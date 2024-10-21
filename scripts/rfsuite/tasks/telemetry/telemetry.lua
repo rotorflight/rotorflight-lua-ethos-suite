@@ -42,6 +42,7 @@ sensorTable["rssi"] = {sport = rfsuite.utils.getRssiSensor(), ccrsf = rfsuite.ut
 sensorTable["voltage"] = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0210}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1011}, lcrsf = "Rx Batt"}
 sensorTable["rpm"] = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0500}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10C0}, lcrsf = "GPS Alt"}
 sensorTable["current"] = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0200}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1012}, lcrsf = "Rx Curr"}
+sensorTable["currentESC1"] = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0201}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1042}, lcrsf = nil}
 sensorTable["tempESC"] = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0B70}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A0}, lcrsf = "GPS Speed"}
 sensorTable["tempMCU"] = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A3}, lcrsf = "GPS Sats"}
 sensorTable["fuel"] = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0600}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1014}, lcrsf = "Rx Batt%"}
