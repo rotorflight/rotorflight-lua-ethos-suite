@@ -13,7 +13,7 @@ fields[#fields + 1] = {t = "Temperature protection", min = 50, max = 150, defaul
 fields[#fields + 1] = {t = "Timing angle", min = 1, max = 20, default = 10, vals = {mspHeaderBytes + 28}, unit = "°"}
 fields[#fields + 1] = {t = "Starting torque", min = 1, max = 15, default = 3, vals = {mspHeaderBytes + 30}}
 fields[#fields + 1] = {t = "Response speed", min = 1, max = 15, default = 5, vals = {mspHeaderBytes + 31}}
-fields[#fields + 1] = {t = "Buzzer volume", min = 0, max = 5, default = 2, vals = {mspHeaderBytes + 32}}
+fields[#fields + 1] = {t = "Buzzer volume", min = 1, max = 5, default = 2, vals = {mspHeaderBytes + 32}}
 fields[#fields + 1] = {t = "Current gain", min = 0, max = 40, default = 20, offset = -20, vals = {mspHeaderBytes + 33}}
 
 local foundEsc = false
