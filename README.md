@@ -87,6 +87,7 @@ Download the latest files (click *Code* and then *Download ZIP*.  Install the zi
 ## Telemetry Sensors
 The below sensors are a good starting point when using rfsuite
 
+```
 ELRS
 set crsf_telemetry_mode = CUSTOM
 set crsf_telemetry_sensors = 3,4,5,61,50,51,52,60,99,93,6,95,96,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -112,6 +113,7 @@ set telemetry_enable_headspeed = ON
 set telemetry_enable_tailspeed = ON
 set telemetry_enable_throttle_control = ON
 set telemetry_enable_arming_flags = ON
+```
 
 ## Contributing
 
