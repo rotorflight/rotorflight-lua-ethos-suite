@@ -183,7 +183,11 @@ end
 
 function utils.ethosVersion()
     local environment = system.getVersion()
-    return tonumber(environment.major .. environment.minor .. environment.revision)
+    local version = tonumber(environment.major .. environment.minor .. environment.revision)
+    if environment.revision == 0 then -- when we have a zero on reversion we drop from 4 numbers to 3.  simple fix.. mult by 10.
+        version = version * 10
+    end
+    return version
 end
 
 function utils.getRssiSensor()
