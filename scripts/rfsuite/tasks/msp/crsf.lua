@@ -31,8 +31,7 @@ local CRSF_FRAMETYPE_MSP_WRITE = 0x7C -- write with 60 byte chunked binary
 
 local crsfMspCmd = 0
 
-local version = system.getVersion()
-if version.minor > 5 then
+if crsf.getSensor ~= nil then
     local sensor = crsf.getSensor()
     transport.popFrame = function() return sensor:popFrame() end
     transport.pushFrame = function(x,y) return sensor:pushFrame(x,y) end
