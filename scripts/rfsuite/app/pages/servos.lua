@@ -90,7 +90,7 @@ local function openPage(pidx, title, script)
 
     rfsuite.bg.msp.protocol.mspIntervalOveride = nil
 
-    if tonumber(rfsuite.utils.makeNumber(rfsuite.config.environment.major .. rfsuite.config.environment.minor .. rfsuite.config.environment.revision)) < rfsuite.config.ethosVersion then return end
+    if rfsuite.config.ethosRunningVersion < rfsuite.config.ethosVersion then return end
 
     rfsuite.app.triggers.isReady = false
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
