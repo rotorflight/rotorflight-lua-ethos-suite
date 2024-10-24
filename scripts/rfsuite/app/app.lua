@@ -604,7 +604,10 @@ function app.wakeupUI()
 
                 local message
                 local apiVersionAsString = tostring(rfsuite.config.apiVersion)
-                if not rfsuite.bg.active() then
+                if rfsuite.config.ethosRunningVersion < config.ethosVersion then
+                    message = config.ethosVersionString
+                    app.triggers.invalidConnectionSetup = true
+                elseif not rfsuite.bg.active() then
                     message = "Please enable the background task."
                     app.triggers.invalidConnectionSetup = true
                 elseif app.getRSSI() == 0 then
@@ -991,39 +994,6 @@ function app.create()
 
     app.ui.openMainMenu()
 
-    -- check the current version of ethos to ensure that it is valid.
-    if rfsuite.config.ethosRunningVersion < config.ethosVersion then
-        if app.dialogs.badversionDisplay == false then
-            app.dialogs.badversionDisplay = true
-
-            local buttons = {
-                {
-                    label = "EXIT",
-                    action = function()
-                        app.triggers.exitAPP = true
-                        return true
-                    end
-                }
-            }
-
-            if tonumber(rfsuite.utils.makeNumber(rfsuite.config.environment.major .. config.environment.minor .. config.environment.revision)) < 1590 then
-                form.openDialog("Warning", config.ethosVersionString, buttons, 1)
-            else
-                form.openDialog({
-                    width = rfsuite.config.lcdWidth,
-                    title = "Warning",
-                    message = config.ethosVersionString,
-                    buttons = buttons,
-                    wakeup = function()
-                    end,
-                    paint = function()
-                    end,
-                    options = TEXT_LEFT
-                })
-            end
-
-        end
-    end
 
 end
 

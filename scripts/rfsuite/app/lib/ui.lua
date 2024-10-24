@@ -154,7 +154,6 @@ function ui.openMainMenu()
 
     local MainMenu = assert(compile.loadScript(config.suiteDir .. "app/pages.lua"))()
 
-    if tonumber(rfsuite.utils.makeNumber(config.environment.major .. config.environment.minor .. config.environment.revision)) < config.ethosVersion then return end
 
     -- clear all nav vars
     rfsuite.app.lastIdx = nil

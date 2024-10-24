@@ -28,6 +28,15 @@ local compile = arg[2]
 
 local elrs = {}
 
+if crsf.getSensor ~= nil then
+    local sensor = crsf.getSensor()
+    elrs.popFrame = function() return sensor:popFrame() end
+    elrs.pushFrame = function(x,y) return sensor:pushFrame(x,y) end
+else
+    elrs.popFrame = function() return crsf.popFrame() end
+    elrs.pushFrame = function(x,y) return crsf.pushFrame(x,y) end
+end
+
 local sensors = {}
 sensors['uid'] = {}
 sensors['lastvalue'] = {}
@@ -397,7 +406,7 @@ function elrs.crossfirePop()
         return false
     else
 
-        local command, data = crsf.popFrame()
+        local command, data = elrs.popFrame()
         if command and data then
 
             if command == CRSF_FRAME_CUSTOM_TELEM then
