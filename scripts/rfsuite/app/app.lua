@@ -176,6 +176,7 @@ function app.resetState()
 
     config.useCompiler = true
     rfsuite.config.useCompiler = true
+    rfsuite.config.ethosRunningVersion = nil
     pageLoaded = 100
     pageTitle = nil
     pageFile = nil
@@ -190,6 +191,7 @@ function app.resetState()
     app.audio = {}
     app.triggers.wasConnected = false
     app.triggers.invalidConnectionSetup = false
+    
 
 end
 
