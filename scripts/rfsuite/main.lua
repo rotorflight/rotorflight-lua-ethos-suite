@@ -26,7 +26,7 @@ local config = {}
 config.toolName = "Rotorflight"                                     -- name of the tool
 config.suiteDir = "/scripts/rfsuite/"                               -- base path the script is installed into
 config.icon = lcd.loadMask(config.suiteDir .. "app/gfx/icon.png")   -- icon
-config.Version = "1.0.0"                                            -- version number of this software release
+config.Version = "2.1.0-RC1"                                        -- version number of this software release
 config.ethosVersion = 1518                                          -- min version of ethos supported by this script
 config.ethosVersionString = "ETHOS < V1.5.18"                       -- string to print if ethos version error occurs
 config.defaultRateProfile = 4 -- ACTUAL                             -- default rate table [default = 4]
