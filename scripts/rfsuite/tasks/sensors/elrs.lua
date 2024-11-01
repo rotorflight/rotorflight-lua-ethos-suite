@@ -73,7 +73,7 @@ local function setTelemetryValue(uid, subid, instance, value, unit, dec, name, m
         end
     else
         if sensors['uid'][uid] then
-            if sensors['lastvalue'][uid] == nil then sensors['uid'][uid]:value(value) end
+            sensors['uid'][uid]:value(value)
 
             -- detect if sensor has been deleted or is missing after initial creation
             if sensors['uid'][uid]:state() == false then
