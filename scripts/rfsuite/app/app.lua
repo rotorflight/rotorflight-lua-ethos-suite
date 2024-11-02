@@ -197,7 +197,7 @@ function app.resetState()
     app.audio = {}
     app.triggers.wasConnected = false
     app.triggers.invalidConnectionSetup = false
-
+    rfsuite.config.ethosRunningVersion = nil
 end
 
 -- SAVE FIELD VALUE FOR ETHOS FROM ETHOS FORMS INTO THE ACTUAL FORMAT THAT 
