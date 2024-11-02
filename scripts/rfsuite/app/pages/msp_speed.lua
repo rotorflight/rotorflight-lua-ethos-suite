@@ -18,7 +18,14 @@ local function resetStats()
     getMSPCount = 0
     mspQueryTimeCount = 0
 
-    mspSpeedTestStats = {total = 0, success = 0, total = 0, retries = 0, timeouts = 0, checksum = 0}
+    mspSpeedTestStats = {
+        total = 0,
+        success = 0,
+        total = 0,
+        retries = 0,
+        timeouts = 0,
+        checksum = 0
+    }
 end
 
 resetStats()
@@ -29,10 +36,12 @@ local Rate = 0.25 -- how many times per second we can call msp
 local function getMSPPidBandwidth()
     local message = {
         command = 94, -- MSP_STATUS
-        processReply = function(self, buf)
-            doNextMsp = true
-        end,
-        simulatorResponse = {3, 25, 250, 0, 12, 0, 1, 30, 30, 45, 50, 50, 100, 15, 15, 20, 2, 10, 10, 15, 100, 100, 5, 0, 30, 0, 25, 0, 40, 55, 40, 75, 20, 25, 0, 15, 45, 45, 15, 15, 20}
+        processReply = function(self, buf) doNextMsp = true end,
+        simulatorResponse = {
+            3, 25, 250, 0, 12, 0, 1, 30, 30, 45, 50, 50, 100, 15, 15, 20, 2, 10,
+            10, 15, 100, 100, 5, 0, 30, 0, 25, 0, 40, 55, 40, 75, 20, 25, 0, 15,
+            45, 45, 15, 15, 20
+        }
     }
     rfsuite.bg.msp.mspQueue:add(message)
 end
@@ -40,12 +49,12 @@ end
 local function getMSPServos()
     local message = {
         command = 120, -- MSP_STATUS
-        processReply = function(self, buf)
-            doNextMsp = true
-        end,
+        processReply = function(self, buf) doNextMsp = true end,
         simulatorResponse = {
-            4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0,
-            120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0
+            4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160,
+            5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12,
+            254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0, 120, 5, 212, 254,
+            44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0
         }
     }
     rfsuite.bg.msp.mspQueue:add(message)
@@ -54,10 +63,11 @@ end
 local function getMSPPids()
     local message = {
         command = 112, -- MSP_STATUS
-        processReply = function(self, buf)
-            doNextMsp = true
-        end,
-        simulatorResponse = {70, 0, 225, 0, 90, 0, 120, 0, 100, 0, 200, 0, 70, 0, 120, 0, 100, 0, 125, 0, 83, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 0, 25, 0}
+        processReply = function(self, buf) doNextMsp = true end,
+        simulatorResponse = {
+            70, 0, 225, 0, 90, 0, 120, 0, 100, 0, 200, 0, 70, 0, 120, 0, 100, 0,
+            125, 0, 83, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 0, 25, 0
+        }
     }
     rfsuite.bg.msp.mspQueue:add(message)
 end
@@ -75,14 +85,18 @@ local function getMSP()
         getMSPCount = 0
     end
 
-    local avgQueryTime = rfsuite.utils.round(mspQueryTimeCount / mspSpeedTestStats['total'], 2) .. "s"
+    local avgQueryTime = rfsuite.utils.round(
+                             mspQueryTimeCount / mspSpeedTestStats['total'], 2) ..
+                             "s"
 end
 
 local function updateStats()
 
     fields['runtime']:value(startTestLength)
 
-    fields['memory']:value(rfsuite.utils.round(system.getMemoryUsage().luaRamAvailable / 1000, 2) .. 'kB')
+    fields['memory']:value(rfsuite.utils.round(
+                               system.getMemoryUsage().luaRamAvailable / 1000, 2) ..
+                               'kB')
 
     fields['total']:value(tostring(mspSpeedTestStats['total']))
 
@@ -92,13 +106,16 @@ local function updateStats()
 
     fields['checksum']:value(tostring(mspSpeedTestStats['checksum']))
 
-    if (mspSpeedTestStats['success'] == mspSpeedTestStats['total'] - 1) and mspSpeedTestStats['timeouts'] == 0 then
+    if (mspSpeedTestStats['success'] == mspSpeedTestStats['total'] - 1) and
+        mspSpeedTestStats['timeouts'] == 0 then
         fields['success']:value(tostring(mspSpeedTestStats['success']))
     else
         fields['success']:value(tostring(mspSpeedTestStats['success']))
     end
 
-    local avgQueryTime = rfsuite.utils.round(mspQueryTimeCount / mspSpeedTestStats['total'], 2) .. "s"
+    local avgQueryTime = rfsuite.utils.round(
+                             mspQueryTimeCount / mspSpeedTestStats['total'], 2) ..
+                             "s"
     fields['time']:value(tostring(avgQueryTime))
 
 end
@@ -118,7 +135,8 @@ local function startTest(duration)
             local now = os.clock()
 
             -- kill if we loose link - but not in sim mode
-            if rfsuite.bg.telemetry.active() == false and startTest == true and system:getVersion().simulation ~= true then
+            if rfsuite.bg.telemetry.active() == false and startTest == true and
+                system:getVersion().simulation ~= true then
                 if testLoader then
                     testLoader:close()
                     testLoader = nil
@@ -140,7 +158,8 @@ local function startTest(duration)
             end
 
             -- do msp query
-            if rfsuite.bg.msp.mspQueue:isProcessed() and ((now - RateLimit) >= Rate) then
+            if rfsuite.bg.msp.mspQueue:isProcessed() and
+                ((now - RateLimit) >= Rate) then
                 RateLimit = now
                 mspSpeedTestStats['total'] = mspSpeedTestStats['total'] + 1
                 mspQueryStartTime = os.clock()
@@ -188,7 +207,12 @@ local function openSpeedTestDialog()
             end
         }
     }
-    form.openDialog({title = "Start", message = "Would you like to start the test? Choose the test run time below.", buttons = buttons, options = TEXT_LEFT})
+    form.openDialog({
+        title = "Start",
+        message = "Would you like to start the test? Choose the test run time below.",
+        buttons = buttons,
+        options = TEXT_LEFT
+    })
 end
 
 local function openPage(pidx, title, script)
@@ -209,56 +233,75 @@ local function openPage(pidx, title, script)
     local buttonWs = buttonW - (buttonW * 20) / 100
     local x = w - 10
 
-    rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {
-        x = x - 5 - buttonW - buttonWs - 5 - buttonWs,
-        y = rfsuite.app.radio.linePaddingTop,
-        w = buttonW,
-        h = rfsuite.app.radio.navbuttonHeight
-    }, {
-        text = "MENU",
-        icon = nil,
-        options = FONT_S,
-        press = function()
-            rfsuite.app.ui.openMainMenu()
-        end
-    })
+    rfsuite.app.formNavigationFields['menu'] =
+        form.addButton(line, {
+            x = x - 5 - buttonW - buttonWs - 5 - buttonWs,
+            y = rfsuite.app.radio.linePaddingTop,
+            w = buttonW,
+            h = rfsuite.app.radio.navbuttonHeight
+        }, {
+            text = "MENU",
+            icon = nil,
+            options = FONT_S,
+            press = function() rfsuite.app.ui.openMainMenu() end
+        })
     rfsuite.app.formNavigationFields['menu']:focus()
 
     -- ACTION BUTTON
-    rfsuite.app.formNavigationFields['tool'] = form.addButton(line, {x = x - 5 - buttonWs - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = buttonWs, h = rfsuite.app.radio.navbuttonHeight}, {
-        text = "*",
-        icon = nil,
-        options = FONT_S,
-        press = function()
-            openSpeedTestDialog()
-        end
-    })
+    rfsuite.app.formNavigationFields['tool'] =
+        form.addButton(line, {
+            x = x - 5 - buttonWs - buttonWs,
+            y = rfsuite.app.radio.linePaddingTop,
+            w = buttonWs,
+            h = rfsuite.app.radio.navbuttonHeight
+        }, {
+            text = "*",
+            icon = nil,
+            options = FONT_S,
+            press = function() openSpeedTestDialog() end
+        })
 
     -- HELP BUTTON
-    local help = assert(compile.loadScript(rfsuite.config.suiteDir .. "app/help/pages.lua"))()
+    local help = assert(compile.loadScript(
+                            rfsuite.config.suiteDir .. "app/help/pages.lua"))()
     local section = string.gsub(rfsuite.app.lastScript, ".lua", "") -- remove .lua
-    rfsuite.app.formNavigationFields['help'] = form.addButton(line, {x = x - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = buttonWs, h = rfsuite.app.radio.navbuttonHeight}, {
-        text = "?",
-        icon = nil,
-        options = FONT_S,
-        paint = function()
-        end,
-        press = function()
-            if rfsuite.app.Page and rfsuite.app.Page.onHelpMenu then
-                rfsuite.app.Page.onHelpMenu(rfsuite.app.Page)
-            else
-                rfsuite.app.ui.openPagehelp(help.data, section)
+    rfsuite.app.formNavigationFields['help'] =
+        form.addButton(line, {
+            x = x - buttonWs,
+            y = rfsuite.app.radio.linePaddingTop,
+            w = buttonWs,
+            h = rfsuite.app.radio.navbuttonHeight
+        }, {
+            text = "?",
+            icon = nil,
+            options = FONT_S,
+            paint = function() end,
+            press = function()
+                if rfsuite.app.Page and rfsuite.app.Page.onHelpMenu then
+                    rfsuite.app.Page.onHelpMenu(rfsuite.app.Page)
+                else
+                    rfsuite.app.ui.openPagehelp(help.data, section)
+                end
             end
-        end
-    })
+        })
 
-    local posText = {x = x - 5 - buttonW - buttonWs - 5 - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = 200, h = rfsuite.app.radio.navbuttonHeight}
+    local posText = {
+        x = x - 5 - buttonW - buttonWs - 5 - buttonWs,
+        y = rfsuite.app.radio.linePaddingTop,
+        w = 200,
+        h = rfsuite.app.radio.navbuttonHeight
+    }
 
     line['rf'] = form.addLine("RF protocol")
-    fields['rf'] = form.addStaticText(line['rf'], posText, string.upper(rfsuite.bg.msp.protocol.mspProtocol))
+    fields['rf'] = form.addStaticText(line['rf'], posText, string.upper(
+                                          rfsuite.bg.msp.protocol.mspProtocol))
 
     line['memory'] = form.addLine("Memory free")
-    fields['memory'] = form.addStaticText(line['memory'], posText, rfsuite.utils.round(system.getMemoryUsage().luaRamAvailable / 1000, 2) .. 'kB')
+    fields['memory'] = form.addStaticText(line['memory'], posText, rfsuite.utils
+                                              .round(
+                                              system.getMemoryUsage()
+                                                  .luaRamAvailable / 1000, 2) ..
+                                              'kB')
 
     line['runtime'] = form.addLine("Test length")
     fields['runtime'] = form.addStaticText(line['runtime'], posText, "-")
@@ -292,15 +335,22 @@ function mspSuccess(self)
 end
 
 function mspTimeout(self)
-    if testLoader then mspSpeedTestStats['timeouts'] = mspSpeedTestStats['timeouts'] + 1 end
+    if testLoader then
+        mspSpeedTestStats['timeouts'] = mspSpeedTestStats['timeouts'] + 1
+    end
 end
 
 function mspRetry(self)
-    if testLoader then mspSpeedTestStats['retries'] = mspSpeedTestStats['retries'] + (self.retryCount - 1) end
+    if testLoader then
+        mspSpeedTestStats['retries'] = mspSpeedTestStats['retries'] +
+                                           (self.retryCount - 1)
+    end
 end
 
 function mspChecksum(self)
-    if testLoader then mspSpeedTestStats['checksum'] = mspSpeedTestStats['checksum'] + 1 end
+    if testLoader then
+        mspSpeedTestStats['checksum'] = mspSpeedTestStats['checksum'] + 1
+    end
 end
 
 function close()
@@ -310,4 +360,13 @@ function close()
     end
 end
 
-return {title = title, openPage = openPage, mspRetry = mspRetry, mspSuccess = mspSuccess, mspTimeout = mspTimeout, mspChecksum = mspChecksum, event = event, close = close}
+return {
+    title = title,
+    openPage = openPage,
+    mspRetry = mspRetry,
+    mspSuccess = mspSuccess,
+    mspTimeout = mspTimeout,
+    mspChecksum = mspChecksum,
+    event = event,
+    close = close
+}

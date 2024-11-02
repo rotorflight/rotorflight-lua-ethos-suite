@@ -17,7 +17,7 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  *
 
-]]--
+]] --
 --
 local arg = {...}
 local config = arg[1]
@@ -79,7 +79,10 @@ local function createSensor(physId, primId, appId, frameValue)
 
         if frsky.createSensorCache[appId] == nil then
 
-            frsky.createSensorCache[appId] = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
+            frsky.createSensorCache[appId] = system.getSource({
+                category = CATEGORY_TELEMETRY_SENSOR,
+                appId = appId
+            })
 
             if frsky.createSensorCache[appId] == nil then
 
@@ -96,8 +99,12 @@ local function createSensor(physId, primId, appId, frameValue)
                     frsky.createSensorCache[appId]:unit(v.unit)
                     frsky.createSensorCache[appId]:protocolUnit(v.unit)
                 end
-                if v.minimum ~= nil then frsky.createSensorCache[appId]:minimum(v.minimum) end
-                if v.maximum ~= nil then frsky.createSensorCache[appId]:maximum(v.maximum) end
+                if v.minimum ~= nil then
+                    frsky.createSensorCache[appId]:minimum(v.minimum)
+                end
+                if v.maximum ~= nil then
+                    frsky.createSensorCache[appId]:maximum(v.maximum)
+                end
 
             end
 
@@ -113,7 +120,10 @@ local function dropSensor(physId, primId, appId, frameValue)
         local v = dropSensorList[appId]
 
         if frsky.dropSensorCache[appId] == nil then
-            frsky.dropSensorCache[appId] = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
+            frsky.dropSensorCache[appId] = system.getSource({
+                category = CATEGORY_TELEMETRY_SENSOR,
+                appId = appId
+            })
 
             if frsky.dropSensorCache[appId] ~= nil then
                 print("Drop sensor: " .. v.name)
@@ -133,8 +143,10 @@ local function renameSensor(physId, primId, appId, frameValue)
         local v = renameSensorList[appId]
 
         if frsky.renameSensorCache[appId] == nil then
-            frsky.renameSensorCache[appId] = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
-
+            frsky.renameSensorCache[appId] = system.getSource({
+                category = CATEGORY_TELEMETRY_SENSOR,
+                appId = appId
+            })
 
             if frsky.renameSensorCache[appId] ~= nil then
                 if frsky.renameSensorCache[appId]:name() == v.onlyifname then
@@ -172,8 +184,12 @@ function frsky.wakeup()
     end
 
     -- if gui or queue is busy.. do not do this!
-    if rfsuite.bg and rfsuite.bg.telemetry and rfsuite.bg.telemetry.active() and rfsuite.rssiSensor then
-        if rfsuite.app.guiIsRunning == false and rfsuite.bg.msp.mspQueue:isProcessed() then while telemetryPop() do end end
+    if rfsuite.bg and rfsuite.bg.telemetry and rfsuite.bg.telemetry.active() and
+        rfsuite.rssiSensor then
+        if rfsuite.app.guiIsRunning == false and
+            rfsuite.bg.msp.mspQueue:isProcessed() then
+            while telemetryPop() do end
+        end
     end
 
 end

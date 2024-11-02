@@ -15,19 +15,67 @@ local currentYawTrimLast
 local currentIdleThrottleTrim
 local currentIdleThrottleTrimLast
 
-fields[#fields + 1] = {t = "Roll trim %", help = "mixerSwashTrim", xlabel = "line5", xinline = 1, min = -1000, max = 1000, vals = {12, 13}, decimals = 1, scale = 10}
+fields[#fields + 1] = {
+    t = "Roll trim %",
+    help = "mixerSwashTrim",
+    xlabel = "line5",
+    xinline = 1,
+    min = -1000,
+    max = 1000,
+    vals = {12, 13},
+    decimals = 1,
+    scale = 10
+}
 
-fields[#fields + 1] = {t = "Pitch trim %", help = "mixerSwashTrim", xlabel = "line6", xinline = 1, min = -1000, max = 1000, vals = {14, 15}, decimals = 1, scale = 10}
+fields[#fields + 1] = {
+    t = "Pitch trim %",
+    help = "mixerSwashTrim",
+    xlabel = "line6",
+    xinline = 1,
+    min = -1000,
+    max = 1000,
+    vals = {14, 15},
+    decimals = 1,
+    scale = 10
+}
 
-fields[#fields + 1] = {t = "Col. trim %", help = "mixerSwashTrim", xlabel = "line7", xinline = 1, min = -1000, max = 1000, vals = {16, 17}, decimals = 1, scale = 10}
+fields[#fields + 1] = {
+    t = "Col. trim %",
+    help = "mixerSwashTrim",
+    xlabel = "line7",
+    xinline = 1,
+    min = -1000,
+    max = 1000,
+    vals = {16, 17},
+    decimals = 1,
+    scale = 10
+}
 
 -- note.  the same vals are used for center trim motor and yaw trim - but they are multiplied and saved in different ways
 if rfsuite.config.tailMode == 1 or rfsuite.config.tailMode == 2 then
-    fields[#fields + 1] = {t = "Center trim for tail motor %", help = "mixerTailMotorCenterTrim", inline = 1, min = -500, max = 500, vals = {4, 5}, decimals = 1, scale = 10}
+    fields[#fields + 1] = {
+        t = "Center trim for tail motor %",
+        help = "mixerTailMotorCenterTrim",
+        inline = 1,
+        min = -500,
+        max = 500,
+        vals = {4, 5},
+        decimals = 1,
+        scale = 10
+    }
 end
 
 if rfsuite.config.tailMode == 0 then
-    fields[#fields + 1] = {t = "Yaw. trim %", help = "mixerTailMotorCenterTrim", inline = 1, min = -1043, max = 1043, vals = {4, 5}, mult = 0.0239923224568138, decimals = 1}
+    fields[#fields + 1] = {
+        t = "Yaw. trim %",
+        help = "mixerTailMotorCenterTrim",
+        inline = 1,
+        min = -1043,
+        max = 1043,
+        vals = {4, 5},
+        mult = 0.0239923224568138,
+        decimals = 1
+    }
 end
 
 local function saveData()
@@ -89,9 +137,13 @@ local function postLoad(self)
     currentPitchTrim = rfsuite.app.Page.fields[2].value
     currentCollectiveTrim = rfsuite.app.Page.fields[3].value
 
-    if rfsuite.config.tailModeActive == 1 or rfsuite.config.tailModeActive == 2 then currentIdleThrottleTrim = rfsuite.app.Page.fields[4].value end
+    if rfsuite.config.tailModeActive == 1 or rfsuite.config.tailModeActive == 2 then
+        currentIdleThrottleTrim = rfsuite.app.Page.fields[4].value
+    end
 
-    if rfsuite.config.tailModeActive == 0 then currentYawTrim = rfsuite.app.Page.fields[4].value end
+    if rfsuite.config.tailModeActive == 0 then
+        currentYawTrim = rfsuite.app.Page.fields[4].value
+    end
     rfsuite.app.triggers.isReady = true
 end
 
@@ -103,7 +155,8 @@ local function wakeup(self)
         currentRollTrim = rfsuite.app.Page.fields[1].value
         local now = os.clock()
         local settleTime = 0.85
-        if ((now - lastChangeTime) >= settleTime) and rfsuite.bg.msp.mspQueue:isProcessed() then
+        if ((now - lastChangeTime) >= settleTime) and
+            rfsuite.bg.msp.mspQueue:isProcessed() then
             if currentRollTrim ~= currentRollTrimLast then
                 currentRollTrimLast = currentRollTrim
                 lastChangeTime = now
@@ -114,7 +167,8 @@ local function wakeup(self)
         currentPitchTrim = rfsuite.app.Page.fields[2].value
         local now = os.clock()
         local settleTime = 0.85
-        if ((now - lastChangeTime) >= settleTime) and rfsuite.bg.msp.mspQueue:isProcessed() then
+        if ((now - lastChangeTime) >= settleTime) and
+            rfsuite.bg.msp.mspQueue:isProcessed() then
             if currentPitchTrim ~= currentPitchTrimLast then
                 currentPitchTrimLast = currentPitchTrim
                 lastChangeTime = now
@@ -125,7 +179,8 @@ local function wakeup(self)
         currentCollectiveTrim = rfsuite.app.Page.fields[3].value
         local now = os.clock()
         local settleTime = 0.85
-        if ((now - lastChangeTime) >= settleTime) and rfsuite.bg.msp.mspQueue:isProcessed() then
+        if ((now - lastChangeTime) >= settleTime) and
+            rfsuite.bg.msp.mspQueue:isProcessed() then
             if currentCollectiveTrim ~= currentCollectiveTrimLast then
                 currentCollectiveTrimLast = currentCollectiveTrim
                 lastChangeTime = now
@@ -137,7 +192,8 @@ local function wakeup(self)
             currentIdleThrottleTrim = rfsuite.app.Page.fields[4].value
             local now = os.clock()
             local settleTime = 0.85
-            if ((now - lastChangeTime) >= settleTime) and rfsuite.bg.msp.mspQueue:isProcessed() then
+            if ((now - lastChangeTime) >= settleTime) and
+                rfsuite.bg.msp.mspQueue:isProcessed() then
                 if currentIdleThrottleTrim ~= currentIdleThrottleTrimLast then
                     currentIdleThrottleTrimLast = currentIdleThrottleTrim
                     lastChangeTime = now
@@ -150,7 +206,8 @@ local function wakeup(self)
             currentYawTrim = rfsuite.app.Page.fields[4].value
             local now = os.clock()
             local settleTime = 0.85
-            if ((now - lastChangeTime) >= settleTime) and rfsuite.bg.msp.mspQueue:isProcessed() then
+            if ((now - lastChangeTime) >= settleTime) and
+                rfsuite.bg.msp.mspQueue:isProcessed() then
                 if currentYawTrim ~= currentYawTrimLast then
                     currentYawTrimLast = currentYawTrim
                     lastChangeTime = now
@@ -168,7 +225,8 @@ local function wakeup(self)
 
             rfsuite.app.audio.playMixerOverideEnable = true
 
-            rfsuite.app.ui.progressDisplay("Mixer override", "Enabling mixer override...")
+            rfsuite.app.ui.progressDisplay("Mixer override",
+                                           "Enabling mixer override...")
 
             rfsuite.app.Page.mixerOn(self)
             inOverRide = true
@@ -176,7 +234,8 @@ local function wakeup(self)
 
             rfsuite.app.audio.playMixerOverideDisable = true
 
-            rfsuite.app.ui.progressDisplay("Mixer override", "Disabling mixer override...")
+            rfsuite.app.ui.progressDisplay("Mixer override",
+                                           "Disabling mixer override...")
 
             rfsuite.app.Page.mixerOff(self)
             inOverRide = false
@@ -197,18 +256,14 @@ local function onToolMenu(self)
                 triggerOverRide = true
                 return true
             end
-        }, {
-            label = "CANCEL",
-            action = function()
-                return true
-            end
-        }
+        }, {label = "CANCEL", action = function() return true end}
     }
     local message
     local title
     if inOverRide == false then
         title = "Enable mixer override"
-        message = "Set all servos to their configured center position. \r\n\r\nThis will result in all values on this page being saved when adjusting the servo trim."
+        message =
+            "Set all servos to their configured center position. \r\n\r\nThis will result in all values on this page being saved when adjusting the servo trim."
     else
         title = "Disable mixer override"
         message = "Return control of the servos to the flight controller."
@@ -219,10 +274,8 @@ local function onToolMenu(self)
         title = title,
         message = message,
         buttons = buttons,
-        wakeup = function()
-        end,
-        paint = function()
-        end,
+        wakeup = function() end,
+        paint = function() end,
         options = TEXT_LEFT
     })
 
@@ -236,7 +289,8 @@ local function onNavMenu(self)
         inOverRide = false
         inFocus = false
 
-        rfsuite.app.ui.progressDisplay("Mixer override", "Disabling mixer override...")
+        rfsuite.app.ui.progressDisplay("Mixer override",
+                                       "Disabling mixer override...")
 
         mixerOff(self)
         rfsuite.app.triggers.closeProgressLoader = true
@@ -252,7 +306,9 @@ return {
     eepromWrite = true,
     reboot = false,
     title = "Mixer",
-    simulatorResponse = {0, 1, 0, 0, 0, 2, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    simulatorResponse = {
+        0, 1, 0, 0, 0, 2, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    },
     minBytes = 19,
     labels = labels,
     fields = fields,
@@ -263,5 +319,11 @@ return {
     onNavMenu = onNavMenu,
     wakeup = wakeup,
     saveData = saveData,
-    navButtons = {menu = true, save = true, reload = true, tool = true, help = true}
+    navButtons = {
+        menu = true,
+        save = true,
+        reload = true,
+        tool = true,
+        help = true
+    }
 }

@@ -17,8 +17,7 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 
-]]--
-
+]] --
 --
 -- background processing of msp traffic
 --
@@ -31,7 +30,8 @@ msp = {}
 msp.activeProtocol = nil
 msp.onConnectChecksInit = true
 
-local protocol = assert(compile.loadScript(config.suiteDir .. "tasks/msp/protocols.lua"))()
+local protocol = assert(compile.loadScript(config.suiteDir ..
+                                               "tasks/msp/protocols.lua"))()
 
 msp.sensor = sport.getSensor({primId = 0x32})
 msp.mspQueue = mspQueue
@@ -43,7 +43,10 @@ msp.protocol = protocol.getProtocol()
 
 -- preload all transport methods
 msp.protocolTransports = {}
-for i, v in pairs(protocol.getTransports()) do msp.protocolTransports[i] = assert(compile.loadScript(config.suiteDir .. v))() end
+for i, v in pairs(protocol.getTransports()) do
+    msp.protocolTransports[i] =
+        assert(compile.loadScript(config.suiteDir .. v))()
+end
 
 -- set active transport table to use
 local transport = msp.protocolTransports[msp.protocol.mspProtocol]
@@ -52,9 +55,11 @@ msp.protocol.mspSend = transport.mspSend
 msp.protocol.mspWrite = transport.mspWrite
 msp.protocol.mspPoll = transport.mspPoll
 
-msp.mspQueue = assert(compile.loadScript(config.suiteDir .. "tasks/msp/mspQueue.lua"))()
+msp.mspQueue = assert(compile.loadScript(config.suiteDir ..
+                                             "tasks/msp/mspQueue.lua"))()
 msp.mspQueue.maxRetries = msp.protocol.maxRetries
-msp.mspHelper = assert(compile.loadScript(config.suiteDir .. "tasks/msp/mspHelper.lua"))()
+msp.mspHelper = assert(compile.loadScript(config.suiteDir ..
+                                              "tasks/msp/mspHelper.lua"))()
 assert(compile.loadScript(config.suiteDir .. "tasks/msp/common.lua"))()
 
 -- BACKGROUND checks
@@ -70,7 +75,8 @@ function msp.onConnectBgChecks()
                     if #buf >= 3 then
                         local version = buf[2] + buf[3] / 100
                         rfsuite.config.apiVersion = version
-                        rfsuite.utils.log("MSP Version: " .. rfsuite.config.apiVersion)
+                        rfsuite.utils.log("MSP Version: " ..
+                                              rfsuite.config.apiVersion)
                     end
                 end,
                 simulatorResponse = {0, 12, 7}
@@ -106,12 +112,14 @@ function msp.onConnectBgChecks()
 
             -- add msg to queue
             rfsuite.bg.msp.mspQueue:add(message)
-        elseif rfsuite.config.clockSet == true and rfsuite.config.clockSetAlart ~= true then
+        elseif rfsuite.config.clockSet == true and rfsuite.config.clockSetAlart ~=
+            true then
             -- this is unsual but needed because the clock sync does not return anything usefull
             -- to confirm its done! 
             rfsuite.utils.playFileCommon("beep.wav")
             rfsuite.config.clockSetAlart = true
-        elseif (rfsuite.config.tailMode == nil or rfsuite.config.swashMode == nil) and msp.mspQueue:isProcessed() then
+        elseif (rfsuite.config.tailMode == nil or rfsuite.config.swashMode ==
+            nil) and msp.mspQueue:isProcessed() then
             local message = {
                 command = 42, -- MIXER
                 processReply = function(self, buf)
@@ -121,14 +129,19 @@ function msp.onConnectBgChecks()
                         local swashMode = buf[6]
                         rfsuite.config.swashMode = swashMode
                         rfsuite.config.tailMode = tailMode
-                        rfsuite.utils.log("Tail mode: " .. rfsuite.config.tailMode)
-                        rfsuite.utils.log("Swash mode: " .. rfsuite.config.swashMode)
+                        rfsuite.utils.log("Tail mode: " ..
+                                              rfsuite.config.tailMode)
+                        rfsuite.utils.log("Swash mode: " ..
+                                              rfsuite.config.swashMode)
                     end
                 end,
-                simulatorResponse = {0, 1, 0, 0, 0, 2, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+                simulatorResponse = {
+                    0, 1, 0, 0, 0, 2, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                }
             }
             msp.mspQueue:add(message)
-        elseif (rfsuite.config.activeProfile == nil or rfsuite.config.activeRateProfile == nil) then
+        elseif (rfsuite.config.activeProfile == nil or
+            rfsuite.config.activeRateProfile == nil) then
 
             rfsuite.utils.getCurrentProfile()
 
@@ -144,13 +157,17 @@ function msp.onConnectBgChecks()
                     end
                 end,
                 simulatorResponse = {
-                    4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0,
-                    0, 0, 120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0
+                    4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1,
+                    0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1,
+                    0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0,
+                    0, 120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0,
+                    0
                 }
             }
             msp.mspQueue:add(message)
 
-        elseif (rfsuite.config.servoOverride == nil) and msp.mspQueue:isProcessed() then
+        elseif (rfsuite.config.servoOverride == nil) and
+            msp.mspQueue:isProcessed() then
             local message = {
                 command = 192, -- MSP_SERVO_OVERIDE
                 processReply = function(self, buf)
@@ -164,10 +181,15 @@ function msp.onConnectBgChecks()
                                 rfsuite.config.servoOverride = true
                             end
                         end
-                        if rfsuite.config.servoOverride == nil then rfsuite.config.servoOverride = false end
+                        if rfsuite.config.servoOverride == nil then
+                            rfsuite.config.servoOverride = false
+                        end
                     end
                 end,
-                simulatorResponse = {209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7}
+                simulatorResponse = {
+                    209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209,
+                    7
+                }
             }
             msp.mspQueue:add(message)
 

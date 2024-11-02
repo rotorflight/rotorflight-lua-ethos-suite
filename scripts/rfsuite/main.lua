@@ -17,8 +17,7 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 
-]]--
-
+]] --
 -- RotorFlight + ETHOS LUA configuration
 local config = {}
 
@@ -68,18 +67,23 @@ local compile = assert(loadfile(config.suiteDir .. "compile.lua"))(config)
 -- main
 rfsuite = {}
 rfsuite.config = config
-rfsuite.app = assert(compile.loadScript(config.suiteDir .. "app/app.lua"))(config, compile)
-rfsuite.utils = assert(compile.loadScript(config.suiteDir .. "lib/utils.lua"))(config, compile)
-
-
+rfsuite.app = assert(compile.loadScript(config.suiteDir .. "app/app.lua"))(
+                  config, compile)
+rfsuite.utils = assert(compile.loadScript(config.suiteDir .. "lib/utils.lua"))(
+                    config, compile)
 
 -- tasks
 rfsuite.tasks = {}
-rfsuite.bg = assert(compile.loadScript(config.suiteDir .. "tasks/bg.lua"))(config, compile)
+rfsuite.bg = assert(compile.loadScript(config.suiteDir .. "tasks/bg.lua"))(
+                 config, compile)
 
 -- widgets
-rfsuite.rf2gov = assert(compile.loadScript(config.suiteDir .. "widgets/governor/governor.lua"))(config, compile)
-rfsuite.rf2status = assert(compile.loadScript(config.suiteDir .. "widgets/status/status.lua"))(config, compile)
+rfsuite.rf2gov = assert(compile.loadScript(config.suiteDir ..
+                                               "widgets/governor/governor.lua"))(
+                     config, compile)
+rfsuite.rf2status = assert(compile.loadScript(config.suiteDir ..
+                                                  "widgets/status/status.lua"))(
+                        config, compile)
 
 -- LuaFormatter off
 

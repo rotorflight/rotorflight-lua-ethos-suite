@@ -17,24 +17,17 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 
-]]--
-
+]] --
 local utils = {}
 
 local arg = {...}
 local config = arg[1]
 local compile = arg[2]
 
-
-
-function utils.dir_exists(base,name)
-        list = system.listFiles(base)       
-        for i,v in pairs(list) do
-                if v == name then
-                        return true
-                end
-        end
-        return false
+function utils.dir_exists(base, name)
+    list = system.listFiles(base)
+    for i, v in pairs(list) do if v == name then return true end end
+    return false
 end
 
 function utils.file_exists(name)
@@ -47,39 +40,42 @@ function utils.file_exists(name)
     end
 end
 
-function utils.playFile(pkg,file)
+function utils.playFile(pkg, file)
 
-        local wavLocale
-        local wavDefault
-        
-        -- fix path
-        local av = system.getAudioVoice()
-        av = string.gsub(av, "SD:", "")
-        av = string.gsub(av, "RADIO:", "")
+    local wavLocale
+    local wavDefault
 
-        if rfsuite.config.soundPack == nil then  
-                wavLocale = rfsuite.config.suiteDir ..  av .. "/" .. pkg .. "/" .. file
-                wavDefault = rfsuite.config.suiteDir .. "/audio/en/default/" .. pkg .. "/" .. file                    
-        else
-                wavLocale = rfsuite.config.suiteDir .. "/audio/" .. rfsuite.config.soundPack .. "/" .. pkg .. "/" .. file
-                wavDefault = rfsuite.config.suiteDir .. "/audio/en/default/" .. pkg .. "/" .. file        
-        end
-             
-        if rfsuite.utils.file_exists(wavLocale) then
-                --print("Locale: " .. wavLocale)
-                system.playFile(wavLocale)
-        else
-                --print("Default: " .. wavDefault)
-                system.playFile(wavDefault)
-        end        
+    -- fix path
+    local av = system.getAudioVoice()
+    av = string.gsub(av, "SD:", "")
+    av = string.gsub(av, "RADIO:", "")
+
+    if rfsuite.config.soundPack == nil then
+        wavLocale = rfsuite.config.suiteDir .. av .. "/" .. pkg .. "/" .. file
+        wavDefault = rfsuite.config.suiteDir .. "/audio/en/default/" .. pkg ..
+                         "/" .. file
+    else
+        wavLocale = rfsuite.config.suiteDir .. "/audio/" ..
+                        rfsuite.config.soundPack .. "/" .. pkg .. "/" .. file
+        wavDefault = rfsuite.config.suiteDir .. "/audio/en/default/" .. pkg ..
+                         "/" .. file
+    end
+
+    if rfsuite.utils.file_exists(wavLocale) then
+        -- print("Locale: " .. wavLocale)
+        system.playFile(wavLocale)
+    else
+        -- print("Default: " .. wavDefault)
+        system.playFile(wavDefault)
+    end
 end
 
 function utils.playFileCommon(file)
 
-        local wav = rfsuite.config.suiteDir .. "/audio/" .. file
+    local wav = rfsuite.config.suiteDir .. "/audio/" .. file
 
-        system.playFile(wav)
-      
+    system.playFile(wav)
+
 end
 
 function utils.isHeliArmed()
@@ -129,22 +125,23 @@ end
 -- you MUST set it to nil after you get it!
 function utils.getCurrentProfile()
 
-    if (rfsuite.bg.telemetry.getSensorSource("pidProfile") ~= nil and rfsuite.bg.telemetry.getSensorSource("rateProfile") ~= nil) then
+    if (rfsuite.bg.telemetry.getSensorSource("pidProfile") ~= nil and
+        rfsuite.bg.telemetry.getSensorSource("rateProfile") ~= nil) then
 
         config.activeProfileLast = config.activeProfile
         local p = rfsuite.bg.telemetry.getSensorSource("pidProfile"):value()
         if p ~= nil then
-                config.activeProfile = math.floor(p)
-        else    
-                config.activeProfile = nil
-        end        
+            config.activeProfile = math.floor(p)
+        else
+            config.activeProfile = nil
+        end
 
         config.activeRateProfileLast = config.activeRateProfile
         local r = rfsuite.bg.telemetry.getSensorSource("rateProfile"):value()
         if r ~= nil then
-                config.activeRateProfile = math.floor(r)
+            config.activeRateProfile = math.floor(r)
         else
-                config.activeRateProfile = nil
+            config.activeRateProfile = nil
         end
 
     else
@@ -159,7 +156,8 @@ function utils.getCurrentProfile()
                     if #buf >= 30 then
 
                         buf.offset = 24
-                        local activeProfile = rfsuite.bg.msp.mspHelper.readU8(buf)
+                        local activeProfile =
+                            rfsuite.bg.msp.mspHelper.readU8(buf)
                         buf.offset = 26
                         local activeRate = rfsuite.bg.msp.mspHelper.readU8(buf)
 
@@ -171,7 +169,10 @@ function utils.getCurrentProfile()
 
                     end
                 end,
-                simulatorResponse = {240, 1, 124, 0, 35, 0, 0, 0, 0, 0, 0, 224, 1, 10, 1, 0, 26, 0, 0, 0, 0, 0, 2, 0, 6, 0, 6, 1, 4, 1}
+                simulatorResponse = {
+                    240, 1, 124, 0, 35, 0, 0, 0, 0, 0, 0, 224, 1, 10, 1, 0, 26,
+                    0, 0, 0, 0, 0, 2, 0, 6, 0, 6, 1, 4, 1
+                }
 
             }
             rfsuite.bg.msp.mspQueue:add(message)
@@ -183,12 +184,16 @@ end
 
 function utils.ethosVersion()
     local environment = system.getVersion()
-    return tonumber(environment.major .. environment.minor .. environment.revision)
+    return tonumber(environment.major .. environment.minor ..
+                        environment.revision)
 end
 
 function utils.getRssiSensor()
     local rssiSensor
-    local rssiNames = {"RSSI", "RSSI 2.4G", "RSSI 900M", "Rx RSSI1", "Rx RSSI2", "RSSI Int", "RSSI Ext", "RSSI Lora"}
+    local rssiNames = {
+        "RSSI", "RSSI 2.4G", "RSSI 900M", "Rx RSSI1", "Rx RSSI2", "RSSI Int",
+        "RSSI Ext", "RSSI Lora"
+    }
     for i, name in pairs(rssiNames) do
         rssiSensor = system.getSource(name)
         if rssiSensor then return {sensor = rssiSensor, name = name} end
@@ -213,14 +218,18 @@ function utils.countCarriageReturns(text)
 end
 
 function utils.getSection(id, sections)
-    for i, v in ipairs(sections) do if id ~= nil then if v.section == id then return v end end end
+    for i, v in ipairs(sections) do
+        if id ~= nil then if v.section == id then return v end end
+    end
 end
 
 -- explode a string
 function utils.explode(inputstr, sep)
     if sep == nil then sep = "%s" end
     local t = {}
-    for str in string.gmatch(inputstr, "([^" .. sep .. "]+)") do table.insert(t, str) end
+    for str in string.gmatch(inputstr, "([^" .. sep .. "]+)") do
+        table.insert(t, str)
+    end
     return t
 end
 
@@ -275,9 +284,7 @@ function utils.loadScript(script)
 end
 
 -- return the time
-function utils.getTime()
-    return os.clock() * 100
-end
+function utils.getTime() return os.clock() * 100 end
 
 function utils.joinTableItems(table, delimiter)
     if table == nil or #table == 0 then return "" end
@@ -298,7 +305,8 @@ function utils.getFieldValue(f)
 
     if f.value ~= nil then
         if f.decimals ~= nil then
-            v = rfsuite.utils.round(f.value * rfsuite.utils.decimalInc(f.decimals))
+            v = rfsuite.utils.round(f.value *
+                                        rfsuite.utils.decimalInc(f.decimals))
         else
             v = f.value
         end
@@ -343,7 +351,10 @@ function utils.scaleValue(value, f)
 end
 
 function utils.decimalInc(dec)
-    local decTable = {10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000, 10000000000, 100000000000}
+    local decTable = {
+        10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000,
+        10000000000, 100000000000
+    }
 
     if dec == nil then
         return 1
@@ -485,31 +496,41 @@ function utils.print_r(node)
                 end
 
                 if (type(v) == "number" or type(v) == "boolean") then
-                    output_str = output_str .. string.rep("\t", depth) .. key .. " = " .. tostring(v)
+                    output_str = output_str .. string.rep("\t", depth) .. key ..
+                                     " = " .. tostring(v)
                 elseif (type(v) == "table") then
-                    output_str = output_str .. string.rep("\t", depth) .. key .. " = {\n"
+                    output_str = output_str .. string.rep("\t", depth) .. key ..
+                                     " = {\n"
                     table.insert(stack, node)
                     table.insert(stack, v)
                     cache[node] = cur_index + 1
                     break
                 else
-                    output_str = output_str .. string.rep("\t", depth) .. key .. " = '" .. tostring(v) .. "'"
+                    output_str = output_str .. string.rep("\t", depth) .. key ..
+                                     " = '" .. tostring(v) .. "'"
                 end
 
                 if (cur_index == size) then
-                    output_str = output_str .. "\n" .. string.rep("\t", depth - 1) .. "}"
+                    output_str = output_str .. "\n" ..
+                                     string.rep("\t", depth - 1) .. "}"
                 else
                     output_str = output_str .. ","
                 end
             else
                 -- close the table
-                if (cur_index == size) then output_str = output_str .. "\n" .. string.rep("\t", depth - 1) .. "}" end
+                if (cur_index == size) then
+                    output_str = output_str .. "\n" ..
+                                     string.rep("\t", depth - 1) .. "}"
+                end
             end
 
             cur_index = cur_index + 1
         end
 
-        if (size == 0) then output_str = output_str .. "\n" .. string.rep("\t", depth - 1) .. "}" end
+        if (size == 0) then
+            output_str = output_str .. "\n" .. string.rep("\t", depth - 1) ..
+                             "}"
+        end
 
         if (#stack > 0) then
             node = stack[#stack]

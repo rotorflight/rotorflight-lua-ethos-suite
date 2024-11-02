@@ -17,8 +17,7 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 
-]]--
-
+]] --
 local arg = {...}
 
 local config = arg[1]
@@ -74,8 +73,14 @@ adjfunc.adjFunctionsTable = {
     id38 = {name = "Yaw D-term Cutoff", wavs = {"yaw", "dterm", "cutoff"}},
 
     -- rescue
-    id39 = {name = "Rescue Climb Coll", wavs = {"rescue", "climb", "collective"}},
-    id40 = {name = "Rescue Hover Coll", wavs = {"rescue", "hover", "collective"}},
+    id39 = {
+        name = "Rescue Climb Coll",
+        wavs = {"rescue", "climb", "collective"}
+    },
+    id40 = {
+        name = "Rescue Hover Coll",
+        wavs = {"rescue", "hover", "collective"}
+    },
     id41 = {name = "Rescue Hover Alt", wavs = {"rescue", "hover", "alt"}},
     id42 = {name = "Rescue Alt P Gain", wavs = {"rescue", "alt", "p", "gain"}},
     id43 = {name = "Rescue Alt I Gain", wavs = {"rescue", "alt", "i", "gain"}},
@@ -129,13 +134,15 @@ adjfunc.adjJustUp = false
 function adjfunc.wakeup()
 
     -- do not run the remaining code
-    if config.adjFunctionAlerts == false and config.adjValueAlerts == false then 
-        return 
+    if config.adjFunctionAlerts == false and config.adjValueAlerts == false then
+        return
     end
 
     if rfsuite.rssiSensor == nil then return end
 
-    if (os.clock() - initTime) < 5 or rfsuite.bg.telemetry.active() == false then return end
+    if (os.clock() - initTime) < 5 or rfsuite.bg.telemetry.active() == false then
+        return
+    end
 
     -- ADJ Function Management
     local telemetrySOURCE = system.getSource("Rx RSSI1")
@@ -144,12 +151,20 @@ function adjfunc.wakeup()
         if crsfSOURCE ~= nil then
             adjfunc.adjFunctionSrc = system.getSource("Adj. Source")
             adjfunc.adjValueSrc = system.getSource("Adj. Value")
-            if adjfunc.adjFunctionSrc == nil or adjfunc.adjValueSrc == nil then return end
+            if adjfunc.adjFunctionSrc == nil or adjfunc.adjValueSrc == nil then
+                return
+            end
         end
     else
         if type(CATEGORY_TELEMETRY_SENSOR) == "number" then
-            adjfunc.adjFunctionSrc = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5110})
-            adjfunc.adjValueSrc = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5111})
+            adjfunc.adjFunctionSrc = system.getSource({
+                category = CATEGORY_TELEMETRY_SENSOR,
+                appId = 0x5110
+            })
+            adjfunc.adjValueSrc = system.getSource({
+                category = CATEGORY_TELEMETRY_SENSOR,
+                appId = 0x5111
+            })
         end
     end
 
@@ -158,18 +173,32 @@ function adjfunc.wakeup()
         adjfunc.adjValue = adjfunc.adjValueSrc:value()
         adjfunc.adjFunction = adjfunc.adjFunctionSrc:value()
 
-        if adjfunc.adjValue ~= nil then if type(adjfunc.adjValue) == "number" then adjfunc.adjValue = math.floor(adjfunc.adjValue) end end
-        if adjfunc.adjFunction ~= nil then if type(adjfunc.adjFunction) == "number" then adjfunc.adjFunction = math.floor(adjfunc.adjFunction) end end
+        if adjfunc.adjValue ~= nil then
+            if type(adjfunc.adjValue) == "number" then
+                adjfunc.adjValue = math.floor(adjfunc.adjValue)
+            end
+        end
+        if adjfunc.adjFunction ~= nil then
+            if type(adjfunc.adjFunction) == "number" then
+                adjfunc.adjFunction = math.floor(adjfunc.adjFunction)
+            end
+        end
 
-        if adjfunc.adjFunction ~= adjfunc.adjFunctionOld then adjfunc.adjfuncIdChanged = true end
-        if adjfunc.adjValue ~= adjfunc.adjValueOld then adjfunc.adjfuncValueChanged = true end
+        if adjfunc.adjFunction ~= adjfunc.adjFunctionOld then
+            adjfunc.adjfuncIdChanged = true
+        end
+        if adjfunc.adjValue ~= adjfunc.adjValueOld then
+            adjfunc.adjfuncValueChanged = true
+        end
 
         if adjfunc.adjJustUp == true then
             adjfunc.adjJustUpCounter = adjfunc.adjJustUpCounter + 1
             adjfunc.adjfuncIdChanged = false
             adjfunc.adjfuncValueChanged = false
 
-            if adjfunc.adjJustUpCounter == 10 then adjfunc.adjJustUp = false end
+            if adjfunc.adjJustUpCounter == 10 then
+                adjfunc.adjJustUp = false
+            end
 
         else
             if adjfunc.adjFunction ~= 0 then
@@ -180,20 +209,22 @@ function adjfunc.wakeup()
                         local tgt = "id" .. tostring(adjfunc.adjFunction)
                         local adjfunction = adjfunc.adjFunctionsTable[tgt]
                         if adjfunction ~= nil and firstRun == false then
-                            for wavi, wavv in ipairs(adjfunction.wavs) do 
+                            for wavi, wavv in ipairs(adjfunction.wavs) do
                                 if config.adjFunctionAlerts == true then
-                                        rfsuite.utils.playFile("adjfunctions",wavv .. ".wav")
-                                end        
+                                    rfsuite.utils.playFile("adjfunctions",
+                                                           wavv .. ".wav")
+                                end
                             end
                         end
                         adjfunc.adjfuncIdChanged = false
                     end
-                    if adjfunc.adjfuncValueChanged == true or adjfunc.adjfuncIdChanged == true then
+                    if adjfunc.adjfuncValueChanged == true or
+                        adjfunc.adjfuncIdChanged == true then
 
-                        if adjfunc.adjValue ~= nil and firstRun == false then 
-                                if config.adjValueAlerts == true then
-                                        system.playNumber(adjfunc.adjValue) 
-                                end        
+                        if adjfunc.adjValue ~= nil and firstRun == false then
+                            if config.adjValueAlerts == true then
+                                system.playNumber(adjfunc.adjValue)
+                            end
                         end
 
                         adjfunc.adjfuncValueChanged = false

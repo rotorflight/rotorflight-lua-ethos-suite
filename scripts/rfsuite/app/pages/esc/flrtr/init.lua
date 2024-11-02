@@ -13,9 +13,7 @@ function getUInt(page, vals)
     return v
 end
 
-function getPageValue(page, index)
-    return page[mspHeaderBytes + index]
-end
+function getPageValue(page, index) return page[mspHeaderBytes + index] end
 
 local function getText(buffer, st, en)
 
@@ -34,7 +32,9 @@ local function getEscModel(self)
     -- buffer is the whole msp payload
     -- looks like prob have to extract
 
-    local hw = (getPageValue(self, 18) + 1) .. ".0/" .. getPageValue(self, 12) .. "." .. getPageValue(self, 13) .. "." .. getPageValue(self, 14)
+    local hw =
+        (getPageValue(self, 18) + 1) .. ".0/" .. getPageValue(self, 12) .. "." ..
+            getPageValue(self, 13) .. "." .. getPageValue(self, 14)
 
     return "FLYROTOR " .. string.format(self[5]) .. "A " .. hw .. " "
 
@@ -49,7 +49,8 @@ local function getEscVersion(self)
 
     -- return string.format("%.5f", getUInt(buffer, {mspHeaderBytes + 18}) / 100000)
 
-    local sn = string.format("%08X", getUInt(self, {7, 6, 5, 4})) .. string.format("%08X", getUInt(self, {11, 10, 9, 8}))
+    local sn = string.format("%08X", getUInt(self, {7, 6, 5, 4})) ..
+                   string.format("%08X", getUInt(self, {11, 10, 9, 8}))
     return sn
 
 end
@@ -57,7 +58,8 @@ end
 -- required by framework
 local function getEscFirmware(self)
 
-    local version = getPageValue(self, 15) .. "." .. getPageValue(self, 16) .. "." .. getPageValue(self, 17)
+    local version = getPageValue(self, 15) .. "." .. getPageValue(self, 16) ..
+                        "." .. getPageValue(self, 17)
 
     return version
 
@@ -69,7 +71,11 @@ return {
     mspSignature = 0x73,
     mspHeaderBytes = mspHeaderBytes,
     mspBytes = 46,
-    simulatorResponse = {115, 0, 0, 0, 150, 231, 79, 190, 216, 78, 29, 169, 244, 1, 0, 0, 1, 0, 2, 0, 4, 76, 7, 148, 0, 6, 30, 125, 0, 15, 0, 3, 15, 1, 20, 0, 10, 0, 0, 0, 0, 0, 0, 2, 73, 240},
+    simulatorResponse = {
+        115, 0, 0, 0, 150, 231, 79, 190, 216, 78, 29, 169, 244, 1, 0, 0, 1, 0,
+        2, 0, 4, 76, 7, 148, 0, 6, 30, 125, 0, 15, 0, 3, 15, 1, 20, 0, 10, 0, 0,
+        0, 0, 0, 0, 2, 73, 240
+    },
     getEscModel = getEscModel,
     getEscVersion = getEscVersion,
     getEscFirmware = getEscFirmware

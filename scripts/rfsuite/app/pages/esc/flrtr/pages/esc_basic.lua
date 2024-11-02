@@ -2,7 +2,9 @@ local labels = {}
 local fields = {}
 
 local folder = "flrtr"
-local ESC = assert(compile.loadScript(rfsuite.config.suiteDir .. "app/pages/esc/" .. folder .. "/init.lua"))()
+local ESC = assert(compile.loadScript(rfsuite.config.suiteDir ..
+                                          "app/pages/esc/" .. folder ..
+                                          "/init.lua"))()
 local mspHeaderBytes = ESC.mspHeaderBytes
 local mspSignature = ESC.mspSignature
 
@@ -13,17 +15,41 @@ local fanControl = {"Automatic", "Always On"}
 
 -- fields[#fields + 1] = {t = "ESC type", tablevals = {mspHeaderBytes + 1}, tableIdxInc = -1, table = flightMode} -- informational - maybe put in header
 -- fields[#fields + 1] = {t = "Current spec", vals = {mspHeaderBytes + 3, mspHeaderBytes + 2}, unit="A"}  -- informational - maybe put in header?
-fields[#fields + 1] = {t = "Cell count", min = 4, max = 14, vals = {mspHeaderBytes + 24}}
-fields[#fields + 1] = {t = "BEC voltage", vals = {mspHeaderBytes + 27}, tableIdxInc = -1, table = becVoltage, unit = "V"}
-fields[#fields + 1] = {t = "Motor direction", vals = {mspHeaderBytes + 29}, tableIdxInc = -1, table = motorDirection}
-fields[#fields + 1] = {t = "Soft start", min = 5, max = 55, vals = {mspHeaderBytes + 35}}
-fields[#fields + 1] = {t = "Fan control", vals = {mspHeaderBytes + 34}, tableIdxInc = -1, table = fanControl}
+fields[#fields + 1] = {
+    t = "Cell count",
+    min = 4,
+    max = 14,
+    vals = {mspHeaderBytes + 24}
+}
+fields[#fields + 1] = {
+    t = "BEC voltage",
+    vals = {mspHeaderBytes + 27},
+    tableIdxInc = -1,
+    table = becVoltage,
+    unit = "V"
+}
+fields[#fields + 1] = {
+    t = "Motor direction",
+    vals = {mspHeaderBytes + 29},
+    tableIdxInc = -1,
+    table = motorDirection
+}
+fields[#fields + 1] = {
+    t = "Soft start",
+    min = 5,
+    max = 55,
+    vals = {mspHeaderBytes + 35}
+}
+fields[#fields + 1] = {
+    t = "Fan control",
+    vals = {mspHeaderBytes + 34},
+    tableIdxInc = -1,
+    table = fanControl
+}
 
 -- fields[#fields + 1] = {t = "Hardware version", vals = {mspHeaderBytes + 18}}  -- this val does not look correct.  regardless not in right place
 
-function postLoad()
-    rfsuite.app.triggers.isReady = true
-end
+function postLoad() rfsuite.app.triggers.isReady = true end
 
 local function onNavMenu(self)
     rfsuite.app.triggers.escToolEnableButtons = true
@@ -54,10 +80,20 @@ return {
     labels = labels,
     fields = fields,
     escinfo = escinfo,
-    simulatorResponse = {115, 0, 0, 0, 150, 231, 79, 190, 216, 78, 29, 169, 244, 1, 0, 0, 1, 0, 2, 0, 4, 76, 7, 148, 0, 6, 30, 125, 0, 15, 0, 3, 15, 1, 20, 0, 10, 0, 0, 0, 0, 0, 0, 2, 73, 240},
+    simulatorResponse = {
+        115, 0, 0, 0, 150, 231, 79, 190, 216, 78, 29, 169, 244, 1, 0, 0, 1, 0,
+        2, 0, 4, 76, 7, 148, 0, 6, 30, 125, 0, 15, 0, 3, 15, 1, 20, 0, 10, 0, 0,
+        0, 0, 0, 0, 2, 73, 240
+    },
     svFlags = 0,
     postLoad = postLoad,
-    navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
+    navButtons = {
+        menu = true,
+        save = true,
+        reload = true,
+        tool = false,
+        help = false
+    },
     onNavMenu = onNavMenu,
     event = event,
     pageTitle = "ESC / FLYROTOR / Basic",

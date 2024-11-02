@@ -2,40 +2,45 @@ local fields = {}
 local rows = {}
 local cols = {}
 
-
 local total_bytes = 16
 
-
 -- generate rows
-for i=0, total_bytes - 1 do
-    rows[i + 1] = tostring(i)
-end
+for i = 0, total_bytes - 1 do rows[i + 1] = tostring(i) end
 
 cols = {"UINT8", "INT8"}
 
-
 -- uint8 fields
-for i=0, total_bytes - 1 do
-    fields[#fields + 1] = {col=1, row=i + 1, min = 0, max = 255, vals = { #fields + 1 } }
+for i = 0, total_bytes - 1 do
+    fields[#fields + 1] = {
+        col = 1,
+        row = i + 1,
+        min = 0,
+        max = 255,
+        vals = {#fields + 1}
+    }
 end
 
 -- int8 fields
-for i=0, total_bytes - 1 do
-    fields[#fields + 1] = {col=2, row=i + 1, min = 0, max = 255, vals = { #fields + 1 } }
+for i = 0, total_bytes - 1 do
+    fields[#fields + 1] = {
+        col = 2,
+        row = i + 1,
+        min = 0,
+        max = 255,
+        vals = {#fields + 1}
+    }
 end
 
-
-local function postLoad(self)
-    rfsuite.app.triggers.isReady = true
-end
+local function postLoad(self) rfsuite.app.triggers.isReady = true end
 
 local function openPage(idx, title, script)
 
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
     rfsuite.app.triggers.isReady = false
 
-    rfsuite.app.Page = assert(compile.loadScript(rfsuite.config.suiteDir .. "app/pages/" .. script))()
-
+    rfsuite.app.Page = assert(compile.loadScript(
+                                  rfsuite.config.suiteDir .. "app/pages/" ..
+                                      script))()
 
     rfsuite.app.lastIdx = idx
     rfsuite.app.lastTitle = title
@@ -88,7 +93,9 @@ local function openPage(idx, title, script)
 
     -- display each row
     local byteRows = {}
-    for ri, rv in ipairs(rfsuite.app.Page.rows) do byteRows[ri] = form.addLine(rv) end
+    for ri, rv in ipairs(rfsuite.app.Page.rows) do
+        byteRows[ri] = form.addLine(rv)
+    end
 
     for i = 1, #rfsuite.app.Page.fields do
         local f = rfsuite.app.Page.fields[i]
@@ -107,11 +114,15 @@ local function openPage(idx, title, script)
             maxValue = maxValue * f.mult
         end
 
-        rfsuite.app.formFields[i] = form.addNumberField(byteRows[f.row], pos, minValue, maxValue, function()
-            local value = rfsuite.utils.getFieldValue(rfsuite.app.Page.fields[i])
+        rfsuite.app.formFields[i] = form.addNumberField(byteRows[f.row], pos,
+                                                        minValue, maxValue,
+                                                        function()
+            local value = rfsuite.utils
+                              .getFieldValue(rfsuite.app.Page.fields[i])
             return value
         end, function(value)
-            f.value = rfsuite.utils.saveFieldValue(rfsuite.app.Page.fields[i], value)
+            f.value = rfsuite.utils.saveFieldValue(rfsuite.app.Page.fields[i],
+                                                   value)
             rfsuite.app.saveValue(i)
         end)
         if f.default ~= nil then
@@ -121,7 +132,9 @@ local function openPage(idx, title, script)
         else
             rfsuite.app.formFields[i]:default(0)
         end
-        if f.decimals ~= nil then rfsuite.app.formFields[i]:decimals(f.decimals) end
+        if f.decimals ~= nil then
+            rfsuite.app.formFields[i]:decimals(f.decimals)
+        end
         if f.unit ~= nil then rfsuite.app.formFields[i]:suffix(f.unit) end
         if f.help ~= nil then
             if rfsuite.app.fieldHelpTxt[f.help]['t'] ~= nil then
@@ -135,20 +148,18 @@ local function openPage(idx, title, script)
 
 end
 
-
-
 return {
-    read =  158, -- MSP_EXPERIMENTAL
+    read = 158, -- MSP_EXPERIMENTAL
     write = 159, -- MSP_SET_EXPERIMENTAL
-    title       = "Experimental",
+    title = "Experimental",
     navButtons = {menu = true, save = true, reload = false, help = true},
-    minBytes    = 0,
+    minBytes = 0,
     eepromWrite = true,
-    labels      = labels,
-    fields      = fields,
+    labels = labels,
+    fields = fields,
     simulatorResponse = {},
     rows = rows,
-    cols = cols,    
+    cols = cols,
     openPage = openPage,
     postLoad = postLoad
 }

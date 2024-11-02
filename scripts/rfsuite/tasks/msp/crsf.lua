@@ -17,7 +17,7 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 
-]]--
+]] --
 local transport = {}
 
 -- CRSF Devices
@@ -50,7 +50,9 @@ end
 transport.mspPoll = function()
     while true do
         local cmd, data = crsf.popFrame()
-        if cmd == CRSF_FRAMETYPE_MSP_RESP and data[1] == CRSF_ADDRESS_RADIO_TRANSMITTER and data[2] == CRSF_ADDRESS_BETAFLIGHT then
+        if cmd == CRSF_FRAMETYPE_MSP_RESP and data[1] ==
+            CRSF_ADDRESS_RADIO_TRANSMITTER and data[2] ==
+            CRSF_ADDRESS_BETAFLIGHT then
             --[[
                         --rfsuite.utils.log("cmd:0x"..string.format("%X", cmd))
                         --rfsuite.utils.log("  data length: "..string.format("%u", #data))

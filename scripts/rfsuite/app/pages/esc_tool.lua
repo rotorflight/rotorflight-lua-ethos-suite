@@ -24,7 +24,12 @@ local findTimeout = math.floor(rfsuite.bg.msp.protocol.pageReqTimeout * 0.5)
 
 local modelLine
 local modelText
-local modelTextPos = {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.config.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}
+local modelTextPos = {
+    x = 0,
+    y = rfsuite.app.radio.linePaddingTop,
+    w = rfsuite.config.lcdWidth,
+    h = rfsuite.app.radio.navbuttonHeight
+}
 
 local function getESCDetails()
     local message = {
@@ -56,7 +61,9 @@ local function openPage(pidx, title, script)
 
     local folder = title
 
-    ESC = assert(compile.loadScript(rfsuite.config.suiteDir .. "app/pages/esc/" .. folder .. "/init.lua"))()
+    ESC = assert(compile.loadScript(
+                     rfsuite.config.suiteDir .. "app/pages/esc/" .. folder ..
+                         "/init.lua"))()
 
     mspSignature = ESC.mspSignature
     mspHeaderBytes = ESC.mspHeaderBytes
@@ -79,38 +86,50 @@ local function openPage(pidx, title, script)
     buttonW = 100
     local x = windowWidth - buttonW
 
-    rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {x = x - buttonW - 5, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}, {
-        text = "MENU",
-        icon = nil,
-        options = FONT_S,
-        paint = function()
-        end,
-        press = function()
-            rfsuite.app.ui.openPage(pidx, "ESC", "esc.lua")
+    rfsuite.app.formNavigationFields['menu'] =
+        form.addButton(line, {
+            x = x - buttonW - 5,
+            y = rfsuite.app.radio.linePaddingTop,
+            w = buttonW,
+            h = rfsuite.app.radio.navbuttonHeight
+        }, {
+            text = "MENU",
+            icon = nil,
+            options = FONT_S,
+            paint = function() end,
+            press = function()
+                rfsuite.app.ui.openPage(pidx, "ESC", "esc.lua")
 
-        end
-    })
+            end
+        })
     rfsuite.app.formNavigationFields['menu']:focus()
 
-    rfsuite.app.formNavigationFields['refresh'] = form.addButton(line, {x = x, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}, {
-        text = "RELOAD",
-        icon = nil,
-        options = FONT_S,
-        paint = function()
-        end,
-        press = function()
-            -- rfsuite.app.ui.openPage(pidx, folder, "esc_tool.lua")
-            rfsuite.app.Page = nil
-            local foundESC = false
-            local foundESCupdateTag = false
-            local showPowerCycleLoader = false
-            local showPowerCycleLoaderInProgress = false
-            rfsuite.app.triggers.triggerReload = true
-        end
-    })
+    rfsuite.app.formNavigationFields['refresh'] =
+        form.addButton(line, {
+            x = x,
+            y = rfsuite.app.radio.linePaddingTop,
+            w = buttonW,
+            h = rfsuite.app.radio.navbuttonHeight
+        }, {
+            text = "RELOAD",
+            icon = nil,
+            options = FONT_S,
+            paint = function() end,
+            press = function()
+                -- rfsuite.app.ui.openPage(pidx, folder, "esc_tool.lua")
+                rfsuite.app.Page = nil
+                local foundESC = false
+                local foundESCupdateTag = false
+                local showPowerCycleLoader = false
+                local showPowerCycleLoaderInProgress = false
+                rfsuite.app.triggers.triggerReload = true
+            end
+        })
     rfsuite.app.formNavigationFields['menu']:focus()
 
-    ESC.pages = assert(compile.loadScript(rfsuite.config.suiteDir .. "app/pages/esc/" .. folder .. "/pages.lua"))()
+    ESC.pages = assert(compile.loadScript(
+                           rfsuite.config.suiteDir .. "app/pages/esc/" .. folder ..
+                               "/pages.lua"))()
 
     modelLine = form.addLine("")
     modelText = form.addStaticText(modelLine, modelTextPos, "")
@@ -119,8 +138,6 @@ local function openPage(pidx, title, script)
     local buttonH
     local padding
     local numPerRow
-
-
 
     if rfsuite.config.iconSize == nil or rfsuite.config.iconSize == "" then
         rfsuite.config.iconSize = 1
@@ -131,7 +148,8 @@ local function openPage(pidx, title, script)
     -- TEXT ICONS
     if rfsuite.config.iconSize == 0 then
         padding = rfsuite.app.radio.buttonPaddingSmall
-        buttonW = (rfsuite.config.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
+        buttonW = (rfsuite.config.lcdWidth - padding) /
+                      rfsuite.app.radio.buttonsPerRow - padding
         buttonH = rfsuite.app.radio.navbuttonHeight
         numPerRow = rfsuite.app.radio.buttonsPerRow
     end
@@ -155,45 +173,66 @@ local function openPage(pidx, title, script)
     local lc = 0
     local bx = 0
 
-    if rfsuite.app.gfx_buttons["esctool"] == nil then rfsuite.app.gfx_buttons["esctool"] = {} end
-    if rfsuite.app.menuLastSelected["esctool"] == nil then rfsuite.app.menuLastSelected["esctool"] = 1 end
+    if rfsuite.app.gfx_buttons["esctool"] == nil then
+        rfsuite.app.gfx_buttons["esctool"] = {}
+    end
+    if rfsuite.app.menuLastSelected["esctool"] == nil then
+        rfsuite.app.menuLastSelected["esctool"] = 1
+    end
 
     for pidx, pvalue in ipairs(ESC.pages) do
 
         if lc == 0 then
-            if rfsuite.config.iconSize == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
-            if rfsuite.config.iconSize == 1 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
-            if rfsuite.config.iconSize == 2 then y = form.height() + rfsuite.app.radio.buttonPadding end
+            if rfsuite.config.iconSize == 0 then
+                y = form.height() + rfsuite.app.radio.buttonPaddingSmall
+            end
+            if rfsuite.config.iconSize == 1 then
+                y = form.height() + rfsuite.app.radio.buttonPaddingSmall
+            end
+            if rfsuite.config.iconSize == 2 then
+                y = form.height() + rfsuite.app.radio.buttonPadding
+            end
         end
 
         if lc >= 0 then bx = (buttonW + padding) * lc end
 
         if rfsuite.config.iconSize ~= 0 then
             if rfsuite.app.gfx_buttons["esctool"][pvalue.image] == nil then
-                rfsuite.app.gfx_buttons["esctool"][pvalue.image] = lcd.loadMask(rfsuite.config.suiteDir .. "app/gfx/esc/" .. pvalue.image)
+                rfsuite.app.gfx_buttons["esctool"][pvalue.image] = lcd.loadMask(
+                                                                       rfsuite.config
+                                                                           .suiteDir ..
+                                                                           "app/gfx/esc/" ..
+                                                                           pvalue.image)
             end
         else
             rfsuite.app.gfx_buttons["esctool"][pvalue.image] = nil
         end
 
         -- rfsuite.utils.log("x = " .. bx .. ", y = " .. y .. ", w = " .. buttonW .. ", h = " .. buttonH)
-        rfsuite.app.formFields[pidx] = form.addButton(nil, {x = bx, y = y, w = buttonW, h = buttonH}, {
+        rfsuite.app.formFields[pidx] = form.addButton(nil, {
+            x = bx,
+            y = y,
+            w = buttonW,
+            h = buttonH
+        }, {
             text = pvalue.title,
             icon = rfsuite.app.gfx_buttons["esctool"][pvalue.image],
             options = FONT_S,
-            paint = function()
-            end,
+            paint = function() end,
             press = function()
                 rfsuite.app.menuLastSelected["esctool"] = pidx
                 rfsuite.app.ui.progressDisplay()
 
                 -- rfsuite.app.ui.openPage(pidx, folder, "esc_form.lua",pvalue.script)
-                rfsuite.app.ui.openPage(pidx, title, "esc/" .. folder .. "/pages/" .. pvalue.script)
+                rfsuite.app.ui.openPage(pidx, title, "esc/" .. folder ..
+                                            "/pages/" .. pvalue.script)
 
             end
         })
 
-        if rfsuite.app.menuLastSelected["esctool"] == pidx then rfsuite.app.formFields[pidx]:focus() end
+        if rfsuite.app.menuLastSelected["esctool"] == pidx then
+            rfsuite.app.formFields[pidx]:focus()
+        end
 
         if rfsuite.app.triggers.escToolEnableButtons == true then
             rfsuite.app.formFields[pidx]:enable(true)
@@ -218,13 +257,17 @@ local function wakeup()
     if foundESC == true and foundESCupdateTag == false then
         foundESCupdateTag = true
 
-        if escDetails.model ~= nil and escDetails.model ~= nil and escDetails.firmware ~= nil then
-            local text = escDetails.model .. " " .. escDetails.version .. " " .. escDetails.firmware
+        if escDetails.model ~= nil and escDetails.model ~= nil and
+            escDetails.firmware ~= nil then
+            local text = escDetails.model .. " " .. escDetails.version .. " " ..
+                             escDetails.firmware
             rfsuite.escHeaderLineText = text
             modelText = form.addStaticText(modelLine, modelTextPos, text)
         end
 
-        for i, v in ipairs(rfsuite.app.formFields) do rfsuite.app.formFields[i]:enable(true) end
+        for i, v in ipairs(rfsuite.app.formFields) do
+            rfsuite.app.formFields[i]:enable(true)
+        end
 
         if ESC and ESC.powerCycle == true and showPowerCycleLoader == true then
             powercycleLoader:close()
@@ -239,15 +282,21 @@ local function wakeup()
 
     end
 
-    if showPowerCycleLoaderFinished == false and foundESCupdateTag == false and showPowerCycleLoader == false and
-        ((findTimeoutClock <= os.clock() - findTimeout) or rfsuite.app.dialogs.progressCounter >= 101) then
+    if showPowerCycleLoaderFinished == false and foundESCupdateTag == false and
+        showPowerCycleLoader == false and
+        ((findTimeoutClock <= os.clock() - findTimeout) or
+            rfsuite.app.dialogs.progressCounter >= 101) then
         rfsuite.app.ui.progressDisplayClose()
         rfsuite.app.dialogs.progressDisplay = false
         rfsuite.app.triggers.isReady = true
 
-        if ESC and ESC.powerCycle ~= true then modelText = form.addStaticText(modelLine, modelTextPos, "UNKNOWN") end
+        if ESC and ESC.powerCycle ~= true then
+            modelText = form.addStaticText(modelLine, modelTextPos, "UNKNOWN")
+        end
 
-        if ESC and ESC.powerCycle == true then showPowerCycleLoader = true end
+        if ESC and ESC.powerCycle == true then
+            showPowerCycleLoader = true
+        end
 
     end
 
@@ -264,7 +313,8 @@ local function wakeup()
 
             if powercycleLoaderCounter >= 100 then
                 powercycleLoader:close()
-                modelText = form.addStaticText(modelLine, modelTextPos, "UNKNOWN")
+                modelText = form.addStaticText(modelLine, modelTextPos,
+                                               "UNKNOWN")
                 showPowerCycleLoaderInProgress = false
                 rfsuite.app.triggers.disableRssiTimeout = false
                 showPowerCycleLoader = false
@@ -282,7 +332,8 @@ local function wakeup()
             showPowerCycleLoaderInProgress = true
             rfsuite.app.audio.playEscPowerCycle = true
             rfsuite.app.triggers.disableRssiTimeout = true
-            powercycleLoader = form.openProgressDialog("Searching", "Please power cycle the ESC...")
+            powercycleLoader = form.openProgressDialog("Searching",
+                                                       "Please power cycle the ESC...")
             powercycleLoader:value(0)
             powercycleLoader:closeAllowed(false)
         end

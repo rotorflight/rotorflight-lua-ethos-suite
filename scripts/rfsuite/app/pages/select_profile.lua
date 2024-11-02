@@ -12,24 +12,32 @@ local saveCounter = 0
 local triggerSaveCounter = false
 local triggerMSPWrite = false
 
-fields[1] = {t = "PID profile", value = "0", vals = {24}, type = 1, table = {"1", "2", "3", "4", "5", "6"}, tableIdxInc = -1}
-fields[2] = {t = "Rate Profile", value = "0", vals = {26}, type = 1, table = {"1", "2", "3", "4", "5", "6"}, tableIdxInc = -1}
+fields[1] = {
+    t = "PID profile",
+    value = "0",
+    vals = {24},
+    type = 1,
+    table = {"1", "2", "3", "4", "5", "6"},
+    tableIdxInc = -1
+}
+fields[2] = {
+    t = "Rate Profile",
+    value = "0",
+    vals = {26},
+    type = 1,
+    table = {"1", "2", "3", "4", "5", "6"},
+    tableIdxInc = -1
+}
 
-local function postLoad(self)
-    rfsuite.app.triggers.isReady = true
-end
+local function postLoad(self) rfsuite.app.triggers.isReady = true end
 
-local function postRead(self)
-
-end
+local function postRead(self) end
 
 local function setPidProfile(profileIndex)
     local message = {
         command = 210, -- MSP_SELECT_SETTING
         payload = {profileIndex},
-        processReply = function(self, buf)
-
-        end,
+        processReply = function(self, buf) end,
         simulatorResponse = {}
     }
     rfsuite.bg.msp.mspQueue:add(message)
@@ -40,9 +48,7 @@ local function setRateProfile(profileIndex)
     local message = {
         command = 210, -- MSP_SELECT_SETTING
         payload = {profileIndex},
-        processReply = function(self, buf)
-
-        end,
+        processReply = function(self, buf) end,
         simulatorResponse = {}
     }
     rfsuite.bg.msp.mspQueue:add(message)
@@ -71,10 +77,8 @@ local function onSaveMenu()
         title = "Save settings",
         message = "Save current page to flight controller?",
         buttons = buttons,
-        wakeup = function()
-        end,
-        paint = function()
-        end,
+        wakeup = function() end,
+        paint = function() end,
         options = TEXT_LEFT
     })
 
@@ -129,7 +133,16 @@ return {
     wakeup = wakeup,
     onSaveMenu = onSaveMenu,
     refreshOnProfileChange = true,
-    simulatorResponse = {240, 1, 124, 0, 35, 0, 0, 0, 0, 0, 0, 224, 1, 10, 1, 0, 26, 0, 0, 0, 0, 0, 2, 0, 6, 0, 6, 1, 4, 1},
+    simulatorResponse = {
+        240, 1, 124, 0, 35, 0, 0, 0, 0, 0, 0, 224, 1, 10, 1, 0, 26, 0, 0, 0, 0,
+        0, 2, 0, 6, 0, 6, 1, 4, 1
+    },
     postLoad = postLoad,
-    navButtons = {menu = true, save = true, reload = false, tool = false, help = true}
+    navButtons = {
+        menu = true,
+        save = true,
+        reload = false,
+        tool = false,
+        help = true
+    }
 }

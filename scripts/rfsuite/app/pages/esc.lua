@@ -1,16 +1,33 @@
 local pages = {}
 
-pages[#pages + 1] = {title = "Scorpion", folder = "scorp", image = "scorpion.png"}
-pages[#pages + 1] = {title = "Hobbywing V5", folder = "hw5", image = "hobbywing.png"}
+pages[#pages + 1] = {
+    title = "Scorpion",
+    folder = "scorp",
+    image = "scorpion.png"
+}
+pages[#pages + 1] = {
+    title = "Hobbywing V5",
+    folder = "hw5",
+    image = "hobbywing.png"
+}
 pages[#pages + 1] = {title = "YGE", folder = "yge", image = "yge.png"}
 pages[#pages + 1] = {title = "FLYROTOR", folder = "flrtr", image = "flrtr.png"}
-pages[#pages + 1] = {title = "XDFly", folder = "flrtr", image = "xdfly.png", disabled = true}
+pages[#pages + 1] = {
+    title = "XDFly",
+    folder = "flrtr",
+    image = "xdfly.png",
+    disabled = true
+}
 
 local function openPage(pidx, title, script)
 
     rfsuite.bg.msp.protocol.mspIntervalOveride = nil
 
-    if tonumber(rfsuite.utils.makeNumber(rfsuite.config.environment.major .. rfsuite.config.environment.minor .. rfsuite.config.environment.revision)) < rfsuite.config.ethosVersion then return end
+    if tonumber(rfsuite.utils.makeNumber(
+                    rfsuite.config.environment.major ..
+                        rfsuite.config.environment.minor ..
+                        rfsuite.config.environment.revision)) <
+        rfsuite.config.ethosVersion then return end
 
     rfsuite.app.triggers.isReady = false
     rfsuite.app.uiState = rfsuite.app.uiStatus.mainMenu
@@ -43,21 +60,28 @@ local function openPage(pidx, title, script)
     buttonW = 100
     local x = windowWidth - buttonW - 10
 
-    rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {x = x, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}, {
-        text = "MENU",
-        icon = nil,
-        options = FONT_S,
-        paint = function()
-        end,
-        press = function()
-            rfsuite.app.lastIdx = nil
-            rfsuite.lastPage = nil
+    rfsuite.app.formNavigationFields['menu'] =
+        form.addButton(line, {
+            x = x,
+            y = rfsuite.app.radio.linePaddingTop,
+            w = buttonW,
+            h = rfsuite.app.radio.navbuttonHeight
+        }, {
+            text = "MENU",
+            icon = nil,
+            options = FONT_S,
+            paint = function() end,
+            press = function()
+                rfsuite.app.lastIdx = nil
+                rfsuite.lastPage = nil
 
-            if rfsuite.app.Page and rfsuite.app.Page.onNavMenu then rfsuite.app.Page.onNavMenu(rfsuite.app.Page) end
+                if rfsuite.app.Page and rfsuite.app.Page.onNavMenu then
+                    rfsuite.app.Page.onNavMenu(rfsuite.app.Page)
+                end
 
-            rfsuite.app.ui.openMainMenu()
-        end
-    })
+                rfsuite.app.ui.openMainMenu()
+            end
+        })
     rfsuite.app.formNavigationFields['menu']:focus()
 
     local buttonW
@@ -69,7 +93,8 @@ local function openPage(pidx, title, script)
     -- TEXT ICONS
     if rfsuite.config.iconSize == 0 then
         padding = rfsuite.app.radio.buttonPaddingSmall
-        buttonW = (rfsuite.config.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
+        buttonW = (rfsuite.config.lcdWidth - padding) /
+                      rfsuite.app.radio.buttonsPerRow - padding
         buttonH = rfsuite.app.radio.navbuttonHeight
         numPerRow = rfsuite.app.radio.buttonsPerRow
     end
@@ -90,36 +115,57 @@ local function openPage(pidx, title, script)
         numPerRow = rfsuite.app.radio.buttonsPerRow
     end
 
-    local ESCMenu = assert(compile.loadScript(rfsuite.config.suiteDir .. "app/pages/" .. script))()
+    local ESCMenu = assert(compile.loadScript(
+                               rfsuite.config.suiteDir .. "app/pages/" .. script))()
 
     local lc = 0
     local bx = 0
 
-    if rfsuite.app.gfx_buttons["escmain"] == nil then rfsuite.app.gfx_buttons["escmain"] = {} end
-    if rfsuite.app.menuLastSelected["escmain"] == nil then rfsuite.app.menuLastSelected["escmain"] = 1 end
+    if rfsuite.app.gfx_buttons["escmain"] == nil then
+        rfsuite.app.gfx_buttons["escmain"] = {}
+    end
+    if rfsuite.app.menuLastSelected["escmain"] == nil then
+        rfsuite.app.menuLastSelected["escmain"] = 1
+    end
 
     for pidx, pvalue in ipairs(ESCMenu.pages) do
 
         if lc == 0 then
-            if rfsuite.config.iconSize == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
-            if rfsuite.config.iconSize == 1 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
-            if rfsuite.config.iconSize == 2 then y = form.height() + rfsuite.app.radio.buttonPadding end
+            if rfsuite.config.iconSize == 0 then
+                y = form.height() + rfsuite.app.radio.buttonPaddingSmall
+            end
+            if rfsuite.config.iconSize == 1 then
+                y = form.height() + rfsuite.app.radio.buttonPaddingSmall
+            end
+            if rfsuite.config.iconSize == 2 then
+                y = form.height() + rfsuite.app.radio.buttonPadding
+            end
         end
 
         if lc >= 0 then bx = (buttonW + padding) * lc end
 
         if rfsuite.config.iconSize ~= 0 then
-            if rfsuite.app.gfx_buttons["escmain"][pidx] == nil then rfsuite.app.gfx_buttons["escmain"][pidx] = lcd.loadMask(rfsuite.config.suiteDir .. "app/gfx/esc/" .. pvalue.image) end
+            if rfsuite.app.gfx_buttons["escmain"][pidx] == nil then
+                rfsuite.app.gfx_buttons["escmain"][pidx] = lcd.loadMask(
+                                                               rfsuite.config
+                                                                   .suiteDir ..
+                                                                   "app/gfx/esc/" ..
+                                                                   pvalue.image)
+            end
         else
             rfsuite.app.gfx_buttons["escmain"][pidx] = nil
         end
 
-        rfsuite.app.formFields[pidx] = form.addButton(line, {x = bx, y = y, w = buttonW, h = buttonH}, {
+        rfsuite.app.formFields[pidx] = form.addButton(line, {
+            x = bx,
+            y = y,
+            w = buttonW,
+            h = buttonH
+        }, {
             text = pvalue.title,
             icon = rfsuite.app.gfx_buttons["escmain"][pidx],
             options = FONT_S,
-            paint = function()
-            end,
+            paint = function() end,
             press = function()
                 rfsuite.app.menuLastSelected["escmain"] = pidx
                 rfsuite.app.ui.progressDisplay()
@@ -127,9 +173,13 @@ local function openPage(pidx, title, script)
             end
         })
 
-        if pvalue.disabled == true then rfsuite.app.formFields[pidx]:enable(false) end
+        if pvalue.disabled == true then
+            rfsuite.app.formFields[pidx]:enable(false)
+        end
 
-        if rfsuite.app.menuLastSelected["escmain"] == pidx then rfsuite.app.formFields[pidx]:focus() end
+        if rfsuite.app.menuLastSelected["escmain"] == pidx then
+            rfsuite.app.formFields[pidx]:focus()
+        end
 
         lc = lc + 1
 

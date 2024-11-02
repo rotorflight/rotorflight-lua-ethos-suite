@@ -16,12 +16,41 @@ local buttonW = 100
 local buttonWs = buttonW - (buttonW * 20) / 100
 local x = w - 15
 
-local displayPos = {x = x - buttonW - buttonWs - 5 - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = 100, h = rfsuite.app.radio.navbuttonHeight}
+local displayPos = {
+    x = x - buttonW - buttonWs - 5 - buttonWs,
+    y = rfsuite.app.radio.linePaddingTop,
+    w = 100,
+    h = rfsuite.app.radio.navbuttonHeight
+}
 
-fields[1] = {t = "Arming Flags", value = "", type = displayType, disable = disableType, position = displayPos}
-fields[2] = {t = "Dataflash Free Space", value = "", type = displayType, disable = disableType, position = displayPos}
-fields[3] = {t = "Real-time Load", value = "", type = displayType, disable = disableType, position = displayPos}
-fields[4] = {t = "CPU Load", value = "", type = displayType, disable = disableType, position = displayPos}
+fields[1] = {
+    t = "Arming Flags",
+    value = "",
+    type = displayType,
+    disable = disableType,
+    position = displayPos
+}
+fields[2] = {
+    t = "Dataflash Free Space",
+    value = "",
+    type = displayType,
+    disable = disableType,
+    position = displayPos
+}
+fields[3] = {
+    t = "Real-time Load",
+    value = "",
+    type = displayType,
+    disable = disableType,
+    position = displayPos
+}
+fields[4] = {
+    t = "CPU Load",
+    value = "",
+    type = displayType,
+    disable = disableType,
+    position = displayPos
+}
 
 local function getStatus()
     local message = {
@@ -44,7 +73,10 @@ local function getStatus()
             -- print("Rate Profile: "..tostring(status.rateProfile))
 
         end,
-        simulatorResponse = {240, 1, 124, 0, 35, 0, 0, 0, 0, 0, 0, 224, 1, 10, 1, 0, 26, 0, 0, 0, 0, 0, 2, 0, 6, 0, 6, 1, 4, 1}
+        simulatorResponse = {
+            240, 1, 124, 0, 35, 0, 0, 0, 0, 0, 0, 224, 1, 10, 1, 0, 26, 0, 0, 0,
+            0, 0, 2, 0, 6, 0, 6, 1, 4, 1
+        }
     }
 
     rfsuite.bg.msp.mspQueue:add(message)
@@ -71,9 +103,7 @@ end
 local function eraseDataflash()
     local message = {
         command = 72, -- MSP_DATAFLASH_ERASE
-        processReply = function(self, buf)
-            local summary = {}
-        end,
+        processReply = function(self, buf) local summary = {} end,
         simulatorResponse = {}
     }
     rfsuite.bg.msp.mspQueue:add(message)
@@ -164,7 +194,8 @@ local function wakeup()
                 getDataflashSummary()
 
                 if status.armingDisableFlags ~= nil then
-                    local value = armingDisableFlagsToString(status.armingDisableFlags)
+                    local value = armingDisableFlagsToString(
+                                      status.armingDisableFlags)
                     rfsuite.app.formFields[1]:value(value)
                 end
 
@@ -176,12 +207,16 @@ local function wakeup()
                 if status.realTimeLoad ~= nil then
                     local value = math.floor(status.realTimeLoad / 10)
                     rfsuite.app.formFields[3]:value(tostring(value) .. "%")
-                    if value >= 60 then rfsuite.app.formFields[4]:color(RED) end
+                    if value >= 60 then
+                        rfsuite.app.formFields[4]:color(RED)
+                    end
                 end
                 if status.cpuLoad ~= nil then
                     local value = status.cpuLoad / 10
                     rfsuite.app.formFields[4]:value(tostring(value) .. "%")
-                    if value >= 60 then rfsuite.app.formFields[4]:color(RED) end
+                    if value >= 60 then
+                        rfsuite.app.formFields[4]:color(RED)
+                    end
                 end
 
                 rfsuite.app.triggers.closeProgressLoader = true
@@ -203,12 +238,7 @@ local function onToolMenu(self)
                 triggerEraseDataFlash = true
                 return true
             end
-        }, {
-            label = "CANCEL",
-            action = function()
-                return true
-            end
-        }
+        }, {label = "CANCEL", action = function() return true end}
     }
     local message
     local title
@@ -221,10 +251,8 @@ local function onToolMenu(self)
         title = title,
         message = message,
         buttons = buttons,
-        wakeup = function()
-        end,
-        paint = function()
-        end,
+        wakeup = function() end,
+        paint = function() end,
         options = TEXT_LEFT
     })
 
@@ -246,5 +274,11 @@ return {
     postRead = postRead,
     eraseDataflash = eraseDataflash,
     onToolMenu = onToolMenu,
-    navButtons = {menu = true, save = false, reload = false, tool = true, help = true}
+    navButtons = {
+        menu = true,
+        save = false,
+        reload = false,
+        tool = true,
+        help = true
+    }
 }

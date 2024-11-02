@@ -17,7 +17,7 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 
-]]--
+]] --
 --[[
 set crsf_flight_mode_reuse = GOV_ADJFUNC
 ]] --
@@ -53,9 +53,7 @@ function rf2gov.sensorMakeNumber(x)
     return x
 end
 
-function rf2gov.create(widget)
-    return
-end
+function rf2gov.create(widget) return end
 
 function rf2gov.paint(widget)
 
@@ -90,7 +88,9 @@ function rf2gov.getSensors()
         govSOURCE = rfsuite.bg.telemetry.getSensorSource("governor")
 
         if rfsuite.bg.telemetry.getSensorProtocol() == 'lcrsf' then
-            if govSOURCE ~= nil then govmode = govSOURCE:stringValue() end
+            if govSOURCE ~= nil then
+                govmode = govSOURCE:stringValue()
+            end
         else
 
             if govSOURCE ~= nil then

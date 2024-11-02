@@ -24,7 +24,7 @@
         @author Dynodzzo
         @rf2updates by rob.thomson
 
-]]--
+]] --
 local LIP = {};
 
 local function file_exists(name)
@@ -74,7 +74,8 @@ function LIP.load(fileName)
 
         local tempSection = line:match("%[([^%[%]]+)%]");
         if (tempSection) then
-            section = tonumber(tempSection) and tonumber(tempSection) or tempSection;
+            section = tonumber(tempSection) and tonumber(tempSection) or
+                          tempSection;
             data[section] = data[section] or {};
         end
         local param, value = line:match('^([%w|_]+)%s-=%s-(.+)$');
@@ -107,7 +108,9 @@ function LIP.save(fileName, data)
     local contents = '';
     for section, param in pairs(data) do
         contents = contents .. ('[%s]\n'):format(section);
-        for key, value in pairs(param) do contents = contents .. ('%s=%s\n'):format(key, tostring(value)); end
+        for key, value in pairs(param) do
+            contents = contents .. ('%s=%s\n'):format(key, tostring(value));
+        end
         contents = contents .. '\n';
     end
 

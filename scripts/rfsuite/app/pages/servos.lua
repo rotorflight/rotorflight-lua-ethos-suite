@@ -30,7 +30,8 @@ local function buildServoTable()
                 servoTable[4]['image'] = "tail.png"
                 servoTable[4]['section'] = 1
             end
-        elseif rfsuite.config.swashMode == 2 or rfsuite.config.swashMode == 3 or rfsuite.config.swashMode == 4 then
+        elseif rfsuite.config.swashMode == 2 or rfsuite.config.swashMode == 3 or
+            rfsuite.config.swashMode == 4 then
             -- servo mode is cppm - 
             servoTable[1]['title'] = "CYC. PITCH"
             servoTable[1]['image'] = "cpitch.png"
@@ -90,7 +91,11 @@ local function openPage(pidx, title, script)
 
     rfsuite.bg.msp.protocol.mspIntervalOveride = nil
 
-    if tonumber(rfsuite.utils.makeNumber(rfsuite.config.environment.major .. rfsuite.config.environment.minor .. rfsuite.config.environment.revision)) < rfsuite.config.ethosVersion then return end
+    if tonumber(rfsuite.utils.makeNumber(
+                    rfsuite.config.environment.major ..
+                        rfsuite.config.environment.minor ..
+                        rfsuite.config.environment.revision)) <
+        rfsuite.config.ethosVersion then return end
 
     rfsuite.app.triggers.isReady = false
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
@@ -130,7 +135,8 @@ local function openPage(pidx, title, script)
     -- TEXT ICONS
     if rfsuite.config.iconSize == 0 then
         padding = rfsuite.app.radio.buttonPaddingSmall
-        buttonW = (rfsuite.config.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
+        buttonW = (rfsuite.config.lcdWidth - padding) /
+                      rfsuite.app.radio.buttonsPerRow - padding
         buttonH = rfsuite.app.radio.navbuttonHeight
         numPerRow = rfsuite.app.radio.buttonsPerRow
     end
@@ -154,11 +160,19 @@ local function openPage(pidx, title, script)
     local lc = 0
     local bx = 0
 
-    if rfsuite.app.gfx_buttons["servos"] == nil then rfsuite.app.gfx_buttons["servos"] = {} end
-    if rfsuite.app.menuLastSelected["servos"] == nil then rfsuite.app.menuLastSelected["servos"] = 1 end
+    if rfsuite.app.gfx_buttons["servos"] == nil then
+        rfsuite.app.gfx_buttons["servos"] = {}
+    end
+    if rfsuite.app.menuLastSelected["servos"] == nil then
+        rfsuite.app.menuLastSelected["servos"] = 1
+    end
 
-    if rfsuite.app.gfx_buttons["servos"] == nil then rfsuite.app.gfx_buttons["servos"] = {} end
-    if rfsuite.app.menuLastSelected["servos"] == nil then rfsuite.app.menuLastSelected["servos"] = 1 end
+    if rfsuite.app.gfx_buttons["servos"] == nil then
+        rfsuite.app.gfx_buttons["servos"] = {}
+    end
+    if rfsuite.app.menuLastSelected["servos"] == nil then
+        rfsuite.app.menuLastSelected["servos"] = 1
+    end
 
     for pidx, pvalue in ipairs(servoTable) do
 
@@ -166,53 +180,82 @@ local function openPage(pidx, title, script)
 
             if pvalue.section == "swash" and lc == 0 then
                 local headerLine = form.addLine("")
-                local headerLineText = form.addStaticText(headerLine, {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.config.lcdWidth, h = rfsuite.app.radio.navbuttonHeight},
-                                                          headerLineText())
+                local headerLineText = form.addStaticText(headerLine, {
+                    x = 0,
+                    y = rfsuite.app.radio.linePaddingTop,
+                    w = rfsuite.config.lcdWidth,
+                    h = rfsuite.app.radio.navbuttonHeight
+                }, headerLineText())
             end
 
             if pvalue.section == "tail" then
                 local headerLine = form.addLine("")
-                local headerLineText = form.addStaticText(headerLine, {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.config.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}, "TAIL")
+                local headerLineText = form.addStaticText(headerLine, {
+                    x = 0,
+                    y = rfsuite.app.radio.linePaddingTop,
+                    w = rfsuite.config.lcdWidth,
+                    h = rfsuite.app.radio.navbuttonHeight
+                }, "TAIL")
             end
 
             if pvalue.section == "other" then
                 local headerLine = form.addLine("")
-                local headerLineText = form.addStaticText(headerLine, {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.config.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}, "TAIL")
+                local headerLineText = form.addStaticText(headerLine, {
+                    x = 0,
+                    y = rfsuite.app.radio.linePaddingTop,
+                    w = rfsuite.config.lcdWidth,
+                    h = rfsuite.app.radio.navbuttonHeight
+                }, "TAIL")
             end
 
             if lc == 0 then
-                if rfsuite.config.iconSize == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
-                if rfsuite.config.iconSize == 1 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
-                if rfsuite.config.iconSize == 2 then y = form.height() + rfsuite.app.radio.buttonPadding end
+                if rfsuite.config.iconSize == 0 then
+                    y = form.height() + rfsuite.app.radio.buttonPaddingSmall
+                end
+                if rfsuite.config.iconSize == 1 then
+                    y = form.height() + rfsuite.app.radio.buttonPaddingSmall
+                end
+                if rfsuite.config.iconSize == 2 then
+                    y = form.height() + rfsuite.app.radio.buttonPadding
+                end
             end
 
             if lc >= 0 then bx = (buttonW + padding) * lc end
 
             if rfsuite.config.iconSize ~= 0 then
                 if rfsuite.app.gfx_buttons["servos"][pidx] == nil then
-                    rfsuite.app.gfx_buttons["servos"][pidx] = lcd.loadMask(rfsuite.config.suiteDir .. "app/gfx/servos/" .. pvalue.image)
+                    rfsuite.app.gfx_buttons["servos"][pidx] = lcd.loadMask(
+                                                                  rfsuite.config
+                                                                      .suiteDir ..
+                                                                      "app/gfx/servos/" ..
+                                                                      pvalue.image)
                 end
             else
                 rfsuite.app.gfx_buttons["servos"][pidx] = nil
             end
 
-            rfsuite.app.formFields[pidx] = form.addButton(nil, {x = bx, y = y, w = buttonW, h = buttonH}, {
-                text = pvalue.title,
-                icon = rfsuite.app.gfx_buttons["servos"][pidx],
-                options = FONT_S,
-                paint = function()
-                end,
-                press = function()
-                    rfsuite.app.menuLastSelected["servos"] = pidx
-                    rfsuite.currentServoIndex = pidx
-                    rfsuite.app.ui.progressDisplay()
-                    rfsuite.app.ui.openPage(pidx, pvalue.title, "servos_tool.lua", servoTable)
-                end
-            })
+            rfsuite.app.formFields[pidx] =
+                form.addButton(nil, {x = bx, y = y, w = buttonW, h = buttonH}, {
+                    text = pvalue.title,
+                    icon = rfsuite.app.gfx_buttons["servos"][pidx],
+                    options = FONT_S,
+                    paint = function() end,
+                    press = function()
+                        rfsuite.app.menuLastSelected["servos"] = pidx
+                        rfsuite.currentServoIndex = pidx
+                        rfsuite.app.ui.progressDisplay()
+                        rfsuite.app.ui.openPage(pidx, pvalue.title,
+                                                "servos_tool.lua", servoTable)
+                    end
+                })
 
-            if pvalue.disabled == true then rfsuite.app.formFields[pidx]:enable(false) end
+            if pvalue.disabled == true then
+                rfsuite.app.formFields[pidx]:enable(false)
+            end
 
-            if rfsuite.app.menuLastSelected["servos"] == pidx then rfsuite.app.formFields[pidx]:focus() end
+            if rfsuite.app.menuLastSelected["servos"] == pidx then
+                rfsuite.app.formFields[pidx]:focus()
+            end
 
             lc = lc + 1
 
@@ -244,8 +287,10 @@ local function getServoCount(callback, callbackParam)
         -- }
         -- 4 servos
         simulatorResponse = {
-            4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0,
-            120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0
+            4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160,
+            5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12,
+            254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0, 120, 5, 212, 254,
+            44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0
         }
     }
     rfsuite.bg.msp.mspQueue:add(message)
@@ -268,8 +313,10 @@ local function openPageInit(pidx, title, script)
                 end
             end,
             simulatorResponse = {
-                4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0,
-                120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0
+                4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0,
+                160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14,
+                6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0, 120, 5,
+                212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0
             }
         }
         rfsuite.bg.msp.mspQueue:add(message)
@@ -281,16 +328,21 @@ local function openPageInit(pidx, title, script)
 
                     for i = 0, rfsuite.config.servoCount do
                         buf.offset = i
-                        local servoOverride = rfsuite.bg.msp.mspHelper.readU8(buf)
+                        local servoOverride =
+                            rfsuite.bg.msp.mspHelper.readU8(buf)
                         if servoOverride == 0 then
                             rfsuite.utils.log("Servo override: true")
                             rfsuite.config.servoOverride = true
                         end
                     end
                 end
-                if rfsuite.config.servoOverride == nil then rfsuite.config.servoOverride = false end
+                if rfsuite.config.servoOverride == nil then
+                    rfsuite.config.servoOverride = false
+                end
             end,
-            simulatorResponse = {209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7}
+            simulatorResponse = {
+                209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7
+            }
         }
         rfsuite.bg.msp.mspQueue:add(message)
 
@@ -322,12 +374,7 @@ local function onToolMenu(self)
                     triggerOverRideAll = true
                     return true
                 end
-            }, {
-                label = "CANCEL",
-                action = function()
-                    return true
-                end
-            }
+            }, {label = "CANCEL", action = function() return true end}
         }
     else
         buttons = {
@@ -340,19 +387,15 @@ local function onToolMenu(self)
                     triggerOverRide = true
                     return true
                 end
-            }, {
-                label = "CANCEL",
-                action = function()
-                    return true
-                end
-            }
+            }, {label = "CANCEL", action = function() return true end}
         }
     end
     local message
     local title
     if rfsuite.config.servoOverride == false then
         title = "Enable servo override"
-        message = "Servo override allows you to 'trim' your servo center point in real time."
+        message =
+            "Servo override allows you to 'trim' your servo center point in real time."
     else
         title = "Disable servo override"
         message = "Return control of the servos to the flight controller."
@@ -363,10 +406,8 @@ local function onToolMenu(self)
         title = title,
         message = message,
         buttons = buttons,
-        wakeup = function()
-        end,
-        paint = function()
-        end,
+        wakeup = function() end,
+        paint = function() end,
         options = TEXT_LEFT
     })
 
@@ -378,24 +419,31 @@ local function wakeup()
 
         if rfsuite.config.servoOverride == false then
             rfsuite.app.audio.playServoOverideEnable = true
-            rfsuite.app.ui.progressDisplay("Servo override", "Enabling servo override...")
+            rfsuite.app.ui.progressDisplay("Servo override",
+                                           "Enabling servo override...")
             rfsuite.app.Page.servoCenterFocusAllOn(self)
             rfsuite.config.servoOverride = true
         else
             rfsuite.app.audio.playServoOverideDisable = true
-            rfsuite.app.ui.progressDisplay("Servo override", "Disabling servo override...")
+            rfsuite.app.ui.progressDisplay("Servo override",
+                                           "Disabling servo override...")
             rfsuite.app.Page.servoCenterFocusAllOff(self)
             rfsuite.config.servoOverride = false
         end
     end
 
     local now = os.clock()
-    if ((now - lastServoCountTime) >= 2) and rfsuite.bg.msp.mspQueue:isProcessed() then
+    if ((now - lastServoCountTime) >= 2) and
+        rfsuite.bg.msp.mspQueue:isProcessed() then
         lastServoCountTime = now
 
         getServoCount()
 
-        if rfsuite.config.servoCountNew ~= nil then if rfsuite.config.servoCountNew ~= rfsuite.config.servoCount then rfsuite.app.triggers.triggerReloadNoPrompt = true end end
+        if rfsuite.config.servoCountNew ~= nil then
+            if rfsuite.config.servoCountNew ~= rfsuite.config.servoCount then
+                rfsuite.app.triggers.triggerReloadNoPrompt = true
+            end
+        end
 
     end
 
@@ -437,7 +485,8 @@ local function onNavMenu(self)
         rfsuite.app.audio.playServoOverideDisable = true
         rfsuite.config.servoOverride = false
         inFocus = false
-        rfsuite.app.ui.progressDisplay("Servo override", "Disabling servo override...")
+        rfsuite.app.ui.progressDisplay("Servo override",
+                                       "Disabling servo override...")
         rfsuite.app.Page.servoCenterFocusAllOff(self)
         rfsuite.app.triggers.closeProgressLoader = true
     end
@@ -455,5 +504,11 @@ return {
     servoCenterFocusAllOn = servoCenterFocusAllOn,
     servoCenterFocusAllOff = servoCenterFocusAllOff,
     wakeup = wakeup,
-    navButtons = {menu = true, save = false, reload = true, tool = true, help = true}
+    navButtons = {
+        menu = true,
+        save = false,
+        reload = true,
+        tool = true,
+        help = true
+    }
 }

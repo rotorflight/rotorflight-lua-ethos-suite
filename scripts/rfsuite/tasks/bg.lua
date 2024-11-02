@@ -17,7 +17,7 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 
-]]--
+]] --
 --
 -- background processing of system tasks
 --
@@ -33,10 +33,17 @@ bg.heartbeat = nil
 
 bg.init = false
 -- tasks
-bg.telemetry = assert(compile.loadScript(config.suiteDir .. "tasks/telemetry/telemetry.lua"))(config, compile)
-bg.msp = assert(compile.loadScript(config.suiteDir .. "tasks/msp/msp.lua"))(config, compile)
-bg.adjfunctions = assert(compile.loadScript(config.suiteDir .. "tasks/adjfunctions/adjfunctions.lua"))(config, compile)
-bg.sensors = assert(compile.loadScript(config.suiteDir .. "tasks/sensors/sensors.lua"))(config, compile)
+bg.telemetry = assert(compile.loadScript(config.suiteDir ..
+                                             "tasks/telemetry/telemetry.lua"))(
+                   config, compile)
+bg.msp = assert(compile.loadScript(config.suiteDir .. "tasks/msp/msp.lua"))(
+             config, compile)
+bg.adjfunctions = assert(compile.loadScript(config.suiteDir ..
+                                                "tasks/adjfunctions/adjfunctions.lua"))(
+                      config, compile)
+bg.sensors = assert(compile.loadScript(config.suiteDir ..
+                                           "tasks/sensors/sensors.lua"))(config,
+                                                                         compile)
 
 rfsuite.rssiSensorChanged = true
 
@@ -92,7 +99,9 @@ function bg.wakeup()
         end
         rssiCheckScheduler = now
     end
-    if system:getVersion().simulation == true then rfsuite.rssiSensorChanged = false end
+    if system:getVersion().simulation == true then
+        rfsuite.rssiSensorChanged = false
+    end
 
     -- high priority and must alway run regardless of tlm state
     bg.msp.wakeup()
@@ -105,7 +114,9 @@ end
 function bg.event(widget, category, value)
 
     if bg.msp.event then bg.msp.event(widget, category, value) end
-    if bg.adjfunctions.event then bg.adjfunctions.event(widget, category, value) end
+    if bg.adjfunctions.event then
+        bg.adjfunctions.event(widget, category, value)
+    end
 end
 
 return bg
