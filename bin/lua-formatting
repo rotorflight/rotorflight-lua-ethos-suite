@@ -7,6 +7,6 @@ list=$(find ./ -name "*.lua")
 for x in $list ; do
 
 	echo $x
-	lua-format  --tab-width=8 -i $x
+	lua-format  --tab-width=4 -i $x
 
 done
