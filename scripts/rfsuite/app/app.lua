@@ -1006,9 +1006,6 @@ function app.create()
                 }
             }
 
-            if tonumber(rfsuite.utils.makeNumber(rfsuite.config.environment.major .. config.environment.minor .. config.environment.revision)) < 1590 then
-                form.openDialog("Warning", config.ethosVersionString, buttons, 1)
-            else
                 form.openDialog({
                     width = rfsuite.config.lcdWidth,
                     title = "Warning",
@@ -1020,7 +1017,6 @@ function app.create()
                     end,
                     options = TEXT_LEFT
                 })
-            end
 
         end
     end
