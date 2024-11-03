@@ -22,7 +22,8 @@ compile = {}
 
 local arg = {...}
 local config = arg[1]
-local suiteDir = config.suiteDir
+--local suiteDir = config.suiteDir
+local suiteDir = "" -- this is done because loadfile etc needs to use relative paths and not absolute!!!
 
 local readConfig
 local switchParam
@@ -50,8 +51,9 @@ end
 
 local function baseName()
     local baseName
-    baseName = config.suiteDir:gsub("/scripts/", "")
-    baseName = baseName:gsub("/", "")
+    --baseName = config.suiteDir:gsub("/scripts/", "")
+    --baseName = baseName:gsub("/", "")
+    baseName = suiteDir:gsub("/", "")
     return baseName
 end
 
@@ -77,11 +79,11 @@ function compile.loadScript(script)
 
     -- overrides
     if config.useCompiler == true then
-        if file_exists("/scripts/" .. baseName() .. ".nocompile") == true then
+        if file_exists("../" .. baseName() .. ".nocompile") == true then
             config.useCompiler = false
         end
 
-        if file_exists("/scripts/nocompile") == true then
+        if file_exists("../nocompile") == true then
             config.useCompiler = false
         end
     end
