@@ -35,8 +35,7 @@ local protocol = assert(compile.loadScript(config.suiteDir .. "tasks/msp/protoco
 
 msp.sensor = sport.getSensor({primId = 0x32})
 msp.mspQueue = mspQueue
-if rfsuite.rssiSensor then rfsuite.sensor:module(rfsuite.rssiSensor:module()) end
-msp.mspQueue = mspQueue
+
 
 -- set active protocol to use
 msp.protocol = protocol.getProtocol()
@@ -211,6 +210,10 @@ function msp.wakeup()
         msp.protocol.mspSend = transport.mspSend
         msp.protocol.mspWrite = transport.mspWrite
         msp.protocol.mspPoll = transport.mspPoll
+
+        if rfsuite.rssiSensor and msp.activeProtocol == "smartPort" then 
+            msp.sensor:module(rfsuite.rssiSensor:module()) 
+        end
 
         msp.resetState()
         msp.onConnectChecksInit = true
