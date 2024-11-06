@@ -89,6 +89,7 @@ local function createSensor(physId, primId, appId, frameValue)
                 frsky.createSensorCache[appId]:name(v.name)
                 frsky.createSensorCache[appId]:appId(appId)
                 frsky.createSensorCache[appId]:physId(physId)
+                frsky.createSensorCache[appId]:module(rfsuite.rssiSensor:module())
 
                 frsky.createSensorCache[appId]:minimum(min or -2147483647)
                 frsky.createSensorCache[appId]:maximum(max or 2147483647)
