@@ -35,8 +35,6 @@ local protocol = assert(compile.loadScript(config.suiteDir .. "tasks/msp/protoco
 
 msp.sensor = sport.getSensor({primId = 0x32})
 msp.mspQueue = mspQueue
-if rfsuite.rssiSensor then rfsuite.sensor:module(rfsuite.rssiSensor:module()) end
-msp.mspQueue = mspQueue
 
 -- set active protocol to use
 msp.protocol = protocol.getProtocol()
@@ -61,6 +59,13 @@ assert(compile.loadScript(config.suiteDir .. "tasks/msp/common.lua"))()
 function msp.onConnectBgChecks()
 
     if msp.mspQueue ~= nil and msp.mspQueue:isProcessed() then
+
+        -- set module to use. this happens on connect as
+        -- it forces a recheck whenever the rx has been disconnected
+        -- or a model swapped
+        if rfsuite.rssiSensor then 
+            msp.sensor:module(rfsuite.rssiSensor:module()) 
+        end
 
         if rfsuite.config.apiVersion == nil and msp.mspQueue:isProcessed() then
 
