@@ -101,14 +101,14 @@ function compile.loadScript(script)
             os.rename(script .. 'c', cachefile)
 
             -- if not compiled - we compile; but return non compiled to sort timing issue.
-            print("Loading: " .. cachefile)
+            --print("Loading: " .. cachefile)
             return assert(loadfile(cachefile))
         end
-         print("Loading: " .. cachefile)
+        -- print("Loading: " .. cachefile)
         return assert(loadfile(cachefile))
     else
         if file_exists(cachefile) == true then os.remove(cachefile) end
-         print("Loading: " .. script)              
+        --print("Loading: " .. script)              
         return assert(loadfile(script))
     end
 
