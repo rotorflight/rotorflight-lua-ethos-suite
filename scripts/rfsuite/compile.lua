@@ -23,7 +23,7 @@ compile = {}
 
 local arg = {...}
 local config = arg[1]
-local suiteDir = config.suiteDir
+local suiteDir = "./"
 
 local readConfig
 local switchParam
@@ -58,8 +58,7 @@ end
 
 local function baseName()
     local baseName
-    baseName = config.suiteDir:gsub("/scripts/", "")
-    baseName = baseName:gsub("/", "")
+    baseName = suiteDir:gsub("/", "")
     return baseName
 end
 
@@ -73,6 +72,7 @@ end
 
 function compile.loadScript(script)
 
+     script = script:gsub(config.suiteDir,"")
 
      if os.mkdir ~= nil and dir_exists(suiteDir , "compiled") == false then
                         os.mkdir(suiteDir .. "compiled")
@@ -84,9 +84,9 @@ function compile.loadScript(script)
 
     -- overrides
     if config.useCompiler == true then
-        if file_exists("/scripts/" .. baseName() .. ".nocompile") == true then config.useCompiler = false end
+        if file_exists("../" .. baseName() .. ".nocompile") == true then config.useCompiler = false end
 
-        if file_exists("/scripts/nocompile") == true then config.useCompiler = false end
+        if file_exists("../nocompile") == true then config.useCompiler = false end
     end
 
     -- do not compile if for some reason the compiler cache folder is missing
@@ -101,14 +101,14 @@ function compile.loadScript(script)
             os.rename(script .. 'c', cachefile)
 
             -- if not compiled - we compile; but return non compiled to sort timing issue.
-            --print("Loading: " .. cachefile)
+            print("Loading: " .. cachefile)
             return assert(loadfile(cachefile))
         end
-        -- print("Loading: " .. cachefile)
+         print("Loading: " .. cachefile)
         return assert(loadfile(cachefile))
     else
         if file_exists(cachefile) == true then os.remove(cachefile) end
-        -- print("Loading: " .. script)              
+         print("Loading: " .. script)              
         return assert(loadfile(script))
     end
 
