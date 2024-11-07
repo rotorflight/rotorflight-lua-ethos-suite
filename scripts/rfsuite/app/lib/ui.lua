@@ -247,7 +247,7 @@ function ui.openMainMenu()
 
                                 if config.iconSize ~= 0 then
                                     if rfsuite.app.gfx_buttons["mainmenu"][pidx] == nil then
-                                        rfsuite.app.gfx_buttons["mainmenu"][pidx] = lcd.loadMask(config.suiteDir .. "app/gfx/menu/" .. pvalue.image)
+                                        rfsuite.app.gfx_buttons["mainmenu"][pidx] = lcd.loadMask("app/gfx/menu/" .. pvalue.image)
                                     end
                                 else
                                     rfsuite.app.gfx_buttons["mainmenu"][pidx] = nil
