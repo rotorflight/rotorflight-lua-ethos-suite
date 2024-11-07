@@ -47,6 +47,13 @@ function MspQueueController:processQueue()
     end
     rfsuite.app.triggers.mspBusy = true
 
+    if rfsuite.rssiSensor then  
+        local module = model.getModule(rfsuite.rssiSensor:module())    
+        if module.muteSensorLost ~= nil then
+            module:muteSensorLost(2.0) -- mute for 2s      
+        end
+    end    
+
     if not self.currentMessage then
         self.currentMessage = popFirstElement(self.messageQueue)
         self.retryCount = 0
