@@ -94,6 +94,10 @@ function bg.wakeup()
     end
     if system:getVersion().simulation == true then rfsuite.rssiSensorChanged = false end
 
+    if config.ethosRunningVersion == nil then
+        config.ethosRunningVersion = rfsuite.utils.ethosVersion()
+    end
+
     -- high priority and must alway run regardless of tlm state
     bg.msp.wakeup()
     bg.telemetry.wakeup()
