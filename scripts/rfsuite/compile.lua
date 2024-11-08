@@ -99,11 +99,13 @@ function compile.loadScript(script)
         if file_exists(cachefile) ~= true then
             system.compile(script)
 
-            os.rename(script .. 'c', cachefile)
+            -- we wrap in this to catch rename not working as some kind of bug here in ethos
+            if pcall(os.rename(script .. 'c', cachefile)) then
+                return assert(loadfile(cachefile))
+            else
+                return assert(loadfile(script))
+            end
 
-            -- if not compiled - we compile; but return non compiled to sort timing issue.
-            --print("Loading: " .. cachefile)
-            return assert(loadfile(cachefile))
         end
         -- print("Loading: " .. cachefile)
         return assert(loadfile(cachefile))
