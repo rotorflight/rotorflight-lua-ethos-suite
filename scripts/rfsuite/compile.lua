@@ -24,6 +24,7 @@ compile = {}
 local arg = {...}
 local config = arg[1]
 local suiteDir = "./"
+local environment = system.getVersion()
 
 local readConfig
 local switchParam
@@ -80,7 +81,7 @@ function compile.loadScript(script)
 
     -- we need to add code to stop this reading every time function runs
     local cachefile    
-    cachefile = suiteDir .. "compiled/" .. script:gsub("/", "_") .. "c"
+    cachefile = "compiled/" .. script:gsub("/", "_") .. "c"
 
     -- overrides
     if config.useCompiler == true then
@@ -97,12 +98,22 @@ function compile.loadScript(script)
     if config.useCompiler == true then
         if file_exists(cachefile) ~= true then
             system.compile(script)
+            
+            -- older ethos version does not handle relative paths correctly on os.rename
+            -- we live with this bug / loop until officially 1.6 is out
+            local v = tonumber(environment.major .. environment.minor)
+            if v <= 15 then
+                if not pcall(os.rename(config.suiteDir .. script .. 'c', config.suiteDir .. cachefile)) then
+                    -- catch the failed rename and keep working by loading source with no compilation
+                    return assert(loadfile(script))                
+                end
+            else
+                if not pcall(os.rename(script .. 'c', cachefile)) then
+                    -- catch the failed rename and keep working by loading source with no compilation
+                    return assert(loadfile(script))
+                end
+            end
 
-            os.rename(script .. 'c', cachefile)
-
-            -- if not compiled - we compile; but return non compiled to sort timing issue.
-            --print("Loading: " .. cachefile)
-            return assert(loadfile(cachefile))
         end
         -- print("Loading: " .. cachefile)
         return assert(loadfile(cachefile))
