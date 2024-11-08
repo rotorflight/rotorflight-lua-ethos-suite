@@ -14,7 +14,7 @@ for i, v in ipairs(rfsuite.config.supportedMspApiVersion) do
     end
 end
 
-if rfsuite.config.useCompiler == true then
+if system:getVersion().simulation == true then
     compilation = "ON"
 else
     compilation = "OFF"
