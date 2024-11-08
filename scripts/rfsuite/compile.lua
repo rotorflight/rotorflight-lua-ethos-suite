@@ -99,13 +99,23 @@ function compile.loadScript(script)
         if file_exists(cachefile) ~= true then
             system.compile(script)
 
-            -- we wrap in this to catch rename not working as some kind of bug here in ethos
-            if pcall(os.rename(script .. 'c', cachefile)) then
-                return assert(loadfile(cachefile))
-            else
-                return assert(loadfile(script))
-            end
 
+            print("###############################################")
+            print("script: " .. script)
+            print("compiled: " .. cachefile)
+            print("Renaming from: " .. script .. " => " .. cachefile )
+
+            print("Files in current dir are:")
+            list = system.listFiles("./")       
+            for i,v in pairs(list) do
+                    print(v)
+            end            
+            print("###############################################")
+            
+            os.rename(script .. 'c', cachefile)
+           
+           
+           --return assert(loadfile(script)) -- this is being added to force it to work; because cachefile is gone / not working rename
         end
         -- print("Loading: " .. cachefile)
         return assert(loadfile(cachefile))
