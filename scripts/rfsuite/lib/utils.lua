@@ -296,7 +296,7 @@ end
 -- dynamic compilation
 function utils.loadScript(script)
     -- system.compile(script)
-    return compile.loadScript(script)
+    return loadfile(script)
 end
 
 -- return the time

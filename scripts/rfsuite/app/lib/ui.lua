@@ -152,7 +152,7 @@ end
 
 function ui.openMainMenu()
 
-    local MainMenu = assert(compile.loadScript("app/pages.lua"))()
+    local MainMenu = assert(loadfile("app/pages.lua"))()
 
 
     -- clear all nav vars
@@ -624,7 +624,7 @@ end
 function ui.openPageRefresh(idx, title, script, extra1, extra2, extra3, extra5, extra5)
 
     rfsuite.app.triggers.isReady = false
-    if script ~= nil then rfsuite.app.Page = assert(compile.loadScript("app/pages/" .. script))() end
+    if script ~= nil then rfsuite.app.Page = assert(loadfile("app/pages/" .. script))() end
 
 end
 
@@ -635,7 +635,7 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra5)
     rfsuite.app.formFields = {}
     rfsuite.app.formLines = {}
 
-    rfsuite.app.Page = assert(compile.loadScript("app/pages/" .. script))()
+    rfsuite.app.Page = assert(loadfile("app/pages/" .. script))()
 
     if rfsuite.app.Page.openPage then
         rfsuite.app.Page.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra5)
@@ -813,7 +813,7 @@ function ui.navigationButtons(x, y, w, h)
     -- HELP BUTTON
     if navButtons.help ~= nil and navButtons.help == true then
 
-        local help = assert(compile.loadScript("app/help/pages.lua"))()
+        local help = assert(loadfile("app/help/pages.lua"))()
         local section = string.gsub(rfsuite.app.lastScript, ".lua", "") -- remove .lua
 
         rfsuite.app.formNavigationFields['help'] = form.addButton(line, {x = helpOffset, y = y, w = wS, h = h}, {
