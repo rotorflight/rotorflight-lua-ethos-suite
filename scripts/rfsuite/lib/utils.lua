@@ -56,13 +56,23 @@ function utils.playFile(pkg,file)
         local av = system.getAudioVoice()
         av = string.gsub(av, "SD:", "")
         av = string.gsub(av, "RADIO:", "")
-
+        
         if rfsuite.config.soundPack == nil then  
-                wavLocale = rfsuite.config.suiteDir ..  av .. "/" .. pkg .. "/" .. file
-                wavDefault = rfsuite.config.suiteDir .. "/audio/en/default/" .. pkg .. "/" .. file                    
+                if utils.ethosVersionToMinor() <= 15 then
+                    wavLocale = rfsuite.config.suiteDir ..  av .. "/" .. pkg .. "/" .. file
+                    wavDefault = rfsuite.config.suiteDir .. "/audio/en/default/" .. pkg .. "/" .. file 
+                else
+                    wavLocale = av .. "/" .. pkg .. "/" .. file
+                    wavDefault = "audio/en/default/" .. pkg .. "/" .. file 
+                end
         else
-                wavLocale = rfsuite.config.suiteDir .. "/audio/" .. rfsuite.config.soundPack .. "/" .. pkg .. "/" .. file
-                wavDefault = rfsuite.config.suiteDir .. "/audio/en/default/" .. pkg .. "/" .. file        
+                if utils.ethosVersionToMinor() <= 15 then
+                    wavLocale = rfsuite.config.suiteDir .. "/audio/" .. rfsuite.config.soundPack .. "/" .. pkg .. "/" .. file
+                    wavDefault = rfsuite.config.suiteDir .. "/audio/en/default/" .. pkg .. "/" .. file       
+                else
+                    wavLocale = "audio/" .. rfsuite.config.soundPack .. "/" .. pkg .. "/" .. file
+                    wavDefault = "audio/en/default/" .. pkg .. "/" .. file                   
+                end
         end
              
         if rfsuite.utils.file_exists(wavLocale) then
@@ -76,7 +86,12 @@ end
 
 function utils.playFileCommon(file)
 
-        local wav = rfsuite.config.suiteDir .. "/audio/" .. file
+        local wav
+        if utils.ethosVersionToMinor() <= 15 then
+            wav = rfsuite.config.suiteDir .. "/audio/" .. file
+        else
+            wav = "audio/" .. file
+        end
 
         system.playFile(wav)
       
