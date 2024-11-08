@@ -99,23 +99,12 @@ function compile.loadScript(script)
         if file_exists(cachefile) ~= true then
             system.compile(script)
 
-
-            print("###############################################")
-            print("script: " .. script)
-            print("compiled: " .. cachefile)
-            print("Renaming from: " .. script .. " => " .. cachefile )
-
-            print("Files in current dir are:")
-            list = system.listFiles("./")       
-            for i,v in pairs(list) do
-                    print(v)
-            end            
-            print("###############################################")
+            -- this works
+            os.rename(config.suiteDir .. script .. 'c', config.suiteDir .. cachefile)
             
-            os.rename(script .. 'c', cachefile)
+            -- this does not work
+            --os.rename(script .. 'c', cachefile)
            
-           
-           --return assert(loadfile(script)) -- this is being added to force it to work; because cachefile is gone / not working rename
         end
         -- print("Loading: " .. cachefile)
         return assert(loadfile(cachefile))
