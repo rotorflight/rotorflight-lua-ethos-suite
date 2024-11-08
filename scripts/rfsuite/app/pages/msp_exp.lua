@@ -34,7 +34,7 @@ local function openPage(idx, title, script)
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
     rfsuite.app.triggers.isReady = false
 
-    rfsuite.app.Page = assert(compile.loadScript(rfsuite.config.suiteDir .. "app/pages/" .. script))()
+    rfsuite.app.Page = assert(compile.loadScript("app/pages/" .. script))()
 
 
     rfsuite.app.lastIdx = idx

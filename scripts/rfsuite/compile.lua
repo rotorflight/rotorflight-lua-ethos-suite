@@ -23,7 +23,7 @@ compile = {}
 
 local arg = {...}
 local config = arg[1]
-local suiteDir = config.suiteDir
+
 
 local readConfig
 local switchParam
@@ -37,6 +37,7 @@ end
 
 
 local function dir_exists(base,name)
+        if base == nil then base = "./" end
         list = system.listFiles(base)       
         for i,v in pairs(list) do
                 if v == name then
@@ -74,13 +75,13 @@ end
 function compile.loadScript(script)
 
 
-     if os.mkdir ~= nil and dir_exists(suiteDir , "compiled") == false then
-                        os.mkdir(suiteDir .. "compiled")
+     if os.mkdir ~= nil and dir_exists("./" , "compiled") == false then
+                        os.mkdir("./" .. "compiled")
      end
 
     -- we need to add code to stop this reading every time function runs
     local cachefile    
-    cachefile = suiteDir .. "compiled/" .. script:gsub("/", "_") .. "c"
+    cachefile = "compiled/" .. script:gsub("/", "_") .. "c"
 
     -- overrides
     if config.useCompiler == true then
