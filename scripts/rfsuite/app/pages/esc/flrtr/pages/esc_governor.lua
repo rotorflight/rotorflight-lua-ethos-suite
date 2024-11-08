@@ -2,7 +2,7 @@ local labels = {}
 local fields = {}
 
 local folder = "flrtr"
-local ESC = assert(compile.loadScript(rfsuite.config.suiteDir .. "app/pages/esc/" .. folder .. "/init.lua"))()
+local ESC = assert(compile.loadScript("app/pages/esc/" .. folder .. "/init.lua"))()
 local mspHeaderBytes = ESC.mspHeaderBytes
 local mspSignature = ESC.mspSignature
 

@@ -457,7 +457,7 @@ function utils.log(msg)
 
         if config.logEnableScreen == true then print(msg) end
 
-        local f = io.open(config.suiteDir .. "/logs/rfsuite.log", 'a')
+        local f = io.open("logs/rfsuite.log", 'a')
         io.write(f, tostring(msg) .. "\n")
         io.close(f)
 

@@ -56,7 +56,7 @@ local function openPage(pidx, title, script)
 
     local folder = title
 
-    ESC = assert(compile.loadScript(rfsuite.config.suiteDir .. "app/pages/esc/" .. folder .. "/init.lua"))()
+    ESC = assert(compile.loadScript("app/pages/esc/" .. folder .. "/init.lua"))()
 
     mspSignature = ESC.mspSignature
     mspHeaderBytes = ESC.mspHeaderBytes
@@ -110,7 +110,7 @@ local function openPage(pidx, title, script)
     })
     rfsuite.app.formNavigationFields['menu']:focus()
 
-    ESC.pages = assert(compile.loadScript(rfsuite.config.suiteDir .. "app/pages/esc/" .. folder .. "/pages.lua"))()
+    ESC.pages = assert(compile.loadScript("app/pages/esc/" .. folder .. "/pages.lua"))()
 
     modelLine = form.addLine("")
     modelText = form.addStaticText(modelLine, modelTextPos, "")
@@ -170,7 +170,7 @@ local function openPage(pidx, title, script)
 
         if rfsuite.config.iconSize ~= 0 then
             if rfsuite.app.gfx_buttons["esctool"][pvalue.image] == nil then
-                rfsuite.app.gfx_buttons["esctool"][pvalue.image] = lcd.loadMask(rfsuite.config.suiteDir .. "app/gfx/esc/" .. pvalue.image)
+                rfsuite.app.gfx_buttons["esctool"][pvalue.image] = lcd.loadMask("app/gfx/esc/" .. pvalue.image)
             end
         else
             rfsuite.app.gfx_buttons["esctool"][pvalue.image] = nil

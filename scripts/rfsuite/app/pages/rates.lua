@@ -4,12 +4,12 @@ local tables = {}
 local activateWakeup = false
 local currentProfileChecked = false
 
-tables[0] = rfsuite.config.suiteDir .. "app/pages/ratetables/none.lua"
-tables[1] = rfsuite.config.suiteDir .. "app/pages/ratetables/betaflight.lua"
-tables[2] = rfsuite.config.suiteDir .. "app/pages/ratetables/raceflight.lua"
-tables[3] = rfsuite.config.suiteDir .. "app/pages/ratetables/kiss.lua"
-tables[4] = rfsuite.config.suiteDir .. "app/pages/ratetables/actual.lua"
-tables[5] = rfsuite.config.suiteDir .. "app/pages/ratetables/quick.lua"
+tables[0] = "app/pages/ratetables/none.lua"
+tables[1] = "app/pages/ratetables/betaflight.lua"
+tables[2] = "app/pages/ratetables/raceflight.lua"
+tables[3] = "app/pages/ratetables/kiss.lua"
+tables[4] = "app/pages/ratetables/actual.lua"
+tables[5] = "app/pages/ratetables/quick.lua"
 
 if rfsuite.rateProfile == nil then rfsuite.rateProfile = rfsuite.config.defaultRateProfile end
 
@@ -46,7 +46,7 @@ end
 
 local function openPage(idx, title, script)
 
-    rfsuite.app.Page = assert(compile.loadScript(rfsuite.config.suiteDir .. "app/pages/" .. script))()
+    rfsuite.app.Page = assert(compile.loadScript("app/pages/" .. script))()
     -- collectgarbage()
 
     rfsuite.app.lastIdx = idx
