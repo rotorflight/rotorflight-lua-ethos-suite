@@ -85,13 +85,13 @@ function compile.loadScript(script)
 
     -- overrides
     if config.useCompiler == true then
-        if file_exists("/scripts/" .. baseName() .. ".nocompile") == true then config.useCompiler = false end
+        if file_exists("../" .. baseName() .. ".nocompile") == true then config.useCompiler = false end
 
-        if file_exists("/scripts/nocompile") == true then config.useCompiler = false end
+        if file_exists("../nocompile") == true then config.useCompiler = false end
     end
 
     -- do not compile if for some reason the compiler cache folder is missing
-    if dir_exists(suiteDir , "compiled") ~= true then
+    if dir_exists("./" , "compiled") ~= true then
         config.useCompiler = false
     end
 
