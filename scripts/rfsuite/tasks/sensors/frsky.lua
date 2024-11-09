@@ -33,7 +33,7 @@ createSensorList[0x5111] = {name = "Adj. Value", unit = UNIT_RAW}
 createSensorList[0x5460] = {name = "Model ID", unit = UNIT_RAW}
 createSensorList[0x5471] = {name = "PID Profile", unit = UNIT_RAW}
 createSensorList[0x5472] = {name = "Rate Profile", unit = UNIT_RAW}
-createSensorList[0x5440] = {name = "Throttle %", unit = UNIT_RAW}
+createSensorList[0x5440] = {name = "Throttle %", unit = UNIT_PERCENT}
 createSensorList[0x5250] = {name = "Consumption", unit = UNIT_MILLIAMPERE_HOUR}
 createSensorList[0x5462] = {name = "Arming Flags", unit = UNIT_RAW}
 
