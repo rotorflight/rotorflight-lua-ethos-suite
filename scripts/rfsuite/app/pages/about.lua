@@ -20,7 +20,7 @@ else
     compilation = "OFF"
 end
 
-if rfsuite.runningInSimulator == true then
+if system.getVersion().simulation == true then
     simulation = "ON"
 else
     simulation = "OFF"
