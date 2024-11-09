@@ -183,7 +183,7 @@ end
 
 function utils.ethosVersion()
     local environment = system.getVersion()
-    v = tonumber(environment.major .. environment.minor .. environment.revision)
+    local v = environment.major * 1000 + environment.minor * 100 + environment.revision
     if environment.revision == 0 then
         v = v * 10
     end
@@ -192,9 +192,9 @@ end
 
 function elrs.ethosVersionToMinor()
     local environment = system.getVersion()
-    local v = tonumber(environment.major .. environment.minor)
-    return v
+    return environment.major * 10 + environment.minor
 end
+
 
 function utils.getRssiSensor()
     local rssiSensor
