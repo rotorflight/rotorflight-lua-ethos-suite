@@ -190,7 +190,7 @@ function utils.ethosVersion()
     return v
 end
 
-function elrs.ethosVersionToMinor()
+function utils.ethosVersionToMinor()
     local environment = system.getVersion()
     local v = tonumber(environment.major .. environment.minor)
     return v
