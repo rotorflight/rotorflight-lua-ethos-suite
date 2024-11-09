@@ -2,11 +2,11 @@ local labels = {}
 local fields = {}
 
 local folder = "scorp"
-local ESC = assert(compile.loadScript("app/pages/esc/" .. folder .. "/init.lua"))()
+local ESC = assert(loadfile("app/pages/esc/" .. folder .. "/init.lua"))()
 local mspHeaderBytes = ESC.mspHeaderBytes
 local mspSignature = ESC.mspSignature
 
-local ESC = assert(compile.loadScript("app/pages/esc/" .. folder .. "/init.lua"))()
+local ESC = assert(loadfile("app/pages/esc/" .. folder .. "/init.lua"))()
 
 local mspHeaderBytes = ESC.mspHeaderBytes
 local mspSignature = ESC.mspSignature

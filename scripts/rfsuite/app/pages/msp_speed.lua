@@ -235,7 +235,7 @@ local function openPage(pidx, title, script)
     })
 
     -- HELP BUTTON
-    local help = assert(compile.loadScript("app/help/pages.lua"))()
+    local help = assert(loadfile("app/help/pages.lua"))()
     local section = string.gsub(rfsuite.app.lastScript, ".lua", "") -- remove .lua
     rfsuite.app.formNavigationFields['help'] = form.addButton(line, {x = x - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = buttonWs, h = rfsuite.app.radio.navbuttonHeight}, {
         text = "?",
