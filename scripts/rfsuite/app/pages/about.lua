@@ -14,11 +14,6 @@ for i, v in ipairs(rfsuite.config.supportedMspApiVersion) do
     end
 end
 
-if system:getVersion().simulation == true then
-    compilation = "ON"
-else
-    compilation = "OFF"
-end
 
 if rfsuite.runningInSimulator == true then
     simulation = "ON"
@@ -41,8 +36,7 @@ fields[2] = {t = "Ethos Version", value = ethosVersion, type = displayType, disa
 fields[3] = {t = "MSP Version", value = apiVersion, type = displayType, disable = disableType, position = displayPos}
 fields[4] = {t = "MSP Transport", value = string.upper(rfsuite.bg.msp.protocol.mspProtocol), type = displayType, disable = disableType, position = displayPos}
 fields[5] = {t = "Supported MSP Versions", value = supportedMspVersion, type = displayType, disable = disableType, position = displayPos}
-fields[6] = {t = "Compilation", value = compilation, type = displayType, disable = disableType, position = displayPos}
-fields[7] = {t = "Simulation", value = simulation, type = displayType, disable = disableType, position = displayPos}
+fields[6] = {t = "Simulation", value = simulation, type = displayType, disable = disableType, position = displayPos}
 
 function readMSP()
     rfsuite.app.triggers.isReady = true
