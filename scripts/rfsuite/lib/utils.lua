@@ -197,11 +197,12 @@ function elrs.ethosVersionToMinor()
 end
 
 function utils.getRssiSensor()
-    local rssiSensor
     local rssiNames = {"RSSI", "RSSI 2.4G", "RSSI 900M", "Rx RSSI1", "Rx RSSI2", "RSSI Int", "RSSI Ext", "RSSI Lora"}
-    for i, name in pairs(rssiNames) do
-        rssiSensor = system.getSource(name)
-        if rssiSensor then return {sensor = rssiSensor, name = name} end
+    for _, name in ipairs(rssiNames) do
+        local rssiSensor = system.getSource(name)
+        if rssiSensor then
+            return {sensor = rssiSensor, name = name}
+        end
     end
     return {sensor = nil, name = nil}
 end
