@@ -64,7 +64,11 @@ function rf2gov.paint(widget)
     lcd.font(FONT_XXL)
 
     if rfsuite.bg.active() then
-        str = sensors.govmode
+        if sensors then
+            str = sensors.govmode
+        else
+            str = ""
+        end
     else
         str = "BG TASK DISABLED"
     end
