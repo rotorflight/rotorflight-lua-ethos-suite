@@ -15,7 +15,7 @@ for i, v in ipairs(rfsuite.config.supportedMspApiVersion) do
 end
 
 
-if rfsuite.runningInSimulator == true then
+if system.getVersion().simulation == true then
     simulation = "ON"
 else
     simulation = "OFF"
