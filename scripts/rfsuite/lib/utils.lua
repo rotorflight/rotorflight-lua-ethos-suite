@@ -47,31 +47,26 @@ function utils.file_exists(name)
     end
 end
 
-function utils.playFile(pkg,file)
+function utils.playFile(pkg, file)
+    -- Get and clean audio voice path
+    local av = system.getAudioVoice()
+    av = av:gsub("SD:", ""):gsub("RADIO:", ""):gsub("AUDIO:", ""):gsub("VOICE[1-4]:", "")
 
-        local wavLocale
-        local wavDefault
-        
-        -- fix path
-        local av = system.getAudioVoice()
-        av = string.gsub(av, "SD:", "")
-        av = string.gsub(av, "RADIO:", "")
+    -- Pre-define the base directory paths
+    local baseDir = rfsuite.config.suiteDir
+    local soundPack = rfsuite.config.soundPack
+    local audioPath = soundPack and ("/audio/" .. soundPack) or (av)
 
-        if rfsuite.config.soundPack == nil then  
-                wavLocale = rfsuite.config.suiteDir ..  av .. "/" .. pkg .. "/" .. file
-                wavDefault = rfsuite.config.suiteDir .. "/audio/en/default/" .. pkg .. "/" .. file                    
-        else
-                wavLocale = rfsuite.config.suiteDir .. "/audio/" .. rfsuite.config.soundPack .. "/" .. pkg .. "/" .. file
-                wavDefault = rfsuite.config.suiteDir .. "/audio/en/default/" .. pkg .. "/" .. file        
-        end
-             
-        if rfsuite.utils.file_exists(wavLocale) then
-                --print("Locale: " .. wavLocale)
-                system.playFile(wavLocale)
-        else
-                --print("Default: " .. wavDefault)
-                system.playFile(wavDefault)
-        end        
+    -- Construct file paths
+    local wavLocale = baseDir .. audioPath .. "/" .. pkg .. "/" .. file
+    local wavDefault = baseDir .. "/audio/en/default/" .. pkg .. "/" .. file
+
+    -- Check if locale file exists, else use the default
+    if rfsuite.utils.file_exists(wavLocale) then
+        system.playFile(wavLocale)
+    else
+        system.playFile(wavDefault)
+    end
 end
 
 function utils.playFileCommon(file)
