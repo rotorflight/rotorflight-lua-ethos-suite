@@ -22,7 +22,6 @@ local status = {}
 
 local arg = {...}
 
-local suiteDir = arg[1].suiteDir
 local compile = arg[2]
 
 local environment = system.getVersion()
@@ -272,8 +271,8 @@ function status.create(widget)
     status.initTime = os.clock()
 
     status.gfx_model = lcd.loadBitmap(model.bitmap())
-    status.gfx_heli = lcd.loadBitmap(suiteDir .. "widgets/status/gfx/heli.png")
-    status.gfx_close = lcd.loadBitmap(suiteDir .. "widgets/status/gfx/close.png")
+    status.gfx_heli = lcd.loadBitmap("widgets/status/gfx/heli.png")
+    status.gfx_close = lcd.loadBitmap("widgets/status/gfx/close.png")
     -- status.rssiSensor = status.getRssiSensor()
 
     if tonumber(status.sensorMakeNumber(environment.version)) < 159 then
@@ -3521,7 +3520,7 @@ function status.sensorsMAXMIN(sensors)
             name = string.gsub(model.name(), "%s+", "_")
             name = string.gsub(name, "%W", "_")
 
-            local file = suiteDir .. "widgets/status/logs/" .. name .. ".log"
+            local file = "widgets/status/logs/" .. name .. ".log"
 
             local f = io.open(file, 'w')
             f:write("")
@@ -3690,7 +3689,7 @@ function status.readHistory()
     name = string.gsub(model.name(), "%s+", "_")
     name = string.gsub(name, "%W", "_")
 
-    file = suiteDir .. "widgets/status/logs/" .. name .. ".log"
+    file = "widgets/status/logs/" .. name .. ".log"
     local f = io.open(file, "rb")
 
     if f ~= nil then
