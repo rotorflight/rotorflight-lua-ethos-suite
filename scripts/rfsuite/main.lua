@@ -63,23 +63,22 @@ config.rf2statusKey = "bkshss"                                      -- RF2Status
 
 -- LuaFormatter on
 
-local compile = assert(loadfile("compile.lua"))(config)
 
 -- main
 rfsuite = {}
 rfsuite.config = config
-rfsuite.app = assert(compile.loadScript("app/app.lua"))(config, compile)
-rfsuite.utils = assert(compile.loadScript("lib/utils.lua"))(config, compile)
+rfsuite.app = assert(loadfile("app/app.lua"))(config)
+rfsuite.utils = assert(loadfile("lib/utils.lua"))(config)
 
 
 
 -- tasks
 rfsuite.tasks = {}
-rfsuite.bg = assert(compile.loadScript("tasks/bg.lua"))(config, compile)
+rfsuite.bg = assert(loadfile("tasks/bg.lua"))(config)
 
 -- widgets
-rfsuite.rf2gov = assert(compile.loadScript("widgets/governor/governor.lua"))(config, compile)
-rfsuite.rf2status = assert(compile.loadScript("widgets/status/status.lua"))(config, compile)
+rfsuite.rf2gov = assert(loadfile("widgets/governor/governor.lua"))(config)
+rfsuite.rf2status = assert(loadfile("widgets/status/status.lua"))(config)
 
 -- LuaFormatter off
 

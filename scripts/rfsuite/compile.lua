@@ -72,7 +72,7 @@ local function explode(inputstr, sep)
     return t
 end
 
-function compile.loadScript(script)
+function loadfile(script)
 
 
      if os.mkdir ~= nil and dir_exists("./" , "compiled") == false then
