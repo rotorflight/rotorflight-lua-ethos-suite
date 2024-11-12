@@ -189,7 +189,7 @@ local function openPage(pidx, title, script)
 
             if rfsuite.config.iconSize ~= 0 then
                 if rfsuite.app.gfx_buttons["servos"][pidx] == nil then
-                    rfsuite.app.gfx_buttons["servos"][pidx] = lcd.loadMask(rfsuite.config.suiteDir .. "app/gfx/servos/" .. pvalue.image)
+                    rfsuite.app.gfx_buttons["servos"][pidx] = lcd.loadMask("app/gfx/servos/" .. pvalue.image)
                 end
             else
                 rfsuite.app.gfx_buttons["servos"][pidx] = nil

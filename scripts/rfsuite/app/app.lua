@@ -71,7 +71,7 @@ app.triggers = {}
 app.triggers = triggers
 
 app.ui = {}
-app.ui = assert(compile.loadScript(config.suiteDir .. "app/lib/ui.lua"))(config, compile)
+app.ui = assert(loadfile("app/lib/ui.lua"))(config, compile)
 
 app.sensors = {}
 app.formFields = {}
@@ -978,9 +978,9 @@ function app.create()
     config.ethosRunningVersion = rfsuite.utils.ethosVersion()
 
     rfsuite.config.lcdWidth, rfsuite.config.lcdHeight = rfsuite.utils.getWindowSize()
-    app.radio = assert(compile.loadScript(rfsuite.config.suiteDir .. "app/radios.lua"))().msp
+    app.radio = assert(loadfile("app/radios.lua"))().msp
 
-    app.fieldHelpTxt = assert(compile.loadScript(rfsuite.config.suiteDir .. "app/help/fields.lua"))()
+    app.fieldHelpTxt = assert(loadfile("app/help/fields.lua"))()
 
     app.uiState = app.uiStatus.init
 
