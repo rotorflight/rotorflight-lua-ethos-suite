@@ -153,24 +153,17 @@ function MspQueueController:clear()
 end
 
 local function deepCopy(original)
+
     local copy
     if type(original) == "table" then
         copy = {}
-        -- Only deep copy values, not keys
-        for key, value in next, original, nil do 
-            copy[key] = deepCopy(value)
-        end
-        local mt = getmetatable(original)
-        if mt then
-            setmetatable(copy, deepCopy(mt)) -- Copy the metatable if it exists
-        end
-    else
-
+        for key, value in next, original, nil do copy[deepCopy(key)] = deepCopy(value) end
+        setmetatable(copy, deepCopy(getmetatable(original)))
+    else -- number, string, boolean, etc
         copy = original
     end
     return copy
 end
-
 
 function MspQueueController:add(message)
 
