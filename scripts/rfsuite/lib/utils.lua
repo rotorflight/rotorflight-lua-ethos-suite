@@ -58,8 +58,16 @@ function utils.playFile(pkg, file)
     local audioPath = soundPack and ("/audio/" .. soundPack) or (av)
 
     -- Construct file paths
-    local wavLocale = baseDir .. audioPath .. "/" .. pkg .. "/" .. file
-    local wavDefault = baseDir .. "/audio/en/default/" .. pkg .. "/" .. file
+    local wavLocale
+    local wavDefault
+    
+    if utils.ethosVersionToMinor() < 16 then
+        wavLocale = baseDir .. audioPath .. "/" .. pkg .. "/" .. file
+        wavDefault = baseDir .. "/audio/en/default/" .. pkg .. "/" .. file
+    else
+        wavLocale = audioPath .. "/" .. pkg .. "/" .. file
+        wavDefault = "audio/en/default/" .. pkg .. "/" .. file
+    end
 
     -- Check if locale file exists, else use the default
     if rfsuite.utils.file_exists(wavLocale) then
@@ -71,8 +79,12 @@ end
 
 function utils.playFileCommon(file)
 
-        local wav = rfsuite.config.suiteDir .. "/audio/" .. file
-
+        local wav
+        if utils.ethosVersionToMinor() < 16 then
+            wav = rfsuite.config.suiteDir .. "/audio/" .. file
+        else
+            wav = "audio/" .. file        
+        end
         system.playFile(wav)
       
 end
