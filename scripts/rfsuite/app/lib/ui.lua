@@ -23,7 +23,7 @@ local ui = {}
 
 local arg = {...}
 local config = arg[1]
-local compile = arg[2]
+
 
 function ui.progressDisplay(title, message)
 

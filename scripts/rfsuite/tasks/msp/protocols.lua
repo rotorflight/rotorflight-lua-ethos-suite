@@ -20,7 +20,6 @@
 ]]--
 local arg = {...}
 local config = arg[1]
-local compile = arg[2]
 
 protocol = {}
 

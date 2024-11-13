@@ -21,12 +21,11 @@
 --
 local arg = {...}
 local config = arg[1]
-local compile = arg[2]
 
 local sensors = {}
 
-sensors.elrs = assert(compile.loadScript("tasks/sensors/elrs.lua"))(config, compile)
-sensors.frsky = assert(compile.loadScript("tasks/sensors/frsky.lua"))(config, compile)
+sensors.elrs = assert(loadfile("tasks/sensors/elrs.lua"))(config)
+sensors.frsky = assert(loadfile("tasks/sensors/frsky.lua"))(config)
 
 function sensors.wakeup()
 

@@ -22,7 +22,6 @@ local status = {}
 
 local arg = {...}
 
-local compile = arg[2]
 
 local environment = system.getVersion()
 

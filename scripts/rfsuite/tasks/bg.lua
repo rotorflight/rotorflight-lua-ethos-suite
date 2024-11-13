@@ -23,7 +23,6 @@
 --
 local arg = {...}
 local config = arg[1]
-local compile = arg[2]
 
 -- declare vars
 local bg = {}
@@ -33,10 +32,10 @@ bg.heartbeat = nil
 
 bg.init = false
 -- tasks
-bg.telemetry = assert(compile.loadScript("tasks/telemetry/telemetry.lua"))(config, compile)
-bg.msp = assert(compile.loadScript("tasks/msp/msp.lua"))(config, compile)
-bg.adjfunctions = assert(compile.loadScript("tasks/adjfunctions/adjfunctions.lua"))(config, compile)
-bg.sensors = assert(compile.loadScript("tasks/sensors/sensors.lua"))(config, compile)
+bg.telemetry = assert(loadfile("tasks/telemetry/telemetry.lua"))(config)
+bg.msp = assert(loadfile("tasks/msp/msp.lua"))(config)
+bg.adjfunctions = assert(loadfile("tasks/adjfunctions/adjfunctions.lua"))(config)
+bg.sensors = assert(loadfile("tasks/sensors/sensors.lua"))(config)
 
 rfsuite.rssiSensorChanged = true
 

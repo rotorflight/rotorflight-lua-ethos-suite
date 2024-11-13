@@ -22,7 +22,6 @@
 local arg = {...}
 
 local config = arg[1]
-local compile = arg[2]
 
 local adjfunc = {}
 local firstRun = true
