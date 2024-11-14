@@ -23,6 +23,7 @@ fields[#fields + 1] = {t = "Gain", help = "govTTAGain", inline = 2, label = 3, m
 fields[#fields + 1] = {t = "Limit", help = "govTTALimit", inline = 1, label = 3, min = 0, max = 250, default = 20, unit = "%", vals = {9}}
 
 fields[#fields + 1] = {t = "Max throttle", help = "govMaxThrottle", min = 40, max = 100, default = 100, unit = "%", vals = {13}}
+fields[#fields + 1] = {t = "Min throttle", help = "govMinThrottle", min = 0, max = 100, default = 10, unit = "%", vals = {14}}
 
 local function postLoad(self)
     rfsuite.app.triggers.isReady = true
@@ -51,7 +52,7 @@ return {
     reboot = false,
     refreshOnProfileChange = true,
     eepromWrite = true,
-    simulatorResponse = {208, 7, 100, 10, 125, 5, 20, 0, 20, 10, 40, 100, 100},
+    simulatorResponse = {208, 7, 100, 10, 125, 5, 20, 0, 20, 10, 40, 100, 100, 10},
     minBytes = 13,
     labels = labels,
     fields = fields,
