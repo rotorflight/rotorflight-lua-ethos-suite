@@ -31,7 +31,7 @@ local function getESCDetails()
         command = 217, -- MSP_STATUS
         processReply = function(self, buf)
 
-            if buf[1] == mspSignature then
+            if #buf >=2 and buf[1] == mspSignature then
 
                 escDetails.model = ESC.getEscModel(buf)
                 escDetails.version = ESC.getEscVersion(buf)
