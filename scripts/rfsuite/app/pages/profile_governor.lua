@@ -23,7 +23,10 @@ fields[#fields + 1] = {t = "Gain", help = "govTTAGain", inline = 2, label = 3, m
 fields[#fields + 1] = {t = "Limit", help = "govTTALimit", inline = 1, label = 3, min = 0, max = 250, default = 20, unit = "%", vals = {9}}
 
 fields[#fields + 1] = {t = "Max throttle", help = "govMaxThrottle", min = 40, max = 100, default = 100, unit = "%", vals = {13}}
-fields[#fields + 1] = {t = "Min throttle", help = "govMinThrottle", min = 0, max = 100, default = 10, unit = "%", vals = {14}}
+
+if tonumber(rfsuite.config.apiVersion) >= 12.07 then
+    fields[#fields + 1] = {t = "Min throttle", help = "govMinThrottle", min = 0, max = 100, default = 10, unit = "%", vals = {14}}
+end
 
 local function postLoad(self)
     rfsuite.app.triggers.isReady = true
