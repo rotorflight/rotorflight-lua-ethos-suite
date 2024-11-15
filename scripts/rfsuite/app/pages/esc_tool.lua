@@ -214,6 +214,10 @@ end
 
 local function wakeup()
 
+    if foundESC == false and rfsuite.bg.msp.mspQueue:isProcessed() then
+            getESCDetails()
+    end
+
     -- enable the form
     if foundESC == true and foundESCupdateTag == false then
         foundESCupdateTag = true
