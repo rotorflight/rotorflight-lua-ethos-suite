@@ -310,11 +310,11 @@ function mspSuccess(self)
 
         if queryTime ~= 0 then
             if queryTime > maxQueryTime then
-                maxQueryTime = mspQueryTimeCount
+                maxQueryTime = queryTime
             end
 
             if queryTime < minQueryTime then
-                minQueryTime = mspQueryTimeCount
+                minQueryTime = queryTime
             end
         end
 
