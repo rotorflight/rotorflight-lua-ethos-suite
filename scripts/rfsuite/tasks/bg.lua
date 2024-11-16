@@ -37,6 +37,8 @@ bg.msp = assert(loadfile("tasks/msp/msp.lua"))(config)
 bg.adjfunctions = assert(loadfile("tasks/adjfunctions/adjfunctions.lua"))(config)
 bg.sensors = assert(loadfile("tasks/sensors/sensors.lua"))(config)
 
+local bg.log_queue = {}
+
 rfsuite.rssiSensorChanged = true
 
 local rssiCheckScheduler = os.clock()

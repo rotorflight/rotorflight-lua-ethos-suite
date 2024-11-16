@@ -462,10 +462,10 @@ function utils.log(msg)
 
         if config.logEnableScreen == true then print(msg) end
 
-        local f = io.open("logs/rfsuite.log", 'a')
-        io.write(f, tostring(msg) .. "\n")
-        io.close(f)
-
+        if rfsuite.bg.log_queue ~= nil then
+            table.insert(rfsuite.bg.log_queue, msg)
+        end
+        
     end
 end
 
