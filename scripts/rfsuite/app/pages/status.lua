@@ -72,7 +72,7 @@ local function eraseDataflash()
     local message = {
         command = 72, -- MSP_DATAFLASH_ERASE
         processReply = function(self, buf)
-            local summary = {}
+            summary = {}
         end,
         simulatorResponse = {}
     }
