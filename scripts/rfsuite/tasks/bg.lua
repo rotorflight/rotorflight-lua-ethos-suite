@@ -37,7 +37,8 @@ bg.msp = assert(loadfile("tasks/msp/msp.lua"))(config)
 bg.adjfunctions = assert(loadfile("tasks/adjfunctions/adjfunctions.lua"))(config)
 bg.sensors = assert(loadfile("tasks/sensors/sensors.lua"))(config)
 
-local bg.log_queue = {}
+bg.log_queue = {}
+
 
 rfsuite.rssiSensorChanged = true
 
@@ -45,6 +46,30 @@ local rssiCheckScheduler = os.clock()
 local lastRssiSensorName = nil
 
 bg.wasOn = false
+
+function bg.flush_logs()
+    local max_lines_per_flush = 5
+
+    if #bg.log_queue > 0 and rfsuite.bg.msp.mspQueue:isProcessed() then
+    
+        local f
+            
+        for i = 1, math.min(#bg.log_queue, max_lines_per_flush) do
+            
+            if rfsuite.config.logEnableScreen == true then print(bg.log_queue[1]) end
+            
+            if rfsuite.utils.ethosVersionToMinor() < 16 then
+                f = io.open(config.suiteDir .. "/logs/rfsuite.log", 'a')
+            else
+                f = io.open("logs/rfsuite.log", 'a')
+            end
+            io.write(f, table.remove(bg.log_queue, 1) .. "\n")
+            io.close(f)
+       
+        end
+            
+    end
+end
 
 function bg.active()
 
@@ -100,7 +125,7 @@ function bg.wakeup()
     bg.telemetry.wakeup()
     bg.sensors.wakeup()
     bg.adjfunctions.wakeup()
-
+    bg.flush_logs()
 end
 
 function bg.event(widget, category, value)

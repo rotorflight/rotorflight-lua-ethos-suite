@@ -460,8 +460,6 @@ function utils.log(msg)
 
     if config.logEnable == true then
 
-        if config.logEnableScreen == true then print(msg) end
-
         if rfsuite.bg.log_queue ~= nil then
             table.insert(rfsuite.bg.log_queue, msg)
         end
