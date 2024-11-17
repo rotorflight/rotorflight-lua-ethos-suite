@@ -344,7 +344,7 @@ elrs.RFSensors = {
     -- GPS Coordinates
     [0x1125] = {original = "GPS",  name = "GPS Coord", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decLatLong},
     -- GPS altitude
-    [0x1126] = {original = "GAlt", name = "GPS Altitude", unit = UNIT_METER, prec = 1, min = -10000, max = 10000, dec = decS16},
+    [0x1126] = {original = "GAlt", name = "GPS Altitude", unit = UNIT_METER, prec = 2, min = -10000, max = 10000, dec = decS16},
     -- GPS heading
     [0x1127] = {original = "GHdg", name = "GPS Heading", unit = UNIT_DEGREE, prec = 1, min = -1800, max = 3600, dec = decS16},
     -- GPS ground speed
