@@ -186,15 +186,26 @@ local function decAccel(data, pos)
     return nil, pos
 end
 
+local function convertToCoordinate(value)
+    -- Divide the input by 10^7 to get the correct coordinate
+    local coordinate = value / 10000000
+    
+    return string.format("%.4f", coordinate)
+end
+
 local function decLatLong(data, pos)
     local lat, lon
     lat, pos = decS32(data, pos)
     lon, pos = decS32(data, pos)
-    -- currently ethos does not have the ability to set a custom UNIT type as a gps type.
-    -- this means we end up with a whole number.
-    -- a git request has been submitted - hopefully will get done.
-    setTelemetryValue(0x1125, 0, 0, lat, UNIT_DEGREE, 0, "GPS Latitude", -10000000000, 10000000000)
-    setTelemetryValue(0x112B, 0, 0, lon, UNIT_DEGREE, 0, "GPS Longitude", -10000000000, 10000000000)
+ 
+    lat = convertToCoordinate(lat)
+    lon = convertToCoordinate(lon)
+    
+    lat = lat:gsub("%.", "")
+    lon = lon:gsub("%.", "")
+ 
+    setTelemetryValue(0x1125, 0, 0, lat, UNIT_DEGREE, 4, "GPS Latitude", -10000000000, 10000000000)
+    setTelemetryValue(0x112B, 0, 0, lon, UNIT_DEGREE, 4, "GPS Longitude", -10000000000, 10000000000)
     return nil, pos
 end
 
