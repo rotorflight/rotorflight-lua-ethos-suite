@@ -59,6 +59,7 @@ return {
     govTTALimit = {t = "TTA max headspeed increase over full headspeed."},
 
     govMaxThrottle = {t = "Maximum output throttle the governor is allowed to use."},
+    govMinThrottle = {t = "Minimum output throttle the governor is allowed to use."},
 
     --
     -- accelerometer.lua
