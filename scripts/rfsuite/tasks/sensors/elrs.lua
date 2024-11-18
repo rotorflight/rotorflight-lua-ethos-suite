@@ -415,6 +415,10 @@ elrs.telemetryFrameCount = 0
 function elrs.crossfirePop()
 
     if (CRSF_PAUSE_TELEMETRY == true or rfsuite.app.triggers.mspBusy == true) then
+        local module = model.getModule(rfsuite.rssiSensor:module())
+        if module ~= nil and module.muteSensorLost ~= nil then
+            module:muteSensorLost(5.0)
+        end    
         return false
     else
 

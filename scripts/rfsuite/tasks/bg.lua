@@ -23,6 +23,7 @@
 --
 local arg = {...}
 local config = arg[1]
+local currentRssiSensor
 
 -- declare vars
 local bg = {}
@@ -101,7 +102,7 @@ function bg.wakeup()
     -- doing this is heavy - lets run it every few seconds only
     local now = os.clock()
     if rssiCheckScheduler ~= nil and (now - rssiCheckScheduler) >= 2 then
-        local currentRssiSensor = rfsuite.utils.getRssiSensor()
+        currentRssiSensor = rfsuite.utils.getRssiSensor()
 
         if currentRssiSensor ~= nil then
 
@@ -112,13 +113,17 @@ function bg.wakeup()
             end
 
             lastRssiSensorName = currentRssiSensor.name
-            rfsuite.rssiSensor = currentRssiSensor.sensor
+            
         else
             rfsuite.rssiSensorChanged = false
         end
         rssiCheckScheduler = now
     end
     if system:getVersion().simulation == true then rfsuite.rssiSensorChanged = false end
+
+    if currentRssiSensor ~= nil then
+        rfsuite.rssiSensor = currentRssiSensor.sensor
+    end    
 
     -- high priority and must alway run regardless of tlm state
     bg.msp.wakeup()
