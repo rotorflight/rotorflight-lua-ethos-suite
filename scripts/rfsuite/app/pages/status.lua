@@ -72,7 +72,14 @@ local function eraseDataflash()
     local message = {
         command = 72, -- MSP_DATAFLASH_ERASE
         processReply = function(self, buf)
-            local summary = {}
+
+            summary = {}
+            
+            -- blank out vars so that we actually are aware that it updated
+            rfsuite.app.formFields[1]:value("")
+            rfsuite.app.formFields[2]:value("")
+            rfsuite.app.formFields[3]:value("")
+            rfsuite.app.formFields[4]:value("")
         end,
         simulatorResponse = {}
     }

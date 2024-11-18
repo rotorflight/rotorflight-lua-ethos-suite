@@ -186,13 +186,26 @@ local function decAccel(data, pos)
     return nil, pos
 end
 
+local function convertToCoordinate(value)
+    -- Divide the input by 10^7 to get the correct coordinate
+    local coordinate = value / 10000000
+    
+    return string.format("%.4f", coordinate)
+end
+
 local function decLatLong(data, pos)
     local lat, lon
     lat, pos = decS32(data, pos)
     lon, pos = decS32(data, pos)
-    setTelemetryValue(0x1125, 0, 0, 0, UNIT_GPS, 0, "GPS")
-    setTelemetryValue(0x1125, 0, 0, lat, UNIT_GPS_LATITUDE)
-    setTelemetryValue(0x1125, 0, 0, lon, UNIT_GPS_LONGITUDE)
+ 
+    lat = convertToCoordinate(lat)
+    lon = convertToCoordinate(lon)
+    
+    lat = lat:gsub("%.", "")
+    lon = lon:gsub("%.", "")
+ 
+    setTelemetryValue(0x1125, 0, 0, lat, UNIT_DEGREE, 4, "GPS Latitude", -10000000000, 10000000000)
+    setTelemetryValue(0x112B, 0, 0, lon, UNIT_DEGREE, 4, "GPS Longitude", -10000000000, 10000000000)
     return nil, pos
 end
 
@@ -344,7 +357,7 @@ elrs.RFSensors = {
     -- GPS Coordinates
     [0x1125] = {original = "GPS",  name = "GPS Coord", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decLatLong},
     -- GPS altitude
-    [0x1126] = {original = "GAlt", name = "GPS Altitude", unit = UNIT_METER, prec = 1, min = -10000, max = 10000, dec = decS16},
+    [0x1126] = {original = "GAlt", name = "GPS Altitude", unit = UNIT_METER, prec = 2, min = -100000000, max = 100000000, dec = decS16},
     -- GPS heading
     [0x1127] = {original = "GHdg", name = "GPS Heading", unit = UNIT_DEGREE, prec = 1, min = -1800, max = 3600, dec = decS16},
     -- GPS ground speed

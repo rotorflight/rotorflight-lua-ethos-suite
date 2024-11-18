@@ -14,6 +14,9 @@ local doNextMsp = true
 
 local mspSpeedTestStats
 
+local maxQueryTime = 0
+local minQueryTime = 1000
+
 local function resetStats()
     getMSPCount = 0
     mspQueryTimeCount = 0
@@ -76,6 +79,8 @@ local function getMSP()
     end
 
     local avgQueryTime = rfsuite.utils.round(mspQueryTimeCount / mspSpeedTestStats['total'], 2) .. "s"
+
+    
 end
 
 local function updateStats()
@@ -91,6 +96,9 @@ local function updateStats()
     fields['timeouts']:value(tostring(mspSpeedTestStats['timeouts']))
 
     fields['checksum']:value(tostring(mspSpeedTestStats['checksum']))
+    
+    fields['mintime']:value(tostring(minQueryTime) .. "s")
+    fields['maxtime']:value(tostring(maxQueryTime) .. "s")
 
     if (mspSpeedTestStats['success'] == mspSpeedTestStats['total'] - 1) and mspSpeedTestStats['timeouts'] == 0 then
         fields['success']:value(tostring(mspSpeedTestStats['success']))
@@ -100,6 +108,9 @@ local function updateStats()
 
     local avgQueryTime = rfsuite.utils.round(mspQueryTimeCount / mspSpeedTestStats['total'], 2) .. "s"
     fields['time']:value(tostring(avgQueryTime))
+
+
+
 
 end
 
@@ -278,6 +289,12 @@ local function openPage(pidx, title, script)
     line['checksum'] = form.addLine("Checksum errors")
     fields['checksum'] = form.addStaticText(line['checksum'], posText, "-")
 
+    line['mintime'] = form.addLine("Minimum query time")
+    fields['mintime'] = form.addStaticText(line['mintime'], posText, "-")
+
+    line['maxtime'] = form.addLine("Maximum query time")
+    fields['maxtime'] = form.addStaticText(line['maxtime'], posText, "-")
+
     line['time'] = form.addLine("Average query time")
     fields['time'] = form.addStaticText(line['time'], posText, "-")
 
@@ -288,6 +305,20 @@ function mspSuccess(self)
     if testLoader then
         mspQueryTimeCount = mspQueryTimeCount + os.clock() - mspQueryStartTime
         mspSpeedTestStats['success'] = mspSpeedTestStats['success'] + 1
+
+        local queryTime = os.clock() - mspQueryStartTime
+
+        if queryTime ~= 0 then
+            if queryTime > maxQueryTime then
+                maxQueryTime = queryTime
+            end
+
+            if queryTime < minQueryTime then
+                minQueryTime = queryTime
+            end
+        end
+
+        
     end
 end
 
