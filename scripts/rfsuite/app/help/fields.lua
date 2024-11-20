@@ -142,6 +142,17 @@ return {
     gyroDynamicNotchCount = {t = "Without RPM filters, 4-6 is recommended. With the RPM filters, 2-4 is recommended."},
     gyroDynamicNotchQ = {t = "Values between 2 and 4 recommended. Lower than 2 will increase filter delay and may degrade flight performance."},
     gyroDynamicNotchMinHz = {t = "Lowest incoming noise frequency to be filtered. Should be slightly below lowest main rotor fundamental, but no less than 20Hz."},
-    gyroDynamicNotchMaxHz = {t = "Highest incoming noise frequency to be filtered. Should be 10-20% above highest tail rotor fundamental."}
+    gyroDynamicNotchMaxHz = {t = "Highest incoming noise frequency to be filtered. Should be 10-20% above highest tail rotor fundamental."},
 
+    --
+    -- motors.lua
+    --
+    motorMinThrottle = {t = "This PWM value is sent to the ESC/Servo at low throttle"},
+    motorMaxThrottle = {t = "This PWM value is sent to the ESC/Servo at full throttle"},
+    motorMinCommand = {t = "This PWM value is sent when the motor is stopped"},
+    motorPollCount = {t = "The number of magnets on the motor bell."},
+    motorGearRatioPinion = {t = "Motor Pinion Gear Tooth Count"},
+    motorGearRatioMain = {t = "Main Gear Tooth Count"},
+    motorGearRatioTailRear = {t = "Tail Gear Tooth Count"},
+    motorGearRatioTailFront = {t = "Autorotation Gear Tooth Count"}    
 }
