@@ -29,13 +29,13 @@ local function postLoad(self)
 end
 
 return {
-    read = 142, -- msp_GOVERNOR_CONFIG
-    write = 143, -- msp_SET_GOVERNOR_CONFIG
-    title = "Governor",
+    read = 131, -- msp_GOVERNOR_CONFIG
+    write = 222, -- msp_SET_GOVERNOR_CONFIG
+    title = "Motors",
     reboot = true,
-    simulatorResponse = {3, 100, 0, 100, 0, 20, 0, 20, 0, 30, 0, 10, 0, 0, 0, 0, 0, 50, 0, 10, 5, 10, 0, 10},
+    simulatorResponse = {46, 4, 208, 7, 232, 3, 1, 8, 0, 0, 250, 0, 1, 8, 8, 8, 8, 100, 100, 100, 100, 1, 0, 1, 0, 1, 0, 1, 0},
     eepromWrite = true,
-    minBytes = 24,
+    minBytes = 29,
     labels = labels,
     fields = fields,
     postLoad = postLoad
