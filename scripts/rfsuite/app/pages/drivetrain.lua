@@ -35,8 +35,8 @@ local function preSavePayload(payload)
             end
             
     end
-
-     
+    newPayload[13] = payload[8]
+    
     return newPayload
 
 end
