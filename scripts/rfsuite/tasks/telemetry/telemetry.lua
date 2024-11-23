@@ -38,6 +38,7 @@ local telemetryState = false
 
 local sensorTable = {}
 sensorTable["rssi"] = {sport = rfsuite.utils.getRssiSensor(), ccrsf = rfsuite.utils.getRssiSensor(), rfsuite.utils.getRssiSensor()}
+sensorTable["armflags"] = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5462}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1202}, lcrsf = nil}
 sensorTable["voltage"] = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0210}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1011}, lcrsf = "Rx Batt"}
 sensorTable["rpm"] = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0500}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10C0}, lcrsf = "GPS Alt"}
 sensorTable["current"] = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0200}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1012}, lcrsf = "Rx Curr"}
@@ -51,6 +52,10 @@ sensorTable["adjF"] = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x
 sensorTable["adjV"] = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5111}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1222}, lcrsf = nil}
 sensorTable["pidProfile"] = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5471}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1211}, lcrsf = nil}
 sensorTable["rateProfile"] = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5472}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1212}, lcrsf = nil}
+sensorTable["roll"] = {sport = {category=CATEGORY_ANALOG, member=ANALOG_STICK_AILERON}, crsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_AILERON}, lcrsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_AILERON}}
+sensorTable["pitch"] = {sport = {category=CATEGORY_ANALOG, member=ANALOG_STICK_ELEVATOR}, crsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_ELEVATOR}, lcrsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_ELEVATOR}}
+sensorTable["yaw"] = {sport = {category=CATEGORY_ANALOG, member=ANALOG_STICK_RUDDER}, crsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_RUDDER}, lcrsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_RUDDER}}
+sensorTable["collective"] = {sport = {category=CATEGORY_ANALOG, member=ANALOG_STICK_THROTTLE}, crsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_THROTTLE}, lcrsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_THROTTLE}}
 
 local tlm = system.getSource({category = CATEGORY_SYSTEM_EVENT, member = TELEMETRY_ACTIVE, options = nil})
 

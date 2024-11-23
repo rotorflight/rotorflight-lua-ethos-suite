@@ -36,6 +36,7 @@ bg.telemetry = assert(loadfile("tasks/telemetry/telemetry.lua"))(config)
 bg.msp = assert(loadfile("tasks/msp/msp.lua"))(config)
 bg.adjfunctions = assert(loadfile("tasks/adjfunctions/adjfunctions.lua"))(config)
 bg.sensors = assert(loadfile("tasks/sensors/sensors.lua"))(config)
+bg.logging = assert(loadfile("tasks/logging/logging.lua"))(config)
 
 bg.log_queue = {}
 
@@ -125,7 +126,8 @@ function bg.wakeup()
     bg.telemetry.wakeup()
     bg.sensors.wakeup()
     bg.adjfunctions.wakeup()
-    bg.flush_logs()
+    bg.logging.wakeup()
+    bg.flush_logs() 
 end
 
 function bg.event(widget, category, value)
