@@ -24,7 +24,7 @@ local config = arg[1]
 
 local logging = {}
 local logdir
-local logInterval = 0.5  -- default is 0.5
+local logInterval = 1  -- default is 1
 local logRateLimit
 local logFileName
 local logRateLimit = os.clock()
