@@ -9,26 +9,21 @@ fields[#fields + 1] = {t = "", help = "profilesPitchFFCollective", inline = 1, l
 
 -- main rotor settings
 labels[#labels + 1] = {t = "Cyclic Cross coupling", label = "cycliccc1", inline_size = 40.15}
-fields[#fields + 1] = {t = "Gain", help = "profilesCyclicCrossCouplingGain", inline = 1, label = "cycliccc1", line = false, min = 0, max = 250, default = 25, vals = {34}}
+if tonumber(rfsuite.config.apiVersion) >= 12.07 then
+    fields[#fields + 1] = {t = "Gain", help = "profilesCyclicCrossCouplingGain", inline = 1, label = "cycliccc1", line = false, min = 0, max = 250, default = 50, vals = {34}}
+else
+    fields[#fields + 1] = {t = "Gain", help = "profilesCyclicCrossCouplingGain", inline = 1, label = "cycliccc1", line = false, min = 0, max = 250, default = 25, vals = {34}}
+end
 
 labels[#labels + 1] = {t = "", label = "cycliccc2", inline_size = 40.15}
 fields[#fields + 1] = {t = "Ratio", help = "profilesCyclicCrossCouplingRatio", inline = 1, label = "cycliccc2", line = false, min = 0, max = 200, default = 0, unit = "%", vals = {35}}
 
 labels[#labels + 1] = {t = "", label = "cycliccc3", inline_size = 40.15}
-fields[#fields + 1] = {
-    t = "Cutoff",
-    help = "profilesCyclicCrossCouplingCutoff",
-    scale = 10,
-    decimals = 1,
-    inline = 1,
-    label = "cycliccc3",
-    line = true,
-    min = 1,
-    max = 250,
-    default = 15,
-    unit = "Hz",
-    vals = {36}
-}
+if tonumber(rfsuite.config.apiVersion) >= 12.07 then
+    fields[#fields + 1] = { t = "Cutoff", help = "profilesCyclicCrossCouplingCutoff", scale = 10, decimals = 1, inline = 1, label = "cycliccc3", line = true, min = 1, max = 250, default = 2.5, unit = "Hz", vals = {36} }
+else
+    fields[#fields + 1] = { t = "Cutoff", help = "profilesCyclicCrossCouplingCutoff", inline = 1, label = "cycliccc3", line = true, min = 1, max = 250, default = 15, unit = "Hz", vals = {36} }
+end
 
 local function postLoad(self)
     rfsuite.app.triggers.isReady = true
