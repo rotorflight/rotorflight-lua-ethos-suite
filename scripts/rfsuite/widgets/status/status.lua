@@ -3146,6 +3146,7 @@ function status.getSensors()
                 current = currentSOURCE:value()
                 if currentSOURCEESC1 ~= nil then
                         currentesc1 = currentSOURCEESC1:value()
+                        if currentesc1 == nil then currentesc1 = 0 end
                 else
                         currentesc1 = 0
                 end
