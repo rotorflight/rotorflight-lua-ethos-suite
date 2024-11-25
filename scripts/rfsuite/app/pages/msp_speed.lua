@@ -27,34 +27,15 @@ end
 resetStats()
 
 local RateLimit = os.clock()
-local Rate = 0.25 -- how many times per second we can call msp 
+local Rate = 0.5 -- how many times per second we can call msp 
 
-local function getMSPPidBandwidth()
-    local message = {
-        command = 94, -- MSP_STATUS
-        processReply = function(self, buf)
-            doNextMsp = true
-        end,
-        simulatorResponse = {3, 25, 250, 0, 12, 0, 1, 30, 30, 45, 50, 50, 100, 15, 15, 20, 2, 10, 10, 15, 100, 100, 5, 0, 30, 0, 25, 0, 40, 55, 40, 75, 20, 25, 0, 15, 45, 45, 15, 15, 20}
-    }
-    rfsuite.bg.msp.mspQueue:add(message)
-end
-
-local function getMSPServos()
-    local message = {
-        command = 120, -- MSP_STATUS
-        processReply = function(self, buf)
-            doNextMsp = true
-        end,
-        simulatorResponse = {
-            4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0,
-            120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0
-        }
-    }
-    rfsuite.bg.msp.mspQueue:add(message)
-end
 
 local function getMSPPids()
+
+end
+
+local function getMSP()
+
     local message = {
         command = 112, -- MSP_STATUS
         processReply = function(self, buf)
@@ -63,20 +44,6 @@ local function getMSPPids()
         simulatorResponse = {70, 0, 225, 0, 90, 0, 120, 0, 100, 0, 200, 0, 70, 0, 120, 0, 100, 0, 125, 0, 83, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 0, 25, 0}
     }
     rfsuite.bg.msp.mspQueue:add(message)
-end
-
-local function getMSP()
-    -- three diff msp queries. 
-    if getMSPCount == 0 then
-        getMSPPidBandwidth()
-        getMSPCount = 1
-    elseif getMSPCount == 1 then
-        getMSPServos()
-        getMSPCount = 2
-    else
-        getMSPPids()
-        getMSPCount = 0
-    end
 
     local avgQueryTime = rfsuite.utils.round(mspQueryTimeCount / mspSpeedTestStats['total'], 2) .. "s"
 
