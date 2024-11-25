@@ -1,0 +1,179 @@
+-- create 16 servos in disabled state
+
+local triggerOverRide = false
+local triggerOverRideAll = false
+local lastServoCountTime = os.clock()
+
+local function openPage(pidx, title, script)
+
+    rfsuite.bg.msp.protocol.mspIntervalOveride = nil
+
+
+    rfsuite.app.triggers.isReady = false
+    rfsuite.app.uiState = rfsuite.app.uiStatus.pages
+
+    form.clear()
+
+    rfsuite.app.lastIdx = idx
+    rfsuite.app.lastTitle = title
+    rfsuite.app.lastScript = script
+
+    -- size of buttons
+    if rfsuite.config.iconSize == nil or rfsuite.config.iconSize == "" then
+        rfsuite.config.iconSize = 1
+    else
+        rfsuite.config.iconSize = tonumber(rfsuite.config.iconSize)
+    end
+
+    local w, h = rfsuite.utils.getWindowSize()
+    local windowWidth = w
+    local windowHeight = h
+    local padding = rfsuite.app.radio.buttonPadding
+
+    local sc
+    local panel
+
+    buttonW = 100
+    local x = windowWidth - buttonW - 10
+
+    rfsuite.app.ui.fieldHeader("SBUS Output")
+
+    local buttonW
+    local buttonH
+    local padding
+    local numPerRow
+
+    -- TEXT ICONS
+    -- TEXT ICONS
+    if rfsuite.config.iconSize == 0 then
+        padding = rfsuite.app.radio.buttonPaddingSmall
+        buttonW = (rfsuite.config.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
+        buttonH = rfsuite.app.radio.navbuttonHeight
+        numPerRow = rfsuite.app.radio.buttonsPerRow
+    end
+    -- SMALL ICONS
+    if rfsuite.config.iconSize == 1 then
+
+        padding = rfsuite.app.radio.buttonPaddingSmall
+        buttonW = rfsuite.app.radio.buttonWidthSmall
+        buttonH = rfsuite.app.radio.buttonHeightSmall
+        numPerRow = rfsuite.app.radio.buttonsPerRowSmall
+    end
+    -- LARGE ICONS
+    if rfsuite.config.iconSize == 2 then
+
+        padding = rfsuite.app.radio.buttonPadding
+        buttonW = rfsuite.app.radio.buttonWidth
+        buttonH = rfsuite.app.radio.buttonHeight
+        numPerRow = rfsuite.app.radio.buttonsPerRow
+    end
+
+    local lc = 0
+    local bx = 0
+
+    if rfsuite.app.gfx_buttons["sbuschannel"] == nil then rfsuite.app.gfx_buttons["sbuschannel"] = {} end
+    if rfsuite.app.menuLastSelected["sbuschannel"] == nil then rfsuite.app.menuLastSelected["sbuschannel"] = 1 end
+
+    if rfsuite.app.gfx_buttons["sbuschannel"] == nil then rfsuite.app.gfx_buttons["sbuschannel"] = {} end
+    if rfsuite.app.menuLastSelected["sbuschannel"] == nil then rfsuite.app.menuLastSelected["sbuschannel"] = 1 end
+
+    for pidx = 1, 16 do
+
+
+        if lc == 0 then
+            if rfsuite.config.iconSize == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
+            if rfsuite.config.iconSize == 1 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
+            if rfsuite.config.iconSize == 2 then y = form.height() + rfsuite.app.radio.buttonPadding end
+        end
+
+        if lc >= 0 then bx = (buttonW + padding) * lc end
+
+        if rfsuite.config.iconSize ~= 0 then
+            if rfsuite.app.gfx_buttons["sbuschannel"][pidx] == nil then
+                rfsuite.app.gfx_buttons["sbuschannel"][pidx] = lcd.loadMask("app/gfx/sbus/ch" .. tostring(pidx) .. ".png")
+            end
+        else
+            rfsuite.app.gfx_buttons["sbuschannel"][pidx] = nil
+        end
+
+        rfsuite.app.formFields[pidx] = form.addButton(nil, {x = bx, y = y, w = buttonW, h = buttonH}, {
+            text = "CHANNEL " .. tostring(pidx),
+            icon = rfsuite.app.gfx_buttons["sbuschannel"][pidx],
+            options = FONT_S,
+            paint = function()
+            end,
+            press = function()
+                rfsuite.app.menuLastSelected["sbuschannel"] = pidx
+                rfsuite.currentServoIndex = pidx
+                rfsuite.app.ui.progressDisplay()
+                rfsuite.app.ui.openPage(pidx - 1, "Channel " .. tostring(pidx), "sbusout_tool.lua")
+            end
+        })
+
+
+        if rfsuite.app.menuLastSelected["sbuschannel"] == pidx then rfsuite.app.formFields[pidx]:focus() end
+
+        lc = lc + 1
+
+        if lc == numPerRow then lc = 0 end
+
+    end
+
+    rfsuite.app.triggers.closeProgressLoader = true
+
+    return
+end
+
+local function openPageInit(pidx, title, script)
+
+
+        
+
+        openPage(pidx, title, script)
+
+        --we will query serial port and disable if needs be
+
+        --[[
+        local message = {
+            command = 152, -- MSP_SERVO_OVERIDE
+            processReply = function(self, buf)
+                if #buf >= 110 then
+                    --openPage(pidx, title, script)
+                end
+            end,
+            simulatorResponse = {209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7}
+        }
+        rfsuite.bg.msp.mspQueue:add(message)
+        ]]--
+
+    
+
+end
+
+local function event(widget, category, value, x, y)
+
+    if category == 5 or value == 35 then
+        rfsuite.app.Page.onNavMenu(self)
+        return true
+    end
+
+    return false
+end
+
+
+
+local function wakeup()
+
+
+end
+
+
+
+
+return {
+    title = "Sbus Out",
+    event = event,
+    openPage = openPageInit,
+    wakeup = wakeup,
+    navButtons = {menu = true, save = false, reload = false, tool = false, help = true}
+}
