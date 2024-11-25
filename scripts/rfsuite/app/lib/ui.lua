@@ -151,11 +151,37 @@ function ui.progressDisplayNoLinkValue(value, message)
 end
 
 function ui.disableAllFields()
-
+        for i in ipairs(rfsuite.app.formFields) do
+                rfsuite.app.formFields[i]:enable(false)
+        end
 end
 
 function ui.enableAllFields()
+        for i in ipairs(rfsuite.app.formFields) do
+                rfsuite.app.formFields[i]:enable(true)
+        end
+end
 
+function ui.disableAllNavigationFields()
+    for i,v in pairs(rfsuite.app.formNavigationFields) do
+        if x ~= v then
+            rfsuite.app.formNavigationFields[i]:enable(false)
+        end    
+    end
+end
+
+function ui.enableAllNavigationFields()
+    for i,v in pairs(rfsuite.app.formNavigationFields) do
+        if x ~= v then
+            rfsuite.app.formNavigationFields[i]:enable(true)
+        end    
+    end
+end
+
+function ui.enableNavigationField(x)
+    if rfsuite.app.formNavigationFields[x] ~= nil then
+           rfsuite.app.formNavigationFields[x]:enable(true) 
+    end
 end
 
 function ui.openMainMenu()
@@ -345,6 +371,9 @@ function ui.fieldChoice(i)
     rfsuite.app.formFields[i] = form.addChoiceField(rfsuite.app.formLines[formLineCnt], posField, rfsuite.utils.convertPageValueTable(f.table, f.tableIdxInc), function()
         if rfsuite.app.Page.fields == nil or rfsuite.app.Page.fields[i] == nil then 
             ui.disableAllFields()
+            ui.disableAllNavigationFields()
+            ui.enableNavigationField('menu')
+            ui.enableNavigationField('reload')
             return nil
         end
         return rfsuite.utils.getFieldValue(rfsuite.app.Page.fields[i])
@@ -411,6 +440,9 @@ function ui.fieldNumber(i)
     rfsuite.app.formFields[i] = form.addNumberField(rfsuite.app.formLines[formLineCnt], posField, minValue, maxValue, function()
         if rfsuite.app.Page.fields == nil or rfsuite.app.Page.fields[i] == nil then 
             ui.disableAllFields()
+            ui.disableAllNavigationFields()
+            ui.enableNavigationField('menu')
+            ui.enableNavigationField('reload')        
             return nil
         end
         return rfsuite.utils.getFieldValue(rfsuite.app.Page.fields[i])
@@ -551,6 +583,9 @@ function ui.fieldText(i)
     rfsuite.app.formFields[i] = form.addTextField(rfsuite.app.formLines[formLineCnt], posField, function()
         if rfsuite.app.Page.fields == nil or rfsuite.app.Page.fields[i] == nil then 
             ui.disableAllFields()
+            ui.disableAllNavigationFields()
+            ui.enableNavigationField('menu')
+            ui.enableNavigationField('reload')     
             return nil
         end    
         return rfsuite.utils.getFieldValue(rfsuite.app.Page.fields[i])
