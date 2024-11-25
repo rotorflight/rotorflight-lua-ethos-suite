@@ -184,6 +184,12 @@ function ui.enableNavigationField(x)
     end
 end
 
+function ui.disableNavigationField(x)
+    if rfsuite.app.formNavigationFields[x] ~= nil then
+           rfsuite.app.formNavigationFields[x]:enable(false) 
+    end
+end
+
 function ui.openMainMenu()
 
     local MainMenu = assert(loadfile("app/pages.lua"))()
@@ -373,7 +379,6 @@ function ui.fieldChoice(i)
             ui.disableAllFields()
             ui.disableAllNavigationFields()
             ui.enableNavigationField('menu')
-            ui.enableNavigationField('reload')
             return nil
         end
         return rfsuite.utils.getFieldValue(rfsuite.app.Page.fields[i])
@@ -441,8 +446,7 @@ function ui.fieldNumber(i)
         if rfsuite.app.Page.fields == nil or rfsuite.app.Page.fields[i] == nil then 
             ui.disableAllFields()
             ui.disableAllNavigationFields()
-            ui.enableNavigationField('menu')
-            ui.enableNavigationField('reload')        
+            ui.enableNavigationField('menu')      
             return nil
         end
         return rfsuite.utils.getFieldValue(rfsuite.app.Page.fields[i])
@@ -584,8 +588,7 @@ function ui.fieldText(i)
         if rfsuite.app.Page.fields == nil or rfsuite.app.Page.fields[i] == nil then 
             ui.disableAllFields()
             ui.disableAllNavigationFields()
-            ui.enableNavigationField('menu')
-            ui.enableNavigationField('reload')     
+            ui.enableNavigationField('menu')   
             return nil
         end    
         return rfsuite.utils.getFieldValue(rfsuite.app.Page.fields[i])
