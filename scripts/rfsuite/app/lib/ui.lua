@@ -150,6 +150,14 @@ function ui.progressDisplayNoLinkValue(value, message)
 
 end
 
+function ui.disableAllFields()
+
+end
+
+function ui.enableAllFields()
+
+end
+
 function ui.openMainMenu()
 
     local MainMenu = assert(loadfile("app/pages.lua"))()
@@ -335,9 +343,11 @@ function ui.fieldChoice(i)
     end
 
     rfsuite.app.formFields[i] = form.addChoiceField(rfsuite.app.formLines[formLineCnt], posField, rfsuite.utils.convertPageValueTable(f.table, f.tableIdxInc), function()
-        local value = rfsuite.utils.getFieldValue(rfsuite.app.Page.fields[i])
-
-        return value
+        if rfsuite.app.Page.fields == nil or rfsuite.app.Page.fields[i] == nil then 
+            ui.disableAllFields()
+            return nil
+        end
+        return rfsuite.utils.getFieldValue(rfsuite.app.Page.fields[i])
     end, function(value)
         -- we do this hook to allow rates to be reset
         if f.postEdit then f.postEdit(rfsuite.app.Page, value) end
@@ -399,10 +409,11 @@ function ui.fieldNumber(i)
     if minValue == nil then minValue = 0 end
     if maxValue == nil then maxValue = 0 end
     rfsuite.app.formFields[i] = form.addNumberField(rfsuite.app.formLines[formLineCnt], posField, minValue, maxValue, function()
-
-        local value = rfsuite.utils.getFieldValue(rfsuite.app.Page.fields[i])
-
-        return value
+        if rfsuite.app.Page.fields == nil or rfsuite.app.Page.fields[i] == nil then 
+            ui.disableAllFields()
+            return nil
+        end
+        return rfsuite.utils.getFieldValue(rfsuite.app.Page.fields[i])
     end, function(value)
         if f.postEdit then f.postEdit(rfsuite.app.Page) end
         if f.onChange then f.onChange(rfsuite.app.Page) end
@@ -441,6 +452,9 @@ function ui.fieldNumber(i)
     end
 
 end
+
+
+
 
 function ui.fieldStaticText(i)
 
@@ -535,8 +549,11 @@ function ui.fieldText(i)
     end
 
     rfsuite.app.formFields[i] = form.addTextField(rfsuite.app.formLines[formLineCnt], posField, function()
-        local value = rfsuite.utils.getFieldValue(rfsuite.app.Page.fields[i])
-        return value
+        if rfsuite.app.Page.fields == nil or rfsuite.app.Page.fields[i] == nil then 
+            ui.disableAllFields()
+            return nil
+        end    
+        return rfsuite.utils.getFieldValue(rfsuite.app.Page.fields[i])
     end, function(value)
         if f.postEdit then f.postEdit(rfsuite.app.Page) end
         if f.onChange then f.onChange(rfsuite.app.Page) end
