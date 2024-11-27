@@ -153,7 +153,7 @@ return {
     motorGearRatioPinion = {t = "Motor Pinion Gear Tooth Count"},
     motorGearRatioMain = {t = "Main Gear Tooth Count"},
     motorGearRatioTailRear = {t = "Tail Gear Tooth Count"},
-    motorGearRatioTailFront = {t = "Autorotation Gear Tooth Count"}    
+    motorGearRatioTailFront = {t = "Autorotation Gear Tooth Count"},
 
     --
     -- radio_config.lua
@@ -164,5 +164,5 @@ return {
     radioMinThrottle = {t = "Minimum throttle (0% throttle output) expected from radio, in microseconds (us)."},
     radioMaxThrottle = {t = "Maximum throttle (100% throttle output) expected from radio, in microseconds (us)."},
     radioCycDeadband = {t = "Deadband for cyclic control in microseconds (us)."},
-    radioYawDeadband = {t = "Deadband for yaw control in microseconds (us)."},
+    radioYawDeadband = {t = "Deadband for yaw control in microseconds (us)."}
 }
