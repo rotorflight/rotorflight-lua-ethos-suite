@@ -69,7 +69,7 @@ return {
     write = 67, -- MSP_SET_RC_CONFIG
     title = "Radio Config",
     reboot = true,
-    simulatorResponse = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+    simulatorResponse = {220, 5, 254, 1, 232, 3, 242, 3, 208, 7, 4, 4},
     eepromWrite = true,
     minBytes = 12,
     labels = labels,
