@@ -1074,7 +1074,7 @@ function status.getThemeInfo()
 
     -- first one is unsporrted
 
-    if environment.board == "XES" or environment.board == "XE" or environment.board == "X20" or environment.board == "X20S" or environment.board == "X20PRO" or environment.board == "X20PROAW" or
+    if environment.board == "V20" or environment.board == "XES" or environment.board == "XE" or environment.board == "X20" or environment.board == "X20S" or environment.board == "X20PRO" or environment.board == "X20PROAW" or
         environment.board == "X20R" or environment.board == "X20RS" then
         ret = {
             supportedRADIO = true,
