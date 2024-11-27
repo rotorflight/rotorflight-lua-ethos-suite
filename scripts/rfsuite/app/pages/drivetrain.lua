@@ -14,9 +14,9 @@ fields[#fields + 1] = {t = "Front", label = 2, inline=1,  help = "motorGearRatio
 fields[#fields + 1] = {t = "Motor Pole Count", help = "motorPollCount", min = 0, max = 256, default = 8, vals = {14}}
 
 -- question of if below params are put elsewhere?
---fields[#fields + 1] = {t = "0% Throttle PWM Value", help = "motorMinThrottle", min = 50, max = 2250, default = 1070, vals = {1,2}}
---fields[#fields + 1] = {t = "100% Throttle PWM value", help = "motorMaxThrottle", min = 50, max = 2250, default = 1070, vals = {3,4}}
---fields[#fields + 1] = {t = "Motor Stop PWM Value", help = "motorMinCommand", min = 50, max = 2250, default = 1070, vals = {5,6}}
+fields[#fields + 1] = {t = "0% Throttle PWM Value", help = "motorMinThrottle", min = 50, max = 2250, default = 1070, vals = {1,2}}
+fields[#fields + 1] = {t = "100% Throttle PWM value", help = "motorMaxThrottle", min = 50, max = 2250, default = 1070, vals = {3,4}}
+fields[#fields + 1] = {t = "Motor Stop PWM Value", help = "motorMinCommand", min = 50, max = 2250, default = 1070, vals = {5,6}}
 
 
 
