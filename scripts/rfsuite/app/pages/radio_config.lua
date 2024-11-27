@@ -1,7 +1,7 @@
 local labels = {}
 local fields = {}
 
-labels[#labels + 1] = {t = "RC Control", label = 1, inline_size = 14.5}
+labels[#labels + 1] = {t = "Stick", label = 1, inline_size = 14.5}
 fields[#fields + 1] = {t = "Center", label = 1, inline = 2, help = "radioCenter", min = 1400, max = 1600, default = 1500, unit = "us", vals = {1, 2}}
 fields[#fields + 1] = {t = "Deflection", t2 = "Deflect", label = 1, inline = 1, help = "radioDeflection", min = 200, max = 700, default = 510, unit = "us", vals = {3, 4}}
 
