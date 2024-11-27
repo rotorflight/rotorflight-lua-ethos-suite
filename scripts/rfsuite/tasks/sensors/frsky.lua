@@ -18,142 +18,96 @@
  *
 
 ]]--
---
 local arg = {...}
 local config = arg[1]
 
 local frsky = {}
 
--- create
-local createSensorList = {}
-createSensorList[0x5450] = {name = "Governor", unit = UNIT_RAW}
-createSensorList[0x5110] = {name = "Adj. Source", unit = UNIT_RAW}
-createSensorList[0x5111] = {name = "Adj. Value", unit = UNIT_RAW}
-createSensorList[0x5460] = {name = "Model ID", unit = UNIT_RAW}
-createSensorList[0x5471] = {name = "PID Profile", unit = UNIT_RAW}
-createSensorList[0x5472] = {name = "Rate Profile", unit = UNIT_RAW}
-createSensorList[0x5440] = {name = "Throttle %", unit = UNIT_PERCENT}
-createSensorList[0x5250] = {name = "Consumption", unit = UNIT_MILLIAMPERE_HOUR}
-createSensorList[0x5462] = {name = "Arming Flags", unit = UNIT_RAW}
+-- Sensor lists (combined into one table with type markers)
+local sensorLists = {
+    create = {
+        [0x5450] = {name = "Governor", unit = UNIT_RAW},
+        [0x5110] = {name = "Adj. Source", unit = UNIT_RAW},
+        [0x5111] = {name = "Adj. Value", unit = UNIT_RAW},
+        [0x5460] = {name = "Model ID", unit = UNIT_RAW},
+        [0x5471] = {name = "PID Profile", unit = UNIT_RAW},
+        [0x5472] = {name = "Rate Profile", unit = UNIT_RAW},
+        [0x5440] = {name = "Throttle %", unit = UNIT_PERCENT},
+        [0x5250] = {name = "Consumption", unit = UNIT_MILLIAMPERE_HOUR},
+        [0x5462] = {name = "Arming Flags", unit = UNIT_RAW}
+    },
+    drop = {
+        [0x0400] = {name = "Temp1"},
+        [0x0410] = {name = "Temp1"}
+    },
+    rename = {
+        [0x0500] = {name = "Headspeed", onlyifname = "RPM"},
+        [0x0501] = {name = "Tailspeed", onlyifname = "RPM"},
+        [0x0210] = {name = "Voltage", onlyifname = "VFAS"},
+        [0x0200] = {name = "Current", onlyifname = "Current"},
+        [0x0600] = {name = "Charge Level", onlyifname = "Fuel"},
+        [0x0910] = {name = "Cell Voltage", onlyifname = "ADC4"},
+        [0x0900] = {name = "BEC Voltage", onlyifname = "ADC3"},
+        [0x0211] = {name = "ESC Voltage", onlyifname = "VFAS"},
+        [0x0201] = {name = "ESC Current", onlyifname = "Current"},
+        [0x0502] = {name = "ESC RPM", onlyifname = "RPM"},
+        [0x0B70] = {name = "ESC Temp", onlyifname = "ESC temp"},
+        [0x0212] = {name = "ESC2 Voltage", onlyifname = "VFAS"},
+        [0x0202] = {name = "ESC2 Current", onlyifname = "Current"},
+        [0x0503] = {name = "ESC2 RPM", onlyifname = "RPM"},
+        [0x0B71] = {name = "ESC2 Temp", onlyifname = "ESC temp"},
+        [0x0401] = {name = "MCU Temp", onlyifname = "Temp1"},
+        [0x0840] = {name = "Heading", onlyifname = "GPS course"}
+    }
+}
 
--- drop
-local dropSensorList = {}
-dropSensorList[0x0400] = {name = "Temp1"}
-dropSensorList[0x0410] = {name = "Temp1"}
-
--- rename
-local renameSensorList = {}
-renameSensorList[0x0500] = {name = "Headspeed", onlyifname = "RPM"}
-renameSensorList[0x0501] = {name = "Tailspeed", onlyifname = "RPM"}
-
-renameSensorList[0x0210] = {name = "Voltage", onlyifname = "VFAS"}
-renameSensorList[0x0200] = {name = "Current", onlyifname = "Current"}
-renameSensorList[0x0600] = {name = "Charge Level", onlyifname = "Fuel"}
-renameSensorList[0x0910] = {name = "Cell Voltage", onlyifname = "ADC4"}
-renameSensorList[0x0900] = {name = "BEC Voltage", onlyifname = "ADC3"}
-
-renameSensorList[0x0211] = {name = "ESC Voltage", onlyifname = "VFAS"}
-renameSensorList[0x0201] = {name = "ESC Current", onlyifname = "Current"}
-renameSensorList[0x0502] = {name = "ESC RPM", onlyifname = "RPM"}
-renameSensorList[0x0B70] = {name = "ESC Temp", onlyifname = "ESC temp"}
-
-renameSensorList[0x0212] = {name = "ESC2 Voltage", onlyifname = "VFAS"}
-renameSensorList[0x0202] = {name = "ESC2 Current", onlyifname = "Current"}
-renameSensorList[0x0503] = {name = "ESC2 RPM", onlyifname = "RPM"}
-renameSensorList[0x0B71] = {name = "ESC2 Temp", onlyifname = "ESC temp"}
-
-renameSensorList[0x0401] = {name = "MCU Temp", onlyifname = "Temp1"}
-renameSensorList[0x0840] = {name = "Heading", onlyifname = "GPS course"}
-
+-- Cache tables for sensors
 frsky.createSensorCache = {}
 frsky.dropSensorCache = {}
 frsky.renameSensorCache = {}
 
-local function createSensor(physId, primId, appId, frameValue)
-
-    -- check for custom sensors and create them if they dont exist
-    if createSensorList[appId] ~= nil then
-
-        local v = createSensorList[appId]
-
-        if frsky.createSensorCache[appId] == nil then
-
-            frsky.createSensorCache[appId] = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
-
-            if frsky.createSensorCache[appId] == nil then
-
-                print("Creating sensor: " .. v.name)
-
-                frsky.createSensorCache[appId] = model.createSensor()
-                frsky.createSensorCache[appId]:name(v.name)
-                frsky.createSensorCache[appId]:appId(appId)
-                frsky.createSensorCache[appId]:physId(physId)
-                frsky.createSensorCache[appId]:module(rfsuite.rssiSensor:module())
-
-                frsky.createSensorCache[appId]:minimum(min or -2147483647)
-                frsky.createSensorCache[appId]:maximum(max or 2147483647)
-                if v.unit ~= nil then
-                    frsky.createSensorCache[appId]:unit(v.unit)
-                    frsky.createSensorCache[appId]:protocolUnit(v.unit)
-                end
-                if v.minimum ~= nil then frsky.createSensorCache[appId]:minimum(v.minimum) end
-                if v.maximum ~= nil then frsky.createSensorCache[appId]:maximum(v.maximum) end
-
+-- Common function for handling sensor creation, dropping, and renaming
+local function handleSensorAction(sensorList, cacheTable, actionType, physId, primId, appId, frameValue)
+    local sensorData = sensorList[appId]
+    if sensorData and cacheTable[appId] == nil then
+        cacheTable[appId] = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
+        if not cacheTable[appId] then
+            --print(actionType .. " sensor: " .. sensorData.name)
+            if actionType == "Create" then
+                cacheTable[appId] = model.createSensor()
+                cacheTable[appId]:name(sensorData.name)
+                cacheTable[appId]:appId(appId)
+                cacheTable[appId]:physId(physId)
+                cacheTable[appId]:module(rfsuite.rssiSensor:module())
+                cacheTable[appId]:unit(sensorData.unit or UNIT_RAW)
+            elseif cacheTable[appId] ~= nil and actionType == "Drop" then
+                    cacheTable[appId]:drop()
+            elseif cacheTable[appId] ~= nil and actionType == "Rename" and cacheTable[appId]:name() == sensorData.onlyifname then
+                    cacheTable[appId]:name(sensorData.name)
             end
-
         end
     end
+end
 
+-- Sensor processing functions
+local function createSensor(physId, primId, appId, frameValue)
+    handleSensorAction(sensorLists.create, frsky.createSensorCache, "Create", physId, primId, appId, frameValue)
 end
 
 local function dropSensor(physId, primId, appId, frameValue)
-
-    -- check for custom sensors and create them if they dont exist
-    if dropSensorList[appId] ~= nil then
-        local v = dropSensorList[appId]
-
-        if frsky.dropSensorCache[appId] == nil then
-            frsky.dropSensorCache[appId] = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
-
-            if frsky.dropSensorCache[appId] ~= nil then
-                print("Drop sensor: " .. v.name)
-                frsky.dropSensorCache[appId]:drop()
-            end
-
-        end
-
-    end
-
+    handleSensorAction(sensorLists.drop, frsky.dropSensorCache, "Drop", physId, primId, appId, frameValue)
 end
 
 local function renameSensor(physId, primId, appId, frameValue)
-
-    -- check for custom sensors and create them if they dont exist
-    if renameSensorList[appId] ~= nil then
-        local v = renameSensorList[appId]
-
-        if frsky.renameSensorCache[appId] == nil then
-            frsky.renameSensorCache[appId] = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
-
-
-            if frsky.renameSensorCache[appId] ~= nil then
-                if frsky.renameSensorCache[appId]:name() == v.onlyifname then
-                    print("Rename sensor: " .. v.name)
-                    frsky.renameSensorCache[appId]:name(v.name)
-                end
-            end
-
-        end
-
-    end
-
+    handleSensorAction(sensorLists.rename, frsky.renameSensorCache, "Rename", physId, primId, appId, frameValue)
 end
 
 local function telemetryPop()
-    -- Pops a received SPORT packet from the queue. Please note that only packets using a data ID within 0x5000 to 0x50FF (frame ID == 0x10), as well as packets with a frame ID equal 0x32 (regardless of the data ID) will be passed to the LUA telemetry receive queue.
+    
+    if rfsuite.app.triggers.mspBusy then return end
+
     local frame = rfsuite.bg.msp.sensor:popFrame()
     if frame == nil then return false end
-
     if not frame.physId or not frame.primId then return end
 
     createSensor(frame:physId(), frame:primId(), frame:appId(), frame:value())
@@ -162,20 +116,19 @@ local function telemetryPop()
     return true
 end
 
+-- Wakeup function
 function frsky.wakeup()
-
-    -- flush sensor list if we kill the sensors
     if not rfsuite.bg.telemetry.active() or not rfsuite.rssiSensor then
         frsky.createSensorCache = {}
         frsky.renameSensorCache = {}
         frsky.dropSensorCache = {}
     end
 
-    -- if gui or queue is busy.. do not do this!
     if rfsuite.bg and rfsuite.bg.telemetry and rfsuite.bg.telemetry.active() and rfsuite.rssiSensor then
-        if rfsuite.app.guiIsRunning == false and rfsuite.bg.msp.mspQueue:isProcessed() then while telemetryPop() do end end
+        if not rfsuite.app.guiIsRunning and rfsuite.bg.msp.mspQueue:isProcessed() then
+            while telemetryPop() do end
+        end
     end
-
 end
 
 return frsky
