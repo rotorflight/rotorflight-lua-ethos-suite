@@ -28,8 +28,8 @@ local function wakeup()
        
             for i,v in ipairs(minmax) do
                     if i == value then      
-                        rfsuite.app.formFields[2]:setMinimum(10)
-                        rfsuite.app.formFields[3]:setMaximum(20)
+                       -- rfsuite.app.formFields[2]:setMinimum(10)
+                       -- rfsuite.app.formFields[3]:setMaximum(20)
                     end
             end
         

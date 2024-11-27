@@ -1,8 +1,13 @@
 -- create 16 servos in disabled state
 
+
+local SBUS_FUNCTIONMASK = 262144
 local triggerOverRide = false
 local triggerOverRideAll = false
 local lastServoCountTime = os.clock()
+local enableWakeup = false
+local wakeupScheduler = os.clock()
+local validSerialConfig = false
 
 local function openPage(pidx, title, script)
 
@@ -109,6 +114,8 @@ local function openPage(pidx, title, script)
                 rfsuite.app.ui.openPage(pidx - 1, "Channel " .. tostring(pidx), "sbusout_tool.lua")
             end
         })
+        
+        rfsuite.app.formFields[pidx]:enable(false)
 
 
         if rfsuite.app.menuLastSelected["sbuschannel"] == pidx then rfsuite.app.formFields[pidx]:focus() end
@@ -121,34 +128,45 @@ local function openPage(pidx, title, script)
 
     rfsuite.app.triggers.closeProgressLoader = true
 
+    enableWakeup = true
+
     return
 end
 
-local function openPageInit(pidx, title, script)
+local function processSerialConfig(data)
 
-
-        
-
-        openPage(pidx, title, script)
-
-        --we will query serial port and disable if needs be
-
-        --[[
-        local message = {
-            command = 152, -- MSP_SERVO_OVERIDE
-            processReply = function(self, buf)
-                if #buf >= 110 then
-                    --openPage(pidx, title, script)
-                end
-            end,
-            simulatorResponse = {209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7}
-        }
-        rfsuite.bg.msp.mspQueue:add(message)
-        ]]--
-
-    
+    for i,v in ipairs(data) do
+        if v.functionMask == SBUS_FUNCTIONMASK then
+            validSerialConfig = true           
+        end
+    end
 
 end
+
+local function getSerialConfig()
+    local message = {
+        command = 54, 
+        processReply = function(self, buf)
+            local data = {}
+            
+            buf.offset = 1
+            for i = 1, 6 do
+                data[i] = {}
+                data[i].identifier = rfsuite.bg.msp.mspHelper.readU8(buf)
+                data[i].functionMask = rfsuite.bg.msp.mspHelper.readU32(buf)
+                data[i].msp_baudrateIndex = rfsuite.bg.msp.mspHelper.readU8(buf)
+                data[i].gps_baudrateIndex = rfsuite.bg.msp.mspHelper.readU8(buf)
+                data[i].telemetry_baudrateIndex = rfsuite.bg.msp.mspHelper.readU8(buf)
+                data[i].blackbox_baudrateIndex = rfsuite.bg.msp.mspHelper.readU8(buf)
+            end
+            
+            processSerialConfig(data)
+        end,
+        simulatorResponse = {20, 1, 0, 0, 0, 5, 4, 0, 5, 0, 0, 0, 4, 0, 5, 4, 0, 5, 1, 0, 0, 4, 0, 5, 4, 0, 5, 2, 0, 0, 0, 0, 5, 4, 0, 5, 3, 0, 0, 0, 0, 5, 4, 0, 5, 4, 64, 0, 0, 0, 5, 4, 0, 5}
+    }
+    rfsuite.bg.msp.mspQueue:add(message)
+end
+
 
 local function event(widget, category, value, x, y)
 
@@ -165,6 +183,21 @@ end
 local function wakeup()
 
 
+    if enableWakeup == true and validSerialConfig == false then
+
+        local now = os.clock()
+        if (now - wakeupScheduler) >= 0.5 then
+            wakeupScheduler = now
+            
+            getSerialConfig()
+            
+        end   
+    elseif enableWakeup == true and validSerialConfig == true then
+        for pidx = 1, 16 do
+                rfsuite.app.formFields[pidx]:enable(true)
+        end
+    end
+
 end
 
 
@@ -173,7 +206,7 @@ end
 return {
     title = "Sbus Out",
     event = event,
-    openPage = openPageInit,
+    openPage = openPage,
     wakeup = wakeup,
     navButtons = {menu = true, save = false, reload = false, tool = false, help = true}
 }
