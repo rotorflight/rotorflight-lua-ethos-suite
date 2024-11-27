@@ -1,18 +1,16 @@
 local labels = {}
 local fields = {}
 
-labels[#labels + 1] = {t = "RC Control", label = "line1", inline_size = 40.15}
-fields[#fields + 1] = {t = "Center", label = "line1", help = "radioCenter", inline = 1, min = 1400, max = 1600, unit = "us", default = 1500, vals = {1, 2}}
+labels[#labels + 1] = {t = "RC Control", label = 1, inline_size = 14.5}
+fields[#fields + 1] = {t = "Center", label = 1, inline = 2, help = "radioCenter", min = 1400, max = 1600, unit = "us", default = 1500, vals = {1, 2}}
+fields[#fields + 1] = {t = "Deflection", t2 = "Deflect", label = 1, inline = 1, help = "radioDeflection", min = 200, max = 700, unit = "us", default = 510, vals = {3, 4}}
 
-labels[#labels + 1] = {t = "", label = "line2", inline_size = 40.15}
-fields[#fields + 1] = {t = "Deflection", label = "line2", help = "radioDeflection", inline = 1, min = 200, max = 700, unit = "us", default = 510, vals = {3, 4}}
-
-labels[#labels + 1] = {t = "Throttle", label = "line3", inline_size = 40.15}
+labels[#labels + 1] = {t = "Throttle", label = 2, inline_size = 14.5}
 fields[#fields + 1] = {
     t = "Arming",
-    label = "line3",
+    label = 2,
+    inline = 2,
     help = "radioArmThrottle",
-    inline = 1,
     min = 850,
     max = 1880,
     unit = "us",
@@ -23,12 +21,11 @@ fields[#fields + 1] = {
     end
 }
 
-labels[#labels + 1] = {t = "", label = "line4", inline_size = 40.15}
 fields[#fields + 1] = {
     t = "Min",
-    label = "line4",
-    help = "radioMinThrottle",
+    label = 2,
     inline = 1,
+    help = "radioMinThrottle",
     min = 860,
     max = 1890,
     unit = "us",
@@ -39,14 +36,12 @@ fields[#fields + 1] = {
     end
 }
 
-labels[#labels + 1] = {t = "", label = "line5", inline_size = 40.15}
-fields[#fields + 1] = {t = "Max", label = "line5", help = "radioMaxThrottle", inline = 1, min = 1900, max = 2150, unit = "us", default = 1900, vals = {9, 10}}
+labels[#labels + 1] = {t = "", label = 3, inline_size = 14.5}
+fields[#fields + 1] = {t = "Max", label = 3, inline = 1, help = "radioMaxThrottle", min = 1900, max = 2150, unit = "us", default = 1900, vals = {9, 10}}
 
-labels[#labels + 1] = {t = "Deadband", label = "line6", inline_size = 40.15}
-fields[#fields + 1] = {t = "Cyclic", label = "line6", help = "radioCycDeadband", inline = 1, min = 0, max = 100, unit = "us", default = 2, vals = {11}}
-
-labels[#labels + 1] = {t = "", label = "line7", inline_size = 40.15}
-fields[#fields + 1] = {t = "Yaw", label = "line7", help = "radioYawDeadband", inline = 1, min = 0, max = 100, unit = "us", default = 2, vals = {12}}
+labels[#labels + 1] = {t = "Deadband", label = 4, inline_size = 14.5}
+fields[#fields + 1] = {t = "Cyclic", label = 4, inline = 2, help = "radioCycDeadband", min = 0, max = 100, unit = "us", default = 2, vals = {11}}
+fields[#fields + 1] = {t = "Yaw", label = 4, inline = 1, help = "radioYawDeadband", min = 0, max = 100, unit = "us", default = 2, vals = {12}}
 
 local function postLoad(self)
     rfsuite.app.triggers.isReady = true
