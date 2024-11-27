@@ -154,7 +154,6 @@ return {
     motorGearRatioMain = {t = "Main Gear Tooth Count"},
     motorGearRatioTailRear = {t = "Tail Gear Tooth Count"},
     motorGearRatioTailFront = {t = "Autorotation Gear Tooth Count"}    
-    gyroDynamicNotchMaxHz = {t = "Highest incoming noise frequency to be filtered. Should be 10-20% above highest tail rotor fundamental."},
 
     --
     -- radio_config.lua
