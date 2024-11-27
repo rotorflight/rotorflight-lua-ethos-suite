@@ -38,6 +38,7 @@ pages[#pages + 1] = {title = "Accelerometer", section = 4, script = "acceleromet
 pages[#pages + 1] = {title = "Filters", section = 4, script = "filters.lua", image = "filters.png"}
 pages[#pages + 1] = {title = "Governor", section = 4, script = "governor.lua", image = "governor.png"}
 pages[#pages + 1] = {title = "ESC", section = 4, script = "esc.lua", image = "esc.png"}
+pages[#pages + 1] = {title = "Radio Config", section = 4, script = "radio_config.lua", image = "radio_config.png"}
 
 sections[#sections + 1] = {title = "Tools", section = 5}
 pages[#pages + 1] = {title = "Copy Profiles", section = 5, script = "copy_profiles.lua", image = "copy.png"}
