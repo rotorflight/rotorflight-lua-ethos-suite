@@ -228,6 +228,28 @@ data["msp_exp"]["TEXT"] = {
         "If you do not understand what you are doing, do not use it as bad things can happen."
 }
 
+-- SBUS Out
+data["sbusout"] = {}
+data["sbusout"]["TEXT"] = {
+        "Configure advanced mixing and channel mapping if you have SBUS Out enabled on a serial port.",
+        "- For RX channels or servos (wideband), use 1000, 2000.",
+        "- For mixer rules, use -1000, 1000.",
+        "- For narrowband servos, use 500, 1000.",
+        "- For motors, use 0, 1000.",
+        "- Or you can customize your own mapping.",
+}
+
+-- SBUS Out
+data["sbusout_tool"] = {}
+data["sbusout_tool"]["TEXT"] = {
+        "Configure advanced mixing and channel mapping if you have SBUS Out enabled on a serial port.",
+        "- For RX channels or servos (wideband), use 1000, 2000.",
+        "- For mixer rules, use -1000, 1000.",
+        "- For narrowband servos, use 500, 1000.",
+        "- For motors, use 0, 1000.",
+        "- Or you can customize your own mapping.",
+}
+
 -- LuaFormatter on
 
 return {data = data}
