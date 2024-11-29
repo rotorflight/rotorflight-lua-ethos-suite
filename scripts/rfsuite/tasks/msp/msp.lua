@@ -26,7 +26,7 @@ local arg = {...}
 local config = arg[1]
 local compile = arg[2]
 
-msp = {}
+local msp = {}
 
 msp.activeProtocol = nil
 msp.onConnectChecksInit = true
