@@ -48,7 +48,7 @@ end
 return {
     read = 131,
     write = 222,
-    title = "DriveTrain",
+    title = "Motors",
     reboot = false,
     simulatorResponse = {45, 4, 208, 7, 232, 3, 1, 6, 0, 0, 250, 0, 1, 6, 4, 2, 1, 8, 7, 7, 8, 20, 0, 50, 0, 9, 0, 30, 0},
     eepromWrite = true,
