@@ -18,115 +18,105 @@
  * 
 
 ]]--
---
+
 local arg = {...}
 local config = arg[1]
 
 local telemetry = {}
-
 local sensors = {}
-local protocol = nil
-
-local telemetrySOURCE
-local crsfSOURCE
-local tgt
-
+local protocol, telemetrySOURCE, crsfSOURCE
 local sensorRateLimit = os.clock()
-local sensorRate = 2 -- how fast can we call the rssi sensor
+local SENSOR_RATE = 2 -- rate in seconds
 
 local telemetryState = false
 
-local sensorTable = {}
-sensorTable["rssi"] = {sport = rfsuite.utils.getRssiSensor(), ccrsf = rfsuite.utils.getRssiSensor(), rfsuite.utils.getRssiSensor()}
-sensorTable["armflags"] = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5462}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1202}, lcrsf = nil}
-sensorTable["voltage"] = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0210}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1011}, lcrsf = "Rx Batt"}
-sensorTable["rpm"] = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0500}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10C0}, lcrsf = "GPS Alt"}
-sensorTable["current"] = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0200}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1012}, lcrsf = "Rx Curr"}
-sensorTable["currentESC1"] = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0201}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1042}, lcrsf = nil}
-sensorTable["tempESC"] = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0B70}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A0}, lcrsf = "GPS Speed"}
-sensorTable["tempMCU"] = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A3}, lcrsf = "GPS Sats"}
-sensorTable["fuel"] = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0600}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1014}, lcrsf = "Rx Batt%"}
-sensorTable["capacity"] = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5250}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1013}, lcrsf = "Rx Cons"}
-sensorTable["governor"] = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5450}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1205}, lcrsf = "Flight mode"}
-sensorTable["adjF"] = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5110}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1221}, lcrsf = nil}
-sensorTable["adjV"] = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5111}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1222}, lcrsf = nil}
-sensorTable["pidProfile"] = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5471}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1211}, lcrsf = nil}
-sensorTable["rateProfile"] = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5472}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1212}, lcrsf = nil}
-sensorTable["roll"] = {sport = {category=CATEGORY_ANALOG, member=ANALOG_STICK_AILERON}, crsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_AILERON}, lcrsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_AILERON}}
-sensorTable["pitch"] = {sport = {category=CATEGORY_ANALOG, member=ANALOG_STICK_ELEVATOR}, crsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_ELEVATOR}, lcrsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_ELEVATOR}}
-sensorTable["yaw"] = {sport = {category=CATEGORY_ANALOG, member=ANALOG_STICK_RUDDER}, crsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_RUDDER}, lcrsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_RUDDER}}
-sensorTable["collective"] = {sport = {category=CATEGORY_ANALOG, member=ANALOG_STICK_THROTTLE}, crsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_THROTTLE}, lcrsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_THROTTLE}}
+-- Predefined sensor mappings
+local sensorTable = {
+    rssi = {sport = rfsuite.utils.getRssiSensor(), ccrsf = rfsuite.utils.getRssiSensor(), lcrsf = nil},
+    armflags = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5462}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1202}, lcrsf = nil},
+    voltage = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0210}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1011}, lcrsf = "Rx Batt"},
+    rpm = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0500}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10C0}, lcrsf = "GPS Alt"},
+    current = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0200}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1012}, lcrsf = "Rx Curr"},
+    currentESC1 = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0201}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1042}, lcrsf = nil},
+    tempESC = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0B70}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A0}, lcrsf = "GPS Speed"},
+    tempMCU = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A3}, lcrsf = "GPS Sats"},
+    fuel = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0600}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1014}, lcrsf = "Rx Batt%"},
+    capacity = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5250}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1013}, lcrsf = "Rx Cons"},
+    governor = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5450}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1205}, lcrsf = "Flight mode"},
+    adjF = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5110}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1221}, lcrsf = nil},
+    adjV = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5111}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1222}, lcrsf = nil},
+    pidProfile = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5471}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1211}, lcrsf = nil},
+    rateProfile = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5472}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1212}, lcrsf = nil},
+    roll = {sport = {category=CATEGORY_ANALOG, member=ANALOG_STICK_AILERON}, crsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_AILERON}, lcrsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_AILERON}},
+    pitch = {sport = {category=CATEGORY_ANALOG, member=ANALOG_STICK_ELEVATOR}, crsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_ELEVATOR}, lcrsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_ELEVATOR}},
+    yaw = {sport = {category=CATEGORY_ANALOG, member=ANALOG_STICK_RUDDER}, crsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_RUDDER}, lcrsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_RUDDER}},
+    collective = {sport = {category=CATEGORY_ANALOG, member=ANALOG_STICK_THROTTLE}, crsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_THROTTLE}, lcrsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_THROTTLE}}
+}
 
-local tlm = system.getSource({category = CATEGORY_SYSTEM_EVENT, member = TELEMETRY_ACTIVE, options = nil})
+-- Cache telemetry source
+local tlm = system.getSource({category = CATEGORY_SYSTEM_EVENT, member = TELEMETRY_ACTIVE})
 
+--- Retrieve the active telemetry protocol
+---@return string
 function telemetry.getSensorProtocol()
     return protocol
 end
 
+--- Retrieve a sensor source by name
+---@param name string
+---@return any
 function telemetry.getSensorSource(name)
-    local src
-    if sensorTable[name] ~= nil then
-        if sensors[name] == nil then
+    if not sensorTable[name] then return nil end
 
-            if telemetrySOURCE == nil then telemetrySOURCE = system.getSource("Rx RSSI1") end
+    -- Use cached value if available
+    if sensors[name] then return sensors[name] end
 
-            -- find type we are targetting
-            if telemetrySOURCE ~= nil then
-                if crsfSOURCE == nil then crsfSOURCE = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = 0xEE01}) end
+    if not telemetrySOURCE then telemetrySOURCE = system.getSource("Rx RSSI1") end
 
-                if crsfSOURCE ~= nil then
-                    protocol = 'ccrsf'
-                    src = system.getSource(sensorTable[name].ccrsf)
-                else
-                    protocol = 'lcrsf'
-                    src = system.getSource(sensorTable[name].lcrsf)
-                end
-            else
-                protocol = 'sport'
-                src = system.getSource(sensorTable[name].sport)
-            end
-
-        else
-            src = sensors[name]
+    if telemetrySOURCE then
+        if not crsfSOURCE then
+            crsfSOURCE = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = 0xEE01})
         end
-        return src
+
+        if crsfSOURCE then
+            protocol = "ccrsf"
+            sensors[name] = system.getSource(sensorTable[name].ccrsf)
+        else
+            protocol = "lcrsf"
+            sensors[name] = system.getSource(sensorTable[name].lcrsf)
+        end
+    else
+        protocol = "sport"
+        sensors[name] = system.getSource(sensorTable[name].sport)
     end
 
-    return nil
+    return sensors[name]
 end
 
+--- Check if telemetry is active
+---@return boolean
 function telemetry.active()
-
-    if system:getVersion().simulation == true then return true end
-
+    if system.getVersion().simulation then return true end
     return telemetryState
 end
 
+--- Wakeup function to refresh telemetry state
 function telemetry.wakeup()
+    local now = os.clock()
 
-    -- we need to rate limit these calls to save issues
+    if rfsuite.app.triggers.mspBusy then return end
 
-    if rfsuite.app.triggers.mspBusy ~= true then
-        local now = os.clock()
-        if (now - sensorRateLimit) >= sensorRate then
-            sensorRateLimit = now
-
-            if tlm:state() == true then
-                telemetryState = true
-            else
-                telemetryState = false
-            end
-
-        end
+    -- Rate-limited telemetry checks
+    if (now - sensorRateLimit) >= SENSOR_RATE then
+        sensorRateLimit = now
+        telemetryState = tlm and tlm:state() or false
     end
 
-    if not telemetry.active() or rfsuite.rssiSensorChanged == true then
-        telemetrySOURCE = nil
-        crsfSOURCE = nil
-        protocol = nil
+    -- Reset if telemetry is inactive or RSSI sensor changed
+    if not telemetry.active() or rfsuite.rssiSensorChanged then
+        telemetrySOURCE, crsfSOURCE, protocol = nil, nil, nil
         sensors = {}
     end
-
 end
 
 return telemetry
