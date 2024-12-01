@@ -186,24 +186,14 @@ local function decAccel(data, pos)
     return nil, pos
 end
 
-local function convertToCoordinate(value)
-    -- Divide the input by 10^7 to get the correct coordinate
-    local coordinate = value / 10000000
-    
-    return string.format("%.4f", coordinate)
-end
-
 local function decLatLong(data, pos)
     local lat, lon
     lat, pos = decS32(data, pos)
     lon, pos = decS32(data, pos)
- 
-    lat = convertToCoordinate(lat)
-    lon = convertToCoordinate(lon)
     
-    lat = lat:gsub("%.", "")
-    lon = lon:gsub("%.", "")
- 
+    lat = math.floor(lat * 0.001)
+    lon = math.floor(lon * 0.001)
+    
     setTelemetryValue(0x1125, 0, 0, lat, UNIT_DEGREE, 4, "GPS Latitude", -10000000000, 10000000000)
     setTelemetryValue(0x112B, 0, 0, lon, UNIT_DEGREE, 4, "GPS Longitude", -10000000000, 10000000000)
     return nil, pos
