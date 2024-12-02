@@ -1,4 +1,4 @@
--- create 16 servos in disabled state
+
 
 
 
@@ -13,7 +13,7 @@ local function getLogDir()
     logdir = string.gsub(model.name(), "%s+", "_")
     logdir = string.gsub(logdir, "%W", "_")
     
-    local logs_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and "logs/" or (config.suiteDir .. "/logs/")
+    local logs_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and "logs/" or (rfsuite.config.suiteDir .. "/logs/")
     
     return logs_path .. logdir
     

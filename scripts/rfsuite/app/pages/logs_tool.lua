@@ -18,6 +18,7 @@ local enableWakeup = false
 local wakeupScheduler = os.clock()
 local activeLogFile 
 local logPadding = 1
+local armTime
 
 local logDataRaw
 local logDataRawReadComplete = false
@@ -34,7 +35,58 @@ local sliderPositionOld = 1
 
 local processedLogData = false
 local currentDataIndex = 1
+
+
+function format_time(seconds)
+    -- Calculate minutes and remaining seconds
+    local minutes = math.floor(seconds / 60)
+    local seconds_remainder = seconds % 60
+
+    -- Format the time string
+    return string.format("%02d:%02d", minutes, seconds_remainder)
+end    
      
+local function calculate_time_coverage(dates)
+
+    if #dates == 0 then
+        return "00:00" -- If the table is empty, return 00:00
+    end
+
+    local timestamps = {}
+    
+    -- Convert each date string to a timestamp
+    for _, date in ipairs(dates) do
+        local year, month, day, hour, min, sec = date:match("(%d+)-(%d+)-(%d+)_(%d+):(%d+):(%d+)")
+        local timestamp = os.time({year = tonumber(year), month = tonumber(month), day = tonumber(day), 
+                                    hour = tonumber(hour), min = tonumber(min), sec = tonumber(sec)})
+        table.insert(timestamps, timestamp)
+    end
+    
+    -- Find the minimum and maximum timestamps
+    local min_time = math.min(table.unpack(timestamps))
+    local max_time = math.max(table.unpack(timestamps))
+    
+    -- Calculate the time difference in seconds
+    local time_diff = max_time - min_time
+    
+    -- Convert seconds to minutes and seconds
+    local minutes = math.floor(time_diff / 60)
+    local seconds = time_diff % 60
+
+    -- Format as mm:ss
+    return string.format("%02d:%02d", minutes, seconds)
+end
+   
+function calculateSeconds(totalSeconds, sliderValue)
+    -- Ensure sliderValue is within the range 1-100
+    if sliderValue < 1 or sliderValue > 100 then
+        error("Slider value must be between 1 and 100")
+    end
+
+    -- Calculate the seconds passed
+    local secondsPassed = (sliderValue / 100) * totalSeconds
+    return secondsPassed
+end   
      
 function paginate_table(data, step_size, position)
     -- Validate inputs
@@ -232,12 +284,22 @@ local function cleanColumn(data)
     return out
 end
 
+local function trimHeader(data)
+    local out = {}
+    for i,v in ipairs(data) do
+        if i ~= 1 then  -- skip the header
+                out[i-1] = v
+        end
+    end
+    return out
+end
+
 local function getLogDir()
     local logdir
     logdir = string.gsub(model.name(), "%s+", "_")
     logdir = string.gsub(logdir, "%W", "_")
     
-    local logs_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and "logs/" or (config.suiteDir .. "/logs/")
+    local logs_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and "logs/" or (rfsuite.config.suiteDir .. "/logs/")
     
     return logs_path .. logdir
     
@@ -269,8 +331,7 @@ local function extractShortTimestamp(filename)
     return nil
 end
 
-
-local function drawGraph(points, color, pen,  x_start, y_start, width, height)
+local function drawGraph(points, color, pen, x_start, y_start, width, height, min_val, max_val)
     -- Sanity check: Ensure all points are numbers
     for i, v in ipairs(points) do
         if type(v) ~= "number" then
@@ -278,13 +339,18 @@ local function drawGraph(points, color, pen,  x_start, y_start, width, height)
         end
     end
     
+    -- Use provided min and max values, or calculate from points
+    min_val = min_val or math.min(table.unpack(points))
+    max_val = max_val or math.max(table.unpack(points))
+    
+    -- Handle edge case: If max_val equals min_val, avoid divide-by-zero error
+    if max_val == min_val then
+        error("Max value and min value cannot be the same.")
+    end
+
     if color ~= nil then lcd.color(color) else lcd.color(COLOR_GREY) end
     if pen ~= nil then lcd.pen(pen) else lcd.pen(DOTTED) end
 
-    -- Calculate min and max values from the points
-    local min_val = math.min(table.unpack(points))
-    local max_val = math.max(table.unpack(points))
-    
     -- Calculate scales to fit the graph within the display area
     local x_scale = width / (#points - 1) -- Width spread across the number of points
     local y_scale = height / (max_val - min_val) -- Height scaled to the value range
@@ -301,6 +367,7 @@ local function drawGraph(points, color, pen,  x_start, y_start, width, height)
         lcd.drawLine(x1, y1, x2, y2)
     end
 end
+
 
 
 local function drawKey(name,keyindex,keyunit, keyminmax, keyfloor, color,minimum,maximum)
@@ -371,7 +438,10 @@ local function drawCurrentIndex(points,position, totalPoints, keyindex, keyunit,
         textAlign = LEFT
     end  
     
-    
+    local current_s = calculateSeconds(totalPoints, position)
+    local time_str = format_time(math.floor(current_s))
+  
+  
     -- work out the current values based on position
     local value = getValueAtPercentage(points, position)
     if keyfloor == true then
@@ -389,7 +459,13 @@ local function drawCurrentIndex(points,position, totalPoints, keyindex, keyunit,
     local tw,th = lcd.getTextSize(value)
     local ty = (h_height / 2 - th / 2) + y + h_height    
     lcd.drawText(idxPos,ty,value,textAlign)   
-    
+
+    -- display time
+    local tw,th = lcd.getTextSize(time_str)
+    local ty = (LCD_H-70) 
+    if linePos >= tw/4 then
+        lcd.drawText(idxPos,ty,time_str,textAlign)   
+    end
     
 
 end
@@ -403,6 +479,13 @@ function findMaxNumber(numbers)
         end
     end
     return max
+end
+
+function addMaxMinToTable(tbl, value_start, value_end)
+    -- Insert the value at the beginning
+    table.insert(tbl, 1, value_start)
+    -- Insert the value at the end
+    table.insert(tbl, value_end)
 end
 
 function findMinNumber(numbers)
@@ -491,6 +574,8 @@ local function wakeup()
         if currentDataIndex == 1 then
             progressLoader = form.openProgressDialog("Processing", "Please be patient - we have some work to do.")
             progressLoader:closeAllowed(false)
+            
+            armTime = calculate_time_coverage(trimHeader(getColumn(logDataRaw, currentDataIndex)))
         else
             -- Update progress dialog
             local percentage = (currentDataIndex / #logColumns) * 100
@@ -498,8 +583,9 @@ local function wakeup()
         end
         
         -- Process the column and store the cleaned data
+       
         logData[currentDataIndex] = {}
-        logData[currentDataIndex]['data'] = padTable(cleanColumn(getColumn(logDataRaw, currentDataIndex+1)),logPadding) -- Note. We + 1 the currentDataIndex because  rfsuite.bg.logging.getLogTable does not return the 1st column
+        logData[currentDataIndex]['data'] = padTable(cleanColumn(getColumn(logDataRaw, currentDataIndex+1)),logPadding) -- Note. We + 1 the currentDataIndex because  rfsuite.bg.logging.getLogTable does not return the 1st column        
         logData[currentDataIndex]['name'] = logColumns[currentDataIndex].name
         logData[currentDataIndex]['color'] = logColumns[currentDataIndex].color
         logData[currentDataIndex]['pen'] = logColumns[currentDataIndex].pen
@@ -519,7 +605,7 @@ local function wakeup()
 
             -- put slider at bottom of form
             local posField = {x=graphPos['x_start'],y=LCD_H - 40,w=graphPos['width']-10,h=40}
-            form.addSliderField(nil, 
+            rfsuite.app.formFields[1] = form.addSliderField(nil, 
                                 posField,
                                 0,
                                 100,
@@ -529,6 +615,7 @@ local function wakeup()
                                 function(newValue) 
                                     sliderPosition = newValue 
                                 end)
+                        
         
             -- set log line count only once!
             logLineCount = #logData[currentDataIndex]['data']
@@ -581,9 +668,10 @@ local function paint()
                     local keyunit = logData[i].keyunit
                     local keyminmax = logData[i].keyminmax
                     local keyfloor = logData[i].keyfloor
-                    drawGraph(points, color, pen , x_start, y_start, width, height)
+                    drawGraph(points, color, pen , x_start, y_start, width, height, minimum, maximum)
                     drawKey(keyname,keyindex, keyunit, keyminmax, keyfloor, color, minimum,maximum)
                     drawCurrentIndex(points,sliderPosition,logLineCount + logPadding,keyindex,keyunit,keyfloor,name,color)
+
 
                 end
                 
