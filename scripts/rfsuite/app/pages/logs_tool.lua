@@ -17,6 +17,7 @@ local lastServoCountTime = os.clock()
 local enableWakeup = false
 local wakeupScheduler = os.clock()
 local activeLogFile 
+local logPadding = 1
 
 local logDataRaw
 local logDataRawReadComplete = false
@@ -35,52 +36,6 @@ local processedLogData = false
 local currentDataIndex = 1
      
      
---[[     
-function paginate_table(data, step_size, position)
-
-    -- Validate inputs
-    if type(data) ~= "table" or type(step_size) ~= "number" or type(position) ~= "number" then
-        error("Invalid arguments: data must be a table, step_size and position must be numbers.")
-    end
-
-    -- Calculate start and end indices
-    local start_index = (position - 1) * step_size + 1
-    local end_index = math.min(position * step_size, #data)
-
-    -- Create a new table for the page
-    local page = {}
-    for i = start_index, end_index do
-        table.insert(page, data[i])
-    end
-
-    return page
-end
-]]--
---[[
-function paginate_table(data, step_size, position)
-    -- Validate inputs
-    if type(data) ~= "table" or type(step_size) ~= "number" or type(position) ~= "number" then
-        error("Invalid arguments: data must be a table, step_size and position must be numbers.")
-    end
-
-    -- Ensure position is within valid bounds
-    if position < 1 or position > #data then
-        error("Position out of bounds.")
-    end
-
-    -- Calculate start and end indices
-    local start_index = position
-    local end_index = math.min(start_index + step_size - 1, #data)
-
-    -- Create a new table for the page
-    local page = {}
-    for i = start_index, end_index do
-        table.insert(page, data[i])
-    end
-
-    return page
-end
-]]--
 function paginate_table(data, step_size, position)
     -- Validate inputs
     if type(data) ~= "table" or type(step_size) ~= "number" or type(position) ~= "number" then
@@ -107,6 +62,32 @@ function paginate_table(data, step_size, position)
     return page
 end
 
+
+function padTable(tbl, padCount)
+    -- Get the first and last values of the table
+    local first = tbl[1]
+    local last = tbl[#tbl]
+
+    -- Create a new table for the padded result
+    local paddedTable = {}
+
+    -- Add the padding elements at the beginning
+    for i = 1, padCount do
+        table.insert(paddedTable, first)
+    end
+
+    -- Add the original table elements
+    for _, value in ipairs(tbl) do
+        table.insert(paddedTable, value)
+    end
+
+    -- Add the padding elements at the end
+    for i = 1, padCount do
+        table.insert(paddedTable, last)
+    end
+
+    return paddedTable
+end
 
 function loadFileToMemory(filename)
     local file, err = io.open(filename, "rb")
@@ -262,6 +243,22 @@ local function getLogDir()
     
 end
 
+function getValueAtPercentage(array, percentage)
+    -- Ensure percentage is between 0 and 100
+    if percentage < 0 or percentage > 100 then
+        error("Percentage must be between 0 and 100")
+    end
+
+    -- Calculate the index based on the percentage
+    local arraySize = #array
+    if arraySize == 0 then
+        error("Array cannot be empty")
+    end
+
+    -- Calculate the 1-based index
+    local index = math.ceil((percentage / 100) * arraySize)
+    return array[index]
+end
 
 local function extractShortTimestamp(filename)
     -- Match the date and time components in the filename
@@ -348,6 +345,56 @@ local function drawKey(name,keyindex,keyunit, keyminmax, keyfloor, color,minimum
 
 end
 
+local function drawCurrentIndex(points,position, totalPoints, keyindex, keyunit,keyfloor, name, color)
+
+    if position < 1 then position = 1 end
+
+    local w = graphPos['width']
+    local h = 35    
+    local h_height = 30
+    local x = 0
+    local y = (graphPos['y_start'] + (keyindex * h)) - h
+    local idx_w = 100
+  
+    local linePos = map(position, 1, 100, 1, w-10)
+    
+    if linePos  < 1 then linePos  = 0 end
+
+    -- which side of line we display the index
+    local idxPos
+    local textAlign
+    if (position > 50) then
+        idxPos = linePos -5 
+        textAlign = RIGHT
+    else
+        idxPos = linePos +5
+        textAlign = LEFT
+    end  
+    
+    
+    -- work out the current values based on position
+    local value = getValueAtPercentage(points, position)
+    if keyfloor == true then
+           value = math.floor(value)         
+    end
+    value = value .. keyunit 
+
+    -- draw the vertical line
+    lcd.color(COLOR_WHITE)
+    lcd.drawLine(linePos,graphPos['menu_offset'] - 5,linePos,LCD_H-45)
+ 
+     -- show value
+    lcd.color(COLOR_WHITE)
+    lcd.font(FONT_BOLD)
+    local tw,th = lcd.getTextSize(value)
+    local ty = (h_height / 2 - th / 2) + y + h_height    
+    lcd.drawText(idxPos,ty,value,textAlign)   
+    
+    
+
+end
+
+
 function findMaxNumber(numbers)
     local max = numbers[1] -- Assume the first number is the largest initially
     for i = 2, #numbers do -- Iterate through the table starting from the second element
@@ -399,20 +446,6 @@ local function openPage(pidx, title, script,logfile)
     
     rfsuite.app.ui.fieldHeader("Logs - " .. extractShortTimestamp(logfile))
     activeLogFile = logfile
-
-
-    -- put slider at bottom of form
-    local posField = {x=graphPos['x_start'],y=LCD_H - 40,w=graphPos['width'],h=40}
-    form.addSliderField(nil, 
-                        posField,
-                        0,
-                        100,
-                        function() 
-                            return sliderPosition
-                        end, 
-                        function(newValue) 
-                            sliderPosition = newValue 
-                        end)
 
     -- initialise the log file reader
     -- this is a bit complex as it reads in chunks on each Loop
@@ -466,7 +499,7 @@ local function wakeup()
         
         -- Process the column and store the cleaned data
         logData[currentDataIndex] = {}
-        logData[currentDataIndex]['data'] = cleanColumn(getColumn(logDataRaw, currentDataIndex+1)) -- Note. We + 1 the currentDataIndex because  rfsuite.bg.logging.getLogTable does not return the 1st column
+        logData[currentDataIndex]['data'] = padTable(cleanColumn(getColumn(logDataRaw, currentDataIndex+1)),logPadding) -- Note. We + 1 the currentDataIndex because  rfsuite.bg.logging.getLogTable does not return the 1st column
         logData[currentDataIndex]['name'] = logColumns[currentDataIndex].name
         logData[currentDataIndex]['color'] = logColumns[currentDataIndex].color
         logData[currentDataIndex]['pen'] = logColumns[currentDataIndex].pen
@@ -483,6 +516,19 @@ local function wakeup()
         
         -- Close progress loader when all columns are processed
         if currentDataIndex >= #logColumns then
+
+            -- put slider at bottom of form
+            local posField = {x=graphPos['x_start'],y=LCD_H - 40,w=graphPos['width']-10,h=40}
+            form.addSliderField(nil, 
+                                posField,
+                                0,
+                                100,
+                                function() 
+                                    return sliderPosition
+                                end, 
+                                function(newValue) 
+                                    sliderPosition = newValue 
+                                end)
         
             -- set log line count only once!
             logLineCount = #logData[currentDataIndex]['data']
@@ -517,6 +563,7 @@ local function paint()
             local step_size = optimal_records_per_page
             
             local position = math.floor(map(sliderPosition,1,100, 1,logLineCount - step_size))
+            if position < 1 then position = 1 end
             
 
             for i,v in ipairs(logData) do
@@ -536,6 +583,7 @@ local function paint()
                     local keyfloor = logData[i].keyfloor
                     drawGraph(points, color, pen , x_start, y_start, width, height)
                     drawKey(keyname,keyindex, keyunit, keyminmax, keyfloor, color, minimum,maximum)
+                    drawCurrentIndex(points,sliderPosition,logLineCount + logPadding,keyindex,keyunit,keyfloor,name,color)
 
                 end
                 
