@@ -31,11 +31,12 @@ pages[#pages + 1] = {title = "Rescue", section = 2, script = "profile_rescue.lua
 pages[#pages + 1] = {title = "Rates", section = 2, script = "rates_advanced.lua", image = "rates.png"}
 
 sections[#sections + 1] = {title = "Hardware", section = 4}
-pages[#pages + 1] = {title = "DriveTrain", section = 4, script = "drivetrain.lua", image = "drivetrain.png"}
+pages[#pages + 1] = {title = "Motors", section = 4, script = "motors.lua", image = "motors.png"}
 pages[#pages + 1] = {title = "Servos", section = 4, script = "servos.lua", image = "servos.png"}
 pages[#pages + 1] = {title = "Mixer", section = 4, script = "mixer.lua", image = "mixer.png"}
 pages[#pages + 1] = {title = "Accelerometer", section = 4, script = "accelerometer.lua", image = "acc.png"}
 pages[#pages + 1] = {title = "Filters", section = 4, script = "filters.lua", image = "filters.png"}
+pages[#pages + 1] = {title = "Radio Config", section = 4, script = "radio_config.lua", image = "radio_config.png"}
 pages[#pages + 1] = {title = "Governor", section = 4, script = "governor.lua", image = "governor.png"}
 pages[#pages + 1] = {title = "ESC", section = 4, script = "esc.lua", image = "esc.png"}
 
