@@ -28,18 +28,11 @@ local logRateLimit = os.clock()
 
 -- List of sensors to log
 local logTable = {
-    "voltage", 
-    "current", 
-    "rpm", 
-    "capacity", 
-    "governor", 
-    "tempESC", 
-    "tempMCU", 
-    "rssi", 
-    "roll", 
-    "pitch", 
-    "yaw", 
-    "collective"
+    { name = "voltage", keyindex = 1, keyname = "Voltage", keyunit="v", keyminmax = 1, color = COLOR_RED , pen = SOLID, graph = true},
+    { name = "current", keyindex = 2, keyname = "Current", keyunit="A", keyminmax = 0, color = COLOR_ORANGE , pen = SOLID, graph = true},
+    { name = "rpm", keyindex = 3,keyname = "Headspeed", keyunit="rpm", keyminmax = 0, keyfloor = true, color = COLOR_BLUE , pen = SOLID, graph = true},
+    { name = "tempESC", keyindex = 4,keyname = "Esc. Temperature", keyunit="°", keyminmax = 1, color = COLOR_CYAN, pen = SOLID, graph = true},
+
 }
 
 -- Queue for log entries
@@ -112,7 +105,11 @@ end
 
 -- Get header line for the CSV log file
 function logging.getLogHeader()
-    return "time, " .. rfsuite.utils.joinTableItems(logTable, ", ")
+    local tmpTable = {}
+    for i, v in ipairs(logTable) do
+        tmpTable[i] = v.name
+    end
+    return "time, " .. rfsuite.utils.joinTableItems(tmpTable, ", ")
 end
 
 -- Generate log line for current sensor values
@@ -120,11 +117,16 @@ function logging.getLogLine()
     local lineValues = {}
     
     for i, v in ipairs(logTable) do
-        local src = rfsuite.bg.telemetry.getSensorSource(v)
+        local src = rfsuite.bg.telemetry.getSensorSource(v.name)
         lineValues[i] = src and src:value() or 0
     end
 
     return os.date("%Y-%m-%d_%H:%M:%S") .. ", " .. rfsuite.utils.joinTableItems(lineValues, ", ")
+end
+
+-- get the log table
+function logging.getLogTable()
+    return logTable
 end
 
 -- Main logging function

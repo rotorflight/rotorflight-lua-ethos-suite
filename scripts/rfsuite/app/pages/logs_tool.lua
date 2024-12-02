@@ -1,5 +1,15 @@
 
 
+-- display vars
+local LCD_W, LCD_H = rfsuite.utils.getWindowSize()
+
+local graphPos = {}
+graphPos['menu_offset'] = 70
+graphPos['x_start'] = 0
+graphPos['y_start'] = 0 + graphPos['menu_offset']
+graphPos['width'] = math.floor(LCD_W * 0.75) -- 35% less
+graphPos['height'] = LCD_H - graphPos['menu_offset'] - 50
+
 
 local triggerOverRide = false
 local triggerOverRideAll = false
@@ -14,42 +24,18 @@ local readNextChunk
 local logData = {}
 local maxMinData = {}
 local progressLoader
+local logLineCount
 
-local logColumns = {
-    'timestamp',
-    'voltage',
-    'current',
-    'rpm',
-    'capacity',
-    'governor',
-    'tempESC',
-    'rssi',
-    'roll',
-    'pitch',
-    'yaw',
-    'collective'
-}
-local logColours = {
-    COLOR_BLACK,
-    COLOR_GREEN,
-    COLOR_BLUE,
-    COLOR_CYAN,
-    COLOR_MAGENTO,
-    COLOR_WHITE,
-    COLOR_YELLOW,
-    COLOR_ORANGE,
-    COLOR_WHITE,
-    COLOR_GREEN,
-    COLOR_BLUE,
-    COLOR_ORANGE
-}
+local logColumns = rfsuite.bg.logging.getLogTable()
 
-local logColumnsCount = 12
+local sliderPosition = 1
+local sliderPositionOld = 1
+
 local processedLogData = false
-local currentDataIndex = 0
-      
-local LCD_W, LCD_H = rfsuite.utils.getWindowSize()
-
+local currentDataIndex = 1
+     
+     
+--[[     
 function paginate_table(data, step_size, position)
 
     -- Validate inputs
@@ -69,6 +55,58 @@ function paginate_table(data, step_size, position)
 
     return page
 end
+]]--
+--[[
+function paginate_table(data, step_size, position)
+    -- Validate inputs
+    if type(data) ~= "table" or type(step_size) ~= "number" or type(position) ~= "number" then
+        error("Invalid arguments: data must be a table, step_size and position must be numbers.")
+    end
+
+    -- Ensure position is within valid bounds
+    if position < 1 or position > #data then
+        error("Position out of bounds.")
+    end
+
+    -- Calculate start and end indices
+    local start_index = position
+    local end_index = math.min(start_index + step_size - 1, #data)
+
+    -- Create a new table for the page
+    local page = {}
+    for i = start_index, end_index do
+        table.insert(page, data[i])
+    end
+
+    return page
+end
+]]--
+function paginate_table(data, step_size, position)
+    -- Validate inputs
+    if type(data) ~= "table" or type(step_size) ~= "number" or type(position) ~= "number" then
+        error("Invalid arguments: data must be a table, step_size and position must be numbers.")
+    end
+
+    -- Adjust position to be within valid bounds
+    if position < 1 then
+        position = 1
+    elseif position > #data then
+        position = #data
+    end
+
+    -- Calculate start and end indices
+    local start_index = position
+    local end_index = math.min(start_index + step_size - 1, #data)
+
+    -- Create a new table for the page
+    local page = {}
+    for i = start_index, end_index do
+        table.insert(page, data[i])
+    end
+
+    return page
+end
+
 
 function loadFileToMemory(filename)
     local file, err = io.open(filename, "rb")
@@ -122,6 +160,10 @@ function createFileReader(filename)
             return content, false  -- Continue reading
         end
     end
+end
+
+function map(x, in_min, in_max, out_min, out_max)
+    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
 end
 
 
@@ -231,16 +273,16 @@ local function extractShortTimestamp(filename)
 end
 
 
-
-function drawGraph(points, color, x_start, y_start, width, height)
+local function drawGraph(points, color, pen,  x_start, y_start, width, height)
     -- Sanity check: Ensure all points are numbers
     for i, v in ipairs(points) do
         if type(v) ~= "number" then
             error("Point at index " .. i .. " is not a number")
         end
     end
-
-    lcd.color(color)
+    
+    if color ~= nil then lcd.color(color) else lcd.color(COLOR_GREY) end
+    if pen ~= nil then lcd.pen(pen) else lcd.pen(DOTTED) end
 
     -- Calculate min and max values from the points
     local min_val = math.min(table.unpack(points))
@@ -264,6 +306,76 @@ function drawGraph(points, color, x_start, y_start, width, height)
 end
 
 
+local function drawKey(name,keyindex,keyunit, keyminmax, keyfloor, color,minimum,maximum)
+    
+    
+    local w = LCD_W - graphPos['width'] - 10
+    local h = 65    
+    local h_height = h/2
+    local x = graphPos['width']
+    local y = (graphPos['y_start'] + (keyindex * h)) - h
+    
+    if keyfloor == true then
+            minimum = math.floor(minimum)
+            maximum = math.floor(maximum)            
+    end
+    
+
+    -- draw the header box
+    lcd.pen(solid)
+    lcd.drawFilledRectangle(x,y,w,h_height)
+    
+    -- put text into the box
+    lcd.color(COLOR_BLACK)
+    lcd.font(FONT_S)
+    local tw,th = lcd.getTextSize(name)
+    local ty = (h_height / 2 - th / 2) + y
+    lcd.drawText(x + 5,ty,name,LEFT)
+
+    -- show min and max values
+    lcd.color(COLOR_WHITE)
+    lcd.font(FONT_S)
+    local mm_str
+    if keyminmax == 1 then
+        mm_str = "Min: " .. minimum .. keyunit .." " .. "Max: " .. maximum .. keyunit
+    else
+        mm_str = "Max: " .. maximum .. keyunit
+    end
+    local tw,th = lcd.getTextSize(mm_str)
+    local ty = (h_height / 2 - th / 2) + y + h_height    
+    lcd.drawText(x + 5,ty,mm_str,LEFT)
+
+
+end
+
+function findMaxNumber(numbers)
+    local max = numbers[1] -- Assume the first number is the largest initially
+    for i = 2, #numbers do -- Iterate through the table starting from the second element
+        if numbers[i] > max then
+            max = numbers[i]
+        end
+    end
+    return max
+end
+
+function findMinNumber(numbers)
+    local min = numbers[1] -- Assume the first number is the smallest initially
+    for i = 2, #numbers do -- Iterate through the table starting from the second element
+        if numbers[i] < min then
+            min = numbers[i]
+        end
+    end
+    return min
+end
+
+function findAverage(numbers)
+    local sum = 0
+    for i = 1, #numbers do -- Iterate through the table
+        sum = sum + numbers[i]
+    end
+    local average = sum / #numbers -- Divide the sum by the number of elements
+    return average
+end
 
 local function openPage(pidx, title, script,logfile)
 
@@ -288,6 +400,23 @@ local function openPage(pidx, title, script,logfile)
     rfsuite.app.ui.fieldHeader("Logs - " .. extractShortTimestamp(logfile))
     activeLogFile = logfile
 
+
+    -- put slider at bottom of form
+    local posField = {x=graphPos['x_start'],y=LCD_H - 40,w=graphPos['width'],h=40}
+    form.addSliderField(nil, 
+                        posField,
+                        0,
+                        100,
+                        function() 
+                            return sliderPosition
+                        end, 
+                        function(newValue) 
+                            sliderPosition = newValue 
+                        end)
+
+    -- initialise the log file reader
+    -- this is a bit complex as it reads in chunks on each Loop
+    -- to help with loading large files.
     readNextChunk = createFileReader(getLogDir() .. "/" .. logfile)
     
     rfsuite.app.ui.progressDisplayClose()
@@ -307,98 +436,118 @@ local function event(widget, category, value, x, y)
 end
 
 local function wakeup()
-    if enableWakeup == true then
-
-        --local now = os.clock()
-        --if (now - wakeupScheduler) >= 0.5 then
-        --    lcd.invalidate()
-        --end   
-
-        if logDataRawReadComplete == false then
-            logDataRaw, logDataRawReadComplete =  readNextChunk()
-        else
-             if processedLogData == false then             
-                currentDataIndex = currentDataIndex + 1
-                
-                if currentDataIndex == 1 then
-                    progressLoader = form.openProgressDialog("Processing", "Please be patient - we have some work to do.")
-                    progressLoader:closeAllowed(false)
-                else      
-                    local percentage = (currentDataIndex / (logColumnsCount+1)) * 100
-                    progressLoader:value(percentage)
-                end
-
-                logData[logColumns[currentDataIndex]] = cleanColumn(getColumn(logDataRaw, currentDataIndex))
-
-                if currentDataIndex >= logColumnsCount then      
-
-                    progressLoader:close()
-                    processedLogData = true
-                end   
-
-            end       
-            
-        end   
-        
-    
-        
+    if not enableWakeup then
+        return -- Exit early if wakeup is disabled
     end
+    
+    if sliderPosition ~= sliderPositionOld then
+            lcd.invalidate()
+            sliderPositionOld = sliderPosition
+    end
+    
+
+    if not logDataRawReadComplete then
+        -- Read chunks of the file until complete
+        logDataRaw, logDataRawReadComplete = readNextChunk()
+        return
+    end
+
+    if not processedLogData then
+
+        -- Show progress dialog if starting
+        if currentDataIndex == 1 then
+            progressLoader = form.openProgressDialog("Processing", "Please be patient - we have some work to do.")
+            progressLoader:closeAllowed(false)
+        else
+            -- Update progress dialog
+            local percentage = (currentDataIndex / #logColumns) * 100
+            progressLoader:value(percentage)
+        end
+        
+        -- Process the column and store the cleaned data
+        logData[currentDataIndex] = {}
+        logData[currentDataIndex]['data'] = cleanColumn(getColumn(logDataRaw, currentDataIndex+1)) -- Note. We + 1 the currentDataIndex because  rfsuite.bg.logging.getLogTable does not return the 1st column
+        logData[currentDataIndex]['name'] = logColumns[currentDataIndex].name
+        logData[currentDataIndex]['color'] = logColumns[currentDataIndex].color
+        logData[currentDataIndex]['pen'] = logColumns[currentDataIndex].pen
+        logData[currentDataIndex]['keyindex'] = logColumns[currentDataIndex].keyindex
+        logData[currentDataIndex]['keyname'] = logColumns[currentDataIndex].keyname
+        logData[currentDataIndex]['keyunit'] = logColumns[currentDataIndex].keyunit
+        logData[currentDataIndex]['keyminmax'] = logColumns[currentDataIndex].keyminmax
+        logData[currentDataIndex]['keyfloor'] = logColumns[currentDataIndex].keyfloor
+        logData[currentDataIndex]['graph'] = logColumns[currentDataIndex].graph
+        logData[currentDataIndex]['maximum'] = findMaxNumber(logData[currentDataIndex]['data'])
+        logData[currentDataIndex]['minimum'] = findMinNumber(logData[currentDataIndex]['data'])
+        logData[currentDataIndex]['average'] = findAverage(logData[currentDataIndex]['data'])
+
+        
+        -- Close progress loader when all columns are processed
+        if currentDataIndex >= #logColumns then
+        
+            -- set log line count only once!
+            logLineCount = #logData[currentDataIndex]['data']
+
+            progressLoader:close()
+            processedLogData = true
+        end
+
+        currentDataIndex = currentDataIndex + 1
+                
+        return
+    end
+
+    -- Logic for paging and navigation can go here when data processing is complete
 end
 
+
 local function paint()
-    -- the graphs get drawn using the paint function
-    --curve_data(5 + 1, widget.x_zoom, curves_y[1], widget.cursor_x_pointer, widget.cursor_x_max, COLOR_GREEN)
+ 
+    local menu_offset = graphPos['menu_offset']
+    local x_start = graphPos['x_start']
+    local y_start = graphPos['y_start']
+    local width = graphPos['width'] - 10
+    local height = graphPos['height']
+
     
     if enableWakeup == true and processedLogData == true then
 
-        if logData ~= nil then
-        
-            local menu_offset = 100
-            local x_start = 0
-            local y_start = 0 + menu_offset
-            local width = LCD_W
-            local height = LCD_H - menu_offset
-            
-            local optimal_records_per_page, optimal_steps = calculate_optimal_records_per_page(#logData['voltage'],40,80)
+        if logData ~= nil then 
+            local optimal_records_per_page, optimal_steps = calculate_optimal_records_per_page(logLineCount,40,120)
             
             local step_size = optimal_records_per_page
-            local position = 1
+            
+            local position = math.floor(map(sliderPosition,1,100, 1,logLineCount - step_size))
+            
 
-            print ("Number of steps to page through: " .. optimal_steps)
+            for i,v in ipairs(logData) do
 
-            --voltage
-            local points = paginate_table(logData['voltage'],step_size,position)  
-            local color = COLOR_RED           
-            drawGraph(points, color, x_start, y_start, width, height)
+                if logData[i].graph == true then
+                    local points = paginate_table(logData[i].data,step_size,position)    
+                    local color = logData[i].color
+                    local pen = logData[i].pen
+                    local name = logData[i].name
+                    local minimum = logData[i].minimum
+                    local maximum = logData[i].maximum
+                    local average = logData[i].average
+                    local keyindex = logData[i].keyindex
+                    local keyname = logData[i].keyname
+                    local keyunit = logData[i].keyunit
+                    local keyminmax = logData[i].keyminmax
+                    local keyfloor = logData[i].keyfloor
+                    drawGraph(points, color, pen , x_start, y_start, width, height)
+                    drawKey(keyname,keyindex, keyunit, keyminmax, keyfloor, color, minimum,maximum)
 
-            --current
-            local points = paginate_table(logData['current'],step_size,position)
-            local color = COLOR_GREEN           
-            drawGraph(points, color, x_start, y_start, width, height)
-
-            --voltage
-            local points = paginate_table(logData['rpm'],step_size,position)
-            local color = COLOR_YELLOW           
-            drawGraph(points, color, x_start, y_start, width, height)        
-
-            --rssi
-            local points = paginate_table(logData['rssi'],step_size,position)
-            local color = COLOR_BLUE           
-            drawGraph(points, color, x_start, y_start, width, height)                    
-
-            --rssi
-            local points = paginate_table(logData['tempESC'],step_size,position)
-            local color = COLOR_CYAN           
-            drawGraph(points, color, x_start, y_start, width, height)    
-
+                end
+                
+            end
+   
         
         end
-
-
-
     end
     
 end
+
+
 local function onNavMenu(self)
 
     rfsuite.app.ui.progressDisplay()
