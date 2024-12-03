@@ -431,10 +431,10 @@ local function drawCurrentIndex(points,position, totalPoints, keyindex, keyunit,
     local idxPos
     local textAlign
     if (position > 50) then
-        idxPos = linePos -5 
+        idxPos = linePos -15 
         textAlign = RIGHT
     else
-        idxPos = linePos +5
+        idxPos = linePos +5 
         textAlign = LEFT
     end  
     
@@ -452,13 +452,13 @@ local function drawCurrentIndex(points,position, totalPoints, keyindex, keyunit,
     -- draw the vertical line
     lcd.color(COLOR_WHITE)
     lcd.drawLine(linePos,graphPos['menu_offset'] - 5,linePos,LCD_H-45)
- 
+
      -- show value
-    lcd.color(COLOR_WHITE)
     lcd.font(FONT_BOLD)
-    local tw,th = lcd.getTextSize(value)
+    local tw,th = lcd.getTextSize(value)     
+    lcd.color(COLOR_WHITE)
     local ty = (h_height / 2 - th / 2) + y + h_height    
-    lcd.drawText(idxPos,ty,value,textAlign)   
+    lcd.drawText(idxPos + 5,ty,value,textAlign)   
 
     -- display time
     local tw,th = lcd.getTextSize(time_str)
@@ -541,12 +541,24 @@ local function openPage(pidx, title, script,logfile)
     return
 end
 
-local function event(widget, category, value, x, y)
+local function event(event, category, value, x, y)
 
     if category == 5 or value == 35 then
         rfsuite.app.Page.onNavMenu(self)
         return true
     end
+    --[[
+    if value == KEY_ROTARY_RIGHT then
+        print("here")
+        sliderPosition = sliderPosition + 1
+        return false
+    end
+
+    if value == KEY_ROTARY_LEFT then
+        sliderPosition = sliderPosition - 1
+        return false   
+    end    
+    ]]--
 
     return false
 end
@@ -616,7 +628,6 @@ local function wakeup()
                                     sliderPosition = newValue 
                                 end)
                         
-        
             -- set log line count only once!
             logLineCount = #logData[currentDataIndex]['data']
 

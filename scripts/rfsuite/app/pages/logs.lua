@@ -8,10 +8,37 @@ local lastServoCountTime = os.clock()
 local enableWakeup = false
 local wakeupScheduler = os.clock()
 
-local function getLogDir()
+
+local function getCleanModelName()
     local logdir
     logdir = string.gsub(model.name(), "%s+", "_")
     logdir = string.gsub(logdir, "%W", "_")
+    return logdir
+end
+
+-- Helper function to check if directory exists
+local function dir_exists(base, name)
+    base = base or "./"
+    for _, v in pairs(system.listFiles(base)) do
+        if v == name then
+            return true
+        end
+    end
+    return false
+end
+
+local function getBaseDir()
+    local logs_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and "./" or (rfsuite.config.suiteDir .. "/") 
+    return logs_path 
+end 
+
+local function getLogDir()
+    local logs_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and "logs/" or (rfsuite.config.suiteDir .. "/logs/") 
+    return logs_path 
+end    
+
+local function getLogDirModel()
+    logdir = getCleanModelName()
     
     local logs_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and "logs/" or (rfsuite.config.suiteDir .. "/logs/")
     
@@ -105,8 +132,19 @@ local function openPage(pidx, title, script)
     if rfsuite.app.gfx_buttons["logs"] == nil then rfsuite.app.gfx_buttons["logs"] = {} end
     if rfsuite.app.menuLastSelected["logs"] == nil then rfsuite.app.menuLastSelected["logs"] = 1 end
 
+    -- check in ./ for logs folder
+    local basedir = getBaseDir()
+    if not dir_exists(basedir,"logs") then
+        os.mkdir(basedir .. "/logs")
+    end
+
+    -- check in ./logs for model folder
+    local logDir = getLogDirModel()
+    if not dir_exists(basedir,"logs/"..getCleanModelName()) then
+        os.mkdir(logDir)
+    end    
     
-    local logDir = getLogDir()
+    
     local logs = getLogs(logDir)
  
     for pidx,name in ipairs(logs) do
