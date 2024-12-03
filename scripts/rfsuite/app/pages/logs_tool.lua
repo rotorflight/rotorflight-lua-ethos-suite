@@ -4,11 +4,12 @@
 local LCD_W, LCD_H = rfsuite.utils.getWindowSize()
 
 local graphPos = {}
-graphPos['menu_offset'] = 70
+graphPos['menu_offset'] = rfsuite.app.radio.logGraphMenuOffset
 graphPos['x_start'] = 0
 graphPos['y_start'] = 0 + graphPos['menu_offset']
-graphPos['width'] = math.floor(LCD_W * 0.75) -- 35% less
+graphPos['width'] = math.floor(LCD_W * rfsuite.app.radio.logGraphWidthPercentage)
 graphPos['height'] = LCD_H - graphPos['menu_offset'] - 50
+
 
 
 local triggerOverRide = false
@@ -372,7 +373,7 @@ local function drawKey(name,keyindex,keyunit, keyminmax, keyfloor, color,minimum
     
     
     local w = LCD_W - graphPos['width'] - 10
-    local h = 65    
+    local h = rfsuite.app.radio.logGraphKeyHeight    
     local h_height = h/2
     local x = graphPos['width']
     local y = (graphPos['y_start'] + (keyindex * h)) - h
@@ -413,12 +414,15 @@ local function drawCurrentIndex(points,position, totalPoints, keyindex, keyunit,
 
     if position < 1 then position = 1 end
 
+
     local w = graphPos['width']
     local h = 35    
     local h_height = 30
     local x = 0
-    local y = (graphPos['y_start'] + (keyindex * h)) - h
+    local y = (keyindex * h) - h_height/2
     local idx_w = 100
+
+
   
     local linePos = map(position, 1, 100, 1, w-10)
     
@@ -453,7 +457,8 @@ local function drawCurrentIndex(points,position, totalPoints, keyindex, keyunit,
     lcd.font(FONT_BOLD)
     local tw,th = lcd.getTextSize(value)     
     lcd.color(COLOR_WHITE)
-    local ty = (h_height / 2 - th / 2) + y + h_height    
+    --local ty = (h_height / 2 - th / 2) + y + (h_height*2)    
+    local ty = (graphPos['menu_offset'] + (th * keyindex)) - keyindex
     lcd.drawText(idxPos + 5,ty,value,textAlign)   
 
     -- display time

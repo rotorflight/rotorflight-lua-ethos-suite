@@ -37,14 +37,15 @@ end
 local function getLogPath()
 
     -- do some checks to make sure stuff exists
-    local base_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and "./" or (rfsuite.config.suiteDir .. "/")     local base_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and "./" or (rfsuite.config.suiteDir .. "/") 
+    local base_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and "./" or (rfsuite.config.suiteDir .. "/")
     local logs_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and "logs" or (rfsuite.config.suiteDir .. "/logs") 
     local logs_path_telemetry = (rfsuite.utils.ethosVersionToMinor() >= 16) and "logs/telemetry" or (rfsuite.config.suiteDir .. "/logs/telemetry") 
     
+
     if not dir_exists(base_path, logs_path) then
         os.mkdir(logs_path)
     end
-    if not dir_exists(base_path .. '/' .. logs_path, 'telemetry') then
+    if not dir_exists(logs_path_telemetry) then
         os.mkdir(logs_path_telemetry)
     end    
     
@@ -86,6 +87,12 @@ local function extractShortTimestamp(filename)
     return nil -- Return nil if the pattern doesn't match
 end
 
+function extractName(input)
+    -- Match everything before the first underscore followed by a date pattern
+    local name = input:match("^(.-)_%d%d%d%d%-%d%d%-%d%d")
+    return name
+end
+
 local function openPage(pidx, title, script)
 
     rfsuite.bg.msp.protocol.mspIntervalOveride = nil
@@ -117,7 +124,7 @@ local function openPage(pidx, title, script)
     local numPerRow
 
     padding = rfsuite.app.radio.buttonPaddingSmall
-    buttonW = (rfsuite.config.lcdWidth - padding) / (rfsuite.app.radio.buttonsPerRow-1) - padding
+    buttonW = (rfsuite.config.lcdWidth - padding) / (rfsuite.app.radio.logGraphButtonsPerRow-1) - padding
     buttonH = rfsuite.app.radio.navbuttonHeight
     numPerRow = rfsuite.app.radio.buttonsPerRow - 1
 
