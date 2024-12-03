@@ -144,37 +144,56 @@ local function openPage(pidx, title, script)
     
     local logs = getLogs(logDir)
  
-    for pidx,name in ipairs(logs) do
+    if #logs == 0 then
 
-        if lc == 0 then
-            y = form.height() + rfsuite.app.radio.buttonPaddingSmall 
-        end
+        LCD_W, LCD_H = rfsuite.utils.getWindowSize()
+        local str = "NO LOG FILES FOUND"
+        local ew = LCD_W
+        local eh = LCD_H
+        local etsizeW, etsizeH = lcd.getTextSize(str)
+        local eposX = ew / 2 - etsizeW / 2
+        local eposY = eh / 2 - etsizeH / 2
 
-        if lc >= 0 then bx = (buttonW + padding) * lc end
 
+        local posErr = {w=etsizeW, h=rfsuite.app.radio.navbuttonHeight, x=eposX,y=ePosY}
+    
+        line = form.addLine("",nil,false)
+        form.addStaticText(line, posErr, str)
+    
+    else
+ 
+        for pidx,name in ipairs(logs) do
 
-        rfsuite.app.formFields[pidx] = form.addButton(nil, {x = bx, y = y, w = buttonW, h = buttonH}, {
-            text = extractShortTimestamp(name),
-            options = FONT_S,
-            paint = function()
-            end,
-            press = function()
-                rfsuite.app.menuLastSelected["logs"] = pidx
-                rfsuite.app.ui.progressDisplay()
-                rfsuite.app.ui.openPage(pidx, "Logs", "logs_tool.lua",name)
+            if lc == 0 then
+                y = form.height() + rfsuite.app.radio.buttonPaddingSmall 
             end
-        })
-        
-        rfsuite.app.formFields[pidx]:enable(true)
+
+            if lc >= 0 then bx = (buttonW + padding) * lc end
 
 
-        if rfsuite.app.menuLastSelected["logs"] == pidx then rfsuite.app.formFields[pidx]:focus() end
+            rfsuite.app.formFields[pidx] = form.addButton(nil, {x = bx, y = y, w = buttonW, h = buttonH}, {
+                text = extractShortTimestamp(name),
+                options = FONT_S,
+                paint = function()
+                end,
+                press = function()
+                    rfsuite.app.menuLastSelected["logs"] = pidx
+                    rfsuite.app.ui.progressDisplay()
+                    rfsuite.app.ui.openPage(pidx, "Logs", "logs_tool.lua",name)
+                end
+            })
+            
+            rfsuite.app.formFields[pidx]:enable(true)
 
-        lc = lc + 1
 
-        if lc == numPerRow then lc = 0 end
+            if rfsuite.app.menuLastSelected["logs"] == pidx then rfsuite.app.formFields[pidx]:focus() end
 
-    end
+            lc = lc + 1
+
+            if lc == numPerRow then lc = 0 end
+
+        end
+    end    
 
     rfsuite.app.triggers.closeProgressLoader = true
 
@@ -186,10 +205,10 @@ end
 
 local function event(widget, category, value, x, y)
 
-    if category == 5 or value == 35 then
-        rfsuite.app.Page.onNavMenu(self)
-        return true
-    end
+    --if category == 5 or value == 35 then
+    --    rfsuite.app.Page.onNavMenu(self)
+    --    return true
+    --end
 
     return false
 end
