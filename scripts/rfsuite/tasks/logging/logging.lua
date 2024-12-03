@@ -21,7 +21,6 @@ local arg = {...}
 local config = arg[1]
 
 local logging = {}
-local logdir
 local logInterval = 1  -- default is 1 second
 local logFileName
 local logRateLimit = os.clock()
@@ -32,15 +31,16 @@ local logTable = {
     { name = "current", keyindex = 2, keyname = "Current", keyunit="A", keyminmax = 0, color = COLOR_ORANGE , pen = SOLID, graph = true},
     { name = "rpm", keyindex = 3,keyname = "Headspeed", keyunit="rpm", keyminmax = 0, keyfloor = true, color = COLOR_BLUE , pen = SOLID, graph = true},
     { name = "tempESC", keyindex = 4,keyname = "Esc. Temperature", keyunit="°", keyminmax = 1, color = COLOR_CYAN, pen = SOLID, graph = true},
-
 }
 
 -- Queue for log entries
 local log_queue = {}
 
+local logDirChecked = false
+
 -- Sensor rate limit
 local sensorRateLimit = os.clock()
-local sensorRate = 2 -- seconds between sensor readings
+local sensorRate = 1 -- seconds between sensor readings
 
 -- Helper function to check if directory exists
 local function dir_exists(base, name)
@@ -64,16 +64,17 @@ local function file_exists(name)
 end
 
 -- Generate a timestamped filename
-local function generateTimestampFilename()
+local function generateLogFilename()
+    local modelname  = string.gsub(model.name(), "%s+", "_")
+          modelname = string.gsub(modelname, "%W", "_")
     local timestamp = os.date("%Y-%m-%d_%H-%M-%S")
     local uniquePart = math.floor(os.clock() * 1000) -- milliseconds
-    return timestamp .. "_" .. uniquePart .. ".csv"
+    return modelname .. "_" .. timestamp .. "_" .. uniquePart .. ".csv"
 end
 
 -- Update log directory based on model name
-local function update_logdir()
-    logdir = string.gsub(model.name(), "%s+", "_")
-    logdir = string.gsub(logdir, "%W", "_")
+local function checkLogdirExists()
+    local logdir = "telemetry"
     local logs_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and "logs/" or (config.suiteDir .. "/logs/")
     
     if not dir_exists(logs_path, logdir) then
@@ -92,8 +93,8 @@ function logging.flushLogs(forceFlush)
 
     if #log_queue > 0 and rfsuite.bg.msp.mspQueue:isProcessed() then
         local filePath = (rfsuite.utils.ethosVersionToMinor() < 16) and 
-            (config.suiteDir .. "/logs/" .. logdir .. "/" .. logFileName) or 
-            ("logs/" .. logdir .. "/" .. logFileName)
+            (config.suiteDir .. "/logs/telemetry/" .. logFileName) or 
+            ("logs/telemetry/" .. logFileName)
         
         local f = io.open(filePath, 'a')
         for i = 1, math.min(#log_queue, max_lines_per_flush) do
@@ -133,14 +134,18 @@ end
 function logging.wakeup()
     if not config.flightLog then return end -- Abort if logging is disabled
 
+    if logDirChecked == false then
+        checkLogdirExists()
+        logDirChecked = true
+    end    
+
     local armSource = rfsuite.bg.telemetry.getSensorSource("armflags")
     if armSource then
         local isArmed = armSource:value()
 
         -- If armed, start logging
         if isArmed == 1 or isArmed == 3 then
-            if not logdir then update_logdir() end
-            if not logFileName then logFileName = generateTimestampFilename() end
+            if not logFileName then logFileName = generateLogFilename() end
             if not logHeader then
                 logHeader = logging.getLogHeader()
                 logging.queueLog(logHeader)

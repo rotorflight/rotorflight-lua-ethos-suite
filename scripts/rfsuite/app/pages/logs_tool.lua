@@ -295,13 +295,10 @@ local function trimHeader(data)
 end
 
 local function getLogDir()
-    local logdir
-    logdir = string.gsub(model.name(), "%s+", "_")
-    logdir = string.gsub(logdir, "%W", "_")
-    
+
     local logs_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and "logs/" or (rfsuite.config.suiteDir .. "/logs/")
     
-    return logs_path .. logdir
+    return logs_path .. "telemetry/"
     
 end
 
@@ -323,12 +320,13 @@ function getValueAtPercentage(array, percentage)
 end
 
 local function extractShortTimestamp(filename)
-    -- Match the date and time components in the filename
-    local date, time = filename:match("^(%d%d%d%d%-%d%d%-%d%d)_(%d%d%-%d%d%-%d%d)")
+    -- Match the date and time components in the filename, ignoring the prefix
+    local date, time = filename:match(".-(%d%d%d%d%-%d%d%-%d%d)_(%d%d%-%d%d%-%d%d)")
     if date and time then
+        -- Replace dashes with slashes or colons for a compact format
         return date:gsub("%-", "/") .. " " .. time:gsub("%-", ":")
     end
-    return nil
+    return nil -- Return nil if the pattern doesn't match
 end
 
 local function drawGraph(points, color, pen, x_start, y_start, width, height, min_val, max_val)
@@ -384,7 +382,6 @@ local function drawKey(name,keyindex,keyunit, keyminmax, keyfloor, color,minimum
             maximum = math.floor(maximum)            
     end
     
-
     -- draw the header box
     lcd.pen(solid)
     lcd.drawFilledRectangle(x,y,w,h_height)
@@ -441,7 +438,6 @@ local function drawCurrentIndex(points,position, totalPoints, keyindex, keyunit,
     local current_s = calculateSeconds(totalPoints, position)
     local time_str = format_time(math.floor(current_s))
   
-  
     -- work out the current values based on position
     local value = getValueAtPercentage(points, position)
     if keyfloor == true then
@@ -469,7 +465,6 @@ local function drawCurrentIndex(points,position, totalPoints, keyindex, keyunit,
     
 
 end
-
 
 function findMaxNumber(numbers)
     local max = numbers[1] -- Assume the first number is the largest initially

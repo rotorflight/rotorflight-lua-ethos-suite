@@ -27,23 +27,28 @@ local function dir_exists(base, name)
     return false
 end
 
-local function getBaseDir()
-    local logs_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and "./" or (rfsuite.config.suiteDir .. "/") 
-    return logs_path 
-end 
+local function getModelName()
+    local logdir
+    logdir = string.gsub(model.name(), "%s+", "_")
+    logdir = string.gsub(logdir, "%W", "_")
+    return logdir
+end
 
-local function getLogDir()
-    local logs_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and "logs/" or (rfsuite.config.suiteDir .. "/logs/") 
-    return logs_path 
-end    
+local function getLogPath()
 
-local function getLogDirModel()
-    logdir = getCleanModelName()
+    -- do some checks to make sure stuff exists
+    local base_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and "./" or (rfsuite.config.suiteDir .. "/")     local base_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and "./" or (rfsuite.config.suiteDir .. "/") 
+    local logs_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and "logs" or (rfsuite.config.suiteDir .. "/logs") 
+    local logs_path_telemetry = (rfsuite.utils.ethosVersionToMinor() >= 16) and "logs/telemetry" or (rfsuite.config.suiteDir .. "/logs/telemetry") 
     
-    local logs_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and "logs/" or (rfsuite.config.suiteDir .. "/logs/")
+    if not dir_exists(base_path, logs_path) then
+        os.mkdir(logs_path)
+    end
+    if not dir_exists(base_path .. '/' .. logs_path, 'telemetry') then
+        os.mkdir(logs_path_telemetry)
+    end    
     
-    return logs_path .. logdir
-    
+    return logs_path_telemetry
 end
 
 local function getLogs(logDir)
@@ -71,11 +76,9 @@ local function getLogs(logDir)
     return result
 end
 
-
-
 local function extractShortTimestamp(filename)
-    -- Match the date and time components in the filename
-    local date, time = filename:match("^(%d%d%d%d%-%d%d%-%d%d)_(%d%d%-%d%d%-%d%d)")
+    -- Match the date and time components in the filename, ignoring the prefix
+    local date, time = filename:match(".-(%d%d%d%d%-%d%d%-%d%d)_(%d%d%-%d%d%-%d%d)")
     if date and time then
         -- Replace dashes with slashes or colons for a compact format
         return date:gsub("%-", "/") .. " " .. time:gsub("%-", ":")
@@ -84,8 +87,6 @@ local function extractShortTimestamp(filename)
 end
 
 local function openPage(pidx, title, script)
-
-
 
     rfsuite.bg.msp.protocol.mspIntervalOveride = nil
 
@@ -132,18 +133,7 @@ local function openPage(pidx, title, script)
     if rfsuite.app.gfx_buttons["logs"] == nil then rfsuite.app.gfx_buttons["logs"] = {} end
     if rfsuite.app.menuLastSelected["logs"] == nil then rfsuite.app.menuLastSelected["logs"] = 1 end
 
-    -- check in ./ for logs folder
-    local basedir = getBaseDir()
-    if not dir_exists(basedir,"logs") then
-        os.mkdir(basedir .. "/logs")
-    end
-
-    -- check in ./logs for model folder
-    local logDir = getLogDirModel()
-    if not dir_exists(basedir,"logs/"..getCleanModelName()) then
-        os.mkdir(logDir)
-    end    
-    
+    local logDir = getLogPath()
     
     local logs = getLogs(logDir)
  
