@@ -344,7 +344,8 @@ local function drawGraph(points, color, pen, x_start, y_start, width, height, mi
     
     -- Handle edge case: If max_val equals min_val, avoid divide-by-zero error
     if max_val == min_val then
-        error("Max value and min value cannot be the same.")
+        max_val = max_val + 1
+        min_val = min_val - 1
     end
 
     if color ~= nil then lcd.color(color) else lcd.color(COLOR_GREY) end
