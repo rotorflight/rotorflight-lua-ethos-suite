@@ -77,7 +77,7 @@ function msp.onConnectBgChecks()
                         rfsuite.utils.log("MSP Version: " .. rfsuite.config.apiVersion)
                     end
                 end,
-                simulatorResponse = {0, 12, 7}
+                simulatorResponse = rfsuite.config.simulatorApiVersionResponse
             }
             msp.mspQueue:add(message)
         elseif rfsuite.config.clockSet == nil and msp.mspQueue:isProcessed() then
