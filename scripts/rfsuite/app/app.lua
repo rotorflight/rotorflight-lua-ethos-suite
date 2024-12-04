@@ -116,6 +116,7 @@ app.audio.playServoOverideEnable = false
 app.audio.playMixerOverideDisable = false
 app.audio.playMixerOverideEnable = false
 app.audio.playEraseFlash = false
+app.offlineMode = false
 
 app.dialogs = {}
 app.dialogs.progress = false
@@ -157,7 +158,7 @@ rfsuite.config.ethosRunningVersion = nil
 
 -- RETURN THE CURRENT RSSI SENSOR VALUE 
 function app.getRSSI()
-    if system:getVersion().simulation == true or rfsuite.config.skipRssiSensorCheck == true then return 100 end
+    if system:getVersion().simulation == true or rfsuite.config.skipRssiSensorCheck == true or app.offlineMode == true then return 100 end
 
     -- if rfsuite.rssiSensor ~= nil then
 
@@ -619,6 +620,11 @@ function app.wakeupUI()
                     message = "This version of the Lua script \ncan't be used with the selected model (" .. rfsuite.config.apiVersion .. ")."
                     app.triggers.invalidConnectionSetup = true
                 end
+                
+                -- if in offline mode.. revert any of the above checks to allow ui to load.
+                if app.offlineMode == true then
+                    app.triggers.invalidConnectionSetup = false
+                end
 
                 -- display message and abort if error occured
                 if app.triggers.invalidConnectionSetup == true and app.triggers.wasConnected == false then
@@ -994,6 +1000,7 @@ function app.create_logtool()
     rfsuite.app.menuLastSelected["mainmenu"] = pidx
     rfsuite.app.ui.progressDisplay()
 
+    rfsuite.app.offlineMode = true
     rfsuite.app.ui.openPage(1, "Logs", "logs.lua",1) --- final param says to load in standalone mode
 
 
@@ -1089,6 +1096,7 @@ end
 function app.close()
 
     app.guiIsRunning = false
+    app.offlineMode = false
 
     if app.Page ~= nil and (app.uiState == app.uiStatus.pages or app.uiState == app.uiStatus.mainMenu) then if app.Page.close then app.Page.close() end end
 
