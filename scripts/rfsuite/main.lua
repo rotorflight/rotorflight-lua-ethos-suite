@@ -25,7 +25,8 @@ local config = {}
 -- LuaFormatter off
 config.toolName = "Rotorflight"                                     -- name of the tool
 config.suiteDir = "/scripts/rfsuite/"                               -- base path the script is installed into
-config.icon = lcd.loadMask("app/gfx/icon.png")   -- icon
+config.icon = lcd.loadMask("app/gfx/icon.png")                      -- icon
+config.icon_logtool = lcd.loadMask("app/gfx/icon_logtool.png")      -- icon
 config.Version = "1.0.0"                                            -- version number of this software release
 config.ethosVersion = 1518                                          -- min version of ethos supported by this script
 config.ethosVersionString = "ETHOS < V1.5.18"                       -- string to print if ethos version error occurs
@@ -84,6 +85,7 @@ rfsuite.rf2status = assert(loadfile("widgets/status/status.lua"))(config)
 
 local function init()
         system.registerSystemTool({event = rfsuite.app.event, name = config.toolName, icon = config.icon, create = rfsuite.app.create, wakeup = rfsuite.app.wakeup, paint = rfsuite.app.paint, close = rfsuite.app.close})
+        system.registerSystemTool({event = rfsuite.app.event, name = config.toolName, icon = config.icon_logtool, create = rfsuite.app.create_logtool, wakeup = rfsuite.app.wakeup, paint = rfsuite.app.paint, close = rfsuite.app.close})
         system.registerTask({name = config.bgTaskName, key = config.bgTaskKey, wakeup = rfsuite.bg.wakeup, event = rfsuite.bg.event})
         system.registerWidget({name = config.rf2govName,key = config.rf2govKey, create = rfsuite.rf2gov.create, paint = rfsuite.rf2gov.paint, wakeup = rfsuite.rf2gov.wakeup, persistent = false})        
         system.registerWidget({name = config.rf2statusName,key = config.rf2statusKey, menu = rfsuite.rf2status.menu, event = rfsuite.rf2status.event, write = rfsuite.rf2status.write, read = rfsuite.rf2status.read, configure = rfsuite.rf2status.configure, create = rfsuite.rf2status.create, paint = rfsuite.rf2status.paint, wakeup = rfsuite.rf2status.wakeup, persistent = false})        

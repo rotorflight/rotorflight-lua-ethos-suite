@@ -7,7 +7,7 @@ local triggerOverRideAll = false
 local lastServoCountTime = os.clock()
 local enableWakeup = false
 local wakeupScheduler = os.clock()
-
+local currentDisplayMode
 
 local function getCleanModelName()
     local logdir
@@ -93,7 +93,9 @@ function extractName(input)
     return name
 end
 
-local function openPage(pidx, title, script)
+local function openPage(pidx, title, script,displaymode)
+
+    currentDisplayMode = displaymode
 
     rfsuite.bg.msp.protocol.mspIntervalOveride = nil
 
@@ -179,7 +181,7 @@ local function openPage(pidx, title, script)
                 press = function()
                     rfsuite.app.menuLastSelected["logs"] = pidx
                     rfsuite.app.ui.progressDisplay()
-                    rfsuite.app.ui.openPage(pidx, "Logs", "logs_tool.lua",name)
+                    rfsuite.app.ui.openPage(pidx, "Logs", "logs_tool.lua",name,currentDisplayMode)
                 end
             })
             
@@ -225,7 +227,15 @@ local function wakeup()
 
 end
 
+local function onNavMenu()
 
+    if currentDisplayMode == 1 then
+        system.exit()
+    else
+        rfsuite.app.ui.openMainMenu()
+    end
+
+end
 
 
 return {
@@ -233,5 +243,6 @@ return {
     event = event,
     openPage = openPage,
     wakeup = wakeup,
+    onNavMenu = onNavMenu,
     navButtons = {menu = true, save = false, reload = false, tool = false, help = true}
 }

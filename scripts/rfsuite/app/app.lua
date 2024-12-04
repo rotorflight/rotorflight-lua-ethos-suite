@@ -969,6 +969,37 @@ function app.wakeupUI()
 
 end
 
+
+function app.create_logtool()
+
+
+    -- config.apiVersion = nil
+    config.environment = system.getVersion()
+    config.ethosRunningVersion = rfsuite.utils.ethosVersion()
+
+    rfsuite.config.lcdWidth, rfsuite.config.lcdHeight = rfsuite.utils.getWindowSize()
+    app.radio = assert(loadfile("app/radios.lua"))().msp
+
+    app.fieldHelpTxt = assert(loadfile("app/help/fields.lua"))()
+
+    app.uiState = app.uiStatus.init
+
+    -- overide developermode if file exists.
+    if rfsuite.config.developerMode ~= true then
+        if rfsuite.utils.file_exists("/scripts/developermode") then
+                rfsuite.config.developerMode = true
+        end
+    end
+
+    rfsuite.app.menuLastSelected["mainmenu"] = pidx
+    rfsuite.app.ui.progressDisplay()
+
+    rfsuite.app.ui.openPage(1, "Logs", "logs.lua",1) --- final param says to load in standalone mode
+
+
+end
+
+
 function app.create()
 
 

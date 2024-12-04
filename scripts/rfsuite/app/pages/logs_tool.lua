@@ -20,6 +20,7 @@ local wakeupScheduler = os.clock()
 local activeLogFile 
 local logPadding = 1
 local armTime
+local currentDisplayMode
 
 local logDataRaw
 local logDataRawReadComplete = false
@@ -508,8 +509,10 @@ function findAverage(numbers)
     return average
 end
 
-local function openPage(pidx, title, script,logfile)
+local function openPage(pidx, title, script,logfile,displaymode)
 
+    currentDisplayMode = displaymode
+    
     rfsuite.bg.msp.protocol.mspIntervalOveride = nil
 
     rfsuite.app.triggers.isReady = false
@@ -698,8 +701,13 @@ end
 
 local function onNavMenu(self)
 
-    rfsuite.app.ui.progressDisplay()
-    rfsuite.app.ui.openPage(rfsuite.app.lastIdx, rfsuite.app.lastTitle, "logs.lua")
+        rfsuite.app.ui.progressDisplay()
+
+    if currentDisplayMode == 1 then
+        rfsuite.app.ui.openPage(1, rfsuite.app.lastTitle, "logs.lua",1)   
+    else
+        rfsuite.app.ui.openPage(rfsuite.app.lastIdx, rfsuite.app.lastTitle, "logs.lua")
+    end
 
 end
 
