@@ -102,7 +102,6 @@ return {
     --
     -- pids.lua
     --
-
     profilesProportional = {t = "How tightly the system tracks the desired setpoint."},
     profilesIntegral = {t = "How tightly the system holds its position."},
     profilesHSI = {t = "Used to prevent the craft from pitching up when flying at speed."},
@@ -154,5 +153,16 @@ return {
     motorGearRatioPinion = {t = "Motor Pinion Gear Tooth Count"},
     motorGearRatioMain = {t = "Main Gear Tooth Count"},
     motorGearRatioTailRear = {t = "Tail Gear Tooth Count"},
-    motorGearRatioTailFront = {t = "Autorotation Gear Tooth Count"}    
+    motorGearRatioTailFront = {t = "Autorotation Gear Tooth Count"},
+
+    --
+    -- radio_config.lua
+    --
+    radioCenter = {t = "Stick center in microseconds (us)."},
+    radioDeflection = {t = "Stick deflection from center in microseconds (us)."},
+    radioArmThrottle = {t = "Throttle must be at or below this value in microseconds (us) to allow arming. Must be at least 10us lower than minimum throttle."},
+    radioMinThrottle = {t = "Minimum throttle (0% throttle output) expected from radio, in microseconds (us)."},
+    radioMaxThrottle = {t = "Maximum throttle (100% throttle output) expected from radio, in microseconds (us)."},
+    radioCycDeadband = {t = "Deadband for cyclic control in microseconds (us)."},
+    radioYawDeadband = {t = "Deadband for yaw control in microseconds (us)."}
 }

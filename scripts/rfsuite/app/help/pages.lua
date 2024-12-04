@@ -197,8 +197,7 @@ data["status"]["TEXT"] = {
 data["about"] = {}
 data["about"]["TEXT"] = {
         "This page provides some useful information that you may be asked for when requesting support.", 
-        "For support, please first read the help pages on www.rotorflight.org",
-        "If you're stuck or need further assistance, drop by our Discord group by scanning the QR code on the right."
+        "For support, please first read the help pages on www.rotorflight.org"
 }
 
 -- SELECT PROFILE

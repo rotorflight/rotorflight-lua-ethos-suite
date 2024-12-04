@@ -27,11 +27,11 @@ local currentRssiSensor
 
 -- declare vars
 local bg = {}
-bg.init = true
-
 bg.heartbeat = nil
-
 bg.init = false
+bg.log_queue = {}
+bg.wasOn = false
+
 -- tasks
 bg.telemetry = assert(loadfile("tasks/telemetry/telemetry.lua"))(config)
 bg.msp = assert(loadfile("tasks/msp/msp.lua"))(config)
@@ -39,20 +39,15 @@ bg.adjfunctions = assert(loadfile("tasks/adjfunctions/adjfunctions.lua"))(config
 bg.sensors = assert(loadfile("tasks/sensors/sensors.lua"))(config)
 bg.logging = assert(loadfile("tasks/logging/logging.lua"))(config)
 
-bg.log_queue = {}
-
-
 rfsuite.rssiSensorChanged = true
 
 local rssiCheckScheduler = os.clock()
 local lastRssiSensorName = nil
 
-bg.wasOn = false
-
 function bg.flush_logs()
     local max_lines_per_flush = 5
 
-    if #bg.log_queue > 0 and rfsuite.bg.msp.mspQueue:isProcessed() then
+    if #bg.log_queue > 0 and rfsuite.bg.msp.mspQueue:isProcessed()then
     
         local f
             
@@ -77,7 +72,7 @@ function bg.active()
 
     if bg.heartbeat == nil then return false end
 
-    if bg.heartbeat ~= nil and (os.clock() - bg.heartbeat) >= 2 then
+    if (os.clock() - bg.heartbeat) >= 2 then
         bg.wasOn = true
     else
         bg.wasOn = false
@@ -89,10 +84,9 @@ function bg.active()
     -- if we have not run within 2 seconds.. notify that bg script is down
     if (os.clock() - bg.heartbeat) <= 2 then
         return true
-    else
-        return false
     end
 
+    return false
 end
 
 function bg.wakeup()
@@ -102,41 +96,36 @@ function bg.wakeup()
     -- this should be before msp.hecks
     -- doing this is heavy - lets run it every few seconds only
     local now = os.clock()
-    if rssiCheckScheduler ~= nil and (now - rssiCheckScheduler) >= 2 then
+    if now - (rssiCheckScheduler or 0) >= 2 then
         currentRssiSensor = rfsuite.utils.getRssiSensor()
 
-        if currentRssiSensor ~= nil then
+        rfsuite.rssiSensorChanged = currentRssiSensor and (lastRssiSensorName ~= currentRssiSensor.name) or false
+        lastRssiSensorName = currentRssiSensor and currentRssiSensor.name or nil
 
-            if lastRssiSensorName ~= currentRssiSensor.name then
-                rfsuite.rssiSensorChanged = true
-            else
-                rfsuite.rssiSensorChanged = false
-            end
-
-            lastRssiSensorName = currentRssiSensor.name
-            
-        else
-            rfsuite.rssiSensorChanged = false
-        end
         rssiCheckScheduler = now
     end
+    
     if system:getVersion().simulation == true then rfsuite.rssiSensorChanged = false end
 
     if currentRssiSensor ~= nil then
         rfsuite.rssiSensor = currentRssiSensor.sensor
-    end    
+    end  
 
     -- high priority and must alway run regardless of tlm state
     bg.msp.wakeup()
-    bg.telemetry.wakeup()
-    bg.sensors.wakeup()
-    bg.adjfunctions.wakeup()
-    bg.logging.wakeup()
-    bg.flush_logs() 
+
+    -- skip these if we are doing any msp traffic
+    if not rfsuite.app.triggers.mspBusy then
+        bg.flush_logs() 
+        bg.logging.wakeup()
+        bg.adjfunctions.wakeup()
+        bg.telemetry.wakeup()        
+        bg.sensors.wakeup()        
+    end    
+            
 end
 
 function bg.event(widget, category, value)
-
     if bg.msp.event then bg.msp.event(widget, category, value) end
     if bg.adjfunctions.event then bg.adjfunctions.event(widget, category, value) end
 end
