@@ -16,7 +16,7 @@ fields[#fields + 1] = {t = "Mode", min = 0, max = 4, vals = {1}, table = {[0] = 
 fields[#fields + 1] = {t = "Handover throttle%", help = "govHandoverThrottle", min = 10, max = 50, unit = "%", default = 20, vals = {20}}
 
 if rfsuite.config.apiVersion >= 12.08 then
-    fields[#fields + 1] = {t = "Min  spoolup throttle", help = "govSpoolupThrottle", min = 0, max = 50, unit = "%", default = 0, vals = {25}}
+    fields[#fields + 1] = {t = "Min  spoolup throttle%", help = "govSpoolupThrottle", min = 0, max = 50, unit = "%", default = 0, vals = {25}}
 end
 
 fields[#fields + 1] = {t = "Startup time", help = "govStartupTime", min = 0, max = 600, unit = "s", default = 200, vals = {2, 3}, decimals = 1, scale = 10}
