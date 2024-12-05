@@ -44,6 +44,7 @@ sections[#sections + 1] = {title = "Tools", section = 5}
 pages[#pages + 1] = {title = "Copy Profiles", section = 5, script = "copy_profiles.lua", image = "copy.png"}
 pages[#pages + 1] = {title = "Set Profiles", section = 5, script = "select_profile.lua", image = "select_profile.png"}
 pages[#pages + 1] = {title = "Status", section = 5, script = "status.lua", image = "status.png"}
+pages[#pages + 1] = {title = "Logs", section = 5, script = "logs.lua", image = "logs.png"}
 
 
 sections[#sections + 1] = {title = "Developer", section = 6, developer = true}
