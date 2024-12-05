@@ -4,6 +4,9 @@ local fields = {}
 local arg = {...}
 
 local idx = arg[1]
+if idx == nil then
+ idx = rfsuite.app.lastIdx
+end
 
 local currentProfileChecked = false
 
