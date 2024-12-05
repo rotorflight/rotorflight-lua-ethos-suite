@@ -43,10 +43,11 @@ local function saveServoSettings(self)
     print(idx)
 
     local mixIndex = idx
-    local mixType = math.floor(rfsuite.app.Page.fields[2].value)
-    local mixSource = math.floor(rfsuite.app.Page.fields[3].value)
-    local mixMin = math.floor(rfsuite.app.Page.fields[4].value)
-    local mixMax = math.floor(rfsuite.app.Page.fields[5].value)    
+    local mixType = math.floor(rfsuite.app.Page.fields[1].value)
+    local mixSource = math.floor(rfsuite.app.Page.fields[2].value)
+    local mixMin = math.floor(rfsuite.app.Page.fields[3].value)
+    local mixMax = math.floor(rfsuite.app.Page.fields[4].value) 
+    local frameRate = 250
 
     local message = {
         command = 153, -- MSP_SET_SERVO_CONFIGURATION
@@ -54,10 +55,10 @@ local function saveServoSettings(self)
     }
     rfsuite.bg.msp.mspHelper.writeU8(message.payload, mixIndex)
     rfsuite.bg.msp.mspHelper.writeU8(message.payload, mixType)
-    rfsuite.bg.msp.mspHelper.writeU16(message.payload, mixSource)
+    rfsuite.bg.msp.mspHelper.writeU8(message.payload, mixSource)
     rfsuite.bg.msp.mspHelper.writeU16(message.payload, mixMin)
     rfsuite.bg.msp.mspHelper.writeU16(message.payload, mixMax)    
-
+    rfsuite.bg.msp.mspHelper.writeU8(message.payload, frameRate)
 
     if rfsuite.config.mspTxRxDebug == true or rfsuite.config.logEnable == true then
         local logData = "{" .. rfsuite.utils.joinTableItems(message.payload, ", ") .. "}"
