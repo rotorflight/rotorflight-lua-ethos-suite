@@ -44,6 +44,7 @@ local function wakeup()
        local currentMax = minmax[minMaxIndex].max
        local currentSourceMax = minmax[minMaxIndex].sourceMax
         
+        -- set min and max values
        if rfsuite.app.Page.fields[2].value >= currentSourceMax then
              rfsuite.app.Page.fields[2].value = currentSourceMax - 1
        end   
@@ -61,7 +62,19 @@ end
 
 -- function to set min and max value based on index.
 local function setMinMaxIndex(self)
-     minMaxIndex = math.floor(rfsuite.app.Page.fields[1].value)     
+   minMaxIndex = math.floor(rfsuite.app.Page.fields[1].value)
+
+
+    -- default all values
+   local currentMin = minmax[minMaxIndex].min
+   local currentMax = minmax[minMaxIndex].max
+   local currentSourceMax = minmax[minMaxIndex].sourceMax
+     
+
+   rfsuite.app.Page.fields[2].value = currentSourceMax - 1
+   rfsuite.app.Page.fields[3].value = currentMin
+   rfsuite.app.Page.fields[4].value = currentMax
+
 end
 
 
