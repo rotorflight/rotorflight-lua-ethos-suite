@@ -108,7 +108,7 @@ local function openPage(pidx, title, script)
             paint = function()
             end,
             press = function()
-                rfsuite.app.menuLastSelected["sbuschannel"] = pidx
+                rfsuite.app.menuLastSelected["sbuschannel"] = pidx -1
                 rfsuite.currentServoIndex = pidx
                 rfsuite.app.ui.progressDisplay()
                 rfsuite.app.ui.openPage(pidx - 1, "Channel " .. tostring(pidx), "sbusout_tool.lua")
