@@ -30,42 +30,60 @@ minmax[4] = {min=0,max=1000, sourceMax=motorCount}        --Motor
 
 local enableWakeup = false
 
+-- layouts
+fields[#fields + 1] = {t = "Type", min = 0, max = 16, vals = {1 + offset}, table = {"Receiver", "Mixer", "Servo", "Motor"},  postEdit = function(self) self.setMinMaxIndex(self, true) end}
+fields[#fields + 1] = {t = "Source", min = 0, max = 15, offset = 1, vals = { 2 + offset}}
+fields[#fields + 1] = {t = "Min", min = -2000, max = 2000, vals = {3 + offset,4 + offset}}
+fields[#fields + 1] = {t = "Max",  min = -2000, max = 2000, vals = {5 + offset,6 + offset}}
 
 
-local function wakeup()
 
-    if enableWakeup == true then
-    
-        -- to avoid a page reload we contrain the field values using a wakeup call.
-        -- we could use postEdit on the fields line - but this does not update until 
-        -- you exit the field!
-       local currentMin = minmax[minMaxIndex].min
-       local currentMax = minmax[minMaxIndex].max
-       local currentSourceMax = minmax[minMaxIndex].sourceMax
-        
-        -- set min and max values
-       if rfsuite.app.Page.fields[2].value >= currentSourceMax then
-       --      rfsuite.app.Page.fields[2].value = currentSourceMax
-       end   
+local function saveServoSettings(self)
 
-       -- handle min value
-       if rfsuite.app.Page.fields[3].value <= currentMin then
-             rfsuite.app.Page.fields[3].value = currentMin
-       end
-       if rfsuite.app.Page.fields[3].value >= currentMax then
-             rfsuite.app.Page.fields[3].value = currentMax
-       end
-       
-       -- handle max value
-       if rfsuite.app.Page.fields[4].value >= currentMax then
-             rfsuite.app.Page.fields[4].value = currentMax
-       end       
-       if rfsuite.app.Page.fields[4].value <= currentMin then
-             rfsuite.app.Page.fields[4].value = currentMin
-       end
-    
-    end    
+    print(idx)
+
+    local mixIndex = idx
+    local mixType = math.floor(rfsuite.app.Page.fields[2].value)
+    local mixSource = math.floor(rfsuite.app.Page.fields[3].value)
+    local mixMin = math.floor(rfsuite.app.Page.fields[4].value)
+    local mixMax = math.floor(rfsuite.app.Page.fields[5].value)    
+
+    local message = {
+        command = 153, -- MSP_SET_SERVO_CONFIGURATION
+        payload = {}
+    }
+    rfsuite.bg.msp.mspHelper.writeU8(message.payload, mixIndex)
+    rfsuite.bg.msp.mspHelper.writeU8(message.payload, mixType)
+    rfsuite.bg.msp.mspHelper.writeU16(message.payload, mixSource)
+    rfsuite.bg.msp.mspHelper.writeU16(message.payload, mixMin)
+    rfsuite.bg.msp.mspHelper.writeU16(message.payload, mixMax)    
+
+
+    if rfsuite.config.mspTxRxDebug == true or rfsuite.config.logEnable == true then
+        local logData = "{" .. rfsuite.utils.joinTableItems(message.payload, ", ") .. "}"
+
+        rfsuite.utils.log(logData)
+
+        if rfsuite.config.mspTxRxDebug == true then print(logData) end
+
+    end
+    rfsuite.bg.msp.mspQueue:add(message)
+
+    -- write change to epprom
+    local mspEepromWrite = {command = 153, simulatorResponse = {}}
+    rfsuite.bg.msp.mspQueue:add(mspEepromWrite)
+
 end
+
+
+local function onSaveMenuProgress()
+    rfsuite.app.ui.progressDisplay("Saving", "Saving data...")
+    saveServoSettings()
+    rfsuite.app.triggers.isReady = true
+    rfsuite.app.triggers.closeProgressLoader = true
+end
+
+
 
 -- function to set min and max value based on index.
 local function setMinMaxIndex(self)
@@ -102,15 +120,89 @@ local function onNavMenu(self)
 
 end
 
-fields[#fields + 1] = {t = "Type", min = 0, max = 16, vals = {1 + offset}, table = {"Receiver", "Mixer", "Servo", "Motor"},  postEdit = function(self) self.setMinMaxIndex(self, true) end}
-fields[#fields + 1] = {t = "Source", min = 0, max = 15, offset = 1, vals = { 2 + offset}}
-fields[#fields + 1] = {t = "Min", min = -2000, max = 2000, vals = {3 + offset,4 + offset}}
-fields[#fields + 1] = {t = "Max",  min = -2000, max = 2000, vals = {5 + offset,6 + offset}}
+
+
+local function onSaveMenu()
+    local buttons = {
+        {
+            label = "                OK                ",
+            action = function()
+                rfsuite.app.audio.playSaving = true
+                isSaving = true
+
+                return true
+            end
+        }, {
+            label = "CANCEL",
+            action = function()
+                return true
+            end
+        }
+    }
+    local theTitle = "Save settings"
+    local theMsg = "Save current page to flight controller?"
+
+    form.openDialog({
+        width = nil,
+        title = theTitle,
+        message = theMsg,
+        buttons = buttons,
+        wakeup = function()
+        end,
+        paint = function()
+        end,
+        options = TEXT_LEFT
+    })
+
+    rfsuite.app.triggers.triggerSave = false
+end
+
+
+local function wakeup()
+
+    if enableWakeup == true then
+ 
+        if isSaving == true then
+            onSaveMenuProgress()
+            isSaving = false
+        end
+
+ 
+        -- to avoid a page reload we contrain the field values using a wakeup call.
+        -- we could use postEdit on the fields line - but this does not update until 
+        -- you exit the field!
+       local currentMin = minmax[minMaxIndex].min
+       local currentMax = minmax[minMaxIndex].max
+       local currentSourceMax = minmax[minMaxIndex].sourceMax
+        
+        -- set min and max values
+       if rfsuite.app.Page.fields[2].value >= currentSourceMax then
+             rfsuite.app.Page.fields[2].value = currentSourceMax
+       end   
+
+       -- handle min value
+       if rfsuite.app.Page.fields[3].value <= currentMin then
+             rfsuite.app.Page.fields[3].value = currentMin
+       end
+       if rfsuite.app.Page.fields[3].value >= currentMax then
+             rfsuite.app.Page.fields[3].value = currentMax
+       end
+       
+       -- handle max value
+       if rfsuite.app.Page.fields[4].value >= currentMax then
+             rfsuite.app.Page.fields[4].value = currentMax
+       end       
+       if rfsuite.app.Page.fields[4].value <= currentMin then
+             rfsuite.app.Page.fields[4].value = currentMin
+       end
+    
+    end    
+end
 
 
 return {
     read = 152, 
-    write = 153, 
+    write = nil, 
     title = "SBUS Output",
     reboot = false,
     eepromWrite = true,
@@ -120,6 +212,7 @@ return {
     fields = fields,
     postLoad = postLoad,
     onNavMenu = onNavMenu, 
+    onSaveMenu = onSaveMenu,
     setMinMaxIndex = setMinMaxIndex,
     wakeup = wakeup,
     navButtons = {menu = true, save = true, reload = true, tool = false, help = true}    
