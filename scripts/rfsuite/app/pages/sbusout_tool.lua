@@ -3,16 +3,13 @@ local fields = {}
 
 local arg = {...}
 
-local idx = arg[1]
-if idx == nil then
- idx = rfsuite.app.lastIdx
-end
 
 local currentProfileChecked = false
 local firstLoad = true
 local minMaxIndex
+local sbus_out_frame_rate
 
-local ch = idx 
+local ch = rfsuite.currentSbusServoIndex 
 local ch_str = "CH" .. tostring(ch + 1)
 local offset = 6 * ch -- 6 bytes per channel
 
@@ -23,31 +20,32 @@ if rfsuite.config.tailMode == 0 then
 end
 
 local minmax = {}
-minmax[1] = {min=1000,max=2000, sourceMax=24}     --Receiver
-minmax[2] = {min=-1000,max=1000,sourceMax=24}    --Mixer
-minmax[3] = {min=1000,max=2000, sourceMax=servoCount}     --Servo
-minmax[4] = {min=0,max=1000, sourceMax=motorCount}        --Motor
+minmax[1] = {min=500,max=2000, sourceMax=24, defaultMin = 1000, defaultMax = 2000}              --Receiver
+minmax[2] = {min=-1000,max=1000,sourceMax=24, defaultMin = -1000, defaultMax = 1000}            --Mixer
+minmax[3] = {min=1000,max=2000, sourceMax=servoCount, defaultMin = 1000, defaultMax = 2000 }    --Servo
+minmax[4] = {min=0,max=1000, sourceMax = motorCount, defaultMin = 0, defaultMax = 1000}           --Motor
 
 local enableWakeup = false
 
 -- layouts
 fields[#fields + 1] = {t = "Type", min = 0, max = 16, vals = {1 + offset}, table = {"Receiver", "Mixer", "Servo", "Motor"},  postEdit = function(self) self.setMinMaxIndex(self, true) end}
-fields[#fields + 1] = {t = "Source", min = 0, max = 15, offset = 1, vals = { 2 + offset}}
-fields[#fields + 1] = {t = "Min", min = -2000, max = 2000, vals = {3 + offset,4 + offset}}
-fields[#fields + 1] = {t = "Max",  min = -2000, max = 2000, vals = {5 + offset,6 + offset}}
+fields[#fields + 1] = {t = "Source", min = 0, max = 15, offset = 0, vals = { 2 + offset},help="sbusOutSource"}
+fields[#fields + 1] = {t = "Min", min = -2000, max = 2000, vals = {3 + offset,4 + offset},help="sbusOutMin"}
+fields[#fields + 1] = {t = "Max",  min = -2000, max = 2000, vals = {5 + offset,6 + offset},help="sbusOutMax"}
 
 
 
 local function saveServoSettings(self)
 
-    print(idx)
 
-    local mixIndex = idx
+
+    local mixIndex = rfsuite.currentSbusServoIndex
     local mixType = math.floor(rfsuite.app.Page.fields[1].value)
     local mixSource = math.floor(rfsuite.app.Page.fields[2].value)
     local mixMin = math.floor(rfsuite.app.Page.fields[3].value)
     local mixMax = math.floor(rfsuite.app.Page.fields[4].value) 
-    local frameRate = 250
+    if sbus_out_frame_rate == nil then sbus_out_frame_rate = 250 end
+    local frameRate = sbus_out_frame_rate
 
     local message = {
         command = 153, -- MSP_SET_SERVO_CONFIGURATION
@@ -94,14 +92,17 @@ local function setMinMaxIndex(self)
         firstLoad = false
     else
         -- default all values
-       local currentMin = minmax[minMaxIndex].min
-       local currentMax = minmax[minMaxIndex].max
+       local defaultMin = minmax[minMaxIndex].defaultMin
+       local defaultMax = minmax[minMaxIndex].defaultMax
        local currentSourceMax = minmax[minMaxIndex].sourceMax
          
 
        rfsuite.app.Page.fields[2].value = 0
-       rfsuite.app.Page.fields[3].value = currentMin
-       rfsuite.app.Page.fields[4].value = currentMax
+       rfsuite.app.Page.fields[3].value = defaultMin
+       rfsuite.app.Page.fields[4].value = defaultMax
+
+       
+       
     end
 end
 
@@ -109,6 +110,10 @@ end
 local function postLoad(self)
 
     setMinMaxIndex(self)
+    
+    -- the sbus output rate is last value. we dont use it - but we need it for writes so grab it here
+    sbus_out_frame_rate = rfsuite.app.Page.values[#rfsuite.app.Page.values]
+
 
     rfsuite.app.triggers.isReady = true
     enableWakeup = true
@@ -207,7 +212,7 @@ return {
     title = "SBUS Output",
     reboot = false,
     eepromWrite = true,
-    minBytes = nil,
+    minBytes = 108,  -- 108?
     labels = labels,
     simulatorResponse = {1, 0, 24, 252, 232, 3, 1, 1, 24, 252, 232, 3, 1, 2, 24, 252, 232, 3, 1, 3, 24, 252, 232, 3, 1, 0, 24, 252, 232, 3, 1, 1, 24, 252, 232, 3, 1, 2, 24, 252, 232, 3, 1, 3, 24, 252, 232, 3, 1, 0, 24, 252, 232, 3, 1, 1, 24, 252, 232, 3, 1, 2, 24, 252, 232, 3, 1, 3, 24, 252, 232, 3, 1, 0, 24, 252, 232, 3, 1, 1, 24, 252, 232, 3, 1, 2, 24, 252, 232, 3, 1, 3, 24, 252, 232, 3, 1, 0, 24, 252, 232, 3, 1, 1, 24, 252, 232, 3, 50},
     fields = fields,

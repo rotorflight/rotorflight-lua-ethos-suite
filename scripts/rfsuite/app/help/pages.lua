@@ -257,9 +257,8 @@ data["sbusout"]["TEXT"] = {
 data["sbusout_tool"] = {}
 data["sbusout_tool"]["TEXT"] = {
         "Configure advanced mixing and channel mapping if you have SBUS Out enabled on a serial port.",
-        "- For RX channels or servos (wideband), use 1000, 2000.",
+        "- For RX channels or servos (wideband), use 1000, 2000 or 500,1000 for narrow band servos.",
         "- For mixer rules, use -1000, 1000.",
-        "- For narrowband servos, use 500, 1000.",
         "- For motors, use 0, 1000.",
         "- Or you can customize your own mapping.",
 }

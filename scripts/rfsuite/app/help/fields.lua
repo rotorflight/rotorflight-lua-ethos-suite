@@ -164,5 +164,12 @@ return {
     radioMinThrottle = {t = "Minimum throttle (0% throttle output) expected from radio, in microseconds (us)."},
     radioMaxThrottle = {t = "Maximum throttle (100% throttle output) expected from radio, in microseconds (us)."},
     radioCycDeadband = {t = "Deadband for cyclic control in microseconds (us)."},
-    radioYawDeadband = {t = "Deadband for yaw control in microseconds (us)."}
+    radioYawDeadband = {t = "Deadband for yaw control in microseconds (us)."},
+
+    --
+    -- sbusout_tool.lua
+    --    
+    sbusOutSource = {t = "Source id for the mix, counting from 0-15."},
+    sbusOutMin = {t = "The minimum pwm value to send"},
+    sbusOutMax = {t = "The maximum pwm value to send"},    
 }
