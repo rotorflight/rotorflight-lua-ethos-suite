@@ -93,7 +93,7 @@ The following provides an example summary of the parameters you can use.
 - vals           => MSP payload location values used for saving and retrieving the data
 - table          => If set a drop down select is displayed with the table values shown in the select
 - tableIdxInc    => Shift all elements from table up/down by the value set. So you can shit +/- <value> 
-- postedit       => a function called whenever the field is changed
+- postEdit       => a function called whenever the field is changed
 - onFocus        => a function called whenever the field is in focus (not yet available)
 - type           => 0 = text , 1 = drop down  , 2 or nil = numeric
 - position       => {x=0,y=0,w=0,h=0}  
