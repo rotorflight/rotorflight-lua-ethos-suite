@@ -1,6 +1,4 @@
 -- create 16 servos in disabled state
-
-
 local SBUS_FUNCTIONMASK = 262144
 local triggerOverRide = false
 local triggerOverRideAll = false
@@ -12,7 +10,6 @@ local validSerialConfig = false
 local function openPage(pidx, title, script)
 
     rfsuite.bg.msp.protocol.mspIntervalOveride = nil
-
 
     rfsuite.app.triggers.isReady = false
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
@@ -52,7 +49,8 @@ local function openPage(pidx, title, script)
     -- TEXT ICONS
     if rfsuite.config.iconSize == 0 then
         padding = rfsuite.app.radio.buttonPaddingSmall
-        buttonW = (rfsuite.config.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
+        buttonW = (rfsuite.config.lcdWidth - padding) /
+                      rfsuite.app.radio.buttonsPerRow - padding
         buttonH = rfsuite.app.radio.navbuttonHeight
         numPerRow = rfsuite.app.radio.buttonsPerRow
     end
@@ -76,46 +74,68 @@ local function openPage(pidx, title, script)
     local lc = 0
     local bx = 0
 
-    if rfsuite.app.gfx_buttons["sbuschannel"] == nil then rfsuite.app.gfx_buttons["sbuschannel"] = {} end
-    if rfsuite.app.menuLastSelected["sbuschannel"] == nil then rfsuite.app.menuLastSelected["sbuschannel"] = 0 end
-    if rfsuite.currentSbusServoIndex == nil then  rfsuite.currentSbusServoIndex = 0 end
-    
+    if rfsuite.app.gfx_buttons["sbuschannel"] == nil then
+        rfsuite.app.gfx_buttons["sbuschannel"] = {}
+    end
+    if rfsuite.app.menuLastSelected["sbuschannel"] == nil then
+        rfsuite.app.menuLastSelected["sbuschannel"] = 0
+    end
+    if rfsuite.currentSbusServoIndex == nil then
+        rfsuite.currentSbusServoIndex = 0
+    end
 
     for pidx = 0, 15 do
 
-
         if lc == 0 then
-            if rfsuite.config.iconSize == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
-            if rfsuite.config.iconSize == 1 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
-            if rfsuite.config.iconSize == 2 then y = form.height() + rfsuite.app.radio.buttonPadding end
+            if rfsuite.config.iconSize == 0 then
+                y = form.height() + rfsuite.app.radio.buttonPaddingSmall
+            end
+            if rfsuite.config.iconSize == 1 then
+                y = form.height() + rfsuite.app.radio.buttonPaddingSmall
+            end
+            if rfsuite.config.iconSize == 2 then
+                y = form.height() + rfsuite.app.radio.buttonPadding
+            end
         end
 
         if lc >= 0 then bx = (buttonW + padding) * lc end
 
         if rfsuite.config.iconSize ~= 0 then
             if rfsuite.app.gfx_buttons["sbuschannel"][pidx] == nil then
-                rfsuite.app.gfx_buttons["sbuschannel"][pidx] = lcd.loadMask("app/gfx/sbus/ch" .. tostring(pidx + 1) .. ".png")
+                rfsuite.app.gfx_buttons["sbuschannel"][pidx] = lcd.loadMask(
+                                                                   "app/gfx/sbus/ch" ..
+                                                                       tostring(
+                                                                           pidx +
+                                                                               1) ..
+                                                                       ".png")
             end
         else
             rfsuite.app.gfx_buttons["sbuschannel"][pidx] = nil
         end
 
-        rfsuite.app.formFields[pidx] = form.addButton(nil, {x = bx, y = y, w = buttonW, h = buttonH}, {
-            text = "CHANNEL " .. tostring(pidx+1),
+        rfsuite.app.formFields[pidx] = form.addButton(nil, {
+            x = bx,
+            y = y,
+            w = buttonW,
+            h = buttonH
+        }, {
+            text = "CHANNEL " .. tostring(pidx + 1),
             icon = rfsuite.app.gfx_buttons["sbuschannel"][pidx],
             options = FONT_S,
-            paint = function()
-            end,
+            paint = function() end,
             press = function()
                 rfsuite.app.menuLastSelected["sbuschannel"] = pidx
                 rfsuite.currentSbusServoIndex = pidx
                 rfsuite.app.ui.progressDisplay()
-                rfsuite.app.ui.openPage(pidx, "Sbus out / CH" .. tostring(rfsuite.currentSbusServoIndex +1), "sbusout_tool.lua")
+                rfsuite.app.ui.openPage(pidx, "Sbus out / CH" ..
+                                            tostring(
+                                                rfsuite.currentSbusServoIndex +
+                                                    1), "sbusout_tool.lua")
             end
         })
-        
+
         rfsuite.app.formFields[pidx]:enable(false)
-       
+
         lc = lc + 1
         if lc == numPerRow then lc = 0 end
 
@@ -130,9 +150,9 @@ end
 
 local function processSerialConfig(data)
 
-    for i,v in ipairs(data) do
+    for i, v in ipairs(data) do
         if v.functionMask == SBUS_FUNCTIONMASK then
-            validSerialConfig = true           
+            validSerialConfig = true
         end
     end
 
@@ -140,10 +160,10 @@ end
 
 local function getSerialConfig()
     local message = {
-        command = 54, 
+        command = 54,
         processReply = function(self, buf)
             local data = {}
-            
+
             buf.offset = 1
             for i = 1, 6 do
                 data[i] = {}
@@ -151,17 +171,22 @@ local function getSerialConfig()
                 data[i].functionMask = rfsuite.bg.msp.mspHelper.readU32(buf)
                 data[i].msp_baudrateIndex = rfsuite.bg.msp.mspHelper.readU8(buf)
                 data[i].gps_baudrateIndex = rfsuite.bg.msp.mspHelper.readU8(buf)
-                data[i].telemetry_baudrateIndex = rfsuite.bg.msp.mspHelper.readU8(buf)
-                data[i].blackbox_baudrateIndex = rfsuite.bg.msp.mspHelper.readU8(buf)
+                data[i].telemetry_baudrateIndex =
+                    rfsuite.bg.msp.mspHelper.readU8(buf)
+                data[i].blackbox_baudrateIndex =
+                    rfsuite.bg.msp.mspHelper.readU8(buf)
             end
-            
+
             processSerialConfig(data)
         end,
-        simulatorResponse = {20, 1, 0, 0, 0, 5, 4, 0, 5, 0, 0, 0, 4, 0, 5, 4, 0, 5, 1, 0, 0, 4, 0, 5, 4, 0, 5, 2, 0, 0, 0, 0, 5, 4, 0, 5, 3, 0, 0, 0, 0, 5, 4, 0, 5, 4, 64, 0, 0, 0, 5, 4, 0, 5}
+        simulatorResponse = {
+            20, 1, 0, 0, 0, 5, 4, 0, 5, 0, 0, 0, 4, 0, 5, 4, 0, 5, 1, 0, 0, 4,
+            0, 5, 4, 0, 5, 2, 0, 0, 0, 0, 5, 4, 0, 5, 3, 0, 0, 0, 0, 5, 4, 0, 5,
+            4, 64, 0, 0, 0, 5, 4, 0, 5
+        }
     }
     rfsuite.bg.msp.mspQueue:add(message)
 end
-
 
 local function event(widget, category, value, x, y)
 
@@ -173,36 +198,39 @@ local function event(widget, category, value, x, y)
     return false
 end
 
-
-
 local function wakeup()
-
 
     if enableWakeup == true and validSerialConfig == false then
 
         local now = os.clock()
         if (now - wakeupScheduler) >= 0.5 then
             wakeupScheduler = now
-            
+
             getSerialConfig()
-            
-        end   
+
+        end
     elseif enableWakeup == true and validSerialConfig == true then
         for pidx = 0, 15 do
-                rfsuite.app.formFields[pidx]:enable(true)
-                if rfsuite.app.menuLastSelected["sbuschannel"] == rfsuite.currentSbusServoIndex then rfsuite.app.formFields[rfsuite.currentSbusServoIndex]:focus() end
+            rfsuite.app.formFields[pidx]:enable(true)
+            if rfsuite.app.menuLastSelected["sbuschannel"] ==
+                rfsuite.currentSbusServoIndex then
+                rfsuite.app.formFields[rfsuite.currentSbusServoIndex]:focus()
+            end
         end
     end
 
 end
-
-
-
 
 return {
     title = "Sbus Out",
     event = event,
     openPage = openPage,
     wakeup = wakeup,
-    navButtons = {menu = true, save = false, reload = false, tool = false, help = true}
+    navButtons = {
+        menu = true,
+        save = false,
+        reload = false,
+        tool = false,
+        help = true
+    }
 }
