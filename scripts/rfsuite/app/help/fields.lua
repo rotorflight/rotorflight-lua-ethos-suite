@@ -40,7 +40,7 @@ return {
     govVoltageFilterHz = {t = "Cutoff for the battery voltage lowpass filter."},
     govTTABandwidth = {t = "Cutoff for the TTA lowpass filter."},
     govTTAPrecomp = {t = "Cutoff for the cyclic/collective collective precomp lowpass filter."},
-
+    govSpoolupThrottle = {t = "Minimum throttle to use for slow spoolup, in percent. For electric motors the default is 5%, for nitro this should be set so the clutch starts to engage for a smooth spoolup 10-15%."},
     --
     -- profile_governor.lua
     --
