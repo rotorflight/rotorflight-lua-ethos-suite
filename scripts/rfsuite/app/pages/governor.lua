@@ -1,8 +1,23 @@
 local labels = {}
 local fields = {}
+local simulatorResponse
+local minBytes
+
+if rfsuite.config.apiVersion >= 12.08 then
+    simulatorResponse = {3, 100, 0, 100, 0, 20, 0, 20, 0, 30, 0, 10, 0, 0, 0, 0, 0, 50, 0, 10, 5, 10, 0, 10,5}
+    minBytes = 25
+else
+    simulatorResponse = {3, 100, 0, 100, 0, 20, 0, 20, 0, 30, 0, 10, 0, 0, 0, 0, 0, 50, 0, 10, 5, 10, 0, 10}
+    minBytes = 24
+end
 
 fields[#fields + 1] = {t = "Mode", min = 0, max = 4, vals = {1}, table = {[0] = "OFF", "PASSTHROUGH", "STANDARD", "MODE1", "MODE2"},postEdit = function(self) self.setGovernorMode(self) end}
 fields[#fields + 1] = {t = "Handover throttle%", help = "govHandoverThrottle", min = 10, max = 50, unit = "%", default = 20, vals = {20}}
+
+if rfsuite.config.apiVersion >= 12.08 then
+    fields[#fields + 1] = {t = "Min  spoolup throttle%", help = "govSpoolupThrottle", min = 0, max = 50, unit = "%", default = 0, vals = {25}}
+end
+
 fields[#fields + 1] = {t = "Startup time", help = "govStartupTime", min = 0, max = 600, unit = "s", default = 200, vals = {2, 3}, decimals = 1, scale = 10}
 fields[#fields + 1] = {t = "Spoolup time", help = "govSpoolupTime", min = 0, max = 600, unit = "s", default = 100, vals = {4, 5}, decimals = 1, scale = 10}
 fields[#fields + 1] = {t = "Tracking time", help = "govTrackingTime", min = 0, max = 100, unit = "s", default = 10, vals = {6, 7}, decimals = 1, scale = 10}
@@ -72,9 +87,9 @@ return {
     write = 143, -- msp_SET_GOVERNOR_CONFIG
     title = "Governor",
     reboot = true,
-    simulatorResponse = {3, 100, 0, 100, 0, 20, 0, 20, 0, 30, 0, 10, 0, 0, 0, 0, 0, 50, 0, 10, 5, 10, 0, 10},
+    simulatorResponse = simulatorResponse,  -- variable based on version code above
     eepromWrite = true,
-    minBytes = 24,
+    minBytes = minBytes, -- variable based on version code above
     labels = labels,
     setGovernorMode = setGovernorMode,
     fields = fields,
