@@ -57,6 +57,15 @@ local function postLoad(self)
     rfsuite.app.triggers.isReady = true
 end
 
+local function preSavePayload(payload)
+
+    if rfsuite.config.governorMode  ~= payload[1] then
+            rfsuite.config.governorMode  = payload[1]
+    end
+
+    return payload
+end
+
 
 return {
     read = 142, -- msp_GOVERNOR_CONFIG
@@ -69,5 +78,6 @@ return {
     labels = labels,
     setGovernorMode = setGovernorMode,
     fields = fields,
-    postLoad = postLoad
+    postLoad = postLoad,
+    preSavePayload = preSavePayload,
 }

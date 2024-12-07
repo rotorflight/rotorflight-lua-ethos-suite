@@ -182,7 +182,7 @@ function msp.onConnectBgChecks()
                     if #buf >= 2 then  --24.  but we only need first
                         local governorMode = msp.mspHelper.readU8(buf)
                         -- update master one in case changed
-                        rfsuite.utils.log("Governor moder: " .. governorMode)
+                        rfsuite.utils.log("Governor mode: " .. governorMode)
                         rfsuite.config.governorMode = governorMode
                     end
                 end,
