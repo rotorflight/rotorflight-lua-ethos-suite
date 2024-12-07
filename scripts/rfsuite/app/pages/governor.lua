@@ -1,7 +1,7 @@
 local labels = {}
 local fields = {}
 
-fields[#fields + 1] = {t = "Mode", min = 0, max = 4, vals = {1}, table = {[0] = "OFF", "PASSTHROUGH", "STANDARD", "MODE1", "MODE2"}}
+fields[#fields + 1] = {t = "Mode", min = 0, max = 4, vals = {1}, table = {[0] = "OFF", "PASSTHROUGH", "STANDARD", "MODE1", "MODE2"},postEdit = function(self) self.setGovernorMode(self) end}
 fields[#fields + 1] = {t = "Handover throttle%", help = "govHandoverThrottle", min = 10, max = 50, unit = "%", default = 20, vals = {20}}
 fields[#fields + 1] = {t = "Startup time", help = "govStartupTime", min = 0, max = 600, unit = "s", default = 200, vals = {2, 3}, decimals = 1, scale = 10}
 fields[#fields + 1] = {t = "Spoolup time", help = "govSpoolupTime", min = 0, max = 600, unit = "s", default = 100, vals = {4, 5}, decimals = 1, scale = 10}
@@ -24,9 +24,39 @@ fields[#fields + 1] = {t = "Volt. filter cutoff", help = "govVoltageFilterHz", m
 fields[#fields + 1] = {t = "TTA bandwidth", help = "govTTABandwidth", min = 0, max = 250, unit = "Hz", default = 0, vals = {23}}
 fields[#fields + 1] = {t = "Precomp bandwidth", help = "govTTAPrecomp", min = 0, max = 250, unit = "Hz", default = 10, vals = {24}}
 
+
+local function disableFields()
+    for i,v in ipairs(rfsuite.app.formFields) do
+            if i ~= 1 then
+                    rfsuite.app.formFields[i]:enable(false)       
+            end
+    end
+end
+
+local function enableFields()
+    for i,v in ipairs(rfsuite.app.formFields) do
+            if i ~= 1 then
+                    rfsuite.app.formFields[i]:enable(true)       
+            end
+    end
+end
+
+local function setGovernorMode(self)
+        
+   local currentIndex = math.floor(rfsuite.app.Page.fields[1].value)
+   if currentIndex == 0 then
+        disableFields()
+   else
+        enableFields()
+   end
+
+end
+
 local function postLoad(self)
+    setGovernorMode(self)
     rfsuite.app.triggers.isReady = true
 end
+
 
 return {
     read = 142, -- msp_GOVERNOR_CONFIG
@@ -37,6 +67,7 @@ return {
     eepromWrite = true,
     minBytes = 24,
     labels = labels,
+    setGovernorMode = setGovernorMode,
     fields = fields,
     postLoad = postLoad
 }
