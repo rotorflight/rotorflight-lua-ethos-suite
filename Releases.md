@@ -1,3 +1,13 @@
+# 2.1.0-RC2
+
+This is the _second Release Candidate_ of the Rotorflight 2.1 RFSUITE LUA Scripts for FrSky Ethos.
+
+- Improved ELRS GPS Sensor Support
+- Add Governor Min Throttle
+- Adjust Cyclic Cross coupling display based on version of RF in use on fbl
+- Fixed bug in progress dialog when switching profiles
+
+
 # 2.1.0-RC1
 
 This is the _first Release Candidate_ of the Rotorflight 2.1 RFSUITE LUA Scripts for FrSky Ethos.
