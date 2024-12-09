@@ -227,6 +227,21 @@ data["msp_exp"]["TEXT"] = {
         "If you do not understand what you are doing, do not use it as bad things can happen."
 }
 
+-- LOGS
+data["logs"] = {}
+data["logs"]["TEXT"] = {
+        "Please select a log file from the list below.",
+        "Note. To enable logging it is essential for you to have the following sensors enabled.",
+        "- arm status, voltage, headspeed, current,esc temperature"
+}
+
+-- LOGS TOOL
+data["logs_tool"] = {}
+data["logs_tool"]["TEXT"] = {
+        "Please use the slider to navigate the graph.",
+}
+
+
 -- LuaFormatter on
 
 return {data = data}
