@@ -29,8 +29,9 @@ local logRateLimit = os.clock()
 local logTable = {
     { name = "voltage", keyindex = 1, keyname = "Voltage", keyunit="v", keyminmax = 1, color = COLOR_RED , pen = SOLID, graph = true},
     { name = "current", keyindex = 2, keyname = "Current", keyunit="A", keyminmax = 0, color = COLOR_ORANGE , pen = SOLID, graph = true},
-    { name = "rpm", keyindex = 3,keyname = "Headspeed", keyunit="rpm", keyminmax = 0, keyfloor = true, color = COLOR_BLUE , pen = SOLID, graph = true},
+    { name = "rpm", keyindex = 3,keyname = "Headspeed", keyunit="rpm", keyminmax = 0, keyfloor = true, color = COLOR_GREEN , pen = SOLID, graph = true},
     { name = "tempESC", keyindex = 4,keyname = "Esc. Temperature", keyunit="°", keyminmax = 1, color = COLOR_CYAN, pen = SOLID, graph = true},
+    { name = "throttlePercentage", keyindex = 5,keyname = "Throttle %", keyunit="%", keyminmax = 0, color = COLOR_YELLOW, pen = SOLID, graph = true},
 }
 
 -- Queue for log entries

@@ -47,6 +47,7 @@ local sensorTable = {
     adjV = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5111}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1222}, lcrsf = nil},
     pidProfile = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5471}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1211}, lcrsf = nil},
     rateProfile = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5472}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1212}, lcrsf = nil},
+    throttlePercentage = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5440}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1035}, lcrsf = nil},
     roll = {sport = {category=CATEGORY_ANALOG, member=ANALOG_STICK_AILERON}, crsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_AILERON}, lcrsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_AILERON}},
     pitch = {sport = {category=CATEGORY_ANALOG, member=ANALOG_STICK_ELEVATOR}, crsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_ELEVATOR}, lcrsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_ELEVATOR}},
     yaw = {sport = {category=CATEGORY_ANALOG, member=ANALOG_STICK_RUDDER}, crsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_RUDDER}, lcrsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_RUDDER}},

@@ -371,7 +371,7 @@ end
 
 
 
-local function drawKey(name,keyindex,keyunit, keyminmax, keyfloor, color,minimum,maximum)
+local function drawKey(name,keyindex,keyunit, keyminmax, keyfloor, color, minimum, maximum)
     
     
     local w = LCD_W - graphPos['width'] - 10
@@ -391,14 +391,14 @@ local function drawKey(name,keyindex,keyunit, keyminmax, keyfloor, color,minimum
     
     -- put text into the box
     lcd.color(COLOR_BLACK)
-    lcd.font(FONT_S)
+    lcd.font(rfsuite.app.radio.logKeyFont)
     local tw,th = lcd.getTextSize(name)
     local ty = (h_height / 2 - th / 2) + y
     lcd.drawText(x + 5,ty,name,LEFT)
 
     -- show min and max values
     lcd.color(COLOR_WHITE)
-    lcd.font(FONT_S)
+    lcd.font(rfsuite.app.radio.logKeyFont)
     local mm_str
     if keyminmax == 1 then
         mm_str = "Min: " .. minimum .. keyunit .." " .. "Max: " .. maximum .. keyunit
@@ -458,7 +458,7 @@ local function drawCurrentIndex(points,position, totalPoints, keyindex, keyunit,
      -- show value
     lcd.font(FONT_BOLD)
     local tw,th = lcd.getTextSize(value)     
-    lcd.color(COLOR_WHITE)
+    lcd.color(color)
     --local ty = (h_height / 2 - th / 2) + y + (h_height*2)    
     local ty = (graphPos['menu_offset'] + (th * keyindex)) - keyindex
     lcd.drawText(idxPos + 5,ty,value,textAlign)   
