@@ -36,7 +36,7 @@ config.watchdogParam = 10                                           -- watchdog 
 -- features
 config.logEnable = false                                            -- will log to: /scripts/rfsuite/rfsuite.log [default = false]
 config.logEnableScreen = false                                      -- if config.logEnable is true then also print to screen [default = false]
-config.useCompiler = true                                           -- enable use of the compiler to improve speed [default = true]
+config.useCompiler = false                                          -- enable use of the compiler to improve speed [default = true]
 config.mspTxRxDebug = false                                         -- simple print of full msp payload that is sent and received [default = false]
 config.reloadOnSave = false                                         -- trigger a reload on save [default = false]
 config.skipRssiSensorCheck = false                                  -- skip checking for a valid rssi [ default = false]
