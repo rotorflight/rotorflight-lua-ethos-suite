@@ -77,7 +77,7 @@ function msp.onConnectBgChecks()
                         rfsuite.utils.log("MSP Version: " .. rfsuite.config.apiVersion)
                     end
                 end,
-                simulatorResponse = {0, 12, 7}
+                simulatorResponse = rfsuite.config.simulatorApiVersionResponse
             }
             msp.mspQueue:add(message)
         elseif rfsuite.config.clockSet == nil and msp.mspQueue:isProcessed() then
@@ -172,6 +172,21 @@ function msp.onConnectBgChecks()
                     end
                 end,
                 simulatorResponse = {209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7}
+            }
+            msp.mspQueue:add(message)
+
+        elseif (rfsuite.config.governorMode == nil) and msp.mspQueue:isProcessed() then
+            local message = {
+                command = 142, -- MSP_SERVO_OVERIDE
+                processReply = function(self, buf)
+                    if #buf >= 2 then  --24.  but we only need first
+                        local governorMode = msp.mspHelper.readU8(buf)
+                        -- update master one in case changed
+                        rfsuite.utils.log("Governor mode: " .. governorMode)
+                        rfsuite.config.governorMode = governorMode
+                    end
+                end,
+                simulatorResponse = {3, 100, 0, 100, 0, 20, 0, 20, 0, 30, 0, 10, 0, 0, 0, 0, 0, 50, 0, 10, 5, 10, 0, 10}
             }
             msp.mspQueue:add(message)
 

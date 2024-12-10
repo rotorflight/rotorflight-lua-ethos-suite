@@ -20,7 +20,12 @@ local supportedRadios = {
             buttonHeightSmall = 120,
             buttonPaddingSmall = 10,
             linePaddingTop = 8,
-            formRowHeight = 50
+            formRowHeight = 50,
+            logGraphMenuOffset = 70,
+            logGraphWidthPercentage = 0.75,
+            logGraphButtonsPerRow = 5,
+            logGraphKeyHeight = 65,
+            logKeyFont = FONT_S
         }
     },
     -- TANDEM X18, TWIN X Lite (480x320)
@@ -41,7 +46,12 @@ local supportedRadios = {
             buttonHeightSmall = 97,
             buttonPaddingSmall = 7,
             linePaddingTop = 6,
-            formRowHeight = 50
+            formRowHeight = 50,
+            logGraphMenuOffset = 55,
+            logGraphWidthPercentage = 0.62,
+            logGraphButtonsPerRow = 4,  
+            logGraphKeyHeight = 45,     
+            logKeyFont = FONT_XS           
         }
     },
     -- Horus X10, Horus X12 (480x272)
@@ -62,7 +72,12 @@ local supportedRadios = {
             buttonHeightSmall = 97,
             buttonPaddingSmall = 7,
             linePaddingTop = 6,
-            formRowHeight = 50
+            formRowHeight = 50,
+            logGraphMenuOffset = 50,
+            logGraphWidthPercentage = 0.65,
+            logGraphButtonsPerRow = 4,  
+            logGraphKeyHeight = 38,    
+            logKeyFont = FONT_XS            
         }
     },
     -- Twin X14 (632x314)
@@ -84,7 +99,12 @@ local supportedRadios = {
             buttonHeightSmall = 97,
             buttonPaddingSmall = 8,
             linePaddingTop = 6,
-            formRowHeight = 50
+            formRowHeight = 50,
+            logGraphMenuOffset = 60,
+            logGraphWidthPercentage = 0.65,
+            logGraphButtonsPerRow = 4,  
+            logGraphKeyHeight = 50,          
+            logKeyFont = FONT_XS            
         }
     }
 }
