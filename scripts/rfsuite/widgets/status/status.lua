@@ -1496,251 +1496,6 @@ function status.telemetryBoxMAX(x, y, w, h, title, value, unit, smallbox)
 
 end
 
-function status.logsBOX()
-
-    if status.readLOGS == false then
-        local history = status.readHistory()
-        status.readLOGSlast = history
-        status.readLOGS = true
-    else
-        history = status.readLOGSlast
-    end
-
-    local theme = status.getThemeInfo()
-    local w, h = lcd.getWindowSize()
-    if w < 500 then
-        boxW = w
-    else
-        boxW = w - math.floor((w * 2) / 100)
-    end
-    if h < 200 then
-        boxH = h - 2
-    else
-        boxH = h - math.floor((h * 4) / 100)
-    end
-
-    -- draw the backgstatus.round
-    if status.isDARKMODE then
-        lcd.color(lcd.RGB(40, 40, 40, 50))
-    else
-        lcd.color(lcd.RGB(240, 240, 240, 50))
-    end
-    lcd.drawFilledRectangle(w / 2 - boxW / 2, h / 2 - boxH / 2, boxW, boxH)
-
-    -- draw the border
-    lcd.color(lcd.RGB(248, 176, 56))
-    lcd.drawRectangle(w / 2 - boxW / 2, h / 2 - boxH / 2, boxW, boxH)
-
-    -- draw the title
-    lcd.color(lcd.RGB(248, 176, 56))
-    lcd.drawFilledRectangle(w / 2 - boxW / 2, h / 2 - boxH / 2, boxW, boxH / 9)
-
-    if status.isDARKMODE then
-        -- dark theme
-        lcd.color(lcd.RGB(0, 0, 0, 1))
-    else
-        -- light theme
-        lcd.color(lcd.RGB(255, 255, 255))
-    end
-    str = "Log History"
-    lcd.font(theme.fontPopupTitle)
-    tsizeW, tsizeH = lcd.getTextSize(str)
-
-    boxTh = boxH / 9
-    boxTy = h / 2 - boxH / 2
-    boxTx = w / 2 - boxW / 2
-    lcd.drawText((w / 2) - tsizeW / 2, boxTy + (boxTh / 2) - tsizeH / 2, str)
-
-    -- close button
-    lcd.drawBitmap(boxTx + boxW - boxTh, boxTy, status.gfx_close, boxTh, boxTh)
-    status.closeButtonX = math.floor(boxTx + boxW - boxTh)
-    status.closeButtonY = math.floor(boxTy) + theme.widgetTitleOffset
-    status.closeButtonW = math.floor(boxTh)
-    status.closeButtonH = math.floor(boxTh)
-
-    lcd.color(lcd.RGB(255, 255, 255))
-
-    --[[ header column format 
-        TIME VOLTAGE AMPS RPM LQ MCU ESC
-    ]] --
-    colW = boxW / 7
-
-    col1x = boxTx
-    col2x = boxTx + theme.logsCOL1w
-    col3x = boxTx + theme.logsCOL1w + theme.logsCOL2w
-    col4x = boxTx + theme.logsCOL1w + theme.logsCOL2w + theme.logsCOL3w
-    col5x = boxTx + theme.logsCOL1w + theme.logsCOL2w + theme.logsCOL3w + theme.logsCOL4w
-    col6x = boxTx + theme.logsCOL1w + theme.logsCOL2w + theme.logsCOL3w + theme.logsCOL4w + theme.logsCOL5w
-    col7x = boxTx + theme.logsCOL1w + theme.logsCOL2w + theme.logsCOL3w + theme.logsCOL4w + theme.logsCOL5w + theme.logsCOL6w
-
-    lcd.color(lcd.RGB(90, 90, 90))
-
-    -- LINES
-    lcd.drawLine(boxTx + boxTh / 2, boxTy + (boxTh * 2), boxTx + boxW - (boxTh / 2), boxTy + (boxTh * 2))
-
-    lcd.drawLine(col2x, boxTy + boxTh + boxTh / 2, col2x, boxTy + boxH - (boxTh / 2))
-    lcd.drawLine(col3x, boxTy + boxTh + boxTh / 2, col3x, boxTy + boxH - (boxTh / 2))
-    lcd.drawLine(col4x, boxTy + boxTh + boxTh / 2, col4x, boxTy + boxH - (boxTh / 2))
-    lcd.drawLine(col5x, boxTy + boxTh + boxTh / 2, col5x, boxTy + boxH - (boxTh / 2))
-    lcd.drawLine(col6x, boxTy + boxTh + boxTh / 2, col6x, boxTy + boxH - (boxTh / 2))
-    lcd.drawLine(col7x, boxTy + boxTh + boxTh / 2, col7x, boxTy + boxH - (boxTh / 2))
-
-    -- HEADER text
-    if status.isDARKMODE then
-        -- dark theme
-        lcd.color(lcd.RGB(255, 255, 255, 1))
-    else
-        -- light theme
-        lcd.color(lcd.RGB(0, 0, 0))
-    end
-    lcd.font(theme.fontPopupTitle)
-
-    if theme.logsCOL1w ~= 0 then
-        str = "TIME"
-        tsizeW, tsizeH = lcd.getTextSize(str)
-        lcd.drawText(col1x + (theme.logsCOL1w / 2) - (tsizeW / 2), theme.logsHeaderOffset + (boxTy + boxTh) + ((boxTh / 2) - (tsizeH / 2)), str)
-    end
-
-    if theme.logsCOL2w ~= 0 then
-        str = "VOLTAGE"
-        tsizeW, tsizeH = lcd.getTextSize(str)
-        lcd.drawText((col2x) + (theme.logsCOL2w / 2) - (tsizeW / 2), theme.logsHeaderOffset + (boxTy + boxTh) + (boxTh / 2) - (tsizeH / 2), str)
-    end
-
-    if theme.logsCOL3w ~= 0 then
-        str = "AMPS"
-        tsizeW, tsizeH = lcd.getTextSize(str)
-        lcd.drawText((col3x) + (theme.logsCOL3w / 2) - (tsizeW / 2), theme.logsHeaderOffset + (boxTy + boxTh) + (boxTh / 2) - (tsizeH / 2), str)
-    end
-
-    if theme.logsCOL4w ~= 0 then
-        str = "RPM"
-        tsizeW, tsizeH = lcd.getTextSize(str)
-        lcd.drawText((col4x) + (theme.logsCOL4w / 2) - (tsizeW / 2), theme.logsHeaderOffset + (boxTy + boxTh) + (boxTh / 2) - (tsizeH / 2), str)
-    end
-
-    if theme.logsCOL5w ~= 0 then
-        str = "LQ"
-        tsizeW, tsizeH = lcd.getTextSize(str)
-        lcd.drawText((col5x) + (theme.logsCOL5w / 2) - (tsizeW / 2), theme.logsHeaderOffset + (boxTy + boxTh) + (boxTh / 2) - (tsizeH / 2), str)
-    end
-
-    if theme.logsCOL6w ~= 0 then
-        str = "T.MCU"
-        tsizeW, tsizeH = lcd.getTextSize(str)
-        lcd.drawText((col6x) + (theme.logsCOL6w / 2) - (tsizeW / 2), theme.logsHeaderOffset + (boxTy + boxTh) + (boxTh / 2) - (tsizeH / 2), str)
-    end
-
-    if theme.logsCOL7w ~= 0 then
-        str = "T.ESC"
-        tsizeW, tsizeH = lcd.getTextSize(str)
-        lcd.drawText((col7x) + (theme.logsCOL7w / 2) - (tsizeW / 2), theme.logsHeaderOffset + (boxTy + boxTh) + (boxTh / 2) - (tsizeH / 2), str)
-    end
-
-    c = 0
-
-    if history ~= nil then
-        for index, value in ipairs(history) do
-            if value ~= nil then
-                if value ~= "" and value ~= nil then
-                    rowH = c * boxTh
-
-                    local rowData = status.explode(value, ",")
-
-                    --[[ rowData is a csv string as follows
-                
-                        status.theTIME,status.sensorVoltageMin,status.sensorVoltageMax,status.sensorFuelMin,status.sensorFuelMax,
-                        status.sensorRPMMin,status.sensorRPMMax,status.sensorCurrentMin,status.sensorCurrentMax,status.sensorRSSIMin,
-                        status.sensorRSSIMax,status.sensorTempMCUMin,status.sensorTempMCUMax,status.sensorTempESCMin,status.sensorTempESCMax    
-                ]] --
-                    -- loop of rowData and extract each value bases on idx
-                    if rowData ~= nil then
-
-                        for idx, snsr in pairs(rowData) do
-
-                            snsr = snsr:gsub("%s+", "")
-
-                            if snsr ~= nil and snsr ~= "" then
-                                -- time
-                                if idx == 1 and theme.logsCOL1w ~= 0 then
-                                    str = status.SecondsToClockAlt(snsr)
-                                    tsizeW, tsizeH = lcd.getTextSize(str)
-                                    lcd.drawText(col1x + (theme.logsCOL1w / 2) - (tsizeW / 2), boxTy + tsizeH / 2 + (boxTh * 2) + rowH, str)
-                                end
-                                -- voltagemin
-                                if idx == 2 then vstr = snsr end
-                                -- voltagemax
-                                if idx == 3 and theme.logsCOL2w ~= 0 then
-                                    str = status.round(vstr / 100, 1) .. 'v / ' .. status.round(snsr / 100, 1) .. 'v'
-                                    tsizeW, tsizeH = lcd.getTextSize(str)
-                                    lcd.drawText(col2x + (theme.logsCOL2w / 2) - (tsizeW / 2), boxTy + tsizeH / 2 + (boxTh * 2) + rowH, str)
-                                end
-                                -- fuelmin
-                                if idx == 4 then local logFUELmin = snsr end
-                                -- fuelmax
-                                if idx == 5 then local logFUELmax = snsr end
-                                -- rpmmin
-                                if idx == 6 then rstr = snsr end
-                                -- rpmmax
-                                if idx == 7 and theme.logsCOL4w ~= 0 then
-                                    str = rstr .. 'rpm / ' .. snsr .. 'rpm'
-                                    tsizeW, tsizeH = lcd.getTextSize(str)
-                                    lcd.drawText(col4x + (theme.logsCOL4w / 2) - (tsizeW / 2), boxTy + tsizeH / 2 + (boxTh * 2) + rowH, str)
-                                end
-                                -- currentmin
-                                if idx == 8 then cstr = snsr end
-                                -- currentmax
-                                if idx == 9 and theme.logsCOL3w ~= 0 then
-                                    str = math.floor(cstr / 10) .. 'A / ' .. math.floor(snsr / 10) .. 'A'
-                                    tsizeW, tsizeH = lcd.getTextSize(str)
-                                    lcd.drawText(col3x + (theme.logsCOL3w / 2) - (tsizeW / 2), boxTy + tsizeH / 2 + (boxTh * 2) + rowH, str)
-                                end
-                                -- rssimin
-                                if idx == 10 then lqstr = snsr end
-                                -- rssimax
-                                if idx == 11 and theme.logsCOL5w ~= 0 then
-                                    str = lqstr .. '% / ' .. snsr .. '%'
-                                    tsizeW, tsizeH = lcd.getTextSize(str)
-                                    lcd.drawText(col5x + (theme.logsCOL5w / 2) - (tsizeW / 2), boxTy + tsizeH / 2 + (boxTh * 2) + rowH, str)
-                                end
-                                -- mcumin
-                                if idx == 12 then mcustr = snsr end
-                                -- mcumax
-                                if idx == 13 and theme.logsCOL6w ~= 0 then
-                                    str = status.round(mcustr / 100, 0) .. '° / ' .. status.round(snsr / 100, 0) .. '°'
-                                    strf = status.round(mcustr / 100, 0) .. '. / ' .. status.round(snsr / 100, 0) .. '.'
-                                    tsizeW, tsizeH = lcd.getTextSize(strf)
-                                    lcd.drawText(col6x + (theme.logsCOL6w / 2) - (tsizeW / 2), boxTy + tsizeH / 2 + (boxTh * 2) + rowH, str)
-                                end
-                                -- escmin
-                                if idx == 14 then escstr = snsr end
-                                -- escmax
-                                if idx == 15 and theme.logsCOL7w ~= 0 then
-                                    str = status.round(escstr / 100, 0) .. '° / ' .. status.round(snsr / 100, 0) .. '°'
-                                    strf = status.round(escstr / 100, 0) .. '. / ' .. status.round(snsr / 100, 0) .. '.'
-                                    tsizeW, tsizeH = lcd.getTextSize(strf)
-                                    lcd.drawText(col7x + (theme.logsCOL7w / 2) - (tsizeW / 2), boxTy + tsizeH / 2 + (boxTh * 2) + rowH, str)
-                                end
-                            end
-                            -- end loop of each storage line        
-                        end
-                        c = c + 1
-
-                        if h < 200 then
-                            if c > 5 then break end
-                        else
-                            if c > 7 then break end
-                        end
-                        -- end of each log storage slot
-                    end
-                end
-            end
-        end
-    end
-
-    -- lcd.drawText((w / 2) - tsizeW / 2, (h / 2) - tsizeH / 2, str)
-    return
-end
 
 function status.telemetryBoxImage(x, y, w, h, gfx)
 
@@ -3495,8 +3250,6 @@ function status.sensorsMAXMIN(sensors)
 
             status.motorWasActive = false
 
-            local maxminFinals = status.readHistory()
-
             if status.sensorCurrentMin == 0 then
                 status.sensorCurrentMinAlt = 1
             else
@@ -3508,37 +3261,6 @@ function status.sensorsMAXMIN(sensors)
                 status.sensorCurrentMaxAlt = status.sensorCurrentMax
             end
 
-            local maxminRow = status.theTIME .. "," .. status.sensorVoltageMin .. "," .. status.sensorVoltageMax .. "," .. status.sensorFuelMin .. "," .. status.sensorFuelMax .. "," ..
-                                  status.sensorRPMMin .. "," .. status.sensorRPMMax .. "," .. status.sensorCurrentMin .. "," .. status.sensorCurrentMax .. "," .. status.sensorRSSIMin .. "," ..
-                                  status.sensorRSSIMax .. "," .. status.sensorTempMCUMin .. "," .. status.sensorTempMCUMax .. "," .. status.sensorTempESCMin .. "," .. status.sensorTempESCMax
-
-            -- print("Last data: ".. maxminRow )
-
-            table.insert(maxminFinals, 1, maxminRow)
-            if tablelength(maxminFinals) >= 9 then table.remove(maxminFinals, 9) end
-
-            name = string.gsub(model.name(), "%s+", "_")
-            name = string.gsub(name, "%W", "_")
-
-            local file = "widgets/status/logs/" .. name .. ".log"
-
-            local f = io.open(file, 'w')
-            f:write("")
-            io.close(f)
-
-            -- print("Writing history to: " .. file)
-
-            local f = io.open(file, 'a')
-            for k, v in ipairs(maxminFinals) do
-                if v ~= nil then
-                    v = v:gsub("%s+", "")
-                    -- if v ~= "" then
-                    -- print(v)
-                    f:write(v .. "\n")
-                    -- end
-                end
-            end
-            io.close(f)
 
             status.readLOGS = false
 
@@ -3565,26 +3287,6 @@ function tablelength(T)
     return count
 end
 
-function print_r(arr, indentLevel)
-    local str = ""
-    local indentStr = "#"
-
-    if (indentLevel == nil) then
-        print(print_r(arr, 0))
-        return
-    end
-
-    for i = 0, indentLevel do indentStr = indentStr .. "\t" end
-
-    for index, value in ipairs(arr) do
-        if type(value) == "table" then
-            str = str .. indentStr .. index .. ": \n" .. print_r(value, (indentLevel + 1))
-        else
-            str = str .. indentStr .. index .. ": " .. value .. "\n"
-        end
-    end
-    return str
-end
 
 function status.sensorMakeNumber(x)
     if x == nil or x == "" then x = 0 end
@@ -3672,52 +3374,6 @@ function status.explode(inputstr, sep)
     return t
 end
 
-function status.ReadLine(f, line)
-    local i = 1 -- line counter
-    for l in f:lines() do -- lines iterator, "l" returns the line
-        if i == line then return l end -- we found this line, return it
-        i = i + 1 -- counting lines
-    end
-    return "" -- Doesn't have that line
-end
-
-function status.readHistory()
-
-    local history = {}
-    -- print("Reading history")
-
-    name = string.gsub(model.name(), "%s+", "_")
-    name = string.gsub(name, "%W", "_")
-
-    file = "widgets/status/logs/" .. name .. ".log"
-    local f = io.open(file, "rb")
-
-    if f ~= nil then
-        -- file exists
-        local rData
-        c = 0
-        tc = 1
-        while c <= 10 do
-            if c == 0 then
-                rData = io.read(f, "l")
-            else
-                rData = io.read(f, "L")
-            end
-            if rData ~= "" or rData ~= nil then
-                history[tc] = rData
-                tc = tc + 1
-            end
-            c = c + 1
-        end
-        io.close(f)
-
-    else
-        return history
-    end
-
-    return history
-
-end
 
 function status.read()
     status.govmodeParam = storage.read("mem1")
@@ -4732,20 +4388,5 @@ function status.wakeupUI(widget)
     return
 end
 
-function status.viewLogs()
-    status.showLOGS = true
-end
-
-function status.menu(widget)
-
-    return {
-        {
-            "View logs", function()
-                status.viewLogs()
-            end
-        }
-    }
-
-end
 
 return status
