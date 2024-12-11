@@ -190,7 +190,12 @@ function app.resetState()
     app.audio = {}
     app.triggers.wasConnected = false
     app.triggers.invalidConnectionSetup = false
-
+    rfsuite.app.triggers.profileswitchLast = nil
+    rfsuite.config.activeProfileLast = nil
+    rfsuite.config.activeProfile = nil
+    rfsuite.config.activeRateProfile = nil
+    rfsuite.config.activeRateProfileLast = nil
+    rfsuite.config.activeProfile = nil   
 end
 
 -- SAVE FIELD VALUE FOR ETHOS FROM ETHOS FORMS INTO THE ACTUAL FORMAT THAT 
