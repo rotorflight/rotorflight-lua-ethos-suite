@@ -615,22 +615,17 @@ function app.wakeupUI()
                 elseif not rfsuite.bg.active() then
                     message = "Please enable the background task."
                     app.triggers.invalidConnectionSetup = true
-                elseif app.getRSSI() == 0 then
+                elseif app.getRSSI() == 0 and app.offlineMode == false then
                     message = "Please check your heli is powered on and telemetry is running."
                     app.triggers.invalidConnectionSetup = true
-                elseif rfsuite.config.apiVersion == nil then
+                elseif rfsuite.config.apiVersion == nil and app.offlineMode == false  then
                     message = "Unable to determine MSP version in use."
                     app.triggers.invalidConnectionSetup = true
-                elseif not rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiVersionAsString) then
+                elseif not rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiVersionAsString) and app.offlineMode == false  then
                     message = "This version of the Lua script \ncan't be used with the selected model (" .. rfsuite.config.apiVersion .. ")."
                     app.triggers.invalidConnectionSetup = true
                 end
                 
-                -- if in offline mode.. revert any of the above checks to allow ui to load.
-                if app.offlineMode == true then
-                    app.triggers.invalidConnectionSetup = false
-                end
-
                 -- display message and abort if error occured
                 if app.triggers.invalidConnectionSetup == true and app.triggers.wasConnected == false then
 
