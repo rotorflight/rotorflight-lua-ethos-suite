@@ -690,7 +690,7 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra5)
     rfsuite.app.formFields = {}
     rfsuite.app.formLines = {}
 
-    rfsuite.app.Page = assert(loadfile("app/pages/" .. script))()
+    rfsuite.app.Page = assert(loadfile("app/pages/" .. script))(idx)
 
     if rfsuite.app.Page.openPage then
         rfsuite.app.Page.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra5)
