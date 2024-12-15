@@ -6,7 +6,7 @@ local arg = {...}
 local currentProfileChecked = false
 local firstLoad = true
 local minMaxIndex
-local sbus_out_frame_rate
+--local sbus_out_frame_rate
 
 local ch = rfsuite.currentSbusServoIndex
 local ch_str = "CH" .. tostring(ch + 1)
@@ -87,8 +87,8 @@ local function saveServoSettings(self)
     local mixSource = math.floor(rfsuite.app.Page.fields[2].value)
     local mixMin = math.floor(rfsuite.app.Page.fields[3].value)
     local mixMax = math.floor(rfsuite.app.Page.fields[4].value)
-    if sbus_out_frame_rate == nil then sbus_out_frame_rate = 250 end
-    local frameRate = sbus_out_frame_rate
+    --if sbus_out_frame_rate == nil then sbus_out_frame_rate = 250 end
+    --local frameRate = sbus_out_frame_rate
 
     local message = {
         command = 153, -- MSP_SET_SERVO_CONFIGURATION
@@ -99,7 +99,7 @@ local function saveServoSettings(self)
     rfsuite.bg.msp.mspHelper.writeU8(message.payload, mixSource)
     rfsuite.bg.msp.mspHelper.writeU16(message.payload, mixMin)
     rfsuite.bg.msp.mspHelper.writeU16(message.payload, mixMax)
-    rfsuite.bg.msp.mspHelper.writeU8(message.payload, frameRate)
+    --rfsuite.bg.msp.mspHelper.writeU8(message.payload, frameRate)
 
     if rfsuite.config.mspTxRxDebug == true or rfsuite.config.logEnable == true then
         local logData = "{" ..
@@ -107,7 +107,7 @@ local function saveServoSettings(self)
                             "}"
 
         rfsuite.utils.log(logData)
-
+print(logData)
         if rfsuite.config.mspTxRxDebug == true then print(logData) end
 
     end
@@ -150,7 +150,7 @@ local function postLoad(self)
     setMinMaxIndex(self)
 
     -- the sbus output rate is last value. we dont use it - but we need it for writes so grab it here
-    sbus_out_frame_rate = rfsuite.app.Page.values[#rfsuite.app.Page.values]
+    --sbus_out_frame_rate = rfsuite.app.Page.values[#rfsuite.app.Page.values]
 
     rfsuite.app.triggers.isReady = true
     enableWakeup = true
@@ -238,7 +238,7 @@ return {
     title = "SBUS Output",
     reboot = false,
     eepromWrite = true,
-    minBytes = 108, -- 108?
+    minBytes = 107,
     labels = labels,
     simulatorResponse = {
         1, 0, 24, 252, 232, 3, 1, 1, 24, 252, 232, 3, 1, 2, 24, 252, 232, 3, 1,
