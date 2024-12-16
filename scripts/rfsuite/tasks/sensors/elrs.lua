@@ -447,7 +447,6 @@ function elrs.crossfirePop()
 end
 
 function elrs.wakeup()
-
     if rfsuite.bg.telemetry.active() and rfsuite.rssiSensor then while elrs.crossfirePop() do if (CRSF_PAUSE_TELEMETRY == true or rfsuite.app.triggers.mspBusy == true) then break end end end
 end
 

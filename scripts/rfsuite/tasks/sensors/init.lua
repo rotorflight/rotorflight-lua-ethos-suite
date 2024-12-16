@@ -18,24 +18,11 @@
  * 
 
 ]]--
---
-local arg = {...}
-local config = arg[1]
 
-local sensors = {}
+local init = {
+    interval = 0.005,         --run every 0.005s
+    script = "sensors.lua",   --run this script
+    msp = false               --do not run if busy with msp 
+}
 
-sensors.elrs = assert(loadfile("tasks/sensors/elrs.lua"))(config)
-sensors.frsky = assert(loadfile("tasks/sensors/frsky.lua"))(config)
-
-function sensors.wakeup()
-
-    -- we cant do anything if bg task not running
-    if not rfsuite.bg.active() then return end
-    
-    if rfsuite.bg.msp.protocol.mspProtocol == "crsf" and config.enableElrsSensors == true then sensors.elrs.wakeup() end
-
-    if rfsuite.bg.msp.protocol.mspProtocol == "smartPort" and config.enableSportSensors == true then sensors.frsky.wakeup() end
-
-end
-
-return sensors
+return init

@@ -42,8 +42,8 @@ config.mspTxRxDebug = false                                         -- simple pr
 config.flightLog = true                                             -- will write a flight log into /scripts/rfsuite/logs/<modelname>/*.log
 config.reloadOnSave = false                                         -- trigger a reload on save [default = false]
 config.skipRssiSensorCheck = false                                  -- skip checking for a valid rssi [ default = false]
-config.enternalElrsSensors = true                                   -- disable the integrated elrs telemetry processing [default = true]
-config.internalSportSensors = true                                  -- disable the integrated smart port telemetry processing [default = true]
+config.enableElrsSensors = true                                     -- disable the integrated elrs telemetry processing [default = true]
+config.enableSportSensors = true                                    -- disable the integrated smart port telemetry processing [default = true]
 config.adjFunctionAlerts = false                                    -- do not alert on adjfunction telemetry.  [default = false]
 config.adjValueAlerts = true                                        -- play adjvalue alerts if sensor changes [default = true]  
 config.saveWhenArmedWarning = true                                  -- do not display the save when armed warning. [default = true]
