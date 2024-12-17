@@ -170,7 +170,8 @@ function bg.wakeup()
                     if not rfsuite.app.triggers.mspBusy then
                         bg[task.name].wakeup()
                     end                
-                end     
+                end   
+                task.last_run = now
             end
          end
     end
