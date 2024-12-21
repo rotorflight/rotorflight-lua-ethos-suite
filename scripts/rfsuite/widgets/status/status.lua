@@ -1597,7 +1597,7 @@ function status.paint(widget)
         local theme = status.getThemeInfo()
         local w, h = lcd.getWindowSize()
 
-        print(w .. "x" .. h)
+  
 
         if status.isVisible then
             -- blank out display
