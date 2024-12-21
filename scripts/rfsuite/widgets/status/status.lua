@@ -1076,7 +1076,7 @@ function status.getThemeInfo()
 
     -- first one is unsporrted
 
-    if environment.board == "XES" or environment.board == "XE" or environment.board == "X20" or environment.board == "X20S" or environment.board == "X20PRO" or environment.board == "X20PROAW" or
+    if environment.board == "X18RS" or environment.board == "XES" or environment.board == "XE" or environment.board == "X20" or environment.board == "X20S" or environment.board == "X20PRO" or environment.board == "X20PROAW" or
         environment.board == "X20R" or environment.board == "X20RS" then
         ret = {
             supportedRADIO = true,
@@ -1112,7 +1112,7 @@ function status.getThemeInfo()
         }
     end
 
-    if environment.board == "X18" or environment.board == "X18S" or environment.board == "X18RS" then
+    if environment.board == "X18" or environment.board == "X18S" then
         ret = {
             supportedRADIO = true,
             colSpacing = 2,
@@ -1862,13 +1862,13 @@ function status.paint(widget)
             end
 
             -- widget size
-            if environment.board == "V20" or environment.board == "XES" or environment.board == "X20" or environment.board == "X20S" or environment.board == "X20PRO" or environment.board == "X20PROAW" then
+            if environment.board == "X18RS" environment.board == "V20" or environment.board == "XES" or environment.board == "X20" or environment.board == "X20S" or environment.board == "X20PRO" or environment.board == "X20PROAW" then
                 if w ~= 784 and h ~= 294 then
                     status.screenError("DISPLAY SIZE INVALID")
                     return
                 end
             end
-            if environment.board == "X18" or environment.board == "X18S" or environment.board == "X18RS"then
+            if environment.board == "X18" or environment.board == "X18S" then
                 smallTEXT = true
                 if w ~= 472 and h ~= 191 then
                     status.screenError("DISPLAY SIZE INVALID")
