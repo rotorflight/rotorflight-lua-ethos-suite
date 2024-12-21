@@ -1112,7 +1112,7 @@ function status.getThemeInfo()
         }
     end
 
-    if environment.board == "X18" or environment.board == "X18S" then
+    if environment.board == "X18" or environment.board == "X18S" or environment.board == "X18RS" then
         ret = {
             supportedRADIO = true,
             colSpacing = 2,
@@ -1868,7 +1868,7 @@ function status.paint(widget)
                     return
                 end
             end
-            if environment.board == "X18" or environment.board == "X18S" then
+            if environment.board == "X18" or environment.board == "X18S" or environment.board == "X18RS"then
                 smallTEXT = true
                 if w ~= 472 and h ~= 191 then
                     status.screenError("DISPLAY SIZE INVALID")
