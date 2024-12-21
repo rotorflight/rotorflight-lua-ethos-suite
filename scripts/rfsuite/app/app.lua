@@ -24,7 +24,7 @@ local app = {}
 local arg = {...}
 
 local config = arg[1]
-
+local compile = arg[2]
 
 local triggers = {}
 triggers.exitAPP = false
@@ -53,6 +53,7 @@ triggers.wasConnected = false
 triggers.isArmed = false
 triggers.showSaveArmedWarning = false
 
+app.compile = compile
 
 rfsuite.config = {}
 rfsuite.config = config
@@ -70,7 +71,7 @@ app.triggers = {}
 app.triggers = triggers
 
 app.ui = {}
-app.ui = assert(loadfile("app/lib/ui.lua"))(config)
+app.ui = assert(compile.loadScript(config.suiteDir .. "app/lib/ui.lua"))(config, compile)
 
 app.sensors = {}
 app.formFields = {}
@@ -116,7 +117,6 @@ app.audio.playServoOverideEnable = false
 app.audio.playMixerOverideDisable = false
 app.audio.playMixerOverideEnable = false
 app.audio.playEraseFlash = false
-app.offlineMode = false
 
 app.dialogs = {}
 app.dialogs.progress = false
@@ -158,7 +158,7 @@ rfsuite.config.ethosRunningVersion = nil
 
 -- RETURN THE CURRENT RSSI SENSOR VALUE 
 function app.getRSSI()
-    if system:getVersion().simulation == true or rfsuite.config.skipRssiSensorCheck == true or app.offlineMode == true then return 100 end
+    if system:getVersion().simulation == true or rfsuite.config.skipRssiSensorCheck == true then return 100 end
 
     -- if rfsuite.rssiSensor ~= nil then
 
@@ -195,7 +195,8 @@ function app.resetState()
     rfsuite.config.activeProfile = nil
     rfsuite.config.activeRateProfile = nil
     rfsuite.config.activeRateProfileLast = nil
-    rfsuite.config.activeProfile = nil   
+    rfsuite.config.activeProfile = nil    
+
 end
 
 -- SAVE FIELD VALUE FOR ETHOS FROM ETHOS FORMS INTO THE ACTUAL FORMAT THAT 
@@ -609,10 +610,7 @@ function app.wakeupUI()
 
                 local message
                 local apiVersionAsString = tostring(rfsuite.config.apiVersion)
-                if rfsuite.config.ethosRunningVersion < config.ethosVersion then
-                    message = config.ethosVersionString
-                    app.triggers.invalidConnectionSetup = true
-                elseif not rfsuite.bg.active() then
+                if not rfsuite.bg.active() then
                     message = "Please enable the background task."
                     app.triggers.invalidConnectionSetup = true
                 elseif app.getRSSI() == 0 then
@@ -624,11 +622,6 @@ function app.wakeupUI()
                 elseif not rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiVersionAsString) then
                     message = "This version of the Lua script \ncan't be used with the selected model (" .. rfsuite.config.apiVersion .. ")."
                     app.triggers.invalidConnectionSetup = true
-                end
-                
-                -- if in offline mode.. revert any of the above checks to allow ui to load.
-                if app.offlineMode == true then
-                    app.triggers.invalidConnectionSetup = false
                 end
 
                 -- display message and abort if error occured
@@ -980,38 +973,6 @@ function app.wakeupUI()
 
 end
 
-
-function app.create_logtool()
-
-
-    -- config.apiVersion = nil
-    config.environment = system.getVersion()
-    config.ethosRunningVersion = rfsuite.utils.ethosVersion()
-
-    rfsuite.config.lcdWidth, rfsuite.config.lcdHeight = rfsuite.utils.getWindowSize()
-    app.radio = assert(loadfile("app/radios.lua"))().msp
-
-    app.fieldHelpTxt = assert(loadfile("app/help/fields.lua"))()
-
-    app.uiState = app.uiStatus.init
-
-    -- overide developermode if file exists.
-    if rfsuite.config.developerMode ~= true then
-        if rfsuite.utils.file_exists("/scripts/developermode") then
-                rfsuite.config.developerMode = true
-        end
-    end
-
-    rfsuite.app.menuLastSelected["mainmenu"] = pidx
-    rfsuite.app.ui.progressDisplay()
-
-    rfsuite.app.offlineMode = true
-    rfsuite.app.ui.openPage(1, "Logs", "logs.lua",1) --- final param says to load in standalone mode
-
-
-end
-
-
 function app.create()
 
 
@@ -1020,9 +981,9 @@ function app.create()
     config.ethosRunningVersion = rfsuite.utils.ethosVersion()
 
     rfsuite.config.lcdWidth, rfsuite.config.lcdHeight = rfsuite.utils.getWindowSize()
-    app.radio = assert(loadfile("app/radios.lua"))().msp
+    app.radio = assert(compile.loadScript(rfsuite.config.suiteDir .. "app/radios.lua"))().msp
 
-    app.fieldHelpTxt = assert(loadfile("app/help/fields.lua"))()
+    app.fieldHelpTxt = assert(compile.loadScript(rfsuite.config.suiteDir .. "app/help/fields.lua"))()
 
     app.uiState = app.uiStatus.init
 
@@ -1036,6 +997,35 @@ function app.create()
 
     app.ui.openMainMenu()
 
+    -- check the current version of ethos to ensure that it is valid.
+    if rfsuite.config.ethosRunningVersion < config.ethosVersion then
+        if app.dialogs.badversionDisplay == false then
+            app.dialogs.badversionDisplay = true
+
+            local buttons = {
+                {
+                    label = "EXIT",
+                    action = function()
+                        app.triggers.exitAPP = true
+                        return true
+                    end
+                }
+            }
+
+                form.openDialog({
+                    width = rfsuite.config.lcdWidth,
+                    title = "Warning",
+                    message = config.ethosVersionString,
+                    buttons = buttons,
+                    wakeup = function()
+                    end,
+                    paint = function()
+                    end,
+                    options = TEXT_LEFT
+                })
+
+        end
+    end
 
 end
 
@@ -1101,7 +1091,6 @@ end
 function app.close()
 
     app.guiIsRunning = false
-    app.offlineMode = false
 
     if app.Page ~= nil and (app.uiState == app.uiStatus.pages or app.uiState == app.uiStatus.mainMenu) then if app.Page.close then app.Page.close() end end
 

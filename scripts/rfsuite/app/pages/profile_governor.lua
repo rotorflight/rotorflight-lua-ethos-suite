@@ -47,6 +47,10 @@ elseif rfsuite.config.governorMode >= 2 then
 end
 
 
+if tonumber(rfsuite.config.apiVersion) >= 12.07 then
+    fields[#fields + 1] = {t = "Min throttle", help = "govMinThrottle", min = 0, max = 100, default = 10, unit = "%", vals = {14}}
+end
+
 local function postLoad(self)
     rfsuite.app.triggers.isReady = true      
     activateWakeup = true

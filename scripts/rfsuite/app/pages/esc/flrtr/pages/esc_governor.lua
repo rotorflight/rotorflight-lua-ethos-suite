@@ -2,7 +2,7 @@ local labels = {}
 local fields = {}
 
 local folder = "flrtr"
-local ESC = assert(loadfile("app/pages/esc/" .. folder .. "/init.lua"))()
+local ESC = assert(compile.loadScript(rfsuite.config.suiteDir .. "app/pages/esc/" .. folder .. "/init.lua"))()
 local mspHeaderBytes = ESC.mspHeaderBytes
 local mspSignature = ESC.mspSignature
 
@@ -48,7 +48,7 @@ return {
     labels = labels,
     fields = fields,
     escinfo = escinfo,
-    simulatorResponse =  {115, 0, 0, 0, 150, 255, 156, 190, 216, 70, 69, 169, 239, 1, 0, 0, 1, 0, 8, 1, 4, 76, 7, 148, 1, 6, 30, 125, 0, 5, 0, 1, 5, 1, 20, 0, 15, 0, 30, 0, 18, 0, 10, 1, 193, 56},
+    simulatorResponse = {115, 0, 0, 0, 150, 255, 156, 190, 216, 70, 69, 169, 239, 1, 0, 0, 1, 0, 8, 1, 4, 76, 7, 148, 1, 6, 30, 125, 0, 5, 0, 1, 5, 1, 20, 0, 15, 0, 30, 0, 18, 0, 10, 1, 193, 56},
     postLoad = postLoad,
     navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
     onNavMenu = onNavMenu,

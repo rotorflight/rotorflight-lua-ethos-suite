@@ -24,16 +24,17 @@
 --
 local arg = {...}
 local config = arg[1]
+local compile = arg[2]
 
 local elrs = {}
 
 if crsf.getSensor ~= nil then
     local sensor = crsf.getSensor()
     elrs.popFrame = function() return sensor:popFrame() end
-    elrs.pushFrame = function(x,y) return sensor:pushFrame(x,y) end
+    elrs.pushFrame = function(x, y) return sensor:pushFrame(x, y) end
 else
     elrs.popFrame = function() return crsf.popFrame() end
-    elrs.pushFrame = function(x,y) return crsf.pushFrame(x,y) end
+    elrs.pushFrame = function(x, y) return crsf.pushFrame(x, y) end
 end
 
 local sensors = {}
@@ -186,11 +187,12 @@ local function decAccel(data, pos)
     return nil, pos
 end
 
+
 local function decLatLong(data, pos)
     local lat, lon
     lat, pos = decS32(data, pos)
     lon, pos = decS32(data, pos)
-    
+ 
     lat = math.floor(lat * 0.001)
     lon = math.floor(lon * 0.001)
     
@@ -405,10 +407,6 @@ elrs.telemetryFrameCount = 0
 function elrs.crossfirePop()
 
     if (CRSF_PAUSE_TELEMETRY == true or rfsuite.app.triggers.mspBusy == true) then
-        local module = model.getModule(rfsuite.rssiSensor:module())
-        if module ~= nil and module.muteSensorLost ~= nil then
-            module:muteSensorLost(5.0)
-        end    
         return false
     else
 

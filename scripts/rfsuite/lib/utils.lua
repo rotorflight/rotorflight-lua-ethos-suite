@@ -23,6 +23,7 @@ local utils = {}
 
 local arg = {...}
 local config = arg[1]
+local compile = arg[2]
 
 
 
@@ -46,44 +47,37 @@ function utils.file_exists(name)
     end
 end
 
-function utils.playFile(pkg, file)
-    -- Get and clean audio voice path
-    local av = system.getAudioVoice()
-    av = av:gsub("SD:", ""):gsub("RADIO:", ""):gsub("AUDIO:", ""):gsub("VOICE[1-4]:", "")
+function utils.playFile(pkg,file)
 
-    -- Pre-define the base directory paths
-    local baseDir = rfsuite.config.suiteDir
-    local soundPack = rfsuite.config.soundPack
-    local audioPath = soundPack and ("/audio/" .. soundPack) or (av)
+        local wavLocale
+        local wavDefault
+        
+        -- fix path
+        local av = system.getAudioVoice()
+        av = string.gsub(av, "SD:", "")
+        av = string.gsub(av, "RADIO:", "")
 
-    -- Construct file paths
-    local wavLocale
-    local wavDefault
-    
-    if utils.ethosVersionToMinor() < 16 then
-        wavLocale = baseDir .. audioPath .. "/" .. pkg .. "/" .. file
-        wavDefault = baseDir .. "/audio/en/default/" .. pkg .. "/" .. file
-    else
-        wavLocale = audioPath .. "/" .. pkg .. "/" .. file
-        wavDefault = "audio/en/default/" .. pkg .. "/" .. file
-    end
-
-    -- Check if locale file exists, else use the default
-    if rfsuite.utils.file_exists(wavLocale) then
-        system.playFile(wavLocale)
-    else
-        system.playFile(wavDefault)
-    end
+        if rfsuite.config.soundPack == nil then  
+                wavLocale = rfsuite.config.suiteDir ..  av .. "/" .. pkg .. "/" .. file
+                wavDefault = rfsuite.config.suiteDir .. "/audio/en/default/" .. pkg .. "/" .. file                    
+        else
+                wavLocale = rfsuite.config.suiteDir .. "/audio/" .. rfsuite.config.soundPack .. "/" .. pkg .. "/" .. file
+                wavDefault = rfsuite.config.suiteDir .. "/audio/en/default/" .. pkg .. "/" .. file        
+        end
+             
+        if rfsuite.utils.file_exists(wavLocale) then
+                --print("Locale: " .. wavLocale)
+                system.playFile(wavLocale)
+        else
+                --print("Default: " .. wavDefault)
+                system.playFile(wavDefault)
+        end        
 end
 
 function utils.playFileCommon(file)
 
-        local wav
-        if utils.ethosVersionToMinor() < 16 then
-            wav = rfsuite.config.suiteDir .. "/audio/" .. file
-        else
-            wav = "audio/" .. file        
-        end
+        local wav = rfsuite.config.suiteDir .. "/audio/" .. file
+
         system.playFile(wav)
       
 end
@@ -196,12 +190,6 @@ function utils.ethosVersion()
     return v
 end
 
-function utils.ethosVersionToMinor()
-    local environment = system.getVersion()
-    local v = tonumber(environment.major .. environment.minor)
-    return v
-end
-
 function utils.getRssiSensor()
     local rssiSensor
     local rssiNames = {"RSSI", "RSSI 2.4G", "RSSI 900M", "Rx RSSI1", "Rx RSSI2", "RSSI Int", "RSSI Ext", "RSSI Lora"}
@@ -286,7 +274,8 @@ end
 -- simple wrapper - long term will enable 
 -- dynamic compilation
 function utils.loadScript(script)
-    return loadfile(script)
+    -- system.compile(script)
+    return compile.loadScript(script)
 end
 
 -- return the time
@@ -460,10 +449,12 @@ function utils.log(msg)
 
     if config.logEnable == true then
 
-        if rfsuite.bg.log_queue ~= nil then
-            table.insert(rfsuite.bg.log_queue, msg)
-        end
-        
+        if config.logEnableScreen == true then print(msg) end
+
+        local f = io.open(config.suiteDir .. "/logs/rfsuite.log", 'a')
+        io.write(f, tostring(msg) .. "\n")
+        io.close(f)
+
     end
 end
 
