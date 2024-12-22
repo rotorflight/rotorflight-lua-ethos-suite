@@ -10,7 +10,7 @@ local mspSignature = ESC.mspSignature
 -- fields[#fields + 1] = {t = "Throttle max", min = 1000, max = 2000, default = 1940,  vals = {mspHeaderBytes + 22, mspHeaderBytes + 21},unit = "us"} -- informational only. cant be saved
 fields[#fields + 1] = {t = "Low voltage protection", min = 28, max = 38, scale = 10, default = 30, decimals = 1, vals = {mspHeaderBytes + 25}, unit = "V"}
 fields[#fields + 1] = {t = "Temperature protection", min = 50, max = 135, default = 125, vals = {mspHeaderBytes + 26}, unit = "°"}
-fields[#fields + 1] = {t = "Timing angle", min = 1, max = 20, default = 10, vals = {mspHeaderBytes + 28}, unit = "°"}
+fields[#fields + 1] = {t = "Timing angle", min = 1, max = 10, default = 5, vals = {mspHeaderBytes + 28}, unit = "°"}
 fields[#fields + 1] = {t = "Starting torque", min = 1, max = 15, default = 3, vals = {mspHeaderBytes + 30}}
 fields[#fields + 1] = {t = "Response speed", min = 1, max = 15, default = 5, vals = {mspHeaderBytes + 31}}
 fields[#fields + 1] = {t = "Buzzer volume", min = 1, max = 5, default = 2, vals = {mspHeaderBytes + 32}}
