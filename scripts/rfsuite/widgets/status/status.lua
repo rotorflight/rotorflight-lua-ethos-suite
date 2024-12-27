@@ -1048,7 +1048,7 @@ function status.message(msg)
         -- light theme
         lcd.color(lcd.RGB(90, 90, 90))
     end
-    lcd.drawText((w / 2) - tsizeW / 2, (h / 2) - tsizeH / 2, str)
+    lcd.drawText((w / 2) - tsizeW / 2, (h / 2) - tsizeH / 2, msg)
     return
 end
 
@@ -2307,6 +2307,12 @@ function status.paint(widget)
 
             if status.linkUP == false and environment.simulation == false then status.noTelem() end
 
+            if status.idleupswitchParam and status.idleupswitchParam:state() then
+                if status.theTIME <= status.idleupdelayParam then
+                        local count = math.floor(status.idleupdelayParam - status.theTIME)
+                        status.message("INITIALISING..." .. count + 1)
+                end      
+            end
         end
     end
 
