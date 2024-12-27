@@ -3089,46 +3089,43 @@ function status.playFuel(widget)
 end
 
 function status.playRPM(widget)
-    if status.announcementRPMSwitchParam ~= nil then
-        if status.announcementRPMSwitchParam:state() then
-            status.rpmtime.announcementTimer = true
-            rpmDoneFirst = false
-        else
-            status.rpmtime.announcementTimer = false
+    if not status.announcementRPMSwitchParam then return end
+
+    -- Update announcement timer state and rpmDoneFirst flag based on switch state
+    local switchState = status.announcementRPMSwitchParam:state()
+    status.rpmtime.announcementTimer = switchState
+    local rpmDoneFirst = not switchState
+
+    if status.isInConfiguration then return end
+
+    local rpmSensor = status.sensors.rpm
+    if not rpmSensor then return end
+
+    if status.rpmtime.announcementTimer then
+        -- Start the timer if not already started and first announcement is not done
+        if not status.rpmtime.announcementTimerStart and not rpmDoneFirst then
+            status.rpmtime.announcementTimerStart = os.time()
+            status.rpmtime.audioannouncementCounter = os.clock()
+            system.playNumber(rpmSensor, UNIT_RPM, 2) -- Play the RPM alert
             rpmDoneFirst = true
         end
+    else
+        status.rpmtime.announcementTimerStart = nil -- Reset the timer if announcement is off
+    end
 
-        if status.isInConfiguration == false then
-            if status.sensors.rpm ~= nil then
-                if status.rpmtime.announcementTimer == true then
-                    -- start timer
-                    if status.rpmtime.announcementTimerStart == nil and rpmDoneFirst == false then
-                        status.rpmtime.announcementTimerStart = os.time()
-                        status.rpmtime.audioannouncementCounter = os.clock()
-                        -- print("Play rpm alert (first)")
-                        system.playNumber(status.sensors.rpm, UNIT_RPM, 2)
-                        rpmDoneFirst = true
-                    end
-                else
-                    status.rpmtime.announcementTimerStart = nil
-                end
-
-                if status.rpmtime.announcementTimerStart ~= nil then
-                    if rpmDoneFirst == false then
-                        if ((tonumber(os.clock()) - tonumber(status.rpmtime.audioannouncementCounter)) >= status.announcementIntervalParam) then
-                            -- print("Play rpm alert (repeat)")
-                            status.rpmtime.audioannouncementCounter = os.clock()
-                            system.playNumber(status.sensors.rpm, UNIT_RPM, 2)
-                        end
-                    end
-                else
-                    -- stop timer
-                    status.rpmtime.announcementTimerStart = nil
-                end
-            end
+    if status.rpmtime.announcementTimerStart then
+        -- Check if it's time for the next announcement
+        local elapsed = os.clock() - (status.rpmtime.audioannouncementCounter or 0)
+        if elapsed >= status.announcementIntervalParam then
+            status.rpmtime.audioannouncementCounter = os.clock()
+            system.playNumber(rpmSensor, UNIT_RPM, 2) -- Repeat the RPM alert
         end
+    else
+        -- Ensure the timer is stopped
+        status.rpmtime.announcementTimerStart = nil
     end
 end
+
 
 function status.playVoltage(widget)
     if status.announcementVoltageSwitchParam ~= nil then
