@@ -105,9 +105,6 @@ status.voltageIsLowAlert = false
 status.voltageIsGettingLow = false
 status.fuelIsLow = false
 status.fuelIsGettingLow = false
-status.showLOGS = false
-status.readLOGS = false
-status.readLOGSlast = {}
 status.playGovernorCount = 0
 status.playGovernorLastState = nil
 status.playrpmdiff = {}
@@ -961,7 +958,6 @@ function status.screenError(msg)
 end
 
 function status.resetALL()
-    status.showLOGS = false
     status.sensorVoltageMax = 0
     status.sensorVoltageMin = 0
     status.sensorFuelMin = 0
@@ -2305,8 +2301,6 @@ function status.paint(widget)
             end
 
             if status.linkUP == false and environment.simulation == false then status.noTelem() end
-
-            if status.showLOGS ~= nil then if status.showLOGS then status.logsBOX() end end
 
         end
     end
