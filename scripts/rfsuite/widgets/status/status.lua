@@ -2870,30 +2870,31 @@ function status.getSensors()
         end
     end
 
-    -- intercept governor for non rf governor helis
-    if armswitchParam ~= nil or status.idleupswitchParam ~= nil then
-        if status.govmodeParam == 1 then
-            if armswitchParam:state() == true then
-                govmode = "ARMED"
-                fm = "ARMED"
-            else
-                govmode = "DISARMED"
-                fm = "DISARMED"
-            end
+    -- Intercept governor for non-RF governor helis
+    local isArmed = false
 
-            if armswitchParam:state() == true then
-                if status.idleupswitchParam:state() == true then
-                    govmode = "ACTIVE"
-                    fm = "ACTIVE"
-                else
-                    govmode = "THR-OFF"
-                    fm = "THR-OFF"
-                end
-
-            end
+    if status.linkUP then    
+        local armSource = rfsuite.bg.telemetry.getSensorSource("armflags")
+        if armSource then
+            isArmed = armSource:value()
         end
-
     end
+
+    if status.idleupswitchParam and status.govmodeParam == 1 then
+        if isArmed == 1 or isArmed == 3 then
+            if status.idleupswitchParam:state() then
+                govmode = "ACTIVE"
+                fm = "ACTIVE"
+            else
+                govmode = "THR-OFF"
+                fm = "THR-OFF"
+            end
+        else
+            govmode = "DISARMED"
+            fm = "DISARMED"
+        end
+    end
+
 
     if status.sensors.voltage ~= voltage then status.refresh = true end
     if status.sensors.rpm ~= rpm then status.refresh = true end
