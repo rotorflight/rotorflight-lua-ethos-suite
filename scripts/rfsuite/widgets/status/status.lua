@@ -2859,48 +2859,42 @@ end
 
 
 function status.playLQ(widget)
-    if status.announcementLQSwitchParam ~= nil then
-        if status.announcementLQSwitchParam:state() then
-            status.lqtime.lqannouncementTimer = true
-            lqDoneFirst = false
-        else
-            status.lqtime.lqannouncementTimer = false
+    if not status.announcementLQSwitchParam then return end
+
+    -- Update the LQ announcement timer state based on switch param
+    local isLQSwitchActive = status.announcementLQSwitchParam:state()
+    status.lqtime.lqannouncementTimer = isLQSwitchActive
+    lqDoneFirst = not isLQSwitchActive
+
+    -- Exit if in configuration mode
+    if status.isInConfiguration then return end
+
+    -- Ensure sensors.rssi is valid
+    if not status.sensors.rssi then return end
+
+    -- Handle LQ announcement timer logic
+    if status.lqtime.lqannouncementTimer then
+        if not status.lqtime.lqannouncementTimerStart and not lqDoneFirst then
+            -- Start the timer and make the initial announcement
+            status.lqtime.lqannouncementTimerStart = os.time()
+            status.lqtime.lqaudioannouncementCounter = os.clock()
+            rfsuite.utils.playFile("status", "alerts/lq.wav")
+            system.playNumber(status.sensors.rssi, UNIT_PERCENT, 2)
             lqDoneFirst = true
-        end
-
-        if status.isInConfiguration == false then
-            if status.sensors.rssi ~= nil then
-                if status.lqtime.lqannouncementTimer == true then
-                    -- start timer
-                    if status.lqtime.lqannouncementTimerStart == nil and lqDoneFirst == false then
-                        status.lqtime.lqannouncementTimerStart = os.time()
-                        status.lqtime.lqaudioannouncementCounter = os.clock()
-                        -- print ("Play LQ Alert (first)")
-                        rfsuite.utils.playFile("status","alerts/lq.wav")
-                        system.playNumber(status.sensors.rssi, UNIT_PERCENT, 2)
-                        lqDoneFirst = true
-                    end
-                else
-                    status.lqtime.lqannouncementTimerStart = nil
-                end
-
-                if status.lqtime.lqannouncementTimerStart ~= nil then
-                    if lqDoneFirst == false then
-                        if ((tonumber(os.clock()) - tonumber(status.lqtime.lqaudioannouncementCounter)) >= status.announcementIntervalParam) then
-                            status.lqtime.lqaudioannouncementCounter = os.clock()
-                            -- print ("Play LQ Alert (repeat)")
-                            rfsuite.utils.playFile("status","alerts/lq.wav")
-                            system.playNumber(status.sensors.rssi, UNIT_PERCENT, 2)
-                        end
-                    end
-                else
-                    -- stop timer
-                    status.lqtime.lqannouncementTimerStart = nil
-                end
+        elseif status.lqtime.lqannouncementTimerStart then
+            -- Make repeated announcements based on the interval
+            if os.clock() - status.lqtime.lqaudioannouncementCounter >= status.announcementIntervalParam then
+                status.lqtime.lqaudioannouncementCounter = os.clock()
+                rfsuite.utils.playFile("status", "alerts/lq.wav")
+                system.playNumber(status.sensors.rssi, UNIT_PERCENT, 2)
             end
         end
+    else
+        -- Stop the timer if the switch is inactive
+        status.lqtime.lqannouncementTimerStart = nil
     end
 end
+
 
 function status.playMCU(widget)
     if status.announcementMCUSwitchParam ~= nil then
