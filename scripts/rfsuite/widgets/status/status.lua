@@ -255,6 +255,20 @@ governorMap[8] = "BAILOUT"
 governorMap[100] = "DISABLED"
 governorMap[101] = "DISARMED"
 
+local voltageSOURCE
+local rpmSOURCE
+local currentSOURCE
+local temp_escSOURCE
+local temp_mcuSOURCE
+local fuelSOURCE
+local govSOURCE
+local adjSOURCE
+local adjVALUE
+local mahSOURCE
+local telemetrySOURCE
+local crsfSOURCE
+
+
 function status.create(widget)
 
     status.initTime = os.clock()
@@ -315,23 +329,13 @@ function status.create(widget)
     }
 end
 
-local voltageSOURCE
-local rpmSOURCE
-local currentSOURCE
-local temp_escSOURCE
-local temp_mcuSOURCE
-local fuelSOURCE
-local govSOURCE
-local adjSOURCE
-local adjVALUE
-local mahSOURCE
-local telemetrySOURCE
-local crsfSOURCE
-
 function status.configure(widget)
     status.isInConfiguration = true
+    
+    local line
+    local field
 
-    triggerpanel = form.addExpansionPanel("Triggers")
+    local triggerpanel = form.addExpansionPanel("Triggers")
     triggerpanel:open(false)
 
    -- line = triggerpanel:addLine("Arm switch")
@@ -342,7 +346,7 @@ function status.configure(widget)
    -- end)
 
     line = triggerpanel:addLine("Idleup switch")
-    idleupswitch = form.addSwitchField(line, form.getFieldSlots(line)[0], function()
+    local idleupswitch = form.addSwitchField(line, form.getFieldSlots(line)[0], function()
         return status.idleupswitchParam
     end, function(value)
         status.idleupswitchParam = value
@@ -357,7 +361,7 @@ function status.configure(widget)
     field:default(5)
     field:suffix("s")
 
-    timerpanel = form.addExpansionPanel("Timer configuration")
+    local timerpanel = form.addExpansionPanel("Timer configuration")
     timerpanel:open(false)
 
     timeTable = {
@@ -381,7 +385,7 @@ function status.configure(widget)
         status.timeralarmVibrateParam = newValue
     end)
 
-    batterypanel = form.addExpansionPanel("Battery configuration")
+    local batterypanel = form.addExpansionPanel("Battery configuration")
     batterypanel:open(false)
 
     -- BATTERY CELLS
@@ -477,7 +481,7 @@ function status.configure(widget)
         plalrthap:enable(true)
     end
 
-    switchpanel = form.addExpansionPanel("Switch announcements")
+    local switchpanel = form.addExpansionPanel("Switch announcements")
     switchpanel:open(false)
 
     line = switchpanel:addLine("Idle speed low")
@@ -550,7 +554,7 @@ function status.configure(widget)
         status.switchbbloffParam = value
     end)
 
-    announcementpanel = form.addExpansionPanel("Telemetry announcements")
+    local announcementpanel = form.addExpansionPanel("Telemetry announcements")
     announcementpanel:open(false)
 
     -- announcement VOLTAGE READING
@@ -617,7 +621,7 @@ function status.configure(widget)
         status.announcementTimerSwitchParam = value
     end)
 
-    govalertpanel = form.addExpansionPanel("Governor announcements")
+    local govalertpanel = form.addExpansionPanel("Governor announcements")
     govalertpanel:open(false)
 
     -- TITLE DISPLAY
@@ -707,7 +711,7 @@ function status.configure(widget)
         status.governorUNKNOWNParam = newValue
     end)
 
-    displaypanel = form.addExpansionPanel("Customise display")
+    local displaypanel = form.addExpansionPanel("Customise display")
     displaypanel:open(false)
 
     line = displaypanel:addLine("Box1")
@@ -795,7 +799,7 @@ function status.configure(widget)
         status.customSensorParam2 = newValue
     end)
 
-    advpanel = form.addExpansionPanel("Advanced")
+    local advpanel = form.addExpansionPanel("Advanced")
     advpanel:open(false)
 
     line = advpanel:addLine("Governor")
@@ -1300,6 +1304,7 @@ function status.paint(widget)
 
         if status.sensors.voltage ~= nil then
             -- we use status.lowvoltagsenseParam is use to raise or lower sensitivity
+            local zippo
             if status.lowvoltagsenseParam == 1 then
                 zippo = 0.2
             elseif status.lowvoltagsenseParam == 2 then
@@ -1362,7 +1367,7 @@ function status.paint(widget)
 
         local theme = status.getThemeInfo()
         local w, h = lcd.getWindowSize()
-
+        local sensorTITLE
   
 
         if status.isVisible then
@@ -2345,6 +2350,7 @@ function status.getSensors()
     local rssi
     local adjSOURCE
     local adjvalue
+    local adjfunc
     local current
     local currentesc1
 
@@ -2364,8 +2370,8 @@ function status.getSensors()
         adjvalue = 0
         current = 0
 
-        if status.idleupswitchParam ~= nil and armswitchParam ~= nil then
-            if status.idleupswitchParam:state() == true and armswitchParam:state() == true then
+        if status.idleupswitchParam ~= nil then
+            if status.idleupswitchParam:state() == true then
                 current = math.random(100, 120)
                 rpm = math.random(90, 100)
             else
@@ -3098,7 +3104,7 @@ function status.read()
     status.tempconvertParamESC = storage.read("mem43")
     status.tempconvertParamMCU = storage.read("mem44")
     status.idleupswitchParam = storage.read("mem45")
-    armswitchParam = storage.read("mem46")
+    status.armswitchParam = storage.read("mem46")
     status.idleupdelayParam = storage.read("mem47")
     status.switchIdlelowParam = storage.read("mem48")
     status.switchIdlemediumParam = storage.read("mem49")
@@ -3538,6 +3544,9 @@ end
 
 
 function status.playVoltage(widget)
+
+    local voltageDoneFirst
+
     if not status.announcementVoltageSwitchParam then return end
 
     local switchState = status.announcementVoltageSwitchParam:state()
