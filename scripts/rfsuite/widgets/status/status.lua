@@ -2333,609 +2333,107 @@ function status.getChannelValue(ich)
 end
 
 function status.getSensors()
-    if status.isInConfiguration == true then return status.sensors end
+    if status.isInConfiguration then return status.sensors end
 
-    local tv
-    local voltage
-    local temp_esc
-    local temp_mcu
-    local mah
-    local mah
-    local fuel
-    local fm
-    local rssi
-    local adjSOURCE
-    local adjvalue
-    local current
-    local currentesc1
+    local function getSensorValue(source, multiplier, default)
+        local value = source and source:value() or nil
+        return value and (value * (multiplier or 1)) or default or 0
+    end
 
-    -- lcd.resetFocusTimeout()
+    local function processTemperatureConversion(temp, conversionParam)
+        if conversionParam == 2 then
+            temp = ((temp / 5) * 9) + 32
+        elseif conversionParam == 3 then
+            temp = ((temp - 32) * 5) / 9
+        end
+        return status.round(temp, 0)
+    end
 
-    if environment.simulation == true then
+    local function getSensorData(protocol, sources)
+        local data = {}
+        data.voltage = getSensorValue(sources.voltage, 100)
+        data.rpm = getSensorValue(sources.rpm)
+        data.current = getSensorValue(sources.current, 10)
+        data.temp_esc = getSensorValue(sources.temp_esc, 100)
+        data.temp_mcu = getSensorValue(sources.temp_mcu, 100)
+        data.fuel = getSensorValue(sources.fuel)
+        data.mah = getSensorValue(sources.mah)
+        data.rssi = getSensorValue(sources.rssi)
 
-        tv = math.random(2100, 2274)
-        voltage = tv
-        temp_esc = math.random(50, 225) * 10
-        temp_mcu = math.random(50, 185) * 10
-        mah = math.random(10000, 10100)
-        fuel = 55
-        fm = "DISABLED"
-        rssi = math.random(90, 100)
-        adjsource = 0
-        adjvalue = 0
-        current = 0
-
-        if status.idleupswitchParam ~= nil and armswitchParam ~= nil then
-            if status.idleupswitchParam:state() == true and armswitchParam:state() == true then
-                current = math.random(100, 120)
-                rpm = math.random(90, 100)
-            else
-                current = 0
-                rpm = 0
-            end
+        if protocol == 'ccrsf' or protocol == 'lcrsf' then
+            data.current = data.current == 0 and getSensorValue(sources.currentESC1, 10) or data.current
         end
 
-    elseif status.linkUP == true then
+        return data
+    end
 
-        -- get sensors
-        voltageSOURCE = rfsuite.bg.telemetry.getSensorSource("voltage")
-        rpmSOURCE = rfsuite.bg.telemetry.getSensorSource("rpm")
-        currentSOURCE = rfsuite.bg.telemetry.getSensorSource("current")
-        currentSOURCEESC1 = rfsuite.bg.telemetry.getSensorSource("currentESC1")
-        temp_escSOURCE = rfsuite.bg.telemetry.getSensorSource("tempESC")
-        temp_mcuSOURCE = rfsuite.bg.telemetry.getSensorSource("tempMCU")
-        fuelSOURCE = rfsuite.bg.telemetry.getSensorSource("fuel")
-        adjSOURCE = rfsuite.bg.telemetry.getSensorSource("adjF")
-        adjVALUE = rfsuite.bg.telemetry.getSensorSource("adjV")
-        adjvSOURCE = rfsuite.bg.telemetry.getSensorSource("adjV")
-        mahSOURCE = rfsuite.bg.telemetry.getSensorSource("capacity")
-        rssiSOURCE = rfsuite.utils.getRssiSensor().sensor
-        govSOURCE = rfsuite.bg.telemetry.getSensorSource("governor")
+    local function calculateFuelPercentage(voltage)
+        if not status.calcfuelParam then return nil end
+        local maxVoltage = (status.maxCellVoltage / 100) * status.cellsParam
+        local minVoltage = (status.minCellVoltage / 100) * status.cellsParam
+        local batteryPercentage = ((voltage / 100 - minVoltage) / (maxVoltage - minVoltage)) * 100
+        return status.round(math.min(batteryPercentage, 100), 0)
+    end
 
-        if rfsuite.bg.telemetry.getSensorProtocol() == 'ccrsf' then
+    local data = {}
 
-            if voltageSOURCE ~= nil then
-                voltage = voltageSOURCE:value()
-                if voltage ~= nil then
-                    voltage = voltage * 100
-                else
-                    voltage = 0
-                end
-            else
-                voltage = 0
-            end
-
-            if rpmSOURCE ~= nil then
-                if rpmSOURCE:maximum() == 1000.0 then rpmSOURCE:maximum(65000) end
-
-                rpm = rpmSOURCE:value()
-                if rpm ~= nil then
-                    rpm = rpm
-                else
-                    rpm = 0
-                end
-            else
-                rpm = 0
-            end
-
-            if currentSOURCE ~= nil then
-                if currentSOURCE:maximum() == 50.0 then currentSOURCE:maximum(400.0) end
-
-                current = currentSOURCE:value()
-                if currentSOURCEESC1 ~= nil then
-                        currentesc1 = currentSOURCEESC1:value()
-                else
-                        currentesc1 = 0
-                end
-                if current ~= nil then
-                    if current == 0 and currentesc1 ~= 0 then
-                        current = currentesc1 * 10
-                    else
-                        current = current * 10
-                    end    
-                else
-                    current = 0
-                end
-            else
-                current = 0
-            end
-
-            if temp_escSOURCE ~= nil then
-                temp_esc = temp_escSOURCE:value()
-                if temp_esc ~= nil then
-                    temp_esc = temp_esc * 100
-                else
-                    temp_esc = 0
-                end
-            else
-                temp_esc = 0
-            end
-
-            if temp_mcuSOURCE ~= nil then
-                temp_mcu = temp_mcuSOURCE:value()
-                if temp_mcu ~= nil then
-                    temp_mcu = (temp_mcu) * 100
-                else
-                    temp_mcu = 0
-                end
-            else
-                temp_mcu = 0
-            end
-
-            if fuelSOURCE ~= nil then
-                fuel = fuelSOURCE:value()
-                if fuel ~= nil then
-                    fuel = fuel
-                else
-                    fuel = 0
-                end
-            else
-                fuel = 0
-            end
-
-            if mahSOURCE ~= nil then
-                mah = mahSOURCE:value()
-                if mah ~= nil then
-                    mah = mah
-                else
-                    mah = 0
-                end
-            else
-                mah = 0
-            end
-
-            if govSOURCE ~= nil then
-                govId = govSOURCE:value()
-
-                if governorMap[govId] == nil then
-                    govmode = "UNKNOWN"
-                else
-                    govmode = governorMap[govId]
-                end
-
-            else
-                govmode = ""
-            end
-            if system.getSource({category = CATEGORY_FLIGHT, member = FLIGHT_CURRENT_MODE}):stringValue() then
-                fm = system.getSource({category = CATEGORY_FLIGHT, member = FLIGHT_CURRENT_MODE}):stringValue()
-            else
-                fm = ""
-            end
-
-            if rssiSOURCE ~= nil then
-                rssi = rssiSOURCE:value()
-
-                if rssi ~= nil then
-                    rssi = rssi
-                else
-                    rssi = 0
-                end
-            else
-                rssi = 0
-            end
-
-            if adjSOURCE ~= nil then
-                adjfunc = adjSOURCE:value()
-                if adjfunc ~= nil then
-                    adjfunc = adjfunc
-                else
-                    adjfunc = 0
-                end
-            else
-                adjfunc = 0
-            end
-
-            if adjVALUE ~= nil then
-                adjvalue = adjVALUE:value()
-                if adjvalue ~= nil then
-                    adjvalue = adjvalue
-                else
-                    adjvalue = 0
-                end
-            else
-                adjvalue = 0
-            end
-
-        elseif rfsuite.bg.telemetry.getSensorProtocol() == 'lcrsf' then
-
-            if voltageSOURCE ~= nil then
-                voltage = voltageSOURCE:value()
-                if voltage ~= nil then
-                    voltage = voltage * 100
-                else
-                    voltage = 0
-                end
-            else
-                voltage = 0
-            end
-
-            if rpmSOURCE ~= nil then
-                if rpmSOURCE:maximum() == 1000.0 then rpmSOURCE:maximum(65000) end
-
-                rpm = rpmSOURCE:value()
-                if rpm ~= nil then
-                    rpm = rpm
-                else
-                    rpm = 0
-                end
-            else
-                rpm = 0
-            end
-
-            if currentSOURCE ~= nil then
-                if currentSOURCE:maximum() == 50.0 then currentSOURCE:maximum(400.0) end
-
-                current = currentSOURCE:value()
-                if current ~= nil then
-                    current = current * 10
-                else
-                    current = 0
-                end
-            else
-                current = 0
-            end
-
-            if temp_escSOURCE ~= nil then
-                temp_esc = temp_escSOURCE:value()
-                if temp_esc ~= nil then
-                    temp_esc = temp_esc * 100
-                else
-                    temp_esc = 0
-                end
-            else
-                temp_esc = 0
-            end
-
-            if temp_mcuSOURCE ~= nil then
-                temp_mcu = temp_mcuSOURCE:value()
-                if temp_mcu ~= nil then
-                    temp_mcu = (temp_mcu) * 100
-                else
-                    temp_mcu = 0
-                end
-            else
-                temp_mcu = 0
-            end
-
-            if fuelSOURCE ~= nil then
-                fuel = fuelSOURCE:value()
-                if fuel ~= nil then
-                    fuel = fuel
-                else
-                    fuel = 0
-                end
-            else
-                fuel = 0
-            end
-
-            if mahSOURCE ~= nil then
-                mah = mahSOURCE:value()
-                if mah ~= nil then
-                    mah = mah
-                else
-                    mah = 0
-                end
-            else
-                mah = 0
-            end
-
-            if govSOURCE ~= nil then govmode = govSOURCE:stringValue() end
-            if system.getSource({category = CATEGORY_FLIGHT, member = FLIGHT_CURRENT_MODE}):stringValue() then
-                fm = system.getSource({category = CATEGORY_FLIGHT, member = FLIGHT_CURRENT_MODE}):stringValue()
-            else
-                fm = ""
-            end
-
-            if rssiSOURCE ~= nil then
-                rssi = rssiSOURCE:value()
-                if rssi ~= nil then
-                    rssi = rssi
-                else
-                    rssi = 0
-                end
-            else
-                rssi = 0
-            end
-
-            -- note.
-            -- need to modify firmware to allow this to work for crsf correctly
-            adjsource = 0
-            adjvalue = 0
-
-        elseif rfsuite.bg.telemetry.getSensorProtocol() == 'sport' then
-
-            if voltageSOURCE ~= nil then
-                voltage = voltageSOURCE:value()
-                if voltage ~= nil then
-                    voltage = voltage * 100
-                else
-                    voltage = 0
-                end
-            else
-                voltage = 0
-            end
-
-            if rpmSOURCE ~= nil then
-                rpm = rpmSOURCE:value()
-                if rpm ~= nil then
-                    rpm = rpm
-                else
-                    rpm = 0
-                end
-            else
-                rpm = 0
-            end
-
-            if currentSOURCE ~= nil then
-                current = currentSOURCE:value()
-                if currentSOURCEESC1 ~= nil then
-                        currentesc1 = currentSOURCEESC1:value()
-                        if currentesc1 == nil then currentesc1 = 0 end
-                else
-                        currentesc1 = 0
-                end
-                if current ~= nil then
-                    if current == 0 and currentesc1 ~= 0 then
-                        current = currentesc1 * 10
-                    else
-                        current = current * 10
-                    end  
-                else
-                    current = 0
-                end
-            else
-                current = 0
-            end
-
-            if temp_escSOURCE ~= nil then
-                temp_esc = temp_escSOURCE:value()
-                if temp_esc ~= nil then
-                    temp_esc = temp_esc * 100
-                else
-                    temp_esc = 0
-                end
-            else
-                temp_esc = 0
-            end
-
-            if temp_mcuSOURCE ~= nil then
-                temp_mcu = temp_mcuSOURCE:value()
-                if temp_mcu ~= nil then
-                    temp_mcu = temp_mcu * 100
-                else
-                    temp_mcu = 0
-                end
-            else
-                temp_mcu = 0
-            end
-
-            if fuelSOURCE ~= nil then
-                fuel = fuelSOURCE:value()
-                if fuel ~= nil then
-                    fuel = status.round(fuel, 0)
-                else
-                    fuel = 0
-                end
-            else
-                fuel = 0
-            end
-
-            if mahSOURCE ~= nil then
-                mah = mahSOURCE:value()
-                if mah ~= nil then
-                    mah = mah
-                else
-                    mah = 0
-                end
-            else
-                mah = 0
-            end
-
-            if rssiSOURCE ~= nil then
-                rssi = rssiSOURCE:value()
-                if rssi ~= nil then
-                    rssi = rssi
-                else
-                    rssi = 0
-                end
-            else
-                rssi = 0
-            end
-
-            if govSOURCE ~= nil then
-                govId = govSOURCE:value()
-
-                if governorMap[govId] == nil then
-                    govmode = "UNKNOWN"
-                else
-                    govmode = governorMap[govId]
-                end
-
-            else
-                govmode = ""
-            end
-            if system.getSource({category = CATEGORY_FLIGHT, member = FLIGHT_CURRENT_MODE}):stringValue() then
-                fm = system.getSource({category = CATEGORY_FLIGHT, member = FLIGHT_CURRENT_MODE}):stringValue()
-            else
-                fm = ""
-            end
-
-            if adjSOURCE ~= nil then adjsource = adjSOURCE:value() end
-
-            if adjVALUE ~= nil then adjvalue = adjVALUE:value() end
-
-        end
-
+    if environment.simulation then
+        data = {
+            voltage = math.random(2100, 2274),
+            rpm = math.random(90, 100),
+            current = math.random(100, 120),
+            temp_esc = math.random(50, 225) * 10,
+            temp_mcu = math.random(50, 185) * 10,
+            fuel = 55,
+            mah = math.random(10000, 10100),
+            rssi = math.random(90, 100),
+        }
+    elseif status.linkUP then
+        local protocol = rfsuite.bg.telemetry.getSensorProtocol()
+        local sources = {
+            voltage = rfsuite.bg.telemetry.getSensorSource("voltage"),
+            rpm = rfsuite.bg.telemetry.getSensorSource("rpm"),
+            current = rfsuite.bg.telemetry.getSensorSource("current"),
+            currentESC1 = rfsuite.bg.telemetry.getSensorSource("currentESC1"),
+            temp_esc = rfsuite.bg.telemetry.getSensorSource("tempESC"),
+            temp_mcu = rfsuite.bg.telemetry.getSensorSource("tempMCU"),
+            fuel = rfsuite.bg.telemetry.getSensorSource("fuel"),
+            mah = rfsuite.bg.telemetry.getSensorSource("capacity"),
+            rssi = rfsuite.utils.getRssiSensor().sensor
+        }
+        data = getSensorData(protocol, sources)
     else
-        -- we have no link.  do something
-        -- print("NO LINK")
-        -- keep looking for new sensor
-
-        voltage = 0
-        rpm = 0
-        current = 0
-        temp_esc = 0
-        temp_mcu = 0
-        fuel = 0
-        mah = 0
-        govmode = "-"
-        fm = "-"
-        rssi = 0
-        adjsource = 0
-        adjvalue = 0
-
-        voltageSOURCE = nil
-        rpmSOURCE = nil
-        currentSOURCE = nil
-        temp_escSOURCE = nil
-        temp_mcuSOURCE = nil
-        fuelSOURCE = nil
-        govSOURCE = nil
-        adjSOURCE = nil
-        adjVALUE = nil
-        mahSOURCE = nil
-        telemetrySOURCE = nil
-        crsfSOURCE = nil
-
+        data = {
+            voltage = 0,
+            rpm = 0,
+            current = 0,
+            temp_esc = 0,
+            temp_mcu = 0,
+            fuel = 0,
+            mah = 0,
+            rssi = 0
+        }
     end
 
-    -- calc fuel percentage if needed
-    if status.calcfuelParam == true then
+    data.temp_mcu = processTemperatureConversion(data.temp_mcu, status.tempconvertParamMCU)
+    data.temp_esc = processTemperatureConversion(data.temp_esc, status.tempconvertParamESC)
+    data.fuel = data.fuel or calculateFuelPercentage(data.voltage)
 
-        local maxCellVoltage = status.maxCellVoltage / 100
-        local minCellVoltage = status.minCellVoltage / 100
+    status.refresh = status.sensors and (
+        status.sensors.voltage ~= data.voltage or
+        status.sensors.rpm ~= data.rpm or
+        status.sensors.current ~= data.current or
+        status.sensors.temp_esc ~= data.temp_esc or
+        status.sensors.temp_mcu ~= data.temp_mcu or
+        status.sensors.fuel ~= data.fuel or
+        status.sensors.mah ~= data.mah or
+        status.sensors.rssi ~= data.rssi
+    )
 
-        local maxVoltage = maxCellVoltage * status.cellsParam
-        local minVoltage = minCellVoltage * status.cellsParam
-
-        local cv = voltage / 100
-        local maxv = maxCellVoltage * status.cellsParam
-        local minv = minCellVoltage * status.cellsParam
-
-        local batteryPercentage = ((cv - minv) / (maxv - minv)) * 100
-
-        fuel = status.round(batteryPercentage, 0)
-
-        if fuel > 100 then fuel = 100 end
-
-    end
-
-    if voltage == nil then voltage = 0 end
-    if math.floor(voltage) <= 5 then fuel = 0 end
-
-    -- convert from C to F
-    -- Divide by 5, then multiply by 9, then add 32
-    if status.tempconvertParamMCU == 2 then
-        temp_mcu = ((temp_mcu / 5) * 9) + 32
-        temp_mcu = status.round(temp_mcu, 0)
-    end
-    -- convert from F to C
-    -- Deduct 32, then multiply by 5, then divide by 9
-    if status.tempconvertParamMCU == 3 then
-        temp_mcu = ((temp_mcu - 32) * 5) / 9
-        temp_mcu = status.round(temp_mcu, 0)
-    end
-
-    -- convert from C to F
-    -- Divide by 5, then multiply by 9, then add 32
-    if status.tempconvertParamESC == 2 then
-        temp_esc = ((temp_esc / 5) * 9) + 32
-        temp_esc = status.round(temp_esc, 0)
-    end
-    -- convert from F to C
-    -- Deduct 32, then multiply by 5, then divide by 9
-    if status.tempconvertParamESC == 3 then
-        temp_esc = ((temp_esc - 32) * 5) / 9
-        temp_esc = status.round(temp_esc, 0)
-    end
-
-    -- set flag to status.refresh screen or not
-
-    if voltage == nil then voltage = 0 end
-    voltage = status.round(voltage, 0)
-
-    if rpm == nil then rpm = 0 end
-    rpm = status.round(rpm, 0)
-
-    if temp_mcu == nil then temp_mcu = 0 end
-    temp_mcu = status.round(temp_mcu, 0)
-
-    if temp_esc == nil then temp_esc = 0 end
-    temp_esc = status.round(temp_esc, 0)
-
-    if current == nil then current = 0 end
-    current = status.round(current, 0)
-
-    if rssi == nil then rssi = 0 end
-    rssi = status.round(rssi, 0)
-
-    -- do / dont do voltage based on stick position
-    if status.lowvoltagStickParam == nil then status.lowvoltagStickParam = 0 end
-    if status.lowvoltagStickCutoffParam == nil then status.lowvoltagStickCutoffParam = 80 end
-
-    if (status.lowvoltagStickParam ~= 0) then
-        status.lvStickannouncement = false
-        for i, v in ipairs(status.lvStickOrder[status.lowvoltagStickParam]) do
-            if status.lvStickannouncement == false then -- we skip more if any stick has resulted in announcement
-                if math.abs(status.getChannelValue(v)) >= status.lowvoltagStickCutoffParam then status.lvStickannouncement = true end
-            end
-        end
-    end
-
-    -- intercept governor for non rf governor helis
-    if armswitchParam ~= nil or status.idleupswitchParam ~= nil then
-        if status.govmodeParam == 1 then
-            if armswitchParam:state() == true then
-                govmode = "ARMED"
-                fm = "ARMED"
-            else
-                govmode = "DISARMED"
-                fm = "DISARMED"
-            end
-
-            if armswitchParam:state() == true then
-                if status.idleupswitchParam:state() == true then
-                    govmode = "ACTIVE"
-                    fm = "ACTIVE"
-                else
-                    govmode = "THR-OFF"
-                    fm = "THR-OFF"
-                end
-
-            end
-        end
-
-    end
-
-    if status.sensors.voltage ~= voltage then status.refresh = true end
-    if status.sensors.rpm ~= rpm then status.refresh = true end
-    if status.sensors.current ~= current then status.refresh = true end
-    if status.sensors.temp_esc ~= temp_esc then status.refresh = true end
-    if status.sensors.temp_mcu ~= temp_mcu then status.refresh = true end
-    if status.sensors.govmode ~= govmode then status.refresh = true end
-    if status.sensors.fuel ~= fuel then status.refresh = true end
-    if status.sensors.mah ~= mah then status.refresh = true end
-    if status.sensors.rssi ~= rssi then status.refresh = true end
-    if status.sensors.fm ~= CURRENT_FLIGHT_MODE then status.refresh = true end
-
-    ret = {
-        fm = fm,
-        govmode = govmode,
-        voltage = voltage,
-        rpm = rpm,
-        current = current,
-        temp_esc = temp_esc,
-        temp_mcu = temp_mcu,
-        fuel = fuel,
-        mah = mah,
-        rssi = rssi,
-        adjsource = adjsource,
-        adjvalue = adjvalue
-    }
-    status.sensors = ret
-
-    return ret
+    status.sensors = data
+    return data
 end
+
 
 function status.sensorsMAXMIN(sensors)
 
