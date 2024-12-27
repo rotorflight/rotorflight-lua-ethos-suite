@@ -264,8 +264,8 @@ function status.create(widget)
     status.gfx_close = lcd.loadBitmap("widgets/status/gfx/close.png")
     -- status.rssiSensor = status.getRssiSensor()
 
-    if tonumber(status.sensorMakeNumber(environment.version)) < 159 then
-        status.screenError("ETHOS < V1.5.9")
+    if rfsuite.utils.ethosVersion() < 1519 then
+        status.screenError("ETHOS < V1.5.19")
         return
     end
 
@@ -3031,20 +3031,6 @@ function tablelength(T)
     return count
 end
 
-
-function status.sensorMakeNumber(x)
-    -- If x is nil or an empty string, default to 0
-    if not x or x == "" then 
-        return 0 
-    end
-
-    -- Remove non-digit characters
-    local numericString = string.gsub(tostring(x), "%D+", "")
-
-    -- Convert to number (default to 0 if conversion fails)
-    return tonumber(numericString) or 0
-end
-
 function status.round(number, precision)
     precision = precision or 0  -- Default to 0 if precision is not provided
     if type(number) ~= "number" or type(precision) ~= "number" then
@@ -3065,61 +3051,6 @@ function status.SecondsToClock(seconds)
 
     return hours .. ":" .. mins .. ":" .. secs
 end
-
-function status.SecondsToClockAlt(seconds)
-    local seconds = tonumber(seconds)
-
-    if not seconds or seconds <= 0 then
-        return "00:00"
-    end
-
-    local mins = string.format("%02d", math.floor(seconds / 60))
-    local secs = string.format("%02d", math.floor(seconds % 60))
-
-    return mins .. ":" .. secs
-end
-
-function status.SecondsFromTime(seconds)
-    local seconds = tonumber(seconds)
-
-    if not seconds or seconds <= 0 then
-        return 0
-    end
-
-    local secs = math.floor(seconds % 60)
-    return secs
-end
-
-function status.spairs(t, order)
-    -- collect the keys
-    local keys = {}
-    for k in pairs(t) do keys[#keys + 1] = k end
-
-    -- if order function given, sort by it by passing the table and keys a, b,
-    -- otherwise just sort the keys 
-    if order then
-        table.sort(keys, function(a, b)
-            return order(t, a, b)
-        end)
-    else
-        table.sort(keys)
-    end
-
-    -- return the iterator function
-    local i = 0
-    return function()
-        i = i + 1
-        if keys[i] then return keys[i], t[keys[i]] end
-    end
-end
-
-function status.explode(inputstr, sep)
-    if sep == nil then sep = "%s" end
-    local t = {}
-    for str in string.gmatch(inputstr, "([^" .. sep .. "]+)") do table.insert(t, str) end
-    return t
-end
-
 
 function status.read()
     status.govmodeParam = storage.read("mem1")
