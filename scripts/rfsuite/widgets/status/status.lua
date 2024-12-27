@@ -1278,22 +1278,23 @@ function status.telemetryBoxMAX(x, y, w, h, title, value, unit, smallbox)
 end
 
 function status.telemetryBoxImage(x, y, w, h, gfx)
-
+    -- Get display status and theme information
     status.isVisible = lcd.isVisible()
     status.isDARKMODE = lcd.darkMode()
     local theme = status.getThemeInfo()
 
+    -- Set background color based on dark mode status
     if status.isDARKMODE then
-        lcd.color(lcd.RGB(40, 40, 40))
+        lcd.color(lcd.RGB(40, 40, 40)) -- Dark background
     else
-        lcd.color(lcd.RGB(240, 240, 240))
+        lcd.color(lcd.RGB(240, 240, 240)) -- Light background
     end
 
-    -- draw box backgstatus.round    
+    -- Draw the background rectangle
     lcd.drawFilledRectangle(x, y, w, h)
 
+    -- Draw the bitmap centered within the box, respecting theme spacing
     lcd.drawBitmap(x, y, gfx, w - theme.colSpacing, h - theme.colSpacing)
-
 end
 
 function status.paint(widget)
