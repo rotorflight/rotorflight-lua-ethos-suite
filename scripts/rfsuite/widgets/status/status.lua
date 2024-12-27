@@ -2933,48 +2933,42 @@ end
 
 
 function status.playESC(widget)
-    if status.announcementESCSwitchParam ~= nil then
-        if status.announcementESCSwitchParam:state() then
-            status.esctime.escannouncementTimer = true
-            escDoneFirst = false
-        else
-            status.esctime.escannouncementTimer = false
+    if not status.announcementESCSwitchParam then return end
+
+    -- Determine if ESC announcement timer should be active
+    local isESCTimerActive = status.announcementESCSwitchParam:state()
+    status.esctime.escannouncementTimer = isESCTimerActive
+    escDoneFirst = not isESCTimerActive
+
+    -- Exit if in configuration mode
+    if status.isInConfiguration then return end
+
+    -- Ensure ESC sensor is available
+    if not status.sensors.temp_esc then return end
+
+    if isESCTimerActive then
+        -- Start the timer if not already started
+        if not status.esctime.escannouncementTimerStart and not escDoneFirst then
+            status.esctime.escannouncementTimerStart = os.time()
+            status.esctime.escaudioannouncementCounter = os.clock()
+            rfsuite.utils.playFile("status", "alerts/esc.wav")
+            system.playNumber(status.sensors.temp_esc / 100, UNIT_DEGREE, 2)
             escDoneFirst = true
         end
 
-        if status.isInConfiguration == false then
-            if status.sensors.temp_esc ~= nil then
-                if status.esctime.escannouncementTimer == true then
-                    -- start timer
-                    if status.esctime.escannouncementTimerStart == nil and escDoneFirst == false then
-                        status.esctime.escannouncementTimerStart = os.time()
-                        status.esctime.escaudioannouncementCounter = os.clock()
-                        -- print ("Playing ESC (first)")
-                        rfsuite.utils.playFile("status","alerts/esc.wav")
-                        system.playNumber(status.sensors.temp_esc / 100, UNIT_DEGREE, 2)
-                        escDoneFirst = true
-                    end
-                else
-                    status.esctime.escannouncementTimerStart = nil
-                end
-
-                if status.esctime.escannouncementTimerStart ~= nil then
-                    if escDoneFirst == false then
-                        if ((tonumber(os.clock()) - tonumber(status.esctime.escaudioannouncementCounter)) >= status.announcementIntervalParam) then
-                            status.esctime.escaudioannouncementCounter = os.clock()
-                            -- print ("Playing ESC (repeat)")
-                            rfsuite.utils.playFile("status","alerts/esc.wav")
-                            system.playNumber(status.sensors.temp_esc / 100, UNIT_DEGREE, 2)
-                        end
-                    end
-                else
-                    -- stop timer
-                    status.esctime.escannouncementTimerStart = nil
-                end
-            end
+        -- Handle repeating announcements
+        if status.esctime.escannouncementTimerStart and 
+           (os.clock() - status.esctime.escaudioannouncementCounter >= status.announcementIntervalParam) then
+            status.esctime.escaudioannouncementCounter = os.clock()
+            rfsuite.utils.playFile("status", "alerts/esc.wav")
+            system.playNumber(status.sensors.temp_esc / 100, UNIT_DEGREE, 2)
         end
+    else
+        -- Stop the timer
+        status.esctime.escannouncementTimerStart = nil
     end
 end
+
 
 function status.playTIMERALARM(widget)
     if status.theTIME ~= nil and status.timeralarmParam ~= nil and status.timeralarmParam ~= 0 then
