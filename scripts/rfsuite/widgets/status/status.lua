@@ -952,20 +952,19 @@ end
 
 function status.screenError(msg)
     local w, h = lcd.getWindowSize()
-    status.isDARKMODE = lcd.darkMode()
-    lcd.font(FONT_STD)
-    str = msg
-    tsizeW, tsizeH = lcd.getTextSize(str)
+    local isDarkMode = lcd.darkMode()
 
-    if status.isDARKMODE then
-        -- dark theme
-        lcd.color(lcd.RGB(255, 255, 255, 1))
-    else
-        -- light theme
-        lcd.color(lcd.RGB(90, 90, 90))
-    end
-    lcd.drawText((w / 2) - tsizeW / 2, (h / 2) - tsizeH / 2, str)
-    return
+    lcd.font(FONT_STD)
+    local tsizeW, tsizeH = lcd.getTextSize(msg)
+
+    -- Set color based on theme
+    local textColor = isDarkMode and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90)
+    lcd.color(textColor)
+
+    -- Center the text on the screen
+    local x = (w - tsizeW) / 2
+    local y = (h - tsizeH) / 2
+    lcd.drawText(x, y, msg)
 end
 
 function status.resetALL()
