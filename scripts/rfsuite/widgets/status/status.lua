@@ -3128,48 +3128,42 @@ end
 
 
 function status.playVoltage(widget)
-    if status.announcementVoltageSwitchParam ~= nil then
-        if status.announcementVoltageSwitchParam:state() then
-            status.lvannouncementTimer = true
-            voltageDoneFirst = false
-        else
-            status.lvannouncementTimer = false
+    if not status.announcementVoltageSwitchParam then return end
+
+    local switchState = status.announcementVoltageSwitchParam:state()
+    status.lvannouncementTimer = switchState
+    voltageDoneFirst = not switchState
+
+    if status.isInConfiguration then return end
+
+    local voltageSensor = status.sensors.voltage
+    if not voltageSensor then return end
+
+    if status.lvannouncementTimer then
+        -- Start timer if not already started and first announcement hasn't been made
+        if not status.lvannouncementTimerStart and not voltageDoneFirst then
+            status.lvannouncementTimerStart = os.time()
+            status.lvaudioannouncementCounter = os.clock()
+            system.playNumber(voltageSensor / 100, 2, 2)
             voltageDoneFirst = true
         end
+    else
+        -- Stop timer
+        status.lvannouncementTimerStart = nil
+    end
 
-        if status.isInConfiguration == false then
-            if status.sensors.voltage ~= nil then
-                if status.lvannouncementTimer == true then
-                    -- start timer
-                    if status.lvannouncementTimerStart == nil and voltageDoneFirst == false then
-                        status.lvannouncementTimerStart = os.time()
-                        status.lvaudioannouncementCounter = os.clock()
-                        -- print("Play voltage alert (first)")                       
-                        system.playNumber(status.sensors.voltage / 100, 2, 2)
-                        voltageDoneFirst = true
-                    end
-                else
-                    status.lvannouncementTimerStart = nil
-                end
+    if not status.lvannouncementTimerStart then return end
 
-                if status.lvannouncementTimerStart ~= nil then
-                    if voltageDoneFirst == false then
-                        if status.lvaudioannouncementCounter ~= nil and status.announcementIntervalParam ~= nil then
-                            if ((tonumber(os.clock()) - tonumber(status.lvaudioannouncementCounter)) >= status.announcementIntervalParam) then
-                                status.lvaudioannouncementCounter = os.clock()
-                                -- print("Play voltage alert (repeat)")                             
-                                system.playNumber(status.sensors.voltage / 100, 2, 2)
-                            end
-                        end
-                    end
-                else
-                    -- stop timer
-                    status.lvannouncementTimerStart = nil
-                end
-            end
+    -- Handle repeated announcements
+    if not voltageDoneFirst and status.lvaudioannouncementCounter and status.announcementIntervalParam then
+        local elapsedTime = os.clock() - status.lvaudioannouncementCounter
+        if elapsedTime >= status.announcementIntervalParam then
+            status.lvaudioannouncementCounter = os.clock()
+            system.playNumber(voltageSensor / 100, 2, 2)
         end
     end
 end
+
 
 function status.event(widget, category, value, x, y)
 
