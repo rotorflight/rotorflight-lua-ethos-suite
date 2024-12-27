@@ -3164,71 +3164,42 @@ function status.playVoltage(widget)
     end
 end
 
-
 function status.playGovernor()
-    if status.governorAlertsParam == true then
-        if status.playGovernorLastState == nil then status.playGovernorLastState = status.sensors.govmode end
+    if not status.governorAlertsParam then return end
 
-        if status.sensors.govmode ~= status.playGovernorLastState then
-            status.playGovernorCount = 0
-            status.playGovernorLastState = status.sensors.govmode
+    status.playGovernorLastState = status.playGovernorLastState or status.sensors.govmode
+
+    if status.sensors.govmode ~= status.playGovernorLastState then
+        status.playGovernorCount = 0
+        status.playGovernorLastState = status.sensors.govmode
+    end
+
+    if status.playGovernorCount == 0 then
+        status.playGovernorCount = 1
+
+        local govmodeActions = {
+            ["UNKNOWN"] = {param = status.governorUNKNOWNParam, sound = "unknown.wav"},
+            ["DISARMED"] = {param = status.governorDISARMEDParam, sound = "disarmed.wav"},
+            ["DISABLED"] = {param = status.governorDISABLEDParam, sound = "disabled.wav"},
+            ["BAILOUT"] = {param = status.governorBAILOUTParam, sound = "bailout.wav"},
+            ["AUTOROT"] = {param = status.governorAUTOROTParam, sound = "autorot.wav"},
+            ["LOST-HS"] = {param = status.governorLOSTHSParam, sound = "lost-hs.wav"},
+            ["THR-OFF"] = {param = status.governorTHROFFParam, sound = "thr-off.wav"},
+            ["ACTIVE"] = {param = status.governorACTIVEParam, sound = "active.wav"},
+            ["RECOVERY"] = {param = status.governorRECOVERYParam, sound = "recovery.wav"},
+            ["SPOOLUP"] = {param = status.governorSPOOLUPParam, sound = "spoolup.wav"},
+            ["IDLE"] = {param = status.governorIDLEParam, sound = "idle.wav"},
+            ["OFF"] = {param = status.governorOFFParam, sound = "off.wav"}
+        }
+
+        local action = govmodeActions[status.sensors.govmode]
+
+        if action and action.param then
+            if status.govmodeParam == 0 then
+                rfsuite.utils.playFile("status", "events/governor.wav")
+            end
+            rfsuite.utils.playFile("status", "events/" .. action.sound)
         end
-
-        if status.playGovernorCount == 0 then
-            -- print("Governor: " .. status.sensors.govmode)
-            status.playGovernorCount = 1
-
-            if status.sensors.govmode == "UNKNOWN" and status.governorUNKNOWNParam == true then
-                if status.govmodeParam == 0 then rfsuite.utils.playFile("status","events/governor.wav") end
-                rfsuite.utils.playFile("status","events/unknown.wav")
-            end
-            if status.sensors.govmode == "DISARMED" and status.governorDISARMEDParam == true then
-                if status.govmodeParam == 0 then rfsuite.utils.playFile("status","events/governor.wav") end
-                rfsuite.utils.playFile("status","events/disarmed.wav")
-            end
-            if status.sensors.govmode == "DISABLED" and status.governorDISABLEDParam == true then
-                if status.govmodeParam == 0 then rfsuite.utils.playFile("status","events/governor.wav") end
-                rfsuite.utils.playFile("status","events/disabled.wav")
-            end
-            if status.sensors.govmode == "BAILOUT" and status.governorBAILOUTParam == true then
-                if status.govmodeParam == 0 then rfsuite.utils.playFile("status","events/governor.wav") end
-                rfsuite.utils.playFile("status","events/bailout.wav")
-            end
-            if status.sensors.govmode == "AUTOROT" and status.governorAUTOROTParam == true then
-                if status.govmodeParam == 0 then rfsuite.utils.playFile("status","events/governor.wav") end
-                rfsuite.utils.playFile("status","events/autorot.wav")
-            end
-            if status.sensors.govmode == "LOST-HS" and status.governorLOSTHSParam == true then
-                if status.govmodeParam == 0 then rfsuite.utils.playFile("status","events/governor.wav") end
-                rfsuite.utils.playFile("status","events/lost-hs.wav")
-            end
-            if status.sensors.govmode == "THR-OFF" and status.governorTHROFFParam == true then
-                if status.govmodeParam == 0 then rfsuite.utils.playFile("status","events/governor.wav") end
-                rfsuite.utils.playFile("status","events/thr-off.wav")
-            end
-            if status.sensors.govmode == "ACTIVE" and status.governorACTIVEParam == true then
-                if status.govmodeParam == 0 then rfsuite.utils.playFile("status","events/governor.wav") end
-                rfsuite.utils.playFile("status","events/active.wav")
-            end
-            if status.sensors.govmode == "RECOVERY" and status.governorRECOVERYParam == true then
-                if status.govmodeParam == 0 then rfsuite.utils.playFile("status","events/governor.wav") end
-                rfsuite.utils.playFile("status","events/recovery.wav")
-            end
-            if status.sensors.govmode == "SPOOLUP" and status.governorSPOOLUPParam == true then
-                if status.govmodeParam == 0 then rfsuite.utils.playFile("status","events/governor.wav") end
-                rfsuite.utils.playFile("status","events/spoolup.wav")
-            end
-            if status.sensors.govmode == "IDLE" and status.governorIDLEParam == true then
-                if status.govmodeParam == 0 then rfsuite.utils.playFile("status","events/governor.wav") end
-                rfsuite.utils.playFile("status","events/idle.wav")
-            end
-            if status.sensors.govmode == "OFF" and status.governorOFFParam == true then
-                if status.govmodeParam == 0 then rfsuite.utils.playFile("status","events/governor.wav") end
-                rfsuite.utils.playFile("status","events/off.wav")
-            end
-
-        end
-
     end
 end
 
