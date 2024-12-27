@@ -3165,36 +3165,6 @@ function status.playVoltage(widget)
 end
 
 
-function status.event(widget, category, value, x, y)
-
-    -- print("Event received:", category, value, x, y)
-
-    if closingLOGS then
-        if category == EVT_TOUCH and (value == 16640 or value == 16641) then
-            closingLOGS = false
-            -- collectgarbage()
-            return true
-        end
-
-    end
-
-    if status.showLOGS then
-        if value == 35 then status.showLOGS = false end
-
-        if category == EVT_TOUCH and (value == 16640 or value == 16641) then
-            if (x >= (status.closeButtonX) and (x <= (status.closeButtonX + status.closeButtonW))) and (y >= (status.closeButtonY) and (y <= (status.closeButtonY + status.closeButtonH))) then
-                status.showLOGS = false
-                closingLOGS = true
-            end
-            return true
-        else
-            if category == EVT_TOUCH then return true end
-        end
-
-    end
-
-end
-
 function status.playGovernor()
     if status.governorAlertsParam == true then
         if status.playGovernorLastState == nil then status.playGovernorLastState = status.sensors.govmode end
@@ -3294,6 +3264,12 @@ function status.playRPMDiff()
             end
         end
     end
+end
+
+function status.event(widget, category, value, x, y)
+
+    -- print("Event received:", category, value, x, y)
+
 end
 
 -- MAIN WAKEUP FUNCTION. THIS SIMPLY FARMS OUT AT DIFFERING SCHEDULES TO SUB FUNCTIONS
