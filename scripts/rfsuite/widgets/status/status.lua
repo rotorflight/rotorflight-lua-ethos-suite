@@ -2917,118 +2917,68 @@ function status.getSensors()
     return ret
 end
 
-
 function status.sensorsMAXMIN(sensors)
+    local sensorTypes = {"Voltage", "Fuel", "RPM", "Current", "RSSI", "TempESC", "TempMCU"}
 
-    if status.linkUP == true and status.theTIME ~= nil and status.idleupdelayParam ~= nil then
+    if status.linkUP and status.theTIME and status.idleupdelayParam then
 
-        -- hold back - to early to get a reading
+        -- Hold back - too early to get a reading
         if status.theTIME <= status.idleupdelayParam then
-            status.sensorVoltageMin = 0
-            status.sensorVoltageMax = 0
-            status.sensorFuelMin = 0
-            status.sensorFuelMax = 0
-            status.sensorRPMMin = 0
-            status.sensorRPMMax = 0
-            status.sensorCurrentMin = 0
-            status.sensorCurrentMax = 0
-            status.sensorRSSIMin = 0
-            status.sensorRSSIMax = 0
-            status.sensorTempESCMin = 0
-            status.sensorTempMCUMax = 0
+            for _, sensor in pairs(sensorTypes) do
+                status["sensor" .. sensor .. "Min"] = 0
+                status["sensor" .. sensor .. "Max"] = 0
+            end
+            return
         end
 
-        -- prob put in a screen/audio alert for initialising
-        if status.theTIME >= 1 and status.theTIME < status.idleupdelayParam then end
-
         if status.theTIME >= status.idleupdelayParam then
-
             local idleupdelayOFFSET = 2
 
-            -- record initial parameters for max/min
-            if status.theTIME >= status.idleupdelayParam and status.theTIME <= (status.idleupdelayParam + idleupdelayOFFSET) then
-                status.sensorVoltageMin = sensors.voltage
-                status.sensorVoltageMax = sensors.voltage
-                status.sensorFuelMin = sensors.fuel
-                status.sensorFuelMax = sensors.fuel
-                status.sensorRPMMin = sensors.rpm
-                status.sensorRPMMax = sensors.rpm
-                if sensors.current == 0 then
-                    status.sensorCurrentMin = 1
-                else
-                    status.sensorCurrentMin = sensors.current
+            -- Record initial parameters for max/min
+            if status.theTIME <= (status.idleupdelayParam + idleupdelayOFFSET) then
+                for _, sensor in pairs(sensorTypes) do
+                    local value = sensors[sensor:lower()]
+                    status["sensor" .. sensor .. "Min"] = value
+                    status["sensor" .. sensor .. "Max"] = value
                 end
+                
+                status.sensorCurrentMin = sensors.current > 0 and sensors.current or 1
                 status.sensorCurrentMax = sensors.current
 
-                status.sensorRSSIMin = sensors.rssi
-                status.sensorRSSIMax = sensors.rssi
-                status.sensorTempESCMin = sensors.temp_esc
-                status.sensorTempESCMax = sensors.temp_esc
-                status.sensorTempMCUMin = sensors.temp_mcu
-                status.sensorTempMCUMax = sensors.temp_mcu
-
                 motorNearlyActive = 0
+                return
             end
-
-            if status.theTIME >= (status.idleupdelayParam + idleupdelayOFFSET) and status.idleupswitchParam:state() == true then
-
-                if sensors.voltage < status.sensorVoltageMin then status.sensorVoltageMin = sensors.voltage end
-                if sensors.voltage > status.sensorVoltageMax then status.sensorVoltageMax = sensors.voltage end
-
-                if sensors.fuel < status.sensorFuelMin then status.sensorFuelMin = sensors.fuel end
-                if sensors.fuel > status.sensorFuelMax then status.sensorFuelMax = sensors.fuel end
-
-                if sensors.rpm < status.sensorRPMMin then status.sensorRPMMin = sensors.rpm end
-                if sensors.rpm > status.sensorRPMMax then status.sensorRPMMax = sensors.rpm end
-                if sensors.current < status.sensorCurrentMin then
-                    status.sensorCurrentMin = sensors.current
-                    if status.sensorCurrentMin == 0 then status.sensorCurrentMin = 1 end
+            print("here")
+            -- Update max/min values after initial delay
+            if status.theTIME > (status.idleupdelayParam + idleupdelayOFFSET) and status.idleupswitchParam:state() then
+                for _, sensor in pairs(sensorTypes) do
+                    local value = sensors[sensor:lower()]
+                    status["sensor" .. sensor .. "Min"] = math.min(status["sensor" .. sensor .. "Min"], value)
+                    status["sensor" .. sensor .. "Max"] = math.max(status["sensor" .. sensor .. "Max"], value)
                 end
-                if sensors.current > status.sensorCurrentMax then status.sensorCurrentMax = sensors.current end
-                if sensors.rssi < status.sensorRSSIMin then status.sensorRSSIMin = sensors.rssi end
-                if sensors.rssi > status.sensorRSSIMax then status.sensorRSSIMax = sensors.rssi end
-                if sensors.temp_esc < status.sensorTempESCMin then status.sensorTempESCMin = sensors.temp_esc end
-                if sensors.temp_esc > status.sensorTempESCMax then status.sensorTempESCMax = sensors.temp_esc end
+
+                status.sensorCurrentMin = math.min(status.sensorCurrentMin, sensors.current > 0 and sensors.current or 1)
+                status.sensorCurrentMax = math.max(status.sensorCurrentMax, sensors.current)
 
                 status.motorWasActive = true
             end
-
         end
 
-        -- store the last values
-        if status.motorWasActive and status.idleupswitchParam:state() == false then
-
+        -- Store the last values if motor was active
+        if status.motorWasActive and not status.idleupswitchParam:state() then
             status.motorWasActive = false
 
-            if status.sensorCurrentMin == 0 then
-                status.sensorCurrentMinAlt = 1
-            else
-                status.sensorCurrentMinAlt = status.sensorCurrentMin
-            end
-            if status.sensorCurrentMax == 0 then
-                status.sensorCurrentMaxAlt = 1
-            else
-                status.sensorCurrentMaxAlt = status.sensorCurrentMax
-            end
-
+            status.sensorCurrentMinAlt = status.sensorCurrentMin > 0 and status.sensorCurrentMin or 1
+            status.sensorCurrentMaxAlt = status.sensorCurrentMax > 0 and status.sensorCurrentMax or 1
 
             status.readLOGS = false
-
         end
-
     else
-        status.sensorVoltageMax = 0
-        status.sensorVoltageMin = 0
-        status.sensorFuelMin = 0
-        status.sensorFuelMax = 0
-        status.sensorRPMMin = 0
-        status.sensorRPMMax = 0
-        status.sensorCurrentMin = 0
-        status.sensorCurrentMax = 0
-        status.sensorTempESCMin = 0
-        status.sensorTempESCMax = 0
+        for _, sensor in pairs(sensorTypes) do
+            status["sensor" .. sensor .. "Min"] = 0
+            status["sensor" .. sensor .. "Max"] = 0
+        end
     end
-
 end
 
 function tablelength(T)
