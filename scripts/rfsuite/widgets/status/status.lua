@@ -2881,7 +2881,6 @@ function status.getSensors()
         end
     end
 
-
     if status.sensors.voltage ~= voltage then status.refresh = true end
     if status.sensors.rpm ~= rpm then status.refresh = true end
     if status.sensors.current ~= current then status.refresh = true end
@@ -3034,59 +3033,61 @@ end
 
 
 function status.sensorMakeNumber(x)
-    if x == nil or x == "" then x = 0 end
+    -- If x is nil or an empty string, default to 0
+    if not x or x == "" then 
+        return 0 
+    end
 
-    x = string.gsub(x, "%D+", "")
-    x = tonumber(x)
-    if x == nil or x == "" then x = 0 end
+    -- Remove non-digit characters
+    local numericString = string.gsub(tostring(x), "%D+", "")
 
-    return x
+    -- Convert to number (default to 0 if conversion fails)
+    return tonumber(numericString) or 0
 end
 
 function status.round(number, precision)
-    local fmtStr = string.format("%%0.%sf", precision)
-    number = string.format(fmtStr, number)
-    number = tonumber(number)
-    return number
+    precision = precision or 0  -- Default to 0 if precision is not provided
+    if type(number) ~= "number" or type(precision) ~= "number" then
+        error("Invalid input: Both number and precision must be numbers")
+    end
+    local fmtStr = string.format("%%.%df", precision)
+    return tonumber(string.format(fmtStr, number))
 end
 
 function status.SecondsToClock(seconds)
-    local seconds = tonumber(seconds)
-
-    if seconds <= 0 then
+    if type(seconds) ~= "number" or seconds <= 0 then
         return "00:00:00"
-    else
-        hours = string.format("%02.f", math.floor(seconds / 3600))
-        mins = string.format("%02.f", math.floor(seconds / 60 - (hours * 60)))
-        secs = string.format("%02.f", math.floor(seconds - hours * 3600 - mins * 60))
-        return hours .. ":" .. mins .. ":" .. secs
     end
+
+    local hours = string.format("%02d", math.floor(seconds / 3600))
+    local mins = string.format("%02d", math.floor((seconds % 3600) / 60))
+    local secs = string.format("%02d", math.floor(seconds % 60))
+
+    return hours .. ":" .. mins .. ":" .. secs
 end
 
 function status.SecondsToClockAlt(seconds)
     local seconds = tonumber(seconds)
 
-    if seconds <= 0 then
+    if not seconds or seconds <= 0 then
         return "00:00"
-    else
-        hours = string.format("%02.f", math.floor(seconds / 3600))
-        mins = string.format("%02.f", math.floor(seconds / 60 - (hours * 60)))
-        secs = string.format("%02.f", math.floor(seconds - hours * 3600 - mins * 60))
-        return mins .. ":" .. secs
     end
+
+    local mins = string.format("%02d", math.floor(seconds / 60))
+    local secs = string.format("%02d", math.floor(seconds % 60))
+
+    return mins .. ":" .. secs
 end
 
 function status.SecondsFromTime(seconds)
     local seconds = tonumber(seconds)
 
-    if seconds <= 0 then
-        return "0"
-    else
-        hours = string.format("%02.f", math.floor(seconds / 3600))
-        mins = string.format("%02.f", math.floor(seconds / 60 - (hours * 60)))
-        secs = string.format("%02.f", math.floor(seconds - hours * 3600 - mins * 60))
-        return tonumber(secs)
+    if not seconds or seconds <= 0 then
+        return 0
     end
+
+    local secs = math.floor(seconds % 60)
+    return secs
 end
 
 function status.spairs(t, order)
