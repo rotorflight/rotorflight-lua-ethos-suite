@@ -229,13 +229,6 @@ status.sensorRSSIMin = 0
 status.sensorRSSIMax = 0
 status.lastMaxMin = 0
 status.wakeupSchedulerUI = os.clock()
-status.voltageNoiseQ = 100
-status.fuelNoiseQ = 100
-status.rpmNoiseQ = 100
-status.temp_mcuNoiseQ = 100
-status.temp_escNoiseQ = 100
-status.rssiNoiseQ = 100
-status.currentNoiseQ = 100
 status.layoutOptions = {
     {"TIMER", 1}, {"VOLTAGE", 2}, {"FUEL", 3}, {"CURRENT", 4}, {"MAH", 17}, {"RPM", 5}, {"LQ", 6}, {"T.ESC", 7}, {"T.MCU", 8}, {"IMAGE", 9}, {"GOVERNOR", 10}, {"IMAGE, GOVERNOR", 11},
     {"LQ, TIMER", 12}, {"T.ESC, T.MCU", 13}, {"VOLTAGE, FUEL", 14}, {"VOLTAGE, CURRENT", 15}, {"VOLTAGE, MAH", 16}, {"LQ, TIMER, T.ESC, T.MCU", 20}, {"MAX CURRENT", 21}, {"LQ, GOVERNOR", 22},
