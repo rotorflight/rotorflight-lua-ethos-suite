@@ -3204,38 +3204,51 @@ function status.playGovernor()
 end
 
 function status.playRPMDiff()
-    if status.rpmAlertsParam == true then
+    if not status.rpmAlertsParam then return end
 
-        if status.sensors.govmode == "ACTIVE" or status.sensors.govmode == "LOST-HS" or status.sensors.govmode == "BAILOUT" or status.sensors.govmode == "RECOVERY" then
+    local govmode = status.sensors.govmode
+    local validGovModes = { "ACTIVE", "LOST-HS", "BAILOUT", "RECOVERY" }
 
-            if status.playrpmdiff.playRPMDiffLastState == nil then status.playrpmdiff.playRPMDiffLastState = status.sensors.rpm end
-
-            -- we take a reading every 5 second
-            if (tonumber(os.clock()) - tonumber(status.playrpmdiff.playRPMDiffCounter)) >= 5 then
-                status.playrpmdiff.playRPMDiffCounter = os.clock()
-                status.playrpmdiff.playRPMDiffLastState = status.sensors.rpm
-            end
-
-            -- check if current state withing % of last state
-            local percentageDiff = 0
-            if status.sensors.rpm > status.playrpmdiff.playRPMDiffLastState then
-                percentageDiff = math.abs(100 - (status.sensors.rpm / status.playrpmdiff.playRPMDiffLastState * 100))
-            elseif status.playrpmdiff.playRPMDiffLastState < status.sensors.rpm then
-                percentage = math.abs(100 - (status.playrpmdiff.playRPMDiffLastState / status.sensors.rpm * 100))
-            else
-                percentageDiff = 0
-            end
-
-            if percentageDiff > status.rpmAlertsPercentageParam / 10 then status.playrpmdiff.playRPMDiffCount = 0 end
-
-            if status.playrpmdiff.playRPMDiffCount == 0 then
-                -- print("RPM Difference: " .. percentageDiff)
-                status.playrpmdiff.playRPMDiffCount = 1
-                system.playNumber(status.sensors.rpm, UNIT_RPM, 2)
-            end
+    -- Check if the current govmode is in the list of valid modes
+    local isGovModeValid = false
+    for _, mode in ipairs(validGovModes) do
+        if govmode == mode then
+            isGovModeValid = true
+            break
         end
     end
+
+    if not isGovModeValid then return end
+
+    local playRPMDiff = status.playrpmdiff
+    playRPMDiff.playRPMDiffLastState = playRPMDiff.playRPMDiffLastState or status.sensors.rpm
+
+    -- Take a reading every 5 seconds
+    if (os.clock() - (playRPMDiff.playRPMDiffCounter or 0)) >= 5 then
+        playRPMDiff.playRPMDiffCounter = os.clock()
+        playRPMDiff.playRPMDiffLastState = status.sensors.rpm
+    end
+
+    -- Calculate the percentage difference
+    local currentRPM = status.sensors.rpm
+    local lastStateRPM = playRPMDiff.playRPMDiffLastState
+    local percentageDiff = 0
+
+    if currentRPM ~= lastStateRPM then
+        percentageDiff = math.abs(100 - math.min(currentRPM, lastStateRPM) / math.max(currentRPM, lastStateRPM) * 100)
+    end
+
+    -- Check if the percentage difference exceeds the threshold
+    if percentageDiff > (status.rpmAlertsPercentageParam / 10) then
+        playRPMDiff.playRPMDiffCount = 0
+    end
+
+    if playRPMDiff.playRPMDiffCount == 0 then
+        playRPMDiff.playRPMDiffCount = 1
+        system.playNumber(currentRPM, UNIT_RPM, 2)
+    end
 end
+
 
 function status.event(widget, category, value, x, y)
 
