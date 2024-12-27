@@ -2813,46 +2813,50 @@ function status.write()
 end
 
 function status.playCurrent(widget)
-    if status.announcementCurrentSwitchParam ~= nil then
-        if status.announcementCurrentSwitchParam:state() then
-            status.currenttime.currentannouncementTimer = true
-            currentDoneFirst = false
-        else
-            status.currenttime.currentannouncementTimer = false
+    if not status.announcementCurrentSwitchParam then
+        return -- Exit early if the announcement switch parameter is nil
+    end
+
+    -- Update the current announcement timer and first-done flag based on switch state
+    local switchState = status.announcementCurrentSwitchParam:state()
+    status.currenttime.currentannouncementTimer = switchState
+    local currentDoneFirst = not switchState
+
+    if status.isInConfiguration then
+        return -- Exit early if the system is in configuration mode
+    end
+
+    local currentSensorValue = status.sensors.current
+    if not currentSensorValue then
+        return -- Exit early if the current sensor value is nil
+    end
+
+    if status.currenttime.currentannouncementTimer then
+        -- Initialize the timer for the first alert
+        if not status.currenttime.currentannouncementTimerStart and not currentDoneFirst then
+            status.currenttime.currentannouncementTimerStart = os.time()
+            status.currenttime.currentaudioannouncementCounter = os.clock()
+            system.playNumber(currentSensorValue / 10, UNIT_AMPERE, 2)
             currentDoneFirst = true
         end
+    else
+        -- Reset the timer when the announcement timer is off
+        status.currenttime.currentannouncementTimerStart = nil
+    end
 
-        if status.isInConfiguration == false then
-            if status.sensors.current ~= nil then
-                if status.currenttime.currentannouncementTimer == true then
-                    -- start timer
-                    if status.currenttime.currentannouncementTimerStart == nil and currentDoneFirst == false then
-                        status.currenttime.currentannouncementTimerStart = os.time()
-                        status.currenttime.currentaudioannouncementCounter = os.clock()
-                        -- print ("Play Current Alert (first)")
-                        system.playNumber(status.sensors.current / 10, UNIT_AMPERE, 2)
-                        currentDoneFirst = true
-                    end
-                else
-                    status.currenttime.currentannouncementTimerStart = nil
-                end
-
-                if status.currenttime.currentannouncementTimerStart ~= nil then
-                    if currentDoneFirst == false then
-                        if ((tonumber(os.clock()) - tonumber(status.currenttime.currentaudioannouncementCounter)) >= status.announcementIntervalParam) then
-                            -- print ("Play Current Alert (repeat)")
-                            status.currenttime.currentaudioannouncementCounter = os.clock()
-                            system.playNumber(status.sensors.current / 10, UNIT_AMPERE, 2)
-                        end
-                    end
-                else
-                    -- stop timer
-                    status.currenttime.currentannouncementTimerStart = nil
-                end
-            end
+    -- Handle repeated alerts
+    if status.currenttime.currentannouncementTimerStart then
+        local elapsed = os.clock() - (status.currenttime.currentaudioannouncementCounter or 0)
+        if elapsed >= (status.announcementIntervalParam or 0) then
+            status.currenttime.currentaudioannouncementCounter = os.clock()
+            system.playNumber(currentSensorValue / 10, UNIT_AMPERE, 2)
         end
+    else
+        -- Ensure timer reset when not in use
+        status.currenttime.currentannouncementTimerStart = nil
     end
 end
+
 
 function status.playLQ(widget)
     if status.announcementLQSwitchParam ~= nil then
