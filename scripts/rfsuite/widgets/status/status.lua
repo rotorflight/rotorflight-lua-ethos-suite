@@ -3004,61 +3004,47 @@ function status.playTIMERALARM(widget)
 end
 
 function status.playTIMER(widget)
-    if status.announcementTimerSwitchParam ~= nil then
+    if not status.announcementTimerSwitchParam then
+        return
+    end
 
-        if status.announcementTimerSwitchParam:state() then
-            status.timetime.timerannouncementTimer = true
-            timerDoneFirst = false
-        else
-            status.timetime.timerannouncementTimer = false
+    -- Update timer announcement state
+    local timerSwitchState = status.announcementTimerSwitchParam:state()
+    status.timetime.timerannouncementTimer = timerSwitchState
+    local timerDoneFirst = not timerSwitchState
+
+    if status.isInConfiguration then
+        return
+    end
+
+    local alertTIME = status.theTIME or 0
+
+    local hours = string.format("%02.f", math.floor(alertTIME / 3600))
+    local mins = string.format("%02.f", math.floor(alertTIME / 60) % 60)
+    local secs = string.format("%02.f", alertTIME % 60)
+
+    if timerSwitchState then
+        -- Start the timer if not already started
+        if not status.timetime.timerannouncementTimerStart and not timerDoneFirst then
+            status.timetime.timerannouncementTimerStart = os.time()
+            status.timetime.timeraudioannouncementCounter = os.clock()
+            if mins ~= "00" then system.playNumber(mins, UNIT_MINUTE, 2) end
+            system.playNumber(secs, UNIT_SECOND, 2)
             timerDoneFirst = true
         end
 
-        if status.isInConfiguration == false then
-
-            if status.theTIME == nil then
-                alertTIME = 0
-            else
-                alertTIME = status.theTIME
-            end
-
-            if alertTIME ~= nil then
-
-                hours = string.format("%02.f", math.floor(alertTIME / 3600))
-                mins = string.format("%02.f", math.floor(alertTIME / 60 - (hours * 60)))
-                secs = string.format("%02.f", math.floor(alertTIME - hours * 3600 - mins * 60))
-
-                if status.timetime.timerannouncementTimer == true then
-                    -- start timer
-                    if status.timetime.timerannouncementTimerStart == nil and timerDoneFirst == false then
-                        status.timetime.timerannouncementTimerStart = os.time()
-                        status.timetime.timeraudioannouncementCounter = os.clock()
-                        -- print ("Playing TIMER (first)" .. alertTIME)
-
-                        if mins ~= "00" then system.playNumber(mins, UNIT_MINUTE, 2) end
-                        system.playNumber(secs, UNIT_SECOND, 2)
-
-                        timerDoneFirst = true
-                    end
-                else
-                    status.timetime.timerannouncementTimerStart = nil
-                end
-
-                if status.timetime.timerannouncementTimerStart ~= nil then
-                    if timerDoneFirst == false then
-                        if ((tonumber(os.clock()) - tonumber(status.timetime.timeraudioannouncementCounter)) >= status.announcementIntervalParam) then
-                            status.timetime.timeraudioannouncementCounter = os.clock()
-                            -- print ("Playing TIMER (repeat)" .. alertTIME)
-                            if mins ~= "00" then system.playNumber(mins, UNIT_MINUTE, 2) end
-                            system.playNumber(secs, UNIT_SECOND, 2)
-                        end
-                    end
-                else
-                    -- stop timer
-                    status.timetime.timerannouncementTimerStart = nil
-                end
+        -- Announce timer intervals
+        if status.timetime.timerannouncementTimerStart and timerDoneFirst then
+            local elapsed = os.clock() - status.timetime.timeraudioannouncementCounter
+            if elapsed >= status.announcementIntervalParam then
+                status.timetime.timeraudioannouncementCounter = os.clock()
+                if mins ~= "00" then system.playNumber(mins, UNIT_MINUTE, 2) end
+                system.playNumber(secs, UNIT_SECOND, 2)
             end
         end
+    else
+        -- Stop the timer
+        status.timetime.timerannouncementTimerStart = nil
     end
 end
 
