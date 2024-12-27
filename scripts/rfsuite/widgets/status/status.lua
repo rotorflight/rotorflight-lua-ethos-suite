@@ -2798,25 +2798,14 @@ function status.getSensors()
 
     end
 
-    -- calc fuel percentage if needed
-    if status.calcfuelParam == true then
-
-        local maxCellVoltage = status.maxCellVoltage / 100
-        local minCellVoltage = status.minCellVoltage / 100
-
-        local maxVoltage = maxCellVoltage * status.cellsParam
-        local minVoltage = minCellVoltage * status.cellsParam
-
+    -- Calculate fuel percentage if needed
+    if status.calcfuelParam then
         local cv = voltage / 100
-        local maxv = maxCellVoltage * status.cellsParam
-        local minv = minCellVoltage * status.cellsParam
+        local maxv = (status.maxCellVoltage / 100) * status.cellsParam
+        local minv = (status.minCellVoltage / 100) * status.cellsParam
 
         local batteryPercentage = ((cv - minv) / (maxv - minv)) * 100
-
-        fuel = status.round(batteryPercentage, 0)
-
-        if fuel > 100 then fuel = 100 end
-
+        fuel = math.min(status.round(batteryPercentage, 0), 100)
     end
 
     if voltage == nil then voltage = 0 end
