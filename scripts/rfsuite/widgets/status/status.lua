@@ -2922,7 +2922,6 @@ function status.sensorsMAXMIN(sensors)
 
     if status.linkUP and status.theTIME and status.idleupdelayParam then
 
-        -- Hold back - too early to get a reading
         if status.theTIME <= status.idleupdelayParam then
             for _, sensor in pairs(sensorTypes) do
                 status["sensor" .. sensor .. "Min"] = 0
@@ -2934,44 +2933,41 @@ function status.sensorsMAXMIN(sensors)
         if status.theTIME >= status.idleupdelayParam then
             local idleupdelayOFFSET = 2
 
-            -- Record initial parameters for max/min
             if status.theTIME <= (status.idleupdelayParam + idleupdelayOFFSET) then
                 for _, sensor in pairs(sensorTypes) do
-                    local value = sensors[sensor:lower()]
+                    local value = sensors[sensor:lower()] or 0
                     status["sensor" .. sensor .. "Min"] = value
                     status["sensor" .. sensor .. "Max"] = value
                 end
                 
-                status.sensorCurrentMin = sensors.current > 0 and sensors.current or 1
-                status.sensorCurrentMax = sensors.current
+                local current = sensors.current or 0
+                status.sensorCurrentMin = current > 0 and current or 1
+                status.sensorCurrentMax = current
 
                 motorNearlyActive = 0
                 return
             end
-            print("here")
-            -- Update max/min values after initial delay
+
             if status.theTIME > (status.idleupdelayParam + idleupdelayOFFSET) and status.idleupswitchParam:state() then
                 for _, sensor in pairs(sensorTypes) do
-                    local value = sensors[sensor:lower()]
-                    status["sensor" .. sensor .. "Min"] = math.min(status["sensor" .. sensor .. "Min"], value)
-                    status["sensor" .. sensor .. "Max"] = math.max(status["sensor" .. sensor .. "Max"], value)
+                    local value = sensors[sensor:lower()] or 0
+                    status["sensor" .. sensor .. "Min"] = math.min(status["sensor" .. sensor .. "Min"] or math.huge, value)
+                    status["sensor" .. sensor .. "Max"] = math.max(status["sensor" .. sensor .. "Max"] or -math.huge, value)
                 end
 
-                status.sensorCurrentMin = math.min(status.sensorCurrentMin, sensors.current > 0 and sensors.current or 1)
-                status.sensorCurrentMax = math.max(status.sensorCurrentMax, sensors.current)
+                local current = sensors.current or 0
+                status.sensorCurrentMin = math.min(status.sensorCurrentMin or math.huge, current > 0 and current or 1)
+                status.sensorCurrentMax = math.max(status.sensorCurrentMax or -math.huge, current)
 
                 status.motorWasActive = true
             end
         end
 
-        -- Store the last values if motor was active
         if status.motorWasActive and not status.idleupswitchParam:state() then
             status.motorWasActive = false
 
             status.sensorCurrentMinAlt = status.sensorCurrentMin > 0 and status.sensorCurrentMin or 1
             status.sensorCurrentMaxAlt = status.sensorCurrentMax > 0 and status.sensorCurrentMax or 1
-
-            status.readLOGS = false
         end
     else
         for _, sensor in pairs(sensorTypes) do
@@ -2980,6 +2976,7 @@ function status.sensorsMAXMIN(sensors)
         end
     end
 end
+
 
 function tablelength(T)
     local count = 0
