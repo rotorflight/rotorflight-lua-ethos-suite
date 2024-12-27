@@ -1064,190 +1064,54 @@ function status.message(msg)
 end
 
 function status.getThemeInfo()
-    environment = system.getVersion()
+    local environment = system.getVersion()
     local w, h = lcd.getWindowSize()
+    local tw, th = w, h
 
-    -- this is just to force height calc to end up on whole numbers to avoid
-    -- scaling issues
-    h = (math.floor((h / 4)) * 4)
-    w = (math.floor((w / 6)) * 6)
+    -- Ensure height and width are whole numbers to avoid scaling issues
+    h = math.floor(h / 4) * 4
+    w = math.floor(w / 6) * 6
 
-    -- first one is unsporrted
+    local defaultConfig = {
+        supportedRADIO = true,
+        title_voltage = "VOLTAGE",
+        title_fuel = "FUEL",
+        title_mah = "MAH",
+        title_rpm = "RPM",
+        title_current = "CURRENT",
+        title_tempMCU = "T.MCU",
+        title_tempESC = "T.ESC",
+        title_time = "TIMER",
+        title_governor = "GOVERNOR",
+        title_fm = "FLIGHT MODE",
+        title_rssi = "LQ",
+        fontSENSOR = FONT_XXL,
+        fontSENSORSmallBox = FONT_STD,
+        fontPopupTitle = FONT_S,
+        widgetTitleOffset = 20,
+    }
 
-    if environment.board == "V20" or environment.board == "XES" or environment.board == "XE" or environment.board == "X20" or environment.board == "X20S" or environment.board == "X20PRO" or environment.board == "X20PROAW" or
-        environment.board == "X20R" or environment.board == "X20RS" or environment.board == "X18RS" then
-        ret = {
-            supportedRADIO = true,
-            colSpacing = 4,
-            fullBoxW = 262,
-            fullBoxH = h / 2,
-            smallBoxSensortextOFFSET = -5,
-            title_voltage = "VOLTAGE",
-            title_fuel = "FUEL",
-            title_mah = "MAH",
-            title_rpm = "RPM",
-            title_current = "CURRENT",
-            title_tempMCU = "T.MCU",
-            title_tempESC = "T.ESC",
-            title_time = "TIMER",
-            title_governor = "GOVERNOR",
-            title_fm = "FLIGHT MODE",
-            title_rssi = "LQ",
-            fontSENSOR = FONT_XXL,
-            fontSENSORSmallBox = FONT_STD,
-            fontTITLE = FONT_XS,
-            fontPopupTitle = FONT_S,
-            widgetTitleOffset = 20,
-            logsCOL1w = 60,
-            logsCOL2w = 120,
-            logsCOL3w = 120,
-            logsCOL4w = 170,
-            logsCOL5w = 110,
-            logsCOL6w = 90,
-            logsCOL7w = 90,
-            logsHeaderOffset = 5
+    local themeConfigs = {
+        ["784x294"] = { colSpacing = 4, fullBoxW = 262, fullBoxH = h / 2, smallBoxSensortextOFFSET = -5, fontTITLE = FONT_XS },
+        ["472x191"] = { colSpacing = 2, fullBoxW = 158, fullBoxH = 97, smallBoxSensortextOFFSET = -8, fontTITLE = 768 },
+        ["630x236"] = { colSpacing = 3, fullBoxW = 210, fullBoxH = 120, smallBoxSensortextOFFSET = -10, fontTITLE = 768 },
+        ["427x158"] = { colSpacing = 2, fullBoxW = 158, fullBoxH = 79, smallBoxSensortextOFFSET = -10, fontTITLE = FONT_XS },
+    }
 
-        }
+    local configKey = string.format("%dx%d", tw, th)
+    local themeConfig = themeConfigs[configKey]
+
+    if themeConfig then
+        -- Merge defaultConfig with the specific themeConfig
+        for k, v in pairs(defaultConfig) do
+            themeConfig[k] = v
+        end
+        return themeConfig
     end
 
-    if environment.board == "X18" or environment.board == "X18S" then
-        ret = {
-            supportedRADIO = true,
-            colSpacing = 2,
-            fullBoxW = 158,
-            fullBoxH = 97,
-            smallBoxSensortextOFFSET = -8,
-            title_voltage = "VOLTAGE",
-            title_fuel = "FUEL",
-            title_mah = "MAH",
-            title_rpm = "RPM",
-            title_current = "CURRENT",
-            title_tempMCU = "T.MCU",
-            title_tempESC = "T.ESC",
-            title_time = "TIMER",
-            title_governor = "GOVERNOR",
-            title_fm = "FLIGHT MODE",
-            title_rssi = "LQ",
-            fontSENSOR = FONT_XXL,
-            fontSENSORSmallBox = FONT_STD,
-            fontTITLE = 768,
-            fontPopupTitle = FONT_S,
-            widgetTitleOffset = 20,
-            logsCOL1w = 50,
-            logsCOL2w = 100,
-            logsCOL3w = 100,
-            logsCOL4w = 140,
-            logsCOL5w = 0,
-            logsCOL6w = 0,
-            logsCOL7w = 75,
-            logsHeaderOffset = 5
-        }
-    end
-
-    if environment.board == "X14" or environment.board == "X14S" then
-        ret = {
-            supportedRADIO = true,
-            colSpacing = 3,
-            fullBoxW = 210,
-            fullBoxH = 120,
-            smallBoxSensortextOFFSET = -10,
-            title_voltage = "VOLTAGE",
-            title_fuel = "FUEL",
-            title_mah = "MAH",
-            title_rpm = "RPM",
-            title_current = "CURRENT",
-            title_tempMCU = "T.MCU",
-            title_tempESC = "T.ESC",
-            title_time = "TIMER",
-            title_governor = "GOVERNOR",
-            title_fm = "FLIGHT MODE",
-            title_rssi = "LQ",
-            fontSENSOR = FONT_XXL,
-            fontSENSORSmallBox = FONT_STD,
-            fontTITLE = 768,
-            fontPopupTitle = FONT_S,
-            widgetTitleOffset = 20,
-            logsCOL1w = 70,
-            logsCOL2w = 140,
-            logsCOL3w = 120,
-            logsCOL4w = 170,
-            logsCOL5w = 0,
-            logsCOL6w = 0,
-            logsCOL7w = 120,
-            logsHeaderOffset = 5
-        }
-    end
-
-    if environment.board == "TWXLITE" or environment.board == "TWXLITES" then
-        ret = {
-            supportedRADIO = true,
-            colSpacing = 2,
-            fullBoxW = 158,
-            fullBoxH = 96,
-            smallBoxSensortextOFFSET = -10,
-            title_voltage = "VOLTAGE",
-            title_fuel = "FUEL",
-            title_mah = "MAH",
-            title_rpm = "RPM",
-            title_current = "CURRENT",
-            title_tempMCU = "T.MCU",
-            title_tempESC = "T.ESC",
-            title_time = "TIMER",
-            title_governor = "GOVERNOR",
-            title_fm = "FLIGHT MODE",
-            title_rssi = "LQ",
-            fontSENSOR = FONT_XXL,
-            fontSENSORSmallBox = FONT_STD,
-            fontTITLE = 768,
-            fontPopupTitle = FONT_S,
-            widgetTitleOffset = 20,
-            logsCOL1w = 50,
-            logsCOL2w = 100,
-            logsCOL3w = 100,
-            logsCOL4w = 140,
-            logsCOL5w = 0,
-            logsCOL6w = 0,
-            logsCOL7w = 75,
-            logsHeaderOffset = 5
-        }
-    end
-
-    if environment.board == "X10EXPRESS" or environment.board == "X10" or environment.board == "X10S" or environment.board == "X12" or environment.board == "X12S" then
-        ret = {
-            supportedRADIO = true,
-            colSpacing = 2,
-            fullBoxW = 158,
-            fullBoxH = 79,
-            smallBoxSensortextOFFSET = -10,
-            title_voltage = "VOLTAGE",
-            title_fuel = "FUEL",
-            title_mah = "MAH",
-            title_rpm = "RPM",
-            title_current = "CURRENT",
-            title_tempMCU = "T.MCU",
-            title_tempESC = "T.ESC",
-            title_time = "TIMER",
-            title_governor = "GOVERNOR",
-            title_fm = "FLIGHT MODE",
-            title_rssi = "LQ",
-            fontSENSOR = FONT_XXL,
-            fontSENSORSmallBox = FONT_STD,
-            fontTITLE = FONT_XS,
-            fontPopupTitle = FONT_S,
-            widgetTitleOffset = 20,
-            logsCOL1w = 50,
-            logsCOL2w = 100,
-            logsCOL3w = 100,
-            logsCOL4w = 140,
-            logsCOL5w = 0,
-            logsCOL6w = 0,
-            logsCOL7w = 75,
-            logsHeaderOffset = 5
-        }
-    end
-
-    return ret
+    return nil -- Return nil if no matching theme configuration is found
 end
+
 
 function status.govColorFlag(flag)
 
@@ -1617,38 +1481,28 @@ function status.paint(widget)
             end
 
             -- widget size
-            if environment.board == "X18RS" or environment.board == "V20" or environment.board == "XES" or environment.board == "X20" or environment.board == "X20S" or environment.board == "X20PRO" or environment.board == "X20PROAW" then
-                if w ~= 784 and h ~= 294 then
-                    status.screenError("DISPLAY SIZE INVALID")
-                    return
+            local validSizes = {
+                {w = 784, h = 294}, -- X20, X20PRO etc
+                {w = 472, h = 191}, -- TWXLITE,X18,X18S
+                {w = 630, h = 236}, -- X14
+                {w = 472, h = 158}  -- X10,X12
+            }
+
+            local isValidSize = false
+            for _, size in ipairs(validSizes) do
+                if w == size.w and h == size.h then
+                    isValidSize = true
+                    break
                 end
             end
-            if environment.board == "X18" or environment.board == "X18S" then
-                smallTEXT = true
-                if w ~= 472 and h ~= 191 then
-                    status.screenError("DISPLAY SIZE INVALID")
-                    return
-                end
-            end
-            if environment.board == "X14" or environment.board == "X14S" then
-                if w ~= 630 and h ~= 236 then
-                    status.screenError("DISPLAY SIZE INVALID")
-                    return
-                end
-            end
-            if environment.board == "TWXLITE" or environment.board == "TWXLITES" then
-                if w ~= 472 and h ~= 191 then
-                    status.screenError("DISPLAY SIZE INVALID")
-                    return
-                end
-            end
-            if environment.board == "X10EXPRESS" or environment.board == "X10" or environment.board == "X10S" or environment.board == "X12" or environment.board == "X12S" then
-                if w ~= 472 and h ~= 158 then
-                    status.screenError("DISPLAY SIZE INVALID")
-                    return
-                end
+            
+            -- hard error
+            if not isValidSize then
+                status.screenError("DISPLAY SIZE INVALID")
+                return
             end
 
+            -- move on to display as no more hard errors
             boxW = theme.fullBoxW - theme.colSpacing
             boxH = theme.fullBoxH - theme.colSpacing
 
