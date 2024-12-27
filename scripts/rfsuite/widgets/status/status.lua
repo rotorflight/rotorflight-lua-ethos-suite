@@ -2319,6 +2319,17 @@ function status.getChannelValue(ich)
     return math.floor((src:value() / 10.24) + 0.5)
 end
 
+-- Function to convert temperature
+local function convert_temperature(temp, conversion_type)
+    if conversion_type == 2 then
+        -- Convert from C to F
+        temp = ((temp / 5) * 9) + 32
+    elseif conversion_type == 3 then
+        -- Convert from F to C
+        temp = ((temp - 32) * 5) / 9
+    end
+    return status.round(temp, 0)
+end
 
 function status.getSensors()
     if status.isInConfiguration == true then return status.sensors end
@@ -2811,30 +2822,14 @@ function status.getSensors()
     if voltage == nil then voltage = 0 end
     if math.floor(voltage) <= 5 then fuel = 0 end
 
-    -- convert from C to F
-    -- Divide by 5, then multiply by 9, then add 32
-    if status.tempconvertParamMCU == 2 then
-        temp_mcu = ((temp_mcu / 5) * 9) + 32
-        temp_mcu = status.round(temp_mcu, 0)
-    end
-    -- convert from F to C
-    -- Deduct 32, then multiply by 5, then divide by 9
-    if status.tempconvertParamMCU == 3 then
-        temp_mcu = ((temp_mcu - 32) * 5) / 9
-        temp_mcu = status.round(temp_mcu, 0)
+    -- Convert MCU temperature
+    if status.tempconvertParamMCU == 2 or status.tempconvertParamMCU == 3 then
+        temp_mcu = convert_temperature(temp_mcu, status.tempconvertParamMCU)
     end
 
-    -- convert from C to F
-    -- Divide by 5, then multiply by 9, then add 32
-    if status.tempconvertParamESC == 2 then
-        temp_esc = ((temp_esc / 5) * 9) + 32
-        temp_esc = status.round(temp_esc, 0)
-    end
-    -- convert from F to C
-    -- Deduct 32, then multiply by 5, then divide by 9
-    if status.tempconvertParamESC == 3 then
-        temp_esc = ((temp_esc - 32) * 5) / 9
-        temp_esc = status.round(temp_esc, 0)
+    -- Convert ESC temperature
+    if status.tempconvertParamESC == 2 or status.tempconvertParamESC == 3 then
+        temp_esc = convert_temperature(temp_esc, status.tempconvertParamESC)
     end
 
     -- set flag to status.refresh screen or not
