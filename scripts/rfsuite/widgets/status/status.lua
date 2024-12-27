@@ -2969,32 +2969,37 @@ function status.playESC(widget)
     end
 end
 
-
 function status.playTIMERALARM(widget)
-    if status.theTIME ~= nil and status.timeralarmParam ~= nil and status.timeralarmParam ~= 0 then
+    if status.theTIME and status.timeralarmParam and status.timeralarmParam ~= 0 then
 
-        -- reset timer Delay
-        if status.theTIME > status.timeralarmParam + 2 then status.timerAlarmPlay = true end
-        -- trigger first timer
-        if status.timerAlarmPlay == true then
+        -- Reset timer delay
+        if status.theTIME > status.timeralarmParam + 2 then
+            status.timerAlarmPlay = true
+        end
+
+        -- Trigger first timer
+        if status.timerAlarmPlay then
             if status.theTIME >= status.timeralarmParam and status.theTIME <= status.timeralarmParam + 1 then
 
                 rfsuite.utils.playFileCommon("alarm.wav")
 
-                hours = string.format("%02.f", math.floor(status.theTIME / 3600))
-                mins = string.format("%02.f", math.floor(status.theTIME / 60 - (hours * 60)))
-                secs = string.format("%02.f", math.floor(status.theTIME - hours * 3600 - mins * 60))
+                local hours = string.format("%02.f", math.floor(status.theTIME / 3600))
+                local mins = string.format("%02.f", math.floor(status.theTIME / 60 - (hours * 60)))
+                local secs = string.format("%02.f", math.floor(status.theTIME - hours * 3600 - mins * 60))
 
-                rfsuite.utils.playFile("status","alerts/timer.wav")
-                if mins ~= "00" then system.playNumber(mins, UNIT_MINUTE, 2) end
+                rfsuite.utils.playFile("status", "alerts/timer.wav")
+                if mins ~= "00" then
+                    system.playNumber(mins, UNIT_MINUTE, 2)
+                end
                 system.playNumber(secs, UNIT_SECOND, 2)
 
-                if status.timeralarmVibrateParam == true then system.playHaptic("- - -") end
+                if status.timeralarmVibrateParam then
+                    system.playHaptic("- - -")
+                end
 
                 status.timerAlarmPlay = false
             end
         end
-
     end
 end
 
