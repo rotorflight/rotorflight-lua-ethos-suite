@@ -3049,47 +3049,42 @@ function status.playTIMER(widget)
 end
 
 function status.playFuel(widget)
-    if status.announcementFuelSwitchParam ~= nil then
-        if status.announcementFuelSwitchParam:state() then
-            status.fueltime.fuelannouncementTimer = true
-            fuelDoneFirst = false
-        else
-            status.fueltime.fuelannouncementTimer = false
+    if not status.announcementFuelSwitchParam then
+        return
+    end
+
+    local isSwitchOn = status.announcementFuelSwitchParam:state()
+    status.fueltime.fuelannouncementTimer = isSwitchOn
+    fuelDoneFirst = not isSwitchOn
+
+    if status.isInConfiguration or not status.sensors.fuel then
+        return
+    end
+
+    if status.fueltime.fuelannouncementTimer then
+        -- Start timer if not already started and first announcement not done
+        if not status.fueltime.fuelannouncementTimerStart and not fuelDoneFirst then
+            status.fueltime.fuelannouncementTimerStart = os.time()
+            status.fueltime.fuelaudioannouncementCounter = os.clock()
+            rfsuite.utils.playFile("status", "alerts/fuel.wav")
+            system.playNumber(status.sensors.fuel, UNIT_PERCENT, 2)
             fuelDoneFirst = true
         end
+    else
+        status.fueltime.fuelannouncementTimerStart = nil
+    end
 
-        if status.isInConfiguration == false then
-            if status.sensors.fuel ~= nil then
-                if status.fueltime.fuelannouncementTimer == true then
-                    -- start timer
-                    if status.fueltime.fuelannouncementTimerStart == nil and fuelDoneFirst == false then
-                        status.fueltime.fuelannouncementTimerStart = os.time()
-                        status.fueltime.fuelaudioannouncementCounter = os.clock()
-                        -- print("Play fuel alert (first)")
-                        rfsuite.utils.playFile("status","alerts/fuel.wav")
-                        system.playNumber(status.sensors.fuel, UNIT_PERCENT, 2)
-                        fuelDoneFirst = true
-                    end
-                else
-                    status.fueltime.fuelannouncementTimerStart = nil
-                end
-
-                if status.fueltime.fuelannouncementTimerStart ~= nil then
-                    if fuelDoneFirst == false then
-                        if ((tonumber(os.clock()) - tonumber(status.fueltime.fuelaudioannouncementCounter)) >= status.announcementIntervalParam) then
-                            status.fueltime.fuelaudioannouncementCounter = os.clock()
-                            -- print("Play fuel alert (repeat)")
-                            rfsuite.utils.playFile("status","alerts/fuel.wav")
-                            system.playNumber(status.sensors.fuel, UNIT_PERCENT, 2)
-
-                        end
-                    end
-                else
-                    -- stop timer
-                    status.fueltime.fuelannouncementTimerStart = nil
-                end
-            end
+    if status.fueltime.fuelannouncementTimerStart then
+        -- Handle repeated announcements
+        local timeElapsed = os.clock() - status.fueltime.fuelaudioannouncementCounter
+        if not fuelDoneFirst and timeElapsed >= status.announcementIntervalParam then
+            status.fueltime.fuelaudioannouncementCounter = os.clock()
+            rfsuite.utils.playFile("status", "alerts/fuel.wav")
+            system.playNumber(status.sensors.fuel, UNIT_PERCENT, 2)
         end
+    else
+        -- Ensure timer is stopped
+        status.fueltime.fuelannouncementTimerStart = nil
     end
 end
 
