@@ -344,12 +344,12 @@ function status.configure(widget)
     triggerpanel = form.addExpansionPanel("Triggers")
     triggerpanel:open(false)
 
-    line = triggerpanel:addLine("Arm switch")
-    armswitch = form.addSwitchField(line, form.getFieldSlots(line)[0], function()
-        return armswitchParam
-    end, function(value)
-        armswitchParam = value
-    end)
+   -- line = triggerpanel:addLine("Arm switch")
+   -- armswitch = form.addSwitchField(line, form.getFieldSlots(line)[0], function()
+   --     return armswitchParam
+   -- end, function(value)
+   --     armswitchParam = value
+   -- end)
 
     line = triggerpanel:addLine("Idleup switch")
     idleupswitch = form.addSwitchField(line, form.getFieldSlots(line)[0], function()
@@ -3441,14 +3441,17 @@ function status.wakeupUI(widget)
                 ---
                 -- TIME
                 if status.linkUP == true then
-                    if armswitchParam ~= nil then
-                        if armswitchParam:state() == false then
+                    
+                    local armSource = rfsuite.bg.telemetry.getSensorSource("armflags")
+                    if armSource then
+                        local isArmed = armSource:value()
+                        if isArmed == 0 or isArmed == 2 then
                             status.stopTimer = true
                             stopTIME = os.clock()
                             timerNearlyActive = 1
-                            status.theTIME = 0
+                            status.theTIME = 0                            
                         end
-                    end
+                    end    
 
                     if status.idleupswitchParam ~= nil then
                         if status.idleupswitchParam:state() then
