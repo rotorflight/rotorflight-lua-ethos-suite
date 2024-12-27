@@ -2897,48 +2897,40 @@ end
 
 
 function status.playMCU(widget)
-    if status.announcementMCUSwitchParam ~= nil then
-        if status.announcementMCUSwitchParam:state() then
-            status.mcutime.mcuannouncementTimer = true
-            mcuDoneFirst = false
+    if not status.announcementMCUSwitchParam then return end
+
+    -- Set MCU announcement timer based on switch state
+    local switchState = status.announcementMCUSwitchParam:state()
+    status.mcutime.mcuannouncementTimer = switchState
+    local mcuDoneFirst = not switchState
+
+    if not status.isInConfiguration and status.sensors.temp_mcu then
+        if status.mcutime.mcuannouncementTimer then
+            -- Start timer if not already started
+            if not status.mcutime.mcuannouncementTimerStart and not mcuDoneFirst then
+                status.mcutime.mcuannouncementTimerStart = os.time()
+                status.mcutime.mcuaudioannouncementCounter = os.clock()
+                rfsuite.utils.playFile("status", "alerts/mcu.wav")
+                system.playNumber(status.sensors.temp_mcu / 100, UNIT_DEGREE, 2)
+                mcuDoneFirst = true
+            end
         else
-            status.mcutime.mcuannouncementTimer = false
-            mcuDoneFirst = true
+            -- Reset timer if switch is off
+            status.mcutime.mcuannouncementTimerStart = nil
         end
 
-        if status.isInConfiguration == false then
-            if status.sensors.temp_mcu ~= nil then
-                if status.mcutime.mcuannouncementTimer == true then
-                    -- start timer
-                    if status.mcutime.mcuannouncementTimerStart == nil and mcuDoneFirst == false then
-                        status.mcutime.mcuannouncementTimerStart = os.time()
-                        status.mcutime.mcuaudioannouncementCounter = os.clock()
-                        -- print ("Playing MCU (first)")
-                        rfsuite.utils.playFile("status","alerts/mcu.wav")
-                        system.playNumber(status.sensors.temp_mcu / 100, UNIT_DEGREE, 2)
-                        mcuDoneFirst = true
-                    end
-                else
-                    status.mcutime.mcuannouncementTimerStart = nil
-                end
-
-                if status.mcutime.mcuannouncementTimerStart ~= nil then
-                    if mcuDoneFirst == false then
-                        if ((tonumber(os.clock()) - tonumber(status.mcutime.mcuaudioannouncementCounter)) >= status.announcementIntervalParam) then
-                            status.mcutime.mcuaudioannouncementCounter = os.clock()
-                            -- print ("Playing MCU (repeat)")
-                            rfsuite.utils.playFile("status","alerts/mcu.wav")
-                            system.playNumber(status.sensors.temp_mcu / 100, UNIT_DEGREE, 2)
-                        end
-                    end
-                else
-                    -- stop timer
-                    status.mcutime.mcuannouncementTimerStart = nil
-                end
+        -- Handle repeat announcements
+        if status.mcutime.mcuannouncementTimerStart and mcuDoneFirst then
+            local elapsedTime = os.clock() - status.mcutime.mcuaudioannouncementCounter
+            if elapsedTime >= status.announcementIntervalParam then
+                status.mcutime.mcuaudioannouncementCounter = os.clock()
+                rfsuite.utils.playFile("status", "alerts/mcu.wav")
+                system.playNumber(status.sensors.temp_mcu / 100, UNIT_DEGREE, 2)
             end
         end
     end
 end
+
 
 function status.playESC(widget)
     if status.announcementESCSwitchParam ~= nil then
