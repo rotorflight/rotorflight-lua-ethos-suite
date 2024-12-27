@@ -1997,7 +1997,7 @@ function status.paint(widget)
 
                     if sensorTGT == 'customsensor1' or sensorTGT == 'customsensor2' then
 
-                        sensorVALUE = status.sensordisplay[sensorTGT]['value']
+                        sensorVALUE = math.floor(status.sensordisplay[sensorTGT]['value'])
                         sensorUNIT = status.sensordisplay[sensorTGT]['unit']
                         sensorMIN = status.sensordisplay[sensorTGT]['min']
                         sensorMAX = status.sensordisplay[sensorTGT]['max']
@@ -2012,7 +2012,7 @@ function status.paint(widget)
                     if sensorTGT == 'customsensor1_2' then
                         -- SENSOR1 & 2
                         sensorTGT = "customsensor1"
-                        sensorVALUE = status.sensordisplay[sensorTGT]['value']
+                        sensorVALUE =  math.floor(status.sensordisplay[sensorTGT]['value'])
                         sensorUNIT = status.sensordisplay[sensorTGT]['unit']
                         sensorMIN = status.sensordisplay[sensorTGT]['min']
                         sensorMAX = status.sensordisplay[sensorTGT]['max']
@@ -2023,7 +2023,7 @@ function status.paint(widget)
                         status.telemetryBox(posX, posY, boxW, boxH / 2 - (theme.colSpacing / 2), sensorTITLE, sensorVALUE, sensorUNIT, smallBOX, sensorWARN, sensorMIN, sensorMAX)
 
                         sensorTGT = "customsensor2"
-                        sensorVALUE = status.sensordisplay[sensorTGT]['value']
+                        sensorVALUE =  math.floor(status.sensordisplay[sensorTGT]['value'])
                         sensorUNIT = status.sensordisplay[sensorTGT]['unit']
                         sensorMIN = status.sensordisplay[sensorTGT]['min']
                         sensorMAX = status.sensordisplay[sensorTGT]['max']
@@ -2305,14 +2305,22 @@ function status.paint(widget)
                 c = c + 1
             end
 
-            if status.linkUP == false and environment.simulation == false then status.noTelem() end
-
-            if status.idleupswitchParam and status.idleupswitchParam:state() then
-                if status.theTIME <= status.idleupdelayParam then
-                        local count = math.floor(status.idleupdelayParam - status.theTIME)
-                        status.message("INITIALISING..." .. count + 1)
-                end      
+            if status.linkUP == false and environment.simulation == false then 
+                    status.noTelem() 
+            elseif status.idleupswitchParam and status.idleupswitchParam:state() then 
+                    local armSource = rfsuite.bg.telemetry.getSensorSource("armflags")
+                    if armSource then
+                        isArmed = math.floor(armSource:value())
+                        if isArmed == 1 or isArmed == 3 then
+                            if status.theTIME <= status.idleupdelayParam then
+                                    local count = math.floor(status.idleupdelayParam - status.theTIME)
+                                    status.message("INITIALISING..." .. count + 1)
+                            end      
+                        end                            
+                    end         
             end
+
+
         end
     end
 
