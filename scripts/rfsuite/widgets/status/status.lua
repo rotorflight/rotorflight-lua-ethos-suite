@@ -2352,13 +2352,13 @@ function status.getSensors()
     local function getSensorData(protocol, sources)
         local data = {}
         data.voltage = getSensorValue(sources.voltage, 100)
-        data.rpm = getSensorValue(sources.rpm)
+        data.rpm = math.floor(getSensorValue(sources.rpm))
         data.current = getSensorValue(sources.current, 10)
         data.temp_esc = getSensorValue(sources.temp_esc, 100)
         data.temp_mcu = getSensorValue(sources.temp_mcu, 100)
-        data.fuel = getSensorValue(sources.fuel)
+        data.fuel = math.floor(getSensorValue(sources.fuel))
         data.mah = getSensorValue(sources.mah)
-        data.rssi = getSensorValue(sources.rssi)
+        data.rssi = math.floor(getSensorValue(sources.rssi))
 
         if protocol == 'ccrsf' or protocol == 'lcrsf' then
             data.current = data.current == 0 and getSensorValue(sources.currentESC1, 10) or data.current
