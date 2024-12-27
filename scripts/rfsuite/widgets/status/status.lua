@@ -3670,6 +3670,8 @@ function status.wakeupUI(widget)
 
         if status.linkUP == true then
 
+            if status.linkUPTime == nil then status.linkUPTime = 0 end
+
             if status.linkUPTime ~= nil and ((tonumber(os.clock()) - tonumber(status.linkUPTime)) >= 5) then
                 -- voltage alerts
                 status.playVoltage(widget)
@@ -3694,7 +3696,6 @@ function status.wakeupUI(widget)
                 -- timer alarm
                 status.playTIMERALARM(widget)
 
-                if status.linkUPTime == nil then status.linkUPTime = 0 end
 
                 if ((tonumber(os.clock()) - tonumber(status.linkUPTime)) >= 10) then
 
