@@ -984,17 +984,16 @@ function status.resetALL()
 end
 
 function status.noTelem()
-
     lcd.font(FONT_STD)
-    str = "NO LINK"
+    local str = "NO LINK"
 
     status.theme = status.getThemeInfo()
     local w, h = lcd.getWindowSize()
-    boxW = math.floor(w / 2)
-    boxH = 45
-    tsizeW, tsizeH = lcd.getTextSize(str)
+    local boxW = math.floor(w / 2)
+    local boxH = 45
+    local tsizeW, tsizeH = lcd.getTextSize(str)
 
-    -- draw the backgstatus.round
+    -- Set background color based on theme
     if status.isDARKMODE then
         lcd.color(lcd.RGB(40, 40, 40))
     else
@@ -1002,24 +1001,22 @@ function status.noTelem()
     end
     lcd.drawFilledRectangle(w / 2 - boxW / 2, h / 2 - boxH / 2, boxW, boxH)
 
-    -- draw the border
+    -- Set border color based on theme
     if status.isDARKMODE then
-        -- dark theme
         lcd.color(lcd.RGB(255, 255, 255, 1))
     else
-        -- light theme
         lcd.color(lcd.RGB(90, 90, 90))
     end
     lcd.drawRectangle(w / 2 - boxW / 2, h / 2 - boxH / 2, boxW, boxH)
 
+    -- Set text color based on theme and draw text
     if status.isDARKMODE then
-        -- dark theme
         lcd.color(lcd.RGB(255, 255, 255, 1))
     else
-        -- light theme
         lcd.color(lcd.RGB(90, 90, 90))
     end
     lcd.drawText((w / 2) - tsizeW / 2, (h / 2) - tsizeH / 2, str)
+
     return
 end
 
