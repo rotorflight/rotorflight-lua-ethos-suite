@@ -1217,40 +1217,34 @@ function status.telemetryBox(x, y, w, h, title, value, unit, smallbox, alarm, mi
     end
 end
 
-
-
 function status.telemetryBoxMAX(x, y, w, h, title, value, unit, smallbox)
-
     status.isVisible = lcd.isVisible()
     status.isDARKMODE = lcd.darkMode()
     local theme = status.getThemeInfo()
 
+    -- Set background color based on dark mode
     if status.isDARKMODE then
         lcd.color(lcd.RGB(40, 40, 40))
     else
         lcd.color(lcd.RGB(240, 240, 240))
     end
 
-    -- draw box backgstatus.round    
+    -- Draw background rectangle
     lcd.drawFilledRectangle(x, y, w, h)
 
-    -- color    
+    -- Set text color based on dark mode
     if status.isDARKMODE then
         lcd.color(lcd.RGB(255, 255, 255, 1))
     else
         lcd.color(lcd.RGB(90, 90, 90))
     end
 
-    -- draw sensor text
-    if value ~= nil then
+    -- Draw sensor value text if available
+    if value then
+        lcd.font(smallbox and theme.fontSENSORSmallBox or theme.fontSENSOR)
 
-        if smallbox == nil or smallbox == false then
-            lcd.font(theme.fontSENSOR)
-        else
-            lcd.font(theme.fontSENSORSmallBox)
-        end
-
-        str = value .. unit
+        local str = value .. unit
+        local tsizeW, tsizeH
 
         if unit == "°" then
             tsizeW, tsizeH = lcd.getTextSize(value .. ".")
@@ -1258,34 +1252,30 @@ function status.telemetryBoxMAX(x, y, w, h, title, value, unit, smallbox)
             tsizeW, tsizeH = lcd.getTextSize(str)
         end
 
-        sx = (x + w / 2) - (tsizeW / 2)
-        if smallbox == nil or smallbox == false then
-            sy = (y + h / 2) - (tsizeH / 2)
-        else
-            if status.maxminParam == false and status.titleParam == false then
-                sy = (y + h / 2) - (tsizeH / 2)
-            else
-                sy = (y + h / 2) - (tsizeH / 2) + theme.smallBoxSensortextOFFSET
+        local sx = x + w / 2 - tsizeW / 2
+        local sy = y + h / 2 - tsizeH / 2
+
+        if smallbox then
+            if status.maxminParam or status.titleParam then
+                sy = sy + theme.smallBoxSensortextOFFSET
             end
         end
 
         lcd.drawText(sx, sy, str)
-
     end
 
-    if title ~= nil and status.titleParam == true then
+    -- Draw title text if available and enabled
+    if title and status.titleParam then
         lcd.font(theme.fontTITLE)
-        str = title
-        tsizeW, tsizeH = lcd.getTextSize(str)
+        local str = title
+        local tsizeW, tsizeH = lcd.getTextSize(str)
 
-        sx = (x + w / 2) - (tsizeW / 2)
-        sy = (y + h) - (tsizeH) - theme.colSpacing
+        local sx = x + w / 2 - tsizeW / 2
+        local sy = y + h - tsizeH - theme.colSpacing
 
         lcd.drawText(sx, sy, str)
     end
-
 end
-
 
 function status.telemetryBoxImage(x, y, w, h, gfx)
 
