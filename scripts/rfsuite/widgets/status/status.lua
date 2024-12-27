@@ -2841,15 +2841,17 @@ function status.getSensors()
     if rssi == nil then rssi = 0 end
     rssi = status.round(rssi, 0)
 
-    -- do / dont do voltage based on stick position
-    if status.lowvoltagStickParam == nil then status.lowvoltagStickParam = 0 end
-    if status.lowvoltagStickCutoffParam == nil then status.lowvoltagStickCutoffParam = 80 end
 
-    if (status.lowvoltagStickParam ~= 0) then
+    -- Voltage based on stick position
+    status.lowvoltagStickParam = status.lowvoltagStickParam or 0
+    status.lowvoltagStickCutoffParam = status.lowvoltagStickCutoffParam or 80
+
+    if status.lowvoltagStickParam ~= 0 then
         status.lvStickannouncement = false
-        for i, v in ipairs(status.lvStickOrder[status.lowvoltagStickParam]) do
-            if status.lvStickannouncement == false then -- we skip more if any stick has resulted in announcement
-                if math.abs(status.getChannelValue(v)) >= status.lowvoltagStickCutoffParam then status.lvStickannouncement = true end
+        for _, v in ipairs(status.lvStickOrder[status.lowvoltagStickParam]) do
+            if math.abs(status.getChannelValue(v)) >= status.lowvoltagStickCutoffParam then
+                status.lvStickannouncement = true
+                break -- Exit loop early once a stick triggers announcement
             end
         end
     end
