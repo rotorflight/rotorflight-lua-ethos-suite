@@ -1114,97 +1114,59 @@ end
 
 
 function status.govColorFlag(flag)
-
+    -- Define a table to map flags to their corresponding values
+    
     -- 0 = default colour
     -- 1 = red (alarm)
     -- 2 = orange (warning)
     -- 3 = green (ok)  
+    
+    local flagColors = {
+        ["UNKNOWN"] = 1,
+        ["DISARMED"] = 0,
+        ["DISABLED"] = 0,
+        ["BAILOUT"] = 2,
+        ["AUTOROT"] = 2,
+        ["LOST-HS"] = 2,
+        ["THR-OFF"] = 2,
+        ["ACTIVE"] = 3,
+        ["RECOVERY"] = 2,
+        ["SPOOLUP"] = 2,
+        ["IDLE"] = 0,
+        ["OFF"] = 0
+    }
 
-    if flag == "UNKNOWN" then
-        return 1
-    elseif flag == "DISARMED" then
-        return 0
-    elseif flag == "DISABLED" then
-        return 0
-    elseif flag == "BAILOUT" then
-        return 2
-    elseif flag == "AUTOROT" then
-        return 2
-    elseif flag == "LOST-HS" then
-        return 2
-    elseif flag == "THR-OFF" then
-        return 2
-    elseif flag == "ACTIVE" then
-        return 3
-    elseif flag == "RECOVERY" then
-        return 2
-    elseif flag == "SPOOLUP" then
-        return 2
-    elseif flag == "IDLE" then
-        return 0
-    elseif flag == "OFF" then
-        return 0
-    end
-
-    return 0
+    -- Return the corresponding value or default to 0
+    return flagColors[flag] or 0
 end
 
 function status.telemetryBox(x, y, w, h, title, value, unit, smallbox, alarm, minimum, maximum)
-
     status.isVisible = lcd.isVisible()
     status.isDARKMODE = lcd.darkMode()
     local theme = status.getThemeInfo()
 
-    if status.isDARKMODE then
-        lcd.color(lcd.RGB(40, 40, 40))
-    else
-        lcd.color(lcd.RGB(240, 240, 240))
-    end
-
-    -- draw box backgstatus.round    
+    -- Set background color based on mode
+    lcd.color(status.isDARKMODE and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
     lcd.drawFilledRectangle(x, y, w, h)
 
-    -- color    
-    if status.isDARKMODE then
-        lcd.color(lcd.RGB(255, 255, 255, 1))
-    else
-        lcd.color(lcd.RGB(90, 90, 90))
-    end
+    -- Set text color
+    lcd.color(status.isDARKMODE and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90))
 
-    -- draw sensor text
     if value ~= nil then
+        -- Set font
+        lcd.font((smallbox == nil or smallbox == false) and theme.fontSENSOR or theme.fontSENSORSmallBox)
+        
+        local str = value .. unit
+        local tsizeW, tsizeH = lcd.getTextSize(unit == "°" and value .. "." or str)
+        local sx = (x + w / 2) - (tsizeW / 2)
+        local sy = (y + h / 2) - (tsizeH / 2)
 
-        if smallbox == nil or smallbox == false then
-            lcd.font(theme.fontSENSOR)
-        else
-            lcd.font(theme.fontSENSORSmallBox)
+        if smallbox and (status.maxminParam or status.titleParam) then
+            sy = sy + theme.smallBoxSensortextOFFSET
         end
 
-        str = value .. unit
-
-        if unit == "°" then
-            tsizeW, tsizeH = lcd.getTextSize(value .. ".")
-        else
-            tsizeW, tsizeH = lcd.getTextSize(str)
-        end
-
-        sx = (x + w / 2) - (tsizeW / 2)
-        if smallbox == nil or smallbox == false then
-            sy = (y + h / 2) - (tsizeH / 2)
-        else
-            if status.maxminParam == false and status.titleParam == false then
-                sy = (y + h / 2) - (tsizeH / 2)
-            else
-                sy = (y + h / 2) - (tsizeH / 2) + theme.smallBoxSensortextOFFSET
-            end
-        end
-
-        -- change text colour to suit alarm flag
-        -- 0 = default colour
-        -- 1 = red (alarm)
-        -- 2 = orange (warning)
-        -- 3 = green (ok)  
-        if status.statusColorParam == true then
+        -- Set text color based on alarm flag
+        if status.statusColorParam then
             if alarm == 1 then
                 lcd.color(lcd.RGB(255, 0, 0, 1)) -- red
             elseif alarm == 2 then
@@ -1212,86 +1174,50 @@ function status.telemetryBox(x, y, w, h, title, value, unit, smallbox, alarm, mi
             elseif alarm == 3 then
                 lcd.color(lcd.RGB(0, 188, 4, 1)) -- green
             end
-        else
-            -- we only do red
-            if alarm == 1 then
-                lcd.color(lcd.RGB(255, 0, 0, 1)) -- red
-            end
+        elseif alarm == 1 then
+            lcd.color(lcd.RGB(255, 0, 0, 1)) -- red
         end
 
         lcd.drawText(sx, sy, str)
 
-        -- reset text back from red to ensure max/min stay right color 
+        -- Reset text color after alarm handling
         if alarm ~= 0 then
-            if status.isDARKMODE then
-                lcd.color(lcd.RGB(255, 255, 255, 1))
-            else
-                lcd.color(lcd.RGB(90, 90, 90))
-            end
+            lcd.color(status.isDARKMODE and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90))
         end
-
     end
 
-    if title ~= nil and status.titleParam == true then
+    if title and status.titleParam then
         lcd.font(theme.fontTITLE)
-        str = title
-        tsizeW, tsizeH = lcd.getTextSize(str)
-
-        sx = (x + w / 2) - (tsizeW / 2)
-        sy = (y + h) - (tsizeH) - theme.colSpacing
-
-        lcd.drawText(sx, sy, str)
+        local tsizeW, tsizeH = lcd.getTextSize(title)
+        local sx = (x + w / 2) - (tsizeW / 2)
+        local sy = (y + h) - tsizeH - theme.colSpacing
+        lcd.drawText(sx, sy, title)
     end
 
-    if status.maxminParam == true then
-
+    if status.maxminParam then
+        -- Draw minimum value
         if minimum ~= nil then
-
             lcd.font(theme.fontTITLE)
-
-            if tostring(minimum) ~= "-" then lastMin = minimum end
-
-            if tostring(minimum) == "-" then
-                str = minimum
-            else
-                str = minimum .. unit
-            end
-
-            if unit == "°" then
-                tsizeW, tsizeH = lcd.getTextSize(minimum .. ".")
-            else
-                tsizeW, tsizeH = lcd.getTextSize(str)
-            end
-
-            sx = (x + theme.colSpacing)
-            sy = (y + h) - (tsizeH) - theme.colSpacing
-
-            lcd.drawText(sx, sy, str)
+            local minStr = tostring(minimum) == "-" and minimum or minimum .. unit
+            local tsizeW, tsizeH = lcd.getTextSize(unit == "°" and minimum .. "." or minStr)
+            local sx = x + theme.colSpacing
+            local sy = (y + h) - tsizeH - theme.colSpacing
+            lcd.drawText(sx, sy, minStr)
         end
 
+        -- Draw maximum value
         if maximum ~= nil then
             lcd.font(theme.fontTITLE)
-
-            if tostring(maximum) == "-" then
-                str = maximum
-            else
-                str = maximum .. unit
-            end
-            if unit == "°" then
-                tsizeW, tsizeH = lcd.getTextSize(maximum .. ".")
-            else
-                tsizeW, tsizeH = lcd.getTextSize(str)
-            end
-
-            sx = (x + w) - tsizeW - theme.colSpacing
-            sy = (y + h) - (tsizeH) - theme.colSpacing
-
-            lcd.drawText(sx, sy, str)
+            local maxStr = tostring(maximum) == "-" and maximum or maximum .. unit
+            local tsizeW, tsizeH = lcd.getTextSize(unit == "°" and maximum .. "." or maxStr)
+            local sx = (x + w) - tsizeW - theme.colSpacing
+            local sy = (y + h) - tsizeH - theme.colSpacing
+            lcd.drawText(sx, sy, maxStr)
         end
-
     end
-
 end
+
+
 
 function status.telemetryBoxMAX(x, y, w, h, title, value, unit, smallbox)
 
