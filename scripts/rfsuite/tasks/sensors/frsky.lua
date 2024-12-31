@@ -40,8 +40,12 @@ createSensorList[0x5471] = {name = "PID Profile", unit = UNIT_RAW}
 createSensorList[0x5472] = {name = "Rate Profile", unit = UNIT_RAW}
 createSensorList[0x5473] = {name = "Led Profile", unit = UNIT_RAW}
 createSensorList[0x5440] = {name = "Throttle %", unit = UNIT_PERCENT}
+createSensorList[0x5441] = {name = "Pitch %", unit = UNIT_PERCENT}
+createSensorList[0x5442] = {name = "Roll %", unit = UNIT_PERCENT}
+createSensorList[0x5443] = {name = "Yaw %", unit = UNIT_PERCENT}
+createSensorList[0x5444] = {name = "Collective %", unit = UNIT_PERCENT}
 createSensorList[0x5250] = {name = "Consumption", unit = UNIT_MILLIAMPERE_HOUR}
-
+createSensorList[0x5260] = {name = "Battery Cell Count", unit = UNIT_RAW}
 
 -- drop
 local dropSensorList = {}
