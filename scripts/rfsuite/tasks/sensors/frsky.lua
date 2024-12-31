@@ -26,15 +26,22 @@ local frsky = {}
 
 -- create
 local createSensorList = {}
+createSensorList[0x5100] = {name = "Heartbeat", unit = UNIT_RAW}
 createSensorList[0x5450] = {name = "Governor", unit = UNIT_RAW}
 createSensorList[0x5110] = {name = "Adj. Source", unit = UNIT_RAW}
 createSensorList[0x5111] = {name = "Adj. Value", unit = UNIT_RAW}
 createSensorList[0x5460] = {name = "Model ID", unit = UNIT_RAW}
+createSensorList[0x5461] = {name = "Flight Mode", unit = UNIT_RAW}
+createSensorList[0x5462] = {name = "Arming Flags", unit = UNIT_RAW}
+createSensorList[0x5463] = {name = "Arming Disable Flags", unit = UNIT_RAW}
+createSensorList[0x5454] = {name = "Rescue State", unit = UNIT_RAW}
+createSensorList[0x5465] = {name = "Governor State", unit = UNIT_RAW}
 createSensorList[0x5471] = {name = "PID Profile", unit = UNIT_RAW}
 createSensorList[0x5472] = {name = "Rate Profile", unit = UNIT_RAW}
+createSensorList[0x5473] = {name = "Led Profile", unit = UNIT_RAW}
 createSensorList[0x5440] = {name = "Throttle %", unit = UNIT_PERCENT}
 createSensorList[0x5250] = {name = "Consumption", unit = UNIT_MILLIAMPERE_HOUR}
-createSensorList[0x5462] = {name = "Arming Flags", unit = UNIT_RAW}
+
 
 -- drop
 local dropSensorList = {}
@@ -47,23 +54,38 @@ renameSensorList[0x0500] = {name = "Headspeed", onlyifname = "RPM"}
 renameSensorList[0x0501] = {name = "Tailspeed", onlyifname = "RPM"}
 
 renameSensorList[0x0210] = {name = "Voltage", onlyifname = "VFAS"}
-renameSensorList[0x0200] = {name = "Current", onlyifname = "Current"}
+
 renameSensorList[0x0600] = {name = "Charge Level", onlyifname = "Fuel"}
 renameSensorList[0x0910] = {name = "Cell Voltage", onlyifname = "ADC4"}
-renameSensorList[0x0900] = {name = "BEC Voltage", onlyifname = "ADC3"}
+
 
 renameSensorList[0x0211] = {name = "ESC Voltage", onlyifname = "VFAS"}
-renameSensorList[0x0201] = {name = "ESC Current", onlyifname = "Current"}
 renameSensorList[0x0502] = {name = "ESC RPM", onlyifname = "RPM"}
 renameSensorList[0x0B70] = {name = "ESC Temp", onlyifname = "ESC temp"}
 
-renameSensorList[0x0212] = {name = "ESC2 Voltage", onlyifname = "VFAS"}
-renameSensorList[0x0202] = {name = "ESC2 Current", onlyifname = "Current"}
-renameSensorList[0x0503] = {name = "ESC2 RPM", onlyifname = "RPM"}
-renameSensorList[0x0B71] = {name = "ESC2 Temp", onlyifname = "ESC temp"}
+renameSensorList[0x0218] = {name = "ESC1 Voltage", onlyifname = "VFAS"}
+renameSensorList[0x0208] = {name = "ESC1 Current", onlyifname = "Current"}
+renameSensorList[0x0508] = {name = "ESC1 RPM", onlyifname = "RPM"}
+renameSensorList[0x0418] = {name = "ESC1 Temp", onlyifname = "Temp2"}
 
-renameSensorList[0x0401] = {name = "MCU Temp", onlyifname = "Temp1"}
+renameSensorList[0x0219] = {name = "ESC2 Voltage", onlyifname = "VFAS"}
+renameSensorList[0x0209] = {name = "ESC2 Current", onlyifname = "Current"}
+renameSensorList[0x0509] = {name = "ESC2 RPM", onlyifname = "RPM"}
+renameSensorList[0x0419] = {name = "ESC2 Temp", onlyifname = "Temp2"}
+
 renameSensorList[0x0840] = {name = "Heading", onlyifname = "GPS course"}
+
+renameSensorList[0x0900] = {name = "MCU Voltage", onlyifname = "ADC3"}
+renameSensorList[0x0901] = {name = "BEC Voltage", onlyifname = "ADC3"}
+renameSensorList[0x0902] = {name = "BUS Voltage", onlyifname = "ADC3"}
+
+renameSensorList[0x0200] = {name = "Current", onlyifname = "Current"}
+renameSensorList[0x0201] = {name = "ESC Current", onlyifname = "Current"}
+renameSensorList[0x0202] = {name = "BEC Current", onlyifname = "Current"}
+
+renameSensorList[0x0400] = {name = "MCU Temp", onlyifname = "Temp1"}
+renameSensorList[0x0401] = {name = "ESC Temp", onlyifname = "Temp1"}
+renameSensorList[0x0402] = {name = "BEC Temp", onlyifname = "Temp1"}
 
 frsky.createSensorCache = {}
 frsky.dropSensorCache = {}
@@ -156,7 +178,7 @@ local function telemetryPop()
     if not frame.physId or not frame.primId then return end
 
     createSensor(frame:physId(), frame:primId(), frame:appId(), frame:value())
-    dropSensor(frame:physId(), frame:primId(), frame:appId(), frame:value())
+    --dropSensor(frame:physId(), frame:primId(), frame:appId(), frame:value())
     renameSensor(frame:physId(), frame:primId(), frame:appId(), frame:value())
     return true
 end
