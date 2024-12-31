@@ -47,6 +47,7 @@ createSensorList[0x5444] = {name = "Collective %", unit = UNIT_PERCENT}
 createSensorList[0x5250] = {name = "Consumption", unit = UNIT_MILLIAMPERE_HOUR}
 createSensorList[0x5260] = {name = "Battery Cell Count", unit = UNIT_RAW}
 
+
 -- drop (drop sensors only runs if < msp 12.08)
 local dropSensorList = {}
 dropSensorList[0x0400] = {name = "Temp1"}
@@ -203,7 +204,7 @@ local function telemetryPop()
     if not frame.physId or not frame.primId then return end
 
     createSensor(frame:physId(), frame:primId(), frame:appId(), frame:value())
-    dropSensor(frame:physId(), frame:primId(), frame:appId(), frame:value())
+    --dropSensor(frame:physId(), frame:primId(), frame:appId(), frame:value())
     renameSensor(frame:physId(), frame:primId(), frame:appId(), frame:value())
     return true
 end
