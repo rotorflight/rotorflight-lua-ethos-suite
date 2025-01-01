@@ -21,7 +21,7 @@ local function resetStats()
     getMSPCount = 0
     mspQueryTimeCount = 0
 
-    mspSpeedTestStats = {total = 0, success = 0, total = 0, retries = 0, timeouts = 0, checksum = 0}
+    mspSpeedTestStats = {total = 0, success = 0, retries = 0, timeouts = 0, checksum = 0}
 end
 
 resetStats()
