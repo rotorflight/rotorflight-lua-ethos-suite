@@ -33,7 +33,7 @@ local supportedProtocols = {
         maxRetries = 10,
         saveTimeout = 10.0,
         cms = {},
-        pageReqTimeout = 10
+        pageReqTimeout = 15
     },
     crsf = {mspTransport = "crsf.lua", mspProtocol = "crsf", maxTxBufferSize = 8, maxRxBufferSize = 58, maxRetries = 5, saveTimeout = 10.0, cms = {}, pageReqTimeout = 10}
 }
