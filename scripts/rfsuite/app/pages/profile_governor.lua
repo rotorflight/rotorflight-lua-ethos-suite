@@ -7,12 +7,7 @@ local governorDisabledMsg = false
 
 if rfsuite.config.governorMode == 1 then
 
-    -- passthru mode is only possible to set max and min
-
-    if tonumber(rfsuite.config.apiVersion) >= 12.07 then
-        fields[#fields + 1] = {t = "Min throttle", help = "govMinThrottle", min = 0, max = 100, default = 10, unit = "%", vals = {14}}
-    end
-
+    -- passthru mode is only possible to set max
     fields[#fields + 1] = {t = "Max throttle", help = "govMaxThrottle", min = 40, max = 100, default = 100, unit = "%", vals = {13}}
 
 elseif rfsuite.config.governorMode >= 2 then
@@ -63,7 +58,7 @@ local function wakeup()
         -- update active profile
         -- the check happens in postLoad          
         if rfsuite.config.activeProfile ~= nil then
-            rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.config.activeRateProfile)
+            rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.config.activeProfile)
             currentProfileChecked = true
         end
         

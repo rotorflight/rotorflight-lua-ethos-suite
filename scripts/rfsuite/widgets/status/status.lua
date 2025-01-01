@@ -105,9 +105,6 @@ status.voltageIsLowAlert = false
 status.voltageIsGettingLow = false
 status.fuelIsLow = false
 status.fuelIsGettingLow = false
-status.showLOGS = false
-status.readLOGS = false
-status.readLOGSlast = {}
 status.playGovernorCount = 0
 status.playGovernorLastState = nil
 status.playrpmdiff = {}
@@ -229,13 +226,6 @@ status.sensorRSSIMin = 0
 status.sensorRSSIMax = 0
 status.lastMaxMin = 0
 status.wakeupSchedulerUI = os.clock()
-status.voltageNoiseQ = 100
-status.fuelNoiseQ = 100
-status.rpmNoiseQ = 100
-status.temp_mcuNoiseQ = 100
-status.temp_escNoiseQ = 100
-status.rssiNoiseQ = 100
-status.currentNoiseQ = 100
 status.layoutOptions = {
     {"TIMER", 1}, {"VOLTAGE", 2}, {"FUEL", 3}, {"CURRENT", 4}, {"MAH", 17}, {"RPM", 5}, {"LQ", 6}, {"T.ESC", 7}, {"T.MCU", 8}, {"IMAGE", 9}, {"GOVERNOR", 10}, {"IMAGE, GOVERNOR", 11},
     {"LQ, TIMER", 12}, {"T.ESC, T.MCU", 13}, {"VOLTAGE, FUEL", 14}, {"VOLTAGE, CURRENT", 15}, {"VOLTAGE, MAH", 16}, {"LQ, TIMER, T.ESC, T.MCU", 20}, {"MAX CURRENT", 21}, {"LQ, GOVERNOR", 22},
@@ -265,6 +255,20 @@ governorMap[8] = "BAILOUT"
 governorMap[100] = "DISABLED"
 governorMap[101] = "DISARMED"
 
+local voltageSOURCE
+local rpmSOURCE
+local currentSOURCE
+local temp_escSOURCE
+local temp_mcuSOURCE
+local fuelSOURCE
+local govSOURCE
+local adjSOURCE
+local adjVALUE
+local mahSOURCE
+local telemetrySOURCE
+local crsfSOURCE
+
+
 function status.create(widget)
 
     status.initTime = os.clock()
@@ -274,8 +278,8 @@ function status.create(widget)
     status.gfx_close = lcd.loadBitmap("widgets/status/gfx/close.png")
     -- status.rssiSensor = status.getRssiSensor()
 
-    if tonumber(status.sensorMakeNumber(environment.version)) < 159 then
-        status.screenError("ETHOS < V1.5.9")
+    if rfsuite.utils.ethosVersion() < 1519 then
+        status.screenError("ETHOS < V1.5.19")
         return
     end
 
@@ -325,34 +329,24 @@ function status.create(widget)
     }
 end
 
-local voltageSOURCE
-local rpmSOURCE
-local currentSOURCE
-local temp_escSOURCE
-local temp_mcuSOURCE
-local fuelSOURCE
-local govSOURCE
-local adjSOURCE
-local adjVALUE
-local mahSOURCE
-local telemetrySOURCE
-local crsfSOURCE
-
 function status.configure(widget)
     status.isInConfiguration = true
+    
+    local line
+    local field
 
-    triggerpanel = form.addExpansionPanel("Triggers")
+    local triggerpanel = form.addExpansionPanel("Triggers")
     triggerpanel:open(false)
 
-    line = triggerpanel:addLine("Arm switch")
-    armswitch = form.addSwitchField(line, form.getFieldSlots(line)[0], function()
-        return armswitchParam
-    end, function(value)
-        armswitchParam = value
-    end)
+   -- line = triggerpanel:addLine("Arm switch")
+   -- armswitch = form.addSwitchField(line, form.getFieldSlots(line)[0], function()
+   --     return armswitchParam
+   -- end, function(value)
+   --     armswitchParam = value
+   -- end)
 
     line = triggerpanel:addLine("Idleup switch")
-    idleupswitch = form.addSwitchField(line, form.getFieldSlots(line)[0], function()
+    local idleupswitch = form.addSwitchField(line, form.getFieldSlots(line)[0], function()
         return status.idleupswitchParam
     end, function(value)
         status.idleupswitchParam = value
@@ -367,7 +361,7 @@ function status.configure(widget)
     field:default(5)
     field:suffix("s")
 
-    timerpanel = form.addExpansionPanel("Timer configuration")
+    local timerpanel = form.addExpansionPanel("Timer configuration")
     timerpanel:open(false)
 
     timeTable = {
@@ -391,7 +385,7 @@ function status.configure(widget)
         status.timeralarmVibrateParam = newValue
     end)
 
-    batterypanel = form.addExpansionPanel("Battery configuration")
+    local batterypanel = form.addExpansionPanel("Battery configuration")
     batterypanel:open(false)
 
     -- BATTERY CELLS
@@ -487,7 +481,7 @@ function status.configure(widget)
         plalrthap:enable(true)
     end
 
-    switchpanel = form.addExpansionPanel("Switch announcements")
+    local switchpanel = form.addExpansionPanel("Switch announcements")
     switchpanel:open(false)
 
     line = switchpanel:addLine("Idle speed low")
@@ -560,7 +554,7 @@ function status.configure(widget)
         status.switchbbloffParam = value
     end)
 
-    announcementpanel = form.addExpansionPanel("Telemetry announcements")
+    local announcementpanel = form.addExpansionPanel("Telemetry announcements")
     announcementpanel:open(false)
 
     -- announcement VOLTAGE READING
@@ -627,7 +621,7 @@ function status.configure(widget)
         status.announcementTimerSwitchParam = value
     end)
 
-    govalertpanel = form.addExpansionPanel("Governor announcements")
+    local govalertpanel = form.addExpansionPanel("Governor announcements")
     govalertpanel:open(false)
 
     -- TITLE DISPLAY
@@ -717,7 +711,7 @@ function status.configure(widget)
         status.governorUNKNOWNParam = newValue
     end)
 
-    displaypanel = form.addExpansionPanel("Customise display")
+    local displaypanel = form.addExpansionPanel("Customise display")
     displaypanel:open(false)
 
     line = displaypanel:addLine("Box1")
@@ -805,7 +799,7 @@ function status.configure(widget)
         status.customSensorParam2 = newValue
     end)
 
-    advpanel = form.addExpansionPanel("Advanced")
+    local advpanel = form.addExpansionPanel("Advanced")
     advpanel:open(false)
 
     line = advpanel:addLine("Governor")
@@ -952,24 +946,22 @@ end
 
 function status.screenError(msg)
     local w, h = lcd.getWindowSize()
-    status.isDARKMODE = lcd.darkMode()
-    lcd.font(FONT_STD)
-    str = msg
-    tsizeW, tsizeH = lcd.getTextSize(str)
+    local isDarkMode = lcd.darkMode()
 
-    if status.isDARKMODE then
-        -- dark theme
-        lcd.color(lcd.RGB(255, 255, 255, 1))
-    else
-        -- light theme
-        lcd.color(lcd.RGB(90, 90, 90))
-    end
-    lcd.drawText((w / 2) - tsizeW / 2, (h / 2) - tsizeH / 2, str)
-    return
+    lcd.font(FONT_STD)
+    local tsizeW, tsizeH = lcd.getTextSize(msg)
+
+    -- Set color based on theme
+    local textColor = isDarkMode and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90)
+    lcd.color(textColor)
+
+    -- Center the text on the screen
+    local x = (w - tsizeW) / 2
+    local y = (h - tsizeH) / 2
+    lcd.drawText(x, y, msg)
 end
 
 function status.resetALL()
-    status.showLOGS = false
     status.sensorVoltageMax = 0
     status.sensorVoltageMin = 0
     status.sensorFuelMin = 0
@@ -985,17 +977,16 @@ function status.resetALL()
 end
 
 function status.noTelem()
-
     lcd.font(FONT_STD)
-    str = "NO LINK"
+    local str = "NO LINK"
 
     status.theme = status.getThemeInfo()
     local w, h = lcd.getWindowSize()
-    boxW = math.floor(w / 2)
-    boxH = 45
-    tsizeW, tsizeH = lcd.getTextSize(str)
+    local boxW = math.floor(w / 2)
+    local boxH = 45
+    local tsizeW, tsizeH = lcd.getTextSize(str)
 
-    -- draw the backgstatus.round
+    -- Set background color based on theme
     if status.isDARKMODE then
         lcd.color(lcd.RGB(40, 40, 40))
     else
@@ -1003,24 +994,22 @@ function status.noTelem()
     end
     lcd.drawFilledRectangle(w / 2 - boxW / 2, h / 2 - boxH / 2, boxW, boxH)
 
-    -- draw the border
+    -- Set border color based on theme
     if status.isDARKMODE then
-        -- dark theme
         lcd.color(lcd.RGB(255, 255, 255, 1))
     else
-        -- light theme
         lcd.color(lcd.RGB(90, 90, 90))
     end
     lcd.drawRectangle(w / 2 - boxW / 2, h / 2 - boxH / 2, boxW, boxH)
 
+    -- Set text color based on theme and draw text
     if status.isDARKMODE then
-        -- dark theme
         lcd.color(lcd.RGB(255, 255, 255, 1))
     else
-        -- light theme
         lcd.color(lcd.RGB(90, 90, 90))
     end
     lcd.drawText((w / 2) - tsizeW / 2, (h / 2) - tsizeH / 2, str)
+
     return
 end
 
@@ -1059,288 +1048,114 @@ function status.message(msg)
         -- light theme
         lcd.color(lcd.RGB(90, 90, 90))
     end
-    lcd.drawText((w / 2) - tsizeW / 2, (h / 2) - tsizeH / 2, str)
+    lcd.drawText((w / 2) - tsizeW / 2, (h / 2) - tsizeH / 2, msg)
     return
 end
 
 function status.getThemeInfo()
-    environment = system.getVersion()
+    local environment = system.getVersion()
     local w, h = lcd.getWindowSize()
+    local tw, th = w, h
 
-    -- this is just to force height calc to end up on whole numbers to avoid
-    -- scaling issues
-    h = (math.floor((h / 4)) * 4)
-    w = (math.floor((w / 6)) * 6)
+    -- Ensure height and width are whole numbers to avoid scaling issues
+    h = math.floor(h / 4) * 4
+    w = math.floor(w / 6) * 6
 
-    -- first one is unsporrted
+    local defaultConfig = {
+        supportedRADIO = true,
+        title_voltage = "VOLTAGE",
+        title_fuel = "FUEL",
+        title_mah = "MAH",
+        title_rpm = "RPM",
+        title_current = "CURRENT",
+        title_tempMCU = "T.MCU",
+        title_tempESC = "T.ESC",
+        title_time = "TIMER",
+        title_governor = "GOVERNOR",
+        title_fm = "FLIGHT MODE",
+        title_rssi = "LQ",
+        fontSENSOR = FONT_XXL,
+        fontSENSORSmallBox = FONT_STD,
+        fontPopupTitle = FONT_S,
+        widgetTitleOffset = 20,
+    }
 
-    if environment.board == "V20" or environment.board == "XES" or environment.board == "XE" or environment.board == "X20" or environment.board == "X20S" or environment.board == "X20PRO" or environment.board == "X20PROAW" or
-        environment.board == "X20R" or environment.board == "X20RS" then
-        ret = {
-            supportedRADIO = true,
-            colSpacing = 4,
-            fullBoxW = 262,
-            fullBoxH = h / 2,
-            smallBoxSensortextOFFSET = -5,
-            title_voltage = "VOLTAGE",
-            title_fuel = "FUEL",
-            title_mah = "MAH",
-            title_rpm = "RPM",
-            title_current = "CURRENT",
-            title_tempMCU = "T.MCU",
-            title_tempESC = "T.ESC",
-            title_time = "TIMER",
-            title_governor = "GOVERNOR",
-            title_fm = "FLIGHT MODE",
-            title_rssi = "LQ",
-            fontSENSOR = FONT_XXL,
-            fontSENSORSmallBox = FONT_STD,
-            fontTITLE = FONT_XS,
-            fontPopupTitle = FONT_S,
-            widgetTitleOffset = 20,
-            logsCOL1w = 60,
-            logsCOL2w = 120,
-            logsCOL3w = 120,
-            logsCOL4w = 170,
-            logsCOL5w = 110,
-            logsCOL6w = 90,
-            logsCOL7w = 90,
-            logsHeaderOffset = 5
+    local themeConfigs = {
+        ["784x294"] = { colSpacing = 4, fullBoxW = 262, fullBoxH = h / 2, smallBoxSensortextOFFSET = -5, fontTITLE = FONT_XS },
+        ["472x191"] = { colSpacing = 2, fullBoxW = 158, fullBoxH = 97, smallBoxSensortextOFFSET = -8, fontTITLE = 768 },
+        ["630x236"] = { colSpacing = 3, fullBoxW = 210, fullBoxH = 120, smallBoxSensortextOFFSET = -10, fontTITLE = 768 },
+        ["427x158"] = { colSpacing = 2, fullBoxW = 158, fullBoxH = 79, smallBoxSensortextOFFSET = -10, fontTITLE = FONT_XS },
+    }
 
-        }
+    local configKey = string.format("%dx%d", tw, th)
+    local themeConfig = themeConfigs[configKey]
+
+    if themeConfig then
+        -- Merge defaultConfig with the specific themeConfig
+        for k, v in pairs(defaultConfig) do
+            themeConfig[k] = v
+        end
+        return themeConfig
     end
 
-    if environment.board == "X18" or environment.board == "X18S" then
-        ret = {
-            supportedRADIO = true,
-            colSpacing = 2,
-            fullBoxW = 158,
-            fullBoxH = 97,
-            smallBoxSensortextOFFSET = -8,
-            title_voltage = "VOLTAGE",
-            title_fuel = "FUEL",
-            title_mah = "MAH",
-            title_rpm = "RPM",
-            title_current = "CURRENT",
-            title_tempMCU = "T.MCU",
-            title_tempESC = "T.ESC",
-            title_time = "TIMER",
-            title_governor = "GOVERNOR",
-            title_fm = "FLIGHT MODE",
-            title_rssi = "LQ",
-            fontSENSOR = FONT_XXL,
-            fontSENSORSmallBox = FONT_STD,
-            fontTITLE = 768,
-            fontPopupTitle = FONT_S,
-            widgetTitleOffset = 20,
-            logsCOL1w = 50,
-            logsCOL2w = 100,
-            logsCOL3w = 100,
-            logsCOL4w = 140,
-            logsCOL5w = 0,
-            logsCOL6w = 0,
-            logsCOL7w = 75,
-            logsHeaderOffset = 5
-        }
-    end
-
-    if environment.board == "X14" or environment.board == "X14S" then
-        ret = {
-            supportedRADIO = true,
-            colSpacing = 3,
-            fullBoxW = 210,
-            fullBoxH = 120,
-            smallBoxSensortextOFFSET = -10,
-            title_voltage = "VOLTAGE",
-            title_fuel = "FUEL",
-            title_mah = "MAH",
-            title_rpm = "RPM",
-            title_current = "CURRENT",
-            title_tempMCU = "T.MCU",
-            title_tempESC = "T.ESC",
-            title_time = "TIMER",
-            title_governor = "GOVERNOR",
-            title_fm = "FLIGHT MODE",
-            title_rssi = "LQ",
-            fontSENSOR = FONT_XXL,
-            fontSENSORSmallBox = FONT_STD,
-            fontTITLE = 768,
-            fontPopupTitle = FONT_S,
-            widgetTitleOffset = 20,
-            logsCOL1w = 70,
-            logsCOL2w = 140,
-            logsCOL3w = 120,
-            logsCOL4w = 170,
-            logsCOL5w = 0,
-            logsCOL6w = 0,
-            logsCOL7w = 120,
-            logsHeaderOffset = 5
-        }
-    end
-
-    if environment.board == "TWXLITE" or environment.board == "TWXLITES" then
-        ret = {
-            supportedRADIO = true,
-            colSpacing = 2,
-            fullBoxW = 158,
-            fullBoxH = 96,
-            smallBoxSensortextOFFSET = -10,
-            title_voltage = "VOLTAGE",
-            title_fuel = "FUEL",
-            title_mah = "MAH",
-            title_rpm = "RPM",
-            title_current = "CURRENT",
-            title_tempMCU = "T.MCU",
-            title_tempESC = "T.ESC",
-            title_time = "TIMER",
-            title_governor = "GOVERNOR",
-            title_fm = "FLIGHT MODE",
-            title_rssi = "LQ",
-            fontSENSOR = FONT_XXL,
-            fontSENSORSmallBox = FONT_STD,
-            fontTITLE = 768,
-            fontPopupTitle = FONT_S,
-            widgetTitleOffset = 20,
-            logsCOL1w = 50,
-            logsCOL2w = 100,
-            logsCOL3w = 100,
-            logsCOL4w = 140,
-            logsCOL5w = 0,
-            logsCOL6w = 0,
-            logsCOL7w = 75,
-            logsHeaderOffset = 5
-        }
-    end
-
-    if environment.board == "X10EXPRESS" or environment.board == "X10" or environment.board == "X10S" or environment.board == "X12" or environment.board == "X12S" then
-        ret = {
-            supportedRADIO = true,
-            colSpacing = 2,
-            fullBoxW = 158,
-            fullBoxH = 79,
-            smallBoxSensortextOFFSET = -10,
-            title_voltage = "VOLTAGE",
-            title_fuel = "FUEL",
-            title_mah = "MAH",
-            title_rpm = "RPM",
-            title_current = "CURRENT",
-            title_tempMCU = "T.MCU",
-            title_tempESC = "T.ESC",
-            title_time = "TIMER",
-            title_governor = "GOVERNOR",
-            title_fm = "FLIGHT MODE",
-            title_rssi = "LQ",
-            fontSENSOR = FONT_XXL,
-            fontSENSORSmallBox = FONT_STD,
-            fontTITLE = FONT_XS,
-            fontPopupTitle = FONT_S,
-            widgetTitleOffset = 20,
-            logsCOL1w = 50,
-            logsCOL2w = 100,
-            logsCOL3w = 100,
-            logsCOL4w = 140,
-            logsCOL5w = 0,
-            logsCOL6w = 0,
-            logsCOL7w = 75,
-            logsHeaderOffset = 5
-        }
-    end
-
-    return ret
+    return nil -- Return nil if no matching theme configuration is found
 end
 
-function status.govColorFlag(flag)
 
+function status.govColorFlag(flag)
+    -- Define a table to map flags to their corresponding values
+    
     -- 0 = default colour
     -- 1 = red (alarm)
     -- 2 = orange (warning)
     -- 3 = green (ok)  
+    
+    local flagColors = {
+        ["UNKNOWN"] = 1,
+        ["DISARMED"] = 0,
+        ["DISABLED"] = 0,
+        ["BAILOUT"] = 2,
+        ["AUTOROT"] = 2,
+        ["LOST-HS"] = 2,
+        ["THR-OFF"] = 2,
+        ["ACTIVE"] = 3,
+        ["RECOVERY"] = 2,
+        ["SPOOLUP"] = 2,
+        ["IDLE"] = 0,
+        ["OFF"] = 0
+    }
 
-    if flag == "UNKNOWN" then
-        return 1
-    elseif flag == "DISARMED" then
-        return 0
-    elseif flag == "DISABLED" then
-        return 0
-    elseif flag == "BAILOUT" then
-        return 2
-    elseif flag == "AUTOROT" then
-        return 2
-    elseif flag == "LOST-HS" then
-        return 2
-    elseif flag == "THR-OFF" then
-        return 2
-    elseif flag == "ACTIVE" then
-        return 3
-    elseif flag == "RECOVERY" then
-        return 2
-    elseif flag == "SPOOLUP" then
-        return 2
-    elseif flag == "IDLE" then
-        return 0
-    elseif flag == "OFF" then
-        return 0
-    end
-
-    return 0
+    -- Return the corresponding value or default to 0
+    return flagColors[flag] or 0
 end
 
 function status.telemetryBox(x, y, w, h, title, value, unit, smallbox, alarm, minimum, maximum)
-
     status.isVisible = lcd.isVisible()
     status.isDARKMODE = lcd.darkMode()
     local theme = status.getThemeInfo()
 
-    if status.isDARKMODE then
-        lcd.color(lcd.RGB(40, 40, 40))
-    else
-        lcd.color(lcd.RGB(240, 240, 240))
-    end
-
-    -- draw box backgstatus.round    
+    -- Set background color based on mode
+    lcd.color(status.isDARKMODE and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
     lcd.drawFilledRectangle(x, y, w, h)
 
-    -- color    
-    if status.isDARKMODE then
-        lcd.color(lcd.RGB(255, 255, 255, 1))
-    else
-        lcd.color(lcd.RGB(90, 90, 90))
-    end
+    -- Set text color
+    lcd.color(status.isDARKMODE and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90))
 
-    -- draw sensor text
     if value ~= nil then
+        -- Set font
+        lcd.font((smallbox == nil or smallbox == false) and theme.fontSENSOR or theme.fontSENSORSmallBox)
+        
+        local str = value .. unit
+        local tsizeW, tsizeH = lcd.getTextSize(unit == "°" and value .. "." or str)
+        local sx = (x + w / 2) - (tsizeW / 2)
+        local sy = (y + h / 2) - (tsizeH / 2)
 
-        if smallbox == nil or smallbox == false then
-            lcd.font(theme.fontSENSOR)
-        else
-            lcd.font(theme.fontSENSORSmallBox)
+        if smallbox and (status.maxminParam or status.titleParam) then
+            sy = sy + theme.smallBoxSensortextOFFSET
         end
 
-        str = value .. unit
-
-        if unit == "°" then
-            tsizeW, tsizeH = lcd.getTextSize(value .. ".")
-        else
-            tsizeW, tsizeH = lcd.getTextSize(str)
-        end
-
-        sx = (x + w / 2) - (tsizeW / 2)
-        if smallbox == nil or smallbox == false then
-            sy = (y + h / 2) - (tsizeH / 2)
-        else
-            if status.maxminParam == false and status.titleParam == false then
-                sy = (y + h / 2) - (tsizeH / 2)
-            else
-                sy = (y + h / 2) - (tsizeH / 2) + theme.smallBoxSensortextOFFSET
-            end
-        end
-
-        -- change text colour to suit alarm flag
-        -- 0 = default colour
-        -- 1 = red (alarm)
-        -- 2 = orange (warning)
-        -- 3 = green (ok)  
-        if status.statusColorParam == true then
+        -- Set text color based on alarm flag
+        if status.statusColorParam then
             if alarm == 1 then
                 lcd.color(lcd.RGB(255, 0, 0, 1)) -- red
             elseif alarm == 2 then
@@ -1348,119 +1163,77 @@ function status.telemetryBox(x, y, w, h, title, value, unit, smallbox, alarm, mi
             elseif alarm == 3 then
                 lcd.color(lcd.RGB(0, 188, 4, 1)) -- green
             end
-        else
-            -- we only do red
-            if alarm == 1 then
-                lcd.color(lcd.RGB(255, 0, 0, 1)) -- red
-            end
+        elseif alarm == 1 then
+            lcd.color(lcd.RGB(255, 0, 0, 1)) -- red
         end
 
         lcd.drawText(sx, sy, str)
 
-        -- reset text back from red to ensure max/min stay right color 
+        -- Reset text color after alarm handling
         if alarm ~= 0 then
-            if status.isDARKMODE then
-                lcd.color(lcd.RGB(255, 255, 255, 1))
-            else
-                lcd.color(lcd.RGB(90, 90, 90))
-            end
+            lcd.color(status.isDARKMODE and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90))
         end
-
     end
 
-    if title ~= nil and status.titleParam == true then
+    if title and status.titleParam then
         lcd.font(theme.fontTITLE)
-        str = title
-        tsizeW, tsizeH = lcd.getTextSize(str)
-
-        sx = (x + w / 2) - (tsizeW / 2)
-        sy = (y + h) - (tsizeH) - theme.colSpacing
-
-        lcd.drawText(sx, sy, str)
+        local tsizeW, tsizeH = lcd.getTextSize(title)
+        local sx = (x + w / 2) - (tsizeW / 2)
+        local sy = (y + h) - tsizeH - theme.colSpacing
+        lcd.drawText(sx, sy, title)
     end
 
-    if status.maxminParam == true then
-
+    if status.maxminParam then
+        -- Draw minimum value
         if minimum ~= nil then
-
             lcd.font(theme.fontTITLE)
-
-            if tostring(minimum) ~= "-" then lastMin = minimum end
-
-            if tostring(minimum) == "-" then
-                str = minimum
-            else
-                str = minimum .. unit
-            end
-
-            if unit == "°" then
-                tsizeW, tsizeH = lcd.getTextSize(minimum .. ".")
-            else
-                tsizeW, tsizeH = lcd.getTextSize(str)
-            end
-
-            sx = (x + theme.colSpacing)
-            sy = (y + h) - (tsizeH) - theme.colSpacing
-
-            lcd.drawText(sx, sy, str)
+            local minStr = tostring(minimum) == "-" and minimum or minimum .. unit
+            local tsizeW, tsizeH = lcd.getTextSize(unit == "°" and minimum .. "." or minStr)
+            local sx = x + theme.colSpacing
+            local sy = (y + h) - tsizeH - theme.colSpacing
+            lcd.drawText(sx, sy, minStr)
         end
 
+        -- Draw maximum value
         if maximum ~= nil then
             lcd.font(theme.fontTITLE)
-
-            if tostring(maximum) == "-" then
-                str = maximum
-            else
-                str = maximum .. unit
-            end
-            if unit == "°" then
-                tsizeW, tsizeH = lcd.getTextSize(maximum .. ".")
-            else
-                tsizeW, tsizeH = lcd.getTextSize(str)
-            end
-
-            sx = (x + w) - tsizeW - theme.colSpacing
-            sy = (y + h) - (tsizeH) - theme.colSpacing
-
-            lcd.drawText(sx, sy, str)
+            local maxStr = tostring(maximum) == "-" and maximum or maximum .. unit
+            local tsizeW, tsizeH = lcd.getTextSize(unit == "°" and maximum .. "." or maxStr)
+            local sx = (x + w) - tsizeW - theme.colSpacing
+            local sy = (y + h) - tsizeH - theme.colSpacing
+            lcd.drawText(sx, sy, maxStr)
         end
-
     end
-
 end
 
 function status.telemetryBoxMAX(x, y, w, h, title, value, unit, smallbox)
-
     status.isVisible = lcd.isVisible()
     status.isDARKMODE = lcd.darkMode()
     local theme = status.getThemeInfo()
 
+    -- Set background color based on dark mode
     if status.isDARKMODE then
         lcd.color(lcd.RGB(40, 40, 40))
     else
         lcd.color(lcd.RGB(240, 240, 240))
     end
 
-    -- draw box backgstatus.round    
+    -- Draw background rectangle
     lcd.drawFilledRectangle(x, y, w, h)
 
-    -- color    
+    -- Set text color based on dark mode
     if status.isDARKMODE then
         lcd.color(lcd.RGB(255, 255, 255, 1))
     else
         lcd.color(lcd.RGB(90, 90, 90))
     end
 
-    -- draw sensor text
-    if value ~= nil then
+    -- Draw sensor value text if available
+    if value then
+        lcd.font(smallbox and theme.fontSENSORSmallBox or theme.fontSENSOR)
 
-        if smallbox == nil or smallbox == false then
-            lcd.font(theme.fontSENSOR)
-        else
-            lcd.font(theme.fontSENSORSmallBox)
-        end
-
-        str = value .. unit
+        local str = value .. unit
+        local tsizeW, tsizeH
 
         if unit == "°" then
             tsizeW, tsizeH = lcd.getTextSize(value .. ".")
@@ -1468,52 +1241,49 @@ function status.telemetryBoxMAX(x, y, w, h, title, value, unit, smallbox)
             tsizeW, tsizeH = lcd.getTextSize(str)
         end
 
-        sx = (x + w / 2) - (tsizeW / 2)
-        if smallbox == nil or smallbox == false then
-            sy = (y + h / 2) - (tsizeH / 2)
-        else
-            if status.maxminParam == false and status.titleParam == false then
-                sy = (y + h / 2) - (tsizeH / 2)
-            else
-                sy = (y + h / 2) - (tsizeH / 2) + theme.smallBoxSensortextOFFSET
+        local sx = x + w / 2 - tsizeW / 2
+        local sy = y + h / 2 - tsizeH / 2
+
+        if smallbox then
+            if status.maxminParam or status.titleParam then
+                sy = sy + theme.smallBoxSensortextOFFSET
             end
         end
 
         lcd.drawText(sx, sy, str)
-
     end
 
-    if title ~= nil and status.titleParam == true then
+    -- Draw title text if available and enabled
+    if title and status.titleParam then
         lcd.font(theme.fontTITLE)
-        str = title
-        tsizeW, tsizeH = lcd.getTextSize(str)
+        local str = title
+        local tsizeW, tsizeH = lcd.getTextSize(str)
 
-        sx = (x + w / 2) - (tsizeW / 2)
-        sy = (y + h) - (tsizeH) - theme.colSpacing
+        local sx = x + w / 2 - tsizeW / 2
+        local sy = y + h - tsizeH - theme.colSpacing
 
         lcd.drawText(sx, sy, str)
     end
-
 end
 
-
 function status.telemetryBoxImage(x, y, w, h, gfx)
-
+    -- Get display status and theme information
     status.isVisible = lcd.isVisible()
     status.isDARKMODE = lcd.darkMode()
     local theme = status.getThemeInfo()
 
+    -- Set background color based on dark mode status
     if status.isDARKMODE then
-        lcd.color(lcd.RGB(40, 40, 40))
+        lcd.color(lcd.RGB(40, 40, 40)) -- Dark background
     else
-        lcd.color(lcd.RGB(240, 240, 240))
+        lcd.color(lcd.RGB(240, 240, 240)) -- Light background
     end
 
-    -- draw box backgstatus.round    
+    -- Draw the background rectangle
     lcd.drawFilledRectangle(x, y, w, h)
 
+    -- Draw the bitmap centered within the box, respecting theme spacing
     lcd.drawBitmap(x, y, gfx, w - theme.colSpacing, h - theme.colSpacing)
-
 end
 
 function status.paint(widget)
@@ -1534,6 +1304,7 @@ function status.paint(widget)
 
         if status.sensors.voltage ~= nil then
             -- we use status.lowvoltagsenseParam is use to raise or lower sensitivity
+            local zippo
             if status.lowvoltagsenseParam == 1 then
                 zippo = 0.2
             elseif status.lowvoltagsenseParam == 2 then
@@ -1596,6 +1367,8 @@ function status.paint(widget)
 
         local theme = status.getThemeInfo()
         local w, h = lcd.getWindowSize()
+        local sensorTITLE
+  
 
         if status.isVisible then
             -- blank out display
@@ -1615,38 +1388,28 @@ function status.paint(widget)
             end
 
             -- widget size
-            if environment.board == "V20" or environment.board == "XES" or environment.board == "X20" or environment.board == "X20S" or environment.board == "X20PRO" or environment.board == "X20PROAW" then
-                if w ~= 784 and h ~= 294 then
-                    status.screenError("DISPLAY SIZE INVALID")
-                    return
+            local validSizes = {
+                {w = 784, h = 294}, -- X20, X20PRO etc
+                {w = 472, h = 191}, -- TWXLITE,X18,X18S
+                {w = 630, h = 236}, -- X14
+                {w = 472, h = 158}  -- X10,X12
+            }
+
+            local isValidSize = false
+            for _, size in ipairs(validSizes) do
+                if w == size.w and h == size.h then
+                    isValidSize = true
+                    break
                 end
             end
-            if environment.board == "X18" or environment.board == "X18S" then
-                smallTEXT = true
-                if w ~= 472 and h ~= 191 then
-                    status.screenError("DISPLAY SIZE INVALID")
-                    return
-                end
-            end
-            if environment.board == "X14" or environment.board == "X14S" then
-                if w ~= 630 and h ~= 236 then
-                    status.screenError("DISPLAY SIZE INVALID")
-                    return
-                end
-            end
-            if environment.board == "TWXLITE" or environment.board == "TWXLITES" then
-                if w ~= 472 and h ~= 191 then
-                    status.screenError("DISPLAY SIZE INVALID")
-                    return
-                end
-            end
-            if environment.board == "X10EXPRESS" or environment.board == "X10" or environment.board == "X10S" or environment.board == "X12" or environment.board == "X12S" then
-                if w ~= 472 and h ~= 158 then
-                    status.screenError("DISPLAY SIZE INVALID")
-                    return
-                end
+            
+            -- hard error
+            if not isValidSize then
+                status.screenError("DISPLAY SIZE INVALID")
+                return
             end
 
+            -- move on to display as no more hard errors
             boxW = theme.fullBoxW - theme.colSpacing
             boxH = theme.fullBoxH - theme.colSpacing
 
@@ -2234,7 +1997,7 @@ function status.paint(widget)
 
                     if sensorTGT == 'customsensor1' or sensorTGT == 'customsensor2' then
 
-                        sensorVALUE = status.sensordisplay[sensorTGT]['value']
+                        sensorVALUE = math.floor(status.sensordisplay[sensorTGT]['value'])
                         sensorUNIT = status.sensordisplay[sensorTGT]['unit']
                         sensorMIN = status.sensordisplay[sensorTGT]['min']
                         sensorMAX = status.sensordisplay[sensorTGT]['max']
@@ -2249,7 +2012,7 @@ function status.paint(widget)
                     if sensorTGT == 'customsensor1_2' then
                         -- SENSOR1 & 2
                         sensorTGT = "customsensor1"
-                        sensorVALUE = status.sensordisplay[sensorTGT]['value']
+                        sensorVALUE =  math.floor(status.sensordisplay[sensorTGT]['value'])
                         sensorUNIT = status.sensordisplay[sensorTGT]['unit']
                         sensorMIN = status.sensordisplay[sensorTGT]['min']
                         sensorMAX = status.sensordisplay[sensorTGT]['max']
@@ -2260,7 +2023,7 @@ function status.paint(widget)
                         status.telemetryBox(posX, posY, boxW, boxH / 2 - (theme.colSpacing / 2), sensorTITLE, sensorVALUE, sensorUNIT, smallBOX, sensorWARN, sensorMIN, sensorMAX)
 
                         sensorTGT = "customsensor2"
-                        sensorVALUE = status.sensordisplay[sensorTGT]['value']
+                        sensorVALUE =  math.floor(status.sensordisplay[sensorTGT]['value'])
                         sensorUNIT = status.sensordisplay[sensorTGT]['unit']
                         sensorMIN = status.sensordisplay[sensorTGT]['min']
                         sensorMAX = status.sensordisplay[sensorTGT]['max']
@@ -2542,9 +2305,21 @@ function status.paint(widget)
                 c = c + 1
             end
 
-            if status.linkUP == false and environment.simulation == false then status.noTelem() end
+            if status.linkUP == false and environment.simulation == false then 
+                    status.noTelem() 
+            elseif status.idleupswitchParam and status.idleupswitchParam:state() then 
+                    local armSource = rfsuite.bg.telemetry.getSensorSource("armflags")
+                    if armSource then
+                        isArmed = math.floor(armSource:value())
+                        if isArmed == 1 or isArmed == 3 then
+                            if status.theTIME <= status.idleupdelayParam then
+                                    local count = math.floor(status.idleupdelayParam - status.theTIME)
+                                    status.message("INITIALISING..." .. count + 1)
+                            end      
+                        end                            
+                    end         
+            end
 
-            if status.showLOGS ~= nil then if status.showLOGS then status.logsBOX() end end
 
         end
     end
@@ -2563,6 +2338,18 @@ function status.getChannelValue(ich)
     return math.floor((src:value() / 10.24) + 0.5)
 end
 
+-- Function to convert temperature
+local function convert_temperature(temp, conversion_type)
+    if conversion_type == 2 then
+        -- Convert from C to F
+        temp = ((temp / 5) * 9) + 32
+    elseif conversion_type == 3 then
+        -- Convert from F to C
+        temp = ((temp - 32) * 5) / 9
+    end
+    return status.round(temp, 0)
+end
+
 function status.getSensors()
     if status.isInConfiguration == true then return status.sensors end
 
@@ -2577,6 +2364,7 @@ function status.getSensors()
     local rssi
     local adjSOURCE
     local adjvalue
+    local adjfunc
     local current
     local currentesc1
 
@@ -2596,8 +2384,8 @@ function status.getSensors()
         adjvalue = 0
         current = 0
 
-        if status.idleupswitchParam ~= nil and armswitchParam ~= nil then
-            if status.idleupswitchParam:state() == true and armswitchParam:state() == true then
+        if status.idleupswitchParam ~= nil then
+            if status.idleupswitchParam:state() == true then
                 current = math.random(100, 120)
                 rpm = math.random(90, 100)
             else
@@ -3030,54 +2818,27 @@ function status.getSensors()
 
     end
 
-    -- calc fuel percentage if needed
-    if status.calcfuelParam == true then
-
-        local maxCellVoltage = status.maxCellVoltage / 100
-        local minCellVoltage = status.minCellVoltage / 100
-
-        local maxVoltage = maxCellVoltage * status.cellsParam
-        local minVoltage = minCellVoltage * status.cellsParam
-
+    -- Calculate fuel percentage if needed
+    if status.calcfuelParam then
         local cv = voltage / 100
-        local maxv = maxCellVoltage * status.cellsParam
-        local minv = minCellVoltage * status.cellsParam
+        local maxv = (status.maxCellVoltage / 100) * status.cellsParam
+        local minv = (status.minCellVoltage / 100) * status.cellsParam
 
         local batteryPercentage = ((cv - minv) / (maxv - minv)) * 100
-
-        fuel = status.round(batteryPercentage, 0)
-
-        if fuel > 100 then fuel = 100 end
-
+        fuel = math.min(status.round(batteryPercentage, 0), 100)
     end
 
     if voltage == nil then voltage = 0 end
     if math.floor(voltage) <= 5 then fuel = 0 end
 
-    -- convert from C to F
-    -- Divide by 5, then multiply by 9, then add 32
-    if status.tempconvertParamMCU == 2 then
-        temp_mcu = ((temp_mcu / 5) * 9) + 32
-        temp_mcu = status.round(temp_mcu, 0)
-    end
-    -- convert from F to C
-    -- Deduct 32, then multiply by 5, then divide by 9
-    if status.tempconvertParamMCU == 3 then
-        temp_mcu = ((temp_mcu - 32) * 5) / 9
-        temp_mcu = status.round(temp_mcu, 0)
+    -- Convert MCU temperature
+    if status.tempconvertParamMCU == 2 or status.tempconvertParamMCU == 3 then
+        temp_mcu = convert_temperature(temp_mcu, status.tempconvertParamMCU)
     end
 
-    -- convert from C to F
-    -- Divide by 5, then multiply by 9, then add 32
-    if status.tempconvertParamESC == 2 then
-        temp_esc = ((temp_esc / 5) * 9) + 32
-        temp_esc = status.round(temp_esc, 0)
-    end
-    -- convert from F to C
-    -- Deduct 32, then multiply by 5, then divide by 9
-    if status.tempconvertParamESC == 3 then
-        temp_esc = ((temp_esc - 32) * 5) / 9
-        temp_esc = status.round(temp_esc, 0)
+    -- Convert ESC temperature
+    if status.tempconvertParamESC == 2 or status.tempconvertParamESC == 3 then
+        temp_esc = convert_temperature(temp_esc, status.tempconvertParamESC)
     end
 
     -- set flag to status.refresh screen or not
@@ -3100,42 +2861,44 @@ function status.getSensors()
     if rssi == nil then rssi = 0 end
     rssi = status.round(rssi, 0)
 
-    -- do / dont do voltage based on stick position
-    if status.lowvoltagStickParam == nil then status.lowvoltagStickParam = 0 end
-    if status.lowvoltagStickCutoffParam == nil then status.lowvoltagStickCutoffParam = 80 end
 
-    if (status.lowvoltagStickParam ~= 0) then
+    -- Voltage based on stick position
+    status.lowvoltagStickParam = status.lowvoltagStickParam or 0
+    status.lowvoltagStickCutoffParam = status.lowvoltagStickCutoffParam or 80
+
+    if status.lowvoltagStickParam ~= 0 then
         status.lvStickannouncement = false
-        for i, v in ipairs(status.lvStickOrder[status.lowvoltagStickParam]) do
-            if status.lvStickannouncement == false then -- we skip more if any stick has resulted in announcement
-                if math.abs(status.getChannelValue(v)) >= status.lowvoltagStickCutoffParam then status.lvStickannouncement = true end
+        for _, v in ipairs(status.lvStickOrder[status.lowvoltagStickParam]) do
+            if math.abs(status.getChannelValue(v)) >= status.lowvoltagStickCutoffParam then
+                status.lvStickannouncement = true
+                break -- Exit loop early once a stick triggers announcement
             end
         end
     end
 
-    -- intercept governor for non rf governor helis
-    if armswitchParam ~= nil or status.idleupswitchParam ~= nil then
-        if status.govmodeParam == 1 then
-            if armswitchParam:state() == true then
-                govmode = "ARMED"
-                fm = "ARMED"
-            else
-                govmode = "DISARMED"
-                fm = "DISARMED"
-            end
+    -- Intercept governor for non-RF governor helis
+    local isArmed = false
 
-            if armswitchParam:state() == true then
-                if status.idleupswitchParam:state() == true then
-                    govmode = "ACTIVE"
-                    fm = "ACTIVE"
-                else
-                    govmode = "THR-OFF"
-                    fm = "THR-OFF"
-                end
-
-            end
+    if status.linkUP then    
+        local armSource = rfsuite.bg.telemetry.getSensorSource("armflags")
+        if armSource then
+            isArmed = armSource:value()
         end
+    end
 
+    if status.idleupswitchParam and status.govmodeParam == 1 then
+        if isArmed == 1 or isArmed == 3 then
+            if status.idleupswitchParam:state() then
+                govmode = "ACTIVE"
+                fm = "ACTIVE"
+            else
+                govmode = "THR-OFF"
+                fm = "THR-OFF"
+            end
+        else
+            govmode = "DISARMED"
+            fm = "DISARMED"
+        end
     end
 
     if status.sensors.voltage ~= voltage then status.refresh = true end
@@ -3169,117 +2932,65 @@ function status.getSensors()
 end
 
 function status.sensorsMAXMIN(sensors)
+    local sensorTypes = {"Voltage", "Fuel", "RPM", "Current", "RSSI", "TempESC", "TempMCU"}
 
-    if status.linkUP == true and status.theTIME ~= nil and status.idleupdelayParam ~= nil then
+    if status.linkUP and status.theTIME and status.idleupdelayParam then
 
-        -- hold back - to early to get a reading
         if status.theTIME <= status.idleupdelayParam then
-            status.sensorVoltageMin = 0
-            status.sensorVoltageMax = 0
-            status.sensorFuelMin = 0
-            status.sensorFuelMax = 0
-            status.sensorRPMMin = 0
-            status.sensorRPMMax = 0
-            status.sensorCurrentMin = 0
-            status.sensorCurrentMax = 0
-            status.sensorRSSIMin = 0
-            status.sensorRSSIMax = 0
-            status.sensorTempESCMin = 0
-            status.sensorTempMCUMax = 0
+            for _, sensor in pairs(sensorTypes) do
+                status["sensor" .. sensor .. "Min"] = 0
+                status["sensor" .. sensor .. "Max"] = 0
+            end
+            return
         end
 
-        -- prob put in a screen/audio alert for initialising
-        if status.theTIME >= 1 and status.theTIME < status.idleupdelayParam then end
-
         if status.theTIME >= status.idleupdelayParam then
-
             local idleupdelayOFFSET = 2
 
-            -- record initial parameters for max/min
-            if status.theTIME >= status.idleupdelayParam and status.theTIME <= (status.idleupdelayParam + idleupdelayOFFSET) then
-                status.sensorVoltageMin = sensors.voltage
-                status.sensorVoltageMax = sensors.voltage
-                status.sensorFuelMin = sensors.fuel
-                status.sensorFuelMax = sensors.fuel
-                status.sensorRPMMin = sensors.rpm
-                status.sensorRPMMax = sensors.rpm
-                if sensors.current == 0 then
-                    status.sensorCurrentMin = 1
-                else
-                    status.sensorCurrentMin = sensors.current
+            if status.theTIME <= (status.idleupdelayParam + idleupdelayOFFSET) then
+                for _, sensor in pairs(sensorTypes) do
+                    local value = sensors[sensor:lower()] or 0
+                    status["sensor" .. sensor .. "Min"] = value
+                    status["sensor" .. sensor .. "Max"] = value
                 end
-                status.sensorCurrentMax = sensors.current
-
-                status.sensorRSSIMin = sensors.rssi
-                status.sensorRSSIMax = sensors.rssi
-                status.sensorTempESCMin = sensors.temp_esc
-                status.sensorTempESCMax = sensors.temp_esc
-                status.sensorTempMCUMin = sensors.temp_mcu
-                status.sensorTempMCUMax = sensors.temp_mcu
+                
+                local current = sensors.current or 0
+                status.sensorCurrentMin = current > 0 and current or 1
+                status.sensorCurrentMax = current
 
                 motorNearlyActive = 0
+                return
             end
 
-            if status.theTIME >= (status.idleupdelayParam + idleupdelayOFFSET) and status.idleupswitchParam:state() == true then
-
-                if sensors.voltage < status.sensorVoltageMin then status.sensorVoltageMin = sensors.voltage end
-                if sensors.voltage > status.sensorVoltageMax then status.sensorVoltageMax = sensors.voltage end
-
-                if sensors.fuel < status.sensorFuelMin then status.sensorFuelMin = sensors.fuel end
-                if sensors.fuel > status.sensorFuelMax then status.sensorFuelMax = sensors.fuel end
-
-                if sensors.rpm < status.sensorRPMMin then status.sensorRPMMin = sensors.rpm end
-                if sensors.rpm > status.sensorRPMMax then status.sensorRPMMax = sensors.rpm end
-                if sensors.current < status.sensorCurrentMin then
-                    status.sensorCurrentMin = sensors.current
-                    if status.sensorCurrentMin == 0 then status.sensorCurrentMin = 1 end
+            if status.theTIME > (status.idleupdelayParam + idleupdelayOFFSET) and status.idleupswitchParam:state() then
+                for _, sensor in pairs(sensorTypes) do
+                    local value = sensors[sensor:lower()] or 0
+                    status["sensor" .. sensor .. "Min"] = math.min(status["sensor" .. sensor .. "Min"] or math.huge, value)
+                    status["sensor" .. sensor .. "Max"] = math.max(status["sensor" .. sensor .. "Max"] or -math.huge, value)
                 end
-                if sensors.current > status.sensorCurrentMax then status.sensorCurrentMax = sensors.current end
-                if sensors.rssi < status.sensorRSSIMin then status.sensorRSSIMin = sensors.rssi end
-                if sensors.rssi > status.sensorRSSIMax then status.sensorRSSIMax = sensors.rssi end
-                if sensors.temp_esc < status.sensorTempESCMin then status.sensorTempESCMin = sensors.temp_esc end
-                if sensors.temp_esc > status.sensorTempESCMax then status.sensorTempESCMax = sensors.temp_esc end
+
+                local current = sensors.current or 0
+                status.sensorCurrentMin = math.min(status.sensorCurrentMin or math.huge, current > 0 and current or 1)
+                status.sensorCurrentMax = math.max(status.sensorCurrentMax or -math.huge, current)
 
                 status.motorWasActive = true
             end
-
         end
 
-        -- store the last values
-        if status.motorWasActive and status.idleupswitchParam:state() == false then
-
+        if status.motorWasActive and not status.idleupswitchParam:state() then
             status.motorWasActive = false
 
-            if status.sensorCurrentMin == 0 then
-                status.sensorCurrentMinAlt = 1
-            else
-                status.sensorCurrentMinAlt = status.sensorCurrentMin
-            end
-            if status.sensorCurrentMax == 0 then
-                status.sensorCurrentMaxAlt = 1
-            else
-                status.sensorCurrentMaxAlt = status.sensorCurrentMax
-            end
-
-
-            status.readLOGS = false
-
+            status.sensorCurrentMinAlt = status.sensorCurrentMin > 0 and status.sensorCurrentMin or 1
+            status.sensorCurrentMaxAlt = status.sensorCurrentMax > 0 and status.sensorCurrentMax or 1
         end
-
     else
-        status.sensorVoltageMax = 0
-        status.sensorVoltageMin = 0
-        status.sensorFuelMin = 0
-        status.sensorFuelMax = 0
-        status.sensorRPMMin = 0
-        status.sensorRPMMax = 0
-        status.sensorCurrentMin = 0
-        status.sensorCurrentMax = 0
-        status.sensorTempESCMin = 0
-        status.sensorTempESCMax = 0
+        for _, sensor in pairs(sensorTypes) do
+            status["sensor" .. sensor .. "Min"] = 0
+            status["sensor" .. sensor .. "Max"] = 0
+        end
     end
-
 end
+
 
 function tablelength(T)
     local count = 0
@@ -3287,93 +2998,26 @@ function tablelength(T)
     return count
 end
 
-
-function status.sensorMakeNumber(x)
-    if x == nil or x == "" then x = 0 end
-
-    x = string.gsub(x, "%D+", "")
-    x = tonumber(x)
-    if x == nil or x == "" then x = 0 end
-
-    return x
-end
-
 function status.round(number, precision)
-    local fmtStr = string.format("%%0.%sf", precision)
-    number = string.format(fmtStr, number)
-    number = tonumber(number)
-    return number
+    precision = precision or 0  -- Default to 0 if precision is not provided
+    if type(number) ~= "number" or type(precision) ~= "number" then
+        error("Invalid input: Both number and precision must be numbers")
+    end
+    local fmtStr = string.format("%%.%df", precision)
+    return tonumber(string.format(fmtStr, number))
 end
 
 function status.SecondsToClock(seconds)
-    local seconds = tonumber(seconds)
-
-    if seconds <= 0 then
+    if type(seconds) ~= "number" or seconds <= 0 then
         return "00:00:00"
-    else
-        hours = string.format("%02.f", math.floor(seconds / 3600))
-        mins = string.format("%02.f", math.floor(seconds / 60 - (hours * 60)))
-        secs = string.format("%02.f", math.floor(seconds - hours * 3600 - mins * 60))
-        return hours .. ":" .. mins .. ":" .. secs
-    end
-end
-
-function status.SecondsToClockAlt(seconds)
-    local seconds = tonumber(seconds)
-
-    if seconds <= 0 then
-        return "00:00"
-    else
-        hours = string.format("%02.f", math.floor(seconds / 3600))
-        mins = string.format("%02.f", math.floor(seconds / 60 - (hours * 60)))
-        secs = string.format("%02.f", math.floor(seconds - hours * 3600 - mins * 60))
-        return mins .. ":" .. secs
-    end
-end
-
-function status.SecondsFromTime(seconds)
-    local seconds = tonumber(seconds)
-
-    if seconds <= 0 then
-        return "0"
-    else
-        hours = string.format("%02.f", math.floor(seconds / 3600))
-        mins = string.format("%02.f", math.floor(seconds / 60 - (hours * 60)))
-        secs = string.format("%02.f", math.floor(seconds - hours * 3600 - mins * 60))
-        return tonumber(secs)
-    end
-end
-
-function status.spairs(t, order)
-    -- collect the keys
-    local keys = {}
-    for k in pairs(t) do keys[#keys + 1] = k end
-
-    -- if order function given, sort by it by passing the table and keys a, b,
-    -- otherwise just sort the keys 
-    if order then
-        table.sort(keys, function(a, b)
-            return order(t, a, b)
-        end)
-    else
-        table.sort(keys)
     end
 
-    -- return the iterator function
-    local i = 0
-    return function()
-        i = i + 1
-        if keys[i] then return keys[i], t[keys[i]] end
-    end
-end
+    local hours = string.format("%02d", math.floor(seconds / 3600))
+    local mins = string.format("%02d", math.floor((seconds % 3600) / 60))
+    local secs = string.format("%02d", math.floor(seconds % 60))
 
-function status.explode(inputstr, sep)
-    if sep == nil then sep = "%s" end
-    local t = {}
-    for str in string.gmatch(inputstr, "([^" .. sep .. "]+)") do table.insert(t, str) end
-    return t
+    return hours .. ":" .. mins .. ":" .. secs
 end
-
 
 function status.read()
     status.govmodeParam = storage.read("mem1")
@@ -3421,7 +3065,7 @@ function status.read()
     status.tempconvertParamESC = storage.read("mem43")
     status.tempconvertParamMCU = storage.read("mem44")
     status.idleupswitchParam = storage.read("mem45")
-    armswitchParam = storage.read("mem46")
+    status.armswitchParam = storage.read("mem46")
     status.idleupdelayParam = storage.read("mem47")
     status.switchIdlelowParam = storage.read("mem48")
     status.switchIdlemediumParam = storage.read("mem49")
@@ -3546,547 +3190,465 @@ function status.write()
 end
 
 function status.playCurrent(widget)
-    if status.announcementCurrentSwitchParam ~= nil then
-        if status.announcementCurrentSwitchParam:state() then
-            status.currenttime.currentannouncementTimer = true
-            currentDoneFirst = false
-        else
-            status.currenttime.currentannouncementTimer = false
+    if not status.announcementCurrentSwitchParam then
+        return -- Exit early if the announcement switch parameter is nil
+    end
+
+    -- Update the current announcement timer and first-done flag based on switch state
+    local switchState = status.announcementCurrentSwitchParam:state()
+    status.currenttime.currentannouncementTimer = switchState
+    local currentDoneFirst = not switchState
+
+    if status.isInConfiguration then
+        return -- Exit early if the system is in configuration mode
+    end
+
+    local currentSensorValue = status.sensors.current
+    if not currentSensorValue then
+        return -- Exit early if the current sensor value is nil
+    end
+
+    if status.currenttime.currentannouncementTimer then
+        -- Initialize the timer for the first alert
+        if not status.currenttime.currentannouncementTimerStart and not currentDoneFirst then
+            status.currenttime.currentannouncementTimerStart = os.time()
+            status.currenttime.currentaudioannouncementCounter = os.clock()
+            system.playNumber(currentSensorValue / 10, UNIT_AMPERE, 2)
             currentDoneFirst = true
         end
+    else
+        -- Reset the timer when the announcement timer is off
+        status.currenttime.currentannouncementTimerStart = nil
+    end
 
-        if status.isInConfiguration == false then
-            if status.sensors.current ~= nil then
-                if status.currenttime.currentannouncementTimer == true then
-                    -- start timer
-                    if status.currenttime.currentannouncementTimerStart == nil and currentDoneFirst == false then
-                        status.currenttime.currentannouncementTimerStart = os.time()
-                        status.currenttime.currentaudioannouncementCounter = os.clock()
-                        -- print ("Play Current Alert (first)")
-                        system.playNumber(status.sensors.current / 10, UNIT_AMPERE, 2)
-                        currentDoneFirst = true
-                    end
-                else
-                    status.currenttime.currentannouncementTimerStart = nil
-                end
-
-                if status.currenttime.currentannouncementTimerStart ~= nil then
-                    if currentDoneFirst == false then
-                        if ((tonumber(os.clock()) - tonumber(status.currenttime.currentaudioannouncementCounter)) >= status.announcementIntervalParam) then
-                            -- print ("Play Current Alert (repeat)")
-                            status.currenttime.currentaudioannouncementCounter = os.clock()
-                            system.playNumber(status.sensors.current / 10, UNIT_AMPERE, 2)
-                        end
-                    end
-                else
-                    -- stop timer
-                    status.currenttime.currentannouncementTimerStart = nil
-                end
-            end
+    -- Handle repeated alerts
+    if status.currenttime.currentannouncementTimerStart then
+        local elapsed = os.clock() - (status.currenttime.currentaudioannouncementCounter or 0)
+        if elapsed >= (status.announcementIntervalParam or 0) then
+            status.currenttime.currentaudioannouncementCounter = os.clock()
+            system.playNumber(currentSensorValue / 10, UNIT_AMPERE, 2)
         end
+    else
+        -- Ensure timer reset when not in use
+        status.currenttime.currentannouncementTimerStart = nil
     end
 end
+
 
 function status.playLQ(widget)
-    if status.announcementLQSwitchParam ~= nil then
-        if status.announcementLQSwitchParam:state() then
-            status.lqtime.lqannouncementTimer = true
-            lqDoneFirst = false
-        else
-            status.lqtime.lqannouncementTimer = false
+    if not status.announcementLQSwitchParam then return end
+
+    -- Update the LQ announcement timer state based on switch param
+    local isLQSwitchActive = status.announcementLQSwitchParam:state()
+    status.lqtime.lqannouncementTimer = isLQSwitchActive
+    lqDoneFirst = not isLQSwitchActive
+
+    -- Exit if in configuration mode
+    if status.isInConfiguration then return end
+
+    -- Ensure sensors.rssi is valid
+    if not status.sensors.rssi then return end
+
+    -- Handle LQ announcement timer logic
+    if status.lqtime.lqannouncementTimer then
+        if not status.lqtime.lqannouncementTimerStart and not lqDoneFirst then
+            -- Start the timer and make the initial announcement
+            status.lqtime.lqannouncementTimerStart = os.time()
+            status.lqtime.lqaudioannouncementCounter = os.clock()
+            rfsuite.utils.playFile("status", "alerts/lq.wav")
+            system.playNumber(status.sensors.rssi, UNIT_PERCENT, 2)
             lqDoneFirst = true
-        end
-
-        if status.isInConfiguration == false then
-            if status.sensors.rssi ~= nil then
-                if status.lqtime.lqannouncementTimer == true then
-                    -- start timer
-                    if status.lqtime.lqannouncementTimerStart == nil and lqDoneFirst == false then
-                        status.lqtime.lqannouncementTimerStart = os.time()
-                        status.lqtime.lqaudioannouncementCounter = os.clock()
-                        -- print ("Play LQ Alert (first)")
-                        rfsuite.utils.playFile("status","alerts/lq.wav")
-                        system.playNumber(status.sensors.rssi, UNIT_PERCENT, 2)
-                        lqDoneFirst = true
-                    end
-                else
-                    status.lqtime.lqannouncementTimerStart = nil
-                end
-
-                if status.lqtime.lqannouncementTimerStart ~= nil then
-                    if lqDoneFirst == false then
-                        if ((tonumber(os.clock()) - tonumber(status.lqtime.lqaudioannouncementCounter)) >= status.announcementIntervalParam) then
-                            status.lqtime.lqaudioannouncementCounter = os.clock()
-                            -- print ("Play LQ Alert (repeat)")
-                            rfsuite.utils.playFile("status","alerts/lq.wav")
-                            system.playNumber(status.sensors.rssi, UNIT_PERCENT, 2)
-                        end
-                    end
-                else
-                    -- stop timer
-                    status.lqtime.lqannouncementTimerStart = nil
-                end
+        elseif status.lqtime.lqannouncementTimerStart then
+            -- Make repeated announcements based on the interval
+            if os.clock() - status.lqtime.lqaudioannouncementCounter >= status.announcementIntervalParam then
+                status.lqtime.lqaudioannouncementCounter = os.clock()
+                rfsuite.utils.playFile("status", "alerts/lq.wav")
+                system.playNumber(status.sensors.rssi, UNIT_PERCENT, 2)
             end
         end
+    else
+        -- Stop the timer if the switch is inactive
+        status.lqtime.lqannouncementTimerStart = nil
     end
 end
+
 
 function status.playMCU(widget)
-    if status.announcementMCUSwitchParam ~= nil then
-        if status.announcementMCUSwitchParam:state() then
-            status.mcutime.mcuannouncementTimer = true
-            mcuDoneFirst = false
+    if not status.announcementMCUSwitchParam then return end
+
+    -- Set MCU announcement timer based on switch state
+    local switchState = status.announcementMCUSwitchParam:state()
+    status.mcutime.mcuannouncementTimer = switchState
+    local mcuDoneFirst = not switchState
+
+    if not status.isInConfiguration and status.sensors.temp_mcu then
+        if status.mcutime.mcuannouncementTimer then
+            -- Start timer if not already started
+            if not status.mcutime.mcuannouncementTimerStart and not mcuDoneFirst then
+                status.mcutime.mcuannouncementTimerStart = os.time()
+                status.mcutime.mcuaudioannouncementCounter = os.clock()
+                rfsuite.utils.playFile("status", "alerts/mcu.wav")
+                system.playNumber(status.sensors.temp_mcu / 100, UNIT_DEGREE, 2)
+                mcuDoneFirst = true
+            end
         else
-            status.mcutime.mcuannouncementTimer = false
-            mcuDoneFirst = true
+            -- Reset timer if switch is off
+            status.mcutime.mcuannouncementTimerStart = nil
         end
 
-        if status.isInConfiguration == false then
-            if status.sensors.temp_mcu ~= nil then
-                if status.mcutime.mcuannouncementTimer == true then
-                    -- start timer
-                    if status.mcutime.mcuannouncementTimerStart == nil and mcuDoneFirst == false then
-                        status.mcutime.mcuannouncementTimerStart = os.time()
-                        status.mcutime.mcuaudioannouncementCounter = os.clock()
-                        -- print ("Playing MCU (first)")
-                        rfsuite.utils.playFile("status","alerts/mcu.wav")
-                        system.playNumber(status.sensors.temp_mcu / 100, UNIT_DEGREE, 2)
-                        mcuDoneFirst = true
-                    end
-                else
-                    status.mcutime.mcuannouncementTimerStart = nil
-                end
-
-                if status.mcutime.mcuannouncementTimerStart ~= nil then
-                    if mcuDoneFirst == false then
-                        if ((tonumber(os.clock()) - tonumber(status.mcutime.mcuaudioannouncementCounter)) >= status.announcementIntervalParam) then
-                            status.mcutime.mcuaudioannouncementCounter = os.clock()
-                            -- print ("Playing MCU (repeat)")
-                            rfsuite.utils.playFile("status","alerts/mcu.wav")
-                            system.playNumber(status.sensors.temp_mcu / 100, UNIT_DEGREE, 2)
-                        end
-                    end
-                else
-                    -- stop timer
-                    status.mcutime.mcuannouncementTimerStart = nil
-                end
+        -- Handle repeat announcements
+        if status.mcutime.mcuannouncementTimerStart and mcuDoneFirst then
+            local elapsedTime = os.clock() - status.mcutime.mcuaudioannouncementCounter
+            if elapsedTime >= status.announcementIntervalParam then
+                status.mcutime.mcuaudioannouncementCounter = os.clock()
+                rfsuite.utils.playFile("status", "alerts/mcu.wav")
+                system.playNumber(status.sensors.temp_mcu / 100, UNIT_DEGREE, 2)
             end
         end
     end
 end
 
+
 function status.playESC(widget)
-    if status.announcementESCSwitchParam ~= nil then
-        if status.announcementESCSwitchParam:state() then
-            status.esctime.escannouncementTimer = true
-            escDoneFirst = false
-        else
-            status.esctime.escannouncementTimer = false
+    if not status.announcementESCSwitchParam then return end
+
+    -- Determine if ESC announcement timer should be active
+    local isESCTimerActive = status.announcementESCSwitchParam:state()
+    status.esctime.escannouncementTimer = isESCTimerActive
+    escDoneFirst = not isESCTimerActive
+
+    -- Exit if in configuration mode
+    if status.isInConfiguration then return end
+
+    -- Ensure ESC sensor is available
+    if not status.sensors.temp_esc then return end
+
+    if isESCTimerActive then
+        -- Start the timer if not already started
+        if not status.esctime.escannouncementTimerStart and not escDoneFirst then
+            status.esctime.escannouncementTimerStart = os.time()
+            status.esctime.escaudioannouncementCounter = os.clock()
+            rfsuite.utils.playFile("status", "alerts/esc.wav")
+            system.playNumber(status.sensors.temp_esc / 100, UNIT_DEGREE, 2)
             escDoneFirst = true
         end
 
-        if status.isInConfiguration == false then
-            if status.sensors.temp_esc ~= nil then
-                if status.esctime.escannouncementTimer == true then
-                    -- start timer
-                    if status.esctime.escannouncementTimerStart == nil and escDoneFirst == false then
-                        status.esctime.escannouncementTimerStart = os.time()
-                        status.esctime.escaudioannouncementCounter = os.clock()
-                        -- print ("Playing ESC (first)")
-                        rfsuite.utils.playFile("status","alerts/esc.wav")
-                        system.playNumber(status.sensors.temp_esc / 100, UNIT_DEGREE, 2)
-                        escDoneFirst = true
-                    end
-                else
-                    status.esctime.escannouncementTimerStart = nil
-                end
-
-                if status.esctime.escannouncementTimerStart ~= nil then
-                    if escDoneFirst == false then
-                        if ((tonumber(os.clock()) - tonumber(status.esctime.escaudioannouncementCounter)) >= status.announcementIntervalParam) then
-                            status.esctime.escaudioannouncementCounter = os.clock()
-                            -- print ("Playing ESC (repeat)")
-                            rfsuite.utils.playFile("status","alerts/esc.wav")
-                            system.playNumber(status.sensors.temp_esc / 100, UNIT_DEGREE, 2)
-                        end
-                    end
-                else
-                    -- stop timer
-                    status.esctime.escannouncementTimerStart = nil
-                end
-            end
+        -- Handle repeating announcements
+        if status.esctime.escannouncementTimerStart and 
+           (os.clock() - status.esctime.escaudioannouncementCounter >= status.announcementIntervalParam) then
+            status.esctime.escaudioannouncementCounter = os.clock()
+            rfsuite.utils.playFile("status", "alerts/esc.wav")
+            system.playNumber(status.sensors.temp_esc / 100, UNIT_DEGREE, 2)
         end
+    else
+        -- Stop the timer
+        status.esctime.escannouncementTimerStart = nil
     end
 end
 
 function status.playTIMERALARM(widget)
-    if status.theTIME ~= nil and status.timeralarmParam ~= nil and status.timeralarmParam ~= 0 then
+    if status.theTIME and status.timeralarmParam and status.timeralarmParam ~= 0 then
 
-        -- reset timer Delay
-        if status.theTIME > status.timeralarmParam + 2 then status.timerAlarmPlay = true end
-        -- trigger first timer
-        if status.timerAlarmPlay == true then
+        -- Reset timer delay
+        if status.theTIME > status.timeralarmParam + 2 then
+            status.timerAlarmPlay = true
+        end
+
+        -- Trigger first timer
+        if status.timerAlarmPlay then
             if status.theTIME >= status.timeralarmParam and status.theTIME <= status.timeralarmParam + 1 then
 
                 rfsuite.utils.playFileCommon("alarm.wav")
 
-                hours = string.format("%02.f", math.floor(status.theTIME / 3600))
-                mins = string.format("%02.f", math.floor(status.theTIME / 60 - (hours * 60)))
-                secs = string.format("%02.f", math.floor(status.theTIME - hours * 3600 - mins * 60))
+                local hours = string.format("%02.f", math.floor(status.theTIME / 3600))
+                local mins = string.format("%02.f", math.floor(status.theTIME / 60 - (hours * 60)))
+                local secs = string.format("%02.f", math.floor(status.theTIME - hours * 3600 - mins * 60))
 
-                rfsuite.utils.playFile("status","alerts/timer.wav")
-                if mins ~= "00" then system.playNumber(mins, UNIT_MINUTE, 2) end
+                rfsuite.utils.playFile("status", "alerts/timer.wav")
+                if mins ~= "00" then
+                    system.playNumber(mins, UNIT_MINUTE, 2)
+                end
                 system.playNumber(secs, UNIT_SECOND, 2)
 
-                if status.timeralarmVibrateParam == true then system.playHaptic("- - -") end
+                if status.timeralarmVibrateParam then
+                    system.playHaptic("- - -")
+                end
 
                 status.timerAlarmPlay = false
             end
         end
-
     end
 end
 
 function status.playTIMER(widget)
-    if status.announcementTimerSwitchParam ~= nil then
+    if not status.announcementTimerSwitchParam then
+        return
+    end
 
-        if status.announcementTimerSwitchParam:state() then
-            status.timetime.timerannouncementTimer = true
-            timerDoneFirst = false
-        else
-            status.timetime.timerannouncementTimer = false
+    -- Update timer announcement state
+    local timerSwitchState = status.announcementTimerSwitchParam:state()
+    status.timetime.timerannouncementTimer = timerSwitchState
+    local timerDoneFirst = not timerSwitchState
+
+    if status.isInConfiguration then
+        return
+    end
+
+    local alertTIME = status.theTIME or 0
+
+    local hours = string.format("%02.f", math.floor(alertTIME / 3600))
+    local mins = string.format("%02.f", math.floor(alertTIME / 60) % 60)
+    local secs = string.format("%02.f", alertTIME % 60)
+
+    if timerSwitchState then
+        -- Start the timer if not already started
+        if not status.timetime.timerannouncementTimerStart and not timerDoneFirst then
+            status.timetime.timerannouncementTimerStart = os.time()
+            status.timetime.timeraudioannouncementCounter = os.clock()
+            if mins ~= "00" then system.playNumber(mins, UNIT_MINUTE, 2) end
+            system.playNumber(secs, UNIT_SECOND, 2)
             timerDoneFirst = true
         end
 
-        if status.isInConfiguration == false then
-
-            if status.theTIME == nil then
-                alertTIME = 0
-            else
-                alertTIME = status.theTIME
-            end
-
-            if alertTIME ~= nil then
-
-                hours = string.format("%02.f", math.floor(alertTIME / 3600))
-                mins = string.format("%02.f", math.floor(alertTIME / 60 - (hours * 60)))
-                secs = string.format("%02.f", math.floor(alertTIME - hours * 3600 - mins * 60))
-
-                if status.timetime.timerannouncementTimer == true then
-                    -- start timer
-                    if status.timetime.timerannouncementTimerStart == nil and timerDoneFirst == false then
-                        status.timetime.timerannouncementTimerStart = os.time()
-                        status.timetime.timeraudioannouncementCounter = os.clock()
-                        -- print ("Playing TIMER (first)" .. alertTIME)
-
-                        if mins ~= "00" then system.playNumber(mins, UNIT_MINUTE, 2) end
-                        system.playNumber(secs, UNIT_SECOND, 2)
-
-                        timerDoneFirst = true
-                    end
-                else
-                    status.timetime.timerannouncementTimerStart = nil
-                end
-
-                if status.timetime.timerannouncementTimerStart ~= nil then
-                    if timerDoneFirst == false then
-                        if ((tonumber(os.clock()) - tonumber(status.timetime.timeraudioannouncementCounter)) >= status.announcementIntervalParam) then
-                            status.timetime.timeraudioannouncementCounter = os.clock()
-                            -- print ("Playing TIMER (repeat)" .. alertTIME)
-                            if mins ~= "00" then system.playNumber(mins, UNIT_MINUTE, 2) end
-                            system.playNumber(secs, UNIT_SECOND, 2)
-                        end
-                    end
-                else
-                    -- stop timer
-                    status.timetime.timerannouncementTimerStart = nil
-                end
+        -- Announce timer intervals
+        if status.timetime.timerannouncementTimerStart and timerDoneFirst then
+            local elapsed = os.clock() - status.timetime.timeraudioannouncementCounter
+            if elapsed >= status.announcementIntervalParam then
+                status.timetime.timeraudioannouncementCounter = os.clock()
+                if mins ~= "00" then system.playNumber(mins, UNIT_MINUTE, 2) end
+                system.playNumber(secs, UNIT_SECOND, 2)
             end
         end
+    else
+        -- Stop the timer
+        status.timetime.timerannouncementTimerStart = nil
     end
 end
 
 function status.playFuel(widget)
-    if status.announcementFuelSwitchParam ~= nil then
-        if status.announcementFuelSwitchParam:state() then
-            status.fueltime.fuelannouncementTimer = true
-            fuelDoneFirst = false
-        else
-            status.fueltime.fuelannouncementTimer = false
+    if not status.announcementFuelSwitchParam then
+        return
+    end
+
+    local isSwitchOn = status.announcementFuelSwitchParam:state()
+    status.fueltime.fuelannouncementTimer = isSwitchOn
+    fuelDoneFirst = not isSwitchOn
+
+    if status.isInConfiguration or not status.sensors.fuel then
+        return
+    end
+
+    if status.fueltime.fuelannouncementTimer then
+        -- Start timer if not already started and first announcement not done
+        if not status.fueltime.fuelannouncementTimerStart and not fuelDoneFirst then
+            status.fueltime.fuelannouncementTimerStart = os.time()
+            status.fueltime.fuelaudioannouncementCounter = os.clock()
+            rfsuite.utils.playFile("status", "alerts/fuel.wav")
+            system.playNumber(status.sensors.fuel, UNIT_PERCENT, 2)
             fuelDoneFirst = true
         end
+    else
+        status.fueltime.fuelannouncementTimerStart = nil
+    end
 
-        if status.isInConfiguration == false then
-            if status.sensors.fuel ~= nil then
-                if status.fueltime.fuelannouncementTimer == true then
-                    -- start timer
-                    if status.fueltime.fuelannouncementTimerStart == nil and fuelDoneFirst == false then
-                        status.fueltime.fuelannouncementTimerStart = os.time()
-                        status.fueltime.fuelaudioannouncementCounter = os.clock()
-                        -- print("Play fuel alert (first)")
-                        rfsuite.utils.playFile("status","alerts/fuel.wav")
-                        system.playNumber(status.sensors.fuel, UNIT_PERCENT, 2)
-                        fuelDoneFirst = true
-                    end
-                else
-                    status.fueltime.fuelannouncementTimerStart = nil
-                end
-
-                if status.fueltime.fuelannouncementTimerStart ~= nil then
-                    if fuelDoneFirst == false then
-                        if ((tonumber(os.clock()) - tonumber(status.fueltime.fuelaudioannouncementCounter)) >= status.announcementIntervalParam) then
-                            status.fueltime.fuelaudioannouncementCounter = os.clock()
-                            -- print("Play fuel alert (repeat)")
-                            rfsuite.utils.playFile("status","alerts/fuel.wav")
-                            system.playNumber(status.sensors.fuel, UNIT_PERCENT, 2)
-
-                        end
-                    end
-                else
-                    -- stop timer
-                    status.fueltime.fuelannouncementTimerStart = nil
-                end
-            end
+    if status.fueltime.fuelannouncementTimerStart then
+        -- Handle repeated announcements
+        local timeElapsed = os.clock() - status.fueltime.fuelaudioannouncementCounter
+        if not fuelDoneFirst and timeElapsed >= status.announcementIntervalParam then
+            status.fueltime.fuelaudioannouncementCounter = os.clock()
+            rfsuite.utils.playFile("status", "alerts/fuel.wav")
+            system.playNumber(status.sensors.fuel, UNIT_PERCENT, 2)
         end
+    else
+        -- Ensure timer is stopped
+        status.fueltime.fuelannouncementTimerStart = nil
     end
 end
 
 function status.playRPM(widget)
-    if status.announcementRPMSwitchParam ~= nil then
-        if status.announcementRPMSwitchParam:state() then
-            status.rpmtime.announcementTimer = true
-            rpmDoneFirst = false
-        else
-            status.rpmtime.announcementTimer = false
+    if not status.announcementRPMSwitchParam then return end
+
+    -- Update announcement timer state and rpmDoneFirst flag based on switch state
+    local switchState = status.announcementRPMSwitchParam:state()
+    status.rpmtime.announcementTimer = switchState
+    local rpmDoneFirst = not switchState
+
+    if status.isInConfiguration then return end
+
+    local rpmSensor = status.sensors.rpm
+    if not rpmSensor then return end
+
+    if status.rpmtime.announcementTimer then
+        -- Start the timer if not already started and first announcement is not done
+        if not status.rpmtime.announcementTimerStart and not rpmDoneFirst then
+            status.rpmtime.announcementTimerStart = os.time()
+            status.rpmtime.audioannouncementCounter = os.clock()
+            system.playNumber(rpmSensor, UNIT_RPM, 2) -- Play the RPM alert
             rpmDoneFirst = true
         end
+    else
+        status.rpmtime.announcementTimerStart = nil -- Reset the timer if announcement is off
+    end
 
-        if status.isInConfiguration == false then
-            if status.sensors.rpm ~= nil then
-                if status.rpmtime.announcementTimer == true then
-                    -- start timer
-                    if status.rpmtime.announcementTimerStart == nil and rpmDoneFirst == false then
-                        status.rpmtime.announcementTimerStart = os.time()
-                        status.rpmtime.audioannouncementCounter = os.clock()
-                        -- print("Play rpm alert (first)")
-                        system.playNumber(status.sensors.rpm, UNIT_RPM, 2)
-                        rpmDoneFirst = true
-                    end
-                else
-                    status.rpmtime.announcementTimerStart = nil
-                end
-
-                if status.rpmtime.announcementTimerStart ~= nil then
-                    if rpmDoneFirst == false then
-                        if ((tonumber(os.clock()) - tonumber(status.rpmtime.audioannouncementCounter)) >= status.announcementIntervalParam) then
-                            -- print("Play rpm alert (repeat)")
-                            status.rpmtime.audioannouncementCounter = os.clock()
-                            system.playNumber(status.sensors.rpm, UNIT_RPM, 2)
-                        end
-                    end
-                else
-                    -- stop timer
-                    status.rpmtime.announcementTimerStart = nil
-                end
-            end
+    if status.rpmtime.announcementTimerStart then
+        -- Check if it's time for the next announcement
+        local elapsed = os.clock() - (status.rpmtime.audioannouncementCounter or 0)
+        if elapsed >= status.announcementIntervalParam then
+            status.rpmtime.audioannouncementCounter = os.clock()
+            system.playNumber(rpmSensor, UNIT_RPM, 2) -- Repeat the RPM alert
         end
+    else
+        -- Ensure the timer is stopped
+        status.rpmtime.announcementTimerStart = nil
     end
 end
+
 
 function status.playVoltage(widget)
-    if status.announcementVoltageSwitchParam ~= nil then
-        if status.announcementVoltageSwitchParam:state() then
-            status.lvannouncementTimer = true
-            voltageDoneFirst = false
-        else
-            status.lvannouncementTimer = false
+
+    local voltageDoneFirst
+
+    if not status.announcementVoltageSwitchParam then return end
+
+    local switchState = status.announcementVoltageSwitchParam:state()
+    status.lvannouncementTimer = switchState
+    voltageDoneFirst = not switchState
+
+    if status.isInConfiguration then return end
+
+    local voltageSensor = status.sensors.voltage
+    if not voltageSensor then return end
+
+    if status.lvannouncementTimer then
+        -- Start timer if not already started and first announcement hasn't been made
+        if not status.lvannouncementTimerStart and not voltageDoneFirst then
+            status.lvannouncementTimerStart = os.time()
+            status.lvaudioannouncementCounter = os.clock()
+            system.playNumber(voltageSensor / 100, 2, 2)
             voltageDoneFirst = true
         end
+    else
+        -- Stop timer
+        status.lvannouncementTimerStart = nil
+    end
 
-        if status.isInConfiguration == false then
-            if status.sensors.voltage ~= nil then
-                if status.lvannouncementTimer == true then
-                    -- start timer
-                    if status.lvannouncementTimerStart == nil and voltageDoneFirst == false then
-                        status.lvannouncementTimerStart = os.time()
-                        status.lvaudioannouncementCounter = os.clock()
-                        -- print("Play voltage alert (first)")                       
-                        system.playNumber(status.sensors.voltage / 100, 2, 2)
-                        voltageDoneFirst = true
-                    end
-                else
-                    status.lvannouncementTimerStart = nil
-                end
+    if not status.lvannouncementTimerStart then return end
 
-                if status.lvannouncementTimerStart ~= nil then
-                    if voltageDoneFirst == false then
-                        if status.lvaudioannouncementCounter ~= nil and status.announcementIntervalParam ~= nil then
-                            if ((tonumber(os.clock()) - tonumber(status.lvaudioannouncementCounter)) >= status.announcementIntervalParam) then
-                                status.lvaudioannouncementCounter = os.clock()
-                                -- print("Play voltage alert (repeat)")                             
-                                system.playNumber(status.sensors.voltage / 100, 2, 2)
-                            end
-                        end
-                    end
-                else
-                    -- stop timer
-                    status.lvannouncementTimerStart = nil
-                end
-            end
+    -- Handle repeated announcements
+    if not voltageDoneFirst and status.lvaudioannouncementCounter and status.announcementIntervalParam then
+        local elapsedTime = os.clock() - status.lvaudioannouncementCounter
+        if elapsedTime >= status.announcementIntervalParam then
+            status.lvaudioannouncementCounter = os.clock()
+            system.playNumber(voltageSensor / 100, 2, 2)
         end
     end
 end
+
+function status.playGovernor()
+    if not status.governorAlertsParam then return end
+
+    status.playGovernorLastState = status.playGovernorLastState or status.sensors.govmode
+
+    if status.sensors.govmode ~= status.playGovernorLastState then
+        status.playGovernorCount = 0
+        status.playGovernorLastState = status.sensors.govmode
+    end
+
+    if status.playGovernorCount == 0 then
+        status.playGovernorCount = 1
+
+        local govmodeActions = {
+            ["UNKNOWN"] = {param = status.governorUNKNOWNParam, sound = "unknown.wav"},
+            ["DISARMED"] = {param = status.governorDISARMEDParam, sound = "disarmed.wav"},
+            ["DISABLED"] = {param = status.governorDISABLEDParam, sound = "disabled.wav"},
+            ["BAILOUT"] = {param = status.governorBAILOUTParam, sound = "bailout.wav"},
+            ["AUTOROT"] = {param = status.governorAUTOROTParam, sound = "autorot.wav"},
+            ["LOST-HS"] = {param = status.governorLOSTHSParam, sound = "lost-hs.wav"},
+            ["THR-OFF"] = {param = status.governorTHROFFParam, sound = "thr-off.wav"},
+            ["ACTIVE"] = {param = status.governorACTIVEParam, sound = "active.wav"},
+            ["RECOVERY"] = {param = status.governorRECOVERYParam, sound = "recovery.wav"},
+            ["SPOOLUP"] = {param = status.governorSPOOLUPParam, sound = "spoolup.wav"},
+            ["IDLE"] = {param = status.governorIDLEParam, sound = "idle.wav"},
+            ["OFF"] = {param = status.governorOFFParam, sound = "off.wav"}
+        }
+
+        local action = govmodeActions[status.sensors.govmode]
+
+        if action and action.param then
+            if status.govmodeParam == 0 then
+                rfsuite.utils.playFile("status", "events/governor.wav")
+            end
+            rfsuite.utils.playFile("status", "events/" .. action.sound)
+        end
+    end
+end
+
+function status.playRPMDiff()
+    if not status.rpmAlertsParam then return end
+
+    local govmode = status.sensors.govmode
+    local validGovModes = { "ACTIVE", "LOST-HS", "BAILOUT", "RECOVERY" }
+
+    -- Check if the current govmode is in the list of valid modes
+    local isGovModeValid = false
+    for _, mode in ipairs(validGovModes) do
+        if govmode == mode then
+            isGovModeValid = true
+            break
+        end
+    end
+
+    if not isGovModeValid then return end
+
+    local playRPMDiff = status.playrpmdiff
+    playRPMDiff.playRPMDiffLastState = playRPMDiff.playRPMDiffLastState or status.sensors.rpm
+
+    -- Take a reading every 5 seconds
+    if (os.clock() - (playRPMDiff.playRPMDiffCounter or 0)) >= 5 then
+        playRPMDiff.playRPMDiffCounter = os.clock()
+        playRPMDiff.playRPMDiffLastState = status.sensors.rpm
+    end
+
+    -- Calculate the percentage difference
+    local currentRPM = status.sensors.rpm
+    local lastStateRPM = playRPMDiff.playRPMDiffLastState
+    local percentageDiff = 0
+
+    if currentRPM ~= lastStateRPM then
+        percentageDiff = math.abs(100 - math.min(currentRPM, lastStateRPM) / math.max(currentRPM, lastStateRPM) * 100)
+    end
+
+    -- Check if the percentage difference exceeds the threshold
+    if percentageDiff > (status.rpmAlertsPercentageParam / 10) then
+        playRPMDiff.playRPMDiffCount = 0
+    end
+
+    if playRPMDiff.playRPMDiffCount == 0 then
+        playRPMDiff.playRPMDiffCount = 1
+        system.playNumber(currentRPM, UNIT_RPM, 2)
+    end
+end
+
 
 function status.event(widget, category, value, x, y)
 
     -- print("Event received:", category, value, x, y)
 
-    if closingLOGS then
-        if category == EVT_TOUCH and (value == 16640 or value == 16641) then
-            closingLOGS = false
-            -- collectgarbage()
-            return true
-        end
-
-    end
-
-    if status.showLOGS then
-        if value == 35 then status.showLOGS = false end
-
-        if category == EVT_TOUCH and (value == 16640 or value == 16641) then
-            if (x >= (status.closeButtonX) and (x <= (status.closeButtonX + status.closeButtonW))) and (y >= (status.closeButtonY) and (y <= (status.closeButtonY + status.closeButtonH))) then
-                status.showLOGS = false
-                closingLOGS = true
-            end
-            return true
-        else
-            if category == EVT_TOUCH then return true end
-        end
-
-    end
-
-end
-
-function status.playGovernor()
-    if status.governorAlertsParam == true then
-        if status.playGovernorLastState == nil then status.playGovernorLastState = status.sensors.govmode end
-
-        if status.sensors.govmode ~= status.playGovernorLastState then
-            status.playGovernorCount = 0
-            status.playGovernorLastState = status.sensors.govmode
-        end
-
-        if status.playGovernorCount == 0 then
-            -- print("Governor: " .. status.sensors.govmode)
-            status.playGovernorCount = 1
-
-            if status.sensors.govmode == "UNKNOWN" and status.governorUNKNOWNParam == true then
-                if status.govmodeParam == 0 then rfsuite.utils.playFile("status","events/governor.wav") end
-                rfsuite.utils.playFile("status","events/unknown.wav")
-            end
-            if status.sensors.govmode == "DISARMED" and status.governorDISARMEDParam == true then
-                if status.govmodeParam == 0 then rfsuite.utils.playFile("status","events/governor.wav") end
-                rfsuite.utils.playFile("status","events/disarmed.wav")
-            end
-            if status.sensors.govmode == "DISABLED" and status.governorDISABLEDParam == true then
-                if status.govmodeParam == 0 then rfsuite.utils.playFile("status","events/governor.wav") end
-                rfsuite.utils.playFile("status","events/disabled.wav")
-            end
-            if status.sensors.govmode == "BAILOUT" and status.governorBAILOUTParam == true then
-                if status.govmodeParam == 0 then rfsuite.utils.playFile("status","events/governor.wav") end
-                rfsuite.utils.playFile("status","events/bailout.wav")
-            end
-            if status.sensors.govmode == "AUTOROT" and status.governorAUTOROTParam == true then
-                if status.govmodeParam == 0 then rfsuite.utils.playFile("status","events/governor.wav") end
-                rfsuite.utils.playFile("status","events/autorot.wav")
-            end
-            if status.sensors.govmode == "LOST-HS" and status.governorLOSTHSParam == true then
-                if status.govmodeParam == 0 then rfsuite.utils.playFile("status","events/governor.wav") end
-                rfsuite.utils.playFile("status","events/lost-hs.wav")
-            end
-            if status.sensors.govmode == "THR-OFF" and status.governorTHROFFParam == true then
-                if status.govmodeParam == 0 then rfsuite.utils.playFile("status","events/governor.wav") end
-                rfsuite.utils.playFile("status","events/thr-off.wav")
-            end
-            if status.sensors.govmode == "ACTIVE" and status.governorACTIVEParam == true then
-                if status.govmodeParam == 0 then rfsuite.utils.playFile("status","events/governor.wav") end
-                rfsuite.utils.playFile("status","events/active.wav")
-            end
-            if status.sensors.govmode == "RECOVERY" and status.governorRECOVERYParam == true then
-                if status.govmodeParam == 0 then rfsuite.utils.playFile("status","events/governor.wav") end
-                rfsuite.utils.playFile("status","events/recovery.wav")
-            end
-            if status.sensors.govmode == "SPOOLUP" and status.governorSPOOLUPParam == true then
-                if status.govmodeParam == 0 then rfsuite.utils.playFile("status","events/governor.wav") end
-                rfsuite.utils.playFile("status","events/spoolup.wav")
-            end
-            if status.sensors.govmode == "IDLE" and status.governorIDLEParam == true then
-                if status.govmodeParam == 0 then rfsuite.utils.playFile("status","events/governor.wav") end
-                rfsuite.utils.playFile("status","events/idle.wav")
-            end
-            if status.sensors.govmode == "OFF" and status.governorOFFParam == true then
-                if status.govmodeParam == 0 then rfsuite.utils.playFile("status","events/governor.wav") end
-                rfsuite.utils.playFile("status","events/off.wav")
-            end
-
-        end
-
-    end
-end
-
-function status.playRPMDiff()
-    if status.rpmAlertsParam == true then
-
-        if status.sensors.govmode == "ACTIVE" or status.sensors.govmode == "LOST-HS" or status.sensors.govmode == "BAILOUT" or status.sensors.govmode == "RECOVERY" then
-
-            if status.playrpmdiff.playRPMDiffLastState == nil then status.playrpmdiff.playRPMDiffLastState = status.sensors.rpm end
-
-            -- we take a reading every 5 second
-            if (tonumber(os.clock()) - tonumber(status.playrpmdiff.playRPMDiffCounter)) >= 5 then
-                status.playrpmdiff.playRPMDiffCounter = os.clock()
-                status.playrpmdiff.playRPMDiffLastState = status.sensors.rpm
-            end
-
-            -- check if current state withing % of last state
-            local percentageDiff = 0
-            if status.sensors.rpm > status.playrpmdiff.playRPMDiffLastState then
-                percentageDiff = math.abs(100 - (status.sensors.rpm / status.playrpmdiff.playRPMDiffLastState * 100))
-            elseif status.playrpmdiff.playRPMDiffLastState < status.sensors.rpm then
-                percentage = math.abs(100 - (status.playrpmdiff.playRPMDiffLastState / status.sensors.rpm * 100))
-            else
-                percentageDiff = 0
-            end
-
-            if percentageDiff > status.rpmAlertsPercentageParam / 10 then status.playrpmdiff.playRPMDiffCount = 0 end
-
-            if status.playrpmdiff.playRPMDiffCount == 0 then
-                -- print("RPM Difference: " .. percentageDiff)
-                status.playrpmdiff.playRPMDiffCount = 1
-                system.playNumber(status.sensors.rpm, UNIT_RPM, 2)
-            end
-        end
-    end
 end
 
 -- MAIN WAKEUP FUNCTION. THIS SIMPLY FARMS OUT AT DIFFERING SCHEDULES TO SUB FUNCTIONS
 function status.wakeup(widget)
+    local schedulerUI = lcd.isVisible() and 0.25 or 1  -- Set interval based on visibility
 
-    local schedulerUI
-    if lcd.isVisible() then
-        schedulerUI = 0.25
-    else
-        schedulerUI = 1
-    end
-
-    -- keep cpu load down by running UI at reduced interval
+    -- Run UI at reduced interval to minimize CPU load
     local now = os.clock()
     if (now - status.wakeupSchedulerUI) >= schedulerUI then
         status.wakeupSchedulerUI = now
         status.wakeupUI()
-        -- collectgarbage()
+        -- collectgarbage()  -- Uncomment if garbage collection is needed
     end
-
 end
+
 
 function status.wakeupUI(widget)
 
@@ -4122,6 +3684,8 @@ function status.wakeupUI(widget)
 
         if status.linkUP == true then
 
+            if status.linkUPTime == nil then status.linkUPTime = 0 end
+
             if status.linkUPTime ~= nil and ((tonumber(os.clock()) - tonumber(status.linkUPTime)) >= 5) then
                 -- voltage alerts
                 status.playVoltage(widget)
@@ -4146,7 +3710,6 @@ function status.wakeupUI(widget)
                 -- timer alarm
                 status.playTIMERALARM(widget)
 
-                if status.linkUPTime == nil then status.linkUPTime = 0 end
 
                 if ((tonumber(os.clock()) - tonumber(status.linkUPTime)) >= 10) then
 
@@ -4259,14 +3822,17 @@ function status.wakeupUI(widget)
                 ---
                 -- TIME
                 if status.linkUP == true then
-                    if armswitchParam ~= nil then
-                        if armswitchParam:state() == false then
+                    
+                    local armSource = rfsuite.bg.telemetry.getSensorSource("armflags")
+                    if armSource then
+                        local isArmed = armSource:value()
+                        if isArmed == 0 or isArmed == 2 then
                             status.stopTimer = true
                             stopTIME = os.clock()
                             timerNearlyActive = 1
-                            status.theTIME = 0
+                            status.theTIME = 0                            
                         end
-                    end
+                    end    
 
                     if status.idleupswitchParam ~= nil then
                         if status.idleupswitchParam:state() then

@@ -34,7 +34,7 @@ local function getEscModel(self)
     -- buffer is the whole msp payload
     -- looks like prob have to extract
 
-    local hw = (getPageValue(self, 18) + 1) .. ".0/" .. getPageValue(self, 12) .. "." .. getPageValue(self, 13) .. "." .. getPageValue(self, 14)
+    local hw = "1." .. getPageValue(self, 18) .. '/' .. getPageValue(self, 12) .. "." .. getPageValue(self, 13) .. "." .. getPageValue(self, 14)
 
     return "FLYROTOR " .. string.format(self[5]) .. "A " .. hw .. " "
 
