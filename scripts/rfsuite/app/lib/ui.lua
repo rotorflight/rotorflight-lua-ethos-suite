@@ -676,14 +676,14 @@ function ui.fieldHeader(title)
     rfsuite.app.ui.navigationButtons(w - 5, rfsuite.app.radio.linePaddingTop, buttonW, buttonH)
 end
 
-function ui.openPageRefresh(idx, title, script, extra1, extra2, extra3, extra5, extra5)
+function ui.openPageRefresh(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
     rfsuite.app.triggers.isReady = false
     if script ~= nil then rfsuite.app.Page = assert(loadfile("app/pages/" .. script))() end
 
 end
 
-function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra5)
+function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
     rfsuite.app.triggers.isReady = false
@@ -693,7 +693,7 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra5)
     rfsuite.app.Page = assert(loadfile("app/pages/" .. script))(idx)
 
     if rfsuite.app.Page.openPage then
-        rfsuite.app.Page.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra5)
+        rfsuite.app.Page.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
     else
 
         rfsuite.app.lastIdx = idx

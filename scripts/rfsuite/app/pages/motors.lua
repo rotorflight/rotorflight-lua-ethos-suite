@@ -7,7 +7,7 @@ labels[#labels + 1] = {t = "Main Motor Ratio", t2 = "Main Motor Gear Ratio", lab
 fields[#fields + 1] = {t = "Pinion", label = 1, inline=2, help = "motorGearRatioPinion", min = 0, max = 2000, default = 1, vals = {22,23}}
 fields[#fields + 1] = {t = "Main", label = 1, inline=1, help = "motorGearRatioMain", min = 0, max = 2000, default = 1, vals = {24,25}}
 
-labels[#labels + 1] = {t = "Tail Motor Ratio", t = "Tail Motor Gear Ratio", label = 2, inline_size = 14.5}
+labels[#labels + 1] = {t = "Tail Motor Ratio", t2 = "Tail Motor Gear Ratio", label = 2, inline_size = 14.5}
 fields[#fields + 1] = {t = "Rear", label = 2, inline=2,  help = "motorGearRatioTailRear", min = 0, max = 2000, default = 1, vals = {26,27}}
 fields[#fields + 1] = {t = "Front", label = 2, inline=1,  help = "motorGearRatioTailFront", min = 0, max = 2000, default = 1, vals = {28,29}}
 
