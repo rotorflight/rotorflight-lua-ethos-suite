@@ -21,6 +21,8 @@ The download locations are:
 - [Lua Scripts for FrSky Ethos](https://github.com/rotorflight/rotorflight-lua-ethos/releases/tag/release/2.1.0)
 - [Lua Suite for FrSky Ethos](https://github.com/rotorflight/rotorflight-lua-ethos-suite/releases/tag/release/2.1.0)
 
+***
+
 # 2.1.0-RC2
 
 This is the _second Release Candidate_ of the Rotorflight 2.1 RFSUITE LUA Scripts for FrSky Ethos.
@@ -30,6 +32,7 @@ This is the _second Release Candidate_ of the Rotorflight 2.1 RFSUITE LUA Script
 - Adjust Cyclic Cross coupling display based on version of RF in use on fbl
 - Fixed bug in progress dialog when switching profiles
 
+***
 
 # 2.1.0-RC1
 
