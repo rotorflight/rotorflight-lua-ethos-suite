@@ -1,3 +1,26 @@
+# 2.1.0
+
+Release version for 2.1.0 Rotorflight
+
+- Ethos 1.6 support
+- X18RS support
+- Various minor bug fixes
+
+## Instructions
+
+For instructions and other details, please read the [README]
+(https://github.com/rotorflight/rotorflight-lua-ethos-suite/tree/release/2.1.0).
+
+## Downloads
+
+The download locations are:
+
+- [Rotorflight Configurator](https://github.com/rotorflight/rotorflight-configurator/releases/tag/release/2.1.0)
+- [Rotorflight Blackbox](https://github.com/rotorflight/rotorflight-blackbox/releases/tag/release/2.1.0)
+- [Lua Scripts for EdgeTx and OpenTx](https://github.com/rotorflight/rotorflight-lua-scripts/releases/tag/release/2.1.0)
+- [Lua Scripts for FrSky Ethos](https://github.com/rotorflight/rotorflight-lua-ethos/releases/tag/release/2.1.0)
+- [Lua Suite for FrSky Ethos](https://github.com/rotorflight/rotorflight-lua-ethos-suite/releases/tag/release/2.1.0)
+
 # 2.1.0-RC2
 
 This is the _second Release Candidate_ of the Rotorflight 2.1 RFSUITE LUA Scripts for FrSky Ethos.
