@@ -47,7 +47,7 @@ createSensorList[0x5444] = {name = "Collective %", unit = UNIT_PERCENT}
 createSensorList[0x5250] = {name = "Consumption", unit = UNIT_MILLIAMPERE_HOUR}
 createSensorList[0x5260] = {name = "Battery Cell Count", unit = UNIT_RAW}
 
--- drop
+-- drop (drop sensors only runs if < msp 12.08)
 local dropSensorList = {}
 dropSensorList[0x0400] = {name = "Temp1"}
 dropSensorList[0x0410] = {name = "Temp1"}
@@ -97,6 +97,12 @@ frsky.renameSensorCache = {}
 
 local function createSensor(physId, primId, appId, frameValue)
 
+
+    -- we dont want any deletions if api has not been found
+    if rfsuite.config.apiVersion == nil then
+        return
+    end
+
     -- check for custom sensors and create them if they dont exist
     if createSensorList[appId] ~= nil then
 
@@ -108,7 +114,7 @@ local function createSensor(physId, primId, appId, frameValue)
 
             if frsky.createSensorCache[appId] == nil then
 
-                print("Creating sensor: " .. v.name)
+                rfsuite.utils.log("Creating sensor: " .. v.name)
 
                 frsky.createSensorCache[appId] = model.createSensor()
                 frsky.createSensorCache[appId]:name(v.name)
@@ -133,6 +139,16 @@ local function createSensor(physId, primId, appId, frameValue)
 end
 
 local function dropSensor(physId, primId, appId, frameValue)
+    
+    -- we dont want any deletions if api has not been found
+    if rfsuite.config.apiVersion == nil then
+        return
+    end
+
+    -- we do not do any sensor dropping post 12.08 as have new frsky telem system
+    if rfsuite.config.apiVersion >= 12.08 then
+        return
+    end
 
     -- check for custom sensors and create them if they dont exist
     if dropSensorList[appId] ~= nil then
@@ -142,7 +158,7 @@ local function dropSensor(physId, primId, appId, frameValue)
             frsky.dropSensorCache[appId] = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
 
             if frsky.dropSensorCache[appId] ~= nil then
-                print("Drop sensor: " .. v.name)
+                rfsuite.utils.log("Drop sensor: " .. v.name)
                 frsky.dropSensorCache[appId]:drop()
             end
 
@@ -154,6 +170,11 @@ end
 
 local function renameSensor(physId, primId, appId, frameValue)
 
+    -- we dont want any deletions if api has not been found
+    if rfsuite.config.apiVersion == nil then
+        return
+    end
+
     -- check for custom sensors and create them if they dont exist
     if renameSensorList[appId] ~= nil then
         local v = renameSensorList[appId]
@@ -163,7 +184,7 @@ local function renameSensor(physId, primId, appId, frameValue)
 
             if frsky.renameSensorCache[appId] ~= nil then
                 if frsky.renameSensorCache[appId]:name() == v.onlyifname then
-                    print("Rename sensor: " .. v.name)
+                    rfsuite.utils.log("Rename sensor: " .. v.name)
                     frsky.renameSensorCache[appId]:name(v.name)
                 end
             end
@@ -182,7 +203,7 @@ local function telemetryPop()
     if not frame.physId or not frame.primId then return end
 
     createSensor(frame:physId(), frame:primId(), frame:appId(), frame:value())
-    --dropSensor(frame:physId(), frame:primId(), frame:appId(), frame:value())
+    dropSensor(frame:physId(), frame:primId(), frame:appId(), frame:value())
     renameSensor(frame:physId(), frame:primId(), frame:appId(), frame:value())
     return true
 end
