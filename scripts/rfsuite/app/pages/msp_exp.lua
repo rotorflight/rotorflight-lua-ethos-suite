@@ -184,7 +184,6 @@ return {
     eepromWrite = true,
     labels      = labels,
     fields      = fields,
-    simulatorResponse = {},
     rows = rows,
     simulatorResponse = {255, 10, 60, 200, 20, 40, 255, 5, 30, 105, 100, 30, 10, 10, 50, 1 },
     cols = cols,    
