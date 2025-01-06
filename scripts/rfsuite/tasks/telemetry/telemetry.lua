@@ -17,8 +17,7 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 
-]]--
-
+]] --
 local arg = {...}
 local config = arg[1]
 
@@ -48,10 +47,10 @@ local sensorTable = {
     pidProfile = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5471}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1211}, lcrsf = nil},
     rateProfile = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5472}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1212}, lcrsf = nil},
     throttlePercentage = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5440}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1035}, lcrsf = nil},
-    roll = {sport = {category=CATEGORY_ANALOG, member=ANALOG_STICK_AILERON}, crsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_AILERON}, lcrsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_AILERON}},
-    pitch = {sport = {category=CATEGORY_ANALOG, member=ANALOG_STICK_ELEVATOR}, crsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_ELEVATOR}, lcrsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_ELEVATOR}},
-    yaw = {sport = {category=CATEGORY_ANALOG, member=ANALOG_STICK_RUDDER}, crsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_RUDDER}, lcrsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_RUDDER}},
-    collective = {sport = {category=CATEGORY_ANALOG, member=ANALOG_STICK_THROTTLE}, crsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_THROTTLE}, lcrsf = {category=CATEGORY_ANALOG, member=ANALOG_STICK_THROTTLE}}
+    roll = {sport = {category = CATEGORY_ANALOG, member = ANALOG_STICK_AILERON}, crsf = {category = CATEGORY_ANALOG, member = ANALOG_STICK_AILERON}, lcrsf = {category = CATEGORY_ANALOG, member = ANALOG_STICK_AILERON}},
+    pitch = {sport = {category = CATEGORY_ANALOG, member = ANALOG_STICK_ELEVATOR}, crsf = {category = CATEGORY_ANALOG, member = ANALOG_STICK_ELEVATOR}, lcrsf = {category = CATEGORY_ANALOG, member = ANALOG_STICK_ELEVATOR}},
+    yaw = {sport = {category = CATEGORY_ANALOG, member = ANALOG_STICK_RUDDER}, crsf = {category = CATEGORY_ANALOG, member = ANALOG_STICK_RUDDER}, lcrsf = {category = CATEGORY_ANALOG, member = ANALOG_STICK_RUDDER}},
+    collective = {sport = {category = CATEGORY_ANALOG, member = ANALOG_STICK_THROTTLE}, crsf = {category = CATEGORY_ANALOG, member = ANALOG_STICK_THROTTLE}, lcrsf = {category = CATEGORY_ANALOG, member = ANALOG_STICK_THROTTLE}}
 }
 
 -- Cache telemetry source
@@ -75,9 +74,7 @@ function telemetry.getSensorSource(name)
     if not telemetrySOURCE then telemetrySOURCE = system.getSource("Rx RSSI1") end
 
     if telemetrySOURCE then
-        if not crsfSOURCE then
-            crsfSOURCE = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = 0xEE01})
-        end
+        if not crsfSOURCE then crsfSOURCE = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = 0xEE01}) end
 
         if crsfSOURCE then
             protocol = "ccrsf"

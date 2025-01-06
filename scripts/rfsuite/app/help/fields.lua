@@ -171,5 +171,5 @@ return {
     --    
     sbusOutSource = {t = "Source id for the mix, counting from 0-15."},
     sbusOutMin = {t = "The minimum pwm value to send"},
-    sbusOutMax = {t = "The maximum pwm value to send"},    
+    sbusOutMax = {t = "The maximum pwm value to send"}
 }

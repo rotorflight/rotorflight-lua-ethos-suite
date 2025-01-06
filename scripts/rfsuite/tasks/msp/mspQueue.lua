@@ -17,7 +17,7 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 
-]]--
+]] --
 -- MspQueueController class
 local MspQueueController = {}
 MspQueueController.__index = MspQueueController
@@ -47,12 +47,12 @@ function MspQueueController:processQueue()
     end
     rfsuite.app.triggers.mspBusy = true
 
-    if rfsuite.rssiSensor then  
-        local module = model.getModule(rfsuite.rssiSensor:module())    
+    if rfsuite.rssiSensor then
+        local module = model.getModule(rfsuite.rssiSensor:module())
         if module ~= nil and module.muteSensorLost ~= nil then
             module:muteSensorLost(2.0) -- mute for 2s      
         end
-    end    
+    end
 
     if not self.currentMessage then
         self.currentMessage = popFirstElement(self.messageQueue)
@@ -157,9 +157,7 @@ local function deepCopy(original)
     if type(original) == "table" then
         copy = {}
         -- Only deep copy values, not keys
-        for key, value in next, original, nil do 
-            copy[key] = deepCopy(value)
-        end
+        for key, value in next, original, nil do copy[key] = deepCopy(value) end
         local mt = getmetatable(original)
         if mt then
             setmetatable(copy, deepCopy(mt)) -- Copy the metatable if it exists
@@ -170,7 +168,6 @@ local function deepCopy(original)
     end
     return copy
 end
-
 
 function MspQueueController:add(message)
 

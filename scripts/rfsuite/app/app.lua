@@ -17,14 +17,12 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 
-]]--
-
+]] --
 local app = {}
 
 local arg = {...}
 
 local config = arg[1]
-
 
 local triggers = {}
 triggers.exitAPP = false
@@ -52,7 +50,6 @@ triggers.invalidConnectionSetup = false
 triggers.wasConnected = false
 triggers.isArmed = false
 triggers.showSaveArmedWarning = false
-
 
 rfsuite.config = {}
 rfsuite.config = config
@@ -195,7 +192,7 @@ function app.resetState()
     rfsuite.config.activeProfile = nil
     rfsuite.config.activeRateProfile = nil
     rfsuite.config.activeRateProfileLast = nil
-    rfsuite.config.activeProfile = nil   
+    rfsuite.config.activeProfile = nil
 end
 
 -- SAVE FIELD VALUE FOR ETHOS FROM ETHOS FORMS INTO THE ACTUAL FORMAT THAT 
@@ -520,15 +517,14 @@ function app.wakeupUI()
     end
 
     -- profile switching - trigger a reload when profile changes
-    if rfsuite.config.profileSwitching == true and app.Page ~= nil and (app.Page.refreshOnProfileChange == true or app.Page.refreshOnRateChange == true) and app.uiState == app.uiStatus.pages and
-        app.triggers.isSaving == false and rfsuite.app.dialogs.saveDisplay ~= true and rfsuite.app.dialogs.progressDisplay ~= true and rfsuite.bg.msp.mspQueue:isProcessed() then
+    if rfsuite.config.profileSwitching == true and app.Page ~= nil and (app.Page.refreshOnProfileChange == true or app.Page.refreshOnRateChange == true) and app.uiState == app.uiStatus.pages and app.triggers.isSaving == false and rfsuite.app.dialogs.saveDisplay ~= true and rfsuite.app.dialogs.progressDisplay ~= true and rfsuite.bg.msp.mspQueue:isProcessed() then
 
         local now = os.clock()
         local profileCheckInterval
 
         -- alter the interval for checking profile changes depenant of if using msp or not
         if (rfsuite.bg.telemetry.getSensorSource("pidProfile") ~= nil and rfsuite.bg.telemetry.getSensorSource("rateProfile") ~= nil) then
-            profileCheckInterval = 0.1   
+            profileCheckInterval = 0.1
         else
             profileCheckInterval = 1.5
         end
@@ -595,17 +591,15 @@ function app.wakeupUI()
 
             if app.guiIsRunning == true and app.triggers.invalidConnectionSetup ~= true and app.triggers.wasConnected == false then
 
-                local buttons = {
-                    {
-                        label = "   OK   ",
-                        action = function()
+                local buttons = {{
+                    label = "   OK   ",
+                    action = function()
 
-                            app.triggers.exitAPP = true
-                            app.dialogs.nolinkDisplayErrorDialog = false
-                            return true
-                        end
-                    }
-                }
+                        app.triggers.exitAPP = true
+                        app.dialogs.nolinkDisplayErrorDialog = false
+                        return true
+                    end
+                }}
 
                 local message
                 local apiVersionAsString = tostring(rfsuite.config.apiVersion)
@@ -618,14 +612,14 @@ function app.wakeupUI()
                 elseif app.getRSSI() == 0 and app.offlineMode == false then
                     message = "Please check your heli is powered on and telemetry is running."
                     app.triggers.invalidConnectionSetup = true
-                elseif rfsuite.config.apiVersion == nil and app.offlineMode == false  then
+                elseif rfsuite.config.apiVersion == nil and app.offlineMode == false then
                     message = "Unable to determine MSP version in use."
                     app.triggers.invalidConnectionSetup = true
-                elseif not rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiVersionAsString) and app.offlineMode == false  then
+                elseif not rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiVersionAsString) and app.offlineMode == false then
                     message = "This version of the Lua script \ncan't be used with the selected model (" .. rfsuite.config.apiVersion .. ")."
                     app.triggers.invalidConnectionSetup = true
                 end
-                
+
                 -- display message and abort if error occured
                 if app.triggers.invalidConnectionSetup == true and app.triggers.wasConnected == false then
 
@@ -701,37 +695,35 @@ function app.wakeupUI()
 
     -- a save was triggered - popup a box asking to save the data
     if app.triggers.triggerSave == true then
-        local buttons = {
-            {
-                label = "                OK                ",
-                action = function()
+        local buttons = {{
+            label = "                OK                ",
+            action = function()
 
-                    app.audio.playSaving = true
+                app.audio.playSaving = true
 
-                    -- we have to fake a save dialog in sim as its not actually possible 
-                    -- to save in sim!
-                    if system:getVersion().simulation ~= true then
-                        app.PageTmp = {}
-                        app.PageTmp = app.Page
-                        app.triggers.isSaving = true
-                        app.triggers.triggerSave = false
-                        saveSettings()
-                    else
-                        -- when in sim we fake a save as not possible to really do
-                        -- this involves tricking the progress dialog into thinking
-                        app.triggers.isSavingFake = true
-                        app.triggers.triggerSave = false
-                    end
-                    return true
-                end
-            }, {
-                label = "CANCEL",
-                action = function()
+                -- we have to fake a save dialog in sim as its not actually possible 
+                -- to save in sim!
+                if system:getVersion().simulation ~= true then
+                    app.PageTmp = {}
+                    app.PageTmp = app.Page
+                    app.triggers.isSaving = true
                     app.triggers.triggerSave = false
-                    return true
+                    saveSettings()
+                else
+                    -- when in sim we fake a save as not possible to really do
+                    -- this involves tricking the progress dialog into thinking
+                    app.triggers.isSavingFake = true
+                    app.triggers.triggerSave = false
                 end
-            }
-        }
+                return true
+            end
+        }, {
+            label = "CANCEL",
+            action = function()
+                app.triggers.triggerSave = false
+                return true
+            end
+        }}
         local theTitle = "Save settings"
         local theMsg = "Save current page to flight controller?"
 
@@ -758,21 +750,19 @@ function app.wakeupUI()
 
     -- a reload was triggered - popup a box asking for the reload to be done
     if app.triggers.triggerReload == true then
-        local buttons = {
-            {
-                label = "                OK                ",
-                action = function()
-                    -- trigger RELOAD
-                    app.triggers.reload = true
-                    return true
-                end
-            }, {
-                label = "CANCEL",
-                action = function()
-                    return true
-                end
-            }
-        }
+        local buttons = {{
+            label = "                OK                ",
+            action = function()
+                -- trigger RELOAD
+                app.triggers.reload = true
+                return true
+            end
+        }, {
+            label = "CANCEL",
+            action = function()
+                return true
+            end
+        }}
         form.openDialog({
             width = nil,
             title = "Reload",
@@ -889,70 +879,70 @@ function app.wakeupUI()
 
     -- play audio
     -- alerts 
-    if rfsuite.config.audioAlerts== 0 or rfsuite.config.audioAlerts== 1 then
+    if rfsuite.config.audioAlerts == 0 or rfsuite.config.audioAlerts == 1 then
 
         if app.audio.playEraseFlash == true then
-            rfsuite.utils.playFile("app","eraseflash.wav")
+            rfsuite.utils.playFile("app", "eraseflash.wav")
             app.audio.playEraseFlash = false
         end
 
         if app.audio.playConnected == true then
-            rfsuite.utils.playFile("app","connected.wav")
+            rfsuite.utils.playFile("app", "connected.wav")
             app.audio.playConnected = false
         end
 
         if app.audio.playConnecting == true then
-            rfsuite.utils.playFile("app","connecting.wav")
+            rfsuite.utils.playFile("app", "connecting.wav")
             app.audio.playConnecting = false
         end
 
         if app.audio.playDemo == true then
-            rfsuite.utils.playFile("app","demo.wav")
+            rfsuite.utils.playFile("app", "demo.wav")
             app.audio.playDemo = false
         end
 
         if app.audio.playTimeout == true then
-            rfsuite.utils.playFile("app","timeout.wav")
+            rfsuite.utils.playFile("app", "timeout.wav")
             app.audio.playTimeout = false
         end
 
         if app.audio.playEscPowerCycle == true then
-            rfsuite.utils.playFile("app","powercycleesc.wav")
+            rfsuite.utils.playFile("app", "powercycleesc.wav")
             app.audio.playEscPowerCycle = false
         end
 
         if app.audio.playServoOverideEnable == true then
-            rfsuite.utils.playFile("app","soverideen.wav")
+            rfsuite.utils.playFile("app", "soverideen.wav")
             app.audio.playServoOverideEnable = false
         end
 
         if app.audio.playServoOverideDisable == true then
-            rfsuite.utils.playFile("app","soveridedis.wav")
+            rfsuite.utils.playFile("app", "soveridedis.wav")
             app.audio.playServoOverideDisable = false
         end
 
         if app.audio.playMixerOverideEnable == true then
-            rfsuite.utils.playFile("app","moverideen.wav")
+            rfsuite.utils.playFile("app", "moverideen.wav")
             app.audio.playMixerOverideEnable = false
         end
 
         if app.audio.playMixerOverideDisable == true then
-            rfsuite.utils.playFile("app","moveridedis.wav")
+            rfsuite.utils.playFile("app", "moveridedis.wav")
             app.audio.playMixerOverideDisable = false
         end
 
-        if app.audio.playSaving == true and rfsuite.config.audioAlerts== 0 then
-            rfsuite.utils.playFile("app","saving.wav")
+        if app.audio.playSaving == true and rfsuite.config.audioAlerts == 0 then
+            rfsuite.utils.playFile("app", "saving.wav")
             app.audio.playSaving = false
         end
 
-        if app.audio.playLoading == true and rfsuite.config.audioAlerts== 0 then
-            rfsuite.utils.playFile("app","loading.wav")
+        if app.audio.playLoading == true and rfsuite.config.audioAlerts == 0 then
+            rfsuite.utils.playFile("app", "loading.wav")
             app.audio.playLoading = false
         end
 
         if app.audio.playSave == true then
-            rfsuite.utils.playFile("app","save.wav")
+            rfsuite.utils.playFile("app", "save.wav")
             app.audio.playSave = false
         end
 
@@ -975,9 +965,7 @@ function app.wakeupUI()
 
 end
 
-
 function app.create_logtool()
-
 
     -- config.apiVersion = nil
     config.environment = system.getVersion()
@@ -991,24 +979,17 @@ function app.create_logtool()
     app.uiState = app.uiStatus.init
 
     -- overide developermode if file exists.
-    if rfsuite.config.developerMode ~= true then
-        if rfsuite.utils.file_exists("/scripts/developermode") then
-                rfsuite.config.developerMode = true
-        end
-    end
+    if rfsuite.config.developerMode ~= true then if rfsuite.utils.file_exists("/scripts/developermode") then rfsuite.config.developerMode = true end end
 
     rfsuite.app.menuLastSelected["mainmenu"] = pidx
     rfsuite.app.ui.progressDisplay()
 
     rfsuite.app.offlineMode = true
-    rfsuite.app.ui.openPage(1, "Logs", "logs.lua",1) --- final param says to load in standalone mode
-
+    rfsuite.app.ui.openPage(1, "Logs", "logs.lua", 1) --- final param says to load in standalone mode
 
 end
 
-
 function app.create()
-
 
     -- config.apiVersion = nil
     config.environment = system.getVersion()
@@ -1022,22 +1003,16 @@ function app.create()
     app.uiState = app.uiStatus.init
 
     -- overide developermode if file exists.
-    if rfsuite.config.developerMode ~= true then
-        if rfsuite.utils.file_exists("/scripts/developermode") then
-                rfsuite.config.developerMode = true
-        end
-    end
-
+    if rfsuite.config.developerMode ~= true then if rfsuite.utils.file_exists("/scripts/developermode") then rfsuite.config.developerMode = true end end
 
     app.ui.openMainMenu()
-
 
 end
 
 -- EVENT:  Called for button presses, scroll events, touch events, etc.
 function app.event(widget, category, value, x, y)
 
-     --print("Event received:" .. ", " .. category .. "," .. value .. "," .. x .. "," .. y)
+    -- print("Event received:" .. ", " .. category .. "," .. value .. "," .. x .. "," .. y)
 
     if value == EVT_VIRTUAL_PREV_LONG then
         print("Forcing exit")

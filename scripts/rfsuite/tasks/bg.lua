@@ -17,7 +17,7 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 
-]]--
+]] --
 --
 -- background processing of system tasks
 --
@@ -47,14 +47,14 @@ local lastRssiSensorName = nil
 function bg.flush_logs()
     local max_lines_per_flush = 5
 
-    if #bg.log_queue > 0 and rfsuite.bg.msp.mspQueue:isProcessed()then
-    
+    if #bg.log_queue > 0 and rfsuite.bg.msp.mspQueue:isProcessed() then
+
         local f
-            
+
         for i = 1, math.min(#bg.log_queue, max_lines_per_flush) do
-            
+
             if rfsuite.config.logEnableScreen == true then print(bg.log_queue[1]) end
-            
+
             if rfsuite.utils.ethosVersionToMinor() < 16 then
                 f = io.open(config.suiteDir .. "/logs/rfsuite.log", 'a')
             else
@@ -62,9 +62,9 @@ function bg.flush_logs()
             end
             io.write(f, table.remove(bg.log_queue, 1) .. "\n")
             io.close(f)
-       
+
         end
-            
+
     end
 end
 
@@ -82,9 +82,7 @@ function bg.active()
     if rfsuite.app.triggers.mspBusy == true then return true end
 
     -- if we have not run within 2 seconds.. notify that bg script is down
-    if (os.clock() - bg.heartbeat) <= 2 then
-        return true
-    end
+    if (os.clock() - bg.heartbeat) <= 2 then return true end
 
     return false
 end
@@ -104,25 +102,23 @@ function bg.wakeup()
 
         rssiCheckScheduler = now
     end
-    
+
     if system:getVersion().simulation == true then rfsuite.rssiSensorChanged = false end
 
-    if currentRssiSensor ~= nil then
-        rfsuite.rssiSensor = currentRssiSensor.sensor
-    end  
+    if currentRssiSensor ~= nil then rfsuite.rssiSensor = currentRssiSensor.sensor end
 
     -- high priority and must alway run regardless of tlm state
     bg.msp.wakeup()
 
     -- skip these if we are doing any msp traffic
     if not rfsuite.app.triggers.mspBusy then
-        bg.flush_logs() 
+        bg.flush_logs()
         bg.logging.wakeup()
         bg.adjfunctions.wakeup()
-        bg.telemetry.wakeup()        
-        bg.sensors.wakeup()        
-    end    
-            
+        bg.telemetry.wakeup()
+        bg.sensors.wakeup()
+    end
+
 end
 
 function bg.event(widget, category, value)

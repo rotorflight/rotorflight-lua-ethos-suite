@@ -31,7 +31,7 @@ local function getESCDetails()
         command = 217, -- MSP_STATUS
         processReply = function(self, buf)
 
-            if #buf >=2 and buf[1] == mspSignature then
+            if #buf >= 2 and buf[1] == mspSignature then
 
                 escDetails.model = ESC.getEscModel(buf)
                 escDetails.version = ESC.getEscVersion(buf)
@@ -120,8 +120,6 @@ local function openPage(pidx, title, script)
     local padding
     local numPerRow
 
-
-
     if rfsuite.config.iconSize == nil or rfsuite.config.iconSize == "" then
         rfsuite.config.iconSize = 1
     else
@@ -169,9 +167,7 @@ local function openPage(pidx, title, script)
         if lc >= 0 then bx = (buttonW + padding) * lc end
 
         if rfsuite.config.iconSize ~= 0 then
-            if rfsuite.app.gfx_buttons["esctool"][pvalue.image] == nil then
-                rfsuite.app.gfx_buttons["esctool"][pvalue.image] = lcd.loadMask("app/gfx/esc/" .. pvalue.image)
-            end
+            if rfsuite.app.gfx_buttons["esctool"][pvalue.image] == nil then rfsuite.app.gfx_buttons["esctool"][pvalue.image] = lcd.loadMask("app/gfx/esc/" .. pvalue.image) end
         else
             rfsuite.app.gfx_buttons["esctool"][pvalue.image] = nil
         end
@@ -214,9 +210,7 @@ end
 
 local function wakeup()
 
-    if foundESC == false and rfsuite.bg.msp.mspQueue:isProcessed() then
-            getESCDetails()
-    end
+    if foundESC == false and rfsuite.bg.msp.mspQueue:isProcessed() then getESCDetails() end
 
     -- enable the form
     if foundESC == true and foundESCupdateTag == false then
@@ -243,8 +237,7 @@ local function wakeup()
 
     end
 
-    if showPowerCycleLoaderFinished == false and foundESCupdateTag == false and showPowerCycleLoader == false and
-        ((findTimeoutClock <= os.clock() - findTimeout) or rfsuite.app.dialogs.progressCounter >= 101) then
+    if showPowerCycleLoaderFinished == false and foundESCupdateTag == false and showPowerCycleLoader == false and ((findTimeoutClock <= os.clock() - findTimeout) or rfsuite.app.dialogs.progressCounter >= 101) then
         rfsuite.app.ui.progressDisplayClose()
         rfsuite.app.dialogs.progressDisplay = false
         rfsuite.app.triggers.isReady = true

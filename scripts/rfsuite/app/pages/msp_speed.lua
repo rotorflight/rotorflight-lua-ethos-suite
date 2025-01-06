@@ -46,10 +46,7 @@ local function getMSPServos()
         processReply = function(self, buf)
             doNextMsp = true
         end,
-        simulatorResponse = {
-            4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0,
-            120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0
-        }
+        simulatorResponse = {4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0, 120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0}
     }
     rfsuite.bg.msp.mspQueue:add(message)
 end
@@ -80,7 +77,6 @@ local function getMSP()
 
     local avgQueryTime = rfsuite.utils.round(mspQueryTimeCount / mspSpeedTestStats['total'], 2) .. "s"
 
-    
 end
 
 local function updateStats()
@@ -96,7 +92,7 @@ local function updateStats()
     fields['timeouts']:value(tostring(mspSpeedTestStats['timeouts']))
 
     fields['checksum']:value(tostring(mspSpeedTestStats['checksum']))
-    
+
     fields['mintime']:value(tostring(minQueryTime) .. "s")
     fields['maxtime']:value(tostring(maxQueryTime) .. "s")
 
@@ -108,9 +104,6 @@ local function updateStats()
 
     local avgQueryTime = rfsuite.utils.round(mspQueryTimeCount / mspSpeedTestStats['total'], 2) .. "s"
     fields['time']:value(tostring(avgQueryTime))
-
-
-
 
 end
 
@@ -172,33 +165,31 @@ local function startTest(duration)
 end
 
 local function openSpeedTestDialog()
-    local buttons = {
-        {
-            label = "  600S  ",
-            action = function()
-                startTest(600)
-                return true
-            end
-        }, {
-            label = "  300S  ",
-            action = function()
-                startTest(300)
-                return true
-            end
-        }, {
-            label = "  120S  ",
-            action = function()
-                startTest(120)
-                return true
-            end
-        }, {
-            label = "  30S  ",
-            action = function()
-                startTest(30)
-                return true
-            end
-        }
-    }
+    local buttons = {{
+        label = "  600S  ",
+        action = function()
+            startTest(600)
+            return true
+        end
+    }, {
+        label = "  300S  ",
+        action = function()
+            startTest(300)
+            return true
+        end
+    }, {
+        label = "  120S  ",
+        action = function()
+            startTest(120)
+            return true
+        end
+    }, {
+        label = "  30S  ",
+        action = function()
+            startTest(30)
+            return true
+        end
+    }}
     form.openDialog({title = "Start", message = "Would you like to start the test? Choose the test run time below.", buttons = buttons, options = TEXT_LEFT})
 end
 
@@ -220,12 +211,7 @@ local function openPage(pidx, title, script)
     local buttonWs = buttonW - (buttonW * 20) / 100
     local x = w - 10
 
-    rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {
-        x = x - 5 - buttonW - buttonWs - 5 - buttonWs,
-        y = rfsuite.app.radio.linePaddingTop,
-        w = buttonW,
-        h = rfsuite.app.radio.navbuttonHeight
-    }, {
+    rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {x = x - 5 - buttonW - buttonWs - 5 - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}, {
         text = "MENU",
         icon = nil,
         options = FONT_S,
@@ -309,16 +295,11 @@ function mspSuccess(self)
         local queryTime = os.clock() - mspQueryStartTime
 
         if queryTime ~= 0 then
-            if queryTime > maxQueryTime then
-                maxQueryTime = queryTime
-            end
+            if queryTime > maxQueryTime then maxQueryTime = queryTime end
 
-            if queryTime < minQueryTime then
-                minQueryTime = queryTime
-            end
+            if queryTime < minQueryTime then minQueryTime = queryTime end
         end
 
-        
     end
 end
 

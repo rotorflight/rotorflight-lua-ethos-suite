@@ -27,16 +27,7 @@ labels[#labels + 1] = {t = "Limits", label = "limits1", inline_size = 40.6}
 fields[#fields + 1] = {t = "Cutoff Handling", inline = 1, label = "limits1", min = 0, max = #cuttoff, vals = {mspHeaderBytes + 17, mspHeaderBytes + 18}, tableIdxInc = -1, table = cuttoff}
 
 labels[#labels + 1] = {t = "", label = "limits2", inline_size = 40.6}
-fields[#fields + 1] = {
-    t = "Cutoff Cell Voltage",
-    inline = 1,
-    label = "limits2",
-    min = 0,
-    max = #cuttoffVoltage,
-    vals = {mspHeaderBytes + 19, mspHeaderBytes + 20},
-    tableIdxInc = -1,
-    table = cuttoffVoltage
-}
+fields[#fields + 1] = {t = "Cutoff Cell Voltage", inline = 1, label = "limits2", min = 0, max = #cuttoffVoltage, vals = {mspHeaderBytes + 19, mspHeaderBytes + 20}, tableIdxInc = -1, table = cuttoffVoltage}
 
 -- need to work current limit out - disable for now
 -- labels[#labels + 1] = {t = "", label = "limits3", inline_size = 40.6}
@@ -75,10 +66,7 @@ return {
     labels = labels,
     fields = fields,
     escinfo = escinfo,
-    simulatorResponse = {
-        165, 0, 32, 0, 3, 0, 55, 0, 0, 0, 0, 0, 4, 0, 3, 0, 1, 0, 1, 0, 2, 0, 3, 0, 80, 3, 131, 148, 1, 0, 30, 170, 0, 0, 3, 0, 86, 4, 22, 3, 163, 15, 1, 0, 2, 0, 2, 0, 20, 0, 20, 0, 0, 0, 0, 0, 2,
-        19, 2, 0, 20, 0, 22, 0, 0, 0
-    },
+    simulatorResponse = {165, 0, 32, 0, 3, 0, 55, 0, 0, 0, 0, 0, 4, 0, 3, 0, 1, 0, 1, 0, 2, 0, 3, 0, 80, 3, 131, 148, 1, 0, 30, 170, 0, 0, 3, 0, 86, 4, 22, 3, 163, 15, 1, 0, 2, 0, 2, 0, 20, 0, 20, 0, 0, 0, 0, 0, 2, 19, 2, 0, 20, 0, 22, 0, 0, 0},
     svFlags = 0,
     postLoad = postLoad,
     navButtons = {menu = true, save = true, reload = true, tool = false, help = false},

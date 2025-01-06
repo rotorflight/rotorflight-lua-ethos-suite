@@ -74,7 +74,7 @@ local function eraseDataflash()
         processReply = function(self, buf)
 
             summary = {}
-            
+
             -- blank out vars so that we actually are aware that it updated
             rfsuite.app.formFields[1]:value("")
             rfsuite.app.formFields[2]:value("")
@@ -200,23 +200,21 @@ end
 
 local function onToolMenu(self)
 
-    local buttons = {
-        {
-            label = "                OK                ",
-            action = function()
+    local buttons = {{
+        label = "                OK                ",
+        action = function()
 
-                -- we cant launch the loader here to se rely on the modules
-                -- wakup function to do this
-                triggerEraseDataFlash = true
-                return true
-            end
-        }, {
-            label = "CANCEL",
-            action = function()
-                return true
-            end
-        }
-    }
+            -- we cant launch the loader here to se rely on the modules
+            -- wakup function to do this
+            triggerEraseDataFlash = true
+            return true
+        end
+    }, {
+        label = "CANCEL",
+        action = function()
+            return true
+        end
+    }}
     local message
     local title
 
@@ -237,21 +235,4 @@ local function onToolMenu(self)
 
 end
 
-return {
-    read = readMSP,
-    write = nil,
-    title = "Status",
-    reboot = false,
-    eepromWrite = false,
-    minBytes = 0,
-    wakeup = wakeup,
-    labels = labels,
-    fields = fields,
-    refreshswitch = false,
-    simulatorResponse = {},
-    postLoad = postLoad,
-    postRead = postRead,
-    eraseDataflash = eraseDataflash,
-    onToolMenu = onToolMenu,
-    navButtons = {menu = true, save = false, reload = false, tool = true, help = true}
-}
+return {read = readMSP, write = nil, title = "Status", reboot = false, eepromWrite = false, minBytes = 0, wakeup = wakeup, labels = labels, fields = fields, refreshswitch = false, simulatorResponse = {}, postLoad = postLoad, postRead = postRead, eraseDataflash = eraseDataflash, onToolMenu = onToolMenu, navButtons = {menu = true, save = false, reload = false, tool = true, help = true}}
