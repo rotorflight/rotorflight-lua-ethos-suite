@@ -17,7 +17,7 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 
-]]--
+]] --
 local transport = {}
 
 -- CRSF Devices
@@ -33,14 +33,20 @@ local crsfMspCmd = 0
 
 if crsf.getSensor ~= nil then
     local sensor = crsf.getSensor()
-    transport.popFrame = function() return sensor:popFrame() end
-    transport.pushFrame = function(x,y) return sensor:pushFrame(x,y) end
+    transport.popFrame = function()
+        return sensor:popFrame()
+    end
+    transport.pushFrame = function(x, y)
+        return sensor:pushFrame(x, y)
+    end
 else
-    transport.popFrame = function() return crsf.popFrame() end
-    transport.pushFrame = function(x,y) return crsf.pushFrame(x,y) end
+    transport.popFrame = function()
+        return crsf.popFrame()
+    end
+    transport.pushFrame = function(x, y)
+        return crsf.pushFrame(x, y)
+    end
 end
-
-
 
 transport.mspSend = function(payload)
     local payloadOut = {CRSF_ADDRESS_BETAFLIGHT, CRSF_ADDRESS_RADIO_TRANSMITTER}

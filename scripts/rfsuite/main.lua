@@ -17,8 +17,7 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 
-]]--
-
+]] --
 -- RotorFlight + ETHOS LUA configuration
 local config = {}
 
@@ -65,14 +64,11 @@ config.rf2statusKey = "bkshss"                                      -- RF2Status
 
 -- LuaFormatter on
 
-
 -- main
 rfsuite = {}
 rfsuite.config = config
 rfsuite.app = assert(loadfile("app/app.lua"))(config)
 rfsuite.utils = assert(loadfile("lib/utils.lua"))(config)
-
-
 
 -- tasks
 rfsuite.tasks = {}

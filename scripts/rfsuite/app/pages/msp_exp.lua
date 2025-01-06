@@ -2,16 +2,12 @@ local fields = {}
 local rows = {}
 local cols = {}
 
-
 local total_bytes = 16
-
 
 function uint8_to_int8(value)
     -- Ensure the value is within uint8 range
-    if value < 0 or value > 255 then
-        error("Value out of uint8 range")
-    end
-    
+    if value < 0 or value > 255 then error("Value out of uint8 range") end
+
     -- Convert to int8
     if value > 127 then
         return value - 256
@@ -25,34 +21,26 @@ function int8_to_uint8(value)
     return value & 0xFF
 end
 
-local function update_int8(i,v)
+local function update_int8(i, v)
     local tgt = i + total_bytes
     rfsuite.app.Page.fields[tgt].value = uint8_to_int8(v)
 end
 
-local function update_uint8(i,v)
+local function update_uint8(i, v)
     local tgt = i - total_bytes
     rfsuite.app.Page.fields[tgt].value = int8_to_uint8(v)
 end
 
 -- generate rows
-for i=0, total_bytes - 1 do
-    rows[i + 1] = tostring(i)
-end
+for i = 0, total_bytes - 1 do rows[i + 1] = tostring(i) end
 
 cols = {"UINT8", "INT8"}
 
-
 -- uint8 fields
-for i=0, total_bytes - 1 do
-    fields[#fields + 1] = {col=1, row=i + 1, min = 0, max = 255, vals = { i + 1 } }
-end
+for i = 0, total_bytes - 1 do fields[#fields + 1] = {col = 1, row = i + 1, min = 0, max = 255, vals = {i + 1}} end
 
 -- int8 fields
-for i=0, total_bytes - 1 do
-    fields[#fields + 1] = {col=2, row=i + 1, min = -128, max = 127, vals = { i + 1 } }
-end
-
+for i = 0, total_bytes - 1 do fields[#fields + 1] = {col = 2, row = i + 1, min = -128, max = 127, vals = {i + 1}} end
 
 local function postLoad(self)
     rfsuite.app.triggers.isReady = true
@@ -64,7 +52,6 @@ local function openPage(idx, title, script)
     rfsuite.app.triggers.isReady = false
 
     rfsuite.app.Page = assert(loadfile("app/pages/" .. script))()
-
 
     rfsuite.app.lastIdx = idx
     rfsuite.app.lastTitle = title
@@ -141,15 +128,15 @@ local function openPage(idx, title, script)
             return value
         end, function(value)
             f.value = rfsuite.utils.saveFieldValue(rfsuite.app.Page.fields[i], value)
-            
+
             if i < total_bytes then
                 -- update int8 field
-                update_int8(i,value)
+                update_int8(i, value)
             else
                 -- update uint8 field
-                update_uint8(i,value)
+                update_uint8(i, value)
             end
-            
+
             rfsuite.app.saveValue(i)
         end)
         if f.default ~= nil then
@@ -173,20 +160,18 @@ local function openPage(idx, title, script)
 
 end
 
-
-
 return {
-    read =  158, -- MSP_EXPERIMENTAL
+    read = 158, -- MSP_EXPERIMENTAL
     write = 159, -- MSP_SET_EXPERIMENTAL
-    title       = "Experimental",
+    title = "Experimental",
     navButtons = {menu = true, save = true, reload = true, help = true},
-    minBytes    = 0,
+    minBytes = 0,
     eepromWrite = true,
-    labels      = labels,
-    fields      = fields,
+    labels = labels,
+    fields = fields,
     rows = rows,
-    simulatorResponse = {255, 10, 60, 200, 20, 40, 255, 5, 30, 105, 100, 30, 10, 10, 50, 1 },
-    cols = cols,    
+    simulatorResponse = {255, 10, 60, 200, 20, 40, 255, 5, 30, 105, 100, 30, 10, 10, 50, 1},
+    cols = cols,
     openPage = openPage,
     postLoad = postLoad
 }

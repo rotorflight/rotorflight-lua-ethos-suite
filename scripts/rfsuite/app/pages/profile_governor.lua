@@ -32,28 +32,21 @@ elseif rfsuite.config.governorMode >= 2 then
     fields[#fields + 1] = {t = "Gain", help = "govTTAGain", inline = 2, label = 3, min = 0, max = 250, default = 0, vals = {8}}
     fields[#fields + 1] = {t = "Limit", help = "govTTALimit", inline = 1, label = 3, min = 0, max = 250, default = 20, unit = "%", vals = {9}}
 
-    if tonumber(rfsuite.config.apiVersion) >= 12.07 then
-        fields[#fields + 1] = {t = "Min throttle", help = "govMinThrottle", min = 0, max = 100, default = 10, unit = "%", vals = {14}}
-    end
+    if tonumber(rfsuite.config.apiVersion) >= 12.07 then fields[#fields + 1] = {t = "Min throttle", help = "govMinThrottle", min = 0, max = 100, default = 10, unit = "%", vals = {14}} end
 
     fields[#fields + 1] = {t = "Max throttle", help = "govMaxThrottle", min = 40, max = 100, default = 100, unit = "%", vals = {13}}
 
-
 end
 
-
 local function postLoad(self)
-    rfsuite.app.triggers.isReady = true      
+    rfsuite.app.triggers.isReady = true
     activateWakeup = true
-    
-    
-    
+
 end
 
 local function wakeup()
 
     if activateWakeup == true and currentProfileChecked == false and rfsuite.bg.msp.mspQueue:isProcessed() then
-
 
         -- update active profile
         -- the check happens in postLoad          
@@ -61,22 +54,20 @@ local function wakeup()
             rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.config.activeProfile)
             currentProfileChecked = true
         end
-        
+
         if rfsuite.config.governorMode == 0 then
             if governorDisabledMsg == false then
                 governorDisabledMsg = true
-                
+
                 -- disable save button
                 rfsuite.app.formNavigationFields['save']:enable(false)
                 -- disable reload button
                 rfsuite.app.formNavigationFields['reload']:enable(false)
                 -- add field to formFields
-                rfsuite.app.formLines[#rfsuite.app.formLines+1] = form.addLine("Rotorflight governor is not enabled")
-                
-                
+                rfsuite.app.formLines[#rfsuite.app.formLines + 1] = form.addLine("Rotorflight governor is not enabled")
+
             end
         end
-        
 
     end
 

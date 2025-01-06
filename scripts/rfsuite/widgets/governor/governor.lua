@@ -13,32 +13,13 @@
  * GNU General Public License for more details.
  *
  * Note: Some icons have been sourced from https://www.flaticon.com/
-]]--
-
+]] --
 --[[
 set crsf_flight_mode_reuse = GOV_ADJFUNC
-]]--
+]] --
+local rf2gov = {refresh = true, environment = system.getVersion(), oldsensors = {govmode = ""}, wakeupSchedulerUI = os.clock()}
 
-local rf2gov = {
-    refresh = true,
-    environment = system.getVersion(),
-    oldsensors = { govmode = "" },
-    wakeupSchedulerUI = os.clock(),
-}
-
-local governorMap = {
-    [0] = "OFF",
-    [1] = "IDLE",
-    [2] = "SPOOLUP",
-    [3] = "RECOVERY",
-    [4] = "ACTIVE",
-    [5] = "THR-OFF",
-    [6] = "LOST-HS",
-    [7] = "AUTOROT",
-    [8] = "BAILOUT",
-    [100] = "DISABLED",
-    [101] = "DISARMED",
-}
+local governorMap = {[0] = "OFF", [1] = "IDLE", [2] = "SPOOLUP", [3] = "RECOVERY", [4] = "ACTIVE", [5] = "THR-OFF", [6] = "LOST-HS", [7] = "AUTOROT", [8] = "BAILOUT", [100] = "DISABLED", [101] = "DISARMED"}
 
 local sensors
 
@@ -75,7 +56,7 @@ function rf2gov.getSensors()
         govmode = "DISABLED"
     else
         local govSOURCE = rfsuite.bg.telemetry.getSensorSource("governor")
-        
+
         if rfsuite.bg.telemetry.getSensorProtocol() == 'lcrsf' then
             govmode = govSOURCE and govSOURCE:stringValue() or ""
         else
@@ -84,11 +65,9 @@ function rf2gov.getSensors()
         end
     end
 
-    if rf2gov.oldsensors.govmode ~= govmode then
-        rf2gov.refresh = true
-    end
+    if rf2gov.oldsensors.govmode ~= govmode then rf2gov.refresh = true end
 
-    sensors = { govmode = govmode }
+    sensors = {govmode = govmode}
     rf2gov.oldsensors = sensors
 
     return sensors
@@ -109,9 +88,7 @@ function rf2gov.wakeupUI()
     rf2gov.refresh = false
     rf2gov.getSensors()
 
-    if rf2gov.refresh then
-        lcd.invalidate()
-    end
+    if rf2gov.refresh then lcd.invalidate() end
 end
 
 return rf2gov

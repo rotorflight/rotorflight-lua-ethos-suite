@@ -20,7 +20,6 @@ local function postLoad(self)
 end
 
 local function postRead(self)
-
 end
 
 local function setPidProfile(profileIndex)
@@ -28,7 +27,6 @@ local function setPidProfile(profileIndex)
         command = 210, -- MSP_SELECT_SETTING
         payload = {profileIndex},
         processReply = function(self, buf)
-
         end,
         simulatorResponse = {}
     }
@@ -41,7 +39,6 @@ local function setRateProfile(profileIndex)
         command = 210, -- MSP_SELECT_SETTING
         payload = {profileIndex},
         processReply = function(self, buf)
-
         end,
         simulatorResponse = {}
     }
@@ -50,21 +47,19 @@ end
 
 local function onSaveMenu()
 
-    local buttons = {
-        {
-            label = "                OK                ",
-            action = function()
-                triggerSave = true
-                return true
-            end
-        }, {
-            label = "CANCEL",
-            action = function()
-                triggerSave = false
-                return true
-            end
-        }
-    }
+    local buttons = {{
+        label = "                OK                ",
+        action = function()
+            triggerSave = true
+            return true
+        end
+    }, {
+        label = "CANCEL",
+        action = function()
+            triggerSave = false
+            return true
+        end
+    }}
 
     form.openDialog({
         width = nil,

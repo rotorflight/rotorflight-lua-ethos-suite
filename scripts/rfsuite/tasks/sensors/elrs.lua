@@ -17,7 +17,7 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 
-]]--
+]] --
 --
 -- Rotorflight Custom Telemetry Decoder for ELRS
 --
@@ -29,11 +29,19 @@ local elrs = {}
 
 if crsf.getSensor ~= nil then
     local sensor = crsf.getSensor()
-    elrs.popFrame = function() return sensor:popFrame() end
-    elrs.pushFrame = function(x,y) return sensor:pushFrame(x,y) end
+    elrs.popFrame = function()
+        return sensor:popFrame()
+    end
+    elrs.pushFrame = function(x, y)
+        return sensor:pushFrame(x, y)
+    end
 else
-    elrs.popFrame = function() return crsf.popFrame() end
-    elrs.pushFrame = function(x,y) return crsf.pushFrame(x,y) end
+    elrs.popFrame = function()
+        return crsf.popFrame()
+    end
+    elrs.pushFrame = function(x, y)
+        return crsf.pushFrame(x, y)
+    end
 end
 
 local sensors = {}
@@ -159,7 +167,7 @@ local function decControl(data, pos)
     y, c, pos = decS12S12(data, pos)
     setTelemetryValue(0x1031, 0, 0, p, UNIT_DEGREE, 2, "Pitch Control", -4500, 4500) -- CPtc
     setTelemetryValue(0x1032, 0, 0, r, UNIT_DEGREE, 2, "Roll Control", -4500, 4500) -- CRol
-    setTelemetryValue(0x1033, 0, 0, 3*y, UNIT_DEGREE, 2, "Yaw Control", -9000, 9000) -- CYaw
+    setTelemetryValue(0x1033, 0, 0, 3 * y, UNIT_DEGREE, 2, "Yaw Control", -9000, 9000) -- CYaw
     setTelemetryValue(0x1034, 0, 0, c, UNIT_DEGREE, 2, "Coll Control", -4500, 4500) -- CCol
     return nil, pos
 end
@@ -190,10 +198,10 @@ local function decLatLong(data, pos)
     local lat, lon
     lat, pos = decS32(data, pos)
     lon, pos = decS32(data, pos)
-    
+
     lat = math.floor(lat * 0.001)
     lon = math.floor(lon * 0.001)
-    
+
     setTelemetryValue(0x1125, 0, 0, lat, UNIT_DEGREE, 4, "GPS Latitude", -10000000000, 10000000000)
     setTelemetryValue(0x112B, 0, 0, lon, UNIT_DEGREE, 4, "GPS Longitude", -10000000000, 10000000000)
     return nil, pos
@@ -241,7 +249,7 @@ elrs.RFSensors = {
     -- Collective Control angle
     [0x1034] = {original = "CCol", name = "Coll Control", unit = UNIT_DEGREE, prec = 1, min = -450, max = 450, dec = decS16},
     -- Throttle output %
-    [0x1035] = {original = "Thr",  name = "Throttle %", unit = UNIT_PERCENT, prec = 0, min = -100, max = 100, dec = decS8},
+    [0x1035] = {original = "Thr", name = "Throttle %", unit = UNIT_PERCENT, prec = 0, min = -100, max = 100, dec = decS8},
 
     -- ESC#1 voltage
     [0x1041] = {original = "EscV", name = "ESC1 Voltage", unit = UNIT_VOLT, prec = 2, min = 0, max = 6500, dec = decU16},
@@ -307,11 +315,11 @@ elrs.RFSensors = {
     [0x10A3] = {original = "Tmcu", name = "MCU Temp", unit = UNIT_CELSIUS, prec = 0, min = 0, max = 255, dec = decU8},
 
     -- Heading (combined gyro+mag+GPS)
-    [0x10B1] = {original = "Hdg",  name = "Heading", unit = UNIT_DEGREE, prec = 1, min = -1800, max = 3600, dec = decS16},
+    [0x10B1] = {original = "Hdg", name = "Heading", unit = UNIT_DEGREE, prec = 1, min = -1800, max = 3600, dec = decS16},
     -- Altitude (combined baro+GPS)
-    [0x10B2] = {original = "Alt",  name = "Altitude", unit = UNIT_METER, prec = 2, min = -100000, max = 100000, dec = decS24},
+    [0x10B2] = {original = "Alt", name = "Altitude", unit = UNIT_METER, prec = 2, min = -100000, max = 100000, dec = decS24},
     -- Variometer (combined baro+GPS)
-    [0x10B3] = {original = "Var",  name = "VSpeed", unit = UNIT_METER_PER_SECOND, prec = 2, min = -10000, max = 10000, dec = decS16},
+    [0x10B3] = {original = "Var", name = "VSpeed", unit = UNIT_METER_PER_SECOND, prec = 2, min = -10000, max = 10000, dec = decS16},
 
     -- Headspeed
     [0x10C0] = {original = "Hspd", name = "Headspeed", unit = UNIT_RPM, prec = 0, min = 0, max = 65535, dec = decU16},
@@ -325,7 +333,7 @@ elrs.RFSensors = {
     -- Attitude roll
     [0x1102] = {original = "Roll", name = "Roll Attitude", unit = UNIT_DEGREE, prec = 0, min = -180, max = 360, dec = decS16},
     -- Attitude yaw
-    [0x1103] = {original = "Yaw",  name = "Yaw Attitude", unit = UNIT_DEGREE, prec = 0, min = -180, max = 360, dec = decS16},
+    [0x1103] = {original = "Yaw", name = "Yaw Attitude", unit = UNIT_DEGREE, prec = 0, min = -180, max = 360, dec = decS16},
 
     -- Acceleration (hires combined)
     [0x1110] = {name = "Accl", unit = UNIT_G, prec = 2, min = nil, max = nil, dec = decAccel},
@@ -345,7 +353,7 @@ elrs.RFSensors = {
     -- GPS VDOP
     [0x1124] = {original = "VDOP", name = "GPS VDOP", unit = UNIT_RAW, prec = 0, min = 0, max = 255, dec = decU8},
     -- GPS Coordinates
-    [0x1125] = {original = "GPS",  name = "GPS Coord", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decLatLong},
+    [0x1125] = {original = "GPS", name = "GPS Coord", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decLatLong},
     -- GPS altitude
     [0x1126] = {original = "GAlt", name = "GPS Altitude", unit = UNIT_METER, prec = 2, min = -100000000, max = 100000000, dec = decS16},
     -- GPS heading
@@ -362,20 +370,20 @@ elrs.RFSensors = {
     -- System load
     [0x1142] = {original = "SYS%", name = "SYS Load", unit = UNIT_PERCENT, prec = 0, min = 0, max = 10, dec = decU8},
     -- Realtime CPU load
-    [0x1143] = {original = "RT%",  name = "RT Load", unit = UNIT_PERCENT, prec = 0, min = 0, max = 200, dec = decU8},
+    [0x1143] = {original = "RT%", name = "RT Load", unit = UNIT_PERCENT, prec = 0, min = 0, max = 200, dec = decU8},
 
     -- Model ID
     [0x1200] = {original = "MDL#", name = "Model ID", unit = UNIT_RAW, prec = 0, min = 0, max = 255, dec = decU8},
     -- Flight mode flags
     [0x1201] = {original = "Mode", name = "Flight Mode", unit = UNIT_RAW, prec = 0, min = 0, max = 65535, dec = decU16},
     -- Arming flags
-    [0x1202] = {original = "ARM",  name = "Arming Flags", unit = UNIT_RAW, prec = 0, min = 0, max = 255, dec = decU8},
+    [0x1202] = {original = "ARM", name = "Arming Flags", unit = UNIT_RAW, prec = 0, min = 0, max = 255, dec = decU8},
     -- Arming disable flags
     [0x1203] = {original = "ARMD", name = "Arming Disable", unit = UNIT_RAW, prec = 0, min = 0, max = 2147483647, dec = decU32},
     -- Rescue state
     [0x1204] = {original = "Resc", name = "Rescue", unit = UNIT_RAW, prec = 0, min = 0, max = 255, dec = decU8},
     -- Governor state
-    [0x1205] = {original = "Gov",  name = "Governor", unit = UNIT_RAW, prec = 0, min = 0, max = 255, dec = decU8},
+    [0x1205] = {original = "Gov", name = "Governor", unit = UNIT_RAW, prec = 0, min = 0, max = 255, dec = decU8},
 
     -- Current PID profile
     [0x1211] = {original = "PID#", name = "PID Profile", unit = UNIT_RAW, prec = 0, min = 1, max = 6, dec = decU8},
@@ -406,9 +414,7 @@ function elrs.crossfirePop()
 
     if (CRSF_PAUSE_TELEMETRY == true or rfsuite.app.triggers.mspBusy == true) then
         local module = model.getModule(rfsuite.rssiSensor:module())
-        if module ~= nil and module.muteSensorLost ~= nil then
-            module:muteSensorLost(5.0)
-        end    
+        if module ~= nil and module.muteSensorLost ~= nil then module:muteSensorLost(5.0) end
         return false
     else
 
@@ -435,7 +441,7 @@ function elrs.crossfirePop()
                     end
                 end
                 setTelemetryValue(0xEE01, 0, 0, elrs.telemetryFrameCount, UNIT_RAW, 0, "Frame Count", 0, 2147483647) -- *Cnt
-                setTelemetryValue(0xEE02, 0, 0, elrs.telemetryFrameSkip,  UNIT_RAW, 0, "Frame Skip",  0, 2147483647) -- *Skp
+                setTelemetryValue(0xEE02, 0, 0, elrs.telemetryFrameSkip, UNIT_RAW, 0, "Frame Skip", 0, 2147483647) -- *Skp
                 -- setTelemetryValue(0xEE03, 0, 0, elrs.telemetryFrameId, UNIT_RAW, 0, "*Frm", 0, 255)
             end
 

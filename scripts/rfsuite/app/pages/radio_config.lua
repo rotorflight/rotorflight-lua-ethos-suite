@@ -54,9 +54,7 @@ local function validateThrottleValues(self)
 
     self.fields[4].min = arm + 10
 
-    if min < (arm + 10) then
-        self.fields[4].value = arm + 10
-    end
+    if min < (arm + 10) then self.fields[4].value = arm + 10 end
 end
 
 return {

@@ -25,7 +25,6 @@ local function postLoad(self)
     local v = rfsuite.app.Page.values[1]
     if v ~= nil then rfsuite.activeRateProfile = math.floor(v) end
 
-
     if rfsuite.activeRateProfile ~= nil then
         if rfsuite.activeRateProfile ~= rfsuite.rateProfile then
             rfsuite.rateProfile = rfsuite.activeRateProfile

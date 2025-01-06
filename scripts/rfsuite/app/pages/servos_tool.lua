@@ -130,22 +130,20 @@ local function onSaveMenuProgress()
 end
 
 local function onSaveMenu()
-    local buttons = {
-        {
-            label = "                OK                ",
-            action = function()
-                rfsuite.app.audio.playSaving = true
-                isSaving = true
+    local buttons = {{
+        label = "                OK                ",
+        action = function()
+            rfsuite.app.audio.playSaving = true
+            isSaving = true
 
-                return true
-            end
-        }, {
-            label = "CANCEL",
-            action = function()
-                return true
-            end
-        }
-    }
+            return true
+        end
+    }, {
+        label = "CANCEL",
+        action = function()
+            return true
+        end
+    }}
     local theTitle = "Save settings"
     local theMsg = "Save current page to flight controller?"
 
@@ -285,10 +283,7 @@ local function getServoConfigurations(callback, callbackParam)
         --        221, 5, 68, 253, 188, 2, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0
         -- }
         -- 4 servos
-        simulatorResponse = {
-            4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0,
-            120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0
-        }
+        simulatorResponse = {4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0, 120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0}
     }
     rfsuite.bg.msp.mspQueue:add(message)
 end
@@ -338,8 +333,7 @@ local function openPage(idx, title, script, extra1)
 
     if rfsuite.app.Page.headerLine ~= nil then
         local headerLine = form.addLine("")
-        local headerLineText = form.addStaticText(headerLine, {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.config.lcdWidth, h = rfsuite.app.radio.navbuttonHeight},
-                                                  rfsuite.app.Page.headerLine)
+        local headerLineText = form.addStaticText(headerLine, {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.config.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}, rfsuite.app.Page.headerLine)
     end
 
     if rfsuite.config.servoOverride == true then rfsuite.app.formNavigationFields['save']:enable(false) end
@@ -534,42 +528,38 @@ local function onToolMenu(self)
 
     local buttons
     if rfsuite.config.servoOverride == false then
-        buttons = {
-            {
-                label = "                OK                ",
-                action = function()
+        buttons = {{
+            label = "                OK                ",
+            action = function()
 
-                    -- we cant launch the loader here to se rely on the modules
-                    -- wakeup function to do this
-                    triggerOverRide = true
-                    triggerOverRideAll = true
-                    return true
-                end
-            }, {
-                label = "CANCEL",
-                action = function()
-                    return true
-                end
-            }
-        }
+                -- we cant launch the loader here to se rely on the modules
+                -- wakeup function to do this
+                triggerOverRide = true
+                triggerOverRideAll = true
+                return true
+            end
+        }, {
+            label = "CANCEL",
+            action = function()
+                return true
+            end
+        }}
     else
-        buttons = {
-            {
-                label = "                OK                ",
-                action = function()
+        buttons = {{
+            label = "                OK                ",
+            action = function()
 
-                    -- we cant launch the loader here to se rely on the modules
-                    -- wakeup function to do this
-                    triggerOverRide = true
-                    return true
-                end
-            }, {
-                label = "CANCEL",
-                action = function()
-                    return true
-                end
-            }
-        }
+                -- we cant launch the loader here to se rely on the modules
+                -- wakeup function to do this
+                triggerOverRide = true
+                return true
+            end
+        }, {
+            label = "CANCEL",
+            action = function()
+                return true
+            end
+        }}
     end
     local message
     local title

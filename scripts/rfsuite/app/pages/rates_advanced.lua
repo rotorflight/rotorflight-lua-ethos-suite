@@ -78,7 +78,6 @@ local function wakeup()
 end
 
 local function postRead(self)
-
 end
 
 local function flagRateChange(self)
