@@ -61,6 +61,9 @@ config.rf2govName = "Rotorflight Governor"                          -- RF2Gov Na
 config.rf2govKey = "rf2gov"                                         -- RF2Gov Key
 config.rf2statusName = "Rotorflight Status"                         -- RF2Status name
 config.rf2statusKey = "bkshss"                                      -- RF2Status key
+config.rf2mdlnmName = "Rotorflight Model Name"                      -- RF2Mdlnm Name
+config.rf2mdlnmKey = "bkzhfs"                                       -- RF2Mdlnm key
+
 
 -- LuaFormatter on
 
@@ -77,6 +80,7 @@ rfsuite.bg = assert(loadfile("tasks/bg.lua"))(config)
 -- widgets
 rfsuite.rf2gov = assert(loadfile("widgets/governor/governor.lua"))(config)
 rfsuite.rf2status = assert(loadfile("widgets/status/status.lua"))(config)
+rfsuite.rf2mdlnm = assert(loadfile("widgets/modelname/modelname.lua"))(config)
 
 -- LuaFormatter off
 
@@ -86,6 +90,7 @@ local function init()
         system.registerTask({name = config.bgTaskName, key = config.bgTaskKey, wakeup = rfsuite.bg.wakeup, event = rfsuite.bg.event})
         system.registerWidget({name = config.rf2govName,key = config.rf2govKey, create = rfsuite.rf2gov.create, paint = rfsuite.rf2gov.paint, wakeup = rfsuite.rf2gov.wakeup, persistent = false})        
         system.registerWidget({name = config.rf2statusName,key = config.rf2statusKey, event = rfsuite.rf2status.event, write = rfsuite.rf2status.write, read = rfsuite.rf2status.read, configure = rfsuite.rf2status.configure, create = rfsuite.rf2status.create, paint = rfsuite.rf2status.paint, wakeup = rfsuite.rf2status.wakeup, persistent = false})        
+		system.registerWidget({name = config.rf2mdlnmName,key = config.rf2mdlnmKey, create = rfsuite.rf2mdlnm.create, paint = rfsuite.rf2mdlnm.paint, wakeup = rfsuite.rf2mdlnm.wakeup, persistent = false})        
 end
 
 -- LuaFormatter on
