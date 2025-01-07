@@ -1,12 +1,49 @@
-# this script uses lua-format
-# https://github.com/Koihik/LuaFormatter
+#!/bin/bash
 
+# Check if the script is being run from a directory named 'bin'
+if [ "$(basename "$(pwd)")" != "bin" ]; then
+    echo "Error: This script must be run from the 'bin' directory."
+    exit 1
+fi
 
-list=$(find ./ -name "*.lua")
+# Check if .lua-format file exists in the current directory
+if [ ! -f ".lua-format" ]; then
+    echo "Error: .lua-format file not found in the current directory."
+    exit 1
+fi
 
-for x in $list ; do
+# Check if lua-format is installed
+if ! command -v lua-format &> /dev/null; then
+    echo "Error: 'lua-format' is not installed."
+    echo "Please visit https://github.com/Koihik/LuaFormatter for installation instructions."
+    exit 1
+fi
 
-	echo $x
-	lua-format  --tab-width=8 -i $x
+# Check if the first argument ($1) is provided
+if [ -z "$1" ]; then
+    echo "Error: No directory specified."
+    echo "Usage: $0 <directory>"
+    exit 1
+fi
 
+# Check if the provided path is a valid directory
+if [ ! -d "$1" ]; then
+    echo "Error: '$1' is not a valid directory."
+    exit 1
+fi
+
+# Find all .lua files in the specified directory and format them
+list=$(find "$1" -type f -name "*.lua")
+
+if [ -z "$list" ]; then
+    echo "No Lua files found in the directory '$1'."
+    exit 0
+fi
+
+# Format each Lua file found
+for x in $list; do
+    echo "Formatting: $x"
+    lua-format -i "$x"
 done
+
+echo "Formatting completed."

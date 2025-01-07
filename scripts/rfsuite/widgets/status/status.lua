@@ -17,11 +17,10 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 
-]]--
+]] --
 local status = {}
 
 local arg = {...}
-
 
 local environment = system.getVersion()
 
@@ -226,11 +225,8 @@ status.sensorRSSIMin = 0
 status.sensorRSSIMax = 0
 status.lastMaxMin = 0
 status.wakeupSchedulerUI = os.clock()
-status.layoutOptions = {
-    {"TIMER", 1}, {"VOLTAGE", 2}, {"FUEL", 3}, {"CURRENT", 4}, {"MAH", 17}, {"RPM", 5}, {"LQ", 6}, {"T.ESC", 7}, {"T.MCU", 8}, {"IMAGE", 9}, {"GOVERNOR", 10}, {"IMAGE, GOVERNOR", 11},
-    {"LQ, TIMER", 12}, {"T.ESC, T.MCU", 13}, {"VOLTAGE, FUEL", 14}, {"VOLTAGE, CURRENT", 15}, {"VOLTAGE, MAH", 16}, {"LQ, TIMER, T.ESC, T.MCU", 20}, {"MAX CURRENT", 21}, {"LQ, GOVERNOR", 22},
-    {"CUSTOMSENSOR #1", 23}, {"CUSTOMSENSOR #2", 24}, {"CUSTOMSENSOR #1, #2", 25}
-}
+status.layoutOptions = {{"TIMER", 1}, {"VOLTAGE", 2}, {"FUEL", 3}, {"CURRENT", 4}, {"MAH", 17}, {"RPM", 5}, {"LQ", 6}, {"T.ESC", 7}, {"T.MCU", 8}, {"IMAGE", 9}, {"GOVERNOR", 10}, {"IMAGE, GOVERNOR", 11}, {"LQ, TIMER", 12}, {"T.ESC, T.MCU", 13}, {"VOLTAGE, FUEL", 14}, {"VOLTAGE, CURRENT", 15}, {"VOLTAGE, MAH", 16}, {"LQ, TIMER, T.ESC, T.MCU", 20}, {"MAX CURRENT", 21}, {"LQ, GOVERNOR", 22},
+                        {"CUSTOMSENSOR #1", 23}, {"CUSTOMSENSOR #2", 24}, {"CUSTOMSENSOR #1, #2", 25}}
 status.layoutBox1Param = 11 -- IMAGE, GOV
 status.layoutBox2Param = 2 -- VOLTAGE
 status.layoutBox3Param = 3 -- FUEL
@@ -267,7 +263,6 @@ local adjVALUE
 local mahSOURCE
 local telemetrySOURCE
 local crsfSOURCE
-
 
 function status.create(widget)
 
@@ -331,19 +326,19 @@ end
 
 function status.configure(widget)
     status.isInConfiguration = true
-    
+
     local line
     local field
 
     local triggerpanel = form.addExpansionPanel("Triggers")
     triggerpanel:open(false)
 
-   -- line = triggerpanel:addLine("Arm switch")
-   -- armswitch = form.addSwitchField(line, form.getFieldSlots(line)[0], function()
-   --     return armswitchParam
-   -- end, function(value)
-   --     armswitchParam = value
-   -- end)
+    -- line = triggerpanel:addLine("Arm switch")
+    -- armswitch = form.addSwitchField(line, form.getFieldSlots(line)[0], function()
+    --     return armswitchParam
+    -- end, function(value)
+    --     armswitchParam = value
+    -- end)
 
     line = triggerpanel:addLine("Idleup switch")
     local idleupswitch = form.addSwitchField(line, form.getFieldSlots(line)[0], function()
@@ -364,12 +359,8 @@ function status.configure(widget)
     local timerpanel = form.addExpansionPanel("Timer configuration")
     timerpanel:open(false)
 
-    timeTable = {
-        {"Disabled", 0}, {"00:30", 30}, {"01:00", 60}, {"01:30", 90}, {"02:00", 120}, {"02:30", 150}, {"03:00", 180}, {"03:30", 210}, {"04:00", 240}, {"04:30", 270}, {"05:00", 300}, {"05:30", 330},
-        {"06:00", 360}, {"06:30", 390}, {"07:00", 420}, {"07:30", 450}, {"08:00", 480}, {"08:30", 510}, {"09:00", 540}, {"09:30", 570}, {"10:00", 600}, {"10:30", 630}, {"11:00", 660}, {"11:30", 690},
-        {"12:00", 720}, {"12:30", 750}, {"13:00", 780}, {"13:30", 810}, {"14:00", 840}, {"14:30", 870}, {"15:00", 900}, {"15:30", 930}, {"16:00", 960}, {"16:30", 990}, {"17:00", 1020},
-        {"17:30", 1050}, {"18:00", 1080}, {"18:30", 1110}, {"19:00", 1140}, {"19:30", 1170}, {"20:00", 1200}
-    }
+    timeTable = {{"Disabled", 0}, {"00:30", 30}, {"01:00", 60}, {"01:30", 90}, {"02:00", 120}, {"02:30", 150}, {"03:00", 180}, {"03:30", 210}, {"04:00", 240}, {"04:30", 270}, {"05:00", 300}, {"05:30", 330}, {"06:00", 360}, {"06:30", 390}, {"07:00", 420}, {"07:30", 450}, {"08:00", 480}, {"08:30", 510}, {"09:00", 540}, {"09:30", 570}, {"10:00", 600}, {"10:30", 630}, {"11:00", 660}, {"11:30", 690},
+                 {"12:00", 720}, {"12:30", 750}, {"13:00", 780}, {"13:30", 810}, {"14:00", 840}, {"14:30", 870}, {"15:00", 900}, {"15:30", 930}, {"16:00", 960}, {"16:30", 990}, {"17:00", 1020}, {"17:30", 1050}, {"18:00", 1080}, {"18:30", 1110}, {"19:00", 1140}, {"19:30", 1170}, {"20:00", 1200}}
 
     line = timerpanel:addLine("Play alarm at")
     form.addChoiceField(line, nil, timeTable, function()
@@ -847,12 +838,11 @@ function status.configure(widget)
 
     -- LVSTICK MONITORING
     line = advpanel:addLine("    " .. "Gimbal monitoring")
-    form.addChoiceField(line, nil, {
-        {"DISABLED", 0}, -- 
-        {"AECR1T23 (ELRS)", 1}, -- recomended
-        {"AETRC123 (FRSKY)", 2}, -- frsky
-        {"AETR1C23 (FUTABA)", 3}, -- fut/hitec
-        {"TAER1C23 (SPEKTRUM)", 4} -- spec
+    form.addChoiceField(line, nil, {{"DISABLED", 0}, -- 
+    {"AECR1T23 (ELRS)", 1}, -- recomended
+    {"AETRC123 (FRSKY)", 2}, -- frsky
+    {"AETR1C23 (FUTABA)", 3}, -- fut/hitec
+    {"TAER1C23 (SPEKTRUM)", 4} -- spec
     }, function()
         return status.lowvoltagStickParam
     end, function(newValue)
@@ -923,9 +913,7 @@ function status.configure(widget)
 
     -- LVannouncement DISPLAY
     line = advpanel:addLine("Announcement interval")
-    form.addChoiceField(line, nil, {
-        {"5s", 5}, {"10s", 10}, {"15s", 15}, {"20s", 20}, {"25s", 25}, {"30s", 30}, {"35s", 35}, {"40s", 40}, {"45s", 45}, {"50s", 50}, {"55s", 55}, {"60s", 60}, {"No repeat", 50000}
-    }, function()
+    form.addChoiceField(line, nil, {{"5s", 5}, {"10s", 10}, {"15s", 15}, {"20s", 20}, {"25s", 25}, {"30s", 30}, {"35s", 35}, {"40s", 40}, {"45s", 45}, {"50s", 50}, {"55s", 55}, {"60s", 60}, {"No repeat", 50000}}, function()
         return status.announcementIntervalParam
     end, function(newValue)
         status.announcementIntervalParam = newValue
@@ -1077,14 +1065,14 @@ function status.getThemeInfo()
         fontSENSOR = FONT_XXL,
         fontSENSORSmallBox = FONT_STD,
         fontPopupTitle = FONT_S,
-        widgetTitleOffset = 20,
+        widgetTitleOffset = 20
     }
 
     local themeConfigs = {
-        ["784x294"] = { colSpacing = 4, fullBoxW = 262, fullBoxH = h / 2, smallBoxSensortextOFFSET = -5, fontTITLE = FONT_XS },
-        ["472x191"] = { colSpacing = 2, fullBoxW = 158, fullBoxH = 97, smallBoxSensortextOFFSET = -8, fontTITLE = 768 },
-        ["630x236"] = { colSpacing = 3, fullBoxW = 210, fullBoxH = 120, smallBoxSensortextOFFSET = -10, fontTITLE = 768 },
-        ["427x158"] = { colSpacing = 2, fullBoxW = 158, fullBoxH = 79, smallBoxSensortextOFFSET = -10, fontTITLE = FONT_XS },
+        ["784x294"] = {colSpacing = 4, fullBoxW = 262, fullBoxH = h / 2, smallBoxSensortextOFFSET = -5, fontTITLE = FONT_XS},
+        ["472x191"] = {colSpacing = 2, fullBoxW = 158, fullBoxH = 97, smallBoxSensortextOFFSET = -8, fontTITLE = 768},
+        ["630x236"] = {colSpacing = 3, fullBoxW = 210, fullBoxH = 120, smallBoxSensortextOFFSET = -10, fontTITLE = 768},
+        ["427x158"] = {colSpacing = 2, fullBoxW = 158, fullBoxH = 79, smallBoxSensortextOFFSET = -10, fontTITLE = FONT_XS}
     }
 
     local configKey = string.format("%dx%d", tw, th)
@@ -1092,38 +1080,22 @@ function status.getThemeInfo()
 
     if themeConfig then
         -- Merge defaultConfig with the specific themeConfig
-        for k, v in pairs(defaultConfig) do
-            themeConfig[k] = v
-        end
+        for k, v in pairs(defaultConfig) do themeConfig[k] = v end
         return themeConfig
     end
 
     return nil -- Return nil if no matching theme configuration is found
 end
 
-
 function status.govColorFlag(flag)
     -- Define a table to map flags to their corresponding values
-    
+
     -- 0 = default colour
     -- 1 = red (alarm)
     -- 2 = orange (warning)
     -- 3 = green (ok)  
-    
-    local flagColors = {
-        ["UNKNOWN"] = 1,
-        ["DISARMED"] = 0,
-        ["DISABLED"] = 0,
-        ["BAILOUT"] = 2,
-        ["AUTOROT"] = 2,
-        ["LOST-HS"] = 2,
-        ["THR-OFF"] = 2,
-        ["ACTIVE"] = 3,
-        ["RECOVERY"] = 2,
-        ["SPOOLUP"] = 2,
-        ["IDLE"] = 0,
-        ["OFF"] = 0
-    }
+
+    local flagColors = {["UNKNOWN"] = 1, ["DISARMED"] = 0, ["DISABLED"] = 0, ["BAILOUT"] = 2, ["AUTOROT"] = 2, ["LOST-HS"] = 2, ["THR-OFF"] = 2, ["ACTIVE"] = 3, ["RECOVERY"] = 2, ["SPOOLUP"] = 2, ["IDLE"] = 0, ["OFF"] = 0}
 
     -- Return the corresponding value or default to 0
     return flagColors[flag] or 0
@@ -1144,15 +1116,13 @@ function status.telemetryBox(x, y, w, h, title, value, unit, smallbox, alarm, mi
     if value ~= nil then
         -- Set font
         lcd.font((smallbox == nil or smallbox == false) and theme.fontSENSOR or theme.fontSENSORSmallBox)
-        
+
         local str = value .. unit
         local tsizeW, tsizeH = lcd.getTextSize(unit == "°" and value .. "." or str)
         local sx = (x + w / 2) - (tsizeW / 2)
         local sy = (y + h / 2) - (tsizeH / 2)
 
-        if smallbox and (status.maxminParam or status.titleParam) then
-            sy = sy + theme.smallBoxSensortextOFFSET
-        end
+        if smallbox and (status.maxminParam or status.titleParam) then sy = sy + theme.smallBoxSensortextOFFSET end
 
         -- Set text color based on alarm flag
         if status.statusColorParam then
@@ -1170,9 +1140,7 @@ function status.telemetryBox(x, y, w, h, title, value, unit, smallbox, alarm, mi
         lcd.drawText(sx, sy, str)
 
         -- Reset text color after alarm handling
-        if alarm ~= 0 then
-            lcd.color(status.isDARKMODE and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90))
-        end
+        if alarm ~= 0 then lcd.color(status.isDARKMODE and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90)) end
     end
 
     if title and status.titleParam then
@@ -1244,11 +1212,7 @@ function status.telemetryBoxMAX(x, y, w, h, title, value, unit, smallbox)
         local sx = x + w / 2 - tsizeW / 2
         local sy = y + h / 2 - tsizeH / 2
 
-        if smallbox then
-            if status.maxminParam or status.titleParam then
-                sy = sy + theme.smallBoxSensortextOFFSET
-            end
-        end
+        if smallbox then if status.maxminParam or status.titleParam then sy = sy + theme.smallBoxSensortextOFFSET end end
 
         lcd.drawText(sx, sy, str)
     end
@@ -1368,7 +1332,6 @@ function status.paint(widget)
         local theme = status.getThemeInfo()
         local w, h = lcd.getWindowSize()
         local sensorTITLE
-  
 
         if status.isVisible then
             -- blank out display
@@ -1388,11 +1351,10 @@ function status.paint(widget)
             end
 
             -- widget size
-            local validSizes = {
-                {w = 784, h = 294}, -- X20, X20PRO etc
-                {w = 472, h = 191}, -- TWXLITE,X18,X18S
-                {w = 630, h = 236}, -- X14
-                {w = 472, h = 158}  -- X10,X12
+            local validSizes = {{w = 784, h = 294}, -- X20, X20PRO etc
+            {w = 472, h = 191}, -- TWXLITE,X18,X18S
+            {w = 630, h = 236}, -- X14
+            {w = 472, h = 158} -- X10,X12
             }
 
             local isValidSize = false
@@ -1402,7 +1364,7 @@ function status.paint(widget)
                     break
                 end
             end
-            
+
             -- hard error
             if not isValidSize then
                 status.screenError("DISPLAY SIZE INVALID")
@@ -2012,7 +1974,7 @@ function status.paint(widget)
                     if sensorTGT == 'customsensor1_2' then
                         -- SENSOR1 & 2
                         sensorTGT = "customsensor1"
-                        sensorVALUE =  math.floor(status.sensordisplay[sensorTGT]['value'])
+                        sensorVALUE = math.floor(status.sensordisplay[sensorTGT]['value'])
                         sensorUNIT = status.sensordisplay[sensorTGT]['unit']
                         sensorMIN = status.sensordisplay[sensorTGT]['min']
                         sensorMAX = status.sensordisplay[sensorTGT]['max']
@@ -2023,7 +1985,7 @@ function status.paint(widget)
                         status.telemetryBox(posX, posY, boxW, boxH / 2 - (theme.colSpacing / 2), sensorTITLE, sensorVALUE, sensorUNIT, smallBOX, sensorWARN, sensorMIN, sensorMAX)
 
                         sensorTGT = "customsensor2"
-                        sensorVALUE =  math.floor(status.sensordisplay[sensorTGT]['value'])
+                        sensorVALUE = math.floor(status.sensordisplay[sensorTGT]['value'])
                         sensorUNIT = status.sensordisplay[sensorTGT]['unit']
                         sensorMIN = status.sensordisplay[sensorTGT]['min']
                         sensorMAX = status.sensordisplay[sensorTGT]['max']
@@ -2031,8 +1993,7 @@ function status.paint(widget)
                         sensorTITLE = status.sensordisplay[sensorTGT]['title']
 
                         smallBOX = true
-                        status.telemetryBox(posX, posY + boxH / 2 + (theme.colSpacing / 2), boxW, boxH / 2 - theme.colSpacing / 2, sensorTITLE, sensorVALUE, sensorUNIT, smallBOX, sensorWARN,
-                                            sensorMIN, sensorMAX)
+                        status.telemetryBox(posX, posY + boxH / 2 + (theme.colSpacing / 2), boxW, boxH / 2 - theme.colSpacing / 2, sensorTITLE, sensorVALUE, sensorUNIT, smallBOX, sensorWARN, sensorMIN, sensorMAX)
 
                     end
 
@@ -2062,8 +2023,7 @@ function status.paint(widget)
                         sensorTITLE = status.sensordisplay[sensorTGT]['title']
 
                         smallBOX = true
-                        status.telemetryBox(posX, posY + boxH / 2 + (theme.colSpacing / 2), boxW, boxH / 2 - theme.colSpacing / 2, sensorTITLE, sensorVALUE, sensorUNIT, smallBOX, sensorWARN,
-                                            sensorMIN, sensorMAX)
+                        status.telemetryBox(posX, posY + boxH / 2 + (theme.colSpacing / 2), boxW, boxH / 2 - theme.colSpacing / 2, sensorTITLE, sensorVALUE, sensorUNIT, smallBOX, sensorWARN, sensorMIN, sensorMAX)
 
                     end
 
@@ -2089,8 +2049,7 @@ function status.paint(widget)
                         sensorTITLE = status.sensordisplay[sensorTGT]['title']
 
                         smallBOX = true
-                        status.telemetryBox(posX, posY + boxH / 2 + (theme.colSpacing / 2), boxW, boxH / 2 - theme.colSpacing / 2, sensorTITLE, sensorVALUE, sensorUNIT, smallBOX, sensorWARN,
-                                            sensorMIN, sensorMAX)
+                        status.telemetryBox(posX, posY + boxH / 2 + (theme.colSpacing / 2), boxW, boxH / 2 - theme.colSpacing / 2, sensorTITLE, sensorVALUE, sensorUNIT, smallBOX, sensorWARN, sensorMIN, sensorMAX)
 
                     end
 
@@ -2118,8 +2077,7 @@ function status.paint(widget)
                         sensorTITLE = status.sensordisplay[sensorTGT]['title']
 
                         smallBOX = true
-                        status.telemetryBox(posX, posY + boxH / 2 + (theme.colSpacing / 2), boxW, boxH / 2 - theme.colSpacing / 2, sensorTITLE, sensorVALUE, sensorUNIT, smallBOX, sensorWARN,
-                                            sensorMIN, sensorMAX)
+                        status.telemetryBox(posX, posY + boxH / 2 + (theme.colSpacing / 2), boxW, boxH / 2 - theme.colSpacing / 2, sensorTITLE, sensorVALUE, sensorUNIT, smallBOX, sensorWARN, sensorMIN, sensorMAX)
 
                     end
 
@@ -2145,8 +2103,7 @@ function status.paint(widget)
                         sensorTITLE = status.sensordisplay[sensorTGT]['title']
 
                         smallBOX = true
-                        status.telemetryBox(posX, posY + boxH / 2 + (theme.colSpacing / 2), boxW, boxH / 2 - theme.colSpacing / 2, sensorTITLE, sensorVALUE, sensorUNIT, smallBOX, sensorWARN,
-                                            sensorMIN, sensorMAX)
+                        status.telemetryBox(posX, posY + boxH / 2 + (theme.colSpacing / 2), boxW, boxH / 2 - theme.colSpacing / 2, sensorTITLE, sensorVALUE, sensorUNIT, smallBOX, sensorWARN, sensorMIN, sensorMAX)
 
                     end
 
@@ -2172,8 +2129,7 @@ function status.paint(widget)
                         sensorTITLE = status.sensordisplay[sensorTGT]['title']
 
                         smallBOX = true
-                        status.telemetryBox(posX, posY + boxH / 2 + (theme.colSpacing / 2), boxW, boxH / 2 - theme.colSpacing / 2, sensorTITLE, sensorVALUE, sensorUNIT, smallBOX, sensorWARN,
-                                            sensorMIN, sensorMAX)
+                        status.telemetryBox(posX, posY + boxH / 2 + (theme.colSpacing / 2), boxW, boxH / 2 - theme.colSpacing / 2, sensorTITLE, sensorVALUE, sensorUNIT, smallBOX, sensorWARN, sensorMIN, sensorMAX)
 
                     end
 
@@ -2199,8 +2155,7 @@ function status.paint(widget)
                         sensorTITLE = status.sensordisplay[sensorTGT]['title']
 
                         smallBOX = true
-                        status.telemetryBox(posX, posY + boxH / 2 + (theme.colSpacing / 2), boxW, boxH / 2 - theme.colSpacing / 2, sensorTITLE, sensorVALUE, sensorUNIT, smallBOX, sensorWARN,
-                                            sensorMIN, sensorMAX)
+                        status.telemetryBox(posX, posY + boxH / 2 + (theme.colSpacing / 2), boxW, boxH / 2 - theme.colSpacing / 2, sensorTITLE, sensorVALUE, sensorUNIT, smallBOX, sensorWARN, sensorMIN, sensorMAX)
 
                     end
 
@@ -2226,8 +2181,7 @@ function status.paint(widget)
                         sensorTITLE = status.sensordisplay[sensorTGT]['title']
 
                         smallBOX = true
-                        status.telemetryBox(posX, posY + boxH / 2 + (theme.colSpacing / 2), boxW, boxH / 2 - theme.colSpacing / 2, sensorTITLE, sensorVALUE, sensorUNIT, smallBOX, sensorWARN,
-                                            sensorMIN, sensorMAX)
+                        status.telemetryBox(posX, posY + boxH / 2 + (theme.colSpacing / 2), boxW, boxH / 2 - theme.colSpacing / 2, sensorTITLE, sensorVALUE, sensorUNIT, smallBOX, sensorWARN, sensorMIN, sensorMAX)
 
                     end
 
@@ -2242,8 +2196,7 @@ function status.paint(widget)
                         sensorTITLE = status.sensordisplay[sensorTGT]['title']
 
                         smallBOX = true
-                        status.telemetryBox(posX, posY, boxW / 2 - (theme.colSpacing / 2), boxH / 2 - (theme.colSpacing / 2), sensorTITLE, sensorVALUE, sensorUNIT, smallBOX, sensorWARN, sensorMIN,
-                                            sensorMAX)
+                        status.telemetryBox(posX, posY, boxW / 2 - (theme.colSpacing / 2), boxH / 2 - (theme.colSpacing / 2), sensorTITLE, sensorVALUE, sensorUNIT, smallBOX, sensorWARN, sensorMIN, sensorMAX)
 
                         sensorTGT = "timer"
                         sensorVALUE = status.sensordisplay[sensorTGT]['value']
@@ -2254,8 +2207,7 @@ function status.paint(widget)
                         sensorTITLE = status.sensordisplay[sensorTGT]['title']
 
                         smallBOX = true
-                        status.telemetryBox(posX + boxW / 2 + (theme.colSpacing / 2), posY, boxW / 2 - (theme.colSpacing / 2), boxH / 2 - (theme.colSpacing / 2), sensorTITLE, sensorVALUE, sensorUNIT,
-                                            smallBOX, sensorWARN, sensorMIN, sensorMAX)
+                        status.telemetryBox(posX + boxW / 2 + (theme.colSpacing / 2), posY, boxW / 2 - (theme.colSpacing / 2), boxH / 2 - (theme.colSpacing / 2), sensorTITLE, sensorVALUE, sensorUNIT, smallBOX, sensorWARN, sensorMIN, sensorMAX)
 
                         sensorTGT = "temp_esc"
                         sensorVALUE = status.sensordisplay[sensorTGT]['value']
@@ -2266,8 +2218,7 @@ function status.paint(widget)
                         sensorTITLE = status.sensordisplay[sensorTGT]['title']
 
                         smallBOX = true
-                        status.telemetryBox(posX, posY + boxH / 2 + (theme.colSpacing / 2), boxW / 2 - (theme.colSpacing / 2), boxH / 2 - theme.colSpacing / 2, sensorTITLE, sensorVALUE, sensorUNIT,
-                                            smallBOX, sensorWARN, sensorMIN, sensorMAX)
+                        status.telemetryBox(posX, posY + boxH / 2 + (theme.colSpacing / 2), boxW / 2 - (theme.colSpacing / 2), boxH / 2 - theme.colSpacing / 2, sensorTITLE, sensorVALUE, sensorUNIT, smallBOX, sensorWARN, sensorMIN, sensorMAX)
 
                         sensorTGT = "temp_mcu"
                         sensorVALUE = status.sensordisplay[sensorTGT]['value']
@@ -2278,8 +2229,7 @@ function status.paint(widget)
                         sensorTITLE = status.sensordisplay[sensorTGT]['title']
 
                         smallBOX = true
-                        status.telemetryBox(posX + boxW / 2 + (theme.colSpacing / 2), posY + boxH / 2 + (theme.colSpacing / 2), boxW / 2 - (theme.colSpacing / 2), boxH / 2 - (theme.colSpacing / 2),
-                                            sensorTITLE, sensorVALUE, sensorUNIT, smallBOX, sensorWARN, sensorMIN, sensorMAX)
+                        status.telemetryBox(posX + boxW / 2 + (theme.colSpacing / 2), posY + boxH / 2 + (theme.colSpacing / 2), boxW / 2 - (theme.colSpacing / 2), boxH / 2 - (theme.colSpacing / 2), sensorTITLE, sensorVALUE, sensorUNIT, smallBOX, sensorWARN, sensorMIN, sensorMAX)
 
                     end
 
@@ -2305,21 +2255,20 @@ function status.paint(widget)
                 c = c + 1
             end
 
-            if status.linkUP == false and environment.simulation == false then 
-                    status.noTelem() 
-            elseif status.idleupswitchParam and status.idleupswitchParam:state() then 
-                    local armSource = rfsuite.bg.telemetry.getSensorSource("armflags")
-                    if armSource then
-                        isArmed = math.floor(armSource:value())
-                        if isArmed == 1 or isArmed == 3 then
-                            if status.theTIME <= status.idleupdelayParam then
-                                    local count = math.floor(status.idleupdelayParam - status.theTIME)
-                                    status.message("INITIALISING..." .. count + 1)
-                            end      
-                        end                            
-                    end         
+            if status.linkUP == false and environment.simulation == false then
+                status.noTelem()
+            elseif status.idleupswitchParam and status.idleupswitchParam:state() then
+                local armSource = rfsuite.bg.telemetry.getSensorSource("armflags")
+                if armSource then
+                    isArmed = math.floor(armSource:value())
+                    if isArmed == 1 or isArmed == 3 then
+                        if status.theTIME <= status.idleupdelayParam then
+                            local count = math.floor(status.idleupdelayParam - status.theTIME)
+                            status.message("INITIALISING..." .. count + 1)
+                        end
+                    end
+                end
             end
-
 
         end
     end
@@ -2442,16 +2391,16 @@ function status.getSensors()
 
                 current = currentSOURCE:value()
                 if currentSOURCEESC1 ~= nil then
-                        currentesc1 = currentSOURCEESC1:value()
+                    currentesc1 = currentSOURCEESC1:value()
                 else
-                        currentesc1 = 0
+                    currentesc1 = 0
                 end
                 if current ~= nil then
                     if current == 0 and currentesc1 ~= 0 then
                         current = currentesc1 * 10
                     else
                         current = current * 10
-                    end    
+                    end
                 else
                     current = 0
                 end
@@ -2688,17 +2637,17 @@ function status.getSensors()
             if currentSOURCE ~= nil then
                 current = currentSOURCE:value()
                 if currentSOURCEESC1 ~= nil then
-                        currentesc1 = currentSOURCEESC1:value()
-                        if currentesc1 == nil then currentesc1 = 0 end
+                    currentesc1 = currentSOURCEESC1:value()
+                    if currentesc1 == nil then currentesc1 = 0 end
                 else
-                        currentesc1 = 0
+                    currentesc1 = 0
                 end
                 if current ~= nil then
                     if current == 0 and currentesc1 ~= 0 then
                         current = currentesc1 * 10
                     else
                         current = current * 10
-                    end  
+                    end
                 else
                     current = 0
                 end
@@ -2832,14 +2781,10 @@ function status.getSensors()
     if math.floor(voltage) <= 5 then fuel = 0 end
 
     -- Convert MCU temperature
-    if status.tempconvertParamMCU == 2 or status.tempconvertParamMCU == 3 then
-        temp_mcu = convert_temperature(temp_mcu, status.tempconvertParamMCU)
-    end
+    if status.tempconvertParamMCU == 2 or status.tempconvertParamMCU == 3 then temp_mcu = convert_temperature(temp_mcu, status.tempconvertParamMCU) end
 
     -- Convert ESC temperature
-    if status.tempconvertParamESC == 2 or status.tempconvertParamESC == 3 then
-        temp_esc = convert_temperature(temp_esc, status.tempconvertParamESC)
-    end
+    if status.tempconvertParamESC == 2 or status.tempconvertParamESC == 3 then temp_esc = convert_temperature(temp_esc, status.tempconvertParamESC) end
 
     -- set flag to status.refresh screen or not
 
@@ -2861,7 +2806,6 @@ function status.getSensors()
     if rssi == nil then rssi = 0 end
     rssi = status.round(rssi, 0)
 
-
     -- Voltage based on stick position
     status.lowvoltagStickParam = status.lowvoltagStickParam or 0
     status.lowvoltagStickCutoffParam = status.lowvoltagStickCutoffParam or 80
@@ -2879,11 +2823,9 @@ function status.getSensors()
     -- Intercept governor for non-RF governor helis
     local isArmed = false
 
-    if status.linkUP then    
+    if status.linkUP then
         local armSource = rfsuite.bg.telemetry.getSensorSource("armflags")
-        if armSource then
-            isArmed = armSource:value()
-        end
+        if armSource then isArmed = armSource:value() end
     end
 
     if status.idleupswitchParam and status.govmodeParam == 1 then
@@ -2912,20 +2854,7 @@ function status.getSensors()
     if status.sensors.rssi ~= rssi then status.refresh = true end
     if status.sensors.fm ~= CURRENT_FLIGHT_MODE then status.refresh = true end
 
-    ret = {
-        fm = fm,
-        govmode = govmode,
-        voltage = voltage,
-        rpm = rpm,
-        current = current,
-        temp_esc = temp_esc,
-        temp_mcu = temp_mcu,
-        fuel = fuel,
-        mah = mah,
-        rssi = rssi,
-        adjsource = adjsource,
-        adjvalue = adjvalue
-    }
+    ret = {fm = fm, govmode = govmode, voltage = voltage, rpm = rpm, current = current, temp_esc = temp_esc, temp_mcu = temp_mcu, fuel = fuel, mah = mah, rssi = rssi, adjsource = adjsource, adjvalue = adjvalue}
     status.sensors = ret
 
     return ret
@@ -2953,7 +2882,7 @@ function status.sensorsMAXMIN(sensors)
                     status["sensor" .. sensor .. "Min"] = value
                     status["sensor" .. sensor .. "Max"] = value
                 end
-                
+
                 local current = sensors.current or 0
                 status.sensorCurrentMin = current > 0 and current or 1
                 status.sensorCurrentMax = current
@@ -2991,7 +2920,6 @@ function status.sensorsMAXMIN(sensors)
     end
 end
 
-
 function tablelength(T)
     local count = 0
     for _ in pairs(T) do count = count + 1 end
@@ -2999,18 +2927,14 @@ function tablelength(T)
 end
 
 function status.round(number, precision)
-    precision = precision or 0  -- Default to 0 if precision is not provided
-    if type(number) ~= "number" or type(precision) ~= "number" then
-        error("Invalid input: Both number and precision must be numbers")
-    end
+    precision = precision or 0 -- Default to 0 if precision is not provided
+    if type(number) ~= "number" or type(precision) ~= "number" then error("Invalid input: Both number and precision must be numbers") end
     local fmtStr = string.format("%%.%df", precision)
     return tonumber(string.format(fmtStr, number))
 end
 
 function status.SecondsToClock(seconds)
-    if type(seconds) ~= "number" or seconds <= 0 then
-        return "00:00:00"
-    end
+    if type(seconds) ~= "number" or seconds <= 0 then return "00:00:00" end
 
     local hours = string.format("%02d", math.floor(seconds / 3600))
     local mins = string.format("%02d", math.floor((seconds % 3600) / 60))
@@ -3234,7 +3158,6 @@ function status.playCurrent(widget)
     end
 end
 
-
 function status.playLQ(widget)
     if not status.announcementLQSwitchParam then return end
 
@@ -3272,7 +3195,6 @@ function status.playLQ(widget)
     end
 end
 
-
 function status.playMCU(widget)
     if not status.announcementMCUSwitchParam then return end
 
@@ -3308,7 +3230,6 @@ function status.playMCU(widget)
     end
 end
 
-
 function status.playESC(widget)
     if not status.announcementESCSwitchParam then return end
 
@@ -3334,8 +3255,7 @@ function status.playESC(widget)
         end
 
         -- Handle repeating announcements
-        if status.esctime.escannouncementTimerStart and 
-           (os.clock() - status.esctime.escaudioannouncementCounter >= status.announcementIntervalParam) then
+        if status.esctime.escannouncementTimerStart and (os.clock() - status.esctime.escaudioannouncementCounter >= status.announcementIntervalParam) then
             status.esctime.escaudioannouncementCounter = os.clock()
             rfsuite.utils.playFile("status", "alerts/esc.wav")
             system.playNumber(status.sensors.temp_esc / 100, UNIT_DEGREE, 2)
@@ -3350,9 +3270,7 @@ function status.playTIMERALARM(widget)
     if status.theTIME and status.timeralarmParam and status.timeralarmParam ~= 0 then
 
         -- Reset timer delay
-        if status.theTIME > status.timeralarmParam + 2 then
-            status.timerAlarmPlay = true
-        end
+        if status.theTIME > status.timeralarmParam + 2 then status.timerAlarmPlay = true end
 
         -- Trigger first timer
         if status.timerAlarmPlay then
@@ -3365,14 +3283,10 @@ function status.playTIMERALARM(widget)
                 local secs = string.format("%02.f", math.floor(status.theTIME - hours * 3600 - mins * 60))
 
                 rfsuite.utils.playFile("status", "alerts/timer.wav")
-                if mins ~= "00" then
-                    system.playNumber(mins, UNIT_MINUTE, 2)
-                end
+                if mins ~= "00" then system.playNumber(mins, UNIT_MINUTE, 2) end
                 system.playNumber(secs, UNIT_SECOND, 2)
 
-                if status.timeralarmVibrateParam then
-                    system.playHaptic("- - -")
-                end
+                if status.timeralarmVibrateParam then system.playHaptic("- - -") end
 
                 status.timerAlarmPlay = false
             end
@@ -3381,18 +3295,14 @@ function status.playTIMERALARM(widget)
 end
 
 function status.playTIMER(widget)
-    if not status.announcementTimerSwitchParam then
-        return
-    end
+    if not status.announcementTimerSwitchParam then return end
 
     -- Update timer announcement state
     local timerSwitchState = status.announcementTimerSwitchParam:state()
     status.timetime.timerannouncementTimer = timerSwitchState
     local timerDoneFirst = not timerSwitchState
 
-    if status.isInConfiguration then
-        return
-    end
+    if status.isInConfiguration then return end
 
     local alertTIME = status.theTIME or 0
 
@@ -3426,17 +3336,13 @@ function status.playTIMER(widget)
 end
 
 function status.playFuel(widget)
-    if not status.announcementFuelSwitchParam then
-        return
-    end
+    if not status.announcementFuelSwitchParam then return end
 
     local isSwitchOn = status.announcementFuelSwitchParam:state()
     status.fueltime.fuelannouncementTimer = isSwitchOn
     fuelDoneFirst = not isSwitchOn
 
-    if status.isInConfiguration or not status.sensors.fuel then
-        return
-    end
+    if status.isInConfiguration or not status.sensors.fuel then return end
 
     if status.fueltime.fuelannouncementTimer then
         -- Start timer if not already started and first announcement not done
@@ -3502,7 +3408,6 @@ function status.playRPM(widget)
         status.rpmtime.announcementTimerStart = nil
     end
 end
-
 
 function status.playVoltage(widget)
 
@@ -3575,9 +3480,7 @@ function status.playGovernor()
         local action = govmodeActions[status.sensors.govmode]
 
         if action and action.param then
-            if status.govmodeParam == 0 then
-                rfsuite.utils.playFile("status", "events/governor.wav")
-            end
+            if status.govmodeParam == 0 then rfsuite.utils.playFile("status", "events/governor.wav") end
             rfsuite.utils.playFile("status", "events/" .. action.sound)
         end
     end
@@ -3587,7 +3490,7 @@ function status.playRPMDiff()
     if not status.rpmAlertsParam then return end
 
     local govmode = status.sensors.govmode
-    local validGovModes = { "ACTIVE", "LOST-HS", "BAILOUT", "RECOVERY" }
+    local validGovModes = {"ACTIVE", "LOST-HS", "BAILOUT", "RECOVERY"}
 
     -- Check if the current govmode is in the list of valid modes
     local isGovModeValid = false
@@ -3614,21 +3517,16 @@ function status.playRPMDiff()
     local lastStateRPM = playRPMDiff.playRPMDiffLastState
     local percentageDiff = 0
 
-    if currentRPM ~= lastStateRPM then
-        percentageDiff = math.abs(100 - math.min(currentRPM, lastStateRPM) / math.max(currentRPM, lastStateRPM) * 100)
-    end
+    if currentRPM ~= lastStateRPM then percentageDiff = math.abs(100 - math.min(currentRPM, lastStateRPM) / math.max(currentRPM, lastStateRPM) * 100) end
 
     -- Check if the percentage difference exceeds the threshold
-    if percentageDiff > (status.rpmAlertsPercentageParam / 10) then
-        playRPMDiff.playRPMDiffCount = 0
-    end
+    if percentageDiff > (status.rpmAlertsPercentageParam / 10) then playRPMDiff.playRPMDiffCount = 0 end
 
     if playRPMDiff.playRPMDiffCount == 0 then
         playRPMDiff.playRPMDiffCount = 1
         system.playNumber(currentRPM, UNIT_RPM, 2)
     end
 end
-
 
 function status.event(widget, category, value, x, y)
 
@@ -3638,7 +3536,7 @@ end
 
 -- MAIN WAKEUP FUNCTION. THIS SIMPLY FARMS OUT AT DIFFERING SCHEDULES TO SUB FUNCTIONS
 function status.wakeup(widget)
-    local schedulerUI = lcd.isVisible() and 0.25 or 1  -- Set interval based on visibility
+    local schedulerUI = lcd.isVisible() and 0.25 or 1 -- Set interval based on visibility
 
     -- Run UI at reduced interval to minimize CPU load
     local now = os.clock()
@@ -3648,7 +3546,6 @@ function status.wakeup(widget)
         -- collectgarbage()  -- Uncomment if garbage collection is needed
     end
 end
-
 
 function status.wakeupUI(widget)
 
@@ -3710,13 +3607,12 @@ function status.wakeupUI(widget)
                 -- timer alarm
                 status.playTIMERALARM(widget)
 
-
                 if ((tonumber(os.clock()) - tonumber(status.linkUPTime)) >= 10) then
 
                     -- IDLE
                     if status.switchIdlelowParam ~= nil and status.switchIdlelowParam:state() == true then
                         if status.switchstatus.idlelow == nil or status.switchstatus.idlelow == false then
-                            rfsuite.utils.playFile("status","switches/idle-l.wav")
+                            rfsuite.utils.playFile("status", "switches/idle-l.wav")
                             status.switchstatus.idlelow = true
                             status.switchstatus.idlemedium = false
                             status.switchstatus.idlehigh = false
@@ -3726,7 +3622,7 @@ function status.wakeupUI(widget)
                     end
                     if status.switchIdlemediumParam ~= nil and status.switchIdlemediumParam:state() == true then
                         if status.switchstatus.idlemedium == nil or status.switchstatus.idlemedium == false then
-                            rfsuite.utils.playFile("status","switches/idle-m.wav")
+                            rfsuite.utils.playFile("status", "switches/idle-m.wav")
                             status.switchstatus.idlelow = false
                             status.switchstatus.idlemedium = true
                             status.switchstatus.idlehigh = false
@@ -3736,7 +3632,7 @@ function status.wakeupUI(widget)
                     end
                     if status.switchIdlehighParam ~= nil and status.switchIdlehighParam:state() == true then
                         if status.switchstatus.idlehigh == nil or status.switchstatus.idlehigh == false then
-                            rfsuite.utils.playFile("status","switches/idle-h.wav")
+                            rfsuite.utils.playFile("status", "switches/idle-h.wav")
                             status.switchstatus.idlelow = false
                             status.switchstatus.idlemedium = false
                             status.switchstatus.idlehigh = true
@@ -3748,7 +3644,7 @@ function status.wakeupUI(widget)
                     -- RATES
                     if status.switchrateslowParam ~= nil and status.switchrateslowParam:state() == true then
                         if status.switchstatus.rateslow == nil or status.switchstatus.rateslow == false then
-                            rfsuite.utils.playFile("status","switches/rates-l.wav")
+                            rfsuite.utils.playFile("status", "switches/rates-l.wav")
                             status.switchstatus.rateslow = true
                             status.switchstatus.ratesmedium = false
                             status.switchstatus.rateshigh = false
@@ -3758,7 +3654,7 @@ function status.wakeupUI(widget)
                     end
                     if status.switchratesmediumParam ~= nil and status.switchratesmediumParam:state() == true then
                         if status.switchstatus.ratesmedium == nil or status.switchstatus.ratesmedium == false then
-                            rfsuite.utils.playFile("status","switches/rates-m.wav")
+                            rfsuite.utils.playFile("status", "switches/rates-m.wav")
                             status.switchstatus.rateslow = false
                             status.switchstatus.ratesmedium = true
                             status.switchstatus.rateshigh = false
@@ -3768,7 +3664,7 @@ function status.wakeupUI(widget)
                     end
                     if status.switchrateshighParam ~= nil and status.switchrateshighParam:state() == true then
                         if status.switchstatus.rateshigh == nil or status.switchstatus.rateshigh == false then
-                            rfsuite.utils.playFile("status","switches/rates-h.wav")
+                            rfsuite.utils.playFile("status", "switches/rates-h.wav")
                             status.switchstatus.rateslow = false
                             status.switchstatus.ratesmedium = false
                             status.switchstatus.rateshigh = true
@@ -3780,7 +3676,7 @@ function status.wakeupUI(widget)
                     -- RESCUE
                     if status.switchrescueonParam ~= nil and status.switchrescueonParam:state() == true then
                         if status.switchstatus.rescueon == nil or status.switchstatus.rescueon == false then
-                            rfsuite.utils.playFile("status","switches/rescue-on.wav")
+                            rfsuite.utils.playFile("status", "switches/rescue-on.wav")
                             status.switchstatus.rescueon = true
                             status.switchstatus.rescueoff = false
                         end
@@ -3789,7 +3685,7 @@ function status.wakeupUI(widget)
                     end
                     if status.switchrescueoffParam ~= nil and status.switchrescueoffParam:state() == true then
                         if status.switchstatus.rescueoff == nil or status.switchstatus.rescueoff == false then
-                            rfsuite.utils.playFile("status","switches/rescue-off.wav")
+                            rfsuite.utils.playFile("status", "switches/rescue-off.wav")
                             status.switchstatus.rescueon = false
                             status.switchstatus.rescueoff = true
                         end
@@ -3800,7 +3696,7 @@ function status.wakeupUI(widget)
                     -- BBL
                     if status.switchbblonParam ~= nil and status.switchbblonParam:state() == true then
                         if status.switchstatus.bblon == nil or status.switchstatus.bblon == false then
-                            rfsuite.utils.playFile("status","switches/bbl-on.wav")
+                            rfsuite.utils.playFile("status", "switches/bbl-on.wav")
                             status.switchstatus.bblon = true
                             status.switchstatus.bbloff = false
                         end
@@ -3809,7 +3705,7 @@ function status.wakeupUI(widget)
                     end
                     if status.switchbbloffParam ~= nil and status.switchbbloffParam:state() == true then
                         if status.switchstatus.bbloff == nil or status.switchstatus.bbloff == false then
-                            rfsuite.utils.playFile("status","switches/bbl-off.wav")
+                            rfsuite.utils.playFile("status", "switches/bbl-off.wav")
                             status.switchstatus.bblon = false
                             status.switchstatus.bbloff = true
                         end
@@ -3822,7 +3718,7 @@ function status.wakeupUI(widget)
                 ---
                 -- TIME
                 if status.linkUP == true then
-                    
+
                     local armSource = rfsuite.bg.telemetry.getSensorSource("armflags")
                     if armSource then
                         local isArmed = armSource:value()
@@ -3830,9 +3726,9 @@ function status.wakeupUI(widget)
                             status.stopTimer = true
                             stopTIME = os.clock()
                             timerNearlyActive = 1
-                            status.theTIME = 0                            
+                            status.theTIME = 0
                         end
-                    end    
+                    end
 
                     if status.idleupswitchParam ~= nil then
                         if status.idleupswitchParam:state() then
@@ -3882,7 +3778,7 @@ function status.wakeupUI(widget)
                         status.lfAudioAlertCounter = os.clock()
 
                         if status.sensors.fuel >= 10 then
-                            rfsuite.utils.playFile("status","alerts/lowfuel.wav")
+                            rfsuite.utils.playFile("status", "alerts/lowfuel.wav")
 
                             -- system.playNumber(status.sensors.voltage / 100, 2, 2)
                             if alrthptParam == true then system.playHaptic("- . -") end
@@ -3930,7 +3826,7 @@ function status.wakeupUI(widget)
                             status.lvAudioAlertCounter = os.clock()
 
                             if status.lvStickannouncement == false and status.voltageIsLowAlert == true then -- do not play if sticks at high end points
-                                rfsuite.utils.playFile("status","alerts/lowvoltage.wav")
+                                rfsuite.utils.playFile("status", "alerts/lowvoltage.wav")
                                 -- system.playNumber(status.sensors.voltage / 100, 2, 2)
                                 if alrthptParam == true then system.playHaptic("- . -") end
                             else
@@ -3953,6 +3849,5 @@ function status.wakeupUI(widget)
     end
     return
 end
-
 
 return status

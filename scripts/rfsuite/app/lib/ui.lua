@@ -17,13 +17,11 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 
-]]--
-
+]] --
 local ui = {}
 
 local arg = {...}
 local config = arg[1]
-
 
 function ui.progressDisplay(title, message)
 
@@ -151,49 +149,32 @@ function ui.progressDisplayNoLinkValue(value, message)
 end
 
 function ui.disableAllFields()
-        for i in ipairs(rfsuite.app.formFields) do
-                rfsuite.app.formFields[i]:enable(false)
-        end
+    for i in ipairs(rfsuite.app.formFields) do rfsuite.app.formFields[i]:enable(false) end
 end
 
 function ui.enableAllFields()
-        for i in ipairs(rfsuite.app.formFields) do
-                rfsuite.app.formFields[i]:enable(true)
-        end
+    for i in ipairs(rfsuite.app.formFields) do rfsuite.app.formFields[i]:enable(true) end
 end
 
 function ui.disableAllNavigationFields()
-    for i,v in pairs(rfsuite.app.formNavigationFields) do
-        if x ~= v then
-            rfsuite.app.formNavigationFields[i]:enable(false)
-        end    
-    end
+    for i, v in pairs(rfsuite.app.formNavigationFields) do if x ~= v then rfsuite.app.formNavigationFields[i]:enable(false) end end
 end
 
 function ui.enableAllNavigationFields()
-    for i,v in pairs(rfsuite.app.formNavigationFields) do
-        if x ~= v then
-            rfsuite.app.formNavigationFields[i]:enable(true)
-        end    
-    end
+    for i, v in pairs(rfsuite.app.formNavigationFields) do if x ~= v then rfsuite.app.formNavigationFields[i]:enable(true) end end
 end
 
 function ui.enableNavigationField(x)
-    if rfsuite.app.formNavigationFields[x] ~= nil then
-           rfsuite.app.formNavigationFields[x]:enable(true) 
-    end
+    if rfsuite.app.formNavigationFields[x] ~= nil then rfsuite.app.formNavigationFields[x]:enable(true) end
 end
 
 function ui.disableNavigationField(x)
-    if rfsuite.app.formNavigationFields[x] ~= nil then
-           rfsuite.app.formNavigationFields[x]:enable(false) 
-    end
+    if rfsuite.app.formNavigationFields[x] ~= nil then rfsuite.app.formNavigationFields[x]:enable(false) end
 end
 
 function ui.openMainMenu()
 
     local MainMenu = assert(loadfile("app/pages.lua"))()
-
 
     -- clear all nav vars
     rfsuite.app.lastIdx = nil
@@ -251,79 +232,86 @@ function ui.openMainMenu()
     if rfsuite.app.gfx_buttons["mainmenu"] == nil then rfsuite.app.gfx_buttons["mainmenu"] = {} end
     if rfsuite.app.menuLastSelected["mainmenu"] == nil then rfsuite.app.menuLastSelected["mainmenu"] = 1 end
 
-
-    
     local hideSection = false
     for idx, value in ipairs(MainMenu.sections) do
-    
-        if (value.ethosversion ~= nil and rfsuite.config.ethosRunningVersion < value.ethosversion) then hideSection = true else hideSection = false end
-        if (value.developer ~= nil and rfsuite.config.developerMode == false) then hideSection = true else hideSection = false end
+
+        if (value.ethosversion ~= nil and rfsuite.config.ethosRunningVersion < value.ethosversion) then
+            hideSection = true
+        else
+            hideSection = false
+        end
+        if (value.developer ~= nil and rfsuite.config.developerMode == false) then
+            hideSection = true
+        else
+            hideSection = false
+        end
 
         if hideSection == false then
 
-                local sc = value.section
+            local sc = value.section
 
-                form.addLine(value.title)
+            form.addLine(value.title)
 
-                lc = 0
-                local hideEntry = false
-                
-                for pidx, pvalue in ipairs(MainMenu.pages) do
-                    if pvalue.section == value.section then
+            lc = 0
+            local hideEntry = false
 
-                        -- do not show icon if not supported by ethos version
-                        if (pvalue.ethosversion ~= nil and rfsuite.config.ethosRunningVersion < pvalue.ethosversion) then hideEntry = true else hideEntry = false end
-                        if (pvalue.developer ~= nil and rfsuite.config.developerMode == false) then hideEntry = true else hideEntry = false end
+            for pidx, pvalue in ipairs(MainMenu.pages) do
+                if pvalue.section == value.section then
 
-                        if hideEntry == false then
-
-                                if lc == 0 then
-                                    if config.iconSize == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
-                                    if config.iconSize == 1 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
-                                    if config.iconSize == 2 then y = form.height() + rfsuite.app.radio.buttonPadding end
-                                end
-
-                                if lc >= 0 then x = (buttonW + padding) * lc end
-
-                                if config.iconSize ~= 0 then
-                                    if rfsuite.app.gfx_buttons["mainmenu"][pidx] == nil then
-                                        rfsuite.app.gfx_buttons["mainmenu"][pidx] = lcd.loadMask("app/gfx/menu/" .. pvalue.image)
-                                    end
-                                else
-                                    rfsuite.app.gfx_buttons["mainmenu"][pidx] = nil
-                                end
-
-
-
-                                rfsuite.app.formFields[pidx] = form.addButton(line, {x = x, y = y, w = buttonW, h = buttonH}, {
-                                    text = pvalue.title,
-                                    icon = rfsuite.app.gfx_buttons["mainmenu"][pidx],
-                                    options = FONT_S,
-                                    paint = function()
-                                    end,
-                                    press = function()
-                                        rfsuite.app.menuLastSelected["mainmenu"] = pidx
-                                        rfsuite.app.ui.progressDisplay()
-                                        rfsuite.app.ui.openPage(pidx, pvalue.title, pvalue.script)
-                                    end
-                                })
-                                
-                                
-
-                                --if pvalue.ethosversion ~= nil and rfsuite.config.ethosRunningVersion < pvalue.ethos then rfsuite.app.formFields[pidx]:enable(false) end
-
-                                if rfsuite.app.menuLastSelected["mainmenu"] == pidx then rfsuite.app.formFields[pidx]:focus() end
-
-                                lc = lc + 1
-
-                                if lc == numPerRow then lc = 0 end
-                        
-                        end
-                            
-             
+                    -- do not show icon if not supported by ethos version
+                    if (pvalue.ethosversion ~= nil and rfsuite.config.ethosRunningVersion < pvalue.ethosversion) then
+                        hideEntry = true
+                    else
+                        hideEntry = false
                     end
+                    if (pvalue.developer ~= nil and rfsuite.config.developerMode == false) then
+                        hideEntry = true
+                    else
+                        hideEntry = false
+                    end
+
+                    if hideEntry == false then
+
+                        if lc == 0 then
+                            if config.iconSize == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
+                            if config.iconSize == 1 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
+                            if config.iconSize == 2 then y = form.height() + rfsuite.app.radio.buttonPadding end
+                        end
+
+                        if lc >= 0 then x = (buttonW + padding) * lc end
+
+                        if config.iconSize ~= 0 then
+                            if rfsuite.app.gfx_buttons["mainmenu"][pidx] == nil then rfsuite.app.gfx_buttons["mainmenu"][pidx] = lcd.loadMask("app/gfx/menu/" .. pvalue.image) end
+                        else
+                            rfsuite.app.gfx_buttons["mainmenu"][pidx] = nil
+                        end
+
+                        rfsuite.app.formFields[pidx] = form.addButton(line, {x = x, y = y, w = buttonW, h = buttonH}, {
+                            text = pvalue.title,
+                            icon = rfsuite.app.gfx_buttons["mainmenu"][pidx],
+                            options = FONT_S,
+                            paint = function()
+                            end,
+                            press = function()
+                                rfsuite.app.menuLastSelected["mainmenu"] = pidx
+                                rfsuite.app.ui.progressDisplay()
+                                rfsuite.app.ui.openPage(pidx, pvalue.title, pvalue.script)
+                            end
+                        })
+
+                        -- if pvalue.ethosversion ~= nil and rfsuite.config.ethosRunningVersion < pvalue.ethos then rfsuite.app.formFields[pidx]:enable(false) end
+
+                        if rfsuite.app.menuLastSelected["mainmenu"] == pidx then rfsuite.app.formFields[pidx]:focus() end
+
+                        lc = lc + 1
+
+                        if lc == numPerRow then lc = 0 end
+
+                    end
+
                 end
-        
+            end
+
         end
 
     end
@@ -375,7 +363,7 @@ function ui.fieldChoice(i)
     end
 
     rfsuite.app.formFields[i] = form.addChoiceField(rfsuite.app.formLines[formLineCnt], posField, rfsuite.utils.convertPageValueTable(f.table, f.tableIdxInc), function()
-        if rfsuite.app.Page.fields == nil or rfsuite.app.Page.fields[i] == nil then 
+        if rfsuite.app.Page.fields == nil or rfsuite.app.Page.fields[i] == nil then
             ui.disableAllFields()
             ui.disableAllNavigationFields()
             ui.enableNavigationField('menu')
@@ -443,10 +431,10 @@ function ui.fieldNumber(i)
     if minValue == nil then minValue = 0 end
     if maxValue == nil then maxValue = 0 end
     rfsuite.app.formFields[i] = form.addNumberField(rfsuite.app.formLines[formLineCnt], posField, minValue, maxValue, function()
-        if rfsuite.app.Page.fields == nil or rfsuite.app.Page.fields[i] == nil then 
+        if rfsuite.app.Page.fields == nil or rfsuite.app.Page.fields[i] == nil then
             ui.disableAllFields()
             ui.disableAllNavigationFields()
-            ui.enableNavigationField('menu')      
+            ui.enableNavigationField('menu')
             return nil
         end
         return rfsuite.utils.getFieldValue(rfsuite.app.Page.fields[i])
@@ -488,9 +476,6 @@ function ui.fieldNumber(i)
     end
 
 end
-
-
-
 
 function ui.fieldStaticText(i)
 
@@ -585,12 +570,12 @@ function ui.fieldText(i)
     end
 
     rfsuite.app.formFields[i] = form.addTextField(rfsuite.app.formLines[formLineCnt], posField, function()
-        if rfsuite.app.Page.fields == nil or rfsuite.app.Page.fields[i] == nil then 
+        if rfsuite.app.Page.fields == nil or rfsuite.app.Page.fields[i] == nil then
             ui.disableAllFields()
             ui.disableAllNavigationFields()
-            ui.enableNavigationField('menu')   
+            ui.enableNavigationField('menu')
             return nil
-        end    
+        end
         return rfsuite.utils.getFieldValue(rfsuite.app.Page.fields[i])
     end, function(value)
         if f.postEdit then f.postEdit(rfsuite.app.Page) end
@@ -670,8 +655,7 @@ function ui.fieldHeader(title)
 
     rfsuite.app.formFields['menu'] = form.addLine("")
 
-    rfsuite.app.formFields['title'] = form.addStaticText(rfsuite.app.formFields['menu'], {x = 0, y = rfsuite.app.radio.linePaddingTop, w = config.lcdWidth, h = rfsuite.app.radio.navbuttonHeight},
-                                                         title)
+    rfsuite.app.formFields['title'] = form.addStaticText(rfsuite.app.formFields['menu'], {x = 0, y = rfsuite.app.radio.linePaddingTop, w = config.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}, title)
 
     rfsuite.app.ui.navigationButtons(w - 5, rfsuite.app.radio.linePaddingTop, buttonW, buttonH)
 end
@@ -719,8 +703,7 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
         if rfsuite.app.Page.headerLine ~= nil then
             local headerLine = form.addLine("")
-            local headerLineText =
-                form.addStaticText(headerLine, {x = 0, y = rfsuite.app.radio.linePaddingTop, w = config.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}, rfsuite.app.Page.headerLine)
+            local headerLineText = form.addStaticText(headerLine, {x = 0, y = rfsuite.app.radio.linePaddingTop, w = config.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}, rfsuite.app.Page.headerLine)
         end
 
         formLineCnt = 0
@@ -899,23 +882,17 @@ function ui.openPageHelp(helpdata, section)
         txtData = helpdata[section]["TEXT"]
     end
 
-
     local message = ""
 
     -- wrap text because of image on right
-    for k, v in ipairs(txtData) do
-        message = message .. v .. "\r\n\r\n"
-    end
+    for k, v in ipairs(txtData) do message = message .. v .. "\r\n\r\n" end
 
-
-    local buttons = {
-        {
-            label = "CLOSE",
-            action = function()
-                return true
-            end
-        }
-    }
+    local buttons = {{
+        label = "CLOSE",
+        action = function()
+            return true
+        end
+    }}
 
     form.openDialog({
         width = config.lcdWidth,

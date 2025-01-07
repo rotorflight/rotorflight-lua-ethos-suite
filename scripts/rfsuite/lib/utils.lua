@@ -17,23 +17,16 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 
-]]--
-
+]] --
 local utils = {}
 
 local arg = {...}
 local config = arg[1]
 
-
-
-function utils.dir_exists(base,name)
-        list = system.listFiles(base)       
-        for i,v in pairs(list) do
-                if v == name then
-                        return true
-                end
-        end
-        return false
+function utils.dir_exists(base, name)
+    list = system.listFiles(base)
+    for i, v in pairs(list) do if v == name then return true end end
+    return false
 end
 
 function utils.file_exists(name)
@@ -59,7 +52,7 @@ function utils.playFile(pkg, file)
     -- Construct file paths
     local wavLocale
     local wavDefault
-    
+
     if utils.ethosVersionToMinor() < 16 then
         wavLocale = baseDir .. audioPath .. "/" .. pkg .. "/" .. file
         wavDefault = baseDir .. "/audio/en/default/" .. pkg .. "/" .. file
@@ -78,14 +71,14 @@ end
 
 function utils.playFileCommon(file)
 
-        local wav
-        if utils.ethosVersionToMinor() < 16 then
-            wav = rfsuite.config.suiteDir .. "/audio/" .. file
-        else
-            wav = "audio/" .. file        
-        end
-        system.playFile(wav)
-      
+    local wav
+    if utils.ethosVersionToMinor() < 16 then
+        wav = rfsuite.config.suiteDir .. "/audio/" .. file
+    else
+        wav = "audio/" .. file
+    end
+    system.playFile(wav)
+
 end
 
 function utils.isHeliArmed()
@@ -140,17 +133,17 @@ function utils.getCurrentProfile()
         config.activeProfileLast = config.activeProfile
         local p = rfsuite.bg.telemetry.getSensorSource("pidProfile"):value()
         if p ~= nil then
-                config.activeProfile = math.floor(p)
-        else    
-                config.activeProfile = nil
-        end        
+            config.activeProfile = math.floor(p)
+        else
+            config.activeProfile = nil
+        end
 
         config.activeRateProfileLast = config.activeRateProfile
         local r = rfsuite.bg.telemetry.getSensorSource("rateProfile"):value()
         if r ~= nil then
-                config.activeRateProfile = math.floor(r)
+            config.activeRateProfile = math.floor(r)
         else
-                config.activeRateProfile = nil
+            config.activeRateProfile = nil
         end
 
     else
@@ -190,9 +183,7 @@ end
 function utils.ethosVersion()
     local environment = system.getVersion()
     v = tonumber(environment.major .. environment.minor .. environment.revision)
-    if environment.revision == 0 then
-        v = v * 10
-    end
+    if environment.revision == 0 then v = v * 10 end
     return v
 end
 
@@ -458,13 +449,7 @@ end
 
 function utils.log(msg)
 
-    if config.logEnable == true then
-
-        if rfsuite.bg.log_queue ~= nil then
-            table.insert(rfsuite.bg.log_queue, msg)
-        end
-        
-    end
+    if config.logEnable == true then if rfsuite.bg.log_queue ~= nil then table.insert(rfsuite.bg.log_queue, msg) end end
 end
 
 -- print a table out to debug console

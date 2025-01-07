@@ -22,13 +22,9 @@ fields[#fields + 1] = {t = "Pitch trim %", help = "mixerSwashTrim", xlabel = "li
 fields[#fields + 1] = {t = "Col. trim %", help = "mixerSwashTrim", xlabel = "line7", xinline = 1, min = -1000, max = 1000, vals = {16, 17}, decimals = 1, scale = 10}
 
 -- note.  the same vals are used for center trim motor and yaw trim - but they are multiplied and saved in different ways
-if rfsuite.config.tailMode == 1 or rfsuite.config.tailMode == 2 then
-    fields[#fields + 1] = {t = "Center trim for tail motor %", help = "mixerTailMotorCenterTrim", inline = 1, min = -500, max = 500, vals = {4, 5}, decimals = 1, scale = 10}
-end
+if rfsuite.config.tailMode == 1 or rfsuite.config.tailMode == 2 then fields[#fields + 1] = {t = "Center trim for tail motor %", help = "mixerTailMotorCenterTrim", inline = 1, min = -500, max = 500, vals = {4, 5}, decimals = 1, scale = 10} end
 
-if rfsuite.config.tailMode == 0 then
-    fields[#fields + 1] = {t = "Yaw. trim %", help = "mixerTailMotorCenterTrim", inline = 1, min = -1043, max = 1043, vals = {4, 5}, mult = 0.0239923224568138, decimals = 1}
-end
+if rfsuite.config.tailMode == 0 then fields[#fields + 1] = {t = "Yaw. trim %", help = "mixerTailMotorCenterTrim", inline = 1, min = -1043, max = 1043, vals = {4, 5}, mult = 0.0239923224568138, decimals = 1} end
 
 local function saveData()
 
@@ -187,23 +183,21 @@ end
 
 local function onToolMenu(self)
 
-    local buttons = {
-        {
-            label = "                OK                ",
-            action = function()
+    local buttons = {{
+        label = "                OK                ",
+        action = function()
 
-                -- we cant launch the loader here to se rely on the modules
-                -- wakup function to do this
-                triggerOverRide = true
-                return true
-            end
-        }, {
-            label = "CANCEL",
-            action = function()
-                return true
-            end
-        }
-    }
+            -- we cant launch the loader here to se rely on the modules
+            -- wakup function to do this
+            triggerOverRide = true
+            return true
+        end
+    }, {
+        label = "CANCEL",
+        action = function()
+            return true
+        end
+    }}
     local message
     local title
     if inOverRide == false then

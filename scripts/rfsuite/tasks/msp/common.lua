@@ -17,7 +17,7 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 
-]]--
+]] --
 -- Protocol version
 local MSP_VERSION = (1 << 5)
 local MSP_STARTFLAG = (1 << 4)
