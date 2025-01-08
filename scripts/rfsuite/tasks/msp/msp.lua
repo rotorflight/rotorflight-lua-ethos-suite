@@ -190,9 +190,7 @@ function msp.onConnectBgChecks()
                 processReply = function(self, buf)
                     local v = 0
                     local modelName = ""
-                    for idx = 1, #buf do
-                            modelName = modelName .. string.char(buf[idx])
-                    end
+                    for idx = 1, #buf do modelName = modelName .. string.char(buf[idx]) end
 
                     rfsuite.config.modelName = modelName
 

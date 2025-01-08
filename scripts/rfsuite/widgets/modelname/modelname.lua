@@ -14,8 +14,6 @@
  *
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]] --
-
-
 local rf2mdlnm = {wakeupSchedulerUI = os.clock()}
 
 local sensors
@@ -38,8 +36,6 @@ function rf2mdlnm.paint(widget)
     lcd.drawText(posX, posY, str)
 end
 
-
-
 -- Main wakeup function
 function rf2mdlnm.wakeup(widget)
     local schedulerUI = lcd.isVisible() and 0.25 or 1
@@ -53,9 +49,7 @@ end
 
 function rf2mdlnm.wakeupUI()
 
-    if lastName ~= rfsuite.config.modelName then
-        lcd.invalidate()
-    end
+    if lastName ~= rfsuite.config.modelName then lcd.invalidate() end
 
     lastName = rfsuite.config.modelName
 
