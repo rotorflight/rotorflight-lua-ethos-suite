@@ -16,9 +16,10 @@
 ]] --
 
 
-local rf2mdlnm = {refresh = true, environment = system.getVersion(), oldsensors = {govmode = ""}, wakeupSchedulerUI = os.clock()}
+local rf2mdlnm = {wakeupSchedulerUI = os.clock()}
 
 local sensors
+local lastName
 
 function rf2mdlnm.create(widget)
     -- Placeholder for widget creation logic
@@ -51,9 +52,13 @@ function rf2mdlnm.wakeup(widget)
 end
 
 function rf2mdlnm.wakeupUI()
-    rf2mdlnm.refresh = false
 
-    if rf2mdlnm.refresh then lcd.invalidate() end
+    if lastName ~= rfsuite.config.modelName then
+        lcd.invalidate()
+    end
+
+    lastName = rfsuite.config.modelName
+
 end
 
 return rf2mdlnm
