@@ -19,36 +19,81 @@ local rf2craftname = {wakeupSchedulerUI = os.clock()}
 local sensors
 local lastName
 
+local config = {}
+
+
+-- Helper function to check if file exists
+local function file_exists(name)
+    local f = io.open(name, "r")
+    if f then
+        io.close(f)
+        return true
+    end
+    return false
+end
+
 function rf2craftname.create(widget)
     -- Placeholder for widget creation logic
 end
 
 function rf2craftname.paint(widget)
     local w, h = lcd.getWindowSize()
-    lcd.font(FONT_XXL)
 
-    local str = rfsuite.bg.active() and rfsuite.config.craftName or "UNKNOWN"
-    local tsizeW, tsizeH = lcd.getTextSize(str)
+    if config.image == false then
 
-    local posX = (w - tsizeW) / 2
-    local posY = (h - tsizeH) / 2 + 5
+        lcd.font(FONT_XXL)
+        local str = rfsuite.bg.active() and rfsuite.config.craftName or "UNKNOWN"
+        local tsizeW, tsizeH = lcd.getTextSize(str)
+    
+        local posX = (w - tsizeW) / 2
+        local posY = (h - tsizeH) / 2 + 5
 
-    lcd.drawText(posX, posY, str)
+        lcd.drawText(posX, posY, str)
+    else
+        lcd.font(FONT_XL)
+
+        local str = rfsuite.bg.active() and rfsuite.config.craftName or "UNKNOWN"
+        local tsizeW, tsizeH = lcd.getTextSize(str)
+    
+        local posX = (w - tsizeW) / 2
+        if bitmapPtr ~= nil then
+            local padding = 5
+            local bitmapX = 0 + padding
+            local bitmapY = 0 + padding + tsizeH 
+            local bitmapW = w - (padding * 2)
+            local bitmapH = h - (padding * 2) - tsizeH
+            lcd.drawBitmap(bitmapX, bitmapY, bitmapPtr, bitmapW, bitmapH)
+        end
+        lcd.drawText(posX, 5, str)
+    end
 end
 
 -- Configure function
 function rf2craftname.configure(widget)
-    -- Placeholder for widget configuration logic
+
+    local line = form.addLine("Image")
+    form.addBooleanField(line, 
+                        nil, 
+                        function() return config.image end, 
+                        function(newValue) config.image = newValue end)
+
+    return widget
 end
 
 -- Read function
 function rf2craftname.read(widget)
-    -- Placeholder for widget read logic
+
+    -- display or not display an image on the page
+    config.image = storage.read("mem1") 
+    if config.image == nil then config.image = false end
+
 end
 
 -- Write function
 function rf2craftname.write(widget)
-    -- Placeholder for widget write logic
+
+    storage.write("mem1", config.image)
+
 end
 
 -- Event function
@@ -68,10 +113,27 @@ function rf2craftname.wakeup(widget)
 end
 
 function rf2craftname.wakeupUI()
+    local image
 
-    if lastName ~= rfsuite.config.rf2craftnameName then lcd.invalidate() end
+    if lastName ~= rfsuite.config.craftName then
+        -- load image if it is enabled
+        if config.image == true then
+            if rfsuite.config.craftName ~= nil then
 
-    lastName = rfsuite.config.rf2craftnameName
+                image = "/bitmaps/models/" .. rfsuite.config.craftName .. ".png"
+
+                if file_exists(image) then
+                    bitmapPtr = lcd.loadBitmap(image)
+                else
+                    bitmapPtr = lcd.loadBitmap(model.bitmap())
+                end
+            else
+                bitmapPtr = nil
+            end
+        end    
+        lcd.invalidate()
+    end
+    lastName = rfsuite.config.craftName
 
 end
 
