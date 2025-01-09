@@ -1816,6 +1816,9 @@ function status.paint(widget)
                     sensorVALUE = "-"
                 else
                     sensorVALUE = csSensor:value()
+                    if csSensor:protocolDecimals() == 0 then
+                        sensorVALUE = math.floor(sensorVALUE)
+                    end                   
                 end
 
                 if csSensor:name() == nil then
@@ -1862,6 +1865,10 @@ function status.paint(widget)
                     sensorVALUE = "-"
                 else
                     sensorVALUE = csSensor:value()
+                    if csSensor:protocolDecimals() == 0 then
+                        sensorVALUE = math.floor(sensorVALUE)
+                    end
+
                 end
 
                 if csSensor:name() == nil then
@@ -1987,7 +1994,7 @@ function status.paint(widget)
 
                     if sensorTGT == 'customsensor1' or sensorTGT == 'customsensor2' then
   
-                        sensorVALUE = math.floor(status.sensordisplay[sensorTGT]['value'])
+                        sensorVALUE = status.sensordisplay[sensorTGT]['value']
                         sensorUNIT = status.sensordisplay[sensorTGT]['unit']
                         sensorMIN = status.sensordisplay[sensorTGT]['min']
                         sensorMAX = status.sensordisplay[sensorTGT]['max']
@@ -2002,7 +2009,7 @@ function status.paint(widget)
                     if sensorTGT == 'customsensor1_2' then
                         -- SENSOR1 & 2
                         sensorTGT = "customsensor1"
-                        sensorVALUE = math.floor(status.sensordisplay[sensorTGT]['value'])
+                        sensorVALUE = status.sensordisplay[sensorTGT]['value']
                         sensorUNIT = status.sensordisplay[sensorTGT]['unit']
                         sensorMIN = status.sensordisplay[sensorTGT]['min']
                         sensorMAX = status.sensordisplay[sensorTGT]['max']
@@ -2013,7 +2020,7 @@ function status.paint(widget)
                         status.telemetryBox(posX, posY, boxW, boxH / 2 - (theme.colSpacing / 2), sensorTITLE, sensorVALUE, sensorUNIT, smallBOX, sensorWARN, sensorMIN, sensorMAX)
 
                         sensorTGT = "customsensor2"
-                        sensorVALUE = math.floor(status.sensordisplay[sensorTGT]['value'])
+                        sensorVALUE = status.sensordisplay[sensorTGT]['value']
                         sensorUNIT = status.sensordisplay[sensorTGT]['unit']
                         sensorMIN = status.sensordisplay[sensorTGT]['min']
                         sensorMAX = status.sensordisplay[sensorTGT]['max']
