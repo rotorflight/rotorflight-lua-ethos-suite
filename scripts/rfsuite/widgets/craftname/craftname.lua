@@ -124,8 +124,12 @@ function rf2craftname.wakeupUI()
 
                 if file_exists(image) then
                     bitmapPtr = lcd.loadBitmap(image)
+                elseif file_exists("BITMAPS:" .. image) then    
+                    bitmapPtr = lcd.loadBitmap("BITMAPS:" .. image)
+                elseif file_exists("SYSTEM:" .. image) then    
+                    bitmapPtr = lcd.loadBitmap("SYSTEM:" .. image)
                 else
-                    bitmapPtr = lcd.loadBitmap(model.bitmap())
+                    bitmapPtr = nil
                 end
             else
                 bitmapPtr = nil
