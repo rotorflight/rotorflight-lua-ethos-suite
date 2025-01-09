@@ -18,6 +18,7 @@ local rf2craftname = {wakeupSchedulerUI = os.clock()}
 
 local sensors
 local lastName
+local bitmapPtr 
 
 local config = {}
 
@@ -119,7 +120,6 @@ function rf2craftname.wakeupUI()
         -- load image if it is enabled
         if config.image == true then
             if rfsuite.config.craftName ~= nil then
-
                 image = "/bitmaps/models/" .. rfsuite.config.craftName .. ".png"
 
                 if file_exists(image) then
