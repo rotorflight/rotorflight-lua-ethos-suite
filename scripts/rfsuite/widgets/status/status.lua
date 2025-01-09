@@ -462,9 +462,9 @@ function status.configure(widget)
     -- HAPTIC
     line = batterypanel:addLine("     " .. "Vibrate")
     plalrthap = form.addBooleanField(line, nil, function()
-        return alrthptParam
+        return status.alrthptParam
     end, function(newValue)
-        alrthptParam = newValue
+        status.alrthptParam = newValue
     end)
     if status.alertonParam == 3 then
         plalrthap:enable(false)
@@ -2962,7 +2962,7 @@ function status.read()
     status.btypeParam = storage.read("mem2")
     status.lowfuelParam = storage.read("mem3")
     status.alertintParam = storage.read("mem4")
-    alrthptParam = storage.read("mem5")
+    status.alrthptParam = storage.read("mem5")
     status.maxminParam = storage.read("mem6")
     status.titleParam = storage.read("mem7")
     status.cellsParam = storage.read("mem8")
@@ -3056,7 +3056,7 @@ function status.write()
     storage.write("mem2", status.btypeParam)
     storage.write("mem3", status.lowfuelParam)
     storage.write("mem4", status.alertintParam)
-    storage.write("mem5", alrthptParam)
+    storage.write("mem5", status.alrthptParam)
     storage.write("mem6", status.maxminParam)
     storage.write("mem7", status.titleParam)
     storage.write("mem8", status.cellsParam)
@@ -3795,7 +3795,7 @@ function status.wakeupUI(widget)
                             rfsuite.utils.playFile("status", "alerts/lowfuel.wav")
 
                             -- system.playNumber(status.sensors.voltage / 100, 2, 2)
-                            if alrthptParam == true then system.playHaptic("- . -") end
+                            if status.alrthptParam == true then system.playHaptic("- . -") end
                         end
                     end
                 else
@@ -3842,7 +3842,7 @@ function status.wakeupUI(widget)
                             if status.lvStickannouncement == false and status.voltageIsLowAlert == true then -- do not play if sticks at high end points
                                 rfsuite.utils.playFile("status", "alerts/lowvoltage.wav")
                                 -- system.playNumber(status.sensors.voltage / 100, 2, 2)
-                                if alrthptParam == true then system.playHaptic("- . -") end
+                                if status.alrthptParam == true then system.playHaptic("- . -") end
                             else
                                 -- print("Alarm supressed due to stick positions")
                             end
