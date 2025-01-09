@@ -1986,7 +1986,7 @@ function status.paint(widget)
                 else
 
                     if sensorTGT == 'customsensor1' or sensorTGT == 'customsensor2' then
-
+  
                         sensorVALUE = math.floor(status.sensordisplay[sensorTGT]['value'])
                         sensorUNIT = status.sensordisplay[sensorTGT]['unit']
                         sensorMIN = status.sensordisplay[sensorTGT]['min']
@@ -3130,7 +3130,7 @@ function status.write()
     storage.write("mem69", status.minCellVoltage)
     storage.write("mem79", status.warnCellVoltage)
     storage.write("mem80", status.customSensorParam1)
-    storage.write("mem81", status.customSensorParam1)
+    storage.write("mem81", status.customSensorParam2)
 
 end
 
