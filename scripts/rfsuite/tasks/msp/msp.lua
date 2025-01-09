@@ -183,18 +183,18 @@ function msp.onConnectBgChecks()
             }
             msp.mspQueue:add(message)
 
-        elseif (rfsuite.config.modelName == nil) and msp.mspQueue:isProcessed() then
+        elseif (rfsuite.config.craftName == nil) and msp.mspQueue:isProcessed() then
 
             local message = {
                 command = 10, -- MSP_NAME
                 processReply = function(self, buf)
                     local v = 0
-                    local modelName = ""
-                    for idx = 1, #buf do modelName = modelName .. string.char(buf[idx]) end
+                    local craftName = ""
+                    for idx = 1, #buf do craftName = craftName .. string.char(buf[idx]) end
 
-                    rfsuite.config.modelName = modelName
+                    rfsuite.config.craftName = craftName
 
-                    rfsuite.utils.log("Model name: " .. modelName)
+                    rfsuite.utils.log("Craft name: " .. craftName)
                 end,
                 simulatorResponse = {80, 105, 108, 111, 116}
             }

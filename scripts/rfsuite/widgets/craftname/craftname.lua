@@ -14,20 +14,20 @@
  *
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]] --
-local rf2mdlnm = {wakeupSchedulerUI = os.clock()}
+local rf2craftname = {wakeupSchedulerUI = os.clock()}
 
 local sensors
 local lastName
 
-function rf2mdlnm.create(widget)
+function rf2craftname.create(widget)
     -- Placeholder for widget creation logic
 end
 
-function rf2mdlnm.paint(widget)
+function rf2craftname.paint(widget)
     local w, h = lcd.getWindowSize()
     lcd.font(FONT_XXL)
 
-    local str = rfsuite.bg.active() and rfsuite.config.modelName or "UNKNOWN"
+    local str = rfsuite.bg.active() and rfsuite.config.craftName or "UNKNOWN"
     local tsizeW, tsizeH = lcd.getTextSize(str)
 
     local posX = (w - tsizeW) / 2
@@ -36,23 +36,43 @@ function rf2mdlnm.paint(widget)
     lcd.drawText(posX, posY, str)
 end
 
+-- Configure function
+function rf2craftname.configure(widget)
+    -- Placeholder for widget configuration logic
+end
+
+-- Read function
+function rf2craftname.read(widget)
+    -- Placeholder for widget read logic
+end
+
+-- Write function
+function rf2craftname.write(widget)
+    -- Placeholder for widget write logic
+end
+
+-- Event function
+function rf2craftname.event(widget, event)
+    -- Placeholder for widget event logic
+end
+
 -- Main wakeup function
-function rf2mdlnm.wakeup(widget)
+function rf2craftname.wakeup(widget)
     local schedulerUI = lcd.isVisible() and 0.25 or 1
     local now = os.clock()
 
-    if (now - rf2mdlnm.wakeupSchedulerUI) >= schedulerUI then
-        rf2mdlnm.wakeupSchedulerUI = now
-        rf2mdlnm.wakeupUI()
+    if (now - rf2craftname.wakeupSchedulerUI) >= schedulerUI then
+        rf2craftname.wakeupSchedulerUI = now
+        rf2craftname.wakeupUI()
     end
 end
 
-function rf2mdlnm.wakeupUI()
+function rf2craftname.wakeupUI()
 
-    if lastName ~= rfsuite.config.modelName then lcd.invalidate() end
+    if lastName ~= rfsuite.config.rf2craftnameName then lcd.invalidate() end
 
-    lastName = rfsuite.config.modelName
+    lastName = rfsuite.config.rf2craftnameName
 
 end
 
-return rf2mdlnm
+return rf2craftname

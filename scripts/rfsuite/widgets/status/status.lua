@@ -226,7 +226,7 @@ status.sensorRSSIMax = 0
 status.lastMaxMin = 0
 status.wakeupSchedulerUI = os.clock()
 status.layoutOptions = {{"TIMER", 1}, {"VOLTAGE", 2}, {"FUEL", 3}, {"CURRENT", 4}, {"MAH", 17}, {"RPM", 5}, {"LQ", 6}, {"T.ESC", 7}, {"T.MCU", 8}, {"IMAGE", 9}, {"GOVERNOR", 10}, {"IMAGE, GOVERNOR", 11}, {"LQ, TIMER", 12}, {"T.ESC, T.MCU", 13}, {"VOLTAGE, FUEL", 14}, {"VOLTAGE, CURRENT", 15}, {"VOLTAGE, MAH", 16}, {"LQ, TIMER, T.ESC, T.MCU", 20}, {"MAX CURRENT", 21}, {"LQ, GOVERNOR", 22},
-                        {"MODEL NAME", 18}, {"CUSTOMSENSOR #1", 23}, {"CUSTOMSENSOR #2", 24}, {"CUSTOMSENSOR #1, #2", 25}}
+                        {"CRAFT NAME", 18}, {"CUSTOMSENSOR #1", 23}, {"CUSTOMSENSOR #2", 24}, {"CUSTOMSENSOR #1, #2", 25}}
 status.layoutBox1Param = 11 -- IMAGE, GOV
 status.layoutBox2Param = 2 -- VOLTAGE
 status.layoutBox3Param = 3 -- FUEL
@@ -1780,14 +1780,14 @@ function status.paint(widget)
             status.sensordisplay[sensorTGT]['max'] = sensorMAX
             status.sensordisplay[sensorTGT]['unit'] = sensorUNIT
 
-            -- MODEL NAME
-            local sensorTGT = 'model_name'
-            local modelName = "UNKNOWN"
-            if rfsuite.config.modelName ~= nil then modelName = rfsuite.config.modelName end
+            -- CRAFT NAME
+            local sensorTGT = 'craft_name'
+            local craftName = "UNKNOWN"
+            if rfsuite.config.craftName ~= nil then craftName = rfsuite.config.craftName end
 
             status.sensordisplay[sensorTGT] = {}
             status.sensordisplay[sensorTGT]['title'] = ""
-            status.sensordisplay[sensorTGT]['value'] = modelName
+            status.sensordisplay[sensorTGT]['value'] = craftName
             status.sensordisplay[sensorTGT]['warn'] = nil
             status.sensordisplay[sensorTGT]['min'] = nil
             status.sensordisplay[sensorTGT]['max'] = nil
@@ -1951,7 +1951,7 @@ function status.paint(widget)
                 if sensorTGT == 14 then sensorTGT = 'voltage__fuel' end
                 if sensorTGT == 15 then sensorTGT = 'voltage__current' end
                 if sensorTGT == 16 then sensorTGT = 'voltage__mah' end
-                if sensorTGT == 18 then sensorTGT = 'model_name' end
+                if sensorTGT == 18 then sensorTGT = 'craft_name' end
                 if sensorTGT == 20 then sensorTGT = 'rssi_timer_temp_esc_temp_mcu' end
                 if sensorTGT == 21 then sensorTGT = 'max_current' end
                 if sensorTGT == 22 then sensorTGT = 'lq__gov' end
