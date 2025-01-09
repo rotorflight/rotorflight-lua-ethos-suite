@@ -214,7 +214,7 @@ function msp.resetState()
     rfsuite.config.apiVersion = nil
     rfsuite.config.clockSet = nil
     rfsuite.config.clockSetAlart = nil
-    rfsuite.config.modelName = nil
+    rfsuite.config.craftName = nil
 end
 
 function msp.wakeup()
