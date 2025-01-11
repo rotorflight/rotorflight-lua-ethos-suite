@@ -14,88 +14,171 @@
  *
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]] --
+local rf2craftname = {wakeupSchedulerUI = os.clock()}
 
-local rf2craftname = { wakeupSchedulerUI = os.clock() }
-
+local sensors
 local lastName
-local bitmapPtr
-local default_image = "/bitmaps/system/default_helicopter.png"
+local bitmapPtr 
+local image
+local default_image = "widgets/craftname/default_image.png"
 local config = {}
 
--- Helper function to load a bitmap from various paths
-local function load_bitmap(image)
-    local paths = { "", "BITMAPS:", "SYSTEM:" }
-    for _, path in ipairs(paths) do
-        local full_path = path .. image
-        if io.open(full_path, "r") then
-            return lcd.loadBitmap(full_path)
+
+-- Helper function to check if file exists
+local function file_exists(name)
+    local f = io.open(name, "r")
+    if f then
+        io.close(f)
+        return true
+    end
+    return false
+end
+
+
+-- Helper function to load image
+function loadImage(image)
+    if image == nil then
+        image = default_image
+    end
+
+    -- Helper function to check file in different locations
+    local function find_image_in_directories(img)
+        if file_exists(img) then
+            return img
+        elseif file_exists("BITMAPS:" .. img) then
+            return "BITMAPS:" .. img
+        elseif file_exists("SYSTEM:" .. img) then
+            return "SYSTEM:" .. img
+        else
+            return nil
         end
     end
-    return nil
-end
 
--- Create widget
-function rf2craftname.create()
-    bitmapPtr = load_bitmap(default_image)
-end
+    -- 1. Check the provided image path
+    image_path = find_image_in_directories(image)
 
--- Paint widget
-function rf2craftname.paint()
-    local w, h = lcd.getWindowSize()
-    local craftName = rfsuite.bg.active() and rfsuite.config.craftName or "UNKNOWN"
-    local tsizeW, tsizeH = lcd.getTextSize(craftName)
-    local posX = (w - tsizeW) / 2
-    local posY = config.image and 5 or (h - tsizeH) / 2 + 5
-
-    if config.image and bitmapPtr then
-        local padding = 5
-        lcd.drawBitmap(padding, padding + tsizeH, bitmapPtr, w - padding * 2, h - padding * 2 - tsizeH)
+    -- 2. If not found, try switching between .png and .bmp
+    if not image_path then
+        if image:match("%.png$") then
+            image_path = find_image_in_directories(image:gsub("%.png$", ".bmp"))
+        elseif image:match("%.bmp$") then
+            image_path = find_image_in_directories(image:gsub("%.bmp$", ".png"))
+        end
     end
 
-    lcd.drawText(posX, posY, craftName)
+    -- 3. If still not found, use the default image
+    if not image_path then
+        image_path = default_image
+    end
+
+    bitmapPtr = lcd.loadBitmap(image_path)
+    return bitmapPtr
 end
 
--- Configure widget
-function rf2craftname.configure()
+-- Create function
+function rf2craftname.create(widget)
+    bitmapPtr = loadImage(default_image)   
+end
+
+-- Paint function
+function rf2craftname.paint(widget)
+    local w, h = lcd.getWindowSize()
+
+    if config.image == false then
+
+        lcd.font(FONT_XXL)
+        local str = rfsuite.bg.active() and rfsuite.config.craftName or "UNKNOWN"
+        local tsizeW, tsizeH = lcd.getTextSize(str)
+    
+        local posX = (w - tsizeW) / 2
+        local posY = (h - tsizeH) / 2 + 5
+
+        lcd.drawText(posX, posY, str)
+    else
+        lcd.font(FONT_XL)
+
+        local str = rfsuite.bg.active() and rfsuite.config.craftName or "UNKNOWN"
+        local tsizeW, tsizeH = lcd.getTextSize(str)
+    
+        local posX = (w - tsizeW) / 2
+        if bitmapPtr ~= nil then
+            local padding = 5
+            local bitmapX = 0 + padding
+            local bitmapY = 0 + padding + tsizeH 
+            local bitmapW = w - (padding * 2)
+            local bitmapH = h - (padding * 2) - tsizeH
+            lcd.drawBitmap(bitmapX, bitmapY, bitmapPtr, bitmapW, bitmapH)
+        end
+        lcd.drawText(posX, 5, str)
+    end
+end
+
+-- Configure function
+function rf2craftname.configure(widget)
+
+    -- reset this to force a lcd refresh
     lastName = nil
+
     local line = form.addLine("Image")
-    form.addBooleanField(line, nil, function() return config.image end, function(val) config.image = val end)
+    form.addBooleanField(line, 
+                        nil, 
+                        function() return config.image end, 
+                        function(newValue) config.image = newValue end)
+
+    return widget
 end
 
--- Read widget state
-function rf2craftname.read()
-    config.image = storage.read("mem1") or false
+-- Read function
+function rf2craftname.read(widget)
+
+    -- display or not display an image on the page
+    config.image = storage.read("mem1") 
+    if config.image == nil then config.image = false end
+
 end
 
--- Write widget state
-function rf2craftname.write()
+-- Write function
+function rf2craftname.write(widget)
+
     storage.write("mem1", config.image)
+
 end
 
--- Event handler (placeholder)
-function rf2craftname.event(_, _)
-    -- Placeholder for event handling
+-- Event function
+function rf2craftname.event(widget, event)
+    -- Placeholder for widget event logic
 end
 
--- Wakeup function
-function rf2craftname.wakeup()
-    if (os.clock() - rf2craftname.wakeupSchedulerUI) >= (lcd.isVisible() and 0.1 or 1) then
-        rf2craftname.wakeupSchedulerUI = os.clock()
+-- Main wakeup function
+function rf2craftname.wakeup(widget)
+    local schedulerUI = lcd.isVisible() and 0.1 or 1
+    local now = os.clock()
+
+    if (now - rf2craftname.wakeupSchedulerUI) >= schedulerUI then
+        rf2craftname.wakeupSchedulerUI = now
         rf2craftname.wakeupUI()
     end
 end
 
--- Wakeup UI function
 function rf2craftname.wakeupUI()
-    local craftName = rfsuite.config.craftName
-    if lastName ~= craftName then
-        bitmapPtr = config.image and load_bitmap("/bitmaps/models/" .. (craftName or "default_helicopter") .. ".png") or nil
-        if not bitmapPtr then
-            bitmapPtr = load_bitmap(default_image)
-        end
+
+    if lastName ~= rfsuite.config.craftName then
+        -- load image if it is enabled
+        if config.image == true then
+            if rfsuite.config.craftName ~= nil then
+                image = "/bitmaps/models/" .. rfsuite.config.craftName .. ".png"    
+                bitmapPtr = loadImage(image)
+            else
+                bitmapPtr = loadImage(default_image)   
+            end 
+        else    
+            bitmapPtr = loadImage(default_image)            
+        end    
         lcd.invalidate()
-        lastName = craftName
     end
+
+    lastName = rfsuite.config.craftName
+
 end
 
 return rf2craftname
