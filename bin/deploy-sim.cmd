@@ -20,7 +20,7 @@ REM    your_script.bat
 
 REM 3. Optional: To copy only .lua files, pass .lua as a parameter:
 REM    Example:
-REM    your_script.bat .lua
+REM    deploy-sim.cmd .lua
 
 REM ------------------------------------------------------
 REM SCRIPT BEGINS BELOW
