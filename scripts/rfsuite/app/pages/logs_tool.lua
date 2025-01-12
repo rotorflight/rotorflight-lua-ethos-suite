@@ -1,12 +1,16 @@
 -- display vars
-local LCD_W, LCD_H = rfsuite.utils.getWindowSize()
+local res = system.getVersion()
+local LCD_W = res.lcdWidth 
+local LCD_H = res.lcdHeight
 
 local graphPos = {}
 graphPos['menu_offset'] = rfsuite.app.radio.logGraphMenuOffset
+graphPos['height_offset'] = rfsuite.app.radio.logGraphHeightOffset or 0
 graphPos['x_start'] = 0
 graphPos['y_start'] = 0 + graphPos['menu_offset']
 graphPos['width'] = math.floor(LCD_W * rfsuite.app.radio.logGraphWidthPercentage)
-graphPos['height'] = LCD_H - graphPos['menu_offset'] - 50
+graphPos['height'] = LCD_H - graphPos['menu_offset'] - graphPos['menu_offset'] - 40 + graphPos['height_offset']
+graphPos['slider_y'] = LCD_H - (graphPos['menu_offset'] + 30 ) + graphPos['height_offset']
 
 local triggerOverRide = false
 local triggerOverRideAll = false
@@ -413,7 +417,7 @@ local function drawCurrentIndex(points, position, totalPoints, keyindex, keyunit
 
     -- draw the vertical line
     lcd.color(COLOR_WHITE)
-    lcd.drawLine(linePos, graphPos['menu_offset'] - 5, linePos, LCD_H - 45)
+    lcd.drawLine(linePos, graphPos['menu_offset'] - 5, linePos, graphPos['height'] + graphPos['menu_offset'])
 
     -- show value
     lcd.font(FONT_BOLD)
@@ -571,7 +575,7 @@ local function wakeup()
         if currentDataIndex >= #logColumns then
 
             -- put slider at bottom of form
-            local posField = {x = graphPos['x_start'], y = LCD_H - 40, w = graphPos['width'] - 10, h = 40}
+            local posField = {x = graphPos['x_start'], y = graphPos['slider_y'] , w = graphPos['width'] - 10, h = 40}
             rfsuite.app.formFields[1] = form.addSliderField(nil, posField, 0, 100, function()
                 return sliderPosition
             end, function(newValue)

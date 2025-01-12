@@ -129,9 +129,6 @@ function msp.onConnectBgChecks()
                 simulatorResponse = {0, 1, 0, 0, 0, 2, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
             }
             msp.mspQueue:add(message)
-        elseif (rfsuite.config.activeProfile == nil or rfsuite.config.activeRateProfile == nil) then
-
-            rfsuite.utils.getCurrentProfile()
 
         elseif (rfsuite.config.servoCount == nil) and msp.mspQueue:isProcessed() then
             local message = {
@@ -186,6 +183,23 @@ function msp.onConnectBgChecks()
             }
             msp.mspQueue:add(message)
 
+        elseif (rfsuite.config.craftName == nil) and msp.mspQueue:isProcessed() then
+
+            local message = {
+                command = 10, -- MSP_NAME
+                processReply = function(self, buf)
+                    local v = 0
+                    local craftName = ""
+                    for idx = 1, #buf do craftName = craftName .. string.char(buf[idx]) end
+
+                    rfsuite.config.craftName = craftName
+
+                    rfsuite.utils.log("Craft name: " .. craftName)
+                end,
+                simulatorResponse = {80, 105, 108, 111, 116}
+            }
+            msp.mspQueue:add(message)
+
             -- do this at end of last one
             msp.onConnectChecksInit = false
         end
@@ -200,6 +214,7 @@ function msp.resetState()
     rfsuite.config.apiVersion = nil
     rfsuite.config.clockSet = nil
     rfsuite.config.clockSetAlart = nil
+    rfsuite.config.craftName = nil
 end
 
 function msp.wakeup()

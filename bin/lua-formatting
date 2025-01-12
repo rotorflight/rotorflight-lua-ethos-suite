@@ -21,29 +21,37 @@ fi
 
 # Check if the first argument ($1) is provided
 if [ -z "$1" ]; then
-    echo "Error: No directory specified."
-    echo "Usage: $0 <directory>"
+    echo "Error: No path specified."
+    echo "Usage: $0 <file or directory>"
     exit 1
 fi
 
-# Check if the provided path is a valid directory
-if [ ! -d "$1" ]; then
-    echo "Error: '$1' is not a valid directory."
-    exit 1
-fi
-
-# Find all .lua files in the specified directory and format them
-list=$(find "$1" -type f -name "*.lua")
-
-if [ -z "$list" ]; then
-    echo "No Lua files found in the directory '$1'."
+# If the provided path is a valid file, format it
+if [ -f "$1" ]; then
+    echo "Formatting file: $1"
+    lua-format -i "$1"
+    echo "Formatting completed."
     exit 0
 fi
 
-# Format each Lua file found
-for x in $list; do
-    echo "Formatting: $x"
-    lua-format -i "$x"
-done
+# If the provided path is a valid directory, format all .lua files recursively
+if [ -d "$1" ]; then
+    list=$(find "$1" -type f -name "*.lua")
 
-echo "Formatting completed."
+    if [ -z "$list" ]; then
+        echo "No Lua files found in the directory '$1'."
+        exit 0
+    fi
+
+    for x in $list; do
+        echo "Formatting: $x"
+        lua-format -i "$x"
+    done
+
+    echo "Formatting completed."
+    exit 0
+fi
+
+# If the provided path is neither a file nor a directory, display an error
+echo "Error: '$1' is not a valid file or directory."
+exit 1

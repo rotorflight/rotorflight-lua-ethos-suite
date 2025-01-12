@@ -224,9 +224,10 @@ status.sensorTempESCMax = 0
 status.sensorRSSIMin = 0
 status.sensorRSSIMax = 0
 status.lastMaxMin = 0
+status.lastBitmap = nil
 status.wakeupSchedulerUI = os.clock()
 status.layoutOptions = {{"TIMER", 1}, {"VOLTAGE", 2}, {"FUEL", 3}, {"CURRENT", 4}, {"MAH", 17}, {"RPM", 5}, {"LQ", 6}, {"T.ESC", 7}, {"T.MCU", 8}, {"IMAGE", 9}, {"GOVERNOR", 10}, {"IMAGE, GOVERNOR", 11}, {"LQ, TIMER", 12}, {"T.ESC, T.MCU", 13}, {"VOLTAGE, FUEL", 14}, {"VOLTAGE, CURRENT", 15}, {"VOLTAGE, MAH", 16}, {"LQ, TIMER, T.ESC, T.MCU", 20}, {"MAX CURRENT", 21}, {"LQ, GOVERNOR", 22},
-                        {"CUSTOMSENSOR #1", 23}, {"CUSTOMSENSOR #2", 24}, {"CUSTOMSENSOR #1, #2", 25}}
+                        {"CRAFT NAME", 18}, {"CUSTOMSENSOR #1", 23}, {"CUSTOMSENSOR #2", 24}, {"CUSTOMSENSOR #1, #2", 25}}
 status.layoutBox1Param = 11 -- IMAGE, GOV
 status.layoutBox2Param = 2 -- VOLTAGE
 status.layoutBox3Param = 3 -- FUEL
@@ -264,14 +265,27 @@ local mahSOURCE
 local telemetrySOURCE
 local crsfSOURCE
 
+-- Helper function to load a bitmap from various paths
+local function load_bitmap(image)
+    local paths = { "", "BITMAPS:", "SYSTEM:" }
+    for _, path in ipairs(paths) do
+        local full_path = path .. image
+        if io.open(full_path, "r") then
+            return lcd.loadBitmap(full_path)
+        end
+    end
+    return nil
+end
+
 function status.create(widget)
 
     status.initTime = os.clock()
 
-    status.gfx_model = lcd.loadBitmap(model.bitmap())
-    status.gfx_heli = lcd.loadBitmap("widgets/status/gfx/heli.png")
-    status.gfx_close = lcd.loadBitmap("widgets/status/gfx/close.png")
-    -- status.rssiSensor = status.getRssiSensor()
+
+    status.lastBitmap = model.bitmap()
+    status.gfx_model = lcd.loadBitmap(model.bitmap()) or load_bitmap("/bitmaps/models/" .. (craftName or "default_helicopter") .. ".png")  or nil
+
+
 
     if rfsuite.utils.ethosVersion() < 1519 then
         status.screenError("ETHOS < V1.5.19")
@@ -462,9 +476,9 @@ function status.configure(widget)
     -- HAPTIC
     line = batterypanel:addLine("     " .. "Vibrate")
     plalrthap = form.addBooleanField(line, nil, function()
-        return alrthptParam
+        return status.alrthptParam
     end, function(newValue)
-        alrthptParam = newValue
+        status.alrthptParam = newValue
     end)
     if status.alertonParam == 3 then
         plalrthap:enable(false)
@@ -1780,6 +1794,19 @@ function status.paint(widget)
             status.sensordisplay[sensorTGT]['max'] = sensorMAX
             status.sensordisplay[sensorTGT]['unit'] = sensorUNIT
 
+            -- CRAFT NAME
+            local sensorTGT = 'craft_name'
+            local craftName = "UNKNOWN"
+            if rfsuite.config.craftName ~= nil then craftName = rfsuite.config.craftName end
+
+            status.sensordisplay[sensorTGT] = {}
+            status.sensordisplay[sensorTGT]['title'] = ""
+            status.sensordisplay[sensorTGT]['value'] = craftName
+            status.sensordisplay[sensorTGT]['warn'] = nil
+            status.sensordisplay[sensorTGT]['min'] = nil
+            status.sensordisplay[sensorTGT]['max'] = nil
+            status.sensordisplay[sensorTGT]['unit'] = ""
+
             -- CUSTOM SENSOR #1
 
             if status.customSensorParam1 ~= nil then
@@ -1789,6 +1816,9 @@ function status.paint(widget)
                     sensorVALUE = "-"
                 else
                     sensorVALUE = csSensor:value()
+                    if csSensor:protocolDecimals() == 0 then
+                        sensorVALUE = math.floor(sensorVALUE)
+                    end                   
                 end
 
                 if csSensor:name() == nil then
@@ -1835,6 +1865,10 @@ function status.paint(widget)
                     sensorVALUE = "-"
                 else
                     sensorVALUE = csSensor:value()
+                    if csSensor:protocolDecimals() == 0 then
+                        sensorVALUE = math.floor(sensorVALUE)
+                    end
+
                 end
 
                 if csSensor:name() == nil then
@@ -1938,6 +1972,7 @@ function status.paint(widget)
                 if sensorTGT == 14 then sensorTGT = 'voltage__fuel' end
                 if sensorTGT == 15 then sensorTGT = 'voltage__current' end
                 if sensorTGT == 16 then sensorTGT = 'voltage__mah' end
+                if sensorTGT == 18 then sensorTGT = 'craft_name' end
                 if sensorTGT == 20 then sensorTGT = 'rssi_timer_temp_esc_temp_mcu' end
                 if sensorTGT == 21 then sensorTGT = 'max_current' end
                 if sensorTGT == 22 then sensorTGT = 'lq__gov' end
@@ -1958,8 +1993,8 @@ function status.paint(widget)
                 else
 
                     if sensorTGT == 'customsensor1' or sensorTGT == 'customsensor2' then
-
-                        sensorVALUE = math.floor(status.sensordisplay[sensorTGT]['value'])
+  
+                        sensorVALUE = status.sensordisplay[sensorTGT]['value']
                         sensorUNIT = status.sensordisplay[sensorTGT]['unit']
                         sensorMIN = status.sensordisplay[sensorTGT]['min']
                         sensorMAX = status.sensordisplay[sensorTGT]['max']
@@ -1974,7 +2009,7 @@ function status.paint(widget)
                     if sensorTGT == 'customsensor1_2' then
                         -- SENSOR1 & 2
                         sensorTGT = "customsensor1"
-                        sensorVALUE = math.floor(status.sensordisplay[sensorTGT]['value'])
+                        sensorVALUE = status.sensordisplay[sensorTGT]['value']
                         sensorUNIT = status.sensordisplay[sensorTGT]['unit']
                         sensorMIN = status.sensordisplay[sensorTGT]['min']
                         sensorMAX = status.sensordisplay[sensorTGT]['max']
@@ -1985,7 +2020,7 @@ function status.paint(widget)
                         status.telemetryBox(posX, posY, boxW, boxH / 2 - (theme.colSpacing / 2), sensorTITLE, sensorVALUE, sensorUNIT, smallBOX, sensorWARN, sensorMIN, sensorMAX)
 
                         sensorTGT = "customsensor2"
-                        sensorVALUE = math.floor(status.sensordisplay[sensorTGT]['value'])
+                        sensorVALUE = status.sensordisplay[sensorTGT]['value']
                         sensorUNIT = status.sensordisplay[sensorTGT]['unit']
                         sensorMIN = status.sensordisplay[sensorTGT]['min']
                         sensorMAX = status.sensordisplay[sensorTGT]['max']
@@ -1999,21 +2034,14 @@ function status.paint(widget)
 
                     if sensorTGT == 'image' then
                         -- IMAGE
-                        if status.gfx_model ~= nil then
-                            status.telemetryBoxImage(posX, posY, boxW, boxH, status.gfx_model)
-                        else
-                            status.telemetryBoxImage(posX, posY, boxW, boxH, status.gfx_heli)
-                        end
+                        status.telemetryBoxImage(posX, posY, boxW, boxH, status.gfx_model)
                     end
 
                     if sensorTGT == 'image__gov' then
-                        -- IMAGE + GOVERNOR
+                        -- IMAGE + GOVERNOR        
                         if status.gfx_model ~= nil then
                             status.telemetryBoxImage(posX, posY, boxW, boxH / 2 - (theme.colSpacing / 2), status.gfx_model)
-                        else
-                            status.telemetryBoxImage(posX, posY, boxW, boxH / 2 - (theme.colSpacing / 2), status.gfx_heli)
-                        end
-
+                        end    
                         sensorTGT = "governor"
                         sensorVALUE = status.sensordisplay[sensorTGT]['value']
                         sensorUNIT = status.sensordisplay[sensorTGT]['unit']
@@ -2948,7 +2976,7 @@ function status.read()
     status.btypeParam = storage.read("mem2")
     status.lowfuelParam = storage.read("mem3")
     status.alertintParam = storage.read("mem4")
-    alrthptParam = storage.read("mem5")
+    status.alrthptParam = storage.read("mem5")
     status.maxminParam = storage.read("mem6")
     status.titleParam = storage.read("mem7")
     status.cellsParam = storage.read("mem8")
@@ -3042,7 +3070,7 @@ function status.write()
     storage.write("mem2", status.btypeParam)
     storage.write("mem3", status.lowfuelParam)
     storage.write("mem4", status.alertintParam)
-    storage.write("mem5", alrthptParam)
+    storage.write("mem5", status.alrthptParam)
     storage.write("mem6", status.maxminParam)
     storage.write("mem7", status.titleParam)
     storage.write("mem8", status.cellsParam)
@@ -3109,7 +3137,7 @@ function status.write()
     storage.write("mem69", status.minCellVoltage)
     storage.write("mem79", status.warnCellVoltage)
     storage.write("mem80", status.customSensorParam1)
-    storage.write("mem81", status.customSensorParam1)
+    storage.write("mem81", status.customSensorParam2)
 
 end
 
@@ -3577,6 +3605,12 @@ function status.wakeupUI(widget)
             lcd.invalidate()
         end
 
+        if status.lastBitmap ~= model.bitmap() then
+            status.gfx_model = lcd.loadBitmap(model.bitmap()) or load_bitmap("/bitmaps/models/" .. (craftName or "default_helicopter") .. ".png")  or nil
+            status.lastBitmap = model.bitmap()
+            lcd.invalidate()
+        end
+
         if status.linkUP == false then status.linkUPTime = os.clock() end
 
         if status.linkUP == true then
@@ -3781,7 +3815,7 @@ function status.wakeupUI(widget)
                             rfsuite.utils.playFile("status", "alerts/lowfuel.wav")
 
                             -- system.playNumber(status.sensors.voltage / 100, 2, 2)
-                            if alrthptParam == true then system.playHaptic("- . -") end
+                            if status.alrthptParam == true then system.playHaptic("- . -") end
                         end
                     end
                 else
@@ -3828,7 +3862,7 @@ function status.wakeupUI(widget)
                             if status.lvStickannouncement == false and status.voltageIsLowAlert == true then -- do not play if sticks at high end points
                                 rfsuite.utils.playFile("status", "alerts/lowvoltage.wav")
                                 -- system.playNumber(status.sensors.voltage / 100, 2, 2)
-                                if alrthptParam == true then system.playHaptic("- . -") end
+                                if status.alrthptParam == true then system.playHaptic("- . -") end
                             else
                                 -- print("Alarm supressed due to stick positions")
                             end
