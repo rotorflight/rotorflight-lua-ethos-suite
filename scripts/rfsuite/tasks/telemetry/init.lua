@@ -15,12 +15,11 @@
  
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
-]]--
-
+]] --
 local init = {
-    interval = 0.5,             --run every 0.5s
-    script = "telemetry.lua",   --run this script
-    msp = false                 --do not run if busy with msp 
+    interval = 0.5, -- run every 0.5s
+    script = "telemetry.lua", -- run this script
+    msp = false -- do not run if busy with msp 
 }
 
 return init

@@ -15,11 +15,10 @@
  
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
-]]--
-
+]] --
 local init = {
-    interval = 0.000001,   --run as often as possible
-    script = "msp.lua",    --run this script
-    msp = true             --do not run if busy with msp [as this is msp we set to true as must run]
+    interval = 0.000001, -- run as often as possible
+    script = "msp.lua", -- run this script
+    msp = true -- do not run if busy with msp [as this is msp we set to true as must run]
 }
 return init
