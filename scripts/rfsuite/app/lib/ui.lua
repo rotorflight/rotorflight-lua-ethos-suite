@@ -174,7 +174,7 @@ end
 
 function ui.openMainMenu()
 
-    local MainMenu = assert(loadfile("app/pages.lua"))()
+    local MainMenu = assert(loadfile("app/modules/init.lua"))()
 
     -- clear all nav vars
     rfsuite.app.lastIdx = nil
