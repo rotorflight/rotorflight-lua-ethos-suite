@@ -1,50 +1,6 @@
 local pages = {}
 local sections = {}
 
-
-
--- findModules
-function findmodules()
-
-    local moduledir = "modules"
-    local modules_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and "modules/" or (config.suiteDir .. "/modules/")
-
-    local modulesList = {}
-
-    for _, v in pairs(system.listFiles(modules_path)) do
-
-        local init_path = modules_path .. v .. '/init.lua'
-        local f = io.open(init_path, "r")
-        if f then
-            io.close(f)
-
-            local func, err = loadfile(init_path)
-
-            if func then
-                local mconfig = func()
-                if type(tconfig) ~= "table" or not tconfig.interval or not tconfig.script then
-                    rfsuite.utils.log("Invalid configuration in " .. init_path)
-                else
-                    local module = {
-                                    name = v, 
-                                    section = mconfig.interval, 
-                                    script = mconfig.script
-                                   }
-                    table.insert(modulesList, module)
-
-                    modules[v] = assert(loadfile(script))(config)
-
-                end
-            end
-        end
-    end
-end
-
-
-local found = findModules()
-
-rfsuite.utils.print_r(found)
-
 -- pages
 -- title = Page Title
 -- section = int 
@@ -57,7 +13,6 @@ rfsuite.utils.print_r(found)
 -- developer = true or false (hides the whole section or page
 -- ethosversion = 1516 or other (disables section if less than version)
 
---[[
 sections[#sections + 1] = {title = "Flight Tuning", section = 1}
 pages[#pages + 1] = {title = "PIDs", section = 1, script = "pids.lua", image = "pids.png"}
 pages[#pages + 1] = {title = "Rates", section = 1, script = "rates.lua", image = "rates.png"}
@@ -96,6 +51,5 @@ pages[#pages + 1] = {title = "Experimental", section = 6, script = "msp_exp.lua"
 
 sections[#sections + 1] = {title = "About", section = 7}
 pages[#pages + 1] = {title = "About", section = 7, script = "about.lua", image = "about.png"}
-]]--
 
 return {pages = pages, sections = sections}

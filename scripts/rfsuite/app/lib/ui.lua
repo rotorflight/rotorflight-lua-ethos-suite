@@ -248,7 +248,7 @@ function ui.openMainMenu()
 
         if hideSection == false then
 
-            local sc = idx
+            local sc = value.section
 
             form.addLine(value.title)
 
@@ -256,7 +256,8 @@ function ui.openMainMenu()
             local hideEntry = false
 
             for pidx, pvalue in ipairs(MainMenu.pages) do
-                if pvalue.section == idx then
+                if pvalue.section == value.section then
+
                     -- do not show icon if not supported by ethos version
                     if (pvalue.ethosversion ~= nil and rfsuite.config.ethosRunningVersion < pvalue.ethosversion) then
                         hideEntry = true
@@ -294,7 +295,7 @@ function ui.openMainMenu()
                             press = function()
                                 rfsuite.app.menuLastSelected["mainmenu"] = pidx
                                 rfsuite.app.ui.progressDisplay()
-                                rfsuite.app.ui.openPage(pidx, pvalue.title, pvalue.folder .. "/" .. pvalue.script)
+                                rfsuite.app.ui.openPage(pidx, pvalue.title, pvalue.script)
                             end
                         })
 
@@ -662,7 +663,7 @@ end
 function ui.openPageRefresh(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
     rfsuite.app.triggers.isReady = false
-    if script ~= nil then rfsuite.app.Page = assert(loadfile("app/modules/" .. script))() end
+    if script ~= nil then rfsuite.app.Page = assert(loadfile("app/pages/" .. script))() end
 
 end
 
@@ -673,7 +674,7 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
     rfsuite.app.formFields = {}
     rfsuite.app.formLines = {}
 
-    rfsuite.app.Page = assert(loadfile("app/modules/" .. script))(idx)
+    rfsuite.app.Page = assert(loadfile("app/pages/" .. script))(idx)
 
     if rfsuite.app.Page.openPage then
         rfsuite.app.Page.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)

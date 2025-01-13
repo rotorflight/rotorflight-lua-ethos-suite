@@ -15,15 +15,11 @@
  
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
-
 ]] --
 local init = {
-    title = "PIDs",                    -- title of the page
+    script = "pids.lua",              -- run this script
     section = "Flight Tuning",         -- do not run if busy with msp
-    script = "main.lua",               -- run this script
-    image = "pids.png",                -- image for the page
-    order = 1,                          -- order in the section
-    ethosversion = 1519                -- disable button if ethos version is less than this
+    image = "pids.png"
 }
 
 return init
