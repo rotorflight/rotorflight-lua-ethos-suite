@@ -10,7 +10,6 @@ local supportedRadios = {
             menuButtonWidth = 100,
             helpQrCodeSize = 100,
             navbuttonHeight = 40,
-            text = 1,
             buttonsPerRow = 5,
             buttonsPerRowSmall = 6,
             buttonWidth = 135,
@@ -25,6 +24,7 @@ local supportedRadios = {
             logGraphWidthPercentage = 0.75,
             logGraphButtonsPerRow = 5,
             logGraphKeyHeight = 65,
+            logGraphHeightOffset = -15,
             logKeyFont = FONT_S
         }
     },
@@ -49,16 +49,16 @@ local supportedRadios = {
             formRowHeight = 50,
             logGraphMenuOffset = 55,
             logGraphWidthPercentage = 0.62,
-            logGraphButtonsPerRow = 4,  
-            logGraphKeyHeight = 45,     
-            logKeyFont = FONT_XS           
+            logGraphButtonsPerRow = 4,
+            logGraphKeyHeight = 45,
+            logGraphHeightOffset = 10,            
+            logKeyFont = FONT_XS
         }
     },
     -- Horus X10, Horus X12 (480x272)
     ["472x240"] = {
         msp = {
             inlinesize_mult = 1.0715,
-            text = 1,
             menuButtonWidth = 60,
             helpQrCodeSize = 70,
             navbuttonHeight = 30,
@@ -75,9 +75,10 @@ local supportedRadios = {
             formRowHeight = 50,
             logGraphMenuOffset = 50,
             logGraphWidthPercentage = 0.65,
-            logGraphButtonsPerRow = 4,  
-            logGraphKeyHeight = 38,    
-            logKeyFont = FONT_XS            
+            logGraphButtonsPerRow = 4,
+            logGraphKeyHeight = 38,
+            logGraphHeightOffset = 0,            
+            logKeyFont = FONT_XS
         }
     },
     -- Twin X14 (632x314)
@@ -89,7 +90,6 @@ local supportedRadios = {
             helpQrCodeSize = 100,
             navbuttonHeight = 35,
             navButtonOffset = 47,
-            text = 2,
             buttonsPerRow = 5,
             buttonsPerRowSmall = 6,
             buttonWidth = 112,
@@ -102,9 +102,10 @@ local supportedRadios = {
             formRowHeight = 50,
             logGraphMenuOffset = 60,
             logGraphWidthPercentage = 0.65,
-            logGraphButtonsPerRow = 4,  
-            logGraphKeyHeight = 50,          
-            logKeyFont = FONT_XS            
+            logGraphButtonsPerRow = 4,
+            logGraphKeyHeight = 50,
+            logGraphHeightOffset = 0,            
+            logKeyFont = FONT_XS
         }
     }
 }

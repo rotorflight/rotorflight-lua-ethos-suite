@@ -17,8 +17,7 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 
-]]--
-
+]] --
 --
 -- background processing of msp traffic
 --
@@ -62,9 +61,7 @@ function msp.onConnectBgChecks()
         -- set module to use. this happens on connect as
         -- it forces a recheck whenever the rx has been disconnected
         -- or a model swapped
-        if rfsuite.rssiSensor then 
-            msp.sensor:module(rfsuite.rssiSensor:module()) 
-        end
+        if rfsuite.rssiSensor then msp.sensor:module(rfsuite.rssiSensor:module()) end
 
         if rfsuite.config.apiVersion == nil and msp.mspQueue:isProcessed() then
 
@@ -132,9 +129,6 @@ function msp.onConnectBgChecks()
                 simulatorResponse = {0, 1, 0, 0, 0, 2, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
             }
             msp.mspQueue:add(message)
-        elseif (rfsuite.config.activeProfile == nil or rfsuite.config.activeRateProfile == nil) then
-
-            rfsuite.utils.getCurrentProfile()
 
         elseif (rfsuite.config.servoCount == nil) and msp.mspQueue:isProcessed() then
             local message = {
@@ -147,10 +141,7 @@ function msp.onConnectBgChecks()
                         rfsuite.config.servoCount = servoCount
                     end
                 end,
-                simulatorResponse = {
-                    4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0,
-                    0, 0, 120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0
-                }
+                simulatorResponse = {4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0, 120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0}
             }
             msp.mspQueue:add(message)
 
@@ -179,14 +170,33 @@ function msp.onConnectBgChecks()
             local message = {
                 command = 142, -- MSP_SERVO_OVERIDE
                 processReply = function(self, buf)
-                    if #buf >= 2 then  --24.  but we only need first
+                    if #buf >= 2 then -- 24.  but we only need first
                         local governorMode = msp.mspHelper.readU8(buf)
                         -- update master one in case changed
-                        rfsuite.utils.log("Governor mode: " .. governorMode)
-                        rfsuite.config.governorMode = governorMode
+                        if governorMode ~= nil then
+                            rfsuite.utils.log("Governor mode: " .. governorMode)
+                            rfsuite.config.governorMode = governorMode
+                        end
                     end
                 end,
                 simulatorResponse = {3, 100, 0, 100, 0, 20, 0, 20, 0, 30, 0, 10, 0, 0, 0, 0, 0, 50, 0, 10, 5, 10, 0, 10}
+            }
+            msp.mspQueue:add(message)
+
+        elseif (rfsuite.config.craftName == nil) and msp.mspQueue:isProcessed() then
+
+            local message = {
+                command = 10, -- MSP_NAME
+                processReply = function(self, buf)
+                    local v = 0
+                    local craftName = ""
+                    for idx = 1, #buf do craftName = craftName .. string.char(buf[idx]) end
+
+                    rfsuite.config.craftName = craftName
+
+                    rfsuite.utils.log("Craft name: " .. craftName)
+                end,
+                simulatorResponse = {80, 105, 108, 111, 116}
             }
             msp.mspQueue:add(message)
 
@@ -204,6 +214,7 @@ function msp.resetState()
     rfsuite.config.apiVersion = nil
     rfsuite.config.clockSet = nil
     rfsuite.config.clockSetAlart = nil
+    rfsuite.config.craftName = nil
 end
 
 function msp.wakeup()

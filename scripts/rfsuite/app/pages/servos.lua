@@ -90,7 +90,6 @@ local function openPage(pidx, title, script)
 
     rfsuite.bg.msp.protocol.mspIntervalOveride = nil
 
-
     rfsuite.app.triggers.isReady = false
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
 
@@ -165,8 +164,7 @@ local function openPage(pidx, title, script)
 
             if pvalue.section == "swash" and lc == 0 then
                 local headerLine = form.addLine("")
-                local headerLineText = form.addStaticText(headerLine, {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.config.lcdWidth, h = rfsuite.app.radio.navbuttonHeight},
-                                                          headerLineText())
+                local headerLineText = form.addStaticText(headerLine, {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.config.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}, headerLineText())
             end
 
             if pvalue.section == "tail" then
@@ -188,9 +186,7 @@ local function openPage(pidx, title, script)
             if lc >= 0 then bx = (buttonW + padding) * lc end
 
             if rfsuite.config.iconSize ~= 0 then
-                if rfsuite.app.gfx_buttons["servos"][pidx] == nil then
-                    rfsuite.app.gfx_buttons["servos"][pidx] = lcd.loadMask("app/gfx/servos/" .. pvalue.image)
-                end
+                if rfsuite.app.gfx_buttons["servos"][pidx] == nil then rfsuite.app.gfx_buttons["servos"][pidx] = lcd.loadMask("app/gfx/servos/" .. pvalue.image) end
             else
                 rfsuite.app.gfx_buttons["servos"][pidx] = nil
             end
@@ -242,10 +238,7 @@ local function getServoCount(callback, callbackParam)
         --        221, 5, 68, 253, 188, 2, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0
         -- }
         -- 4 servos
-        simulatorResponse = {
-            4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0,
-            120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0
-        }
+        simulatorResponse = {4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0, 120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0}
     }
     rfsuite.bg.msp.mspQueue:add(message)
 end
@@ -266,10 +259,7 @@ local function openPageInit(pidx, title, script)
                     rfsuite.config.servoCount = servoCount
                 end
             end,
-            simulatorResponse = {
-                4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0,
-                120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0
-            }
+            simulatorResponse = {4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0, 120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0}
         }
         rfsuite.bg.msp.mspQueue:add(message)
 
@@ -310,42 +300,38 @@ local function onToolMenu(self)
 
     local buttons
     if rfsuite.config.servoOverride == false then
-        buttons = {
-            {
-                label = "                OK                ",
-                action = function()
+        buttons = {{
+            label = "                OK                ",
+            action = function()
 
-                    -- we cant launch the loader here to se rely on the modules
-                    -- wakeup function to do this
-                    triggerOverRide = true
-                    triggerOverRideAll = true
-                    return true
-                end
-            }, {
-                label = "CANCEL",
-                action = function()
-                    return true
-                end
-            }
-        }
+                -- we cant launch the loader here to se rely on the modules
+                -- wakeup function to do this
+                triggerOverRide = true
+                triggerOverRideAll = true
+                return true
+            end
+        }, {
+            label = "CANCEL",
+            action = function()
+                return true
+            end
+        }}
     else
-        buttons = {
-            {
-                label = "                OK                ",
-                action = function()
+        buttons = {{
+            label = "                OK                ",
+            action = function()
 
-                    -- we cant launch the loader here to se rely on the modules
-                    -- wakeup function to do this
-                    triggerOverRide = true
-                    return true
-                end
-            }, {
-                label = "CANCEL",
-                action = function()
-                    return true
-                end
-            }
-        }
+                -- we cant launch the loader here to se rely on the modules
+                -- wakeup function to do this
+                triggerOverRide = true
+                return true
+            end
+        }, {
+            label = "CANCEL",
+            action = function()
+                return true
+            end
+        }}
     end
     local message
     local title
@@ -445,14 +431,4 @@ local function onNavMenu(self)
 
 end
 
-return {
-    title = "Servos",
-    event = event,
-    openPage = openPageInit,
-    onToolMenu = onToolMenu,
-    onNavMenu = onNavMenu,
-    servoCenterFocusAllOn = servoCenterFocusAllOn,
-    servoCenterFocusAllOff = servoCenterFocusAllOff,
-    wakeup = wakeup,
-    navButtons = {menu = true, save = false, reload = true, tool = true, help = true}
-}
+return {title = "Servos", event = event, openPage = openPageInit, onToolMenu = onToolMenu, onNavMenu = onNavMenu, servoCenterFocusAllOn = servoCenterFocusAllOn, servoCenterFocusAllOff = servoCenterFocusAllOff, wakeup = wakeup, navButtons = {menu = true, save = false, reload = true, tool = true, help = true}}

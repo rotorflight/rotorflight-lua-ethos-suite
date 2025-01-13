@@ -24,7 +24,7 @@
         @author Dynodzzo
         @rf2updates by rob.thomson
 
-]]--
+]] --
 local LIP = {};
 
 local function file_exists(name)

@@ -14,7 +14,6 @@ for i, v in ipairs(rfsuite.config.supportedMspApiVersion) do
     end
 end
 
-
 if system.getVersion().simulation == true then
     simulation = "ON"
 else
@@ -45,23 +44,18 @@ end
 
 function onToolMenu()
 
-    local opener =
-        "Rotorflight is an open source project. Contribution from other like minded people, keen to assist in making this software even better, is welcomed and encouraged. You do not have to be a hardcore programmer to help."
-    local credits =
-        "Notable contributors to both the Rotorflight firmware and this software are: Petri Mattila, Egon Lubbers, Rob Thomson, Rob Gayle, Phil Kaighin, Robert Burrow, Keith Williams, Bertrand Songis, Venbs Zhou... and many more who have spent hours testing and providing feedback!"
-    local license =
-        "You may copy, distribute, and modify the software as long as you track changes/dates in source files. Any modifications to or software including (via compiler) GPL-licensed code must also be made available under the GPL along with build & install instructions."
+    local opener = "Rotorflight is an open source project. Contribution from other like minded people, keen to assist in making this software even better, is welcomed and encouraged. You do not have to be a hardcore programmer to help."
+    local credits = "Notable contributors to both the Rotorflight firmware and this software are: Petri Mattila, Egon Lubbers, Rob Thomson, Rob Gayle, Phil Kaighin, Robert Burrow, Keith Williams, Bertrand Songis, Venbs Zhou... and many more who have spent hours testing and providing feedback!"
+    local license = "You may copy, distribute, and modify the software as long as you track changes/dates in source files. Any modifications to or software including (via compiler) GPL-licensed code must also be made available under the GPL along with build & install instructions."
 
     local message = opener .. "\r\n\r\n" .. credits .. "\r\n\r\n" .. license .. "\r\n\r\n"
 
-    local buttons = {
-        {
-            label = "CLOSE",
-            action = function()
-                return true
-            end
-        }
-    }
+    local buttons = {{
+        label = "CLOSE",
+        action = function()
+            return true
+        end
+    }}
 
     form.openDialog({
         width = rfsuite.config.lcdWidth,
@@ -77,18 +71,4 @@ function onToolMenu()
 
 end
 
-return {
-    read = readMSP,
-    write = nil,
-    title = "Status",
-    reboot = false,
-    eepromWrite = false,
-    minBytes = 0,
-    wakeup = wakeup,
-    labels = labels,
-    fields = fields,
-    refreshswitch = false,
-    simulatorResponse = {},
-    onToolMenu = onToolMenu,
-    navButtons = {menu = true, save = false, reload = false, tool = true, help = true}
-}
+return {read = readMSP, write = nil, title = "Status", reboot = false, eepromWrite = false, minBytes = 0, wakeup = wakeup, labels = labels, fields = fields, refreshswitch = false, simulatorResponse = {}, onToolMenu = onToolMenu, navButtons = {menu = true, save = false, reload = false, tool = true, help = true}}

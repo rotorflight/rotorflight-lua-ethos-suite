@@ -25,7 +25,6 @@ local function postLoad(self)
     local v = rfsuite.app.Page.values[1]
     if v ~= nil then rfsuite.activeRateProfile = math.floor(v) end
 
-
     if rfsuite.activeRateProfile ~= nil then
         if rfsuite.activeRateProfile ~= rfsuite.rateProfile then
             rfsuite.rateProfile = rfsuite.activeRateProfile
@@ -170,7 +169,7 @@ local function wakeup()
 
         -- update active profile
         -- the check happens in postLoad          
-        if rfsuite.config.activeProfile ~= nil then
+        if rfsuite.config.activeRateProfile ~= nil then
             rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.config.activeRateProfile)
             currentProfileChecked = true
         end

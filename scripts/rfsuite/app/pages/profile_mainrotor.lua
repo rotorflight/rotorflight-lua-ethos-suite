@@ -20,9 +20,9 @@ fields[#fields + 1] = {t = "Ratio", help = "profilesCyclicCrossCouplingRatio", i
 
 labels[#labels + 1] = {t = "", label = "cycliccc3", inline_size = 40.15}
 if tonumber(rfsuite.config.apiVersion) >= 12.07 then
-    fields[#fields + 1] = { t = "Cutoff", help = "profilesCyclicCrossCouplingCutoff", scale = 10, decimals = 1, inline = 1, label = "cycliccc3", line = true, min = 1, max = 250, default = 2.5, unit = "Hz", vals = {36} }
+    fields[#fields + 1] = {t = "Cutoff", help = "profilesCyclicCrossCouplingCutoff", scale = 10, decimals = 1, inline = 1, label = "cycliccc3", line = true, min = 1, max = 250, default = 2.5, unit = "Hz", vals = {36}}
 else
-    fields[#fields + 1] = { t = "Cutoff", help = "profilesCyclicCrossCouplingCutoff", inline = 1, label = "cycliccc3", line = true, min = 1, max = 250, default = 15, unit = "Hz", vals = {36} }
+    fields[#fields + 1] = {t = "Cutoff", help = "profilesCyclicCrossCouplingCutoff", inline = 1, label = "cycliccc3", line = true, min = 1, max = 250, default = 15, unit = "Hz", vals = {36}}
 end
 
 local function postLoad(self)
@@ -37,7 +37,7 @@ local function wakeup()
         -- update active profile
         -- the check happens in postLoad          
         if rfsuite.config.activeProfile ~= nil then
-            rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.config.activeRateProfile)
+            rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.config.activeProfile)
             currentProfileChecked = true
         end
 
