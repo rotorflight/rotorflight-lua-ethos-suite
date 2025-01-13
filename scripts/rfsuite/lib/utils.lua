@@ -557,4 +557,37 @@ function utils.convertPageValueTable(tbl, inc)
     return thetable
 end
 
+function utils.findModules()
+    local modulesList = {}
+
+    local moduledir = "app/modules/"
+    local modules_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and moduledir or (config.suiteDir .. moduledir)
+
+   
+    for _, v in pairs(system.listFiles(modules_path)) do
+
+        local init_path = modules_path .. v .. '/init.lua'
+        local f = io.open(init_path, "r")
+        if f then
+            io.close(f)
+
+
+            local func, err = loadfile(init_path)
+
+            if func then
+                local mconfig = func()
+                if type(mconfig) ~= "table" or not mconfig.script then
+                    rfsuite.utils.log("Invalid configuration in " .. init_path)
+                else
+                    mconfig['folder'] = v
+                    table.insert(modulesList, mconfig)
+                end
+            end
+        end
+    end
+
+    return modulesList
+end
+
+
 return utils

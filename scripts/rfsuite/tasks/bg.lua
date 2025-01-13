@@ -39,6 +39,12 @@ rfsuite.rssiSensorChanged = true
 local rssiCheckScheduler = os.clock()
 local lastRssiSensorName = nil
 
+
+-- findModules on task init to ensure we are precached  
+if rfsuite.app.moduleList == nil then
+    rfsuite.app.moduleList = rfsuite.utils.findModules()
+end
+
 -- findTasks
 function bg.findTasks()
 

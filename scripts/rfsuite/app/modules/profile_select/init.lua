@@ -18,11 +18,11 @@
 
 ]] --
 local init = {
-    title = "PIDs",                    -- title of the page
-    section = "Flight Tuning",         -- do not run if busy with msp
+    title = "Select Profile",                    -- title of the page
+    section = "Tools",         -- do not run if busy with msp
     script = "main.lua",               -- run this script
-    image = "pids.png",                -- image for the page
-    order = 1,                          -- order in the section
+    image = "select_profile.png",                -- image for the page
+    order = 4,                          -- order in the section
     ethosversion = 1519                -- disable button if ethos version is less than this
 }
 

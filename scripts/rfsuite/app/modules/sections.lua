@@ -1,4 +1,5 @@
 --[[
+
  * Copyright (C) Rotorflight Project
  *
  *
@@ -17,13 +18,14 @@
  * 
 
 ]] --
-local init = {
-    title = "PIDs",                    -- title of the page
-    section = "Flight Tuning",         -- do not run if busy with msp
-    script = "main.lua",               -- run this script
-    image = "pids.png",                -- image for the page
-    order = 1,                          -- order in the section
-    ethosversion = 1519                -- disable button if ethos version is less than this
-}
 
-return init
+local sections = {}
+
+sections[#sections + 1] = {title = "Flight Tuning"}
+sections[#sections + 1] = {title = "Advanced"}
+sections[#sections + 1] = {title = "Hardware"}
+sections[#sections + 1] = {title = "Tools"}
+sections[#sections + 1] = {title = "Developer", developer = true}
+sections[#sections + 1] = {title = "About"}
+
+return sections

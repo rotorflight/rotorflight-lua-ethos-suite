@@ -18,11 +18,12 @@
 
 ]] --
 local init = {
-    title = "PIDs",                    -- title of the page
-    section = "Flight Tuning",         -- do not run if busy with msp
+    title = "MSP Experimental",                    -- title of the page
+    section = "Developer",         -- do not run if busy with msp
     script = "main.lua",               -- run this script
-    image = "pids.png",                -- image for the page
-    order = 1,                          -- order in the section
+    image = "msp_exp.png",                -- image for the page
+    order = 100,                          -- order in the section
+    developer = true,                     -- show if developer mode enabled
     ethosversion = 1519                -- disable button if ethos version is less than this
 }
 

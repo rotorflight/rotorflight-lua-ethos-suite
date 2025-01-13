@@ -1,101 +1,91 @@
+--[[
+
+ * Copyright (C) Rotorflight Project
+ *
+ *
+ * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ 
+ * Note.  Some icons have been sourced from https://www.flaticon.com/
+ * 
+
+]] --
+
 local pages = {}
-local sections = {}
+local sections = loadfile("app/modules/sections.lua")()
 
+-- find the modules (this should already have been done in the tasks/bg.lua script but we catch and retry on the offchance it hasn't)
+if rfsuite.app.moduleList == nil then
+    rfsuite.app.moduleList = rfsuite.utils.findModules()
+end
 
-
--- findModules
-function findmodules()
-
-    local moduledir = "modules"
-    local modules_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and "modules/" or (config.suiteDir .. "/modules/")
-
-    local modulesList = {}
-
-    for _, v in pairs(system.listFiles(modules_path)) do
-
-        local init_path = modules_path .. v .. '/init.lua'
-        local f = io.open(init_path, "r")
-        if f then
-            io.close(f)
-
-            local func, err = loadfile(init_path)
-
-            if func then
-                local mconfig = func()
-                if type(tconfig) ~= "table" or not tconfig.interval or not tconfig.script then
-                    rfsuite.utils.log("Invalid configuration in " .. init_path)
-                else
-                    local module = {
-                                    name = v, 
-                                    section = mconfig.interval, 
-                                    script = mconfig.script
-                                   }
-                    table.insert(modulesList, module)
-
-                    modules[v] = assert(loadfile(script))(config)
-
-                end
-            end
+-- Helper function to find section index
+local function findSectionIndex(sectionTitle)
+    for index, section in ipairs(sections) do
+        if section.title == sectionTitle then
+            return index
         end
+    end
+    return nil -- Section not found
+end
+
+-- Populate pages with mapped modules
+for _, module in ipairs(rfsuite.app.moduleList) do
+    local sectionIndex = findSectionIndex(module.section)
+    if sectionIndex then
+        pages[#pages + 1] = {
+            title = module.title,
+            section = sectionIndex,
+            script = module.script,
+            order = module.order or 0,
+            image = module.image,
+            folder = module.folder
+        }
+    else
+        rfsuite.utils.log("Warning: Section '" .. module.section .. "' not found for module '" .. module.title .. "'")
     end
 end
 
+-- Function to sort pages by order within each section
+local function sortPagesBySectionAndOrder(pages)
+    -- Group pages by section
+    local groupedPages = {}
 
-local found = findModules()
+    for _, page in ipairs(pages) do
+        if not groupedPages[page.section] then
+            groupedPages[page.section] = {}
+        end
+        table.insert(groupedPages[page.section], page)
+    end
 
-rfsuite.utils.print_r(found)
+    -- Sort each group by order
+    for section, pagesGroup in pairs(groupedPages) do
+        table.sort(pagesGroup, function(a, b) return a.order < b.order end)
+    end
 
--- pages
--- title = Page Title
--- section = int 
--- script = file.lua
--- image = image.png
--- ethosversion = 1516 or other (disables button if less than version)
--- developer = true or false (hides the whole section or page
+    -- Reconstruct the pages table in the correct order
+    local sortedPages = {}
+    for section = 1, #sections do
+        if groupedPages[section] then
+            for _, page in ipairs(groupedPages[section]) do
+                sortedPages[#sortedPages + 1] = page
+            end
+        end
+    end
 
--- sections
--- developer = true or false (hides the whole section or page
--- ethosversion = 1516 or other (disables section if less than version)
+    return sortedPages
+end
 
---[[
-sections[#sections + 1] = {title = "Flight Tuning", section = 1}
-pages[#pages + 1] = {title = "PIDs", section = 1, script = "pids.lua", image = "pids.png"}
-pages[#pages + 1] = {title = "Rates", section = 1, script = "rates.lua", image = "rates.png"}
-pages[#pages + 1] = {title = "Main Rotor", section = 1, script = "profile_mainrotor.lua", image = "mainrotor.png"}
-pages[#pages + 1] = {title = "Tail Rotor", section = 1, script = "profile_tailrotor.lua", image = "tailrotor.png"}
-pages[#pages + 1] = {title = "Governor", section = 1, script = "profile_governor.lua", image = "governor.png"}
-pages[#pages + 1] = {title = "Trim", section = 1, script = "trim.lua", image = "trim.png"}
+-- Sort the pages
+pages = sortPagesBySectionAndOrder(pages)
 
-sections[#sections + 1] = {title = "Advanced", section = 2}
-pages[#pages + 1] = {title = "PID Controller", section = 2, script = "profile_pidcontroller.lua", image = "pids-controller.png"}
-pages[#pages + 1] = {title = "PID Bandwidth", section = 2, script = "profile_pidbandwidth.lua", image = "pids-bandwidth.png"}
-pages[#pages + 1] = {title = "Auto Level", section = 2, script = "profile_autolevel.lua", image = "autolevel.png"}
-pages[#pages + 1] = {title = "Rescue", section = 2, script = "profile_rescue.lua", image = "rescue.png"}
-pages[#pages + 1] = {title = "Rates", section = 2, script = "rates_advanced.lua", image = "rates.png"}
-
-sections[#sections + 1] = {title = "Hardware", section = 4}
-pages[#pages + 1] = {title = "Motors", section = 4, script = "motors.lua", image = "motors.png"}
-pages[#pages + 1] = {title = "Servos", section = 4, script = "servos.lua", image = "servos.png"}
-pages[#pages + 1] = {title = "SBUS Output", section = 4, script = "sbusout.lua", image = "sbusout.png"}
-pages[#pages + 1] = {title = "Mixer", section = 4, script = "mixer.lua", image = "mixer.png"}
-pages[#pages + 1] = {title = "Accelerometer", section = 4, script = "accelerometer.lua", image = "acc.png"}
-pages[#pages + 1] = {title = "Filters", section = 4, script = "filters.lua", image = "filters.png"}
-pages[#pages + 1] = {title = "Radio Config", section = 4, script = "radio_config.lua", image = "radio_config.png"}
-pages[#pages + 1] = {title = "Governor", section = 4, script = "governor.lua", image = "governor.png"}
-pages[#pages + 1] = {title = "ESC", section = 4, script = "esc.lua", image = "esc.png"}
-
-sections[#sections + 1] = {title = "Tools", section = 5}
-pages[#pages + 1] = {title = "Copy Profiles", section = 5, script = "copy_profiles.lua", image = "copy.png"}
-pages[#pages + 1] = {title = "Set Profiles", section = 5, script = "select_profile.lua", image = "select_profile.png"}
-pages[#pages + 1] = {title = "Status", section = 5, script = "status.lua", image = "status.png"}
-pages[#pages + 1] = {title = "Logs", section = 5, script = "logs.lua", image = "logs.png"}
-
-sections[#sections + 1] = {title = "Developer", section = 6, developer = true}
-pages[#pages + 1] = {title = "MSP Speed", section = 6, script = "msp_speed.lua", image = "msp_speed.png"}
-pages[#pages + 1] = {title = "Experimental", section = 6, script = "msp_exp.lua", image = "msp_exp.png"}
-
-sections[#sections + 1] = {title = "About", section = 7}
-pages[#pages + 1] = {title = "About", section = 7, script = "about.lua", image = "about.png"}
-]]--
 
 return {pages = pages, sections = sections}
