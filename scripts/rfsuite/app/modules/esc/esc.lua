@@ -4,7 +4,7 @@ pages[#pages + 1] = {title = "Scorpion", folder = "scorp", image = "scorpion.png
 pages[#pages + 1] = {title = "Hobbywing V5", folder = "hw5", image = "hobbywing.png"}
 pages[#pages + 1] = {title = "YGE", folder = "yge", image = "yge.png"}
 pages[#pages + 1] = {title = "FLYROTOR", folder = "flrtr", image = "flrtr.png"}
-pages[#pages + 1] = {title = "XDFly", folder = "flrtr", image = "xdfly.png", disabled = true}
+pages[#pages + 1] = {title = "XDFly", folder = "xdfly", image = "xdfly.png", disabled = true}
 
 local function openPage(pidx, title, script)
 
@@ -107,7 +107,7 @@ local function openPage(pidx, title, script)
         if lc >= 0 then bx = (buttonW + padding) * lc end
 
         if rfsuite.config.iconSize ~= 0 then
-            if rfsuite.app.gfx_buttons["escmain"][pidx] == nil then rfsuite.app.gfx_buttons["escmain"][pidx] = lcd.loadMask("app/gfx/esc/" .. pvalue.image) end
+            if rfsuite.app.gfx_buttons["escmain"][pidx] == nil then rfsuite.app.gfx_buttons["escmain"][pidx] = lcd.loadMask("app/modules/esc/mfg/" .. pvalue.folder .. "/" .. pvalue.image) end
         else
             rfsuite.app.gfx_buttons["escmain"][pidx] = nil
         end

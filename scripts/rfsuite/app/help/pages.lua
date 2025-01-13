@@ -201,15 +201,15 @@ data["about"]["TEXT"] = {
 }
 
 -- SELECT PROFILE
-data["select_profile"] = {}
-data["select_profile"]["TEXT"] = {
+data["profile_select"] = {}
+data["profile_select"]["TEXT"] = {
         "Set the current flight profile or rate profile you would like to use.",
         "If you use use a switch on your radio to change flight or rate modes, this will over-ride this choice as soon as you toggle the switch."
 }
 
 -- COPY PROFILES
-data["copy_profiles"] = {}
-data["copy_profiles"]["TEXT"] = {
+data["copyprofiles"] = {}
+data["copyprofiles"]["TEXT"] = {
         "Copy PID profile or Rate profile from Source to Destination.", 
         "Choose the source and destinations and save to copy the profile."
 }
@@ -261,6 +261,18 @@ data["sbusout_tool"]["TEXT"] = {
         "- For mixer rules, use -1000, 1000.",
         "- For motors, use 0, 1000.",
         "- Or you can customize your own mapping.",
+}
+
+-- Motors
+data["motors"] = {}
+data["motors"]["TEXT"] = {
+        "Configure your motor gear ratio, motor pole count, and throttle PWM values.",
+}
+
+-- Motors
+data["radio_config"] = {}
+data["radio_config"]["TEXT"] = {
+        "Configure your radio settings. Stick center, arm, throttle hold, and throttle cut.",
 }
 
 -- LuaFormatter on
