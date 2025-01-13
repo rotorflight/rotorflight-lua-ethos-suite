@@ -280,7 +280,7 @@ function ui.openMainMenu()
                         if lc >= 0 then x = (buttonW + padding) * lc end
 
                         if config.iconSize ~= 0 then
-                            if rfsuite.app.gfx_buttons["mainmenu"][pidx] == nil then rfsuite.app.gfx_buttons["mainmenu"][pidx] = lcd.loadMask("app/gfx/menu/" .. pvalue.image) end
+                            if rfsuite.app.gfx_buttons["mainmenu"][pidx] == nil then rfsuite.app.gfx_buttons["mainmenu"][pidx] = lcd.loadMask("app/modules/" .. pvalue.folder .. "/" .. pvalue.image) end
                         else
                             rfsuite.app.gfx_buttons["mainmenu"][pidx] = nil
                         end
@@ -851,7 +851,7 @@ function ui.navigationButtons(x, y, w, h)
     if navButtons.help ~= nil and navButtons.help == true then
 
         local help = assert(loadfile("app/help/pages.lua"))()
-        local section = string.gsub(rfsuite.app.lastScript, ".lua", "") -- remove .lua
+        local section = rfsuite.app.lastScript:match("([^/]+)") -- return just the folder name
 
         rfsuite.app.formNavigationFields['help'] = form.addButton(line, {x = helpOffset, y = y, w = wS, h = h}, {
             text = "?",

@@ -99,7 +99,7 @@ local function openPage(pidx, title, script)
         paint = function()
         end,
         press = function()
-            -- rfsuite.app.ui.openPage(pidx, folder, "esc/mfg/esc_tool.lua")
+            -- rfsuite.app.ui.openPage(pidx, folder , "esc/esc_tool.lua")
             rfsuite.app.Page = nil
             local foundESC = false
             local foundESCupdateTag = false
@@ -167,7 +167,7 @@ local function openPage(pidx, title, script)
         if lc >= 0 then bx = (buttonW + padding) * lc end
 
         if rfsuite.config.iconSize ~= 0 then
-            if rfsuite.app.gfx_buttons["esctool"][pvalue.image] == nil then rfsuite.app.gfx_buttons["esctool"][pvalue.image] = lcd.loadMask("app/gfx/esc/" .. pvalue.image) end
+            if rfsuite.app.gfx_buttons["esctool"][pvalue.image] == nil then rfsuite.app.gfx_buttons["esctool"][pvalue.image] = lcd.loadMask("app/modules/esc/mfg/" .. folder .. "/gfx/"  .. pvalue.image) end
         else
             rfsuite.app.gfx_buttons["esctool"][pvalue.image] = nil
         end
