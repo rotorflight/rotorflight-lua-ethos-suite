@@ -33,7 +33,7 @@ config.defaultRateProfile = 4 -- ACTUAL                             -- default r
 config.supportedMspApiVersion = {"12.06", "12.07","12.08"}          -- supported msp versions
 config.simulatorApiVersionResponse = {0, 12, 8}                     -- version of api return by simulator
 config.watchdogParam = 10                                           -- watchdog timeout for progress boxes [default = 10]
-config.syncCraftName = false                                         -- sync the craft name with the model name [default = false]
+
 
 -- features
 config.logEnable = false                                           -- will write debug log to: /scripts/rfsuite/logs/rfsuite.log [default = false]
@@ -52,6 +52,7 @@ config.profileSwitching = true                                      -- enable au
 config.iconSize = 1                                                 -- 0 = text, 1 = small, 2 = large [default = 1]
 config.developerMode = false                                        -- show developer tools on main menu [default = false]
 config.soundPack = nil                                              -- use an custom sound pack. [default = nil]
+config.syncCraftName = false                                         -- sync the craft name with the model name [default = false]
 
 -- tasks
 config.bgTaskName = config.toolName .. " [Background]"              -- background task name for msp services etc
