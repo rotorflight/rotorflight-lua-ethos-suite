@@ -146,12 +146,6 @@ end
 
 function rf2craftname.wakeupUI()
     if lastName ~= rfsuite.config.craftName then
-        -- Set the model name
-        if rfsuite.config.craftName ~= nil and rfsuite.config.craftName ~= '' then
-            model.name(rfsuite.config.craftName)
-        else
-            model.name("HELI")
-        end
         -- load image if it is enabled
         if config.image == true then
             if rfsuite.config.craftName ~= nil then
