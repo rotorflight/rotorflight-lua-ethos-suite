@@ -23,6 +23,8 @@ local arg = {...}
 local config = arg[1]
 
 local frsky = {}
+local cacheExpireTime = 10  -- Time in seconds to expire the caches
+local lastCacheFlushTime = os.clock()  -- Store the initial time
 
 -- create
 local createSensorList = {}
@@ -123,7 +125,7 @@ local function createSensor(physId, primId, appId, frameValue)
                 frsky.createSensorCache[appId]:physId(physId)
                 frsky.createSensorCache[appId]:module(rfsuite.rssiSensor:module())
 
-                frsky.createSensorCache[appId]:minimum(min or -2147483647)
+                frsky.createSensorCache[appId]:minimum(min or -1000000000)
                 frsky.createSensorCache[appId]:maximum(max or 2147483647)
                 if v.unit ~= nil then
                     frsky.createSensorCache[appId]:unit(v.unit)
@@ -211,15 +213,30 @@ end
 
 function frsky.wakeup()
 
-    -- flush sensor list if we kill the sensors
-    if not rfsuite.bg.telemetry.active() or not rfsuite.rssiSensor then
+    -- Function to clear caches
+    local function clearCaches()
         frsky.createSensorCache = {}
         frsky.renameSensorCache = {}
-        frsky.dropSensorCache = {}
+        frsky.dropSensorCache = {}  
     end
 
-    -- if gui or queue is busy.. do not do this!
-    if rfsuite.bg and rfsuite.bg.telemetry and rfsuite.bg.telemetry.active() and rfsuite.rssiSensor then if rfsuite.app.guiIsRunning == false and rfsuite.bg.msp.mspQueue:isProcessed() then while telemetryPop() do end end end
+    -- Check if it's time to expire the caches
+    if os.clock() - lastCacheFlushTime >= cacheExpireTime then
+        clearCaches()
+        lastCacheFlushTime = os.clock()  -- Reset the timer
+    end
+
+    -- Flush sensor list if we kill the sensors
+    if not rfsuite.bg.telemetry.active() or not rfsuite.rssiSensor then
+        clearCaches()
+    end
+
+    -- If GUI or queue is busy.. do not do this!
+    if rfsuite.bg and rfsuite.bg.telemetry and rfsuite.bg.telemetry.active() and rfsuite.rssiSensor then
+        if rfsuite.app.guiIsRunning == false and rfsuite.bg.msp.mspQueue:isProcessed() then
+            while telemetryPop() do end
+        end
+    end
 
 end
 

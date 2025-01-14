@@ -24,7 +24,7 @@
 --
 local arg = {...}
 local config = arg[1]
-local cacheExpireTime = 30  -- Time in seconds to expire the caches
+local cacheExpireTime = 10  -- Time in seconds to expire the caches
 local lastCacheFlushTime = os.clock()  -- Store the initial time
 
 local frsky_legacy = {}
@@ -93,7 +93,7 @@ local function createSensor(physId, primId, appId, frameValue)
                 frsky_legacy.createSensorCache[appId]:physId(physId)
                 frsky_legacy.createSensorCache[appId]:module(rfsuite.rssiSensor:module())
 
-                frsky_legacy.createSensorCache[appId]:minimum(min or -2147483647)
+                frsky.createSensorCache[appId]:minimum(min or -1000000000)
                 frsky_legacy.createSensorCache[appId]:maximum(max or 2147483647)
                 if v.unit ~= nil then
                     frsky_legacy.createSensorCache[appId]:unit(v.unit)
