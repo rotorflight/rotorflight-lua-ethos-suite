@@ -41,7 +41,7 @@ local sensorTable = {
     tempMCU = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A3}, lcrsf = "GPS Sats"},
     fuel = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0600}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1014}, lcrsf = "Rx Batt%"},
     capacity = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5250}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1013}, lcrsf = "Rx Cons"},
-    governor = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5450},sport_alt = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5465}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1205}, lcrsf = "Flight mode"},
+    governor = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5450},sport_alt = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5125}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1205}, lcrsf = "Flight mode"},
     adjF = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5110}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1221}, lcrsf = nil},
     adjV = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5111}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1222}, lcrsf = nil},
     pidProfile = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5471}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1211}, lcrsf = nil},
