@@ -182,8 +182,19 @@ end
 
 function utils.ethosVersion()
     local environment = system.getVersion()
-    v = tonumber(environment.major .. environment.minor .. environment.revision)
-    if environment.revision == 0 then v = v * 10 end
+    local v = tonumber(environment.major .. environment.minor .. environment.revision)
+
+    if environment.revision == 0 then
+        v = v * 10
+    end
+
+    -- Check if v is a 3-digit number, and if so, multiply it by 10
+    if v < 1000 then
+        v = v * 10
+    end
+
+    print(v)
+
     return v
 end
 
