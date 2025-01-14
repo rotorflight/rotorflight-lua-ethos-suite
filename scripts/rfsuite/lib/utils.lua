@@ -193,8 +193,6 @@ function utils.ethosVersion()
         v = v * 10
     end
 
-    print(v)
-
     return v
 end
 
