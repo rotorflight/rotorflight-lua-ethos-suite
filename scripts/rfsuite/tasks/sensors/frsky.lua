@@ -29,31 +29,43 @@ local lastCacheFlushTime = os.clock()  -- Store the initial time
 -- create
 local createSensorList = {}
 createSensorList[0x5100] = {name = "Heartbeat", unit = UNIT_RAW}
-createSensorList[0x5450] = {name = "Governor", unit = UNIT_RAW}
-createSensorList[0x5110] = {name = "Adj. Source", unit = UNIT_RAW}
-createSensorList[0x5111] = {name = "Adj. Value", unit = UNIT_RAW}
-createSensorList[0x5460] = {name = "Model ID", unit = UNIT_RAW}
-createSensorList[0x5461] = {name = "Flight Mode", unit = UNIT_RAW}
-createSensorList[0x5462] = {name = "Arming Flags", unit = UNIT_RAW}
-createSensorList[0x5463] = {name = "Arming Disable Flags", unit = UNIT_RAW}
-createSensorList[0x5454] = {name = "Rescue State", unit = UNIT_RAW}
-createSensorList[0x5465] = {name = "Governor State", unit = UNIT_RAW}
-createSensorList[0x5471] = {name = "PID Profile", unit = UNIT_RAW}
-createSensorList[0x5472] = {name = "Rate Profile", unit = UNIT_RAW}
-createSensorList[0x5473] = {name = "Led Profile", unit = UNIT_RAW}
-createSensorList[0x5440] = {name = "Throttle %", unit = UNIT_PERCENT}
-createSensorList[0x5441] = {name = "Pitch %", unit = UNIT_DEGREE}
-createSensorList[0x5442] = {name = "Roll %", unit = UNIT_DEGREE}
-createSensorList[0x5443] = {name = "Yaw %", unit = UNIT_DEGREE}
-createSensorList[0x5444] = {name = "Collective %", unit = UNIT_DEGREE}
 createSensorList[0x5250] = {name = "Consumption", unit = UNIT_MILLIAMPERE_HOUR}
 createSensorList[0x5260] = {name = "Cell Count", unit = UNIT_RAW}
-
+createSensorList[0x51A0] = {name = "Pitch Control", unit = UNIT_DEGREE}
+createSensorList[0x51A1] = {name = "Roll Control", unit = UNIT_DEGREE}
+createSensorList[0x51A2] = {name = "Yaw Control", unit = UNIT_DEGREE}
+createSensorList[0x51A3] = {name = "Collective Control", unit = UNIT_DEGREE}
+createSensorList[0x51A4] = {name = "Throttle %", unit = UNIT_PERCENT}
+createSensorList[0x5258] = {name = "ESC1 Capacity", unit = UNIT_RAW}
+createSensorList[0x5268] = {name = "ESC1 Power", unit = UNIT_RAW}
+createSensorList[0x5269] = {name = "ESC1 Throttle", unit = UNIT_RAW}
+createSensorList[0x525A] = {name = "ESC2 Capacity", unit = UNIT_RAW}
+createSensorList[0x51D0] = {name = "CPU Load", unit = UNIT_PERCENT}
+createSensorList[0x51D1] = {name = "System Load", unit = UNIT_PERCENT}
+createSensorList[0x51D2] = {name = "RT Load", unit = UNIT_PERCENT}
+createSensorList[0x5120] = {name = "Model ID", unit = UNIT_RAW}
+createSensorList[0x5121] = {name = "Flight Mode", unit = UNIT_RAW}
+createSensorList[0x5122] = {name = "Arming Flags", unit = UNIT_RAW}
+createSensorList[0x5123] = {name = "Arming Disable Flags", unit = UNIT_RAW}
+createSensorList[0x5124] = {name = "Rescue State", unit = UNIT_RAW}
+createSensorList[0x5125] = {name = "Governor State", unit = UNIT_RAW}
+createSensorList[0x5130] = {name = "PID Profile", unit = UNIT_RAW}
+createSensorList[0x5131] = {name = "Rates Profile", unit = UNIT_RAW}
+createSensorList[0x5110] = {name = "Adj Function", unit = UNIT_RAW}
+createSensorList[0x5111] = {name = "Adj Value", unit = UNIT_RAW}
+createSensorList[0x52F0] = {name = "Debug 0", unit = UNIT_RAW}
+createSensorList[0x52F1] = {name = "Debug 1", unit = UNIT_RAW}
+createSensorList[0x52F2] = {name = "Debug 2", unit = UNIT_RAW}
+createSensorList[0x52F3] = {name = "Debug 3", unit = UNIT_RAW}
+createSensorList[0x52F4] = {name = "Debug 4", unit = UNIT_RAW}
+createSensorList[0x52F5] = {name = "Debug 5", unit = UNIT_RAW}
+createSensorList[0x52F6] = {name = "Debug 6", unit = UNIT_RAW}
+createSensorList[0x52F8] = {name = "Debug 7", unit = UNIT_RAW}
 
 -- drop (drop sensors only runs if < msp 12.08)
 local dropSensorList = {}
-dropSensorList[0x0400] = {name = "Temp1"}
-dropSensorList[0x0410] = {name = "Temp1"}
+--dropSensorList[0x0400] = {name = "Temp1"}
+
 
 -- rename
 local renameSensorList = {}
