@@ -1,10 +1,36 @@
-local pages = {}
 
-pages[#pages + 1] = {title = "Scorpion", folder = "scorp", image = "scorpion.png"}
-pages[#pages + 1] = {title = "Hobbywing V5", folder = "hw5", image = "hobbywing.png"}
-pages[#pages + 1] = {title = "YGE", folder = "yge", image = "yge.png"}
-pages[#pages + 1] = {title = "FLYROTOR", folder = "flrtr", image = "flrtr.png"}
-pages[#pages + 1] = {title = "XDFly", folder = "xdfly", image = "xdfly.png", disabled = true}
+local function findMFG()
+    local mfgsList = {}
+
+    local mfgdir = "app/modules/esc/mfg/"
+    local mfgs_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and mfgdir or (config.suiteDir .. mfgdir)
+
+    for _, v in pairs(system.listFiles(mfgs_path)) do
+
+        local init_path = mfgs_path .. v .. '/init.lua'
+
+        local f = io.open(init_path, "r")
+        if f then
+            io.close(f)
+
+
+            local func, err = loadfile(init_path)
+
+            if func then
+                local mconfig = func()
+                if type(mconfig) ~= "table" or not mconfig.toolName then
+                    rfsuite.utils.log("Invalid configuration in " .. init_path)
+                else
+                    mconfig['folder'] = v
+                    table.insert(mfgsList, mconfig)
+                end
+            end
+        end
+    end
+
+    return mfgsList
+end
+
 
 local function openPage(pidx, title, script)
 
@@ -89,14 +115,14 @@ local function openPage(pidx, title, script)
     end
 
     local ESCMenu = assert(loadfile("app/modules/" .. script))()
-
+    local pages = findMFG()
     local lc = 0
     local bx = 0
 
     if rfsuite.app.gfx_buttons["escmain"] == nil then rfsuite.app.gfx_buttons["escmain"] = {} end
     if rfsuite.app.menuLastSelected["escmain"] == nil then rfsuite.app.menuLastSelected["escmain"] = 1 end
 
-    for pidx, pvalue in ipairs(ESCMenu.pages) do
+    for pidx, pvalue in ipairs(pages) do
 
         if lc == 0 then
             if rfsuite.config.iconSize == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
@@ -113,7 +139,7 @@ local function openPage(pidx, title, script)
         end
 
         rfsuite.app.formFields[pidx] = form.addButton(line, {x = bx, y = y, w = buttonW, h = buttonH}, {
-            text = pvalue.title,
+            text = pvalue.toolName,
             icon = rfsuite.app.gfx_buttons["escmain"][pidx],
             options = FONT_S,
             paint = function()

@@ -34,6 +34,7 @@ end
 
 return {
     toolName = toolName,
+    image = "scorpion.png",
     powerCycle = true,
     mspSignature = 0x53,
     mspHeaderBytes = mspHeaderBytes,

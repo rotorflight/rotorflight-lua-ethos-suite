@@ -28,6 +28,7 @@ end
 
 return {
     toolName = toolName,
+    image = "hobbywing.png",
     powerCycle = false,
     getEscModel = getEscModel,
     getEscVersion = getEscVersion,
