@@ -47,7 +47,7 @@ createSensorList[0x5442] = {name = "Roll %", unit = UNIT_DEGREE}
 createSensorList[0x5443] = {name = "Yaw %", unit = UNIT_DEGREE}
 createSensorList[0x5444] = {name = "Collective %", unit = UNIT_DEGREE}
 createSensorList[0x5250] = {name = "Consumption", unit = UNIT_MILLIAMPERE_HOUR}
-createSensorList[0x5260] = {name = "Battery Cell Count", unit = UNIT_RAW}
+createSensorList[0x5260] = {name = "Cell Count", unit = UNIT_RAW}
 
 
 -- drop (drop sensors only runs if < msp 12.08)
