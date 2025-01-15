@@ -36,10 +36,10 @@ createSensorList[0x51A1] = {name = "Roll Control", unit = UNIT_DEGREE}
 createSensorList[0x51A2] = {name = "Yaw Control", unit = UNIT_DEGREE}
 createSensorList[0x51A3] = {name = "Collective Control", unit = UNIT_DEGREE}
 createSensorList[0x51A4] = {name = "Throttle %", unit = UNIT_PERCENT}
-createSensorList[0x5258] = {name = "ESC1 Capacity", unit = UNIT_RAW}
-createSensorList[0x5268] = {name = "ESC1 Power", unit = UNIT_RAW}
+createSensorList[0x5258] = {name = "ESC1 Capacity", unit = UNIT_MILLIAMPERE_HOUR}
+createSensorList[0x5268] = {name = "ESC1 Power", unit = UNIT_PERCENT}
 createSensorList[0x5269] = {name = "ESC1 Throttle", unit = UNIT_RAW}
-createSensorList[0x525A] = {name = "ESC2 Capacity", unit = UNIT_RAW}
+createSensorList[0x525A] = {name = "ESC2 Capacity", unit = UNIT_MILLIAMPERE_HOUR}
 createSensorList[0x51D0] = {name = "CPU Load", unit = UNIT_PERCENT}
 createSensorList[0x51D1] = {name = "System Load", unit = UNIT_PERCENT}
 createSensorList[0x51D2] = {name = "RT Load", unit = UNIT_PERCENT}
@@ -92,7 +92,7 @@ renameSensorList[0x0209] = {name = "ESC2 Current", onlyifname = "Current"}
 renameSensorList[0x0509] = {name = "ESC2 RPM", onlyifname = "RPM"}
 renameSensorList[0x0419] = {name = "ESC2 Temp", onlyifname = "Temp2"}
 
-renameSensorList[0x0840] = {name = "Heading", onlyifname = "GPS course"}
+renameSensorList[0x0840] = {name = "GPS Heading", onlyifname = "GPS course"}
 
 renameSensorList[0x0900] = {name = "MCU Voltage", onlyifname = "ADC3"}
 renameSensorList[0x0901] = {name = "BEC Voltage", onlyifname = "ADC3"}
