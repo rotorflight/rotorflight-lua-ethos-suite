@@ -28,7 +28,7 @@ local lastCacheFlushTime = os.clock()  -- Store the initial time
 
 -- create
 local createSensorList = {}
-createSensorList[0x0211] = {name = "ESC Voltage", unit = UNIT_VOLT}
+createSensorList[0x0211] = {name = "ESC Voltage", unit = UNIT_VOLT, decimals=2}
 createSensorList[0x5100] = {name = "Heartbeat", unit = UNIT_RAW}
 createSensorList[0x5250] = {name = "Consumption", unit = UNIT_MILLIAMPERE_HOUR}
 createSensorList[0x5260] = {name = "Cell Count", unit = UNIT_RAW}
@@ -144,6 +144,9 @@ local function createSensor(physId, primId, appId, frameValue)
                 if v.unit ~= nil then
                     frsky.createSensorCache[appId]:unit(v.unit)
                     frsky.createSensorCache[appId]:protocolUnit(v.unit)
+                end
+                if v.decimals ~= nil then 
+                        frsky.createSensorCache[appId]:decimals(v.decimals) 
                 end
                 if v.minimum ~= nil then frsky.createSensorCache[appId]:minimum(v.minimum) end
                 if v.maximum ~= nil then frsky.createSensorCache[appId]:maximum(v.maximum) end
