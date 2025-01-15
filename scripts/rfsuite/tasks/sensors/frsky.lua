@@ -28,7 +28,7 @@ local lastCacheFlushTime = os.clock()  -- Store the initial time
 
 -- create
 local createSensorList = {}
-createSensorList[0x0211] = {name = "ESC Voltage", unit = UNIT_VOLTAGE}
+createSensorList[0x0211] = {name = "ESC Voltage", unit = UNIT_VOLT}
 createSensorList[0x5100] = {name = "Heartbeat", unit = UNIT_RAW}
 createSensorList[0x5250] = {name = "Consumption", unit = UNIT_MILLIAMPERE_HOUR}
 createSensorList[0x5260] = {name = "Cell Count", unit = UNIT_RAW}
