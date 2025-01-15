@@ -147,6 +147,7 @@ local function createSensor(physId, primId, appId, frameValue)
                 end
                 if v.decimals ~= nil then 
                         frsky.createSensorCache[appId]:decimals(v.decimals) 
+                        frsky.createSensorCache[appId]:protocolDecimals(v.decimals)
                 end
                 if v.minimum ~= nil then frsky.createSensorCache[appId]:minimum(v.minimum) end
                 if v.maximum ~= nil then frsky.createSensorCache[appId]:maximum(v.maximum) end
