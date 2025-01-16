@@ -37,6 +37,7 @@ local function findSectionIndex(sectionTitle)
     return nil -- Section not found
 end
 
+
 -- Populate pages with mapped modules
 for _, module in ipairs(rfsuite.app.moduleList) do
     local sectionIndex = findSectionIndex(module.section)

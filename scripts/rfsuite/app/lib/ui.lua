@@ -232,18 +232,21 @@ function ui.openMainMenu()
     if rfsuite.app.gfx_buttons["mainmenu"] == nil then rfsuite.app.gfx_buttons["mainmenu"] = {} end
     if rfsuite.app.menuLastSelected["mainmenu"] == nil then rfsuite.app.menuLastSelected["mainmenu"] = 1 end
 
-    local hideSection = false
+
     for idx, value in ipairs(MainMenu.sections) do
+
+        local hideSection = false
 
         if (value.ethosversion ~= nil and rfsuite.config.ethosRunningVersion < value.ethosversion) then
             hideSection = true
-        else
-            hideSection = false
         end
+
+        if (value.mspversion ~= nil and rfsuite.config.apiVersion < value.mspversion) then
+            hideSection = true
+        end       
+
         if (value.developer ~= nil and rfsuite.config.developerMode == false) then
             hideSection = true
-        else
-            hideSection = false
         end
 
         if hideSection == false then
@@ -253,20 +256,22 @@ function ui.openMainMenu()
             form.addLine(value.title)
 
             lc = 0
-            local hideEntry = false
 
             for pidx, pvalue in ipairs(MainMenu.pages) do
                 if pvalue.section == idx then
                     -- do not show icon if not supported by ethos version
+                    local hideEntry = false
+
                     if (pvalue.ethosversion ~= nil and rfsuite.config.ethosRunningVersion < pvalue.ethosversion) then
                         hideEntry = true
-                    else
-                        hideEntry = false
                     end
+            
+                    if (pvalue.mspversion ~= nil and rfsuite.config.apiVersion < pvalue.mspversion) then
+                        hideEntry = true
+                    end       
+            
                     if (pvalue.developer ~= nil and rfsuite.config.developerMode == false) then
                         hideEntry = true
-                    else
-                        hideEntry = false
                     end
 
                     if hideEntry == false then
