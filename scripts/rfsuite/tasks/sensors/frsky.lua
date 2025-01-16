@@ -31,14 +31,14 @@ local createSensorList = {}
 createSensorList[0x5100] = {name = "Heartbeat", unit = UNIT_RAW}
 createSensorList[0x5250] = {name = "Consumption", unit = UNIT_MILLIAMPERE_HOUR}
 createSensorList[0x5260] = {name = "Cell Count", unit = UNIT_RAW}
-createSensorList[0x51A0] = {name = "Pitch Control", unit = UNIT_DEGREE}
-createSensorList[0x51A1] = {name = "Roll Control", unit = UNIT_DEGREE}
-createSensorList[0x51A2] = {name = "Yaw Control", unit = UNIT_DEGREE}
-createSensorList[0x51A3] = {name = "Collective Control", unit = UNIT_DEGREE}
-createSensorList[0x51A4] = {name = "Throttle %", unit = UNIT_PERCENT}
+createSensorList[0x51A0] = {name = "Pitch Control", unit = UNIT_DEGREE, decimals=2}
+createSensorList[0x51A1] = {name = "Roll Control", unit = UNIT_DEGREE, decimals=2}
+createSensorList[0x51A2] = {name = "Yaw Control", unit = UNIT_DEGREE, decimals=2}
+createSensorList[0x51A3] = {name = "Collective Control", unit = UNIT_DEGREE, decimals=2}
+createSensorList[0x51A4] = {name = "Throttle %", unit = UNIT_PERCENT, decimals=1}
 createSensorList[0x5258] = {name = "ESC1 Capacity", unit = UNIT_MILLIAMPERE_HOUR}
 createSensorList[0x5268] = {name = "ESC1 Power", unit = UNIT_PERCENT}
-createSensorList[0x5269] = {name = "ESC1 Throttle", unit = UNIT_RAW}
+createSensorList[0x5269] = {name = "ESC1 Throttle", unit = UNIT_PERCENT}
 createSensorList[0x525A] = {name = "ESC2 Capacity", unit = UNIT_MILLIAMPERE_HOUR}
 createSensorList[0x51D0] = {name = "CPU Load", unit = UNIT_PERCENT}
 createSensorList[0x51D1] = {name = "System Load", unit = UNIT_PERCENT}
@@ -53,7 +53,7 @@ createSensorList[0x5130] = {name = "PID Profile", unit = UNIT_RAW}
 createSensorList[0x5131] = {name = "Rates Profile", unit = UNIT_RAW}
 createSensorList[0x5110] = {name = "Adj Function", unit = UNIT_RAW}
 createSensorList[0x5111] = {name = "Adj Value", unit = UNIT_RAW}
-createSensorList[0x5210] = {name = "Heading", unit = UNIT_DEGREE}
+createSensorList[0x5210] = {name = "Heading", unit = UNIT_DEGREE, decimals=1}
 createSensorList[0x52F0] = {name = "Debug 0", unit = UNIT_RAW}
 createSensorList[0x52F1] = {name = "Debug 1", unit = UNIT_RAW}
 createSensorList[0x52F2] = {name = "Debug 2", unit = UNIT_RAW}
@@ -78,9 +78,7 @@ renameSensorList[0x0210] = {name = "Voltage", onlyifname = "VFAS"}
 renameSensorList[0x0600] = {name = "Charge Level", onlyifname = "Fuel"}
 renameSensorList[0x0910] = {name = "Cell Voltage", onlyifname = "ADC4"}
 
-
 renameSensorList[0x0211] = {name = "ESC Voltage", onlyifname = "VFAS"}
-renameSensorList[0x0502] = {name = "ESC RPM", onlyifname = "RPM"}
 renameSensorList[0x0B70] = {name = "ESC Temp", onlyifname = "ESC temp"}
 
 renameSensorList[0x0218] = {name = "ESC1 Voltage", onlyifname = "VFAS"}
@@ -88,10 +86,14 @@ renameSensorList[0x0208] = {name = "ESC1 Current", onlyifname = "Current"}
 renameSensorList[0x0508] = {name = "ESC1 RPM", onlyifname = "RPM"}
 renameSensorList[0x0418] = {name = "ESC1 Temp", onlyifname = "Temp2"}
 
-renameSensorList[0x0219] = {name = "ESC2 Voltage", onlyifname = "VFAS"}
-renameSensorList[0x0209] = {name = "ESC2 Current", onlyifname = "Current"}
-renameSensorList[0x0509] = {name = "ESC2 RPM", onlyifname = "RPM"}
-renameSensorList[0x0419] = {name = "ESC2 Temp", onlyifname = "Temp2"}
+renameSensorList[0x0219] = {name = "BEC1 Voltage", onlyifname = "VFAS"}
+renameSensorList[0x0229] = {name = "BEC1 Current", onlyifname = "Current"}
+renameSensorList[0x0419] = {name = "BEC1 Temp", onlyifname = "Temp2"}
+
+renameSensorList[0x021A] = {name = "ESC2 Voltage", onlyifname = "VFAS"}
+renameSensorList[0x020A] = {name = "ESC2 Current", onlyifname = "Current"}
+renameSensorList[0x050A] = {name = "ESC2 RPM", onlyifname = "RPM"}
+renameSensorList[0x041A] = {name = "ESC2 Temp", onlyifname = "Temp2"}
 
 renameSensorList[0x0840] = {name = "GPS Heading", onlyifname = "GPS course"}
 
@@ -101,7 +103,7 @@ renameSensorList[0x0902] = {name = "BUS Voltage", onlyifname = "ADC3"}
 
 renameSensorList[0x0200] = {name = "Current", onlyifname = "Current"}
 renameSensorList[0x0201] = {name = "ESC Current", onlyifname = "Current"}
-renameSensorList[0x0202] = {name = "BEC Current", onlyifname = "Current"}
+renameSensorList[0x0222] = {name = "BEC Current", onlyifname = "Current"}
 
 renameSensorList[0x0400] = {name = "MCU Temp", onlyifname = "Temp1"}
 renameSensorList[0x0401] = {name = "ESC Temp", onlyifname = "Temp1"}
