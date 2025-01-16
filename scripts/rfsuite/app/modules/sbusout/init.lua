@@ -24,6 +24,7 @@ local init = {
     image = "sbusout.png",                -- image for the page
     order = 3,                          -- order in the section
     ethosversion = 1519                -- disable button if ethos version is less than this
+    mspversion = 12.07,                 -- disable button if msp version is less than this
 }
 
 return init

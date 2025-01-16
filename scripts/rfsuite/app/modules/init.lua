@@ -47,7 +47,9 @@ for _, module in ipairs(rfsuite.app.moduleList) do
             script = module.script,
             order = module.order or 0,
             image = module.image,
-            folder = module.folder
+            folder = module.folder,
+            ethosversion = module.ethosversion,
+            mspversion  = module.mspversion
         }
     else
         rfsuite.utils.log("Warning: Section '" .. module.section .. "' not found for module '" .. module.title .. "'")
