@@ -1,53 +1,89 @@
 @echo off
+REM ------------------------------------------------------
+REM   FILE COPY SCRIPT FOR MULTIPLE DESTINATION FOLDERS
+REM ------------------------------------------------------
+REM   This script copies files from a Git source folder to multiple destination folders.
+REM   Destination folders are specified in a CSV list using the %DEV_SIM_SRC% environment variable.
+REM   The script can optionally handle specific file extensions (e.g., .lua files).
+
+REM ------------------------------------------------------
+REM   SETUP INSTRUCTIONS (WINDOWS)
+REM ------------------------------------------------------
+REM 1. Set the environment variables in Windows Command Prompt (or add them to System Variables):
+REM    Example:
+REM    set DEV_RFSUITE_GIT_SRC=C:\Path\To\Your\Source
+REM    set DEV_SIM_SRC="C:\Program Files (x86)\FrSky\Ethos\X20S\scripts","C:\Program Files (x86)\FrSky\Ethos\X14S\scripts","C:\Program Files (x86)\FrSky\Ethos\X18S\scripts"
+
+REM 2. Run the script from the Command Prompt:
+REM    Example (copy all files):
+REM    your_script.bat
+
+REM 3. Optional: To copy only .lua files, pass .lua as a parameter:
+REM    Example:
+REM    deploy-sim.cmd .lua
+
+REM ------------------------------------------------------
+REM SCRIPT BEGINS BELOW
+REM ------------------------------------------------------
+
 
 REM Accept an optional parameter for file extension
 set "fileext=%~1"
 
-if not "%fileext%"==".lua" (
-    echo No file extension specified or unsupported parameter. Proceeding with default behavior.
-)
-
-set tgt=rfsuite
-set srcfolder=%DEV_RFSUITE_GIT_SRC%
-set dstfolder=%DEV_SIM_SRC%
-
-REM Preserve the logs folder by moving it temporarily
-if exist "%dstfolder%\%tgt%\logs\" (
-    mkdir "%dstfolder%\logs_temp"
-    xcopy "%dstfolder%\%tgt%\logs\*" "%dstfolder%\logs_temp" /h /i /c /k /e /r /y
-)
-
-REM If .lua parameter is set, handle .lua files specifically
-if "%fileext%"==".lua" (
-    echo Removing all .lua files from target...
-    for /r "%dstfolder%\%tgt%" %%F in (*.lua) do del "%%F"
-    
-    echo Syncing only .lua files to target...
-    mkdir "%dstfolder%\%tgt%"
-    xcopy "%srcfolder%\scripts\%tgt%\*.lua" "%dstfolder%\%tgt%" /h /i /c /k /e /r /y
+if not defined fileext (
+    echo No file extension specified. Copying all files.
 ) else (
-    REM Remove the entire destination folder
-    RMDIR "%dstfolder%\%tgt%" /S /Q
-
-    REM Recreate the destination folder
-    mkdir "%dstfolder%\%tgt%"
-    
-    REM Restore the logs folder
-    if exist "%dstfolder%\logs_temp\" (
-        mkdir "%dstfolder%\%tgt%\logs"
-        xcopy "%dstfolder%\logs_temp\*" "%dstfolder%\%tgt%\logs" /h /i /c /k /e /r /y
-        RMDIR "%dstfolder%\logs_temp" /S /Q
-    )
-    
-    REM Copy all files to the destination folder
-    xcopy "%srcfolder%\scripts\%tgt%" "%dstfolder%\%tgt%" /h /i /c /k /e /r /y
+    echo File extension specified: %fileext%
 )
 
-REM Restore logs if not handled already
-if exist "%dstfolder%\logs_temp\" (
-    mkdir "%dstfolder%\%tgt%\logs"
-    xcopy "%dstfolder%\logs_temp\*" "%dstfolder%\%tgt%\logs" /h /i /c /k /e /r /y
-    RMDIR "%dstfolder%\logs_temp" /S /Q
+set "tgt=rfsuite"
+set "srcfolder=%DEV_RFSUITE_GIT_SRC%"
+set "destfolders=%DEV_SIM_SRC%"
+
+REM Convert CSV list to array by replacing commas with spaces and handling quotes
+for %%d in ("%destfolders:,=" "%") do (
+    echo Processing destination folder: %%~d
+
+    REM Preserve the logs folder by moving it temporarily
+    if exist "%%~d\%tgt%\logs\" (
+        mkdir "%%~d\logs_temp" >nul 2>&1
+        xcopy "%%~d\%tgt%\logs\*" "%%~d\logs_temp" /h /i /c /k /e /r /y >nul 2>&1
+    )
+
+    REM Handle the case where .lua is passed as a parameter
+    if "%fileext%"==".lua" (
+        echo Removing all .lua files from target in %%~d...
+        for /r "%%~d\%tgt%" %%F in (*.lua) do del "%%F" >nul 2>&1
+
+        echo Syncing only .lua files to target in %%~d...
+        mkdir "%%~d\%tgt%" >nul 2>&1
+        xcopy "%srcfolder%\scripts\%tgt%\*.lua" "%%~d\%tgt%" /h /i /c /k /e /r /y >nul 2>&1
+    ) else (
+        REM No specific file extension, remove and copy all files
+        RMDIR "%%~d\%tgt%" /S /Q >nul 2>&1
+
+        REM Recreate the destination folder
+        mkdir "%%~d\%tgt%" >nul 2>&1
+
+        REM Restore the logs folder
+        if exist "%%~d\logs_temp\" (
+            mkdir "%%~d\%tgt%\logs" >nul 2>&1
+            xcopy "%%~d\logs_temp\*" "%%~d\%tgt%\logs" /h /i /c /k /e /r /y >nul 2>&1
+            RMDIR "%%~d\logs_temp" /S /Q >nul 2>&1
+        )
+
+        REM Copy all files to the destination folder
+        xcopy "%srcfolder%\scripts\%tgt%" "%%~d\%tgt%" /h /i /c /k /e /r /y >nul 2>&1
+    )
+
+    REM Restore logs if not handled already
+    if exist "%%~d\logs_temp\" (
+        mkdir "%%~d\%tgt%\logs" >nul 2>&1
+        xcopy "%%~d\logs_temp\*" "%%~d\%tgt%\logs" /h /i /c /k /e /r /y >nul 2>&1
+        RMDIR "%%~d\logs_temp" /S /Q >nul 2>&1
+    )
+
+    echo Copy completed for: %%~d
 )
 
 echo Script execution completed.
