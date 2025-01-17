@@ -14,15 +14,14 @@
  *
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]] --
-local rf2craftname = {wakeupSchedulerUI = os.clock()}
+local rf2craftname = { wakeupSchedulerUI = os.clock() }
 
 local sensors
 local lastName
-local bitmapPtr 
+local bitmapPtr
 local image
 local default_image = "widgets/craftname/default_image.png"
 local config = {}
-
 
 -- Helper function to check if file exists
 local function file_exists(name)
@@ -34,9 +33,8 @@ local function file_exists(name)
     return false
 end
 
-
 -- Helper function to load image
-function loadImage(image)
+local function loadImage(image)
     if image == nil then
         image = default_image
     end
@@ -55,7 +53,7 @@ function loadImage(image)
     end
 
     -- 1. Check the provided image path
-    image_path = find_image_in_directories(image)
+    local image_path = find_image_in_directories(image)
 
     -- 2. If not found, try switching between .png and .bmp
     if not image_path then
@@ -77,71 +75,57 @@ end
 
 -- Create function
 function rf2craftname.create(widget)
-    bitmapPtr = loadImage(default_image)   
+    bitmapPtr = loadImage(default_image)
 end
 
 -- Paint function
 function rf2craftname.paint(widget)
     local w, h = lcd.getWindowSize()
+    lcd.font(FONT_XXL)
+    local str = rfsuite.bg.active() and rfsuite.config.craftName or "UNKNOWN"
+    local tsizeW, tsizeH = lcd.getTextSize(str)
+    local posX = (w - tsizeW) / 2
+    local posY = 5
 
     if config.image == false then
-
-        lcd.font(FONT_XXL)
-        local str = rfsuite.bg.active() and rfsuite.config.craftName or "UNKNOWN"
-        local tsizeW, tsizeH = lcd.getTextSize(str)
-    
-        local posX = (w - tsizeW) / 2
-        local posY = (h - tsizeH) / 2 + 5
-
-        lcd.drawText(posX, posY, str)
+        posY = (h - tsizeH) / 2 + 5
     else
-        lcd.font(FONT_XL)
-
-        local str = rfsuite.bg.active() and rfsuite.config.craftName or "UNKNOWN"
-        local tsizeW, tsizeH = lcd.getTextSize(str)
-    
-        local posX = (w - tsizeW) / 2
         if bitmapPtr ~= nil then
             local padding = 5
             local bitmapX = 0 + padding
-            local bitmapY = 0 + padding + tsizeH 
+            local bitmapY = 0 + padding + tsizeH
             local bitmapW = w - (padding * 2)
             local bitmapH = h - (padding * 2) - tsizeH
             lcd.drawBitmap(bitmapX, bitmapY, bitmapPtr, bitmapW, bitmapH)
         end
-        lcd.drawText(posX, 5, str)
     end
+    lcd.drawText(posX, posY, str)
 end
 
 -- Configure function
 function rf2craftname.configure(widget)
-
     -- reset this to force a lcd refresh
     lastName = nil
 
     local line = form.addLine("Image")
-    form.addBooleanField(line, 
-                        nil, 
-                        function() return config.image end, 
-                        function(newValue) config.image = newValue end)
+    form.addBooleanField(line,
+        nil,
+        function() return config.image end,
+        function(newValue) config.image = newValue end)
 
     return widget
 end
 
 -- Read function
 function rf2craftname.read(widget)
-
     -- display or not display an image on the page
-    config.image = storage.read("mem1") 
+    config.image = storage.read("mem1")
     if config.image == nil then config.image = false end
-
 end
 
 -- Write function
 function rf2craftname.write(widget)
-
     storage.write("mem1", config.image)
-
 end
 
 -- Event function
@@ -161,24 +145,22 @@ function rf2craftname.wakeup(widget)
 end
 
 function rf2craftname.wakeupUI()
-
     if lastName ~= rfsuite.config.craftName then
         -- load image if it is enabled
         if config.image == true then
             if rfsuite.config.craftName ~= nil then
-                image = "/bitmaps/models/" .. rfsuite.config.craftName .. ".png"    
+                image = "/bitmaps/models/" .. rfsuite.config.craftName .. ".png"
                 bitmapPtr = loadImage(image)
             else
-                bitmapPtr = loadImage(default_image)   
-            end 
-        else    
-            bitmapPtr = loadImage(default_image)            
-        end    
+                bitmapPtr = loadImage(default_image)
+            end
+        else
+            bitmapPtr = loadImage(default_image)
+        end
         lcd.invalidate()
     end
 
     lastName = rfsuite.config.craftName
-
 end
 
 return rf2craftname

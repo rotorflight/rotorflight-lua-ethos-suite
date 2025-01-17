@@ -194,6 +194,12 @@ function msp.onConnectBgChecks()
 
                     rfsuite.config.craftName = craftName
 
+                    -- set the model name to the craft name
+                    if rfsuite.config.syncCraftName == true and model.name and rfsuite.config.craftName ~= nil then
+                        model.name(rfsuite.config.craftName)
+                        lcd.invalidate()
+                    end
+
                     rfsuite.utils.log("Craft name: " .. craftName)
                 end,
                 simulatorResponse = {80, 105, 108, 111, 116}
