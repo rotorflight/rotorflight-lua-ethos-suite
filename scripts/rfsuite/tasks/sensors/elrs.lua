@@ -57,7 +57,7 @@ local function createTelemetrySensor(uid, name, unit, dec, value, min, max)
     sensors['uid'][uid]:name(name)
     sensors['uid'][uid]:appId(uid)
     sensors['uid'][uid]:module(1)
-    sensors['uid'][uid]:minimum(min or -2147483647)
+    sensors['uid'][uid]:minimum(min or -1000000000)
     sensors['uid'][uid]:maximum(max or 2147483647)
     if dec then
         sensors['uid'][uid]:decimals(dec)

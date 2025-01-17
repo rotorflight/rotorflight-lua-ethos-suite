@@ -174,7 +174,7 @@ end
 
 function ui.openMainMenu()
 
-    local MainMenu = assert(loadfile("app/pages.lua"))()
+    local MainMenu = assert(loadfile("app/modules/init.lua"))()
 
     -- clear all nav vars
     rfsuite.app.lastIdx = nil
@@ -232,42 +232,46 @@ function ui.openMainMenu()
     if rfsuite.app.gfx_buttons["mainmenu"] == nil then rfsuite.app.gfx_buttons["mainmenu"] = {} end
     if rfsuite.app.menuLastSelected["mainmenu"] == nil then rfsuite.app.menuLastSelected["mainmenu"] = 1 end
 
-    local hideSection = false
+
     for idx, value in ipairs(MainMenu.sections) do
+
+        local hideSection = false
 
         if (value.ethosversion ~= nil and rfsuite.config.ethosRunningVersion < value.ethosversion) then
             hideSection = true
-        else
-            hideSection = false
         end
+
+        if (value.mspversion ~= nil and rfsuite.config.apiVersion < value.mspversion) then
+            hideSection = true
+        end       
+
         if (value.developer ~= nil and rfsuite.config.developerMode == false) then
             hideSection = true
-        else
-            hideSection = false
         end
 
         if hideSection == false then
 
-            local sc = value.section
+            local sc = idx
 
             form.addLine(value.title)
 
             lc = 0
-            local hideEntry = false
 
             for pidx, pvalue in ipairs(MainMenu.pages) do
-                if pvalue.section == value.section then
-
+                if pvalue.section == idx then
                     -- do not show icon if not supported by ethos version
+                    local hideEntry = false
+
                     if (pvalue.ethosversion ~= nil and rfsuite.config.ethosRunningVersion < pvalue.ethosversion) then
                         hideEntry = true
-                    else
-                        hideEntry = false
                     end
+            
+                    if (pvalue.mspversion ~= nil and rfsuite.config.apiVersion < pvalue.mspversion) then
+                        hideEntry = true
+                    end       
+            
                     if (pvalue.developer ~= nil and rfsuite.config.developerMode == false) then
                         hideEntry = true
-                    else
-                        hideEntry = false
                     end
 
                     if hideEntry == false then
@@ -281,7 +285,7 @@ function ui.openMainMenu()
                         if lc >= 0 then x = (buttonW + padding) * lc end
 
                         if config.iconSize ~= 0 then
-                            if rfsuite.app.gfx_buttons["mainmenu"][pidx] == nil then rfsuite.app.gfx_buttons["mainmenu"][pidx] = lcd.loadMask("app/gfx/menu/" .. pvalue.image) end
+                            if rfsuite.app.gfx_buttons["mainmenu"][pidx] == nil then rfsuite.app.gfx_buttons["mainmenu"][pidx] = lcd.loadMask("app/modules/" .. pvalue.folder .. "/" .. pvalue.image) end
                         else
                             rfsuite.app.gfx_buttons["mainmenu"][pidx] = nil
                         end
@@ -295,7 +299,7 @@ function ui.openMainMenu()
                             press = function()
                                 rfsuite.app.menuLastSelected["mainmenu"] = pidx
                                 rfsuite.app.ui.progressDisplay()
-                                rfsuite.app.ui.openPage(pidx, pvalue.title, pvalue.script)
+                                rfsuite.app.ui.openPage(pidx, pvalue.title, pvalue.folder .. "/" .. pvalue.script)
                             end
                         })
 
@@ -663,7 +667,7 @@ end
 function ui.openPageRefresh(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
     rfsuite.app.triggers.isReady = false
-    if script ~= nil then rfsuite.app.Page = assert(loadfile("app/pages/" .. script))() end
+    if script ~= nil then rfsuite.app.Page = assert(loadfile("app/modules/" .. script))() end
 
 end
 
@@ -674,7 +678,7 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
     rfsuite.app.formFields = {}
     rfsuite.app.formLines = {}
 
-    rfsuite.app.Page = assert(loadfile("app/pages/" .. script))(idx)
+    rfsuite.app.Page = assert(loadfile("app/modules/" .. script))(idx)
 
     if rfsuite.app.Page.openPage then
         rfsuite.app.Page.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
@@ -852,7 +856,7 @@ function ui.navigationButtons(x, y, w, h)
     if navButtons.help ~= nil and navButtons.help == true then
 
         local help = assert(loadfile("app/help/pages.lua"))()
-        local section = string.gsub(rfsuite.app.lastScript, ".lua", "") -- remove .lua
+        local section = rfsuite.app.lastScript:match("([^/]+)") -- return just the folder name
 
         rfsuite.app.formNavigationFields['help'] = form.addButton(line, {x = helpOffset, y = y, w = wS, h = h}, {
             text = "?",

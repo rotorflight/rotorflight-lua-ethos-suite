@@ -979,13 +979,13 @@ function app.create_logtool()
     app.uiState = app.uiStatus.init
 
     -- overide developermode if file exists.
-    if rfsuite.config.developerMode ~= true then if rfsuite.utils.file_exists("/scripts/developermode") then rfsuite.config.developerMode = true end end
+    if rfsuite.config.developerMode ~= true then if rfsuite.utils.file_exists("../developermode") then rfsuite.config.developerMode = true end end
 
     rfsuite.app.menuLastSelected["mainmenu"] = pidx
     rfsuite.app.ui.progressDisplay()
 
     rfsuite.app.offlineMode = true
-    rfsuite.app.ui.openPage(1, "Logs", "logs.lua", 1) --- final param says to load in standalone mode
+    rfsuite.app.ui.openPage(1, "Logs", "logs/logs.lua", 1) --- final param says to load in standalone mode
 
 end
 
@@ -1003,7 +1003,7 @@ function app.create()
     app.uiState = app.uiStatus.init
 
     -- overide developermode if file exists.
-    if rfsuite.config.developerMode ~= true then if rfsuite.utils.file_exists("/scripts/developermode") then rfsuite.config.developerMode = true end end
+    if rfsuite.config.developerMode ~= true then if rfsuite.utils.file_exists("../developermode") then rfsuite.config.developerMode = true end end
 
     app.ui.openMainMenu()
 

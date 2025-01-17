@@ -32,69 +32,44 @@ bg.init = false
 bg.log_queue = {}
 bg.wasOn = false
 
-local tasksList = {}
+-- tasks
+bg.telemetry = assert(loadfile("tasks/telemetry/telemetry.lua"))(config)
+bg.msp = assert(loadfile("tasks/msp/msp.lua"))(config)
+bg.adjfunctions = assert(loadfile("tasks/adjfunctions/adjfunctions.lua"))(config)
+bg.sensors = assert(loadfile("tasks/sensors/sensors.lua"))(config)
+bg.logging = assert(loadfile("tasks/logging/logging.lua"))(config)
 
 rfsuite.rssiSensorChanged = true
 
 local rssiCheckScheduler = os.clock()
 local lastRssiSensorName = nil
 
--- findTasks
-function bg.findTasks()
-
-    local taskdir = "tasks"
-    local tasks_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and "tasks/" or (config.suiteDir .. "/tasks/")
-
-    for _, v in pairs(system.listFiles(tasks_path)) do
-
-        local init_path = tasks_path .. v .. '/init.lua'
-        local f = io.open(init_path, "r")
-        if f then
-            io.close(f)
-
-            local func, err = loadfile(init_path)
-
-            if func then
-                local tconfig = func()
-                if type(tconfig) ~= "table" or not tconfig.interval or not tconfig.script then
-                    rfsuite.utils.log("Invalid configuration in " .. init_path)
-                else
-                    local task = {name = v, interval = tconfig.interval, script = tconfig.script, msp = tconfig.msp, last_run = os.clock()}
-                    table.insert(tasksList, task)
-
-                    local script = tasks_path .. v .. '/' .. tconfig.script
-                    local fs = io.open(script, "r")
-                    if fs then
-                        io.close(fs)
-                        bg[v] = assert(loadfile(script))(config)
-                    end
-                end
-            end
-        end
-    end
+-- findModules on task init to ensure we are precached  
+if rfsuite.app.moduleList == nil then
+    rfsuite.app.moduleList = rfsuite.utils.findModules()
 end
 
--- flush_logs
 function bg.flush_logs()
     local max_lines_per_flush = 5
 
     if #bg.log_queue > 0 and rfsuite.bg.msp.mspQueue:isProcessed() then
-        -- Determine the log file path based on the ethos version
-        local log_file_path = rfsuite.utils.ethosVersionToMinor() < 16 and config.suiteDir .. "/logs/rfsuite.log" or "logs/rfsuite.log"
 
-        -- Attempt to open the log file once
-        local f, err = io.open(log_file_path, 'a')
-        if not f then
-            print("Error opening log file: " .. (err or "Unknown error"))
-            return
-        end
+        local f
 
         for i = 1, math.min(#bg.log_queue, max_lines_per_flush) do
-            if rfsuite.config.logEnableScreen then print(bg.log_queue[1]) end
-            f:write(table.remove(bg.log_queue, 1) .. "\n")
+
+            if rfsuite.config.logEnableScreen == true then print(bg.log_queue[1]) end
+
+            if rfsuite.utils.ethosVersionToMinor() < 16 then
+                f = io.open(config.suiteDir .. "/logs/rfsuite.log", 'a')
+            else
+                f = io.open("logs/rfsuite.log", 'a')
+            end
+            io.write(f, table.remove(bg.log_queue, 1) .. "\n")
+            io.close(f)
+
         end
 
-        f:close()
     end
 end
 
@@ -117,15 +92,7 @@ function bg.active()
     return false
 end
 
--- wakeup
 function bg.wakeup()
-
-    -- initialise tasks
-    if bg.init == false then
-        bg.findTasks()
-        bg.init = true
-        return
-    end
 
     bg.heartbeat = os.clock()
 
@@ -145,21 +112,16 @@ function bg.wakeup()
 
     if currentRssiSensor ~= nil then rfsuite.rssiSensor = currentRssiSensor.sensor end
 
-    -- we load in tasks dynamically using the settings found in
-    -- tasks/<name>init.lua
-    -- check the existing scripts for more details.
-    local now = os.clock()
-    for _, task in ipairs(tasksList) do
-        if now - task.last_run >= task.interval then
-            if bg[task.name].wakeup then
-                if task.msp == true then
-                    bg[task.name].wakeup()
-                else
-                    if not rfsuite.app.triggers.mspBusy then bg[task.name].wakeup() end
-                end
-                task.last_run = now
-            end
-        end
+    -- high priority and must alway run regardless of tlm state
+    bg.msp.wakeup()
+
+    -- skip these if we are doing any msp traffic
+    if not rfsuite.app.triggers.mspBusy then
+        bg.flush_logs()
+        bg.logging.wakeup()
+        bg.adjfunctions.wakeup()
+        bg.telemetry.wakeup()
+        bg.sensors.wakeup()
     end
 
 end
