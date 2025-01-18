@@ -23,23 +23,50 @@ local arg = {...}
 local config = arg[1]
 
 local frsky = {}
+local cacheExpireTime = 10  -- Time in seconds to expire the caches
+local lastCacheFlushTime = os.clock()  -- Store the initial time
 
 -- create
 local createSensorList = {}
-createSensorList[0x5450] = {name = "Governor", unit = UNIT_RAW}
-createSensorList[0x5110] = {name = "Adj. Source", unit = UNIT_RAW}
-createSensorList[0x5111] = {name = "Adj. Value", unit = UNIT_RAW}
-createSensorList[0x5460] = {name = "Model ID", unit = UNIT_RAW}
-createSensorList[0x5471] = {name = "PID Profile", unit = UNIT_RAW}
-createSensorList[0x5472] = {name = "Rate Profile", unit = UNIT_RAW}
-createSensorList[0x5440] = {name = "Throttle %", unit = UNIT_PERCENT}
+createSensorList[0x5100] = {name = "Heartbeat", unit = UNIT_RAW}
 createSensorList[0x5250] = {name = "Consumption", unit = UNIT_MILLIAMPERE_HOUR}
-createSensorList[0x5462] = {name = "Arming Flags", unit = UNIT_RAW}
+createSensorList[0x5260] = {name = "Cell Count", unit = UNIT_RAW}
+createSensorList[0x51A0] = {name = "Pitch Control", unit = UNIT_DEGREE, decimals=2}
+createSensorList[0x51A1] = {name = "Roll Control", unit = UNIT_DEGREE, decimals=2}
+createSensorList[0x51A2] = {name = "Yaw Control", unit = UNIT_DEGREE, decimals=2}
+createSensorList[0x51A3] = {name = "Collective Control", unit = UNIT_DEGREE, decimals=2}
+createSensorList[0x51A4] = {name = "Throttle %", unit = UNIT_PERCENT, decimals=1}
+createSensorList[0x5258] = {name = "ESC1 Capacity", unit = UNIT_MILLIAMPERE_HOUR}
+createSensorList[0x5268] = {name = "ESC1 Power", unit = UNIT_PERCENT}
+createSensorList[0x5269] = {name = "ESC1 Throttle", unit = UNIT_PERCENT}
+createSensorList[0x525A] = {name = "ESC2 Capacity", unit = UNIT_MILLIAMPERE_HOUR}
+createSensorList[0x51D0] = {name = "CPU Load", unit = UNIT_PERCENT}
+createSensorList[0x51D1] = {name = "System Load", unit = UNIT_PERCENT}
+createSensorList[0x51D2] = {name = "RT Load", unit = UNIT_PERCENT}
+createSensorList[0x5120] = {name = "Model ID", unit = UNIT_RAW}
+createSensorList[0x5121] = {name = "Flight Mode", unit = UNIT_RAW}
+createSensorList[0x5122] = {name = "Arming Flags", unit = UNIT_RAW}
+createSensorList[0x5123] = {name = "Arming Disable Flags", unit = UNIT_RAW}
+createSensorList[0x5124] = {name = "Rescue State", unit = UNIT_RAW}
+createSensorList[0x5125] = {name = "Governor State", unit = UNIT_RAW}
+createSensorList[0x5130] = {name = "PID Profile", unit = UNIT_RAW}
+createSensorList[0x5131] = {name = "Rates Profile", unit = UNIT_RAW}
+createSensorList[0x5110] = {name = "Adj Function", unit = UNIT_RAW}
+createSensorList[0x5111] = {name = "Adj Value", unit = UNIT_RAW}
+createSensorList[0x5210] = {name = "Heading", unit = UNIT_DEGREE, decimals=1}
+createSensorList[0x52F0] = {name = "Debug 0", unit = UNIT_RAW}
+createSensorList[0x52F1] = {name = "Debug 1", unit = UNIT_RAW}
+createSensorList[0x52F2] = {name = "Debug 2", unit = UNIT_RAW}
+createSensorList[0x52F3] = {name = "Debug 3", unit = UNIT_RAW}
+createSensorList[0x52F4] = {name = "Debug 4", unit = UNIT_RAW}
+createSensorList[0x52F5] = {name = "Debug 5", unit = UNIT_RAW}
+createSensorList[0x52F6] = {name = "Debug 6", unit = UNIT_RAW}
+createSensorList[0x52F8] = {name = "Debug 7", unit = UNIT_RAW}
 
--- drop
+-- drop (drop sensors only runs if < msp 12.08)
 local dropSensorList = {}
-dropSensorList[0x0400] = {name = "Temp1"}
-dropSensorList[0x0410] = {name = "Temp1"}
+--dropSensorList[0x0400] = {name = "Temp1"}
+
 
 -- rename
 local renameSensorList = {}
@@ -47,29 +74,52 @@ renameSensorList[0x0500] = {name = "Headspeed", onlyifname = "RPM"}
 renameSensorList[0x0501] = {name = "Tailspeed", onlyifname = "RPM"}
 
 renameSensorList[0x0210] = {name = "Voltage", onlyifname = "VFAS"}
-renameSensorList[0x0200] = {name = "Current", onlyifname = "Current"}
+
 renameSensorList[0x0600] = {name = "Charge Level", onlyifname = "Fuel"}
 renameSensorList[0x0910] = {name = "Cell Voltage", onlyifname = "ADC4"}
-renameSensorList[0x0900] = {name = "BEC Voltage", onlyifname = "ADC3"}
 
 renameSensorList[0x0211] = {name = "ESC Voltage", onlyifname = "VFAS"}
-renameSensorList[0x0201] = {name = "ESC Current", onlyifname = "Current"}
-renameSensorList[0x0502] = {name = "ESC RPM", onlyifname = "RPM"}
 renameSensorList[0x0B70] = {name = "ESC Temp", onlyifname = "ESC temp"}
 
-renameSensorList[0x0212] = {name = "ESC2 Voltage", onlyifname = "VFAS"}
-renameSensorList[0x0202] = {name = "ESC2 Current", onlyifname = "Current"}
-renameSensorList[0x0503] = {name = "ESC2 RPM", onlyifname = "RPM"}
-renameSensorList[0x0B71] = {name = "ESC2 Temp", onlyifname = "ESC temp"}
+renameSensorList[0x0218] = {name = "ESC1 Voltage", onlyifname = "VFAS"}
+renameSensorList[0x0208] = {name = "ESC1 Current", onlyifname = "Current"}
+renameSensorList[0x0508] = {name = "ESC1 RPM", onlyifname = "RPM"}
+renameSensorList[0x0418] = {name = "ESC1 Temp", onlyifname = "Temp2"}
 
-renameSensorList[0x0401] = {name = "MCU Temp", onlyifname = "Temp1"}
-renameSensorList[0x0840] = {name = "Heading", onlyifname = "GPS course"}
+renameSensorList[0x0219] = {name = "BEC1 Voltage", onlyifname = "VFAS"}
+renameSensorList[0x0229] = {name = "BEC1 Current", onlyifname = "Current"}
+renameSensorList[0x0419] = {name = "BEC1 Temp", onlyifname = "Temp2"}
+
+renameSensorList[0x021A] = {name = "ESC2 Voltage", onlyifname = "VFAS"}
+renameSensorList[0x020A] = {name = "ESC2 Current", onlyifname = "Current"}
+renameSensorList[0x050A] = {name = "ESC2 RPM", onlyifname = "RPM"}
+renameSensorList[0x041A] = {name = "ESC2 Temp", onlyifname = "Temp2"}
+
+renameSensorList[0x0840] = {name = "GPS Heading", onlyifname = "GPS course"}
+
+renameSensorList[0x0900] = {name = "MCU Voltage", onlyifname = "ADC3"}
+renameSensorList[0x0901] = {name = "BEC Voltage", onlyifname = "ADC3"}
+renameSensorList[0x0902] = {name = "BUS Voltage", onlyifname = "ADC3"}
+
+renameSensorList[0x0200] = {name = "Current", onlyifname = "Current"}
+renameSensorList[0x0201] = {name = "ESC Current", onlyifname = "Current"}
+renameSensorList[0x0222] = {name = "BEC Current", onlyifname = "Current"}
+
+renameSensorList[0x0400] = {name = "MCU Temp", onlyifname = "Temp1"}
+renameSensorList[0x0401] = {name = "ESC Temp", onlyifname = "Temp1"}
+renameSensorList[0x0402] = {name = "BEC Temp", onlyifname = "Temp1"}
 
 frsky.createSensorCache = {}
 frsky.dropSensorCache = {}
 frsky.renameSensorCache = {}
 
 local function createSensor(physId, primId, appId, frameValue)
+
+
+    -- we dont want any deletions if api has not been found
+    if rfsuite.config.apiVersion == nil then
+        return
+    end
 
     -- check for custom sensors and create them if they dont exist
     if createSensorList[appId] ~= nil then
@@ -82,7 +132,7 @@ local function createSensor(physId, primId, appId, frameValue)
 
             if frsky.createSensorCache[appId] == nil then
 
-                print("Creating sensor: " .. v.name)
+                rfsuite.utils.log("Creating sensor: " .. v.name)
 
                 frsky.createSensorCache[appId] = model.createSensor()
                 frsky.createSensorCache[appId]:name(v.name)
@@ -90,11 +140,15 @@ local function createSensor(physId, primId, appId, frameValue)
                 frsky.createSensorCache[appId]:physId(physId)
                 frsky.createSensorCache[appId]:module(rfsuite.rssiSensor:module())
 
-                frsky.createSensorCache[appId]:minimum(min or -2147483647)
+                frsky.createSensorCache[appId]:minimum(min or -1000000000)
                 frsky.createSensorCache[appId]:maximum(max or 2147483647)
                 if v.unit ~= nil then
                     frsky.createSensorCache[appId]:unit(v.unit)
                     frsky.createSensorCache[appId]:protocolUnit(v.unit)
+                end
+                if v.decimals ~= nil then 
+                        frsky.createSensorCache[appId]:decimals(v.decimals) 
+                        frsky.createSensorCache[appId]:protocolDecimals(v.decimals)
                 end
                 if v.minimum ~= nil then frsky.createSensorCache[appId]:minimum(v.minimum) end
                 if v.maximum ~= nil then frsky.createSensorCache[appId]:maximum(v.maximum) end
@@ -107,6 +161,16 @@ local function createSensor(physId, primId, appId, frameValue)
 end
 
 local function dropSensor(physId, primId, appId, frameValue)
+    
+    -- we dont want any deletions if api has not been found
+    if rfsuite.config.apiVersion == nil then
+        return
+    end
+
+    -- we do not do any sensor dropping post 12.08 as have new frsky telem system
+    if rfsuite.config.apiVersion >= 12.08 then
+        return
+    end
 
     -- check for custom sensors and create them if they dont exist
     if dropSensorList[appId] ~= nil then
@@ -116,7 +180,7 @@ local function dropSensor(physId, primId, appId, frameValue)
             frsky.dropSensorCache[appId] = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
 
             if frsky.dropSensorCache[appId] ~= nil then
-                print("Drop sensor: " .. v.name)
+                rfsuite.utils.log("Drop sensor: " .. v.name)
                 frsky.dropSensorCache[appId]:drop()
             end
 
@@ -128,6 +192,11 @@ end
 
 local function renameSensor(physId, primId, appId, frameValue)
 
+    -- we dont want any deletions if api has not been found
+    if rfsuite.config.apiVersion == nil then
+        return
+    end
+
     -- check for custom sensors and create them if they dont exist
     if renameSensorList[appId] ~= nil then
         local v = renameSensorList[appId]
@@ -137,7 +206,7 @@ local function renameSensor(physId, primId, appId, frameValue)
 
             if frsky.renameSensorCache[appId] ~= nil then
                 if frsky.renameSensorCache[appId]:name() == v.onlyifname then
-                    print("Rename sensor: " .. v.name)
+                    rfsuite.utils.log("Rename sensor: " .. v.name)
                     frsky.renameSensorCache[appId]:name(v.name)
                 end
             end
@@ -163,15 +232,30 @@ end
 
 function frsky.wakeup()
 
-    -- flush sensor list if we kill the sensors
-    if not rfsuite.bg.telemetry.active() or not rfsuite.rssiSensor then
+    -- Function to clear caches
+    local function clearCaches()
         frsky.createSensorCache = {}
         frsky.renameSensorCache = {}
-        frsky.dropSensorCache = {}
+        frsky.dropSensorCache = {}  
     end
 
-    -- if gui or queue is busy.. do not do this!
-    if rfsuite.bg and rfsuite.bg.telemetry and rfsuite.bg.telemetry.active() and rfsuite.rssiSensor then if rfsuite.app.guiIsRunning == false and rfsuite.bg.msp.mspQueue:isProcessed() then while telemetryPop() do end end end
+    -- Check if it's time to expire the caches
+    if os.clock() - lastCacheFlushTime >= cacheExpireTime then
+        clearCaches()
+        lastCacheFlushTime = os.clock()  -- Reset the timer
+    end
+
+    -- Flush sensor list if we kill the sensors
+    if not rfsuite.bg.telemetry.active() or not rfsuite.rssiSensor then
+        clearCaches()
+    end
+
+    -- If GUI or queue is busy.. do not do this!
+    if rfsuite.bg and rfsuite.bg.telemetry and rfsuite.bg.telemetry.active() and rfsuite.rssiSensor then
+        if rfsuite.app.guiIsRunning == false and rfsuite.bg.msp.mspQueue:isProcessed() then
+            while telemetryPop() do end
+        end
+    end
 
 end
 

@@ -25,6 +25,7 @@ local config = arg[1]
 local sensors = {}
 
 sensors.elrs = assert(loadfile("tasks/sensors/elrs.lua"))(config)
+sensors.frsky_legacy = assert(loadfile("tasks/sensors/frsky_legacy.lua"))(config)
 sensors.frsky = assert(loadfile("tasks/sensors/frsky.lua"))(config)
 
 function sensors.wakeup()
@@ -32,9 +33,21 @@ function sensors.wakeup()
     -- we cant do anything if bg task not running
     if not rfsuite.bg.active() then return end
 
+    -- we cant do anything if we have no msp
+    if not rfsuite.config.apiVersion then return end
+
     if rfsuite.bg.msp.protocol.mspProtocol == "crsf" and config.enternalElrsSensors == true then sensors.elrs.wakeup() end
 
-    if rfsuite.bg.msp.protocol.mspProtocol == "smartPort" and config.internalSportSensors == true then sensors.frsky.wakeup() end
+    if rfsuite.bg.msp.protocol.mspProtocol == "smartPort" and config.internalSportSensors == true then 
+
+        if rfsuite.config.apiVersion >= 12.08 then
+            -- use new if msp is 12.08 or higher
+            sensors.frsky.wakeup() 
+        else
+            -- use legacy if msp is lower than 12.08
+            sensors.frsky_legacy.wakeup()
+        end
+    end
 
 end
 
