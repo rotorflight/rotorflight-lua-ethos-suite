@@ -15,6 +15,8 @@ local brakeType = {"Normal", "Reverse"}
 local autoRestart = {"OFF", "90s"}
 local srFunc = {"ON", "OFF"}
 
+-- this is a 'session buffer' from first init that can be used to modify the table below
+rfsuite.utils.print_r(rfsuite.escBuffer)
 
 fields[#fields + 1] = {t = "Low voltage protection", vals = {mspHeaderBytes + 6, mspHeaderBytes + 5}, tableIdxInc = -1, table = lowVoltage}
 fields[#fields + 1] = {t = "Timing", vals = {mspHeaderBytes + 8, mspHeaderBytes + 7}, tableIdxInc = -1, table = timing}

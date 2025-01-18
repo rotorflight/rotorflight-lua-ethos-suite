@@ -35,7 +35,7 @@ local function getESCDetails()
             if ESC.mspBufferCache == true then
                 mspBytesCheck = mspBytes
             end
-            print(mspBytesCheck)
+ 
             if #buf >= mspBytesCheck and buf[1] == mspSignature then
 
                 escDetails.model = ESC.getEscModel(buf)
@@ -43,7 +43,7 @@ local function getESCDetails()
                 escDetails.firmware = ESC.getEscFirmware(buf)
 
                 if ESC.mspBufferCache == true then
-                    escDetails.mspBuffer = buf 
+                    rfsuite.escBuffer = buf 
                 end    
 
                 foundESC = true
@@ -62,6 +62,8 @@ local function openPage(pidx, title, script)
     rfsuite.app.lastIdx = pidx
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
+
+    rfsuite.escBuffer = nil -- clear the buffer
 
     local folder = title
 

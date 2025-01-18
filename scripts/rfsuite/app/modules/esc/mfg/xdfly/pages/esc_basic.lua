@@ -12,6 +12,9 @@ local motorDirection = {"CW", "CCW"}
 local startupPower = {"Low", "Medium", "High"}
 local fanControl = {"On", "Off"}
 
+-- this is a 'session buffer' from first init that can be used to modify the table below
+rfsuite.utils.print_r(rfsuite.escBuffer)
+
 fields[#fields + 1] = {t = "LV BEC voltage",min = 60, max = 84, default = 74, step = 2 , scale = 10, decimals = 1, vals = {mspHeaderBytes + 10, mspHeaderBytes + 9}, unit = "V"}
 fields[#fields + 1] = {t = "HV BEC voltage",min = 60, max = 120, default = 84, step = 2 , scale = 10, decimals = 1, vals = {mspHeaderBytes + 22, mspHeaderBytes + 21}, tableIdxInc = -1, table = becVoltage, unit = "V"}
 fields[#fields + 1] = {t = "Motor direction", vals = {mspHeaderBytes + 12, mspHeaderBytes + 11}, tableIdxInc = -1, table = motorDirection}

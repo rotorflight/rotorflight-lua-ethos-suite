@@ -12,6 +12,10 @@ local foundEscDone = false
 
 local govMode = {"External Governor", "ESC Governor" , "Fixed Windg"}
 
+-- this is a 'session buffer' from first init that can be used to modify the table below
+rfsuite.utils.print_r(rfsuite.escBuffer)
+
+
 fields[#fields + 1] = {t = "Governor",  vals = {mspHeaderBytes + 4, mspHeaderBytes + 3}, tableIdxInc = -1, table = govMode}
 fields[#fields + 1] = {t = "Gov-P",  vals = {mspHeaderBytes + 14, mspHeaderBytes + 13}, min = 1, max = 10, default = 4}
 fields[#fields + 1] = {t = "Gov-I",  vals = {mspHeaderBytes + 16, mspHeaderBytes + 15}, min = 1, max = 10, default = 3}
