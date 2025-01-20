@@ -41,24 +41,39 @@ end
 
 local function getLogs(logDir)
     local files = system.listFiles(logDir)
+    local csvFiles = {}
 
-    local reversed = {}
-    for i = #files, 1, -1 do
-        if files[i] ~= ".." and files[i]:sub(-4) == ".csv" then -- Check for .csv files and skip ".."
-            table.insert(reversed, files[i])
+    -- Extract CSV files and parse date-time from filenames
+    for i = 1, #files do
+        if files[i] ~= ".." and files[i]:sub(-4) == ".csv" then
+            local datePart, timePart = files[i]:match("_(%d%d%d%d%-%d%d%-%d%d)_(%d%d%-%d%d%-%d%d)_")
+            if datePart and timePart then
+                local sortableDateTime = datePart .. "T" .. timePart -- Concatenating for sorting
+                table.insert(csvFiles, { filename = files[i], datetime = sortableDateTime })
+            end
         end
     end
+
+    -- Sort files by extracted date-time string
+    table.sort(csvFiles, function(a, b)
+        return a.datetime > b.datetime -- Sort in descending order (latest first)
+    end)
 
     -- Limit to a maximum of 50 entries
     local maxEntries = 50
     local result = {}
-    for i = 1, math.min(#reversed, maxEntries) do table.insert(result, reversed[i]) end
+    for i = 1, math.min(#csvFiles, maxEntries) do
+        table.insert(result, csvFiles[i].filename)
+    end
 
-    -- Call deleteData for the remaining files outside the truncated list
-    for i = maxEntries + 1, #reversed do os.remove(logDir .. "/" .. reversed[i]) end
+    -- Delete the remaining files outside the truncated list
+    for i = maxEntries + 1, #csvFiles do
+        os.remove(logDir .. "/" .. csvFiles[i].filename)
+    end
 
     return result
 end
+
 
 local function extractShortTimestamp(filename)
     -- Match the date and time components in the filename, ignoring the prefix
