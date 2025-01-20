@@ -73,6 +73,7 @@ end
 function extractName(input)
     -- Match everything before the first underscore followed by a date pattern
     local name = input:match("^(.-)_%d%d%d%d%-%d%d%-%d%d")
+    name = string.gsub(name, "_", " ")
     return name
 end
 
@@ -107,9 +108,10 @@ local function openPage(pidx, title, script, displaymode)
     local numPerRow
 
     padding = rfsuite.app.radio.buttonPaddingSmall
-    buttonW = (rfsuite.config.lcdWidth - padding) / (rfsuite.app.radio.logGraphButtonsPerRow - 1) - padding
+    --buttonW = (rfsuite.config.lcdWidth - padding) / (rfsuite.app.radio.logGraphButtonsPerRow - 1) - padding
+    buttonW = (rfsuite.config.lcdWidth - padding) / (2) - padding/2
     buttonH = rfsuite.app.radio.navbuttonHeight
-    numPerRow = rfsuite.app.radio.buttonsPerRow - 1
+    numPerRow = 2 -- = rfsuite.app.radio.buttonsPerRow - 1
 
     local x = windowWidth - buttonW + 10
 
@@ -150,7 +152,7 @@ local function openPage(pidx, title, script, displaymode)
             if lc >= 0 then bx = (buttonW + padding) * lc end
 
             rfsuite.app.formFields[pidx] = form.addButton(nil, {x = bx, y = y, w = buttonW, h = buttonH}, {
-                text = extractShortTimestamp(name),
+                text = extractName(name) .. " " .. extractShortTimestamp(name),
                 options = FONT_S,
                 paint = function()
                 end,
