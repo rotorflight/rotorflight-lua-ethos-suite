@@ -118,6 +118,16 @@ end
 function logging.wakeup()
     if not config.flightLog then return end -- Abort if logging is disabled
 
+    -- If telemetry is not active, clear logs
+    if rfsuite.bg.telemetry.active() == false then
+        logFileName = nil
+        logHeader = nil
+        logging.flushLogs(true)
+        logdir = nil
+
+        return
+    end    
+
     if logDirChecked == false then
         checkLogdirExists()
         logDirChecked = true
@@ -148,7 +158,7 @@ function logging.wakeup()
             logHeader = nil
             logging.flushLogs(true)
             logdir = nil
-        end
+        end      
     end
 end
 
