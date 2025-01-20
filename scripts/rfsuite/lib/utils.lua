@@ -598,5 +598,36 @@ function utils.findModules()
     return modulesList
 end
 
+function utils.findWidgets()
+    local widgetsList = {}
+
+    local widgetdir = "widgets/"
+    local widgets_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and widgetdir or (config.suiteDir .. widgetdir)
+
+   
+    for _, v in pairs(system.listFiles(widgets_path)) do
+
+        local init_path = widgets_path .. v .. '/init.lua'
+        local f = io.open(init_path, "r")
+        if f then
+            io.close(f)
+
+
+            local func, err = loadfile(init_path)
+
+            if func then
+                local wconfig = func()
+                if type(wconfig) ~= "table" or not wconfig.key then
+                    rfsuite.utils.log("Invalid configuration in " .. init_path)
+                else
+                    wconfig['folder'] = v
+                    table.insert(widgetsList, wconfig)
+                end
+            end
+        end
+    end
+
+    return widgetsList
+end
 
 return utils
