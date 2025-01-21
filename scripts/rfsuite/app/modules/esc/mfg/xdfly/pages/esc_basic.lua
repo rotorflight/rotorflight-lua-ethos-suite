@@ -12,15 +12,23 @@ local motorDirection = {"CW", "CCW"}
 local startupPower = {"Low", "Medium", "High"}
 local fanControl = {"On", "Off"}
 
--- this is a 'session buffer' from first init that can be used to modify the table below
-rfsuite.utils.print_r(rfsuite.escBuffer)
-
 fields[#fields + 1] = {t = "LV BEC voltage",min = 60, max = 84, default = 74, step = 2 , scale = 10, decimals = 1, vals = {mspHeaderBytes + 10, mspHeaderBytes + 9}, unit = "V"}
 fields[#fields + 1] = {t = "HV BEC voltage",min = 60, max = 120, default = 84, step = 2 , scale = 10, decimals = 1, vals = {mspHeaderBytes + 22, mspHeaderBytes + 21}, tableIdxInc = -1, table = becVoltage, unit = "V"}
 fields[#fields + 1] = {t = "Motor direction", vals = {mspHeaderBytes + 12, mspHeaderBytes + 11}, tableIdxInc = -1, table = motorDirection}
 fields[#fields + 1] = {t = "Motor Poles", min = 1, max = 550, default = 1, step = 1 ,  vals = {mspHeaderBytes + 34, mspHeaderBytes + 33}}
 fields[#fields + 1] = {t = "Startup Power",  vals = {mspHeaderBytes + 24, mspHeaderBytes + 23}, tableIdxInc = -1, table = startupPower}
 fields[#fields + 1] = {t = "Smart Fan",  vals = {mspHeaderBytes + 36, mspHeaderBytes + 35}, tableIdxInc = -1, table = fanControl}
+
+-- this code will disable the field if the ESC does not support it
+-- it uses the rfsuite.escBuffer variable that is set on first init
+for i = #fields, 1, -1 do 
+    local f = fields[i]
+    if (rfsuite.escBuffer[f.vals[2]] & 0xF0) ~= 0 then
+        --print("v:" .. f.t .. " " .. rfsuite.escBuffer[f.vals[2]] .. " " .. rfsuite.escBuffer[f.vals[1]])
+        --print("element disabled")
+        table.remove(fields, i)  -- Remove the field from the table
+    end
+end
 
 
 
@@ -48,15 +56,6 @@ end
 
 local function wakeup(self)
     if activateWakeup == true and rfsuite.bg.msp.mspQueue:isProcessed() then
-        for i, f in ipairs(rfsuite.app.Page.fields) do 
-            print("v:" .. f.t .. " " .. rfsuite.app.Page.values[f.vals[2]] .. " " .. rfsuite.app.Page.values[f.vals[1]])
-            if (rfsuite.app.Page.values[f.vals[2]] & 0xF0) ~= 0 then
-                -- rfsuite.app.Page.values[f.vals[2]] = (rfsuite.app.Page.values[f.vals[2]] & 0x7F)
-                rfsuite.app.formFields[i]:enable(false)
-                print("v:" .. f.t .. " " .. rfsuite.app.Page.values[f.vals[2]] .. " " .. rfsuite.app.Page.values[f.vals[1]])
-                print("element disabled")
-            end
-        end
         activateWakeup = false
     end
 end

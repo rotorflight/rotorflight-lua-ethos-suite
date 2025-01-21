@@ -15,8 +15,6 @@ local brakeType = {"Normal", "Reverse"}
 local autoRestart = {"OFF", "90s"}
 local srFunc = {"ON", "OFF"}
 
--- this is a 'session buffer' from first init that can be used to modify the table below
-rfsuite.utils.print_r(rfsuite.escBuffer)
 
 fields[#fields + 1] = {t = "Low voltage protection", vals = {mspHeaderBytes + 6, mspHeaderBytes + 5}, tableIdxInc = -1, table = lowVoltage}
 fields[#fields + 1] = {t = "Timing", vals = {mspHeaderBytes + 8, mspHeaderBytes + 7}, tableIdxInc = -1, table = timing}
@@ -27,6 +25,17 @@ fields[#fields + 1] = {t = "Brake Force", min = 0, max = 100, default = 0, vals 
 fields[#fields + 1] = {t = "SR Function", vals = {mspHeaderBytes + 30, mspHeaderBytes + 29}, tableIdxInc = -1, table = srFunc}
 fields[#fields + 1] = {t = "Capacity Correction", min = 0, max = 20, default = 10, offset = -10 , vals = {mspHeaderBytes + 32, mspHeaderBytes + 31}, unit = "%"}
 fields[#fields + 1] = {t = "Auto Restart", tableIdxInc = -1, table = autoRestart ,vals = {mspHeaderBytes + 20, mspHeaderBytes + 19}}
+
+-- this code will disable the field if the ESC does not support it
+-- it uses the rfsuite.escBuffer variable that is set on first init
+for i = #fields, 1, -1 do 
+    local f = fields[i]
+    if (rfsuite.escBuffer[f.vals[2]] & 0xF0) ~= 0 then
+        --print("v:" .. f.t .. " " .. rfsuite.escBuffer[f.vals[2]] .. " " .. rfsuite.escBuffer[f.vals[1]])
+        --print("element disabled")
+        table.remove(fields, i)  -- Remove the field from the table
+    end
+end
 
 
 local foundEsc = false
@@ -56,15 +65,6 @@ end
 
 local function wakeup(self)
     if activateWakeup == true and rfsuite.bg.msp.mspQueue:isProcessed() then
-        for i, f in ipairs(rfsuite.app.Page.fields) do 
-            print("v:" .. f.t .. " " .. rfsuite.app.Page.values[f.vals[2]] .. " " .. rfsuite.app.Page.values[f.vals[1]])
-            if (rfsuite.app.Page.values[f.vals[2]] & 0xF0) ~= 0 then
-                -- rfsuite.app.Page.values[f.vals[2]] = (rfsuite.app.Page.values[f.vals[2]] & 0x7F)
-                rfsuite.app.formFields[i]:enable(false)
-                print("v:" .. f.t .. " " .. rfsuite.app.Page.values[f.vals[2]] .. " " .. rfsuite.app.Page.values[f.vals[1]])
-                print("element disabled")
-            end
-        end
         activateWakeup = false
     end
 end

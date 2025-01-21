@@ -12,13 +12,22 @@ local foundEscDone = false
 
 local govMode = {"External Governor", "ESC Governor" , "Fixed Windg"}
 
--- this is a 'session buffer' from first init that can be used to modify the table below
-rfsuite.utils.print_r(rfsuite.escBuffer)
-
 
 fields[#fields + 1] = {t = "Governor",  vals = {mspHeaderBytes + 4, mspHeaderBytes + 3}, tableIdxInc = -1, table = govMode}
 fields[#fields + 1] = {t = "Gov-P",  vals = {mspHeaderBytes + 14, mspHeaderBytes + 13}, min = 1, max = 10, default = 4}
 fields[#fields + 1] = {t = "Gov-I",  vals = {mspHeaderBytes + 16, mspHeaderBytes + 15}, min = 1, max = 10, default = 3}
+
+-- this code will disable the field if the ESC does not support it
+-- it uses the rfsuite.escBuffer variable that is set on first init
+for i = #fields, 1, -1 do 
+    local f = fields[i]
+    if (rfsuite.escBuffer[f.vals[2]] & 0xF0) ~= 0 then
+        --print("v:" .. f.t .. " " .. rfsuite.escBuffer[f.vals[2]] .. " " .. rfsuite.escBuffer[f.vals[1]])
+        --print("element disabled")
+        table.remove(fields, i)  -- Remove the field from the table
+    end
+end
+
 
 function postLoad()
     rfsuite.app.triggers.isReady = true
@@ -44,15 +53,6 @@ end
 
 local function wakeup(self)
     if activateWakeup == true and rfsuite.bg.msp.mspQueue:isProcessed() then
-        for i, f in ipairs(rfsuite.app.Page.fields) do 
-            print("v:" .. f.t .. " " .. rfsuite.app.Page.values[f.vals[2]] .. " " .. rfsuite.app.Page.values[f.vals[1]])
-            if (rfsuite.app.Page.values[f.vals[2]] & 0xF0) ~= 0 then
-                -- rfsuite.app.Page.values[f.vals[2]] = (rfsuite.app.Page.values[f.vals[2]] & 0x7F)
-                rfsuite.app.formFields[i]:enable(false)
-                print("v:" .. f.t .. " " .. rfsuite.app.Page.values[f.vals[2]] .. " " .. rfsuite.app.Page.values[f.vals[1]])
-                print("element disabled")
-            end
-        end
         activateWakeup = false
     end
 end
