@@ -47,7 +47,7 @@ end
 return {
         toolName = toolName, 
         image="xdfly.png", 
-        powerCycle = true,
+        powerCycle = false,
         mspBufferCache = true,  
         mspSignature = 0x73, 
         mspHeaderBytes = mspHeaderBytes, 
