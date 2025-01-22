@@ -54,8 +54,8 @@ return {
         mspBufferCache = true,  
         mspSignature = 0xA6, 
         mspHeaderBytes = mspHeaderBytes, 
-        mspBytes = 25,  -- was 46.  set to 38 as this is checked in init for powercyle etc., if it does not match you will not get past the power cycle check
-        simulatorResponse = {2, 100, 0, 100, 0, 20, 0, 20, 0, 30, 0, 10, 0, 0, 0, 0, 0, 50, 0, 20, 20, 20, 0, 10, 5},
+        mspBytes = 38,  -- was 46.  set to 38 as this is checked in init for powercyle etc., if it does not match you will not get past the power cycle check
+        simulatorResponse = {166, 0, 6, 18, 0, 1, 0, 1, 0, 2, 240, 84, 0, 1, 0, 5, 0, 4, 0, 2, 0, 1, 0, 92, 0, 1, 0, 0, 0, 50, 0, 1, 0, 11, 0, 18, 0, 0},
         getEscModel = getEscModel, 
         getEscVersion = getEscVersion, 
         getEscFirmware = getEscFirmware
