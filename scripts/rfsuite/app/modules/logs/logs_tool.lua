@@ -608,7 +608,7 @@ local function paint()
     if enableWakeup == true and processedLogData == true then
 
         if logData ~= nil then
-            local optimal_records_per_page, optimal_steps = calculate_optimal_records_per_page(logLineCount, 40, 120)
+            local optimal_records_per_page, optimal_steps = calculate_optimal_records_per_page(logLineCount, 40, 80)
 
             local step_size = optimal_records_per_page
 
