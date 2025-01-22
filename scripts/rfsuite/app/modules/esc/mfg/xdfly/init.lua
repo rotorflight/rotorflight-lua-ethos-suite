@@ -24,6 +24,9 @@ local function getEscModel(self)
     local escModelID = getUInt(self, {1})
     local escModels = {"RESERVED", "35A", "65A", "85A", "125A", "155A", "130A", "195A", "300A"}
 
+    if escModelID == nil then
+        return "UNKNOWN"
+    end
 
     return "XDFLY " .. escModels[escModelID] .. " "
 
@@ -51,8 +54,8 @@ return {
         mspBufferCache = true,  
         mspSignature = 0xA6, 
         mspHeaderBytes = mspHeaderBytes, 
-        mspBytes = 38,  -- was 46.  set to 38 as this is checked in init for powercyle etc., if it does not match you will not get past the power cycle check
-        simulatorResponse = {115, 0, 6, 18, 0, 1, 0, 1, 0, 2, 240, 84, 0, 1, 0, 5, 0, 4, 0, 2, 0, 1, 0, 92, 0, 1, 0, 0, 0, 50, 0, 1, 0, 11, 0, 18, 0, 0},
+        mspBytes = 25,  -- was 46.  set to 38 as this is checked in init for powercyle etc., if it does not match you will not get past the power cycle check
+        simulatorResponse = {2, 100, 0, 100, 0, 20, 0, 20, 0, 30, 0, 10, 0, 0, 0, 0, 0, 50, 0, 20, 20, 20, 0, 10, 5},
         getEscModel = getEscModel, 
         getEscVersion = getEscVersion, 
         getEscFirmware = getEscFirmware
