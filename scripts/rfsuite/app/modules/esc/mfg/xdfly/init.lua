@@ -49,7 +49,7 @@ return {
         image="xdfly.png", 
         powerCycle = false,
         mspBufferCache = true,  
-        mspSignature = 0x73, 
+        mspSignature = 0xA6, 
         mspHeaderBytes = mspHeaderBytes, 
         mspBytes = 38,  -- was 46.  set to 38 as this is checked in init for powercyle etc., if it does not match you will not get past the power cycle check
         simulatorResponse = {115, 0, 6, 18, 0, 1, 0, 1, 0, 2, 240, 84, 0, 1, 0, 5, 0, 4, 0, 2, 0, 1, 0, 92, 0, 1, 0, 0, 0, 50, 0, 1, 0, 11, 0, 18, 0, 0},
