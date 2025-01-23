@@ -37,10 +37,11 @@ local function loadAPI(apiName)
     local apiFilePath = api_path .. apiName .. ".lua"
     
     -- Check if file exists before trying to load it
-    if system.fileExists(apiFilePath) then
+    if rfsuite.utils.file_exists(apiFilePath) then
+
         local apiModule = dofile(apiFilePath)  -- Load the Lua API file
         
-        if type(apiModule) == "table" and apiModule.get and apiModule.set then
+        if type(apiModule) == "table" and apiModule.get and apiModule.set and  apiModule.data and apiModule.isReady then
             apiCache[apiName] = apiModule  -- Store loaded API in cache
             rfsuite.utils.log("Loaded API:", apiName)
             return apiModule
@@ -58,9 +59,11 @@ function apiLoader.execute(apiName)
 end
 
 -- Example usage
--- rfsuite.bg.msp.api.execute("myApi").get(callback, callbackParam)        -- get function
--- rfsuite.bg.msp.api.execute("myApi").set(callback, callbackParam)        -- set function
--- rfsuite.bg.msp.api.execute("myApi").data(data)                          -- pass api specific data
+-- rfsuite.bg.msp.api.execute("myApi").get()        -- get function
+-- rfsuite.bg.msp.api.execute("myApi").set()        -- set function
+-- rfsuite.bg.msp.api.execute("myApi").isReady()    -- check if data is ready
+-- rfsuite.bg.msp.api.execute("myApi").data(data)   -- return entire buffer
+
 --
 -- Note: The API name is the filename without the .lua extension
 --      The variables callback and callbackParam are optional.
@@ -74,6 +77,7 @@ end
 --          get = get,
 --          set = set,
 --          data = data,
+--          isReady = isReady
 --      }       
 --
 -- Note:  It is possible for individual API modules to have additional functions.
@@ -83,5 +87,17 @@ end
 --        rfsuite.bg.msp.api.execute("myApi").myFunction()
 --         
 --        It is up to you to read the api file and understand the functions it provides.
+--
+-- Example usage:
+-- rfsuite.bg.msp.api.execute("MSP_MIXER_CONFIG").get()    -- do the msp call
+-- if rfsuite.bg.msp.api.execute("MSP_MIXER_CONFIG").isReady() then
+--    rfsuite.config.tailMode = rfsuite.bg.msp.api.execute("MSP_MIXER_CONFIG").getTailMode()
+--    rfsuite.config.swashMode = rfsuite.bg.msp.api.execute("MSP_MIXER_CONFIG").getSwashMode()
+--    rfsuite.utils.log("Tail mode: " .. rfsuite.config.tailMode)
+--    rfsuite.utils.log("Swash mode: " .. rfsuite.config.swashMode)
+    
+--    print("Tail mode: " .. rfsuite.config.tailMode)
+-- end    
+
 
 return apiLoader

@@ -19,14 +19,27 @@
 
 ]] --
 local function set(callback, callbackParam)
-    local message = {
-        command = 205, -- MSP_ACC_CALIBRATION
-        processReply = function(self, buf)
-            if callback then callback(callbackParam) end
-        end,
-        simulatorResponse = {}
-    }
-    rfsuite.bg.msp.mspQueue:add(message)
+	local message = {
+		command = 246, -- MSP_SET_RTC
+		payload = {},
+		processReply = function(self, buf)
+			rfsuite.utils.log("RTC set.")
+			if callback then callback(callbackParam) end
+		end,
+		simulatorResponse = {}
+	}
+
+	-- generate message to send
+	local now = os.time()
+	-- format: seconds after the epoch / milliseconds
+	for i = 1, 4 do
+		rfsuite.bg.msp.mspHelper.writeU8(message.payload, now & 0xFF)
+		now = now >> 8
+	end
+	rfsuite.bg.msp.mspHelper.writeU16(message.payload, 0)
+
+	-- add msg to queue
+	rfsuite.bg.msp.mspQueue:add(message)
 end
 
 local function get(callback, callbackParam)
@@ -34,11 +47,20 @@ local function get(callback, callbackParam)
 end
 
 local function data(data)
-	return nil
+	if mspData then
+		return mspData
+	end
 end
 
+local function isReady()
+	if mspData then
+		return true
+	end
+	return false
+end
 return {
 	get = get,
 	set = set,
     data = data,
+	isReady = isReady
 }

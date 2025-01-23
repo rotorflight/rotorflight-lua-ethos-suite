@@ -66,70 +66,32 @@ function msp.onConnectBgChecks()
 
         if rfsuite.config.apiVersion == nil and msp.mspQueue:isProcessed() then
 
-            local message = {
-                command = 1, -- MIXER
-                processReply = function(self, buf)
-                    if #buf >= 3 then
-                        local version = buf[2] + buf[3] / 100
-                        rfsuite.config.apiVersion = version
-                        rfsuite.utils.log("MSP Version: " .. rfsuite.config.apiVersion)
-                    end
-                end,
-                simulatorResponse = rfsuite.config.simulatorApiVersionResponse
-            }
-            msp.mspQueue:add(message)
+            rfsuite.config.apiVersion = rfsuite.bg.msp.api.execute("MSP_API_VERSION").get()
+            if rfsuite.bg.msp.api.execute("MSP_API_VERSION").isReady() then
+                rfsuite.config.apiVersion = rfsuite.bg.msp.api.execute("MSP_API_VERSION").getVersion()
+                rfsuite.utils.log("API version: " .. rfsuite.config.apiVersion)
+            end
+
         elseif rfsuite.config.clockSet == nil and msp.mspQueue:isProcessed() then
 
             rfsuite.utils.log("Sync clock: " .. os.clock())
+            rfsuite.bg.msp.api.execute("SET_RTC").set(function() rfsuite.config.clockSet = true end)
 
-            local message = {
-                command = 246, -- MSP_SET_RTC
-                payload = {},
-                processReply = function(self, buf)
-                    rfsuite.utils.log("RTC set.")
-
-                    if #buf >= 0 then
-                        rfsuite.config.clockSet = true
-                        -- we do the beep later to avoid a double beep
-                    end
-
-                end,
-                simulatorResponse = {}
-            }
-
-            -- generate message to send
-            local now = os.time()
-            -- format: seconds after the epoch / milliseconds
-            for i = 1, 4 do
-                rfsuite.bg.msp.mspHelper.writeU8(message.payload, now & 0xFF)
-                now = now >> 8
-            end
-            rfsuite.bg.msp.mspHelper.writeU16(message.payload, 0)
-
-            -- add msg to queue
-            rfsuite.bg.msp.mspQueue:add(message)
         elseif rfsuite.config.clockSet == true and rfsuite.config.clockSetAlart ~= true then
             -- this is unsual but needed because the clock sync does not return anything usefull
             -- to confirm its done! 
             rfsuite.utils.playFileCommon("beep.wav")
             rfsuite.config.clockSetAlart = true
         elseif (rfsuite.config.tailMode == nil or rfsuite.config.swashMode == nil) and msp.mspQueue:isProcessed() then
-            local message = {
-                command = 42, -- MIXER
-                processReply = function(self, buf)
-                    if #buf >= 19 then
+           
+            rfsuite.bg.msp.api.execute("MSP_MIXER_CONFIG").get()    -- do the msp call
 
-                        local tailMode = buf[2]
-                        local swashMode = buf[6]
-                        rfsuite.config.swashMode = swashMode
-                        rfsuite.config.tailMode = tailMode
-                        rfsuite.utils.log("Tail mode: " .. rfsuite.config.tailMode)
-                        rfsuite.utils.log("Swash mode: " .. rfsuite.config.swashMode)
-                    end
-                end,
-                simulatorResponse = {0, 1, 0, 0, 0, 2, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-            }
-            msp.mspQueue:add(message)
+            if rfsuite.bg.msp.api.execute("MSP_MIXER_CONFIG").isReady() then
+                rfsuite.config.tailMode = rfsuite.bg.msp.api.execute("MSP_MIXER_CONFIG").getTailMode()
+                rfsuite.config.swashMode = rfsuite.bg.msp.api.execute("MSP_MIXER_CONFIG").getSwashMode()
+                rfsuite.utils.log("Tail mode: " .. rfsuite.config.tailMode)
+                rfsuite.utils.log("Swash mode: " .. rfsuite.config.swashMode)
+            end
 
         elseif (rfsuite.config.servoCount == nil) and msp.mspQueue:isProcessed() then
             local message = {
