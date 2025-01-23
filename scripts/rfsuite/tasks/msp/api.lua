@@ -55,7 +55,7 @@ local function loadAPI(apiName)
 end
 
 -- Function to execute a given API, lazy-loading it when first called
-function apiLoader.execute(apiName)
+function apiLoader.use(apiName)
     local function apiWrapper()
         return loadAPI(apiName)
     end

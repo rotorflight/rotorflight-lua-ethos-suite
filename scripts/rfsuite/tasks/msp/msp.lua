@@ -66,7 +66,7 @@ function msp.onConnectBgChecks()
 
         if rfsuite.config.apiVersion == nil and msp.mspQueue:isProcessed() then
 
-            local versionAPI = rfsuite.bg.msp.api.execute("MSP_API_VERSION")
+            local versionAPI = rfsuite.bg.msp.api.use("MSP_API_VERSION")
             versionAPI().get()  -- Do the msp call     
             if versionAPI().isReady() then
                 rfsuite.config.apiVersion = versionAPI().getVersion()
@@ -76,7 +76,7 @@ function msp.onConnectBgChecks()
         elseif rfsuite.config.clockSet == nil and msp.mspQueue:isProcessed() then
 
             
-            local clocksyncAPI = rfsuite.bg.msp.api.execute("MSP_SET_RTC")
+            local clocksyncAPI = rfsuite.bg.msp.api.use("MSP_SET_RTC")
             clocksyncAPI().set()  -- Do the msp call
             if clocksyncAPI().isSet() then
                 rfsuite.config.clockSet = true
@@ -91,7 +91,7 @@ function msp.onConnectBgChecks()
             rfsuite.config.clockSetAlart = true
         elseif (rfsuite.config.tailMode == nil or rfsuite.config.swashMode == nil) and msp.mspQueue:isProcessed() then
            
-            local mixerAPI = rfsuite.bg.msp.api.execute("MSP_MIXER_CONFIG")
+            local mixerAPI = rfsuite.bg.msp.api.use("MSP_MIXER_CONFIG")
             mixerAPI().get()  -- Do the msp call     
             if mixerAPI().isReady() then
                 rfsuite.config.tailMode = mixerAPI().getTailMode()     
