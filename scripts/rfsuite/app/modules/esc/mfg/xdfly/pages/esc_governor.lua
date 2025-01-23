@@ -12,7 +12,7 @@ local activateWakeup = false
 local foundEsc = false
 local foundEscDone = false
 
-local govMode = {"External Governor", "ESC Governor" , "Fixed Windg"}
+local govMode = {"External Governor", "ESC Governor" , "Fixed Wing"}
 
 
 fields[#fields + 1] = {t = "Governor",  vals = {mspHeaderBytes + 4, mspHeaderBytes + 3}, tableIdxInc = -1, table = govMode}
