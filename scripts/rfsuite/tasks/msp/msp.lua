@@ -101,19 +101,13 @@ function msp.onConnectBgChecks()
             end    
 
         elseif (rfsuite.config.servoCount == nil) and msp.mspQueue:isProcessed() then
-            local message = {
-                command = 120, -- MSP_SERVO_CONFIGURATIONS
-                processReply = function(self, buf)
-                    if #buf >= 20 then
-                        local servoCount = msp.mspHelper.readU8(buf)
 
-                        -- update master one in case changed
-                        rfsuite.config.servoCount = servoCount
-                    end
-                end,
-                simulatorResponse = {4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0, 120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0}
-            }
-            msp.mspQueue:add(message)
+            local servoAPI = rfsuite.bg.msp.api.use("MSP_SERVO_CONFIGURATIONS")
+            servoAPI().get()  -- Do the msp call     
+            if servoAPI().isReady() then
+                rfsuite.config.servoCount =  servoAPI().getServoCount()
+                rfsuite.utils.log("Servo count: " .. rfsuite.config.servoCount)
+            end    
 
         elseif (rfsuite.config.servoOverride == nil) and msp.mspQueue:isProcessed() then
             local message = {
@@ -137,47 +131,38 @@ function msp.onConnectBgChecks()
             msp.mspQueue:add(message)
 
         elseif (rfsuite.config.governorMode == nil) and msp.mspQueue:isProcessed() then
-            local message = {
-                command = 142, -- MSP_SERVO_OVERIDE
-                processReply = function(self, buf)
-                    if #buf >= 2 then -- 24.  but we only need first
-                        local governorMode = msp.mspHelper.readU8(buf)
-                        -- update master one in case changed
-                        if governorMode ~= nil then
-                            rfsuite.utils.log("Governor mode: " .. governorMode)
-                            rfsuite.config.governorMode = governorMode
-                        end
-                    end
-                end,
-                simulatorResponse = {3, 100, 0, 100, 0, 20, 0, 20, 0, 30, 0, 10, 0, 0, 0, 0, 0, 50, 0, 10, 5, 10, 0, 10}
-            }
-            msp.mspQueue:add(message)
+
+            local govAPI = rfsuite.bg.msp.api.use("MSP_GOVERNOR_CONFIG")
+            govAPI().get()  -- Do the msp call     
+
+            if govAPI().isReady() then
+                local governorMode = govAPI().getMode()
+                if governorMode ~= nil then
+                    rfsuite.utils.log("Governor mode: " .. governorMode)
+                    rfsuite.config.governorMode = governorMode
+                end
+            end
 
         elseif (rfsuite.config.craftName == nil) and msp.mspQueue:isProcessed() then
 
-            local message = {
-                command = 10, -- MSP_NAME
-                processReply = function(self, buf)
-                    local v = 0
-                    local craftName = ""
-                    for idx = 1, #buf do craftName = craftName .. string.char(buf[idx]) end
+            local nameAPI = rfsuite.bg.msp.api.use("MSP_NAME")
+            nameAPI().get()  -- Do the msp call     
 
-                    rfsuite.config.craftName = craftName
+            if nameAPI().isReady() then
+                rfsuite.config.craftName =  nameAPI().getName()
 
-                    -- set the model name to the craft name
-                    if rfsuite.config.syncCraftName == true and model.name and rfsuite.config.craftName ~= nil then
-                        model.name(rfsuite.config.craftName)
-                        lcd.invalidate()
-                    end
+                -- set the model name to the craft name
+                if rfsuite.config.syncCraftName == true and model.name and rfsuite.config.craftName ~= nil then
+                    model.name(rfsuite.config.craftName)
+                    lcd.invalidate()
+                end
 
-                    rfsuite.utils.log("Craft name: " .. craftName)
-                end,
-                simulatorResponse = {80, 105, 108, 111, 116}
-            }
-            msp.mspQueue:add(message)
+                rfsuite.utils.log("Craft name: " .. rfsuite.config.craftName)
 
-            -- do this at end of last one
-            msp.onConnectChecksInit = false
+             -- do this at end of last one
+             msp.onConnectChecksInit = false               
+            end    
+
         end
     end
 
