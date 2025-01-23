@@ -14,21 +14,22 @@ local motorDirection = {"CW", "CCW"}
 local startupPower = {"Low", "Medium", "High"}
 local fanControl = {"On", "Off"}
 
-fields[#fields + 1] = {t = "LV BEC voltage",min = 60, max = 84, default = 74, step = 2 , scale = 10, decimals = 1, vals = {mspHeaderBytes + 10, mspHeaderBytes + 9}, unit = "V"}
-fields[#fields + 1] = {t = "HV BEC voltage",min = 60, max = 120, default = 84, step = 2 , scale = 10, decimals = 1, vals = {mspHeaderBytes + 22, mspHeaderBytes + 21}, tableIdxInc = -1, table = becVoltage, unit = "V"}
-fields[#fields + 1] = {t = "Motor direction", vals = {mspHeaderBytes + 12, mspHeaderBytes + 11}, tableIdxInc = -1, table = motorDirection}
-fields[#fields + 1] = {t = "Motor Poles", min = 1, max = 550, default = 1, step = 1 ,  vals = {mspHeaderBytes + 34, mspHeaderBytes + 33}}
-fields[#fields + 1] = {t = "Startup Power",  vals = {mspHeaderBytes + 24, mspHeaderBytes + 23}, tableIdxInc = -1, table = startupPower}
-fields[#fields + 1] = {t = "Smart Fan",  vals = {mspHeaderBytes + 36, mspHeaderBytes + 35}, tableIdxInc = -1, table = fanControl}
+fields[#fields + 1] = {t = "LV BEC voltage", activeFieldPos = 4, min = 60, max = 84, default = 74, step = 2 , scale = 10, decimals = 1, vals = {mspHeaderBytes + 10, mspHeaderBytes + 9}, unit = "V",}
+fields[#fields + 1] = {t = "HV BEC voltage",  activeFieldPos = 10, min = 60, max = 120, default = 84, step = 2 , scale = 10, decimals = 1, vals = {mspHeaderBytes + 22, mspHeaderBytes + 21}, tableIdxInc = -1, table = becVoltage, unit = "V"}
+fields[#fields + 1] = {t = "Motor direction",  activeFieldPos = 5, vals = {mspHeaderBytes + 12, mspHeaderBytes + 11}, tableIdxInc = -1, table = motorDirection}
+fields[#fields + 1] = {t = "Motor Poles",  activeFieldPos = 16, min = 1, max = 550, default = 1, step = 1 ,  vals = {mspHeaderBytes + 34, mspHeaderBytes + 33}}
+fields[#fields + 1] = {t = "Startup Power",   activeFieldPos = 11, vals = {mspHeaderBytes + 24, mspHeaderBytes + 23}, tableIdxInc = -1, table = startupPower}
+fields[#fields + 1] = {t = "Smart Fan",   activeFieldPos = 17, vals = {mspHeaderBytes + 36, mspHeaderBytes + 35}, tableIdxInc = -1, table = fanControl}
 
+rfsuite.utils.print_r(activeFields)
 
 -- This code will disable the field if the ESC does not support it
--- It now uses the activeFields table instead of rfsuite.escBuffer
+-- It now uses the activeFieldsPos element to associate to the activeFields table
 for i = #fields, 1, -1 do 
     local f = fields[i]
-    local fieldIndex = f.vals[2]  -- Extract the index from the field
+    local fieldIndex = f.activeFieldPos  -- Use activeFieldPos for association
     if activeFields[fieldIndex] == 0 then
-        -- print("v:" .. f.t .. " disabled")
+         print("v:" .. f.t .. " disabled")
         table.remove(fields, i)  -- Remove the field from the table
     end
 end

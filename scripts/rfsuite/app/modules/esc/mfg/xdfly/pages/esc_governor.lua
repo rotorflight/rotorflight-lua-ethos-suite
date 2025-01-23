@@ -16,16 +16,16 @@ local govMode = {"External Governor", "ESC Governor" , "Fixed Windg"}
 
 
 fields[#fields + 1] = {t = "Governor",  vals = {mspHeaderBytes + 4, mspHeaderBytes + 3}, tableIdxInc = -1, table = govMode}
-fields[#fields + 1] = {t = "Gov-P",  vals = {mspHeaderBytes + 14, mspHeaderBytes + 13}, min = 1, max = 10, default = 4}
-fields[#fields + 1] = {t = "Gov-I",  vals = {mspHeaderBytes + 16, mspHeaderBytes + 15}, min = 1, max = 10, default = 3}
+fields[#fields + 1] = {t = "Gov-P", activeFieldPos = 6,  vals = {mspHeaderBytes + 14, mspHeaderBytes + 13}, min = 1, max = 10, default = 4}
+fields[#fields + 1] = {t = "Gov-I", activeFieldPos = 7,  vals = {mspHeaderBytes + 16, mspHeaderBytes + 15}, min = 1, max = 10, default = 3}
 
 -- This code will disable the field if the ESC does not support it
--- It now uses the activeFields table instead of rfsuite.escBuffer
+-- It now uses the activeFieldsPos element to associate to the activeFields table
 for i = #fields, 1, -1 do 
     local f = fields[i]
-    local fieldIndex = f.vals[2]  -- Extract the index from the field
+    local fieldIndex = f.activeFieldPos  -- Use activeFieldPos for association
     if activeFields[fieldIndex] == 0 then
-        -- print("v:" .. f.t .. " disabled")
+         print("v:" .. f.t .. " disabled")
         table.remove(fields, i)  -- Remove the field from the table
     end
 end

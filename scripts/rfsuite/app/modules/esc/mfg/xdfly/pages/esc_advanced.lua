@@ -18,23 +18,23 @@ local autoRestart = {"OFF", "90s"}
 local srFunc = {"ON", "OFF"}
 
 
-fields[#fields + 1] = {t = "Low voltage protection", vals = {mspHeaderBytes + 6, mspHeaderBytes + 5}, tableIdxInc = -1, table = lowVoltage}
-fields[#fields + 1] = {t = "Timing", vals = {mspHeaderBytes + 8, mspHeaderBytes + 7}, tableIdxInc = -1, table = timing}
-fields[#fields + 1] = {t = "Startup Power", vals = {mspHeaderBytes + 24, mspHeaderBytes + 23}, tableIdxInc = -1, table = startupPower}
-fields[#fields + 1] = {t = "Acceleration",  vals = {mspHeaderBytes + 18, mspHeaderBytes + 17}, tableIdxInc = -1, table = accel}
-fields[#fields + 1] = {t = "Brake Type", vals = {mspHeaderBytes + 26, mspHeaderBytes + 25}, tableIdxInc = -1, table = brakeType}
-fields[#fields + 1] = {t = "Brake Force", min = 0, max = 100, default = 0, vals = {mspHeaderBytes + 28, mspHeaderBytes + 27}, unit = "%"}
-fields[#fields + 1] = {t = "SR Function", vals = {mspHeaderBytes + 30, mspHeaderBytes + 29}, tableIdxInc = -1, table = srFunc}
-fields[#fields + 1] = {t = "Capacity Correction", min = 0, max = 20, default = 10, offset = -10 , vals = {mspHeaderBytes + 32, mspHeaderBytes + 31}, unit = "%"}
-fields[#fields + 1] = {t = "Auto Restart", tableIdxInc = -1, table = autoRestart ,vals = {mspHeaderBytes + 20, mspHeaderBytes + 19}}
+--fields[#fields + 1] = {t = "Low voltage protection", vals = {mspHeaderBytes + 6, mspHeaderBytes + 5}, tableIdxInc = -1, table = lowVoltage}
+fields[#fields + 1] = {t = "Timing", activeFieldPos = 3, vals = {mspHeaderBytes + 8, mspHeaderBytes + 7}, tableIdxInc = -1, table = timing}
+fields[#fields + 1] = {t = "Startup Power", activeFieldPos = 11, vals = {mspHeaderBytes + 24, mspHeaderBytes + 23}, tableIdxInc = -1, table = startupPower}
+fields[#fields + 1] = {t = "Acceleration", activeFieldPos = 8, vals = {mspHeaderBytes + 18, mspHeaderBytes + 17}, tableIdxInc = -1, table = accel}
+fields[#fields + 1] = {t = "Brake Type", activeFieldPos = 12, vals = {mspHeaderBytes + 26, mspHeaderBytes + 25}, tableIdxInc = -1, table = brakeType}
+fields[#fields + 1] = {t = "Brake Force", activeFieldPos = 13, min = 0, max = 100, default = 0, vals = {mspHeaderBytes + 28, mspHeaderBytes + 27}, unit = "%"}
+fields[#fields + 1] = {t = "SR Function", activeFieldPos = 14, vals = {mspHeaderBytes + 30, mspHeaderBytes + 29}, tableIdxInc = -1, table = srFunc}
+fields[#fields + 1] = {t = "Capacity Correction", activeFieldPos = 15, min = 0, max = 20, default = 10, offset = -10 , vals = {mspHeaderBytes + 32, mspHeaderBytes + 31}, unit = "%"}
+fields[#fields + 1] = {t = "Auto Restart Time", activeFieldPos = 9, tableIdxInc = -1, table = autoRestart ,vals = {mspHeaderBytes + 20, mspHeaderBytes + 19}}
 
 -- This code will disable the field if the ESC does not support it
--- It now uses the activeFields table instead of rfsuite.escBuffer
+-- It now uses the activeFieldsPos element to associate to the activeFields table
 for i = #fields, 1, -1 do 
     local f = fields[i]
-    local fieldIndex = f.vals[2]  -- Extract the index from the field
+    local fieldIndex = f.activeFieldPos  -- Use activeFieldPos for association
     if activeFields[fieldIndex] == 0 then
-        -- print("v:" .. f.t .. " disabled")
+         print("v:" .. f.t .. " disabled")
         table.remove(fields, i)  -- Remove the field from the table
     end
 end
