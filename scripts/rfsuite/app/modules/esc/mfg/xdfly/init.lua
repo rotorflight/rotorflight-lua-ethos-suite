@@ -21,7 +21,7 @@ end
 -- required by framework
 local function getEscModel(self)
 
-    local escModelID = getUInt(self, {1})
+    local escModelID = getPageValue(self, 2)
     local escModels = {"RESERVED", "35A", "65A", "85A", "125A", "155A", "130A", "195A", "300A"}
 
     if escModelID == nil then
@@ -47,16 +47,78 @@ local function getEscFirmware(self)
 
 end
 
+local function simulatorResponse()
+    return {166, 64, 18, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 238, 255, 1, 0}
+end
+
+local function mspBytes()
+    return #simulatorResponse()
+end
+
+-- Function to convert two bytes to a 16-bit number (little-endian)
+local function to16bit(low, high)
+    return low + (high * 256)
+end
+
+-- Function to convert a number to a table of binary bits
+local function to_binary_table(value, bits)
+    local binary_table = {}
+    for i = bits - 1, 0, -1 do
+        table.insert(binary_table, (value >> i) & 1)
+    end
+    return binary_table
+end
+
+-- Main function to process byte stream and extract values as a bit table
+local function extract_16bit_values_as_table(byte_stream)
+    if #byte_stream % 2 ~= 0 then
+        error("Byte stream length must be even (multiple of 2)")
+    end
+
+    local combined_binary_table = {}
+    for i = 1, #byte_stream, 2 do
+        local value = to16bit(byte_stream[i], byte_stream[i + 1])
+        local binary_table = to_binary_table(value, 16)
+        for _, bit in ipairs(binary_table) do
+            table.insert(combined_binary_table, bit)
+        end
+    end
+
+    return combined_binary_table
+end
+
+function getActiveFields(inputTable)
+    
+    if inputTable == nil then
+        return {}
+    end
+
+    local length = #inputTable
+    local lastFour = {}
+
+    -- Ensure we handle cases where the table has fewer than 4 elements
+    local startIndex = math.max(1, length - 3)
+
+    for i = startIndex, length do
+        table.insert(lastFour, inputTable[i])
+    end
+
+    return extract_16bit_values_as_table(lastFour)
+
+end
+
+
 return {
         toolName = toolName, 
         image="xdfly.png", 
         powerCycle = false,
-        mspBufferCache = true,  
+        mspBufferCache = true, 
         mspSignature = 0xA6, 
         mspHeaderBytes = mspHeaderBytes, 
-        mspBytes = 38,  -- was 46.  set to 38 as this is checked in init for powercyle etc., if it does not match you will not get past the power cycle check
-        simulatorResponse = {166, 0, 6, 18, 0, 1, 0, 1, 0, 2, 240, 84, 0, 1, 0, 5, 0, 4, 0, 2, 0, 1, 0, 92, 0, 1, 0, 0, 0, 50, 0, 1, 0, 11, 0, 18, 0, 0},
+        mspBytes = mspBytes(),
+        simulatorResponse =  simulatorResponse(),  
         getEscModel = getEscModel, 
         getEscVersion = getEscVersion, 
-        getEscFirmware = getEscFirmware
+        getEscFirmware = getEscFirmware,
+        getActiveFields = getActiveFields
     }

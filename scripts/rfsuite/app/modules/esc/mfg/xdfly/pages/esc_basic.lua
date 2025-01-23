@@ -5,6 +5,8 @@ local folder = "xdfly"
 local ESC = assert(loadfile("app/modules/esc/mfg/" .. folder .. "/init.lua"))()
 local mspHeaderBytes = ESC.mspHeaderBytes
 local mspSignature = ESC.mspSignature
+local simulatorResponse = ESC.simulatorResponse
+local activeFields = ESC.getActiveFields(rfsuite.escBuffer)
 local activateWakeup = false
 
 local flightMode = {"Helicopter", "Fixed Wing"}
@@ -19,13 +21,14 @@ fields[#fields + 1] = {t = "Motor Poles", min = 1, max = 550, default = 1, step 
 fields[#fields + 1] = {t = "Startup Power",  vals = {mspHeaderBytes + 24, mspHeaderBytes + 23}, tableIdxInc = -1, table = startupPower}
 fields[#fields + 1] = {t = "Smart Fan",  vals = {mspHeaderBytes + 36, mspHeaderBytes + 35}, tableIdxInc = -1, table = fanControl}
 
--- this code will disable the field if the ESC does not support it
--- it uses the rfsuite.escBuffer variable that is set on first init
+
+-- This code will disable the field if the ESC does not support it
+-- It now uses the activeFields table instead of rfsuite.escBuffer
 for i = #fields, 1, -1 do 
     local f = fields[i]
-    if (rfsuite.escBuffer[f.vals[2]] & 0xF0) ~= 0 then
-        --print("v:" .. f.t .. " " .. rfsuite.escBuffer[f.vals[2]] .. " " .. rfsuite.escBuffer[f.vals[1]])
-        --print("element disabled")
+    local fieldIndex = f.vals[2]  -- Extract the index from the field
+    if activeFields[fieldIndex] == 0 then
+        -- print("v:" .. f.t .. " disabled")
         table.remove(fields, i)  -- Remove the field from the table
     end
 end
@@ -72,7 +75,7 @@ return {
     labels = labels,
     fields = fields,
     escinfo = escinfo,
-    simulatorResponse = {166, 0, 6, 18, 0, 1, 0, 1, 0, 2, 240, 84, 0, 1, 0, 5, 0, 4, 0, 2, 0, 1, 0, 92, 0, 1, 0, 0, 0, 50, 0, 1, 0, 11, 0, 18, 0, 0},
+    simulatorResponse =  simulatorResponse,
     svFlags = 0,
     postLoad = postLoad,
     navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
