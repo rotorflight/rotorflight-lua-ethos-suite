@@ -462,6 +462,13 @@ function ui.fieldNumber(i)
         if f.offset ~= nil then f.default = f.default + f.offset end
         local default = f.default * rfsuite.utils.decimalInc(f.decimals)
         if f.mult ~= nil then default = default * f.mult end
+
+        -- if for some reason we have a .0 we need to work around an ethos pecularity on default boxes!
+        local str = tostring(default)
+        if str:match("%.0$") then
+            default = math.ceil(default)
+        end
+  
         rfsuite.app.formFields[i]:default(default)
     else
         rfsuite.app.formFields[i]:default(0)

@@ -41,24 +41,39 @@ end
 
 local function getLogs(logDir)
     local files = system.listFiles(logDir)
+    local csvFiles = {}
 
-    local reversed = {}
-    for i = #files, 1, -1 do
-        if files[i] ~= ".." and files[i]:sub(-4) == ".csv" then -- Check for .csv files and skip ".."
-            table.insert(reversed, files[i])
+    -- Extract CSV files and parse date-time from filenames
+    for i = 1, #files do
+        if files[i] ~= ".." and files[i]:sub(-4) == ".csv" then
+            local datePart, timePart = files[i]:match("_(%d%d%d%d%-%d%d%-%d%d)_(%d%d%-%d%d%-%d%d)_")
+            if datePart and timePart then
+                local sortableDateTime = datePart .. "T" .. timePart -- Concatenating for sorting
+                table.insert(csvFiles, { filename = files[i], datetime = sortableDateTime })
+            end
         end
     end
+
+    -- Sort files by extracted date-time string
+    table.sort(csvFiles, function(a, b)
+        return a.datetime > b.datetime -- Sort in descending order (latest first)
+    end)
 
     -- Limit to a maximum of 50 entries
     local maxEntries = 50
     local result = {}
-    for i = 1, math.min(#reversed, maxEntries) do table.insert(result, reversed[i]) end
+    for i = 1, math.min(#csvFiles, maxEntries) do
+        table.insert(result, csvFiles[i].filename)
+    end
 
-    -- Call deleteData for the remaining files outside the truncated list
-    for i = maxEntries + 1, #reversed do os.remove(logDir .. "/" .. reversed[i]) end
+    -- Delete the remaining files outside the truncated list
+    for i = maxEntries + 1, #csvFiles do
+        os.remove(logDir .. "/" .. csvFiles[i].filename)
+    end
 
     return result
 end
+
 
 local function extractShortTimestamp(filename)
     -- Match the date and time components in the filename, ignoring the prefix
@@ -73,6 +88,7 @@ end
 function extractName(input)
     -- Match everything before the first underscore followed by a date pattern
     local name = input:match("^(.-)_%d%d%d%d%-%d%d%-%d%d")
+    name = string.gsub(name, "_", " ")
     return name
 end
 
@@ -107,9 +123,10 @@ local function openPage(pidx, title, script, displaymode)
     local numPerRow
 
     padding = rfsuite.app.radio.buttonPaddingSmall
-    buttonW = (rfsuite.config.lcdWidth - padding) / (rfsuite.app.radio.logGraphButtonsPerRow - 1) - padding
+    --buttonW = (rfsuite.config.lcdWidth - padding) / (rfsuite.app.radio.logGraphButtonsPerRow - 1) - padding
+    buttonW = (rfsuite.config.lcdWidth - padding) / (2) - padding/2
     buttonH = rfsuite.app.radio.navbuttonHeight
-    numPerRow = rfsuite.app.radio.buttonsPerRow - 1
+    numPerRow = 2 -- = rfsuite.app.radio.buttonsPerRow - 1
 
     local x = windowWidth - buttonW + 10
 
@@ -150,7 +167,7 @@ local function openPage(pidx, title, script, displaymode)
             if lc >= 0 then bx = (buttonW + padding) * lc end
 
             rfsuite.app.formFields[pidx] = form.addButton(nil, {x = bx, y = y, w = buttonW, h = buttonH}, {
-                text = extractShortTimestamp(name),
+                text = extractName(name) .. " " .. extractShortTimestamp(name),
                 options = FONT_S,
                 paint = function()
                 end,

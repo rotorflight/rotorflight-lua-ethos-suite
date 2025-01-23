@@ -58,15 +58,6 @@ config.syncCraftName = false                                         -- sync the
 config.bgTaskName = config.toolName .. " [Background]"              -- background task name for msp services etc
 config.bgTaskKey = "rf2bg"                                          -- key id used for msp services
 
--- widgets
-config.rf2govName = "Rotorflight Governor"                          -- RF2Gov Name
-config.rf2govKey = "rf2gov"                                         -- RF2Gov Key
-config.rf2statusName = "Rotorflight Status"                         -- RF2Status name
-config.rf2statusKey = "bkshss"                                      -- RF2Status key
-config.rf2craftnameName = "Rotorflight Craft Name"                  -- rf2craftname Name
-config.rf2craftnameKey = "bkzhfs"                                   -- rf2craftname key
-config.rf2craftimageName = "Rotorflight Craft Image"                 -- rf2imagename Name
-config.rf2craftimageKey = "cgzhfs"                                   -- rf2imagename key
 
 -- LuaFormatter on
 
@@ -80,22 +71,43 @@ rfsuite.utils = assert(loadfile("lib/utils.lua"))(config)
 rfsuite.tasks = {}
 rfsuite.bg = assert(loadfile("tasks/bg.lua"))(config)
 
--- widgets
-rfsuite.rf2gov = assert(loadfile("widgets/governor/governor.lua"))(config)
-rfsuite.rf2status = assert(loadfile("widgets/status/status.lua"))(config)
-rfsuite.rf2craftname = assert(loadfile("widgets/craftname/craftname.lua"))(config)
-rfsuite.rf2craftimage = assert(loadfile("widgets/craftimage/craftimage.lua"))(config)
 
 -- LuaFormatter off
 
 local function init()
-        system.registerSystemTool({event = rfsuite.app.event, name = config.toolName, icon = config.icon, create = rfsuite.app.create, wakeup = rfsuite.app.wakeup, paint = rfsuite.app.paint, close = rfsuite.app.close})
-        system.registerSystemTool({event = rfsuite.app.event, name = config.toolName, icon = config.icon_logtool, create = rfsuite.app.create_logtool, wakeup = rfsuite.app.wakeup, paint = rfsuite.app.paint, close = rfsuite.app.close})
-        system.registerTask({name = config.bgTaskName, key = config.bgTaskKey, wakeup = rfsuite.bg.wakeup, event = rfsuite.bg.event})
-        system.registerWidget({name = config.rf2govName,key = config.rf2govKey, create = rfsuite.rf2gov.create, paint = rfsuite.rf2gov.paint, wakeup = rfsuite.rf2gov.wakeup, persistent = false})        
-        system.registerWidget({name = config.rf2statusName,key = config.rf2statusKey, event = rfsuite.rf2status.event, write = rfsuite.rf2status.write, read = rfsuite.rf2status.read, configure = rfsuite.rf2status.configure, create = rfsuite.rf2status.create, paint = rfsuite.rf2status.paint, wakeup = rfsuite.rf2status.wakeup, persistent = false})        
-		system.registerWidget({name = config.rf2craftnameName,key = config.rf2craftnameKey, event = rfsuite.rf2craftname.event, create = rfsuite.rf2craftname.create, paint = rfsuite.rf2craftname.paint, wakeup = rfsuite.rf2craftname.wakeup, write = rfsuite.rf2craftname.write, read = rfsuite.rf2craftname.read, configure = rfsuite.rf2craftname.configure, persistent = false})        
-        system.registerWidget({name = config.rf2craftimageName,key = config.rf2craftimageKey, event = rfsuite.rf2craftimage.event, create = rfsuite.rf2craftimage.create, paint = rfsuite.rf2craftimage.paint, wakeup = rfsuite.rf2craftimage.wakeup, write = rfsuite.rf2craftimage.write, read = rfsuite.rf2craftimage.read, configure = rfsuite.rf2craftimage.configure, persistent = false})        	
+
+    -- function that most always been there and are not handled dynamically on init
+    system.registerSystemTool({event = rfsuite.app.event, name = config.toolName, icon = config.icon, create = rfsuite.app.create, wakeup = rfsuite.app.wakeup, paint = rfsuite.app.paint, close = rfsuite.app.close})
+    system.registerSystemTool({event = rfsuite.app.event, name = config.toolName, icon = config.icon_logtool, create = rfsuite.app.create_logtool, wakeup = rfsuite.app.wakeup, paint = rfsuite.app.paint, close = rfsuite.app.close})
+    system.registerTask({name = config.bgTaskName, key = config.bgTaskKey, wakeup = rfsuite.bg.wakeup, event = rfsuite.bg.event})
+
+
+    -- widgets are loaded dynamically
+    local widgetList = rfsuite.utils.findWidgets()
+
+    for i, v in ipairs(widgetList) do
+        if v.script then
+            -- Dynamically assign the loaded script to a variable inside rfsuite table
+            local scriptModule = assert(loadfile("widgets/" .. v.folder .. "/" .. v.script))(config)
+
+            -- Use the script name as a key to store in rfsuite dynamically
+            -- Assuming v.name is a valid Lua identifier-like string (without spaces or special characters)
+            local varname = v.varname or v.script:gsub(".lua", "")
+            rfsuite[varname] = scriptModule
+
+            -- Now register the widget with dynamically assigned variable
+            system.registerWidget({
+                name = v.name,
+                key = v.key,
+                event = scriptModule.event,      -- Reference dynamically assigned module
+                create = scriptModule.create,
+                paint = scriptModule.paint,
+                wakeup = scriptModule.wakeup,
+                close = scriptModule.close,
+                persistent = false
+            })
+        end
+    end
 end
 
 -- LuaFormatter on

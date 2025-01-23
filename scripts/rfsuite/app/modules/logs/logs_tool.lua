@@ -342,6 +342,17 @@ local function drawGraph(points, color, pen, x_start, y_start, width, height, mi
     end
 end
 
+local function drawTime(armTime)
+    if armTime == nil then return end
+
+    local tw, th = lcd.getTextSize(armTime)
+    lcd.color(COLOR_WHITE)
+
+    local y = graphPos['height'] + graphPos['menu_offset'] - th
+    local x = graphPos['width'] - tw - 10
+    lcd.drawText(x, y, armTime, LEFT)
+end
+
 local function drawKey(name, keyindex, keyunit, keyminmax, keyfloor, color, minimum, maximum)
 
     local w = LCD_W - graphPos['width'] - 10
@@ -605,10 +616,12 @@ local function paint()
     local width = graphPos['width'] - 10
     local height = graphPos['height']
 
+    drawTime(armTime)
+
     if enableWakeup == true and processedLogData == true then
 
         if logData ~= nil then
-            local optimal_records_per_page, optimal_steps = calculate_optimal_records_per_page(logLineCount, 40, 120)
+            local optimal_records_per_page, optimal_steps = calculate_optimal_records_per_page(logLineCount, 40, 80)
 
             local step_size = optimal_records_per_page
 
