@@ -1,3 +1,4 @@
+--
 --[[
 
  * Copyright (C) Rotorflight Project
@@ -41,12 +42,12 @@ local function loadAPI(apiName)
 
         local apiModule = dofile(apiFilePath)  -- Load the Lua API file
         
-        if type(apiModule) == "table" and apiModule.get and apiModule.set and  apiModule.data and apiModule.isReady then
+        if type(apiModule) == "table" and apiModule.get and apiModule.set and  apiModule.data and apiModule.isReady and apiModule.isSet then
             apiCache[apiName] = apiModule  -- Store loaded API in cache
             rfsuite.utils.log("Loaded API:", apiName)
             return apiModule
         else
-            rfsuite.utils.log("Error: API file '" .. apiName .. "' does not contain valid 'get' and 'set' functions.")
+            rfsuite.utils.log("Error: API file '" .. apiName .. "' does not contain valid 'get','set','data',isReady and isSet functions.")
         end
     else
         rfsuite.utils.log("Error: API file '" .. apiName .. ".lua' not found.")
@@ -55,49 +56,10 @@ end
 
 -- Function to execute a given API, lazy-loading it when first called
 function apiLoader.execute(apiName)
-    return loadAPI(apiName)
+    local function apiWrapper()
+        return loadAPI(apiName)
+    end
+    return apiWrapper
 end
-
--- Example usage
--- rfsuite.bg.msp.api.execute("myApi").get()        -- get function
--- rfsuite.bg.msp.api.execute("myApi").set()        -- set function
--- rfsuite.bg.msp.api.execute("myApi").isReady()    -- check if data is ready
--- rfsuite.bg.msp.api.execute("myApi").data(data)   -- return entire buffer
-
---
--- Note: The API name is the filename without the .lua extension
---      The variables callback and callbackParam are optional.
---      The callback function is called when the MSP response is received.
---      The data function is used to pass data to the API module.
---
--- Note: The API module must return a table with 'get', 'set' and 'data' functions. 
---
--- Note: The API module must have the following structure:
---      return { 
---          get = get,
---          set = set,
---          data = data,
---          isReady = isReady
---      }       
---
--- Note:  It is possible for individual API modules to have additional functions.
---        These functions can be called in the same way as 'get' and 'set'.
---        for example: 
---
---        rfsuite.bg.msp.api.execute("myApi").myFunction()
---         
---        It is up to you to read the api file and understand the functions it provides.
---
--- Example usage:
--- rfsuite.bg.msp.api.execute("MSP_MIXER_CONFIG").get()    -- do the msp call
--- if rfsuite.bg.msp.api.execute("MSP_MIXER_CONFIG").isReady() then
---    rfsuite.config.tailMode = rfsuite.bg.msp.api.execute("MSP_MIXER_CONFIG").getTailMode()
---    rfsuite.config.swashMode = rfsuite.bg.msp.api.execute("MSP_MIXER_CONFIG").getSwashMode()
---    rfsuite.utils.log("Tail mode: " .. rfsuite.config.tailMode)
---    rfsuite.utils.log("Swash mode: " .. rfsuite.config.swashMode)
-    
---    print("Tail mode: " .. rfsuite.config.tailMode)
--- end    
-
 
 return apiLoader

@@ -51,6 +51,11 @@ local function isReady()
 	return false
 end
 
+local function isSet()
+	-- to be implemented
+	return true
+end
+
 local function getVersion()
 	if mspData then
 		local version = mspData[2] + mspData[3] / 100
@@ -63,5 +68,6 @@ return {
 	set = set,
     data = data,
 	isReady = isReady,
+	isSet = isSet,
 	getVersion = getVersion
 }

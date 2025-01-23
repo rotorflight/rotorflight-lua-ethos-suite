@@ -66,16 +66,23 @@ function msp.onConnectBgChecks()
 
         if rfsuite.config.apiVersion == nil and msp.mspQueue:isProcessed() then
 
-            rfsuite.config.apiVersion = rfsuite.bg.msp.api.execute("MSP_API_VERSION").get()
-            if rfsuite.bg.msp.api.execute("MSP_API_VERSION").isReady() then
-                rfsuite.config.apiVersion = rfsuite.bg.msp.api.execute("MSP_API_VERSION").getVersion()
+            local versionAPI = rfsuite.bg.msp.api.execute("MSP_API_VERSION")
+            versionAPI().get()  -- Do the msp call     
+            if versionAPI().isReady() then
+                rfsuite.config.apiVersion = versionAPI().getVersion()
                 rfsuite.utils.log("API version: " .. rfsuite.config.apiVersion)
-            end
+            end   
 
         elseif rfsuite.config.clockSet == nil and msp.mspQueue:isProcessed() then
 
-            rfsuite.utils.log("Sync clock: " .. os.clock())
-            rfsuite.bg.msp.api.execute("SET_RTC").set(function() rfsuite.config.clockSet = true end)
+            
+            local clocksyncAPI = rfsuite.bg.msp.api.execute("MSP_SET_RTC")
+            clocksyncAPI().set()  -- Do the msp call
+            if clocksyncAPI().isSet() then
+                rfsuite.config.clockSet = true
+            end
+
+           rfsuite.utils.log("Sync clock: " .. os.clock())
 
         elseif rfsuite.config.clockSet == true and rfsuite.config.clockSetAlart ~= true then
             -- this is unsual but needed because the clock sync does not return anything usefull
@@ -84,14 +91,14 @@ function msp.onConnectBgChecks()
             rfsuite.config.clockSetAlart = true
         elseif (rfsuite.config.tailMode == nil or rfsuite.config.swashMode == nil) and msp.mspQueue:isProcessed() then
            
-            rfsuite.bg.msp.api.execute("MSP_MIXER_CONFIG").get()    -- do the msp call
-
-            if rfsuite.bg.msp.api.execute("MSP_MIXER_CONFIG").isReady() then
-                rfsuite.config.tailMode = rfsuite.bg.msp.api.execute("MSP_MIXER_CONFIG").getTailMode()
-                rfsuite.config.swashMode = rfsuite.bg.msp.api.execute("MSP_MIXER_CONFIG").getSwashMode()
+            local mixerAPI = rfsuite.bg.msp.api.execute("MSP_MIXER_CONFIG")
+            mixerAPI().get()  -- Do the msp call     
+            if mixerAPI().isReady() then
+                rfsuite.config.tailMode = mixerAPI().getTailMode()     
+                rfsuite.config.swashMode = mixerAPI().getSwashMode()
                 rfsuite.utils.log("Tail mode: " .. rfsuite.config.tailMode)
                 rfsuite.utils.log("Swash mode: " .. rfsuite.config.swashMode)
-            end
+            end    
 
         elseif (rfsuite.config.servoCount == nil) and msp.mspQueue:isProcessed() then
             local message = {

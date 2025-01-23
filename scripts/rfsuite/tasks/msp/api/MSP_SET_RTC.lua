@@ -18,13 +18,15 @@
  * 
 
 ]] --
-local function set(callback, callbackParam)
+
+local mspSent
+
+local function set()
 	local message = {
 		command = 246, -- MSP_SET_RTC
 		payload = {},
 		processReply = function(self, buf)
 			rfsuite.utils.log("RTC set.")
-			if callback then callback(callbackParam) end
 		end,
 		simulatorResponse = {}
 	}
@@ -40,6 +42,8 @@ local function set(callback, callbackParam)
 
 	-- add msg to queue
 	rfsuite.bg.msp.mspQueue:add(message)
+
+	mspSent = true
 end
 
 local function get(callback, callbackParam)
@@ -58,9 +62,18 @@ local function isReady()
 	end
 	return false
 end
+
+local function isSet()
+	if mspSent == true then
+		return true
+	end
+	return false	
+end
+
 return {
 	get = get,
 	set = set,
     data = data,
-	isReady = isReady
+	isReady = isReady,
+	isSet = isSet,
 }

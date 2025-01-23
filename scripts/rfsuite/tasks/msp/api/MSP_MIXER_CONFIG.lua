@@ -52,6 +52,11 @@ local function isReady()
 	return false
 end
 
+local function isSet()
+	-- to be implemented
+	return true
+end
+
 local function getSwashMode()
 	if mspData then
 		return mspData[6]
@@ -70,5 +75,6 @@ return {
 	set = set,
     data = data,
 	getSwashMode = getSwashMode,
-	getTailMode = getTailMode
+	getTailMode = getTailMode,
+	isSet = isSet,
 }
