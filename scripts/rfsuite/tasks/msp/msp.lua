@@ -51,6 +51,7 @@ msp.protocol.mspPoll = transport.mspPoll
 msp.mspQueue = assert(loadfile("tasks/msp/mspQueue.lua"))()
 msp.mspQueue.maxRetries = msp.protocol.maxRetries
 msp.mspHelper = assert(loadfile("tasks/msp/mspHelper.lua"))()
+msp.api = assert(loadfile("tasks/msp/api.lua"))()
 assert(loadfile("tasks/msp/common.lua"))()
 
 -- BACKGROUND checks

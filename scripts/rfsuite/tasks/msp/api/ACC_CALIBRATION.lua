@@ -18,11 +18,10 @@
  * 
 
 ]] --
-local function calibrate(callback, callbackParam)
+local function set(callback, callbackParam)
     local message = {
         command = 205, -- MSP_ACC_CALIBRATION
         processReply = function(self, buf)
-            -- rfsuite.utils.log("Accelerometer calibrated.")
             if callback then callback(callbackParam) end
         end,
         simulatorResponse = {}
@@ -30,4 +29,16 @@ local function calibrate(callback, callbackParam)
     rfsuite.bg.msp.mspQueue:add(message)
 end
 
-return {calibrate = calibrate}
+local function get(callback, callbackParam)
+	return nil
+end
+
+local function data(data)
+	return nil
+end
+
+return {
+	get = get,
+	set = set,
+    data = data,
+}
