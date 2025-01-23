@@ -64,6 +64,7 @@ function msp.onConnectBgChecks()
         -- or a model swapped
         if rfsuite.rssiSensor then msp.sensor:module(rfsuite.rssiSensor:module()) end
 
+        -- get the api version
         if rfsuite.config.apiVersion == nil and msp.mspQueue:isProcessed() then
 
             local versionAPI = rfsuite.bg.msp.api.use("MSP_API_VERSION")
@@ -73,6 +74,7 @@ function msp.onConnectBgChecks()
                 rfsuite.utils.log("API version: " .. rfsuite.config.apiVersion)
             end   
 
+        -- sync the clock
         elseif rfsuite.config.clockSet == nil and msp.mspQueue:isProcessed() then
 
             
@@ -84,11 +86,14 @@ function msp.onConnectBgChecks()
 
            rfsuite.utils.log("Sync clock: " .. os.clock())
 
+        -- beep the clock
         elseif rfsuite.config.clockSet == true and rfsuite.config.clockSetAlart ~= true then
             -- this is unsual but needed because the clock sync does not return anything usefull
             -- to confirm its done! 
             rfsuite.utils.playFileCommon("beep.wav")
             rfsuite.config.clockSetAlart = true
+
+        -- find tail and swash mode
         elseif (rfsuite.config.tailMode == nil or rfsuite.config.swashMode == nil) and msp.mspQueue:isProcessed() then
            
             local mixerAPI = rfsuite.bg.msp.api.use("MSP_MIXER_CONFIG")
@@ -100,6 +105,7 @@ function msp.onConnectBgChecks()
                 rfsuite.utils.log("Swash mode: " .. rfsuite.config.swashMode)
             end    
 
+        -- get servo configuration
         elseif (rfsuite.config.servoCount == nil) and msp.mspQueue:isProcessed() then
 
             local servoAPI = rfsuite.bg.msp.api.use("MSP_SERVO_CONFIGURATIONS")
@@ -109,27 +115,25 @@ function msp.onConnectBgChecks()
                 rfsuite.utils.log("Servo count: " .. rfsuite.config.servoCount)
             end    
 
+        -- work out if fbl has any servos in overide mode
         elseif (rfsuite.config.servoOverride == nil) and msp.mspQueue:isProcessed() then
-            local message = {
-                command = 192, -- MSP_SERVO_OVERIDE
-                processReply = function(self, buf)
-                    if #buf >= 16 then
 
-                        for i = 0, rfsuite.config.servoCount do
-                            buf.offset = i
-                            local servoOverride = msp.mspHelper.readU8(buf)
-                            if servoOverride == 0 then
-                                rfsuite.utils.log("Servo overide: true")
-                                rfsuite.config.servoOverride = true
-                            end
-                        end
-                        if rfsuite.config.servoOverride == nil then rfsuite.config.servoOverride = false end
+            local servoAPI = rfsuite.bg.msp.api.use("MSP_SERVO_OVERIDE")
+            servoAPI().get()  -- Do the msp call     
+            if servoAPI().isReady() then
+                local buf = servoAPI().data()
+                for i = 0, rfsuite.config.servoCount do
+                    buf.offset = i
+                    local servoOverride = msp.mspHelper.readU8(buf)
+                    if servoOverride == 0 then
+                        rfsuite.utils.log("Servo overide: true")
+                        rfsuite.config.servoOverride = true
                     end
-                end,
-                simulatorResponse = {209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7}
-            }
-            msp.mspQueue:add(message)
+                end
+                if rfsuite.config.servoOverride == nil then rfsuite.config.servoOverride = false end
+            end    
 
+        -- find out if we have a governor
         elseif (rfsuite.config.governorMode == nil) and msp.mspQueue:isProcessed() then
 
             local govAPI = rfsuite.bg.msp.api.use("MSP_GOVERNOR_CONFIG")
@@ -143,6 +147,7 @@ function msp.onConnectBgChecks()
                 end
             end
 
+        -- find the craft name on the fbl
         elseif (rfsuite.config.craftName == nil) and msp.mspQueue:isProcessed() then
 
             local nameAPI = rfsuite.bg.msp.api.use("MSP_NAME")
