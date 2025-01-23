@@ -30,9 +30,7 @@ local function get()
 	local message = {
 		command = 10, -- MSP_NAME
 		processReply = function(self, buf)
-			if #buf >= 5 then
 				mspData = buf
-			end
 		end,
 		simulatorResponse = {80, 105, 108, 111, 116}
 	}
@@ -60,6 +58,11 @@ end
 
 local function getName()
 	if mspData then
+
+		if #mspData == 0 then
+			return "NOT SET"
+		end	
+
 		local v = 0
 		local craftName = ""
 		for idx = 1, #mspData do craftName = craftName .. string.char(mspData[idx]) end
