@@ -14,8 +14,7 @@ local foundEscDone = false
 
 local govMode = {"External Governor", "ESC Governor" , "Fixed Wing"}
 
-
-fields[#fields + 1] = {t = "Governor",  vals = {mspHeaderBytes + 4, mspHeaderBytes + 3}, tableIdxInc = -1, table = govMode}
+fields[#fields + 1] = {t = "Governor", activeFieldPos = 1 + 1,  vals = {mspHeaderBytes + 4, mspHeaderBytes + 3}, tableIdxInc = -1, table = govMode}
 fields[#fields + 1] = {t = "Gov-P", activeFieldPos = 6,  vals = {mspHeaderBytes + 14, mspHeaderBytes + 13}, min = 1, max = 10, default = 4}
 fields[#fields + 1] = {t = "Gov-I", activeFieldPos = 7,  vals = {mspHeaderBytes + 16, mspHeaderBytes + 15}, min = 1, max = 10, default = 3}
 

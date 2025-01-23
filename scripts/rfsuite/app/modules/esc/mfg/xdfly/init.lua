@@ -56,15 +56,15 @@ local function mspBytes()
 end
 
 -- Function to convert two bytes to a 16-bit number (little-endian)
-local function to16bit(low, high)
+local function to16bit(high, low)
     return low + (high * 256)
 end
 
--- Function to convert a number to a table of binary bits
+-- Function to convert a number to a table of binary bits (LSB first)
 local function to_binary_table(value, bits)
     local binary_table = {}
-    for i = bits - 1, 0, -1 do
-        table.insert(binary_table, (value >> i) & 1)
+    for i = 0, bits - 1 do
+        table.insert(binary_table, (value >> i) & 1)  -- Store bits from LSB to MSB
     end
     return binary_table
 end
@@ -77,7 +77,7 @@ local function extract_16bit_values_as_table(byte_stream)
 
     local combined_binary_table = {}
     for i = 1, #byte_stream, 2 do
-        local value = to16bit(byte_stream[i], byte_stream[i + 1])
+        local value = to16bit(byte_stream[i + 1], byte_stream[i]) -- Swap order to handle LSB first
         local binary_table = to_binary_table(value, 16)
         for _, bit in ipairs(binary_table) do
             table.insert(combined_binary_table, bit)
