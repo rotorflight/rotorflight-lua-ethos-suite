@@ -19,61 +19,97 @@
 
 ]] --
 
-local mspSent
+--[[  
+-- USAGE GUIDE
+local apiVersion = require("MSP_SET_RTC")
 
-local function set()
-	local message = {
-		command = 246, -- MSP_SET_RTC
-		payload = {},
-		processReply = function(self, buf)
-			rfsuite.utils.log("RTC set.")
-		end,
-		simulatorResponse = {}
-	}
+-- Initialize module and fetch data
+apiVersion:init()
 
-	-- generate message to send
-	local now = os.time()
-	-- format: seconds after the epoch / milliseconds
-	for i = 1, 4 do
-		rfsuite.bg.msp.mspHelper.writeU8(message.payload, now & 0xFF)
-		now = now >> 8
-	end
-	rfsuite.bg.msp.mspHelper.writeU16(message.payload, 0)
+]]
 
-	-- add msg to queue
-	rfsuite.bg.msp.mspQueue:add(message)
 
-	mspSent = true
-end
+local READ_ID = nil        -- The id on the FBL used for read commands
+local WRITE_ID = 246     -- The id on the FBL used for write commands (nil prevents)
 
-local function get(callback, callbackParam)
-	return nil
-end
+local MSP_SET_RTC = {}
 
-local function data(data)
-	if mspData then
-		return mspData
-	end
-end
+-- Internal buffers to hold read and write data
+MSP_SET_RTC.readData = {}
+MSP_SET_RTC.writeDataBuffer = {}
 
-local function isReady()
-	if mspData then
-		return true
-	end
-	return false
-end
 
-local function isSet()
-	if mspSent == true then
-		return true
-	end
-	return false	
-end
-
-return {
-	get = get,
-	set = set,
-    data = data,
-	isReady = isReady,
-	isSet = isSet,
+-- Define the read data structure (order and sizes)
+MSP_SET_RTC.readStructure = {
+    { key = "SECONDS", bits = 32 },   -- 32-bit signed integer for epoch time
+    { key = "MILLISECONDS", bits = 16 }  -- 16-bit unsigned integer for milliseconds
 }
+
+-- Define the write data structure (order and sizes)
+MSP_SET_RTC.writeStructure = {
+    { key = "SECONDS", bits = 32 },   -- 32-bit signed integer for epoch time
+    { key = "MILLISECONDS", bits = 16 }  -- 16-bit unsigned integer for milliseconds
+}
+
+-- Define the simulator response we expect
+local simulatorResponse = nil
+
+-- same statefull stuff
+local writeCompleteState = false
+local readCompleteState = false
+
+-- Count the elements for read and write
+local readStructureCount = #MSP_SET_RTC.readStructure
+local writeStructureCount = #MSP_SET_RTC.writeStructure
+
+-- Initialise the api by fetching data
+function MSP_SET_RTC:init()
+    if READ_ID ~= nil then
+        self:fetchData()
+    end    
+end
+
+function MSP_SET_RTC:readComplete()
+    return readCompleteState
+end    
+
+function MSP_SET_RTC:writeComplete()
+    return writeCompleteState
+end  
+
+-- The functions below simple map to function in api.lua. This is done because
+-- the same code is used in 99% of the api calls and as such sharing the code 
+-- make sense. 
+
+-- Parse raw MSP response buffer into structured readData table
+function MSP_SET_RTC:parseResponse(buf)
+    rfsuite.bg.msp.api.parseResponse(buf, self.readStructure, self.readData)
+end
+
+-- Build byte stream for sending based on write data table
+function MSP_SET_RTC:buildWriteRequest()
+    return rfsuite.bg.msp.api.buildWriteRequest(self.writeStructure, self.writeDataBuffer)
+end
+
+-- Get data by key or full read data (offloaded to api.lua to avoid duplication)
+function MSP_SET_RTC:getData(key)
+    return rfsuite.bg.msp.api.getData(self.readData, key)
+end
+
+-- Set value and prepare for write
+function MSP_SET_RTC:setParam(key, value)
+    rfsuite.bg.msp.api.setParam(self.writeDataBuffer, self.writeStructure, key, value)
+end
+
+-- Write updated data back using write structure (offloaded to api.lua to avoid duplication)
+function MSP_SET_RTC:writeData()
+    rfsuite.bg.msp.api.writeData(WRITE_ID, rfsuite.bg.msp.api.buildWriteRequest, self.writeStructure, self.writeDataBuffer, function() writeCompleteState = true end, nil)
+end
+
+-- Fetch data from MSP
+function MSP_SET_RTC:fetchData()
+    rfsuite.bg.msp.api.fetchData(READ_ID, rfsuite.bg.msp.api.parseResponse, self.readStructure, #self.readStructure, self.readData, function() readCompleteState = true end, nil, simulatorResponse)
+end
+
+
+return MSP_SET_RTC

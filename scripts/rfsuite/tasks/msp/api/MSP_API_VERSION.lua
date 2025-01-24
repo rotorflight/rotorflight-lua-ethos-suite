@@ -47,6 +47,9 @@ local WRITE_ID = nil     -- The id on the FBL used for write commands (nil preve
 
 local MSP_API_VERSION = {}
 
+-- Internal buffers to hold read and write data
+MSP_API_VERSION.readData = {}
+MSP_API_VERSION.writeDataBuffer = {}
 
 -- Define the read data structure (order and sizes)
 MSP_API_VERSION.readStructure = {
@@ -62,104 +65,22 @@ MSP_API_VERSION.writeStructure = {
     { key = "API_VERSION_MINOR", bits = 8 }
 }
 
+-- Define the simulator response we expect
+local simulatorResponse = rfsuite.config.simulatorApiVersionResponse or {0, 12, 07}
+
 -- Count the elements for read and write
 local readStructureCount = #MSP_API_VERSION.readStructure
 local writeStructureCount = #MSP_API_VERSION.writeStructure
 
--- Internal buffers to hold read and write data
-MSP_API_VERSION.readData = {}
-MSP_API_VERSION.writeDataBuffer = {}
+-- same statefull stuff
+local writeCompleteState = false
+local readCompleteState = false
 
+-- Initialise the api by fetching data
 function MSP_API_VERSION:init()
-    self:fetchData()
-end
-
--- Parse raw MSP response buffer into structured readData table
-function MSP_API_VERSION:parseResponse(buf)
-
-    local index = 1
-    for _, entry in ipairs(self.readStructure) do
-        local key, bits = entry.key, entry.bits
-        if bits == 8 then
-            self.readData[key] = buf[index]
-            rfsuite.utils.log("Parsed " .. key .. ": " .. tostring(buf[index]))
-            index = index + 1
-        elseif bits == 16 then
-            self.readData[key] = buf[index] + (buf[index + 1] * 256)
-            rfsuite.utils.log("Parsed " .. key .. ": " .. tostring(self.readData[key]))
-            index = index + 2
-        else
-            rfsuite.utils.log("Unsupported data size for key: " .. key)
-        end
-    end
-end
-
--- Build byte stream for sending based on write data table
-function MSP_API_VERSION:buildWriteRequest()
-    local requestData = {}
-    for key, bits in pairs(self.writeStructure) do
-        local value = self.writeDataBuffer[key] or 0
-        if bits == 8 then
-            table.insert(requestData, value & 0xFF)
-        elseif bits == 16 then
-            table.insert(requestData, value & 0xFF)
-            table.insert(requestData, (value >> 8) & 0xFF)
-        else
-            rfsuite.utils.log("Unsupported data size for key: " .. key)
-        end
-    end
-    return requestData
-end
-
--- Fetch data from MSP
-function MSP_API_VERSION:fetchData()
-    if READ_ID == nil then
-        rfsuite.utils.log("Read operation is disabled. READ_ID is nil.")
-        return
-    end
-
-    local message = {
-        command = READ_ID, -- MSP_API_VERSION
-        processReply = function(_, buf)
-			-- we do this to ensure all data has arrived
-			if #buf >= readStructureCount then  
-            	self:parseResponse(buf)
-			end
-        end,
-        simulatorResponse = rfsuite.config.simulatorApiVersionResponse or {0, 12, 07}
-    }
-    rfsuite.bg.msp.mspQueue:add(message)
-end
-
--- Get data by key or full read data
-function MSP_API_VERSION:getData(key)
-    if key then
-        return self.readData[key]
-    end
-    return self.readData
-end
-
--- Set value and prepare for write
-function MSP_API_VERSION:setParam(key, value)
-    if self.writeStructure[key] then
-        self.writeDataBuffer[key] = value
-    else
-        rfsuite.utils.log("Invalid parameter for writing: " .. key)
-    end
-end
-
--- Write updated data back using write structure
-function MSP_API_VERSION:writeData()
-    if WRITE_ID == nil then
-        rfsuite.utils.log("Write operation is disabled. WRITE_ID is nil.")
-        return
-    end
-
-    local message = {
-        command = WRITE_ID, -- MSP write command
-        data = self:buildWriteRequest()
-    }
-    rfsuite.bg.msp.mspQueue:add(message)
+    if READ_ID ~= nil then
+        self:fetchData()
+    end    
 end
 
 -- Custom function to return the version as a single floating-point value
@@ -186,5 +107,48 @@ function MSP_API_VERSION:getVersion()
     local version = major + minor / (10 ^ minorDigits)
     return version
 end
+
+function MSP_API_VERSION:readComplete()
+    return readCompleteState
+end    
+
+function MSP_API_VERSION:writeComplete()
+    return writeCompleteState
+end  
+
+-- The functions below simple map to function in api.lua. This is done because
+-- the same code is used in 99% of the api calls and as such sharing the code 
+-- make sense. 
+
+-- Parse raw MSP response buffer into structured readData table
+function MSP_API_VERSION:parseResponse(buf)
+    rfsuite.bg.msp.api.parseResponse(buf, self.readStructure, self.readData)
+end
+
+-- Build byte stream for sending based on write data table
+function MSP_API_VERSION:buildWriteRequest()
+    return rfsuite.bg.msp.api.buildWriteRequest(self.writeStructure, self.writeDataBuffer)
+end
+
+-- Get data by key or full read data (offloaded to api.lua to avoid duplication)
+function MSP_API_VERSION:getData(key)
+    return rfsuite.bg.msp.api.getData(self.readData, key)
+end
+
+-- Set value and prepare for write
+function MSP_API_VERSION:setParam(key, value)
+    rfsuite.bg.msp.api.setParam(self.writeDataBuffer, self.writeStructure, key, value)
+end
+
+-- Write updated data back using write structure (offloaded to api.lua to avoid duplication)
+function MSP_API_VERSION:writeData()
+    rfsuite.bg.msp.api.writeData(WRITE_ID, rfsuite.bg.msp.api.buildWriteRequest, self.writeStructure, self.writeDataBuffer, function() writeCompleteState = true end, nil)
+end
+
+-- Fetch data from MSP
+function MSP_API_VERSION:fetchData()
+    rfsuite.bg.msp.api.fetchData(READ_ID, rfsuite.bg.msp.api.parseResponse, self.readStructure, #self.readStructure, self.readData, function() readCompleteState = true end, nil, simulatorResponse)
+end
+
 
 return MSP_API_VERSION

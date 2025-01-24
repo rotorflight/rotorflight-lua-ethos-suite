@@ -67,13 +67,13 @@ function msp.onConnectBgChecks()
         -- get the api version
         if rfsuite.config.apiVersion == nil and msp.mspQueue:isProcessed() then
 
-            local versionAPI = msp.api.use("MSP_API_VERSION")
+            local API = msp.api.use("MSP_API_VERSION")
             
             -- Fetch data first
-            versionAPI:fetchData()
+            API:fetchData()
             
             -- After data is fetched, get the version number
-            local version = versionAPI:getVersion()
+            local version = API:getVersion()
             if version then
                 rfsuite.config.apiVersion = version
                 rfsuite.utils.log("Firmware Version: " .. version)  -- Example: 1.12
@@ -84,14 +84,14 @@ function msp.onConnectBgChecks()
         -- sync the clock
         elseif rfsuite.config.clockSet == nil and msp.mspQueue:isProcessed() then
 
-            
-            local clocksyncAPI = rfsuite.bg.msp.api.use("MSP_SET_RTC")
-            clocksyncAPI().set()  -- Do the msp call
-            if clocksyncAPI().isSet() then
+            local API = msp.api.use("MSP_SET_RTC")
+            API:setParam("SECONDS", os.time())
+            API:setParam("MILLISECONDS", 0)          
+            API:writeData()
+            if API:writeComplete() == true then
                 rfsuite.config.clockSet = true
             end
-
-           rfsuite.utils.log("Sync clock: " .. os.clock())
+            rfsuite.utils.log("Sync clock: " .. os.clock())
 
         -- beep the clock
         elseif rfsuite.config.clockSet == true and rfsuite.config.clockSetAlart ~= true then
