@@ -67,12 +67,26 @@ function msp.onConnectBgChecks()
         -- get the api version
         if rfsuite.config.apiVersion == nil and msp.mspQueue:isProcessed() then
 
-            local versionAPI = rfsuite.bg.msp.api.use("MSP_API_VERSION")
-            versionAPI().get()  -- Do the msp call     
-            if versionAPI().isReady() then
-                rfsuite.config.apiVersion = versionAPI().getVersion()
-                rfsuite.utils.log("API version: " .. rfsuite.config.apiVersion)
-            end   
+           -- local versionAPI = rfsuite.bg.msp.api.use("MSP_API_VERSION")
+            --versionAPI().get()  -- Do the msp call     
+            --if versionAPI().isReady() then
+            --    rfsuite.config.apiVersion = versionAPI().getVersion()
+            --    rfsuite.utils.log("API version: " .. rfsuite.config.apiVersion)
+            --end
+
+            local versionAPI = msp.api.use("MSP_API_VERSION")
+            
+            -- Fetch data first
+            versionAPI:fetchData()
+            
+            -- After data is fetched, get the version number
+            local version = versionAPI:getVersion()
+            if version then
+                rfsuite.config.apiVersion = version
+                rfsuite.utils.log("Firmware Version: " .. version)  -- Example: 1.12
+            else
+                rfsuite.utils.log("Waiting for version info")
+            end
 
         -- sync the clock
         elseif rfsuite.config.clockSet == nil and msp.mspQueue:isProcessed() then
