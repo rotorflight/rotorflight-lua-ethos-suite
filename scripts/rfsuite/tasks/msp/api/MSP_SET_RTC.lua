@@ -21,11 +21,14 @@
 
 --[[  
 -- USAGE GUIDE
-local apiVersion = require("MSP_SET_RTC")
-
--- Initialize module and fetch data
-apiVersion:init()
-
+local API = msp.api.use("MSP_SET_RTC")
+API:setParam("SECONDS", os.time())
+API:setParam("MILLISECONDS", 0)          
+API:writeData()
+if API:writeComplete() == true then
+	API:cleanState() --- clear the lock
+	rfsuite.config.clockSet = true
+end
 ]]
 
 
@@ -69,12 +72,20 @@ function MSP_SET_RTC:init()
     end    
 end
 
+--  check to see if we have completed a read
 function MSP_SET_RTC:readComplete()
     return readCompleteState
 end    
 
+-- check to see if we have completed a write
 function MSP_SET_RTC:writeComplete()
     return writeCompleteState
+end  
+
+-- check to see if we have completed a write
+function MSP_SET_RTC:flushLocks()
+    writeCompleteState = false
+    readCompleteState = false
 end  
 
 -- The functions below simple map to function in api.lua. This is done because

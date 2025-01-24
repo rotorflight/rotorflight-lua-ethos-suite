@@ -99,28 +99,25 @@ function api.setParam(writeDataBuffer, writeStructure, key, value)
 end
 
 -- common function to write data
-function api.writeData(WRITE_ID, buildWriteRequest, writeStructure, writeDataBuffer, callback, callbackParam)
+function api.writeData(WRITE_ID, buildWriteRequest, writeStructure, writeDataBuffer, callback, callbackParam, simulatorResponse)
     if WRITE_ID == nil then
         rfsuite.utils.log("Write operation is disabled. WRITE_ID is nil.")
         return
     end
 
-    local payload =  buildWriteRequest(writeStructure, writeDataBuffer)
-    rfsuite.utils.print_r(payload)
-
     local message = {
         command = WRITE_ID,
-        payload = payload,
+        payload = buildWriteRequest(writeStructure, writeDataBuffer),
 		processReply = function(self, buf)
-            print("here")
             callback(callbackParam)			
 		end,
+        simulatorResponse = simulatorResponse or {}
     }
     rfsuite.bg.msp.mspQueue:add(message)
 end
 
 -- common function to read data
-function api.fetchData(READ_ID, parseResponse, readStructure, readStructureCount, readData, callback, callbackParam, simulatorApiVersionResponse)
+function api.fetchData(READ_ID, parseResponse, readStructure, readStructureCount, readData, callback, callbackParam, simulatorResponse)
     if READ_ID == nil then
         rfsuite.utils.log("Read operation is disabled. READ_ID is nil.")
         return
@@ -134,7 +131,7 @@ function api.fetchData(READ_ID, parseResponse, readStructure, readStructureCount
                 callback(callbackParam)
             end
         end,
-        simulatorResponse = simulatorApiVersionResponse
+        simulatorResponse = simulatorResponse or {}
     }
     rfsuite.bg.msp.mspQueue:add(message)
 end

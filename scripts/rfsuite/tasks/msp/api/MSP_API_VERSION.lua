@@ -108,12 +108,20 @@ function MSP_API_VERSION:getVersion()
     return version
 end
 
+--  check to see if we have completed a read
 function MSP_API_VERSION:readComplete()
     return readCompleteState
 end    
 
+-- check to see if we have completed a write
 function MSP_API_VERSION:writeComplete()
     return writeCompleteState
+end  
+
+-- check to see if we have completed a write
+function MSP_API_VERSION:flushLocks()
+    writeCompleteState = false
+    readCompleteState = false
 end  
 
 -- The functions below simple map to function in api.lua. This is done because

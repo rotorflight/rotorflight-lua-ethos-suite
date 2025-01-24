@@ -19,62 +19,133 @@
 
 ]] --
 
-local mspData
+--[[  
+-- USAGE GUIDE
+local apiVersion = require("MSP_MIXER_CONFIG")
 
-local function set()
-	-- we still need to do this
-end
+-- Initialize module and fetch data
+apiVersion:init()
 
-local function get()
+-- Read some data
+local mainRotorDir = apiVersion:getData("main_rotor_dir")
 
-	local message = {
-		command = 42, -- MIXER
-		processReply = function(self, buf)
-			if #buf >= 19 then
-				mspData = buf
-			end
-		end,
-		simulatorResponse = {0, 1, 0, 0, 0, 2, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-	}
-	rfsuite.bg.msp.mspQueue:add(message)
-end
+-- Update values and write back
+apiVersion:setParam("swash_type", 3)
+apiVersion:writeData()
 
-local function data(data)
-	if mspData then
-		return mspData
-	end
-end
+]]
 
-local function isReady()
-	if mspData then
-		return true
-	end
-	return false
-end
 
-local function isSet()
-	-- to be implemented
-	return true
-end
+local READ_ID = 42        -- The id on the FBL used for read commands
+local WRITE_ID = 43     -- The id on the FBL used for write commands (nil prevents)
 
-local function getSwashMode()
-	if mspData then
-		return mspData[6]
-	end
-end
+local MSP_MIXER_CONFIG = {}
 
-local function getTailMode()
-	if mspData then
-		return mspData[2]
-	end
-end
+-- Internal buffers to hold read and write data
+MSP_MIXER_CONFIG.readData = {}
+MSP_MIXER_CONFIG.writeDataBuffer = {}
 
-return {
-	isReady = isReady,
-	get = get,
-	set = set,
-    data = data,
-	getSwashMode = getSwashMode,
-	getTailMode = getTailMode,
-	isSet = isSet,
+-- Define the read data structure (order and sizes)
+MSP_MIXER_CONFIG.readStructure = {
+    { key = "main_rotor_dir", bits = 8 },
+    { key = "tail_rotor_mode", bits = 8 },
+    { key = "tail_motor_idle", bits = 8 },
+    { key = "tail_center_trim", bits = 16 },
+    { key = "swash_type", bits = 8 },
+    { key = "swash_ring", bits = 8 },
+    { key = "swash_phase", bits = 16 },
+    { key = "swash_pitch_limit", bits = 16 },
+    { key = "swash_trim_0", bits = 16 },
+    { key = "swash_trim_1", bits = 16 },
+    { key = "swash_trim_2", bits = 16 },
+    { key = "swash_tta_precomp", bits = 8 },
+    { key = "swash_geo_correction", bits = 8 }
 }
+
+-- Define the write data structure (order and sizes)
+MSP_MIXER_CONFIG.writeStructure = {
+    { key = "main_rotor_dir", bits = 8 },
+    { key = "tail_rotor_mode", bits = 8 },
+    { key = "tail_motor_idle", bits = 8 },
+    { key = "tail_center_trim", bits = 16 },
+    { key = "swash_type", bits = 8 },
+    { key = "swash_ring", bits = 8 },
+    { key = "swash_phase", bits = 16 },
+    { key = "swash_pitch_limit", bits = 16 },
+    { key = "swash_trim_0", bits = 16 },
+    { key = "swash_trim_1", bits = 16 },
+    { key = "swash_trim_2", bits = 16 },
+    { key = "swash_tta_precomp", bits = 8 },
+    { key = "swash_geo_correction", bits = 8 }
+}
+
+-- Define the simulator response we expect
+local simulatorResponse = {0, 1, 0, 0, 0, 2, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+
+-- Count the elements for read and write
+local readStructureCount = #MSP_MIXER_CONFIG.readStructure
+local writeStructureCount = #MSP_MIXER_CONFIG.writeStructure
+
+-- same statefull stuff
+local writeCompleteState = false
+local readCompleteState = false
+
+-- Initialise the api by fetching data
+function MSP_MIXER_CONFIG:init()
+    if READ_ID ~= nil then
+        self:fetchData()
+    end    
+end
+
+--  check to see if we have completed a read
+function MSP_MIXER_CONFIG:readComplete()
+    return readCompleteState
+end    
+
+-- check to see if we have completed a write
+function MSP_MIXER_CONFIG:writeComplete()
+    return writeCompleteState
+end  
+
+-- check to see if we have completed a write
+function MSP_MIXER_CONFIG:cleanState()
+    writeCompleteState = false
+    readCompleteState = false
+end  
+
+-- The functions below simple map to function in api.lua. This is done because
+-- the same code is used in 99% of the api calls and as such sharing the code 
+-- make sense. 
+
+-- Parse raw MSP response buffer into structured readData table
+function MSP_MIXER_CONFIG:parseResponse(buf)
+    rfsuite.bg.msp.api.parseResponse(buf, self.readStructure, self.readData)
+end
+
+-- Build byte stream for sending based on write data table
+function MSP_MIXER_CONFIG:buildWriteRequest()
+    return rfsuite.bg.msp.api.buildWriteRequest(self.writeStructure, self.writeDataBuffer)
+end
+
+-- Get data by key or full read data (offloaded to api.lua to avoid duplication)
+function MSP_MIXER_CONFIG:getData(key)
+    return rfsuite.bg.msp.api.getData(self.readData, key)
+end
+
+-- Set value and prepare for write
+function MSP_MIXER_CONFIG:setParam(key, value)
+    rfsuite.bg.msp.api.setParam(self.writeDataBuffer, self.writeStructure, key, value)
+end
+
+-- Write updated data back using write structure (offloaded to api.lua to avoid duplication)
+function MSP_MIXER_CONFIG:writeData()
+    rfsuite.bg.msp.api.writeData(WRITE_ID, rfsuite.bg.msp.api.buildWriteRequest, self.writeStructure, self.writeDataBuffer, function() writeCompleteState = true end, nil)
+end
+
+-- Fetch data from MSP
+function MSP_MIXER_CONFIG:fetchData()
+    rfsuite.bg.msp.api.fetchData(READ_ID, rfsuite.bg.msp.api.parseResponse, self.readStructure, #self.readStructure, self.readData, function() readCompleteState = true end, nil, simulatorResponse)
+end
+
+
+return MSP_MIXER_CONFIG
