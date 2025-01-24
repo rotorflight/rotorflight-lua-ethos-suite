@@ -104,6 +104,9 @@ local function init()
                 paint = scriptModule.paint,
                 wakeup = scriptModule.wakeup,
                 close = scriptModule.close,
+                configure = scriptModule.configure,
+                read = scriptModule.read,
+                write = scriptModule.write,                
                 persistent = false
             })
         end
