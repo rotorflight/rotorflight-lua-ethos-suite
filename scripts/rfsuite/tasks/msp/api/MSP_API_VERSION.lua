@@ -18,6 +18,30 @@
  * 
 
 ]] --
+
+--[[  
+-- USAGE GUIDE
+local apiVersion = require("MSP_API_VERSION")
+
+-- Initialize module and fetch data
+apiVersion:init()
+
+-- Wait for data and retrieve values
+local versionMajor = apiVersion:getData("API_VERSION_MAJOR")
+local versionMinor = apiVersion:getData("API_VERSION_MINOR")
+print("Current API Version: " .. tostring(versionMajor) .. "." .. tostring(versionMinor))
+
+-- Update values and write back (if allowed)
+apiVersion:setParam("API_VERSION_MAJOR", 2)
+apiVersion:setParam("API_VERSION_MINOR", 1)
+apiVersion:writeData()
+
+-- Get formatted version
+local formattedVersion = apiVersion:getVersion()
+print("Formatted Version: " .. tostring(formattedVersion))
+]]
+
+
 local READ_ID = 1        -- The id on the FBL used for read commands
 local WRITE_ID = nil     -- The id on the FBL used for write commands (nil prevents)
 

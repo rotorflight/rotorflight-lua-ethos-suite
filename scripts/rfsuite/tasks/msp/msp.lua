@@ -67,13 +67,6 @@ function msp.onConnectBgChecks()
         -- get the api version
         if rfsuite.config.apiVersion == nil and msp.mspQueue:isProcessed() then
 
-           -- local versionAPI = rfsuite.bg.msp.api.use("MSP_API_VERSION")
-            --versionAPI().get()  -- Do the msp call     
-            --if versionAPI().isReady() then
-            --    rfsuite.config.apiVersion = versionAPI().getVersion()
-            --    rfsuite.utils.log("API version: " .. rfsuite.config.apiVersion)
-            --end
-
             local versionAPI = msp.api.use("MSP_API_VERSION")
             
             -- Fetch data first
