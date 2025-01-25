@@ -26,7 +26,7 @@
 ]]--
 
 -- Constants for MSP Commands
-local MSP_API_CMD = 19  -- Command identifier for MSP Mixer Config
+local MSP_API_CMD = 42  -- Command identifier for MSP Mixer Config
 local MSP_API_SIMULATOR_RESPONSE = {0, 0, 0, 0, 0, 2, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}  -- Default simulator response
 local MSP_MIN_BYTES = 19
 
@@ -75,14 +75,6 @@ local function readComplete()
             return true
     end    
     return false
-end
-
-
--- Function to get the API version in major.minor format
-local function readVersion()
-    if mspData then
-        return mspData['parsed'].version_major + mspData['parsed'].version_minor / 100
-    end
 end
 
 -- Function to get the value of a specific field from MSP data

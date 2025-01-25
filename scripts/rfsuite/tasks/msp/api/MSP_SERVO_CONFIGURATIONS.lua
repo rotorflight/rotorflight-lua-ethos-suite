@@ -28,7 +28,7 @@
 -- Constants for MSP Commands
 local MSP_API_CMD = 120  -- Command identifier for Servo Configuration
 local MSP_API_SIMULATOR_RESPONSE = {4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0, 120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0}  -- Default simulator response
-local MSP_MIN_BYTES = 50 -- varies in this api based on servo count
+local MSP_MIN_BYTES = 1 -- variable in this api as based on servo count to we override this once we have a servo count when the read function is called
 
 -- Define the MSP response data structure (note that we have dynamic stuff below)
 local function generateMSPStructure(servoCount)
@@ -116,8 +116,11 @@ local function read()
     local message = {
         command = MSP_API_CMD,  -- Specify the MSP command
         processReply = function(self, buf)
-            -- Parse the MSP data using the defined structure
-			local MSP_API_STRUCTURE = generateMSPStructure(buf[1])
+            -- Generate the MSP structure dynamically
+            local servoCount = buf[1]
+            MSP_MIN_BYTES = 1 + (servoCount * 16)  -- Update MSP_MIN_BYTES dynamically
+
+            local MSP_API_STRUCTURE = generateMSPStructure(servoCount)
             mspData = parseMSPData(buf, MSP_API_STRUCTURE)
         end,
         simulatorResponse = MSP_API_SIMULATOR_RESPONSE
@@ -137,14 +140,6 @@ local function readComplete()
             return true
     end    
     return false
-end
-
-
--- Function to get the API version in major.minor format
-local function readVersion()
-    if mspData then
-        return mspData['parsed'].version_major + mspData['parsed'].version_minor / 100
-    end
 end
 
 -- Function to get the value of a specific field from MSP data

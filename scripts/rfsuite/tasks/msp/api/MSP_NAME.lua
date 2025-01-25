@@ -92,14 +92,6 @@ local function readComplete()
     return false
 end
 
-
--- Function to get the API version in major.minor format
-local function readVersion()
-    if mspData then
-        return mspData['parsed'].version_major + mspData['parsed'].version_minor / 100
-    end
-end
-
 -- Function to get the value of a specific field from MSP data
 local function readValue(fieldName)
     if mspData and mspData['parsed'][fieldName] ~= nil then
