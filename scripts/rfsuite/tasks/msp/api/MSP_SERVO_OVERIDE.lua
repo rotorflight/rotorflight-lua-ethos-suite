@@ -1,7 +1,5 @@
 --[[
-
  * Copyright (C) Rotorflight Project
- *
  *
  * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
  *
@@ -13,64 +11,87 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- 
- * Note.  Some icons have been sourced from https://www.flaticon.com/
- * 
-
+ *
+ * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
 
-local mspData
+--[[
+ * API Reference Guide
+ * -------------------
+ * read(servoCount): Initiates an MSP command to read data.
+ * data(): Returns the parsed MSP data.
+ * readComplete(): Checks if the read operation is complete.
+ * readValue(fieldName): Returns the value of a specific field from MSP data.
+ * readVersion(): Retrieves the API version in major.minor format.
+]]--
 
-local function set()
-	-- we still need to do this
+-- Constants for MSP Commands
+local MSP_API_CMD = 192  -- Command identifier for MSP Mixer Config
+local MSP_API_SIMULATOR_RESPONSE = {209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7}  -- Default simulator response
+local MSP_MIN_BYTES = 10	-- quite likely to be higher
+
+-- Define the MSP response data structure
+local function genStructure(count)
+    local structure = {}
+    for i = 1, count do
+        table.insert(structure, { field = string.format("servo%d", i), type = "U16" })
+    end
+    return structure
 end
 
-local function get()
+-- Variable to store parsed MSP data
+local mspData = nil
 
-	local message = {
-		command = 192, -- MSP_SERVO_OVERIDE
-		processReply = function(self, buf)
-			if #buf >= 16 then	
-				mspData = buf
-			end
-		end,
-		simulatorResponse = {209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7}
-	}
-
-
-	rfsuite.bg.msp.mspQueue:add(message)
+-- Function to initiate MSP read operation
+local function read(servoCount)
+	if servoCount == nil then servoCount = 4 end
+    local message = {
+        command = MSP_API_CMD,  -- Specify the MSP command
+        processReply = function(self, buf)
+            -- Parse the MSP data using the defined structure
+			local MSP_API_STRUCTURE = genStructure(servoCount)
+            mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE)
+        end,
+        simulatorResponse = MSP_API_SIMULATOR_RESPONSE
+    }
+    -- Add the message to the processing queue
+    rfsuite.bg.msp.mspQueue:add(message)
 end
 
-local function data(data)
-	if mspData then
-		return mspData
-	end
+-- Function to return the parsed MSP data
+local function data()
+    return mspData
 end
 
-local function isReady()
-	if mspData then
-		return true
-	end
-	return false
+-- Function to check if the read operation is complete
+local function readComplete()
+    if mspData ~= nil and #mspData['buffer'] >= MSP_MIN_BYTES then
+            return true
+    end    
+    return false
 end
 
-local function isSet()
-	-- to be implemented
-	return true
+
+-- Function to get the API version in major.minor format
+local function readVersion()
+    if mspData then
+        return mspData['parsed'].version_major + mspData['parsed'].version_minor / 100
+    end
 end
 
-local function getMode()
-	if mspData then
-		local mode = rfsuite.bg.msp.mspHelper.readU8(mspData)
-		return mode
-	end
+-- Function to get the value of a specific field from MSP data
+local function readValue(fieldName)
+    if mspData and mspData['parsed'][fieldName] ~= nil then
+        return mspData['parsed'][fieldName]
+    end
+    return nil
 end
 
+-- Return the module's API functions
 return {
-	isReady = isReady,
-	get = get,
-	set = set,
     data = data,
-	getMode = getMode,
-	isSet = isSet,
+    read = read,
+    readComplete = readComplete,
+    readVersion = readVersion,
+    readValue = readValue
 }

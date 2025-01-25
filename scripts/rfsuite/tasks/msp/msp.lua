@@ -105,66 +105,65 @@ function msp.onConnectBgChecks()
 
         -- get servo configuration
         elseif (rfsuite.config.servoCount == nil) and msp.mspQueue:isProcessed() then
-
-            local servoAPI = rfsuite.bg.msp.api.use("MSP_SERVO_CONFIGURATIONS")
-            servoAPI().get()  -- Do the msp call     
-            if servoAPI().isReady() then
-                rfsuite.config.servoCount =  servoAPI().getServoCount()
+ 
+           local API = msp.api.load("MSP_SERVO_CONFIGURATIONS")
+           API.read()  
+           if API.readComplete() then
+                rfsuite.config.servoCount =  API.readValue("servo_count")
                 rfsuite.utils.log("Servo count: " .. rfsuite.config.servoCount)
-            end    
+           end     
 
         -- work out if fbl has any servos in overide mode
         elseif (rfsuite.config.servoOverride == nil) and msp.mspQueue:isProcessed() then
 
-            local servoAPI = rfsuite.bg.msp.api.use("MSP_SERVO_OVERIDE")
-            servoAPI().get()  -- Do the msp call     
-            if servoAPI().isReady() then
-                local buf = servoAPI().data()
-                for i = 0, rfsuite.config.servoCount do
-                    buf.offset = i
-                    local servoOverride = msp.mspHelper.readU8(buf)
-                    if servoOverride == 0 then
-                        rfsuite.utils.log("Servo overide: true")
-                        rfsuite.config.servoOverride = true
+
+            local API = msp.api.load("MSP_SERVO_OVERIDE")
+            API.read(rfsuite.config.servoCount)  
+            if API.readComplete() then
+                    local data = API.data()
+                    local buf = data['buffer']
+                    --rfsuite.utils.print_r(data)
+                    for i = 0, rfsuite.config.servoCount do
+                        buf.offset = i
+                        local servoOverride = msp.mspHelper.readU8(buf)
+                        if servoOverride == 0 then
+                            rfsuite.utils.log("Servo overide: true")
+                            rfsuite.config.servoOverride = true
+                       end
                     end
-                end
-                if rfsuite.config.servoOverride == nil then rfsuite.config.servoOverride = false end
+                    if rfsuite.config.servoOverride == nil then rfsuite.config.servoOverride = false end
             end    
 
         -- find out if we have a governor
         elseif (rfsuite.config.governorMode == nil) and msp.mspQueue:isProcessed() then
 
-            local govAPI = rfsuite.bg.msp.api.use("MSP_GOVERNOR_CONFIG")
-            govAPI().get()  -- Do the msp call     
-
-            if govAPI().isReady() then
-                local governorMode = govAPI().getMode()
-                if governorMode ~= nil then
+            local API = msp.api.load("MSP_GOVERNOR_CONFIG")
+            API.read()  
+            if API.readComplete() then
+                    local governorMode = API.readValue("gov_mode")
                     rfsuite.utils.log("Governor mode: " .. governorMode)
                     rfsuite.config.governorMode = governorMode
-                end
-            end
+            end   
 
         -- find the craft name on the fbl
         elseif (rfsuite.config.craftName == nil) and msp.mspQueue:isProcessed() then
 
-            local nameAPI = rfsuite.bg.msp.api.use("MSP_NAME")
-            nameAPI().get()  -- Do the msp call     
+            local API = msp.api.load("MSP_NAME")
+            API.read()  
+            if API.readComplete() then
+                    rfsuite.config.craftName  = API.readValue("name")
 
-            if nameAPI().isReady() then
-                rfsuite.config.craftName =  nameAPI().getName()
+                    -- set the model name to the craft name
+                    if rfsuite.config.syncCraftName == true and model.name and rfsuite.config.craftName ~= nil then
+                        model.name(rfsuite.config.craftName)
+                        lcd.invalidate()
+                    end
 
-                -- set the model name to the craft name
-                if rfsuite.config.syncCraftName == true and model.name and rfsuite.config.craftName ~= nil then
-                    model.name(rfsuite.config.craftName)
-                    lcd.invalidate()
-                end
+                    rfsuite.utils.log("Craft name: " .. rfsuite.config.craftName)
 
-                rfsuite.utils.log("Craft name: " .. rfsuite.config.craftName)
-
-             -- do this at end of last one
-             msp.onConnectChecksInit = false               
-            end    
+                -- do this at end of last one
+                 msp.onConnectChecksInit = false      
+            end   
 
         end
     end
