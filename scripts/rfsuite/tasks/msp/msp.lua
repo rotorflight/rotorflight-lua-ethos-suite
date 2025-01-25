@@ -122,7 +122,6 @@ function msp.onConnectBgChecks()
             if API.readComplete() then
                     local data = API.data()
                     local buf = data['buffer']
-                    --rfsuite.utils.print_r(data)
                     for i = 0, rfsuite.config.servoCount do
                         buf.offset = i
                         local servoOverride = msp.mspHelper.readU8(buf)
