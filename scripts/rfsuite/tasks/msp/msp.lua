@@ -67,24 +67,22 @@ function msp.onConnectBgChecks()
         -- get the api version
         if rfsuite.config.apiVersion == nil and msp.mspQueue:isProcessed() then
 
-            local versionAPI = rfsuite.bg.msp.api.use("MSP_API_VERSION")
-            versionAPI().get()  -- Do the msp call     
-            if versionAPI().isReady() then
-                rfsuite.config.apiVersion = versionAPI().getVersion()
+            local API = msp.api.load("MSP_API_VERSION")
+            API.read()  
+            if API.readComplete() then
+                rfsuite.config.apiVersion = API.readVersion()
                 rfsuite.utils.log("API version: " .. rfsuite.config.apiVersion)
-            end   
+            end               
 
         -- sync the clock
         elseif rfsuite.config.clockSet == nil and msp.mspQueue:isProcessed() then
 
-            
-            local clocksyncAPI = rfsuite.bg.msp.api.use("MSP_SET_RTC")
-            clocksyncAPI().set()  -- Do the msp call
-            if clocksyncAPI().isSet() then
+            local API = msp.api.load("MSP_SET_RTC")
+            API.write()  
+            if API.writeComplete() then
                 rfsuite.config.clockSet = true
-            end
-
-           rfsuite.utils.log("Sync clock: " .. os.clock())
+                rfsuite.utils.log("Sync clock: " .. os.clock())
+            end                
 
         -- beep the clock
         elseif rfsuite.config.clockSet == true and rfsuite.config.clockSetAlart ~= true then
@@ -96,14 +94,14 @@ function msp.onConnectBgChecks()
         -- find tail and swash mode
         elseif (rfsuite.config.tailMode == nil or rfsuite.config.swashMode == nil) and msp.mspQueue:isProcessed() then
            
-            local mixerAPI = rfsuite.bg.msp.api.use("MSP_MIXER_CONFIG")
-            mixerAPI().get()  -- Do the msp call     
-            if mixerAPI().isReady() then
-                rfsuite.config.tailMode = mixerAPI().getTailMode()     
-                rfsuite.config.swashMode = mixerAPI().getSwashMode()
+            local API = msp.api.load("MSP_MIXER_CONFIG")
+            API.read()  
+            if API.readComplete() then
+                rfsuite.config.tailMode = API.readValue("tail_rotor_mode")     
+                rfsuite.config.swashMode = API.readValue("swash_type")
                 rfsuite.utils.log("Tail mode: " .. rfsuite.config.tailMode)
                 rfsuite.utils.log("Swash mode: " .. rfsuite.config.swashMode)
-            end    
+            end                 
 
         -- get servo configuration
         elseif (rfsuite.config.servoCount == nil) and msp.mspQueue:isProcessed() then

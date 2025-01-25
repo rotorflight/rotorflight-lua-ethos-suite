@@ -1,7 +1,5 @@
 --[[
-
  * Copyright (C) Rotorflight Project
- *
  *
  * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
  *
@@ -13,67 +11,71 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- 
- * Note.  Some icons have been sourced from https://www.flaticon.com/
- * 
-
+ *
+ * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
 
-local mspSent
+--[[
+ * MSP_SET_RTC Write API
+ * --------------------
+ * This module provides functions to set the real-time clock (RTC) using the MSP protocol.
+ * The write function sends the current system time to the device, formatted as seconds since the epoch.
+ *
+ * Functions:
+ * - write(): Initiates an MSP command to set the RTC.
+ * - writeComplete(): Checks if the write operation is complete.
+ * - resetWriteStatus(): Resets the write completion status.
+ *
+ * MSP Command Used:
+ * - MSP_SET_RTC (Command ID: 246)
+]] --
 
-local function set()
-	local message = {
-		command = 246, -- MSP_SET_RTC
-		payload = {},
-		processReply = function(self, buf)
-			rfsuite.utils.log("RTC set.")
-		end,
-		simulatorResponse = {}
-	}
 
-	-- generate message to send
-	local now = os.time()
-	-- format: seconds after the epoch / milliseconds
-	for i = 1, 4 do
-		rfsuite.bg.msp.mspHelper.writeU8(message.payload, now & 0xFF)
-		now = now >> 8
-	end
-	rfsuite.bg.msp.mspHelper.writeU16(message.payload, 0)
+-- Constants for MSP Commands
+local MSP_SET_RTC_CMD = 246  -- Command identifier for setting RTC
 
-	-- add msg to queue
-	rfsuite.bg.msp.mspQueue:add(message)
+-- Define the MSP request data structure
+local MSP_SET_RTC_STRUCTURE = {
+    { field = "seconds", type = "U32" },  -- 32-bit seconds since epoch
+    { field = "milliseconds", type = "U16" }  -- 16-bit milliseconds
+}
 
-	mspSent = true
+-- Variable to track write completion
+local mspWriteComplete = false
+
+-- Function to initiate MSP write operation
+local function write()
+    local message = {
+        command = MSP_SET_RTC_CMD,  -- Specify the MSP command
+        payload = {},
+        processReply = function(self, buf)
+            mspWriteComplete = true
+        end,
+        simulatorResponse = {}
+    }
+
+    -- Get current time and format it for payload
+    local now = os.time()
+    rfsuite.bg.msp.mspHelper.writeU32(message.payload, now)  -- Write seconds
+    rfsuite.bg.msp.mspHelper.writeU16(message.payload, 0)    -- Placeholder for milliseconds
+
+    -- Add the message to the processing queue
+    rfsuite.bg.msp.mspQueue:add(message)
 end
 
-local function get(callback, callbackParam)
-	return nil
+-- Function to check if the write operation is complete
+local function writeComplete()
+    return mspWriteComplete
 end
 
-local function data(data)
-	if mspData then
-		return mspData
-	end
+-- Function to reset the write completion status
+local function resetWriteStatus()
+    mspWriteComplete = false
 end
 
-local function isReady()
-	if mspData then
-		return true
-	end
-	return false
-end
-
-local function isSet()
-	if mspSent == true then
-		return true
-	end
-	return false	
-end
-
+-- Return the module's API functions
 return {
-	get = get,
-	set = set,
-    data = data,
-	isReady = isReady,
-	isSet = isSet,
+    write = write,
+    writeComplete = writeComplete,
+    resetWriteStatus = resetWriteStatus
 }

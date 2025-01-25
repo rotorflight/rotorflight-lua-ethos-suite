@@ -42,24 +42,57 @@ local function loadAPI(apiName)
 
         local apiModule = dofile(apiFilePath)  -- Load the Lua API file
         
-        if type(apiModule) == "table" and apiModule.get and apiModule.set and  apiModule.data and apiModule.isReady and apiModule.isSet then
+        if type(apiModule) == "table" and (apiModule.read or apiModule.write) then
             apiCache[apiName] = apiModule  -- Store loaded API in cache
             rfsuite.utils.log("Loaded API:", apiName)
             return apiModule
         else
-            rfsuite.utils.log("Error: API file '" .. apiName .. "' does not contain valid 'get','set','data',isReady and isSet functions.")
+            rfsuite.utils.log("Error: API file '" .. apiName .. "' does not contain valid read or write functions.")
         end
     else
         rfsuite.utils.log("Error: API file '" .. apiName .. ".lua' not found.")
     end
 end
 
--- Function to execute a given API, lazy-loading it when first called
-function apiLoader.use(apiName)
-    local function apiWrapper()
-        return loadAPI(apiName)
-    end
-    return apiWrapper
+-- Function to directly return the API table instead of a wrapper function
+function apiLoader.load(apiName)
+    return loadAPI(apiName) or {}  -- Return an empty table if API fails to load
 end
+
+function apiLoader.parseMSPData(buf, structure)
+    -- Ensure buffer length matches expected data structure
+    if #buf < #structure then
+        return nil
+    end
+
+    local parsedData = {}
+    local offset = 1  -- Maintain a strict offset tracking
+
+    for _, field in ipairs(structure) do
+        if field.type == "U8" then
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU8(buf, offset)
+            offset = offset + 1
+        elseif field.type == "U16" then
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU16(buf, offset)
+            offset = offset + 2
+        elseif field.type == "U24" then
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU24(buf, offset)
+            offset = offset + 3
+        elseif field.type == "U32" then
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU32(buf, offset)
+            offset = offset + 4
+        else
+            return nil  -- Unknown data type, fail safely
+        end
+    end
+
+    -- prepare data for return
+    local data = {}
+    data['parsed'] = parsedData
+    data['buffer'] = buf
+
+    return data
+end
+
 
 return apiLoader
