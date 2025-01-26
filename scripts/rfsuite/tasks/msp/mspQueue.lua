@@ -27,6 +27,7 @@ function MspQueueController.new()
     self.lastTimeCommandSent = nil
     self.retryCount = 0
     self.maxRetries = rfsuite.config.maxRetries or 3
+    self.messageTimestamps = {}
     return self
 end
 
@@ -47,6 +48,8 @@ function MspQueueController:processQueue()
             module:muteSensorLost(2.0) -- mute for 2s
         end
     end
+
+    self:checkMessageDelays()
 
     if not self.currentMessage then
         self.currentMessage = table.remove(self.messageQueue, 1)
@@ -112,6 +115,7 @@ end
 function MspQueueController:clear()
     self.messageQueue = {}
     self.currentMessage = nil
+    self.messageTimestamps = {}
     mspClearTxBuf()
 end
 
@@ -121,8 +125,19 @@ function MspQueueController:add(message)
     if message then
         local copiedMessage = self:deepCopy(message)
         table.insert(self.messageQueue, copiedMessage)
+        self.messageTimestamps[#self.messageQueue] = os.clock()
     else
         rfsuite.utils.log("Unable to queue - nil message. Check function is callable")
+    end
+end
+
+function MspQueueController:checkMessageDelays()
+    local currentTime = os.clock()
+    for i = #self.messageQueue, 1, -1 do
+        if currentTime - self.messageTimestamps[i] > 1 then  -- Timeout set to 1 second
+            table.remove(self.messageQueue, i)
+            table.remove(self.messageTimestamps, i)
+        end
     end
 end
 
