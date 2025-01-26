@@ -21,12 +21,11 @@
  *     local message = {
  *         command = 193, -- MSP_SET_SERVO_OVERRIDE
  *         payload = {servoIndex},
- *         uuid = os.time() -- Unique identifier to prevent duplicate messages (time is not a good one - may be use a uuid)
+ *         timeout = 3 -- custom time before message is flushed (default 1)
+ *         uuid = os.time() -- Unique identifier to prevent duplicate messages (default is nil)
  *     }
  *     rfsuite.bg.msp.mspHelper.writeU16(message.payload, 0)
  *     rfsuite.bg.msp.mspQueue:add(message)
- *     rfsuite.app.triggers.isReady = true
- *     rfsuite.app.triggers.closeProgressLoader = true
  * end
 ]] --
 
@@ -146,6 +145,7 @@ function MspQueueController:add(message)
 
     if message then
         local copiedMessage = self:deepCopy(message)
+        copiedMessage.timeout = message.timeout or 1  -- Default timeout of 1 second if not provided
         table.insert(self.messageQueue, copiedMessage)
         self.messageTimestamps[#self.messageQueue] = os.clock()
     else
@@ -165,9 +165,11 @@ end
 function MspQueueController:checkMessageDelays()
     local currentTime = os.clock()
     for i = #self.messageQueue, 1, -1 do
-        if currentTime - self.messageTimestamps[i] > 1 then  -- Timeout set to 1 second
+        local timeout = self.messageQueue[i].timeout or 1  -- Use message-specific timeout if available
+        if currentTime - self.messageTimestamps[i] > timeout then
             table.remove(self.messageQueue, i)
             table.remove(self.messageTimestamps, i)
+            rfsuite.utils.log("Message timed out and removed from the queue.")
         end
     end
 end
