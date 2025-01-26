@@ -24,13 +24,14 @@
  * Functions:
  * - write(): Initiates an MSP command to set the RTC.
  * - writeComplete(): Checks if the write operation is complete.
+ * - setValue("seconds", os.time())
+ * - setValue("milliseconds", 123)
  * - resetWriteStatus(): Resets the write completion status.
  *
  * MSP Command Used:
  * - MSP_SET_RTC (Command ID: 246)
 ]] --
-
-
+ 
 -- Constants for MSP Commands
 local MSP_SET_RTC_CMD = 246  -- Command identifier for setting RTC
 
@@ -43,8 +44,36 @@ local MSP_SET_RTC_STRUCTURE = {
 -- Variable to track write completion
 local mspWriteComplete = false
 
+-- Function to create a payload table
+local payloadData = {}
+local defaultData = {}
+
+-- Function to get default values (stub for now)
+local function getDefaults()
+    -- This function should return a table with default values
+    -- Typically we should be performing a 'read' to populate this data
+    -- however this api only ever writes data
+    return {
+        seconds = os.time(),
+        milliseconds = 0
+    }
+end
+
 -- Function to initiate MSP write operation
 local function write()
+    local defaults = getDefaults()
+    -- Validate if all fields have been set or fallback to defaults
+    for _, field in ipairs(MSP_SET_RTC_STRUCTURE) do
+        if payloadData[field.field] == nil then
+            if defaults[field.field] ~= nil then
+                payloadData[field.field] = defaults[field.field]
+            else
+                error("Missing value for field: " .. field.field)
+                return
+            end
+        end
+    end
+
     local message = {
         command = MSP_SET_RTC_CMD,  -- Specify the MSP command
         payload = {},
@@ -54,13 +83,32 @@ local function write()
         simulatorResponse = {}
     }
 
-    -- Get current time and format it for payload
-    local now = os.time()
-    rfsuite.bg.msp.mspHelper.writeU32(message.payload, now)  -- Write seconds
-    rfsuite.bg.msp.mspHelper.writeU16(message.payload, 0)    -- Placeholder for milliseconds
+    -- Fill payload with data from payloadData table
+    for _, field in ipairs(MSP_SET_RTC_STRUCTURE) do
+        if field.type == "U32" then
+            rfsuite.bg.msp.mspHelper.writeU32(message.payload, payloadData[field.field])
+        elseif field.type == "U24" then
+            rfsuite.bg.msp.mspHelper.writeU24(message.payload, payloadData[field.field])
+        elseif field.type == "U16" then
+            rfsuite.bg.msp.mspHelper.writeU16(message.payload, payloadData[field.field])
+        elseif field.type == "U8" then
+            rfsuite.bg.msp.mspHelper.writeU8(message.payload, payloadData[field.field])
+        end
+    end
 
     -- Add the message to the processing queue
     rfsuite.bg.msp.mspQueue:add(message)
+end
+
+-- Function to set a value dynamically
+local function setValue(fieldName, value)
+    for _, field in ipairs(MSP_SET_RTC_STRUCTURE) do
+        if field.field == fieldName then
+            payloadData[fieldName] = value
+            return true
+        end
+    end
+    error("Invalid field name: " .. fieldName)
 end
 
 -- Function to check if the write operation is complete
@@ -76,6 +124,8 @@ end
 -- Return the module's API functions
 return {
     write = write,
+    setValue = setValue,
     writeComplete = writeComplete,
-    resetWriteStatus = resetWriteStatus
+    resetWriteStatus = resetWriteStatus,
+    getDefaults = getDefaults
 }
