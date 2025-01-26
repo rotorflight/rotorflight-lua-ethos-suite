@@ -15,7 +15,22 @@
  *
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  *
+ * Usage Example:
+ * ---------------------------
+ * local function servoCenterFocusOn(self)
+ *     local message = {
+ *         command = 193, -- MSP_SET_SERVO_OVERRIDE
+ *         payload = {servoIndex},
+ *         uuid = os.time() -- Unique identifier to prevent duplicate messages (time is not a good one - may be use a uuid)
+ *     }
+ *     rfsuite.bg.msp.mspHelper.writeU16(message.payload, 0)
+ *     rfsuite.bg.msp.mspQueue:add(message)
+ *     rfsuite.app.triggers.isReady = true
+ *     rfsuite.app.triggers.closeProgressLoader = true
+ * end
 ]] --
+
+
 -- MspQueueController class
 local MspQueueController = {}
 MspQueueController.__index = MspQueueController
@@ -122,6 +137,13 @@ end
 function MspQueueController:add(message)
     if not rfsuite.bg.telemetry.active() then return end
 
+    if message and message.uuid then
+        if self:hasUUID(message.uuid) then
+            rfsuite.utils.log("Message with UUID " .. message.uuid .. " already exists in the queue. Skipping.")
+            return
+        end
+    end
+
     if message then
         local copiedMessage = self:deepCopy(message)
         table.insert(self.messageQueue, copiedMessage)
@@ -129,6 +151,15 @@ function MspQueueController:add(message)
     else
         rfsuite.utils.log("Unable to queue - nil message. Check function is callable")
     end
+end
+
+function MspQueueController:hasUUID(uuid)
+    for _, msg in ipairs(self.messageQueue) do
+        if msg.uuid == uuid then
+            return true
+        end
+    end
+    return false
 end
 
 function MspQueueController:checkMessageDelays()
