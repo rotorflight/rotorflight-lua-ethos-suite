@@ -19,7 +19,7 @@ function MspQueueController.new()
     self.lastTimeCommandSent = nil
     self.retryCount = 0
     self.maxRetries = 3
-    self.uuidSet = {}
+    self.uuid = nil
     return self
 end
 
@@ -118,7 +118,7 @@ end
 function MspQueueController:clear()
     self.messageQueue = {}
     self.currentMessage = nil
-    self.uuidSet = {}
+    self.uuid = {}
     mspClearTxBuf()
 end
 
@@ -137,13 +137,13 @@ end
 function MspQueueController:add(message)
     if not rfsuite.bg.telemetry.active() then return end
     if message then
-        if message.uuid and self.uuidSet[message.uuid] then
+        if message.uuid and self.uuid == message.uuid then
             rfsuite.utils.log("Skipping duplicate message with UUID " .. message.uuid)
             return
         end
         message = deepCopy(message)
         if message.uuid then
-            self.uuidSet[message.uuid] = true
+            self.uuid = message.uuid
         end
         rfsuite.utils.log("Queueing command " .. message.command .. " at position " .. #self.messageQueue + 1)
         self.messageQueue[#self.messageQueue + 1] = message
