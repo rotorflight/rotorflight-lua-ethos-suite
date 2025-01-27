@@ -1,34 +1,12 @@
 --[[
-
  * Copyright (C) Rotorflight Project
- *
  * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
  *
  * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 3 as
- * published by the Free Software Foundation.
+ * it under the terms of the GNU General Public License version 3.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * Note.  Some icons have been sourced from https://www.flaticon.com/
- *
- * Usage Example:
- * ---------------------------
- * local function servoCenterFocusOn(self)
- *     local message = {
- *         command = 193, -- MSP_SET_SERVO_OVERRIDE
- *         payload = {servoIndex},
- *         timeout = 3 -- custom time before message is flushed (default 1)
- *         uuid = os.time() -- Unique identifier to prevent duplicate messages (default is nil)
- *     }
- *     rfsuite.bg.msp.mspHelper.writeU16(message.payload, 0)
- *     rfsuite.bg.msp.mspQueue:add(message)
- * end
-]] --
-
+ * Note: Some icons have been sourced from https://www.flaticon.com/
+]]--
 
 -- MspQueueController class
 local MspQueueController = {}
@@ -40,13 +18,17 @@ function MspQueueController.new()
     self.currentMessage = nil
     self.lastTimeCommandSent = nil
     self.retryCount = 0
-    self.maxRetries = rfsuite.config.maxRetries or 3
-    self.messageTimestamps = {}
+    self.maxRetries = 3
+    self.uuidSet = {}
     return self
 end
 
 function MspQueueController:isProcessed()
     return not self.currentMessage and #self.messageQueue == 0
+end
+
+local function popFirstElement(tbl)
+    return table.remove(tbl, 1)
 end
 
 function MspQueueController:processQueue()
@@ -59,136 +41,115 @@ function MspQueueController:processQueue()
     if rfsuite.rssiSensor then
         local module = model.getModule(rfsuite.rssiSensor:module())
         if module and module.muteSensorLost then
-            module:muteSensorLost(2.0) -- mute for 2s
+            module:muteSensorLost(2.0)
         end
     end
 
-    self:checkMessageDelays()
-
     if not self.currentMessage then
-        self.currentMessage = table.remove(self.messageQueue, 1)
+        self.currentMessage = popFirstElement(self.messageQueue)
         self.retryCount = 0
     end
 
-    local lastTimeInterval = rfsuite.bg.msp.protocol.mspIntervalOverride or 1
+    local lastTimeInterval = rfsuite.bg.msp.protocol.mspIntervalOveride or 1
     if lastTimeInterval == nil then lastTimeInterval = 1 end
 
     if not system:getVersion().simulation then
         if not self.lastTimeCommandSent or self.lastTimeCommandSent + lastTimeInterval < os.clock() then
-            self:sendCurrentMessage()
+            rfsuite.bg.msp.protocol.mspWrite(self.currentMessage.command, self.currentMessage.payload or {})
+            self.lastTimeCommandSent = os.clock()
+            self.retryCount = self.retryCount + 1
+
+            if rfsuite.app.Page and rfsuite.app.Page.mspRetry then
+                rfsuite.app.Page.mspRetry(self)
+            end
         end
 
         mspProcessTxQ()
-        local cmd, buf, err = mspPollReply()
-        self:handleReply(cmd, buf, err)
+        cmd, buf, err = mspPollReply()
     else
-        self:simulateResponse()
+        if not self.currentMessage.simulatorResponse then
+            rfsuite.utils.log("No simulator response for command " .. tostring(self.currentMessage.command))
+            self.currentMessage = nil
+            return
+        end
+        cmd, buf, err = self.currentMessage.command, self.currentMessage.simulatorResponse, nil
     end
-end
 
-function MspQueueController:sendCurrentMessage()
-    if self.currentMessage.payload then
-        rfsuite.bg.msp.protocol.mspWrite(self.currentMessage.command, self.currentMessage.payload)
-    else
-        rfsuite.bg.msp.protocol.mspWrite(self.currentMessage.command, {})
-    end
-    self.lastTimeCommandSent = os.clock()
-    self.retryCount = self.retryCount + 1
-    if rfsuite.app.Page and rfsuite.app.Page.mspRetry then
-        rfsuite.app.Page.mspRetry(self)
-    end
-end
-
-function MspQueueController:handleReply(cmd, buf, err)
     if cmd then
         self.lastTimeCommandSent = nil
-        if self.currentMessage.command == cmd and not err then
-            if self.currentMessage.processReply then
-                self.currentMessage:processReply(buf)
-            end
-            self.currentMessage = nil
-
-            -- Invoke mspSuccess function if available
-            if rfsuite.app.Page ~= nil and rfsuite.app.Page.mspSuccess then
-                rfsuite.app.Page.mspSuccess()
-            end            
-
-        elseif self.retryCount > self.maxRetries then
-            self.messageQueue = {}
-            if self.currentMessage.errorHandler then
-                self.currentMessage:errorHandler()
-            end
-            self:clear()
+        if rfsuite.config.mspTxRxDebug or rfsuite.config.logEnable then
+            local logData = "Requesting: {" .. tostring(cmd) .. "}"
+            rfsuite.utils.log(logData)
+            if rfsuite.config.mspTxRxDebug then print(logData) end
         end
     end
-end
 
-function MspQueueController:simulateResponse()
-    if not self.currentMessage.simulatorResponse then
-        rfsuite.utils.log("No simulator response for command " .. tostring(self.currentMessage.command))
+    if (cmd == self.currentMessage.command and not err)
+       or (self.currentMessage.command == 68 and self.retryCount == 2)
+       or (self.currentMessage.command == 217 and err and self.retryCount == 2) then
+
+        if rfsuite.config.mspTxRxDebug or rfsuite.config.logEnable then
+            local logData = "Received: {" .. rfsuite.utils.joinTableItems(buf, ", ") .. "}"
+            rfsuite.utils.log(logData)
+            if rfsuite.config.mspTxRxDebug and #buf > 0 then print(logData) end
+        end
+
+        if self.currentMessage.processReply then
+            self.currentMessage:processReply(buf)
+        end
         self.currentMessage = nil
-        return
+
+        if rfsuite.app.Page and rfsuite.app.Page.mspSuccess then
+            rfsuite.app.Page.mspSuccess()
+        end
+    elseif self.retryCount > self.maxRetries then
+        self.messageQueue = {}
+        if self.currentMessage.errorHandler then
+            self.currentMessage:errorHandler()
+        end
+        self:clear()
+
+        if rfsuite.app.Page and rfsuite.app.Page.mspTimeout then
+            rfsuite.app.Page.mspTimeout()
+        end
     end
-    self:handleReply(self.currentMessage.command, self.currentMessage.simulatorResponse, nil)
 end
 
 function MspQueueController:clear()
     self.messageQueue = {}
     self.currentMessage = nil
-    self.messageTimestamps = {}
+    self.uuidSet = {}
     mspClearTxBuf()
+end
+
+local function deepCopy(original)
+    if type(original) == "table" then
+        local copy = {}
+        for key, value in next, original, nil do
+            copy[key] = deepCopy(value)
+        end
+        return setmetatable(copy, getmetatable(original))
+    else
+        return original
+    end
 end
 
 function MspQueueController:add(message)
     if not rfsuite.bg.telemetry.active() then return end
-
-    if message and message.uuid then
-        if self:hasUUID(message.uuid) then
-            rfsuite.utils.log("Message with UUID " .. message.uuid .. " already exists in the queue. Skipping.")
+    if message then
+        if message.uuid and self.uuidSet[message.uuid] then
+            rfsuite.utils.log("Skipping duplicate message with UUID " .. message.uuid)
             return
         end
-    end
-
-    if message then
-        local copiedMessage = self:deepCopy(message)
-        copiedMessage.timeout = message.timeout or 1  -- Default timeout of 1 second if not provided
-        table.insert(self.messageQueue, copiedMessage)
-        self.messageTimestamps[#self.messageQueue] = os.clock()
+        message = deepCopy(message)
+        if message.uuid then
+            self.uuidSet[message.uuid] = true
+        end
+        rfsuite.utils.log("Queueing command " .. message.command .. " at position " .. #self.messageQueue + 1)
+        self.messageQueue[#self.messageQueue + 1] = message
+        return self
     else
-        rfsuite.utils.log("Unable to queue - nil message. Check function is callable")
-    end
-end
-
-function MspQueueController:hasUUID(uuid)
-    for _, msg in ipairs(self.messageQueue) do
-        if msg.uuid == uuid then
-            return true
-        end
-    end
-    return false
-end
-
-function MspQueueController:checkMessageDelays()
-    local currentTime = os.clock()
-    for i = #self.messageQueue, 1, -1 do
-        local timeout = self.messageQueue[i].timeout or 1  -- Use message-specific timeout if available
-        if currentTime - self.messageTimestamps[i] > timeout then
-            table.remove(self.messageQueue, i)
-            table.remove(self.messageTimestamps, i)
-            rfsuite.utils.log("Message timed out and removed from the queue.")
-        end
-    end
-end
-
-function MspQueueController:deepCopy(original)
-    if type(original) == "table" then
-        local copy = {}
-        for key, value in pairs(original) do
-            copy[key] = self:deepCopy(value)
-        end
-        return copy
-    else
-        return original
+        rfsuite.utils.log("Unable to queue - nil message.")
     end
 end
 
