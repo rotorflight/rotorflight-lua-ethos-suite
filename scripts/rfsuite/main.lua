@@ -31,7 +31,7 @@ config.ethosVersion = 1560                                          -- min versi
 config.ethosVersionString = "ETHOS < V1.6.0"                        -- string to print if ethos version error occurs
 config.defaultRateProfile = 4 -- ACTUAL                             -- default rate table [default = 4]
 config.supportedMspApiVersion = {"12.06", "12.07","12.08"}          -- supported msp versions
-config.simulatorApiVersionResponse = {0, 12, 07}                    -- version of api return by simulator
+config.simulatorApiVersionResponse = {0, 12, 08}                    -- version of api return by simulator
 config.watchdogParam = 10                                           -- watchdog timeout for progress boxes [default = 10]
 
 
