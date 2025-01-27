@@ -21,7 +21,7 @@ fields[#fields + 1] = {t = "Motor direction",  activeFieldPos = 5 + 1, vals = {m
 fields[#fields + 1] = {t = "Motor Poles",  activeFieldPos = 16 + 1, min = 1, max = 550, default = 1, step = 1 ,  vals = {mspHeaderBytes + 34, mspHeaderBytes + 33}}
 fields[#fields + 1] = {t = "Startup Power",   activeFieldPos = 11 + 1, vals = {mspHeaderBytes + 24, mspHeaderBytes + 23}, tableIdxInc = -1, table = startupPower}
 fields[#fields + 1] = {t = "LED Colour",   activeFieldPos = 17 + 1, vals = {mspHeaderBytes + 36, mspHeaderBytes + 35}, tableIdxInc = -1, table = ledColor}
-fields[#fields + 1] = {t = "Smart Fan",   activeFieldPos = 18 + 1, vals = {mspHeaderBytes + 37, mspHeaderBytes + 38}, tableIdxInc = -1, table = fanControl}
+fields[#fields + 1] = {t = "Smart Fan",   activeFieldPos = 18 + 1, vals = {mspHeaderBytes + 38, mspHeaderBytes + 37}, tableIdxInc = -1, table = fanControl}
 
 rfsuite.utils.print_r(activeFields)
 
