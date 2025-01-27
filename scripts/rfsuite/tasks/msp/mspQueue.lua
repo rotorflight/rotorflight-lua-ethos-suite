@@ -13,12 +13,14 @@ local MspQueueController = {}
 MspQueueController.__index = MspQueueController
 
 function MspQueueController.new()
+    local DEFAULT_TIMEOUT = 1.0
     local self = setmetatable({}, MspQueueController)
     self.messageQueue = {}
     self.currentMessage = nil
     self.lastTimeCommandSent = nil
     self.retryCount = 0
     self.maxRetries = 3
+    self.timeout = DEFAULT_TIMEOUT
     self.uuid = nil
     return self
 end
@@ -46,6 +48,7 @@ function MspQueueController:processQueue()
     end
 
     if not self.currentMessage then
+        self.currentMessageStartTime = os.clock()
         self.currentMessage = popFirstElement(self.messageQueue)
         self.retryCount = 0
     end
@@ -57,6 +60,7 @@ function MspQueueController:processQueue()
         if not self.lastTimeCommandSent or self.lastTimeCommandSent + lastTimeInterval < os.clock() then
             rfsuite.bg.msp.protocol.mspWrite(self.currentMessage.command, self.currentMessage.payload or {})
             self.lastTimeCommandSent = os.clock()
+            self.currentMessageStartTime = os.clock()
             self.retryCount = self.retryCount + 1
 
             if rfsuite.app.Page and rfsuite.app.Page.mspRetry then
@@ -73,6 +77,12 @@ function MspQueueController:processQueue()
             return
         end
         cmd, buf, err = self.currentMessage.command, self.currentMessage.simulatorResponse, nil
+    end
+
+    if self.currentMessage and os.clock() - self.currentMessageStartTime > (self.currentMessage.timeout or self.timeout) then
+        rfsuite.utils.log("Message timeout exceeded. Flushing queue.")
+        self:clear()
+        return
     end
 
     if cmd then
