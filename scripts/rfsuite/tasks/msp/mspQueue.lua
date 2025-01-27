@@ -107,6 +107,12 @@ function MspQueueController:handleReply(cmd, buf, err)
                 self.currentMessage:processReply(buf)
             end
             self.currentMessage = nil
+
+            -- Invoke mspSuccess function if available
+            if rfsuite.app.Page ~= nil and rfsuite.app.Page.mspSuccess then
+                rfsuite.app.Page.mspSuccess()
+            end            
+
         elseif self.retryCount > self.maxRetries then
             self.messageQueue = {}
             if self.currentMessage.errorHandler then
