@@ -13,7 +13,7 @@ local MspQueueController = {}
 MspQueueController.__index = MspQueueController
 
 function MspQueueController.new()
-    local DEFAULT_TIMEOUT = 1.0
+    local DEFAULT_TIMEOUT = 2.0
     local self = setmetatable({}, MspQueueController)
     self.messageQueue = {}
     self.currentMessage = nil
