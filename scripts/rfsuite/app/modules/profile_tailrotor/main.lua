@@ -16,7 +16,7 @@ fields[#fields + 1] = {t = "Collective FF gain", help = "profilesYawFFCollective
 if rfsuite.config.apiVersion >= 12.08 then
     labels[#labels + 1] = {t = "Inertia Precomp", label = "inertia", inline_size = 13.6}
     fields[#fields + 1] = {t = "Gain", help = "profilesIntertiaGain", inline = 2, label = "inertia", min = 0, max = 250, default = 0, vals = {42}}
-    fields[#fields + 1] = {t = "Cutoff", help = "profilesInertiaCutoff", inline = 1, label = "inertia", min = 0, max = 250, default = 25, unit = "s", vals = {43}}
+    fields[#fields + 1] = {t = "Cutoff", help = "profilesInertiaCutoff", inline = 1, label = "inertia", min = 0, max = 250, default = 25, unit = "Hz", vals = {43}}
 else
     labels[#labels + 1] = {t = "Collective Impulse FF", label = "colimpff", inline_size = 13.6}
     fields[#fields + 1] = {t = "Gain", help = "profilesYawFFImpulseGain", inline = 2, label = "colimpff", min = 0, max = 250, default = 0, vals = {26}}
