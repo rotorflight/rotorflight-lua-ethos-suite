@@ -37,6 +37,8 @@ data['fields'] = {
     profilesYawFFCollectiveGain = {t = "Collective feedforward mixed into yaw (collective-to-yaw precomp)."},
     profilesYawFFImpulseGain = {t = "An extra boost of yaw precomp on collective input."},
     profilesyawFFImpulseDecay = {t = "Decay time for the extra yaw precomp on collective input."},
+    profilesIntertiaGain = {t= "Scalar gain. The strength of the main rotor inertia. Higher value means more precomp is applied to yaw control."},
+    profilesInertiaCutoff = {t = "Cutoff. Derivative cutoff frequency in 1/10Hz steps. Controls how sharp the precomp is. Higher value is sharper."},    
 }
 
 return data
