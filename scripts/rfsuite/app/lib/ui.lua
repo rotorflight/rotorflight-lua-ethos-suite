@@ -886,56 +886,52 @@ function ui.navigationButtons(x, y, w, h)
     
     -- Attempt to load the help.lua file
     local helpPath = "app/modules/" .. section .. "/help.lua"
-    local helpFunction, loadError = loadfile(helpPath)
 
-        -- File loaded successfully; now execute it in a protected call
-        local success, help = pcall(helpFunction)
+        if rfsuite.utils.file_exists(helpPath) then
 
-        -- Execution of the file succeeded
-        rfsuite.app.formNavigationFields['help'] = form.addButton(line, {x = helpOffset, y = y, w = wS, h = h}, {
-            text = "?",
-            icon = nil,
-            options = FONT_S,
-            paint = function()
-            end,
-            press = function()
-                if rfsuite.app.Page and rfsuite.app.Page.onHelpMenu then
-                    rfsuite.app.Page.onHelpMenu(rfsuite.app.Page)
-                else
-                    if section == 'rates' then
-                        -- rates is an oddball and has an exeption
-                        rfsuite.app.ui.openPageHelp(help.help["table"][rfsuite.rateProfile], section) 
-                    else    
-                        -- choose default or custom
-                        if help.help[script] then
-                            rfsuite.app.ui.openPageHelp(help.help[script], section) 
-                        else   
-                            rfsuite.app.ui.openPageHelp(help.help['default'], section)
-                        end    
+            local help = assert(loadfile(helpPath))()
+
+            -- Execution of the file succeeded
+            rfsuite.app.formNavigationFields['help'] = form.addButton(line, {x = helpOffset, y = y, w = wS, h = h}, {
+                text = "?",
+                icon = nil,
+                options = FONT_S,
+                paint = function()
+                end,
+                press = function()
+                    if rfsuite.app.Page and rfsuite.app.Page.onHelpMenu then
+                        rfsuite.app.Page.onHelpMenu(rfsuite.app.Page)
+                    else
+                        if section == 'rates' then
+                            -- rates is an oddball and has an exeption
+                            rfsuite.app.ui.openPageHelp(help.help["table"][rfsuite.rateProfile], section) 
+                        else    
+                            -- choose default or custom
+                            if help.help[script] then
+                                rfsuite.app.ui.openPageHelp(help.help[script], section) 
+                            else   
+                                rfsuite.app.ui.openPageHelp(help.help['default'], section)
+                            end    
+                        end
                     end
                 end
-            end
-        })
-        if not success then
-            rfsuite.utils.log("Error executing help.lua: " .. help)
+            })
+
+        else
+            -- File loading failed
+            rfsuite.utils.log("Failed to load help.lua: " .. loadError)
+            rfsuite.app.formNavigationFields['help'] = form.addButton(line, {x = helpOffset, y = y, w = wS, h = h}, {
+                text = "?",
+                icon = nil,
+                options = FONT_S,
+                paint = function()
+                end,
+                press = function()
+                end
+            })
             rfsuite.app.formNavigationFields['help']:enable(false)
         end
-
-    else
-        -- File loading failed
-        rfsuite.utils.log("Failed to load help.lua: " .. loadError)
-        rfsuite.app.formNavigationFields['help'] = form.addButton(line, {x = helpOffset, y = y, w = wS, h = h}, {
-            text = "?",
-            icon = nil,
-            options = FONT_S,
-            paint = function()
-            end,
-            press = function()
-            end
-        })
-        rfsuite.app.formNavigationFields['help']:enable(false)
     end
-
 
 end
 
