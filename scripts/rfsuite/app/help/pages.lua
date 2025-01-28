@@ -2,15 +2,6 @@ data = {}
 
 -- LuaFormatter off
 
--- PIDS
-data["pids"] = {}
-data["pids"]["TEXT"] = {
-        "Increase D, P, I in order until each wobbles, then back off.", 
-        "Set F for a good response in full stick flips and rolls.", 
-        "If necessary, tweak P:D ratio to set response damping to your liking.",
-        "Increase O until wobbles occur when jabbing elevator at full collective, back off a bit.", 
-        "Increase B if you want sharper response."
-}
 
 -- FLIGHT TUNING RATES
 data["rates"] = {}
@@ -214,11 +205,6 @@ data["copyprofiles"]["TEXT"] = {
         "Choose the source and destinations and save to copy the profile."
 }
 
--- SELECT PROFILE
-data["msp_speed"] = {}
-data["msp_speed"]["TEXT"] = {
-        "This tool attempt to determine the quality of your MSP data link by performing as many large MSP queries within 30 seconds as possible."
-}
 
 -- EXP MSP
 data["msp_exp"] = {}

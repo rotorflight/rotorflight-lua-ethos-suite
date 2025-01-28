@@ -480,7 +480,7 @@ function ui.fieldNumber(i)
     if f.disable == true then rfsuite.app.formFields[i]:enable(false) end
 
     if f.help ~= nil then
-        if rfsuite.app.fieldHelpTxt[f.help]['t'] ~= nil then
+        if rfsuite.app.fieldHelpTxt and rfsuite.app.fieldHelpTxt[f.help]['t'] ~= nil then
             local helpTxt = rfsuite.app.fieldHelpTxt[f.help]['t']
             rfsuite.app.formFields[i]:help(helpTxt)
         end
@@ -607,7 +607,7 @@ function ui.fieldText(i)
     if f.disable == true then rfsuite.app.formFields[i]:enable(false) end
 
     if f.help ~= nil then
-        if rfsuite.app.fieldHelpTxt[f.help]['t'] ~= nil then
+        if rfsuite.app.fieldHelpTxt and rfsuite.app.fieldHelpTxt[f.help]['t'] ~= nil then
             local helpTxt = rfsuite.app.fieldHelpTxt[f.help]['t']
             rfsuite.app.formFields[i]:help(helpTxt)
         end
@@ -686,6 +686,18 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
     rfsuite.app.formLines = {}
 
     rfsuite.app.Page = assert(loadfile("app/modules/" .. script))(idx)
+
+    -- load the help file
+    local section = script:match("([^/]+)") -- return just the folder name
+    local helpPath = "app/modules/" .. section .. "/help.lua"
+    if rfsuite.utils.file_exists(helpPath) then
+        local helpData = assert(loadfile(helpPath))()
+        rfsuite.app.fieldHelpTxt = helpData.fields
+    else
+        rfsuite.app.fieldHelpTxt = nil  
+    end    
+
+
 
     if rfsuite.app.Page.openPage then
         rfsuite.app.Page.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
@@ -861,10 +873,16 @@ function ui.navigationButtons(x, y, w, h)
 
     -- HELP BUTTON
     if navButtons.help ~= nil and navButtons.help == true then
-
-        local help = assert(loadfile("app/help/pages.lua"))()
         local section = rfsuite.app.lastScript:match("([^/]+)") -- return just the folder name
+    
+    -- Attempt to load the help.lua file
+    local helpPath = "app/modules/" .. section .. "/help.lua"
+    local helpFunction, loadError = loadfile(helpPath)
 
+        -- File loaded successfully; now execute it in a protected call
+        local success, help = pcall(helpFunction)
+
+        -- Execution of the file succeeded
         rfsuite.app.formNavigationFields['help'] = form.addButton(line, {x = helpOffset, y = y, w = wS, h = h}, {
             text = "?",
             icon = nil,
@@ -875,11 +893,30 @@ function ui.navigationButtons(x, y, w, h)
                 if rfsuite.app.Page and rfsuite.app.Page.onHelpMenu then
                     rfsuite.app.Page.onHelpMenu(rfsuite.app.Page)
                 else
-                    rfsuite.app.ui.openPageHelp(help.data, section)
+                    rfsuite.app.ui.openPageHelp(help.help, section)
                 end
             end
         })
+        if not success then
+            rfsuite.utils.log("Error executing help.lua: " .. help)
+            rfsuite.app.formNavigationFields['help']:enable(false)
+        end
+
+    else
+        -- File loading failed
+        rfsuite.utils.log("Failed to load help.lua: " .. loadError)
+        rfsuite.app.formNavigationFields['help'] = form.addButton(line, {x = helpOffset, y = y, w = wS, h = h}, {
+            text = "?",
+            icon = nil,
+            options = FONT_S,
+            paint = function()
+            end,
+            press = function()
+            end
+        })
+        rfsuite.app.formNavigationFields['help']:enable(false)
     end
+
 
 end
 
@@ -888,9 +925,12 @@ function ui.openPageHelp(helpdata, section)
     local qr
 
     if section == "rates" then
-        txtData = helpdata[section]["table"][rfsuite.rateProfile]
+
+        rfsuite.utils.print_r(helpdata)
+
+        txtData = helpdata["table"][rfsuite.rateProfile]
     else
-        txtData = helpdata[section]["TEXT"]
+        txtData = helpdata
     end
 
     local message = ""

@@ -111,13 +111,7 @@ return {
     profilesFeedforward = {t = "Helps push P-term based on stick input. Increasing will make response more sharp, but can cause overshoot."},
     profilesBoost = {t = "Additional boost on the feedforward to make the heli react more to quick stick movements."},
 
-    --
-    -- rates.lua
-    --
-    profilesRatesDynamicsTime = {t = "Increase or decrease the response time of the rate to smooth heli movements."},
-    profilesRatesDynamicsAcc = {t = "Maximum acceleration of the craft in response to a stick movement."},
 
-    --
     -- profile_rescue.lua
     --
     profilesRescueFlipMode = {t = "If rescue is activated while inverted, flip to upright - or remain inverted."},
