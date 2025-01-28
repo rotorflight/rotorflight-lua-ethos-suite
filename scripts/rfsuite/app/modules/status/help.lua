@@ -22,7 +22,8 @@ local data = {}
 data['help'] = {}
 
 data['help']['default'] = {
-	"This tool attempts to determine the quality of your MSP data link by performing as many large MSP queries within 30 seconds as possible.",
+        "Use this page to view your current flight controller status. This can be useful when determining why your heli will not arm.",
+        "To erase the dataflash for more log file storage, press the button on the menu denoted by a '*'."
 }
 
 data['fields'] = {

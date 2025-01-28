@@ -22,8 +22,10 @@ local data = {}
 data['help'] = {}
 
 data['help']['default'] = {
-	"This tool attempts to determine the quality of your MSP data link by performing as many large MSP queries within 30 seconds as possible.",
+        "This page provides some useful information that you may be asked for when requesting support.", 
+        "For support, please first read the help pages on www.rotorflight.org",
 }
+
 
 data['fields'] = {
 

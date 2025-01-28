@@ -22,11 +22,17 @@ local data = {}
 data['help'] = {}
 
 data['help']['default'] = {
-	"This tool attempts to determine the quality of your MSP data link by performing as many large MSP queries within 30 seconds as possible.",
+        "Configure advanced mixing and channel mapping if you have SBUS Out enabled on a serial port.",
+        "- For RX channels or servos (wideband), use 1000, 2000 or 500,1000 for narrow band servos.",
+        "- For mixer rules, use -1000, 1000.",
+        "- For motors, use 0, 1000.",
+        "- Or you can customize your own mapping.",
 }
 
 data['fields'] = {
-
+    sbusOutSource = {t = "Source id for the mix, counting from 0-15."},
+    sbusOutMin = {t = "The minimum pwm value to send"},
+    sbusOutMax = {t = "The maximum pwm value to send"}
 }
 
 return data

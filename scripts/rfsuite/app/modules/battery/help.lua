@@ -22,11 +22,17 @@ local data = {}
 data['help'] = {}
 
 data['help']['default'] = {
-	"This tool attempts to determine the quality of your MSP data link by performing as many large MSP queries within 30 seconds as possible.",
+        "Configure parameters related to your battery setup.", 
+        "These settings are used to calculate your fuel capacity.", 
 }
 
 data['fields'] = {
-
+    maxCellVoltage = {t = "Maximum voltage each cell can be charged to."},
+    fullCellVoltage = {t = "The nomimal voltage of a fully charged cell."},
+    warnCellVoltage = {t = "The voltage per cell when we trigger an alarm."},	
+    minCellVoltage = {t = "The minimum voltage a cell is safe to discharge to."},	
+    batteryCapacity = {t = "The milliamp hour capacity of your battery."},
+    cellCount = {t = "The number of cells in your battery pack."},
 }
 
 return data

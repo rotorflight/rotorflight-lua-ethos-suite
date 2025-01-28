@@ -22,7 +22,8 @@ local data = {}
 data['help'] = {}
 
 data['help']['default'] = {
-	"This tool attempts to determine the quality of your MSP data link by performing as many large MSP queries within 30 seconds as possible.",
+        "Set the current flight profile or rate profile you would like to use.",
+        "If you use use a switch on your radio to change flight or rate modes, this will over-ride this choice as soon as you toggle the switch."
 }
 
 data['fields'] = {

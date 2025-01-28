@@ -241,7 +241,7 @@ local function openPage(pidx, title, script)
         paint = function()
         end,
         press = function()
-            rfsuite.app.ui.openPageHelp(help.help, section)
+            rfsuite.app.ui.openPageHelp(help.help['default'], section)
         end
     })
 

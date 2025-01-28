@@ -22,7 +22,8 @@ local data = {}
 data['help'] = {}
 
 data['help']['default'] = {
-	"This tool attempts to determine the quality of your MSP data link by performing as many large MSP queries within 30 seconds as possible.",
+        "Copy PID profile or Rate profile from Source to Destination.", 
+        "Choose the source and destinations and save to copy the profile."
 }
 
 data['fields'] = {

@@ -22,7 +22,13 @@ local data = {}
 data['help'] = {}
 
 data['help']['default'] = {
-	"This tool attempts to determine the quality of your MSP data link by performing as many large MSP queries within 30 seconds as possible.",
+        "Please select a log file from the list below.",
+        "Note. To enable logging it is essential for you to have the following sensors enabled.",
+        "- arm status, voltage, headspeed, current,esc temperature"
+}
+
+data['help']['logs_tool'] = {
+        "Please use the slider to navigate the graph.",
 }
 
 data['fields'] = {

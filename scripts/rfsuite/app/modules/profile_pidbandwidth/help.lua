@@ -22,11 +22,15 @@ local data = {}
 data['help'] = {}
 
 data['help']['default'] = {
-	"This tool attempts to determine the quality of your MSP data link by performing as many large MSP queries within 30 seconds as possible.",
+        "PID Bandwidth: Overall bandwidth in HZ used by the PID loop.", 
+        "D-term cutoff: D-term cutoff frequency in HZ.", 
+        "B-term cutoff: B-term cutoff frequency in HZ."
 }
 
 data['fields'] = {
-
+    profilesPIDBandwidth = {t = "PID loop overall bandwidth in Hz."},
+    profilesPIDBandwidthDtermCutoff = {t = "D-term cutoff in Hz."},
+    profilesPIDBandwidthBtermCutoff = {t = "B-term cutoff in Hz."},	
 }
 
 return data
