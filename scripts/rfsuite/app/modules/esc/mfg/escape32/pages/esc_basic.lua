@@ -1,25 +1,35 @@
 local labels = {}
 local fields = {}
 
-local folder = "flrtr"
+local folder = "escape32"
 local ESC = assert(loadfile("app/modules/esc/mfg/" .. folder .. "/init.lua"))()
 local mspHeaderBytes = ESC.mspHeaderBytes
 local mspSignature = ESC.mspSignature
 
-local flightMode = {"Helicopter", "Fixed Wing"}
-local becVoltage = {"7.5", "8.0", "8.5", "12"}
-local motorDirection = {"CW", "CCW"}
-local fanControl = {"Automatic", "Always On"}
 
--- fields[#fields + 1] = {t = "ESC type", tablevals = {mspHeaderBytes + 1}, tableIdxInc = -1, table = flightMode} -- informational - maybe put in header
--- fields[#fields + 1] = {t = "Current spec", vals = {mspHeaderBytes + 3, mspHeaderBytes + 2}, unit="A"}  -- informational - maybe put in header?
-fields[#fields + 1] = {t = "Cell count", min = 4, max = 14, vals = {mspHeaderBytes + 24}}
-fields[#fields + 1] = {t = "BEC voltage", vals = {mspHeaderBytes + 27}, tableIdxInc = -1, table = becVoltage, unit = "V"}
-fields[#fields + 1] = {t = "Motor direction", vals = {mspHeaderBytes + 29}, tableIdxInc = -1, table = motorDirection}
-fields[#fields + 1] = {t = "Soft start", min = 5, max = 55, vals = {mspHeaderBytes + 35}}
-fields[#fields + 1] = {t = "Fan control", vals = {mspHeaderBytes + 34}, tableIdxInc = -1, table = fanControl}
+local bool = {"ON","OFF"}
+local throttleMode = {"FORWARD"}
+local ledMode = {"FORWARD"}
 
--- fields[#fields + 1] = {t = "Hardware version", vals = {mspHeaderBytes + 18}}  -- this val does not look correct.  regardless not in right place
+
+fields[#fields + 1] = {t = "Arm (wait for zero throttle)", min = 0, max = 1, vals = {mspHeaderBytes + 24}, table = bool}    -- Wait for 250ms zero throttle on startup:
+fields[#fields + 1] = {t = "Active Freewheeling", min = 0, max = 1, vals = {mspHeaderBytes + 24}, table = bool}             -- Damped mode (complementary PWM, active freewheeling): (needs to be on for sine_range to work)
+fields[#fields + 1] = {t = "Motor Reverse", min = 0, max = 1, vals = {mspHeaderBytes + 24}, table = bool}                   --  Reversed motor direction:
+fields[#fields + 1] = {t = "Brushed Motor", min = 0, max = 1, vals = {mspHeaderBytes + 24}, table = bool}                   --  Brushed mode: -- need to disable dome fields: In this mode, the ESC can be used with brushed motors connected to phases A and B (or C and B). The following settings have no effect: timing, sine_range, sine_power, freq_min, duty_spup, duty_ramp, duty_lock, prot_stall
+fields[#fields + 1] = {t = "Motor Timing", min = 1, max = 31, vals = {mspHeaderBytes + 24}}                                  -- Motor Timing
+fields[#fields + 1] = {t = "Slow Startup", min = 0, max = 1, vals = {mspHeaderBytes + 24}}                                  -- Sine startup range (%) [0 - off, 5..25]. This value sets the portion of throttle range dedicated to sine startup mode (crawler mode). Damped mode must be enabled before this setting can be activated. Stall protection can be used for seamless transition between sine startup and normal drive.
+fields[#fields + 1] = {t = "Minimum PWM Frequency", min = 16, max = 48, vals = {mspHeaderBytes + 24}}                       -- Minimum PWM frequency (kHz) [16..48].
+fields[#fields + 1] = {t = "Maximum PWM Frequency", min = 16, max = 96, vals = {mspHeaderBytes + 24}}                       -- Maximum PWM frequency (kHz) [16..96]. Smooth transition from minimum to maximum PWM frequency happens across [30..60] kERPM range.
+fields[#fields + 1] = {t = "Minimum Thottle Power", min = 0, max = 1, vals = {mspHeaderBytes + 24}}
+fields[#fields + 1] = {t = "Maximum Thottle Power", min = 0, max = 1, vals = {mspHeaderBytes + 24}}
+fields[#fields + 1] = {t = "Maximum Spinup Power", min = 0, max = 1, vals = {mspHeaderBytes + 24}}
+fields[#fields + 1] = {t = "Maximum Power @ kERPM", min = 0, max = 1, vals = {mspHeaderBytes + 24}}
+fields[#fields + 1] = {t = "Acceleration Slew Rate", min = 0, max = 1, vals = {mspHeaderBytes + 24}}
+fields[#fields + 1] = {t = "Drag Brake Amount", min = 0, max = 1, vals = {mspHeaderBytes + 24}}
+fields[#fields + 1] = {t = "Throttle Mode", min = 0, max = 1, vals = {mspHeaderBytes + 24}, table=throttleMode}
+fields[#fields + 1] = {t = "Preset Throttle", min = 0, max = 1, vals = {mspHeaderBytes + 24}}
+fields[#fields + 1] = {t = "Bec Voltage", min = 0, max = 1, vals = {mspHeaderBytes + 24}}
+fields[#fields + 1] = {t = "LED", min = 0, max = 1, vals = {mspHeaderBytes + 24}, table=ledMode}
 
 function postLoad()
     rfsuite.app.triggers.isReady = true
@@ -60,7 +70,7 @@ return {
     navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
     onNavMenu = onNavMenu,
     event = event,
-    pageTitle = "ESC / FLYROTOR / Basic",
+    pageTitle = "ESC / ESCape32 / Basic",
     headerLine = rfsuite.escHeaderLineText
 }
 
