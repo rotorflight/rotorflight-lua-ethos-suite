@@ -20,7 +20,9 @@
 local data = {}
 
 
-data['help'] = {
+data['help'] = {}
+
+data['help']['default'] = {
         "Default: We keep this to make button appear for rates.", 
         "We will use the sub keys below."
 }

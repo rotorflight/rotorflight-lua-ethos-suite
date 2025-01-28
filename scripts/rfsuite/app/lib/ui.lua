@@ -480,10 +480,14 @@ function ui.fieldNumber(i)
     if f.disable == true then rfsuite.app.formFields[i]:enable(false) end
 
     if f.help ~= nil then
-        if rfsuite.app.fieldHelpTxt and rfsuite.app.fieldHelpTxt[f.help]['t'] ~= nil then
+        if rfsuite.app.fieldHelpTxt and rfsuite.app.fieldHelpTxt[f.help] and rfsuite.app.fieldHelpTxt[f.help]['t'] ~= nil then
             local helpTxt = rfsuite.app.fieldHelpTxt[f.help]['t']
             rfsuite.app.formFields[i]:help(helpTxt)
-        end
+        else
+            if rfsuite.config.helpFieldDebug == true then
+                print(f.help)
+            end
+        end    
     end
 
 end
@@ -607,10 +611,14 @@ function ui.fieldText(i)
     if f.disable == true then rfsuite.app.formFields[i]:enable(false) end
 
     if f.help ~= nil then
-        if rfsuite.app.fieldHelpTxt and rfsuite.app.fieldHelpTxt[f.help]['t'] ~= nil then
+        if rfsuite.app.fieldHelpTxt and rfsuite.app.fieldHelpTxt[f.help] and rfsuite.app.fieldHelpTxt[f.help]['t'] ~= nil then
             local helpTxt = rfsuite.app.fieldHelpTxt[f.help]['t']
             rfsuite.app.formFields[i]:help(helpTxt)
-        end
+        else
+            if rfsuite.config.helpFieldDebug == true then
+                print(f.help)
+            end 
+        end      
     end
 
 end
@@ -873,7 +881,8 @@ function ui.navigationButtons(x, y, w, h)
 
     -- HELP BUTTON
     if navButtons.help ~= nil and navButtons.help == true then
-        local section = rfsuite.app.lastScript:match("([^/]+)") -- return just the folder name
+    local section = rfsuite.app.lastScript:match("([^/]+)") -- return just the folder name
+    local script = string.match(rfsuite.app.lastScript, "/([^/]+)%.lua$")
     
     -- Attempt to load the help.lua file
     local helpPath = "app/modules/" .. section .. "/help.lua"
@@ -893,7 +902,17 @@ function ui.navigationButtons(x, y, w, h)
                 if rfsuite.app.Page and rfsuite.app.Page.onHelpMenu then
                     rfsuite.app.Page.onHelpMenu(rfsuite.app.Page)
                 else
-                    rfsuite.app.ui.openPageHelp(help.help, section)
+                    if section == 'rates' then
+                        -- rates is an oddball and has an exeption
+                        rfsuite.app.ui.openPageHelp(help.help["table"][rfsuite.rateProfile], section) 
+                    else    
+                        -- choose default or custom
+                        if help.help[script] then
+                            rfsuite.app.ui.openPageHelp(help.help[script], section) 
+                        else   
+                            rfsuite.app.ui.openPageHelp(help.help['default'], section)
+                        end    
+                    end
                 end
             end
         })
@@ -920,18 +939,9 @@ function ui.navigationButtons(x, y, w, h)
 
 end
 
-function ui.openPageHelp(helpdata, section)
-    local txtData
+function ui.openPageHelp(txtData, section)
+
     local qr
-
-    if section == "rates" then
-
-        rfsuite.utils.print_r(helpdata)
-
-        txtData = helpdata["table"][rfsuite.rateProfile]
-    else
-        txtData = helpdata
-    end
 
     local message = ""
 

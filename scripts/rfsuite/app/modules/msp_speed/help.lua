@@ -19,7 +19,9 @@
 ]] --
 local data = {}
 
-data['help'] = {
+data['help'] = {}
+
+data['help']['default'] = {
 	"This tool attempt to determine the quality of your MSP data link by performing as many large MSP queries within 30 seconds as possible."
 }
 

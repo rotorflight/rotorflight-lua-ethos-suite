@@ -19,7 +19,9 @@
 ]] --
 local data = {}
 
-data['help'] = {
+data['help'] = {}
+
+data['help']['default'] = {
         "Increase D, P, I in order until each wobbles, then back off.", 
         "Set F for a good response in full stick flips and rolls.", 
         "If necessary, tweak P:D ratio to set response damping to your liking.",
