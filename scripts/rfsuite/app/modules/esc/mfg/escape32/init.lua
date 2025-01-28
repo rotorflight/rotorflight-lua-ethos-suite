@@ -1,5 +1,5 @@
-local toolName = "FLYROTOR"
-moduleName = "FLRTR"
+local toolName = "ESCape32"
+moduleName = "escape32"
 
 local mspHeaderBytes = 2
 
@@ -36,8 +36,8 @@ local function getEscModel(self)
 
     local hw = "1." .. getPageValue(self, 18) .. '/' .. getPageValue(self, 12) .. "." .. getPageValue(self, 13) .. "." .. getPageValue(self, 14)
 
-    return "FLYROTOR " .. string.format(self[5]) .. "A " .. hw .. " "
-
+    --return "FLYROTOR " .. string.format(self[5]) .. "A " .. hw .. " "
+    return "ESCape32 150A 1.0"
 end
 
 -- required by framework
@@ -63,4 +63,15 @@ local function getEscFirmware(self)
 
 end
 
-return {toolName = toolName, image = "escape32.png", powerCycle = false, mspSignature = 0x73, mspHeaderBytes = mspHeaderBytes, mspBytes = 46, simulatorResponse = {115, 0, 0, 0, 150, 231, 79, 190, 216, 78, 29, 169, 244, 1, 0, 0, 1, 0, 2, 0, 4, 76, 7, 148, 0, 6, 30, 125, 0, 15, 0, 3, 15, 1, 20, 0, 10, 0, 0, 0, 0, 0, 0, 2, 73, 240}, getEscModel = getEscModel, getEscVersion = getEscVersion, getEscFirmware = getEscFirmware}
+return {
+        toolName = toolName, 
+        image = "escape32.png", 
+        powerCycle = false,
+        order = 10, 
+        mspSignature = 0x73, 
+        mspHeaderBytes = mspHeaderBytes, 
+        mspBytes = 46, 
+        simulatorResponse = {115, 0, 0, 0, 150, 231, 79, 190, 216, 78, 29, 169, 244, 1, 0, 0, 1, 0, 2, 0, 4, 76, 7, 148, 0, 6, 30, 125, 0, 15, 0, 3, 15, 1, 20, 0, 10, 0, 0, 0, 0, 0, 0, 2, 73, 240}, 
+        getEscModel = getEscModel, 
+        getEscVersion = getEscVersion, 
+        getEscFirmware = getEscFirmware}
