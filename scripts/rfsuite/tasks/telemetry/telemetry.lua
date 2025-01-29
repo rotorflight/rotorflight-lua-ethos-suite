@@ -31,27 +31,130 @@ local telemetryState = false
 
 -- Predefined sensor mappings
 local sensorTable = {
-    rssi = {sport = rfsuite.utils.getRssiSensor(), ccrsf = rfsuite.utils.getRssiSensor(), lcrsf = nil},
-    armflags = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5462}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1202}, lcrsf = nil},
-    voltage = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0210}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1011}, lcrsf = "Rx Batt"},
-    rpm = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0500}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10C0}, lcrsf = "GPS Alt"},
-    current = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0200}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1012}, lcrsf = "Rx Curr"},
-    currentESC1 = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0201}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1042}, lcrsf = nil},
-    tempESC = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0B70}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A0}, lcrsf = "GPS Speed"},
-    tempMCU = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A3}, lcrsf = "GPS Sats"},
-    fuel = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0600}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1014}, lcrsf = "Rx Batt%"},
-    capacity = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5250}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1013}, lcrsf = "Rx Cons"},
-    governor = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5450},sport_alt = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5125}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1205}, lcrsf = "Flight mode"},
-    adjF = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5110}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1221}, lcrsf = nil},
-    adjV = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5111}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1222}, lcrsf = nil},
-    pidProfile = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5130}, sport_alt = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5471}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1211}, lcrsf = nil},
-    rateProfile = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5131}, sport_alt = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5472}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1212}, lcrsf = nil},
-    throttlePercentage = {sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5440}, ccrsf = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1035}, lcrsf = nil},
-    roll = {sport = {category = CATEGORY_ANALOG, member = ANALOG_STICK_AILERON}, crsf = {category = CATEGORY_ANALOG, member = ANALOG_STICK_AILERON}, lcrsf = {category = CATEGORY_ANALOG, member = ANALOG_STICK_AILERON}},
-    pitch = {sport = {category = CATEGORY_ANALOG, member = ANALOG_STICK_ELEVATOR}, crsf = {category = CATEGORY_ANALOG, member = ANALOG_STICK_ELEVATOR}, lcrsf = {category = CATEGORY_ANALOG, member = ANALOG_STICK_ELEVATOR}},
-    yaw = {sport = {category = CATEGORY_ANALOG, member = ANALOG_STICK_RUDDER}, crsf = {category = CATEGORY_ANALOG, member = ANALOG_STICK_RUDDER}, lcrsf = {category = CATEGORY_ANALOG, member = ANALOG_STICK_RUDDER}},
-    collective = {sport = {category = CATEGORY_ANALOG, member = ANALOG_STICK_THROTTLE}, crsf = {category = CATEGORY_ANALOG, member = ANALOG_STICK_THROTTLE}, lcrsf = {category = CATEGORY_ANALOG, member = ANALOG_STICK_THROTTLE}}
+    -- RSSI Sensors
+    rssi = {
+        sport = rfsuite.utils.getRssiSensor(),
+        customCRSF = rfsuite.utils.getRssiSensor(),
+        legacyCRSF= nil
+    },
+
+    -- Arm Flags
+    armflags = {
+        sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5122},
+        sport_alt = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5462},
+        customCRSF = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1202},
+        legacyCRSF= nil
+    },
+
+    -- Voltage Sensors
+    voltage = {
+        sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0210},
+        customCRSF = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1011},
+        legacyCRSF= "Rx Batt"
+    },
+
+    -- RPM Sensors
+    rpm = {
+        sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0500},
+        customCRSF = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10C0},
+        legacyCRSF= "GPS Alt"
+    },
+
+    -- Current Sensors
+    current = {
+        sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0201},
+        sport_alt = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0200},
+        customCRSF = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1042},
+        customCRSF_alt = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1012},
+        legacyCRSF= "Rx Curr"
+    },
+
+    -- Temperature Sensors
+    tempESC = {
+        sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0B70},
+        customCRSF = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A0},
+        legacyCRSF= "GPS Speed"
+    },
+    tempMCU = {
+        sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401},
+        customCRSF = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A3},
+        legacyCRSF= "GPS Sats"
+    },
+
+    -- Fuel and Capacity Sensors
+    fuel = {
+        sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0600},
+        customCRSF = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1014},
+        legacyCRSF= "Rx Batt%"
+    },
+    capacity = {
+        sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5250},
+        customCRSF = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1013},
+        legacyCRSF= "Rx Cons"
+    },
+
+    -- Flight Mode Sensors
+    governor = {
+        sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5450},
+        sport_alt = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5125},
+        customCRSF = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1205},
+        legacyCRSF= "Flight mode"
+    },
+
+    -- Adjustment Sensors
+    adjF = {
+        sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5110},
+        customCRSF = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1221},
+        legacyCRSF= nil
+    },
+    adjV = {
+        sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5111},
+        customCRSF = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1222},
+        legacyCRSF= nil
+    },
+
+    -- PID and Rate Profiles
+    pidProfile = {
+        sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5471},
+        customCRSF = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1211},
+        legacyCRSF= nil
+    },
+    rateProfile = {
+        sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5472},
+        customCRSF = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1212},
+        legacyCRSF= nil
+    },
+
+    -- Throttle Sensors
+    throttlePercentage = {
+        sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5440},
+        customCRSF = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1035},
+        legacyCRSF= nil
+    },
+
+    -- Stick Inputs (Analog Sensors)
+    roll = {
+        sport = {category = CATEGORY_ANALOG, member = ANALOG_STICK_AILERON},
+        crsf = {category = CATEGORY_ANALOG, member = ANALOG_STICK_AILERON},
+        legacyCRSF= {category = CATEGORY_ANALOG, member = ANALOG_STICK_AILERON}
+    },
+    pitch = {
+        sport = {category = CATEGORY_ANALOG, member = ANALOG_STICK_ELEVATOR},
+        crsf = {category = CATEGORY_ANALOG, member = ANALOG_STICK_ELEVATOR},
+        legacyCRSF= {category = CATEGORY_ANALOG, member = ANALOG_STICK_ELEVATOR}
+    },
+    yaw = {
+        sport = {category = CATEGORY_ANALOG, member = ANALOG_STICK_RUDDER},
+        crsf = {category = CATEGORY_ANALOG, member = ANALOG_STICK_RUDDER},
+        legacyCRSF= {category = CATEGORY_ANALOG, member = ANALOG_STICK_RUDDER}
+    },
+    collective = {
+        sport = {category = CATEGORY_ANALOG, member = ANALOG_STICK_THROTTLE},
+        crsf = {category = CATEGORY_ANALOG, member = ANALOG_STICK_THROTTLE},
+        legacyCRSF= {category = CATEGORY_ANALOG, member = ANALOG_STICK_THROTTLE}
+    }
 }
+
 
 -- Cache telemetry source
 local tlm = system.getSource({category = CATEGORY_SYSTEM_EVENT, member = TELEMETRY_ACTIVE})
@@ -77,10 +180,10 @@ function telemetry.getSensorSource(name)
         if not crsfSOURCE then crsfSOURCE = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = 0xEE01}) end
 
         if crsfSOURCE then
-            protocol = "ccrsf"
-            sensors[name] = system.getSource(sensorTable[name].ccrsf)
-            if sensors[name] == nil and sensorTable[name].ccrsf_alt ~= nil then
-                sensors[name] = system.getSource(sensorTable[name].ccrsf_alt)
+            protocol = "customCRSF"
+            sensors[name] = system.getSource(sensorTable[name].customCRSF)
+            if sensors[name] == nil and sensorTable[name].customCRSF_alt ~= nil then
+                sensors[name] = system.getSource(sensorTable[name].customCRSF_alt)
             end  
         else
             protocol = "lcrsf"

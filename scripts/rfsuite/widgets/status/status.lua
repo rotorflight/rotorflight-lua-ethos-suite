@@ -2377,7 +2377,6 @@ function status.getSensors()
         voltageSOURCE = rfsuite.bg.telemetry.getSensorSource("voltage")
         rpmSOURCE = rfsuite.bg.telemetry.getSensorSource("rpm")
         currentSOURCE = rfsuite.bg.telemetry.getSensorSource("current")
-        currentSOURCEESC1 = rfsuite.bg.telemetry.getSensorSource("currentESC1")
         temp_escSOURCE = rfsuite.bg.telemetry.getSensorSource("tempESC")
         temp_mcuSOURCE = rfsuite.bg.telemetry.getSensorSource("tempMCU")
         fuelSOURCE = rfsuite.bg.telemetry.getSensorSource("fuel")
@@ -2418,17 +2417,8 @@ function status.getSensors()
                 if currentSOURCE:maximum() == 50.0 then currentSOURCE:maximum(400.0) end
 
                 current = currentSOURCE:value()
-                if currentSOURCEESC1 ~= nil then
-                    currentesc1 = currentSOURCEESC1:value()
-                else
-                    currentesc1 = 0
-                end
                 if current ~= nil then
-                    if current == 0 and currentesc1 ~= 0 then
-                        current = currentesc1 * 10
-                    else
-                        current = current * 10
-                    end
+                    current = current * 10
                 else
                     current = 0
                 end
