@@ -37,6 +37,24 @@ local function file_exists(name)
     return false
 end
 
+-- error function
+local function screenError(msg)
+    local w, h = lcd.getWindowSize()
+    local isDarkMode = lcd.darkMode()
+
+    lcd.font(FONT_STD)
+    local tsizeW, tsizeH = lcd.getTextSize(msg)
+
+    -- Set color based on theme
+    local textColor = isDarkMode and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90)
+    lcd.color(textColor)
+
+    -- Center the text on the screen
+    local x = (w - tsizeW) / 2
+    local y = (h - tsizeH) / 2
+    lcd.drawText(x, y, msg)
+end
+
 -- Helper function to load image
 local function loadImage(image)
     if image == nil then
@@ -80,11 +98,18 @@ end
 
 -- Create function
 function rf2craftname.create(widget)
+    LCD_W, LCD_H = lcd.getWindowSize()    
     bitmapPtr = loadImage(default_image)
 end
 
 -- Paint function
 function rf2craftname.paint(widget)
+
+    if rfsuite.utils.ethosVersion() < rfsuite.config.ethosVersion  then
+        screenError(rfsuite.config.ethosVersionString )
+        return
+    end
+
     local w = LCD_W
     local h = LCD_H
 

@@ -281,16 +281,8 @@ function status.create(widget)
 
     status.initTime = os.clock()
 
-
     status.lastBitmap = model.bitmap()
     status.gfx_model = lcd.loadBitmap(model.bitmap()) or load_bitmap("/bitmaps/models/" .. (craftName or "default_helicopter") .. ".png")  or nil
-
-
-
-    if rfsuite.utils.ethosVersion() < 1519 then
-        status.screenError("ETHOS < V1.5.19")
-        return
-    end
 
     return {
         fmsrc = 0,
@@ -1265,6 +1257,12 @@ function status.telemetryBoxImage(x, y, w, h, gfx)
 end
 
 function status.paint(widget)
+
+
+    if rfsuite.utils.ethosVersion() < rfsuite.config.ethosVersion  then
+        status.screenError(rfsuite.config.ethosVersionString )
+        return
+    end
 
     if not rfsuite.bg.active() then
 
