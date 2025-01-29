@@ -100,6 +100,30 @@ function telemetry.getSensorSource(name)
     return sensors[name]
 end
 
+--- Function to validate sensors
+---@return table
+function telemetry.validateSensors()
+
+    if not telemetry.active() then
+        local allSensors = {}
+        for name, _ in pairs(sensorTable) do
+            table.insert(allSensors, name)
+        end
+        return allSensors
+    end
+
+    local failedSensors = {}
+    
+    for name, _ in pairs(sensorTable) do
+        local sensor = telemetry.getSensorSource(name)
+        if sensor == nil then
+            table.insert(failedSensors, name)
+        end
+    end
+    
+    return failedSensors
+end
+
 --- Check if telemetry is active
 ---@return boolean
 function telemetry.active()
