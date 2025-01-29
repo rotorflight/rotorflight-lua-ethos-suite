@@ -279,12 +279,7 @@ end
 
 function status.create(widget)
 
-    if rfsuite.utils.ethosVersion() < rfsuite.config.ethosVersion  then
-        return
-    end
-
     status.initTime = os.clock()
-
 
     status.lastBitmap = model.bitmap()
     status.gfx_model = lcd.loadBitmap(model.bitmap()) or load_bitmap("/bitmaps/models/" .. (craftName or "default_helicopter") .. ".png")  or nil
