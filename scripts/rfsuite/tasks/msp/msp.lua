@@ -143,7 +143,18 @@ function msp.onConnectBgChecks()
                     rfsuite.utils.log("Governor mode: " .. governorMode)
                     rfsuite.config.governorMode = governorMode
             end   
+        
+        -- get the model id
+        elseif (rfsuite.config.modelID == nil) and msp.mspQueue:isProcessed() then
 
+            local API = msp.api.load("MSP_PILOT_CONFIG")
+            API.read()  
+            if API.readComplete() then
+                    local model_id = API.readValue("model_id")
+                    rfsuite.utils.log("Model id: " .. model_id)
+                    rfsuite.config.modelID = model_id
+            end   
+           
         -- find the craft name on the fbl
         elseif (rfsuite.config.craftName == nil) and msp.mspQueue:isProcessed() then
 
@@ -177,6 +188,7 @@ function msp.resetState()
     rfsuite.config.clockSet = nil
     rfsuite.config.clockSetAlart = nil
     rfsuite.config.craftName = nil
+    rfsuite.config.modelID = nil
 end
 
 function msp.wakeup()

@@ -72,14 +72,26 @@ function apiLoader.parseMSPData(buf, structure)
         if field.type == "U8" then
             parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU8(buf, offset)
             offset = offset + 1
+        elseif field.type == "S8" then
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS8(buf, offset)
+            offset = offset + 1
         elseif field.type == "U16" then
             parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU16(buf, offset)
+            offset = offset + 2
+        elseif field.type == "S16" then
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS16(buf, offset)
             offset = offset + 2
         elseif field.type == "U24" then
             parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU24(buf, offset)
             offset = offset + 3
+        elseif field.type == "S24" then
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS24(buf, offset)
+            offset = offset + 3
         elseif field.type == "U32" then
             parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU32(buf, offset)
+            offset = offset + 4
+        elseif field.type == "S32" then
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS32(buf, offset)
             offset = offset + 4
         else
             return nil  -- Unknown data type, fail safely
