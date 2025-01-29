@@ -232,7 +232,7 @@ local function openPage(pidx, title, script)
     })
 
     -- HELP BUTTON
-    local help = assert(loadfile("app/help/pages.lua"))()
+    local help = assert(loadfile("app/modules/msp_speed/help.lua"))()
     local section = rfsuite.app.lastScript:match("([^/]+)")
     rfsuite.app.formNavigationFields['help'] = form.addButton(line, {x = x - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = buttonWs, h = rfsuite.app.radio.navbuttonHeight}, {
         text = "?",
@@ -241,11 +241,7 @@ local function openPage(pidx, title, script)
         paint = function()
         end,
         press = function()
-            if rfsuite.app.Page and rfsuite.app.Page.onHelpMenu then
-                rfsuite.app.Page.onHelpMenu(rfsuite.app.Page)
-            else
-                rfsuite.app.ui.openPageHelp(help.data, section)
-            end
+            rfsuite.app.ui.openPageHelp(help.help['default'], section)
         end
     })
 

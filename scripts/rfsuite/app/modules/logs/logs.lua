@@ -94,6 +94,11 @@ end
 
 local function openPage(pidx, title, script, displaymode)
 
+    -- hard exit on error
+    if rfsuite.utils.ethosVersion() < rfsuite.config.ethosVersion  then
+        return
+    end   
+
     currentDisplayMode = displaymode
 
     rfsuite.bg.msp.protocol.mspIntervalOveride = nil

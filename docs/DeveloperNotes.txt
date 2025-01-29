@@ -81,7 +81,7 @@ The following provides an example summary of the parameters you can use.
 #FIELDS
 - t              => Field Text
 - t2             => Field Text (small screens)
-- help           => A tag used to determine which text to display from /help/fields.lua
+- help           => A tag used to determine which text to display from app/modules/<module>/help.lua
 - min            => Minimum value achievable in form input box
 - max            => Maximum value  achievable in form input box
 - decimals       => A number value to indicate the number of decimal points used on the form field

@@ -23,6 +23,24 @@ local governorMap = {[0] = "OFF", [1] = "IDLE", [2] = "SPOOLUP", [3] = "RECOVERY
 
 local sensors
 
+-- error function
+local function screenError(msg)
+    local w, h = lcd.getWindowSize()
+    local isDarkMode = lcd.darkMode()
+
+    lcd.font(FONT_STD)
+    local tsizeW, tsizeH = lcd.getTextSize(msg)
+
+    -- Set color based on theme
+    local textColor = isDarkMode and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90)
+    lcd.color(textColor)
+
+    -- Center the text on the screen
+    local x = (w - tsizeW) / 2
+    local y = (h - tsizeH) / 2
+    lcd.drawText(x, y, msg)
+end
+
 -- Helper function to convert a value to a valid number
 function rf2gov.sensorMakeNumber(value)
     value = value or 0
@@ -35,6 +53,12 @@ function rf2gov.create(widget)
 end
 
 function rf2gov.paint(widget)
+
+    if rfsuite.utils.ethosVersion() < rfsuite.config.ethosVersion  then
+        screenError(rfsuite.config.ethosVersionString )
+        return
+    end
+
     local w, h = lcd.getWindowSize()
     lcd.font(FONT_XXL)
 
