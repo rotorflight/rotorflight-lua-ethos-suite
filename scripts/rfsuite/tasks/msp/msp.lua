@@ -51,6 +51,7 @@ msp.protocol.mspPoll = transport.mspPoll
 msp.mspQueue = assert(loadfile("tasks/msp/mspQueue.lua"))()
 msp.mspQueue.maxRetries = msp.protocol.maxRetries
 msp.mspHelper = assert(loadfile("tasks/msp/mspHelper.lua"))()
+msp.api = assert(loadfile("tasks/msp/api.lua"))()
 assert(loadfile("tasks/msp/common.lua"))()
 
 -- BACKGROUND checks
@@ -63,136 +64,93 @@ function msp.onConnectBgChecks()
         -- or a model swapped
         if rfsuite.rssiSensor then msp.sensor:module(rfsuite.rssiSensor:module()) end
 
+        -- get the api version
         if rfsuite.config.apiVersion == nil and msp.mspQueue:isProcessed() then
 
-            local message = {
-                command = 1, -- MIXER
-                processReply = function(self, buf)
-                    if #buf >= 3 then
-                        local version = buf[2] + buf[3] / 100
-                        rfsuite.config.apiVersion = version
-                        rfsuite.utils.log("MSP Version: " .. rfsuite.config.apiVersion)
-                    end
-                end,
-                simulatorResponse = rfsuite.config.simulatorApiVersionResponse
-            }
-            msp.mspQueue:add(message)
+            local API = msp.api.load("MSP_API_VERSION")
+            API.read()  
+            if API.readComplete() then
+                rfsuite.config.apiVersion = API.readVersion()
+                rfsuite.utils.log("API version: " .. rfsuite.config.apiVersion)
+            end               
+
+        -- sync the clock
         elseif rfsuite.config.clockSet == nil and msp.mspQueue:isProcessed() then
 
-            rfsuite.utils.log("Sync clock: " .. os.clock())
+            local API = msp.api.load("MSP_SET_RTC")
+            API.write()  
+            if API.writeComplete() then
+                rfsuite.config.clockSet = true
+                rfsuite.utils.log("Sync clock: " .. os.clock())
+            end                
 
-            local message = {
-                command = 246, -- MSP_SET_RTC
-                payload = {},
-                processReply = function(self, buf)
-                    rfsuite.utils.log("RTC set.")
-
-                    if #buf >= 0 then
-                        rfsuite.config.clockSet = true
-                        -- we do the beep later to avoid a double beep
-                    end
-
-                end,
-                simulatorResponse = {}
-            }
-
-            -- generate message to send
-            local now = os.time()
-            -- format: seconds after the epoch / milliseconds
-            for i = 1, 4 do
-                rfsuite.bg.msp.mspHelper.writeU8(message.payload, now & 0xFF)
-                now = now >> 8
-            end
-            rfsuite.bg.msp.mspHelper.writeU16(message.payload, 0)
-
-            -- add msg to queue
-            rfsuite.bg.msp.mspQueue:add(message)
+        -- beep the clock
         elseif rfsuite.config.clockSet == true and rfsuite.config.clockSetAlart ~= true then
             -- this is unsual but needed because the clock sync does not return anything usefull
             -- to confirm its done! 
             rfsuite.utils.playFileCommon("beep.wav")
             rfsuite.config.clockSetAlart = true
+
+        -- find tail and swash mode
         elseif (rfsuite.config.tailMode == nil or rfsuite.config.swashMode == nil) and msp.mspQueue:isProcessed() then
-            local message = {
-                command = 42, -- MIXER
-                processReply = function(self, buf)
-                    if #buf >= 19 then
+           
+            local API = msp.api.load("MSP_MIXER_CONFIG")
+            API.read()  
+            if API.readComplete() then
+                rfsuite.config.tailMode = API.readValue("tail_rotor_mode")     
+                rfsuite.config.swashMode = API.readValue("swash_type")
+                rfsuite.utils.log("Tail mode: " .. rfsuite.config.tailMode)
+                rfsuite.utils.log("Swash mode: " .. rfsuite.config.swashMode)
+            end                 
 
-                        local tailMode = buf[2]
-                        local swashMode = buf[6]
-                        rfsuite.config.swashMode = swashMode
-                        rfsuite.config.tailMode = tailMode
-                        rfsuite.utils.log("Tail mode: " .. rfsuite.config.tailMode)
-                        rfsuite.utils.log("Swash mode: " .. rfsuite.config.swashMode)
-                    end
-                end,
-                simulatorResponse = {0, 1, 0, 0, 0, 2, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-            }
-            msp.mspQueue:add(message)
-
+        -- get servo configuration
         elseif (rfsuite.config.servoCount == nil) and msp.mspQueue:isProcessed() then
-            local message = {
-                command = 120, -- MSP_SERVO_CONFIGURATIONS
-                processReply = function(self, buf)
-                    if #buf >= 20 then
-                        local servoCount = msp.mspHelper.readU8(buf)
+ 
+           local API = msp.api.load("MSP_SERVO_CONFIGURATIONS")
+           API.read()  
+           if API.readComplete() then
+                rfsuite.config.servoCount =  API.readValue("servo_count")
+                rfsuite.utils.log("Servo count: " .. rfsuite.config.servoCount)
+           end     
 
-                        -- update master one in case changed
-                        rfsuite.config.servoCount = servoCount
-                    end
-                end,
-                simulatorResponse = {4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0, 120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0}
-            }
-            msp.mspQueue:add(message)
-
+        -- work out if fbl has any servos in overide mode
         elseif (rfsuite.config.servoOverride == nil) and msp.mspQueue:isProcessed() then
-            local message = {
-                command = 192, -- MSP_SERVO_OVERIDE
-                processReply = function(self, buf)
-                    if #buf >= 16 then
 
-                        for i = 0, rfsuite.config.servoCount do
-                            buf.offset = i
-                            local servoOverride = msp.mspHelper.readU8(buf)
-                            if servoOverride == 0 then
-                                rfsuite.utils.log("Servo overide: true")
-                                rfsuite.config.servoOverride = true
-                            end
-                        end
-                        if rfsuite.config.servoOverride == nil then rfsuite.config.servoOverride = false end
+
+            local API = msp.api.load("MSP_SERVO_OVERIDE")
+            API.read(rfsuite.config.servoCount)  
+            if API.readComplete() then
+                    local data = API.data()
+                    local buf = data['buffer']
+                    for i = 0, rfsuite.config.servoCount do
+                        buf.offset = i
+                        local servoOverride = msp.mspHelper.readU8(buf)
+                        if servoOverride == 0 then
+                            rfsuite.utils.log("Servo overide: true")
+                            rfsuite.config.servoOverride = true
+                       end
                     end
-                end,
-                simulatorResponse = {209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7}
-            }
-            msp.mspQueue:add(message)
+                    if rfsuite.config.servoOverride == nil then rfsuite.config.servoOverride = false end
+            end    
 
+        -- find out if we have a governor
         elseif (rfsuite.config.governorMode == nil) and msp.mspQueue:isProcessed() then
-            local message = {
-                command = 142, -- MSP_SERVO_OVERIDE
-                processReply = function(self, buf)
-                    if #buf >= 2 then -- 24.  but we only need first
-                        local governorMode = msp.mspHelper.readU8(buf)
-                        -- update master one in case changed
-                        if governorMode ~= nil then
-                            rfsuite.utils.log("Governor mode: " .. governorMode)
-                            rfsuite.config.governorMode = governorMode
-                        end
-                    end
-                end,
-                simulatorResponse = {3, 100, 0, 100, 0, 20, 0, 20, 0, 30, 0, 10, 0, 0, 0, 0, 0, 50, 0, 10, 5, 10, 0, 10}
-            }
-            msp.mspQueue:add(message)
 
+            local API = msp.api.load("MSP_GOVERNOR_CONFIG")
+            API.read()  
+            if API.readComplete() then
+                    local governorMode = API.readValue("gov_mode")
+                    rfsuite.utils.log("Governor mode: " .. governorMode)
+                    rfsuite.config.governorMode = governorMode
+            end   
+
+        -- find the craft name on the fbl
         elseif (rfsuite.config.craftName == nil) and msp.mspQueue:isProcessed() then
 
-            local message = {
-                command = 10, -- MSP_NAME
-                processReply = function(self, buf)
-                    local v = 0
-                    local craftName = ""
-                    for idx = 1, #buf do craftName = craftName .. string.char(buf[idx]) end
-
-                    rfsuite.config.craftName = craftName
+            local API = msp.api.load("MSP_NAME")
+            API.read()  
+            if API.readComplete() then
+                    rfsuite.config.craftName  = API.readValue("name")
 
                     -- set the model name to the craft name
                     if rfsuite.config.syncCraftName == true and model.name and rfsuite.config.craftName ~= nil then
@@ -200,14 +158,12 @@ function msp.onConnectBgChecks()
                         lcd.invalidate()
                     end
 
-                    rfsuite.utils.log("Craft name: " .. craftName)
-                end,
-                simulatorResponse = {80, 105, 108, 111, 116}
-            }
-            msp.mspQueue:add(message)
+                    rfsuite.utils.log("Craft name: " .. rfsuite.config.craftName)
 
-            -- do this at end of last one
-            msp.onConnectChecksInit = false
+                -- do this at end of last one
+                 msp.onConnectChecksInit = false      
+            end   
+
         end
     end
 

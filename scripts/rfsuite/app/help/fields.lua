@@ -86,6 +86,8 @@ return {
     profilesYawFFCollectiveGain = {t = "Collective feedforward mixed into yaw (collective-to-yaw precomp)."},
     profilesYawFFImpulseGain = {t = "An extra boost of yaw precomp on collective input."},
     profilesyawFFImpulseDecay = {t = "Decay time for the extra yaw precomp on collective input."},
+    profilesIntertiaGain = {t= "Gain to apply to prevent yaw drift on collective input."},
+    profilesInertiaCutoff = {t = "Cutoff frequency at which the gain value will have no effect."},
     profilesPitchFFCollective = {t = "Increasing will compensate for the pitching up motion caused by tail drag when climbing."},
     profilesPIDBandwidth = {t = "PID loop overall bandwidth in Hz."},
     profilesPIDBandwidthDtermCutoff = {t = "D-term cutoff in Hz."},
