@@ -27,6 +27,11 @@ local protocol, telemetrySOURCE, crsfSOURCE
 local sensorRateLimit = os.clock()
 local SENSOR_RATE = 2 -- rate in seconds
 
+-- Store the last validated sensors and timestamp
+local lastValidationResult = nil
+local lastValidationTime = 0
+local VALIDATION_RATE_LIMIT = 5 -- Rate limit in seconds
+
 local telemetryState = false
 
 -- Predefined sensor mappings
@@ -226,51 +231,6 @@ local sensorTable = {
         }
     },
 
-    -- Stick Inputs (Analog Sensors)
-    roll = {
-        sport = {
-            {category = CATEGORY_ANALOG, member = ANALOG_STICK_AILERON}
-        },
-        crsf = {
-            {category = CATEGORY_ANALOG, member = ANALOG_STICK_AILERON}
-        },
-        legacyCRSF = {
-            {category = CATEGORY_ANALOG, member = ANALOG_STICK_AILERON}
-        }
-    },
-    pitch = {
-        sport = {
-            {category = CATEGORY_ANALOG, member = ANALOG_STICK_ELEVATOR}
-        },
-        crsf = {
-            {category = CATEGORY_ANALOG, member = ANALOG_STICK_ELEVATOR}
-        },
-        legacyCRSF = {
-            {category = CATEGORY_ANALOG, member = ANALOG_STICK_ELEVATOR}
-        }
-    },
-    yaw = {
-        sport = {
-            {category = CATEGORY_ANALOG, member = ANALOG_STICK_RUDDER}
-        },
-        crsf = {
-            {category = CATEGORY_ANALOG, member = ANALOG_STICK_RUDDER}
-        },
-        legacyCRSF = {
-            {category = CATEGORY_ANALOG, member = ANALOG_STICK_RUDDER}
-        }
-    },
-    collective = {
-        sport = {
-            {category = CATEGORY_ANALOG, member = ANALOG_STICK_THROTTLE}
-        },
-        crsf = {
-            {category = CATEGORY_ANALOG, member = ANALOG_STICK_THROTTLE}
-        },
-        legacyCRSF = {
-            {category = CATEGORY_ANALOG, member = ANALOG_STICK_THROTTLE}
-        }
-    }
 }
 
 
@@ -331,15 +291,25 @@ function telemetry.getSensorSource(name)
 end
 
 
---- Function to validate sensors
+--- Function to validate sensors with rate limiting
 ---@return table
 function telemetry.validateSensors()
-
+    local now = os.clock()
+    
+    -- Return cached result if within rate limit
+    if (now - lastValidationTime) < VALIDATION_RATE_LIMIT then
+        return lastValidationResult
+    end
+    
+    -- Update last validation time
+    lastValidationTime = now
+    
     if not telemetry.active() then
         local allSensors = {}
         for name, _ in pairs(sensorTable) do
             table.insert(allSensors, name)
         end
+        lastValidationResult = allSensors
         return allSensors
     end
 
@@ -347,11 +317,12 @@ function telemetry.validateSensors()
     
     for name, _ in pairs(sensorTable) do
         local sensor = telemetry.getSensorSource(name)
-        if sensor == nil then
+        if sensor == nil or sensor:state() == false then
             table.insert(failedSensors, name)
         end
     end
     
+    lastValidationResult = failedSensors
     return failedSensors
 end
 

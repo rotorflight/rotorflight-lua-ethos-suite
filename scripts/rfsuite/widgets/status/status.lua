@@ -963,6 +963,29 @@ function status.screenError(msg)
     lcd.drawText(x, y, msg)
 end
 
+function status.screenErrorLarge(title,message)
+    local w, h = lcd.getWindowSize()
+    local isDarkMode = lcd.darkMode()
+
+    lcd.font(FONT_STD)
+    local tsizeW, tsizeH = lcd.getTextSize(title)
+
+    -- Set color based on theme
+    local textColor = isDarkMode and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90)
+    lcd.color(textColor)
+
+    -- Center the text on the screen
+    local x = (w - tsizeW) / 2
+    local y = ((h - tsizeH) / 2) - (tsizeH*2)
+    lcd.drawText(x, y, title)
+
+    -- Display the message    
+    lcd.font(FONT_SMALL)
+    local x = (w - tsizeW) / 2
+    local y = ((h - tsizeH) / 2)
+    lcd.drawText(x, y, message)   
+end
+
 function status.resetALL()
     status.sensorVoltageMax = 0
     status.sensorVoltageMin = 0
@@ -1266,11 +1289,25 @@ end
 
 function status.paint(widget)
 
+    -- initiate timed sensor validation
+    local validateSensors = {}
+    if rfsuite.bg and rfsuite.bg.telemetry then
+        validateSensors= rfsuite.bg.telemetry.validateSensors()
+    end
+
     if not rfsuite.bg.active() then
 
         if (os.clock() - status.initTime) >= 2 then status.screenError("PLEASE ENABLE THE BACKGROUND TASK") end
         lcd.invalidate()
         return
+    --elseif (os.clock() - status.initTime) >= 5 and (#rfsuite.bg.telemetry.validateSensors() > 0) then
+    elseif validateSensors and (#validateSensors > 0) then
+        local list = ""  -- Initialize list to an empty string
+        for _, s in ipairs(validateSensors) do
+            list = list .. s .. ", "  -- Append sensor name followed by a comma and space
+        end
+        status.screenErrorLarge("MISSING REQUIRED SENSORS", list:gsub(",%s*$", ""))    
+        lcd.invalidate()
     else
 
         status.isVisible = lcd.isVisible()
