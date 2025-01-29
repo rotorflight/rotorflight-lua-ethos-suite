@@ -963,29 +963,6 @@ function status.screenError(msg)
     lcd.drawText(x, y, msg)
 end
 
-function status.screenErrorLarge(title,message)
-    local w, h = lcd.getWindowSize()
-    local isDarkMode = lcd.darkMode()
-
-    lcd.font(FONT_STD)
-    local tsizeW, tsizeH = lcd.getTextSize(title)
-
-    -- Set color based on theme
-    local textColor = isDarkMode and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90)
-    lcd.color(textColor)
-
-    -- Center the text on the screen
-    local x = (w - tsizeW) / 2
-    local y = ((h - tsizeH) / 2) - (tsizeH*2)
-    lcd.drawText(x, y, title)
-
-    -- Display the message    
-    lcd.font(FONT_SMALL)
-    local x = (w - tsizeW) / 2
-    local y = ((h - tsizeH) / 2)
-    lcd.drawText(x, y, message)   
-end
-
 function status.resetALL()
     status.sensorVoltageMax = 0
     status.sensorVoltageMin = 0
@@ -1000,6 +977,44 @@ function status.resetALL()
     status.sensorTempESCMin = 0
     status.sensorTempESCMax = 0
 end
+
+function status.missingSensors()
+    lcd.font(FONT_STD)
+    local str = "MISSING REQUIRED SENSORS"
+
+    status.theme = status.getThemeInfo()
+    local w, h = lcd.getWindowSize()
+    local boxW = math.floor(w / 2)
+    local boxH = 45
+    local tsizeW, tsizeH = lcd.getTextSize(str)
+
+    -- Set background color based on theme
+    if status.isDARKMODE then
+        lcd.color(lcd.RGB(40, 40, 40))
+    else
+        lcd.color(lcd.RGB(240, 240, 240))
+    end
+    lcd.drawFilledRectangle(w / 2 - boxW / 2, h / 2 - boxH / 2, boxW, boxH)
+
+    -- Set border color based on theme
+    if status.isDARKMODE then
+        lcd.color(lcd.RGB(255, 255, 255, 1))
+    else
+        lcd.color(lcd.RGB(90, 90, 90))
+    end
+    lcd.drawRectangle(w / 2 - boxW / 2, h / 2 - boxH / 2, boxW, boxH)
+
+    -- Set text color based on theme and draw text
+    if status.isDARKMODE then
+        lcd.color(lcd.RGB(255, 255, 255, 1))
+    else
+        lcd.color(lcd.RGB(90, 90, 90))
+    end
+    lcd.drawText((w / 2) - tsizeW / 2, (h / 2) - tsizeH / 2, str)
+
+    return
+end
+
 
 function status.noTelem()
     lcd.font(FONT_STD)
@@ -1289,25 +1304,13 @@ end
 
 function status.paint(widget)
 
-    -- initiate timed sensor validation
-    local validateSensors = {}
-    if rfsuite.bg and rfsuite.bg.telemetry then
-        validateSensors= rfsuite.bg.telemetry.validateSensors()
-    end
+
 
     if not rfsuite.bg.active() then
 
         if (os.clock() - status.initTime) >= 2 then status.screenError("PLEASE ENABLE THE BACKGROUND TASK") end
         lcd.invalidate()
         return
-    --elseif (os.clock() - status.initTime) >= 5 and (#rfsuite.bg.telemetry.validateSensors() > 0) then
-    elseif validateSensors and (#validateSensors > 0) then
-        local list = ""  -- Initialize list to an empty string
-        for _, s in ipairs(validateSensors) do
-            list = list .. s .. ", "  -- Append sensor name followed by a comma and space
-        end
-        status.screenErrorLarge("MISSING REQUIRED SENSORS", list:gsub(",%s*$", ""))    
-        lcd.invalidate()
     else
 
         status.isVisible = lcd.isVisible()
@@ -2320,8 +2323,16 @@ function status.paint(widget)
                 c = c + 1
             end
 
+            -- initiate timed sensor validation
+            local validateSensors = {}
+            if rfsuite.bg and rfsuite.bg.telemetry then
+                validateSensors= rfsuite.bg.telemetry.validateSensors()
+            end
+
             if status.linkUP == false and environment.simulation == false then
                 status.noTelem()
+            elseif (os.clock() - status.initTime) >= 10 and validateSensors and (#rfsuite.bg.telemetry.validateSensors() > 0) then
+                status.missingSensors()  
             elseif status.idleupswitchParam and status.idleupswitchParam:state() then
                 local armSource = rfsuite.bg.telemetry.getSensorSource("armflags")
                 if armSource then
