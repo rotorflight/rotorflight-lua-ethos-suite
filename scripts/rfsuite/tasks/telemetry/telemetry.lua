@@ -33,125 +33,239 @@ local telemetryState = false
 local sensorTable = {
     -- RSSI Sensors
     rssi = {
-        sport = rfsuite.utils.getRssiSensor(),
-        customCRSF = rfsuite.utils.getRssiSensor(),
-        legacyCRSF= nil
+        sport = {
+            rfsuite.utils.getRssiSensor()
+        },
+        customCRSF = {
+            rfsuite.utils.getRssiSensor()
+        },
+        legacyCRSF = {
+            nil
+        }
     },
 
     -- Arm Flags
     armflags = {
-        sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5122},
-        sport_alt = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5462},
-        customCRSF = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1202},
-        legacyCRSF= nil
+        sport = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5122},
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5462},
+        },
+        customCRSF = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1202}
+        },
+        legacyCRSF = {
+            nil
+        }
     },
 
     -- Voltage Sensors
     voltage = {
-        sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0210},
-        customCRSF = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1011},
-        legacyCRSF= "Rx Batt"
+        sport = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0210}
+        },
+        customCRSF = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1011}
+        },
+        legacyCRSF = {
+            "Rx Batt"
+        }
     },
 
     -- RPM Sensors
     rpm = {
-        sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0500},
-        customCRSF = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10C0},
-        legacyCRSF= "GPS Alt"
+        sport = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0500}
+        },
+        customCRSF = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10C0}
+        },
+        legacyCRSF = {
+            "GPS Alt"
+        }
     },
 
     -- Current Sensors
     current = {
-        sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0201},
-        sport_alt = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0200},
-        customCRSF = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1042},
-        customCRSF_alt = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1012},
-        legacyCRSF= "Rx Curr"
+        sport = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0200},            
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0201},
+        },
+        customCRSF = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1012},            
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1042},
+        },
+        legacyCRSF = {
+            "Rx Curr"
+        }
     },
 
     -- Temperature Sensors
     tempESC = {
-        sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0B70},
-        customCRSF = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A0},
-        legacyCRSF= "GPS Speed"
+        sport = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0B70}
+        },
+        customCRSF = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A0}
+        },
+        legacyCRSF = {
+            "GPS Speed"
+        }
     },
     tempMCU = {
-        sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401},
-        customCRSF = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A3},
-        legacyCRSF= "GPS Sats"
+        sport = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401}
+        },
+        customCRSF = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A3}
+        },
+        legacyCRSF = {
+            "GPS Sats"
+        }
     },
 
     -- Fuel and Capacity Sensors
     fuel = {
-        sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0600},
-        customCRSF = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1014},
-        legacyCRSF= "Rx Batt%"
+        sport = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0600}
+        },
+        customCRSF = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1014}
+        },
+        legacyCRSF = {
+            "Rx Batt%"
+        }
     },
     capacity = {
-        sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5250},
-        customCRSF = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1013},
-        legacyCRSF= "Rx Cons"
+        sport = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5250}
+        },
+        customCRSF = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1013}
+        },
+        legacyCRSF = {
+            "Rx Cons"
+        }
     },
 
     -- Flight Mode Sensors
     governor = {
-        sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5450},
-        sport_alt = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5125},
-        customCRSF = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1205},
-        legacyCRSF= "Flight mode"
+        sport = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5125},
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5450}
+        },
+        customCRSF = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1205}
+        },
+        legacyCRSF = {
+            "Flight mode"
+        }
     },
 
     -- Adjustment Sensors
     adjF = {
-        sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5110},
-        customCRSF = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1221},
-        legacyCRSF= nil
+        sport = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5110}
+        },
+        customCRSF = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1221}
+        },
+        legacyCRSF = {
+            nil
+        }
     },
     adjV = {
-        sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5111},
-        customCRSF = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1222},
-        legacyCRSF= nil
+        sport = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5111}
+        },
+        customCRSF = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1222}
+        },
+        legacyCRSF = {
+            nil
+        }
     },
 
     -- PID and Rate Profiles
     pidProfile = {
-        sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5471},
-        customCRSF = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1211},
-        legacyCRSF= nil
+        sport = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5471}
+        },
+        customCRSF = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1211}
+        },
+        legacyCRSF = {
+            nil
+        }
     },
     rateProfile = {
-        sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5472},
-        customCRSF = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1212},
-        legacyCRSF= nil
+        sport = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5472}
+        },
+        customCRSF = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1212}
+        },
+        legacyCRSF = {
+            nil
+        }
     },
 
     -- Throttle Sensors
     throttlePercentage = {
-        sport = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5440},
-        customCRSF = {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1035},
-        legacyCRSF= nil
+        sport = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5440}
+        },
+        customCRSF = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1035}
+        },
+        legacyCRSF = {
+            nil
+        }
     },
 
     -- Stick Inputs (Analog Sensors)
     roll = {
-        sport = {category = CATEGORY_ANALOG, member = ANALOG_STICK_AILERON},
-        crsf = {category = CATEGORY_ANALOG, member = ANALOG_STICK_AILERON},
-        legacyCRSF= {category = CATEGORY_ANALOG, member = ANALOG_STICK_AILERON}
+        sport = {
+            {category = CATEGORY_ANALOG, member = ANALOG_STICK_AILERON}
+        },
+        crsf = {
+            {category = CATEGORY_ANALOG, member = ANALOG_STICK_AILERON}
+        },
+        legacyCRSF = {
+            {category = CATEGORY_ANALOG, member = ANALOG_STICK_AILERON}
+        }
     },
     pitch = {
-        sport = {category = CATEGORY_ANALOG, member = ANALOG_STICK_ELEVATOR},
-        crsf = {category = CATEGORY_ANALOG, member = ANALOG_STICK_ELEVATOR},
-        legacyCRSF= {category = CATEGORY_ANALOG, member = ANALOG_STICK_ELEVATOR}
+        sport = {
+            {category = CATEGORY_ANALOG, member = ANALOG_STICK_ELEVATOR}
+        },
+        crsf = {
+            {category = CATEGORY_ANALOG, member = ANALOG_STICK_ELEVATOR}
+        },
+        legacyCRSF = {
+            {category = CATEGORY_ANALOG, member = ANALOG_STICK_ELEVATOR}
+        }
     },
     yaw = {
-        sport = {category = CATEGORY_ANALOG, member = ANALOG_STICK_RUDDER},
-        crsf = {category = CATEGORY_ANALOG, member = ANALOG_STICK_RUDDER},
-        legacyCRSF= {category = CATEGORY_ANALOG, member = ANALOG_STICK_RUDDER}
+        sport = {
+            {category = CATEGORY_ANALOG, member = ANALOG_STICK_RUDDER}
+        },
+        crsf = {
+            {category = CATEGORY_ANALOG, member = ANALOG_STICK_RUDDER}
+        },
+        legacyCRSF = {
+            {category = CATEGORY_ANALOG, member = ANALOG_STICK_RUDDER}
+        }
     },
     collective = {
-        sport = {category = CATEGORY_ANALOG, member = ANALOG_STICK_THROTTLE},
-        crsf = {category = CATEGORY_ANALOG, member = ANALOG_STICK_THROTTLE},
-        legacyCRSF= {category = CATEGORY_ANALOG, member = ANALOG_STICK_THROTTLE}
+        sport = {
+            {category = CATEGORY_ANALOG, member = ANALOG_STICK_THROTTLE}
+        },
+        crsf = {
+            {category = CATEGORY_ANALOG, member = ANALOG_STICK_THROTTLE}
+        },
+        legacyCRSF = {
+            {category = CATEGORY_ANALOG, member = ANALOG_STICK_THROTTLE}
+        }
     }
 }
 
@@ -181,27 +295,37 @@ function telemetry.getSensorSource(name)
 
         if crsfSOURCE then
             protocol = "customCRSF"
-            sensors[name] = system.getSource(sensorTable[name].customCRSF)
-            if sensors[name] == nil and sensorTable[name].customCRSF_alt ~= nil then
-                sensors[name] = system.getSource(sensorTable[name].customCRSF_alt)
-            end  
+            for _, sensor in ipairs(sensorTable[name].customCRSF or {}) do
+                local source = system.getSource(sensor)
+                if source then
+                    sensors[name] = source
+                    return sensors[name]
+                end
+            end
         else
-            protocol = "lcrsf"
-            sensors[name] = system.getSource(sensorTable[name].lcrsf)
-            if sensors[name] == nil and sensorTable[name].lcrsf_alt ~= nil then
-                sensors[name] = system.getSource(sensorTable[name].lcrsf_alt)
-            end            
+            protocol = "legacyCRSF"
+            for _, sensor in ipairs(sensorTable[name].legacyCRSF or {}) do
+                local source = system.getSource(sensor)
+                if source then
+                    sensors[name] = source
+                    return sensors[name]
+                end
+            end
         end
     else
         protocol = "sport"
-        sensors[name] = system.getSource(sensorTable[name].sport)
-        if sensors[name] == nil and sensorTable[name].sport_alt ~= nil then
-            sensors[name] = system.getSource(sensorTable[name].sport_alt)
+        for _, sensor in ipairs(sensorTable[name].sport or {}) do
+            local source = system.getSource(sensor)
+            if source then
+                sensors[name] = source
+                return sensors[name]
+            end
         end
     end
 
-    return sensors[name]
+    return nil -- If no valid sensor is found
 end
+
 
 --- Function to validate sensors
 ---@return table
