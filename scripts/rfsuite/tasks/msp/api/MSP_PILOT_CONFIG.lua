@@ -26,7 +26,7 @@
 ]]--
 
 -- Constants for MSP Commands
-local MSP_API_CMD = 12  -- Command identifier for MSP Mixer Config
+local MSP_API_CMD = 12  -- Command identifier for MSP PILOT CONFIG
 local MSP_API_SIMULATOR_RESPONSE = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0}  -- Default simulator response
 local MSP_MIN_BYTES = 0
 
