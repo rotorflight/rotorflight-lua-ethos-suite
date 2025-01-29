@@ -102,7 +102,8 @@ local sensorTable = {
     -- Temperature Sensors
     tempESC = {
         sport = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0B70}
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401},
+            {category = CATEGORY_TELEMETRY_SENSOR, appId =  0x0B70}
         },
         customCRSF = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A0}
@@ -113,7 +114,7 @@ local sensorTable = {
     },
     tempMCU = {
         sport = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401}
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0400}
         },
         customCRSF = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A3}
@@ -188,6 +189,7 @@ local sensorTable = {
     -- PID and Rate Profiles
     pidProfile = {
         sport = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5130},
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5471}
         },
         customCRSF = {
@@ -199,6 +201,7 @@ local sensorTable = {
     },
     rateProfile = {
         sport = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5131},            
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5472}
         },
         customCRSF = {
@@ -212,6 +215,7 @@ local sensorTable = {
     -- Throttle Sensors
     throttlePercentage = {
         sport = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x51A4},
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5440}
         },
         customCRSF = {
@@ -375,6 +379,7 @@ function telemetry.wakeup()
         telemetrySOURCE, crsfSOURCE, protocol = nil, nil, nil
         sensors = {}
     end
+
 end
 
 return telemetry
