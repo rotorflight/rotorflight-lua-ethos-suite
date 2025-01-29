@@ -27,7 +27,7 @@ config.suiteDir = "/scripts/rfsuite/"                               -- base path
 config.icon = lcd.loadMask("app/gfx/icon.png")                      -- icon
 config.icon_logtool = lcd.loadMask("app/gfx/icon_logtool.png")      -- icon
 config.Version = "1.0.0"                                            -- version number of this software release
-config.ethosVersion = 1560                                          -- min version of ethos supported by this script
+config.ethosVersion = 1600                                          -- min version of ethos supported by this script
 config.ethosVersionString = "ETHOS < V1.6.0"                        -- string to print if ethos version error occurs
 config.defaultRateProfile = 4 -- ACTUAL                             -- default rate table [default = 4]
 config.supportedMspApiVersion = {"12.06", "12.07","12.08"}          -- supported msp versions

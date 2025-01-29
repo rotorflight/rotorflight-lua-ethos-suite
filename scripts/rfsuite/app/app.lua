@@ -377,6 +377,10 @@ end
 -- REQUEST A PAGE OVER MSP. THIS RUNS ON MOST CLOCK CYCLES WHEN DATA IS BEING REQUESTED
 local function requestPage()
 
+    if not rfsuite.bg or not rfsuite.bg.msp then
+        return
+    end
+
     if not app.Page.reqTS or app.Page.reqTS + rfsuite.bg.msp.protocol.pageReqTimeout <= os.clock() then
 
         app.Page.reqTS = os.clock()

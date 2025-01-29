@@ -174,6 +174,11 @@ end
 
 function ui.openMainMenu()
 
+    -- hard exit on error
+    if rfsuite.utils.ethosVersion() < rfsuite.config.ethosVersion  then
+        return
+    end   
+
     local MainMenu = assert(loadfile("app/modules/init.lua"))()
 
     -- clear all nav vars
