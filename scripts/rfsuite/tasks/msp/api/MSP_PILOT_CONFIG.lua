@@ -31,6 +31,10 @@ local MSP_API_SIMULATOR_RESPONSE = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0}  -- Default si
 local MSP_MIN_BYTES = 0
 
 -- Define the MSP response data structure
+-- parameters are:
+--  field (name)
+--  type (U8|U16|S16|etc) (see api.lua)
+--  byteorder (big|little)
 local MSP_API_STRUCTURE = {
 	{ field = "model_id", type = "U8" },
 	{ field = "model_param1_type", type = "U8" },
@@ -44,13 +48,61 @@ local MSP_API_STRUCTURE = {
 -- Variable to store parsed MSP data
 local mspData = nil
 
+-- parse data
+local function parseMSPData(buf, structure)
+    -- Ensure buffer length matches expected data structure
+    if #buf < #structure then
+        return nil
+    end
+
+    local parsedData = {}
+    local offset = 1  -- Maintain a strict offset tracking
+
+    for _, field in ipairs(structure) do
+        if field.type == "U8" then
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU8(buf, offset)
+            offset = offset + 1
+        elseif field.type == "S8" then
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS8(buf, offset)
+            offset = offset + 1
+        elseif field.type == "U16" then
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU16(buf, offset)
+            offset = offset + 2
+        elseif field.type == "S16" then
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS16(buf, offset)
+            offset = offset + 2
+        elseif field.type == "U24" then
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU24(buf, offset)
+            offset = offset + 3
+        elseif field.type == "S24" then
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS24(buf, offset)
+            offset = offset + 3
+        elseif field.type == "U32" then
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU32(buf, offset)
+            offset = offset + 4
+        elseif field.type == "S32" then
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS32(buf, offset)
+            offset = offset + 4
+        else
+            return nil  -- Unknown data type, fail safely
+        end
+    end
+
+    -- prepare data for return
+    local data = {}
+    data['parsed'] = parsedData
+    data['buffer'] = buf
+
+    return data
+end
+
 -- Function to initiate MSP read operation
 local function read()
     local message = {
         command = MSP_API_CMD,  -- Specify the MSP command
         processReply = function(self, buf)
             -- Parse the MSP data using the defined structure
-            mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE)
+            mspData = parseMSPData(buf, MSP_API_STRUCTURE)
         end,
         simulatorResponse = MSP_API_SIMULATOR_RESPONSE
     }

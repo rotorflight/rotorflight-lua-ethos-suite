@@ -19,8 +19,7 @@
 
 ]] --
 local mspHelper = {
-
-    -- read functions
+    -- Read functions with endianness handling
     readU8 = function(buf)
         local offset = buf.offset or 1
         local value = buf[offset]
@@ -33,91 +32,94 @@ local mspHelper = {
         if value >= 128 then value = value - 256 end
         buf.offset = offset + 1
         return value
-    end,    
-    readU16 = function(buf)
+    end,
+    readU16 = function(buf, byteorder)
         local offset = buf.offset or 1
-        local value = buf[offset] + buf[offset + 1] * 256
+        local value
+        if byteorder == "big" then
+            value = buf[offset] * 256 + buf[offset + 1]
+        else -- Default to little-endian
+            value = buf[offset] + buf[offset + 1] * 256
+        end
         buf.offset = offset + 2
         return value
     end,
-    readS16 = function(buf)
+    readS16 = function(buf, byteorder)
         local offset = buf.offset or 1
-        local value = buf[offset] + buf[offset + 1] * 256
+        local value
+        if byteorder == "big" then
+            value = buf[offset] * 256 + buf[offset + 1]
+        else
+            value = buf[offset] + buf[offset + 1] * 256
+        end
         if value >= 32768 then value = value - 65536 end
         buf.offset = offset + 2
         return value
     end,
-    readU24 = function(buf)
+    readU32 = function(buf, byteorder)
         local offset = buf.offset or 1
-        local value = buf[offset] + buf[offset + 1] * 256 + buf[offset + 2] * 65536
-        buf.offset = offset + 3
-        return value
-    end,
-    readS24 = function(buf)
-        local offset = buf.offset or 1
-        local value = buf[offset] + buf[offset + 1] * 256 + buf[offset + 2] * 65536
-        if value >= 8388608 then value = value - 16777216 end
-        buf.offset = offset + 3
-        return value
-    end,        
-    readU32 = function(buf)
-        local offset = buf.offset or 1
-        local value = buf[offset] + buf[offset + 1] * 256 + buf[offset + 2] * 65536 + buf[offset + 3] * 16777216
+        local value
+        if byteorder == "big" then
+            value = buf[offset] * 16777216 + buf[offset + 1] * 65536 + buf[offset + 2] * 256 + buf[offset + 3]
+        else
+            value = buf[offset] + buf[offset + 1] * 256 + buf[offset + 2] * 65536 + buf[offset + 3] * 16777216
+        end
         buf.offset = offset + 4
         return value
     end,
-    readS32 = function(buf)
+    readS32 = function(buf, byteorder)
         local offset = buf.offset or 1
-        local value = buf[offset] + buf[offset + 1] * 256 + buf[offset + 2] * 65536 + buf[offset + 3] * 16777216
+        local value
+        if byteorder == "big" then
+            value = buf[offset] * 16777216 + buf[offset + 1] * 65536 + buf[offset + 2] * 256 + buf[offset + 3]
+        else
+            value = buf[offset] + buf[offset + 1] * 256 + buf[offset + 2] * 65536 + buf[offset + 3] * 16777216
+        end
         if value >= 2147483648 then value = value - 4294967296 end
         buf.offset = offset + 4
         return value
-    end,    
-
-    -- write functions
+    end,
+    -- Write functions with endianness handling
     writeU8 = function(buf, value)
         buf[#buf + 1] = value % 256
     end,
     writeS8 = function(buf, value)
         if value < 0 then value = value + 256 end
         buf[#buf + 1] = value % 256
-    end,    
-    writeU16 = function(buf, value)
-        buf[#buf + 1] = value % 256
-        buf[#buf + 1] = math.floor(value / 256) % 256
     end,
-    writeS16 = function(buf, value)
+    writeU16 = function(buf, value, byteorder)
+        if byteorder == "big" then
+            buf[#buf + 1] = math.floor(value / 256) % 256
+            buf[#buf + 1] = value % 256
+        else
+            buf[#buf + 1] = value % 256
+            buf[#buf + 1] = math.floor(value / 256) % 256
+        end
+    end,
+    writeS16 = function(buf, value, byteorder)
         if value < 0 then value = value + 65536 end
-        buf[#buf + 1] = value % 256
-        buf[#buf + 1] = math.floor(value / 256) % 256
-    end,    
-    writeU24 = function(buf, value)
-        buf[#buf + 1] = value % 256
-        buf[#buf + 1] = math.floor(value / 256) % 256
-        buf[#buf + 1] = math.floor(value / 65536) % 256
+        mspHelper.writeU16(buf, value, byteorder)
     end,
-    writeS24 = function(buf, value)
-        if value < 0 then value = value + 16777216 end
-        buf[#buf + 1] = value % 256
-        buf[#buf + 1] = math.floor(value / 256) % 256
-        buf[#buf + 1] = math.floor(value / 65536) % 256
-    end,        
-    writeU32 = function(buf, value)
-        buf[#buf + 1] = value % 256
-        buf[#buf + 1] = math.floor(value / 256) % 256
-        buf[#buf + 1] = math.floor(value / 65536) % 256
-        buf[#buf + 1] = math.floor(value / 16777216) % 256
+    writeU32 = function(buf, value, byteorder)
+        if byteorder == "big" then
+            buf[#buf + 1] = math.floor(value / 16777216) % 256
+            buf[#buf + 1] = math.floor(value / 65536) % 256
+            buf[#buf + 1] = math.floor(value / 256) % 256
+            buf[#buf + 1] = value % 256
+        else
+            buf[#buf + 1] = value % 256
+            buf[#buf + 1] = math.floor(value / 256) % 256
+            buf[#buf + 1] = math.floor(value / 65536) % 256
+            buf[#buf + 1] = math.floor(value / 16777216) % 256
+        end
     end,
-    writeS32 = function(buf, value)
+    writeS32 = function(buf, value, byteorder)
         if value < 0 then value = value + 4294967296 end
-        buf[#buf + 1] = value % 256
-        buf[#buf + 1] = math.floor(value / 256) % 256
-        buf[#buf + 1] = math.floor(value / 65536) % 256
-        buf[#buf + 1] = math.floor(value / 16777216) % 256
-    end,    
+        mspHelper.writeU32(buf, value, byteorder)
+    end,
     writeRAW = function(buf, value)
         buf[#buf + 1] = value
-    end
+    end    
 }
 
 return mspHelper
