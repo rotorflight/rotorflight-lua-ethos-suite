@@ -48,14 +48,30 @@ function apitester.wakeup()
 
 
     --[[  EXAMPLE READ
-    local API = rfsuite.bg.msp.api.load("MSP_GOVERNOR_CONFIG")
-    API.read()  
-    if API.readComplete() then
-            local value = API.readValue("gov_mode")
-            local data = API.data()
+            local API = rfsuite.bg.msp.api.load("MSP_GOVERNOR_CONFIG")
+            API.read()  
+            if API.readComplete() then
+                    local value = API.readValue("gov_mode")
+                    local data = API.data()
 
-            rfsuite.utils.print_r(data)
-    end       
+                    rfsuite.utils.print_r(data)
+            end     
+            
+            or 
+
+            local API = rfsuite.bg.msp.api.load("MSP_GOVERNOR_CONFIG")
+            API.setCompleteHandler(function(self, buf) 
+                    local data = API.data()
+
+                    rfsuite.utils.print_r(data)
+            end
+            API.setErrorHandler(function(self, buf) 
+                    local data = API.data()
+
+                    rfsuite.utils.print_r(data)
+            end    
+            )   
+            API.read()  
     ]]--
 
     --[[  EXAMPLE WRITE
@@ -65,7 +81,28 @@ function apitester.wakeup()
                 rfsuite.config.clockSet = true
                 rfsuite.utils.log("Sync clock: " .. os.clock())
             end        
+
+            or
+
+            local API = rfsuite.bg.msp.api.load("MSP_SET_RTC")
+            API.setCompleteHandler(function(self, buf) 
+                print("error")
+            end
+            API.setErrorHandler(function(self, buf) 
+                print("error")
+            end               
+            API.write()  
+  
+
     ]]--
+
+   -- local API = rfsuite.bg.msp.api.load("MSP_FILTER_CONFIG")
+   -- API.read()  
+  --  if API.readComplete() then
+   --         local data = API.data()
+   --         rfsuite.utils.print_r(data)
+   -- end   
+
 
   
 
