@@ -27,7 +27,8 @@
  * - setValue("seconds", os.time())
  * - setValue("milliseconds", 123)
  * - resetWriteStatus(): Resets the write completion status.
- * - setErrorHandler():  Set a function to be called when an error on write occurs
+ * - setCompleteHandler(handlerFunction):  Set function to run on completion
+ * - setErrorHandler(handlerFunction): Set function to run on error  
  *
  * MSP Command Used:
  * - MSP_EEPROM_WRITE (Command ID: 246)
@@ -47,12 +48,34 @@ local MSP_STRUCTURE = {
 -- Variable to track write completion
 local mspWriteComplete = false
 
+
 -- Function to create a payload table
 local payloadData = {}
 local defaultData = {}
 
 -- Variable to store the custom error handler
 local customErrorHandler = nil
+
+-- Function to set the error handler
+local function setErrorHandler(handlerFunction)
+    if type(handlerFunction) == "function" then
+        customErrorHandler = handlerFunction
+    else
+        error("setErrorHandler expects a function")
+    end
+end
+
+-- Variable to store the custom complete handler
+local customCompleteHandler = nil
+
+-- Function to set the Complete handler
+local function setCompleteHandler(handlerFunction)
+    if type(handlerFunction) == "function" then
+        customCompleteHandler = handlerFunction
+    else
+        error("setCompleteHandler expects a function")
+    end
+end
 
 -- Function to get default values (stub for now)
 local function getDefaults()
@@ -63,14 +86,6 @@ local function getDefaults()
     }
 end
 
--- Function to set the error handler
-local function setErrorHandler(handlerFunction)
-    if type(handlerFunction) == "function" then
-        customErrorHandler = handlerFunction
-    else
-        error("setErrorHandler expects a function")
-    end
-end
 
 -- Function to initiate MSP write operation
 local function write()
@@ -156,5 +171,7 @@ return {
     setValue = setValue,
     writeComplete = writeComplete,
     resetWriteStatus = resetWriteStatus,
-    getDefaults = getDefaults
+    getDefaults = getDefaults,
+    setCompleteHandler = setCompleteHandler,
+    setErrorHandler = setErrorHandler    
 }

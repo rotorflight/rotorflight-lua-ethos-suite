@@ -27,6 +27,8 @@
  * - setValue("seconds", os.time())
  * - setValue("milliseconds", 123)
  * - resetWriteStatus(): Resets the write completion status.
+ * setCompleteHandler(handlerFunction):  Set function to run on completion
+ * setErrorHandler(handlerFunction): Set function to run on error   
  *
  * MSP Command Used:
  * - MSP_REBOOT (Command ID: 68)
@@ -45,6 +47,30 @@ local MSP_STRUCTURE = {
 
 -- Variable to track write completion
 local mspWriteComplete = false
+
+-- Variable to store the custom error handler
+local customErrorHandler = nil
+
+-- Function to set the error handler
+local function setErrorHandler(handlerFunction)
+    if type(handlerFunction) == "function" then
+        customErrorHandler = handlerFunction
+    else
+        error("setErrorHandler expects a function")
+    end
+end
+
+-- Variable to store the custom complete handler
+local customCompleteHandler = nil
+
+-- Function to set the Complete handler
+local function setCompleteHandler(handlerFunction)
+    if type(handlerFunction) == "function" then
+        customCompleteHandler = handlerFunction
+    else
+        error("setCompleteHandler expects a function")
+    end
+end
 
 -- Function to create a payload table
 local payloadData = {}
@@ -80,7 +106,15 @@ local function write()
         payload = {},
         processReply = function(self, buf)
             mspWriteComplete = true
+            if customCompleteHandler then
+                customCompleteHandler(self, buf)
+            end            
         end,
+        errorHandler = function(self, buf)
+            if customErrorHandler then
+                customErrorHandler(self, buf)
+            end
+        end,        
         simulatorResponse = {}
     }
 
@@ -139,5 +173,7 @@ return {
     setValue = setValue,
     writeComplete = writeComplete,
     resetWriteStatus = resetWriteStatus,
-    getDefaults = getDefaults
+    getDefaults = getDefaults,
+    setCompleteHandler = setCompleteHandler,
+    setErrorHandler = setErrorHandler    
 }

@@ -35,7 +35,8 @@
  * - setValue("seconds", os.time())
  * - setValue("milliseconds", 123)
  * - resetWriteStatus(): Resets the write completion status.
- * - setErrorHandler():  Set a function to be called when an error on write occurs
+ * - setCompleteHandler(handlerFunction):  Set function to run on completion
+ * - setErrorHandler(handlerFunction): Set function to run on error  
  *
  * MSP Command Used:
  * - MSP_SET_RTC (Command ID: 246)
@@ -71,6 +72,7 @@ local function setErrorHandler(handlerFunction)
         error("setErrorHandler expects a function")
     end
 end
+
 -- Function to get default values (stub for now)
 local function getDefaults()
     -- This function should return a table with default values
@@ -166,5 +168,7 @@ return {
     setValue = setValue,
     writeComplete = writeComplete,
     resetWriteStatus = resetWriteStatus,
-    getDefaults = getDefaults
+    getDefaults = getDefaults,
+    setCompleteHandler = setCompleteHandler,
+    setErrorHandler = setErrorHandler    
 }

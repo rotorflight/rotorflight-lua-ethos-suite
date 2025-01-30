@@ -68,22 +68,25 @@ function msp.onConnectBgChecks()
         if rfsuite.config.apiVersion == nil and msp.mspQueue:isProcessed() then
 
             local API = msp.api.load("MSP_API_VERSION")
-            API.read()  
-            if API.readComplete() then
+            API.setCompleteHandler(function(self, buf) 
                 rfsuite.config.apiVersion = API.readVersion()
                 rfsuite.utils.log("API version: " .. rfsuite.config.apiVersion)
-            end               
+            end
+            )       
+            API.read() 
 
         -- sync the clock
         elseif rfsuite.config.clockSet == nil and msp.mspQueue:isProcessed() then
 
             local API = msp.api.load("MSP_SET_RTC")
-            API.write()  
-            if API.writeComplete() then
+            API.setCompleteHandler(function(self, buf) 
                 rfsuite.config.clockSet = true
                 rfsuite.utils.log("Sync clock: " .. os.clock())
-            end                
+            end
+            )
 
+            API.write()  
+             
         -- beep the clock
         elseif rfsuite.config.clockSet == true and rfsuite.config.clockSetAlart ~= true then
             -- this is unsual but needed because the clock sync does not return anything usefull
@@ -95,29 +98,32 @@ function msp.onConnectBgChecks()
         elseif (rfsuite.config.tailMode == nil or rfsuite.config.swashMode == nil) and msp.mspQueue:isProcessed() then
            
             local API = msp.api.load("MSP_MIXER_CONFIG")
-            API.read()  
-            if API.readComplete() then
+            API.setCompleteHandler(function(self, buf) 
                 rfsuite.config.tailMode = API.readValue("tail_rotor_mode")     
                 rfsuite.config.swashMode = API.readValue("swash_type")
                 rfsuite.utils.log("Tail mode: " .. rfsuite.config.tailMode)
                 rfsuite.utils.log("Swash mode: " .. rfsuite.config.swashMode)
-            end                 
+            end
+            )              
+            API.read()  
+          
 
         -- get servo configuration
         elseif (rfsuite.config.servoCount == nil) and msp.mspQueue:isProcessed() then
  
            local API = msp.api.load("MSP_SERVO_CONFIGURATIONS")
-           API.read()  
-           if API.readComplete() then
+           API.setCompleteHandler(function(self, buf) 
                 rfsuite.config.servoCount =  API.readValue("servo_count")
                 rfsuite.utils.log("Servo count: " .. rfsuite.config.servoCount)
-           end     
+            end
+            )              
+           API.read()  
 
         -- work out if fbl has any servos in overide mode
         elseif (rfsuite.config.servoOverride == nil) and msp.mspQueue:isProcessed() then
 
 
-            local API = msp.api.load("MSP_SERVO_OVERIDE")
+            local API = msp.api.load("MSP_SERVO_OVERIDE")            
             API.read(rfsuite.config.servoCount)  
             if API.readComplete() then
                     local data = API.data()

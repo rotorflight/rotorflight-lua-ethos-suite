@@ -31,6 +31,8 @@
  * readComplete(): Checks if the read operation is complete.
  * readValue(fieldName): Returns the value of a specific field from MSP data.
  * readVersion(): Retrieves the API version in major.minor format.
+ * setCompleteHandler(handlerFunction):  Set function to run on completion
+ * setErrorHandler(handlerFunction): Set function to run on error  
 ]]--
 
 -- Constants for MSP Commands
@@ -55,6 +57,31 @@ local MSP_API_STRUCTURE = {
 
 -- Variable to store parsed MSP data
 local mspData = nil
+
+-- Variable to store the custom complete handler
+local customCompleteHandler = nil
+
+-- Function to set the Complete handler
+local function setCompleteHandler(handlerFunction)
+    if type(handlerFunction) == "function" then
+        customCompleteHandler = handlerFunction
+    else
+        error("setCompleteHandler expects a function")
+    end
+end
+
+-- Variable to store the custom error handler
+local customErrorHandler = nil
+
+-- Function to set the error handler
+local function setErrorHandler(handlerFunction)
+    if type(handlerFunction) == "function" then
+        customErrorHandler = handlerFunction
+    else
+        error("setErrorHandler expects a function")
+    end
+end
+
 
 -- parse data
 local function parseMSPData(buf, structure)
@@ -113,7 +140,17 @@ local function read()
         processReply = function(self, buf)
             -- Parse the MSP data using the defined structure
             mspData = parseMSPData(buf, MSP_API_STRUCTURE)
+            if #buf >= MSP_MIN_BYTES then
+                if customCompleteHandler then
+                    customCompleteHandler(self, buf)
+                end     
+            end             
         end,
+        errorHandler = function(self, buf)
+            if customErrorHandler then
+                customErrorHandler(self, buf)
+            end
+        end,        
         simulatorResponse = MSP_API_SIMULATOR_RESPONSE
     }
     -- Add the message to the processing queue
@@ -147,5 +184,7 @@ return {
     read = read,
     readComplete = readComplete,
     readVersion = readVersion,
-    readValue = readValue
+    readValue = readValue,
+    setCompleteHandler = setCompleteHandler,
+    setErrorHandler = setErrorHandler    
 }
