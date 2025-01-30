@@ -54,6 +54,7 @@ config.developerMode = false                                        -- show deve
 config.soundPack = nil                                              -- use an custom sound pack. [default = nil]
 config.syncCraftName = false                                        -- sync the craft name with the model name [default = false]
 config.helpFieldDebug = true                                        -- print debug to show help fields being looked for [default = false]
+config.apiTester = true                                             -- run the api tester sub task for use when developing new api files [default = false]
 
 -- tasks
 config.bgTaskName = config.toolName .. " [Background]"              -- background task name for msp services etc
