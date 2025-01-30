@@ -27,6 +27,7 @@
  * - setValue("seconds", os.time())
  * - setValue("milliseconds", 123)
  * - resetWriteStatus(): Resets the write completion status.
+ * - setErrorHandler():  Set a function to be called when an error on write occurs 
  *
  * MSP Command Used:
  * - MSP_SET_RTC (Command ID: 246)
@@ -50,6 +51,18 @@ local mspWriteComplete = false
 -- Function to create a payload table
 local payloadData = {}
 local defaultData = {}
+
+-- Variable to store the custom error handler
+local customErrorHandler = nil
+
+-- Function to set the error handler
+local function setErrorHandler(handlerFunction)
+    if type(handlerFunction) == "function" then
+        customErrorHandler = handlerFunction
+    else
+        error("setErrorHandler expects a function")
+    end
+end
 
 -- Function to get default values (stub for now)
 local function getDefaults()
@@ -83,6 +96,11 @@ local function write()
         processReply = function(self, buf)
             mspWriteComplete = true
         end,
+        errorHandler = function(self, buf)
+            if customErrorHandler then
+                customErrorHandler(self, buf)
+            end
+        end,       
         simulatorResponse = {}
     }
 

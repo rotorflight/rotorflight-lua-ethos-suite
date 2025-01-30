@@ -29,7 +29,7 @@
  * - resetWriteStatus(): Resets the write completion status.
  *
  * MSP Command Used:
- * - MSP_SET_RTC (Command ID: 246)
+ * - MSP_REBOOT (Command ID: 68)
 ]] --
  
 -- Constants for MSP Commands
