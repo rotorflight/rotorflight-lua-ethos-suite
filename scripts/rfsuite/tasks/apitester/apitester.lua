@@ -45,7 +45,9 @@ function apitester.wakeup()
     end
 
     -- add in test functions below
-    --[[
+
+
+    --[[  EXAMPLE READ
     local API = rfsuite.bg.msp.api.load("MSP_GOVERNOR_CONFIG")
     API.read()  
     if API.readComplete() then
@@ -56,15 +58,14 @@ function apitester.wakeup()
     end       
     ]]--
 
-
-    local API = rfsuite.bg.msp.api.load("MSP_BATTERY_CONFIG")
-    API.read()  
-    if API.readComplete() then
-            local value = API.readValue("gov_mode")
-            local data = API.data()
-
-            rfsuite.utils.print_r(data)
-    end       
+    --[[  EXAMPLE WRITE
+            local API = rfsuite.bg.msp.api.load("MSP_SET_RTC")
+            API.write()  
+            if API.writeComplete() then
+                rfsuite.config.clockSet = true
+                rfsuite.utils.log("Sync clock: " .. os.clock())
+            end        
+    ]]--
 
 
 end    

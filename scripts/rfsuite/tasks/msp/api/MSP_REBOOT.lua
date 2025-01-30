@@ -1,12 +1,4 @@
 --[[
- *********************************************************************************************
- *                                                                                           *
- *     THIS IS A TEMPLATE AND SHOULD BE USED ONLY AS A SOURCE FOR MAKING A NEW API FILE      *
- *                                                                                           *
- *********************************************************************************************
-]]--
-
---[[
  * Copyright (C) Rotorflight Project
  *
  * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
@@ -41,15 +33,14 @@
 ]] --
  
 -- Constants for MSP Commands
-local MSP_API_CMD = 246  -- Command identifier for setting RTC
+local MSP_API_CMD = 68  -- Command identifier for setting RTC
 
 -- Define the MSP request data structure
 --  field (name)
 --  type (U8|U16|S16|etc) (see api.lua)
 --  byteorder (big|little)
 local MSP_STRUCTURE = {
-    { field = "seconds", type = "U32" },  -- 32-bit seconds since epoch
-    { field = "milliseconds", type = "U16" }  -- 16-bit milliseconds
+    { field = "rebootMode", type = "U8" },  -- 32-bit seconds since epoch
 }
 
 -- Variable to track write completion
@@ -65,8 +56,7 @@ local function getDefaults()
     -- Typically we should be performing a 'read' to populate this data
     -- however this api only ever writes data
     return {
-        seconds = os.time(),
-        milliseconds = 0
+        rebootMode = 0
     }
 end
 

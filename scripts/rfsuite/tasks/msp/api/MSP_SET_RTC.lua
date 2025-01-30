@@ -33,13 +33,13 @@
 ]] --
  
 -- Constants for MSP Commands
-local MSP_SET_RTC_CMD = 246  -- Command identifier for setting RTC
+local MSP_API_CMD = 246  -- Command identifier for setting RTC
 
 -- Define the MSP request data structure
 --  field (name)
 --  type (U8|U16|S16|etc) (see api.lua)
 --  byteorder (big|little)
-local MSP_SET_RTC_STRUCTURE = {
+local MSP_STRUCTURE = {
     { field = "seconds", type = "U32" },  -- 32-bit seconds since epoch
     { field = "milliseconds", type = "U16" }  -- 16-bit milliseconds
 }
@@ -66,7 +66,7 @@ end
 local function write()
     local defaults = getDefaults()
     -- Validate if all fields have been set or fallback to defaults
-    for _, field in ipairs(MSP_SET_RTC_STRUCTURE) do
+    for _, field in ipairs(MSP_STRUCTURE) do
         if payloadData[field.field] == nil then
             if defaults[field.field] ~= nil then
                 payloadData[field.field] = defaults[field.field]
@@ -78,7 +78,7 @@ local function write()
     end
 
     local message = {
-        command = MSP_SET_RTC_CMD,  -- Specify the MSP command
+        command = MSP_API_CMD,  -- Specify the MSP command
         payload = {},
         processReply = function(self, buf)
             mspWriteComplete = true
@@ -87,7 +87,7 @@ local function write()
     }
 
     -- Fill payload with data from payloadData table
-    for _, field in ipairs(MSP_SET_RTC_STRUCTURE) do
+    for _, field in ipairs(MSP_STRUCTURE) do
 
         local byteorder = field.byteorder or "little"  -- Default to little-endian
 
@@ -116,7 +116,7 @@ end
 
 -- Function to set a value dynamically
 local function setValue(fieldName, value)
-    for _, field in ipairs(MSP_SET_RTC_STRUCTURE) do
+    for _, field in ipairs(MSP_STRUCTURE) do
         if field.field == fieldName then
             payloadData[fieldName] = value
             return true
