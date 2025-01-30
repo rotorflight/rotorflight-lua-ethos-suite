@@ -18,10 +18,55 @@
  * 
 
 ]] --
+--[[
+
+* This task triggers every 5 seconds and will only execute if config.apiTester is == true
+* The purpose of this task is to allow easy testing of read/write api files from a developer 
+* point of view.
+*
+* Templates for creating a new MSP api can be found in:
+*  rfsuite/tasks/msp/api/template/*.lua
+*
+* choose a read or write api and customise it to suite.
+
+]]--
+
 local arg = {...}
 local config = arg[1]
 
 local apitester = {}
 
+
+function apitester.wakeup()
+
+    -- quick exit if we have not enabled apiTester mode
+    if config.apiTester == nil or config.apiTester == false then
+        return
+    end
+
+    -- add in test functions below
+    --[[
+    local API = rfsuite.bg.msp.api.load("MSP_GOVERNOR_CONFIG")
+    API.read()  
+    if API.readComplete() then
+            local value = API.readValue("gov_mode")
+            local data = API.data()
+
+            rfsuite.utils.print_r(data)
+    end       
+    ]]--
+
+
+    local API = rfsuite.bg.msp.api.load("MSP_BATTERY_CONFIG")
+    API.read()  
+    if API.readComplete() then
+            local value = API.readValue("gov_mode")
+            local data = API.data()
+
+            rfsuite.utils.print_r(data)
+    end       
+
+
+end    
 
 return apitester
