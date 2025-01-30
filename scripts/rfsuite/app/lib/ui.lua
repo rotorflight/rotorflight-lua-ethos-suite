@@ -388,6 +388,14 @@ function ui.fieldChoice(i)
     end)
 
     if f.disable == true then rfsuite.app.formFields[i]:enable(false) end
+
+    if f.instantChange and f.instantChange == true then
+        rfsuite.app.formFields[i]:enableInstantChange(true)
+    else
+        rfsuite.app.formFields[i]:enableInstantChange(false)     
+    end
+
+
 end
 
 function ui.fieldNumber(i)
@@ -494,7 +502,11 @@ function ui.fieldNumber(i)
             end
         end    
     end
-
+    if f.instantChange and f.instantChange == true then
+        rfsuite.app.formFields[i]:enableInstantChange(true)
+    else
+        rfsuite.app.formFields[i]:enableInstantChange(false)     
+    end
 end
 
 function ui.fieldStaticText(i)
@@ -624,6 +636,11 @@ function ui.fieldText(i)
                 print(f.help)
             end 
         end      
+    end
+    if f.instantChange and f.instantChange == true then
+        rfsuite.app.formFields[i]:enableInstantChange(true)
+    else
+        rfsuite.app.formFields[i]:enableInstantChange(false)     
     end
 
 end
