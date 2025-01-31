@@ -65,6 +65,7 @@ find "$API_DIR" -type f -name "*.lua" | while read -r file; do
     grep -E "local MSP_API_CMD *= *[0-9]+" "$file" | awk -F'=' '{print $2}' | tr -d ' ' >> "$API_NUMBERS_FILE"
 done
 
+
 # Extract read values and simulatorResponse lines from module files
 echo "Scanning $MODULES_DIR for read numbers..."
 find "$MODULES_DIR" -type f -name "*.lua" | while read -r file; do
@@ -81,12 +82,21 @@ done
 # Check for missing matches and get MSP define name
 echo "Checking for unmatched read numbers..."
 while IFS=, read -r folder read_number sim_response; do
+    if [[ "$folder" == *"esc/mfg/"* ]]; then
+        continue  # Skip this iteration if the folder contains "esc/mfg/"
+    fi
+
     if ! grep -q "^$read_number$" "$API_NUMBERS_FILE"; then
         # Find matching define name for the read number
         define_name=$(grep -E "[[:space:]]+$read_number$" "$MSP_DEFINES_FILE" | awk '{print $2}')
         
         if [[ -z "$define_name" ]]; then
             define_name="UNKNOWN"
+        fi
+
+        # Skip displaying output if the corresponding Lua file exists in API_DIR
+        if [[ -f "$API_DIR/$define_name.lua" ]]; then
+            continue
         fi
 
         # Count elements in the simulatorResponse array
@@ -110,6 +120,8 @@ while IFS=, read -r folder read_number sim_response; do
         echo " "
     fi
 done < "$MODULES_NUMBERS_FILE"
+
+
 
 # Clean up temp files
 rm -f "$API_NUMBERS_FILE" "$MODULES_NUMBERS_FILE" "$MSP_DEFINES_FILE" "$MSP_SOURCE_FILE"
