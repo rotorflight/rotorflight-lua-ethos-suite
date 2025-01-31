@@ -84,10 +84,10 @@ while IFS=, read -r folder read_number sim_response; do
 
         # Display the formatted output
         echo "  MSP_COMMAND:   $define_name"
-        echo "  MSP_ID:  $read_number"
-        echo "  FOLDER:  $folder"
+        echo "  MSP_ID:        $read_number"
+        echo "  FOLDER:        app/modules/$folder"
         echo "  SIM RESPONSE:  $sim_response"
-        echo "  MIN_BYTES:  $min_bytes"
+        echo "  MIN_BYTES:     $min_bytes"
 		echo " "
     fi
 done < "$MODULES_NUMBERS_FILE"
