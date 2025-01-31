@@ -108,7 +108,9 @@ local function init()
                 configure = scriptModule.configure,
                 read = scriptModule.read,
                 write = scriptModule.write,                
-                persistent = false
+                persistent = scriptModule.persistent or false,
+                menu = scriptModule.menu,
+                title = scriptModule.title
             })
         end
     end

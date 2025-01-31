@@ -1121,10 +1121,14 @@ function status.getThemeInfo()
     }
 
     local themeConfigs = {
-        ["784x294"] = {colSpacing = 4, fullBoxW = 262, fullBoxH = h / 2, smallBoxSensortextOFFSET = -5, fontTITLE = FONT_XS},
-        ["472x191"] = {colSpacing = 2, fullBoxW = 158, fullBoxH = 97, smallBoxSensortextOFFSET = -8, fontTITLE = 768},
-        ["630x236"] = {colSpacing = 3, fullBoxW = 210, fullBoxH = 120, smallBoxSensortextOFFSET = -10, fontTITLE = 768},
-        ["427x158"] = {colSpacing = 2, fullBoxW = 158, fullBoxH = 79, smallBoxSensortextOFFSET = -10, fontTITLE = FONT_XS}
+ 
+        ["784x294"] = {colSpacing = 4, fullBoxW = 262, fullBoxH = h / 2, smallBoxSensortextOFFSET = -5, fontTITLE = FONT_XS}, 
+        ["784x316"] = {colSpacing = 4, fullBoxW = 262, fullBoxH = h / 2, smallBoxSensortextOFFSET = -5, fontTITLE = FONT_XS},  -- no title
+        ["472x191"] = {colSpacing = 2, fullBoxW = 158, fullBoxH = h / 2, smallBoxSensortextOFFSET = -8, fontTITLE = 768},
+        ["472x210"] = {colSpacing = 2, fullBoxW = 158, fullBoxH = h / 2, smallBoxSensortextOFFSET = -8, fontTITLE = 768},          -- no title 
+        ["630x236"] = {colSpacing = 3, fullBoxW = 210, fullBoxH = h / 2, smallBoxSensortextOFFSET = -10, fontTITLE = 768},
+        ["630x258"] = {colSpacing = 3, fullBoxW = 210, fullBoxH = h / 2, smallBoxSensortextOFFSET = -10, fontTITLE = 768},        -- no title
+        ["427x158"] = {colSpacing = 2, fullBoxW = 158, fullBoxH = h / 2, smallBoxSensortextOFFSET = -10, fontTITLE = FONT_XS}  -- not supported anymore as X12
     }
 
     local configKey = string.format("%dx%d", tw, th)
@@ -1384,6 +1388,7 @@ function status.paint(widget)
         -- -----------------------------------------------------------------------------------------------
 
         local theme = status.getThemeInfo()
+
         local w, h = lcd.getWindowSize()
         local sensorTITLE
 
@@ -1404,12 +1409,17 @@ function status.paint(widget)
                 return
             end
 
+  
             -- widget size
-            local validSizes = {{w = 784, h = 294}, -- X20, X20PRO etc
-            {w = 472, h = 191}, -- TWXLITE,X18,X18S
-            {w = 630, h = 236}, -- X14
-            {w = 472, h = 158} -- X10,X12
-            }
+            local validSizes = {
+                               {w = 784, h = 294}, -- X20, X20PRO etc
+                               {w = 784, h = 316}, -- X20, X20PRO etc (no title)
+                               {w = 472, h = 191}, -- TWXLITE,X18,X18S
+                               {w = 472, h = 210}, -- TWXLITE,X18,X18S (no title)
+                               {w = 630, h = 236}, -- X14
+                               {w = 630, h = 258}, -- X14 (no title)                              
+                               {w = 472, h = 158} -- X10,X12
+                            }
 
             local isValidSize = false
             for _, size in ipairs(validSizes) do
