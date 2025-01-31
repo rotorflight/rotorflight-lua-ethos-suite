@@ -56,13 +56,19 @@ local mspData = nil
 -- Create a new instance
 local handlers = rfsuite.bg.msp.api.createHandlers()  
 
+
+-- Stub Function for additional processing of retured data
+local function processMSPData(buf, MSP_API_STRUCTURE)
+    local data = {}
+    return data
+end  
 -- Function to initiate MSP read operation
 local function read()
     local message = {
         command = MSP_API_CMD, -- Specify the MSP command
         processReply = function(self, buf)
             -- Parse the MSP data using the defined structure
-            mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE)
+            mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE,processMSPData(buf, MSP_API_STRUCTURE))
             if #buf >= MSP_MIN_BYTES then
                 local completeHandler = handlers.getCompleteHandler()
                 if completeHandler then

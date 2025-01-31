@@ -66,13 +66,56 @@ local mspData = nil
 -- Create a new instance
 local handlers = rfsuite.bg.msp.api.createHandlers()  
 
+-- Additional data formating
+local function processMSPData(buf, MSP_API_STRUCTURE)
+    local data = {
+        tables = {}  -- Create a nested table to hold indexed data
+    }
+
+    -- Ensure buffer is valid
+    if not buf or type(buf) ~= "table" then
+        return nil
+    end
+
+    local index = 1
+
+    for i, field in ipairs(MSP_API_STRUCTURE) do
+        local baseName, suffix = field.field:match("(.+)_(%d+)")
+        local value = 0
+
+        -- Determine data type and extract values from buffer
+        if field.type == "U8" then
+            value = buf[i] or 0
+        elseif field.type == "U16" then
+            value = (buf[i] or 0) + ((buf[i + 1] or 0) * 256)
+        end
+
+        if baseName and suffix then
+            local keyIndex = tonumber(suffix) - 1  -- Convert suffix to zero-based index
+
+            if not data.tables[keyIndex] then
+                data.tables[keyIndex] = {}
+            end
+
+            data.tables[keyIndex][baseName] = value
+        else
+            -- Handle fields without a suffix (e.g., "rates_type")
+            data[field.field] = value
+        end
+    end
+
+    return data
+end
+
+
+
 -- Function to initiate MSP read operation
 local function read()
     local message = {
         command = MSP_API_CMD, -- Specify the MSP command
         processReply = function(self, buf)
             -- Parse the MSP data using the defined structure
-            mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE)
+            mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE,processMSPData(buf, MSP_API_STRUCTURE))
             if #buf >= MSP_MIN_BYTES then
                 local completeHandler = handlers.getCompleteHandler()
                 if completeHandler then

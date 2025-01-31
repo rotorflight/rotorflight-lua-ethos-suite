@@ -96,12 +96,12 @@ function apitester.wakeup()
 
     ]]--
 
-    local API = rfsuite.bg.msp.api.load("MSP_SBUS_OUTPUT_CONFIG")
+    local API = rfsuite.bg.msp.api.load("MSP_STATUS")
     API.read()  
     if API.readComplete() then
             local data = API.data()
+            --rfsuite.utils.print_r(data['processed'])
             rfsuite.utils.print_r(data)
-
     end   
 
 

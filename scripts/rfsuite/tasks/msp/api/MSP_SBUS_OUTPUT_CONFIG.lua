@@ -1,11 +1,4 @@
 --[[
- *********************************************************************************************
- *                                                                                           *
- *     THIS IS A TEMPLATE AND SHOULD BE USED ONLY AS A SOURCE FOR MAKING A NEW API FILE      *
- *                                                                                           *
- *********************************************************************************************
-]] --
---[[
  * Copyright (C) Rotorflight Project
  *
  * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
@@ -43,10 +36,10 @@ local function generateSbusApiStructure(numChannels)
     local structure = {}
 
     for i = 1, numChannels do
-        table.insert(structure, { field = "sbus_sourceType_" .. i, type = "U8" })
-        table.insert(structure, { field = "sbus_sourceIndex_" .. i, type = "U8" })
-        table.insert(structure, { field = "sbus_sourceRangeLow_" .. i, type = "S16" })
-        table.insert(structure, { field = "sbus_sourceRangeHigh_" .. i, type = "S16" })
+        table.insert(structure, { field = "Type_" .. i, type = "U8" })
+        table.insert(structure, { field = "Index_" .. i, type = "U8" })
+        table.insert(structure, { field = "RangeLow_" .. i, type = "S16" })
+        table.insert(structure, { field = "RangeHigh_" .. i, type = "S16" })
     end
 
     return structure
@@ -64,13 +57,42 @@ local mspData = nil
 -- Create a new instance
 local handlers = rfsuite.bg.msp.api.createHandlers()  
 
+
+-- Function to handle additional msp data processing
+local function processMSPData(buf, MSP_API_STRUCTURE)
+    local data = {}
+
+    -- Ensure we have valid input data
+    if not buf or type(buf) ~= "table" then
+        return nil
+    end
+
+    -- Iterate through the MSP_API_STRUCTURE to extract relevant fields
+    local index = 1
+    for i = 1, #MSP_API_STRUCTURE, 4 do
+        local channelData = {}
+
+        -- Extract data based on structure definitions
+        channelData["Type"] = buf[i] or 0
+        channelData["Index"] = buf[i + 1] or 0
+        channelData["RangeLow"] = (buf[i + 2] or 0) + ((buf[i + 3] or 0) * 256)
+        channelData["RangeHigh"] = (buf[i + 4] or 0) + ((buf[i + 5] or 0) * 256)
+
+        -- Store in ordered table
+        data[index] = channelData
+        index = index + 1
+    end
+
+    return data
+end  
+
 -- Function to initiate MSP read operation
 local function read()
     local message = {
         command = MSP_API_CMD, -- Specify the MSP command
         processReply = function(self, buf)
             -- Parse the MSP data using the defined structure
-            mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE)
+            mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE,processMSPData(buf,MSP_API_STRUCTURE))
             if #buf >= MSP_MIN_BYTES then
                 local completeHandler = handlers.getCompleteHandler()
                 if completeHandler then

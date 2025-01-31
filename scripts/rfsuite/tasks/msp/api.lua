@@ -60,7 +60,8 @@ function apiLoader.load(apiName)
     return loadAPI(apiName) or {} -- Return an empty table if API fails to load
 end
 
-function apiLoader.parseMSPData(buf, structure)
+-- Function to parse the msp Data.  Optionally pass a processed(buf, structure) to provide more data formating
+function apiLoader.parseMSPData(buf, structure, processed, other)
     -- Ensure buffer length matches expected data structure
     if #buf < #structure then return nil end
 
@@ -118,7 +119,14 @@ function apiLoader.parseMSPData(buf, structure)
     local data = {}
     data['parsed'] = parsedData
     data['buffer'] = buf
-
+    -- add in processed table if supplied
+    if processed then
+        data['processed'] = processed
+    end
+    -- add in other table if supplied
+    if other then
+        data['other'] = other
+    end    
     return data
 end
 

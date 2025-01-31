@@ -463,7 +463,6 @@ end
 
 -- print a table out to debug console
 function utils.print_r(node)
-    -- Handle cases where node is nil or not a table
     if node == nil then
         print("nil (type: nil)")
         return
@@ -489,7 +488,6 @@ function utils.print_r(node)
                     output_str = output_str .. "\n"
                 end
 
-                -- Prevent memory issues with large tables
                 table.insert(output, output_str)
                 output_str = ""
 
@@ -540,10 +538,20 @@ function utils.print_r(node)
     end
 
     table.insert(output, output_str)
-    output_str = table.concat(output)
+    output_str = table.concat(output, "\n")
 
-    print(output_str)
+    -- Print in chunks of 5 lines
+    local lines = {}
+    for line in output_str:gmatch("[^\n]+") do
+        table.insert(lines, line)
+    end
+
+    for i = 1, #lines, 5 do
+        local chunk = table.concat(lines, "\n", i, math.min(i + 4, #lines))
+        print(chunk)
+    end
 end
+
 
 -- convert a string to a nunber
 function utils.makeNumber(x)

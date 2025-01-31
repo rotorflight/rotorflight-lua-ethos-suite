@@ -68,46 +68,40 @@ local function generateMSPStructure(servoCount)
 end
 
 -- Custom parser function to suite the servo data
-local function parseMSPData(buf, structure)
-    -- Ensure buffer length matches expected data structure
-    if #buf < #structure then return nil end
+local function processMSPData(buf, MSP_API_STRUCTURE)
+    local data = {
+        servos = {} -- Create a nested table to hold servo data
+    }
 
-    local parsedData = {servos = {}}
-    local offset = 1 -- Maintain a strict offset tracking
-
-    for _, field in ipairs(structure) do
-        local value
-        if field.type == "U8" then
-            value = rfsuite.bg.msp.mspHelper.readU8(buf, offset)
-            offset = offset + 1
-        elseif field.type == "U16" then
-            value = rfsuite.bg.msp.mspHelper.readU16(buf, offset)
-            offset = offset + 2
-        elseif field.type == "U24" then
-            value = rfsuite.bg.msp.mspHelper.readU24(buf, offset)
-            offset = offset + 3
-        elseif field.type == "U32" then
-            value = rfsuite.bg.msp.mspHelper.readU32(buf, offset)
-            offset = offset + 4
-        else
-            return nil -- Unknown data type, fail safely
-        end
-
-        -- Parse servo-specific data into separate entries
-        local servo_id, param = string.match(field.field, "servo_(%d+)_(%w+)")
-        if servo_id and param then
-            servo_id = tonumber(servo_id)
-            parsedData.servos[servo_id] = parsedData.servos[servo_id] or {}
-            parsedData.servos[servo_id][param] = value
-        else
-            parsedData[field.field] = value
-        end
+    -- Ensure buffer is valid
+    if not buf or type(buf) ~= "table" then
+        return nil
     end
 
-    -- Prepare data for return
-    local data = {}
-    data['parsed'] = parsedData
-    data['buffer'] = buf
+    for i, field in ipairs(MSP_API_STRUCTURE) do
+        local baseName, servoIndex = field.field:match("servo_(%d+)_(.+)")
+        local value = 0
+
+        -- Determine data type and extract values from buffer
+        if field.type == "U8" then
+            value = buf[i] or 0
+        elseif field.type == "U16" then
+            value = (buf[i] or 0) + ((buf[i + 1] or 0) * 256)
+        end
+
+        if baseName and servoIndex then
+            local keyIndex = tonumber(baseName) - 1  -- Convert to zero-based index
+
+            if not data.servos[keyIndex] then
+                data.servos[keyIndex] = {}
+            end
+
+            data.servos[keyIndex][servoIndex] = value
+        else
+            -- Handle top-level fields like "servo_count"
+            data[field.field] = value
+        end
+    end
 
     return data
 end
@@ -122,7 +116,7 @@ local function read()
             MSP_MIN_BYTES = 1 + (servoCount * 16) -- Update MSP_MIN_BYTES dynamically
 
             local MSP_API_STRUCTURE = generateMSPStructure(servoCount)
-            mspData = parseMSPData(buf, MSP_API_STRUCTURE)
+            mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE,processMSPData(buf, MSP_API_STRUCTURE))
             if #buf >= MSP_MIN_BYTES then
                 local completeHandler = handlers.getCompleteHandler()
                 if completeHandler then
