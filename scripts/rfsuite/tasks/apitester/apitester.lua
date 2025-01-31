@@ -96,7 +96,7 @@ function apitester.wakeup()
 
     ]]--
 
-    local API = rfsuite.bg.msp.api.load("MSP_STATUS")
+    local API = rfsuite.bg.msp.api.load("MSP_PID_PROFILE")
     API.read()  
     if API.readComplete() then
             local data = API.data()
