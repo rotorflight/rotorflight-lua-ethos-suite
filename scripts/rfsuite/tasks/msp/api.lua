@@ -115,6 +115,11 @@ function apiLoader.parseMSPData(buf, structure, processed, other)
         end
     end
 
+    -- Detect unused bytes
+    if offset <= #buf then
+        rfsuite.utils.log("Warning: Unused bytes in buffer (" .. (#buf - offset + 1) .. " extra bytes)")
+    end
+
     -- prepare data for return
     local data = {}
     data['parsed'] = parsedData
