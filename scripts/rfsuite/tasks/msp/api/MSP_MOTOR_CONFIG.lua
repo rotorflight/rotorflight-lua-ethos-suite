@@ -1,4 +1,11 @@
 --[[
+ *********************************************************************************************
+ *                                                                                           *
+ *     THIS IS A TEMPLATE AND SHOULD BE USED ONLY AS A SOURCE FOR MAKING A NEW API FILE      *
+ *                                                                                           *
+ *********************************************************************************************
+]] --
+--[[
  * Copyright (C) Rotorflight Project
  *
  * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
@@ -26,9 +33,9 @@
  * setErrorHandler(handlerFunction): Set function to run on error  
 ]] --
 -- Constants for MSP Commands
-local MSP_API_CMD = 101 -- Command identifier for MSP STATUS
-local MSP_API_SIMULATOR_RESPONSE = {252, 1, 127, 0, 35, 0, 0, 0, 0, 0, 0, 122, 1, 182, 0, 0, 26, 0, 0, 0, 0, 0, 2, 0, 6, 0, 6, 1, 4, 1} -- Default simulator response
-local MSP_MIN_BYTES = 30
+local MSP_API_CMD = 131 -- Command identifier for MSP MOTOR CONFIG
+local MSP_API_SIMULATOR_RESPONSE = {45, 4, 208, 7, 232, 3, 1, 6, 0, 0, 250, 0, 1, 6, 4, 2, 1, 8, 7, 7, 8, 20, 0, 50, 0, 9, 0, 30, 0} -- Default simulator response
+local MSP_MIN_BYTES = 29
 
 -- Define the MSP response data structure
 -- parameters are:
@@ -36,25 +43,31 @@ local MSP_MIN_BYTES = 30
 --  type (U8|U16|S16|etc) (see api.lua)
 --  byteorder (big|little)
 local MSP_API_STRUCTURE = {
-    { field = "task_delta_time_pid", type = "U16" },
-    { field = "task_delta_time_gyro", type = "U16" },
-    { field = "sensor_status", type = "U16" },
-    { field = "flight_mode_flags", type = "U32"},
-    { field = "profile_number", type = "U8" },
-    { field = "max_real_time_load", type = "U16" },
-    { field = "average_cpu_load", type = "U16" },
-    { field = "extra_flight_mode_flags_count", type = "U8" },
-    { field = "arming_disable_flags_count", type = "U8" },
-    { field = "arming_disable_flags", type = "U32" },
-    { field = "reboot_required", type = "U8" },
-    { field = "configuration_state", type = "U8" },
-    { field = "current_pid_profile_index", type = "U8" },
-    { field = "pid_profile_count", type = "U8" },
-    { field = "current_control_rate_profile_index", type = "U8" },
-    { field = "control_rate_profile_count", type = "U8" },
-    { field = "motor_count", type = "U8" },
-    { field = "servo_count", type = "U8" },  
-    { field = "gyro_detection_flags", type = "U8" }
+    { field = "minthrottle", type = "U16" },
+    { field = "maxthrottle", type = "U16" },
+    { field = "mincommand", type = "U16" },
+    
+    { field = "motor_count", type = "U8" }, -- compat: BLHeliSuite
+    { field = "motor_pole_count_0", type = "U8" }, -- compat: BLHeliSuite
+
+    { field = "use_dshot_telemetry", type = "U8" },
+    { field = "motor_pwm_protocol", type = "U8" },
+    { field = "motor_pwm_rate", type = "U16" },
+    { field = "use_unsynced_pwm", type = "U8" },
+
+    { field = "motor_pole_count_1", type = "U8" },
+    { field = "motor_pole_count_2", type = "U8" },
+    { field = "motor_pole_count_3", type = "U8" },
+
+    { field = "motor_rpm_lpf_0", type = "U8" },
+    { field = "motor_rpm_lpf_1", type = "U8" },
+    { field = "motor_rpm_lpf_2", type = "U8" },
+    { field = "motor_rpm_lpf_3", type = "U8" },
+
+    { field = "main_rotor_gear_ratio_0", type = "U16" },
+    { field = "main_rotor_gear_ratio_1", type = "U16" },
+    { field = "tail_rotor_gear_ratio_0", type = "U16" },
+    { field = "tail_rotor_gear_ratio_1", type = "U16" },
 }
 
 -- Variable to store parsed MSP data

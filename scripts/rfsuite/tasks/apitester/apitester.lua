@@ -96,11 +96,12 @@ function apitester.wakeup()
 
     ]]--
 
-    local API = rfsuite.bg.msp.api.load("MSP_STATUS")
+    local API = rfsuite.bg.msp.api.load("MSP_MOTOR_CONFIG")
     API.read()  
     if API.readComplete() then
             local data = API.data()
             rfsuite.utils.print_r(data)
+
     end   
 
 

@@ -92,6 +92,7 @@ while IFS=, read -r folder read_number sim_response; do
         
         if [[ -z "$define_name" ]]; then
             define_name="UNKNOWN"
+            continue
         fi
 
         # Skip displaying output if the corresponding Lua file exists in API_DIR
