@@ -18,36 +18,46 @@
 #    - Folder name from `app/modules`
 #    - Simulator Response array
 #    - Number of elements in the Simulator Response (`MIN_BYTES`)
+#    - Link to the relevant line in `msp.c`
 #
 # 4. The script fetches MSP command definitions from:
-#    https://github.com/rotorflight/rotorflight-firmware/blob/master/src/main/msp/msp_protocol.h
+#    - https://github.com/rotorflight/rotorflight-firmware/blob/master/src/main/msp/msp_protocol.h
+#    - https://github.com/rotorflight/rotorflight-firmware/blob/master/src/main/msp/msp.c
 #
 # Output Example:
 #
 #  MSP_COMMAND:   MSP_MIXER_CONFIG
-#  MSP_ID:  42
-#  FOLDER:  trim
+#  MSP_ID:        42
+#  FOLDER:        app/modules/trim
 #  SIM RESPONSE:  {0, 1, 0, 0, 0, 2, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-#  MIN_BYTES:  19
+#  MIN_BYTES:     19
+#  COMMAND URL:   https://github.com/rotorflight/rotorflight-firmware/blob/master/src/main/msp/msp.c#L1333
 #
-# This exist exists as a means of finding out which READ API have not been written
+# This script exists to identify missing READ API implementations.
 #####################################################################################
 
 # Define the directories
 API_DIR="../scripts/rfsuite/tasks/msp/api"
 MODULES_DIR="../scripts/rfsuite/app/modules"
 
-# Define the URL of the MSP Protocol header file
+# Define the URLs for MSP header and source files
 MSP_PROTOCOL_URL="https://raw.githubusercontent.com/rotorflight/rotorflight-firmware/master/src/main/msp/msp_protocol.h"
+MSP_SOURCE_URL="https://raw.githubusercontent.com/rotorflight/rotorflight-firmware/master/src/main/msp/msp.c"
+MSP_GITHUB_URL="https://github.com/rotorflight/rotorflight-firmware/blob/master/src/main/msp/msp.c"
 
 # Temporary files for storing extracted values
 API_NUMBERS_FILE=$(mktemp)
 MODULES_NUMBERS_FILE=$(mktemp)
 MSP_DEFINES_FILE=$(mktemp)
+MSP_SOURCE_FILE=$(mktemp)
 
 # Fetch MSP define mappings from GitHub
 echo "Fetching MSP define mappings from GitHub..."
 curl -s "$MSP_PROTOCOL_URL" | grep -E "^#define MSP_[A-Z0-9_]+[[:space:]]+[0-9]+" > "$MSP_DEFINES_FILE"
+
+# Fetch the MSP source file to find function line numbers
+echo "Fetching MSP source file from GitHub..."
+curl -s "$MSP_SOURCE_URL" > "$MSP_SOURCE_FILE"
 
 # Extract MSP_API_CMD values from API files
 echo "Scanning $API_DIR for MSP_API_CMD numbers..."
@@ -82,15 +92,24 @@ while IFS=, read -r folder read_number sim_response; do
         # Count elements in the simulatorResponse array
         min_bytes=$(echo "$sim_response" | grep -oE "[0-9]+" | wc -l)
 
+        # Find the line number in msp.c where the command is handled
+        line_number=$(grep -n "$define_name" "$MSP_SOURCE_FILE" | awk -F: '{print $1}' | head -n 1)
+        if [[ -n "$line_number" ]]; then
+            command_url="$MSP_GITHUB_URL#L$line_number"
+        else
+            command_url="Not Found"
+        fi
+
         # Display the formatted output
         echo "  MSP_COMMAND:   $define_name"
         echo "  MSP_ID:        $read_number"
         echo "  FOLDER:        app/modules/$folder"
         echo "  SIM RESPONSE:  $sim_response"
         echo "  MIN_BYTES:     $min_bytes"
-		echo " "
+        echo "  COMMAND URL:   $command_url"
+        echo " "
     fi
 done < "$MODULES_NUMBERS_FILE"
 
 # Clean up temp files
-rm -f "$API_NUMBERS_FILE" "$MODULES_NUMBERS_FILE" "$MSP_DEFINES_FILE"
+rm -f "$API_NUMBERS_FILE" "$MODULES_NUMBERS_FILE" "$MSP_DEFINES_FILE" "$MSP_SOURCE_FILE"
