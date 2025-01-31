@@ -77,7 +77,6 @@ function msp.onConnectBgChecks()
                 rfsuite.utils.log("API version: " .. rfsuite.config.apiVersion)
             end)
             API.read()
-
             -- sync the clock
         elseif rfsuite.config.clockSet == nil and msp.mspQueue:isProcessed() then
 
@@ -180,7 +179,9 @@ function msp.onConnectBgChecks()
                     lcd.invalidate()
                 end
 
-                rfsuite.utils.log("Craft name: " .. rfsuite.config.craftName)
+                if rfsuite.config.craftName then
+                    rfsuite.utils.log("Craft name: " .. rfsuite.config.craftName)
+                end
 
                 -- do this at end of last one
                 msp.onConnectChecksInit = false

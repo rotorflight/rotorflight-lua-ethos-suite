@@ -48,29 +48,8 @@ local mspWriteComplete = false
 local payloadData = {}
 local defaultData = {}
 
--- Variable to store the custom error handler
-local customErrorHandler = nil
-
--- Function to set the error handler
-local function setErrorHandler(handlerFunction)
-    if type(handlerFunction) == "function" then
-        customErrorHandler = handlerFunction
-    else
-        error("setErrorHandler expects a function")
-    end
-end
-
--- Variable to store the custom complete handler
-local customCompleteHandler = nil
-
--- Function to set the Complete handler
-local function setCompleteHandler(handlerFunction)
-    if type(handlerFunction) == "function" then
-        customCompleteHandler = handlerFunction
-    else
-        error("setCompleteHandler expects a function")
-    end
-end
+-- Create a new instance
+local handlers = rfsuite.bg.msp.api.createHandlers()  
 
 -- Function to get default values (stub for now)
 local function getDefaults()
@@ -99,10 +78,17 @@ local function write()
         command = MSP_API_CMD, -- Specify the MSP command
         payload = {},
         processReply = function(self, buf)
+            local completeHandler = handlers.getCompleteHandler()
+            if completeHandler then
+                completeHandler(self, buf)
+            end            
             mspWriteComplete = true
         end,
         errorHandler = function(self, buf)
-            if customErrorHandler then customErrorHandler(self, buf) end
+            local errorHandler = handlers.getErrorHandler()
+            if errorHandler then 
+                errorHandler(self, buf)
+            end
         end,
         simulatorResponse = {}
     }
@@ -177,6 +163,6 @@ return {
     writeComplete = writeComplete,
     resetWriteStatus = resetWriteStatus,
     getDefaults = getDefaults,
-    setCompleteHandler = setCompleteHandler,
-    setErrorHandler = setErrorHandler
+    setCompleteHandler = handlers.setCompleteHandler,
+    setErrorHandler = handlers.setErrorHandler
 }

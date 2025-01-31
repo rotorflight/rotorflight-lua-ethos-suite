@@ -122,4 +122,46 @@ function apiLoader.parseMSPData(buf, structure)
     return data
 end
 
+-- handlers.lua
+function apiLoader.createHandlers()
+    -- Instance-specific storage
+    local customCompleteHandler = nil
+    local customErrorHandler = nil
+
+    -- Function to set the Complete handler
+    local function setCompleteHandler(handlerFunction)
+        if type(handlerFunction) == "function" then
+            customCompleteHandler = handlerFunction
+        else
+            error("setCompleteHandler expects a function")
+        end
+    end
+
+    -- Function to set the Error handler
+    local function setErrorHandler(handlerFunction)
+        if type(handlerFunction) == "function" then
+            customErrorHandler = handlerFunction
+        else
+            error("setErrorHandler expects a function")
+        end
+    end
+
+    -- Function to get handlers safely
+    local function getCompleteHandler()
+        return customCompleteHandler
+    end
+
+    local function getErrorHandler()
+        return customErrorHandler
+    end
+
+    -- Return an instance with functions that operate on separate data
+    return {
+        setCompleteHandler = setCompleteHandler,
+        setErrorHandler = setErrorHandler,
+        getCompleteHandler = getCompleteHandler,
+        getErrorHandler = getErrorHandler
+    }
+end
+
 return apiLoader

@@ -46,29 +46,8 @@ local MSP_API_STRUCTURE = {{field = "model_id", type = "U8"},
 -- Variable to store parsed MSP data
 local mspData = nil
 
--- Variable to store the custom complete handler
-local customCompleteHandler = nil
-
--- Function to set the Complete handler
-local function setCompleteHandler(handlerFunction)
-    if type(handlerFunction) == "function" then
-        customCompleteHandler = handlerFunction
-    else
-        error("setCompleteHandler expects a function")
-    end
-end
-
--- Variable to store the custom error handler
-local customErrorHandler = nil
-
--- Function to set the error handler
-local function setErrorHandler(handlerFunction)
-    if type(handlerFunction) == "function" then
-        customErrorHandler = handlerFunction
-    else
-        error("setErrorHandler expects a function")
-    end
-end
+-- Create a new instance
+local handlers = rfsuite.bg.msp.api.createHandlers()  
 
 -- parse data
 local function parseMSPData(buf, structure)
@@ -140,13 +119,17 @@ local function read()
             -- Parse the MSP data using the defined structure
             mspData = parseMSPData(buf, MSP_API_STRUCTURE)
             if #buf >= MSP_MIN_BYTES then
-                if customCompleteHandler then
-                    customCompleteHandler(self, buf)
+                local completeHandler = handlers.getCompleteHandler()
+                if completeHandler then
+                    completeHandler(self, buf)
                 end
             end
         end,
         errorHandler = function(self, buf)
-            if customErrorHandler then customErrorHandler(self, buf) end
+            local errorHandler = handlers.getErrorHandler()
+            if errorHandler then 
+                errorHandler(self, buf)
+            end
         end,
         simulatorResponse = MSP_API_SIMULATOR_RESPONSE
     }
@@ -182,6 +165,6 @@ return {
     readComplete = readComplete,
     readVersion = readVersion,
     readValue = readValue,
-    setCompleteHandler = setCompleteHandler,
-    setErrorHandler = setErrorHandler
+    setCompleteHandler = handlers.setCompleteHandler,
+    setErrorHandler = handlers.setErrorHandler
 }
