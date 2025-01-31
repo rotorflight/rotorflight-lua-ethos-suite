@@ -60,9 +60,11 @@ local mspHelper = {
         local offset = buf.offset or 1
         local value
         if byteorder == "big" then
-            value = buf[offset] * 16777216 + buf[offset + 1] * 65536 + buf[offset + 2] * 256 + buf[offset + 3]
+            value = buf[offset] * 16777216 + buf[offset + 1] * 65536 +
+                        buf[offset + 2] * 256 + buf[offset + 3]
         else
-            value = buf[offset] + buf[offset + 1] * 256 + buf[offset + 2] * 65536 + buf[offset + 3] * 16777216
+            value = buf[offset] + buf[offset + 1] * 256 + buf[offset + 2] *
+                        65536 + buf[offset + 3] * 16777216
         end
         buf.offset = offset + 4
         return value
@@ -71,9 +73,11 @@ local mspHelper = {
         local offset = buf.offset or 1
         local value
         if byteorder == "big" then
-            value = buf[offset] * 16777216 + buf[offset + 1] * 65536 + buf[offset + 2] * 256 + buf[offset + 3]
+            value = buf[offset] * 16777216 + buf[offset + 1] * 65536 +
+                        buf[offset + 2] * 256 + buf[offset + 3]
         else
-            value = buf[offset] + buf[offset + 1] * 256 + buf[offset + 2] * 65536 + buf[offset + 3] * 16777216
+            value = buf[offset] + buf[offset + 1] * 256 + buf[offset + 2] *
+                        65536 + buf[offset + 3] * 16777216
         end
         if value >= 2147483648 then value = value - 4294967296 end
         buf.offset = offset + 4
@@ -119,7 +123,7 @@ local mspHelper = {
     end,
     writeRAW = function(buf, value)
         buf[#buf + 1] = value
-    end    
+    end
 }
 
 return mspHelper

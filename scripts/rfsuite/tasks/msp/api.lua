@@ -19,7 +19,6 @@
  * 
 
 ]] --
-
 local apiLoader = {}
 
 -- Cache to store loaded API modules
@@ -27,27 +26,29 @@ local apiCache = {}
 
 -- Define the API directory path based on the ethos version
 local apidir = "tasks/msp/api/"
-local api_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and apidir or (config.suiteDir .. apidir)
+local api_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and apidir or
+                     (config.suiteDir .. apidir)
 
 -- Function to load a specific API file by name
 local function loadAPI(apiName)
     if apiCache[apiName] then
-        return apiCache[apiName]  -- Return cached version if already loaded
+        return apiCache[apiName] -- Return cached version if already loaded
     end
 
     local apiFilePath = api_path .. apiName .. ".lua"
-    
+
     -- Check if file exists before trying to load it
     if rfsuite.utils.file_exists(apiFilePath) then
 
-        local apiModule = dofile(apiFilePath)  -- Load the Lua API file
-        
+        local apiModule = dofile(apiFilePath) -- Load the Lua API file
+
         if type(apiModule) == "table" and (apiModule.read or apiModule.write) then
-            apiCache[apiName] = apiModule  -- Store loaded API in cache
+            apiCache[apiName] = apiModule -- Store loaded API in cache
             rfsuite.utils.log("Loaded API:", apiName)
             return apiModule
         else
-            rfsuite.utils.log("Error: API file '" .. apiName .. "' does not contain valid read or write functions.")
+            rfsuite.utils.log("Error: API file '" .. apiName ..
+                                  "' does not contain valid read or write functions.")
         end
     else
         rfsuite.utils.log("Error: API file '" .. apiName .. ".lua' not found.")
@@ -56,48 +57,60 @@ end
 
 -- Function to directly return the API table instead of a wrapper function
 function apiLoader.load(apiName)
-    return loadAPI(apiName) or {}  -- Return an empty table if API fails to load
+    return loadAPI(apiName) or {} -- Return an empty table if API fails to load
 end
 
 function apiLoader.parseMSPData(buf, structure)
     -- Ensure buffer length matches expected data structure
-    if #buf < #structure then
-        return nil
-    end
+    if #buf < #structure then return nil end
 
     local parsedData = {}
-    local offset = 1  -- Maintain a strict offset tracking
+    local offset = 1 -- Maintain a strict offset tracking
 
     for _, field in ipairs(structure) do
 
-        local byteorder = field.byteorder or "little"  -- Default to little-endian
+        local byteorder = field.byteorder or "little" -- Default to little-endian
 
         if field.type == "U8" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU8(buf, offset)
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU8(buf,
+                                                                      offset)
             offset = offset + 1
         elseif field.type == "S8" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS8(buf, offset)
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS8(buf,
+                                                                      offset)
             offset = offset + 1
         elseif field.type == "U16" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU16(buf, offset, byteorder)
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU16(buf,
+                                                                       offset,
+                                                                       byteorder)
             offset = offset + 2
         elseif field.type == "S16" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS16(buf, offset, byteorder)
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS16(buf,
+                                                                       offset,
+                                                                       byteorder)
             offset = offset + 2
         elseif field.type == "U24" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU24(buf, offset, byteorder)
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU24(buf,
+                                                                       offset,
+                                                                       byteorder)
             offset = offset + 3
         elseif field.type == "S24" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS24(buf, offset, byteorder)
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS24(buf,
+                                                                       offset,
+                                                                       byteorder)
             offset = offset + 3
         elseif field.type == "U32" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU32(buf, offset, byteorder)
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU32(buf,
+                                                                       offset,
+                                                                       byteorder)
             offset = offset + 4
         elseif field.type == "S32" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS32(buf, offset, byteorder)
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS32(buf,
+                                                                       offset,
+                                                                       byteorder)
             offset = offset + 4
         else
-            return nil  -- Unknown data type, fail safely
+            return nil -- Unknown data type, fail safely
         end
     end
 
@@ -108,6 +121,5 @@ function apiLoader.parseMSPData(buf, structure)
 
     return data
 end
-
 
 return apiLoader

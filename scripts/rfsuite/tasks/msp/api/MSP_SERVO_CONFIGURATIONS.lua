@@ -14,7 +14,6 @@
  *
  * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
-
 --[[
  * API Reference Guide
  * -------------------
@@ -25,30 +24,32 @@
  * readVersion(): Retrieves the API version in major.minor format.
  * setCompleteHandler(handlerFunction):  Set function to run on completion
  * setErrorHandler(handlerFunction): Set function to run on error   
-]]--
-
+]] --
 -- Constants for MSP Commands
-local MSP_API_CMD = 120  -- Command identifier for Servo Configuration
-local MSP_API_SIMULATOR_RESPONSE = {4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0, 120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0}  -- Default simulator response
+local MSP_API_CMD = 120 -- Command identifier for Servo Configuration
+local MSP_API_SIMULATOR_RESPONSE = {4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1,
+                                    144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1,
+                                    244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6,
+                                    12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0,
+                                    0, 0, 0, 120, 5, 212, 254, 44, 1, 244, 1,
+                                    244, 1, 77, 1, 0, 0, 0, 0} -- Default simulator response
 local MSP_MIN_BYTES = 1 -- variable in this api as based on servo count to we override this once we have a servo count when the read function is called
 
 -- Define the MSP response data structure (note that we have dynamic stuff below)
 local function generateMSPStructure(servoCount)
-    local MSP_API_STRUCTURE = {
-        { field = "servo_count", type = "U8" }  -- The servo count comes first
-    }
+    local MSP_API_STRUCTURE =
+        {{field = "servo_count", type = "U8"} -- The servo count comes first
+        }
 
     -- Define servo fields structure
-    local servo_fields = {
-        { field = "mid", type = "U16" },
-        { field = "min", type = "U16" },
-        { field = "max", type = "U16" },
-        { field = "rneg", type = "U16" },
-        { field = "rpos", type = "U16" },
-        { field = "rate", type = "U16" },
-        { field = "speed", type = "U16" },
-        { field = "flags", type = "U16" }
-    }
+    local servo_fields = {{field = "mid", type = "U16"},
+                          {field = "min", type = "U16"},
+                          {field = "max", type = "U16"},
+                          {field = "rneg", type = "U16"},
+                          {field = "rpos", type = "U16"},
+                          {field = "rate", type = "U16"},
+                          {field = "speed", type = "U16"},
+                          {field = "flags", type = "U16"}}
 
     -- Add servo field structures dynamically based on servoCount
     for i = 1, servoCount do
@@ -66,12 +67,10 @@ end
 -- Custom parser function to suite the servo data
 local function parseMSPData(buf, structure)
     -- Ensure buffer length matches expected data structure
-    if #buf < #structure then
-        return nil
-    end
+    if #buf < #structure then return nil end
 
-    local parsedData = { servos = {} }
-    local offset = 1  -- Maintain a strict offset tracking
+    local parsedData = {servos = {}}
+    local offset = 1 -- Maintain a strict offset tracking
 
     for _, field in ipairs(structure) do
         local value
@@ -88,7 +87,7 @@ local function parseMSPData(buf, structure)
             value = rfsuite.bg.msp.mspHelper.readU32(buf, offset)
             offset = offset + 4
         else
-            return nil  -- Unknown data type, fail safely
+            return nil -- Unknown data type, fail safely
         end
 
         -- Parse servo-specific data into separate entries
@@ -140,25 +139,23 @@ end
 -- Function to initiate MSP read operation
 local function read()
     local message = {
-        command = MSP_API_CMD,  -- Specify the MSP command
+        command = MSP_API_CMD, -- Specify the MSP command
         processReply = function(self, buf)
             -- Generate the MSP structure dynamically
             local servoCount = buf[1]
-            MSP_MIN_BYTES = 1 + (servoCount * 16)  -- Update MSP_MIN_BYTES dynamically
+            MSP_MIN_BYTES = 1 + (servoCount * 16) -- Update MSP_MIN_BYTES dynamically
 
             local MSP_API_STRUCTURE = generateMSPStructure(servoCount)
             mspData = parseMSPData(buf, MSP_API_STRUCTURE)
             if #buf >= MSP_MIN_BYTES then
                 if customCompleteHandler then
                     customCompleteHandler(self, buf)
-                end     
-            end               
+                end
+            end
         end,
         errorHandler = function(self, buf)
-            if customErrorHandler then
-                customErrorHandler(self, buf)
-            end
-        end,        
+            if customErrorHandler then customErrorHandler(self, buf) end
+        end,
         simulatorResponse = MSP_API_SIMULATOR_RESPONSE
     }
     -- Add the message to the processing queue
@@ -173,8 +170,8 @@ end
 -- Function to check if the read operation is complete
 local function readComplete()
     if mspData ~= nil and #mspData['buffer'] >= MSP_MIN_BYTES then
-            return true
-    end    
+        return true
+    end
     return false
 end
 
@@ -191,7 +188,7 @@ local function readValue(fieldName)
                 return nil -- Servo ID out of range
             end
         end
-        
+
         -- Return standard field value
         if mspData['parsed'][fieldName] ~= nil then
             return mspData['parsed'][fieldName]
@@ -208,5 +205,5 @@ return {
     readVersion = readVersion,
     readValue = readValue,
     setCompleteHandler = setCompleteHandler,
-    setErrorHandler = setErrorHandler    
+    setErrorHandler = setErrorHandler
 }

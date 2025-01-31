@@ -14,7 +14,6 @@
  *
  * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
-
 --[[
  * API Reference Guide
  * -------------------
@@ -25,29 +24,27 @@
  * readVersion(): Retrieves the API version in major.minor format.
  * setCompleteHandler(handlerFunction):  Set function to run on completion
  * setErrorHandler(handlerFunction): Set function to run on error  
-]]--
-
+]] --
 -- Constants for MSP Commands
-local MSP_API_CMD = 42  -- Command identifier for MSP Mixer Config
-local MSP_API_SIMULATOR_RESPONSE = {0, 0, 0, 0, 0, 2, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}  -- Default simulator response
+local MSP_API_CMD = 42 -- Command identifier for MSP Mixer Config
+local MSP_API_SIMULATOR_RESPONSE = {0, 0, 0, 0, 0, 2, 100, 0, 0, 0, 0, 0, 0, 0,
+                                    0, 0, 0, 0, 0} -- Default simulator response
 local MSP_MIN_BYTES = 19
 
 -- Define the MSP response data structure
-local MSP_API_STRUCTURE = {
-    { field = "main_rotor_dir", type = "U8" },
-    { field = "tail_rotor_mode", type = "U8" },
-    { field = "tail_motor_idle", type = "U8" },
-    { field = "tail_center_trim", type = "U16" },
-    { field = "swash_type", type = "U8" },
-    { field = "swash_ring", type = "U8" },
-    { field = "swash_phase", type = "U16" },
-    { field = "swash_pitch_limit", type = "U16" },
-    { field = "swash_trim_0", type = "U16" },
-    { field = "swash_trim_1", type = "U16" },
-    { field = "swash_trim_2", type = "U16" },
-    { field = "swash_tta_precomp", type = "U8" },
-    { field = "swash_geo_correction", type = "U8" }
-}
+local MSP_API_STRUCTURE = {{field = "main_rotor_dir", type = "U8"},
+                           {field = "tail_rotor_mode", type = "U8"},
+                           {field = "tail_motor_idle", type = "U8"},
+                           {field = "tail_center_trim", type = "U16"},
+                           {field = "swash_type", type = "U8"},
+                           {field = "swash_ring", type = "U8"},
+                           {field = "swash_phase", type = "U16"},
+                           {field = "swash_pitch_limit", type = "U16"},
+                           {field = "swash_trim_0", type = "U16"},
+                           {field = "swash_trim_1", type = "U16"},
+                           {field = "swash_trim_2", type = "U16"},
+                           {field = "swash_tta_precomp", type = "U8"},
+                           {field = "swash_geo_correction", type = "U8"}}
 
 -- Variable to store parsed MSP data
 local mspData = nil
@@ -76,25 +73,22 @@ local function setErrorHandler(handlerFunction)
     end
 end
 
-
 -- Function to initiate MSP read operation
 local function read()
     local message = {
-        command = MSP_API_CMD,  -- Specify the MSP command
+        command = MSP_API_CMD, -- Specify the MSP command
         processReply = function(self, buf)
             -- Parse the MSP data using the defined structure
             mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE)
             if #buf >= MSP_MIN_BYTES then
                 if customCompleteHandler then
                     customCompleteHandler(self, buf)
-                end     
-            end               
+                end
+            end
         end,
         errorHandler = function(self, buf)
-            if customErrorHandler then
-                customErrorHandler(self, buf)
-            end
-        end,        
+            if customErrorHandler then customErrorHandler(self, buf) end
+        end,
         simulatorResponse = MSP_API_SIMULATOR_RESPONSE
     }
     -- Add the message to the processing queue
@@ -109,8 +103,8 @@ end
 -- Function to check if the read operation is complete
 local function readComplete()
     if mspData ~= nil and #mspData['buffer'] >= MSP_MIN_BYTES then
-            return true
-    end    
+        return true
+    end
     return false
 end
 
@@ -130,5 +124,5 @@ return {
     readVersion = readVersion,
     readValue = readValue,
     setCompleteHandler = setCompleteHandler,
-    setErrorHandler = setErrorHandler    
+    setErrorHandler = setErrorHandler
 }

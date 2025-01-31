@@ -14,7 +14,6 @@
  *
  * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
-
 --[[
  * API Reference Guide
  * -------------------
@@ -25,32 +24,32 @@
  * readVersion(): Retrieves the API version in major.minor format.
  * setCompleteHandler(handlerFunction):  Set function to run on completion
  * setErrorHandler(handlerFunction): Set function to run on error   
-]]--
-
+]] --
 -- Constants for MSP Commands
-local MSP_API_CMD = 142  -- Command identifier for MSP Mixer Config
-local MSP_API_SIMULATOR_RESPONSE = {3, 100, 0, 100, 0, 20, 0, 20, 0, 30, 0, 10, 0, 0, 0, 0, 0, 50, 0, 10, 5, 10, 0, 10}  -- Default simulator response
+local MSP_API_CMD = 142 -- Command identifier for MSP Mixer Config
+local MSP_API_SIMULATOR_RESPONSE = {3, 100, 0, 100, 0, 20, 0, 20, 0, 30, 0, 10,
+                                    0, 0, 0, 0, 0, 50, 0, 10, 5, 10, 0, 10} -- Default simulator response
 local MSP_MIN_BYTES = 24
 
 -- Define the MSP response data structure
-local MSP_API_STRUCTURE = {
-	{ field = "gov_mode", type = "U8" },
-	{ field = "gov_startup_time", type = "U16" },
-	{ field = "gov_spoolup_time", type = "U16" },
-	{ field = "gov_tracking_time", type = "U16" },
-	{ field = "gov_recovery_time", type = "U16" },
-	{ field = "gov_zero_throttle_timeout", type = "U16" },
-	{ field = "gov_lost_headspeed_timeout", type = "U16" },
-	{ field = "gov_autorotation_timeout", type = "U16" },
-	{ field = "gov_autorotation_bailout_time", type = "U16" },
-	{ field = "gov_autorotation_min_entry_time", type = "U16" },
-	{ field = "gov_handover_throttle", type = "U8" },
-	{ field = "gov_pwr_filter", type = "U8" },
-	{ field = "gov_rpm_filter", type = "U8" },
-	{ field = "gov_tta_filter", type = "U8" },
-	{ field = "gov_ff_filter", type = "U8" },
-	{ field = "gov_spoolup_min_throttle", type = "U8" }	
-}
+local MSP_API_STRUCTURE = {{field = "gov_mode", type = "U8"},
+                           {field = "gov_startup_time", type = "U16"},
+                           {field = "gov_spoolup_time", type = "U16"},
+                           {field = "gov_tracking_time", type = "U16"},
+                           {field = "gov_recovery_time", type = "U16"},
+                           {field = "gov_zero_throttle_timeout", type = "U16"},
+                           {field = "gov_lost_headspeed_timeout", type = "U16"},
+                           {field = "gov_autorotation_timeout", type = "U16"},
+                           {
+    field = "gov_autorotation_bailout_time",
+    type = "U16"
+}, {field = "gov_autorotation_min_entry_time", type = "U16"},
+                           {field = "gov_handover_throttle", type = "U8"},
+                           {field = "gov_pwr_filter", type = "U8"},
+                           {field = "gov_rpm_filter", type = "U8"},
+                           {field = "gov_tta_filter", type = "U8"},
+                           {field = "gov_ff_filter", type = "U8"},
+                           {field = "gov_spoolup_min_throttle", type = "U8"}}
 
 -- Variable to store parsed MSP data
 local mspData = nil
@@ -79,25 +78,22 @@ local function setErrorHandler(handlerFunction)
     end
 end
 
-
 -- Function to initiate MSP read operation
 local function read()
     local message = {
-        command = MSP_API_CMD,  -- Specify the MSP command
+        command = MSP_API_CMD, -- Specify the MSP command
         processReply = function(self, buf)
             -- Parse the MSP data using the defined structure
             mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE)
             if #buf >= MSP_MIN_BYTES then
                 if customCompleteHandler then
                     customCompleteHandler(self, buf)
-                end     
-            end               
+                end
+            end
         end,
         errorHandler = function(self, buf)
-            if customErrorHandler then
-                customErrorHandler(self, buf)
-            end
-        end,        
+            if customErrorHandler then customErrorHandler(self, buf) end
+        end,
         simulatorResponse = MSP_API_SIMULATOR_RESPONSE
     }
     -- Add the message to the processing queue
@@ -112,8 +108,8 @@ end
 -- Function to check if the read operation is complete
 local function readComplete()
     if mspData ~= nil and #mspData['buffer'] >= MSP_MIN_BYTES then
-            return true
-    end    
+        return true
+    end
     return false
 end
 
@@ -133,5 +129,5 @@ return {
     readVersion = readVersion,
     readValue = readValue,
     setCompleteHandler = setCompleteHandler,
-    setErrorHandler = setErrorHandler    
+    setErrorHandler = setErrorHandler
 }

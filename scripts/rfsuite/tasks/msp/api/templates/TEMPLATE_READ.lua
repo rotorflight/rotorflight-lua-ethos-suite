@@ -4,8 +4,7 @@
  *     THIS IS A TEMPLATE AND SHOULD BE USED ONLY AS A SOURCE FOR MAKING A NEW API FILE      *
  *                                                                                           *
  *********************************************************************************************
-]]--
-
+]] --
 --[[
  * Copyright (C) Rotorflight Project
  *
@@ -22,7 +21,6 @@
  *
  * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
-
 --[[
  * API Reference Guide
  * -------------------
@@ -33,11 +31,10 @@
  * readVersion(): Retrieves the API version in major.minor format.
  * setCompleteHandler(handlerFunction):  Set function to run on completion
  * setErrorHandler(handlerFunction): Set function to run on error  
-]]--
-
+]] --
 -- Constants for MSP Commands
-local MSP_API_CMD = 12  -- Command identifier for MSP PILOT CONFIG
-local MSP_API_SIMULATOR_RESPONSE = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0}  -- Default simulator response
+local MSP_API_CMD = 12 -- Command identifier for MSP PILOT CONFIG
+local MSP_API_SIMULATOR_RESPONSE = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0} -- Default simulator response
 local MSP_MIN_BYTES = 0
 
 -- Define the MSP response data structure
@@ -45,15 +42,13 @@ local MSP_MIN_BYTES = 0
 --  field (name)
 --  type (U8|U16|S16|etc) (see api.lua)
 --  byteorder (big|little)
-local MSP_API_STRUCTURE = {
-	{ field = "model_id", type = "U8" },
-	{ field = "model_param1_type", type = "U8" },
-	{ field = "model_param1_value", type = "S16" },     
-    { field = "model_param2_type", type = "U8" },
-	{ field = "model_param2_value", type = "S16" },
-	{ field = "model_param3_type", type = "U8" },
-	{ field = "model_param3_value", type = "S16" },           
-}
+local MSP_API_STRUCTURE = {{field = "model_id", type = "U8"},
+                           {field = "model_param1_type", type = "U8"},
+                           {field = "model_param1_value", type = "S16"},
+                           {field = "model_param2_type", type = "U8"},
+                           {field = "model_param2_value", type = "S16"},
+                           {field = "model_param3_type", type = "U8"},
+                           {field = "model_param3_value", type = "S16"}}
 
 -- Variable to store parsed MSP data
 local mspData = nil
@@ -82,43 +77,54 @@ local function setErrorHandler(handlerFunction)
     end
 end
 
-
 -- parse data
 local function parseMSPData(buf, structure)
     -- Ensure buffer length matches expected data structure
-    if #buf < #structure then
-        return nil
-    end
+    if #buf < #structure then return nil end
 
     local parsedData = {}
-    local offset = 1  -- Maintain a strict offset tracking
+    local offset = 1 -- Maintain a strict offset tracking
 
     for _, field in ipairs(structure) do
-        local byteorder = field.byteorder or "little"  -- Default to little-endian
-        
+        local byteorder = field.byteorder or "little" -- Default to little-endian
+
         if field.type == "U8" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU8(buf, offset)
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU8(buf,
+                                                                      offset)
             offset = offset + 1
         elseif field.type == "S8" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS8(buf, offset)
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS8(buf,
+                                                                      offset)
             offset = offset + 1
         elseif field.type == "U16" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU16(buf, offset, byteorder)
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU16(buf,
+                                                                       offset,
+                                                                       byteorder)
             offset = offset + 2
         elseif field.type == "S16" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS16(buf, offset, byteorder)
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS16(buf,
+                                                                       offset,
+                                                                       byteorder)
             offset = offset + 2
         elseif field.type == "U24" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU24(buf, offset, byteorder)
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU24(buf,
+                                                                       offset,
+                                                                       byteorder)
             offset = offset + 3
         elseif field.type == "S24" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS24(buf, offset, byteorder)
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS24(buf,
+                                                                       offset,
+                                                                       byteorder)
             offset = offset + 3
         elseif field.type == "U32" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU32(buf, offset, byteorder)
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU32(buf,
+                                                                       offset,
+                                                                       byteorder)
             offset = offset + 4
         elseif field.type == "S32" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS32(buf, offset, byteorder)
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS32(buf,
+                                                                       offset,
+                                                                       byteorder)
             offset = offset + 4
         else
             return nil
@@ -136,21 +142,19 @@ end
 -- Function to initiate MSP read operation
 local function read()
     local message = {
-        command = MSP_API_CMD,  -- Specify the MSP command
+        command = MSP_API_CMD, -- Specify the MSP command
         processReply = function(self, buf)
             -- Parse the MSP data using the defined structure
             mspData = parseMSPData(buf, MSP_API_STRUCTURE)
             if #buf >= MSP_MIN_BYTES then
                 if customCompleteHandler then
                     customCompleteHandler(self, buf)
-                end     
-            end             
+                end
+            end
         end,
         errorHandler = function(self, buf)
-            if customErrorHandler then
-                customErrorHandler(self, buf)
-            end
-        end,        
+            if customErrorHandler then customErrorHandler(self, buf) end
+        end,
         simulatorResponse = MSP_API_SIMULATOR_RESPONSE
     }
     -- Add the message to the processing queue
@@ -165,8 +169,8 @@ end
 -- Function to check if the read operation is complete
 local function readComplete()
     if mspData ~= nil and #mspData['buffer'] >= MSP_MIN_BYTES then
-            return true
-    end    
+        return true
+    end
     return false
 end
 
@@ -186,5 +190,5 @@ return {
     readVersion = readVersion,
     readValue = readValue,
     setCompleteHandler = setCompleteHandler,
-    setErrorHandler = setErrorHandler    
+    setErrorHandler = setErrorHandler
 }

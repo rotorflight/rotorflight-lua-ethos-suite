@@ -4,8 +4,7 @@
  *     THIS IS A TEMPLATE AND SHOULD BE USED ONLY AS A SOURCE FOR MAKING A NEW API FILE      *
  *                                                                                           *
  *********************************************************************************************
-]]--
-
+]] --
 --[[
  * Copyright (C) Rotorflight Project
  *
@@ -22,7 +21,6 @@
  *
  * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
-
 --[[
  * MSP_SET_RTC Write API
  * --------------------
@@ -41,18 +39,17 @@
  * MSP Command Used:
  * - MSP_SET_RTC (Command ID: 246)
 ]] --
- 
 -- Constants for MSP Commands
-local MSP_API_CMD = 246  -- Command identifier for setting RTC
+local MSP_API_CMD = 246 -- Command identifier for setting RTC
 
 -- Define the MSP request data structure
 --  field (name)
 --  type (U8|U16|S16|etc) (see api.lua)
 --  byteorder (big|little)
-local MSP_STRUCTURE = {
-    { field = "seconds", type = "U32" },  -- 32-bit seconds since epoch
-    { field = "milliseconds", type = "U16" }  -- 16-bit milliseconds
-}
+local MSP_STRUCTURE =
+    {{field = "seconds", type = "U32"}, -- 32-bit seconds since epoch
+    {field = "milliseconds", type = "U16"} -- 16-bit milliseconds
+    }
 
 -- Variable to track write completion
 local mspWriteComplete = false
@@ -78,10 +75,7 @@ local function getDefaults()
     -- This function should return a table with default values
     -- Typically we should be performing a 'read' to populate this data
     -- however this api only ever writes data
-    return {
-        seconds = os.time(),
-        milliseconds = 0
-    }
+    return {seconds = os.time(), milliseconds = 0}
 end
 
 -- Function to initiate MSP write operation
@@ -100,40 +94,52 @@ local function write()
     end
 
     local message = {
-        command = MSP_API_CMD,  -- Specify the MSP command
+        command = MSP_API_CMD, -- Specify the MSP command
         payload = {},
         processReply = function(self, buf)
             mspWriteComplete = true
         end,
         errorHandler = function(self, buf)
-            if customErrorHandler then
-                customErrorHandler(self, buf)
-            end
-        end,        
+            if customErrorHandler then customErrorHandler(self, buf) end
+        end,
         simulatorResponse = {}
     }
 
     -- Fill payload with data from payloadData table
     for _, field in ipairs(MSP_STRUCTURE) do
 
-        local byteorder = field.byteorder or "little"  -- Default to little-endian
+        local byteorder = field.byteorder or "little" -- Default to little-endian
 
         if field.type == "U32" then
-            rfsuite.bg.msp.mspHelper.writeU32(message.payload, payloadData[field.field], byteorder)
+            rfsuite.bg.msp.mspHelper.writeU32(message.payload,
+                                              payloadData[field.field],
+                                              byteorder)
         elseif field.type == "S32" then
-                rfsuite.bg.msp.mspHelper.writeU32(message.payload, payloadData[field.field], byteorder)            
+            rfsuite.bg.msp.mspHelper.writeU32(message.payload,
+                                              payloadData[field.field],
+                                              byteorder)
         elseif field.type == "U24" then
-            rfsuite.bg.msp.mspHelper.writeU24(message.payload, payloadData[field.field], byteorder)
+            rfsuite.bg.msp.mspHelper.writeU24(message.payload,
+                                              payloadData[field.field],
+                                              byteorder)
         elseif field.type == "S24" then
-            rfsuite.bg.msp.mspHelper.writeU24(message.payload, payloadData[field.field], byteorder)           
+            rfsuite.bg.msp.mspHelper.writeU24(message.payload,
+                                              payloadData[field.field],
+                                              byteorder)
         elseif field.type == "U16" then
-            rfsuite.bg.msp.mspHelper.writeU16(message.payload, payloadData[field.field], byteorder)
+            rfsuite.bg.msp.mspHelper.writeU16(message.payload,
+                                              payloadData[field.field],
+                                              byteorder)
         elseif field.type == "S16" then
-            rfsuite.bg.msp.mspHelper.writeU16(message.payload, payloadData[field.field], byteorder)            
+            rfsuite.bg.msp.mspHelper.writeU16(message.payload,
+                                              payloadData[field.field],
+                                              byteorder)
         elseif field.type == "U8" then
-            rfsuite.bg.msp.mspHelper.writeU8(message.payload, payloadData[field.field])
+            rfsuite.bg.msp.mspHelper.writeU8(message.payload,
+                                             payloadData[field.field])
         elseif field.type == "S8" then
-            rfsuite.bg.msp.mspHelper.writeU8(message.payload, payloadData[field.field])
+            rfsuite.bg.msp.mspHelper.writeU8(message.payload,
+                                             payloadData[field.field])
         end
     end
 
@@ -170,5 +176,5 @@ return {
     resetWriteStatus = resetWriteStatus,
     getDefaults = getDefaults,
     setCompleteHandler = setCompleteHandler,
-    setErrorHandler = setErrorHandler    
+    setErrorHandler = setErrorHandler
 }

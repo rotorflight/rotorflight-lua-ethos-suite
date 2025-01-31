@@ -14,7 +14,6 @@
  *
  * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
-
 --[[
  * API Reference Guide
  * -------------------
@@ -25,20 +24,18 @@
  * readVersion(): Retrieves the API version in major.minor format.
  * setCompleteHandler(handlerFunction):  Set function to run on completion
  * setErrorHandler(handlerFunction): Set function to run on error  
-]]--
-
-
+]] --
 -- Constants for MSP Commands
-local MSP_API_CMD = 1  -- Command identifier for MSP API request
-local MSP_API_SIMULATOR_RESPONSE = {0, 12, 7}  -- Default simulator response
+local MSP_API_CMD = 1 -- Command identifier for MSP API request
+local MSP_API_SIMULATOR_RESPONSE = {0, 12, 7} -- Default simulator response
 local MSP_MIN_BYTES = 3
 
 -- Define the MSP response data structure
-local MSP_API_STRUCTURE = {
-    { field = "version_command", type = "U8" },  -- Command version
-    { field = "version_major", type = "U8" },    -- Major version
-    { field = "version_minor", type = "U8" }     -- Minor version
-}
+local MSP_API_STRUCTURE =
+    {{field = "version_command", type = "U8"}, -- Command version
+    {field = "version_major", type = "U8"}, -- Major version
+    {field = "version_minor", type = "U8"} -- Minor version
+    }
 
 -- Variable to store parsed MSP data
 local mspData = nil
@@ -67,26 +64,24 @@ local function setErrorHandler(handlerFunction)
     end
 end
 
-
 -- Function to initiate MSP read operation
 local function read()
     local message = {
-        command = MSP_API_CMD,  -- Specify the MSP command
+        command = MSP_API_CMD, -- Specify the MSP command
         processReply = function(self, buf)
             -- Parse the MSP data using the defined structure
             mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE)
             if #buf >= MSP_MIN_BYTES then
                 if customCompleteHandler then
                     customCompleteHandler(self, buf)
-                end     
-            end       
+                end
+            end
         end,
         errorHandler = function(self, buf)
-            if customErrorHandler then
-                customErrorHandler(self, buf)
-            end
-        end,        
-        simulatorResponse = rfsuite.config.simulatorApiVersionResponse or MSP_API_SIMULATOR_RESPONSE
+            if customErrorHandler then customErrorHandler(self, buf) end
+        end,
+        simulatorResponse = rfsuite.config.simulatorApiVersionResponse or
+            MSP_API_SIMULATOR_RESPONSE
     }
     -- Add the message to the processing queue
     rfsuite.bg.msp.mspQueue:add(message)
@@ -100,16 +95,17 @@ end
 -- Function to check if the read operation is complete
 local function readComplete()
     if mspData ~= nil and #mspData['buffer'] >= MSP_MIN_BYTES then
-            return true
-    end    
+        return true
+    end
     return false
 end
-
 
 -- Function to get the API version in major.minor format
 local function readVersion()
     if mspData then
-        return mspData['parsed'].version_major + mspData['parsed'].version_minor / 100
+        return
+            mspData['parsed'].version_major + mspData['parsed'].version_minor /
+                100
     end
 end
 
@@ -129,5 +125,5 @@ return {
     readVersion = readVersion,
     readValue = readValue,
     setCompleteHandler = setCompleteHandler,
-    setErrorHandler = setErrorHandler    
+    setErrorHandler = setErrorHandler
 }
