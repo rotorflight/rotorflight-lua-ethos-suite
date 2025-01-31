@@ -33,22 +33,24 @@
  * setErrorHandler(handlerFunction): Set function to run on error  
 ]] --
 -- Constants for MSP Commands
-local MSP_API_CMD = 12 -- Command identifier for MSP PILOT CONFIG
-local MSP_API_SIMULATOR_RESPONSE = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0} -- Default simulator response
-local MSP_MIN_BYTES = 1
+local MSP_API_CMD = 66 -- Command identifier for MSP RC CONFIG
+local MSP_API_SIMULATOR_RESPONSE = {220, 5, 254, 1, 232, 3, 242, 3, 208, 7, 4, 4} -- Default simulator response
+local MSP_MIN_BYTES = 12
 
 -- Define the MSP response data structure
 -- parameters are:
 --  field (name)
 --  type (U8|U16|S16|etc) (see api.lua)
 --  byteorder (big|little)
-local MSP_API_STRUCTURE = {{field = "model_id", type = "U8"},
-                           {field = "model_param1_type", type = "U8"},
-                           {field = "model_param1_value", type = "S16"},
-                           {field = "model_param2_type", type = "U8"},
-                           {field = "model_param2_value", type = "S16"},
-                           {field = "model_param3_type", type = "U8"},
-                           {field = "model_param3_value", type = "S16"}}
+local MSP_API_STRUCTURE = {
+    { field = "rc_center", type = "U16" },
+    { field = "rc_deflection", type = "U16" },
+    { field = "rc_arm_throttle", type = "U16" },
+    { field = "rc_min_throttle", type = "U16" },
+    { field = "rc_max_throttle", type = "U16" },
+    { field = "rc_deadband", type = "U8" },
+    { field = "rc_yaw_deadband", type = "U8" }
+}
 
 -- Variable to store parsed MSP data
 local mspData = nil
