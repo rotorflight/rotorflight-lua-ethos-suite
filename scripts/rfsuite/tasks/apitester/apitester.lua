@@ -96,7 +96,7 @@ function apitester.wakeup()
 
     ]]--
 
-    local API = rfsuite.bg.msp.api.load("MSP_MOTOR_CONFIG")
+    local API = rfsuite.bg.msp.api.load("MSP_RC_TUNING")
     API.read()  
     if API.readComplete() then
             local data = API.data()

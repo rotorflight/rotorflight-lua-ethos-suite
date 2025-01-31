@@ -1,11 +1,4 @@
 --[[
- *********************************************************************************************
- *                                                                                           *
- *     THIS IS A TEMPLATE AND SHOULD BE USED ONLY AS A SOURCE FOR MAKING A NEW API FILE      *
- *                                                                                           *
- *********************************************************************************************
-]] --
---[[
  * Copyright (C) Rotorflight Project
  *
  * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
@@ -33,22 +26,39 @@
  * setErrorHandler(handlerFunction): Set function to run on error  
 ]] --
 -- Constants for MSP Commands
-local MSP_API_CMD = 12 -- Command identifier for MSP PILOT CONFIG
-local MSP_API_SIMULATOR_RESPONSE = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0} -- Default simulator response
-local MSP_MIN_BYTES = 0
+local MSP_API_CMD = 111 -- Command identifier for MSP RC TUNING
+local MSP_API_SIMULATOR_RESPONSE = {4, 18, 25, 32, 20, 0, 0, 18, 25, 32, 20, 0, 0, 32, 50, 45, 10, 0, 0, 56, 0, 56, 20, 0, 0} -- Default simulator response
+local MSP_MIN_BYTES = 25
 
 -- Define the MSP response data structure
 -- parameters are:
 --  field (name)
 --  type (U8|U16|S16|etc) (see api.lua)
 --  byteorder (big|little)
-local MSP_API_STRUCTURE = {{field = "model_id", type = "U8"},
-                           {field = "model_param1_type", type = "U8"},
-                           {field = "model_param1_value", type = "S16"},
-                           {field = "model_param2_type", type = "U8"},
-                           {field = "model_param2_value", type = "S16"},
-                           {field = "model_param3_type", type = "U8"},
-                           {field = "model_param3_value", type = "S16"}}
+local MSP_API_STRUCTURE = {
+    { field = "rates_type", type = "U8" },
+    { field = "rcRates_1", type = "U8" },
+    { field = "rcExpo_1", type = "U8" },
+    { field = "rates_1", type = "U8" },
+    { field = "response_time_1", type = "U8" },
+    { field = "accel_limit_1", type = "U16" },
+    { field = "rcRates_2", type = "U8" },
+    { field = "rcExpo_2", type = "U8" },
+    { field = "rates_2", type = "U8" },
+    { field = "response_time_2", type = "U8" },
+    { field = "accel_limit_2", type = "U16" },
+    { field = "rcRates_3", type = "U8" },
+    { field = "rcExpo_3", type = "U8" },
+    { field = "rates_3", type = "U8" },
+    { field = "response_time_3", type = "U8" },
+    { field = "accel_limit_3", type = "U16" },
+    { field = "rcRates_4", type = "U8" },
+    { field = "rcExpo_4", type = "U8" },
+    { field = "rates_4", type = "U8" },
+    { field = "response_time_4", type = "U8" },
+    { field = "accel_limit_4", type = "U16" }
+}
+
 
 -- Variable to store parsed MSP data
 local mspData = nil
