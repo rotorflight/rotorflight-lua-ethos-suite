@@ -40,10 +40,8 @@ local MSP_API_STRUCTURE = {{field = "gov_mode", type = "U8"},
                            {field = "gov_zero_throttle_timeout", type = "U16"},
                            {field = "gov_lost_headspeed_timeout", type = "U16"},
                            {field = "gov_autorotation_timeout", type = "U16"},
-                           {
-    field = "gov_autorotation_bailout_time",
-    type = "U16"
-}, {field = "gov_autorotation_min_entry_time", type = "U16"},
+                           {field = "gov_autorotation_bailout_time",type = "U16"}, 
+                           {field = "gov_autorotation_min_entry_time", type = "U16"},
                            {field = "gov_handover_throttle", type = "U8"},
                            {field = "gov_pwr_filter", type = "U8"},
                            {field = "gov_rpm_filter", type = "U8"},
