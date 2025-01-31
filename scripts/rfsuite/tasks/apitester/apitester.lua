@@ -96,13 +96,13 @@ function apitester.wakeup()
 
     ]]--
 
-    local API = rfsuite.bg.msp.api.load("MSP_PID_PROFILE")
-    API.read()  
-    if API.readComplete() then
-            local data = API.data()
-            --rfsuite.utils.print_r(data['processed'])
-            rfsuite.utils.print_r(data)
-    end   
+    --local API = rfsuite.bg.msp.api.load("MSP_PID_TUNING")
+    --API.read()  
+    --if API.readComplete() then
+    --        local data = API.data()
+    --        --rfsuite.utils.print_r(data['processed'])
+    --        rfsuite.utils.print_r(data)
+    --end   
 
 
   
