@@ -23,44 +23,91 @@
  * readValue(fieldName): Returns the value of a specific field from MSP data.
  * readVersion(): Retrieves the API version in major.minor format.
  * setCompleteHandler(handlerFunction):  Set function to run on completion
- * setErrorHandler(handlerFunction): Set function to run on error   
+ * setErrorHandler(handlerFunction): Set function to run on error  
 ]] --
 -- Constants for MSP Commands
-local MSP_API_CMD = 10 -- Command identifier for MSP Mixer Config
-local MSP_API_SIMULATOR_RESPONSE = {80, 105, 108, 111, 116} -- Default simulator response
-local MSP_MIN_BYTES = 0
+local MSP_API_CMD = 111 -- Command identifier for MSP RC TUNING
+local MSP_API_SIMULATOR_RESPONSE = {4, 18, 25, 32, 20, 0, 0, 18, 25, 32, 20, 0, 0, 32, 50, 45, 10, 0, 0, 56, 0, 56, 20, 0, 0} -- Default simulator response
+local MSP_MIN_BYTES = 25
 
 -- Define the MSP response data structure
-local MSP_API_STRUCTURE = {{field = "name", type = "U8"}}
+-- parameters are:
+--  field (name)
+--  type (U8|U16|S16|etc) (see api.lua)
+--  byteorder (big|little)
+local MSP_API_STRUCTURE = {
+    { field = "rates_type", type = "U8" },
+    { field = "rcRates_1", type = "U8" },
+    { field = "rcExpo_1", type = "U8" },
+    { field = "rates_1", type = "U8" },
+    { field = "response_time_1", type = "U8" },
+    { field = "accel_limit_1", type = "U16" },
+    { field = "rcRates_2", type = "U8" },
+    { field = "rcExpo_2", type = "U8" },
+    { field = "rates_2", type = "U8" },
+    { field = "response_time_2", type = "U8" },
+    { field = "accel_limit_2", type = "U16" },
+    { field = "rcRates_3", type = "U8" },
+    { field = "rcExpo_3", type = "U8" },
+    { field = "rates_3", type = "U8" },
+    { field = "response_time_3", type = "U8" },
+    { field = "accel_limit_3", type = "U16" },
+    { field = "rcRates_4", type = "U8" },
+    { field = "rcExpo_4", type = "U8" },
+    { field = "rates_4", type = "U8" },
+    { field = "response_time_4", type = "U8" },
+    { field = "accel_limit_4", type = "U16" }
+}
+
+
+-- Variable to store parsed MSP data
+local mspData = nil
 
 -- Create a new instance
-local handlers = rfsuite.bg.msp.api.createHandlers() 
+local handlers = rfsuite.bg.msp.api.createHandlers()  
 
-local function parseMSPData(buf)
-    local parsedData = {}
+-- Additional data formating
+local function processMSPData(buf, MSP_API_STRUCTURE)
+    local data = {
+        tables = {}  -- Create a nested table to hold indexed data
+    }
 
-    -- Handle variable-length name
-    local name = ""
-    local offset = 1
-
-    while offset <= #buf do
-        local char = rfsuite.bg.msp.mspHelper.readU8(buf, offset)
-        if char == 0 then -- Null terminator found, break
-            break
-        end
-        name = name .. string.char(char)
-        offset = offset + 1
+    -- Ensure buffer is valid
+    if not buf or type(buf) ~= "table" then
+        return nil
     end
 
-    parsedData["name"] = name
+    local index = 1
 
-    -- Prepare data for return
-    local data = {}
-    data['parsed'] = parsedData
-    data['buffer'] = buf
+    for i, field in ipairs(MSP_API_STRUCTURE) do
+        local baseName, suffix = field.field:match("(.+)_(%d+)")
+        local value = 0
+
+        -- Determine data type and extract values from buffer
+        if field.type == "U8" then
+            value = buf[i] or 0
+        elseif field.type == "U16" then
+            value = (buf[i] or 0) + ((buf[i + 1] or 0) * 256)
+        end
+
+        if baseName and suffix then
+            local keyIndex = tonumber(suffix) - 1  -- Convert suffix to zero-based index
+
+            if not data.tables[keyIndex] then
+                data.tables[keyIndex] = {}
+            end
+
+            data.tables[keyIndex][baseName] = value
+        else
+            -- Handle fields without a suffix (e.g., "rates_type")
+            data[field.field] = value
+        end
+    end
 
     return data
 end
+
+
 
 -- Function to initiate MSP read operation
 local function read()
@@ -68,7 +115,7 @@ local function read()
         command = MSP_API_CMD, -- Specify the MSP command
         processReply = function(self, buf)
             -- Parse the MSP data using the defined structure
-            mspData = parseMSPData(buf, MSP_API_STRUCTURE)
+            mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE,processMSPData(buf, MSP_API_STRUCTURE))
             if #buf >= MSP_MIN_BYTES then
                 local completeHandler = handlers.getCompleteHandler()
                 if completeHandler then

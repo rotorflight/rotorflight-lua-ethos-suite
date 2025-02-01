@@ -463,6 +463,14 @@ end
 
 -- print a table out to debug console
 function utils.print_r(node)
+    if node == nil then
+        print("nil (type: nil)")
+        return
+    elseif type(node) ~= "table" then
+        print(tostring(node) .. " (type: " .. type(node) .. ")")
+        return
+    end
+
     local cache, stack, output = {}, {}, {}
     local depth = 1
     local output_str = "{\n"
@@ -480,7 +488,6 @@ function utils.print_r(node)
                     output_str = output_str .. "\n"
                 end
 
-                -- This is necessary for working with HUGE tables otherwise we run out of memory using concat on huge strings
                 table.insert(output, output_str)
                 output_str = ""
 
@@ -509,14 +516,17 @@ function utils.print_r(node)
                     output_str = output_str .. ","
                 end
             else
-                -- close the table
-                if (cur_index == size) then output_str = output_str .. "\n" .. string.rep("\t", depth - 1) .. "}" end
+                if (cur_index == size) then
+                    output_str = output_str .. "\n" .. string.rep("\t", depth - 1) .. "}"
+                end
             end
 
             cur_index = cur_index + 1
         end
 
-        if (size == 0) then output_str = output_str .. "\n" .. string.rep("\t", depth - 1) .. "}" end
+        if (size == 0) then
+            output_str = output_str .. "\n" .. string.rep("\t", depth - 1) .. "}"
+        end
 
         if (#stack > 0) then
             node = stack[#stack]
@@ -527,12 +537,21 @@ function utils.print_r(node)
         end
     end
 
-    -- This is necessary for working with HUGE tables otherwise we run out of memory using concat on huge strings
     table.insert(output, output_str)
-    output_str = table.concat(output)
+    output_str = table.concat(output, "\n")
 
-    print(output_str)
+    -- Print in chunks of 5 lines
+    local lines = {}
+    for line in output_str:gmatch("[^\n]+") do
+        table.insert(lines, line)
+    end
+
+    for i = 1, #lines, 5 do
+        local chunk = table.concat(lines, "\n", i, math.min(i + 4, #lines))
+        print(chunk)
+    end
 end
+
 
 -- convert a string to a nunber
 function utils.makeNumber(x)
