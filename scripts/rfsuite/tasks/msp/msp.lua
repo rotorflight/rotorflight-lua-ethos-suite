@@ -169,9 +169,8 @@ function msp.onConnectBgChecks()
 
             local API = msp.api.load("MSP_NAME")
             API.read()
-            if API.readComplete() then
+            if API.readComplete() and API.readValue("name") ~= nil then
                 rfsuite.config.craftName = API.readValue("name")
-
                 -- set the model name to the craft name
                 if rfsuite.config.syncCraftName == true and model.name and
                     rfsuite.config.craftName ~= nil then
