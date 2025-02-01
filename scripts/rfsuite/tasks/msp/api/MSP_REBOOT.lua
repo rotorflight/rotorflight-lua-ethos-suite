@@ -26,40 +26,39 @@
  * - setValue("seconds", os.time())
  * - setValue("milliseconds", 123)
  * - resetWriteStatus(): Resets the write completion status.
- * - setCompleteHandler(handlerFunction):  Set function to run on completion
- * - setErrorHandler(handlerFunction): Set function to run on error  
+ * setCompleteHandler(handlerFunction):  Set function to run on completion
+ * setErrorHandler(handlerFunction): Set function to run on error   
  *
  * MSP Command Used:
- * - MSP_SET_RTC (Command ID: 246)
+ * - MSP_REBOOT (Command ID: 68)
 ]] --
 -- Constants for MSP Commands
-local MSP_API_CMD = 246 -- Command identifier for setting RTC
+local MSP_API_CMD = 68 -- Command identifier for setting RTC
 
 -- Define the MSP request data structure
 --  field (name)
 --  type (U8|U16|S16|etc) (see api.lua)
 --  byteorder (big|little)
 local MSP_STRUCTURE =
-    {{field = "seconds", type = "U32"}, -- 32-bit seconds since epoch
-    {field = "milliseconds", type = "U16"} -- 16-bit milliseconds
+    {{field = "rebootMode", type = "U8"} -- 32-bit seconds since epoch
     }
 
 -- Variable to track write completion
 local mspWriteComplete = false
 
+-- Create a new instance
+local handlers = rfsuite.bg.msp.api.createHandlers() 
+
 -- Function to create a payload table
 local payloadData = {}
 local defaultData = {}
-
--- Create a new instance
-local handlers = rfsuite.bg.msp.api.createHandlers()  
 
 -- Function to get default values (stub for now)
 local function getDefaults()
     -- This function should return a table with default values
     -- Typically we should be performing a 'read' to populate this data
     -- however this api only ever writes data
-    return {seconds = os.time(), milliseconds = 0}
+    return {rebootMode = 0}
 end
 
 -- Function to initiate MSP write operation

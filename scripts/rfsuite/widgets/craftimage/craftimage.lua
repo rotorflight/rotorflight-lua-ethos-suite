@@ -18,6 +18,7 @@ local rf2craftimage = { wakeupSchedulerUI = os.clock() }
 
 local sensors
 local lastName
+local lastID
 local bitmapPtr
 local image
 local default_image = "widgets/craftimage/default_image.png"
@@ -55,15 +56,10 @@ local function screenError(msg)
     lcd.drawText(x, y, msg)
 end
 
--- Helper function to load image
-local function loadImage(image)
-    if image == nil then
-        image = default_image
-    end
-
+-- Helper function to load an image from two possible paths
+local function loadImage(image1, image2)
     -- Helper function to check file in different locations
     local function find_image_in_directories(img)
-
         if file_exists(img) then
             return img
         elseif file_exists("BITMAPS:" .. img) then
@@ -75,23 +71,36 @@ local function loadImage(image)
         end
     end
 
-    -- 1. Check the provided image path
-    local image_path = find_image_in_directories(image)
-
-    -- 2. If not found, try switching between .png and .bmp
-    if not image_path then
-        if image:match("%.png$") then
-            image_path = find_image_in_directories(image:gsub("%.png$", ".bmp"))
-        elseif image:match("%.bmp$") then
-            image_path = find_image_in_directories(image:gsub("%.bmp$", ".png"))
+    -- Function to check and return a valid image path
+    local function resolve_image(image)
+        if image then
+            local image_path = find_image_in_directories(image)
+            if not image_path then
+                if image:match("%.png$") then
+                    image_path = find_image_in_directories(image:gsub("%.png$", ".bmp"))
+                elseif image:match("%.bmp$") then
+                    image_path = find_image_in_directories(image:gsub("%.bmp$", ".png"))
+                end
+            end
+            return image_path
         end
+        return nil
     end
 
-    -- 3. If still not found, use the default image
+    -- 1. Check the first image
+    local image_path = resolve_image(image1)
+    
+    -- 2. If not found, check the second image
+    if not image_path then
+        image_path = resolve_image(image2)
+    end
+
+    -- 3. If still not found, fall back to default image
     if not image_path then
         image_path = default_image
     end
 
+    -- Load and return the image bitmap
     bitmapPtr = lcd.loadBitmap(image_path)
     return bitmapPtr
 end
@@ -127,6 +136,7 @@ end
 function rf2craftimage.configure(widget)
     -- reset this to force a lcd refresh
     lastName = nil
+    lastID = nil
 
     return widget
 end
@@ -161,18 +171,21 @@ function rf2craftimage.wakeupUI()
 
     LCD_W, LCD_H = lcd.getWindowSize()
 
-    if lastName ~= rfsuite.config.craftName then
+    if lastName ~= rfsuite.config.craftName or lastID ~= rfsuite.config.modelID then
         if rfsuite.config.craftName ~= nil then
-            image = "/bitmaps/models/" .. rfsuite.config.craftName .. ".png"
-            bitmapPtr = loadImage(image)
-        else
-            bitmapPtr = loadImage(default_image)
+            image1 = "/bitmaps/models/" .. rfsuite.config.craftName .. ".png"          
         end
+        if rfsuite.config.modelID ~= nil then
+            image2 = "/bitmaps/models/" .. rfsuite.config.modelID .. ".png"          
+        end
+
+        bitmapPtr = loadImage(image1,image2)  
 
         lcd.invalidate()
     end
 
     lastName = rfsuite.config.craftName
+    lastID = rfsuite.config.modelID
 end
 
 return rf2craftimage

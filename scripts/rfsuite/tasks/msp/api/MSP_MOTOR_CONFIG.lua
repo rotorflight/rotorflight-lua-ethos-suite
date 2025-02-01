@@ -1,4 +1,11 @@
 --[[
+ *********************************************************************************************
+ *                                                                                           *
+ *     THIS IS A TEMPLATE AND SHOULD BE USED ONLY AS A SOURCE FOR MAKING A NEW API FILE      *
+ *                                                                                           *
+ *********************************************************************************************
+]] --
+--[[
  * Copyright (C) Rotorflight Project
  *
  * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
@@ -23,44 +30,51 @@
  * readValue(fieldName): Returns the value of a specific field from MSP data.
  * readVersion(): Retrieves the API version in major.minor format.
  * setCompleteHandler(handlerFunction):  Set function to run on completion
- * setErrorHandler(handlerFunction): Set function to run on error   
+ * setErrorHandler(handlerFunction): Set function to run on error  
 ]] --
 -- Constants for MSP Commands
-local MSP_API_CMD = 10 -- Command identifier for MSP Mixer Config
-local MSP_API_SIMULATOR_RESPONSE = {80, 105, 108, 111, 116} -- Default simulator response
-local MSP_MIN_BYTES = 0
+local MSP_API_CMD = 131 -- Command identifier for MSP MOTOR CONFIG
+local MSP_API_SIMULATOR_RESPONSE = {45, 4, 208, 7, 232, 3, 1, 6, 0, 0, 250, 0, 1, 6, 4, 2, 1, 8, 7, 7, 8, 20, 0, 50, 0, 9, 0, 30, 0} -- Default simulator response
+local MSP_MIN_BYTES = 29
 
 -- Define the MSP response data structure
-local MSP_API_STRUCTURE = {{field = "name", type = "U8"}}
+-- parameters are:
+--  field (name)
+--  type (U8|U16|S16|etc) (see api.lua)
+--  byteorder (big|little)
+local MSP_API_STRUCTURE = {
+    { field = "minthrottle", type = "U16" },
+    { field = "maxthrottle", type = "U16" },
+    { field = "mincommand", type = "U16" },
+    
+    { field = "motor_count", type = "U8" }, -- compat: BLHeliSuite
+    { field = "motor_pole_count_0", type = "U8" }, -- compat: BLHeliSuite
+
+    { field = "use_dshot_telemetry", type = "U8" },
+    { field = "motor_pwm_protocol", type = "U8" },
+    { field = "motor_pwm_rate", type = "U16" },
+    { field = "use_unsynced_pwm", type = "U8" },
+
+    { field = "motor_pole_count_1", type = "U8" },
+    { field = "motor_pole_count_2", type = "U8" },
+    { field = "motor_pole_count_3", type = "U8" },
+
+    { field = "motor_rpm_lpf_0", type = "U8" },
+    { field = "motor_rpm_lpf_1", type = "U8" },
+    { field = "motor_rpm_lpf_2", type = "U8" },
+    { field = "motor_rpm_lpf_3", type = "U8" },
+
+    { field = "main_rotor_gear_ratio_0", type = "U16" },
+    { field = "main_rotor_gear_ratio_1", type = "U16" },
+    { field = "tail_rotor_gear_ratio_0", type = "U16" },
+    { field = "tail_rotor_gear_ratio_1", type = "U16" },
+}
+
+-- Variable to store parsed MSP data
+local mspData = nil
 
 -- Create a new instance
-local handlers = rfsuite.bg.msp.api.createHandlers() 
-
-local function parseMSPData(buf)
-    local parsedData = {}
-
-    -- Handle variable-length name
-    local name = ""
-    local offset = 1
-
-    while offset <= #buf do
-        local char = rfsuite.bg.msp.mspHelper.readU8(buf, offset)
-        if char == 0 then -- Null terminator found, break
-            break
-        end
-        name = name .. string.char(char)
-        offset = offset + 1
-    end
-
-    parsedData["name"] = name
-
-    -- Prepare data for return
-    local data = {}
-    data['parsed'] = parsedData
-    data['buffer'] = buf
-
-    return data
-end
+local handlers = rfsuite.bg.msp.api.createHandlers()  
 
 -- Function to initiate MSP read operation
 local function read()
@@ -68,7 +82,7 @@ local function read()
         command = MSP_API_CMD, -- Specify the MSP command
         processReply = function(self, buf)
             -- Parse the MSP data using the defined structure
-            mspData = parseMSPData(buf, MSP_API_STRUCTURE)
+            mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE)
             if #buf >= MSP_MIN_BYTES then
                 local completeHandler = handlers.getCompleteHandler()
                 if completeHandler then
