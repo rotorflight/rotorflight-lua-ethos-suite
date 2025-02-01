@@ -377,6 +377,10 @@ end
 -- REQUEST A PAGE OVER MSP. THIS RUNS ON MOST CLOCK CYCLES WHEN DATA IS BEING REQUESTED
 local function requestPage()
 
+    if not rfsuite.bg or not rfsuite.bg.msp then
+        return
+    end
+
     if not app.Page.reqTS or app.Page.reqTS + rfsuite.bg.msp.protocol.pageReqTimeout <= os.clock() then
 
         app.Page.reqTS = os.clock()
@@ -974,8 +978,6 @@ function app.create_logtool()
     rfsuite.config.lcdWidth, rfsuite.config.lcdHeight = rfsuite.utils.getWindowSize()
     app.radio = assert(loadfile("app/radios.lua"))().msp
 
-    app.fieldHelpTxt = assert(loadfile("app/help/fields.lua"))()
-
     app.uiState = app.uiStatus.init
 
     -- overide developermode if file exists.
@@ -997,8 +999,6 @@ function app.create()
 
     rfsuite.config.lcdWidth, rfsuite.config.lcdHeight = rfsuite.utils.getWindowSize()
     app.radio = assert(loadfile("app/radios.lua"))().msp
-
-    app.fieldHelpTxt = assert(loadfile("app/help/fields.lua"))()
 
     app.uiState = app.uiStatus.init
 

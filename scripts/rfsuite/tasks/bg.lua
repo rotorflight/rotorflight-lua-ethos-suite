@@ -125,6 +125,11 @@ end
 -- wakeup
 function bg.wakeup()
 
+    -- kill if version is bad
+    if rfsuite.utils.ethosVersion() < rfsuite.config.ethosVersion  then
+        return
+    end
+
     -- initialise tasks
     if bg.init == false then
         bg.findTasks()

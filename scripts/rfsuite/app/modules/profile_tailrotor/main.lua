@@ -13,9 +13,15 @@ fields[#fields + 1] = {t = "Precomp Cutoff", help = "profilesYawPrecompCutoff", 
 fields[#fields + 1] = {t = "Cyclic FF gain", help = "profilesYawFFCyclicGain", min = 0, max = 250, default = 30, vals = {24}}
 fields[#fields + 1] = {t = "Collective FF gain", help = "profilesYawFFCollectiveGain", min = 0, max = 250, default = 0, vals = {25}}
 
-labels[#labels + 1] = {t = "Collective Impulse FF", label = "colimpff", inline_size = 13.6}
-fields[#fields + 1] = {t = "Gain", help = "profilesYawFFImpulseGain", inline = 2, label = "colimpff", min = 0, max = 250, default = 0, vals = {26}}
-fields[#fields + 1] = {t = "Decay", help = "profilesyawFFImpulseDecay", inline = 1, label = "colimpff", min = 0, max = 250, default = 25, unit = "s", vals = {27}}
+if rfsuite.config.apiVersion >= 12.08 then
+    labels[#labels + 1] = {t = "Inertia Precomp", label = "inertia", inline_size = 13.6}
+    fields[#fields + 1] = {t = "Gain", help = "profilesIntertiaGain", inline = 2, label = "inertia", min = 0, max = 250, default = 0, vals = {42}}
+    fields[#fields + 1] = {t = "Cutoff", help = "profilesInertiaCutoff", inline = 1, label = "inertia", min = 0, max = 250, default = 25, unit = "Hz", vals = {43}}
+else
+    labels[#labels + 1] = {t = "Collective Impulse FF", label = "colimpff", inline_size = 13.6}
+    fields[#fields + 1] = {t = "Gain", help = "profilesYawFFImpulseGain", inline = 2, label = "colimpff", min = 0, max = 250, default = 0, vals = {26}}
+    fields[#fields + 1] = {t = "Decay", help = "profilesyawFFImpulseDecay", inline = 1, label = "colimpff", min = 0, max = 250, default = 25, unit = "s", vals = {27}}
+end
 
 local function postLoad(self)
     rfsuite.app.triggers.isReady = true

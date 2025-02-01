@@ -38,6 +38,12 @@ local mspHelper = {
         buf.offset = offset + 2
         return value
     end,
+    readU24 = function(buf)
+        local offset = buf.offset or 1
+        local value = buf[offset] + buf[offset + 1] * 256 + buf[offset + 2] * 65536
+        buf.offset = offset + 3
+        return value
+    end,    
     readU32 = function(buf)
         local offset = buf.offset or 1
         local value = buf[offset] + buf[offset + 1] * 256 + buf[offset + 2] * 65536 + buf[offset + 3] * 16777216
@@ -51,6 +57,11 @@ local mspHelper = {
         buf[#buf + 1] = value % 256
         buf[#buf + 1] = math.floor(value / 256) % 256
     end,
+    writeU24 = function(buf, value)
+        buf[#buf + 1] = value % 256
+        buf[#buf + 1] = math.floor(value / 256) % 256
+        buf[#buf + 1] = math.floor(value / 65536) % 256
+    end,    
     writeU32 = function(buf, value)
         buf[#buf + 1] = value % 256
         buf[#buf + 1] = math.floor(value / 256) % 256

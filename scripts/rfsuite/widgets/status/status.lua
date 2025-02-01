@@ -978,6 +978,44 @@ function status.resetALL()
     status.sensorTempESCMax = 0
 end
 
+function status.missingSensors()
+    lcd.font(FONT_STD)
+    local str = "MISSING REQUIRED SENSORS"
+
+    status.theme = status.getThemeInfo()
+    local w, h = lcd.getWindowSize()
+    local boxW = math.floor(w / 2)
+    local boxH = 45
+    local tsizeW, tsizeH = lcd.getTextSize(str)
+
+    -- Set background color based on theme
+    if status.isDARKMODE then
+        lcd.color(lcd.RGB(40, 40, 40))
+    else
+        lcd.color(lcd.RGB(240, 240, 240))
+    end
+    lcd.drawFilledRectangle(w / 2 - boxW / 2, h / 2 - boxH / 2, boxW, boxH)
+
+    -- Set border color based on theme
+    if status.isDARKMODE then
+        lcd.color(lcd.RGB(255, 255, 255, 1))
+    else
+        lcd.color(lcd.RGB(90, 90, 90))
+    end
+    lcd.drawRectangle(w / 2 - boxW / 2, h / 2 - boxH / 2, boxW, boxH)
+
+    -- Set text color based on theme and draw text
+    if status.isDARKMODE then
+        lcd.color(lcd.RGB(255, 255, 255, 1))
+    else
+        lcd.color(lcd.RGB(90, 90, 90))
+    end
+    lcd.drawText((w / 2) - tsizeW / 2, (h / 2) - tsizeH / 2, str)
+
+    return
+end
+
+
 function status.noTelem()
     lcd.font(FONT_STD)
     local str = "NO LINK"
@@ -1265,6 +1303,8 @@ function status.telemetryBoxImage(x, y, w, h, gfx)
 end
 
 function status.paint(widget)
+
+
 
     if not rfsuite.bg.active() then
 
@@ -2283,8 +2323,16 @@ function status.paint(widget)
                 c = c + 1
             end
 
+            -- initiate timed sensor validation
+            local validateSensors = {}
+            if rfsuite.bg and rfsuite.bg.telemetry then
+                validateSensors= rfsuite.bg.telemetry.validateSensors()
+            end
+
             if status.linkUP == false and environment.simulation == false then
                 status.noTelem()
+            elseif (os.clock() - status.initTime) >= 10 and validateSensors and (#rfsuite.bg.telemetry.validateSensors() > 0) then
+                status.missingSensors()  
             elseif status.idleupswitchParam and status.idleupswitchParam:state() then
                 local armSource = rfsuite.bg.telemetry.getSensorSource("armflags")
                 if armSource then
@@ -2377,7 +2425,6 @@ function status.getSensors()
         voltageSOURCE = rfsuite.bg.telemetry.getSensorSource("voltage")
         rpmSOURCE = rfsuite.bg.telemetry.getSensorSource("rpm")
         currentSOURCE = rfsuite.bg.telemetry.getSensorSource("current")
-        currentSOURCEESC1 = rfsuite.bg.telemetry.getSensorSource("currentESC1")
         temp_escSOURCE = rfsuite.bg.telemetry.getSensorSource("tempESC")
         temp_mcuSOURCE = rfsuite.bg.telemetry.getSensorSource("tempMCU")
         fuelSOURCE = rfsuite.bg.telemetry.getSensorSource("fuel")
@@ -2388,7 +2435,7 @@ function status.getSensors()
         rssiSOURCE = rfsuite.utils.getRssiSensor().sensor
         govSOURCE = rfsuite.bg.telemetry.getSensorSource("governor")
 
-        if rfsuite.bg.telemetry.getSensorProtocol() == 'ccrsf' then
+        if rfsuite.bg.telemetry.getSensorProtocol() == 'customCRSF' then
 
             if voltageSOURCE ~= nil then
                 voltage = voltageSOURCE:value()
@@ -2418,17 +2465,8 @@ function status.getSensors()
                 if currentSOURCE:maximum() == 50.0 then currentSOURCE:maximum(400.0) end
 
                 current = currentSOURCE:value()
-                if currentSOURCEESC1 ~= nil then
-                    currentesc1 = currentSOURCEESC1:value()
-                else
-                    currentesc1 = 0
-                end
                 if current ~= nil then
-                    if current == 0 and currentesc1 ~= 0 then
-                        current = currentesc1 * 10
-                    else
-                        current = current * 10
-                    end
+                    current = current * 10
                 else
                     current = 0
                 end

@@ -27,11 +27,11 @@ config.suiteDir = "/scripts/rfsuite/"                               -- base path
 config.icon = lcd.loadMask("app/gfx/icon.png")                      -- icon
 config.icon_logtool = lcd.loadMask("app/gfx/icon_logtool.png")      -- icon
 config.Version = "1.0.0"                                            -- version number of this software release
-config.ethosVersion = 1560                                          -- min version of ethos supported by this script
+config.ethosVersion = 1600                                          -- min version of ethos supported by this script
 config.ethosVersionString = "ETHOS < V1.6.0"                        -- string to print if ethos version error occurs
 config.defaultRateProfile = 4 -- ACTUAL                             -- default rate table [default = 4]
 config.supportedMspApiVersion = {"12.06", "12.07","12.08"}          -- supported msp versions
-config.simulatorApiVersionResponse = {0, 12, 07}                    -- version of api return by simulator
+config.simulatorApiVersionResponse = {0, 12, 08}                    -- version of api return by simulator
 config.watchdogParam = 10                                           -- watchdog timeout for progress boxes [default = 10]
 
 
@@ -52,7 +52,8 @@ config.profileSwitching = true                                      -- enable au
 config.iconSize = 1                                                 -- 0 = text, 1 = small, 2 = large [default = 1]
 config.developerMode = false                                        -- show developer tools on main menu [default = false]
 config.soundPack = nil                                              -- use an custom sound pack. [default = nil]
-config.syncCraftName = false                                         -- sync the craft name with the model name [default = false]
+config.syncCraftName = false                                        -- sync the craft name with the model name [default = false]
+config.helpFieldDebug = true                                        -- print debug to show help fields being looked for [default = false]
 
 -- tasks
 config.bgTaskName = config.toolName .. " [Background]"              -- background task name for msp services etc
