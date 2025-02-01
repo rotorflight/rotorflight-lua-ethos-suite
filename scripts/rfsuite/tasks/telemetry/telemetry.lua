@@ -38,6 +38,8 @@ local telemetryState = false
 local sensorTable = {
     -- RSSI Sensors
     rssi = {
+        name = "RSSI",
+        mandatory = true,        
         sport = {
             rfsuite.utils.getRssiSensor()
         },
@@ -46,11 +48,13 @@ local sensorTable = {
         },
         legacyCRSF = {
             nil
-        }
+        },
     },
 
     -- Arm Flags
     armflags = {
+        name = "Arming Flags",
+        mandatory = true,         
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5122},
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5462},
@@ -60,11 +64,13 @@ local sensorTable = {
         },
         legacyCRSF = {
             nil
-        }
+        },
     },
 
     -- Voltage Sensors
     voltage = {
+        name = "Voltage",
+        mandatory = true,          
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0210}
         },
@@ -78,6 +84,8 @@ local sensorTable = {
 
     -- RPM Sensors
     rpm = {
+        name = "Head Speed",
+        mandatory = true,          
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0500}
         },
@@ -91,6 +99,8 @@ local sensorTable = {
 
     -- Current Sensors
     current = {
+        name = "Current",
+        mandatory = false,          
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0200},            
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0201},
@@ -106,6 +116,8 @@ local sensorTable = {
 
     -- Temperature Sensors
     tempESC = {
+        name = "ESC Temperature",
+        mandatory = false,         
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401},
             {category = CATEGORY_TELEMETRY_SENSOR, appId =  0x0B70}
@@ -118,8 +130,11 @@ local sensorTable = {
         }
     },
     tempMCU = {
+        name = "MCU Temperature",
+        mandatory = false,          
         sport = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0400}
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0400, mspgt=12.08},
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401, msplt=12.07}
         },
         customCRSF = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A3}
@@ -131,6 +146,8 @@ local sensorTable = {
 
     -- Fuel and Capacity Sensors
     fuel = {
+        name = "Charge Level",
+        mandatory = false,           
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0600}
         },
@@ -142,6 +159,8 @@ local sensorTable = {
         }
     },
     capacity = {
+        name = "Consumption",
+        mandatory = false,           
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5250}
         },
@@ -155,6 +174,8 @@ local sensorTable = {
 
     -- Flight Mode Sensors
     governor = {
+        name = "Governor State",
+        mandatory = false,          
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5125},
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5450}
@@ -169,6 +190,8 @@ local sensorTable = {
 
     -- Adjustment Sensors
     adjF = {
+        name = "Adjustment Sensors",
+        mandatory = false,           
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5110}
         },
@@ -180,6 +203,8 @@ local sensorTable = {
         }
     },
     adjV = {
+        name = "Adjustment Sensors",
+        mandatory = false,           
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5111}
         },
@@ -193,6 +218,8 @@ local sensorTable = {
 
     -- PID and Rate Profiles
     pidProfile = {
+        name = "PID Profile",
+        mandatory = true,           
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5130},
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5471}
@@ -205,6 +232,8 @@ local sensorTable = {
         }
     },
     rateProfile = {
+        name = "Rate Profile",
+        mandatory = true,           
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5131},            
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5472}
@@ -219,6 +248,8 @@ local sensorTable = {
 
     -- Throttle Sensors
     throttlePercentage = {
+        name = "Thottle %",
+        mandatory = true,           
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x51A4},
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5440}
@@ -243,6 +274,23 @@ function telemetry.getSensorProtocol()
     return protocol
 end
 
+--- Function to list all sensors with key, name, and mandatory status
+---@return table
+function telemetry.listSensors()
+    local sensorList = {}
+    
+    for key, sensor in pairs(sensorTable) do
+        table.insert(sensorList, {
+            key = key,
+            name = sensor.name,
+            mandatory = sensor.mandatory
+        })
+    end
+    
+    return sensorList
+end
+
+
 --- Retrieve a sensor source by name
 ---@param name string
 ---@return any
@@ -254,16 +302,32 @@ function telemetry.getSensorSource(name)
 
     if not telemetrySOURCE then telemetrySOURCE = system.getSource("Rx RSSI1") end
 
+    -- Helper function to check if MSP version conditions are met
+    local function checkCondition(sensorEntry)
+        if sensorEntry.mspgt then
+            -- Check if API version exists and meets "greater than" condition
+            return rfsuite.config and rfsuite.config.apiVersion and (rfsuite.config.apiVersion >= sensorEntry.mspgt)
+        elseif sensorEntry.msplt then
+            -- Check if API version exists and meets "less than" condition
+            return rfsuite.config and rfsuite.config.apiVersion and (rfsuite.config.apiVersion <= sensorEntry.msplt)
+        end
+        -- No conditions = always valid
+        return true
+    end
+
     if telemetrySOURCE then
         if not crsfSOURCE then crsfSOURCE = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = 0xEE01}) end
 
         if crsfSOURCE then
             protocol = "customCRSF"
             for _, sensor in ipairs(sensorTable[name].customCRSF or {}) do
-                local source = system.getSource(sensor)
-                if source then
-                    sensors[name] = source
-                    return sensors[name]
+                -- Skip entries with unfulfilled version conditions
+                if checkCondition(sensor) then
+                    local source = system.getSource(sensor)
+                    if source then
+                        sensors[name] = source
+                        return sensors[name]
+                    end
                 end
             end
         else
@@ -279,10 +343,13 @@ function telemetry.getSensorSource(name)
     else
         protocol = "sport"
         for _, sensor in ipairs(sensorTable[name].sport or {}) do
-            local source = system.getSource(sensor)
-            if source then
-                sensors[name] = source
-                return sensors[name]
+            -- Skip entries with unfulfilled version conditions
+            if checkCondition(sensor) then
+                local source = system.getSource(sensor)
+                if source then
+                    sensors[name] = source
+                    return sensors[name]
+                end
             end
         end
     end
@@ -292,8 +359,9 @@ end
 
 
 --- Function to validate sensors with rate limiting
+---@param returnValid boolean|nil Whether to return valid or invalid sensors
 ---@return table
-function telemetry.validateSensors()
+function telemetry.validateSensors(returnValid)
     local now = os.clock()
     
     -- Return cached result if within rate limit
@@ -306,24 +374,34 @@ function telemetry.validateSensors()
     
     if not telemetry.active() then
         local allSensors = {}
-        for name, _ in pairs(sensorTable) do
-            table.insert(allSensors, name)
+        for key, sensor in pairs(sensorTable) do
+            table.insert(allSensors, { key = key, name = sensor.name })
         end
         lastValidationResult = allSensors
         return allSensors
     end
 
-    local failedSensors = {}
+    local resultSensors = {}
     
-    for name, _ in pairs(sensorTable) do
-        local sensor = telemetry.getSensorSource(name)
-        if sensor == nil or sensor:state() == false then
-            table.insert(failedSensors, name)
+    for key, sensor in pairs(sensorTable) do
+        local sensorSource = telemetry.getSensorSource(key)       
+        local isValid = sensorSource ~= nil and sensorSource:state() ~= false
+        
+        if returnValid then
+            -- Include only valid sensors
+            if isValid then
+                table.insert(resultSensors, { key = key, name = sensor.name })
+            end
+        else
+            -- Include only invalid sensors, but consider mandatory flag
+            if not isValid and sensor.mandatory ~= false then
+                table.insert(resultSensors, { key = key, name = sensor.name })
+            end
         end
     end
     
-    lastValidationResult = failedSensors
-    return failedSensors
+    lastValidationResult = resultSensors
+    return resultSensors
 end
 
 --- Check if telemetry is active
@@ -337,6 +415,7 @@ end
 function telemetry.wakeup()
     local now = os.clock()
 
+    -- prioritise msp traffic
     if rfsuite.app.triggers.mspBusy then return end
 
     -- Rate-limited telemetry checks

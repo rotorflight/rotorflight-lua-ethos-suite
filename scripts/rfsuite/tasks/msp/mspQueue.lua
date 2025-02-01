@@ -6,8 +6,7 @@
  * it under the terms of the GNU General Public License version 3.
  *
  * Note: Some icons have been sourced from https://www.flaticon.com/
-]]--
-
+]] --
 -- MspQueueController class
 local MspQueueController = {}
 MspQueueController.__index = MspQueueController
@@ -57,8 +56,10 @@ function MspQueueController:processQueue()
     if lastTimeInterval == nil then lastTimeInterval = 1 end
 
     if not system:getVersion().simulation then
-        if not self.lastTimeCommandSent or self.lastTimeCommandSent + lastTimeInterval < os.clock() then
-            rfsuite.bg.msp.protocol.mspWrite(self.currentMessage.command, self.currentMessage.payload or {})
+        if not self.lastTimeCommandSent or self.lastTimeCommandSent +
+            lastTimeInterval < os.clock() then
+            rfsuite.bg.msp.protocol.mspWrite(self.currentMessage.command,
+                                             self.currentMessage.payload or {})
             self.lastTimeCommandSent = os.clock()
             self.currentMessageStartTime = os.clock()
             self.retryCount = self.retryCount + 1
@@ -72,14 +73,19 @@ function MspQueueController:processQueue()
         cmd, buf, err = mspPollReply()
     else
         if not self.currentMessage.simulatorResponse then
-            rfsuite.utils.log("No simulator response for command " .. tostring(self.currentMessage.command))
+            rfsuite.utils.log("No simulator response for command " ..
+                                  tostring(self.currentMessage.command))
             self.currentMessage = nil
             return
         end
-        cmd, buf, err = self.currentMessage.command, self.currentMessage.simulatorResponse, nil
+        cmd, buf, err = self.currentMessage.command,
+                        self.currentMessage.simulatorResponse, nil
     end
 
     if self.currentMessage and os.clock() - self.currentMessageStartTime > (self.currentMessage.timeout or self.timeout) then
+        if self.currentMessage.errorHandler then
+            self.currentMessage:errorHandler()
+        end            
         rfsuite.utils.log("Message timeout exceeded. Flushing queue.")
         self:clear()
         return
@@ -94,14 +100,17 @@ function MspQueueController:processQueue()
         end
     end
 
-    if (cmd == self.currentMessage.command and not err)
-       or (self.currentMessage.command == 68 and self.retryCount == 2)
-       or (self.currentMessage.command == 217 and err and self.retryCount == 2) then
+    if (cmd == self.currentMessage.command and not err) or
+        (self.currentMessage.command == 68 and self.retryCount == 2) or
+        (self.currentMessage.command == 217 and err and self.retryCount == 2) then
 
         if rfsuite.config.mspTxRxDebug or rfsuite.config.logEnable then
-            local logData = "Received: {" .. rfsuite.utils.joinTableItems(buf, ", ") .. "}"
+            local logData = "Received: {" ..
+                                rfsuite.utils.joinTableItems(buf, ", ") .. "}"
             rfsuite.utils.log(logData)
-            if rfsuite.config.mspTxRxDebug and #buf > 0 then print(logData) end
+            if rfsuite.config.mspTxRxDebug and #buf > 0 then
+                print(logData)
+            end
         end
 
         if self.currentMessage.processReply then
@@ -148,14 +157,14 @@ function MspQueueController:add(message)
     if not rfsuite.bg.telemetry.active() then return end
     if message then
         if message.uuid and self.uuid == message.uuid then
-            rfsuite.utils.log("Skipping duplicate message with UUID " .. message.uuid)
+            rfsuite.utils.log("Skipping duplicate message with UUID " ..
+                                  message.uuid)
             return
         end
         message = deepCopy(message)
-        if message.uuid then
-            self.uuid = message.uuid
-        end
-        rfsuite.utils.log("Queueing command " .. message.command .. " at position " .. #self.messageQueue + 1)
+        if message.uuid then self.uuid = message.uuid end
+        rfsuite.utils.log("Queueing command " .. message.command ..
+                              " at position " .. #self.messageQueue + 1)
         self.messageQueue[#self.messageQueue + 1] = message
         return self
     else

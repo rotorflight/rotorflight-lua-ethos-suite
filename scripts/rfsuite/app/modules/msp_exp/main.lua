@@ -37,10 +37,10 @@ for i = 0, total_bytes - 1 do rows[i + 1] = tostring(i) end
 cols = {"UINT8", "INT8"}
 
 -- uint8 fields
-for i = 0, total_bytes - 1 do fields[#fields + 1] = {col = 1, row = i + 1, min = 0, max = 255, vals = {i + 1}} end
+for i = 0, total_bytes - 1 do fields[#fields + 1] = {col = 1, row = i + 1, min = 0, max = 255, vals = {i + 1}, instantChange = true} end
 
 -- int8 fields
-for i = 0, total_bytes - 1 do fields[#fields + 1] = {col = 2, row = i + 1, min = -128, max = 127, vals = {i + 1}} end
+for i = 0, total_bytes - 1 do fields[#fields + 1] = {col = 2, row = i + 1, min = -128, max = 127, vals = {i + 1}, instantChange = true} end
 
 local function postLoad(self)
     rfsuite.app.triggers.isReady = true
@@ -128,7 +128,6 @@ local function openPage(idx, title, script)
             return value
         end, function(value)
             f.value = rfsuite.utils.saveFieldValue(rfsuite.app.Page.fields[i], value)
-
             if i < total_bytes then
                 -- update int8 field
                 update_int8(i, value)
@@ -153,6 +152,11 @@ local function openPage(idx, title, script)
                 local helpTxt = rfsuite.app.fieldHelpTxt[f.help]['t']
                 rfsuite.app.formFields[i]:help(helpTxt)
             end
+        end
+        if f.instantChange and f.instantChange == true then
+            rfsuite.app.formFields[i]:enableInstantChange(true)
+        else
+            rfsuite.app.formFields[i]:enableInstantChange(false)     
         end
     end
 
