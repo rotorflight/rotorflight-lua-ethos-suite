@@ -23,44 +23,35 @@
  * readValue(fieldName): Returns the value of a specific field from MSP data.
  * readVersion(): Retrieves the API version in major.minor format.
  * setCompleteHandler(handlerFunction):  Set function to run on completion
- * setErrorHandler(handlerFunction): Set function to run on error   
+ * setErrorHandler(handlerFunction): Set function to run on error  
 ]] --
 -- Constants for MSP Commands
-local MSP_API_CMD = 10 -- Command identifier for MSP Mixer Config
-local MSP_API_SIMULATOR_RESPONSE = {80, 105, 108, 111, 116} -- Default simulator response
-local MSP_MIN_BYTES = 0
+local MSP_API_CMD = 32 -- Command identifier for MSP_BATTERY_CONFIG
+local MSP_API_SIMULATOR_RESPONSE = {138, 2, 3, 1, 1, 74, 1, 174, 1, 154, 1, 94,
+                                    1, 100, 10} -- Default simulator response
+local MSP_MIN_BYTES = 15
 
 -- Define the MSP response data structure
-local MSP_API_STRUCTURE = {{field = "name", type = "U8"}}
+-- parameters are:
+--  field (name)
+--  type (U8|U16|S16|etc) (see api.lua)
+--  byteorder (big|little)
+local MSP_API_STRUCTURE = {{field = "batteryCapacity", type = "U16"},
+                           {field = "batteryCellCount", type = "U8"},
+                           {field = "voltageMeterSource", type = "U8"},
+                           {field = "currentMeterSource", type = "U8"},
+                           {field = "vbatmincellvoltage", type = "U16"},
+                           {field = "vbatmaxcellvoltage", type = "U16"},
+                           {field = "vbatfullcellvoltage", type = "U16"},
+                           {field = "vbatwarningcellvoltage", type = "U16"},
+                           {field = "lvcPercentage", type = "U8"},
+                           {field = "consumptionWarningPercentage", type = "U8"}}
+
+-- Variable to store parsed MSP data
+local mspData = nil
 
 -- Create a new instance
-local handlers = rfsuite.bg.msp.api.createHandlers() 
-
-local function parseMSPData(buf)
-    local parsedData = {}
-
-    -- Handle variable-length name
-    local name = ""
-    local offset = 1
-
-    while offset <= #buf do
-        local char = rfsuite.bg.msp.mspHelper.readU8(buf, offset)
-        if char == 0 then -- Null terminator found, break
-            break
-        end
-        name = name .. string.char(char)
-        offset = offset + 1
-    end
-
-    parsedData["name"] = name
-
-    -- Prepare data for return
-    local data = {}
-    data['parsed'] = parsedData
-    data['buffer'] = buf
-
-    return data
-end
+local handlers = rfsuite.bg.msp.api.createHandlers()  
 
 -- Function to initiate MSP read operation
 local function read()
@@ -68,7 +59,7 @@ local function read()
         command = MSP_API_CMD, -- Specify the MSP command
         processReply = function(self, buf)
             -- Parse the MSP data using the defined structure
-            mspData = parseMSPData(buf, MSP_API_STRUCTURE)
+            mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE)
             if #buf >= MSP_MIN_BYTES then
                 local completeHandler = handlers.getCompleteHandler()
                 if completeHandler then

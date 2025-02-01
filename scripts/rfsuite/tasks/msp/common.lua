@@ -13,9 +13,7 @@
  * GNU General Public License for more details.
  *
  * Note: Some icons have been sourced from https://www.flaticon.com/
-]]
-
--- Protocol constants
+]] -- Protocol constants
 local MSP_VERSION = (1 << 5)
 local MSP_STARTFLAG = (1 << 4)
 
@@ -45,7 +43,9 @@ end
 function mspProcessTxQ()
     if #mspTxBuf == 0 then return false end
 
-    rfsuite.utils.log("Sending mspTxBuf size " .. tostring(#mspTxBuf) .. " at Idx " .. tostring(mspTxIdx) .. " for cmd: " .. tostring(mspLastReq))
+    rfsuite.utils.log("Sending mspTxBuf size " .. tostring(#mspTxBuf) ..
+                          " at Idx " .. tostring(mspTxIdx) .. " for cmd: " ..
+                          tostring(mspLastReq))
 
     local payload = {}
     payload[1] = mspSeq + MSP_VERSION
@@ -53,7 +53,8 @@ function mspProcessTxQ()
     if mspTxIdx == 1 then payload[1] = payload[1] + MSP_STARTFLAG end
 
     local i = 2
-    while (i <= rfsuite.bg.msp.protocol.maxTxBufferSize) and mspTxIdx <= #mspTxBuf do
+    while (i <= rfsuite.bg.msp.protocol.maxTxBufferSize) and mspTxIdx <=
+        #mspTxBuf do
         payload[i] = mspTxBuf[mspTxIdx]
         mspTxIdx = mspTxIdx + 1
         mspTxCRC = mspTxCRC ~ payload[i]
@@ -62,7 +63,9 @@ function mspProcessTxQ()
 
     if i <= rfsuite.bg.msp.protocol.maxTxBufferSize then
         payload[i] = mspTxCRC
-        for j = i + 1, rfsuite.bg.msp.protocol.maxTxBufferSize do payload[j] = 0 end
+        for j = i + 1, rfsuite.bg.msp.protocol.maxTxBufferSize do
+            payload[j] = 0
+        end
         mspTxBuf = {}
         mspTxIdx = 1
         mspTxCRC = 0
@@ -79,7 +82,9 @@ function mspSendRequest(cmd, payload)
         return nil
     end
     if #mspTxBuf ~= 0 then
-        rfsuite.utils.log("Existing mspTxBuf still sending, failed to send cmd: " .. tostring(cmd))
+        rfsuite.utils.log(
+            "Existing mspTxBuf still sending, failed to send cmd: " ..
+                tostring(cmd))
         return nil
     end
     mspTxBuf[1] = #payload
@@ -113,7 +118,8 @@ local function mspReceivedReply(payload)
         return nil
     end
 
-    while (idx <= rfsuite.bg.msp.protocol.maxRxBufferSize) and (#mspRxBuf < mspRxSize) do
+    while (idx <= rfsuite.bg.msp.protocol.maxRxBufferSize) and
+        (#mspRxBuf < mspRxSize) do
         mspRxBuf[#mspRxBuf + 1] = payload[idx]
         mspRxCRC = mspRxCRC ~ payload[idx]
         idx = idx + 1

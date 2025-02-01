@@ -97,6 +97,7 @@ The following provides an example summary of the parameters you can use.
 - onFocus        => a function called whenever the field is in focus (not yet available)
 - type           => 0 = text , 1 = drop down  , 2 or nil = numeric
 - position       => {x=0,y=0,w=0,h=0}  
+- instantChange  => true | false
 
 #TRIGGERS
 rf2thos.triggers.triggerSave = true             -- trigger and msp save
