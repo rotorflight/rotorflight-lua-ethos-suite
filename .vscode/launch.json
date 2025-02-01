@@ -1,0 +1,42 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "SIM: Deploy",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/deploy-sim.py",
+            "args": [
+                "--src", "${workspaceFolder}",
+                "--destfolders","${env:FRSKY_SIM_SRC}"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+        },
+        {
+            "name": "SIM: Deploy & Launch",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/deploy-sim.py",
+            "args": [
+                "--src", "${workspaceFolder}",
+                "--sim", "${env:FRSKY_SIM_BIN}",
+                "--destfolders","${env:FRSKY_SIM_SRC}"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+        },
+        {
+            "name": "Remote: Deploy",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/deploy-sim.py",
+            "args": [
+                "--src", "${env:FRSKY_REMOTE_SRC}",
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+        },
+    ]
+  }
+  
