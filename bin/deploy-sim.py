@@ -55,7 +55,7 @@ def copy_files(src, fileext=None, launch=False, destfolders=None):
                         shutil.copytree(logs_temp, logs_folder, dirs_exist_ok=True)
                         shutil.rmtree(logs_temp)
                 except OSError as e:
-                    print(f"Files in use, replacing files: {e.strerror}")
+                    print(f"Failed to delete entire folder, replacing single files instead")
 
             # Copy all files to the destination folder
             all_src = os.path.join(srcfolder, 'scripts', tgt)
