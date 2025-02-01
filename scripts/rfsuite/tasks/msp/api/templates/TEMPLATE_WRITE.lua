@@ -1,4 +1,11 @@
 --[[
+ *********************************************************************************************
+ *                                                                                           *
+ *     THIS IS A TEMPLATE AND SHOULD BE USED ONLY AS A SOURCE FOR MAKING A NEW API FILE      *
+ *                                                                                           *
+ *********************************************************************************************
+]] --
+--[[
  * Copyright (C) Rotorflight Project
  *
  * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html

@@ -30,19 +30,16 @@
  * - setErrorHandler(handlerFunction): Set function to run on error  
  *
  * MSP Command Used:
- * - MSP_SET_RTC (Command ID: 246)
+ * - MSP_EEPROM_WRITE (Command ID: 246)
 ]] --
 -- Constants for MSP Commands
-local MSP_API_CMD = 246 -- Command identifier for setting RTC
+local MSP_API_CMD = 68 -- Command identifier for writing epprom
 
 -- Define the MSP request data structure
 --  field (name)
 --  type (U8|U16|S16|etc) (see api.lua)
 --  byteorder (big|little)
-local MSP_STRUCTURE =
-    {{field = "seconds", type = "U32"}, -- 32-bit seconds since epoch
-    {field = "milliseconds", type = "U16"} -- 16-bit milliseconds
-    }
+local MSP_STRUCTURE = {}
 
 -- Variable to track write completion
 local mspWriteComplete = false
@@ -59,7 +56,7 @@ local function getDefaults()
     -- This function should return a table with default values
     -- Typically we should be performing a 'read' to populate this data
     -- however this api only ever writes data
-    return {seconds = os.time(), milliseconds = 0}
+    return {}
 end
 
 -- Function to initiate MSP write operation

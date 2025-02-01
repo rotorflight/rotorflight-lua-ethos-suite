@@ -23,44 +23,36 @@
  * readValue(fieldName): Returns the value of a specific field from MSP data.
  * readVersion(): Retrieves the API version in major.minor format.
  * setCompleteHandler(handlerFunction):  Set function to run on completion
- * setErrorHandler(handlerFunction): Set function to run on error   
+ * setErrorHandler(handlerFunction): Set function to run on error  
 ]] --
 -- Constants for MSP Commands
-local MSP_API_CMD = 10 -- Command identifier for MSP Mixer Config
-local MSP_API_SIMULATOR_RESPONSE = {80, 105, 108, 111, 116} -- Default simulator response
-local MSP_MIN_BYTES = 0
+local MSP_API_CMD = 92 -- Command identifier for MSP_FILTER_CONFIG
+local MSP_API_SIMULATOR_RESPONSE = {0, 1, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                    0, 0, 0, 0, 0, 2, 25, 25, 0, 245, 0} -- Default simulator response
+local MSP_MIN_BYTES = 25
 
 -- Define the MSP response data structure
-local MSP_API_STRUCTURE = {{field = "name", type = "U8"}}
+-- parameters are:
+--  field (name)
+--  type (U8|U16|S16|etc) (see api.lua)
+--  byteorder (big|little)
+local MSP_API_STRUCTURE = {{field = "gyro_hardware_lpf", type = "U8"},
+                           {field = "gyro_lpf1_type", type = "U8"},
+                           {field = "gyro_lpf1_static_hz", type = "U16"},
+                           {field = "gyro_lpf2_type", type = "U8"},
+                           {field = "gyro_lpf2_static_hz", type = "U16"},
+                           {field = "gyro_soft_notch_hz_1", type = "U16"},
+                           {field = "gyro_soft_notch_cutoff_1", type = "U16"},
+                           {field = "gyro_soft_notch_hz_2", type = "U16"},
+                           {field = "gyro_soft_notch_cutoff_2", type = "U16"},
+                           {field = "gyro_lpf1_dyn_min_hz", type = "U16"},
+                           {field = "gyro_lpf1_dyn_max_hz", type = "U16"}}
+
+-- Variable to store parsed MSP data
+local mspData = nil
 
 -- Create a new instance
-local handlers = rfsuite.bg.msp.api.createHandlers() 
-
-local function parseMSPData(buf)
-    local parsedData = {}
-
-    -- Handle variable-length name
-    local name = ""
-    local offset = 1
-
-    while offset <= #buf do
-        local char = rfsuite.bg.msp.mspHelper.readU8(buf, offset)
-        if char == 0 then -- Null terminator found, break
-            break
-        end
-        name = name .. string.char(char)
-        offset = offset + 1
-    end
-
-    parsedData["name"] = name
-
-    -- Prepare data for return
-    local data = {}
-    data['parsed'] = parsedData
-    data['buffer'] = buf
-
-    return data
-end
+local handlers = rfsuite.bg.msp.api.createHandlers()  
 
 -- Function to initiate MSP read operation
 local function read()
@@ -68,7 +60,7 @@ local function read()
         command = MSP_API_CMD, -- Specify the MSP command
         processReply = function(self, buf)
             -- Parse the MSP data using the defined structure
-            mspData = parseMSPData(buf, MSP_API_STRUCTURE)
+            mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE)
             if #buf >= MSP_MIN_BYTES then
                 local completeHandler = handlers.getCompleteHandler()
                 if completeHandler then

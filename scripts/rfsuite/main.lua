@@ -36,7 +36,7 @@ config.watchdogParam = 10                                           -- watchdog 
 
 
 -- features
-config.logEnable = false                                           -- will write debug log to: /scripts/rfsuite/logs/rfsuite.log [default = false]
+config.logEnable = false                                             -- will write debug log to: /scripts/rfsuite/logs/rfsuite.log [default = false]
 config.logEnableScreen = false                                      -- if config.logEnable is true then also print to screen [default = false]
 config.mspTxRxDebug = false                                         -- simple print of full msp payload that is sent and received [default = false]
 config.flightLog = true                                             -- will write a flight log into /scripts/rfsuite/logs/<modelname>/*.log
@@ -54,6 +54,7 @@ config.developerMode = false                                        -- show deve
 config.soundPack = nil                                              -- use an custom sound pack. [default = nil]
 config.syncCraftName = false                                        -- sync the craft name with the model name [default = false]
 config.helpFieldDebug = true                                        -- print debug to show help fields being looked for [default = false]
+config.apiTester = true                                             -- run the api tester sub task for use when developing new api files [default = false]
 
 -- tasks
 config.bgTaskName = config.toolName .. " [Background]"              -- background task name for msp services etc
