@@ -2,8 +2,24 @@ import os
 import shutil
 import subprocess
 import argparse
+from tqdm import tqdm
+
+pbar = None
+
+def copy_verbose(src, dst):
+    pbar.update(1)
+    shutil.copy(src,dst)
+
+def count_files_in_tree(directory, extension = None):
+    file_count = 0
+    for root, dirs, files in os.walk(directory):
+        if extension:
+            files = [f for f in files if f.endswith(extension)]
+        file_count += len(files)
+    return file_count
 
 def copy_files(src, fileext=None, launch=False, destfolders=None):
+    global pbar
     if fileext:
         print(f"File extension specified: {fileext}")
     else:
@@ -18,8 +34,8 @@ def copy_files(src, fileext=None, launch=False, destfolders=None):
 
     destfolders = destfolders.split(',')
 
-    for dest in destfolders:
-        print(f"Processing destination folder: {dest}")
+    for idx, dest in enumerate(destfolders):
+        print(f"[{idx+1}/{len(destfolders)}] Processing destination folder: {dest}")
 
         logs_temp = os.path.join(dest, 'logs_temp')
         tgt_folder = os.path.join(dest, tgt)
@@ -27,7 +43,8 @@ def copy_files(src, fileext=None, launch=False, destfolders=None):
 
         # Preserve the logs folder by moving it temporarily
         if os.path.exists(logs_folder):
-            os.makedirs(logs_temp, exist_ok=True)
+            print(f"Backing up logs ...")
+            os.makedirs(logs_temp, exist_ok=True)  
             shutil.copytree(logs_folder, logs_temp, dirs_exist_ok=True)
 
         if fileext == ".lua":
@@ -48,21 +65,27 @@ def copy_files(src, fileext=None, launch=False, destfolders=None):
             # No specific file extension, remove and copy all files
             if os.path.exists(tgt_folder):
                 try:
+                    print(f"Deleting existing folder: {tgt_folder}")
                     shutil.rmtree(tgt_folder)
                     os.makedirs(tgt_folder, exist_ok=True)
                     if os.path.exists(logs_temp):
                         os.makedirs(logs_folder, exist_ok=True)
+                        print(f"Restoring logs from backup ...")
                         shutil.copytree(logs_temp, logs_folder, dirs_exist_ok=True)
                         shutil.rmtree(logs_temp)
                 except OSError as e:
                     print(f"Failed to delete entire folder, replacing single files instead")
 
             # Copy all files to the destination folder
+            print(f"Copying all files to target in {dest}...")
             all_src = os.path.join(srcfolder, 'scripts', tgt)
-            shutil.copytree(all_src, tgt_folder, dirs_exist_ok=True)
+            numFiles = count_files_in_tree(all_src)
+            pbar = tqdm(total=numFiles)     
+            shutil.copytree(all_src, tgt_folder, dirs_exist_ok=True, copy_function=copy_verbose)
 
         # Restore logs if not handled already
         if os.path.exists(logs_temp):
+            print(f"Restoring logs from backup ...")
             os.makedirs(logs_folder, exist_ok=True)
             shutil.copytree(logs_temp, logs_folder, dirs_exist_ok=True)
             shutil.rmtree(logs_temp)
