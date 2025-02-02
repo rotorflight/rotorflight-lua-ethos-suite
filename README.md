@@ -84,13 +84,14 @@ The following receivers were correctly working with an X18 or X20, X10, XLite an
 - sim for your remote
 - VS Code
 - Python
+  - install tqdm: `pip install tqdm`
   
 Open the root folder of this project in VS Code.
 You need to set the following system variables:
 ```
 FRSKY_SIM_BIN = e.g. %ProgramFiles(x86)%\FrSky\Ethos\X18S\simulator.exe
 FRSKY_SIM_SRC = e.g. %ProgramFiles(x86)%\FrSky\Ethos\X18S\scripts
-FRSKY_REMOTE_SRC = 
+FRSKY_REMOTE_SRC = e.g. F:\scripts
 ```
 FRSKY_SIM_SRC can also be a comma separated list of paths for deploying to multiple sims simultaneously.
 ### Launch Configurations
