@@ -28,16 +28,6 @@ local LCD_H
 
 local LCD_MINH4IMAGE = 130
 
--- Helper function to check if file exists
-local function file_exists(name)
-    local f = io.open(name, "r")
-    if f then
-        io.close(f)
-        return true
-    end
-    return false
-end
-
 -- error function
 local function screenError(msg)
     local w, h = lcd.getWindowSize()
@@ -56,58 +46,9 @@ local function screenError(msg)
     lcd.drawText(x, y, msg)
 end
 
--- Helper function to load an image from two possible paths
-local function loadImage(image1, image2)
-    -- Helper function to check file in different locations
-    local function find_image_in_directories(img)
-        if file_exists(img) then
-            return img
-        elseif file_exists("BITMAPS:" .. img) then
-            return "BITMAPS:" .. img
-        elseif file_exists("SYSTEM:" .. img) then
-            return "SYSTEM:" .. img
-        else
-            return nil
-        end
-    end
-
-    -- Function to check and return a valid image path
-    local function resolve_image(image)
-        if image then
-            local image_path = find_image_in_directories(image)
-            if not image_path then
-                if image:match("%.png$") then
-                    image_path = find_image_in_directories(image:gsub("%.png$", ".bmp"))
-                elseif image:match("%.bmp$") then
-                    image_path = find_image_in_directories(image:gsub("%.bmp$", ".png"))
-                end
-            end
-            return image_path
-        end
-        return nil
-    end
-
-    -- 1. Check the first image
-    local image_path = resolve_image(image1)
-    
-    -- 2. If not found, check the second image
-    if not image_path then
-        image_path = resolve_image(image2)
-    end
-
-    -- 3. If still not found, fall back to default image
-    if not image_path then
-        image_path = default_image
-    end
-
-    -- Load and return the image bitmap
-    bitmapPtr = lcd.loadBitmap(image_path)
-    return bitmapPtr
-end
-
 -- Create function
 function rf2craftimage.create(widget)
-    bitmapPtr = loadImage(default_image)
+    bitmapPtr = rfsuite.utils.loadImage(default_image)
 end
 
 -- Paint function
@@ -179,7 +120,7 @@ function rf2craftimage.wakeupUI()
             image2 = "/bitmaps/models/" .. rfsuite.config.modelID .. ".png"          
         end
 
-        bitmapPtr = loadImage(image1,image2)  
+        bitmapPtr = rfsuite.utils.loadImage(image1,image2,default_image)  
 
         lcd.invalidate()
     end

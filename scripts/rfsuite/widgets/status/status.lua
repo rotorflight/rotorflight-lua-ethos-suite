@@ -264,18 +264,9 @@ local adjVALUE
 local mahSOURCE
 local telemetrySOURCE
 local crsfSOURCE
-
--- Helper function to load a bitmap from various paths
-local function load_bitmap(image)
-    local paths = { "", "BITMAPS:", "SYSTEM:" }
-    for _, path in ipairs(paths) do
-        local full_path = path .. image
-        if io.open(full_path, "r") then
-            return lcd.loadBitmap(full_path)
-        end
-    end
-    return nil
-end
+local lastName
+local lastID
+local default_image
 
 function status.create(widget)
 
@@ -283,12 +274,10 @@ function status.create(widget)
 
 
     status.lastBitmap = model.bitmap()
-    status.gfx_model = lcd.loadBitmap(model.bitmap()) or load_bitmap("/bitmaps/models/" .. (craftName or "default_helicopter") .. ".png")  or nil
+    default_image = lcd.loadBitmap(model.bitmap()) or rfsuite.utils.loadImage("widgets/status/default_image.png")  or nil
 
-
-
-    if rfsuite.utils.ethosVersion() < 1519 then
-        status.screenError("ETHOS < V1.5.19")
+    if rfsuite.utils.ethosVersion() < rfsuite.config.ethosVersion then
+        status.screenError(rfsuite.config.ethosVersionString)
         return
     end
 
@@ -1303,7 +1292,11 @@ function status.telemetryBoxImage(x, y, w, h, gfx)
     lcd.drawFilledRectangle(x, y, w, h)
 
     -- Draw the bitmap centered within the box, respecting theme spacing
-    lcd.drawBitmap(x, y, gfx, w - theme.colSpacing, h - theme.colSpacing)
+    if gfx ~= nil then
+        lcd.drawBitmap(x, y, gfx, w - theme.colSpacing, h - theme.colSpacing)
+    else
+        lcd.drawBitmap(x, y, default_image, w - theme.colSpacing, h - theme.colSpacing)      
+    end
 end
 
 function status.paint(widget)
@@ -1847,7 +1840,9 @@ function status.paint(widget)
             -- CRAFT NAME
             local sensorTGT = 'craft_name'
             local craftName = "UNKNOWN"
+            local modelID = nil
             if rfsuite.config.craftName ~= nil then craftName = rfsuite.config.craftName end
+            if rfsuite.config.modelID ~= nil then modelID = rfsuite.config.modelID end
 
             status.sensordisplay[sensorTGT] = {}
             status.sensordisplay[sensorTGT]['title'] = ""
@@ -2091,6 +2086,8 @@ function status.paint(widget)
                         -- IMAGE + GOVERNOR        
                         if status.gfx_model ~= nil then
                             status.telemetryBoxImage(posX, posY, boxW, boxH / 2 - (theme.colSpacing / 2), status.gfx_model)
+                        else
+                           status.telemetryBoxImage(posX, posY, boxW, boxH / 2 - (theme.colSpacing / 2), default_image)     
                         end    
                         sensorTGT = "governor"
                         sensorVALUE = status.sensordisplay[sensorTGT]['value']
@@ -3653,11 +3650,21 @@ function status.wakeupUI(widget)
             lcd.invalidate()
         end
 
-        if status.lastBitmap ~= model.bitmap() then
-            status.gfx_model = lcd.loadBitmap(model.bitmap()) or load_bitmap("/bitmaps/models/" .. (craftName or "default_helicopter") .. ".png")  or nil
-            status.lastBitmap = model.bitmap()
+        --  find and set image to suite based on craftname or model id
+        if lastName ~= rfsuite.config.craftName or lastID ~= rfsuite.config.modelID then
+            if rfsuite.config.craftName ~= nil then
+                image1 = "/bitmaps/models/" .. rfsuite.config.craftName .. ".png"          
+            end
+            if rfsuite.config.modelID ~= nil then
+                image2 = "/bitmaps/models/" .. rfsuite.config.modelID .. ".png"          
+            end
+    
+            status.gfx_model = rfsuite.utils.loadImage(image1,image2,default_image)  
+    
             lcd.invalidate()
         end
+        lastName = rfsuite.config.craftName
+        lastID = rfsuite.config.modelID    
 
         if status.linkUP == false then status.linkUPTime = os.clock() end
 
