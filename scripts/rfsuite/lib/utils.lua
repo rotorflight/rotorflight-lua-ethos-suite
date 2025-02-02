@@ -649,4 +649,53 @@ function utils.findWidgets()
     return widgetsList
 end
 
+-- Helper function to load an image from up to three possible paths
+function utils.loadImage(image1, image2, image3)
+    -- Helper function to check file in different locations
+    local function find_image_in_directories(img)
+        if rfsuite.utils.file_exists(img) then
+            return img
+        elseif rfsuite.utils.file_exists("BITMAPS:" .. img) then
+            return "BITMAPS:" .. img
+        elseif rfsuite.utils.file_exists("SYSTEM:" .. img) then
+            return "SYSTEM:" .. img
+        else
+            return nil
+        end
+    end
+
+    -- Function to check and return a valid image path
+    local function resolve_image(image)  
+        if type(image) == "string" then
+            local image_path = find_image_in_directories(image)
+            if not image_path then
+                if image:match("%.png$") then
+                    image_path = find_image_in_directories(image:gsub("%.png$", ".bmp"))
+                elseif image:match("%.bmp$") then
+                    image_path = find_image_in_directories(image:gsub("%.bmp$", ".png"))
+                end
+            end
+            return image_path
+        end
+        return nil
+    end
+
+    -- Resolve images in order of precedence
+    local image_path = resolve_image(image1) or resolve_image(image2) or resolve_image(image3)
+
+    -- If an image path is found, load and return the bitmap
+    if image_path then
+        return lcd.loadBitmap(image_path)
+    end
+
+    -- If no valid image path was found, return the first existing Bitmap in order
+    if type(image1) == "Bitmap" then return image1 end
+    if type(image2) == "Bitmap" then return image2 end
+    if type(image3) == "Bitmap" then return image3 end
+
+    -- If nothing was found, return nil
+    return nil
+end
+
+
 return utils
