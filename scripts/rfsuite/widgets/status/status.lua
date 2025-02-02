@@ -1292,7 +1292,11 @@ function status.telemetryBoxImage(x, y, w, h, gfx)
     lcd.drawFilledRectangle(x, y, w, h)
 
     -- Draw the bitmap centered within the box, respecting theme spacing
-    lcd.drawBitmap(x, y, gfx, w - theme.colSpacing, h - theme.colSpacing)
+    if gfx ~= nil then
+        lcd.drawBitmap(x, y, gfx, w - theme.colSpacing, h - theme.colSpacing)
+    else
+        lcd.drawBitmap(x, y, default_image, w - theme.colSpacing, h - theme.colSpacing)      
+    end
 end
 
 function status.paint(widget)
