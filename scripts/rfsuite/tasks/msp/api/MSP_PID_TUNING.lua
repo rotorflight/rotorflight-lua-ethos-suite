@@ -37,7 +37,8 @@ local MSP_API_CMD = 112 -- Command identifier for MSP PILOT CONFIG
 local MSP_API_SIMULATOR_RESPONSE = {70, 0, 225, 0, 90, 0, 120, 0, 100, 0, 200, 0, 70, 0, 120, 0, 100, 0, 125, 0, 83, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 0, 25, 0} -- Default simulator response
 local MSP_MIN_BYTES = 34
 
-
+-- function to help generate the pid structure
+-- if you update this - also update the same function in the set api
 local function generate_pid_structure(pid_axis_count, cyclic_axis_count)
     local structure = {}
 

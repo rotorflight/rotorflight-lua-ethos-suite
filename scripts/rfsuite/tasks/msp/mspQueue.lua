@@ -112,7 +112,7 @@ function MspQueueController:processQueue()
                 print(logData)
             end
         end
-
+        
         if self.currentMessage.processReply then
             self.currentMessage:processReply(buf)
         end

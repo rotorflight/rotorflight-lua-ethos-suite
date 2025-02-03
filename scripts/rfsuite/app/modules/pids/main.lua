@@ -160,7 +160,7 @@ end
 
 return {
     read = "MSP_PID_TUNING",  
-    write = 202, -- MSP_SET_PID_TUNING
+    write = "MSP_SET_PID_TUNING", 
     title = "PIDs",
     reboot = false,
     eepromWrite = true,

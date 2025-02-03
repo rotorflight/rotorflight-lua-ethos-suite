@@ -253,104 +253,6 @@ function app.dataBindFields()
         end
     end
 end    
---[[
-function app.dataBindFields(methodType)
-    if not app.Page.fields then
-        rfsuite.utils.log("Unable to bind fields as app.Page.fields does not exist")
-        return
-    end
-
-    local mspHelper = rfsuite.bg.msp.mspHelper
-    local buffer = app.Page.values and app.Page.values.buffer
-    local parsed = app.Page.values and app.Page.values.parsed
-    
-    if methodType == "api" or methodType == "string" or buffer then
-        -- API-based method: Use parsed data or byte stream from buffer
-        for i = 1, #app.Page.fields do
-            local f = app.Page.fields[i]
-            if f.vals or f.apikey then
-                if type(f.apikey) == "string" then
-                    -- Lookup in parsed data if `vals` is a string key
-                    f.value = parsed and parsed[f.apikey] or 0
-                    
-                elseif type(f.vals) == "table" then
-                    -- Lookup in buffer using appropriate read function
-                    local byteCount = #f.vals
-                    local byteorder = f.byteorder or "little" -- Default to little-endian
-                    local buf = { offset = 1 }
-                    for _, idx in ipairs(f.vals) do
-                        buf[#buf + 1] = buffer and buffer[idx] or 0
-                    end
-                    
-                    if byteCount == 1 then
-                        f.value = f.signed and mspHelper.readS8(buf) or mspHelper.readU8(buf)
-                    elseif byteCount == 2 then
-                        f.value = f.signed and mspHelper.readS16(buf, byteorder) or mspHelper.readU16(buf, byteorder)
-                    elseif byteCount == 3 then
-                        f.value = f.signed and mspHelper.readS24(buf, byteorder) or mspHelper.readU24(buf, byteorder)
-                    elseif byteCount == 4 then
-                        f.value = f.signed and mspHelper.readS32(buf, byteorder) or mspHelper.readU32(buf, byteorder)
-                    else
-                        f.value = 0
-                    end
-
-                    -- Handle signed values if needed
-                    if f.min and f.min < 0 and f.signed then
-                        local bits = byteCount * 8
-                        if (f.value & (1 << (bits - 1))) ~= 0 then
-                            f.value = f.value - (2 ^ bits)
-                        end
-                    end
-                else    
-                    rfsuite.utils.log("Field [" .. i .. "] does not have a key or val declared")
-                    f.value = 0
-                end
-
-                -- Apply scaling if necessary
-                f.value = f.value / (f.scale or 1)
-            end
-        end
-    else
-        -- Legacy numeric method (assumes vals is a table of byte stream locations)
-        for i = 1, #app.Page.fields do
-            if app.Page.values and #app.Page.values >= app.Page.minBytes then
-                local f = app.Page.fields[i]
-                if f.vals then
-                    local byteCount = #f.vals
-                    local byteorder = f.byteorder or "little"
-                    local buf = { offset = 1 }
-                    for _, idx in ipairs(f.vals) do
-                        buf[#buf + 1] = app.Page.values[idx] or 0
-                    end
-                    
-                    if byteCount == 1 then
-                        f.value = f.signed and mspHelper.readS8(buf) or mspHelper.readU8(buf)
-                    elseif byteCount == 2 then
-                        f.value = f.signed and mspHelper.readS16(buf, byteorder) or mspHelper.readU16(buf, byteorder)
-                    elseif byteCount == 3 then
-                        f.value = f.signed and mspHelper.readS24(buf, byteorder) or mspHelper.readU24(buf, byteorder)
-                    elseif byteCount == 4 then
-                        f.value = f.signed and mspHelper.readS32(buf, byteorder) or mspHelper.readU32(buf, byteorder)
-                    else
-                        f.value = 0
-                    end
-                    
-                    -- Handle signed values if needed
-                    if f.min and f.min < 0 and f.signed then
-                        local bits = byteCount * 8
-                        if (f.value & (1 << (bits - 1))) ~= 0 then
-                            f.value = f.value - (2 ^ bits)
-                        end
-                    end
-                    
-                    -- Apply scaling if necessary
-                    f.value = f.value / (f.scale or 1)
-                end
-            end
-        end
-    end
-end
-]]--
 
 -- RETURN CURRENT LCD SIZE
 function app.getWindowSize()
@@ -418,13 +320,6 @@ function app.settingsSaved()
     end
 end
 
--- WRAPPER FUNCTION USED TO TRIGGER SAVE SETTINGS
-local mspSaveSettings = {
-    processReply = function(self, buf)
-        app.settingsSaved()
-    end
-}
-
 -- Function to process the reply buffer for app.Page, now aware of the method used
 local function processPageReply(source, buf, methodType)
     if not app.Page then
@@ -432,7 +327,9 @@ local function processPageReply(source, buf, methodType)
         return
     end
 
+    -- we should not need this with the api - it is kept for legacy compatability
     app.Page.minBytes = app.Page.minBytes or 0
+
     rfsuite.utils.log("app.Page is processing reply for cmd " .. tostring(source.command) ..
         " len buf: " .. #buf .. " expected: " .. app.Page.minBytes .. " (Method: " .. methodType .. ")")
 
@@ -454,10 +351,21 @@ local function processPageReply(source, buf, methodType)
         end
     end
 
+    -- run the postRead function to allow you to manipulate the data before regular processing.
+    -- this is a legacy call that is only really used to directly manipulate the byte string.
+    -- if using the api; there are better ways to do this.
     if app.Page.postRead then app.Page.postRead(app.Page) end
+
+    -- bind the fields to values.  This determins what is send and received by the api
     app.dataBindFields(methodType)
+
+    -- run this function after the data has been load and bound
     if app.Page.postLoad then app.Page.postLoad(app.Page) end
+
+    -- clear the ethos forms variable to ensure page reload is clean
     if form then form.invalidate() end
+
+    -- log this happened
     rfsuite.utils.log("app.triggers.isReady (Method: " .. methodType .. ")")
 end
 
@@ -500,27 +408,56 @@ function app.readPage()
 end
 
 
+-- WRAPPER FUNCTION USED TO TRIGGER SAVE SETTINGS
+local mspSaveSettings = {
+    processReply = function(self, buf)
+        app.settingsSaved()
+    end
+}
+
 -- SAVE ALL SETTINGS 
 local function saveSettings()
+    local methodType = type(app.Page.write)
 
     if app.pageState ~= app.pageStatus.saving then
         app.pageState = app.pageStatus.saving
         app.saveTS = os.clock()
 
-        if app.Page.values then
+        if methodType == "string" or methodType == "api" then                           -- api system
+
+            local API = rfsuite.bg.msp.api.load("MSP_SET_PID_TUNING")
+
+            API.setCompleteHandler(function(self, buf)
+                app.settingsSaved()
+            end)
+
+            API.setErrorHandler(function(self, buf)
+                app.triggers.saveFailed = true
+            end)
+
+            local payload = app.Page.values
+            if app.Page.preSave then payload = app.Page.preSave(app.Page) end
+            if app.Page.preSavePayload then payload = app.Page.preSavePayload(payload) end
+
+            if rfsuite.config.mspTxRxDebug == true or rfsuite.config.logEnable == true then
+                local logData = "Saving:                {" .. rfsuite.utils.joinTableItems(payload, ", ") .. "}"
+                rfsuite.utils.log(logData)
+                if rfsuite.config.mspTxRxDebug == true then print(logData) end
+            end            
+
+            -- Execute the write operation
+            API.write(payload)      
+ 
+        elseif methodType == "number" and app.Page.values then                          -- legacy by sending id
             local payload = app.Page.values
 
             if app.Page.preSave then payload = app.Page.preSave(app.Page) end
             if app.Page.preSavePayload then payload = app.Page.preSavePayload(payload) end
 
             if rfsuite.config.mspTxRxDebug == true or rfsuite.config.logEnable == true then
-
                 local logData = "Saving:                {" .. rfsuite.utils.joinTableItems(payload, ", ") .. "}"
-
                 rfsuite.utils.log(logData)
-
                 if rfsuite.config.mspTxRxDebug == true then print(logData) end
-
             end
 
             mspSaveSettings.command = app.Page.write
@@ -531,7 +468,7 @@ local function saveSettings()
                 print("Save failed")
                 app.triggers.saveFailed = true
             end
-        elseif type(app.Page.write) == "function" then
+        elseif type(app.Page.write) == "function" then                                  -- run a custom function
             app.Page.write(app.Page)
         end
 
