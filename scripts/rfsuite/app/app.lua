@@ -208,6 +208,52 @@ function app.saveValue(currentField)
 end
 
 -- Function to bind page fields to values using MSP helper functions
+function app.dataBindFields()
+    if not app.Page.fields then
+        rfsuite.utils.log("Unable to bind fields as app.Page.fields does not exist")
+        return
+    end
+
+    local mspHelper = rfsuite.bg.msp.mspHelper
+
+    for i = 1, #app.Page.fields do
+        if app.Page.values and #app.Page.values >= app.Page.minBytes then
+            local f = app.Page.fields[i]
+            if f.vals then
+                local byteCount = #f.vals
+                local byteorder = f.byteorder or "little"
+                local buf = { offset = 1 }
+                for _, idx in ipairs(f.vals) do
+                    buf[#buf + 1] = app.Page.values[idx] or 0
+                end
+                
+                if byteCount == 1 then
+                    f.value = f.signed and mspHelper.readS8(buf) or mspHelper.readU8(buf)
+                elseif byteCount == 2 then
+                    f.value = f.signed and mspHelper.readS16(buf, byteorder) or mspHelper.readU16(buf, byteorder)
+                elseif byteCount == 3 then
+                    f.value = f.signed and mspHelper.readS24(buf, byteorder) or mspHelper.readU24(buf, byteorder)
+                elseif byteCount == 4 then
+                    f.value = f.signed and mspHelper.readS32(buf, byteorder) or mspHelper.readU32(buf, byteorder)
+                else
+                    f.value = 0
+                end
+                
+                -- Handle signed values if needed
+                if f.min and f.min < 0 and f.signed then
+                    local bits = byteCount * 8
+                    if (f.value & (1 << (bits - 1))) ~= 0 then
+                        f.value = f.value - (2 ^ bits)
+                    end
+                end
+                
+                -- Apply scaling if necessary
+                f.value = f.value / (f.scale or 1)
+            end
+        end
+    end
+end    
+--[[
 function app.dataBindFields(methodType)
     if not app.Page.fields then
         rfsuite.utils.log("Unable to bind fields as app.Page.fields does not exist")
@@ -222,10 +268,10 @@ function app.dataBindFields(methodType)
         -- API-based method: Use parsed data or byte stream from buffer
         for i = 1, #app.Page.fields do
             local f = app.Page.fields[i]
-            if f.vals then
-                if type(f.vals) == "string" then
+            if f.vals or f.apikey then
+                if type(f.apikey) == "string" then
                     -- Lookup in parsed data if `vals` is a string key
-                    f.value = parsed and parsed[f.vals] or 0
+                    f.value = parsed and parsed[f.apikey] or 0
                     
                 elseif type(f.vals) == "table" then
                     -- Lookup in buffer using appropriate read function
@@ -255,7 +301,9 @@ function app.dataBindFields(methodType)
                             f.value = f.value - (2 ^ bits)
                         end
                     end
-
+                else    
+                    rfsuite.utils.log("Field [" .. i .. "] does not have a key or val declared")
+                    f.value = 0
                 end
 
                 -- Apply scaling if necessary
@@ -302,6 +350,7 @@ function app.dataBindFields(methodType)
         end
     end
 end
+]]--
 
 -- RETURN CURRENT LCD SIZE
 function app.getWindowSize()
@@ -383,15 +432,28 @@ local function processPageReply(source, buf, methodType)
         return
     end
 
-    if buf['parsed'] then
-    rfsuite.utils.print_r(buf['parsed'])
-    end
-
     app.Page.minBytes = app.Page.minBytes or 0
     rfsuite.utils.log("app.Page is processing reply for cmd " .. tostring(source.command) ..
         " len buf: " .. #buf .. " expected: " .. app.Page.minBytes .. " (Method: " .. methodType .. ")")
 
-    app.Page.values = buf
+    -- ensure page.values contains a copy of the buffer
+    if methodType == "string" or methodType == "api" then
+        app.Page.values = buf['buffer']
+    else    
+        app.Page.values = buf
+    end    
+
+    -- inject vals fields based on the positionmap returned by the api call
+    if app.Page.fields then
+        for i,v in ipairs(app.Page.fields) do
+               if v.apikey then
+                    if buf['positionmap'] and buf['positionmap'][v.apikey] then
+                        app.Page.fields[i].vals = buf['positionmap'][v.apikey]
+                    end    
+               end 
+        end
+    end
+
     if app.Page.postRead then app.Page.postRead(app.Page) end
     app.dataBindFields(methodType)
     if app.Page.postLoad then app.Page.postLoad(app.Page) end

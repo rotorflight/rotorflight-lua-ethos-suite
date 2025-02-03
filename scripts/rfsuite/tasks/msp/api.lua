@@ -68,6 +68,19 @@ function apiLoader.parseMSPData(buf, structure, processed, other)
     local parsedData = {}
     local offset = 1 -- Maintain a strict offset tracking
 
+    -- map of values to byte positions
+    local function build_position_map(param_table)
+        local position_map = {}
+    
+        for index, param in ipairs(param_table) do
+            local start_pos = (index - 1) * 2 + 1
+            local end_pos = start_pos + 1
+            position_map[param.field] = {start_pos, end_pos}
+        end
+    
+        return position_map
+    end
+
     for _, field in ipairs(structure) do
 
         local byteorder = field.byteorder or "little" -- Default to little-endian
@@ -124,6 +137,8 @@ function apiLoader.parseMSPData(buf, structure, processed, other)
     local data = {}
     data['parsed'] = parsedData
     data['buffer'] = buf
+    data['structure'] = structure
+    data['positionmap'] = build_position_map(structure)
     -- add in processed table if supplied
     if processed then
         data['processed'] = processed
