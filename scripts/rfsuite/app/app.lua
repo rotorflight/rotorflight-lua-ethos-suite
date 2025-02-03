@@ -207,28 +207,99 @@ function app.saveValue(currentField)
     if f.upd and app.Page.values then f.upd(app.Page) end
 end
 
--- ITERATE OVER THE FIELD DATA AND UPDATE ALL VALUES FOR DISPLAY PURPOSES
-function app.dataBindFields()
-    if app.Page.fields then
-        for i = 1, #app.Page.fields do
+-- Function to bind page fields to values using MSP helper functions
+function app.dataBindFields(methodType)
+    if not app.Page.fields then
+        rfsuite.utils.log("Unable to bind fields as app.Page.fields does not exist")
+        return
+    end
 
+    local mspHelper = rfsuite.bg.msp.mspHelper
+    local buffer = app.Page.values and app.Page.values.buffer
+    local parsed = app.Page.values and app.Page.values.parsed
+    
+    if methodType == "api" or methodType == "string" or buffer then
+        -- API-based method: Use parsed data or byte stream from buffer
+        for i = 1, #app.Page.fields do
+            local f = app.Page.fields[i]
+            if f.vals then
+                if type(f.vals) == "string" then
+                    -- Lookup in parsed data if `vals` is a string key
+                    f.value = parsed and parsed[f.vals] or 0
+                    
+                elseif type(f.vals) == "table" then
+                    -- Lookup in buffer using appropriate read function
+                    local byteCount = #f.vals
+                    local byteorder = f.byteorder or "little" -- Default to little-endian
+                    local buf = { offset = 1 }
+                    for _, idx in ipairs(f.vals) do
+                        buf[#buf + 1] = buffer and buffer[idx] or 0
+                    end
+                    
+                    if byteCount == 1 then
+                        f.value = f.signed and mspHelper.readS8(buf) or mspHelper.readU8(buf)
+                    elseif byteCount == 2 then
+                        f.value = f.signed and mspHelper.readS16(buf, byteorder) or mspHelper.readU16(buf, byteorder)
+                    elseif byteCount == 3 then
+                        f.value = f.signed and mspHelper.readS24(buf, byteorder) or mspHelper.readU24(buf, byteorder)
+                    elseif byteCount == 4 then
+                        f.value = f.signed and mspHelper.readS32(buf, byteorder) or mspHelper.readU32(buf, byteorder)
+                    else
+                        f.value = 0
+                    end
+
+                    -- Handle signed values if needed
+                    if f.min and f.min < 0 and f.signed then
+                        local bits = byteCount * 8
+                        if (f.value & (1 << (bits - 1))) ~= 0 then
+                            f.value = f.value - (2 ^ bits)
+                        end
+                    end
+
+                end
+
+                -- Apply scaling if necessary
+                f.value = f.value / (f.scale or 1)
+            end
+        end
+    else
+        -- Legacy numeric method (assumes vals is a table of byte stream locations)
+        for i = 1, #app.Page.fields do
             if app.Page.values and #app.Page.values >= app.Page.minBytes then
                 local f = app.Page.fields[i]
                 if f.vals then
-                    f.value = 0
-                    for idx = 1, #f.vals do
-                        local raw_val = app.Page.values[f.vals[idx]] or 0
-                        raw_val = raw_val << ((idx - 1) * 8)
-                        f.value = f.value | raw_val
+                    local byteCount = #f.vals
+                    local byteorder = f.byteorder or "little"
+                    local buf = { offset = 1 }
+                    for _, idx in ipairs(f.vals) do
+                        buf[#buf + 1] = app.Page.values[idx] or 0
                     end
-                    local bits = #f.vals * 8
-                    if f.min and f.min < 0 and (f.value & (1 << (bits - 1)) ~= 0) then f.value = f.value - (2 ^ bits) end
+                    
+                    if byteCount == 1 then
+                        f.value = f.signed and mspHelper.readS8(buf) or mspHelper.readU8(buf)
+                    elseif byteCount == 2 then
+                        f.value = f.signed and mspHelper.readS16(buf, byteorder) or mspHelper.readU16(buf, byteorder)
+                    elseif byteCount == 3 then
+                        f.value = f.signed and mspHelper.readS24(buf, byteorder) or mspHelper.readU24(buf, byteorder)
+                    elseif byteCount == 4 then
+                        f.value = f.signed and mspHelper.readS32(buf, byteorder) or mspHelper.readU32(buf, byteorder)
+                    else
+                        f.value = 0
+                    end
+                    
+                    -- Handle signed values if needed
+                    if f.min and f.min < 0 and f.signed then
+                        local bits = byteCount * 8
+                        if (f.value & (1 << (bits - 1))) ~= 0 then
+                            f.value = f.value - (2 ^ bits)
+                        end
+                    end
+                    
+                    -- Apply scaling if necessary
                     f.value = f.value / (f.scale or 1)
                 end
             end
         end
-    else
-        rfsuite.utils.log("Unable to bind fields as app.Page.fields does not exist")
     end
 end
 
@@ -305,36 +376,67 @@ local mspSaveSettings = {
     end
 }
 
--- WRAPPER FUNCTION USED TO TRIGGER LOAD SETTINGS
+-- Function to process the reply buffer for app.Page, now aware of the method used
+local function processPageReply(source, buf, methodType)
+    if not app.Page then
+        rfsuite.utils.log("app.triggers.isReady app.Page is nil?")
+        return
+    end
+
+    if buf['parsed'] then
+    rfsuite.utils.print_r(buf['parsed'])
+    end
+
+    app.Page.minBytes = app.Page.minBytes or 0
+    rfsuite.utils.log("app.Page is processing reply for cmd " .. tostring(source.command) ..
+        " len buf: " .. #buf .. " expected: " .. app.Page.minBytes .. " (Method: " .. methodType .. ")")
+
+    app.Page.values = buf
+    if app.Page.postRead then app.Page.postRead(app.Page) end
+    app.dataBindFields(methodType)
+    if app.Page.postLoad then app.Page.postLoad(app.Page) end
+    if form then form.invalidate() end
+    rfsuite.utils.log("app.triggers.isReady (Method: " .. methodType .. ")")
+end
+
+-- Wrapper to an MSP call for situations where we receive a numeric ID
 local mspLoadSettings = {
     processReply = function(self, buf)
-
-        if app.Page.minBytes == nil then app.Page.minBytes = 0 end
-        rfsuite.utils.log("app.Page is processing reply for cmd " .. tostring(self.command) .. " len buf: " .. #buf .. " expected: " .. app.Page.minBytes)
-        if app.Page ~= nil then
-            app.Page.values = buf
-            if app.Page.postRead then app.Page.postRead(app.Page) end
-            app.dataBindFields()
-            if app.Page.postLoad then app.Page.postLoad(app.Page) end
-            if form then form.invalidate() end
-            rfsuite.utils.log("app.triggers.isReady")
-        else
-            rfsuite.utils.log("app.triggers.isReady app.Page is nil?")
-        end
-
+        processPageReply(self, buf, "number")
     end
 }
 
--- READ AN MSP PAGE
+-- Read a page via msp
+-- This code supports a few different ways of knowing how to do the call - in the end its determined by the return response of app.Page.read
+-- If app.Page.read returns:
+--   number:   we do a low level msp call by adding the message to the queue using the processReply format. See mspQueue.lua
+--   string:   we use the msp api to return the data.  This is a wrapper to mspQueue.lua and can be found in api.lua
+--   function: we dont actually do anything bar run the function - offloading the read to the modules built-in code.
 function app.readPage()
-    if type(app.Page.read) == "function" then
-        app.Page.read(app.Page)
-    else
+    local methodType = type(app.Page.read)
+
+    if methodType == "string" then                              -- api
+        local API = rfsuite.bg.msp.api.load(app.Page.read)
+
+        API.setCompleteHandler(function(self, buf)
+            processPageReply(self, API.data(), "api")
+        end)
+
+        API.read()
+
+    elseif methodType == "function" then                         -- function
+        app.Page.read(app.Page)  
+
+    elseif methodType == "number" then                           -- msp id
         mspLoadSettings.command = app.Page.read
         mspLoadSettings.simulatorResponse = app.Page.simulatorResponse
         rfsuite.bg.msp.mspQueue:add(mspLoadSettings)
+
+    else
+        rfsuite.utils.log("API 'read' method is invalid")
     end
 end
+
 
 -- SAVE ALL SETTINGS 
 local function saveSettings()
