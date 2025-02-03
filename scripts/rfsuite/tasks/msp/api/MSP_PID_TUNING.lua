@@ -74,9 +74,9 @@ local handlers = rfsuite.bg.msp.api.createHandlers()
 
 local function extract_pid_data(buf)
     local data = {
-        Roll = { P = 0, I = 0, D = 0, F = 0 },
-        Pitch = { P = 0, I = 0, D = 0, F = 0 },
-        Yaw = { P = 0, I = 0, D = 0, F = 0 }
+        Roll = { P = 0, I = 0, D = 0, F = 0, O = 0, B = 0 },
+        Pitch = { P = 0, I = 0, D = 0, F = 0, O = 0, B = 0 },
+        Yaw = { P = 0, I = 0, D = 0, F = 0,  B = 0 }        -- yaw does not have an o gain
     }
 
     -- Mapping rows to axis names
@@ -98,7 +98,15 @@ local function extract_pid_data(buf)
 
         { key = "F", vals = {7, 8}, row = 1 },
         { key = "F", vals = {15, 16}, row = 2 },
-        { key = "F", vals = {23, 24}, row = 3 }
+        { key = "F", vals = {23, 24}, row = 3 },
+
+        { key = "O", vals = {31, 32}, row = 1 },
+        { key = "O", vals = {33, 34}, row = 2 },
+
+        { key = "B", vals = {25, 26}, row = 1 },
+        { key = "B", vals = {27, 28}, row = 2 },
+        { key = "B", vals = {29, 30}, row = 3 },            
+
     }
 
     -- Iterate through fields and extract values

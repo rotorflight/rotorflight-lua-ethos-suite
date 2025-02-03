@@ -207,7 +207,27 @@ function app.saveValue(currentField)
     if f.upd and app.Page.values then f.upd(app.Page) end
 end
 
--- Function to bind page fields to values using MSP helper functions
+--[[
+    Function: app.dataBindFields
+    
+    This function binds page fields to values by interpreting data from multiple sources, 
+    including parsed tables, processed data structures, and byte buffers.
+    
+    Features:
+    - Direct key lookup from the 'parsed' table.
+    - Alternative lookup using a string-based path structure with ':' as a delimiter.
+      - Example: "processed:Pitch:P" retrieves from app.Page.values.processed["Pitch"]["P"].
+      - Example: "other:Yaw:D" retrieves from app.Page.values.other["Yaw"]["D"].
+      - If no ':' is found, it defaults to looking in 'parsed'.
+    - Byte buffer reading using MSP helper functions, supporting multiple data types:
+      - U8, S8, U16, S16, U24, S24, U32, S32 with proper endian handling.
+    - Handles signed values using two’s complement conversion where necessary.
+    - Applies scaling if specified for each field.
+    
+    Method Types:
+    - "api", "string" - Uses the parsed data or byte buffer if available.
+    - Legacy support for numeric data based on direct byte index references.
+]]--
 function app.dataBindFields(methodType)
     if not app.Page.fields then
         rfsuite.utils.log("Unable to bind fields as app.Page.fields does not exist")
@@ -217,6 +237,8 @@ function app.dataBindFields(methodType)
     local mspHelper = rfsuite.bg.msp.mspHelper
     local buffer = app.Page.values and app.Page.values.buffer
     local parsed = app.Page.values and app.Page.values.parsed
+    local processed = app.Page.values and app.Page.values.processed
+    local other = app.Page.values and app.Page.values.other
     
     if methodType == "api" or methodType == "string" or buffer then
         -- API-based method: Use parsed data or byte stream from buffer
@@ -224,9 +246,27 @@ function app.dataBindFields(methodType)
             local f = app.Page.fields[i]
             if f.vals then
                 if type(f.vals) == "string" then
-                    -- Lookup in parsed data if `vals` is a string key
-                    f.value = parsed and parsed[f.vals] or 0
-                    
+                    if string.find(f.vals, ":") then
+                        -- Split the string by ':' to determine lookup path
+                        local parts = {}
+                        for part in string.gmatch(f.vals, "[^:]+") do
+                            table.insert(parts, part)
+                        end
+                        
+                        if #parts == 3 then
+                            local sourceTable = parts[1] == "processed" and processed or parts[1] == "other" and other or nil
+                            if sourceTable and sourceTable[parts[2]] then
+                                f.value = sourceTable[parts[2]][parts[3]] or 0
+                            else
+                                f.value = 0
+                            end
+                        else
+                            f.value = 0
+                        end
+                    else
+                        -- Default to parsed table lookup
+                        f.value = parsed and parsed[f.vals] or 0
+                    end
                 elseif type(f.vals) == "table" then
                     -- Lookup in buffer using appropriate read function
                     local byteCount = #f.vals
@@ -255,7 +295,6 @@ function app.dataBindFields(methodType)
                             f.value = f.value - (2 ^ bits)
                         end
                     end
-
                 end
 
                 -- Apply scaling if necessary
@@ -384,7 +423,7 @@ local function processPageReply(source, buf, methodType)
     end
 
     if buf['parsed'] then
-    rfsuite.utils.print_r(buf['parsed'])
+    rfsuite.utils.print_r(buf['processed'])
     end
 
     app.Page.minBytes = app.Page.minBytes or 0
