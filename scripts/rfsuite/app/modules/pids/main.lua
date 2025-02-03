@@ -9,33 +9,33 @@ rows = {"Roll", "Pitch", "Yaw"}
 cols = {"P", "I", "D", "F", "O", "B"}
 
 -- P
-fields[1] = {help = "profilesProportional", row = 1, col = 1, min = 0, max = 1000, default = 50, vals = "processed:Roll:P"}
-fields[2] = {help = "profilesProportional", row = 2, col = 1, min = 0, max = 1000, default = 50, vals = "processed:Pitch:P"}
-fields[3] = {help = "profilesProportional", row = 3, col = 1, t = "PY", min = 0, max = 1000, default = 80, vals = "processed:Yaw:P"}
+fields[1] = {help = "profilesProportional", row = 1, col = 1, min = 0, max = 1000, default = 50, vals = "pid_0_P"}
+fields[2] = {help = "profilesProportional", row = 2, col = 1, min = 0, max = 1000, default = 50, vals = "pid_1_P"}
+fields[3] = {help = "profilesProportional", row = 3, col = 1, t = "PY", min = 0, max = 1000, default = 80, vals = "pid_2_P"}
 
 -- I
-fields[4] = {help = "profilesIntegral", row = 1, col = 2, min = 0, max = 1000, default = 100, vals = "processed:Roll:I"}
-fields[5] = {help = "profilesIntegral", row = 2, col = 2, min = 0, max = 1000, default = 100, vals = "processed:Pitch:I"}
-fields[6] = {help = "profilesIntegral", row = 3, col = 2, min = 0, max = 1000, default = 120, vals = "processed:Yaw:I"}
+fields[4] = {help = "profilesIntegral", row = 1, col = 2, min = 0, max = 1000, default = 100, vals = "pid_0_I"}
+fields[5] = {help = "profilesIntegral", row = 2, col = 2, min = 0, max = 1000, default = 100, vals = "pid_1_I"}
+fields[6] = {help = "profilesIntegral", row = 3, col = 2, min = 0, max = 1000, default = 120, vals = "pid_2_I"}
 
 -- D
-fields[7] = {help = "profilesDerivative", row = 1, col = 3, min = 0, max = 1000, default = 20, vals = "processed:Roll:D"}
-fields[8] = {help = "profilesDerivative", row = 2, col = 3, min = 0, max = 1000, default = 50, vals = "processed:Pitch:D"}
-fields[9] = {help = "profilesDerivative", row = 3, col = 3, min = 0, max = 1000, default = 40, vals = "processed:Yaw:I"}
+fields[7] = {help = "profilesDerivative", row = 1, col = 3, min = 0, max = 1000, default = 20, vals = "pid_0_D"}
+fields[8] = {help = "profilesDerivative", row = 2, col = 3, min = 0, max = 1000, default = 50, vals = "pid_1_D"}
+fields[9] = {help = "profilesDerivative", row = 3, col = 3, min = 0, max = 1000, default = 40, vals = "pid_2_D"}
 
 -- F
-fields[10] = {help = "profilesFeedforward", row = 1, col = 4, min = 0, max = 1000, default = 100, vals = "processed:Roll:F"}
-fields[11] = {help = "profilesFeedforward", row = 2, col = 4, min = 0, max = 1000, default = 100, vals = "processed:Pitch:F"}
-fields[12] = {help = "profilesFeedforward", row = 3, col = 4, min = 0, max = 1000, default = 0, vals = "processed:Yaw:F"}
+fields[10] = {help = "profilesFeedforward", row = 1, col = 4, min = 0, max = 1000, default = 100, vals = "pid_0_F"}
+fields[11] = {help = "profilesFeedforward", row = 2, col = 4, min = 0, max = 1000, default = 100, vals = "pid_1_F"}
+fields[12] = {help = "profilesFeedforward", row = 3, col = 4, min = 0, max = 1000, default = 0, vals = "pid_2_F"}
 
 -- O
-fields[13] = {help = "profilesHSI", row = 1, col = 5, min = 0, max = 1000, default = 45, vals = "processed:Roll:O"}
-fields[14] = {help = "profilesHSI", row = 2, col = 5, min = 0, max = 1000, default = 45, vals = "processed:Pitch:O"}
+fields[13] = {help = "profilesHSI", row = 1, col = 5, min = 0, max = 1000, default = 45, vals = "pid_0_O"}
+fields[14] = {help = "profilesHSI", row = 2, col = 5, min = 0, max = 1000, default = 45, vals = "pid_1_O"}
 
 -- B
-fields[15] = {help = "profilesBoost", row = 1, col = 6, min = 0, max = 1000, default = 0, vals = "processed:Roll:B"}
-fields[16] = {help = "profilesBoost", row = 2, col = 6, min = 0, max = 1000, default = 0, vals = "processed:Pitch:B"}
-fields[17] = {help = "profilesBoost", row = 3, col = 6, min = 0, max = 1000, default = 0, vals = "processed:Yaw:B"}
+fields[15] = {help = "profilesBoost", row = 1, col = 6, min = 0, max = 1000, default = 0, vals = "pid_0_B"}
+fields[16] = {help = "profilesBoost", row = 2, col = 6, min = 0, max = 1000, default = 0, vals = "pid_1_B"}
+fields[17] = {help = "profilesBoost", row = 3, col = 6, min = 0, max = 1000, default = 0, vals = "pid_2_B"}
 
 local function postLoad(self)
     rfsuite.app.triggers.isReady = true
