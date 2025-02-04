@@ -407,71 +407,61 @@ function app.readPage()
     end
 end
 
-
--- WRAPPER FUNCTION USED TO TRIGGER SAVE SETTINGS
+-- Wrapper function used to trigger save settings
 local mspSaveSettings = {
     processReply = function(self, buf)
         app.settingsSaved()
     end
 }
 
--- SAVE ALL SETTINGS 
+-- Save all settings
 local function saveSettings()
+    if app.pageState == app.pageStatus.saving then return end
+
+    app.pageState = app.pageStatus.saving
+    app.saveTS = os.clock()
+
     local methodType = type(app.Page.write)
+    local payload = app.Page.values
 
-    if app.pageState ~= app.pageStatus.saving then
-        app.pageState = app.pageStatus.saving
-        app.saveTS = os.clock()
+    if app.Page.preSave then payload = app.Page.preSave(app.Page) end
+    if app.Page.preSavePayload then payload = app.Page.preSavePayload(payload) end
 
-        if methodType == "string" or methodType == "api" then                           -- api system
+    -- Log payload if debugging is enabled
+    local function logPayload()
+        local logData = "Saving: {" .. rfsuite.utils.joinTableItems(payload, ", ") .. "}"
+        rfsuite.utils.log(logData)
+        if rfsuite.config.mspTxRxDebug then print(logData) end
+    end
 
-            local API = rfsuite.bg.msp.api.load("MSP_SET_PID_TUNING")
+    -- API-based save method
+    if methodType == "string" or methodType == "api" then
+        local API = rfsuite.bg.msp.api.load(app.Page.write)
 
-            API.setCompleteHandler(function(self, buf)
-                app.settingsSaved()
-            end)
+        API.setCompleteHandler(function(self, buf) app.settingsSaved() end)
+        API.setErrorHandler(function(self, buf) app.triggers.saveFailed = true end)
 
-            API.setErrorHandler(function(self, buf)
-                app.triggers.saveFailed = true
-            end)
+        if rfsuite.config.mspTxRxDebug or rfsuite.config.logEnable then logPayload() end
 
-            local payload = app.Page.values
-            if app.Page.preSave then payload = app.Page.preSave(app.Page) end
-            if app.Page.preSavePayload then payload = app.Page.preSavePayload(payload) end
+        API.write(payload)
 
-            if rfsuite.config.mspTxRxDebug == true or rfsuite.config.logEnable == true then
-                local logData = "Saving:                {" .. rfsuite.utils.joinTableItems(payload, ", ") .. "}"
-                rfsuite.utils.log(logData)
-                if rfsuite.config.mspTxRxDebug == true then print(logData) end
-            end            
+    -- Legacy method using an ID
+    elseif methodType == "number" and app.Page.values then
+        if rfsuite.config.mspTxRxDebug or rfsuite.config.logEnable then logPayload() end
 
-            -- Execute the write operation
-            API.write(payload)      
- 
-        elseif methodType == "number" and app.Page.values then                          -- legacy by sending id
-            local payload = app.Page.values
+        mspSaveSettings.command = app.Page.write
+        mspSaveSettings.payload = payload
+        mspSaveSettings.simulatorResponse = {}
 
-            if app.Page.preSave then payload = app.Page.preSave(app.Page) end
-            if app.Page.preSavePayload then payload = app.Page.preSavePayload(payload) end
-
-            if rfsuite.config.mspTxRxDebug == true or rfsuite.config.logEnable == true then
-                local logData = "Saving:                {" .. rfsuite.utils.joinTableItems(payload, ", ") .. "}"
-                rfsuite.utils.log(logData)
-                if rfsuite.config.mspTxRxDebug == true then print(logData) end
-            end
-
-            mspSaveSettings.command = app.Page.write
-            mspSaveSettings.payload = payload
-            mspSaveSettings.simulatorResponse = {}
-            rfsuite.bg.msp.mspQueue:add(mspSaveSettings)
-            rfsuite.bg.msp.mspQueue.errorHandler = function()
-                print("Save failed")
-                app.triggers.saveFailed = true
-            end
-        elseif type(app.Page.write) == "function" then                                  -- run a custom function
-            app.Page.write(app.Page)
+        rfsuite.bg.msp.mspQueue:add(mspSaveSettings)
+        rfsuite.bg.msp.mspQueue.errorHandler = function()
+            print("Save failed")
+            app.triggers.saveFailed = true
         end
 
+    -- Custom function-based save method
+    elseif methodType == "function" then
+        app.Page.write(app.Page)
     end
 end
 

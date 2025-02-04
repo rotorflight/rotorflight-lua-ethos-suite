@@ -88,24 +88,38 @@ function apitester.wakeup()
             API.setCompleteHandler(function(self, buf) 
                 print("error")
             end
+            )
             API.setErrorHandler(function(self, buf) 
                 print("error")
-            end               
+            end
+            )               
             API.write()  
   
 
     ]]--
 
-    --local API = rfsuite.bg.msp.api.load("MSP_PID_TUNING")
-    --API.read()  
-    --if API.readComplete() then
-    --        local data = API.data()
-    --        --rfsuite.utils.print_r(data['processed'])
-    --        rfsuite.utils.print_r(data)
-    --end   
 
+    -- this is a more complex loop with a read and write updating just one value on the fly
+    --[[
+    local API = rfsuite.bg.msp.api.load("MSP_PID_TUNING")
+    API.read()  
+    if API.readComplete() then
+            local data = API.data()
 
-  
+            local WRITEAPI = rfsuite.bg.msp.api.load("MSP_SET_PID_TUNING")
+            WRITEAPI.setCompleteHandler(function(self, buf)
+                print("write")
+            end)
+            WRITEAPI.setErrorHandler(function(self, buf)
+                print("error")
+            end)
+
+            WRITEAPI.setValue("pid_0_P",math.random(10,150))
+            WRITEAPI.setDefaults(data)    
+            WRITEAPI.write()  
+
+    end   
+    ]]-
 
 
 end    

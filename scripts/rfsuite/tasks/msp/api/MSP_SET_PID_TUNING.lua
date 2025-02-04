@@ -1,4 +1,28 @@
 --[[
+ * Rotorflight API Template - Write Operations
+ * -------------------------------------------
+ * This API provides a template for handling MSP (MultiWii Serial Protocol) write commands.
+ * It allows sending PID tuning parameters to the flight controller and monitoring the write status.
+ * 
+ * Functions:
+ * - write(suppliedPayload): Initiates an MSP command to set the RTC with optional payload.
+ * - setValue(fieldName, value): Sets an individual value dynamically in the payload.
+ * - writeComplete(): Checks if the write operation is complete.
+ * - resetWriteStatus(): Resets the write completion status.
+ * - getDefaults(): Retrieves default values stored for MSP writes.
+ * - setDefaults(data): Sets default values for the MSP write operation.
+ * - setCompleteHandler(handlerFunction): Assigns a function to execute on write completion.
+ * - setErrorHandler(handlerFunction): Assigns a function to execute if an error occurs.
+ *
+ * MSP Command Used:
+ * - MSP_SET_PID_TUNING (Command ID: 202)
+ *
+ * Usage:
+ * - Modify this template for new API files by implementing appropriate MSP commands and handlers.
+ * - Ensure you update relevant documentation when making changes.
+]] --
+
+--[[
  * Copyright (C) Rotorflight Project
  *
  * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
@@ -13,22 +37,6 @@
  * GNU General Public License for more details.
  *
  * Note. Some icons have been sourced from https://www.flaticon.com/
-]] --
---[[
- * MSP_SET_RTC Write API
- * --------------------
- * This module provides functions to set the real-time clock (RTC) using the MSP protocol.
- * The write function sends the current system time to the device, formatted as seconds since the epoch.
- *
- * Functions:
- * - write(): Initiates an MSP command to set the RTC.
- * - writeComplete(): Checks if the write operation is complete.
- * - resetWriteStatus(): Resets the write completion status.
- * - setCompleteHandler(handlerFunction):  Set function to run on completion
- * - setErrorHandler(handlerFunction): Set function to run on error  
- *
- * MSP Command Used:
- * - MSP_SET_RTC (Command ID: 202)
 ]] --
 -- Constants for MSP Commands
 local MSP_API_CMD = 202 -- Command identifier for saving PID settings
@@ -74,24 +82,28 @@ local handlers = rfsuite.bg.msp.api.createHandlers()
 
 -- Function to get default values
 local function getDefaults()
+    if defaultData['parsed'] then
+        return defaultData['parsed']
+    else    
+        return defaultData
+    end
+end
 
-    local API = rfsuite.bg.msp.api.load("MSP_PID_TUNING")
-    API.setCompleteHandler(function(self, buf)
-        defaultData = API.data()
-    end)
-    API.read()
-
-    return defaultData
+-- Function to set defaults
+local function setDefaults(data)
+    defaultData = data -- Store data to prevent unnecessary MSP calls
 end
 
 -- Function to initiate MSP write operation
 local function write(suppliedPayload)
 
-    -- its possible to send the actual payload that will be written.
-    -- this is mostly used within the app framework where we use app.Page.values
-    -- keeping this up2date while changing form field values.
-    -- under normal circumstances write would be called with no parameters; instead
-    -- relying on the setValue function to build up a payload
+    --[[
+    * its possible to send the actual payload that will be written.
+    * this is mostly used within the app framework where we use app.Page.values
+    * keeping this up2date while changing form field values.
+    * under normal circumstances write would be called with no parameters; instead
+    * relying on the setValue function to build up a payload
+    ]]--
     if suppliedPayload then
 
         local message = {
@@ -117,21 +129,37 @@ local function write(suppliedPayload)
         rfsuite.bg.msp.mspQueue:add(message)
 
     else
-        -- NOTE. This api has not yet had the functionality tested around getDefaults below.
+    --[[
+    * If no payload has been set; we are relying on a payload contructed
+    * by using the setValue("key",value) functions.
+    * the first part of this code retrieves the initial dataset that you
+    * are expected to supply from an earlier read call - or manually
+    * constructed table.  This is essential because even if you only want
+    * to update one value; the msp call needs to send the entire dataset.
+    *
+    * the defaults are expected to be a table in the same format as supplied
+    * by the MSP_STRUCTURE definition.  Its essentially a simple table of 
+    * key=>value pairs.
+    *           ['pid_2_I'] = 125,
+    *            ['pid_2_B'] = 0,
+    *            ['pid_2_P'] = 100,
+    * etc...
+    * 
+    ]]--
 
         local defaults = getDefaults()
+
         -- Validate if all fields have been set or fallback to defaults
         for _, field in ipairs(MSP_STRUCTURE) do
             if payloadData[field.field] == nil then
                 if defaults[field.field] ~= nil then
                     payloadData[field.field] = defaults[field.field]
                 else
-                    error("Missing value for field: " .. field.field)
+                    error("Missing value for field: " .. field.field .. "Check you have run setDefaults(<value from API:data() read api)")
                     return
                 end
             end
         end
-
 
         local message = {
             command = MSP_API_CMD, -- Specify the MSP command
@@ -190,6 +218,12 @@ local function write(suppliedPayload)
             end
         end
 
+        if rfsuite.config.mspTxRxDebug or rfsuite.config.logEnable then
+            local logData = "Saving: {" .. rfsuite.utils.joinTableItems(message.payload, ", ") .. "}"
+            rfsuite.utils.log(logData)
+            if rfsuite.config.mspTxRxDebug then print(logData) end
+        end
+
         -- Add the message to the processing queue
         rfsuite.bg.msp.mspQueue:add(message)
     end
@@ -223,6 +257,7 @@ return {
     writeComplete = writeComplete,
     resetWriteStatus = resetWriteStatus,
     getDefaults = getDefaults,
+    setDefaults = setDefaults,
     setPayload = setPayload,
     setCompleteHandler = handlers.setCompleteHandler,
     setErrorHandler = handlers.setErrorHandler
