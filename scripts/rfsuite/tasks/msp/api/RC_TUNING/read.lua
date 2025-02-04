@@ -1,28 +1,4 @@
 --[[
- * Rotorflight API Template - Write Operations
- * -------------------------------------------
- * This API provides a template for handling MSP (MultiWii Serial Protocol) write commands.
- * It allows sending PID tuning parameters to the flight controller and monitoring the write status.
- * 
- * Functions:
- * - write(suppliedPayload): Initiates an MSP command to set the RTC with optional payload.
- * - setValue(fieldName, value): Sets an individual value dynamically in the payload.
- * - writeComplete(): Checks if the write operation is complete.
- * - resetWriteStatus(): Resets the write completion status.
- * - getDefaults(): Retrieves default values stored for MSP writes.
- * - setDefaults(data): Sets default values for the MSP write operation.
- * - setCompleteHandler(handlerFunction): Assigns a function to execute on write completion.
- * - setErrorHandler(handlerFunction): Assigns a function to execute if an error occurs.
- *
- * MSP Command Used:
- * - MSP_SET_PID_TUNING (Command ID: 202)
- *
- * Usage:
- * - Modify this template for new API files by implementing appropriate MSP commands and handlers.
- * - Ensure you update relevant documentation when making changes.
-]] --
-
---[[
  * Copyright (C) Rotorflight Project
  *
  * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
@@ -38,170 +14,92 @@
  *
  * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
+--[[
+ * API Reference Guide
+ * -------------------
+ * read(): Initiates an MSP command to read data.
+ * data(): Returns the parsed MSP data.
+ * readComplete(): Checks if the read operation is complete.
+ * readValue(fieldName): Returns the value of a specific field from MSP data.
+ * readVersion(): Retrieves the API version in major.minor format.
+ * setCompleteHandler(handlerFunction):  Set function to run on completion
+ * setErrorHandler(handlerFunction): Set function to run on error  
+]] --
 -- Constants for MSP Commands
-local MSP_API_CMD = 204 -- Command identifier for saving PID settings
+local MSP_API_CMD = 111 -- Command identifier for MSP RC TUNING
+local MSP_API_SIMULATOR_RESPONSE = {4, 18, 25, 32, 20, 0, 0, 18, 25, 32, 20, 0, 0, 32, 50, 45, 10, 0, 0, 56, 0, 56, 20, 0, 0}-- Default simulator response
+local MSP_MIN_BYTES = 25
 
--- Define the MSP request data structure based on PID and cyclic axis counts
-local MSP_API_STRUCTURE = {
-    { field = "rates_type", type = "U8" },
-    { field = "rcRates_1", type = "U8" },
-    { field = "rcExpo_1", type = "U8" },
-    { field = "rates_1", type = "U8" },
-    { field = "response_time_1", type = "U8" },
-    { field = "accel_limit_1", type = "U16" },
-    { field = "rcRates_2", type = "U8" },
-    { field = "rcExpo_2", type = "U8" },
-    { field = "rates_2", type = "U8" },
-    { field = "response_time_2", type = "U8" },
-    { field = "accel_limit_2", type = "U16" },
-    { field = "rcRates_3", type = "U8" },
-    { field = "rcExpo_3", type = "U8" },
-    { field = "rates_3", type = "U8" },
-    { field = "response_time_3", type = "U8" },
-    { field = "accel_limit_3", type = "U16" },
-    { field = "rcRates_4", type = "U8" },
-    { field = "rcExpo_4", type = "U8" },
-    { field = "rates_4", type = "U8" },
-    { field = "response_time_4", type = "U8" },
-    { field = "accel_limit_4", type = "U16" }
-}
+-- Define the MSP response data structure
+-- parameters are:
+--  field (name)
+--  type (U8|U16|S16|etc) (see api.lua)
+--  byteorder (big|little)
+local apiPath = _G.paramMspApiPath -- passed as tmp global as called via dofile()
+local structure = assert(loadfile(apiPath .. "/structure.lua"))()
+local MSP_API_STRUCTURE = structure.MSP_API_STRUCTURE
 
--- Variable to track write completion status
-local mspWriteComplete = false
+-- Variable to store parsed MSP data
+local mspData = nil
 
--- Tables for handling payload data
-local payloadData = {}
-local defaultData = {}
+-- Create a new instance
+local handlers = rfsuite.bg.msp.api.createHandlers()  
 
--- Create a new instance of handlers for processing MSP commands
-local handlers = rfsuite.bg.msp.api.createHandlers()
+-- Function to initiate MSP read operation
+local function read()
+    local message = {
+        command = MSP_API_CMD, -- Specify the MSP command
+        processReply = function(self, buf)
+            -- Parse the MSP data using the defined structure
+            mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE)
 
---[[
- * Function: getDefaults
- * ----------------------
- * Retrieves the default values for the MSP write operation.
- *
- * Returns:
- * - table: Default values used when no payload is explicitly provided.
-]]--
-local function getDefaults()
-    if defaultData['parsed'] then
-        return defaultData['parsed']
-    else    
-        return defaultData
-    end
-end
-
---[[
- * Function: setDefaults
- * ----------------------
- * Sets default values for the write operation to avoid unnecessary MSP calls.
- *
- * Parameters:
- * - data (table): The default data to use when constructing the payload.
-]]--
-local function setDefaults(data)
-    defaultData = data 
-end
-
---[[
- * Function: write
- * ---------------
- * Initiates an MSP write operation to send PID tuning data.
- *
- * Parameters:
- * - suppliedPayload (optional, table): A payload table containing PID values.
- *
- * If no payload is provided, the function constructs one using default values.
- * Ensures that all required fields are populated before sending the command.
-]]--
-local function write(suppliedPayload)
-    if suppliedPayload then
-        local message = {
-            command = MSP_API_CMD,
-            payload = suppliedPayload,
-            processReply = function(self, buf)
+            if #buf >= MSP_MIN_BYTES then
                 local completeHandler = handlers.getCompleteHandler()
                 if completeHandler then
                     completeHandler(self, buf)
-                end            
-                mspWriteComplete = true
-            end,
-            errorHandler = function(self, buf)
-                local errorHandler = handlers.getErrorHandler()
-                if errorHandler then 
-                    errorHandler(self, buf)
-                end
-            end,
-            simulatorResponse = {}
-        }
-        rfsuite.bg.msp.mspQueue:add(message)
-    else
-        local defaults = getDefaults()
-        for _, field in ipairs(MSP_STRUCTURE) do
-            if payloadData[field.field] == nil then
-                if defaults[field.field] ~= nil then
-                    payloadData[field.field] = defaults[field.field]
-                else
-                    error("Missing value for field: " .. field.field)
-                    return
                 end
             end
-        end
+        end,
+        errorHandler = function(self, buf)
+            local errorHandler = handlers.getErrorHandler()
+            if errorHandler then 
+                errorHandler(self, buf)
+            end
+        end,
+        simulatorResponse = MSP_API_SIMULATOR_RESPONSE
+    }
+    -- Add the message to the processing queue
+    rfsuite.bg.msp.mspQueue:add(message)
+end
+
+-- Function to return the parsed MSP data
+local function data()
+    return mspData
+end
+
+-- Function to check if the read operation is complete
+local function readComplete()
+    if mspData ~= nil and #mspData['buffer'] >= MSP_MIN_BYTES then
+        return true
     end
+    return false
 end
 
---[[
- * Function: setValue
- * ------------------
- * Dynamically sets a value for a specific PID field.
- *
- * Parameters:
- * - fieldName (string): The name of the PID field to update.
- * - value (number): The value to assign.
- *
- * Returns:
- * - boolean: True if the value was successfully set.
-]]--
-local function setValue(fieldName, value)
-    for _, field in ipairs(MSP_STRUCTURE) do
-        if field.field == fieldName then
-            payloadData[fieldName] = value
-            return true
-        end
+-- Function to get the value of a specific field from MSP data
+local function readValue(fieldName)
+    if mspData and mspData['parsed'][fieldName] ~= nil then
+        return mspData['parsed'][fieldName]
     end
-    error("Invalid field name: " .. fieldName)
-end
-
---[[
- * Function: writeComplete
- * -----------------------
- * Checks if the write operation has completed.
- *
- * Returns:
- * - boolean: True if the write operation is complete, otherwise false.
-]]--
-local function writeComplete()
-    return mspWriteComplete
-end
-
---[[
- * Function: resetWriteStatus
- * --------------------------
- * Resets the write completion status flag.
-]]--
-local function resetWriteStatus()
-    mspWriteComplete = false
+    return nil
 end
 
 -- Return the module's API functions
 return {
-    write = write,
-    setValue = setValue,
-    writeComplete = writeComplete,
-    resetWriteStatus = resetWriteStatus,
-    getDefaults = getDefaults,
-    setDefaults = setDefaults,
+    data = data,
+    read = read,
+    readComplete = readComplete,
+    readVersion = readVersion,
+    readValue = readValue,
     setCompleteHandler = handlers.setCompleteHandler,
     setErrorHandler = handlers.setErrorHandler
 }

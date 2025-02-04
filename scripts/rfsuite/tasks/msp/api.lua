@@ -124,6 +124,15 @@ local function build_position_map(param_table)
 
         -- Move to the next available byte position
         current_byte = end_pos + 1
+
+        if rfsuite.config.mspApiPositionMapDebug == true then
+            if start_pos == end_pos then
+                print(param.field .. ": " .. start_pos)
+            else
+                print(param.field .. ": " .. start_pos .. ":" .. end_pos)
+            end    
+        end   
+
     end
 
     return position_map
@@ -203,11 +212,7 @@ end
     if rfsuite.config.mspApiParsedDebug == true then
         rfsuite.utils.print_r(data['parsed'])
     end    
-
-    if rfsuite.config.mspApiPositionMapDebug == true then
-        rfsuite.utils.print_r(data['positionmap'])
-    end    
-
+ 
     return data
 end
 

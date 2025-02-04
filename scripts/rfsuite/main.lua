@@ -41,7 +41,7 @@ config.logEnableScreen = false                                      -- if config
 config.mspTxRxDebug = false                                         -- simple print of full msp payload that is sent and received [default = false]
 config.mspApiParsedDebug = false                                     -- debug log to print out the parsed buffer for the msp api query [default = false]
 config.mspApiStructureDebug = false                                 -- debug log to print out the msp structure for the msp api query [default = false]
-config.mspApiPositionMapDebug = false                                 -- debug log to print out the msp structure for the msp api query [default = false]
+config.mspApiPositionMapDebug = true                                 -- debug log to print out the msp structure for the msp api query [default = false]
 config.flightLog = true                                             -- will write a flight log into /scripts/rfsuite/logs/<modelname>/*.log
 config.reloadOnSave = false                                         -- trigger a reload on save [default = false]
 config.skipRssiSensorCheck = false                                  -- skip checking for a valid rssi [ default = false]
