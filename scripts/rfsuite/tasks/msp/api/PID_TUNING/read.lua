@@ -1,10 +1,4 @@
---[[
- *********************************************************************************************
- *                                                                                           *
- *     THIS IS A TEMPLATE AND SHOULD BE USED ONLY AS A SOURCE FOR MAKING A NEW API FILE      *
- *                                                                                           *
- *********************************************************************************************
-]] --
+
 --[[
  * Copyright (C) Rotorflight Project
  *
@@ -37,35 +31,18 @@ local MSP_API_CMD = 112 -- Command identifier for MSP PILOT CONFIG
 local MSP_API_SIMULATOR_RESPONSE = {70, 0, 225, 0, 90, 0, 120, 0, 100, 0, 200, 0, 70, 0, 120, 0, 100, 0, 125, 0, 83, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 0, 25, 0} -- Default simulator response
 local MSP_MIN_BYTES = 34
 
--- function to help generate the pid structure
--- if you update this - also update the same function in the set api
-local function generate_pid_structure(pid_axis_count, cyclic_axis_count)
-    local structure = {}
-
-    for i = 0, pid_axis_count - 1 do
-        table.insert(structure, { field = "pid_" .. i .. "_P", type = "U16" })
-        table.insert(structure, { field = "pid_" .. i .. "_I", type = "U16" })
-        table.insert(structure, { field = "pid_" .. i .. "_D", type = "U16" })
-        table.insert(structure, { field = "pid_" .. i .. "_F", type = "U16" })
-    end
-
-    for i = 0, pid_axis_count - 1 do
-        table.insert(structure, { field = "pid_" .. i .. "_B", type = "U16" })
-    end
-
-    for i = 0, cyclic_axis_count - 1 do
-        table.insert(structure, { field = "pid_" .. i .. "_O", type = "U16" })
-    end
-
-    return structure
-end
+-- Grab some env vars
+local arg = {...}
+local apiFolder = arg[1]
 
 -- Define the MSP response data structure
 -- parameters are:
 --  field (name)
 --  type (U8|U16|S16|etc) (see api.lua)
 --  byteorder (big|little)
-local MSP_API_STRUCTURE = generate_pid_structure(3, 2)
+local apiPath = _G.paramMspApiPath -- passed as tmp global as called via dofile()
+local structure = assert(loadfile(apiPath .. "/structure.lua"))()
+local MSP_API_STRUCTURE = structure.MSP_API_STRUCTURE
 
 -- Variable to store parsed MSP data
 local mspData = nil

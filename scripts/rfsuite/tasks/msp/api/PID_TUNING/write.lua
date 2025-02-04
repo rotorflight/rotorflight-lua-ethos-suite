@@ -41,34 +41,13 @@
 -- Constants for MSP Commands
 local MSP_API_CMD = 202 -- Command identifier for saving PID settings
 
--- function to help generate the pid structure
--- if you update this - also update the same function in the read api
-local function generate_pid_structure(pid_axis_count, cyclic_axis_count)
-    local structure = {}
-
-    for i = 0, pid_axis_count - 1 do
-        table.insert(structure, { field = "pid_" .. i .. "_P", type = "U16" })
-        table.insert(structure, { field = "pid_" .. i .. "_I", type = "U16" })
-        table.insert(structure, { field = "pid_" .. i .. "_D", type = "U16" })
-        table.insert(structure, { field = "pid_" .. i .. "_F", type = "U16" })
-    end
-
-    for i = 0, pid_axis_count - 1 do
-        table.insert(structure, { field = "pid_" .. i .. "_B", type = "U16" })
-    end
-
-    for i = 0, cyclic_axis_count - 1 do
-        table.insert(structure, { field = "pid_" .. i .. "_O", type = "U16" })
-    end
-
-    return structure
-end
-
 -- Define the MSP request data structure
 --  field (name)
 --  type (U8|U16|S16|etc) (see api.lua)
 --  byteorder (big|little)
-local MSP_STRUCTURE = generate_pid_structure(3, 2)
+local apiPath = _G.paramMspApiPath
+local structure = assert(loadfile(apiPath .. "/structure.lua"))()
+local MSP_API_STRUCTURE = structure.MSP_API_STRUCTURE
 
 -- Variable to track write completion
 local mspWriteComplete = false

@@ -62,6 +62,9 @@ local function loadAPI(apiName, method)
 
     -- Check if file exists before trying to load it
     if rfsuite.utils.file_exists(apiFilePath) then
+
+        -- we do this _G to pass a param via dofile.  A little dirty but effective.
+        _G.paramMspApiPath = api_path .. apiName .. "/"
         local apiModule = dofile(apiFilePath) -- Load the Lua API file
 
         if type(apiModule) == "table" and (apiModule.read or apiModule.write) then
