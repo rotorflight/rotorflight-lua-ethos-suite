@@ -209,50 +209,42 @@ end
 
 -- Function to bind page fields to values using MSP helper functions
 function app.dataBindFields()
-    if not app.Page.fields then
-        rfsuite.utils.log("Unable to bind fields as app.Page.fields does not exist")
-        return
-    end
-
-    local mspHelper = rfsuite.bg.msp.mspHelper
-
-    for i = 1, #app.Page.fields do
-        if app.Page.values and #app.Page.values >= app.Page.minBytes then
-            local f = app.Page.fields[i]
-            if f.vals then
-                local byteCount = #f.vals
-                local byteorder = f.byteorder or "little"
-                local buf = { offset = 1 }
-                for _, idx in ipairs(f.vals) do
-                    buf[#buf + 1] = app.Page.values[idx] or 0
-                end
-                
-                if byteCount == 1 then
-                    f.value = f.signed and mspHelper.readS8(buf) or mspHelper.readU8(buf)
-                elseif byteCount == 2 then
-                    f.value = f.signed and mspHelper.readS16(buf, byteorder) or mspHelper.readU16(buf, byteorder)
-                elseif byteCount == 3 then
-                    f.value = f.signed and mspHelper.readS24(buf, byteorder) or mspHelper.readU24(buf, byteorder)
-                elseif byteCount == 4 then
-                    f.value = f.signed and mspHelper.readS32(buf, byteorder) or mspHelper.readU32(buf, byteorder)
-                else
-                    f.value = 0
-                end
-                
-                -- Handle signed values if needed
-                if f.min and f.min < 0 and f.signed then
-                    local bits = byteCount * 8
-                    if (f.value & (1 << (bits - 1))) ~= 0 then
+    if app.Page.fields then
+        for i = 1, #app.Page.fields do
+            if app.Page.values and #app.Page.values >= app.Page.minBytes then
+                local f = app.Page.fields[i]
+                if f.vals and #f.vals > 0 then
+                    local buf = {}
+                    for idx = 1, #f.vals do
+                        buf[idx] = app.Page.values[f.vals[idx]] or 0
+                    end
+                    
+                    local bits = #f.vals * 8
+                    if #f.vals == 1 then
+                        f.value = rfsuite.bg.msp.mspHelper.readU8(buf)
+                    elseif #f.vals == 2 then
+                        f.value = rfsuite.bg.msp.mspHelper.readU16(buf)
+                    elseif #f.vals == 3 then
+                        f.value = rfsuite.bg.msp.mspHelper.readU24(buf)
+                    elseif #f.vals == 4 then
+                        f.value = rfsuite.bg.msp.mspHelper.readU32(buf)
+                    else
+                        rfsuite.utils.log("Unsupported field size: " .. #f.vals)
+                        f.value = 0
+                    end
+                    
+                    if f.min and f.min < 0 and (f.value & (1 << (bits - 1)) ~= 0) then
                         f.value = f.value - (2 ^ bits)
                     end
+                    
+                    f.value = f.value / (f.scale or 1)
                 end
-                
-                -- Apply scaling if necessary
-                f.value = f.value / (f.scale or 1)
             end
         end
+    else
+        rfsuite.utils.log("Unable to bind fields as app.Page.fields does not exist")
     end
-end    
+end
 
 -- RETURN CURRENT LCD SIZE
 function app.getWindowSize()

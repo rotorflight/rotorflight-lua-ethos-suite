@@ -27,24 +27,13 @@
 ]] --
 -- Constants for MSP Commands
 local MSP_API_CMD = 42 -- Command identifier for MSP Mixer Config
-local MSP_API_SIMULATOR_RESPONSE = {0, 0, 0, 0, 0, 2, 100, 0, 0, 0, 0, 0, 0, 0,
-                                    0, 0, 0, 0, 0} -- Default simulator response
+local MSP_API_SIMULATOR_RESPONSE = {0, 1, 0, 21, 0, 2, 100, 0, 0, 131, 6, 147, 0, 87, 254, 0, 0, 40, 138} -- Default simulator response
 local MSP_MIN_BYTES = 19
 
 -- Define the MSP response data structure
-local MSP_API_STRUCTURE = {{field = "main_rotor_dir", type = "U8"},
-                           {field = "tail_rotor_mode", type = "U8"},
-                           {field = "tail_motor_idle", type = "U8"},
-                           {field = "tail_center_trim", type = "U16"},
-                           {field = "swash_type", type = "U8"},
-                           {field = "swash_ring", type = "U8"},
-                           {field = "swash_phase", type = "U16"},
-                           {field = "swash_pitch_limit", type = "U16"},
-                           {field = "swash_trim_0", type = "U16"},
-                           {field = "swash_trim_1", type = "U16"},
-                           {field = "swash_trim_2", type = "U16"},
-                           {field = "swash_tta_precomp", type = "U8"},
-                           {field = "swash_geo_correction", type = "U8"}}
+local apiPath = _G.paramMspApiPath -- passed as tmp global as called via dofile()
+local structure = assert(loadfile(apiPath .. "/structure.lua"))()
+local MSP_API_STRUCTURE = structure.MSP_API_STRUCTURE
 
 -- Variable to store parsed MSP data
 local mspData = nil
