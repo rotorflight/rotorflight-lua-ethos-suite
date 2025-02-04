@@ -346,7 +346,7 @@ local function processPageReply(source, buf, methodType)
                if v.apikey then
                     if buf['positionmap'] and buf['positionmap'][v.apikey] then
                         app.Page.fields[i].vals = buf['positionmap'][v.apikey]
-                    end    
+                    end
                end 
         end
     end

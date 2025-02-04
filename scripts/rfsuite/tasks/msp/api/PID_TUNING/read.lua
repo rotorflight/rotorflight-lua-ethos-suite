@@ -50,6 +50,8 @@ local mspData = nil
 -- Create a new instance
 local handlers = rfsuite.bg.msp.api.createHandlers()  
 
+-- extra function to present data in an ordered format.
+-- for the processed data return
 local function extract_pid_data(buf)
     local data = {
         Roll = { P = 0, I = 0, D = 0, F = 0 },

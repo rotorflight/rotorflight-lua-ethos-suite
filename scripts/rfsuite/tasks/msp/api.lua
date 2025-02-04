@@ -95,18 +95,39 @@ function apiLoader.parseMSPData(buf, structure, processed, other)
     local parsedData = {}
     local offset = 1 -- Maintain a strict offset tracking
 
+    -- Function to get byte size from type
+    local function get_type_size(data_type)
+        local type_sizes = {
+            U8 = 1,  U16 = 2,  U24 = 3,  U32 = 4,
+            S8 = 1,  S16 = 2,  S24 = 3,  S32 = 4
+        }
+        return type_sizes[data_type] or 2  -- Default to U16 if unknown
+    end
+
     -- map of values to byte positions
-    local function build_position_map(param_table)
-        local position_map = {}
-    
-        for index, param in ipairs(param_table) do
-            local start_pos = (index - 1) * 2 + 1
-            local end_pos = start_pos + 1
+-- Function to build position map considering type sizes
+local function build_position_map(param_table)
+    local position_map = {}
+    local current_byte = 1  -- Track the byte position dynamically
+
+    for _, param in ipairs(param_table) do
+        local size = get_type_size(param.type)
+        local start_pos = current_byte
+        local end_pos = start_pos + size - 1
+
+        -- Store as single number if start and end are the same
+        if start_pos == end_pos then
+            position_map[param.field] = {start_pos}
+        else
             position_map[param.field] = {start_pos, end_pos}
         end
-    
-        return position_map
+
+        -- Move to the next available byte position
+        current_byte = end_pos + 1
     end
+
+    return position_map
+end
 
     for _, field in ipairs(structure) do
 
@@ -174,6 +195,19 @@ function apiLoader.parseMSPData(buf, structure, processed, other)
     if other then
         data['other'] = other
     end    
+
+    if rfsuite.config.mspApiStructureDebug == true then
+        rfsuite.utils.print_r(data['structure'])
+    end
+
+    if rfsuite.config.mspApiParsedDebug == true then
+        rfsuite.utils.print_r(data['parsed'])
+    end    
+
+    if rfsuite.config.mspApiPositionMapDebug == true then
+        rfsuite.utils.print_r(data['positionmap'])
+    end    
+
     return data
 end
 

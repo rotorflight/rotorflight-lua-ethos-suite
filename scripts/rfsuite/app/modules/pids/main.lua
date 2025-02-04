@@ -164,8 +164,6 @@ return {
     reboot = false,
     eepromWrite = true,
     refreshOnProfileChange = true,
-    minBytes = 34,
-    simulatorResponse = {70, 0, 225, 0, 90, 0, 120, 0, 100, 0, 200, 0, 70, 0, 120, 0, 100, 0, 125, 0, 83, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 0, 25, 0},
     fields = fields,
     rows = rows,
     cols = cols,
