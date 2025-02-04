@@ -159,8 +159,7 @@ local function wakeup()
 end
 
 return {
-    read = "MSP_PID_TUNING",  
-    write = "MSP_SET_PID_TUNING", 
+    mspapi = "PID_TUNING",
     title = "PIDs",
     reboot = false,
     eepromWrite = true,

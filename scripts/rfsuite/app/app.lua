@@ -383,10 +383,13 @@ local mspLoadSettings = {
 --   string:   we use the msp api to return the data.  This is a wrapper to mspQueue.lua and can be found in api.lua
 --   function: we dont actually do anything bar run the function - offloading the read to the modules built-in code.
 function app.readPage()
-    local methodType = type(app.Page.read)
+
+    -- check mspapi and if it returns (should always be a string) then proceed
+    -- otherwise we revert to using app.Page.read using actual msp id numbers
+    local methodType = app.Page.mspapi and type(app.Page.mspapi) or app.Page.read and type(app.Page.read) or nil
 
     if methodType == "string" then                              -- api
-        local API = rfsuite.bg.msp.api.load(app.Page.read)
+        local API = rfsuite.bg.msp.api.load(app.Page.mspapi, 0)
 
         API.setCompleteHandler(function(self, buf)
             processPageReply(self, API.data(), "api")
@@ -421,7 +424,10 @@ local function saveSettings()
     app.pageState = app.pageStatus.saving
     app.saveTS = os.clock()
 
-    local methodType = type(app.Page.write)
+    -- check mspapi and if it returns (should always be a string) then proceed
+    -- otherwise we revert to using app.Page.read using actual msp id numbers
+    local methodType = app.Page.mspapi and type(app.Page.mspapi) or app.Page.read and type(app.Page.write) or nil
+
     local payload = app.Page.values
 
     if app.Page.preSave then payload = app.Page.preSave(app.Page) end
@@ -436,13 +442,13 @@ local function saveSettings()
 
     -- API-based save method
     if methodType == "string" or methodType == "api" then
-        local API = rfsuite.bg.msp.api.load(app.Page.write)
+
+        local API = rfsuite.bg.msp.api.load(app.Page.mspapi, 1) -- set param 2 to '1' as a write request
 
         API.setCompleteHandler(function(self, buf) app.settingsSaved() end)
         API.setErrorHandler(function(self, buf) app.triggers.saveFailed = true end)
 
         if rfsuite.config.mspTxRxDebug or rfsuite.config.logEnable then logPayload() end
-
         API.write(payload)
 
     -- Legacy method using an ID
@@ -463,6 +469,8 @@ local function saveSettings()
     elseif methodType == "function" then
         app.Page.write(app.Page)
     end
+
+
 end
 
 -- REQUEST A PAGE OVER MSP. THIS RUNS ON MOST CLOCK CYCLES WHEN DATA IS BEING REQUESTED
@@ -475,7 +483,7 @@ local function requestPage()
     if not app.Page.reqTS or app.Page.reqTS + rfsuite.bg.msp.protocol.pageReqTimeout <= os.clock() then
 
         app.Page.reqTS = os.clock()
-        if app.Page.read then app.readPage() end
+        if app.Page.read or app.Page.mspapi then app.readPage() end
     end
 end
 

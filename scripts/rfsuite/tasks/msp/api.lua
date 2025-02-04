@@ -29,35 +29,59 @@ local apidir = "tasks/msp/api/"
 local api_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and apidir or
                      (config.suiteDir .. apidir)
 
--- Function to load a specific API file by name
-local function loadAPI(apiName)
-    if apiCache[apiName] then
-        return apiCache[apiName] -- Return cached version if already loaded
+-- Function to load a specific API file by name and method
+local function loadAPI(apiName, method)
+
+    -- Ensure method is defaulted
+    if method == nil then
+        method = 0
     end
 
-    local apiFilePath = api_path .. apiName .. ".lua"
+    -- Set valid options for the method call
+    local validMethods = { [0] = true, [1] = true, read = true, write = true }
+
+    if not validMethods[method] then
+        error("Error: " .. apiName .. " Invalid method(" .. tostring(method) .. ") Please use 'read|0' or 'write|1'")
+    end
+
+    -- Normalize method values
+    if method == 0 then method = "read" end
+    if method == 1 then method = "write" end
+
+    -- Initialize sub-table for method if it doesn't exist
+    if not apiCache[apiName] then
+        apiCache[apiName] = {}  -- Create a sub-table for methods
+    end
+
+    -- Return cached version if already loaded for this method
+    if apiCache[apiName][method] then
+        return apiCache[apiName][method]
+    end
+
+    local apiFilePath = api_path .. apiName .. "/" .. method .. ".lua"
 
     -- Check if file exists before trying to load it
     if rfsuite.utils.file_exists(apiFilePath) then
-
         local apiModule = dofile(apiFilePath) -- Load the Lua API file
 
         if type(apiModule) == "table" and (apiModule.read or apiModule.write) then
-            apiCache[apiName] = apiModule -- Store loaded API in cache
-            rfsuite.utils.log("Loaded API:", apiName)
+            -- Store the loaded API in the cache
+            apiCache[apiName][method] = apiModule
+            rfsuite.utils.log("Loaded API:", apiName, "Method:", method)
             return apiModule
         else
-            rfsuite.utils.log("Error: API file '" .. apiName ..
-                                  "' does not contain valid read or write functions.")
+            rfsuite.utils.log("Error: API file '" .. apiName .. "' does not contain valid read or write functions.")
         end
     else
-        rfsuite.utils.log("Error: API file '" .. apiName .. ".lua' not found.")
+        local logline = "Error: API file '" .. apiFilePath .. " not found."
+        rfsuite.utils.log(logline)
+        error(logline)
     end
 end
 
 -- Function to directly return the API table instead of a wrapper function
-function apiLoader.load(apiName)
-    return loadAPI(apiName) or {} -- Return an empty table if API fails to load
+function apiLoader.load(apiName, method)
+    return loadAPI(apiName, method) or {} -- Return an empty table if API fails to load
 end
 
 -- Function to parse the msp Data.  Optionally pass a processed(buf, structure) to provide more data formating
