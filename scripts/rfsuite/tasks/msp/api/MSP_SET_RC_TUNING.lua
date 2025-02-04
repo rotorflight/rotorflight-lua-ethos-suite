@@ -1,12 +1,4 @@
 --[[
- *********************************************************************************************
- *                                                                                           *
- *     THIS IS A TEMPLATE AND SHOULD BE USED ONLY AS A SOURCE FOR MAKING A NEW API FILE      *
- *                                                                                           *
- *********************************************************************************************
-]] --
-
---[[
  * Rotorflight API Template - Write Operations
  * -------------------------------------------
  * This API provides a template for handling MSP (MultiWii Serial Protocol) write commands.
@@ -46,33 +38,33 @@
  *
  * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
- 
 -- Constants for MSP Commands
-local MSP_API_CMD = 202 -- Command identifier for saving PID settings
-
-local function generate_pid_structure(pid_axis_count, cyclic_axis_count)
-    local structure = {}
-
-    for i = 0, pid_axis_count - 1 do
-        table.insert(structure, { field = "pid_" .. i .. "_P", type = "U16" })
-        table.insert(structure, { field = "pid_" .. i .. "_I", type = "U16" })
-        table.insert(structure, { field = "pid_" .. i .. "_D", type = "U16" })
-        table.insert(structure, { field = "pid_" .. i .. "_F", type = "U16" })
-    end
-
-    for i = 0, pid_axis_count - 1 do
-        table.insert(structure, { field = "pid_" .. i .. "_B", type = "U16" })
-    end
-
-    for i = 0, cyclic_axis_count - 1 do
-        table.insert(structure, { field = "pid_" .. i .. "_O", type = "U16" })
-    end
-
-    return structure
-end
+local MSP_API_CMD = 204 -- Command identifier for saving PID settings
 
 -- Define the MSP request data structure based on PID and cyclic axis counts
-local MSP_STRUCTURE = generate_pid_structure(3, 2)
+local MSP_API_STRUCTURE = {
+    { field = "rates_type", type = "U8" },
+    { field = "rcRates_1", type = "U8" },
+    { field = "rcExpo_1", type = "U8" },
+    { field = "rates_1", type = "U8" },
+    { field = "response_time_1", type = "U8" },
+    { field = "accel_limit_1", type = "U16" },
+    { field = "rcRates_2", type = "U8" },
+    { field = "rcExpo_2", type = "U8" },
+    { field = "rates_2", type = "U8" },
+    { field = "response_time_2", type = "U8" },
+    { field = "accel_limit_2", type = "U16" },
+    { field = "rcRates_3", type = "U8" },
+    { field = "rcExpo_3", type = "U8" },
+    { field = "rates_3", type = "U8" },
+    { field = "response_time_3", type = "U8" },
+    { field = "accel_limit_3", type = "U16" },
+    { field = "rcRates_4", type = "U8" },
+    { field = "rcExpo_4", type = "U8" },
+    { field = "rates_4", type = "U8" },
+    { field = "response_time_4", type = "U8" },
+    { field = "accel_limit_4", type = "U16" }
+}
 
 -- Variable to track write completion status
 local mspWriteComplete = false

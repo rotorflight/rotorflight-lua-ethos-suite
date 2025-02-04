@@ -179,8 +179,8 @@ local function wakeup()
 end
 
 return {
-    read = 111, -- msp_RC_TUNING
-    write = 204, -- msp_SET_RC_TUNING
+    read = 111, -- MSP_RC_TUNING    (keeping as legacy method for now due to some dynamic min/max cals that occur in page load)
+    write = 204, -- MSP_SET_RC_TUNING
     title = "Rates",
     reboot = false,
     eepromWrite = true,

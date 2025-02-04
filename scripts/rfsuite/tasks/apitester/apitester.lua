@@ -119,7 +119,7 @@ function apitester.wakeup()
             WRITEAPI.write()  
 
     end   
-    ]]-
+    ]]--
 
 
 end    
