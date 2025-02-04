@@ -110,6 +110,10 @@ local function build_position_map(param_table)
     local position_map = {}
     local current_byte = 1  -- Track the byte position dynamically
 
+    if rfsuite.config.mspApiPositionMapDebug == true then
+        print("------  mspApiPositionMapDebug start ------")
+    end   
+
     for _, param in ipairs(param_table) do
         local size = get_type_size(param.type)
         local start_pos = current_byte
@@ -134,6 +138,10 @@ local function build_position_map(param_table)
         end   
 
     end
+
+    if rfsuite.config.mspApiPositionMapDebug == true then
+        print("------  mspApiPositionMapDebug end ------")
+    end   
 
     return position_map
 end
