@@ -35,21 +35,9 @@ local MSP_MIN_BYTES = 14
 --  field (name)
 --  type (U8|U16|S16|etc) (see api.lua)
 --  byteorder (big|little)
-local MSP_API_STRUCTURE = {
-    { field = "governor_headspeed", type = "U16" },
-    { field = "governor_gain", type = "U8" },
-    { field = "governor_p_gain", type = "U8" },
-    { field = "governor_i_gain", type = "U8" },
-    { field = "governor_d_gain", type = "U8" },
-    { field = "governor_f_gain", type = "U8" },
-    { field = "governor_tta_gain", type = "U8" },
-    { field = "governor_tta_limit", type = "U8" },
-    { field = "governor_yaw_ff_weight", type = "U8" },
-    { field = "governor_cyclic_ff_weight", type = "U8" },
-    { field = "governor_collective_ff_weight", type = "U8" },
-    { field = "governor_max_throttle", type = "U8" },
-    { field = "governor_min_throttle", type = "U8" },
-}
+local apiPath = _G.paramMspApiPath -- passed as tmp global as called via dofile()
+local structure = assert(loadfile(apiPath .. "/structure.lua"))()
+local MSP_API_STRUCTURE = structure.MSP_API_STRUCTURE
 
 -- Variable to store parsed MSP data
 local mspData = nil
