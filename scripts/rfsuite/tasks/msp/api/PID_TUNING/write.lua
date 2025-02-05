@@ -117,7 +117,7 @@ local function write(suppliedPayload)
     * to update one value; the msp call needs to send the entire dataset.
     *
     * the defaults are expected to be a table in the same format as supplied
-    * by the MSP_STRUCTURE definition.  Its essentially a simple table of 
+    * by the MSP_API_STRUCTURE definition.  Its essentially a simple table of 
     * key=>value pairs.
     *           ['pid_2_I'] = 125,
     *            ['pid_2_B'] = 0,
@@ -129,7 +129,7 @@ local function write(suppliedPayload)
         local defaults = getDefaults()
 
         -- Validate if all fields have been set or fallback to defaults
-        for _, field in ipairs(MSP_STRUCTURE) do
+        for _, field in ipairs(MSP_API_STRUCTURE) do
             if payloadData[field.field] == nil then
                 if defaults[field.field] ~= nil then
                     payloadData[field.field] = defaults[field.field]
@@ -160,7 +160,7 @@ local function write(suppliedPayload)
         }
 
         -- Fill payload with data from payloadData table
-        for _, field in ipairs(MSP_STRUCTURE) do
+        for _, field in ipairs(MSP_API_STRUCTURE) do
 
             local byteorder = field.byteorder or "little" -- Default to little-endian
 
@@ -210,7 +210,7 @@ end
 
 -- Function to set a value dynamically
 local function setValue(fieldName, value)
-    for _, field in ipairs(MSP_STRUCTURE) do
+    for _, field in ipairs(MSP_API_STRUCTURE) do
         if field.field == fieldName then
             payloadData[fieldName] = value
             return true

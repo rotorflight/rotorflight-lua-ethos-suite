@@ -31,15 +31,10 @@ local MSP_API_SIMULATOR_RESPONSE = {209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209,
                                     7, 209, 7, 209, 7} -- Default simulator response
 local MSP_MIN_BYTES = 10 -- quite likely to be higher
 
--- Define the MSP response data structure
-local function genStructure(count)
-    local structure = {}
-    for i = 1, count do
-        table.insert(structure,
-                     {field = string.format("servo%d", i), type = "U16"})
-    end
-    return structure
-end
+local apiPath = _G.paramMspApiPath -- passed as tmp global as called via dofile()
+local structure = assert(loadfile(apiPath .. "/structure.lua"))()
+
+local MSP_API_STRUCTURE = {}  -- we simply declare var as we dynamically make this based on servo count in the read function.
 
 -- Variable to store parsed MSP data
 local mspData = nil
@@ -54,7 +49,8 @@ local function read(servoCount)
         command = MSP_API_CMD, -- Specify the MSP command
         processReply = function(self, buf)
             -- Parse the MSP data using the defined structure
-            local MSP_API_STRUCTURE = genStructure(servoCount)
+            local MSP_API_STRUCTURE = structure.MSP_API_STRUCTURE_READ(servoCount)
+
             mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE)
             if #buf >= MSP_MIN_BYTES then
                 local completeHandler = handlers.getCompleteHandler()

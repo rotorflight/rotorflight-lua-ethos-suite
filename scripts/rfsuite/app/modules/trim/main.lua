@@ -78,7 +78,7 @@ local function mixerOn(self)
     for i = 1, 4 do
 
         local message = {
-            command = 191, -- MSP_SET_SERVO_OVERRIDE
+            command = 191, -- MSP_SET_MIXER_OVERRIDE
             payload = {i}
         }
         rfsuite.bg.msp.mspHelper.writeU16(message.payload, 0)
@@ -95,7 +95,7 @@ local function mixerOff(self)
 
     for i = 1, 4 do
         local message = {
-            command = 191, -- MSP_SET_SERVO_OVERRIDE
+            command = 191, -- MSP_SET_MIXER_OVERRIDE
             payload = {i}
         }
         rfsuite.bg.msp.mspHelper.writeU16(message.payload, 2501)

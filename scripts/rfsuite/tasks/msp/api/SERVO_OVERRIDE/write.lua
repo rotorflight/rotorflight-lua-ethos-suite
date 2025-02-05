@@ -16,7 +16,7 @@
  * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
 -- Constants for MSP Commands
-local MSP_API_CMD = 43 -- Command identifier for saving  mixer config settings
+local MSP_API_CMD = 193 -- Command identifier for setting servo overide
 
 -- Define the MSP request data structure
 --  field (name)
@@ -24,7 +24,7 @@ local MSP_API_CMD = 43 -- Command identifier for saving  mixer config settings
 --  byteorder (big|little)
 local apiPath = _G.paramMspApiPath -- passed as tmp global as called via dofile()
 local structure = assert(loadfile(apiPath .. "/structure.lua"))()
-local MSP_API_STRUCTURE = structure.MSP_API_STRUCTURE
+local MSP_API_STRUCTURE = structure.MSP_API_STRUCTURE_WRITE
 
 -- Variable to track write completion
 local mspWriteComplete = false
@@ -188,6 +188,7 @@ end
 -- Function to set a value dynamically
 local function setValue(fieldName, value)
     for _, field in ipairs(MSP_API_STRUCTURE) do
+
         if field.field == fieldName then
             payloadData[fieldName] = value
             return true
