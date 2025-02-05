@@ -139,13 +139,6 @@ local function build_position_map(param_table)
             print(param.field .. ": " .. start_pos .. ":" .. end_pos)
             end
         end
-        if rfsuite.config.mspApiPositionMapDebug == true then
-            if start_pos == end_pos then
-                print(param.field .. ": " .. start_pos)
-            else
-                print(param.field .. ": " .. start_pos .. ":" .. end_pos)
-            end    
-        end   
 
     end
 

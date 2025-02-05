@@ -36,9 +36,9 @@ config.watchdogParam = 10                                           -- watchdog 
 
 
 -- features
-config.logEnable = true                                            -- will write debug log to: /scripts/rfsuite/logs/rfsuite.log [default = false]
+config.logEnable = false                                            -- will write debug log to: /scripts/rfsuite/logs/rfsuite.log [default = false]
 config.logEnableScreen = false                                      -- if config.logEnable is true then also print to screen [default = false]
-config.mspTxRxDebug = true                                         -- simple print of full msp payload that is sent and received [default = false]
+config.mspTxRxDebug = false                                         -- simple print of full msp payload that is sent and received [default = false]
 config.mspApiParsedDebug = false                                     -- debug log to print out the parsed buffer for the msp api query [default = false]
 config.mspApiStructureDebug = false                                 -- debug log to print out the msp structure for the msp api query [default = false]
 config.mspApiPositionMapDebug = true                                 -- debug log to print out the msp structure for the msp api query [default = false]
