@@ -4,6 +4,8 @@ import argparse
 from tqdm import tqdm
 import subprocess_conout
 import serial
+import subprocess
+import ast
 
 pbar = None
 
@@ -109,50 +111,41 @@ def main():
     parser.add_argument('--destfolders', type=str, default=None, help='Folders for deployment')
     parser.add_argument('--radio', action='store_true', default=None, help='Check radio connection')
     parser.add_argument('--radioDebug', action='store_true', default=None, help='Switch Radio to debug after deploying')
+    parser.add_argument('--radioDebugOnly', action='store_true', default=None, help='Switch Radio to debug after deploying')
 
     args = parser.parse_args()
 
-    radio_connected = False
-
     if args.radio:
-        if os.getenv('FRSKY_RADIO_TOOL_SRC'):
-            import importlib.util
-            import sys
-            spec = importlib.util.spec_from_file_location("frsky.radio", os.path.join(os.getenv('FRSKY_RADIO_TOOL_SRC'), "RadioInterface.py"))
-            RadioIf = importlib.util.module_from_spec(spec)
-            sys.modules["frsky.radio"] = RadioIf
-            spec.loader.exec_module(RadioIf)
-            intf = RadioIf.RadioInterface()
-            
-            if intf.connect():
-                radio_connected = True
-                if intf.isInDebugMode():
-                    print("Radio is in debug mode, leaving ...")
-                    intf.stop_usb_debug()
-                    #wait until drives are mounted again
-                    intf.waitForMassStorage()
-                paths = intf.getDrives()
-                args.destfolders = os.path.join(paths['radio'],'\scripts')
-            
-    copy_files(args.src, args.fileext, launch = args.sim, destfolders = args.destfolders)
+        if os.getenv('FRSKY_RADIO_TOOL_SRC') and not args.radioDebugOnly:
+            # call radio_cmd.exe from FRSKY_RADIO_TOOL_SRC
+            try:
+                paths = subprocess.check_output(os.path.join(os.getenv('FRSKY_RADIO_TOOL_SRC'), 'radio_cmd.exe -s'), shell=True)
+                paths = paths.decode("utf-8")
+                paths = ast.literal_eval(paths)
+                args.destfolders = os.path.join(paths['radio'],f'\scripts')
+            except subprocess.CalledProcessError as e:
+                print(f"Radio not connected: {e}")   
 
-    if args.radio and args.radioDebug:
-        if os.getenv('FRSKY_RADIO_TOOL_SRC'):
-            if radio_connected:
-                print("Entering Debug mode ...")
-                intf.start_usb_debug()                
-                #wait for debug mode and open serial port
-                intf.waitForSerialPort()
-                print("Radio connected in debug mode ...")
+    if not args.radioDebugOnly:             
+        copy_files(args.src, args.fileext, launch = args.sim, destfolders = args.destfolders)
 
-                serialPort = intf.getSerialPort()
-                ser = serial.Serial(port=serialPort)
-                if serialPort:
-                    while True:
-                        try:
-                            print(ser.readline().decode("utf-8"))
-                        except serial.serialutil.SerialException:
-                            exit()
+    if os.getenv('FRSKY_RADIO_TOOL_SRC'):
+        if args.radio and args.radioDebug:
+            if os.getenv('FRSKY_RADIO_TOOL_SRC'):
+                try:
+                    print("Entering Debug mode ...")
+                    serialPortName = subprocess.check_output(os.path.join(os.getenv('FRSKY_RADIO_TOOL_SRC'), 'radio_cmd.exe -d'), shell=True)
+                    serialPortName = serialPortName.decode("utf-8").rstrip()
+                    print("Radio connected in debug mode ...")
+                    ser = serial.Serial(port=serialPortName)
+                    if serialPortName:
+                        while True:
+                            try:
+                                print(ser.readline().decode("utf-8"))
+                            except serial.serialutil.SerialException:
+                                exit()
+                except subprocess.CalledProcessError as e:
+                    print(f"Radio not connected: {e}")
 
             
 

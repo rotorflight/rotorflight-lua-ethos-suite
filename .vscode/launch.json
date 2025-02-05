@@ -53,6 +53,19 @@
             "console": "integratedTerminal",
             "justMyCode": true,
         },
+        {
+            "name": "Radio: Debug",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/deploy-sim.py",
+            "args": [
+                "--radio",
+                "--radioDebug",
+                "--radioDebugOnly"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+        },
     ]
   }
   
