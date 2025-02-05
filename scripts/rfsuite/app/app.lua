@@ -215,10 +215,8 @@ function app.dataBindFields()
                 local f = app.Page.fields[i]
                 if f.vals and #f.vals > 0 then
                     local buf = {}
-                    for idx = 1, #f.vals do
-                        buf[idx] = app.Page.values[f.vals[idx]] or 0
-                    end
-                    
+                    for idx = 1, #f.vals do buf[idx] = app.Page.values[f.vals[idx]] or 0 end
+
                     local bits = #f.vals * 8
                     if #f.vals == 1 then
                         f.value = rfsuite.bg.msp.mspHelper.readU8(buf)
@@ -232,11 +230,9 @@ function app.dataBindFields()
                         rfsuite.utils.log("Unsupported field size: " .. #f.vals)
                         f.value = 0
                     end
-                    
-                    if f.min and f.min < 0 and (f.value & (1 << (bits - 1)) ~= 0) then
-                        f.value = f.value - (2 ^ bits)
-                    end
-                    
+
+                    if f.min and f.min < 0 and (f.value & (1 << (bits - 1)) ~= 0) then f.value = f.value - (2 ^ bits) end
+
                     f.value = f.value / (f.scale or 1)
                 end
             end
@@ -322,26 +318,17 @@ local function processPageReply(source, buf, methodType)
     -- we should not need this with the api - it is kept for legacy compatability
     app.Page.minBytes = app.Page.minBytes or 0
 
-    rfsuite.utils.log("app.Page is processing reply for cmd " .. tostring(source.command) ..
-        " len buf: " .. #buf .. " expected: " .. app.Page.minBytes .. " (Method: " .. methodType .. ")")
+    rfsuite.utils.log("app.Page is processing reply for cmd " .. tostring(source.command) .. " len buf: " .. #buf .. " expected: " .. app.Page.minBytes .. " (Method: " .. methodType .. ")")
 
     -- ensure page.values contains a copy of the buffer
     if methodType == "string" or methodType == "api" then
         app.Page.values = buf['buffer']
-    else    
+    else
         app.Page.values = buf
-    end    
+    end
 
     -- inject vals fields based on the positionmap returned by the api call
-    if app.Page.fields then
-        for i,v in ipairs(app.Page.fields) do
-               if v.apikey then
-                    if buf['positionmap'] and buf['positionmap'][v.apikey] then
-                        app.Page.fields[i].vals = buf['positionmap'][v.apikey]
-                    end
-               end 
-        end
-    end
+    if app.Page.fields then for i, v in ipairs(app.Page.fields) do if v.apikey then if buf['positionmap'] and buf['positionmap'][v.apikey] then app.Page.fields[i].vals = buf['positionmap'][v.apikey] end end end end
 
     -- run the postRead function to allow you to manipulate the data before regular processing.
     -- this is a legacy call that is only really used to directly manipulate the byte string.
@@ -380,7 +367,7 @@ function app.readPage()
     -- otherwise we revert to using app.Page.read using actual msp id numbers
     local methodType = app.Page.mspapi and type(app.Page.mspapi) or app.Page.read and type(app.Page.read) or nil
 
-    if methodType == "string" then                              -- api
+    if methodType == "string" then -- api
         local API = rfsuite.bg.msp.api.load(app.Page.mspapi, 0)
 
         API.setCompleteHandler(function(self, buf)
@@ -389,10 +376,10 @@ function app.readPage()
 
         API.read()
 
-    elseif methodType == "function" then                         -- function
-        app.Page.read(app.Page)  
+    elseif methodType == "function" then -- function
+        app.Page.read(app.Page)
 
-    elseif methodType == "number" then                           -- msp id
+    elseif methodType == "number" then -- msp id
         mspLoadSettings.command = app.Page.read
         mspLoadSettings.simulatorResponse = app.Page.simulatorResponse
         rfsuite.bg.msp.mspQueue:add(mspLoadSettings)
@@ -437,13 +424,17 @@ local function saveSettings()
 
         local API = rfsuite.bg.msp.api.load(app.Page.mspapi, 1) -- set param 2 to '1' as a write request
 
-        API.setCompleteHandler(function(self, buf) app.settingsSaved() end)
-        API.setErrorHandler(function(self, buf) app.triggers.saveFailed = true end)
+        API.setCompleteHandler(function(self, buf)
+            app.settingsSaved()
+        end)
+        API.setErrorHandler(function(self, buf)
+            app.triggers.saveFailed = true
+        end)
 
         if rfsuite.config.mspTxRxDebug or rfsuite.config.logEnable then logPayload() end
         API.write(payload)
 
-    -- Legacy method using an ID
+        -- Legacy method using an ID
     elseif methodType == "number" and app.Page.values then
         if rfsuite.config.mspTxRxDebug or rfsuite.config.logEnable then logPayload() end
 
@@ -457,20 +448,17 @@ local function saveSettings()
             app.triggers.saveFailed = true
         end
 
-    -- Custom function-based save method
+        -- Custom function-based save method
     elseif methodType == "function" then
         app.Page.write(app.Page)
     end
-
 
 end
 
 -- REQUEST A PAGE OVER MSP. THIS RUNS ON MOST CLOCK CYCLES WHEN DATA IS BEING REQUESTED
 local function requestPage()
 
-    if not rfsuite.bg or not rfsuite.bg.msp then
-        return
-    end
+    if not rfsuite.bg or not rfsuite.bg.msp then return end
 
     if not app.Page.reqTS or app.Page.reqTS + rfsuite.bg.msp.protocol.pageReqTimeout <= os.clock() then
 

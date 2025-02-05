@@ -76,7 +76,6 @@ rfsuite.utils = assert(loadfile("lib/utils.lua"))(config)
 rfsuite.tasks = {}
 rfsuite.bg = assert(loadfile("tasks/bg.lua"))(config)
 
-
 -- LuaFormatter off
 
 local function init()

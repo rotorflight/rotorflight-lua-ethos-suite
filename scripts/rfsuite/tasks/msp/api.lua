@@ -26,39 +26,15 @@ local apiCache = {}
 
 -- Define the API directory path based on the ethos version
 local apidir = "tasks/msp/api/"
-local api_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and apidir or
-                     (config.suiteDir .. apidir)
+local api_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and apidir or (config.suiteDir .. apidir)
 
 -- Function to load a specific API file by name and method
-local function loadAPI(apiName, method)
-
-    -- Ensure method is defaulted
-    if method == nil then
-        method = 0
-    end
-
-    -- Set valid options for the method call
-    local validMethods = { [0] = true, [1] = true, read = true, write = true }
-
-    if not validMethods[method] then
-        error("Error: " .. apiName .. " Invalid method(" .. tostring(method) .. ") Please use 'read|0' or 'write|1'")
-    end
-
-    -- Normalize method values
-    if method == 0 then method = "read" end
-    if method == 1 then method = "write" end
-
-    -- Initialize sub-table for method if it doesn't exist
-    if not apiCache[apiName] then
-        apiCache[apiName] = {}  -- Create a sub-table for methods
-    end
+local function loadAPI(apiName)
 
     -- Return cached version if already loaded for this method
-    if apiCache[apiName][method] then
-        return apiCache[apiName][method]
-    end
+    if apiCache[apiName] then return apiCache[apiName] end
 
-    local apiFilePath = api_path .. apiName .. "/" .. method .. ".lua"
+    local apiFilePath = api_path .. apiName .. ".lua"
 
     -- Check if file exists before trying to load it
     if rfsuite.utils.file_exists(apiFilePath) then
@@ -69,12 +45,12 @@ local function loadAPI(apiName, method)
 
         if type(apiModule) == "table" and (apiModule.read or apiModule.write) then
             -- Store the loaded API in the cache
-            apiCache[apiName][method] = apiModule
-            rfsuite.utils.log("Loaded API:", apiName, "Method:", method)
+            apiCache[apiName] = apiModule
+            rfsuite.utils.log("Loaded API:", apiName)
             if rfsuite.config.mspApiPositionMapDebug == true then
                 print("--------------------------------------------")
-                print("Loaded API:", apiName, "Method:", method)
-            end             
+                print("Loaded API:", apiName)
+            end
             return apiModule
         else
             rfsuite.utils.log("Error: API file '" .. apiName .. "' does not contain valid read or write functions.")
@@ -101,97 +77,77 @@ function apiLoader.parseMSPData(buf, structure, processed, other)
 
     -- Function to get byte size from type
     local function get_type_size(data_type)
-        local type_sizes = {
-            U8 = 1,  U16 = 2,  U24 = 3,  U32 = 4,
-            S8 = 1,  S16 = 2,  S24 = 3,  S32 = 4
-        }
-        return type_sizes[data_type] or 2  -- Default to U16 if unknown
+        local type_sizes = {U8 = 1, U16 = 2, U24 = 3, U32 = 4, S8 = 1, S16 = 2, S24 = 3, S32 = 4}
+        return type_sizes[data_type] or 2 -- Default to U16 if unknown
     end
 
     -- map of values to byte positions
--- Function to build position map considering type sizes
-local function build_position_map(param_table)
-    local position_map = {}
-    local current_byte = 1  -- Track the byte position dynamically
+    -- Function to build position map considering type sizes
+    local function build_position_map(param_table)
+        local position_map = {}
+        local current_byte = 1 -- Track the byte position dynamically
 
-    if rfsuite.config.mspApiPositionMapDebug == true then
-        print("------  mspApiPositionMapDebug start ------")
-    end   
+        if rfsuite.config.mspApiPositionMapDebug == true then print("------  mspApiPositionMapDebug start ------") end
 
-    for _, param in ipairs(param_table) do
-        local size = get_type_size(param.type)
-        local start_pos = current_byte
-        local end_pos = start_pos + size - 1
+        for _, param in ipairs(param_table) do
+            local size = get_type_size(param.type)
+            local start_pos = current_byte
+            local end_pos = start_pos + size - 1
 
-        -- Store as single number if start and end are the same
-        if start_pos == end_pos then
-            position_map[param.field] = {start_pos}
-        else
-            position_map[param.field] = {start_pos, end_pos}
-        end
-
-        -- Move to the next available byte position
-        current_byte = end_pos + 1
-        if rfsuite.config.mspApiPositionMapDebug == true then
+            -- Store as single number if start and end are the same
             if start_pos == end_pos then
-            print(param.field .. ": " .. start_pos)
+                position_map[param.field] = {start_pos}
             else
-            print(param.field .. ": " .. start_pos .. ":" .. end_pos)
+                position_map[param.field] = {start_pos, end_pos}
             end
+
+            -- Move to the next available byte position
+            current_byte = end_pos + 1
+            if rfsuite.config.mspApiPositionMapDebug == true then
+                if start_pos == end_pos then
+                    print(param.field .. ": " .. start_pos)
+                else
+                    print(param.field .. ": " .. start_pos .. ":" .. end_pos)
+                end
+            end
+
         end
 
+        if rfsuite.config.mspApiPositionMapDebug == true then
+            print("------  mspApiPositionMapDebug end --------")
+            print(" ")
+        end
+
+        return position_map
     end
-
-    
-    if rfsuite.config.mspApiPositionMapDebug == true then
-        print("------  mspApiPositionMapDebug end --------")
-        print(" ")
-    end   
-
-    return position_map
-end
 
     for _, field in ipairs(structure) do
 
         local byteorder = field.byteorder or "little" -- Default to little-endian
 
         if field.type == "U8" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU8(buf,
-                                                                      offset)
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU8(buf, offset)
             offset = offset + 1
         elseif field.type == "S8" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS8(buf,
-                                                                      offset)
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS8(buf, offset)
             offset = offset + 1
         elseif field.type == "U16" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU16(buf,
-                                                                       offset,
-                                                                       byteorder)
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU16(buf, offset, byteorder)
             offset = offset + 2
         elseif field.type == "S16" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS16(buf,
-                                                                       offset,
-                                                                       byteorder)
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS16(buf, offset, byteorder)
             offset = offset + 2
         elseif field.type == "U24" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU24(buf,
-                                                                       offset,
-                                                                       byteorder)
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU24(buf, offset, byteorder)
             offset = offset + 3
         elseif field.type == "S24" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS24(buf,
-                                                                       offset,
-                                                                       byteorder)
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS24(buf, offset, byteorder)
             offset = offset + 3
         elseif field.type == "U32" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU32(buf,
-                                                                       offset,
-                                                                       byteorder)
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU32(buf, offset, byteorder)
             offset = offset + 4
         elseif field.type == "S32" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS32(buf,
-                                                                       offset,
-                                                                       byteorder)
+            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS32(buf, offset, byteorder)
             offset = offset + 4
         else
             return nil -- Unknown data type, fail safely
@@ -211,22 +167,14 @@ end
     data['structure'] = structure
     data['positionmap'] = build_position_map(structure)
     -- add in processed table if supplied
-    if processed then
-        data['processed'] = processed
-    end
+    if processed then data['processed'] = processed end
     -- add in other table if supplied
-    if other then
-        data['other'] = other
-    end    
+    if other then data['other'] = other end
 
-    if rfsuite.config.mspApiStructureDebug == true then
-        rfsuite.utils.print_r(data['structure'])
-    end
+    if rfsuite.config.mspApiStructureDebug == true then rfsuite.utils.print_r(data['structure']) end
 
-    if rfsuite.config.mspApiParsedDebug == true then
-        rfsuite.utils.print_r(data['parsed'])
-    end    
- 
+    if rfsuite.config.mspApiParsedDebug == true then rfsuite.utils.print_r(data['parsed']) end
+
     return data
 end
 
@@ -264,12 +212,7 @@ function apiLoader.createHandlers()
     end
 
     -- Return an instance with functions that operate on separate data
-    return {
-        setCompleteHandler = setCompleteHandler,
-        setErrorHandler = setErrorHandler,
-        getCompleteHandler = getCompleteHandler,
-        getErrorHandler = getErrorHandler
-    }
+    return {setCompleteHandler = setCompleteHandler, setErrorHandler = setErrorHandler, getCompleteHandler = getCompleteHandler, getErrorHandler = getErrorHandler}
 end
 
 return apiLoader

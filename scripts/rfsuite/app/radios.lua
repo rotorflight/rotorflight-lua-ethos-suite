@@ -51,7 +51,7 @@ local supportedRadios = {
             logGraphWidthPercentage = 0.62,
             logGraphButtonsPerRow = 4,
             logGraphKeyHeight = 45,
-            logGraphHeightOffset = 10,            
+            logGraphHeightOffset = 10,
             logKeyFont = FONT_XS
         }
     },
@@ -77,7 +77,7 @@ local supportedRadios = {
             logGraphWidthPercentage = 0.65,
             logGraphButtonsPerRow = 4,
             logGraphKeyHeight = 38,
-            logGraphHeightOffset = 0,            
+            logGraphHeightOffset = 0,
             logKeyFont = FONT_XS
         }
     },
@@ -104,7 +104,7 @@ local supportedRadios = {
             logGraphWidthPercentage = 0.65,
             logGraphButtonsPerRow = 4,
             logGraphKeyHeight = 50,
-            logGraphHeightOffset = 0,            
+            logGraphHeightOffset = 0,
             logKeyFont = FONT_XS
         }
     }

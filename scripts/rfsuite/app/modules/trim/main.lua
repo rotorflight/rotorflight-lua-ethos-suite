@@ -16,57 +16,52 @@ local currentIdleThrottleTrim
 local currentIdleThrottleTrimLast
 local clear2send = true
 
+fields[#fields + 1] = {t = "Roll trim %", help = "mixerSwashTrim", min = -1000, max = 1000, decimals = 1, scale = 10, apikey = "swash_trim_0", instantChange = true}
 
-fields[#fields + 1] = {t = "Roll trim %", help = "mixerSwashTrim", min = -1000, max = 1000, decimals = 1, scale = 10, apikey="swash_trim_0", instantChange=true}
+fields[#fields + 1] = {t = "Pitch trim %", help = "mixerSwashTrim", min = -1000, max = 1000, decimals = 1, scale = 10, apikey = "swash_trim_1", instantChange = true}
 
-fields[#fields + 1] = {t = "Pitch trim %", help = "mixerSwashTrim", min = -1000, max = 1000, decimals = 1, scale = 10, apikey="swash_trim_1", instantChange=true}
-
-fields[#fields + 1] = {t = "Col. trim %", help = "mixerSwashTrim", min = -1000, max = 1000, decimals = 1, scale = 10, apikey="swash_trim_2", instantChange=true}
+fields[#fields + 1] = {t = "Col. trim %", help = "mixerSwashTrim", min = -1000, max = 1000, decimals = 1, scale = 10, apikey = "swash_trim_2", instantChange = true}
 
 -- note.  the same vals are used for center trim motor and yaw trim - but they are multiplied and saved in different ways
-if rfsuite.config.tailMode == 1 or rfsuite.config.tailMode == 2 then 
-    fields[#fields + 1] = {t = "Center trim for tail motor %", help = "mixerTailMotorCenterTrim", inline = 1, min = -500, max = 500,  decimals = 1, scale = 10, apikey="tail_center_trim", instantChange=true} 
-end
+if rfsuite.config.tailMode == 1 or rfsuite.config.tailMode == 2 then fields[#fields + 1] = {t = "Center trim for tail motor %", help = "mixerTailMotorCenterTrim", inline = 1, min = -500, max = 500, decimals = 1, scale = 10, apikey = "tail_center_trim", instantChange = true} end
 
-if rfsuite.config.tailMode == 0 then 
-    fields[#fields + 1] = {t = "Yaw. trim %", help = "mixerTailMotorCenterTrim", inline = 1, min = -1043, max = 1043, mult = 0.0239923224568138, decimals = 1, apikey="tail_center_trim", instantChange=true} 
-end
+if rfsuite.config.tailMode == 0 then fields[#fields + 1] = {t = "Yaw. trim %", help = "mixerTailMotorCenterTrim", inline = 1, min = -1043, max = 1043, mult = 0.0239923224568138, decimals = 1, apikey = "tail_center_trim", instantChange = true} end
 
 local function saveDataEnd()
-    local message = {command = 250, 
-                     payload = {},
-                     processReply = function(self, buf)
-                        clear2send = true
-                     end, 
-                     errorHandler = function(self, buf)
-                        clear2send = true
-                    end,                    
-                    }
+    local message = {
+        command = 250,
+        payload = {},
+        processReply = function(self, buf)
+            clear2send = true
+        end,
+        errorHandler = function(self, buf)
+            clear2send = true
+        end
+    }
     rfsuite.bg.msp.mspQueue:add(message)
 
-end    
+end
 
 local function saveData()
 
     clear2send = false
     local payload = rfsuite.app.Page.values
     local message = {
-                    command = 43, 
-                    payload = payload,
-                    processReply = function(self, buf)
-                        saveDataEnd()
-                    end,
-                    errorHandler = function(self, buf)
-                        clear2send = true
-                    end,
-                }
+        command = 43,
+        payload = payload,
+        processReply = function(self, buf)
+            saveDataEnd()
+        end,
+        errorHandler = function(self, buf)
+            clear2send = true
+        end
+    }
 
-    if rfsuite.config.mspTxRxDebug or rfsuite.config.logEnable then 
-            local logData = "Saving: {" .. rfsuite.utils.joinTableItems(payload, ", ") .. "}"
-            rfsuite.utils.log(logData)
-            if rfsuite.config.mspTxRxDebug then print(logData) end
-    end                
-
+    if rfsuite.config.mspTxRxDebug or rfsuite.config.logEnable then
+        local logData = "Saving: {" .. rfsuite.utils.joinTableItems(payload, ", ") .. "}"
+        rfsuite.utils.log(logData)
+        if rfsuite.config.mspTxRxDebug then print(logData) end
+    end
 
     rfsuite.bg.msp.mspQueue:add(message)
 end
@@ -145,7 +140,7 @@ local function wakeup(self)
         currentPitchTrim = rfsuite.app.Page.fields[2].value
         local now = os.clock()
         local settleTime = 0.85
-        if ((now - lastChangeTime) >= settleTime) and rfsuite.bg.msp.mspQueue:isProcessed()  and clear2send == true then
+        if ((now - lastChangeTime) >= settleTime) and rfsuite.bg.msp.mspQueue:isProcessed() and clear2send == true then
             if currentPitchTrim ~= currentPitchTrimLast then
                 currentPitchTrimLast = currentPitchTrim
                 lastChangeTime = now
@@ -156,7 +151,7 @@ local function wakeup(self)
         currentCollectiveTrim = rfsuite.app.Page.fields[3].value
         local now = os.clock()
         local settleTime = 0.85
-        if ((now - lastChangeTime) >= settleTime) and rfsuite.bg.msp.mspQueue:isProcessed()  and clear2send == true then
+        if ((now - lastChangeTime) >= settleTime) and rfsuite.bg.msp.mspQueue:isProcessed() and clear2send == true then
             if currentCollectiveTrim ~= currentCollectiveTrimLast then
                 currentCollectiveTrimLast = currentCollectiveTrim
                 lastChangeTime = now
@@ -275,19 +270,4 @@ local function onNavMenu(self)
 
 end
 
-return {
-    mspapi = "MIXER_CONFIG",
-    eepromWrite = true,
-    reboot = false,
-    title = "Mixer",
-    labels = labels,
-    fields = fields,
-    mixerOff = mixerOff,
-    mixerOn = mixerOn,
-    postLoad = postLoad,
-    onToolMenu = onToolMenu,
-    onNavMenu = onNavMenu,
-    wakeup = wakeup,
-    saveData = saveData,
-    navButtons = {menu = true, save = true, reload = true, tool = true, help = true}
-}
+return {mspapi = "MIXER_CONFIG", eepromWrite = true, reboot = false, title = "Mixer", labels = labels, fields = fields, mixerOff = mixerOff, mixerOn = mixerOn, postLoad = postLoad, onToolMenu = onToolMenu, onNavMenu = onNavMenu, wakeup = wakeup, saveData = saveData, navButtons = {menu = true, save = true, reload = true, tool = true, help = true}}

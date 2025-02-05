@@ -21,15 +21,8 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {
-        "Flip to upright: Flip the heli upright when rescue is activated.", 
-        "Pull-up: How much collective and for how long to arrest the fall.",
-        "Climb: How much collective to maintain a steady climb - and how long.", 
-        "Hover: How much collective to maintain a steady hover.",
-        "Flip: How long to wait before aborting because the flip did not work.", 
-        "Gains: How hard to fight to keep heli level when engaging rescue mode.",
-        "Rate and Accel: Max rotation and acceleration rates when leveling during rescue."
-}
+data['help']['default'] = {"Flip to upright: Flip the heli upright when rescue is activated.", "Pull-up: How much collective and for how long to arrest the fall.", "Climb: How much collective to maintain a steady climb - and how long.", "Hover: How much collective to maintain a steady hover.", "Flip: How long to wait before aborting because the flip did not work.",
+                           "Gains: How hard to fight to keep heli level when engaging rescue mode.", "Rate and Accel: Max rotation and acceleration rates when leveling during rescue."}
 
 data['fields'] = {
     profilesRescueFlipMode = {t = "If rescue is activated while inverted, flip to upright - or remain inverted."},
@@ -43,7 +36,7 @@ data['fields'] = {
     profilesRescueLevelGain = {t = "Determine how agressively the heli levels during rescue."},
     profilesRescueFlipGain = {t = "Determine how agressively the heli flips during inverted rescue."},
     profilesRescueMaxRate = {t = "Limit rescue roll/pitch rate. Larger helicopters may need slower rotation rates."},
-    profilesRescueMaxAccel = {t = "Limit how fast the helicopter accelerates into a roll/pitch. Larger helicopters may need slower acceleration."},
+    profilesRescueMaxAccel = {t = "Limit how fast the helicopter accelerates into a roll/pitch. Larger helicopters may need slower acceleration."}
 }
 
 return data

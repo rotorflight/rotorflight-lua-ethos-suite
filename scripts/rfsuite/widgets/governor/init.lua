@@ -17,10 +17,10 @@
  * 
 ]] --
 local init = {
-    script = "governor.lua",            -- run this script
-    varname = "rf2gov",                 -- variable name used in the suite. (if nil, we use the script var with .lua removed)
-    name = "Rotorflight Governor",      -- name of the widget
-    key = "rf2gov",                     -- key id used for widget
+    script = "governor.lua", -- run this script
+    varname = "rf2gov", -- variable name used in the suite. (if nil, we use the script var with .lua removed)
+    name = "Rotorflight Governor", -- name of the widget
+    key = "rf2gov" -- key id used for widget
 }
 
 return init

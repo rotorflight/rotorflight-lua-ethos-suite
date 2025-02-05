@@ -18,7 +18,6 @@
  * 
 
 ]] --
-
 local sections = {}
 
 sections[#sections + 1] = {title = "Flight Tuning"}

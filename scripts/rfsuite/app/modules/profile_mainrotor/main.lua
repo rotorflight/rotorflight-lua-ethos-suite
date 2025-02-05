@@ -5,7 +5,7 @@ local activateWakeup = false
 local currentProfileChecked = false
 
 labels[#labels + 1] = {t = "Collective Pitch Compensation", t2 = "Col. Pitch Compensation", label = "cpcomp", inline_size = 40.15}
-fields[#fields + 1] = {t = "", help = "profilesPitchFFCollective", inline = 1, label = "cpcomp", min = 0, max = 250, default = 0, apikey="pitch_collective_ff_gain"}
+fields[#fields + 1] = {t = "", help = "profilesPitchFFCollective", inline = 1, label = "cpcomp", min = 0, max = 250, default = 0, apikey = "pitch_collective_ff_gain"}
 
 -- main rotor settings
 labels[#labels + 1] = {t = "Cyclic Cross coupling", label = "cycliccc1", inline_size = 40.15}
@@ -45,14 +45,4 @@ local function wakeup()
 
 end
 
-return {
-     mspapi = "PID_PROFILE",   
-    title = "Main Rotor",
-    refreshOnProfileChange = true,
-    reboot = false,
-    eepromWrite = true,
-    labels = labels,
-    fields = fields,
-    postLoad = postLoad,
-    wakeup = wakeup
-}
+return {mspapi = "PID_PROFILE", title = "Main Rotor", refreshOnProfileChange = true, reboot = false, eepromWrite = true, labels = labels, fields = fields, postLoad = postLoad, wakeup = wakeup}

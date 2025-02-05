@@ -21,12 +21,7 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {
-        "Typically you would not edit this page without checking your Blackbox logs!", 
-        "Gyro lowpass: Lowpass filters for the gyro signal. Typically left at default.",
-        "Gyro notch filters: Use for filtering specific frequency ranges. Typically not needed in most helis.",
-        "Dynamic Notch Filters: Automatically creates notch filters within the min and max frequency range."
-}
+data['help']['default'] = {"Typically you would not edit this page without checking your Blackbox logs!", "Gyro lowpass: Lowpass filters for the gyro signal. Typically left at default.", "Gyro notch filters: Use for filtering specific frequency ranges. Typically not needed in most helis.", "Dynamic Notch Filters: Automatically creates notch filters within the min and max frequency range."}
 
 data['fields'] = {
     gyroLowpassFilterCutoff = {t = "Lowpass filter cutoff frequency in Hz."},
@@ -35,7 +30,7 @@ data['fields'] = {
     gyroDynamicNotchCount = {t = "Without RPM filters, 4-6 is recommended. With the RPM filters, 2-4 is recommended."},
     gyroDynamicNotchQ = {t = "Values between 2 and 4 recommended. Lower than 2 will increase filter delay and may degrade flight performance."},
     gyroDynamicNotchMinHz = {t = "Lowest incoming noise frequency to be filtered. Should be slightly below lowest main rotor fundamental, but no less than 20Hz."},
-    gyroDynamicNotchMaxHz = {t = "Highest incoming noise frequency to be filtered. Should be 10-20% above highest tail rotor fundamental."},
+    gyroDynamicNotchMaxHz = {t = "Highest incoming noise frequency to be filtered. Should be 10-20% above highest tail rotor fundamental."}
 }
 
 return data
