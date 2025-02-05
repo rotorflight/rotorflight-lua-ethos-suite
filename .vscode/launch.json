@@ -27,12 +27,28 @@
             "justMyCode": true,
         },
         {
-            "name": "Remote: Deploy",
+            "name": "Radio: Deploy",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/bin/deploy-sim.py",
             "args": [
-                "--src", "${env:FRSKY_REMOTE_SRC}",
+                "--src", "${workspaceFolder}",
+                "--destfolders","${env:FRSKY_REMOTE_SRC}",
+                "--radio"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+        },
+        {
+            "name": "Radio: Deploy & Debug",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/deploy-sim.py",
+            "args": [
+                "--src", "${workspaceFolder}",
+                "--destfolders","${env:FRSKY_REMOTE_SRC}",
+                "--radio",
+                "--radioDebug"
             ],
             "console": "integratedTerminal",
             "justMyCode": true,
