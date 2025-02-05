@@ -71,6 +71,10 @@ local function loadAPI(apiName, method)
             -- Store the loaded API in the cache
             apiCache[apiName][method] = apiModule
             rfsuite.utils.log("Loaded API:", apiName, "Method:", method)
+            if rfsuite.config.mspApiPositionMapDebug == true then
+                print("--------------------------------------------")
+                print("Loaded API:", apiName, "Method:", method)
+            end             
             return apiModule
         else
             rfsuite.utils.log("Error: API file '" .. apiName .. "' does not contain valid read or write functions.")
@@ -128,7 +132,13 @@ local function build_position_map(param_table)
 
         -- Move to the next available byte position
         current_byte = end_pos + 1
-
+        if rfsuite.config.mspApiPositionMapDebug == true then
+            if start_pos == end_pos then
+            print(param.field .. ": " .. start_pos)
+            else
+            print(param.field .. ": " .. start_pos .. ":" .. end_pos)
+            end
+        end
         if rfsuite.config.mspApiPositionMapDebug == true then
             if start_pos == end_pos then
                 print(param.field .. ": " .. start_pos)
@@ -139,8 +149,10 @@ local function build_position_map(param_table)
 
     end
 
+    
     if rfsuite.config.mspApiPositionMapDebug == true then
-        print("------  mspApiPositionMapDebug end ------")
+        print("------  mspApiPositionMapDebug end --------")
+        print(" ")
     end   
 
     return position_map
@@ -196,6 +208,7 @@ end
     -- Detect unused bytes
     if offset <= #buf then
         rfsuite.utils.log("Warning: Unused bytes in buffer (" .. (#buf - offset + 1) .. " extra bytes)")
+        print("Warning: Unused bytes in buffer (" .. (#buf - offset + 1) .. " extra bytes)")
     end
 
     -- prepare data for return

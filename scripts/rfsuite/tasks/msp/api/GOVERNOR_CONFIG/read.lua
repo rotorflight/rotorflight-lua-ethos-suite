@@ -28,7 +28,7 @@
 -- Constants for MSP Commands
 local MSP_API_CMD = 142 -- Command identifier for MSP Mixer Config
 local MSP_API_SIMULATOR_RESPONSE = {3, 100, 0, 100, 0, 20, 0, 20, 0, 30, 0, 10,
-                                    0, 0, 0, 0, 0, 50, 0, 10, 5, 10, 0, 10} -- Default simulator response
+                                    0, 0, 0, 0, 0, 50, 0, 10, 5, 10, 0, 10, 10} -- Default simulator response
 local MSP_MIN_BYTES = 24
 
 -- Define the MSP response data structure
