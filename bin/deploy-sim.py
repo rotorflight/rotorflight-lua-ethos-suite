@@ -45,7 +45,7 @@ def copy_files(src, fileext=None, launch=False, destfolders=None):
         logs_folder = os.path.join(tgt_folder, 'logs')
 
         # Preserve the logs folder by moving it temporarily
-        if os.path.exists(logs_folder):
+        if os.path.exists(logs_folder) and not fileext == "fast":
             print(f"Backing up logs ...")
             os.makedirs(logs_temp, exist_ok=True)  
             shutil.copytree(logs_folder, logs_temp, dirs_exist_ok=True)
@@ -64,6 +64,26 @@ def copy_files(src, fileext=None, launch=False, destfolders=None):
                 for file in files:
                     if file.endswith('.lua'):
                         shutil.copy(os.path.join(root, file), os.path.join(tgt_folder, file))
+
+        elif fileext == "fast":
+            lua_src = os.path.join(srcfolder, 'scripts', tgt)
+            for root, _, files in os.walk(lua_src):
+                for file in files:
+                    src_file = os.path.join(root, file)
+                    rel_path = os.path.relpath(src_file, lua_src)
+                    tgt_file = os.path.join(tgt_folder, rel_path)
+
+                    # Ensure the target directory exists
+                    os.makedirs(os.path.dirname(tgt_file), exist_ok=True)
+
+                    # If target file exists, compare and copy only if source is newer
+                    if os.path.exists(tgt_file):
+                        if os.stat(src_file).st_mtime > os.stat(tgt_file).st_mtime:
+                            shutil.copy(src_file, tgt_file)
+                            print(f"Copying {file} to {tgt_file}")
+                    else:
+                        shutil.copy(src_file, tgt_file)
+                        print(f"Copying {file} to {tgt_file}")
         else:
             # No specific file extension, remove and copy all files
             if os.path.exists(tgt_folder):
