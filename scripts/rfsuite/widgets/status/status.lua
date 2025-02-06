@@ -272,9 +272,8 @@ function status.create(widget)
 
     status.initTime = os.clock()
 
-
     status.lastBitmap = model.bitmap()
-    default_image = lcd.loadBitmap(model.bitmap()) or rfsuite.utils.loadImage("widgets/status/default_image.png")  or nil
+    default_image = lcd.loadBitmap(model.bitmap()) or rfsuite.utils.loadImage("widgets/status/default_image.png") or nil
 
     if rfsuite.utils.ethosVersion() < rfsuite.config.ethosVersion then
         status.screenError(rfsuite.config.ethosVersionString)
@@ -1004,7 +1003,6 @@ function status.missingSensors()
     return
 end
 
-
 function status.noTelem()
     lcd.font(FONT_STD)
     local str = "NO LINK"
@@ -1110,14 +1108,14 @@ function status.getThemeInfo()
     }
 
     local themeConfigs = {
- 
-        ["784x294"] = {colSpacing = 4, fullBoxW = 262, fullBoxH = h / 2, smallBoxSensortextOFFSET = -5, fontTITLE = FONT_XS}, 
-        ["784x316"] = {colSpacing = 4, fullBoxW = 262, fullBoxH = h / 2, smallBoxSensortextOFFSET = -5, fontTITLE = FONT_XS},  -- no title
+
+        ["784x294"] = {colSpacing = 4, fullBoxW = 262, fullBoxH = h / 2, smallBoxSensortextOFFSET = -5, fontTITLE = FONT_XS},
+        ["784x316"] = {colSpacing = 4, fullBoxW = 262, fullBoxH = h / 2, smallBoxSensortextOFFSET = -5, fontTITLE = FONT_XS}, -- no title
         ["472x191"] = {colSpacing = 2, fullBoxW = 158, fullBoxH = h / 2, smallBoxSensortextOFFSET = -8, fontTITLE = 768},
-        ["472x210"] = {colSpacing = 2, fullBoxW = 158, fullBoxH = h / 2, smallBoxSensortextOFFSET = -8, fontTITLE = 768},          -- no title 
+        ["472x210"] = {colSpacing = 2, fullBoxW = 158, fullBoxH = h / 2, smallBoxSensortextOFFSET = -8, fontTITLE = 768}, -- no title 
         ["630x236"] = {colSpacing = 3, fullBoxW = 210, fullBoxH = h / 2, smallBoxSensortextOFFSET = -10, fontTITLE = 768},
-        ["630x258"] = {colSpacing = 3, fullBoxW = 210, fullBoxH = h / 2, smallBoxSensortextOFFSET = -10, fontTITLE = 768},        -- no title
-        ["427x158"] = {colSpacing = 2, fullBoxW = 158, fullBoxH = h / 2, smallBoxSensortextOFFSET = -10, fontTITLE = FONT_XS}  -- not supported anymore as X12
+        ["630x258"] = {colSpacing = 3, fullBoxW = 210, fullBoxH = h / 2, smallBoxSensortextOFFSET = -10, fontTITLE = 768}, -- no title
+        ["427x158"] = {colSpacing = 2, fullBoxW = 158, fullBoxH = h / 2, smallBoxSensortextOFFSET = -10, fontTITLE = FONT_XS} -- not supported anymore as X12
     }
 
     local configKey = string.format("%dx%d", tw, th)
@@ -1295,13 +1293,11 @@ function status.telemetryBoxImage(x, y, w, h, gfx)
     if gfx ~= nil then
         lcd.drawBitmap(x, y, gfx, w - theme.colSpacing, h - theme.colSpacing)
     else
-        lcd.drawBitmap(x, y, default_image, w - theme.colSpacing, h - theme.colSpacing)      
+        lcd.drawBitmap(x, y, default_image, w - theme.colSpacing, h - theme.colSpacing)
     end
 end
 
 function status.paint(widget)
-
-
 
     if not rfsuite.bg.active() then
 
@@ -1402,17 +1398,15 @@ function status.paint(widget)
                 return
             end
 
-  
             -- widget size
-            local validSizes = {
-                               {w = 784, h = 294}, -- X20, X20PRO etc
-                               {w = 784, h = 316}, -- X20, X20PRO etc (no title)
-                               {w = 472, h = 191}, -- TWXLITE,X18,X18S
-                               {w = 472, h = 210}, -- TWXLITE,X18,X18S (no title)
-                               {w = 630, h = 236}, -- X14
-                               {w = 630, h = 258}, -- X14 (no title)                              
-                               {w = 472, h = 158} -- X10,X12
-                            }
+            local validSizes = {{w = 784, h = 294}, -- X20, X20PRO etc
+            {w = 784, h = 316}, -- X20, X20PRO etc (no title)
+            {w = 472, h = 191}, -- TWXLITE,X18,X18S
+            {w = 472, h = 210}, -- TWXLITE,X18,X18S (no title)
+            {w = 630, h = 236}, -- X14
+            {w = 630, h = 258}, -- X14 (no title)                              
+            {w = 472, h = 158} -- X10,X12
+            }
 
             local isValidSize = false
             for _, size in ipairs(validSizes) do
@@ -1861,9 +1855,7 @@ function status.paint(widget)
                     sensorVALUE = "-"
                 else
                     sensorVALUE = csSensor:value()
-                    if csSensor:protocolDecimals() == 0 then
-                        sensorVALUE = math.floor(sensorVALUE)
-                    end                   
+                    if csSensor:protocolDecimals() == 0 then sensorVALUE = math.floor(sensorVALUE) end
                 end
 
                 if csSensor:name() == nil then
@@ -1910,9 +1902,7 @@ function status.paint(widget)
                     sensorVALUE = "-"
                 else
                     sensorVALUE = csSensor:value()
-                    if csSensor:protocolDecimals() == 0 then
-                        sensorVALUE = math.floor(sensorVALUE)
-                    end
+                    if csSensor:protocolDecimals() == 0 then sensorVALUE = math.floor(sensorVALUE) end
 
                 end
 
@@ -2038,7 +2028,7 @@ function status.paint(widget)
                 else
 
                     if sensorTGT == 'customsensor1' or sensorTGT == 'customsensor2' then
-  
+
                         sensorVALUE = status.sensordisplay[sensorTGT]['value']
                         sensorUNIT = status.sensordisplay[sensorTGT]['unit']
                         sensorMIN = status.sensordisplay[sensorTGT]['min']
@@ -2087,8 +2077,8 @@ function status.paint(widget)
                         if status.gfx_model ~= nil then
                             status.telemetryBoxImage(posX, posY, boxW, boxH / 2 - (theme.colSpacing / 2), status.gfx_model)
                         else
-                           status.telemetryBoxImage(posX, posY, boxW, boxH / 2 - (theme.colSpacing / 2), default_image)     
-                        end    
+                            status.telemetryBoxImage(posX, posY, boxW, boxH / 2 - (theme.colSpacing / 2), default_image)
+                        end
                         sensorTGT = "governor"
                         sensorVALUE = status.sensordisplay[sensorTGT]['value']
                         sensorUNIT = status.sensordisplay[sensorTGT]['unit']
@@ -2332,15 +2322,13 @@ function status.paint(widget)
 
             -- initiate timed sensor validation
             local validateSensors = {}
-            if rfsuite.bg and rfsuite.bg.telemetry then
-                validateSensors= rfsuite.bg.telemetry.validateSensors()
-            end
+            if rfsuite.bg and rfsuite.bg.telemetry then validateSensors = rfsuite.bg.telemetry.validateSensors() end
 
             if status.linkUP == false and environment.simulation == false then
                 status.noTelem()
                 status.initTime = os.clock()
             elseif (os.clock() - status.initTime) >= 5 and validateSensors and (#rfsuite.bg.telemetry.validateSensors() > 0) then
-                status.missingSensors()  
+                status.missingSensors()
             elseif status.idleupswitchParam and status.idleupswitchParam:state() then
                 local armSource = rfsuite.bg.telemetry.getSensorSource("armflags")
                 if armSource then
@@ -3653,19 +3641,15 @@ function status.wakeupUI(widget)
 
         --  find and set image to suite based on craftname or model id
         if lastName ~= rfsuite.config.craftName or lastID ~= rfsuite.config.modelID then
-            if rfsuite.config.craftName ~= nil then
-                image1 = "/bitmaps/models/" .. rfsuite.config.craftName .. ".png"          
-            end
-            if rfsuite.config.modelID ~= nil then
-                image2 = "/bitmaps/models/" .. rfsuite.config.modelID .. ".png"          
-            end
-    
-            status.gfx_model = rfsuite.utils.loadImage(image1,image2,default_image)  
-    
+            if rfsuite.config.craftName ~= nil then image1 = "/bitmaps/models/" .. rfsuite.config.craftName .. ".png" end
+            if rfsuite.config.modelID ~= nil then image2 = "/bitmaps/models/" .. rfsuite.config.modelID .. ".png" end
+
+            status.gfx_model = rfsuite.utils.loadImage(image1, image2, default_image)
+
             lcd.invalidate()
         end
         lastName = rfsuite.config.craftName
-        lastID = rfsuite.config.modelID    
+        lastID = rfsuite.config.modelID
 
         if status.linkUP == false then status.linkUPTime = os.clock() end
 

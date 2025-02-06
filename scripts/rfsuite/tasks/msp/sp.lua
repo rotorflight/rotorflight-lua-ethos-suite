@@ -39,12 +39,7 @@ function transport.sportTelemetryPush(sensorId, frameId, dataId, value)
     -- @param value         value
     -- @retval boolean  data queued in output buffer or not.
     -- @retval nil          incorrect telemetry protocol.  (added in 2.3.4)
-    return rfsuite.bg.msp.sensor:pushFrame({
-        physId = sensorId,
-        primId = frameId,
-        appId = dataId,
-        value = value
-    })
+    return rfsuite.bg.msp.sensor:pushFrame({physId = sensorId, primId = frameId, appId = dataId, value = value})
 end
 
 -- GRAB THE SPORT TELEMETRY FRAME
@@ -64,8 +59,7 @@ transport.mspSend = function(payload)
     local value = 0
     for i = 3, #payload do value = value + (payload[i] << ((i - 3) * 8)) end
 
-    return transport.sportTelemetryPush(LOCAL_SENSOR_ID, REQUEST_FRAME_ID,
-                                        dataId, value)
+    return transport.sportTelemetryPush(LOCAL_SENSOR_ID, REQUEST_FRAME_ID, dataId, value)
 end
 
 transport.mspRead = function(cmd)
@@ -82,8 +76,7 @@ local function smartPortTelemetryPop()
         local sensorId, frameId, dataId, value = transport.sportTelemetryPop()
         if not sensorId then
             return nil
-        elseif (lastSensorId == sensorId) and (lastFrameId == frameId) and
-            (lastDataId == dataId) and (lastValue == value) then
+        elseif (lastSensorId == sensorId) and (lastFrameId == frameId) and (lastDataId == dataId) and (lastValue == value) then
             -- Keep checking
         else
             lastSensorId = sensorId
@@ -98,8 +91,7 @@ end
 transport.mspPoll = function()
     while true do
         local sensorId, frameId, dataId, value = smartPortTelemetryPop()
-        if (sensorId == SMARTPORT_REMOTE_SENSOR_ID or sensorId ==
-            FPORT_REMOTE_SENSOR_ID) and frameId == REPLY_FRAME_ID then
+        if (sensorId == SMARTPORT_REMOTE_SENSOR_ID or sensorId == FPORT_REMOTE_SENSOR_ID) and frameId == REPLY_FRAME_ID then
             -- --rfsuite.utils.log("sensorId:0x"..string.format("%X", sensorId).." frameId:0x"..string.format("%X", frameId).." dataId:0x"..string.format("%X", dataId).." value:0x"..string.format("%X", value))
             local payload = {}
             payload[1] = dataId & 0xFF

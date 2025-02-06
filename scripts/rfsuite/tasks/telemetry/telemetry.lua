@@ -37,233 +37,43 @@ local telemetryState = false
 -- Predefined sensor mappings
 local sensorTable = {
     -- RSSI Sensors
-    rssi = {
-        name = "RSSI",
-        mandatory = true,        
-        sport = {
-            rfsuite.utils.getRssiSensor()
-        },
-        customCRSF = {
-            rfsuite.utils.getRssiSensor()
-        },
-        legacyCRSF = {
-            nil
-        },
-    },
+    rssi = {name = "RSSI", mandatory = true, sport = {rfsuite.utils.getRssiSensor()}, customCRSF = {rfsuite.utils.getRssiSensor()}, legacyCRSF = {nil}},
 
     -- Arm Flags
-    armflags = {
-        name = "Arming Flags",
-        mandatory = true,         
-        sport = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5122},
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5462},
-        },
-        customCRSF = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1202}
-        },
-        legacyCRSF = {
-            nil
-        },
-    },
+    armflags = {name = "Arming Flags", mandatory = true, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5122}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5462}}, customCRSF = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1202}}, legacyCRSF = {nil}},
 
     -- Voltage Sensors
-    voltage = {
-        name = "Voltage",
-        mandatory = true,          
-        sport = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0210}
-        },
-        customCRSF = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1011}
-        },
-        legacyCRSF = {
-            "Rx Batt"
-        }
-    },
+    voltage = {name = "Voltage", mandatory = true, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0210}}, customCRSF = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1011}}, legacyCRSF = {"Rx Batt"}},
 
     -- RPM Sensors
-    rpm = {
-        name = "Head Speed",
-        mandatory = true,          
-        sport = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0500}
-        },
-        customCRSF = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10C0}
-        },
-        legacyCRSF = {
-            "GPS Alt"
-        }
-    },
+    rpm = {name = "Head Speed", mandatory = true, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0500}}, customCRSF = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10C0}}, legacyCRSF = {"GPS Alt"}},
 
     -- Current Sensors
-    current = {
-        name = "Current",
-        mandatory = false,          
-        sport = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0200},            
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0201},
-        },
-        customCRSF = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1012},            
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1042},
-        },
-        legacyCRSF = {
-            "Rx Curr"
-        }
-    },
+    current = {name = "Current", mandatory = false, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0200}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0201}}, customCRSF = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1012}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1042}}, legacyCRSF = {"Rx Curr"}},
 
     -- Temperature Sensors
-    tempESC = {
-        name = "ESC Temperature",
-        mandatory = false,         
-        sport = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401},
-            {category = CATEGORY_TELEMETRY_SENSOR, appId =  0x0B70}
-        },
-        customCRSF = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A0}
-        },
-        legacyCRSF = {
-            "GPS Speed"
-        }
-    },
-    tempMCU = {
-        name = "MCU Temperature",
-        mandatory = false,          
-        sport = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0400, mspgt=12.08},
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401, msplt=12.07}
-        },
-        customCRSF = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A3}
-        },
-        legacyCRSF = {
-            "GPS Sats"
-        }
-    },
+    tempESC = {name = "ESC Temperature", mandatory = false, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0B70}}, customCRSF = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A0}}, legacyCRSF = {"GPS Speed"}},
+    tempMCU = {name = "MCU Temperature", mandatory = false, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0400, mspgt = 12.08}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401, msplt = 12.07}}, customCRSF = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A3}}, legacyCRSF = {"GPS Sats"}},
 
     -- Fuel and Capacity Sensors
-    fuel = {
-        name = "Charge Level",
-        mandatory = false,           
-        sport = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0600}
-        },
-        customCRSF = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1014}
-        },
-        legacyCRSF = {
-            "Rx Batt%"
-        }
-    },
-    capacity = {
-        name = "Consumption",
-        mandatory = false,           
-        sport = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5250}
-        },
-        customCRSF = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1013}
-        },
-        legacyCRSF = {
-            "Rx Cons"
-        }
-    },
+    fuel = {name = "Charge Level", mandatory = false, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0600}}, customCRSF = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1014}}, legacyCRSF = {"Rx Batt%"}},
+    capacity = {name = "Consumption", mandatory = false, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5250}}, customCRSF = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1013}}, legacyCRSF = {"Rx Cons"}},
 
     -- Flight Mode Sensors
-    governor = {
-        name = "Governor State",
-        mandatory = false,          
-        sport = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5125},
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5450}
-        },
-        customCRSF = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1205}
-        },
-        legacyCRSF = {
-            "Flight mode"
-        }
-    },
+    governor = {name = "Governor State", mandatory = false, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5125}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5450}}, customCRSF = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1205}}, legacyCRSF = {"Flight mode"}},
 
     -- Adjustment Sensors
-    adjF = {
-        name = "Adjustment Sensors",
-        mandatory = false,           
-        sport = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5110}
-        },
-        customCRSF = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1221}
-        },
-        legacyCRSF = {
-            nil
-        }
-    },
-    adjV = {
-        name = "Adjustment Sensors",
-        mandatory = false,           
-        sport = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5111}
-        },
-        customCRSF = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1222}
-        },
-        legacyCRSF = {
-            nil
-        }
-    },
+    adjF = {name = "Adjustment Sensors", mandatory = false, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5110}}, customCRSF = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1221}}, legacyCRSF = {nil}},
+    adjV = {name = "Adjustment Sensors", mandatory = false, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5111}}, customCRSF = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1222}}, legacyCRSF = {nil}},
 
     -- PID and Rate Profiles
-    pidProfile = {
-        name = "PID Profile",
-        mandatory = true,           
-        sport = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5130},
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5471}
-        },
-        customCRSF = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1211}
-        },
-        legacyCRSF = {
-            nil
-        }
-    },
-    rateProfile = {
-        name = "Rate Profile",
-        mandatory = true,           
-        sport = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5131},            
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5472}
-        },
-        customCRSF = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1212}
-        },
-        legacyCRSF = {
-            nil
-        }
-    },
+    pidProfile = {name = "PID Profile", mandatory = true, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5130}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5471}}, customCRSF = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1211}}, legacyCRSF = {nil}},
+    rateProfile = {name = "Rate Profile", mandatory = true, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5131}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5472}}, customCRSF = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1212}}, legacyCRSF = {nil}},
 
     -- Throttle Sensors
-    throttlePercentage = {
-        name = "Thottle %",
-        mandatory = true,           
-        sport = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x51A4},
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5440}
-        },
-        customCRSF = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1035}
-        },
-        legacyCRSF = {
-            nil
-        }
-    },
+    throttlePercentage = {name = "Thottle %", mandatory = true, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x51A4}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5440}}, customCRSF = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1035}}, legacyCRSF = {nil}}
 
 }
-
 
 -- Cache telemetry source
 local tlm = system.getSource({category = CATEGORY_SYSTEM_EVENT, member = TELEMETRY_ACTIVE})
@@ -278,18 +88,11 @@ end
 ---@return table
 function telemetry.listSensors()
     local sensorList = {}
-    
-    for key, sensor in pairs(sensorTable) do
-        table.insert(sensorList, {
-            key = key,
-            name = sensor.name,
-            mandatory = sensor.mandatory
-        })
-    end
-    
+
+    for key, sensor in pairs(sensorTable) do table.insert(sensorList, {key = key, name = sensor.name, mandatory = sensor.mandatory}) end
+
     return sensorList
 end
-
 
 --- Retrieve a sensor source by name
 ---@param name string
@@ -357,49 +160,40 @@ function telemetry.getSensorSource(name)
     return nil -- If no valid sensor is found
 end
 
-
 --- Function to validate sensors with rate limiting
 ---@param returnValid boolean|nil Whether to return valid or invalid sensors
 ---@return table
 function telemetry.validateSensors(returnValid)
     local now = os.clock()
-    
+
     -- Return cached result if within rate limit
-    if (now - lastValidationTime) < VALIDATION_RATE_LIMIT then
-        return lastValidationResult
-    end
-    
+    if (now - lastValidationTime) < VALIDATION_RATE_LIMIT then return lastValidationResult end
+
     -- Update last validation time
     lastValidationTime = now
-    
+
     if not telemetry.active() then
         local allSensors = {}
-        for key, sensor in pairs(sensorTable) do
-            table.insert(allSensors, { key = key, name = sensor.name })
-        end
+        for key, sensor in pairs(sensorTable) do table.insert(allSensors, {key = key, name = sensor.name}) end
         lastValidationResult = allSensors
         return allSensors
     end
 
     local resultSensors = {}
-    
+
     for key, sensor in pairs(sensorTable) do
-        local sensorSource = telemetry.getSensorSource(key)       
+        local sensorSource = telemetry.getSensorSource(key)
         local isValid = sensorSource ~= nil and sensorSource:state() ~= false
-        
+
         if returnValid then
             -- Include only valid sensors
-            if isValid then
-                table.insert(resultSensors, { key = key, name = sensor.name })
-            end
+            if isValid then table.insert(resultSensors, {key = key, name = sensor.name}) end
         else
             -- Include only invalid sensors, but consider mandatory flag
-            if not isValid and sensor.mandatory ~= false then
-                table.insert(resultSensors, { key = key, name = sensor.name })
-            end
+            if not isValid and sensor.mandatory ~= false then table.insert(resultSensors, {key = key, name = sensor.name}) end
         end
     end
-    
+
     lastValidationResult = resultSensors
     return resultSensors
 end

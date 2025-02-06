@@ -38,11 +38,11 @@ function sensors.wakeup()
 
     if rfsuite.bg.msp.protocol.mspProtocol == "crsf" and config.enternalElrsSensors == true then sensors.elrs.wakeup() end
 
-    if rfsuite.bg.msp.protocol.mspProtocol == "smartPort" and config.internalSportSensors == true then 
+    if rfsuite.bg.msp.protocol.mspProtocol == "smartPort" and config.internalSportSensors == true then
 
         if rfsuite.config.apiVersion >= 12.08 then
             -- use new if msp is 12.08 or higher
-            sensors.frsky.wakeup() 
+            sensors.frsky.wakeup()
         else
             -- use legacy if msp is lower than 12.08
             sensors.frsky_legacy.wakeup()

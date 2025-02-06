@@ -21,10 +21,7 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {
-        "These parameters apply globally to the governor regardless of the profile in use.", 
-        "Each parameter is simply a time value in seconds for each governor action."
-}
+data['help']['default'] = {"These parameters apply globally to the governor regardless of the profile in use.", "Each parameter is simply a time value in seconds for each governor action."}
 
 data['fields'] = {
     govHandoverThrottle = {t = "Governor activates above this %. Below this the input throttle is passed to the ESC."},
@@ -41,7 +38,7 @@ data['fields'] = {
     govVoltageFilterHz = {t = "Cutoff for the battery voltage lowpass filter."},
     govTTABandwidth = {t = "Cutoff for the TTA lowpass filter."},
     govTTAPrecomp = {t = "Cutoff for the cyclic/collective collective precomp lowpass filter."},
-    govSpoolupThrottle = {t = "Minimum throttle to use for slow spoolup, in percent. For electric motors the default is 5%, for nitro this should be set so the clutch starts to engage for a smooth spoolup 10-15%."},
+    govSpoolupThrottle = {t = "Minimum throttle to use for slow spoolup, in percent. For electric motors the default is 5%, for nitro this should be set so the clutch starts to engage for a smooth spoolup 10-15%."}
 }
 
 return data

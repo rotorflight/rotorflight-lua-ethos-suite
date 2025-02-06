@@ -14,7 +14,7 @@
  *
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]] --
-local rf2craftname = { wakeupSchedulerUI = os.clock() }
+local rf2craftname = {wakeupSchedulerUI = os.clock()}
 
 local sensors
 local lastName
@@ -27,7 +27,6 @@ local LCD_W
 local LCD_H
 
 local LCD_MINH4IMAGE = 130
-
 
 -- error function
 local function screenError(msg)
@@ -49,15 +48,15 @@ end
 
 -- Create function
 function rf2craftname.create(widget)
-    LCD_W, LCD_H = lcd.getWindowSize()    
+    LCD_W, LCD_H = lcd.getWindowSize()
     bitmapPtr = rfsuite.utils.loadImage(default_image)
 end
 
 -- Paint function
 function rf2craftname.paint(widget)
 
-    if rfsuite.utils.ethosVersion() < rfsuite.config.ethosVersion  then
-        screenError(rfsuite.config.ethosVersionString )
+    if rfsuite.utils.ethosVersion() < rfsuite.config.ethosVersion then
+        screenError(rfsuite.config.ethosVersionString)
         return
     end
 
@@ -69,8 +68,8 @@ function rf2craftname.paint(widget)
     elseif config.fontSize == 1 then
         lcd.font(FONT_M)
     elseif config.fontSize == 2 then
-        lcd.font(FONT_L)    
-    elseif config.fontSize == 3 then  
+        lcd.font(FONT_L)
+    elseif config.fontSize == 3 then
         lcd.font(FONT_XL)
     else
         lcd.font(FONT_M)
@@ -102,16 +101,16 @@ function rf2craftname.configure(widget)
     lastName = nil
     lastID = nil
 
-
     if LCD_H > LCD_MINH4IMAGE then
         local line = form.addLine("Image")
-        form.addBooleanField(line,
-            nil,
-            function() return config.image end,
-            function(newValue) config.image = newValue end)
+        form.addBooleanField(line, nil, function()
+            return config.image
+        end, function(newValue)
+            config.image = newValue
+        end)
     end
 
-    local sizeTable = {{"Small", 0}, {"Medium", 1}, {"Large", 2}, {"X Large", 3},}
+    local sizeTable = {{"Small", 0}, {"Medium", 1}, {"Large", 2}, {"X Large", 3}}
     local line = form.addLine("Font Size")
     form.addChoiceField(line, nil, sizeTable, function()
         return config.fontSize
@@ -160,25 +159,19 @@ function rf2craftname.wakeupUI()
 
     LCD_W, LCD_H = lcd.getWindowSize()
 
-    if LCD_H < LCD_MINH4IMAGE then
-        config.image = false
-    end
+    if LCD_H < LCD_MINH4IMAGE then config.image = false end
 
     if lastName ~= rfsuite.config.craftName or lastID ~= rfsuite.config.modelID then
-        if rfsuite.config.craftName ~= nil then
-            image1 = "/bitmaps/models/" .. rfsuite.config.craftName .. ".png"          
-        end
-        if rfsuite.config.modelID ~= nil then
-            image2 = "/bitmaps/models/" .. rfsuite.config.modelID .. ".png"          
-        end
+        if rfsuite.config.craftName ~= nil then image1 = "/bitmaps/models/" .. rfsuite.config.craftName .. ".png" end
+        if rfsuite.config.modelID ~= nil then image2 = "/bitmaps/models/" .. rfsuite.config.modelID .. ".png" end
 
-        bitmapPtr = rfsuite.utils.loadImage(image1,image2,default_image)  
+        bitmapPtr = rfsuite.utils.loadImage(image1, image2, default_image)
 
         lcd.invalidate()
     end
 
     lastName = rfsuite.config.craftName
-    lastID = rfsuite.config.modelID    
+    lastID = rfsuite.config.modelID
 end
 
 return rf2craftname

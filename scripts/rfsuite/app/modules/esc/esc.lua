@@ -1,4 +1,3 @@
-
 local function findMFG()
     local mfgsList = {}
 
@@ -12,7 +11,6 @@ local function findMFG()
         local f = io.open(init_path, "r")
         if f then
             io.close(f)
-
 
             local func, err = loadfile(init_path)
 
@@ -30,7 +28,6 @@ local function findMFG()
 
     return mfgsList
 end
-
 
 local function openPage(pidx, title, script)
 

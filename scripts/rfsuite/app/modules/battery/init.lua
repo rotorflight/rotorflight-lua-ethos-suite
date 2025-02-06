@@ -18,12 +18,12 @@
 
 ]] --
 local init = {
-    title = "Battery",                    -- title of the page
-    section = "Hardware",         -- do not run if busy with msp
-    script = "battery.lua",               -- run this script
-    image = "battery.png",                -- image for the page
-    order = 10,                          -- order in the section
-    ethosversion = 1519                -- disable button if ethos version is less than this
+    title = "Battery", -- title of the page
+    section = "Hardware", -- do not run if busy with msp
+    script = "battery.lua", -- run this script
+    image = "battery.png", -- image for the page
+    order = 10, -- order in the section
+    ethosversion = 1519 -- disable button if ethos version is less than this
 }
 
 return init

@@ -18,12 +18,12 @@
 
 ]] --
 local init = {
-    title = "Rates",                    -- title of the page
-    section = "Flight Tuning",         -- do not run if busy with msp
-    script = "main.lua",               -- run this script
-    image = "rates.png",                -- image for the page
-    order = 2,                          -- order in the section
-    ethosversion = 1519                -- disable button if ethos version is less than this
+    title = "Rates", -- title of the page
+    section = "Flight Tuning", -- do not run if busy with msp
+    script = "main.lua", -- run this script
+    image = "rates.png", -- image for the page
+    order = 2, -- order in the section
+    ethosversion = 1519 -- disable button if ethos version is less than this
 }
 
 return init

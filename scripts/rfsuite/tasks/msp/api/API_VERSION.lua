@@ -1,11 +1,4 @@
 --[[
- *********************************************************************************************
- *                                                                                           *
- *     THIS IS A TEMPLATE AND SHOULD BE USED ONLY AS A SOURCE FOR MAKING A NEW API FILE      *
- *                                                                                           *
- *********************************************************************************************
-]] --
---[[
  * Copyright (C) Rotorflight Project
  *
  * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
@@ -33,52 +26,41 @@
  * setErrorHandler(handlerFunction): Set function to run on error  
 ]] --
 -- Constants for MSP Commands
-local MSP_API_CMD = 240 -- Command identifier for MSP PILOT CONFIG
-local MSP_API_SIMULATOR_RESPONSE = {0, 0, 0, 0} -- Default simulator response
-local MSP_MIN_BYTES = 4
+local MSP_API_CMD_READ = 1 -- Command identifier for MSP API request
+local MSP_API_SIMULATOR_RESPONSE = {0, 12, 7} -- Default simulator response
+local MSP_MIN_BYTES = 3
 
 -- Define the MSP response data structure
--- parameters are:
---  field (name)
---  type (U8|U16|S16|etc) (see api.lua)
---  byteorder (big|little)
-local MSP_API_STRUCTURE = {{field = "pitch", type = "U16"},
-                           {field = "roll", type = "U16"},
+local MSP_API_STRUCTURE_READ = {{field = "version_command", type = "U8"}, -- Command version
+{field = "version_major", type = "U8"}, -- Major version
+{field = "version_minor", type = "U8"} -- Minor version
 }
+
+local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
 
 -- Variable to store parsed MSP data
 local mspData = nil
 
 -- Create a new instance
-local handlers = rfsuite.bg.msp.api.createHandlers()  
-
--- Stub Function for additional processing of retured data
-local function processMSPData(buf, MSP_API_STRUCTURE)
-    local data = {}
-    return data
-end  
+local handlers = rfsuite.bg.msp.api.createHandlers()
 
 -- Function to initiate MSP read operation
 local function read()
     local message = {
-        command = MSP_API_CMD, -- Specify the MSP command
+        command = MSP_API_CMD_READ, -- Specify the MSP command
         processReply = function(self, buf)
             -- Parse the MSP data using the defined structure
-            mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE,processMSPData(buf, MSP_API_STRUCTURE))
+            mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE_READ)
             if #buf >= MSP_MIN_BYTES then
                 local completeHandler = handlers.getCompleteHandler()
-                if completeHandler then
-                    completeHandler(self, buf)
-                end
+                if completeHandler then completeHandler(self, buf) end
             end
         end,
         errorHandler = function(self, buf)
             local errorHandler = handlers.getErrorHandler()
-            if errorHandler then 
-                errorHandler(self, buf)
-            end
+            if errorHandler then errorHandler(self, buf) end
         end,
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE
+        simulatorResponse = rfsuite.config.simulatorApiVersionResponse or MSP_API_SIMULATOR_RESPONSE
     }
     -- Add the message to the processing queue
     rfsuite.bg.msp.mspQueue:add(message)
@@ -91,27 +73,20 @@ end
 
 -- Function to check if the read operation is complete
 local function readComplete()
-    if mspData ~= nil and #mspData['buffer'] >= MSP_MIN_BYTES then
-        return true
-    end
+    if mspData ~= nil and #mspData['buffer'] >= MSP_MIN_BYTES then return true end
     return false
+end
+
+-- Function to get the API version in major.minor format
+local function readVersion()
+    if mspData then return mspData['parsed'].version_major + mspData['parsed'].version_minor / 100 end
 end
 
 -- Function to get the value of a specific field from MSP data
 local function readValue(fieldName)
-    if mspData and mspData['parsed'][fieldName] ~= nil then
-        return mspData['parsed'][fieldName]
-    end
+    if mspData and mspData['parsed'][fieldName] ~= nil then return mspData['parsed'][fieldName] end
     return nil
 end
 
 -- Return the module's API functions
-return {
-    data = data,
-    read = read,
-    readComplete = readComplete,
-    readVersion = readVersion,
-    readValue = readValue,
-    setCompleteHandler = handlers.setCompleteHandler,
-    setErrorHandler = handlers.setErrorHandler
-}
+return {data = data, read = read, write = write, readComplete = readComplete, writeComplete = writeComplete, readVersion = readVersion, readValue = readValue, readComplete, setCompleteHandler = handlers.setCompleteHandler, setErrorHandler = handlers.setErrorHandler}

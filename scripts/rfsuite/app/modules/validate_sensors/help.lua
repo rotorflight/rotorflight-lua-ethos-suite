@@ -21,13 +21,8 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {
-        "This tool attempts to list all the sensors that your are not receiving in a consise list",
-        "Use this tool to ensure you are sending the correct sensors."
-}
+data['help']['default'] = {"This tool attempts to list all the sensors that your are not receiving in a consise list", "Use this tool to ensure you are sending the correct sensors."}
 
-data['fields'] = {
-
-}
+data['fields'] = {}
 
 return data

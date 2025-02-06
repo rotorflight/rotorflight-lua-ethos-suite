@@ -2,9 +2,9 @@ local fields = {}
 local rows = {}
 local cols = {}
 
-local total_bytes = 16
+local total_bytes = rfsuite.config.mspExpBytes
 
-function uint8_to_int8(value)
+local function uint8_to_int8(value)
     -- Ensure the value is within uint8 range
     if value < 0 or value > 255 then error("Value out of uint8 range") end
 
@@ -16,7 +16,7 @@ function uint8_to_int8(value)
     end
 end
 
-function int8_to_uint8(value)
+local function int8_to_uint8(value)
     -- Convert signed 8-bit to unsigned 8-bit
     return value & 0xFF
 end
@@ -43,10 +43,18 @@ for i = 0, total_bytes - 1 do fields[#fields + 1] = {col = 1, row = i + 1, min =
 for i = 0, total_bytes - 1 do fields[#fields + 1] = {col = 2, row = i + 1, min = -128, max = 127, vals = {i + 1}, instantChange = true} end
 
 local function postLoad(self)
+
+    --trigger a full reload if the number of bytes has changed
+    if total_bytes ~= #rfsuite.app.Page.values then
+        rfsuite.config.mspExpBytes = #rfsuite.app.Page.values
+        print(rfsuite.config.mspExpBytes)
+        rfsuite.app.triggers.reloadFull = true
+    end
     rfsuite.app.triggers.isReady = true
 end
 
 local function openPage(idx, title, script)
+
 
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
     rfsuite.app.triggers.isReady = false
@@ -156,7 +164,7 @@ local function openPage(idx, title, script)
         if f.instantChange and f.instantChange == true then
             rfsuite.app.formFields[i]:enableInstantChange(true)
         else
-            rfsuite.app.formFields[i]:enableInstantChange(false)     
+            rfsuite.app.formFields[i]:enableInstantChange(false)
         end
     end
 

@@ -36,9 +36,12 @@ config.watchdogParam = 10                                           -- watchdog 
 
 
 -- features
-config.logEnable = false                                             -- will write debug log to: /scripts/rfsuite/logs/rfsuite.log [default = false]
+config.logEnable = false                                            -- will write debug log to: /scripts/rfsuite/logs/rfsuite.log [default = false]
 config.logEnableScreen = false                                      -- if config.logEnable is true then also print to screen [default = false]
 config.mspTxRxDebug = false                                         -- simple print of full msp payload that is sent and received [default = false]
+config.mspApiParsedDebug = false                                    -- debug log to print out the parsed buffer for the msp api query [default = false]
+config.mspApiStructureDebug = false                                 -- debug log to print out the msp structure for the msp api query [default = false]
+config.mspApiPositionMapDebug = false                               -- debug log to print out the msp structure for the msp api query [default = false]
 config.flightLog = true                                             -- will write a flight log into /scripts/rfsuite/logs/<modelname>/*.log
 config.reloadOnSave = false                                         -- trigger a reload on save [default = false]
 config.skipRssiSensorCheck = false                                  -- skip checking for a valid rssi [ default = false]
@@ -54,7 +57,8 @@ config.developerMode = false                                        -- show deve
 config.soundPack = nil                                              -- use an custom sound pack. [default = nil]
 config.syncCraftName = false                                        -- sync the craft name with the model name [default = false]
 config.helpFieldDebug = true                                        -- print debug to show help fields being looked for [default = false]
-config.apiTester = true                                             -- run the api tester sub task for use when developing new api files [default = false]
+config.apiTester = false                                            -- run the api tester sub task for use when developing new api files [default = false]
+config.mspExpBytes = 16                                             -- number of bytes to read for the msp experimental page [default = 8]
 
 -- tasks
 config.bgTaskName = config.toolName .. " [Background]"              -- background task name for msp services etc
@@ -72,7 +76,6 @@ rfsuite.utils = assert(loadfile("lib/utils.lua"))(config)
 -- tasks
 rfsuite.tasks = {}
 rfsuite.bg = assert(loadfile("tasks/bg.lua"))(config)
-
 
 -- LuaFormatter off
 

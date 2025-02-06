@@ -21,9 +21,7 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {
-        "Configure your radio settings. Stick center, arm, throttle hold, and throttle cut.",
-}
+data['help']['default'] = {"Configure your radio settings. Stick center, arm, throttle hold, and throttle cut."}
 
 data['fields'] = {
     radioCenter = {t = "Stick center in microseconds (us)."},
@@ -32,7 +30,7 @@ data['fields'] = {
     radioMinThrottle = {t = "Minimum throttle (0% throttle output) expected from radio, in microseconds (us)."},
     radioMaxThrottle = {t = "Maximum throttle (100% throttle output) expected from radio, in microseconds (us)."},
     radioCycDeadband = {t = "Deadband for cyclic control in microseconds (us)."},
-    radioYawDeadband = {t = "Deadband for yaw control in microseconds (us)."},
+    radioYawDeadband = {t = "Deadband for yaw control in microseconds (us)."}
 }
 
 return data

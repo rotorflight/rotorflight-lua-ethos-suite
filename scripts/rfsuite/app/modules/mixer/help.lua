@@ -21,16 +21,14 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {
-        "Adust swash plate geometry, phase angles, and limits."
-}
+data['help']['default'] = {"Adust swash plate geometry, phase angles, and limits."}
 
 data['fields'] = {
     mixerTTAPrecomp = {t = "Mixer precomp for 0 yaw."}, -- ??? this is not named well in any of the RF LUAs
     mixerCollectiveGeoCorrection = {t = "Adjust if there is too much negative collective or too much positive collective."},
     mixerTotalPitchLimit = {t = "Maximum amount of combined cyclic and collective blade pitch."},
     mixerSwashPhase = {t = "Phase offset for the swashplate controls."},
-    mixerTailMotorIdle = {t = "Minimum throttle signal sent to the tail motor. This should be set just high enough that the motor does not stop."},		
+    mixerTailMotorIdle = {t = "Minimum throttle signal sent to the tail motor. This should be set just high enough that the motor does not stop."}
 }
 
 return data

@@ -184,14 +184,10 @@ function utils.ethosVersion()
     local environment = system.getVersion()
     local v = tonumber(environment.major .. environment.minor .. environment.revision)
 
-    if environment.revision == 0 then
-        v = v * 10
-    end
+    if environment.revision == 0 then v = v * 10 end
 
     -- Check if v is a 3-digit number, and if so, multiply it by 10
-    if v < 1000 then
-        v = v * 10
-    end
+    if v < 1000 then v = v * 10 end
 
     return v
 end
@@ -516,17 +512,13 @@ function utils.print_r(node)
                     output_str = output_str .. ","
                 end
             else
-                if (cur_index == size) then
-                    output_str = output_str .. "\n" .. string.rep("\t", depth - 1) .. "}"
-                end
+                if (cur_index == size) then output_str = output_str .. "\n" .. string.rep("\t", depth - 1) .. "}" end
             end
 
             cur_index = cur_index + 1
         end
 
-        if (size == 0) then
-            output_str = output_str .. "\n" .. string.rep("\t", depth - 1) .. "}"
-        end
+        if (size == 0) then output_str = output_str .. "\n" .. string.rep("\t", depth - 1) .. "}" end
 
         if (#stack > 0) then
             node = stack[#stack]
@@ -542,16 +534,13 @@ function utils.print_r(node)
 
     -- Print in chunks of 5 lines
     local lines = {}
-    for line in output_str:gmatch("[^\n]+") do
-        table.insert(lines, line)
-    end
+    for line in output_str:gmatch("[^\n]+") do table.insert(lines, line) end
 
     for i = 1, #lines, 5 do
         local chunk = table.concat(lines, "\n", i, math.min(i + 4, #lines))
         print(chunk)
     end
 end
-
 
 -- convert a string to a nunber
 function utils.makeNumber(x)
@@ -591,14 +580,12 @@ function utils.findModules()
     local moduledir = "app/modules/"
     local modules_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and moduledir or (config.suiteDir .. moduledir)
 
-   
     for _, v in pairs(system.listFiles(modules_path)) do
 
         local init_path = modules_path .. v .. '/init.lua'
         local f = io.open(init_path, "r")
         if f then
             io.close(f)
-
 
             local func, err = loadfile(init_path)
 
@@ -623,14 +610,12 @@ function utils.findWidgets()
     local widgetdir = "widgets/"
     local widgets_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and widgetdir or (config.suiteDir .. widgetdir)
 
-   
     for _, v in pairs(system.listFiles(widgets_path)) do
 
         local init_path = widgets_path .. v .. '/init.lua'
         local f = io.open(init_path, "r")
         if f then
             io.close(f)
-
 
             local func, err = loadfile(init_path)
 
@@ -665,7 +650,7 @@ function utils.loadImage(image1, image2, image3)
     end
 
     -- Function to check and return a valid image path
-    local function resolve_image(image)  
+    local function resolve_image(image)
         if type(image) == "string" then
             local image_path = find_image_in_directories(image)
             if not image_path then
@@ -684,9 +669,7 @@ function utils.loadImage(image1, image2, image3)
     local image_path = resolve_image(image1) or resolve_image(image2) or resolve_image(image3)
 
     -- If an image path is found, load and return the bitmap
-    if image_path then
-        return lcd.loadBitmap(image_path)
-    end
+    if image_path then return lcd.loadBitmap(image_path) end
 
     -- If no valid image path was found, return the first existing Bitmap in order
     if type(image1) == "Bitmap" then return image1 end
@@ -696,6 +679,5 @@ function utils.loadImage(image1, image2, image3)
     -- If nothing was found, return nil
     return nil
 end
-
 
 return utils

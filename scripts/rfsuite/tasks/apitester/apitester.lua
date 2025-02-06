@@ -29,23 +29,18 @@
 *
 * choose a read or write api and customise it to suite.
 
-]]--
-
+]] --
 local arg = {...}
 local config = arg[1]
 
 local apitester = {}
 
-
 function apitester.wakeup()
 
     -- quick exit if we have not enabled apiTester mode
-    if config.apiTester == nil or config.apiTester == false then
-        return
-    end
+    if config.apiTester == nil or config.apiTester == false then return end
 
     -- add in test functions below
-
 
     --[[  EXAMPLE READ
             local API = rfsuite.bg.msp.api.load("MSP_GOVERNOR_CONFIG")
@@ -72,7 +67,7 @@ function apitester.wakeup()
             end    
             )   
             API.read()  
-    ]]--
+    ]] --
 
     --[[  EXAMPLE WRITE
             local API = rfsuite.bg.msp.api.load("MSP_SET_RTC")
@@ -88,26 +83,38 @@ function apitester.wakeup()
             API.setCompleteHandler(function(self, buf) 
                 print("error")
             end
+            )
             API.setErrorHandler(function(self, buf) 
                 print("error")
-            end               
+            end
+            )               
             API.write()  
   
 
-    ]]--
+    ]] --
 
-    --local API = rfsuite.bg.msp.api.load("MSP_PID_TUNING")
-    --API.read()  
-    --if API.readComplete() then
-    --        local data = API.data()
-    --        --rfsuite.utils.print_r(data['processed'])
-    --        rfsuite.utils.print_r(data)
-    --end   
+    -- this is a more complex loop with a read and write updating just one value on the fly
+    --[[
+    local API = rfsuite.bg.msp.api.load("MSP_PID_TUNING")
+    API.read()  
+    if API.readComplete() then
+            local data = API.data()
 
+            local WRITEAPI = rfsuite.bg.msp.api.load("MSP_SET_PID_TUNING")
+            WRITEAPI.setCompleteHandler(function(self, buf)
+                print("write")
+            end)
+            WRITEAPI.setErrorHandler(function(self, buf)
+                print("error")
+            end)
 
-  
+            WRITEAPI.setValue("pid_0_P",math.random(10,150))
+            WRITEAPI.setDefaults(data)    
+            WRITEAPI.write()  
 
+    end   
+    ]] --
 
-end    
+end
 
 return apitester

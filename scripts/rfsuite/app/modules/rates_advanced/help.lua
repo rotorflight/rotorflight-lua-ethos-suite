@@ -21,14 +21,8 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {
-        "Rates type: Choose the rate type you prefer flying with. Raceflight and Actual are the most straightforward.",
-        "Dynamics: Applied regardless of rates type. Typically left on defaults but can be adjusted to smooth heli movements, like with scale helis."
-}
+data['help']['default'] = {"Rates type: Choose the rate type you prefer flying with. Raceflight and Actual are the most straightforward.", "Dynamics: Applied regardless of rates type. Typically left on defaults but can be adjusted to smooth heli movements, like with scale helis."}
 
-data['fields'] = {
-    profilesRatesDynamicsTime = {t = "Increase or decrease the response time of the rate to smooth heli movements."},
-    profilesRatesDynamicsAcc = {t = "Maximum acceleration of the craft in response to a stick movement."},
-}
+data['fields'] = {profilesRatesDynamicsTime = {t = "Increase or decrease the response time of the rate to smooth heli movements."}, profilesRatesDynamicsAcc = {t = "Maximum acceleration of the craft in response to a stick movement."}}
 
 return data

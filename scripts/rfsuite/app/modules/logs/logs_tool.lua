@@ -1,6 +1,6 @@
 -- display vars
 local res = system.getVersion()
-local LCD_W = res.lcdWidth 
+local LCD_W = res.lcdWidth
 local LCD_H = res.lcdHeight
 
 local graphPos = {}
@@ -10,7 +10,7 @@ graphPos['x_start'] = 0
 graphPos['y_start'] = 0 + graphPos['menu_offset']
 graphPos['width'] = math.floor(LCD_W * rfsuite.app.radio.logGraphWidthPercentage)
 graphPos['height'] = LCD_H - graphPos['menu_offset'] - graphPos['menu_offset'] - 40 + graphPos['height_offset']
-graphPos['slider_y'] = LCD_H - (graphPos['menu_offset'] + 30 ) + graphPos['height_offset']
+graphPos['slider_y'] = LCD_H - (graphPos['menu_offset'] + 30) + graphPos['height_offset']
 
 local triggerOverRide = false
 local triggerOverRideAll = false
@@ -586,7 +586,7 @@ local function wakeup()
         if currentDataIndex >= #logColumns then
 
             -- put slider at bottom of form
-            local posField = {x = graphPos['x_start'], y = graphPos['slider_y'] , w = graphPos['width'] - 10, h = 40}
+            local posField = {x = graphPos['x_start'], y = graphPos['slider_y'], w = graphPos['width'] - 10, h = 40}
             rfsuite.app.formFields[1] = form.addSliderField(nil, posField, 0, 100, function()
                 return sliderPosition
             end, function(newValue)

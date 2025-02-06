@@ -1,8 +1,8 @@
 import os
 import shutil
-import subprocess
 import argparse
 from tqdm import tqdm
+import subprocess_conout
 
 pbar = None
 
@@ -82,6 +82,7 @@ def copy_files(src, fileext=None, launch=False, destfolders=None):
             numFiles = count_files_in_tree(all_src)
             pbar = tqdm(total=numFiles)     
             shutil.copytree(all_src, tgt_folder, dirs_exist_ok=True, copy_function=copy_verbose)
+            pbar.close()
 
         # Restore logs if not handled already
         if os.path.exists(logs_temp):
@@ -92,7 +93,11 @@ def copy_files(src, fileext=None, launch=False, destfolders=None):
 
         print(f"Copy completed for: {dest}")
     if launch:
-        subprocess.run(launch, check=True) 
+        cmd = (
+            launch
+        )
+        ret = subprocess_conout.subprocess_conout(cmd, nrows=9999, encode=True)
+        print(ret)
     print("Script execution completed.")
 
 def main():
