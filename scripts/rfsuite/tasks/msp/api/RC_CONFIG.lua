@@ -16,7 +16,7 @@
 ]] --
 -- Constants for MSP Commands
 local MSP_API_CMD_READ = 66 -- Command identifier 
-local MSP_API_CMD_WRITE = nil -- Command identifier 
+local MSP_API_CMD_WRITE = 67 -- Command identifier 
 local MSP_API_SIMULATOR_RESPONSE = {220, 5, 254, 1, 232, 3, 242, 3, 208, 7, 4, 4} -- Default simulator response
 local MSP_MIN_BYTES = 12
 
