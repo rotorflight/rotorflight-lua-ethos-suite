@@ -181,4 +181,18 @@ local function wakeup()
 
 end
 
-return {title = "Sbus Out", event = event, openPage = openPage, wakeup = wakeup, navButtons = {menu = true, save = false, reload = false, tool = false, help = true}}
+-- not changing to api for this module due to the unusual read/write scenario.
+-- its not worth the effort
+return {
+    title = "Sbus Out",
+    event = event,
+    openPage = openPage,
+    wakeup = wakeup,
+    navButtons = {
+        menu = true,
+        save = false,
+        reload = false,
+        tool = false,
+        help = true
+    }
+}

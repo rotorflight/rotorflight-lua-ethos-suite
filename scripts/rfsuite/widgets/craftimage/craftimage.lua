@@ -14,7 +14,7 @@
  *
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]] --
-local rf2craftimage = { wakeupSchedulerUI = os.clock() }
+local rf2craftimage = {wakeupSchedulerUI = os.clock()}
 
 local sensors
 local lastName
@@ -56,16 +56,15 @@ function rf2craftimage.paint(widget)
     local w = LCD_W
     local h = LCD_H
 
-
-    if rfsuite.utils.ethosVersion() < rfsuite.config.ethosVersion  then
-        screenError(rfsuite.config.ethosVersionString )
+    if rfsuite.utils.ethosVersion() < rfsuite.config.ethosVersion then
+        screenError(rfsuite.config.ethosVersionString)
         return
-    end   
+    end
 
     if bitmapPtr ~= nil then
         local padding = 5
         local bitmapX = 0 + padding
-        local bitmapY = 0 + padding 
+        local bitmapY = 0 + padding
         local bitmapW = w - (padding * 2)
         local bitmapH = h - (padding * 2)
         lcd.drawBitmap(bitmapX, bitmapY, bitmapPtr, bitmapW, bitmapH)
@@ -113,14 +112,10 @@ function rf2craftimage.wakeupUI()
     LCD_W, LCD_H = lcd.getWindowSize()
 
     if lastName ~= rfsuite.config.craftName or lastID ~= rfsuite.config.modelID then
-        if rfsuite.config.craftName ~= nil then
-            image1 = "/bitmaps/models/" .. rfsuite.config.craftName .. ".png"          
-        end
-        if rfsuite.config.modelID ~= nil then
-            image2 = "/bitmaps/models/" .. rfsuite.config.modelID .. ".png"          
-        end
+        if rfsuite.config.craftName ~= nil then image1 = "/bitmaps/models/" .. rfsuite.config.craftName .. ".png" end
+        if rfsuite.config.modelID ~= nil then image2 = "/bitmaps/models/" .. rfsuite.config.modelID .. ".png" end
 
-        bitmapPtr = rfsuite.utils.loadImage(image1,image2,default_image)  
+        bitmapPtr = rfsuite.utils.loadImage(image1, image2, default_image)
 
         lcd.invalidate()
     end

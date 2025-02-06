@@ -21,13 +21,8 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {
-        "Use this page to view your current flight controller status. This can be useful when determining why your heli will not arm.",
-        "To erase the dataflash for more log file storage, press the button on the menu denoted by a '*'."
-}
+data['help']['default'] = {"Use this page to view your current flight controller status. This can be useful when determining why your heli will not arm.", "To erase the dataflash for more log file storage, press the button on the menu denoted by a '*'."}
 
-data['fields'] = {
-
-}
+data['fields'] = {}
 
 return data

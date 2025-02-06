@@ -21,18 +21,10 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {
-        "Please select a log file from the list below.",
-        "Note. To enable logging it is essential for you to have the following sensors enabled.",
-        "- arm status, voltage, headspeed, current,esc temperature"
-}
+data['help']['default'] = {"Please select a log file from the list below.", "Note. To enable logging it is essential for you to have the following sensors enabled.", "- arm status, voltage, headspeed, current,esc temperature"}
 
-data['help']['logs_tool'] = {
-        "Please use the slider to navigate the graph.",
-}
+data['help']['logs_tool'] = {"Please use the slider to navigate the graph."}
 
-data['fields'] = {
-
-}
+data['fields'] = {}
 
 return data

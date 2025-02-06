@@ -167,7 +167,7 @@ local function openPage(pidx, title, script)
         if lc >= 0 then bx = (buttonW + padding) * lc end
 
         if rfsuite.config.iconSize ~= 0 then
-            if rfsuite.app.gfx_buttons["esctool"][pvalue.image] == nil then rfsuite.app.gfx_buttons["esctool"][pvalue.image] = lcd.loadMask("app/modules/esc/mfg/" .. folder .. "/gfx/"  .. pvalue.image) end
+            if rfsuite.app.gfx_buttons["esctool"][pvalue.image] == nil then rfsuite.app.gfx_buttons["esctool"][pvalue.image] = lcd.loadMask("app/modules/esc/mfg/" .. folder .. "/gfx/" .. pvalue.image) end
         else
             rfsuite.app.gfx_buttons["esctool"][pvalue.image] = nil
         end

@@ -40,9 +40,7 @@ local rssiCheckScheduler = os.clock()
 local lastRssiSensorName = nil
 
 -- findModules on task init to ensure we are precached  
-if rfsuite.app.moduleList == nil then
-    rfsuite.app.moduleList = rfsuite.utils.findModules()
-end
+if rfsuite.app.moduleList == nil then rfsuite.app.moduleList = rfsuite.utils.findModules() end
 
 -- findTasks
 function bg.findTasks()
@@ -126,9 +124,7 @@ end
 function bg.wakeup()
 
     -- kill if version is bad
-    if rfsuite.utils.ethosVersion() < rfsuite.config.ethosVersion  then
-        return
-    end
+    if rfsuite.utils.ethosVersion() < rfsuite.config.ethosVersion then return end
 
     -- initialise tasks
     if bg.init == false then

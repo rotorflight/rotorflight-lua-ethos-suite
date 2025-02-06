@@ -6,21 +6,21 @@ local currentProfileChecked = false
 
 -- tail rotor settings
 labels[#labels + 1] = {t = "Yaw stop gain", label = "ysgain", inline_size = 13.6}
-fields[#fields + 1] = {t = "CW", help = "profilesYawStopGainCW", inline = 2, label = "ysgain", min = 25, max = 250, default = 80, vals = {21}}
-fields[#fields + 1] = {t = "CCW", help = "profilesYawStopGainCCW", inline = 1, label = "ysgain", min = 25, max = 250, default = 120, vals = {22}}
+fields[#fields + 1] = {t = "CW", help = "profilesYawStopGainCW", inline = 2, label = "ysgain", min = 25, max = 250, default = 80, apikey = "yaw_cw_stop_gain"}
+fields[#fields + 1] = {t = "CCW", help = "profilesYawStopGainCCW", inline = 1, label = "ysgain", min = 25, max = 250, default = 120, apikey = "yaw_ccw_stop_gain"}
 
-fields[#fields + 1] = {t = "Precomp Cutoff", help = "profilesYawPrecompCutoff", min = 0, max = 250, default = 5, unit = "Hz", vals = {23}}
-fields[#fields + 1] = {t = "Cyclic FF gain", help = "profilesYawFFCyclicGain", min = 0, max = 250, default = 30, vals = {24}}
-fields[#fields + 1] = {t = "Collective FF gain", help = "profilesYawFFCollectiveGain", min = 0, max = 250, default = 0, vals = {25}}
+fields[#fields + 1] = {t = "Precomp Cutoff", help = "profilesYawPrecompCutoff", min = 0, max = 250, default = 5, unit = "Hz", apikey = "yaw_precomp_cutoff"}
+fields[#fields + 1] = {t = "Cyclic FF gain", help = "profilesYawFFCyclicGain", min = 0, max = 250, default = 30, apikey = "yaw_cyclic_ff_gain"}
+fields[#fields + 1] = {t = "Collective FF gain", help = "profilesYawFFCollectiveGain", min = 0, max = 250, default = 0, apikey = "yaw_collective_ff_gain"}
 
 if rfsuite.config.apiVersion >= 12.08 then
     labels[#labels + 1] = {t = "Inertia Precomp", label = "inertia", inline_size = 13.6}
-    fields[#fields + 1] = {t = "Gain", help = "profilesIntertiaGain", inline = 2, label = "inertia", min = 0, max = 250, default = 0, vals = {42}}
-    fields[#fields + 1] = {t = "Cutoff", help = "profilesInertiaCutoff", inline = 1, label = "inertia", min = 0, max = 250, default = 25, unit = "Hz", vals = {43}}
+    fields[#fields + 1] = {t = "Gain", help = "profilesIntertiaGain", inline = 2, label = "inertia", min = 0, max = 250, default = 0, apikey = "yaw_inertia_precomp_gain"}
+    fields[#fields + 1] = {t = "Cutoff", help = "profilesInertiaCutoff", inline = 1, label = "inertia", min = 0, max = 250, default = 25, unit = "Hz", apikey = "yaw_inertia_precomp_cutoff"}
 else
     labels[#labels + 1] = {t = "Collective Impulse FF", label = "colimpff", inline_size = 13.6}
-    fields[#fields + 1] = {t = "Gain", help = "profilesYawFFImpulseGain", inline = 2, label = "colimpff", min = 0, max = 250, default = 0, vals = {26}}
-    fields[#fields + 1] = {t = "Decay", help = "profilesyawFFImpulseDecay", inline = 1, label = "colimpff", min = 0, max = 250, default = 25, unit = "s", vals = {27}}
+    fields[#fields + 1] = {t = "Gain", help = "profilesYawFFImpulseGain", inline = 2, label = "colimpff", min = 0, max = 250, default = 0, apikey = "yaw_collective_dynamic_gain"}
+    fields[#fields + 1] = {t = "Decay", help = "profilesyawFFImpulseDecay", inline = 1, label = "colimpff", min = 0, max = 250, default = 25, unit = "s", apikey = "yaw_collective_dynamic_decay"}
 end
 
 local function postLoad(self)
@@ -43,17 +43,4 @@ local function wakeup()
 
 end
 
-return {
-    read = 94, -- msp_PID_PROFILE
-    write = 95, -- msp_SET_PID_PROFILE
-    title = "Tail Rotor",
-    refreshOnProfileChange = true,
-    reboot = false,
-    eepromWrite = true,
-    minBytes = 41,
-    labels = labels,
-    simulatorResponse = {3, 25, 250, 0, 12, 0, 1, 30, 30, 45, 50, 50, 100, 15, 15, 20, 2, 10, 10, 15, 100, 100, 5, 0, 30, 0, 25, 0, 40, 55, 40, 75, 20, 25, 0, 15, 45, 45, 15, 15, 20},
-    fields = fields,
-    postLoad = postLoad,
-    wakeup = wakeup
-}
+return {mspapi = "PID_PROFILE", title = "Tail Rotor", refreshOnProfileChange = true, reboot = false, eepromWrite = true, labels = labels, fields = fields, postLoad = postLoad, wakeup = wakeup}

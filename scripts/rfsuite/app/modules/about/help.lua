@@ -21,14 +21,8 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {
-        "This page provides some useful information that you may be asked for when requesting support.", 
-        "For support, please first read the help pages on www.rotorflight.org",
-}
+data['help']['default'] = {"This page provides some useful information that you may be asked for when requesting support.", "For support, please first read the help pages on www.rotorflight.org"}
 
-
-data['fields'] = {
-
-}
+data['fields'] = {}
 
 return data

@@ -126,7 +126,7 @@ function logging.wakeup()
         logdir = nil
 
         return
-    end    
+    end
 
     if logDirChecked == false then
         checkLogdirExists()
@@ -158,7 +158,7 @@ function logging.wakeup()
             logHeader = nil
             logging.flushLogs(true)
             logdir = nil
-        end      
+        end
     end
 end
 

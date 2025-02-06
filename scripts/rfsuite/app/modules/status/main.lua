@@ -18,10 +18,10 @@ local x = w - 15
 
 local displayPos = {x = x - buttonW - buttonWs - 5 - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = 100, h = rfsuite.app.radio.navbuttonHeight}
 
-fields[1] = {t = "Arming Flags", value = "", type = displayType, disable = disableType, position = displayPos}
-fields[2] = {t = "Dataflash Free Space", value = "", type = displayType, disable = disableType, position = displayPos}
-fields[3] = {t = "Real-time Load", value = "", type = displayType, disable = disableType, position = displayPos}
-fields[4] = {t = "CPU Load", value = "", type = displayType, disable = disableType, position = displayPos}
+fields[1] = {t = "Arming Flags", value = "-", type = displayType, disable = disableType, position = displayPos}
+fields[2] = {t = "Dataflash Free Space", value = "-", type = displayType, disable = disableType, position = displayPos}
+fields[3] = {t = "Real-time Load", value = "-", type = displayType, disable = disableType, position = displayPos}
+fields[4] = {t = "CPU Load", value = "-", type = displayType, disable = disableType, position = displayPos}
 
 local function getStatus()
     local message = {
@@ -88,6 +88,7 @@ end
 
 local function postLoad(self)
     -- print("postLoad")
+    rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function postRead(self)
@@ -191,8 +192,10 @@ local function wakeup()
                     if value >= 60 then rfsuite.app.formFields[4]:color(RED) end
                 end
 
-                rfsuite.app.triggers.closeProgressLoader = true
             end
+        end
+        if (now - wakeupScheduler) >= 1 then
+            rfsuite.app.triggers.closeProgressLoader = true
         end
     end
 
@@ -235,4 +238,27 @@ local function onToolMenu(self)
 
 end
 
-return {read = readMSP, write = nil, title = "Status", reboot = false, eepromWrite = false, minBytes = 0, wakeup = wakeup, labels = labels, fields = fields, refreshswitch = false, simulatorResponse = {}, postLoad = postLoad, postRead = postRead, eraseDataflash = eraseDataflash, onToolMenu = onToolMenu, navButtons = {menu = true, save = false, reload = false, tool = true, help = true}}
+return {
+    read = readMSP,
+    write = nil,
+    title = "Status",
+    reboot = false,
+    eepromWrite = false,
+    minBytes = 0,
+    wakeup = wakeup,
+    labels = labels,
+    fields = fields,
+    refreshswitch = false,
+    simulatorResponse = {},
+    postLoad = postLoad,
+    postRead = postRead,
+    eraseDataflash = eraseDataflash,
+    onToolMenu = onToolMenu,
+    navButtons = {
+        menu = true,
+        save = false,
+        reload = false,
+        tool = true,
+        help = true
+    }
+}

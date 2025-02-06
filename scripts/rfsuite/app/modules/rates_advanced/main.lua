@@ -19,20 +19,20 @@ fields[#fields + 1] = {
 }
 
 labels[#labels + 1] = {t = "Roll dynamics", label = "rolldynamics", inline_size = 14.6}
-fields[#fields + 1] = {t = "Time", help = "profilesRatesDynamicsTime", inline = 2, label = "rolldynamics", min = 0, max = 250, vals = {5}, unit = "ms"}
-fields[#fields + 1] = {t = "Accel", help = "profilesRatesDynamicsAcc", inline = 1, label = "rolldynamics", min = 0, max = 50000, vals = {6, 7}, unit = "°/s", mult = 10, step = 10}
+fields[#fields + 1] = {t = "Time", help = "profilesRatesDynamicsTime", inline = 2, label = "rolldynamics", min = 0, max = 250, unit = "ms", apikey="response_time_1"}
+fields[#fields + 1] = {t = "Accel", help = "profilesRatesDynamicsAcc", inline = 1, label = "rolldynamics", min = 0, max = 50000, unit = "°/s", mult = 10, step = 10, apikey="accel_limit_1"}
 
 labels[#labels + 1] = {t = "Pitch dynamics", label = "pitchdynamics", inline_size = 14.6}
-fields[#fields + 1] = {t = "Time", help = "profilesRatesDynamicsTime", inline = 2, label = "pitchdynamics", min = 0, max = 250, vals = {11}, unit = "ms"}
-fields[#fields + 1] = {t = "Accel", help = "profilesRatesDynamicsAcc", inline = 1, label = "pitchdynamics", min = 0, max = 50000, vals = {12, 13}, unit = "°/s", mult = 10, step = 10}
+fields[#fields + 1] = {t = "Time", help = "profilesRatesDynamicsTime", inline = 2, label = "pitchdynamics", min = 0, max = 250, unit = "ms", apikey="response_time_2"}
+fields[#fields + 1] = {t = "Accel", help = "profilesRatesDynamicsAcc", inline = 1, label = "pitchdynamics", min = 0, max = 50000, unit = "°/s", mult = 10, step = 10, apikey="accel_limit_2"}
 
 labels[#labels + 1] = {t = "Yaw dynamics", label = "yawdynamics", inline_size = 14.6}
-fields[#fields + 1] = {t = "Time", help = "profilesRatesDynamicsTime", inline = 2, label = "yawdynamics", min = 0, max = 250, vals = {17}, unit = "ms"}
-fields[#fields + 1] = {t = "Accel", help = "profilesRatesDynamicsAcc", inline = 1, label = "yawdynamics", min = 0, max = 50000, vals = {18, 19}, unit = "°/s", mult = 10, step = 10}
+fields[#fields + 1] = {t = "Time", help = "profilesRatesDynamicsTime", inline = 2, label = "yawdynamics", min = 0, max = 250, unit = "ms", apikey="response_time_3"}
+fields[#fields + 1] = {t = "Accel", help = "profilesRatesDynamicsAcc", inline = 1, label = "yawdynamics", min = 0, max = 50000, unit = "°/s", mult = 10, step = 10, apikey="accel_limit_3"}
 
 labels[#labels + 1] = {t = "Collective dynamics", label = "coldynamics", inline_size = 14.6}
-fields[#fields + 1] = {t = "Time", help = "profilesRatesDynamicsTime", inline = 2, label = "coldynamics", min = 0, max = 250, vals = {23}, unit = "ms"}
-fields[#fields + 1] = {t = "Accel", help = "profilesRatesDynamicsAcc", inline = 1, label = "coldynamics", min = 0, max = 50000, vals = {24, 25}, unit = "°/^s", mult = 10, step = 10}
+fields[#fields + 1] = {t = "Time", help = "profilesRatesDynamicsTime", inline = 2, label = "coldynamics", min = 0, max = 250, unit = "ms", apikey="response_time_4"}
+fields[#fields + 1] = {t = "Accel", help = "profilesRatesDynamicsAcc", inline = 1, label = "coldynamics", min = 0, max = 50000, unit = "°/^s", mult = 10, step = 10, apikey="accel_limit_4"}
 
 -- rate table defaults
 local function defaultRates(x)
@@ -85,18 +85,15 @@ local function flagRateChange(self)
 end
 
 return {
-    read = 111, -- msp_RC_TUNING
-    write = 204, -- msp_SET_RC_TUNING
+    mspapi = "RC_TUNING",
     title = "Rates",
     reboot = false,
     eepromWrite = true,
-    minBytes = 25,
     labels = labels,
     fields = fields,
     refreshOnRateChange = true,
     rows = rows,
     cols = cols,
-    simulatorResponse = {4, 18, 25, 32, 20, 0, 0, 18, 25, 32, 20, 0, 0, 32, 50, 45, 10, 0, 0, 56, 0, 56, 20, 0, 0},
     rTableName = rTableName,
     flagRateChange = flagRateChange,
     postRead = postRead,

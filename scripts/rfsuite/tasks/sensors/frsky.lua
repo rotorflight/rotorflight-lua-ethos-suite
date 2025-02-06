@@ -23,19 +23,19 @@ local arg = {...}
 local config = arg[1]
 
 local frsky = {}
-local cacheExpireTime = 10  -- Time in seconds to expire the caches
-local lastCacheFlushTime = os.clock()  -- Store the initial time
+local cacheExpireTime = 10 -- Time in seconds to expire the caches
+local lastCacheFlushTime = os.clock() -- Store the initial time
 
 -- create
 local createSensorList = {}
 createSensorList[0x5100] = {name = "Heartbeat", unit = UNIT_RAW}
 createSensorList[0x5250] = {name = "Consumption", unit = UNIT_MILLIAMPERE_HOUR}
 createSensorList[0x5260] = {name = "Cell Count", unit = UNIT_RAW}
-createSensorList[0x51A0] = {name = "Pitch Control", unit = UNIT_DEGREE, decimals=2}
-createSensorList[0x51A1] = {name = "Roll Control", unit = UNIT_DEGREE, decimals=2}
-createSensorList[0x51A2] = {name = "Yaw Control", unit = UNIT_DEGREE, decimals=2}
-createSensorList[0x51A3] = {name = "Collective Control", unit = UNIT_DEGREE, decimals=2}
-createSensorList[0x51A4] = {name = "Throttle %", unit = UNIT_PERCENT, decimals=0}
+createSensorList[0x51A0] = {name = "Pitch Control", unit = UNIT_DEGREE, decimals = 2}
+createSensorList[0x51A1] = {name = "Roll Control", unit = UNIT_DEGREE, decimals = 2}
+createSensorList[0x51A2] = {name = "Yaw Control", unit = UNIT_DEGREE, decimals = 2}
+createSensorList[0x51A3] = {name = "Collective Control", unit = UNIT_DEGREE, decimals = 2}
+createSensorList[0x51A4] = {name = "Throttle %", unit = UNIT_PERCENT, decimals = 0}
 createSensorList[0x5258] = {name = "ESC1 Capacity", unit = UNIT_MILLIAMPERE_HOUR}
 createSensorList[0x5268] = {name = "ESC1 Power", unit = UNIT_PERCENT}
 createSensorList[0x5269] = {name = "ESC1 Throttle", unit = UNIT_PERCENT}
@@ -53,7 +53,7 @@ createSensorList[0x5130] = {name = "PID Profile", unit = UNIT_RAW}
 createSensorList[0x5131] = {name = "Rates Profile", unit = UNIT_RAW}
 createSensorList[0x5110] = {name = "Adj Function", unit = UNIT_RAW}
 createSensorList[0x5111] = {name = "Adj Value", unit = UNIT_RAW}
-createSensorList[0x5210] = {name = "Heading", unit = UNIT_DEGREE, decimals=1}
+createSensorList[0x5210] = {name = "Heading", unit = UNIT_DEGREE, decimals = 1}
 createSensorList[0x52F0] = {name = "Debug 0", unit = UNIT_RAW}
 createSensorList[0x52F1] = {name = "Debug 1", unit = UNIT_RAW}
 createSensorList[0x52F2] = {name = "Debug 2", unit = UNIT_RAW}
@@ -65,8 +65,7 @@ createSensorList[0x52F8] = {name = "Debug 7", unit = UNIT_RAW}
 
 -- drop (drop sensors only runs if < msp 12.08)
 local dropSensorList = {}
---dropSensorList[0x0400] = {name = "Temp1"}
-
+-- dropSensorList[0x0400] = {name = "Temp1"}
 
 -- rename
 local renameSensorList = {}
@@ -115,11 +114,8 @@ frsky.renameSensorCache = {}
 
 local function createSensor(physId, primId, appId, frameValue)
 
-
     -- we dont want any deletions if api has not been found
-    if rfsuite.config.apiVersion == nil then
-        return
-    end
+    if rfsuite.config.apiVersion == nil then return end
 
     -- check for custom sensors and create them if they dont exist
     if createSensorList[appId] ~= nil then
@@ -146,9 +142,9 @@ local function createSensor(physId, primId, appId, frameValue)
                     frsky.createSensorCache[appId]:unit(v.unit)
                     frsky.createSensorCache[appId]:protocolUnit(v.unit)
                 end
-                if v.decimals ~= nil then 
-                        frsky.createSensorCache[appId]:decimals(v.decimals) 
-                        frsky.createSensorCache[appId]:protocolDecimals(v.decimals)
+                if v.decimals ~= nil then
+                    frsky.createSensorCache[appId]:decimals(v.decimals)
+                    frsky.createSensorCache[appId]:protocolDecimals(v.decimals)
                 end
                 if v.minimum ~= nil then frsky.createSensorCache[appId]:minimum(v.minimum) end
                 if v.maximum ~= nil then frsky.createSensorCache[appId]:maximum(v.maximum) end
@@ -161,16 +157,12 @@ local function createSensor(physId, primId, appId, frameValue)
 end
 
 local function dropSensor(physId, primId, appId, frameValue)
-    
+
     -- we dont want any deletions if api has not been found
-    if rfsuite.config.apiVersion == nil then
-        return
-    end
+    if rfsuite.config.apiVersion == nil then return end
 
     -- we do not do any sensor dropping post 12.08 as have new frsky telem system
-    if rfsuite.config.apiVersion >= 12.08 then
-        return
-    end
+    if rfsuite.config.apiVersion >= 12.08 then return end
 
     -- check for custom sensors and create them if they dont exist
     if dropSensorList[appId] ~= nil then
@@ -193,9 +185,7 @@ end
 local function renameSensor(physId, primId, appId, frameValue)
 
     -- we dont want any deletions if api has not been found
-    if rfsuite.config.apiVersion == nil then
-        return
-    end
+    if rfsuite.config.apiVersion == nil then return end
 
     -- check for custom sensors and create them if they dont exist
     if renameSensorList[appId] ~= nil then
@@ -236,26 +226,20 @@ function frsky.wakeup()
     local function clearCaches()
         frsky.createSensorCache = {}
         frsky.renameSensorCache = {}
-        frsky.dropSensorCache = {}  
+        frsky.dropSensorCache = {}
     end
 
     -- Check if it's time to expire the caches
     if os.clock() - lastCacheFlushTime >= cacheExpireTime then
         clearCaches()
-        lastCacheFlushTime = os.clock()  -- Reset the timer
+        lastCacheFlushTime = os.clock() -- Reset the timer
     end
 
     -- Flush sensor list if we kill the sensors
-    if not rfsuite.bg.telemetry.active() or not rfsuite.rssiSensor then
-        clearCaches()
-    end
+    if not rfsuite.bg.telemetry.active() or not rfsuite.rssiSensor then clearCaches() end
 
     -- If GUI or queue is busy.. do not do this!
-    if rfsuite.bg and rfsuite.bg.telemetry and rfsuite.bg.telemetry.active() and rfsuite.rssiSensor then
-        if rfsuite.app.guiIsRunning == false and rfsuite.bg.msp.mspQueue:isProcessed() then
-            while telemetryPop() do end
-        end
-    end
+    if rfsuite.bg and rfsuite.bg.telemetry and rfsuite.bg.telemetry.active() and rfsuite.rssiSensor then if rfsuite.app.guiIsRunning == false and rfsuite.bg.msp.mspQueue:isProcessed() then while telemetryPop() do end end end
 
 end
 

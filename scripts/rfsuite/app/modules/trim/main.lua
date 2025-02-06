@@ -14,27 +14,56 @@ local currentYawTrim
 local currentYawTrimLast
 local currentIdleThrottleTrim
 local currentIdleThrottleTrimLast
+local clear2send = true
 
-fields[#fields + 1] = {t = "Roll trim %", help = "mixerSwashTrim", xlabel = "line5", xinline = 1, min = -1000, max = 1000, vals = {12, 13}, decimals = 1, scale = 10}
+fields[#fields + 1] = {t = "Roll trim %", help = "mixerSwashTrim", min = -1000, max = 1000, decimals = 1, scale = 10, apikey = "swash_trim_0", instantChange = true}
 
-fields[#fields + 1] = {t = "Pitch trim %", help = "mixerSwashTrim", xlabel = "line6", xinline = 1, min = -1000, max = 1000, vals = {14, 15}, decimals = 1, scale = 10}
+fields[#fields + 1] = {t = "Pitch trim %", help = "mixerSwashTrim", min = -1000, max = 1000, decimals = 1, scale = 10, apikey = "swash_trim_1", instantChange = true}
 
-fields[#fields + 1] = {t = "Col. trim %", help = "mixerSwashTrim", xlabel = "line7", xinline = 1, min = -1000, max = 1000, vals = {16, 17}, decimals = 1, scale = 10}
+fields[#fields + 1] = {t = "Col. trim %", help = "mixerSwashTrim", min = -1000, max = 1000, decimals = 1, scale = 10, apikey = "swash_trim_2", instantChange = true}
 
 -- note.  the same vals are used for center trim motor and yaw trim - but they are multiplied and saved in different ways
-if rfsuite.config.tailMode == 1 or rfsuite.config.tailMode == 2 then fields[#fields + 1] = {t = "Center trim for tail motor %", help = "mixerTailMotorCenterTrim", inline = 1, min = -500, max = 500, vals = {4, 5}, decimals = 1, scale = 10} end
+if rfsuite.config.tailMode == 1 or rfsuite.config.tailMode == 2 then fields[#fields + 1] = {t = "Center trim for tail motor %", help = "mixerTailMotorCenterTrim", inline = 1, min = -500, max = 500, decimals = 1, scale = 10, apikey = "tail_center_trim", instantChange = true} end
 
-if rfsuite.config.tailMode == 0 then fields[#fields + 1] = {t = "Yaw. trim %", help = "mixerTailMotorCenterTrim", inline = 1, min = -1043, max = 1043, vals = {4, 5}, mult = 0.0239923224568138, decimals = 1} end
+if rfsuite.config.tailMode == 0 then fields[#fields + 1] = {t = "Yaw. trim %", help = "mixerTailMotorCenterTrim", inline = 1, min = -1043, max = 1043, mult = 0.0239923224568138, decimals = 1, apikey = "tail_center_trim", instantChange = true} end
+
+local function saveDataEnd()
+    local message = {
+        command = 250,
+        payload = {},
+        processReply = function(self, buf)
+            clear2send = true
+        end,
+        errorHandler = function(self, buf)
+            clear2send = true
+        end
+    }
+    rfsuite.bg.msp.mspQueue:add(message)
+
+end
 
 local function saveData()
 
+    clear2send = false
     local payload = rfsuite.app.Page.values
-    local message = {command = 43, payload = payload}
-    rfsuite.bg.msp.mspQueue:add(message)
+    local message = {
+        command = 43,
+        payload = payload,
+        processReply = function(self, buf)
+            saveDataEnd()
+        end,
+        errorHandler = function(self, buf)
+            clear2send = true
+        end
+    }
 
-    local message = {command = 250, payload = {}}
-    rfsuite.bg.msp.mspQueue:add(message)
+    if rfsuite.config.mspTxRxDebug or rfsuite.config.logEnable then
+        local logData = "Saving: {" .. rfsuite.utils.joinTableItems(payload, ", ") .. "}"
+        rfsuite.utils.log(logData)
+        if rfsuite.config.mspTxRxDebug then print(logData) end
+    end
 
+    rfsuite.bg.msp.mspQueue:add(message)
 end
 
 local function mixerOn(self)
@@ -44,7 +73,7 @@ local function mixerOn(self)
     for i = 1, 4 do
 
         local message = {
-            command = 191, -- MSP_SET_SERVO_OVERRIDE
+            command = 191, -- MSP_SET_MIXER_OVERRIDE
             payload = {i}
         }
         rfsuite.bg.msp.mspHelper.writeU16(message.payload, 0)
@@ -61,7 +90,7 @@ local function mixerOff(self)
 
     for i = 1, 4 do
         local message = {
-            command = 191, -- MSP_SET_SERVO_OVERRIDE
+            command = 191, -- MSP_SET_MIXER_OVERRIDE
             payload = {i}
         }
         rfsuite.bg.msp.mspHelper.writeU16(message.payload, 2501)
@@ -99,10 +128,11 @@ local function wakeup(self)
         currentRollTrim = rfsuite.app.Page.fields[1].value
         local now = os.clock()
         local settleTime = 0.85
-        if ((now - lastChangeTime) >= settleTime) and rfsuite.bg.msp.mspQueue:isProcessed() then
+        if ((now - lastChangeTime) >= settleTime) and rfsuite.bg.msp.mspQueue:isProcessed() and clear2send == true then
             if currentRollTrim ~= currentRollTrimLast then
                 currentRollTrimLast = currentRollTrim
                 lastChangeTime = now
+                print("save")
                 self.saveData(self)
             end
         end
@@ -110,7 +140,7 @@ local function wakeup(self)
         currentPitchTrim = rfsuite.app.Page.fields[2].value
         local now = os.clock()
         local settleTime = 0.85
-        if ((now - lastChangeTime) >= settleTime) and rfsuite.bg.msp.mspQueue:isProcessed() then
+        if ((now - lastChangeTime) >= settleTime) and rfsuite.bg.msp.mspQueue:isProcessed() and clear2send == true then
             if currentPitchTrim ~= currentPitchTrimLast then
                 currentPitchTrimLast = currentPitchTrim
                 lastChangeTime = now
@@ -121,7 +151,7 @@ local function wakeup(self)
         currentCollectiveTrim = rfsuite.app.Page.fields[3].value
         local now = os.clock()
         local settleTime = 0.85
-        if ((now - lastChangeTime) >= settleTime) and rfsuite.bg.msp.mspQueue:isProcessed() then
+        if ((now - lastChangeTime) >= settleTime) and rfsuite.bg.msp.mspQueue:isProcessed() and clear2send == true then
             if currentCollectiveTrim ~= currentCollectiveTrimLast then
                 currentCollectiveTrimLast = currentCollectiveTrim
                 lastChangeTime = now
@@ -133,7 +163,7 @@ local function wakeup(self)
             currentIdleThrottleTrim = rfsuite.app.Page.fields[4].value
             local now = os.clock()
             local settleTime = 0.85
-            if ((now - lastChangeTime) >= settleTime) and rfsuite.bg.msp.mspQueue:isProcessed() then
+            if ((now - lastChangeTime) >= settleTime) and rfsuite.bg.msp.mspQueue:isProcessed() and clear2send == true then
                 if currentIdleThrottleTrim ~= currentIdleThrottleTrimLast then
                     currentIdleThrottleTrimLast = currentIdleThrottleTrim
                     lastChangeTime = now
@@ -240,22 +270,4 @@ local function onNavMenu(self)
 
 end
 
-return {
-    read = 42, -- msp_MIXER_CONFIG
-    write = 43, -- msp_SET_MIXER_CONFIG
-    eepromWrite = true,
-    reboot = false,
-    title = "Mixer",
-    simulatorResponse = {0, 1, 0, 0, 0, 2, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    minBytes = 19,
-    labels = labels,
-    fields = fields,
-    mixerOff = mixerOff,
-    mixerOn = mixerOn,
-    postLoad = postLoad,
-    onToolMenu = onToolMenu,
-    onNavMenu = onNavMenu,
-    wakeup = wakeup,
-    saveData = saveData,
-    navButtons = {menu = true, save = true, reload = true, tool = true, help = true}
-}
+return {mspapi = "MIXER_CONFIG", eepromWrite = true, reboot = false, title = "Mixer", labels = labels, fields = fields, mixerOff = mixerOff, mixerOn = mixerOn, postLoad = postLoad, onToolMenu = onToolMenu, onNavMenu = onNavMenu, wakeup = wakeup, saveData = saveData, navButtons = {menu = true, save = true, reload = true, tool = true, help = true}}

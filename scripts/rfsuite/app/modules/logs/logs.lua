@@ -49,7 +49,7 @@ local function getLogs(logDir)
             local datePart, timePart = files[i]:match("_(%d%d%d%d%-%d%d%-%d%d)_(%d%d%-%d%d%-%d%d)_")
             if datePart and timePart then
                 local sortableDateTime = datePart .. "T" .. timePart -- Concatenating for sorting
-                table.insert(csvFiles, { filename = files[i], datetime = sortableDateTime })
+                table.insert(csvFiles, {filename = files[i], datetime = sortableDateTime})
             end
         end
     end
@@ -62,18 +62,13 @@ local function getLogs(logDir)
     -- Limit to a maximum of 50 entries
     local maxEntries = 50
     local result = {}
-    for i = 1, math.min(#csvFiles, maxEntries) do
-        table.insert(result, csvFiles[i].filename)
-    end
+    for i = 1, math.min(#csvFiles, maxEntries) do table.insert(result, csvFiles[i].filename) end
 
     -- Delete the remaining files outside the truncated list
-    for i = maxEntries + 1, #csvFiles do
-        os.remove(logDir .. "/" .. csvFiles[i].filename)
-    end
+    for i = maxEntries + 1, #csvFiles do os.remove(logDir .. "/" .. csvFiles[i].filename) end
 
     return result
 end
-
 
 local function extractShortTimestamp(filename)
     -- Match the date and time components in the filename, ignoring the prefix
@@ -95,9 +90,7 @@ end
 local function openPage(pidx, title, script, displaymode)
 
     -- hard exit on error
-    if rfsuite.utils.ethosVersion() < rfsuite.config.ethosVersion  then
-        return
-    end   
+    if rfsuite.utils.ethosVersion() < rfsuite.config.ethosVersion then return end
 
     currentDisplayMode = displaymode
 
@@ -128,8 +121,8 @@ local function openPage(pidx, title, script, displaymode)
     local numPerRow
 
     padding = rfsuite.app.radio.buttonPaddingSmall
-    --buttonW = (rfsuite.config.lcdWidth - padding) / (rfsuite.app.radio.logGraphButtonsPerRow - 1) - padding
-    buttonW = (rfsuite.config.lcdWidth - padding) / (2) - padding/2
+    -- buttonW = (rfsuite.config.lcdWidth - padding) / (rfsuite.app.radio.logGraphButtonsPerRow - 1) - padding
+    buttonW = (rfsuite.config.lcdWidth - padding) / (2) - padding / 2
     buttonH = rfsuite.app.radio.navbuttonHeight
     numPerRow = 2 -- = rfsuite.app.radio.buttonsPerRow - 1
 
