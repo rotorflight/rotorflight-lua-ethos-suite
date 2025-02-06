@@ -183,6 +183,8 @@ local function wakeup()
     end
 end
 
+-- not changing to api for this module due to the unusual read/write scenario.
+-- its not worth the effort
 return {
     read = 152,
     write = nil,
