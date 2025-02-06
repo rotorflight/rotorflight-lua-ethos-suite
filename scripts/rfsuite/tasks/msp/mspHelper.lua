@@ -67,6 +67,28 @@ mspHelper.readS16 = function(buf, byteorder)
     return value
 end
 
+mspHelper.readU24 = function(buf, byteorder)
+    local offset = buf.offset or 1
+    if not buf[offset] or not buf[offset + 2] then
+        debugPrint("Nil offset found in readU24 at position " .. offset)
+        return nil
+    end
+    local value = (buf[offset] or 0) + (buf[offset + 1] or 0) * 256 + (buf[offset + 2] or 0) * 65536
+    if byteorder == "big" then value = (buf[offset] or 0) * 65536 + (buf[offset + 1] or 0) * 256 + (buf[offset + 2] or 0) end
+    buf.offset = offset + 3
+    return value
+end
+
+mspHelper.readS24 = function(buf, byteorder)
+    local value = mspHelper.readU24(buf, byteorder)
+    if value == nil then
+        debugPrint("Nil value found in readS24")
+        return nil
+    end
+    if value >= 8388608 then value = value - 16777216 end
+    return value
+end
+
 mspHelper.readU32 = function(buf, byteorder)
     local offset = buf.offset or 1
     if not buf[offset] or not buf[offset + 3] then
@@ -111,6 +133,23 @@ end
 mspHelper.writeS16 = function(buf, value, byteorder)
     if value < 0 then value = value + 65536 end
     mspHelper.writeU16(buf, value, byteorder)
+end
+
+mspHelper.writeU24 = function(buf, value, byteorder)
+    if byteorder == "big" then
+        buf[#buf + 1] = math.floor(value / 65536) % 256
+        buf[#buf + 1] = math.floor(value / 256) % 256
+        buf[#buf + 1] = value % 256
+    else
+        buf[#buf + 1] = value % 256
+        buf[#buf + 1] = math.floor(value / 256) % 256
+        buf[#buf + 1] = math.floor(value / 65536) % 256
+    end
+end
+
+mspHelper.writeS24 = function(buf, value, byteorder)
+    if value < 0 then value = value + 16777216 end
+    mspHelper.writeU24(buf, value, byteorder)
 end
 
 mspHelper.writeU32 = function(buf, value, byteorder)
