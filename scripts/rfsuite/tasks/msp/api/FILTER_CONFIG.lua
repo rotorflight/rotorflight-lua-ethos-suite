@@ -16,13 +16,24 @@
 ]] --
 -- Constants for MSP Commands
 local MSP_API_CMD_READ = 92 -- Command identifier 
-local MSP_API_CMD_WRITE = nil -- Command identifier 
+local MSP_API_CMD_WRITE = 93 -- Command identifier 
 local MSP_API_SIMULATOR_RESPONSE = {0, 1, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 25, 25, 0, 245, 0} -- Default simulator response
 local MSP_MIN_BYTES = 25
 
 -- Define the MSP response data structures
-local MSP_API_STRUCTURE_READ = {{field = "gyro_hardware_lpf", type = "U8"}, {field = "gyro_lpf1_type", type = "U8"}, {field = "gyro_lpf1_static_hz", type = "U16"}, {field = "gyro_lpf2_type", type = "U8"}, {field = "gyro_lpf2_static_hz", type = "U16"}, {field = "gyro_soft_notch_hz_1", type = "U16"}, {field = "gyro_soft_notch_cutoff_1", type = "U16"}, {field = "gyro_soft_notch_hz_2", type = "U16"},
-                                {field = "gyro_soft_notch_cutoff_2", type = "U16"}, {field = "gyro_lpf1_dyn_min_hz", type = "U16"}, {field = "gyro_lpf1_dyn_max_hz", type = "U16"}}
+local MSP_API_STRUCTURE_READ = {
+    {field = "gyro_hardware_lpf", type = "U8"},
+    {field = "gyro_lpf1_type", type = "U8"},
+    {field = "gyro_lpf1_static_hz", type = "U16"},
+    {field = "gyro_lpf2_type", type = "U8"},
+    {field = "gyro_lpf2_static_hz", type = "U16"},
+    {field = "gyro_soft_notch_hz_1", type = "U16"},
+    {field = "gyro_soft_notch_cutoff_1", type = "U16"},
+    {field = "gyro_soft_notch_hz_2", type = "U16"},
+    {field = "gyro_soft_notch_cutoff_2", type = "U16"},
+    {field = "gyro_lpf1_dyn_min_hz", type = "U16"},
+    {field = "gyro_lpf1_dyn_max_hz", type = "U16"}
+}
 
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ -- Assuming identical structure for now
 
