@@ -16,17 +16,62 @@
 ]] --
 -- Constants for MSP Commands
 local MSP_API_CMD_READ = 131 -- Command identifier 
-local MSP_API_CMD_WRITE = nil -- Command identifier 
-local MSP_API_SIMULATOR_RESPONSE = {45, 4, 208, 7, 232, 3, 1, 6, 0, 0, 250, 0, 1, 6, 4, 2, 1, 8, 7, 7, 8, 20, 0, 50, 0, 9, 0, 30, 0} -- Default simulator response
+local MSP_API_CMD_WRITE = 222 -- Command identifier 
+local MSP_API_SIMULATOR_RESPONSE = {
+    45, 4, 208, 7, 232, 3, 1, 6, 0, 0,
+    250, 0, 1, 6, 4, 2, 1, 8, 7, 7,
+    8, 20, 0, 50, 0, 9, 0, 30, 0
+} -- Default simulator response
 local MSP_MIN_BYTES = 29
 
 -- Define the MSP response data structures
-local MSP_API_STRUCTURE_READ = {{field = "minthrottle", type = "U16"}, {field = "maxthrottle", type = "U16"}, {field = "mincommand", type = "U16"}, {field = "motor_count", type = "U8"}, -- compat: BLHeliSuite
-{field = "motor_pole_count_0", type = "U8"}, -- compat: BLHeliSuite
-{field = "use_dshot_telemetry", type = "U8"}, {field = "motor_pwm_protocol", type = "U8"}, {field = "motor_pwm_rate", type = "U16"}, {field = "use_unsynced_pwm", type = "U8"}, {field = "motor_pole_count_1", type = "U8"}, {field = "motor_pole_count_2", type = "U8"}, {field = "motor_pole_count_3", type = "U8"}, {field = "motor_rpm_lpf_0", type = "U8"}, {field = "motor_rpm_lpf_1", type = "U8"},
-                                {field = "motor_rpm_lpf_2", type = "U8"}, {field = "motor_rpm_lpf_3", type = "U8"}, {field = "main_rotor_gear_ratio_0", type = "U16"}, {field = "main_rotor_gear_ratio_1", type = "U16"}, {field = "tail_rotor_gear_ratio_0", type = "U16"}, {field = "tail_rotor_gear_ratio_1", type = "U16"}}
+local MSP_API_STRUCTURE_READ = {
+    {field = "minthrottle", type = "U16"},
+    {field = "maxthrottle", type = "U16"},
+    {field = "mincommand", type = "U16"},
+    {field = "motor_count_blheli", type = "U8"},             -- compat: BLHeliSuite
+    {field = "motor_pole_count_blheli", type = "U8"},      -- compat: BLHeliSuite
+    {field = "use_dshot_telemetry", type = "U8"},
+    {field = "motor_pwm_protocol", type = "U8"},
+    {field = "motor_pwm_rate", type = "U16"},
+    {field = "use_unsynced_pwm", type = "U8"},
+    {field = "motor_pole_count_0", type = "U8"},
+    {field = "motor_pole_count_1", type = "U8"},
+    {field = "motor_pole_count_2", type = "U8"},
+    {field = "motor_pole_count_3", type = "U8"},
+    {field = "motor_rpm_lpf_0", type = "U8"},
+    {field = "motor_rpm_lpf_1", type = "U8"},
+    {field = "motor_rpm_lpf_2", type = "U8"},
+    {field = "motor_rpm_lpf_3", type = "U8"},
+    {field = "main_rotor_gear_ratio_0", type = "U16"},
+    {field = "main_rotor_gear_ratio_1", type = "U16"},
+    {field = "tail_rotor_gear_ratio_0", type = "U16"},
+    {field = "tail_rotor_gear_ratio_1", type = "U16"}
+}
 
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ -- Assuming identical structure for now
+local MSP_API_STRUCTURE_WRITE = {
+    {field = "minthrottle", type = "U16"},
+    {field = "maxthrottle", type = "U16"},
+    {field = "mincommand", type = "U16"},
+ -- {field = "motor_count_blheli", type = "U8"},           -- compat: BLHeliSuite for no good reason this is missing from the write structure
+    {field = "motor_pole_count_blheli", type = "U8"},      -- compat: BLHeliSuite
+    {field = "use_dshot_telemetry", type = "U8"},
+    {field = "motor_pwm_protocol", type = "U8"},
+    {field = "motor_pwm_rate", type = "U16"},
+    {field = "use_unsynced_pwm", type = "U8"},
+    {field = "motor_pole_count_0", type = "U8"},
+    {field = "motor_pole_count_1", type = "U8"},
+    {field = "motor_pole_count_2", type = "U8"},
+    {field = "motor_pole_count_3", type = "U8"},
+    {field = "motor_rpm_lpf_0", type = "U8"},
+    {field = "motor_rpm_lpf_1", type = "U8"},
+    {field = "motor_rpm_lpf_2", type = "U8"},
+    {field = "motor_rpm_lpf_3", type = "U8"},
+    {field = "main_rotor_gear_ratio_0", type = "U16"},
+    {field = "main_rotor_gear_ratio_1", type = "U16"},
+    {field = "tail_rotor_gear_ratio_0", type = "U16"},
+    {field = "tail_rotor_gear_ratio_1", type = "U16"}
+}
 
 -- Variable to store parsed MSP data
 local mspData = nil
@@ -62,12 +107,30 @@ local function read()
     rfsuite.bg.msp.mspQueue:add(message)
 end
 
+local function shiftSuppliedPayload(payload)
+    local newPayload = {}
+    for i, v in ipairs(payload) do
+        if i > 6 then
+            newPayload[i] = payload[i + 1]
+        else
+            newPayload[i] = payload[i]
+        end
+
+    end
+    return newPayload
+end
+
 local function write(suppliedPayload)
     if MSP_API_CMD_WRITE == nil then
         print("No value set for MSP_API_CMD_WRITE")
         return
     end
 
+    -- If suppliedPayload is not nil, shift the payload as this write api does not honour the order of the read command
+    if suppliedPayload ~=nil then
+        suppliedPayload = shiftSuppliedPayload(suppliedPayload)
+    end
+        
     local message = {
         command = MSP_API_CMD_WRITE,
         payload = suppliedPayload or {},

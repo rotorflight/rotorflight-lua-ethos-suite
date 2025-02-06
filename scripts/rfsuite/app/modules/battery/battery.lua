@@ -19,14 +19,10 @@ local function postLoad(self)
 end
 
 return {
---    read = 32, -- MSP_BATTERY_CONFIG
---    write = 33, -- MSP_SET_BATTERY_CONFIG
     mspapi = "BATTERY_CONFIG",
     eepromWrite = true,
     reboot = false,
     title = "Battery",
---    minBytes = 15,
---    simulatorResponse = {138, 2, 3, 1, 1, 74, 1, 174, 1, 154, 1, 94, 1, 100, 10},
     labels = labels,
     fields = fields,
     postLoad = postLoad
