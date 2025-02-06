@@ -122,7 +122,7 @@ def main():
                 paths = subprocess.check_output(os.path.join(os.getenv('FRSKY_RADIO_TOOL_SRC'), 'radio_cmd.exe -s'), shell=True)
                 paths = paths.decode("utf-8")
                 paths = ast.literal_eval(paths)
-                args.destfolders = os.path.join(paths['radio'],f'\scripts')
+                args.destfolders = os.path.join(paths['radio'],f'\\scripts')
             except subprocess.CalledProcessError as e:
                 print(f"Radio not connected: {e}")   
 
