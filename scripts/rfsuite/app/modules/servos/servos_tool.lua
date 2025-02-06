@@ -586,6 +586,7 @@ local function onToolMenu(self)
 end
 
 return {
+    -- not changing to custom api at present due to complexity of read/write scenario in these modules
     title = "Servos",
     reboot = false,
     event = event,

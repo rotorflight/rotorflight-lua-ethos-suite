@@ -21,13 +21,8 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {
-        "Full headspeed: Headspeed target when at 100% throttle input.", 
-        "PID master gain: How hard the governor works to hold the RPM.", "Gains: Fine tuning of the governor.",
-        "Precomp: Governor precomp gain for yaw, cyclic, and collective inputs.", 
-        "Max throttle: The maximum throttle % the governor is allowed to use.",
-        "Tail Torque Assist: For motorized tails. Gain and limit of headspeed increase when using main rotor torque for yaw assist."
-}
+data['help']['default'] = {"Full headspeed: Headspeed target when at 100% throttle input.", "PID master gain: How hard the governor works to hold the RPM.", "Gains: Fine tuning of the governor.", "Precomp: Governor precomp gain for yaw, cyclic, and collective inputs.", "Max throttle: The maximum throttle % the governor is allowed to use.",
+                           "Tail Torque Assist: For motorized tails. Gain and limit of headspeed increase when using main rotor torque for yaw assist."}
 
 data['fields'] = {
     govHeadspeed = {t = "Target headspeed for the current profile."},
@@ -42,7 +37,7 @@ data['fields'] = {
     govTTAGain = {t = "TTA gain applied to increase headspeed to control the tail in the negative direction (e.g. motorised tail less than idle speed)."},
     govTTALimit = {t = "TTA max headspeed increase over full headspeed."},
     govMaxThrottle = {t = "Maximum output throttle the governor is allowed to use."},
-    govMinThrottle = {t = "Minimum output throttle the governor is allowed to use."},
+    govMinThrottle = {t = "Minimum output throttle the governor is allowed to use."}
 }
 
 return data

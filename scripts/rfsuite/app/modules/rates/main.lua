@@ -179,18 +179,19 @@ local function wakeup()
 end
 
 return {
-    read = 111, -- msp_RC_TUNING
-    write = 204, -- msp_SET_RC_TUNING
+    --   read = "111", -- MSP_RC_TUNING    
+    --    write = 204, -- MSP_SET_RC_TUNING
+    mspapi = "RC_TUNING",
     title = "Rates",
     reboot = false,
     eepromWrite = true,
-    minBytes = 25,
+    --    minBytes = 25,
     labels = labels,
     fields = fields,
     refreshOnRateChange = true,
     rows = mytable.rows,
     cols = mytable.cols,
-    simulatorResponse = {4, 18, 25, 32, 20, 0, 0, 18, 25, 32, 20, 0, 0, 32, 50, 45, 10, 0, 0, 56, 0, 56, 20, 0, 0},
+    --   simulatorResponse = {4, 18, 25, 32, 20, 0, 0, 18, 25, 32, 20, 0, 0, 32, 50, 45, 10, 0, 0, 56, 0, 56, 20, 0, 0},
     rTableName = mytable.rTableName,
     flagRateChange = flagRateChange,
     postLoad = postLoad,

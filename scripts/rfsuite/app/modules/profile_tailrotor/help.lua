@@ -21,13 +21,8 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {
-        "Yaw Stop Gain: Higher stop gain will make the tail stop more aggressively but may cause oscillations if too high. Adjust CW or CCW to make the yaw stops even.",
-        "Precomp Cutoff: Frequency limit for all yaw precompensation actions.", 
-        "Cyclic FF Gain: Tail precompensation for cyclic inputs.",
-        "Collective FF Gain: Tail precompensation for collective inputs.",
-        "Collective Impulse FF: Impulse tail precompensation for collective inputs. If you need extra tail precompensation at the beginning of collective input."
-}
+data['help']['default'] = {"Yaw Stop Gain: Higher stop gain will make the tail stop more aggressively but may cause oscillations if too high. Adjust CW or CCW to make the yaw stops even.", "Precomp Cutoff: Frequency limit for all yaw precompensation actions.", "Cyclic FF Gain: Tail precompensation for cyclic inputs.", "Collective FF Gain: Tail precompensation for collective inputs.",
+                           "Collective Impulse FF: Impulse tail precompensation for collective inputs. If you need extra tail precompensation at the beginning of collective input."}
 
 data['fields'] = {
     profilesYawStopGainCW = {t = "Stop gain (PD) for clockwise rotation."},
@@ -37,8 +32,8 @@ data['fields'] = {
     profilesYawFFCollectiveGain = {t = "Collective feedforward mixed into yaw (collective-to-yaw precomp)."},
     profilesYawFFImpulseGain = {t = "An extra boost of yaw precomp on collective input."},
     profilesyawFFImpulseDecay = {t = "Decay time for the extra yaw precomp on collective input."},
-    profilesIntertiaGain = {t= "Scalar gain. The strength of the main rotor inertia. Higher value means more precomp is applied to yaw control."},
-    profilesInertiaCutoff = {t = "Cutoff. Derivative cutoff frequency in 1/10Hz steps. Controls how sharp the precomp is. Higher value is sharper."},    
+    profilesIntertiaGain = {t = "Scalar gain. The strength of the main rotor inertia. Higher value means more precomp is applied to yaw control."},
+    profilesInertiaCutoff = {t = "Cutoff. Derivative cutoff frequency in 1/10Hz steps. Controls how sharp the precomp is. Higher value is sharper."}
 }
 
 return data

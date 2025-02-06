@@ -19,13 +19,12 @@
 
 * This script is called when using RF2.1 or lower. It is used to create, drop and rename sensors for the legacy frsky protocol
 
-]]--
-
+]] --
 --
 local arg = {...}
 local config = arg[1]
-local cacheExpireTime = 10  -- Time in seconds to expire the caches
-local lastCacheFlushTime = os.clock()  -- Store the initial time
+local cacheExpireTime = 10 -- Time in seconds to expire the caches
+local lastCacheFlushTime = os.clock() -- Store the initial time
 
 local frsky_legacy = {}
 
@@ -118,9 +117,7 @@ local function dropSensor(physId, primId, appId, frameValue)
         if frsky_legacy.dropSensorCache[appId] == nil then
             frsky_legacy.dropSensorCache[appId] = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
 
-            if frsky_legacy.dropSensorCache[appId] ~= nil then
-                frsky_legacy.dropSensorCache[appId]:drop()
-            end
+            if frsky_legacy.dropSensorCache[appId] ~= nil then frsky_legacy.dropSensorCache[appId]:drop() end
 
         end
 
@@ -137,11 +134,7 @@ local function renameSensor(physId, primId, appId, frameValue)
         if frsky_legacy.renameSensorCache[appId] == nil then
             frsky_legacy.renameSensorCache[appId] = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
 
-            if frsky_legacy.renameSensorCache[appId] ~= nil then
-                if frsky_legacy.renameSensorCache[appId]:name() == v.onlyifname then
-                    frsky_legacy.renameSensorCache[appId]:name(v.name)
-                end
-            end
+            if frsky_legacy.renameSensorCache[appId] ~= nil then if frsky_legacy.renameSensorCache[appId]:name() == v.onlyifname then frsky_legacy.renameSensorCache[appId]:name(v.name) end end
 
         end
 
@@ -168,26 +161,20 @@ function frsky_legacy.wakeup()
     local function clearCaches()
         frsky_legacy.createSensorCache = {}
         frsky_legacy.renameSensorCache = {}
-        frsky_legacy.dropSensorCache = {}  -- We don't use this in this script, but keep it here in case the legacy script is used
+        frsky_legacy.dropSensorCache = {} -- We don't use this in this script, but keep it here in case the legacy script is used
     end
 
     -- Check if it's time to expire the caches
     if os.clock() - lastCacheFlushTime >= cacheExpireTime then
         clearCaches()
-        lastCacheFlushTime = os.clock()  -- Reset the timer
+        lastCacheFlushTime = os.clock() -- Reset the timer
     end
 
     -- Flush sensor list if we kill the sensors
-    if not rfsuite.bg.telemetry.active() or not rfsuite.rssiSensor then
-        clearCaches()
-    end
+    if not rfsuite.bg.telemetry.active() or not rfsuite.rssiSensor then clearCaches() end
 
     -- If GUI or queue is busy.. do not do this!
-    if rfsuite.bg and rfsuite.bg.telemetry and rfsuite.bg.telemetry.active() and rfsuite.rssiSensor then
-        if rfsuite.app.guiIsRunning == false and rfsuite.bg.msp.mspQueue:isProcessed() then
-            while telemetryPop() do end
-        end
-    end
+    if rfsuite.bg and rfsuite.bg.telemetry and rfsuite.bg.telemetry.active() and rfsuite.rssiSensor then if rfsuite.app.guiIsRunning == false and rfsuite.bg.msp.mspQueue:isProcessed() then while telemetryPop() do end end end
 
 end
 

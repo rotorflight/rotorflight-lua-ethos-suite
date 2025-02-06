@@ -22,20 +22,20 @@ local data = {}
 data['help'] = {}
 
 data['help']['default'] = {
-        "Increase D, P, I in order until each wobbles, then back off.", 
-        "Set F for a good response in full stick flips and rolls.", 
-        "If necessary, tweak P:D ratio to set response damping to your liking.",
-        "Increase O until wobbles occur when jabbing elevator at full collective, back off a bit.", 
-        "Increase B if you want sharper response."
+    "FeedForward (Roll/Pitch): Start at 70, increase until stops are sharp with no drift. Keep roll and pitch equal.",
+    "I Gain (Roll/Pitch): Raise gradually for stable piro pitch pumps. Too high causes wobbles; match roll/pitch values.",
+    "Tail P/I/D Gains: Increase P until slight wobble in funnels, then back off slightly. Raise I until tail holds firm in hard moves (too high causes slow wag). Adjust D for smooth stops—higher for slow servos, lower for fast ones.",
+    "Tail Stop Gain (CW/CCW): Adjust separately for clean, bounce-free stops in both directions.",
+    "Test & Adjust: Fly, observe, and fine-tune for best performance in real conditions."
 }
 
 data['fields'] = {
-	profilesProportional = {t = "How tightly the system tracks the desired setpoint."},
+    profilesProportional = {t = "How tightly the system tracks the desired setpoint."},
     profilesIntegral = {t = "How tightly the system holds its position."},
     profilesHSI = {t = "Used to prevent the craft from pitching up when flying at speed."},
     profilesDerivative = {t = "Strength of dampening to any motion on the system, including external influences. Also reduces overshoot."},
     profilesFeedforward = {t = "Helps push P-term based on stick input. Increasing will make response more sharp, but can cause overshoot."},
-    profilesBoost = {t = "Additional boost on the feedforward to make the heli react more to quick stick movements."},
+    profilesBoost = {t = "Additional boost on the feedforward to make the heli react more to quick stick movements."}
 }
 
 return data

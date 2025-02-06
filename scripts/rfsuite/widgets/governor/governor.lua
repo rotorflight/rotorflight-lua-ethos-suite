@@ -54,8 +54,8 @@ end
 
 function rf2gov.paint(widget)
 
-    if rfsuite.utils.ethosVersion() < rfsuite.config.ethosVersion  then
-        screenError(rfsuite.config.ethosVersionString )
+    if rfsuite.utils.ethosVersion() < rfsuite.config.ethosVersion then
+        screenError(rfsuite.config.ethosVersionString)
         return
     end
 

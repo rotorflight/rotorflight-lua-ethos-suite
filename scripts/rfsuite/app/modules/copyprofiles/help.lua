@@ -21,13 +21,8 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {
-        "Copy PID profile or Rate profile from Source to Destination.", 
-        "Choose the source and destinations and save to copy the profile."
-}
+data['help']['default'] = {"Copy PID profile or Rate profile from Source to Destination.", "Choose the source and destinations and save to copy the profile."}
 
-data['fields'] = {
-
-}
+data['fields'] = {}
 
 return data

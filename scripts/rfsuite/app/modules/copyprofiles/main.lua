@@ -27,8 +27,10 @@ local function getDestinationPidProfile(self)
 end
 
 return {
-    read = 101, -- msp_STATUS
-    write = 183, -- msp_COPY_PROFILE
+    -- leaving this api as legacy for now due to unsual read/write scenario.
+    -- to change it will mean a bit of a rewrite so leaving it for now.
+    read = 101, -- MSP_STATUS
+    write = 183, -- MSP_COPY_PROFILE
     reboot = false,
     eepromWrite = true,
     title = "Copy",

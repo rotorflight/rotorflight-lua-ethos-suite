@@ -175,9 +175,7 @@ end
 function ui.openMainMenu()
 
     -- hard exit on error
-    if rfsuite.utils.ethosVersion() < rfsuite.config.ethosVersion  then
-        return
-    end   
+    if rfsuite.utils.ethosVersion() < rfsuite.config.ethosVersion then return end
 
     local MainMenu = assert(loadfile("app/modules/init.lua"))()
 
@@ -237,22 +235,15 @@ function ui.openMainMenu()
     if rfsuite.app.gfx_buttons["mainmenu"] == nil then rfsuite.app.gfx_buttons["mainmenu"] = {} end
     if rfsuite.app.menuLastSelected["mainmenu"] == nil then rfsuite.app.menuLastSelected["mainmenu"] = 1 end
 
-
     for idx, value in ipairs(MainMenu.sections) do
 
         local hideSection = false
 
-        if (value.ethosversion ~= nil and rfsuite.config.ethosRunningVersion < value.ethosversion) then
-            hideSection = true
-        end
+        if (value.ethosversion ~= nil and rfsuite.config.ethosRunningVersion < value.ethosversion) then hideSection = true end
 
-        if (value.mspversion ~= nil and rfsuite.config.apiVersion < value.mspversion) then
-            hideSection = true
-        end       
+        if (value.mspversion ~= nil and rfsuite.config.apiVersion < value.mspversion) then hideSection = true end
 
-        if (value.developer ~= nil and rfsuite.config.developerMode == false) then
-            hideSection = true
-        end
+        if (value.developer ~= nil and rfsuite.config.developerMode == false) then hideSection = true end
 
         if hideSection == false then
 
@@ -267,17 +258,11 @@ function ui.openMainMenu()
                     -- do not show icon if not supported by ethos version
                     local hideEntry = false
 
-                    if (pvalue.ethosversion ~= nil and rfsuite.config.ethosRunningVersion < pvalue.ethosversion) then
-                        hideEntry = true
-                    end
-            
-                    if (pvalue.mspversion ~= nil and rfsuite.config.apiVersion < pvalue.mspversion) then
-                        hideEntry = true
-                    end       
-            
-                    if (pvalue.developer ~= nil and rfsuite.config.developerMode == false) then
-                        hideEntry = true
-                    end
+                    if (pvalue.ethosversion ~= nil and rfsuite.config.ethosRunningVersion < pvalue.ethosversion) then hideEntry = true end
+
+                    if (pvalue.mspversion ~= nil and rfsuite.config.apiVersion < pvalue.mspversion) then hideEntry = true end
+
+                    if (pvalue.developer ~= nil and rfsuite.config.developerMode == false) then hideEntry = true end
 
                     if hideEntry == false then
 
@@ -471,10 +456,8 @@ function ui.fieldNumber(i)
 
         -- if for some reason we have a .0 we need to work around an ethos pecularity on default boxes!
         local str = tostring(default)
-        if str:match("%.0$") then
-            default = math.ceil(default)
-        end
-  
+        if str:match("%.0$") then default = math.ceil(default) end
+
         rfsuite.app.formFields[i]:default(default)
     else
         rfsuite.app.formFields[i]:default(0)
@@ -490,15 +473,13 @@ function ui.fieldNumber(i)
             local helpTxt = rfsuite.app.fieldHelpTxt[f.help]['t']
             rfsuite.app.formFields[i]:help(helpTxt)
         else
-            if rfsuite.config.helpFieldDebug == true then
-                print(f.help)
-            end
-        end    
+            if rfsuite.config.helpFieldDebug == true then print(f.help) end
+        end
     end
     if f.instantChange and f.instantChange == true then
         rfsuite.app.formFields[i]:enableInstantChange(true)
     else
-        rfsuite.app.formFields[i]:enableInstantChange(false)     
+        rfsuite.app.formFields[i]:enableInstantChange(false)
     end
 end
 
@@ -625,15 +606,13 @@ function ui.fieldText(i)
             local helpTxt = rfsuite.app.fieldHelpTxt[f.help]['t']
             rfsuite.app.formFields[i]:help(helpTxt)
         else
-            if rfsuite.config.helpFieldDebug == true then
-                print(f.help)
-            end 
-        end      
+            if rfsuite.config.helpFieldDebug == true then print(f.help) end
+        end
     end
     if f.instantChange and f.instantChange == true then
         rfsuite.app.formFields[i]:enableInstantChange(true)
     else
-        rfsuite.app.formFields[i]:enableInstantChange(false)     
+        rfsuite.app.formFields[i]:enableInstantChange(false)
     end
 
 end
@@ -717,10 +696,8 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
         local helpData = assert(loadfile(helpPath))()
         rfsuite.app.fieldHelpTxt = helpData.fields
     else
-        rfsuite.app.fieldHelpTxt = nil  
-    end    
-
-
+        rfsuite.app.fieldHelpTxt = nil
+    end
 
     if rfsuite.app.Page.openPage then
         rfsuite.app.Page.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
@@ -896,11 +873,11 @@ function ui.navigationButtons(x, y, w, h)
 
     -- HELP BUTTON
     if navButtons.help ~= nil and navButtons.help == true then
-    local section = rfsuite.app.lastScript:match("([^/]+)") -- return just the folder name
-    local script = string.match(rfsuite.app.lastScript, "/([^/]+)%.lua$")
-    
-    -- Attempt to load the help.lua file
-    local helpPath = "app/modules/" .. section .. "/help.lua"
+        local section = rfsuite.app.lastScript:match("([^/]+)") -- return just the folder name
+        local script = string.match(rfsuite.app.lastScript, "/([^/]+)%.lua$")
+
+        -- Attempt to load the help.lua file
+        local helpPath = "app/modules/" .. section .. "/help.lua"
 
         if rfsuite.utils.file_exists(helpPath) then
 
@@ -919,14 +896,14 @@ function ui.navigationButtons(x, y, w, h)
                     else
                         if section == 'rates' then
                             -- rates is an oddball and has an exeption
-                            rfsuite.app.ui.openPageHelp(help.help["table"][rfsuite.rateProfile], section) 
-                        else    
+                            rfsuite.app.ui.openPageHelp(help.help["table"][rfsuite.rateProfile], section)
+                        else
                             -- choose default or custom
                             if help.help[script] then
-                                rfsuite.app.ui.openPageHelp(help.help[script], section) 
-                            else   
+                                rfsuite.app.ui.openPageHelp(help.help[script], section)
+                            else
                                 rfsuite.app.ui.openPageHelp(help.help['default'], section)
-                            end    
+                            end
                         end
                     end
                 end

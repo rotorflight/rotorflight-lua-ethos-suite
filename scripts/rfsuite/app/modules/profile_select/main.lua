@@ -113,6 +113,8 @@ local function wakeup()
 end
 
 return {
+    -- leaving this as legacy api for now as move to new api will require a rewrite.
+    -- no value to change this at this time.
     read = 101,
     write = nil,
     title = "Select Profile",

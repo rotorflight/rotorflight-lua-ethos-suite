@@ -18,12 +18,12 @@
 
 ]] --
 local init = {
-    title = "PID Bandwidth",                    -- title of the page
-    section = "Advanced",         -- do not run if busy with msp
-    script = "main.lua",               -- run this script
-    image = "pids-bandwidth.png",                -- image for the page
-    order = 2,                          -- order in the section
-    ethosversion = 1519                -- disable button if ethos version is less than this
+    title = "PID Bandwidth", -- title of the page
+    section = "Advanced", -- do not run if busy with msp
+    script = "main.lua", -- run this script
+    image = "pids-bandwidth.png", -- image for the page
+    order = 2, -- order in the section
+    ethosversion = 1519 -- disable button if ethos version is less than this
 }
 
 return init

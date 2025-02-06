@@ -39,7 +39,7 @@ end
 
 local function onNavMenu(self)
     rfsuite.app.triggers.escToolEnableButtons = true
-    rfsuite.app.ui.openPage(pidx, folder , "esc/esc_tool.lua")
+    rfsuite.app.ui.openPage(pidx, folder, "esc/esc_tool.lua")
 end
 
 local function event(widget, category, value, x, y)
@@ -47,7 +47,7 @@ local function event(widget, category, value, x, y)
     -- print("Event received:" .. ", " .. category .. "," .. value .. "," .. x .. "," .. y)
 
     if category == 5 or value == 35 then
-        rfsuite.app.ui.openPage(pidx, folder , "esc/esc_tool.lua")
+        rfsuite.app.ui.openPage(pidx, folder, "esc/esc_tool.lua")
         return true
     end
 

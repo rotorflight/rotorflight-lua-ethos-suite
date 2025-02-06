@@ -21,14 +21,8 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {
-        "This tool provides the ability to send a custom byte string to the flight controller. It is useful for developers when debugging values.",
-        "If you do not understand what you are doing, do not use it as bad things can happen."
-}
+data['help']['default'] = {"This tool provides the ability to send a custom byte string to the flight controller. It is useful for developers when debugging values.", "If you do not understand what you are doing, do not use it as bad things can happen."}
 
-
-data['fields'] = {
-
-}
+data['fields'] = {}
 
 return data

@@ -21,19 +21,10 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {
-        "Please select the servo you would like to configure from the list below.", "Primary flight controls that use the rotoflight mixer will display in the section called 'mixer",
-        "Any other servos that are not controlled by the primary flight mixer will be displayed in the section called 'Other servos'.",		
-}
+data['help']['default'] = {"Please select the servo you would like to configure from the list below.", "Primary flight controls that use the rotoflight mixer will display in the section called 'mixer", "Any other servos that are not controlled by the primary flight mixer will be displayed in the section called 'Other servos'."}
 
-data['help']['servos_tool'] = {
-        "Override: [*]  Enable override to allow real time updates of servo center point.", 
-        "Center: Adjust the center position of the servo.",
-        "Minimum/Maximum: Adjust the end points of the selected servo.", 
-        "Scale: Adjust the amount the servo moves for a given input.",
-        "Rate: The frequency the servo runs best at - check with manufacturer.",
-        "Speed: The speed the servo moves. Generally only used for the cyclic servos to help the swash move evenly. Optional - leave all at 0 if unsure."
-}
+data['help']['servos_tool'] = {"Override: [*]  Enable override to allow real time updates of servo center point.", "Center: Adjust the center position of the servo.", "Minimum/Maximum: Adjust the end points of the selected servo.", "Scale: Adjust the amount the servo moves for a given input.", "Rate: The frequency the servo runs best at - check with manufacturer.",
+                               "Speed: The speed the servo moves. Generally only used for the cyclic servos to help the swash move evenly. Optional - leave all at 0 if unsure."}
 
 data['fields'] = {
     servoMid = {t = "Servo center position pulse width."},
@@ -43,7 +34,7 @@ data['fields'] = {
     servoScalePos = {t = "Servo positive scaling."},
     servoRate = {t = "Servo PWM rate."},
     servoSpeed = {t = "Servo motion speed in milliseconds."},
-    servoFlags = {t = "0 = Default, 1=Reverse, 2 = Geo Correction, 3 = Reverse + Geo Correction"},
+    servoFlags = {t = "0 = Default, 1=Reverse, 2 = Geo Correction, 3 = Reverse + Geo Correction"}
 }
 
 return data
