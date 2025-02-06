@@ -155,7 +155,11 @@ function createFileReader(filename)
     -- Return the function to read the next chunk of 10KB
     return function()
         -- Seek to the current position in the file
-        file:seek(file_pos) -- This should work correctly now
+        if rfsuite.config.ethosRunningVersion > 1600 then
+            file:seek("set", file_pos)  -- Explicitly set the seek mode
+        else
+            file:seek(file_pos)
+        end
 
         -- Read the next 10KB chunk
         local chunk = file:read(10 * 1024)
