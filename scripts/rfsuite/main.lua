@@ -58,6 +58,7 @@ config.soundPack = nil                                              -- use an cu
 config.syncCraftName = false                                        -- sync the craft name with the model name [default = false]
 config.helpFieldDebug = true                                        -- print debug to show help fields being looked for [default = false]
 config.apiTester = false                                            -- run the api tester sub task for use when developing new api files [default = false]
+config.mspExpBytes = 16                                             -- number of bytes to read for the msp experimental page [default = 8]
 
 -- tasks
 config.bgTaskName = config.toolName .. " [Background]"              -- background task name for msp services etc
