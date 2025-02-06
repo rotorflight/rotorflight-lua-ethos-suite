@@ -431,4 +431,21 @@ local function onNavMenu(self)
 
 end
 
-return {title = "Servos", event = event, openPage = openPageInit, onToolMenu = onToolMenu, onNavMenu = onNavMenu, servoCenterFocusAllOn = servoCenterFocusAllOn, servoCenterFocusAllOff = servoCenterFocusAllOff, wakeup = wakeup, navButtons = {menu = true, save = false, reload = true, tool = true, help = true}}
+-- not changing to custom api at present due to complexity of read/write scenario in these modules
+return {
+    title = "Servos",
+    event = event,
+    openPage = openPageInit,
+    onToolMenu = onToolMenu,
+    onNavMenu = onNavMenu,
+    servoCenterFocusAllOn = servoCenterFocusAllOn,
+    servoCenterFocusAllOff = servoCenterFocusAllOff,
+    wakeup = wakeup,
+    navButtons = {
+        menu = true,
+        save = false,
+        reload = true,
+        tool = true,
+        help = true
+    }
+}
