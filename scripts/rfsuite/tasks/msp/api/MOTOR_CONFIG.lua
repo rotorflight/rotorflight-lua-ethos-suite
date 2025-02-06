@@ -107,6 +107,7 @@ local function read()
     rfsuite.bg.msp.mspQueue:add(message)
 end
 
+-- helper function to shift payload position when writing with a supplied payload
 local function shiftSuppliedPayload(payload)
     local newPayload = {}
     for i, v in ipairs(payload) do
