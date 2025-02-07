@@ -14,9 +14,9 @@ local foundEscDone = false
 
 local govMode = {"External Governor", "ESC Governor" , "Fixed Wing"}
 
-fields[#fields + 1] = {t = "Governor", activeFieldPos = 1 + 1,  vals = {mspHeaderBytes + 3, mspHeaderBytes + 4}, tableIdxInc = -1, table = govMode}
-fields[#fields + 1] = {t = "Gov-P", activeFieldPos = 6,  vals = {mspHeaderBytes + 13, mspHeaderBytes + 14}, min = 1, max = 10, default = 4}
-fields[#fields + 1] = {t = "Gov-I", activeFieldPos = 7,  vals = {mspHeaderBytes + 15, mspHeaderBytes + 16}, min = 1, max = 10, default = 3}
+fields[#fields + 1] = {t = "Governor", activeFieldPos = 1 + 1,  xvals = {5, 6}, tableIdxInc = -1, table = govMode, mspkey = "governor"}
+fields[#fields + 1] = {t = "Gov-P", activeFieldPos = 6,  xvals = {15, 16}, min = 1, max = 10, default = 4, mspkey="governor_p"}
+fields[#fields + 1] = {t = "Gov-I", activeFieldPos = 7,  xvals = {17, 18}, min = 1, max = 10, default = 3, mspkey="governor_i"}
 
 -- This code will disable the field if the ESC does not support it
 -- It now uses the activeFieldsPos element to associate to the activeFields table
@@ -24,7 +24,7 @@ for i = #fields, 1, -1 do
     local f = fields[i]
     local fieldIndex = f.activeFieldPos  -- Use activeFieldPos for association
     if activeFields[fieldIndex] == 0 then
-         print("v:" .. f.t .. " disabled")
+        -- print("v:" .. f.t .. " disabled")
         table.remove(fields, i)  -- Remove the field from the table
     end
 end
@@ -59,12 +59,10 @@ local function wakeup(self)
 end
 
 return {
-    read = 217, -- msp_ESC_PARAMETERS
-    write = 218, -- msp_SET_ESC_PARAMETERS
+    mspapi="ESC_PARAMETERS_XDFLY",
     eepromWrite = true,
     reboot = false,
     title = "Governor",
-    minBytes = mspBytes,
     labels = labels,
     fields = fields,
     escinfo = escinfo,

@@ -47,14 +47,6 @@ local function getEscFirmware(self)
 
 end
 
-local function simulatorResponse()
-    return {166, 64, 20, 4, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 4, 0, 3, 0, 2, 0, 1, 0, 7, 0, 1, 0, 0, 0, 0, 0, 0, 0, 10, 0, 1, 0, 0, 0, 0, 0, 238, 255, 1, 0}
-end
-
-local function mspBytes()
-    return #simulatorResponse()
-end
-
 -- Function to convert two bytes to a 16-bit number (little-endian)
 local function to16bit(high, low)
     return low + (high * 256)
@@ -109,14 +101,12 @@ end
 
 
 return {
+        mspapi="ESC_PARAMETERS_XDFLY",
         toolName = toolName, 
         image="xdfly.png", 
         powerCycle = false,
         mspBufferCache = true, 
         mspSignature = 0xA6, 
-        mspHeaderBytes = mspHeaderBytes, 
-        mspBytes = mspBytes(),
-        simulatorResponse =  simulatorResponse(),  
         getEscModel = getEscModel, 
         getEscVersion = getEscVersion, 
         getEscFirmware = getEscFirmware,

@@ -17,15 +17,13 @@ local startupPower = {"Low", "Medium", "High"}
 local fanControl = {"On", "Off"}
 local ledColor = {"RED", "YELOW","ORANGE","GREEN","JADE GREEN","BLUE","CYAN","PURPLE","PINK","WHITE"}
 
-fields[#fields + 1] = {t = "LV BEC voltage", activeFieldPos = 4 + 1, min = 60, max = 84, default = 74, step = 2 , scale = 10, decimals = 1, vals = {mspHeaderBytes + 9, mspHeaderBytes + 10}, table = becLvVoltage}
-fields[#fields + 1] = {t = "HV BEC voltage",  activeFieldPos = 10 + 1, min = 60, max = 120, vals = {mspHeaderBytes + 21, mspHeaderBytes + 22}, tableIdxInc = -1, table = becHvVoltage}
-fields[#fields + 1] = {t = "Motor direction",  activeFieldPos = 5 + 1, vals = {mspHeaderBytes + 11, mspHeaderBytes + 12}, tableIdxInc = -1, table = motorDirection}
-fields[#fields + 1] = {t = "Motor Poles",  activeFieldPos = 16 + 1, min = 1, max = 550, default = 1, step = 1 ,  vals = {mspHeaderBytes + 33, mspHeaderBytes + 34}}
-fields[#fields + 1] = {t = "Startup Power",   activeFieldPos = 11 + 1, vals = {mspHeaderBytes + 23, mspHeaderBytes + 24}, tableIdxInc = -1, table = startupPower}
-fields[#fields + 1] = {t = "LED Colour",   activeFieldPos = 17 + 1, vals = {mspHeaderBytes + 35, mspHeaderBytes + 36}, tableIdxInc = -1, table = ledColor}
-fields[#fields + 1] = {t = "Smart Fan",   activeFieldPos = 18 + 1, vals = {mspHeaderBytes + 37, mspHeaderBytes + 38}, tableIdxInc = -1, table = fanControl}
-
-rfsuite.utils.print_r(activeFields)
+fields[#fields + 1] = {t = "LV BEC voltage", activeFieldPos = 4 + 1, min = 60, max = 84, default = 74, step = 2 , scale = 10, decimals = 1, xvals = {11, 12}, table = becLvVoltage, mspkey = "lv_bec_voltage"}
+fields[#fields + 1] = {t = "HV BEC voltage",  activeFieldPos = 10 + 1, min = 60, max = 120, xvals = {23, 24}, tableIdxInc = -1, table = becHvVoltage, mspkey = "hv_bec_voltage"}
+fields[#fields + 1] = {t = "Motor direction",  activeFieldPos = 5 + 1, xvals = {13, 14}, tableIdxInc = -1, table = motorDirection, mspkey = "motor_direction"}
+fields[#fields + 1] = {t = "Motor Poles",  activeFieldPos = 16 + 1, min = 1, max = 550, default = 1, step = 1 ,  xvals = {35, 36}, mspkey="motor_poles"}
+fields[#fields + 1] = {t = "Startup Power",   activeFieldPos = 11 + 1, xvals = {25, 26}, tableIdxInc = -1, table = startupPower, mspkey = "startup_power"}
+fields[#fields + 1] = {t = "LED Colour",   activeFieldPos = 17 + 1, xvals = {37, 38}, tableIdxInc = -1, table = ledColor, mspkey = "led_color"}
+fields[#fields + 1] = {t = "Smart Fan",   activeFieldPos = 18 + 1, xvals = {39, 40}, tableIdxInc = -1, table = fanControl, mspkey = "smart_fan"}
 
 -- This code will disable the field if the ESC does not support it
 -- It now uses the activeFieldsPos element to associate to the activeFields table
@@ -33,7 +31,7 @@ for i = #fields, 1, -1 do
     local f = fields[i]
     local fieldIndex = f.activeFieldPos  -- Use activeFieldPos for association
     if activeFields[fieldIndex] == 0 then
-         print("v:" .. f.t .. " disabled")
+        -- print("v:" .. f.t .. " disabled")
         table.remove(fields, i)  -- Remove the field from the table
     end
 end
@@ -71,16 +69,13 @@ end
 local foundEsc = false
 local foundEscDone = false
 return {
-    read = 217, -- msp_ESC_PARAMETERS
-    write = 218, -- msp_SET_ESC_PARAMETERS
+    mspapi="ESC_PARAMETERS_XDFLY",
     eepromWrite = false,
     reboot = false,
     title = "Basic Setup",
-    minBytes = mspBytes,
     labels = labels,
     fields = fields,
     escinfo = escinfo,
-    simulatorResponse =  simulatorResponse,
     svFlags = 0,
     postLoad = postLoad,
     navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
