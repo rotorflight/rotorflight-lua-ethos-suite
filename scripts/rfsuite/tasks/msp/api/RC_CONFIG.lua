@@ -82,11 +82,11 @@ local function write(suppliedPayload)
             local errorHandler = handlers.getErrorHandler()
             if errorHandler then errorHandler(self, buf) end
         end,
-        simulatorResponse = {}
+        simulatorResponse = {},
+        uuid = MSP_API_UUID,
+        timeout = MSP_API_TIMEOUT  
     }
-    rfsuite.bg.msp.mspQueue:add(message),
-    uuid = MSP_API_UUID,
-    timeout = MSP_API_TIMEOUT  
+    rfsuite.bg.msp.mspQueue:add(message)
 end
 
 -- Function to get the value of a specific field from MSP data
