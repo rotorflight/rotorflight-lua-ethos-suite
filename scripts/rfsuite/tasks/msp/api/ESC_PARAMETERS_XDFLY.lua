@@ -172,5 +172,7 @@ return {
     resetWriteStatus = resetWriteStatus,
     setCompleteHandler = handlers.setCompleteHandler,
     setErrorHandler = handlers.setErrorHandler,
-    data = data
+    data = data,
+    setUUID = setUUID,
+    setTimeout = setTimeout
 }
