@@ -36,7 +36,7 @@ config.watchdogParam = 10                                           -- watchdog 
 
 
 -- features
-config.logEnable = false                                             -- will write debug log to: /scripts/rfsuite/logs/rfsuite.log [default = false]
+config.logEnable = true                                             -- will write debug log to: /scripts/rfsuite/logs/rfsuite.log [default = false]
 config.logEnableScreen = false                                      -- if config.logEnable is true then also print to screen [default = false]
 config.mspTxRxDebug = true
 config.flightLog = true                                             -- will write a flight log into /scripts/rfsuite/logs/<modelname>/*.log
