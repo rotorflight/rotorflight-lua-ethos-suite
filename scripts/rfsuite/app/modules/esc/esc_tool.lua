@@ -31,11 +31,20 @@ local function getESCDetails()
         command = 217, -- MSP_STATUS
         processReply = function(self, buf)
 
-            if #buf >= 2 and buf[1] == mspSignature then
+            local mspBytesCheck = 2 -- we query 2 only unless the flack to cache the init buffer is set
+            if ESC.mspBufferCache == true then
+                mspBytesCheck = mspBytes
+            end
+ 
+            if #buf >= mspBytesCheck and buf[1] == mspSignature then
 
                 escDetails.model = ESC.getEscModel(buf)
                 escDetails.version = ESC.getEscVersion(buf)
                 escDetails.firmware = ESC.getEscFirmware(buf)
+
+                if ESC.mspBufferCache == true then
+                    rfsuite.escBuffer = buf 
+                end    
 
                 foundESC = true
 
@@ -53,6 +62,8 @@ local function openPage(pidx, title, script)
     rfsuite.app.lastIdx = pidx
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
+
+    rfsuite.escBuffer = nil -- clear the buffer
 
     local folder = title
 
