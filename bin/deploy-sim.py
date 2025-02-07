@@ -3,6 +3,9 @@ import shutil
 import argparse
 from tqdm import tqdm
 import subprocess_conout
+import serial
+import subprocess
+import ast
 
 pbar = None
 
@@ -42,7 +45,7 @@ def copy_files(src, fileext=None, launch=False, destfolders=None):
         logs_folder = os.path.join(tgt_folder, 'logs')
 
         # Preserve the logs folder by moving it temporarily
-        if os.path.exists(logs_folder):
+        if os.path.exists(logs_folder) and not fileext == "fast":
             print(f"Backing up logs ...")
             os.makedirs(logs_temp, exist_ok=True)  
             shutil.copytree(logs_folder, logs_temp, dirs_exist_ok=True)
@@ -61,6 +64,26 @@ def copy_files(src, fileext=None, launch=False, destfolders=None):
                 for file in files:
                     if file.endswith('.lua'):
                         shutil.copy(os.path.join(root, file), os.path.join(tgt_folder, file))
+
+        elif fileext == "fast":
+            lua_src = os.path.join(srcfolder, 'scripts', tgt)
+            for root, _, files in os.walk(lua_src):
+                for file in files:
+                    src_file = os.path.join(root, file)
+                    rel_path = os.path.relpath(src_file, lua_src)
+                    tgt_file = os.path.join(tgt_folder, rel_path)
+
+                    # Ensure the target directory exists
+                    os.makedirs(os.path.dirname(tgt_file), exist_ok=True)
+
+                    # If target file exists, compare and copy only if source is newer
+                    if os.path.exists(tgt_file):
+                        if os.stat(src_file).st_mtime > os.stat(tgt_file).st_mtime:
+                            shutil.copy(src_file, tgt_file)
+                            print(f"Copying {file} to {tgt_file}")
+                    else:
+                        shutil.copy(src_file, tgt_file)
+                        print(f"Copying {file} to {tgt_file}")
         else:
             # No specific file extension, remove and copy all files
             if os.path.exists(tgt_folder):
@@ -106,9 +129,45 @@ def main():
     parser.add_argument('--sim' ,type=str, help='launch path for the sim after deployment')
     parser.add_argument('--fileext', type=str, help='File extension to filter by')
     parser.add_argument('--destfolders', type=str, default=None, help='Folders for deployment')
+    parser.add_argument('--radio', action='store_true', default=None, help='Check radio connection')
+    parser.add_argument('--radioDebug', action='store_true', default=None, help='Switch Radio to debug after deploying')
+    parser.add_argument('--radioDebugOnly', action='store_true', default=None, help='Switch Radio to debug after deploying')
+
     args = parser.parse_args()
 
-    copy_files(args.src, args.fileext, launch = args.sim, destfolders = args.destfolders)
+    if args.radio:
+        if os.getenv('FRSKY_RADIO_TOOL_SRC') and not args.radioDebugOnly:
+            # call radio_cmd.exe from FRSKY_RADIO_TOOL_SRC
+            try:
+                paths = subprocess.check_output(os.path.join(os.getenv('FRSKY_RADIO_TOOL_SRC'), 'radio_cmd.exe -s'), shell=True)
+                paths = paths.decode("utf-8")
+                paths = ast.literal_eval(paths)
+                args.destfolders = os.path.join(paths['radio'],f'\\scripts')
+            except subprocess.CalledProcessError as e:
+                print(f"Radio not connected: {e}")   
+
+    if not args.radioDebugOnly:             
+        copy_files(args.src, args.fileext, launch = args.sim, destfolders = args.destfolders)
+
+    if os.getenv('FRSKY_RADIO_TOOL_SRC'):
+        if args.radio and args.radioDebug:
+            if os.getenv('FRSKY_RADIO_TOOL_SRC'):
+                try:
+                    print("Entering Debug mode ...")
+                    serialPortName = subprocess.check_output(os.path.join(os.getenv('FRSKY_RADIO_TOOL_SRC'), 'radio_cmd.exe -d'), shell=True)
+                    serialPortName = serialPortName.decode("utf-8").rstrip()
+                    print("Radio connected in debug mode ...")
+                    ser = serial.Serial(port=serialPortName)
+                    if serialPortName:
+                        while True:
+                            try:
+                                print(ser.readline().decode("utf-8"))
+                            except serial.serialutil.SerialException:
+                                exit()
+                except subprocess.CalledProcessError as e:
+                    print(f"Radio not connected: {e}")
+
+            
 
 if __name__ == "__main__":
     main()
