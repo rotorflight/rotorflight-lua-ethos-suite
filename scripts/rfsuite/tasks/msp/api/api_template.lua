@@ -135,5 +135,19 @@ end
 local function setTimeout(timeout)
     MSP_API_MSG_TIMEOUT = timeout
 end
+
 -- Return the module's API functions
-return {read = read, write = write, readComplete = readComplete, writeComplete = writeComplete, readValue = readValue, setValue = setValue, resetWriteStatus = resetWriteStatus, setCompleteHandler = handlers.setCompleteHandler, setErrorHandler = handlers.setErrorHandler, data = data}
+return {
+    read = read,
+    write = write,
+    readComplete = readComplete,
+    writeComplete = writeComplete,
+    readValue = readValue,
+    setValue = setValue,
+    resetWriteStatus = resetWriteStatus,
+    setCompleteHandler = handlers.setCompleteHandler,
+    setErrorHandler = handlers.setErrorHandler,
+    data = data,
+    setUUID = setUUID,
+    setTimeout = setTimeout
+}

@@ -69,10 +69,20 @@ local function openPage(pidx, title, script)
 
     ESC = assert(loadfile("app/modules/esc/mfg/" .. folder .. "/init.lua"))()
 
-    mspSignature = ESC.mspSignature
-    mspHeaderBytes = ESC.mspHeaderBytes
-    mspBytes = ESC.mspBytes
-    simulatorResponse = ESC.simulatorResponse
+    if ESC.mspapi ~= nil then
+        -- we are using the api so get values from that!
+        local API = rfsuite.bg.msp.api.load(ESC.mspapi)
+        mspSignature = API.mspSignature
+        mspHeaderBytes = API.mspHeaderBytes
+        simulatorResponse = API.simulatorResponse
+        mspBytes = #simulatorResponse
+    else
+        --legacy method
+        mspSignature = ESC.mspSignature
+        mspHeaderBytes = ESC.mspHeaderBytes
+        simulatorResponse = ESC.simulatorResponse
+        mspBytes = ESC.mspBytes
+    end    
 
     rfsuite.app.formFields = {}
     rfsuite.app.formLines = {}
@@ -311,4 +321,9 @@ local function event(widget, category, value, x, y)
     return false
 end
 
-return {title = "ESC", openPage = openPage, wakeup = wakeup, event = event}
+return {
+    title = "ESC",
+    openPage = openPage,
+    wakeup = wakeup,
+    event = event
+}
