@@ -21,9 +21,28 @@ local MSP_API_SIMULATOR_RESPONSE = {252, 1, 127, 0, 35, 0, 0, 0, 0, 0, 0, 122, 1
 local MSP_MIN_BYTES = 30
 
 -- Define the MSP response data structures
-local MSP_API_STRUCTURE_READ = {{field = "task_delta_time_pid", type = "U16"}, {field = "task_delta_time_gyro", type = "U16"}, {field = "sensor_status", type = "U16"}, {field = "flight_mode_flags", type = "U32"}, {field = "profile_number", type = "U8"}, {field = "max_real_time_load", type = "U16"}, {field = "average_cpu_load", type = "U16"}, {field = "extra_flight_mode_flags_count", type = "U8"},
-                                {field = "arming_disable_flags_count", type = "U8"}, {field = "arming_disable_flags", type = "U32"}, {field = "reboot_required", type = "U8"}, {field = "configuration_state", type = "U8"}, {field = "current_pid_profile_index", type = "U8"}, {field = "pid_profile_count", type = "U8"}, {field = "current_control_rate_profile_index", type = "U8"},
-                                {field = "control_rate_profile_count", type = "U8"}, {field = "motor_count", type = "U8"}, {field = "servo_count", type = "U8"}, {field = "gyro_detection_flags", type = "U8"}}
+local MSP_API_STRUCTURE_READ = {
+    {field = "task_delta_time_pid", type = "U16"},
+    {field = "task_delta_time_gyro", type = "U16"},
+    {field = "sensor_status", type = "U16"},
+    {field = "flight_mode_flags", type = "U32"},
+    {field = "profile_number", type = "U8"},
+    {field = "max_real_time_load", type = "U16"},
+    {field = "average_cpu_load", type = "U16"},
+    {field = "extra_flight_mode_flags_count", type = "U8"},
+    {field = "arming_disable_flags_count", type = "U8"},
+    {field = "arming_disable_flags", type = "U32"},
+    {field = "reboot_required", type = "U8"},
+    {field = "configuration_state", type = "U8"},
+    {field = "current_pid_profile_index", type = "U8"},
+    {field = "pid_profile_count", type = "U8"},
+    {field = "current_control_rate_profile_index", type = "U8"},
+    {field = "control_rate_profile_count", type = "U8"},
+    {field = "motor_count", type = "U8"},
+    {field = "servo_count", type = "U8"},
+    {field = "gyro_detection_flags", type = "U8"}
+}
+
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ -- Assuming identical structure for now
 
 -- Variable to store parsed MSP data
@@ -34,6 +53,10 @@ local defaultData = {}
 
 -- Create a new instance
 local handlers = rfsuite.bg.msp.api.createHandlers()
+
+-- Variables to store optional the UUID and timeout for payload
+local MSP_API_UUID
+local MSP_API_MSG_TIMEOUT
 
 -- Function to initiate MSP read operation
 local function read()
@@ -55,7 +78,9 @@ local function read()
             local errorHandler = handlers.getErrorHandler()
             if errorHandler then errorHandler(self, buf) end
         end,
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE
+        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
+        uuid = MSP_API_UUID,
+        timeout = MSP_API_MSG_TIMEOUT  
     }
     rfsuite.bg.msp.mspQueue:add(message)
 end
@@ -78,7 +103,9 @@ local function write(suppliedPayload)
             local errorHandler = handlers.getErrorHandler()
             if errorHandler then errorHandler(self, buf) end
         end,
-        simulatorResponse = {}
+        simulatorResponse = {},
+        uuid = MSP_API_UUID,
+        timeout = MSP_API_MSG_TIMEOUT  
     }
     rfsuite.bg.msp.mspQueue:add(message)
 end
@@ -118,6 +145,16 @@ end
 -- Function to return the parsed MSP data
 local function data()
     return mspData
+end
+
+-- set the UUID for the payload
+local function setUUID(uuid)
+    MSP_API_UUID = uuid
+end
+
+-- set the timeout for the payload
+local function setTimeout(timeout)
+    MSP_API_MSG_TIMEOUT = timeout
 end
 
 -- Return the module's API functions

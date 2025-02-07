@@ -44,6 +44,10 @@ local mspData = nil
 -- Create a new instance
 local handlers = rfsuite.bg.msp.api.createHandlers()
 
+-- Variables to store optional the UUID and timeout for payload
+local MSP_API_UUID
+local MSP_API_MSG_TIMEOUT
+
 -- Function to initiate MSP read operation
 local function read()
     local message = {
@@ -60,7 +64,9 @@ local function read()
             local errorHandler = handlers.getErrorHandler()
             if errorHandler then errorHandler(self, buf) end
         end,
-        simulatorResponse = rfsuite.config.simulatorApiVersionResponse or MSP_API_SIMULATOR_RESPONSE
+        simulatorResponse = rfsuite.config.simulatorApiVersionResponse or MSP_API_SIMULATOR_RESPONSE,
+        uuid = MSP_API_UUID,
+        timeout = MSP_API_MSG_TIMEOUT  
     }
     -- Add the message to the processing queue
     rfsuite.bg.msp.mspQueue:add(message)
@@ -86,6 +92,16 @@ end
 local function readValue(fieldName)
     if mspData and mspData['parsed'][fieldName] ~= nil then return mspData['parsed'][fieldName] end
     return nil
+end
+
+-- set the UUID for the payload
+local function setUUID(uuid)
+    MSP_API_UUID = uuid
+end
+
+-- set the timeout for the payload
+local function setTimeout(timeout)
+    MSP_API_MSG_TIMEOUT = timeout
 end
 
 -- Return the module's API functions
