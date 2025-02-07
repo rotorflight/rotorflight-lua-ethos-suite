@@ -14,9 +14,10 @@ local foundEscDone = false
 
 local govMode = {"External Governor", "ESC Governor" , "Fixed Wing"}
 
-fields[#fields + 1] = {t = "Governor", activeFieldPos = 1 + 1,  xvals = {5, 6}, tableIdxInc = -1, table = govMode, mspkey = "governor"}
-fields[#fields + 1] = {t = "Gov-P", activeFieldPos = 6,  xvals = {15, 16}, min = 1, max = 10, default = 4, mspkey="governor_p"}
-fields[#fields + 1] = {t = "Gov-I", activeFieldPos = 7,  xvals = {17, 18}, min = 1, max = 10, default = 3, mspkey="governor_i"}
+fields[#fields + 1] = {t = "Governor", activeFieldPos = 2, tableIdxInc = -1, table = govMode, apikey = "governor"}
+fields[#fields + 1] = {t = "Gov-P", activeFieldPos = 6,  min = 1, max = 10, default = 4, apikey="governor_p"}
+fields[#fields + 1] = {t = "Gov-I", activeFieldPos = 7,  min = 1, max = 10, default = 3, apikey="governor_i"}
+fields[#fields + 1] = {t = "Motor Poles",  activeFieldPos = 17, min = 1, max = 550, default = 1, step = 1 , apikey="motor_poles"}
 
 -- This code will disable the field if the ESC does not support it
 -- It now uses the activeFieldsPos element to associate to the activeFields table

@@ -18,15 +18,15 @@ local autoRestart = {"OFF", "90s"}
 local srFunc = {"ON", "OFF"}
 
 
-fields[#fields + 1] = {t = "Timing", activeFieldPos = 3 + 1, xvals = {9, 10}, tableIdxInc = -1, table = timing, mspkey="timing"}
-fields[#fields + 1] = {t = "Startup Power", activeFieldPos = 11 + 1, xvals = {25, 26}, tableIdxInc = -1, table = startupPower, mspkey="startup_power"}
-fields[#fields + 1] = {t = "Acceleration", activeFieldPos = 8 + 1, xvals = {19, 20}, tableIdxInc = -1, table = accel, mspkey="acceleration"}
-fields[#fields + 1] = {t = "Brake Type", activeFieldPos = 12 + 1, xvals = {27, 28}, tableIdxInc = -1, table = brakeType, mspkey="brake_type"}
-fields[#fields + 1] = {t = "Brake Force", activeFieldPos = 13 + 1, xmin = 0, max = 100, default = 0, vals = {29, 30}, unit = "%", mspkey="brake_force"}
-fields[#fields + 1] = {t = "SR Function", activeFieldPos = 14 + 1, xvals = {31, 32}, tableIdxInc = -1, table = srFunc, mspkey="sr_function"}
-fields[#fields + 1] = {t = "Capacity Correction", activeFieldPos = 15 + 1, min = 0, max = 20, default = 10, offset = -10 , xvals = {33, 34}, unit = "%", mspkey="capacity_correction"}
-fields[#fields + 1] = {t = "Auto Restart Time", activeFieldPos = 9 + 1, tableIdxInc = -1, table = autoRestart ,xvals = {21, 22}, mspkey="auto_restart_time"}
-fields[#fields + 1] = {t = "Cell Cutoff", activeFieldPos = 10 + 1, xvals = {7, 8}, tableIdxInc = -1, table = lowVoltage, mspkey="cell_cutoff"}  
+fields[#fields + 1] = {t = "Timing", activeFieldPos = 4, tableIdxInc = -1, table = timing, apikey="timing"}
+fields[#fields + 1] = {t = "Startup Power", activeFieldPos = 12, tableIdxInc = -1, table = startupPower, apikey="startup_power"}
+fields[#fields + 1] = {t = "Acceleration", activeFieldPos = 9, tableIdxInc = -1, table = accel, apikey="acceleration"}
+fields[#fields + 1] = {t = "Brake Type", activeFieldPos = 13, tableIdxInc = -1, table = brakeType, apikey="brake_type"}
+fields[#fields + 1] = {t = "Brake Force", activeFieldPos = 14, xmin = 0, max = 100, default = 0, unit = "%", apikey="brake_force"}
+fields[#fields + 1] = {t = "SR Function", activeFieldPos = 15, tableIdxInc = -1, table = srFunc, apikey="sr_function"}
+fields[#fields + 1] = {t = "Capacity Correction", activeFieldPos = 16, min = 0, max = 20, default = 10, offset = -10 , unit = "%", apikey="capacity_correction"}
+fields[#fields + 1] = {t = "Auto Restart Time", activeFieldPos = 10, tableIdxInc = -1, table = autoRestart , apikey="auto_restart_time"}
+fields[#fields + 1] = {t = "Cell Cutoff", activeFieldPos = 11, tableIdxInc = -1, table = lowVoltage, apikey="cell_cutoff"}  
 
 
 -- This code will disable the field if the ESC does not support it

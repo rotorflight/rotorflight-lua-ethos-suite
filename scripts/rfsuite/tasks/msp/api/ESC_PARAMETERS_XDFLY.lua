@@ -20,12 +20,13 @@ local MSP_API_CMD_WRITE = 218 -- Command identifier
 local MSP_API_SIMULATOR_RESPONSE = {166, 64, 20, 4, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 4, 0, 3, 0, 2, 0, 1, 0, 7, 0, 1, 0, 0, 0, 0, 0, 0, 0, 10, 0, 1, 0, 0, 0, 0, 0, 238, 255, 1, 0} -- Default simulator response
 local MSP_MIN_BYTES = 44
 local MSP_SIGNATURE = 0xA6
+local MSP_HEADER_BYTES = 2
 
--- Define the MSP response data structures
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ = {
     {field = "esc_signature", type = "U8"},
     {field = "esc_command", type = "U8"},
+    {field = "esc_model", type = "U8"}, 
     {field = "esc_version", type = "U8"}, 
     {field = "governor", type = "U16"}, 
     {field = "cell_cutoff", type = "U16"}, 
@@ -174,5 +175,8 @@ return {
     setErrorHandler = handlers.setErrorHandler,
     data = data,
     setUUID = setUUID,
-    setTimeout = setTimeout
+    setTimeout = setTimeout,
+    mspSignature = MSP_SIGNATURE,
+    mspHeaderBytes = MSP_HEADER_BYTES,
+    simulatorResponse = MSP_API_SIMULATOR_RESPONSE
 }

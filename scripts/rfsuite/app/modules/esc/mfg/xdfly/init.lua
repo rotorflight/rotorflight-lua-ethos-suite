@@ -1,27 +1,17 @@
+local MSP_API = "ESC_PARAMETERS_XDFLY"
 local toolName = "XDFLY"
 moduleName = "xdfly"
 
-local mspHeaderBytes = 2
-
-function getUInt(page, vals)
-    local v = 0
-    for idx = 1, #vals do
-        local raw_val = page[vals[idx] + mspHeaderBytes] or 0
-        raw_val = raw_val << ((idx - 1) * 8)
-        v = v | raw_val
-    end
-    return v
-end
 
 function getPageValue(page, index)
-    return page[mspHeaderBytes + index]
+    return page[index]
 end
 
 
 -- required by framework
 local function getEscModel(self)
 
-    local escModelID = getPageValue(self, 2)
+    local escModelID = getPageValue(self, 4)
     local escModels = {"RESERVED", "35A", "65A", "85A", "125A", "155A", "130A", "195A", "300A"}
 
     if escModelID == nil then
@@ -34,16 +24,14 @@ end
 
 -- required by framework
 local function getEscVersion(self)
-    -- mno version provided
     return " "
-
 end
 
 -- required by framework
 local function getEscFirmware(self)
 
-    local version = "SW" .. (getPageValue(self, 1) >> 4) .. "." .. (getPageValue(self, 1) & 0xF)
-    return version
+   local version = "SW" .. (getPageValue(self, 3) >> 4) .. "." .. (getPageValue(self, 3) & 0xF)
+   return version
 
 end
 
@@ -101,14 +89,13 @@ end
 
 
 return {
-        mspapi="ESC_PARAMETERS_XDFLY",
+        mspapi=MSP_API,
         toolName = toolName, 
         image="xdfly.png", 
         powerCycle = false,
-        mspBufferCache = true, 
-        mspSignature = 0xA6, 
-        getEscModel = getEscModel, 
+        mspBufferCache = true,      -- funny little param to allow us to cache the buffer and carry it over to the next page
+        getEscModel = getEscModel,
         getEscVersion = getEscVersion, 
         getEscFirmware = getEscFirmware,
-        getActiveFields = getActiveFields
+        getActiveFields = getActiveFields,
     }

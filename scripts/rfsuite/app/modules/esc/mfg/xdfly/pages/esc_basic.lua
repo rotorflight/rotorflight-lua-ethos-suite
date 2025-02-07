@@ -17,13 +17,12 @@ local startupPower = {"Low", "Medium", "High"}
 local fanControl = {"On", "Off"}
 local ledColor = {"RED", "YELOW","ORANGE","GREEN","JADE GREEN","BLUE","CYAN","PURPLE","PINK","WHITE"}
 
-fields[#fields + 1] = {t = "LV BEC voltage", activeFieldPos = 4 + 1, min = 60, max = 84, default = 74, step = 2 , scale = 10, decimals = 1, xvals = {11, 12}, table = becLvVoltage, mspkey = "lv_bec_voltage"}
-fields[#fields + 1] = {t = "HV BEC voltage",  activeFieldPos = 10 + 1, min = 60, max = 120, xvals = {23, 24}, tableIdxInc = -1, table = becHvVoltage, mspkey = "hv_bec_voltage"}
-fields[#fields + 1] = {t = "Motor direction",  activeFieldPos = 5 + 1, xvals = {13, 14}, tableIdxInc = -1, table = motorDirection, mspkey = "motor_direction"}
-fields[#fields + 1] = {t = "Motor Poles",  activeFieldPos = 16 + 1, min = 1, max = 550, default = 1, step = 1 ,  xvals = {35, 36}, mspkey="motor_poles"}
-fields[#fields + 1] = {t = "Startup Power",   activeFieldPos = 11 + 1, xvals = {25, 26}, tableIdxInc = -1, table = startupPower, mspkey = "startup_power"}
-fields[#fields + 1] = {t = "LED Colour",   activeFieldPos = 17 + 1, xvals = {37, 38}, tableIdxInc = -1, table = ledColor, mspkey = "led_color"}
-fields[#fields + 1] = {t = "Smart Fan",   activeFieldPos = 18 + 1, xvals = {39, 40}, tableIdxInc = -1, table = fanControl, mspkey = "smart_fan"}
+fields[#fields + 1] = {t = "LV BEC voltage", activeFieldPos = 5, min = 60, max = 84, default = 74, step = 2 , scale = 10, decimals = 1, table = becLvVoltage, apikey = "lv_bec_voltage"}
+fields[#fields + 1] = {t = "HV BEC voltage",  activeFieldPos = 11, min = 60, max = 120, tableIdxInc = -1, table = becHvVoltage, apikey = "hv_bec_voltage"}
+fields[#fields + 1] = {t = "Motor direction",  activeFieldPos = 6, tableIdxInc = -1, table = motorDirection, apikey = "motor_direction"}
+fields[#fields + 1] = {t = "Startup Power",   activeFieldPos = 12, tableIdxInc = -1, table = startupPower, apikey = "startup_power"}
+fields[#fields + 1] = {t = "LED Colour",   activeFieldPos = 18, tableIdxInc = -1, table = ledColor, apikey = "led_color"}
+fields[#fields + 1] = {t = "Smart Fan",   activeFieldPos = 19, tableIdxInc = -1, table = fanControl, apikey = "smart_fan"}
 
 -- This code will disable the field if the ESC does not support it
 -- It now uses the activeFieldsPos element to associate to the activeFields table
@@ -68,6 +67,7 @@ end
 
 local foundEsc = false
 local foundEscDone = false
+
 return {
     mspapi="ESC_PARAMETERS_XDFLY",
     eepromWrite = false,
