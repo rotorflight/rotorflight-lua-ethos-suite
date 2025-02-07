@@ -21,7 +21,14 @@ local MSP_API_SIMULATOR_RESPONSE = {70, 0, 225, 0, 90, 0, 120, 0, 100, 0, 200, 0
 local MSP_MIN_BYTES = 34
 
 -- Define the MSP response data structures
-local MSP_API_STRUCTURE_READ = {{field = "gov_mode", type = "U8"}, {field = "gov_startup_time", type = "U16"}, {field = "gov_spoolup_time", type = "U16"}, {field = "gov_tracking_time", type = "U16"}, {field = "gov_spoolup_min_throttle", type = "U8"}}
+local MSP_API_STRUCTURE_READ = {
+    {field = "gov_mode", type = "U8"},
+    {field = "gov_startup_time", type = "U16"},
+    {field = "gov_spoolup_time", type = "U16"},
+    {field = "gov_tracking_time", type = "U16"},
+    {field = "gov_spoolup_min_throttle", type = "U8"}
+}
+
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ -- Assuming identical structure for now
 
 -- Variable to store parsed MSP data
@@ -136,4 +143,17 @@ local function setTimeout(timeout)
     MSP_API_MSG_TIMEOUT = timeout
 end
 -- Return the module's API functions
-return {read = read, write = write, readComplete = readComplete, writeComplete = writeComplete, readValue = readValue, setValue = setValue, resetWriteStatus = resetWriteStatus, setCompleteHandler = handlers.setCompleteHandler, setErrorHandler = handlers.setErrorHandler, data = data}
+return {
+    read = read,
+    write = write,
+    readComplete = readComplete,
+    writeComplete = writeComplete,
+    readValue = readValue,
+    setValue = setValue,
+    resetWriteStatus = resetWriteStatus,
+    setCompleteHandler = handlers.setCompleteHandler,
+    setErrorHandler = handlers.setErrorHandler,
+    data = data,
+    setUUID = setUUID,
+    setTimeout = setTimeout,
+}
