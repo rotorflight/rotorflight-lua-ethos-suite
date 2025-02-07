@@ -21,18 +21,8 @@ local MSP_API_SIMULATOR_RESPONSE = {138, 2, 3, 1, 1, 74, 1, 174, 1, 154, 1, 94, 
 local MSP_MIN_BYTES = 15
 
 -- Define the MSP response data structures
-local MSP_API_STRUCTURE_READ = {
-    {field = "batteryCapacity", type = "U16"},
-    {field = "batteryCellCount", type = "U8"},
-    {field = "voltageMeterSource", type = "U8"},
-    {field = "currentMeterSource", type = "U8"},
-    {field = "vbatmincellvoltage", type = "U16"},
-    {field = "vbatmaxcellvoltage", type = "U16"},
-    {field = "vbatfullcellvoltage", type = "U16"},
-    {field = "vbatwarningcellvoltage", type = "U16"},
-    {field = "lvcPercentage", type = "U8"},
-    {field = "consumptionWarningPercentage", type = "U8"}
-}
+local MSP_API_STRUCTURE_READ = {{field = "batteryCapacity", type = "U16"}, {field = "batteryCellCount", type = "U8"}, {field = "voltageMeterSource", type = "U8"}, {field = "currentMeterSource", type = "U8"}, {field = "vbatmincellvoltage", type = "U16"}, {field = "vbatmaxcellvoltage", type = "U16"}, {field = "vbatfullcellvoltage", type = "U16"}, {field = "vbatwarningcellvoltage", type = "U16"},
+                                {field = "lvcPercentage", type = "U8"}, {field = "consumptionWarningPercentage", type = "U8"}}
 
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ -- Assuming identical structure for now
 
@@ -149,17 +139,4 @@ local function setTimeout(timeout)
 end
 
 -- Return the module's API functions
-return {
-    read = read,
-    write = write,
-    readComplete = readComplete,
-    writeComplete = writeComplete,
-    readValue = readValue,
-    setValue = setValue,
-    resetWriteStatus = resetWriteStatus,
-    setCompleteHandler = handlers.setCompleteHandler,
-    setErrorHandler = handlers.setErrorHandler,
-    data = data,
-    setUUID = setUUID,
-    setTimeout = setTimeout,
-}
+return {read = read, write = write, readComplete = readComplete, writeComplete = writeComplete, readValue = readValue, setValue = setValue, resetWriteStatus = resetWriteStatus, setCompleteHandler = handlers.setCompleteHandler, setErrorHandler = handlers.setErrorHandler, data = data}
