@@ -328,7 +328,16 @@ local function processPageReply(source, buf, methodType)
     end
 
     -- inject vals fields based on the positionmap returned by the api call
-    if app.Page.fields then for i, v in ipairs(app.Page.fields) do if v.apikey then if buf['positionmap'] and buf['positionmap'][v.apikey] then app.Page.fields[i].vals = buf['positionmap'][v.apikey] end end end end
+    if app.Page.fields then
+        for i, v in ipairs(app.Page.fields) do
+            if v.apikey then
+                if buf['positionmap'] and buf['positionmap'][v.apikey] then
+                    rfsuite.utils.log("Assigning value to apikey: " .. v.apikey .. " with vals: " .. table.concat(buf['positionmap'][v.apikey], ", "))
+                    app.Page.fields[i].vals = buf['positionmap'][v.apikey]
+                end
+            end
+        end
+    end
 
     -- run the postRead function to allow you to manipulate the data before regular processing.
     -- this is a legacy call that is only really used to directly manipulate the byte string.
@@ -336,7 +345,7 @@ local function processPageReply(source, buf, methodType)
     if app.Page.postRead then app.Page.postRead(app.Page) end
 
     -- bind the fields to values.  This determins what is send and received by the api
-    app.dataBindFields(methodType)
+    app.dataBindFields()
 
     -- run this function after the data has been load and bound
     if app.Page.postLoad then app.Page.postLoad(app.Page) end

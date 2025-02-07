@@ -93,24 +93,33 @@ function apiLoader.parseMSPData(buf, structure, processed, other)
             local size = get_type_size(param.type)
             local start_pos = current_byte
             local end_pos = start_pos + size - 1
+            local byteorder = param.byteorder or "little" -- Default to little-endian
 
             -- Store as single number if start and end are the same
             if start_pos == end_pos then
-                position_map[param.field] = {start_pos}
+            position_map[param.field] = {start_pos}
             else
-                position_map[param.field] = {start_pos, end_pos}
+                position_map[param.field] = {}
+                if byteorder == "big" then
+                    for i = end_pos, start_pos, -1 do
+                        table.insert(position_map[param.field], i)
+                    end
+                else
+                    for i = start_pos, end_pos do
+                        table.insert(position_map[param.field], i)
+                    end
+                end
             end
 
             -- Move to the next available byte position
             current_byte = end_pos + 1
             if rfsuite.config.mspApiPositionMapDebug == true then
-                if start_pos == end_pos then
-                    print(param.field .. ": " .. start_pos)
-                else
-                    print(param.field .. ": " .. start_pos .. ":" .. end_pos)
-                end
+            if start_pos == end_pos then
+                print(param.field .. ": " .. start_pos)
+            else
+                print(param.field .. ": " .. start_pos .. " to " .. end_pos)
             end
-
+            end
         end
 
         if rfsuite.config.mspApiPositionMapDebug == true then
@@ -119,7 +128,7 @@ function apiLoader.parseMSPData(buf, structure, processed, other)
         end
 
         return position_map
-    end
+        end
 
     for _, field in ipairs(structure) do
 

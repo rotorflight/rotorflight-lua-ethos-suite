@@ -5,21 +5,23 @@ local folder = "flrtr"
 local ESC = assert(loadfile("app/modules/esc/mfg/" .. folder .. "/init.lua"))()
 local mspHeaderBytes = ESC.mspHeaderBytes
 local mspSignature = ESC.mspSignature
+local simulatorResponse = ESC.simulatorResponse
 
 local flightMode = {"Helicopter", "Fixed Wing"}
 local becVoltage = {"7.5", "8.0", "8.5", "12"}
 local motorDirection = {"CW", "CCW"}
 local fanControl = {"Automatic", "Always On"}
 
--- fields[#fields + 1] = {t = "ESC type", tablevals = {mspHeaderBytes + 1}, tableIdxInc = -1, table = flightMode} -- informational - maybe put in header
--- fields[#fields + 1] = {t = "Current spec", vals = {mspHeaderBytes + 3, mspHeaderBytes + 2}, unit="A"}  -- informational - maybe put in header?
-fields[#fields + 1] = {t = "Cell count", min = 4, max = 14, vals = {mspHeaderBytes + 24}}
-fields[#fields + 1] = {t = "BEC voltage", vals = {mspHeaderBytes + 27}, tableIdxInc = -1, table = becVoltage, unit = "V"}
-fields[#fields + 1] = {t = "Motor direction", vals = {mspHeaderBytes + 29}, tableIdxInc = -1, table = motorDirection}
-fields[#fields + 1] = {t = "Soft start", min = 5, max = 55, vals = {mspHeaderBytes + 35}}
-fields[#fields + 1] = {t = "Fan control", vals = {mspHeaderBytes + 34}, tableIdxInc = -1, table = fanControl}
+
+fields[#fields + 1] = {t = "Cell count", min = 4, max = 14, apikey="cell_count"}
+fields[#fields + 1] = {t = "BEC voltage", tableIdxInc = -1, table = becVoltage, unit = "V", apikey="bec_voltage"}
+fields[#fields + 1] = {t = "Motor direction", tableIdxInc = -1, table = motorDirection, apikey="motor_direction"}
+fields[#fields + 1] = {t = "Soft start", min = 5, max = 55, apikey="soft_start"}
+fields[#fields + 1] = {t = "Fan control", tableIdxInc = -1, table = fanControl, apikey="fan_control"}
 
 -- fields[#fields + 1] = {t = "Hardware version", vals = {mspHeaderBytes + 18}}  -- this val does not look correct.  regardless not in right place
+
+rfsuite.utils.print_r(rfsuite.app.Page.values)
 
 function postLoad()
     rfsuite.app.triggers.isReady = true
@@ -44,18 +46,17 @@ end
 
 local foundEsc = false
 local foundEscDone = false
+
 return {
-    read = 217, -- msp_ESC_PARAMETERS
-    write = 218, -- msp_SET_ESC_PARAMETERS
+    mspapi="ESC_PARAMETERS_FLYROTOR",
     eepromWrite = false,
     reboot = false,
     title = "Basic Setup",
-    minBytes = mspBytes,
     labels = labels,
     fields = fields,
     escinfo = escinfo,
-    simulatorResponse = {115, 0, 0, 0, 150, 231, 79, 190, 216, 78, 29, 169, 244, 1, 0, 0, 1, 0, 2, 0, 4, 76, 7, 148, 0, 6, 30, 125, 0, 15, 0, 3, 15, 1, 20, 0, 10, 0, 0, 0, 0, 0, 0, 2, 73, 240},
     svFlags = 0,
+    simulatorResponse =  simulatorResponse,
     postLoad = postLoad,
     navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
     onNavMenu = onNavMenu,
