@@ -168,6 +168,8 @@ function bg.wakeup()
         end
     end
 
+    bg.flush_logs()
+
 end
 
 function bg.event(widget, category, value)

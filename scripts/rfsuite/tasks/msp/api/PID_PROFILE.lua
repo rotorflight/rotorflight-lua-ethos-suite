@@ -38,6 +38,23 @@ local defaultData = {}
 -- Create a new instance
 local handlers = rfsuite.bg.msp.api.createHandlers()
 
+-- Add missing methods to handlers
+function handlers.setCompleteHandler(handler)
+    handlers.completeHandler = handler
+end
+
+function handlers.setErrorHandler(handler)
+    handlers.errorHandler = handler
+end
+
+function handlers.getCompleteHandler()
+    return handlers.completeHandler
+end
+
+function handlers.getErrorHandler()
+    return handlers.errorHandler
+end
+
 -- Variables to store optional the UUID and timeout for payload
 local MSP_API_UUID
 local MSP_API_MSG_TIMEOUT
@@ -142,4 +159,17 @@ local function setTimeout(timeout)
 end
 
 -- Return the module's API functions
-return {read = read, write = write, readComplete = readComplete, writeComplete = writeComplete, readValue = readValue, setValue = setValue, resetWriteStatus = resetWriteStatus, setCompleteHandler = handlers.setCompleteHandler, setErrorHandler = handlers.setErrorHandler, data = data}
+return {
+    read = read,
+    write = write,
+    readComplete = readComplete,
+    writeComplete = writeComplete,
+    readValue = readValue,
+    setValue = setValue,
+    resetWriteStatus = resetWriteStatus,
+    setCompleteHandler = handlers.setCompleteHandler,
+    setErrorHandler = handlers.setErrorHandler,
+    data = data,
+    setUUID = setUUID,
+    setTimeout = setTimeout,
+}

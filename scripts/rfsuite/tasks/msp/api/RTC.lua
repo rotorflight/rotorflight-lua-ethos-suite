@@ -144,4 +144,17 @@ local function setTimeout(timeout)
 end
 
 -- Return the module's API functions
-return {read = read, write = write, setValue = setValue, getValue = getValue, readComplete = readComplete, writeComplete = writeComplete, resetWriteStatus = resetWriteStatus, getDefaults = getDefaults, setCompleteHandler = handlers.setCompleteHandler, setErrorHandler = handlers.setErrorHandler, data = data}
+return {
+    write = write,
+    setValue = setValue,
+    writeComplete = writeComplete,
+    resetWriteStatus = resetWriteStatus,
+    getDefaults = getDefaults,
+    setCompleteHandler = handlers.setCompleteHandler,
+    setErrorHandler = handlers.setErrorHandler,
+    data = data,
+    setUUID = setUUID,
+    setTimeout = setTimeout,
+    setUUID = setUUID,
+    setTimeout = setTimeout,
+}
