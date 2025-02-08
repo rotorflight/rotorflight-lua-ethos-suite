@@ -2,14 +2,9 @@ local labels = {}
 local fields = {}
 
 local folder = "scorp"
-local ESC = assert(loadfile("app/modules/esc/mfg/" .. folder .. "/init.lua"))()
-local mspHeaderBytes = ESC.mspHeaderBytes
-local mspSignature = ESC.mspSignature
+
 
 local ESC = assert(loadfile("app/modules/esc/mfg/" .. folder .. "/init.lua"))()
-
-local mspHeaderBytes = ESC.mspHeaderBytes
-local mspSignature = ESC.mspSignature
 
 local escMode = {"Heli Governor", "Heli Governor (stored)", "VBar Governor", "External Governor", "Airplane mode", "Boat mode", "Quad mode"}
 
@@ -21,9 +16,9 @@ local teleProtocol = {"Standard", "VBar", "Jeti Exbus", "Unsolicited", "Futaba S
 
 labels[#labels + 1] = {t = "Scorpion ESC"}
 
-fields[#fields + 1] = {t = "ESC Mode", min = 0, max = #escMode, vals = {mspHeaderBytes + 33, mspHeaderBytes + 34}, tableIdxInc = -1, table = escMode}
-fields[#fields + 1] = {t = "Rotation", min = 0, max = #rotation, vals = {mspHeaderBytes + 37, mspHeaderBytes + 38}, tableIdxInc = -1, table = rotation}
-fields[#fields + 1] = {t = "BEC Voltage", min = 0, max = #becVoltage, vals = {mspHeaderBytes + 35, mspHeaderBytes + 36}, tableIdxInc = -1, table = becVoltage}
+fields[#fields + 1] = {t = "ESC Mode", min = 0, max = #escMode, tableIdxInc = -1, table = escMode, apikey="esc_mode"}
+fields[#fields + 1] = {t = "Rotation", min = 0, max = #rotation, tableIdxInc = -1, table = rotation, apikey="rotation"}
+fields[#fields + 1] = {t = "BEC Voltage", min = 0, max = #becVoltage, tableIdxInc = -1, table = becVoltage, apikey="bec_voltage"}
 
 -- not a good idea to allow this to be changed
 -- fields[#fields + 1] = {t = "Telemetry Protocol", min = 0, max = #teleProtocol, vals = {mspHeaderBytes + 39, mspHeaderBytes + 40}, tableIdxInc = -1,table = teleProtocol}
@@ -50,15 +45,12 @@ local function event(widget, category, value, x, y)
 end
 
 return {
-    read = 217, -- msp_ESC_PARAMETERS
-    write = 218, -- msp_SET_ESC_PARAMETERS
+    mspapi="ESC_PARAMETERS_SCORPION",
     eepromWrite = false,
     reboot = false,
     title = "Basic Setup",
-    minBytes = mspBytes,
     labels = labels,
     fields = fields,
-    simulatorResponse = {83, 128, 84, 114, 105, 98, 117, 110, 117, 115, 32, 69, 83, 67, 45, 54, 83, 45, 56, 48, 65, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 3, 0, 3, 0, 1, 0, 3, 0, 136, 19, 22, 3, 16, 39, 64, 31, 136, 19, 0, 0, 1, 0, 7, 2, 0, 6, 63, 0, 160, 15, 64, 31, 208, 7, 100, 0, 0, 0, 200, 0, 0, 0, 1, 0, 0, 0, 200, 250, 0, 0},
     svFlags = 0,
     preSavePayload = function(payload)
         payload[2] = 0
