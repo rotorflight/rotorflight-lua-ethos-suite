@@ -24,50 +24,48 @@ local MSP_HEADER_BYTES = 2
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ = {
-    {field = "esc_signature", type = "U8"}, -- 1
-    {field = "esc_command", type = "U8"},  -- 2
+    {field = "esc_signature", type = "U8"},                     -- 1
+    {field = "esc_command", type = "U8"},                       -- 2
 
-    -- Dummy fields for missing 3 to 20
-    -- I am not 100% sure about the data type of these fields
-    -- but we dont actively edit or use them so it should be fine
-    {field = "dummy_field_3", type = "U8"},   -- 3
-    {field = "dummy_field_4", type = "U8"},   -- 4
-    {field = "dummy_field_5", type = "U8"},   -- 5
-    {field = "dummy_field_6", type = "U8"},   -- 6
-    {field = "dummy_field_7", type = "U8"},   -- 7
-    {field = "dummy_field_8", type = "U8"},   -- 8
-    {field = "dummy_field_9", type = "U8"},   -- 9
-    {field = "dummy_field_10", type = "U8"},  -- 10
-    {field = "dummy_field_11", type = "U8"},  -- 11
-    {field = "dummy_field_12", type = "U8"},  -- 12
-    {field = "dummy_field_13", type = "U8"},  -- 13
-    {field = "dummy_field_14", type = "U8"},  -- 14
-    {field = "dummy_field_15", type = "U8"},  -- 15
-    {field = "dummy_field_16", type = "U8"},  -- 16
-    {field = "dummy_field_17", type = "U8"},  -- 17
-    {field = "dummy_field_18", type = "U8"},  -- 18
-    {field = "dummy_field_19", type = "U8"},  -- 19
-    {field = "dummy_field_20", type = "U8"},  -- 20
+    -- Buffer containing esc info for decoding
+    {field = "escinfo_1", type = "U8"},                         -- 3
+    {field = "escinfo_2", type = "U8"},                         -- 4
+    {field = "escinfo_3", type = "U8"},                         -- 5
+    {field = "escinfo_4", type = "U8"},                         -- 6
+    {field = "escinfo_5", type = "U8"},                         -- 7
+    {field = "escinfo_6", type = "U8"},                         -- 8
+    {field = "escinfo_7", type = "U8"},                         -- 9
+    {field = "escinfo_8", type = "U8"},                         -- 10
+    {field = "escinfo_9", type = "U8"},                         -- 11
+    {field = "escinfo_10", type = "U8"},                        -- 12
+    {field = "escinfo_11", type = "U8"},                        -- 13
+    {field = "escinfo_12", type = "U8"},                        -- 14
+    {field = "escinfo_13", type = "U8"},                        -- 15
+    {field = "escinfo_14", type = "U8"},                        -- 16
+    {field = "escinfo_15", type = "U8"},                        -- 17
+    {field = "escinfo_16", type = "U8"},                        -- 18
+    {field = "escinfo_17", type = "U8"},                        -- 19
+    {field = "escinfo_18", type = "U8"},                        -- 20
 
-    {field = "throttle_min", type = "U16", byteorder = "big"},        -- 21, 22
-    {field = "throttle_max", type = "U16", byteorder = "big"},        -- 23, 24
-    {field = "governor", type = "U8"},          -- 25
-    {field = "cell_count", type = "U8"},        -- 26
-    {field = "low_voltage_protection", type = "U8"}, -- 27
-    {field = "temperature_protection", type = "U8"}, -- 28
-    {field = "bec_voltage", type = "U8"},       -- 29
-    {field = "timing_angle", type = "U8"},      -- 30
-    {field = "motor_direction", type = "U8"},   -- 31
-    {field = "starting_torque", type = "U8"},   -- 32
-    {field = "response_speed", type = "U8"},    -- 33
-    {field = "buzzer_volume", type = "U8"},     -- 34
-    {field = "current_gain", type = "S8"},      -- 35
-    {field = "fan_control", type = "U8"},       -- 36
-    {field = "soft_start", type = "U8"},        -- 37
-    {field = "gov_p", type = "U16", byteorder = "big"},               -- 38, 39
-    {field = "gov_i", type = "U16", byteorder = "big"},               -- 40, 41
-    {field = "gov_d", type = "U16", byteorder = "big"},               -- 42, 43
-    {field = "motor_erpm_max", type = "U24", byteorder = "big"},      -- 44, 45, 46
+    {field = "throttle_min", type = "U16", byteorder = "big"},  -- 21, 22
+    {field = "throttle_max", type = "U16", byteorder = "big"},  -- 23, 24
+    {field = "governor", type = "U8"},                          -- 25
+    {field = "cell_count", type = "U8"},                        -- 26
+    {field = "low_voltage_protection", type = "U8"},            -- 27
+    {field = "temperature_protection", type = "U8"},            -- 28
+    {field = "bec_voltage", type = "U8"},                       -- 29
+    {field = "timing_angle", type = "U8"},                      -- 30
+    {field = "motor_direction", type = "U8"},                   -- 31
+    {field = "starting_torque", type = "U8"},                   -- 32
+    {field = "response_speed", type = "U8"},                    -- 33
+    {field = "buzzer_volume", type = "U8"},                     -- 34
+    {field = "current_gain", type = "S8"},                      -- 35
+    {field = "fan_control", type = "U8"},                       -- 36
+    {field = "soft_start", type = "U8"},                        -- 37
+    {field = "gov_p", type = "U16", byteorder = "big"},         -- 38, 39
+    {field = "gov_i", type = "U16", byteorder = "big"},         -- 40, 41
+    {field = "gov_d", type = "U16", byteorder = "big"},         -- 42, 43
+    {field = "motor_erpm_max", type = "U24", byteorder = "big"} -- 44, 45, 46
 }
 
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ -- Assuming identical structure for now
