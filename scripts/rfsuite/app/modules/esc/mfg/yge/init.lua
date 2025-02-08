@@ -56,15 +56,12 @@ local function getEscFirmware(buffer)
 end
 
 return {
+    mspapi = "ESC_PARAMETERS_YGE",
     toolName = toolName,
     image = "yge.png",
     powerCycle = false,
-    mspSignature = 0xA5,
-    mspHeaderBytes = mspHeaderBytes,
-    mspBytes = 60,
     getEscModel = getEscModel,
     getEscVersion = getEscVersion,
     getEscFirmware = getEscFirmware,
-    simulatorResponse = {165, 0, 32, 0, 3, 0, 55, 0, 0, 0, 0, 0, 4, 0, 3, 0, 1, 0, 1, 0, 2, 0, 3, 0, 80, 3, 131, 148, 1, 0, 30, 170, 0, 0, 3, 0, 86, 4, 22, 3, 163, 15, 1, 0, 2, 0, 2, 0, 20, 0, 20, 0, 0, 0, 0, 0, 2, 19, 2, 0, 20, 0, 22, 0, 0, 0}
 }
 
