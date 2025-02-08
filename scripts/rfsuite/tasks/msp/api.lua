@@ -203,11 +203,11 @@ function apiLoader.parseMSPData(buf, structure, processed, other)
 end
 
 -- Function to calculate MIN_BYTES and filtered structure
-function apiLoader.filterStructure(structure)
+function apiLoader.calculateMinBytes(structure)
 
     local apiVersion = rfsuite.config.apiVersion
     local totalBytes = 0
-    local filteredStructure = {}
+
 
     for _, param in ipairs(structure) do
         local insert_param = false
@@ -219,11 +219,58 @@ function apiLoader.filterStructure(structure)
 
         if insert_param then
             totalBytes = totalBytes + get_type_size(param.type)
+        end
+    end
+
+    return totalBytes
+end
+
+-- Function to calculate MIN_BYTES and filtered structure
+function apiLoader.filterByApiVersion(structure)
+
+    local apiVersion = rfsuite.config.apiVersion or 12.06
+    local filteredStructure = {}
+
+    for _, param in ipairs(structure) do
+        local insert_param = false
+
+        -- API version check logic
+        if not param.apiVersion or (apiVersion and apiVersion >= param.apiVersion) then
+            insert_param = true
+        end
+
+        if insert_param then
             table.insert(filteredStructure, param)
         end
     end
 
-    return totalBytes, filteredStructure
+    return filteredStructure
+end
+
+function apiLoader.buildSimResponse(dataStructure)
+
+    if system:getVersion().simulation == false then
+        return nil
+    end
+
+    local response = {}
+
+    for _, field in ipairs(dataStructure) do
+        if field.simResponse then
+            -- Append all values in simResponse to the response table
+            for _, value in ipairs(field.simResponse) do
+                table.insert(response, value)
+            end
+        else
+            -- If simResponse is nil, insert default values based on the field's type size
+            local type_size = get_type_size(field.type)
+            for i = 1, type_size do
+                table.insert(response, 0)
+            end
+        end
+    end
+
+    return response
 end
 
 -- handlers.lua
