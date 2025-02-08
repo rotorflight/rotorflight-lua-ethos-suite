@@ -38,7 +38,6 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "gov_spoolup_min_throttle",      type = "U8",  apiVersion = 12.08, simResponse = {5}},
 }
 
-
 -- filter the structure to remove any params not supported by the running api version
 local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
 
