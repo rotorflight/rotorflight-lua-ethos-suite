@@ -18,7 +18,6 @@
 local MSP_API_CMD_READ = 101 -- Command identifier 
 local MSP_API_CMD_WRITE = nil -- Command identifier 
 local MSP_API_SIMULATOR_RESPONSE = {252, 1, 127, 0, 35, 0, 0, 0, 0, 0, 0, 122, 1, 182, 0, 0, 26, 0, 0, 0, 0, 0, 2, 0, 6, 0, 6, 1, 4, 1} -- Default simulator response
-local MSP_MIN_BYTES = 30
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ = {
@@ -43,7 +42,14 @@ local MSP_API_STRUCTURE_READ = {
     {field = "gyro_detection_flags", type = "U8"}
 }
 
+-- Process msp structure to get version that works for api Version
+local MSP_MIN_BYTES, MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterStructure(MSP_API_STRUCTURE_READ) 
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ -- Assuming identical structure for now
+
+-- Check if the simulator response contains enough data
+if #MSP_API_SIMULATOR_RESPONSE < MSP_MIN_BYTES then
+    error("MSP_API_SIMULATOR_RESPONSE does not contain enough data to satisfy MSP_MIN_BYTES")
+end
 
 -- Variable to store parsed MSP data
 local mspData = nil

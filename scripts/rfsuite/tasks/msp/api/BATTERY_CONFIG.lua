@@ -18,14 +18,20 @@
 local MSP_API_CMD_READ = 32 -- Command identifier 
 local MSP_API_CMD_WRITE = 33 -- Command identifier 
 local MSP_API_SIMULATOR_RESPONSE = {138, 2, 3, 1, 1, 74, 1, 174, 1, 154, 1, 94, 1, 100, 10} -- Default simulator response
-local MSP_MIN_BYTES = 15
+
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ = {{field = "batteryCapacity", type = "U16"}, {field = "batteryCellCount", type = "U8"}, {field = "voltageMeterSource", type = "U8"}, {field = "currentMeterSource", type = "U8"}, {field = "vbatmincellvoltage", type = "U16"}, {field = "vbatmaxcellvoltage", type = "U16"}, {field = "vbatfullcellvoltage", type = "U16"}, {field = "vbatwarningcellvoltage", type = "U16"},
                                 {field = "lvcPercentage", type = "U8"}, {field = "consumptionWarningPercentage", type = "U8"}}
 
+-- Process msp structure to get version that works for api Version
+local MSP_MIN_BYTES, MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterStructure(MSP_API_STRUCTURE_READ) 
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ -- Assuming identical structure for now
 
+-- Check if the simulator response contains enough data
+if #MSP_API_SIMULATOR_RESPONSE < MSP_MIN_BYTES then
+    error("MSP_API_SIMULATOR_RESPONSE does not contain enough data to satisfy MSP_MIN_BYTES")
+end
 -- Variable to store parsed MSP data
 local mspData = nil
 local mspWriteComplete = false

@@ -17,17 +17,63 @@
 -- Constants for MSP Commands
 local MSP_API_CMD_READ = 94 -- Command identifier 
 local MSP_API_CMD_WRITE = 95 -- Command identifier 
-local MSP_API_SIMULATOR_RESPONSE = {3, 25, 250, 0, 12, 0, 1, 30, 30, 45, 50, 50, 100, 15, 15, 20, 2, 10, 10, 15, 100, 100, 6, 0, 30, 0, 0, 0, 40, 55, 0, 75, 20, 25, 0, 15, 45, 45, 15, 15, 20, 0, 25} -- Default simulator response
-local MSP_MIN_BYTES = 43
+local MSP_API_SIMULATOR_RESPONSE = {3, 25, 250, 0, 12, 0, 1, 30, 30, 45, 50, 50, 100, 15, 15, 20, 2, 10, 10, 15, 100, 100, 6, 0, 30, 0, 0, 0, 40, 55, 0, 75, 20, 25, 0, 15, 45, 45, 15, 15, 20, 10, 20}
 
 -- Define the MSP response data structures
-local MSP_API_STRUCTURE_READ = {{field = "pid_mode", type = "U8"}, {field = "error_decay_time_ground", type = "U8"}, {field = "error_decay_time_cyclic", type = "U8"}, {field = "error_decay_time_yaw", type = "U8"}, {field = "error_decay_limit_cyclic", type = "U8"}, {field = "error_decay_limit_yaw", type = "U8"}, {field = "error_rotation", type = "U8"}, {field = "error_limit_0", type = "U8"},
-                                {field = "error_limit_1", type = "U8"}, {field = "error_limit_2", type = "U8"}, {field = "gyro_cutoff_0", type = "U8"}, {field = "gyro_cutoff_1", type = "U8"}, {field = "gyro_cutoff_2", type = "U8"}, {field = "dterm_cutoff_0", type = "U8"}, {field = "dterm_cutoff_1", type = "U8"}, {field = "dterm_cutoff_2", type = "U8"}, {field = "iterm_relax_type", type = "U8"},
-                                {field = "iterm_relax_cutoff_0", type = "U8"}, {field = "iterm_relax_cutoff_1", type = "U8"}, {field = "iterm_relax_cutoff_2", type = "U8"}, {field = "yaw_cw_stop_gain", type = "U8"}, {field = "yaw_ccw_stop_gain", type = "U8"}, {field = "yaw_precomp_cutoff", type = "U8"}, {field = "yaw_cyclic_ff_gain", type = "U8"}, {field = "yaw_collective_ff_gain", type = "U8"},
-                                {field = "yaw_collective_dynamic_gain", type = "U8"}, {field = "yaw_collective_dynamic_decay", type = "U8"}, {field = "pitch_collective_ff_gain", type = "U8"}, {field = "angle_level_strength", type = "U8"}, {field = "angle_level_limit", type = "U8"}, {field = "horizon_level_strength", type = "U8"}, {field = "trainer_gain", type = "U8"},
-                                {field = "trainer_angle_limit", type = "U8"}, {field = "cyclic_cross_coupling_gain", type = "U8"}, {field = "cyclic_cross_coupling_ratio", type = "U8"}, {field = "cyclic_cross_coupling_cutoff", type = "U8"}, {field = "offset_limit_0", type = "U8"}, {field = "offset_limit_1", type = "U8"}, {field = "bterm_cutoff_0", type = "U8"},
-                                {field = "bterm_cutoff_1", type = "U8"}, {field = "bterm_cutoff_2", type = "U8"}, {field = "yaw_inertia_precomp_gain", type = "U8"}, {field = "yaw_inertia_precomp_cutoff", type = "U8"}}
+local MSP_API_STRUCTURE_READ = {
+    {field = "pid_mode", type = "U8"},
+    {field = "error_decay_time_ground", type = "U8"},
+    {field = "error_decay_time_cyclic", type = "U8"},
+    {field = "error_decay_time_yaw", type = "U8"},
+    {field = "error_decay_limit_cyclic", type = "U8"},
+    {field = "error_decay_limit_yaw", type = "U8"},
+    {field = "error_rotation", type = "U8"},
+    {field = "error_limit_0", type = "U8"},
+    {field = "error_limit_1", type = "U8"},
+    {field = "error_limit_2", type = "U8"},
+    {field = "gyro_cutoff_0", type = "U8"},
+    {field = "gyro_cutoff_1", type = "U8"},
+    {field = "gyro_cutoff_2", type = "U8"},
+    {field = "dterm_cutoff_0", type = "U8"},
+    {field = "dterm_cutoff_1", type = "U8"},
+    {field = "dterm_cutoff_2", type = "U8"},
+    {field = "iterm_relax_type", type = "U8"},
+    {field = "iterm_relax_cutoff_0", type = "U8"},
+    {field = "iterm_relax_cutoff_1", type = "U8"},
+    {field = "iterm_relax_cutoff_2", type = "U8"},
+    {field = "yaw_cw_stop_gain", type = "U8"},
+    {field = "yaw_ccw_stop_gain", type = "U8"},
+    {field = "yaw_precomp_cutoff", type = "U8"},
+    {field = "yaw_cyclic_ff_gain", type = "U8"},
+    {field = "yaw_collective_ff_gain", type = "U8"},
+    {field = "yaw_collective_dynamic_gain", type = "U8"},
+    {field = "yaw_collective_dynamic_decay", type = "U8"},
+    {field = "pitch_collective_ff_gain", type = "U8"},
+    {field = "angle_level_strength", type = "U8"},
+    {field = "angle_level_limit", type = "U8"},
+    {field = "horizon_level_strength", type = "U8"},
+    {field = "trainer_gain", type = "U8"},
+    {field = "trainer_angle_limit", type = "U8"},
+    {field = "cyclic_cross_coupling_gain", type = "U8"},
+    {field = "cyclic_cross_coupling_ratio", type = "U8"},
+    {field = "cyclic_cross_coupling_cutoff", type = "U8"},
+    {field = "offset_limit_0", type = "U8"},
+    {field = "offset_limit_1", type = "U8"},
+    {field = "bterm_cutoff_0", type = "U8"},
+    {field = "bterm_cutoff_1", type = "U8"},
+    {field = "bterm_cutoff_2", type = "U8"},
+    {field = "yaw_inertia_precomp_gain", type = "U8", apiVersion = 12.08},
+    {field = "yaw_inertia_precomp_cutoff", type = "U8", apiVersion = 12.08}
+}
+
+-- Process msp structure to get version that works for api Version
+local MSP_MIN_BYTES, MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterStructure(MSP_API_STRUCTURE_READ) 
+
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ -- Assuming identical structure for now
+
+if #MSP_API_SIMULATOR_RESPONSE < MSP_MIN_BYTES then
+    error("MSP_API_SIMULATOR_RESPONSE does not contain enough data to satisfy MSP_MIN_BYTES")
+end
 
 -- Variable to store parsed MSP data
 local mspData = nil

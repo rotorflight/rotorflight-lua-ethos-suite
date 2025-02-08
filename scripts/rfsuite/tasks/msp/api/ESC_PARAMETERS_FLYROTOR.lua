@@ -18,7 +18,6 @@
 local MSP_API_CMD_READ = 217 -- Command identifier 
 local MSP_API_CMD_WRITE = 218 -- Command identifier 
 local MSP_API_SIMULATOR_RESPONSE = {115, 0, 0, 0, 150, 231, 79, 190, 216, 78, 29, 169, 244, 1, 0, 0, 1, 0, 8, 0, 4, 76, 7, 148, 0, 6, 30, 125, 0, 10, 0, 3, 5, 1, 20, 0, 15, 0, 45, 0, 35, 0, 0, 1, 134, 160} -- Default simulator response
-local MSP_MIN_BYTES = 46
 local MSP_SIGNATURE = 0x73
 local MSP_HEADER_BYTES = 2
 
@@ -68,7 +67,14 @@ local MSP_API_STRUCTURE_READ = {
     {field = "motor_erpm_max", type = "U24", byteorder = "big"} -- 44, 45, 46
 }
 
+-- Process msp structure to get version that works for api Version
+local MSP_MIN_BYTES, MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterStructure(MSP_API_STRUCTURE_READ) 
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ -- Assuming identical structure for now
+
+-- Check if the simulator response contains enough data
+if #MSP_API_SIMULATOR_RESPONSE < MSP_MIN_BYTES then
+    error("MSP_API_SIMULATOR_RESPONSE does not contain enough data to satisfy MSP_MIN_BYTES")
+end
 
 -- Variable to store parsed MSP data
 local mspData = nil

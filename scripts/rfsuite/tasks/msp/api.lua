@@ -67,6 +67,14 @@ function apiLoader.load(apiName, method)
     return loadAPI(apiName, method) or {} -- Return an empty table if API fails to load
 end
 
+
+-- Function to get byte size from type
+local function get_type_size(data_type)
+    local type_sizes = {U8 = 1, U16 = 2, U24 = 3, U32 = 4, S8 = 1, S16 = 2, S24 = 3, S32 = 4}
+    return type_sizes[data_type] or 2 -- Default to U16 if unknown
+end
+
+
 -- Function to parse the msp Data.  Optionally pass a processed(buf, structure) to provide more data formating
 function apiLoader.parseMSPData(buf, structure, processed, other)
     -- Ensure buffer length matches expected data structure
@@ -74,12 +82,6 @@ function apiLoader.parseMSPData(buf, structure, processed, other)
 
     local parsedData = {}
     local offset = 1 -- Maintain a strict offset tracking
-
-    -- Function to get byte size from type
-    local function get_type_size(data_type)
-        local type_sizes = {U8 = 1, U16 = 2, U24 = 3, U32 = 4, S8 = 1, S16 = 2, S24 = 3, S32 = 4}
-        return type_sizes[data_type] or 2 -- Default to U16 if unknown
-    end
 
     -- map of values to byte positions
     -- Function to build position map considering type sizes
@@ -90,35 +92,48 @@ function apiLoader.parseMSPData(buf, structure, processed, other)
         if rfsuite.config.mspApiPositionMapDebug == true then print("------  mspApiPositionMapDebug start ------") end
 
         for _, param in ipairs(param_table) do
-            local size = get_type_size(param.type)
-            local start_pos = current_byte
-            local end_pos = start_pos + size - 1
-            local byteorder = param.byteorder or "little" -- Default to little-endian
+            -- Check API version conditions
+            local apiVersion = rfsuite.config.apiVersion
+            local insert_param = false
 
-            -- Store as single number if start and end are the same
-            if start_pos == end_pos then
-            position_map[param.field] = {start_pos}
+            if not param.apiVersion or apiVersion >= param.apiVersion then
+                insert_param = true
             else
-                position_map[param.field] = {}
-                if byteorder == "big" then
-                    for i = end_pos, start_pos, -1 do
-                        table.insert(position_map[param.field], i)
-                    end
+                insert_param = false
+            end
+        
+            if insert_param then
+                local size = get_type_size(param.type)
+                local start_pos = current_byte
+                local end_pos = start_pos + size - 1
+                local byteorder = param.byteorder or "little" -- Default to little-endian
+        
+                -- Store as single number if start and end are the same
+                if start_pos == end_pos then
+                    position_map[param.field] = {start_pos}
                 else
-                    for i = start_pos, end_pos do
-                        table.insert(position_map[param.field], i)
+                    position_map[param.field] = {}
+                    if byteorder == "big" then
+                        for i = end_pos, start_pos, -1 do
+                            table.insert(position_map[param.field], i)
+                        end
+                    else
+                        for i = start_pos, end_pos do
+                            table.insert(position_map[param.field], i)
+                        end
                     end
                 end
-            end
-
-            -- Move to the next available byte position
-            current_byte = end_pos + 1
-            if rfsuite.config.mspApiPositionMapDebug == true then
-            if start_pos == end_pos then
-                print(param.field .. ": " .. start_pos)
-            else
-                print(param.field .. ": " .. start_pos .. " to " .. end_pos)
-            end
+        
+                -- Move to the next available byte position
+                current_byte = end_pos + 1
+        
+                if rfsuite.config.mspApiPositionMapDebug == true then
+                    if start_pos == end_pos then
+                        print(param.field .. ": " .. start_pos)
+                    else
+                        print(param.field .. ": " .. start_pos .. " to " .. end_pos)
+                    end
+                end
             end
         end
 
@@ -185,6 +200,30 @@ function apiLoader.parseMSPData(buf, structure, processed, other)
     if rfsuite.config.mspApiParsedDebug == true then rfsuite.utils.print_r(data['parsed']) end
 
     return data
+end
+
+-- Function to calculate MIN_BYTES and filtered structure
+function apiLoader.filterStructure(structure)
+
+    local apiVersion = rfsuite.config.apiVersion
+    local totalBytes = 0
+    local filteredStructure = {}
+
+    for _, param in ipairs(structure) do
+        local insert_param = false
+
+        -- API version check logic
+        if not param.apiVersion or (apiVersion and apiVersion >= param.apiVersion) then
+            insert_param = true
+        end
+
+        if insert_param then
+            totalBytes = totalBytes + get_type_size(param.type)
+            table.insert(filteredStructure, param)
+        end
+    end
+
+    return totalBytes, filteredStructure
 end
 
 -- handlers.lua
