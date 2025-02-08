@@ -36,10 +36,10 @@ config.watchdogParam = 10                                           -- watchdog 
 
 
 -- features
-config.logEnable = false                                            -- will write debug log to: /scripts/rfsuite/logs/rfsuite.log [default = false]
+config.logEnable = true                                            -- will write debug log to: /scripts/rfsuite/logs/rfsuite.log [default = false]
 config.logEnableScreen = false                                      -- if config.logEnable is true then also print to screen [default = false]
 config.mspTxRxDebug = true                                         -- print out the packets being sent and received [default = false]
-config.mspApiPositionMapDebug = false                                -- print out a map of the api positions [default = false]
+config.mspApiPositionMapDebug = true                                -- print out a map of the api positions [default = false]
 config.flightLog = true                                             -- will write a flight log into /scripts/rfsuite/logs/<modelname>/*.log
 config.reloadOnSave = false                                         -- trigger a reload on save [default = false]
 config.skipRssiSensorCheck = false                                  -- skip checking for a valid rssi [ default = false]
