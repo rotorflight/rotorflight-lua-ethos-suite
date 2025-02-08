@@ -317,7 +317,7 @@ local function processPageReply(source, buf, methodType)
 
     -- we should not need this with the api - it is kept for legacy compatability
     app.Page.minBytes = app.Page.minBytes or 0
-
+    print("app.Page.minBytes: " .. app.Page.minBytes)
     rfsuite.utils.log("app.Page is processing reply for cmd " .. tostring(source.command) .. " len buf: " .. #buf .. " expected: " .. app.Page.minBytes .. " (Method: " .. methodType .. ")")
 
     -- ensure page.values contains a copy of the buffer

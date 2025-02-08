@@ -18,15 +18,37 @@
 local MSP_API_CMD_READ = 146 -- Command identifier 
 local MSP_API_CMD_WRITE = 147 -- Command identifier 
 local MSP_API_SIMULATOR_RESPONSE = {1, 0, 200, 100, 5, 3, 10, 5, 182, 3, 188, 2, 194, 1, 244, 1, 20, 0, 20, 0, 10, 0, 232, 3, 44, 1, 184, 11} -- Default simulator response
-local MSP_MIN_BYTES = 28
 
 -- Define the MSP response data structures
-local MSP_API_STRUCTURE_READ = {{field = "rescue_mode", type = "U8"}, {field = "rescue_flip_mode", type = "U8"}, {field = "rescue_flip_gain", type = "U8"}, {field = "rescue_level_gain", type = "U8"}, {field = "rescue_pull_up_time", type = "U8"}, {field = "rescue_climb_time", type = "U8"}, {field = "rescue_flip_time", type = "U8"}, {field = "rescue_exit_time", type = "U8"},
+local MSP_API_STRUCTURE_READ = {
+    {field = "rescue_mode", type = "U8"},
+    {field = "rescue_flip_mode", type = "U8"},
+    {field = "rescue_flip_gain", type = "U8"},
+    {field = "rescue_level_gain", type = "U8"},
+    {field = "rescue_pull_up_time", type = "U8"},
+    {field = "rescue_climb_time", type = "U8"},
+    {field = "rescue_flip_time", type = "U8"},
+    {field = "rescue_exit_time", type = "U8"},
+    {field = "rescue_pull_up_collective", type = "U16"},
+    {field = "rescue_climb_collective", type = "U16"},
+    {field = "rescue_hover_collective", type = "U16"},
+    {field = "rescue_hover_altitude", type = "U16"},
+    {field = "rescue_alt_p_gain", type = "U16"},
+    {field = "rescue_alt_i_gain", type = "U16"},
+    {field = "rescue_alt_d_gain", type = "U16"},
+    {field = "rescue_max_collective", type = "U16"},
+    {field = "rescue_max_setpoint_rate", type = "U16"},
+    {field = "rescue_max_setpoint_accel", type = "U16"}
+}
 
-                                {field = "rescue_pull_up_collective", type = "U16"}, {field = "rescue_climb_collective", type = "U16"}, {field = "rescue_hover_collective", type = "U16"}, {field = "rescue_hover_altitude", type = "U16"}, {field = "rescue_alt_p_gain", type = "U16"}, {field = "rescue_alt_i_gain", type = "U16"}, {field = "rescue_alt_d_gain", type = "U16"},
-                                {field = "rescue_max_collective", type = "U16"}, {field = "rescue_max_setpoint_rate", type = "U16"}, {field = "rescue_max_setpoint_accel", type = "U16"}}
-
+-- Process msp structure to get version that works for api Version
+local MSP_MIN_BYTES, MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterStructure(MSP_API_STRUCTURE_READ) 
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ -- Assuming identical structure for now
+
+-- Check if the simulator response contains enough data
+if #MSP_API_SIMULATOR_RESPONSE < MSP_MIN_BYTES then
+    error("MSP_API_SIMULATOR_RESPONSE does not contain enough data to satisfy MSP_MIN_BYTES")
+end
 
 -- Variable to store parsed MSP data
 local mspData = nil

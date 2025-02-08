@@ -18,12 +18,30 @@
 local MSP_API_CMD_READ = 148 -- Command identifier 
 local MSP_API_CMD_WRITE = 149 -- Command identifier 
 local MSP_API_SIMULATOR_RESPONSE = {208, 7, 100, 10, 125, 5, 20, 0, 20, 10, 40, 100, 100, 10} -- Default simulator response
-local MSP_MIN_BYTES = 14
 
 -- Define the MSP response data structures
-local MSP_API_STRUCTURE_READ = {{field = "governor_headspeed", type = "U16"}, {field = "governor_gain", type = "U8"}, {field = "governor_p_gain", type = "U8"}, {field = "governor_i_gain", type = "U8"}, {field = "governor_d_gain", type = "U8"}, {field = "governor_f_gain", type = "U8"}, {field = "governor_tta_gain", type = "U8"}, {field = "governor_tta_limit", type = "U8"},
-                                {field = "governor_yaw_ff_weight", type = "U8"}, {field = "governor_cyclic_ff_weight", type = "U8"}, {field = "governor_collective_ff_weight", type = "U8"}, {field = "governor_max_throttle", type = "U8"}, {field = "governor_min_throttle", type = "U8"}}
+local MSP_API_STRUCTURE_READ = {
+    {field = "governor_headspeed", type = "U16"},
+    {field = "governor_gain", type = "U8"},
+    {field = "governor_p_gain", type = "U8"},
+    {field = "governor_i_gain", type = "U8"},
+    {field = "governor_d_gain", type = "U8"},
+    {field = "governor_f_gain", type = "U8"},
+    {field = "governor_tta_gain", type = "U8"},
+    {field = "governor_tta_limit", type = "U8"},
+    {field = "governor_yaw_ff_weight", type = "U8"},
+    {field = "governor_cyclic_ff_weight", type = "U8"},
+    {field = "governor_collective_ff_weight", type = "U8"},
+    {field = "governor_max_throttle", type = "U8"},
+    {field = "governor_min_throttle", type = "U8"}
+}
+local MSP_MIN_BYTES, MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterStructure(MSP_API_STRUCTURE_READ) 
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ -- Assuming identical structure for now
+
+-- Check if the simulator response contains enough data
+if #MSP_API_SIMULATOR_RESPONSE < MSP_MIN_BYTES then
+    error("MSP_API_SIMULATOR_RESPONSE does not contain enough data to satisfy MSP_MIN_BYTES")
+end
 
 -- Variable to store parsed MSP data
 local mspData = nil

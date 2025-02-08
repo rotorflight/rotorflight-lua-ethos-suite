@@ -23,7 +23,14 @@ local MSP_MIN_BYTES = 0
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ = {{field = "model_id", type = "U8"}, {field = "model_param1_type", type = "U8"}, {field = "model_param1_value", type = "S16"}, {field = "model_param2_type", type = "U8"}, {field = "model_param2_value", type = "S16"}, {field = "model_param3_type", type = "U8"}, {field = "model_param3_value", type = "S16"}}
 
+-- Process msp structure to get version that works for api Version
+local MSP_MIN_BYTES, MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterStructure(MSP_API_STRUCTURE_READ) 
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ -- Assuming identical structure for now
+
+-- Check if the simulator response contains enough data
+if #MSP_API_SIMULATOR_RESPONSE < MSP_MIN_BYTES then
+    error("MSP_API_SIMULATOR_RESPONSE does not contain enough data to satisfy MSP_MIN_BYTES")
+end
 
 -- Variable to store parsed MSP data
 local mspData = nil

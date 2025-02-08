@@ -17,14 +17,35 @@
 -- Constants for MSP Commands
 local MSP_API_CMD_READ = 42 -- Command identifier for MSP Mixer Config Read
 local MSP_API_CMD_WRITE = 43 -- Command identifier for saving Mixer Config Settings
-local MSP_API_SIMULATOR_RESPONSE = {0, 1, 0, 21, 0, 2, 100, 0, 0, 131, 6, 147, 0, 87, 254, 0, 0, 40, 138} -- Default simulator response
-local MSP_MIN_BYTES = 19
+local MSP_API_SIMULATOR_RESPONSE = {0, 1, 0, 21, 0, 2, 100, 0, 0, 131, 6, 147, 0, 87, 254, 0, 0, 40, 138, 10, 10} -- Default simulator response
 
 -- Define the MSP response data structures
-local MSP_API_STRUCTURE_READ = {{field = "main_rotor_dir", type = "U8"}, {field = "tail_rotor_mode", type = "U8"}, {field = "tail_motor_idle", type = "U8"}, {field = "tail_center_trim", type = "U16"}, {field = "swash_type", type = "U8"}, {field = "swash_ring", type = "U8"}, {field = "swash_phase", type = "U16"}, {field = "swash_pitch_limit", type = "U16"}, {field = "swash_trim_0", type = "U16"},
-                                {field = "swash_trim_1", type = "U16"}, {field = "swash_trim_2", type = "U16"}, {field = "swash_tta_precomp", type = "U8"}, {field = "swash_geo_correction", type = "U8"}, {field = "collective_geo_correction_pos", type = "S8"}, {field = "collective_geo_correction_neg", type = "S8"}}
+local MSP_API_STRUCTURE_READ = {
+    {field = "main_rotor_dir", type = "U8"},
+    {field = "tail_rotor_mode", type = "U8"},
+    {field = "tail_motor_idle", type = "U8"},
+    {field = "tail_center_trim", type = "U16"},
+    {field = "swash_type", type = "U8"},
+    {field = "swash_ring", type = "U8"},
+    {field = "swash_phase", type = "U16"},
+    {field = "swash_pitch_limit", type = "U16"},
+    {field = "swash_trim_0", type = "U16"},
+    {field = "swash_trim_1", type = "U16"},
+    {field = "swash_trim_2", type = "U16"},
+    {field = "swash_tta_precomp", type = "U8"},
+    {field = "swash_geo_correction", type = "U8"},
+    {field = "collective_geo_correction_pos", type = "S8", apiVersion = 12.08},
+    {field = "collective_geo_correction_neg", type = "S8", apiVersion = 12.08},
+}
 
+-- Process msp structure to get version that works for api Version
+local MSP_MIN_BYTES, MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterStructure(MSP_API_STRUCTURE_READ) 
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ -- Assuming identical structure for now
+
+-- Check if the simulator response contains enough data
+if #MSP_API_SIMULATOR_RESPONSE < MSP_MIN_BYTES then
+    error("MSP_API_SIMULATOR_RESPONSE does not contain enough data to satisfy MSP_MIN_BYTES")
+end
 
 -- Variable to store parsed MSP data
 local mspData = nil

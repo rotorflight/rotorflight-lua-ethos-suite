@@ -22,7 +22,7 @@ local MSP_API_SIMULATOR_RESPONSE = {
     250, 0, 1, 6, 4, 2, 1, 8, 7, 7,
     8, 20, 0, 50, 0, 9, 0, 30, 0
 } -- Default simulator response
-local MSP_MIN_BYTES = 29
+
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ = {
@@ -72,6 +72,14 @@ local MSP_API_STRUCTURE_WRITE = {
     {field = "tail_rotor_gear_ratio_0", type = "U16"},
     {field = "tail_rotor_gear_ratio_1", type = "U16"}
 }
+
+-- Process msp structure to get version that works for api Version
+local MSP_MIN_BYTES, MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterStructure(MSP_API_STRUCTURE_READ) 
+
+-- Check if the simulator response contains enough data
+if #MSP_API_SIMULATOR_RESPONSE < MSP_MIN_BYTES then
+    error("MSP_API_SIMULATOR_RESPONSE does not contain enough data to satisfy MSP_MIN_BYTES")
+end
 
 -- Variable to store parsed MSP data
 local mspData = nil

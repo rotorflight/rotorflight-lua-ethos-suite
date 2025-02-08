@@ -18,7 +18,6 @@
 local MSP_API_CMD_READ = 112 -- Command identifier 
 local MSP_API_CMD_WRITE = 202 -- Command identifier 
 local MSP_API_SIMULATOR_RESPONSE = {70, 0, 225, 0, 90, 0, 120, 0, 100, 0, 200, 0, 70, 0, 120, 0, 100, 0, 125, 0, 83, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 0, 25, 0} -- Default simulator response
-local MSP_MIN_BYTES = 34
 
 -- Function to generate the PID structure
 local function generate_pid_structure(pid_axis_count, cyclic_axis_count)
@@ -41,7 +40,14 @@ end
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ = generate_pid_structure(3, 2)
 
+-- Process msp structure to get version that works for api Version
+local MSP_MIN_BYTES, MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterStructure(MSP_API_STRUCTURE_READ) 
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ -- Assuming identical structure for now
+
+-- Check if the simulator response contains enough data
+if #MSP_API_SIMULATOR_RESPONSE < MSP_MIN_BYTES then
+    error("MSP_API_SIMULATOR_RESPONSE does not contain enough data to satisfy MSP_MIN_BYTES")
+end
 
 -- Variable to store parsed MSP data
 local mspData = nil
