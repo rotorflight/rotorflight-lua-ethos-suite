@@ -17,9 +17,6 @@
 -- Constants for MSP Commands
 local MSP_API_CMD_READ = 152 -- Command identifier 
 local MSP_API_CMD_WRITE = 153 -- Command identifier 
-local MSP_API_SIMULATOR_RESPONSE = {1, 0, 24, 252, 232, 3, 1, 1, 24, 252, 232, 3, 1, 2, 24, 252, 232, 3, 1, 3, 24, 252, 232, 3, 1, 0, 24, 252, 232, 3, 1, 1, 24, 252, 232, 3, 1, 2, 24, 252, 232, 3, 1, 3, 24, 252, 232, 3, 1, 0, 24, 252, 232, 3, 1, 1, 24, 252, 232, 3, 1, 2, 24, 252, 232, 3, 1, 3, 24, 252, 232, 3, 1, 0, 24, 252, 232, 3, 1, 1, 24, 252, 232, 3, 1, 2, 24, 252, 232, 3, 1, 3, 24, 252, 232,
-                                    3, 1, 0, 24, 252, 232, 3, 1, 1, 24, 252, 232, 3, 50} -- Default simulator response
-
 
 local function generateSbusApiStructure(numChannels)
     local structure = {}
@@ -29,7 +26,6 @@ local function generateSbusApiStructure(numChannels)
         table.insert(structure, {field = "Index_" .. i, type = "U8",      apiVersion = 12.06, simResponse = {0}})
         table.insert(structure, {field = "RangeLow_" .. i, type = "S16",  apiVersion = 12.06, simResponse = {24, 252}})
         table.insert(structure, {field = "RangeHigh_" .. i, type = "S16", apiVersion = 12.06, simResponse = {232, 3}})
-    end
     end
 
     return structure
