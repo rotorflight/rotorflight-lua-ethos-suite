@@ -20,21 +20,21 @@ local MSP_API_CMD_WRITE = 43 -- Command identifier for saving Mixer Config Setti
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "main_rotor_dir",              type = "U8",  apiVersion = 12.06, simResponse = {0}},
-    {field = "tail_rotor_mode",             type = "U8",  apiVersion = 12.06, simResponse = {1}},
-    {field = "tail_motor_idle",             type = "U8",  apiVersion = 12.06, simResponse = {0}},
-    {field = "tail_center_trim",            type = "U16", apiVersion = 12.06, simResponse = {0, 21}},
-    {field = "swash_type",                  type = "U8",  apiVersion = 12.06, simResponse = {0}},
-    {field = "swash_ring",                  type = "U8",  apiVersion = 12.06, simResponse = {2}},
-    {field = "swash_phase",                 type = "U16", apiVersion = 12.06, simResponse = {100, 0}},
-    {field = "swash_pitch_limit",           type = "U16", apiVersion = 12.06, simResponse = {0, 0}},
-    {field = "swash_trim_0",                type = "U16", apiVersion = 12.06, simResponse = {131, 6}},
-    {field = "swash_trim_1",                type = "U16", apiVersion = 12.06, simResponse = {147, 0}},
-    {field = "swash_trim_2",                type = "U16", apiVersion = 12.06, simResponse = {87, 254}},
-    {field = "swash_tta_precomp",           type = "U8",  apiVersion = 12.06, simResponse = {0}},
-    {field = "swash_geo_correction",        type = "U8",  apiVersion = 12.06, simResponse = {0}},
-    {field = "collective_geo_correction_pos", type = "S8", apiVersion = 12.08, simResponse = {40}},
-    {field = "collective_geo_correction_neg", type = "S8", apiVersion = 12.08, simResponse = {138}},
+    {field = "main_rotor_dir",                 type = "U8",  apiVersion = 12.06, simResponse = {0}},
+    {field = "tail_rotor_mode",                type = "U8",  apiVersion = 12.06, simResponse = {1}},
+    {field = "tail_motor_idle",                type = "U8",  apiVersion = 12.06, simResponse = {0}},
+    {field = "tail_center_trim",               type = "U16", apiVersion = 12.06, simResponse = {0, 21}},
+    {field = "swash_type",                     type = "U8",  apiVersion = 12.06, simResponse = {0}},
+    {field = "swash_ring",                     type = "U8",  apiVersion = 12.06, simResponse = {2}},
+    {field = "swash_phase",                    type = "U16", apiVersion = 12.06, simResponse = {100, 0}},
+    {field = "swash_pitch_limit",              type = "U16", apiVersion = 12.06, simResponse = {0, 0}},
+    {field = "swash_trim_0",                   type = "U16", apiVersion = 12.06, simResponse = {131, 6}},
+    {field = "swash_trim_1",                   type = "U16", apiVersion = 12.06, simResponse = {147, 0}},
+    {field = "swash_trim_2",                   type = "U16", apiVersion = 12.06, simResponse = {87, 254}},
+    {field = "swash_tta_precomp",              type = "U8",  apiVersion = 12.06, simResponse = {0}},
+    {field = "swash_geo_correction",           type = "U8",  apiVersion = 12.07, simResponse = {0}},
+    {field = "collective_tilt_correction_pos", type = "S8",  apiVersion = 12.08, simResponse = {40}},
+    {field = "collective_tilt_correction_neg", type = "S8",  apiVersion = 12.08, simResponse = {138}},
 }
 
 -- filter the structure to remove any params not supported by the running api version

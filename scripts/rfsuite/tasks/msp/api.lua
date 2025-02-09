@@ -63,7 +63,8 @@ local function loadAPI(apiName)
 end
 
 -- Function to directly return the API table instead of a wrapper function
-function apiLoader.load(apiName, method)
+function apiLoader.load(apiName)
+    print("apiLoader.load: ", apiName)
     return loadAPI(apiName, method) or {} -- Return an empty table if API fails to load
 end
 
@@ -208,7 +209,6 @@ function apiLoader.calculateMinBytes(structure)
     local apiVersion = rfsuite.config.apiVersion
     local totalBytes = 0
 
-
     for _, param in ipairs(structure) do
         local insert_param = false
 
@@ -222,10 +222,14 @@ function apiLoader.calculateMinBytes(structure)
         end
     end
 
+    -- Subtract 2 bytes to allow for overlap times when developnent is in progress
+    -- essentialy this allows a margin in which dev fbl firmware can be tested
+    totalBytes = totalBytes - 2
+
     return totalBytes
 end
 
--- Function to calculate MIN_BYTES and filtered structure
+-- Function to strip filtered structure based on msp version
 function apiLoader.filterByApiVersion(structure)
 
     local apiVersion = rfsuite.config.apiVersion or 12.06

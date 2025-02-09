@@ -23,63 +23,63 @@ local MSP_API_SIMULATOR_RESPONSE = {
     8, 20, 0, 50, 0, 9, 0, 30, 0
 } -- Default simulator response
 
-
 -- Define the MSP response data structures
-local MSP_API_STRUCTURE_READ = {
-    {field = "minthrottle", type = "U16"},
-    {field = "maxthrottle", type = "U16"},
-    {field = "mincommand", type = "U16"},
-    {field = "motor_count_blheli", type = "U8"},             -- compat: BLHeliSuite
-    {field = "motor_pole_count_blheli", type = "U8"},      -- compat: BLHeliSuite
-    {field = "use_dshot_telemetry", type = "U8"},
-    {field = "motor_pwm_protocol", type = "U8"},
-    {field = "motor_pwm_rate", type = "U16"},
-    {field = "use_unsynced_pwm", type = "U8"},
-    {field = "motor_pole_count_0", type = "U8"},
-    {field = "motor_pole_count_1", type = "U8"},
-    {field = "motor_pole_count_2", type = "U8"},
-    {field = "motor_pole_count_3", type = "U8"},
-    {field = "motor_rpm_lpf_0", type = "U8"},
-    {field = "motor_rpm_lpf_1", type = "U8"},
-    {field = "motor_rpm_lpf_2", type = "U8"},
-    {field = "motor_rpm_lpf_3", type = "U8"},
-    {field = "main_rotor_gear_ratio_0", type = "U16"},
-    {field = "main_rotor_gear_ratio_1", type = "U16"},
-    {field = "tail_rotor_gear_ratio_0", type = "U16"},
-    {field = "tail_rotor_gear_ratio_1", type = "U16"}
+local MSP_API_STRUCTURE_READ_DATA = {
+    {field = "minthrottle",              type = "U16", apiVersion = 12.06, simResponse = {45, 4}},
+    {field = "maxthrottle",              type = "U16", apiVersion = 12.06, simResponse = {208, 7}},
+    {field = "mincommand",               type = "U16", apiVersion = 12.06, simResponse = {232, 3}},
+    {field = "motor_count_blheli",       type = "U8",  apiVersion = 12.06, simResponse = {1}},
+    {field = "motor_pole_count_blheli",  type = "U8",  apiVersion = 12.06, simResponse = {6}},
+    {field = "use_dshot_telemetry",      type = "U8",  apiVersion = 12.06, simResponse = {0}},
+    {field = "motor_pwm_protocol",       type = "U8",  apiVersion = 12.06, simResponse = {0}},
+    {field = "motor_pwm_rate",           type = "U16", apiVersion = 12.06, simResponse = {250, 0}},
+    {field = "use_unsynced_pwm",         type = "U8",  apiVersion = 12.06, simResponse = {1}},
+    {field = "motor_pole_count_0",       type = "U8",  apiVersion = 12.06, simResponse = {6}},
+    {field = "motor_pole_count_1",       type = "U8",  apiVersion = 12.06, simResponse = {4}},
+    {field = "motor_pole_count_2",       type = "U8",  apiVersion = 12.06, simResponse = {2}},
+    {field = "motor_pole_count_3",       type = "U8",  apiVersion = 12.06, simResponse = {1}},
+    {field = "motor_rpm_lpf_0",          type = "U8",  apiVersion = 12.06, simResponse = {8}},
+    {field = "motor_rpm_lpf_1",          type = "U8",  apiVersion = 12.06, simResponse = {7}},
+    {field = "motor_rpm_lpf_2",          type = "U8",  apiVersion = 12.06, simResponse = {7}},
+    {field = "motor_rpm_lpf_3",          type = "U8",  apiVersion = 12.06, simResponse = {8}},
+    {field = "main_rotor_gear_ratio_0",  type = "U16", apiVersion = 12.06, simResponse = {20, 0}},
+    {field = "main_rotor_gear_ratio_1",  type = "U16", apiVersion = 12.06, simResponse = {50, 0}},
+    {field = "tail_rotor_gear_ratio_0",  type = "U16", apiVersion = 12.06, simResponse = {9, 0}},
+    {field = "tail_rotor_gear_ratio_1",  type = "U16", apiVersion = 12.06, simResponse = {30, 0}}
 }
 
 local MSP_API_STRUCTURE_WRITE = {
-    {field = "minthrottle", type = "U16"},
-    {field = "maxthrottle", type = "U16"},
-    {field = "mincommand", type = "U16"},
- -- {field = "motor_count_blheli", type = "U8"},           -- compat: BLHeliSuite for no good reason this is missing from the write structure
-    {field = "motor_pole_count_blheli", type = "U8"},      -- compat: BLHeliSuite
-    {field = "use_dshot_telemetry", type = "U8"},
-    {field = "motor_pwm_protocol", type = "U8"},
-    {field = "motor_pwm_rate", type = "U16"},
-    {field = "use_unsynced_pwm", type = "U8"},
-    {field = "motor_pole_count_0", type = "U8"},
-    {field = "motor_pole_count_1", type = "U8"},
-    {field = "motor_pole_count_2", type = "U8"},
-    {field = "motor_pole_count_3", type = "U8"},
-    {field = "motor_rpm_lpf_0", type = "U8"},
-    {field = "motor_rpm_lpf_1", type = "U8"},
-    {field = "motor_rpm_lpf_2", type = "U8"},
-    {field = "motor_rpm_lpf_3", type = "U8"},
-    {field = "main_rotor_gear_ratio_0", type = "U16"},
-    {field = "main_rotor_gear_ratio_1", type = "U16"},
-    {field = "tail_rotor_gear_ratio_0", type = "U16"},
-    {field = "tail_rotor_gear_ratio_1", type = "U16"}
+    {field = "minthrottle",              type = "U16", apiVersion = 12.06, simResponse = {45, 4}},
+    {field = "maxthrottle",              type = "U16", apiVersion = 12.06, simResponse = {208, 7}},
+    {field = "mincommand",               type = "U16", apiVersion = 12.06, simResponse = {232, 3}},
+    --{field = "motor_count_blheli",       type = "U8",  simResponse = {1}}, -- compat: BLHeliSuite for no good reason this is missing from the write structure
+    {field = "motor_pole_count_blheli",  type = "U8",  apiVersion = 12.06, simResponse = {6}}, -- compat: BLHeliSuite
+    {field = "use_dshot_telemetry",      type = "U8",  apiVersion = 12.06, simResponse = {0}},
+    {field = "motor_pwm_protocol",       type = "U8",  apiVersion = 12.06, simResponse = {0}},
+    {field = "motor_pwm_rate",           type = "U16", apiVersion = 12.06, simResponse = {250, 0}},
+    {field = "use_unsynced_pwm",         type = "U8",  apiVersion = 12.06, simResponse = {1}},
+    {field = "motor_pole_count_0",       type = "U8",  apiVersion = 12.06, simResponse = {6}},
+    {field = "motor_pole_count_1",       type = "U8",  apiVersion = 12.06, simResponse = {4}},
+    {field = "motor_pole_count_2",       type = "U8",  apiVersion = 12.06, simResponse = {2}},
+    {field = "motor_pole_count_3",       type = "U8",  apiVersion = 12.06, simResponse = {1}},
+    {field = "motor_rpm_lpf_0",          type = "U8",  apiVersion = 12.06, simResponse = {8}},
+    {field = "motor_rpm_lpf_1",          type = "U8",  apiVersion = 12.06, simResponse = {7}},
+    {field = "motor_rpm_lpf_2",          type = "U8",  apiVersion = 12.06, simResponse = {7}},
+    {field = "motor_rpm_lpf_3",          type = "U8",  apiVersion = 12.06, simResponse = {8}},
+    {field = "main_rotor_gear_ratio_0",  type = "U16", apiVersion = 12.06, simResponse = {20, 0}},
+    {field = "main_rotor_gear_ratio_1",  type = "U16", apiVersion = 12.06, simResponse = {50, 0}},
+    {field = "tail_rotor_gear_ratio_0",  type = "U16", apiVersion = 12.06, simResponse = {9, 0}},
+    {field = "tail_rotor_gear_ratio_1",  type = "U16", apiVersion = 12.06, simResponse = {30, 0}}
 }
 
--- Process msp structure to get version that works for api Version
-local MSP_MIN_BYTES, MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterStructure(MSP_API_STRUCTURE_READ) 
+-- filter the structure to remove any params not supported by the running api version
+local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
 
--- Check if the simulator response contains enough data
-if #MSP_API_SIMULATOR_RESPONSE < MSP_MIN_BYTES then
-    error("MSP_API_SIMULATOR_RESPONSE does not contain enough data to satisfy MSP_MIN_BYTES")
-end
+-- calculate the min bytes value from the structure
+local MSP_MIN_BYTES = rfsuite.bg.msp.api.calculateMinBytes(MSP_API_STRUCTURE_READ)
+
+-- generate a simulatorResponse from the read structure
+local MSP_API_SIMULATOR_RESPONSE = rfsuite.bg.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
 
 -- Variable to store parsed MSP data
 local mspData = nil

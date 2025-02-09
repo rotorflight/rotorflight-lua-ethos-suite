@@ -27,7 +27,7 @@
 ]] --
 -- Constants for MSP Commands
 local MSP_API_CMD_READ = 1 -- Command identifier for MSP API request
-local MSP_API_SIMULATOR_RESPONSE = {0, 12, 7} -- Default simulator response
+local MSP_API_SIMULATOR_RESPONSE = {0, 12, 8} -- Default simulator response
 
 
 -- Define the MSP response data structure

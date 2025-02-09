@@ -15,6 +15,12 @@
  * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
 -- Constants for MSP Commands
+
+-- NOTE: This api is not actually use it.  Its a base structure.
+-- The actual servos module needs to be modified to use this structure.
+-- that is a task for another day
+-- net result - not tested - be prepaired to make it work!
+
 local MSP_API_CMD_READ = 120 -- Command identifier
 local MSP_API_CMD_WRITE = nil -- Command identifier 
 local MSP_API_SIMULATOR_RESPONSE = {4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0, 120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0} -- Default simulator response
@@ -42,10 +48,23 @@ local function generateMSPStructureRead(servoCount)
     }
 
     -- Define servo fields structure
-    local servo_fields = {{field = "mid", type = "U16"}, {field = "min", type = "U16"}, {field = "max", type = "U16"}, {field = "rneg", type = "U16"}, {field = "rpos", type = "U16"}, {field = "rate", type = "U16"}, {field = "speed", type = "U16"}, {field = "flags", type = "U16"}}
+    local servo_fields = {
+        {field = "mid", type = "U16"},
+        {field = "min", type = "U16"},
+        {field = "max", type = "U16"},
+        {field = "rneg", type = "U16"},
+        {field = "rpos", type = "U16"},
+        {field = "rate", type = "U16"},
+        {field = "speed", type = "U16"},
+        {field = "flags", type = "U16"}
+    }
 
     -- Add servo field structures dynamically based on servoCount
-    for i = 1, servoCount do for _, field in ipairs(servo_fields) do table.insert(MSP_API_STRUCTURE, {field = string.format("servo_%d_%s", i, field.field), type = field.type}) end end
+    for i = 1, servoCount do
+        for _, field in ipairs(servo_fields) do
+            table.insert(MSP_API_STRUCTURE, {field = string.format("servo_%d_%s", i, field.field), type = field.type, apiVersion=12.07})
+        end
+    end
 
     return MSP_API_STRUCTURE
 end

@@ -29,6 +29,7 @@ triggers.exitAPP = false
 triggers.noRFMsg = false
 triggers.triggerSave = false
 triggers.triggerReload = false
+triggers.triggerReloadFull = false
 triggers.triggerReloadNoPrompt = false
 triggers.reloadFull = false
 triggers.isReady = false
@@ -317,7 +318,7 @@ local function processPageReply(source, buf, methodType)
 
     -- we should not need this with the api - it is kept for legacy compatability
     app.Page.minBytes = app.Page.minBytes or 0
-    print("app.Page.minBytes: " .. app.Page.minBytes)
+
     rfsuite.utils.log("app.Page is processing reply for cmd " .. tostring(source.command) .. " len buf: " .. #buf .. " expected: " .. app.Page.minBytes .. " (Method: " .. methodType .. ")")
 
     -- ensure page.values contains a copy of the buffer
@@ -869,6 +870,36 @@ function app.wakeupUI()
 
         app.triggers.triggerReload = false
     end
+
+   -- a full reload was triggered - popup a box asking for the reload to be done
+   if app.triggers.triggerReloadFull == true then
+    local buttons = {{
+        label = "                OK                ",
+        action = function()
+            -- trigger RELOAD
+            app.triggers.reloadFull = true
+            return true
+        end
+    }, {
+        label = "CANCEL",
+        action = function()
+            return true
+        end
+    }}
+    form.openDialog({
+        width = nil,
+        title = "Reload",
+        message = "Reload data from flight controller?",
+        buttons = buttons,
+        wakeup = function()
+        end,
+        paint = function()
+        end,
+        options = TEXT_LEFT
+    })
+
+    app.triggers.triggerReloadFull = false
+end
 
     -- a save was triggered - lets display a progress box
     if app.triggers.isSaving then

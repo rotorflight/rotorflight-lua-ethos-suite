@@ -18,12 +18,15 @@
 local MSP_API_CMD_READ = 192 -- Command identifier for MSP Mixer Config Read
 local MSP_API_CMD_WRITE = 193 -- Command identifier for saving Mixer Config Settings
 local MSP_API_SIMULATOR_RESPONSE = {209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7} -- Default simulator response
-local MSP_MIN_BYTES = 10
+local MSP_MIN_BYTES = 3
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ = {} -- we dynamically generate this later
 
-local MSP_API_STRUCTURE_WRITE = {{field = "servo_id", type = "U8"}, {field = "action", type = "U16"}}
+local MSP_API_STRUCTURE_WRITE = {
+                {field = "servo_id", type = "U8"}, 
+                {field = "action", type = "U16"}
+            }
 
 -- Variable to store parsed MSP data
 local mspData = nil

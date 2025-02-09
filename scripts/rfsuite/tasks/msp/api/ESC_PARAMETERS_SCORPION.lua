@@ -17,82 +17,76 @@
 -- Constants for MSP Commands
 local MSP_API_CMD_READ = 217 -- Command identifier 
 local MSP_API_CMD_WRITE = 218 -- Command identifier 
-local MSP_API_SIMULATOR_RESPONSE = {83, 128, 84, 114, 105, 98, 117, 110, 117, 115, 32, 69, 83, 67, 45, 54, 83, 45, 56, 48, 65, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 3, 0, 3, 0, 1, 0, 3, 0, 136, 19, 22, 3, 16, 39, 64, 31, 136, 19, 0, 0, 1, 0, 7, 2, 0, 6, 63, 0, 160, 15, 64, 31, 208, 7, 100, 0, 0, 0, 200, 0, 0, 0, 1, 0, 0, 0, 200, 250, 0, 0} -- Default simulator response
 local MSP_SIGNATURE = 0x53
 local MSP_HEADER_BYTES = 2
 
-local MSP_API_STRUCTURE_READ = {
-    {field = "esc_signature", type = "U8"},        -- 1
-    {field = "esc_command", type = "U8"},          -- 2
-
-    {field = "escinfo_1", type = "U8"},            -- 3
-    {field = "escinfo_2", type = "U8"},            -- 4
-    {field = "escinfo_3", type = "U8"},            -- 5
-    {field = "escinfo_4", type = "U8"},            -- 6
-    {field = "escinfo_5", type = "U8"},            -- 7
-    {field = "escinfo_6", type = "U8"},            -- 8
-    {field = "escinfo_7", type = "U8"},            -- 9
-    {field = "escinfo_8", type = "U8"},            -- 10
-    {field = "escinfo_9", type = "U8"},            -- 11
-    {field = "escinfo_10", type = "U8"},           -- 12
-    {field = "escinfo_11", type = "U8"},           -- 13
-    {field = "escinfo_12", type = "U8"},           -- 14
-    {field = "escinfo_13", type = "U8"},           -- 15
-    {field = "escinfo_14", type = "U8"},           -- 16
-    {field = "escinfo_15", type = "U8"},           -- 17
-    {field = "escinfo_16", type = "U8"},           -- 18
-    {field = "escinfo_17", type = "U8"},           -- 19
-    {field = "escinfo_18", type = "U8"},           -- 20
-    {field = "escinfo_19", type = "U8"},           -- 21
-    {field = "escinfo_20", type = "U8"},           -- 22
-    {field = "escinfo_21", type = "U8"},           -- 23
-    {field = "escinfo_22", type = "U8"},           -- 24
-    {field = "escinfo_23", type = "U8"},           -- 25
-    {field = "escinfo_24", type = "U8"},           -- 26
-    {field = "escinfo_25", type = "U8"},           -- 27
-    {field = "escinfo_26", type = "U8"},           -- 28
-    {field = "escinfo_27", type = "U8"},           -- 29
-    {field = "escinfo_28", type = "U8"},           -- 30
-    {field = "escinfo_29", type = "U8"},           -- 31
-    {field = "escinfo_30", type = "U8"},           -- 32
-    {field = "escinfo_31", type = "U8"},           -- 33
-    {field = "escinfo_32", type = "U8"},           -- 34
-
-    {field = "esc_mode", type = "U16"},            -- 35, 36
-    {field = "bec_voltage", type = "U16"},         -- 37, 38
-    {field = "rotation", type = "U16"},            -- 39, 40
-
-    -- no idea what this is for
-    {field = "dummy_0", type = "U16"},             -- 41, 42
-
-    {field = "protection_delay", type = "U16"},    -- 43, 44
-    {field = "min_voltage", type = "U16"},         -- 45, 46
-    {field = "max_temperature", type = "U16"},     -- 47, 48
-    {field = "max_current", type = "U16"},         -- 49, 50
-    {field = "cutoff_handling", type = "U16"},     -- 51, 52
-    {field = "max_used", type = "U16"},            -- 53, 54
-    {field = "motor_startup_sound", type = "U16"}, -- 55, 56
-
-    -- no idea what these are for
-    {field = "paddding_1", type = "U16"},          -- 57, 58
-    {field = "paddding_2", type = "U16"},          -- 59, 60
-    {field = "paddding_3", type = "U16"},          -- 61, 62
-
-    {field = "soft_start_time", type = "U16"},     -- 63, 64
-    {field = "runup_time", type = "U16"},          -- 65, 66
-    {field = "bailout", type = "U16"},             -- 67, 68
-    {field = "gov_proportional", type = "U32"},    -- 69, 70, 71, 72
-    {field = "gov_integral", type = "U32"},        -- 73, 74, 75, 76
+local MSP_API_STRUCTURE_READ_DATA = {
+    {field = "esc_signature",       type = "U8",  apiVersion = 12.07, simResponse = {83}},
+    {field = "esc_command",         type = "U8",  apiVersion = 12.07, simResponse = {128}},
+    {field = "escinfo_1",           type = "U8",  apiVersion = 12.07, simResponse = {84}},
+    {field = "escinfo_2",           type = "U8",  apiVersion = 12.07, simResponse = {114}},
+    {field = "escinfo_3",           type = "U8",  apiVersion = 12.07, simResponse = {105}},
+    {field = "escinfo_4",           type = "U8",  apiVersion = 12.07, simResponse = {98}},
+    {field = "escinfo_5",           type = "U8",  apiVersion = 12.07, simResponse = {117}},
+    {field = "escinfo_6",           type = "U8",  apiVersion = 12.07, simResponse = {110}},
+    {field = "escinfo_7",           type = "U8",  apiVersion = 12.07, simResponse = {117}},
+    {field = "escinfo_8",           type = "U8",  apiVersion = 12.07, simResponse = {115}},
+    {field = "escinfo_9",           type = "U8",  apiVersion = 12.07, simResponse = {32}},
+    {field = "escinfo_10",          type = "U8",  apiVersion = 12.07, simResponse = {69}},
+    {field = "escinfo_11",          type = "U8",  apiVersion = 12.07, simResponse = {83}},
+    {field = "escinfo_12",          type = "U8",  apiVersion = 12.07, simResponse = {67}},
+    {field = "escinfo_13",          type = "U8",  apiVersion = 12.07, simResponse = {45}},
+    {field = "escinfo_14",          type = "U8",  apiVersion = 12.07, simResponse = {54}},
+    {field = "escinfo_15",          type = "U8",  apiVersion = 12.07, simResponse = {83}},
+    {field = "escinfo_16",          type = "U8",  apiVersion = 12.07, simResponse = {45}},
+    {field = "escinfo_17",          type = "U8",  apiVersion = 12.07, simResponse = {56}},
+    {field = "escinfo_18",          type = "U8",  apiVersion = 12.07, simResponse = {48}},
+    {field = "escinfo_19",          type = "U8",  apiVersion = 12.07, simResponse = {65}},
+    {field = "escinfo_20",          type = "U8",  apiVersion = 12.07, simResponse = {0}},
+    {field = "escinfo_21",          type = "U8",  apiVersion = 12.07, simResponse = {0}},
+    {field = "escinfo_22",          type = "U8",  apiVersion = 12.07, simResponse = {0}},
+    {field = "escinfo_23",          type = "U8",  apiVersion = 12.07, simResponse = {0}},
+    {field = "escinfo_24",          type = "U8",  apiVersion = 12.07, simResponse = {0}},
+    {field = "escinfo_25",          type = "U8",  apiVersion = 12.07, simResponse = {0}},
+    {field = "escinfo_26",          type = "U8",  apiVersion = 12.07, simResponse = {0}},
+    {field = "escinfo_27",          type = "U8",  apiVersion = 12.07, simResponse = {0}},
+    {field = "escinfo_28",          type = "U8",  apiVersion = 12.07, simResponse = {0}},
+    {field = "escinfo_29",          type = "U8",  apiVersion = 12.07, simResponse = {0}},
+    {field = "escinfo_30",          type = "U8",  apiVersion = 12.07, simResponse = {0}},
+    {field = "escinfo_31",          type = "U8",  apiVersion = 12.07, simResponse = {4}},
+    {field = "escinfo_32",          type = "U8",  apiVersion = 12.07, simResponse = {0}},
+    {field = "esc_mode",            type = "U16", apiVersion = 12.07, simResponse = {3, 0}},
+    {field = "bec_voltage",         type = "U16", apiVersion = 12.07, simResponse = {3, 0}},
+    {field = "rotation",            type = "U16", apiVersion = 12.07, simResponse = {1, 0}},
+    {field = "padding_0",           type = "U16", apiVersion = 12.07, simResponse = {3, 0}},
+    {field = "protection_delay",    type = "U16", apiVersion = 12.07, simResponse = {136, 19}},
+    {field = "min_voltage",         type = "U16", apiVersion = 12.07, simResponse = {22, 3}},
+    {field = "max_temperature",     type = "U16", apiVersion = 12.07, simResponse = {16, 39}},
+    {field = "max_current",         type = "U16", apiVersion = 12.07, simResponse = {64, 31}},
+    {field = "cutoff_handling",     type = "U16", apiVersion = 12.07, simResponse = {136, 19}},
+    {field = "max_used",            type = "U16", apiVersion = 12.07, simResponse = {0, 0}},
+    {field = "motor_startup_sound", type = "U16", apiVersion = 12.07, simResponse = {1, 0}},
+    {field = "padding_1",           type = "U16", apiVersion = 12.07, simResponse = {7, 2}},
+    {field = "padding_2",           type = "U16", apiVersion = 12.07, simResponse = {0, 6}},
+    {field = "padding_3",           type = "U16", apiVersion = 12.07, simResponse = {63, 0}},
+    {field = "soft_start_time",     type = "U16", apiVersion = 12.07, simResponse = {160, 15}},
+    {field = "runup_time",          type = "U16", apiVersion = 12.07, simResponse = {64, 31}},
+    {field = "bailout",             type = "U16", apiVersion = 12.07, simResponse = {208, 7}},
+    {field = "gov_proportional",    type = "U32", apiVersion = 12.07, simResponse = {100, 0, 0, 0}},
+    {field = "gov_integral",        type = "U32", apiVersion = 12.07, simResponse = {200, 0, 0, 0}},
 }
 
--- Process msp structure to get version that works for api Version
-local MSP_MIN_BYTES, MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterStructure(MSP_API_STRUCTURE_READ) 
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ -- Assuming identical structure for now
+-- filter the structure to remove any params not supported by the running api version
+local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
 
--- Check if the simulator response contains enough data
-if #MSP_API_SIMULATOR_RESPONSE < MSP_MIN_BYTES then
-    error("MSP_API_SIMULATOR_RESPONSE does not contain enough data to satisfy MSP_MIN_BYTES")
-end
+-- calculate the min bytes value from the structure
+local MSP_MIN_BYTES = rfsuite.bg.msp.api.calculateMinBytes(MSP_API_STRUCTURE_READ)
+
+-- set read structure
+local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
+
+-- generate a simulatorResponse from the read structure
+local MSP_API_SIMULATOR_RESPONSE = rfsuite.bg.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
 
 -- Variable to store parsed MSP data
 local mspData = nil

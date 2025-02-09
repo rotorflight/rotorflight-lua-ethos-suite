@@ -17,13 +17,24 @@
 -- Constants for MSP Commands
 local MSP_API_CMD_READ = 10 -- Command identifier 
 local MSP_API_CMD_WRITE = nil -- Command identifier 
-local MSP_API_SIMULATOR_RESPONSE = {80, 105, 108, 111, 116} -- Default simulator response
 local MSP_MIN_BYTES = 0
 
 -- Define the MSP response data structures
-local MSP_API_STRUCTURE_READ = {{field = "name", type = "U8"}}
+local MSP_API_STRUCTURE_READ_DATA = {
+    { field = "name", type = "U32", apiVersion = 12.06, simResponse = {80, 105, 108, 111, 116}}
+}
 
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ -- Assuming identical structure for now
+-- filter the structure to remove any params not supported by the running api version
+local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
+
+-- calculate the min bytes value from the structure
+local MSP_MIN_BYTES = rfsuite.bg.msp.api.calculateMinBytes(MSP_API_STRUCTURE_READ)
+
+-- set read structure
+local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
+
+-- generate a simulatorResponse from the read structure
+local MSP_API_SIMULATOR_RESPONSE = rfsuite.bg.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
 
 -- Variable to store parsed MSP data
 local mspData = nil

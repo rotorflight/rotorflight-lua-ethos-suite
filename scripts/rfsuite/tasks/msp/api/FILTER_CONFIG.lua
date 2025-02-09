@@ -19,30 +19,37 @@ local MSP_API_CMD_READ = 92 -- Command identifier
 local MSP_API_CMD_WRITE = 93 -- Command identifier 
 local MSP_API_SIMULATOR_RESPONSE = {0, 1, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 25, 25, 0, 245, 0} -- Default simulator response
 
--- Define the MSP response data structures
-local MSP_API_STRUCTURE_READ = {
-    {field = "gyro_hardware_lpf", type = "U8"},
-    {field = "gyro_lpf1_type", type = "U8"},
-    {field = "gyro_lpf1_static_hz", type = "U16"},
-    {field = "gyro_lpf2_type", type = "U8"},
-    {field = "gyro_lpf2_static_hz", type = "U16"},
-    {field = "gyro_soft_notch_hz_1", type = "U16"},
-    {field = "gyro_soft_notch_cutoff_1", type = "U16"},
-    {field = "gyro_soft_notch_hz_2", type = "U16"},
-    {field = "gyro_soft_notch_cutoff_2", type = "U16"},
-    {field = "gyro_lpf1_dyn_min_hz", type = "U16"},
-    {field = "gyro_lpf1_dyn_max_hz", type = "U16"}
+local MSP_API_STRUCTURE_READ_DATA = {
+    {field = "gyro_hardware_lpf",        type = "U8",  apiVersion = 12.07, simResponse = {0}},          
+    {field = "gyro_lpf1_type",           type = "U8",  apiVersion = 12.07, simResponse = {1}},          
+    {field = "gyro_lpf1_static_hz",      type = "U16", apiVersion = 12.07, simResponse = {100, 0}},     
+    {field = "gyro_lpf2_type",           type = "U8",  apiVersion = 12.07, simResponse = {0}},          
+    {field = "gyro_lpf2_static_hz",      type = "U16", apiVersion = 12.07, simResponse = {0, 0}},       
+    {field = "gyro_soft_notch_hz_1",     type = "U16", apiVersion = 12.07, simResponse = {0, 0}},       
+    {field = "gyro_soft_notch_cutoff_1", type = "U16", apiVersion = 12.07, simResponse = {0, 0}},       
+    {field = "gyro_soft_notch_hz_2",     type = "U16", apiVersion = 12.07, simResponse = {0, 0}},       
+    {field = "gyro_soft_notch_cutoff_2", type = "U16", apiVersion = 12.07, simResponse = {0, 0}},       
+    {field = "gyro_lpf1_dyn_min_hz",     type = "U16", apiVersion = 12.07, simResponse = {0, 2}},       
+    {field = "gyro_lpf1_dyn_max_hz",     type = "U16", apiVersion = 12.07, simResponse = {25, 25}},     
+    {field = "dyn_notch_count",          type = "U8",  apiVersion = 12.07, simResponse = {0}},          
+    {field = "dyn_notch_q",              type = "U8",  apiVersion = 12.07, simResponse = {245}},        
+    {field = "dyn_notch_min_hz",         type = "U16", apiVersion = 12.07, simResponse = {0, 0}},       
+    {field = "dyn_notch_max_hz",         type = "U16", apiVersion = 12.07, simResponse = {0, 0}},
+    {field = "rpm_preset",               type = "U8",  apiVersion = 12.07, simResponse = {0}}, 
+    {field = "rpm_min_hz",               type = "U8",  apiVersion = 12.07, simResponse = {0}}            
 }
 
--- Process msp structure to get version that works for api Version
-local MSP_MIN_BYTES, MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterStructure(MSP_API_STRUCTURE_READ) 
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ -- Assuming identical structure for now
+-- filter the structure to remove any params not supported by the running api version
+local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
 
--- Check if the simulator response contains enough data
-if #MSP_API_SIMULATOR_RESPONSE < MSP_MIN_BYTES then
-    error("MSP_API_SIMULATOR_RESPONSE does not contain enough data to satisfy MSP_MIN_BYTES")
-end
+-- calculate the min bytes value from the structure
+local MSP_MIN_BYTES = rfsuite.bg.msp.api.calculateMinBytes(MSP_API_STRUCTURE_READ)
 
+-- set read structure
+local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
+
+-- generate a simulatorResponse from the read structure
+local MSP_API_SIMULATOR_RESPONSE = rfsuite.bg.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
 -- Variable to store parsed MSP data
 local mspData = nil
 local mspWriteComplete = false

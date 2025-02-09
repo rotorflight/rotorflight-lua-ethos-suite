@@ -17,38 +17,40 @@
 -- Constants for MSP Commands
 local MSP_API_CMD_READ = 146 -- Command identifier 
 local MSP_API_CMD_WRITE = 147 -- Command identifier 
-local MSP_API_SIMULATOR_RESPONSE = {1, 0, 200, 100, 5, 3, 10, 5, 182, 3, 188, 2, 194, 1, 244, 1, 20, 0, 20, 0, 10, 0, 232, 3, 44, 1, 184, 11} -- Default simulator response
 
 -- Define the MSP response data structures
-local MSP_API_STRUCTURE_READ = {
-    {field = "rescue_mode", type = "U8"},
-    {field = "rescue_flip_mode", type = "U8"},
-    {field = "rescue_flip_gain", type = "U8"},
-    {field = "rescue_level_gain", type = "U8"},
-    {field = "rescue_pull_up_time", type = "U8"},
-    {field = "rescue_climb_time", type = "U8"},
-    {field = "rescue_flip_time", type = "U8"},
-    {field = "rescue_exit_time", type = "U8"},
-    {field = "rescue_pull_up_collective", type = "U16"},
-    {field = "rescue_climb_collective", type = "U16"},
-    {field = "rescue_hover_collective", type = "U16"},
-    {field = "rescue_hover_altitude", type = "U16"},
-    {field = "rescue_alt_p_gain", type = "U16"},
-    {field = "rescue_alt_i_gain", type = "U16"},
-    {field = "rescue_alt_d_gain", type = "U16"},
-    {field = "rescue_max_collective", type = "U16"},
-    {field = "rescue_max_setpoint_rate", type = "U16"},
-    {field = "rescue_max_setpoint_accel", type = "U16"}
+local MSP_API_STRUCTURE_READ_DATA = {
+    {field = "rescue_mode",                type = "U8",  apiVersion = 12.06, simResponse = {1}},
+    {field = "rescue_flip_mode",           type = "U8",  apiVersion = 12.06, simResponse = {0}},
+    {field = "rescue_flip_gain",           type = "U8",  apiVersion = 12.06, simResponse = {200}},
+    {field = "rescue_level_gain",          type = "U8",  apiVersion = 12.06, simResponse = {100}},
+    {field = "rescue_pull_up_time",        type = "U8",  apiVersion = 12.06, simResponse = {5}},
+    {field = "rescue_climb_time",          type = "U8",  apiVersion = 12.06, simResponse = {3}},
+    {field = "rescue_flip_time",           type = "U8",  apiVersion = 12.06, simResponse = {10}},
+    {field = "rescue_exit_time",           type = "U8",  apiVersion = 12.06, simResponse = {5}},
+    {field = "rescue_pull_up_collective",  type = "U16", apiVersion = 12.06, simResponse = {182, 3}},
+    {field = "rescue_climb_collective",    type = "U16", apiVersion = 12.06, simResponse = {188, 2}},
+    {field = "rescue_hover_collective",    type = "U16", apiVersion = 12.06, simResponse = {194, 1}},
+    {field = "rescue_hover_altitude",      type = "U16", apiVersion = 12.06, simResponse = {244, 1}},
+    {field = "rescue_alt_p_gain",          type = "U16", apiVersion = 12.06, simResponse = {20, 0}},
+    {field = "rescue_alt_i_gain",          type = "U16", apiVersion = 12.06, simResponse = {20, 0}},
+    {field = "rescue_alt_d_gain",          type = "U16", apiVersion = 12.06, simResponse = {10, 0}},
+    {field = "rescue_max_collective",      type = "U16", apiVersion = 12.06, simResponse = {232, 3}},
+    {field = "rescue_max_setpoint_rate",   type = "U16", apiVersion = 12.06, simResponse = {44, 1}},
+    {field = "rescue_max_setpoint_accel",  type = "U16", apiVersion = 12.06, simResponse = {184, 11}}
 }
 
--- Process msp structure to get version that works for api Version
-local MSP_MIN_BYTES, MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterStructure(MSP_API_STRUCTURE_READ) 
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ -- Assuming identical structure for now
+-- filter the structure to remove any params not supported by the running api version
+local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
 
--- Check if the simulator response contains enough data
-if #MSP_API_SIMULATOR_RESPONSE < MSP_MIN_BYTES then
-    error("MSP_API_SIMULATOR_RESPONSE does not contain enough data to satisfy MSP_MIN_BYTES")
-end
+-- calculate the min bytes value from the structure
+local MSP_MIN_BYTES = rfsuite.bg.msp.api.calculateMinBytes(MSP_API_STRUCTURE_READ)
+
+-- set read structure
+local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
+
+-- generate a simulatorResponse from the read structure
+local MSP_API_SIMULATOR_RESPONSE = rfsuite.bg.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
 
 -- Variable to store parsed MSP data
 local mspData = nil

@@ -17,60 +17,56 @@
 -- Constants for MSP Commands
 local MSP_API_CMD_READ = 217 -- Command identifier 
 local MSP_API_CMD_WRITE = 218 -- Command identifier 
-local MSP_API_SIMULATOR_RESPONSE = {165, 0, 32, 0, 3, 0, 55, 0, 0, 0, 0, 0, 4, 0, 3, 0, 1, 0, 1, 0, 2, 0, 3, 0, 80, 3, 131, 148, 1, 0, 30, 170, 0, 0, 3, 0, 86, 4, 22, 3, 163, 15, 1, 0, 2, 0, 2, 0, 20, 0, 20, 0, 0, 0, 0, 0, 2, 19, 2, 0, 20, 0, 22, 0, 0, 0} -- Default simulator response
 local MSP_SIGNATURE = 0xA5
 local MSP_HEADER_BYTES = 2
 
 -- Define the MSP response data structures
-local MSP_API_STRUCTURE_READ = {
-    {field = "esc_signature", type = "U8"},         -- 1
-    {field = "esc_command", type = "U8"},           -- 2
-    {field = "esc_model", type = "U8"},             -- 3
-    {field = "esc_version", type = "U8"},           -- 4
-    {field = "governor", type = "U16"},             -- 5-6 (ESC Mode)
-    {field = "lv_bec_voltage", type = "U16"},       -- 7-8 (BEC Voltage)
-    {field = "timing", type = "U16"},               -- 9-10 (Motor Timing)
-    {field = "acceleration", type = "U16"},         -- 11-12 (Potential Startup Response)
-    {field = "gov_p", type = "U16"},                -- 13-14 (P-Gain)
-    {field = "gov_i", type = "U16"},                -- 15-16 (I-Gain)
-    {field = "throttle_response", type = "U16"},    -- 17-18 (Throttle Response)
-    {field = "auto_restart_time", type = "U16"},    -- 19-20 (Cutoff Handling)
-    {field = "cell_cutoff", type = "U16"},          -- 21-22 (Cutoff Cell Voltage)
-    {field = "active_freewheel", type = "U16"},     -- 23-24 (Active Freewheel)
-
-    -- unknown data
-    {field = "padding_1", type = "U16"},            -- 25-26 (Padding)
-    {field = "padding_2", type = "U16"},            -- 27-28 (Padding)
-    {field = "padding_3", type = "U16"},            -- 29-30 (Padding)
-    {field = "padding_4", type = "U16"},            -- 31-32 (Padding)
-    {field = "padding_5", type = "U16"},            -- 33-34 (Padding)
-    {field = "padding_6", type = "U16"},            -- 35-36 (Padding)
-
-
-    {field = "stick_zero_us", type = "U16"},        -- 37-38 (Stick Zero (us))
-    {field = "stick_range_us", type = "U16"},       -- 39-40 (Stick Range (us))
-    {field = "padding_7", type = "U16"},            -- 41-42 (Padding)
-    {field = "motor_poll_pairs", type = "U16"},     -- 43-44 (Motor Pole Pairs)
-    {field = "pinion_teeth", type = "U16"},         -- 45-46 (Pinion Teeth)
-    {field = "main_teeth", type = "U16"},           -- 47-48 (Main Teeth)
-    {field = "min_start_power", type = "U16"},      -- 49-50 (Min Start Power)
-    {field = "max_start_power", type = "U16"},      -- 51-52 (Max Start Power)
-    {field = "padding_8", type = "U16"},            -- 53-54 (Padding)
-    {field = "direction", type = "U8"},              -- 55 (Direction, F3C Autorotation)
-    {field = "f3c_auto", type = "U8"},               -- 56 (F3C Autorotation)
-
-    {field = "current_limit", type = "U16"},        -- 57-58
+local MSP_API_STRUCTURE_READ_DATA = {
+    {field = "esc_signature",      type = "U8",  apiVersion = 12.07, simResponse = {165}},
+    {field = "esc_command",        type = "U8",  apiVersion = 12.07, simResponse = {0}},
+    {field = "esc_model",          type = "U8",  apiVersion = 12.07, simResponse = {32}},
+    {field = "esc_version",        type = "U8",  apiVersion = 12.07, simResponse = {0}},
+    {field = "governor",           type = "U16", apiVersion = 12.07, simResponse = {3, 0}},
+    {field = "lv_bec_voltage",     type = "U16", apiVersion = 12.07, simResponse = {55, 0}},
+    {field = "timing",             type = "U16", apiVersion = 12.07, simResponse = {0, 0}},
+    {field = "acceleration",       type = "U16", apiVersion = 12.07, simResponse = {0, 0}},
+    {field = "gov_p",              type = "U16", apiVersion = 12.07, simResponse = {4, 0}},
+    {field = "gov_i",              type = "U16", apiVersion = 12.07, simResponse = {3, 0}},
+    {field = "throttle_response",  type = "U16", apiVersion = 12.07, simResponse = {1, 0}},
+    {field = "auto_restart_time",  type = "U16", apiVersion = 12.07, simResponse = {1, 0}},
+    {field = "cell_cutoff",        type = "U16", apiVersion = 12.07, simResponse = {2, 0}},
+    {field = "active_freewheel",   type = "U16", apiVersion = 12.07, simResponse = {3, 0}},
+    {field = "padding_1",          type = "U16", apiVersion = 12.07, simResponse = {80, 3}},
+    {field = "padding_2",          type = "U16", apiVersion = 12.07, simResponse = {131, 148}},
+    {field = "padding_3",          type = "U16", apiVersion = 12.07, simResponse = {1, 0}},
+    {field = "padding_4",          type = "U16", apiVersion = 12.07, simResponse = {30, 170}},
+    {field = "padding_5",          type = "U16", apiVersion = 12.07, simResponse = {0, 0}},
+    {field = "padding_6",          type = "U16", apiVersion = 12.07, simResponse = {3, 0}},
+    {field = "stick_zero_us",      type = "U16", apiVersion = 12.07, simResponse = {86, 4}},
+    {field = "stick_range_us",     type = "U16", apiVersion = 12.07, simResponse = {22, 3}},
+    {field = "padding_7",          type = "U16", apiVersion = 12.07, simResponse = {163, 15}},
+    {field = "motor_poll_pairs",   type = "U16", apiVersion = 12.07, simResponse = {1, 0}},
+    {field = "pinion_teeth",       type = "U16", apiVersion = 12.07, simResponse = {2, 0}},
+    {field = "main_teeth",         type = "U16", apiVersion = 12.07, simResponse = {2, 0}},
+    {field = "min_start_power",    type = "U16", apiVersion = 12.07, simResponse = {20, 0}},
+    {field = "max_start_power",    type = "U16", apiVersion = 12.07, simResponse = {20, 0}},
+    {field = "padding_8",          type = "U16", apiVersion = 12.07, simResponse = {0, 0}},
+    {field = "direction",          type = "U8",  apiVersion = 12.07, simResponse = {0}},
+    {field = "f3c_auto",           type = "U8",  apiVersion = 12.07, simResponse = {0}},
+    {field = "current_limit",      type = "U16", apiVersion = 12.07, simResponse = {2, 19}},
 }
 
+-- filter the structure to remove any params not supported by the running api version
+local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
 
--- Process msp structure to get version that works for api Version
-local MSP_MIN_BYTES, MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterStructure(MSP_API_STRUCTURE_READ) 
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ -- Assuming identical structure for now
+-- calculate the min bytes value from the structure
+local MSP_MIN_BYTES = rfsuite.bg.msp.api.calculateMinBytes(MSP_API_STRUCTURE_READ)
 
--- Check if the simulator response contains enough data
-if #MSP_API_SIMULATOR_RESPONSE < MSP_MIN_BYTES then
-    error("MSP_API_SIMULATOR_RESPONSE does not contain enough data to satisfy MSP_MIN_BYTES")
-end
+-- set read structure
+local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
+
+-- generate a simulatorResponse from the read structure
+local MSP_API_SIMULATOR_RESPONSE = rfsuite.bg.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
 
 -- Variable to store parsed MSP data
 local mspData = nil

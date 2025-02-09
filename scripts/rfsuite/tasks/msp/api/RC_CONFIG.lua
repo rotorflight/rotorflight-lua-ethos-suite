@@ -17,19 +17,29 @@
 -- Constants for MSP Commands
 local MSP_API_CMD_READ = 66 -- Command identifier 
 local MSP_API_CMD_WRITE = 67 -- Command identifier 
-local MSP_API_SIMULATOR_RESPONSE = {220, 5, 254, 1, 232, 3, 242, 3, 208, 7, 4, 4} -- Default simulator response
 
--- Define the MSP response data structures
-local MSP_API_STRUCTURE_READ = {{field = "rc_center", type = "U16"}, {field = "rc_deflection", type = "U16"}, {field = "rc_arm_throttle", type = "U16"}, {field = "rc_min_throttle", type = "U16"}, {field = "rc_max_throttle", type = "U16"}, {field = "rc_deadband", type = "U8"}, {field = "rc_yaw_deadband", type = "U8"}}
+-- Define the MSP response data structures with simResponse
+local MSP_API_STRUCTURE_READ_DATA = {
+    {field = "rc_center",       type = "U16", apiVersion = 12.06, simResponse = {220, 5}},
+    {field = "rc_deflection",   type = "U16", apiVersion = 12.06, simResponse = {254, 1}},
+    {field = "rc_arm_throttle", type = "U16", apiVersion = 12.06, simResponse = {232, 3}},
+    {field = "rc_min_throttle", type = "U16", apiVersion = 12.06, simResponse = {242, 3}},
+    {field = "rc_max_throttle", type = "U16", apiVersion = 12.06, simResponse = {208, 7}},
+    {field = "rc_deadband",     type = "U8",  apiVersion = 12.06, simResponse = {4}},
+    {field = "rc_yaw_deadband", type = "U8",  apiVersion = 12.06, simResponse = {4}}
+}
 
--- Process msp structure to get version that works for api Version
-local MSP_MIN_BYTES, MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterStructure(MSP_API_STRUCTURE_READ) 
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ -- Assuming identical structure for now
+-- filter the structure to remove any params not supported by the running api version
+local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
 
--- Check if the simulator response contains enough data
-if #MSP_API_SIMULATOR_RESPONSE < MSP_MIN_BYTES then
-    error("MSP_API_SIMULATOR_RESPONSE does not contain enough data to satisfy MSP_MIN_BYTES")
-end
+-- calculate the min bytes value from the structure
+local MSP_MIN_BYTES = rfsuite.bg.msp.api.calculateMinBytes(MSP_API_STRUCTURE_READ)
+
+-- set read structure
+local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
+
+-- generate a simulatorResponse from the read structure
+local MSP_API_SIMULATOR_RESPONSE = rfsuite.bg.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
 
 -- Variable to store parsed MSP data
 local mspData = nil

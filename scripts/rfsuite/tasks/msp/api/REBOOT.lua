@@ -22,7 +22,8 @@ local MSP_MIN_BYTES = 0
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ = {}
-local MSP_API_STRUCTURE_WRITE = {{field = "rebootMode", type = "U8"} -- Assuming identical structure for now
+local MSP_API_STRUCTURE_WRITE = {
+    {field = "rebootMode", type = "U8", apiVersion = 12.06, simResponse = {0}} 
 }
 
 -- Variable to store parsed MSP data

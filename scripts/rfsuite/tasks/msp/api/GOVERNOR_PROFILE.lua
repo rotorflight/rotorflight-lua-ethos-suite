@@ -17,31 +17,35 @@
 -- Constants for MSP Commands
 local MSP_API_CMD_READ = 148 -- Command identifier 
 local MSP_API_CMD_WRITE = 149 -- Command identifier 
-local MSP_API_SIMULATOR_RESPONSE = {208, 7, 100, 10, 125, 5, 20, 0, 20, 10, 40, 100, 100, 10} -- Default simulator response
 
 -- Define the MSP response data structures
-local MSP_API_STRUCTURE_READ = {
-    {field = "governor_headspeed", type = "U16"},
-    {field = "governor_gain", type = "U8"},
-    {field = "governor_p_gain", type = "U8"},
-    {field = "governor_i_gain", type = "U8"},
-    {field = "governor_d_gain", type = "U8"},
-    {field = "governor_f_gain", type = "U8"},
-    {field = "governor_tta_gain", type = "U8"},
-    {field = "governor_tta_limit", type = "U8"},
-    {field = "governor_yaw_ff_weight", type = "U8"},
-    {field = "governor_cyclic_ff_weight", type = "U8"},
-    {field = "governor_collective_ff_weight", type = "U8"},
-    {field = "governor_max_throttle", type = "U8"},
-    {field = "governor_min_throttle", type = "U8"}
+local MSP_API_STRUCTURE_READ_DATA = {
+    {field = "governor_headspeed",          type = "U16", apiVersion = 12.06, simResponse = {208, 7}},
+    {field = "governor_gain",               type = "U8",  apiVersion = 12.06, simResponse = {100}},
+    {field = "governor_p_gain",             type = "U8",  apiVersion = 12.06, simResponse = {10}},
+    {field = "governor_i_gain",             type = "U8",  apiVersion = 12.06, simResponse = {125}},
+    {field = "governor_d_gain",             type = "U8",  apiVersion = 12.06, simResponse = {5}},
+    {field = "governor_f_gain",             type = "U8",  apiVersion = 12.06, simResponse = {20}},
+    {field = "governor_tta_gain",           type = "U8",  apiVersion = 12.06, simResponse = {0}},
+    {field = "governor_tta_limit",          type = "U8",  apiVersion = 12.06, simResponse = {20}},
+    {field = "governor_yaw_ff_weight",      type = "U8",  apiVersion = 12.06, simResponse = {10}},
+    {field = "governor_cyclic_ff_weight",   type = "U8",  apiVersion = 12.06, simResponse = {40}},
+    {field = "governor_collective_ff_weight", type = "U8", apiVersion = 12.06, simResponse = {100}},
+    {field = "governor_max_throttle",       type = "U8",  apiVersion = 12.06, simResponse = {100}},
+    {field = "governor_min_throttle",       type = "U8",  apiVersion = 12.06, simResponse = {10}}
 }
-local MSP_MIN_BYTES, MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterStructure(MSP_API_STRUCTURE_READ) 
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ -- Assuming identical structure for now
 
--- Check if the simulator response contains enough data
-if #MSP_API_SIMULATOR_RESPONSE < MSP_MIN_BYTES then
-    error("MSP_API_SIMULATOR_RESPONSE does not contain enough data to satisfy MSP_MIN_BYTES")
-end
+-- filter the structure to remove any params not supported by the running api version
+local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
+
+-- calculate the min bytes value from the structure
+local MSP_MIN_BYTES = rfsuite.bg.msp.api.calculateMinBytes(MSP_API_STRUCTURE_READ)
+
+-- set read structure
+local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
+
+-- generate a simulatorResponse from the read structure
+local MSP_API_SIMULATOR_RESPONSE = rfsuite.bg.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
 
 -- Variable to store parsed MSP data
 local mspData = nil

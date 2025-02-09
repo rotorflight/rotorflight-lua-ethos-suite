@@ -17,39 +17,41 @@
 -- Constants for MSP Commands
 local MSP_API_CMD_READ = 101 -- Command identifier 
 local MSP_API_CMD_WRITE = nil -- Command identifier 
-local MSP_API_SIMULATOR_RESPONSE = {252, 1, 127, 0, 35, 0, 0, 0, 0, 0, 0, 122, 1, 182, 0, 0, 26, 0, 0, 0, 0, 0, 2, 0, 6, 0, 6, 1, 4, 1} -- Default simulator response
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ = {
-    {field = "task_delta_time_pid", type = "U16"},
-    {field = "task_delta_time_gyro", type = "U16"},
-    {field = "sensor_status", type = "U16"},
-    {field = "flight_mode_flags", type = "U32"},
-    {field = "profile_number", type = "U8"},
-    {field = "max_real_time_load", type = "U16"},
-    {field = "average_cpu_load", type = "U16"},
-    {field = "extra_flight_mode_flags_count", type = "U8"},
-    {field = "arming_disable_flags_count", type = "U8"},
-    {field = "arming_disable_flags", type = "U32"},
-    {field = "reboot_required", type = "U8"},
-    {field = "configuration_state", type = "U8"},
-    {field = "current_pid_profile_index", type = "U8"},
-    {field = "pid_profile_count", type = "U8"},
-    {field = "current_control_rate_profile_index", type = "U8"},
-    {field = "control_rate_profile_count", type = "U8"},
-    {field = "motor_count", type = "U8"},
-    {field = "servo_count", type = "U8"},
-    {field = "gyro_detection_flags", type = "U8"}
+    {field = "task_delta_time_pid",                type = "U16", apiVersion = 12.06, simResponse = {252, 1}},
+    {field = "task_delta_time_gyro",               type = "U16", apiVersion = 12.06, simResponse = {127, 0}},
+    {field = "sensor_status",                      type = "U16", apiVersion = 12.06, simResponse = {35, 0}},
+    {field = "flight_mode_flags",                  type = "U32", apiVersion = 12.06, simResponse = {0, 0, 0, 0}},
+    {field = "profile_number",                     type = "U8",  apiVersion = 12.06, simResponse = {0}},
+    {field = "max_real_time_load",                 type = "U16", apiVersion = 12.06, simResponse = {122, 1}},
+    {field = "average_cpu_load",                   type = "U16", apiVersion = 12.06, simResponse = {182, 0}},
+    {field = "extra_flight_mode_flags_count",      type = "U8",  apiVersion = 12.06, simResponse = {0}},
+    {field = "arming_disable_flags_count",         type = "U8",  apiVersion = 12.06, simResponse = {0}},
+    {field = "arming_disable_flags",               type = "U32", apiVersion = 12.06, simResponse = {0, 0, 0, 0}},
+    {field = "reboot_required",                    type = "U8",  apiVersion = 12.06, simResponse = {2}},
+    {field = "configuration_state",                type = "U8",  apiVersion = 12.06, simResponse = {0}},
+    {field = "current_pid_profile_index",          type = "U8",  apiVersion = 12.06, simResponse = {6}},
+    {field = "pid_profile_count",                  type = "U8",  apiVersion = 12.06, simResponse = {6}},
+    {field = "current_control_rate_profile_index", type = "U8",  apiVersion = 12.06, simResponse = {1}},
+    {field = "control_rate_profile_count",         type = "U8",  apiVersion = 12.06, simResponse = {4}},
+    {field = "motor_count",                        type = "U8",  apiVersion = 12.06, simResponse = {1}},
+    {field = "servo_count",                        type = "U8",  apiVersion = 12.06, simResponse = {4}},
+    {field = "gyro_detection_flags",               type = "U8",  apiVersion = 12.06, simResponse = {1}},
 }
 
--- Process msp structure to get version that works for api Version
-local MSP_MIN_BYTES, MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterStructure(MSP_API_STRUCTURE_READ) 
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ -- Assuming identical structure for now
+-- filter the structure to remove any params not supported by the running api version
+local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
 
--- Check if the simulator response contains enough data
-if #MSP_API_SIMULATOR_RESPONSE < MSP_MIN_BYTES then
-    error("MSP_API_SIMULATOR_RESPONSE does not contain enough data to satisfy MSP_MIN_BYTES")
-end
+-- calculate the min bytes value from the structure
+local MSP_MIN_BYTES = rfsuite.bg.msp.api.calculateMinBytes(MSP_API_STRUCTURE_READ)
+
+-- set read structure
+local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
+
+-- generate a simulatorResponse from the read structure
+local MSP_API_SIMULATOR_RESPONSE = rfsuite.bg.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
 
 -- Variable to store parsed MSP data
 local mspData = nil

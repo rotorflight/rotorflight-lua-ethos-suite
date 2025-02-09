@@ -19,30 +19,40 @@ local MSP_API_CMD_READ = 152 -- Command identifier
 local MSP_API_CMD_WRITE = 153 -- Command identifier 
 local MSP_API_SIMULATOR_RESPONSE = {1, 0, 24, 252, 232, 3, 1, 1, 24, 252, 232, 3, 1, 2, 24, 252, 232, 3, 1, 3, 24, 252, 232, 3, 1, 0, 24, 252, 232, 3, 1, 1, 24, 252, 232, 3, 1, 2, 24, 252, 232, 3, 1, 3, 24, 252, 232, 3, 1, 0, 24, 252, 232, 3, 1, 1, 24, 252, 232, 3, 1, 2, 24, 252, 232, 3, 1, 3, 24, 252, 232, 3, 1, 0, 24, 252, 232, 3, 1, 1, 24, 252, 232, 3, 1, 2, 24, 252, 232, 3, 1, 3, 24, 252, 232,
                                     3, 1, 0, 24, 252, 232, 3, 1, 1, 24, 252, 232, 3, 50} -- Default simulator response
-local MSP_MIN_BYTES = 34
+
 
 local function generateSbusApiStructure(numChannels)
     local structure = {}
 
     for i = 1, numChannels do
-        table.insert(structure, {field = "Type_" .. i, type = "U8"})
-        table.insert(structure, {field = "Index_" .. i, type = "U8"})
-        table.insert(structure, {field = "RangeLow_" .. i, type = "S16"})
-        table.insert(structure, {field = "RangeHigh_" .. i, type = "S16"})
+        table.insert(structure, {field = "Type_" .. i, type = "U8",       apiVersion = 12.06, simResponse = {1}})
+        table.insert(structure, {field = "Index_" .. i, type = "U8",      apiVersion = 12.06, simResponse = {0}})
+        table.insert(structure, {field = "RangeLow_" .. i, type = "S16",  apiVersion = 12.06, simResponse = {24, 252}})
+        table.insert(structure, {field = "RangeHigh_" .. i, type = "S16", apiVersion = 12.06, simResponse = {232, 3}})
+    end
     end
 
     return structure
 end
 
 -- Define the MSP response data structures
-local MSP_API_STRUCTURE_READ = generateSbusApiStructure(16)
+local MSP_API_STRUCTURE_READ_DATA = generateSbusApiStructure(16)
 local MSP_API_STRUCTURE_WRITE = {
-    {field = "target_channel", type = "U8"},
-    {field = "source_type", type = "U8"},
-    {field = "source_index", type = "U8"},
-    {field = "source_range_low", type = "S16"},
-    {field = "source_range_high", type = "S16"}
+    {field = "target_channel",    type = "U8",  apiVersion = 12.06},
+    {field = "source_type",       type = "U8",  apiVersion = 12.06},
+    {field = "source_index",      type = "U8",  apiVersion = 12.06},
+    {field = "source_range_low",  type = "S16", apiVersion = 12.06},
+    {field = "source_range_high", type = "S16", apiVersion = 12.06}
 }
+
+-- filter the structure to remove any params not supported by the running api version
+local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
+
+-- calculate the min bytes value from the structure
+local MSP_MIN_BYTES = rfsuite.bg.msp.api.calculateMinBytes(MSP_API_STRUCTURE_READ)
+
+-- generate a simulatorResponse from the read structure
+local MSP_API_SIMULATOR_RESPONSE = rfsuite.bg.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
 
 -- Variable to store parsed MSP data
 local mspData = nil
