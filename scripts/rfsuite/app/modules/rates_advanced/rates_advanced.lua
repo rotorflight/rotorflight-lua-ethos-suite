@@ -99,5 +99,6 @@ return {
     postRead = postRead,
     postLoad = postLoad,
     preSavePayload = preSavePayload,
-    wakeup = wakeup
+    wakeup = wakeup,
+    API = {},
 }

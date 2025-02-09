@@ -194,5 +194,6 @@ return {
         reload = false,
         tool = false,
         help = true
-    }
+    },
+    API = {},
 }

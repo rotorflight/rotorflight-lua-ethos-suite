@@ -608,6 +608,7 @@ return {
     onSaveMenu = onSaveMenu,
     onReloadMenu = onReloadMenu,
     pageTitle = "Servos",
-    navButtons = {menu = true, save = true, reload = true, tool = true, help = true}
+    navButtons = {menu = true, save = true, reload = true, tool = true, help = true},
+    API = {},
 
 }

@@ -56,5 +56,6 @@ return {
     setGovernorMode = setGovernorMode,
     fields = fields,
     postLoad = postLoad,
-    preSavePayload = preSavePayload
+    preSavePayload = preSavePayload,
+    API = {},
 }

@@ -45,4 +45,15 @@ local function wakeup()
 
 end
 
-return {mspapi = "PID_PROFILE", title = "Main Rotor", refreshOnProfileChange = true, reboot = false, eepromWrite = true, labels = labels, fields = fields, postLoad = postLoad, wakeup = wakeup}
+return {
+    mspapi = "PID_PROFILE",
+    title = "Main Rotor",
+    refreshOnProfileChange = true,
+    reboot = false,
+    eepromWrite = true,
+    labels = labels,
+    fields = fields,
+    postLoad = postLoad,
+    wakeup = wakeup,
+    API = {},
+}

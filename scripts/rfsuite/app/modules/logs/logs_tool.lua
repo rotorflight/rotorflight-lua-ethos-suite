@@ -672,4 +672,19 @@ local function onNavMenu(self)
 
 end
 
-return {title = "Logs", event = event, openPage = openPage, wakeup = wakeup, paint = paint, onNavMenu = onNavMenu, navButtons = {menu = true, save = false, reload = false, tool = false, help = true}}
+return {
+    title = "Logs",
+    event = event,
+    openPage = openPage,
+    wakeup = wakeup,
+    paint = paint,
+    onNavMenu = onNavMenu,
+    navButtons = {
+        menu = true,
+        save = false,
+        reload = false,
+        tool = false,
+        help = true
+    },
+    API = {},
+}

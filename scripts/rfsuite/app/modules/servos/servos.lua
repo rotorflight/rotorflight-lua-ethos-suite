@@ -447,5 +447,6 @@ return {
         reload = true,
         tool = true,
         help = true
-    }
+    },
+    API = {},
 }

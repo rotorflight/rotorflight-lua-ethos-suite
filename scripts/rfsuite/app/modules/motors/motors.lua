@@ -32,4 +32,5 @@ return {
     labels = labels,
     fields = fields,
     postLoad = postLoad,
+    API = {},
 }

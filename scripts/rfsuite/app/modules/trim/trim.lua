@@ -270,4 +270,26 @@ local function onNavMenu(self)
 
 end
 
-return {mspapi = "MIXER_CONFIG", eepromWrite = true, reboot = false, title = "Mixer", labels = labels, fields = fields, mixerOff = mixerOff, mixerOn = mixerOn, postLoad = postLoad, onToolMenu = onToolMenu, onNavMenu = onNavMenu, wakeup = wakeup, saveData = saveData, navButtons = {menu = true, save = true, reload = true, tool = true, help = true}}
+return {
+    mspapi = "MIXER_CONFIG",
+    eepromWrite = true,
+    reboot = false,
+    title = "Mixer",
+    labels = labels,
+    fields = fields,
+    mixerOff = mixerOff,
+    mixerOn = mixerOn,
+    postLoad = postLoad,
+    onToolMenu = onToolMenu,
+    onNavMenu = onNavMenu,
+    wakeup = wakeup,
+    saveData = saveData,
+    navButtons = {
+        menu = true,
+        save = true,
+        reload = true,
+        tool = true,
+        help = true
+    },
+    API = {},
+}

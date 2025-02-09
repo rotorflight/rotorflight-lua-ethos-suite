@@ -20,7 +20,7 @@
 local init = {
     title = "About", -- title of the page
     section = "About", -- do not run if busy with msp
-    script = "main.lua", -- run this script
+    script = "about.lua", -- run this script
     image = "about.png", -- image for the page
     order = 1, -- order in the section
     ethosversion = 1519 -- disable button if ethos version is less than this

@@ -32,5 +32,6 @@ return {
     title = "Mixer",
     labels = labels,
     fields = fields,
-    postLoad = postLoad
+    postLoad = postLoad,
+    API = {},
 }

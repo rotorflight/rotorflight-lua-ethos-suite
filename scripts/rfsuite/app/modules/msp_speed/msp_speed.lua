@@ -318,4 +318,14 @@ function close()
     end
 end
 
-return {title = title, openPage = openPage, mspRetry = mspRetry, mspSuccess = mspSuccess, mspTimeout = mspTimeout, mspChecksum = mspChecksum, event = event, close = close}
+return {
+    title = title,
+    openPage = openPage,
+    mspRetry = mspRetry,
+    mspSuccess = mspSuccess,
+    mspTimeout = mspTimeout,
+    mspChecksum = mspChecksum,
+    event = event,
+    close = close,
+    API = {},
+}

@@ -71,4 +71,25 @@ function onToolMenu()
 
 end
 
-return {read = readMSP, write = nil, title = "Status", reboot = false, eepromWrite = false, minBytes = 0, wakeup = wakeup, labels = labels, fields = fields, refreshswitch = false, simulatorResponse = {}, onToolMenu = onToolMenu, navButtons = {menu = true, save = false, reload = false, tool = true, help = true}}
+return {
+    read = readMSP,
+    write = nil,
+    title = "Status",
+    reboot = false,
+    eepromWrite = false,
+    minBytes = 0,
+    wakeup = wakeup,
+    labels = labels,
+    fields = fields,
+    refreshswitch = false,
+    simulatorResponse = {},
+    onToolMenu = onToolMenu,
+    navButtons = {
+        menu = true,
+        save = false,
+        reload = false,
+        tool = true,
+        help = true
+    },
+    API = {},
+}

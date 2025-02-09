@@ -158,4 +158,17 @@ local function wakeup()
 
 end
 
-return {mspapi = "PID_TUNING", title = "PIDs", reboot = false, eepromWrite = true, refreshOnProfileChange = true, fields = fields, rows = rows, cols = cols, postLoad = postLoad, openPage = openPage, wakeup = wakeup}
+return {
+    mspapi = "PID_TUNING",
+    title = "PIDs",
+    reboot = false,
+    eepromWrite = true,
+    refreshOnProfileChange = true,
+    fields = fields,
+    rows = rows,
+    cols = cols,
+    postLoad = postLoad,
+    openPage = openPage,
+    wakeup = wakeup,
+    API = {},
+}

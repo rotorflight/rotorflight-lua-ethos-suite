@@ -38,5 +38,6 @@ return {
     labels = labels,
     fields = fields,
     postLoad = postLoad,
-    validateThrottleValues = validateThrottleValues
+    validateThrottleValues = validateThrottleValues,
+    API = {},
 }
