@@ -199,13 +199,16 @@ end
 -- SAVE FIELD VALUE FOR ETHOS FROM ETHOS FORMS INTO THE ACTUAL FORMAT THAT 
 -- WILL BE TRANSMITTED OVER MSP
 function app.saveValue(currentField)
-
     local f = app.Page.fields[currentField]
     local scale = f.scale or 1
-    local step = f.step or 1
 
-    for idx = 1, #f.vals do app.Page.values[f.vals[idx]] = math.floor(f.value * scale + 0.5) >> ((idx - 1) * 8) end
-    if f.upd and app.Page.values then f.upd(app.Page) end
+    for idx = 1, #f.vals do
+        app.Page.values[f.vals[idx]] = math.floor(f.value * scale + 0.5) >> ((idx - 1) * 8)
+    end
+
+    if f.upd and app.Page.values then
+        f.upd(app.Page)
+    end
 end
 
 -- Function to bind page fields to values using MSP helper functions
@@ -343,50 +346,6 @@ local function processPageReply(source, buf, methodType)
             end
         end
 
---[[
-        -- inject max min default values using fields from api call
-        -- we only inject these values if the field does not already have a value
-        -- this means for an api based update; you need to remove the fields from the page
-
-        -- NOTE: THis is the ideal place to do this but it cant be done because some fields need this sort of data before the page is loaded!!
-
-        if app.Page.fields and buf.structure then
-            for i, v in ipairs(buf.structure) do
-                local field = v.field
-                for j, f in ipairs(app.Page.fields) do
-                    if f.apikey and  f.apikey == field then
-
-
-                        if f.scale == nil then f.scale = v.scale end
-                        if f.mult == nil then f.mult = v.mult end
-                        if f.offset == nil then f.offset = v.offset end
-
-                        if f.decimals == nil and rfsuite.app.formFields[j] then
-                            rfsuite.app.formFields[j]:decimals(v.decimals)
-                        end
-                        if f.unit == nil and rfsuite.app.formFields[j] then
-                            rfsuite.app.formFields[j]:suffix(v.unit)
-                        end
-                        if f.step == nil and rfsuite.app.formFields[j] then
-                            rfsuite.app.formFields[j]:step(v.step)
-                        end
-                        if f.min == nil and rfsuite.app.formFields[j] then
-                            rfsuite.app.formFields[j]:minimum(v.min)
-                        end
-                        if f.max == nil and rfsuite.app.formFields[j] then
-                            rfsuite.app.formFields[j]:maximum(v.min)
-                        end
-                        if f.default == nil and rfsuite.app.formFields[j] then
-                            rfsuite.app.formFields[j]:default(v.default)
-                        end
-
-                    end
-                end
-
-            end
-        end
-        ]]--
-
     end
  
     -- run the postRead function to allow you to manipulate the data before regular processing.
@@ -481,12 +440,15 @@ local function saveSettings()
     -- API-based save method
     if methodType == "string" or methodType == "api" then
 
-        local rAPI = rfsuite.bg.msp.api.load(app.Page.mspapi, 1) -- set param 2 to '1' as a write request
+        -- defineit if missing
+        if app.Page.API == nil then
+            app.Page.API = rfsuite.bg.msp.api.load(app.Page.mspapi, 1)
+        end
 
-        API.setCompleteHandler(function(self, buf)
+        app.Page.API.setCompleteHandler(function(self, buf)
             app.settingsSaved()
         end)
-        API.setErrorHandler(function(self, buf)
+        app.Page.API.setErrorHandler(function(self, buf)
             app.triggers.saveFailed = true
         end)
 
