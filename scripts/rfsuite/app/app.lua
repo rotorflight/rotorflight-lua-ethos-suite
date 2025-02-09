@@ -328,16 +328,44 @@ local function processPageReply(source, buf, methodType)
         app.Page.values = buf
     end
 
-    -- inject vals fields based on the positionmap returned by the api call
-    if app.Page.fields then
-        for i, v in ipairs(app.Page.fields) do
-            if v.apikey then
-                if buf['positionmap'] and buf['positionmap'][v.apikey] then
-                    rfsuite.utils.log("Assigning value to apikey: " .. v.apikey .. " with vals: " .. table.concat(buf['positionmap'][v.apikey], ", "))
-                    app.Page.fields[i].vals = buf['positionmap'][v.apikey]
+    -- if using the api; then lets do value injection from the api
+
+    if methodType == "string" or methodType == "api" then
+        -- inject vals fields based on the positionmap returned by the api call
+        if app.Page.fields then
+            for i, v in ipairs(app.Page.fields) do
+                if v.apikey then
+                    if buf['positionmap'] and buf['positionmap'][v.apikey] then
+                        rfsuite.utils.log("Assigning value to apikey: " .. v.apikey .. " with vals: " .. table.concat(buf['positionmap'][v.apikey], ", "))
+                        app.Page.fields[i].vals = buf['positionmap'][v.apikey]                
+                    end
                 end
             end
         end
+
+        -- inject max min default values using fields from api call
+        -- we only inject these values if the field does not already have a value
+        -- this means for an api based update; you need to remove the fields from the page
+        if app.Page.fields and buf.structure then
+            for i, v in ipairs(buf.structure) do
+                local field = v.field
+                for j, f in ipairs(app.Page.fields) do
+                    if f.apikey and  f.apikey == field then
+                        if f.max == nil then f.max = v.max end
+                        if f.min == nil then f.min = v.min end
+                        if f.default == nil then f.default = v.default end
+                        if f.scale == nil then f.scale = v.scale end
+                        if f.unit == nil then f.unit = v.unit end
+                        if f.step == nil then f.step = v.step end
+                        if f.mult == nil then f.mult = v.mult end
+                        if f.decimals == nil then f.decimals = v.decimals end
+                        if f.offset == nil then f.offset = v.offset end
+                    end
+                end
+
+            end
+        end
+
     end
 
     -- run the postRead function to allow you to manipulate the data before regular processing.
