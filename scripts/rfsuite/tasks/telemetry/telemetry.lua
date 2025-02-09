@@ -63,8 +63,8 @@ local sensorTable = {
     governor = {name = "Governor State", mandatory = false, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5125}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5450}}, customCRSF = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1205}}, legacyCRSF = {"Flight mode"}},
 
     -- Adjustment Sensors
-    adjF = {name = "Adjustment Sensors", mandatory = false, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5110}}, customCRSF = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1221}}, legacyCRSF = {nil}},
-    adjV = {name = "Adjustment Sensors", mandatory = false, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5111}}, customCRSF = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1222}}, legacyCRSF = {nil}},
+    adjF = {name = "Adjustment Sensors (Function)", mandatory = false, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5110}}, customCRSF = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1221}}, legacyCRSF = {nil}},
+    adjV = {name = "Adjustment Sensors (Value)", mandatory = false, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5111}}, customCRSF = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1222}}, legacyCRSF = {nil}},
 
     -- PID and Rate Profiles
     pidProfile = {name = "PID Profile", mandatory = true, sport = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5130}, {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5471}}, customCRSF = {{category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1211}}, legacyCRSF = {nil}},

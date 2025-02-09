@@ -133,21 +133,9 @@ function adjfunc.wakeup()
 
     if (os.clock() - initTime) < 5 or rfsuite.bg.telemetry.active() == false then return end
 
-    -- ADJ Function Management
-    local telemetrySOURCE = system.getSource("Rx RSSI1")
-    if telemetrySOURCE ~= nil then
-        local crsfSOURCE = system.getSource("Voltage")
-        if crsfSOURCE ~= nil then
-            adjfunc.adjFunctionSrc = system.getSource("Adj. Source")
-            adjfunc.adjValueSrc = system.getSource("Adj. Value")
-            if adjfunc.adjFunctionSrc == nil or adjfunc.adjValueSrc == nil then return end
-        end
-    else
-        if type(CATEGORY_TELEMETRY_SENSOR) == "number" then
-            adjfunc.adjFunctionSrc = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5110})
-            adjfunc.adjValueSrc = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5111})
-        end
-    end
+
+    adjfunc.adjFunctionSrc = rfsuite.bg.telemetry.getSensorSource("adjF")
+    adjfunc.adjValueSrc = rfsuite.bg.telemetry.getSensorSource("adjV")
 
     if adjfunc.adjValueSrc ~= nil and adjfunc.adjFunctionSrc ~= nil then
 
