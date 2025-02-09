@@ -110,10 +110,12 @@ return {
     data = data,
     read = read,
     readComplete = readComplete,
-    readVersion = readVersion,
+    readStructure = MSP_API_STRUCTURE_READ,
     readValue = readValue,
+    readVersion = readVersion,
     setCompleteHandler = handlers.setCompleteHandler,
     setErrorHandler = handlers.setErrorHandler,
+    setTimeout = setTimeout,
     setUUID = setUUID,
-    setTimeout = setTimeout
+    writeStructure = MSP_API_STRUCTURE_WRITE
 }
