@@ -16,7 +16,7 @@ fields[#fields + 1] = {t = "Tail Idle Thr%", help = "mixerTailMotorIdle", min = 
 
 if rfsuite.config.apiVersion >= 12.08 then
     labels[#labels + 1] = {t = "Collective Tilt Correction", inline_size = 15, label = "coltilt", type = 1}
-    fields[#fields + 1] = {t = "Positive", help = "collectiveTiltCorrection", inline = 2, label = "coltilt", min = 0, max = 250, decimals = 1, scale = 10, unit = "%", apikey="collective_tilt_correction_pos"}
+    fields[#fields + 1] = {t = "Positive", help = "collectiveTiltCorrection", inline = 2, label = "coltilt",  min = 0, max = 250, decimals = 1, scale = 10, unit = "%", apikey="collective_tilt_correction_pos"}
     fields[#fields + 1] = {t = "Negative", help = "collectiveTiltCorrection", inline = 1, label = "coltilt",  min = 0, max = 250, decimals = 1, scale = 10, unit = "%", apikey="collective_tilt_correction_neg"}
 end
 
@@ -32,5 +32,6 @@ return {
     title = "Mixer",
     labels = labels,
     fields = fields,
-    postLoad = postLoad
+    postLoad = postLoad,
+    API = {},
 }

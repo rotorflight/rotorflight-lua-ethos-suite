@@ -165,4 +165,9 @@ end
 
 rfsuite.app.uiState = rfsuite.app.uiStatus.pages
 
-return {title = "ESC", pages = pages, openPage = openPage}
+return {
+    title = "ESC", 
+    pages = pages, 
+    openPage = openPage,
+    API = {},
+}

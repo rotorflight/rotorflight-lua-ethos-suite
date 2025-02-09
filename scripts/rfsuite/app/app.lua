@@ -328,18 +328,67 @@ local function processPageReply(source, buf, methodType)
         app.Page.values = buf
     end
 
-    -- inject vals fields based on the positionmap returned by the api call
-    if app.Page.fields then
-        for i, v in ipairs(app.Page.fields) do
-            if v.apikey then
-                if buf['positionmap'] and buf['positionmap'][v.apikey] then
-                    rfsuite.utils.log("Assigning value to apikey: " .. v.apikey .. " with vals: " .. table.concat(buf['positionmap'][v.apikey], ", "))
-                    app.Page.fields[i].vals = buf['positionmap'][v.apikey]
+    -- if using the api; then lets do value injection from the api
+
+    if methodType == "string" or methodType == "api" then
+        -- inject vals fields based on the positionmap returned by the api call
+        if app.Page.fields then
+            for i, v in ipairs(app.Page.fields) do
+                if v.apikey then
+                    if buf['positionmap'] and buf['positionmap'][v.apikey] then
+                        rfsuite.utils.log("Assigning value to apikey: " .. v.apikey .. " with vals: " .. table.concat(buf['positionmap'][v.apikey], ", "))
+                        app.Page.fields[i].vals = buf['positionmap'][v.apikey]                
+                    end
                 end
             end
         end
-    end
 
+--[[
+        -- inject max min default values using fields from api call
+        -- we only inject these values if the field does not already have a value
+        -- this means for an api based update; you need to remove the fields from the page
+
+        -- NOTE: THis is the ideal place to do this but it cant be done because some fields need this sort of data before the page is loaded!!
+
+        if app.Page.fields and buf.structure then
+            for i, v in ipairs(buf.structure) do
+                local field = v.field
+                for j, f in ipairs(app.Page.fields) do
+                    if f.apikey and  f.apikey == field then
+
+
+                        if f.scale == nil then f.scale = v.scale end
+                        if f.mult == nil then f.mult = v.mult end
+                        if f.offset == nil then f.offset = v.offset end
+
+                        if f.decimals == nil and rfsuite.app.formFields[j] then
+                            rfsuite.app.formFields[j]:decimals(v.decimals)
+                        end
+                        if f.unit == nil and rfsuite.app.formFields[j] then
+                            rfsuite.app.formFields[j]:suffix(v.unit)
+                        end
+                        if f.step == nil and rfsuite.app.formFields[j] then
+                            rfsuite.app.formFields[j]:step(v.step)
+                        end
+                        if f.min == nil and rfsuite.app.formFields[j] then
+                            rfsuite.app.formFields[j]:minimum(v.min)
+                        end
+                        if f.max == nil and rfsuite.app.formFields[j] then
+                            rfsuite.app.formFields[j]:maximum(v.min)
+                        end
+                        if f.default == nil and rfsuite.app.formFields[j] then
+                            rfsuite.app.formFields[j]:default(v.default)
+                        end
+
+                    end
+                end
+
+            end
+        end
+        ]]--
+
+    end
+ 
     -- run the postRead function to allow you to manipulate the data before regular processing.
     -- this is a legacy call that is only really used to directly manipulate the byte string.
     -- if using the api; there are better ways to do this.
@@ -377,14 +426,14 @@ function app.readPage()
     -- otherwise we revert to using app.Page.read using actual msp id numbers
     local methodType = app.Page.mspapi and type(app.Page.mspapi) or app.Page.read and type(app.Page.read) or nil
 
-    if methodType == "string" then -- api
-        local API = rfsuite.bg.msp.api.load(app.Page.mspapi, 0)
+    if methodType == "string" or methodType == "api" then -- api
+        app.Page.API = rfsuite.bg.msp.api.load(app.Page.mspapi, 0)
 
-        API.setCompleteHandler(function(self, buf)
-            processPageReply(self, API.data(), "api")
+        app.Page.API.setCompleteHandler(function(self, buf)
+            processPageReply(self, app.Page.API.data(), "api")
         end)
 
-        API.read()
+        app.Page.API.read()
 
     elseif methodType == "function" then -- function
         app.Page.read(app.Page)
@@ -432,7 +481,7 @@ local function saveSettings()
     -- API-based save method
     if methodType == "string" or methodType == "api" then
 
-        local API = rfsuite.bg.msp.api.load(app.Page.mspapi, 1) -- set param 2 to '1' as a write request
+        local rAPI = rfsuite.bg.msp.api.load(app.Page.mspapi, 1) -- set param 2 to '1' as a write request
 
         API.setCompleteHandler(function(self, buf)
             app.settingsSaved()

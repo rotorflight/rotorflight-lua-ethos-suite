@@ -260,5 +260,6 @@ return {
         reload = false,
         tool = true,
         help = true
-    }
+    },
+    API = {},
 }

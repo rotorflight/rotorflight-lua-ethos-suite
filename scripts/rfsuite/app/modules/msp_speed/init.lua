@@ -20,7 +20,7 @@
 local init = {
     title = "MSP Speed", -- title of the page
     section = "Developer", -- do not run if busy with msp
-    script = "main.lua", -- run this script
+    script = "msp_speed.lua", -- run this script
     image = "msp_speed.png", -- image for the page
     order = 102, -- order in the section
     developer = true, -- show if developer mode enabled    

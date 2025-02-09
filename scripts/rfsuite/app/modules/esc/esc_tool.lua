@@ -325,5 +325,6 @@ return {
     title = "ESC",
     openPage = openPage,
     wakeup = wakeup,
-    event = event
+    event = event,
+    API = {}
 }

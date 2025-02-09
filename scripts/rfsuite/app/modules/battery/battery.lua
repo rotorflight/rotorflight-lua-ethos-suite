@@ -25,5 +25,6 @@ return {
     title = "Battery",
     labels = labels,
     fields = fields,
-    postLoad = postLoad
+    postLoad = postLoad,
+    API = {},
 }

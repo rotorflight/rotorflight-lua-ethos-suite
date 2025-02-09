@@ -20,7 +20,7 @@
 local init = {
     title = "Rates", -- title of the page
     section = "Advanced", -- do not run if busy with msp
-    script = "main.lua", -- run this script
+    script = "rates_advanced.lua", -- run this script
     image = "rates.png", -- image for the page
     order = 8, -- order in the section
     ethosversion = 1519 -- disable button if ethos version is less than this

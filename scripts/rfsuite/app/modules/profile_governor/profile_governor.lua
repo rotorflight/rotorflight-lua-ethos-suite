@@ -73,4 +73,15 @@ local function wakeup()
 
 end
 
-return {mspapi = "GOVERNOR_PROFILE", title = "Governor", reboot = false, refreshOnProfileChange = true, eepromWrite = true, labels = labels, fields = fields, postLoad = postLoad, wakeup = wakeup}
+return {
+    mspapi = "GOVERNOR_PROFILE",
+    title = "Governor",
+    reboot = false,
+    refreshOnProfileChange = true,
+    eepromWrite = true,
+    labels = labels,
+    fields = fields,
+    postLoad = postLoad,
+    wakeup = wakeup,
+    API = {},
+}

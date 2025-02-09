@@ -128,5 +128,6 @@ return {
     refreshOnProfileChange = true,
     simulatorResponse = {240, 1, 124, 0, 35, 0, 0, 0, 0, 0, 0, 224, 1, 10, 1, 0, 26, 0, 0, 0, 0, 0, 2, 0, 6, 0, 6, 1, 4, 1},
     postLoad = postLoad,
-    navButtons = {menu = true, save = true, reload = false, tool = false, help = true}
+    navButtons = {menu = true, save = true, reload = false, tool = false, help = true},
+    API = {},
 }

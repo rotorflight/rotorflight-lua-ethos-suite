@@ -61,5 +61,6 @@ return {
     labels = labels,
     fields = fields,
     postLoad = postLoad,
-    wakeup = wakeup
+    wakeup = wakeup,
+    API = {},
 }

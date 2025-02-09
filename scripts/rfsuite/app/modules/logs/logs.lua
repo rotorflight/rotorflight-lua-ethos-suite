@@ -224,4 +224,18 @@ local function onNavMenu()
 
 end
 
-return {title = "Logs", event = event, openPage = openPage, wakeup = wakeup, onNavMenu = onNavMenu, navButtons = {menu = true, save = false, reload = false, tool = false, help = true}}
+return {
+    title = "Logs",
+    event = event,
+    openPage = openPage,
+    wakeup = wakeup,
+    onNavMenu = onNavMenu,
+    navButtons = {
+        menu = true,
+        save = false,
+        reload = false,
+        tool = false,
+        help = true
+    },
+    API = {},
+}

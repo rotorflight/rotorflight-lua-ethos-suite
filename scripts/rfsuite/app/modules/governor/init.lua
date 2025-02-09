@@ -20,7 +20,7 @@
 local init = {
     title = "Governor", -- title of the page
     section = "Hardware", -- do not run if busy with msp
-    script = "main.lua", -- run this script
+    script = "governor.lua", -- run this script
     image = "governor.png", -- image for the page
     order = 11, -- order in the section
     ethosversion = 1519 -- disable button if ethos version is less than this

@@ -20,7 +20,7 @@
 local init = {
     title = "Radio Config", -- title of the page
     section = "Hardware", -- do not run if busy with msp
-    script = "main.lua", -- run this script
+    script = "radio_config.lua", -- run this script
     image = "radio_config.png", -- image for the page
     order = 9, -- order in the section
     ethosversion = 1519 -- disable button if ethos version is less than this

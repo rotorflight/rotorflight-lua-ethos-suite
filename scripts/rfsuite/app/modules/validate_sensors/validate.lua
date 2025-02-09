@@ -83,4 +83,27 @@ local function wakeup()
 
 end
 
-return {read = nil, write = nil, title = "Status", reboot = false, eepromWrite = false, minBytes = 0, wakeup = wakeup, labels = labels, fields = fields, refreshswitch = false, simulatorResponse = {}, postLoad = postLoad, postRead = postRead, openPage = openPage, navButtons = {menu = true, save = false, reload = false, tool = false, help = true}}
+return {
+    read = nil,
+    write = nil,
+    title = "Status",
+    reboot = false,
+    eepromWrite = false,
+    minBytes = 0,
+    wakeup = wakeup,
+    labels = labels,
+    fields = fields,
+    refreshswitch = false,
+    simulatorResponse = {},
+    postLoad = postLoad,
+    postRead = postRead,
+    openPage = openPage,
+    navButtons = {
+        menu = true,
+        save = false,
+        reload = false,
+        tool = false,
+        help = true
+    },
+    API = {},
+}

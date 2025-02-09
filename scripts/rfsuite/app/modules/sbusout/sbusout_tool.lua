@@ -201,5 +201,6 @@ return {
     onSaveMenu = onSaveMenu,
     setMinMaxIndex = setMinMaxIndex,
     wakeup = wakeup,
-    navButtons = {menu = true, save = true, reload = true, tool = false, help = true}
+    navButtons = {menu = true, save = true, reload = true, tool = false, help = true},
+    API = {},
 }

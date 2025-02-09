@@ -21,8 +21,8 @@ local MSP_API_CMD_WRITE = 239 -- Command identifier
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "pitch", type = "U16", apiVersion = 12.06, simResponse = {0, 0}}, 
-    {field = "roll", type = "U16", apiVersion = 12.06, simResponse = {0, 0}},
+    {field = "pitch", type = "U16", apiVersion = 12.06, simResponse = {0, 0}, min = -300, max = 300, default = 0, unit = "°", step = nil, mult = nil, decimals = nil}, 
+    {field = "roll",  type = "U16", apiVersion = 12.06, simResponse = {0, 0}, min = -300, max = 300, default = 0, unit = "°", step = nil, mult = nil, decimals = nil},
 }  
 -- filter the structure to remove any params not supported by the running api version
 local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)

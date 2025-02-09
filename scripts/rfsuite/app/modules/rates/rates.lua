@@ -196,6 +196,7 @@ return {
     flagRateChange = flagRateChange,
     postLoad = postLoad,
     openPage = openPage,
-    wakeup = wakeup
+    wakeup = wakeup,
+    API = {},
 
 }
