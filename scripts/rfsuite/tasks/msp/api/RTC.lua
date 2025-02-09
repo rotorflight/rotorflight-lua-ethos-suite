@@ -145,16 +145,14 @@ end
 
 -- Return the module's API functions
 return {
-    data = data,
-    getDefaults = getDefaults,
-    readStructure = MSP_API_STRUCTURE_READ,
+    write = write,
+    setValue = setValue,
+    writeComplete = writeComplete,
     resetWriteStatus = resetWriteStatus,
+    getDefaults = getDefaults,
     setCompleteHandler = handlers.setCompleteHandler,
     setErrorHandler = handlers.setErrorHandler,
-    setTimeout = setTimeout,
+    data = data,
     setUUID = setUUID,
-    setValue = setValue,
-    write = write,
-    writeComplete = writeComplete,
-    writeStructure = MSP_API_STRUCTURE_WRITE
+    setTimeout = setTimeout
 }

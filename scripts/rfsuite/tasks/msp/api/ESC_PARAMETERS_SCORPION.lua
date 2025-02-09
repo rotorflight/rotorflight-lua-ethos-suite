@@ -201,21 +201,19 @@ local function setTimeout(timeout)
 end
 -- Return the module's API functions
 return {
-    data = data,
-    mspHeaderBytes = MSP_HEADER_BYTES,
-    mspSignature = MSP_SIGNATURE,
     read = read,
+    write = write,
     readComplete = readComplete,
-    readStructure = MSP_API_STRUCTURE_READ,
+    writeComplete = writeComplete,
     readValue = readValue,
+    setValue = setValue,
     resetWriteStatus = resetWriteStatus,
     setCompleteHandler = handlers.setCompleteHandler,
     setErrorHandler = handlers.setErrorHandler,
-    setTimeout = setTimeout,
+    data = data,
     setUUID = setUUID,
-    setValue = setValue,
-    simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
-    write = write,
-    writeComplete = writeComplete,
-    writeStructure = MSP_API_STRUCTURE_WRITE
+    setTimeout = setTimeout,
+    mspSignature = MSP_SIGNATURE,
+    mspHeaderBytes = MSP_HEADER_BYTES,
+    simulatorResponse = MSP_API_SIMULATOR_RESPONSE
 }
