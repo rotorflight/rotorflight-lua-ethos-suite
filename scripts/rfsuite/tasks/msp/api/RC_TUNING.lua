@@ -17,41 +17,43 @@
 -- Constants for MSP Commands
 local MSP_API_CMD_READ = 111 -- Command identifier 
 local MSP_API_CMD_WRITE = 204 -- Command identifier 
-local MSP_API_SIMULATOR_RESPONSE = {4, 18, 25, 32, 20, 0, 0, 18, 25, 32, 20, 0, 0, 32, 50, 45, 10, 0, 0, 56, 0, 56, 20, 0, 0} -- Default simulator response
 
 -- Define the MSP response data structures
-local MSP_API_STRUCTURE_READ = {
-    {field = "rates_type", type = "U8"},
-    {field = "rcRates_1", type = "U8"},
-    {field = "rcExpo_1", type = "U8"},
-    {field = "rates_1", type = "U8"},
-    {field = "response_time_1", type = "U8"},
-    {field = "accel_limit_1", type = "U16"},
-    {field = "rcRates_2", type = "U8"},
-    {field = "rcExpo_2", type = "U8"},
-    {field = "rates_2", type = "U8"},
-    {field = "response_time_2", type = "U8"},
-    {field = "accel_limit_2", type = "U16"},
-    {field = "rcRates_3", type = "U8"},
-    {field = "rcExpo_3", type = "U8"},
-    {field = "rates_3", type = "U8"},
-    {field = "response_time_3", type = "U8"},
-    {field = "accel_limit_3", type = "U16"},
-    {field = "rcRates_4", type = "U8"},
-    {field = "rcExpo_4", type = "U8"},
-    {field = "rates_4", type = "U8"},
-    {field = "response_time_4", type = "U8"},
-    {field = "accel_limit_4", type = "U16"}
+local MSP_API_STRUCTURE_READ_DATA = {
+    {field = "rates_type",      type = "U8",  apiVersion = 12.06, simResponse = {4}},
+    {field = "rcRates_1",       type = "U8",  apiVersion = 12.06, simResponse = {18}},
+    {field = "rcExpo_1",        type = "U8",  apiVersion = 12.06, simResponse = {25}},
+    {field = "rates_1",         type = "U8",  apiVersion = 12.06, simResponse = {32}},
+    {field = "response_time_1", type = "U8",  apiVersion = 12.06, simResponse = {20}},
+    {field = "accel_limit_1",   type = "U16", apiVersion = 12.06, simResponse = {0, 0}},
+    {field = "rcRates_2",       type = "U8",  apiVersion = 12.06, simResponse = {18}},
+    {field = "rcExpo_2",        type = "U8",  apiVersion = 12.06, simResponse = {25}},
+    {field = "rates_2",         type = "U8",  apiVersion = 12.06, simResponse = {32}},
+    {field = "response_time_2", type = "U8",  apiVersion = 12.06, simResponse = {20}},
+    {field = "accel_limit_2",   type = "U16", apiVersion = 12.06, simResponse = {0, 0}},
+    {field = "rcRates_3",       type = "U8",  apiVersion = 12.06, simResponse = {32}},
+    {field = "rcExpo_3",        type = "U8",  apiVersion = 12.06, simResponse = {50}},
+    {field = "rates_3",         type = "U8",  apiVersion = 12.06, simResponse = {45}},
+    {field = "response_time_3", type = "U8",  apiVersion = 12.06, simResponse = {10}},
+    {field = "accel_limit_3",   type = "U16", apiVersion = 12.06, simResponse = {0, 0}},
+    {field = "rcRates_4",       type = "U8",  apiVersion = 12.06, simResponse = {56}},
+    {field = "rcExpo_4",        type = "U8",  apiVersion = 12.06, simResponse = {0}},
+    {field = "rates_4",         type = "U8",  apiVersion = 12.06, simResponse = {56}},
+    {field = "response_time_4", type = "U8",  apiVersion = 12.06, simResponse = {20}},
+    {field = "accel_limit_4",   type = "U16", apiVersion = 12.06, simResponse = {0, 0}}
 }
 
--- Process msp structure to get version that works for api Version
-local MSP_MIN_BYTES, MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterStructure(MSP_API_STRUCTURE_READ) 
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ -- Assuming identical structure for now
+-- filter the structure to remove any params not supported by the running api version
+local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
 
--- Check if the simulator response contains enough data
-if #MSP_API_SIMULATOR_RESPONSE < MSP_MIN_BYTES then
-    error("MSP_API_SIMULATOR_RESPONSE does not contain enough data to satisfy MSP_MIN_BYTES")
-end
+-- calculate the min bytes value from the structure
+local MSP_MIN_BYTES = rfsuite.bg.msp.api.calculateMinBytes(MSP_API_STRUCTURE_READ)
+
+-- set read structure
+local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
+
+-- generate a simulatorResponse from the read structure
+local MSP_API_SIMULATOR_RESPONSE = rfsuite.bg.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
 
 -- Variable to store parsed MSP data
 local mspData = nil

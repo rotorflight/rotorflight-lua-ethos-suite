@@ -27,23 +27,17 @@
 ]] --
 -- Constants for MSP Commands
 local MSP_API_CMD_READ = 1 -- Command identifier for MSP API request
-local MSP_API_SIMULATOR_RESPONSE = {0, 12, 7} -- Default simulator response
+local MSP_API_SIMULATOR_RESPONSE = {0, 12, 8} -- Default simulator response
 
 
 -- Define the MSP response data structure
-local MSP_API_STRUCTURE_READ = {{field = "version_command", type = "U8"}, -- Command version
-{field = "version_major", type = "U8"}, -- Major version
-{field = "version_minor", type = "U8"} -- Minor version
+local MSP_API_STRUCTURE_READ = {
+    {field = "version_command", type = "U8"}, -- Command version
+    {field = "version_major", type = "U8"}, -- Major version
+    {field = "version_minor", type = "U8"} -- Minor version
 }
 
--- Process msp structure to get version that works for api Version
-local MSP_MIN_BYTES, MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterStructure(MSP_API_STRUCTURE_READ) 
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ -- Assuming identical structure for now
-
--- Check if the simulator response contains enough data
-if #MSP_API_SIMULATOR_RESPONSE < MSP_MIN_BYTES then
-    error("MSP_API_SIMULATOR_RESPONSE does not contain enough data to satisfy MSP_MIN_BYTES")
-end
+local MSP_MIN_BYTES = #MSP_API_STRUCTURE_READ -- Minimum bytes required for the structure
 
 -- Variable to store parsed MSP data
 local mspData = nil

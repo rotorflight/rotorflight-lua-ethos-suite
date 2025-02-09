@@ -63,7 +63,8 @@ local function loadAPI(apiName)
 end
 
 -- Function to directly return the API table instead of a wrapper function
-function apiLoader.load(apiName, method)
+function apiLoader.load(apiName)
+    print("apiLoader.load: ", apiName)
     return loadAPI(apiName, method) or {} -- Return an empty table if API fails to load
 end
 
@@ -203,11 +204,10 @@ function apiLoader.parseMSPData(buf, structure, processed, other)
 end
 
 -- Function to calculate MIN_BYTES and filtered structure
-function apiLoader.filterStructure(structure)
+function apiLoader.calculateMinBytes(structure)
 
     local apiVersion = rfsuite.config.apiVersion
     local totalBytes = 0
-    local filteredStructure = {}
 
     for _, param in ipairs(structure) do
         local insert_param = false
@@ -219,11 +219,62 @@ function apiLoader.filterStructure(structure)
 
         if insert_param then
             totalBytes = totalBytes + get_type_size(param.type)
+        end
+    end
+
+    -- Subtract 2 bytes to allow for overlap times when developnent is in progress
+    -- essentialy this allows a margin in which dev fbl firmware can be tested
+    totalBytes = totalBytes - 2
+
+    return totalBytes
+end
+
+-- Function to strip filtered structure based on msp version
+function apiLoader.filterByApiVersion(structure)
+
+    local apiVersion = rfsuite.config.apiVersion or 12.06
+    local filteredStructure = {}
+
+    for _, param in ipairs(structure) do
+        local insert_param = false
+
+        -- API version check logic
+        if not param.apiVersion or (apiVersion and apiVersion >= param.apiVersion) then
+            insert_param = true
+        end
+
+        if insert_param then
             table.insert(filteredStructure, param)
         end
     end
 
-    return totalBytes, filteredStructure
+    return filteredStructure
+end
+
+function apiLoader.buildSimResponse(dataStructure)
+
+    if system:getVersion().simulation == false then
+        return nil
+    end
+
+    local response = {}
+
+    for _, field in ipairs(dataStructure) do
+        if field.simResponse then
+            -- Append all values in simResponse to the response table
+            for _, value in ipairs(field.simResponse) do
+                table.insert(response, value)
+            end
+        else
+            -- If simResponse is nil, insert default values based on the field's type size
+            local type_size = get_type_size(field.type)
+            for i = 1, type_size do
+                table.insert(response, 0)
+            end
+        end
+    end
+
+    return response
 end
 
 -- handlers.lua

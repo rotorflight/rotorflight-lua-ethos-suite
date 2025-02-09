@@ -17,21 +17,34 @@
 -- Constants for MSP Commands
 local MSP_API_CMD_READ = 32 -- Command identifier 
 local MSP_API_CMD_WRITE = 33 -- Command identifier 
-local MSP_API_SIMULATOR_RESPONSE = {138, 2, 3, 1, 1, 74, 1, 174, 1, 154, 1, 94, 1, 100, 10} -- Default simulator response
-
 
 -- Define the MSP response data structures
-local MSP_API_STRUCTURE_READ = {{field = "batteryCapacity", type = "U16"}, {field = "batteryCellCount", type = "U8"}, {field = "voltageMeterSource", type = "U8"}, {field = "currentMeterSource", type = "U8"}, {field = "vbatmincellvoltage", type = "U16"}, {field = "vbatmaxcellvoltage", type = "U16"}, {field = "vbatfullcellvoltage", type = "U16"}, {field = "vbatwarningcellvoltage", type = "U16"},
-                                {field = "lvcPercentage", type = "U8"}, {field = "consumptionWarningPercentage", type = "U8"}}
+local MSP_API_STRUCTURE_READ_DATA = {
+    {field = "batteryCapacity", type = "U16", apiVersion = 12.06, simResponse = {138, 2}},
+    {field = "batteryCellCount", type = "U8", apiVersion = 12.06, simResponse = {3}},
+    {field = "voltageMeterSource", type = "U8", apiVersion = 12.06, simResponse = {1}},
+    {field = "currentMeterSource", type = "U8", apiVersion = 12.06, simResponse = {1}},
+    {field = "vbatmincellvoltage", type = "U16", apiVersion = 12.06, simResponse = {74, 1}},
+    {field = "vbatmaxcellvoltage", type = "U16", apiVersion = 12.06, simResponse = {174, 1}},
+    {field = "vbatfullcellvoltage", type = "U16", apiVersion = 12.06, simResponse = {154, 1}},
+    {field = "vbatwarningcellvoltage", type = "U16", apiVersion = 12.06, simResponse = {94, 1}},
+    {field = "lvcPercentage", type = "U8", simResponse = {100}},
+    {field = "consumptionWarningPercentage", type = "U8", apiVersion = 12.06, simResponse = {10}},
+}
 
--- Process msp structure to get version that works for api Version
-local MSP_MIN_BYTES, MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterStructure(MSP_API_STRUCTURE_READ) 
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ -- Assuming identical structure for now
+-- filter the structure to remove any params not supported by the running api version
+local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
 
--- Check if the simulator response contains enough data
-if #MSP_API_SIMULATOR_RESPONSE < MSP_MIN_BYTES then
-    error("MSP_API_SIMULATOR_RESPONSE does not contain enough data to satisfy MSP_MIN_BYTES")
-end
+-- calculate the min bytes value from the structure
+local MSP_MIN_BYTES = rfsuite.bg.msp.api.calculateMinBytes(MSP_API_STRUCTURE_READ)
+
+-- set read structure
+local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
+
+-- generate a simulatorResponse from the read structure
+local MSP_API_SIMULATOR_RESPONSE = rfsuite.bg.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
+
+
 -- Variable to store parsed MSP data
 local mspData = nil
 local mspWriteComplete = false

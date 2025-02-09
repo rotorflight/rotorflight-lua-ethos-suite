@@ -17,37 +17,44 @@
 -- Constants for MSP Commands
 local MSP_API_CMD_READ = 112 -- Command identifier 
 local MSP_API_CMD_WRITE = 202 -- Command identifier 
-local MSP_API_SIMULATOR_RESPONSE = {70, 0, 225, 0, 90, 0, 120, 0, 100, 0, 200, 0, 70, 0, 120, 0, 100, 0, 125, 0, 83, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 0, 25, 0} -- Default simulator response
 
 -- Function to generate the PID structure
 local function generate_pid_structure(pid_axis_count, cyclic_axis_count)
     local structure = {}
 
     for i = 0, pid_axis_count - 1 do
-        table.insert(structure, {field = "pid_" .. i .. "_P", type = "U16"})
-        table.insert(structure, {field = "pid_" .. i .. "_I", type = "U16"})
-        table.insert(structure, {field = "pid_" .. i .. "_D", type = "U16"})
-        table.insert(structure, {field = "pid_" .. i .. "_F", type = "U16"})
+        table.insert(structure, {field = "pid_" .. i .. "_P", type = "U16", apiVersion = 12.06, simResponse = {70, 0}})
+        table.insert(structure, {field = "pid_" .. i .. "_I", type = "U16", apiVersion = 12.06, simResponse = {255, 0}})
+        table.insert(structure, {field = "pid_" .. i .. "_D", type = "U16", apiVersion = 12.06, simResponse = {90, 0}})
+        table.insert(structure, {field = "pid_" .. i .. "_F", type = "U16", apiVersion = 12.06, simResponse = {120, 0}})
     end
 
-    for i = 0, pid_axis_count - 1 do table.insert(structure, {field = "pid_" .. i .. "_B", type = "U16"}) end
+    for i = 0, pid_axis_count - 1 do
+        table.insert(structure, {field = "pid_" .. i .. "_B", type = "U16", apiVersion = 12.06, simResponse = {100, 0}})
+    end
 
-    for i = 0, cyclic_axis_count - 1 do table.insert(structure, {field = "pid_" .. i .. "_O", type = "U16"}) end
+    for i = 0, cyclic_axis_count - 1 do
+        table.insert(structure, {field = "pid_" .. i .. "_O", type = "U16", apiVersion = 12.06, simResponse = {200, 0}})
+    end
 
     return structure
 end
 
 -- Define the MSP response data structures
-local MSP_API_STRUCTURE_READ = generate_pid_structure(3, 2)
+local MSP_API_STRUCTURE_READ_DATA = generate_pid_structure(3, 2)
 
--- Process msp structure to get version that works for api Version
-local MSP_MIN_BYTES, MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterStructure(MSP_API_STRUCTURE_READ) 
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ -- Assuming identical structure for now
+-- filter the structure to remove any params not supported by the running api version
+local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
 
--- Check if the simulator response contains enough data
-if #MSP_API_SIMULATOR_RESPONSE < MSP_MIN_BYTES then
-    error("MSP_API_SIMULATOR_RESPONSE does not contain enough data to satisfy MSP_MIN_BYTES")
-end
+-- calculate the min bytes value from the structure
+local MSP_MIN_BYTES = rfsuite.bg.msp.api.calculateMinBytes(MSP_API_STRUCTURE_READ)
+
+-- set read structure
+local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
+
+-- generate a simulatorResponse from the read structure
+local MSP_API_SIMULATOR_RESPONSE = rfsuite.bg.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
+
 
 -- Variable to store parsed MSP data
 local mspData = nil

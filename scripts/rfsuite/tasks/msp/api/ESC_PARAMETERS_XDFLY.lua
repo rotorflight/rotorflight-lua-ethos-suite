@@ -17,45 +17,50 @@
 -- Constants for MSP Commands
 local MSP_API_CMD_READ = 217 -- Command identifier 
 local MSP_API_CMD_WRITE = 218 -- Command identifier 
-local MSP_API_SIMULATOR_RESPONSE = {166, 64, 20, 4, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 4, 0, 3, 0, 2, 0, 1, 0, 7, 0, 1, 0, 0, 0, 0, 0, 0, 0, 10, 0, 1, 0, 0, 0, 0, 0, 238, 255, 1, 0} -- Default simulator response
 local MSP_SIGNATURE = 0xA6
 local MSP_HEADER_BYTES = 2
 
--- Define the MSP response data structures
-local MSP_API_STRUCTURE_READ = {
-    {field = "esc_signature", type = "U8"},
-    {field = "esc_command", type = "U8"},
-    {field = "esc_model", type = "U8"}, 
-    {field = "esc_version", type = "U8"}, 
-    {field = "governor", type = "U16"}, 
-    {field = "cell_cutoff", type = "U16"}, 
-    {field = "timing", type = "U16"}, 
-    {field = "lv_bec_voltage", type = "U16"}, 
-    {field = "motor_direction", type = "U16"},
-    {field = "gov_p", type = "U16"}, 
-    {field = "gov_i", type = "U16"}, 
-    {field = "acceleration", type = "U16"}, 
-    {field = "auto_restart_time", type = "U16"},
-    {field = "hv_bec_voltage", type = "U16"}, 
-    {field = "startup_power", type = "U16"}, 
-    {field = "brake_type", type = "U16"}, 
-    {field = "brake_force", type = "U16"}, 
-    {field = "sr_function", type = "U16"}, 
-    {field = "capacity_correction", type = "U16"}, 
-    {field = "motor_poles", type = "U16"}, 
-    {field = "led_color", type = "U16"}, 
-    {field = "smart_fan", type = "U16"} 
+-- Define the MSP response data structures with simResponse
+-- Note. simResponse has not been included - we have a hard
+-- structure for xdfly.  this is because xdfly includes an
+-- extra bit that flags up if the field is or is not value
+-- its a bit messy and we need to handle it differently
+local MSP_API_STRUCTURE_READ_DATA = {
+    {field = "esc_signature",       type = "U8",  apiVersion = 12.08},
+    {field = "esc_command",         type = "U8",  apiVersion = 12.08},
+    {field = "esc_model",           type = "U8",  apiVersion = 12.08},
+    {field = "esc_version",         type = "U8",  apiVersion = 12.08},
+    {field = "governor",            type = "U16", apiVersion = 12.08},
+    {field = "cell_cutoff",         type = "U16", apiVersion = 12.08},
+    {field = "timing",              type = "U16", apiVersion = 12.08},
+    {field = "lv_bec_voltage",      type = "U16", apiVersion = 12.08},
+    {field = "motor_direction",     type = "U16", apiVersion = 12.08},
+    {field = "gov_p",               type = "U16", apiVersion = 12.08},
+    {field = "gov_i",               type = "U16", apiVersion = 12.08},
+    {field = "acceleration",        type = "U16", apiVersion = 12.08},
+    {field = "auto_restart_time",   type = "U16", apiVersion = 12.08},
+    {field = "hv_bec_voltage",      type = "U16", apiVersion = 12.08},
+    {field = "startup_power",       type = "U16", apiVersion = 12.08},
+    {field = "brake_type",          type = "U16", apiVersion = 12.08},
+    {field = "brake_force",         type = "U16", apiVersion = 12.08},
+    {field = "sr_function",         type = "U16", apiVersion = 12.08},
+    {field = "capacity_correction", type = "U16", apiVersion = 12.08},
+    {field = "motor_poles",         type = "U16", apiVersion = 12.08},
+    {field = "led_color",           type = "U16", apiVersion = 12.08},
+    {field = "smart_fan",           type = "U16", apiVersion = 12.08}
 }
 
+-- filter the structure to remove any params not supported by the running api version
+local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
 
--- Process msp structure to get version that works for api Version
-local MSP_MIN_BYTES, MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterStructure(MSP_API_STRUCTURE_READ) 
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ -- Assuming identical structure for now
+-- calculate the min bytes value from the structure
+local MSP_MIN_BYTES = rfsuite.bg.msp.api.calculateMinBytes(MSP_API_STRUCTURE_READ)
 
--- Check if the simulator response contains enough data
-if #MSP_API_SIMULATOR_RESPONSE < MSP_MIN_BYTES then
-    error("MSP_API_SIMULATOR_RESPONSE does not contain enough data to satisfy MSP_MIN_BYTES")
-end
+-- set read structure
+local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
+
+-- generate a simulatorResponse from the read structure
+local MSP_API_SIMULATOR_RESPONSE = {166, 64, 20, 4, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 4, 0, 3, 0, 2, 0, 1, 0, 7, 0, 1, 0, 0, 0, 0, 0, 0, 0, 10, 0, 1, 0, 0, 0, 0, 0, 238, 255, 1, 0}
 
 -- Variable to store parsed MSP data
 local mspData = nil

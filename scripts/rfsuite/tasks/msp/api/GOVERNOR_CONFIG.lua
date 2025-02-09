@@ -17,38 +17,38 @@
 -- Constants for MSP Commands
 local MSP_API_CMD_READ = 142 -- Command identifier for MSP Mixer Config Read
 local MSP_API_CMD_WRITE = 143 -- Command identifier for saving Mixer Config Settings
-local MSP_API_SIMULATOR_RESPONSE = {3, 100, 0, 100, 0, 20, 0, 20, 0, 30, 0, 10, 0, 0, 0, 0, 0, 50, 0, 10, 5, 10, 0, 10, 5} -- Default simulator response
 
 -- define msp structure for reading and writing
-local MSP_API_STRUCTURE_READ = {
-    {field = "gov_mode", type = "U8"},
-    {field = "gov_startup_time", type = "U16"},
-    {field = "gov_spoolup_time", type = "U16"},
-    {field = "gov_tracking_time", type = "U16"},
-    {field = "gov_recovery_time", type = "U16"},
-    {field = "gov_zero_throttle_timeout", type = "U16"},
-    {field = "gov_lost_headspeed_timeout", type = "U16"},
-    {field = "gov_autorotation_timeout", type = "U16"},
-    {field = "gov_autorotation_bailout_time", type = "U16"},
-    {field = "gov_autorotation_min_entry_time", type = "U16"},
-    {field = "gov_handover_throttle", type = "U8"},
-    {field = "gov_pwr_filter", type = "U8"},
-    {field = "gov_rpm_filter", type = "U8"},
-    {field = "gov_tta_filter", type = "U8"},
-    {field = "gov_ff_filter", type = "U8"},
-    {field = "gov_spoolup_min_throttle", type = "U8", apiVersion = 12.08}
+local MSP_API_STRUCTURE_READ_DATA = {
+    {field = "gov_mode",                        type = "U8",  apiVersion = 12.06, simResponse = {3}},
+    {field = "gov_startup_time",                type = "U16", apiVersion = 12.06, simResponse = {100, 0}},
+    {field = "gov_spoolup_time",                type = "U16", apiVersion = 12.06, simResponse = {100, 0}},
+    {field = "gov_tracking_time",               type = "U16", apiVersion = 12.06, simResponse = {20, 0}},
+    {field = "gov_recovery_time",               type = "U16", apiVersion = 12.06, simResponse = {20, 0}},
+    {field = "gov_zero_throttle_timeout",       type = "U16", apiVersion = 12.06, simResponse = {30, 0}},
+    {field = "gov_lost_headspeed_timeout",      type = "U16", apiVersion = 12.06, simResponse = {10, 0}},
+    {field = "gov_autorotation_timeout",        type = "U16", apiVersion = 12.06, simResponse = {0, 0}},
+    {field = "gov_autorotation_bailout_time",   type = "U16", apiVersion = 12.06, simResponse = {0, 0}},
+    {field = "gov_autorotation_min_entry_time", type = "U16", apiVersion = 12.06, simResponse = {50, 0}},
+    {field = "gov_handover_throttle",           type = "U8",  apiVersion = 12.06, simResponse = {10}},
+    {field = "gov_pwr_filter",                  type = "U8",  apiVersion = 12.06, simResponse = {5}},
+    {field = "gov_rpm_filter",                  type = "U8",  apiVersion = 12.06, simResponse = {10}},
+    {field = "gov_tta_filter",                  type = "U8",  apiVersion = 12.06, simResponse = {0}},
+    {field = "gov_ff_filter",                   type = "U8",  apiVersion = 12.06, simResponse = {10}},
+    {field = "gov_spoolup_min_throttle",        type = "U8",  apiVersion = 12.08, simResponse = {5}},
 }
 
+-- filter the structure to remove any params not supported by the running api version
+local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
 
+-- calculate the min bytes value from the structure
+local MSP_MIN_BYTES = rfsuite.bg.msp.api.calculateMinBytes(MSP_API_STRUCTURE_READ)
 
--- Process msp structure to get version that works for api Version
-local MSP_MIN_BYTES, MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterStructure(MSP_API_STRUCTURE_READ) 
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ -- Assuming identical structure for now
+-- set read structure
+local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
 
--- Check if the simulator response contains enough data
-if #MSP_API_SIMULATOR_RESPONSE < MSP_MIN_BYTES then
-    error("MSP_API_SIMULATOR_RESPONSE does not contain enough data to satisfy MSP_MIN_BYTES")
-end
+-- generate a simulatorResponse from the read structure
+local MSP_API_SIMULATOR_RESPONSE = rfsuite.bg.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
 
 -- Variable to store parsed MSP data
 local mspData = nil

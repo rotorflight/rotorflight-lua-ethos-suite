@@ -585,6 +585,10 @@ local function onToolMenu(self)
 
 end
 
+local function onReloadMenu()
+    rfsuite.app.triggers.triggerReloadFull = true
+end
+
 return {
     -- not changing to custom api at present due to complexity of read/write scenario in these modules
     title = "Servos",
@@ -602,6 +606,7 @@ return {
     openPage = openPage,
     onNavMenu = onNavMenu,
     onSaveMenu = onSaveMenu,
+    onReloadMenu = onReloadMenu,
     pageTitle = "Servos",
     navButtons = {menu = true, save = true, reload = true, tool = true, help = true}
 
