@@ -1324,7 +1324,7 @@ function status.paint(widget)
                 zippo = 0
             end
             -- low
-            if status.sensors.voltage / 100 < ((cellVoltage * status.cellsParam) + zippo) then
+            if status.cellsParam and status.sensors.voltage / 100 < ((cellVoltage * status.cellsParam) + zippo) then
                 -- only do audio alert if between a range
                 if status.sensors.voltage / 100 > ((cellVoltage * status.cellsParam / 2) + zippo) then
                     status.voltageIsLowAlert = true
