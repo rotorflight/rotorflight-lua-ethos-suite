@@ -454,7 +454,7 @@ local function saveSettings()
     -- otherwise we revert to using app.Page.read using actual msp id numbers
     local methodType, methodTarget = app.mspMethodType(1)
 
-    print("Saving: " , "MethodType: " .. methodType, "MethodTarget: " .. methodTarget)
+    print("Writing: " , "MethodType: " .. methodType, "MethodTarget: " .. methodTarget)
 
     local payload = app.Page.values
 
