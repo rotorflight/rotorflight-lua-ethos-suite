@@ -174,6 +174,13 @@ end
 
 function ui.openMainMenu()
 
+    -- clear old icons
+    for i,v in pairs(rfsuite.app.gfx_buttons) do
+        if i ~= "mainmenu" then
+            rfsuite.app.gfx_buttons[i] = nil
+        end
+    end
+
     -- hard exit on error
     if rfsuite.utils.ethosVersion() < rfsuite.config.ethosVersion then return end
 
