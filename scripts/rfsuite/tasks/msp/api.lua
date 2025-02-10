@@ -207,11 +207,13 @@ function apiLoader.parseMSPData(buf, structure, processed, other)
         local extra_bytes = #buf - (offset - 1)
         rfsuite.utils.log("Warning: " .. active_api_name .. " Unused bytes in buffer (" .. extra_bytes .. " extra bytes)")
         print("Warning: " .. active_api_name .. " Unused bytes in buffer (" .. extra_bytes .. " extra bytes)")
-        print("Check if using supported firmware")    
+        print("Check if using supported firmware") 
+        rfsuite.app.triggers.showUnderUsedBufferWarning = true
     elseif offset > #buf + 1 then
         print("Error: " .. active_api_name .. " Offset exceeded buffer length (Offset: " .. offset .. ", Buffer: " .. #buf .. ")")
         print("Likely caused by incorrect structure or buffer corruption.")
-        print("Check if using supported firmware")   
+        print("Check if using supported firmware") 
+        rfsuite.app.triggers.showOverUsedBufferWarning = true
     end
 
 

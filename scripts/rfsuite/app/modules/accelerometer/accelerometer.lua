@@ -7,8 +7,6 @@ fields[#fields + 1] = {t = "Pitch", help = "accelerometerTrim", xmin = -300, max
 local function postLoad(self)
     rfsuite.app.triggers.isReady = true
 
-    rfsuite.utils.print_r(self.API.data())
-
 end
 
 return {
