@@ -70,17 +70,16 @@ function msp.onConnectBgChecks()
             local API = msp.api.load("API_VERSION")
             API.setCompleteHandler(function(self, buf)
                 rfsuite.config.apiVersion = API.readVersion()
-                rfsuite.utils.log("API version: " .. rfsuite.config.apiVersion)
+                print("API version: " .. rfsuite.config.apiVersion)
             end)
             API.read()
-            -- sync the clock
-            print(rfsuite.config.apiVersion)
+
         elseif rfsuite.config.clockSet == nil and msp.mspQueue:isProcessed() then
 
             local API = msp.api.load("RTC", 1)
             API.setCompleteHandler(function(self, buf)
                 rfsuite.config.clockSet = true
-                rfsuite.utils.log("Sync clock: " .. os.clock())
+                print("Sync clock: " .. os.clock())
             end)
 
             API.write()
@@ -238,7 +237,9 @@ function msp.wakeup()
         msp.mspQueue:processQueue()
 
         -- checks that run on each connection to the fbl
-        if msp.onConnectChecksInit == true then msp.onConnectBgChecks() end
+        if msp.onConnectChecksInit == true then 
+            msp.onConnectBgChecks() 
+        end
     else
         msp.mspQueue:clear()
     end
