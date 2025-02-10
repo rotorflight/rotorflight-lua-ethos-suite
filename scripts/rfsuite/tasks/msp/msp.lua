@@ -118,10 +118,9 @@ function msp.onConnectBgChecks()
         elseif (rfsuite.config.servoOverride == nil) and msp.mspQueue:isProcessed() then
 
             local API = msp.api.load("SERVO_OVERRIDE")
-            API.read(rfsuite.config.servoCount)
+            API.read()
             if API.readComplete() then
-                local data = API.data().parsed
-                for i,v in ipairs(data) do
+                for i,v in pairs(API.data().parsed) do
                     if v == 0 then
                         rfsuite.utils.log("Servo override: true (" .. i .. ")")
                         rfsuite.config.servoOverride = true
