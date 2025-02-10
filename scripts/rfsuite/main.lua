@@ -40,6 +40,8 @@ config.logEnable = false                                            -- will writ
 config.logEnableScreen = false                                      -- if config.logEnable is true then also print to screen [default = false]
 config.mspTxRxDebug = false                                         -- print out the packets being sent and received [default = false]
 config.mspApiPositionMapDebug = false                               -- print out a map of the api positions [default = false]
+config.mspApiStructureDebug = false                                 -- print out the structure data from the api [default = false]
+config.mspApiParsedDebug = false                                    -- print out the parsed data from the api [default = false]
 config.flightLog = true                                             -- will write a flight log into /scripts/rfsuite/logs/<modelname>/*.log
 config.reloadOnSave = false                                         -- trigger a reload on save [default = false]
 config.skipRssiSensorCheck = false                                  -- skip checking for a valid rssi [ default = false]

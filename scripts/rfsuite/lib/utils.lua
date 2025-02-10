@@ -23,6 +23,23 @@ local utils = {}
 local arg = {...}
 local config = arg[1]
 
+function utils.sanitize_filename(str)
+
+    -- quick exit if bad
+    if str == nil then
+        return nil
+    end
+
+    -- Trim leading and trailing whitespace
+    str = str:match("^%s*(.-)%s*$")
+    
+    -- Remove unsafe filename characters: / \ : * ? " < > | (Windows restrictions)
+    -- You can modify this pattern based on your specific OS requirements
+    str = str:gsub('[\\/:"*?<>|]', '')
+
+    return str
+end
+
 function utils.dir_exists(base, name)
     list = system.listFiles(base)
     for i, v in pairs(list) do if v == name then return true end end
