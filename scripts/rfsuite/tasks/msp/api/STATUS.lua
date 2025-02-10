@@ -19,7 +19,7 @@ local MSP_API_CMD_READ = 101 -- Command identifier
 local MSP_API_CMD_WRITE = nil -- Command identifier 
 
 -- Define the MSP response data structures
-local MSP_API_STRUCTURE_READ = {
+local MSP_API_STRUCTURE_READ_DATA = {
     {field = "task_delta_time_pid",                type = "U16", apiVersion = 12.06, simResponse = {252, 1}},
     {field = "task_delta_time_gyro",               type = "U16", apiVersion = 12.06, simResponse = {127, 0}},
     {field = "sensor_status",                      type = "U16", apiVersion = 12.06, simResponse = {35, 0}},

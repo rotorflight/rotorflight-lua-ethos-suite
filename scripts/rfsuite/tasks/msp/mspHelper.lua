@@ -17,15 +17,10 @@
 ]] --
 local mspHelper = {}
 
-local function debugPrint(message)
-    print("[MSP HELPER DEBUG] " .. message)
-    if system:getVersion().simulation == true then print("Check MSP_API_SIMULATOR_RESPONSE matches structure") end
-end
 
 mspHelper.readU8 = function(buf)
     local offset = buf.offset or 1
     if not buf[offset] then
-        debugPrint("Nil offset found in readU8 at position " .. offset)
         return nil
     end
     local value = buf[offset]
@@ -36,7 +31,6 @@ end
 mspHelper.readS8 = function(buf)
     local offset = buf.offset or 1
     if not buf[offset] then
-        debugPrint("Nil offset found in readS8 at position " .. offset)
         return nil
     end
     local value = buf[offset]
@@ -48,7 +42,6 @@ end
 mspHelper.readU16 = function(buf, byteorder)
     local offset = buf.offset or 1
     if not buf[offset] or not buf[offset + 1] then
-        debugPrint("Nil offset found in readU16 at position " .. offset)
         return nil
     end
     local value = (buf[offset] or 0) + (buf[offset + 1] or 0) * 256
@@ -60,7 +53,6 @@ end
 mspHelper.readS16 = function(buf, byteorder)
     local value = mspHelper.readU16(buf, byteorder)
     if value == nil then
-        debugPrint("Nil value found in readS16")
         return nil
     end
     if value >= 32768 then value = value - 65536 end
@@ -71,7 +63,6 @@ end
 mspHelper.readU24 = function(buf, byteorder)
     local offset = buf.offset or 1
     if not buf[offset] or not buf[offset + 2] then
-        debugPrint("Nil offset found in readU24 at position " .. offset)
         return nil
     end
     local value = (buf[offset] or 0) + (buf[offset + 1] or 0) * 256 + (buf[offset + 2] or 0) * 65536
@@ -83,7 +74,6 @@ end
 mspHelper.readS24 = function(buf, byteorder)
     local value = mspHelper.readU24(buf, byteorder)
     if value == nil then
-        debugPrint("Nil value found in readS24")
         return nil
     end
     if value >= 8388608 then value = value - 16777216 end
@@ -93,7 +83,6 @@ end
 mspHelper.readU32 = function(buf, byteorder)
     local offset = buf.offset or 1
     if not buf[offset] or not buf[offset + 3] then
-        debugPrint("Nil offset found in readU32 at position " .. offset)
         return nil
     end
     local value = (buf[offset] or 0) + (buf[offset + 1] or 0) * 256 + (buf[offset + 2] or 0) * 65536 + (buf[offset + 3] or 0) * 16777216
@@ -105,7 +94,6 @@ end
 mspHelper.readS32 = function(buf, byteorder)
     local value = mspHelper.readU32(buf, byteorder)
     if value == nil then
-        debugPrint("Nil value found in readS32")
         return nil
     end
     if value >= 2147483648 then value = value - 4294967296 end
@@ -115,7 +103,6 @@ end
 mspHelper.readU48 = function(buf, byteorder)
     local offset = buf.offset or 1
     if not buf[offset] or not buf[offset + 5] then
-        debugPrint("Nil offset found in readU48 at position " .. offset)
         return nil
     end
     local value = 0
@@ -135,7 +122,6 @@ end
 mspHelper.readS48 = function(buf, byteorder)
     local value = mspHelper.readU48(buf, byteorder)
     if value == nil then
-        debugPrint("Nil value found in readS48")
         return nil
     end
     if value >= 2^47 then value = value - 2^48 end
@@ -145,7 +131,6 @@ end
 mspHelper.readU64 = function(buf, byteorder)
     local offset = buf.offset or 1
     if not buf[offset] or not buf[offset + 7] then
-        debugPrint("Nil offset found in readU64 at position " .. offset)
         return nil
     end
     local value = 0
@@ -165,7 +150,6 @@ end
 mspHelper.readS64 = function(buf, byteorder)
     local value = mspHelper.readU64(buf, byteorder)
     if value == nil then
-        debugPrint("Nil value found in readS64")
         return nil
     end
     if value >= 2^63 then value = value - 2^64 end
@@ -175,7 +159,6 @@ end
 mspHelper.readU72 = function(buf, byteorder)
     local offset = buf.offset or 1
     if not buf[offset] or not buf[offset + 8] then
-        debugPrint("Nil offset found in readU72 at position " .. offset)
         return nil
     end
     local value = 0
@@ -195,7 +178,6 @@ end
 mspHelper.readS72 = function(buf, byteorder)
     local value = mspHelper.readU72(buf, byteorder)
     if value == nil then
-        debugPrint("Nil value found in readS72")
         return nil
     end
     if value >= 2^71 then value = value - 2^72 end
@@ -205,7 +187,6 @@ end
 mspHelper.readU128 = function(buf, byteorder)
     local offset = buf.offset or 1
     if not buf[offset] or not buf[offset + 15] then
-        debugPrint("Nil offset found in readU128 at position " .. offset)
         return nil
     end
     local value = 0
@@ -225,7 +206,6 @@ end
 mspHelper.readS128 = function(buf, byteorder)
     local value = mspHelper.readU128(buf, byteorder)
     if value == nil then
-        debugPrint("Nil value found in readS128")
         return nil
     end
     if value >= 2^127 then value = value - 2^128 end

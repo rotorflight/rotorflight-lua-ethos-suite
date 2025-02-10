@@ -384,7 +384,7 @@ function app.mspMethodType(rw)
     -- First, prioritize the read/write method based on rw
     if type(target) == "function" then
         methodType = "function"
-        retTgt = target
+        retTgt = "function"
     elseif type(target) == "number" then
         methodType = "id"
         retTgt = target
@@ -412,7 +412,7 @@ function app.readPage()
     -- otherwise we revert to using app.Page.read using actual msp id numbers
     local methodType, methodTarget = app.mspMethodType(0)
 
-    print("Reading: " , "MethodType: " .. methodType, "MethodTarget: " .. methodTarget)
+    print("Reading: " , "Method: " .. methodType, "MethodTarget: " .. methodTarget)
 
     if  methodType == "api" then -- api
         app.Page.API = rfsuite.bg.msp.api.load(app.Page.mspapi, 0)

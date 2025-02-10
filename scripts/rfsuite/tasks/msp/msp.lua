@@ -99,18 +99,18 @@ function msp.onConnectBgChecks()
             API.setCompleteHandler(function(self, buf)
                 rfsuite.config.tailMode = API.readValue("tail_rotor_mode")
                 rfsuite.config.swashMode = API.readValue("swash_type")
-                rfsuite.utils.log("Tail mode: " .. rfsuite.config.tailMode)
-                rfsuite.utils.log("Swash mode: " .. rfsuite.config.swashMode)
+                print("Tail mode: " .. rfsuite.config.tailMode)
+                print("Swash mode: " .. rfsuite.config.swashMode)
             end)
             API.read()
 
             -- get servo configuration
         elseif (rfsuite.config.servoCount == nil) and msp.mspQueue:isProcessed() then
 
-            local API = msp.api.load("SERVO_CONFIGURATIONS")
+            local API = msp.api.load("STATUS")
             API.setCompleteHandler(function(self, buf)
                 rfsuite.config.servoCount = API.readValue("servo_count")
-                rfsuite.utils.log("Servo count: " .. rfsuite.config.servoCount)
+                print("Servo count: " .. rfsuite.config.servoCount)
             end)
             API.read()
 
@@ -120,15 +120,12 @@ function msp.onConnectBgChecks()
             local API = msp.api.load("SERVO_OVERRIDE")
             API.read(rfsuite.config.servoCount)
             if API.readComplete() then
-                local data = API.data()
-                local buf = data['buffer']
-                for i = 0, rfsuite.config.servoCount do
-                    buf.offset = i
-                    local servoOverride = msp.mspHelper.readU8(buf)
-                    if servoOverride == 0 then
-                        rfsuite.utils.log("Servo override: true")
+                local data = API.data().parsed
+                for i,v in ipairs(data) do
+                    if v == 0 then
+                        rfsuite.utils.log("Servo override: true (" .. i .. ")")
                         rfsuite.config.servoOverride = true
-                    end
+                    end    
                 end
                 if rfsuite.config.servoOverride == nil then rfsuite.config.servoOverride = false end
             end
@@ -150,7 +147,7 @@ function msp.onConnectBgChecks()
             local API = msp.api.load("PILOT_CONFIG")
             API.setCompleteHandler(function(self, buf)
                 local model_id = API.readValue("model_id")
-                rfsuite.utils.log("Model id: " .. model_id)
+                print("Model id: " .. model_id)
                 rfsuite.config.modelID = model_id
             end)
             API.read()
@@ -170,7 +167,7 @@ function msp.onConnectBgChecks()
                     lcd.invalidate()
                 end
 
-                if rfsuite.config.craftName then rfsuite.utils.log("Craft name: " .. rfsuite.config.craftName) end
+                if rfsuite.config.craftName then print("Craft name: " .. rfsuite.config.craftName) end
 
                 -- do this at end of last one
                 msp.onConnectChecksInit = false

@@ -50,11 +50,12 @@ end
 -- Function to initiate MSP read operation
 local function read(servoCount)
     if servoCount == nil then servoCount = 4 end
+
     local message = {
         command = MSP_API_CMD_READ, -- Specify the MSP command
         processReply = function(self, buf)
             -- Parse the MSP data using the defined structure
-            local MSP_API_STRUCTURE_READ = readStructure(servoCount)
+            MSP_API_STRUCTURE_READ = readStructure(servoCount)
 
             mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE_READ)
             if #buf >= MSP_MIN_BYTES then
