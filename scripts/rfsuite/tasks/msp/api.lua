@@ -28,10 +28,10 @@ local apiCache = {}
 local apidir = "tasks/msp/api/"
 local api_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and apidir or (config.suiteDir .. apidir)
 
--- Function to load a specific API file by name and method
+-- Function to load a specific API file by name
 local function loadAPI(apiName)
 
-    -- Return cached version if already loaded for this method
+    -- Return cached version if already loaded
     if apiCache[apiName] then return apiCache[apiName] end
 
     local apiFilePath = api_path .. apiName .. ".lua"
@@ -64,8 +64,8 @@ end
 
 -- Function to directly return the API table instead of a wrapper function
 function apiLoader.load(apiName)
-    print("apiLoader.load: ", apiName)
-    return loadAPI(apiName, method) or {} -- Return an empty table if API fails to load
+    --print("apiLoader.load: ", apiName)
+    return loadAPI(apiName) or {} -- Return an empty table if API fails to load
 end
 
 

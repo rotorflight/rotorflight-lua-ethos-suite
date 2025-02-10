@@ -325,7 +325,7 @@ local function processPageReply(source, buf, methodType)
     rfsuite.utils.log("app.Page is processing reply for cmd " .. tostring(source.command) .. " len buf: " .. #buf .. " expected: " .. app.Page.minBytes .. " (Method: " .. methodType .. ")")
 
     -- ensure page.values contains a copy of the buffer
-    if methodType == "string" or methodType == "api" then
+    if methodType == "api" then
         app.Page.values = buf['buffer']
     else
         app.Page.values = buf
@@ -333,7 +333,7 @@ local function processPageReply(source, buf, methodType)
 
     -- if using the api; then lets do value injection from the api
 
-    if methodType == "string" or methodType == "api" then
+    if methodType == "api" then
         -- inject vals fields based on the positionmap returned by the api call
         if app.Page.fields then
             for i, v in ipairs(app.Page.fields) do
@@ -373,6 +373,33 @@ local mspLoadSettings = {
     end
 }
 
+-- Find out the method we are using to read/write the page
+-- rw = 0 for read, 1 for write
+function app.mspMethodType(rw)
+    local target = rw == 1 and app.Page.write or app.Page.read
+    local methodType
+    local retType
+    local retTgt
+
+    -- First, prioritize the read/write method based on rw
+    if type(target) == "function" then
+        methodType = "function"
+        retTgt = target
+    elseif type(target) == "number" then
+        methodType = "id"
+        retTgt = target
+    -- If no read/write method found, fallback to mspapi
+    elseif type(app.Page.mspapi) == "string" then
+        methodType = "api"
+        retTgt = app.Page.mspapi
+    else
+        methodType = nil
+        retTgt = nil
+    end
+
+    return methodType, retTgt
+end
+
 -- Read a page via msp
 -- This code supports a few different ways of knowing how to do the call - in the end its determined by the return response of app.Page.read
 -- If app.Page.read returns:
@@ -383,13 +410,15 @@ function app.readPage()
 
     -- check mspapi and if it returns (should always be a string) then proceed
     -- otherwise we revert to using app.Page.read using actual msp id numbers
-    local methodType = app.Page.mspapi and type(app.Page.mspapi) or app.Page.read and type(app.Page.read) or nil
+    local methodType, methodTarget = app.mspMethodType(0)
 
-    if methodType == "string" or methodType == "api" then -- api
+    print("Reading: " , "MethodType: " .. methodType, "MethodTarget: " .. methodTarget)
+
+    if  methodType == "api" then -- api
         app.Page.API = rfsuite.bg.msp.api.load(app.Page.mspapi, 0)
 
         app.Page.API.setCompleteHandler(function(self, buf)
-            processPageReply(self, app.Page.API.data(), "api")
+            processPageReply(self, app.Page.API.data(), methodType)
         end)
 
         app.Page.API.read()
@@ -397,7 +426,7 @@ function app.readPage()
     elseif methodType == "function" then -- function
         app.Page.read(app.Page)
 
-    elseif methodType == "number" then -- msp id
+    elseif methodType == "id" then -- msp id
         mspLoadSettings.command = app.Page.read
         mspLoadSettings.simulatorResponse = app.Page.simulatorResponse
         rfsuite.bg.msp.mspQueue:add(mspLoadSettings)
@@ -423,7 +452,9 @@ local function saveSettings()
 
     -- check mspapi and if it returns (should always be a string) then proceed
     -- otherwise we revert to using app.Page.read using actual msp id numbers
-    local methodType = app.Page.mspapi and type(app.Page.mspapi) or app.Page.read and type(app.Page.write) or nil
+    local methodType, methodTarget = app.mspMethodType(1)
+
+    print("Writing: " , "MethodType: " .. methodType, "MethodTarget: " .. methodTarget)
 
     local payload = app.Page.values
 
@@ -438,11 +469,11 @@ local function saveSettings()
     end
 
     -- API-based save method
-    if methodType == "string" or methodType == "api" then
+    if methodType == "api" then
 
-        -- defineit if missing
+        -- define it if missing
         if app.Page.API == nil then
-            app.Page.API = rfsuite.bg.msp.api.load(app.Page.mspapi, 1)
+            app.Page.API = rfsuite.bg.msp.api.load(app.Page.mspapi)
         end
 
         app.Page.API.setCompleteHandler(function(self, buf)
@@ -453,10 +484,10 @@ local function saveSettings()
         end)
 
         if rfsuite.config.mspTxRxDebug or rfsuite.config.logEnable then logPayload() end
-        API.write(payload)
+        app.Page.API.write(payload)
 
         -- Legacy method using an ID
-    elseif methodType == "number" and app.Page.values then
+    elseif methodType == "id" and app.Page.values then
         if rfsuite.config.mspTxRxDebug or rfsuite.config.logEnable then logPayload() end
 
         mspSaveSettings.command = app.Page.write
