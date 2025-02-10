@@ -800,7 +800,9 @@ function app.wakeupUI()
         local warningTime = 5  -- Total time for the progress to complete (in seconds)
         local startTime = os.clock()
         
-        local warningLoader = form.openProgressDialog({
+        local warningLoader
+        
+        warningLoader = form.openProgressDialog({
             title = "Protocol structure mismatch.",
             message = message,  
             close = function()
@@ -1175,6 +1177,9 @@ end
 end
 
 function app.create_logtool()
+
+    triggers.showUnderUsedBufferWarning = false
+    triggers.showOverUsedBufferWarning = false
 
     -- config.apiVersion = nil
     config.environment = system.getVersion()
