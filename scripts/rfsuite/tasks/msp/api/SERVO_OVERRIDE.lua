@@ -17,16 +17,34 @@
 -- Constants for MSP Commands
 local MSP_API_CMD_READ = 192 -- Command identifier for MSP Mixer Config Read
 local MSP_API_CMD_WRITE = 193 -- Command identifier for saving Mixer Config Settings
-local MSP_API_SIMULATOR_RESPONSE = {209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7} -- Default simulator response
-local MSP_MIN_BYTES = 3
+
+
 
 -- Define the MSP response data structures
-local MSP_API_STRUCTURE_READ = {} -- we dynamically generate this later
+local MSP_API_STRUCTURE_READ_DATA = {
+    {field = "servo_1", type = "U16", apiVersion=12.06, simResponse={209, 7}}, 
+    {field = "servo_2", type = "U16", apiVersion=12.06, simResponse={209, 7}}, 
+    {field = "servo_3", type = "U16", apiVersion=12.06, simResponse={209, 7}}, 
+    {field = "servo_4", type = "U16", apiVersion=12.06, simResponse={209, 7}}, 
+    {field = "servo_5", type = "U16", apiVersion=12.06, simResponse={209, 7}}, 
+    {field = "servo_6", type = "U16", apiVersion=12.06, simResponse={209, 7}}, 
+    {field = "servo_7", type = "U16", apiVersion=12.06, simResponse={209, 7}}, 
+    {field = "servo_8", type = "U16", apiVersion=12.06, simResponse={209, 7}}, 
+}
 
 local MSP_API_STRUCTURE_WRITE = {
                 {field = "servo_id", type = "U8"}, 
-                {field = "action", type = "U16"}
+                {field = "action", type = "U8"}
             }
+
+-- filter the structure to remove any params not supported by the running api version
+local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
+
+-- calculate the min bytes value from the structure
+local MSP_MIN_BYTES = rfsuite.bg.msp.api.calculateMinBytes(MSP_API_STRUCTURE_READ)
+
+-- generate a simulatorResponse from the read structure
+local MSP_API_SIMULATOR_RESPONSE = rfsuite.bg.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
 
 -- Variable to store parsed MSP data
 local mspData = nil
@@ -41,21 +59,13 @@ local handlers = rfsuite.bg.msp.api.createHandlers()
 local MSP_API_UUID
 local MSP_API_MSG_TIMEOUT
 
-local function readStructure(count)
-    local structure = {}
-    for i = 1, count do table.insert(structure, {field = string.format("servo%d", i), type = "U16"}) end
-    return structure
-end
-
 -- Function to initiate MSP read operation
-local function read(servoCount)
-    if servoCount == nil then servoCount = 4 end
+local function read()
+
     local message = {
         command = MSP_API_CMD_READ, -- Specify the MSP command
         processReply = function(self, buf)
             -- Parse the MSP data using the defined structure
-            local MSP_API_STRUCTURE_READ = readStructure(servoCount)
-
             mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE_READ)
             if #buf >= MSP_MIN_BYTES then
                 local completeHandler = handlers.getCompleteHandler()

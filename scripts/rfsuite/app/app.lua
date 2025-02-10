@@ -51,6 +51,9 @@ triggers.invalidConnectionSetup = false
 triggers.wasConnected = false
 triggers.isArmed = false
 triggers.showSaveArmedWarning = false
+triggers.showUnderUsedBufferWarning  = false
+triggers.showOverUsedBufferWarning  = false
+triggers.nomoreBufferWarning = false
 
 rfsuite.config = {}
 rfsuite.config = config
@@ -384,7 +387,7 @@ function app.mspMethodType(rw)
     -- First, prioritize the read/write method based on rw
     if type(target) == "function" then
         methodType = "function"
-        retTgt = target
+        retTgt = "function"
     elseif type(target) == "number" then
         methodType = "id"
         retTgt = target
@@ -412,7 +415,7 @@ function app.readPage()
     -- otherwise we revert to using app.Page.read using actual msp id numbers
     local methodType, methodTarget = app.mspMethodType(0)
 
-    print("Reading: " , "MethodType: " .. methodType, "MethodTarget: " .. methodTarget)
+    print("Reading: " , "Method: " .. methodType, "Target: " .. methodTarget)
 
     if  methodType == "api" then -- api
         app.Page.API = rfsuite.bg.msp.api.load(app.Page.mspapi, 0)
@@ -454,7 +457,7 @@ local function saveSettings()
     -- otherwise we revert to using app.Page.read using actual msp id numbers
     local methodType, methodTarget = app.mspMethodType(1)
 
-    print("Writing: " , "MethodType: " .. methodType, "MethodTarget: " .. methodTarget)
+    print("Writing: " , "MethodType: " .. methodType, "Target: " .. methodTarget)
 
     local payload = app.Page.values
 
@@ -473,6 +476,7 @@ local function saveSettings()
 
         -- define it if missing
         if app.Page.API == nil then
+            print("app.Page.API is missing.. recreating for " .. active_api_name)
             app.Page.API = rfsuite.bg.msp.api.load(app.Page.mspapi)
         end
 
@@ -783,6 +787,40 @@ function app.wakeupUI()
 
         end
         app.ui.progressDisplayNoLinkValue(app.dialogs.nolinkValueCounter)
+    end
+
+    -- display a warning if we trigger one of these events
+    -- we only show this if we are on an actual form for a page.
+    if rfsuite.app.uiState == rfsuite.app.uiStatus.mainMenu then
+        triggers.showUnderUsedBufferWarning = false
+        triggers.showOverUsedBufferWarning = false
+    elseif rfsuite.app.uiState == rfsuite.app.uiStatus.pages and (triggers.showOverUsedBufferWarning or triggers.showUnderUsedBufferWarning) and not triggers.nomoreBufferWarning then
+
+        local message = "It's possible you are not running an official release version."
+        local warningTime = 5  -- Total time for the progress to complete (in seconds)
+        local startTime = os.clock()
+        
+        local warningLoader = form.openProgressDialog({
+            title = "Protocol structure mismatch.",
+            message = message,  
+            close = function()
+                triggers.nomoreBufferWarning = true
+                warningLoader = nil
+            end,
+            wakeup = function()
+                local elapsedTime = os.clock() - startTime
+                local progress = math.min((elapsedTime / warningTime) * 100, 100)
+                warningLoader:value(progress)
+                if progress >= 100 then
+                    warningLoader:close()
+                end
+            end
+        })
+        
+        warningLoader:value(0)
+        app.audio.playBufferWarn = true
+        triggers.showUnderUsedBufferWarning = false
+        triggers.showOverUsedBufferWarning = false
     end
 
     -- a watchdog to enable the close button when saving data if we exheed the save timout
@@ -1115,6 +1153,12 @@ end
             rfsuite.utils.playFileCommon("warn.wav")
             app.audio.playSaveArmed = false
         end
+
+        if app.audio.playBufferWarn == true then
+            rfsuite.utils.playFileCommon("warn.wav")
+            app.audio.playBufferWarn = false
+        end
+
 
     else
         app.audio.playLoading = false

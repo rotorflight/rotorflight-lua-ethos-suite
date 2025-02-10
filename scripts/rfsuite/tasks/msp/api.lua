@@ -27,6 +27,7 @@ local apiCache = {}
 -- Define the API directory path based on the ethos version
 local apidir = "tasks/msp/api/"
 local api_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and apidir or (config.suiteDir .. apidir)
+local active_api_name -- variable to store the api name in use
 
 -- Function to load a specific API file by name
 local function loadAPI(apiName)
@@ -39,8 +40,6 @@ local function loadAPI(apiName)
     -- Check if file exists before trying to load it
     if rfsuite.utils.file_exists(apiFilePath) then
 
-        -- we do this _G to pass a param via dofile.  A little dirty but effective.
-        _G.paramMspApiPath = api_path .. apiName .. "/"
         local apiModule = dofile(apiFilePath) -- Load the Lua API file
 
         if type(apiModule) == "table" and (apiModule.read or apiModule.write) then
@@ -51,13 +50,16 @@ local function loadAPI(apiName)
                 print("--------------------------------------------")
                 print("Loaded API:", apiName)
             end
+            active_api_name = apiName
             return apiModule
         else
-            rfsuite.utils.log("Error: API file '" .. apiName .. "' does not contain valid read or write functions.")
+            print("Error: API file '" .. apiName .. "' does not contain valid read or write functions.")
+            active_api_name = nil
         end
     else
         local logline = "Error: API file '" .. apiFilePath .. " not found."
-        rfsuite.utils.log(logline)
+        print(logline)
+        active_api_name = nil
         error(logline)
     end
 end
@@ -65,21 +67,33 @@ end
 -- Function to directly return the API table instead of a wrapper function
 function apiLoader.load(apiName)
     --print("apiLoader.load: ", apiName)
-    return loadAPI(apiName) or {} -- Return an empty table if API fails to load
+    local api = loadAPI(apiName)
+    if api == nil then
+        print("Unable to load " .. apiName)
+    end
+    return api
 end
 
 
 -- Function to get byte size from type
 local function get_type_size(data_type)
     local type_sizes = {U8 = 1, U16 = 2, U24 = 3, U32 = 4, S8 = 1, S16 = 2, S24 = 3, S32 = 4}
-    return type_sizes[data_type] or 2 -- Default to U16 if unknown
+    return type_sizes[data_type] or 1 -- Default to U8 if unknown
 end
 
 
 -- Function to parse the msp Data.  Optionally pass a processed(buf, structure) to provide more data formating
 function apiLoader.parseMSPData(buf, structure, processed, other)
+    -- Calculate the expected buffer length based on the structure
+    local expected_length = 0
+    for _, field in ipairs(structure) do
+        expected_length = expected_length + get_type_size(field.type)
+    end
+
     -- Ensure buffer length matches expected data structure
-    if #buf < #structure then return nil end
+    if #buf < expected_length then
+        print("Error: Buffer too small. Expected " .. expected_length .. ", got " .. #buf)
+    end
 
     local parsedData = {}
     local offset = 1 -- Maintain a strict offset tracking
@@ -90,7 +104,10 @@ function apiLoader.parseMSPData(buf, structure, processed, other)
         local position_map = {}
         local current_byte = 1 -- Track the byte position dynamically
 
-        if rfsuite.config.mspApiPositionMapDebug == true then print("------  mspApiPositionMapDebug start ------") end
+        if rfsuite.config.mspApiPositionMapDebug == true then 
+            print("------  " .. active_api_name .. "  ------")
+            print("------  mspApiPositionMapDebug start ------") 
+        end
 
         for _, param in ipairs(param_table) do
             -- Check API version conditions
@@ -102,13 +119,13 @@ function apiLoader.parseMSPData(buf, structure, processed, other)
             else
                 insert_param = false
             end
-        
+
             if insert_param then
                 local size = get_type_size(param.type)
                 local start_pos = current_byte
                 local end_pos = start_pos + size - 1
                 local byteorder = param.byteorder or "little" -- Default to little-endian
-        
+
                 -- Store as single number if start and end are the same
                 if start_pos == end_pos then
                     position_map[param.field] = {start_pos}
@@ -124,10 +141,10 @@ function apiLoader.parseMSPData(buf, structure, processed, other)
                         end
                     end
                 end
-        
+
                 -- Move to the next available byte position
                 current_byte = end_pos + 1
-        
+
                 if rfsuite.config.mspApiPositionMapDebug == true then
                     if start_pos == end_pos then
                         print(param.field .. ": " .. start_pos)
@@ -144,67 +161,87 @@ function apiLoader.parseMSPData(buf, structure, processed, other)
         end
 
         return position_map
-        end
+    end
 
     for _, field in ipairs(structure) do
-
         local byteorder = field.byteorder or "little" -- Default to little-endian
+        local data
 
         if field.type == "U8" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU8(buf, offset)
-            offset = offset + 1
+            data = rfsuite.bg.msp.mspHelper.readU8(buf, offset)
+            offset = offset + 1 -- Added missing increment
+
         elseif field.type == "S8" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS8(buf, offset)
+            data = rfsuite.bg.msp.mspHelper.readS8(buf, offset)
             offset = offset + 1
         elseif field.type == "U16" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU16(buf, offset, byteorder)
+            data = rfsuite.bg.msp.mspHelper.readU16(buf, offset, byteorder)
             offset = offset + 2
         elseif field.type == "S16" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS16(buf, offset, byteorder)
+            data = rfsuite.bg.msp.mspHelper.readS16(buf, offset, byteorder)
             offset = offset + 2
         elseif field.type == "U24" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU24(buf, offset, byteorder)
+            data = rfsuite.bg.msp.mspHelper.readU24(buf, offset, byteorder)
             offset = offset + 3
         elseif field.type == "S24" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS24(buf, offset, byteorder)
+            data = rfsuite.bg.msp.mspHelper.readS24(buf, offset, byteorder)
             offset = offset + 3
         elseif field.type == "U32" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU32(buf, offset, byteorder)
+            data = rfsuite.bg.msp.mspHelper.readU32(buf, offset, byteorder)
             offset = offset + 4
         elseif field.type == "S32" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS32(buf, offset, byteorder)
+            data = rfsuite.bg.msp.mspHelper.readS32(buf, offset, byteorder)
             offset = offset + 4
         else
-            return nil -- Unknown data type, fail safely
+            print("Error: Unknown data type: " .. field.type)
+            return nil -- Exit if unknown data type
         end
+
+        if data == nil then
+            print("Error: Failed to read " .. field.type .. " value for field: " .. field.field .. " at offset: " .. offset .. " for api: " .. active_api_name) 
+        end   
+        parsedData[field.field] = data
     end
 
-    -- Detect unused bytes
     if offset <= #buf then
-        rfsuite.utils.log("Warning: Unused bytes in buffer (" .. (#buf - offset + 1) .. " extra bytes)")
-        print("Warning: Unused bytes in buffer (" .. (#buf - offset + 1) .. " extra bytes)")
+        local extra_bytes = #buf - (offset - 1)
+        rfsuite.utils.log("Warning: " .. active_api_name .. " Unused bytes in buffer (" .. extra_bytes .. " extra bytes)")
+        print("Warning: " .. active_api_name .. " Unused bytes in buffer (" .. extra_bytes .. " extra bytes)")
+        print("Check if using supported firmware") 
+        rfsuite.app.triggers.showUnderUsedBufferWarning = true
+    elseif offset > #buf + 1 then
+        print("Error: " .. active_api_name .. " Offset exceeded buffer length (Offset: " .. offset .. ", Buffer: " .. #buf .. ")")
+        print("Likely caused by incorrect structure or buffer corruption.")
+        print("Check if using supported firmware") 
+        rfsuite.app.triggers.showOverUsedBufferWarning = true
     end
 
-    -- prepare data for return
+
+    -- Prepare data for return
     local data = {}
     data['parsed'] = parsedData
     data['buffer'] = buf
     data['structure'] = structure
     data['positionmap'] = build_position_map(structure)
-    -- add in processed table if supplied
+    -- Add in processed table if supplied
     if processed then data['processed'] = processed end
-    -- add in other table if supplied
+    -- Add in other table if supplied
     if other then data['other'] = other end
 
     if rfsuite.config.mspApiStructureDebug == true then rfsuite.utils.print_r(data['structure']) end
-
     if rfsuite.config.mspApiParsedDebug == true then rfsuite.utils.print_r(data['parsed']) end
 
     return data
 end
 
+
 -- Function to calculate MIN_BYTES and filtered structure
 function apiLoader.calculateMinBytes(structure)
+
+    if structure == nil then
+        print(active_api_name .. " No structure suppled to apiLoader.calculateMinBytes")
+        return
+    end
 
     local apiVersion = rfsuite.config.apiVersion
     local totalBytes = 0
@@ -231,6 +268,11 @@ end
 
 -- Function to strip filtered structure based on msp version
 function apiLoader.filterByApiVersion(structure)
+
+    if structure == nil then
+        print(active_api_name .. " No structure suppled to apiLoader.filterByApiVersion")
+        return 
+    end
 
     local apiVersion = rfsuite.config.apiVersion or 12.06
     local filteredStructure = {}
