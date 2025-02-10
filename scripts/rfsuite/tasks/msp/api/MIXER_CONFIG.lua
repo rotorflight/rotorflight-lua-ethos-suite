@@ -33,8 +33,8 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "swash_trim_2",                   type = "U16", apiVersion = 12.06, simResponse = {87, 254}},
     {field = "swash_tta_precomp",              type = "U8",  apiVersion = 12.06, simResponse = {0}},
     {field = "swash_geo_correction",           type = "U8",  apiVersion = 12.07, simResponse = {0}},
-    {field = "collective_tilt_correction_pos", type = "S8",  apiVersion = 12.08, simResponse = {40}},
-    {field = "collective_tilt_correction_neg", type = "S8",  apiVersion = 12.08, simResponse = {138}},
+    {field = "collective_tilt_correction_pos", type = "S8",  apiVersion = 12.08, simResponse = {0}},
+    {field = "collective_tilt_correction_neg", type = "S8",  apiVersion = 12.08, simResponse = {10}},
 }
 
 -- filter the structure to remove any params not supported by the running api version
