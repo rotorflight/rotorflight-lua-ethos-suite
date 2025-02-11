@@ -215,6 +215,9 @@ function utils.ethosVersionToMinor()
     return v
 end
 
+-- this function is only uised on init connect to verify presense of a link
+-- it should not be used once bgtasks are running
+-- you can use rssiSOURCE = rfsuite.bg.telemetry.getSensorSource("rssi") 
 function utils.getRssiSensor()
     local rssiSensor
     local rssiNames = {"RSSI", "RSSI 2.4G", "RSSI 900M", "Rx RSSI1", "Rx RSSI2", "RSSI Int", "RSSI Ext", "RSSI Lora"}

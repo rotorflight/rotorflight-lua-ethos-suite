@@ -40,9 +40,25 @@ local sensorTable = {
     rssi = {
         name = "RSSI",
         mandatory = true,
-        sport = {rfsuite.utils.getRssiSensor()},
-        customCRSF = {rfsuite.utils.getRssiSensor()},
-        legacyCRSF = {nil}
+        sport = {
+            "RSSI",
+            "RSSI 2.4G",
+            "RSSI 900M",
+            "RSSI Int",
+            "RSSI Ext",
+            "RSSI Lora"
+
+        },
+        customCRSF = {
+            "Rx RSSI1",
+            "Rx RSSI2",
+            "Rx Quality",
+        },
+        legacyCRSF = {
+            "RSSI 1",
+            "RSSI 2",
+            "Rx Quality",
+        }
     },
 
     -- Arm Flags
@@ -72,7 +88,7 @@ local sensorTable = {
         customCRSF = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1011},
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1041},
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1051,
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1051},
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1080},
         },
         legacyCRSF = {"Rx Batt"}

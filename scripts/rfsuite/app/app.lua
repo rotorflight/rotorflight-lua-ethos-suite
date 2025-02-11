@@ -604,6 +604,7 @@ function app.updateTelemetryState()
         app.triggers.telemetryState = app.telemetryStatus.ok
     end
 
+
 end
 
 -- PAINT.  HOOK INTO PAINT FUNCTION TO ALLOW lcd FUNCTIONS TO BE USED

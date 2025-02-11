@@ -2428,7 +2428,7 @@ function status.getSensors()
         adjVALUE = rfsuite.bg.telemetry.getSensorSource("adjV")
         adjvSOURCE = rfsuite.bg.telemetry.getSensorSource("adjV")
         mahSOURCE = rfsuite.bg.telemetry.getSensorSource("capacity")
-        rssiSOURCE = rfsuite.utils.getRssiSensor().sensor
+        rssiSOURCE = rfsuite.bg.telemetry.getSensorSource("rssi") 
         govSOURCE = rfsuite.bg.telemetry.getSensorSource("governor")
 
         if rfsuite.bg.telemetry.getSensorProtocol() == 'customCRSF' then
