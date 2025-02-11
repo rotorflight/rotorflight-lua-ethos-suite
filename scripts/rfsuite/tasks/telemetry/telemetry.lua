@@ -56,7 +56,7 @@ local sensorTable = {
             "Rx Quality",
         },
         legacyCRSF = {
-            {crsfId=0x14, subIdStart=0, subIdEnd=1}
+            {crsfId=0x14, subIdStart=0, subIdEnd=1},
             "RSSI 1",   -- fallback for older versions (should never get here if running ethos 1.6.2 or newer)
             "RSSI 2",
             "Rx Quality",
