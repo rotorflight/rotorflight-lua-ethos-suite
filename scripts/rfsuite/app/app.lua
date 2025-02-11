@@ -349,6 +349,72 @@ local function processPageReply(source, buf, methodType)
             end
         end
 
+        -- inject min/max/defaults etc if present
+        if rfsuite.config.ethosRunningVersion >= 1620 and app.Page.fields and buf.structure then
+            for i, v in ipairs(buf.structure) do
+                local field = v.field
+                for j, f in ipairs(app.Page.fields) do
+
+                    local formField = rfsuite.app.formFields[j]
+
+                    if f.apikey and  f.apikey == field and formField then
+                        
+                        if f.t then
+                                print("Setting values for: " .. f.t)
+                        end
+
+                        if (f.scale == nil and v.scale ~= nil)  then 
+                            print("scale: " .. v.scale)
+                            f.scale = v.scale 
+                        end
+                        if (f.mult == nil and v.mult ~= nil) then 
+                            print("mult: " .. v.mult)
+                            f.mult = v.mult 
+                        end
+                        if (f.offset == nil and v.offset ~= nil) then 
+                            print("offset: " .. v.offset)
+                            f.offset = v.offset 
+                        end
+
+                        if (f.decimals == nil and v.decimals ~= nil ) then
+                            print("decimals: " .. v.decimals)
+                            f.decimals = v.decimals
+                            formField:decimals(v.decimals)
+                        end
+                        if (f.unit == nil and v.unit ~= nil)  then
+                            if v.unit == "°" then
+                                print("unit: deg")
+                            else    
+                                print("unit: " .. v.unit)
+                            end    
+                            f.unit = v.unit
+                            formField:suffix(v.unit)
+                        end
+                        if (f.step == nil and v.step~= nil) then
+                            print("step: " .. v.step)
+                            f.step = v.step
+                            formField:step(v.step)
+                        end
+                        if (f.min == nil and v.min ~= nil)  then
+                            print("min: " .. v.min)
+                            f.min = v.min
+                            formField:minimum(v.min)
+                        end
+                        if (f.max == nil and v.max ~= nil) then
+                            print("max: " .. v.max)
+                            f.max = v.max
+                            formField:maximum(v.max)
+                        end
+                        if (f.default == nil and v.default ~= nil) then
+                            print("default to: " .. v.default)
+                            f.default = v.default
+                            formField:default(v.default)
+                        end
+                    end
+                end
+            end
+        end       
+
     end
  
     -- run the postRead function to allow you to manipulate the data before regular processing.
