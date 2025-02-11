@@ -28,10 +28,8 @@ jobs:
         PR_NUMBER=${{ github.event.pull_request.number }}
         ZIP_NAME="rfsuite-lua-ethos-PR-${PR_NUMBER}.zip"
 
-        # Move to the scripts directory to avoid nesting
+        # Zip the contents without creating unnecessary nested structure
         cd scripts
-
-        # Zip only the contents of rfsuite without including extra layers
         zip -r ../${ZIP_NAME} rfsuite
 
     - name: Upload rfsuite-lua-ethos-PR-<number>.zip as Artifact
@@ -39,3 +37,4 @@ jobs:
       with:
         name: rfsuite-lua-ethos-PR-${{ github.event.pull_request.number }}
         path: rfsuite-lua-ethos-PR-${{ github.event.pull_request.number }}.zip
+        if-no-files-found: error
