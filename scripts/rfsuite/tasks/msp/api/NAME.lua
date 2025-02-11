@@ -21,14 +21,11 @@ local MSP_MIN_BYTES = 0
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "name", type = "U32", apiVersion = 12.06, simResponse = {80, 105, 108, 111, 116}}
+    { field = "name", type = "U8", apiVersion = 12.06, simResponse = {80, 105, 108, 111, 116}}
 }
 
 -- filter the structure to remove any params not supported by the running api version
 local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
-
--- calculate the min bytes value from the structure
-local MSP_MIN_BYTES = rfsuite.bg.msp.api.calculateMinBytes(MSP_API_STRUCTURE_READ)
 
 -- set read structure
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
@@ -65,6 +62,10 @@ local function parseMSPData(buf)
         offset = offset + 1
     end
 
+    if #buf == 0 then
+        name = ""
+    end
+
     parsedData["name"] = name
 
     -- Prepare data for return
@@ -82,7 +83,7 @@ local function read()
         processReply = function(self, buf)
             -- Parse the MSP data using the defined structure
             mspData = parseMSPData(buf, MSP_API_STRUCTURE)
-            if #buf >= MSP_MIN_BYTES then
+            if #buf >= 0 then  -- this is a odd one in that we dont know how many bytes we will get!
                 local completeHandler = handlers.getCompleteHandler()
                 if completeHandler then completeHandler(self, buf) end
             end
