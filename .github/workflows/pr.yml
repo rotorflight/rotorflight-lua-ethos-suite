@@ -1,4 +1,4 @@
-name: Create rfsuite.zip on PR
+name: Create rfsuite-lua-ethos ZIP on PR
 
 on:
   pull_request:
@@ -23,14 +23,14 @@ jobs:
         # Display updated version for verification
         grep 'config.Version' scripts/rfsuite/main.lua
 
-    - name: Create rfsuite-PR-<number>.zip (only /scripts/rfsuite)
+    - name: Create rfsuite-lua-ethos-PR-<number>.zip (only /scripts/rfsuite)
       run: |
         PR_NUMBER=${{ github.event.pull_request.number }}
         ZIP_NAME="rfsuite-lua-ethos-PR-${PR_NUMBER}.zip"
         zip -r $ZIP_NAME scripts/rfsuite
 
-    - name: Upload rfsuite-PR-<number>.zip as Artifact
+    - name: Upload rfsuite-lua-ethos-PR-<number>.zip as Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: rfsuite-PR-${{ github.event.pull_request.number }}
-        path: rfsuite-PR-${{ github.event.pull_request.number }}.zip
+        name: rfsuite-lua-ethos-PR-${{ github.event.pull_request.number }}
+        path: rfsuite-lua-ethos-PR-${{ github.event.pull_request.number }}.zip
