@@ -163,8 +163,10 @@ local function openPage(idx, title, script)
         end
         if f.instantChange and f.instantChange == true then
             rfsuite.app.formFields[i]:enableInstantChange(true)
+        elseif f.instantChange and f.instantChange == false then
+            rfsuite.app.formFields[i]:enableInstantChange(false)    
         else
-            rfsuite.app.formFields[i]:enableInstantChange(false)
+            rfsuite.app.formFields[i]:enableInstantChange(true)
         end
     end
 

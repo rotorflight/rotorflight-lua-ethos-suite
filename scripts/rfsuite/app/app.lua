@@ -360,7 +360,7 @@ local function processPageReply(source, buf, methodType)
                     if f.apikey and  f.apikey == field and formField then
                         
                         if f.t then
-                                print("Setting values for: " .. f.t)
+                                print("Checking if I need to set values via api for: " .. f.t)
                         end
 
                         if (f.scale == nil and v.scale ~= nil)  then 
