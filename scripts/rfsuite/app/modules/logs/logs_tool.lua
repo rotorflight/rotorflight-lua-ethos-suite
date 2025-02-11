@@ -404,7 +404,7 @@ local function drawCurrentIndex(points, position, totalPoints, keyindex, keyunit
 
     if position < 1 then position = 1 end
 
-    local sliderPadding = 42
+    local sliderPadding = rfsuite.app.radio.sliderPaddingLeft
     local w = graphPos['width'] - sliderPadding
     local h = 35
     local h_height = 30
