@@ -28,6 +28,7 @@ local apiCache = {}
 local apidir = "tasks/msp/api/"
 local api_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and apidir or (config.suiteDir .. apidir)
 local active_api_name -- variable to store the api name in use
+local validate_structure = true
 
 -- Function to load a specific API file by name
 local function loadAPI(apiName)
@@ -203,19 +204,20 @@ function apiLoader.parseMSPData(buf, structure, processed, other)
         parsedData[field.field] = data
     end
 
-    if offset <= #buf then
-        local extra_bytes = #buf - (offset - 1)
-        rfsuite.utils.log("Warning: " .. active_api_name .. " Unused bytes in buffer (" .. extra_bytes .. " extra bytes)")
-        print("Warning: " .. active_api_name .. " Unused bytes in buffer (" .. extra_bytes .. " extra bytes)")
-        print("Check if using supported firmware") 
-        rfsuite.app.triggers.showUnderUsedBufferWarning = true
-    elseif offset > #buf + 1 then
-        print("Error: " .. active_api_name .. " Offset exceeded buffer length (Offset: " .. offset .. ", Buffer: " .. #buf .. ")")
-        print("Likely caused by incorrect structure or buffer corruption.")
-        print("Check if using supported firmware") 
-        rfsuite.app.triggers.showOverUsedBufferWarning = true
+    if validate_structure == true then
+        if offset <= #buf then
+            local extra_bytes = #buf - (offset - 1)
+            rfsuite.utils.log("Warning: " .. active_api_name .. " Unused bytes in buffer (" .. extra_bytes .. " extra bytes)")
+            print("Warning: " .. active_api_name .. " Unused bytes in buffer (" .. extra_bytes .. " extra bytes)")
+            print("Check if using supported firmware") 
+            rfsuite.app.triggers.showUnderUsedBufferWarning = true
+        elseif offset > #buf + 1 then
+            print("Error: " .. active_api_name .. " Offset exceeded buffer length (Offset: " .. offset .. ", Buffer: " .. #buf .. ")")
+            print("Likely caused by incorrect structure or buffer corruption.")
+            print("Check if using supported firmware") 
+            rfsuite.app.triggers.showOverUsedBufferWarning = true
+        end
     end
-
 
     -- Prepare data for return
     local data = {}
@@ -291,6 +293,16 @@ function apiLoader.filterByApiVersion(structure)
     end
 
     return filteredStructure
+end
+
+function apiLoader.validateStructure(state)
+    if state == nil then
+        validate_structure = true
+    elseif type(state) == "boolean" then
+        validate_structure = state
+    else
+        error("Invalid argument: state must be a boolean or nil")
+    end
 end
 
 function apiLoader.buildSimResponse(dataStructure)

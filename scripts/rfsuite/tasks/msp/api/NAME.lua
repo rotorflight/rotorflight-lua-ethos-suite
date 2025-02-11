@@ -82,7 +82,9 @@ local function read()
         command = MSP_API_CMD_READ, -- Specify the MSP command
         processReply = function(self, buf)
             -- Parse the MSP data using the defined structure
+            rfsuite.bg.msp.api.validateStructure(false)
             mspData = parseMSPData(buf, MSP_API_STRUCTURE)
+            rfsuite.bg.msp.api.validateStructure(true)
             if #buf >= 0 then  -- this is a odd one in that we dont know how many bytes we will get!
                 local completeHandler = handlers.getCompleteHandler()
                 if completeHandler then completeHandler(self, buf) end
