@@ -41,21 +41,23 @@ local sensorTable = {
         name = "RSSI",
         mandatory = true,
         sport = {
-            "RSSI",
+            {appId=0xF101, subId=0},
+            "RSSI",   -- fallback for older versions (should never get here if running ethos 1.6.2 or newer)
             "RSSI 2.4G",
             "RSSI 900M",
             "RSSI Int",
             "RSSI Ext",
             "RSSI Lora"
-
         },
         customCRSF = {
-            "Rx RSSI1",
+            {crsfId=0x14, subIdStart=0, subIdEnd=1},
+            "Rx RSSI1", -- fallback for older versions (should never get here if running ethos 1.6.2 or newer)
             "Rx RSSI2",
             "Rx Quality",
         },
         legacyCRSF = {
-            "RSSI 1",
+            {crsfId=0x14, subIdStart=0, subIdEnd=1}
+            "RSSI 1",   -- fallback for older versions (should never get here if running ethos 1.6.2 or newer)
             "RSSI 2",
             "Rx Quality",
         }

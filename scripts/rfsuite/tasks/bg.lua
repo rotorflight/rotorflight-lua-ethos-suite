@@ -141,15 +141,15 @@ function bg.wakeup()
     if now - (rssiCheckScheduler or 0) >= 2 then
         currentRssiSensor = rfsuite.utils.getRssiSensor()
 
-        rfsuite.rssiSensorChanged = currentRssiSensor and (lastRssiSensorName ~= currentRssiSensor.name) or false
-        lastRssiSensorName = currentRssiSensor and currentRssiSensor.name or nil
-
+        rfsuite.rssiSensorChanged = currentRssiSensor and (lastRssiSensorName ~= currentRssiSensor:name()) or false
+        lastRssiSensorName = currentRssiSensor and currentRssiSensor:name() or nil    
         rssiCheckScheduler = now
+
     end
 
     if system:getVersion().simulation == true then rfsuite.rssiSensorChanged = false end
 
-    if currentRssiSensor ~= nil then rfsuite.rssiSensor = currentRssiSensor.sensor end
+    if currentRssiSensor ~= nil then rfsuite.rssiSensor = currentRssiSensor end
 
     -- we load in tasks dynamically using the settings found in
     -- tasks/<name>init.lua
