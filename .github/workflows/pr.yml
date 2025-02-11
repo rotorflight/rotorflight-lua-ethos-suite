@@ -1,0 +1,36 @@
+name: Create rfsuite.zip on PR
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  create-zip:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Update version in main.lua
+      run: |
+        PR_NUMBER=${{ github.event.pull_request.number }}
+        NEW_VERSION="PR-${PR_NUMBER}"
+
+        # Update the version in main.lua
+        sed -i "s/config.Version = \".*\"/config.Version = \"${NEW_VERSION}\"/" scripts/rfsuite/main.lua
+
+        # Display updated version for verification
+        grep 'config.Version' scripts/rfsuite/main.lua
+
+    - name: Create rfsuite-PR-<number>.zip (only /scripts/rfsuite)
+      run: |
+        PR_NUMBER=${{ github.event.pull_request.number }}
+        ZIP_NAME="rfsuite-PR-${PR_NUMBER}.zip"
+        zip -r $ZIP_NAME scripts/rfsuite
+
+    - name: Upload rfsuite-PR-<number>.zip as Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: rfsuite-PR-${{ github.event.pull_request.number }}
+        path: rfsuite-PR-${{ github.event.pull_request.number }}.zip
