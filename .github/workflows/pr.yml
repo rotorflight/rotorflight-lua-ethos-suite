@@ -28,6 +28,7 @@ jobs:
         PR_NUMBER=${{ github.event.pull_request.number }}
         ZIP_NAME="rfsuite-lua-ethos-PR-${PR_NUMBER}.zip"
 
+
         # Move to the scripts directory to avoid nesting
         cd scripts
 
