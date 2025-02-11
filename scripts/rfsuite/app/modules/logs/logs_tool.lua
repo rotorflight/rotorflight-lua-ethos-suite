@@ -523,19 +523,6 @@ local function event(event, category, value, x, y)
         rfsuite.app.Page.onNavMenu(self)
         return true
     end
-    --[[
-    if value == KEY_ROTARY_RIGHT then
-        print("here")
-        sliderPosition = sliderPosition + 1
-        return false
-    end
-
-    if value == KEY_ROTARY_LEFT then
-        sliderPosition = sliderPosition - 1
-        return false   
-    end    
-    ]] --
-
     return false
 end
 
@@ -596,6 +583,9 @@ local function wakeup()
             end, function(newValue)
                 sliderPosition = newValue
             end)
+            if rfsuite.config.ethosRunningVersion >= 1620 then
+            rfsuite.app.formFields[1]:step(1)
+            end
 
             -- set log line count only once!
             logLineCount = #logData[currentDataIndex]['data']
