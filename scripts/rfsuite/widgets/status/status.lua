@@ -2327,7 +2327,7 @@ function status.paint(widget)
             if status.linkUP == false and environment.simulation == false then
                 status.noTelem()
                 status.initTime = os.clock()
-            elseif (os.clock() - status.initTime) >= 5 and validateSensors and (#rfsuite.bg.telemetry.validateSensors() > 0) then
+            elseif (os.clock() - status.initTime) >= 10 and validateSensors and (#rfsuite.bg.telemetry.validateSensors() > 0) then
                 status.missingSensors()
             elseif status.idleupswitchParam and status.idleupswitchParam:state() then
                 local armSource = rfsuite.bg.telemetry.getSensorSource("armflags")

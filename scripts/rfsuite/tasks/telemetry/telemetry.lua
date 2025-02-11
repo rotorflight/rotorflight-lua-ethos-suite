@@ -25,12 +25,12 @@ local telemetry = {}
 local sensors = {}
 local protocol, telemetrySOURCE, crsfSOURCE
 local sensorRateLimit = os.clock()
-local SENSOR_RATE = 2 -- rate in seconds
+local SENSOR_RATE = 0.5 -- rate in seconds
 
 -- Store the last validated sensors and timestamp
 local lastValidationResult = nil
 local lastValidationTime = 0
-local VALIDATION_RATE_LIMIT = 5 -- Rate limit in seconds
+local VALIDATION_RATE_LIMIT = 2 -- Rate limit in seconds
 
 local telemetryState = false
 
