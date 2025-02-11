@@ -349,6 +349,69 @@ local function processPageReply(source, buf, methodType)
             end
         end
 
+        -- inject min/max/defaults etc if present
+        if rfsuite.config.ethosRunningVersion >= 1620 and app.Page.fields and buf.structure then
+            for i, v in ipairs(buf.structure) do
+                local field = v.field
+                for j, f in ipairs(app.Page.fields) do
+                    if f.apikey and  f.apikey == field then
+                        
+                        if f.t then
+                                print("Setting values for: " .. f.t)
+                        end
+
+                        if (f.scale == nil and v.scale ~= nil) and rfsuite.app.formFields[j] then 
+                            print("scale: " .. v.scale)
+                            f.scale = v.scale 
+                        end
+                        if (f.mult == nil and v.mult ~= nil) and rfsuite.app.formFields[j] then 
+                            print("mult: " .. v.mult)
+                            f.mult = v.mult 
+                        end
+                        if (f.offset == nil and v.offset ~= nil) and rfsuite.app.formFields[j] then 
+                            print("offset: " .. v.offset)
+                            f.offset = v.offset 
+                        end
+
+                        if (f.decimals == nil and v.decimals ~= nil ) and rfsuite.app.formFields[j] then
+                            print("decimals: " .. v.decimals)
+                            f.decimals = v.decimals
+                            rfsuite.app.formFields[j]:decimals(v.decimals)
+                        end
+                        if (f.unit == nil and v.unit ~= nil) and rfsuite.app.formFields[j] then
+                            if v.unit == "°" then
+                                print("unit: deg")
+                            else    
+                                print("unit: " .. v.unit)
+                            end    
+                            f.unit = v.unit
+                            rfsuite.app.formFields[j]:suffix(v.unit)
+                        end
+                        if (f.step == nil and v.step~= nil) and rfsuite.app.formFields[j] then
+                            print("step: " .. v.step)
+                            f.step = v.step
+                            rfsuite.app.formFields[j]:step(v.step)
+                        end
+                        if (f.min == nil and v.min ~= nil) and rfsuite.app.formFields[j] then
+                            print("min: " .. v.min)
+                            f.min = v.min
+                            rfsuite.app.formFields[j]:minimum(v.min)
+                        end
+                        if (f.max == nil and v.max ~= nil) and rfsuite.app.formFields[j] then
+                            print("max: " .. v.max)
+                            f.max = v.max
+                            rfsuite.app.formFields[j]:maximum(v.min)
+                        end
+                        if (f.default == nil and v.default ~= nil) and rfsuite.app.formFields[j] then
+                            print("default to: " .. v.default)
+                            f.default = v.default
+                            rfsuite.app.formFields[j]:default(v.default)
+                        end
+                    end
+                end
+            end
+        end       
+
     end
  
     -- run the postRead function to allow you to manipulate the data before regular processing.
