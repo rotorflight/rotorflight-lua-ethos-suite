@@ -1,11 +1,8 @@
 local labels = {}
 local fields = {}
 
---fields[#fields + 1] = {t = "Roll", help = "accelerometerTrim", min = -300, max = 300, default = 0, unit = "°", apikey="roll"}
---fields[#fields + 1] = {t = "Pitch", help = "accelerometerTrim", min = -300, max = 300, default = 0, unit = "°", apikey="pitch"}
-
-fields[#fields + 1] = {t = "Roll", help = "accelerometerTrim", apikey="roll"}
-fields[#fields + 1] = {t = "Pitch", help = "accelerometerTrim", apikey="pitch"}
+fields[#fields + 1] = {t = "Roll", help = "accelerometerTrim", min = -300, max = 300, default = 0, unit = "°", apikey="roll"}
+fields[#fields + 1] = {t = "Pitch", help = "accelerometerTrim", min = -300, max = 300, default = 0, unit = "°", apikey="pitch"}
 
 local function postLoad(self)
     rfsuite.app.triggers.isReady = true
