@@ -18,7 +18,7 @@ local lastServoCountTime = os.clock()
 local enableWakeup = false
 local wakeupScheduler = os.clock()
 local activeLogFile
-local logPadding = 1
+local logPadding = 5
 local armTime
 local currentDisplayMode
 
@@ -80,9 +80,8 @@ end
 function calculateSeconds(totalSeconds, sliderValue)
     -- Ensure sliderValue is within the range 1-100
     if sliderValue < 1 or sliderValue > 100 then error("Slider value must be between 1 and 100") end
-
-    -- Calculate the seconds passed
-    local secondsPassed = (sliderValue / 100) * totalSeconds
+    
+    local secondsPassed = math.floor(((sliderValue-1) / 100) * totalSeconds)
     return secondsPassed
 end
 
@@ -127,6 +126,22 @@ function padTable(tbl, padCount)
 
     return paddedTable
 end
+
+function unpadTable(paddedTable, padCount)
+    -- Ensure the paddedTable has enough elements to unpad
+    if #paddedTable < 2 * padCount then
+        error("Padded table is too small to unpad with the given padCount")
+    end
+
+    -- Extract the original table elements
+    local unpaddedTable = {}
+    for i = padCount + 1, #paddedTable - padCount do
+        table.insert(unpaddedTable, paddedTable[i])
+    end
+
+    return unpaddedTable
+end
+
 
 function loadFileToMemory(filename)
     local file, err = io.open(filename, "rb")
@@ -346,17 +361,6 @@ local function drawGraph(points, color, pen, x_start, y_start, width, height, mi
     end
 end
 
-local function drawTime(armTime)
-    if armTime == nil then return end
-
-    local tw, th = lcd.getTextSize(armTime)
-    lcd.color(COLOR_WHITE)
-
-    local y = graphPos['height'] + graphPos['menu_offset'] - th
-    local x = graphPos['width'] - tw - 10
-    lcd.drawText(x, y, armTime, LEFT)
-end
-
 local function drawKey(name, keyindex, keyunit, keyminmax, keyfloor, color, minimum, maximum)
 
     local w = LCD_W - graphPos['width'] - 10
@@ -400,14 +404,16 @@ local function drawCurrentIndex(points, position, totalPoints, keyindex, keyunit
 
     if position < 1 then position = 1 end
 
-    local w = graphPos['width']
+    local sliderPadding = rfsuite.app.radio.sliderPaddingLeft
+    local w = graphPos['width'] - sliderPadding
     local h = 35
     local h_height = 30
     local x = 0
     local y = (keyindex * h) - h_height / 2
     local idx_w = 100
 
-    local linePos = map(position, 1, 100, 1, w - 10)
+    local linePos = map(position, 1, 100, 1, w - 10) + sliderPadding
+
 
     if linePos < 1 then linePos = 0 end
 
@@ -431,8 +437,10 @@ local function drawCurrentIndex(points, position, totalPoints, keyindex, keyunit
     value = value .. keyunit
 
     -- draw the vertical line
-    lcd.color(COLOR_WHITE)
-    lcd.drawLine(linePos, graphPos['menu_offset'] - 5, linePos, graphPos['height'] + graphPos['menu_offset'])
+    if keyindex == 1 then     -- only draw line once
+        lcd.color(COLOR_WHITE)
+        lcd.drawLine(linePos, graphPos['menu_offset'] - 5, linePos, graphPos['height'] + graphPos['menu_offset'])
+    end
 
     -- show value
     lcd.font(FONT_BOLD)
@@ -443,9 +451,30 @@ local function drawCurrentIndex(points, position, totalPoints, keyindex, keyunit
     lcd.drawText(idxPos + 5, ty, value, textAlign)
 
     -- display time
-    local tw, th = lcd.getTextSize(time_str)
-    local ty = (LCD_H - 70)
-    if linePos >= tw / 4 then lcd.drawText(idxPos, ty, time_str, textAlign) end
+    if keyindex == 1 then  -- only do this once
+        -- show current time of line
+        lcd.font(FONT_NORMAL)
+        local tw, th = lcd.getTextSize(time_str)
+        lcd.color(COLOR_WHITE)
+        local ty = graphPos['height'] + graphPos['menu_offset'] - th
+        lcd.drawText(idxPos + 5, ty, time_str, textAlign)
+
+        if (idxPos + 5) <= w - tw then
+
+            local run_current_s = calculateSeconds(totalPoints, 100)
+            local run_time_str = format_time(math.floor(run_current_s))            
+            lcd.font(FONT_NORMAL)
+            local tw, th = lcd.getTextSize(run_time_str)
+
+            lcd.color(COLOR_WHITE)
+            local ty = graphPos['height'] + graphPos['menu_offset'] - th
+            lcd.drawText(graphPos['width'] - tw - 10, ty, run_time_str)
+
+
+        end
+    end
+
+
 
 end
 
@@ -523,19 +552,6 @@ local function event(event, category, value, x, y)
         rfsuite.app.Page.onNavMenu(self)
         return true
     end
-    --[[
-    if value == KEY_ROTARY_RIGHT then
-        print("here")
-        sliderPosition = sliderPosition + 1
-        return false
-    end
-
-    if value == KEY_ROTARY_LEFT then
-        sliderPosition = sliderPosition - 1
-        return false   
-    end    
-    ]] --
-
     return false
 end
 
@@ -562,7 +578,6 @@ local function wakeup()
             progressLoader = form.openProgressDialog("Processing", "Please be patient - we have some work to do.")
             progressLoader:closeAllowed(false)
 
-            armTime = calculate_time_coverage(trimHeader(getColumn(logDataRaw, currentDataIndex)))
         else
             -- Update progress dialog
             local percentage = (currentDataIndex / #logColumns) * 100
@@ -596,6 +611,9 @@ local function wakeup()
             end, function(newValue)
                 sliderPosition = newValue
             end)
+            if rfsuite.config.ethosRunningVersion >= 1620 then
+            rfsuite.app.formFields[1]:step(1)
+            end
 
             -- set log line count only once!
             logLineCount = #logData[currentDataIndex]['data']
@@ -619,8 +637,6 @@ local function paint()
     local y_start = graphPos['y_start']
     local width = graphPos['width'] - 10
     local height = graphPos['height']
-
-    drawTime(armTime)
 
     if enableWakeup == true and processedLogData == true then
 
