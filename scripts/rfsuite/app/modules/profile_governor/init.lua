@@ -23,7 +23,7 @@ local init = {
     script = "profile_governor.lua", -- run this script
     image = "governor.png", -- image for the page
     order = 5, -- order in the section
-    ethosversion = 1519 -- disable button if ethos version is less than this
+    ethosversion = {1, 6, 2} -- disable button if ethos version is less than this
 }
 
 return init

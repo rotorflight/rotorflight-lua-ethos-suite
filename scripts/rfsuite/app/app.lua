@@ -350,7 +350,7 @@ local function processPageReply(source, buf, methodType)
         end
 
         -- inject min/max/defaults etc if present
-        if rfsuite.config.ethosRunningVersion >= 1620 and app.Page.fields and buf.structure then
+        if app.Page.fields and buf.structure then
             for i, v in ipairs(buf.structure) do
                 local field = v.field
                 for j, f in ipairs(app.Page.fields) do
@@ -809,8 +809,11 @@ function app.wakeupUI()
 
                 local message
                 local apiVersionAsString = tostring(rfsuite.config.apiVersion)
-                if rfsuite.config.ethosRunningVersion < config.ethosVersionOld then
-                    message = config.ethosVersionOldString
+                if not rfsuite.utils.ethosVersionAtLeast() then
+                    message = string.format("ETHOS < V%d.%d.%d", 
+                    rfsuite.config.ethosVersion[1], 
+                    rfsuite.config.ethosVersion[2], 
+                    rfsuite.config.ethosVersion[3])
                     app.triggers.invalidConnectionSetup = true
                 elseif not rfsuite.bg.active() then
                     message = "Please enable the background task."
@@ -1250,7 +1253,7 @@ function app.create_logtool()
 
     -- config.apiVersion = nil
     config.environment = system.getVersion()
-    config.ethosRunningVersion = rfsuite.utils.ethosVersionOld()
+    config.ethosRunningVersion = {config.environment.major, config.environment.minor, config.environment.revision}
 
     rfsuite.config.lcdWidth, rfsuite.config.lcdHeight = rfsuite.utils.getWindowSize()
     app.radio = assert(loadfile("app/radios.lua"))().msp
@@ -1272,7 +1275,7 @@ function app.create()
 
     -- config.apiVersion = nil
     config.environment = system.getVersion()
-    config.ethosRunningVersion = rfsuite.utils.ethosVersionOld()
+    config.ethosRunningVersion = {config.environment.major, config.environment.minor, config.environment.revision}
 
     rfsuite.config.lcdWidth, rfsuite.config.lcdHeight = rfsuite.utils.getWindowSize()
     app.radio = assert(loadfile("app/radios.lua"))().msp

@@ -46,7 +46,7 @@ if rfsuite.app.moduleList == nil then rfsuite.app.moduleList = rfsuite.utils.fin
 function bg.findTasks()
 
     local taskdir = "tasks"
-    local tasks_path = (rfsuite.utils.ethosVersionToMinorOld() >= 16) and "tasks/" or (config.suiteDir .. "/tasks/")
+    local tasks_path = "tasks/"
 
     for _, v in pairs(system.listFiles(tasks_path)) do
 
@@ -83,7 +83,7 @@ function bg.flush_logs()
 
     if #bg.log_queue > 0 and rfsuite.bg.msp.mspQueue:isProcessed() then
         -- Determine the log file path based on the ethos version
-        local log_file_path = rfsuite.utils.ethosVersionToMinorOld() < 16 and config.suiteDir .. "/logs/rfsuite.log" or "logs/rfsuite.log"
+        local log_file_path = "logs/rfsuite.log"
 
         -- Attempt to open the log file once
         local f, err = io.open(log_file_path, 'a')
@@ -124,7 +124,9 @@ end
 function bg.wakeup()
 
     -- kill if version is bad
-    if rfsuite.utils.ethosVersionOld() < rfsuite.config.ethosVersionOld then return end
+    if not rfsuite.utils.ethosVersionAtLeast() then
+        return
+    end
 
     -- initialise tasks
     if bg.init == false then

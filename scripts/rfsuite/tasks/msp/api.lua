@@ -26,7 +26,7 @@ local apiCache = {}
 
 -- Define the API directory path based on the ethos version
 local apidir = "tasks/msp/api/"
-local api_path = (rfsuite.utils.ethosVersionToMinorOld() >= 16) and apidir or (config.suiteDir .. apidir)
+local api_path = apidir
 local active_api_name -- variable to store the api name in use
 local validate_structure = true
 

@@ -23,12 +23,10 @@ local config = {}
 
 -- LuaFormatter off
 config.toolName = "Rotorflight"                                     -- name of the tool
-config.suiteDir = "/scripts/rfsuite/"                               -- base path the script is installed into
 config.icon = lcd.loadMask("app/gfx/icon.png")                      -- icon
 config.icon_logtool = lcd.loadMask("app/gfx/icon_logtool.png")      -- icon
-config.Version = "1.0.0"                                            -- version number of this software release
-config.ethosVersionOld = 1620                                          -- min version of ethos supported by this script
-config.ethosVersionOldString = "ETHOS < V1.6.2"                        -- string to print if ethos version error occurs
+config.Version = "1.0.0"                                            -- version number of this software replace
+config.ethosVersion = {1, 6, 2}                                     -- min version of ethos supported by this script                                                     
 config.defaultRateProfile = 4 -- ACTUAL                             -- default rate table [default = 4]
 config.supportedMspApiVersion = {"12.06", "12.07","12.08"}          -- supported msp versions
 config.simulatorApiVersionResponse = {0, 12, 8}                    -- version of api return by simulator
@@ -79,7 +77,14 @@ rfsuite.bg = assert(loadfile("tasks/bg.lua"))(config)
 
 -- LuaFormatter off
 
+
 local function init()
+
+    -- prevent this even getting close to running if version is not good
+    if not rfsuite.utils.ethosVersionAtLeast() then
+        error("Ethos version is not supported")
+        return
+    end
 
     -- function that most always been there and are not handled dynamically on init
     system.registerSystemTool({event = rfsuite.app.event, name = config.toolName, icon = config.icon, create = rfsuite.app.create, wakeup = rfsuite.app.wakeup, paint = rfsuite.app.paint, close = rfsuite.app.close})

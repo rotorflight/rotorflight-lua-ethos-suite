@@ -276,11 +276,6 @@ function status.create(widget)
     status.lastBitmap = model.bitmap()
     default_image = lcd.loadBitmap(model.bitmap()) or rfsuite.utils.loadImage("widgets/status/default_image.png") or nil
 
-    if rfsuite.utils.ethosVersionOld() < rfsuite.config.ethosVersionOld then
-        status.screenError(rfsuite.config.ethosVersionOldString)
-        return
-    end
-
     return {
         fmsrc = 0,
         btype = 0,
@@ -1308,7 +1303,14 @@ end
 
 function status.paint(widget)
 
-    if not rfsuite.bg.active() then
+    if not rfsuite.utils.ethosVersionAtLeast() then
+        status.screenError(string.format("ETHOS < V%d.%d.%d", 
+            rfsuite.config.ethosVersion[1], 
+            rfsuite.config.ethosVersion[2], 
+            rfsuite.config.ethosVersion[3])
+        )
+        return
+    elseif not rfsuite.bg.active() then
 
         if (os.clock() - status.initTime) >= 2 then status.screenError("PLEASE ENABLE THE BACKGROUND TASK") end
         lcd.invalidate()

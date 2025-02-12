@@ -170,11 +170,8 @@ function createFileReader(filename)
     -- Return the function to read the next chunk of 10KB
     return function()
         -- Seek to the current position in the file
-        if rfsuite.config.ethosRunningVersion > 1600 then
-            file:seek("set", file_pos)  -- Explicitly set the seek mode
-        else
-            file:seek(file_pos)
-        end
+        file:seek("set", file_pos)  -- Explicitly set the seek mode
+
 
         -- Read the next 10KB chunk
         local chunk = file:read(10 * 1024)
@@ -290,7 +287,7 @@ end
 
 local function getLogDir()
 
-    local logs_path = (rfsuite.utils.ethosVersionToMinorOld() >= 16) and "logs/" or (rfsuite.config.suiteDir .. "/logs/")
+    local logs_path = "logs/"
 
     return logs_path .. "telemetry/"
 
@@ -611,9 +608,9 @@ local function wakeup()
             end, function(newValue)
                 sliderPosition = newValue
             end)
-            if rfsuite.config.ethosRunningVersion >= 1620 then
+  
             rfsuite.app.formFields[1]:step(1)
-            end
+
 
             -- set log line count only once!
             logLineCount = #logData[currentDataIndex]['data']

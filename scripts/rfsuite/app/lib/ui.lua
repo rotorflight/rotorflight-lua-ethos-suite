@@ -182,7 +182,9 @@ function ui.openMainMenu()
     end
 
     -- hard exit on error
-    if rfsuite.utils.ethosVersionOld() < rfsuite.config.ethosVersionOld then return end
+    if not rfsuite.utils.ethosVersionAtLeast(config.ethosVersion) then
+        return
+    end    
 
     local MainMenu = assert(loadfile("app/modules/init.lua"))()
 
@@ -265,7 +267,7 @@ function ui.openMainMenu()
                     -- do not show icon if not supported by ethos version
                     local hideEntry = false
 
-                    if (pvalue.ethosversion ~= nil and rfsuite.config.ethosRunningVersion < pvalue.ethosversion) then hideEntry = true end
+                    if (pvalue.ethosversion ~= nil and not rfsuite.utils.ethosVersionAtLeast(pvalue.ethosversion)) then hideEntry = true end
 
                     if (pvalue.mspversion ~= nil and rfsuite.config.apiVersion < pvalue.mspversion) then hideEntry = true end
 
@@ -448,13 +450,13 @@ function ui.fieldNumber(i)
         rfsuite.app.saveValue(i)
     end)
 
-    if config.ethosRunningVersion >= 1514 then
-        if f.onFocus ~= nil then
-            rfsuite.app.formFields[i]:onFocus(function()
-                f.onFocus(rfsuite.app.Page)
-            end)
-        end
+
+    if f.onFocus ~= nil then
+        rfsuite.app.formFields[i]:onFocus(function()
+            f.onFocus(rfsuite.app.Page)
+        end)
     end
+
 
     if f.default ~= nil then
         if f.offset ~= nil then f.default = f.default + f.offset end
@@ -532,13 +534,12 @@ function ui.fieldStaticText(i)
 
     rfsuite.app.formFields[i] = form.addStaticText(rfsuite.app.formLines[formLineCnt], posField, rfsuite.utils.getFieldValue(rfsuite.app.Page.fields[i]))
 
-    if config.ethosRunningVersion >= 1514 then
-        if f.onFocus ~= nil then
-            rfsuite.app.formFields[i]:onFocus(function()
-                f.onFocus(rfsuite.app.Page)
-            end)
-        end
+    if f.onFocus ~= nil then
+        rfsuite.app.formFields[i]:onFocus(function()
+            f.onFocus(rfsuite.app.Page)
+        end)
     end
+
 
     if f.decimals ~= nil then rfsuite.app.formFields[i]:decimals(f.decimals) end
     if f.unit ~= nil then rfsuite.app.formFields[i]:suffix(f.unit) end
