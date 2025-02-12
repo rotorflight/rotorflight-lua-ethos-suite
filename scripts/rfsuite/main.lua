@@ -17,10 +17,6 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 
- This version of rotorflight-ethos-suite is the final version that will
- support ethos 1.6.1.  Due to new features we would like to make use of
- all releases past this data will be for ethos 1.6.2 and higher.
-
 ]] --
 -- RotorFlight + ETHOS LUA configuration
 local config = {}
@@ -31,8 +27,8 @@ config.suiteDir = "/scripts/rfsuite/"                               -- base path
 config.icon = lcd.loadMask("app/gfx/icon.png")                      -- icon
 config.icon_logtool = lcd.loadMask("app/gfx/icon_logtool.png")      -- icon
 config.Version = "1.0.0"                                            -- version number of this software release
-config.ethosVersion = 1600                                          -- min version of ethos supported by this script
-config.ethosVersionString = "ETHOS < V1.6.0"                        -- string to print if ethos version error occurs
+config.ethosVersion = 1620                                          -- min version of ethos supported by this script
+config.ethosVersionString = "ETHOS < V1.6.2"                        -- string to print if ethos version error occurs
 config.defaultRateProfile = 4 -- ACTUAL                             -- default rate table [default = 4]
 config.supportedMspApiVersion = {"12.06", "12.07","12.08"}          -- supported msp versions
 config.simulatorApiVersionResponse = {0, 12, 8}                    -- version of api return by simulator
