@@ -140,8 +140,10 @@ function bg.wakeup()
     -- this should be before msp.hecks
     -- doing this is heavy - lets run it every few seconds only
     local now = os.clock()
-    if now - (rssiCheckScheduler or 0) >= 2 then
-        currentRssiSensor = rfsuite.utils.getRssiSensor()
+    if now - (rssiCheckScheduler or 0) >= 4 then
+
+        -- get sport then elrs sensor
+        currentRssiSensor = system.getSource({appId = 0xF101}) or system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1}) or nil
 
         rfsuite.rssiSensorChanged = currentRssiSensor and (lastRssiSensorName ~= currentRssiSensor:name()) or false
         lastRssiSensorName = currentRssiSensor and currentRssiSensor:name() or nil    

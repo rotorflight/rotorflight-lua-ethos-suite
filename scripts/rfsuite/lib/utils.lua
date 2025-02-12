@@ -224,21 +224,6 @@ function utils.ethosVersionAtLeast(targetVersion)
     return true  -- Versions are equal (>= condition met)
 end
 
-
-
--- this function is only uised on init connect to verify presense of a link
--- it should not be used once bgtasks are running
--- you can use rssiSOURCE = rfsuite.bg.telemetry.getSensorSource("rssi") 
-function utils.getRssiSensor()
-    local rssiSensor
-
-    -- look for sport (0xF101) or elrs (0x14) rssi sensor
-    rssiSensor = system.getSource({appId = 0xF101}) or system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1}) 
-    if rssiSensor then return rssiSensor end
-
-    return nil
-end
-
 function utils.titleCase(str)
     return str:gsub("(%a)([%w_']*)", function(first, rest)
         return first:upper() .. rest:lower()
