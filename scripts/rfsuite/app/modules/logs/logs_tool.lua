@@ -290,7 +290,7 @@ end
 
 local function getLogDir()
 
-    local logs_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and "logs/" or (rfsuite.config.suiteDir .. "/logs/")
+    local logs_path = (rfsuite.utils.ethosVersionToMinorOld() >= 16) and "logs/" or (rfsuite.config.suiteDir .. "/logs/")
 
     return logs_path .. "telemetry/"
 

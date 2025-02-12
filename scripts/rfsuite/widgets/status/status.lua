@@ -276,8 +276,8 @@ function status.create(widget)
     status.lastBitmap = model.bitmap()
     default_image = lcd.loadBitmap(model.bitmap()) or rfsuite.utils.loadImage("widgets/status/default_image.png") or nil
 
-    if rfsuite.utils.ethosVersion() < rfsuite.config.ethosVersion then
-        status.screenError(rfsuite.config.ethosVersionString)
+    if rfsuite.utils.ethosVersionOld() < rfsuite.config.ethosVersionOld then
+        status.screenError(rfsuite.config.ethosVersionOldString)
         return
     end
 

@@ -55,8 +55,8 @@ end
 -- Paint function
 function rf2craftname.paint(widget)
 
-    if rfsuite.utils.ethosVersion() < rfsuite.config.ethosVersion then
-        screenError(rfsuite.config.ethosVersionString)
+    if rfsuite.utils.ethosVersionOld() < rfsuite.config.ethosVersionOld then
+        screenError(rfsuite.config.ethosVersionOldString)
         return
     end
 

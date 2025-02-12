@@ -182,7 +182,7 @@ function ui.openMainMenu()
     end
 
     -- hard exit on error
-    if rfsuite.utils.ethosVersion() < rfsuite.config.ethosVersion then return end
+    if rfsuite.utils.ethosVersionOld() < rfsuite.config.ethosVersionOld then return end
 
     local MainMenu = assert(loadfile("app/modules/init.lua"))()
 

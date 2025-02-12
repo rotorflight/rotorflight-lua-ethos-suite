@@ -809,8 +809,8 @@ function app.wakeupUI()
 
                 local message
                 local apiVersionAsString = tostring(rfsuite.config.apiVersion)
-                if rfsuite.config.ethosRunningVersion < config.ethosVersion then
-                    message = config.ethosVersionString
+                if rfsuite.config.ethosRunningVersion < config.ethosVersionOld then
+                    message = config.ethosVersionOldString
                     app.triggers.invalidConnectionSetup = true
                 elseif not rfsuite.bg.active() then
                     message = "Please enable the background task."
@@ -1250,7 +1250,7 @@ function app.create_logtool()
 
     -- config.apiVersion = nil
     config.environment = system.getVersion()
-    config.ethosRunningVersion = rfsuite.utils.ethosVersion()
+    config.ethosRunningVersion = rfsuite.utils.ethosVersionOld()
 
     rfsuite.config.lcdWidth, rfsuite.config.lcdHeight = rfsuite.utils.getWindowSize()
     app.radio = assert(loadfile("app/radios.lua"))().msp
@@ -1272,7 +1272,7 @@ function app.create()
 
     -- config.apiVersion = nil
     config.environment = system.getVersion()
-    config.ethosRunningVersion = rfsuite.utils.ethosVersion()
+    config.ethosRunningVersion = rfsuite.utils.ethosVersionOld()
 
     rfsuite.config.lcdWidth, rfsuite.config.lcdHeight = rfsuite.utils.getWindowSize()
     app.radio = assert(loadfile("app/radios.lua"))().msp

@@ -70,7 +70,7 @@ function utils.playFile(pkg, file)
     local wavLocale
     local wavDefault
 
-    if utils.ethosVersionToMinor() < 16 then
+    if utils.ethosVersionToMinorOld() < 16 then
         wavLocale = baseDir .. audioPath .. "/" .. pkg .. "/" .. file
         wavDefault = baseDir .. "/audio/en/default/" .. pkg .. "/" .. file
     else
@@ -89,7 +89,7 @@ end
 function utils.playFileCommon(file)
 
     local wav
-    if utils.ethosVersionToMinor() < 16 then
+    if utils.ethosVersionToMinorOld() < 16 then
         wav = rfsuite.config.suiteDir .. "/audio/" .. file
     else
         wav = "audio/" .. file
@@ -197,7 +197,7 @@ function utils.getCurrentProfile()
     end
 end
 
-function utils.ethosVersion()
+function utils.ethosVersionOld()
     local environment = system.getVersion()
     local v = tonumber(environment.major .. environment.minor .. environment.revision)
 
@@ -209,7 +209,7 @@ function utils.ethosVersion()
     return v
 end
 
-function utils.ethosVersionToMinor()
+function utils.ethosVersionToMinorOld()
     local environment = system.getVersion()
     local v = tonumber(environment.major .. environment.minor)
     return v
@@ -609,7 +609,7 @@ function utils.findModules()
     local modulesList = {}
 
     local moduledir = "app/modules/"
-    local modules_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and moduledir or (config.suiteDir .. moduledir)
+    local modules_path = (rfsuite.utils.ethosVersionToMinorOld() >= 16) and moduledir or (config.suiteDir .. moduledir)
 
     for _, v in pairs(system.listFiles(modules_path)) do
 
@@ -639,7 +639,7 @@ function utils.findWidgets()
     local widgetsList = {}
 
     local widgetdir = "widgets/"
-    local widgets_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and widgetdir or (config.suiteDir .. widgetdir)
+    local widgets_path = (rfsuite.utils.ethosVersionToMinorOld() >= 16) and widgetdir or (config.suiteDir .. widgetdir)
 
     for _, v in pairs(system.listFiles(widgets_path)) do
 
