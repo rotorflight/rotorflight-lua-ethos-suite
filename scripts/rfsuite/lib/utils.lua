@@ -230,22 +230,11 @@ end
 -- it should not be used once bgtasks are running
 -- you can use rssiSOURCE = rfsuite.bg.telemetry.getSensorSource("rssi") 
 function utils.getRssiSensor()
-    -- Try to find the sport sensor
-    local rssiSensor = system.getSource({appId = 0xF101})
-    if rssiSensor then
-        return rssiSensor
-    end
+    local rssiSensor
 
-    -- Try to find the ELRS sensor
-    --system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1})  -- this will replace below loop once 1.6.2 is out
-
-    local rssiNames = {"Rx RSSI1", "Rx RSSI2"}
-    for _, name in ipairs(rssiNames) do
-        rssiSensor = system.getSource(name)
-        if rssiSensor then
-            return rssiSensor
-        end
-    end
+    -- look for sport (0xF101) or elrs (0x14) rssi sensor
+    rssiSensor = system.getSource({appId = 0xF101}) or system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1}) 
+    if rssiSensor then return rssiSensor end
 
     return nil
 end
