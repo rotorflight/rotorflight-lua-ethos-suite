@@ -145,6 +145,7 @@ status.announcementLQSwitchParam = nil
 status.announcementESCSwitchParam = nil
 status.announcementMCUSwitchParam = nil
 status.announcementTimerSwitchParam = nil
+status.sensorwarningParam = true
 status.filteringParam = 1
 status.lowvoltagsenseParam = 2
 status.announcementIntervalParam = 30
@@ -927,6 +928,14 @@ function status.configure(widget)
         return status.calcfuelParam
     end, function(newValue)
         status.calcfuelParam = newValue
+    end)
+
+    -- display warning about sensors
+    line = advpanel:addLine("Warn if missing sensors")
+    form.addBooleanField(line, nil, function()
+        return status.sensorwarningParam
+    end, function(newValue)
+        status.sensorwarningParam = newValue
     end)
 
     status.resetALL()
@@ -2328,7 +2337,9 @@ function status.paint(widget)
                 status.noTelem()
                 status.initTime = os.clock()
             elseif (os.clock() - status.initTime) >= 10 and validateSensors and (#rfsuite.bg.telemetry.validateSensors() > 0) then
-                status.missingSensors()
+                if status.sensorwarningParam == true or status.sensorwarningParam == nil then
+                    status.missingSensors()
+                end
             elseif status.idleupswitchParam and status.idleupswitchParam:state() then
                 local armSource = rfsuite.bg.telemetry.getSensorSource("armflags")
                 if armSource then
@@ -3018,7 +3029,7 @@ function status.read()
     status.govmodeParam = storage.read("mem10")
     status.rpmAlertsParam = storage.read("mem11")
     status.rpmAlertsPercentageParam = storage.read("mem12")
-    status.adjFunctionParam = storage.read("mem13") -- spare
+    status.sensorwarningParam = storage.read("mem13") 
     status.announcementRPMSwitchParam = storage.read("mem14")
     status.announcementCurrentSwitchParam = storage.read("mem15")
     status.announcementFuelSwitchParam = storage.read("mem16")
@@ -3112,7 +3123,7 @@ function status.write()
     storage.write("mem10", status.govmodeParam)
     storage.write("mem11", status.rpmAlertsParam)
     storage.write("mem12", status.rpmAlertsPercentageParam)
-    storage.write("mem13", status.adjFunctionParam) -- spare
+    storage.write("mem13", status.sensorwarningParam) 
     storage.write("mem14", status.announcementRPMSwitchParam)
     storage.write("mem15", status.announcementCurrentSwitchParam)
     storage.write("mem16", status.announcementFuelSwitchParam)
