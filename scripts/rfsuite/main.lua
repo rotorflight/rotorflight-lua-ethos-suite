@@ -17,6 +17,10 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 
+ This version of rotorflight-ethos-suite is the final version that will
+ support ethos 1.6.1.  Due to new features we would like to make use of
+ all releases past this data will be for ethos 1.6.2 and higher.
+
 ]] --
 -- RotorFlight + ETHOS LUA configuration
 local config = {}
