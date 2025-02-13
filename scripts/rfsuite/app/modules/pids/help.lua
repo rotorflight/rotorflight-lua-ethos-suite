@@ -30,28 +30,28 @@ data['help']['default'] = {
 }
 
 data['fields'] = {
-    pid_0_P = {t = "How tightly the system tracks the desired setpoint."},
-    pid_1_P = {t = "How tightly the system tracks the desired setpoint."},
-    pid_2_P = {t = "How tightly the system tracks the desired setpoint."},
+--    pid_0_P = {help = "How tightly the system tracks the desired setpoint."},
+--    pid_1_P = {help = "How tightly the system tracks the desired setpoint."},
+--    pid_2_P = {help = "How tightly the system tracks the desired setpoint."},
 
-    pid_0_I = {t = "How tightly the system holds its position."},
-    pid_1_I = {t = "How tightly the system holds its position."},
-    pid_2_I = {t = "How tightly the system holds its position."},
+--    pid_0_I = {help = "How tightly the system holds its position."},
+--    pid_1_I = {help = "How tightly the system holds its position."},
+--    pid_2_I = {help = "How tightly the system holds its position."},
 
-    pid_0_O = {t = "Used to prevent the craft from pitching up when flying at speed."},
-    pid_1_O = {t = "Used to prevent the craft from pitching up when flying at speed."},
+--    pid_0_O = {help = "Used to prevent the craft from pitching up when flying at speed."},
+--    pid_1_O = {help = "Used to prevent the craft from pitching up when flying at speed."},
 
-    pid_0_D = {t = "Strength of dampening to any motion on the system, including external influences. Also reduces overshoot."},
-    pid_1_D = {t = "Strength of dampening to any motion on the system, including external influences. Also reduces overshoot."},
-    pid_2_D = {t = "Strength of dampening to any motion on the system, including external influences. Also reduces overshoot."},
+--    pid_0_D = {help = "Strength of dampening to any motion on the system, including external influences. Also reduces overshoot."},
+--    pid_1_D = {help = "Strength of dampening to any motion on the system, including external influences. Also reduces overshoot."},
+--    pid_2_D = {help = "Strength of dampening to any motion on the system, including external influences. Also reduces overshoot."},
     
-    pid_0_F = {t = "Helps push P-term based on stick input. Increasing will make response more sharp, but can cause overshoot."},
-    pid_1_F = {t = "Helps push P-term based on stick input. Increasing will make response more sharp, but can cause overshoot."},
-    pid_2_F = {t = "Helps push P-term based on stick input. Increasing will make response more sharp, but can cause overshoot."},
+--    pid_0_F = {help = "Helps push P-term based on stick input. Increasing will make response more sharp, but can cause overshoot."},
+--    pid_1_F = {help = "Helps push P-term based on stick input. Increasing will make response more sharp, but can cause overshoot."},
+--    pid_2_F = {help = "Helps push P-term based on stick input. Increasing will make response more sharp, but can cause overshoot."},
     
-    pid_0_B = {t = "Additional boost on the feedforward to make the heli react more to quick stick movements."},
-    pid_1_B = {t = "Additional boost on the feedforward to make the heli react more to quick stick movements."},
-    pid_2_B = {t = "Additional boost on the feedforward to make the heli react more to quick stick movements."}
+--    pid_0_B = {help = "Additional boost on the feedforward to make the heli react more to quick stick movements."},
+--    pid_1_B = {help = "Additional boost on the feedforward to make the heli react more to quick stick movements."},
+--    pid_2_B = {help = "Additional boost on the feedforward to make the heli react more to quick stick movements."}
 }
 
 return data
