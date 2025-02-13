@@ -6,21 +6,21 @@ local currentProfileChecked = false
 
 -- tail rotor settings
 labels[#labels + 1] = { t = "Yaw stop gain", label = "ysgain", inline_size = 13.6 }
-fields[#fields + 1] = { t = "CW", help = "profilesYawStopGainCW", inline = 2, label = "ysgain", apikey = "yaw_cw_stop_gain" }
-fields[#fields + 1] = { t = "CCW", help = "profilesYawStopGainCCW", inline = 1, label = "ysgain", apikey = "yaw_ccw_stop_gain" }
+fields[#fields + 1] = { t = "CW", inline = 2, label = "ysgain", apikey = "yaw_cw_stop_gain" }
+fields[#fields + 1] = { t = "CCW", inline = 1, label = "ysgain", apikey = "yaw_ccw_stop_gain" }
 
-fields[#fields + 1] = { t = "Precomp Cutoff", help = "profilesYawPrecompCutoff", apikey = "yaw_precomp_cutoff" }
-fields[#fields + 1] = { t = "Cyclic FF gain", help = "profilesYawFFCyclicGain", apikey = "yaw_cyclic_ff_gain" }
-fields[#fields + 1] = { t = "Collective FF gain", help = "profilesYawFFCollectiveGain", apikey = "yaw_collective_ff_gain" }
+fields[#fields + 1] = { t = "Precomp Cutoff", apikey = "yaw_precomp_cutoff" }
+fields[#fields + 1] = { t = "Cyclic FF gain", apikey = "yaw_cyclic_ff_gain" }
+fields[#fields + 1] = { t = "Collective FF gain", apikey = "yaw_collective_ff_gain" }
 
 if rfsuite.config.apiVersion >= 12.08 then
     labels[#labels + 1] = { t = "Inertia Precomp", label = "inertia", inline_size = 13.6 }
-    fields[#fields + 1] = { t = "Gain", help = "profilesIntertiaGain", inline = 2, label = "inertia", apikey = "yaw_inertia_precomp_gain" }
-    fields[#fields + 1] = { t = "Cutoff", help = "profilesInertiaCutoff", inline = 1, label = "inertia", apikey = "yaw_inertia_precomp_cutoff" }
+    fields[#fields + 1] = { t = "Gain", inline = 2, label = "inertia", apikey = "yaw_inertia_precomp_gain" }
+    fields[#fields + 1] = { t = "Cutoff", inline = 1, label = "inertia", apikey = "yaw_inertia_precomp_cutoff" }
 else
     labels[#labels + 1] = { t = "Collective Impulse FF", label = "colimpff", inline_size = 13.6 }
-    fields[#fields + 1] = { t = "Gain", help = "profilesYawFFImpulseGain", inline = 2, label = "colimpff", apikey = "yaw_collective_dynamic_gain" }
-    fields[#fields + 1] = { t = "Decay", help = "profilesyawFFImpulseDecay", inline = 1, label = "colimpff", apikey = "yaw_collective_dynamic_decay" }
+    fields[#fields + 1] = { t = "Gain", inline = 2, label = "colimpff", apikey = "yaw_collective_dynamic_gain" }
+    fields[#fields + 1] = { t = "Decay", inline = 1, label = "colimpff", apikey = "yaw_collective_dynamic_decay" }
 end
 
 local function postLoad(self)

@@ -5,16 +5,16 @@ local minBytes
 
 
 fields[#fields + 1] = { t = "Mode" , postEdit = function(self) self.setGovernorMode(self) end , type=1, apikey="gov_mode"}
-fields[#fields + 1] = {t = "Handover throttle%", help = "govHandoverThrottle", apikey = "gov_handover_throttle"}
+fields[#fields + 1] = {t = "Handover throttle%", apikey = "gov_handover_throttle"}
 
 if rfsuite.config.apiVersion >= 12.08 then 
-fields[#fields + 1] = {t = "Min spoolup throttle%", help = "govSpoolupThrottle", apikey = "gov_spoolup_min_throttle"}
+fields[#fields + 1] = {t = "Min spoolup throttle%", apikey = "gov_spoolup_min_throttle"}
 end
 
-fields[#fields + 1] = {t = "Startup time", help = "govStartupTime", apikey = "gov_startup_time"}
-fields[#fields + 1] = {t = "Spoolup time", help = "govSpoolupTime", apikey = "gov_spoolup_time"}
-fields[#fields + 1] = {t = "Tracking time", help = "govTrackingTime", apikey = "gov_tracking_time"}
-fields[#fields + 1] = {t = "Recovery time", help = "govRecoveryTime", apikey = "gov_recovery_time"}
+fields[#fields + 1] = {t = "Startup time", apikey = "gov_startup_time"}
+fields[#fields + 1] = {t = "Spoolup time", apikey = "gov_spoolup_time"}
+fields[#fields + 1] = {t = "Tracking time", apikey = "gov_tracking_time"}
+fields[#fields + 1] = {t = "Recovery time", apikey = "gov_recovery_time"}
 
 local function disableFields()
     for i, v in ipairs(rfsuite.app.formFields) do if i ~= 1 then rfsuite.app.formFields[i]:enable(false) end end

@@ -434,8 +434,8 @@ function ui.fieldNumber(i)
     maxValue = rfsuite.utils.scaleValue(f.max, f)
 
     if f.mult ~= nil then
-        minValue = minValue * f.mult
-        maxValue = maxValue * f.mult
+        if minValue ~= nil then minValue = minValue * f.mult end
+        if maxValue ~= nil then maxValue = maxValue * f.mult end
     end
 
     if minValue == nil then minValue = 0 end
@@ -483,7 +483,10 @@ function ui.fieldNumber(i)
     if f.step ~= nil then rfsuite.app.formFields[i]:step(f.step) end
     if f.disable == true then rfsuite.app.formFields[i]:enable(false) end
 
-    if f.help ~= nil then
+    if f.help ~= nil or f.apikey ~= nil then
+
+        if f.help == nil and f.apikey ~= nul then f.help = f.apikey end
+
         if rfsuite.app.fieldHelpTxt and rfsuite.app.fieldHelpTxt[f.help] and rfsuite.app.fieldHelpTxt[f.help]['t'] ~= nil then
             local helpTxt = rfsuite.app.fieldHelpTxt[f.help]['t']
             rfsuite.app.formFields[i]:help(helpTxt)

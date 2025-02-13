@@ -23,8 +23,6 @@ data['help'] = {}
 
 data['help']['default'] = {"Default: We keep this to make button appear for rates.", "We will use the sub keys below."}
 
-data['fields'] = {profilesRatesDynamicsTime = {t = "Increase or decrease the response time of the rate to smooth heli movements."}, profilesRatesDynamicsAcc = {t = "Maximum acceleration of the craft in response to a stick movement."}}
-
 -- Rates is a bit of an odd-ball because we show different help based one
 -- the rate table selected.  This info is supplied below.
 

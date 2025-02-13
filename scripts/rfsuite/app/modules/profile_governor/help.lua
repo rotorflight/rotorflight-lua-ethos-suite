@@ -25,19 +25,19 @@ data['help']['default'] = {"Full headspeed: Headspeed target when at 100% thrott
                            "Tail Torque Assist: For motorized tails. Gain and limit of headspeed increase when using main rotor torque for yaw assist."}
 
 data['fields'] = {
-    govHeadspeed = {t = "Target headspeed for the current profile."},
-    govMasterGain = {t = "Master PID loop gain."},
-    govPGain = {t = "PID loop P-term gain."},
-    govIGain = {t = "PID loop I-term gain."},
-    govDGain = {t = "PID loop D-term gain."},
-    govFGain = {t = "Feedforward gain."},
-    govYawPrecomp = {t = "Yaw precompensation weight - how much yaw is mixed into the feedforward."},
-    govCyclicPrecomp = {t = "Cyclic precompensation weight - how much cyclic is mixed into the feedforward."},
-    govCollectivePrecomp = {t = "Collective precompensation weight - how much collective is mixed into the feedfoward."},
-    govTTAGain = {t = "TTA gain applied to increase headspeed to control the tail in the negative direction (e.g. motorised tail less than idle speed)."},
-    govTTALimit = {t = "TTA max headspeed increase over full headspeed."},
-    govMaxThrottle = {t = "Maximum output throttle the governor is allowed to use."},
-    govMinThrottle = {t = "Minimum output throttle the governor is allowed to use."}
+    governor_headspeed = {t = "Target headspeed for the current profile."},
+    governor_gain = {t = "Master PID loop gain."},
+    governor_p_gain = {t = "PID loop P-term gain."},
+    governor_i_gain = {t = "PID loop I-term gain."},
+    governor_d_gain = {t = "PID loop D-term gain."},
+    governor_f_gain = {t = "Feedforward gain."},
+    governor_yaw_ff_weight = {t = "Yaw precompensation weight - how much yaw is mixed into the feedforward."},
+    governor_cyclic_ff_weight = {t = "Cyclic precompensation weight - how much cyclic is mixed into the feedforward."},
+    governor_collective_ff_weight = {t = "Collective precompensation weight - how much collective is mixed into the feedfoward."},
+    governor_tta_gain = {t = "TTA gain applied to increase headspeed to control the tail in the negative direction (e.g. motorised tail less than idle speed)."},
+    governor_tta_limit = {t = "TTA max headspeed increase over full headspeed."},
+    governor_max_throttle = {t = "Maximum output throttle the governor is allowed to use."},
+    governor_min_throttle = {t = "Minimum output throttle the governor is allowed to use."}
 }
 
 return data

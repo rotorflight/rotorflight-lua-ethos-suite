@@ -24,13 +24,13 @@ data['help'] = {}
 data['help']['default'] = {"Configure your radio settings. Stick center, arm, throttle hold, and throttle cut."}
 
 data['fields'] = {
-    radioCenter = {t = "Stick center in microseconds (us)."},
-    radioDeflection = {t = "Stick deflection from center in microseconds (us)."},
-    radioArmThrottle = {t = "Throttle must be at or below this value in microseconds (us) to allow arming. Must be at least 10us lower than minimum throttle."},
-    radioMinThrottle = {t = "Minimum throttle (0% throttle output) expected from radio, in microseconds (us)."},
-    radioMaxThrottle = {t = "Maximum throttle (100% throttle output) expected from radio, in microseconds (us)."},
-    radioCycDeadband = {t = "Deadband for cyclic control in microseconds (us)."},
-    radioYawDeadband = {t = "Deadband for yaw control in microseconds (us)."}
+    rc_center = {t = "Stick center in microseconds (us)."},
+    rc_deflection = {t = "Stick deflection from center in microseconds (us)."},
+    rc_arm_throttle = {t = "Throttle must be at or below this value in microseconds (us) to allow arming. Must be at least 10us lower than minimum throttle."},
+    rc_min_throttle = {t = "Minimum throttle (0% throttle output) expected from radio, in microseconds (us)."},
+    rc_max_throttle = {t = "Maximum throttle (100% throttle output) expected from radio, in microseconds (us)."},
+    rc_deadband = {t = "Deadband for cyclic control in microseconds (us)."},
+    rc_yaw_deadband = {t = "Deadband for yaw control in microseconds (us)."}
 }
 
 return data

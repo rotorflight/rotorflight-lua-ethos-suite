@@ -1,12 +1,12 @@
 local labels = {}
 local fields = {}
 
-fields[#fields + 1] = {t = "Max Cell Voltage", help = "maxCellVoltage", apikey="vbatmaxcellvoltage"}
-fields[#fields + 1] = {t = "Full Cell Voltage", help = "fullCellVoltage", apikey="vbatfullcellvoltage"}
-fields[#fields + 1] = {t = "Warn Cell Voltage", help = "warnCellVoltage", apikey="vbatwarningcellvoltage"}
-fields[#fields + 1] = {t = "Min Cell Voltage", help = "minCellVoltage", apikey="vbatmincellvoltage"}
-fields[#fields + 1] = {t = "Battery Capacity", help = "batteryCapacity", apikey="batteryCapacity"}
-fields[#fields + 1] = {t = "Cell Count", help = "cellCount", apikey="batteryCellCount"}
+fields[#fields + 1] = {t = "Max Cell Voltage", apikey="vbatmaxcellvoltage"}
+fields[#fields + 1] = {t = "Full Cell Voltage", apikey="vbatfullcellvoltage"}
+fields[#fields + 1] = {t = "Warn Cell Voltage", apikey="vbatwarningcellvoltage"}
+fields[#fields + 1] = {t = "Min Cell Voltage", apikey="vbatmincellvoltage"}
+fields[#fields + 1] = {t = "Battery Capacity", apikey="batteryCapacity"}
+fields[#fields + 1] = {t = "Cell Count", apikey="batteryCellCount"}
 
 -- Below are other fields on the same msp call.
 -- voltage meter source (val 4)

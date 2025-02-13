@@ -24,13 +24,14 @@ data['help'] = {}
 data['help']['default'] = {"Typically you would not edit this page without checking your Blackbox logs!", "Gyro lowpass: Lowpass filters for the gyro signal. Typically left at default.", "Gyro notch filters: Use for filtering specific frequency ranges. Typically not needed in most helis.", "Dynamic Notch Filters: Automatically creates notch filters within the min and max frequency range."}
 
 data['fields'] = {
-    gyroLowpassFilterCutoff = {t = "Lowpass filter cutoff frequency in Hz."},
-    gyroLowpassFilterDynamicCutoff = {t = "Dynamic filter min/max cutoff in Hz."},
-    gyroLowpassFilterCenter = {t = "Center frequency to which the notch is applied."},
-    gyroDynamicNotchCount = {t = "Without RPM filters, 4-6 is recommended. With the RPM filters, 2-4 is recommended."},
-    gyroDynamicNotchQ = {t = "Values between 2 and 4 recommended. Lower than 2 will increase filter delay and may degrade flight performance."},
-    gyroDynamicNotchMinHz = {t = "Lowest incoming noise frequency to be filtered. Should be slightly below lowest main rotor fundamental, but no less than 20Hz."},
-    gyroDynamicNotchMaxHz = {t = "Highest incoming noise frequency to be filtered. Should be 10-20% above highest tail rotor fundamental."}
+    gyro_lpf1_static_hz = {t = "Lowpass filter cutoff frequency in Hz."},
+    gyro_lpf1_dyn_min_hz = {t = "Dynamic filter min/max cutoff in Hz."},
+    gyro_lpf1_dyn_max_hz = {t = "Dynamic filter min/max cutoff in Hz."},
+    gyro_lpf2_static_hz = {t = "Lowpass filter cutoff frequency in Hz."},
+    gyro_soft_notch_hz_1 = {t = "Center frequency to which the notch is applied."},
+    gyro_soft_notch_cutoff_1 = {t = "Width of the notch filter in Hz."},
+    gyro_soft_notch_hz_2 = {t = "Center frequency to which the notch is applied."},
+    gyro_soft_notch_cutoff_2 = {t = "Width of the notch filter in Hz."},
 }
 
 return data

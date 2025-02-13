@@ -25,10 +25,10 @@ data['help']['default'] = {"Collective Pitch Compensation: Increasing will compe
                            "Cross Coupling Feq. Limit: Frequency limit for the compensation, higher value will make the compensation action faster."}
 
 data['fields'] = {
-    profilesPitchFFCollective = {t = "Increasing will compensate for the pitching up motion caused by tail drag when climbing."},
-    profilesCyclicCrossCouplingGain = {t = "Amount of compensation applied for pitch-to-roll decoupling."},
-    profilesCyclicCrossCouplingRatio = {t = "Amount of roll-to-pitch compensation needed, vs. pitch-to-roll."},
-    profilesCyclicCrossCouplingCutoff = {t = "Frequency limit for the compensation. Higher value will make the compensation action faster."}
+    pitch_collective_ff_gain = {t = "Increasing will compensate for the pitching up motion caused by tail drag when climbing."},
+    cyclic_cross_coupling_gain = {t = "Amount of compensation applied for pitch-to-roll decoupling."},
+    cyclic_cross_coupling_ratio = {t = "Amount of roll-to-pitch compensation needed, vs. pitch-to-roll."},
+    cyclic_cross_coupling_cutoff = {t = "Frequency limit for the compensation. Higher value will make the compensation action faster."}
 }
 
 return data

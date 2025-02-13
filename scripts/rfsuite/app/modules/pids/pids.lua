@@ -9,9 +9,9 @@ rows = {"Roll", "Pitch", "Yaw"}
 cols = {"P", "I", "D", "F", "O", "B"}
 
 -- P
-fields[1] = {help = "profilesProportional", row = 1, col = 1, apikey = "pid_0_P"}
-fields[2] = {help = "profilesProportional", row = 2, col = 1, apikey = "pid_1_P"}
-fields[3] = {help = "profilesProportional", row = 3, col = 1, apikey = "pid_2_P"}
+fields[1] = {row = 1, col = 1, apikey = "pid_0_P"}
+fields[2] = {row = 2, col = 1, apikey = "pid_1_P"}
+fields[3] = {row = 3, col = 1, apikey = "pid_2_P"}
 
 -- I
 fields[4] = {help = "profilesIntegral", row = 1, col = 2, apikey = "pid_0_I"}
@@ -19,23 +19,23 @@ fields[5] = {help = "profilesIntegral", row = 2, col = 2, apikey = "pid_1_I"}
 fields[6] = {help = "profilesIntegral", row = 3, col = 2, apikey = "pid_2_I"}
 
 -- D
-fields[7] = {help = "profilesDerivative", row = 1, col = 3, apikey = "pid_0_D"}
-fields[8] = {help = "profilesDerivative", row = 2, col = 3, apikey = "pid_1_D"}
-fields[9] = {help = "profilesDerivative", row = 3, col = 3, apikey = "pid_2_D"}
+fields[7] = {row = 1, col = 3, apikey = "pid_0_D"}
+fields[8] = {row = 2, col = 3, apikey = "pid_1_D"}
+fields[9] = {row = 3, col = 3, apikey = "pid_2_D"}
 
 -- F
-fields[10] = {help = "profilesFeedforward", row = 1, col = 4, apikey = "pid_0_F"}
-fields[11] = {help = "profilesFeedforward", row = 2, col = 4, apikey = "pid_1_F"}
-fields[12] = {help = "profilesFeedforward", row = 3, col = 4, apikey = "pid_2_F"}
+fields[10] = {row = 1, col = 4, apikey = "pid_0_F"}
+fields[11] = {row = 2, col = 4, apikey = "pid_1_F"}
+fields[12] = {row = 3, col = 4, apikey = "pid_2_F"}
 
 -- O
-fields[13] = {help = "profilesHSI", row = 1, col = 5, apikey = "pid_0_O"}
-fields[14] = {help = "profilesHSI", row = 2, col = 5, apikey = "pid_1_O"}
+fields[13] = {row = 1, col = 5, apikey = "pid_0_O"}
+fields[14] = {row = 2, col = 5, apikey = "pid_1_O"}
 
 -- B
-fields[15] = {help = "profilesBoost", row = 1, col = 6, apikey = "pid_0_B"}
-fields[16] = {help = "profilesBoost", row = 2, col = 6, apikey = "pid_1_B"}
-fields[17] = {help = "profilesBoost", row = 3, col = 6, apikey = "pid_2_B"}
+fields[15] = {row = 1, col = 6, apikey = "pid_0_B"}
+fields[16] = {row = 2, col = 6, apikey = "pid_1_B"}
+fields[17] = {row = 3, col = 6, apikey = "pid_2_B"}
 
 local function postLoad(self)
     rfsuite.app.triggers.isReady = true
@@ -118,9 +118,9 @@ local function openPage(idx, title, script)
             rfsuite.app.saveValue(i)
         end)
 
-        if f.help ~= nil then
-            if rfsuite.app.fieldHelpTxt[f.help]['t'] ~= nil then
-                local helpTxt = rfsuite.app.fieldHelpTxt[f.help]['t']
+        if f.apikey ~= nil then
+            if rfsuite.app.fieldHelpTxt[f.apikey]['t'] ~= nil then
+                local helpTxt = rfsuite.app.fieldHelpTxt[f.apikey]['t']
                 rfsuite.app.formFields[i]:help(helpTxt)
             end
         end
