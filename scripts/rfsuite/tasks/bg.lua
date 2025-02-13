@@ -46,7 +46,7 @@ if rfsuite.app.moduleList == nil then rfsuite.app.moduleList = rfsuite.utils.fin
 function bg.findTasks()
 
     local taskdir = "tasks"
-    local tasks_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and "tasks/" or (config.suiteDir .. "/tasks/")
+    local tasks_path = "tasks/"
 
     for _, v in pairs(system.listFiles(tasks_path)) do
 
@@ -83,7 +83,7 @@ function bg.flush_logs()
 
     if #bg.log_queue > 0 and rfsuite.bg.msp.mspQueue:isProcessed() then
         -- Determine the log file path based on the ethos version
-        local log_file_path = rfsuite.utils.ethosVersionToMinor() < 16 and config.suiteDir .. "/logs/rfsuite.log" or "logs/rfsuite.log"
+        local log_file_path = "logs/rfsuite.log"
 
         -- Attempt to open the log file once
         local f, err = io.open(log_file_path, 'a')
@@ -124,7 +124,9 @@ end
 function bg.wakeup()
 
     -- kill if version is bad
-    if rfsuite.utils.ethosVersion() < rfsuite.config.ethosVersion then return end
+    if not rfsuite.utils.ethosVersionAtLeast() then
+        return
+    end
 
     -- initialise tasks
     if bg.init == false then
@@ -138,18 +140,20 @@ function bg.wakeup()
     -- this should be before msp.hecks
     -- doing this is heavy - lets run it every few seconds only
     local now = os.clock()
-    if now - (rssiCheckScheduler or 0) >= 2 then
-        currentRssiSensor = rfsuite.utils.getRssiSensor()
+    if now - (rssiCheckScheduler or 0) >= 4 then
 
-        rfsuite.rssiSensorChanged = currentRssiSensor and (lastRssiSensorName ~= currentRssiSensor.name) or false
-        lastRssiSensorName = currentRssiSensor and currentRssiSensor.name or nil
+        -- get sport then elrs sensor
+        currentRssiSensor = system.getSource({appId = 0xF101}) or system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1}) or nil
 
+        rfsuite.rssiSensorChanged = currentRssiSensor and (lastRssiSensorName ~= currentRssiSensor:name()) or false
+        lastRssiSensorName = currentRssiSensor and currentRssiSensor:name() or nil    
         rssiCheckScheduler = now
+
     end
 
     if system:getVersion().simulation == true then rfsuite.rssiSensorChanged = false end
 
-    if currentRssiSensor ~= nil then rfsuite.rssiSensor = currentRssiSensor.sensor end
+    if currentRssiSensor ~= nil then rfsuite.rssiSensor = currentRssiSensor end
 
     -- we load in tasks dynamically using the settings found in
     -- tasks/<name>init.lua

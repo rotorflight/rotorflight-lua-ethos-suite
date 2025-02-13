@@ -75,7 +75,7 @@ end
 -- Update log directory based on model name
 local function checkLogdirExists()
     local logdir = "telemetry"
-    local logs_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and "logs/" or (config.suiteDir .. "/logs/")
+    local logs_path = "logs/" 
 
     if not dir_exists(logs_path, logdir) then os.mkdir(logs_path .. logdir) end
 end
@@ -90,7 +90,7 @@ function logging.flushLogs(forceFlush)
     local max_lines_per_flush = forceFlush or not rfsuite.bg.telemetry.active() and 1 or 10
 
     if #log_queue > 0 and rfsuite.bg.msp.mspQueue:isProcessed() then
-        local filePath = (rfsuite.utils.ethosVersionToMinor() < 16) and (config.suiteDir .. "/logs/telemetry/" .. logFileName) or ("logs/telemetry/" .. logFileName)
+        local filePath = "logs/telemetry/" .. logFileName
 
         local f = io.open(filePath, 'a')
         for i = 1, math.min(#log_queue, max_lines_per_flush) do io.write(f, table.remove(log_queue, 1) .. "\n") end

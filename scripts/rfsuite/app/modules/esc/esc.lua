@@ -2,7 +2,7 @@ local function findMFG()
     local mfgsList = {}
 
     local mfgdir = "app/modules/esc/mfg/"
-    local mfgs_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and mfgdir or (config.suiteDir .. mfgdir)
+    local mfgs_path = mfgdir 
 
     for _, v in pairs(system.listFiles(mfgs_path)) do
 

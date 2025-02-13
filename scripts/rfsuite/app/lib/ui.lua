@@ -174,8 +174,17 @@ end
 
 function ui.openMainMenu()
 
+    -- clear old icons
+    for i,v in pairs(rfsuite.app.gfx_buttons) do
+        if i ~= "mainmenu" then
+            rfsuite.app.gfx_buttons[i] = nil
+        end
+    end
+
     -- hard exit on error
-    if rfsuite.utils.ethosVersion() < rfsuite.config.ethosVersion then return end
+    if not rfsuite.utils.ethosVersionAtLeast(config.ethosVersion) then
+        return
+    end    
 
     local MainMenu = assert(loadfile("app/modules/init.lua"))()
 
@@ -258,7 +267,7 @@ function ui.openMainMenu()
                     -- do not show icon if not supported by ethos version
                     local hideEntry = false
 
-                    if (pvalue.ethosversion ~= nil and rfsuite.config.ethosRunningVersion < pvalue.ethosversion) then hideEntry = true end
+                    if (pvalue.ethosversion ~= nil and not rfsuite.utils.ethosVersionAtLeast(pvalue.ethosversion)) then hideEntry = true end
 
                     if (pvalue.mspversion ~= nil and rfsuite.config.apiVersion < pvalue.mspversion) then hideEntry = true end
 
@@ -356,7 +365,13 @@ function ui.fieldChoice(i)
         postText = nil
     end
 
-    rfsuite.app.formFields[i] = form.addChoiceField(rfsuite.app.formLines[formLineCnt], posField, rfsuite.utils.convertPageValueTable(f.table, f.tableIdxInc), function()
+    local tbldata
+    if f.table == nil then
+        tbldata = {}
+    else
+        tbldata = rfsuite.utils.convertPageValueTable(f.table, f.tableIdxInc)
+    end
+    rfsuite.app.formFields[i] = form.addChoiceField(rfsuite.app.formLines[formLineCnt], posField, tbldata, function()
         if rfsuite.app.Page.fields == nil or rfsuite.app.Page.fields[i] == nil then
             ui.disableAllFields()
             ui.disableAllNavigationFields()
@@ -419,8 +434,8 @@ function ui.fieldNumber(i)
     maxValue = rfsuite.utils.scaleValue(f.max, f)
 
     if f.mult ~= nil then
-        minValue = minValue * f.mult
-        maxValue = maxValue * f.mult
+        if minValue ~= nil then minValue = minValue * f.mult end
+        if maxValue ~= nil then maxValue = maxValue * f.mult end
     end
 
     if minValue == nil then minValue = 0 end
@@ -441,13 +456,13 @@ function ui.fieldNumber(i)
         rfsuite.app.saveValue(i)
     end)
 
-    if config.ethosRunningVersion >= 1514 then
-        if f.onFocus ~= nil then
-            rfsuite.app.formFields[i]:onFocus(function()
-                f.onFocus(rfsuite.app.Page)
-            end)
-        end
+
+    if f.onFocus ~= nil then
+        rfsuite.app.formFields[i]:onFocus(function()
+            f.onFocus(rfsuite.app.Page)
+        end)
     end
+
 
     if f.default ~= nil then
         if f.offset ~= nil then f.default = f.default + f.offset end
@@ -468,7 +483,10 @@ function ui.fieldNumber(i)
     if f.step ~= nil then rfsuite.app.formFields[i]:step(f.step) end
     if f.disable == true then rfsuite.app.formFields[i]:enable(false) end
 
-    if f.help ~= nil then
+    if f.help ~= nil or f.apikey ~= nil then
+
+        if f.help == nil and f.apikey ~= nul then f.help = f.apikey end
+
         if rfsuite.app.fieldHelpTxt and rfsuite.app.fieldHelpTxt[f.help] and rfsuite.app.fieldHelpTxt[f.help]['t'] ~= nil then
             local helpTxt = rfsuite.app.fieldHelpTxt[f.help]['t']
             rfsuite.app.formFields[i]:help(helpTxt)
@@ -478,8 +496,10 @@ function ui.fieldNumber(i)
     end
     if f.instantChange and f.instantChange == true then
         rfsuite.app.formFields[i]:enableInstantChange(true)
+    elseif f.instantChange and f.instantChange == false then
+        rfsuite.app.formFields[i]:enableInstantChange(false)    
     else
-        rfsuite.app.formFields[i]:enableInstantChange(false)
+        rfsuite.app.formFields[i]:enableInstantChange(true)
     end
 end
 
@@ -523,13 +543,12 @@ function ui.fieldStaticText(i)
 
     rfsuite.app.formFields[i] = form.addStaticText(rfsuite.app.formLines[formLineCnt], posField, rfsuite.utils.getFieldValue(rfsuite.app.Page.fields[i]))
 
-    if config.ethosRunningVersion >= 1514 then
-        if f.onFocus ~= nil then
-            rfsuite.app.formFields[i]:onFocus(function()
-                f.onFocus(rfsuite.app.Page)
-            end)
-        end
+    if f.onFocus ~= nil then
+        rfsuite.app.formFields[i]:onFocus(function()
+            f.onFocus(rfsuite.app.Page)
+        end)
     end
+
 
     if f.decimals ~= nil then rfsuite.app.formFields[i]:decimals(f.decimals) end
     if f.unit ~= nil then rfsuite.app.formFields[i]:suffix(f.unit) end
@@ -611,8 +630,10 @@ function ui.fieldText(i)
     end
     if f.instantChange and f.instantChange == true then
         rfsuite.app.formFields[i]:enableInstantChange(true)
+    elseif f.instantChange and f.instantChange == false then
+        rfsuite.app.formFields[i]:enableInstantChange(false)    
     else
-        rfsuite.app.formFields[i]:enableInstantChange(false)
+        rfsuite.app.formFields[i]:enableInstantChange(true)
     end
 
 end

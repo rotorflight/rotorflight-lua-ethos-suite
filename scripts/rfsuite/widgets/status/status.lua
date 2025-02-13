@@ -145,6 +145,7 @@ status.announcementLQSwitchParam = nil
 status.announcementESCSwitchParam = nil
 status.announcementMCUSwitchParam = nil
 status.announcementTimerSwitchParam = nil
+status.sensorwarningParam = true
 status.filteringParam = 1
 status.lowvoltagsenseParam = 2
 status.announcementIntervalParam = 30
@@ -274,11 +275,6 @@ function status.create(widget)
 
     status.lastBitmap = model.bitmap()
     default_image = lcd.loadBitmap(model.bitmap()) or rfsuite.utils.loadImage("widgets/status/default_image.png") or nil
-
-    if rfsuite.utils.ethosVersion() < rfsuite.config.ethosVersion then
-        status.screenError(rfsuite.config.ethosVersionString)
-        return
-    end
 
     return {
         fmsrc = 0,
@@ -929,6 +925,14 @@ function status.configure(widget)
         status.calcfuelParam = newValue
     end)
 
+    -- display warning about sensors
+    line = advpanel:addLine("Warn if missing sensors")
+    form.addBooleanField(line, nil, function()
+        return status.sensorwarningParam
+    end, function(newValue)
+        status.sensorwarningParam = newValue
+    end)
+
     status.resetALL()
 
     return widget
@@ -1299,7 +1303,14 @@ end
 
 function status.paint(widget)
 
-    if not rfsuite.bg.active() then
+    if not rfsuite.utils.ethosVersionAtLeast() then
+        status.screenError(string.format("ETHOS < V%d.%d.%d", 
+            rfsuite.config.ethosVersion[1], 
+            rfsuite.config.ethosVersion[2], 
+            rfsuite.config.ethosVersion[3])
+        )
+        return
+    elseif not rfsuite.bg.active() then
 
         if (os.clock() - status.initTime) >= 2 then status.screenError("PLEASE ENABLE THE BACKGROUND TASK") end
         lcd.invalidate()
@@ -1324,7 +1335,7 @@ function status.paint(widget)
                 zippo = 0
             end
             -- low
-            if status.sensors.voltage / 100 < ((cellVoltage * status.cellsParam) + zippo) then
+            if status.cellsParam and status.sensors.voltage / 100 < ((cellVoltage * status.cellsParam) + zippo) then
                 -- only do audio alert if between a range
                 if status.sensors.voltage / 100 > ((cellVoltage * status.cellsParam / 2) + zippo) then
                     status.voltageIsLowAlert = true
@@ -2327,8 +2338,10 @@ function status.paint(widget)
             if status.linkUP == false and environment.simulation == false then
                 status.noTelem()
                 status.initTime = os.clock()
-            elseif (os.clock() - status.initTime) >= 5 and validateSensors and (#rfsuite.bg.telemetry.validateSensors() > 0) then
-                status.missingSensors()
+            elseif (os.clock() - status.initTime) >= 10 and validateSensors and (#rfsuite.bg.telemetry.validateSensors() > 0) then
+                if status.sensorwarningParam == true or status.sensorwarningParam == nil then
+                    status.missingSensors()
+                end
             elseif status.idleupswitchParam and status.idleupswitchParam:state() then
                 local armSource = rfsuite.bg.telemetry.getSensorSource("armflags")
                 if armSource then
@@ -2428,7 +2441,7 @@ function status.getSensors()
         adjVALUE = rfsuite.bg.telemetry.getSensorSource("adjV")
         adjvSOURCE = rfsuite.bg.telemetry.getSensorSource("adjV")
         mahSOURCE = rfsuite.bg.telemetry.getSensorSource("capacity")
-        rssiSOURCE = rfsuite.utils.getRssiSensor().sensor
+        rssiSOURCE = rfsuite.bg.telemetry.getSensorSource("rssi") 
         govSOURCE = rfsuite.bg.telemetry.getSensorSource("governor")
 
         if rfsuite.bg.telemetry.getSensorProtocol() == 'customCRSF' then
@@ -3018,7 +3031,7 @@ function status.read()
     status.govmodeParam = storage.read("mem10")
     status.rpmAlertsParam = storage.read("mem11")
     status.rpmAlertsPercentageParam = storage.read("mem12")
-    status.adjFunctionParam = storage.read("mem13") -- spare
+    status.sensorwarningParam = storage.read("mem13") 
     status.announcementRPMSwitchParam = storage.read("mem14")
     status.announcementCurrentSwitchParam = storage.read("mem15")
     status.announcementFuelSwitchParam = storage.read("mem16")
@@ -3112,7 +3125,7 @@ function status.write()
     storage.write("mem10", status.govmodeParam)
     storage.write("mem11", status.rpmAlertsParam)
     storage.write("mem12", status.rpmAlertsPercentageParam)
-    storage.write("mem13", status.adjFunctionParam) -- spare
+    storage.write("mem13", status.sensorwarningParam) 
     storage.write("mem14", status.announcementRPMSwitchParam)
     storage.write("mem15", status.announcementCurrentSwitchParam)
     storage.write("mem16", status.announcementFuelSwitchParam)

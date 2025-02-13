@@ -7,17 +7,13 @@ local mspHeaderBytes = ESC.mspHeaderBytes
 local mspSignature = ESC.mspSignature
 local simulatorResponse = ESC.simulatorResponse
 
-local flightMode = {"Helicopter", "Fixed Wing"}
-local becVoltage = {"7.5", "8.0", "8.5", "12"}
-local motorDirection = {"CW", "CCW"}
-local fanControl = {"Automatic", "Always On"}
 
 
-fields[#fields + 1] = {t = "Cell count", min = 4, max = 14, apikey="cell_count"}
-fields[#fields + 1] = {t = "BEC voltage", tableIdxInc = -1, table = becVoltage, unit = "V", apikey="bec_voltage"}
-fields[#fields + 1] = {t = "Motor direction", tableIdxInc = -1, table = motorDirection, apikey="motor_direction"}
-fields[#fields + 1] = {t = "Soft start", min = 5, max = 55, apikey="soft_start"}
-fields[#fields + 1] = {t = "Fan control", tableIdxInc = -1, table = fanControl, apikey="fan_control"}
+fields[#fields + 1] = {t = "Cell count", apikey="cell_count"}
+fields[#fields + 1] = {t = "BEC voltage", apikey="bec_voltage", type = 1}
+fields[#fields + 1] = {t = "Motor direction", apikey="motor_direction", type = 1}
+fields[#fields + 1] = {t = "Soft start", apikey="soft_start"}
+fields[#fields + 1] = {t = "Fan control", apikey="fan_control"}
 
 -- fields[#fields + 1] = {t = "Hardware version", vals = {mspHeaderBytes + 18}}  -- this val does not look correct.  regardless not in right place
 

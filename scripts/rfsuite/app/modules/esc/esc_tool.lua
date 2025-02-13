@@ -74,7 +74,7 @@ local function openPage(pidx, title, script)
         local API = rfsuite.bg.msp.api.load(ESC.mspapi)
         mspSignature = API.mspSignature
         mspHeaderBytes = API.mspHeaderBytes
-        simulatorResponse = API.simulatorResponse
+        simulatorResponse = API.simulatorResponse or {0}
         mspBytes = #simulatorResponse
     else
         --legacy method

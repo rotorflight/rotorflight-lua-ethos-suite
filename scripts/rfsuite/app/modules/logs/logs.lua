@@ -29,9 +29,9 @@ end
 local function getLogPath()
 
     -- do some checks to make sure stuff exists
-    local base_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and "./" or (rfsuite.config.suiteDir .. "/")
-    local logs_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and "logs" or (rfsuite.config.suiteDir .. "/logs")
-    local logs_path_telemetry = (rfsuite.utils.ethosVersionToMinor() >= 16) and "logs/telemetry" or (rfsuite.config.suiteDir .. "/logs/telemetry")
+    local base_path = "./"
+    local logs_path = "logs"
+    local logs_path_telemetry = "logs/telemetry" 
 
     if not dir_exists(base_path, logs_path) then os.mkdir(logs_path) end
     if not dir_exists(logs_path_telemetry) then os.mkdir(logs_path_telemetry) end
@@ -90,7 +90,9 @@ end
 local function openPage(pidx, title, script, displaymode)
 
     -- hard exit on error
-    if rfsuite.utils.ethosVersion() < rfsuite.config.ethosVersion then return end
+    if not rfsuite.utils.ethosVersionAtLeast() then
+        return
+    end
 
     currentDisplayMode = displaymode
 

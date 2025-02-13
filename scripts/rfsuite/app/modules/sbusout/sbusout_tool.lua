@@ -25,16 +25,7 @@ minmax[4] = {min = 0, max = 1000, sourceMax = motorCount, defaultMin = 0, defaul
 local enableWakeup = false
 
 -- layouts
-fields[#fields + 1] = {
-    t = "Type",
-    min = 0,
-    max = 16,
-    vals = {1 + offset},
-    table = {"Receiver", "Mixer", "Servo", "Motor"},
-    postEdit = function(self)
-        self.setMinMaxIndex(self, true)
-    end
-}
+fields[#fields + 1] = {t = "Type", min = 0, max = 16, vals = {1 + offset}, table = {"Receiver", "Mixer", "Servo", "Motor"}, postEdit = function(self) self.setMinMaxIndex(self, true) end}
 fields[#fields + 1] = {t = "Source", min = 0, max = 15, offset = 0, vals = {2 + offset}, help = "sbusOutSource"}
 fields[#fields + 1] = {t = "Min", min = -2000, max = 2000, vals = {3 + offset, 4 + offset}, help = "sbusOutMin"}
 fields[#fields + 1] = {t = "Max", min = -2000, max = 2000, vals = {5 + offset, 6 + offset}, help = "sbusOutMax"}

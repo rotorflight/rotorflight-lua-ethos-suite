@@ -25,7 +25,8 @@ local supportedRadios = {
             logGraphButtonsPerRow = 5,
             logGraphKeyHeight = 65,
             logGraphHeightOffset = -15,
-            logKeyFont = FONT_S
+            logKeyFont = FONT_S,
+            sliderPaddingLeft = 42,
         }
     },
     -- TANDEM X18, TWIN X Lite (480x320)
@@ -48,11 +49,12 @@ local supportedRadios = {
             linePaddingTop = 6,
             formRowHeight = 50,
             logGraphMenuOffset = 55,
-            logGraphWidthPercentage = 0.62,
+            logGraphWidthPercentage = 0.685,
             logGraphButtonsPerRow = 4,
             logGraphKeyHeight = 45,
             logGraphHeightOffset = 10,
-            logKeyFont = FONT_XS
+            logKeyFont = FONT_XS,
+            sliderPaddingLeft = 30,
         }
     },
     -- Horus X10, Horus X12 (480x272)
@@ -78,7 +80,8 @@ local supportedRadios = {
             logGraphButtonsPerRow = 4,
             logGraphKeyHeight = 38,
             logGraphHeightOffset = 0,
-            logKeyFont = FONT_XS
+            logKeyFont = FONT_XS,
+            sliderPaddingLeft = 30,
         }
     },
     -- Twin X14 (632x314)
@@ -105,7 +108,8 @@ local supportedRadios = {
             logGraphButtonsPerRow = 4,
             logGraphKeyHeight = 50,
             logGraphHeightOffset = 0,
-            logKeyFont = FONT_XS
+            logKeyFont = FONT_XS,
+            sliderPaddingLeft = 30,
         }
     }
 }

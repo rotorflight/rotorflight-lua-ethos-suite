@@ -24,7 +24,7 @@ local init = {
     image = "mixer.png", -- image for the page
     order = 4, -- order in the section
     developer = false, -- hide this page if true
-    ethosversion = 1519 -- disable button if ethos version is less than this
+    ethosversion = {1, 6, 2} -- disable button if ethos version is less than this
 }
 
 return init

@@ -56,8 +56,12 @@ function rf2craftimage.paint(widget)
     local w = LCD_W
     local h = LCD_H
 
-    if rfsuite.utils.ethosVersion() < rfsuite.config.ethosVersion then
-        screenError(rfsuite.config.ethosVersionString)
+    if not rfsuite.utils.ethosVersionAtLeast() then
+        status.screenError(string.format("ETHOS < V%d.%d.%d", 
+            rfsuite.config.ethosVersion[1], 
+            rfsuite.config.ethosVersion[2], 
+            rfsuite.config.ethosVersion[3])
+        )
         return
     end
 
