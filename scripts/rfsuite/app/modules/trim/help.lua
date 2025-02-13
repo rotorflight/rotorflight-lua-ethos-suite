@@ -24,11 +24,11 @@ data['help'] = {}
 data['help']['default'] = {"Link trims: Use to trim out small leveling issues in your swash plate. Typically only used if the swash links are non-adjustable.", "Motorised tail: If using a motorised tail, use this to set the minimum idle speed and zero yaw."}
 
 data['fields'] = {
-    swash_trim_0 = {t = "Swash trim to level the swash plate when using fixed links."},
-    swash_trim_1 = {t = "Swash trim to level the swash plate when using fixed links."},
-    swash_trim_2 = {t = "Swash trim to level the swash plate when using fixed links."},
-    tail_center_trim = {t = "Sets tail rotor trim for 0 yaw for variable pitch, or tail motor throttle for 0 yaw for motorized."},
-    tail_center_trim_motor = {t = "Minimum throttle signal sent to the tail motor. This should be set just high enough that the motor does not stop."}
+--    swash_trim_0 = {help ="Swash trim to level the swash plate when using fixed links."},
+--    swash_trim_1 = {help ="Swash trim to level the swash plate when using fixed links."},
+--    swash_trim_2 = {help ="Swash trim to level the swash plate when using fixed links."},
+--    tail_center_trim = {help ="Sets tail rotor trim for 0 yaw for variable pitch, or tail motor throttle for 0 yaw for motorized."},
+--    tail_center_trim_motor = {help ="Minimum throttle signal sent to the tail motor. This should be set just high enough that the motor does not stop."}
 }
 
 return data
