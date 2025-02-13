@@ -18,30 +18,30 @@
 local MSP_API_CMD_READ = 112 -- Command identifier 
 local MSP_API_CMD_WRITE = 202 -- Command identifier 
 
--- Function to generate the PID structure
-local function generate_pid_structure(pid_axis_count, cyclic_axis_count)
-    local structure = {}
-
-    for i = 0, pid_axis_count - 1 do
-        table.insert(structure, {field = "pid_" .. i .. "_P", type = "U16", apiVersion = 12.06, simResponse = {70, 0}})
-        table.insert(structure, {field = "pid_" .. i .. "_I", type = "U16", apiVersion = 12.06, simResponse = {255, 0}})
-        table.insert(structure, {field = "pid_" .. i .. "_D", type = "U16", apiVersion = 12.06, simResponse = {90, 0}})
-        table.insert(structure, {field = "pid_" .. i .. "_F", type = "U16", apiVersion = 12.06, simResponse = {120, 0}})
-    end
-
-    for i = 0, pid_axis_count - 1 do
-        table.insert(structure, {field = "pid_" .. i .. "_B", type = "U16", apiVersion = 12.06, simResponse = {100, 0}})
-    end
-
-    for i = 0, cyclic_axis_count - 1 do
-        table.insert(structure, {field = "pid_" .. i .. "_O", type = "U16", apiVersion = 12.06, simResponse = {200, 0}})
-    end
-
-    return structure
-end
 
 -- Define the MSP response data structures
-local MSP_API_STRUCTURE_READ_DATA = generate_pid_structure(3, 2)
+local MSP_API_STRUCTURE_READ_DATA = {
+        {field = "pid_0_P", type = "U16", apiVersion = 12.06, simResponse = {50, 0},  min = 0, max = 1000, default = 50},
+        {field = "pid_0_I", type = "U16", apiVersion = 12.06, simResponse = {100, 0}, min = 0, max = 1000, default = 100},
+        {field = "pid_0_D", type = "U16", apiVersion = 12.06, simResponse = {20, 0},  min = 0, max = 1000, default = 20},
+        {field = "pid_0_F", type = "U16", apiVersion = 12.06, simResponse = {100, 0}, min = 0, max = 1000, default = 100},
+        {field = "pid_0_B", type = "U16", apiVersion = 12.06, simResponse = {0, 0},   min = 0, max = 1000, default = 0},
+        
+        {field = "pid_1_P", type = "U16", apiVersion = 12.06, simResponse = {50, 0},  min = 0, max = 1000, default = 50},
+        {field = "pid_1_I", type = "U16", apiVersion = 12.06, simResponse = {100, 0}, min = 0, max = 1000, default = 100},
+        {field = "pid_1_D", type = "U16", apiVersion = 12.06, simResponse = {50, 0},  min = 0, max = 1000, default = 50},
+        {field = "pid_1_F", type = "U16", apiVersion = 12.06, simResponse = {100, 0}, min = 0, max = 1000, default = 100},
+        {field = "pid_1_B", type = "U16", apiVersion = 12.06, simResponse = {0, 0},   min = 0, max = 1000, default = 0},
+        
+        {field = "pid_2_P", type = "U16", apiVersion = 12.06, simResponse = {80, 0},  min = 0, max = 1000, default = 80},
+        {field = "pid_2_I", type = "U16", apiVersion = 12.06, simResponse = {120, 0}, min = 0, max = 1000, default = 120},
+        {field = "pid_2_D", type = "U16", apiVersion = 12.06, simResponse = {40, 0},  min = 0, max = 1000, default = 40},
+        {field = "pid_2_F", type = "U16", apiVersion = 12.06, simResponse = {0, 0},   min = 0, max = 1000, default = 0},
+        {field = "pid_2_B", type = "U16", apiVersion = 12.06, simResponse = {0, 0},   min = 0, max = 1000, default = 0},
+        
+        {field = "pid_0_O", type = "U16", apiVersion = 12.06, simResponse = {45, 0},  min = 0, max = 1000, default = 45},
+        {field = "pid_1_O", type = "U16", apiVersion = 12.06, simResponse = {45, 0},  min = 0, max = 1000, default = 45}
+}
 
 -- filter the structure to remove any params not supported by the running api version
 local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)

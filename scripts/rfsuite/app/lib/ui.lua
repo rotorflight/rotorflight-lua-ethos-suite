@@ -365,7 +365,13 @@ function ui.fieldChoice(i)
         postText = nil
     end
 
-    rfsuite.app.formFields[i] = form.addChoiceField(rfsuite.app.formLines[formLineCnt], posField, rfsuite.utils.convertPageValueTable(f.table, f.tableIdxInc), function()
+    local tbldata
+    if f.table == nil then
+        tbldata = {}
+    else
+        tbldata = rfsuite.utils.convertPageValueTable(f.table, f.tableIdxInc)
+    end
+    rfsuite.app.formFields[i] = form.addChoiceField(rfsuite.app.formLines[formLineCnt], posField, tbldata, function()
         if rfsuite.app.Page.fields == nil or rfsuite.app.Page.fields[i] == nil then
             ui.disableAllFields()
             ui.disableAllNavigationFields()

@@ -16,16 +16,16 @@ local currentIdleThrottleTrim
 local currentIdleThrottleTrimLast
 local clear2send = true
 
-fields[#fields + 1] = {t = "Roll trim %", help = "mixerSwashTrim", min = -1000, max = 1000, decimals = 1, scale = 10, apikey = "swash_trim_0", instantChange = true}
+fields[#fields + 1] = {t = "Roll trim %", help = "mixerSwashTrim", apikey = "swash_trim_0"}
 
-fields[#fields + 1] = {t = "Pitch trim %", help = "mixerSwashTrim", min = -1000, max = 1000, decimals = 1, scale = 10, apikey = "swash_trim_1", instantChange = true}
+fields[#fields + 1] = {t = "Pitch trim %", help = "mixerSwashTrim", apikey = "swash_trim_1"}
 
-fields[#fields + 1] = {t = "Col. trim %", help = "mixerSwashTrim", min = -1000, max = 1000, decimals = 1, scale = 10, apikey = "swash_trim_2", instantChange = true}
+fields[#fields + 1] = {t = "Col. trim %", help = "mixerSwashTrim", apikey = "swash_trim_2"}
 
 -- note.  the same vals are used for center trim motor and yaw trim - but they are multiplied and saved in different ways
-if rfsuite.config.tailMode == 1 or rfsuite.config.tailMode == 2 then fields[#fields + 1] = {t = "Center trim for tail motor %", help = "mixerTailMotorCenterTrim", inline = 1, min = -500, max = 500, decimals = 1, scale = 10, apikey = "tail_center_trim", instantChange = true} end
+fields[#fields + 1] = {t = "Center trim for tail motor %", help = "mixerTailMotorCenterTrim", inline = 1, apikey = "tail_center_trim"}
 
-if rfsuite.config.tailMode == 0 then fields[#fields + 1] = {t = "Yaw. trim %", help = "mixerTailMotorCenterTrim", inline = 1, min = -1043, max = 1043, mult = 0.0239923224568138, decimals = 1, apikey = "tail_center_trim", instantChange = true} end
+fields[#fields + 1] = {t = "Yaw. trim %", help = "mixerTailMotorCenterTrim", inline = 1, mult = "0.0239923224568138", apikey = "tail_center_trim"}
 
 local function saveDataEnd()
     local message = {

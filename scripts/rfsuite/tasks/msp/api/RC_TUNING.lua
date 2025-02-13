@@ -20,27 +20,27 @@ local MSP_API_CMD_WRITE = 204 -- Command identifier
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "rates_type",      type = "U8",  apiVersion = 12.06, simResponse = {4}},
-    {field = "rcRates_1",       type = "U8",  apiVersion = 12.06, simResponse = {18}},
-    {field = "rcExpo_1",        type = "U8",  apiVersion = 12.06, simResponse = {25}},
-    {field = "rates_1",         type = "U8",  apiVersion = 12.06, simResponse = {32}},
-    {field = "response_time_1", type = "U8",  apiVersion = 12.06, simResponse = {20}},
-    {field = "accel_limit_1",   type = "U16", apiVersion = 12.06, simResponse = {0, 0}},
-    {field = "rcRates_2",       type = "U8",  apiVersion = 12.06, simResponse = {18}},
-    {field = "rcExpo_2",        type = "U8",  apiVersion = 12.06, simResponse = {25}},
-    {field = "rates_2",         type = "U8",  apiVersion = 12.06, simResponse = {32}},
-    {field = "response_time_2", type = "U8",  apiVersion = 12.06, simResponse = {20}},
-    {field = "accel_limit_2",   type = "U16", apiVersion = 12.06, simResponse = {0, 0}},
-    {field = "rcRates_3",       type = "U8",  apiVersion = 12.06, simResponse = {32}},
-    {field = "rcExpo_3",        type = "U8",  apiVersion = 12.06, simResponse = {50}},
-    {field = "rates_3",         type = "U8",  apiVersion = 12.06, simResponse = {45}},
-    {field = "response_time_3", type = "U8",  apiVersion = 12.06, simResponse = {10}},
-    {field = "accel_limit_3",   type = "U16", apiVersion = 12.06, simResponse = {0, 0}},
-    {field = "rcRates_4",       type = "U8",  apiVersion = 12.06, simResponse = {56}},
-    {field = "rcExpo_4",        type = "U8",  apiVersion = 12.06, simResponse = {0}},
-    {field = "rates_4",         type = "U8",  apiVersion = 12.06, simResponse = {56}},
-    {field = "response_time_4", type = "U8",  apiVersion = 12.06, simResponse = {20}},
-    {field = "accel_limit_4",   type = "U16", apiVersion = 12.06, simResponse = {0, 0}}
+    {field = "rates_type",      type = "U8",  apiVersion = 12.06, simResponse = {4}, min = 0, max = 6, default = 4, table = {[0] = "NONE", "BETAFLIGHT", "RACEFLIGHT", "KISS", "ACTUAL", "QUICK"}},  
+    {field = "rcRates_1",       type = "U8",  apiVersion = 12.06, simResponse = {18}},      -- we do no set min/max values as depends on rate type!
+    {field = "rcExpo_1",        type = "U8",  apiVersion = 12.06, simResponse = {25}},      -- we do no set min/max values as depends on rate type!
+    {field = "rates_1",         type = "U8",  apiVersion = 12.06, simResponse = {32}},      -- we do no set min/max values as depends on rate type!
+    {field = "response_time_1", type = "U8",  apiVersion = 12.06, simResponse = {20}, min = 0, max = 250, unit = "ms"},
+    {field = "accel_limit_1",   type = "U16", apiVersion = 12.06, simResponse = {0, 0}, min = 0, max = 50000, unit = "°/s", step = 10, mult = 10},
+    {field = "rcRates_2",       type = "U8",  apiVersion = 12.06, simResponse = {18}},      -- we do no set min/max values as depends on rate type!
+    {field = "rcExpo_2",        type = "U8",  apiVersion = 12.06, simResponse = {25}},      -- we do no set min/max values as depends on rate type!
+    {field = "rates_2",         type = "U8",  apiVersion = 12.06, simResponse = {32}},      -- we do no set min/max values as depends on rate type!
+    {field = "response_time_2", type = "U8",  apiVersion = 12.06, simResponse = {20}, min = 0, max = 250, unit = "ms"},
+    {field = "accel_limit_2",   type = "U16", apiVersion = 12.06, simResponse = {0, 0}, min = 0, max = 50000, unit = "°/s", step = 10, mult = 10},
+    {field = "rcRates_3",       type = "U8",  apiVersion = 12.06, simResponse = {32}},      -- we do no set min/max values as depends on rate type!
+    {field = "rcExpo_3",        type = "U8",  apiVersion = 12.06, simResponse = {50}},      -- we do no set min/max values as depends on rate type!
+    {field = "rates_3",         type = "U8",  apiVersion = 12.06, simResponse = {45}},      -- we do no set min/max values as depends on rate type!
+    {field = "response_time_3", type = "U8",  apiVersion = 12.06, simResponse = {10}, min = 0, max = 250, unit = "ms"},
+    {field = "accel_limit_3",   type = "U16", apiVersion = 12.06, simResponse = {0, 0}, min = 0, max = 50000, unit = "°/s", step = 10, mult = 10},
+    {field = "rcRates_4",       type = "U8",  apiVersion = 12.06, simResponse = {56}},      -- we do no set min/max values as depends on rate type!
+    {field = "rcExpo_4",        type = "U8",  apiVersion = 12.06, simResponse = {0}},       -- we do no set min/max values as depends on rate type!
+    {field = "rates_4",         type = "U8",  apiVersion = 12.06, simResponse = {56}},      -- we do no set min/max values as depends on rate type!
+    {field = "response_time_4", type = "U8",  apiVersion = 12.06, simResponse = {20}, min = 0, max = 250, unit = "ms"},
+    {field = "accel_limit_4",   type = "U16", apiVersion = 12.06, simResponse = {0, 0}, min = 0, max = 50000, unit = "°/^s", step = 10, mult = 10}
 }
 
 -- filter the structure to remove any params not supported by the running api version

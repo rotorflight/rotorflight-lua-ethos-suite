@@ -19,24 +19,26 @@ local MSP_API_CMD_READ = 92 -- Command identifier
 local MSP_API_CMD_WRITE = 93 -- Command identifier 
 local MSP_API_SIMULATOR_RESPONSE = {0, 1, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 25, 25, 0, 245, 0} -- Default simulator response
 
+local gyroFilterType = {[0]="NONE", [1]="1ST", [2]="2ND"}
+
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "gyro_hardware_lpf",        type = "U8",  apiVersion = 12.07, simResponse = {0}},          
-    {field = "gyro_lpf1_type",           type = "U8",  apiVersion = 12.07, simResponse = {1}},          
-    {field = "gyro_lpf1_static_hz",      type = "U16", apiVersion = 12.07, simResponse = {100, 0}},     
-    {field = "gyro_lpf2_type",           type = "U8",  apiVersion = 12.07, simResponse = {0}},          
-    {field = "gyro_lpf2_static_hz",      type = "U16", apiVersion = 12.07, simResponse = {0, 0}},       
-    {field = "gyro_soft_notch_hz_1",     type = "U16", apiVersion = 12.07, simResponse = {0, 0}},       
-    {field = "gyro_soft_notch_cutoff_1", type = "U16", apiVersion = 12.07, simResponse = {0, 0}},       
-    {field = "gyro_soft_notch_hz_2",     type = "U16", apiVersion = 12.07, simResponse = {0, 0}},       
-    {field = "gyro_soft_notch_cutoff_2", type = "U16", apiVersion = 12.07, simResponse = {0, 0}},       
-    {field = "gyro_lpf1_dyn_min_hz",     type = "U16", apiVersion = 12.07, simResponse = {0, 2}},       
-    {field = "gyro_lpf1_dyn_max_hz",     type = "U16", apiVersion = 12.07, simResponse = {25, 25}},     
-    {field = "dyn_notch_count",          type = "U8",  apiVersion = 12.07, simResponse = {0}},          
-    {field = "dyn_notch_q",              type = "U8",  apiVersion = 12.07, simResponse = {245}},        
-    {field = "dyn_notch_min_hz",         type = "U16", apiVersion = 12.07, simResponse = {0, 0}},       
-    {field = "dyn_notch_max_hz",         type = "U16", apiVersion = 12.07, simResponse = {0, 0}},
-    {field = "rpm_preset",               type = "U8",  apiVersion = 12.07, simResponse = {0}}, 
-    {field = "rpm_min_hz",               type = "U8",  apiVersion = 12.07, simResponse = {0}}            
+    { field = "gyro_hardware_lpf",        type = "U8",  apiVersion = 12.07, simResponse = {0 }},          
+    { field = "gyro_lpf1_type",           type = "U8",  apiVersion = 12.07, simResponse = {1 }, min = 0, max = #gyroFilterType , table = gyroFilterType},          
+    { field = "gyro_lpf1_static_hz",      type = "U16", apiVersion = 12.07, simResponse = {100 ,0}, min = 0, max = 4000, unit = "Hz", default = 100 },     
+    { field = "gyro_lpf2_type",           type = "U8",  apiVersion = 12.07, simResponse = {0 }, min = 0, max = #gyroFilterType , table = gyroFilterType},          
+    { field = "gyro_lpf2_static_hz",      type = "U16", apiVersion = 12.07, simResponse = {0 ,0}, min = 0, max = 4000, unit = "Hz" },       
+    { field = "gyro_soft_notch_hz_1",     type = "U16", apiVersion = 12.07, simResponse = {0 ,0}, min = 0, max = 4000, unit = "Hz" },       
+    { field = "gyro_soft_notch_cutoff_1", type = "U16", apiVersion = 12.07, simResponse = {0 ,0}, min = 0, max = 4000, unit = "Hz" },       
+    { field = "gyro_soft_notch_hz_2",     type = "U16", apiVersion = 12.07, simResponse = {0 ,0}, min = 0, max = 4000, unit = "Hz" },       
+    { field = "gyro_soft_notch_cutoff_2", type = "U16", apiVersion = 12.07, simResponse = {0 ,0}, min = 0, max = 4000, unit = "Hz" },       
+    { field = "gyro_lpf1_dyn_min_hz",     type = "U16", apiVersion = 12.07, simResponse = {0 ,0}, min = 0, max = 1000, unit = "Hz" },       
+    { field = "gyro_lpf1_dyn_max_hz",     type = "U16", apiVersion = 12.07, simResponse = {25 ,0}, min = 0, max = 1000, unit = "Hz" },     
+    { field = "dyn_notch_count",          type = "U8",  apiVersion = 12.07, simResponse = {0 }},          
+    { field = "dyn_notch_q",              type = "U8",  apiVersion = 12.07, simResponse = {245 }},        
+    { field = "dyn_notch_min_hz",         type = "U16", apiVersion = 12.07, simResponse = {0 ,0}},       
+    { field = "dyn_notch_max_hz",         type = "U16", apiVersion = 12.07, simResponse = {0 ,0}},
+    { field = "rpm_preset",               type = "U8",  apiVersion = 12.07, simResponse = {0 }}, 
+    { field = "rpm_min_hz",               type = "U8",  apiVersion = 12.07, simResponse = {0 }}            
 }
 
 -- filter the structure to remove any params not supported by the running api version

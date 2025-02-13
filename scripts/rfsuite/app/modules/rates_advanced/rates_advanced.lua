@@ -6,33 +6,23 @@ local currentProfileChecked = false
 
 if rfsuite.RateTable == nil then rfsuite.RateTable = rfsuite.config.defaultRateProfile end
 
-fields[#fields + 1] = {
-    t = "Rates Type",
-    ratetype = 1,
-    min = 0,
-    max = 5,
-    vals = {1},
-    table = {[0] = "NONE", "BETAFLIGHT", "RACEFLIGHT", "KISS", "ACTUAL", "QUICK"},
-    postEdit = function(self)
-        self.flagRateChange(self, true)
-    end
-}
+fields[#fields + 1] = {t = "Rates Type", ratetype = 1, min = 0, max = 5, type = 1, postEdit = function(self) self.flagRateChange(self, true) end, apikey = "rates_type"}
 
 labels[#labels + 1] = {t = "Roll dynamics", label = "rolldynamics", inline_size = 14.6}
-fields[#fields + 1] = {t = "Time", help = "profilesRatesDynamicsTime", inline = 2, label = "rolldynamics", min = 0, max = 250, unit = "ms", apikey="response_time_1"}
-fields[#fields + 1] = {t = "Accel", help = "profilesRatesDynamicsAcc", inline = 1, label = "rolldynamics", min = 0, max = 50000, unit = "°/s", mult = 10, step = 10, apikey="accel_limit_1"}
+fields[#fields + 1] = {t = "Time", help = "profilesRatesDynamicsTime", inline = 2, label = "rolldynamics", apikey = "response_time_1"}
+fields[#fields + 1] = {t = "Accel", help = "profilesRatesDynamicsAcc", inline = 1, label = "rolldynamics", apikey = "accel_limit_1"}
 
 labels[#labels + 1] = {t = "Pitch dynamics", label = "pitchdynamics", inline_size = 14.6}
-fields[#fields + 1] = {t = "Time", help = "profilesRatesDynamicsTime", inline = 2, label = "pitchdynamics", min = 0, max = 250, unit = "ms", apikey="response_time_2"}
-fields[#fields + 1] = {t = "Accel", help = "profilesRatesDynamicsAcc", inline = 1, label = "pitchdynamics", min = 0, max = 50000, unit = "°/s", mult = 10, step = 10, apikey="accel_limit_2"}
+fields[#fields + 1] = {t = "Time", help = "profilesRatesDynamicsTime", inline = 2, label = "pitchdynamics", apikey = "response_time_2"}
+fields[#fields + 1] = {t = "Accel", help = "profilesRatesDynamicsAcc", inline = 1, label = "pitchdynamics", apikey = "accel_limit_2"}
 
 labels[#labels + 1] = {t = "Yaw dynamics", label = "yawdynamics", inline_size = 14.6}
-fields[#fields + 1] = {t = "Time", help = "profilesRatesDynamicsTime", inline = 2, label = "yawdynamics", min = 0, max = 250, unit = "ms", apikey="response_time_3"}
-fields[#fields + 1] = {t = "Accel", help = "profilesRatesDynamicsAcc", inline = 1, label = "yawdynamics", min = 0, max = 50000, unit = "°/s", mult = 10, step = 10, apikey="accel_limit_3"}
+fields[#fields + 1] = {t = "Time", help = "profilesRatesDynamicsTime", inline = 2, label = "yawdynamics", apikey = "response_time_3"}
+fields[#fields + 1] = {t = "Accel", help = "profilesRatesDynamicsAcc", inline = 1, label = "yawdynamics", apikey = "accel_limit_3"}
 
 labels[#labels + 1] = {t = "Collective dynamics", label = "coldynamics", inline_size = 14.6}
-fields[#fields + 1] = {t = "Time", help = "profilesRatesDynamicsTime", inline = 2, label = "coldynamics", min = 0, max = 250, unit = "ms", apikey="response_time_4"}
-fields[#fields + 1] = {t = "Accel", help = "profilesRatesDynamicsAcc", inline = 1, label = "coldynamics", min = 0, max = 50000, unit = "°/^s", mult = 10, step = 10, apikey="accel_limit_4"}
+fields[#fields + 1] = {t = "Time", help = "profilesRatesDynamicsTime", inline = 2, label = "coldynamics", apikey = "response_time_4"}
+fields[#fields + 1] = {t = "Accel", help = "profilesRatesDynamicsAcc", inline = 1, label = "coldynamics", apikey = "accel_limit_4"}
 
 -- rate table defaults
 local function defaultRates(x)

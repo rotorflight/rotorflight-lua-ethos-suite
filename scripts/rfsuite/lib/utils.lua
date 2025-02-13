@@ -306,11 +306,17 @@ function utils.getTime()
     return os.clock() * 100
 end
 
-function utils.joinTableItems(table, delimiter)
-    if table == nil or #table == 0 then return "" end
+function utils.joinTableItems(tbl, delimiter)
+    if not tbl or #tbl == 0 then return "" end
+
     delimiter = delimiter or ""
-    local result = table[1]
-    for i = 2, #table do result = result .. delimiter .. table[i] end
+    local startIndex = tbl[0] and 0 or 1
+    local result = tbl[startIndex]
+
+    for i = startIndex + 1, #tbl do
+        result = result .. delimiter .. tbl[i]
+    end
+
     return result
 end
 
@@ -401,6 +407,7 @@ function utils.getInlinePositions(f, lPage)
     local eY = rfsuite.app.radio.linePaddingTop
     local posX
     lcd.font(FONT_STD)
+    if f.t == nil then f.t = "" end
     tsizeW, tsizeH = lcd.getTextSize(f.t)
 
     if f.inline == 5 then
@@ -573,6 +580,8 @@ end
 -- and convert them to an ethos forms format
 function utils.convertPageValueTable(tbl, inc)
     local thetable = {}
+
+    if tbl == nil then return nil end
 
     if inc == nil then inc = 0 end
 

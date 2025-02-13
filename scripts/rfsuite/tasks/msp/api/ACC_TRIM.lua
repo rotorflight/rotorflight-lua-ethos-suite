@@ -21,8 +21,8 @@ local MSP_API_CMD_WRITE = 239 -- Command identifier
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "pitch", type = "U16", apiVersion = 12.06, simResponse = {0, 0}, unit = "°", min = -300, max = 300, default = 0},
-    {field = "roll",  type = "U16", apiVersion = 12.06, simResponse = {0, 0}, unit = "°", min = -300, max = 300, default = 0},
+    { field = "pitch", type = "U16", apiVersion = 12.06, simResponse = {0}, min = -300, max = 300, default = 0, unit = "°" },
+    { field = "roll",  type = "U16", apiVersion = 12.06, simResponse = {0}, min = -300, max = 300, default = 0, unit = "°" },
 }
 
 -- filter the structure to remove any params not supported by the running api version

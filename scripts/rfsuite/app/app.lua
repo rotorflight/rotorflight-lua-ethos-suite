@@ -375,7 +375,6 @@ local function processPageReply(source, buf, methodType)
                             print("offset: " .. v.offset)
                             f.offset = v.offset 
                         end
-
                         if (f.decimals == nil and v.decimals ~= nil ) then
                             print("decimals: " .. v.decimals)
                             f.decimals = v.decimals
@@ -398,18 +397,45 @@ local function processPageReply(source, buf, methodType)
                         if (f.min == nil and v.min ~= nil)  then
                             print("min: " .. v.min)
                             f.min = v.min
-                            formField:minimum(v.min)
+                            -- we cant set this for a choice field
+                            if f.type ~= 1 then
+                                formField:minimum(v.min)
+                            end
                         end
                         if (f.max == nil and v.max ~= nil) then
                             print("max: " .. v.max)
                             f.max = v.max
-                            formField:maximum(v.max)
+                            -- we cant set this for a choice field
+                            if f.type ~= 1 then
+                                formField:maximum(v.max)
+                            end
                         end
                         if (f.default == nil and v.default ~= nil) then
                             print("default to: " .. v.default)
                             f.default = v.default
-                            formField:default(v.default)
+                            
+                            -- factor in all possible scaling
+                            if f.offset ~= nil then f.default = f.default + f.offset end
+                            local default = v.default * rfsuite.utils.decimalInc(v.decimals)
+                            if v.mult ~= nil then default = default * v.mult end
+                    
+                            -- if for some reason we have a .0 we need to work around an ethos pecularity on default boxes!
+                            local str = tostring(default)
+                            if str:match("%.0$") then default = math.ceil(default) end                            
+
+                            print("default to: " .. default)       
+                            if f.type ~= 1 then 
+                                formField:default(default)
+                            end
                         end
+                        if (f.table == nil and v.table ~= nil) then 
+                            print("table: .. {" .. rfsuite.utils.joinTableItems(v.table, ", ") .. "}")
+                            f.table = v.table 
+
+                            -- handle some table specific stuff
+                            local tbldata = rfsuite.utils.convertPageValueTable(v.table, f.tableIdxInc or v.tableIdxInc)                                
+                            formField:values(tbldata)
+                        end                        
                     end
                 end
             end

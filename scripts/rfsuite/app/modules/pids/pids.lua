@@ -9,33 +9,33 @@ rows = {"Roll", "Pitch", "Yaw"}
 cols = {"P", "I", "D", "F", "O", "B"}
 
 -- P
-fields[1] = {help = "profilesProportional", row = 1, col = 1, min = 0, max = 1000, default = 50, apikey = "pid_0_P"}
-fields[2] = {help = "profilesProportional", row = 2, col = 1, min = 0, max = 1000, default = 50, apikey = "pid_1_P"}
-fields[3] = {help = "profilesProportional", row = 3, col = 1, t = "PY", min = 0, max = 1000, default = 80, apikey = "pid_2_P"}
+fields[1] = {help = "profilesProportional", row = 1, col = 1, apikey = "pid_0_P"}
+fields[2] = {help = "profilesProportional", row = 2, col = 1, apikey = "pid_1_P"}
+fields[3] = {help = "profilesProportional", row = 3, col = 1, apikey = "pid_2_P"}
 
 -- I
-fields[4] = {help = "profilesIntegral", row = 1, col = 2, min = 0, max = 1000, default = 100, apikey = "pid_0_I"}
-fields[5] = {help = "profilesIntegral", row = 2, col = 2, min = 0, max = 1000, default = 100, apikey = "pid_1_I"}
-fields[6] = {help = "profilesIntegral", row = 3, col = 2, min = 0, max = 1000, default = 120, apikey = "pid_2_I"}
+fields[4] = {help = "profilesIntegral", row = 1, col = 2, apikey = "pid_0_I"}
+fields[5] = {help = "profilesIntegral", row = 2, col = 2, apikey = "pid_1_I"}
+fields[6] = {help = "profilesIntegral", row = 3, col = 2, apikey = "pid_2_I"}
 
 -- D
-fields[7] = {help = "profilesDerivative", row = 1, col = 3, min = 0, max = 1000, default = 20, apikey = "pid_0_D"}
-fields[8] = {help = "profilesDerivative", row = 2, col = 3, min = 0, max = 1000, default = 50, apikey = "pid_1_D"}
-fields[9] = {help = "profilesDerivative", row = 3, col = 3, min = 0, max = 1000, default = 40, apikey = "pid_2_D"}
+fields[7] = {help = "profilesDerivative", row = 1, col = 3, apikey = "pid_0_D"}
+fields[8] = {help = "profilesDerivative", row = 2, col = 3, apikey = "pid_1_D"}
+fields[9] = {help = "profilesDerivative", row = 3, col = 3, apikey = "pid_2_D"}
 
 -- F
-fields[10] = {help = "profilesFeedforward", row = 1, col = 4, min = 0, max = 1000, default = 100, apikey = "pid_0_F"}
-fields[11] = {help = "profilesFeedforward", row = 2, col = 4, min = 0, max = 1000, default = 100, apikey = "pid_1_F"}
-fields[12] = {help = "profilesFeedforward", row = 3, col = 4, min = 0, max = 1000, default = 0, apikey = "pid_2_F"}
+fields[10] = {help = "profilesFeedforward", row = 1, col = 4, apikey = "pid_0_F"}
+fields[11] = {help = "profilesFeedforward", row = 2, col = 4, apikey = "pid_1_F"}
+fields[12] = {help = "profilesFeedforward", row = 3, col = 4, apikey = "pid_2_F"}
 
 -- O
-fields[13] = {help = "profilesHSI", row = 1, col = 5, min = 0, max = 1000, default = 45, apikey = "pid_0_O"}
-fields[14] = {help = "profilesHSI", row = 2, col = 5, min = 0, max = 1000, default = 45, apikey = "pid_1_O"}
+fields[13] = {help = "profilesHSI", row = 1, col = 5, apikey = "pid_0_O"}
+fields[14] = {help = "profilesHSI", row = 2, col = 5, apikey = "pid_1_O"}
 
 -- B
-fields[15] = {help = "profilesBoost", row = 1, col = 6, min = 0, max = 1000, default = 0, apikey = "pid_0_B"}
-fields[16] = {help = "profilesBoost", row = 2, col = 6, min = 0, max = 1000, default = 0, apikey = "pid_1_B"}
-fields[17] = {help = "profilesBoost", row = 3, col = 6, min = 0, max = 1000, default = 0, apikey = "pid_2_B"}
+fields[15] = {help = "profilesBoost", row = 1, col = 6, apikey = "pid_0_B"}
+fields[16] = {help = "profilesBoost", row = 2, col = 6, apikey = "pid_1_B"}
+fields[17] = {help = "profilesBoost", row = 3, col = 6, apikey = "pid_2_B"}
 
 local function postLoad(self)
     rfsuite.app.triggers.isReady = true
@@ -110,29 +110,14 @@ local function openPage(idx, title, script)
 
         pos = {x = posX + padding, y = posY, w = w - padding, h = h}
 
-        minValue = f.min * rfsuite.utils.decimalInc(f.decimals)
-        maxValue = f.max * rfsuite.utils.decimalInc(f.decimals)
-        if f.mult ~= nil then
-            minValue = minValue * f.mult
-            maxValue = maxValue * f.mult
-        end
-
-        rfsuite.app.formFields[i] = form.addNumberField(pidRows[f.row], pos, minValue, maxValue, function()
+        rfsuite.app.formFields[i] = form.addNumberField(pidRows[f.row], pos, 0, 0, function()
             local value = rfsuite.utils.getFieldValue(rfsuite.app.Page.fields[i])
             return value
         end, function(value)
             f.value = rfsuite.utils.saveFieldValue(rfsuite.app.Page.fields[i], value)
             rfsuite.app.saveValue(i)
         end)
-        if f.default ~= nil then
-            local default = f.default * rfsuite.utils.decimalInc(f.decimals)
-            if f.mult ~= nil then default = default * f.mult end
-            rfsuite.app.formFields[i]:default(default)
-        else
-            rfsuite.app.formFields[i]:default(0)
-        end
-        if f.decimals ~= nil then rfsuite.app.formFields[i]:decimals(f.decimals) end
-        if f.unit ~= nil then rfsuite.app.formFields[i]:suffix(f.unit) end
+
         if f.help ~= nil then
             if rfsuite.app.fieldHelpTxt[f.help]['t'] ~= nil then
                 local helpTxt = rfsuite.app.fieldHelpTxt[f.help]['t']

@@ -20,16 +20,16 @@ local MSP_API_CMD_WRITE = 33 -- Command identifier
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "batteryCapacity", type = "U16", apiVersion = 12.06, simResponse = {138, 2}},
-    {field = "batteryCellCount", type = "U8", apiVersion = 12.06, simResponse = {3}},
-    {field = "voltageMeterSource", type = "U8", apiVersion = 12.06, simResponse = {1}},
-    {field = "currentMeterSource", type = "U8", apiVersion = 12.06, simResponse = {1}},
-    {field = "vbatmincellvoltage", type = "U16", apiVersion = 12.06, simResponse = {74, 1}},
-    {field = "vbatmaxcellvoltage", type = "U16", apiVersion = 12.06, simResponse = {174, 1}},
-    {field = "vbatfullcellvoltage", type = "U16", apiVersion = 12.06, simResponse = {154, 1}},
-    {field = "vbatwarningcellvoltage", type = "U16", apiVersion = 12.06, simResponse = {94, 1}},
-    {field = "lvcPercentage", type = "U8", simResponse = {100}},
-    {field = "consumptionWarningPercentage", type = "U8", apiVersion = 12.06, simResponse = {10}},
+    {field = "batteryCapacity",              type = "U16", apiVersion = 12.06, simResponse = {138, 2}, min = 0,   max = 20000, step = 50, unit = "mAh", default = 0    },
+    {field = "batteryCellCount",             type = "U8",  apiVersion = 12.06, simResponse = {3},      min = 0,   max = 24,    unit = nil,   default = 6    },
+    {field = "voltageMeterSource",           type = "U8",  apiVersion = 12.06, simResponse = {1}},
+    {field = "currentMeterSource",           type = "U8",  apiVersion = 12.06, simResponse = {1}},
+    {field = "vbatmincellvoltage",           type = "U16", apiVersion = 12.06, simResponse = {74, 1},  min = 0,   decimals = 2, scale = 100, max = 500, unit = "V",   default = 3.3  },
+    {field = "vbatmaxcellvoltage",           type = "U16", apiVersion = 12.06, simResponse = {174, 1}, min = 0,   decimals = 2, scale = 100, max = 500, unit = "V",   default = 4.3  },
+    {field = "vbatfullcellvoltage",          type = "U16", apiVersion = 12.06, simResponse = {154, 1}, min = 0,   decimals = 2, scale = 100, max = 500, unit = "V",   default = 4.1  },
+    {field = "vbatwarningcellvoltage",       type = "U16", apiVersion = 12.06, simResponse = {94, 1},  min = 0,   decimals = 2, scale = 100, max = 500, unit = "V",   default = 3.5  },
+    {field = "lvcPercentage",                type = "U8",  simResponse = {100}},
+    {field = "consumptionWarningPercentage", type = "U8",  apiVersion = 12.06, simResponse = {10}},
 }
 
 -- filter the structure to remove any params not supported by the running api version
