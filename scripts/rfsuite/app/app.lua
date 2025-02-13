@@ -436,8 +436,9 @@ local function processPageReply(source, buf, methodType)
                             local tbldata = rfsuite.utils.convertPageValueTable(v.table, f.tableIdxInc or v.tableIdxInc)                                
                             formField:values(tbldata)
                         end            
-                        if f.help == nil and v.help ~= nil then
-                            --print("help: " .. v.help)
+        
+                        if v.help ~= nil then
+                            print("help: " .. v.help)
                             f.help = v.help
                             formField:help(v.help)
                         end            
