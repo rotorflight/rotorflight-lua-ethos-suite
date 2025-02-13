@@ -24,15 +24,15 @@ data['help'] = {}
 data['help']['default'] = {"PID Bandwidth: Overall bandwidth in HZ used by the PID loop.", "D-term cutoff: D-term cutoff frequency in HZ.", "B-term cutoff: B-term cutoff frequency in HZ."}
 
 data['fields'] = {
-    gyro_cutoff_0 = {t = "PID loop overall bandwidth in Hz."},
-    gyro_cutoff_1 = {t = "PID loop overall bandwidth in Hz."},
-    gyro_cutoff_2 = {t = "PID loop overall bandwidth in Hz."},
-    dterm_cutoff_0 = {t = "D-term cutoff in Hz."},
-    dterm_cutoff_1 = {t = "D-term cutoff in Hz."},
-    dterm_cutoff_2 = {t = "D-term cutoff in Hz."},
-    bterm_cutoff_0 = {t = "B-term cutoff in Hz."},
-    bterm_cutoff_1 = {t = "B-term cutoff in Hz."},
-    bterm_cutoff_2 = {t = "B-term cutoff in Hz."}
+--    gyro_cutoff_0 = {help = "PID loop overall bandwidth in Hz."},
+--    gyro_cutoff_1 = {help = "PID loop overall bandwidth in Hz."},
+--    gyro_cutoff_2 = {help = "PID loop overall bandwidth in Hz."},
+--    dterm_cutoff_0 = {help = "D-term cutoff in Hz."},
+--    dterm_cutoff_1 = {help = "D-term cutoff in Hz."},
+--    dterm_cutoff_2 = {help = "D-term cutoff in Hz."},
+--    bterm_cutoff_0 = {help = "B-term cutoff in Hz."},
+--    bterm_cutoff_1 = {help = "B-term cutoff in Hz."},
+--    bterm_cutoff_2 = {help = "B-term cutoff in Hz."}
 }
 
 return data
