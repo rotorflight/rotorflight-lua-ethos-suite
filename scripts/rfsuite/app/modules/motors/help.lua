@@ -24,14 +24,14 @@ data['help'] = {}
 data['help']['default'] = {"Configure your motor gear ratio, motor pole count, and throttle PWM values."}
 
 data['fields'] = {
-    minthrottle = {t = "This PWM value is sent to the ESC/Servo at low throttle"},
-    maxthrottle = {t = "This PWM value is sent to the ESC/Servo at full throttle"},
-    mincommand = {t = "This PWM value is sent when the motor is stopped"},
-    motor_pole_count_0 = {t = "The number of magnets on the motor bell."},
-    main_rotor_gear_ratio_0 = {t = "Motor Pinion Gear Tooth Count"},
-    main_rotor_gear_ratio_1 = {t = "Main Gear Tooth Count"},
-    tail_rotor_gear_ratio_0 = {t = "Tail Gear Tooth Count"},
-    tail_rotor_gear_ratio_1 = {t = "Autorotation Gear Tooth Count"}
+--    minthrottle = {help = "This PWM value is sent to the ESC/Servo at low throttle"},
+--    maxthrottle = {help = "This PWM value is sent to the ESC/Servo at full throttle"},
+--    mincommand = {help = "This PWM value is sent when the motor is stopped"},
+--    motor_pole_count_0 = {help = "The number of magnets on the motor bell."},
+--    main_rotor_gear_ratio_0 = {help = "Motor Pinion Gear Tooth Count"},
+--    main_rotor_gear_ratio_1 = {help = "Main Gear Tooth Count"},
+--    tail_rotor_gear_ratio_0 = {help = "Tail Gear Tooth Count"},
+--    tail_rotor_gear_ratio_1 = {help = "Autorotation Gear Tooth Count"}
 }
 
 return data
