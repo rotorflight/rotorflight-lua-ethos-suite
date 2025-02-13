@@ -20,19 +20,19 @@ local MSP_API_CMD_WRITE = 149 -- Command identifier
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "governor_headspeed",            type = "U16", apiVersion = 12.06, simResponse = {208, 7}, min = 0,   max = 50000, default = 1000, unit = "rpm", step = 10},
-    {field = "governor_gain",                 type = "U8",  apiVersion = 12.06, simResponse = {100},    min = 0,   max = 250,   default = 40},
-    {field = "governor_p_gain",               type = "U8",  apiVersion = 12.06, simResponse = {10},     min = 0,   max = 250,   default = 40},
-    {field = "governor_i_gain",               type = "U8",  apiVersion = 12.06, simResponse = {125},    min = 0,   max = 250,   default = 50},
-    {field = "governor_d_gain",               type = "U8",  apiVersion = 12.06, simResponse = {5},      min = 0,   max = 250,   default = 0},
-    {field = "governor_f_gain",               type = "U8",  apiVersion = 12.06, simResponse = {20},     min = 0,   max = 250,   default = 10},
-    {field = "governor_tta_gain",             type = "U8",  apiVersion = 12.06, simResponse = {0},      min = 0,   max = 250,   default = 0},
-    {field = "governor_tta_limit",            type = "U8",  apiVersion = 12.06, simResponse = {20},     min = 0,   max = 250,   default = 20,  unit = "%"},
-    {field = "governor_yaw_ff_weight",        type = "U8",  apiVersion = 12.06, simResponse = {10},     min = 0,   max = 250,   default = 0},
-    {field = "governor_cyclic_ff_weight",     type = "U8",  apiVersion = 12.06, simResponse = {40},     min = 0,   max = 250,   default = 10},
-    {field = "governor_collective_ff_weight", type = "U8",  apiVersion = 12.06, simResponse = {100},    min = 0,   max = 250,   default = 100},
-    {field = "governor_max_throttle",         type = "U8",  apiVersion = 12.06, simResponse = {100},    min = 40,  max = 100,   default = 100, unit = "%"},
-    {field = "governor_min_throttle",         type = "U8",  apiVersion = 12.06, simResponse = {10},     min = 0,   max = 100,   default = 10,  unit = "%"}
+    {field = "governor_headspeed",            type = "U16", apiVersion = 12.06, simResponse = {208, 7}, min = 0,   max = 50000, default = 1000, unit = "rpm", step = 10, help = "Target headspeed for the current profile."},
+    {field = "governor_gain",                 type = "U8",  apiVersion = 12.06, simResponse = {100},    min = 0,   max = 250,   default = 40,   help = "Master PID loop gain."},
+    {field = "governor_p_gain",               type = "U8",  apiVersion = 12.06, simResponse = {10},     min = 0,   max = 250,   default = 40,   help = "PID loop P-term gain."},
+    {field = "governor_i_gain",               type = "U8",  apiVersion = 12.06, simResponse = {125},    min = 0,   max = 250,   default = 50,   help = "PID loop I-term gain."},
+    {field = "governor_d_gain",               type = "U8",  apiVersion = 12.06, simResponse = {5},      min = 0,   max = 250,   default = 0,    help = "PID loop D-term gain."},
+    {field = "governor_f_gain",               type = "U8",  apiVersion = 12.06, simResponse = {20},     min = 0,   max = 250,   default = 10,   help = "Feedforward gain."},
+    {field = "governor_tta_gain",             type = "U8",  apiVersion = 12.06, simResponse = {0},      min = 0,   max = 250,   default = 0,    help = "TTA gain applied to increase headspeed to control the tail in the negative direction (e.g. motorised tail less than idle speed)."},
+    {field = "governor_tta_limit",            type = "U8",  apiVersion = 12.06, simResponse = {20},     min = 0,   max = 250,   default = 20,   unit = "%", help = "TTA max headspeed increase over full headspeed."},
+    {field = "governor_yaw_ff_weight",        type = "U8",  apiVersion = 12.06, simResponse = {10},     min = 0,   max = 250,   default = 0,    help = "Yaw precompensation weight - how much yaw is mixed into the feedforward."},
+    {field = "governor_cyclic_ff_weight",     type = "U8",  apiVersion = 12.06, simResponse = {40},     min = 0,   max = 250,   default = 10,   help = "Cyclic precompensation weight - how much cyclic is mixed into the feedforward."},
+    {field = "governor_collective_ff_weight", type = "U8",  apiVersion = 12.06, simResponse = {100},    min = 0,   max = 250,   default = 100,  help = "Collective precompensation weight - how much collective is mixed into the feedfoward."},
+    {field = "governor_max_throttle",         type = "U8",  apiVersion = 12.06, simResponse = {100},    min = 40,  max = 100,   default = 100,  unit = "%", help = "Maximum output throttle the governor is allowed to use."},
+    {field = "governor_min_throttle",         type = "U8",  apiVersion = 12.06, simResponse = {10},     min = 0,   max = 100,   default = 10,   unit = "%", help = "Minimum output throttle the governor is allowed to use."}
 }
 
 -- filter the structure to remove any params not supported by the running api version
