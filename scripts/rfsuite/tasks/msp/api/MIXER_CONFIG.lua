@@ -21,20 +21,20 @@ local MSP_API_CMD_WRITE = 43 -- Command identifier for saving Mixer Config Setti
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
     {field = "main_rotor_dir",                 type = "U8",  apiVersion = 12.06, simResponse = {0}},
-    {field = "tail_rotor_mode",                type = "U8",  apiVersion = 12.06, simResponse = {1}},
-    {field = "tail_motor_idle",                type = "U8",  apiVersion = 12.06, simResponse = {0},  default = 0, unit = "%", min = 0,  max = 250, decimals = 1, scale = 10},
-    {field = "tail_center_trim",               type = "U16", apiVersion = 12.06, simResponse = {0, 0}, default = 0,  max = 500, decimals = 1, scale = 10},
+    {field = "tail_rotor_mode",                type = "U8",  apiVersion = 12.06, simResponse = {1},},
+    {field = "tail_motor_idle",                type = "U8",  apiVersion = 12.06, simResponse = {0},  default = 0, unit = "%", min = 0,  max = 250, decimals = 1, scale = 10, help = "Minimum throttle signal sent to the tail motor. This should be set just high enough that the motor does not stop."},
+    {field = "tail_center_trim",               type = "U16", apiVersion = 12.06, simResponse = {0, 0}, default = 0,  max = 500, decimals = 1, scale = 10, help ="Sets tail rotor trim for 0 yaw for variable pitch, or tail motor throttle for 0 yaw for motorized."},
     {field = "swash_type",                     type = "U8",  apiVersion = 12.06, simResponse = {0}},
     {field = "swash_ring",                     type = "U8",  apiVersion = 12.06, simResponse = {2}},
-    {field = "swash_phase",                    type = "U16", apiVersion = 12.06, simResponse = {100, 0}, default = 0, max = 1800, decimals = 1, scale = 10},
-    {field = "swash_pitch_limit",              type = "U16", apiVersion = 12.06, simResponse = {0, 0},   default = 0, min = 0, max = 3000, decimals = 1, scale = 83.33333333333333, step = 1},
-    {field = "swash_trim_0",                   type = "U16", apiVersion = 12.06, simResponse = {0, 0}, default = 0, max = 1000, decimals = 1, scale = 10},
-    {field = "swash_trim_1",                   type = "U16", apiVersion = 12.06, simResponse = {0, 0}, default = 0,  max = 1000, decimals = 1, scale = 10},
-    {field = "swash_trim_2",                   type = "U16", apiVersion = 12.06, simResponse = {0, 0},default = 0,  max = 1000, decimals = 1, scale = 10},
-    {field = "swash_tta_precomp",              type = "U8",  apiVersion = 12.06, simResponse = {0},  default = 0, min = 0, max = 250},
-    {field = "swash_geo_correction",           type = "U8",  apiVersion = 12.07, simResponse = {0},  default = 0, max = 125, decimals = 1, scale = 5, step = 2},
-    {field = "collective_tilt_correction_pos", type = "S8",  apiVersion = 12.08, simResponse = {0},  default = 0, max = 100},
-    {field = "collective_tilt_correction_neg", type = "S8",  apiVersion = 12.08, simResponse = {10}, default = 10, max = 100},
+    {field = "swash_phase",                    type = "U16", apiVersion = 12.06, simResponse = {100, 0}, default = 0, max = 1800, decimals = 1, scale = 10, help = "Phase offset for the swashplate controls."},
+    {field = "swash_pitch_limit",              type = "U16", apiVersion = 12.06, simResponse = {0, 0},   default = 0, min = 0, max = 3000, decimals = 1, scale = 83.33333333333333, step = 1, help = "Maximum amount of combined cyclic and collective blade pitch."},
+    {field = "swash_trim_0",                   type = "U16", apiVersion = 12.06, simResponse = {0, 0}, default = 0, max = 1000, decimals = 1, scale = 10, help ="Swash trim to level the swash plate when using fixed links."},
+    {field = "swash_trim_1",                   type = "U16", apiVersion = 12.06, simResponse = {0, 0}, default = 0,  max = 1000, decimals = 1, scale = 10, help ="Swash trim to level the swash plate when using fixed links."},
+    {field = "swash_trim_2",                   type = "U16", apiVersion = 12.06, simResponse = {0, 0},default = 0,  max = 1000, decimals = 1, scale = 10, help ="Swash trim to level the swash plate when using fixed links."},
+    {field = "swash_tta_precomp",              type = "U8",  apiVersion = 12.06, simResponse = {0},  default = 0, min = 0, max = 250, help = "Mixer precomp for 0 yaw."},
+    {field = "swash_geo_correction",           type = "U8",  apiVersion = 12.07, simResponse = {0},  default = 0, max = 125, decimals = 1, scale = 5, step = 2, help = "Adjust if there is too much negative collective or too much positive collective."},
+    {field = "collective_tilt_correction_pos", type = "S8",  apiVersion = 12.08, simResponse = {0},  default = 0, max = 100, help = "Adjust the collective tilt correction scaling for postive collective pitch."},
+    {field = "collective_tilt_correction_neg", type = "S8",  apiVersion = 12.08, simResponse = {10}, default = 10, max = 100, help = "Adjust the collective tilt correction scaling for negative collective pitch."},
 }
 
 -- filter the structure to remove any params not supported by the running api version

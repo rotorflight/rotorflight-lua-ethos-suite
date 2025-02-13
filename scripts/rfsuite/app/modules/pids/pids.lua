@@ -117,15 +117,8 @@ local function openPage(idx, title, script)
             f.value = rfsuite.utils.saveFieldValue(rfsuite.app.Page.fields[i], value)
             rfsuite.app.saveValue(i)
         end)
-
-        if f.apikey ~= nil then
-            if rfsuite.app.fieldHelpTxt[f.apikey]['t'] ~= nil then
-                local helpTxt = rfsuite.app.fieldHelpTxt[f.apikey]['t']
-                rfsuite.app.formFields[i]:help(helpTxt)
-            end
-        end
     end
-
+    
 end
 
 local function wakeup()

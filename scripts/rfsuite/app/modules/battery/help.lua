@@ -24,12 +24,12 @@ data['help'] = {}
 data['help']['default'] = {"Configure parameters related to your battery setup.", "These settings are used to calculate your fuel capacity."}
 
 data['fields'] = {
-    vbatmaxcellvoltage = {t = "Maximum voltage each cell can be charged to."},
-    vbatfullcellvoltage = {t = "The nomimal voltage of a fully charged cell."},
-    vbatwarningcellvoltage = {t = "The voltage per cell when we trigger an alarm."},
-    vbatmincellvoltage = {t = "The minimum voltage a cell is safe to discharge to."},
-    batteryCapacity = {t = "The milliamp hour capacity of your battery."},
-    batteryCellCount = {t = "The number of cells in your battery pack."}
+--    vbatmaxcellvoltage = {help = "Maximum voltage each cell can be charged to."},
+--    vbatfullcellvoltage = {help = "The nomimal voltage of a fully charged cell."},
+--    vbatwarningcellvoltage = {help = "The voltage per cell when we trigger an alarm."},
+--    vbatmincellvoltage = {help = "The minimum voltage a cell is safe to discharge to."},
+--    batteryCapacity = {help = "The milliamp hour capacity of your battery."},
+--    batteryCellCounhelp = {help = "The number of cells in your battery pack."}
 }
 
 return data

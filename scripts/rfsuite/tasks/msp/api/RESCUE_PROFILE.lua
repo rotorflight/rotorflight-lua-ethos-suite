@@ -20,24 +20,24 @@ local MSP_API_CMD_WRITE = 147 -- Command identifier
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "rescue_mode",               type = "U8",  apiVersion = 12.06, simResponse = {1},   min = 0, max = 1,   default = 0, table = {[0] = "OFF", "ON"}},
-    {field = "rescue_flip_mode",          type = "U8",  apiVersion = 12.06, simResponse = {0},   min = 0, max = 1,   default = 0, table = {[0] = "No flip", "Flip"}},
-    {field = "rescue_flip_gain",          type = "U8",  apiVersion = 12.06, simResponse = {200}, min = 5, max = 250, default = 50},
-    {field = "rescue_level_gain",         type = "U8",  apiVersion = 12.06, simResponse = {100}, min = 5, max = 250, default = 40},
-    {field = "rescue_pull_up_time",       type = "U8",  apiVersion = 12.06, simResponse = {5},   min = 0, max = 250, default = 50, unit = "s", decimals = 1, scale = 10},
-    {field = "rescue_climb_time",         type = "U8",  apiVersion = 12.06, simResponse = {3},   min = 0, max = 250, default = 200, unit = "s", decimals = 1, scale = 10},
-    {field = "rescue_flip_time",          type = "U8",  apiVersion = 12.06, simResponse = {10},  min = 0, max = 250, default = 100, unit = "s", decimals = 1, scale = 10},
-    {field = "rescue_exit_time",          type = "U8",  apiVersion = 12.06, simResponse = {5},   min = 0, max = 250, default = 50, unit = "s", decimals = 1, scale = 10},
-    {field = "rescue_pull_up_collective", type = "U16", apiVersion = 12.06, simResponse = {182, 3}, min = 0, max = 1000, default = 650, unit = "%", scale = 10},
-    {field = "rescue_climb_collective",   type = "U16", apiVersion = 12.06, simResponse = {188, 2}, min = 0, max = 1000, default = 450, unit = "%", scale = 10},
-    {field = "rescue_hover_collective",   type = "U16", apiVersion = 12.06, simResponse = {194, 1}, min = 0, max = 1000, default = 350, unit = "%", decimals = 1, scale = 10},
+    {field = "rescue_mode",               type = "U8",  apiVersion = 12.06, simResponse = {1},   min = 0, max = 1,   default = 0,   table = {[0] = "OFF", "ON"}},
+    {field = "rescue_flip_mode",          type = "U8",  apiVersion = 12.06, simResponse = {0},   min = 0, max = 1,   default = 0,   table = {[0] = "No flip", "Flip"}, help = "If rescue is activated while inverted, flip to upright - or remain inverted."},
+    {field = "rescue_flip_gain",          type = "U8",  apiVersion = 12.06, simResponse = {200}, min = 5, max = 250, default = 50,  help = "Determine how agressively the heli flips during inverted rescue."},
+    {field = "rescue_level_gain",         type = "U8",  apiVersion = 12.06, simResponse = {100}, min = 5, max = 250, default = 40,  help = "Determine how agressively the heli levels during rescue."},
+    {field = "rescue_pull_up_time",       type = "U8",  apiVersion = 12.06, simResponse = {5},   min = 0, max = 250, default = 50,  unit = "s", decimals = 1, scale = 10, help = "When rescue is activated, helicopter will apply pull-up collective for this time period before moving to flip or climb stage."},
+    {field = "rescue_climb_time",         type = "U8",  apiVersion = 12.06, simResponse = {3},   min = 0, max = 250, default = 200, unit = "s", decimals = 1, scale = 10, help = "Length of time the climb collective is applied before switching to hover."},
+    {field = "rescue_flip_time",          type = "U8",  apiVersion = 12.06, simResponse = {10},  min = 0, max = 250, default = 100, unit = "s", decimals = 1, scale = 10, help = "If the helicopter is in rescue and is trying to flip to upright and does not within this time, rescue will be aborted."},
+    {field = "rescue_exit_time",          type = "U8",  apiVersion = 12.06, simResponse = {5},   min = 0, max = 250, default = 50,  unit = "s", decimals = 1, scale = 10, help = "This limits rapid application of negative collective if the helicopter has rolled during rescue."},
+    {field = "rescue_pull_up_collective", type = "U16", apiVersion = 12.06, simResponse = {182, 3}, min = 0, max = 1000, default = 650, unit = "%", scale = 10, help = "Collective value for pull-up climb."},
+    {field = "rescue_climb_collective",   type = "U16", apiVersion = 12.06, simResponse = {188, 2}, min = 0, max = 1000, default = 450, unit = "%", scale = 10, help = "Collective value for rescue climb."},
+    {field = "rescue_hover_collective",   type = "U16", apiVersion = 12.06, simResponse = {194, 1}, min = 0, max = 1000, default = 350, unit = "%", decimals = 1, scale = 10, help = "Collective value for hover."},
     {field = "rescue_hover_altitude",     type = "U16", apiVersion = 12.06, simResponse = {244, 1}},
     {field = "rescue_alt_p_gain",         type = "U16", apiVersion = 12.06, simResponse = {20, 0}},
     {field = "rescue_alt_i_gain",         type = "U16", apiVersion = 12.06, simResponse = {20, 0}},
     {field = "rescue_alt_d_gain",         type = "U16", apiVersion = 12.06, simResponse = {10, 0}},
     {field = "rescue_max_collective",     type = "U16", apiVersion = 12.06, simResponse = {232, 3}},
-    {field = "rescue_max_setpoint_rate",  type = "U16", apiVersion = 12.06, simResponse = {44, 1}, min = 1, max = 1000, default = 250, unit = "°/s"},
-    {field = "rescue_max_setpoint_accel", type = "U16", apiVersion = 12.06, simResponse = {184, 11}, min = 1, max = 10000, default = 2000, unit = "°/^2"}
+    {field = "rescue_max_setpoint_rate",  type = "U16", apiVersion = 12.06, simResponse = {44, 1}, min = 1, max = 1000, default = 250, unit = "°/s", help = "Limit rescue roll/pitch rate. Larger helicopters may need slower rotation rates."},
+    {field = "rescue_max_setpoint_accel", type = "U16", apiVersion = 12.06, simResponse = {184, 11}, min = 1, max = 10000, default = 2000, unit = "°/^2", help = "Limit how fast the helicopter accelerates into a roll/pitch. Larger helicopters may need slower acceleration."}
 }
 
 -- filter the structure to remove any params not supported by the running api version
