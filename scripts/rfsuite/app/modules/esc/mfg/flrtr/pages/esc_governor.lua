@@ -10,13 +10,11 @@ local simulatorResponse = ESC.simulatorResponse
 local foundEsc = false
 local foundEscDone = false
 
-local govMode = {"External Governor", "ESC Governor"}
-
-fields[#fields + 1] = {t = "Governor", tableIdxInc = -1, table = govMode, apikey="governor"}
-fields[#fields + 1] = {t = "Gov-P", min = 1, max = 100, default = 45, apikey="gov_p"}
-fields[#fields + 1] = {t = "Gov-I", min = 1, max = 100, default = 35, apikey="gov_i"}
-fields[#fields + 1] = {t = "Gov-D", min = 0, max = 100, default = 0, apikey="gov_d"}
-fields[#fields + 1] = {t = "Motor ERPM max", min = 0, max = 1000000, step = 100, apikey="motor_erpm_max"}
+fields[#fields + 1] = {t = "Governor", apikey="governor", type = 1}
+fields[#fields + 1] = {t = "Gov-P", apikey="gov_p"}
+fields[#fields + 1] = {t = "Gov-I", apikey="gov_i"}
+fields[#fields + 1] = {t = "Gov-D", apikey="gov_d"}
+fields[#fields + 1] = {t = "Motor ERPM max", apikey="motor_erpm_max"}
 
 function postLoad()
     rfsuite.app.triggers.isReady = true

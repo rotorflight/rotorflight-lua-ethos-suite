@@ -7,13 +7,13 @@ local mspHeaderBytes = ESC.mspHeaderBytes
 local mspSignature = ESC.mspSignature
 local simulatorResponse = ESC.simulatorResponse
 
-fields[#fields + 1] = {t = "Low voltage protection", min = 28, max = 38, scale = 10, default = 30, decimals = 1, unit = "V", apikey="low_voltage_protection"}
-fields[#fields + 1] = {t = "Temperature protection", min = 50, max = 135, default = 125, unit = "°", apikey="temperature_protection"}
-fields[#fields + 1] = {t = "Timing angle", min = 1, max = 10, default = 5, unit = "°", apikey="timing_angle"}
-fields[#fields + 1] = {t = "Starting torque", min = 1, max = 15, default = 3, apikey="starting_torque"}
-fields[#fields + 1] = {t = "Response speed", min = 1, max = 15, default = 5, apikey="response_speed"}
-fields[#fields + 1] = {t = "Buzzer volume", min = 1, max = 5, default = 2, apikey="buzzer_volume"}
-fields[#fields + 1] = {t = "Current gain", min = 0, max = 40, default = 20, offset = -20, apikey="current_gain"}
+fields[#fields + 1] = {t = "Low voltage protection", apikey="low_voltage_protection"}
+fields[#fields + 1] = {t = "Temperature protection",  apikey="temperature_protection"}
+fields[#fields + 1] = {t = "Timing angle", apikey="timing_angle"}
+fields[#fields + 1] = {t = "Starting torque", apikey="starting_torque"}
+fields[#fields + 1] = {t = "Response speed", apikey="response_speed"}
+fields[#fields + 1] = {t = "Buzzer volume", apikey="buzzer_volume"}
+fields[#fields + 1] = {t = "Current gain", apikey="current_gain"}
 
 local foundEsc = false
 local foundEscDone = false
