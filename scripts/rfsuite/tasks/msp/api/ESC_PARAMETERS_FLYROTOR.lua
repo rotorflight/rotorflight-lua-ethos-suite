@@ -41,25 +41,25 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "escinfo_16",              type = "U8",  apiVersion = 12.07, simResponse = {0}},
     {field = "escinfo_17",              type = "U8",  apiVersion = 12.07, simResponse = {8}},
     {field = "escinfo_18",              type = "U8",  apiVersion = 12.07, simResponse = {0}},
-    {field = "throttle_min",            type = "U16", apiVersion = 12.07, simResponse = {4, 76},       byteorder = "big", help="Minimum throttle value"},
-    {field = "throttle_max",            type = "U16", apiVersion = 12.07, simResponse = {7, 148},      byteorder = "big", help="Maximum throttle value"},
-    {field = "governor",                type = "U8",  apiVersion = 12.07, simResponse = {0}, table = {"External Governor", "ESC Governor"}, tableIdxInc = -1},
-    {field = "cell_count",              type = "U8",  apiVersion = 12.07, simResponse = {6}, min = 4, max = 14, default = 6, help="Number of cells in the battery"},
-    {field = "low_voltage_protection",  type = "U8",  apiVersion = 12.07, simResponse = {30},min = 28, max = 38, scale = 10, default = 30, decimals = 1, unit = "V", help="Voltage at which we cut poer to the motor"},
-    {field = "temperature_protection",  type = "U8",  apiVersion = 12.07, simResponse = {125},min = 50, max = 135, default = 125, unit = "°", help="Temperature at which we cut power to the motor"},
-    {field = "bec_voltage",             type = "U8",  apiVersion = 12.07, simResponse = {0}, unit = "V", table={"7.5", "8.0", "8.5", "12"}, tableIdxInc = -1},
-    {field = "timing_angle",            type = "U8",  apiVersion = 12.07, simResponse = {10},min = 1, max = 10, default = 5, unit = "°", help="Timing angle for the motor"},
-    {field = "motor_direction",         type = "U8",  apiVersion = 12.07, simResponse = {0}, table={"CW", "CCW"}, tableIdxInc = -1},
-    {field = "starting_torque",         type = "U8",  apiVersion = 12.07, simResponse = {3},min = 1, max = 15, default = 3, help="Starting torque for the motor"},
-    {field = "response_speed",          type = "U8",  apiVersion = 12.07, simResponse = {5},min = 1, max = 15, default = 5, help="Response speed for the motor"},
-    {field = "buzzer_volume",           type = "U8",  apiVersion = 12.07, simResponse = {1},min = 1, max = 5, default = 2, help="Buzzer volume"},
-    {field = "current_gain",            type = "S8",  apiVersion = 12.07, simResponse = {20},min = 0, max = 40, default = 20, offset = -20, help="Gain value for the current sensor"},
-    {field = "fan_control",             type = "U8",  apiVersion = 12.07, simResponse = {0}, table = {"Automatic", "Always On"}, tableIdxInc = -1},
-    {field = "soft_start",              type = "U8",  apiVersion = 12.07, simResponse = {15}, min = 5, max = 55, help="Soft start value"},
-    {field = "gov_p",                   type = "U16", apiVersion = 12.07, simResponse = {0, 45}, min = 1, max = 100, default = 45, byteorder = "big", help="Proportional value for the governor"},
-    {field = "gov_i",                   type = "U16", apiVersion = 12.07, simResponse = {0, 35}, min = 1, max = 100, default = 35, byteorder = "big", help="Integral value for the governor"},
-    {field = "gov_d",                   type = "U16", apiVersion = 12.07, simResponse = {0, 0},  min = 0, max = 100, default = 0,  byteorder = "big", help="Derivative value for the governor"},
-    {field = "motor_erpm_max",          type = "U24", apiVersion = 12.07, simResponse = {1, 134, 160}, min = 0, max = 1000000, step = 100, byteorder = "big", help="Maximum RPM"}
+    {field = "throttle_min",            type = "U16", apiVersion = 12.07, simResponse = {4, 76},       byteorder = "big", help = "Minimum throttle value"},
+    {field = "throttle_max",            type = "U16", apiVersion = 12.07, simResponse = {7, 148},      byteorder = "big", help = "Maximum throttle value"},
+    {field = "governor",                type = "U8",  apiVersion = 12.07, simResponse = {0},           table = {"External Governor", "ESC Governor"}, tableIdxInc = -1},
+    {field = "cell_count",              type = "U8",  apiVersion = 12.07, simResponse = {6},           min = 4, max = 14, default = 6, help = "Number of cells in the battery"},
+    {field = "low_voltage_protection",  type = "U8",  apiVersion = 12.07, simResponse = {30},          min = 28, max = 38, scale = 10, default = 30, decimals = 1, unit = "V", help = "Voltage at which we cut power by 50%"},
+    {field = "temperature_protection",  type = "U8",  apiVersion = 12.07, simResponse = {125},         min = 50, max = 135, default = 125, unit = "°", help = "Temperature at which we cut power by 50%"},
+    {field = "bec_voltage",             type = "U8",  apiVersion = 12.07, simResponse = {0},           unit = "V", table = {"7.5", "8.0", "8.5", "12"}, tableIdxInc = -1},
+    {field = "timing_angle",            type = "U8",  apiVersion = 12.07, simResponse = {10},          min = 1, max = 10, default = 5, unit = "°", help = "Timing angle for the motor"},
+    {field = "motor_direction",         type = "U8",  apiVersion = 12.07, simResponse = {0},           table = {"CW", "CCW"}, tableIdxInc = -1},
+    {field = "starting_torque",         type = "U8",  apiVersion = 12.07, simResponse = {3},           min = 1, max = 15, default = 3, help = "Starting torque for the motor"},
+    {field = "response_speed",          type = "U8",  apiVersion = 12.07, simResponse = {5},           min = 1, max = 15, default = 5, help = "Response speed for the motor"},
+    {field = "buzzer_volume",           type = "U8",  apiVersion = 12.07, simResponse = {1},           min = 1, max = 5, default = 2, help = "Buzzer volume"},
+    {field = "current_gain",            type = "S8",  apiVersion = 12.07, simResponse = {20},          min = 0, max = 40, default = 20, offset = -20, help = "Gain value for the current sensor"},
+    {field = "fan_control",             type = "U8",  apiVersion = 12.07, simResponse = {0},           table = {"Automatic", "Always On"}, tableIdxInc = -1},
+    {field = "soft_start",              type = "U8",  apiVersion = 12.07, simResponse = {15},          min = 5, max = 55, help = "Soft start value"},
+    {field = "gov_p",                   type = "U16", apiVersion = 12.07, simResponse = {0, 45},       min = 1, max = 100, default = 45, byteorder = "big", help = "Proportional value for the governor"},
+    {field = "gov_i",                   type = "U16", apiVersion = 12.07, simResponse = {0, 35},       min = 1, max = 100, default = 35, byteorder = "big", help = "Integral value for the governor"},
+    {field = "gov_d",                   type = "U16", apiVersion = 12.07, simResponse = {0, 0},        min = 0, max = 100, default = 0, byteorder = "big", help = "Derivative value for the governor"},
+    {field = "motor_erpm_max",          type = "U24", apiVersion = 12.07, simResponse = {1, 134, 160}, min = 0, max = 1000000, step = 100, byteorder = "big", help = "Maximum RPM"}
 }
 
 -- filter the structure to remove any params not supported by the running api version
@@ -73,6 +73,11 @@ local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
 
 -- generate a simulatorResponse from the read structure
 local MSP_API_SIMULATOR_RESPONSE = rfsuite.bg.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
+
+local function processedData()
+    print("Processed data")
+
+end
 
 -- Variable to store parsed MSP data
 local mspData = nil
@@ -97,7 +102,7 @@ local function read()
     local message = {
         command = MSP_API_CMD_READ,
         processReply = function(self, buf)
-            mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE_READ)
+            mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE_READ,processedData)
             if #buf >= MSP_MIN_BYTES then
                 local completeHandler = handlers.getCompleteHandler()
                 if completeHandler then completeHandler(self, buf) end

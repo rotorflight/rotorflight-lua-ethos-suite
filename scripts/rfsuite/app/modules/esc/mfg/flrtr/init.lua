@@ -59,5 +59,5 @@ return {
     powerCycle = false,
     getEscModel = getEscModel,
     getEscVersion = getEscVersion,
-    getEscFirmware = getEscFirmware
+    getEscFirmware = getEscFirmware,
 }
