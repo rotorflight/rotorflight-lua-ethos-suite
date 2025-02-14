@@ -209,9 +209,6 @@ function app.saveValue(currentField)
         app.Page.values[f.vals[idx]] = math.floor(f.value * scale + 0.5) >> ((idx - 1) * 8)
     end
 
-    if f.upd and app.Page.values then
-        f.upd(app.Page)
-    end
 end
 
 -- Function to bind page fields to values using MSP helper functions
