@@ -6,13 +6,13 @@ local folder = "scorp"
 
 labels[#labels + 1] = {t = "Scorpion ESC"}
 
-fields[#fields + 1] = {t = "Protection Delay", min = 0, max = 5000, unit = "s", scale = 1000, apikey="protection_delay"}
-fields[#fields + 1] = {t = "Cutoff Handling", min = 0, max = 10000, unit = "%", scale = 100, apikey="cutoff_handling"}
+fields[#fields + 1] = {t = "Protection Delay", apikey="protection_delay"}
+fields[#fields + 1] = {t = "Cutoff Handling", apikey="cutoff_handling"}
 
-fields[#fields + 1] = {t = "Max Temperature", min = 0, max = 40000, unit = "°", scale = 100,apikey="max_temperature"}
-fields[#fields + 1] = {t = "Max Current", min = 0, max = 30000, unit = "A", scale = 100,  apikey="max_current"}
-fields[#fields + 1] = {t = "Min Voltage", min = 0, max = 7000, unit = "v", decimals = 1, scale = 100 ,apikey="min_voltage"}
-fields[#fields + 1] = {t = "Max Used", min = 0, max = 6000, unit = "Ah", scale = 100,apikey="max_used"}
+fields[#fields + 1] = {t = "Max Temperature",apikey="max_temperature"}
+fields[#fields + 1] = {t = "Max Current",  apikey="max_current"}
+fields[#fields + 1] = {t = "Min Voltage" ,apikey="min_voltage"}
+fields[#fields + 1] = {t = "Max Used", apikey="max_used"}
 
 local foundEsc = false
 local foundEscDone = false
