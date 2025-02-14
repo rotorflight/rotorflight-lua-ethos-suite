@@ -23,12 +23,18 @@ end
 
 local function update_int8(i, v)
     local tgt = i + total_bytes
-    rfsuite.app.Page.fields[tgt].value = uint8_to_int8(v)
+    if rfsuite.app.Page.fields[tgt] then
+     rfsuite.app.Page.fields[tgt].value = uint8_to_int8(v)
+    end
 end
 
 local function update_uint8(i, v)
     local tgt = i - total_bytes
-    rfsuite.app.Page.fields[tgt].value = int8_to_uint8(v)
+    if i == total_bytes then tgt = i + total_bytes end
+
+    if rfsuite.app.Page.fields[tgt] then
+        rfsuite.app.Page.fields[tgt].value = int8_to_uint8(v)
+    end
 end
 
 -- generate rows
@@ -37,10 +43,10 @@ for i = 0, total_bytes - 1 do rows[i + 1] = tostring(i) end
 cols = {"UINT8", "INT8"}
 
 -- uint8 fields
-for i = 0, total_bytes - 1 do fields[#fields + 1] = {col = 1, row = i + 1, min = 0, max = 255, vals = {i + 1}, instantChange = true} end
+for i = 0, total_bytes - 1 do fields[#fields + 1] = {col = 1, row = i + 1, min = 0, max = 255, vals = {i + 1}} end
 
 -- int8 fields
-for i = 0, total_bytes - 1 do fields[#fields + 1] = {col = 2, row = i + 1, min = -128, max = 127, vals = {i + 1}, instantChange = true} end
+for i = 0, total_bytes - 1 do fields[#fields + 1] = {col = 2, row = i + 1, min = -128, max = 127, vals = {i + 1}} end
 
 local function postLoad(self)
 
