@@ -1,0 +1,1 @@
+Inside the zip file rfglobals.zip is a simple widget to show how you can access values in rfsuite from outside rfsuite.
