@@ -6,22 +6,14 @@ local folder = "scorp"
 
 local ESC = assert(loadfile("app/modules/esc/mfg/" .. folder .. "/init.lua"))()
 
-local escMode = {"Heli Governor", "Heli Governor (stored)", "VBar Governor", "External Governor", "Airplane mode", "Boat mode", "Quad mode"}
 
-local rotation = {"CCW", "CW"}
-
-local becVoltage = {"5.1 V", "6.1 V", "7.3 V", "8.3 V", "Disabled"}
-
-local teleProtocol = {"Standard", "VBar", "Jeti Exbus", "Unsolicited", "Futaba SBUS"}
 
 labels[#labels + 1] = {t = "Scorpion ESC"}
 
-fields[#fields + 1] = {t = "ESC Mode", min = 0, max = #escMode, tableIdxInc = -1, table = escMode, apikey="esc_mode"}
-fields[#fields + 1] = {t = "Rotation", min = 0, max = #rotation, tableIdxInc = -1, table = rotation, apikey="rotation"}
-fields[#fields + 1] = {t = "BEC Voltage", min = 0, max = #becVoltage, tableIdxInc = -1, table = becVoltage, apikey="bec_voltage"}
-
--- not a good idea to allow this to be changed
--- fields[#fields + 1] = {t = "Telemetry Protocol", min = 0, max = #teleProtocol, vals = {mspHeaderBytes + 39, mspHeaderBytes + 40}, tableIdxInc = -1,table = teleProtocol}
+fields[#fields + 1] = {t = "ESC Mode", type = 1, apikey="esc_mode"}
+fields[#fields + 1] = {t = "Rotation", type = 1, apikey="rotation"}
+fields[#fields + 1] = {t = "BEC Voltage", type = 1, apikey="bec_voltage"}
+-- fields[#fields + 1] = {t = "Telemetry Protocol", type = 1, apikey="telemetry_protocol"} -- not used as dangerous to change
 
 function postLoad()
     rfsuite.app.triggers.isReady = true

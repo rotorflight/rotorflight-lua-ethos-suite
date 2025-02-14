@@ -4,19 +4,19 @@ local fields = {}
 local folder = "scorp"
 
 
-local onOff = {"On", "Off"}
+
 
 labels[#labels + 1] = {t = "Scorpion ESC"}
 
-fields[#fields + 1] = {t = "Soft Start Time", unit = "s", min = 0, max = 60000, scale = 1000, apikey="soft_start_time"}
-fields[#fields + 1] = {t = "Runup Time", unit = "s", min = 0, max = 60000, scale = 1000, apikey="runup_time"}
-fields[#fields + 1] = {t = "Bailout", unit = "s", min = 0, max = 100000, scale = 1000, apikey="bailout"}
+fields[#fields + 1] = {t = "Soft Start Time", apikey="soft_start_time"}
+fields[#fields + 1] = {t = "Runup Time", apikey="runup_time"}
+fields[#fields + 1] = {t = "Bailout", apikey="bailout"}
 
 -- data types are IQ22 - decoded/encoded by FC - regual scaled integers here
-fields[#fields + 1] = {t = "Gov Proportional", min = 30, max = 180, scale = 100, xvals = {69, 70, 71, 72}, apikey="gov_proportional"}
-fields[#fields + 1] = {t = "Gov Integral", min = 150, max = 250, scale = 100, xvals = {73, 74, 75, 76}, apikey="gov_integral"}
+fields[#fields + 1] = {t = "Gov Proportional", apikey="gov_proportional"}
+fields[#fields + 1] = {t = "Gov Integral", apikey="gov_integral"}
 
-fields[#fields + 1] = {t = "Motor Startup Sound", min = 0, max = #onOff, tableIdxInc = -1, table = onOff, apikey="motor_startup_sound"}
+fields[#fields + 1] = {t = "Motor Startup Sound", type = 1, apikey="motor_startup_sound"}
 
 local foundEsc = false
 local foundEscDone = false

@@ -20,6 +20,18 @@ local MSP_API_CMD_WRITE = 218 -- Command identifier
 local MSP_SIGNATURE = 0xFD
 local MSP_HEADER_BYTES = 2
 
+-- some tables used in structure below
+local flightMode = {"Fixed Wing", "Heli Ext Governor", "Heli Governor", "Heli Governor Store"}
+local rotation = {"CW", "CCW"}
+local voltages = {"5.4", "5.5", "5.6", "5.7", "5.8", "5.9", "6.0", "6.1", "6.2", "6.3", "6.4", "6.5", "6.6", "6.7", "6.8", "6.9", "7.0", "7.1", "7.2", "7.3", "7.4", "7.5", "7.6", "7.7", "7.8", "7.9", "8.0", "8.1", "8.2", "8.3", "8.4"}
+local lipoCellCount = {"Auto Calculate", "3S", "4S", "5S", "6S", "7S", "8S", "9S", "10S", "11S", "12S", "13S", "14S"}
+local cutoffType = {"Soft Cutoff", "Hard Cutoff"}
+local cutoffVoltage = {"Disabled", "2.8", "2.9", "3.0", "3.1", "3.2", "3.3", "3.4", "3.5", "3.6", "3.7", "3.8"}
+local restartTime = {"1s", "1.5s", "2s", "2.5s", "3s"}
+local startupPower = {"1", "2", "3", "4", "5", "6", "7"}
+local enabledDisabled = {"Enabled", "Disabled"}
+local brakeType = {"Disabled", "Normal", "Proportional", "Reverse"}
+
 local MSP_API_STRUCTURE_READ_DATA = {
     {field = "esc_signature",       type = "U8", apiVersion = 12.07, simResponse = {253}},
     {field = "esc_command",         type = "U8", apiVersion = 12.07, simResponse = {0}},
@@ -86,22 +98,22 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "escinfo_61",          type = "U8", apiVersion = 12.07, simResponse = {32}},
     {field = "escinfo_62",          type = "U8", apiVersion = 12.07, simResponse = {32}},
     {field = "escinfo_63",          type = "U8", apiVersion = 12.07, simResponse = {32}},
-    {field = "flight_mode",         type = "U8", apiVersion = 12.07, simResponse = {0}},
-    {field = "lipo_cell_count",     type = "U8", apiVersion = 12.07, simResponse = {0}},
-    {field = "volt_cutoff_type",    type = "U8", apiVersion = 12.07, simResponse = {0}},
-    {field = "cutoff_voltage",      type = "U8", apiVersion = 12.07, simResponse = {3}},
-    {field = "bec_voltage",         type = "U8", apiVersion = 12.07, simResponse = {0}},
+    {field = "flight_mode",         type = "U8", apiVersion = 12.07, simResponse = {0}, default = 0, min = 0, max = #flightMode, tableIdxInc = -1, table = flightMode},
+    {field = "lipo_cell_count",     type = "U8", apiVersion = 12.07, simResponse = {0}, default = 0, min = 0, max = #lipoCellCount, tableIdxInc = -1, table = lipoCellCount},
+    {field = "volt_cutoff_type",    type = "U8", apiVersion = 12.07, simResponse = {0}, default = 0, min = 0, max = #cutoffType, tableIdxInc = -1, table = cutoffType},
+    {field = "cutoff_voltage",      type = "U8", apiVersion = 12.07, simResponse = {3}, default = 3, min = 0, max = #cutoffVoltage, tableIdxInc = -1, table = cutoffVoltage},
+    {field = "bec_voltage",         type = "U8", apiVersion = 12.07, simResponse = {0}, default = 0, min = 0, max = #voltages, tableIdxInc = -1, table = voltages},
     {field = "startup_time",        type = "U8", apiVersion = 12.07, simResponse = {11}},
     {field = "gov_p_gain",          type = "U8", apiVersion = 12.07, simResponse = {6}},
     {field = "gov_i_gain",          type = "U8", apiVersion = 12.07, simResponse = {5}},
-    {field = "auto_restart",        type = "U8", apiVersion = 12.07, simResponse = {25}},
-    {field = "restart_time",        type = "U8", apiVersion = 12.07, simResponse = {1}},
-    {field = "brake_type",          type = "U8", apiVersion = 12.07, simResponse = {0}},
-    {field = "brake_force",         type = "U8", apiVersion = 12.07, simResponse = {0}},
+    {field = "auto_restart",        type = "U8", apiVersion = 12.07, simResponse = {25}, default = 25, units = "s", min = 0, max = 90},
+    {field = "restart_time",        type = "U8", apiVersion = 12.07, simResponse = {1} , default = 1, tableIdxInc = -1, min = 0, max = #restartTime, table = restartTime},
+    {field = "brake_type",          type = "U8", apiVersion = 12.07, simResponse = {0} , default = 0, min = 0, max = #brakeType, xvals = {76}, table = brakeType, tableIdxInc = -1},
+    {field = "brake_force",         type = "U8", apiVersion = 12.07, simResponse = {0}, default = 0, min = 0, max = 100},
     {field = "timing",              type = "U8", apiVersion = 12.07, simResponse = {24}},
-    {field = "rotation",            type = "U8", apiVersion = 12.07, simResponse = {0}},
-    {field = "active_freewheel",    type = "U8", apiVersion = 12.07, simResponse = {0}},
-    {field = "startup_power",       type = "U8", apiVersion = 12.07, simResponse = {2}}
+    {field = "rotation",            type = "U8", apiVersion = 12.07, simResponse = {0}, default = 0, min = 0, max = #rotation, tableIdxInc = -1, table = rotation},
+    {field = "active_freewheel",    type = "U8", apiVersion = 12.07, simResponse = {0}, min = 0, max = #enabledDisabled, table = enabledDisabled, tableIdxInc = -1},
+    {field = "startup_power",       type = "U8", apiVersion = 12.07, simResponse = {2}, default = 2, min = 0, max = #startupPower, tableIdxInc = -1, table = startupPower}
 }
 
 -- filter the structure to remove any params not supported by the running api version

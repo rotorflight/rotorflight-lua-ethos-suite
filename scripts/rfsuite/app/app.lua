@@ -209,9 +209,6 @@ function app.saveValue(currentField)
         app.Page.values[f.vals[idx]] = math.floor(f.value * scale + 0.5) >> ((idx - 1) * 8)
     end
 
-    if f.upd and app.Page.values then
-        f.upd(app.Page)
-    end
 end
 
 -- Function to bind page fields to values using MSP helper functions
@@ -364,54 +361,40 @@ local function processPageReply(source, buf, methodType)
                         --end
 
                         if (f.scale == nil and v.scale ~= nil)  then 
-                            --print("scale: " .. v.scale)
                             f.scale = v.scale 
                         end
                         if (f.mult == nil and v.mult ~= nil) then 
-                            --print("mult: " .. v.mult)
                             f.mult = v.mult 
                         end
                         if (f.offset == nil and v.offset ~= nil) then 
-                            --print("offset: " .. v.offset)
                             f.offset = v.offset 
                         end
                         if (f.decimals == nil and v.decimals ~= nil ) then
-                            --print("decimals: " .. v.decimals)
                             f.decimals = v.decimals
                             formField:decimals(v.decimals)
                         end
-                        if (f.unit == nil and v.unit ~= nil)  then
-                            if v.unit == "°" then
-                                --print("unit: deg")
-                            else    
-                                --print("unit: " .. v.unit)
+                        if (f.unit == nil and v.unit ~= nil)  then 
+                            if f.type ~= 1 then
+                                formField:suffix(v.unit)
                             end    
-                            f.unit = v.unit
-                            formField:suffix(v.unit)
                         end
                         if (f.step == nil and v.step~= nil) then
-                            --print("step: " .. v.step)
                             f.step = v.step
                             formField:step(v.step)
                         end
                         if (f.min == nil and v.min ~= nil)  then
-                            --print("min: " .. v.min)
                             f.min = v.min
-                            -- we cant set this for a choice field
                             if f.type ~= 1 then
                                 formField:minimum(v.min)
                             end
                         end
                         if (f.max == nil and v.max ~= nil) then
-                            --print("max: " .. v.max)
                             f.max = v.max
-                            -- we cant set this for a choice field
                             if f.type ~= 1 then
                                 formField:maximum(v.max)
                             end
                         end
                         if (f.default == nil and v.default ~= nil) then
-                            --print("default to: " .. v.default)
                             f.default = v.default
                             
                             -- factor in all possible scaling
@@ -422,23 +405,19 @@ local function processPageReply(source, buf, methodType)
                             -- if for some reason we have a .0 we need to work around an ethos pecularity on default boxes!
                             local str = tostring(default)
                             if str:match("%.0$") then default = math.ceil(default) end                            
-
-                            --print("default to: " .. default)       
+     
                             if f.type ~= 1 then 
                                 formField:default(default)
                             end
                         end
                         if (f.table == nil and v.table ~= nil) then 
-                            --print("table: .. {" .. rfsuite.utils.joinTableItems(v.table, ", ") .. "}")
                             f.table = v.table 
-
-                            -- handle some table specific stuff
-                            local tbldata = rfsuite.utils.convertPageValueTable(v.table, f.tableIdxInc or v.tableIdxInc)                                
-                            formField:values(tbldata)
+                            local tbldata = rfsuite.utils.convertPageValueTable(v.table, f.tableIdxInc or v.tableIdxInc)       
+                            if f.type == 1 then                      
+                                formField:values(tbldata)
+                            end
                         end            
-        
                         if v.help ~= nil then
-                            print("help: " .. v.help)
                             f.help = v.help
                             formField:help(v.help)
                         end            

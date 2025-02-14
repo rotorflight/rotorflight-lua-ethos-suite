@@ -2,11 +2,6 @@ local labels = {}
 local fields = {}
 
 local folder = "hw5"
---local ESC = assert(loadfile("app/modules/esc/mfg/" .. folder .. "/init.lua"))()
---local mspHeaderBytes = ESC.mspHeaderBytes
---local mspSignature = ESC.mspSignature
-
-local restartTime = {"1s", "1.5s", "2s", "2.5s", "3s"}
 
 labels[#labels + 1] = {t = "Governor", label = "gov", inline_size = 13.4}
 fields[#fields + 1] = {t = "P-Gain", inline = 2, label = "gov", min = 0, max = 9, xvals = {72}, apikey="gov_p_gain"}
@@ -16,10 +11,10 @@ labels[#labels + 1] = {t = "Soft Start", label = "start", inline_size = 40.6}
 fields[#fields + 1] = {t = "Startup Time", inline = 1, label = "start", units = "s", min = 4, max = 25, xvals = {71}, apikey="startup_time"}
 
 labels[#labels + 1] = {t = "", label = "start2", inline_size = 40.6}
-fields[#fields + 1] = {t = "Restart Time", inline = 1, label = "start2", units = "s", tableIdxInc = -1, min = 0, max = #restartTime, xvals = {75}, table = restartTime, apikey="restart_time"}
+fields[#fields + 1] = {t = "Restart Time", inline = 1, label = "start2", type = 1, apikey="restart_time"}
 
 labels[#labels + 1] = {t = "", label = "start3", inline_size = 40.6}
-fields[#fields + 1] = {t = "Auto Restart", inline = 1, label = "start3", units = "s", min = 0, max = 90, xvals = {74}, apikey="auto_restart"}
+fields[#fields + 1] = {t = "Auto Restart", inline = 1, label = "start3", apikey="auto_restart"}
 
 function postLoad()
     rfsuite.app.triggers.isReady = true

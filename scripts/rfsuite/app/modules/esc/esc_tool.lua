@@ -27,6 +27,7 @@ local modelText
 local modelTextPos = {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.config.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}
 
 local function getESCDetails()
+
     local message = {
         command = 217, -- MSP_STATUS
         processReply = function(self, buf)
