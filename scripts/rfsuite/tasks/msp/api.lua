@@ -27,8 +27,6 @@ local apiCache = {}
 -- Define the API directory path based on the ethos version
 local apidir = "tasks/msp/api/"
 local api_path = apidir
-local active_api_name -- variable to store the api name in use
-local validate_structure = true
 
 -- Function to load a specific API file by name
 local function loadAPI(apiName)
@@ -47,27 +45,19 @@ local function loadAPI(apiName)
             -- Store the loaded API in the cache
             apiCache[apiName] = apiModule
             rfsuite.utils.log("Loaded API:", apiName)
-            if rfsuite.config.mspApiPositionMapDebug == true then
-                print("--------------------------------------------")
-                print("Loaded API:", apiName)
-            end
-            active_api_name = apiName
             return apiModule
         else
             print("Error: API file '" .. apiName .. "' does not contain valid read or write functions.")
-            active_api_name = nil
         end
     else
         local logline = "Error: API file '" .. apiFilePath .. " not found."
         print(logline)
-        active_api_name = nil
         error(logline)
     end
 end
 
 -- Function to directly return the API table instead of a wrapper function
 function apiLoader.load(apiName)
-    --print("apiLoader.load: ", apiName)
     local api = loadAPI(apiName)
     if api == nil then
         print("Unable to load " .. apiName)
@@ -86,16 +76,7 @@ end
 -- Function to parse the msp Data.  Optionally pass a processed(buf, structure) to provide more data formating
 function apiLoader.parseMSPData(buf, structure, processed, other)
     -- Calculate the expected buffer length based on the structure
-    local expected_length = 0
-    for _, field in ipairs(structure) do
-        expected_length = expected_length + get_type_size(field.type)
-    end
-
-    -- Ensure buffer length matches expected data structure
-    if #buf < expected_length then
-        print("Error: Buffer too small. Expected " .. expected_length .. ", got " .. #buf)
-    end
-
+    
     local parsedData = {}
     local offset = 1 -- Maintain a strict offset tracking
 
@@ -105,14 +86,9 @@ function apiLoader.parseMSPData(buf, structure, processed, other)
         local position_map = {}
         local current_byte = 1 -- Track the byte position dynamically
 
-        if rfsuite.config.mspApiPositionMapDebug == true then 
-            print("------  " .. active_api_name .. "  ------")
-            print("------  mspApiPositionMapDebug start ------") 
-        end
-
         for _, param in ipairs(param_table) do
             -- Check API version conditions
-            local apiVersion = rfsuite.config.apiVersion
+            local apiVersion = rfsuite.config.apiVersion or 12.06
             local insert_param = false
 
             if not param.apiVersion or apiVersion >= param.apiVersion then
@@ -146,19 +122,7 @@ function apiLoader.parseMSPData(buf, structure, processed, other)
                 -- Move to the next available byte position
                 current_byte = end_pos + 1
 
-                if rfsuite.config.mspApiPositionMapDebug == true then
-                    if start_pos == end_pos then
-                        print(param.field .. ": " .. start_pos)
-                    else
-                        print(param.field .. ": " .. start_pos .. " to " .. end_pos)
-                    end
-                end
             end
-        end
-
-        if rfsuite.config.mspApiPositionMapDebug == true then
-            print("------  mspApiPositionMapDebug end --------")
-            print(" ")
         end
 
         return position_map
@@ -170,8 +134,7 @@ function apiLoader.parseMSPData(buf, structure, processed, other)
 
         if field.type == "U8" then
             data = rfsuite.bg.msp.mspHelper.readU8(buf, offset)
-            offset = offset + 1 -- Added missing increment
-
+            offset = offset + 1 
         elseif field.type == "S8" then
             data = rfsuite.bg.msp.mspHelper.readS8(buf, offset)
             offset = offset + 1
@@ -199,24 +162,9 @@ function apiLoader.parseMSPData(buf, structure, processed, other)
         end
 
         if data == nil then
-            print("Error: Failed to read " .. field.type .. " value for field: " .. field.field .. " at offset: " .. offset .. " for api: " .. active_api_name) 
+            print("Error " .. field.type .. " field: " .. field.field .. " offset: " .. offset) 
         end   
         parsedData[field.field] = data
-    end
-
-    if validate_structure == true then
-        if offset <= #buf then
-            local extra_bytes = #buf - (offset - 1)
-            rfsuite.utils.log("Warning: " .. active_api_name .. " Unused bytes in buffer (" .. extra_bytes .. " extra bytes)")
-            print("Warning: " .. active_api_name .. " Unused bytes in buffer (" .. extra_bytes .. " extra bytes)")
-            print("Check if using supported firmware") 
-            rfsuite.app.triggers.showUnderUsedBufferWarning = true
-        elseif offset > #buf + 1 then
-            print("Error: " .. active_api_name .. " Offset exceeded buffer length (Offset: " .. offset .. ", Buffer: " .. #buf .. ")")
-            print("Likely caused by incorrect structure or buffer corruption.")
-            print("Check if using supported firmware") 
-            rfsuite.app.triggers.showOverUsedBufferWarning = true
-        end
     end
 
     -- Prepare data for return
@@ -239,11 +187,6 @@ end
 
 -- Function to calculate MIN_BYTES and filtered structure
 function apiLoader.calculateMinBytes(structure)
-
-    if structure == nil then
-        print(active_api_name .. " No structure suppled to apiLoader.calculateMinBytes")
-        return
-    end
 
     local apiVersion = rfsuite.config.apiVersion
     local totalBytes = 0
@@ -271,11 +214,6 @@ end
 -- Function to strip filtered structure based on msp version
 function apiLoader.filterByApiVersion(structure)
 
-    if structure == nil then
-        print(active_api_name .. " No structure suppled to apiLoader.filterByApiVersion")
-        return 
-    end
-
     local apiVersion = rfsuite.config.apiVersion or 12.06
     local filteredStructure = {}
 
@@ -293,16 +231,6 @@ function apiLoader.filterByApiVersion(structure)
     end
 
     return filteredStructure
-end
-
-function apiLoader.validateStructure(state)
-    if state == nil then
-        validate_structure = true
-    elseif type(state) == "boolean" then
-        validate_structure = state
-    else
-        error("Invalid argument: state must be a boolean or nil")
-    end
 end
 
 function apiLoader.buildSimResponse(dataStructure)
