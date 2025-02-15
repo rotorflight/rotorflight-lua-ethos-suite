@@ -196,9 +196,13 @@ end
 
 function msp.wakeup()
 
-    -- check what protocol is in use
-    local telemetrySOURCE = system.getSource("Rx RSSI1")
-    if telemetrySOURCE ~= nil then
+    -- check if we have a telemetry source
+    local telemetrySOURCE = rfsuite.bg.telemetry.getSensorSource("rssi") 
+    if telemetrySOURCE == nil then 
+        return
+    end
+
+    if telemetrySOURCE:name() == "Rx RSSI1" or telemetrySOURCE:name() == "Rx RSSI1" then
         msp.activeProtocol = "crsf"
     else
         msp.activeProtocol = "smartPort"
