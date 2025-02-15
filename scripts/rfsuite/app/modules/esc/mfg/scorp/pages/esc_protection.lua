@@ -56,5 +56,6 @@ return {
     onNavMenu = onNavMenu,
     event = event,
     pageTitle = "ESC / Scorpion / Limits",
-    headerLine = rfsuite.escHeaderLineText
+    headerLine = rfsuite.escHeaderLineText,
+    extraMsgOnSave = "Please reboot the ESC to apply the changes",   
 }

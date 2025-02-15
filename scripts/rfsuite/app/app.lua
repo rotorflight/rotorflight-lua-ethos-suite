@@ -981,7 +981,13 @@ function app.wakeupUI()
             end
         }}
         local theTitle = "Save settings"
-        local theMsg = "Save current page to flight controller?"
+        local theMsg
+        if rfsuite.app.Page.extraMsgOnSave then
+            theMsg = "Save current page to flight controller?" .. "\n\n" .. rfsuite.app.Page.extraMsgOnSave
+        else    
+            theMsg = "Save current page to flight controller?"
+        end
+
 
         form.openDialog({
             width = nil,
