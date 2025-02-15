@@ -272,7 +272,7 @@ local function openPageInit(pidx, title, script)
                         buf.offset = i
                         local servoOverride = rfsuite.bg.msp.mspHelper.readU8(buf)
                         if servoOverride == 0 then
-                            rfsuite.utils.log("Servo override: true")
+                            rfsuite.utils.log("Servo override: true","debug")
                             rfsuite.config.servoOverride = true
                         end
                     end

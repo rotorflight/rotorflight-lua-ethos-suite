@@ -41,7 +41,7 @@ end
 function mspProcessTxQ()
     if #mspTxBuf == 0 then return false end
 
-    rfsuite.utils.log("Sending mspTxBuf size " .. tostring(#mspTxBuf) .. " at Idx " .. tostring(mspTxIdx) .. " for cmd: " .. tostring(mspLastReq))
+    rfsuite.utils.log("Sending mspTxBuf size " .. tostring(#mspTxBuf) .. " at Idx " .. tostring(mspTxIdx) .. " for cmd: " .. tostring(mspLastReq),"debug")
 
     local payload = {}
     payload[1] = mspSeq + MSP_VERSION
@@ -71,11 +71,11 @@ end
 
 function mspSendRequest(cmd, payload)
     if not cmd or type(payload) ~= "table" then
-        rfsuite.utils.log("Invalid command or payload")
+        rfsuite.utils.log("Invalid command or payload","debug")
         return nil
     end
     if #mspTxBuf ~= 0 then
-        rfsuite.utils.log("Existing mspTxBuf still sending, failed to send cmd: " .. tostring(cmd))
+        rfsuite.utils.log("Existing mspTxBuf still sending, failed to send cmd: " .. tostring(cmd),"debug")
         return nil
     end
     mspTxBuf[1] = #payload
@@ -122,7 +122,7 @@ local function mspReceivedReply(payload)
 
     mspStarted = false
     if mspRxCRC ~= payload[idx] and version == 0 then
-        rfsuite.utils.log("Payload checksum incorrect, message failed!")
+        rfsuite.utils.log("Payload checksum incorrect, message failed!","debug")
         return nil
     end
     return true

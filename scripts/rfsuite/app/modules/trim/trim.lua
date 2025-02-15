@@ -61,11 +61,10 @@ local function saveData()
         end
     }
 
-    if rfsuite.config.mspTxRxDebug or rfsuite.config.logEnable then
-        local logData = "Saving: {" .. rfsuite.utils.joinTableItems(payload, ", ") .. "}"
-        rfsuite.utils.log(logData)
-        if rfsuite.config.mspTxRxDebug then print(logData) end
-    end
+
+    local logData = "Saving: {" .. rfsuite.utils.joinTableItems(payload, ", ") .. "}"
+    rfsuite.utils.log(logData,"debug")
+
 
     rfsuite.bg.msp.mspQueue:add(message)
 end
@@ -136,7 +135,7 @@ local function wakeup(self)
             if currentRollTrim ~= currentRollTrimLast then
                 currentRollTrimLast = currentRollTrim
                 lastChangeTime = now
-                print("save")
+                rfsuite.utils.log("save trim","debug")
                 self.saveData(self)
             end
         end

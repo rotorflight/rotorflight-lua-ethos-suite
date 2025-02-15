@@ -100,7 +100,6 @@ renameSensorList[0x0900] = {name = "MCU Voltage", onlyifname = "ADC3"}
 renameSensorList[0x0901] = {name = "BEC Voltage", onlyifname = "ADC3"}
 renameSensorList[0x0902] = {name = "BUS Voltage", onlyifname = "ADC3"}
 
-renameSensorList[0x0200] = {name = "Current", onlyifname = "Current"}
 renameSensorList[0x0201] = {name = "ESC Current", onlyifname = "Current"}
 renameSensorList[0x0222] = {name = "BEC Current", onlyifname = "Current"}
 
@@ -128,7 +127,7 @@ local function createSensor(physId, primId, appId, frameValue)
 
             if frsky.createSensorCache[appId] == nil then
 
-                rfsuite.utils.log("Creating sensor: " .. v.name)
+                rfsuite.utils.log("Creating sensor: " .. v.name, "info")
 
                 frsky.createSensorCache[appId] = model.createSensor()
                 frsky.createSensorCache[appId]:name(v.name)
@@ -172,7 +171,7 @@ local function dropSensor(physId, primId, appId, frameValue)
             frsky.dropSensorCache[appId] = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
 
             if frsky.dropSensorCache[appId] ~= nil then
-                rfsuite.utils.log("Drop sensor: " .. v.name)
+                rfsuite.utils.log("Drop sensor: " .. v.name, "info")
                 frsky.dropSensorCache[appId]:drop()
             end
 
@@ -196,7 +195,7 @@ local function renameSensor(physId, primId, appId, frameValue)
 
             if frsky.renameSensorCache[appId] ~= nil then
                 if frsky.renameSensorCache[appId]:name() == v.onlyifname then
-                    rfsuite.utils.log("Rename sensor: " .. v.name)
+                    rfsuite.utils.log("Rename sensor: " .. v.name, "info")
                     frsky.renameSensorCache[appId]:name(v.name)
                 end
             end

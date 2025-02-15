@@ -34,12 +34,7 @@ config.watchdogParam = 10                                           -- watchdog 
 config.mspExpBytes = 8                                              -- number of bytes for msp_exp [default = 8]    
 
 -- features
-config.logEnable = false                                            -- will write debug log to: /scripts/rfsuite/logs/rfsuite.log [default = false]
-config.logEnableScreen = false                                      -- if config.logEnable is true then also print to screen [default = false]
-config.mspTxRxDebug = false                                         -- print out the packets being sent and received [default = false]
-config.mspApiPositionMapDebug = false                               -- print out a map of the api positions [default = false]
-config.mspApiStructureDebug = false                                 -- print out the structure data from the api [default = false]
-config.mspApiParsedDebug = false                                    -- print out the parsed data from the api [default = false]
+config.logLevel= "info"                                             -- off | info | debug [default = info]
 config.flightLog = true                                             -- will write a flight log into /scripts/rfsuite/logs/<modelname>/*.log
 config.reloadOnSave = false                                         -- trigger a reload on save [default = false]
 config.skipRssiSensorCheck = false                                  -- skip checking for a valid rssi [ default = false]
@@ -68,7 +63,16 @@ config.bgTaskKey = "rf2bg"                                          -- key id us
 rfsuite = {}
 rfsuite.config = config
 rfsuite.app = assert(loadfile("app/app.lua"))(config)
+
+-- logging
+rfsuite.log = assert(loadfile("lib/log.lua"))(config)
+rfsuite.log.config.log_file = "logs/rfsuite_" .. os.date("%Y-%m-%d_%H-%M-%S") .. ".log"
+rfsuite.log.config.min_print_level  = config.logLevel
+if system:getVersion().simulation == true then rfsuite.log.print_interval = 0.1 end
+
 rfsuite.utils = assert(loadfile("lib/utils.lua"))(config)
+
+
 
 -- tasks
 rfsuite.tasks = {}

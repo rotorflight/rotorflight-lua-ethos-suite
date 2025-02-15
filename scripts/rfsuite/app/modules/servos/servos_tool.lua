@@ -109,9 +109,7 @@ local function saveServoSettings(self)
     if rfsuite.config.mspTxRxDebug == true or rfsuite.config.logEnable == true then
         local logData = "{" .. rfsuite.utils.joinTableItems(message.payload, ", ") .. "}"
 
-        rfsuite.utils.log(logData)
-
-        if rfsuite.config.mspTxRxDebug == true then print(logData) end
+        rfsuite.utils.log(logData,"debug")
 
     end
     rfsuite.bg.msp.mspQueue:add(message)
@@ -245,7 +243,7 @@ local function getServoConfigurations(callback, callbackParam)
             -- update master one in case changed
             rfsuite.config.servoCount = servoCount
 
-            -- print("Servo count "..tostring(servoCount))
+            rfsuite.utils.log("Servo count "..tostring(servoCount),"info")
             for i = 0, servoCount - 1 do
                 local config = {}
 

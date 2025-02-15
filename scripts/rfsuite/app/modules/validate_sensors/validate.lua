@@ -51,11 +51,11 @@ function sensorKeyExists(searchKey, sensorTable)
 end
 
 local function postLoad(self)
-    -- print("postLoad")
+    rfsuite.utils.log("postLoad","debug")
 end
 
 local function postRead(self)
-    -- print("postLoad")
+    rfsuite.utils.log("postRead","debug")
 end
 
 local function wakeup()

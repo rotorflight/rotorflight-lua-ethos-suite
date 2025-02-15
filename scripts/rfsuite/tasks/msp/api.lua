@@ -44,15 +44,14 @@ local function loadAPI(apiName)
         if type(apiModule) == "table" and (apiModule.read or apiModule.write) then
             -- Store the loaded API in the cache
             apiCache[apiName] = apiModule
-            rfsuite.utils.log("Loaded API:", apiName)
+            rfsuite.utils.log("Loaded API:", apiName,"debug")
             return apiModule
         else
-            print("Error: API file '" .. apiName .. "' does not contain valid read or write functions.")
+            rfsuite.utils.log("Error: API file '" .. apiName .. "' does not contain valid read or write functions.","debug")
         end
     else
         local logline = "Error: API file '" .. apiFilePath .. " not found."
-        print(logline)
-        error(logline)
+        rfsuite.utils.log(logline,"debug")
     end
 end
 
@@ -60,7 +59,7 @@ end
 function apiLoader.load(apiName)
     local api = loadAPI(apiName)
     if api == nil then
-        print("Unable to load " .. apiName)
+        rfsuite.utils.log("Unable to load " .. apiName,"debug")
     end
     return api
 end
@@ -157,12 +156,12 @@ function apiLoader.parseMSPData(buf, structure, processed, other)
             data = rfsuite.bg.msp.mspHelper.readS32(buf, offset, byteorder)
             offset = offset + 4
         else
-            print("Error: Unknown data type: " .. field.type)
+            rfsuite.utils.log("Error: Unknown data type: " .. field.type,"debug")
             return nil -- Exit if unknown data type
         end
 
         if data == nil then
-            print("Error " .. field.type .. " field: " .. field.field .. " offset: " .. offset) 
+            rfsuite.utils.log("Error " .. field.type .. " field: " .. field.field .. " offset: " .. offset,"debug")
         end   
         parsedData[field.field] = data
     end
@@ -177,9 +176,6 @@ function apiLoader.parseMSPData(buf, structure, processed, other)
     if processed then data['processed'] = processed end
     -- Add in other table if supplied
     if other then data['other'] = other end
-
-    if rfsuite.config.mspApiStructureDebug == true then rfsuite.utils.print_r(data['structure']) end
-    if rfsuite.config.mspApiParsedDebug == true then rfsuite.utils.print_r(data['parsed']) end
 
     return data
 end

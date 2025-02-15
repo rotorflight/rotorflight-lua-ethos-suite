@@ -27,21 +27,17 @@ local function getStatus()
     local message = {
         command = 101, -- MSP_STATUS
         processReply = function(self, buf)
-            -- status.pidCycleTime = rfsuite.bg.msp.mspHelper.readU16(buf)
-            -- status.gyroCycleTime = rfsuite.bg.msp.mspHelper.readU16(buf)
+
             buf.offset = 12
             status.realTimeLoad = rfsuite.bg.msp.mspHelper.readU16(buf)
-            -- print("Real-time load: "..tostring(status.realTimeLoad))
             status.cpuLoad = rfsuite.bg.msp.mspHelper.readU16(buf)
-            -- print("CPU load: "..tostring(status.cpuLoad))
             buf.offset = 18
             status.armingDisableFlags = rfsuite.bg.msp.mspHelper.readU32(buf)
             buf.offset = 24
             status.profile = rfsuite.bg.msp.mspHelper.readU8(buf)
-            -- print("Profile: "..tostring(status.profile))
             buf.offset = 26
             status.rateProfile = rfsuite.bg.msp.mspHelper.readU8(buf)
-            -- print("Rate Profile: "..tostring(status.rateProfile))
+
 
         end,
         simulatorResponse = {240, 1, 124, 0, 35, 0, 0, 0, 0, 0, 0, 224, 1, 10, 1, 0, 26, 0, 0, 0, 0, 0, 2, 0, 6, 0, 6, 1, 4, 1}
@@ -54,7 +50,7 @@ local function getDataflashSummary()
     local message = {
         command = 70, -- MSP_DATAFLASH_SUMMARY
         processReply = function(self, buf)
-            -- rfsuite.print("buf length: "..#buf)
+
             local flags = rfsuite.bg.msp.mspHelper.readU8(buf)
             summary.ready = (flags & 1) ~= 0
             summary.supported = (flags & 2) ~= 0
@@ -87,12 +83,12 @@ local function eraseDataflash()
 end
 
 local function postLoad(self)
-    -- print("postLoad")
+    rfsuite.utils.log("postLoad","debug")
     rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function postRead(self)
-    -- print("postLoad")
+    rfsuite.utils.log("postRead","debug")
 end
 
 local function readMSP()

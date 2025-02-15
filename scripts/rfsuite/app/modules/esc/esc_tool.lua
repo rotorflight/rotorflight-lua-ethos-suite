@@ -87,7 +87,7 @@ local function openPage(pidx, title, script)
 
     rfsuite.app.formFields = {}
     rfsuite.app.formLines = {}
-    -- rfsuite.utils.log("ui.openPageEscTool")
+
 
     local windowWidth = rfsuite.config.lcdWidth
     local windowHeight = rfsuite.config.lcdHeight
@@ -194,7 +194,6 @@ local function openPage(pidx, title, script)
             rfsuite.app.gfx_buttons["esctool"][pvalue.image] = nil
         end
 
-        -- rfsuite.utils.log("x = " .. bx .. ", y = " .. y .. ", w = " .. buttonW .. ", h = " .. buttonH)
         rfsuite.app.formFields[pidx] = form.addButton(nil, {x = bx, y = y, w = buttonW, h = buttonH}, {
             text = pvalue.title,
             icon = rfsuite.app.gfx_buttons["esctool"][pvalue.image],
@@ -310,8 +309,6 @@ local function wakeup()
 end
 
 local function event(widget, category, value, x, y)
-
-    -- print("Event received:" .. ", " .. category .. "," .. value .. "," .. x .. "," .. y)
 
     if category == 5 or value == 35 then
         if powercycleLoader then powercycleLoader:close() end

@@ -36,7 +36,7 @@ for _, module in ipairs(rfsuite.app.moduleList) do
     if sectionIndex then
         pages[#pages + 1] = {title = module.title, section = sectionIndex, script = module.script, order = module.order or 0, image = module.image, folder = module.folder, ethosversion = module.ethosversion, mspversion = module.mspversion}
     else
-        rfsuite.utils.log("Warning: Section '" .. module.section .. "' not found for module '" .. module.title .. "'")
+        rfsuite.utils.log("Warning: Section '" .. module.section .. "' not found for module '" .. module.title .. "'","debug")
     end
 end
 

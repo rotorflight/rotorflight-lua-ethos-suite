@@ -53,7 +53,7 @@ local function postLoad(self)
     --trigger a full reload if the number of bytes has changed
     if total_bytes ~= #rfsuite.app.Page.values then
         rfsuite.config.mspExpBytes = #rfsuite.app.Page.values
-        print(rfsuite.config.mspExpBytes)
+
         rfsuite.app.triggers.reloadFull = true
     end
     rfsuite.app.triggers.isReady = true
