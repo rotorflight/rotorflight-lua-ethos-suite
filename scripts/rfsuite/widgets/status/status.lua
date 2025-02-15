@@ -2597,7 +2597,6 @@ function status.getSensors()
             end
 
             if rssiSOURCE ~= nil then
-                print("Type:" .. type(rssiSOURCE))
                 rssi = rssiSOURCE:value() or 0
 
                 if rssi ~= nil then
@@ -2863,8 +2862,6 @@ function status.getSensors()
 
     else
         -- we have no link.  do something
-        -- print("NO LINK")
-        -- keep looking for new sensor
 
         voltage = 0
         rpm = 0
@@ -3658,8 +3655,6 @@ end
 
 function status.event(widget, category, value, x, y)
 
-    -- print("Event received:", category, value, x, y)
-
 end
 
 -- MAIN WAKEUP FUNCTION. THIS SIMPLY FARMS OUT AT DIFFERING SCHEDULES TO SUB FUNCTIONS
@@ -3969,8 +3964,6 @@ function status.wakeupUI(widget)
                                 rfsuite.utils.playFile("status", "alerts/lowvoltage.wav")
                                 -- system.playNumber(status.sensors.voltage / 100, 2, 2)
                                 if status.alrthptParam == true then system.playHaptic("- . -") end
-                            else
-                                -- print("Alarm supressed due to stick positions")
                             end
 
                         end

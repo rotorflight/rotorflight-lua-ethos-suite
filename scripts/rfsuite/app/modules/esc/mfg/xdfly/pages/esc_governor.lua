@@ -25,7 +25,6 @@ for i = #fields, 1, -1 do
     local f = fields[i]
     local fieldIndex = f.activeFieldPos  -- Use activeFieldPos for association
     if activeFields[fieldIndex] == 0 then
-        -- print("v:" .. f.t .. " disabled")
         table.remove(fields, i)  -- Remove the field from the table
     end
 end
@@ -42,9 +41,7 @@ local function onNavMenu(self)
 end
 
 local function event(widget, category, value, x, y)
-
-    -- print("Event received:" .. ", " .. category .. "," .. value .. "," .. x .. "," .. y)
-
+    
     if category == 5 or value == 35 then
         rfsuite.app.ui.openPage(pidx, folder , "esc/esc_tool.lua")
         return true

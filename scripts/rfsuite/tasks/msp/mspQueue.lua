@@ -67,7 +67,7 @@ function MspQueueController:processQueue()
         cmd, buf, err = mspPollReply()
     else
         if not self.currentMessage.simulatorResponse then
-            rfsuite.utils.log("No simulator response for command " .. tostring(self.currentMessage.command))
+            rfsuite.utils.log("No simulator response for command " .. tostring(self.currentMessage.command),"debug")
             self.currentMessage = nil
             return
         end
@@ -76,27 +76,25 @@ function MspQueueController:processQueue()
 
     if self.currentMessage and os.clock() - self.currentMessageStartTime > (self.currentMessage.timeout or self.timeout) then
         if self.currentMessage.errorHandler then self.currentMessage:errorHandler() end
-        rfsuite.utils.log("Message timeout exceeded. Flushing queue.")
+        rfsuite.utils.log("Message timeout exceeded. Flushing queue.","debug")
         self:clear()
         return
     end
 
     if cmd then
         self.lastTimeCommandSent = nil
-        if rfsuite.config.mspTxRxDebug or rfsuite.config.logEnable then
-            local logData = "Requesting: {" .. tostring(cmd) .. "}"
-            rfsuite.utils.log(logData)
-            if rfsuite.config.mspTxRxDebug then print(logData) end
-        end
+
+        local logData = "Requesting: {" .. tostring(cmd) .. "}"
+        rfsuite.utils.log(logData,"debug")
+
     end
 
     if (cmd == self.currentMessage.command and not err) or (self.currentMessage.command == 68 and self.retryCount == 2) or (self.currentMessage.command == 217 and err and self.retryCount == 2) then
 
-        if rfsuite.config.mspTxRxDebug or rfsuite.config.logEnable then
+
             local logData = "Received: {" .. rfsuite.utils.joinTableItems(buf, ", ") .. "}"
-            rfsuite.utils.log(logData)
-            if rfsuite.config.mspTxRxDebug and #buf > 0 then print(logData) end
-        end
+            if #buf > 0 then rfsuite.utils.log(logData,"debug") end
+
 
         if self.currentMessage.processReply then self.currentMessage:processReply(buf) end
         self.currentMessage = nil
@@ -132,7 +130,7 @@ function MspQueueController:add(message)
     if not rfsuite.bg.telemetry.active() then return end
     if message then
         if message.uuid and self.uuid == message.uuid then
-            rfsuite.utils.log("Skipping duplicate message with UUID " .. message.uuid)
+            rfsuite.utils.log("Skipping duplicate message with UUID " .. message.uuid,"debug")
             return
         end
         message = deepCopy(message)
@@ -141,7 +139,7 @@ function MspQueueController:add(message)
         self.messageQueue[#self.messageQueue + 1] = message
         return self
     else
-        rfsuite.utils.log("Unable to queue - nil message.")
+        rfsuite.utils.log("Unable to queue - nil message.","debug")
     end
 end
 

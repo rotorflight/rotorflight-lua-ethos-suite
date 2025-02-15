@@ -75,7 +75,7 @@ local function setTelemetryValue(uid, subid, instance, value, unit, dec, name, m
     if sensors['uid'][uid] == nil then
         sensors['uid'][uid] = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = uid})
         if sensors['uid'][uid] == nil then
-            print("Create sensor: " .. uid)
+            rfsuite.utils.log("Create sensor: " .. uid, "debug")
             createTelemetrySensor(uid, name, unit, dec, value, min, max)
         end
     else

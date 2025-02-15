@@ -63,7 +63,7 @@ local MSP_API_MSG_TIMEOUT
 -- Function to initiate MSP read operation
 local function read()
     if MSP_API_CMD_READ == nil then
-        print("No value set for MSP_API_CMD_READ")
+        rfsuite.utils.log("No value set for MSP_API_CMD_READ", "debug")
         return
     end
 
@@ -89,7 +89,7 @@ end
 
 local function write(suppliedPayload)
     if MSP_API_CMD_WRITE == nil then
-        print("No value set for MSP_API_CMD_WRITE")
+        rfsuite.utils.log("No value set for MSP_API_CMD_WRITE", "debug")
         return
     end
 

@@ -70,7 +70,7 @@ function msp.onConnectBgChecks()
             local API = msp.api.load("API_VERSION")
             API.setCompleteHandler(function(self, buf)
                 rfsuite.config.apiVersion = API.readVersion()
-                print("API version: " .. rfsuite.config.apiVersion)
+                rfsuite.utils.log("API version: " .. rfsuite.config.apiVersion,"info")
             end)
             API.read()
 
@@ -81,7 +81,7 @@ function msp.onConnectBgChecks()
                 local API = msp.api.load("RTC", 1)
                 API.setCompleteHandler(function(self, buf)
                     rfsuite.config.clockSet = true
-                    print("Sync clock: " .. os.clock())
+                    rfsuite.utils.log("Sync clock: " .. os.clock(),"info")
                 end)
 
                 API.write()
@@ -100,8 +100,8 @@ function msp.onConnectBgChecks()
                 API.setCompleteHandler(function(self, buf)
                     rfsuite.config.tailMode = API.readValue("tail_rotor_mode")
                     rfsuite.config.swashMode = API.readValue("swash_type")
-                    print("Tail mode: " .. rfsuite.config.tailMode)
-                    print("Swash mode: " .. rfsuite.config.swashMode)
+                    rfsuite.utils.log("Tail mode: " .. rfsuite.config.tailMode,"info")
+                    rfsuite.utils.log("Swash mode: " .. rfsuite.config.swashMode,"info")
                 end)
                 API.read()
 
@@ -111,7 +111,7 @@ function msp.onConnectBgChecks()
                 local API = msp.api.load("STATUS")
                 API.setCompleteHandler(function(self, buf)
                     rfsuite.config.servoCount = API.readValue("servo_count")
-                    print("Servo count: " .. rfsuite.config.servoCount)
+                    rfsuite.utils.log("Servo count: " .. rfsuite.config.servoCount,"info")
                 end)
                 API.read()
 
@@ -123,7 +123,7 @@ function msp.onConnectBgChecks()
                 if API.readComplete() then
                     for i,v in pairs(API.data().parsed) do
                         if v == 0 then
-                            rfsuite.utils.log("Servo override: true (" .. i .. ")")
+                            rfsuite.utils.log("Servo override: true (" .. i .. ")","info")
                             rfsuite.config.servoOverride = true
                         end    
                     end
@@ -136,7 +136,7 @@ function msp.onConnectBgChecks()
                 local API = msp.api.load("GOVERNOR_CONFIG")
                 API.setCompleteHandler(function(self, buf)
                     local governorMode = API.readValue("gov_mode")
-                    rfsuite.utils.log("Governor mode: " .. governorMode)
+                    rfsuite.utils.log("Governor mode: " .. governorMode,"info")
                     rfsuite.config.governorMode = governorMode
                 end)
                 API.read()
@@ -147,7 +147,7 @@ function msp.onConnectBgChecks()
                 local API = msp.api.load("PILOT_CONFIG")
                 API.setCompleteHandler(function(self, buf)
                     local model_id = API.readValue("model_id")
-                    print("Model id: " .. model_id)
+                    rfsuite.utils.log("Model id: " .. model_id,"info")
                     rfsuite.config.modelID = model_id
                 end)
                 API.read()
@@ -164,11 +164,14 @@ function msp.onConnectBgChecks()
 
                     -- set the model name to the craft name
                     if rfsuite.config.syncCraftName == true and model.name and rfsuite.config.craftName ~= nil then
+                        rfsuite.utils.log("Setting model name to: " .. rfsuite.config.craftName,"info")
                         model.name(rfsuite.config.craftName)
                         lcd.invalidate()
                     end
 
-                    if rfsuite.config.craftName and rfsuite.config.craftName ~= "" then print("Craft name: " .. rfsuite.config.craftName) end
+                    if rfsuite.config.craftName and rfsuite.config.craftName ~= "" then 
+                        rfsuite.utils.log("Craft name: " .. rfsuite.config.craftName,"info") 
+                    end
 
                     -- do this at end of last one
                     msp.onConnectChecksInit = false
@@ -205,7 +208,7 @@ function msp.wakeup()
 
     if rfsuite.rssiSensorChanged == true then
 
-        rfsuite.utils.log("Switching protocol: " .. msp.activeProtocol)
+        --rfsuite.utils.log("Switching protocol: " .. msp.activeProtocol)
 
         msp.protocol = protocol.getProtocol()
 

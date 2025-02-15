@@ -490,8 +490,6 @@ function ui.fieldNumber(i)
         if rfsuite.app.fieldHelpTxt and rfsuite.app.fieldHelpTxt[f.help] and rfsuite.app.fieldHelpTxt[f.help]['t'] ~= nil then
             local helpTxt = rfsuite.app.fieldHelpTxt[f.help]['t']
             rfsuite.app.formFields[i]:help(helpTxt)
-        else
-            if rfsuite.config.helpFieldDebug == true then print(f.help) end
         end
     end
     if f.instantChange and f.instantChange == true then
@@ -624,8 +622,6 @@ function ui.fieldText(i)
         if rfsuite.app.fieldHelpTxt and rfsuite.app.fieldHelpTxt[f.help] and rfsuite.app.fieldHelpTxt[f.help]['t'] ~= nil then
             local helpTxt = rfsuite.app.fieldHelpTxt[f.help]['t']
             rfsuite.app.formFields[i]:help(helpTxt)
-        else
-            if rfsuite.config.helpFieldDebug == true then print(f.help) end
         end
     end
     if f.instantChange and f.instantChange == true then
@@ -932,7 +928,7 @@ function ui.navigationButtons(x, y, w, h)
 
         else
             -- File loading failed
-            rfsuite.utils.log("Failed to load help.lua: " .. loadError)
+            rfsuite.utils.log("Failed to load help.lua: " .. loadError,"debug")
             rfsuite.app.formNavigationFields['help'] = form.addButton(line, {x = helpOffset, y = y, w = wS, h = h}, {
                 text = "?",
                 icon = nil,

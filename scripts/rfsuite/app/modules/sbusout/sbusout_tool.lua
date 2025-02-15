@@ -51,14 +51,9 @@ local function saveServoSettings(self)
     rfsuite.bg.msp.mspHelper.writeU16(message.payload, mixMax)
     -- rfsuite.bg.msp.mspHelper.writeU8(message.payload, frameRate)
 
-    if rfsuite.config.mspTxRxDebug == true or rfsuite.config.logEnable == true then
-        local logData = "{" .. rfsuite.utils.joinTableItems(message.payload, ", ") .. "}"
+    local logData = "{" .. rfsuite.utils.joinTableItems(message.payload, ", ") .. "}"
+    rfsuite.utils.log(logData,"debug")
 
-        rfsuite.utils.log(logData)
-        print(logData)
-        if rfsuite.config.mspTxRxDebug == true then print(logData) end
-
-    end
     rfsuite.bg.msp.mspQueue:add(message)
 
     -- write change to epprom

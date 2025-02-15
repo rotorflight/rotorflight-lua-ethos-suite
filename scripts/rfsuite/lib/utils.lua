@@ -181,7 +181,9 @@ function utils.getCurrentProfile()
                 simulatorResponse = {240, 1, 124, 0, 35, 0, 0, 0, 0, 0, 0, 224, 1, 10, 1, 0, 26, 0, 0, 0, 0, 0, 2, 0, 6, 0, 6, 1, 4, 1}
 
             }
-            rfsuite.bg.msp.mspQueue:add(message)
+            if system:getVersion().simulation ~= true then  -- only do if on real radio
+                rfsuite.bg.msp.mspQueue:add(message)
+            end
 
         end
 
@@ -203,7 +205,7 @@ function utils.ethosVersionAtLeast(targetVersion)
             return false
         end
     elseif type(targetVersion) == "number" then
-        print("WARNING: utils.ethosVersionAtLeast() called with a number instead of a table (" .. targetVersion .. ")")
+        rfsuite.utils.log("WARNING: utils.ethosVersionAtLeast() called with a number instead of a table (" .. targetVersion .. ")",2)
         return false    
     end
 
@@ -475,9 +477,10 @@ function utils.writeText(x, y, str)
     lcd.drawText(x, y, str)
 end
 
-function utils.log(msg)
-
-    if config.logEnable == true then if rfsuite.bg.log_queue ~= nil then table.insert(rfsuite.bg.log_queue, msg) end end
+function utils.log(msg, level)  
+    -- route to the master logger
+    if level == nil then level = "debug" end
+    rfsuite.log.log(msg, level)
 end
 
 -- print a table out to debug console
@@ -617,7 +620,7 @@ function utils.findModules()
             if func then
                 local mconfig = func()
                 if type(mconfig) ~= "table" or not mconfig.script then
-                    rfsuite.utils.log("Invalid configuration in " .. init_path)
+                    rfsuite.utils.log("Invalid configuration in " .. init_path,"debug")
                 else
                     mconfig['folder'] = v
                     table.insert(modulesList, mconfig)
@@ -647,7 +650,7 @@ function utils.findWidgets()
             if func then
                 local wconfig = func()
                 if type(wconfig) ~= "table" or not wconfig.key then
-                    rfsuite.utils.log("Invalid configuration in " .. init_path)
+                    rfsuite.utils.log("Invalid configuration in " .. init_path,"debug")
                 else
                     wconfig['folder'] = v
                     table.insert(widgetsList, wconfig)

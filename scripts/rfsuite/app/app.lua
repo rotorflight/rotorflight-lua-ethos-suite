@@ -228,7 +228,7 @@ function app.dataBindFields()
                     elseif #f.vals == 4 then
                         f.value = rfsuite.bg.msp.mspHelper.readU32(buf)
                     else
-                        rfsuite.utils.log("Unsupported field size: " .. #f.vals)
+                        rfsuite.utils.log("Unsupported field size: " .. #f.vals, "debug")
                         f.value = 0
                     end
 
@@ -239,7 +239,7 @@ function app.dataBindFields()
             end
         end
     else
-        rfsuite.utils.log("Unable to bind fields as app.Page.fields does not exist")
+        rfsuite.utils.log("Unable to bind fields as app.Page.fields does not exist", "debug")
     end
 end
 
@@ -312,14 +312,14 @@ end
 -- Function to process the reply buffer for app.Page, now aware of the method used
 local function processPageReply(source, buf, methodType)
     if not app.Page then
-        rfsuite.utils.log("app.triggers.isReady app.Page is nil?")
+        rfsuite.utils.log("app.triggers.isReady app.Page is nil?","debug")
         return
     end
 
     -- we should not need this with the api - it is kept for legacy compatability
     app.Page.minBytes = app.Page.minBytes or 0
 
-    rfsuite.utils.log("app.Page is processing reply for cmd " .. tostring(source.command) .. " len buf: " .. #buf .. " expected: " .. app.Page.minBytes .. " (Method: " .. methodType .. ")")
+    rfsuite.utils.log("app.Page is processing reply for cmd " .. tostring(source.command) .. " len buf: " .. #buf .. " expected: " .. app.Page.minBytes .. " (Method: " .. methodType .. ")" , "debug")
 
     -- ensure page.values contains a copy of the buffer
     if methodType == "api" then
@@ -336,7 +336,7 @@ local function processPageReply(source, buf, methodType)
             for i, v in ipairs(app.Page.fields) do
                 if v.apikey then
                     if buf['positionmap'] and buf['positionmap'][v.apikey] then
-                        rfsuite.utils.log("Assigning value to apikey: " .. v.apikey .. " with vals: " .. table.concat(buf['positionmap'][v.apikey], ", "))
+                        rfsuite.utils.log("Assigning value to apikey: " .. v.apikey .. " with vals: " .. table.concat(buf['positionmap'][v.apikey], ", "), "debug")
                         app.Page.fields[i].vals = buf['positionmap'][v.apikey]                
                     end
                 end
@@ -353,10 +353,6 @@ local function processPageReply(source, buf, methodType)
 
                     if f.apikey and  f.apikey == field and formField then
                         
-                        --if f.t then
-                        --        print("Checking if I need to set values via api for: " .. f.t)
-                        --end
-
                         if (f.scale == nil and v.scale ~= nil)  then 
                             f.scale = v.scale 
                         end
@@ -440,7 +436,7 @@ local function processPageReply(source, buf, methodType)
     if form then form.invalidate() end
 
     -- log this happened
-    rfsuite.utils.log("app.triggers.isReady (Method: " .. methodType .. ")")
+    rfsuite.utils.log("app.triggers.isReady (Method: " .. methodType .. ")","debug")
 end
 
 -- Wrapper to an MSP call for situations where we receive a numeric ID
@@ -489,7 +485,7 @@ function app.readPage()
     -- otherwise we revert to using app.Page.read using actual msp id numbers
     local methodType, methodTarget = app.mspMethodType(0)
 
-    print("Reading: " , "Method: " .. methodType, "Target: " .. methodTarget)
+    rfsuite.utils.log("Reading: " .. "Method: " .. methodType, "Target: " .. methodTarget , "debug")
 
     if  methodType == "api" then -- api
         app.Page.API = rfsuite.bg.msp.api.load(app.Page.mspapi, 0)
@@ -509,7 +505,7 @@ function app.readPage()
         rfsuite.bg.msp.mspQueue:add(mspLoadSettings)
 
     else
-        rfsuite.utils.log("API 'read' method is invalid")
+        rfsuite.utils.log("API 'read' method is invalid","debug")
     end
 end
 
@@ -531,7 +527,7 @@ local function saveSettings()
     -- otherwise we revert to using app.Page.read using actual msp id numbers
     local methodType, methodTarget = app.mspMethodType(1)
 
-    print("Writing: " , "MethodType: " .. methodType, "Target: " .. methodTarget)
+    rfsuite.utils.log("Writing: " , "MethodType: " .. methodType, "Target: " .. methodTarget,"debug")
 
     local payload = app.Page.values
 
@@ -541,8 +537,7 @@ local function saveSettings()
     -- Log payload if debugging is enabled
     local function logPayload()
         local logData = "Saving: {" .. rfsuite.utils.joinTableItems(payload, ", ") .. "}"
-        rfsuite.utils.log(logData)
-        if rfsuite.config.mspTxRxDebug then print(logData) end
+        rfsuite.utils.log(logData,"debug")
     end
 
     -- API-based save method
@@ -550,7 +545,7 @@ local function saveSettings()
 
         -- define it if missing
         if app.Page.API == nil then
-            print("app.Page.API is missing.. recreating for " .. active_api_name)
+            rfsuite.utils.log("app.Page.API is missing.. recreating","debug")
             app.Page.API = rfsuite.bg.msp.api.load(app.Page.mspapi)
         end
 
@@ -561,12 +556,12 @@ local function saveSettings()
             app.triggers.saveFailed = true
         end)
 
-        if rfsuite.config.mspTxRxDebug or rfsuite.config.logEnable then logPayload() end
+        logPayload() 
         app.Page.API.write(payload)
 
         -- Legacy method using an ID
     elseif methodType == "id" and app.Page.values then
-        if rfsuite.config.mspTxRxDebug or rfsuite.config.logEnable then logPayload() end
+        logPayload()
 
         mspSaveSettings.command = app.Page.write
         mspSaveSettings.payload = payload
@@ -574,7 +569,7 @@ local function saveSettings()
 
         rfsuite.bg.msp.mspQueue:add(mspSaveSettings)
         rfsuite.bg.msp.mspQueue.errorHandler = function()
-            print("Save failed")
+            rfsuite.utils.log("Save failed","debug")
             app.triggers.saveFailed = true
         end
 
@@ -1272,10 +1267,8 @@ end
 -- EVENT:  Called for button presses, scroll events, touch events, etc.
 function app.event(widget, category, value, x, y)
 
-    -- print("Event received:" .. ", " .. category .. "," .. value .. "," .. x .. "," .. y)
-
     if value == EVT_VIRTUAL_PREV_LONG then
-        print("Forcing exit")
+        rfsuite.utils.log("Forcing exit","debug")
         invalidatePages()
         system.exit()
         return 0
