@@ -21,7 +21,7 @@ local MSP_API_CMD_WRITE = 43 -- Command identifier for saving Mixer Config Setti
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
     {field = "main_rotor_dir",                 type = "U8",  apiVersion = 12.06, simResponse = {0}},
-    {field = "tail_rotor_mode",                type = "U8",  apiVersion = 12.06, simResponse = {1},},
+    {field = "tail_rotor_mode",                type = "U8",  apiVersion = 12.06, simResponse = {1}},
     {field = "tail_motor_idle",                type = "U8",  apiVersion = 12.06, simResponse = {0},  default = 0, unit = "%", min = 0,  max = 250, decimals = 1, scale = 10, help = "Minimum throttle signal sent to the tail motor. This should be set just high enough that the motor does not stop."},
     {field = "tail_center_trim",               type = "U16", apiVersion = 12.06, simResponse = {0, 0}, default = 0,  max = 500, decimals = 1, scale = 10, help ="Sets tail rotor trim for 0 yaw for variable pitch, or tail motor throttle for 0 yaw for motorized."},
     {field = "swash_type",                     type = "U8",  apiVersion = 12.06, simResponse = {0}},

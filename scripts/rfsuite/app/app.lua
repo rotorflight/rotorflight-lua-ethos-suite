@@ -51,9 +51,6 @@ triggers.invalidConnectionSetup = false
 triggers.wasConnected = false
 triggers.isArmed = false
 triggers.showSaveArmedWarning = false
-triggers.showUnderUsedBufferWarning  = false
-triggers.showOverUsedBufferWarning  = false
-triggers.nomoreBufferWarning = false
 
 rfsuite.config = {}
 rfsuite.config = config
@@ -872,40 +869,6 @@ function app.wakeupUI()
 
     -- display a warning if we trigger one of these events
     -- we only show this if we are on an actual form for a page.
-    if rfsuite.app.uiState == rfsuite.app.uiStatus.mainMenu then
-        triggers.showUnderUsedBufferWarning = false
-        triggers.showOverUsedBufferWarning = false
-    elseif rfsuite.app.uiState == rfsuite.app.uiStatus.pages and (triggers.showOverUsedBufferWarning or triggers.showUnderUsedBufferWarning) and not triggers.nomoreBufferWarning then
-
-        local message = "It's possible you are not running an official release version."
-        local warningTime = 5  -- Total time for the progress to complete (in seconds)
-        local startTime = os.clock()
-        
-        local warningLoader
-        
-        warningLoader = form.openProgressDialog({
-            title = "Protocol structure mismatch.",
-            message = message,  
-            close = function()
-                triggers.nomoreBufferWarning = true
-                warningLoader = nil
-            end,
-            wakeup = function()
-                local elapsedTime = os.clock() - startTime
-                local progress = math.min((elapsedTime / warningTime) * 100, 100)
-                warningLoader:value(progress)
-                if progress >= 100 then
-                    warningLoader:close()
-                end
-            end
-        })
-        
-        warningLoader:value(0)
-        app.audio.playBufferWarn = true
-        triggers.showUnderUsedBufferWarning = false
-        triggers.showOverUsedBufferWarning = false
-    end
-
     -- a watchdog to enable the close button when saving data if we exheed the save timout
     if rfsuite.config.watchdogParam ~= nil and rfsuite.config.watchdogParam ~= 1 then app.protocol.saveTimeout = rfsuite.config.watchdogParam end
     if app.dialogs.saveDisplay == true then

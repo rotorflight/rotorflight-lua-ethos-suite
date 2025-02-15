@@ -74,105 +74,108 @@ function msp.onConnectBgChecks()
             end)
             API.read()
 
-        elseif rfsuite.config.clockSet == nil and msp.mspQueue:isProcessed() then
-
-            local API = msp.api.load("RTC", 1)
-            API.setCompleteHandler(function(self, buf)
-                rfsuite.config.clockSet = true
-                print("Sync clock: " .. os.clock())
-            end)
-
-            API.write()
-
-            -- beep the clock
-        elseif rfsuite.config.clockSet == true and rfsuite.config.clockSetAlart ~= true then
-            -- this is unsual but needed because the clock sync does not return anything usefull
-            -- to confirm its done! 
-            rfsuite.utils.playFileCommon("beep.wav")
-            rfsuite.config.clockSetAlart = true
-
-            -- find tail and swash mode
-        elseif (rfsuite.config.tailMode == nil or rfsuite.config.swashMode == nil) and msp.mspQueue:isProcessed() then
-
-            local API = msp.api.load("MIXER_CONFIG")
-            API.setCompleteHandler(function(self, buf)
-                rfsuite.config.tailMode = API.readValue("tail_rotor_mode")
-                rfsuite.config.swashMode = API.readValue("swash_type")
-                print("Tail mode: " .. rfsuite.config.tailMode)
-                print("Swash mode: " .. rfsuite.config.swashMode)
-            end)
-            API.read()
-
-            -- get servo configuration
-        elseif (rfsuite.config.servoCount == nil) and msp.mspQueue:isProcessed() then
-
-            local API = msp.api.load("STATUS")
-            API.setCompleteHandler(function(self, buf)
-                rfsuite.config.servoCount = API.readValue("servo_count")
-                print("Servo count: " .. rfsuite.config.servoCount)
-            end)
-            API.read()
-
-            -- work out if fbl has any servos in overide mode
-        elseif (rfsuite.config.servoOverride == nil) and msp.mspQueue:isProcessed() then
-
-            local API = msp.api.load("SERVO_OVERRIDE")
-            API.read()
-            if API.readComplete() then
-                for i,v in pairs(API.data().parsed) do
-                    if v == 0 then
-                        rfsuite.utils.log("Servo override: true (" .. i .. ")")
-                        rfsuite.config.servoOverride = true
-                    end    
-                end
-                if rfsuite.config.servoOverride == nil then rfsuite.config.servoOverride = false end
-            end
-
-            -- find out if we have a governor
-        elseif (rfsuite.config.governorMode == nil) and msp.mspQueue:isProcessed() then
-
-            local API = msp.api.load("GOVERNOR_CONFIG")
-            API.setCompleteHandler(function(self, buf)
-                local governorMode = API.readValue("gov_mode")
-                rfsuite.utils.log("Governor mode: " .. governorMode)
-                rfsuite.config.governorMode = governorMode
-            end)
-            API.read()
-
-            -- get the model id
-        elseif (rfsuite.config.modelID == nil) and msp.mspQueue:isProcessed() then
-
-            local API = msp.api.load("PILOT_CONFIG")
-            API.setCompleteHandler(function(self, buf)
-                local model_id = API.readValue("model_id")
-                print("Model id: " .. model_id)
-                rfsuite.config.modelID = model_id
-            end)
-            API.read()
-
-            -- find the craft name on the fbl
-        elseif (rfsuite.config.craftName == nil) and msp.mspQueue:isProcessed() then
-
-            local API = msp.api.load("NAME")
-            API.read()
-            if API.readComplete() and API.readValue("name") ~= nil then
-                local data = API.data()
-
-                rfsuite.config.craftName = API.readValue("name")
-
-                -- set the model name to the craft name
-                if rfsuite.config.syncCraftName == true and model.name and rfsuite.config.craftName ~= nil then
-                    model.name(rfsuite.config.craftName)
-                    lcd.invalidate()
-                end
-
-                if rfsuite.config.craftName and rfsuite.config.craftName ~= "" then print("Craft name: " .. rfsuite.config.craftName) end
-
-                -- do this at end of last one
-                msp.onConnectChecksInit = false
-            end
-
         end
+        if rfsuite.config.apiVersion ~= nil then
+            if rfsuite.config.clockSet == nil and msp.mspQueue:isProcessed() then
+
+                local API = msp.api.load("RTC", 1)
+                API.setCompleteHandler(function(self, buf)
+                    rfsuite.config.clockSet = true
+                    print("Sync clock: " .. os.clock())
+                end)
+
+                API.write()
+
+                -- beep the clock
+            elseif rfsuite.config.clockSet == true and rfsuite.config.clockSetAlart ~= true then
+                -- this is unsual but needed because the clock sync does not return anything usefull
+                -- to confirm its done! 
+                rfsuite.utils.playFileCommon("beep.wav")
+                rfsuite.config.clockSetAlart = true
+
+                -- find tail and swash mode
+            elseif (rfsuite.config.tailMode == nil or rfsuite.config.swashMode == nil) and msp.mspQueue:isProcessed() then
+
+                local API = msp.api.load("MIXER_CONFIG")
+                API.setCompleteHandler(function(self, buf)
+                    rfsuite.config.tailMode = API.readValue("tail_rotor_mode")
+                    rfsuite.config.swashMode = API.readValue("swash_type")
+                    print("Tail mode: " .. rfsuite.config.tailMode)
+                    print("Swash mode: " .. rfsuite.config.swashMode)
+                end)
+                API.read()
+
+                -- get servo configuration
+            elseif (rfsuite.config.servoCount == nil) and msp.mspQueue:isProcessed() then
+
+                local API = msp.api.load("STATUS")
+                API.setCompleteHandler(function(self, buf)
+                    rfsuite.config.servoCount = API.readValue("servo_count")
+                    print("Servo count: " .. rfsuite.config.servoCount)
+                end)
+                API.read()
+
+                -- work out if fbl has any servos in overide mode
+            elseif (rfsuite.config.servoOverride == nil) and msp.mspQueue:isProcessed() then
+
+                local API = msp.api.load("SERVO_OVERRIDE")
+                API.read()
+                if API.readComplete() then
+                    for i,v in pairs(API.data().parsed) do
+                        if v == 0 then
+                            rfsuite.utils.log("Servo override: true (" .. i .. ")")
+                            rfsuite.config.servoOverride = true
+                        end    
+                    end
+                    if rfsuite.config.servoOverride == nil then rfsuite.config.servoOverride = false end
+                end
+
+                -- find out if we have a governor
+            elseif (rfsuite.config.governorMode == nil) and msp.mspQueue:isProcessed() then
+
+                local API = msp.api.load("GOVERNOR_CONFIG")
+                API.setCompleteHandler(function(self, buf)
+                    local governorMode = API.readValue("gov_mode")
+                    rfsuite.utils.log("Governor mode: " .. governorMode)
+                    rfsuite.config.governorMode = governorMode
+                end)
+                API.read()
+
+                -- get the model id
+            elseif (rfsuite.config.modelID == nil) and msp.mspQueue:isProcessed() then
+
+                local API = msp.api.load("PILOT_CONFIG")
+                API.setCompleteHandler(function(self, buf)
+                    local model_id = API.readValue("model_id")
+                    print("Model id: " .. model_id)
+                    rfsuite.config.modelID = model_id
+                end)
+                API.read()
+
+                -- find the craft name on the fbl
+            elseif (rfsuite.config.craftName == nil) and msp.mspQueue:isProcessed() then
+
+                local API = msp.api.load("NAME")
+                API.read()
+                if API.readComplete() and API.readValue("name") ~= nil then
+                    local data = API.data()
+
+                    rfsuite.config.craftName = API.readValue("name")
+
+                    -- set the model name to the craft name
+                    if rfsuite.config.syncCraftName == true and model.name and rfsuite.config.craftName ~= nil then
+                        model.name(rfsuite.config.craftName)
+                        lcd.invalidate()
+                    end
+
+                    if rfsuite.config.craftName and rfsuite.config.craftName ~= "" then print("Craft name: " .. rfsuite.config.craftName) end
+
+                    -- do this at end of last one
+                    msp.onConnectChecksInit = false
+                end
+
+            end
+        end    
     end
 
 end
