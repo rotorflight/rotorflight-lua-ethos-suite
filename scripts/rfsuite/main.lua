@@ -34,7 +34,7 @@ config.watchdogParam = 10                                           -- watchdog 
 config.mspExpBytes = 8                                              -- number of bytes for msp_exp [default = 8]    
 
 -- features
-config.logLevel= "info"                                             -- off | info | debug [default = info]
+config.logLevel= "off"                                             -- off | info | debug [default = info]
 config.flightLog = true                                             -- will write a flight log into /scripts/rfsuite/logs/<modelname>/*.log
 config.reloadOnSave = false                                         -- trigger a reload on save [default = false]
 config.skipRssiSensorCheck = false                                  -- skip checking for a valid rssi [ default = false]
