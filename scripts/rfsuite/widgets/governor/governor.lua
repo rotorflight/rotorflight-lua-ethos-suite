@@ -24,20 +24,41 @@ local governorMap = {[0] = "OFF", [1] = "IDLE", [2] = "SPOOLUP", [3] = "RECOVERY
 local sensors
 
 -- error function
-local function screenError(msg)
+function screenError(msg)
     local w, h = lcd.getWindowSize()
     local isDarkMode = lcd.darkMode()
 
-    lcd.font(FONT_STD)
-    local tsizeW, tsizeH = lcd.getTextSize(msg)
+    -- Available font sizes in order from smallest to largest
+    local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL}
 
-    -- Set color based on theme
+    -- Determine the maximum width and height with 10% padding
+    local maxW, maxH = w * 0.9, h * 0.9
+    local bestFont = FONT_XXS
+    local bestW, bestH = 0, 0
+
+    -- Loop through font sizes and find the largest one that fits
+    for _, font in ipairs(fonts) do
+        lcd.font(font)
+        local tsizeW, tsizeH = lcd.getTextSize(msg)
+        
+        if tsizeW <= maxW and tsizeH <= maxH then
+            bestFont = font
+            bestW, bestH = tsizeW, tsizeH
+        else
+            break  -- Stop checking larger fonts once one exceeds limits
+        end
+    end
+
+    -- Set the optimal font
+    lcd.font(bestFont)
+
+    -- Set text color based on dark mode
     local textColor = isDarkMode and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90)
     lcd.color(textColor)
 
     -- Center the text on the screen
-    local x = (w - tsizeW) / 2
-    local y = (h - tsizeH) / 2
+    local x = (w - bestW) / 2
+    local y = (h - bestH) / 2
     lcd.drawText(x, y, msg)
 end
 
@@ -53,7 +74,6 @@ function rf2gov.create(widget)
 end
 
 function rf2gov.paint(widget)
-
     if not rfsuite.utils.ethosVersionAtLeast() then
         status.screenError(string.format("ETHOS < V%d.%d.%d", 
             rfsuite.config.ethosVersion[1], 
@@ -64,16 +84,42 @@ function rf2gov.paint(widget)
     end
 
     local w, h = lcd.getWindowSize()
-    lcd.font(FONT_XXL)
 
+    -- Available font sizes ordered from smallest to largest
+    local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL}
+
+    -- Determine the maximum width and height with 10% padding
+    local maxW, maxH = w * 0.9, h * 0.9
+    local bestFont = FONT_XXS
+    local bestW, bestH = 0, 0
+
+    -- Determine the text to display
     local str = rfsuite.bg.active() and (sensors and sensors.govmode or "") or "BG TASK DISABLED"
-    local tsizeW, tsizeH = lcd.getTextSize(str)
 
-    local posX = (w - tsizeW) / 2
-    local posY = (h - tsizeH) / 2 + 5
+    -- Loop through font sizes and find the largest one that fits
+    for _, font in ipairs(fonts) do
+        lcd.font(font)
+        local tsizeW, tsizeH = lcd.getTextSize(str)
+        
+        if tsizeW <= maxW and tsizeH <= maxH then
+            bestFont = font
+            bestW, bestH = tsizeW, tsizeH
+        else
+            break  -- Stop checking larger fonts once one exceeds limits
+        end
+    end
 
+    -- Set the optimal font
+    lcd.font(bestFont)
+
+    -- Calculate centered position
+    local posX = (w - bestW) / 2
+    local posY = (h - bestH) / 2 + 5
+
+    -- Draw the text
     lcd.drawText(posX, posY, str)
 end
+
 
 function rf2gov.getSensors()
     if not rfsuite.bg.active() then return end
