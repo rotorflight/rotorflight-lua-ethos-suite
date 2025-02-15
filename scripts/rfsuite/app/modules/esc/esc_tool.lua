@@ -33,7 +33,7 @@ local function getESCDetails()
         processReply = function(self, buf)
 
             local mspBytesCheck = 2 -- we query 2 only unless the flack to cache the init buffer is set
-            if ESC.mspBufferCache == true then
+            if ESC and ESC.mspBufferCache == true then
                 mspBytesCheck = mspBytes
             end
  
