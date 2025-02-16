@@ -32,8 +32,8 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "hw4_current_gain",             type = "U8",  apiVersion = 12.06, simResponse = {0},     min = 0, max = 250},
     {field = "hw4_voltage_gain",             type = "U8",  apiVersion = 12.06, simResponse = {30},    min = 0, max = 250},
     {field = "pin_swap",                     type = "U8",  apiVersion = 12.07, simResponse = {0},     table = onOff},
-    {field = "current_correction_factor",    type = "U16", apiVersion = 12.08, simResponse = {100, 0}, default = 10, min = 0, max = 1000, default = 0, help = "Adjust the current sensor reading to match the actual current draw."},
-    {field = "consumption_correction_factor",type = "U16", apiVersion = 12.08, simResponse = {100, 0}, default = 10, min = 0, max = 1000, default = 0, help = "Adjust the consumption sensor reading to match the actual current draw."},
+    {field = "current_correction_factor",    type = "U16", apiVersion = 12.08, simResponse = {100, 0}, scale=100, decimals=1, default = 1, min = 0, max = 100, help = "Adjust the current sensor reading to match the actual current draw. 1.0 and lower will reduce the gain.  1.0 and higher will increase the gain."},
+    {field = "consumption_correction_factor",type = "U16", apiVersion = 12.08, simResponse = {100, 0}, scale=100, decimals=1, default = 1, min = 0, max = 100, help = "Adjust the consumption sensor reading to match the actual current draw. 1.0 and lower will reduce the gain.  1.0 and higher will increase the gain."},
 }
 
 -- filter the structure to remove any params not supported by the running api version
