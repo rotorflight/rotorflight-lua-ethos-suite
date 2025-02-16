@@ -20,6 +20,7 @@ local logs = {}
 -- Configuration
 logs.config = {
     enabled = true,
+    log_to_file = true, -- New option to enable/disable logging to a file
     print_interval = 0.25,  -- seconds
     disk_write_interval = 5.0, -- seconds (configurable disk write interval)
     max_line_length = 100,
@@ -77,8 +78,10 @@ function logs.log(message, level)
         table.insert(logs.queue, line)
     end
 
-    -- Add to disk queue instead of writing immediately
-    table.insert(logs.disk_queue, log_entry)
+    -- Add to disk queue only if logging to a file is enabled
+    if logs.config.log_to_file then
+        table.insert(logs.disk_queue, log_entry)
+    end
 end
 
 -- Function to process console output queue
@@ -96,7 +99,7 @@ end
 
 -- Function to process disk queue
 function logs.process_disk_queue()
-    if not logs.config.enabled or logs.config.min_print_level == "off" then return end
+    if not logs.config.enabled or logs.config.min_print_level == "off" or not logs.config.log_to_file then return end
 
     local now = os.clock()
 
