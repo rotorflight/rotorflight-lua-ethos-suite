@@ -45,7 +45,9 @@ local sensorRate = 1 -- seconds between sensor readings
 -- Helper function to check if directory exists
 local function dir_exists(base, name)
     base = base or "./"
-    for _, v in pairs(system.listFiles(base)) do if v == name then return true end end
+    local files = system.listFiles(base)
+    if files == nil then return false end
+    for _, v in pairs(files) do if v == name then return true end end
     return false
 end
 
@@ -77,6 +79,7 @@ local function checkLogdirExists()
     local logdir = "telemetry"
     local logs_path = "logs/" 
 
+    if not dir_exists(logs_dir, "./") then os.mkdir(logdir) end
     if not dir_exists(logs_path, logdir) then os.mkdir(logs_path .. logdir) end
 end
 
@@ -126,6 +129,12 @@ end
 function logging.wakeup()
     if not config.flightLog then return end -- Abort if logging is disabled
 
+    if logDirChecked == false then
+        checkLogdirExists()
+        logDirChecked = true
+    end
+
+
     -- If telemetry is not active, clear logs
     if rfsuite.bg.telemetry.active() == false then
         logFileName = nil
@@ -134,11 +143,6 @@ function logging.wakeup()
         logdir = nil
 
         return
-    end
-
-    if logDirChecked == false then
-        checkLogdirExists()
-        logDirChecked = true
     end
 
     local armSource = rfsuite.bg.telemetry.getSensorSource("armflags")
