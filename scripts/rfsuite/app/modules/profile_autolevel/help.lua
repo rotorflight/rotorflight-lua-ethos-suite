@@ -23,12 +23,6 @@ data['help'] = {}
 
 data['help']['default'] = {"Acro Trainer: How aggressively the heli tilts back to level when flying in Acro Trainer Mode.", "Angle Mode: How aggressively the heli tilts back to level when flying in Angle Mode.", "Horizon Mode: How aggressively the heli tilts back to level when flying in Horizon Mode."}
 
-data['fields'] = {
---    trainer_gain = {help = "Determines how aggressively the helicopter tilts back to the maximum angle (if exceeded) while in Acro Trainer Mode."},
---    trainer_angle_limihelp = {help = "Limit the maximum angle the helicopter will pitch/roll to while in Acro Trainer Mode."},
---    angle_level_strength = {help = "Determines how aggressively the helicopter tilts back to level while in Angle Mode."},
---    angle_level_limihelp = {help = "Limit the maximum angle the helicopter will pitch/roll to while in Angle mode."},
---    horizon_level_strength = {help = "Determines how aggressively the helicopter tilts back to level while in Horizon Mode."}
-}
+data['fields'] = {}
 
 return data

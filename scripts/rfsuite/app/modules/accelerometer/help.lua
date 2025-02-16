@@ -23,6 +23,6 @@ data['help'] = {}
 
 data['help']['default'] = {"If your helicopter drifts forward, back, left, or right when in angle mode, use the trim values to compensate."}
 
-data['fields'] = {accelerometerTrim = {t = "Use to trim if the heli drifts in one of the stabilized modes (angle, horizon, etc.)."}}
+data['fields'] = {}
 
 return data

@@ -23,14 +23,6 @@ data['help'] = {}
 
 data['help']['default'] = {"Adust swash plate geometry, phase angles, and limits."}
 
-data['fields'] = {
---    swash_tta_precomp = {help = "Mixer precomp for 0 yaw."}, 
---    swash_geo_correction = {help = "Adjust if there is too much negative collective or too much positive collective."},
---    swash_pitch_limihelp = {help = "Maximum amount of combined cyclic and collective blade pitch."},
---    swash_phase = {help = "Phase offset for the swashplate controls."},
---    tail_motor_idle = {help = "Minimum throttle signal sent to the tail motor. This should be set just high enough that the motor does not stop."},
---    collective_tilt_correction_pos = {help = "Adjust the collective tilt correction scaling for postive or negative collective pitch."},
---    collective_tilt_correction_neg = {help = "Adjust the collective tilt correction scaling for postive or negative collective pitch."}
-}
+data['fields'] = {}
 
 return data
