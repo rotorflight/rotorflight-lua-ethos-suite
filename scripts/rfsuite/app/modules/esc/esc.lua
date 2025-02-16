@@ -129,7 +129,7 @@ local function openPage(pidx, title, script)
         end    
 
         rfsuite.app.formFields[pidx] = form.addButton(line, {x = bx, y = y, w = buttonW, h = buttonH}, {
-            text = "Sensor Config",
+            text = "Telemetry",
             icon = rfsuite.app.gfx_buttons["escmain"]['sensor_config'],
             options = FONT_S,
             paint = function()
@@ -137,7 +137,7 @@ local function openPage(pidx, title, script)
             press = function()
                 rfsuite.app.menuLastSelected["escmain"] = 'sensor_config'
                 rfsuite.app.ui.progressDisplay()
-                rfsuite.app.ui.openPage('sensor_config', "ESC / Sensor Config", "esc/esc_sensor.lua")
+                rfsuite.app.ui.openPage('sensor_config', "ESC / Telemetry", "esc/esc_sensor.lua")
             end
         })   
         if rfsuite.app.menuLastSelected["escmain"] == 'sensor_config' then rfsuite.app.formFields[pidx]:focus() end
