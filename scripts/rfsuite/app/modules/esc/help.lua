@@ -21,8 +21,7 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {""}
-data['help']['esc_sensor'] = {"Configure the ESC sensor settings."}
+data['help']['default'] = {"Configure the ESC sensor settings."}
 
 data['fields'] = {}
 

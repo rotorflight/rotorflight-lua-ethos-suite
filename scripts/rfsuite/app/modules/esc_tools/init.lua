@@ -19,10 +19,10 @@
 ]] --
 local init = {
     title = "ESC", -- title of the page
-    section = "Hardware", -- do not run if busy with msp
+    section = "Tools", -- do not run if busy with msp
     script = "esc.lua", -- run this script
     image = "esc.png", -- image for the page
-    order = 5, -- order in the section
+    order = 12, -- order in the section
     ethosversion = {1, 6, 2} -- disable button if ethos version is less than this
 }
 
