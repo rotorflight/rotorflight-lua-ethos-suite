@@ -34,13 +34,13 @@ function sensors.wakeup()
     if not rfsuite.bg.active() then return end
 
     -- we cant do anything if we have no msp
-    if not rfsuite.config.apiVersion then return end
+    if not rfsuite.session.apiVersion then return end
 
     if rfsuite.bg.msp.protocol.mspProtocol == "crsf" and rfsuite.preferences.internalElrsSensors == true then sensors.elrs.wakeup() end
 
     if rfsuite.bg.msp.protocol.mspProtocol == "smartPort" and rfsuite.preferences.internalSportSensors == true then
 
-        if rfsuite.config.apiVersion >= 12.08 then
+        if rfsuite.session.apiVersion >= 12.08 then
             -- use new if msp is 12.08 or higher
             sensors.frsky.wakeup()
         else

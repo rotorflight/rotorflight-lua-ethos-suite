@@ -52,17 +52,15 @@ triggers.wasConnected = false
 triggers.isArmed = false
 triggers.showSaveArmedWarning = false
 
-rfsuite.config = {}
-rfsuite.config = config
-rfsuite.config.tailMode = nil
-rfsuite.config.swashMode = nil
-rfsuite.config.activeProfile = nil
-rfsuite.config.activeRateProfile = nil
-rfsuite.config.activeProfileLast = nil
-rfsuite.config.activeRateLast = nil
-rfsuite.config.servoCount = nil
-rfsuite.config.servoOverride = nil
-rfsuite.config.clockSet = nil
+rfsuite.session.tailMode = nil
+rfsuite.session.swashMode = nil
+rfsuite.session.activeProfile = nil
+rfsuite.session.activeRateProfile = nil
+rfsuite.session.activeProfileLast = nil
+rfsuite.session.activeRateLast = nil
+rfsuite.session.servoCount = nil
+rfsuite.session.servoOverride = nil
+rfsuite.session.clockSet = nil
 
 app.triggers = {}
 app.triggers = triggers
@@ -189,11 +187,11 @@ function app.resetState()
     app.triggers.wasConnected = false
     app.triggers.invalidConnectionSetup = false
     rfsuite.app.triggers.profileswitchLast = nil
-    rfsuite.config.activeProfileLast = nil
-    rfsuite.config.activeProfile = nil
-    rfsuite.config.activeRateProfile = nil
-    rfsuite.config.activeRateProfileLast = nil
-    rfsuite.config.activeProfile = nil
+    rfsuite.session.activeProfileLast = nil
+    rfsuite.session.activeProfile = nil
+    rfsuite.session.activeRateProfile = nil
+    rfsuite.session.activeRateProfileLast = nil
+    rfsuite.session.activeProfile = nil
 end
 
 -- SAVE FIELD VALUE FOR ETHOS FROM ETHOS FORMS INTO THE ACTUAL FORMAT THAT 
@@ -743,10 +741,10 @@ function app.wakeupUI()
 
             rfsuite.utils.getCurrentProfile()
 
-            if rfsuite.config.activeProfile ~= nil and rfsuite.config.activeProfileLast ~= nil then
+            if rfsuite.session.activeProfile ~= nil and rfsuite.session.activeProfileLast ~= nil then
 
                 if app.Page.refreshOnProfileChange == true then
-                    if rfsuite.config.activeProfile ~= rfsuite.config.activeProfileLast and rfsuite.config.activeProfileLast ~= nil then
+                    if rfsuite.session.activeProfile ~= rfsuite.session.activeProfileLast and rfsuite.session.activeProfileLast ~= nil then
                         if app.ui.progressDisplayIsActive() then
                             -- switch has been toggled mid flow - this is bad.. clean upd
                             form.clear()
@@ -762,10 +760,10 @@ function app.wakeupUI()
 
             end
 
-            if rfsuite.config.activeRateProfile ~= nil and rfsuite.config.activeRateProfileLast ~= nil then
+            if rfsuite.session.activeRateProfile ~= nil and rfsuite.session.activeRateProfileLast ~= nil then
 
                 if app.Page.refreshOnRateChange == true then
-                    if rfsuite.config.activeRateProfile ~= rfsuite.config.activeRateProfileLast and rfsuite.config.activeRateProfileLast ~= nil then
+                    if rfsuite.session.activeRateProfile ~= rfsuite.session.activeRateProfileLast and rfsuite.session.activeRateProfileLast ~= nil then
                         if app.ui.progressDisplayIsActive() then
                             -- switch has been toggled mid flow - this is bad.. clean upd
                             form.clear()
@@ -811,7 +809,7 @@ function app.wakeupUI()
                 }}
 
                 local message
-                local apiVersionAsString = tostring(rfsuite.config.apiVersion)
+                local apiVersionAsString = tostring(rfsuite.session.apiVersion)
                 if not rfsuite.utils.ethosVersionAtLeast() then
                     message = string.format("ETHOS < V%d.%d.%d", 
                     rfsuite.config.ethosVersion[1], 
@@ -824,11 +822,11 @@ function app.wakeupUI()
                 elseif app.getRSSI() == 0 and app.offlineMode == false then
                     message = "Please check your heli is powered on and telemetry is running."
                     app.triggers.invalidConnectionSetup = true
-                elseif rfsuite.config.apiVersion == nil and app.offlineMode == false then
+                elseif rfsuite.session.apiVersion == nil and app.offlineMode == false then
                     message = "Unable to determine MSP version in use."
                     app.triggers.invalidConnectionSetup = true
                 elseif not rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiVersionAsString) and app.offlineMode == false then
-                    message = "This version of the Lua script \ncan't be used with the selected model (" .. rfsuite.config.apiVersion .. ")."
+                    message = "This version of the Lua script \ncan't be used with the selected model (" .. rfsuite.session.apiVersion .. ")."
                     app.triggers.invalidConnectionSetup = true
                 end
 
@@ -1226,7 +1224,7 @@ function app.create_logtool()
     triggers.showUnderUsedBufferWarning = false
     triggers.showOverUsedBufferWarning = false
 
-    -- config.apiVersion = nil
+    -- session.apiVersion = nil
     config.environment = system.getVersion()
     config.ethosRunningVersion = {config.environment.major, config.environment.minor, config.environment.revision}
 
@@ -1248,7 +1246,7 @@ end
 
 function app.create()
 
-    -- config.apiVersion = nil
+    -- session.apiVersion = nil
     config.environment = system.getVersion()
     config.ethosRunningVersion = {config.environment.major, config.environment.minor, config.environment.revision}
 

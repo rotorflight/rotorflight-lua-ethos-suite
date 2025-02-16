@@ -1867,8 +1867,8 @@ function status.paint(widget)
             local sensorTGT = 'craft_name'
             local craftName = "UNKNOWN"
             local modelID = nil
-            if rfsuite.config.craftName ~= nil then craftName = rfsuite.config.craftName end
-            if rfsuite.config.modelID ~= nil then modelID = rfsuite.config.modelID end
+            if rfsuite.session.craftName ~= nil then craftName = rfsuite.session.craftName end
+            if rfsuite.session.modelID ~= nil then modelID = rfsuite.session.modelID end
 
             status.sensordisplay[sensorTGT] = {}
             status.sensordisplay[sensorTGT]['title'] = ""
@@ -3701,16 +3701,16 @@ function status.wakeupUI(widget)
         end
 
         --  find and set image to suite based on craftname or model id
-        if lastName ~= rfsuite.config.craftName or lastID ~= rfsuite.config.modelID then
-            if rfsuite.config.craftName ~= nil then image1 = "/bitmaps/models/" .. rfsuite.config.craftName .. ".png" end
-            if rfsuite.config.modelID ~= nil then image2 = "/bitmaps/models/" .. rfsuite.config.modelID .. ".png" end
+        if lastName ~= rfsuite.session.craftName or lastID ~= rfsuite.session.modelID then
+            if rfsuite.session.craftName ~= nil then image1 = "/bitmaps/models/" .. rfsuite.session.craftName .. ".png" end
+            if rfsuite.session.modelID ~= nil then image2 = "/bitmaps/models/" .. rfsuite.session.modelID .. ".png" end
 
             status.gfx_model = rfsuite.utils.loadImage(image1, image2, default_image)
 
             lcd.invalidate()
         end
-        lastName = rfsuite.config.craftName
-        lastID = rfsuite.config.modelID
+        lastName = rfsuite.session.craftName
+        lastID = rfsuite.session.modelID
 
         if status.linkUP == false then status.linkUPTime = os.clock() end
 

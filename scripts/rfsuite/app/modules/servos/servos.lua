@@ -9,7 +9,7 @@ local lastServoCountTime = os.clock()
 
 local function buildServoTable()
 
-    for i = 1, rfsuite.config.servoCount do
+    for i = 1, rfsuite.session.servoCount do
         servoTable[i] = {}
         servoTable[i] = {}
         servoTable[i]['title'] = "SERVO " .. i
@@ -17,20 +17,20 @@ local function buildServoTable()
         servoTable[i]['disabled'] = true
     end
 
-    for i = 1, rfsuite.config.servoCount do
+    for i = 1, rfsuite.session.servoCount do
         -- enable actual number of servos
         servoTable[i]['disabled'] = false
 
-        if rfsuite.config.swashMode == 0 then
+        if rfsuite.session.swashMode == 0 then
             -- we do nothing as we cannot determine any servo names
-        elseif rfsuite.config.swashMode == 1 then
+        elseif rfsuite.session.swashMode == 1 then
             -- servo mode is direct - only servo for sure we know name of is tail
-            if rfsuite.config.tailMode == 0 then
+            if rfsuite.session.tailMode == 0 then
                 servoTable[4]['title'] = "TAIL"
                 servoTable[4]['image'] = "tail.png"
                 servoTable[4]['section'] = 1
             end
-        elseif rfsuite.config.swashMode == 2 or rfsuite.config.swashMode == 3 or rfsuite.config.swashMode == 4 then
+        elseif rfsuite.session.swashMode == 2 or rfsuite.session.swashMode == 3 or rfsuite.session.swashMode == 4 then
             -- servo mode is cppm - 
             servoTable[1]['title'] = "CYC. PITCH"
             servoTable[1]['image'] = "cpitch.png"
@@ -41,7 +41,7 @@ local function buildServoTable()
             servoTable[3]['title'] = "CYC. RIGHT"
             servoTable[3]['image'] = "cright.png"
 
-            if rfsuite.config.tailMode == 0 then
+            if rfsuite.session.tailMode == 0 then
                 -- this is because when swiching models this may or may not have
                 -- been created.
                 if servoTable[4] == nil then servoTable[4] = {} end
@@ -50,10 +50,10 @@ local function buildServoTable()
             else
                 -- servoTable[4]['disabled'] = true
             end
-        elseif rfsuite.config.swashMode == 5 or rfsuite.config.swashMode == 6 then
+        elseif rfsuite.session.swashMode == 5 or rfsuite.session.swashMode == 6 then
             -- servo mode is fpm 90
             -- servoTable[3]['disabled'] = true 
-            if rfsuite.config.tailMode == 0 then
+            if rfsuite.session.tailMode == 0 then
                 servoTable[4]['title'] = "TAIL"
                 servoTable[4]['image'] = "tail.png"
             else
@@ -65,19 +65,19 @@ end
 
 local function swashMixerType()
     local txt
-    if rfsuite.config.swashMode == 0 then
+    if rfsuite.session.swashMode == 0 then
         txt = "NONE"
-    elseif rfsuite.config.swashMode == 1 then
+    elseif rfsuite.session.swashMode == 1 then
         txt = "DIRECT"
-    elseif rfsuite.config.swashMode == 2 then
+    elseif rfsuite.session.swashMode == 2 then
         txt = "CPPM 120°"
-    elseif rfsuite.config.swashMode == 3 then
+    elseif rfsuite.session.swashMode == 3 then
         txt = "CPPM 135°"
-    elseif rfsuite.config.swashMode == 4 then
+    elseif rfsuite.session.swashMode == 4 then
         txt = "CPPM 140°"
-    elseif rfsuite.config.swashMode == 5 then
+    elseif rfsuite.session.swashMode == 5 then
         txt = "FPPM 90° L"
-    elseif rfsuite.config.swashMode == 6 then
+    elseif rfsuite.session.swashMode == 6 then
         txt = "FPPM 90° R"
     else
         txt = "UNKNOWN"
@@ -227,7 +227,7 @@ local function getServoCount(callback, callbackParam)
             local servoCount = rfsuite.bg.msp.mspHelper.readU8(buf)
 
             -- update master one in case changed
-            rfsuite.config.servoCountNew = servoCount
+            rfsuite.session.servoCountNew = servoCount
 
             if callback then callback(callbackParam) end
         end,
@@ -245,7 +245,7 @@ end
 
 local function openPageInit(pidx, title, script)
 
-    if rfsuite.config.servoCount ~= nil then
+    if rfsuite.session.servoCount ~= nil then
         buildServoTable()
         openPage(pidx, title, script)
     else
@@ -256,7 +256,7 @@ local function openPageInit(pidx, title, script)
                     local servoCount = rfsuite.bg.msp.mspHelper.readU8(buf)
 
                     -- update master one in case changed
-                    rfsuite.config.servoCount = servoCount
+                    rfsuite.session.servoCount = servoCount
                 end
             end,
             simulatorResponse = {4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0, 120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0}
@@ -268,16 +268,16 @@ local function openPageInit(pidx, title, script)
             processReply = function(self, buf)
                 if #buf >= 10 then
 
-                    for i = 0, rfsuite.config.servoCount do
+                    for i = 0, rfsuite.session.servoCount do
                         buf.offset = i
                         local servoOverride = rfsuite.bg.msp.mspHelper.readU8(buf)
                         if servoOverride == 0 then
                             rfsuite.utils.log("Servo override: true","debug")
-                            rfsuite.config.servoOverride = true
+                            rfsuite.session.servoOverride = true
                         end
                     end
                 end
-                if rfsuite.config.servoOverride == nil then rfsuite.config.servoOverride = false end
+                if rfsuite.session.servoOverride == nil then rfsuite.session.servoOverride = false end
             end,
             simulatorResponse = {209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7}
         }
@@ -299,7 +299,7 @@ end
 local function onToolMenu(self)
 
     local buttons
-    if rfsuite.config.servoOverride == false then
+    if rfsuite.session.servoOverride == false then
         buttons = {{
             label = "                OK                ",
             action = function()
@@ -335,7 +335,7 @@ local function onToolMenu(self)
     end
     local message
     local title
-    if rfsuite.config.servoOverride == false then
+    if rfsuite.session.servoOverride == false then
         title = "Enable servo override"
         message = "Servo override allows you to 'trim' your servo center point in real time."
     else
@@ -361,16 +361,16 @@ local function wakeup()
     if triggerOverRide == true then
         triggerOverRide = false
 
-        if rfsuite.config.servoOverride == false then
+        if rfsuite.session.servoOverride == false then
             rfsuite.app.audio.playServoOverideEnable = true
             rfsuite.app.ui.progressDisplay("Servo override", "Enabling servo override...")
             rfsuite.app.Page.servoCenterFocusAllOn(self)
-            rfsuite.config.servoOverride = true
+            rfsuite.session.servoOverride = true
         else
             rfsuite.app.audio.playServoOverideDisable = true
             rfsuite.app.ui.progressDisplay("Servo override", "Disabling servo override...")
             rfsuite.app.Page.servoCenterFocusAllOff(self)
-            rfsuite.config.servoOverride = false
+            rfsuite.session.servoOverride = false
         end
     end
 
@@ -380,7 +380,7 @@ local function wakeup()
 
         getServoCount()
 
-        if rfsuite.config.servoCountNew ~= nil then if rfsuite.config.servoCountNew ~= rfsuite.config.servoCount then rfsuite.app.triggers.triggerReloadNoPrompt = true end end
+        if rfsuite.session.servoCountNew ~= nil then if rfsuite.session.servoCountNew ~= rfsuite.session.servoCount then rfsuite.app.triggers.triggerReloadNoPrompt = true end end
 
     end
 
@@ -418,9 +418,9 @@ end
 
 local function onNavMenu(self)
 
-    if rfsuite.config.servoOverride == true or inFocus == true then
+    if rfsuite.session.servoOverride == true or inFocus == true then
         rfsuite.app.audio.playServoOverideDisable = true
-        rfsuite.config.servoOverride = false
+        rfsuite.session.servoOverride = false
         inFocus = false
         rfsuite.app.ui.progressDisplay("Servo override", "Disabling servo override...")
         rfsuite.app.Page.servoCenterFocusAllOff(self)

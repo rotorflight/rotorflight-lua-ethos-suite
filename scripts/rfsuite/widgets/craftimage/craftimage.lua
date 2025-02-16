@@ -136,17 +136,17 @@ function rf2craftimage.wakeupUI()
 
     LCD_W, LCD_H = lcd.getWindowSize()
 
-    if lastName ~= rfsuite.config.craftName or lastID ~= rfsuite.config.modelID then
-        if rfsuite.config.craftName ~= nil then image1 = "/bitmaps/models/" .. rfsuite.config.craftName .. ".png" end
-        if rfsuite.config.modelID ~= nil then image2 = "/bitmaps/models/" .. rfsuite.config.modelID .. ".png" end
+    if lastName ~= rfsuite.session.craftName or lastID ~= rfsuite.session.modelID then
+        if rfsuite.session.craftName ~= nil then image1 = "/bitmaps/models/" .. rfsuite.session.craftName .. ".png" end
+        if rfsuite.session.modelID ~= nil then image2 = "/bitmaps/models/" .. rfsuite.session.modelID .. ".png" end
 
         bitmapPtr = rfsuite.utils.loadImage(image1, image2, default_image)
 
         lcd.invalidate()
     end
 
-    lastName = rfsuite.config.craftName
-    lastID = rfsuite.config.modelID
+    lastName = rfsuite.session.craftName
+    lastID = rfsuite.session.modelID
 end
 
 return rf2craftimage

@@ -114,7 +114,7 @@ frsky.renameSensorCache = {}
 local function createSensor(physId, primId, appId, frameValue)
 
     -- we dont want any deletions if api has not been found
-    if rfsuite.config.apiVersion == nil then return end
+    if rfsuite.session.apiVersion == nil then return end
 
     -- check for custom sensors and create them if they dont exist
     if createSensorList[appId] ~= nil then
@@ -158,10 +158,10 @@ end
 local function dropSensor(physId, primId, appId, frameValue)
 
     -- we dont want any deletions if api has not been found
-    if rfsuite.config.apiVersion == nil then return end
+    if rfsuite.session.apiVersion == nil then return end
 
     -- we do not do any sensor dropping post 12.08 as have new frsky telem system
-    if rfsuite.config.apiVersion >= 12.08 then return end
+    if rfsuite.session.apiVersion >= 12.08 then return end
 
     -- check for custom sensors and create them if they dont exist
     if dropSensorList[appId] ~= nil then
@@ -184,7 +184,7 @@ end
 local function renameSensor(physId, primId, appId, frameValue)
 
     -- we dont want any deletions if api has not been found
-    if rfsuite.config.apiVersion == nil then return end
+    if rfsuite.session.apiVersion == nil then return end
 
     -- check for custom sensors and create them if they dont exist
     if renameSensorList[appId] ~= nil then

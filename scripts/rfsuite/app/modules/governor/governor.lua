@@ -7,7 +7,7 @@ local minBytes
 fields[#fields + 1] = { t = "Mode" , postEdit = function(self) self.setGovernorMode(self) end , type=1, apikey="gov_mode"}
 fields[#fields + 1] = {t = "Handover throttle%", apikey = "gov_handover_throttle"}
 
-if rfsuite.config.apiVersion >= 12.08 then 
+if rfsuite.session.apiVersion >= 12.08 then 
 fields[#fields + 1] = {t = "Min spoolup throttle%", apikey = "gov_spoolup_min_throttle"}
 end
 

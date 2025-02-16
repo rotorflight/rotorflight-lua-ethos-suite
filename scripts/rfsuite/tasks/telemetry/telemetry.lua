@@ -280,10 +280,10 @@ function telemetry.getSensorSource(name)
     local function checkCondition(sensorEntry)
         if sensorEntry.mspgt then
             -- Check if API version exists and meets "greater than" condition
-            return rfsuite.config and rfsuite.config.apiVersion and (rfsuite.config.apiVersion >= sensorEntry.mspgt)
+            return rfsuite.config and rfsuite.session.apiVersion and (rfsuite.session.apiVersion >= sensorEntry.mspgt)
         elseif sensorEntry.msplt then
             -- Check if API version exists and meets "less than" condition
-            return rfsuite.config and rfsuite.config.apiVersion and (rfsuite.config.apiVersion <= sensorEntry.msplt)
+            return rfsuite.config and rfsuite.session.apiVersion and (rfsuite.session.apiVersion <= sensorEntry.msplt)
         end
         -- No conditions = always valid
         return true

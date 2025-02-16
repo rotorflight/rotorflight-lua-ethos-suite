@@ -87,7 +87,7 @@ function rf2craftname.paint(widget)
     local w, h = lcd.getWindowSize()  -- Ensure consistency with rf2gov.paint
 
     -- Text to display
-    local str = rfsuite.bg.active() and rfsuite.config.craftName or "[NO LINK]"
+    local str = rfsuite.bg.active() and rfsuite.session.craftName or "[NO LINK]"
 
     -- Available font sizes ordered from smallest to largest
     local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL}
@@ -201,17 +201,17 @@ function rf2craftname.wakeupUI()
 
     if LCD_H < LCD_MINH4IMAGE then config.image = false end
 
-    if lastName ~= rfsuite.config.craftName or lastID ~= rfsuite.config.modelID then
-        if rfsuite.config.craftName ~= nil then image1 = "/bitmaps/models/" .. rfsuite.config.craftName .. ".png" end
-        if rfsuite.config.modelID ~= nil then image2 = "/bitmaps/models/" .. rfsuite.config.modelID .. ".png" end
+    if lastName ~= rfsuite.session.craftName or lastID ~= rfsuite.session.modelID then
+        if rfsuite.session.craftName ~= nil then image1 = "/bitmaps/models/" .. rfsuite.session.craftName .. ".png" end
+        if rfsuite.session.modelID ~= nil then image2 = "/bitmaps/models/" .. rfsuite.session.modelID .. ".png" end
 
         bitmapPtr = rfsuite.utils.loadImage(image1, image2, default_image)
 
         lcd.invalidate()
     end
 
-    lastName = rfsuite.config.craftName
-    lastID = rfsuite.config.modelID
+    lastName = rfsuite.session.craftName
+    lastID = rfsuite.session.modelID
 end
 
 return rf2craftname

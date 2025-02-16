@@ -133,7 +133,7 @@ function apiLoader.parseMSPData(buf, structure, processed, other)
 
         for _, param in ipairs(param_table) do
             -- Check API version conditions
-            local apiVersion = rfsuite.config.apiVersion or 12.06
+            local apiVersion = rfsuite.session.apiVersion or 12.06
             local insert_param = false
 
             if not param.apiVersion or apiVersion >= param.apiVersion then
@@ -239,7 +239,7 @@ end
 -- Function to calculate MIN_BYTES and filtered structure
 function apiLoader.calculateMinBytes(structure)
 
-    local apiVersion = rfsuite.config.apiVersion
+    local apiVersion = rfsuite.session.apiVersion
     local totalBytes = 0
 
     for _, param in ipairs(structure) do
@@ -265,7 +265,7 @@ end
 -- Function to strip filtered structure based on msp version
 function apiLoader.filterByApiVersion(structure)
 
-    local apiVersion = rfsuite.config.apiVersion or 12.06
+    local apiVersion = rfsuite.session.apiVersion or 12.06
     local filteredStructure = {}
 
     for _, param in ipairs(structure) do
