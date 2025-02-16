@@ -4,15 +4,19 @@ local fields = {}
 local folder = "scorp"
 
 
+
+
 labels[#labels + 1] = {t = "Scorpion ESC"}
 
-fields[#fields + 1] = {t = "Protection Delay", apikey="protection_delay"}
-fields[#fields + 1] = {t = "Cutoff Handling", apikey="cutoff_handling"}
+fields[#fields + 1] = {t = "Soft Start Time", apikey="soft_start_time"}
+fields[#fields + 1] = {t = "Runup Time", apikey="runup_time"}
+fields[#fields + 1] = {t = "Bailout", apikey="bailout"}
 
-fields[#fields + 1] = {t = "Max Temperature",apikey="max_temperature"}
-fields[#fields + 1] = {t = "Max Current",  apikey="max_current"}
-fields[#fields + 1] = {t = "Min Voltage" ,apikey="min_voltage"}
-fields[#fields + 1] = {t = "Max Used", apikey="max_used"}
+-- data types are IQ22 - decoded/encoded by FC - regual scaled integers here
+fields[#fields + 1] = {t = "Gov Proportional", apikey="gov_proportional"}
+fields[#fields + 1] = {t = "Gov Integral", apikey="gov_integral"}
+
+fields[#fields + 1] = {t = "Motor Startup Sound", type = 1, apikey="motor_startup_sound"}
 
 local foundEsc = false
 local foundEscDone = false
@@ -23,13 +27,13 @@ end
 
 local function onNavMenu(self)
     rfsuite.app.triggers.escToolEnableButtons = true
-    rfsuite.app.ui.openPage(pidx, folder, "esc/esc_tool.lua")
+    rfsuite.app.ui.openPage(pidx, folder, "esc_tools/esc_tool.lua")
 end
 
 local function event(widget, category, value, x, y)
-
+    
     if category == 5 or value == 35 then
-        rfsuite.app.ui.openPage(pidx, folder, "esc/esc_tool.lua")
+        rfsuite.app.ui.openPage(pidx, folder, "esc_tools/esc_tool.lua")
         return true
     end
 
@@ -40,7 +44,7 @@ return {
     mspapi="ESC_PARAMETERS_SCORPION",
     eepromWrite = false,
     reboot = false,
-    title = "Limits",
+    title = "Advanced Setup",
     labels = labels,
     fields = fields,
     escinfo = escinfo,
@@ -53,7 +57,7 @@ return {
     navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
     onNavMenu = onNavMenu,
     event = event,
-    pageTitle = "ESC / Scorpion / Limits",
+    pageTitle = "ESC / Scorpion / Advanced",
     headerLine = rfsuite.escHeaderLineText,
     extraMsgOnSave = "Please reboot the ESC to apply the changes",   
 }

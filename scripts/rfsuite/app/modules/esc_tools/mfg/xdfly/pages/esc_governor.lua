@@ -2,20 +2,22 @@ local labels = {}
 local fields = {}
 
 local folder = "xdfly"
-local ESC = assert(loadfile("app/modules/esc/mfg/" .. folder .. "/init.lua"))()
+local ESC = assert(loadfile("app/modules/esc_tools/mfg/" .. folder .. "/init.lua"))()
 local mspHeaderBytes = ESC.mspHeaderBytes
 local mspSignature = ESC.mspSignature
 local simulatorResponse = ESC.simulatorResponse
 local activeFields = ESC.getActiveFields(rfsuite.escBuffer)
 local activateWakeup = false
 
+local foundEsc = false
+local foundEscDone = false
 
-fields[#fields + 1] = {t = "LV BEC voltage", activeFieldPos = 5, type = 1, apikey = "lv_bec_voltage"}
-fields[#fields + 1] = {t = "HV BEC voltage",  activeFieldPos = 11, type = 1,apikey = "hv_bec_voltage"}
-fields[#fields + 1] = {t = "Motor direction",  activeFieldPos = 6, type = 1,apikey = "motor_direction"}
-fields[#fields + 1] = {t = "Startup Power",   activeFieldPos = 12, apikey = "startup_power"}
-fields[#fields + 1] = {t = "LED Colour",   activeFieldPos = 18, type = 1, apikey = "led_color"}
-fields[#fields + 1] = {t = "Smart Fan",   activeFieldPos = 19, type = 1, apikey = "smart_fan"}
+
+
+fields[#fields + 1] = {t = "Governor", activeFieldPos = 2, type = 1,  apikey = "governor"}
+fields[#fields + 1] = {t = "Gov-P", activeFieldPos = 6, apikey="governor_p"}
+fields[#fields + 1] = {t = "Gov-I", activeFieldPos = 7, apikey="governor_i"}
+fields[#fields + 1] = {t = "Motor Poles",  activeFieldPos = 17 , apikey="motor_poles"}
 
 -- This code will disable the field if the ESC does not support it
 -- It now uses the activeFieldsPos element to associate to the activeFields table
@@ -28,7 +30,6 @@ for i = #fields, 1, -1 do
 end
 
 
-
 function postLoad()
     rfsuite.app.triggers.isReady = true
     activateWakeup = true
@@ -36,13 +37,13 @@ end
 
 local function onNavMenu(self)
     rfsuite.app.triggers.escToolEnableButtons = true
-    rfsuite.app.ui.openPage(pidx, folder , "esc/esc_tool.lua")
+    rfsuite.app.ui.openPage(pidx, folder , "esc_tools/esc_tool.lua")
 end
 
 local function event(widget, category, value, x, y)
-
+    
     if category == 5 or value == 35 then
-        rfsuite.app.ui.openPage(pidx, folder , "esc/esc_tool.lua")
+        rfsuite.app.ui.openPage(pidx, folder , "esc_tools/esc_tool.lua")
         return true
     end
 
@@ -55,24 +56,20 @@ local function wakeup(self)
     end
 end
 
-local foundEsc = false
-local foundEscDone = false
-
 return {
     mspapi="ESC_PARAMETERS_XDFLY",
-    eepromWrite = false,
+    eepromWrite = true,
     reboot = false,
-    title = "Basic Setup",
+    title = "Governor",
     labels = labels,
     fields = fields,
     escinfo = escinfo,
-    svFlags = 0,
+    simulatorResponse =  simulatorResponse,
     postLoad = postLoad,
     navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
     onNavMenu = onNavMenu,
     event = event,
-    pageTitle = "ESC / XDFLY / Basic",
+    pageTitle = "ESC / XDFLY / Governor",
     headerLine = rfsuite.escHeaderLineText,
     wakeup = wakeup
 }
-

@@ -68,7 +68,7 @@ local function openPage(pidx, title, script)
 
     local folder = title
 
-    ESC = assert(loadfile("app/modules/esc/mfg/" .. folder .. "/init.lua"))()
+    ESC = assert(loadfile("app/modules/esc_tools/mfg/" .. folder .. "/init.lua"))()
 
     if ESC.mspapi ~= nil then
         -- we are using the api so get values from that!
@@ -108,7 +108,7 @@ local function openPage(pidx, title, script)
         paint = function()
         end,
         press = function()
-            rfsuite.app.ui.openPage(pidx, "ESC", "esc/esc.lua")
+            rfsuite.app.ui.openPage(pidx, "ESC", "esc_tools/esc.lua")
 
         end
     })
@@ -121,7 +121,7 @@ local function openPage(pidx, title, script)
         paint = function()
         end,
         press = function()
-            -- rfsuite.app.ui.openPage(pidx, folder , "esc/esc_tool.lua")
+            -- rfsuite.app.ui.openPage(pidx, folder , "esc_tools/esc_tool.lua")
             rfsuite.app.Page = nil
             local foundESC = false
             local foundESCupdateTag = false
@@ -132,7 +132,7 @@ local function openPage(pidx, title, script)
     })
     rfsuite.app.formNavigationFields['menu']:focus()
 
-    ESC.pages = assert(loadfile("app/modules/esc/mfg/" .. folder .. "/pages.lua"))()
+    ESC.pages = assert(loadfile("app/modules/esc_tools/mfg/" .. folder .. "/pages.lua"))()
 
     modelLine = form.addLine("")
     modelText = form.addStaticText(modelLine, modelTextPos, "")
@@ -189,7 +189,7 @@ local function openPage(pidx, title, script)
         if lc >= 0 then bx = (buttonW + padding) * lc end
 
         if rfsuite.preferences.iconSize ~= 0 then
-            if rfsuite.app.gfx_buttons["esctool"][pvalue.image] == nil then rfsuite.app.gfx_buttons["esctool"][pvalue.image] = lcd.loadMask("app/modules/esc/mfg/" .. folder .. "/gfx/" .. pvalue.image) end
+            if rfsuite.app.gfx_buttons["esctool"][pvalue.image] == nil then rfsuite.app.gfx_buttons["esctool"][pvalue.image] = lcd.loadMask("app/modules/esc_tools/mfg/" .. folder .. "/gfx/" .. pvalue.image) end
         else
             rfsuite.app.gfx_buttons["esctool"][pvalue.image] = nil
         end
@@ -205,7 +205,7 @@ local function openPage(pidx, title, script)
                 rfsuite.app.ui.progressDisplay()
 
                 -- rfsuite.app.ui.openPage(pidx, folder, "esc_form.lua",pvalue.script)
-                rfsuite.app.ui.openPage(pidx, title, "esc/mfg/" .. folder .. "/pages/" .. pvalue.script)
+                rfsuite.app.ui.openPage(pidx, title, "esc_tools/mfg/" .. folder .. "/pages/" .. pvalue.script)
 
             end
         })
