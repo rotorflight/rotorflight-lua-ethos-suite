@@ -63,7 +63,7 @@ end
 
 -- Generate a timestamped filename
 local function generateLogFilename()
-    local craftName = rfsuite.utils.sanitize_filename(rfsuite.config.craftName)
+    local craftName = rfsuite.utils.sanitize_filename(rfsuite.session.craftName)
     local modelName = (craftName and craftName ~= "") and craftName or model.name()
 
     modelName = string.gsub(modelName, "%s+", "_")

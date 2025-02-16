@@ -250,7 +250,7 @@ function ui.openMainMenu()
 
         if (value.ethosversion ~= nil and rfsuite.config.ethosRunningVersion < value.ethosversion) then hideSection = true end
 
-        if (value.mspversion ~= nil and rfsuite.config.apiVersion < value.mspversion) then hideSection = true end
+        if (value.mspversion ~= nil and rfsuite.session.apiVersion < value.mspversion) then hideSection = true end
 
         if (value.developer ~= nil and rfsuite.config.developerMode == false) then hideSection = true end
 
@@ -269,7 +269,7 @@ function ui.openMainMenu()
 
                     if (pvalue.ethosversion ~= nil and not rfsuite.utils.ethosVersionAtLeast(pvalue.ethosversion)) then hideEntry = true end
 
-                    if (rfsuite.config.apiVersion) and (pvalue.mspversion ~= nil and rfsuite.config.apiVersion < pvalue.mspversion) then hideEntry = true end
+                    if (rfsuite.session.apiVersion) and (pvalue.mspversion ~= nil and rfsuite.session.apiVersion < pvalue.mspversion) then hideEntry = true end
 
                     if (pvalue.developer ~= nil and rfsuite.config.developerMode == false) then hideEntry = true end
 

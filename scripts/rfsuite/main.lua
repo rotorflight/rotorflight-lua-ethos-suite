@@ -65,10 +65,12 @@ config.bgTaskKey = "rf2bg"                                          -- key id us
 -- main
 -- rfsuite: Main table for the rotorflight-lua-ethos-suite script.
 -- rfsuite.config: Configuration table for the suite.
+-- rfsuite.session: Session table for the suite.
 -- rfsuite.app: Application module loaded from "app/app.lua" with the provided configuration.
 rfsuite = {}
 rfsuite.config = config
 rfsuite.preferences = preferences
+rfsuite.session = {}
 rfsuite.app = assert(loadfile("app/app.lua"))(config)
 
 -- 

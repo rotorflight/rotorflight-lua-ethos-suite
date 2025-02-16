@@ -3,7 +3,7 @@ local labels = {}
 
 local version = rfsuite.config.Version
 local ethosVersion = rfsuite.config.environment.major .. "." .. rfsuite.config.environment.minor .. "." .. rfsuite.config.environment.revision
-local apiVersion = rfsuite.config.apiVersion
+local apiVersion = rfsuite.session.apiVersion
 
 local supportedMspVersion = ""
 for i, v in ipairs(rfsuite.config.supportedMspApiVersion) do

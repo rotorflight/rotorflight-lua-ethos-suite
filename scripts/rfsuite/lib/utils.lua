@@ -138,20 +138,20 @@ function utils.getCurrentProfile()
 
     if (rfsuite.bg.telemetry.getSensorSource("pidProfile") ~= nil and rfsuite.bg.telemetry.getSensorSource("rateProfile") ~= nil) then
 
-        config.activeProfileLast = config.activeProfile
+        session.activeProfileLast = session.activeProfile
         local p = rfsuite.bg.telemetry.getSensorSource("pidProfile"):value()
         if p ~= nil then
-            config.activeProfile = math.floor(p)
+            session.activeProfile = math.floor(p)
         else
-            config.activeProfile = nil
+            session.activeProfile = nil
         end
 
-        config.activeRateProfileLast = config.activeRateProfile
+        session.activeRateProfileLast = session.activeRateProfile
         local r = rfsuite.bg.telemetry.getSensorSource("rateProfile"):value()
         if r ~= nil then
-            config.activeRateProfile = math.floor(r)
+            session.activeRateProfile = math.floor(r)
         else
-            config.activeRateProfile = nil
+            session.activeRateProfile = nil
         end
 
     else
@@ -170,11 +170,11 @@ function utils.getCurrentProfile()
                         buf.offset = 26
                         local activeRate = rfsuite.bg.msp.mspHelper.readU8(buf)
 
-                        config.activeProfileLast = config.activeProfile
-                        config.activeRateProfileLast = config.activeRateProfile
+                        session.activeProfileLast = session.activeProfile
+                        session.activeRateProfileLast = session.activeRateProfile
 
-                        config.activeProfile = activeProfile + 1
-                        config.activeRateProfile = activeRate + 1
+                        session.activeProfile = activeProfile + 1
+                        session.activeRateProfile = activeRate + 1
 
                     end
                 end,

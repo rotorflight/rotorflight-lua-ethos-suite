@@ -12,9 +12,9 @@ local ch = rfsuite.currentSbusServoIndex
 local ch_str = "CH" .. tostring(ch + 1)
 local offset = 6 * ch -- 6 bytes per channel
 
-local servoCount = rfsuite.config.servoCount or 6
+local servoCount = rfsuite.session.servoCount or 6
 local motorCount = 1
-if rfsuite.config.tailMode == 0 then motorCount = 2 end
+if rfsuite.session.tailMode == 0 then motorCount = 2 end
 
 local minmax = {}
 minmax[1] = {min = 500, max = 2000, sourceMax = 24, defaultMin = 1000, defaultMax = 2000} -- Receiver

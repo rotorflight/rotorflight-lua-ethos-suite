@@ -9,7 +9,7 @@ fields[#fields + 1] = {t = "", inline = 1, label = "cpcomp", apikey = "pitch_col
 
 -- main rotor settings
 labels[#labels + 1] = {t = "Cyclic Cross coupling", label = "cycliccc1", inline_size = 40.15}
-if tonumber(rfsuite.config.apiVersion) >= 12.07 then
+if tonumber(rfsuite.session.apiVersion) >= 12.07 then
     fields[#fields + 1] = {t = "Gain", inline = 1, label = "cycliccc1", apikey = "cyclic_cross_coupling_gain"}
 else
     fields[#fields + 1] = {t = "Gain", inline = 1, label = "cycliccc1", apikey = "cyclic_cross_coupling_gain"}
@@ -19,7 +19,7 @@ labels[#labels + 1] = {t = "", label = "cycliccc2", inline_size = 40.15}
 fields[#fields + 1] = {t = "Ratio", inline = 1, label = "cycliccc2", apikey = "cyclic_cross_coupling_ratio"}
 
 labels[#labels + 1] = {t = "", label = "cycliccc3", inline_size = 40.15}
-if tonumber(rfsuite.config.apiVersion) >= 12.07 then
+if tonumber(rfsuite.session.apiVersion) >= 12.07 then
     fields[#fields + 1] = {t = "Cutoff", inline = 1, label = "cycliccc3", apikey = "cyclic_cross_coupling_cutoff"}
 else
     fields[#fields + 1] = {t = "Cutoff", inline = 1, label = "cycliccc3", apikey = "cyclic_cross_coupling_cutoff"}
@@ -36,8 +36,8 @@ local function wakeup()
 
         -- update active profile
         -- the check happens in postLoad          
-        if rfsuite.config.activeProfile ~= nil then
-            rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.config.activeProfile)
+        if rfsuite.session.activeProfile ~= nil then
+            rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeProfile)
             currentProfileChecked = true
         end
 

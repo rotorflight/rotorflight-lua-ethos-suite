@@ -13,7 +13,7 @@ fields[#fields + 1] = { t = "Precomp Cutoff", apikey = "yaw_precomp_cutoff" }
 fields[#fields + 1] = { t = "Cyclic FF gain", apikey = "yaw_cyclic_ff_gain" }
 fields[#fields + 1] = { t = "Collective FF gain", apikey = "yaw_collective_ff_gain" }
 
-if rfsuite.config.apiVersion >= 12.08 then
+if rfsuite.session.apiVersion >= 12.08 then
     labels[#labels + 1] = { t = "Inertia Precomp", label = "inertia", inline_size = 13.6 }
     fields[#fields + 1] = { t = "Gain", inline = 2, label = "inertia", apikey = "yaw_inertia_precomp_gain" }
     fields[#fields + 1] = { t = "Cutoff", inline = 1, label = "inertia", apikey = "yaw_inertia_precomp_cutoff" }
@@ -34,8 +34,8 @@ local function wakeup()
 
         -- update active profile
         -- the check happens in postLoad          
-        if rfsuite.config.activeProfile ~= nil then
-            rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.config.activeProfile)
+        if rfsuite.session.activeProfile ~= nil then
+            rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeProfile)
             currentProfileChecked = true
         end
 

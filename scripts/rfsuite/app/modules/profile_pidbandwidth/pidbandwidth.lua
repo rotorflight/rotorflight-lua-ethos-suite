@@ -31,8 +31,8 @@ local function wakeup()
 
         -- update active profile
         -- the check happens in postLoad          
-        if rfsuite.config.activeProfile ~= nil then
-            rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.config.activeProfile)
+        if rfsuite.session.activeProfile ~= nil then
+            rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeProfile)
             currentProfileChecked = true
         end
 

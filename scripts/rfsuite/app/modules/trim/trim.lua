@@ -23,7 +23,7 @@ fields[#fields + 1] = {t = "Pitch trim %", apikey = "swash_trim_1"}
 fields[#fields + 1] = {t = "Col. trim %", apikey = "swash_trim_2"}
 
 -- note.  the same vals are used for center trim motor and yaw trim - but they are multiplied and saved in different ways
-if rfsuite.config.tailMode == 1 or rfsuite.config.tailMode == 2 then
+if rfsuite.session.tailMode == 1 or rfsuite.session.tailMode == 2 then
     fields[#fields + 1] = {t = "Center trim for tail motor %", help= "tail_center_trim_motor", inline = 1, apikey = "tail_center_trim"}
 else
     fields[#fields + 1] = {t = "Yaw. trim %", inline = 1, mult = 0.0239923224568138, apikey = "tail_center_trim"}
@@ -105,9 +105,9 @@ end
 
 local function postLoad(self)
 
-    if rfsuite.config.tailMode == nil then
+    if rfsuite.session.tailMode == nil then
         local v = rfsuite.app.Page.values[2]
-        rfsuite.config.tailMode = math.floor(v)
+        rfsuite.session.tailMode = math.floor(v)
         rfsuite.app.triggers.reload = true
         return
     end
@@ -117,9 +117,9 @@ local function postLoad(self)
     currentPitchTrim = rfsuite.app.Page.fields[2].value
     currentCollectiveTrim = rfsuite.app.Page.fields[3].value
 
-    if rfsuite.config.tailModeActive == 1 or rfsuite.config.tailModeActive == 2 then currentIdleThrottleTrim = rfsuite.app.Page.fields[4].value end
+    if rfsuite.session.tailModeActive == 1 or rfsuite.session.tailModeActive == 2 then currentIdleThrottleTrim = rfsuite.app.Page.fields[4].value end
 
-    if rfsuite.config.tailModeActive == 0 then currentYawTrim = rfsuite.app.Page.fields[4].value end
+    if rfsuite.session.tailModeActive == 0 then currentYawTrim = rfsuite.app.Page.fields[4].value end
     rfsuite.app.triggers.isReady = true
 end
 
@@ -162,7 +162,7 @@ local function wakeup(self)
             end
         end
 
-        if rfsuite.config.tailMode == 1 or rfsuite.config.tailMode == 2 then
+        if rfsuite.session.tailMode == 1 or rfsuite.session.tailMode == 2 then
             currentIdleThrottleTrim = rfsuite.app.Page.fields[4].value
             local now = os.clock()
             local settleTime = 0.85
@@ -175,7 +175,7 @@ local function wakeup(self)
             end
         end
 
-        if rfsuite.config.tailMode == 0 then
+        if rfsuite.session.tailMode == 0 then
             currentYawTrim = rfsuite.app.Page.fields[4].value
             local now = os.clock()
             local settleTime = 0.85
