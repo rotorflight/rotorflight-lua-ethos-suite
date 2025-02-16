@@ -163,7 +163,7 @@ function msp.onConnectBgChecks()
                     rfsuite.config.craftName = API.readValue("name")
 
                     -- set the model name to the craft name
-                    if rfsuite.config.syncCraftName == true and model.name and rfsuite.config.craftName ~= nil then
+                    if rfsuite.preferences.syncCraftName == true and model.name and rfsuite.config.craftName ~= nil then
                         rfsuite.utils.log("Setting model name to: " .. rfsuite.config.craftName,"info")
                         model.name(rfsuite.config.craftName)
                         lcd.invalidate()

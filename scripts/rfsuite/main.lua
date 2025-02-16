@@ -33,27 +33,28 @@ config.supportedMspApiVersion = {"12.06", "12.07","12.08"}          -- supported
 config.simulatorApiVersionResponse = {0, 12, 8}                     -- version of api return by simulator
 config.logLevel= "info"                                             -- off | info | debug [default = info]
 config.logToFile = false                                            -- log to file [default = false] (log file is in /scripts/rfsuite/logs)
+config.developerMode = false                                        -- show developer tools on main menu [default = false]
+
+-- RotorFlight + ETHOS LUA preferences
+local preferences = {}
 
 -- Configuration options that adjust behavior of the script (will be moved to a settings menu in the future)
-config.flightLog = true                                             -- will write a flight log into /scripts/rfsuite/logs/<modelname>/*.log
-config.reloadOnSave = false                                         -- trigger a reload on save [default = false]
-config.skipRssiSensorCheck = false                                  -- skip checking for a valid rssi [ default = false]
-config.enternalElrsSensors = true                                   -- disable the integrated elrs telemetry processing [default = true]
-config.internalSportSensors = true                                  -- disable the integrated smart port telemetry processing [default = true]
-config.adjFunctionAlerts = false                                    -- do not alert on adjfunction telemetry.  [default = false]
-config.adjValueAlerts = true                                        -- play adjvalue alerts if sensor changes [default = true]  
-config.saveWhenArmedWarning = true                                  -- do not display the save when armed warning. [default = true]
-config.audioAlerts = 1                                              -- 0 = all, 1 = alerts, 2 = disable [default = 1]
-config.profileSwitching = true                                      -- enable auto profile switching [default = true]
-config.iconSize = 1                                                 -- 0 = text, 1 = small, 2 = large [default = 1]
-config.developerMode = false                                        -- show developer tools on main menu [default = false]
-config.soundPack = nil                                              -- use an custom sound pack. [default = nil]
-config.syncCraftName = false                                        -- sync the craft name with the model name [default = false]
-config.helpFieldDebug = true                                        -- print debug to show help fields being looked for [default = false]
-config.apiTester = true                                             -- run the api tester sub task for use when developing new api files [default = false]
-config.mspExpBytes = 8                                              -- number of bytes for msp_exp [default = 8] 
-config.defaultRateProfile = 4 -- ACTUAL                             -- default rate table [default = 4]
-config.watchdogParam = 10                                           -- watchdog timeout for progress boxes [default = 10]
+preferences.flightLog = true                                        -- will write a flight log into /scripts/rfsuite/logs/<modelname>/*.log
+preferences.reloadOnSave = false                                    -- trigger a reload on save [default = false]
+preferences.skipRssiSensorCheck = false                             -- skip checking for a valid rssi [ default = false]
+preferences.internalElrsSensors = true                              -- disable the integrated elrs telemetry processing [default = true]
+preferences.internalSportSensors = true                             -- disable the integrated smart port telemetry processing [default = true]
+preferences.adjFunctionAlerts = false                               -- do not alert on adjfunction telemetry.  [default = false]
+preferences.adjValueAlerts = true                                   -- play adjvalue alerts if sensor changes [default = true]  
+preferences.saveWhenArmedWarning = true                             -- do not display the save when armed warning. [default = true]
+preferences.audioAlerts = 1                                         -- 0 = all, 1 = alerts, 2 = disable [default = 1]
+preferences.profileSwitching = true                                 -- enable auto profile switching [default = true]
+preferences.iconSize = 1                                            -- 0 = text, 1 = small, 2 = large [default = 1]
+preferences.soundPack = nil                                         -- use an custom sound pack. [default = nil]
+preferences.syncCraftName = false                                   -- sync the craft name with the model name [default = false]
+preferences.mspExpBytes = 8                                         -- number of bytes for msp_exp [default = 8] 
+preferences.defaultRateProfile = 4 -- ACTUAL                        -- default rate table [default = 4]
+preferences.watchdogParam = 10                                      -- watchdog timeout for progress boxes [default = 10]
 
 -- tasks
 config.bgTaskName = config.toolName .. " [Background]"              -- background task name for msp services etc
@@ -67,6 +68,7 @@ config.bgTaskKey = "rf2bg"                                          -- key id us
 -- rfsuite.app: Application module loaded from "app/app.lua" with the provided configuration.
 rfsuite = {}
 rfsuite.config = config
+rfsuite.preferences = preferences
 rfsuite.app = assert(loadfile("app/app.lua"))(config)
 
 -- 

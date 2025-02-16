@@ -156,7 +156,7 @@ rfsuite.config.ethosRunningVersion = nil
 
 -- RETURN THE CURRENT RSSI SENSOR VALUE 
 function app.getRSSI()
-    if system:getVersion().simulation == true or rfsuite.config.skipRssiSensorCheck == true or app.offlineMode == true then return 100 end
+    if system:getVersion().simulation == true or rfsuite.preferences.skipRssiSensorCheck == true or app.offlineMode == true then return 100 end
 
     -- if rfsuite.rssiSensor ~= nil then
 
@@ -285,7 +285,7 @@ local mspEepromWrite = {
     errorHandler = function(self)
         app.triggers.closeSave = true
         app.audio.playSaveArmed = true
-        if config.saveWhenArmedWarning == true then app.triggers.showSaveArmedWarning = true end
+        if rfsuite.preferences.saveWhenArmedWarning == true then app.triggers.showSaveArmedWarning = true end
     end,
     simulatorResponse = {}
 }
@@ -701,7 +701,7 @@ function app.wakeupUI()
 
                 app.ui.progressDisplaySaveClose()
 
-                if rfsuite.config.reloadOnSave == true then app.triggers.triggerReloadNoPrompt = true end
+                if rfsuite.preferences.reloadOnSave == true then app.triggers.triggerReloadNoPrompt = true end
 
             end
         end
@@ -726,7 +726,7 @@ function app.wakeupUI()
     end
 
     -- profile switching - trigger a reload when profile changes
-    if rfsuite.config.profileSwitching == true and app.Page ~= nil and (app.Page.refreshOnProfileChange == true or app.Page.refreshOnRateChange == true) and app.uiState == app.uiStatus.pages and app.triggers.isSaving == false and rfsuite.app.dialogs.saveDisplay ~= true and rfsuite.app.dialogs.progressDisplay ~= true and rfsuite.bg.msp.mspQueue:isProcessed() then
+    if rfsuite.preferences.profileSwitching == true and app.Page ~= nil and (app.Page.refreshOnProfileChange == true or app.Page.refreshOnRateChange == true) and app.uiState == app.uiStatus.pages and app.triggers.isSaving == false and rfsuite.app.dialogs.saveDisplay ~= true and rfsuite.app.dialogs.progressDisplay ~= true and rfsuite.bg.msp.mspQueue:isProcessed() then
 
         local now = os.clock()
         local profileCheckInterval
@@ -865,7 +865,7 @@ function app.wakeupUI()
     -- display a warning if we trigger one of these events
     -- we only show this if we are on an actual form for a page.
     -- a watchdog to enable the close button when saving data if we exheed the save timout
-    if rfsuite.config.watchdogParam ~= nil and rfsuite.config.watchdogParam ~= 1 then app.protocol.saveTimeout = rfsuite.config.watchdogParam end
+    if rfsuite.preferences.watchdogParam ~= nil and rfsuite.preferences.watchdogParam ~= 1 then app.protocol.saveTimeout = rfsuite.preferences.watchdogParam end
     if app.dialogs.saveDisplay == true then
         if app.dialogs.saveWatchDog ~= nil then
             if (os.clock() - app.dialogs.saveWatchDog) > (tonumber(app.protocol.saveTimeout + 5)) or (app.dialogs.saveProgressCounter > 120 and rfsuite.bg.msp.mspQueue:isProcessed()) then
@@ -1064,7 +1064,7 @@ end
     end
 
     -- after saving show brief warning if armed (we only show this if feature it turned on as default option is to not allow save when armed for safety.
-    if config.saveWhenArmedWarning == true then
+    if rfsuite.preferences.saveWhenArmedWarning == true then
         if app.triggers.showSaveArmedWarning == true and app.triggers.closeSave == false then
             if app.dialogs.progressDisplay == false then
                 app.dialogs.progressCounter = 0
@@ -1129,7 +1129,7 @@ end
 
     -- play audio
     -- alerts 
-    if rfsuite.config.audioAlerts == 0 or rfsuite.config.audioAlerts == 1 then
+    if rfsuite.preferences.audioAlerts == 0 or rfsuite.preferences.audioAlerts == 1 then
 
         if app.audio.playEraseFlash == true then
             rfsuite.utils.playFile("app", "eraseflash.wav")
@@ -1181,12 +1181,12 @@ end
             app.audio.playMixerOverideDisable = false
         end
 
-        if app.audio.playSaving == true and rfsuite.config.audioAlerts == 0 then
+        if app.audio.playSaving == true and rfsuite.preferences.audioAlerts == 0 then
             rfsuite.utils.playFile("app", "saving.wav")
             app.audio.playSaving = false
         end
 
-        if app.audio.playLoading == true and rfsuite.config.audioAlerts == 0 then
+        if app.audio.playLoading == true and rfsuite.preferences.audioAlerts == 0 then
             rfsuite.utils.playFile("app", "loading.wav")
             app.audio.playLoading = false
         end

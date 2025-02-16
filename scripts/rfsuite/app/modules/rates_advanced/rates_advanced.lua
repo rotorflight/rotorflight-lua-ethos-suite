@@ -4,7 +4,7 @@ local fields = {}
 local activateWakeup = false
 local currentProfileChecked = false
 
-if rfsuite.RateTable == nil then rfsuite.RateTable = rfsuite.config.defaultRateProfile end
+if rfsuite.RateTable == nil then rfsuite.RateTable = rfsuite.preferences.defaultRateProfile end
 
 fields[#fields + 1] = {t = "Rates Type", ratetype = 1, min = 0, max = 5, type = 1, postEdit = function(self) self.flagRateChange(self, true) end, apikey = "rates_type"}
 
