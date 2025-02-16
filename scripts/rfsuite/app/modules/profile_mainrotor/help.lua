@@ -24,11 +24,6 @@ data['help'] = {}
 data['help']['default'] = {"Collective Pitch Compensation: Increasing will compensate for the pitching motion caused by tail drag when climbing.", "Cross Coupling Gain: Removes roll coupling when only elevator is applied.", "Cross Coupling Ratio: Amount of compensation (pitch vs roll) to apply.",
                            "Cross Coupling Feq. Limit: Frequency limit for the compensation, higher value will make the compensation action faster."}
 
-data['fields'] = {
---    pitch_collective_ff_gain = {help = "Increasing will compensate for the pitching up motion caused by tail drag when climbing."},
---    cyclic_cross_coupling_gain = {help = "Amount of compensation applied for pitch-to-roll decoupling."},
---    cyclic_cross_coupling_ratio = {help = "Amount of roll-to-pitch compensation needed, vs. pitch-to-roll."},
---    cyclic_cross_coupling_cutoff = {help = "Frequency limit for the compensation. Higher value will make the compensation action faster."}
-}
+data['fields'] = {}
 
 return data
