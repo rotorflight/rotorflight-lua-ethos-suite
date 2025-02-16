@@ -11,7 +11,7 @@ tables[3] = "app/modules/rates/ratetables/kiss.lua"
 tables[4] = "app/modules/rates/ratetables/actual.lua"
 tables[5] = "app/modules/rates/ratetables/quick.lua"
 
-if rfsuite.rateProfile == nil then rfsuite.rateProfile = rfsuite.config.defaultRateProfile end
+if rfsuite.rateProfile == nil then rfsuite.rateProfile = rfsuite.preferences.defaultRateProfile end
 
 local mytable = assert(loadfile(tables[rfsuite.rateProfile]))()
 

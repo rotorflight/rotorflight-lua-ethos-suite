@@ -2,7 +2,7 @@ local fields = {}
 local rows = {}
 local cols = {}
 
-local total_bytes = rfsuite.config.mspExpBytes
+local total_bytes = rfsuite.preferences.mspExpBytes
 
 local function uint8_to_int8(value)
     -- Ensure the value is within uint8 range
@@ -52,7 +52,7 @@ local function postLoad(self)
 
     --trigger a full reload if the number of bytes has changed
     if total_bytes ~= #rfsuite.app.Page.values then
-        rfsuite.config.mspExpBytes = #rfsuite.app.Page.values
+        rfsuite.preferences.mspExpBytes = #rfsuite.app.Page.values
 
         rfsuite.app.triggers.reloadFull = true
     end

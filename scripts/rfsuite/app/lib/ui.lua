@@ -201,10 +201,10 @@ function ui.openMainMenu()
     rfsuite.app.triggers.disableRssiTimeout = false
 
     -- size of buttons
-    if config.iconSize == nil or config.iconSize == "" then
-        config.iconSize = 1
+    if rfsuite.preferences.iconSize == nil or rfsuite.preferences.iconSize == "" then
+        rfsuite.preferences.iconSize = 1
     else
-        config.iconSize = tonumber(config.iconSize)
+        rfsuite.preferences.iconSize = tonumber(rfsuite.preferences.iconSize)
     end
 
     local buttonW
@@ -213,14 +213,14 @@ function ui.openMainMenu()
     local numPerRow
 
     -- TEXT ICONS
-    if config.iconSize == 0 then
+    if rfsuite.preferences.iconSize == 0 then
         padding = rfsuite.app.radio.buttonPaddingSmall
         buttonW = (config.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
         buttonH = rfsuite.app.radio.navbuttonHeight
         numPerRow = rfsuite.app.radio.buttonsPerRow
     end
     -- SMALL ICONS
-    if config.iconSize == 1 then
+    if rfsuite.preferences.iconSize == 1 then
 
         padding = rfsuite.app.radio.buttonPaddingSmall
         buttonW = rfsuite.app.radio.buttonWidthSmall
@@ -228,7 +228,7 @@ function ui.openMainMenu()
         numPerRow = rfsuite.app.radio.buttonsPerRowSmall
     end
     -- LARGE ICONS
-    if config.iconSize == 2 then
+    if rfsuite.preferences.iconSize == 2 then
 
         padding = rfsuite.app.radio.buttonPadding
         buttonW = rfsuite.app.radio.buttonWidth
@@ -276,14 +276,14 @@ function ui.openMainMenu()
                     if hideEntry == false then
 
                         if lc == 0 then
-                            if config.iconSize == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
-                            if config.iconSize == 1 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
-                            if config.iconSize == 2 then y = form.height() + rfsuite.app.radio.buttonPadding end
+                            if rfsuite.preferences.iconSize == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
+                            if rfsuite.preferences.iconSize == 1 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
+                            if rfsuite.preferences.iconSize == 2 then y = form.height() + rfsuite.app.radio.buttonPadding end
                         end
 
                         if lc >= 0 then x = (buttonW + padding) * lc end
 
-                        if config.iconSize ~= 0 then
+                        if rfsuite.preferences.iconSize ~= 0 then
                             if rfsuite.app.gfx_buttons["mainmenu"][pidx] == nil then rfsuite.app.gfx_buttons["mainmenu"][pidx] = lcd.loadMask("app/modules/" .. pvalue.folder .. "/" .. pvalue.image) end
                         else
                             rfsuite.app.gfx_buttons["mainmenu"][pidx] = nil

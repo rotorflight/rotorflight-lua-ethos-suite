@@ -63,7 +63,7 @@ function utils.playFile(pkg, file)
 
     -- Pre-define the base directory paths
     local baseDir = "./"
-    local soundPack = rfsuite.config.soundPack
+    local soundPack = rfsuite.preferences.soundPack
     local audioPath = soundPack and ("/audio/" .. soundPack) or (av)
 
     -- Construct file paths

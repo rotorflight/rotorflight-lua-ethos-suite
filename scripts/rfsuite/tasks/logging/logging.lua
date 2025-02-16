@@ -127,7 +127,7 @@ end
 
 -- Main logging function
 function logging.wakeup()
-    if not config.flightLog then return end -- Abort if logging is disabled
+    if not rfsuite.preferences.flightLog then return end -- Abort if logging is disabled
 
     if logDirChecked == false then
         checkLogdirExists()
