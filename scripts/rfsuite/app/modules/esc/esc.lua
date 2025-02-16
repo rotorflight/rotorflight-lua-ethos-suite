@@ -10,8 +10,10 @@ labels[#labels + 1] = {t = "    ", label="port2", inline_size = 17.3}
 fields[#fields + 1] = {t = "Half Duplex", apikey = "half_duplex", type=1, label="port2", inline = 2}
 fields[#fields + 1] = {t = "Update HZ", apikey = "update_hz", label="port2", inline = 1}
 
-fields[#fields + 1] = {t = "Current Correction Factor", apikey = "current_correction_factor"}
-fields[#fields + 1] = {t = "Consumption Correction Factor", apikey = "consumption_correction_factor"}
+if rfsuite.session.apiVersion >= 12.08 then
+    fields[#fields + 1] = {t = "Current Correction Factor", apikey = "current_correction_factor"}
+    fields[#fields + 1] = {t = "Consumption Correction Factor", apikey = "consumption_correction_factor"}
+end
 
 local function postLoad(self)
     
