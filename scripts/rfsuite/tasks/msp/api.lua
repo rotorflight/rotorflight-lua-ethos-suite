@@ -30,7 +30,6 @@ local api_path = apidir
 
 -- Function to load a specific API file by name
 local function loadAPI(apiName)
-
     -- Return cached version if already loaded
     if apiCache[apiName] then return apiCache[apiName] end
 
@@ -38,22 +37,59 @@ local function loadAPI(apiName)
 
     -- Check if file exists before trying to load it
     if rfsuite.utils.file_exists(apiFilePath) then
-
         local apiModule = dofile(apiFilePath) -- Load the Lua API file
 
         if type(apiModule) == "table" and (apiModule.read or apiModule.write) then
-            -- Store the loaded API in the cache
+            -- Wrap the read function
+            if apiModule.read then
+                local originalRead = apiModule.read
+                apiModule.read = function(...)
+                    rfsuite.utils.log("read() called from " .. apiName, "debug")
+                    return originalRead(...)
+                end
+            end
+
+            -- Wrap the write function
+            if apiModule.write then
+                local originalWrite = apiModule.write
+                apiModule.write = function(...)
+                    rfsuite.utils.log("write() called from " .. apiName, "debug")
+                    return originalWrite(...)
+                end
+            end
+
+            -- Wrap the setValue function
+            if apiModule.setValue then
+                local originalSetValue = apiModule.setValue
+                apiModule.setValue = function(...)
+                    rfsuite.utils.log("setValue() called from " .. apiName, "debug")
+                    return originalSetValue(...)
+                end
+            end
+
+            -- Wrap the readValue function
+            if apiModule.readValue then
+                local originalReadValue = apiModule.readValue
+                apiModule.readValue = function(...)
+                    rfsuite.utils.log("readValue() called from " .. apiName, "debug")
+                    return originalReadValue(...)
+                end
+            end
+
+
+
+            -- Store the modified API in the cache
             apiCache[apiName] = apiModule
-            rfsuite.utils.log("Loaded API:", apiName,"debug")
+            rfsuite.utils.log("Loaded API: " .. apiName, "debug")
             return apiModule
         else
-            rfsuite.utils.log("Error: API file '" .. apiName .. "' does not contain valid read or write functions.","debug")
+            rfsuite.utils.log("Error: API file '" .. apiName .. "' does not contain valid read or write functions.", "debug")
         end
     else
-        local logline = "Error: API file '" .. apiFilePath .. " not found."
-        rfsuite.utils.log(logline,"debug")
+        rfsuite.utils.log("Error: API file '" .. apiFilePath .. "' not found.", "debug")
     end
 end
+
 
 -- Function to directly return the API table instead of a wrapper function
 function apiLoader.load(apiName)
@@ -74,7 +110,17 @@ end
 
 -- Function to parse the msp Data.  Optionally pass a processed(buf, structure) to provide more data formating
 function apiLoader.parseMSPData(buf, structure, processed, other)
+
     -- Calculate the expected buffer length based on the structure
+    local expected_length = 0
+    for _, field in ipairs(structure) do
+        expected_length = expected_length + get_type_size(field.type)
+    end
+
+    -- Ensure buffer length matches expected data structure
+    if #buf < expected_length then
+        rfsuite.utils.log("Error: Buffer too small. Expected " .. expected_length .. ", got " .. #buf,"debug")
+    end
     
     local parsedData = {}
     local offset = 1 -- Maintain a strict offset tracking
@@ -164,6 +210,15 @@ function apiLoader.parseMSPData(buf, structure, processed, other)
             rfsuite.utils.log("Error " .. field.type .. " field: " .. field.field .. " offset: " .. offset,"debug")
         end   
         parsedData[field.field] = data
+
+    end
+
+    -- Check for unused bytes in the buffer
+    if offset <= #buf then
+        local extra_bytes = #buf - (offset - 1)
+        rfsuite.utils.log("Unused bytes in buffer (" .. extra_bytes .. " extra bytes)")
+    elseif offset > #buf + 1 then
+        rfsuite.utils.log("Offset exceeded buffer length (Offset: " .. offset .. ", Buffer: " .. #buf .. ")")
     end
 
     -- Prepare data for return
