@@ -111,13 +111,47 @@ local function openPage(pidx, title, script)
         numPerRow = rfsuite.app.radio.buttonsPerRow
     end
 
+
+    if rfsuite.app.gfx_buttons["escmain"] == nil then rfsuite.app.gfx_buttons["escmain"] = {} end
+    if rfsuite.app.menuLastSelected["escmain"] == nil then rfsuite.app.menuLastSelected["escmain"] = 1 end
+
+   -- add extra menu once newer api is available
+    if rfsuite.session.apiVersion >= 12.08 then
+        -- add setup button line
+        if rfsuite.preferences.iconSize == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
+        if rfsuite.preferences.iconSize == 1 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
+        if rfsuite.preferences.iconSize == 2 then y = form.height() + rfsuite.app.radio.buttonPadding end
+
+        if rfsuite.preferences.iconSize ~= 0 then
+            if rfsuite.app.gfx_buttons["escmain"]['sensor_config'] == nil then rfsuite.app.gfx_buttons["escmain"]['sensor_config'] = lcd.loadMask("app/modules/esc/sensors.png") end
+        else
+            rfsuite.app.gfx_buttons["escmain"]['sensor_config'] = nil
+        end    
+
+        rfsuite.app.formFields[pidx] = form.addButton(line, {x = bx, y = y, w = buttonW, h = buttonH}, {
+            text = "Telemetry",
+            icon = rfsuite.app.gfx_buttons["escmain"]['sensor_config'],
+            options = FONT_S,
+            paint = function()
+            end,
+            press = function()
+                rfsuite.app.menuLastSelected["escmain"] = 'sensor_config'
+                rfsuite.app.ui.progressDisplay()
+                rfsuite.app.ui.openPage('sensor_config', "ESC / Telemetry", "esc/esc_sensor.lua")
+            end
+        })   
+        if rfsuite.app.menuLastSelected["escmain"] == 'sensor_config' then rfsuite.app.formFields[pidx]:focus() end
+
+        -- show all programing tools
+        form.addLine("ESC Programing Tools")
+    end
+
     local ESCMenu = assert(loadfile("app/modules/" .. script))()
     local pages = findMFG()
     local lc = 0
     local bx = 0
 
-    if rfsuite.app.gfx_buttons["escmain"] == nil then rfsuite.app.gfx_buttons["escmain"] = {} end
-    if rfsuite.app.menuLastSelected["escmain"] == nil then rfsuite.app.menuLastSelected["escmain"] = 1 end
+
 
     for pidx, pvalue in ipairs(pages) do
 
