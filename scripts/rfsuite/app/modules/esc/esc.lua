@@ -25,7 +25,7 @@ end
 return {
     mspapi = "ESC_SENSOR_CONFIG",
     eepromWrite = true,
-    reboot = false,
+    reboot = true,
     title = "Mixer",
     labels = labels,
     fields = fields,
