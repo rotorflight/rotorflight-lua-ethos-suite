@@ -788,7 +788,7 @@ end
 function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
     -- quick exit to divert to the form api
-    if rfsuite.app.Page.apiform then
+    if rfsuite.app.Page and rfsuite.app.Page.apiform then
         rfsuite.utils.log("api form detected for '"..title.."', switching to api form","debug")
         rfsuite.app.ui.openPageAPIForm(idx, title, script, extra1, extra2, extra3, extra5, extra6)
         return
