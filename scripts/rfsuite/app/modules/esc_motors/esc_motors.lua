@@ -4,109 +4,34 @@ local enableWakeup = false
 local apiform = {
     mspapi = {'ESC_SENSOR_CONFIG','MOTOR_CONFIG'},
     formdata = {
-        {
-            title = "ESC Throttle Protocol", 
-            inline_size = nil,
-            fields = {
-                {
-                    title = nil,
-                    mspapi = 'MOTOR_CONFIG',
-                    apikey = 'motor_pwm_protocol',
-                },
-            }
-        },    
-        {
-            title = "ESC Telemetry Protocol", 
-            inline_size = nil,
-            fields = {
-                {
-                    title = nil,
-                    mspapi = 'ESC_SENSOR_CONFIG',
-                    apikey = 'protocol',
-                },
-            }
-        },               
-        {
-            title = "Main Motor Gear Ratio", 
-            inline_size = 14,
-            fields = {
-                {
-                    title = "Pinion",
-                    mspapi = 'MOTOR_CONFIG',
-                    apikey = 'main_rotor_gear_ratio_0',
-                },
-                {
-                    title = "Main",
-                    mspapi = 'MOTOR_CONFIG',
-                    apikey = 'main_rotor_gear_ratio_1',
-                }
-            }
+        labels = {
+            {t = "Main Motor Ratio", t2 = "Main Motor Gear Ratio", label = 1, inline_size = 14.5},
+            {t = "Tail Motor Ratio", t2 = "Tail Motor Gear Ratio", label = 2, inline_size = 14.5},
+            {t = "Port Setup", label=3, inline_size = 17.3},
+            {t = "    ", label=4, inline_size = 17.3}
         },
-        {
-            title = "Tail Motor Gear Ratio",
-            inline_size = 14.5,
-            fields = {
-                {
-                    title = "Rear",
-                    mspapi = 'MOTOR_CONFIG',
-                    apikey = 'tail_rotor_gear_ratio_0',
-                },
-                {
-                    title = "Front",
-                    mspapi = 'MOTOR_CONFIG',
-                    apikey = 'tail_rotor_gear_ratio_1',
-                }
-            }
-        },
-        {
-            title = "Motor Pole Count",
-            inline_size = 14.5,   
-            fields = {
-                {
-                    title = "Main",
-                    mspapi = 'MOTOR_CONFIG',
-                    apikey = 'main_rotor_pole_count',
-                },
-                {
-                    title = "Tail",
-                    mspapi = 'MOTOR_CONFIG',
-                    apikey = 'tail_rotor_pole_count',
-                }
-            }
-        },
-        {
-            title = "0% Throttle PWM Value",
-            inline_size = nil,   
-            fields = {
-                {
-                    title = "Main",
-                    mspapi = 'MOTOR_CONFIG',
-                    apikey = 'minthrottle',
-                },
-            }
-        },      
-        {
-            title = "100% Throttle PWM Value",
-            inline_size = nil,   
-            fields = {
-                {
-                    title = "Main",
-                    mspapi = 'MOTOR_CONFIG',
-                    apikey = 'maxthrottle',
-                },
-            }
-        },    
-        {
-            title = "Motor Stop PWM Value",
-            inline_size = nil,   
-            fields = {
-                {
-                    title = "Main",
-                    mspapi = 'MOTOR_CONFIG',
-                    apikey = 'mincommand',
-                },
-            }
-        },   
+        fields = {
+            {t = "Pinion", label = 1, inline = 2, apikey = "main_rotor_gear_ratio_0"},
+            {t = "Main", label = 1, inline = 1, apikey = "main_rotor_gear_ratio_1"},
+            
+            {t = "Rear", label = 2, inline = 2, apikey = "tail_rotor_gear_ratio_0"},
+            {t = "Front", label = 2, inline = 1, apikey = "tail_rotor_gear_ratio_1"},
+            
+            {t = "Motor Pole Count", apikey = "motor_pole_count_0"},
+            
+            {t = "0% Throttle PWM Value", apikey = "minthrottle"},
+            {t = "100% Throttle PWM value", apikey = "maxthrottle"},
+            {t = "Motor Stop PWM Value",  apikey = "mincommand"},
+
+            {t = "Protocol", apikey = "protocol", type=1, label=3, inline = 2},
+            {t = "Pin Swap", apikey = "pin_swap", type=1, label=3, inline = 1} ,   
+            
+            {t = "Half Duplex", apikey = "half_duplex", type=1, label=4, inline = 2},
+            {t = "Update HZ", apikey = "update_hz", label=4, inline = 1},
+
+            {t = "Current Correction Factor", apikey = "current_correction_factor", apiversion=12.08},
+            {t = "Consumption Correction Factor", apikey = "consumption_correction_factor", apiversion=12.08},            
+        }
     }                 
 }
 

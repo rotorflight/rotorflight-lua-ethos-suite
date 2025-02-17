@@ -172,6 +172,7 @@ function ui.disableNavigationField(x)
     if rfsuite.app.formNavigationFields[x] ~= nil then rfsuite.app.formNavigationFields[x]:enable(false) end
 end
 
+
 function ui.openMainMenu()
 
     -- clear old icons
@@ -298,11 +299,7 @@ function ui.openMainMenu()
                             press = function()
                                 rfsuite.app.menuLastSelected["mainmenu"] = pidx
                                 rfsuite.app.ui.progressDisplay()
-                                if pvalue.apiform == true then
-                                    rfsuite.app.ui.openPageAPIForm(pidx, pvalue.title, pvalue.folder .. "/" .. pvalue.script)
-                                else    
-                                    rfsuite.app.ui.openPage(pidx, pvalue.title, pvalue.folder .. "/" .. pvalue.script)
-                                end    
+                                rfsuite.app.ui.openPage(pidx, pvalue.title, pvalue.folder .. "/" .. pvalue.script)
                             end
                         })
 
@@ -612,13 +609,13 @@ function ui.fieldText(i)
         rfsuite.app.saveValue(i)
     end)
 
-    if config.ethosRunningVersion >= 1514 then
-        if f.onFocus ~= nil then
-            rfsuite.app.formFields[i]:onFocus(function()
-                f.onFocus(rfsuite.app.Page)
-            end)
-        end
+
+    if f.onFocus ~= nil then
+        rfsuite.app.formFields[i]:onFocus(function()
+            f.onFocus(rfsuite.app.Page)
+        end)
     end
+
 
     if f.disable == true then rfsuite.app.formFields[i]:enable(false) end
 
@@ -701,99 +698,10 @@ function ui.openPageRefresh(idx, title, script, extra1, extra2, extra3, extra5, 
 
 end
 
--- this is a new way of defining forms using a structured approach that allows for
--- multiple api to be present on the same page
-function ui.openPageAPIForm(idx, title, script, extra1, extra2, extra3, extra5, extra6)
-
-    rfsuite.app.uiState = rfsuite.app.uiStatus.pages
-    rfsuite.app.triggers.isReady = false
-    rfsuite.app.formFields = {}
-    rfsuite.app.formLines = {}
-
-    rfsuite.app.Page = assert(loadfile("app/modules/" .. script))(idx)
-
-    -- load the help file
-    local section = script:match("([^/]+)") -- return just the folder name
-    local helpPath = "app/modules/" .. section .. "/help.lua"
-    if rfsuite.utils.file_exists(helpPath) then
-        local helpData = assert(loadfile(helpPath))()
-        rfsuite.app.fieldHelpTxt = helpData.fields
-    else
-        rfsuite.app.fieldHelpTxt = nil
-    end
-
-    if rfsuite.app.Page.apiform then
-
-        rfsuite.app.lastIdx = idx
-        rfsuite.app.lastTitle = title
-        rfsuite.app.lastScript = script
-
-        local fieldAR = {}
-
-        rfsuite.app.uiState = rfsuite.app.uiStatus.pages
-        rfsuite.app.triggers.isReady = false
-
-        longPage = false
-
-        form.clear()
-
-        rfsuite.session.lastPage = script
-
-        if rfsuite.app.Page.pageTitle ~= nil then
-            rfsuite.app.ui.fieldHeader(rfsuite.app.Page.pageTitle)
-        else
-            rfsuite.app.ui.fieldHeader(title)
-        end
-
-        if rfsuite.app.Page.headerLine ~= nil then
-            local headerLine = form.addLine("")
-            local headerLineText = form.addStaticText(headerLine, {x = 0, y = rfsuite.app.radio.linePaddingTop, w = config.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}, rfsuite.app.Page.headerLine)
-        end
-
-        formLineCnt = 0
-
-        if rfsuite.app.Page.apiform then
-            --[[
-            for i = 1, #rfsuite.app.Page.fields do
-                local f = rfsuite.app.Page.fields[i]
-                local l = rfsuite.app.Page.labels
-                local pageValue = f
-                local pageIdx = i
-                local currentField = i
-
-                rfsuite.app.ui.fieldLabel(f, i, l)
-
-                if f.hidden ~= true then
-
-                    if f.type == 0 then
-                        rfsuite.app.ui.fieldStaticText(i)
-                    elseif f.table or f.type == 1 then
-                        rfsuite.app.ui.fieldChoice(i)
-                    elseif f.type == 2 then
-                        rfsuite.app.ui.fieldNumber(i)
-                    elseif f.type == 3 then
-                        rfsuite.app.ui.fieldText(i)
-                    else
-                        rfsuite.app.ui.fieldNumber(i)
-                    end
-
-                end
-            end
-            ]]--
-        end   
-    end
-
-end
 
 function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
-    -- quick exit to divert to the form api
-    if rfsuite.app.Page and rfsuite.app.Page.apiform then
-        rfsuite.utils.log("api form detected for '"..title.."', switching to api form","debug")
-        rfsuite.app.ui.openPageAPIForm(idx, title, script, extra1, extra2, extra3, extra5, extra6)
-        return
-    end        
-
+    
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
     rfsuite.app.triggers.isReady = false
     rfsuite.app.formFields = {}
@@ -843,6 +751,14 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
         formLineCnt = 0
 
+        if rfsuite.app.Page.apiform then
+            rfsuite.app.Page.fields = rfsuite.app.Page.apiform.formdata.fields
+            rfsuite.app.Page.labels = rfsuite.app.Page.apiform.formdata.labels
+        end
+
+        rfsuite.utils.print_r(rfsuite.app.Page.labels)
+        rfsuite.utils.print_r(rfsuite.app.Page.fields)
+
         if rfsuite.app.Page.fields then
             for i = 1, #rfsuite.app.Page.fields do
                 local f = rfsuite.app.Page.fields[i]
@@ -853,7 +769,7 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
                 rfsuite.app.ui.fieldLabel(f, i, l)
 
-                if f.hidden ~= true then
+                if f.hidden ~= true and (f.apiversion == nil or f.apiversion <= rfsuite.session.apiVersion) then
 
                     if f.type == 0 then
                         rfsuite.app.ui.fieldStaticText(i)
