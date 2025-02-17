@@ -578,8 +578,92 @@ local function saveSettings()
 
 end
 
+-- REQUEST A PAGE USING THE NEW API FORM SYSTEM
+-- Store state outside the function
+local function requestPageApiForm()
+    -- Ensure app.Page and its apiform.mspapi exist
+    if not app.Page or not app.Page.apiform or not app.Page.apiform.mspapi then
+        rfsuite.utils.log("app.Page.apiform.mspapi is nil", "debug")
+        return
+    end
+
+    local apiList = app.Page.apiform.mspapi
+    local state = rfsuite.app.Page.apiform.apiState  -- Reference persistent state
+
+    -- Prevent duplicate execution if already running
+    if state.isProcessing then
+        rfsuite.utils.log("requestPageApiForm is already running, skipping duplicate call.", "debug")
+        return
+    end
+    state.isProcessing = true  -- Set processing flag
+
+    if not rfsuite.app.Page.apiform.values then
+        rfsuite.app.Page.apiform.values = {}  -- Initialize if first run
+    end
+
+    -- Recursive function to process API calls sequentially
+    local function processNextAPI()
+        if state.currentIndex > #apiList then
+            if state.isProcessing then  -- Ensure this runs only once
+                state.isProcessing = false  -- Reset processing flag
+                state.currentIndex = 1  -- Reset for next run
+
+                app.triggers.isReady = true
+
+                -- Run the postRead function if it exists
+                if app.Page.postRead then app.Page.postRead(app.Page) end
+
+                -- Populate the form fields with data
+                --rfsuite.utils.print_r(app.Page.apiform.values)
+
+                -- Run the postLoad function if it exists
+                if app.Page.postLoad then app.Page.postLoad(app.Page) end
+            end
+            return
+        end
+
+        local v = apiList[state.currentIndex]
+        local apiKey = type(v) == "string" and v or v.name  -- Use API name or unique key
+
+        if not apiKey then
+            rfsuite.utils.log("API key is missing for index " .. tostring(state.currentIndex), "error")
+            state.currentIndex = state.currentIndex + 1
+            processNextAPI()
+            return
+        end
+
+        local API = rfsuite.bg.msp.api.load(v)
+
+        -- Handle API success
+        API.setCompleteHandler(function(self, buf)
+            -- Store API response with API name as the key
+            rfsuite.app.Page.apiform.values[apiKey] = API.data()
+
+            -- Move to the next API
+            state.currentIndex = state.currentIndex + 1
+            processNextAPI()
+        end)
+
+        -- Handle API errors
+        API.setErrorHandler(function(self, err)
+            rfsuite.utils.log("API error for " .. apiKey .. ": " .. tostring(err), "error")
+
+            -- Move to the next API even if there's an error
+            state.currentIndex = state.currentIndex + 1
+            processNextAPI()
+        end)
+
+        API.read()
+    end
+
+    -- Start processing the first API
+    processNextAPI()
+end
+
+
 -- REQUEST A PAGE OVER MSP. THIS RUNS ON MOST CLOCK CYCLES WHEN DATA IS BEING REQUESTED
 local function requestPage()
+    -- this function is called repeatedly until data has arrived
 
     if not rfsuite.bg or not rfsuite.bg.msp then return end
 
@@ -1105,7 +1189,21 @@ end
         if not app.Page and app.PageTmp then app.Page = app.PageTmp end
 
         -- we have a page waiting to be retrieved - trigger a request page
-        if app.Page ~= nil then if not (app.Page.values or app.triggers.isReady) and app.pageState == app.pageStatus.display then requestPage() end end
+        if app.Page ~= nil then
+            if not (app.Page.values or app.triggers.isReady) and app.pageState == app.pageStatus.display then
+                if app.Page.apiform then
+                    if not rfsuite.app.Page.apiform.apiState then
+                        rfsuite.app.Page.apiform.apiState = {
+                            currentIndex = 1,
+                            isProcessing = false
+                        }
+                    end                    
+                    requestPageApiForm()
+                else
+                    requestPage()
+                end
+            end
+        end
 
     end
 

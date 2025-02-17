@@ -53,7 +53,7 @@ local function openPage(idx, title, script)
     rfsuite.app.lastIdx = idx
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
-    rfsuite.lastPage = script
+    rfsuite.session.lastPage = script
 
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
 
