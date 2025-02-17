@@ -91,10 +91,10 @@ function MspQueueController:processQueue()
 
     if (cmd == self.currentMessage.command and not err) or (self.currentMessage.command == 68 and self.retryCount == 2) or (self.currentMessage.command == 217 and err and self.retryCount == 2) then
 
-
+        if buf then
             local logData = "Received: {" .. rfsuite.utils.joinTableItems(buf, ", ") .. "}"
             if #buf > 0 then rfsuite.utils.log(logData,"debug") end
-
+        end
 
         if self.currentMessage.processReply then self.currentMessage:processReply(buf) end
         self.currentMessage = nil
