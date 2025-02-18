@@ -599,7 +599,7 @@ end
 -- we do both initial values and attributes in one loop to preven to many cascading loops
 function app.mspApiUpdateFormAttributes(values, structure)
     -- Ensure app.Page and its mspapi.formdata exist
-    if not (app.Page.mspapi.formdata and app.Page.mspapi.api) then
+    if not (app.Page.mspapi.formdata and app.Page.mspapi.api and rfsuite.app.Page.fields) then
         rfsuite.utils.log("app.Page.mspapi.formdata or its components are nil", "debug")
         return
     end

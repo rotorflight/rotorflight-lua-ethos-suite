@@ -14,6 +14,7 @@ local mspapi = {
             {t = "    ",             label = 4, inline_size = 17.3}
         },
         fields = {
+            {t = "ESC Update frequency",            mspapi = 1, apikey = "motor_pwm_rate"},   
             {t = "Pinion",                          mspapi = 1, apikey = "main_rotor_gear_ratio_0",       label = 1, inline = 2},
             {t = "Main",                            mspapi = 1, apikey = "main_rotor_gear_ratio_1",       label = 1, inline = 1},
             {t = "Rear",                            mspapi = 1, apikey = "tail_rotor_gear_ratio_0",       label = 2, inline = 2},

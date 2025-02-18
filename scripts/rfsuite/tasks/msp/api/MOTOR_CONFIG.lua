@@ -27,7 +27,7 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "motor_pole_count_blheli",  type = "U8",  apiVersion = 12.06, simResponse = {6}},
     {field = "use_dshot_telemetry",      type = "U8",  apiVersion = 12.06, simResponse = {0}},
     {field = "motor_pwm_protocol",       type = "U8",  apiVersion = 12.06, simResponse = {0}},
-    {field = "motor_pwm_rate",           type = "U16", apiVersion = 12.06, simResponse = {250, 0}},
+    {field = "motor_pwm_rate",           type = "U16", apiVersion = 12.06, simResponse = {250, 0}, min=50, max = 8000, default = 250, unit="Hz", help = "The frequency at which the ESC sends PWM signals to the motor"},
     {field = "use_unsynced_pwm",         type = "U8",  apiVersion = 12.06, simResponse = {1}},
     {field = "motor_pole_count_0",       type = "U8",  apiVersion = 12.06, simResponse = {6}, min = 0, max = 256, default = 8, help = "The number of magnets on the motor bell."},
     {field = "motor_pole_count_1",       type = "U8",  apiVersion = 12.06, simResponse = {4}},
