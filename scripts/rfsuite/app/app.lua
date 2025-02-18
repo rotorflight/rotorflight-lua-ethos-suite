@@ -197,12 +197,20 @@ end
 -- SAVE FIELD VALUE FOR ETHOS FROM ETHOS FORMS INTO THE ACTUAL FORMAT THAT 
 -- WILL BE TRANSMITTED OVER MSP
 function app.saveValue(currentField)
+    -- this method is only used for legacy api saves.
+    -- if using multi_mspapi we must fast about
+    if rfsuite.utils.is_multi_mspapi() then
+        return
+    end    
+
     local f = app.Page.fields[currentField]
     local scale = f.scale or 1
+
 
     for idx = 1, #f.vals do
         app.Page.values[f.vals[idx]] = math.floor(f.value * scale + 0.5) >> ((idx - 1) * 8)
     end
+
 
 end
 
@@ -350,7 +358,7 @@ local function processPageReply(source, buf, methodType)
                     local formField = rfsuite.app.formFields[j]
 
                     if f.apikey and  f.apikey == field and formField then
-                        rfsuite.app.ui.injectApiValues(formField,f,v)                
+                        rfsuite.app.ui.injectApiAttributes(formField,f,v)                
                     end
                 end
             end
@@ -526,6 +534,8 @@ function app.mspApiUpdateFormAttributes(values, structure)
         return
     end
 
+
+
     local fields = app.Page.mspapi.formdata.fields
     local api = app.Page.mspapi.api
 
@@ -536,10 +546,11 @@ function app.mspApiUpdateFormAttributes(values, structure)
         local mspapiID = f.mspapi
         local mspapiNAME = api[mspapiID]
         local targetStructure = structure[mspapiNAME]
-
+ 
         for _, v in ipairs(targetStructure) do
             if v.field == apikey then
-                rfsuite.app.ui.injectApiValues(formField, f, v)
+                rfsuite.app.ui.injectApiAttributes(formField, f, v)
+                rfsuite.app.Page.fields[i].value = values[mspapiNAME][apikey]
                 break -- Found field, can move on
             end
         end

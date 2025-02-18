@@ -752,7 +752,7 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
         formLineCnt = 0
 
         -- merge in form info when using multi msp api system
-        if rfsuite.app.Page.mspapi and type(rfsuite.app.Page.mspapi) == "table" and rfsuite.app.Page.mspapi.api then
+        if rfsuite.utils.is_multi_mspapi() then
             rfsuite.utils.log("Merging form data from mspapi","debug")
             rfsuite.app.Page.fields = rfsuite.app.Page.mspapi.formdata.fields
             rfsuite.app.Page.labels = rfsuite.app.Page.mspapi.formdata.labels
@@ -991,7 +991,7 @@ function ui.openPageHelp(txtData, section)
 
 end
 
-function ui.injectApiValues(formField,f,v)
+function ui.injectApiAttributes(formField,f,v)
     if (f.scale == nil and v.scale ~= nil)  then 
         f.scale = v.scale 
     end
