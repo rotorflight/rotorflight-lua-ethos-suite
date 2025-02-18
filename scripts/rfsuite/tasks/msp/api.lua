@@ -347,4 +347,69 @@ function apiLoader.createHandlers()
     return {setCompleteHandler = setCompleteHandler, setErrorHandler = setErrorHandler, getCompleteHandler = getCompleteHandler, getErrorHandler = getErrorHandler}
 end
 
+-- payload builder
+function apiLoader.buildWritePayload(payload, api_structure)
+
+    local function clamp(value, min, max)
+        return math.max(min or value, math.min(value, max or value))
+    end
+
+    local function serialize_value(buf, value, data_type, min, max, byteorder)
+        value = clamp(value, min, max)
+
+        if data_type == "U8" then
+            rfsuite.bg.msp.mspHelper.writeU8(buf, value)
+        elseif data_type == "U16" then
+            if byteorder then
+                rfsuite.bg.msp.mspHelper.writeU16(buf, value, byteorder)
+            else
+                rfsuite.bg.msp.mspHelper.writeU16(buf, value)
+            end
+        elseif data_type == "U24" then
+            if byteorder then
+                rfsuite.bg.msp.mspHelper.writeU24(buf, value, byteorder)
+            else
+                rfsuite.bg.msp.mspHelper.writeU24(buf, value)
+            end
+        elseif data_type == "S8" then
+            rfsuite.bg.msp.mspHelper.writeS8(buf, value)
+        elseif data_type == "S16" then
+            if byteorder then
+                rfsuite.bg.msp.mspHelper.writeS16(buf, value, byteorder)
+            else
+                rfsuite.bg.msp.mspHelper.writeS16(buf, value)
+            end
+        elseif data_type == "S24" then
+            if byteorder then
+                rfsuite.bg.msp.mspHelper.writeS24(buf, value, byteorder)
+            else
+                rfsuite.bg.msp.mspHelper.writeS24(buf, value)
+            end
+        elseif data_type == "S32" then
+            if byteorder then
+                rfsuite.bg.msp.mspHelper.writeS32(buf, value, byteorder)
+            else
+                rfsuite.bg.msp.mspHelper.writeS32(buf, value)
+            end
+        else
+            error("Unknown type: " .. tostring(data_type))
+        end
+    end
+
+    local byte_stream = {}
+
+    for _, field_def in ipairs(api_structure) do
+        local field_name = field_def.field
+        local value = payload[field_name] or field_def.default or 0
+        local byteorder = field_def.byteorder -- Only pass if defined
+        local scale = field_def.scale or 1 -- Default scale to 1 if not defined
+
+        value = value * scale
+
+        serialize_value(byte_stream, value, field_def.type, field_def.min, field_def.max, byteorder)
+    end
+
+    return byte_stream
+end
+
 return apiLoader

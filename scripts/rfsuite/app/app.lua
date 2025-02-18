@@ -480,43 +480,62 @@ local function saveSettings()
 
     if rfsuite.utils.is_multi_mspapi() then
         -- we handle saving 100% different for multi mspapi
-        rfsuite.utils.log("Saving data using the multi mspapi framework","debug")
-
+        rfsuite.utils.log("Saving data using the multi mspapi framework", "debug")
+    
         local mspapi = rfsuite.app.Page.mspapi
         local apiList = mspapi.api
         local values = mspapi.values
-
-        for apiID,apiNAME in ipairs(apiList) do
-            rfsuite.utils.log(" Saving data for api: " .. apiNAME,"debug")
-
+    
+        local totalRequests = #apiList  -- Total API calls to be made
+        local completedRequests = 0      -- Counter for completed requests
+    
+        for apiID, apiNAME in ipairs(apiList) do
+            rfsuite.utils.log("Saving data for API: " .. apiNAME, "debug")
+    
             local payloadData = values[apiNAME]
             local payloadStructure = mspapi.structure[apiNAME]
-
-            -- initialise the api
+    
+            -- Initialise the API
             local API = rfsuite.bg.msp.api.load(apiNAME)
-            API.setCompleteHandler(function(self, buf)
-                        rfsuite.utils.log("API " .. apiNAME .. " write complete","info")
-            end)
-
-            -- get values from fields and inject them into the payload
-            for i,v in pairs(payloadData) do    
-                    for fidx, f in ipairs(app.Page.mspapi.formdata.fields) do
-                        if f.apikey == i and f.mspapi == apiID then
-                            payloadData[i] = app.Page.fields[fidx].value
-                        end
-                    end 
+            API.setErrorHandler(function(self, buf)
+                app.triggers.saveFailed = true
             end
+            )
+            API.setCompleteHandler(function(self, buf)
+                completedRequests = completedRequests + 1
+                rfsuite.utils.log("API " .. apiNAME .. " write complete", "debug")
+    
+                -- Check if this is the last completed request
+                if completedRequests == totalRequests then
+                    rfsuite.utils.log("All API requests have been completed!", "debug")
+                    
+                    -- Run the postSave function if it exists
+                    if app.Page.postSave then app.Page.postSave(app.Page) end
 
-            -- lets now actually send off the payload!
-            for i,v in pairs(payloadData) do
-                rfsuite.utils.log(" Set value for " .. i.. " to " .. v, "info")
+                    -- we need to save to epprom etc
+                    app.settingsSaved()
+
+                end
+            end)
+    
+            -- Inject values into the payload
+            for i, v in pairs(payloadData) do    
+                for fidx, f in ipairs(app.Page.mspapi.formdata.fields) do
+                    if f.apikey == i and f.mspapi == apiID then
+                        payloadData[i] = app.Page.fields[fidx].value
+                    end
+                end 
+            end
+    
+            -- Send the payload
+            for i, v in pairs(payloadData) do
+                rfsuite.utils.log("Set value for " .. i .. " to " .. v, "debug")
                 API.setValue(i, v)
             end
             API.write()
         end
-
-
-    else    
+    else
+        -- legacy method
         -- check mspapi and if it returns (should always be a string) then proceed
         -- otherwise we revert to using app.Page.read using actual msp id numbers
         local methodType, methodTarget = app.mspMethodType(1)

@@ -712,4 +712,5 @@ function utils.is_multi_mspapi()
     return rfsuite.app.Page.mspapi and type(rfsuite.app.Page.mspapi) == "table" and rfsuite.app.Page.mspapi.api
 end
 
+
 return utils

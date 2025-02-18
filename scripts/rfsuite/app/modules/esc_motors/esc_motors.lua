@@ -46,6 +46,8 @@ end
 
 return {
     mspapi = mspapi,
+    reboot = false,
+    eepromWrite = true,    
     title = title,
     event = event,
     wakeup = wakeup,
