@@ -65,138 +65,144 @@ function msp.onConnectBgChecks()
         if rfsuite.rssiSensor then msp.sensor:module(rfsuite.rssiSensor:module()) end
 
         -- get the api version
-        if rfsuite.config.apiVersion == nil and msp.mspQueue:isProcessed() then
+        if rfsuite.session.apiVersion == nil and msp.mspQueue:isProcessed() then
 
             local API = msp.api.load("API_VERSION")
             API.setCompleteHandler(function(self, buf)
-                rfsuite.config.apiVersion = API.readVersion()
-                rfsuite.utils.log("API version: " .. rfsuite.config.apiVersion)
+                rfsuite.session.apiVersion = API.readVersion()
+                rfsuite.utils.log("API version: " .. rfsuite.session.apiVersion,"info")
             end)
             API.read()
-            -- sync the clock
-            print(rfsuite.config.apiVersion)
-        elseif rfsuite.config.clockSet == nil and msp.mspQueue:isProcessed() then
-
-            local API = msp.api.load("RTC", 1)
-            API.setCompleteHandler(function(self, buf)
-                rfsuite.config.clockSet = true
-                rfsuite.utils.log("Sync clock: " .. os.clock())
-            end)
-
-            API.write()
-
-            -- beep the clock
-        elseif rfsuite.config.clockSet == true and rfsuite.config.clockSetAlart ~= true then
-            -- this is unsual but needed because the clock sync does not return anything usefull
-            -- to confirm its done! 
-            rfsuite.utils.playFileCommon("beep.wav")
-            rfsuite.config.clockSetAlart = true
-
-            -- find tail and swash mode
-        elseif (rfsuite.config.tailMode == nil or rfsuite.config.swashMode == nil) and msp.mspQueue:isProcessed() then
-
-            local API = msp.api.load("MIXER_CONFIG")
-            API.setCompleteHandler(function(self, buf)
-                rfsuite.config.tailMode = API.readValue("tail_rotor_mode")
-                rfsuite.config.swashMode = API.readValue("swash_type")
-                rfsuite.utils.log("Tail mode: " .. rfsuite.config.tailMode)
-                rfsuite.utils.log("Swash mode: " .. rfsuite.config.swashMode)
-            end)
-            API.read()
-
-            -- get servo configuration
-        elseif (rfsuite.config.servoCount == nil) and msp.mspQueue:isProcessed() then
-
-            local API = msp.api.load("SERVO_CONFIGURATIONS")
-            API.setCompleteHandler(function(self, buf)
-                rfsuite.config.servoCount = API.readValue("servo_count")
-                rfsuite.utils.log("Servo count: " .. rfsuite.config.servoCount)
-            end)
-            API.read()
-
-            -- work out if fbl has any servos in overide mode
-        elseif (rfsuite.config.servoOverride == nil) and msp.mspQueue:isProcessed() then
-
-            local API = msp.api.load("SERVO_OVERRIDE")
-            API.read(rfsuite.config.servoCount)
-            if API.readComplete() then
-                local data = API.data()
-                local buf = data['buffer']
-                for i = 0, rfsuite.config.servoCount do
-                    buf.offset = i
-                    local servoOverride = msp.mspHelper.readU8(buf)
-                    if servoOverride == 0 then
-                        rfsuite.utils.log("Servo override: true")
-                        rfsuite.config.servoOverride = true
-                    end
-                end
-                if rfsuite.config.servoOverride == nil then rfsuite.config.servoOverride = false end
-            end
-
-            -- find out if we have a governor
-        elseif (rfsuite.config.governorMode == nil) and msp.mspQueue:isProcessed() then
-
-            local API = msp.api.load("GOVERNOR_CONFIG")
-            API.setCompleteHandler(function(self, buf)
-                local governorMode = API.readValue("gov_mode")
-                rfsuite.utils.log("Governor mode: " .. governorMode)
-                rfsuite.config.governorMode = governorMode
-            end)
-            API.read()
-
-            -- get the model id
-        elseif (rfsuite.config.modelID == nil) and msp.mspQueue:isProcessed() then
-
-            local API = msp.api.load("PILOT_CONFIG")
-            API.setCompleteHandler(function(self, buf)
-                local model_id = API.readValue("model_id")
-                rfsuite.utils.log("Model id: " .. model_id)
-                rfsuite.config.modelID = model_id
-            end)
-            API.read()
-
-            -- find the craft name on the fbl
-        elseif (rfsuite.config.craftName == nil) and msp.mspQueue:isProcessed() then
-
-            local API = msp.api.load("NAME")
-            API.read()
-            if API.readComplete() and API.readValue("name") ~= nil then
-                local data = API.data()
-
-                rfsuite.config.craftName = API.readValue("name")
-                -- set the model name to the craft name
-                if rfsuite.config.syncCraftName == true and model.name and rfsuite.config.craftName ~= nil then
-                    model.name(rfsuite.config.craftName)
-                    lcd.invalidate()
-                end
-
-                if rfsuite.config.craftName then rfsuite.utils.log("Craft name: " .. rfsuite.config.craftName) end
-
-                -- do this at end of last one
-                msp.onConnectChecksInit = false
-            end
 
         end
+        if rfsuite.session.apiVersion ~= nil then
+            if rfsuite.session.clockSet == nil and msp.mspQueue:isProcessed() then
+
+                local API = msp.api.load("RTC", 1)
+                API.setCompleteHandler(function(self, buf)
+                    rfsuite.session.clockSet = true
+                    rfsuite.utils.log("Sync clock: " .. os.clock(),"info")
+                end)
+
+                API.write()
+
+                -- beep the clock
+            elseif rfsuite.session.clockSet == true and rfsuite.session.clockSetAlart ~= true then
+                -- this is unsual but needed because the clock sync does not return anything usefull
+                -- to confirm its done! 
+                rfsuite.utils.playFileCommon("beep.wav")
+                rfsuite.session.clockSetAlart = true
+
+                -- find tail and swash mode
+            elseif (rfsuite.session.tailMode == nil or rfsuite.session.swashMode == nil) and msp.mspQueue:isProcessed() then
+
+                local API = msp.api.load("MIXER_CONFIG")
+                API.setCompleteHandler(function(self, buf)
+                    rfsuite.session.tailMode = API.readValue("tail_rotor_mode")
+                    rfsuite.session.swashMode = API.readValue("swash_type")
+                    rfsuite.utils.log("Tail mode: " .. rfsuite.session.tailMode,"info")
+                    rfsuite.utils.log("Swash mode: " .. rfsuite.session.swashMode,"info")
+                end)
+                API.read()
+
+                -- get servo configuration
+            elseif (rfsuite.session.servoCount == nil) and msp.mspQueue:isProcessed() then
+
+                local API = msp.api.load("STATUS")
+                API.setCompleteHandler(function(self, buf)
+                    rfsuite.session.servoCount = API.readValue("servo_count")
+                    rfsuite.utils.log("Servo count: " .. rfsuite.session.servoCount,"info")
+                end)
+                API.read()
+
+                -- work out if fbl has any servos in overide mode
+            elseif (rfsuite.session.servoOverride == nil) and msp.mspQueue:isProcessed() then
+
+                local API = msp.api.load("SERVO_OVERRIDE")
+                API.read()
+                if API.readComplete() then
+                    for i,v in pairs(API.data().parsed) do
+                        if v == 0 then
+                            rfsuite.utils.log("Servo override: true (" .. i .. ")","info")
+                            rfsuite.session.servoOverride = true
+                        end    
+                    end
+                    if rfsuite.session.servoOverride == nil then rfsuite.session.servoOverride = false end
+                end
+
+                -- find out if we have a governor
+            elseif (rfsuite.config.governorMode == nil) and msp.mspQueue:isProcessed() then
+
+                local API = msp.api.load("GOVERNOR_CONFIG")
+                API.setCompleteHandler(function(self, buf)
+                    local governorMode = API.readValue("gov_mode")
+                    rfsuite.utils.log("Governor mode: " .. governorMode,"info")
+                    rfsuite.config.governorMode = governorMode
+                end)
+                API.read()
+
+                -- get the model id
+            elseif (rfsuite.session.modelID == nil) and msp.mspQueue:isProcessed() then
+
+                local API = msp.api.load("PILOT_CONFIG")
+                API.setCompleteHandler(function(self, buf)
+                    local model_id = API.readValue("model_id")
+                    rfsuite.utils.log("Model id: " .. model_id,"info")
+                    rfsuite.session.modelID = model_id
+                end)
+                API.read()
+
+                -- find the craft name on the fbl
+            elseif (rfsuite.session.craftName == nil) and msp.mspQueue:isProcessed() then
+
+                local API = msp.api.load("NAME")
+                API.read()
+                if API.readComplete() and API.readValue("name") ~= nil then
+                    local data = API.data()
+
+                    rfsuite.session.craftName = API.readValue("name")
+
+                    -- set the model name to the craft name
+                    if rfsuite.preferences.syncCraftName == true and model.name and rfsuite.session.craftName ~= nil then
+                        rfsuite.utils.log("Setting model name to: " .. rfsuite.session.craftName,"info")
+                        model.name(rfsuite.session.craftName)
+                        lcd.invalidate()
+                    end
+
+                    if rfsuite.session.craftName and rfsuite.session.craftName ~= "" then 
+                        rfsuite.utils.log("Craft name: " .. rfsuite.session.craftName,"info") 
+                    end
+
+                    -- do this at end of last one
+                    msp.onConnectChecksInit = false
+                end
+
+            end
+        end    
     end
 
 end
 
 function msp.resetState()
-    rfsuite.config.servoOverride = nil
-    rfsuite.config.servoCount = nil
-    rfsuite.config.tailMode = nil
-    rfsuite.config.apiVersion = nil
-    rfsuite.config.clockSet = nil
-    rfsuite.config.clockSetAlart = nil
-    rfsuite.config.craftName = nil
-    rfsuite.config.modelID = nil
+    rfsuite.session.servoOverride = nil
+    rfsuite.session.servoCount = nil
+    rfsuite.session.tailMode = nil
+    rfsuite.session.apiVersion = nil
+    rfsuite.session.clockSet = nil
+    rfsuite.session.clockSetAlart = nil
+    rfsuite.session.craftName = nil
+    rfsuite.session.modelID = nil
 end
 
 function msp.wakeup()
 
-    -- check what protocol is in use
-    local telemetrySOURCE = system.getSource("Rx RSSI1")
-    if telemetrySOURCE ~= nil then
+    -- check if we have a telemetry source
+    local telemetrySOURCE = rfsuite.bg.telemetry.getSensorSource("rssi") 
+    if telemetrySOURCE == nil then 
+        return
+    end
+
+    if telemetrySOURCE:name() == "Rx RSSI1" or telemetrySOURCE:name() == "Rx RSSI1" then
         msp.activeProtocol = "crsf"
     else
         msp.activeProtocol = "smartPort"
@@ -206,7 +212,7 @@ function msp.wakeup()
 
     if rfsuite.rssiSensorChanged == true then
 
-        rfsuite.utils.log("Switching protocol: " .. msp.activeProtocol)
+        --rfsuite.utils.log("Switching protocol: " .. msp.activeProtocol)
 
         msp.protocol = protocol.getProtocol()
 
@@ -242,7 +248,9 @@ function msp.wakeup()
         msp.mspQueue:processQueue()
 
         -- checks that run on each connection to the fbl
-        if msp.onConnectChecksInit == true then msp.onConnectBgChecks() end
+        if msp.onConnectChecksInit == true then 
+            msp.onConnectBgChecks() 
+        end
     else
         msp.mspQueue:clear()
     end

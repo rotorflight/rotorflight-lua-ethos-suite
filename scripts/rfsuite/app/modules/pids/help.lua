@@ -29,13 +29,6 @@ data['help']['default'] = {
     "Test & Adjust: Fly, observe, and fine-tune for best performance in real conditions."
 }
 
-data['fields'] = {
-    profilesProportional = {t = "How tightly the system tracks the desired setpoint."},
-    profilesIntegral = {t = "How tightly the system holds its position."},
-    profilesHSI = {t = "Used to prevent the craft from pitching up when flying at speed."},
-    profilesDerivative = {t = "Strength of dampening to any motion on the system, including external influences. Also reduces overshoot."},
-    profilesFeedforward = {t = "Helps push P-term based on stick input. Increasing will make response more sharp, but can cause overshoot."},
-    profilesBoost = {t = "Additional boost on the feedforward to make the heli react more to quick stick movements."}
-}
+data['fields'] = {}
 
 return data

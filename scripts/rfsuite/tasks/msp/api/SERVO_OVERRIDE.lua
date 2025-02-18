@@ -17,13 +17,34 @@
 -- Constants for MSP Commands
 local MSP_API_CMD_READ = 192 -- Command identifier for MSP Mixer Config Read
 local MSP_API_CMD_WRITE = 193 -- Command identifier for saving Mixer Config Settings
-local MSP_API_SIMULATOR_RESPONSE = {209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7} -- Default simulator response
-local MSP_MIN_BYTES = 10
+
+
 
 -- Define the MSP response data structures
-local MSP_API_STRUCTURE_READ = {} -- we dynamically generate this later
+local MSP_API_STRUCTURE_READ_DATA = {
+    {field = "servo_1", type = "U16", apiVersion=12.06, simResponse={209, 7}}, 
+    {field = "servo_2", type = "U16", apiVersion=12.06, simResponse={209, 7}}, 
+    {field = "servo_3", type = "U16", apiVersion=12.06, simResponse={209, 7}}, 
+    {field = "servo_4", type = "U16", apiVersion=12.06, simResponse={209, 7}}, 
+    {field = "servo_5", type = "U16", apiVersion=12.06, simResponse={209, 7}}, 
+    {field = "servo_6", type = "U16", apiVersion=12.06, simResponse={209, 7}}, 
+    {field = "servo_7", type = "U16", apiVersion=12.06, simResponse={209, 7}}, 
+    {field = "servo_8", type = "U16", apiVersion=12.06, simResponse={209, 7}}, 
+}
 
-local MSP_API_STRUCTURE_WRITE = {{field = "servo_id", type = "U8"}, {field = "action", type = "U16"}}
+local MSP_API_STRUCTURE_WRITE = {
+                {field = "servo_id", type = "U8"}, 
+                {field = "action", type = "U8"}
+            }
+
+-- filter the structure to remove any params not supported by the running api version
+local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
+
+-- calculate the min bytes value from the structure
+local MSP_MIN_BYTES = rfsuite.bg.msp.api.calculateMinBytes(MSP_API_STRUCTURE_READ)
+
+-- generate a simulatorResponse from the read structure
+local MSP_API_SIMULATOR_RESPONSE = rfsuite.bg.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
 
 -- Variable to store parsed MSP data
 local mspData = nil
@@ -34,21 +55,17 @@ local defaultData = {}
 -- Create a new instance
 local handlers = rfsuite.bg.msp.api.createHandlers()
 
-local function readStructure(count)
-    local structure = {}
-    for i = 1, count do table.insert(structure, {field = string.format("servo%d", i), type = "U16"}) end
-    return structure
-end
+-- Variables to store optional the UUID and timeout for payload
+local MSP_API_UUID
+local MSP_API_MSG_TIMEOUT
 
 -- Function to initiate MSP read operation
-local function read(servoCount)
-    if servoCount == nil then servoCount = 4 end
+local function read()
+
     local message = {
         command = MSP_API_CMD_READ, -- Specify the MSP command
         processReply = function(self, buf)
             -- Parse the MSP data using the defined structure
-            local MSP_API_STRUCTURE_READ = readStructure(servoCount)
-
             mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE_READ)
             if #buf >= MSP_MIN_BYTES then
                 local completeHandler = handlers.getCompleteHandler()
@@ -59,7 +76,9 @@ local function read(servoCount)
             local errorHandler = handlers.getErrorHandler()
             if errorHandler then errorHandler(self, buf) end
         end,
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE
+        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
+        uuid = MSP_API_UUID,
+        timeout = MSP_API_MSG_TIMEOUT  
     }
     -- Add the message to the processing queue
     rfsuite.bg.msp.mspQueue:add(message)
@@ -67,7 +86,7 @@ end
 
 local function write(suppliedPayload)
     if MSP_API_CMD_WRITE == nil then
-        print("No value set for MSP_API_CMD_WRITE")
+        rfsuite.utils.log("No value set for MSP_API_CMD_WRITE", "debug")
         return
     end
 
@@ -83,7 +102,9 @@ local function write(suppliedPayload)
             local errorHandler = handlers.getErrorHandler()
             if errorHandler then errorHandler(self, buf) end
         end,
-        simulatorResponse = {}
+        simulatorResponse = {},
+        uuid = MSP_API_UUID,
+        timeout = MSP_API_MSG_TIMEOUT  
     }
     rfsuite.bg.msp.mspQueue:add(message)
 end
@@ -125,5 +146,28 @@ local function data()
     return mspData
 end
 
+-- set the UUID for the payload
+local function setUUID(uuid)
+    MSP_API_UUID = uuid
+end
+
+-- set the timeout for the payload
+local function setTimeout(timeout)
+    MSP_API_MSG_TIMEOUT = timeout
+end
+
 -- Return the module's API functions
-return {read = read, write = write, readComplete = readComplete, writeComplete = writeComplete, readValue = readValue, setValue = setValue, resetWriteStatus = resetWriteStatus, setCompleteHandler = handlers.setCompleteHandler, setErrorHandler = handlers.setErrorHandler, data = data}
+return {
+    read = read,
+    write = write,
+    readComplete = readComplete,
+    writeComplete = writeComplete,
+    readValue = readValue,
+    setValue = setValue,
+    resetWriteStatus = resetWriteStatus,
+    setCompleteHandler = handlers.setCompleteHandler,
+    setErrorHandler = handlers.setErrorHandler,
+    data = data,
+    setUUID = setUUID,
+    setTimeout = setTimeout
+}

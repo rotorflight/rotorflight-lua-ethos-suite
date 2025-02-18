@@ -17,13 +17,21 @@
 -- Constants for MSP Commands
 local MSP_API_CMD_READ = 10 -- Command identifier 
 local MSP_API_CMD_WRITE = nil -- Command identifier 
-local MSP_API_SIMULATOR_RESPONSE = {80, 105, 108, 111, 116} -- Default simulator response
 local MSP_MIN_BYTES = 0
 
 -- Define the MSP response data structures
-local MSP_API_STRUCTURE_READ = {{field = "name", type = "U8"}}
+local MSP_API_STRUCTURE_READ_DATA = {
+    { field = "name", type = "U8", apiVersion = 12.06, simResponse = {80, 105, 108, 111, 116}}
+}
 
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ -- Assuming identical structure for now
+-- filter the structure to remove any params not supported by the running api version
+local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
+
+-- set read structure
+local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
+
+-- generate a simulatorResponse from the read structure
+local MSP_API_SIMULATOR_RESPONSE = rfsuite.bg.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
 
 -- Variable to store parsed MSP data
 local mspData = nil
@@ -33,6 +41,10 @@ local defaultData = {}
 
 -- Create a new instance
 local handlers = rfsuite.bg.msp.api.createHandlers()
+
+-- Variables to store optional the UUID and timeout for payload
+local MSP_API_UUID
+local MSP_API_MSG_TIMEOUT
 
 local function parseMSPData(buf)
     local parsedData = {}
@@ -48,6 +60,10 @@ local function parseMSPData(buf)
         end
         name = name .. string.char(char)
         offset = offset + 1
+    end
+
+    if #buf == 0 then
+        name = ""
     end
 
     parsedData["name"] = name
@@ -67,7 +83,7 @@ local function read()
         processReply = function(self, buf)
             -- Parse the MSP data using the defined structure
             mspData = parseMSPData(buf, MSP_API_STRUCTURE)
-            if #buf >= MSP_MIN_BYTES then
+            if #buf >= 0 then  -- this is a odd one in that we dont know how many bytes we will get!
                 local completeHandler = handlers.getCompleteHandler()
                 if completeHandler then completeHandler(self, buf) end
             end
@@ -76,7 +92,9 @@ local function read()
             local errorHandler = handlers.getErrorHandler()
             if errorHandler then errorHandler(self, buf) end
         end,
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE
+        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
+        uuid = MSP_API_UUID,
+        timeout = MSP_API_MSG_TIMEOUT  
     }
     -- Add the message to the processing queue
     rfsuite.bg.msp.mspQueue:add(message)
@@ -84,7 +102,7 @@ end
 
 local function write(suppliedPayload)
     if MSP_API_CMD_WRITE == nil then
-        print("No value set for MSP_API_CMD_WRITE")
+        rfsuite.utils.log("No value set for MSP_API_CMD_WRITE", "debug")
         return
     end
 
@@ -100,7 +118,9 @@ local function write(suppliedPayload)
             local errorHandler = handlers.getErrorHandler()
             if errorHandler then errorHandler(self, buf) end
         end,
-        simulatorResponse = {}
+        simulatorResponse = {},
+        uuid = MSP_API_UUID,
+        timeout = MSP_API_MSG_TIMEOUT  
     }
     rfsuite.bg.msp.mspQueue:add(message)
 end
@@ -142,5 +162,28 @@ local function data()
     return mspData
 end
 
+-- set the UUID for the payload
+local function setUUID(uuid)
+    MSP_API_UUID = uuid
+end
+
+-- set the timeout for the payload
+local function setTimeout(timeout)
+    MSP_API_MSG_TIMEOUT = timeout
+end
+
 -- Return the module's API functions
-return {read = read, write = write, readComplete = readComplete, writeComplete = writeComplete, readValue = readValue, setValue = setValue, resetWriteStatus = resetWriteStatus, setCompleteHandler = handlers.setCompleteHandler, setErrorHandler = handlers.setErrorHandler, data = data}
+return {
+    read = read,
+    write = write,
+    readComplete = readComplete,
+    writeComplete = writeComplete,
+    readValue = readValue,
+    setValue = setValue,
+    resetWriteStatus = resetWriteStatus,
+    setCompleteHandler = handlers.setCompleteHandler,
+    setErrorHandler = handlers.setErrorHandler,
+    data = data,
+    setUUID = setUUID,
+    setTimeout = setTimeout
+}

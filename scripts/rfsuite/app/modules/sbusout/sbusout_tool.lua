@@ -12,9 +12,9 @@ local ch = rfsuite.currentSbusServoIndex
 local ch_str = "CH" .. tostring(ch + 1)
 local offset = 6 * ch -- 6 bytes per channel
 
-local servoCount = rfsuite.config.servoCount or 6
+local servoCount = rfsuite.session.servoCount or 6
 local motorCount = 1
-if rfsuite.config.tailMode == 0 then motorCount = 2 end
+if rfsuite.session.tailMode == 0 then motorCount = 2 end
 
 local minmax = {}
 minmax[1] = {min = 500, max = 2000, sourceMax = 24, defaultMin = 1000, defaultMax = 2000} -- Receiver
@@ -25,16 +25,7 @@ minmax[4] = {min = 0, max = 1000, sourceMax = motorCount, defaultMin = 0, defaul
 local enableWakeup = false
 
 -- layouts
-fields[#fields + 1] = {
-    t = "Type",
-    min = 0,
-    max = 16,
-    vals = {1 + offset},
-    table = {"Receiver", "Mixer", "Servo", "Motor"},
-    postEdit = function(self)
-        self.setMinMaxIndex(self, true)
-    end
-}
+fields[#fields + 1] = {t = "Type", min = 0, max = 16, vals = {1 + offset}, table = {"Receiver", "Mixer", "Servo", "Motor"}, postEdit = function(self) self.setMinMaxIndex(self, true) end}
 fields[#fields + 1] = {t = "Source", min = 0, max = 15, offset = 0, vals = {2 + offset}, help = "sbusOutSource"}
 fields[#fields + 1] = {t = "Min", min = -2000, max = 2000, vals = {3 + offset, 4 + offset}, help = "sbusOutMin"}
 fields[#fields + 1] = {t = "Max", min = -2000, max = 2000, vals = {5 + offset, 6 + offset}, help = "sbusOutMax"}
@@ -60,14 +51,9 @@ local function saveServoSettings(self)
     rfsuite.bg.msp.mspHelper.writeU16(message.payload, mixMax)
     -- rfsuite.bg.msp.mspHelper.writeU8(message.payload, frameRate)
 
-    if rfsuite.config.mspTxRxDebug == true or rfsuite.config.logEnable == true then
-        local logData = "{" .. rfsuite.utils.joinTableItems(message.payload, ", ") .. "}"
+    local logData = "{" .. rfsuite.utils.joinTableItems(message.payload, ", ") .. "}"
+    rfsuite.utils.log(logData,"debug")
 
-        rfsuite.utils.log(logData)
-        print(logData)
-        if rfsuite.config.mspTxRxDebug == true then print(logData) end
-
-    end
     rfsuite.bg.msp.mspQueue:add(message)
 
     -- write change to epprom
@@ -201,5 +187,6 @@ return {
     onSaveMenu = onSaveMenu,
     setMinMaxIndex = setMinMaxIndex,
     wakeup = wakeup,
-    navButtons = {menu = true, save = true, reload = true, tool = false, help = true}
+    navButtons = {menu = true, save = true, reload = true, tool = false, help = true},
+    API = {},
 }

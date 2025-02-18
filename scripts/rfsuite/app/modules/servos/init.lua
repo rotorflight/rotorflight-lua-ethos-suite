@@ -23,7 +23,7 @@ local init = {
     script = "servos.lua", -- run this script
     image = "servos.png", -- image for the page
     order = 2, -- order in the section
-    ethosversion = 1519 -- disable button if ethos version is less than this
+    ethosversion = {1, 6, 2} -- disable button if ethos version is less than this
 }
 
 return init

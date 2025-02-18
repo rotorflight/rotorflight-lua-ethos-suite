@@ -17,12 +17,26 @@
 -- Constants for MSP Commands
 local MSP_API_CMD_READ = 240 -- Command identifier 
 local MSP_API_CMD_WRITE = 239 -- Command identifier 
-local MSP_API_SIMULATOR_RESPONSE = {0, 0, 0, 0} -- Default simulator response
-local MSP_MIN_BYTES = 4
+
 
 -- Define the MSP response data structures
-local MSP_API_STRUCTURE_READ = {{field = "pitch", type = "U16"}, {field = "roll", type = "U16"}}
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ -- Assuming identical structure for now
+local MSP_API_STRUCTURE_READ_DATA = {
+    { field = "pitch", type = "U16", apiVersion = 12.06, simResponse = {0}, min = -300, max = 300, default = 0, unit = "°", help="Use to trim if the heli drifts in one of the stabilized modes (angle, horizon, etc.)."},
+    { field = "roll",  type = "U16", apiVersion = 12.06, simResponse = {0}, min = -300, max = 300, default = 0, unit = "°", help="Use to trim if the heli drifts in one of the stabilized modes (angle, horizon, etc.)."},
+}
+
+-- filter the structure to remove any params not supported by the running api version
+local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
+
+-- calculate the min bytes value from the structure
+local MSP_MIN_BYTES = rfsuite.bg.msp.api.calculateMinBytes(MSP_API_STRUCTURE_READ)
+
+-- set read structure
+local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
+
+-- generate a simulatorResponse from the read structure
+local MSP_API_SIMULATOR_RESPONSE = rfsuite.bg.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
+
 
 -- Variable to store parsed MSP data
 local mspData = nil
@@ -30,13 +44,17 @@ local mspWriteComplete = false
 local payloadData = {}
 local defaultData = {}
 
+-- Variables to store optional the UUID and timeout for payload
+local MSP_API_UUID
+local MSP_API_MSG_TIMEOUT
+
 -- Create a new instance
 local handlers = rfsuite.bg.msp.api.createHandlers()
 
 -- Function to initiate MSP read operation
 local function read()
     if MSP_API_CMD_READ == nil then
-        print("No value set for MSP_API_CMD_READ")
+        rfsuite.utils.log("No value set for MSP_API_CMD_READ", "debug")
         return
     end
 
@@ -53,14 +71,16 @@ local function read()
             local errorHandler = handlers.getErrorHandler()
             if errorHandler then errorHandler(self, buf) end
         end,
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE
+        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
+        uuid = MSP_API_UUID,
+        timeout = MSP_API_TIMEOUT
     }
     rfsuite.bg.msp.mspQueue:add(message)
 end
 
 local function write(suppliedPayload)
     if MSP_API_CMD_WRITE == nil then
-        print("No value set for MSP_API_CMD_WRITE")
+        rfsuite.utils.log("No value set for MSP_API_CMD_WRITE", "debug")
         return
     end
 
@@ -76,7 +96,9 @@ local function write(suppliedPayload)
             local errorHandler = handlers.getErrorHandler()
             if errorHandler then errorHandler(self, buf) end
         end,
-        simulatorResponse = {}
+        simulatorResponse = {},
+        uuid = MSP_API_UUID,
+        timeout = MSP_API_MSG_TIMEOUT        
     }
     rfsuite.bg.msp.mspQueue:add(message)
 end
@@ -118,5 +140,28 @@ local function data()
     return mspData
 end
 
+-- set the UUID for the payload
+local function setUUID(uuid)
+    MSP_API_UUID = uuid
+end
+
+-- set the timeout for the payload
+local function setTimeout(timeout)
+    MSP_API_MSG_TIMEOUT = timeout
+end
+
 -- Return the module's API functions
-return {read = read, write = write, readComplete = readComplete, writeComplete = writeComplete, readValue = readValue, setValue = setValue, resetWriteStatus = resetWriteStatus, setCompleteHandler = handlers.setCompleteHandler, setErrorHandler = handlers.setErrorHandler, data = data}
+return {
+    read = read,
+    write = write,
+    readComplete = readComplete,
+    writeComplete = writeComplete,
+    readValue = readValue,
+    setValue = setValue,
+    resetWriteStatus = resetWriteStatus,
+    setCompleteHandler = handlers.setCompleteHandler,
+    setErrorHandler = handlers.setErrorHandler,
+    data = data,
+    setUUID = setUUID,
+    setTimeout = setTimeout
+}

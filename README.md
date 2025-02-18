@@ -59,7 +59,7 @@ And many more...
 
 ## Lua Scripts Requirements
 
-- Ethos 1.5.16 or later
+- Ethos 1.6.2 or later
 - an X10, X12, X14, X18, X20 or Twin X Lite transmitter
 - a FrSky Smartport or F.Port receiver using ACCESS, ACCST, TD or TW mode
 - a ELRS Module supported by Ethos

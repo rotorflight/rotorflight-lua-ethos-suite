@@ -1,0 +1,40 @@
+name: Create rfsuite-lua-ethos ZIP on PR
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  create-zip:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Update version in main.lua
+      run: |
+        PR_NUMBER=${{ github.event.pull_request.number }}
+        NEW_VERSION="PR-${PR_NUMBER}"
+
+        # Update the version in main.lua
+        sed -i "s/config.Version = \".*\"/config.Version = \"${NEW_VERSION}\"/" scripts/rfsuite/main.lua
+
+        # Display updated version for verification
+        grep 'config.Version' scripts/rfsuite/main.lua
+
+    - name: Create rfsuite-lua-ethos-PR-<number>.zip (only /scripts/rfsuite)
+      run: |
+        PR_NUMBER=${{ github.event.pull_request.number }}
+        ZIP_NAME="rfsuite-lua-ethos-PR-${PR_NUMBER}.zip"
+
+        # Zip the contents without creating unnecessary nested structure
+        cd scripts
+        zip -r ../${ZIP_NAME} rfsuite
+
+    - name: Upload rfsuite-lua-ethos-PR-<number>.zip as Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: rfsuite-lua-ethos-PR-${{ github.event.pull_request.number }}
+        path: rfsuite-lua-ethos-PR-${{ github.event.pull_request.number }}.zip
+        if-no-files-found: error

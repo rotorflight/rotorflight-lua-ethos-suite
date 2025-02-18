@@ -109,9 +109,7 @@ local function saveServoSettings(self)
     if rfsuite.config.mspTxRxDebug == true or rfsuite.config.logEnable == true then
         local logData = "{" .. rfsuite.utils.joinTableItems(message.payload, ", ") .. "}"
 
-        rfsuite.utils.log(logData)
-
-        if rfsuite.config.mspTxRxDebug == true then print(logData) end
+        rfsuite.utils.log(logData,"debug")
 
     end
     rfsuite.bg.msp.mspQueue:add(message)
@@ -165,7 +163,7 @@ end
 local function onNavMenu(self)
 
     rfsuite.app.ui.progressDisplay()
-    rfsuite.app.ui.openPage(rfsuite.app.lastIdx, rfsuite.app.lastTitle, "servos/servos.lua", rfsuite.config.servoOverride)
+    rfsuite.app.ui.openPage(rfsuite.app.lastIdx, rfsuite.app.lastTitle, "servos/servos.lua", rfsuite.session.servoOverride)
 
 end
 
@@ -179,7 +177,7 @@ local function wakeup(self)
         end
 
         -- filter changes to servo center - essentially preventing queue getting flooded        
-        if rfsuite.config.servoOverride == true then
+        if rfsuite.session.servoOverride == true then
 
             currentServoCenter = configs[servoIndex]['mid']
 
@@ -199,11 +197,11 @@ local function wakeup(self)
     if triggerOverRide == true then
         triggerOverRide = false
 
-        if rfsuite.config.servoOverride == false then
+        if rfsuite.session.servoOverride == false then
             rfsuite.app.audio.playServoOverideEnable = true
             rfsuite.app.ui.progressDisplay("Servo override", "Enabling servo override...")
             rfsuite.app.Page.servoCenterFocusAllOn(self)
-            rfsuite.config.servoOverride = true
+            rfsuite.session.servoOverride = true
 
             rfsuite.app.formFields[3]:enable(false)
             rfsuite.app.formFields[4]:enable(false)
@@ -220,7 +218,7 @@ local function wakeup(self)
             rfsuite.app.audio.playServoOverideDisable = true
             rfsuite.app.ui.progressDisplay("Servo override", "Disabling servo override...")
             rfsuite.app.Page.servoCenterFocusAllOff(self)
-            rfsuite.config.servoOverride = false
+            rfsuite.session.servoOverride = false
 
             rfsuite.app.formFields[3]:enable(true)
             rfsuite.app.formFields[4]:enable(true)
@@ -243,9 +241,9 @@ local function getServoConfigurations(callback, callbackParam)
             servoCount = rfsuite.bg.msp.mspHelper.readU8(buf)
 
             -- update master one in case changed
-            rfsuite.config.servoCount = servoCount
+            rfsuite.session.servoCount = servoCount
 
-            -- print("Servo count "..tostring(servoCount))
+            rfsuite.utils.log("Servo count "..tostring(servoCount),"info")
             for i = 0, servoCount - 1 do
                 local config = {}
 
@@ -336,7 +334,7 @@ local function openPage(idx, title, script, extra1)
         local headerLineText = form.addStaticText(headerLine, {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.config.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}, rfsuite.app.Page.headerLine)
     end
 
-    if rfsuite.config.servoOverride == true then rfsuite.app.formNavigationFields['save']:enable(false) end
+    if rfsuite.session.servoOverride == true then rfsuite.app.formNavigationFields['save']:enable(false) end
 
     if configs[servoIndex]['mid'] ~= nil then
 
@@ -374,7 +372,7 @@ local function openPage(idx, title, script, extra1)
         if suffix ~= nil then rfsuite.app.formFields[idx]:suffix(suffix) end
         if defaultValue ~= nil then rfsuite.app.formFields[idx]:default(defaultValue) end
         if helpTxt ~= nil then rfsuite.app.formFields[idx]:help(helpTxt) end
-        if rfsuite.config.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
+        if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
     end
 
     if configs[servoIndex]['max'] ~= nil then
@@ -393,7 +391,7 @@ local function openPage(idx, title, script, extra1)
         if suffix ~= nil then rfsuite.app.formFields[idx]:suffix(suffix) end
         if defaultValue ~= nil then rfsuite.app.formFields[idx]:default(defaultValue) end
         if helpTxt ~= nil then rfsuite.app.formFields[idx]:help(helpTxt) end
-        if rfsuite.config.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
+        if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
     end
 
     if configs[servoIndex]['scaleNeg'] ~= nil then
@@ -412,7 +410,7 @@ local function openPage(idx, title, script, extra1)
         if suffix ~= nil then rfsuite.app.formFields[idx]:suffix(suffix) end
         if defaultValue ~= nil then rfsuite.app.formFields[idx]:default(defaultValue) end
         if helpTxt ~= nil then rfsuite.app.formFields[idx]:help(helpTxt) end
-        if rfsuite.config.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
+        if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
     end
 
     if configs[servoIndex]['scalePos'] ~= nil then
@@ -431,7 +429,7 @@ local function openPage(idx, title, script, extra1)
         if suffix ~= nil then rfsuite.app.formFields[idx]:suffix(suffix) end
         if defaultValue ~= nil then rfsuite.app.formFields[idx]:default(defaultValue) end
         if helpTxt ~= nil then rfsuite.app.formFields[idx]:help(helpTxt) end
-        if rfsuite.config.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
+        if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
     end
 
     if configs[servoIndex]['rate'] ~= nil then
@@ -450,7 +448,7 @@ local function openPage(idx, title, script, extra1)
         if suffix ~= nil then rfsuite.app.formFields[idx]:suffix(suffix) end
         if defaultValue ~= nil then rfsuite.app.formFields[idx]:default(defaultValue) end
         if helpTxt ~= nil then rfsuite.app.formFields[idx]:help(helpTxt) end
-        if rfsuite.config.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
+        if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
     end
 
     if configs[servoIndex]['speed'] ~= nil then
@@ -469,7 +467,7 @@ local function openPage(idx, title, script, extra1)
         if suffix ~= nil then rfsuite.app.formFields[idx]:suffix(suffix) end
         if defaultValue ~= nil then rfsuite.app.formFields[idx]:default(defaultValue) end
         if helpTxt ~= nil then rfsuite.app.formFields[idx]:help(helpTxt) end
-        if rfsuite.config.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
+        if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
     end
 
     if configs[servoIndex]['flags'] ~= nil then
@@ -485,7 +483,7 @@ local function openPage(idx, title, script, extra1)
         end, function(value)
             configs[servoIndex]['reverse'] = value
         end)
-        if rfsuite.config.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
+        if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
     end
 
     if configs[servoIndex]['flags'] ~= nil then
@@ -501,7 +499,7 @@ local function openPage(idx, title, script, extra1)
         end, function(value)
             configs[servoIndex]['geometry'] = value
         end)
-        if rfsuite.config.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
+        if rfsuite.session.servoOverride == true then rfsuite.app.formFields[idx]:enable(false) end
     end
 
     getServoConfigurations(getServoConfigurationsEnd)
@@ -517,7 +515,7 @@ local function event(widget, category, value, x, y)
     end
 
     if category == 5 or value == 35 then
-        rfsuite.app.ui.openPage(pidx, "Servos", "servos/servos.lua", rfsuite.config.servoOverride)
+        rfsuite.app.ui.openPage(pidx, "Servos", "servos/servos.lua", rfsuite.session.servoOverride)
         return true
     end
 
@@ -527,7 +525,7 @@ end
 local function onToolMenu(self)
 
     local buttons
-    if rfsuite.config.servoOverride == false then
+    if rfsuite.session.servoOverride == false then
         buttons = {{
             label = "                OK                ",
             action = function()
@@ -563,7 +561,7 @@ local function onToolMenu(self)
     end
     local message
     local title
-    if rfsuite.config.servoOverride == false then
+    if rfsuite.session.servoOverride == false then
         title = "Enable servo override"
         message = "Servo override allows you to 'trim' your servo center point in real time."
     else
@@ -585,6 +583,10 @@ local function onToolMenu(self)
 
 end
 
+local function onReloadMenu()
+    rfsuite.app.triggers.triggerReloadFull = true
+end
+
 return {
     -- not changing to custom api at present due to complexity of read/write scenario in these modules
     title = "Servos",
@@ -602,7 +604,9 @@ return {
     openPage = openPage,
     onNavMenu = onNavMenu,
     onSaveMenu = onSaveMenu,
+    onReloadMenu = onReloadMenu,
     pageTitle = "Servos",
-    navButtons = {menu = true, save = true, reload = true, tool = true, help = true}
+    navButtons = {menu = true, save = true, reload = true, tool = true, help = true},
+    API = {},
 
 }

@@ -35,6 +35,10 @@ local defaultData = {}
 -- Create a new instance
 local handlers = rfsuite.bg.msp.api.createHandlers()
 
+-- Variables to store optional the UUID and timeout for payload
+local MSP_API_UUID
+local MSP_API_MSG_TIMEOUT
+
 -- Function to get default values (stub for now)
 local function getDefaults()
     -- This function should return a table with default values
@@ -70,7 +74,9 @@ local function write()
             local errorHandler = handlers.getErrorHandler()
             if errorHandler then errorHandler(self, buf) end
         end,
-        simulatorResponse = {}
+        simulatorResponse = {},
+        uuid = MSP_API_UUID,
+        timeout = MSP_API_MSG_TIMEOUT  
     }
 
     -- Fill payload with data from payloadData table
@@ -127,5 +133,26 @@ local function data()
     return mspData
 end
 
+-- set the UUID for the payload
+local function setUUID(uuid)
+    MSP_API_UUID = uuid
+end
+
+-- set the timeout for the payload
+local function setTimeout(timeout)
+    MSP_API_MSG_TIMEOUT = timeout
+end
+
 -- Return the module's API functions
-return {read = read, write = write, setValue = setValue, getValue = getValue, readComplete = readComplete, writeComplete = writeComplete, resetWriteStatus = resetWriteStatus, getDefaults = getDefaults, setCompleteHandler = handlers.setCompleteHandler, setErrorHandler = handlers.setErrorHandler, data = data}
+return {
+    write = write,
+    setValue = setValue,
+    writeComplete = writeComplete,
+    resetWriteStatus = resetWriteStatus,
+    getDefaults = getDefaults,
+    setCompleteHandler = handlers.setCompleteHandler,
+    setErrorHandler = handlers.setErrorHandler,
+    data = data,
+    setUUID = setUUID,
+    setTimeout = setTimeout
+}

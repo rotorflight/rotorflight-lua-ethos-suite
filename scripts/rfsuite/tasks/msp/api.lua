@@ -26,60 +26,104 @@ local apiCache = {}
 
 -- Define the API directory path based on the ethos version
 local apidir = "tasks/msp/api/"
-local api_path = (rfsuite.utils.ethosVersionToMinor() >= 16) and apidir or (config.suiteDir .. apidir)
+local api_path = apidir
 
--- Function to load a specific API file by name and method
+-- Function to load a specific API file by name
 local function loadAPI(apiName)
-
-    -- Return cached version if already loaded for this method
+    -- Return cached version if already loaded
     if apiCache[apiName] then return apiCache[apiName] end
 
     local apiFilePath = api_path .. apiName .. ".lua"
 
     -- Check if file exists before trying to load it
     if rfsuite.utils.file_exists(apiFilePath) then
-
-        -- we do this _G to pass a param via dofile.  A little dirty but effective.
-        _G.paramMspApiPath = api_path .. apiName .. "/"
         local apiModule = dofile(apiFilePath) -- Load the Lua API file
 
         if type(apiModule) == "table" and (apiModule.read or apiModule.write) then
-            -- Store the loaded API in the cache
-            apiCache[apiName] = apiModule
-            rfsuite.utils.log("Loaded API:", apiName)
-            if rfsuite.config.mspApiPositionMapDebug == true then
-                print("--------------------------------------------")
-                print("Loaded API:", apiName)
+            -- Wrap the read function
+            if apiModule.read then
+                local originalRead = apiModule.read
+                apiModule.read = function(...)
+                    rfsuite.utils.log("read() called from " .. apiName, "debug")
+                    return originalRead(...)
+                end
             end
+
+            -- Wrap the write function
+            if apiModule.write then
+                local originalWrite = apiModule.write
+                apiModule.write = function(...)
+                    rfsuite.utils.log("write() called from " .. apiName, "debug")
+                    return originalWrite(...)
+                end
+            end
+
+            -- Wrap the setValue function
+            if apiModule.setValue then
+                local originalSetValue = apiModule.setValue
+                apiModule.setValue = function(...)
+                    rfsuite.utils.log("setValue() called from " .. apiName, "debug")
+                    return originalSetValue(...)
+                end
+            end
+
+            -- Wrap the readValue function
+            if apiModule.readValue then
+                local originalReadValue = apiModule.readValue
+                apiModule.readValue = function(...)
+                    rfsuite.utils.log("readValue() called from " .. apiName, "debug")
+                    return originalReadValue(...)
+                end
+            end
+
+
+
+            -- Store the modified API in the cache
+            apiCache[apiName] = apiModule
+            rfsuite.utils.log("Loaded API: " .. apiName, "debug")
             return apiModule
         else
-            rfsuite.utils.log("Error: API file '" .. apiName .. "' does not contain valid read or write functions.")
+            rfsuite.utils.log("Error: API file '" .. apiName .. "' does not contain valid read or write functions.", "debug")
         end
     else
-        local logline = "Error: API file '" .. apiFilePath .. " not found."
-        rfsuite.utils.log(logline)
-        error(logline)
+        rfsuite.utils.log("Error: API file '" .. apiFilePath .. "' not found.", "debug")
     end
 end
 
+
 -- Function to directly return the API table instead of a wrapper function
-function apiLoader.load(apiName, method)
-    return loadAPI(apiName, method) or {} -- Return an empty table if API fails to load
+function apiLoader.load(apiName)
+    local api = loadAPI(apiName)
+    if api == nil then
+        rfsuite.utils.log("Unable to load " .. apiName,"debug")
+    end
+    return api
 end
+
+
+-- Function to get byte size from type
+local function get_type_size(data_type)
+    local type_sizes = {U8 = 1, U16 = 2, U24 = 3, U32 = 4, S8 = 1, S16 = 2, S24 = 3, S32 = 4}
+    return type_sizes[data_type] or 1 -- Default to U8 if unknown
+end
+
 
 -- Function to parse the msp Data.  Optionally pass a processed(buf, structure) to provide more data formating
 function apiLoader.parseMSPData(buf, structure, processed, other)
-    -- Ensure buffer length matches expected data structure
-    if #buf < #structure then return nil end
 
+    -- Calculate the expected buffer length based on the structure
+    local expected_length = 0
+    for _, field in ipairs(structure) do
+        expected_length = expected_length + get_type_size(field.type)
+    end
+
+    -- Ensure buffer length matches expected data structure
+    if #buf < expected_length then
+        rfsuite.utils.log("Error: Buffer too small. Expected " .. expected_length .. ", got " .. #buf,"debug")
+    end
+    
     local parsedData = {}
     local offset = 1 -- Maintain a strict offset tracking
-
-    -- Function to get byte size from type
-    local function get_type_size(data_type)
-        local type_sizes = {U8 = 1, U16 = 2, U24 = 3, U32 = 4, S8 = 1, S16 = 2, S24 = 3, S32 = 4}
-        return type_sizes[data_type] or 2 -- Default to U16 if unknown
-    end
 
     -- map of values to byte positions
     -- Function to build position map considering type sizes
@@ -87,95 +131,183 @@ function apiLoader.parseMSPData(buf, structure, processed, other)
         local position_map = {}
         local current_byte = 1 -- Track the byte position dynamically
 
-        if rfsuite.config.mspApiPositionMapDebug == true then print("------  mspApiPositionMapDebug start ------") end
-
         for _, param in ipairs(param_table) do
-            local size = get_type_size(param.type)
-            local start_pos = current_byte
-            local end_pos = start_pos + size - 1
+            -- Check API version conditions
+            local apiVersion = rfsuite.session.apiVersion or 12.06
+            local insert_param = false
 
-            -- Store as single number if start and end are the same
-            if start_pos == end_pos then
-                position_map[param.field] = {start_pos}
+            if not param.apiVersion or apiVersion >= param.apiVersion then
+                insert_param = true
             else
-                position_map[param.field] = {start_pos, end_pos}
+                insert_param = false
             end
 
-            -- Move to the next available byte position
-            current_byte = end_pos + 1
-            if rfsuite.config.mspApiPositionMapDebug == true then
+            if insert_param then
+                local size = get_type_size(param.type)
+                local start_pos = current_byte
+                local end_pos = start_pos + size - 1
+                local byteorder = param.byteorder or "little" -- Default to little-endian
+
+                -- Store as single number if start and end are the same
                 if start_pos == end_pos then
-                    print(param.field .. ": " .. start_pos)
+                    position_map[param.field] = {start_pos}
                 else
-                    print(param.field .. ": " .. start_pos .. ":" .. end_pos)
+                    position_map[param.field] = {}
+                    if byteorder == "big" then
+                        for i = end_pos, start_pos, -1 do
+                            table.insert(position_map[param.field], i)
+                        end
+                    else
+                        for i = start_pos, end_pos do
+                            table.insert(position_map[param.field], i)
+                        end
+                    end
                 end
+
+                -- Move to the next available byte position
+                current_byte = end_pos + 1
+
             end
-
-        end
-
-        if rfsuite.config.mspApiPositionMapDebug == true then
-            print("------  mspApiPositionMapDebug end --------")
-            print(" ")
         end
 
         return position_map
     end
 
     for _, field in ipairs(structure) do
-
         local byteorder = field.byteorder or "little" -- Default to little-endian
+        local data
 
         if field.type == "U8" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU8(buf, offset)
-            offset = offset + 1
+            data = rfsuite.bg.msp.mspHelper.readU8(buf, offset)
+            offset = offset + 1 
         elseif field.type == "S8" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS8(buf, offset)
+            data = rfsuite.bg.msp.mspHelper.readS8(buf, offset)
             offset = offset + 1
         elseif field.type == "U16" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU16(buf, offset, byteorder)
+            data = rfsuite.bg.msp.mspHelper.readU16(buf, offset, byteorder)
             offset = offset + 2
         elseif field.type == "S16" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS16(buf, offset, byteorder)
+            data = rfsuite.bg.msp.mspHelper.readS16(buf, offset, byteorder)
             offset = offset + 2
         elseif field.type == "U24" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU24(buf, offset, byteorder)
+            data = rfsuite.bg.msp.mspHelper.readU24(buf, offset, byteorder)
             offset = offset + 3
         elseif field.type == "S24" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS24(buf, offset, byteorder)
+            data = rfsuite.bg.msp.mspHelper.readS24(buf, offset, byteorder)
             offset = offset + 3
         elseif field.type == "U32" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readU32(buf, offset, byteorder)
+            data = rfsuite.bg.msp.mspHelper.readU32(buf, offset, byteorder)
             offset = offset + 4
         elseif field.type == "S32" then
-            parsedData[field.field] = rfsuite.bg.msp.mspHelper.readS32(buf, offset, byteorder)
+            data = rfsuite.bg.msp.mspHelper.readS32(buf, offset, byteorder)
             offset = offset + 4
         else
-            return nil -- Unknown data type, fail safely
+            rfsuite.utils.log("Error: Unknown data type: " .. field.type,"debug")
+            return nil -- Exit if unknown data type
         end
+
+        if data == nil then
+            rfsuite.utils.log("Error " .. field.type .. " field: " .. field.field .. " offset: " .. offset,"debug")
+        end   
+        parsedData[field.field] = data
+
     end
 
-    -- Detect unused bytes
+    -- Check for unused bytes in the buffer
     if offset <= #buf then
-        rfsuite.utils.log("Warning: Unused bytes in buffer (" .. (#buf - offset + 1) .. " extra bytes)")
-        print("Warning: Unused bytes in buffer (" .. (#buf - offset + 1) .. " extra bytes)")
+        local extra_bytes = #buf - (offset - 1)
+        rfsuite.utils.log("Unused bytes in buffer (" .. extra_bytes .. " extra bytes)")
+    elseif offset > #buf + 1 then
+        rfsuite.utils.log("Offset exceeded buffer length (Offset: " .. offset .. ", Buffer: " .. #buf .. ")")
     end
 
-    -- prepare data for return
+    -- Prepare data for return
     local data = {}
     data['parsed'] = parsedData
     data['buffer'] = buf
     data['structure'] = structure
     data['positionmap'] = build_position_map(structure)
-    -- add in processed table if supplied
+    -- Add in processed table if supplied
     if processed then data['processed'] = processed end
-    -- add in other table if supplied
+    -- Add in other table if supplied
     if other then data['other'] = other end
 
-    if rfsuite.config.mspApiStructureDebug == true then rfsuite.utils.print_r(data['structure']) end
-
-    if rfsuite.config.mspApiParsedDebug == true then rfsuite.utils.print_r(data['parsed']) end
-
     return data
+end
+
+
+-- Function to calculate MIN_BYTES and filtered structure
+function apiLoader.calculateMinBytes(structure)
+
+    local apiVersion = rfsuite.session.apiVersion
+    local totalBytes = 0
+
+    for _, param in ipairs(structure) do
+        local insert_param = false
+
+        -- API version check logic
+        if not param.apiVersion or (apiVersion and apiVersion >= param.apiVersion) then
+            insert_param = true
+        end
+
+        if insert_param then
+            totalBytes = totalBytes + get_type_size(param.type)
+        end
+    end
+
+    -- Subtract 2 bytes to allow for overlap times when developnent is in progress
+    -- essentialy this allows a margin in which dev fbl firmware can be tested
+    totalBytes = totalBytes - 2
+
+    return totalBytes
+end
+
+-- Function to strip filtered structure based on msp version
+function apiLoader.filterByApiVersion(structure)
+
+    local apiVersion = rfsuite.session.apiVersion or 12.06
+    local filteredStructure = {}
+
+    for _, param in ipairs(structure) do
+        local insert_param = false
+
+        -- API version check logic
+        if not param.apiVersion or (apiVersion and apiVersion >= param.apiVersion) then
+            insert_param = true
+        end
+
+        if insert_param then
+            table.insert(filteredStructure, param)
+        end
+    end
+
+    return filteredStructure
+end
+
+function apiLoader.buildSimResponse(dataStructure)
+
+    if system:getVersion().simulation == false then
+        return nil
+    end
+
+    local response = {}
+
+    for _, field in ipairs(dataStructure) do
+        if field.simResponse then
+            -- Append all values in simResponse to the response table
+            for _, value in ipairs(field.simResponse) do
+                table.insert(response, value)
+            end
+        else
+            -- If simResponse is nil, insert default values based on the field's type size
+            local type_size = get_type_size(field.type)
+            for i = 1, type_size do
+                table.insert(response, 0)
+            end
+        end
+    end
+
+    return response
 end
 
 -- handlers.lua

@@ -20,10 +20,10 @@
 local init = {
     title = "Auto Level", -- title of the page
     section = "Advanced", -- do not run if busy with msp
-    script = "main.lua", -- run this script
+    script = "autolevel.lua", -- run this script
     image = "autolevel.png", -- image for the page
     order = 3, -- order in the section
-    ethosversion = 1519 -- disable button if ethos version is less than this
+    ethosversion = {1, 6, 2} -- disable button if ethos version is less than this
 }
 
 return init

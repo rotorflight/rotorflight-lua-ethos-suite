@@ -23,6 +23,6 @@ data['help'] = {}
 
 data['help']['default'] = {"PID Bandwidth: Overall bandwidth in HZ used by the PID loop.", "D-term cutoff: D-term cutoff frequency in HZ.", "B-term cutoff: B-term cutoff frequency in HZ."}
 
-data['fields'] = {profilesPIDBandwidth = {t = "PID loop overall bandwidth in Hz."}, profilesPIDBandwidthDtermCutoff = {t = "D-term cutoff in Hz."}, profilesPIDBandwidthBtermCutoff = {t = "B-term cutoff in Hz."}}
+data['fields'] = {}
 
 return data

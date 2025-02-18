@@ -27,22 +27,27 @@
 ]] --
 -- Constants for MSP Commands
 local MSP_API_CMD_READ = 1 -- Command identifier for MSP API request
-local MSP_API_SIMULATOR_RESPONSE = {0, 12, 7} -- Default simulator response
-local MSP_MIN_BYTES = 3
+local MSP_API_SIMULATOR_RESPONSE = {0, 12, 8} -- Default simulator response
+
 
 -- Define the MSP response data structure
-local MSP_API_STRUCTURE_READ = {{field = "version_command", type = "U8"}, -- Command version
-{field = "version_major", type = "U8"}, -- Major version
-{field = "version_minor", type = "U8"} -- Minor version
+local MSP_API_STRUCTURE_READ = {
+    {field = "version_command", type = "U8"}, -- Command version
+    {field = "version_major", type = "U8"}, -- Major version
+    {field = "version_minor", type = "U8"} -- Minor version
 }
 
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
+local MSP_MIN_BYTES = #MSP_API_STRUCTURE_READ -- Minimum bytes required for the structure
 
 -- Variable to store parsed MSP data
 local mspData = nil
 
 -- Create a new instance
 local handlers = rfsuite.bg.msp.api.createHandlers()
+
+-- Variables to store optional the UUID and timeout for payload
+local MSP_API_UUID
+local MSP_API_MSG_TIMEOUT
 
 -- Function to initiate MSP read operation
 local function read()
@@ -60,7 +65,9 @@ local function read()
             local errorHandler = handlers.getErrorHandler()
             if errorHandler then errorHandler(self, buf) end
         end,
-        simulatorResponse = rfsuite.config.simulatorApiVersionResponse or MSP_API_SIMULATOR_RESPONSE
+        simulatorResponse = rfsuite.config.simulatorApiVersionResponse or MSP_API_SIMULATOR_RESPONSE,
+        uuid = MSP_API_UUID,
+        timeout = MSP_API_MSG_TIMEOUT  
     }
     -- Add the message to the processing queue
     rfsuite.bg.msp.mspQueue:add(message)
@@ -88,5 +95,25 @@ local function readValue(fieldName)
     return nil
 end
 
+-- set the UUID for the payload
+local function setUUID(uuid)
+    MSP_API_UUID = uuid
+end
+
+-- set the timeout for the payload
+local function setTimeout(timeout)
+    MSP_API_MSG_TIMEOUT = timeout
+end
+
 -- Return the module's API functions
-return {data = data, read = read, write = write, readComplete = readComplete, writeComplete = writeComplete, readVersion = readVersion, readValue = readValue, readComplete, setCompleteHandler = handlers.setCompleteHandler, setErrorHandler = handlers.setErrorHandler}
+return {
+    data = data,
+    read = read,
+    readComplete = readComplete,
+    readVersion = readVersion,
+    readValue = readValue,
+    setCompleteHandler = handlers.setCompleteHandler,
+    setErrorHandler = handlers.setErrorHandler,
+    setUUID = setUUID,
+    setTimeout = setTimeout
+}

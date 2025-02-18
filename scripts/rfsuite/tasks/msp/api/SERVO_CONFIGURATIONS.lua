@@ -15,6 +15,12 @@
  * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
 -- Constants for MSP Commands
+
+-- NOTE: This api is not actually use it.  Its a base structure.
+-- The actual servos module needs to be modified to use this structure.
+-- that is a task for another day
+-- net result - not tested - be prepaired to make it work!
+
 local MSP_API_CMD_READ = 120 -- Command identifier
 local MSP_API_CMD_WRITE = nil -- Command identifier 
 local MSP_API_SIMULATOR_RESPONSE = {4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0, 120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0} -- Default simulator response
@@ -32,16 +38,33 @@ local defaultData = {}
 -- Create a new instance
 local handlers = rfsuite.bg.msp.api.createHandlers()
 
+-- Variables to store optional the UUID and timeout for payload
+local MSP_API_UUID
+local MSP_API_MSG_TIMEOUT
+
 -- Define the MSP response data structure (note that we have dynamic stuff below)
 local function generateMSPStructureRead(servoCount)
     local MSP_API_STRUCTURE = {{field = "servo_count", type = "U8"} -- The servo count comes first
     }
 
     -- Define servo fields structure
-    local servo_fields = {{field = "mid", type = "U16"}, {field = "min", type = "U16"}, {field = "max", type = "U16"}, {field = "rneg", type = "U16"}, {field = "rpos", type = "U16"}, {field = "rate", type = "U16"}, {field = "speed", type = "U16"}, {field = "flags", type = "U16"}}
+    local servo_fields = {
+        {field = "mid", type = "U16"},
+        {field = "min", type = "U16"},
+        {field = "max", type = "U16"},
+        {field = "rneg", type = "U16"},
+        {field = "rpos", type = "U16"},
+        {field = "rate", type = "U16"},
+        {field = "speed", type = "U16"},
+        {field = "flags", type = "U16"}
+    }
 
     -- Add servo field structures dynamically based on servoCount
-    for i = 1, servoCount do for _, field in ipairs(servo_fields) do table.insert(MSP_API_STRUCTURE, {field = string.format("servo_%d_%s", i, field.field), type = field.type}) end end
+    for i = 1, servoCount do
+        for _, field in ipairs(servo_fields) do
+            table.insert(MSP_API_STRUCTURE, {field = string.format("servo_%d_%s", i, field.field), type = field.type, apiVersion=12.07})
+        end
+    end
 
     return MSP_API_STRUCTURE
 end
@@ -102,7 +125,9 @@ local function read()
             if errorHandler then errorHandler(self, buf) end
 
         end,
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE
+        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
+        uuid = MSP_API_UUID,
+        timeout = MSP_API_MSG_TIMEOUT  
     }
     -- Add the message to the processing queue
     rfsuite.bg.msp.mspQueue:add(message)
@@ -110,7 +135,7 @@ end
 
 local function write(suppliedPayload)
     if MSP_API_CMD_WRITE == nil then
-        print("No value set for MSP_API_CMD_WRITE")
+        rfsuite.utils.log("No value set for MSP_API_CMD_WRITE", "debug")
         return
     end
 
@@ -126,7 +151,9 @@ local function write(suppliedPayload)
             local errorHandler = handlers.getErrorHandler()
             if errorHandler then errorHandler(self, buf) end
         end,
-        simulatorResponse = {}
+        simulatorResponse = {},
+        uuid = MSP_API_UUID,
+        timeout = MSP_API_MSG_TIMEOUT  
     }
     rfsuite.bg.msp.mspQueue:add(message)
 end
@@ -168,5 +195,28 @@ local function data()
     return mspData
 end
 
+-- set the UUID for the payload
+local function setUUID(uuid)
+    MSP_API_UUID = uuid
+end
+
+-- set the timeout for the payload
+local function setTimeout(timeout)
+    MSP_API_MSG_TIMEOUT = timeout
+end
+
 -- Return the module's API functions
-return {read = read, write = write, readComplete = readComplete, writeComplete = writeComplete, readValue = readValue, setValue = setValue, resetWriteStatus = resetWriteStatus, setCompleteHandler = handlers.setCompleteHandler, setErrorHandler = handlers.setErrorHandler, data = data}
+return {
+    read = read,
+    write = write,
+    readComplete = readComplete,
+    writeComplete = writeComplete,
+    readValue = readValue,
+    setValue = setValue,
+    resetWriteStatus = resetWriteStatus,
+    setCompleteHandler = handlers.setCompleteHandler,
+    setErrorHandler = handlers.setErrorHandler,
+    data = data,
+    setUUID = setUUID,
+    setTimeout = setTimeout
+}

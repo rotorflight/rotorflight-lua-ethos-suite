@@ -29,20 +29,41 @@ local LCD_H
 local LCD_MINH4IMAGE = 130
 
 -- error function
-local function screenError(msg)
+function screenError(msg)
     local w, h = lcd.getWindowSize()
     local isDarkMode = lcd.darkMode()
 
-    lcd.font(FONT_STD)
-    local tsizeW, tsizeH = lcd.getTextSize(msg)
+    -- Available font sizes in order from smallest to largest
+    local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL}
 
-    -- Set color based on theme
+    -- Determine the maximum width and height with 10% padding
+    local maxW, maxH = w * 0.9, h * 0.9
+    local bestFont = FONT_XXS
+    local bestW, bestH = 0, 0
+
+    -- Loop through font sizes and find the largest one that fits
+    for _, font in ipairs(fonts) do
+        lcd.font(font)
+        local tsizeW, tsizeH = lcd.getTextSize(msg)
+        
+        if tsizeW <= maxW and tsizeH <= maxH then
+            bestFont = font
+            bestW, bestH = tsizeW, tsizeH
+        else
+            break  -- Stop checking larger fonts once one exceeds limits
+        end
+    end
+
+    -- Set the optimal font
+    lcd.font(bestFont)
+
+    -- Set text color based on dark mode
     local textColor = isDarkMode and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90)
     lcd.color(textColor)
 
     -- Center the text on the screen
-    local x = (w - tsizeW) / 2
-    local y = (h - tsizeH) / 2
+    local x = (w - bestW) / 2
+    local y = (h - bestH) / 2
     lcd.drawText(x, y, msg)
 end
 
@@ -56,8 +77,12 @@ function rf2craftimage.paint(widget)
     local w = LCD_W
     local h = LCD_H
 
-    if rfsuite.utils.ethosVersion() < rfsuite.config.ethosVersion then
-        screenError(rfsuite.config.ethosVersionString)
+    if not rfsuite.utils.ethosVersionAtLeast() then
+        status.screenError(string.format("ETHOS < V%d.%d.%d", 
+            rfsuite.config.ethosVersion[1], 
+            rfsuite.config.ethosVersion[2], 
+            rfsuite.config.ethosVersion[3])
+        )
         return
     end
 
@@ -111,17 +136,17 @@ function rf2craftimage.wakeupUI()
 
     LCD_W, LCD_H = lcd.getWindowSize()
 
-    if lastName ~= rfsuite.config.craftName or lastID ~= rfsuite.config.modelID then
-        if rfsuite.config.craftName ~= nil then image1 = "/bitmaps/models/" .. rfsuite.config.craftName .. ".png" end
-        if rfsuite.config.modelID ~= nil then image2 = "/bitmaps/models/" .. rfsuite.config.modelID .. ".png" end
+    if lastName ~= rfsuite.session.craftName or lastID ~= rfsuite.session.modelID then
+        if rfsuite.session.craftName ~= nil then image1 = "/bitmaps/models/" .. rfsuite.session.craftName .. ".png" end
+        if rfsuite.session.modelID ~= nil then image2 = "/bitmaps/models/" .. rfsuite.session.modelID .. ".png" end
 
         bitmapPtr = rfsuite.utils.loadImage(image1, image2, default_image)
 
         lcd.invalidate()
     end
 
-    lastName = rfsuite.config.craftName
-    lastID = rfsuite.config.modelID
+    lastName = rfsuite.session.craftName
+    lastID = rfsuite.session.modelID
 end
 
 return rf2craftimage

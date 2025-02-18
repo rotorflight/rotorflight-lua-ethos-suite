@@ -20,11 +20,11 @@
 local init = {
     title = "MSP Experimental", -- title of the page
     section = "Developer", -- do not run if busy with msp
-    script = "main.lua", -- run this script
+    script = "msp_exp.lua", -- run this script
     image = "msp_exp.png", -- image for the page
     order = 100, -- order in the section
     developer = true, -- show if developer mode enabled
-    ethosversion = 1519 -- disable button if ethos version is less than this
+    ethosversion = {1, 6, 2} -- disable button if ethos version is less than this
 }
 
 return init

@@ -20,10 +20,10 @@
 local init = {
     title = "Select Profile", -- title of the page
     section = "Tools", -- do not run if busy with msp
-    script = "main.lua", -- run this script
+    script = "select_profile.lua", -- run this script
     image = "select_profile.png", -- image for the page
     order = 4, -- order in the section
-    ethosversion = 1519 -- disable button if ethos version is less than this
+    ethosversion = {1, 6, 2} -- disable button if ethos version is less than this
 }
 
 return init

@@ -17,31 +17,44 @@
 -- Constants for MSP Commands
 local MSP_API_CMD_READ = 112 -- Command identifier 
 local MSP_API_CMD_WRITE = 202 -- Command identifier 
-local MSP_API_SIMULATOR_RESPONSE = {70, 0, 225, 0, 90, 0, 120, 0, 100, 0, 200, 0, 70, 0, 120, 0, 100, 0, 125, 0, 83, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 0, 25, 0} -- Default simulator response
-local MSP_MIN_BYTES = 34
 
--- Function to generate the PID structure
-local function generate_pid_structure(pid_axis_count, cyclic_axis_count)
-    local structure = {}
-
-    for i = 0, pid_axis_count - 1 do
-        table.insert(structure, {field = "pid_" .. i .. "_P", type = "U16"})
-        table.insert(structure, {field = "pid_" .. i .. "_I", type = "U16"})
-        table.insert(structure, {field = "pid_" .. i .. "_D", type = "U16"})
-        table.insert(structure, {field = "pid_" .. i .. "_F", type = "U16"})
-    end
-
-    for i = 0, pid_axis_count - 1 do table.insert(structure, {field = "pid_" .. i .. "_B", type = "U16"}) end
-
-    for i = 0, cyclic_axis_count - 1 do table.insert(structure, {field = "pid_" .. i .. "_O", type = "U16"}) end
-
-    return structure
-end
 
 -- Define the MSP response data structures
-local MSP_API_STRUCTURE_READ = generate_pid_structure(3, 2)
+local MSP_API_STRUCTURE_READ_DATA = {
+    {field = "pid_0_P", type = "U16", apiVersion = 12.06, simResponse = {50, 0},  min = 0, max = 1000, default = 50,  help = "How tightly the system tracks the desired setpoint."},
+    {field = "pid_0_I", type = "U16", apiVersion = 12.06, simResponse = {100, 0}, min = 0, max = 1000, default = 100, help = "How tightly the system holds its position."},
+    {field = "pid_0_D", type = "U16", apiVersion = 12.06, simResponse = {20, 0},  min = 0, max = 1000, default = 20,  help = "Strength of dampening to any motion on the system, including external influences. Also reduces overshoot."},
+    {field = "pid_0_F", type = "U16", apiVersion = 12.06, simResponse = {100, 0}, min = 0, max = 1000, default = 100, help = "Helps push P-term based on stick input. Increasing will make response more sharp, but can cause overshoot."},
+    {field = "pid_0_B", type = "U16", apiVersion = 12.06, simResponse = {0, 0},   min = 0, max = 1000, default = 0,   help = "Additional boost on the feedforward to make the heli react more to quick stick movements."},
+    
+    {field = "pid_1_P", type = "U16", apiVersion = 12.06, simResponse = {50, 0},  min = 0, max = 1000, default = 50,  help = "How tightly the system tracks the desired setpoint."},
+    {field = "pid_1_I", type = "U16", apiVersion = 12.06, simResponse = {100, 0}, min = 0, max = 1000, default = 100, help = "How tightly the system holds its position."},
+    {field = "pid_1_D", type = "U16", apiVersion = 12.06, simResponse = {50, 0},  min = 0, max = 1000, default = 50,  help = "Strength of dampening to any motion on the system, including external influences. Also reduces overshoot."},
+    {field = "pid_1_F", type = "U16", apiVersion = 12.06, simResponse = {100, 0}, min = 0, max = 1000, default = 100, help = "Helps push P-term based on stick input. Increasing will make response more sharp, but can cause overshoot."},
+    {field = "pid_1_B", type = "U16", apiVersion = 12.06, simResponse = {0, 0},   min = 0, max = 1000, default = 0,   help = "Additional boost on the feedforward to make the heli react more to quick stick movements."},
+    
+    {field = "pid_2_P", type = "U16", apiVersion = 12.06, simResponse = {80, 0},  min = 0, max = 1000, default = 80,  help = "How tightly the system tracks the desired setpoint."},
+    {field = "pid_2_I", type = "U16", apiVersion = 12.06, simResponse = {120, 0}, min = 0, max = 1000, default = 120, help = "How tightly the system holds its position."},
+    {field = "pid_2_D", type = "U16", apiVersion = 12.06, simResponse = {40, 0},  min = 0, max = 1000, default = 40,  help = "Strength of dampening to any motion on the system, including external influences. Also reduces overshoot."},
+    {field = "pid_2_F", type = "U16", apiVersion = 12.06, simResponse = {0, 0},   min = 0, max = 1000, default = 0,   help = "Helps push P-term based on stick input. Increasing will make response more sharp, but can cause overshoot."},
+    {field = "pid_2_B", type = "U16", apiVersion = 12.06, simResponse = {0, 0},   min = 0, max = 1000, default = 0,   help = "Additional boost on the feedforward to make the heli react more to quick stick movements."},
+    
+    {field = "pid_0_O", type = "U16", apiVersion = 12.06, simResponse = {45, 0},  min = 0, max = 1000, default = 45,  help = "Used to prevent the craft from pitching up when flying at speed."},
+    {field = "pid_1_O", type = "U16", apiVersion = 12.06, simResponse = {45, 0},  min = 0, max = 1000, default = 45,  help = "Used to prevent the craft from pitching up when flying at speed."}
+}
 
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ -- Assuming identical structure for now
+-- filter the structure to remove any params not supported by the running api version
+local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
+
+-- calculate the min bytes value from the structure
+local MSP_MIN_BYTES = rfsuite.bg.msp.api.calculateMinBytes(MSP_API_STRUCTURE_READ)
+
+-- set read structure
+local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
+
+-- generate a simulatorResponse from the read structure
+local MSP_API_SIMULATOR_RESPONSE = rfsuite.bg.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
+
 
 -- Variable to store parsed MSP data
 local mspData = nil
@@ -52,10 +65,14 @@ local defaultData = {}
 -- Create a new instance
 local handlers = rfsuite.bg.msp.api.createHandlers()
 
+-- Variables to store optional the UUID and timeout for payload
+local MSP_API_UUID
+local MSP_API_MSG_TIMEOUT
+
 -- Function to initiate MSP read operation
 local function read()
     if MSP_API_CMD_READ == nil then
-        print("No value set for MSP_API_CMD_READ")
+        rfsuite.utils.log("No value set for MSP_API_CMD_READ", "debug")
         return
     end
 
@@ -72,14 +89,16 @@ local function read()
             local errorHandler = handlers.getErrorHandler()
             if errorHandler then errorHandler(self, buf) end
         end,
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE
+        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
+        uuid = MSP_API_UUID,
+        timeout = MSP_API_MSG_TIMEOUT  
     }
     rfsuite.bg.msp.mspQueue:add(message)
 end
 
 local function write(suppliedPayload)
     if MSP_API_CMD_WRITE == nil then
-        print("No value set for MSP_API_CMD_WRITE")
+        rfsuite.utils.log("No value set for MSP_API_CMD_WRITE", "debug")
         return
     end
 
@@ -95,7 +114,9 @@ local function write(suppliedPayload)
             local errorHandler = handlers.getErrorHandler()
             if errorHandler then errorHandler(self, buf) end
         end,
-        simulatorResponse = {}
+        simulatorResponse = {},
+        uuid = MSP_API_UUID,
+        timeout = MSP_API_MSG_TIMEOUT  
     }
     rfsuite.bg.msp.mspQueue:add(message)
 end
@@ -137,5 +158,28 @@ local function data()
     return mspData
 end
 
+-- set the UUID for the payload
+local function setUUID(uuid)
+    MSP_API_UUID = uuid
+end
+
+-- set the timeout for the payload
+local function setTimeout(timeout)
+    MSP_API_MSG_TIMEOUT = timeout
+end
+
 -- Return the module's API functions
-return {read = read, write = write, readComplete = readComplete, writeComplete = writeComplete, readValue = readValue, setValue = setValue, resetWriteStatus = resetWriteStatus, setCompleteHandler = handlers.setCompleteHandler, setErrorHandler = handlers.setErrorHandler, data = data}
+return {
+    read = read,
+    write = write,
+    readComplete = readComplete,
+    writeComplete = writeComplete,
+    readValue = readValue,
+    setValue = setValue,
+    resetWriteStatus = resetWriteStatus,
+    setCompleteHandler = handlers.setCompleteHandler,
+    setErrorHandler = handlers.setErrorHandler,
+    data = data,
+    setUUID = setUUID,
+    setTimeout = setTimeout
+}

@@ -20,10 +20,10 @@
 local init = {
     title = "Trim", -- title of the page
     section = "Flight Tuning", -- do not run if busy with msp
-    script = "main.lua", -- run this script
+    script = "trim.lua", -- run this script
     image = "trim.png", -- image for the page
     order = 6, -- order in the section
-    ethosversion = 1519 -- disable button if ethos version is less than this
+    ethosversion = {1, 6, 2} -- disable button if ethos version is less than this
 }
 
 return init

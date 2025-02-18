@@ -18,25 +18,40 @@
 local MSP_API_CMD_READ = 92 -- Command identifier 
 local MSP_API_CMD_WRITE = 93 -- Command identifier 
 local MSP_API_SIMULATOR_RESPONSE = {0, 1, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 25, 25, 0, 245, 0} -- Default simulator response
-local MSP_MIN_BYTES = 25
 
--- Define the MSP response data structures
-local MSP_API_STRUCTURE_READ = {
-    {field = "gyro_hardware_lpf", type = "U8"},
-    {field = "gyro_lpf1_type", type = "U8"},
-    {field = "gyro_lpf1_static_hz", type = "U16"},
-    {field = "gyro_lpf2_type", type = "U8"},
-    {field = "gyro_lpf2_static_hz", type = "U16"},
-    {field = "gyro_soft_notch_hz_1", type = "U16"},
-    {field = "gyro_soft_notch_cutoff_1", type = "U16"},
-    {field = "gyro_soft_notch_hz_2", type = "U16"},
-    {field = "gyro_soft_notch_cutoff_2", type = "U16"},
-    {field = "gyro_lpf1_dyn_min_hz", type = "U16"},
-    {field = "gyro_lpf1_dyn_max_hz", type = "U16"}
+local gyroFilterType = {[0]="NONE", [1]="1ST", [2]="2ND"}
+
+local MSP_API_STRUCTURE_READ_DATA = {
+    { field = "gyro_hardware_lpf",        type = "U8",  apiVersion = 12.07, simResponse = {0 }},          
+    { field = "gyro_lpf1_type",           type = "U8",  apiVersion = 12.07, simResponse = {1 }, min = 0, max = #gyroFilterType, table = gyroFilterType},          
+    { field = "gyro_lpf1_static_hz",      type = "U16", apiVersion = 12.07, simResponse = {100, 0}, min = 0, max = 4000, unit = "Hz", default = 100, help = "Lowpass filter cutoff frequency in Hz." },     
+    { field = "gyro_lpf2_type",           type = "U8",  apiVersion = 12.07, simResponse = {0 }, min = 0, max = #gyroFilterType, table = gyroFilterType},          
+    { field = "gyro_lpf2_static_hz",      type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 4000, unit = "Hz", help = "Lowpass filter cutoff frequency in Hz." },       
+    { field = "gyro_soft_notch_hz_1",     type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 4000, unit = "Hz", help = "Center frequency to which the notch is applied." },       
+    { field = "gyro_soft_notch_cutoff_1", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 4000, unit = "Hz", help = "Width of the notch filter in Hz." },       
+    { field = "gyro_soft_notch_hz_2",     type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 4000, unit = "Hz", help = "Center frequency to which the notch is applied." },       
+    { field = "gyro_soft_notch_cutoff_2", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 4000, unit = "Hz", help = "Width of the notch filter in Hz." },       
+    { field = "gyro_lpf1_dyn_min_hz",     type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 1000, unit = "Hz", help = "Dynamic filter min cutoff in Hz." },       
+    { field = "gyro_lpf1_dyn_max_hz",     type = "U16", apiVersion = 12.07, simResponse = {25, 0}, min = 0, max = 1000, unit = "Hz", help = "Dynamic filter max cutoff in Hz."},     
+    { field = "dyn_notch_count",          type = "U8",  apiVersion = 12.07, simResponse = {0 }},          
+    { field = "dyn_notch_q",              type = "U8",  apiVersion = 12.07, simResponse = {245 }},        
+    { field = "dyn_notch_min_hz",         type = "U16", apiVersion = 12.07, simResponse = {0, 0}},       
+    { field = "dyn_notch_max_hz",         type = "U16", apiVersion = 12.07, simResponse = {0, 0}},
+    { field = "rpm_preset",               type = "U8",  apiVersion = 12.07, simResponse = {0 }}, 
+    { field = "rpm_min_hz",               type = "U8",  apiVersion = 12.07, simResponse = {0 }}            
 }
 
-local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ -- Assuming identical structure for now
+-- filter the structure to remove any params not supported by the running api version
+local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
 
+-- calculate the min bytes value from the structure
+local MSP_MIN_BYTES = rfsuite.bg.msp.api.calculateMinBytes(MSP_API_STRUCTURE_READ)
+
+-- set read structure
+local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
+
+-- generate a simulatorResponse from the read structure
+local MSP_API_SIMULATOR_RESPONSE = rfsuite.bg.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
 -- Variable to store parsed MSP data
 local mspData = nil
 local mspWriteComplete = false
@@ -46,10 +61,14 @@ local defaultData = {}
 -- Create a new instance
 local handlers = rfsuite.bg.msp.api.createHandlers()
 
+-- Variables to store optional the UUID and timeout for payload
+local MSP_API_UUID
+local MSP_API_MSG_TIMEOUT
+
 -- Function to initiate MSP read operation
 local function read()
     if MSP_API_CMD_READ == nil then
-        print("No value set for MSP_API_CMD_READ")
+        rfsuite.utils.log("No value set for MSP_API_CMD_READ", "debug")
         return
     end
 
@@ -66,14 +85,16 @@ local function read()
             local errorHandler = handlers.getErrorHandler()
             if errorHandler then errorHandler(self, buf) end
         end,
-        simulatorResponse = MSP_API_SIMULATOR_RESPONSE
+        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
+        uuid = MSP_API_UUID,
+        timeout = MSP_API_MSG_TIMEOUT  
     }
     rfsuite.bg.msp.mspQueue:add(message)
 end
 
 local function write(suppliedPayload)
     if MSP_API_CMD_WRITE == nil then
-        print("No value set for MSP_API_CMD_WRITE")
+        rfsuite.utils.log("No value set for MSP_API_CMD_WRITE", "debug")
         return
     end
 
@@ -89,7 +110,9 @@ local function write(suppliedPayload)
             local errorHandler = handlers.getErrorHandler()
             if errorHandler then errorHandler(self, buf) end
         end,
-        simulatorResponse = {}
+        simulatorResponse = {},
+        uuid = MSP_API_UUID,
+        timeout = MSP_API_MSG_TIMEOUT  
     }
     rfsuite.bg.msp.mspQueue:add(message)
 end
@@ -131,5 +154,28 @@ local function data()
     return mspData
 end
 
+-- set the UUID for the payload
+local function setUUID(uuid)
+    MSP_API_UUID = uuid
+end
+
+-- set the timeout for the payload
+local function setTimeout(timeout)
+    MSP_API_MSG_TIMEOUT = timeout
+end
+
 -- Return the module's API functions
-return {read = read, write = write, readComplete = readComplete, writeComplete = writeComplete, readValue = readValue, setValue = setValue, resetWriteStatus = resetWriteStatus, setCompleteHandler = handlers.setCompleteHandler, setErrorHandler = handlers.setErrorHandler, data = data}
+return {
+    read = read,
+    write = write,
+    readComplete = readComplete,
+    writeComplete = writeComplete,
+    readValue = readValue,
+    setValue = setValue,
+    resetWriteStatus = resetWriteStatus,
+    setCompleteHandler = handlers.setCompleteHandler,
+    setErrorHandler = handlers.setErrorHandler,
+    data = data,
+    setUUID = setUUID,
+    setTimeout = setTimeout
+}
