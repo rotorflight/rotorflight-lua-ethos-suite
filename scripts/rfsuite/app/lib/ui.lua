@@ -149,11 +149,19 @@ function ui.progressDisplayNoLinkValue(value, message)
 end
 
 function ui.disableAllFields()
-    for i in ipairs(rfsuite.app.formFields) do rfsuite.app.formFields[i]:enable(false) end
+    for i in ipairs(rfsuite.app.formFields) do 
+        if type(rfsuite.app.formFields[i]) == "userdata" then
+            rfsuite.app.formFields[i]:enable(false) 
+        end
+    end
 end
 
 function ui.enableAllFields()
-    for i in ipairs(rfsuite.app.formFields) do rfsuite.app.formFields[i]:enable(true) end
+    for i in ipairs(rfsuite.app.formFields) do 
+        if type(rfsuite.app.formFields[i]) == "userdata" then
+            rfsuite.app.formFields[i]:enable(true) 
+        end
+    end
 end
 
 function ui.disableAllNavigationFields()
@@ -441,6 +449,7 @@ function ui.fieldNumber(i)
 
     if minValue == nil then minValue = 0 end
     if maxValue == nil then maxValue = 0 end
+
     rfsuite.app.formFields[i] = form.addNumberField(rfsuite.app.formLines[formLineCnt], posField, minValue, maxValue, function()
         if rfsuite.app.Page.fields == nil or rfsuite.app.Page.fields[i] == nil then
             ui.disableAllFields()
@@ -781,7 +790,9 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
                     else
                         rfsuite.app.ui.fieldNumber(i)
                     end
-
+                else
+                    -- we need to make something!
+                    rfsuite.app.formFields[i] = {}
                 end
             end
         end   
