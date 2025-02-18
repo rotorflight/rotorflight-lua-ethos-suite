@@ -1,3 +1,4 @@
+
 local mspapi = {
     api = {
         [1] = 'MIXER_CONFIG',
@@ -10,16 +11,14 @@ local mspapi = {
         fields = {
             {t = "Geo correction",        mspapi = 1, apikey = "swash_geo_correction"},
             {t = "Total pitch limit",     mspapi = 1, apikey = "swash_pitch_limit"},
-            {t = "Positive",              mspapi = 1, apikey = "collective_tilt_correction_pos", inline = 1, label = 1, apiversion = 12.08},
-            {t = "Negative",              mspapi = 1, apikey = "collective_tilt_correction_neg", inline = 1, label = 2, apiversion = 12.08},
+            {t = "Positive",              mspapi = 1, apikey = "collective_tilt_correction_pos", inline = 1, label = 1, apiversiongt = 12.08},
+            {t = "Negative",              mspapi = 1, apikey = "collective_tilt_correction_neg", inline = 1, label = 2, apiversiongt = 12.08},
             {t = "Phase angle",           mspapi = 1, apikey = "swash_phase"},
             {t = "TTA precomp",           mspapi = 1, apikey = "swash_tta_precomp"},
-            {t = "Tail Idle Thr%",        mspapi = 1, apikey = "tail_motor_idle"},
+            {t = "Tail Idle Thr%",        mspapi = 1, apikey = "tail_motor_idle", enablefunction = function() return (rfsuite.session.tailMode >= 1) end},
         }
     }                 
 }
-
-
 
 return {
     mspapi = mspapi,

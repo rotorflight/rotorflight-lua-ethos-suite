@@ -775,10 +775,22 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
                 local pageIdx = i
                 local currentField = i
 
-                if f.hidden ~= true and 
-                ( (f.apiversion == nil or f.apiversion <= rfsuite.session.apiVersion) and
-                  (f.apiversionlt == nil or f.apiversionlt > rfsuite.session.apiVersion) and
-                  (f.apiversiongt == nil or f.apiversiongt < rfsuite.session.apiVersion) ) then
+                local apiversionCheck = (f.apiversion == nil or f.apiversion <= rfsuite.session.apiVersion)
+                local apiversionltCheck = (f.apiversionlt == nil or f.apiversionlt > rfsuite.session.apiVersion)
+                local apiversiongtCheck = (f.apiversiongt == nil or f.apiversiongt < rfsuite.session.apiVersion)
+                local enableFunctionCheck = (f.enablefunction == nil or f.enablefunction())
+                
+                --[[
+                print("Checking field:", f.t)
+                print(" - Hidden check:", f.hidden ~= true)
+                print(" - API version check:", apiversionCheck)
+                print(" - API version less-than check:", apiversionltCheck)
+                print(" - API version greater-than check:", apiversiongtCheck)
+                print(" - Enable function check:", enableFunctionCheck)
+                ]]--
+                if f.hidden ~= true and apiversionCheck and apiversionltCheck and apiversiongtCheck and enableFunctionCheck then
+                    
+                    --print(" -> Field is ENABLED:", f.t)
 
                 rfsuite.app.ui.fieldLabel(f, i, l)
                     
@@ -1011,6 +1023,8 @@ function ui.openPageHelp(txtData, section)
 end
 
 function ui.injectApiAttributes(formField,f,v)
+
+
     if (f.scale == nil and v.scale ~= nil)  then 
         f.scale = v.scale 
     end
