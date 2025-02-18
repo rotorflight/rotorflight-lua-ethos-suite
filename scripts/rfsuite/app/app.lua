@@ -517,33 +517,33 @@ local function saveSettings()
 
 end
 
--- UPDATE THE FORM VALUES WITH THE DATA RETURNED FROM THE API
-local function mspApiUpdateFormAttributes(values)
-
-    if not (app.Page.mspapi.formdata and app.Page.mspapi.api and app.Page.mspapi.formdata) then
+-- Update the page with the new values received from the MSP and API structures
+-- we do both initial values and attributes in one loop to preven to many cascading loops
+function app.mspApiUpdateFormAttributes(values, structure)
+    -- Ensure app.Page and its mspapi.formdata exist
+    if not (app.Page.mspapi.formdata and app.Page.mspapi.api) then
         rfsuite.utils.log("app.Page.mspapi.formdata or its components are nil", "debug")
         return
     end
 
-    for apiID,apiNAME in ipairs(app.Page.mspapi.api) do
+    local fields = app.Page.mspapi.formdata.fields
+    local api = app.Page.mspapi.api
 
-        local structure = values[apiNAME].structure
+    for i, f in ipairs(fields) do
+        -- Define some key details
+        local formField = rfsuite.app.formFields[i]
+        local apikey = f.apikey
+        local mspapiID = f.mspapi
+        local mspapiNAME = api[mspapiID]
+        local targetStructure = structure[mspapiNAME]
 
-        for i,v in pairs(structure) do
-            print(i,v)
-        end
-
-        for i,f in pairs(app.Page.mspapi.formdata.fields) do
-
-            local formField = rfsuite.app.formFields[i]
-
-           -- for j,k in ipairs(structure) do
-           --     rfsuite.app.ui.injectApiValues(formField,f,k)                
-           -- end
+        for _, v in ipairs(targetStructure) do
+            if v.field == apikey then
+                rfsuite.app.ui.injectApiValues(formField, f, v)
+                break -- Found field, can move on
+            end
         end
     end
-
-
 end
 
 
@@ -567,7 +567,9 @@ local function requestPageMspApi()
     state.isProcessing = true  -- Set processing flag
 
     if not rfsuite.app.Page.mspapi.values then
+        rfsuite.utils.log("requestPageMspApi Initialize values on first run", "debug")
         rfsuite.app.Page.mspapi.values = {}  -- Initialize if first run
+        rfsuite.app.Page.mspapi.structure = {}  -- Initialize if first run
     end
 
     -- Recursive function to process API calls sequentially
@@ -583,7 +585,7 @@ local function requestPageMspApi()
                 if app.Page.postRead then app.Page.postRead(app.Page) end
 
                 -- Populate the form fields with data
-                mspApiUpdateFormAttributes(rfsuite.app.Page.mspapi.values)
+                app.mspApiUpdateFormAttributes(app.Page.mspapi.values,app.Page.mspapi.structure)
 
                 -- Run the postLoad function if it exists
                 if app.Page.postLoad then app.Page.postLoad(app.Page) end
@@ -595,7 +597,7 @@ local function requestPageMspApi()
         local apiKey = type(v) == "string" and v or v.name  -- Use API name or unique key
 
         if not apiKey then
-            rfsuite.utils.log("API key is missing for index " .. tostring(state.currentIndex), "error")
+            rfsuite.utils.log("API key is missing for index " .. tostring(state.currentIndex), "debug")
             state.currentIndex = state.currentIndex + 1
             processNextAPI()
             return
@@ -605,8 +607,12 @@ local function requestPageMspApi()
 
         -- Handle API success
         API.setCompleteHandler(function(self, buf)
+
             -- Store API response with API name as the key
-            rfsuite.app.Page.mspapi.values[apiKey] = API.data()
+            app.Page.mspapi.values[apiKey] = API.data().parsed
+
+            -- Store the structure with the API name as the key
+            app.Page.mspapi.structure[apiKey] = API.data().structure
 
             -- Move to the next API
             state.currentIndex = state.currentIndex + 1
@@ -615,7 +621,7 @@ local function requestPageMspApi()
 
         -- Handle API errors
         API.setErrorHandler(function(self, err)
-            rfsuite.utils.log("API error for " .. apiKey .. ": " .. tostring(err), "error")
+            rfsuite.utils.log("API error for " .. apiKey .. ": " .. tostring(err), "debug")
 
             -- Move to the next API even if there's an error
             state.currentIndex = state.currentIndex + 1
