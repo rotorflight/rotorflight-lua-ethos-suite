@@ -17,11 +17,6 @@
 -- Constants for MSP Commands
 local MSP_API_CMD_READ = 131 -- Command identifier 
 local MSP_API_CMD_WRITE = 222 -- Command identifier 
-local MSP_API_SIMULATOR_RESPONSE = {
-    45, 4, 208, 7, 232, 3, 1, 6, 0, 0,
-    250, 0, 1, 6, 4, 2, 1, 8, 7, 7,
-    8, 20, 0, 50, 0, 9, 0, 30, 0
-} -- Default simulator response
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
@@ -179,7 +174,7 @@ local function setValue(fieldName, value)
             return true
         end
     end
-    error("Invalid field name: " .. fieldName)
+    --error("Invalid field name: " .. fieldName)
 end
 
 -- Function to check if the read operation is complete

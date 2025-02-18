@@ -400,7 +400,10 @@ function app.mspMethodType(rw)
     local retTgt
 
     -- First, prioritize the read/write method based on rw
-    if type(target) == "function" then
+    if rfsuite.utils.is_multi_mspapi() then
+        methodType = "multiapi"
+        retTgt = app.Page.mspapi       
+    elseif type(target) == "function" then
         methodType = "function"
         retTgt = "function"
     elseif type(target) == "number" then
@@ -430,7 +433,9 @@ function app.readPage()
     -- otherwise we revert to using app.Page.read using actual msp id numbers
     local methodType, methodTarget = app.mspMethodType(0)
 
-    rfsuite.utils.log("Reading: " .. "Method: " .. methodType, "Target: " .. methodTarget , "debug")
+    if not rfsuite.utils.is_multi_mspapi() then
+        rfsuite.utils.log("Reading: " .. "Method: " .. methodType, "Target: " .. methodTarget , "debug")
+    end
 
     if  methodType == "api" then -- api
         app.Page.API = rfsuite.bg.msp.api.load(app.Page.mspapi, 0)
@@ -448,7 +453,11 @@ function app.readPage()
         mspLoadSettings.command = app.Page.read
         mspLoadSettings.simulatorResponse = app.Page.simulatorResponse
         rfsuite.bg.msp.mspQueue:add(mspLoadSettings)
-
+    elseif  methodType == "multiapi" then
+        -- multiapi call.
+        -- technically we should not ever get this, but the loop is in here
+        -- to make it clear that that api is a possible return value
+        rfsuite.utils.log("API 'multiapi' method is not valid in the app.readPage function","debug")
     else
         rfsuite.utils.log("API 'read' method is invalid","debug")
     end
@@ -461,6 +470,7 @@ local mspSaveSettings = {
     end
 }
 
+
 -- Save all settings
 local function saveSettings()
     if app.pageState == app.pageStatus.saving then return end
@@ -468,61 +478,102 @@ local function saveSettings()
     app.pageState = app.pageStatus.saving
     app.saveTS = os.clock()
 
-    -- check mspapi and if it returns (should always be a string) then proceed
-    -- otherwise we revert to using app.Page.read using actual msp id numbers
-    local methodType, methodTarget = app.mspMethodType(1)
+    if rfsuite.utils.is_multi_mspapi() then
+        -- we handle saving 100% different for multi mspapi
+        rfsuite.utils.log("Saving data using the multi mspapi framework","debug")
 
-    rfsuite.utils.log("Writing: " , "MethodType: " .. methodType, "Target: " .. methodTarget,"debug")
+        local mspapi = rfsuite.app.Page.mspapi
+        local apiList = mspapi.api
+        local values = mspapi.values
 
-    local payload = app.Page.values
+        for apiID,apiNAME in ipairs(apiList) do
+            rfsuite.utils.log(" Saving data for api: " .. apiNAME,"debug")
 
-    if app.Page.preSave then payload = app.Page.preSave(app.Page) end
-    if app.Page.preSavePayload then payload = app.Page.preSavePayload(payload) end
+            local payloadData = values[apiNAME]
+            local payloadStructure = mspapi.structure[apiNAME]
 
-    -- Log payload if debugging is enabled
-    local function logPayload()
-        local logData = "Saving: {" .. rfsuite.utils.joinTableItems(payload, ", ") .. "}"
-        rfsuite.utils.log(logData,"debug")
-    end
+            -- initialise the api
+            local API = rfsuite.bg.msp.api.load(apiNAME)
+            API.setCompleteHandler(function(self, buf)
+                        rfsuite.utils.log("API " .. apiNAME .. " write complete","info")
+            end)
 
-    -- API-based save method
-    if methodType == "api" then
+            -- get values from fields and inject them into the payload
+            for i,v in pairs(payloadData) do    
+                    for fidx, f in ipairs(app.Page.mspapi.formdata.fields) do
+                        if f.apikey == i and f.mspapi == apiID then
+                            payloadData[i] = app.Page.fields[fidx].value
+                        end
+                    end 
+            end
 
-        -- define it if missing
-        if app.Page.API == nil then
-            rfsuite.utils.log("app.Page.API is missing.. recreating","debug")
-            app.Page.API = rfsuite.bg.msp.api.load(app.Page.mspapi)
+            -- lets now actually send off the payload!
+            for i,v in pairs(payloadData) do
+                rfsuite.utils.log(" Set value for " .. i.. " to " .. v, "info")
+                API.setValue(i, v)
+            end
+            API.write()
         end
 
-        app.Page.API.setCompleteHandler(function(self, buf)
-            app.settingsSaved()
-        end)
-        app.Page.API.setErrorHandler(function(self, buf)
-            app.triggers.saveFailed = true
-        end)
 
-        logPayload() 
-        app.Page.API.write(payload)
+    else    
+        -- check mspapi and if it returns (should always be a string) then proceed
+        -- otherwise we revert to using app.Page.read using actual msp id numbers
+        local methodType, methodTarget = app.mspMethodType(1)
 
-        -- Legacy method using an ID
-    elseif methodType == "id" and app.Page.values then
-        logPayload()
+        -- this is the std log but will cant work with the multiapi method
+        rfsuite.utils.log("Writing: " , "MethodType: " .. methodType, "Target: " .. methodTarget,"debug")
 
-        mspSaveSettings.command = app.Page.write
-        mspSaveSettings.payload = payload
-        mspSaveSettings.simulatorResponse = {}
 
-        rfsuite.bg.msp.mspQueue:add(mspSaveSettings)
-        rfsuite.bg.msp.mspQueue.errorHandler = function()
-            rfsuite.utils.log("Save failed","debug")
-            app.triggers.saveFailed = true
+        local payload = app.Page.values
+
+        if app.Page.preSave then payload = app.Page.preSave(app.Page) end
+        if app.Page.preSavePayload then payload = app.Page.preSavePayload(payload) end
+
+        -- Log payload if debugging is enabled
+        local function logPayload()
+            local logData = "Saving: {" .. rfsuite.utils.joinTableItems(payload, ", ") .. "}"
+            rfsuite.utils.log(logData,"debug")
         end
 
-        -- Custom function-based save method
-    elseif methodType == "function" then
-        app.Page.write(app.Page)
-    end
+        -- API-based save method
+        if methodType == "api" then
 
+            -- define it if missing
+            if app.Page.API == nil then
+                rfsuite.utils.log("app.Page.API is missing.. recreating","debug")
+                app.Page.API = rfsuite.bg.msp.api.load(app.Page.mspapi)
+            end
+
+            app.Page.API.setCompleteHandler(function(self, buf)
+                app.settingsSaved()
+            end)
+            app.Page.API.setErrorHandler(function(self, buf)
+                app.triggers.saveFailed = true
+            end)
+
+            logPayload() 
+            app.Page.API.write(payload)
+
+            -- Legacy method using an ID
+        elseif methodType == "id" and app.Page.values then
+            logPayload()
+
+            mspSaveSettings.command = app.Page.write
+            mspSaveSettings.payload = payload
+            mspSaveSettings.simulatorResponse = {}
+
+            rfsuite.bg.msp.mspQueue:add(mspSaveSettings)
+            rfsuite.bg.msp.mspQueue.errorHandler = function()
+                rfsuite.utils.log("Save failed","debug")
+                app.triggers.saveFailed = true
+            end
+
+            -- Custom function-based save method
+        elseif methodType == "function" then
+            app.Page.write(app.Page)
+        end
+    end
 end
 
 -- Update the page with the new values received from the MSP and API structures
@@ -548,7 +599,7 @@ function app.mspApiUpdateFormAttributes(values, structure)
         local targetStructure = structure[mspapiNAME]
  
         for _, v in ipairs(targetStructure) do
-            if v.field == apikey then
+            if v.field == apikey and mspapiID == f.mspapi then
                 rfsuite.app.ui.injectApiAttributes(formField, f, v)
                 rfsuite.app.Page.fields[i].value = values[mspapiNAME][apikey]
                 break -- Found field, can move on
@@ -1002,17 +1053,16 @@ function app.wakeupUI()
 
                 -- we have to fake a save dialog in sim as its not actually possible 
                 -- to save in sim!
-                if system:getVersion().simulation ~= true then
-                    app.PageTmp = {}
-                    app.PageTmp = app.Page
-                    app.triggers.isSaving = true
-                    app.triggers.triggerSave = false
+                app.PageTmp = app.Page
+                app.triggers.isSaving = true
+                app.triggers.triggerSave = false
+
+                if rfsuite.utils.is_multi_mspapi() or system:getVersion().simulation ~= true then
                     saveSettings()
                 else
                     -- when in sim we fake a save as not possible to really do
                     -- this involves tricking the progress dialog into thinking
                     app.triggers.isSavingFake = true
-                    app.triggers.triggerSave = false
                 end
                 return true
             end
