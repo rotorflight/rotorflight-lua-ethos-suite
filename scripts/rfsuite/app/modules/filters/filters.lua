@@ -16,7 +16,7 @@ local mspapi = {
         fields = {
             {t = "Filter type", label = 1, inline = 1, mspapi = 1, apikey = "gyro_lpf1_type", type = 1},
             {t = "Cutoff",      label = 2, inline = 1, mspapi = 1, apikey = "gyro_lpf1_static_hz"},
-            {t = "Min cutoff",  label = 2, inline = 1, mspapi = 1, apikey = "gyro_lpf1_dyn_min_hz"},
+            {t = "Min cutoff",  label = 3, inline = 1, mspapi = 1, apikey = "gyro_lpf1_dyn_min_hz"},
             {t = "Max cutoff",  label = 4, inline = 1, mspapi = 1, apikey = "gyro_lpf1_dyn_max_hz"},
             {t = "Filter type", label = 5, inline = 1, mspapi = 1, apikey = "gyro_lpf2_type", type = 1},
             {t = "Cutoff",      label = 6, inline = 1, mspapi = 1, apikey = "gyro_lpf2_static_hz"},
@@ -27,7 +27,6 @@ local mspapi = {
         }
     }                 
 }
-
 
 
 return {
