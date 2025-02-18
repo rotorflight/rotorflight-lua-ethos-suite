@@ -708,4 +708,9 @@ function utils.loadImage(image1, image2, image3)
     return nil
 end
 
+function utils.is_multi_mspapi()
+    return rfsuite.app.Page.mspapi and type(rfsuite.app.Page.mspapi) == "table" and rfsuite.app.Page.mspapi.api
+end
+
+
 return utils

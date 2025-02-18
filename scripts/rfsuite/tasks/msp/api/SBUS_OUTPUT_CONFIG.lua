@@ -98,7 +98,7 @@ local function write(suppliedPayload)
 
     local message = {
         command = MSP_API_CMD_WRITE,
-        payload = suppliedPayload or payloadData,
+        payload = suppliedPayload or rfsuite.bg.msp.api.buildWritePayload(payloadData,MSP_API_STRUCTURE_WRITE),
         processReply = function(self, buf)
             local completeHandler = handlers.getCompleteHandler()
             if completeHandler then completeHandler(self, buf) end
@@ -129,7 +129,6 @@ local function setValue(fieldName, value)
             return true
         end
     end
-    error("Invalid field name: " .. fieldName)
 end
 
 -- Function to check if the read operation is complete

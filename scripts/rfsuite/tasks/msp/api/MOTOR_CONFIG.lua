@@ -17,11 +17,6 @@
 -- Constants for MSP Commands
 local MSP_API_CMD_READ = 131 -- Command identifier 
 local MSP_API_CMD_WRITE = 222 -- Command identifier 
-local MSP_API_SIMULATOR_RESPONSE = {
-    45, 4, 208, 7, 232, 3, 1, 6, 0, 0,
-    250, 0, 1, 6, 4, 2, 1, 8, 7, 7,
-    8, 20, 0, 50, 0, 9, 0, 30, 0
-} -- Default simulator response
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
@@ -32,7 +27,7 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "motor_pole_count_blheli",  type = "U8",  apiVersion = 12.06, simResponse = {6}},
     {field = "use_dshot_telemetry",      type = "U8",  apiVersion = 12.06, simResponse = {0}},
     {field = "motor_pwm_protocol",       type = "U8",  apiVersion = 12.06, simResponse = {0}},
-    {field = "motor_pwm_rate",           type = "U16", apiVersion = 12.06, simResponse = {250, 0}},
+    {field = "motor_pwm_rate",           type = "U16", apiVersion = 12.06, simResponse = {250, 0}, min=50, max = 8000, default = 250, unit="Hz", help = "The frequency at which the ESC sends PWM signals to the motor"},
     {field = "use_unsynced_pwm",         type = "U8",  apiVersion = 12.06, simResponse = {1}},
     {field = "motor_pole_count_0",       type = "U8",  apiVersion = 12.06, simResponse = {6}, min = 0, max = 256, default = 8, help = "The number of magnets on the motor bell."},
     {field = "motor_pole_count_1",       type = "U8",  apiVersion = 12.06, simResponse = {4}},
@@ -148,7 +143,7 @@ local function write(suppliedPayload)
         
     local message = {
         command = MSP_API_CMD_WRITE,
-        payload = suppliedPayload or payloadData,
+        payload = suppliedPayload or rfsuite.bg.msp.api.buildWritePayload(payloadData,MSP_API_STRUCTURE_WRITE),
         processReply = function(self, buf)
             local completeHandler = handlers.getCompleteHandler()
             if completeHandler then completeHandler(self, buf) end
@@ -179,7 +174,6 @@ local function setValue(fieldName, value)
             return true
         end
     end
-    error("Invalid field name: " .. fieldName)
 end
 
 -- Function to check if the read operation is complete

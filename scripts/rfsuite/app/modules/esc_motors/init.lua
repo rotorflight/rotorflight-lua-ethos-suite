@@ -18,12 +18,12 @@
 
 ]] --
 local init = {
-    title = "Motors", -- title of the page
+    title = "ESC/Motors", -- title of the page
     section = "Hardware", -- do not run if busy with msp
-    script = "motors.lua", -- run this script
-    image = "motors.png", -- image for the page
-    order = 1, -- order in the section
-    ethosversion = {1, 6, 2} -- disable button if ethos version is less than this
+    script = "esc_motors.lua", -- run this script
+    image = "esc.png", -- image for the page
+    order = 5, -- order in the section
+    ethosversion = {1, 6, 2}, -- disable button if ethos version is less than this,
 }
 
 return init

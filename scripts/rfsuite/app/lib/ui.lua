@@ -172,6 +172,7 @@ function ui.disableNavigationField(x)
     if rfsuite.app.formNavigationFields[x] ~= nil then rfsuite.app.formNavigationFields[x]:enable(false) end
 end
 
+
 function ui.openMainMenu()
 
     -- clear old icons
@@ -192,7 +193,7 @@ function ui.openMainMenu()
     rfsuite.app.lastIdx = nil
     rfsuite.app.lastTitle = nil
     rfsuite.app.lastScript = nil
-    rfsuite.lastPage = nil
+    rfsuite.session.lastPage = nil
 
     -- rfsuite.bg.msp.protocol.mspIntervalOveride = nil
 
@@ -608,13 +609,13 @@ function ui.fieldText(i)
         rfsuite.app.saveValue(i)
     end)
 
-    if config.ethosRunningVersion >= 1514 then
-        if f.onFocus ~= nil then
-            rfsuite.app.formFields[i]:onFocus(function()
-                f.onFocus(rfsuite.app.Page)
-            end)
-        end
+
+    if f.onFocus ~= nil then
+        rfsuite.app.formFields[i]:onFocus(function()
+            f.onFocus(rfsuite.app.Page)
+        end)
     end
+
 
     if f.disable == true then rfsuite.app.formFields[i]:enable(false) end
 
@@ -697,8 +698,10 @@ function ui.openPageRefresh(idx, title, script, extra1, extra2, extra3, extra5, 
 
 end
 
+
 function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
+    
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
     rfsuite.app.triggers.isReady = false
     rfsuite.app.formFields = {}
@@ -733,7 +736,7 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
         form.clear()
 
-        rfsuite.lastPage = script
+        rfsuite.session.lastPage = script
 
         if rfsuite.app.Page.pageTitle ~= nil then
             rfsuite.app.ui.fieldHeader(rfsuite.app.Page.pageTitle)
@@ -748,31 +751,40 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
         formLineCnt = 0
 
-        for i = 1, #rfsuite.app.Page.fields do
-            local f = rfsuite.app.Page.fields[i]
-            local l = rfsuite.app.Page.labels
-            local pageValue = f
-            local pageIdx = i
-            local currentField = i
-
-            rfsuite.app.ui.fieldLabel(f, i, l)
-
-            if f.hidden ~= true then
-
-                if f.type == 0 then
-                    rfsuite.app.ui.fieldStaticText(i)
-                elseif f.table or f.type == 1 then
-                    rfsuite.app.ui.fieldChoice(i)
-                elseif f.type == 2 then
-                    rfsuite.app.ui.fieldNumber(i)
-                elseif f.type == 3 then
-                    rfsuite.app.ui.fieldText(i)
-                else
-                    rfsuite.app.ui.fieldNumber(i)
-                end
-
-            end
+        -- merge in form info when using multi msp api system
+        if rfsuite.utils.is_multi_mspapi() then
+            rfsuite.utils.log("Merging form data from mspapi","debug")
+            rfsuite.app.Page.fields = rfsuite.app.Page.mspapi.formdata.fields
+            rfsuite.app.Page.labels = rfsuite.app.Page.mspapi.formdata.labels
         end
+
+        if rfsuite.app.Page.fields then
+            for i = 1, #rfsuite.app.Page.fields do
+                local f = rfsuite.app.Page.fields[i]
+                local l = rfsuite.app.Page.labels
+                local pageValue = f
+                local pageIdx = i
+                local currentField = i
+
+                rfsuite.app.ui.fieldLabel(f, i, l)
+
+                if f.hidden ~= true and (f.apiversion == nil or f.apiversion <= rfsuite.session.apiVersion) then
+
+                    if f.type == 0 then
+                        rfsuite.app.ui.fieldStaticText(i)
+                    elseif f.table or f.type == 1 then
+                        rfsuite.app.ui.fieldChoice(i)
+                    elseif f.type == 2 then
+                        rfsuite.app.ui.fieldNumber(i)
+                    elseif f.type == 3 then
+                        rfsuite.app.ui.fieldText(i)
+                    else
+                        rfsuite.app.ui.fieldNumber(i)
+                    end
+
+                end
+            end
+        end   
     end
 
 end
@@ -867,7 +879,11 @@ function ui.navigationButtons(x, y, w, h)
                 if rfsuite.app.Page and rfsuite.app.Page.onReloadMenu then
                     rfsuite.app.Page.onReloadMenu(rfsuite.app.Page)
                 else
-                    rfsuite.app.triggers.triggerReload = true
+                    if rfsuite.utils.is_multi_mspapi() then
+                        rfsuite.app.triggers.triggerReloadFull = true
+                    else
+                        rfsuite.app.triggers.triggerReload = true
+                    end
                 end
                 return true
             end
@@ -978,6 +994,70 @@ function ui.openPageHelp(txtData, section)
     })
 
 end
+
+function ui.injectApiAttributes(formField,f,v)
+    if (f.scale == nil and v.scale ~= nil)  then 
+        f.scale = v.scale 
+    end
+    if (f.mult == nil and v.mult ~= nil) then 
+        f.mult = v.mult 
+    end
+    if (f.offset == nil and v.offset ~= nil) then 
+        f.offset = v.offset 
+    end
+    if (f.decimals == nil and v.decimals ~= nil ) then
+        f.decimals = v.decimals
+        formField:decimals(v.decimals)
+    end
+    if (f.unit == nil and v.unit ~= nil)  then 
+        if f.type ~= 1 then
+            formField:suffix(v.unit)
+        end    
+    end
+    if (f.step == nil and v.step~= nil) then
+        f.step = v.step
+        formField:step(v.step)
+    end
+    if (f.min == nil and v.min ~= nil)  then
+        f.min = v.min
+        if f.type ~= 1 then
+            formField:minimum(v.min)
+        end
+    end
+    if (f.max == nil and v.max ~= nil) then
+        f.max = v.max
+        if f.type ~= 1 then
+            formField:maximum(v.max)
+        end
+    end
+    if (f.default == nil and v.default ~= nil) then
+        f.default = v.default
+        
+        -- factor in all possible scaling
+        if f.offset ~= nil then f.default = f.default + f.offset end
+        local default = v.default * rfsuite.utils.decimalInc(v.decimals)
+        if v.mult ~= nil then default = default * v.mult end
+
+        -- if for some reason we have a .0 we need to work around an ethos pecularity on default boxes!
+        local str = tostring(default)
+        if str:match("%.0$") then default = math.ceil(default) end                            
+
+        if f.type ~= 1 then 
+            formField:default(default)
+        end
+    end
+    if (f.table == nil and v.table ~= nil) then 
+        f.table = v.table 
+        local tbldata = rfsuite.utils.convertPageValueTable(v.table, f.tableIdxInc or v.tableIdxInc)       
+        if f.type == 1 then                      
+            formField:values(tbldata)
+        end
+    end            
+    if v.help ~= nil then
+        f.help = v.help
+        formField:help(v.help)
+    end  
+end    
 
 
 return ui

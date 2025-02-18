@@ -72,7 +72,7 @@ local function openPage(pidx, title, script)
         end,
         press = function()
             rfsuite.app.lastIdx = nil
-            rfsuite.lastPage = nil
+            rfsuite.session.lastPage = nil
 
             if rfsuite.app.Page and rfsuite.app.Page.onNavMenu then rfsuite.app.Page.onNavMenu(rfsuite.app.Page) end
 
