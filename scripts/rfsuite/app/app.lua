@@ -620,7 +620,8 @@ function app.mspApiUpdateFormAttributes(values, structure)
         for _, v in ipairs(targetStructure) do
             if v.field == apikey and mspapiID == f.mspapi then
                 rfsuite.app.ui.injectApiAttributes(formField, f, v)
-                rfsuite.app.Page.fields[i].value = values[mspapiNAME][apikey]
+                local scale = f.scale or 1
+                rfsuite.app.Page.fields[i].value = values[mspapiNAME][apikey] / scale
                 break -- Found field, can move on
             end
         end
@@ -653,9 +654,14 @@ local function requestPageMspApi()
         rfsuite.app.Page.mspapi.structure = {}  -- Initialize if first run
     end
 
+    -- Ensure state.currentIndex is initialized
+    if state.currentIndex == nil then
+        state.currentIndex = 1
+    end
+
     -- Recursive function to process API calls sequentially
     local function processNextAPI()
-        if state.currentIndex > #apiList then
+        if state.currentIndex > #apiList or #apiList == 0 then
             if state.isProcessing then  -- Ensure this runs only once
                 state.isProcessing = false  -- Reset processing flag
                 state.currentIndex = 1  -- Reset for next run
@@ -669,7 +675,13 @@ local function requestPageMspApi()
                 app.mspApiUpdateFormAttributes(app.Page.mspapi.values,app.Page.mspapi.structure)
 
                 -- Run the postLoad function if it exists
-                if app.Page.postLoad then app.Page.postLoad(app.Page) end
+                -- if postload exits.. then it must take responsibility for 
+                -- closing the progress dialog.
+                if app.Page.postLoad then 
+                    app.Page.postLoad(app.Page) 
+                else
+                    rfsuite.app.triggers.closeProgressLoader = true    
+                end
             end
             return
         end
@@ -715,6 +727,7 @@ local function requestPageMspApi()
     -- Start processing the first API
     processNextAPI()
 end
+
 
 
 -- REQUEST A PAGE OVER MSP. THIS RUNS ON MOST CLOCK CYCLES WHEN DATA IS BEING REQUESTED

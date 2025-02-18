@@ -1,21 +1,25 @@
 local labels = {}
 local fields = {}
 
-fields[#fields + 1] = {t = "Roll", help = "accelerometerTrim", apikey="roll"}
-fields[#fields + 1] = {t = "Pitch", help = "accelerometerTrim", apikey="pitch"}
+local mspapi = {
+    api = {
+        [1] = 'ACC_TRIM',
+    },
+    formdata = {
+        labels = {
+        },
+        fields = {
+            {t = "Roll", mspapi=1, apikey="roll"},
+            {t = "Pitch", mspapi=1,apikey="pitch"}
+        }
+    }                 
+}
 
-local function postLoad(self)
-    rfsuite.app.triggers.isReady = true
-
-end
 
 return {
-    mspapi="ACC_TRIM",
+    mspapi=mspapi,
     eepromWrite = true,
     reboot = false,
     title = "Accelerometer",
-    labels = labels,
-    fields = fields,
-    postLoad = postLoad,
     API = {},
 }
