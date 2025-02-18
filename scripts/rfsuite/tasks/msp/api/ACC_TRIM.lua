@@ -117,7 +117,6 @@ local function setValue(fieldName, value)
             return true
         end
     end
-    error("Invalid field name: " .. fieldName)
 end
 
 -- Function to check if the read operation is complete
