@@ -775,25 +775,29 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
                 local pageIdx = i
                 local currentField = i
 
+                if f.hidden ~= true and 
+                ( (f.apiversion == nil or f.apiversion <= rfsuite.session.apiVersion) and
+                  (f.apiversionlt == nil or f.apiversionlt > rfsuite.session.apiVersion) and
+                  (f.apiversiongt == nil or f.apiversiongt < rfsuite.session.apiVersion) ) then
+
                 rfsuite.app.ui.fieldLabel(f, i, l)
-
-                if f.hidden ~= true and (f.apiversion == nil or f.apiversion <= rfsuite.session.apiVersion) then
-
-                    if f.type == 0 then
-                        rfsuite.app.ui.fieldStaticText(i)
-                    elseif f.table or f.type == 1 then
-                        rfsuite.app.ui.fieldChoice(i)
-                    elseif f.type == 2 then
-                        rfsuite.app.ui.fieldNumber(i)
-                    elseif f.type == 3 then
-                        rfsuite.app.ui.fieldText(i)
-                    else
-                        rfsuite.app.ui.fieldNumber(i)
-                    end
-                else
-                    -- we need to make something!
-                    rfsuite.app.formFields[i] = {}
-                end
+                    
+                 if f.type == 0 then
+                     rfsuite.app.ui.fieldStaticText(i)
+                 elseif f.table or f.type == 1 then
+                     rfsuite.app.ui.fieldChoice(i)
+                 elseif f.type == 2 then
+                     rfsuite.app.ui.fieldNumber(i)
+                 elseif f.type == 3 then
+                     rfsuite.app.ui.fieldText(i)
+                 else
+                     rfsuite.app.ui.fieldNumber(i)
+                 end
+             else
+                 -- we need to make something!
+                 rfsuite.app.formFields[i] = {}
+             end
+             
             end
         end   
     end
