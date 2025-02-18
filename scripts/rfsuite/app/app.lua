@@ -350,68 +350,7 @@ local function processPageReply(source, buf, methodType)
                     local formField = rfsuite.app.formFields[j]
 
                     if f.apikey and  f.apikey == field and formField then
-                        
-                        if (f.scale == nil and v.scale ~= nil)  then 
-                            f.scale = v.scale 
-                        end
-                        if (f.mult == nil and v.mult ~= nil) then 
-                            f.mult = v.mult 
-                        end
-                        if (f.offset == nil and v.offset ~= nil) then 
-                            f.offset = v.offset 
-                        end
-                        if (f.decimals == nil and v.decimals ~= nil ) then
-                            f.decimals = v.decimals
-                            formField:decimals(v.decimals)
-                        end
-                        if (f.unit == nil and v.unit ~= nil)  then 
-                            if f.type ~= 1 then
-                                formField:suffix(v.unit)
-                            end    
-                        end
-                        if (f.step == nil and v.step~= nil) then
-                            f.step = v.step
-                            formField:step(v.step)
-                        end
-                        if (f.min == nil and v.min ~= nil)  then
-                            f.min = v.min
-                            if f.type ~= 1 then
-                                formField:minimum(v.min)
-                            end
-                        end
-                        if (f.max == nil and v.max ~= nil) then
-                            f.max = v.max
-                            if f.type ~= 1 then
-                                formField:maximum(v.max)
-                            end
-                        end
-                        if (f.default == nil and v.default ~= nil) then
-                            f.default = v.default
-                            
-                            -- factor in all possible scaling
-                            if f.offset ~= nil then f.default = f.default + f.offset end
-                            local default = v.default * rfsuite.utils.decimalInc(v.decimals)
-                            if v.mult ~= nil then default = default * v.mult end
-                    
-                            -- if for some reason we have a .0 we need to work around an ethos pecularity on default boxes!
-                            local str = tostring(default)
-                            if str:match("%.0$") then default = math.ceil(default) end                            
-     
-                            if f.type ~= 1 then 
-                                formField:default(default)
-                            end
-                        end
-                        if (f.table == nil and v.table ~= nil) then 
-                            f.table = v.table 
-                            local tbldata = rfsuite.utils.convertPageValueTable(v.table, f.tableIdxInc or v.tableIdxInc)       
-                            if f.type == 1 then                      
-                                formField:values(tbldata)
-                            end
-                        end            
-                        if v.help ~= nil then
-                            f.help = v.help
-                            formField:help(v.help)
-                        end            
+                        rfsuite.app.ui.injectApiValues(formField,f,v)                
                     end
                 end
             end
@@ -460,7 +399,7 @@ function app.mspMethodType(rw)
         methodType = "id"
         retTgt = target
     -- If no read/write method found, fallback to mspapi
-    elseif type(app.Page.mspapi) == "string" then
+    elseif type(app.Page.mspapi) == "string"  then
         methodType = "api"
         retTgt = app.Page.mspapi
     else
@@ -578,27 +517,57 @@ local function saveSettings()
 
 end
 
--- REQUEST A PAGE USING THE NEW API FORM SYSTEM
--- Store state outside the function
-local function requestPageApiForm()
-    -- Ensure app.Page and its apiform.mspapi exist
-    if not app.Page or not app.Page.apiform or not app.Page.apiform.mspapi then
-        rfsuite.utils.log("app.Page.apiform.mspapi is nil", "debug")
+-- UPDATE THE FORM VALUES WITH THE DATA RETURNED FROM THE API
+local function mspApiUpdateFormAttributes(values)
+
+    if not (app.Page.mspapi.formdata and app.Page.mspapi.api and app.Page.mspapi.formdata) then
+        rfsuite.utils.log("app.Page.mspapi.formdata or its components are nil", "debug")
         return
     end
 
-    local apiList = app.Page.apiform.mspapi
-    local state = rfsuite.app.Page.apiform.apiState  -- Reference persistent state
+    for apiID,apiNAME in ipairs(app.Page.mspapi.api) do
+
+        local structure = values[apiNAME].structure
+
+        for i,v in pairs(structure) do
+            print(i,v)
+        end
+
+        for i,f in pairs(app.Page.mspapi.formdata.fields) do
+
+            local formField = rfsuite.app.formFields[i]
+
+           -- for j,k in ipairs(structure) do
+           --     rfsuite.app.ui.injectApiValues(formField,f,k)                
+           -- end
+        end
+    end
+
+
+end
+
+
+-- REQUEST A PAGE USING THE NEW API FORM SYSTEM
+-- Store state outside the function
+local function requestPageMspApi()
+    -- Ensure app.Page and its mspapi.api exist
+    if not app.Page or not app.Page.mspapi or not app.Page.mspapi.api then
+        rfsuite.utils.log("app.Page.mspapi.api is nil", "debug")
+        return
+    end
+
+    local apiList = app.Page.mspapi.api
+    local state = rfsuite.app.Page.mspapi.apiState  -- Reference persistent state
 
     -- Prevent duplicate execution if already running
     if state.isProcessing then
-        rfsuite.utils.log("requestPageApiForm is already running, skipping duplicate call.", "debug")
+        rfsuite.utils.log("requestPageMspApi is already running, skipping duplicate call.", "debug")
         return
     end
     state.isProcessing = true  -- Set processing flag
 
-    if not rfsuite.app.Page.apiform.values then
-        rfsuite.app.Page.apiform.values = {}  -- Initialize if first run
+    if not rfsuite.app.Page.mspapi.values then
+        rfsuite.app.Page.mspapi.values = {}  -- Initialize if first run
     end
 
     -- Recursive function to process API calls sequentially
@@ -614,7 +583,7 @@ local function requestPageApiForm()
                 if app.Page.postRead then app.Page.postRead(app.Page) end
 
                 -- Populate the form fields with data
-                --rfsuite.utils.print_r(app.Page.apiform.values)
+                mspApiUpdateFormAttributes(rfsuite.app.Page.mspapi.values)
 
                 -- Run the postLoad function if it exists
                 if app.Page.postLoad then app.Page.postLoad(app.Page) end
@@ -637,7 +606,7 @@ local function requestPageApiForm()
         -- Handle API success
         API.setCompleteHandler(function(self, buf)
             -- Store API response with API name as the key
-            rfsuite.app.Page.apiform.values[apiKey] = API.data()
+            rfsuite.app.Page.mspapi.values[apiKey] = API.data()
 
             -- Move to the next API
             state.currentIndex = state.currentIndex + 1
@@ -667,11 +636,28 @@ local function requestPage()
 
     if not rfsuite.bg or not rfsuite.bg.msp then return end
 
-    if not app.Page.reqTS or app.Page.reqTS + rfsuite.bg.msp.protocol.pageReqTimeout <= os.clock() then
+    -- api form method
+    if app.Page.mspapi and type(app.Page.mspapi) == "table" then
+        if not app.Page.mspapi.api and not app.Page.mspapi.formdata then
+            rfsuite.utils.log("app.Page.mspapi.api did not pass consistancy checks", "debug")
+            return
+        end
+        if not rfsuite.app.Page.mspapi.apiState then
+            rfsuite.app.Page.mspapi.apiState = {
+                currentIndex = 1,
+                isProcessing = false
+            }
+        end                    
+        requestPageMspApi()
+        return
+    else    
+        -- legacy method
+        if not app.Page.reqTS or app.Page.reqTS + rfsuite.bg.msp.protocol.pageReqTimeout <= os.clock() then
 
-        app.Page.reqTS = os.clock()
-        if app.Page.read or app.Page.mspapi then app.readPage() end
-    end
+            app.Page.reqTS = os.clock()
+            if app.Page.read or app.Page.mspapi then app.readPage() end
+        end
+    end    
 end
 
 -- UPDATE CURRENT TELEMETRY STATE - RUNS MOST CLOCK CYCLES
@@ -1190,19 +1176,7 @@ end
 
         -- we have a page waiting to be retrieved - trigger a request page
         if app.Page ~= nil then
-            if not (app.Page.values or app.triggers.isReady) and app.pageState == app.pageStatus.display then
-                if app.Page.apiform then
-                    if not rfsuite.app.Page.apiform.apiState then
-                        rfsuite.app.Page.apiform.apiState = {
-                            currentIndex = 1,
-                            isProcessing = false
-                        }
-                    end                    
-                    requestPageApiForm()
-                else
-                    requestPage()
-                end
-            end
+            if not (app.Page.values or app.triggers.isReady) and app.pageState == app.pageStatus.display then requestPage() end
         end
 
     end

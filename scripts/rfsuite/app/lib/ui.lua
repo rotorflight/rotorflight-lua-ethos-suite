@@ -751,13 +751,12 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
         formLineCnt = 0
 
-        if rfsuite.app.Page.apiform then
-            rfsuite.app.Page.fields = rfsuite.app.Page.apiform.formdata.fields
-            rfsuite.app.Page.labels = rfsuite.app.Page.apiform.formdata.labels
+        -- merge in form info when using multi msp api system
+        if rfsuite.app.Page.mspapi and type(rfsuite.app.Page.mspapi) == "table" and rfsuite.app.Page.mspapi.api then
+            rfsuite.utils.log("Merging form data from mspapi","debug")
+            rfsuite.app.Page.fields = rfsuite.app.Page.mspapi.formdata.fields
+            rfsuite.app.Page.labels = rfsuite.app.Page.mspapi.formdata.labels
         end
-
-        rfsuite.utils.print_r(rfsuite.app.Page.labels)
-        rfsuite.utils.print_r(rfsuite.app.Page.fields)
 
         if rfsuite.app.Page.fields then
             for i = 1, #rfsuite.app.Page.fields do
@@ -991,6 +990,70 @@ function ui.openPageHelp(txtData, section)
     })
 
 end
+
+function ui.injectApiValues(formField,f,v)
+    if (f.scale == nil and v.scale ~= nil)  then 
+        f.scale = v.scale 
+    end
+    if (f.mult == nil and v.mult ~= nil) then 
+        f.mult = v.mult 
+    end
+    if (f.offset == nil and v.offset ~= nil) then 
+        f.offset = v.offset 
+    end
+    if (f.decimals == nil and v.decimals ~= nil ) then
+        f.decimals = v.decimals
+        formField:decimals(v.decimals)
+    end
+    if (f.unit == nil and v.unit ~= nil)  then 
+        if f.type ~= 1 then
+            formField:suffix(v.unit)
+        end    
+    end
+    if (f.step == nil and v.step~= nil) then
+        f.step = v.step
+        formField:step(v.step)
+    end
+    if (f.min == nil and v.min ~= nil)  then
+        f.min = v.min
+        if f.type ~= 1 then
+            formField:minimum(v.min)
+        end
+    end
+    if (f.max == nil and v.max ~= nil) then
+        f.max = v.max
+        if f.type ~= 1 then
+            formField:maximum(v.max)
+        end
+    end
+    if (f.default == nil and v.default ~= nil) then
+        f.default = v.default
+        
+        -- factor in all possible scaling
+        if f.offset ~= nil then f.default = f.default + f.offset end
+        local default = v.default * rfsuite.utils.decimalInc(v.decimals)
+        if v.mult ~= nil then default = default * v.mult end
+
+        -- if for some reason we have a .0 we need to work around an ethos pecularity on default boxes!
+        local str = tostring(default)
+        if str:match("%.0$") then default = math.ceil(default) end                            
+
+        if f.type ~= 1 then 
+            formField:default(default)
+        end
+    end
+    if (f.table == nil and v.table ~= nil) then 
+        f.table = v.table 
+        local tbldata = rfsuite.utils.convertPageValueTable(v.table, f.tableIdxInc or v.tableIdxInc)       
+        if f.type == 1 then                      
+            formField:values(tbldata)
+        end
+    end            
+    if v.help ~= nil then
+        f.help = v.help
+        formField:help(v.help)
+    end  
+end    
 
 
 return ui

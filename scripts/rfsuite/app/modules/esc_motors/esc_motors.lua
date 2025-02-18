@@ -1,10 +1,10 @@
 local title = "Motor/ESC Features"
 local enableWakeup = false
 
-local apiform = {
-    mspapi = {
-        [1] = 'ESC_SENSOR_CONFIG',
-        [2] = 'MOTOR_CONFIG'
+local mspapi = {
+    api = {
+        [1] = 'MOTOR_CONFIG',
+        [2] = 'ESC_SENSOR_CONFIG',
     },
     formdata = {
         labels = {
@@ -12,7 +12,6 @@ local apiform = {
             {t = "Tail Motor Ratio", label = 2, inline_size = 14.5},
             {t = "Port Setup",       label = 3, inline_size = 17.3},
             {t = "    ",             label = 4, inline_size = 17.3}
-        }
         },
         fields = {
             {t = "Pinion",                          mspapi = 1, apikey = "main_rotor_gear_ratio_0",       label = 1, inline = 2},
@@ -37,7 +36,6 @@ local apiform = {
 local function postLoad(self)
     rfsuite.app.triggers.closeProgressLoader = true
     enableWakeup = true
-
 end
 
 local function wakeup()
@@ -47,9 +45,9 @@ local function wakeup()
 end
 
 return {
+    mspapi = mspapi,
     title = title,
     event = event,
-    apiform = apiform,
     wakeup = wakeup,
     postLoad = postLoad,
 }
