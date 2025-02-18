@@ -42,14 +42,26 @@ local lastRssiSensorName = nil
 if rfsuite.app.moduleList == nil then rfsuite.app.moduleList = rfsuite.utils.findModules() end
 
 -- findTasks
+-- Configurable delay for module discovery
+bg.discoveryInterval = 0.5  -- seconds per task (not used directly but implies spread over multiple wakeups)
+bg.taskScanIndex = 1         -- Tracks current task being processed
+bg.taskListTemp = nil        -- Holds list of tasks to process incrementally
+bg.tasksInitialized = false  -- Ensures findTasks runs only once
+
 function bg.findTasks()
+    -- Initialize the task list on first call
+    if bg.taskListTemp == nil then
+        local tasks_path = "tasks/"
+        bg.taskListTemp = system.listFiles(tasks_path)
+        bg.taskScanIndex = 1  -- Start fresh
+    end
 
-    local taskdir = "tasks"
-    local tasks_path = "tasks/"
-
-    for _, v in pairs(system.listFiles(tasks_path)) do
-
+    -- Process one task per wakeup
+    if bg.taskScanIndex <= #bg.taskListTemp then
+        local v = bg.taskListTemp[bg.taskScanIndex]
+        local tasks_path = "tasks/"
         local init_path = tasks_path .. v .. '/init.lua'
+
         local f = io.open(init_path, "r")
         if f then
             io.close(f)
@@ -59,9 +71,15 @@ function bg.findTasks()
             if func then
                 local tconfig = func()
                 if type(tconfig) ~= "table" or not tconfig.interval or not tconfig.script then
-                    rfsuite.utils.log("Invalid configuration in " .. init_path,"debug")
+                    rfsuite.utils.log("Invalid configuration in " .. init_path, "debug")
                 else
-                    local task = {name = v, interval = tconfig.interval, script = tconfig.script, msp = tconfig.msp, last_run = os.clock()}
+                    local task = {
+                        name = v,
+                        interval = tconfig.interval,
+                        script = tconfig.script,
+                        msp = tconfig.msp,
+                        last_run = os.clock()
+                    }
                     table.insert(tasksList, task)
 
                     local script = tasks_path .. v .. '/' .. tconfig.script
@@ -73,8 +91,16 @@ function bg.findTasks()
                 end
             end
         end
+
+        -- Move to the next task on the next wakeup
+        bg.taskScanIndex = bg.taskScanIndex + 1
+    else
+        -- Cleanup once all tasks are processed
+        bg.taskListTemp = nil
+        bg.tasksInitialized = true
     end
 end
+
 
 
 function bg.active()
@@ -107,50 +133,46 @@ function bg.wakeup()
         return
     end
 
-    -- initialise tasks
-    if bg.init == false then
+    -- Incremental task initialization
+    if not bg.tasksInitialized then
         bg.findTasks()
-        bg.init = true
         return
     end
 
     bg.heartbeat = os.clock()
 
-    -- this should be before msp.hecks
-    -- doing this is heavy - lets run it every few seconds only
+    -- Heavy checks, run every few seconds
     local now = os.clock()
     if now - (rssiCheckScheduler or 0) >= 4 then
-
-        -- get sport then elrs sensor
         currentRssiSensor = system.getSource({appId = 0xF101}) or system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1}) or nil
-
         rfsuite.rssiSensorChanged = currentRssiSensor and (lastRssiSensorName ~= currentRssiSensor:name()) or false
         lastRssiSensorName = currentRssiSensor and currentRssiSensor:name() or nil    
         rssiCheckScheduler = now
-
     end
 
-    if system:getVersion().simulation == true then rfsuite.rssiSensorChanged = false end
+    if system:getVersion().simulation == true then 
+        rfsuite.rssiSensorChanged = false 
+    end
 
-    if currentRssiSensor ~= nil then rfsuite.rssiSensor = currentRssiSensor end
+    if currentRssiSensor ~= nil then 
+        rfsuite.rssiSensor = currentRssiSensor 
+    end
 
-    -- we load in tasks dynamically using the settings found in
-    -- tasks/<name>init.lua
-    -- check the existing scripts for more details.
-    local now = os.clock()
+    -- Process scheduled tasks
     for _, task in ipairs(tasksList) do
         if now - task.last_run >= task.interval then
             if bg[task.name].wakeup then
                 if task.msp == true then
                     bg[task.name].wakeup()
                 else
-                    if not rfsuite.app.triggers.mspBusy then bg[task.name].wakeup() end
+                    if not rfsuite.app.triggers.mspBusy then 
+                        bg[task.name].wakeup() 
+                    end
                 end
                 task.last_run = now
             end
         end
     end
-
 end
 
 function bg.event(widget, category, value)
