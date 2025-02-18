@@ -404,7 +404,7 @@ function apiLoader.buildWritePayload(payload, api_structure)
         local byteorder = field_def.byteorder -- Only pass if defined
         local scale = field_def.scale or 1 -- Default scale to 1 if not defined
 
-        value = value * scale
+        value = math.floor(value * scale + 0.5)
 
         serialize_value(byte_stream, value, field_def.type, field_def.min, field_def.max, byteorder)
     end

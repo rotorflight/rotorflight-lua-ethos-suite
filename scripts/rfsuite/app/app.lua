@@ -620,7 +620,8 @@ function app.mspApiUpdateFormAttributes(values, structure)
         for _, v in ipairs(targetStructure) do
             if v.field == apikey and mspapiID == f.mspapi then
                 rfsuite.app.ui.injectApiAttributes(formField, f, v)
-                rfsuite.app.Page.fields[i].value = values[mspapiNAME][apikey]
+                local scale = f.scale or 1
+                rfsuite.app.Page.fields[i].value = values[mspapiNAME][apikey] / scale
                 break -- Found field, can move on
             end
         end

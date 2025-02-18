@@ -16,14 +16,10 @@ local mspapi = {
 }
 
 
-
-
 return {
     mspapi=mspapi,
     eepromWrite = true,
     reboot = false,
     title = "Accelerometer",
-    labels = labels,
-    fields = fields,
     API = {},
 }
