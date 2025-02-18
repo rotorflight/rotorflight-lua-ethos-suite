@@ -616,8 +616,11 @@ function app.mspApiUpdateFormAttributes(values, structure)
         local mspapiID = f.mspapi
         local mspapiNAME = api[mspapiID]
         local targetStructure = structure[mspapiNAME]
- 
+        
+        if mspapiID  == nil then error("mspapiID is nil for field " .. f.t) break end    
+        
         for _, v in ipairs(targetStructure) do
+
             if v.field == apikey and mspapiID == f.mspapi then
                 rfsuite.app.ui.injectApiAttributes(formField, f, v)
                 local scale = f.scale or 1

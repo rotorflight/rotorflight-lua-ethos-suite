@@ -149,11 +149,19 @@ function ui.progressDisplayNoLinkValue(value, message)
 end
 
 function ui.disableAllFields()
-    for i in ipairs(rfsuite.app.formFields) do rfsuite.app.formFields[i]:enable(false) end
+    for i in ipairs(rfsuite.app.formFields) do 
+        if type(rfsuite.app.formFields[i]) == "userdata" then
+            rfsuite.app.formFields[i]:enable(false) 
+        end
+    end
 end
 
 function ui.enableAllFields()
-    for i in ipairs(rfsuite.app.formFields) do rfsuite.app.formFields[i]:enable(true) end
+    for i in ipairs(rfsuite.app.formFields) do 
+        if type(rfsuite.app.formFields[i]) == "userdata" then
+            rfsuite.app.formFields[i]:enable(true) 
+        end
+    end
 end
 
 function ui.disableAllNavigationFields()
@@ -441,6 +449,7 @@ function ui.fieldNumber(i)
 
     if minValue == nil then minValue = 0 end
     if maxValue == nil then maxValue = 0 end
+
     rfsuite.app.formFields[i] = form.addNumberField(rfsuite.app.formLines[formLineCnt], posField, minValue, maxValue, function()
         if rfsuite.app.Page.fields == nil or rfsuite.app.Page.fields[i] == nil then
             ui.disableAllFields()
@@ -766,23 +775,41 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
                 local pageIdx = i
                 local currentField = i
 
+                local apiversionCheck = (f.apiversion == nil or f.apiversion <= rfsuite.session.apiVersion)
+                local apiversionltCheck = (f.apiversionlt == nil or f.apiversionlt > rfsuite.session.apiVersion)
+                local apiversiongtCheck = (f.apiversiongt == nil or f.apiversiongt < rfsuite.session.apiVersion)
+                local enableFunctionCheck = (f.enablefunction == nil or f.enablefunction())
+                
+                --[[
+                print("Checking field:", f.t)
+                print(" - Hidden check:", f.hidden ~= true)
+                print(" - API version check:", apiversionCheck)
+                print(" - API version less-than check:", apiversionltCheck)
+                print(" - API version greater-than check:", apiversiongtCheck)
+                print(" - Enable function check:", enableFunctionCheck)
+                ]]--
+                if f.hidden ~= true and apiversionCheck and apiversionltCheck and apiversiongtCheck and enableFunctionCheck then
+                    
+                    --print(" -> Field is ENABLED:", f.t)
+
                 rfsuite.app.ui.fieldLabel(f, i, l)
-
-                if f.hidden ~= true and (f.apiversion == nil or f.apiversion <= rfsuite.session.apiVersion) then
-
-                    if f.type == 0 then
-                        rfsuite.app.ui.fieldStaticText(i)
-                    elseif f.table or f.type == 1 then
-                        rfsuite.app.ui.fieldChoice(i)
-                    elseif f.type == 2 then
-                        rfsuite.app.ui.fieldNumber(i)
-                    elseif f.type == 3 then
-                        rfsuite.app.ui.fieldText(i)
-                    else
-                        rfsuite.app.ui.fieldNumber(i)
-                    end
-
-                end
+                    
+                 if f.type == 0 then
+                     rfsuite.app.ui.fieldStaticText(i)
+                 elseif f.table or f.type == 1 then
+                     rfsuite.app.ui.fieldChoice(i)
+                 elseif f.type == 2 then
+                     rfsuite.app.ui.fieldNumber(i)
+                 elseif f.type == 3 then
+                     rfsuite.app.ui.fieldText(i)
+                 else
+                     rfsuite.app.ui.fieldNumber(i)
+                 end
+             else
+                 -- we need to make something!
+                 rfsuite.app.formFields[i] = {}
+             end
+             
             end
         end   
     end
@@ -996,6 +1023,8 @@ function ui.openPageHelp(txtData, section)
 end
 
 function ui.injectApiAttributes(formField,f,v)
+
+
     if (f.scale == nil and v.scale ~= nil)  then 
         f.scale = v.scale 
     end
