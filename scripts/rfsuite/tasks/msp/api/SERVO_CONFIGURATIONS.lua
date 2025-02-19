@@ -20,7 +20,7 @@
 -- The actual servos module needs to be modified to use this structure.
 -- that is a task for another day
 -- net result - not tested - be prepaired to make it work!
-
+local API_NAME = "SERVO_CONFIGURATIONS" -- API name (must be same as filename)
 local MSP_API_CMD_READ = 120 -- Command identifier
 local MSP_API_CMD_WRITE = nil -- Command identifier 
 local MSP_API_SIMULATOR_RESPONSE = {4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0, 120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0} -- Default simulator response
@@ -141,7 +141,7 @@ local function write(suppliedPayload)
 
     local message = {
         command = MSP_API_CMD_WRITE,
-        payload = suppliedPayload or rfsuite.bg.msp.api.buildWritePayload(payloadData,MSP_API_STRUCTURE_WRITE),
+        payload = suppliedPayload or rfsuite.bg.msp.api.buildWritePayload(API_NAME, payloadData,MSP_API_STRUCTURE_WRITE),
         processReply = function(self, buf)
             local completeHandler = handlers.getCompleteHandler()
             if completeHandler then completeHandler(self, buf) end

@@ -461,9 +461,7 @@ function ui.fieldNumber(i)
     end, function(value)
         if f.postEdit then f.postEdit(rfsuite.app.Page) end
         if f.onChange then f.onChange(rfsuite.app.Page) end
-
         f.value = rfsuite.utils.saveFieldValue(rfsuite.app.Page.fields[i], value)
-        rfsuite.app.saveValue(i)
     end)
 
 
@@ -702,9 +700,15 @@ end
 
 function ui.openPageRefresh(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
-    rfsuite.app.triggers.isReady = false
-    if script ~= nil then rfsuite.app.Page = assert(loadfile("app/modules/" .. script))() end
-
+    if rfsuite.utils.is_multi_mspapi() then
+        rfsuite.app.triggers.isReady = false
+        rfsuite.app.triggers.reloadFull = true
+    else    
+       rfsuite.app.triggers.isReady = false
+        if script ~= nil then 
+            rfsuite.app.Page = assert(loadfile("app/modules/" .. script))() 
+        end
+    end
 end
 
 
@@ -956,7 +960,7 @@ function ui.navigationButtons(x, y, w, h)
                     else
                         if section == 'rates' then
                             -- rates is an oddball and has an exeption
-                            rfsuite.app.ui.openPageHelp(help.help["table"][rfsuite.rateProfile], section)
+                            rfsuite.app.ui.openPageHelp(help.help["table"][rfsuite.session.rateProfile], section)
                         else
                             -- choose default or custom
                             if help.help[script] then

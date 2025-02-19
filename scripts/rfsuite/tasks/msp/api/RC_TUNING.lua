@@ -15,12 +15,13 @@
  * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
 -- Constants for MSP Commands
+local API_NAME = "RC_TUNING" -- API name (must be same as filename)
 local MSP_API_CMD_READ = 111 -- Command identifier 
 local MSP_API_CMD_WRITE = 204 -- Command identifier 
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = { -- This still needs completed
-    {field = "rates_type",      type = "U8",  apiVersion = 12.06, simResponse = {4},  min = 0, max = 6,    default = 4,  table = {[0] = "NONE", "BETAFLIGHT", "RACEFLIGHT", "KISS", "ACTUAL", "QUICK"}},
+    {field = "rates_type",      type = "U8",  apiVersion = 12.06, simResponse = {4},  min = 0, max = 6,    default = 4,  tableIdxInc = -1, table = {"NONE", "BETAFLIGHT", "RACEFLIGHT", "KISS", "ACTUAL", "QUICK"}},
     {field = "rcRates_1",       type = "U8",  apiVersion = 12.06, simResponse = {18}}, -- we do no set min/max values as depends on rate type!
     {field = "rcExpo_1",        type = "U8",  apiVersion = 12.06, simResponse = {25}}, -- we do no set min/max values as depends on rate type!
     {field = "rates_1",         type = "U8",  apiVersion = 12.06, simResponse = {32}}, -- we do no set min/max values as depends on rate type!
@@ -103,7 +104,7 @@ local function write(suppliedPayload)
 
     local message = {
         command = MSP_API_CMD_WRITE,
-        payload = suppliedPayload or rfsuite.bg.msp.api.buildWritePayload(payloadData,MSP_API_STRUCTURE_WRITE),
+        payload = suppliedPayload or rfsuite.bg.msp.api.buildWritePayload(API_NAME, payloadData,MSP_API_STRUCTURE_WRITE),
         processReply = function(self, buf)
             local completeHandler = handlers.getCompleteHandler()
             if completeHandler then completeHandler(self, buf) end

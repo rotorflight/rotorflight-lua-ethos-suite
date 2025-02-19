@@ -15,10 +15,9 @@
  * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
 -- Constants for MSP Commands
+local API_NAME = "SERVO_OVERRIDE" -- API name (must be same as filename)
 local MSP_API_CMD_READ = 192 -- Command identifier for MSP Mixer Config Read
 local MSP_API_CMD_WRITE = 193 -- Command identifier for saving Mixer Config Settings
-
-
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
@@ -92,7 +91,7 @@ local function write(suppliedPayload)
 
     local message = {
         command = MSP_API_CMD_WRITE,
-        payload = suppliedPayload or rfsuite.bg.msp.api.buildWritePayload(payloadData,MSP_API_STRUCTURE_WRITE),
+        payload = suppliedPayload or rfsuite.bg.msp.api.buildWritePayload(API_NAME, payloadData,MSP_API_STRUCTURE_WRITE),
         processReply = function(self, buf)
             local completeHandler = handlers.getCompleteHandler()
             if completeHandler then completeHandler(self, buf) end

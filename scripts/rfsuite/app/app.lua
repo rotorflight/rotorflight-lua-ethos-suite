@@ -280,6 +280,9 @@ local mspEepromWrite = {
     command = 250, -- MSP_EEPROM_WRITE, fails when armed
     processReply = function(self, buf)
         app.triggers.closeSave = true
+        if app.Page.postEepromWrite then 
+            app.Page.postEepromWrite() 
+        end
         if app.Page.reboot then
             -- app.audio.playSaveArmed = true
             rebootFc()
@@ -488,7 +491,10 @@ local function saveSettings()
     
         local totalRequests = #apiList  -- Total API calls to be made
         local completedRequests = 0      -- Counter for completed requests
-    
+
+        -- run a function in a module if it exists just prior to saving
+        if app.Page.preSave then app.Page.preSave(app.Page) end
+
         for apiID, apiNAME in ipairs(apiList) do
             rfsuite.utils.log("Saving data for API: " .. apiNAME, "debug")
     
@@ -532,6 +538,7 @@ local function saveSettings()
                 rfsuite.utils.log("Set value for " .. i .. " to " .. v, "debug")
                 API.setValue(i, v)
             end
+
             API.write()
         end
     else

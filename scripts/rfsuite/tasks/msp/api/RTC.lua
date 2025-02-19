@@ -15,6 +15,7 @@
  * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
 -- Constants for MSP Commands
+local API_NAME = "RTC" -- API name (must be same as filename)
 local MSP_API_CMD_WRITE = 246 -- Command identifier for setting RTC
 
 -- Define the MSP request data structure

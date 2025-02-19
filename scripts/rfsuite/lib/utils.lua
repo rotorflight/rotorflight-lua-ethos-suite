@@ -157,36 +157,38 @@ function utils.getCurrentProfile()
     else
         -- msp call to get data
 
-        if rfsuite.config.ethosRunningVersion ~= nil then
+        if system.getVersion().simulation ~= true then
+            
+            if rfsuite.config.ethosRunningVersion ~= nil then
 
-            local message = {
-                command = 101, -- MSP_SERVO_CONFIGURATIONS
-                processReply = function(self, buf)
+                local message = {
+                    command = 101, -- MSP_SERVO_CONFIGURATIONS
+                    uuid = "getProfile",
+                    processReply = function(self, buf)
 
-                    if #buf >= 30 then
+                        if #buf >= 30 then
 
-                        buf.offset = 24
-                        local activeProfile = rfsuite.bg.msp.mspHelper.readU8(buf)
-                        buf.offset = 26
-                        local activeRate = rfsuite.bg.msp.mspHelper.readU8(buf)
+                            buf.offset = 24
+                            local activeProfile = rfsuite.bg.msp.mspHelper.readU8(buf)
+                            buf.offset = 26
+                            local activeRate = rfsuite.bg.msp.mspHelper.readU8(buf)
 
-                        rfsuite.session.activeProfileLast = rfsuite.session.activeProfile
-                        rfsuite.session.activeRateProfileLast = rfsuite.session.activeRateProfile
+                            rfsuite.session.activeProfileLast = rfsuite.session.activeProfile
+                            rfsuite.session.activeRateProfileLast = rfsuite.session.activeRateProfile
 
-                        rfsuite.session.activeProfile = activeProfile + 1
-                        rfsuite.session.activeRateProfile = activeRate + 1
+                            rfsuite.session.activeProfile = activeProfile + 1
+                            rfsuite.session.activeRateProfile = activeRate + 1
 
-                    end
-                end,
-                simulatorResponse = {240, 1, 124, 0, 35, 0, 0, 0, 0, 0, 0, 224, 1, 10, 1, 0, 26, 0, 0, 0, 0, 0, 2, 0, 6, 0, 6, 1, 4, 1}
+                        end
+                    end,
+                    simulatorResponse = {240, 1, 124, 0, 35, 0, 0, 0, 0, 0, 0, 224, 1, 10, 1, 0, 26, 0, 0, 0, 0, 0, 2, 0, 6, 0, 6, 1, 4, 1}
 
-            }
-            if system:getVersion().simulation ~= true then  -- only do if on real radio
+                }
                 rfsuite.bg.msp.mspQueue:add(message)
+
+
             end
-
         end
-
     end
 end
 
