@@ -702,7 +702,7 @@ function ui.openPageRefresh(idx, title, script, extra1, extra2, extra3, extra5, 
 
     if rfsuite.utils.is_multi_mspapi() then
         rfsuite.app.triggers.isReady = false
-        rfsuite.app.triggers.reloadFull = true
+        --rfsuite.app.triggers.reloadFull = true
     else    
        rfsuite.app.triggers.isReady = false
         if script ~= nil then 
@@ -910,11 +910,11 @@ function ui.navigationButtons(x, y, w, h)
                 if rfsuite.app.Page and rfsuite.app.Page.onReloadMenu then
                     rfsuite.app.Page.onReloadMenu(rfsuite.app.Page)
                 else
-                    if rfsuite.utils.is_multi_mspapi() then
-                        rfsuite.app.triggers.triggerReloadFull = true
-                    else
+                    --if rfsuite.utils.is_multi_mspapi() then
+                    --    rfsuite.app.triggers.triggerReloadFull = true
+                    --else
                         rfsuite.app.triggers.triggerReload = true
-                    end
+                    --end
                 end
                 return true
             end

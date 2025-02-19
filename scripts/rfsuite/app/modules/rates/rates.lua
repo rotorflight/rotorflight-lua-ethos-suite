@@ -1,9 +1,10 @@
 local labels = {}
 local tables = {}
+local alltables = {}
 
 local activateWakeup = false
-local currentProfileChecked = false
-local activeRateProfile
+local activeRateTable
+
 
 tables[0] = "app/modules/rates/ratetables/none.lua"
 tables[1] = "app/modules/rates/ratetables/betaflight.lua"
@@ -12,25 +13,29 @@ tables[3] = "app/modules/rates/ratetables/kiss.lua"
 tables[4] = "app/modules/rates/ratetables/actual.lua"
 tables[5] = "app/modules/rates/ratetables/quick.lua"
 
-if rfsuite.session.activeRateProfile == nil then 
-    rfsuite.session.activeRateProfile = rfsuite.preferences.defaultRateProfile 
+-- populate alltables with the tables
+for i,v in ipairs(tables) do
+    alltables[i] = assert(loadfile(v))()
+end
+
+if activeRateTable == nil then 
+    activeRateTable = rfsuite.preferences.defaultRateProfile 
 end
 
 
-local mytable = assert(loadfile(tables[rfsuite.session.activeRateProfile]))()
-local mspapi = mytable
-
+local mspapi = alltables[activeRateTable]
+local mytable = mspapi.formdata
 
 local function postLoad(self)
     -- if the activeRateProfile is not what we are displaying
     -- then we need to trigger a reload of the page
     --local v = rfsuite.app.Page.values[1]
     local v = mspapi.values[mspapi.api[1]].rates_type
-    if v ~= nil then activeRateProfile = math.floor(v) end
+    if v ~= nil then activeRateTable = math.floor(v) end
 
-    if activeRateProfile ~= nil then
-        if activeRateProfile ~= rfsuite.rateProfile then
-            rfsuite.rateProfile = activeRateProfile
+    if activeRateTable ~= nil then
+        if activeRateTable ~= rfsuite.session.activeRateTable then
+            rfsuite.session.activeRateTable = activeRateTable
             rfsuite.app.triggers.reloadFull = true
             return
         end
@@ -39,9 +44,19 @@ local function postLoad(self)
     rfsuite.app.triggers.closeProgressLoader = true
     rfsuite.app.triggers.isReady = true
     activateWakeup = true
-
+  
 end
 
+function rightAlignText(width, text)
+    local textWidth, _ = lcd.getTextSize(text)  -- Get the text width
+    local padding = width - textWidth  -- Calculate how much padding is needed
+    
+    if padding > 0 then
+        return string.rep(" ", math.floor(padding / lcd.getTextSize(" "))) .. text
+    else
+        return text  -- No padding needed if text is already wider than width
+    end
+end
 
 local function openPage(idx, title, script)
 
@@ -95,6 +110,8 @@ local function openPage(idx, title, script)
     local posX = screenWidth - paddingRight
     local posY = paddingTop
 
+    rfsuite.session.colWidth = w - paddingRight
+
     local c = 1
     while loc > 0 do
         local colLabel = rfsuite.app.Page.cols[loc]
@@ -103,12 +120,13 @@ local function openPage(idx, title, script)
         positions_r[c] = posX - w
 
         lcd.font(FONT_STD)
-        local tsizeW, tsizeH = lcd.getTextSize(colLabel)
+        --local tsizeW, tsizeH = lcd.getTextSize(colLabel)
+        colLabel = rightAlignText(rfsuite.session.colWidth, colLabel)
 
-        local posTxt = (positions_r[c] + w) - tsizeW
+        local posTxt = positions_r[c] + paddingRight 
 
         pos = {x = posTxt, y = posY, w = w, h = h}
-        form.addStaticText(line, pos, colLabel)
+        rfsuite.app.formFields['col_'..tostring(c)] = form.addStaticText(line, pos, colLabel)
 
         posX = math.floor(posX - w)
 
@@ -181,15 +199,22 @@ end
 
 local function wakeup()
 
-    if activateWakeup == true and currentProfileChecked == false and rfsuite.bg.msp.mspQueue:isProcessed() then
-
-        -- update active profile
-        -- the check happens in postLoad          
+    if activateWakeup == true and rfsuite.bg.msp.mspQueue:isProcessed() then       
         if rfsuite.session.activeRateProfile ~= nil then
             rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeRateProfile)
-            currentProfileChecked = true
-        end
 
+
+            local v = mspapi.values[mspapi.api[1]].rates_type
+
+            local cols = alltables[activeRateTable].formdata.cols
+
+            for i = 1, #cols do
+                local txt = rightAlignText(rfsuite.session.colWidth, cols[i])
+                rfsuite.app.formFields['col_' .. tostring((#cols + 1) - i)]:value(txt)
+            end
+
+
+        end
     end
 
 end
