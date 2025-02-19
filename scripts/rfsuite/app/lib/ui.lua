@@ -701,9 +701,15 @@ end
 
 function ui.openPageRefresh(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
-    rfsuite.app.triggers.isReady = false
-    if script ~= nil then rfsuite.app.Page = assert(loadfile("app/modules/" .. script))() end
-
+    if rfsuite.utils.is_multi_mspapi() then
+        print("set isread to false")
+        rfsuite.app.triggers.isReady = false
+    else    
+        rfsuite.app.triggers.isReady = false
+        if script ~= nil then 
+            rfsuite.app.Page = assert(loadfile("app/modules/" .. script))() 
+        end
+    end
 end
 
 

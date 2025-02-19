@@ -181,9 +181,8 @@ function utils.getCurrentProfile()
                 simulatorResponse = {240, 1, 124, 0, 35, 0, 0, 0, 0, 0, 0, 224, 1, 10, 1, 0, 26, 0, 0, 0, 0, 0, 2, 0, 6, 0, 6, 1, 4, 1}
 
             }
-            if system:getVersion().simulation ~= true then  -- only do if on real radio
-                rfsuite.bg.msp.mspQueue:add(message)
-            end
+            rfsuite.bg.msp.mspQueue:add(message)
+
 
         end
 
