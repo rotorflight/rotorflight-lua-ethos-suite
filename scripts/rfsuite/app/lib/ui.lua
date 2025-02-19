@@ -956,7 +956,7 @@ function ui.navigationButtons(x, y, w, h)
                     else
                         if section == 'rates' then
                             -- rates is an oddball and has an exeption
-                            rfsuite.app.ui.openPageHelp(help.help["table"][rfsuite.rateProfile], section)
+                            rfsuite.app.ui.openPageHelp(help.help["table"][rfsuite.session.rateProfile], section)
                         else
                             -- choose default or custom
                             if help.help[script] then

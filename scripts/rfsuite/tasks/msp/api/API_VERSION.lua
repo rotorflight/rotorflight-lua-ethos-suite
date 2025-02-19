@@ -26,6 +26,7 @@
  * setErrorHandler(handlerFunction): Set function to run on error  
 ]] --
 -- Constants for MSP Commands
+local API_NAME = "API_VERSION" -- API name (must be same as filename)
 local MSP_API_CMD_READ = 1 -- Command identifier for MSP API request
 local MSP_API_SIMULATOR_RESPONSE = {0, 12, 8} -- Default simulator response
 

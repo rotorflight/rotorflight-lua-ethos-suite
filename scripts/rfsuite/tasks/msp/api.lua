@@ -40,6 +40,10 @@ local function loadAPI(apiName)
         local apiModule = dofile(apiFilePath) -- Load the Lua API file
 
         if type(apiModule) == "table" and (apiModule.read or apiModule.write) then
+
+            -- Store the API name inside the module
+            apiModule.__apiName = apiName
+
             -- Wrap the read function
             if apiModule.read then
                 local originalRead = apiModule.read
@@ -348,10 +352,26 @@ function apiLoader.createHandlers()
 end
 
 -- payload builder
-function apiLoader.buildWritePayload(payload, api_structure)
+function apiLoader.buildWritePayload(apiname,payload, api_structure)
 
     local function clamp(value, min, max)
         return math.max(min or value, math.min(value, max or value))
+    end
+
+    local function get_scale_from_page(field_name)
+
+        -- Quick exit if necessary data is not available
+        if not rfsuite.app.Page.mspapi.api_reversed or not rfsuite.app.Page.fields then
+            return 1
+        end
+
+        local page = rfsuite.app.Page.fields
+        for i,v in ipairs(page) do
+            if field_name == v.apikey and rfsuite.app.Page.mspapi.api_reversed[apiname] == v.mspapi then
+                return v.scale
+            end
+        end
+        return 1
     end
 
     local function serialize_value(buf, value, data_type, min, max, byteorder)
@@ -402,7 +422,7 @@ function apiLoader.buildWritePayload(payload, api_structure)
         local field_name = field_def.field
         local value = payload[field_name] or field_def.default or 0
         local byteorder = field_def.byteorder -- Only pass if defined
-        local scale = field_def.scale or 1 -- Default scale to 1 if not defined
+        local scale = field_def.scale or get_scale_from_page(field_name) or 1 -- Default scale to 1 if not defined
 
         value = math.floor(value * scale + 0.5)
 
