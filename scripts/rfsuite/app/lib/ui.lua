@@ -1022,10 +1022,8 @@ function ui.openPageHelp(txtData, section)
 
 end
 
-function ui.injectApiAttributes(formField,f,v)
-
-
-    if (f.scale == nil and v.scale ~= nil)  then 
+function ui.injectApiAttributes(formField, f, v)
+    if (f.scale == nil and v.scale ~= nil) then 
         f.scale = v.scale 
     end
     if (f.mult == nil and v.mult ~= nil) then 
@@ -1034,20 +1032,20 @@ function ui.injectApiAttributes(formField,f,v)
     if (f.offset == nil and v.offset ~= nil) then 
         f.offset = v.offset 
     end
-    if (f.decimals == nil and v.decimals ~= nil ) then
+    if (f.decimals == nil and v.decimals ~= nil) then
         f.decimals = v.decimals
         formField:decimals(v.decimals)
     end
-    if (f.unit == nil and v.unit ~= nil)  then 
+    if (f.unit == nil and v.unit ~= nil) then 
         if f.type ~= 1 then
             formField:suffix(v.unit)
         end    
     end
-    if (f.step == nil and v.step~= nil) then
+    if (f.step == nil and v.step ~= nil) then
         f.step = v.step
         formField:step(v.step)
     end
-    if (f.min == nil and v.min ~= nil)  then
+    if (f.min == nil and v.min ~= nil) then
         f.min = v.min
         if f.type ~= 1 then
             formField:minimum(v.min)
@@ -1067,7 +1065,7 @@ function ui.injectApiAttributes(formField,f,v)
         local default = v.default * rfsuite.utils.decimalInc(v.decimals)
         if v.mult ~= nil then default = default * v.mult end
 
-        -- if for some reason we have a .0 we need to work around an ethos pecularity on default boxes!
+        -- if for some reason we have a .0 we need to work around an ethos peculiarity on default boxes!
         local str = tostring(default)
         if str:match("%.0$") then default = math.ceil(default) end                            
 
@@ -1086,7 +1084,7 @@ function ui.injectApiAttributes(formField,f,v)
         f.help = v.help
         formField:help(v.help)
     end  
-end    
+end
 
 
 return ui
