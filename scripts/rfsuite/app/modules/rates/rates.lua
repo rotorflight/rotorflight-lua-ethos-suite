@@ -3,6 +3,7 @@ local tables = {}
 
 local activateWakeup = false
 local currentProfileChecked = false
+local activeRateProfile
 
 tables[0] = "app/modules/rates/ratetables/none.lua"
 tables[1] = "app/modules/rates/ratetables/betaflight.lua"
@@ -11,36 +12,36 @@ tables[3] = "app/modules/rates/ratetables/kiss.lua"
 tables[4] = "app/modules/rates/ratetables/actual.lua"
 tables[5] = "app/modules/rates/ratetables/quick.lua"
 
-if rfsuite.session.rateProfile == nil then rfsuite.session.rateProfile = rfsuite.preferences.defaultRateProfile end
+if rfsuite.session.activeRateProfile == nil then 
+    rfsuite.session.activeRateProfile = rfsuite.preferences.defaultRateProfile 
+end
 
 
-local mytable = assert(loadfile(tables[rfsuite.session.rateProfile]))()
+local mytable = assert(loadfile(tables[rfsuite.session.activeRateProfile]))()
 local mspapi = mytable
 
 
 local function postLoad(self)
-
-
     -- if the activeRateProfile is not what we are displaying
     -- then we need to trigger a reload of the page
+    --local v = rfsuite.app.Page.values[1]
     local v = mspapi.values[mspapi.api[1]].rates_type
+    if v ~= nil then activeRateProfile = math.floor(v) end
 
-    if v ~= nil then rfsuite.session.activeRateProfile = math.floor(v) end
-
-    if rfsuite.session.activeRateProfile ~= nil then
-        if rfsuite.session.activeRateProfile ~= rfsuite.session.rateProfile then
-            rfsuite.utils.log("Rate profile changed from " .. rfsuite.session.rateProfile .. " to " .. rfsuite.session.activeRateProfile, "debug")
-            rfsuite.session.rateProfile = rfsuite.session.activeRateProfile
+    if activeRateProfile ~= nil then
+        if activeRateProfile ~= rfsuite.rateProfile then
+            rfsuite.rateProfile = activeRateProfile
             rfsuite.app.triggers.reloadFull = true
             return
         end
     end
 
     rfsuite.app.triggers.closeProgressLoader = true
-
+    rfsuite.app.triggers.isReady = true
     activateWakeup = true
 
 end
+
 
 local function openPage(idx, title, script)
 

@@ -461,7 +461,6 @@ function ui.fieldNumber(i)
     end, function(value)
         if f.postEdit then f.postEdit(rfsuite.app.Page) end
         if f.onChange then f.onChange(rfsuite.app.Page) end
-
         f.value = rfsuite.utils.saveFieldValue(rfsuite.app.Page.fields[i], value)
     end)
 
@@ -702,10 +701,10 @@ end
 function ui.openPageRefresh(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
     if rfsuite.utils.is_multi_mspapi() then
-        print("set isread to false")
         rfsuite.app.triggers.isReady = false
+        rfsuite.app.triggers.reloadFull = true
     else    
-        rfsuite.app.triggers.isReady = false
+       rfsuite.app.triggers.isReady = false
         if script ~= nil then 
             rfsuite.app.Page = assert(loadfile("app/modules/" .. script))() 
         end
