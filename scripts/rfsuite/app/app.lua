@@ -604,30 +604,77 @@ function app.mspApiUpdateFormAttributes(values, structure)
         return
     end
 
-
+    local function combined_api_parts(s)
+        local part1, part2 = s:match("^([^:]+):([^:]+)$")
+    
+        if part1 and part2 then
+            local num = tonumber(part1)
+            if num then
+                part1 = num  -- Convert string to number
+            else
+                -- Fast lookup in precomputed table
+                part1 = app.Page.mspapi.api_reversed[part1] or nil
+            end
+    
+            if part1 then
+                return { part1, part2 }
+            end
+        end
+    
+        return nil
+    end
 
     local fields = app.Page.mspapi.formdata.fields
     local api = app.Page.mspapi.api
 
+    -- Create a reversed API table for quick lookups
+    if not app.Page.mspapi.api_reversed then
+        app.Page.mspapi.api_reversed = {}
+        for index, value in pairs(app.Page.mspapi.api) do
+            app.Page.mspapi.api_reversed[value] = index
+        end
+    end
+
     for i, f in ipairs(fields) do
         -- Define some key details
         local formField = rfsuite.app.formFields[i]
-        local apikey = f.apikey
-        local mspapiID = f.mspapi
-        local mspapiNAME = api[mspapiID]
-        local targetStructure = structure[mspapiNAME]
-        
-        if mspapiID  == nil then error("mspapiID is nil for field " .. f.t) break end    
-        
-        for _, v in ipairs(targetStructure) do
 
-            if v.field == apikey and mspapiID == f.mspapi then
-                rfsuite.app.ui.injectApiAttributes(formField, f, v)
-                local scale = f.scale or 1
-                rfsuite.app.Page.fields[i].value = values[mspapiNAME][apikey] / scale
-                break -- Found field, can move on
+        if type(formField) == 'userdata' then
+
+            -- Check if the field has an API key and extract the parts if needed
+            -- we do not need to handle this on the save side as read has simple
+            -- populated the mspapi and api fierds in the formdata.fields
+            -- meaning they are already in the correct format
+            if f.api then
+                rfsuite.utils.log("API field found: " .. f.api, "debug")
+                local parts = combined_api_parts(f.api)
+                if parts then
+                f.mspapi = parts[1]
+                f.apikey = parts[2]
+                end
             end
-        end
+
+            local apikey = f.apikey
+            local mspapiID = f.mspapi
+            local mspapiNAME = api[mspapiID]
+            local targetStructure = structure[mspapiNAME]
+
+            if mspapiID  == nil or mspapiID  == nil then 
+                rfsuite.utils.log("API field missing mspapi or apikey", "debug")
+            else        
+                for _, v in ipairs(targetStructure) do
+
+                    if v.field == apikey and mspapiID == f.mspapi then
+                        rfsuite.app.ui.injectApiAttributes(formField, f, v)
+                        local scale = f.scale or 1
+                        rfsuite.app.Page.fields[i].value = values[mspapiNAME][apikey] / scale
+                        break -- Found field, can move on
+                    end
+                end
+            end
+        else
+            rfsuite.utils.log("Form field skipped; not valid for this api version?", "debug")    
+        end    
     end
 end
 
