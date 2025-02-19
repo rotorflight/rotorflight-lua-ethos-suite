@@ -3,6 +3,8 @@ local activateWakeup = false
 local currentProfileChecked = false
 local extraMsgOnSave = nil
 local originalRateTable = nil
+local resetRates = false
+local doFullReload = false
 
 if rfsuite.RateTable == nil then rfsuite.RateTable = rfsuite.preferences.defaultRateProfile end
 
@@ -31,37 +33,70 @@ local mspapi = {
     }                 
 }
 
---[[
--- rate table defaults
-local function defaultRates(x)
-    local defaults = {}
-    defaults[0] = {0,   0,  0,  0,  0,  0,  0,   0,  0,  0,  0,  0,  0,   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0}  -- NONE
-    defaults[1] = {1, 180,  0,  0,  0,  0,  0, 180,  0,  0,  0,  0,  0, 180,  0,  0,  0,  0,  0, 203,  0,  1,  0,  0,  0} -- BF
-    defaults[2] = {2,  36,  0,  0,  0,  0,  0,  36,  0,  0,  0,  0,  0,  36,  0,  0,  0,  0,  0,  50,  0,  0,  0,  0,  0} -- RACEFL
-    defaults[3] = {3, 180,  0,  0,  0,  0,  0, 180,  0,  0,  0,  0,  0, 180,  0,  0,  0,  0,  0, 250,  0,  0,  0,  0,  0} -- KISS
-    defaults[4] = {4,  36,  0, 36,  0,  0,  0,  36,  0, 36,  0,  0,  0,  36,  0, 36,  0,  0,  0,  48,  0, 48,  0,  0,  0} -- ACTUAL
-    defaults[5] = {5, 180,  0, 36,  0,  0,  0, 180,  0, 36,  0,  0,  0, 180,  0, 36,  0,  0,  0, 250,  0,104,  0,  0,  0} -- QUICK
-
-    return defaults[x]
-end
-]]--
-
---[[
-local function preSavePayload(payload)
-    if rfsuite.app.triggers.resetRates == true then
-        rfsuite.app.triggers.resetRates = false
-        rfsuite.NewRateTable = rfsuite.app.Page.values[1]
-        payload = defaultRates(rfsuite.NewRateTable)
-    end
-
-    return payload
-end
-]]--
-
 local function preSave(self)
-    if rfsuite.app.triggers.resetRates == true then
+    if resetRates == true then
         rfsuite.utils.log("Resetting rates to defaults","info")
-    end     
+
+        -- selected id
+        local table_id = rfsuite.app.Page.fields[1].value
+
+        -- load the respective rate table
+        local tables = {}
+        tables[0] = "app/modules/rates/ratetables/none.lua"
+        tables[1] = "app/modules/rates/ratetables/betaflight.lua"
+        tables[2] = "app/modules/rates/ratetables/raceflight.lua"
+        tables[3] = "app/modules/rates/ratetables/kiss.lua"
+        tables[4] = "app/modules/rates/ratetables/actual.lua"
+        tables[5] = "app/modules/rates/ratetables/quick.lua"
+        
+        local mytable = assert(loadfile(tables[table_id]))()
+
+        rfsuite.utils.log("Using defaults from table " .. tables[table_id], "info")
+
+        -- pull all the values to the fields table as not created because not rendered!
+        for _, y in pairs(mytable.formdata.fields) do
+            if y.default then
+                local found = false
+        
+
+                -- Check if an entry with the same apikey exists
+                for i, v in ipairs(rfsuite.app.Page.fields) do
+                    if v.apikey == y.apikey then
+                        -- Update existing entry
+                        rfsuite.app.Page.fields[i] = y
+                        found = true
+                        break
+                    end
+                end
+        
+                -- If no match was found, insert as a new entry and set value to default
+                if not found then
+                    table.insert(rfsuite.app.Page.fields, y)
+                end
+            end
+        end
+
+        -- save all the values
+        for i,v in ipairs(rfsuite.app.Page.fields) do
+
+                if v.apikey == "rates_type" then
+                    v.value = table_id
+                else 
+
+                    local default = v.default or 0
+
+                    default = default * rfsuite.utils.decimalInc(v.decimals)
+                    if v.mult ~= nil then default = math.floor(default * v.mult) end
+                    if v.scale ~= nil then default = math.floor(default / v.scale) end
+                    
+                    rfsuite.utils.log("Saving default value for " .. v.apikey .. " as " .. default, "info")
+                    rfsuite.utils.saveFieldValue(v, default)
+                    rfsuite.app.saveValue(i)
+                end    
+        end    
+            
+    end
+ 
 end    
 
 local function postLoad(self)
@@ -82,6 +117,13 @@ local function wakeup()
         if not originalRateTable then
             originalRateTable = rfsuite.app.Page.fields[1].value
         end
+
+        -- reload the page
+        if doFullReload == true then
+            rfsuite.utils.log("Reloading full after rate type change","info")
+            rfsuite.app.triggers.reloadFull = true
+            doFullReload = false
+        end    
     end
 end
 
@@ -90,13 +132,21 @@ local function flagRateChange(self)
     if rfsuite.app.Page.fields[1].value == originalRateTable then
         self.extraMsgOnSave = nil
         rfsuite.app.ui.enableAllFields()
-        rfsuite.app.triggers.resetRates = false
+        resetRates = false
     else
         self.extraMsgOnSave = "Rate type changed. Values will be reset to defaults."
-        rfsuite.app.triggers.resetRates = true
+        resetRates = true
         rfsuite.app.ui.disableAllFields()
         rfsuite.app.formFields[1]:enable(true)
     end
+end
+
+local function postEepromWrite(self)
+        -- trigger full reload after writting eeprom - needed as we are changing the rate type
+        if resetRates == true then
+            doFullReload = true
+        end
+        
 end
 
 return {
@@ -110,6 +160,7 @@ return {
     postLoad = postLoad,
     wakeup = wakeup,
     preSave = preSave,
+    postEepromWrite = postEepromWrite,
     extraMsgOnSave = extraMsgOnSave,
     API = {},
 }

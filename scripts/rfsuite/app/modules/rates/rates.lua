@@ -36,22 +36,10 @@ local function postLoad(self)
         end
     end
 
-    -- this is an odd one in that the field values are not in the api structure due to how it works
-    -- we need to back fill the values from the mspapi structure
-    --for i,v in ipairs(rfsuite.app.Page.fields) do
-    --    if v.min then
-    --        mspapi.formFields.
-    --    end
-    --end
-
     rfsuite.app.triggers.closeProgressLoader = true
 
     activateWakeup = true
 
-end
-
-local function flagRateChange(self)
-    rfsuite.app.triggers.resetRates = true
 end
 
 local function openPage(idx, title, script)
@@ -162,7 +150,9 @@ local function openPage(idx, title, script)
                 end
                 return value
             end, function(value)
+                print("value: " .. value)
                 f.value = rfsuite.utils.saveFieldValue(rfsuite.app.Page.fields[i], value)
+                print("f. value: " .. f.value)
                 rfsuite.app.saveValue(i)
             end)
             if f.default ~= nil then

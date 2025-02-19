@@ -21,7 +21,7 @@ local MSP_API_CMD_WRITE = 204 -- Command identifier
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = { -- This still needs completed
-    {field = "rates_type",      type = "U8",  apiVersion = 12.06, simResponse = {4},  min = 0, max = 6,    default = 4,  table = {[0] = "NONE", "BETAFLIGHT", "RACEFLIGHT", "KISS", "ACTUAL", "QUICK"}},
+    {field = "rates_type",      type = "U8",  apiVersion = 12.06, simResponse = {4},  min = 0, max = 6,    default = 4,  tableIdxInc = -1, table = {"NONE", "BETAFLIGHT", "RACEFLIGHT", "KISS", "ACTUAL", "QUICK"}},
     {field = "rcRates_1",       type = "U8",  apiVersion = 12.06, simResponse = {18}}, -- we do no set min/max values as depends on rate type!
     {field = "rcExpo_1",        type = "U8",  apiVersion = 12.06, simResponse = {25}}, -- we do no set min/max values as depends on rate type!
     {field = "rates_1",         type = "U8",  apiVersion = 12.06, simResponse = {32}}, -- we do no set min/max values as depends on rate type!
