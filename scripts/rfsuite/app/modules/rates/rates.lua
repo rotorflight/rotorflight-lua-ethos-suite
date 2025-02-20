@@ -225,7 +225,6 @@ end
 
 return {
     mspapi = mspapi,
-    apiForceStructPrecedence = true,  
     title = "Rates",
     reboot = false,
     eepromWrite = true,

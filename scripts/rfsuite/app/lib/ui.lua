@@ -1028,42 +1028,43 @@ end
 
 
 -- form target; field from exsting page; field from strucxture
-function ui.injectApiAttributes(formField, f, v, forceUpdate)
-    if (forceUpdate or f.scale == nil) and v.scale ~= nil then 
+-- form target; field from exsisting page; field from structure
+function ui.injectApiAttributes(formField, f, v)
+    if (f.scale == nil and v.scale ~= nil) then 
         f.scale = v.scale 
     end
-    if (forceUpdate or f.mult == nil) and v.mult ~= nil then 
+    if (f.mult == nil and v.mult ~= nil) then 
         f.mult = v.mult 
     end
-    if (forceUpdate or f.offset == nil) and v.offset ~= nil then 
+    if (f.offset == nil and v.offset ~= nil) then 
         f.offset = v.offset 
     end
-    if (forceUpdate or f.decimals == nil) and v.decimals ~= nil then
+    if (f.decimals == nil and v.decimals ~= nil) then
         f.decimals = v.decimals
         formField:decimals(v.decimals)
     end
-    if (forceUpdate or f.unit == nil) and v.unit ~= nil then 
+    if (f.unit == nil and v.unit ~= nil) then 
         if f.type ~= 1 then
             formField:suffix(v.unit)
         end    
     end
-    if (forceUpdate or f.step == nil) and v.step ~= nil then
+    if (f.step == nil and v.step ~= nil) then
         f.step = v.step
         formField:step(v.step)
     end
-    if (forceUpdate or f.min == nil) and v.min ~= nil then
+    if (f.min == nil and v.min ~= nil) then
         f.min = v.min
         if f.type ~= 1 then
             formField:minimum(v.min)
         end
     end
-    if (forceUpdate or f.max == nil) and v.max ~= nil then
+    if (f.max == nil and v.max ~= nil) then
         f.max = v.max
         if f.type ~= 1 then
             formField:maximum(v.max)
         end
     end
-    if (forceUpdate or f.default == nil) and v.default ~= nil then
+    if (f.default == nil and v.default ~= nil) then
         f.default = v.default
         
         -- factor in all possible scaling
@@ -1079,7 +1080,7 @@ function ui.injectApiAttributes(formField, f, v, forceUpdate)
             formField:default(default)
         end
     end
-    if (forceUpdate or f.table == nil) and v.table ~= nil then 
+    if (f.table == nil and v.table ~= nil) then 
         f.table = v.table 
         local tbldata = rfsuite.utils.convertPageValueTable(v.table, f.tableIdxInc or v.tableIdxInc)       
         if f.type == 1 then                      
@@ -1091,7 +1092,5 @@ function ui.injectApiAttributes(formField, f, v, forceUpdate)
         formField:help(v.help)
     end  
 end
-
-
 
 return ui
