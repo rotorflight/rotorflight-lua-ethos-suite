@@ -33,13 +33,74 @@ local function postLoad(self)
     local v = mspapi.values[mspapi.api[1]].rates_type
     if v ~= nil then activeRateTable = math.floor(v) end
 
-    if activeRateTable ~= nil then
-        if activeRateTable ~= rfsuite.session.activeRateTable then
+    --if activeRateTable ~= nil then
+        --if activeRateTable ~= rfsuite.session.activeRateTable then
+            rfsuite.utils.log("Active rate table has changed, refreshing data", "info")
+
+
             rfsuite.session.activeRateTable = activeRateTable
-            rfsuite.app.triggers.reloadFull = true
-            return
-        end
-    end
+
+           -- update static text fields
+           local v = mspapi.values[mspapi.api[1]].rates_type
+           local cols = alltables[activeRateTable].formdata.cols
+           local title = alltables[activeRateTable].formdata.name
+
+           -- title
+           rfsuite.app.formFields['col_0']:value(title)
+
+           -- columns
+           for i = 1, #cols do
+               local txt = rightAlignText(rfsuite.session.colWidth, cols[i])
+               rfsuite.app.formFields['col_' .. tostring((#cols + 1) - i)]:value(txt)
+           end
+
+           -- update field decimals mult max etc
+            for x,f in ipairs(alltables[activeRateTable].formdata.fields) do
+                if f.scale ~= nil then 
+                   rfsuite.app.Page.fields[x].scale = f.scale
+                end
+                if f.mult ~= nil then 
+                   rfsuite.app.Page.fields[x].mult = f.mult
+                end
+                if f.offset ~= nil then 
+                    rfsuite.app.Page.fields[x].offset = f.offset
+                end
+                if f.decimals ~= nil then
+                    rfsuite.app.formFields[x]:decimals(math.floor(f.decimals))
+                end
+                if f.unit ~= nil then 
+                    rfsuite.app.formFields[x]:suffix(math.floor(f.unit))
+                end
+                if f.step ~= nil then
+                    rfsuite.app.formFields[x]:step(math.floor(f.step))
+                end
+                if f.min ~= nil then
+                    rfsuite.app.formFields[x]:minimum(math.floor(f.min))
+                end
+                if f.max ~= nil then
+                   rfsuite.app.formFields[x]:maximum(math.floor(f.max))
+                end
+                if (f.default) then
+                                     
+                    -- factor in all possible scaling
+                    if f.offset ~= nil then f.default = f.default + f.offset end
+                    local default = f.default * rfsuite.utils.decimalInc(f.decimals)
+                    if f.mult ~= nil then default = default * f.mult end
+            
+                    -- if for some reason we have a .0 we need to work around an ethos peculiarity on default boxes!
+                    local str = tostring(default)
+                    if str:match("%.0$") then default = math.ceil(default) end                            
+            
+                    if f.type ~= 1 then 
+                        rfsuite.app.formFields[x]:default(math.floor(default))
+                    end
+                end
+
+            end
+
+
+        --end
+    --end
 
     rfsuite.app.triggers.closeProgressLoader = true
     rfsuite.app.triggers.isReady = true

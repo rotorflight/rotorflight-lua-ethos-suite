@@ -1028,8 +1028,10 @@ end
 
 
 -- form target; field from exsting page; field from strucxture
--- form target; field from exsisting page; field from structure
+-- v is the structure value
+-- f is the field from page value
 function ui.injectApiAttributes(formField, f, v)
+
     if (f.scale == nil and v.scale ~= nil) then 
         f.scale = v.scale 
     end
