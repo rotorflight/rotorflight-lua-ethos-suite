@@ -38,6 +38,13 @@ local function postLoad(self)
             rfsuite.utils.log("Active rate table has changed, refreshing data", "info")
 
 
+            --[[
+            We need to structure this page so it only loads the parameters after init.
+            maybe we initially load a 'blank' rate table for form generation - then adjust
+            values after. This way we can avoid the 'double load' issue.
+            
+            ]]
+
             rfsuite.session.activeRateTable = activeRateTable
 
            -- update static text fields
