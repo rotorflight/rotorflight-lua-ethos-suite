@@ -11,6 +11,9 @@ set tgt=rfsuite
 set srcfolder=%DEV_RFSUITE_GIT_SRC%
 set dstfolder=%DEV_RADIO_SRC%
 
+REM Extract the drive letter from dstfolder
+for %%A in ("%dstfolder%") do set "driveLetter=%%~dA"
+
 REM Preserve the logs folder by moving it temporarily
 if exist "%dstfolder%\%tgt%\logs\" (
     mkdir "%dstfolder%\logs_temp"
@@ -49,5 +52,8 @@ if exist "%dstfolder%\logs_temp\" (
     xcopy "%dstfolder%\logs_temp\*" "%dstfolder%\%tgt%\logs" /h /i /c /k /e /r /y
     RMDIR "%dstfolder%\logs_temp" /S /Q
 )
+
+REM Dismount the volume as the last step
+fsutil volume dismount %driveLetter%
 
 echo Script execution completed.

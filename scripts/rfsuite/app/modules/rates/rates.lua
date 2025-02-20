@@ -104,7 +104,10 @@ local function openPage(idx, title, script)
     local positions_r = {}
     local pos
 
-    line = form.addLine(mspapi.formdata.name)
+    --line = form.addLine(mspapi.formdata.name)
+    line = form.addLine("")
+    pos = {x = 0, y = paddingTop, w = 200, h = h}
+    rfsuite.app.formFields['col_0'] = form.addStaticText(line, pos, mspapi.formdata.name)
 
     local loc = numCols
     local posX = screenWidth - paddingRight
@@ -169,9 +172,7 @@ local function openPage(idx, title, script)
                 end
                 return value
             end, function(value)
-                print("value: " .. value)
                 f.value = rfsuite.utils.saveFieldValue(rfsuite.app.Page.fields[i], value)
-                print("f. value: " .. f.value)
                 rfsuite.app.saveValue(i)
             end)
             if f.default ~= nil then
@@ -203,16 +204,19 @@ local function wakeup()
         if rfsuite.session.activeRateProfile ~= nil then
             rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeRateProfile)
 
-
+            -- update static text fields
             local v = mspapi.values[mspapi.api[1]].rates_type
-
             local cols = alltables[activeRateTable].formdata.cols
+            local title = alltables[activeRateTable].formdata.name
 
+            -- title
+            rfsuite.app.formFields['col_0']:value(title)
+
+            -- columns
             for i = 1, #cols do
                 local txt = rightAlignText(rfsuite.session.colWidth, cols[i])
                 rfsuite.app.formFields['col_' .. tostring((#cols + 1) - i)]:value(txt)
             end
-
 
         end
     end
@@ -221,6 +225,7 @@ end
 
 return {
     mspapi = mspapi,
+    apiForceStructPrecedence = true,  
     title = "Rates",
     reboot = false,
     eepromWrite = true,

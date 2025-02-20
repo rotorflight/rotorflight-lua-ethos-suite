@@ -361,7 +361,11 @@ local function processPageReply(source, buf, methodType)
                     local formField = rfsuite.app.formFields[j]
 
                     if f.apikey and  f.apikey == field and formField then
-                        rfsuite.app.ui.injectApiAttributes(formField,f,v)                
+                        if rfsuite.app.Page.apiForceStructPrecedence == true then
+                            rfsuite.app.ui.injectApiAttributes(formField,f,v, true)
+                        else    
+                            rfsuite.app.ui.injectApiAttributes(formField,f,v, false) 
+                        end               
                     end
                 end
             end
@@ -672,7 +676,11 @@ function app.mspApiUpdateFormAttributes(values, structure)
                 for _, v in ipairs(targetStructure) do
 
                     if v.field == apikey and mspapiID == f.mspapi then
-                        rfsuite.app.ui.injectApiAttributes(formField, f, v)
+                        if rfsuite.app.Page.apiForceStructPrecedence == true then
+                            rfsuite.app.ui.injectApiAttributes(formField, f, v, true)
+                        else
+                            rfsuite.app.ui.injectApiAttributes(formField, f, v, false)
+                        end
                         local scale = f.scale or 1
                         rfsuite.app.Page.fields[i].value = values[mspapiNAME][apikey] / scale
                         break -- Found field, can move on
