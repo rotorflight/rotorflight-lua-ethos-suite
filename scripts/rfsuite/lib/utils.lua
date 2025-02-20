@@ -156,7 +156,7 @@ function utils.getCurrentProfile()
 
     else
         -- msp call to get data
-
+        
         if system.getVersion().simulation ~= true then
             
             if rfsuite.config.ethosRunningVersion ~= nil then
@@ -189,6 +189,7 @@ function utils.getCurrentProfile()
 
             end
         else
+            --[[
             local seconds = tonumber(os.date("%S"))  -- Get the current second (0-59)
     
             local ap
@@ -214,7 +215,7 @@ function utils.getCurrentProfile()
             else
                 rfsuite.session.activeRateProfile = nil
             end           
-
+            ]]--
         end
     end
 end
