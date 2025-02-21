@@ -191,15 +191,11 @@ local function openPage(idx, title, script)
 
     rfsuite.app.ui.fieldHeader(title)
 
-    -- merge in form info when using multi msp api system
-    if rfsuite.utils.is_multi_mspapi() then
-        rfsuite.utils.log("Merging form data from mspapi","debug")
-        rfsuite.app.Page.fields = rfsuite.app.Page.mspapi.formdata.fields
-        rfsuite.app.Page.labels = rfsuite.app.Page.mspapi.formdata.labels
-        rfsuite.app.Page.rows = rfsuite.app.Page.mspapi.formdata.rows
-        rfsuite.app.Page.cols = rfsuite.app.Page.mspapi.formdata.cols
-    end
-
+    rfsuite.utils.log("Merging form data from mspapi","debug")
+    rfsuite.app.Page.fields = rfsuite.app.Page.mspapi.formdata.fields
+    rfsuite.app.Page.labels = rfsuite.app.Page.mspapi.formdata.labels
+    rfsuite.app.Page.rows = rfsuite.app.Page.mspapi.formdata.rows
+    rfsuite.app.Page.cols = rfsuite.app.Page.mspapi.formdata.cols
 
     local numCols
     if rfsuite.app.Page.cols ~= nil then

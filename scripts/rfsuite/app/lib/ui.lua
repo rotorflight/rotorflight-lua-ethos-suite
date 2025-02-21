@@ -700,15 +700,17 @@ end
 
 function ui.openPageRefresh(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
-    if rfsuite.utils.is_multi_mspapi() then
-        rfsuite.app.triggers.isReady = false
-        --rfsuite.app.triggers.reloadFull = true
-    else    
-       rfsuite.app.triggers.isReady = false
-        if script ~= nil then 
-            rfsuite.app.Page = assert(loadfile("app/modules/" .. script))() 
-        end
-    end
+    rfsuite.app.triggers.isReady = false
+
+--     if rfsuite.utils.is_multi_mspapi() then
+--         rfsuite.app.triggers.isReady = false
+
+--     else    
+--        rfsuite.app.triggers.isReady = false
+--         if script ~= nil then 
+--             rfsuite.app.Page = assert(loadfile("app/modules/" .. script))() 
+--         end
+--     end
 end
 
 
@@ -764,12 +766,11 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
         formLineCnt = 0
 
-        -- merge in form info when using multi msp api system
-        if rfsuite.utils.is_multi_mspapi() then
-            rfsuite.utils.log("Merging form data from mspapi","debug")
-            rfsuite.app.Page.fields = rfsuite.app.Page.mspapi.formdata.fields
-            rfsuite.app.Page.labels = rfsuite.app.Page.mspapi.formdata.labels
-        end
+
+        rfsuite.utils.log("Merging form data from mspapi","debug")
+        rfsuite.app.Page.fields = rfsuite.app.Page.mspapi.formdata.fields
+        rfsuite.app.Page.labels = rfsuite.app.Page.mspapi.formdata.labels
+
 
         if rfsuite.app.Page.fields then
             for i = 1, #rfsuite.app.Page.fields do
