@@ -1,5 +1,4 @@
 local activateWakeup = false
-local currentProfileChecked = false
 
 local mspapi = {
     api = {
@@ -149,13 +148,12 @@ end
 
 local function wakeup()
 
-    if activateWakeup == true and currentProfileChecked == false and rfsuite.bg.msp.mspQueue:isProcessed() then
+    if activateWakeup == true and rfsuite.bg.msp.mspQueue:isProcessed() then
 
         -- update active profile
         -- the check happens in postLoad          
         if rfsuite.session.activeProfile ~= nil then
             rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeProfile)
-            currentProfileChecked = true
         end
 
     end

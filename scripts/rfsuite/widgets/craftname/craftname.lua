@@ -153,6 +153,8 @@ function rf2craftname.configure(widget)
     -- reset this to force a lcd refresh
     lastName = nil
     lastID = nil
+    
+    LCD_W, LCD_H = lcd.getWindowSize()
 
     if LCD_H > LCD_MINH4IMAGE then
         local line = form.addLine("Image")

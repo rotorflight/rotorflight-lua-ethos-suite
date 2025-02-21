@@ -1,53 +1,51 @@
-local labels = {}
-local fields = {}
-
 local activateWakeup = false
-local currentProfileChecked = false
 
--- pid controller bandwidth
-labels[#labels + 1] = {t = "PID Bandwidth", inline_size = 8.15, label = "pidbandwidth", type = 1}
-fields[#fields + 1] = {t = "R", inline = 3, label = "pidbandwidth", apikey = "gyro_cutoff_0"}
-fields[#fields + 1] = {t = "P", inline = 2, label = "pidbandwidth", apikey = "gyro_cutoff_1"}
-fields[#fields + 1] = {t = "Y", inline = 1, label = "pidbandwidth", apikey = "gyro_cutoff_2"}
-
-labels[#labels + 1] = {t = "D-term cut-off", inline_size = 8.15, label = "dcutoff", type = 1}
-fields[#fields + 1] = {t = "R", inline = 3, label = "dcutoff", apikey = "dterm_cutoff_0"}
-fields[#fields + 1] = {t = "P", inline = 2, label = "dcutoff", apikey = "dterm_cutoff_1"}
-fields[#fields + 1] = {t = "Y", inline = 1, label = "dcutoff", apikey = "dterm_cutoff_2"}
-
-labels[#labels + 1] = {t = "B-term cut-off", inline_size = 8.15, label = "bcutoff", type = 1}
-fields[#fields + 1] = {t = "R", inline = 3, label = "bcutoff", apikey = "bterm_cutoff_0"}
-fields[#fields + 1] = {t = "P", inline = 2, label = "bcutoff", apikey = "bterm_cutoff_1"}
-fields[#fields + 1] = {t = "Y", inline = 1, label = "bcutoff", apikey = "bterm_cutoff_2"}
+local mspapi = {
+    api = {
+        [1] = "PID_PROFILE",
+    },
+    formdata = {
+        labels = {
+            {t = "PID Bandwidth", inline_size = 8.15, label = 1, type = 1},
+            {t = "D-term cut-off", inline_size = 8.15, label = 2, type = 1},
+            {t = "B-term cut-off", inline_size = 8.15, label = 3, type = 1}
+        },
+        fields = {
+            {t = "R", inline = 3, label = 1, mspapi = 1, apikey = "gyro_cutoff_0"},
+            {t = "P", inline = 2, label = 1, mspapi = 1, apikey = "gyro_cutoff_1"},
+            {t = "Y", inline = 1, label = 1, mspapi = 1, apikey = "gyro_cutoff_2"},
+            {t = "R", inline = 3, label = 2, mspapi = 1, apikey = "dterm_cutoff_0"},
+            {t = "P", inline = 2, label = 2, mspapi = 1, apikey = "dterm_cutoff_1"},
+            {t = "Y", inline = 1, label = 2, mspapi = 1, apikey = "dterm_cutoff_2"},
+            {t = "R", inline = 3, label = 3, mspapi = 1, apikey = "bterm_cutoff_0"},
+            {t = "P", inline = 2, label = 3, mspapi = 1, apikey = "bterm_cutoff_1"},
+            {t = "Y", inline = 1, label = 3, mspapi = 1, apikey = "bterm_cutoff_2"}
+        }
+    }                 
+}
 
 local function postLoad(self)
-    rfsuite.app.triggers.isReady = true
+    rfsuite.app.triggers.closeProgressLoader = true
     activateWakeup = true
 end
 
 local function wakeup()
 
-    if activateWakeup == true and currentProfileChecked == false and rfsuite.bg.msp.mspQueue:isProcessed() then
-
-        -- update active profile
-        -- the check happens in postLoad          
-        if rfsuite.session.activeProfile ~= nil then
+    if activateWakeup and rfsuite.bg.msp.mspQueue:isProcessed() then       
+        if rfsuite.session.activeProfile then
             rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeProfile)
             currentProfileChecked = true
         end
-
     end
 
 end
 
 return {
-    mspapi = "PID_PROFILE",
+    mspapi = mspapi,
     title = "PID Bandwidth",
     refreshOnProfileChange = true,
     reboot = false,
     eepromWrite = true,
-    labels = labels,
-    fields = fields,
     postLoad = postLoad,
     wakeup = wakeup,
     API = {},

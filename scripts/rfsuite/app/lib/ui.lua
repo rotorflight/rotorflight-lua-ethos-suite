@@ -702,7 +702,7 @@ function ui.openPageRefresh(idx, title, script, extra1, extra2, extra3, extra5, 
 
     if rfsuite.utils.is_multi_mspapi() then
         rfsuite.app.triggers.isReady = false
-        rfsuite.app.triggers.reloadFull = true
+        --rfsuite.app.triggers.reloadFull = true
     else    
        rfsuite.app.triggers.isReady = false
         if script ~= nil then 
@@ -782,17 +782,19 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
                 local apiversionCheck = (f.apiversion == nil or f.apiversion <= rfsuite.session.apiVersion)
                 local apiversionltCheck = (f.apiversionlt == nil or f.apiversionlt > rfsuite.session.apiVersion)
                 local apiversiongtCheck = (f.apiversiongt == nil or f.apiversiongt < rfsuite.session.apiVersion)
+                local apiversionlteCheck = (f.apiversionlte == nil or f.apiversionlte >= rfsuite.session.apiVersion)
+                local apiversiongteCheck = (f.apiversiongte == nil or f.apiversiongte <= rfsuite.session.apiVersion)                
                 local enableFunctionCheck = (f.enablefunction == nil or f.enablefunction())
                 
-                --[[
-                print("Checking field:", f.t)
-                print(" - Hidden check:", f.hidden ~= true)
-                print(" - API version check:", apiversionCheck)
-                print(" - API version less-than check:", apiversionltCheck)
-                print(" - API version greater-than check:", apiversiongtCheck)
-                print(" - Enable function check:", enableFunctionCheck)
-                ]]--
-                if f.hidden ~= true and apiversionCheck and apiversionltCheck and apiversiongtCheck and enableFunctionCheck then
+
+                --print("Checking field:", f.t)
+                --print(" - Hidden check:", f.hidden ~= true)
+                --print(" - API version check:", apiversionCheck)
+                --print(" - API version less-than check:", apiversionltCheck)
+                --print(" - API version greater-than check:", apiversiongtCheck)
+                --print(" - Enable function check:", enableFunctionCheck)
+
+                if f.hidden ~= true and apiversionCheck and apiversionlteCheck and apiversiongteCheck and apiversionltCheck and apiversiongtCheck and enableFunctionCheck then
                     
                     --print(" -> Field is ENABLED:", f.t)
 
@@ -910,11 +912,11 @@ function ui.navigationButtons(x, y, w, h)
                 if rfsuite.app.Page and rfsuite.app.Page.onReloadMenu then
                     rfsuite.app.Page.onReloadMenu(rfsuite.app.Page)
                 else
-                    if rfsuite.utils.is_multi_mspapi() then
-                        rfsuite.app.triggers.triggerReloadFull = true
-                    else
+                    --if rfsuite.utils.is_multi_mspapi() then
+                    --    rfsuite.app.triggers.triggerReloadFull = true
+                    --else
                         rfsuite.app.triggers.triggerReload = true
-                    end
+                    --end
                 end
                 return true
             end
@@ -1026,38 +1028,50 @@ function ui.openPageHelp(txtData, section)
 
 end
 
+
+-- form target; field from exsting page; field from strucxture
+-- v is the structure value
+-- f is the field from page value
 function ui.injectApiAttributes(formField, f, v)
-    if (f.scale == nil and v.scale ~= nil) then 
-        f.scale = v.scale 
-    end
-    if (f.mult == nil and v.mult ~= nil) then 
-        f.mult = v.mult 
-    end
-    if (f.offset == nil and v.offset ~= nil) then 
-        f.offset = v.offset 
-    end
     if (f.decimals == nil and v.decimals ~= nil) then
+        rfsuite.utils.log("Injecting decimals: " .. v.decimals,"debug")
         f.decimals = v.decimals
         formField:decimals(v.decimals)
     end
+    if (f.scale == nil and v.scale ~= nil) then 
+        rfsuite.utils.log("Injecting scale: " .. v.scale,"debug")
+        f.scale = v.scale 
+    end
+    if (f.mult == nil and v.mult ~= nil) then 
+        rfsuite.utils.log("Injecting mult: " .. v.mult,"debug")
+        f.mult = v.mult 
+    end
+    if (f.offset == nil and v.offset ~= nil) then 
+        rfsuite.utils.log("Injecting offset: " .. v.offset,"debug")
+        f.offset = v.offset 
+    end
     if (f.unit == nil and v.unit ~= nil) then 
         if f.type ~= 1 then
+            rfsuite.utils.log("Injecting unit: " .. v.unit,"debug")
             formField:suffix(v.unit)
         end    
     end
     if (f.step == nil and v.step ~= nil) then
+        rfsuite.utils.log("Injecting step: " .. v.step,"debug")
         f.step = v.step
         formField:step(v.step)
     end
     if (f.min == nil and v.min ~= nil) then
         f.min = v.min
         if f.type ~= 1 then
+            rfsuite.utils.log("Injecting min: " .. v.min,"debug")
             formField:minimum(v.min)
         end
     end
     if (f.max == nil and v.max ~= nil) then
         f.max = v.max
         if f.type ~= 1 then
+            rfsuite.utils.log("Injecting max: " .. v.max,"debug")
             formField:maximum(v.max)
         end
     end
@@ -1074,21 +1088,23 @@ function ui.injectApiAttributes(formField, f, v)
         if str:match("%.0$") then default = math.ceil(default) end                            
 
         if f.type ~= 1 then 
+            rfsuite.utils.log("Injecting default: " .. v.default,"debug")
             formField:default(default)
         end
     end
     if (f.table == nil and v.table ~= nil) then 
         f.table = v.table 
         local tbldata = rfsuite.utils.convertPageValueTable(v.table, f.tableIdxInc or v.tableIdxInc)       
-        if f.type == 1 then                      
+        if f.type == 1 then   
+            rfsuite.utils.log("Injecting table: {}","debug")                   
             formField:values(tbldata)
         end
     end            
     if v.help ~= nil then
         f.help = v.help
+        rfsuite.utils.log("Injecting help: {}","debug")
         formField:help(v.help)
     end  
 end
-
 
 return ui

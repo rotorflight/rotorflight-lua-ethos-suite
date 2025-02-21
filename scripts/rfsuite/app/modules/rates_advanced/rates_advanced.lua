@@ -1,6 +1,5 @@
 
 local activateWakeup = false
-local currentProfileChecked = false
 local extraMsgOnSave = nil
 local originalRateTable = nil
 local resetRates = false
@@ -105,12 +104,12 @@ local function postLoad(self)
 end
 
 local function wakeup()
-    if activateWakeup and not currentProfileChecked and rfsuite.bg.msp.mspQueue:isProcessed() then
+    if activateWakeup and rfsuite.bg.msp.mspQueue:isProcessed() then
         -- update active profile
         -- the check happens in postLoad          
         if rfsuite.session.activeRateProfile then
             rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeRateProfile)
-            currentProfileChecked = true
+            rfsuite.app.ui.enableAllFields()
         end
 
         -- set this after all data has loaded
@@ -121,7 +120,7 @@ local function wakeup()
         -- reload the page
         if doFullReload == true then
             rfsuite.utils.log("Reloading full after rate type change","info")
-            rfsuite.app.triggers.reloadFull = true
+            rfsuite.app.triggers.reload = true
             doFullReload = false
         end    
     end

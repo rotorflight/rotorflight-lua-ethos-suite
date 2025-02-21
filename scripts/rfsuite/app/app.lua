@@ -361,7 +361,14 @@ local function processPageReply(source, buf, methodType)
                     local formField = rfsuite.app.formFields[j]
 
                     if f.apikey and  f.apikey == field and formField then
-                        rfsuite.app.ui.injectApiAttributes(formField,f,v)                
+                            rfsuite.app.ui.injectApiAttributes(formField,f,v)   
+                            
+                            --local value = values[mspapiNAME][apikey]
+                            --value = value * rfsuite.utils.decimalInc(v.decimals)
+                            --if f.mult ~= nil then value = math.floor(value * f.mult) end
+                            --if f.scale ~= nil then value = math.floor(value / f.scale) end
+                            --rfsuite.app.Page.fields[i].value = value
+
                     end
                 end
             end
@@ -673,8 +680,16 @@ function app.mspApiUpdateFormAttributes(values, structure)
 
                     if v.field == apikey and mspapiID == f.mspapi then
                         rfsuite.app.ui.injectApiAttributes(formField, f, v)
+
                         local scale = f.scale or 1
                         rfsuite.app.Page.fields[i].value = values[mspapiNAME][apikey] / scale
+                        --local value = values[mspapiNAME][apikey]
+                        --value = value * rfsuite.utils.decimalInc(v.decimals)
+                        --if f.mult ~= nil then value = math.floor(value * f.mult) end
+                        --if f.scale ~= nil then value = math.floor(value / f.scale) end
+                        --rfsuite.app.Page.fields[i].value = value
+
+
                         break -- Found field, can move on
                     end
                 end

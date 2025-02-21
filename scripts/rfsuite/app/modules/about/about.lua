@@ -1,9 +1,8 @@
-local fields = {}
-local labels = {}
 
 local version = rfsuite.config.Version
 local ethosVersion = rfsuite.config.environment.major .. "." .. rfsuite.config.environment.minor .. "." .. rfsuite.config.environment.revision
 local apiVersion = rfsuite.session.apiVersion
+local closeProgressLoader = true
 
 local supportedMspVersion = ""
 for i, v in ipairs(rfsuite.config.supportedMspApiVersion) do
@@ -30,17 +29,25 @@ local x = w - 15
 
 displayPos = {x = x - buttonW - buttonWs - 5 - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = 300, h = rfsuite.app.radio.navbuttonHeight}
 
-fields[1] = {t = "Version", value = version, type = displayType, disable = disableType, position = displayPos}
-fields[2] = {t = "Ethos Version", value = ethosVersion, type = displayType, disable = disableType, position = displayPos}
-fields[3] = {t = "MSP Version", value = apiVersion, type = displayType, disable = disableType, position = displayPos}
-fields[4] = {t = "MSP Transport", value = string.upper(rfsuite.bg.msp.protocol.mspProtocol), type = displayType, disable = disableType, position = displayPos}
-fields[5] = {t = "Supported MSP Versions", value = supportedMspVersion, type = displayType, disable = disableType, position = displayPos}
-fields[6] = {t = "Simulation", value = simulation, type = displayType, disable = disableType, position = displayPos}
 
-function readMSP()
-    rfsuite.app.triggers.isReady = true
-    rfsuite.app.triggers.closeProgressLoader = true
-end
+local mspapi = {
+    api = {
+        [1] = nil,
+    },
+    formdata = {
+        labels = {
+        },
+        fields = {
+            {t = "Version", value = version, type = displayType, disable = disableType, position = displayPos},
+            {t = "Ethos Version", value = ethosVersion, type = displayType, disable = disableType, position = displayPos},
+            {t = "MSP Version", value = apiVersion, type = displayType, disable = disableType, position = displayPos},
+            {t = "MSP Transport", value = string.upper(rfsuite.bg.msp.protocol.mspProtocol), type = displayType, disable = disableType, position = displayPos},
+            {t = "Supported MSP Versions", value = supportedMspVersion, type = displayType, disable = disableType, position = displayPos},
+            {t = "Simulation", value = simulation, type = displayType, disable = disableType, position = displayPos}
+        }
+    }
+}
+
 
 function onToolMenu()
 
@@ -71,16 +78,20 @@ function onToolMenu()
 
 end
 
+local function wakeup()
+    if closeProgressLoader == false then
+        rfsuite.app.triggers.closeProgressLoader = true
+        closeProgressLoader = true
+    end    
+end
+
 return {
-    read = readMSP,
-    write = nil,
+    mspapi = mspapi,
     title = "Status",
     reboot = false,
     eepromWrite = false,
     minBytes = 0,
     wakeup = wakeup,
-    labels = labels,
-    fields = fields,
     refreshswitch = false,
     simulatorResponse = {},
     onToolMenu = onToolMenu,

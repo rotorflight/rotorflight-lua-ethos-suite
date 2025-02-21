@@ -19,10 +19,10 @@ local mspapi = {
         },
         fields = {
             -- rc rate
-            {row = 1, col = 1, min = 0, max = 255, default = 120, decimals = 2, scale = 100, mspapi = 1, apikey = "rcRates_1"},
-            {row = 2, col = 1, min = 0, max = 255, default = 120, decimals = 2, scale = 100, mspapi = 1, apikey = "rcRates_2"},
-            {row = 3, col = 1, min = 0, max = 255, default = 200, decimals = 2, scale = 100, mspapi = 1, apikey = "rcRates_3"},
-            {row = 4, col = 1, min = 0, max = 255, default = 203, decimals = 2, scale = 100, mspapi = 1, apikey = "rcRates_4"},
+            {row = 1, col = 1, min = 0, max = 255, default = 120, decimals = 2, scale = 10, mspapi = 1, apikey = "rcRates_1"},
+            {row = 2, col = 1, min = 0, max = 255, default = 120, decimals = 2, scale = 10, mspapi = 1, apikey = "rcRates_2"},
+            {row = 3, col = 1, min = 0, max = 255, default = 200, decimals = 2, scale = 10, mspapi = 1, apikey = "rcRates_3"},
+            {row = 4, col = 1, min = 0, max = 255, default = 203, decimals = 2, scale = 10, mspapi = 1, apikey = "rcRates_4"},
             -- super rate
             {row = 1, col = 2, min = 0, max = 100, default = 0,   decimals = 2, scale = 100, mspapi = 1, apikey = "rates_1"},
             {row = 2, col = 2, min = 0, max = 100, default = 0,   decimals = 2, scale = 100, mspapi = 1, apikey = "rates_2"},

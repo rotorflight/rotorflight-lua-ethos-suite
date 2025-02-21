@@ -18,10 +18,22 @@ local x = w - 15
 
 local displayPos = {x = x - buttonW - buttonWs - 5 - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = 100, h = rfsuite.app.radio.navbuttonHeight}
 
-fields[1] = {t = "Arming Flags", value = "-", type = displayType, disable = disableType, position = displayPos}
-fields[2] = {t = "Dataflash Free Space", value = "-", type = displayType, disable = disableType, position = displayPos}
-fields[3] = {t = "Real-time Load", value = "-", type = displayType, disable = disableType, position = displayPos}
-fields[4] = {t = "CPU Load", value = "-", type = displayType, disable = disableType, position = displayPos}
+
+local mspapi = {
+    api = {
+        [1] = nil,
+    },
+    formdata = {
+        labels = {
+        },
+        fields = {
+            {t = "Arming Flags", value = "-", type = displayType, disable = disableType, position = displayPos},
+            {t = "Dataflash Free Space", value = "-", type = displayType, disable = disableType, position = displayPos},
+            {t = "Real-time Load", value = "-", type = displayType, disable = disableType, position = displayPos},
+            {t = "CPU Load", value = "-", type = displayType, disable = disableType, position = displayPos}
+        }
+    }                 
+}
 
 local function getStatus()
     local message = {
@@ -83,19 +95,17 @@ local function eraseDataflash()
 end
 
 local function postLoad(self)
-    rfsuite.utils.log("postLoad","debug")
+
+    getStatus()
+    getDataflashSummary()
+    rfsuite.app.triggers.isReady = true
+    enableWakeup = true
+
     rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function postRead(self)
     rfsuite.utils.log("postRead","debug")
-end
-
-local function readMSP()
-    getStatus()
-    getDataflashSummary()
-    rfsuite.app.triggers.isReady = true
-    enableWakeup = true
 end
 
 local function armingDisableFlagsToString(flags)
@@ -235,15 +245,12 @@ local function onToolMenu(self)
 end
 
 return {
-    read = readMSP,
-    write = nil,
+    mspapi = mspapi,
     title = "Status",
     reboot = false,
     eepromWrite = false,
     minBytes = 0,
     wakeup = wakeup,
-    labels = labels,
-    fields = fields,
     refreshswitch = false,
     simulatorResponse = {},
     postLoad = postLoad,

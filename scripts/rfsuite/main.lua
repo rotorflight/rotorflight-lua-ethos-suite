@@ -55,6 +55,7 @@ preferences.syncCraftName = false                                   -- sync the 
 preferences.mspExpBytes = 8                                         -- number of bytes for msp_exp [default = 8] 
 preferences.defaultRateProfile = 4 -- ACTUAL                        -- default rate table [default = 4]
 preferences.watchdogParam = 10                                      -- watchdog timeout for progress boxes [default = 10]
+preferences.simProfileSwiching  = true                              -- enable auto profile switching in simulator[default = true]
 
 -- tasks
 config.bgTaskName = config.toolName .. " [Background]"              -- background task name for msp services etc
@@ -93,7 +94,7 @@ rfsuite.log = assert(loadfile("lib/log.lua"))(config)
 rfsuite.log.config.log_file = "logs/rfsuite_" .. os.date("%Y-%m-%d_%H-%M-%S") .. ".log"
 rfsuite.log.config.min_print_level  = config.logLevel
 rfsuite.log.config.log_to_file = config.logToFile
-if system:getVersion().simulation == true then rfsuite.log.print_interval = 0.1 end
+
 
 -- library with utility functions used throughou the suite
 rfsuite.utils = assert(loadfile("lib/utils.lua"))(config)
