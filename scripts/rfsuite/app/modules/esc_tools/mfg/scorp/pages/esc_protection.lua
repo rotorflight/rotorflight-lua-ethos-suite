@@ -1,24 +1,32 @@
-local labels = {}
-local fields = {}
 
 local folder = "scorp"
 
+local mspapi = {
+    api = {
+        [1] = "ESC_PARAMETERS_SCORPION",
+    },
+    formdata = {
+        labels = {
+        },
+        fields = {
+            {t = "Protection Delay", mspapi = 1, apikey="protection_delay"},
+            {t = "Cutoff Handling", mspapi = 1, apikey="cutoff_handling"},
+            {t = "Max Temperature", mspapi = 1, apikey="max_temperature"},
+            {t = "Max Current", mspapi = 1, apikey="max_current"},
+            {t = "Min Voltage", mspapi = 1, apikey="min_voltage"},
+            {t = "Max Used", mspapi = 1, apikey="max_used"}
+        }
+    }                 
+}
 
-labels[#labels + 1] = {t = "Scorpion ESC"}
 
-fields[#fields + 1] = {t = "Protection Delay", apikey="protection_delay"}
-fields[#fields + 1] = {t = "Cutoff Handling", apikey="cutoff_handling"}
 
-fields[#fields + 1] = {t = "Max Temperature",apikey="max_temperature"}
-fields[#fields + 1] = {t = "Max Current",  apikey="max_current"}
-fields[#fields + 1] = {t = "Min Voltage" ,apikey="min_voltage"}
-fields[#fields + 1] = {t = "Max Used", apikey="max_used"}
 
 local foundEsc = false
 local foundEscDone = false
 
 function postLoad()
-    rfsuite.app.triggers.isReady = true
+    rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function onNavMenu(self)
@@ -37,12 +45,10 @@ local function event(widget, category, value, x, y)
 end
 
 return {
-    mspapi="ESC_PARAMETERS_SCORPION",
+    mspapi=mspapi,
     eepromWrite = false,
     reboot = false,
     title = "Limits",
-    labels = labels,
-    fields = fields,
     escinfo = escinfo,
     svFlags = 0,
     preSavePayload = function(payload)

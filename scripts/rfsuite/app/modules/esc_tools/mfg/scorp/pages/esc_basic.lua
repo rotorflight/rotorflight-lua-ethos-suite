@@ -1,22 +1,32 @@
-local labels = {}
-local fields = {}
+
 
 local folder = "scorp"
 
 
 local ESC = assert(loadfile("app/modules/esc_tools/mfg/" .. folder .. "/init.lua"))()
 
+local mspapi = {
+    api = {
+        [1] = "ESC_PARAMETERS_SCORPION",
+    },
+    formdata = {
+        labels = {
+        },
+        fields = {
+
+            {t = "ESC Mode", type = 1, mspapi=1, apikey="esc_mode"},
+            {t = "Rotation", type = 1, mspapi=1, apikey="rotation"},
+            {t = "BEC Voltage", type = 1, mspapi=1, apikey="bec_voltage"},
+            -- {t = "Telemetry Protocol", type = 1, mspapi=1, apikey="telemetry_protocol"} -- not used as dangerous to change
+        }
+    }                 
+}
 
 
-labels[#labels + 1] = {t = "Scorpion ESC"}
 
-fields[#fields + 1] = {t = "ESC Mode", type = 1, apikey="esc_mode"}
-fields[#fields + 1] = {t = "Rotation", type = 1, apikey="rotation"}
-fields[#fields + 1] = {t = "BEC Voltage", type = 1, apikey="bec_voltage"}
--- fields[#fields + 1] = {t = "Telemetry Protocol", type = 1, apikey="telemetry_protocol"} -- not used as dangerous to change
 
 function postLoad()
-    rfsuite.app.triggers.isReady = true
+    rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function onNavMenu(self)
@@ -35,12 +45,10 @@ local function event(widget, category, value, x, y)
 end
 
 return {
-    mspapi="ESC_PARAMETERS_SCORPION",
+    mspapi=mspapi,
     eepromWrite = false,
     reboot = false,
     title = "Basic Setup",
-    labels = labels,
-    fields = fields,
     svFlags = 0,
     preSavePayload = function(payload)
         payload[2] = 0

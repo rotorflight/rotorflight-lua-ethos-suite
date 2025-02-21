@@ -1,5 +1,3 @@
-local labels = {}
-local fields = {}
 
 local folder = "xdfly"
 local ESC = assert(loadfile("app/modules/esc_tools/mfg/" .. folder .. "/init.lua"))()
@@ -9,26 +7,32 @@ local simulatorResponse = ESC.simulatorResponse
 local activeFields = ESC.getActiveFields(rfsuite.escBuffer)
 local activateWakeup = false
 
-
-
-
-fields[#fields + 1] = {t = "Timing", activeFieldPos = 4, apikey="timing"}
-fields[#fields + 1] = {t = "Acceleration", activeFieldPos = 9, apikey="acceleration"}
-fields[#fields + 1] = {t = "Brake Type", activeFieldPos = 13, apikey="brake_type"}
-fields[#fields + 1] = {t = "Brake Force", activeFieldPos = 14, apikey="brake_force"}
-fields[#fields + 1] = {t = "SR Function", activeFieldPos = 15, apikey="sr_function"}
-fields[#fields + 1] = {t = "Capacity Correction", activeFieldPos = 16, apikey="capacity_correction"}
-fields[#fields + 1] = {t = "Auto Restart Time", activeFieldPos = 10 , apikey="auto_restart_time"}
-fields[#fields + 1] = {t = "Cell Cutoff", activeFieldPos = 11, apikey="cell_cutoff"}  
-
+local mspapi = {
+    api = {
+        [1] = "ESC_PARAMETERS_XDFLY",
+    },
+    formdata = {
+        labels = {
+        },
+        fields = {
+            {t = "Timing",              activeFieldPos = 4,  mspapi = 1, apikey = "timing"},
+            {t = "Acceleration",        activeFieldPos = 9,  mspapi = 1, apikey = "brake_type"},
+            {t = "Brake Force",         activeFieldPos = 14, mspapi = 1, apikey = "brake_force"},
+            {t = "SR Function",         activeFieldPos = 15, mspapi = 1, apikey = "sr_function"},
+            {t = "Capacity Correction", activeFieldPos = 16, mspapi = 1, apikey = "capacity_correction"},
+            {t = "Auto Restart Time",   activeFieldPos = 10, mspapi = 1, apikey = "auto_restart_time"},
+            {t = "Cell Cutoff",         activeFieldPos = 11, mspapi = 1, apikey = "cell_cutoff"}
+        }
+    }                 
+}
 
 -- This code will disable the field if the ESC does not support it
 -- It now uses the activeFieldsPos element to associate to the activeFields table
-for i = #fields, 1, -1 do 
-    local f = fields[i]
+for i = #mspapi.formdata.fields, 1, -1 do 
+    local f = mspapi.formdata.fields[i]
     local fieldIndex = f.activeFieldPos  -- Use activeFieldPos for association
     if activeFields[fieldIndex] == 0 then
-        table.remove(fields, i)  -- Remove the field from the table
+        table.remove(mspapi.formdata.fields, i)  -- Remove the field from the table
     end
 end
 
@@ -37,7 +41,7 @@ local foundEsc = false
 local foundEscDone = false
 
 function postLoad()
-    rfsuite.app.triggers.isReady = true
+    rfsuite.app.triggers.closeProgressLoader = true
     activateWakeup = true
 end
 
@@ -63,12 +67,10 @@ local function wakeup(self)
 end
 
 return {
-    mspapi="ESC_PARAMETERS_XDFLY",
+    mspapi=mspapi,
     eepromWrite = true,
     reboot = false,
     title = "Advanced Setup",
-    labels = labels,
-    fields = fields,
     escinfo = escinfo,
     simulatorResponse =  simulatorResponse,
     svTiming = 0,

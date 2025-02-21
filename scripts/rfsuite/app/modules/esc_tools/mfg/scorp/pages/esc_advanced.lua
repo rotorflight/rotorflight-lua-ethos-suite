@@ -1,28 +1,31 @@
-local labels = {}
-local fields = {}
+
 
 local folder = "scorp"
 
+local mspapi = {
+    api = {
+        [1] = "ESC_PARAMETERS_SCORPION",
+    },
+    formdata = {
+        labels = {
+        },
+        fields = {
+            {t = "Soft Start Time", mspapi=1, apikey="soft_start_time"},
+            {t = "Runup Time", mspapi=1, apikey="runup_time"},
+            {t = "Bailout", mspapi=1, apikey="bailout"},
+            {t = "Gov Proportional", mspapi=1, apikey="gov_proportional"},
+            {t = "Gov Integral", mspapi=1, apikey="gov_integral"},
+            {t = "Motor Startup Sound", type = 1, mspapi=1, apikey="motor_startup_sound"},
+        }
+    }                 
+}
 
-
-
-labels[#labels + 1] = {t = "Scorpion ESC"}
-
-fields[#fields + 1] = {t = "Soft Start Time", apikey="soft_start_time"}
-fields[#fields + 1] = {t = "Runup Time", apikey="runup_time"}
-fields[#fields + 1] = {t = "Bailout", apikey="bailout"}
-
--- data types are IQ22 - decoded/encoded by FC - regual scaled integers here
-fields[#fields + 1] = {t = "Gov Proportional", apikey="gov_proportional"}
-fields[#fields + 1] = {t = "Gov Integral", apikey="gov_integral"}
-
-fields[#fields + 1] = {t = "Motor Startup Sound", type = 1, apikey="motor_startup_sound"}
 
 local foundEsc = false
 local foundEscDone = false
 
 function postLoad()
-    rfsuite.app.triggers.isReady = true
+    rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function onNavMenu(self)
@@ -41,12 +44,10 @@ local function event(widget, category, value, x, y)
 end
 
 return {
-    mspapi="ESC_PARAMETERS_SCORPION",
+    mspapi=mspapi,
     eepromWrite = false,
     reboot = false,
     title = "Advanced Setup",
-    labels = labels,
-    fields = fields,
     escinfo = escinfo,
     svFlags = 0,
     preSavePayload = function(payload)
