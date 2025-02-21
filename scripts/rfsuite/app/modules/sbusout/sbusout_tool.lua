@@ -1,5 +1,3 @@
-local labels = {}
-local fields = {}
 
 local arg = {...}
 
@@ -24,11 +22,22 @@ minmax[4] = {min = 0, max = 1000, sourceMax = motorCount, defaultMin = 0, defaul
 
 local enableWakeup = false
 
--- layouts
-fields[#fields + 1] = {t = "Type", min = 0, max = 16, vals = {1 + offset}, table = {"Receiver", "Mixer", "Servo", "Motor"}, postEdit = function(self) self.setMinMaxIndex(self, true) end}
-fields[#fields + 1] = {t = "Source", min = 0, max = 15, offset = 0, vals = {2 + offset}, help = "sbusOutSource"}
-fields[#fields + 1] = {t = "Min", min = -2000, max = 2000, vals = {3 + offset, 4 + offset}, help = "sbusOutMin"}
-fields[#fields + 1] = {t = "Max", min = -2000, max = 2000, vals = {5 + offset, 6 + offset}, help = "sbusOutMax"}
+local mspapi = {
+    api = {
+        [1] = "SBUS_OUTPUT_CONFIG",
+    },
+    formdata = {
+        labels = {
+        },
+        fields = {
+            {t = "Type", min=0, max = 16, mspapi = 1, apikey="Type_"..ch+1, table = {"Receiver", "Mixer", "Servo", "Motor"}, postEdit = function(self) self.setMinMaxIndex(self, true) end},
+            {t = "Source", min=0, max = 15, mspapi = 1, apikey = "Index_"..ch+1, help = "sbusOutSource"},
+            {t = "Min", min = -2000, max = 2000, mspapi = 1, apikey="RangeLow_"..ch+1, help = "sbusOutMin"},
+            {t = "Max", min = -2000, max = 2000, mspapi = 1, apikey="RangeHigh_"..ch+1 ,help = "sbusOutMax"},
+        }
+    }                 
+}
+
 
 local function saveServoSettings(self)
 
@@ -95,7 +104,7 @@ local function postLoad(self)
     -- the sbus output rate is last value. we dont use it - but we need it for writes so grab it here
     -- sbus_out_frame_rate = rfsuite.app.Page.values[#rfsuite.app.Page.values]
 
-    rfsuite.app.triggers.isReady = true
+    rfsuite.app.triggers.closeProgressLoader = true
     enableWakeup = true
 end
 
@@ -172,16 +181,10 @@ end
 -- not changing to api for this module due to the unusual read/write scenario.
 -- its not worth the effort
 return {
-    read = 152,
-    write = nil,
+    mspapi = mspapi,
     title = "SBUS Output",
     reboot = false,
     eepromWrite = true,
-    minBytes = 107,
-    labels = labels,
-    simulatorResponse = {1, 0, 24, 252, 232, 3, 1, 1, 24, 252, 232, 3, 1, 2, 24, 252, 232, 3, 1, 3, 24, 252, 232, 3, 1, 0, 24, 252, 232, 3, 1, 1, 24, 252, 232, 3, 1, 2, 24, 252, 232, 3, 1, 3, 24, 252, 232, 3, 1, 0, 24, 252, 232, 3, 1, 1, 24, 252, 232, 3, 1, 2, 24, 252, 232, 3, 1, 3, 24, 252, 232, 3, 1, 0, 24, 252, 232, 3, 1, 1, 24, 252, 232, 3, 1, 2, 24, 252, 232, 3, 1, 3, 24, 252, 232, 3, 1, 0,
-                         24, 252, 232, 3, 1, 1, 24, 252, 232, 3, 50},
-    fields = fields,
     postLoad = postLoad,
     onNavMenu = onNavMenu,
     onSaveMenu = onSaveMenu,
