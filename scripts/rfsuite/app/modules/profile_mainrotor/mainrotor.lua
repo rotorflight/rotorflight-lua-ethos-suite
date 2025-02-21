@@ -1,44 +1,39 @@
-local labels = {}
-local fields = {}
-
 local activateWakeup = false
-local currentProfileChecked = false
 
-labels[#labels + 1] = {t = "Collective Pitch Compensation", t2 = "Col. Pitch Compensation", label = "cpcomp", inline_size = 40.15}
-fields[#fields + 1] = {t = "", inline = 1, label = "cpcomp", apikey = "pitch_collective_ff_gain"}
 
--- main rotor settings
-labels[#labels + 1] = {t = "Cyclic Cross coupling", label = "cycliccc1", inline_size = 40.15}
-if tonumber(rfsuite.session.apiVersion) >= 12.07 then
-    fields[#fields + 1] = {t = "Gain", inline = 1, label = "cycliccc1", apikey = "cyclic_cross_coupling_gain"}
-else
-    fields[#fields + 1] = {t = "Gain", inline = 1, label = "cycliccc1", apikey = "cyclic_cross_coupling_gain"}
-end
+local mspapi = {
+    api = {
+        [1] = 'PID_PROFILE',
+    },
+    formdata = {
+        labels = {
+            {t = "Collective Pitch Compensation", t2 = "Col. Pitch Compensation", label = 1,  inline_size = 40.15},
+            {t = "Cyclic Cross coupling",                                         label = 2,  inline_size = 40.15},
+            {t = "",                                                              label = 3,  inline_size = 40.15},
+            {t = "",                                                              label = 4,  inline_size = 40.15}
 
-labels[#labels + 1] = {t = "", label = "cycliccc2", inline_size = 40.15}
-fields[#fields + 1] = {t = "Ratio", inline = 1, label = "cycliccc2", apikey = "cyclic_cross_coupling_ratio"}
+        },
+        fields = {
+            {t = "",      inline = 1, label = 1, mspapi = 1, apikey = "pitch_collective_ff_gain"},
+            {t = "Gain",  inline = 1, label = 2, mspapi = 1, apikey = "cyclic_cross_coupling_gain"},
+            {t = "Ratio", inline = 1, label = 3, mspapi = 1, apikey = "cyclic_cross_coupling_ratio"},
+            {t = "Cutoff",inline = 1, label = 4, mspapi = 1, apikey = "cyclic_cross_coupling_cutoff"}
+        }
+    }
+}
 
-labels[#labels + 1] = {t = "", label = "cycliccc3", inline_size = 40.15}
-if tonumber(rfsuite.session.apiVersion) >= 12.07 then
-    fields[#fields + 1] = {t = "Cutoff", inline = 1, label = "cycliccc3", apikey = "cyclic_cross_coupling_cutoff"}
-else
-    fields[#fields + 1] = {t = "Cutoff", inline = 1, label = "cycliccc3", apikey = "cyclic_cross_coupling_cutoff"}
-end
 
 local function postLoad(self)
-    rfsuite.app.triggers.isReady = true
+    rfsuite.app.triggers.closeProgressLoader = true
     activateWakeup = true
 end
 
 local function wakeup()
 
-    if activateWakeup == true and currentProfileChecked == false and rfsuite.bg.msp.mspQueue:isProcessed() then
-
-        -- update active profile
-        -- the check happens in postLoad          
+    if activateWakeup == true and rfsuite.bg.msp.mspQueue:isProcessed() then
+         
         if rfsuite.session.activeProfile ~= nil then
             rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeProfile)
-            currentProfileChecked = true
         end
 
     end
@@ -46,13 +41,11 @@ local function wakeup()
 end
 
 return {
-    mspapi = "PID_PROFILE",
+    mspapi = mspapi,
     title = "Main Rotor",
     refreshOnProfileChange = true,
     reboot = false,
     eepromWrite = true,
-    labels = labels,
-    fields = fields,
     postLoad = postLoad,
     wakeup = wakeup,
     API = {},

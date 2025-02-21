@@ -1034,7 +1034,7 @@ end
 -- f is the field from page value
 function ui.injectApiAttributes(formField, f, v)
     if (f.decimals == nil and v.decimals ~= nil) then
-        rfsuite.utils.log("Injecting decimals: " .. v.decimals,"info")
+        rfsuite.utils.log("Injecting decimals: " .. v.decimals,"debug")
         f.decimals = v.decimals
         formField:decimals(v.decimals)
     end
