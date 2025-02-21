@@ -31,7 +31,7 @@ config.Version = "1.0.0"                                            -- version n
 config.ethosVersion = {1, 6, 2}                                     -- min version of ethos supported by this script                                                     
 config.supportedMspApiVersion = {"12.06", "12.07","12.08"}          -- supported msp versions
 config.simulatorApiVersionResponse = {0, 12, 8}                     -- version of api return by simulator
-config.logLevel= "debug"                                             -- off | info | debug [default = info]
+config.logLevel= "info"                                             -- off | info | debug [default = info]
 config.logToFile = false                                            -- log to file [default = false] (log file is in /scripts/rfsuite/logs)
 config.developerMode = false                                        -- show developer tools on main menu [default = false]
 

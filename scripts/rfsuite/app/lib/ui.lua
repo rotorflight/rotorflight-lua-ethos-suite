@@ -1031,38 +1031,45 @@ end
 -- v is the structure value
 -- f is the field from page value
 function ui.injectApiAttributes(formField, f, v)
-
-    if (f.scale == nil and v.scale ~= nil) then 
-        f.scale = v.scale 
-    end
-    if (f.mult == nil and v.mult ~= nil) then 
-        f.mult = v.mult 
-    end
-    if (f.offset == nil and v.offset ~= nil) then 
-        f.offset = v.offset 
-    end
     if (f.decimals == nil and v.decimals ~= nil) then
+        rfsuite.utils.log("Injecting decimals: " .. v.decimals,"info")
         f.decimals = v.decimals
         formField:decimals(v.decimals)
     end
+    if (f.scale == nil and v.scale ~= nil) then 
+        rfsuite.utils.log("Injecting scale: " .. v.scale,"debug")
+        f.scale = v.scale 
+    end
+    if (f.mult == nil and v.mult ~= nil) then 
+        rfsuite.utils.log("Injecting mult: " .. v.mult,"debug")
+        f.mult = v.mult 
+    end
+    if (f.offset == nil and v.offset ~= nil) then 
+        rfsuite.utils.log("Injecting offset: " .. v.offset,"debug")
+        f.offset = v.offset 
+    end
     if (f.unit == nil and v.unit ~= nil) then 
         if f.type ~= 1 then
+            rfsuite.utils.log("Injecting unit: " .. v.unit,"debug")
             formField:suffix(v.unit)
         end    
     end
     if (f.step == nil and v.step ~= nil) then
+        rfsuite.utils.log("Injecting step: " .. v.step,"debug")
         f.step = v.step
         formField:step(v.step)
     end
     if (f.min == nil and v.min ~= nil) then
         f.min = v.min
         if f.type ~= 1 then
+            rfsuite.utils.log("Injecting min: " .. v.min,"debug")
             formField:minimum(v.min)
         end
     end
     if (f.max == nil and v.max ~= nil) then
         f.max = v.max
         if f.type ~= 1 then
+            rfsuite.utils.log("Injecting max: " .. v.max,"debug")
             formField:maximum(v.max)
         end
     end
@@ -1079,18 +1086,21 @@ function ui.injectApiAttributes(formField, f, v)
         if str:match("%.0$") then default = math.ceil(default) end                            
 
         if f.type ~= 1 then 
+            rfsuite.utils.log("Injecting default: " .. v.default,"debug")
             formField:default(default)
         end
     end
     if (f.table == nil and v.table ~= nil) then 
         f.table = v.table 
         local tbldata = rfsuite.utils.convertPageValueTable(v.table, f.tableIdxInc or v.tableIdxInc)       
-        if f.type == 1 then                      
+        if f.type == 1 then   
+            rfsuite.utils.log("Injecting table: {}","debug")                   
             formField:values(tbldata)
         end
     end            
     if v.help ~= nil then
         f.help = v.help
+        rfsuite.utils.log("Injecting help: {}","debug")
         formField:help(v.help)
     end  
 end
