@@ -189,34 +189,35 @@ function utils.getCurrentProfile()
 
             end
         else
-            --[[
-            local seconds = tonumber(os.date("%S"))  -- Get the current second (0-59)
-    
-            local ap
-            if seconds % 20 < 10 then
-                ap = 1
-            else
-                ap = 2
-            end       
-            
+            if rfsuite.preferences.simProfileSwiching == true then
+                local seconds = tonumber(os.date("%S"))  -- Get the current second (0-59)
+        
+                local ap
+                if seconds % 20 < 10 then
+                    ap = 1
+                else
+                    ap = 2
+                end       
+                
 
-            rfsuite.session.activeProfileLast = rfsuite.session.activeProfile
-            local p = ap
-            if p ~= nil then
-                rfsuite.session.activeProfile = math.floor(p)
-            else
-                rfsuite.session.activeProfile = nil
+                rfsuite.session.activeProfileLast = rfsuite.session.activeProfile
+                local p = ap
+                if p ~= nil then
+                    rfsuite.session.activeProfile = math.floor(p)
+                else
+                    rfsuite.session.activeProfile = nil
+                end
+
+                rfsuite.session.activeRateProfileLast = rfsuite.session.activeRateProfile
+                local r = ap
+                if r ~= nil then
+                    rfsuite.session.activeRateProfile = math.floor(r)
+                else
+                    rfsuite.session.activeRateProfile = nil
+                end           
+
             end
-
-            rfsuite.session.activeRateProfileLast = rfsuite.session.activeRateProfile
-            local r = ap
-            if r ~= nil then
-                rfsuite.session.activeRateProfile = math.floor(r)
-            else
-                rfsuite.session.activeRateProfile = nil
-            end           
-            ]]--
-        end
+        end    
     end
 end
 
