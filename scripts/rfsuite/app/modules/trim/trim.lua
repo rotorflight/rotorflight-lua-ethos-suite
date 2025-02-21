@@ -16,19 +16,23 @@ local currentIdleThrottleTrim
 local currentIdleThrottleTrimLast
 local clear2send = true
 
-fields[#fields + 1] = {t = "Roll trim %", apikey = "swash_trim_0"}
 
-fields[#fields + 1] = {t = "Pitch trim %", apikey = "swash_trim_1"}
-
-fields[#fields + 1] = {t = "Col. trim %", apikey = "swash_trim_2"}
-
--- note.  the same vals are used for center trim motor and yaw trim - but they are multiplied and saved in different ways
-if rfsuite.session.tailMode == 1 or rfsuite.session.tailMode == 2 then
-    fields[#fields + 1] = {t = "Center trim for tail motor %", help= "tail_center_trim_motor", inline = 1, apikey = "tail_center_trim"}
-else
-    fields[#fields + 1] = {t = "Yaw. trim %", inline = 1, mult = 0.0239923224568138, apikey = "tail_center_trim"}
-end
-
+local mspapi = {
+    api = {
+        [1] = "MIXER_CONFIG",
+    },
+    formdata = {
+        labels = {
+        },
+        fields = {
+            {t = "Roll trim %",                  mspapi = 1, apikey = "swash_trim_0"},
+            {t = "Pitch trim %",                 mspapi = 1, apikey = "swash_trim_1"},
+            {t = "Col. trim %",                  mspapi = 1, apikey = "swash_trim_2"},
+            {t = "Center trim for tail motor %", mspapi = 1, apikey = "tail_center_trim", enablefunction = function() return (rfsuite.session.tailMode >= 1) end},
+            {t = "Yaw. trim %",                  mspapi = 1, apikey = "tail_center_trim", mult = 0.0239923224568138, enablefunction = function() return (rfsuite.session.tailMode == 0) end }
+        }
+    }                 
+}
 
 
 local function saveDataEnd()
@@ -120,7 +124,7 @@ local function postLoad(self)
     if rfsuite.session.tailModeActive == 1 or rfsuite.session.tailModeActive == 2 then currentIdleThrottleTrim = rfsuite.app.Page.fields[4].value end
 
     if rfsuite.session.tailModeActive == 0 then currentYawTrim = rfsuite.app.Page.fields[4].value end
-    rfsuite.app.triggers.isReady = true
+    rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function wakeup(self)
@@ -274,12 +278,10 @@ local function onNavMenu(self)
 end
 
 return {
-    mspapi = "MIXER_CONFIG",
+    mspapi = mspapi,
     eepromWrite = true,
     reboot = false,
-    title = "Mixer",
-    labels = labels,
-    fields = fields,
+    title = "Trim",
     mixerOff = mixerOff,
     mixerOn = mixerOn,
     postLoad = postLoad,
