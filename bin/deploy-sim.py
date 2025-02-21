@@ -4,7 +4,9 @@ import argparse
 from tqdm import tqdm
 import subprocess_conout
 import serial
+import serial.tools.list_ports
 import subprocess
+import time
 import ast
 
 pbar = None
@@ -119,53 +121,182 @@ def copy_files(src, fileext=None, launch=False, destfolders=None):
         cmd = (
             launch
         )
+        #todo: refactor this to use a platform independent approach
         ret = subprocess_conout.subprocess_conout(cmd, nrows=9999, encode=True)
         print(ret)
     print("Script execution completed.")
 
+
+def checkEnvVar(var):
+    if not os.getenv(var):
+        print(f"Environment variable {var} not set.")
+        return False
+    return True
+
+def CheckTools():
+    if not checkEnvVar('FRSKY_SIM_BIN'):
+        return False
+    if not checkEnvVar('FRSKY_SIM_SRC'):        
+        return False
+    if not checkEnvVar('FRSKY_ETHOS_SUITE_BIN'):
+        return False
+    
+    #check if paths do exist
+    sim_bin_path = os.getenv('FRSKY_SIM_BIN')
+    sim_src_path = os.getenv('FRSKY_SIM_SRC')
+    ethos_suite_bin_path = os.getenv('FRSKY_ETHOS_SUITE_BIN')
+
+    if not os.path.isfile(sim_bin_path):
+        print(f"Simulator executable not found at {sim_bin_path}.")
+        return False    
+    if not os.path.isdir(sim_src_path):
+        print(f"Simulator source folder not found at {sim_src_path}.")
+        return False    
+    if not os.path.isfile(ethos_suite_bin_path):
+        print(f"Ethos Suite executable not found at {ethos_suite_bin_path}.")
+        return False
+    
+    return True
+
+import re
+
+def extract_vid_pid(device_string):
+    pattern = r'VID_([0-9A-Fa-f]{4})&PID_([0-9A-Fa-f]{4})'
+    match = re.search(pattern, device_string)
+    if match:
+        vid = match.group(1)
+        pid = match.group(2)
+        return vid, pid
+    else:
+        return None, None
+    
+def getSerialPortByVidPid(vid, pid):
+    reslt =  serial.tools.list_ports.comports()
+    for d in reslt:
+        usbInfo = d.hwid.split(" ")
+        if(len(usbInfo) < 2):
+            continue
+        vid_pid = d.hwid.split(" ")[1]
+        if vid_pid == "VID:PID="+vid+":"+pid:
+            return d.device
+    return None
+
+def ethosSuiteParseRadioInfo(output, info):
+    lines = output.splitlines()
+    info['product'] = lines[3].split("|")[0].strip()
+    info['usbinfo'] = lines[3].split("|")[1].strip()
+    info['vid'], info['pid'] = extract_vid_pid(info['usbinfo'])
+    return info
+
+def waitForSerialPort(vid, pid):
+    port = None
+    cnt = 10
+    while port == None:
+        port = getSerialPortByVidPid(vid, pid)
+        time.sleep(1)
+        cnt -= 1
+        if cnt == 0:
+            return False
+    return port
+
+def ethosSuiteParsePath(output, info):
+    lines = output.splitlines()
+    if len(lines) < 8:
+        info['debug'] = True
+        return info
+    else:
+        info['debug'] = False
+    info['bitmaps'] = lines[3].split("|")[1].strip()
+    info['scripts'] = lines[4].split("|")[1].strip()
+    info['screenshots'] = lines[5].split("|")[1].strip()
+    info['audio'] = lines[6].split("|")[1].strip()
+    info['i18n'] = lines[7].split("|")[1].strip()
+    return info
+
+def radioGetInfo(info):
+    result = subprocess.run('"'+os.getenv('FRSKY_ETHOS_SUITE_BIN')+'"'+' --list-radio', text=True, capture_output=True, shell=True)
+    if result.returncode != 0:
+        return False
+    info = ethosSuiteParseRadioInfo(result.stdout, info)
+    result = subprocess.run('"'+os.getenv('FRSKY_ETHOS_SUITE_BIN')+'"'+' --radio-path', text=True, capture_output=True, shell=True)
+    if result.returncode != 0:
+        return False
+    info = ethosSuiteParsePath(result.stdout , info)
+    return info    
+
 def main():
+    #check if required tools are installed and env vars are set
+    radio_info = {}
+    radio_info["connected"] = False
+
     parser = argparse.ArgumentParser(description='Deploy simulation files.')
     parser.add_argument('--src', type=str, help='Source folder')
     parser.add_argument('--sim' ,type=str, help='launch path for the sim after deployment')
     parser.add_argument('--fileext', type=str, help='File extension to filter by')
-    parser.add_argument('--destfolders', type=str, default=None, help='Folders for deployment')
-    parser.add_argument('--radio', action='store_true', default=None, help='Check radio connection')
+    parser.add_argument('--radioDeploy', action='store_true', default=None, help='Deploy to radio')
     parser.add_argument('--radioDebug', action='store_true', default=None, help='Switch Radio to debug after deploying')
-    parser.add_argument('--radioDebugOnly', action='store_true', default=None, help='Switch Radio to debug after deploying')
+
+    if CheckTools() == False:
+        print("Tools not installed or environment variables not set.")
+        return
 
     args = parser.parse_args()
 
-    if args.radio:
-        if os.getenv('FRSKY_RADIO_TOOL_SRC') and not args.radioDebugOnly:
-            # call radio_cmd.exe from FRSKY_RADIO_TOOL_SRC
-            try:
-                paths = subprocess.check_output(os.path.join(os.getenv('FRSKY_RADIO_TOOL_SRC'), 'radio_cmd.exe -s'), shell=True)
-                paths = paths.decode("utf-8")
-                paths = ast.literal_eval(paths)
-                args.destfolders = os.path.join(paths['radio'],f'\\scripts')
-            except subprocess.CalledProcessError as e:
-                print(f"Radio not connected: {e}")   
+    if os.getenv('FRSKY_ETHOS_SUITE_BIN'):
+        # call radio_cmd.exe from FRSKY_RADIO_TOOL_SRC
+        result = radioGetInfo(radio_info)
+        radio_info = result
+        if result == False:
+            print("Radio not connected")
+        else: 
+            print("Radio connected")
+            radio_info["connected"] = True
+            print(f"Radio product: {result['product']}") 
 
-    if not args.radioDebugOnly:             
+    if radio_info["connected"] and radio_info["debug"] and args.radioDeploy:
+        subprocess.run('"'+os.getenv('FRSKY_ETHOS_SUITE_BIN')+'"'+' --serial stop', text=True, capture_output=True, shell=True)
+        time.sleep(2)
+        radio_info = radioGetInfo(radio_info)
+
+    if args.radioDeploy and radio_info["connected"]:             
         copy_files(args.src, args.fileext, launch = args.sim, destfolders = args.destfolders)
 
-    if os.getenv('FRSKY_RADIO_TOOL_SRC'):
-        if args.radio and args.radioDebug:
-            if os.getenv('FRSKY_RADIO_TOOL_SRC'):
-                try:
+    # rewrite this section to use ethos suite!
+    if args.radioDebug:
+        if os.getenv('FRSKY_ETHOS_SUITE_BIN'):
+            # Eject radio volume
+            try:
+                if not radio_info["debug"]:
+                    radio_volume = os.path.dirname(radio_info['scripts'])
+                    #if os.name == 'nt':  # Windows
+                        #subprocess.run(f'powershell -Command "Remove-Item -Path {radio_volume} -Recurse -Force"', shell=True, check=True)
+                    #else:  # Unix-based systems
+                        #subprocess.run(f"umount {radio_volume}", shell=True, check=True)
+                    print("Radio volume ejected successfully.")
+            except subprocess.CalledProcessError as e:
+                print(f"Failed to eject radio volume: {e}")
+            try:
+                if radio_info["debug"]:
+                    print("Radio already in debug mode ...")
+                else:
                     print("Entering Debug mode ...")
-                    serialPortName = subprocess.check_output(os.path.join(os.getenv('FRSKY_RADIO_TOOL_SRC'), 'radio_cmd.exe -d'), shell=True)
-                    serialPortName = serialPortName.decode("utf-8").rstrip()
-                    print("Radio connected in debug mode ...")
-                    ser = serial.Serial(port=serialPortName)
-                    if serialPortName:
-                        while True:
-                            try:
-                                print(ser.readline().decode("utf-8"))
-                            except serial.serialutil.SerialException:
-                                exit()
-                except subprocess.CalledProcessError as e:
-                    print(f"Radio not connected: {e}")
+                    subprocess.run('"'+os.getenv('FRSKY_ETHOS_SUITE_BIN')+'"'+' --serial start', text=True, capture_output=True, shell=True)
+                port = getSerialPortByVidPid(radio_info['vid'], radio_info['pid'])
+                result = waitForSerialPort(radio_info['vid'], radio_info['pid'])
+                if result == False:
+                    print("Failed to connect to radio")
+                    return
+                radio_info['port'] = result.rstrip()
+                print("Radio connected in debug mode ...")
+                ser = serial.Serial(port=radio_info["port"])
+                if radio_info["port"]:
+                    while True:
+                        try:
+                            print(ser.readline().decode("utf-8"))
+                        except serial.serialutil.SerialException:
+                            exit()
+            except subprocess.CalledProcessError as e:
+                print(f"Radio not connected: {e}")
 
             
 
