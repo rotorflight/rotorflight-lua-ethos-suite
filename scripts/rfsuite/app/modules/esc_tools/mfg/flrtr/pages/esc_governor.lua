@@ -1,6 +1,3 @@
-local labels = {}
-local fields = {}
-
 local folder = "flrtr"
 local ESC = assert(loadfile("app/modules/esc_tools/mfg/" .. folder .. "/init.lua"))()
 local mspHeaderBytes = ESC.mspHeaderBytes
@@ -10,14 +7,26 @@ local simulatorResponse = ESC.simulatorResponse
 local foundEsc = false
 local foundEscDone = false
 
-fields[#fields + 1] = {t = "Governor", apikey="governor", type = 1}
-fields[#fields + 1] = {t = "Gov-P", apikey="gov_p"}
-fields[#fields + 1] = {t = "Gov-I", apikey="gov_i"}
-fields[#fields + 1] = {t = "Gov-D", apikey="gov_d"}
-fields[#fields + 1] = {t = "Motor ERPM max", apikey="motor_erpm_max"}
+local mspapi = {
+    api = {
+        [1] = "ESC_PARAMETERS_FLYROTOR",
+    },
+    formdata = {
+        labels = {
+        },
+        fields = {
+            { t = "Governor",        mspapi = 1, apikey = "governor",        type = 1 },
+            { t = "Gov-P",           mspapi = 1, apikey = "gov_p"                     },
+            { t = "Gov-I",           mspapi = 1, apikey = "gov_i"                     },
+            { t = "Gov-D",           mspapi = 1, apikey = "gov_d"                     },
+            { t = "Motor ERPM max",  mspapi = 1, apikey = "motor_erpm_max"            }
+        }
+    }                 
+}
+
 
 function postLoad()
-    rfsuite.app.triggers.isReady = true
+    rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function onNavMenu(self)
@@ -36,12 +45,10 @@ local function event(widget, category, value, x, y)
 end
 
 return {
-    mspapi="ESC_PARAMETERS_FLYROTOR",
+    mspapi=mspapi,
     eepromWrite = true,
     reboot = false,
     title = "Governor",
-    labels = labels,
-    fields = fields,
     escinfo = escinfo,
     postLoad = postLoad,
     simulatorResponse =  simulatorResponse,

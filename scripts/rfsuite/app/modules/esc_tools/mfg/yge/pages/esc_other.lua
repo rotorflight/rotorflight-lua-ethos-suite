@@ -1,5 +1,4 @@
-local labels = {}
-local fields = {}
+
 
 local folder = "yge"
 
@@ -7,20 +6,30 @@ local folder = "yge"
 local foundEsc = false
 local foundEscDone = false
 
-labels[#labels + 1] = {t = "ESC"}
+local mspapi = {
+    api = {
+        [1] = "ESC_PARAMETERS_YGE",
+    },
+    formdata = {
+        labels = {
+        },
+        fields = {
+            {t = "P-Gain", mspapi = 1, apikey="gov_p"},
+            {t = "I-Gain", mspapi = 1, apikey="gov_i"},
+            {t = "Motor Pole Pairs", mspapi = 1, apikey="motor_pole_pairs"},
+            {t = "Main Teeth", mspapi = 1, apikey="main_teeth"},
+            {t = "Pinion Teeth" , mspapi = 1, apikey="pinion_teeth"} ,
+            {t = "Stick Zero (us)", mspapi = 1, apikey="stick_zero_us"},
+            {t = "Stick Range (us)", mspapi = 1, apikey="stick_range_us"},
+        }
+    }                 
+}
 
-fields[#fields + 1] = {t = "P-Gain", apikey="gov_p"}
-fields[#fields + 1] = {t = "I-Gain", apikey="gov_i"}
 
-fields[#fields + 1] = {t = "Motor Pole Pairs", apikey="motor_pole_pairs"}
-fields[#fields + 1] = {t = "Main Teeth", apikey="main_teeth"}
-fields[#fields + 1] = {t = "Pinion Teeth" , apikey="pinion_teeth"}
 
-fields[#fields + 1] = {t = "Stick Zero (us)", apikey="stick_zero_us"}
-fields[#fields + 1] = {t = "Stick Range (us)", apikey="stick_range_us"}
 
 function postLoad()
-    rfsuite.app.triggers.isReady = true
+    rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function onNavMenu(self)
@@ -39,12 +48,10 @@ local function event(widget, category, value, x, y)
 end
 
 return {
-    mspapi = "ESC_PARAMETERS_YGE",
+    mspapi = mspapi,
     eepromWrite = true,
     reboot = false,
     title = "Other Settings",
-    labels = labels,
-    fields = fields,
     escinfo = escinfo,
     postLoad = postLoad,
     navButtons = {menu = true, save = true, reload = true, tool = false, help = false},

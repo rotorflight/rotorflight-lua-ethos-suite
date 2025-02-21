@@ -1,29 +1,33 @@
-local labels = {}
-local fields = {}
-
 
 local folder = "hw5"
 
-labels[#labels + 1] = {t = "ESC", label = "esc1", inline_size = 40.6}
-fields[#fields + 1] = {t = "Flight Mode", inline = 1, label = "esc1", type = 1, apikey="flight_mode"}
+local mspapi = {
+    api = {
+        [1] = "ESC_PARAMETERS_HW5",
+    },
+    formdata = {
+        labels = {
+            {t = "ESC",                   label = "esc1",    inline_size = 40.6},
+            {t = "",                      label = "esc2",    inline_size = 40.6},
+            {t = "",                      label = "esc3",    inline_size = 40.6},
+            {t = "Protection and Limits", label = "limits1", inline_size = 40.6},
+            {t = "",                      label = "limits2", inline_size = 40.6},
+            {t = "",                      label = "limits3", inline_size = 40.6}
+        },
+        fields = {
+            {t = "Flight Mode",       inline = 1, label = "esc1",    type = 1, mspapi = 1, apikey = "flight_mode"},
+            {t = "Rotation",          inline = 1, label = "esc2",    type = 1, mspapi = 1, apikey = "rotation"},
+            {t = "BEC Voltage",       inline = 1, label = "esc3",    type = 1, mspapi = 1, apikey = "bec_voltage"},
+            {t = "LiPo Cell Count",   inline = 1, label = "limits1", type = 1, mspapi = 1, apikey = "lipo_cell_count"},
+            {t = "Volt Cutoff Type",  inline = 1, label = "limits2", type = 1, mspapi = 1, apikey = "volt_cutoff_type"},
+            {t = "Cuttoff Voltage",   inline = 1, label = "limits3", type = 1, mspapi = 1, apikey = "cutoff_voltage"}
+        }
+    }                 
+}
 
-labels[#labels + 1] = {t = "", label = "esc2", inline_size = 40.6}
-fields[#fields + 1] = {t = "Rotation", inline = 1, label = "esc2", type = 1, apikey="rotation"}
-
-labels[#labels + 1] = {t = "", label = "esc3", inline_size = 40.6}
-fields[#fields + 1] = {t = "BEC Voltage", inline = 1, label = "esc3", type = 1, apikey="bec_voltage"}
-
-labels[#labels + 1] = {t = "Protection and Limits", label = "limits1", inline_size = 40.6}
-fields[#fields + 1] = {t = "LiPo Cell Count", inline = 1, label = "limits1", type = 1, apikey="lipo_cell_count"}
-
-labels[#labels + 1] = {t = "", label = "limits2", inline_size = 40.6}
-fields[#fields + 1] = {t = "Volt Cutoff Type", inline = 1, label = "limits2", type = 1, apikey="volt_cutoff_type"}
-
-labels[#labels + 1] = {t = "", label = "limits3", inline_size = 40.6}
-fields[#fields + 1] = {t = "Cuttoff Voltage", inline = 1, label = "limits3", type = 1, apikey="cutoff_voltage"}
 
 function postLoad()
-    rfsuite.app.triggers.isReady = true
+    rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function onNavMenu(self)
@@ -42,12 +46,10 @@ local function event(widget, category, value, x, y)
 end
 
 return {
-    mspapi="ESC_PARAMETERS_HW5",
+    mspapi=mspapi,
     eepromWrite = true,
     reboot = false,
     title = "Basic Setup",
-    labels = labels,
-    fields = fields,
     escinfo = escinfo,
     postLoad = postLoad,
     navButtons = {menu = true, save = true, reload = true, tool = false, help = false},

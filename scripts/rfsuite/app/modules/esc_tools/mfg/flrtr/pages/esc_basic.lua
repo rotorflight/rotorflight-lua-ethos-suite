@@ -1,5 +1,3 @@
-local labels = {}
-local fields = {}
 
 local folder = "flrtr"
 local ESC = assert(loadfile("app/modules/esc_tools/mfg/" .. folder .. "/init.lua"))()
@@ -8,19 +6,26 @@ local mspSignature = ESC.mspSignature
 local simulatorResponse = ESC.simulatorResponse
 
 
+local mspapi = {
+    api = {
+        [1] = "ESC_PARAMETERS_FLYROTOR",
+    },
+    formdata = {
+        labels = {
+        },
+        fields = {
+            {t = "Cell count",       mspapi = 1, apikey = "cell_count"},
+            {t = "BEC voltage",      mspapi = 1, apikey = "bec_voltage",    type = 1},
+            {t = "Motor direction",  mspapi = 1, apikey = "motor_direction", type = 1},
+            {t = "Soft start",       mspapi = 1, apikey = "soft_start"},
+            {t = "Fan control",      mspapi = 1, apikey = "fan_control"}
+        }
+    }                 
+}
 
-fields[#fields + 1] = {t = "Cell count", apikey="cell_count"}
-fields[#fields + 1] = {t = "BEC voltage", apikey="bec_voltage", type = 1}
-fields[#fields + 1] = {t = "Motor direction", apikey="motor_direction", type = 1}
-fields[#fields + 1] = {t = "Soft start", apikey="soft_start"}
-fields[#fields + 1] = {t = "Fan control", apikey="fan_control"}
-
--- fields[#fields + 1] = {t = "Hardware version", vals = {mspHeaderBytes + 18}}  -- this val does not look correct.  regardless not in right place
-
-rfsuite.utils.print_r(rfsuite.app.Page.values)
 
 function postLoad()
-    rfsuite.app.triggers.isReady = true
+    rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function onNavMenu(self)
@@ -42,12 +47,10 @@ local foundEsc = false
 local foundEscDone = false
 
 return {
-    mspapi="ESC_PARAMETERS_FLYROTOR",
+    mspapi=mspapi,
     eepromWrite = false,
     reboot = false,
     title = "Basic Setup",
-    labels = labels,
-    fields = fields,
     escinfo = escinfo,
     svFlags = 0,
     simulatorResponse =  simulatorResponse,

@@ -1,26 +1,32 @@
 local folder = "hw5"
 
-local labels = {}
-local fields = {}
+
+local mspapi = {
+    api = {
+        [1] = "ESC_PARAMETERS_HW5",
+    },
+    formdata = {
+        labels = {
+            {t = "Motor", label = "motor1", inline_size = 40.6},
+            {t = "",      label = "motor2", inline_size = 40.6},
+            {t = "",      label = "motor3", inline_size = 40.6},
+            {t = "Brake", label = "brake1", inline_size = 40.6},
+            {t = "",      label = "brake2", inline_size = 40.6},
+        },
+        fields = {
+            {t = "Timing",           inline = 1, label = "motor1", mspapi = 1, apikey = "timing"},
+            {t = "Startup Power",    inline = 1, label = "motor2", type = 1, mspapi = 1, apikey = "startup_power"},
+            {t = "Active Freewheel", inline = 1, label = "motor3", type = 1, mspapi = 1, apikey = "active_freewheel"},
+            {t = "Brake Type",       inline = 1, label = "brake1", type = 1, mspapi = 1, apikey = "brake_type"},
+            {t = "Brake Force %",    inline = 1, label = "brake2", mspapi = 1, apikey = "brake_force"}
+        }
+    }                 
+}
 
 
-labels[#labels + 1] = {t = "Motor", label = "motor1", inline_size = 40.6}
-fields[#fields + 1] = {t = "Timing", inline = 1, label = "motor1", min = 0, max = 30, xvals = {78}, apikey="timing"}
-
-labels[#labels + 1] = {t = "", label = "motor2", inline_size = 40.6}
-fields[#fields + 1] = {t = "Startup Power", inline = 1, label = "motor2", type = 1, apikey="startup_power"}
-
-labels[#labels + 1] = {t = "", label = "motor3", inline_size = 40.6}
-fields[#fields + 1] = {t = "Active Freewheel", inline = 1, label = "motor3", type = 1, apikey="active_freewheel"}
-
-labels[#labels + 1] = {t = "Brake", label = "brake1", inline_size = 40.6}
-fields[#fields + 1] = {t = "Brake Type", inline = 1, label = "brake1", type = 1, apikey="brake_type"}
-
-labels[#labels + 1] = {t = "", label = "brake2", inline_size = 40.6}
-fields[#fields + 1] = {t = "Brake Force %", inline = 1, label = "brake2", apikey="brake_force"}
 
 function postLoad()
-    rfsuite.app.triggers.isReady = true
+    rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function onNavMenu(self)
@@ -39,12 +45,10 @@ local function event(widget, category, value, x, y)
 end
 
 return {
-    mspapi="ESC_PARAMETERS_HW5",
+    mspapi=mspapi,
     eepromWrite = true,
     reboot = false,
     title = "Other Settings",
-    labels = labels,
-    fields = fields,
     escinfo = escinfo,
     postLoad = postLoad,
     navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
