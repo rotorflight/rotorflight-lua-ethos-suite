@@ -782,17 +782,19 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
                 local apiversionCheck = (f.apiversion == nil or f.apiversion <= rfsuite.session.apiVersion)
                 local apiversionltCheck = (f.apiversionlt == nil or f.apiversionlt > rfsuite.session.apiVersion)
                 local apiversiongtCheck = (f.apiversiongt == nil or f.apiversiongt < rfsuite.session.apiVersion)
+                local apiversionlteCheck = (f.apiversionlte == nil or f.apiversionlte >= rfsuite.session.apiVersion)
+                local apiversiongteCheck = (f.apiversiongte == nil or f.apiversiongte <= rfsuite.session.apiVersion)                
                 local enableFunctionCheck = (f.enablefunction == nil or f.enablefunction())
                 
-                --[[
-                print("Checking field:", f.t)
-                print(" - Hidden check:", f.hidden ~= true)
-                print(" - API version check:", apiversionCheck)
-                print(" - API version less-than check:", apiversionltCheck)
-                print(" - API version greater-than check:", apiversiongtCheck)
-                print(" - Enable function check:", enableFunctionCheck)
-                ]]--
-                if f.hidden ~= true and apiversionCheck and apiversionltCheck and apiversiongtCheck and enableFunctionCheck then
+
+                --print("Checking field:", f.t)
+                --print(" - Hidden check:", f.hidden ~= true)
+                --print(" - API version check:", apiversionCheck)
+                --print(" - API version less-than check:", apiversionltCheck)
+                --print(" - API version greater-than check:", apiversiongtCheck)
+                --print(" - Enable function check:", enableFunctionCheck)
+
+                if f.hidden ~= true and apiversionCheck and apiversionlteCheck and apiversiongteCheck and apiversionltCheck and apiversiongtCheck and enableFunctionCheck then
                     
                     --print(" -> Field is ENABLED:", f.t)
 
