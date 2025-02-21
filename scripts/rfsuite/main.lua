@@ -94,7 +94,7 @@ rfsuite.log = assert(loadfile("lib/log.lua"))(config)
 rfsuite.log.config.log_file = "logs/rfsuite_" .. os.date("%Y-%m-%d_%H-%M-%S") .. ".log"
 rfsuite.log.config.min_print_level  = config.logLevel
 rfsuite.log.config.log_to_file = config.logToFile
-if system:getVersion().simulation == true then rfsuite.log.print_interval = 0.1 end
+
 
 -- library with utility functions used throughou the suite
 rfsuite.utils = assert(loadfile("lib/utils.lua"))(config)

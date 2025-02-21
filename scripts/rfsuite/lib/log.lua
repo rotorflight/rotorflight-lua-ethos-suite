@@ -29,6 +29,11 @@ logs.config = {
     prefix = ""
 }
 
+-- quick logs in sim
+if system:getVersion().simulation == true then
+    logs.config.print_interval = 0.025
+end
+
 logs.queue = {} -- For console output
 logs.disk_queue = {} -- For batched disk writes
 logs.last_print_time = os.clock()
