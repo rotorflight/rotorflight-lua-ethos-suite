@@ -417,6 +417,10 @@ end
 -- REQUEST A PAGE USING THE NEW API FORM SYSTEM
 local function requestPage()
     -- Ensure app.Page and its mspapi.api exist
+    if not app.Page.mspapi then
+        return
+    end
+
 
     if not app.Page.mspapi.api and not app.Page.mspapi.formdata then
         rfsuite.utils.log("app.Page.mspapi.api did not pass consistancy checks", "debug")
@@ -435,13 +439,13 @@ local function requestPage()
 
     -- Prevent duplicate execution if already running
     if state.isProcessing then
-        rfsuite.utils.log("requestPageMspApi is already running, skipping duplicate call.", "debug")
+        rfsuite.utils.log("requestPage is already running, skipping duplicate call.", "debug")
         return
     end
     state.isProcessing = true  -- Set processing flag
 
     if not rfsuite.app.Page.mspapi.values then
-        rfsuite.utils.log("requestPageMspApi Initialize values on first run", "debug")
+        rfsuite.utils.log("requestPage Initialize values on first run", "debug")
         rfsuite.app.Page.mspapi.values = {}  -- Initialize if first run
         rfsuite.app.Page.mspapi.structure = {}  -- Initialize if first run
     end
@@ -1035,7 +1039,7 @@ end
 
         -- we have a page waiting to be retrieved - trigger a request page
         if app.Page ~= nil then
-            if not (app.Page.values or app.triggers.isReady) and app.pageState == app.pageStatus.display then requestPage() end
+            if app.Page.mspapi and app.pageState == app.pageStatus.display then requestPage() end
         end
 
     end
