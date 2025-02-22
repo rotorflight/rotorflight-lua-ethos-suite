@@ -249,13 +249,11 @@ function app.settingsSaved()
         if app.pageState ~= app.pageStatus.eepromWrite then
             app.pageState = app.pageStatus.eepromWrite
             rfsuite.bg.msp.mspQueue:add(mspEepromWrite)
-            -- app.audio.playSave = true
         end
     elseif app.pageState ~= app.pageStatus.eepromWrite then
         -- If we're not already trying to write to eeprom from a previous save, then we're done.
         invalidatePages()
         app.triggers.closeSave = true
-        -- app.audio.playSave = true
     end
 end
 
@@ -401,7 +399,9 @@ function app.mspApiUpdateFormAttributes(values, structure)
                         rfsuite.app.ui.injectApiAttributes(formField, f, v)
 
                         local scale = f.scale or 1
-                        rfsuite.app.Page.fields[i].value = values[mspapiNAME][apikey] / scale
+                        if values and values[mspapiNAME] and values[mspapiNAME][apikey] then
+                            rfsuite.app.Page.fields[i].value = values[mspapiNAME][apikey] / scale
+                        end
 
                         break -- Found field, can move on
                     end
@@ -420,7 +420,6 @@ local function requestPage()
     if not app.Page.mspapi then
         return
     end
-
 
     if not app.Page.mspapi.api and not app.Page.mspapi.formdata then
         rfsuite.utils.log("app.Page.mspapi.api did not pass consistancy checks", "debug")
@@ -547,30 +546,25 @@ end
 -- PAINT.  HOOK INTO PAINT FUNCTION TO ALLOW lcd FUNCTIONS TO BE USED
 -- NOTE. this function will only be called if lcd.refesh is triggered. it is not a wakeup function
 function app.paint()
-
-    -- run the modules paint function if it exists
-    if app.Page ~= nil then if app.Page.paint then app.Page.paint(app.Page) end end
+    if app.Page and app.Page.paint then
+        app.Page.paint(app.Page)
+    end
 end
 
 -- MAIN WAKEUP FUNCTION. THIS SIMPLY FARMS OUT AT DIFFERING SCHEDULES TO SUB FUNCTIONS
 function app.wakeup(widget)
-
     app.guiIsRunning = true
-
     app.wakeupUI()
     app.wakeupForm()
-
 end
 
 -- WAKEUPFORM.  RUN A FUNCTION CALLED wakeup THAT IS RETURNED WHEN REQUESTING A PAGE
 -- THIS ESSENTIALLY GIVES US A TIMER THAT CAN BE USED BY A PAGE THAT HAS LOADED TO
 -- HANDLE BACKGROUND PROCESSING
 function app.wakeupForm()
-    if app.Page ~= nil and app.uiState == app.uiStatus.pages then
-        if app.Page.wakeup then
-            -- run the pages wakeup function if it exists
-            app.Page.wakeup(app.Page)
-        end
+    if app.Page and app.uiState == app.uiStatus.pages and app.Page.wakeup then
+        -- run the pages wakeup function if it exists
+        app.Page.wakeup(app.Page)
     end
 end
 
@@ -1016,32 +1010,23 @@ end
     -- if we are on the home page - then ensure pages are invalidated
     if app.uiState == app.uiStatus.mainMenu then
         invalidatePages()
-    else
-        -- detect page data loaded and ready to move onto rendering the page
-        if (app.triggers.isReady == true and rfsuite.bg.msp.mspQueue:isProcessed() and (app.Page and app.Page.values)) then
-            app.triggers.isReady = false
-
-            app.triggers.closeProgressLoader = true
-
-        end
+    elseif app.triggers.isReady and rfsuite.bg.msp.mspQueue:isProcessed() and app.Page and app.Page.values then
+        app.triggers.isReady = false
+        app.triggers.closeProgressLoader = true
     end
 
     -- if we are viewing a page with form data then we need to run some stuff USED
     -- by the msp processing
     if app.uiState == app.uiStatus.pages then
 
-        -- rebind fields if needed
-        if app.pageState == app.pageStatus.saving then if (app.saveTS + app.protocol.saveTimeout) < os.clock() then app.dataBindFields() end end
+        -- intercept and populate app.Page if it's empty
+        if not app.Page and app.PageTmp then 
+            app.Page = app.PageTmp 
+        end
 
-        -- intercept and populate app.Page if its empty
-        -- this simply catches scenarious where we save the page AND
-        -- other parts of the script fail for the few ms where the app.Page
-        -- var is not populated
-        if not app.Page and app.PageTmp then app.Page = app.PageTmp end
-
-        -- we have a page waiting to be retrieved - trigger a request page
-        if app.Page ~= nil then
-            if app.Page.mspapi and app.pageState == app.pageStatus.display then requestPage() end
+        -- trigger a request page if we have a page waiting to be retrieved
+        if app.Page and app.Page.mspapi and app.pageState == app.pageStatus.display then 
+            requestPage() 
         end
 
     end
@@ -1157,7 +1142,6 @@ end
 end
 
 function app.create_logtool()
-
     triggers.showUnderUsedBufferWarning = false
     triggers.showOverUsedBufferWarning = false
 
@@ -1170,15 +1154,16 @@ function app.create_logtool()
 
     app.uiState = app.uiStatus.init
 
-    -- overide developermode if file exists.
-    if rfsuite.config.developerMode ~= true then if rfsuite.utils.file_exists("../developermode") then rfsuite.config.developerMode = true end end
+    -- override developermode if file exists.
+    if not rfsuite.config.developerMode and rfsuite.utils.file_exists("../developermode") then
+        rfsuite.config.developerMode = true
+    end
 
     rfsuite.app.menuLastSelected["mainmenu"] = pidx
     rfsuite.app.ui.progressDisplay()
 
     rfsuite.app.offlineMode = true
-    rfsuite.app.ui.openPage(1, "Logs", "logs/logs.lua", 1) --- final param says to load in standalone mode
-
+    rfsuite.app.ui.openPage(1, "Logs", "logs/logs.lua", 1) -- final param says to load in standalone mode
 end
 
 function app.create()
@@ -1192,8 +1177,10 @@ function app.create()
 
     app.uiState = app.uiStatus.init
 
-    -- overide developermode if file exists.
-    if rfsuite.config.developerMode ~= true then if rfsuite.utils.file_exists("../developermode") then rfsuite.config.developerMode = true end end
+    -- override developermode if file exists.
+    if not rfsuite.config.developerMode and rfsuite.utils.file_exists("../developermode") then
+        rfsuite.config.developerMode = true
+    end
 
     app.ui.openMainMenu()
 
@@ -1201,74 +1188,60 @@ end
 
 -- EVENT:  Called for button presses, scroll events, touch events, etc.
 function app.event(widget, category, value, x, y)
-
     if value == EVT_VIRTUAL_PREV_LONG then
-        rfsuite.utils.log("Forcing exit","debug")
+        rfsuite.utils.log("Forcing exit", "debug")
         invalidatePages()
         system.exit()
         return 0
     end
 
-    if app.Page ~= nil and (app.uiState == app.uiStatus.pages or app.uiState == app.uiStatus.mainMenu) then
+    if app.Page and (app.uiState == app.uiStatus.pages or app.uiState == app.uiStatus.mainMenu) then
         if app.Page.event then
-            -- run the pages wakeup function if it exists
             return app.Page.event(widget, category, value, x, y)
         end
     end
 
     if app.uiState == app.uiStatus.pages then
-
-        if category == EVT_CLOSE and value == 0 then
-            if app.dialogs.progressDisplay == true then app.ui.progressDisplayClose() end
-            if app.dialogs.saveDisplay == true then app.ui.progressDisplaySaveClose() end
-            if app.Page.onNavMenu then app.Page.onNavMenu(app.Page) end
-            app.ui.openMainMenu()
-            return true
-        end
-        if value == 35 then
-            if app.dialogs.progressDisplay == true then app.ui.progressDisplayClose() end
-            if app.dialogs.saveDisplay == true then app.ui.progressDisplaySaveClose() end
+        if category == EVT_CLOSE and value == 0 or value == 35 then
+            if app.dialogs.progressDisplay then app.ui.progressDisplayClose() end
+            if app.dialogs.saveDisplay then app.ui.progressDisplaySaveClose() end
             if app.Page.onNavMenu then app.Page.onNavMenu(app.Page) end
             app.ui.openMainMenu()
             return true
         end
         if value == KEY_ENTER_LONG then
-            if app.dialogs.progressDisplay == true then app.ui.progressDisplayClose() end
-            if app.dialogs.saveDisplay == true then app.ui.progressDisplaySaveClose() end
-            -- if triggers.isArmed == false then
+            if app.dialogs.progressDisplay then app.ui.progressDisplayClose() end
+            if app.dialogs.saveDisplay then app.ui.progressDisplaySaveClose() end
             app.triggers.triggerSave = true
             system.killEvents(KEY_ENTER_BREAK)
-            -- end
             return true
         end
-
     end
 
-    if app.uiState == app.uiStatus.MainMenu then
-        if value == KEY_ENTER_LONG then
-            if app.dialogs.progressDisplay == true then app.ui.progressDisplayClose() end
-            if app.dialogs.saveDisplay == true then app.ui.progressDisplaySaveClose() end
-            system.killEvents(KEY_ENTER_BREAK)
-            return true
-        end
+    if app.uiState == app.uiStatus.mainMenu and value == KEY_ENTER_LONG then
+        if app.dialogs.progressDisplay then app.ui.progressDisplayClose() end
+        if app.dialogs.saveDisplay then app.ui.progressDisplaySaveClose() end
+        system.killEvents(KEY_ENTER_BREAK)
+        return true
     end
 
     return false
 end
 
 function app.close()
-
     app.guiIsRunning = false
     app.offlineMode = false
 
-    if app.Page ~= nil and (app.uiState == app.uiStatus.pages or app.uiState == app.uiStatus.mainMenu) then if app.Page.close then app.Page.close() end end
+    if app.Page and (app.uiState == app.uiStatus.pages or app.uiState == app.uiStatus.mainMenu) and app.Page.close then
+        app.Page.close()
+    end
 
     if app.dialogs.progress then app.ui.progressDisplayClose() end
     if app.dialogs.save then app.ui.progressDisplaySaveClose() end
     if app.dialogs.noLink then app.ui.progressNolinkDisplayClose() end
+
     invalidatePages()
     app.resetState()
-    -- collectgarbage()
     system.exit()
     return true
 end
