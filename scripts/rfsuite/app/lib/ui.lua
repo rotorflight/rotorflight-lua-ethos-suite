@@ -382,7 +382,6 @@ function ui.fieldChoice(i)
             if f.postEdit then f.postEdit(page, value) end
             if f.onChange then f.onChange(page, value) end
             f.value = rfsuite.utils.saveFieldValue(fields[i], value)
-            app.saveValue(i)
         end
     )
 
@@ -596,7 +595,6 @@ function ui.fieldText(i)
             if f.onChange then f.onChange(page) end
 
             f.value = rfsuite.utils.saveFieldValue(fields[i], value)
-            app.saveValue(i)
         end
     )
 

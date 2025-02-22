@@ -149,8 +149,6 @@ local function openPage(idx, title, script)
                 -- update uint8 field
                 update_uint8(i, value)
             end
-
-            rfsuite.app.saveValue(i)
         end)
         if f.default ~= nil then
             local default = f.default * rfsuite.utils.decimalInc(f.decimals)

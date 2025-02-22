@@ -137,7 +137,6 @@ local function openPage(idx, title, script)
             if f.onChange then f.onChange(rfsuite.app.Page) end
     
             f.value = rfsuite.utils.saveFieldValue(rfsuite.app.Page.fields[i], value)
-            rfsuite.app.saveValue(i)
         end)
     end
     

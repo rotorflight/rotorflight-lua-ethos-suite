@@ -275,7 +275,6 @@ local function openPage(idx, title, script)
                 return value
             end, function(value)
                 f.value = rfsuite.utils.saveFieldValue(rfsuite.app.Page.fields[i], value)
-                rfsuite.app.saveValue(i)
             end)
         end
     end

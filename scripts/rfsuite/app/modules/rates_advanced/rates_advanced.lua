@@ -90,7 +90,6 @@ local function preSave(self)
                     
                     rfsuite.utils.log("Saving default value for " .. v.apikey .. " as " .. default, "info")
                     rfsuite.utils.saveFieldValue(v, default)
-                    rfsuite.app.saveValue(i)
                 end    
         end    
             
