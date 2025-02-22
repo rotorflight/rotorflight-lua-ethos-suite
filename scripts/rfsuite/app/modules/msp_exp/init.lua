@@ -25,6 +25,7 @@ local init = {
     order = 100, -- order in the section
     developer = true, -- show if developer mode enabled
     ethosversion = {1, 6, 2} -- disable button if ethos version is less than this
+    disable = true
 }
 
 return init
