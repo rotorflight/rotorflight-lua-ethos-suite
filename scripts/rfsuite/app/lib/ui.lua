@@ -856,11 +856,7 @@ function ui.navigationButtons(x, y, w, h)
                 if rfsuite.app.Page and rfsuite.app.Page.onReloadMenu then
                     rfsuite.app.Page.onReloadMenu(rfsuite.app.Page)
                 else
-                    --if rfsuite.utils.is_multi_mspapi() then
-                    --    rfsuite.app.triggers.triggerReloadFull = true
-                    --else
                         rfsuite.app.triggers.triggerReload = true
-                    --end
                 end
                 return true
             end

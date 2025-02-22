@@ -200,7 +200,6 @@ local function invalidatePages()
     app.Page = nil
     app.pageState = app.pageStatus.display
     app.saveTS = 0
-    -- collectgarbage()
 end
 
 -- ISSUE AN MSP COMNMAND TO REBOOT THE FBL UNIT
@@ -551,11 +550,17 @@ function app.paint()
     end
 end
 
--- MAIN WAKEUP FUNCTION. THIS SIMPLY FARMS OUT AT DIFFERING SCHEDULES TO SUB FUNCTIONS
+-- we run alternating between the UI and the form. 
+-- this is a simple way of reducing cpu load
+app.runUI = true
 function app.wakeup(widget)
     app.guiIsRunning = true
-    app.wakeupUI()
-    app.wakeupForm()
+    if app.runUI then
+        app.wakeupUI()
+    else
+        app.wakeupForm()
+    end
+    app.runUI = not app.runUI  -- Toggle for next cycle
 end
 
 -- WAKEUPFORM.  RUN A FUNCTION CALLED wakeup THAT IS RETURNED WHEN REQUESTING A PAGE

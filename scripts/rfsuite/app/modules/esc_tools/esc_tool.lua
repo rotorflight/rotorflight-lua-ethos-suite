@@ -121,13 +121,12 @@ local function openPage(pidx, title, script)
         paint = function()
         end,
         press = function()
-            -- rfsuite.app.ui.openPage(pidx, folder , "esc_tools/esc_tool.lua")
             rfsuite.app.Page = nil
             local foundESC = false
             local foundESCupdateTag = false
             local showPowerCycleLoader = false
             local showPowerCycleLoaderInProgress = false
-            rfsuite.app.triggers.triggerReload = true
+            rfsuite.app.triggers.triggerReloadFull = true
         end
     })
     rfsuite.app.formNavigationFields['menu']:focus()
@@ -204,7 +203,6 @@ local function openPage(pidx, title, script)
                 rfsuite.app.menuLastSelected["esctool"] = pidx
                 rfsuite.app.ui.progressDisplay()
 
-                -- rfsuite.app.ui.openPage(pidx, folder, "esc_form.lua",pvalue.script)
                 rfsuite.app.ui.openPage(pidx, title, "esc_tools/mfg/" .. folder .. "/pages/" .. pvalue.script)
 
             end
