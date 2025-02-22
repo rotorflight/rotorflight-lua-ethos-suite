@@ -49,23 +49,23 @@ function mspProcessTxQ()
     if mspTxIdx == 1 then payload[1] = payload[1] + MSP_STARTFLAG end
 
     local i = 2
-    while (i <= rfsuite.bg.msp.protocol.maxTxBufferSize) and mspTxIdx <= #mspTxBuf do
+    while (i <= rfsuite.tasks.msp.protocol.maxTxBufferSize) and mspTxIdx <= #mspTxBuf do
         payload[i] = mspTxBuf[mspTxIdx]
         mspTxIdx = mspTxIdx + 1
         mspTxCRC = mspTxCRC ~ payload[i]
         i = i + 1
     end
 
-    if i <= rfsuite.bg.msp.protocol.maxTxBufferSize then
+    if i <= rfsuite.tasks.msp.protocol.maxTxBufferSize then
         payload[i] = mspTxCRC
-        for j = i + 1, rfsuite.bg.msp.protocol.maxTxBufferSize do payload[j] = 0 end
+        for j = i + 1, rfsuite.tasks.msp.protocol.maxTxBufferSize do payload[j] = 0 end
         mspTxBuf = {}
         mspTxIdx = 1
         mspTxCRC = 0
-        rfsuite.bg.msp.protocol.mspSend(payload)
+        rfsuite.tasks.msp.protocol.mspSend(payload)
         return false
     end
-    rfsuite.bg.msp.protocol.mspSend(payload)
+    rfsuite.tasks.msp.protocol.mspSend(payload)
     return true
 end
 
@@ -109,13 +109,13 @@ local function mspReceivedReply(payload)
         return nil
     end
 
-    while (idx <= rfsuite.bg.msp.protocol.maxRxBufferSize) and (#mspRxBuf < mspRxSize) do
+    while (idx <= rfsuite.tasks.msp.protocol.maxRxBufferSize) and (#mspRxBuf < mspRxSize) do
         mspRxBuf[#mspRxBuf + 1] = payload[idx]
         mspRxCRC = mspRxCRC ~ payload[idx]
         idx = idx + 1
     end
 
-    if idx > rfsuite.bg.msp.protocol.maxRxBufferSize then
+    if idx > rfsuite.tasks.msp.protocol.maxRxBufferSize then
         mspRemoteSeq = seq
         return false
     end
@@ -131,7 +131,7 @@ end
 function mspPollReply()
     local startTime = os.clock()
     while os.clock() - startTime < 0.1 do
-        local mspData = rfsuite.bg.msp.protocol.mspPoll()
+        local mspData = rfsuite.tasks.msp.protocol.mspPoll()
         if mspData and mspReceivedReply(mspData) then
             mspLastReq = 0
             return mspRxReq, mspRxBuf, mspRxError

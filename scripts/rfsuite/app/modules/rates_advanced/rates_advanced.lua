@@ -104,7 +104,7 @@ local function postLoad(self)
 end
 
 local function wakeup()
-    if activateWakeup and rfsuite.bg.msp.mspQueue:isProcessed() then
+    if activateWakeup and rfsuite.tasks.msp.mspQueue:isProcessed() then
         -- update active profile
         -- the check happens in postLoad          
         if rfsuite.session.activeRateProfile then

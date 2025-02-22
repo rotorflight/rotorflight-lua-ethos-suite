@@ -214,7 +214,7 @@ function ui.openMainMenu()
     rfsuite.app.lastScript = nil
     rfsuite.session.lastPage = nil
 
-    -- rfsuite.bg.msp.protocol.mspIntervalOveride = nil
+    -- rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
 
     rfsuite.app.triggers.isReady = false
     rfsuite.app.uiState = rfsuite.app.uiStatus.mainMenu

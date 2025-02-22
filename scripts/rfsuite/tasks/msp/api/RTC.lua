@@ -34,7 +34,7 @@ local payloadData = {}
 local defaultData = {}
 
 -- Create a new instance
-local handlers = rfsuite.bg.msp.api.createHandlers()
+local handlers = rfsuite.tasks.msp.api.createHandlers()
 
 -- Variables to store optional the UUID and timeout for payload
 local MSP_API_UUID
@@ -86,26 +86,26 @@ local function write()
         local byteorder = field.byteorder or "little" -- Default to little-endian
 
         if field.type == "U32" then
-            rfsuite.bg.msp.mspHelper.writeU32(message.payload, payloadData[field.field], byteorder)
+            rfsuite.tasks.msp.mspHelper.writeU32(message.payload, payloadData[field.field], byteorder)
         elseif field.type == "S32" then
-            rfsuite.bg.msp.mspHelper.writeU32(message.payload, payloadData[field.field], byteorder)
+            rfsuite.tasks.msp.mspHelper.writeU32(message.payload, payloadData[field.field], byteorder)
         elseif field.type == "U24" then
-            rfsuite.bg.msp.mspHelper.writeU24(message.payload, payloadData[field.field], byteorder)
+            rfsuite.tasks.msp.mspHelper.writeU24(message.payload, payloadData[field.field], byteorder)
         elseif field.type == "S24" then
-            rfsuite.bg.msp.mspHelper.writeU24(message.payload, payloadData[field.field], byteorder)
+            rfsuite.tasks.msp.mspHelper.writeU24(message.payload, payloadData[field.field], byteorder)
         elseif field.type == "U16" then
-            rfsuite.bg.msp.mspHelper.writeU16(message.payload, payloadData[field.field], byteorder)
+            rfsuite.tasks.msp.mspHelper.writeU16(message.payload, payloadData[field.field], byteorder)
         elseif field.type == "S16" then
-            rfsuite.bg.msp.mspHelper.writeU16(message.payload, payloadData[field.field], byteorder)
+            rfsuite.tasks.msp.mspHelper.writeU16(message.payload, payloadData[field.field], byteorder)
         elseif field.type == "U8" then
-            rfsuite.bg.msp.mspHelper.writeU8(message.payload, payloadData[field.field])
+            rfsuite.tasks.msp.mspHelper.writeU8(message.payload, payloadData[field.field])
         elseif field.type == "S8" then
-            rfsuite.bg.msp.mspHelper.writeU8(message.payload, payloadData[field.field])
+            rfsuite.tasks.msp.mspHelper.writeU8(message.payload, payloadData[field.field])
         end
     end
 
     -- Add the message to the processing queue
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 -- Function to set a value dynamically

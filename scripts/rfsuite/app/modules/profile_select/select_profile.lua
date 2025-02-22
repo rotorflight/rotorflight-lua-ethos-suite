@@ -30,7 +30,7 @@ local function setPidProfile(profileIndex)
         end,
         simulatorResponse = {}
     }
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function setRateProfile(profileIndex)
@@ -42,7 +42,7 @@ local function setRateProfile(profileIndex)
         end,
         simulatorResponse = {}
     }
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function onSaveMenu()

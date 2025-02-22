@@ -50,12 +50,12 @@ function MspQueueController:processQueue()
         self.retryCount = 0
     end
 
-    local lastTimeInterval = rfsuite.bg.msp.protocol.mspIntervalOveride or 1
+    local lastTimeInterval = rfsuite.tasks.msp.protocol.mspIntervalOveride or 1
     if lastTimeInterval == nil then lastTimeInterval = 1 end
 
     if not system:getVersion().simulation then
         if not self.lastTimeCommandSent or self.lastTimeCommandSent + lastTimeInterval < os.clock() then
-            rfsuite.bg.msp.protocol.mspWrite(self.currentMessage.command, self.currentMessage.payload or {})
+            rfsuite.tasks.msp.protocol.mspWrite(self.currentMessage.command, self.currentMessage.payload or {})
             self.lastTimeCommandSent = os.clock()
             self.currentMessageStartTime = os.clock()
             self.retryCount = self.retryCount + 1
@@ -127,7 +127,7 @@ local function deepCopy(original)
 end
 
 function MspQueueController:add(message)
-    if not rfsuite.bg.telemetry.active() then return end
+    if not rfsuite.tasks.telemetry.active() then return end
     if message then
         if message.uuid and self.uuid == message.uuid then
             rfsuite.utils.log("Skipping duplicate message with UUID " .. message.uuid,"debug")

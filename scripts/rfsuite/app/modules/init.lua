@@ -21,7 +21,7 @@
 local pages = {}
 local sections = loadfile("app/modules/sections.lua")()
 
--- find the modules (this should already have been done in the tasks/bg.lua script but we catch and retry on the offchance it hasn't)
+-- find the modules (this should already have been done in the tasks/tasks.lua script but we catch and retry on the offchance it hasn't)
 if rfsuite.app.moduleList == nil then rfsuite.app.moduleList = rfsuite.utils.findModules() end
 
 -- Helper function to find section index

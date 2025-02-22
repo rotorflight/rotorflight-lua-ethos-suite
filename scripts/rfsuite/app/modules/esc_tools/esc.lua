@@ -31,7 +31,7 @@ end
 
 local function openPage(pidx, title, script)
 
-    rfsuite.bg.msp.protocol.mspIntervalOveride = nil
+    rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
 
     rfsuite.app.triggers.isReady = false
     rfsuite.app.uiState = rfsuite.app.uiStatus.mainMenu

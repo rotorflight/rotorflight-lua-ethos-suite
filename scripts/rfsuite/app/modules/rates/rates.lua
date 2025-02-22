@@ -284,7 +284,7 @@ end
 
 local function wakeup()
 
-    if activateWakeup == true and rfsuite.bg.msp.mspQueue:isProcessed() then       
+    if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then       
         if rfsuite.session.activeRateProfile ~= nil then
             rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeRateProfile)
         end

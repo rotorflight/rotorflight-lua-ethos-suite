@@ -94,7 +94,7 @@ function rf2gov.paint(widget)
     local bestW, bestH = 0, 0
 
     -- Determine the text to display
-    local str = rfsuite.bg.active() and (sensors and sensors.govmode or "") or "BG TASK DISABLED"
+    local str = rfsuite.tasks.active() and (sensors and sensors.govmode or "") or "BG TASK DISABLED"
 
     -- Loop through font sizes and find the largest one that fits
     for _, font in ipairs(fonts) do
@@ -122,16 +122,16 @@ end
 
 
 function rf2gov.getSensors()
-    if not rfsuite.bg.active() then return end
+    if not rfsuite.tasks.active() then return end
 
     local govmode = ""
 
     if rf2gov.environment.simulation then
         govmode = "DISABLED"
     else
-        local govSOURCE = rfsuite.bg.telemetry.getSensorSource("governor")
+        local govSOURCE = rfsuite.tasks.telemetry.getSensorSource("governor")
 
-        if rfsuite.bg.telemetry.getSensorProtocol() == 'lcrsf' then
+        if rfsuite.tasks.telemetry.getSensorProtocol() == 'lcrsf' then
             govmode = govSOURCE and govSOURCE:stringValue() or ""
         else
             local govId = govSOURCE and govSOURCE:value()

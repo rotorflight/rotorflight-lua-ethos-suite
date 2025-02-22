@@ -40,7 +40,7 @@ end
 
 local function wakeup()
 
-    if activateWakeup == true and rfsuite.bg.msp.mspQueue:isProcessed() then
+    if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then
 
         -- update active profile
         -- the check happens in postLoad          

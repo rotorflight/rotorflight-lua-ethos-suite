@@ -103,12 +103,11 @@ rfsuite.utils = assert(loadfile("lib/utils.lua"))(config)
 -- This script initializes the `rfsuite` tasks and background task.
 -- 
 -- The `rfsuite.tasks` table is created to hold various tasks.
--- The `rfsuite.bg` is assigned the result of executing the "tasks/bg.lua" file with the `config` parameter.
--- The `loadfile` function is used to load the "tasks/bg.lua" file, and `assert` ensures that the file is loaded successfully.
--- The loaded file is then executed with the `config` parameter, and its return value is assigned to `rfsuite.bg`.
+-- The `rfsuite.tasks` is assigned the result of executing the "tasks/tasks.lua" file with the `config` parameter.
+-- The `loadfile` function is used to load the "tasks/tasks.lua" file, and `assert` ensures that the file is loaded successfully.
+-- The loaded file is then executed with the `config` parameter, and its return value is assigned to `rfsuite.tasks`.
 -- tasks
-rfsuite.tasks = {}
-rfsuite.bg = assert(loadfile("tasks/bg.lua"))(config)
+rfsuite.tasks = assert(loadfile("tasks/tasks.lua"))(config)
 
 -- LuaFormatter off
 
@@ -178,8 +177,8 @@ local function init()
     system.registerTask({
         name = config.bgTaskName,
         key = config.bgTaskKey,
-        wakeup = rfsuite.bg.wakeup,
-        event = rfsuite.bg.event
+        wakeup = rfsuite.tasks.wakeup,
+        event = rfsuite.tasks.event
     })
 
     -- widgets are loaded dynamically

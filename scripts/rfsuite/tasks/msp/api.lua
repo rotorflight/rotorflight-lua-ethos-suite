@@ -182,28 +182,28 @@ function apiLoader.parseMSPData(buf, structure, processed, other)
         local data
 
         if field.type == "U8" then
-            data = rfsuite.bg.msp.mspHelper.readU8(buf, offset)
+            data = rfsuite.tasks.msp.mspHelper.readU8(buf, offset)
             offset = offset + 1 
         elseif field.type == "S8" then
-            data = rfsuite.bg.msp.mspHelper.readS8(buf, offset)
+            data = rfsuite.tasks.msp.mspHelper.readS8(buf, offset)
             offset = offset + 1
         elseif field.type == "U16" then
-            data = rfsuite.bg.msp.mspHelper.readU16(buf, offset, byteorder)
+            data = rfsuite.tasks.msp.mspHelper.readU16(buf, offset, byteorder)
             offset = offset + 2
         elseif field.type == "S16" then
-            data = rfsuite.bg.msp.mspHelper.readS16(buf, offset, byteorder)
+            data = rfsuite.tasks.msp.mspHelper.readS16(buf, offset, byteorder)
             offset = offset + 2
         elseif field.type == "U24" then
-            data = rfsuite.bg.msp.mspHelper.readU24(buf, offset, byteorder)
+            data = rfsuite.tasks.msp.mspHelper.readU24(buf, offset, byteorder)
             offset = offset + 3
         elseif field.type == "S24" then
-            data = rfsuite.bg.msp.mspHelper.readS24(buf, offset, byteorder)
+            data = rfsuite.tasks.msp.mspHelper.readS24(buf, offset, byteorder)
             offset = offset + 3
         elseif field.type == "U32" then
-            data = rfsuite.bg.msp.mspHelper.readU32(buf, offset, byteorder)
+            data = rfsuite.tasks.msp.mspHelper.readU32(buf, offset, byteorder)
             offset = offset + 4
         elseif field.type == "S32" then
-            data = rfsuite.bg.msp.mspHelper.readS32(buf, offset, byteorder)
+            data = rfsuite.tasks.msp.mspHelper.readS32(buf, offset, byteorder)
             offset = offset + 4
         else
             rfsuite.utils.log("Error: Unknown data type: " .. field.type,"debug")
@@ -378,38 +378,38 @@ function apiLoader.buildWritePayload(apiname,payload, api_structure)
         value = clamp(value, min, max)
 
         if data_type == "U8" then
-            rfsuite.bg.msp.mspHelper.writeU8(buf, value)
+            rfsuite.tasks.msp.mspHelper.writeU8(buf, value)
         elseif data_type == "U16" then
             if byteorder then
-                rfsuite.bg.msp.mspHelper.writeU16(buf, value, byteorder)
+                rfsuite.tasks.msp.mspHelper.writeU16(buf, value, byteorder)
             else
-                rfsuite.bg.msp.mspHelper.writeU16(buf, value)
+                rfsuite.tasks.msp.mspHelper.writeU16(buf, value)
             end
         elseif data_type == "U24" then
             if byteorder then
-                rfsuite.bg.msp.mspHelper.writeU24(buf, value, byteorder)
+                rfsuite.tasks.msp.mspHelper.writeU24(buf, value, byteorder)
             else
-                rfsuite.bg.msp.mspHelper.writeU24(buf, value)
+                rfsuite.tasks.msp.mspHelper.writeU24(buf, value)
             end
         elseif data_type == "S8" then
-            rfsuite.bg.msp.mspHelper.writeS8(buf, value)
+            rfsuite.tasks.msp.mspHelper.writeS8(buf, value)
         elseif data_type == "S16" then
             if byteorder then
-                rfsuite.bg.msp.mspHelper.writeS16(buf, value, byteorder)
+                rfsuite.tasks.msp.mspHelper.writeS16(buf, value, byteorder)
             else
-                rfsuite.bg.msp.mspHelper.writeS16(buf, value)
+                rfsuite.tasks.msp.mspHelper.writeS16(buf, value)
             end
         elseif data_type == "S24" then
             if byteorder then
-                rfsuite.bg.msp.mspHelper.writeS24(buf, value, byteorder)
+                rfsuite.tasks.msp.mspHelper.writeS24(buf, value, byteorder)
             else
-                rfsuite.bg.msp.mspHelper.writeS24(buf, value)
+                rfsuite.tasks.msp.mspHelper.writeS24(buf, value)
             end
         elseif data_type == "S32" then
             if byteorder then
-                rfsuite.bg.msp.mspHelper.writeS32(buf, value, byteorder)
+                rfsuite.tasks.msp.mspHelper.writeS32(buf, value, byteorder)
             else
-                rfsuite.bg.msp.mspHelper.writeS32(buf, value)
+                rfsuite.tasks.msp.mspHelper.writeS32(buf, value)
             end
         else
             error("Unknown type: " .. tostring(data_type))

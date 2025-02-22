@@ -37,7 +37,7 @@ local function getMSPPidBandwidth()
         end,
         simulatorResponse = {3, 25, 250, 0, 12, 0, 1, 30, 30, 45, 50, 50, 100, 15, 15, 20, 2, 10, 10, 15, 100, 100, 5, 0, 30, 0, 25, 0, 40, 55, 40, 75, 20, 25, 0, 15, 45, 45, 15, 15, 20}
     }
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function getMSPServos()
@@ -48,7 +48,7 @@ local function getMSPServos()
         end,
         simulatorResponse = {4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0, 120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0}
     }
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function getMSPPids()
@@ -59,7 +59,7 @@ local function getMSPPids()
         end,
         simulatorResponse = {70, 0, 225, 0, 90, 0, 120, 0, 100, 0, 200, 0, 70, 0, 120, 0, 100, 0, 125, 0, 83, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 0, 25, 0}
     }
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function getMSP()
@@ -122,7 +122,7 @@ local function startTest(duration)
             local now = os.clock()
 
             -- kill if we loose link - but not in sim mode
-            if rfsuite.bg.telemetry.active() == false and startTest == true and system:getVersion().simulation ~= true then
+            if rfsuite.tasks.telemetry.active() == false and startTest == true and system:getVersion().simulation ~= true then
                 if testLoader then
                     testLoader:close()
                     testLoader = nil
@@ -144,7 +144,7 @@ local function startTest(duration)
             end
 
             -- do msp query
-            if rfsuite.bg.msp.mspQueue:isProcessed() and ((now - RateLimit) >= Rate) then
+            if rfsuite.tasks.msp.mspQueue:isProcessed() and ((now - RateLimit) >= Rate) then
                 RateLimit = now
                 mspSpeedTestStats['total'] = mspSpeedTestStats['total'] + 1
                 mspQueryStartTime = os.clock()
@@ -248,7 +248,7 @@ local function openPage(pidx, title, script)
     local posText = {x = x - 5 - buttonW - buttonWs - 5 - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = 200, h = rfsuite.app.radio.navbuttonHeight}
 
     line['rf'] = form.addLine("RF protocol")
-    fields['rf'] = form.addStaticText(line['rf'], posText, string.upper(rfsuite.bg.msp.protocol.mspProtocol))
+    fields['rf'] = form.addStaticText(line['rf'], posText, string.upper(rfsuite.tasks.msp.protocol.mspProtocol))
 
     line['memory'] = form.addLine("Memory free")
     fields['memory'] = form.addStaticText(line['memory'], posText, rfsuite.utils.round(system.getMemoryUsage().luaRamAvailable / 1000, 2) .. 'kB')

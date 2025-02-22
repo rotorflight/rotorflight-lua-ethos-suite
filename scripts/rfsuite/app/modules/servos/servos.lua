@@ -88,7 +88,7 @@ end
 
 local function openPage(pidx, title, script)
 
-    rfsuite.bg.msp.protocol.mspIntervalOveride = nil
+    rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
 
     rfsuite.app.triggers.isReady = false
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
@@ -224,7 +224,7 @@ local function getServoCount(callback, callbackParam)
     local message = {
         command = 120, -- MSP_SERVO_CONFIGURATIONS
         processReply = function(self, buf)
-            local servoCount = rfsuite.bg.msp.mspHelper.readU8(buf)
+            local servoCount = rfsuite.tasks.msp.mspHelper.readU8(buf)
 
             -- update master one in case changed
             rfsuite.session.servoCountNew = servoCount
@@ -240,7 +240,7 @@ local function getServoCount(callback, callbackParam)
         -- 4 servos
         simulatorResponse = {4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0, 120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0}
     }
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function openPageInit(pidx, title, script)
@@ -253,7 +253,7 @@ local function openPageInit(pidx, title, script)
             command = 120, -- MSP_SERVO_CONFIGURATIONS
             processReply = function(self, buf)
                 if #buf >= 10 then
-                    local servoCount = rfsuite.bg.msp.mspHelper.readU8(buf)
+                    local servoCount = rfsuite.tasks.msp.mspHelper.readU8(buf)
 
                     -- update master one in case changed
                     rfsuite.session.servoCount = servoCount
@@ -261,7 +261,7 @@ local function openPageInit(pidx, title, script)
             end,
             simulatorResponse = {4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0, 120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0}
         }
-        rfsuite.bg.msp.mspQueue:add(message)
+        rfsuite.tasks.msp.mspQueue:add(message)
 
         local message = {
             command = 192, -- MSP_SERVO_OVERIDE
@@ -270,7 +270,7 @@ local function openPageInit(pidx, title, script)
 
                     for i = 0, rfsuite.session.servoCount do
                         buf.offset = i
-                        local servoOverride = rfsuite.bg.msp.mspHelper.readU8(buf)
+                        local servoOverride = rfsuite.tasks.msp.mspHelper.readU8(buf)
                         if servoOverride == 0 then
                             rfsuite.utils.log("Servo override: true","debug")
                             rfsuite.session.servoOverride = true
@@ -281,7 +281,7 @@ local function openPageInit(pidx, title, script)
             end,
             simulatorResponse = {209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7, 209, 7}
         }
-        rfsuite.bg.msp.mspQueue:add(message)
+        rfsuite.tasks.msp.mspQueue:add(message)
 
     end
 end
@@ -375,7 +375,7 @@ local function wakeup()
     end
 
     local now = os.clock()
-    if ((now - lastServoCountTime) >= 2) and rfsuite.bg.msp.mspQueue:isProcessed() then
+    if ((now - lastServoCountTime) >= 2) and rfsuite.tasks.msp.mspQueue:isProcessed() then
         lastServoCountTime = now
 
         getServoCount()
@@ -395,8 +395,8 @@ local function servoCenterFocusAllOn(self)
             command = 193, -- MSP_SET_SERVO_OVERRIDE
             payload = {i}
         }
-        rfsuite.bg.msp.mspHelper.writeU16(message.payload, 0)
-        rfsuite.bg.msp.mspQueue:add(message)
+        rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
+        rfsuite.tasks.msp.mspQueue:add(message)
     end
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
@@ -409,8 +409,8 @@ local function servoCenterFocusAllOff(self)
             command = 193, -- MSP_SET_SERVO_OVERRIDE
             payload = {i}
         }
-        rfsuite.bg.msp.mspHelper.writeU16(message.payload, 2001)
-        rfsuite.bg.msp.mspQueue:add(message)
+        rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
+        rfsuite.tasks.msp.mspQueue:add(message)
     end
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true

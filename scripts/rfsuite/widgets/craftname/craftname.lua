@@ -87,7 +87,7 @@ function rf2craftname.paint(widget)
     local w, h = lcd.getWindowSize()  -- Ensure consistency with rf2gov.paint
 
     -- Text to display
-    local str = rfsuite.bg.active() and rfsuite.session.craftName or "[NO LINK]"
+    local str = rfsuite.tasks.active() and rfsuite.session.craftName or "[NO LINK]"
 
     -- Available font sizes ordered from smallest to largest
     local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL}

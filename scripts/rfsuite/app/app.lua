@@ -156,7 +156,7 @@ rfsuite.config.ethosRunningVersion = nil
 function app.getRSSI()
     if system:getVersion().simulation == true or rfsuite.preferences.skipRssiSensorCheck == true or app.offlineMode == true then return 100 end
 
-    if rfsuite.bg.telemetry.active() == true then
+    if rfsuite.tasks.telemetry.active() == true then
         return 100
     else
         return 0
@@ -207,7 +207,7 @@ end
 local function rebootFc()
 
     app.pageState = app.pageStatus.rebooting
-    rfsuite.bg.msp.mspQueue:add({
+    rfsuite.tasks.msp.mspQueue:add({
         command = 68, -- MSP_REBOOT
         processReply = function(self, buf)
             invalidatePages()
@@ -248,7 +248,7 @@ function app.settingsSaved()
         -- don't write again if we're already responding to earlier page.write()s
         if app.pageState ~= app.pageStatus.eepromWrite then
             app.pageState = app.pageStatus.eepromWrite
-            rfsuite.bg.msp.mspQueue:add(mspEepromWrite)
+            rfsuite.tasks.msp.mspQueue:add(mspEepromWrite)
         end
     elseif app.pageState ~= app.pageStatus.eepromWrite then
         -- If we're not already trying to write to eeprom from a previous save, then we're done.
@@ -284,7 +284,7 @@ local function saveSettings()
         local payloadStructure = mspapi.structure[apiNAME]
 
         -- Initialise the API
-        local API = rfsuite.bg.msp.api.load(apiNAME)
+        local API = rfsuite.tasks.msp.api.load(apiNAME)
         API.setErrorHandler(function(self, buf)
             app.triggers.saveFailed = true
         end
@@ -491,7 +491,7 @@ local function requestPage()
             return
         end
 
-        local API = rfsuite.bg.msp.api.load(v)
+        local API = rfsuite.tasks.msp.api.load(v)
 
         -- Handle API success
         API.setCompleteHandler(function(self, buf)
@@ -608,7 +608,7 @@ function app.wakeupUI()
     if app.triggers.closeSave == true then
         app.triggers.isSaving = false
 
-        if rfsuite.bg.msp.mspQueue:isProcessed() then
+        if rfsuite.tasks.msp.mspQueue:isProcessed() then
             if (app.dialogs.saveProgressCounter > 40 and app.dialogs.saveProgressCounter <= 80) then
                 app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 5
             elseif (app.dialogs.saveProgressCounter > 90) then
@@ -620,7 +620,7 @@ function app.wakeupUI()
 
         if app.dialogs.save ~= nil then app.ui.progressDisplaySaveValue(app.dialogs.saveProgressCounter) end
 
-        if app.dialogs.saveProgressCounter >= 100 and rfsuite.bg.msp.mspQueue:isProcessed() then
+        if app.dialogs.saveProgressCounter >= 100 and rfsuite.tasks.msp.mspQueue:isProcessed() then
             app.triggers.closeSave = false
             app.dialogs.saveProgressCounter = 0
             app.dialogs.saveDisplay = false
@@ -654,13 +654,13 @@ function app.wakeupUI()
     end
 
     -- profile switching - trigger a reload when profile changes
-    if rfsuite.preferences.profileSwitching == true and app.Page ~= nil and (app.Page.refreshOnProfileChange == true or app.Page.refreshOnRateChange == true) and app.uiState == app.uiStatus.pages and app.triggers.isSaving == false and rfsuite.app.dialogs.saveDisplay ~= true and rfsuite.app.dialogs.progressDisplay ~= true and rfsuite.bg.msp.mspQueue:isProcessed() then
+    if rfsuite.preferences.profileSwitching == true and app.Page ~= nil and (app.Page.refreshOnProfileChange == true or app.Page.refreshOnRateChange == true) and app.uiState == app.uiStatus.pages and app.triggers.isSaving == false and rfsuite.app.dialogs.saveDisplay ~= true and rfsuite.app.dialogs.progressDisplay ~= true and rfsuite.tasks.msp.mspQueue:isProcessed() then
 
         local now = os.clock()
         local profileCheckInterval
 
         -- alter the interval for checking profile changes depenant of if using msp or not
-        if (rfsuite.bg.telemetry.getSensorSource("pidProfile") ~= nil and rfsuite.bg.telemetry.getSensorSource("rateProfile") ~= nil) then
+        if (rfsuite.tasks.telemetry.getSensorSource("pidProfile") ~= nil and rfsuite.tasks.telemetry.getSensorSource("rateProfile") ~= nil) then
             profileCheckInterval = 0.1
         else
             profileCheckInterval = 1.5
@@ -746,7 +746,7 @@ function app.wakeupUI()
                     rfsuite.config.ethosVersion[2], 
                     rfsuite.config.ethosVersion[3])
                     app.triggers.invalidConnectionSetup = true
-                elseif not rfsuite.bg.active() then
+                elseif not rfsuite.tasks.active() then
                     message = "Please enable the background task."
                     app.triggers.invalidConnectionSetup = true
                 elseif app.getRSSI() == 0 and app.offlineMode == false then
@@ -796,7 +796,7 @@ function app.wakeupUI()
     if rfsuite.preferences.watchdogParam ~= nil and rfsuite.preferences.watchdogParam ~= 1 then app.protocol.saveTimeout = rfsuite.preferences.watchdogParam end
     if app.dialogs.saveDisplay == true then
         if app.dialogs.saveWatchDog ~= nil then
-            if (os.clock() - app.dialogs.saveWatchDog) > (tonumber(app.protocol.saveTimeout + 5)) or (app.dialogs.saveProgressCounter > 120 and rfsuite.bg.msp.mspQueue:isProcessed()) then
+            if (os.clock() - app.dialogs.saveWatchDog) > (tonumber(app.protocol.saveTimeout + 5)) or (app.dialogs.saveProgressCounter > 120 and rfsuite.tasks.msp.mspQueue:isProcessed()) then
                 app.audio.playTimeout = true
                 app.ui.progressDisplaySaveMessage("Error: timed out")
                 app.ui.progressDisplaySaveCloseAllowed(true)
@@ -817,7 +817,7 @@ function app.wakeupUI()
         app.dialogs.progressCounter = app.dialogs.progressCounter + 2
         app.ui.progressDisplayValue(app.dialogs.progressCounter)
 
-        if (os.clock() - app.dialogs.progressWatchDog) > (tonumber(rfsuite.bg.msp.protocol.pageReqTimeout)) then
+        if (os.clock() - app.dialogs.progressWatchDog) > (tonumber(rfsuite.tasks.msp.protocol.pageReqTimeout)) then
 
             app.audio.playTimeout = true
 
@@ -963,7 +963,7 @@ end
                 app.triggers.saveFailed = false
                 app.dialogs.saveProgressCounter = 0
                 app.ui.progressDisplaySave()
-                rfsuite.bg.msp.mspQueue.retryCount = 0
+                rfsuite.tasks.msp.mspQueue.retryCount = 0
             end
             if app.pageState == app.pageStatus.saving then
                 app.ui.progressDisplaySaveValue(app.dialogs.saveProgressCounter, "Saving data...")
@@ -984,7 +984,7 @@ end
             app.triggers.saveFailed = false
             app.dialogs.saveProgressCounter = 0
             app.ui.progressDisplaySave()
-            rfsuite.bg.msp.mspQueue.retryCount = 0
+            rfsuite.tasks.msp.mspQueue.retryCount = 0
             app.triggers.closeSaveFake = true
             app.triggers.isSavingFake = false
         end
@@ -1010,7 +1010,7 @@ end
     -- if we are on the home page - then ensure pages are invalidated
     if app.uiState == app.uiStatus.mainMenu then
         invalidatePages()
-    elseif app.triggers.isReady and rfsuite.bg.msp.mspQueue:isProcessed() and app.Page and app.Page.values then
+    elseif app.triggers.isReady and rfsuite.tasks.msp.mspQueue:isProcessed() and app.Page and app.Page.values then
         app.triggers.isReady = false
         app.triggers.closeProgressLoader = true
     end

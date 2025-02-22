@@ -90,9 +90,9 @@ end
 
 -- Write log entries to file
 function logging.flushLogs(forceFlush)
-    local max_lines_per_flush = forceFlush or not rfsuite.bg.telemetry.active() and 1 or 10
+    local max_lines_per_flush = forceFlush or not rfsuite.tasks.telemetry.active() and 1 or 10
 
-    if #log_queue > 0 and rfsuite.bg.msp.mspQueue:isProcessed() then
+    if #log_queue > 0 and rfsuite.tasks.msp.mspQueue:isProcessed() then
         local filePath = "logs/telemetry/" .. logFileName
 
         local f = io.open(filePath, 'a')
@@ -113,7 +113,7 @@ function logging.getLogLine()
     local lineValues = {}
 
     for i, v in ipairs(logTable) do
-        local src = rfsuite.bg.telemetry.getSensorSource(v.name)
+        local src = rfsuite.tasks.telemetry.getSensorSource(v.name)
         lineValues[i] = src and src:value() or 0
     end
 
@@ -136,7 +136,7 @@ function logging.wakeup()
 
 
     -- If telemetry is not active, clear logs
-    if rfsuite.bg.telemetry.active() == false then
+    if rfsuite.tasks.telemetry.active() == false then
         logFileName = nil
         logHeader = nil
         logging.flushLogs(true)
@@ -145,7 +145,7 @@ function logging.wakeup()
         return
     end
 
-    local armSource = rfsuite.bg.telemetry.getSensorSource("armflags")
+    local armSource = rfsuite.tasks.telemetry.getSensorSource("armflags")
     if armSource then
         local isArmed = armSource:value()
 

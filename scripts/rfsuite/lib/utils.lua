@@ -73,10 +73,10 @@ end
 -- you MUST set it to nil after you get it!
 function utils.getCurrentProfile()
 
-    if (rfsuite.bg.telemetry.getSensorSource("pidProfile") ~= nil and rfsuite.bg.telemetry.getSensorSource("rateProfile") ~= nil) then
+    if (rfsuite.tasks.telemetry.getSensorSource("pidProfile") ~= nil and rfsuite.tasks.telemetry.getSensorSource("rateProfile") ~= nil) then
 
         rfsuite.session.activeProfileLast = rfsuite.session.activeProfile
-        local p = rfsuite.bg.telemetry.getSensorSource("pidProfile"):value()
+        local p = rfsuite.tasks.telemetry.getSensorSource("pidProfile"):value()
         if p ~= nil then
             rfsuite.session.activeProfile = math.floor(p)
         else
@@ -84,7 +84,7 @@ function utils.getCurrentProfile()
         end
 
         rfsuite.session.activeRateProfileLast = rfsuite.session.activeRateProfile
-        local r = rfsuite.bg.telemetry.getSensorSource("rateProfile"):value()
+        local r = rfsuite.tasks.telemetry.getSensorSource("rateProfile"):value()
         if r ~= nil then
             rfsuite.session.activeRateProfile = math.floor(r)
         else
@@ -106,9 +106,9 @@ function utils.getCurrentProfile()
                         if #buf >= 30 then
 
                             buf.offset = 24
-                            local activeProfile = rfsuite.bg.msp.mspHelper.readU8(buf)
+                            local activeProfile = rfsuite.tasks.msp.mspHelper.readU8(buf)
                             buf.offset = 26
-                            local activeRate = rfsuite.bg.msp.mspHelper.readU8(buf)
+                            local activeRate = rfsuite.tasks.msp.mspHelper.readU8(buf)
 
                             rfsuite.session.activeProfileLast = rfsuite.session.activeProfile
                             rfsuite.session.activeRateProfileLast = rfsuite.session.activeRateProfile
@@ -121,7 +121,7 @@ function utils.getCurrentProfile()
                     simulatorResponse = {240, 1, 124, 0, 35, 0, 0, 0, 0, 0, 0, 224, 1, 10, 1, 0, 26, 0, 0, 0, 0, 0, 2, 0, 6, 0, 6, 1, 4, 1}
 
                 }
-                rfsuite.bg.msp.mspQueue:add(message)
+                rfsuite.tasks.msp.mspQueue:add(message)
 
 
             end

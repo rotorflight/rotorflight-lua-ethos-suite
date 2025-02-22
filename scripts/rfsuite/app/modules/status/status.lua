@@ -41,21 +41,21 @@ local function getStatus()
         processReply = function(self, buf)
 
             buf.offset = 12
-            status.realTimeLoad = rfsuite.bg.msp.mspHelper.readU16(buf)
-            status.cpuLoad = rfsuite.bg.msp.mspHelper.readU16(buf)
+            status.realTimeLoad = rfsuite.tasks.msp.mspHelper.readU16(buf)
+            status.cpuLoad = rfsuite.tasks.msp.mspHelper.readU16(buf)
             buf.offset = 18
-            status.armingDisableFlags = rfsuite.bg.msp.mspHelper.readU32(buf)
+            status.armingDisableFlags = rfsuite.tasks.msp.mspHelper.readU32(buf)
             buf.offset = 24
-            status.profile = rfsuite.bg.msp.mspHelper.readU8(buf)
+            status.profile = rfsuite.tasks.msp.mspHelper.readU8(buf)
             buf.offset = 26
-            status.rateProfile = rfsuite.bg.msp.mspHelper.readU8(buf)
+            status.rateProfile = rfsuite.tasks.msp.mspHelper.readU8(buf)
 
 
         end,
         simulatorResponse = {240, 1, 124, 0, 35, 0, 0, 0, 0, 0, 0, 224, 1, 10, 1, 0, 26, 0, 0, 0, 0, 0, 2, 0, 6, 0, 6, 1, 4, 1}
     }
 
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function getDataflashSummary()
@@ -63,17 +63,17 @@ local function getDataflashSummary()
         command = 70, -- MSP_DATAFLASH_SUMMARY
         processReply = function(self, buf)
 
-            local flags = rfsuite.bg.msp.mspHelper.readU8(buf)
+            local flags = rfsuite.tasks.msp.mspHelper.readU8(buf)
             summary.ready = (flags & 1) ~= 0
             summary.supported = (flags & 2) ~= 0
-            summary.sectors = rfsuite.bg.msp.mspHelper.readU32(buf)
-            summary.totalSize = rfsuite.bg.msp.mspHelper.readU32(buf)
-            summary.usedSize = rfsuite.bg.msp.mspHelper.readU32(buf)
+            summary.sectors = rfsuite.tasks.msp.mspHelper.readU32(buf)
+            summary.totalSize = rfsuite.tasks.msp.mspHelper.readU32(buf)
+            summary.usedSize = rfsuite.tasks.msp.mspHelper.readU32(buf)
 
         end,
         simulatorResponse = {3, 1, 0, 0, 0, 0, 4, 0, 0, 0, 3, 0, 0}
     }
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function eraseDataflash()
@@ -91,7 +91,7 @@ local function eraseDataflash()
         end,
         simulatorResponse = {}
     }
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function postLoad(self)
@@ -172,7 +172,7 @@ local function wakeup()
         if (now - wakeupScheduler) >= 2 then
             wakeupScheduler = now
             firstRun = false
-            if rfsuite.bg.msp.mspQueue:isProcessed() then
+            if rfsuite.tasks.msp.mspQueue:isProcessed() then
 
                 getStatus()
                 getDataflashSummary()

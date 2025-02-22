@@ -41,7 +41,7 @@ local mspapi = {
             {t = "Version", value = version, type = displayType, disable = disableType, position = displayPos},
             {t = "Ethos Version", value = ethosVersion, type = displayType, disable = disableType, position = displayPos},
             {t = "MSP Version", value = apiVersion, type = displayType, disable = disableType, position = displayPos},
-            {t = "MSP Transport", value = string.upper(rfsuite.bg.msp.protocol.mspProtocol), type = displayType, disable = disableType, position = displayPos},
+            {t = "MSP Transport", value = string.upper(rfsuite.tasks.msp.protocol.mspProtocol), type = displayType, disable = disableType, position = displayPos},
             {t = "Supported MSP Versions", value = supportedMspVersion, type = displayType, disable = disableType, position = displayPos},
             {t = "Simulation", value = simulation, type = displayType, disable = disableType, position = displayPos}
         }
