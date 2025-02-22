@@ -460,18 +460,23 @@ function utils.findModules()
         local f = io.open(init_path, "r")
         if f then
             io.close(f)
-
             local func, err = loadfile(init_path)
-
+            if err then
+                rfsuite.utils.log("Error loading " .. init_path, "info")
+                rfsuite.utils.log(err, "info")
+            end
             if func then
                 local mconfig = func()
                 if type(mconfig) ~= "table" or not mconfig.script then
-                    rfsuite.utils.log("Invalid configuration in " .. init_path,"debug")
+                    rfsuite.utils.log("Invalid configuration in " .. init_path,"info")
                 else
+                    rfsuite.utils.log("Loading module " .. v, "debug")
                     mconfig['folder'] = v
                     table.insert(modulesList, mconfig)
                 end
-            end
+            else
+                rfsuite.utils.log("Error loading " .. init_path, "info")    
+            end 
         end
     end
 

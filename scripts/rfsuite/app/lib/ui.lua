@@ -208,38 +208,34 @@ function ui.openMainMenu()
 
     local MainMenu = assert(loadfile("app/modules/init.lua"))()
 
-    -- clear all nav vars
+    -- Clear all navigation variables
     rfsuite.app.lastIdx = nil
     rfsuite.app.lastTitle = nil
     rfsuite.app.lastScript = nil
     rfsuite.session.lastPage = nil
-
-    -- rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
-
     rfsuite.app.triggers.isReady = false
     rfsuite.app.uiState = rfsuite.app.uiStatus.mainMenu
     rfsuite.app.triggers.disableRssiTimeout = false
 
-    -- size of buttons
+    -- Determine button size based on preferences
     rfsuite.preferences.iconSize = tonumber(rfsuite.preferences.iconSize) or 1
 
-    local buttonW
-    local buttonH
-    local padding
-    local numPerRow
+    local buttonW, buttonH, padding, numPerRow
 
-    local iconSize = rfsuite.preferences.iconSize
-    if iconSize == 0 then
+    if rfsuite.preferences.iconSize == 0 then
+        -- Text icons
         padding = rfsuite.app.radio.buttonPaddingSmall
         buttonW = (config.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
         buttonH = rfsuite.app.radio.navbuttonHeight
         numPerRow = rfsuite.app.radio.buttonsPerRow
-    elseif iconSize == 1 then
+    elseif rfsuite.preferences.iconSize == 1 then
+        -- Small icons
         padding = rfsuite.app.radio.buttonPaddingSmall
         buttonW = rfsuite.app.radio.buttonWidthSmall
         buttonH = rfsuite.app.radio.buttonHeightSmall
         numPerRow = rfsuite.app.radio.buttonsPerRowSmall
-    elseif iconSize == 2 then
+    elseif rfsuite.preferences.iconSize == 2 then
+        -- Large icons
         padding = rfsuite.app.radio.buttonPadding
         buttonW = rfsuite.app.radio.buttonWidth
         buttonH = rfsuite.app.radio.buttonHeight
@@ -254,65 +250,54 @@ function ui.openMainMenu()
     rfsuite.app.gfx_buttons["mainmenu"] = rfsuite.app.gfx_buttons["mainmenu"] or {}
     rfsuite.app.menuLastSelected["mainmenu"] = rfsuite.app.menuLastSelected["mainmenu"] or 1
 
-    for idx, value in ipairs(MainMenu.sections) do
-
-        local hideSection = (value.ethosversion and rfsuite.config.ethosRunningVersion < value.ethosversion)
-        or (value.mspversion and rfsuite.session.apiVersion < value.mspversion)
-        or (value.developer and not rfsuite.config.developerMode)
-        or false
-
+    for idx, section in ipairs(MainMenu.sections) do
+        local hideSection = (section.ethosversion and rfsuite.config.ethosRunningVersion < section.ethosversion) or
+                            (section.mspversion and rfsuite.session.apiVersion < section.mspversion) or
+                            (section.developer and not rfsuite.config.developerMode)
 
         if not hideSection then
-            form.addLine(value.title)
-            local lc = 0
-            local rowY = 0
-            local height = form.height()
-            
-            for pidx, pvalue in ipairs(MainMenu.pages) do
-                if pvalue.section == idx then
-                    local hideEntry = (pvalue.ethosversion and not rfsuite.utils.ethosVersionAtLeast(pvalue.ethosversion))
-                                     or (rfsuite.session.apiVersion and pvalue.mspversion and rfsuite.session.apiVersion < pvalue.mspversion)
-                                     or (pvalue.developer and not rfsuite.config.developerMode)
-                    
+            form.addLine(section.title)
+            local lc, y = 0, 0
+
+            for pidx, page in ipairs(MainMenu.pages) do
+                if page.section == idx then
+                    local hideEntry = (page.ethosversion and not rfsuite.utils.ethosVersionAtLeast(page.ethosversion)) or
+                                      (page.mspversion and rfsuite.session.apiVersion < page.mspversion) or
+                                      (page.developer and not rfsuite.config.developerMode)
+
                     if not hideEntry then
                         if lc == 0 then
-                            rowY = height + (rfsuite.preferences.iconSize == 2 and rfsuite.app.radio.buttonPadding or rfsuite.app.radio.buttonPaddingSmall)
+                            y = form.height() + (rfsuite.preferences.iconSize == 2 and rfsuite.app.radio.buttonPadding or rfsuite.app.radio.buttonPaddingSmall)
                         end
-        
+
                         local x = (buttonW + padding) * lc
-        
                         if rfsuite.preferences.iconSize ~= 0 then
-                            if not rfsuite.app.gfx_buttons["mainmenu"][pidx] then
-                                rfsuite.app.gfx_buttons["mainmenu"][pidx] = lcd.loadMask("app/modules/" .. pvalue.folder .. "/" .. pvalue.image)
-                            end
+                            rfsuite.app.gfx_buttons["mainmenu"][pidx] = rfsuite.app.gfx_buttons["mainmenu"][pidx] or lcd.loadMask("app/modules/" .. page.folder .. "/" .. page.image)
                         else
                             rfsuite.app.gfx_buttons["mainmenu"][pidx] = nil
                         end
-        
-                        rfsuite.app.formFields[pidx] = form.addButton(line, { x = x, y = rowY, w = buttonW, h = buttonH }, {
-                            text    = pvalue.title,
-                            icon    = rfsuite.app.gfx_buttons["mainmenu"][pidx],
+
+                        rfsuite.app.formFields[pidx] = form.addButton(line, {x = x, y = y, w = buttonW, h = buttonH}, {
+                            text = page.title,
+                            icon = rfsuite.app.gfx_buttons["mainmenu"][pidx],
                             options = FONT_S,
-                            paint   = function() end,
-                            press   = function()
+                            paint = function() end,
+                            press = function()
                                 rfsuite.app.menuLastSelected["mainmenu"] = pidx
                                 rfsuite.app.ui.progressDisplay()
-                                rfsuite.app.ui.openPage(pidx, pvalue.title, pvalue.folder .. "/" .. pvalue.script)
+                                rfsuite.app.ui.openPage(pidx, page.title, page.folder .. "/" .. page.script)
                             end
                         })
-        
+
                         if rfsuite.app.menuLastSelected["mainmenu"] == pidx then
                             rfsuite.app.formFields[pidx]:focus()
                         end
-        
-                        lc = lc + 1
-                        if lc == numPerRow then lc = 0 end
+
+                        lc = (lc + 1) % numPerRow
                     end
                 end
             end
         end
-        
-
     end
 
 end

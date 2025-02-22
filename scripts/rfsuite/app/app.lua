@@ -550,17 +550,10 @@ function app.paint()
     end
 end
 
--- we run alternating between the UI and the form. 
--- this is a simple way of reducing cpu load
-app.runUI = true
+
 function app.wakeup(widget)
-    app.guiIsRunning = true
-    if app.runUI then
         app.wakeupUI()
-    else
         app.wakeupForm()
-    end
-    app.runUI = not app.runUI  -- Toggle for next cycle
 end
 
 -- WAKEUPFORM.  RUN A FUNCTION CALLED wakeup THAT IS RETURNED WHEN REQUESTING A PAGE
