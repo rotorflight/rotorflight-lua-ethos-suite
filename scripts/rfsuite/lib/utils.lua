@@ -278,11 +278,15 @@ function utils.scaleValue(value, f)
     return utils.round(v)
 end
 
+
 function utils.decimalInc(dec)
-    if not dec or dec < 1 or dec > 11 then
+    local decTable = {10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000, 10000000000, 100000000000}
+
+    if dec == nil then
         return 1
+    else
+        return decTable[dec]
     end
-    return 10 ^ dec
 end
 
 -- set positions of form elements
