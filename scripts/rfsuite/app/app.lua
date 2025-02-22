@@ -1025,7 +1025,7 @@ end
         end
 
         -- trigger a request page if we have a page waiting to be retrieved
-        if app.Page and app.Page.mspapi and app.pageState == app.pageStatus.display then 
+        if app.Page and app.Page.mspapi and app.pageState == app.pageStatus.display and app.triggers.isReady == false then 
             requestPage() 
         end
 

@@ -280,14 +280,21 @@ end
 
 
 function utils.decimalInc(dec)
-    local decTable = {10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000, 10000000000, 100000000000}
-
     if dec == nil then
         return 1
-    else
-        return decTable[dec]
     end
+    -- Validate that dec is a positive integer (mimicking the table index behavior)
+    if dec < 1 or dec % 1 ~= 0 then
+        return nil  -- or error out, if that suits your design better
+    end
+    local result = 10 ^ dec
+    local intResult = math.tointeger(result)
+    if intResult == nil then
+        error("Result (" .. result .. ") is not representable as an integer")
+    end
+    return intResult
 end
+
 
 -- set positions of form elements
 function utils.getInlinePositions(f, lPage)
