@@ -497,15 +497,17 @@ local function requestPage()
         -- Handle API success
         API.setCompleteHandler(function(self, buf)
 
-            -- Store API response with API name as the key
-            app.Page.mspapi.values[apiKey] = API.data().parsed
+            if app.Page and app.Page.mspapi then
+                -- Store API response with API name as the key
+                app.Page.mspapi.values[apiKey] = API.data().parsed
 
-            -- Store the structure with the API name as the key
-            app.Page.mspapi.structure[apiKey] = API.data().structure
+                -- Store the structure with the API name as the key
+                app.Page.mspapi.structure[apiKey] = API.data().structure
 
-            -- Move to the next API
-            state.currentIndex = state.currentIndex + 1
-            processNextAPI()
+                -- Move to the next API
+                state.currentIndex = state.currentIndex + 1
+                processNextAPI()
+            end    
         end)
 
         -- Handle API errors
