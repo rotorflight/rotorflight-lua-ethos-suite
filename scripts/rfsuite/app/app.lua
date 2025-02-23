@@ -675,9 +675,9 @@ function app.wakeupUI()
                     if rfsuite.session.activeProfile ~= rfsuite.session.activeProfileLast and rfsuite.session.activeProfileLast ~= nil then
                         if app.ui.progressDisplayIsActive() then
                             -- switch has been toggled mid flow - this is bad.. clean upd
-                            form.clear()
+                            --form.clear()
                             app.triggers.triggerReloadNoPrompt = true
-
+                            return true
                         else
                             -- trigger RELOAD
                             app.triggers.triggerReloadNoPrompt = true
@@ -694,9 +694,8 @@ function app.wakeupUI()
                     if rfsuite.session.activeRateProfile ~= rfsuite.session.activeRateProfileLast and rfsuite.session.activeRateProfileLast ~= nil then
                         if app.ui.progressDisplayIsActive() then
                             -- switch has been toggled mid flow - this is bad.. clean upd
-                            form.clear()
                             app.triggers.triggerReloadNoPrompt = true
-
+                            return true
                         else
                             -- trigger RELOAD
                             app.triggers.triggerReloadNoPrompt = true

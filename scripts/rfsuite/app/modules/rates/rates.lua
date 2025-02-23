@@ -151,9 +151,10 @@ local function postLoad(self)
             rfsuite.app.Page.fields[x].default = nil    
         end
         -- set the value
-        rfsuite.utils.log("Setting value for field: " .. f.apikey .. " to " .. f.value,"debug")
-        rfsuite.app.Page.fields[x].value = f.value
-
+        if f.value ~= nil then
+            rfsuite.app.Page.fields[x].value = f.value
+            rfsuite.utils.log("Setting value for field: " .. f.apikey .. " to " .. f.value,"debug")
+        end
     end
 
 
