@@ -456,28 +456,31 @@ function utils.findModules()
 
     for _, v in pairs(system.listFiles(modules_path)) do
 
-        local init_path = modules_path .. v .. '/init.lua'
-        local f = io.open(init_path, "r")
-        if f then
-            io.close(f)
-            local func, err = loadfile(init_path)
-            if err then
-                rfsuite.utils.log("Error loading " .. init_path, "info")
-                rfsuite.utils.log(err, "info")
-            end
-            if func then
-                local mconfig = func()
-                if type(mconfig) ~= "table" or not mconfig.script then
-                    rfsuite.utils.log("Invalid configuration in " .. init_path,"info")
-                else
-                    rfsuite.utils.log("Loading module " .. v, "debug")
-                    mconfig['folder'] = v
-                    table.insert(modulesList, mconfig)
+        if v ~= ".." then
+            local init_path = modules_path .. v .. '/init.lua'
+
+            local f = io.open(init_path, "r")
+            if f then
+                io.close(f)
+                local func, err = loadfile(init_path)
+                if err then
+                    rfsuite.utils.log("Error loading " .. init_path, "info")
+                    rfsuite.utils.log(err, "info")
                 end
-            else
-                rfsuite.utils.log("Error loading " .. init_path, "info")    
-            end 
-        end
+                if func then
+                    local mconfig = func()
+                    if type(mconfig) ~= "table" or not mconfig.script then
+                        rfsuite.utils.log("Invalid configuration in " .. init_path,"info")
+                    else
+                        rfsuite.utils.log("Loading module " .. v, "debug")
+                        mconfig['folder'] = v
+                        table.insert(modulesList, mconfig)
+                    end
+                else
+                    rfsuite.utils.log("Error loading " .. init_path, "info")    
+                end 
+            end
+        end    
     end
 
     return modulesList
@@ -491,23 +494,25 @@ function utils.findWidgets()
 
     for _, v in pairs(system.listFiles(widgets_path)) do
 
-        local init_path = widgets_path .. v .. '/init.lua'
-        local f = io.open(init_path, "r")
-        if f then
-            io.close(f)
+        if v ~= ".." then
+            local init_path = widgets_path .. v .. '/init.lua'
+            local f = io.open(init_path, "r")
+            if f then
+                io.close(f)
 
-            local func, err = loadfile(init_path)
+                local func, err = loadfile(init_path)
 
-            if func then
-                local wconfig = func()
-                if type(wconfig) ~= "table" or not wconfig.key then
-                    rfsuite.utils.log("Invalid configuration in " .. init_path,"debug")
-                else
-                    wconfig['folder'] = v
-                    table.insert(widgetsList, wconfig)
+                if func then
+                    local wconfig = func()
+                    if type(wconfig) ~= "table" or not wconfig.key then
+                        rfsuite.utils.log("Invalid configuration in " .. init_path,"debug")
+                    else
+                        wconfig['folder'] = v
+                        table.insert(widgetsList, wconfig)
+                    end
                 end
             end
-        end
+        end    
     end
 
     return widgetsList

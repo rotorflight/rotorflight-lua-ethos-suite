@@ -59,41 +59,44 @@ function tasks.findTasks()
     -- Process one task per wakeup
     if tasks.taskScanIndex <= #tasks.taskListTemp then
         local v = tasks.taskListTemp[tasks.taskScanIndex]
-        local tasks_path = "tasks/"
-        local init_path = tasks_path .. v .. '/init.lua'
 
-        local f = io.open(init_path, "r")
-        if f then
-            io.close(f)
+        if v ~= ".." then
+            local tasks_path = "tasks/"
+            local init_path = tasks_path .. v .. '/init.lua'
 
-            local func, err = loadfile(init_path)
+            local f = io.open(init_path, "r")
+            if f then
+                io.close(f)
 
-            if func then
-                local tconfig = func()
-                if type(tconfig) ~= "table" or not tconfig.interval or not tconfig.script then
-                    rfsuite.utils.log("Invalid configuration in " .. init_path, "debug")
-                else
-                    local task = {
-                        name = v,
-                        interval = tconfig.interval,
-                        script = tconfig.script,
-                        msp = tconfig.msp,
-                        last_run = os.clock()
-                    }
-                    table.insert(tasksList, task)
+                local func, err = loadfile(init_path)
 
-                    local script = tasks_path .. v .. '/' .. tconfig.script
-                    local fs = io.open(script, "r")
-                    if fs then
-                        io.close(fs)
-                        tasks[v] = assert(loadfile(script))(config)
+                if func then
+                    local tconfig = func()
+                    if type(tconfig) ~= "table" or not tconfig.interval or not tconfig.script then
+                        rfsuite.utils.log("Invalid configuration in " .. init_path, "debug")
+                    else
+                        local task = {
+                            name = v,
+                            interval = tconfig.interval,
+                            script = tconfig.script,
+                            msp = tconfig.msp,
+                            last_run = os.clock()
+                        }
+                        table.insert(tasksList, task)
+
+                        local script = tasks_path .. v .. '/' .. tconfig.script
+                        local fs = io.open(script, "r")
+                        if fs then
+                            io.close(fs)
+                            tasks[v] = assert(loadfile(script))(config)
+                        end
                     end
                 end
             end
-        end
-
+        end   
         -- Move to the next task on the next wakeup
         tasks.taskScanIndex = tasks.taskScanIndex + 1
+ 
     else
         -- Cleanup once all tasks are processed
         tasks.taskListTemp = nil
