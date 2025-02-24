@@ -18,7 +18,7 @@ local mspapi = {
             {t = "Timing",              activeFieldPos = 4,  mspapi = 1, type = 1, apikey = "timing"},
             {t = "Acceleration",        activeFieldPos = 9,  mspapi = 1, type = 1, apikey = "acceleration"},
             {t = "Brake Force",         activeFieldPos = 14, mspapi = 1, apikey = "brake_force"},
-            {t = "SR Function",         activeFieldPos = 15, mspapi = 1, xtype = 1, apikey = "sr_function"},
+            {t = "SR Function",         activeFieldPos = 15, mspapi = 1, type = 1, apikey = "sr_function"},
             {t = "Capacity Correction", activeFieldPos = 16, mspapi = 1, apikey = "capacity_correction"},
             {t = "Auto Restart Time",   activeFieldPos = 10, mspapi = 1, type = 1, apikey = "auto_restart_time"},
             {t = "Cell Cutoff",         activeFieldPos = 11, mspapi = 1, type = 1, apikey = "cell_cutoff"}

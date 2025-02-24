@@ -391,6 +391,12 @@ function apiLoader.buildWritePayload(apiname,payload, api_structure)
             else
                 rfsuite.tasks.msp.mspHelper.writeU24(buf, value)
             end
+        elseif data_type == "U32" then
+            if byteorder then
+                rfsuite.tasks.msp.mspHelper.writeU32(buf, value, byteorder)
+            else
+                rfsuite.tasks.msp.mspHelper.writeU32(buf, value)
+            end            
         elseif data_type == "S8" then
             rfsuite.tasks.msp.mspHelper.writeS8(buf, value)
         elseif data_type == "S16" then
