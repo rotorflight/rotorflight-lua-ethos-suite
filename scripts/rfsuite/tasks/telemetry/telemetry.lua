@@ -390,7 +390,7 @@ function telemetry.wakeup()
     end
 
     -- Reset if telemetry is inactive or RSSI sensor changed
-    if not telemetry.active() or rfsuite.rssiSensorChanged then
+    if not telemetry.active() or rfsuite.session.rssiSensorChanged then
         telemetrySOURCE, crsfSOURCE, protocol = nil, nil, nil
         sensors = {}
     end

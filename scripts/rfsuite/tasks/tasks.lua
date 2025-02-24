@@ -33,7 +33,7 @@ tasks.wasOn = false
 
 local tasksList = {}
 
-rfsuite.rssiSensorChanged = true
+rfsuite.session.rssiSensorChanged = true
 
 local rssiCheckScheduler = os.clock()
 local lastRssiSensorName = nil
@@ -148,17 +148,17 @@ function tasks.wakeup()
     local now = os.clock()
     if now - (rssiCheckScheduler or 0) >= 4 then
         currentRssiSensor = system.getSource({appId = 0xF101}) or system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1}) or nil
-        rfsuite.rssiSensorChanged = currentRssiSensor and (lastRssiSensorName ~= currentRssiSensor:name()) or false
+        rfsuite.session.rssiSensorChanged = currentRssiSensor and (lastRssiSensorName ~= currentRssiSensor:name()) or false
         lastRssiSensorName = currentRssiSensor and currentRssiSensor:name() or nil    
         rssiCheckScheduler = now
     end
 
     if system:getVersion().simulation == true then 
-        rfsuite.rssiSensorChanged = false 
+        rfsuite.session.rssiSensorChanged = false 
     end
 
     if currentRssiSensor ~= nil then 
-        rfsuite.rssiSensor = currentRssiSensor 
+        rfsuite.session.rssiSensor = currentRssiSensor 
     end
 
     -- Process scheduled tasks

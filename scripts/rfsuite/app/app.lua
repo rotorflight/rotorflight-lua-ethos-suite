@@ -529,7 +529,7 @@ end
 function app.updateTelemetryState()
 
     if system:getVersion().simulation ~= true then
-        if not rfsuite.rssiSensor then
+        if not rfsuite.session.rssiSensor then
             app.triggers.telemetryState = app.telemetryStatus.noSensor
         elseif app.getRSSI() == 0 then
             app.triggers.telemetryState = app.telemetryStatus.noTelemetry
