@@ -189,6 +189,7 @@ function app.resetState()
     rfsuite.session.activeRateProfileLast = nil
     rfsuite.session.activeProfile = nil
     rfsuite.session.activeRateTable = nil
+    rfsuite.app.triggers.disableRssiTimeout = false
 end
 
 -- RETURN CURRENT LCD SIZE
@@ -553,8 +554,10 @@ end
 
 
 function app.wakeup(widget)
-        app.wakeupUI()
-        app.wakeupForm()
+    app.guiIsRunning = true
+
+    app.wakeupUI()
+    app.wakeupForm()
 end
 
 -- WAKEUPFORM.  RUN A FUNCTION CALLED wakeup THAT IS RETURNED WHEN REQUESTING A PAGE
@@ -704,11 +707,15 @@ function app.wakeupUI()
     end
 
     if app.triggers.telemetryState ~= 1 and app.triggers.disableRssiTimeout == false then
+
         if rfsuite.app.dialogs.progressDisplay == true then app.ui.progressDisplayClose() end
         if rfsuite.app.dialogs.saveDisplay == true then app.ui.progressDisplaySaveClose() end
 
-        if app.dialogs.nolinkDisplay == false and app.dialogs.nolinkDisplayErrorDialog ~= true then app.ui.progressNolinkDisplay() end
+        if app.dialogs.nolinkDisplay == false and app.dialogs.nolinkDisplayErrorDialog ~= true then 
+            app.ui.progressNolinkDisplay() 
+        end
     end
+
     if (app.dialogs.nolinkDisplay == true) and app.triggers.disableRssiTimeout == false then
 
         app.dialogs.nolinkValueCounter = app.dialogs.nolinkValueCounter + 10
@@ -939,7 +946,7 @@ function app.wakeupUI()
     })
 
     app.triggers.triggerReloadFull = false
-end
+    end
 
     -- a save was triggered - lets display a progress box
     if app.triggers.isSaving then

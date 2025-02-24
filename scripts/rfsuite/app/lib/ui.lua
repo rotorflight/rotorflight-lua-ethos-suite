@@ -252,7 +252,7 @@ function ui.openMainMenu()
 
     for idx, section in ipairs(MainMenu.sections) do
         local hideSection = (section.ethosversion and rfsuite.config.ethosRunningVersion < section.ethosversion) or
-                            (section.mspversion and rfsuite.session.apiVersion < section.mspversion) or
+                            (section.mspversion and (rfsuite.session.apiVersion or 1) < section.mspversion) or
                             (section.developer and not rfsuite.config.developerMode)
 
         if not hideSection then

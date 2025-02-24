@@ -85,14 +85,6 @@ function msp.onConnectBgChecks()
                 end)
 
                 API.write()
-
-                -- beep the clock
-            elseif rfsuite.session.clockSet == true and rfsuite.session.clockSetAlart ~= true then
-                -- this is unsual but needed because the clock sync does not return anything usefull
-                -- to confirm its done! 
-                rfsuite.utils.playFileCommon("beep.wav")
-                rfsuite.session.clockSetAlart = true
-
                 -- find tail and swash mode
             elseif (rfsuite.session.tailMode == nil or rfsuite.session.swashMode == nil) and msp.mspQueue:isProcessed() then
 
@@ -173,11 +165,18 @@ function msp.onConnectBgChecks()
                         rfsuite.utils.log("Craft name: " .. rfsuite.session.craftName,"info") 
                     end
 
-                    -- do this at end of last one
-                    msp.onConnectChecksInit = false
+
                 end
 
-            end
+            elseif rfsuite.session.clockSet == true and rfsuite.session.clockSetAlart ~= true then
+                -- this is unsual but needed because the clock sync does not return anything usefull
+                -- to confirm its done! 
+                rfsuite.utils.playFileCommon("beep.wav")
+                rfsuite.session.clockSetAlart = true
+                
+                -- do this at end of last one
+                msp.onConnectChecksInit = false
+            end    
         end    
     end
 
