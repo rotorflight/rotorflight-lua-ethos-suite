@@ -1,3 +1,26 @@
+# 2.1.1
+
+Release version for 2.1.1 Rotorflight
+
+- Ethos 1.6 version detection fix
+
+## Instructions
+
+For instructions and other details, please read the [README]
+(https://github.com/rotorflight/rotorflight-lua-ethos-suite/tree/release/2.1.1).
+
+## Downloads
+
+The download locations are:
+
+- [Rotorflight Configurator](https://github.com/rotorflight/rotorflight-configurator/releases/tag/release/2.1.1)
+- [Rotorflight Blackbox](https://github.com/rotorflight/rotorflight-blackbox/releases/tag/release/2.1.1)
+- [Lua Scripts for EdgeTx and OpenTx](https://github.com/rotorflight/rotorflight-lua-scripts/releases/tag/release/2.1.1)
+- [Lua Scripts for FrSky Ethos](https://github.com/rotorflight/rotorflight-lua-ethos/releases/tag/release/2.1.1)
+- [Lua Suite for FrSky Ethos](https://github.com/rotorflight/rotorflight-lua-ethos-suite/releases/tag/release/2.1.1)
+
+***
+
 # 2.1.0
 
 Release version for 2.1.0 Rotorflight
