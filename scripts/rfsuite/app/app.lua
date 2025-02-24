@@ -840,13 +840,8 @@ function app.wakeupUI()
                 app.triggers.isSaving = true
                 app.triggers.triggerSave = false
 
-                --if rfsuite.utils.is_multi_mspapi() or system:getVersion().simulation ~= true then
-                    saveSettings()
-                --else
-                    -- when in sim we fake a save as not possible to really do
-                    -- this involves tricking the progress dialog into thinking
-                --    app.triggers.isSavingFake = true
-                --end
+
+                saveSettings()
                 return true
             end
         }, {
