@@ -62,7 +62,7 @@ function msp.onConnectBgChecks()
         -- set module to use. this happens on connect as
         -- it forces a recheck whenever the rx has been disconnected
         -- or a model swapped
-        if rfsuite.rssiSensor then msp.sensor:module(rfsuite.rssiSensor:module()) end
+        if rfsuite.session.rssiSensor then msp.sensor:module(rfsuite.session.rssiSensor:module()) end
 
         -- get the api version
         if rfsuite.session.apiVersion == nil and msp.mspQueue:isProcessed() then
@@ -208,9 +208,9 @@ function msp.wakeup()
         msp.activeProtocol = "smartPort"
     end
 
-    if rfsuite.tasks.wasOn == true then rfsuite.rssiSensorChanged = true end
+    if rfsuite.tasks.wasOn == true then rfsuite.session.rssiSensorChanged = true end
 
-    if rfsuite.rssiSensorChanged == true then
+    if rfsuite.session.rssiSensorChanged == true then
 
         --rfsuite.utils.log("Switching protocol: " .. msp.activeProtocol)
 
@@ -227,7 +227,7 @@ function msp.wakeup()
         msp.onConnectChecksInit = true
     end
 
-    if rfsuite.rssiSensor ~= nil and rfsuite.tasks.telemetry.active() == false then
+    if rfsuite.session.rssiSensor ~= nil and rfsuite.tasks.telemetry.active() == false then
         msp.resetState()
         msp.onConnectChecksInit = true
     end
@@ -238,7 +238,7 @@ function msp.wakeup()
 
     if system:getVersion().simulation == true then
         state = true
-    elseif rfsuite.rssiSensor then
+    elseif rfsuite.session.rssiSensor then
         state = rfsuite.tasks.telemetry.active()
     else
         state = false
