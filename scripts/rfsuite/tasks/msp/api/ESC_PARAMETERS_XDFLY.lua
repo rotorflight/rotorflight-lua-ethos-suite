@@ -31,7 +31,6 @@ local fanControl = {"On", "Off"}
 local ledColor = {"RED", "YELOW","ORANGE","GREEN","JADE GREEN","BLUE","CYAN","PURPLE","PINK","WHITE"}
 local lowVoltage = {"OFF", "2.7V", "3.0V", "3.2V", "3.4V", "3.6V", "3.8V"}
 local timing = {"Auto", "Low", "Medium", "High"}
-local startupPower = {"Low", "Medium", "High"}
 local accel = {"Fast", "Normal", "Slow", "Very Slow"}
 local brakeType = {"Normal", "Reverse"}
 local autoRestart = {"OFF", "90s"}
@@ -40,29 +39,29 @@ local govMode = {"External Governor", "ESC Governor" , "Fixed Wing"}
 
 -- api structure
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "esc_signature",       type = "U8",  apiVersion = 12.08, simResponse = {166}},
-    {field = "esc_command",         type = "U8",  apiVersion = 12.08, simResponse = {64}},
-    {field = "esc_model",           type = "U8",  apiVersion = 12.08, simResponse = {20}},
-    {field = "esc_version",         type = "U8",  apiVersion = 12.08, simResponse = {4}},
-    {field = "governor",            type = "U16", apiVersion = 12.08, simResponse = {0, 0}, tableIdxInc = -1, table = govMode},
-    {field = "cell_cutoff",         type = "U16", apiVersion = 12.08, simResponse = {2, 0}, tableIdxInc = -1, table = lowVoltage},
-    {field = "timing",              type = "U16", apiVersion = 12.08, simResponse = {0, 0}, tableIdxInc = -1, table = timing},
-    {field = "lv_bec_voltage",      type = "U16", apiVersion = 12.08, simResponse = {0, 0}, min = 60, max = 84, default = 74, step = 2, scale = 10, decimals = 1, table = becLvVoltage},
-    {field = "motor_direction",     type = "U16", apiVersion = 12.08, simResponse = {0, 0}, tableIdxInc = -1, table = motorDirection},
-    {field = "gov_p",               type = "U16", apiVersion = 12.08, simResponse = {0, 0}, min = 1, max = 10, default = 4},
-    {field = "gov_i",               type = "U16", apiVersion = 12.08, simResponse = {0, 0}, min = 1, max = 10, default = 3},
-    {field = "acceleration",        type = "U16", apiVersion = 12.08, simResponse = {0, 0}, tableIdxInc = -1, table = accel},
-    {field = "auto_restart_time",   type = "U16", apiVersion = 12.08, simResponse = {0, 0}, tableIdxInc = -1, table = autoRestart},
-    {field = "hv_bec_voltage",      type = "U16", apiVersion = 12.08, simResponse = {4, 0}, min = 60, max = 120, tableIdxInc = -1, table = becHvVoltage},
-    {field = "startup_power",       type = "U16", apiVersion = 12.08, simResponse = {3, 0}, tableIdxInc = -1, table = startupPower},
-    {field = "brake_type",          type = "U16", apiVersion = 12.08, simResponse = {2, 0}, tableIdxInc = -1, table = brakeType},
-    {field = "brake_force",         type = "U16", apiVersion = 12.08, simResponse = {1, 0}, min = 0, max = 100, default = 0, unit = "%"},
-    {field = "sr_function",         type = "U16", apiVersion = 12.08, simResponse = {7, 0}, tableIdxInc = -1, table = srFunc},
-    {field = "capacity_correction", type = "U16", apiVersion = 12.08, simResponse = {1, 0}, min = 0, max = 20, default = 10, offset = -10, unit = "%"},
-    {field = "motor_poles",         type = "U16", apiVersion = 12.08, simResponse = {0, 0}, min = 1, max = 550, default = 1, step = 1},
-    {field = "led_color",           type = "U16", apiVersion = 12.08, simResponse = {0, 0}, tableIdxInc = -1, table = ledColor},
-    {field = "smart_fan",           type = "U16", apiVersion = 12.08, simResponse = {10, 0}, tableIdxInc = -1, table = fanControl},
-    {field = "activefields",        type = "U32", apiVersion = 12.08, simResponse = {238, 255, 1, 0}},
+    {field = "esc_signature",       type = "U8",  apiVersion = 12.07, simResponse = {166}},
+    {field = "esc_command",         type = "U8",  apiVersion = 12.07, simResponse = {0}},
+    {field = "esc_model",           type = "U8",  apiVersion = 12.07, simResponse = {23}},
+    {field = "esc_version",         type = "U8",  apiVersion = 12.07, simResponse = {3}},
+    {field = "governor",            type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = govMode},
+    {field = "cell_cutoff",         type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = lowVoltage},
+    {field = "timing",              type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = timing},
+    {field = "lv_bec_voltage",      type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 60, max = 84, default = 74, step = 2, scale = 10, decimals = 1, table = becLvVoltage},
+    {field = "motor_direction",     type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = motorDirection},
+    {field = "gov_p",               type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 10, default = 4},
+    {field = "gov_i",               type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 10, default = 3},
+    {field = "acceleration",        type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = accel},
+    {field = "auto_restart_time",   type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = autoRestart},
+    {field = "hv_bec_voltage",      type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 60, max = 120, tableIdxInc = -1, table = becHvVoltage},
+    {field = "startup_power",       type = "U16", apiVersion = 12.07, simResponse = {0, 0}, table = startupPower, tableIdxInc = -1},
+    {field = "brake_type",          type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = brakeType},
+    {field = "brake_force",         type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 100, default = 0, unit = "%"},
+    {field = "sr_function",         type = "U16", apiVersion = 12.07, simResponse = {0, 0}, table = srFunc, tableIdxInc = -1},
+    {field = "capacity_correction", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 10, default = 10, offset = -10, unit = "%"},
+    {field = "motor_poles",         type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 1, max = 55, default = 1, step = 1},
+    {field = "led_color",           type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = ledColor},
+    {field = "smart_fan",           type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = fanControl},
+    {field = "activefields",        type = "U32", apiVersion = 12.07, simResponse = {238, 255, 1, 0}},
 }
 
 -- filter the structure to remove any params not supported by the running api version

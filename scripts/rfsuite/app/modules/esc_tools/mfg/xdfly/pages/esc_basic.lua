@@ -5,7 +5,7 @@ local ESC = assert(loadfile("app/modules/esc_tools/mfg/" .. folder .. "/init.lua
 local mspHeaderBytes = ESC.mspHeaderBytes
 local mspSignature = ESC.mspSignature
 local simulatorResponse = ESC.simulatorResponse
-local activeFields = ESC.getActiveFields(rfsuite.escBuffer)
+local activeFields = ESC.getActiveFields(rfsuite.session.escBuffer)
 local activateWakeup = false
 
 local mspapi = {
@@ -19,7 +19,7 @@ local mspapi = {
             {t = "LV BEC voltage", activeFieldPos = 5, type = 1, mspapi = 1, apikey = "lv_bec_voltage"},
             {t = "HV BEC voltage", activeFieldPos = 11, type = 1, mspapi = 1, apikey = "hv_bec_voltage"},
             {t = "Motor direction", activeFieldPos = 6, type = 1, mspapi = 1, apikey = "motor_direction"},
-            {t = "Startup Power", activeFieldPos = 12, mspapi = 1, apikey = "startup_power"},
+            {t = "Startup Power", activeFieldPos = 12, type = 1, mspapi = 1, apikey = "startup_power"},
             {t = "LED Colour", activeFieldPos = 18, type = 1, mspapi = 1, apikey = "led_color"},
             {t = "Smart Fan", activeFieldPos = 19, type = 1, mspapi = 1, apikey = "smart_fan"}
         }

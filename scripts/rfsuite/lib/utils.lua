@@ -431,13 +431,19 @@ end
 -- used to take tables from format used in pages
 -- and convert them to an ethos forms format
 function utils.convertPageValueTable(tbl, inc)
-    if not tbl then return nil end
-
-    inc = inc or 0
     local thetable = {}
 
-    for idx = 0, #tbl do
-        thetable[idx] = {tbl[idx] or tbl[idx + 1], idx + inc}
+    if inc == nil then inc = 0 end
+
+    if tbl[0] ~= nil then
+        thetable[0] = {}
+        thetable[0][1] = tbl[0]
+        thetable[0][2] = 0
+    end
+    for idx, value in ipairs(tbl) do
+        thetable[idx] = {}
+        thetable[idx][1] = value
+        thetable[idx][2] = idx + inc
     end
 
     return thetable

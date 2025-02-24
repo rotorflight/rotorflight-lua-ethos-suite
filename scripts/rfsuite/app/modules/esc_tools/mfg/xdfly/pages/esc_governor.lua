@@ -5,7 +5,7 @@ local ESC = assert(loadfile("app/modules/esc_tools/mfg/" .. folder .. "/init.lua
 local mspHeaderBytes = ESC.mspHeaderBytes
 local mspSignature = ESC.mspSignature
 local simulatorResponse = ESC.simulatorResponse
-local activeFields = ESC.getActiveFields(rfsuite.escBuffer)
+local activeFields = ESC.getActiveFields(rfsuite.session.escBuffer)
 local activateWakeup = false
 
 local foundEsc = false
@@ -20,8 +20,8 @@ local mspapi = {
         },
         fields = {
             {t = "Governor", activeFieldPos = 2, type = 1,  mspapi = 1, apikey = "governor"},
-            {t = "Gov-P", activeFieldPos = 6,  mspapi = 1, apikey="governor_p"},
-            {t = "Gov-I", activeFieldPos = 7,  mspapi = 1, apikey="governor_i"},
+            {t = "Gov-P", activeFieldPos = 6,  mspapi = 1, apikey="gov_p"},
+            {t = "Gov-I", activeFieldPos = 7,  mspapi = 1, apikey="gov_i"},
             {t = "Motor Poles",  activeFieldPos = 17 ,  mspapi = 1, apikey="motor_poles"},
         }
     }                 

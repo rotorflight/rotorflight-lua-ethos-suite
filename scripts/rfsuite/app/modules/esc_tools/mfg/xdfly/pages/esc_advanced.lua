@@ -4,7 +4,7 @@ local ESC = assert(loadfile("app/modules/esc_tools/mfg/" .. folder .. "/init.lua
 local mspHeaderBytes = ESC.mspHeaderBytes
 local mspSignature = ESC.mspSignature
 local simulatorResponse = ESC.simulatorResponse
-local activeFields = ESC.getActiveFields(rfsuite.escBuffer)
+local activeFields = ESC.getActiveFields(rfsuite.session.escBuffer)
 local activateWakeup = false
 
 local mspapi = {
@@ -15,13 +15,13 @@ local mspapi = {
         labels = {
         },
         fields = {
-            {t = "Timing",              activeFieldPos = 4,  mspapi = 1, apikey = "timing"},
-            {t = "Acceleration",        activeFieldPos = 9,  mspapi = 1, apikey = "brake_type"},
+            {t = "Timing",              activeFieldPos = 4,  mspapi = 1, type = 1, apikey = "timing"},
+            {t = "Acceleration",        activeFieldPos = 9,  mspapi = 1, type = 1, apikey = "acceleration"},
             {t = "Brake Force",         activeFieldPos = 14, mspapi = 1, apikey = "brake_force"},
-            {t = "SR Function",         activeFieldPos = 15, mspapi = 1, apikey = "sr_function"},
+            {t = "SR Function",         activeFieldPos = 15, mspapi = 1, type = 1, apikey = "sr_function"},
             {t = "Capacity Correction", activeFieldPos = 16, mspapi = 1, apikey = "capacity_correction"},
-            {t = "Auto Restart Time",   activeFieldPos = 10, mspapi = 1, apikey = "auto_restart_time"},
-            {t = "Cell Cutoff",         activeFieldPos = 11, mspapi = 1, apikey = "cell_cutoff"}
+            {t = "Auto Restart Time",   activeFieldPos = 10, mspapi = 1, type = 1, apikey = "auto_restart_time"},
+            {t = "Cell Cutoff",         activeFieldPos = 11, mspapi = 1, type = 1, apikey = "cell_cutoff"}
         }
     }                 
 }
