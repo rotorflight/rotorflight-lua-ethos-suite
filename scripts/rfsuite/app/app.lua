@@ -188,6 +188,7 @@ function app.resetState()
     rfsuite.session.activeRateProfile = nil
     rfsuite.session.activeRateProfileLast = nil
     rfsuite.session.activeProfile = nil
+    rfsuite.session.activeRateTable = nil
 end
 
 -- RETURN CURRENT LCD SIZE
@@ -652,7 +653,7 @@ function app.wakeupUI()
     end
 
     -- profile switching - trigger a reload when profile changes
-    if rfsuite.preferences.profileSwitching == true and app.Page ~= nil and (app.Page.refreshOnProfileChange == true or app.Page.refreshOnRateChange == true) and app.uiState == app.uiStatus.pages and app.triggers.isSaving == false and rfsuite.app.dialogs.saveDisplay ~= true and rfsuite.app.dialogs.progressDisplay ~= true and rfsuite.tasks.msp.mspQueue:isProcessed() then
+    if rfsuite.preferences.profileSwitching == true and app.Page ~= nil and (app.Page.refreshOnProfileChange == true or app.Page.refreshOnRateChange == true or app.Page.refreshFullOnProfileChange == true or app.Page.refreshFullOnRateChange == true) and app.uiState == app.uiStatus.pages and app.triggers.isSaving == false and rfsuite.app.dialogs.saveDisplay ~= true and rfsuite.app.dialogs.progressDisplay ~= true and rfsuite.tasks.msp.mspQueue:isProcessed() then
 
         local now = os.clock()
         local profileCheckInterval
@@ -671,18 +672,14 @@ function app.wakeupUI()
 
             if rfsuite.session.activeProfile ~= nil and rfsuite.session.activeProfileLast ~= nil then
 
-                if app.Page.refreshOnProfileChange == true then
+                if app.Page.refreshOnProfileChange == true or  app.Page.refreshFullOnProfileChange == true then
                     if rfsuite.session.activeProfile ~= rfsuite.session.activeProfileLast and rfsuite.session.activeProfileLast ~= nil then
-                        if app.ui.progressDisplayIsActive() then
-                            -- switch has been toggled mid flow - this is bad.. clean upd
-                            --form.clear()
-                            app.triggers.triggerReloadNoPrompt = true
-                            return true
+                        if app.Page.refreshFullOnProfileChange == true then
+                            app.triggers.reloadFull = true
                         else
-                            -- trigger RELOAD
-                            app.triggers.triggerReloadNoPrompt = true
-                            return true
+                            app.triggers.reload = true
                         end
+                        return true
                     end
                 end
 
@@ -690,17 +687,14 @@ function app.wakeupUI()
 
             if rfsuite.session.activeRateProfile ~= nil and rfsuite.session.activeRateProfileLast ~= nil then
 
-                if app.Page.refreshOnRateChange == true then
+                if app.Page.refreshOnRateChange == true or app.Page.refreshFullOnRateChange == true then
                     if rfsuite.session.activeRateProfile ~= rfsuite.session.activeRateProfileLast and rfsuite.session.activeRateProfileLast ~= nil then
-                        if app.ui.progressDisplayIsActive() then
-                            -- switch has been toggled mid flow - this is bad.. clean upd
-                            app.triggers.triggerReloadNoPrompt = true
+                            if app.Page.refreshFullOnRateChange == true then
+                                app.triggers.reloadFull = true
+                            else
+                                app.triggers.reload = true
+                            end
                             return true
-                        else
-                            -- trigger RELOAD
-                            app.triggers.triggerReloadNoPrompt = true
-                            return true
-                        end
                     end
                 end
             end
