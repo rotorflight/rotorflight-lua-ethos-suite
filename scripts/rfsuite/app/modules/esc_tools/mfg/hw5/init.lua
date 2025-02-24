@@ -1,7 +1,7 @@
 local toolName = "Hobbywing V5"
 local mspHeaderBytes = 2
 
--- rfsuite.bg.msp.protocol.mspIntervalOveride = 0.8
+-- rfsuite.tasks.msp.protocol.mspIntervalOveride = 0.8
 
 local function getText(buffer, st, en)
 

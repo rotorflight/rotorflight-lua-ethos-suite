@@ -29,7 +29,7 @@ local function postLoad(self)
 end
 
 local function wakeup()
-    if activateWakeup and rfsuite.bg.msp.mspQueue:isProcessed() then
+    if activateWakeup and rfsuite.tasks.msp.mspQueue:isProcessed() then
         if rfsuite.session.activeProfile then
             rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeProfile)
             currentProfileChecked = true

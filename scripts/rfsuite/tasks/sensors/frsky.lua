@@ -208,7 +208,7 @@ end
 
 local function telemetryPop()
     -- Pops a received SPORT packet from the queue. Please note that only packets using a data ID within 0x5000 to 0x50FF (frame ID == 0x10), as well as packets with a frame ID equal 0x32 (regardless of the data ID) will be passed to the LUA telemetry receive queue.
-    local frame = rfsuite.bg.msp.sensor:popFrame()
+    local frame = rfsuite.tasks.msp.sensor:popFrame()
     if frame == nil then return false end
 
     if not frame.physId or not frame.primId then return end
@@ -235,10 +235,10 @@ function frsky.wakeup()
     end
 
     -- Flush sensor list if we kill the sensors
-    if not rfsuite.bg.telemetry.active() or not rfsuite.rssiSensor then clearCaches() end
+    if not rfsuite.tasks.telemetry.active() or not rfsuite.rssiSensor then clearCaches() end
 
     -- If GUI or queue is busy.. do not do this!
-    if rfsuite.bg and rfsuite.bg.telemetry and rfsuite.bg.telemetry.active() and rfsuite.rssiSensor then if rfsuite.app.guiIsRunning == false and rfsuite.bg.msp.mspQueue:isProcessed() then while telemetryPop() do end end end
+    if rfsuite.tasks and rfsuite.tasks.telemetry and rfsuite.tasks.telemetry.active() and rfsuite.rssiSensor then if rfsuite.app.guiIsRunning == false and rfsuite.tasks.msp.mspQueue:isProcessed() then while telemetryPop() do end end end
 
 end
 

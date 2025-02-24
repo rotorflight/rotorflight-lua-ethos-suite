@@ -24,122 +24,59 @@ local arg = {...}
 local config = arg[1]
 
 function utils.sanitize_filename(str)
-
-    -- quick exit if bad
-    if str == nil then
-        return nil
-    end
-
-    -- Trim leading and trailing whitespace
-    str = str:match("^%s*(.-)%s*$")
-    
-    -- Remove unsafe filename characters: / \ : * ? " < > | (Windows restrictions)
-    -- You can modify this pattern based on your specific OS requirements
-    str = str:gsub('[\\/:"*?<>|]', '')
-
-    return str
+    if not str then return nil end
+    return str:match("^%s*(.-)%s*$"):gsub('[\\/:"*?<>|]', '')
 end
 
 function utils.dir_exists(base, name)
-    list = system.listFiles(base)
-    for i, v in pairs(list) do if v == name then return true end end
+    local list = system.listFiles(base)
+    for i = 1, #list do
+        if list[i] == name then
+            return true
+        end
+    end
     return false
 end
 
 function utils.file_exists(name)
     local f = io.open(name, "r")
-    if f ~= nil then
+    if f then
         io.close(f)
         return true
-    else
-        return false
     end
+    return false
 end
 
 function utils.playFile(pkg, file)
     -- Get and clean audio voice path
-    local av = system.getAudioVoice()
-    av = av:gsub("SD:", ""):gsub("RADIO:", ""):gsub("AUDIO:", ""):gsub("VOICE[1-4]:", "")
+    local av = system.getAudioVoice():gsub("SD:", ""):gsub("RADIO:", ""):gsub("AUDIO:", ""):gsub("VOICE[1-4]:", "")
 
     -- Pre-define the base directory paths
-    local baseDir = "./"
     local soundPack = rfsuite.preferences.soundPack
-    local audioPath = soundPack and ("/audio/" .. soundPack) or (av)
+    local audioPath = soundPack and ("/audio/" .. soundPack) or av
 
     -- Construct file paths
-    local wavLocale
-    local wavDefault
-
-    wavLocale = audioPath .. "/" .. pkg .. "/" .. file
-    wavDefault = "audio/en/default/" .. pkg .. "/" .. file
-
+    local wavLocale = audioPath .. "/" .. pkg .. "/" .. file
+    local wavDefault = "audio/en/default/" .. pkg .. "/" .. file
 
     -- Check if locale file exists, else use the default
-    if rfsuite.utils.file_exists(wavLocale) then
-        system.playFile(wavLocale)
-    else
-        system.playFile(wavDefault)
-    end
+    system.playFile(rfsuite.utils.file_exists(wavLocale) and wavLocale or wavDefault)
 end
 
 function utils.playFileCommon(file)
-
-    local wav = "audio/" .. file
-    system.playFile(wav)
-
+    system.playFile("audio/" .. file)
 end
 
-function utils.isHeliArmed()
-
-    local govmode
-
-    local governorMap = {}
-    governorMap[0] = "OFF"
-    governorMap[1] = "IDLE"
-    governorMap[2] = "SPOOLUP"
-    governorMap[3] = "RECOVERY"
-    governorMap[4] = "ACTIVE"
-    governorMap[5] = "THR-OFF"
-    governorMap[6] = "LOST-HS"
-    governorMap[7] = "AUTOROT"
-    governorMap[8] = "BAILOUT"
-    governorMap[100] = "DISABLED"
-    governorMap[101] = "DISARMED"
-
-    govSOURCE = rfsuite.bg.telemetry.getSensorSource("governor")
-
-    if rfsuite.bg.telemetry.getSensorProtocol() == 'lcrsf' then
-        if govSOURCE ~= nil then govmode = govSOURCE:stringValue() end
-    else
-        if govSOURCE ~= nil then
-            govId = govSOURCE:value()
-            if governorMap[govId] == nil then
-                govmode = "UNKNOWN"
-            else
-                govmode = governorMap[govId]
-            end
-        else
-            govmode = ""
-        end
-    end
-
-    if govmode ~= "DISARMED" then
-        return true
-    else
-        return false
-    end
-
-end
 
 -- this is used in multiple places - just gives easy way
 -- to grab activeProfile or activeRateProfile in tmp var
 -- you MUST set it to nil after you get it!
 function utils.getCurrentProfile()
 
-    if (rfsuite.bg.telemetry.getSensorSource("pidProfile") ~= nil and rfsuite.bg.telemetry.getSensorSource("rateProfile") ~= nil) then
+    if (rfsuite.tasks.telemetry.getSensorSource("pidProfile") ~= nil and rfsuite.tasks.telemetry.getSensorSource("rateProfile") ~= nil) then
 
         rfsuite.session.activeProfileLast = rfsuite.session.activeProfile
-        local p = rfsuite.bg.telemetry.getSensorSource("pidProfile"):value()
+        local p = rfsuite.tasks.telemetry.getSensorSource("pidProfile"):value()
         if p ~= nil then
             rfsuite.session.activeProfile = math.floor(p)
         else
@@ -147,7 +84,7 @@ function utils.getCurrentProfile()
         end
 
         rfsuite.session.activeRateProfileLast = rfsuite.session.activeRateProfile
-        local r = rfsuite.bg.telemetry.getSensorSource("rateProfile"):value()
+        local r = rfsuite.tasks.telemetry.getSensorSource("rateProfile"):value()
         if r ~= nil then
             rfsuite.session.activeRateProfile = math.floor(r)
         else
@@ -169,9 +106,9 @@ function utils.getCurrentProfile()
                         if #buf >= 30 then
 
                             buf.offset = 24
-                            local activeProfile = rfsuite.bg.msp.mspHelper.readU8(buf)
+                            local activeProfile = rfsuite.tasks.msp.mspHelper.readU8(buf)
                             buf.offset = 26
-                            local activeRate = rfsuite.bg.msp.mspHelper.readU8(buf)
+                            local activeRate = rfsuite.tasks.msp.mspHelper.readU8(buf)
 
                             rfsuite.session.activeProfileLast = rfsuite.session.activeProfile
                             rfsuite.session.activeRateProfileLast = rfsuite.session.activeRateProfile
@@ -184,7 +121,7 @@ function utils.getCurrentProfile()
                     simulatorResponse = {240, 1, 124, 0, 35, 0, 0, 0, 0, 0, 0, 224, 1, 10, 1, 0, 26, 0, 0, 0, 0, 0, 2, 0, 6, 0, 6, 1, 4, 1}
 
                 }
-                rfsuite.bg.msp.mspQueue:add(message)
+                rfsuite.tasks.msp.mspQueue:add(message)
 
 
             end
@@ -268,28 +205,6 @@ function utils.stringInArray(array, s)
     return false
 end
 
-function utils.countCarriageReturns(text)
-    local _, count = text:gsub("\r", "")
-    return count
-end
-
-function utils.getSection(id, sections)
-    for i, v in ipairs(sections) do if id ~= nil then if v.section == id then return v end end end
-end
-
--- explode a string
-function utils.explode(inputstr, sep)
-    if sep == nil then sep = "%s" end
-    local t = {}
-    for str in string.gmatch(inputstr, "([^" .. sep .. "]+)") do table.insert(t, str) end
-    return t
-end
-
-function utils.trim(s)
-    s = tostring(s)
-    return s:match("^%s*(.-)%s*$"):gsub("[\r\n]+$", "")
-end
-
 function utils.round(number, precision)
     if precision == nil then precision = 0 end
     local fmtStr = string.format("%%0.%sf", precision)
@@ -298,45 +213,10 @@ function utils.round(number, precision)
     return number
 end
 
--- clear the screen when using lcd functions
-function utils.clearScreen()
-    local w = LCD_W
-    local h = LCD_H
-    if isDARKMODE then
-        lcd.color(lcd.RGB(40, 40, 40))
-    else
-        lcd.color(lcd.RGB(240, 240, 240))
-    end
-    lcd.drawFilledRectangle(0, 0, w, h)
-end
-
--- prevent value going to high or too low
-function utils.clipValue(val, min, max)
-    if val < min then
-        val = min
-    elseif val > max then
-        val = max
-    end
-    return val
-end
 
 -- return current window size
 function utils.getWindowSize()
     return lcd.getWindowSize()
-    -- return 784, 406
-    -- return 472, 288
-    -- return 472, 240
-end
-
--- simple wrapper - long term will enable 
--- dynamic compilation
-function utils.loadScript(script)
-    return loadfile(script)
-end
-
--- return the time
-function utils.getTime()
-    return os.clock() * 100
 end
 
 function utils.joinTableItems(tbl, delimiter)
@@ -356,24 +236,19 @@ end
 -- GET FIELD VALUE FOR ETHOS FORMS.  FUNCTION TAKES THE VALUE AND APPLIES RULES BASED
 -- ON THE PARAMETERS ON THE rfsuite.pages TABLE
 function utils.getFieldValue(f)
+    local v = f.value or 0
 
-    local v
-
-    if f.value == nil then f.value = 0 end
-    if f.t == nil then f.t = "N/A" end
-
-    if f.value ~= nil then
-        if f.decimals ~= nil then
-            v = rfsuite.utils.round(f.value * rfsuite.utils.decimalInc(f.decimals))
-        else
-            v = f.value
-        end
-    else
-        v = 0
+    if f.decimals then
+        v = rfsuite.utils.round(v * rfsuite.utils.decimalInc(f.decimals))
     end
 
-    if f.offset ~= nil then v = v + f.offset end
-    if f.mult ~= nil then v = math.floor(v * f.mult + 0.5) end
+    if f.offset then
+        v = v + f.offset
+    end
+
+    if f.mult then
+        v = math.floor(v * f.mult + 0.5)
+    end
 
     return v
 end
@@ -381,9 +256,9 @@ end
 -- SAVE FIELD VALUE FOR ETHOS FORMS.  FUNCTION TAKES THE VALUE AND APPLIES RULES BASED
 -- ON THE PARAMETERS ON THE rfsuite.pages TABLE
 function utils.saveFieldValue(f, value)
-    if value ~= nil then
-        if f.offset ~= nil then value = value - f.offset end
-        if f.decimals ~= nil then
+    if value then
+        if f.offset then value = value - f.offset end
+        if f.decimals then
             f.value = value / rfsuite.utils.decimalInc(f.decimals)
         else
             f.value = value
@@ -391,127 +266,81 @@ function utils.saveFieldValue(f, value)
         if f.postEdit then f.postEdit(rfsuite.app.Page) end
     end
 
-    if f.mult ~= nil then f.value = f.value / f.mult end
+    if f.mult then f.value = f.value / f.mult end
 
     return f.value
 end
 
 function utils.scaleValue(value, f)
-    local v
-    if value ~= nil then
-        v = value * utils.decimalInc(f.decimals)
-        if f.scale ~= nil then v = v / f.scale end
-        v = utils.round(v)
-        return v
-    else
-        return nil
-    end
+    if not value then return nil end
+    local v = value * utils.decimalInc(f.decimals)
+    if f.scale then v = v / f.scale end
+    return utils.round(v)
 end
 
+
 function utils.decimalInc(dec)
+    
     local decTable = {10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000, 10000000000, 100000000000}
 
-    if dec == nil then
+    if dec == nil or dec == 0 then
         return 1
     else
         return decTable[dec]
     end
 end
 
+
 -- set positions of form elements
 function utils.getInlinePositions(f, lPage)
-    local tmp_inline_size = utils.getInlineSize(f.label, lPage)
-    local inline_multiplier = rfsuite.app.radio.inlinesize_mult
+    -- Compute inline size in one step.
+    local inline_size = utils.getInlineSize(f.label, lPage) * rfsuite.app.radio.inlinesize_mult
 
-    local inline_size = tmp_inline_size * inline_multiplier
-
-    LCD_W, LCD_H = utils.getWindowSize()
-
-    local w = LCD_W
-    local h = LCD_H
-    local colStart
+    -- Get LCD dimensions.
+    local w, h = utils.getWindowSize()
 
     local padding = 5
     local fieldW = (w * inline_size) / 100
-
-    local eX
     local eW = fieldW - padding
     local eH = rfsuite.app.radio.navbuttonHeight
     local eY = rfsuite.app.radio.linePaddingTop
-    local posX
+
+    -- Set default text and compute its dimensions.
+    f.t = f.t or ""
     lcd.font(FONT_STD)
-    if f.t == nil then f.t = "" end
-    tsizeW, tsizeH = lcd.getTextSize(f.t)
+    local tsizeW, tsizeH = lcd.getTextSize(f.t)
 
-    if f.inline == 5 then
-        posX = w - fieldW * 9 - tsizeW - padding
-        posText = {x = posX, y = eY, w = tsizeW, h = eH}
+    -- Map inline values to multipliers.
+    local multipliers = { [1] = 1, [2] = 3, [3] = 5, [4] = 7, [5] = 9 }
+    local m = multipliers[f.inline] or 1
 
-        posX = w - fieldW * 9
-        posField = {x = posX, y = eY, w = eW, h = eH}
-    elseif f.inline == 4 then
-        posX = w - fieldW * 7 - tsizeW - padding
-        posText = {x = posX, y = eY, w = tsizeW, h = eH}
+    -- For inline==1, extra padding is applied to the text.
+    local textPadding = (f.inline == 1) and (2 * padding) or padding
 
-        posX = w - fieldW * 7
-        posField = {x = posX, y = eY, w = eW, h = eH}
-    elseif f.inline == 3 then
-        posX = w - fieldW * 5 - tsizeW - padding
-        posText = {x = posX, y = eY, w = tsizeW, h = eH}
+    local posTextX = w - fieldW * m - tsizeW - textPadding
+    local posFieldX = w - fieldW * m - ((f.inline == 1) and padding or 0)
 
-        posX = w - fieldW * 5
-        posField = {x = posX, y = eY, w = eW, h = eH}
-    elseif f.inline == 2 then
-        posX = w - fieldW * 3 - tsizeW - padding
-        posText = {x = posX, y = eY, w = tsizeW, h = eH}
+    local posText = { x = posTextX, y = eY, w = tsizeW, h = eH }
+    local posField = { x = posFieldX, y = eY, w = eW, h = eH }
 
-        posX = w - fieldW * 3
-        posField = {x = posX, y = eY, w = eW, h = eH}
-    elseif f.inline == 1 then
-        posX = w - fieldW - tsizeW - padding - padding
-        posText = {x = posX, y = eY, w = tsizeW, h = eH}
-
-        posX = w - fieldW - padding
-        posField = {x = posX, y = eY, w = eW, h = eH}
-    end
-
-    ret = {posText = posText, posField = posField}
-
-    return ret
+    return { posText = posText, posField = posField }
 end
+
 
 -- find size of elements
 function utils.getInlineSize(id, lPage)
-    for i, v in ipairs(lPage.labels) do
-        if id ~= nil then
-            if v.label == id then
-                local size
-                if v.inline_size == nil then
-                    size = 13.6
-                else
-                    size = v.inline_size
-                end
-                return size
-
-            end
+    if not id then return nil end
+    for i = 1, #lPage.labels do
+        local v = lPage.labels[i]
+        if v.label == id then
+            return v.inline_size or 13.6
         end
     end
+    return nil
 end
 
--- write text at given ordinates on screen
-function utils.writeText(x, y, str)
-    if lcd.darkMode() then
-        lcd.color(lcd.RGB(255, 255, 255))
-    else
-        lcd.color(lcd.RGB(90, 90, 90))
-    end
-    lcd.drawText(x, y, str)
-end
-
-function utils.log(msg, level)  
-    -- route to the master logger
-    if level == nil then level = "debug" end
-    rfsuite.log.log(msg, level)
+function utils.log(msg, level)
+    rfsuite.log.log(msg, level or "debug")
 end
 
 -- print a table out to debug console
@@ -599,35 +428,16 @@ function utils.print_r(node)
     end
 end
 
--- convert a string to a nunber
-function utils.makeNumber(x)
-    if x == nil or x == "" then x = 0 end
-
-    x = string.gsub(x, "%D+", "")
-    x = tonumber(x)
-    if x == nil or x == "" then x = 0 end
-
-    return x
-end
-
 -- used to take tables from format used in pages
 -- and convert them to an ethos forms format
 function utils.convertPageValueTable(tbl, inc)
+    if not tbl then return nil end
+
+    inc = inc or 0
     local thetable = {}
 
-    if tbl == nil then return nil end
-
-    if inc == nil then inc = 0 end
-
-    if tbl[0] ~= nil then
-        thetable[0] = {}
-        thetable[0][1] = tbl[0]
-        thetable[0][2] = 0
-    end
-    for idx, value in ipairs(tbl) do
-        thetable[idx] = {}
-        thetable[idx][1] = value
-        thetable[idx][2] = idx + inc
+    for idx = 0, #tbl do
+        thetable[idx] = {tbl[idx] or tbl[idx + 1], idx + inc}
     end
 
     return thetable
@@ -641,23 +451,31 @@ function utils.findModules()
 
     for _, v in pairs(system.listFiles(modules_path)) do
 
-        local init_path = modules_path .. v .. '/init.lua'
-        local f = io.open(init_path, "r")
-        if f then
-            io.close(f)
+        if v ~= ".." then
+            local init_path = modules_path .. v .. '/init.lua'
 
-            local func, err = loadfile(init_path)
-
-            if func then
-                local mconfig = func()
-                if type(mconfig) ~= "table" or not mconfig.script then
-                    rfsuite.utils.log("Invalid configuration in " .. init_path,"debug")
-                else
-                    mconfig['folder'] = v
-                    table.insert(modulesList, mconfig)
+            local f = io.open(init_path, "r")
+            if f then
+                io.close(f)
+                local func, err = loadfile(init_path)
+                if err then
+                    rfsuite.utils.log("Error loading " .. init_path, "info")
+                    rfsuite.utils.log(err, "info")
                 end
+                if func then
+                    local mconfig = func()
+                    if type(mconfig) ~= "table" or not mconfig.script then
+                        rfsuite.utils.log("Invalid configuration in " .. init_path,"info")
+                    else
+                        rfsuite.utils.log("Loading module " .. v, "debug")
+                        mconfig['folder'] = v
+                        table.insert(modulesList, mconfig)
+                    end
+                else
+                    rfsuite.utils.log("Error loading " .. init_path, "info")    
+                end 
             end
-        end
+        end    
     end
 
     return modulesList
@@ -671,23 +489,25 @@ function utils.findWidgets()
 
     for _, v in pairs(system.listFiles(widgets_path)) do
 
-        local init_path = widgets_path .. v .. '/init.lua'
-        local f = io.open(init_path, "r")
-        if f then
-            io.close(f)
+        if v ~= ".." then
+            local init_path = widgets_path .. v .. '/init.lua'
+            local f = io.open(init_path, "r")
+            if f then
+                io.close(f)
 
-            local func, err = loadfile(init_path)
+                local func, err = loadfile(init_path)
 
-            if func then
-                local wconfig = func()
-                if type(wconfig) ~= "table" or not wconfig.key then
-                    rfsuite.utils.log("Invalid configuration in " .. init_path,"debug")
-                else
-                    wconfig['folder'] = v
-                    table.insert(widgetsList, wconfig)
+                if func then
+                    local wconfig = func()
+                    if type(wconfig) ~= "table" or not wconfig.key then
+                        rfsuite.utils.log("Invalid configuration in " .. init_path,"debug")
+                    else
+                        wconfig['folder'] = v
+                        table.insert(widgetsList, wconfig)
+                    end
                 end
             end
-        end
+        end    
     end
 
     return widgetsList
@@ -737,10 +557,6 @@ function utils.loadImage(image1, image2, image3)
 
     -- If nothing was found, return nil
     return nil
-end
-
-function utils.is_multi_mspapi()
-    return rfsuite.app.Page.mspapi and type(rfsuite.app.Page.mspapi) == "table" and rfsuite.app.Page.mspapi.api
 end
 
 

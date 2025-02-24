@@ -30,7 +30,7 @@ local maxMinData = {}
 local progressLoader
 local logLineCount
 
-local logColumns = rfsuite.bg.logging.getLogTable()
+local logColumns = rfsuite.tasks.logging.getLogTable()
 
 local sliderPosition = 1
 local sliderPositionOld = 1
@@ -511,7 +511,7 @@ local function openPage(pidx, title, script, logfile, displaymode)
 
     currentDisplayMode = displaymode
 
-    rfsuite.bg.msp.protocol.mspIntervalOveride = nil
+    rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
 
     rfsuite.app.triggers.isReady = false
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
@@ -584,7 +584,7 @@ local function wakeup()
         -- Process the column and store the cleaned data
 
         logData[currentDataIndex] = {}
-        logData[currentDataIndex]['data'] = padTable(cleanColumn(getColumn(logDataRaw, currentDataIndex + 1)), logPadding) -- Note. We + 1 the currentDataIndex because  rfsuite.bg.logging.getLogTable does not return the 1st column        
+        logData[currentDataIndex]['data'] = padTable(cleanColumn(getColumn(logDataRaw, currentDataIndex + 1)), logPadding) -- Note. We + 1 the currentDataIndex because  rfsuite.tasks.logging.getLogTable does not return the 1st column        
         logData[currentDataIndex]['name'] = logColumns[currentDataIndex].name
         logData[currentDataIndex]['color'] = logColumns[currentDataIndex].color
         logData[currentDataIndex]['pen'] = logColumns[currentDataIndex].pen

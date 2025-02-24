@@ -10,7 +10,7 @@ local x = w - 15
 
 local displayPos = {x = x - buttonW - buttonWs - 5 - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = 100, h = rfsuite.app.radio.navbuttonHeight}
 
-local invalidSensors = rfsuite.bg.telemetry.validateSensors()
+local invalidSensors = rfsuite.tasks.telemetry.validateSensors()
 
 function sortSensorListByName(sensorList)
     table.sort(sensorList, function(a, b)
@@ -19,7 +19,7 @@ function sortSensorListByName(sensorList)
     return sensorList
 end
 
-local sensorList = sortSensorListByName(rfsuite.bg.telemetry.listSensors())
+local sensorList = sortSensorListByName(rfsuite.tasks.telemetry.listSensors())
 
 local function openPage(pidx, title, script)
     enableWakeup = true
@@ -64,7 +64,7 @@ local function wakeup()
     if enableWakeup == false then return end
 
     -- check for updates
-    invalidSensors = rfsuite.bg.telemetry.validateSensors()
+    invalidSensors = rfsuite.tasks.telemetry.validateSensors()
 
     for i, v in ipairs(sensorList) do
         if sensorKeyExists(v.key, invalidSensors) then

@@ -25,8 +25,8 @@ local function servoCenterFocusAllOn(self)
             command = 193, -- MSP_SET_SERVO_OVERRIDE
             payload = {i}
         }
-        rfsuite.bg.msp.mspHelper.writeU16(message.payload, 0)
-        rfsuite.bg.msp.mspQueue:add(message)
+        rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
+        rfsuite.tasks.msp.mspQueue:add(message)
     end
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
@@ -39,8 +39,8 @@ local function servoCenterFocusAllOff(self)
             command = 193, -- MSP_SET_SERVO_OVERRIDE
             payload = {i}
         }
-        rfsuite.bg.msp.mspHelper.writeU16(message.payload, 2001)
-        rfsuite.bg.msp.mspQueue:add(message)
+        rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
+        rfsuite.tasks.msp.mspQueue:add(message)
     end
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
@@ -51,8 +51,8 @@ local function servoCenterFocusOff(self)
         command = 193, -- MSP_SET_SERVO_OVERRIDE
         payload = {servoIndex}
     }
-    rfsuite.bg.msp.mspHelper.writeU16(message.payload, 2001)
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2001)
+    rfsuite.tasks.msp.mspQueue:add(message)
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
 end
@@ -62,8 +62,8 @@ local function servoCenterFocusOn(self)
         command = 193, -- MSP_SET_SERVO_OVERRIDE
         payload = {servoIndex}
     }
-    rfsuite.bg.msp.mspHelper.writeU16(message.payload, 0)
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
+    rfsuite.tasks.msp.mspQueue:add(message)
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
     rfsuite.app.triggers.closeProgressLoader = true
@@ -96,15 +96,15 @@ local function saveServoSettings(self)
         command = 212, -- MSP_SET_SERVO_CONFIGURATION
         payload = {}
     }
-    rfsuite.bg.msp.mspHelper.writeU8(message.payload, servoIndex)
-    rfsuite.bg.msp.mspHelper.writeU16(message.payload, servoCenter)
-    rfsuite.bg.msp.mspHelper.writeU16(message.payload, servoMin)
-    rfsuite.bg.msp.mspHelper.writeU16(message.payload, servoMax)
-    rfsuite.bg.msp.mspHelper.writeU16(message.payload, servoScaleNeg)
-    rfsuite.bg.msp.mspHelper.writeU16(message.payload, servoScalePos)
-    rfsuite.bg.msp.mspHelper.writeU16(message.payload, servoRate)
-    rfsuite.bg.msp.mspHelper.writeU16(message.payload, servoSpeed)
-    rfsuite.bg.msp.mspHelper.writeU16(message.payload, servoFlags)
+    rfsuite.tasks.msp.mspHelper.writeU8(message.payload, servoIndex)
+    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoCenter)
+    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoMin)
+    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoMax)
+    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoScaleNeg)
+    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoScalePos)
+    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoRate)
+    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoSpeed)
+    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoFlags)
 
     if rfsuite.config.mspTxRxDebug == true or rfsuite.config.logEnable == true then
         local logData = "{" .. rfsuite.utils.joinTableItems(message.payload, ", ") .. "}"
@@ -112,11 +112,11 @@ local function saveServoSettings(self)
         rfsuite.utils.log(logData,"debug")
 
     end
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 
     -- write change to epprom
     local mspEepromWrite = {command = 250, simulatorResponse = {}}
-    rfsuite.bg.msp.mspQueue:add(mspEepromWrite)
+    rfsuite.tasks.msp.mspQueue:add(mspEepromWrite)
 
 end
 
@@ -183,7 +183,7 @@ local function wakeup(self)
 
             local now = os.clock()
             local settleTime = 0.85
-            if ((now - lastServoChangeTime) >= settleTime) and rfsuite.bg.msp.mspQueue:isProcessed() then
+            if ((now - lastServoChangeTime) >= settleTime) and rfsuite.tasks.msp.mspQueue:isProcessed() then
                 if currentServoCenter ~= lastSetServoCenter then
                     lastSetServoCenter = currentServoCenter
                     lastServoChangeTime = now
@@ -238,7 +238,7 @@ local function getServoConfigurations(callback, callbackParam)
     local message = {
         command = 120, -- MSP_SERVO_CONFIGURATIONS
         processReply = function(self, buf)
-            servoCount = rfsuite.bg.msp.mspHelper.readU8(buf)
+            servoCount = rfsuite.tasks.msp.mspHelper.readU8(buf)
 
             -- update master one in case changed
             rfsuite.session.servoCount = servoCount
@@ -248,14 +248,14 @@ local function getServoConfigurations(callback, callbackParam)
                 local config = {}
 
                 config.name = servoTable[servoIndex + 1]['title']
-                config.mid = rfsuite.bg.msp.mspHelper.readU16(buf)
-                config.min = rfsuite.bg.msp.mspHelper.readS16(buf)
-                config.max = rfsuite.bg.msp.mspHelper.readS16(buf)
-                config.scaleNeg = rfsuite.bg.msp.mspHelper.readU16(buf)
-                config.scalePos = rfsuite.bg.msp.mspHelper.readU16(buf)
-                config.rate = rfsuite.bg.msp.mspHelper.readU16(buf)
-                config.speed = rfsuite.bg.msp.mspHelper.readU16(buf)
-                config.flags = rfsuite.bg.msp.mspHelper.readU16(buf)
+                config.mid = rfsuite.tasks.msp.mspHelper.readU16(buf)
+                config.min = rfsuite.tasks.msp.mspHelper.readS16(buf)
+                config.max = rfsuite.tasks.msp.mspHelper.readS16(buf)
+                config.scaleNeg = rfsuite.tasks.msp.mspHelper.readU16(buf)
+                config.scalePos = rfsuite.tasks.msp.mspHelper.readU16(buf)
+                config.rate = rfsuite.tasks.msp.mspHelper.readU16(buf)
+                config.speed = rfsuite.tasks.msp.mspHelper.readU16(buf)
+                config.flags = rfsuite.tasks.msp.mspHelper.readU16(buf)
 
                 if config.flags == 1 or config.flags == 3 then
                     config.reverse = 1
@@ -283,7 +283,7 @@ local function getServoConfigurations(callback, callbackParam)
         -- 4 servos
         simulatorResponse = {4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0, 120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0}
     }
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function getServoConfigurationsEnd(callbackParam)

@@ -197,7 +197,7 @@ end
 function msp.wakeup()
 
     -- check if we have a telemetry source
-    local telemetrySOURCE = rfsuite.bg.telemetry.getSensorSource("rssi") 
+    local telemetrySOURCE = rfsuite.tasks.telemetry.getSensorSource("rssi") 
     if telemetrySOURCE == nil then 
         return
     end
@@ -208,7 +208,7 @@ function msp.wakeup()
         msp.activeProtocol = "smartPort"
     end
 
-    if rfsuite.bg.wasOn == true then rfsuite.rssiSensorChanged = true end
+    if rfsuite.tasks.wasOn == true then rfsuite.rssiSensorChanged = true end
 
     if rfsuite.rssiSensorChanged == true then
 
@@ -227,7 +227,7 @@ function msp.wakeup()
         msp.onConnectChecksInit = true
     end
 
-    if rfsuite.rssiSensor ~= nil and rfsuite.bg.telemetry.active() == false then
+    if rfsuite.rssiSensor ~= nil and rfsuite.tasks.telemetry.active() == false then
         msp.resetState()
         msp.onConnectChecksInit = true
     end
@@ -239,7 +239,7 @@ function msp.wakeup()
     if system:getVersion().simulation == true then
         state = true
     elseif rfsuite.rssiSensor then
-        state = rfsuite.bg.telemetry.active()
+        state = rfsuite.tasks.telemetry.active()
     else
         state = false
     end

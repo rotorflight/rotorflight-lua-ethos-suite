@@ -87,7 +87,7 @@ function rf2craftname.paint(widget)
     local w, h = lcd.getWindowSize()  -- Ensure consistency with rf2gov.paint
 
     -- Text to display
-    local str = rfsuite.bg.active() and rfsuite.session.craftName or "[NO LINK]"
+    local str = rfsuite.tasks.active() and rfsuite.session.craftName or "[NO LINK]"
 
     -- Available font sizes ordered from smallest to largest
     local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL}
@@ -188,7 +188,7 @@ end
 
 -- Main wakeup function
 function rf2craftname.wakeup(widget)
-    local schedulerUI = lcd.isVisible() and 0.1 or 1
+    local schedulerUI = lcd.isVisible() and 0.5 or 5
     local now = os.clock()
 
     if (now - rf2craftname.wakeupSchedulerUI) >= schedulerUI then

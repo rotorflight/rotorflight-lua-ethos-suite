@@ -33,9 +33,9 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "arming_disable_flags",               type = "U32", apiVersion = 12.06, simResponse = {0, 0, 0, 0}},
     {field = "reboot_required",                    type = "U8",  apiVersion = 12.06, simResponse = {2}},
     {field = "configuration_state",                type = "U8",  apiVersion = 12.06, simResponse = {0}},
-    {field = "current_pid_profile_index",          type = "U8",  apiVersion = 12.06, simResponse = {6}},
+    {field = "current_pid_profile_index",          type = "U8",  apiVersion = 12.06, simResponse = {5}, table = {"1", "2", "3", "4", "5", "6"}, tableIdxInc = -1},
     {field = "pid_profile_count",                  type = "U8",  apiVersion = 12.06, simResponse = {6}},
-    {field = "current_control_rate_profile_index", type = "U8",  apiVersion = 12.06, simResponse = {1}},
+    {field = "current_control_rate_profile_index", type = "U8",  apiVersion = 12.06, simResponse = {1}, table = {"1", "2", "3", "4", "5", "6"}, tableIdxInc = -1},
     {field = "control_rate_profile_count",         type = "U8",  apiVersion = 12.06, simResponse = {4}},
     {field = "motor_count",                        type = "U8",  apiVersion = 12.06, simResponse = {1}},
     {field = "servo_count",                        type = "U8",  apiVersion = 12.06, simResponse = {4}},
@@ -43,16 +43,16 @@ local MSP_API_STRUCTURE_READ_DATA = {
 }
 
 -- filter the structure to remove any params not supported by the running api version
-local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
+local MSP_API_STRUCTURE_READ = rfsuite.tasks.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
 
 -- calculate the min bytes value from the structure
-local MSP_MIN_BYTES = rfsuite.bg.msp.api.calculateMinBytes(MSP_API_STRUCTURE_READ)
+local MSP_MIN_BYTES = rfsuite.tasks.msp.api.calculateMinBytes(MSP_API_STRUCTURE_READ)
 
 -- set read structure
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
 
 -- generate a simulatorResponse from the read structure
-local MSP_API_SIMULATOR_RESPONSE = rfsuite.bg.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
+local MSP_API_SIMULATOR_RESPONSE = rfsuite.tasks.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
 
 -- Variable to store parsed MSP data
 local mspData = nil
@@ -61,7 +61,7 @@ local payloadData = {}
 local defaultData = {}
 
 -- Create a new instance
-local handlers = rfsuite.bg.msp.api.createHandlers()
+local handlers = rfsuite.tasks.msp.api.createHandlers()
 
 -- Variables to store optional the UUID and timeout for payload
 local MSP_API_UUID
@@ -77,7 +77,7 @@ local function read()
     local message = {
         command = MSP_API_CMD_READ,
         processReply = function(self, buf)
-            mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE_READ)
+            mspData = rfsuite.tasks.msp.api.parseMSPData(buf, MSP_API_STRUCTURE_READ)
             if #buf >= MSP_MIN_BYTES then
                 local completeHandler = handlers.getCompleteHandler()
                 if completeHandler then completeHandler(self, buf) end
@@ -91,7 +91,7 @@ local function read()
         uuid = MSP_API_UUID,
         timeout = MSP_API_MSG_TIMEOUT  
     }
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function write(suppliedPayload)
@@ -102,7 +102,7 @@ local function write(suppliedPayload)
 
     local message = {
         command = MSP_API_CMD_WRITE,
-        payload = suppliedPayload or rfsuite.bg.msp.api.buildWritePayload(API_NAME, payloadData,MSP_API_STRUCTURE_WRITE),
+        payload = suppliedPayload or rfsuite.tasks.msp.api.buildWritePayload(API_NAME, payloadData,MSP_API_STRUCTURE_WRITE),
         processReply = function(self, buf)
             local completeHandler = handlers.getCompleteHandler()
             if completeHandler then completeHandler(self, buf) end
@@ -116,7 +116,7 @@ local function write(suppliedPayload)
         uuid = MSP_API_UUID,
         timeout = MSP_API_MSG_TIMEOUT  
     }
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 -- Function to get the value of a specific field from MSP data

@@ -47,7 +47,7 @@ local function wakeup(widget)
     local currentTime = os.clock() -- Get the current time in seconds
 
     if currentTime - lastPrintTime >= printInterval then
-        if rfsuite and rfsuite.bg.active() then
+        if rfsuite and rfsuite.tasks.active() then
             -- Useful info
             print("Craft Name: " .. (rfsuite.session.craftName or "-"))
             print("Model Id: " .. (rfsuite.session.modelID or "-"))
@@ -60,13 +60,13 @@ local function wakeup(widget)
             -- Get a sensor source regardless of protocol
             -- You can see sensor names in rfsuite/tasks/telemetry/telemetry.lua 
             -- Look at the sensorTable
-            local armflags = rfsuite.bg.telemetry.getSensorSource("armflags")
+            local armflags = rfsuite.tasks.telemetry.getSensorSource("armflags")
             print("Arm Flags: " .. (armflags:value() or "-"))
 
-            local rpm = rfsuite.bg.telemetry.getSensorSource("rpm")
+            local rpm = rfsuite.tasks.telemetry.getSensorSource("rpm")
             print("Headspeed: " .. (rpm:value() or "-"))
 
-            local voltage = rfsuite.bg.telemetry.getSensorSource("voltage")
+            local voltage = rfsuite.tasks.telemetry.getSensorSource("voltage")
             print("Voltage: " .. (voltage:value() or "-"))
         else
             print("Init...")

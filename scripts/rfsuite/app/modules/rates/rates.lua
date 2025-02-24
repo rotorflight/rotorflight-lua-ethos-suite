@@ -3,7 +3,6 @@ local tables = {}
 local alltables = {}
 
 local activateWakeup = false
-local activeRateTable
 
 
 tables[0] = "app/modules/rates/ratetables/none.lua"
@@ -18,149 +17,30 @@ for i,v in ipairs(tables) do
     alltables[i] = assert(loadfile(v))()
 end
 
-if activeRateTable == nil then 
-    activeRateTable = rfsuite.preferences.defaultRateProfile 
+if rfsuite.session.activeRateTable == nil then 
+    rfsuite.session.activeRateTable = rfsuite.preferences.defaultRateProfile 
 end
 
 
-local mspapi = alltables[activeRateTable]
+local mspapi = alltables[rfsuite.session.activeRateTable]
 local mytable = mspapi.formdata
 
 local function postLoad(self)
 
     local v = mspapi.values[mspapi.api[1]].rates_type
-    if v ~= nil then activeRateTable = math.floor(v) end
-
-    rfsuite.utils.log("Active Rate Table: " .. activeRateTable,"info")
-
-
-    rfsuite.session.activeRateTable = activeRateTable
-
-    -- update static text fields
-    local v = mspapi.values[mspapi.api[1]].rates_type
-    local cols = alltables[activeRateTable].formdata.cols
-    local title = alltables[activeRateTable].formdata.name
-
-    -- title
-    rfsuite.app.formFields['col_0']:value(title)
-
-    -- columns
-    for i = 1, #cols do
-        local txt = rightAlignText(rfsuite.session.colWidth, cols[i])
-        rfsuite.app.formFields['col_' .. tostring((#cols + 1) - i)]:value(txt)
-    end
-
-    -- update field decimals mult max etc
-    for x,f in ipairs(alltables[activeRateTable].formdata.fields) do
-        if f.disable == true then
-            rfsuite.utils.log("Disabling field: " .. f.apikey,"debug")
-            rfsuite.app.formFields[x]:enable(false)
-        else
-            rfsuite.app.formFields[x]:enable(true)
-        end
-        if f.scale ~= nil then 
-            rfsuite.utils.log("Setting scale for field: " .. f.apikey .. " to " .. f.scale,"debug")
-            rfsuite.app.Page.fields[x].scale = f.scale
-        else
-            rfsuite.app.Page.fields[x].scale = nil    
-        end
-        if f.mult ~= nil then 
-            rfsuite.utils.log("Setting mult for field: " .. f.apikey .. " to " .. f.mult,"debug")
-            rfsuite.app.Page.fields[x].mult = f.mult
-        else
-            rfsuite.app.Page.fields[x].mult = nil        
-        end
-        if f.offset ~= nil then 
-            rfsuite.utils.log("Setting offset for field: " .. f.apikey.. " to " .. f.offset,"debug")
-            rfsuite.app.Page.fields[x].offset = f.offset
-        else
-            rfsuite.app.Page.fields[x].offset = nil           
-        end
-        if f.decimals ~= nil then
-            rfsuite.utils.log("Setting decimals for field: " .. f.apikey .. " to " .. f.decimals,"debug")
-            rfsuite.app.formFields[x]:decimals(math.floor(f.decimals))
-            rfsuite.app.Page.fields[x].decimals = f.decimals
-        else
-            rfsuite.app.formFields[x]:decimals(nil)
-            rfsuite.app.Page.fields[x].decimals = nil   
-        end
-        if f.unit ~= nil then 
-            rfsuite.utils.log("Setting unit for field: " .. f.apikey.. " to " .. f.unit,"debug")
-            rfsuite.app.formFields[x]:suffix(math.floor(f.unit))
-            rfsuite.app.Page.fields[x].unit = f.unit
-        else
-            rfsuite.app.formFields[x]:suffix("")
-            rfsuite.app.Page.fields[x].unit = nil    
-        end
-        if f.step ~= nil then
-            rfsuite.utils.log("Setting step for field: " .. f.apikey.. " to " .. f.step,"debug")
-            rfsuite.app.formFields[x]:step(math.floor(f.step))
-            rfsuite.app.Page.fields[x].step = f.step
-        else
-            rfsuite.app.formFields[x]:step(1)
-            rfsuite.app.Page.fields[x].step = nil
-        end
-        if f.min ~= nil then
-            rfsuite.utils.log("Setting min for field: " .. f.apikey .. " to " .. f.min,"debug")
-            local  minValue = f.min * rfsuite.utils.decimalInc(f.decimals)
-            if f.mult ~= nil then
-                minValue = minValue * f.mult
-            end
-            if f.scale ~= nil then
-                minValue = minValue / f.scale
-            end
-            rfsuite.app.formFields[x]:minimum(math.floor(minValue))
-            rfsuite.app.Page.fields[x].min = f.min
-        else
-            rfsuite.app.formFields[x]:minimum(0)
-            rfsuite.app.Page.fields[x].min = nil    
-        end
-        if f.max ~= nil then
-            rfsuite.utils.log("Setting max for field: " .. f.apikey .. " to " .. f.max,"debug")
-            local maxValue = f.max * rfsuite.utils.decimalInc(f.decimals)
-            if f.mult ~= nil then
-                maxValue = maxValue * f.mult
-            end
-            if f.scale ~= nil then
-                maxValue = maxValue / f.scale
-            end
-            rfsuite.app.formFields[x]:maximum(math.floor(maxValue))
-            rfsuite.app.Page.fields[x].max = f.max
-        else
-            rfsuite.app.formFields[x]:maximum(0)
-            rfsuite.app.Page.fields[x].max = nil    
-        end
-        if (f.default ~= nil) then
-            rfsuite.utils.log("Setting default for field: " .. f.apikey .. " to " .. f.default,"debug")
-                                
-            -- factor in all possible scaling
-            if f.offset ~= nil then f.default = f.default + f.offset end
-            local default = f.default * rfsuite.utils.decimalInc(f.decimals)
-            if f.mult ~= nil then default = default * f.mult end
     
-            -- if for some reason we have a .0 we need to work around an ethos peculiarity on default boxes!
-            local str = tostring(default)
-            if str:match("%.0$") then default = math.ceil(default) end                            
-    
-            if f.type ~= 1 then 
-                rfsuite.app.formFields[x]:default(math.floor(default))
-                rfsuite.app.Page.fields[x].default = default
-            end
-        else
-            rfsuite.app.formFields[x]:default(nil)
-            rfsuite.app.Page.fields[x].default = nil    
-        end
-        -- set the value
-        rfsuite.utils.log("Setting value for field: " .. f.apikey .. " to " .. f.value,"debug")
-        rfsuite.app.Page.fields[x].value = f.value
+    rfsuite.utils.log("Active Rate Table: " .. rfsuite.session.activeRateTable,"info")
 
-    end
-
+    if v ~= rfsuite.session.activeRateTable then
+        rfsuite.utils.log("Switching Rate Table: " .. v,"info")
+        rfsuite.app.triggers.reloadFull = true
+        rfsuite.session.activeRateTable = v           
+        return
+    end 
 
     rfsuite.app.triggers.closeProgressLoader = true
-    rfsuite.app.triggers.isReady = true
     activateWakeup = true
-  
+
 end
 
 function rightAlignText(width, text)
@@ -191,15 +71,11 @@ local function openPage(idx, title, script)
 
     rfsuite.app.ui.fieldHeader(title)
 
-    -- merge in form info when using multi msp api system
-    if rfsuite.utils.is_multi_mspapi() then
-        rfsuite.utils.log("Merging form data from mspapi","debug")
-        rfsuite.app.Page.fields = rfsuite.app.Page.mspapi.formdata.fields
-        rfsuite.app.Page.labels = rfsuite.app.Page.mspapi.formdata.labels
-        rfsuite.app.Page.rows = rfsuite.app.Page.mspapi.formdata.rows
-        rfsuite.app.Page.cols = rfsuite.app.Page.mspapi.formdata.cols
-    end
-
+    rfsuite.utils.log("Merging form data from mspapi","debug")
+    rfsuite.app.Page.fields = rfsuite.app.Page.mspapi.formdata.fields
+    rfsuite.app.Page.labels = rfsuite.app.Page.mspapi.formdata.labels
+    rfsuite.app.Page.rows = rfsuite.app.Page.mspapi.formdata.rows
+    rfsuite.app.Page.cols = rfsuite.app.Page.mspapi.formdata.cols
 
     local numCols
     if rfsuite.app.Page.cols ~= nil then
@@ -267,9 +143,8 @@ local function openPage(idx, title, script)
             posX = positions[f.col]
 
             pos = {x = posX + padding, y = posY, w = w - padding, h = h}
-
  
-            rfsuite.app.formFields[i] = form.addNumberField(rateRows[f.row], pos, 0, 0, function()
+            rfsuite.app.formFields[i] = form.addNumberField(rateRows[f.row], pos, f.min, f.max, function()
                 local value
                 if rfsuite.session.activeRateProfile == 0 then
                     value = 0
@@ -279,8 +154,16 @@ local function openPage(idx, title, script)
                 return value
             end, function(value)
                 f.value = rfsuite.utils.saveFieldValue(rfsuite.app.Page.fields[i], value)
-                rfsuite.app.saveValue(i)
             end)
+            if f.decimals ~= nil then rfsuite.app.formFields[i]:decimals(f.decimals) end
+            if f.unit ~= nil then rfsuite.app.formFields[i]:suffix(f.unit) end
+            if f.step ~= nil then rfsuite.app.formFields[i]:step(f.step) end
+            if f.help ~= nil then
+                if rfsuite.app.fieldHelpTxt[f.help]['t'] ~= nil then
+                    local helpTxt = rfsuite.app.fieldHelpTxt[f.help]['t']
+                    rfsuite.app.formFields[i]:help(helpTxt)
+                end
+            end     
         end
     end
 
@@ -288,18 +171,11 @@ end
 
 local function wakeup()
 
-    if activateWakeup == true and rfsuite.bg.msp.mspQueue:isProcessed() then       
+    if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then       
         if rfsuite.session.activeRateProfile ~= nil then
             rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeRateProfile)
-        end
-
-
-        ----for i,v in ipairs(rfsuite.app.Page.fields) do
-        --    rfsuite.utils.print_r(v)
-       -- end    
-
+        end 
     end
-
 end
 
 return {

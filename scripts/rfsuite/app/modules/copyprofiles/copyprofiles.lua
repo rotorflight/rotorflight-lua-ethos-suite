@@ -1,20 +1,50 @@
 local labels = {}
 local fields = {}
 
-fields[#fields + 1] = {t = "Profile type", min = 0, max = 1, vals = {1}, table = {[0] = "PID", "Rate"}}
-fields[#fields + 1] = {t = "Source profile", min = 0, max = 5, vals = {3}, tableIdxInc = -1, table = {"1", "2", "3", "4", "5", "6"}}
-fields[#fields + 1] = {t = "Dest. profile", min = 0, max = 5, vals = {2}, tableIdxInc = -1, table = {"1", "2", "3", "4", "5", "6"}}
+fields[#fields + 1] = {t = "Profile type", value = 0, min = 0, max = 1, table = {[0] = "PID", "Rate"}}
+fields[#fields + 1] = {t = "Source profile", value = 0, min = 0, max = 5, tableIdxInc = -1, table = {"1", "2", "3", "4", "5", "6"}}
+fields[#fields + 1] = {t = "Dest. profile", value = 0, min = 0, max = 5, tableIdxInc = -1, table = {"1", "2", "3", "4", "5", "6"}}
 
-local function postLoad(self)
-    rfsuite.app.triggers.isReady = true
-end
+local doSave = false
 
-local function postRead(self)
-    self.maxPidProfiles = self.values[25]
-    self.currentPidProfile = self.values[24]
-    self.values = {0, self.getDestinationPidProfile(self), self.currentPidProfile}
-    self.minBytes = 3
-end
+local function onSaveMenu()
+    local buttons = {{
+        label = "                OK                ",
+        action = function()
+
+            --- trigger a write here
+            doSave = true
+
+            return true
+        end
+    }, {
+        label = "CANCEL",
+        action = function()
+            return true
+        end
+    }}
+    local theTitle = "Save settings"
+    local theMsg
+    if rfsuite.app.Page.extraMsgOnSave then
+        theMsg = "Save current page to flight controller?" .. "\n\n" .. rfsuite.app.Page.extraMsgOnSave
+    else    
+        theMsg = "Save current page to flight controller?"
+    end
+
+
+    form.openDialog({
+        width = nil,
+        title = theTitle,
+        message = theMsg,
+        buttons = buttons,
+        wakeup = function()
+        end,
+        paint = function()
+        end,
+        options = TEXT_LEFT
+    })
+end    
+
 
 local function getDestinationPidProfile(self)
     local destPidProfile
@@ -26,21 +56,119 @@ local function getDestinationPidProfile(self)
     return destPidProfile
 end
 
+local function openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
+    -- Initialize global UI state and clear form data
+    rfsuite.app.uiState = rfsuite.app.uiStatus.pages
+    rfsuite.app.triggers.isReady = false
+    rfsuite.app.formFields = {}
+    rfsuite.app.formLines = {}
+
+
+    -- Fallback behavior if no custom openPage exists
+    rfsuite.app.lastIdx = idx
+    rfsuite.app.lastTitle = title
+    rfsuite.app.lastScript = script
+
+    form.clear()
+    rfsuite.session.lastPage = script
+
+    local pageTitle = rfsuite.app.Page.pageTitle or title
+    rfsuite.app.ui.fieldHeader(pageTitle)
+
+    if rfsuite.app.Page.headerLine then
+        local headerLine = form.addLine("")
+        form.addStaticText(headerLine, {
+            x = 0,
+            y = rfsuite.app.radio.linePaddingTop,
+            w = config.lcdWidth,
+            h = rfsuite.app.radio.navbuttonHeight
+        }, rfsuite.app.Page.headerLine)
+    end
+
+    formLineCnt = 0
+
+    if fields then
+        for i, field in ipairs(fields) do
+            local label = labels
+            local version = rfsuite.session.apiVersion
+            local valid = (field.apiversion    == nil or field.apiversion    <= version) and
+                          (field.apiversionlt  == nil or field.apiversionlt  >  version) and
+                          (field.apiversiongt  == nil or field.apiversiongt  <  version) and
+                          (field.apiversionlte == nil or field.apiversionlte >= version) and
+                          (field.apiversiongte == nil or field.apiversiongte <= version) and
+                          (field.enablefunction == nil or field.enablefunction())
+
+            if field.hidden ~= true and valid then
+                rfsuite.app.ui.fieldLabel(field, i, label)
+                if field.type == 0 then
+                    rfsuite.app.ui.fieldStaticText(i)
+                elseif field.table or field.type == 1 then
+                    rfsuite.app.ui.fieldChoice(i)
+                elseif field.type == 2 then
+                    rfsuite.app.ui.fieldNumber(i)
+                elseif field.type == 3 then
+                    rfsuite.app.ui.fieldText(i)
+                else
+                    rfsuite.app.ui.fieldNumber(i)
+                end
+            else
+                rfsuite.app.formFields[i] = {}
+            end
+        end
+    end
+
+    rfsuite.app.triggers.closeProgressLoader = true
+end 
+
+local function wakeup()
+    if doSave == true then
+        rfsuite.app.triggers.isSavingFake = true
+
+        local payload = {}
+        payload[1] = fields[1].value
+        payload[2] = fields[3].value
+        payload[3] = fields[2].value
+
+
+        if payload[2] == payload[3] then
+            rfsuite.utils.log("Source and destination profiles are the same. No need to copy.","info")
+            doSave = false
+        end
+
+        local message = {
+            command = 183, -- COPY PROFILE
+            payload = payload,
+            processReply = function(self, buf)
+                rfsuite.app.triggers.closeProgressLoader = true
+            end,
+            simulatorResponse = {}
+        }
+        rfsuite.tasks.msp.mspQueue:add(message)
+
+
+        doSave = false
+    end     
+end    
+
 return {
     -- leaving this api as legacy for now due to unsual read/write scenario.
     -- to change it will mean a bit of a rewrite so leaving it for now.
-    read = 101, -- MSP_STATUS
-    write = 183, -- MSP_COPY_PROFILE
+    --write = 183, -- MSP_COPY_PROFILE
     reboot = false,
     eepromWrite = true,
     title = "Copy",
-    minBytes = 30,
+    openPage = openPage,
+    wakeup = wakeup,
+    onSaveMenu = onSaveMenu,
     labels = labels,
-    refreshOnProfileChange = true,
     fields = fields,
-    simulatorResponse = {252, 1, 127, 0, 35, 0, 0, 0, 0, 0, 0, 122, 1, 182, 0, 0, 26, 0, 0, 0, 0, 0, 2, 0, 6, 0, 6, 1, 4, 1},
-    postRead = postRead,
-    postLoad = postLoad,
     getDestinationPidProfile = getDestinationPidProfile,
     API = {},
+    navButtons = {
+        menu = true,
+        save = true,
+        reload = false,
+        tool = false,
+        help = true
+    },
 }

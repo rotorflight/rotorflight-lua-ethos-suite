@@ -23,7 +23,8 @@ local init = {
     script = "copyprofiles.lua", -- run this script
     image = "copy.png", -- image for the page
     order = 1, -- order in the section
-    ethosversion = {1, 6, 2} -- disable button if ethos version is less than this
+    ethosversion = {1, 6, 2}, -- disable button if ethos version is less than this,
+    disable = true
 }
 
 return init

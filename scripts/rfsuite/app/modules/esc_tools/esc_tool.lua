@@ -20,7 +20,7 @@ local versionField
 local firmwareField
 
 local findTimeoutClock = os.clock()
-local findTimeout = math.floor(rfsuite.bg.msp.protocol.pageReqTimeout * 0.5)
+local findTimeout = math.floor(rfsuite.tasks.msp.protocol.pageReqTimeout * 0.5)
 
 local modelLine
 local modelText
@@ -55,7 +55,7 @@ local function getESCDetails()
         simulatorResponse = simulatorResponse
     }
 
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function openPage(pidx, title, script)
@@ -72,7 +72,7 @@ local function openPage(pidx, title, script)
 
     if ESC.mspapi ~= nil then
         -- we are using the api so get values from that!
-        local API = rfsuite.bg.msp.api.load(ESC.mspapi)
+        local API = rfsuite.tasks.msp.api.load(ESC.mspapi)
         mspSignature = API.mspSignature
         mspHeaderBytes = API.mspHeaderBytes
         simulatorResponse = API.simulatorResponse or {0}
@@ -121,13 +121,12 @@ local function openPage(pidx, title, script)
         paint = function()
         end,
         press = function()
-            -- rfsuite.app.ui.openPage(pidx, folder , "esc_tools/esc_tool.lua")
             rfsuite.app.Page = nil
             local foundESC = false
             local foundESCupdateTag = false
             local showPowerCycleLoader = false
             local showPowerCycleLoaderInProgress = false
-            rfsuite.app.triggers.triggerReload = true
+            rfsuite.app.triggers.triggerReloadFull = true
         end
     })
     rfsuite.app.formNavigationFields['menu']:focus()
@@ -204,7 +203,6 @@ local function openPage(pidx, title, script)
                 rfsuite.app.menuLastSelected["esctool"] = pidx
                 rfsuite.app.ui.progressDisplay()
 
-                -- rfsuite.app.ui.openPage(pidx, folder, "esc_form.lua",pvalue.script)
                 rfsuite.app.ui.openPage(pidx, title, "esc_tools/mfg/" .. folder .. "/pages/" .. pvalue.script)
 
             end
@@ -231,7 +229,7 @@ end
 
 local function wakeup()
 
-    if foundESC == false and rfsuite.bg.msp.mspQueue:isProcessed() then getESCDetails() end
+    if foundESC == false and rfsuite.tasks.msp.mspQueue:isProcessed() then getESCDetails() end
 
     -- enable the form
     if foundESC == true and foundESCupdateTag == false then

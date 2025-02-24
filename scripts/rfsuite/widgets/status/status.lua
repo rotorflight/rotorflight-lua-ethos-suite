@@ -1331,7 +1331,7 @@ function status.paint(widget)
             rfsuite.config.ethosVersion[3])
         )
         return
-    elseif not rfsuite.bg.active() then
+    elseif not rfsuite.tasks.active() then
 
         if (os.clock() - status.initTime) >= 2 then status.screenError("PLEASE ENABLE THE BACKGROUND TASK") end
         lcd.invalidate()
@@ -2385,17 +2385,17 @@ function status.paint(widget)
 
             -- initiate timed sensor validation
             local validateSensors = {}
-            if rfsuite.bg and rfsuite.bg.telemetry then validateSensors = rfsuite.bg.telemetry.validateSensors() end
+            if rfsuite.tasks and rfsuite.tasks.telemetry then validateSensors = rfsuite.tasks.telemetry.validateSensors() end
 
             if status.linkUP == false and environment.simulation == false then
                 status.noTelem()
                 status.initTime = os.clock()
-            elseif (os.clock() - status.initTime) >= 10 and validateSensors and (#rfsuite.bg.telemetry.validateSensors() > 0) then
+            elseif (os.clock() - status.initTime) >= 10 and validateSensors and (#rfsuite.tasks.telemetry.validateSensors() > 0) then
                 if status.sensorwarningParam == true or status.sensorwarningParam == nil then
                     status.missingSensors()
                 end
             elseif status.idleupswitchParam and status.idleupswitchParam:state() then
-                local armSource = rfsuite.bg.telemetry.getSensorSource("armflags")
+                local armSource = rfsuite.tasks.telemetry.getSensorSource("armflags")
                 if armSource then
                     isArmed = math.floor(armSource:value())
                     if isArmed == 1 or isArmed == 3 then
@@ -2482,20 +2482,20 @@ function status.getSensors()
     elseif status.linkUP == true then
 
         -- get sensors
-        voltageSOURCE = rfsuite.bg.telemetry.getSensorSource("voltage")
-        rpmSOURCE = rfsuite.bg.telemetry.getSensorSource("rpm")
-        currentSOURCE = rfsuite.bg.telemetry.getSensorSource("current")
-        temp_escSOURCE = rfsuite.bg.telemetry.getSensorSource("tempESC")
-        temp_mcuSOURCE = rfsuite.bg.telemetry.getSensorSource("tempMCU")
-        fuelSOURCE = rfsuite.bg.telemetry.getSensorSource("fuel")
-        adjSOURCE = rfsuite.bg.telemetry.getSensorSource("adjF")
-        adjVALUE = rfsuite.bg.telemetry.getSensorSource("adjV")
-        adjvSOURCE = rfsuite.bg.telemetry.getSensorSource("adjV")
-        mahSOURCE = rfsuite.bg.telemetry.getSensorSource("capacity")
-        rssiSOURCE = rfsuite.bg.telemetry.getSensorSource("rssi") 
-        govSOURCE = rfsuite.bg.telemetry.getSensorSource("governor")
+        voltageSOURCE = rfsuite.tasks.telemetry.getSensorSource("voltage")
+        rpmSOURCE = rfsuite.tasks.telemetry.getSensorSource("rpm")
+        currentSOURCE = rfsuite.tasks.telemetry.getSensorSource("current")
+        temp_escSOURCE = rfsuite.tasks.telemetry.getSensorSource("tempESC")
+        temp_mcuSOURCE = rfsuite.tasks.telemetry.getSensorSource("tempMCU")
+        fuelSOURCE = rfsuite.tasks.telemetry.getSensorSource("fuel")
+        adjSOURCE = rfsuite.tasks.telemetry.getSensorSource("adjF")
+        adjVALUE = rfsuite.tasks.telemetry.getSensorSource("adjV")
+        adjvSOURCE = rfsuite.tasks.telemetry.getSensorSource("adjV")
+        mahSOURCE = rfsuite.tasks.telemetry.getSensorSource("capacity")
+        rssiSOURCE = rfsuite.tasks.telemetry.getSensorSource("rssi") 
+        govSOURCE = rfsuite.tasks.telemetry.getSensorSource("governor")
 
-        if rfsuite.bg.telemetry.getSensorProtocol() == 'customCRSF' then
+        if rfsuite.tasks.telemetry.getSensorProtocol() == 'customCRSF' then
 
             if voltageSOURCE ~= nil then
                 voltage = voltageSOURCE:value() or 0
@@ -2630,7 +2630,7 @@ function status.getSensors()
                 adjvalue = 0
             end
 
-        elseif rfsuite.bg.telemetry.getSensorProtocol() == 'lcrsf' then
+        elseif rfsuite.tasks.telemetry.getSensorProtocol() == 'lcrsf' then
 
             if voltageSOURCE ~= nil then
                 voltage = voltageSOURCE:value() or 0
@@ -2736,7 +2736,7 @@ function status.getSensors()
             adjsource = 0
             adjvalue = 0
 
-        elseif rfsuite.bg.telemetry.getSensorProtocol() == 'sport' then
+        elseif rfsuite.tasks.telemetry.getSensorProtocol() == 'sport' then
 
             if voltageSOURCE ~= nil then
                 voltage = voltageSOURCE:value() or 0
@@ -2948,7 +2948,7 @@ function status.getSensors()
     local isArmed = false
 
     if status.linkUP then
-        local armSource = rfsuite.bg.telemetry.getSensorSource("armflags")
+        local armSource = rfsuite.tasks.telemetry.getSensorSource("armflags")
         if armSource then isArmed = armSource:value() end
     end
 
@@ -3659,7 +3659,7 @@ end
 
 -- MAIN WAKEUP FUNCTION. THIS SIMPLY FARMS OUT AT DIFFERING SCHEDULES TO SUB FUNCTIONS
 function status.wakeup(widget)
-    local schedulerUI = lcd.isVisible() and 0.25 or 1 -- Set interval based on visibility
+    local schedulerUI = lcd.isVisible() and 0.25 or 2 -- Set interval based on visibility
 
     -- Run UI at reduced interval to minimize CPU load
     local now = os.clock()
@@ -3672,7 +3672,7 @@ end
 
 function status.wakeupUI(widget)
 
-    if not rfsuite.bg.active() then
+    if not rfsuite.tasks.active() then
         voltageSOURCE = nil
         rpmSOURCE = nil
         currentSOURCE = nil
@@ -3692,7 +3692,7 @@ function status.wakeupUI(widget)
 
         status.refresh = false
 
-        status.linkUP = rfsuite.bg.telemetry.active()
+        status.linkUP = rfsuite.tasks.telemetry.active()
         status.sensors = status.getSensors()
 
         if status.refresh == true then
@@ -3854,7 +3854,7 @@ function status.wakeupUI(widget)
                 -- TIME
                 if status.linkUP == true then
 
-                    local armSource = rfsuite.bg.telemetry.getSensorSource("armflags")
+                    local armSource = rfsuite.tasks.telemetry.getSensorSource("armflags")
                     if armSource then
                         local isArmed = armSource:value()
                         if isArmed == 0 or isArmed == 2 then

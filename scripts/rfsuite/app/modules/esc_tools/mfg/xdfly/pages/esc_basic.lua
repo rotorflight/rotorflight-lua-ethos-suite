@@ -59,7 +59,7 @@ local function event(widget, category, value, x, y)
 end
 
 local function wakeup(self)
-    if activateWakeup == true and rfsuite.bg.msp.mspQueue:isProcessed() then
+    if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then
         activateWakeup = false
     end
 end

@@ -85,12 +85,11 @@ local function preSave(self)
                     local default = v.default or 0
 
                     default = default * rfsuite.utils.decimalInc(v.decimals)
-                    if v.mult ~= nil then default = math.floor(default * v.mult) end
+                    if v.mult ~= nil then default = math.floor(default * v.mult + 0.5) end
                     if v.scale ~= nil then default = math.floor(default / v.scale) end
                     
                     rfsuite.utils.log("Saving default value for " .. v.apikey .. " as " .. default, "info")
                     rfsuite.utils.saveFieldValue(v, default)
-                    rfsuite.app.saveValue(i)
                 end    
         end    
             
@@ -104,7 +103,7 @@ local function postLoad(self)
 end
 
 local function wakeup()
-    if activateWakeup and rfsuite.bg.msp.mspQueue:isProcessed() then
+    if activateWakeup and rfsuite.tasks.msp.mspQueue:isProcessed() then
         -- update active profile
         -- the check happens in postLoad          
         if rfsuite.session.activeRateProfile then

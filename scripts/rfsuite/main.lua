@@ -55,7 +55,7 @@ preferences.syncCraftName = false                                   -- sync the 
 preferences.mspExpBytes = 8                                         -- number of bytes for msp_exp [default = 8] 
 preferences.defaultRateProfile = 4 -- ACTUAL                        -- default rate table [default = 4]
 preferences.watchdogParam = 10                                      -- watchdog timeout for progress boxes [default = 10]
-preferences.simProfileSwiching  = true                              -- enable auto profile switching in simulator[default = true]
+preferences.simProfileSwiching  = false                              -- enable auto profile switching in simulator[default = false]
 
 -- tasks
 config.bgTaskName = config.toolName .. " [Background]"              -- background task name for msp services etc
@@ -103,12 +103,11 @@ rfsuite.utils = assert(loadfile("lib/utils.lua"))(config)
 -- This script initializes the `rfsuite` tasks and background task.
 -- 
 -- The `rfsuite.tasks` table is created to hold various tasks.
--- The `rfsuite.bg` is assigned the result of executing the "tasks/bg.lua" file with the `config` parameter.
--- The `loadfile` function is used to load the "tasks/bg.lua" file, and `assert` ensures that the file is loaded successfully.
--- The loaded file is then executed with the `config` parameter, and its return value is assigned to `rfsuite.bg`.
+-- The `rfsuite.tasks` is assigned the result of executing the "tasks/tasks.lua" file with the `config` parameter.
+-- The `loadfile` function is used to load the "tasks/tasks.lua" file, and `assert` ensures that the file is loaded successfully.
+-- The loaded file is then executed with the `config` parameter, and its return value is assigned to `rfsuite.tasks`.
 -- tasks
-rfsuite.tasks = {}
-rfsuite.bg = assert(loadfile("tasks/bg.lua"))(config)
+rfsuite.tasks = assert(loadfile("tasks/tasks.lua"))(config)
 
 -- LuaFormatter off
 
@@ -178,8 +177,8 @@ local function init()
     system.registerTask({
         name = config.bgTaskName,
         key = config.bgTaskKey,
-        wakeup = rfsuite.bg.wakeup,
-        event = rfsuite.bg.event
+        wakeup = rfsuite.tasks.wakeup,
+        event = rfsuite.tasks.event
     })
 
     -- widgets are loaded dynamically

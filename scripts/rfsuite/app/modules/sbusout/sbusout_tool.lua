@@ -53,21 +53,21 @@ local function saveServoSettings(self)
         command = 153, -- MSP_SET_SERVO_CONFIGURATION
         payload = {}
     }
-    rfsuite.bg.msp.mspHelper.writeU8(message.payload, mixIndex)
-    rfsuite.bg.msp.mspHelper.writeU8(message.payload, mixType)
-    rfsuite.bg.msp.mspHelper.writeU8(message.payload, mixSource)
-    rfsuite.bg.msp.mspHelper.writeU16(message.payload, mixMin)
-    rfsuite.bg.msp.mspHelper.writeU16(message.payload, mixMax)
-    -- rfsuite.bg.msp.mspHelper.writeU8(message.payload, frameRate)
+    rfsuite.tasks.msp.mspHelper.writeU8(message.payload, mixIndex)
+    rfsuite.tasks.msp.mspHelper.writeU8(message.payload, mixType)
+    rfsuite.tasks.msp.mspHelper.writeU8(message.payload, mixSource)
+    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, mixMin)
+    rfsuite.tasks.msp.mspHelper.writeU16(message.payload, mixMax)
+    -- rfsuite.tasks.msp.mspHelper.writeU8(message.payload, frameRate)
 
     local logData = "{" .. rfsuite.utils.joinTableItems(message.payload, ", ") .. "}"
     rfsuite.utils.log(logData,"debug")
 
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 
     -- write change to epprom
     local mspEepromWrite = {command = 153, simulatorResponse = {}}
-    rfsuite.bg.msp.mspQueue:add(mspEepromWrite)
+    rfsuite.tasks.msp.mspQueue:add(mspEepromWrite)
 
 end
 

@@ -156,15 +156,11 @@ rfsuite.config.ethosRunningVersion = nil
 function app.getRSSI()
     if system:getVersion().simulation == true or rfsuite.preferences.skipRssiSensorCheck == true or app.offlineMode == true then return 100 end
 
-    -- if rfsuite.rssiSensor ~= nil then
-
-    if rfsuite.bg.telemetry.active() == true then
+    if rfsuite.tasks.telemetry.active() == true then
         return 100
     else
         return 0
     end
-    -- end
-    -- return 0
 end
 
 -- RESET ALL VALUES TO DEFAULTS. FUNCTION IS CALLED WHEN THE CLOSE EVENT RUNS
@@ -192,61 +188,7 @@ function app.resetState()
     rfsuite.session.activeRateProfile = nil
     rfsuite.session.activeRateProfileLast = nil
     rfsuite.session.activeProfile = nil
-end
-
--- SAVE FIELD VALUE FOR ETHOS FROM ETHOS FORMS INTO THE ACTUAL FORMAT THAT 
--- WILL BE TRANSMITTED OVER MSP
-function app.saveValue(currentField)
-    -- this method is only used for legacy api saves.
-    -- if using multi_mspapi we must fast about
-    if rfsuite.utils.is_multi_mspapi() then
-        return
-    end    
-
-    local f = app.Page.fields[currentField]
-    local scale = f.scale or 1
-
-
-    for idx = 1, #f.vals do
-        app.Page.values[f.vals[idx]] = math.floor(f.value * scale + 0.5) >> ((idx - 1) * 8)
-    end
-
-
-end
-
--- Function to bind page fields to values using MSP helper functions
-function app.dataBindFields()
-    if app.Page.fields then
-        for i = 1, #app.Page.fields do
-            if app.Page.values and #app.Page.values >= app.Page.minBytes then
-                local f = app.Page.fields[i]
-                if f.vals and #f.vals > 0 then
-                    local buf = {}
-                    for idx = 1, #f.vals do buf[idx] = app.Page.values[f.vals[idx]] or 0 end
-
-                    local bits = #f.vals * 8
-                    if #f.vals == 1 then
-                        f.value = rfsuite.bg.msp.mspHelper.readU8(buf)
-                    elseif #f.vals == 2 then
-                        f.value = rfsuite.bg.msp.mspHelper.readU16(buf)
-                    elseif #f.vals == 3 then
-                        f.value = rfsuite.bg.msp.mspHelper.readU24(buf)
-                    elseif #f.vals == 4 then
-                        f.value = rfsuite.bg.msp.mspHelper.readU32(buf)
-                    else
-                        rfsuite.utils.log("Unsupported field size: " .. #f.vals, "debug")
-                        f.value = 0
-                    end
-
-                    if f.min and f.min < 0 and (f.value & (1 << (bits - 1)) ~= 0) then f.value = f.value - (2 ^ bits) end
-
-                    f.value = f.value / (f.scale or 1)
-                end
-            end
-        end
-    else
-        rfsuite.utils.log("Unable to bind fields as app.Page.fields does not exist", "debug")
-    end
+    rfsuite.session.activeRateTable = nil
 end
 
 -- RETURN CURRENT LCD SIZE
@@ -259,14 +201,13 @@ local function invalidatePages()
     app.Page = nil
     app.pageState = app.pageStatus.display
     app.saveTS = 0
-    -- collectgarbage()
 end
 
 -- ISSUE AN MSP COMNMAND TO REBOOT THE FBL UNIT
 local function rebootFc()
 
     app.pageState = app.pageStatus.rebooting
-    rfsuite.bg.msp.mspQueue:add({
+    rfsuite.tasks.msp.mspQueue:add({
         command = 68, -- MSP_REBOOT
         processReply = function(self, buf)
             invalidatePages()
@@ -307,179 +248,14 @@ function app.settingsSaved()
         -- don't write again if we're already responding to earlier page.write()s
         if app.pageState ~= app.pageStatus.eepromWrite then
             app.pageState = app.pageStatus.eepromWrite
-            rfsuite.bg.msp.mspQueue:add(mspEepromWrite)
-            -- app.audio.playSave = true
+            rfsuite.tasks.msp.mspQueue:add(mspEepromWrite)
         end
     elseif app.pageState ~= app.pageStatus.eepromWrite then
         -- If we're not already trying to write to eeprom from a previous save, then we're done.
         invalidatePages()
         app.triggers.closeSave = true
-        -- app.audio.playSave = true
     end
 end
-
--- Function to process the reply buffer for app.Page, now aware of the method used
-local function processPageReply(source, buf, methodType)
-    if not app.Page then
-        rfsuite.utils.log("app.triggers.isReady app.Page is nil?","debug")
-        return
-    end
-
-    -- we should not need this with the api - it is kept for legacy compatability
-    app.Page.minBytes = app.Page.minBytes or 0
-
-    rfsuite.utils.log("app.Page is processing reply for cmd " .. tostring(source.command) .. " len buf: " .. #buf .. " expected: " .. app.Page.minBytes .. " (Method: " .. methodType .. ")" , "debug")
-
-    -- ensure page.values contains a copy of the buffer
-    if methodType == "api" then
-        app.Page.values = buf['buffer']
-    else
-        app.Page.values = buf
-    end
-
-    -- if using the api; then lets do value injection from the api
-
-    if methodType == "api" then
-        -- inject vals fields based on the positionmap returned by the api call
-        if app.Page.fields then
-            for i, v in ipairs(app.Page.fields) do
-                if v.apikey then
-                    if buf['positionmap'] and buf['positionmap'][v.apikey] then
-                        rfsuite.utils.log("Assigning value to apikey: " .. v.apikey .. " with vals: " .. table.concat(buf['positionmap'][v.apikey], ", "), "debug")
-                        app.Page.fields[i].vals = buf['positionmap'][v.apikey]                
-                    end
-                end
-            end
-        end
-
-        -- inject min/max/defaults etc if present
-        if app.Page.fields and buf.structure then
-            for i, v in ipairs(buf.structure) do
-                local field = v.field
-                for j, f in ipairs(app.Page.fields) do
-
-                    local formField = rfsuite.app.formFields[j]
-
-                    if f.apikey and  f.apikey == field and formField then
-                            rfsuite.app.ui.injectApiAttributes(formField,f,v)   
-                            
-                            --local value = values[mspapiNAME][apikey]
-                            --value = value * rfsuite.utils.decimalInc(v.decimals)
-                            --if f.mult ~= nil then value = math.floor(value * f.mult) end
-                            --if f.scale ~= nil then value = math.floor(value / f.scale) end
-                            --rfsuite.app.Page.fields[i].value = value
-
-                    end
-                end
-            end
-        end       
-
-    end
- 
-    -- run the postRead function to allow you to manipulate the data before regular processing.
-    -- this is a legacy call that is only really used to directly manipulate the byte string.
-    -- if using the api; there are better ways to do this.
-    if app.Page.postRead then app.Page.postRead(app.Page) end
-
-    -- bind the fields to values.  This determins what is send and received by the api
-    app.dataBindFields()
-
-    -- run this function after the data has been load and bound
-    if app.Page.postLoad then app.Page.postLoad(app.Page) end
-
-    -- clear the ethos forms variable to ensure page reload is clean
-    if form then form.invalidate() end
-
-    -- log this happened
-    rfsuite.utils.log("app.triggers.isReady (Method: " .. methodType .. ")","debug")
-end
-
--- Wrapper to an MSP call for situations where we receive a numeric ID
-local mspLoadSettings = {
-    processReply = function(self, buf)
-        processPageReply(self, buf, "number")
-    end
-}
-
--- Find out the method we are using to read/write the page
--- rw = 0 for read, 1 for write
-function app.mspMethodType(rw)
-    local target = rw == 1 and app.Page.write or app.Page.read
-    local methodType
-    local retType
-    local retTgt
-
-    -- First, prioritize the read/write method based on rw
-    if rfsuite.utils.is_multi_mspapi() then
-        methodType = "multiapi"
-        retTgt = app.Page.mspapi       
-    elseif type(target) == "function" then
-        methodType = "function"
-        retTgt = "function"
-    elseif type(target) == "number" then
-        methodType = "id"
-        retTgt = target
-    -- If no read/write method found, fallback to mspapi
-    elseif type(app.Page.mspapi) == "string"  then
-        methodType = "api"
-        retTgt = app.Page.mspapi
-    else
-        methodType = nil
-        retTgt = nil
-    end
-
-    return methodType, retTgt
-end
-
--- Read a page via msp
--- This code supports a few different ways of knowing how to do the call - in the end its determined by the return response of app.Page.read
--- If app.Page.read returns:
---   number:   we do a low level msp call by adding the message to the queue using the processReply format. See mspQueue.lua
---   string:   we use the msp api to return the data.  This is a wrapper to mspQueue.lua and can be found in api.lua
---   function: we dont actually do anything bar run the function - offloading the read to the modules built-in code.
-function app.readPage()
-
-    -- check mspapi and if it returns (should always be a string) then proceed
-    -- otherwise we revert to using app.Page.read using actual msp id numbers
-    local methodType, methodTarget = app.mspMethodType(0)
-
-    if not rfsuite.utils.is_multi_mspapi() then
-        rfsuite.utils.log("Reading: " .. "Method: " .. methodType, "Target: " .. methodTarget , "debug")
-    end
-
-    if  methodType == "api" then -- api
-        app.Page.API = rfsuite.bg.msp.api.load(app.Page.mspapi, 0)
-
-        app.Page.API.setCompleteHandler(function(self, buf)
-            processPageReply(self, app.Page.API.data(), methodType)
-        end)
-
-        app.Page.API.read()
-
-    elseif methodType == "function" then -- function
-        app.Page.read(app.Page)
-
-    elseif methodType == "id" then -- msp id
-        mspLoadSettings.command = app.Page.read
-        mspLoadSettings.simulatorResponse = app.Page.simulatorResponse
-        rfsuite.bg.msp.mspQueue:add(mspLoadSettings)
-    elseif  methodType == "multiapi" then
-        -- multiapi call.
-        -- technically we should not ever get this, but the loop is in here
-        -- to make it clear that that api is a possible return value
-        rfsuite.utils.log("API 'multiapi' method is not valid in the app.readPage function","debug")
-    else
-        rfsuite.utils.log("API 'read' method is invalid","debug")
-    end
-end
-
--- Wrapper function used to trigger save settings
-local mspSaveSettings = {
-    processReply = function(self, buf)
-        app.settingsSaved()
-    end
-}
-
 
 -- Save all settings
 local function saveSettings()
@@ -488,125 +264,66 @@ local function saveSettings()
     app.pageState = app.pageStatus.saving
     app.saveTS = os.clock()
 
-    if rfsuite.utils.is_multi_mspapi() then
-        -- we handle saving 100% different for multi mspapi
-        rfsuite.utils.log("Saving data using the multi mspapi framework", "debug")
-    
-        local mspapi = rfsuite.app.Page.mspapi
-        local apiList = mspapi.api
-        local values = mspapi.values
-    
-        local totalRequests = #apiList  -- Total API calls to be made
-        local completedRequests = 0      -- Counter for completed requests
+    -- we handle saving 100% different for multi mspapi
+    rfsuite.utils.log("Saving data", "debug")
 
-        -- run a function in a module if it exists just prior to saving
-        if app.Page.preSave then app.Page.preSave(app.Page) end
+    local mspapi = rfsuite.app.Page.mspapi
+    local apiList = mspapi.api
+    local values = mspapi.values
 
-        for apiID, apiNAME in ipairs(apiList) do
-            rfsuite.utils.log("Saving data for API: " .. apiNAME, "debug")
-    
-            local payloadData = values[apiNAME]
-            local payloadStructure = mspapi.structure[apiNAME]
-    
-            -- Initialise the API
-            local API = rfsuite.bg.msp.api.load(apiNAME)
-            API.setErrorHandler(function(self, buf)
-                app.triggers.saveFailed = true
-            end
-            )
-            API.setCompleteHandler(function(self, buf)
-                completedRequests = completedRequests + 1
-                rfsuite.utils.log("API " .. apiNAME .. " write complete", "debug")
-    
-                -- Check if this is the last completed request
-                if completedRequests == totalRequests then
-                    rfsuite.utils.log("All API requests have been completed!", "debug")
-                    
-                    -- Run the postSave function if it exists
-                    if app.Page.postSave then app.Page.postSave(app.Page) end
+    local totalRequests = #apiList  -- Total API calls to be made
+    local completedRequests = 0      -- Counter for completed requests
 
-                    -- we need to save to epprom etc
-                    app.settingsSaved()
+    -- run a function in a module if it exists just prior to saving
+    if app.Page.preSave then app.Page.preSave(app.Page) end
 
-                end
-            end)
-    
-            -- Inject values into the payload
-            for i, v in pairs(payloadData) do    
-                for fidx, f in ipairs(app.Page.mspapi.formdata.fields) do
-                    if f.apikey == i and f.mspapi == apiID then
-                        payloadData[i] = app.Page.fields[fidx].value
-                    end
-                end 
-            end
-    
-            -- Send the payload
-            for i, v in pairs(payloadData) do
-                rfsuite.utils.log("Set value for " .. i .. " to " .. v, "debug")
-                API.setValue(i, v)
-            end
+    for apiID, apiNAME in ipairs(apiList) do
+        rfsuite.utils.log("Saving data for API: " .. apiNAME, "debug")
 
-            API.write()
+        local payloadData = values[apiNAME]
+        local payloadStructure = mspapi.structure[apiNAME]
+
+        -- Initialise the API
+        local API = rfsuite.tasks.msp.api.load(apiNAME)
+        API.setErrorHandler(function(self, buf)
+            app.triggers.saveFailed = true
         end
-    else
-        -- legacy method
-        -- check mspapi and if it returns (should always be a string) then proceed
-        -- otherwise we revert to using app.Page.read using actual msp id numbers
-        local methodType, methodTarget = app.mspMethodType(1)
+        )
+        API.setCompleteHandler(function(self, buf)
+            completedRequests = completedRequests + 1
+            rfsuite.utils.log("API " .. apiNAME .. " write complete", "debug")
 
-        -- this is the std log but will cant work with the multiapi method
-        rfsuite.utils.log("Writing: " , "MethodType: " .. methodType, "Target: " .. methodTarget,"debug")
+            -- Check if this is the last completed request
+            if completedRequests == totalRequests then
+                rfsuite.utils.log("All API requests have been completed!", "debug")
+                
+                -- Run the postSave function if it exists
+                if app.Page.postSave then app.Page.postSave(app.Page) end
 
-
-        local payload = app.Page.values
-
-        if app.Page.preSave then payload = app.Page.preSave(app.Page) end
-        if app.Page.preSavePayload then payload = app.Page.preSavePayload(payload) end
-
-        -- Log payload if debugging is enabled
-        local function logPayload()
-            local logData = "Saving: {" .. rfsuite.utils.joinTableItems(payload, ", ") .. "}"
-            rfsuite.utils.log(logData,"debug")
-        end
-
-        -- API-based save method
-        if methodType == "api" then
-
-            -- define it if missing
-            if app.Page.API == nil then
-                rfsuite.utils.log("app.Page.API is missing.. recreating","debug")
-                app.Page.API = rfsuite.bg.msp.api.load(app.Page.mspapi)
-            end
-
-            app.Page.API.setCompleteHandler(function(self, buf)
+                -- we need to save to epprom etc
                 app.settingsSaved()
-            end)
-            app.Page.API.setErrorHandler(function(self, buf)
-                app.triggers.saveFailed = true
-            end)
 
-            logPayload() 
-            app.Page.API.write(payload)
-
-            -- Legacy method using an ID
-        elseif methodType == "id" and app.Page.values then
-            logPayload()
-
-            mspSaveSettings.command = app.Page.write
-            mspSaveSettings.payload = payload
-            mspSaveSettings.simulatorResponse = {}
-
-            rfsuite.bg.msp.mspQueue:add(mspSaveSettings)
-            rfsuite.bg.msp.mspQueue.errorHandler = function()
-                rfsuite.utils.log("Save failed","debug")
-                app.triggers.saveFailed = true
             end
+        end)
 
-            -- Custom function-based save method
-        elseif methodType == "function" then
-            app.Page.write(app.Page)
+        -- Inject values into the payload
+        for i, v in pairs(payloadData) do    
+            for fidx, f in ipairs(app.Page.mspapi.formdata.fields) do
+                if f.apikey == i and f.mspapi == apiID then
+                    payloadData[i] = app.Page.fields[fidx].value
+                end
+            end 
         end
+
+        -- Send the payload
+        for i, v in pairs(payloadData) do
+            rfsuite.utils.log("Set value for " .. i .. " to " .. v, "debug")
+            API.setValue(i, v)
+        end
+
+        API.write()
     end
+    
 end
 
 -- Update the page with the new values received from the MSP and API structures
@@ -682,13 +399,9 @@ function app.mspApiUpdateFormAttributes(values, structure)
                         rfsuite.app.ui.injectApiAttributes(formField, f, v)
 
                         local scale = f.scale or 1
-                        rfsuite.app.Page.fields[i].value = values[mspapiNAME][apikey] / scale
-                        --local value = values[mspapiNAME][apikey]
-                        --value = value * rfsuite.utils.decimalInc(v.decimals)
-                        --if f.mult ~= nil then value = math.floor(value * f.mult) end
-                        --if f.scale ~= nil then value = math.floor(value / f.scale) end
-                        --rfsuite.app.Page.fields[i].value = value
-
+                        if values and values[mspapiNAME] and values[mspapiNAME][apikey] then
+                            rfsuite.app.Page.fields[i].value = values[mspapiNAME][apikey] / scale
+                        end
 
                         break -- Found field, can move on
                     end
@@ -702,26 +415,36 @@ end
 
 
 -- REQUEST A PAGE USING THE NEW API FORM SYSTEM
--- Store state outside the function
-local function requestPageMspApi()
+local function requestPage()
     -- Ensure app.Page and its mspapi.api exist
-    if not app.Page or not app.Page.mspapi or not app.Page.mspapi.api then
-        rfsuite.utils.log("app.Page.mspapi.api is nil", "debug")
+    if not app.Page.mspapi then
         return
     end
+
+    if not app.Page.mspapi.api and not app.Page.mspapi.formdata then
+        rfsuite.utils.log("app.Page.mspapi.api did not pass consistancy checks", "debug")
+        return
+    end
+
+    if not rfsuite.app.Page.mspapi.apiState then
+        rfsuite.app.Page.mspapi.apiState = {
+            currentIndex = 1,
+            isProcessing = false
+        }
+    end    
 
     local apiList = app.Page.mspapi.api
     local state = rfsuite.app.Page.mspapi.apiState  -- Reference persistent state
 
     -- Prevent duplicate execution if already running
     if state.isProcessing then
-        rfsuite.utils.log("requestPageMspApi is already running, skipping duplicate call.", "debug")
+        rfsuite.utils.log("requestPage is already running, skipping duplicate call.", "debug")
         return
     end
     state.isProcessing = true  -- Set processing flag
 
     if not rfsuite.app.Page.mspapi.values then
-        rfsuite.utils.log("requestPageMspApi Initialize values on first run", "debug")
+        rfsuite.utils.log("requestPage Initialize values on first run", "debug")
         rfsuite.app.Page.mspapi.values = {}  -- Initialize if first run
         rfsuite.app.Page.mspapi.structure = {}  -- Initialize if first run
     end
@@ -768,20 +491,22 @@ local function requestPageMspApi()
             return
         end
 
-        local API = rfsuite.bg.msp.api.load(v)
+        local API = rfsuite.tasks.msp.api.load(v)
 
         -- Handle API success
         API.setCompleteHandler(function(self, buf)
 
-            -- Store API response with API name as the key
-            app.Page.mspapi.values[apiKey] = API.data().parsed
+            if app.Page and app.Page.mspapi then
+                -- Store API response with API name as the key
+                app.Page.mspapi.values[apiKey] = API.data().parsed
 
-            -- Store the structure with the API name as the key
-            app.Page.mspapi.structure[apiKey] = API.data().structure
+                -- Store the structure with the API name as the key
+                app.Page.mspapi.structure[apiKey] = API.data().structure
 
-            -- Move to the next API
-            state.currentIndex = state.currentIndex + 1
-            processNextAPI()
+                -- Move to the next API
+                state.currentIndex = state.currentIndex + 1
+                processNextAPI()
+            end    
         end)
 
         -- Handle API errors
@@ -798,38 +523,6 @@ local function requestPageMspApi()
 
     -- Start processing the first API
     processNextAPI()
-end
-
-
-
--- REQUEST A PAGE OVER MSP. THIS RUNS ON MOST CLOCK CYCLES WHEN DATA IS BEING REQUESTED
-local function requestPage()
-    -- this function is called repeatedly until data has arrived
-
-    if not rfsuite.bg or not rfsuite.bg.msp then return end
-
-    -- api form method
-    if app.Page.mspapi and type(app.Page.mspapi) == "table" then
-        if not app.Page.mspapi.api and not app.Page.mspapi.formdata then
-            rfsuite.utils.log("app.Page.mspapi.api did not pass consistancy checks", "debug")
-            return
-        end
-        if not rfsuite.app.Page.mspapi.apiState then
-            rfsuite.app.Page.mspapi.apiState = {
-                currentIndex = 1,
-                isProcessing = false
-            }
-        end                    
-        requestPageMspApi()
-        return
-    else    
-        -- legacy method
-        if not app.Page.reqTS or app.Page.reqTS + rfsuite.bg.msp.protocol.pageReqTimeout <= os.clock() then
-
-            app.Page.reqTS = os.clock()
-            if app.Page.read or app.Page.mspapi then app.readPage() end
-        end
-    end    
 end
 
 -- UPDATE CURRENT TELEMETRY STATE - RUNS MOST CLOCK CYCLES
@@ -853,30 +546,24 @@ end
 -- PAINT.  HOOK INTO PAINT FUNCTION TO ALLOW lcd FUNCTIONS TO BE USED
 -- NOTE. this function will only be called if lcd.refesh is triggered. it is not a wakeup function
 function app.paint()
-
-    -- run the modules paint function if it exists
-    if app.Page ~= nil then if app.Page.paint then app.Page.paint(app.Page) end end
+    if app.Page and app.Page.paint then
+        app.Page.paint(app.Page)
+    end
 end
 
--- MAIN WAKEUP FUNCTION. THIS SIMPLY FARMS OUT AT DIFFERING SCHEDULES TO SUB FUNCTIONS
+
 function app.wakeup(widget)
-
-    app.guiIsRunning = true
-
-    app.wakeupUI()
-    app.wakeupForm()
-
+        app.wakeupUI()
+        app.wakeupForm()
 end
 
 -- WAKEUPFORM.  RUN A FUNCTION CALLED wakeup THAT IS RETURNED WHEN REQUESTING A PAGE
 -- THIS ESSENTIALLY GIVES US A TIMER THAT CAN BE USED BY A PAGE THAT HAS LOADED TO
 -- HANDLE BACKGROUND PROCESSING
 function app.wakeupForm()
-    if app.Page ~= nil and app.uiState == app.uiStatus.pages then
-        if app.Page.wakeup then
-            -- run the pages wakeup function if it exists
-            app.Page.wakeup(app.Page)
-        end
+    if app.Page and app.uiState == app.uiStatus.pages and app.Page.wakeup then
+        -- run the pages wakeup function if it exists
+        app.Page.wakeup(app.Page)
     end
 end
 
@@ -920,7 +607,7 @@ function app.wakeupUI()
     if app.triggers.closeSave == true then
         app.triggers.isSaving = false
 
-        if rfsuite.bg.msp.mspQueue:isProcessed() then
+        if rfsuite.tasks.msp.mspQueue:isProcessed() then
             if (app.dialogs.saveProgressCounter > 40 and app.dialogs.saveProgressCounter <= 80) then
                 app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 5
             elseif (app.dialogs.saveProgressCounter > 90) then
@@ -932,7 +619,7 @@ function app.wakeupUI()
 
         if app.dialogs.save ~= nil then app.ui.progressDisplaySaveValue(app.dialogs.saveProgressCounter) end
 
-        if app.dialogs.saveProgressCounter >= 100 and rfsuite.bg.msp.mspQueue:isProcessed() then
+        if app.dialogs.saveProgressCounter >= 100 and rfsuite.tasks.msp.mspQueue:isProcessed() then
             app.triggers.closeSave = false
             app.dialogs.saveProgressCounter = 0
             app.dialogs.saveDisplay = false
@@ -966,13 +653,13 @@ function app.wakeupUI()
     end
 
     -- profile switching - trigger a reload when profile changes
-    if rfsuite.preferences.profileSwitching == true and app.Page ~= nil and (app.Page.refreshOnProfileChange == true or app.Page.refreshOnRateChange == true) and app.uiState == app.uiStatus.pages and app.triggers.isSaving == false and rfsuite.app.dialogs.saveDisplay ~= true and rfsuite.app.dialogs.progressDisplay ~= true and rfsuite.bg.msp.mspQueue:isProcessed() then
+    if rfsuite.preferences.profileSwitching == true and app.Page ~= nil and (app.Page.refreshOnProfileChange == true or app.Page.refreshOnRateChange == true or app.Page.refreshFullOnProfileChange == true or app.Page.refreshFullOnRateChange == true) and app.uiState == app.uiStatus.pages and app.triggers.isSaving == false and rfsuite.app.dialogs.saveDisplay ~= true and rfsuite.app.dialogs.progressDisplay ~= true and rfsuite.tasks.msp.mspQueue:isProcessed() then
 
         local now = os.clock()
         local profileCheckInterval
 
         -- alter the interval for checking profile changes depenant of if using msp or not
-        if (rfsuite.bg.telemetry.getSensorSource("pidProfile") ~= nil and rfsuite.bg.telemetry.getSensorSource("rateProfile") ~= nil) then
+        if (rfsuite.tasks.telemetry.getSensorSource("pidProfile") ~= nil and rfsuite.tasks.telemetry.getSensorSource("rateProfile") ~= nil) then
             profileCheckInterval = 0.1
         else
             profileCheckInterval = 1.5
@@ -985,18 +672,14 @@ function app.wakeupUI()
 
             if rfsuite.session.activeProfile ~= nil and rfsuite.session.activeProfileLast ~= nil then
 
-                if app.Page.refreshOnProfileChange == true then
+                if app.Page.refreshOnProfileChange == true or  app.Page.refreshFullOnProfileChange == true then
                     if rfsuite.session.activeProfile ~= rfsuite.session.activeProfileLast and rfsuite.session.activeProfileLast ~= nil then
-                        if app.ui.progressDisplayIsActive() then
-                            -- switch has been toggled mid flow - this is bad.. clean upd
-                            form.clear()
-                            app.triggers.triggerReloadNoPrompt = true
-
+                        if app.Page.refreshFullOnProfileChange == true then
+                            app.triggers.reloadFull = true
                         else
-                            -- trigger RELOAD
-                            app.triggers.triggerReloadNoPrompt = true
-                            return true
+                            app.triggers.reload = true
                         end
+                        return true
                     end
                 end
 
@@ -1004,18 +687,14 @@ function app.wakeupUI()
 
             if rfsuite.session.activeRateProfile ~= nil and rfsuite.session.activeRateProfileLast ~= nil then
 
-                if app.Page.refreshOnRateChange == true then
+                if app.Page.refreshOnRateChange == true or app.Page.refreshFullOnRateChange == true then
                     if rfsuite.session.activeRateProfile ~= rfsuite.session.activeRateProfileLast and rfsuite.session.activeRateProfileLast ~= nil then
-                        if app.ui.progressDisplayIsActive() then
-                            -- switch has been toggled mid flow - this is bad.. clean upd
-                            form.clear()
-                            app.triggers.triggerReloadNoPrompt = true
-
-                        else
-                            -- trigger RELOAD
-                            app.triggers.triggerReloadNoPrompt = true
+                            if app.Page.refreshFullOnRateChange == true then
+                                app.triggers.reloadFull = true
+                            else
+                                app.triggers.reload = true
+                            end
                             return true
-                        end
                     end
                 end
             end
@@ -1058,7 +737,7 @@ function app.wakeupUI()
                     rfsuite.config.ethosVersion[2], 
                     rfsuite.config.ethosVersion[3])
                     app.triggers.invalidConnectionSetup = true
-                elseif not rfsuite.bg.active() then
+                elseif not rfsuite.tasks.active() then
                     message = "Please enable the background task."
                     app.triggers.invalidConnectionSetup = true
                 elseif app.getRSSI() == 0 and app.offlineMode == false then
@@ -1108,7 +787,7 @@ function app.wakeupUI()
     if rfsuite.preferences.watchdogParam ~= nil and rfsuite.preferences.watchdogParam ~= 1 then app.protocol.saveTimeout = rfsuite.preferences.watchdogParam end
     if app.dialogs.saveDisplay == true then
         if app.dialogs.saveWatchDog ~= nil then
-            if (os.clock() - app.dialogs.saveWatchDog) > (tonumber(app.protocol.saveTimeout + 5)) or (app.dialogs.saveProgressCounter > 120 and rfsuite.bg.msp.mspQueue:isProcessed()) then
+            if (os.clock() - app.dialogs.saveWatchDog) > (tonumber(app.protocol.saveTimeout + 5)) or (app.dialogs.saveProgressCounter > 120 and rfsuite.tasks.msp.mspQueue:isProcessed()) then
                 app.audio.playTimeout = true
                 app.ui.progressDisplaySaveMessage("Error: timed out")
                 app.ui.progressDisplaySaveCloseAllowed(true)
@@ -1129,7 +808,7 @@ function app.wakeupUI()
         app.dialogs.progressCounter = app.dialogs.progressCounter + 2
         app.ui.progressDisplayValue(app.dialogs.progressCounter)
 
-        if (os.clock() - app.dialogs.progressWatchDog) > (tonumber(rfsuite.bg.msp.protocol.pageReqTimeout)) then
+        if (os.clock() - app.dialogs.progressWatchDog) > (tonumber(rfsuite.tasks.msp.protocol.pageReqTimeout)) then
 
             app.audio.playTimeout = true
 
@@ -1161,13 +840,8 @@ function app.wakeupUI()
                 app.triggers.isSaving = true
                 app.triggers.triggerSave = false
 
-                if rfsuite.utils.is_multi_mspapi() or system:getVersion().simulation ~= true then
-                    saveSettings()
-                else
-                    -- when in sim we fake a save as not possible to really do
-                    -- this involves tricking the progress dialog into thinking
-                    app.triggers.isSavingFake = true
-                end
+
+                saveSettings()
                 return true
             end
         }, {
@@ -1275,7 +949,7 @@ end
                 app.triggers.saveFailed = false
                 app.dialogs.saveProgressCounter = 0
                 app.ui.progressDisplaySave()
-                rfsuite.bg.msp.mspQueue.retryCount = 0
+                rfsuite.tasks.msp.mspQueue.retryCount = 0
             end
             if app.pageState == app.pageStatus.saving then
                 app.ui.progressDisplaySaveValue(app.dialogs.saveProgressCounter, "Saving data...")
@@ -1296,7 +970,7 @@ end
             app.triggers.saveFailed = false
             app.dialogs.saveProgressCounter = 0
             app.ui.progressDisplaySave()
-            rfsuite.bg.msp.mspQueue.retryCount = 0
+            rfsuite.tasks.msp.mspQueue.retryCount = 0
             app.triggers.closeSaveFake = true
             app.triggers.isSavingFake = false
         end
@@ -1322,32 +996,23 @@ end
     -- if we are on the home page - then ensure pages are invalidated
     if app.uiState == app.uiStatus.mainMenu then
         invalidatePages()
-    else
-        -- detect page data loaded and ready to move onto rendering the page
-        if (app.triggers.isReady == true and rfsuite.bg.msp.mspQueue:isProcessed() and (app.Page and app.Page.values)) then
-            app.triggers.isReady = false
-
-            app.triggers.closeProgressLoader = true
-
-        end
+    elseif app.triggers.isReady and rfsuite.tasks.msp.mspQueue:isProcessed() and app.Page and app.Page.values then
+        app.triggers.isReady = false
+        app.triggers.closeProgressLoader = true
     end
 
     -- if we are viewing a page with form data then we need to run some stuff USED
     -- by the msp processing
     if app.uiState == app.uiStatus.pages then
 
-        -- rebind fields if needed
-        if app.pageState == app.pageStatus.saving then if (app.saveTS + app.protocol.saveTimeout) < os.clock() then app.dataBindFields() end end
+        -- intercept and populate app.Page if it's empty
+        if not app.Page and app.PageTmp then 
+            app.Page = app.PageTmp 
+        end
 
-        -- intercept and populate app.Page if its empty
-        -- this simply catches scenarious where we save the page AND
-        -- other parts of the script fail for the few ms where the app.Page
-        -- var is not populated
-        if not app.Page and app.PageTmp then app.Page = app.PageTmp end
-
-        -- we have a page waiting to be retrieved - trigger a request page
-        if app.Page ~= nil then
-            if not (app.Page.values or app.triggers.isReady) and app.pageState == app.pageStatus.display then requestPage() end
+        -- trigger a request page if we have a page waiting to be retrieved
+        if app.Page and app.Page.mspapi and app.pageState == app.pageStatus.display and app.triggers.isReady == false then 
+            requestPage() 
         end
 
     end
@@ -1463,7 +1128,6 @@ end
 end
 
 function app.create_logtool()
-
     triggers.showUnderUsedBufferWarning = false
     triggers.showOverUsedBufferWarning = false
 
@@ -1476,15 +1140,16 @@ function app.create_logtool()
 
     app.uiState = app.uiStatus.init
 
-    -- overide developermode if file exists.
-    if rfsuite.config.developerMode ~= true then if rfsuite.utils.file_exists("../developermode") then rfsuite.config.developerMode = true end end
+    -- override developermode if file exists.
+    if not rfsuite.config.developerMode and rfsuite.utils.file_exists("../developermode") then
+        rfsuite.config.developerMode = true
+    end
 
     rfsuite.app.menuLastSelected["mainmenu"] = pidx
     rfsuite.app.ui.progressDisplay()
 
     rfsuite.app.offlineMode = true
-    rfsuite.app.ui.openPage(1, "Logs", "logs/logs.lua", 1) --- final param says to load in standalone mode
-
+    rfsuite.app.ui.openPage(1, "Logs", "logs/logs.lua", 1) -- final param says to load in standalone mode
 end
 
 function app.create()
@@ -1498,8 +1163,10 @@ function app.create()
 
     app.uiState = app.uiStatus.init
 
-    -- overide developermode if file exists.
-    if rfsuite.config.developerMode ~= true then if rfsuite.utils.file_exists("../developermode") then rfsuite.config.developerMode = true end end
+    -- override developermode if file exists.
+    if not rfsuite.config.developerMode and rfsuite.utils.file_exists("../developermode") then
+        rfsuite.config.developerMode = true
+    end
 
     app.ui.openMainMenu()
 
@@ -1507,74 +1174,60 @@ end
 
 -- EVENT:  Called for button presses, scroll events, touch events, etc.
 function app.event(widget, category, value, x, y)
-
     if value == EVT_VIRTUAL_PREV_LONG then
-        rfsuite.utils.log("Forcing exit","debug")
+        rfsuite.utils.log("Forcing exit", "debug")
         invalidatePages()
         system.exit()
         return 0
     end
 
-    if app.Page ~= nil and (app.uiState == app.uiStatus.pages or app.uiState == app.uiStatus.mainMenu) then
+    if app.Page and (app.uiState == app.uiStatus.pages or app.uiState == app.uiStatus.mainMenu) then
         if app.Page.event then
-            -- run the pages wakeup function if it exists
             return app.Page.event(widget, category, value, x, y)
         end
     end
 
     if app.uiState == app.uiStatus.pages then
-
-        if category == EVT_CLOSE and value == 0 then
-            if app.dialogs.progressDisplay == true then app.ui.progressDisplayClose() end
-            if app.dialogs.saveDisplay == true then app.ui.progressDisplaySaveClose() end
-            if app.Page.onNavMenu then app.Page.onNavMenu(app.Page) end
-            app.ui.openMainMenu()
-            return true
-        end
-        if value == 35 then
-            if app.dialogs.progressDisplay == true then app.ui.progressDisplayClose() end
-            if app.dialogs.saveDisplay == true then app.ui.progressDisplaySaveClose() end
+        if category == EVT_CLOSE and value == 0 or value == 35 then
+            if app.dialogs.progressDisplay then app.ui.progressDisplayClose() end
+            if app.dialogs.saveDisplay then app.ui.progressDisplaySaveClose() end
             if app.Page.onNavMenu then app.Page.onNavMenu(app.Page) end
             app.ui.openMainMenu()
             return true
         end
         if value == KEY_ENTER_LONG then
-            if app.dialogs.progressDisplay == true then app.ui.progressDisplayClose() end
-            if app.dialogs.saveDisplay == true then app.ui.progressDisplaySaveClose() end
-            -- if triggers.isArmed == false then
+            if app.dialogs.progressDisplay then app.ui.progressDisplayClose() end
+            if app.dialogs.saveDisplay then app.ui.progressDisplaySaveClose() end
             app.triggers.triggerSave = true
             system.killEvents(KEY_ENTER_BREAK)
-            -- end
             return true
         end
-
     end
 
-    if app.uiState == app.uiStatus.MainMenu then
-        if value == KEY_ENTER_LONG then
-            if app.dialogs.progressDisplay == true then app.ui.progressDisplayClose() end
-            if app.dialogs.saveDisplay == true then app.ui.progressDisplaySaveClose() end
-            system.killEvents(KEY_ENTER_BREAK)
-            return true
-        end
+    if app.uiState == app.uiStatus.mainMenu and value == KEY_ENTER_LONG then
+        if app.dialogs.progressDisplay then app.ui.progressDisplayClose() end
+        if app.dialogs.saveDisplay then app.ui.progressDisplaySaveClose() end
+        system.killEvents(KEY_ENTER_BREAK)
+        return true
     end
 
     return false
 end
 
 function app.close()
-
     app.guiIsRunning = false
     app.offlineMode = false
 
-    if app.Page ~= nil and (app.uiState == app.uiStatus.pages or app.uiState == app.uiStatus.mainMenu) then if app.Page.close then app.Page.close() end end
+    if app.Page and (app.uiState == app.uiStatus.pages or app.uiState == app.uiStatus.mainMenu) and app.Page.close then
+        app.Page.close()
+    end
 
     if app.dialogs.progress then app.ui.progressDisplayClose() end
     if app.dialogs.save then app.ui.progressDisplaySaveClose() end
     if app.dialogs.noLink then app.ui.progressNolinkDisplayClose() end
+
     invalidatePages()
     app.resetState()
-    -- collectgarbage()
     system.exit()
     return true
 end

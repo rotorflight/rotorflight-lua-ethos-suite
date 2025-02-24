@@ -92,14 +92,11 @@ local function openPage(idx, title, script)
     local posY = paddingTop
 
 
-    -- merge in form info when using multi msp api system
-    if rfsuite.utils.is_multi_mspapi() then
-        rfsuite.utils.log("Merging form data from mspapi","debug")
-        rfsuite.app.Page.fields = rfsuite.app.Page.mspapi.formdata.fields
-        rfsuite.app.Page.labels = rfsuite.app.Page.mspapi.formdata.labels
-        rfsuite.app.Page.rows = rfsuite.app.Page.mspapi.formdata.rows
-        rfsuite.app.Page.cols = rfsuite.app.Page.mspapi.formdata.cols
-    end
+    rfsuite.utils.log("Merging form data from mspapi","debug")
+    rfsuite.app.Page.fields = rfsuite.app.Page.mspapi.formdata.fields
+    rfsuite.app.Page.labels = rfsuite.app.Page.mspapi.formdata.labels
+    rfsuite.app.Page.rows = rfsuite.app.Page.mspapi.formdata.rows
+    rfsuite.app.Page.cols = rfsuite.app.Page.mspapi.formdata.cols
 
     local c = 1
     while loc > 0 do
@@ -140,7 +137,6 @@ local function openPage(idx, title, script)
             if f.onChange then f.onChange(rfsuite.app.Page) end
     
             f.value = rfsuite.utils.saveFieldValue(rfsuite.app.Page.fields[i], value)
-            rfsuite.app.saveValue(i)
         end)
     end
     
@@ -148,7 +144,7 @@ end
 
 local function wakeup()
 
-    if activateWakeup == true and rfsuite.bg.msp.mspQueue:isProcessed() then
+    if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then
 
         -- update active profile
         -- the check happens in postLoad          

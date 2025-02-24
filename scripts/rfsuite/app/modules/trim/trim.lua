@@ -46,7 +46,7 @@ local function saveDataEnd()
             clear2send = true
         end
     }
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 
 end
 
@@ -70,7 +70,7 @@ local function saveData()
     rfsuite.utils.log(logData,"debug")
 
 
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function mixerOn(self)
@@ -83,8 +83,8 @@ local function mixerOn(self)
             command = 191, -- MSP_SET_MIXER_OVERRIDE
             payload = {i}
         }
-        rfsuite.bg.msp.mspHelper.writeU16(message.payload, 0)
-        rfsuite.bg.msp.mspQueue:add(message)
+        rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
+        rfsuite.tasks.msp.mspQueue:add(message)
 
     end
 
@@ -100,8 +100,8 @@ local function mixerOff(self)
             command = 191, -- MSP_SET_MIXER_OVERRIDE
             payload = {i}
         }
-        rfsuite.bg.msp.mspHelper.writeU16(message.payload, 2501)
-        rfsuite.bg.msp.mspQueue:add(message)
+        rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2501)
+        rfsuite.tasks.msp.mspQueue:add(message)
     end
 
     rfsuite.app.triggers.isReady = true
@@ -135,7 +135,7 @@ local function wakeup(self)
         currentRollTrim = rfsuite.app.Page.fields[1].value
         local now = os.clock()
         local settleTime = 0.85
-        if ((now - lastChangeTime) >= settleTime) and rfsuite.bg.msp.mspQueue:isProcessed() and clear2send == true then
+        if ((now - lastChangeTime) >= settleTime) and rfsuite.tasks.msp.mspQueue:isProcessed() and clear2send == true then
             if currentRollTrim ~= currentRollTrimLast then
                 currentRollTrimLast = currentRollTrim
                 lastChangeTime = now
@@ -147,7 +147,7 @@ local function wakeup(self)
         currentPitchTrim = rfsuite.app.Page.fields[2].value
         local now = os.clock()
         local settleTime = 0.85
-        if ((now - lastChangeTime) >= settleTime) and rfsuite.bg.msp.mspQueue:isProcessed() and clear2send == true then
+        if ((now - lastChangeTime) >= settleTime) and rfsuite.tasks.msp.mspQueue:isProcessed() and clear2send == true then
             if currentPitchTrim ~= currentPitchTrimLast then
                 currentPitchTrimLast = currentPitchTrim
                 lastChangeTime = now
@@ -158,7 +158,7 @@ local function wakeup(self)
         currentCollectiveTrim = rfsuite.app.Page.fields[3].value
         local now = os.clock()
         local settleTime = 0.85
-        if ((now - lastChangeTime) >= settleTime) and rfsuite.bg.msp.mspQueue:isProcessed() and clear2send == true then
+        if ((now - lastChangeTime) >= settleTime) and rfsuite.tasks.msp.mspQueue:isProcessed() and clear2send == true then
             if currentCollectiveTrim ~= currentCollectiveTrimLast then
                 currentCollectiveTrimLast = currentCollectiveTrim
                 lastChangeTime = now
@@ -170,7 +170,7 @@ local function wakeup(self)
             currentIdleThrottleTrim = rfsuite.app.Page.fields[4].value
             local now = os.clock()
             local settleTime = 0.85
-            if ((now - lastChangeTime) >= settleTime) and rfsuite.bg.msp.mspQueue:isProcessed() and clear2send == true then
+            if ((now - lastChangeTime) >= settleTime) and rfsuite.tasks.msp.mspQueue:isProcessed() and clear2send == true then
                 if currentIdleThrottleTrim ~= currentIdleThrottleTrimLast then
                     currentIdleThrottleTrimLast = currentIdleThrottleTrim
                     lastChangeTime = now
@@ -183,7 +183,7 @@ local function wakeup(self)
             currentYawTrim = rfsuite.app.Page.fields[4].value
             local now = os.clock()
             local settleTime = 0.85
-            if ((now - lastChangeTime) >= settleTime) and rfsuite.bg.msp.mspQueue:isProcessed() then
+            if ((now - lastChangeTime) >= settleTime) and rfsuite.tasks.msp.mspQueue:isProcessed() then
                 if currentYawTrim ~= currentYawTrimLast then
                     currentYawTrimLast = currentYawTrim
                     lastChangeTime = now
