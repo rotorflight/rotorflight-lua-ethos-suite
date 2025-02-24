@@ -942,9 +942,11 @@ function ui.injectApiAttributes(formField, f, v)
     local log = utils.log
 
     if v.decimals and not f.decimals then
-        log("Injecting decimals: " .. v.decimals, "debug")
-        f.decimals = v.decimals
-        formField:decimals(v.decimals)
+        if f.type ~= 1 then
+            log("Injecting decimals: " .. v.decimals, "debug")
+            f.decimals = v.decimals
+            formField:decimals(v.decimals)
+        end
     end
     if v.scale and not f.scale then 
         log("Injecting scale: " .. v.scale, "debug")
@@ -965,9 +967,11 @@ function ui.injectApiAttributes(formField, f, v)
         end    
     end
     if v.step and not f.step then
-        log("Injecting step: " .. v.step, "debug")
-        f.step = v.step
-        formField:step(v.step)
+        if f.type ~= 1 then
+            log("Injecting step: " .. v.step, "debug")
+            f.step = v.step
+            formField:step(v.step)
+        end
     end
     if v.min and not f.min then
         f.min = v.min

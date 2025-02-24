@@ -28,6 +28,11 @@ local modelTextPos = {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.c
 
 local function getESCDetails()
 
+
+    if foundESC == true then 
+        return
+    end
+
     local message = {
         command = 217, -- MSP_STATUS
         processReply = function(self, buf)
@@ -44,7 +49,7 @@ local function getESCDetails()
                 escDetails.firmware = ESC.getEscFirmware(buf)
 
                 if ESC.mspBufferCache == true then
-                    rfsuite.escBuffer = buf 
+                    rfsuite.session.escBuffer = buf 
                 end    
 
                 foundESC = true
@@ -64,7 +69,7 @@ local function openPage(pidx, title, script)
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-    rfsuite.escBuffer = nil -- clear the buffer
+    rfsuite.session.escBuffer = nil -- clear the buffer
 
     local folder = title
 
