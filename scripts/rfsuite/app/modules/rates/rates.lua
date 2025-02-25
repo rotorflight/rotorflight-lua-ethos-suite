@@ -1,6 +1,5 @@
 local labels = {}
 local tables = {}
-local alltables = {}
 
 local activateWakeup = false
 
@@ -12,18 +11,16 @@ tables[3] = "app/modules/rates/ratetables/kiss.lua"
 tables[4] = "app/modules/rates/ratetables/actual.lua"
 tables[5] = "app/modules/rates/ratetables/quick.lua"
 
--- populate alltables with the tables
-for i,v in ipairs(tables) do
-    alltables[i] = assert(loadfile(v))()
-end
-
 if rfsuite.session.activeRateTable == nil then 
     rfsuite.session.activeRateTable = rfsuite.preferences.defaultRateProfile 
 end
 
 
-local mspapi = alltables[rfsuite.session.activeRateTable]
+rfsuite.utils.log("Loading Rate Table: " .. tables[rfsuite.session.activeRateTable],"debug")
+local mspapi = assert(loadfile(tables[rfsuite.session.activeRateTable]))()
 local mytable = mspapi.formdata
+
+
 
 local function postLoad(self)
 
@@ -143,8 +140,19 @@ local function openPage(idx, title, script)
             posX = positions[f.col]
 
             pos = {x = posX + padding, y = posY, w = w - padding, h = h}
- 
-            rfsuite.app.formFields[i] = form.addNumberField(rateRows[f.row], pos, f.min, f.max, function()
+
+            minValue = f.min * rfsuite.utils.decimalInc(f.decimals)
+            maxValue = f.max * rfsuite.utils.decimalInc(f.decimals)
+            if f.mult ~= nil then
+                minValue = minValue * f.mult
+                maxValue = maxValue * f.mult
+            end
+            if f.scale ~= nil then
+                minValue = minValue / f.scale
+                maxValue = maxValue / f.scale
+            end            
+
+            rfsuite.app.formFields[i] = form.addNumberField(rateRows[f.row], pos, minValue, maxValue, function()
                 local value
                 if rfsuite.session.activeRateProfile == 0 then
                     value = 0
@@ -155,6 +163,14 @@ local function openPage(idx, title, script)
             end, function(value)
                 f.value = rfsuite.utils.saveFieldValue(rfsuite.app.Page.fields[i], value)
             end)
+            if f.default ~= nil then
+                local default = f.default * rfsuite.utils.decimalInc(f.decimals)
+                if f.mult ~= nil then default = math.floor(default * f.mult) end
+                if f.scale ~= nil then default = math.floor(default / f.scale) end
+                rfsuite.app.formFields[i]:default(default)
+            else
+                rfsuite.app.formFields[i]:default(0)
+            end           
             if f.decimals ~= nil then rfsuite.app.formFields[i]:decimals(f.decimals) end
             if f.unit ~= nil then rfsuite.app.formFields[i]:suffix(f.unit) end
             if f.step ~= nil then rfsuite.app.formFields[i]:step(f.step) end
@@ -163,7 +179,10 @@ local function openPage(idx, title, script)
                     local helpTxt = rfsuite.app.fieldHelpTxt[f.help]['t']
                     rfsuite.app.formFields[i]:help(helpTxt)
                 end
-            end     
+            end   
+            if f.disable == true then 
+                rfsuite.app.formFields[i]:enable(false) 
+            end  
         end
     end
 
@@ -173,7 +192,9 @@ local function wakeup()
 
     if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then       
         if rfsuite.session.activeRateProfile ~= nil then
-            rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeRateProfile)
+            if rfsuite.app.formFields['title'] then
+                rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeRateProfile)
+            end
         end 
     end
 end
