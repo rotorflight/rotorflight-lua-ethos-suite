@@ -32,6 +32,7 @@ msp.onConnectChecksInit = true
 local protocol = assert(loadfile("tasks/msp/protocols.lua"))()
 
 msp.sensor = sport.getSensor({primId = 0x32})
+msp.sensorTlm = sport.getSensor()
 msp.mspQueue = mspQueue
 
 -- set active protocol to use

@@ -92,7 +92,7 @@ local function createSensor(physId, primId, appId, frameValue)
                 frsky_legacy.createSensorCache[appId]:physId(physId)
                 frsky_legacy.createSensorCache[appId]:module(rfsuite.session.rssiSensor:module())
 
-                frsky.createSensorCache[appId]:minimum(min or -1000000000)
+                frsky_legacy.createSensorCache[appId]:minimum(min or -1000000000)
                 frsky_legacy.createSensorCache[appId]:maximum(max or 2147483647)
                 if v.unit ~= nil then
                     frsky_legacy.createSensorCache[appId]:unit(v.unit)
@@ -144,7 +144,7 @@ end
 
 local function telemetryPop()
     -- Pops a received SPORT packet from the queue. Please note that only packets using a data ID within 0x5000 to 0x50FF (frame ID == 0x10), as well as packets with a frame ID equal 0x32 (regardless of the data ID) will be passed to the LUA telemetry receive queue.
-    local frame = rfsuite.tasks.msp.sensor:popFrame()
+    local frame = rfsuite.tasks.msp.sensorTlm:popFrame()
     if frame == nil then return false end
 
     if not frame.physId or not frame.primId then return end
