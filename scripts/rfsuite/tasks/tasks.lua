@@ -134,7 +134,7 @@ function tasks.wakeup()
         if sportSensor then
             rfsuite.session.rssiSensorType = "sport"
         elseif elrsSensor then
-            rfsuite.session.rssiSensorType = "elrs"
+            rfsuite.session.rssiSensorType = "crsf"
         else
             rfsuite.session.rssiSensorType = nil    
         end
