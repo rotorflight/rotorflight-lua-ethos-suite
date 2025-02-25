@@ -42,29 +42,18 @@ local lastRssiSensorName = nil
 if rfsuite.app.moduleList == nil then rfsuite.app.moduleList = rfsuite.utils.findModules() end
 
 -- findTasks
--- Configurable delay for module discovery
-tasks.discoveryInterval = 0.5  -- seconds per task (not used directly but implies spread over multiple wakeups)
-tasks.taskScanIndex = 1         -- Tracks current task being processed
-tasks.taskListTemp = nil        -- Holds list of tasks to process incrementally
-tasks.tasksInitialized = false  -- Ensures findTasks runs only once
-
 function tasks.findTasks()
-    -- Initialize the task list on first call
-    if tasks.taskListTemp == nil then
-        local tasks_path = "tasks/"
-        tasks.taskListTemp = system.listFiles(tasks_path)
-        tasks.taskScanIndex = 1  -- Start fresh
-    end
 
-    -- Process one task per wakeup
-    if tasks.taskScanIndex <= #tasks.taskListTemp then
-        local v = tasks.taskListTemp[tasks.taskScanIndex]
+    local taskdir = "tasks"
+    local tasks_path = "tasks/"
 
+    for _, v in pairs(system.listFiles(tasks_path)) do
+       
         if v ~= ".." then
-            local tasks_path = "tasks/"
             local init_path = tasks_path .. v .. '/init.lua'
-
             local f = io.open(init_path, "r")
+
+            print("Checking " .. init_path)
             if f then
                 io.close(f)
 
@@ -73,15 +62,9 @@ function tasks.findTasks()
                 if func then
                     local tconfig = func()
                     if type(tconfig) ~= "table" or not tconfig.interval or not tconfig.script then
-                        rfsuite.utils.log("Invalid configuration in " .. init_path, "debug")
+                        rfsuite.utils.log("Invalid configuration in " .. init_path,"debug")
                     else
-                        local task = {
-                            name = v,
-                            interval = tconfig.interval,
-                            script = tconfig.script,
-                            msp = tconfig.msp,
-                            last_run = os.clock()
-                        }
+                        local task = {name = v, interval = tconfig.interval, script = tconfig.script, msp = tconfig.msp, last_run = os.clock()}
                         table.insert(tasksList, task)
 
                         local script = tasks_path .. v .. '/' .. tconfig.script
@@ -93,17 +76,10 @@ function tasks.findTasks()
                     end
                 end
             end
-        end   
-        -- Move to the next task on the next wakeup
-        tasks.taskScanIndex = tasks.taskScanIndex + 1
- 
-    else
-        -- Cleanup once all tasks are processed
-        tasks.taskListTemp = nil
-        tasks.tasksInitialized = true
+
+        end    
     end
 end
-
 
 
 function tasks.active()
@@ -119,7 +95,7 @@ function tasks.active()
     -- if msp is busy.. we are 100% ok
     if rfsuite.app.triggers.mspBusy == true then return true end
 
-    -- if we have not run within 2 seconds.. notify that task script is down
+    -- if we have not run within 2 seconds.. notify that tasks script is down
     if (os.clock() - tasks.heartbeat) <= 2 then return true end
 
     return false
@@ -136,46 +112,50 @@ function tasks.wakeup()
         return
     end
 
-    -- Incremental task initialization
-    if not tasks.tasksInitialized then
+    -- initialise tasks
+    if tasks.init == false then
         tasks.findTasks()
+        tasks.init = true
         return
     end
 
     tasks.heartbeat = os.clock()
 
-    -- Heavy checks, run every few seconds
+    -- this should be before msp.hecks
+    -- doing this is heavy - lets run it every few seconds only
     local now = os.clock()
     if now - (rssiCheckScheduler or 0) >= 4 then
+
+        -- get sport then elrs sensor
         currentRssiSensor = system.getSource({appId = 0xF101}) or system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1}) or nil
+
         rfsuite.session.rssiSensorChanged = currentRssiSensor and (lastRssiSensorName ~= currentRssiSensor:name()) or false
         lastRssiSensorName = currentRssiSensor and currentRssiSensor:name() or nil    
         rssiCheckScheduler = now
+
     end
 
-    if system:getVersion().simulation == true then 
-        rfsuite.session.rssiSensorChanged = false 
-    end
+    if system:getVersion().simulation == true then rfsuite.session.rssiSensorChanged = false end
 
-    if currentRssiSensor ~= nil then 
-        rfsuite.session.rssiSensor = currentRssiSensor 
-    end
+    if currentRssiSensor ~= nil then rfsuite.session.rssiSensor = currentRssiSensor end
 
-    -- Process scheduled tasks
+    -- we load in tasks dynamically using the settings found in
+    -- tasks/<name>init.lua
+    -- check the existing scripts for more details.
+    local now = os.clock()
     for _, task in ipairs(tasksList) do
         if now - task.last_run >= task.interval then
             if tasks[task.name].wakeup then
                 if task.msp == true then
                     tasks[task.name].wakeup()
                 else
-                    if not rfsuite.app.triggers.mspBusy then 
-                        tasks[task.name].wakeup() 
-                    end
+                    if not rfsuite.app.triggers.mspBusy then tasks[task.name].wakeup() end
                 end
                 task.last_run = now
             end
         end
     end
+
 end
 
 function tasks.event(widget, category, value)
