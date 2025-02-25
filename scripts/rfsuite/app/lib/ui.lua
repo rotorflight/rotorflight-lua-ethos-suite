@@ -1016,7 +1016,7 @@ function ui.injectApiAttributes(formField, f, v)
             formField:default(default)
         end
 
-    end
+    end  
     if v.table and not f.table then 
         f.table = v.table 
         local idxInc = f.tableIdxInc or v.tableIdxInc

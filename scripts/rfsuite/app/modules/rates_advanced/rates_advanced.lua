@@ -1,11 +1,12 @@
 
 local activateWakeup = false
 local extraMsgOnSave = nil
-local originalRateTable = nil
 local resetRates = false
 local doFullReload = false
 
-if rfsuite.RateTable == nil then rfsuite.RateTable = rfsuite.preferences.defaultRateProfile end
+if rfsuite.session.activeRateTable == nil then 
+    rfsuite.session.activeRateTable = rfsuite.preferences.defaultRateProfile 
+end
 
 local mspapi = {
     api = {
@@ -83,12 +84,11 @@ local function preSave(self)
                 else 
 
                     local default = v.default or 0
-
                     default = default * rfsuite.utils.decimalInc(v.decimals)
-                    if v.mult ~= nil then default = math.floor(default * v.mult + 0.5) end
+                    if v.mult ~= nil then default = math.floor(default * (v.mult)) end
                     if v.scale ~= nil then default = math.floor(default / v.scale) end
                     
-                    rfsuite.utils.log("Saving default value for " .. v.apikey .. " as " .. default, "info")
+                    rfsuite.utils.log("Saving default value for " .. v.apikey .. " as " .. default, "debug")
                     rfsuite.utils.saveFieldValue(v, default)
                 end    
         end    
@@ -98,6 +98,19 @@ local function preSave(self)
 end    
 
 local function postLoad(self)
+
+    local v = mspapi.values[mspapi.api[1]].rates_type
+    
+    rfsuite.utils.log("Active Rate Table: " .. rfsuite.session.activeRateTable,"info")
+
+    if v ~= rfsuite.session.activeRateTable then
+        rfsuite.utils.log("Switching Rate Table: " .. v,"info")
+        rfsuite.app.triggers.reloadFull = true
+        rfsuite.session.activeRateTable = v           
+        return
+    end 
+
+
     rfsuite.app.triggers.closeProgressLoader = true
     activateWakeup = true
 end
@@ -108,12 +121,6 @@ local function wakeup()
         -- the check happens in postLoad          
         if rfsuite.session.activeRateProfile then
             rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeRateProfile)
-            rfsuite.app.ui.enableAllFields()
-        end
-
-        -- set this after all data has loaded
-        if not originalRateTable then
-            originalRateTable = rfsuite.app.Page.fields[1].value
         end
 
         -- reload the page
@@ -127,7 +134,8 @@ end
 
 -- enable and disable fields if rate type changes
 local function flagRateChange(self)
-    if rfsuite.app.Page.fields[1].value == originalRateTable then
+
+    if math.floor(rfsuite.app.Page.fields[1].value) == math.floor(rfsuite.session.activeRateTable) then
         self.extraMsgOnSave = nil
         rfsuite.app.ui.enableAllFields()
         resetRates = false
