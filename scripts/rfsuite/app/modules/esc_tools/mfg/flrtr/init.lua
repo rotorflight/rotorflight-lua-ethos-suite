@@ -46,7 +46,7 @@ end
 -- required by framework
 local function getEscFirmware(self)
 
-    local version = getPageValue(self, 15) .. "." .. getPageValue(self, 16) .. "." .. getPageValue(self, 17)
+    local version = getPageValue(self, 17) .. "." .. getPageValue(self, 18) .. "." .. getPageValue(self, 19)
 
     return version
 
