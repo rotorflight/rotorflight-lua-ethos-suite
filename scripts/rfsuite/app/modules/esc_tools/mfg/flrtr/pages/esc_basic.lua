@@ -18,7 +18,7 @@ local mspapi = {
             {t = "BEC voltage",      mspapi = 1, apikey = "bec_voltage",    type = 1},
             {t = "Motor direction",  mspapi = 1, apikey = "motor_direction", type = 1},
             {t = "Soft start",       mspapi = 1, apikey = "soft_start"},
-            {t = "Fan control",      mspapi = 1, apikey = "fan_control"}
+            {t = "Fan control",      mspapi = 1, apikey = "fan_control", type = 1}
         }
     }                 
 }
