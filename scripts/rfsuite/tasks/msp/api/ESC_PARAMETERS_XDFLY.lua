@@ -57,7 +57,7 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "brake_type",          type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = brakeType},
     {field = "brake_force",         type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 100, default = 0, unit = "%"},
     {field = "sr_function",         type = "U16", apiVersion = 12.07, simResponse = {0, 0}, table = srFunc, tableIdxInc = -1},
-    {field = "capacity_correction", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 10, default = 10, offset = -10, unit = "%"},
+    {field = "capacity_correction", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 20, default = 10, offset = -10, unit = "%"},
     {field = "motor_poles",         type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 1, max = 55, default = 1, step = 1},
     {field = "led_color",           type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = ledColor},
     {field = "smart_fan",           type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = fanControl},

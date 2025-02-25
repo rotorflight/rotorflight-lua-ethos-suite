@@ -975,16 +975,22 @@ function ui.injectApiAttributes(formField, f, v)
     end
     if v.min and not f.min then
         f.min = v.min
+        if f.offset then 
+            f.min = f.min + f.offset 
+        end            
         if f.type ~= 1 then
-            log("Injecting min: " .. v.min, "debug")
-            formField:minimum(v.min)
+            log("Injecting min: " .. f.min, "debug")
+            formField:minimum(f.min)
         end
     end
     if v.max and not f.max then
         f.max = v.max
+        if f.offset then 
+            f.max = f.max + f.offset 
+        end        
         if f.type ~= 1 then
-            log("Injecting max: " .. v.max, "debug")
-            formField:maximum(v.max)
+            log("Injecting max: " .. f.max, "debug")
+            formField:maximum(f.max)
         end
     end
     if v.default and not f.default then
@@ -994,9 +1000,9 @@ function ui.injectApiAttributes(formField, f, v)
         if f.offset then 
             f.default = f.default + f.offset 
         end
-        local default = v.default * utils.decimalInc(v.decimals)
-        if v.mult then 
-            default = default * v.mult 
+        local default = f.default * utils.decimalInc(f.decimals)
+        if f.mult then 
+            default = default * f.mult 
         end
 
         -- Work around ethos peculiarity on default boxes if trailing .0.
@@ -1006,9 +1012,10 @@ function ui.injectApiAttributes(formField, f, v)
         end                            
 
         if f.type ~= 1 then 
-            log("Injecting default: " .. v.default, "debug")
+            log("Injecting default: " .. default, "debug")
             formField:default(default)
         end
+
     end
     if v.table and not f.table then 
         f.table = v.table 

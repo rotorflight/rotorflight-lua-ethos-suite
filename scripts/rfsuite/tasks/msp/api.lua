@@ -182,28 +182,28 @@ function apiLoader.parseMSPData(buf, structure, processed, other)
         local data
 
         if field.type == "U8" then
-            data = rfsuite.tasks.msp.mspHelper.readU8(buf, offset)
+            data = rfsuite.tasks.msp.mspHelper.readU8(buf)
             offset = offset + 1 
         elseif field.type == "S8" then
-            data = rfsuite.tasks.msp.mspHelper.readS8(buf, offset)
+            data = rfsuite.tasks.msp.mspHelper.readS8(buf)
             offset = offset + 1
         elseif field.type == "U16" then
-            data = rfsuite.tasks.msp.mspHelper.readU16(buf, offset, byteorder)
+            data = rfsuite.tasks.msp.mspHelper.readU16(buf, byteorder)
             offset = offset + 2
         elseif field.type == "S16" then
-            data = rfsuite.tasks.msp.mspHelper.readS16(buf, offset, byteorder)
+            data = rfsuite.tasks.msp.mspHelper.readS16(buf, byteorder)
             offset = offset + 2
         elseif field.type == "U24" then
-            data = rfsuite.tasks.msp.mspHelper.readU24(buf, offset, byteorder)
+            data = rfsuite.tasks.msp.mspHelper.readU24(buf, byteorder)
             offset = offset + 3
         elseif field.type == "S24" then
-            data = rfsuite.tasks.msp.mspHelper.readS24(buf, offset, byteorder)
+            data = rfsuite.tasks.msp.mspHelper.readS24(buf, byteorder)
             offset = offset + 3
         elseif field.type == "U32" then
-            data = rfsuite.tasks.msp.mspHelper.readU32(buf, offset, byteorder)
+            data = rfsuite.tasks.msp.mspHelper.readU32(buf, byteorder)
             offset = offset + 4
         elseif field.type == "S32" then
-            data = rfsuite.tasks.msp.mspHelper.readS32(buf, offset, byteorder)
+            data = rfsuite.tasks.msp.mspHelper.readS32(buf, byteorder)
             offset = offset + 4
         else
             rfsuite.utils.log("Error: Unknown data type: " .. field.type,"debug")
