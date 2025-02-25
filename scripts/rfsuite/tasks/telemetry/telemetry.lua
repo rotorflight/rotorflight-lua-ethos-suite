@@ -274,7 +274,6 @@ function telemetry.getSensorSource(name)
     -- Use cached value if available
     if sensors[name] then return sensors[name] end
 
-    if not telemetrySOURCE then telemetrySOURCE = system.getSource("Rx RSSI1") end
 
     -- Helper function to check if MSP version conditions are met
     local function checkCondition(sensorEntry)
@@ -289,7 +288,7 @@ function telemetry.getSensorSource(name)
         return true
     end
 
-    if telemetrySOURCE then
+    if rfsuite.session.rssiSensorType == "crsf" then
         if not crsfSOURCE then crsfSOURCE = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = 0xEE01}) end
 
         if crsfSOURCE then
@@ -314,7 +313,7 @@ function telemetry.getSensorSource(name)
                 end
             end
         end
-    else
+    elseif rfsuite.session.rssiSensorType == "sport" then
         protocol = "sport"
         for _, sensor in ipairs(sensorTable[name].sport or {}) do
             -- Skip entries with unfulfilled version conditions
@@ -326,6 +325,8 @@ function telemetry.getSensorSource(name)
                 end
             end
         end
+    else
+        protocol = "unknown"    
     end
 
     return nil -- If no valid sensor is found

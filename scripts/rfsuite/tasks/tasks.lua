@@ -127,7 +127,17 @@ function tasks.wakeup()
     if now - (rssiCheckScheduler or 0) >= 4 then
 
         -- get sport then elrs sensor
-        currentRssiSensor = system.getSource({appId = 0xF101}) or system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1}) or nil
+        local sportSensor  = system.getSource({appId = 0xF101})
+        local elrsSensor = system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1})
+        currentRssiSensor = sportSensor or elrsSensor or nil
+
+        if sportSensor then
+            rfsuite.session.rssiSensorType = "sport"
+        elseif elrsSensor then
+            rfsuite.session.rssiSensorType = "crsf"
+        else
+            rfsuite.session.rssiSensorType = nil    
+        end
 
         rfsuite.session.rssiSensorChanged = currentRssiSensor and (lastRssiSensorName ~= currentRssiSensor:name()) or false
         lastRssiSensorName = currentRssiSensor and currentRssiSensor:name() or nil    
