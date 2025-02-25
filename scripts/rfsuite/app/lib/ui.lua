@@ -262,7 +262,7 @@ function ui.openMainMenu()
             for pidx, page in ipairs(MainMenu.pages) do
                 if page.section == idx then
                     local hideEntry = (page.ethosversion and not rfsuite.utils.ethosVersionAtLeast(page.ethosversion)) or
-                                      (page.mspversion and rfsuite.session.apiVersion < page.mspversion) or
+                                      (page.mspversion and (rfsuite.session.apiVersion or 1) < page.mspversion) or
                                       (page.developer and not rfsuite.config.developerMode)
 
                     if not hideEntry then
