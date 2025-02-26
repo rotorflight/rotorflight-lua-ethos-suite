@@ -2893,7 +2893,7 @@ function status.getSensors()
 
     -- Calculate fuel percentage if needed
     if status.calcfuelParam then
-        local cv = voltage / 100
+        local cv = (voltage or 0) / 100
         local maxv = (status.maxCellVoltage / 100) * status.cellsParam
         local minv = (status.minCellVoltage / 100) * status.cellsParam
 
