@@ -124,7 +124,7 @@ function tasks.wakeup()
     -- this should be before msp.hecks
     -- doing this is heavy - lets run it every few seconds only
     local now = os.clock()
-    if now - (rssiCheckScheduler or 0) >= 4 then
+    if now - (rssiCheckScheduler or 0) >= 1 then
 
         -- get sport then elrs sensor
         local sportSensor  = system.getSource({appId = 0xF101})

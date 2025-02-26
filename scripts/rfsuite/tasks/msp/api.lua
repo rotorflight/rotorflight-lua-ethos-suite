@@ -354,10 +354,6 @@ end
 -- payload builder
 function apiLoader.buildWritePayload(apiname,payload, api_structure)
 
-    local function clamp(value, min, max)
-        return math.max(min or value, math.min(value, max or value))
-    end
-
     local function get_scale_from_page(field_name)
 
         -- Quick exit if necessary data is not available
@@ -374,8 +370,7 @@ function apiLoader.buildWritePayload(apiname,payload, api_structure)
         return 1
     end
 
-    local function serialize_value(buf, value, data_type, min, max, byteorder)
-        value = clamp(value, min, max)
+    local function serialize_value(buf, value, data_type, byteorder)
 
         if data_type == "U8" then
             rfsuite.tasks.msp.mspHelper.writeU8(buf, value)
@@ -432,7 +427,7 @@ function apiLoader.buildWritePayload(apiname,payload, api_structure)
 
         value = math.floor(value * scale + 0.5)
 
-        serialize_value(byte_stream, value, field_def.type, field_def.min, field_def.max, byteorder)
+        serialize_value(byte_stream, value, field_def.type, byteorder)
     end
 
     return byte_stream
