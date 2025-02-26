@@ -130,18 +130,18 @@ local function openPage(idx, title, script)
 
         pos = {x = posX + padding, y = posY, w = w - padding, h = h}
 
-        minValue = f.min * rfsuite.utils.decimalInc(f.decimals)
-        maxValue = f.max * rfsuite.utils.decimalInc(f.decimals)
+        minValue = f.min * rfsuite.app.utils.decimalInc(f.decimals)
+        maxValue = f.max * rfsuite.app.utils.decimalInc(f.decimals)
         if f.mult ~= nil then
             minValue = minValue * f.mult
             maxValue = maxValue * f.mult
         end
 
         rfsuite.app.formFields[i] = form.addNumberField(byteRows[f.row], pos, minValue, maxValue, function()
-            local value = rfsuite.utils.getFieldValue(rfsuite.app.Page.fields[i])
+            local value = rfsuite.app.utils.getFieldValue(rfsuite.app.Page.fields[i])
             return value
         end, function(value)
-            f.value = rfsuite.utils.saveFieldValue(rfsuite.app.Page.fields[i], value)
+            f.value = rfsuite.app.utils.saveFieldValue(rfsuite.app.Page.fields[i], value)
             if i < total_bytes then
                 -- update int8 field
                 update_int8(i, value)
@@ -151,7 +151,7 @@ local function openPage(idx, title, script)
             end
         end)
         if f.default ~= nil then
-            local default = f.default * rfsuite.utils.decimalInc(f.decimals)
+            local default = f.default * rfsuite.app.utils.decimalInc(f.decimals)
             if f.mult ~= nil then default = default * f.mult end
             rfsuite.app.formFields[i]:default(default)
         else
