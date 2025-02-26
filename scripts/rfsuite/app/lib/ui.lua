@@ -1021,7 +1021,7 @@ function ui.injectApiAttributes(formField, f, v)
     if v.table and not f.table then 
         f.table = v.table 
         local idxInc = f.tableIdxInc or v.tableIdxInc
-        local tbldata = app.utils.convertPageValueTable(v.table, idxInc)       
+        local tbldata = rfsuite.app.utils.convertPageValueTable(v.table, idxInc)       
         if f.type == 1 then   
             log("Injecting table: {}", "debug")                   
             formField:values(tbldata)
@@ -1032,6 +1032,8 @@ function ui.injectApiAttributes(formField, f, v)
         log("Injecting help: {}", "debug")
         formField:help(v.help)
     end  
+
+    rfsuite.utils.print_r(f)
 end
 
 
