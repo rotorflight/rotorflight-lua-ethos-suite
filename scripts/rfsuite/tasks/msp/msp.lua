@@ -124,13 +124,13 @@ function msp.onConnectBgChecks()
                 end
 
                 -- find out if we have a governor
-            elseif (rfsuite.config.governorMode == nil) and msp.mspQueue:isProcessed() then
+            elseif (rfsuite.session.governorMode == nil) and msp.mspQueue:isProcessed() then
 
                 local API = msp.api.load("GOVERNOR_CONFIG")
                 API.setCompleteHandler(function(self, buf)
                     local governorMode = API.readValue("gov_mode")
                     rfsuite.utils.log("Governor mode: " .. governorMode,"info")
-                    rfsuite.config.governorMode = governorMode
+                    rfsuite.session.governorMode = governorMode
                 end)
                 API.read()
 

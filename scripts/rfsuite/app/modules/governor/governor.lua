@@ -53,9 +53,11 @@ local function postLoad(self)
     rfsuite.app.triggers.closeProgressLoader = true
 end
 
-local function preSavePayload(payload)
-    if rfsuite.config.governorMode ~= payload[1] then
-        rfsuite.config.governorMode = payload[1]
+local function postSave(self)
+
+    if rfsuite.session.governorMode ~= rfsuite.app.Page.fields[1].value then
+        rfsuite.session.governorMode = rfsuite.app.Page.fields[1].value
+        rfsuite.utils.log("Governor mode: " .. rfsuite.session.governorMode,"info")
     end
     return payload
 end
@@ -68,5 +70,5 @@ return {
     setGovernorMode = setGovernorMode,
     fields = fields,
     postLoad = postLoad,
-    preSavePayload = preSavePayload,
+    postSave = postSave
 }
