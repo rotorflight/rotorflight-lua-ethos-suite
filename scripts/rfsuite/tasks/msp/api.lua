@@ -430,6 +430,11 @@ function apiLoader.buildWritePayload(apiname,payload, api_structure)
         serialize_value(byte_stream, value, field_def.type, byteorder)
     end
 
+    if rfsuite.config.logMSP then
+        local logData = "Sending:  {" .. rfsuite.utils.joinTableItems(byte_stream, ", ") .. "}"
+        rfsuite.utils.log(logData,"info")
+    end
+
     return byte_stream
 end
 

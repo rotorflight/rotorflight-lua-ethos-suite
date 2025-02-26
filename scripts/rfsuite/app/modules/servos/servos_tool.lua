@@ -106,10 +106,10 @@ local function saveServoSettings(self)
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoSpeed)
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoFlags)
 
-    if rfsuite.config.mspTxRxDebug == true or rfsuite.config.logEnable == true then
+   if rfsuite.config.logMSP then
         local logData = "{" .. rfsuite.utils.joinTableItems(message.payload, ", ") .. "}"
 
-        rfsuite.utils.log(logData,"debug")
+        rfsuite.utils.log(logData,"info")
 
     end
     rfsuite.tasks.msp.mspQueue:add(message)

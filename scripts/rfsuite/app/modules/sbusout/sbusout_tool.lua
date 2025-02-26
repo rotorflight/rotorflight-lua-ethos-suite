@@ -60,8 +60,10 @@ local function saveServoSettings(self)
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, mixMax)
     -- rfsuite.tasks.msp.mspHelper.writeU8(message.payload, frameRate)
 
-    local logData = "{" .. rfsuite.utils.joinTableItems(message.payload, ", ") .. "}"
-    rfsuite.utils.log(logData,"debug")
+    if rfsuite.config.logMSP then
+        local logData = "{" .. rfsuite.utils.joinTableItems(message.payload, ", ") .. "}"
+        rfsuite.utils.log(logData,"info")
+    end
 
     rfsuite.tasks.msp.mspQueue:add(message)
 
