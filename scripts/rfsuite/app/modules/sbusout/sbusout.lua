@@ -117,7 +117,7 @@ local function openPage(pidx, title, script)
     rfsuite.app.triggers.closeProgressLoader = true
 
     enableWakeup = true
-
+    collectgarbage()
     return
 end
 
