@@ -73,6 +73,7 @@ function msp.onConnectBgChecks()
                 rfsuite.session.apiVersion = API.readVersion()
                 rfsuite.utils.log("API version: " .. rfsuite.session.apiVersion,"info")
             end)
+            API.setUUID("22a683cb-db0e-439f-8d04-04687c9360f3")
             API.read()
 
         end
@@ -84,7 +85,7 @@ function msp.onConnectBgChecks()
                     rfsuite.session.clockSet = true
                     rfsuite.utils.log("Sync clock: " .. os.clock(),"info")
                 end)
-
+                API.setUUID("eaeb0028-219b-4cec-9f57-3c7f74dd49ac")
                 API.write()
                 -- find tail and swash mode
             elseif (rfsuite.session.tailMode == nil or rfsuite.session.swashMode == nil) and msp.mspQueue:isProcessed() then
@@ -96,6 +97,7 @@ function msp.onConnectBgChecks()
                     rfsuite.utils.log("Tail mode: " .. rfsuite.session.tailMode,"info")
                     rfsuite.utils.log("Swash mode: " .. rfsuite.session.swashMode,"info")
                 end)
+                API.setUUID("fbccd634-c9b7-4b48-8c02-08ef560dc515")
                 API.read()
 
                 -- get servo configuration
@@ -106,14 +108,15 @@ function msp.onConnectBgChecks()
                     rfsuite.session.servoCount = API.readValue("servo_count")
                     rfsuite.utils.log("Servo count: " .. rfsuite.session.servoCount,"info")
                 end)
+                API.setUUID("d7e0db36-ca3c-4e19-9a64-40e76c78329c")
                 API.read()
 
                 -- work out if fbl has any servos in overide mode
             elseif (rfsuite.session.servoOverride == nil) and msp.mspQueue:isProcessed() then
 
                 local API = msp.api.load("SERVO_OVERRIDE")
-                API.read()
-                if API.readComplete() then
+                --if API.readComplete() then
+                API.setCompleteHandler(function(self, buf)
                     for i,v in pairs(API.data().parsed) do
                         if v == 0 then
                             rfsuite.utils.log("Servo override: true (" .. i .. ")","info")
@@ -121,8 +124,9 @@ function msp.onConnectBgChecks()
                         end    
                     end
                     if rfsuite.session.servoOverride == nil then rfsuite.session.servoOverride = false end
-                end
-
+                end)
+                API.setUUID("b9617ec3-5e01-468e-a7d5-ec7460d277ef")
+                API.read()
                 -- find out if we have a governor
             elseif (rfsuite.session.governorMode == nil) and msp.mspQueue:isProcessed() then
 
@@ -132,6 +136,7 @@ function msp.onConnectBgChecks()
                     rfsuite.utils.log("Governor mode: " .. governorMode,"info")
                     rfsuite.session.governorMode = governorMode
                 end)
+                API.setUUID("37163617-1486-4886-8b81-6a1dd6d7edd1")
                 API.read()
 
                 -- get the model id
@@ -143,12 +148,14 @@ function msp.onConnectBgChecks()
                     rfsuite.utils.log("Model id: " .. model_id,"info")
                     rfsuite.session.modelID = model_id
                 end)
+                API.setUUID("587d2865-df85-48e5-844b-e01c9f1aa247")
                 API.read()
 
                 -- find the craft name on the fbl
             elseif (rfsuite.session.craftName == nil) and msp.mspQueue:isProcessed() then
 
                 local API = msp.api.load("NAME")
+                API.setUUID("a66de3a0-c64e-423b-a48c-307d476303b6")
                 API.read()
                 if API.readComplete() and API.readValue("name") ~= nil then
                     local data = API.data()
@@ -165,8 +172,6 @@ function msp.onConnectBgChecks()
                     if rfsuite.session.craftName and rfsuite.session.craftName ~= "" then 
                         rfsuite.utils.log("Craft name: " .. rfsuite.session.craftName,"info") 
                     end
-
-
                 end
 
             elseif rfsuite.session.clockSet == true and rfsuite.session.clockSetAlart ~= true then
