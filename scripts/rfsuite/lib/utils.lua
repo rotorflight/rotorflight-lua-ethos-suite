@@ -224,10 +224,17 @@ function utils.joinTableItems(tbl, delimiter)
 
     delimiter = delimiter or ""
     local startIndex = tbl[0] and 0 or 1
-    local result = tbl[startIndex]
+    
+    -- Ensure each field is padded to at least 3 characters
+    local function padField(field)
+        field = tostring(field)
+        return field .. string.rep(" ", math.max(0, 3 - #field))
+    end
+
+    local result = padField(tbl[startIndex])
 
     for i = startIndex + 1, #tbl do
-        result = result .. delimiter .. tbl[i]
+        result = result .. delimiter .. padField(tbl[i])
     end
 
     return result

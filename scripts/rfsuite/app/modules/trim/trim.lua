@@ -66,8 +66,10 @@ local function saveData()
     }
 
 
-    local logData = "Saving: {" .. rfsuite.utils.joinTableItems(payload, ", ") .. "}"
-    rfsuite.utils.log(logData,"debug")
+    if rfsuite.config.logMSP then
+        local logData = "Saving: {" .. rfsuite.utils.joinTableItems(payload, ", ") .. "}"
+        rfsuite.utils.log(logData,"info")
+    end
 
 
     rfsuite.tasks.msp.mspQueue:add(message)
