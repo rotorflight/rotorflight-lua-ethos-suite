@@ -335,7 +335,7 @@ function ui.fieldChoice(i)
         if radioText == 2 and f.t2 then
             f.t = f.t2
         end
-        local p = rfsuite.utils.getInlinePositions(f, page)
+        local p = rfsuite.app.utils.getInlinePositions(f, page)
         posText  = p.posText
         posField = p.posField
         form.addStaticText(formLines[formLineCnt], posText, f.t)
@@ -353,7 +353,7 @@ function ui.fieldChoice(i)
         posField = f.position or nil
     end
 
-    local tbldata = f.table and rfsuite.utils.convertPageValueTable(f.table, f.tableIdxInc) or {}
+    local tbldata = f.table and rfsuite.app.utils.convertPageValueTable(f.table, f.tableIdxInc) or {}
     formFields[i] = form.addChoiceField(formLines[formLineCnt], posField, tbldata,
         function()
             if not fields or not fields[i] then
@@ -362,12 +362,12 @@ function ui.fieldChoice(i)
                 ui.enableNavigationField('menu')
                 return nil
             end
-            return rfsuite.utils.getFieldValue(fields[i])
+            return rfsuite.app.utils.getFieldValue(fields[i])
         end,
         function(value)
             if f.postEdit then f.postEdit(page, value) end
             if f.onChange then f.onChange(page, value) end
-            f.value = rfsuite.utils.saveFieldValue(fields[i], value)
+            f.value = rfsuite.app.utils.saveFieldValue(fields[i], value)
         end
     )
 
@@ -392,7 +392,7 @@ function ui.fieldNumber(i)
     local posField, posText
 
     if f.inline and f.inline >= 1 and f.label then
-        local p = rfsuite.utils.getInlinePositions(f, page)
+        local p = rfsuite.app.utils.getInlinePositions(f, page)
         posText  = p.posText
         posField = p.posField
         form.addStaticText(formLines[formLineCnt], posText, f.t)
@@ -414,8 +414,8 @@ function ui.fieldNumber(i)
         if f.max then f.max = f.max + f.offset end
     end
 
-    local minValue = rfsuite.utils.scaleValue(f.min, f)
-    local maxValue = rfsuite.utils.scaleValue(f.max, f)
+    local minValue = rfsuite.app.utils.scaleValue(f.min, f)
+    local maxValue = rfsuite.app.utils.scaleValue(f.max, f)
 
     if f.mult then
         if minValue then minValue = minValue * f.mult end
@@ -433,12 +433,12 @@ function ui.fieldNumber(i)
                 ui.enableNavigationField('menu')
                 return nil
             end
-            return rfsuite.utils.getFieldValue(page.fields[i])
+            return rfsuite.app.utils.getFieldValue(page.fields[i])
         end,
         function(value)
             if f.postEdit then f.postEdit(page) end
             if f.onChange then f.onChange(page) end
-            f.value = rfsuite.utils.saveFieldValue(page.fields[i], value)
+            f.value = rfsuite.app.utils.saveFieldValue(page.fields[i], value)
         end
     )
 
@@ -450,7 +450,7 @@ function ui.fieldNumber(i)
 
     if f.default then
         if f.offset then f.default = f.default + f.offset end
-        local default = f.default * rfsuite.utils.decimalInc(f.decimals)
+        local default = f.default * rfsuite.app.utils.decimalInc(f.decimals)
         if f.mult then default = default * f.mult end
         local str = tostring(default)
         if str:match("%.0$") then default = math.ceil(default) end
@@ -493,7 +493,7 @@ function ui.fieldStaticText(i)
         if radioText == 2 and f.t2 then
             f.t = f.t2
         end
-        local p = rfsuite.utils.getInlinePositions(f, page)
+        local p = rfsuite.app.utils.getInlinePositions(f, page)
         posText  = p.posText
         posField = p.posField
         form.addStaticText(formLines[formLineCnt], posText, f.t)
@@ -517,7 +517,7 @@ function ui.fieldStaticText(i)
         -- posField = {x = 2000, y = 0, w = 20, h = 20}
     end
 
-    formFields[i] = form.addStaticText(formLines[formLineCnt], posField, rfsuite.utils.getFieldValue(fields[i]))
+    formFields[i] = form.addStaticText(formLines[formLineCnt], posField, rfsuite.app.utils.getFieldValue(fields[i]))
     local currentField = formFields[i]
 
     if f.onFocus then
@@ -544,7 +544,7 @@ function ui.fieldText(i)
         if radioText == 2 and f.t2 then
             f.t = f.t2
         end
-        local p = rfsuite.utils.getInlinePositions(f, page)
+        local p = rfsuite.app.utils.getInlinePositions(f, page)
         posText  = p.posText
         posField = p.posField
         form.addStaticText(formLines[formLineCnt], posText, f.t)
@@ -574,13 +574,13 @@ function ui.fieldText(i)
                 ui.enableNavigationField('menu')
                 return nil
             end
-            return rfsuite.utils.getFieldValue(fields[i])
+            return rfsuite.app.utils.getFieldValue(fields[i])
         end,
         function(value)
             if f.postEdit then f.postEdit(page) end
             if f.onChange then f.onChange(page) end
 
-            f.value = rfsuite.utils.saveFieldValue(fields[i], value)
+            f.value = rfsuite.app.utils.saveFieldValue(fields[i], value)
         end
     )
 
@@ -1001,7 +1001,7 @@ function ui.injectApiAttributes(formField, f, v)
         if f.offset then 
             f.default = f.default + f.offset 
         end
-        local default = f.default * utils.decimalInc(f.decimals)
+        local default = f.default * rfsuite.app.utils.decimalInc(f.decimals)
         if f.mult then 
             default = default * f.mult 
         end
@@ -1021,7 +1021,7 @@ function ui.injectApiAttributes(formField, f, v)
     if v.table and not f.table then 
         f.table = v.table 
         local idxInc = f.tableIdxInc or v.tableIdxInc
-        local tbldata = utils.convertPageValueTable(v.table, idxInc)       
+        local tbldata = rfsuite.app.utils.convertPageValueTable(v.table, idxInc)       
         if f.type == 1 then   
             log("Injecting table: {}", "debug")                   
             formField:values(tbldata)
@@ -1032,6 +1032,8 @@ function ui.injectApiAttributes(formField, f, v)
         log("Injecting help: {}", "debug")
         formField:help(v.help)
     end  
+
+    rfsuite.utils.print_r(f)
 end
 
 

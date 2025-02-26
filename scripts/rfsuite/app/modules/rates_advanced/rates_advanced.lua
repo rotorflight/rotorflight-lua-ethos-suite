@@ -84,12 +84,12 @@ local function preSave(self)
                 else 
 
                     local default = v.default or 0
-                    default = default * rfsuite.utils.decimalInc(v.decimals)
+                    default = default * rfsuite.app.utils.decimalInc(v.decimals)
                     if v.mult ~= nil then default = math.floor(default * (v.mult)) end
                     if v.scale ~= nil then default = math.floor(default / v.scale) end
                     
                     rfsuite.utils.log("Saving default value for " .. v.apikey .. " as " .. default, "debug")
-                    rfsuite.utils.saveFieldValue(v, default)
+                    rfsuite.app.utils.saveFieldValue(v, default)
                 end    
         end    
             

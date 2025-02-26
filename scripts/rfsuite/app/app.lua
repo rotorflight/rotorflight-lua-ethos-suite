@@ -67,6 +67,9 @@ app.triggers = triggers
 
 app.ui = {}
 app.ui = assert(loadfile("app/lib/ui.lua"))(config)
+app.utils = {}
+app.utils = assert(loadfile("app/lib/utils.lua"))(config)
+
 
 app.sensors = {}
 app.formFields = {}

@@ -131,12 +131,12 @@ local function openPage(idx, title, script)
                 ui.enableNavigationField('menu')
                 return nil
             end
-            return rfsuite.utils.getFieldValue(rfsuite.app.Page.fields[i])
+            return rfsuite.app.utils.getFieldValue(rfsuite.app.Page.fields[i])
         end, function(value)
             if f.postEdit then f.postEdit(rfsuite.app.Page) end
             if f.onChange then f.onChange(rfsuite.app.Page) end
     
-            f.value = rfsuite.utils.saveFieldValue(rfsuite.app.Page.fields[i], value)
+            f.value = rfsuite.app.utils.saveFieldValue(rfsuite.app.Page.fields[i], value)
         end)
     end
     
