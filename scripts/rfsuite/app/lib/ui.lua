@@ -300,6 +300,7 @@ function ui.openMainMenu()
         end
     end
 
+    collectgarbage()
 end
 
 function ui.progressDisplayIsActive()

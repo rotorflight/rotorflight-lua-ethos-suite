@@ -190,6 +190,7 @@ function app.resetState()
     rfsuite.session.activeProfile = nil
     rfsuite.session.activeRateTable = nil
     rfsuite.app.triggers.disableRssiTimeout = false
+    collectgarbage()
 end
 
 -- RETURN CURRENT LCD SIZE
@@ -256,6 +257,7 @@ function app.settingsSaved()
         invalidatePages()
         app.triggers.closeSave = true
     end
+    collectgarbage()
 end
 
 -- Save all settings
