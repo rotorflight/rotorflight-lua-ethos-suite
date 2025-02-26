@@ -1033,7 +1033,6 @@ function ui.injectApiAttributes(formField, f, v)
         formField:help(v.help)
     end  
 
-    rfsuite.utils.print_r(f)
 end
 
 
