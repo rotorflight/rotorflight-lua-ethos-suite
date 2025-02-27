@@ -125,7 +125,6 @@ local sensorTable = {
         name = "ESC Temperature",
         mandatory = false,
         sport = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401},
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0B70}
         },
         customCRSF = {

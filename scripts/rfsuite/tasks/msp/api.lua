@@ -252,20 +252,17 @@ function apiLoader.calculateMinBytes(structure)
 
     for _, param in ipairs(structure) do
         local insert_param = false
-
+    
         -- API version check logic
         if not param.apiVersion or (apiVersion and apiVersion >= param.apiVersion) then
             insert_param = true
         end
-
-        if insert_param then
+    
+        -- Mandatory check
+        if insert_param and (param.mandatory ~= false) then
             totalBytes = totalBytes + get_type_size(param.type)
         end
     end
-
-    -- Subtract 2 bytes to allow for overlap times when developnent is in progress
-    -- essentialy this allows a margin in which dev fbl firmware can be tested
-    totalBytes = totalBytes - 2
 
     return totalBytes
 end
