@@ -213,6 +213,9 @@ function utils.round(number, precision)
     return number
 end
 
+function utils.roughlyEqual(a, b, tolerance)
+    return math.abs(a - b) < (tolerance or 0.0001)  -- Allows a tiny margin of error
+end
 
 -- return current window size
 function utils.getWindowSize()

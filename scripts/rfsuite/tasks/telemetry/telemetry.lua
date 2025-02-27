@@ -25,12 +25,15 @@ local telemetry = {}
 local sensors = {}
 local protocol, telemetrySOURCE, crsfSOURCE
 local sensorRateLimit = os.clock()
-local SENSOR_RATE = 0.5 -- rate in seconds
+local SENSOR_RATE = 0.25 -- rate in seconds
 
 -- Store the last validated sensors and timestamp
 local lastValidationResult = nil
 local lastValidationTime = 0
 local VALIDATION_RATE_LIMIT = 2 -- Rate limit in seconds
+
+local lastCacheFlushTime = 0
+local CACHE_FLUSH_INTERVAL = 10 -- Flush cache every 10 seconds
 
 local telemetryState = false
 
@@ -274,15 +277,20 @@ function telemetry.getSensorSource(name)
     -- Use cached value if available
     if sensors[name] then return sensors[name] end
 
+    -- local rounding
+    local function round(num, places)
+        local mult = 10^(places or 3)
+        return math.floor(num * mult + 0.5) / mult
+    end
 
     -- Helper function to check if MSP version conditions are met
     local function checkCondition(sensorEntry)
         if sensorEntry.mspgt then
             -- Check if API version exists and meets "greater than" condition
-            return rfsuite.config and rfsuite.session.apiVersion and (rfsuite.session.apiVersion >= sensorEntry.mspgt)
+            return rfsuite.session and rfsuite.session.apiVersion and (round(rfsuite.session.apiVersion,2) >= round(sensorEntry.mspgt,2))
         elseif sensorEntry.msplt then
             -- Check if API version exists and meets "less than" condition
-            return rfsuite.config and rfsuite.session.apiVersion and (rfsuite.session.apiVersion <= sensorEntry.msplt)
+            return rfsuite.session and rfsuite.session.apiVersion and (round(rfsuite.session.apiVersion,2) <= round(sensorEntry.msplt,2))
         end
         -- No conditions = always valid
         return true
@@ -296,6 +304,8 @@ function telemetry.getSensorSource(name)
             for _, sensor in ipairs(sensorTable[name].customCRSF or {}) do
                 -- Skip entries with unfulfilled version conditions
                 if checkCondition(sensor) then
+                    sensor.mspgt = nil
+                    sensor.msplt = nil
                     local source = system.getSource(sensor)
                     if source then
                         sensors[name] = source
@@ -316,9 +326,14 @@ function telemetry.getSensorSource(name)
     elseif rfsuite.session.rssiSensorType == "sport" then
         protocol = "sport"
         for _, sensor in ipairs(sensorTable[name].sport or {}) do
-            -- Skip entries with unfulfilled version conditions
+            -- Skip entries with unfulfilled version conditions 
             if checkCondition(sensor) then
+                sensor.mspgt = nil
+                sensor.msplt = nil
                 local source = system.getSource(sensor)
+                if sensor.msplt then
+                    print(source)
+                end   
                 if source then
                     sensors[name] = source
                     return sensors[name]
@@ -381,7 +396,7 @@ end
 function telemetry.wakeup()
     local now = os.clock()
 
-    -- prioritise msp traffic
+    -- Prioritize MSP traffic
     if rfsuite.app.triggers.mspBusy then return end
 
     -- Rate-limited telemetry checks
@@ -390,12 +405,18 @@ function telemetry.wakeup()
         telemetryState = tlm and tlm:state() or false
     end
 
+    -- Periodic cache flush every 10 seconds
+    if (now - lastCacheFlushTime) >= CACHE_FLUSH_INTERVAL then
+        lastCacheFlushTime = now
+        sensors = {} -- Reset cached sensors
+        telemetrySOURCE, crsfSOURCE, protocol = nil, nil, nil
+    end
+
     -- Reset if telemetry is inactive or RSSI sensor changed
     if not telemetry.active() or rfsuite.session.rssiSensorChanged then
         telemetrySOURCE, crsfSOURCE, protocol = nil, nil, nil
         sensors = {}
     end
-
 end
 
 return telemetry
