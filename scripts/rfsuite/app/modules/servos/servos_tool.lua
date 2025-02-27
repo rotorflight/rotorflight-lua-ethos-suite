@@ -478,7 +478,7 @@ local function openPage(idx, title, script, extra1)
         local tableIdxInc = -1
         local value
         rfsuite.app.formLines[idx] = form.addLine("Reverse")
-        rfsuite.app.formFields[idx] = form.addChoiceField(rfsuite.app.formLines[idx], nil, rfsuite.utils.convertPageValueTable(table, tableIdxInc), function()
+        rfsuite.app.formFields[idx] = form.addChoiceField(rfsuite.app.formLines[idx], nil, rfsuite.app.utils.convertPageValueTable(table, tableIdxInc), function()
             return configs[servoIndex]['reverse']
         end, function(value)
             configs[servoIndex]['reverse'] = value
@@ -494,7 +494,7 @@ local function openPage(idx, title, script, extra1)
         local tableIdxInc = -1
         local value
         rfsuite.app.formLines[idx] = form.addLine("Geometry")
-        rfsuite.app.formFields[idx] = form.addChoiceField(rfsuite.app.formLines[idx], nil, rfsuite.utils.convertPageValueTable(table, tableIdxInc), function()
+        rfsuite.app.formFields[idx] = form.addChoiceField(rfsuite.app.formLines[idx], nil, rfsuite.app.utils.convertPageValueTable(table, tableIdxInc), function()
             return configs[servoIndex]['geometry']
         end, function(value)
             configs[servoIndex]['geometry'] = value

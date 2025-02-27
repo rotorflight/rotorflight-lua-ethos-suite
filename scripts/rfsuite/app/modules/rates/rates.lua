@@ -141,8 +141,8 @@ local function openPage(idx, title, script)
 
             pos = {x = posX + padding, y = posY, w = w - padding, h = h}
 
-            minValue = f.min * rfsuite.utils.decimalInc(f.decimals)
-            maxValue = f.max * rfsuite.utils.decimalInc(f.decimals)
+            minValue = f.min * rfsuite.app.utils.decimalInc(f.decimals)
+            maxValue = f.max * rfsuite.app.utils.decimalInc(f.decimals)
             if f.mult ~= nil then
                 minValue = minValue * f.mult
                 maxValue = maxValue * f.mult
@@ -157,14 +157,14 @@ local function openPage(idx, title, script)
                 if rfsuite.session.activeRateProfile == 0 then
                     value = 0
                 else
-                    value = rfsuite.utils.getFieldValue(rfsuite.app.Page.fields[i])
+                    value = rfsuite.app.utils.getFieldValue(rfsuite.app.Page.fields[i])
                 end
                 return value
             end, function(value)
-                f.value = rfsuite.utils.saveFieldValue(rfsuite.app.Page.fields[i], value)
+                f.value = rfsuite.app.utils.saveFieldValue(rfsuite.app.Page.fields[i], value)
             end)
             if f.default ~= nil then
-                local default = f.default * rfsuite.utils.decimalInc(f.decimals)
+                local default = f.default * rfsuite.app.utils.decimalInc(f.decimals)
                 if f.mult ~= nil then default = math.floor(default * f.mult) end
                 if f.scale ~= nil then default = math.floor(default / f.scale) end
                 rfsuite.app.formFields[i]:default(default)

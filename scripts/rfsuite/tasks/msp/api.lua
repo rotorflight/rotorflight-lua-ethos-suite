@@ -48,7 +48,9 @@ local function loadAPI(apiName)
             if apiModule.read then
                 local originalRead = apiModule.read
                 apiModule.read = function(...)
-                    rfsuite.utils.log("read() called from " .. apiName, "debug")
+                    if rfsuite.config.logMSP then
+                        rfsuite.utils.log(apiName .. "->read()", "info")
+                    end    
                     return originalRead(...)
                 end
             end
@@ -57,7 +59,9 @@ local function loadAPI(apiName)
             if apiModule.write then
                 local originalWrite = apiModule.write
                 apiModule.write = function(...)
-                    rfsuite.utils.log("write() called from " .. apiName, "debug")
+                    if rfsuite.config.logMSP then
+                        rfsuite.utils.log(apiName .. "->write()", "info")
+                    end    
                     return originalWrite(...)
                 end
             end
@@ -66,7 +70,7 @@ local function loadAPI(apiName)
             if apiModule.setValue then
                 local originalSetValue = apiModule.setValue
                 apiModule.setValue = function(...)
-                    rfsuite.utils.log("setValue() called from " .. apiName, "debug")
+                    rfsuite.utils.log(apiName .. "->setValue()", "debug")
                     return originalSetValue(...)
                 end
             end
@@ -75,7 +79,7 @@ local function loadAPI(apiName)
             if apiModule.readValue then
                 local originalReadValue = apiModule.readValue
                 apiModule.readValue = function(...)
-                    rfsuite.utils.log("readValue() called from " .. apiName, "debug")
+                    rfsuite.utils.log(apiName .. "->readValue()", "debug")
                     return originalReadValue(...)
                 end
             end

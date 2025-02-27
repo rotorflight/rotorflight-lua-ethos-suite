@@ -69,6 +69,7 @@ function MspQueueController:processQueue()
         if not self.currentMessage.simulatorResponse then
             rfsuite.utils.log("No simulator response for command " .. tostring(self.currentMessage.command),"debug")
             self.currentMessage = nil
+            self.uuid = nil -- Clear UUID after processing
             return
         end
         cmd, buf, err = self.currentMessage.command, self.currentMessage.simulatorResponse, nil
@@ -83,14 +84,11 @@ function MspQueueController:processQueue()
 
     if cmd then
         self.lastTimeCommandSent = nil
-
         local logData = "Requesting: {" .. tostring(cmd) .. "}"
         rfsuite.utils.log(logData,"debug")
-
     end
 
     if (cmd == self.currentMessage.command and not err) or (self.currentMessage.command == 68 and self.retryCount == 2) or (self.currentMessage.command == 217 and err and self.retryCount == 2) then
-
         if rfsuite.config.logMSP then
             if buf then
                 local logData = "Received: {" .. rfsuite.utils.joinTableItems(buf, ", ") .. "}"
@@ -100,6 +98,7 @@ function MspQueueController:processQueue()
 
         if self.currentMessage.processReply then self.currentMessage:processReply(buf) end
         self.currentMessage = nil
+        self.uuid = nil -- Clear UUID after successful processing
 
         if rfsuite.app.Page and rfsuite.app.Page.mspSuccess then rfsuite.app.Page.mspSuccess() end
     elseif self.retryCount > self.maxRetries then
@@ -114,7 +113,7 @@ end
 function MspQueueController:clear()
     self.messageQueue = {}
     self.currentMessage = nil
-    self.uuid = {}
+    self.uuid = nil -- Ensure UUID is cleared when queue is cleared
     mspClearTxBuf()
 end
 
