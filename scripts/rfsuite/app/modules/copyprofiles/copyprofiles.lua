@@ -85,7 +85,7 @@ local function openPage(idx, title, script, extra1, extra2, extra3, extra5, extr
         }, rfsuite.app.Page.headerLine)
     end
 
-    formLineCnt = 0
+    rfsuite.session.formLineCnt = 0
 
     if fields then
         for i, field in ipairs(fields) do

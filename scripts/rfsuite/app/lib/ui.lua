@@ -194,6 +194,9 @@ end
 
 function ui.openMainMenu()
 
+    rfsuite.app.formFields = {}
+    rfsuite.app.formLines = {}
+
     -- clear old icons
     for i in pairs(rfsuite.app.gfx_buttons) do
         if i ~= "mainmenu" then
@@ -338,7 +341,7 @@ function ui.fieldChoice(i)
         local p = rfsuite.app.utils.getInlinePositions(f, page)
         posText  = p.posText
         posField = p.posField
-        form.addStaticText(formLines[formLineCnt], posText, f.t)
+        form.addStaticText(formLines[rfsuite.session.formLineCnt], posText, f.t)
     else
         if f.t then
             if radioText == 2 and f.t2 then
@@ -348,13 +351,13 @@ function ui.fieldChoice(i)
                 f.t = "        " .. f.t
             end
         end
-        formLineCnt = formLineCnt + 1
-        formLines[formLineCnt] = form.addLine(f.t)
+        rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
+        formLines[rfsuite.session.formLineCnt] = form.addLine(f.t)
         posField = f.position or nil
     end
 
     local tbldata = f.table and rfsuite.app.utils.convertPageValueTable(f.table, f.tableIdxInc) or {}
-    formFields[i] = form.addChoiceField(formLines[formLineCnt], posField, tbldata,
+    formFields[i] = form.addChoiceField(formLines[rfsuite.session.formLineCnt], posField, tbldata,
         function()
             if not fields or not fields[i] then
                 ui.disableAllFields()
@@ -395,7 +398,7 @@ function ui.fieldNumber(i)
         local p = rfsuite.app.utils.getInlinePositions(f, page)
         posText  = p.posText
         posField = p.posField
-        form.addStaticText(formLines[formLineCnt], posText, f.t)
+        form.addStaticText(formLines[rfsuite.session.formLineCnt], posText, f.t)
     else
         if f.t then
             if f.label then
@@ -404,8 +407,8 @@ function ui.fieldNumber(i)
         else
             f.t = ""
         end
-        formLineCnt = formLineCnt + 1
-        formLines[formLineCnt] = form.addLine(f.t)
+        rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
+        formLines[rfsuite.session.formLineCnt] = form.addLine(f.t)
         posField = f.position or nil
     end
 
@@ -425,7 +428,7 @@ function ui.fieldNumber(i)
     minValue = minValue or 0
     maxValue = maxValue or 0
 
-    formFields[i] = form.addNumberField(formLines[formLineCnt], posField, minValue, maxValue,
+    formFields[i] = form.addNumberField(formLines[rfsuite.session.formLineCnt], posField, minValue, maxValue,
         function()
             if not (page.fields and page.fields[i]) then
                 ui.disableAllFields()
@@ -496,7 +499,7 @@ function ui.fieldStaticText(i)
         local p = rfsuite.app.utils.getInlinePositions(f, page)
         posText  = p.posText
         posField = p.posField
-        form.addStaticText(formLines[formLineCnt], posText, f.t)
+        form.addStaticText(formLines[rfsuite.session.formLineCnt], posText, f.t)
     else
         if radioText == 2 and f.t2 then
             f.t = f.t2
@@ -508,8 +511,8 @@ function ui.fieldStaticText(i)
         else
             f.t = ""
         end
-        formLineCnt = formLineCnt + 1
-        formLines[formLineCnt] = form.addLine(f.t)
+        rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
+        formLines[rfsuite.session.formLineCnt] = form.addLine(f.t)
         posField = f.position or nil
     end
 
@@ -517,7 +520,7 @@ function ui.fieldStaticText(i)
         -- posField = {x = 2000, y = 0, w = 20, h = 20}
     end
 
-    formFields[i] = form.addStaticText(formLines[formLineCnt], posField, rfsuite.app.utils.getFieldValue(fields[i]))
+    formFields[i] = form.addStaticText(formLines[rfsuite.session.formLineCnt], posField, rfsuite.app.utils.getFieldValue(fields[i]))
     local currentField = formFields[i]
 
     if f.onFocus then
@@ -547,7 +550,7 @@ function ui.fieldText(i)
         local p = rfsuite.app.utils.getInlinePositions(f, page)
         posText  = p.posText
         posField = p.posField
-        form.addStaticText(formLines[formLineCnt], posText, f.t)
+        form.addStaticText(formLines[rfsuite.session.formLineCnt], posText, f.t)
     else
         if radioText == 2 and f.t2 then
             f.t = f.t2
@@ -561,12 +564,12 @@ function ui.fieldText(i)
             f.t = ""
         end
 
-        formLineCnt = formLineCnt + 1
-        formLines[formLineCnt] = form.addLine(f.t)
+        rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
+        formLines[rfsuite.session.formLineCnt] = form.addLine(f.t)
         posField = f.position or nil
     end
 
-    formFields[i] = form.addTextField(formLines[formLineCnt], posField,
+    formFields[i] = form.addTextField(formLines[rfsuite.session.formLineCnt], posField,
         function()
             if not fields or not fields[i] then
                 ui.disableAllFields()
@@ -628,9 +631,9 @@ function ui.fieldLabel(f, i, l)
 
         if f.label ~= rfsuite.lastLabel then
             label.type = label.type or 0
-            formLineCnt = formLineCnt + 1
-            app.formLines[formLineCnt] = form.addLine(labelName)
-            form.addStaticText(app.formLines[formLineCnt], nil, "")
+            rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
+            app.formLines[rfsuite.session.formLineCnt] = form.addLine(labelName)
+            form.addStaticText(app.formLines[rfsuite.session.formLineCnt], nil, "")
             rfsuite.lastLabel = f.label
         end
     end
@@ -714,7 +717,7 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
         }, rfsuite.app.Page.headerLine)
     end
 
-    formLineCnt = 0
+    rfsuite.session.formLineCnt = 0
 
     rfsuite.utils.log("Merging form data from mspapi", "debug")
     rfsuite.app.Page.fields = rfsuite.app.Page.mspapi.formdata.fields

@@ -33,13 +33,13 @@ local function openPage(pidx, title, script)
 
     rfsuite.app.ui.fieldHeader("Sensors")
 
-    formLineCnt = 0
+    rfsuite.session.formLineCnt = 0
     local posText = {x = x - 5 - buttonW - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = 200, h = rfsuite.app.radio.navbuttonHeight}
     for i, v in ipairs(sensorList) do
 
-        formLineCnt = formLineCnt + 1
-        rfsuite.app.formLines[formLineCnt] = form.addLine(v.name)
-        rfsuite.app.formFields[v.key] = form.addStaticText(rfsuite.app.formLines[formLineCnt], posText, "-")
+        rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
+        rfsuite.app.formLines[rfsuite.session.formLineCnt] = form.addLine(v.name)
+        rfsuite.app.formFields[v.key] = form.addStaticText(rfsuite.app.formLines[rfsuite.session.formLineCnt], posText, "-")
 
     end
 
