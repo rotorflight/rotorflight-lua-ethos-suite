@@ -28,8 +28,9 @@ local mspapi = {
             {t = "Pin Swap",                        mspapi = 2, apikey = "pin_swap",                      type = 1, label = 3, inline = 1},
             {t = "Half Duplex",                     mspapi = 2, apikey = "half_duplex",                   type = 1, label = 4, inline = 2},
             {t = "Update HZ",                       mspapi = 2, apikey = "update_hz",                     label = 4, inline = 1},
-            {t = "Current Correction Factor",       mspapi = 2, apikey = "current_correction_factor",     apiversion = 12.08},
-            {t = "Consumption Correction Factor",   mspapi = 2, apikey = "consumption_correction_factor", apiversion = 12.08}
+            {t = "Voltage Correction",              mspapi = 2, apikey = "voltage_correction",            apiversion = 12.08},
+            {t = "Current Correction",              mspapi = 2, apikey = "current_correction",            apiversion = 12.08},
+            {t = "Consumption Correction",          mspapi = 2, apikey = "consumption_correction",        apiversion = 12.08}
         }
     }                 
 }

@@ -33,8 +33,9 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "hw4_current_gain",                                type = "U8",  apiVersion = 12.06, simResponse = {0},     min = 0, max = 250, default = 0,  help="Hobbywing v4 current gain adjustment"},
     {field = "hw4_voltage_gain",                                type = "U8",  apiVersion = 12.06, simResponse = {30},    min = 0, max = 250,  default = 30, help="Hobbywing v4 voltage gain adjustment"},
     {field = "pin_swap",                                        type = "U8",  apiVersion = 12.07, simResponse = {0},     table = onOff, tableIdxInc = -1, help="Swap the TX and RX pins for the ESC telemetry"},
-    {field = "current_correction_factor",    mandatory = false, type = "U16", apiVersion = 12.08, simResponse = {100, 0}, scale=100, decimals=1, default = 1, min = 0, max = 100, help = "Adjust the current sensor reading to match the actual current draw. 1.0 and lower will reduce the gain.  1.0 and higher will increase the gain."},
-    {field = "consumption_correction_factor",mandatory = false, type = "U16", apiVersion = 12.08, simResponse = {100, 0}, scale=100, decimals=1, default = 1, min = 0, max = 100, help = "Adjust the consumption sensor reading to match the actual consumption. 1.0 and lower will reduce the gain.  1.0 and higher will increase the gain."},
+    {field = "voltage_correction",           mandatory = false, type = "S8",  apiVersion = 12.08, simResponse = {0},     unit = "%", default = 1, min = -100, max = 125, help = "Adjust the voltag correction"},
+    {field = "current_correction",           mandatory = false, type = "S8",  apiVersion = 12.08, simResponse = {0},     unit = "%", default = 1, min = -100, max = 125, help = "Adjust current correction"},
+    {field = "consumption_correction",       mandatory = false, type = "S8",  apiVersion = 12.08, simResponse = {0},     unit = "%", default = 1, min = -100, max = 125, help = "Adjust the consumption correction"},
 }
 
 -- filter the structure to remove any params not supported by the running api version
