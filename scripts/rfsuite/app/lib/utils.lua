@@ -84,9 +84,9 @@ end
 
 function utils.scaleValue(value, f)
     if not value then return nil end
-    local v = value * app.utils.decimalInc(f.decimals)
+    local v = value * rfsuite.app.utils.decimalInc(f.decimals)
     if f.scale then v = v / f.scale end
-    return utils.round(v)
+    return rfsuite.utils.round(v)
 end
 
 

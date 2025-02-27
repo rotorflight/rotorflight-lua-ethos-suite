@@ -117,6 +117,18 @@ local function onNavMenu(self)
 
 end
 
+local function event(widget, category, value, x, y)
+
+    -- if close event detected go to section home page
+    if category == EVT_CLOSE and value == 0 or value == 35 then
+        rfsuite.app.ui.progressDisplay()
+        rfsuite.app.ui.openPage(rfsuite.app.lastIdx, rfsuite.app.lastTitle, "sbusout/sbusout.lua")
+        return true
+    end
+
+
+end
+
 local function onSaveMenu()
     local buttons = {{
         label = "                OK                ",
@@ -166,16 +178,18 @@ local function wakeup()
         local currentMax = minmax[minMaxIndex].max
         local currentSourceMax = minmax[minMaxIndex].sourceMax
 
+ 
+
         -- set min and max values
-        if rfsuite.app.Page.fields[2].value >= currentSourceMax then rfsuite.app.Page.fields[2].value = currentSourceMax end
+         if rfsuite.app.Page.fields[2].value and rfsuite.app.Page.fields[2].value >= currentSourceMax then rfsuite.app.Page.fields[2].value = currentSourceMax end
 
         -- handle min value
-        if rfsuite.app.Page.fields[3].value <= currentMin then rfsuite.app.Page.fields[3].value = currentMin end
-        if rfsuite.app.Page.fields[3].value >= currentMax then rfsuite.app.Page.fields[3].value = currentMax end
+         if rfsuite.app.Page.fields[3].value and rfsuite.app.Page.fields[3].value <= currentMin then rfsuite.app.Page.fields[3].value = currentMin end
+         if rfsuite.app.Page.fields[3].value and rfsuite.app.Page.fields[3].value >= currentMax then rfsuite.app.Page.fields[3].value = currentMax end
 
         -- handle max value
-        if rfsuite.app.Page.fields[4].value >= currentMax then rfsuite.app.Page.fields[4].value = currentMax end
-        if rfsuite.app.Page.fields[4].value <= currentMin then rfsuite.app.Page.fields[4].value = currentMin end
+         if rfsuite.app.Page.fields[4].value and rfsuite.app.Page.fields[4].value >= currentMax then rfsuite.app.Page.fields[4].value = currentMax end
+         if rfsuite.app.Page.fields[4].value and rfsuite.app.Page.fields[4].value <= currentMin then rfsuite.app.Page.fields[4].value = currentMin end
 
     end
 end
@@ -193,5 +207,6 @@ return {
     setMinMaxIndex = setMinMaxIndex,
     wakeup = wakeup,
     navButtons = {menu = true, save = true, reload = true, tool = false, help = true},
+    event = event,
     API = {},
 }

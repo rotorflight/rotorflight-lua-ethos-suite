@@ -151,15 +151,6 @@ local function getSerialConfig()
     rfsuite.tasks.msp.mspQueue:add(message)
 end
 
-local function event(widget, category, value, x, y)
-
-    if category == 5 or value == 35 then
-        rfsuite.app.Page.onNavMenu(self)
-        return true
-    end
-
-    return false
-end
 
 local function wakeup()
 
@@ -185,7 +176,6 @@ end
 -- its not worth the effort
 return {
     title = "Sbus Out",
-    event = event,
     openPage = openPage,
     wakeup = wakeup,
     navButtons = {
