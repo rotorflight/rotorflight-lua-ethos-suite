@@ -57,10 +57,10 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "current_gain",            type = "S8",  apiVersion = 12.07, simResponse = {20},          min = 0, max = 40, default = 20, offset = -20, help = "Gain value for the current sensor"},
     {field = "fan_control",             type = "U8",  apiVersion = 12.07, simResponse = {0},           table = {"Automatic", "Always On"}, tableIdxInc = -1},
     {field = "soft_start",              type = "U8",  apiVersion = 12.07, simResponse = {15},          min = 5, max = 55, help = "Soft start value"},
-    {field = "gov_p",                   type = "U16", apiVersion = 12.07, simResponse = {0, 45},       min = 1, max = 100, default = 45, scale=10, byteorder = "big", help = "Proportional value for the governor"},
-    {field = "gov_i",                   type = "U16", apiVersion = 12.07, simResponse = {0, 35},       min = 1, max = 100, default = 35, scale=10,  byteorder = "big", help = "Integral value for the governor"},
-    {field = "gov_d",                   type = "U16", apiVersion = 12.07, simResponse = {0, 0},        min = 0, max = 100, default = 0, scale=10,  byteorder = "big", help = "Derivative value for the governor"},
-    {field = "motor_erpm_max",          type = "U24", apiVersion = 12.07, simResponse = {1, 134, 160}, min = 0, max = 1000000, step = 100, byteorder = "big", help = "Maximum RPM"}
+    {field = "gov_p",                   type = "U16", apiVersion = 12.07, simResponse = {0, 100},       min = 1, max = 100, default = 45, scale=10, byteorder = "big", help = "Proportional value for the governor"},
+    {field = "gov_i",                   type = "U16", apiVersion = 12.07, simResponse = {0, 100},       min = 1, max = 100, default = 35, scale=10,  byteorder = "big", help = "Integral value for the governor"},
+    {field = "gov_d",                   type = "U16", apiVersion = 12.07, simResponse = {0, 50},        min = 0, max = 100, default = 0, scale=10,  byteorder = "big", help = "Derivative value for the governor"},
+    {field = "motor_erpm_max",          type = "U24", apiVersion = 12.07, simResponse = {2, 21, 52}, min = 0, max = 1000000, step = 100, byteorder = "big", help = "Maximum RPM"}
 }
 
 -- filter the structure to remove any params not supported by the running api version
