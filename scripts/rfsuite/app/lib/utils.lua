@@ -150,3 +150,4 @@ function utils.getInlineSize(id, lPage)
 end
 
 return utils
+

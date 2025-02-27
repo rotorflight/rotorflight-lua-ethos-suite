@@ -22,7 +22,7 @@ local MSP_MIN_BYTES = 0
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "name", type = "U8", apiVersion = 12.06, simResponse = {80, 105, 108, 111, 116}}
+    { field = "name", mandatory = false, type = "U8", apiVersion = 12.06, simResponse = {80, 105, 108, 111, 116}}
 }
 
 -- filter the structure to remove any params not supported by the running api version
