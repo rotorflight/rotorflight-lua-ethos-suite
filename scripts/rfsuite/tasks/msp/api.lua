@@ -263,9 +263,9 @@ function apiLoader.calculateMinBytes(structure)
         end
     end
 
-    -- Subtract 2 bytes to allow for overlap times when developnent is in progress
+    -- Subtract 4 bytes to allow for overlap times when developnent is in progress
     -- essentialy this allows a margin in which dev fbl firmware can be tested
-    totalBytes = totalBytes - 2
+    totalBytes = totalBytes - 4
 
     return totalBytes
 end
