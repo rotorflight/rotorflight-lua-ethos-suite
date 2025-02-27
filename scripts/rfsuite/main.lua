@@ -30,7 +30,7 @@ config.icon_logtool = lcd.loadMask("app/gfx/icon_logtool.png")      -- icon
 config.Version = "1.0.0"                                            -- version number of this software replace
 config.ethosVersion = {1, 6, 2}                                     -- min version of ethos supported by this script                                                     
 config.supportedMspApiVersion = {"12.06", "12.07","12.08"}          -- supported msp versions
-config.simulatorApiVersionResponse = {0, 12, 8}                     -- version of api return by simulator
+config.simulatorApiVersionResponse = {0, 12, 7}                     -- version of api return by simulator
 config.logLevel= "info"                                             -- off | info | debug [default = info]
 config.logToFile = false                                            -- log to file [default = false] (log file is in /scripts/rfsuite/logs)
 config.logMSP = true                                                -- log msp messages [default =  false]

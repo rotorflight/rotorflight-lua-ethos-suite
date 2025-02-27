@@ -140,14 +140,13 @@ end
 
 -- find size of elements
 function utils.getInlineSize(id, lPage)
-    if not id then return nil end
+    if not id then return 13.6 end  -- Prevent nil size issues
     for i = 1, #lPage.labels do
-        local v = lPage.labels[i]
-        if v.label == id then
-            return v.inline_size or 13.6
+        if lPage.labels[i].label == id then
+            return lPage.labels[i].inline_size or 13.6
         end
     end
-    return nil
+    return 13.6  -- Use default if label is missing
 end
 
 return utils

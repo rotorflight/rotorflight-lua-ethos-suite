@@ -196,6 +196,7 @@ function ui.openMainMenu()
 
     rfsuite.app.formFields = {}
     rfsuite.app.formLines = {}
+    rfsuite.session.lastLabel = nil
 
     -- clear old icons
     for i in pairs(rfsuite.app.gfx_buttons) do
@@ -399,6 +400,7 @@ function ui.fieldNumber(i)
         posText  = p.posText
         posField = p.posField
         form.addStaticText(formLines[rfsuite.session.formLineCnt], posText, f.t)
+        rfsuite.utils.log("Adding inline text: " .. f.t .. " to line " .. rfsuite.session.formLineCnt, "info")
     else
         if f.t then
             if f.label then
@@ -407,7 +409,9 @@ function ui.fieldNumber(i)
         else
             f.t = ""
         end
+
         rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
+        rfsuite.utils.log("Adding line: " .. f.t .. " id " .. rfsuite.session.formLineCnt, "info")
         formLines[rfsuite.session.formLineCnt] = form.addLine(f.t)
         posField = f.position or nil
     end
@@ -629,12 +633,12 @@ function ui.fieldLabel(f, i, l)
         end
         local labelName = f.t and labelValue or "unknown"
 
-        if f.label ~= rfsuite.lastLabel then
+        if f.label ~= rfsuite.session.lastLabel then
             label.type = label.type or 0
             rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
             app.formLines[rfsuite.session.formLineCnt] = form.addLine(labelName)
             form.addStaticText(app.formLines[rfsuite.session.formLineCnt], nil, "")
-            rfsuite.lastLabel = f.label
+            rfsuite.session.lastLabel = f.label
         end
     end
 end
@@ -675,6 +679,7 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
     rfsuite.app.triggers.isReady = false
     rfsuite.app.formFields = {}
     rfsuite.app.formLines = {}
+    rfsuite.session.lastLabel = nil
 
     -- Load the module
     local modulePath = "app/modules/" .. script
@@ -723,15 +728,21 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
     rfsuite.app.Page.fields = rfsuite.app.Page.mspapi.formdata.fields
     rfsuite.app.Page.labels = rfsuite.app.Page.mspapi.formdata.labels
 
+    local function round(num, places)
+        local mult = 10^(places or 3)
+        return math.floor(num * mult + 0.5) / mult
+    end
+
     if rfsuite.app.Page.fields then
         for i, field in ipairs(rfsuite.app.Page.fields) do
+
             local label = rfsuite.app.Page.labels
             local version = rfsuite.session.apiVersion
-            local valid = (field.apiversion    == nil or field.apiversion    <= version) and
-                          (field.apiversionlt  == nil or field.apiversionlt  >  version) and
-                          (field.apiversiongt  == nil or field.apiversiongt  <  version) and
-                          (field.apiversionlte == nil or field.apiversionlte >= version) and
-                          (field.apiversiongte == nil or field.apiversiongte <= version) and
+            local valid = (field.apiversion    == nil or round(field.apiversion,2)    <= round(version,2)) and
+                          (field.apiversionlt  == nil or round(field.apiversionlt,2)  >  round(version,2)) and
+                          (field.apiversiongt  == nil or round(field.apiversiongt,2)  <  round(version,2)) and
+                          (field.apiversionlte == nil or round(field.apiversionlte,2) >= round(version,2)) and
+                          (field.apiversiongte == nil or round(field.apiversiongte,2) <= round(version,2)) and
                           (field.enablefunction == nil or field.enablefunction())
 
             if field.hidden ~= true and valid then
