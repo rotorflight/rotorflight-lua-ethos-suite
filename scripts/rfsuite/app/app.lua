@@ -1186,28 +1186,43 @@ end
 
 -- EVENT:  Called for button presses, scroll events, touch events, etc.
 function app.event(widget, category, value, x, y)
-    if value == EVT_VIRTUAL_PREV_LONG then
-        rfsuite.utils.log("Forcing exit", "debug")
+
+    -- long press on return at any point will force an rapid exit
+    if value == KEY_RTN_LONG then
+        rfsuite.utils.log("KEY_RTN_LONG", "info")
         invalidatePages()
         system.exit()
         return 0
     end
 
+    -- the page has its own even system.  we should use it.
     if app.Page and (app.uiState == app.uiStatus.pages or app.uiState == app.uiStatus.mainMenu) then
         if app.Page.event then
-            return app.Page.event(widget, category, value, x, y)
+            rfsuite.utils.log("USING PAGES EVENTS", "info")
+            local ret = app.Page.event(widget, category, value, x, y)
+            print(ret)
+            if ret ~= nil then
+                return ret
+            end    
         end
     end
 
+    -- generic events handler for most pages
     if app.uiState == app.uiStatus.pages then
+
+        -- close button (top menu) should go back to main menu
         if category == EVT_CLOSE and value == 0 or value == 35 then
+            rfsuite.utils.log("EVT_CLOSE", "info")
             if app.dialogs.progressDisplay then app.ui.progressDisplayClose() end
             if app.dialogs.saveDisplay then app.ui.progressDisplaySaveClose() end
             if app.Page.onNavMenu then app.Page.onNavMenu(app.Page) end
             app.ui.openMainMenu()
             return true
         end
+
+        -- long press on enter should result in a save dialog box
         if value == KEY_ENTER_LONG then
+            rfsuite.utils.log("EVT_ENTER_LONG (PAGES)", "info")
             if app.dialogs.progressDisplay then app.ui.progressDisplayClose() end
             if app.dialogs.saveDisplay then app.ui.progressDisplaySaveClose() end
             app.triggers.triggerSave = true
@@ -1216,11 +1231,13 @@ function app.event(widget, category, value, x, y)
         end
     end
 
+    -- catch all to stop lock press on main menu doing anything
     if app.uiState == app.uiStatus.mainMenu and value == KEY_ENTER_LONG then
-        if app.dialogs.progressDisplay then app.ui.progressDisplayClose() end
-        if app.dialogs.saveDisplay then app.ui.progressDisplaySaveClose() end
-        system.killEvents(KEY_ENTER_BREAK)
-        return true
+         rfsuite.utils.log("EVT_ENTER_LONG (MAIN MENU)", "info")
+         if app.dialogs.progressDisplay then app.ui.progressDisplayClose() end
+         if app.dialogs.saveDisplay then app.ui.progressDisplaySaveClose() end
+         system.killEvents(KEY_ENTER_BREAK)
+         return true
     end
 
     return false

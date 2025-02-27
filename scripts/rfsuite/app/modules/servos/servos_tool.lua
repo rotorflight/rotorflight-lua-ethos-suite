@@ -508,18 +508,12 @@ end
 
 local function event(widget, category, value, x, y)
 
-    if value == KEY_ENTER_LONG then
-        onSaveMenu()
-        system.killEvents(KEY_ENTER_LONG)
-        return true
-    end
-
-    if category == 5 or value == 35 then
+    -- if close event detected go to section home page
+    if category == EVT_CLOSE and value == 0 or value == 35 then
         rfsuite.app.ui.openPage(pidx, "Servos", "servos/servos.lua", rfsuite.session.servoOverride)
         return true
     end
 
-    return false
 end
 
 local function onToolMenu(self)

@@ -288,12 +288,7 @@ end
 
 local function event(widget, category, value, x, y)
 
-    if category == 5 or value == 35 then
-        rfsuite.app.Page.onNavMenu(self)
-        return true
-    end
 
-    return false
 end
 
 local function onToolMenu(self)

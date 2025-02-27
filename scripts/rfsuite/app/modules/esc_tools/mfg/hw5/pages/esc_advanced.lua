@@ -34,12 +34,14 @@ end
 
 local function event(widget, category, value, x, y)
 
-    if category == 5 or value == 35 then
+    -- if close event detected go to section home page
+    if category == EVT_CLOSE and value == 0 or value == 35 then
+        if powercycleLoader then powercycleLoader:close() end
         rfsuite.app.ui.openPage(pidx, folder, "esc_tools/esc_tool.lua")
         return true
     end
 
-    return false
+
 end
 return {
     mspapi=mspapi, 
