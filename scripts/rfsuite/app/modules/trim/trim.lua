@@ -28,8 +28,8 @@ local mspapi = {
             {t = "Roll trim %",                  mspapi = 1, apikey = "swash_trim_0"},
             {t = "Pitch trim %",                 mspapi = 1, apikey = "swash_trim_1"},
             {t = "Col. trim %",                  mspapi = 1, apikey = "swash_trim_2"},
-            {t = "Center trim for tail motor %", mspapi = 1, apikey = "tail_center_trim", enablefunction = function() return (rfsuite.session.tailMode >= 1) end},
-            {t = "Yaw. trim %",                  mspapi = 1, apikey = "tail_center_trim", mult = 0.0239923224568138, enablefunction = function() return (rfsuite.session.tailMode == 0) end }
+            {t = "Tail Motor idle  %", mspapi = 1, apikey = "tail_motor_idle", enablefunction = function() return (rfsuite.session.tailMode >= 1) end},
+            {t = "Yaw. trim %",                  mspapi = 1, apikey = "tail_center_trim", enablefunction = function() return (rfsuite.session.tailMode == 0) end }
         }
     }                 
 }
