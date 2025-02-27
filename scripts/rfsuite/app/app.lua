@@ -409,6 +409,11 @@ function app.mspApiUpdateFormAttributes(values, structure)
                             rfsuite.app.Page.fields[i].value = values[mspapiNAME][apikey] / scale
                         end
 
+                        if values[mspapiNAME][apikey] == nil then
+                            rfsuite.utils.log("API field value is nil: " .. mspapiNAME .. " " .. apikey, "info")
+                            formField:enable(false)
+                        end
+
                         break -- Found field, can move on
                     end
                 end

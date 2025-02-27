@@ -400,7 +400,6 @@ function ui.fieldNumber(i)
         posText  = p.posText
         posField = p.posField
         form.addStaticText(formLines[rfsuite.session.formLineCnt], posText, f.t)
-        rfsuite.utils.log("Adding inline text: " .. f.t .. " to line " .. rfsuite.session.formLineCnt, "info")
     else
         if f.t then
             if f.label then
@@ -411,7 +410,6 @@ function ui.fieldNumber(i)
         end
 
         rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-        rfsuite.utils.log("Adding line: " .. f.t .. " id " .. rfsuite.session.formLineCnt, "info")
         formLines[rfsuite.session.formLineCnt] = form.addLine(f.t)
         posField = f.position or nil
     end
