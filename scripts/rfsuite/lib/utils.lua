@@ -205,12 +205,9 @@ function utils.stringInArray(array, s)
     return false
 end
 
-function utils.round(number, precision)
-    if precision == nil then precision = 0 end
-    local fmtStr = string.format("%%0.%sf", precision)
-    number = string.format(fmtStr, number)
-    number = tonumber(number)
-    return number
+function utils.round(num, places)
+    local mult = 10^(places or 2)
+    return math.floor(num * mult + 0.5) / mult
 end
 
 function utils.roughlyEqual(a, b, tolerance)

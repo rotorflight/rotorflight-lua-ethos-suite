@@ -50,7 +50,7 @@ function utils.getFieldValue(f)
     local v = f.value or 0
 
     if f.decimals then
-        v = rfsuite.utils.round(v * rfsuite.app.utils.decimalInc(f.decimals))
+        v = rfsuite.utils.round(v * rfsuite.app.utils.decimalInc(f.decimals),2)
     end
 
     if f.offset then

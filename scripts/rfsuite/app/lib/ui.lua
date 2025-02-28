@@ -726,21 +726,16 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
     rfsuite.app.Page.fields = rfsuite.app.Page.mspapi.formdata.fields
     rfsuite.app.Page.labels = rfsuite.app.Page.mspapi.formdata.labels
 
-    local function round(num, places)
-        local mult = 10^(places or 3)
-        return math.floor(num * mult + 0.5) / mult
-    end
-
     if rfsuite.app.Page.fields then
         for i, field in ipairs(rfsuite.app.Page.fields) do
 
             local label = rfsuite.app.Page.labels
-            local version = rfsuite.session.apiVersion
-            local valid = (field.apiversion    == nil or round(field.apiversion,2)    <= round(version,2)) and
-                          (field.apiversionlt  == nil or round(field.apiversionlt,2)  >  round(version,2)) and
-                          (field.apiversiongt  == nil or round(field.apiversiongt,2)  <  round(version,2)) and
-                          (field.apiversionlte == nil or round(field.apiversionlte,2) >= round(version,2)) and
-                          (field.apiversiongte == nil or round(field.apiversiongte,2) <= round(version,2)) and
+            local version = rfsuite.utils.round(rfsuite.session.apiVersion,2)
+            local valid = (field.apiversion    == nil or rfsuite.utils.round(field.apiversion,2)    <= version) and
+                          (field.apiversionlt  == nil or rfsuite.utils.round(field.apiversionlt,2)  >  version) and
+                          (field.apiversiongt  == nil or rfsuite.utils.round(field.apiversiongt,2)  <  version) and
+                          (field.apiversionlte == nil or rfsuite.utils.round(field.apiversionlte,2) >= version) and
+                          (field.apiversiongte == nil or rfsuite.utils.round(field.apiversiongte,2) <= version) and
                           (field.enablefunction == nil or field.enablefunction())
 
             if field.hidden ~= true and valid then
