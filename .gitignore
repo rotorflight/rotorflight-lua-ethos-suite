@@ -2,3 +2,17 @@
 *.orig.png
 scripts/rfsuite.zip
 bin/__pycache__/subprocess_conout.cpython-312.pyc
+bin/TelemetryEdit/build/main/Analysis-00.toc
+bin/TelemetryEdit/build/main/base_library.zip
+bin/TelemetryEdit/build/main/EXE-00.toc
+bin/TelemetryEdit/build/main/localpycs/pyimod01_archive.pyc
+bin/TelemetryEdit/build/main/localpycs/pyimod02_importers.pyc
+bin/TelemetryEdit/build/main/localpycs/pyimod03_ctypes.pyc
+bin/TelemetryEdit/build/main/localpycs/pyimod04_pywin32.pyc
+bin/TelemetryEdit/build/main/localpycs/struct.pyc
+bin/TelemetryEdit/build/main/main.pkg
+bin/TelemetryEdit/build/main/PKG-00.toc
+bin/TelemetryEdit/build/main/PYZ-00.pyz
+bin/TelemetryEdit/build/main/PYZ-00.toc
+bin/TelemetryEdit/build/main/warn-main.txt
+bin/TelemetryEdit/build/main/xref-main.html
