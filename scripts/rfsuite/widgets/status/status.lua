@@ -1075,7 +1075,7 @@ function status.message(msg)
     boxH = 45
     tsizeW, tsizeH = lcd.getTextSize(msg)
 
-    -- draw the backgstatus.round
+    -- draw the backgrfsuite.utils.round
     if status.isDARKMODE then
         lcd.color(lcd.RGB(40, 40, 40))
     else
@@ -1654,7 +1654,7 @@ function status.paint(widget)
             -- TEMP ESC
             if status.sensors.temp_esc ~= nil then
 
-                sensorVALUE = status.round(status.sensors.temp_esc / 100, 0)
+                sensorVALUE = rfsuite.utils.round(status.sensors.temp_esc / 100, 0)
 
                 if sensorVALUE < 1 then sensorVALUE = 0 end
 
@@ -1667,13 +1667,13 @@ function status.paint(widget)
                 if status.sensorTempESCMin == 0 or status.sensorTempESCMin == nil or status.theTIME == 0 then
                     sensorMIN = "-"
                 else
-                    sensorMIN = status.round(status.sensorTempESCMin / 100, 0)
+                    sensorMIN = rfsuite.utils.round(status.sensorTempESCMin / 100, 0)
                 end
 
                 if status.sensorTempESCMax == 0 or status.sensorTempESCMax == nil or status.theTIME == 0 then
                     sensorMAX = "-"
                 else
-                    sensorMAX = status.round(status.sensorTempESCMax / 100, 0)
+                    sensorMAX = rfsuite.utils.round(status.sensorTempESCMax / 100, 0)
                 end
 
                 sensorUNIT = "°"
@@ -1693,7 +1693,7 @@ function status.paint(widget)
             -- TEMP MCU
             if status.sensors.temp_mcu ~= nil then
 
-                sensorVALUE = status.round(status.sensors.temp_mcu / 100, 0)
+                sensorVALUE = rfsuite.utils.round(status.sensors.temp_mcu / 100, 0)
 
                 if sensorVALUE < 1 then sensorVALUE = 0 end
 
@@ -1706,13 +1706,13 @@ function status.paint(widget)
                 if status.sensorTempMCUMin == 0 or status.sensorTempMCUMin == nil or status.theTIME == 0 then
                     sensorMIN = "-"
                 else
-                    sensorMIN = status.round(status.sensorTempMCUMin / 100, 0)
+                    sensorMIN = rfsuite.utils.round(status.sensorTempMCUMin / 100, 0)
                 end
 
                 if status.sensorTempMCUMax == 0 or status.sensorTempMCUMax == nil or status.theTIME == 0 then
                     sensorMAX = "-"
                 else
-                    sensorMAX = status.round(status.sensorTempMCUMax / 100, 0)
+                    sensorMAX = rfsuite.utils.round(status.sensorTempMCUMax / 100, 0)
                 end
 
                 sensorUNIT = "°"
@@ -2433,7 +2433,7 @@ local function convert_temperature(temp, conversion_type)
         -- Convert from F to C
         temp = ((temp - 32) * 5) / 9
     end
-    return status.round(temp, 0)
+    return rfsuite.utils.round(temp, 0)
 end
 
 function status.getSensors()
@@ -2806,7 +2806,7 @@ function status.getSensors()
             if fuelSOURCE ~= nil then
                 fuel = fuelSOURCE:value() or 0
                 if fuel ~= nil then
-                    fuel = status.round(fuel, 0)
+                    fuel = rfsuite.utils.round(fuel, 0)
                 else
                     fuel = 0
                 end
@@ -2898,7 +2898,7 @@ function status.getSensors()
         local minv = (status.minCellVoltage / 100) * status.cellsParam
 
         local batteryPercentage = ((cv - minv) / (maxv - minv)) * 100
-        fuel = math.min(status.round(batteryPercentage, 0), 100)
+        fuel = math.min(rfsuite.utils.round(batteryPercentage, 0), 100)
     end
 
     if voltage == nil then voltage = 0 end
@@ -2913,22 +2913,22 @@ function status.getSensors()
     -- set flag to status.refresh screen or not
 
     if voltage == nil then voltage = 0 end
-    voltage = status.round(voltage, 0)
+    voltage = rfsuite.utils.round(voltage, 0)
 
     if rpm == nil then rpm = 0 end
-    rpm = status.round(rpm, 0)
+    rpm = rfsuite.utils.round(rpm, 0)
 
     if temp_mcu == nil then temp_mcu = 0 end
-    temp_mcu = status.round(temp_mcu, 0)
+    temp_mcu = rfsuite.utils.round(temp_mcu, 0)
 
     if temp_esc == nil then temp_esc = 0 end
-    temp_esc = status.round(temp_esc, 0)
+    temp_esc = rfsuite.utils.round(temp_esc, 0)
 
     if current == nil then current = 0 end
-    current = status.round(current, 0)
+    current = rfsuite.utils.round(current, 0)
 
     if rssi == nil then rssi = 0 end
-    rssi = status.round(rssi, 0)
+    rssi = rfsuite.utils.round(rssi, 0)
 
     -- Voltage based on stick position
     status.lowvoltagStickParam = status.lowvoltagStickParam or 0
@@ -3050,12 +3050,6 @@ function tablelength(T)
     return count
 end
 
-function status.round(number, precision)
-    precision = precision or 0 -- Default to 0 if precision is not provided
-    if type(number) ~= "number" or type(precision) ~= "number" then error("Invalid input: Both number and precision must be numbers") end
-    local fmtStr = string.format("%%.%df", precision)
-    return tonumber(string.format(fmtStr, number))
-end
 
 function status.SecondsToClock(seconds)
     if type(seconds) ~= "number" or seconds <= 0 then return "00:00:00" end

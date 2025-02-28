@@ -276,20 +276,15 @@ function telemetry.getSensorSource(name)
     -- Use cached value if available
     if sensors[name] then return sensors[name] end
 
-    -- local rounding
-    local function round(num, places)
-        local mult = 10^(places or 3)
-        return math.floor(num * mult + 0.5) / mult
-    end
-
     -- Helper function to check if MSP version conditions are met
     local function checkCondition(sensorEntry)
         if sensorEntry.mspgt then
             -- Check if API version exists and meets "greater than" condition
-            return rfsuite.session and rfsuite.session.apiVersion and (round(rfsuite.session.apiVersion,2) >= round(sensorEntry.mspgt,2))
+            return rfsuite.session and rfsuite.session.apiVersion and (rfsuite.utils.round(rfsuite.session.apiVersion,2) >= rfsuite.utils.round(sensorEntry.mspgt,2))
         elseif sensorEntry.msplt then
             -- Check if API version exists and meets "less than" condition
-            return rfsuite.session and rfsuite.session.apiVersion and (round(rfsuite.session.apiVersion,2) <= round(sensorEntry.msplt,2))
+            return rfsuite.session and rfsuite.session.apiVersion and (rfsuite.utils.round(rfsuite.session.apiVersion,2) <= rfsuite.utils.round(sensorEntry.msplt,2))
+
         end
         -- No conditions = always valid
         return true
