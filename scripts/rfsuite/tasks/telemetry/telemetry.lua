@@ -129,7 +129,7 @@ local sensorTable = {
         name = "Head Speed",
         mandatory = true,
         sim =  {
-            {uid=0x5003, unit=UNIT_RPM, dec=0, value=function() return math.random(1500, 1550) end, min = 0, max = 2000},
+            {uid=0x5003, unit=UNIT_RPM, dec=nil, value=function() return math.random(1500, 1550) end, min = 0, max = 2000},
         },
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0500}
@@ -390,7 +390,7 @@ function telemetry.getSensorSource(name)
             if sensor and type(sensor) == "table" then
                 -- redefine sensor params
                 local sensorQ = {}
-                sensorQ.appid = sensor.uid
+                sensorQ.appId = sensor.uid
                 sensorQ.category = CATEGORY_TELEMETRY_SENSOR    
 
                 local source = system.getSource(sensorQ)
