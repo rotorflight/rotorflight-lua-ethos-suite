@@ -17,12 +17,12 @@ class LuaFileEditor(QMainWindow):
         # Determine folder path: CLI arg > Environment variable > Fallback default
         if len(sys.argv) > 1:
             self.folder_path = sys.argv[1]
-        elif os.getenv("RFSUITE_TELEMETRY_EDIT_PATH"):
-            self.folder_path = os.getenv("RFSUITE_TELEMETRY_EDIT_PATH")
+        elif os.getenv("DEV_RFSUITE.SIM_PATH"):
+            self.folder_path = os.getenv("DEV_RFSUITE.SIM_PATH")
         else:
-            self.folder_path = "C:/Program Files (x86)/FrSky/Ethos/X20S/scripts/rfsuite.simtelemetry"
+            self.folder_path = "C:/Program Files (x86)/FrSky/Ethos/X20S/scripts/rfsuite.sim/"
 
-        self.folder_path = os.path.normpath(self.folder_path)
+        self.folder_path = os.path.normpath(os.path.join(self.folder_path, "sensors"))
 
         self.entries = []
 

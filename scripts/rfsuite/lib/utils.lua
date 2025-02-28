@@ -442,8 +442,8 @@ function utils.simTelemetry(id)
 
     if id == nil then return 0 end
 
-    local localPath = "../rfsuite.simtelemetry/" .. id .. ".lua"
-    local fallbackPath = "lib/sim/" .. id .. ".lua"
+    local localPath = "../rfsuite.sim/sensors/" .. id .. ".lua"
+    local fallbackPath = "sim/sensors/" .. id .. ".lua"
 
     local filepath
 
