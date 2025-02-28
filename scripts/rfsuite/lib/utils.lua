@@ -31,6 +31,7 @@ end
 function utils.dir_exists(base, name)
     base = base or "./"
     local list = system.listFiles(base)
+    if list == nil then return false end
     for i = 1, #list do
         if list[i] == name then
             return true
@@ -419,7 +420,7 @@ function utils.loadImage(image1, image2, image3)
 end
 
 --[[
-    Function: utils.simTelemetry
+    Function: utils.simSensors
 
     Loads and executes a telemetry Lua script based on the provided ID.
 
@@ -431,14 +432,14 @@ end
 
     Description:
         This function attempts to load a telemetry Lua script from two possible paths:
-        1. "../rfsuite.simtelemetry/<id>.lua"
-        2. "lib/sim/<id>.lua"
+        1. "../rfsuite.sim/sensors/<id>.lua"
+        2. "lib/sim/sensors/<id>.lua"
         
         It first checks if the file exists at the local path. If not, it checks the fallback path.
         If the file is found, it attempts to load and execute the script. If any error occurs
         during loading or execution, it prints an error message and returns 0.
 --]]
-function utils.simTelemetry(id)
+function utils.simSensors(id)
 
     if id == nil then return 0 end
 
@@ -471,6 +472,136 @@ function utils.simTelemetry(id)
     return result
 end
 
+-- Splits a given string into a table of substrings based on a specified separator.
+-- @param input The string to be split.
+-- @param sep The separator used to split the string.
+-- @return A table containing the substrings.
+function utils.splitString(input, sep)
+    local result = {}
+
+    -- Lua's gmatch needs plain `sep`, so if you want to handle "%s*" or patterns, use this
+    for item in input:gmatch("([^" .. sep .. "]+)") do
+        table.insert(result, item)
+    end
+
+    return result
+end
+
+
+--[[
+    Function: utils.simMspSave
+
+    Saves a byte stream to a file in the MSP format if the system is in simulation mode.
+
+    Parameters:
+        apiname (string) - The name of the API to be used as part of the filename.
+        byte_stream (table) - A table containing the byte stream to be saved.
+
+    Returns:
+        None
+
+    Notes:
+        - The function only operates if the system is in simulation mode.
+        - If the `refreshOnProfileChange` flag is set, the active profile is appended to the `apiname`.
+        - The function attempts to save the file in a specific directory structure, falling back to a secondary path if the primary path does not exist.
+        - The byte stream is converted to a comma-separated string before being written to the file.
+        - If the file cannot be opened for writing, an error is raised.
+--]]
+function utils.simMspSave(apiname, byte_stream)
+    if not system.getVersion().simulation then
+        return
+    end
+
+    if rfsuite.app.Page.refreshOnProfileChange then
+        apiname = apiname .. "_" .. (rfsuite.session.activeProfile or "default")
+    end
+
+    local localPath = "../rfsuite.sim/msp/" .. apiname .. ".csv"
+    local fallbackPath = "sim/msp/" .. apiname .. ".csv"
+
+    local filepath
+    if rfsuite.utils.dir_exists("../rfsuite.sim/", "msp") then
+        filepath = localPath
+    elseif rfsuite.utils.dir_exists("sim/", "msp") then
+        filepath = fallbackPath
+    else
+        return
+    end
+
+    local str = rfsuite.utils.joinTableItems(byte_stream, ", ")
+
+    local file, err = io.open(filepath, "w")
+    if not file then
+        error("Failed to open file for writing: " .. filepath .. " - " .. err)
+    end
+
+    file:write(str)
+    file:close()
+end
+
+--[[
+    Function: utils.simMspLoad
+
+    Loads a simulated MSP (MultiWii Serial Protocol) data file based on the given API name.
+
+    Parameters:
+        apiname (string) - The name of the API for which to load the MSP data.
+
+    Returns:
+        table - A table containing the byte stream of the MSP data.
+        string - An error message if the function fails.
+
+    Notes:
+        - The function checks if the system is in simulation mode.
+        - If the `refreshOnProfileChange` flag is set, the API name is appended with the active profile name.
+        - The function attempts to locate the MSP data file in two possible directories.
+        - If the file is found, it reads the content and splits it into a byte stream.
+        - The byte stream items are converted to numbers if possible.
+
+    Errors:
+        - "Not in simulation mode" if the system is not in simulation mode.
+        - "File path not found" if the MSP data file cannot be located.
+        - "Failed to open file for reading: <filepath> - <err>" if the file cannot be opened.
+--]]
+function utils.simMspLoad(apiname)
+    if not system.getVersion().simulation then
+        return nil, "Not in simulation mode"
+    end
+
+    if rfsuite.app.Page.refreshOnProfileChange then
+        apiname = apiname .. "_" .. (rfsuite.session.activeProfile or "default")
+    end
+
+    local localPath = "../rfsuite.sim/msp/" .. apiname .. ".csv"
+    local fallbackPath = "sim/msp/" .. apiname .. ".csv"
+
+    local filepath
+    if rfsuite.utils.dir_exists("../rfsuite.sim/", "msp") then
+        filepath = localPath
+    elseif rfsuite.utils.dir_exists("sim/", "msp") then
+        filepath = fallbackPath
+    else
+        return nil, "File path not found"
+    end
+
+    local file = io.open(filepath, "rb")
+    if not file then
+        return nil, "Failed to open file for reading: " .. filepath
+    end
+
+    -- Read the first (and only) line
+    local content = io.read(file, "l")
+    io.close(file)
+
+    -- Parse into byte stream
+    local byte_stream = rfsuite.utils.splitString(content, ",%s*")
+
+    for i, v in ipairs(byte_stream) do
+        byte_stream[i] = tonumber(v) or v
+    end
+
+    return byte_stream
+end
 
 
 
