@@ -2412,13 +2412,6 @@ function status.paint(widget)
 
 end
 
-function status.ReverseTable(t)
-    local reversedTable = {}
-    local itemCount = #t
-    for k, v in ipairs(t) do reversedTable[itemCount + 1 - k] = v end
-    return reversedTable
-end
-
 function status.getChannelValue(ich)
     local src = system.getSource({category = CATEGORY_CHANNEL, member = (ich - 1), options = 0})
     return math.floor((src:value() / 10.24) + 0.5)
