@@ -272,8 +272,8 @@ function adjfunc.wakeup()
     if (os.clock() - initTime) < 5 or rfsuite.tasks.telemetry.active() == false then return end
 
 
-    adjfunc.adjFunctionSrc = rfsuite.tasks.telemetry.getSensorSource("adjF")
-    adjfunc.adjValueSrc = rfsuite.tasks.telemetry.getSensorSource("adjV")
+    adjfunc.adjFunctionSrc = rfsuite.tasks.telemetry.getSensorSource("adj_f")
+    adjfunc.adjValueSrc = rfsuite.tasks.telemetry.getSensorSource("adj_v")
 
     if adjfunc.adjValueSrc ~= nil and adjfunc.adjFunctionSrc ~= nil then
 

@@ -36,6 +36,7 @@ config.logToFile = false                                            -- log to fi
 config.logMSP = false                                               -- log msp messages [default =  false]
 config.developerMode = false                                        -- show developer tools on main menu [default = false]
 
+
 -- RotorFlight + ETHOS LUA preferences
 local preferences = {}
 

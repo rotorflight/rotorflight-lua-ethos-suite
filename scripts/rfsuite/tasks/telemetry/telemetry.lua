@@ -54,12 +54,12 @@ Sensors included:
 - Voltage Sensors (voltage)
 - RPM Sensors (rpm)
 - Current Sensors (current)
-- Temperature Sensors (tempESC, tempMCU)
+- Temperature Sensors (temp_esc, temp_mcu)
 - Fuel and Capacity Sensors (fuel, capacity)
 - Flight Mode Sensors (governor)
-- Adjustment Sensors (adjF, adjV)
-- PID and Rate Profiles (pidProfile, rateProfile)
-- Throttle Sensors (throttlePercentage)
+- Adjustment Sensors (adj_f, adj_v)
+- PID and Rate Profiles (pid_profile, rate_profile)
+- Throttle Sensors (throttle_percentage)
 ]]
 local sensorTable = {
     -- RSSI Sensors
@@ -90,7 +90,7 @@ local sensorTable = {
         name = "Arming Flags",
         mandatory = true,
         sim = {
-            {uid=0x5001, unit=nil, dec=nil, value=function() return math.random(0, 0) end, min = 0, max = 2},
+            {uid=0x5001, unit=nil, dec=nil, value=function() return rfsuite.utils.simTelemetry('armflags') end, min = 0, max = 2},
         },
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5122},
@@ -107,7 +107,7 @@ local sensorTable = {
         name = "Voltage",
         mandatory = true,
         sim =  {
-            {uid=0x5002, unit=UNIT_VOLT, dec=2, value=function() return math.random(2200, 2500) end, min = 0, max = 3000},
+            {uid=0x5002, unit=UNIT_VOLT, dec=2, value=function() return rfsuite.utils.simTelemetry('voltage') end, min = 0, max = 3000},
         },
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0210},
@@ -129,7 +129,7 @@ local sensorTable = {
         name = "Head Speed",
         mandatory = true,
         sim =  {
-            {uid=0x5003, unit=UNIT_RPM, dec=nil, value=function() return math.random(1500, 1550) end, min = 0, max = 2000},
+            {uid=0x5003, unit=UNIT_RPM, dec=nil, value=function() return rfsuite.utils.simTelemetry('rpm') end, min = 0, max = 2000},
         },
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0500}
@@ -145,7 +145,7 @@ local sensorTable = {
         name = "Current",
         mandatory = false,
         sim =  {
-            {uid=0x5004, unit=UNIT_AMPERE, dec=0, value=function() return math.random(20, 25) end, min = 0, max = 25},
+            {uid=0x5004, unit=UNIT_AMPERE, dec=0, value=function() return rfsuite.utils.simTelemetry('current') end, min = 0, max = 25},
         },
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0200},
@@ -159,11 +159,11 @@ local sensorTable = {
     },
 
     -- Temperature Sensors
-    tempESC = {
+    temp_esc = {
         name = "ESC Temperature",
         mandatory = false,
         sim =  {
-            {uid=0x5005, unit=UNIT_DEGREE, dec=0, value=function() return math.random(50, 55) end, min = 0, max = 100},
+            {uid=0x5005, unit=UNIT_DEGREE, dec=0, value=function() return rfsuite.utils.simTelemetry('temp_esc') end, min = 0, max = 100},
         },   
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0B70}
@@ -173,11 +173,11 @@ local sensorTable = {
         },
         crsfLegacy = {"GPS Speed"}
     },
-    tempMCU = {
+    temp_mcu = {
         name = "MCU Temperature",
         mandatory = false,
         sim =  {
-            {uid=0x5006, unit=UNIT_DEGREE, dec=0, value=function() return math.random(0, 55) end, min = 0, max = 100},
+            {uid=0x5006, unit=UNIT_DEGREE, dec=0, value=function() return rfsuite.utils.simTelemetry('temp_mcu') end, min = 0, max = 100},
         },         
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0400, mspgt = 12.08},
@@ -194,7 +194,7 @@ local sensorTable = {
         name = "Charge Level",
         mandatory = false,
         sim =  {
-            {uid=0x5007, unit=UNIT_PERCENT, dec=0, value=function() return math.random(90, 95) end, min = 0, max = 100},
+            {uid=0x5007, unit=UNIT_PERCENT, dec=0, value=function() return rfsuite.utils.simTelemetry('fuel') end, min = 0, max = 100},
         },               
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0600}
@@ -204,11 +204,11 @@ local sensorTable = {
         },
         crsfLegacy = {"Rx Batt%"}
     },
-    capacity = {
+    consumption = {
         name = "Consumption",
         mandatory = false,
         sim =  {
-            {uid=0x5008, unit=UNIT_MILLIAMPERE_HOUR, dec=0, value=function() return math.random(60, 70) end, min = 0, max = 100},
+            {uid=0x5008, unit=UNIT_MILLIAMPERE_HOUR, dec=0, value=function() return rfsuite.utils.simTelemetry('consumption') end, min = 0, max = 5000},
         },           
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5250}
@@ -224,7 +224,7 @@ local sensorTable = {
         name = "Governor State",
         mandatory = false,
         sim =  {
-            {uid=0x5009, unit=nil, dec=0, value=function() return math.random(0, 0) end, min = 0, max = 5},
+            {uid=0x5009, unit=nil, dec=0, value=function() return rfsuite.utils.simTelemetry('governor') end, min = 0, max = 5},
         },        
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5125},
@@ -237,11 +237,11 @@ local sensorTable = {
     },
 
     -- Adjustment Sensors
-    adjF = {
+    adj_f = {
         name = "Adj (Function)",
         mandatory = false,
         sim =  {
-            {uid=0x5010, unit=nil, dec=0, value=function() return math.random(0, 0) end, min = 0, max = 10},
+            {uid=0x5010, unit=nil, dec=0, value=function() return rfsuite.utils.simTelemetry('adj_f') end, min = 0, max = 10},
         },           
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5110}
@@ -251,11 +251,11 @@ local sensorTable = {
         },
         crsfLegacy = {nil}
     },
-    adjV = {
+    adj_v = {
         name = "Adj (Value)",
         mandatory = false,
         sim =  {
-            {uid=0x5011, unit=nil, dec=0, value=function() return math.random(1000, 1000) end, min = 0, max = 2000},
+            {uid=0x5011, unit=nil, dec=0, value=function() return rfsuite.utils.simTelemetry('adj_v') end, min = 0, max = 2000},
         },           
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5111}
@@ -267,11 +267,11 @@ local sensorTable = {
     },
 
     -- PID and Rate Profiles
-    pidProfile = {
+    pid_profile = {
         name = "PID Profile",
         mandatory = true,
         sim =  {
-            {uid=0x5012, unit=nil, dec=0, value=function() return math.random(1, 2) end, min = 0, max = 6},
+            {uid=0x5012, unit=nil, dec=0, value=function() return rfsuite.utils.simTelemetry('pid_profile') end, min = 0, max = 6},
         },            
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5130},
@@ -282,11 +282,11 @@ local sensorTable = {
         },
         crsfLegacy = {nil}
     },
-    rateProfile = {
+    rate_profile = {
         name = "Rate Profile",
         mandatory = true,
         sim =  {
-            {uid=0x5013, unit=nil, dec=0, value=function() return math.random(1, 2) end, min = 0, max = 6},
+            {uid=0x5013, unit=nil, dec=0, value=function() return rfsuite.utils.simTelemetry('rate_profile') end, min = 0, max = 6},
         },            
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5131},
@@ -299,11 +299,11 @@ local sensorTable = {
     },
 
     -- Throttle Sensors
-    throttlePercentage = {
+    throttle_percent = {
         name = "Throttle %",
         mandatory = true,
         sim =  {
-            {uid=0x5014, unit=nil, dec=0, value=function() return math.random(80, 85) end, min = 0, max = 100},
+            {uid=0x5014, unit=nil, dec=0, value=function() return rfsuite.utils.simTelemetry('throttle_percent') end, min = 0, max = 100},
         },         
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x51A4},
@@ -452,7 +452,6 @@ function telemetry.getSensorSource(name)
 
     return nil -- If no valid sensor is found
 end
-
 
 
 
