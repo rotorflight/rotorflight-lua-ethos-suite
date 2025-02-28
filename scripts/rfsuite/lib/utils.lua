@@ -31,6 +31,7 @@ end
 function utils.dir_exists(base, name)
     base = base or "./"
     local list = system.listFiles(base)
+    if list == nil then return false end
     for i = 1, #list do
         if list[i] == name then
             return true
