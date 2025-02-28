@@ -42,6 +42,13 @@ local lastRssiSensorName = nil
 if rfsuite.app.moduleList == nil then rfsuite.app.moduleList = rfsuite.utils.findModules() end
 
 -- findTasks
+--[[
+    Function: tasks.findTasks
+    Description: This function scans the "tasks" directory for task configurations and scripts. 
+                 It loads and validates each task's configuration, then adds valid tasks to the tasksList.
+                 It also loads and initializes the corresponding task scripts.
+    Usage: Call tasks.findTasks() to initialize and load all tasks from the "tasks" directory.
+]]
 function tasks.findTasks()
 
     local taskdir = "tasks"
@@ -82,6 +89,12 @@ function tasks.findTasks()
 end
 
 
+--[[
+    Checks if the tasks script is active based on the heartbeat and MSP status.
+
+    Returns:
+        boolean: True if the tasks script is active, otherwise false.
+]]
 function tasks.active()
 
     if tasks.heartbeat == nil then return false end
@@ -101,7 +114,24 @@ function tasks.active()
     return false
 end
 
--- wakeup
+--[[
+    Function: tasks.wakeup
+
+    Short:
+    Handles the periodic wakeup tasks for the rotorflight suite.
+
+    Use:
+    This function is responsible for processing logs, checking the Ethos version, initializing tasks, updating the heartbeat, 
+    managing RSSI sensor checks, and dynamically loading tasks based on settings.
+
+    Details:
+    - Processes the log using `rfsuite.log.process()`.
+    - Checks if the Ethos version is at least the required version using `rfsuite.utils.ethosVersionAtLeast()`.
+    - Initializes tasks if not already initialized by calling `tasks.findTasks()`.
+    - Updates the heartbeat timestamp using `os.clock()`.
+    - Manages RSSI sensor checks and updates the current RSSI sensor and its type.
+    - Runs tasks dynamically based on their defined intervals and conditions.
+--]]
 function tasks.wakeup()
 
     -- process the log
@@ -168,6 +198,13 @@ function tasks.wakeup()
 
 end
 
+--[[
+    Handles events for the tasks module by delegating to specific event handlers.
+
+    @param widget The widget that triggered the event.
+    @param category The category of the event.
+    @param value The value associated with the event.
+]]
 function tasks.event(widget, category, value)
     if tasks.msp.event then tasks.msp.event(widget, category, value) end
     if tasks.adjfunctions.event then tasks.adjfunctions.event(widget, category, value) end

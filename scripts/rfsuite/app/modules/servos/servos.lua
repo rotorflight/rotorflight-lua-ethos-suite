@@ -128,7 +128,7 @@ local function openPage(pidx, title, script)
     -- TEXT ICONS
     if rfsuite.preferences.iconSize == 0 then
         padding = rfsuite.app.radio.buttonPaddingSmall
-        buttonW = (rfsuite.config.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
+        buttonW = (rfsuite.session.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
         buttonH = rfsuite.app.radio.navbuttonHeight
         numPerRow = rfsuite.app.radio.buttonsPerRow
     end
@@ -164,17 +164,17 @@ local function openPage(pidx, title, script)
 
             if pvalue.section == "swash" and lc == 0 then
                 local headerLine = form.addLine("")
-                local headerLineText = form.addStaticText(headerLine, {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.config.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}, headerLineText())
+                local headerLineText = form.addStaticText(headerLine, {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.session.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}, headerLineText())
             end
 
             if pvalue.section == "tail" then
                 local headerLine = form.addLine("")
-                local headerLineText = form.addStaticText(headerLine, {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.config.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}, "TAIL")
+                local headerLineText = form.addStaticText(headerLine, {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.session.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}, "TAIL")
             end
 
             if pvalue.section == "other" then
                 local headerLine = form.addLine("")
-                local headerLineText = form.addStaticText(headerLine, {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.config.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}, "TAIL")
+                local headerLineText = form.addStaticText(headerLine, {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.session.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}, "TAIL")
             end
 
             if lc == 0 then

@@ -123,8 +123,8 @@ local function openPage(pidx, title, script, displaymode)
     local numPerRow
 
     padding = rfsuite.app.radio.buttonPaddingSmall
-    -- buttonW = (rfsuite.config.lcdWidth - padding) / (rfsuite.app.radio.logGraphButtonsPerRow - 1) - padding
-    buttonW = (rfsuite.config.lcdWidth - padding) / (2) - padding / 2
+    -- buttonW = (rfsuite.session.lcdWidth - padding) / (rfsuite.app.radio.logGraphButtonsPerRow - 1) - padding
+    buttonW = (rfsuite.session.lcdWidth - padding) / (2) - padding / 2
     buttonH = rfsuite.app.radio.navbuttonHeight
     numPerRow = 2 -- = rfsuite.app.radio.buttonsPerRow - 1
 

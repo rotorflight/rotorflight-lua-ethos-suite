@@ -23,6 +23,9 @@ local ui = {}
 local arg = {...}
 local config = arg[1]
 
+-- Displays a progress dialog with a title and message.
+-- @param title The title of the progress dialog (optional, default is "Loading").
+-- @param message The message of the progress dialog (optional, default is "Loading data from flight controller...").
 function ui.progressDisplay(title, message)
     if rfsuite.app.dialogs.progressDisplay then return end
 
@@ -43,6 +46,12 @@ function ui.progressDisplay(title, message)
     end
 end
 
+--[[
+    Function: ui.progressNolinkDisplay
+    Description: Displays a progress dialog indicating a connection attempt.
+    Sets the nolinkDisplay flag to true and opens a progress dialog with the title "Connecting" and message "Connecting...".
+    The dialog is configured to disallow closing and initializes the progress value to 0.
+]]
 function ui.progressNolinkDisplay()
     rfsuite.app.dialogs.nolinkDisplay = true
     rfsuite.app.dialogs.noLink = form.openProgressDialog("Connecting", "Connecting...")
@@ -50,6 +59,12 @@ function ui.progressNolinkDisplay()
     rfsuite.app.dialogs.noLink:value(0)
 end
 
+--[[
+    Function: ui.progressDisplaySave
+    Description: Opens a progress dialog indicating that data is being saved. 
+                 Sets the save display flag, initializes the save watchdog timer, 
+                 and configures the progress dialog with initial values.
+]]
 function ui.progressDisplaySave()
     rfsuite.app.dialogs.saveDisplay = true
     rfsuite.app.dialogs.saveWatchDog = os.clock()
@@ -58,7 +73,15 @@ function ui.progressDisplaySave()
     rfsuite.app.dialogs.save:closeAllowed(false)
 end
 
--- we wrap a simple rate limiter into this to prevent cpu overload when handling msp
+
+--[[
+    Updates the progress display with the given value and optional message.
+    
+    @param value (number) - The progress value to display. If the value is 100 or more, the progress is updated immediately.
+    @param message (string, optional) - An optional message to display along with the progress value.
+    
+    The function ensures that the progress display is updated at a rate limited by `rfsuite.app.dialogs.progressRate`.
+]]
 function ui.progressDisplayValue(value, message)
     if value >= 100 then
         rfsuite.app.dialogs.progress:value(value)
@@ -74,7 +97,13 @@ function ui.progressDisplayValue(value, message)
     end
 end
 
--- we wrap a simple rate limiter into this to prevent cpu overload when handling msp
+
+--[[
+    Updates the progress display with a given value and optional message.
+    
+    @param value number: The progress value to display. If the value is 100 or more, the display is updated immediately.
+    @param message string (optional): An optional message to display along with the progress value.
+]]
 function ui.progressDisplaySaveValue(value, message)
     if value >= 100 then
         rfsuite.app.dialogs.save:value(value)
@@ -90,6 +119,9 @@ function ui.progressDisplaySaveValue(value, message)
     end
 end
 
+-- Closes the progress display dialog if it is currently open.
+-- This function checks if the progress dialog exists, closes it, 
+-- and updates the progress display status to false.
 function ui.progressDisplayClose()
     local progress = rfsuite.app.dialogs.progress
     if progress then
@@ -98,6 +130,8 @@ function ui.progressDisplayClose()
     end
 end
 
+-- Closes the progress display if allowed by the given status.
+-- @param status A boolean indicating whether closing the progress display is allowed.
 function ui.progressDisplayCloseAllowed(status)
     local progress = rfsuite.app.dialogs.progress
     if progress then
@@ -105,6 +139,8 @@ function ui.progressDisplayCloseAllowed(status)
     end
 end
 
+-- Displays a progress message in the UI.
+-- @param message The message to be displayed in the progress dialog.
 function ui.progressDisplayMessage(message)
     local progress = rfsuite.app.dialogs.progress
     if progress then
@@ -112,27 +148,60 @@ function ui.progressDisplayMessage(message)
     end
 end
 
+-- Closes the save dialog if it is open and updates the save display status.
+-- This function checks if the save dialog exists, closes it if it does,
+-- and then sets the save display status to false.
 function ui.progressDisplaySaveClose()
     local saveDialog = rfsuite.app.dialogs.save
     if saveDialog then saveDialog:close() end
     rfsuite.app.dialogs.saveDisplay = false
 end
 
+--- Displays a save message in the progress dialog.
+-- @param message The message to be displayed in the save dialog.
 function ui.progressDisplaySaveMessage(message)
     local saveDialog = rfsuite.app.dialogs.save
     if saveDialog then saveDialog:message(message) end
 end
 
+--[[
+    Function: ui.progressDisplaySaveCloseAllowed
+
+    Description:
+    This function updates the closeAllowed status of the save dialog in the rfsuite application.
+
+    Parameters:
+    status (boolean) - The status to set for allowing the save dialog to close.
+
+    Usage:
+    ui.progressDisplaySaveCloseAllowed(true) -- Allows the save dialog to close.
+    ui.progressDisplaySaveCloseAllowed(false) -- Prevents the save dialog from closing.
+]]
 function ui.progressDisplaySaveCloseAllowed(status)
     local saveDialog = rfsuite.app.dialogs.save
     if saveDialog then saveDialog:closeAllowed(status) end
 end
 
+-- Closes the "no link" dialog in the rfsuite application.
+-- This function is used to close the dialog that indicates there is no link.
 function ui.progressNolinkDisplayClose()
     rfsuite.app.dialogs.noLink:close()
 end
 
--- we wrap a simple rate limiter into this to prevent cpu overload when handling msp
+--[[
+    Function: ui.progressDisplayNoLinkValue
+
+    Updates the progress display for a "no link" scenario.
+
+    Parameters:
+    - value (number): The progress value to display. If the value is 100 or more, the display is updated immediately.
+    - message (string, optional): An optional message to display along with the progress value.
+
+    Behavior:
+    - If the value is 100 or more, the progress display is updated immediately with the provided value and message.
+    - If the value is less than 100, the progress display is updated only if a certain rate limit has been exceeded.
+    - The rate limit is controlled by `rfsuite.app.dialogs.nolinkRate` and `rfsuite.app.dialogs.nolinkRateLimit`.
+]]
 function ui.progressDisplayNoLinkValue(value, message)
     if value >= 100 then
         rfsuite.app.dialogs.noLink:value(value)
@@ -148,6 +217,8 @@ function ui.progressDisplayNoLinkValue(value, message)
     end
 end
 
+-- Disables all form fields in the rfsuite application.
+-- Iterates through the formFields array and disables each field if it is of type "userdata".
 function ui.disableAllFields()
     for i = 1, #rfsuite.app.formFields do 
         local field = rfsuite.app.formFields[i]
@@ -157,6 +228,8 @@ function ui.disableAllFields()
     end
 end
 
+-- Enables all form fields in the rfsuite application.
+-- Iterates through the formFields table and enables each field if it is of type "userdata".
 function ui.enableAllFields()
     for _, field in ipairs(rfsuite.app.formFields) do 
         if type(field) == "userdata" then
@@ -165,6 +238,9 @@ function ui.enableAllFields()
     end
 end
 
+-- Disables all navigation fields in the form except the currently active one.
+-- Iterates through the `formNavigationFields` table in the `rfsuite.app` namespace
+-- and disables each field by calling its `enable` method with `false` as the argument.
 function ui.disableAllNavigationFields()
     for i, v in pairs(rfsuite.app.formNavigationFields) do
         if x ~= v then
@@ -173,6 +249,8 @@ function ui.disableAllNavigationFields()
     end
 end
 
+-- Enables all navigation fields in the form except the one specified by 'x'.
+-- Iterates through 'rfsuite.app.formNavigationFields' and calls 'enable(true)' on each field.
 function ui.enableAllNavigationFields()
     for i, v in pairs(rfsuite.app.formNavigationFields) do
         if x ~= v then
@@ -181,17 +259,48 @@ function ui.enableAllNavigationFields()
     end
 end
 
+-- Enables a navigation field based on the given index.
+-- @param x The index of the navigation field to enable.
 function ui.enableNavigationField(x)
     local field = rfsuite.app.formNavigationFields[x]
     if field then field:enable(true) end
 end
 
+-- Disables the navigation field at the specified index.
+-- @param x The index of the navigation field to disable.
 function ui.disableNavigationField(x)
     local field = rfsuite.app.formNavigationFields[x]
     if field then field:enable(false) end
 end
 
+--[[
+    Checks if any progress-related display is active.
+    
+    @return boolean True if any of the progress, save, no link, or bad version displays are active; otherwise, false.
+]]
+function ui.progressDisplayIsActive()
+    return rfsuite.app.dialogs.progressDisplay or 
+           rfsuite.app.dialogs.saveDisplay or 
+           rfsuite.app.dialogs.progressDisplayEsc or 
+           rfsuite.app.dialogs.nolinkDisplay or 
+           rfsuite.app.dialogs.badversionDisplay
+end
 
+--[[
+    Function: ui.openMainMenu
+
+    Description:
+    Initializes and opens the main menu of the application. This function clears previous form fields, form lines, and graphics buttons, 
+    checks for the required Ethos version, and loads the main menu configuration from a specified file. It then sets up the main menu 
+    interface based on user preferences for icon size, and dynamically creates buttons for each section and page defined in the main menu 
+    configuration. The function also handles hiding sections and pages based on Ethos version, MSP version, and developer mode settings.
+
+    Parameters:
+    None
+
+    Returns:
+    None
+]]
 function ui.openMainMenu()
 
     rfsuite.app.formFields = {}
@@ -229,7 +338,7 @@ function ui.openMainMenu()
     if rfsuite.preferences.iconSize == 0 then
         -- Text icons
         padding = rfsuite.app.radio.buttonPaddingSmall
-        buttonW = (config.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
+        buttonW = (session.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
         buttonH = rfsuite.app.radio.navbuttonHeight
         numPerRow = rfsuite.app.radio.buttonsPerRow
     elseif rfsuite.preferences.iconSize == 1 then
@@ -255,7 +364,7 @@ function ui.openMainMenu()
     rfsuite.app.menuLastSelected["mainmenu"] = rfsuite.app.menuLastSelected["mainmenu"] or 1
 
     for idx, section in ipairs(MainMenu.sections) do
-        local hideSection = (section.ethosversion and rfsuite.config.ethosRunningVersion < section.ethosversion) or
+        local hideSection = (section.ethosversion and rfsuite.session.ethosRunningVersion < section.ethosversion) or
                             (section.mspversion and (rfsuite.session.apiVersion or 1) < section.mspversion) or
                             (section.developer and not rfsuite.config.developerMode)
 
@@ -307,14 +416,14 @@ function ui.openMainMenu()
     collectgarbage()
 end
 
-function ui.progressDisplayIsActive()
-    return rfsuite.app.dialogs.progressDisplay or 
-           rfsuite.app.dialogs.saveDisplay or 
-           rfsuite.app.dialogs.progressDisplayEsc or 
-           rfsuite.app.dialogs.nolinkDisplay or 
-           rfsuite.app.dialogs.badversionDisplay
-end
 
+--[[
+    Retrieves a label from a given page by its ID.
+
+    @param id The ID of the label to retrieve.
+    @param page The page containing the labels.
+    @return The label with the specified ID, or nil if not found.
+]]
 function ui.getLabel(id, page)
     if id == nil then return nil end
     for i = 1, #page do
@@ -325,6 +434,22 @@ function ui.getLabel(id, page)
     return nil
 end
 
+--[[
+    ui.fieldChoice(i)
+    
+    This function creates a choice field in the UI form based on the provided index `i`.
+    
+    Parameters:
+    - i: The index of the field in the `fields` table.
+    
+    The function performs the following steps:
+    1. Retrieves the application, page, fields, form lines, form fields, and radio text.
+    2. Determines the position of the text and field based on whether the field is inline.
+    3. Adds static text or a new form line based on the field's properties.
+    4. Converts the field's table data if available.
+    5. Adds a choice field to the form and sets up its get and set value functions.
+    6. Disables the field if specified.
+]]
 function ui.fieldChoice(i)
     local app      = rfsuite.app
     local page     = app.Page
@@ -380,6 +505,26 @@ function ui.fieldChoice(i)
     end
 end
 
+--[[
+    Function: ui.fieldNumber
+
+    Description:
+    This function creates and configures a number input field in the form. It handles various configurations 
+    such as inline positioning, text overrides, value scaling, and field-specific behaviors like focus, 
+    default values, and help text.
+
+    Parameters:
+    - i (number): The index of the field in the fields table.
+
+    Behavior:
+    - Applies radio text override if applicable.
+    - Determines the position of the field and text based on inline settings.
+    - Adjusts min and max values based on offset and scaling factors.
+    - Adds the number field to the form with specified configurations.
+    - Sets up callbacks for getting and setting the field value.
+    - Configures additional properties like focus behavior, default value, decimals, unit, step, and help text.
+    - Enables or disables instant change based on the field configuration.
+]]
 function ui.fieldNumber(i)
     local app    = rfsuite.app
     local page   = app.Page
@@ -484,6 +629,23 @@ function ui.fieldNumber(i)
 end
 
 
+--[[
+    Function: ui.fieldStaticText
+
+    This function adds a static text field to the form based on the provided index.
+
+    Parameters:
+        i (number) - The index of the field in the fields table.
+
+    Behavior:
+        - Retrieves the application, page, fields, form lines, form fields, and radio text.
+        - Determines the position and text for the static text field based on the field's properties.
+        - Adds the static text to the form.
+        - Increments the form line counter.
+        - Optionally hides the field if `HideMe` is true.
+        - Adds the static text field to the form fields table.
+        - Sets up focus, decimals, unit, and step properties if they are defined for the field.
+--]]
 function ui.fieldStaticText(i)
     local app       = rfsuite.app
     local page      = app.Page
@@ -535,6 +697,20 @@ function ui.fieldStaticText(i)
 end
 
 
+--[[
+    Function: ui.fieldText
+
+    Description:
+    This function is responsible for creating and configuring a text field in the UI. It handles the display of static text, 
+    inline text positioning, and the creation of text fields with various properties such as focus, disable, help text, 
+    and instant change behavior.
+
+    Parameters:
+    - i (number): The index of the field in the fields table.
+
+    Returns:
+    None
+]]
 function ui.fieldText(i)
     local app         = rfsuite.app
     local page        = app.Page
@@ -611,6 +787,23 @@ function ui.fieldText(i)
 end
 
 
+--[[
+    Function: ui.fieldLabel
+
+    Parameters:
+    - f (table): A table containing field properties.
+        - t (string, optional): A text value.
+        - t2 (string, optional): A secondary text value.
+        - label (string, optional): A label identifier.
+    - i (number): An index value (not used in the function).
+    - l (number): A length value (not used in the function).
+
+    Description:
+    This function handles the creation and management of field labels within the UI. 
+    It updates the text value based on the presence of secondary text and label properties. 
+    If a label is provided and it is different from the last processed label, 
+    it adds a new line to the form and updates the session's lastLabel and formLineCnt.
+]]
 function ui.fieldLabel(f, i, l)
     local app = rfsuite.app
 
@@ -642,12 +835,19 @@ function ui.fieldLabel(f, i, l)
 end
 
 
+--[[
+    Function: ui.fieldHeader
+    Description: Creates a header field in the UI with a title and navigation buttons.
+    Parameters:
+        title (string) - The title text to be displayed in the header.
+    Returns: None
+]]
 function ui.fieldHeader(title)
     local app    = rfsuite.app
     local utils  = rfsuite.utils
     local radio  = app.radio
     local formFields = app.formFields
-    local lcdWidth   = config.lcdWidth
+    local lcdWidth   = rfsuite.session.lcdWidth
 
     local w, h = utils.getWindowSize()
     local padding = 5
@@ -666,11 +866,41 @@ function ui.fieldHeader(title)
 end
 
 
+--- Opens a page and refreshes the UI.
+-- @param idx The index of the page.
+-- @param title The title of the page.
+-- @param script The script associated with the page.
+-- @param extra1 Additional parameter 1.
+-- @param extra2 Additional parameter 2.
+-- @param extra3 Additional parameter 3.
+-- @param extra5 Additional parameter 5.
+-- @param extra6 Additional parameter 6.
 function ui.openPageRefresh(idx, title, script, extra1, extra2, extra3, extra5, extra6)
     rfsuite.app.triggers.isReady = false
 end
 
 
+--[[
+    Function: ui.openPage
+
+    Description:
+    Opens a new page in the UI, initializing the global UI state, loading the specified module, 
+    and setting up form data and help text if available. If the loaded module has its own 
+    openPage function, it will be called with the provided arguments.
+
+    Parameters:
+    - idx (number): Index of the page to open.
+    - title (string): Title of the page.
+    - script (string): Script name of the module to load.
+    - extra1 (any): Additional parameter 1.
+    - extra2 (any): Additional parameter 2.
+    - extra3 (any): Additional parameter 3.
+    - extra5 (any): Additional parameter 5.
+    - extra6 (any): Additional parameter 6.
+
+    Returns:
+    None
+]]
 function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
     -- Initialize global UI state and clear form data
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
@@ -715,7 +945,7 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
         form.addStaticText(headerLine, {
             x = 0,
             y = rfsuite.app.radio.linePaddingTop,
-            w = config.lcdWidth,
+            w = session.lcdWidth,
             h = rfsuite.app.radio.navbuttonHeight
         }, rfsuite.app.Page.headerLine)
     end
@@ -759,6 +989,25 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 end
 
 
+--[[
+    Function: ui.navigationButtons
+
+    Description:
+    This function creates and positions navigation buttons (Menu, Save, Reload, Tool, Help) on the UI. 
+    It calculates the offsets for each button based on their visibility and positions them accordingly.
+
+    Parameters:
+    - x (number): The x-coordinate for the button placement.
+    - y (number): The y-coordinate for the button placement.
+    - w (number): The width of the buttons.
+    - h (number): The height of the buttons.
+
+    Notes:
+    - The function checks the visibility of each button from `rfsuite.app.Page.navButtons`.
+    - If a button is visible, it calculates its offset and adds it to the form.
+    - Each button has a specific action defined in its `press` function.
+    - The Help button attempts to load a help file and displays relevant help content.
+--]]
 function ui.navigationButtons(x, y, w, h)
 
     local xOffset = 0
@@ -926,11 +1175,19 @@ function ui.navigationButtons(x, y, w, h)
 
 end
 
+--[[
+    Opens a help dialog with the provided text data and section.
+
+    @param txtData (table) - A table containing lines of text to be displayed in the help dialog.
+    @param section (string) - The section of the help content to be displayed (currently unused).
+
+    @return (boolean) - Always returns true when the close button is pressed.
+]]
 function ui.openPageHelp(txtData, section)
     local message = table.concat(txtData, "\r\n\r\n")
 
     form.openDialog({
-        width = config.lcdWidth,
+        width = session.lcdWidth,
         title = "Help - " .. rfsuite.app.lastTitle,
         message = message,
         buttons = {{
@@ -942,9 +1199,26 @@ function ui.openPageHelp(txtData, section)
 end
 
 
--- form target; field from exsting page; field from strucxture
--- v is the structure value
--- f is the field from page value
+--[[
+    Injects API attributes into a form field.
+
+    @param formField (table) - The form field to inject attributes into.
+    @param f (table) - The form field's current attributes.
+    @param v (table) - The new attributes to inject.
+
+    Attributes injected:
+    - decimals: Number of decimal places.
+    - scale: Scale factor.
+    - mult: Multiplication factor.
+    - offset: Offset value.
+    - unit: Unit suffix.
+    - step: Step value.
+    - min: Minimum value.
+    - max: Maximum value.
+    - default: Default value.
+    - table: Table of values.
+    - help: Help text.
+]]
 function ui.injectApiAttributes(formField, f, v)
     local utils = rfsuite.utils
     local log = utils.log

@@ -1,6 +1,40 @@
 local LCD_W, LCD_H = rfsuite.utils.getWindowSize()
 local resolution = LCD_W .. "x" .. LCD_H
 
+--[[
+    This script defines a table `supportedRadios` that contains configuration settings for different radio models.
+    Each key in the table represents a screen resolution, and the value is a table of settings specific to that resolution.
+    
+    Supported Radios:
+    - TANDEM X20, TANDEM XE (800x480)
+    - TANDEM X18, TWIN X Lite (480x320)
+    - Horus X10, Horus X12 (480x272)
+    - Twin X14 (632x314)
+    
+    Configuration settings include:
+    - `inlinesize_mult`: Multiplier for inline size.
+    - `text`: Text size.
+    - `menuButtonWidth`: Width of menu buttons.
+    - `helpQrCodeSize`: Size of help QR code.
+    - `navbuttonHeight`: Height of navigation buttons.
+    - `buttonsPerRow`: Number of buttons per row.
+    - `buttonsPerRowSmall`: Number of small buttons per row.
+    - `buttonWidth`: Width of buttons.
+    - `buttonHeight`: Height of buttons.
+    - `buttonPadding`: Padding between buttons.
+    - `buttonWidthSmall`: Width of small buttons.
+    - `buttonHeightSmall`: Height of small buttons.
+    - `buttonPaddingSmall`: Padding between small buttons.
+    - `linePaddingTop`: Padding at the top of lines.
+    - `formRowHeight`: Height of form rows.
+    - `logGraphMenuOffset`: Offset for log graph menu.
+    - `logGraphWidthPercentage`: Width percentage for log graph.
+    - `logGraphButtonsPerRow`: Number of buttons per row in log graph.
+    - `logGraphKeyHeight`: Height of log graph key.
+    - `logGraphHeightOffset`: Height offset for log graph.
+    - `logKeyFont`: Font for log key.
+    - `sliderPaddingLeft`: Left padding for sliders.
+]]
 local supportedRadios = {
     -- TANDEM X20, TANDEM XE (800x480)
     ["784x406"] = {

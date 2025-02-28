@@ -23,6 +23,20 @@ local config = arg[1]
 
 protocol = {}
 
+--[[
+    supportedProtocols table contains configurations for different communication protocols.
+    
+    Each protocol configuration includes:
+    - mspTransport: The Lua script responsible for handling the MSP transport layer.
+    - mspProtocol: The name of the MSP protocol.
+    - push: Function to push telemetry data (only for sport protocol).
+    - maxTxBufferSize: Maximum size of the transmission buffer.
+    - maxRxBufferSize: Maximum size of the reception buffer.
+    - maxRetries: Maximum number of retries for communication.
+    - saveTimeout: Timeout duration for saving data.
+    - cms: Configuration management system settings (currently empty).
+    - pageReqTimeout: Timeout duration for page requests.
+]]
 local supportedProtocols = {
     sport = {
         mspTransport = "sp.lua",
@@ -47,11 +61,23 @@ local supportedProtocols = {
     }
 }
 
+--[[
+    Retrieves the communication protocol based on the availability of the "Rx RSSI1" source.
+    @return supportedProtocols.crsf if "Rx RSSI1" source is available, otherwise supportedProtocols.sport.
+]]
 function protocol.getProtocol()
     if system.getSource("Rx RSSI1") ~= nil then return supportedProtocols.crsf end
     return supportedProtocols.sport
 end
 
+--[[
+    Retrieves the available transport protocols.
+    
+    This function iterates over the supportedProtocols table and constructs a new table
+    containing the transport paths for each protocol.
+
+    @return table A table where each key corresponds to a protocol and the value is the transport path.
+]]
 function protocol.getTransports()
     local transport = {}
     for i, v in pairs(supportedProtocols) do transport[i] = "tasks/msp/" .. v.mspTransport end

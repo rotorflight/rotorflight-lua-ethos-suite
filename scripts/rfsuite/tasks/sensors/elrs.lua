@@ -27,6 +27,11 @@ local config = arg[1]
 
 local elrs = {}
 
+--[[
+This script checks if the `crsf.getSensor` function is available.
+If available, it retrieves the sensor object and assigns the `popFrame` and `pushFrame` methods from the sensor object to the `elrs` table.
+If `crsf.getSensor` is not available, it directly assigns the `crsf.popFrame` and `crsf.pushFrame` methods to the `elrs` table.
+]]
 if crsf.getSensor ~= nil then
     local sensor = crsf.getSensor()
     elrs.popFrame = function()
@@ -52,6 +57,17 @@ local rssiSensor = nil
 
 local CRSF_FRAME_CUSTOM_TELEM = 0x88
 
+--[[
+    Creates a telemetry sensor with the specified parameters and adds it to the sensors table.
+
+    @param uid (number) - Unique identifier for the sensor.
+    @param name (string) - Name of the sensor.
+    @param unit (number) - Unit of measurement for the sensor (optional).
+    @param dec (number) - Number of decimal places for the sensor value (optional).
+    @param value (number) - Initial value of the sensor (optional).
+    @param min (number) - Minimum value for the sensor (optional, default is -1000000000).
+    @param max (number) - Maximum value for the sensor (optional, default is 2147483647).
+]]
 local function createTelemetrySensor(uid, name, unit, dec, value, min, max)
     sensors['uid'][uid] = model.createSensor()
     sensors['uid'][uid]:name(name)
@@ -70,6 +86,24 @@ local function createTelemetrySensor(uid, name, unit, dec, value, min, max)
     if value then sensors['uid'][uid]:value(value) end
 end
 
+--[[
+    setTelemetryValue - Sets the telemetry value for a given sensor.
+
+    Parameters:
+    uid (number) - Unique identifier for the sensor.
+    subid (number) - Sub-identifier for the sensor (not used in the function).
+    instance (number) - Instance of the sensor (not used in the function).
+    value (number) - The value to set for the sensor.
+    unit (number) - The unit of the value.
+    dec (number) - Decimal places for the value.
+    name (string) - Name of the sensor.
+    min (number) - Minimum value for the sensor.
+    max (number) - Maximum value for the sensor.
+
+    The function checks if the sensor with the given uid exists. If not, it creates the sensor.
+    If the sensor exists, it updates the value if it has changed. It also checks if the sensor
+    has been deleted or is missing and handles it accordingly.
+]]
 local function setTelemetryValue(uid, subid, instance, value, unit, dec, name, min, max)
 
     if sensors['uid'][uid] == nil then
@@ -92,62 +126,214 @@ local function setTelemetryValue(uid, subid, instance, value, unit, dec, name, m
     end
 end
 
+--[[
+    decNil function
+    Short description: This function returns nil and the given position.
+    
+    Parameters:
+    - data: The data input (not used in the function).
+    - pos: The position input to be returned.
+    
+    Returns:
+    - nil: Always returns nil.
+    - pos: The position input.
+]]
 local function decNil(data, pos)
     return nil, pos
 end
 
+--[[
+    decU8 - Decodes an unsigned 8-bit integer from the given data at the specified position.
+    
+    Parameters:
+    data (table) - The table containing the data to decode.
+    pos (number) - The position in the data table to start decoding from.
+    
+    Returns:
+    number - The decoded unsigned 8-bit integer.
+    number - The next position in the data table after decoding.
+]]
 local function decU8(data, pos)
     return data[pos], pos + 1
 end
 
+--[[
+    decS8 - Decodes a signed 8-bit integer from the given data at the specified position.
+    
+    Parameters:
+    data (string) - The data string containing the 8-bit integer to decode.
+    pos (number) - The position in the data string to start decoding from.
+    
+    Returns:
+    number - The decoded signed 8-bit integer.
+    number - The next position in the data string after decoding.
+]]
 local function decS8(data, pos)
     local val, ptr = decU8(data, pos)
     return val < 0x80 and val or val - 0x100, ptr
 end
 
+--[[
+    decU16 - Decodes a 16-bit unsigned integer from a byte array.
+    
+    Parameters:
+    data (table) - The byte array containing the data.
+    pos (number) - The position in the array to start decoding from.
+    
+    Returns:
+    number - The decoded 16-bit unsigned integer.
+    number - The new position in the array after decoding.
+]]
 local function decU16(data, pos)
     return (data[pos] << 8) | data[pos + 1], pos + 2
 end
 
+--[[
+    decS16 - Decodes a signed 16-bit integer from the given data at the specified position.
+    
+    Parameters:
+    data (string) - The data string containing the encoded integer.
+    pos (number) - The position in the data string to start decoding from.
+    
+    Returns:
+    number - The decoded signed 16-bit integer.
+    number - The updated position pointer after decoding.
+]]
 local function decS16(data, pos)
     local val, ptr = decU16(data, pos)
     return val < 0x8000 and val or val - 0x10000, ptr
 end
 
+--[[
+    decU12U12 - Decodes two 12-bit unsigned integers from a byte array.
+
+    Parameters:
+    data (table) - The byte array containing the data to decode.
+    pos (number) - The starting position in the byte array.
+
+    Returns:
+    a (number) - The first 12-bit unsigned integer.
+    b (number) - The second 12-bit unsigned integer.
+    pos (number) - The updated position in the byte array after decoding.
+]]
 local function decU12U12(data, pos)
     local a = ((data[pos] & 0x0F) << 8) | data[pos + 1]
     local b = ((data[pos] & 0xF0) << 4) | data[pos + 2]
     return a, b, pos + 3
 end
 
+--[[
+    Decodes two signed 12-bit integers from the given data starting at the specified position.
+    
+    Parameters:
+    data (string) - The data string containing the encoded 12-bit integers.
+    pos (number) - The position in the data string to start decoding from.
+    
+    Returns:
+    a (number) - The first decoded signed 12-bit integer.
+    b (number) - The second decoded signed 12-bit integer.
+    ptr (number) - The updated position in the data string after decoding.
+]]
 local function decS12S12(data, pos)
     local a, b, ptr = decU12U12(data, pos)
     return a < 0x0800 and a or a - 0x1000, b < 0x0800 and b or b - 0x1000, ptr
 end
 
+--[[
+    decU24 - Decodes a 24-bit unsigned integer from a byte array.
+    
+    Parameters:
+    data (table) - The byte array containing the data.
+    pos (number) - The starting position in the byte array.
+    
+    Returns:
+    number - The decoded 24-bit unsigned integer.
+    number - The updated position in the byte array.
+]]
 local function decU24(data, pos)
     return (data[pos] << 16) | (data[pos + 1] << 8) | data[pos + 2], pos + 3
 end
 
+--[[
+    decS24 - Decodes a signed 24-bit integer from the given data starting at the specified position.
+    
+    Parameters:
+    data (string) - The data string containing the 24-bit integer to decode.
+    pos (number) - The position in the data string to start decoding from.
+    
+    Returns:
+    number - The decoded signed 24-bit integer.
+    number - The updated position pointer after decoding.
+]]
 local function decS24(data, pos)
     local val, ptr = decU24(data, pos)
     return val < 0x800000 and val or val - 0x1000000, ptr
 end
 
+--[[
+    Decodes a 32-bit unsigned integer from a given position in a byte array.
+    
+    Parameters:
+    data (table): The byte array containing the data.
+    pos (number): The position in the byte array from which to start decoding.
+    
+    Returns:
+    number: The decoded 32-bit unsigned integer.
+    number: The new position in the byte array after decoding.
+]]
 local function decU32(data, pos)
     return (data[pos] << 24) | (data[pos + 1] << 16) | (data[pos + 2] << 8) | data[pos + 3], pos + 4
 end
 
+--[[
+    decS32 - Decodes a signed 32-bit integer from the given data starting at the specified position.
+    
+    Parameters:
+    data (string) - The data string containing the encoded integer.
+    pos (number) - The position in the data string to start decoding from.
+    
+    Returns:
+    number - The decoded signed 32-bit integer.
+    number - The new position in the data string after decoding.
+]]
 local function decS32(data, pos)
     local val, ptr = decU32(data, pos)
     return val < 0x80000000 and val or val - 0x100000000, ptr
 end
 
+--[[
+    decCellV
+
+    This function decodes a single cell voltage from the given data at the specified position.
+    It uses the decU8 function to decode an unsigned 8-bit integer from the data.
+
+    Parameters:
+    - data: The data from which to decode the cell voltage.
+    - pos: The position in the data to start decoding from.
+
+    Returns:
+    - val: The decoded cell voltage value. If the decoded value is greater than 0, 
+           it adds 200 to the value. Otherwise, it returns 0.
+    - ptr: The updated position pointer after decoding.
+]]
 local function decCellV(data, pos)
     local val, ptr = decU8(data, pos)
     return val > 0 and val + 200 or 0, ptr
 end
 
+--[[
+    decCells function
+
+    This function decodes cell count and cell voltages from the given data and sets telemetry values accordingly.
+
+    Parameters:
+    - data: The data to decode.
+    - pos: The current position in the data.
+
+    Returns:
+    - nil: The function always returns nil.
+    - pos: The updated position in the data.
+]]
 local function decCells(data, pos)
     local cnt, val, vol
     cnt, pos = decU8(data, pos)
@@ -161,6 +347,16 @@ local function decCells(data, pos)
     return nil, pos
 end
 
+--[[
+    decControl - Decodes control data and sets telemetry values for pitch, roll, yaw, and collective control.
+
+    Parameters:
+    data (string) - The data to decode.
+    pos (number) - The current position in the data string.
+
+    Returns:
+    nil, pos (number) - Always returns nil and the updated position in the data string.
+]]
 local function decControl(data, pos)
     local r, p, y, c
     p, r, pos = decS12S12(data, pos)
@@ -172,6 +368,22 @@ local function decControl(data, pos)
     return nil, pos
 end
 
+--[[
+    decAttitude - Decodes attitude data from a given position in the data stream.
+    
+    Parameters:
+    data (string) - The data stream containing the attitude information.
+    pos (number) - The current position in the data stream to start decoding from.
+    
+    Returns:
+    nil - Always returns nil.
+    pos (number) - The updated position in the data stream after decoding.
+    
+    Description:
+    This function decodes pitch, roll, and yaw attitude values from the data stream
+    starting at the specified position. It then sets telemetry values for pitch, roll,
+    and yaw attitudes using the setTelemetryValue function.
+--]]
 local function decAttitude(data, pos)
     local p, r, y
     p, pos = decS16(data, pos)
@@ -183,6 +395,20 @@ local function decAttitude(data, pos)
     return nil, pos
 end
 
+--[[
+    decAccel - Decodes accelerometer data from a given data stream and sets telemetry values.
+
+    Parameters:
+    data (string) - The data stream containing accelerometer values.
+    pos (number) - The current position in the data stream.
+
+    Returns:
+    nil, pos (number) - Returns nil and the updated position in the data stream.
+
+    The function decodes three 16-bit signed integers from the data stream representing
+    the X, Y, and Z accelerometer values. It then sets these values as telemetry data
+    with appropriate units and ranges.
+]]
 local function decAccel(data, pos)
     local x, y, z
     x, pos = decS16(data, pos)
@@ -194,6 +420,16 @@ local function decAccel(data, pos)
     return nil, pos
 end
 
+--[[
+    decLatLong - Decodes latitude and longitude from the given data and sets telemetry values.
+
+    Parameters:
+    data (string) - The data containing encoded latitude and longitude.
+    pos (number) - The position in the data to start decoding from.
+
+    Returns:
+    nil, pos (number) - Returns nil and the updated position after decoding.
+]]
 local function decLatLong(data, pos)
     local lat, lon
     lat, pos = decS32(data, pos)
@@ -207,6 +443,23 @@ local function decLatLong(data, pos)
     return nil, pos
 end
 
+--[[
+    decAdjFunc - Decodes adjustment function and value from telemetry data.
+
+    Parameters:
+        data (string): The telemetry data to decode.
+        pos (number): The current position in the data string.
+
+    Returns:
+        nil: Always returns nil.
+        pos (number): The updated position in the data string after decoding.
+
+    Description:
+        This function decodes a 16-bit unsigned integer (function) and a 32-bit signed integer (value) from the given telemetry data.
+        It then sets two telemetry values:
+        - Adj. Source (0x1221) with the decoded function.
+        - Adj. Value (0x1222) with the decoded value.
+]]
 local function decAdjFunc(data, pos)
     local fun, val
     fun, pos = decU16(data, pos)
@@ -216,6 +469,17 @@ local function decAdjFunc(data, pos)
     return nil, pos
 end
 
+--[[
+    elrs.RFSensors is a table that maps sensor IDs to their respective sensor configurations.
+    Each sensor configuration includes:
+    - original: The original name of the sensor.
+    - name: The human-readable name of the sensor.
+    - unit: The unit of measurement for the sensor's value.
+    - prec: The precision of the sensor's value.
+    - min: The minimum value the sensor can report.
+    - max: The maximum value the sensor can report.
+    - dec: The function used to decode the sensor's value.
+]]
 elrs.RFSensors = {
     -- No data
     [0x1000] = {name = "NULL", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decNil},
@@ -410,6 +674,16 @@ elrs.telemetryFrameId = 0
 elrs.telemetryFrameSkip = 0
 elrs.telemetryFrameCount = 0
 
+--[[
+    Function: elrs.crossfirePop
+    Description: Handles the processing of Crossfire telemetry frames for ELRS (ExpressLRS).
+    Short: Processes Crossfire telemetry frames for ELRS.
+    Use: This function is called to process incoming telemetry frames from the Crossfire protocol. It checks if telemetry is paused or if MSP (Multiwii Serial Protocol) is busy. If so, it mutes sensor lost warnings for a specified duration. Otherwise, it processes the telemetry frame, decodes sensor values, and updates telemetry values accordingly.
+    Parameters: None
+    Returns: 
+        - true: if a telemetry frame was successfully processed.
+        - false: if no telemetry frame was processed or if telemetry is paused/MSP is busy.
+]]
 function elrs.crossfirePop()
 
     if (CRSF_PAUSE_TELEMETRY == true or rfsuite.app.triggers.mspBusy == true) then
@@ -452,6 +726,11 @@ function elrs.crossfirePop()
     end
 end
 
+--[[
+    Function: elrs.wakeup
+    Description: This function is called to handle the wakeup event for the ELRS (ExpressLRS) module. It checks if telemetry is active and if the RSSI sensor is available. If both conditions are met, it processes the Crossfire telemetry data unless telemetry is paused or the MSP (Multiwii Serial Protocol) is busy.
+    Usage: Call this function to manage the wakeup event for the ELRS module.
+]]
 function elrs.wakeup()
 
     if rfsuite.tasks.telemetry.active() and rfsuite.session.rssiSensor then while elrs.crossfirePop() do if (CRSF_PAUSE_TELEMETRY == true or rfsuite.app.triggers.mspBusy == true) then break end end end

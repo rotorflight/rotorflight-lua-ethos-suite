@@ -24,6 +24,35 @@ local arg = {...}
 
 local config = arg[1]
 
+--[[
+triggers table:
+    - exitAPP: boolean, indicates if the app should exit.
+    - noRFMsg: boolean, indicates if there is no RF message.
+    - triggerSave: boolean, indicates if a save operation should be triggered.
+    - triggerReload: boolean, indicates if a reload operation should be triggered.
+    - triggerReloadFull: boolean, indicates if a full reload operation should be triggered.
+    - triggerReloadNoPrompt: boolean, indicates if a reload without prompt should be triggered.
+    - reloadFull: boolean, indicates if a full reload is in progress.
+    - isReady: boolean, indicates if the app is ready.
+    - isSaving: boolean, indicates if a save operation is in progress.
+    - isSavingFake: boolean, indicates if a fake save operation is in progress.
+    - saveFailed: boolean, indicates if a save operation has failed.
+    - telemetryState: unknown, stores the state of telemetry.
+    - profileswitchLast: unknown, stores the last profile switch state.
+    - rateswitchLast: unknown, stores the last rate switch state.
+    - closeSave: boolean, indicates if the save operation should be closed.
+    - closeSaveFake: boolean, indicates if the fake save operation should be closed.
+    - badMspVersion: boolean, indicates if there is a bad MSP version.
+    - badMspVersionDisplay: boolean, indicates if the bad MSP version should be displayed.
+    - closeProgressLoader: boolean, indicates if the progress loader should be closed.
+    - mspBusy: boolean, indicates if MSP is busy.
+    - disableRssiTimeout: boolean, indicates if RSSI timeout should be disabled.
+    - timeIsSet: boolean, indicates if the time is set.
+    - invalidConnectionSetup: boolean, indicates if the connection setup is invalid.
+    - wasConnected: boolean, indicates if there was a previous connection.
+    - isArmed: boolean, indicates if the system is armed.
+    - showSaveArmedWarning: boolean, indicates if a warning should be shown when saving while armed.
+]]
 local triggers = {}
 triggers.exitAPP = false
 triggers.noRFMsg = false
@@ -52,6 +81,32 @@ triggers.wasConnected = false
 triggers.isArmed = false
 triggers.showSaveArmedWarning = false
 
+
+--[[
+This script initializes various session parameters for the rfsuite application to nil.
+The parameters include:
+- tailMode: Mode for the tail rotor.
+- swashMode: Mode for the swashplate.
+- activeProfile: Currently active profile.
+- activeRateProfile: Currently active rate profile.
+- activeProfileLast: Last active profile.
+- activeRateLast: Last active rate profile.
+- servoCount: Number of servos.
+- servoOverride: Override setting for servos.
+- clockSet: Clock setting.
+- apiVersion: Version of the API.
+- lastLabel: Last label used.
+- rssiSensor: RSSI sensor value.
+- formLineCnt: Form line count.
+- rateProfile: Rate profile.
+- governorMode: Mode for the governor.
+- ethosRunningVersion: Version of the Ethos running.
+- lcdWidth: Width of the LCD.
+- lcdHeight: Height of the LCD.
+
+-- Every attempt should be made if using session vars to record them here with a nil
+-- to prevent conflicts with other scripts that may use the same session vars.
+]]
 rfsuite.session.tailMode = nil
 rfsuite.session.swashMode = nil
 rfsuite.session.activeProfile = nil
@@ -61,16 +116,86 @@ rfsuite.session.activeRateLast = nil
 rfsuite.session.servoCount = nil
 rfsuite.session.servoOverride = nil
 rfsuite.session.clockSet = nil
-
+rfsuite.session.apiVersion = nil
+rfsuite.session.activeProfile = nil
+rfsuite.session.activeRateProfile = nil
+rfsuite.session.activeProfileLast = nil
+rfsuite.session.activeRateLast = nil
+rfsuite.session.servoCount = nil
+rfsuite.session.servoOverride = nil
+rfsuite.session.clockSet = nil
+rfsuite.session.lastLabel = nil
+rfsuite.session.tailMode = nil
+rfsuite.session.swashMode = nil
+rfsuite.session.rssiSensor = nil
+rfsuite.session.formLineCnt = nil
+rfsuite.session.rateProfile = nil
+rfsuite.session.governorMode = nil
+rfsuite.session.servoOverride = nil
+rfsuite.session.ethosRunningVersion = nil
+rfsuite.session.lcdWidth = nil
+rfsuite.session.lcdHeight = nil
+--[[
+    Initializes the app.triggers table and assigns it to the triggers table.
+    This is used to set up the triggers for the application.
+]]
 app.triggers = {}
 app.triggers = triggers
 
+
+--[[
+    Initializes the app.ui table and loads the UI library.
+
+    The app.ui table is first initialized as an empty table.
+    Then, the UI library is loaded from "app/lib/ui.lua" using the loadfile function,
+    and the result is assigned to app.ui. The config parameter is passed to the loaded file.
+
+]]
 app.ui = {}
 app.ui = assert(loadfile("app/lib/ui.lua"))(config)
+
+
+--[[
+    Initializes the app.utils table and loads utility functions from the specified file.
+    The utility functions are loaded from "app/lib/utils.lua" and are passed the 'config' parameter.
+    If the file cannot be loaded, an error will be thrown.
+]]
 app.utils = {}
 app.utils = assert(loadfile("app/lib/utils.lua"))(config)
 
 
+--[[
+app.sensors: Table to store sensor data.
+app.formFields: Table to store form fields.
+app.formNavigationFields: Table to store form navigation fields.
+app.PageTmp: Temporary storage for page data.
+app.Page: Table to store page data.
+app.saveTS: Timestamp for the last save operation.
+app.lastPage: Stores the last accessed page.
+app.lastSection: Stores the last accessed section.
+app.lastIdx: Stores the last accessed index.
+app.lastTitle: Stores the last accessed title.
+app.lastScript: Stores the last executed script.
+app.gfx_buttons: Table to store graphical buttons.
+app.uiStatus: Table to store UI status constants.
+app.pageStatus: Table to store page status constants.
+app.telemetryStatus: Table to store telemetry status constants.
+app.uiState: Current state of the UI.
+app.pageState: Current state of the page.
+app.lastLabel: Stores the last accessed label.
+app.NewRateTable: Table to store new rate data.
+app.RateTable: Table to store rate data.
+app.fieldHelpTxt: Stores help text for fields.
+app.protocol: Table to store protocol data.
+app.protocolTransports: Table to store protocol transport data.
+app.radio: Table to store radio data.
+app.sensor: Table to store sensor data.
+app.init: Initialization function.
+app.guiIsRunning: Boolean indicating if the GUI is running.
+app.menuLastSelected: Table to store the last selected menu item.
+app.adjfunctions: Table to store adjustment functions.
+app.profileCheckScheduler: Scheduler for profile checks using os.clock().
+]]
 app.sensors = {}
 app.formFields = {}
 app.formNavigationFields = {}
@@ -102,6 +227,22 @@ app.menuLastSelected = {}
 app.adjfunctions = nil
 app.profileCheckScheduler = os.clock()
 
+--[[
+app.audio: Table containing boolean flags for various audio states.
+    - playDemo: Flag to indicate if demo audio should be played.
+    - playConnecting: Flag to indicate if connecting audio should be played.
+    - playConnected: Flag to indicate if connected audio should be played.
+    - playTimeout: Flag to indicate if timeout audio should be played.
+    - playSaving: Flag to indicate if saving audio should be played.
+    - playLoading: Flag to indicate if loading audio should be played.
+    - playEscPowerCycle: Flag to indicate if ESC power cycle audio should be played.
+    - playServoOverideDisable: Flag to indicate if servo override disable audio should be played.
+    - playServoOverideEnable: Flag to indicate if servo override enable audio should be played.
+    - playMixerOverideDisable: Flag to indicate if mixer override disable audio should be played.
+    - playMixerOverideEnable: Flag to indicate if mixer override enable audio should be played.
+    - playEraseFlash: Flag to indicate if erase flash audio should be played.
+app.offlineMode: Flag to indicate if the application is in offline mode.
+]]
 app.audio = {}
 app.audio.playDemo = false
 app.audio.playConnecting = false
@@ -117,45 +258,91 @@ app.audio.playMixerOverideEnable = false
 app.audio.playEraseFlash = false
 app.offlineMode = false
 
+--[[
+    app.dialogs: Table to manage dialog states and properties.
+    - progress: Boolean indicating if a progress dialog is active.
+    - progressDisplay: Boolean indicating if the progress dialog is displayed.
+    - progressWatchDog: Timer or reference to monitor progress dialog.
+    - progressCounter: Counter to track progress updates.
+    - progressRateLimit: Timestamp to limit the rate of progress updates.
+    - progressRate: Number specifying how many times per second the dialog value can change.
+]]
 app.dialogs = {}
 app.dialogs.progress = false
 app.dialogs.progressDisplay = false
 app.dialogs.progressWatchDog = nil
 app.dialogs.progressCounter = 0
 app.dialogs.progressRateLimit = os.clock()
-app.dialogs.progressRate = 0.2 -- how many times per second we can change dialog value
+app.dialogs.progressRate = 0.2 
 
+--[[
+    This section of the code initializes several variables related to the progress of ESC (Electronic Speed Controller) operations in the app.
+
+    Variables:
+    - app.dialogs.progressESC: A boolean flag indicating the progress state of the ESC.
+    - app.dialogs.progressDisplayEsc: A boolean flag indicating whether to display the ESC progress.
+    - app.dialogs.progressWatchDogESC: A variable for the ESC watchdog timer.
+    - app.dialogs.progressCounterESC: A counter for tracking ESC progress.
+    - app.dialogs.progressESCRateLimit: A timestamp for rate limiting ESC progress updates.
+    - app.dialogs.progressESCRate: The rate at which ESC progress updates are allowed (in seconds).
+]]
 app.dialogs.progressESC = false
 app.dialogs.progressDisplayEsc = false
 app.dialogs.progressWatchDogESC = nil
 app.dialogs.progressCounterESC = 0
 app.dialogs.progressESCRateLimit = os.clock()
-app.dialogs.progressESCRate = 2.5 -- how many times per second we can change dialog value
+app.dialogs.progressESCRate = 2.5 
 
+--[[
+    Initializes the save dialog properties for the app.
+    
+    Properties:
+    - save: Boolean flag indicating if the save dialog is active.
+    - saveDisplay: Boolean flag indicating if the save dialog should be displayed.
+    - saveWatchDog: Timer or watchdog for the save dialog (initially nil).
+    - saveProgressCounter: Counter to track the progress of the save operation.
+    - saveRateLimit: Timestamp of the last save operation to enforce rate limiting.
+    - saveRate: Minimum time interval (in seconds) between save operations.
+]]
 app.dialogs.save = false
 app.dialogs.saveDisplay = false
 app.dialogs.saveWatchDog = nil
 app.dialogs.saveProgressCounter = 0
 app.dialogs.saveRateLimit = os.clock()
-app.dialogs.saveRate = 0.2 -- how many times per second we can change dialog value
+app.dialogs.saveRate = 0.2
 
+--[[
+    Initializes the 'nolink' dialog properties within the 'app' namespace.
+    
+    Properties:
+    - nolink: Boolean flag indicating the presence of a link.
+    - nolinkDisplay: Boolean flag for displaying the 'nolink' dialog.
+    - nolinkValueCounter: Counter for the 'nolink' dialog value.
+    - nolinkRateLimit: Timestamp for rate limiting the 'nolink' dialog updates.
+    - nolinkRate: Time interval (in seconds) for rate limiting the 'nolink' dialog updates.
+]]
 app.dialogs.nolink = false
 app.dialogs.nolinkDisplay = false
 app.dialogs.nolinkValueCounter = 0
 app.dialogs.nolinkRateLimit = os.clock()
-app.dialogs.nolinkRate = 0.2 -- how many times per second we can change dialog value
+app.dialogs.nolinkRate = 0.2 
 
+--[[
+    This code snippet initializes two boolean flags within the `app.dialogs` table:
+    - `badversion`: Indicates whether there is a bad version detected.
+    - `badversionDisplay`: Controls the display state of the bad version dialog.
+]]
 app.dialogs.badversion = false
 app.dialogs.badversionDisplay = false
 
-rfsuite.config.saveTimeout = nil
-rfsuite.config.requestTimeout = nil
-rfsuite.config.maxRetries = nil
-rfsuite.config.lcdWidth = nil
-rfsuite.config.lcdHeight = nil
-rfsuite.config.ethosRunningVersion = nil
-
--- RETURN THE CURRENT RSSI SENSOR VALUE 
+--[[
+    Function: app.getRSSI
+    Description: Retrieves the RSSI (Received Signal Strength Indicator) value.
+    Returns 100 if the system is in simulation mode, the RSSI sensor check is skipped, or the app is in offline mode.
+    Otherwise, returns 100 if telemetry is active, and 0 if it is not.
+    Returns:
+        number - The RSSI value (100 or 0).
+]]
 function app.getRSSI()
     if system:getVersion().simulation == true or rfsuite.preferences.skipRssiSensorCheck == true or app.offlineMode == true then return 100 end
 
@@ -166,7 +353,13 @@ function app.getRSSI()
     end
 end
 
--- RESET ALL VALUES TO DEFAULTS. FUNCTION IS CALLED WHEN THE CLOSE EVENT RUNS
+
+--[[
+    Function: app.resetState
+    Description: Resets the application state by initializing various configuration settings, triggers, dialogs, and session variables to their default values. Also, it forces garbage collection to free up memory.
+    Parameters: None
+    Returns: None
+]]
 function app.resetState()
 
     config.useCompiler = true
@@ -196,19 +389,26 @@ function app.resetState()
     collectgarbage()
 end
 
--- RETURN CURRENT LCD SIZE
+
+-- Retrieves the current window size from the LCD.
+-- @return The window size as provided by lcd.getWindowSize().
 function app.getWindowSize()
     return lcd.getWindowSize()
 end
 
--- INAVALIDATE THE PAGES VARIABLE. TYPICALLY CALLED AFTER WRITING MSP DATA
+-- Function to invalidate the pages variable.
+-- Typically called after writing MSP data.
+-- Resets the app.Page to nil, sets app.pageState to app.pageStatus.display,
+-- and initializes app.saveTS to 0.
 local function invalidatePages()
     app.Page = nil
     app.pageState = app.pageStatus.display
     app.saveTS = 0
 end
 
--- ISSUE AN MSP COMNMAND TO REBOOT THE FBL UNIT
+-- Reboots the flight controller (FBL unit) by issuing an MSP command.
+-- Sets the application page state to 'rebooting' and adds a reboot command to the MSP queue.
+-- Once the command is processed, it invalidates the pages.
 local function rebootFc()
 
     app.pageState = app.pageStatus.rebooting
@@ -221,7 +421,11 @@ local function rebootFc()
     })
 end
 
--- ISSUE AN MSP COMMAND TO TELL THE FBL TO WRITE THE DATA TO EPPROM
+-- This table represents an MSP (MultiWii Serial Protocol) command to write data to EEPROM.
+-- @field command The MSP command code for EEPROM write (250).
+-- @field processReply Function to handle the response from the EEPROM write command.
+-- @field errorHandler Function to handle errors that occur during the EEPROM write command.
+-- @field simulatorResponse Table to handle simulator responses (currently empty).
 local mspEepromWrite = {
     command = 250, -- MSP_EEPROM_WRITE, fails when armed
     processReply = function(self, buf)
@@ -245,7 +449,20 @@ local mspEepromWrite = {
     simulatorResponse = {}
 }
 
--- SAVE ALL SETTINGS 
+--[[
+    Function: app.settingsSaved
+
+    Description:
+    This function handles the saving of settings. It checks if the current page requires writing to EEPROM.
+    If so, it queues an EEPROM write task unless one is already in progress. If no EEPROM write is needed,
+    it invalidates the pages and sets a trigger to close the save process. Finally, it runs garbage collection.
+
+    Parameters:
+    None
+
+    Returns:
+    None
+]]
 function app.settingsSaved()
 
     -- check if this page requires writing to eeprom to save (most do)
@@ -263,7 +480,13 @@ function app.settingsSaved()
     collectgarbage()
 end
 
--- Save all settings
+--[[
+    Function: saveSettings
+    Description: This function saves all settings by making API calls to save data. It handles the saving process differently for multi mspapi.
+    It logs the saving process, initializes APIs, sets error and completion handlers, injects values into the payload, and sends the payload.
+    If preSave and postSave functions are defined, they are executed before and after the saving process respectively.
+    The function also ensures that all API requests are completed before finalizing the save process.
+--]]
 local function saveSettings()
     if app.pageState == app.pageStatus.saving then return end
 
@@ -332,8 +555,20 @@ local function saveSettings()
     
 end
 
--- Update the page with the new values received from the MSP and API structures
--- we do both initial values and attributes in one loop to preven to many cascading loops
+--[[
+    Updates the page with new values received from the MSP and API structures.
+    This function handles both initial values and attributes in one loop to prevent too many cascading loops.
+
+    @param values - Table containing the new values to update the form with.
+    @param structure - Table containing the structure of the MSP and API data.
+
+    The function performs the following steps:
+    1. Ensures that `app.Page.mspapi.formdata`, `app.Page.mspapi.api`, and `rfsuite.app.Page.fields` exist.
+    2. Defines a helper function `combined_api_parts` to split and convert API keys.
+    3. Creates a reversed API table for quick lookups if it doesn't already exist.
+    4. Iterates over the form fields and updates them based on the provided values and structure.
+    5. Logs debug information and handles cases where fields or values are missing.
+--]]
 function app.mspApiUpdateFormAttributes(values, structure)
     -- Ensure app.Page and its mspapi.formdata exist
     if not (app.Page.mspapi.formdata and app.Page.mspapi.api and rfsuite.app.Page.fields) then
@@ -425,7 +660,26 @@ function app.mspApiUpdateFormAttributes(values, structure)
 end
 
 
--- REQUEST A PAGE USING THE NEW API FORM SYSTEM
+--[[
+    requestPage - Requests a page using the new API form system.
+
+    This function ensures that the necessary API and form data exist, initializes
+    the state if needed, and processes API calls sequentially. It prevents duplicate
+    execution if already running and handles both API success and error cases.
+
+    The function performs the following steps:
+    1. Checks if app.Page.mspapi and its api/formdata exist.
+    2. Initializes the apiState if not already initialized.
+    3. Prevents duplicate execution by checking the isProcessing flag.
+    4. Initializes values and structure on the first run.
+    5. Processes each API call sequentially using a recursive function.
+    6. Handles API success by storing the response and moving to the next API.
+    7. Handles API errors by logging the error and moving to the next API.
+    8. Resets the state and triggers postRead and postLoad functions if they exist.
+
+    Note: The function uses rfsuite.utils.log for logging and rfsuite.tasks.msp.api.load
+    for loading the API. It also updates form attributes and manages progress loader triggers.
+]]
 local function requestPage()
     -- Ensure app.Page and its mspapi.api exist
     if not app.Page.mspapi then
@@ -536,7 +790,15 @@ local function requestPage()
     processNextAPI()
 end
 
--- UPDATE CURRENT TELEMETRY STATE - RUNS MOST CLOCK CYCLES
+--[[
+    Updates the current telemetry state. This function is called frequently to check the telemetry status.
+    
+    - If the system is not in simulation mode:
+        - Sets telemetry state to `noSensor` if the RSSI sensor is not available.
+        - Sets telemetry state to `noTelemetry` if the RSSI value is 0.
+        - Sets telemetry state to `ok` if the RSSI value is valid.
+    - If the system is in simulation mode, sets telemetry state to `ok`.
+]]
 function app.updateTelemetryState()
 
     if system:getVersion().simulation ~= true then
@@ -554,15 +816,20 @@ function app.updateTelemetryState()
 
 end
 
--- PAINT.  HOOK INTO PAINT FUNCTION TO ALLOW lcd FUNCTIONS TO BE USED
--- NOTE. this function will only be called if lcd.refesh is triggered. it is not a wakeup function
+-- Function: app.paint
+-- Description: Calls the paint method of the current page if it exists.
+-- Note: This function is triggered by lcd.refresh and is not a wakeup function.
 function app.paint()
     if app.Page and app.Page.paint then
         app.Page.paint(app.Page)
     end
 end
 
-
+-- This function is called to wake up the application.
+-- It sets the `app.guiIsRunning` flag to true and then
+-- calls the `app.wakeupUI` and `app.wakeupForm` functions
+-- to initialize the user interface and form respectively.
+-- @param widget The widget that triggered the wakeup.
 function app.wakeup(widget)
     app.guiIsRunning = true
 
@@ -570,9 +837,15 @@ function app.wakeup(widget)
     app.wakeupForm()
 end
 
--- WAKEUPFORM.  RUN A FUNCTION CALLED wakeup THAT IS RETURNED WHEN REQUESTING A PAGE
--- THIS ESSENTIALLY GIVES US A TIMER THAT CAN BE USED BY A PAGE THAT HAS LOADED TO
--- HANDLE BACKGROUND PROCESSING
+--[[
+    Function: app.wakeupForm
+    Description: Executes the wakeup function of the current page if it exists. This function acts as a timer for background processing on the loaded page.
+    Preconditions:
+        - app.Page must be defined.
+        - app.uiState must be equal to app.uiStatus.pages.
+        - app.Page.wakeup must be a valid function.
+    Usage: Call this function to handle background processing for the current page.
+]]
 function app.wakeupForm()
     if app.Page and app.uiState == app.uiStatus.pages and app.Page.wakeup then
         -- run the pages wakeup function if it exists
@@ -580,8 +853,28 @@ function app.wakeupForm()
     end
 end
 
--- WAKUP UI.  UI RUNS AT LOWER INTERVAL, TO SAVE CPU POWER.
--- THE GUTS OF ETHOS FORMS IS HANDLED WITHIN THIS FUNCTION
+--[[ 
+    Function: app.wakeupUI
+    Description: Handles the main UI wakeup routine for the Ethos forms. This function manages various triggers and states to ensure the UI operates efficiently and responds to user interactions and system events.
+    
+    Triggers and States Managed:
+    - exitAPP: Exits the application if triggered.
+    - closeProgressLoader: Accelerates the closing of the progress loader.
+    - closeSave: Manages the save progress and closes the save loader.
+    - closeSaveFake: Simulates the save process in a simulator environment.
+    - profileSwitching: Handles profile switching and triggers reloads if necessary.
+    - telemetryState: Manages telemetry state and displays no-link warnings.
+    - triggerSave: Prompts the user to save settings.
+    - triggerReloadNoPrompt: Triggers a reload without user prompt.
+    - triggerReload: Prompts the user to reload data.
+    - triggerReloadFull: Prompts the user to perform a full reload.
+    - isSaving: Displays a progress box during the save process.
+    - isSavingFake: Simulates the save process in a simulator environment.
+    - showSaveArmedWarning: Displays a warning if saving while armed.
+    - reload: Reloads the current page.
+    - reloadFull: Performs a full reload of the current page.
+    - audio alerts: Plays various audio alerts based on the current state and preferences.
+]]
 function app.wakeupUI()
 
     -- exit app called : quick abort
@@ -1144,6 +1437,14 @@ function app.wakeupUI()
 
 end
 
+--[[
+    Creates the log tool for the application.
+    This function initializes various configurations and settings for the log tool,
+    including disabling buffer warnings, setting the environment version, 
+    determining the LCD dimensions, loading the radio configuration, 
+    and setting the initial UI state. It also checks for developer mode, 
+    updates the menu selection, displays the progress, and opens the logs page in offline mode.
+]]
 function app.create_logtool()
     triggers.showUnderUsedBufferWarning = false
     triggers.showOverUsedBufferWarning = false
@@ -1152,7 +1453,7 @@ function app.create_logtool()
     config.environment = system.getVersion()
     config.ethosRunningVersion = {config.environment.major, config.environment.minor, config.environment.revision}
 
-    rfsuite.config.lcdWidth, rfsuite.config.lcdHeight = rfsuite.utils.getWindowSize()
+    rfsuite.session.lcdWidth, rfsuite.session.lcdHeight = rfsuite.utils.getWindowSize()
     app.radio = assert(loadfile("app/radios.lua"))().msp
 
     app.uiState = app.uiStatus.init
@@ -1169,13 +1470,28 @@ function app.create_logtool()
     rfsuite.app.ui.openPage(1, "Logs", "logs/logs.lua", 1) -- final param says to load in standalone mode
 end
 
+--[[
+    Function: app.create
+
+    Initializes the application by setting up the environment configuration, 
+    determining the LCD dimensions, loading the radio configuration, 
+    setting the initial UI state, and checking for developer mode.
+
+    Steps:
+    1. Sets the environment configuration using the system version.
+    2. Retrieves and sets the LCD width and height.
+    3. Loads the radio configuration from "app/radios.lua".
+    4. Sets the initial UI state to 'init'.
+    5. Checks for the existence of a developer mode file and enables developer mode if found.
+    6. Opens the main menu UI.
+]]
 function app.create()
 
     -- session.apiVersion = nil
     config.environment = system.getVersion()
     config.ethosRunningVersion = {config.environment.major, config.environment.minor, config.environment.revision}
 
-    rfsuite.config.lcdWidth, rfsuite.config.lcdHeight = rfsuite.utils.getWindowSize()
+    rfsuite.session.lcdWidth, rfsuite.session.lcdHeight = rfsuite.utils.getWindowSize()
     app.radio = assert(loadfile("app/radios.lua"))().msp
 
     app.uiState = app.uiStatus.init
@@ -1189,7 +1505,22 @@ function app.create()
 
 end
 
--- EVENT:  Called for button presses, scroll events, touch events, etc.
+--[[
+Handles various events for the app, including key presses and page events.
+
+Parameters:
+- widget: The widget triggering the event.
+- category: The category of the event.
+- value: The value associated with the event.
+- x: The x-coordinate of the event.
+- y: The y-coordinate of the event.
+
+Returns:
+- 0 if a rapid exit is triggered.
+- The return value of the page event handler if it handles the event.
+- true if the event is handled by the generic event handler.
+- false if the event is not handled.
+]]
 function app.event(widget, category, value, x, y)
 
     -- long press on return at any point will force an rapid exit
@@ -1248,6 +1579,20 @@ function app.event(widget, category, value, x, y)
     return false
 end
 
+--[[
+Closes the application and performs necessary cleanup operations.
+
+This function sets the application state to indicate that the GUI is no longer running
+and that the application is not in offline mode. It then checks if there is an active
+page and if the current UI state is either in pages or main menu, and if so, it calls
+the close method of the active page.
+
+Additionally, it closes any open progress, save, or no-link dialogs. It then invalidates
+the pages, resets the application state, and exits the system.
+
+Returns:
+    true: Always returns true to indicate successful closure.
+]]
 function app.close()
     app.guiIsRunning = false
     app.offlineMode = false

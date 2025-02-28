@@ -28,7 +28,23 @@ local apiCache = {}
 local apidir = "tasks/msp/api/"
 local api_path = apidir
 
--- Function to load a specific API file by name
+
+--[[
+    Loads and returns an API module by its name, with caching and logging functionality.
+    
+    @param apiName (string) - The name of the API module to load.
+    @return (table) - The loaded API module, or nil if the module could not be loaded.
+    
+    The function performs the following steps:
+    1. Checks if the API module is already cached and returns it if available.
+    2. Constructs the file path for the API module.
+    3. Checks if the API file exists.
+    4. Loads the API file and verifies it contains valid read or write functions.
+    5. Wraps the read, write, setValue, and readValue functions with logging functionality.
+    6. Caches the modified API module and returns it.
+    
+    Logs errors if the API file is not found or does not contain valid functions.
+]]
 local function loadAPI(apiName)
     -- Return cached version if already loaded
     if apiCache[apiName] then return apiCache[apiName] end
@@ -99,7 +115,13 @@ local function loadAPI(apiName)
 end
 
 
--- Function to directly return the API table instead of a wrapper function
+
+--[[
+    Loads the specified API by name.
+    
+    @param apiName (string) - The name of the API to load.
+    @return (table) - The loaded API table, or nil if the API could not be loaded.
+]]
 function apiLoader.load(apiName)
     local api = loadAPI(apiName)
     if api == nil then
@@ -108,15 +130,36 @@ function apiLoader.load(apiName)
     return api
 end
 
-
--- Function to get byte size from type
+--[[
+    Returns the size in bytes of the given data type.
+    
+    @param data_type (string): The data type to get the size of. 
+                               Valid types are "U8", "U16", "U24", "U32", "S8", "S16", "S24", "S32".
+    
+    @return (number): The size in bytes of the given data type. Defaults to 1 if the data type is unknown.
+]]
 local function get_type_size(data_type)
     local type_sizes = {U8 = 1, U16 = 2, U24 = 3, U32 = 4, S8 = 1, S16 = 2, S24 = 3, S32 = 4}
     return type_sizes[data_type] or 1 -- Default to U8 if unknown
 end
 
 
--- Function to parse the msp Data.  Optionally pass a processed(buf, structure) to provide more data formating
+--[[
+Parses MSP data from a buffer according to a given structure.
+
+@param buf (string) The buffer containing the MSP data.
+@param structure (table) The structure defining the data types and fields.
+@param processed (table) Optional table to include in the returned data.
+@param other (table) Optional table to include in the returned data.
+
+@return (table) A table containing:
+    - parsed: The parsed data as per the structure.
+    - buffer: The original buffer.
+    - structure: The original structure.
+    - positionmap: A map of field names to their byte positions.
+    - processed: The processed table if supplied.
+    - other: The other table if supplied.
+--]]
 function apiLoader.parseMSPData(buf, structure, processed, other)
 
     -- Calculate the expected buffer length based on the structure
@@ -244,7 +287,17 @@ function apiLoader.parseMSPData(buf, structure, processed, other)
 end
 
 
--- Function to calculate MIN_BYTES and filtered structure
+
+--[[
+    Calculates the minimum number of bytes required for a given structure.
+
+    @param structure (table): A table containing parameter definitions. Each parameter is a table with the following fields:
+        - type (string): The data type of the parameter.
+        - apiVersion (number, optional): The minimum API version required for this parameter.
+        - mandatory (boolean, optional): Whether the parameter is mandatory. Defaults to true if not specified.
+
+    @return (number): The total number of bytes required for the structure.
+]]
 function apiLoader.calculateMinBytes(structure)
 
     local apiVersion = rfsuite.session.apiVersion
@@ -267,7 +320,16 @@ function apiLoader.calculateMinBytes(structure)
     return totalBytes
 end
 
--- Function to strip filtered structure based on msp version
+
+--[[
+    Filters a given structure based on the API version.
+
+    @param structure (table): The structure to be filtered. Each element in the structure
+                              should be a table that may contain an 'apiVersion' field.
+
+    @return (table): A new table containing only the elements from the input structure
+                     that meet the API version criteria.
+]]
 function apiLoader.filterByApiVersion(structure)
 
     local apiVersion = rfsuite.session.apiVersion or 12.06
@@ -277,7 +339,7 @@ function apiLoader.filterByApiVersion(structure)
         local insert_param = false
 
         -- API version check logic
-        if not param.apiVersion or (apiVersion and apiVersion >= param.apiVersion) then
+        if not param.apiVersion or (apiVersion and rfsuite.utils.round(apiVersion,2) >= rfsuite.utils.round(param.apiVersion,2)) then
             insert_param = true
         end
 
@@ -289,6 +351,17 @@ function apiLoader.filterByApiVersion(structure)
     return filteredStructure
 end
 
+--[[
+    Builds a simulated response based on the provided data structure.
+
+    This function generates a response table for simulation purposes. It checks if the system is in simulation mode,
+    and if so, it constructs the response based on the `simResponse` field of each element in the `dataStructure`.
+    If `simResponse` is not provided for a field, it inserts default values based on the field's type size.
+
+    @param dataStructure (table): A table containing the data structure with fields that may include `simResponse`.
+
+    @return response (table or nil): A table containing the simulated response values, or nil if not in simulation mode.
+]]
 function apiLoader.buildSimResponse(dataStructure)
 
     if system:getVersion().simulation == false then
@@ -315,7 +388,23 @@ function apiLoader.buildSimResponse(dataStructure)
     return response
 end
 
--- handlers.lua
+
+--[[
+    Creates a new instance of handlers for complete and error events.
+    
+    Functions:
+    - setCompleteHandler(handlerFunction): Sets the custom complete handler. Expects a function as an argument.
+    - setErrorHandler(handlerFunction): Sets the custom error handler. Expects a function as an argument.
+    - getCompleteHandler(): Returns the current custom complete handler.
+    - getErrorHandler(): Returns the current custom error handler.
+    
+    Returns:
+    A table with the following functions:
+    - setCompleteHandler
+    - setErrorHandler
+    - getCompleteHandler
+    - getErrorHandler
+]]
 function apiLoader.createHandlers()
     -- Instance-specific storage
     local customCompleteHandler = nil
@@ -352,7 +441,23 @@ function apiLoader.createHandlers()
     return {setCompleteHandler = setCompleteHandler, setErrorHandler = setErrorHandler, getCompleteHandler = getCompleteHandler, getErrorHandler = getErrorHandler}
 end
 
--- payload builder
+
+--[[
+    Builds a write payload for the given API name and payload data based on the provided API structure.
+
+    @param apiname (string) The name of the API.
+    @param payload (table) The data to be serialized into the payload.
+    @param api_structure (table) The structure defining the API fields and their types.
+
+    @return (table) A byte stream representing the serialized payload.
+
+    Internal Functions:
+    - get_scale_from_page(field_name): Retrieves the scale factor for a given field name from the page data.
+    - serialize_value(buf, value, data_type, byteorder): Serializes a value into the buffer based on its data type and byte order.
+
+    Example Usage:
+    local byte_stream = apiLoader.buildWritePayload("exampleAPI", {field1 = 10, field2 = 20}, api_structure)
+]]
 function apiLoader.buildWritePayload(apiname,payload, api_structure)
 
     local function get_scale_from_page(field_name)

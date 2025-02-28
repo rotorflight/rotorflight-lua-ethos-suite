@@ -27,6 +27,99 @@ local firstRun = true
 
 local initTime = os.clock()
 
+--[[
+adjfunc.adjFunctionsTable - A table containing adjustable functions for various parameters.
+
+Each entry in the table represents a specific adjustable function with the following structure:
+    idXX = {
+        name = "Descriptive Name",
+        wavs = {"wav1", "wav2", ...}
+    }
+
+Categories of adjustable functions:
+- Rates:
+    id5  - Pitch Rate
+    id6  - Roll Rate
+    id7  - Yaw Rate
+    id8  - Pitch RC Rate
+    id9  - Roll RC Rate
+    id10 - Yaw RC Rate
+    id11 - Pitch RC Expo
+    id12 - Roll RC Expo
+    id13 - Yaw RC Expo
+
+- PIDs:
+    id14 - Pitch P Gain
+    id15 - Pitch I Gain
+    id16 - Pitch D Gain
+    id17 - Pitch F Gain
+    id18 - Roll P Gain
+    id19 - Roll I Gain
+    id20 - Roll D Gain
+    id21 - Roll F Gain
+    id22 - Yaw P Gain
+    id23 - Yaw I Gain
+    id24 - Yaw D Gain
+    id25 - Yaw F Gain
+    id26 - Yaw CW Gain
+    id27 - Yaw CCW Gain
+    id28 - Yaw Cyclic FF
+    id29 - Yaw Coll FF
+    id30 - Yaw Coll Dyn
+    id31 - Yaw Coll Decay
+    id32 - Pitch Coll FF
+
+- Gyro Cutoffs:
+    id33 - Pitch Gyro Cutoff
+    id34 - Roll Gyro Cutoff
+    id35 - Yaw Gyro Cutoff
+
+- D-term Cutoffs:
+    id36 - Pitch D-term Cutoff
+    id37 - Roll D-term Cutoff
+    id38 - Yaw D-term Cutoff
+
+- Rescue:
+    id39 - Rescue Climb Coll
+    id40 - Rescue Hover Coll
+    id41 - Rescue Hover Alt
+    id42 - Rescue Alt P Gain
+    id43 - Rescue Alt I Gain
+    id44 - Rescue Alt D Gain
+
+- Leveling:
+    id45 - Angle Level Gain
+    id46 - Horizon Level Gain
+    id47 - Acro Trainer Gain
+
+- Governor:
+    id48 - Governor Gain
+    id49 - Governor P Gain
+    id50 - Governor I Gain
+    id51 - Governor D Gain
+    id52 - Governor F Gain
+    id53 - Governor TTA Gain
+    id54 - Governor Cyclic FF
+    id55 - Governor Coll FF
+
+- Boost Gains:
+    id56 - Pitch B Gain
+    id57 - Roll B Gain
+    id58 - Yaw B Gain
+
+- Offset Gains:
+    id59 - Pitch O Gain
+    id60 - Roll O Gain
+
+- Cross-Coupling:
+    id61 - Cross Coup Gain
+    id62 - Cross Coup Ratio
+    id63 - Cross Coup Cutoff
+
+- Accelerometer:
+    id64 - Accelerometer Pitch Trim
+    id65 - Accelerometer Roll Trim
+]]
 adjfunc.adjFunctionsTable = {
     -- rates
     id5 = {name = "Pitch Rate", wavs = {"pitch", "rate"}},
@@ -113,6 +206,21 @@ adjfunc.adjFunctionsTable = {
     id65 = {name = "Accelerometer Roll Trim", wavs = {"acc", "roll", "trim"}}
 
 }
+
+
+--[[
+Initializes various adjustment function variables to nil or default values.
+adjValueSrc: Source of the adjustment value.
+adjFunctionSrc: Source of the adjustment function.
+adjValue: Current adjustment value.
+adjFunction: Current adjustment function.
+adjValueOld: Previous adjustment value.
+adjFunctionOld: Previous adjustment function.
+adjTimer: Timer for adjustment functions, initialized with the current clock time.
+adjfuncIdChanged: Boolean flag indicating if the adjustment function ID has changed.
+adjfuncValueChanged: Boolean flag indicating if the adjustment value has changed.
+adjJustUp: Boolean flag indicating if the adjustment was just increased.
+]]
 adjfunc.adjValueSrc = nil
 adjfunc.adjFunctionSrc = nil
 adjfunc.adjValue = nil
@@ -124,6 +232,36 @@ adjfunc.adjfuncIdChanged = false
 adjfunc.adjfuncValueChanged = false
 adjfunc.adjJustUp = false
 
+--[[
+    Function: adjfunc.wakeup
+    Description: This function is responsible for handling the wakeup process of the adjfunc module. It checks various conditions and updates the state of the adjfunc module based on sensor values and preferences.
+    
+    Conditions:
+    - If both adjFunctionAlerts and adjValueAlerts preferences are false, the function returns early.
+    - If the rssiSensor is nil, the function returns early.
+    - If less than 5 seconds have passed since initTime or telemetry is not active, the function returns early.
+
+    Process:
+    - Retrieves sensor sources for "adjF" and "adjV".
+    - Updates adjValue and adjFunction based on sensor values.
+    - Checks if adjValue and adjFunction have changed and sets corresponding flags.
+    - Handles the adjJustUp state and its counter.
+    - If adjFunction is not zero, processes adjFunction and adjValue changes, plays alerts if necessary, and updates the adjTimer.
+
+    Variables:
+    - adjfunc.adjFunctionSrc: Source for adjFunction sensor.
+    - adjfunc.adjValueSrc: Source for adjValue sensor.
+    - adjfunc.adjValue: Current value of adjValue sensor.
+    - adjfunc.adjFunction: Current value of adjFunction sensor.
+    - adjfunc.adjValueOld: Previous value of adjValue sensor.
+    - adjfunc.adjFunctionOld: Previous value of adjFunction sensor.
+    - adjfunc.adjfuncIdChanged: Flag indicating if adjFunction has changed.
+    - adjfunc.adjfuncValueChanged: Flag indicating if adjValue has changed.
+    - adjfunc.adjJustUp: Flag indicating if adjFunction was just activated.
+    - adjfunc.adjJustUpCounter: Counter for adjJustUp state.
+    - adjfunc.adjTimer: Timer for adjFunction processing.
+    - firstRun: Flag indicating if this is the first run of the function.
+]]
 function adjfunc.wakeup()
 
     -- do not run the remaining code
