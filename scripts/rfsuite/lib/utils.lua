@@ -29,6 +29,7 @@ function utils.sanitize_filename(str)
 end
 
 function utils.dir_exists(base, name)
+    base = base or "./"
     local list = system.listFiles(base)
     for i = 1, #list do
         if list[i] == name then
@@ -96,7 +97,7 @@ function utils.getCurrentProfile()
         
         if system.getVersion().simulation ~= true then
             
-            if rfsuite.config.ethosRunningVersion ~= nil then
+            if rfsuite.session.ethosRunningVersion ~= nil then
 
                 local message = {
                     command = 101, -- MSP_SERVO_CONFIGURATIONS

@@ -31,6 +31,14 @@ local CRSF_FRAMETYPE_MSP_WRITE = 0x7C -- write with 60 byte chunked binary
 
 local crsfMspCmd = 0
 
+--[[
+This script configures the `transport` object to use the appropriate `popFrame` and `pushFrame` functions 
+based on the availability of the `crsf.getSensor` function.
+
+If `crsf.getSensor` is not nil, it retrieves the sensor object and assigns its `popFrame` and `pushFrame` 
+methods to the `transport` object. Otherwise, it directly assigns the `crsf.popFrame` and `crsf.pushFrame` 
+functions to the `transport` object.
+]]
 if crsf.getSensor ~= nil then
     local sensor = crsf.getSensor()
     transport.popFrame = function()
@@ -48,33 +56,58 @@ else
     end
 end
 
+--[[
+    Sends an MSP (MultiWii Serial Protocol) payload using CRSF (Crossfire) transport.
+
+    @param payload (table) - The MSP payload to be sent.
+
+    @return (boolean) - Returns true if the frame was successfully pushed, false otherwise.
+]]
 transport.mspSend = function(payload)
     local payloadOut = {CRSF_ADDRESS_BETAFLIGHT, CRSF_ADDRESS_RADIO_TRANSMITTER}
     for i = 1, #(payload) do payloadOut[i + 2] = payload[i] end
     return transport.pushFrame(crsfMspCmd, payloadOut)
 end
 
+--[[
+    Sends an MSP (Multiwii Serial Protocol) request using CRSF (Crossfire) transport.
+
+    @param cmd: The MSP command to be sent.
+    @return: The result of the mspSendRequest function call.
+]]
 transport.mspRead = function(cmd)
     crsfMspCmd = CRSF_FRAMETYPE_MSP_REQ
     return mspSendRequest(cmd, {})
 end
 
+--[[
+    Function: transport.mspWrite
+    Description: Sends an MSP (Multiwii Serial Protocol) write request using CRSF (Crossfire) protocol.
+    Parameters:
+        cmd (number) - The MSP command to be sent.
+        payload (table) - The data payload to be sent with the command.
+    Returns:
+        (boolean) - The result of the mspSendRequest function indicating success or failure.
+]]
 transport.mspWrite = function(cmd, payload)
     crsfMspCmd = CRSF_FRAMETYPE_MSP_WRITE
     return mspSendRequest(cmd, payload)
 end
 
+--[[
+    Function: transport.mspPoll
+    Description: Polls for MSP (Multiwii Serial Protocol) frames from the transport layer.
+    Returns: 
+        - mspData (table): A table containing the MSP data if a valid frame is received.
+        - nil: If no valid frame is received.
+    Notes:
+        - The function continuously checks for frames until a valid MSP response frame is found or no frame is available.
+        - It expects the frame to be of type CRSF_FRAMETYPE_MSP_RESP, originating from CRSF_ADDRESS_RADIO_TRANSMITTER and destined for CRSF_ADDRESS_BETAFLIGHT.
+]]
 transport.mspPoll = function()
     while true do
         local cmd, data = transport.popFrame()
         if cmd == CRSF_FRAMETYPE_MSP_RESP and data[1] == CRSF_ADDRESS_RADIO_TRANSMITTER and data[2] == CRSF_ADDRESS_BETAFLIGHT then
-            --[[
-                        --rfsuite.utils.log("cmd:0x"..string.format("%X", cmd))
-                        --rfsuite.utils.log("  data length: "..string.format("%u", #data))
-                        for i=1,#data do
-                                --rfsuite.utils.log("  ["..string.format("%u", i).."]:  0x"..string.format("%X", data[i]))
-                        end
---]]
             local mspData = {}
             for i = 3, #data do mspData[i - 2] = data[i] end
             return mspData

@@ -24,7 +24,19 @@ local logInterval = 1 -- default is 1 second
 local logFileName
 local logRateLimit = os.clock()
 
--- List of sensors to log
+--[[
+logTable: A table containing sensor data to be logged.
+Each entry in the table is a table with the following fields:
+- name: The name of the sensor (string).
+- keyindex: The index of the sensor (number).
+- keyname: The display name of the sensor (string).
+- keyunit: The unit of measurement for the sensor (string).
+- keyminmax: A flag indicating if min/max values should be tracked (number).
+- keyfloor: (Optional) A flag indicating if the value should be floored (boolean).
+- color: The color used for the sensor's graph (constant).
+- pen: The pen style used for the sensor's graph (constant).
+- graph: A flag indicating if the sensor should be graphed (boolean).
+]]
 local logTable = {
     {name = "voltage", keyindex = 1, keyname = "Voltage", keyunit = "v", keyminmax = 1, color = COLOR_RED, pen = SOLID, graph = true},
     {name = "current", keyindex = 2, keyname = "Current", keyunit = "A", keyminmax = 0, color = COLOR_ORANGE, pen = SOLID, graph = true},
@@ -42,26 +54,15 @@ local logDirChecked = false
 local sensorRateLimit = os.clock()
 local sensorRate = 1 -- seconds between sensor readings
 
--- Helper function to check if directory exists
-local function dir_exists(base, name)
-    base = base or "./"
-    local files = system.listFiles(base)
-    if files == nil then return false end
-    for _, v in pairs(files) do if v == name then return true end end
-    return false
-end
+--[[
+    Generates a timestamped filename for logging purposes.
 
--- Helper function to check if file exists
-local function file_exists(name)
-    local f = io.open(name, "r")
-    if f then
-        io.close(f)
-        return true
-    end
-    return false
-end
+    The filename is constructed using the sanitized craft name or model name,
+    followed by the current timestamp and a unique part based on the current clock time in milliseconds.
 
--- Generate a timestamped filename
+    Returns:
+        string: The generated filename in the format "modelName_YYYY-MM-DD_HH-MM-SS_uniquePart.csv"
+]]
 local function generateLogFilename()
     local craftName = rfsuite.utils.sanitize_filename(rfsuite.session.craftName)
     local modelName = (craftName and craftName ~= "") and craftName or model.name()
@@ -74,21 +75,41 @@ local function generateLogFilename()
     return modelName .. "_" .. timestamp .. "_" .. uniquePart .. ".csv"
 end
 
--- Update log directory based on model name
+--[[
+    Function: checkLogdirExists
+    Description: Checks if the required directories for logging exist and creates them if they do not.
+    Directories:
+        - "telemetry": The main directory for telemetry logs.
+        - "logs/telemetry": The subdirectory within the main telemetry directory for storing logs.
+    Dependencies: 
+        - rfsuite.utils.dir_exists: Utility function to check if a directory exists.
+        - os.mkdir: Function to create a new directory.
+]]
 local function checkLogdirExists()
     local logdir = "telemetry"
     local logs_path = "logs/" 
 
-    if not dir_exists(logs_dir, "./") then os.mkdir(logdir) end
-    if not dir_exists(logs_path, logdir) then os.mkdir(logs_path .. logdir) end
+    if not rfsuite.utils.dir_exists(logs_dir, "./") then os.mkdir(logdir) end
+    if not rfsuite.utils.dir_exists(logs_path, logdir) then os.mkdir(logs_path .. logdir) end
 end
 
--- Add log entry to queue
+--[[
+    Adds a message to the log queue.
+    
+    @param msg (string) The message to be logged.
+]]
 function logging.queueLog(msg)
     table.insert(log_queue, msg)
 end
 
--- Write log entries to file
+
+--[[
+    Function: logging.flushLogs
+    Description: Flushes the log queue to a file. If `forceFlush` is true or telemetry is inactive, it flushes one line per call; otherwise, it flushes up to ten lines.
+    Parameters:
+        forceFlush (boolean) - Optional. If true, forces a single line flush regardless of telemetry status.
+    Returns: None
+]]
 function logging.flushLogs(forceFlush)
     local max_lines_per_flush = forceFlush or not rfsuite.tasks.telemetry.active() and 1 or 10
 
@@ -101,14 +122,22 @@ function logging.flushLogs(forceFlush)
     end
 end
 
--- Get header line for the CSV log file
+--[[
+    Generates the log header string for the logging system.
+    The header consists of a "time" column followed by the names of the columns in the logTable.
+    @return string: The formatted log header string.
+]]
 function logging.getLogHeader()
     local tmpTable = {}
     for i, v in ipairs(logTable) do tmpTable[i] = v.name end
     return "time, " .. rfsuite.utils.joinTableItems(tmpTable, ", ")
 end
 
--- Generate log line for current sensor values
+--[[
+    Function: logging.getLogLine
+    Description: Generates a log line with the current date and time, followed by sensor values.
+    Returns: A string containing the current date and time, followed by a comma-separated list of sensor values.
+]]
 function logging.getLogLine()
     local lineValues = {}
 
@@ -120,12 +149,24 @@ function logging.getLogLine()
     return os.date("%Y-%m-%d_%H:%M:%S") .. ", " .. rfsuite.utils.joinTableItems(lineValues, ", ")
 end
 
--- get the log table
+--[[
+    Retrieves the log table.
+    @return table logTable - The table containing log data.
+]]
 function logging.getLogTable()
     return logTable
 end
 
--- Main logging function
+--[[
+    Function: logging.wakeup
+    Description: Handles the logging process based on telemetry status and arming state.
+    - If logging is disabled in preferences, the function returns immediately.
+    - Checks if the log directory exists and sets the flag accordingly.
+    - Clears logs if telemetry is not active.
+    - If telemetry is active, checks the arming state from the "armflags" sensor.
+    - If armed, starts logging by generating a log filename and header, and logs sensor data at defined intervals.
+    - If disarmed, clears logs and resets relevant variables.
+]]
 function logging.wakeup()
     if not rfsuite.preferences.flightLog then return end -- Abort if logging is disabled
 

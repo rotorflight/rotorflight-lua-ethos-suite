@@ -85,7 +85,7 @@ local function openPage(idx, title, script)
     else
         numCols = 2
     end
-    local screenWidth = rfsuite.config.lcdWidth - 10
+    local screenWidth = rfsuite.session.lcdWidth - 10
     local padding = 10
     local paddingTop = rfsuite.app.radio.linePaddingTop
     local h = rfsuite.app.radio.navbuttonHeight

@@ -26,6 +26,24 @@ local frsky = {}
 local cacheExpireTime = 10 -- Time in seconds to expire the caches
 local lastCacheFlushTime = os.clock() -- Store the initial time
 
+--[[
+createSensorList:
+    This table maps sensor IDs to their respective sensor details, including name, unit, and optional decimals.
+    - Example entries:
+        - [0x5100] = {name = "Heartbeat", unit = UNIT_RAW}
+        - [0x51A0] = {name = "Pitch Control", unit = UNIT_DEGREE, decimals = 2}
+
+dropSensorList:
+    This table is intended for sensors that should be dropped if the MSP version is less than 12.08.
+    - Example entry (commented out):
+        - [0x0400] = {name = "Temp1"}
+
+renameSensorList:
+    This table maps sensor IDs to their new names, conditional on their current names.
+    - Example entries:
+        - [0x0500] = {name = "Headspeed", onlyifname = "RPM"}
+        - [0x0210] = {name = "Voltage", onlyifname = "VFAS"}
+]]
 -- create
 local createSensorList = {}
 createSensorList[0x5100] = {name = "Heartbeat", unit = UNIT_RAW}
@@ -63,9 +81,7 @@ createSensorList[0x52F5] = {name = "Debug 5", unit = UNIT_RAW}
 createSensorList[0x52F6] = {name = "Debug 6", unit = UNIT_RAW}
 createSensorList[0x52F8] = {name = "Debug 7", unit = UNIT_RAW}
 
--- drop (drop sensors only runs if < msp 12.08)
 local dropSensorList = {}
--- dropSensorList[0x0400] = {name = "Temp1"}
 
 -- rename
 local renameSensorList = {}
@@ -111,6 +127,18 @@ frsky.createSensorCache = {}
 frsky.dropSensorCache = {}
 frsky.renameSensorCache = {}
 
+--[[
+    createSensor - Creates a custom sensor if it doesn't already exist.
+
+    @param physId (number) - The physical ID of the sensor.
+    @param primId (number) - The primary ID of the sensor.
+    @param appId (number) - The application ID of the sensor.
+    @param frameValue (number) - The frame value of the sensor.
+
+    This function checks if the API version is available and if the custom sensor
+    specified by appId exists. If the sensor does not exist, it creates a new sensor
+    with the specified parameters and caches it for future use.
+]]
 local function createSensor(physId, primId, appId, frameValue)
 
     -- we dont want any deletions if api has not been found
@@ -155,6 +183,20 @@ local function createSensor(physId, primId, appId, frameValue)
 
 end
 
+--[[
+    dropSensor - Drops a sensor based on the provided parameters if certain conditions are met.
+
+    Parameters:
+    physId (number) - The physical ID of the sensor.
+    primId (number) - The primary ID of the sensor.
+    appId (number) - The application ID of the sensor.
+    frameValue (number) - The frame value of the sensor.
+
+    Description:
+    This function checks the API version and ensures it is found before proceeding. 
+    It does not perform any sensor dropping if the API version is 12.08 or higher due to a new telemetry system.
+    If the sensor is in the dropSensorList and not already cached, it retrieves the sensor source and drops it.
+]]
 local function dropSensor(physId, primId, appId, frameValue)
 
     -- we dont want any deletions if api has not been found
@@ -181,6 +223,19 @@ local function dropSensor(physId, primId, appId, frameValue)
 
 end
 
+--[[
+    renameSensor - Renames a sensor based on provided parameters if certain conditions are met.
+
+    Parameters:
+    physId (number) - The physical ID of the sensor.
+    primId (number) - The primary ID of the sensor.
+    appId (number) - The application ID of the sensor.
+    frameValue (number) - The frame value of the sensor.
+
+    Description:
+    This function checks if the API version is available and if the sensor with the given appId exists in the renameSensorList.
+    If the sensor exists and is not already cached, it retrieves the sensor source and renames it if its current name matches the specified condition.
+]]
 local function renameSensor(physId, primId, appId, frameValue)
 
     -- we dont want any deletions if api has not been found
@@ -206,8 +261,20 @@ local function renameSensor(physId, primId, appId, frameValue)
 
 end
 
+--[[
+    Function: telemetryPop
+    Description: Pops a received SPORT packet from the queue and processes it. 
+                 Only packets with a data ID within 0x5000 to 0x50FF (frame ID == 0x10) 
+                 and packets with a frame ID equal to 0x32 (regardless of the data ID) 
+                 are passed to the LUA telemetry receive queue.
+    Returns: 
+        - true if a frame was processed
+        - false if no frame was available
+    Notes: 
+        - The function calls createSensor, dropSensor, and renameSensor with the frame's 
+          physical ID, primary ID, application ID, and value.
+--]]
 local function telemetryPop()
-    -- Pops a received SPORT packet from the queue. Please note that only packets using a data ID within 0x5000 to 0x50FF (frame ID == 0x10), as well as packets with a frame ID equal 0x32 (regardless of the data ID) will be passed to the LUA telemetry receive queue.
     local frame = rfsuite.tasks.msp.sensorTlm:popFrame()
     if frame == nil then return false end
 
@@ -219,6 +286,17 @@ local function telemetryPop()
     return true
 end
 
+--[[
+    frsky.wakeup()
+
+    This function is responsible for managing the sensor caches and ensuring that they are cleared when necessary.
+    It performs the following tasks:
+    
+    - Defines a local function `clearCaches` to clear the sensor caches.
+    - Checks if the cache expiration time has been reached and clears the caches if necessary.
+    - Flushes the sensor list if telemetry is inactive or the RSSI sensor is not available.
+    - Ensures that the function does not run if the GUI is busy or the MSP queue is not processed.
+]]
 function frsky.wakeup()
 
     -- Function to clear caches

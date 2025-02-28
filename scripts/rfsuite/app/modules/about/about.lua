@@ -65,7 +65,7 @@ function onToolMenu()
     }}
 
     form.openDialog({
-        width = rfsuite.config.lcdWidth,
+        width = rfsuite.session.lcdWidth,
         title = "Credits",
         message = message,
         buttons = buttons,

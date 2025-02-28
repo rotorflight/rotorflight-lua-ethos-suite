@@ -38,6 +38,29 @@ local CACHE_FLUSH_INTERVAL = 10 -- Flush cache every 10 seconds
 local telemetryState = false
 
 -- Predefined sensor mappings
+--[[
+sensorTable: A table containing various telemetry sensor configurations for different protocols (sport, crsf, crsfLegacy).
+
+Each sensor configuration includes:
+- name: The name of the sensor.
+- mandatory: A boolean indicating if the sensor is mandatory.
+- sport: A table of sensor configurations for the sport protocol.
+- crsf: A table of sensor configurations for the crsf protocol.
+- crsfLegacy: A table of sensor configurations for the crsfLegacy protocol.
+
+Sensors included:
+- RSSI Sensors (rssi)
+- Arm Flags (armflags)
+- Voltage Sensors (voltage)
+- RPM Sensors (rpm)
+- Current Sensors (current)
+- Temperature Sensors (tempESC, tempMCU)
+- Fuel and Capacity Sensors (fuel, capacity)
+- Flight Mode Sensors (governor)
+- Adjustment Sensors (adjF, adjV)
+- PID and Rate Profiles (pidProfile, rateProfile)
+- Throttle Sensors (throttlePercentage)
+]]
 local sensorTable = {
     -- RSSI Sensors
     rssi = {
@@ -251,14 +274,19 @@ local sensorTable = {
 -- Cache telemetry source
 local tlm = system.getSource({category = CATEGORY_SYSTEM_EVENT, member = TELEMETRY_ACTIVE})
 
---- Retrieve the active telemetry protocol
----@return string
+--[[
+    Retrieves the current sensor protocol.
+    @return protocol - The protocol used by the sensor.
+]]
 function telemetry.getSensorProtocol()
     return protocol
 end
 
---- Function to list all sensors with key, name, and mandatory status
----@return table
+--[[
+    Function: telemetry.listSensors
+    Description: Generates a list of sensors from the sensorTable.
+    Returns: A table containing sensor details (key, name, and mandatory status).
+]]
 function telemetry.listSensors()
     local sensorList = {}
 
@@ -267,9 +295,28 @@ function telemetry.listSensors()
     return sensorList
 end
 
---- Retrieve a sensor source by name
----@param name string
----@return any
+
+--[[
+    Function: telemetry.getSensorSource
+    Retrieves the sensor source based on the provided sensor name.
+
+    Parameters:
+    - name (string): The name of the sensor to retrieve.
+
+    Returns:
+    - source (table or nil): The sensor source if found, otherwise nil.
+
+    Description:
+    This function attempts to retrieve a sensor source from a predefined sensor table. It first checks if the sensor is cached and returns the cached value if available. If not, it checks the sensor type (CRSF or SPORT) and retrieves the appropriate sensor source based on the conditions specified in the sensor table. If no valid sensor is found, it returns nil.
+
+    Helper Function:
+    - checkCondition(sensorEntry): Checks if the MSP version conditions are met for a given sensor entry.
+
+    Notes:
+    - The function uses a caching mechanism to store and retrieve sensor sources.
+    - It supports different sensor types (CRSF, CRSF Legacy, and SPORT).
+    - The function handles version conditions specified in the sensor table.
+]]
 function telemetry.getSensorSource(name)
     if not sensorTable[name] then return nil end
 
@@ -298,13 +345,15 @@ function telemetry.getSensorSource(name)
             for _, sensor in ipairs(sensorTable[name].crsf or {}) do
                 -- Skip entries with unfulfilled version conditions
                 if checkCondition(sensor) then
-                    sensor.mspgt = nil
-                    sensor.msplt = nil
-                    local source = system.getSource(sensor)
-                    if source then
-                        sensors[name] = source
-                        return sensors[name]
-                    end
+                    if sensor and type(sensor) == "table" then
+                        sensor.mspgt = nil
+                        sensor.msplt = nil
+                        local source = system.getSource(sensor)
+                        if source then
+                            sensors[name] = source
+                            return sensors[name]
+                        end
+                    end    
                 end
             end
         else
@@ -322,15 +371,14 @@ function telemetry.getSensorSource(name)
         for _, sensor in ipairs(sensorTable[name].sport or {}) do
             -- Skip entries with unfulfilled version conditions 
             if checkCondition(sensor) then
-                sensor.mspgt = nil
-                sensor.msplt = nil
-                local source = system.getSource(sensor)
-                if sensor.msplt then
-                    print(source)
-                end   
-                if source then
-                    sensors[name] = source
-                    return sensors[name]
+                if sensor and type(sensor) == "table" then
+                    sensor.mspgt = nil
+                    sensor.msplt = nil
+                    local source = system.getSource(sensor)
+                    if source then
+                        sensors[name] = source
+                        return sensors[name]
+                    end
                 end
             end
         end
@@ -341,9 +389,19 @@ function telemetry.getSensorSource(name)
     return nil -- If no valid sensor is found
 end
 
---- Function to validate sensors with rate limiting
----@param returnValid boolean|nil Whether to return valid or invalid sensors
----@return table
+
+--[[
+    Function: telemetry.validateSensors
+    Purpose: Validates the sensors and returns a list of either valid or invalid sensors based on the input parameter.
+    Parameters:
+        returnValid (boolean) - If true, the function returns only valid sensors. If false, it returns only invalid sensors.
+    Returns:
+        table - A list of sensors with their keys and names. The list contains either valid or invalid sensors based on the returnValid parameter.
+    Notes:
+        - The function uses a rate limit to avoid frequent validations.
+        - If telemetry is not active, it returns all sensors.
+        - The function considers the mandatory flag for invalid sensors.
+]]
 function telemetry.validateSensors(returnValid)
     local now = os.clock()
 
@@ -379,14 +437,34 @@ function telemetry.validateSensors(returnValid)
     return resultSensors
 end
 
---- Check if telemetry is active
----@return boolean
+
+--[[
+    Function: telemetry.active
+    Description: Checks if telemetry is active. Returns true if the system is in simulation mode, otherwise returns the state of telemetry.
+    Returns: 
+        - boolean: true if in simulation mode or telemetry is active, false otherwise.
+]]
 function telemetry.active()
     if system.getVersion().simulation then return true end
     return telemetryState
 end
 
---- Wakeup function to refresh telemetry state
+
+--[[
+    Function: telemetry.wakeup
+
+    Description:
+    This function is called periodically to handle telemetry updates and cache management. It prioritizes MSP traffic, performs rate-limited telemetry checks, flushes the cache periodically, and resets telemetry sources if necessary.
+
+    Usage:
+    This function should be called in a loop or scheduled task to ensure telemetry data is processed and managed correctly.
+
+    Notes:
+    - MSP traffic is prioritized by checking the rfsuite.app.triggers.mspBusy flag.
+    - Telemetry checks are rate-limited based on SENSOR_RATE.
+    - The cache is flushed every CACHE_FLUSH_INTERVAL seconds.
+    - Telemetry sources and cached sensors are reset if telemetry is inactive or the RSSI sensor has changed.
+]]
 function telemetry.wakeup()
     local now = os.clock()
 

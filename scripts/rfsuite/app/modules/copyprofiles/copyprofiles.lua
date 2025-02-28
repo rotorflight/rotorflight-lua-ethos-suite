@@ -80,7 +80,7 @@ local function openPage(idx, title, script, extra1, extra2, extra3, extra5, extr
         form.addStaticText(headerLine, {
             x = 0,
             y = rfsuite.app.radio.linePaddingTop,
-            w = config.lcdWidth,
+            w = session.lcdWidth,
             h = rfsuite.app.radio.navbuttonHeight
         }, rfsuite.app.Page.headerLine)
     end
