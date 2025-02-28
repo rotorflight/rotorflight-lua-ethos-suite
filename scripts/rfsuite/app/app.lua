@@ -965,7 +965,7 @@ function app.wakeupUI()
         local profileCheckInterval
 
         -- alter the interval for checking profile changes depenant of if using msp or not
-        if (rfsuite.tasks.telemetry.getSensorSource("pidProfile") ~= nil and rfsuite.tasks.telemetry.getSensorSource("rateProfile") ~= nil) then
+        if (rfsuite.tasks.telemetry.getSensorSource("pid_profile") ~= nil and rfsuite.tasks.telemetry.getSensorSource("rate_profile") ~= nil) then
             profileCheckInterval = 0.1
         else
             profileCheckInterval = 1.5

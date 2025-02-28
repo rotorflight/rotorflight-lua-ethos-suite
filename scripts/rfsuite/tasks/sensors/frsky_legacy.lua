@@ -28,6 +28,9 @@ local lastCacheFlushTime = os.clock() -- Store the initial time
 
 local frsky_legacy = {}
 
+-- used by sensors.lua to know if module has changed
+frsky_legacy.name = "frsky_legacy"
+
 --[[
 createSensorList: A table mapping sensor IDs to their respective sensor details.
     - 0x5450: Governor Flags (UNIT_RAW)

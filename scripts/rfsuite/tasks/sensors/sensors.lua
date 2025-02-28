@@ -23,49 +23,58 @@ local arg = {...}
 local config = arg[1]
 
 local sensors = {}
-
-sensors.elrs = assert(loadfile("tasks/sensors/elrs.lua"))(config)
-sensors.frsky_legacy = assert(loadfile("tasks/sensors/frsky_legacy.lua"))(config)
-sensors.frsky = assert(loadfile("tasks/sensors/frsky.lua"))(config)
+local loadedSensorModule = nil
 
 --[[
-    Function: sensors.wakeup
+    loadSensorModule - Loads the appropriate sensor module based on the current protocol and preferences.
 
-    Description:
-    This function is responsible for waking up the sensors based on the current protocol and preferences. 
-    It checks if the background task is running and if the MSP (Multiwii Serial Protocol) session is available. 
-    Depending on the protocol (CRSF or SPORT) and the API version, it calls the appropriate wakeup function for the sensors.
+    This function checks if the rfsuite tasks are active and if the API version is available. 
+    Depending on the protocol (either "crsf" or "sport") and the user's preferences, it loads the corresponding sensor module.
+    - For "crsf" protocol, it loads the "elrs" sensor module if internalElrsSensors preference is enabled.
+    - For "sport" protocol, it loads either the "frsky" or "frsky_legacy" sensor module based on the API version and internalSportSensors preference.
+    If no matching sensor is found, it clears the loadedSensorModule to save memory.
 
-    Usage:
-    sensors.wakeup()
-
-    Notes:
-    - If the background task is not running, the function returns immediately.
-    - If the MSP session is not available, the function returns immediately.
-    - For CRSF protocol, it calls sensors.elrs.wakeup() if internalElrsSensors preference is true.
-    - For SPORT protocol, it calls sensors.frsky.wakeup() if the API version is 12.08 or higher, otherwise it calls sensors.frsky_legacy.wakeup() if internalSportSensors preference is true.
+    Returns:
+        nil - If the tasks are not active or the API version is not available.
 ]]
-function sensors.wakeup()
+local function loadSensorModule()
+    if not rfsuite.tasks.active() then return nil end
+    if not rfsuite.session.apiVersion then return nil end
 
-    -- we cant do anything if bg task not running
-    if not rfsuite.tasks.active() then return end
+    local protocol = rfsuite.tasks.msp.protocol.mspProtocol
 
-    -- we cant do anything if we have no msp
-    if not rfsuite.session.apiVersion then return end
-
-    if rfsuite.tasks.msp.protocol.mspProtocol == "crsf" and rfsuite.preferences.internalElrsSensors == true then sensors.elrs.wakeup() end
-
-    if rfsuite.tasks.msp.protocol.mspProtocol == "sport" and rfsuite.preferences.internalSportSensors == true then
-
-        if rfsuite.session.apiVersion >= 12.08 then
-            -- use new if msp is 12.08 or higher
-            sensors.frsky.wakeup()
-        else
-            -- use legacy if msp is lower than 12.08
-            sensors.frsky_legacy.wakeup()
+    if system:getVersion().simulation == true and rfsuite.preferences.internalSimSensors == true then
+        if not loadedSensorModule or loadedSensorModule.name ~= "sim" then
+            rfsuite.utils.log("Loading Simulator sensor module","info")
+            loadedSensorModule = {name = "sim", module = assert(loadfile("tasks/sensors/sim.lua"))(config)}
+        end   
+    elseif protocol == "crsf" and rfsuite.preferences.internalElrsSensors then
+        if not loadedSensorModule or loadedSensorModule.name ~= "elrs" then
+            rfsuite.utils.log("Loading ELRS sensor module","info")
+            loadedSensorModule = {name = "elrs", module = assert(loadfile("tasks/sensors/elrs.lua"))(config)}
         end
+    elseif protocol == "sport" and rfsuite.preferences.internalSportSensors then
+        if rfsuite.utils.round(rfsuite.session.apiVersion,2) >= 12.08 then
+            if not loadedSensorModule or loadedSensorModule.name ~= "frsky" then
+                rfsuite.utils.log("Loading FrSky sensor module","info")
+                loadedSensorModule = {name = "frsky", module = assert(loadfile("tasks/sensors/frsky.lua"))(config)}
+            end
+        else
+            if not loadedSensorModule or loadedSensorModule.name ~= "frsky_legacy" then
+                rfsuite.utils.log("Loading FrSky Legacy sensor module","info")
+                loadedSensorModule = {name = "frsky_legacy", module = assert(loadfile("tasks/sensors/frsky_legacy.lua"))(config)}
+            end
+        end
+    else
+        loadedSensorModule = nil  -- No matching sensor, clear to save memory
     end
+end
 
+function sensors.wakeup()
+    loadSensorModule()
+    if loadedSensorModule and loadedSensorModule.module.wakeup then
+        loadedSensorModule.module.wakeup()
+    end
 end
 
 return sensors

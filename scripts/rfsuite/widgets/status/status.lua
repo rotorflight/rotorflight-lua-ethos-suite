@@ -689,43 +689,19 @@ local function getSensors()
 
     -- lcd.resetFocusTimeout()
 
-    if environment.simulation == true then
-
-        tv = math.random(2100, 2274)
-        voltage = tv
-        temp_esc = math.random(50, 225) * 10
-        temp_mcu = math.random(50, 185) * 10
-        mah = math.random(10000, 10100)
-        fuel = 55
-        fm = "DISABLED"
-        rssi = math.random(90, 100)
-        adjsource = 0
-        adjvalue = 0
-        current = 0
-
-        if status.idleupswitchParam ~= nil then
-            if status.idleupswitchParam:state() == true then
-                current = math.random(100, 120)
-                rpm = math.random(90, 100)
-            else
-                current = 0
-                rpm = 0
-            end
-        end
-
-    elseif status.linkUP == true then
+    if status.linkUP == true then
 
         -- get sensors
         voltageSOURCE = rfsuite.tasks.telemetry.getSensorSource("voltage")
         rpmSOURCE = rfsuite.tasks.telemetry.getSensorSource("rpm")
         currentSOURCE = rfsuite.tasks.telemetry.getSensorSource("current")
-        temp_escSOURCE = rfsuite.tasks.telemetry.getSensorSource("tempESC")
-        temp_mcuSOURCE = rfsuite.tasks.telemetry.getSensorSource("tempMCU")
+        temp_escSOURCE = rfsuite.tasks.telemetry.getSensorSource("temp_esc")
+        temp_mcuSOURCE = rfsuite.tasks.telemetry.getSensorSource("temp_mcu")
         fuelSOURCE = rfsuite.tasks.telemetry.getSensorSource("fuel")
-        adjSOURCE = rfsuite.tasks.telemetry.getSensorSource("adjF")
-        adjVALUE = rfsuite.tasks.telemetry.getSensorSource("adjV")
-        adjvSOURCE = rfsuite.tasks.telemetry.getSensorSource("adjV")
-        mahSOURCE = rfsuite.tasks.telemetry.getSensorSource("capacity")
+        adjSOURCE = rfsuite.tasks.telemetry.getSensorSource("adj_f")
+        adjVALUE = rfsuite.tasks.telemetry.getSensorSource("adj_v")
+        adjvSOURCE = rfsuite.tasks.telemetry.getSensorSource("adj_v")
+        mahSOURCE = rfsuite.tasks.telemetry.getSensorSource("consumption")
         rssiSOURCE = rfsuite.tasks.telemetry.getSensorSource("rssi") 
         govSOURCE = rfsuite.tasks.telemetry.getSensorSource("governor")
 
@@ -972,6 +948,7 @@ local function getSensors()
 
         elseif rfsuite.tasks.telemetry.getSensorProtocol() == 'sport' then
 
+
             if voltageSOURCE ~= nil then
                 voltage = voltageSOURCE:value() or 0
                 if voltage ~= nil then
@@ -1163,6 +1140,9 @@ local function getSensors()
 
     if rssi == nil then rssi = 0 end
     rssi = rfsuite.utils.round(rssi, 0)
+
+    if rpm == nil then rpm = 0 end
+    rpm = rfsuite.utils.round(rpm, 0)
 
     -- Voltage based on stick position
     status.lowvoltagStickParam = status.lowvoltagStickParam or 0
@@ -3066,8 +3046,8 @@ function status.paint(widget)
             -- RPM
             if status.sensors.rpm ~= nil then
 
-                sensorVALUE = status.sensors.rpm
-
+                sensorVALUE = rfsuite.utils.round(status.sensors.rpm,0)
+                
                 if status.sensors.rpm < 5 then sensorVALUE = 0 end
 
                 if status.titleParam == true then
@@ -3945,7 +3925,7 @@ function status.paint(widget)
             local validateSensors = {}
             if rfsuite.tasks and rfsuite.tasks.telemetry then validateSensors = rfsuite.tasks.telemetry.validateSensors() end
 
-            if status.linkUP == false and environment.simulation == false then
+            if status.linkUP == false then
                 noTelem()
                 status.initTime = os.clock()
             elseif (os.clock() - status.initTime) >= 10 and validateSensors and (#rfsuite.tasks.telemetry.validateSensors() > 0) then

@@ -33,8 +33,9 @@ config.supportedMspApiVersion = {"12.06", "12.07","12.08"}          -- supported
 config.simulatorApiVersionResponse = {0, 12, 8}                     -- version of api return by simulator
 config.logLevel= "info"                                             -- off | info | debug [default = info]
 config.logToFile = false                                            -- log to file [default = false] (log file is in /scripts/rfsuite/logs)
-config.logMSP = true                                               -- log msp messages [default =  false]
+config.logMSP = false                                               -- log msp messages [default =  false]
 config.developerMode = false                                        -- show developer tools on main menu [default = false]
+
 
 -- RotorFlight + ETHOS LUA preferences
 local preferences = {}
@@ -45,6 +46,7 @@ preferences.reloadOnSave = false                                    -- trigger a
 preferences.skipRssiSensorCheck = false                             -- skip checking for a valid rssi [ default = false]
 preferences.internalElrsSensors = true                              -- disable the integrated elrs telemetry processing [default = true]
 preferences.internalSportSensors = true                             -- disable the integrated smart port telemetry processing [default = true]
+preferences.internalSimSensors = true                               -- disable the integrated simulator telemetry processing [default = true]
 preferences.adjFunctionAlerts = false                               -- do not alert on adjfunction telemetry.  [default = false]
 preferences.adjValueAlerts = true                                   -- play adjvalue alerts if sensor changes [default = true]  
 preferences.saveWhenArmedWarning = true                             -- do not display the save when armed warning. [default = true]

@@ -74,10 +74,10 @@ end
 -- you MUST set it to nil after you get it!
 function utils.getCurrentProfile()
 
-    if (rfsuite.tasks.telemetry.getSensorSource("pidProfile") ~= nil and rfsuite.tasks.telemetry.getSensorSource("rateProfile") ~= nil) then
+    if (rfsuite.tasks.telemetry.getSensorSource("pid_profile") ~= nil and rfsuite.tasks.telemetry.getSensorSource("rate_profile") ~= nil) then
 
         rfsuite.session.activeProfileLast = rfsuite.session.activeProfile
-        local p = rfsuite.tasks.telemetry.getSensorSource("pidProfile"):value()
+        local p = rfsuite.tasks.telemetry.getSensorSource("pid_profile"):value()
         if p ~= nil then
             rfsuite.session.activeProfile = math.floor(p)
         else
@@ -85,7 +85,7 @@ function utils.getCurrentProfile()
         end
 
         rfsuite.session.activeRateProfileLast = rfsuite.session.activeRateProfile
-        local r = rfsuite.tasks.telemetry.getSensorSource("rateProfile"):value()
+        local r = rfsuite.tasks.telemetry.getSensorSource("rate_profile"):value()
         if r ~= nil then
             rfsuite.session.activeRateProfile = math.floor(r)
         else
@@ -207,9 +207,15 @@ function utils.stringInArray(array, s)
 end
 
 function utils.round(num, places)
-    local mult = 10^(places or 2)
-    return math.floor(num * mult + 0.5) / mult
+    local places = places or 2
+    if places == 0 then
+        return math.floor(num + 0.5)  -- return integer (no .0)
+    else
+        local mult = 10^places
+        return math.floor(num * mult + 0.5) / mult
+    end
 end
+
 
 function utils.roughlyEqual(a, b, tolerance)
     return math.abs(a - b) < (tolerance or 0.0001)  -- Allows a tiny margin of error
@@ -447,6 +453,61 @@ function utils.loadImage(image1, image2, image3)
     -- If nothing was found, return nil
     return nil
 end
+
+--[[
+    Function: utils.simTelemetry
+
+    Loads and executes a telemetry Lua script based on the provided ID.
+
+    Parameters:
+        id (string): The identifier for the telemetry script to load.
+
+    Returns:
+        number: The result of the executed telemetry script, or 0 if an error occurs.
+
+    Description:
+        This function attempts to load a telemetry Lua script from two possible paths:
+        1. "../rfsuite.simtelemetry/<id>.lua"
+        2. "lib/sim/<id>.lua"
+        
+        It first checks if the file exists at the local path. If not, it checks the fallback path.
+        If the file is found, it attempts to load and execute the script. If any error occurs
+        during loading or execution, it prints an error message and returns 0.
+--]]
+function utils.simTelemetry(id)
+
+    if id == nil then return 0 end
+
+    local localPath = "../rfsuite.simtelemetry/" .. id .. ".lua"
+    local fallbackPath = "lib/sim/" .. id .. ".lua"
+
+    local filepath
+
+    if rfsuite.utils.file_exists(localPath) then
+        filepath = localPath
+    elseif rfsuite.utils.file_exists(fallbackPath) then
+        filepath = fallbackPath
+    else
+        return 0
+    end
+
+    local chunk, err = loadfile(filepath)
+    if not chunk then
+        print("Error loading telemetry file: " .. err)
+        return 0
+    end
+
+    local success, result = pcall(chunk)
+
+    if not success then
+        print("Error executing telemetry file: " .. result)
+        return 0
+    end
+
+    return result
+end
+
+
 
 
 return utils
