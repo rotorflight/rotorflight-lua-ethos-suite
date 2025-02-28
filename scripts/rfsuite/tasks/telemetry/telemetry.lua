@@ -47,11 +47,11 @@ local sensorTable = {
             {appId=0xF101, subId=0},
             "RSSI",   -- fallback for older versions (should never get here if running ethos 1.6.2 or newer)
         },
-        customCRSF = {
+        crsf = {
             {crsfId=0x14, subIdStart=0, subIdEnd=1},
             "Rx RSSI1", -- fallback for older versions (should never get here if running ethos 1.6.2 or newer)
         },
-        legacyCRSF = {
+        crsfLegacy = {
             {crsfId=0x14, subIdStart=0, subIdEnd=1},
             "RSSI 1",   -- fallback for older versions (should never get here if running ethos 1.6.2 or newer)
             "RSSI 2",
@@ -67,10 +67,10 @@ local sensorTable = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5122},
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5462}
         },
-        customCRSF = {
+        crsf = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1202}
         },
-        legacyCRSF = {nil}
+        crsfLegacy = {nil}
     },
 
     -- Voltage Sensors
@@ -83,13 +83,13 @@ local sensorTable = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0218},
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x021A},
         },
-        customCRSF = {
+        crsf = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1011},
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1041},
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1051},
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1080},
         },
-        legacyCRSF = {"Rx Batt"}
+        crsfLegacy = {"Rx Batt"}
     },
 
     -- RPM Sensors
@@ -99,10 +99,10 @@ local sensorTable = {
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0500}
         },
-        customCRSF = {
+        crsf = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10C0}
         },
-        legacyCRSF = {"GPS Alt"}
+        crsfLegacy = {"GPS Alt"}
     },
 
     -- Current Sensors
@@ -113,11 +113,11 @@ local sensorTable = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0200},
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0201}
         },
-        customCRSF = {
+        crsf = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1012},
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1042}
         },
-        legacyCRSF = {"Rx Curr"}
+        crsfLegacy = {"Rx Curr"}
     },
 
     -- Temperature Sensors
@@ -127,10 +127,10 @@ local sensorTable = {
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0B70}
         },
-        customCRSF = {
+        crsf = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A0}
         },
-        legacyCRSF = {"GPS Speed"}
+        crsfLegacy = {"GPS Speed"}
     },
     tempMCU = {
         name = "MCU Temperature",
@@ -139,10 +139,10 @@ local sensorTable = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0400, mspgt = 12.08},
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401, msplt = 12.07}
         },
-        customCRSF = {
+        crsf = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A3}
         },
-        legacyCRSF = {"GPS Sats"}
+        crsfLegacy = {"GPS Sats"}
     },
 
     -- Fuel and Capacity Sensors
@@ -152,10 +152,10 @@ local sensorTable = {
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0600}
         },
-        customCRSF = {
+        crsf = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1014}
         },
-        legacyCRSF = {"Rx Batt%"}
+        crsfLegacy = {"Rx Batt%"}
     },
     capacity = {
         name = "Consumption",
@@ -163,10 +163,10 @@ local sensorTable = {
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5250}
         },
-        customCRSF = {
+        crsf = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1013}
         },
-        legacyCRSF = {"Rx Cons"}
+        crsfLegacy = {"Rx Cons"}
     },
 
     -- Flight Mode Sensors
@@ -177,10 +177,10 @@ local sensorTable = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5125},
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5450}
         },
-        customCRSF = {
+        crsf = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1205}
         },
-        legacyCRSF = {"Flight mode"}
+        crsfLegacy = {"Flight mode"}
     },
 
     -- Adjustment Sensors
@@ -190,10 +190,10 @@ local sensorTable = {
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5110}
         },
-        customCRSF = {
+        crsf = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1221}
         },
-        legacyCRSF = {nil}
+        crsfLegacy = {nil}
     },
     adjV = {
         name = "Adjustment Sensors (Value)",
@@ -201,10 +201,10 @@ local sensorTable = {
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5111}
         },
-        customCRSF = {
+        crsf = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1222}
         },
-        legacyCRSF = {nil}
+        crsfLegacy = {nil}
     },
 
     -- PID and Rate Profiles
@@ -215,10 +215,10 @@ local sensorTable = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5130},
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5471}
         },
-        customCRSF = {
+        crsf = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1211}
         },
-        legacyCRSF = {nil}
+        crsfLegacy = {nil}
     },
     rateProfile = {
         name = "Rate Profile",
@@ -227,10 +227,10 @@ local sensorTable = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5131},
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5472}
         },
-        customCRSF = {
+        crsf = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1212}
         },
-        legacyCRSF = {nil}
+        crsfLegacy = {nil}
     },
 
     -- Throttle Sensors
@@ -241,10 +241,10 @@ local sensorTable = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x51A4},
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5440}
         },
-        customCRSF = {
+        crsf = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1035}
         },
-        legacyCRSF = {nil}
+        crsfLegacy = {nil}
     }
 }
 
@@ -294,8 +294,8 @@ function telemetry.getSensorSource(name)
         if not crsfSOURCE then crsfSOURCE = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = 0xEE01}) end
 
         if crsfSOURCE then
-            protocol = "customCRSF"
-            for _, sensor in ipairs(sensorTable[name].customCRSF or {}) do
+            protocol = "crsf"
+            for _, sensor in ipairs(sensorTable[name].crsf or {}) do
                 -- Skip entries with unfulfilled version conditions
                 if checkCondition(sensor) then
                     sensor.mspgt = nil
@@ -308,8 +308,8 @@ function telemetry.getSensorSource(name)
                 end
             end
         else
-            protocol = "legacyCRSF"
-            for _, sensor in ipairs(sensorTable[name].legacyCRSF or {}) do
+            protocol = "crsfLegacy"
+            for _, sensor in ipairs(sensorTable[name].crsfLegacy or {}) do
                 local source = system.getSource(sensor)
                 if source then
                     sensors[name] = source

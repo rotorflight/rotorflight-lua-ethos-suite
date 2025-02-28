@@ -21,7 +21,7 @@
 local transport = {}
 
 local LOCAL_SENSOR_ID = 0x0D
-local SMARTPORT_REMOTE_SENSOR_ID = 0x1B
+local sport_REMOTE_SENSOR_ID = 0x1B
 local FPORT_REMOTE_SENSOR_ID = 0x00
 local REQUEST_FRAME_ID = 0x30
 local REPLY_FRAME_ID = 0x32
@@ -48,7 +48,7 @@ function transport.sportTelemetryPop()
     local frame = rfsuite.tasks.msp.sensor:popFrame()
     if frame == nil then return nil, nil, nil, nil end
     -- physId = physical / remote sensor Id (aka sensorId)
-    --   0x00 for FPORT, 0x1B for SmartPort
+    --   0x00 for FPORT, 0x1B for sport
     -- primId = frame ID  (should be 0x32 for reply frames)
     -- appId = data Id
     return frame:physId(), frame:primId(), frame:appId(), frame:value()
@@ -71,7 +71,7 @@ transport.mspWrite = function(cmd, payload)
 end
 
 -- Discards duplicate data from lua input buffer
-local function smartPortTelemetryPop()
+local function sportTelemetryPop()
     while true do
         local sensorId, frameId, dataId, value = transport.sportTelemetryPop()
         if not sensorId then
@@ -90,8 +90,8 @@ end
 
 transport.mspPoll = function()
     while true do
-        local sensorId, frameId, dataId, value = smartPortTelemetryPop()
-        if (sensorId == SMARTPORT_REMOTE_SENSOR_ID or sensorId == FPORT_REMOTE_SENSOR_ID) and frameId == REPLY_FRAME_ID then
+        local sensorId, frameId, dataId, value = sportTelemetryPop()
+        if (sensorId == sport_REMOTE_SENSOR_ID or sensorId == FPORT_REMOTE_SENSOR_ID) and frameId == REPLY_FRAME_ID then
             -- --rfsuite.utils.log("sensorId:0x"..string.format("%X", sensorId).." frameId:0x"..string.format("%X", frameId).." dataId:0x"..string.format("%X", dataId).." value:0x"..string.format("%X", value))
             local payload = {}
             payload[1] = dataId & 0xFF

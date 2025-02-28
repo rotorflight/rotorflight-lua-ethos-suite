@@ -207,11 +207,7 @@ function msp.wakeup()
         return
     end
 
-    if telemetrySOURCE:name() == "Rx RSSI1" or telemetrySOURCE:name() == "Rx RSSI1" then
-        msp.activeProtocol = "crsf"
-    else
-        msp.activeProtocol = "smartPort"
-    end
+   msp.activeProtocol = rfsuite.session.rssiSensorType
 
     if rfsuite.tasks.wasOn == true then rfsuite.session.rssiSensorChanged = true end
 

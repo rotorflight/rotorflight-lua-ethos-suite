@@ -2495,7 +2495,7 @@ function status.getSensors()
         rssiSOURCE = rfsuite.tasks.telemetry.getSensorSource("rssi") 
         govSOURCE = rfsuite.tasks.telemetry.getSensorSource("governor")
 
-        if rfsuite.tasks.telemetry.getSensorProtocol() == 'customCRSF' then
+        if rfsuite.tasks.telemetry.getSensorProtocol() == 'crsf' then
 
             if voltageSOURCE ~= nil then
                 voltage = voltageSOURCE:value() or 0

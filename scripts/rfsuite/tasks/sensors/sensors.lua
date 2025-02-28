@@ -38,7 +38,7 @@ function sensors.wakeup()
 
     if rfsuite.tasks.msp.protocol.mspProtocol == "crsf" and rfsuite.preferences.internalElrsSensors == true then sensors.elrs.wakeup() end
 
-    if rfsuite.tasks.msp.protocol.mspProtocol == "smartPort" and rfsuite.preferences.internalSportSensors == true then
+    if rfsuite.tasks.msp.protocol.mspProtocol == "sport" and rfsuite.preferences.internalSportSensors == true then
 
         if rfsuite.session.apiVersion >= 12.08 then
             -- use new if msp is 12.08 or higher
