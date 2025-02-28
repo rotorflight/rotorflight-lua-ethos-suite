@@ -237,9 +237,7 @@ function msp.wakeup()
 
     local state
 
-    if system:getVersion().simulation == true then
-        state = true
-    elseif rfsuite.session.rssiSensor then
+    if rfsuite.session.rssiSensor then
         state = rfsuite.tasks.telemetry.active()
     else
         state = false

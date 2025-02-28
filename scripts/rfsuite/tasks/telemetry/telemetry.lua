@@ -90,7 +90,7 @@ local sensorTable = {
         name = "Arming Flags",
         mandatory = true,
         sim = {
-            {uid=0x5001, unit=nil, dec=nil, value=function() return math.random(0, 2) end, min = 0, max = 2},
+            {uid=0x5001, unit=nil, dec=nil, value=function() return math.random(0, 0) end, min = 0, max = 2},
         },
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5122},
@@ -224,7 +224,7 @@ local sensorTable = {
         name = "Governor State",
         mandatory = false,
         sim =  {
-            {uid=0x5009, unit=nil, dec=0, value=function() return math.random(0, 2) end, min = 0, max = 5},
+            {uid=0x5009, unit=nil, dec=0, value=function() return math.random(0, 0) end, min = 0, max = 5},
         },        
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5125},
@@ -238,10 +238,10 @@ local sensorTable = {
 
     -- Adjustment Sensors
     adjF = {
-        name = "Adjustment Sensors (Function)",
+        name = "Adj (Function)",
         mandatory = false,
         sim =  {
-            {uid=0x5010, unit=nil, dec=0, value=function() return math.random(0, 10) end, min = 0, max = 10},
+            {uid=0x5010, unit=nil, dec=0, value=function() return math.random(0, 0) end, min = 0, max = 10},
         },           
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5110}
@@ -252,10 +252,10 @@ local sensorTable = {
         crsfLegacy = {nil}
     },
     adjV = {
-        name = "Adjustment Sensors (Value)",
+        name = "Adj (Value)",
         mandatory = false,
         sim =  {
-            {uid=0x5011, unit=nil, dec=0, value=function() return math.random(1000, 1002) end, min = 0, max = 2000},
+            {uid=0x5011, unit=nil, dec=0, value=function() return math.random(1000, 1000) end, min = 0, max = 2000},
         },           
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5111}

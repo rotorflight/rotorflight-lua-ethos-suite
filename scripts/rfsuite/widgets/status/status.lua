@@ -1141,6 +1141,9 @@ local function getSensors()
     if rssi == nil then rssi = 0 end
     rssi = rfsuite.utils.round(rssi, 0)
 
+    if rpm == nil then rpm = 0 end
+    rpm = rfsuite.utils.round(rpm, 0)
+
     -- Voltage based on stick position
     status.lowvoltagStickParam = status.lowvoltagStickParam or 0
     status.lowvoltagStickCutoffParam = status.lowvoltagStickCutoffParam or 80
@@ -3043,8 +3046,8 @@ function status.paint(widget)
             -- RPM
             if status.sensors.rpm ~= nil then
 
-                sensorVALUE = status.sensors.rpm
-
+                sensorVALUE = rfsuite.utils.round(status.sensors.rpm,0)
+                
                 if status.sensors.rpm < 5 then sensorVALUE = 0 end
 
                 if status.titleParam == true then

@@ -207,9 +207,15 @@ function utils.stringInArray(array, s)
 end
 
 function utils.round(num, places)
-    local mult = 10^(places or 2)
-    return math.floor(num * mult + 0.5) / mult
+    local places = places or 2
+    if places == 0 then
+        return math.floor(num + 0.5)  -- return integer (no .0)
+    else
+        local mult = 10^places
+        return math.floor(num * mult + 0.5) / mult
+    end
 end
+
 
 function utils.roughlyEqual(a, b, tolerance)
     return math.abs(a - b) < (tolerance or 0.0001)  -- Allows a tiny margin of error

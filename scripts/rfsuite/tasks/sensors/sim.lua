@@ -50,7 +50,8 @@ local function createSensor(uid, name, unit, dec, value, min, max)
     sensors['uid'][uid]:module(1)
     sensors['uid'][uid]:minimum(min or -1000000000)
     sensors['uid'][uid]:maximum(max or 2147483647)
-    if dec or dec >= 1 then
+
+    if dec or (dev and dec >= 1) then
         sensors['uid'][uid]:decimals(dec)
         sensors['uid'][uid]:protocolDecimals(dec)
     end
