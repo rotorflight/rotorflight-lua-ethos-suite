@@ -28,7 +28,11 @@ local config = arg[1]
 local cacheExpireTime = 10 -- Time in seconds to expire the caches
 local lastCacheFlushTime = os.clock() -- Store the initial time
 local lastWakeupTime = 0  
-local wakeupInterval = 0.5
+local wakeupInterval = 2
+local lastWakeupTimeDrop = 0  
+local wakeupIntervalDrop = 60
+
+
 
 local sim = {}
 
@@ -38,9 +42,33 @@ sim.name = "sim"
 -- get the sensors
 local sensorList = rfsuite.tasks.telemetry.simSensors()
 
+-- drop sensors that get auto discovered
+
+local dropList = {
+    ["0xF104"] = "RxBatt",
+    ["0x0300"] = "LIPO",
+    ["0x0301"] = "LIPO",
+    ["0x0100"] = "Alt",
+    ["0x0110"] = "Vspeed",
+    ["0x0500"] = "RPM",
+    ["0x0200"] = "Current",
+    ["0x0800"] = "GPS",
+    ["0x0850"] = "GPS Clock",
+    ["0x0830"] = "GPS Speed",
+    ["0x0820"] = "GPS Alt",
+    ["0x0840"] = "GPS course",
+    ["0xF103"] = "ADC",
+    ["0x0A00"] = "Airspeed",
+    ["0x0210"] = "VFAS",
+    ["0x0B20"] = "RB",
+    ["0x0730"] = "Angle",
+}
+
+
 local sensors = {}
 sensors['uid'] = {}
 sensors['lastvalue'] = {}
+
 
 local function createSensor(uid, name, unit, dec, value, min, max)
 
@@ -63,6 +91,13 @@ local function createSensor(uid, name, unit, dec, value, min, max)
 end
 
 
+local function dropSensor(uid)
+    src = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = uid})
+    if src then
+        src:drop()
+    end
+end
+
 function sim.wakeup()
     local now = os.clock()  -- Get current time in seconds (high precision)
     if now - lastWakeupTime >= wakeupInterval then
@@ -77,6 +112,7 @@ function sim.wakeup()
             local dec = v.sensor.dec
             local name = v.name
   
+            
             if min ~= nil and max ~= nil and uid ~= nil and value ~= nil then
                 -- create the sensors
                 if sensors['uid'][uid] == nil then
@@ -95,19 +131,25 @@ function sim.wakeup()
                 end
 
                 if sensors['uid'][uid] then
-    
                     -- detect if sensor has been deleted or is missing after initial creation
                     if sensors['uid'][uid]:state() == false then
                         sensors['uid'][uid] = nil
                         sensors['lastvalue'][uid] = nil
                     end
-        
                 end        
             end
+        
         end
 
-
         lastWakeupTime = now
+    end
+
+    if now - lastWakeupTimeDrop >= wakeupIntervalDrop then
+        -- drop sensors that get auto discovered
+        for i,v in pairs(dropList) do
+            dropSensor(i)
+        end
+        lastWakeupTimeDrop = now
     end
 end
 
