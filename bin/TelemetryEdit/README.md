@@ -30,12 +30,12 @@ python main.py "C:\Program Files (x86)\FrSky\Ethos\X20S\scripts\rfsuite.simtelem
 
 ### ✅ Option 2: Use Environment Variable (Persistent Option)
 
-Set the environment variable `RFSUITE_TELEMETRY_EDIT_PATH` to point to your Lua folder. This way, you don’t need to pass the folder every time.
+Set the environment variable `DEV_RFSUITE.SIM_PATH` to point to your Lua folder. This way, you don’t need to pass the folder every time.
 
 #### On Windows (Temporary for Current Terminal)
 
 ```bash
-set RFSUITE_TELEMETRY_EDIT_PATH=C:\path\to\your\lua\files
+set DEV_RFSUITE.SIM_PATH=C:\path\to\your\lua\files
 python main.py
 ```
 
@@ -43,7 +43,7 @@ python main.py
 
 1. Open **Control Panel**.
 2. Navigate to **System > Advanced system settings > Environment Variables**.
-3. Add a new **User variable** called `RFSUITE_TELEMETRY_EDIT_PATH`.
+3. Add a new **User variable** called `DEV_RFSUITE.SIM_PATH`.
 4. Set the value to your Lua folder path, e.g.:
 ```
 C:\Program Files (x86)\FrSky\Ethos\X20S\scripts\rfsuite.simtelemetry
@@ -75,12 +75,12 @@ python main.py "C:\My\Custom\Lua\Folder"
 
 ### Example 2 - Using Environment Variable (for Current Session)
 ```bash
-set RFSUITE_TELEMETRY_EDIT_PATH=C:\My\Custom\Lua\Folder
+set DEV_RFSUITE.SIM_PATH=C:\My\Custom\Lua\Folder
 python main.py
 ```
 
 ### Example 3 - Using Permanent Environment Variable (Set Once)
-Once you set `RFSUITE_TELEMETRY_EDIT_PATH`, just run:
+Once you set `DEV_RFSUITE.SIM_PATH`, just run:
 ```bash
 python main.py
 ```
@@ -94,7 +94,7 @@ For even more convenience, you can create a batch file called `run_editor.bat`:
 **run_editor.bat**
 ```bat
 @echo off
-set RFSUITE_TELEMETRY_EDIT_PATH=C:\My\Custom\Lua\Folder
+set DEV_RFSUITE.SIM_PATH=C:\My\Custom\Lua\Folder
 python main.py
 pause
 ```

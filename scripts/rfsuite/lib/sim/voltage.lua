@@ -1,1 +1,0 @@
-return math.random(2800, 2850) 
