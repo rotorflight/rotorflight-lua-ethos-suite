@@ -66,6 +66,9 @@ local sensorTable = {
     rssi = {
         name = "RSSI",
         mandatory = true,
+        sim = {
+            {appId=0xF101, subId=0},
+        },
         sport = {
             {appId=0xF101, subId=0},
             "RSSI",   -- fallback for older versions (should never get here if running ethos 1.6.2 or newer)
@@ -86,6 +89,9 @@ local sensorTable = {
     armflags = {
         name = "Arming Flags",
         mandatory = true,
+        sim = {
+            {uid=0x5001, unit=nil, dec=nil, value=function() return math.random(0, 2) end, min = 0, max = 2},
+        },
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5122},
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5462}
@@ -100,6 +106,9 @@ local sensorTable = {
     voltage = {
         name = "Voltage",
         mandatory = true,
+        sim =  {
+            {uid=0x5002, unit=UNIT_VOLT, dec=2, value=function() return math.random(2200, 2500) end, min = 0, max = 3000},
+        },
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0210},
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0211},
@@ -119,6 +128,9 @@ local sensorTable = {
     rpm = {
         name = "Head Speed",
         mandatory = true,
+        sim =  {
+            {uid=0x5003, unit=UNIT_RPM, dec=0, value=function() return math.random(1500, 1550) end, min = 0, max = 2000},
+        },
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0500}
         },
@@ -132,6 +144,9 @@ local sensorTable = {
     current = {
         name = "Current",
         mandatory = false,
+        sim =  {
+            {uid=0x5004, unit=UNIT_AMPERE, dec=0, value=function() return math.random(20, 25) end, min = 0, max = 25},
+        },
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0200},
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0201}
@@ -147,6 +162,9 @@ local sensorTable = {
     tempESC = {
         name = "ESC Temperature",
         mandatory = false,
+        sim =  {
+            {uid=0x5005, unit=UNIT_DEGREE, dec=0, value=function() return math.random(50, 55) end, min = 0, max = 100},
+        },   
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0B70}
         },
@@ -158,6 +176,9 @@ local sensorTable = {
     tempMCU = {
         name = "MCU Temperature",
         mandatory = false,
+        sim =  {
+            {uid=0x5006, unit=UNIT_DEGREE, dec=0, value=function() return math.random(0, 55) end, min = 0, max = 100},
+        },         
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0400, mspgt = 12.08},
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401, msplt = 12.07}
@@ -172,6 +193,9 @@ local sensorTable = {
     fuel = {
         name = "Charge Level",
         mandatory = false,
+        sim =  {
+            {uid=0x5007, unit=UNIT_PERCENT, dec=0, value=function() return math.random(90, 95) end, min = 0, max = 100},
+        },               
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0600}
         },
@@ -183,6 +207,9 @@ local sensorTable = {
     capacity = {
         name = "Consumption",
         mandatory = false,
+        sim =  {
+            {uid=0x5008, unit=UNIT_MILLIAMPERE_HOUR, dec=0, value=function() return math.random(60, 70) end, min = 0, max = 100},
+        },           
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5250}
         },
@@ -196,6 +223,9 @@ local sensorTable = {
     governor = {
         name = "Governor State",
         mandatory = false,
+        sim =  {
+            {uid=0x5009, unit=nil, dec=0, value=function() return math.random(0, 2) end, min = 0, max = 5},
+        },        
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5125},
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5450}
@@ -210,6 +240,9 @@ local sensorTable = {
     adjF = {
         name = "Adjustment Sensors (Function)",
         mandatory = false,
+        sim =  {
+            {uid=0x5010, unit=nil, dec=0, value=function() return math.random(0, 10) end, min = 0, max = 10},
+        },           
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5110}
         },
@@ -221,6 +254,9 @@ local sensorTable = {
     adjV = {
         name = "Adjustment Sensors (Value)",
         mandatory = false,
+        sim =  {
+            {uid=0x5011, unit=nil, dec=0, value=function() return math.random(1000, 1002) end, min = 0, max = 2000},
+        },           
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5111}
         },
@@ -234,6 +270,9 @@ local sensorTable = {
     pidProfile = {
         name = "PID Profile",
         mandatory = true,
+        sim =  {
+            {uid=0x5012, unit=nil, dec=0, value=function() return math.random(1, 2) end, min = 0, max = 6},
+        },            
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5130},
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5471}
@@ -246,6 +285,9 @@ local sensorTable = {
     rateProfile = {
         name = "Rate Profile",
         mandatory = true,
+        sim =  {
+            {uid=0x5013, unit=nil, dec=0, value=function() return math.random(1, 2) end, min = 0, max = 6},
+        },            
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5131},
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5472}
@@ -260,6 +302,9 @@ local sensorTable = {
     throttlePercentage = {
         name = "Throttle %",
         mandatory = true,
+        sim =  {
+            {uid=0x5014, unit=nil, dec=0, value=function() return math.random(80, 85) end, min = 0, max = 100},
+        },         
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x51A4},
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5440}
@@ -337,7 +382,26 @@ function telemetry.getSensorSource(name)
         return true
     end
 
-    if rfsuite.session.rssiSensorType == "crsf" then
+    if system.getVersion().simulation == true then
+        protocol = "sport"
+        for _, sensor in ipairs(sensorTable[name].sim or {}) do
+            -- Skip entries with unfulfilled version conditions 
+
+            if sensor and type(sensor) == "table" then
+                -- redefine sensor params
+                local sensorQ = {}
+                sensorQ.appid = sensor.uid
+                sensorQ.category = CATEGORY_TELEMETRY_SENSOR    
+
+                local source = system.getSource(sensorQ)
+                if source then
+                    sensors[name] = source
+                    return sensors[name]
+                end
+            end
+
+        end
+    elseif rfsuite.session.rssiSensorType == "crsf" then
         if not crsfSOURCE then crsfSOURCE = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = 0xEE01}) end
 
         if crsfSOURCE then
@@ -390,6 +454,8 @@ function telemetry.getSensorSource(name)
 end
 
 
+
+
 --[[
     Function: telemetry.validateSensors
     Purpose: Validates the sensors and returns a list of either valid or invalid sensors based on the input parameter.
@@ -437,6 +503,33 @@ function telemetry.validateSensors(returnValid)
     return resultSensors
 end
 
+--[[
+    Function: telemetry.simSensors
+    Description: Simulates sensors by iterating over a sensor table and returning a list of valid sensors.
+    Parameters:
+        returnValid (boolean) - A flag indicating whether to return valid sensors.
+    Returns:
+        result (table) - A table containing the names and first sport sensors of valid sensors.
+
+    This function is used to build a list of sensors that are availiable in 'simulation mode'
+]]
+function telemetry.simSensors(returnValid)
+    local result = {}
+
+    for key, sensor in pairs(sensorTable) do
+        local name = sensor.name
+        local firstSportSensor = sensor.sim and sensor.sim[1]
+
+        if firstSportSensor then
+            table.insert(result, {
+                name = name,
+                sensor = firstSportSensor
+            })
+        end
+    end
+
+    return result
+end
 
 --[[
     Function: telemetry.active

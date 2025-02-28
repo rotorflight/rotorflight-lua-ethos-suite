@@ -45,6 +45,7 @@ preferences.reloadOnSave = false                                    -- trigger a
 preferences.skipRssiSensorCheck = false                             -- skip checking for a valid rssi [ default = false]
 preferences.internalElrsSensors = true                              -- disable the integrated elrs telemetry processing [default = true]
 preferences.internalSportSensors = true                             -- disable the integrated smart port telemetry processing [default = true]
+preferences.internalSimSensors = true                               -- disable the integrated simulator telemetry processing [default = true]
 preferences.adjFunctionAlerts = false                               -- do not alert on adjfunction telemetry.  [default = false]
 preferences.adjValueAlerts = true                                   -- play adjvalue alerts if sensor changes [default = true]  
 preferences.saveWhenArmedWarning = true                             -- do not display the save when armed warning. [default = true]

@@ -689,31 +689,7 @@ local function getSensors()
 
     -- lcd.resetFocusTimeout()
 
-    if environment.simulation == true then
-
-        tv = math.random(2100, 2274)
-        voltage = tv
-        temp_esc = math.random(50, 225) * 10
-        temp_mcu = math.random(50, 185) * 10
-        mah = math.random(10000, 10100)
-        fuel = 55
-        fm = "DISABLED"
-        rssi = math.random(90, 100)
-        adjsource = 0
-        adjvalue = 0
-        current = 0
-
-        if status.idleupswitchParam ~= nil then
-            if status.idleupswitchParam:state() == true then
-                current = math.random(100, 120)
-                rpm = math.random(90, 100)
-            else
-                current = 0
-                rpm = 0
-            end
-        end
-
-    elseif status.linkUP == true then
+    if status.linkUP == true then
 
         -- get sensors
         voltageSOURCE = rfsuite.tasks.telemetry.getSensorSource("voltage")
@@ -971,6 +947,7 @@ local function getSensors()
             adjvalue = 0
 
         elseif rfsuite.tasks.telemetry.getSensorProtocol() == 'sport' then
+
 
             if voltageSOURCE ~= nil then
                 voltage = voltageSOURCE:value() or 0
@@ -3945,7 +3922,7 @@ function status.paint(widget)
             local validateSensors = {}
             if rfsuite.tasks and rfsuite.tasks.telemetry then validateSensors = rfsuite.tasks.telemetry.validateSensors() end
 
-            if status.linkUP == false and environment.simulation == false then
+            if status.linkUP == false then
                 noTelem()
                 status.initTime = os.clock()
             elseif (os.clock() - status.initTime) >= 10 and validateSensors and (#rfsuite.tasks.telemetry.validateSensors() > 0) then
