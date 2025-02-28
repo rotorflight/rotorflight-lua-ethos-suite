@@ -27,6 +27,9 @@ local config = arg[1]
 
 local elrs = {}
 
+-- used by sensors.lua to know if module has changed
+elrs.name = "elrs"
+
 --[[
 This script checks if the `crsf.getSensor` function is available.
 If available, it retrieves the sensor object and assigns the `popFrame` and `pushFrame` methods from the sensor object to the `elrs` table.

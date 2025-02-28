@@ -26,6 +26,8 @@ local frsky = {}
 local cacheExpireTime = 10 -- Time in seconds to expire the caches
 local lastCacheFlushTime = os.clock() -- Store the initial time
 
+frsky.name = "frsky"
+
 --[[
 createSensorList:
     This table maps sensor IDs to their respective sensor details, including name, unit, and optional decimals.
