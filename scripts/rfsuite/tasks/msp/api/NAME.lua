@@ -31,9 +31,6 @@ local MSP_API_STRUCTURE_READ = rfsuite.tasks.msp.api.filterByApiVersion(MSP_API_
 -- set read structure
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
 
--- generate a simulatorResponse from the read structure
-local MSP_API_SIMULATOR_RESPONSE = rfsuite.tasks.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
-
 -- Variable to store parsed MSP data
 local mspData = nil
 local mspWriteComplete = false
@@ -79,6 +76,9 @@ end
 
 -- Function to initiate MSP read operation
 local function read()
+
+    local MSP_API_SIMULATOR_RESPONSE = rfsuite.tasks.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ,API_NAME)
+
     local message = {
         command = MSP_API_CMD_READ, -- Specify the MSP command
         processReply = function(self, buf)

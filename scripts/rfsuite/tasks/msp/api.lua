@@ -362,12 +362,20 @@ end
 
     @return response (table or nil): A table containing the simulated response values, or nil if not in simulation mode.
 ]]
-function apiLoader.buildSimResponse(dataStructure)
+function apiLoader.buildSimResponse(dataStructure, apiName)
 
     if system:getVersion().simulation == false then
         return nil
     end
 
+    -- Attempt to load saved byte stream
+    local byteStream, err = rfsuite.utils.simMspLoad(apiName)
+
+    if byteStream and apiLoader.validateLoadedStream(byteStream, dataStructure) then
+        return byteStream
+    end
+
+    -- Fallback to building from dataStructure if file is invalid or missing
     local response = {}
 
     for _, field in ipairs(dataStructure) do
@@ -386,6 +394,32 @@ function apiLoader.buildSimResponse(dataStructure)
     end
 
     return response
+end
+
+-- This function checks that the loaded stream:
+-- 1. Is a table
+-- 2. Is at least 70% the length of the 'ideal' response built from dataStructure
+function apiLoader.validateLoadedStream(byteStream, dataStructure)
+    if type(byteStream) ~= "table" then
+        return false
+    end
+
+    local expectedLength = 0
+    for _, field in ipairs(dataStructure) do
+        if field.simResponse then
+            expectedLength = expectedLength + #field.simResponse
+        else
+            expectedLength = expectedLength + get_type_size(field.type)
+        end
+    end
+
+    local minAcceptableLength = math.floor(expectedLength * 0.7)
+
+    if #byteStream < minAcceptableLength then
+        return false
+    end
+
+    return true
 end
 
 
@@ -538,8 +572,9 @@ function apiLoader.buildWritePayload(apiname,payload, api_structure)
 
     if rfsuite.config.logMSP then
         local logData = "Sending:  {" .. rfsuite.utils.joinTableItems(byte_stream, ", ") .. "}"
-        rfsuite.utils.log(logData,"info")
+        rfsuite.utils.log(logData,"info")    
     end
+    rfsuite.utils.simMspSave(apiname, byte_stream)   
 
     return byte_stream
 end

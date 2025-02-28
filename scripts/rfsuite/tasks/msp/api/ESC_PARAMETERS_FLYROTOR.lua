@@ -63,17 +63,13 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "motor_erpm_max",          type = "U24", apiVersion = 12.07, simResponse = {2, 23, 40}, min = 0, max = 1000000, step = 100, byteorder = "big", help = "Maximum RPM"}
 }
 
--- filter the structure to remove any params not supported by the running api version
-local MSP_API_STRUCTURE_READ = rfsuite.tasks.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
-
 -- calculate the min bytes value from the structure
 local MSP_MIN_BYTES = rfsuite.tasks.msp.api.calculateMinBytes(MSP_API_STRUCTURE_READ)
 
 -- set read structure
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
 
--- generate a simulatorResponse from the read structure
-local MSP_API_SIMULATOR_RESPONSE = rfsuite.tasks.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
+
 
 local function processedData()
     rfsuite.utils.log("Processed data","debug")
@@ -95,6 +91,9 @@ local MSP_API_MSG_TIMEOUT
 
 -- Function to initiate MSP read operation
 local function read()
+
+    local MSP_API_SIMULATOR_RESPONSE = rfsuite.tasks.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ,API_NAME)
+
     if MSP_API_CMD_READ == nil then
         rfsuite.utils.log("No value set for MSP_API_CMD_READ", "debug")
         return
