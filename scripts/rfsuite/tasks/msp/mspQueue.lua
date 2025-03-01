@@ -114,6 +114,9 @@ function MspQueueController:processQueue()
         cmd, buf, err = rfsuite.tasks.msp.common.mspPollReply()
 
         -- we dont log here - but later as this is 'polling'
+        -- look further down in the script where we process the 
+        -- cmd, buf, err commands
+
     else
         if not self.currentMessage.simulatorResponse then
             rfsuite.utils.log("No simulator response for command " .. tostring(self.currentMessage.command),"debug")
@@ -121,13 +124,33 @@ function MspQueueController:processQueue()
             self.uuid = nil -- Clear UUID after processing
             return
         end
+
+
         -- return the simulator response
         cmd, buf, err = self.currentMessage.command, self.currentMessage.simulatorResponse, nil
 
         if cmd then
+            -- find state
             local rwState = (self.currentMessage.payload and #self.currentMessage.payload > 0) and "WRITE" or "READ"
-            rfsuite.utils.logMsp(cmd, rwState, self.currentMessage.payload or buf, err)
-        end
+
+            -- if writing, then we can take payload and write to disk
+            if rwState == "WRITE" then
+                rfsuite.utils.simMspSave(cmd, self.currentMessage.payload)
+            end
+
+            -- if reading, then we can take payload and load from disk  (if available)
+            -- if not available, we use the existing simulator response
+            if rwState == "READ" then
+                local payload_disk = rfsuite.utils.simMspLoad(cmd)
+                if payload_disk then
+                    rfsuite.utils.log("Using payload from disk for command " .. tostring(cmd),"info")
+                    buf = payload_disk
+                    self.currentMessage.simulatorResponse = buf
+                end     
+            end  
+
+            rfsuite.utils.logMsp(cmd, rwState, self.currentMessage.payload or buf, err)      
+        end    
     end
 
     if self.currentMessage and os.clock() - self.currentMessageStartTime > (self.currentMessage.timeout or self.timeout) then
@@ -146,6 +169,7 @@ function MspQueueController:processQueue()
         if self.currentMessage.processReply then 
             self.currentMessage:processReply(buf) 
             if cmd then
+                -- we can do logging etc here as payload is now complete (real)
                 local rwState = (self.currentMessage.payload and #self.currentMessage.payload > 0) and "WRITE" or "READ"
                 rfsuite.utils.logMsp(cmd, rwState, self.currentMessage.payload or buf, err)
             end

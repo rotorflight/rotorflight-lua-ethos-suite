@@ -379,32 +379,6 @@ function apiLoader.buildSimResponse(dataStructure, apiName)
     return response
 end
 
--- This function checks that the loaded stream:
--- 1. Is a table
--- 2. Is at least 70% the length of the 'ideal' response built from dataStructure
-function apiLoader.validateLoadedStream(byteStream, dataStructure)
-    if type(byteStream) ~= "table" then
-        return false
-    end
-
-    local expectedLength = 0
-    for _, field in ipairs(dataStructure) do
-        if field.simResponse then
-            expectedLength = expectedLength + #field.simResponse
-        else
-            expectedLength = expectedLength + get_type_size(field.type)
-        end
-    end
-
-    local minAcceptableLength = math.floor(expectedLength * 0.7)
-
-    if #byteStream < minAcceptableLength then
-        return false
-    end
-
-    return true
-end
-
 
 --[[
     Creates a new instance of handlers for complete and error events.
