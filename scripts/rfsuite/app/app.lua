@@ -535,19 +535,15 @@ local function saveSettings()
             end
         end)
 
-        -- Inject values into the payload
+        -- Inject values into the payload and send the payload in a single loop
         for i, v in pairs(payloadData) do    
             for fidx, f in ipairs(app.Page.mspapi.formdata.fields) do
-                if f.apikey == i and f.mspapi == apiID then
-                    payloadData[i] = app.Page.fields[fidx].value
-                end
+            if f.apikey == i and f.mspapi == apiID then
+                payloadData[i] = app.Page.fields[fidx].value
+                rfsuite.utils.log("Set value for " .. i .. " to " .. payloadData[i], "debug")
+                API.setValue(i, payloadData[i])
+            end
             end 
-        end
-
-        -- Send the payload
-        for i, v in pairs(payloadData) do
-            rfsuite.utils.log("Set value for " .. i .. " to " .. v, "debug")
-            API.setValue(i, v)
         end
 
         API.write()
@@ -1536,7 +1532,6 @@ function app.event(widget, category, value, x, y)
         if app.Page.event then
             rfsuite.utils.log("USING PAGES EVENTS", "info")
             local ret = app.Page.event(widget, category, value, x, y)
-            print(ret)
             if ret ~= nil then
                 return ret
             end    
