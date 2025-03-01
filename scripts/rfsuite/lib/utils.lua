@@ -488,6 +488,23 @@ function utils.splitString(input, sep)
 end
 
 
+--- Logs MSP (Multiwii Serial Protocol) commands if logging is enabled in the configuration.
+-- @param cmd The MSP command to log.
+-- @param rwState The read/write state of the command.
+-- @param buf The buffer containing the command data.
+-- @param err Any error associated with the command.
+-- @usage
+-- utils.logMsp("MSP_STATUS", "read", {0x01, 0x02, 0x03}, nil)
+function utils.logMsp(cmd, rwState, buf, err)
+    if rfsuite.config.logMSP then
+        local payload = rfsuite.utils.joinTableItems(buf, ", ")
+        rfsuite.utils.log(rwState .. " [" .. cmd .. "]" .. " {" .. payload .. "}", "info")
+        if err then
+            rfsuite.utils.log("Error: " .. err, "info")
+        end
+    end
+end
+
 --[[
     Function: utils.simMspSave
 

@@ -64,9 +64,6 @@ local function loadAPI(apiName)
             if apiModule.read then
                 local originalRead = apiModule.read
                 apiModule.read = function(...)
-                    if rfsuite.config.logMSP then
-                        rfsuite.utils.log(apiName .. "->read()", "info")
-                    end    
                     return originalRead(...)
                 end
             end
@@ -74,10 +71,7 @@ local function loadAPI(apiName)
             -- Wrap the write function
             if apiModule.write then
                 local originalWrite = apiModule.write
-                apiModule.write = function(...)
-                    if rfsuite.config.logMSP then
-                        rfsuite.utils.log(apiName .. "->write()", "info")
-                    end    
+                apiModule.write = function(...) 
                     return originalWrite(...)
                 end
             end
@@ -86,7 +80,6 @@ local function loadAPI(apiName)
             if apiModule.setValue then
                 local originalSetValue = apiModule.setValue
                 apiModule.setValue = function(...)
-                    rfsuite.utils.log(apiName .. "->setValue()", "debug")
                     return originalSetValue(...)
                 end
             end
@@ -95,12 +88,9 @@ local function loadAPI(apiName)
             if apiModule.readValue then
                 local originalReadValue = apiModule.readValue
                 apiModule.readValue = function(...)
-                    rfsuite.utils.log(apiName .. "->readValue()", "debug")
                     return originalReadValue(...)
                 end
             end
-
-
 
             -- Store the modified API in the cache
             apiCache[apiName] = apiModule
@@ -368,13 +358,6 @@ function apiLoader.buildSimResponse(dataStructure, apiName)
         return nil
     end
 
-    -- Attempt to load saved byte stream
-    local byteStream, err = rfsuite.utils.simMspLoad(apiName)
-
-    if byteStream and apiLoader.validateLoadedStream(byteStream, dataStructure) then
-        return byteStream
-    end
-
     -- Fallback to building from dataStructure if file is invalid or missing
     local response = {}
 
@@ -569,12 +552,6 @@ function apiLoader.buildWritePayload(apiname,payload, api_structure)
 
         serialize_value(byte_stream, value, field_def.type, byteorder)
     end
-
-    if rfsuite.config.logMSP then
-        local logData = "Sending:  {" .. rfsuite.utils.joinTableItems(byte_stream, ", ") .. "}"
-        rfsuite.utils.log(logData,"info")    
-    end
-    rfsuite.utils.simMspSave(apiname, byte_stream)   
 
     return byte_stream
 end
