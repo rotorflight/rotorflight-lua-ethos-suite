@@ -26,18 +26,12 @@ local MSP_API_STRUCTURE_READ_DATA = {
     { field = "roll",  type = "U16", apiVersion = 12.06, simResponse = {0, 0}, min = -300, max = 300, default = 0, unit = "°", help="Use to trim if the heli drifts in one of the stabilized modes (angle, horizon, etc.)."},
 }
 
--- filter the structure to remove any params not supported by the running api version
-local MSP_API_STRUCTURE_READ = rfsuite.tasks.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
+-- Process structure in one pass
+local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE =
+    rfsuite.tasks.msp.api.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 
--- calculate the min bytes value from the structure
-local MSP_MIN_BYTES = rfsuite.tasks.msp.api.calculateMinBytes(MSP_API_STRUCTURE_READ)
-
--- set read structure
+-- set write structure
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
-
--- generate a simulatorResponse from the read structure
-local MSP_API_SIMULATOR_RESPONSE = rfsuite.tasks.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
-
 
 -- Variable to store parsed MSP data
 local mspData = nil

@@ -444,4 +444,57 @@ function apiLoader.buildWritePayload(apiname, payload, api_structure)
 end
 
 
+
+-- New function to process structure in one pass
+function apiLoader.prepareStructureData(structure)
+    local filteredStructure = {}
+    local minBytes = 0
+    local simResponse = {}
+
+    local apiVersion = rfsuite.session.apiVersion or 12.06
+
+    for _, param in ipairs(structure) do
+        if param.apiVersion and apiVersion < param.apiVersion then
+            goto continue
+        end
+
+        table.insert(filteredStructure, param)
+
+        if param.mandatory ~= false then
+            minBytes = minBytes + get_type_size(param.type)
+        end
+
+        if param.simResponse then
+            for _, value in ipairs(param.simResponse) do
+                table.insert(simResponse, value)
+            end
+        else
+            local typeSize = get_type_size(param.type)
+            for i = 1, typeSize do
+                table.insert(simResponse, 0)
+            end
+        end
+
+        ::continue::
+    end
+
+    return filteredStructure, minBytes, simResponse
+end
+
+-- Backward compatible stubs
+function apiLoader.filterByApiVersion(structure)
+    local filtered, _, _ = apiLoader.prepareStructureData(structure)
+    return filtered
+end
+
+function apiLoader.calculateMinBytes(structure)
+    local _, minBytes, _ = apiLoader.prepareStructureData(structure)
+    return minBytes
+end
+
+function apiLoader.buildSimResponse(structure)
+    local _, _, simResponse = apiLoader.prepareStructureData(structure)
+    return simResponse
+end
+
 return apiLoader

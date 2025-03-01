@@ -34,6 +34,7 @@ end
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = generateSbusApiStructure(16)
+
 local MSP_API_STRUCTURE_WRITE = {
     {field = "target_channel",    type = "U8",  apiVersion = 12.06},
     {field = "source_type",       type = "U8",  apiVersion = 12.06},
