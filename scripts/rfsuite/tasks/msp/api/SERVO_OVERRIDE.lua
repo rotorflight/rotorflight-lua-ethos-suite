@@ -42,6 +42,9 @@ local MSP_API_STRUCTURE_READ = rfsuite.tasks.msp.api.filterByApiVersion(MSP_API_
 -- calculate the min bytes value from the structure
 local MSP_MIN_BYTES = rfsuite.tasks.msp.api.calculateMinBytes(MSP_API_STRUCTURE_READ)
 
+-- generate a simulatorResponse from the read structure
+local MSP_API_SIMULATOR_RESPONSE = rfsuite.tasks.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
+
 -- Variable to store parsed MSP data
 local mspData = nil
 local mspWriteComplete = false
@@ -57,8 +60,6 @@ local MSP_API_MSG_TIMEOUT
 
 -- Function to initiate MSP read operation
 local function read()
-
-    local MSP_API_SIMULATOR_RESPONSE = rfsuite.tasks.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ,API_NAME)
 
     local message = {
         command = MSP_API_CMD_READ, -- Specify the MSP command
