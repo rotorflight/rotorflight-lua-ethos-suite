@@ -103,6 +103,7 @@ The parameters include:
 - ethosRunningVersion: Version of the Ethos running.
 - lcdWidth: Width of the LCD.
 - lcdHeight: Height of the LCD.
+- mspSignature - uses for mostly in sim to save esc type
 
 -- Every attempt should be made if using session vars to record them here with a nil
 -- to prevent conflicts with other scripts that may use the same session vars.
@@ -135,6 +136,7 @@ rfsuite.session.servoOverride = nil
 rfsuite.session.ethosRunningVersion = nil
 rfsuite.session.lcdWidth = nil
 rfsuite.session.lcdHeight = nil
+rfsuite.session.mspSignature = nil
 --[[
     Initializes the app.triggers table and assigns it to the triggers table.
     This is used to set up the triggers for the application.
@@ -535,13 +537,20 @@ local function saveSettings()
             end
         end)
 
+        -- Create lookup table for fields by apikey
+        local fieldMap = {}
+        for fidx, f in ipairs(app.Page.mspapi.formdata.fields) do
+            if f.mspapi == apiID then
+                fieldMap[f.apikey] = fidx
+            end
+        end
+
         -- Inject values into the payload
-        for i, v in pairs(payloadData) do    
-            for fidx, f in ipairs(app.Page.mspapi.formdata.fields) do
-                if f.apikey == i and f.mspapi == apiID then
-                    payloadData[i] = app.Page.fields[fidx].value
-                end
-            end 
+        for i, v in pairs(payloadData) do
+            local fieldIndex = fieldMap[i]
+            if fieldIndex then
+                payloadData[i] = app.Page.fields[fieldIndex].value
+            end
         end
 
         -- Send the payload
@@ -1531,12 +1540,11 @@ function app.event(widget, category, value, x, y)
         return 0
     end
 
-    -- the page has its own even system.  we should use it.
+    -- the page has its own event system.  we should use it.
     if app.Page and (app.uiState == app.uiStatus.pages or app.uiState == app.uiStatus.mainMenu) then
         if app.Page.event then
-            rfsuite.utils.log("USING PAGES EVENTS", "info")
+            rfsuite.utils.log("USING PAGES EVENTS", "debug")
             local ret = app.Page.event(widget, category, value, x, y)
-            print(ret)
             if ret ~= nil then
                 return ret
             end    

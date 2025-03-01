@@ -488,13 +488,30 @@ function utils.splitString(input, sep)
 end
 
 
+--- Logs MSP (Multiwii Serial Protocol) commands if logging is enabled in the configuration.
+-- @param cmd The MSP command to log.
+-- @param rwState The read/write state of the command.
+-- @param buf The buffer containing the command data.
+-- @param err Any error associated with the command.
+-- @usage
+-- utils.logMsp("MSP_STATUS", "read", {0x01, 0x02, 0x03}, nil)
+function utils.logMsp(cmd, rwState, buf, err)
+    if rfsuite.config.logMSP then
+        local payload = rfsuite.utils.joinTableItems(buf, ", ")
+        rfsuite.utils.log(rwState .. " [" .. cmd .. "]" .. " {" .. payload .. "}", "info")
+        if err then
+            rfsuite.utils.log("Error: " .. err, "info")
+        end
+    end
+end
+
 --[[
     Function: utils.simMspSave
 
     Saves a byte stream to a file in the MSP format if the system is in simulation mode.
 
     Parameters:
-        apiname (string) - The name of the API to be used as part of the filename.
+        mspid (string) - The name of the API to be used as part of the filename.
         byte_stream (table) - A table containing the byte stream to be saved.
 
     Returns:
@@ -502,22 +519,22 @@ end
 
     Notes:
         - The function only operates if the system is in simulation mode.
-        - If the `refreshOnProfileChange` flag is set, the active profile is appended to the `apiname`.
+        - If the `refreshOnProfileChange` flag is set, the active profile is appended to the `mspid`.
         - The function attempts to save the file in a specific directory structure, falling back to a secondary path if the primary path does not exist.
         - The byte stream is converted to a comma-separated string before being written to the file.
         - If the file cannot be opened for writing, an error is raised.
 --]]
-function utils.simMspSave(apiname, byte_stream)
+function utils.simMspSave(mspcmd, byte_stream)
     if not system.getVersion().simulation then
         return
     end
 
     if rfsuite.app.Page.refreshOnProfileChange then
-        apiname = apiname .. "_" .. (rfsuite.session.activeProfile or "default")
+        mspcmd = mspcmd .. "_" .. (rfsuite.session.activeProfile or "default")
     end
 
-    local localPath = "../rfsuite.sim/msp/" .. apiname .. ".csv"
-    local fallbackPath = "sim/msp/" .. apiname .. ".csv"
+    local localPath = "../rfsuite.sim/msp/" .. mspcmd .. ".csv"
+    local fallbackPath = "sim/msp/" .. mspcmd .. ".csv"
 
     local filepath
     if rfsuite.utils.dir_exists("../rfsuite.sim/", "msp") then
@@ -542,10 +559,10 @@ end
 --[[
     Function: utils.simMspLoad
 
-    Loads a simulated MSP (MultiWii Serial Protocol) data file based on the given API name.
+    Loads a simulated MSP (MultiWii Serial Protocol) data file based on the given msp id.
 
     Parameters:
-        apiname (string) - The name of the API for which to load the MSP data.
+        mspcmd (number) - The msp id  for which to load the MSP data.
 
     Returns:
         table - A table containing the byte stream of the MSP data.
@@ -563,17 +580,17 @@ end
         - "File path not found" if the MSP data file cannot be located.
         - "Failed to open file for reading: <filepath> - <err>" if the file cannot be opened.
 --]]
-function utils.simMspLoad(apiname)
+function utils.simMspLoad(mspcmd)
     if not system.getVersion().simulation then
         return nil, "Not in simulation mode"
     end
 
     if rfsuite.app.Page.refreshOnProfileChange then
-        apiname = apiname .. "_" .. (rfsuite.session.activeProfile or "default")
+        mspcmd = mspcmd .. "_" .. (rfsuite.session.activeProfile or "default")
     end
 
-    local localPath = "../rfsuite.sim/msp/" .. apiname .. ".csv"
-    local fallbackPath = "sim/msp/" .. apiname .. ".csv"
+    local localPath = "../rfsuite.sim/msp/" .. mspcmd .. ".csv"
+    local fallbackPath = "sim/msp/" .. mspcmd .. ".csv"
 
     local filepath
     if rfsuite.utils.dir_exists("../rfsuite.sim/", "msp") then

@@ -104,14 +104,14 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "volt_cutoff_type",    type = "U8", apiVersion = 12.07, simResponse = {0}, default = 0, min = 0, max = #cutoffType, tableIdxInc = -1, table = cutoffType},
     {field = "cutoff_voltage",      type = "U8", apiVersion = 12.07, simResponse = {3}, default = 3, min = 0, max = #cutoffVoltage, tableIdxInc = -1, table = cutoffVoltage},
     {field = "bec_voltage",         type = "U8", apiVersion = 12.07, simResponse = {0}, default = 0, min = 0, max = #voltages, tableIdxInc = -1, table = voltages},
-    {field = "startup_time",        type = "U8", apiVersion = 12.07, simResponse = {11}},
-    {field = "gov_p_gain",          type = "U8", apiVersion = 12.07, simResponse = {6}},
-    {field = "gov_i_gain",          type = "U8", apiVersion = 12.07, simResponse = {5}},
+    {field = "startup_time",        type = "U8", apiVersion = 12.07, simResponse = {11}, default = 0, min = 4, max = 25, unit = "s"},
+    {field = "gov_p_gain",          type = "U8", apiVersion = 12.07, simResponse = {6}, default = 0, min = 0, max = 9},
+    {field = "gov_i_gain",          type = "U8", apiVersion = 12.07, simResponse = {5}, default = 0, min = 0, max = 9},
     {field = "auto_restart",        type = "U8", apiVersion = 12.07, simResponse = {25}, default = 25, units = "s", min = 0, max = 90},
-    {field = "restart_time",        type = "U8", apiVersion = 12.07, simResponse = {1} , default = 1, tableIdxInc = -1, min = 0, max = #restartTime, table = restartTime},
-    {field = "brake_type",          type = "U8", apiVersion = 12.07, simResponse = {0} , default = 0, min = 0, max = #brakeType, xvals = {76}, table = brakeType, tableIdxInc = -1},
+    {field = "restart_time",        type = "U8", apiVersion = 12.07, simResponse = {1}, default = 1, tableIdxInc = -1, min = 0, max = #restartTime, table = restartTime},
+    {field = "brake_type",          type = "U8", apiVersion = 12.07, simResponse = {0}, default = 0, min = 0, max = #brakeType, xvals = {76}, table = brakeType, tableIdxInc = -1},
     {field = "brake_force",         type = "U8", apiVersion = 12.07, simResponse = {0}, default = 0, min = 0, max = 100},
-    {field = "timing",              type = "U8", apiVersion = 12.07, simResponse = {24}},
+    {field = "timing",              type = "U8", apiVersion = 12.07, simResponse = {24}, default = 0, min = 0, max = 30},
     {field = "rotation",            type = "U8", apiVersion = 12.07, simResponse = {0}, default = 0, min = 0, max = #rotation, tableIdxInc = -1, table = rotation},
     {field = "active_freewheel",    type = "U8", apiVersion = 12.07, simResponse = {0}, min = 0, max = #enabledDisabled, table = enabledDisabled, tableIdxInc = -1},
     {field = "startup_power",       type = "U8", apiVersion = 12.07, simResponse = {2}, default = 2, min = 0, max = #startupPower, tableIdxInc = -1, table = startupPower}
@@ -125,6 +125,9 @@ local MSP_MIN_BYTES = rfsuite.tasks.msp.api.calculateMinBytes(MSP_API_STRUCTURE_
 
 -- set read structure
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
+
+-- generate a simulatorResponse from the read structure
+local MSP_API_SIMULATOR_RESPONSE = rfsuite.tasks.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
 
 -- Variable to store parsed MSP data
 local mspData = nil
@@ -141,9 +144,6 @@ local MSP_API_MSG_TIMEOUT
 
 -- Function to initiate MSP read operation
 local function read()
-
-    local MSP_API_SIMULATOR_RESPONSE = rfsuite.tasks.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ,API_NAME)
-
     if MSP_API_CMD_READ == nil then
         rfsuite.utils.log("No value set for MSP_API_CMD_READ", "debug")
         return

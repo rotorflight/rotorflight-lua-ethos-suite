@@ -106,12 +106,6 @@ local function saveServoSettings(self)
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoSpeed)
     rfsuite.tasks.msp.mspHelper.writeU16(message.payload, servoFlags)
 
-   if rfsuite.config.logMSP then
-        local logData = "{" .. rfsuite.utils.joinTableItems(message.payload, ", ") .. "}"
-
-        rfsuite.utils.log(logData,"info")
-
-    end
     rfsuite.tasks.msp.mspQueue:add(message)
 
     -- write change to epprom

@@ -99,6 +99,7 @@ function MspQueueController:processQueue()
     if lastTimeInterval == nil then lastTimeInterval = 1 end
 
     if not system:getVersion().simulation then
+        -- we process on the actual radio
         if not self.lastTimeCommandSent or self.lastTimeCommandSent + lastTimeInterval < os.clock() then
             rfsuite.tasks.msp.protocol.mspWrite(self.currentMessage.command, self.currentMessage.payload or {})
             self.lastTimeCommandSent = os.clock()
@@ -109,7 +110,13 @@ function MspQueueController:processQueue()
         end
 
         mspProcessTxQ()
+        -- return the radio response
         cmd, buf, err = rfsuite.tasks.msp.common.mspPollReply()
+
+        -- we dont log here - but later as this is 'polling'
+        -- look further down in the script where we process the 
+        -- cmd, buf, err commands
+
     else
         if not self.currentMessage.simulatorResponse then
             rfsuite.utils.log("No simulator response for command " .. tostring(self.currentMessage.command),"debug")
@@ -117,7 +124,33 @@ function MspQueueController:processQueue()
             self.uuid = nil -- Clear UUID after processing
             return
         end
+
+
+        -- return the simulator response
         cmd, buf, err = self.currentMessage.command, self.currentMessage.simulatorResponse, nil
+
+        if cmd then
+            -- find state
+            local rwState = (self.currentMessage.payload and #self.currentMessage.payload > 0) and "WRITE" or "READ"
+
+            -- if writing, then we can take payload and write to disk
+            if rwState == "WRITE" then
+                rfsuite.utils.simMspSave(cmd, self.currentMessage.payload)
+            end
+
+            -- if reading, then we can take payload and load from disk  (if available)
+            -- if not available, we use the existing simulator response
+            if rwState == "READ" then
+                local payload_disk = rfsuite.utils.simMspLoad(cmd)
+                if payload_disk then
+                    rfsuite.utils.log("Using payload from disk for command " .. tostring(cmd),"info")
+                    buf = payload_disk
+                    self.currentMessage.simulatorResponse = buf
+                end     
+            end  
+
+            rfsuite.utils.logMsp(cmd, rwState, self.currentMessage.payload or buf, err)      
+        end    
     end
 
     if self.currentMessage and os.clock() - self.currentMessageStartTime > (self.currentMessage.timeout or self.timeout) then
@@ -129,19 +162,18 @@ function MspQueueController:processQueue()
 
     if cmd then
         self.lastTimeCommandSent = nil
-        local logData = "Requesting: {" .. tostring(cmd) .. "}"
-        rfsuite.utils.log(logData,"debug")
     end
 
     if (cmd == self.currentMessage.command and not err) or (self.currentMessage.command == 68 and self.retryCount == 2) or (self.currentMessage.command == 217 and err and self.retryCount == 2) then
-        if rfsuite.config.logMSP then
-            if buf then
-                local logData = "Received: {" .. rfsuite.utils.joinTableItems(buf, ", ") .. "}"
-                if #buf > 0 then rfsuite.utils.log(logData,"info") end
+
+        if self.currentMessage.processReply then 
+            self.currentMessage:processReply(buf) 
+            if cmd then
+                -- we can do logging etc here as payload is now complete (real)
+                local rwState = (self.currentMessage.payload and #self.currentMessage.payload > 0) and "WRITE" or "READ"
+                rfsuite.utils.logMsp(cmd, rwState, self.currentMessage.payload or buf, err)
             end
         end
-
-        if self.currentMessage.processReply then self.currentMessage:processReply(buf) end
         self.currentMessage = nil
         self.uuid = nil -- Clear UUID after successful processing
 
@@ -207,7 +239,7 @@ function MspQueueController:add(message)
         end
         message = deepCopy(message)
         if message.uuid then self.uuid = message.uuid end
-        rfsuite.utils.log("Queueing command " .. message.command .. " at position " .. #self.messageQueue + 1)
+        --rfsuite.utils.log("Queueing command " .. message.command .. " at position " .. #self.messageQueue + 1,"info")
         self.messageQueue[#self.messageQueue + 1] = message
         return self
     else

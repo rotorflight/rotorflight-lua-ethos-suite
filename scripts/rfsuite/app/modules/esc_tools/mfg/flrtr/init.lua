@@ -25,7 +25,7 @@ local function getEscModel(self)
 
     local hw = "1." .. getPageValue(self, 20) .. '/' .. getPageValue(self, 14) .. "." .. getPageValue(self, 15) .. "." .. getPageValue(self, 16)
 
-    return "FLYROTOR " .. string.format(self[5]) .. "A " .. hw .. " "
+    return "FLYROTOR " .. string.format(self[3] + self[5]) .. "A " .. hw .. " "
 
 end
 

@@ -244,6 +244,7 @@ function msp.wakeup()
     end
 
     if state == true then
+        
         msp.mspQueue:processQueue()
 
         -- checks that run on each connection to the fbl

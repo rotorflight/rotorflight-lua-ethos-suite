@@ -945,7 +945,7 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
         form.addStaticText(headerLine, {
             x = 0,
             y = rfsuite.app.radio.linePaddingTop,
-            w = session.lcdWidth,
+            w = rfsuite.session.lcdWidth,
             h = rfsuite.app.radio.navbuttonHeight
         }, rfsuite.app.Page.headerLine)
     end
