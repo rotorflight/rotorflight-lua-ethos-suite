@@ -404,38 +404,53 @@ function apiLoader.createHandlers()
     return {setCompleteHandler = setCompleteHandler, setErrorHandler = setErrorHandler, getCompleteHandler = getCompleteHandler, getErrorHandler = getErrorHandler}
 end
 
-
 --[[
-    Builds a write payload for the given API name and payload data based on the provided API structure.
+    Builds the payload for writing to the API.
 
-    @param apiname (string) The name of the API.
-    @param payload (table) The data to be serialized into the payload.
-    @param api_structure (table) The structure defining the API fields and their types.
+    @param apiname (string) - The name of the API.
+    @param payload (table) - The data to be written.
+    @param api_structure (table) - The structure of the API fields.
 
-    @return (table) A byte stream representing the serialized payload.
+    @return (table) - The byte stream representing the payload.
 
-    Internal Functions:
-    - get_scale_from_page(field_name): Retrieves the scale factor for a given field name from the page data.
-    - serialize_value(buf, value, data_type, byteorder): Serializes a value into the buffer based on its data type and byte order.
-
-    Example Usage:
-    local byte_stream = apiLoader.buildWritePayload("exampleAPI", {field1 = 10, field2 = 20}, api_structure)
-]]
+    The function performs the following steps:
+    1. Checks if delta updates can be used based on the presence of positionmap, receivedBytes, and receivedBytesCount.
+    2. Logs whether delta updates or a full rebuild will be used.
+    3. Precomputes a list of editable fields from formFields.
+    4. Initializes the byte stream with the last known bytes if available.
+    5. Defines a helper function to get the scale for a field from the page.
+    6. Iterates over the API structure to process each field:
+        - Skips non-editable fields.
+        - Retrieves the value, byte order, and scale for the field.
+        - Uses the appropriate write function based on the field type.
+        - If delta updates are used and the field has a position map, patches the field into the byte stream.
+        - Otherwise, performs a full write for the field.
+    7. Returns the constructed byte stream.
+--]]
 function apiLoader.buildWritePayload(apiname, payload, api_structure)
 
-    local positionmap = rfsuite.app.Page.mspapi and rfsuite.app.Page.mspapi.positionmap[apiname] 
-    local receivedBytes = rfsuite.app.Page.mspapi and rfsuite.app.Page.mspapi.receivedBytes[apiname] 
-    local receivedBytesCount = rfsuite.app.Page.mspapi and rfsuite.app.Page.mspapi.receivedBytesCount[apiname] 
+    local positionmap = rfsuite.app.Page.mspapi and rfsuite.app.Page.mspapi.positionmap[apiname]
+    local receivedBytes = rfsuite.app.Page.mspapi and rfsuite.app.Page.mspapi.receivedBytes[apiname]
+    local receivedBytesCount = rfsuite.app.Page.mspapi and rfsuite.app.Page.mspapi.receivedBytesCount[apiname]
 
     local useDelta = positionmap and receivedBytes and receivedBytesCount
 
     if useDelta then
-        rfsuite.utils.log("[buildWritePayload] Using positionmap for " .. apiname, "info")
+        rfsuite.utils.log("[buildWritePayload] Using delta updates for " .. apiname, "info")
     else
-        rfsuite.utils.log("[buildWritePayload] No valid positionmap for " .. apiname .. ", doing full rebuild", "info")
+        rfsuite.utils.log("[buildWritePayload] No valid delta for " .. apiname .. ", doing full rebuild", "info")
     end
 
-    -- Start with a full copy of the receivedBytes (assume unmodified to start)
+    -- Precompute list of editable fields from formFields
+    local editableFields = {}
+    for idx, formField in ipairs(rfsuite.app.formFields) do
+        local pageField = rfsuite.app.Page.fields[idx]
+        if pageField and pageField.apikey then
+            editableFields[pageField.apikey] = true
+        end
+    end
+
+    -- Start with a copy of the last known bytes
     local byte_stream = {}
     for i = 1, receivedBytesCount or 0 do
         byte_stream[i] = receivedBytes and receivedBytes[i] or 0
@@ -445,7 +460,6 @@ function apiLoader.buildWritePayload(apiname, payload, api_structure)
         if not rfsuite.app.Page.mspapi.api_reversed or not rfsuite.app.Page.fields then
             return 1
         end
-
         for _, v in ipairs(rfsuite.app.Page.fields) do
             if field_name == v.apikey and rfsuite.app.Page.mspapi.api_reversed[apiname] == v.mspapi then
                 return v.scale
@@ -456,6 +470,13 @@ function apiLoader.buildWritePayload(apiname, payload, api_structure)
 
     for _, field_def in ipairs(api_structure) do
         local field_name = field_def.field
+
+        -- Skip non-editable fields immediately
+        if not editableFields[field_name] then
+            rfsuite.utils.log("[buildWritePayload] Skipping non-editable field: " .. field_name, "debug")
+            goto continue
+        end
+
         local value = payload[field_name] or field_def.default or 0
         local byteorder = field_def.byteorder
         local scale = field_def.scale or get_scale_from_page(field_name) or 1
@@ -476,7 +497,6 @@ function apiLoader.buildWritePayload(apiname, payload, api_structure)
                 writeFunction(tmpStream, value)
             end
 
-            -- Patch only the relevant bytes
             for idx, pos in ipairs(field_positions) do
                 if pos <= receivedBytesCount then
                     byte_stream[pos] = tmpStream[idx]
@@ -486,10 +506,10 @@ function apiLoader.buildWritePayload(apiname, payload, api_structure)
             rfsuite.utils.log(string.format(
                 "[buildWritePayload] Patched field '%s' into positions [%s]",
                 field_name, table.concat(field_positions, ",")
-            ), "info")
+            ), "debug")
 
         else
-            -- Full write fallback if no positionmap entry
+            -- Full write fallback (non-patch mode)
             local tmpStream = {}
             if byteorder then
                 writeFunction(tmpStream, value, byteorder)
@@ -506,12 +526,12 @@ function apiLoader.buildWritePayload(apiname, payload, api_structure)
                 field_name
             ), "info")
         end
+
+        ::continue::
     end
 
     return byte_stream
 end
-
-
 
 
 -- New function to process structure in one pass
