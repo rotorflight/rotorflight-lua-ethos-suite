@@ -27,8 +27,8 @@ jobs:
 
         # Set logging settings
         sed -i 's/\(config.logLevel= \)".*"/\1"off"/' scripts/rfsuite/main.lua
-        sed -i 's/\(config.logToFile = \).*/\1false/' scripts/rfsuite/main.lua
-        sed -i 's/\(config.logMSP = \).*/\1false/' scripts/rfsuite/main.lua
+        sed -i 's/\(config.logToFile = \)[^ ]*/\1false/' scripts/rfsuite/main.lua
+        sed -i 's/\(config.logMSP = \)[^ ]*/\1false/' scripts/rfsuite/main.lua
 
 
         # Show updated file (for verification)
