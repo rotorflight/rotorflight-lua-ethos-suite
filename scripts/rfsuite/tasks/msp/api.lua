@@ -423,6 +423,10 @@ end
 ]]
 function apiLoader.buildWritePayload(apiname, payload, api_structure)
 
+    local positionmap = rfsuite.app.Page.mspapi and rfsuite.app.Page.mspapi.positionmap[apiname] 
+    local receivedBytes = rfsuite.app.Page.mspapi and rfsuite.app.Page.mspapi.receivedBytes[apiname] 
+    local receivedBytesCount = rfsuite.app.Page.mspapi and rfsuite.app.Page.mspapi.receivedBytesCount[apiname] 
+
     local function get_scale_from_page(field_name)
         if not rfsuite.app.Page.mspapi.api_reversed or not rfsuite.app.Page.fields then
             return 1

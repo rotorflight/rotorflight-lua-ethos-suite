@@ -723,6 +723,7 @@ local function requestPage()
         rfsuite.app.Page.mspapi.structure = {}  -- Initialize if first run
         rfsuite.app.Page.mspapi.receivedBytesCount = {}  -- Initialize if first run
         rfsuite.app.Page.mspapi.receivedBytes = {}  -- Initialize if first run
+        rfsuite.app.Page.mspapi.positionmap = {}  -- Initialize if first run
     end
 
     -- Ensure state.currentIndex is initialized
@@ -785,6 +786,10 @@ local function requestPage()
                 -- Store the receivedByte count with the API name as the key
                 app.Page.mspapi.receivedBytesCount[apiKey] = API.data().receivedBytesCount
 
+                -- Store the receivedByte count with the API name as the key
+                app.Page.mspapi.positionmap[apiKey] = API.data().positionmap
+
+                
                 -- Move to the next API
                 state.currentIndex = state.currentIndex + 1
                 processNextAPI()
