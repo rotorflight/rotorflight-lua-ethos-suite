@@ -35,6 +35,8 @@ local tasksList = {}
 
 rfsuite.session.rssiSensorChanged = true
 
+
+local ethosVersionGood = nil  
 local rssiCheckScheduler = os.clock()
 local lastRssiSensorName = nil
 
@@ -133,13 +135,19 @@ end
 --]]
 function tasks.wakeup()
 
-    -- process the log
-    rfsuite.log.process()
+
+    -- Check version only once after startup
+    if ethosVersionGood == nil then
+        ethosVersionGood = rfsuite.utils.ethosVersionAtLeast()
+    end
 
     -- kill if version is bad
-    if not rfsuite.utils.ethosVersionAtLeast() then
+    if not ethosVersionGood then
         return
     end
+
+   -- process the log
+   rfsuite.log.process()    
 
     -- initialise tasks
     if tasks.init == false then
