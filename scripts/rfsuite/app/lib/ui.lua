@@ -303,6 +303,14 @@ end
 ]]
 function ui.openMainMenu()
 
+
+    -- we should unload any api we using from previous page loads
+    if rfsuite.app.Page and rfsuite.app.Page.mspapi and rfsuite.app.Page.mspapi.api then
+        for i,v in ipairs(rfsuite.app.Page.mspapi.api) do
+            rfsuite.tasks.msp.api.unload(v)
+        end
+    end
+    
     rfsuite.app.formFields = {}
     rfsuite.app.formLines = {}
     rfsuite.session.lastLabel = nil
