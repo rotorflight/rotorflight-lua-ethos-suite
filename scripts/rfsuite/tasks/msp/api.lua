@@ -121,6 +121,24 @@ function apiLoader.load(apiName)
 end
 
 --[[
+    Unloads the specified API from the cache.
+
+    This function removes the API identified by `apiName` from the `apiCache`.
+    If the API is found and successfully removed, a debug log entry is created.
+    If the API is not found in the cache, a different debug log entry is created.
+
+    @param apiName (string) The name of the API to unload.
+]]
+function apiLoader.unload(apiName)
+    if apiCache[apiName] then
+        apiCache[apiName] = nil
+        rfsuite.utils.log("Unloaded API: " .. apiName, "debug")
+    else
+        rfsuite.utils.log("API not found in cache: " .. apiName, "debug")
+    end
+end
+
+--[[
     Returns the size in bytes of the given data type.
     
     @param data_type (string): The data type to get the size of. 
