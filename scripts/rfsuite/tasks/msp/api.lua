@@ -427,6 +427,20 @@ function apiLoader.buildWritePayload(apiname, payload, api_structure)
     local receivedBytes = rfsuite.app.Page.mspapi and rfsuite.app.Page.mspapi.receivedBytes[apiname] 
     local receivedBytesCount = rfsuite.app.Page.mspapi and rfsuite.app.Page.mspapi.receivedBytesCount[apiname] 
 
+    local useDelta = positionmap and receivedBytes and receivedBytesCount
+
+    if useDelta then
+        rfsuite.utils.log("[buildWritePayload] Using positionmap for " .. apiname, "info")
+    else
+        rfsuite.utils.log("[buildWritePayload] No valid positionmap for " .. apiname .. ", doing full rebuild", "info")
+    end
+
+    -- Start with a full copy of the receivedBytes (assume unmodified to start)
+    local byte_stream = {}
+    for i = 1, receivedBytesCount or 0 do
+        byte_stream[i] = receivedBytes and receivedBytes[i] or 0
+    end
+
     local function get_scale_from_page(field_name)
         if not rfsuite.app.Page.mspapi.api_reversed or not rfsuite.app.Page.fields then
             return 1
@@ -440,31 +454,63 @@ function apiLoader.buildWritePayload(apiname, payload, api_structure)
         return 1
     end
 
-    local byte_stream = {}
-
     for _, field_def in ipairs(api_structure) do
         local field_name = field_def.field
         local value = payload[field_name] or field_def.default or 0
-        local byteorder = field_def.byteorder  -- Only pass if defined
+        local byteorder = field_def.byteorder
         local scale = field_def.scale or get_scale_from_page(field_name) or 1
         value = math.floor(value * scale + 0.5)
 
-        -- Dynamically resolve the correct writer function
         local writeFunction = rfsuite.tasks.msp.mspHelper["write" .. field_def.type]
         if not writeFunction then
             error("Unknown type: " .. tostring(field_def.type))
         end
 
-        -- Call write function (pass byteorder if needed)
-        if byteorder then
-            writeFunction(byte_stream, value, byteorder)
+        if useDelta and positionmap[field_name] then
+            local field_positions = positionmap[field_name]
+            local tmpStream = {}
+
+            if byteorder then
+                writeFunction(tmpStream, value, byteorder)
+            else
+                writeFunction(tmpStream, value)
+            end
+
+            -- Patch only the relevant bytes
+            for idx, pos in ipairs(field_positions) do
+                if pos <= receivedBytesCount then
+                    byte_stream[pos] = tmpStream[idx]
+                end
+            end
+
+            rfsuite.utils.log(string.format(
+                "[buildWritePayload] Patched field '%s' into positions [%s]",
+                field_name, table.concat(field_positions, ",")
+            ), "info")
+
         else
-            writeFunction(byte_stream, value)
+            -- Full write fallback if no positionmap entry
+            local tmpStream = {}
+            if byteorder then
+                writeFunction(tmpStream, value, byteorder)
+            else
+                writeFunction(tmpStream, value)
+            end
+
+            for i, byte in ipairs(tmpStream) do
+                table.insert(byte_stream, byte)
+            end
+
+            rfsuite.utils.log(string.format(
+                "[buildWritePayload] Full write for field '%s', no positionmap entry",
+                field_name
+            ), "info")
         end
     end
 
     return byte_stream
 end
+
 
 
 
