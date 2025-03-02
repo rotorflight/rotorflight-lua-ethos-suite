@@ -721,6 +721,8 @@ local function requestPage()
         rfsuite.utils.log("requestPage Initialize values on first run", "debug")
         rfsuite.app.Page.mspapi.values = {}  -- Initialize if first run
         rfsuite.app.Page.mspapi.structure = {}  -- Initialize if first run
+        rfsuite.app.Page.mspapi.receivedBytesCount = {}  -- Initialize if first run
+        rfsuite.app.Page.mspapi.receivedBytes = {}  -- Initialize if first run
     end
 
     -- Ensure state.currentIndex is initialized
@@ -776,6 +778,12 @@ local function requestPage()
 
                 -- Store the structure with the API name as the key
                 app.Page.mspapi.structure[apiKey] = API.data().structure
+
+                -- Store the receivedByte count with the API name as the key
+                app.Page.mspapi.receivedBytes[apiKey] = API.data().buffer
+
+                -- Store the receivedByte count with the API name as the key
+                app.Page.mspapi.receivedBytesCount[apiKey] = API.data().receivedBytesCount
 
                 -- Move to the next API
                 state.currentIndex = state.currentIndex + 1
@@ -1458,7 +1466,7 @@ function app.create_logtool()
     triggers.showUnderUsedBufferWarning = false
     triggers.showOverUsedBufferWarning = false
 
-    -- session.apiVersion = nil
+    -- rfsuite.session.apiVersion = nil
     config.environment = system.getVersion()
     config.ethosRunningVersion = {config.environment.major, config.environment.minor, config.environment.revision}
 
@@ -1496,7 +1504,7 @@ end
 ]]
 function app.create()
 
-    -- session.apiVersion = nil
+    -- rfsuite.session.apiVersion = nil
     config.environment = system.getVersion()
     config.ethosRunningVersion = {config.environment.major, config.environment.minor, config.environment.revision}
 

@@ -1187,7 +1187,7 @@ function ui.openPageHelp(txtData, section)
     local message = table.concat(txtData, "\r\n\r\n")
 
     form.openDialog({
-        width = session.lcdWidth,
+        width = rfsuite.session.lcdWidth,
         title = "Help - " .. rfsuite.app.lastTitle,
         message = message,
         buttons = {{
