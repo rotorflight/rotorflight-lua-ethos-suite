@@ -196,21 +196,17 @@ function utils.joinTableItems(tbl, delimiter)
 
     delimiter = delimiter or ""
     local startIndex = tbl[0] and 0 or 1
-    
-    -- Ensure each field is padded to at least 3 characters
-    local function padField(field)
-        field = tostring(field)
-        return field .. string.rep(" ", math.max(0, 3 - #field))
+
+    -- Pre-pad all fields once before joining
+    local paddedTable = {}
+    for i = startIndex, #tbl do
+        paddedTable[i] = tostring(tbl[i]) .. string.rep(" ", math.max(0, 3 - #tostring(tbl[i])))
     end
 
-    local result = padField(tbl[startIndex])
-
-    for i = startIndex + 1, #tbl do
-        result = result .. delimiter .. padField(tbl[i])
-    end
-
-    return result
+    -- Join the padded table items
+    return table.concat(paddedTable, delimiter, startIndex, #tbl)
 end
+
 
 
 function utils.log(msg, level)
@@ -504,122 +500,6 @@ function utils.logMsp(cmd, rwState, buf, err)
         end
     end
 end
-
---[[
-    Function: utils.simMspSave
-
-    Saves a byte stream to a file in the MSP format if the system is in simulation mode.
-
-    Parameters:
-        mspid (string) - The name of the API to be used as part of the filename.
-        byte_stream (table) - A table containing the byte stream to be saved.
-
-    Returns:
-        None
-
-    Notes:
-        - The function only operates if the system is in simulation mode.
-        - If the `refreshOnProfileChange` flag is set, the active profile is appended to the `mspid`.
-        - The function attempts to save the file in a specific directory structure, falling back to a secondary path if the primary path does not exist.
-        - The byte stream is converted to a comma-separated string before being written to the file.
-        - If the file cannot be opened for writing, an error is raised.
---]]
-function utils.simMspSave(mspcmd, byte_stream)
-    if not system.getVersion().simulation then
-        return
-    end
-
-    if rfsuite.app.Page.refreshOnProfileChange then
-        mspcmd = mspcmd .. "_" .. (rfsuite.session.activeProfile or "default")
-    end
-
-    local localPath = "../rfsuite.sim/msp/" .. mspcmd .. ".csv"
-    local fallbackPath = "sim/msp/" .. mspcmd .. ".csv"
-
-    local filepath
-    if rfsuite.utils.dir_exists("../rfsuite.sim/", "msp") then
-        filepath = localPath
-    elseif rfsuite.utils.dir_exists("sim/", "msp") then
-        filepath = fallbackPath
-    else
-        return
-    end
-
-    local str = rfsuite.utils.joinTableItems(byte_stream, ", ")
-
-    local file, err = io.open(filepath, "w")
-    if not file then
-        error("Failed to open file for writing: " .. filepath .. " - " .. err)
-    end
-
-    file:write(str)
-    file:close()
-end
-
---[[
-    Function: utils.simMspLoad
-
-    Loads a simulated MSP (MultiWii Serial Protocol) data file based on the given msp id.
-
-    Parameters:
-        mspcmd (number) - The msp id  for which to load the MSP data.
-
-    Returns:
-        table - A table containing the byte stream of the MSP data.
-        string - An error message if the function fails.
-
-    Notes:
-        - The function checks if the system is in simulation mode.
-        - If the `refreshOnProfileChange` flag is set, the API name is appended with the active profile name.
-        - The function attempts to locate the MSP data file in two possible directories.
-        - If the file is found, it reads the content and splits it into a byte stream.
-        - The byte stream items are converted to numbers if possible.
-
-    Errors:
-        - "Not in simulation mode" if the system is not in simulation mode.
-        - "File path not found" if the MSP data file cannot be located.
-        - "Failed to open file for reading: <filepath> - <err>" if the file cannot be opened.
---]]
-function utils.simMspLoad(mspcmd)
-    if not system.getVersion().simulation then
-        return nil, "Not in simulation mode"
-    end
-
-    if rfsuite.app.Page.refreshOnProfileChange then
-        mspcmd = mspcmd .. "_" .. (rfsuite.session.activeProfile or "default")
-    end
-
-    local localPath = "../rfsuite.sim/msp/" .. mspcmd .. ".csv"
-    local fallbackPath = "sim/msp/" .. mspcmd .. ".csv"
-
-    local filepath
-    if rfsuite.utils.dir_exists("../rfsuite.sim/", "msp") then
-        filepath = localPath
-    elseif rfsuite.utils.dir_exists("sim/", "msp") then
-        filepath = fallbackPath
-    else
-        return nil, "File path not found"
-    end
-
-    local file = io.open(filepath, "rb")
-    if not file then
-        return nil, "Failed to open file for reading: " .. filepath
-    end
-
-    -- Read the first (and only) line
-    local content = io.read(file, "l")
-    io.close(file)
-
-    -- Parse into byte stream
-    local byte_stream = rfsuite.utils.splitString(content, ",%s*")
-
-    for i, v in ipairs(byte_stream) do
-        byte_stream[i] = tonumber(v) or v
-    end
-
-    return byte_stream
-end
-
 
 
 return utils

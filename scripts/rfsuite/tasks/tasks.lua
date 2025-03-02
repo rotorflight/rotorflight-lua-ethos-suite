@@ -35,6 +35,8 @@ local tasksList = {}
 
 rfsuite.session.rssiSensorChanged = true
 
+
+local ethosVersionGood = nil  
 local rssiCheckScheduler = os.clock()
 local lastRssiSensorName = nil
 
@@ -60,7 +62,6 @@ function tasks.findTasks()
             local init_path = tasks_path .. v .. '/init.lua'
             local f = io.open(init_path, "r")
 
-            print("Checking " .. init_path)
             if f then
                 io.close(f)
 
@@ -134,13 +135,19 @@ end
 --]]
 function tasks.wakeup()
 
-    -- process the log
-    rfsuite.log.process()
+
+    -- Check version only once after startup
+    if ethosVersionGood == nil then
+        ethosVersionGood = rfsuite.utils.ethosVersionAtLeast()
+    end
 
     -- kill if version is bad
-    if not rfsuite.utils.ethosVersionAtLeast() then
+    if not ethosVersionGood then
         return
     end
+
+   -- process the log
+   rfsuite.log.process()    
 
     -- initialise tasks
     if tasks.init == false then
@@ -175,7 +182,7 @@ function tasks.wakeup()
 
     end
 
-    if system:getVersion().simulation == true then rfsuite.session.rssiSensorChanged = false end
+    --if system:getVersion().simulation == true then rfsuite.session.rssiSensorChanged = false end
 
     if currentRssiSensor ~= nil then rfsuite.session.rssiSensor = currentRssiSensor end
 
