@@ -174,7 +174,7 @@ function tasks.wakeup()
 
     end
 
-    if system:getVersion().simulation == true then rfsuite.session.rssiSensorChanged = false end
+    --if system:getVersion().simulation == true then rfsuite.session.rssiSensorChanged = false end
 
     if currentRssiSensor ~= nil then rfsuite.session.rssiSensor = currentRssiSensor end
 
