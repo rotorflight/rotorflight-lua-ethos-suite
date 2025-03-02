@@ -60,7 +60,6 @@ function tasks.findTasks()
             local init_path = tasks_path .. v .. '/init.lua'
             local f = io.open(init_path, "r")
 
-            print("Checking " .. init_path)
             if f then
                 io.close(f)
 
