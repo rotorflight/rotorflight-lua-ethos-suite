@@ -585,7 +585,7 @@ function utils.simMspLoad(mspcmd)
         return nil, "Not in simulation mode"
     end
 
-    if rfsuite.app.Page.refreshOnProfileChange then
+    if rfsuite.app.Page and rfsuite.app.Page.refreshOnProfileChange then
         mspcmd = mspcmd .. "_" .. (rfsuite.session.activeProfile or "default")
     end
 

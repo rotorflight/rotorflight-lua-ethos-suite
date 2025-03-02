@@ -537,7 +537,6 @@ end
         - boolean: true if in simulation mode or telemetry is active, false otherwise.
 ]]
 function telemetry.active()
-    if system.getVersion().simulation then return true end
     return telemetryState
 end
 
