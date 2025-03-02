@@ -1,7 +1,5 @@
 --[[
  * Copyright (C) Rotorflight Project
- *
- *
  * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
  *
  * This program is free software; you can redistribute it and/or modify
@@ -12,13 +10,14 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- 
+ *
  * Note.  Some icons have been sourced from https://www.flaticon.com/
- * 
+ *
 ]] --
 local tasks = {}
 local tasksList = {}
 local tasksLoaded = false
+local totalTaskCount = 0  -- Tracks total number of loaded tasks
 
 local STATE = {
     WAITING_FOR_CONNECT = "waiting",
@@ -54,7 +53,7 @@ function tasks.findTasks()
                         complete = false,
                         resetPending = false
                     }
-                    remainingTasks = remainingTasks + 1  -- Track how many tasks exist
+                    totalTaskCount = totalTaskCount + 1  -- Track total
                 else
                     --rfsuite.utils.log("Invalid task file: " .. file .. " (must return table with wakeup())", "debug")
                 end
@@ -74,8 +73,9 @@ function tasks.resetAllTasks()
         task.complete = false
         task.resetPending = false
     end
-    remainingTasks = #tasksList  -- Reset count on reconnect
+
     completionNotified = false
+    remainingTasks = totalTaskCount  -- Direct reset to known count
 end
 
 function tasks.wakeup()
@@ -86,11 +86,7 @@ function tasks.wakeup()
             tasks.findTasks()
             taskState = STATE.CONNECTED
             completionNotified = false
-            remainingTasks = 0
-
-            for _, task in pairs(tasksList) do
-                remainingTasks = remainingTasks + 1
-            end
+            remainingTasks = totalTaskCount  -- Reset at the start of each session
         end
 
     elseif taskState == STATE.CONNECTED then
