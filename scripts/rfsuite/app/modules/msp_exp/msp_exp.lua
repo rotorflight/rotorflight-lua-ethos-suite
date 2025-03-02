@@ -3,12 +3,19 @@ local rows = {}
 local cols = {}
 
 local total_bytes = rfsuite.preferences.mspExpBytes
+local fieldMap = {}
 
+-- Dirty flags and enable control
+local int8_dirty = false
+local uint8_dirty = false
+local enableWakeup = false
+
+-- Utility Functions
 local function uint8_to_int8(value)
-    -- Ensure the value is within uint8 range
+    if type(value) ~= "number" then
+        error("uint8_to_int8: value is not a number (got " .. tostring(value) .. ")")
+    end
     if value < 0 or value > 255 then error("Value out of uint8 range") end
-
-    -- Convert to int8
     if value > 127 then
         return value - 256
     else
@@ -17,98 +24,150 @@ local function uint8_to_int8(value)
 end
 
 local function int8_to_uint8(value)
-    -- Convert signed 8-bit to unsigned 8-bit
     return value & 0xFF
 end
 
-function update_int8()
-    -- update the uint8 fields
-    for i,v in ipairs(rfsuite.app.Page.fields) do
-        if v.isINT8 then
-            -- we now have to update the value in the associated field
-            -- that has the same label id number
-            for j,w in ipairs(rfsuite.app.Page.fields) do
-                if w.isUINT8 and w.label == v.label then
-                    v.value = uint8_to_int8(w.value)
+-- Build or rebuild the field lookup map (maps label -> list of fields)
+local function buildFieldMap()
+    fieldMap = {}
+    for _, field in ipairs(rfsuite.app.Page.fields or {}) do
+        if not fieldMap[field.label] then
+            fieldMap[field.label] = {}
+        end
+        table.insert(fieldMap[field.label], field)
+    end
+end
+
+-- Safe field value getter
+local function safeFieldValue(field)
+    if field.value == nil then
+        return 0
+    end
+    return field.value
+end
+
+-- Update all int8 fields from uint8 fields (with guard)
+local function update_int8()
+    if not uint8_dirty then
+        return
+    end
+    uint8_dirty = false
+
+    for _, field in ipairs(rfsuite.app.Page.fields or {}) do
+        if field.isINT8 then
+            for _, match in ipairs(fieldMap[field.label] or {}) do
+                if match.isUINT8 then
+                    field.value = uint8_to_int8(safeFieldValue(match))
                 end
             end
         end
     end
 end
 
-function update_uint8()
-    -- update the uint8 fields
-    for i,v in ipairs(rfsuite.app.Page.fields) do
-        if v.isUINT8 then
-            -- we now have to update the value in the associated field
-            -- that has the same label id number
-            for j,w in ipairs(rfsuite.app.Page.fields) do
-                if w.isINT8 and w.label == v.label then
-                    v.value = int8_to_uint8(w.value)
+-- Update all uint8 fields from int8 fields (with guard)
+local function update_uint8()
+    if not int8_dirty then
+        return
+    end
+    int8_dirty = false
+
+    for _, field in ipairs(rfsuite.app.Page.fields or {}) do
+        if field.isUINT8 then
+            for _, match in ipairs(fieldMap[field.label] or {}) do
+                if match.isINT8 then
+                    field.value = int8_to_uint8(safeFieldValue(match))
                 end
             end
         end
     end
 end
 
-function generateMSPAPI(numLabels)
+-- Generates the MSP API structure
+local function generateMSPAPI(numLabels)
+
+    -- prevent overage
+    if numLabels > 16 then
+        numLabels = 16
+    end
+        
     local mspapi = {
-        api = {
-            [1] = 'EXPERIMENTAL',
-        },
-        formdata = {
-            labels = {},
-            fields = {}
-        }
+        api = {'EXPERIMENTAL'},
+        formdata = {labels = {}, fields = {}}
     }
 
     for i = 1, numLabels do
-        -- Add a label
         table.insert(mspapi.formdata.labels, {t = tostring(i), inline_size = 17, label = i})
 
-        -- Add corresponding fields for this label
         table.insert(mspapi.formdata.fields, {
             t = "UINT8", isUINT8 = true, label = i, inline = 2, mspapi = 1, apikey = "exp_uint" .. i,
-            min = 0, max = 255, onChange = function(i) return update_int8() end 
+            min = 0, max = 255,
+            onChange = function() uint8_dirty = true end
         })
 
         table.insert(mspapi.formdata.fields, {
             t = "INT8", isINT8 = true, label = i, inline = 1, mspapi = 1, apikey = "exp_int" .. i,
-            min = -128, max = 127, onChange = function(i) return update_uint8() end
+            min = -128, max = 127,
+            onChange = function() int8_dirty = true end
         })
     end
 
     return mspapi
 end
 
-
-
+-- Init API
 local mspapi = generateMSPAPI(rfsuite.preferences.mspExpBytes)
 
-local function postLoad(self)
+-- Periodic updater (called each wakeup)
+local function periodicSync()
+    update_int8()
+    update_uint8()
+end
 
+-- Full reset on page load (handles reloads gracefully)
+local function postLoad()
 
-    --trigger a full reload if the number of bytes has changed
+    -- Hard reset everything to avoid stale state
+    fieldMap = {}
+    int8_dirty = false
+    uint8_dirty = true
+    enableWakeup = false
+
     if total_bytes ~= rfsuite.app.Page.mspapi.receivedBytesCount['EXPERIMENTAL'] then
-        print("Number of bytes has changed, reloading page")
 
         rfsuite.preferences.mspExpBytes = rfsuite.app.Page.mspapi.receivedBytesCount['EXPERIMENTAL']
-
         rfsuite.app.triggers.reloadFull = true
     end
 
-    -- update all the fields as msp only supports uint8
-    update_int8()
+    buildFieldMap()
 
+    -- Force an initial sync (this primes int8 values)
+    uint8_dirty = true
+
+    enableWakeup = true
     rfsuite.app.triggers.closeProgressLoader = true
 end
 
+-- Called periodically by framework (acts as "tick")
+local function wakeup()
+    if not enableWakeup or not rfsuite.app.Page or not rfsuite.app.Page.fields then
+        return
+    end
+    periodicSync()
+end
 
+-- Optional (if your system supports cleanup on exit):
+local function preUnload()
+    enableWakeup = false  -- Disable to avoid running wakeup() on stale data
+end
+
+-- Return page definition
 return {
-    mspapi  = mspapi,
+    mspapi = mspapi,
     title = "Experimental",
     navButtons = {menu = true, save = true, reload = true, help = true},
     eepromWrite = true,
     postLoad = postLoad,
+    wakeup = wakeup,
+    preUnload = preUnload,  -- Optional, add only if your system supports
     API = {},
 }

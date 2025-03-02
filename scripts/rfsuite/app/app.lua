@@ -1466,7 +1466,7 @@ function app.create_logtool()
     triggers.showUnderUsedBufferWarning = false
     triggers.showOverUsedBufferWarning = false
 
-    -- session.apiVersion = nil
+    -- rfsuite.session.apiVersion = nil
     config.environment = system.getVersion()
     config.ethosRunningVersion = {config.environment.major, config.environment.minor, config.environment.revision}
 
@@ -1504,7 +1504,7 @@ end
 ]]
 function app.create()
 
-    -- session.apiVersion = nil
+    -- rfsuite.session.apiVersion = nil
     config.environment = system.getVersion()
     config.ethosRunningVersion = {config.environment.major, config.environment.minor, config.environment.revision}
 

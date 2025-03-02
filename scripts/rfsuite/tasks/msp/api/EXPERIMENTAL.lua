@@ -20,7 +20,7 @@ local MSP_API_CMD_READ = 158 -- Command identifier
 local MSP_API_CMD_WRITE = 159 -- Command identifier 
 
 -- Define the MSP response data structures
--- we are respectfully allowing up to 32 values to be read and written
+-- we are respectfully allowing up to 16 values to be read and written
 -- this is not likely to ever be needed
 local MSP_API_STRUCTURE_READ_DATA = {
     {field = "exp_uint1", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {255}},
@@ -38,23 +38,7 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "exp_uint13", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {10}},
     {field = "exp_uint14", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {20}},
     {field = "exp_uint15", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {20}},
-    {field = "exp_uint16", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {20}},
-    {field = "exp_uint17", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {255}},
-    {field = "exp_uint18", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {10}},
-    {field = "exp_uint19", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {60}},
-    {field = "exp_uint20", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {200}},
-    {field = "exp_uint21", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {20}},
-    {field = "exp_uint22", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {255}},
-    {field = "exp_uint23", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {6}},
-    {field = "exp_uint24", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {10}},
-    {field = "exp_uint25", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {20}},
-    {field = "exp_uint26", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {40}},
-    {field = "exp_uint27", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {255}},
-    {field = "exp_uint28", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {6}},
-    {field = "exp_uint29", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {10}},
-    {field = "exp_uint30", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {20}},
-    {field = "exp_uint31", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {20}},
-    {field = "exp_uint32", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {20}},    
+    {field = "exp_uint16", mandatory = false, type = "U8", apiVersion = 12.07, simResponse = {20}}, 
 }
 
 
