@@ -227,7 +227,8 @@ function apiLoader.parseMSPData(buf, structure, processed, other)
         structure = structure,
         positionmap = position_map,
         processed = processed or nil,
-        other = other or nil
+        other = other or nil,
+        receivedBytesCount = math.floor(buf.offset - 1)
     }
 end
 

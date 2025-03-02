@@ -21,176 +21,94 @@ local function int8_to_uint8(value)
     return value & 0xFF
 end
 
-local function update_int8(i, v)
-    local tgt = i + total_bytes
-    if rfsuite.app.Page.fields[tgt] then
-     rfsuite.app.Page.fields[tgt].value = uint8_to_int8(v)
+function update_int8()
+    -- update the uint8 fields
+    for i,v in ipairs(rfsuite.app.Page.fields) do
+        if v.isINT8 then
+            -- we now have to update the value in the associated field
+            -- that has the same label id number
+            for j,w in ipairs(rfsuite.app.Page.fields) do
+                if w.isUINT8 and w.label == v.label then
+                    v.value = uint8_to_int8(w.value)
+                end
+            end
+        end
     end
 end
 
-local function update_uint8(i, v)
-    local tgt = i - total_bytes
-    if i == total_bytes then tgt = i + total_bytes end
-
-    if rfsuite.app.Page.fields[tgt] then
-        rfsuite.app.Page.fields[tgt].value = int8_to_uint8(v)
+function update_uint8()
+    -- update the uint8 fields
+    for i,v in ipairs(rfsuite.app.Page.fields) do
+        if v.isUINT8 then
+            -- we now have to update the value in the associated field
+            -- that has the same label id number
+            for j,w in ipairs(rfsuite.app.Page.fields) do
+                if w.isINT8 and w.label == v.label then
+                    v.value = int8_to_uint8(w.value)
+                end
+            end
+        end
     end
 end
 
--- generate rows
-for i = 0, total_bytes - 1 do rows[i + 1] = tostring(i) end
+function generateMSPAPI(numLabels)
+    local mspapi = {
+        api = {
+            [1] = 'EXPERIMENTAL',
+        },
+        formdata = {
+            labels = {},
+            fields = {}
+        }
+    }
 
-cols = {"UINT8", "INT8"}
+    for i = 1, numLabels do
+        -- Add a label
+        table.insert(mspapi.formdata.labels, {t = tostring(i), inline_size = 17, label = i})
 
--- uint8 fields
-for i = 0, total_bytes - 1 do fields[#fields + 1] = {col = 1, row = i + 1, min = 0, max = 255, vals = {i + 1}} end
+        -- Add corresponding fields for this label
+        table.insert(mspapi.formdata.fields, {
+            t = "UINT8", isUINT8 = true, label = i, inline = 2, mspapi = 1, apikey = "exp_uint" .. i,
+            min = 0, max = 255, onChange = function(i) return update_int8() end 
+        })
 
--- int8 fields
-for i = 0, total_bytes - 1 do fields[#fields + 1] = {col = 2, row = i + 1, min = -128, max = 127, vals = {i + 1}} end
+        table.insert(mspapi.formdata.fields, {
+            t = "INT8", isINT8 = true, label = i, inline = 1, mspapi = 1, apikey = "exp_int" .. i,
+            min = -128, max = 127, onChange = function(i) return update_uint8() end
+        })
+    end
+
+    return mspapi
+end
+
+
+
+local mspapi = generateMSPAPI(rfsuite.preferences.mspExpBytes)
 
 local function postLoad(self)
 
+
     --trigger a full reload if the number of bytes has changed
-    if total_bytes ~= #rfsuite.app.Page.values then
-        rfsuite.preferences.mspExpBytes = #rfsuite.app.Page.values
+    if total_bytes ~= rfsuite.app.Page.mspapi.receivedBytesCount['EXPERIMENTAL'] then
+        print("Number of bytes has changed, reloading page")
+
+        rfsuite.preferences.mspExpBytes = rfsuite.app.Page.mspapi.receivedBytesCount['EXPERIMENTAL']
 
         rfsuite.app.triggers.reloadFull = true
     end
-    rfsuite.app.triggers.isReady = true
-end
 
-local function openPage(idx, title, script)
-
-
-    rfsuite.app.uiState = rfsuite.app.uiStatus.pages
-    rfsuite.app.triggers.isReady = false
-
-    rfsuite.app.Page = assert(loadfile("app/modules/" .. script))()
-
-    rfsuite.app.lastIdx = idx
-    rfsuite.app.lastTitle = title
-    rfsuite.app.lastScript = script
-    rfsuite.lastPage = script
-
-    rfsuite.app.uiState = rfsuite.app.uiStatus.pages
-
-    longPage = false
-
-    form.clear()
-
-    rfsuite.app.ui.fieldHeader(title)
-    local numCols
-    if rfsuite.app.Page.cols ~= nil then
-        numCols = #rfsuite.app.Page.cols
-    else
-        numCols = 2
-    end
-    local screenWidth = rfsuite.session.lcdWidth - 10
-    local padding = 10
-    local paddingTop = rfsuite.app.radio.linePaddingTop
-    local h = rfsuite.app.radio.navbuttonHeight
-    local w = ((screenWidth * 50 / 100) / numCols)
-    local paddingRight = 0
-    local positions = {}
-    local positions_r = {}
-    local pos
-
-    line = form.addLine("Byte")
-
-    local loc = numCols
-    local posX = screenWidth - paddingRight
-    local posY = paddingTop
-
-    local c = 1
-    while loc > 0 do
-        local colLabel = rfsuite.app.Page.cols[loc]
-
-        positions[loc] = posX - w + paddingRight
-        positions_r[c] = posX - w + paddingRight
-        posX = math.floor(posX - w)
-
-        pos = {x = positions[loc] + padding, y = posY, w = w, h = h}
-        form.addStaticText(line, pos, colLabel)
-
-        loc = loc - 1
-        c = c + 1
-    end
-
-    -- display each row
-    local byteRows = {}
-    for ri, rv in ipairs(rfsuite.app.Page.rows) do byteRows[ri] = form.addLine(rv) end
-
-    for i = 1, #rfsuite.app.Page.fields do
-        local f = rfsuite.app.Page.fields[i]
-        local l = rfsuite.app.Page.labels
-        local pageIdx = i
-        local currentField = i
-
-        posX = positions[f.col]
-
-        pos = {x = posX + padding, y = posY, w = w - padding, h = h}
-
-        minValue = f.min * rfsuite.app.utils.decimalInc(f.decimals)
-        maxValue = f.max * rfsuite.app.utils.decimalInc(f.decimals)
-        if f.mult ~= nil then
-            minValue = minValue * f.mult
-            maxValue = maxValue * f.mult
-        end
-
-        rfsuite.app.formFields[i] = form.addNumberField(byteRows[f.row], pos, minValue, maxValue, function()
-            local value = rfsuite.app.utils.getFieldValue(rfsuite.app.Page.fields[i])
-            return value
-        end, function(value)
-            f.value = rfsuite.app.utils.saveFieldValue(rfsuite.app.Page.fields[i], value)
-            if i < total_bytes then
-                -- update int8 field
-                update_int8(i, value)
-            else
-                -- update uint8 field
-                update_uint8(i, value)
-            end
-        end)
-        if f.default ~= nil then
-            local default = f.default * rfsuite.app.utils.decimalInc(f.decimals)
-            if f.mult ~= nil then default = default * f.mult end
-            rfsuite.app.formFields[i]:default(default)
-        else
-            rfsuite.app.formFields[i]:default(0)
-        end
-        if f.decimals ~= nil then rfsuite.app.formFields[i]:decimals(f.decimals) end
-        if f.unit ~= nil then rfsuite.app.formFields[i]:suffix(f.unit) end
-        if f.help ~= nil then
-            if rfsuite.app.fieldHelpTxt[f.help]['t'] ~= nil then
-                local helpTxt = rfsuite.app.fieldHelpTxt[f.help]['t']
-                rfsuite.app.formFields[i]:help(helpTxt)
-            end
-        end
-        if f.instantChange and f.instantChange == true then
-            rfsuite.app.formFields[i]:enableInstantChange(true)
-        elseif f.instantChange and f.instantChange == false then
-            rfsuite.app.formFields[i]:enableInstantChange(false)    
-        else
-            rfsuite.app.formFields[i]:enableInstantChange(true)
-        end
-    end
+    -- update all the fields as msp only supports uint8
+    update_int8()
 
     rfsuite.app.triggers.closeProgressLoader = true
-
 end
 
+
 return {
-    read = 158, -- MSP_EXPERIMENTAL
-    write = 159, -- MSP_SET_EXPERIMENTAL
+    mspapi  = mspapi,
     title = "Experimental",
     navButtons = {menu = true, save = true, reload = true, help = true},
-    minBytes = 0,
     eepromWrite = true,
-    labels = labels,
-    fields = fields,
-    rows = rows,
-    simulatorResponse = {255, 10, 60, 200, 20, 40, 255, 5, 30, 105, 100, 30, 10, 10, 50, 1},
-    cols = cols,
-    openPage = openPage,
     postLoad = postLoad,
     API = {},
 }
