@@ -26,9 +26,10 @@ jobs:
         sed -i "s/config.Version = \".*\"/config.Version = \"${{ env.GIT_VER }}\"/" scripts/rfsuite/main.lua
 
         # Set logging settings
-        sed -i 's/config.logLevel= ".*"/config.logLevel= "off"/' scripts/rfsuite/main.lua
-        sed -i 's/config.logToFile = .*/config.logToFile = false/' scripts/rfsuite/main.lua
-        sed -i 's/config.logMSP = .*/config.logMSP = false/' scripts/rfsuite/main.lua
+        sed -i 's/\(config.logLevel= \)".*"/\1"off"/' scripts/rfsuite/main.lua
+        sed -i 's/\(config.logToFile = \).*/\1false/' scripts/rfsuite/main.lua
+        sed -i 's/\(config.logMSP = \).*/\1false/' scripts/rfsuite/main.lua
+
 
         # Show updated file (for verification)
         grep 'config\.' scripts/rfsuite/main.lua
