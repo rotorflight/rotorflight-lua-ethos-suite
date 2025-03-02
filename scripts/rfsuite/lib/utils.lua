@@ -196,21 +196,17 @@ function utils.joinTableItems(tbl, delimiter)
 
     delimiter = delimiter or ""
     local startIndex = tbl[0] and 0 or 1
-    
-    -- Ensure each field is padded to at least 3 characters
-    local function padField(field)
-        field = tostring(field)
-        return field .. string.rep(" ", math.max(0, 3 - #field))
+
+    -- Pre-pad all fields once before joining
+    local paddedTable = {}
+    for i = startIndex, #tbl do
+        paddedTable[i] = tostring(tbl[i]) .. string.rep(" ", math.max(0, 3 - #tostring(tbl[i])))
     end
 
-    local result = padField(tbl[startIndex])
-
-    for i = startIndex + 1, #tbl do
-        result = result .. delimiter .. padField(tbl[i])
-    end
-
-    return result
+    -- Join the padded table items
+    return table.concat(paddedTable, delimiter, startIndex, #tbl)
 end
+
 
 
 function utils.log(msg, level)
