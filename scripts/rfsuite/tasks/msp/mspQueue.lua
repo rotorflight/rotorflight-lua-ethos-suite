@@ -133,22 +133,6 @@ function MspQueueController:processQueue()
             -- find state
             local rwState = (self.currentMessage.payload and #self.currentMessage.payload > 0) and "WRITE" or "READ"
 
-            -- if writing, then we can take payload and write to disk
-            if rwState == "WRITE" then
-                rfsuite.utils.simMspSave(cmd, self.currentMessage.payload)
-            end
-
-            -- if reading, then we can take payload and load from disk  (if available)
-            -- if not available, we use the existing simulator response
-            if rwState == "READ" then
-                local payload_disk = rfsuite.utils.simMspLoad(cmd)
-                if payload_disk then
-                    rfsuite.utils.log("Using payload from disk for command " .. tostring(cmd),"info")
-                    buf = payload_disk
-                    self.currentMessage.simulatorResponse = buf
-                end     
-            end  
-
             rfsuite.utils.logMsp(cmd, rwState, self.currentMessage.payload or buf, err)      
         end    
     end
