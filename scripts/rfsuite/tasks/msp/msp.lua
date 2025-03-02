@@ -181,7 +181,17 @@ function msp.onConnectBgChecks()
                 rfsuite.session.clockSetAlart = true
                 
                 -- do this at end of last one
+                -- we essentially stop the init loop and unload all api we just used
                 msp.onConnectChecksInit = false
+                msp.api.unload("API_VERSION")
+                msp.api.unload("RTC")
+                msp.api.unload("MIXER_CONFIG")
+                msp.api.unload("STATUS")
+                msp.api.unload("SERVO_OVERRIDE")
+                msp.api.unload("GOVERNOR_CONFIG")
+                msp.api.unload("PILOT_CONFIG")
+                msp.api.unload("NAME")
+
             end    
         end    
     end
