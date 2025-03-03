@@ -207,7 +207,7 @@ function tasks.wakeup()
 
         -- we can now move on and store some session vars
         -- and move on to processing tasks
-        rfsuite.session.telemetryState = false
+        rfsuite.session.telemetryState = true
 
         if sportSensor then
             rfsuite.session.telemetryType = "sport"

@@ -316,9 +316,6 @@ local sensorTable = {
     }
 }
 
--- Cache telemetry source
-local tlm = system.getSource({category = CATEGORY_SYSTEM_EVENT, member = TELEMETRY_ACTIVE})
-
 --[[
     Retrieves the current sensor protocol.
     @return protocol - The protocol used by the sensor.
@@ -370,18 +367,25 @@ function telemetry.getSensorSource(name)
 
     -- Helper function to check if MSP version conditions are met
     local function checkCondition(sensorEntry)
+        if not (rfsuite.session and rfsuite.session.apiVersion) then
+            -- No session or apiVersion means no valid comparison can happen, so return true (default to valid)
+            return true
+        end
+    
+        local roundedApiVersion = rfsuite.utils.round(rfsuite.session.apiVersion, 2)
+    
         if sensorEntry.mspgt then
             -- Check if API version exists and meets "greater than" condition
-            return rfsuite.session and rfsuite.session.apiVersion and (rfsuite.utils.round(rfsuite.session.apiVersion,2) >= rfsuite.utils.round(sensorEntry.mspgt,2))
+            return roundedApiVersion >= rfsuite.utils.round(sensorEntry.mspgt, 2)
         elseif sensorEntry.msplt then
             -- Check if API version exists and meets "less than" condition
-            return rfsuite.session and rfsuite.session.apiVersion and (rfsuite.utils.round(rfsuite.session.apiVersion,2) <= rfsuite.utils.round(sensorEntry.msplt,2))
-
+            return roundedApiVersion <= rfsuite.utils.round(sensorEntry.msplt, 2)
         end
+    
         -- No conditions = always valid
         return true
     end
-
+    
     if system.getVersion().simulation == true then
         protocol = "sport"
         for _, sensor in ipairs(sensorTable[name].sim or {}) do
@@ -476,7 +480,7 @@ function telemetry.validateSensors(returnValid)
     -- Update last validation time
     lastValidationTime = now
 
-    if not telemetry.active() then
+    if not rfsuite.session.telemetryState then
         local allSensors = {}
         for key, sensor in pairs(sensorTable) do table.insert(allSensors, {key = key, name = sensor.name}) end
         lastValidationResult = allSensors
@@ -537,7 +541,7 @@ end
         - boolean: true if in simulation mode or telemetry is active, false otherwise.
 ]]
 function telemetry.active()
-    return telemetryState
+    return rfsuite.session.telemetryState or false
 end
 
 
@@ -565,7 +569,8 @@ function telemetry.wakeup()
     -- Rate-limited telemetry checks
     if (now - sensorRateLimit) >= SENSOR_RATE then
         sensorRateLimit = now
-        telemetryState = tlm and tlm:state() or false
+        --telemetryState = tlm and tlm:state() or false
+        --telemetryState = rfsuite.session.telemetryState or false
     end
 
     -- Periodic cache flush every 10 seconds
@@ -576,7 +581,7 @@ function telemetry.wakeup()
     end
 
     -- Reset if telemetry is inactive or RSSI sensor changed
-    if not telemetry.active() or rfsuite.session.telemetryTypeChanged then
+    if not rfsuite.session.telemetryState or rfsuite.session.telemetryTypeChanged then
         telemetrySOURCE, crsfSOURCE, protocol = nil, nil, nil
         sensors = {}
     end
