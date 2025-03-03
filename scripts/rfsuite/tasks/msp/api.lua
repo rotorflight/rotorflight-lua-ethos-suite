@@ -304,7 +304,7 @@ function apiLoader.parseMSPData(buf, structure, processed, other, options)
             end
 
             rfsuite.utils.log(string.format("Chunk processed - fields %d to %d", 
-                state.index - processedFields, state.index - 1), "info")
+                state.index - processedFields, state.index - 1), "debug")
 
             if state.index > #structure then
                 if completionCallback then
