@@ -21,33 +21,30 @@
 ]] --
 local apiLoader = {}
 
--- Cache to store loaded API modules
-local apiCache = {}
-
 -- Define the API directory path based on the ethos version
 local apidir = "tasks/msp/api/"
 local api_path = apidir
 
 
 --[[
-    Loads and returns an API module by its name, with caching and logging functionality.
-    
-    @param apiName (string) - The name of the API module to load.
-    @return (table) - The loaded API module, or nil if the module could not be loaded.
-    
+    Loads a Lua API module by its name, checks for the existence of the file, and wraps its functions.
+
+    @param apiName (string) The name of the API to load.
+
+    @return (table|nil) The loaded API module if successful, or nil if the file does not exist or is invalid.
+
     The function performs the following steps:
-    1. Checks if the API module is already cached and returns it if available.
-    2. Constructs the file path for the API module.
-    3. Checks if the API file exists.
-    4. Loads the API file and verifies it contains valid read or write functions.
-    5. Wraps the read, write, setValue, and readValue functions with logging functionality.
-    6. Caches the modified API module and returns it.
-    
-    Logs errors if the API file is not found or does not contain valid functions.
-]]
+    1. Constructs the file path for the API module.
+    2. Checks if the file exists using `rfsuite.utils.file_exists`.
+    3. Loads the API module using `dofile`.
+    4. Verifies that the module is a table and contains either a `read` or `write` function.
+    5. Stores the API name inside the module as `__apiName`.
+    6. Wraps the `read`, `write`, `setValue`, and `readValue` functions if they exist.
+    7. Logs the successful loading of the API module.
+    8. Returns the loaded API module.
+    9. Logs an error if the file does not exist or the module is invalid.
+--]]
 local function loadAPI(apiName)
-    -- Return cached version if already loaded
-    if apiCache[apiName] then return apiCache[apiName] end
 
     local apiFilePath = api_path .. apiName .. ".lua"
 
@@ -92,8 +89,6 @@ local function loadAPI(apiName)
                 end
             end
 
-            -- Store the modified API in the cache
-            apiCache[apiName] = apiModule
             rfsuite.utils.log("Loaded API: " .. apiName, "debug")
             return apiModule
         else
@@ -120,23 +115,6 @@ function apiLoader.load(apiName)
     return api
 end
 
---[[
-    Unloads the specified API from the cache.
-
-    This function removes the API identified by `apiName` from the `apiCache`.
-    If the API is found and successfully removed, a debug log entry is created.
-    If the API is not found in the cache, a different debug log entry is created.
-
-    @param apiName (string) The name of the API to unload.
-]]
-function apiLoader.unload(apiName)
-    if apiCache[apiName] then
-        apiCache[apiName] = nil
-        rfsuite.utils.log("Unloaded API: " .. apiName, "debug")
-    else
-        rfsuite.utils.log("API not found in cache: " .. apiName, "debug")
-    end
-end
 
 --[[
     Returns the size in bytes of the given data type.
