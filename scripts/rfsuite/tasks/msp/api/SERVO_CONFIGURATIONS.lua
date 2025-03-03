@@ -109,17 +109,27 @@ local function read()
     local message = {
         command = MSP_API_CMD_READ, -- Specify the MSP command
         processReply = function(self, buf)
-            -- Generate the MSP structure dynamically
+            -- Dynamically generate the structure
             local servoCount = buf[1]
-            MSP_MIN_BYTES = 1 + (servoCount * 16) -- Update MSP_MIN_BYTES dynamically
-
+            MSP_MIN_BYTES = 1 + (servoCount * 16)
+        
             local MSP_API_STRUCTURE_READ = generateMSPStructureRead(servoCount)
-            mspData = rfsuite.tasks.msp.api.parseMSPData(buf, MSP_API_STRUCTURE_READ, processMSPData(buf, MSP_API_STRUCTURE_READ))
-            if #buf >= MSP_MIN_BYTES then
-                local completeHandler = handlers.getCompleteHandler()
-                if completeHandler then completeHandler(self, buf) end
+        
+            local function onParseComplete(result)
+                mspData = result
+                if #buf >= MSP_MIN_BYTES then
+                    local completeHandler = handlers.getCompleteHandler()
+                    if completeHandler then completeHandler(self, buf) end
+                end
             end
-        end,
+        
+            -- Always use chunked parser
+            rfsuite.tasks.msp.api.parseMSPData(buf, MSP_API_STRUCTURE_READ, processMSPData(buf, MSP_API_STRUCTURE_READ), nil, {
+                chunked = true,
+                fieldsPerTick = 10,  -- Tune if needed
+                completionCallback = onParseComplete
+            })
+        end,        
         errorHandler = function(self, buf)
             local errorHandler = handlers.getErrorHandler()
             if errorHandler then errorHandler(self, buf) end

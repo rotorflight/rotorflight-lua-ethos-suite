@@ -26,6 +26,30 @@ local apidir = "tasks/msp/api/"
 local api_path = apidir
 
 
+-- Wakeup Manager for scheduling tasks over multiple frames
+
+-- Function to wake up and execute one task from the wakeup queue.
+-- If there are tasks in the queue, it removes the first task and executes it.
+-- @function apiLoader.wakeup
+
+-- Function to schedule a task to be executed later.
+-- Adds the given function to the wakeup queue.
+-- @param func The function to be scheduled for execution.
+-- @function apiLoader.scheduleWakeup
+local wakeupQueue = {}
+
+function apiLoader.wakeup()
+    if #wakeupQueue > 0 then
+        local task = table.remove(wakeupQueue, 1)
+        task()  -- Execute one queued task per tick
+    end
+end
+
+function apiLoader.scheduleWakeup(func)
+    table.insert(wakeupQueue, func)
+end
+
+
 --[[
     Loads a Lua API module by its name, checks for the existence of the file, and wraps its functions.
 
@@ -156,97 +180,209 @@ local function get_type_size(data_type)
     end
 end
 
+
 --[[
-Parses MSP data from a buffer according to a given structure.
-
-@param buf (string) The buffer containing the MSP data.
-@param structure (table) The structure defining the data types and fields.
-@param processed (table) Optional table to include in the returned data.
-@param other (table) Optional table to include in the returned data.
-
-@return (table) A table containing:
-    - parsed: The parsed data as per the structure.
-    - buffer: The original buffer.
-    - structure: The original structure.
-    - positionmap: A map of field names to their byte positions.
-    - processed: The processed table if supplied.
-    - other: The other table if supplied.
---]]
-function apiLoader.parseMSPData(buf, structure, processed, other)
-    local parsedData = {}
-    buf.offset = 1  -- Centralize offset handling using mspHelper
-
-    -- Map of sizes for known types
-    local typeSizes = get_type_size()
-
-    local position_map = {}
-    local current_byte = 1
-
+    Parses a chunk of MSP (Multiwii Serial Protocol) data according to the provided structure and state.
+    
+    @param buf (string): The buffer containing the MSP data to be parsed.
+    @param structure (table): A table defining the structure of the MSP data. Each entry in the table should be a field definition.
+    @param state (table): A table representing the current state of the parser. It should contain:
+        - index (number): The current index in the structure table.
+        - parsedData (table): A table to store the parsed data fields.
+        - error (string, optional): An error message if an error occurs during parsing.
+    
+    @return (boolean): Returns true if all fields in the structure have been processed, false otherwise.
+    
+    The function processes up to 5 fields per call (wakeup) to allow for chunked parsing. It logs the range of fields processed in each call.
+    If a field has an `apiVersion` and the current API version is less than the field's `apiVersion`, the field is skipped.
+    If a field type does not have a corresponding read function, an error is logged and the parsing is halted.
+]]
+local function parseMSPChunk(buf, structure, state)
     local apiVersion = rfsuite.session.apiVersion or 12.06
+    local processedFields = 0
+    local startIndex = state.index
 
-    for _, field in ipairs(structure) do
+    while state.index <= #structure and processedFields < 5 do  -- Process 5 fields per wakeup
+        local field = structure[state.index]
+        state.index = state.index + 1
+
         if field.apiVersion and apiVersion < field.apiVersion then
-            goto continue  -- Skip fields not supported by current API version
+            goto continue
         end
 
-        local byteorder = field.byteorder or "little"
-        local size = typeSizes[field.type]
-        if not size then
-            rfsuite.utils.log("Error: Unknown data type: " .. field.type, "debug")
-            return nil
-        end
-
-        -- Use mspHelper dynamic read
         local readFunction = rfsuite.tasks.msp.mspHelper["read" .. field.type]
         if not readFunction then
             rfsuite.utils.log("Error: No reader for type: " .. field.type, "debug")
-            return nil
+            state.error = "Unknown type: " .. field.type
+            return false
         end
 
-        local data = readFunction(buf, byteorder)
-        if data == nil then
-            rfsuite.utils.log("Error reading field: " .. field.field .. " at offset " .. buf.offset, "debug")
-        end
-        parsedData[field.field] = data
-
-        -- Build position map in the same loop
-        local start_pos = current_byte
-        local end_pos = start_pos + size - 1
-        position_map[field.field] = {}
-
-        if byteorder == "big" then
-            for i = end_pos, start_pos, -1 do
-                table.insert(position_map[field.field], i)
-            end
-        else
-            for i = start_pos, end_pos do
-                table.insert(position_map[field.field], i)
-            end
-        end
-
-        current_byte = end_pos + 1
+        local data = readFunction(buf, field.byteorder or "little")
+        state.parsedData[field.field] = data
+        processedFields = processedFields + 1
 
         ::continue::
     end
 
-    -- Check for unused bytes in the buffer
-    if buf.offset <= #buf then
-        local extra_bytes = #buf - (buf.offset - 1)
-        rfsuite.utils.log("Unused bytes in buffer (" .. extra_bytes .. " extra bytes)")
-    elseif buf.offset > #buf + 1 then
-        rfsuite.utils.log("Offset exceeded buffer length (Offset: " .. buf.offset .. ", Buffer: " .. #buf .. ")")
+    rfsuite.utils.log(string.format("Chunk processed - fields %d to %d", startIndex, state.index - 1), "debug")
+
+    return state.index > #structure
+end
+
+--[[
+    Parses MSP data from a buffer according to a given structure.
+
+    @param buf (table) - The buffer containing the MSP data.
+    @param structure (table) - The structure defining the fields to be parsed.
+    @param processed (table) - Optional. A table to store processed data.
+    @param other (table) - Optional. A table to store additional data.
+    @param options (table|function) - Optional. A table of options or a completion callback function.
+        @field chunked (boolean) - If true, processes data in chunks asynchronously.
+        @field fieldsPerTick (number) - Number of fields to process per tick in chunked mode.
+        @field completionCallback (function) - Callback function to be called upon completion in chunked mode.
+
+    @return (table|nil) - Returns a table with parsed data, buffer, structure, position map, processed data, other data, and received bytes count in blocking mode.
+                          Returns nil in chunked mode.
+--]]
+function apiLoader.parseMSPData(buf, structure, processed, other, options)
+    if type(options) == "function" then
+        options = {chunked = true, completionCallback = options}
+    elseif type(options) ~= "table" then
+        options = {}
     end
 
-    return {
-        parsed = parsedData,
-        buffer = buf,
-        structure = structure,
-        positionmap = position_map,
-        processed = processed or nil,
-        other = other or nil,
-        receivedBytesCount = math.floor(buf.offset - 1)
-    }
+    local chunked = options.chunked or false
+    local fieldsPerTick = options.fieldsPerTick or 10
+    local completionCallback = options.completionCallback
+
+    if chunked then
+        -- Chunked async mode
+        local state = {
+            index = 1,
+            parsedData = {},
+            positionmap = {},
+            processed = processed or {},
+            other = other or {},
+            currentByte = 1,
+            fieldsPerTick = fieldsPerTick,
+            completionCallback = completionCallback
+        }
+
+        local function processNextChunk()
+            local apiVersion = rfsuite.session.apiVersion or 12.06
+            local processedFields = 0
+
+            while state.index <= #structure and processedFields < fieldsPerTick do
+                local field = structure[state.index]
+                state.index = state.index + 1
+
+                if field.apiVersion and apiVersion < field.apiVersion then
+                    goto continue
+                end
+
+                local readFunction = rfsuite.tasks.msp.mspHelper["read" .. field.type]
+                if not readFunction then
+                    rfsuite.utils.log("Error: No reader for type: " .. field.type, "debug")
+                    return
+                end
+
+                local data = readFunction(buf, field.byteorder or "little")
+                state.parsedData[field.field] = data
+
+                local size = get_type_size(field.type)
+                local startByte = state.currentByte
+                local endByte = startByte + size - 1
+                state.positionmap[field.field] = {}
+                for b = startByte, endByte do
+                    table.insert(state.positionmap[field.field], b)
+                end
+                state.currentByte = endByte + 1
+
+                processedFields = processedFields + 1
+
+                ::continue::
+            end
+
+            rfsuite.utils.log(string.format("Chunk processed - fields %d to %d", 
+                state.index - processedFields, state.index - 1), "debug")
+
+            if state.index > #structure then
+                if completionCallback then
+                    completionCallback({
+                        parsed = state.parsedData,
+                        buffer = buf,
+                        structure = structure,
+                        positionmap = state.positionmap,
+                        processed = state.processed,
+                        other = state.other,
+                        receivedBytesCount = math.floor(buf.offset - 1)
+                    })
+                end
+            else
+                apiLoader.scheduleWakeup(processNextChunk)
+            end
+        end
+
+        processNextChunk()
+        return nil
+    else
+        -- Blocking mode (sync)
+        local parsedData = {}
+        buf.offset = 1
+
+        local typeSizes = get_type_size()
+        local position_map = {}
+        local current_byte = 1
+        local apiVersion = rfsuite.session.apiVersion or 12.06
+
+        for _, field in ipairs(structure) do
+            if field.apiVersion and apiVersion < field.apiVersion then
+                goto continue
+            end
+
+            local readFunction = rfsuite.tasks.msp.mspHelper["read" .. field.type]
+            if not readFunction then
+                rfsuite.utils.log("Error: No reader for type: " .. field.type, "debug")
+                return nil
+            end
+
+            local data = readFunction(buf, field.byteorder or "little")
+            parsedData[field.field] = data
+
+            local size = typeSizes[field.type]
+            local start_pos = current_byte
+            local end_pos = start_pos + size - 1
+            position_map[field.field] = {}
+
+            for i = start_pos, end_pos do
+                table.insert(position_map[field.field], i)
+            end
+
+            current_byte = end_pos + 1
+
+            ::continue::
+        end
+
+        if buf.offset <= #buf then
+            local extraBytes = #buf - (buf.offset - 1)
+            rfsuite.utils.log("Unused bytes in buffer (" .. extraBytes .. " extra bytes)", "debug")
+        elseif buf.offset > #buf + 1 then
+            rfsuite.utils.log("Offset exceeded buffer length (Offset: " .. buf.offset .. ", Buffer: " .. #buf .. ")", "debug")
+        end
+
+        return {
+            parsed = parsedData,
+            buffer = buf,
+            structure = structure,
+            positionmap = position_map,
+            processed = processed,
+            other = other,
+            receivedBytesCount = math.floor(buf.offset - 1)
+        }
+    end
 end
+
+
 
 --[[
     Calculates the minimum number of bytes required for a given structure.
