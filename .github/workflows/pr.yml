@@ -12,29 +12,31 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Update version in main.lua
+    - name: Set build variables (PR version)
       run: |
         PR_NUMBER=${{ github.event.pull_request.number }}
-        NEW_VERSION="PR-${PR_NUMBER}"
+        echo "GIT_VER=PR-${PR_NUMBER}" >> $GITHUB_ENV
 
-        # Update the version in main.lua
-        sed -i "s/config.Version = \".*\"/config.Version = \"${NEW_VERSION}\"/" scripts/rfsuite/main.lua
-
-        # Display updated version for verification
-        grep 'config.Version' scripts/rfsuite/main.lua
-
-    - name: Create rfsuite-lua-ethos-PR-<number>.zip (only /scripts/rfsuite)
+    - name: Update version and config in main.lua
       run: |
-        PR_NUMBER=${{ github.event.pull_request.number }}
-        ZIP_NAME="rfsuite-lua-ethos-PR-${PR_NUMBER}.zip"
+        # Use GIT_VER set in previous step
+        sed -i "s/config.Version = \".*\"/config.Version = \"${{ env.GIT_VER }}\"/" scripts/rfsuite/main.lua
 
-        # Zip the contents without creating unnecessary nested structure
-        cd scripts
-        zip -r ../${ZIP_NAME} rfsuite
+        # Set logging settings
+        sed -i 's/\(config.logLevel= \)".*"/\1"off"/' scripts/rfsuite/main.lua
+        sed -i 's/\(config.logToFile = \)[^ ]*/\1false/' scripts/rfsuite/main.lua
+        sed -i 's/\(config.logMSP = \)[^ ]*/\1false/' scripts/rfsuite/main.lua
 
-    - name: Upload rfsuite-lua-ethos-PR-<number>.zip as Artifact
+        # Show updated file (for verification)
+        grep 'config\.' scripts/rfsuite/main.lua
+
+    - name: Create rotorflight-lua-ethos-suite-PR-<number>.zip (entire scripts folder)
+      run: |
+        zip -q -r -9 "rotorflight-lua-ethos-suite-${{ env.GIT_VER }}.zip" scripts
+
+    - name: Upload rotorflight-lua-ethos-suite-PR-<number>.zip as Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: rfsuite-lua-ethos-PR-${{ github.event.pull_request.number }}
-        path: rfsuite-lua-ethos-PR-${{ github.event.pull_request.number }}.zip
+        name: rotorflight-lua-ethos-suite-${{ env.GIT_VER }}
+        path: rotorflight-lua-ethos-suite-${{ env.GIT_VER }}.zip
         if-no-files-found: error
