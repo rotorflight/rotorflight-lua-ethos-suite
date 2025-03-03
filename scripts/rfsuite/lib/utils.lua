@@ -207,98 +207,69 @@ function utils.joinTableItems(tbl, delimiter)
     return table.concat(paddedTable, delimiter, startIndex, #tbl)
 end
 
-
-
+--[[
+    Logs a message with a specified log level.
+    
+    @param msg string: The message to log.
+    @param level string (optional): The log level (e.g., "debug", "info", "warn", "error"). Defaults to "debug".
+]]
 function utils.log(msg, level)
     rfsuite.log.log(msg, level or "debug")
 end
 
+-- Function to print a table to the debug console in a readable format.
+-- @param node The table to be printed.
+-- @param maxDepth (optional) The maximum depth to traverse the table. Default is 5.
+-- @param currentDepth (optional) The current depth of traversal. Default is 0.
+-- @return A string representation of the table.
 -- print a table out to debug console
-function utils.print_r(node)
-    if node == nil then
-        print("nil (type: nil)")
-        return
-    elseif type(node) ~= "table" then
-        print(tostring(node) .. " (type: " .. type(node) .. ")")
-        return
+function utils.print_r(node, maxDepth, currentDepth)
+    maxDepth = maxDepth or 5  -- Reasonable depth limit to avoid runaway recursion
+    currentDepth = currentDepth or 0
+
+    if currentDepth > maxDepth then
+        return "{...} -- Max Depth Reached"
     end
 
-    local cache, stack, output = {}, {}, {}
-    local depth = 1
-    local output_str = "{\n"
+    if type(node) ~= "table" then
+        return tostring(node) .. " (" .. type(node) .. ")"
+    end
 
-    while true do
-        local size = 0
-        for k, v in pairs(node) do size = size + 1 end
+    local result = {}
 
-        local cur_index = 1
-        for k, v in pairs(node) do
-            if (cache[node] == nil) or (cur_index >= cache[node]) then
-                if (string.find(output_str, "}", output_str:len())) then
-                    output_str = output_str .. ",\n"
-                elseif not (string.find(output_str, "\n", output_str:len())) then
-                    output_str = output_str .. "\n"
-                end
+    table.insert(result, "{")
 
-                table.insert(output, output_str)
-                output_str = ""
+    for k, v in pairs(node) do
+        local key = type(k) == "string" and ('["' .. k .. '"]') or ("[" .. tostring(k) .. "]")
+        local value
 
-                local key
-                if (type(k) == "number" or type(k) == "boolean") then
-                    key = "[" .. tostring(k) .. "]"
-                else
-                    key = "['" .. tostring(k) .. "']"
-                end
-
-                if (type(v) == "number" or type(v) == "boolean") then
-                    output_str = output_str .. string.rep("\t", depth) .. key .. " = " .. tostring(v)
-                elseif (type(v) == "table") then
-                    output_str = output_str .. string.rep("\t", depth) .. key .. " = {\n"
-                    table.insert(stack, node)
-                    table.insert(stack, v)
-                    cache[node] = cur_index + 1
-                    break
-                else
-                    output_str = output_str .. string.rep("\t", depth) .. key .. " = '" .. tostring(v) .. "'"
-                end
-
-                if (cur_index == size) then
-                    output_str = output_str .. "\n" .. string.rep("\t", depth - 1) .. "}"
-                else
-                    output_str = output_str .. ","
-                end
-            else
-                if (cur_index == size) then output_str = output_str .. "\n" .. string.rep("\t", depth - 1) .. "}" end
-            end
-
-            cur_index = cur_index + 1
-        end
-
-        if (size == 0) then output_str = output_str .. "\n" .. string.rep("\t", depth - 1) .. "}" end
-
-        if (#stack > 0) then
-            node = stack[#stack]
-            stack[#stack] = nil
-            depth = cache[node] == nil and depth + 1 or depth - 1
+        if type(v) == "table" then
+            value = utils.print_r(v, maxDepth, currentDepth + 1)
         else
-            break
+            value = tostring(v)
+            if type(v) == "string" then
+                value = '"' .. value .. '"'
+            end
         end
+
+        table.insert(result, key .. " = " .. value .. ",")
     end
 
-    table.insert(output, output_str)
-    output_str = table.concat(output, "\n")
+    table.insert(result, "}")
 
-    -- Print in chunks of 5 lines
-    local lines = {}
-    for line in output_str:gmatch("[^\n]+") do table.insert(lines, line) end
-
-    for i = 1, #lines, 5 do
-        local chunk = table.concat(lines, "\n", i, math.min(i + 4, #lines))
-        print(chunk)
-    end
+    return table.concat(result, " ")
 end
 
 
+--[[
+    Finds and loads modules from the specified directory.
+
+    This function scans the "app/modules/" directory for subdirectories containing an "init.lua" file.
+    It attempts to load each "init.lua" file as a Lua chunk and expects it to return a table with a "script" field.
+    If the "init.lua" file is successfully loaded and returns a valid configuration table, the module is added to the modules list.
+
+    @return table A list of loaded module configurations. Each configuration is a table containing the module's details.
+]]
 function utils.findModules()
     local modulesList = {}
 
@@ -337,6 +308,16 @@ function utils.findModules()
     return modulesList
 end
 
+--[[
+    Finds and loads widget configurations from the "widgets/" directory.
+
+    This function scans the "widgets/" directory for subdirectories containing an "init.lua" file.
+    It attempts to load each "init.lua" file as a Lua chunk and expects it to return a table with widget configuration.
+    The configuration table must contain a "key" field to be considered valid.
+    If valid, the configuration table is added to the widgets list with an additional "folder" field indicating the widget's directory.
+
+    @return table A list of valid widget configuration tables.
+]]
 function utils.findWidgets()
     local widgetsList = {}
 
@@ -369,7 +350,29 @@ function utils.findWidgets()
     return widgetsList
 end
 
--- Helper function to load an image from up to three possible paths
+--[[
+    utils.loadImage(image1, image2, image3)
+
+    This function attempts to load an image from a list of provided image paths or Bitmap objects.
+    It checks for the existence of the image in multiple directories and supports both PNG and BMP formats.
+
+    Parameters:
+        image1 (string|Bitmap): The primary image path or Bitmap object to load.
+        image2 (string|Bitmap): The secondary image path or Bitmap object to load if the primary is not found.
+        image3 (string|Bitmap): The tertiary image path or Bitmap object to load if neither the primary nor secondary are found.
+
+    Returns:
+        Bitmap: The loaded Bitmap object if an image path is found and successfully loaded.
+        Bitmap: The first existing Bitmap object from the provided parameters if no image path is found.
+        nil: If no valid image path or Bitmap object is found.
+
+    Helper Functions:
+        find_image_in_directories(img):
+            Checks if the image file exists in different directories and returns the valid path if found.
+
+        resolve_image(image):
+            Resolves the image path by checking its existence and attempting to switch between PNG and BMP formats if necessary.
+--]]
 function utils.loadImage(image1, image2, image3)
     -- Helper function to check file in different locations
     local function find_image_in_directories(img)
