@@ -19,7 +19,7 @@ local tasksList = {}
 local tasksLoaded = false
 local completionNotified = false
 
-local TASK_TIMEOUT_SECONDS = 5  -- Customize this if needed
+local TASK_TIMEOUT_SECONDS = 10  -- Customize this if needed
 
 function tasks.findTasks()
     if tasksLoaded then
