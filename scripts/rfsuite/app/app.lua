@@ -614,147 +614,131 @@ end
 
 
 --[[
-    requestPage - Requests a page using the new API form system.
-
-    This function ensures that the necessary API and form data exist, initializes
-    the state if needed, and processes API calls sequentially. It prevents duplicate
-    execution if already running and handles both API success and error cases.
-
-    The function performs the following steps:
-    1. Checks if app.Page.mspapi and its api/formdata exist.
-    2. Initializes the apiState if not already initialized.
-    3. Prevents duplicate execution by checking the isProcessing flag.
-    4. Initializes values and structure on the first run.
-    5. Processes each API call sequentially using a recursive function.
-    6. Handles API success by storing the response and moving to the next API.
-    7. Handles API errors by logging the error and moving to the next API.
-    8. Resets the state and triggers postRead and postLoad functions if they exist.
-
-    Note: The function uses rfsuite.utils.log for logging and rfsuite.tasks.msp.api.load
-    for loading the API. It also updates form attributes and manages progress loader triggers.
+    Function: startPageRequest
+    Description: Initializes and starts the page request process. This function sets up the necessary state and data structures for the page request.
+    Preconditions:
+        - `app.Page` must be defined.
+        - `app.Page.mspapi` must be defined.
+        - `app.Page.mspapi.api` must be defined.
+    Postconditions:
+        - Logs an error if any of the preconditions are not met.
+        - Initializes `page.mspapi.apiState` with the current index, processing state, retries, and start time.
+        - Clears `page.mspapi.values`, `page.mspapi.structure`, `page.mspapi.receivedBytes`, `page.mspapi.receivedBytesCount`, and `page.mspapi.positionmap`.
+        - Logs the start of the page request process.
 ]]
-local function requestPage()
-    -- Ensure app.Page and its mspapi.api exist
-    if not app.Page.mspapi then
+local function startPageRequest()
+    local page = app.Page
+
+    if not (page and page.mspapi and page.mspapi.api) then
+        rfsuite.utils.log("Invalid page request - missing mspapi", "debug")
         return
     end
 
-    if not app.Page.mspapi.api and not app.Page.mspapi.formdata then
-        rfsuite.utils.log("app.Page.mspapi.api did not pass consistancy checks", "debug")
-        return
-    end
+    page.mspapi.apiState = {
+        currentIndex = 1,
+        isProcessing = true,
+        retries = 0,
+        startTime = os.clock(),
+    }
 
-    if not rfsuite.app.Page.mspapi.apiState then
-        rfsuite.app.Page.mspapi.apiState = {
-            currentIndex = 1,
-            isProcessing = false
-        }
-    end    
+    page.mspapi.values = {}
+    page.mspapi.structure = {}
+    page.mspapi.receivedBytes = {}
+    page.mspapi.receivedBytesCount = {}
+    page.mspapi.positionmap = {}
 
-    local apiList = app.Page.mspapi.api
-    local state = rfsuite.app.Page.mspapi.apiState  -- Reference persistent state
-
-    -- Prevent duplicate execution if already running
-    if state.isProcessing then
-        rfsuite.utils.log("requestPage is already running, skipping duplicate call.", "debug")
-        return
-    end
-    state.isProcessing = true  -- Set processing flag
-
-    if not rfsuite.app.Page.mspapi.values then
-        rfsuite.utils.log("requestPage Initialize values on first run", "debug")
-        rfsuite.app.Page.mspapi.values = {}  -- Initialize if first run
-        rfsuite.app.Page.mspapi.structure = {}  -- Initialize if first run
-        rfsuite.app.Page.mspapi.receivedBytesCount = {}  -- Initialize if first run
-        rfsuite.app.Page.mspapi.receivedBytes = {}  -- Initialize if first run
-        rfsuite.app.Page.mspapi.positionmap = {}  -- Initialize if first run
-    end
-
-    -- Ensure state.currentIndex is initialized
-    if state.currentIndex == nil then
-        state.currentIndex = 1
-    end
-
-    -- Recursive function to process API calls sequentially
-    local function processNextAPI()
-        if state.currentIndex > #apiList or #apiList == 0 then
-            if state.isProcessing then  -- Ensure this runs only once
-                state.isProcessing = false  -- Reset processing flag
-                state.currentIndex = 1  -- Reset for next run
-
-                app.triggers.isReady = true
-
-                -- Run the postRead function if it exists
-                if app.Page.postRead then app.Page.postRead(app.Page) end
-
-                -- Populate the form fields with data
-                app.mspApiUpdateFormAttributes(app.Page.mspapi.values,app.Page.mspapi.structure)
-
-                -- Run the postLoad function if it exists
-                -- if postload exits.. then it must take responsibility for 
-                -- closing the progress dialog.
-                if app.Page.postLoad then 
-                    app.Page.postLoad(app.Page) 
-                else
-                    rfsuite.app.triggers.closeProgressLoader = true    
-                end
-            end
-            return
-        end
-
-        local v = apiList[state.currentIndex]
-        local apiKey = type(v) == "string" and v or v.name  -- Use API name or unique key
-
-        if not apiKey then
-            rfsuite.utils.log("API key is missing for index " .. tostring(state.currentIndex), "debug")
-            state.currentIndex = state.currentIndex + 1
-            processNextAPI()
-            return
-        end
-
-        local API = rfsuite.tasks.msp.api.load(v)
-
-        -- Handle API success
-        API.setCompleteHandler(function(self, buf)
-
-            if app.Page and app.Page.mspapi then
-                -- Store API response with API name as the key
-                app.Page.mspapi.values[apiKey] = API.data().parsed
-
-                -- Store the structure with the API name as the key
-                app.Page.mspapi.structure[apiKey] = API.data().structure
-
-                -- Store the receivedByte count with the API name as the key
-                app.Page.mspapi.receivedBytes[apiKey] = API.data().buffer
-
-                -- Store the receivedByte count with the API name as the key
-                app.Page.mspapi.receivedBytesCount[apiKey] = API.data().receivedBytesCount
-
-                -- Store the receivedByte count with the API name as the key
-                app.Page.mspapi.positionmap[apiKey] = API.data().positionmap
-
-                
-                -- Move to the next API
-                state.currentIndex = state.currentIndex + 1
-                processNextAPI()
-            end    
-        end)
-
-        -- Handle API errors
-        API.setErrorHandler(function(self, err)
-            rfsuite.utils.log("API error for " .. apiKey .. ": " .. tostring(err), "debug")
-
-            -- Move to the next API even if there's an error
-            state.currentIndex = state.currentIndex + 1
-            processNextAPI()
-        end)
-
-        API.read()
-    end
-
-    -- Start processing the first API
-    processNextAPI()
+    rfsuite.utils.log("Starting page request process", "debug")
 end
+
+
+--[[
+    Function: processPageRequest
+
+    Description:
+    This function processes a page request by interacting with the MSP API. It handles the state of the API processing, 
+    logs the duration of the page load, and updates the form attributes with the received data. It also manages retries 
+    in case of errors and skips APIs after three consecutive failures.
+
+    Parameters:
+    None
+
+    Returns:
+    None
+
+    Internal Variables:
+    - page: The current page object from the app.
+    - state: The state object of the MSP API.
+    - apiName: The name of the current API being processed.
+    - API: The API object loaded from the rfsuite.tasks.msp.api module.
+
+    Handlers:
+    - setCompleteHandler: Called when the API read operation completes successfully. Updates the page's MSP API values, 
+      structure, received bytes, and position map. Increments the current index and resets retries.
+    - setErrorHandler: Called when there is an error in the API read operation. Logs the error and increments the retry count. 
+      Skips the API after three consecutive failures.
+
+    Logs:
+    - Logs the duration of the page load.
+    - Logs the fetching of each API.
+    - Logs any errors encountered during the API read operation.
+    - Logs a warning when an API is skipped after three failures.
+--]]
+local function processPageRequest()
+    local page = app.Page
+    local state = page.mspapi.apiState
+
+    if not state.isProcessing then
+        return
+    end
+
+    if state.currentIndex > #page.mspapi.api then
+        state.isProcessing = false
+        app.triggers.isReady = true
+
+        local duration = os.clock() - state.startTime
+        rfsuite.utils.log("Page load completed in " .. string.format("%.2f", duration) .. " seconds", "debug")
+
+        if page.postRead then page.postRead(page) end
+        app.mspApiUpdateFormAttributes(page.mspapi.values, page.mspapi.structure)
+
+        if page.postLoad then
+            page.postLoad(page)
+        else
+            app.triggers.closeProgressLoader = true
+        end
+
+        return
+    end
+
+    local apiName = page.mspapi.api[state.currentIndex]
+    local API = rfsuite.tasks.msp.api.load(apiName)
+
+    rfsuite.utils.log("Fetching API: " .. apiName, "debug")
+
+    API.setCompleteHandler(function(self, buf)
+        page.mspapi.values[apiName] = API.data().parsed
+        page.mspapi.structure[apiName] = API.data().structure
+        page.mspapi.receivedBytes[apiName] = API.data().buffer
+        page.mspapi.receivedBytesCount[apiName] = API.data().receivedBytesCount
+        page.mspapi.positionmap[apiName] = API.data().positionmap
+
+        state.currentIndex = state.currentIndex + 1
+        state.retries = 0
+    end)
+
+    API.setErrorHandler(function(self, err)
+        rfsuite.utils.log("API Error (" .. apiName .. "): " .. tostring(err), "error")
+        state.retries = state.retries + 1
+        if state.retries > 2 then
+            rfsuite.utils.log("Skipping " .. apiName .. " after 3 failures", "warn")
+            state.currentIndex = state.currentIndex + 1
+            state.retries = 0
+        end
+    end)
+
+    API.read()
+end
+
 
 --[[
     Updates the current telemetry state. This function is called frequently to check the telemetry status.
@@ -1288,7 +1272,11 @@ function app.wakeupUI()
 
         -- trigger a request page if we have a page waiting to be retrieved
         if app.Page and app.Page.mspapi and app.pageState == app.pageStatus.display and app.triggers.isReady == false then 
-            requestPage() 
+           -- requestPage()
+            if not app.Page.mspapi.apiState then
+                startPageRequest()
+            end
+            processPageRequest()           
         end
 
     end
