@@ -114,6 +114,69 @@ rfsuite.tasks = assert(loadfile("tasks/tasks.lua"))(config)
 
 -- LuaFormatter off
 
+
+--[[
+This script initializes various session parameters for the rfsuite application to nil.
+The parameters include:
+- tailMode: Mode for the tail rotor.
+- swashMode: Mode for the swashplate.
+- activeProfile: Currently active profile.
+- activeRateProfile: Currently active rate profile.
+- activeProfileLast: Last active profile.
+- activeRateLast: Last active rate profile.
+- servoCount: Number of servos.
+- servoOverride: Override setting for servos.
+- clockSet: Clock setting.
+- apiVersion: Version of the API.
+- lastLabel: Last label used.
+- rssiSensor: RSSI sensor value.
+- formLineCnt: Form line count.
+- rateProfile: Rate profile.
+- governorMode: Mode for the governor.
+- ethosRunningVersion: Version of the Ethos running.
+- lcdWidth: Width of the LCD.
+- lcdHeight: Height of the LCD.
+- mspSignature - uses for mostly in sim to save esc type
+- telemetryType = sport or crsf
+- 
+
+-- Every attempt should be made if using session vars to record them here with a nil
+-- to prevent conflicts with other scripts that may use the same session vars.
+]]
+rfsuite.session.tailMode = nil
+rfsuite.session.swashMode = nil
+rfsuite.session.activeProfile = nil
+rfsuite.session.activeRateProfile = nil
+rfsuite.session.activeProfileLast = nil
+rfsuite.session.activeRateLast = nil
+rfsuite.session.servoCount = nil
+rfsuite.session.servoOverride = nil
+rfsuite.session.clockSet = nil
+rfsuite.session.apiVersion = nil
+rfsuite.session.activeProfile = nil
+rfsuite.session.activeRateProfile = nil
+rfsuite.session.activeProfileLast = nil
+rfsuite.session.activeRateLast = nil
+rfsuite.session.servoCount = nil
+rfsuite.session.servoOverride = nil
+rfsuite.session.clockSet = nil
+rfsuite.session.lastLabel = nil
+rfsuite.session.tailMode = nil
+rfsuite.session.swashMode = nil
+rfsuite.session.formLineCnt = nil
+rfsuite.session.rateProfile = nil
+rfsuite.session.governorMode = nil
+rfsuite.session.servoOverride = nil
+rfsuite.session.ethosRunningVersion = nil
+rfsuite.session.lcdWidth = nil
+rfsuite.session.lcdHeight = nil
+rfsuite.session.mspSignature = nil
+rfsuite.session.telemetryState = nil
+rfsuite.session.telemetryType = nil
+rfsuite.session.telemetryTypeChanged = nil
+rfsuite.session.telemetrySensor = nil
+
+
 --[[
     Initializes the main script for the rotorflight-lua-ethos-suite.
 

@@ -267,11 +267,10 @@ function adjfunc.wakeup()
     -- do not run the remaining code
     if rfsuite.preferences.adjFunctionAlerts == false and rfsuite.preferences.adjValueAlerts == false then return end
 
-    if rfsuite.session.rssiSensor == nil then return end
 
-    if (os.clock() - initTime) < 5 or rfsuite.tasks.telemetry.active() == false then return end
+    if (os.clock() - initTime) < 5  then return end
 
-
+    -- getSensor source has a cache built in - win
     adjfunc.adjFunctionSrc = rfsuite.tasks.telemetry.getSensorSource("adj_f")
     adjfunc.adjValueSrc = rfsuite.tasks.telemetry.getSensorSource("adj_v")
 

@@ -401,7 +401,7 @@ function telemetry.getSensorSource(name)
             end
 
         end
-    elseif rfsuite.session.rssiSensorType == "crsf" then
+    elseif rfsuite.session.telemetryType == "crsf" then
         if not crsfSOURCE then crsfSOURCE = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = 0xEE01}) end
 
         if crsfSOURCE then
@@ -430,7 +430,7 @@ function telemetry.getSensorSource(name)
                 end
             end
         end
-    elseif rfsuite.session.rssiSensorType == "sport" then
+    elseif rfsuite.session.telemetryType == "sport" then
         protocol = "sport"
         for _, sensor in ipairs(sensorTable[name].sport or {}) do
             -- Skip entries with unfulfilled version conditions 
@@ -576,7 +576,7 @@ function telemetry.wakeup()
     end
 
     -- Reset if telemetry is inactive or RSSI sensor changed
-    if not telemetry.active() or rfsuite.session.rssiSensorChanged then
+    if not telemetry.active() or rfsuite.session.telemetryTypeChanged then
         telemetrySOURCE, crsfSOURCE, protocol = nil, nil, nil
         sensors = {}
     end

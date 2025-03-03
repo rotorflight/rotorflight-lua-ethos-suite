@@ -23,7 +23,7 @@
 --
 local arg = {...}
 local config = arg[1]
-local currentRssiSensor
+local currentTelemetrySensor
 
 -- declare vars
 local tasks = {}
@@ -33,12 +33,12 @@ tasks.wasOn = false
 
 local tasksList = {}
 
-rfsuite.session.rssiSensorChanged = true
+rfsuite.session.telemetryTypeChanged = true
 
 
 local ethosVersionGood = nil  
-local rssiCheckScheduler = os.clock()
-local lastRssiSensorName = nil
+local telemetryCheckScheduler = os.clock()
+local lastTelemetrySensorName = nil
 
 local sportSensor  = system.getSource({appId = 0xF101})
 local elrsSensor = system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1})     
@@ -130,14 +130,14 @@ end
 
     Use:
     This function is responsible for processing logs, checking the Ethos version, initializing tasks, updating the heartbeat, 
-    managing RSSI sensor checks, and dynamically loading tasks based on settings.
+    managing Telemetry sensor checks, and dynamically loading tasks based on settings.
 
     Details:
     - Processes the log using `rfsuite.log.process()`.
     - Checks if the Ethos version is at least the required version using `rfsuite.utils.ethosVersionAtLeast()`.
     - Initializes tasks if not already initialized by calling `tasks.findTasks()`.
     - Updates the heartbeat timestamp using `os.clock()`.
-    - Manages RSSI sensor checks and updates the current RSSI sensor and its type.
+    - Manages Telemetry sensor checks and updates the current Telemetry sensor and its type.
     - Runs tasks dynamically based on their defined intervals and conditions.
 --]]
 function tasks.wakeup()
@@ -167,56 +167,60 @@ function tasks.wakeup()
     -- this should be before msp.hecks
     -- doing this is heavy - lets run it every few seconds only
     local now = os.clock()
-    if now - (rssiCheckScheduler or 0) >= 1 then
+    if now - (telemetryCheckScheduler or 0) >= 1 then
 
         -- get sport then elrs sensor
         telemetryState = tlm and tlm:state() or false
 
         -- if we are in init - then we can abort here
         if not telemetryState then
-            rfsuite.session.rssiSensorType = nil
-            rfsuite.session.rssiSensorChanged = false
-            rfsuite.session.rssiSensor = nil
-            lastRssiSensorName = nil
-            rssiCheckScheduler = now    
+            rfsuite.session.telemetryState = false
+            rfsuite.session.telemetryType = nil
+            rfsuite.session.telemetryTypeChanged = false
+            rfsuite.session.telemetrySensor = nil
+            lastTelemetrySensorName = nil
+            telemetryCheckScheduler = now    
             sportSensor = nil
             elrsSensor = nil 
             return
         end
 
-        -- determine the rssi sensor
+        -- determine the telemetry sensor
         if not sportSensor then sportSensor = system.getSource({appId = 0xF101}) end
         if not elrsSensor then system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1}) end
 
-        currentRssiSensor = sportSensor or elrsSensor or nil
-        rfsuite.session.rssiSensor = currentRssiSensor
+        currentTelemetrySensor = sportSensor or elrsSensor or nil
+        rfsuite.session.telemetrySensor = currentTelemetrySensor
 
         -- we can abort here if we have no sensor
-        if currentRssiSensor == nil then
-            rfsuite.session.rssiSensorType = nil
-            rfsuite.session.rssiSensorChanged = false
-            rfsuite.session.rssiSensor = nil
-            lastRssiSensorName = nil
+        if currentTelemetrySensor == nil then
+            rfsuite.session.telemetryState = false
+            rfsuite.session.telemetryType = nil
+            rfsuite.session.telemetryTypeChanged = false
+            rfsuite.session.telemetrySensor = nil
+            lastTelemetrySensorName = nil
             sportSensor = nil
             elrsSensor = nil 
-            rssiCheckScheduler = now
+            telemetryCheckScheduler = now
             return
         end
 
         -- we can now move on and store some session vars
         -- and move on to processing tasks
+        rfsuite.session.telemetryState = false
+
         if sportSensor then
-            rfsuite.session.rssiSensorType = "sport"
+            rfsuite.session.telemetryType = "sport"
         elseif elrsSensor then
-            rfsuite.session.rssiSensorType = "crsf"
+            rfsuite.session.telemetryType = "crsf"
         else
-            rfsuite.session.rssiSensorType = nil    
+            rfsuite.session.telemetryType = nil    
         end
 
-        rfsuite.session.rssiSensorChanged = currentRssiSensor and (lastRssiSensorName ~= currentRssiSensor:name()) or false
-        lastRssiSensorName = currentRssiSensor and currentRssiSensor:name() or nil    
+        rfsuite.session.telemetryTypeChanged = currentTelemetrySensor and (lastTelemetrySensorName ~= currentTelemetrySensor:name()) or false
+        lastTelemetrySensorName = currentTelemetrySensor and currentTelemetrySensor:name() or nil    
         
-        rssiCheckScheduler = now
+        telemetryCheckScheduler = now
 
     end
 
@@ -250,8 +254,7 @@ end
     @param value The value associated with the event.
 ]]
 function tasks.event(widget, category, value)
-    if tasks.msp.event then tasks.msp.event(widget, category, value) end
-    if tasks.adjfunctions.event then tasks.adjfunctions.event(widget, category, value) end
+    -- currently does nothing.
 end
 
 return tasks
