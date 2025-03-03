@@ -40,8 +40,8 @@ local ethosVersionGood = nil
 local telemetryCheckScheduler = os.clock()
 local lastTelemetrySensorName = nil
 
-local sportSensor  = system.getSource({appId = 0xF101})
-local elrsSensor = system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1})     
+local sportSensor 
+local elrsSensor
 
 -- Cache telemetry source
 local tlm = system.getSource({category = CATEGORY_SYSTEM_EVENT, member = TELEMETRY_ACTIVE})
@@ -187,7 +187,7 @@ function tasks.wakeup()
 
         -- determine the telemetry sensor
         if not sportSensor then sportSensor = system.getSource({appId = 0xF101}) end
-        if not elrsSensor then system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1}) end
+        if not elrsSensor then elrsSensor = system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1}) end
 
         currentTelemetrySensor = sportSensor or elrsSensor or nil
         rfsuite.session.telemetrySensor = currentTelemetrySensor
@@ -221,6 +221,7 @@ function tasks.wakeup()
         lastTelemetrySensorName = currentTelemetrySensor and currentTelemetrySensor:name() or nil    
         
         telemetryCheckScheduler = now
+
 
     end
 

@@ -569,8 +569,6 @@ function telemetry.wakeup()
     -- Rate-limited telemetry checks
     if (now - sensorRateLimit) >= SENSOR_RATE then
         sensorRateLimit = now
-        --telemetryState = tlm and tlm:state() or false
-        --telemetryState = rfsuite.session.telemetryState or false
     end
 
     -- Periodic cache flush every 10 seconds

@@ -25,10 +25,7 @@ function craftname.wakeup()
 
     if (rfsuite.session.craftName == nil) then
         local API = rfsuite.tasks.msp.api.load("NAME")
-        API.setUUID("a66de3a0-c64e-423b-a48c-307d476303b6")
-        API.read()
-        if API.readComplete() and API.readValue("name") ~= nil then
-            local data = API.data()
+        API.setCompleteHandler(function(self, buf)
             rfsuite.session.craftName = API.readValue("name")
             if rfsuite.preferences.syncCraftName == true and model.name and rfsuite.session.craftName ~= nil then
                 rfsuite.utils.log("Setting model name to: " .. rfsuite.session.craftName, "info")
@@ -38,8 +35,10 @@ function craftname.wakeup()
             if rfsuite.session.craftName and rfsuite.session.craftName ~= "" then
                 rfsuite.utils.log("Craft name: " .. rfsuite.session.craftName, "info")
             end
-        end
-    end    
+        end)
+        API.setUUID("37163617-1486-4886-8b81-6a1dd6d7edd1")
+        API.read()
+    end     
 
 end
 
