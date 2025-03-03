@@ -116,19 +116,45 @@ function apiLoader.load(apiName)
 end
 
 
+
 --[[
-    Returns the size in bytes of the given data type.
-    
-    @param data_type (string): The data type to get the size of. 
-                               Valid types are "U8", "U16", "U24", "U32", "S8", "S16", "S24", "S32".
-    
-    @return (number): The size in bytes of the given data type. Defaults to 1 if the data type is unknown.
+    Function: get_type_size
+    Description: Returns the size in bytes of the given data type.
+    Parameters:
+        data_type (string) - The data type for which the size is to be determined. 
+                             Supported types are U8, S8, U16, S16, U24, S24, U32, S32, 
+                             U40, S40, U48, S48, U56, S56, U64, S64, U72, S72, U80, 
+                             S80, U88, S88, U96, S96, U104, S104, U112, S112, U120, 
+                             S120, U128, S128.
+    Returns:
+        number - The size in bytes of the given data type. Defaults to 1 if the data type is unknown.
 ]]
 local function get_type_size(data_type)
-    local type_sizes = {U8 = 1, U16 = 2, U24 = 3, U32 = 4, S8 = 1, S16 = 2, S24 = 3, S32 = 4}
-    return type_sizes[data_type] or 1 -- Default to U8 if unknown
-end
+    local type_sizes = {
+        U8 = 1,   S8 = 1,
+        U16 = 2,  S16 = 2,
+        U24 = 3,  S24 = 3,
+        U32 = 4,  S32 = 4,
+        U40 = 5,  S40 = 5,
+        U48 = 6,  S48 = 6,
+        U56 = 7,  S56 = 7,
+        U64 = 8,  S64 = 8,
+        U72 = 9,  S72 = 9,
+        U80 = 10, S80 = 10,
+        U88 = 11, S88 = 11,
+        U96 = 12, S96 = 12,
+        U104 = 13, S104 = 13,
+        U112 = 14, S112 = 14,
+        U120 = 15, S120 = 15,
+        U128 = 16, S128 = 16
+    }
 
+    if data_type then
+        return type_sizes[data_type] or 1 -- Default to U8 if unknown
+    else
+        return type_sizes  -- Return the whole table if no type provided
+    end
+end
 
 --[[
 Parses MSP data from a buffer according to a given structure.
@@ -151,13 +177,7 @@ function apiLoader.parseMSPData(buf, structure, processed, other)
     buf.offset = 1  -- Centralize offset handling using mspHelper
 
     -- Map of sizes for known types
-    local typeSizes = {
-        U8 = 1, S8 = 1,
-        U16 = 2, S16 = 2,
-        U24 = 3, S24 = 3,
-        U32 = 4, S32 = 4,
-        U64 = 8, S64 = 8,  -- In case larger types are needed
-    }
+    local typeSizes = get_type_size()
 
     local position_map = {}
     local current_byte = 1
