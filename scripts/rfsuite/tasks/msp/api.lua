@@ -252,7 +252,7 @@ function apiLoader.parseMSPData(buf, structure, processed, other, options)
     end
 
     local chunked = options.chunked or false
-    local fieldsPerTick = options.fieldsPerTick or 5
+    local fieldsPerTick = options.fieldsPerTick or 10
     local completionCallback = options.completionCallback
 
     if chunked then
