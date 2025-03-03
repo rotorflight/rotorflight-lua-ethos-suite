@@ -69,17 +69,11 @@ end
 
 function msp.wakeup()
 
-    -- check if we have a telemetry source
-    local telemetrySOURCE = rfsuite.tasks.telemetry.getSensorSource("rssi") 
-    if telemetrySOURCE == nil then 
-        return
-    end
+   msp.activeProtocol = rfsuite.session.telemetryType
 
-   msp.activeProtocol = rfsuite.session.rssiSensorType
+    if rfsuite.tasks.wasOn == true then rfsuite.session.telemetryTypeChanged = true end
 
-    if rfsuite.tasks.wasOn == true then rfsuite.session.rssiSensorChanged = true end
-
-    if rfsuite.session.rssiSensorChanged == true then
+    if rfsuite.session.telemetryTypeChanged == true then
 
         --rfsuite.utils.log("Switching protocol: " .. msp.activeProtocol)
 
@@ -96,7 +90,7 @@ function msp.wakeup()
         msp.onConnectChecksInit = true
     end
 
-    if rfsuite.session.rssiSensor ~= nil and rfsuite.tasks.telemetry.active() == false then
+    if rfsuite.session.telemetrySensor ~= nil and rfsuite.session.telemetryState == false then
         msp.resetState()
         msp.onConnectChecksInit = true
     end
@@ -105,8 +99,8 @@ function msp.wakeup()
 
     local state
 
-    if rfsuite.session.rssiSensor then
-        state = rfsuite.tasks.telemetry.active()
+    if rfsuite.session.telemetrySensor then
+        state = rfsuite.session.telemetryState
     else
         state = false
     end
@@ -117,7 +111,7 @@ function msp.wakeup()
 
         -- checks that run on each connection to the fbl
         if msp.onConnectChecksInit == true then 
-            if rfsuite.session.rssiSensor then msp.sensor:module(rfsuite.session.rssiSensor:module()) end
+            if rfsuite.session.telemetrySensor then msp.sensor:module(rfsuite.session.telemetrySensor:module()) end
         end
     else
         msp.mspQueue:clear()

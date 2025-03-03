@@ -9,13 +9,7 @@ local validSerialConfig = false
 
 local function openPage(pidx, title, script)
 
-    -- we should unload any api we using from previous page loads
-    if rfsuite.app.Page and rfsuite.app.Page.mspapi and rfsuite.app.Page.mspapi.api then
-        for i,v in ipairs(rfsuite.app.Page.mspapi.api) do
-            rfsuite.tasks.msp.api.unload(v)
-        end
-    end
-    
+
     rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
 
     rfsuite.app.triggers.isReady = false

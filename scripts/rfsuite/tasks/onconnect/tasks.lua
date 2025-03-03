@@ -17,16 +17,9 @@
 local tasks = {}
 local tasksList = {}
 local tasksLoaded = false
-local totalTaskCount = 0  -- Tracks total number of loaded tasks
-
-local STATE = {
-    WAITING_FOR_CONNECT = "waiting",
-    CONNECTED = "connected"
-}
-
-local taskState = STATE.WAITING_FOR_CONNECT
 local completionNotified = false
-local remainingTasks = 0 -- Tracks how many tasks are still incomplete
+
+local TASK_TIMEOUT_SECONDS = 10  -- Customize this if needed
 
 function tasks.findTasks()
     if tasksLoaded then
@@ -42,7 +35,7 @@ function tasks.findTasks()
 
             local chunk, err = loadfile(fullPath)
             if not chunk then
-                --rfsuite.utils.log("Error loading " .. file .. ": " .. err, "error")
+                rfsuite.utils.log("Error loading task file " .. file .. ": " .. err, "error")
             else
                 local taskModule = assert(chunk())
 
@@ -51,11 +44,11 @@ function tasks.findTasks()
                         module = taskModule,
                         initialized = false,
                         complete = false,
-                        resetPending = false
+                        resetPending = false,
+                        startTime = nil
                     }
-                    totalTaskCount = totalTaskCount + 1  -- Track total
                 else
-                    --rfsuite.utils.log("Invalid task file: " .. file .. " (must return table with wakeup())", "debug")
+                    rfsuite.utils.log("Invalid task file: " .. file .. " (must return table with wakeup()).", "info")
                 end
             end
         end
@@ -72,58 +65,88 @@ function tasks.resetAllTasks()
         task.initialized = false
         task.complete = false
         task.resetPending = false
+        task.startTime = nil
     end
 
     completionNotified = false
-    remainingTasks = totalTaskCount  -- Direct reset to known count
 end
 
 function tasks.wakeup()
-    local active = rfsuite.tasks.msp.onConnectChecksInit and rfsuite.tasks.telemetry.active()
+    local telemetryActive = rfsuite.tasks.msp.onConnectChecksInit and rfsuite.session.telemetryState
 
-    if taskState == STATE.WAITING_FOR_CONNECT then
-        if active then
-            tasks.findTasks()
-            taskState = STATE.CONNECTED
-            completionNotified = false
-            remainingTasks = totalTaskCount  -- Reset at the start of each session
+    if rfsuite.session.telemetryTypeChanged then
+        rfsuite.utils.log("Telemetry type changed, resetting all tasks and reconnecting.", "info")
+        rfsuite.session.telemetryTypeChanged = false
+        tasks.resetAllTasks()
+        tasksLoaded = false -- force re-scan of tasks on reconnect
+        return
+    end
+
+    if not telemetryActive then
+        tasks.resetAllTasks()
+        tasksLoaded = false -- tasks will reload on next valid telemetry
+        return
+    end
+
+    if not tasksLoaded then
+        tasks.findTasks()
+        completionNotified = false
+    end
+
+    local now = os.clock()
+
+    for name, task in pairs(tasksList) do
+        if task.resetPending then
+            if type(task.module.reset) == "function" then
+                task.module.reset()
+            end
+            task.resetPending = false
+            task.initialized = false
+            task.complete = false
+            task.startTime = nil
         end
 
-    elseif taskState == STATE.CONNECTED then
-        if not active then
-            tasks.resetAllTasks()
-            taskState = STATE.WAITING_FOR_CONNECT
-            return
+        if not task.initialized then
+            task.initialized = true
+            task.startTime = now  -- Start timing when task first runs
         end
 
-        for name, task in pairs(tasksList) do
-            if task.resetPending then
-                if type(task.module.reset) == "function" then
-                    task.module.reset()
+        if not task.complete then
+            rfsuite.utils.log("Waking up task: " .. name, "debug")
+            task.module.wakeup()
+
+            if task.module.isComplete and task.module.isComplete() then
+                rfsuite.utils.log("Task '" .. name .. "' is complete.", "debug")
+                task.complete = true
+                task.startTime = nil  -- Clear timer on successful completion
+            else
+                if not task.module.isComplete then
+                    rfsuite.utils.log("Task '" .. name .. "' does not implement isComplete(). This may block task completion detection.", "info")
+                elseif task.startTime and (now - task.startTime) > TASK_TIMEOUT_SECONDS then
+                    rfsuite.utils.log("Task '" .. name .. "' has not completed within " .. TASK_TIMEOUT_SECONDS .. " seconds.", "info")
+                    task.startTime = nil  -- Only log once per stuck task
                 end
-                task.resetPending = false
-                task.initialized = false
-                task.complete = false
-            end
-
-            if not task.initialized then
-                task.initialized = true
-            end
-
-            if not task.complete then
-                task.module.wakeup()
-
-                if task.module.isComplete and task.module.isComplete() then
-                    task.complete = true
-                    remainingTasks = remainingTasks - 1  -- Track completion here
-
-                    if remainingTasks == 0 and not completionNotified then
-                        completionNotified = true
-                        rfsuite.utils.playFileCommon("beep.wav")
-                    end
-                end
             end
         end
+    end
+
+    -- Log task completion state every time
+    --rfsuite.utils.log("Task completion state:", "info")
+    local allComplete = true
+    for name, task in pairs(tasksList) do
+        local state = task.complete and "complete" or "incomplete"
+        --if state == "incomplete" then
+        --    rfsuite.utils.log(" - " .. name .. ": " .. state, "info")
+        --end
+        if not task.complete then
+            allComplete = false
+        end
+    end
+
+    if allComplete and not completionNotified then
+        rfsuite.utils.log("All tasks complete.", "info")
+        completionNotified = true
+        rfsuite.utils.playFileCommon("beep.wav")
     end
 end
 
