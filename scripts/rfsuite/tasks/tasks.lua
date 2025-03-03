@@ -40,6 +40,13 @@ local ethosVersionGood = nil
 local rssiCheckScheduler = os.clock()
 local lastRssiSensorName = nil
 
+local sportSensor  = system.getSource({appId = 0xF101})
+local elrsSensor = system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1})     
+
+-- Cache telemetry source
+local tlm = system.getSource({category = CATEGORY_SYSTEM_EVENT, member = TELEMETRY_ACTIVE})
+
+
 -- findModules on task init to ensure we are precached  
 if rfsuite.app.moduleList == nil then rfsuite.app.moduleList = rfsuite.utils.findModules() end
 
@@ -135,7 +142,6 @@ end
 --]]
 function tasks.wakeup()
 
-
     -- Check version only once after startup
     if ethosVersionGood == nil then
         ethosVersionGood = rfsuite.utils.ethosVersionAtLeast()
@@ -164,10 +170,41 @@ function tasks.wakeup()
     if now - (rssiCheckScheduler or 0) >= 1 then
 
         -- get sport then elrs sensor
-        local sportSensor  = system.getSource({appId = 0xF101})
-        local elrsSensor = system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1})
-        currentRssiSensor = sportSensor or elrsSensor or nil
+        telemetryState = tlm and tlm:state() or false
 
+        -- if we are in init - then we can abort here
+        if not telemetryState then
+            rfsuite.session.rssiSensorType = nil
+            rfsuite.session.rssiSensorChanged = false
+            rfsuite.session.rssiSensor = nil
+            lastRssiSensorName = nil
+            rssiCheckScheduler = now    
+            sportSensor = nil
+            elrsSensor = nil 
+            return
+        end
+
+        -- determine the rssi sensor
+        if not sportSensor then sportSensor = system.getSource({appId = 0xF101}) end
+        if not elrsSensor then system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1}) end
+
+        currentRssiSensor = sportSensor or elrsSensor or nil
+        rfsuite.session.rssiSensor = currentRssiSensor
+
+        -- we can abort here if we have no sensor
+        if currentRssiSensor == nil then
+            rfsuite.session.rssiSensorType = nil
+            rfsuite.session.rssiSensorChanged = false
+            rfsuite.session.rssiSensor = nil
+            lastRssiSensorName = nil
+            sportSensor = nil
+            elrsSensor = nil 
+            rssiCheckScheduler = now
+            return
+        end
+
+        -- we can now move on and store some session vars
+        -- and move on to processing tasks
         if sportSensor then
             rfsuite.session.rssiSensorType = "sport"
         elseif elrsSensor then
@@ -178,27 +215,27 @@ function tasks.wakeup()
 
         rfsuite.session.rssiSensorChanged = currentRssiSensor and (lastRssiSensorName ~= currentRssiSensor:name()) or false
         lastRssiSensorName = currentRssiSensor and currentRssiSensor:name() or nil    
+        
         rssiCheckScheduler = now
 
     end
 
-    --if system:getVersion().simulation == true then rfsuite.session.rssiSensorChanged = false end
-
-    if currentRssiSensor ~= nil then rfsuite.session.rssiSensor = currentRssiSensor end
 
     -- we load in tasks dynamically using the settings found in
     -- tasks/<name>init.lua
     -- check the existing scripts for more details.
-    local now = os.clock()
-    for _, task in ipairs(tasksList) do
-        if now - task.last_run >= task.interval then
-            if tasks[task.name].wakeup then
-                if task.msp == true then
-                    tasks[task.name].wakeup()
-                else
-                    if not rfsuite.app.triggers.mspBusy then tasks[task.name].wakeup() end
+    if telemetryState then
+        local now = os.clock()
+        for _, task in ipairs(tasksList) do
+            if now - task.last_run >= task.interval then
+                if tasks[task.name].wakeup then
+                    if task.msp == true then
+                        tasks[task.name].wakeup()
+                    else
+                        if not rfsuite.app.triggers.mspBusy then tasks[task.name].wakeup() end
+                    end
+                    task.last_run = now
                 end
-                task.last_run = now
             end
         end
     end
