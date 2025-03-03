@@ -10,7 +10,7 @@ local mspapi = {
             {t = "ESC",                   label = "esc1",    inline_size = 40.6},
             {t = "",                      label = "esc2",    inline_size = 40.6},
             {t = "",                      label = "esc3",    inline_size = 40.6},
-            {t = "Protection and Limits", label = "limits1", inline_size = 40.6},
+            {t = "Limits",                label = "limits1", inline_size = 40.6},
             {t = "",                      label = "limits2", inline_size = 40.6},
             {t = "",                      label = "limits3", inline_size = 40.6}
         },
