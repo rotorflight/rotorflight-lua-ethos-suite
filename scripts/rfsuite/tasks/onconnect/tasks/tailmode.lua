@@ -39,10 +39,11 @@ end
 
 function tailmode.reset()
     rfsuite.session.tailMode = nil
+    rfsuite.session.swashMode = nil
 end
 
 function tailmode.isComplete()
-    if rfsuite.session.tailMode ~= nil then
+    if rfsuite.session.tailMode ~= nil and rfsuite.session.swashMode ~= nil then
         return true
     end
 end

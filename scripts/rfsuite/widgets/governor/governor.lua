@@ -14,9 +14,7 @@
  *
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]] --
---[[
-set crsf_flight_mode_reuse = GOV_ADJFUNC
-]] --
+
 local rf2gov = {refresh = true, environment = system.getVersion(), oldsensors = {govmode = ""}, wakeupSchedulerUI = os.clock()}
 
 local governorMap = {[0] = "OFF", [1] = "IDLE", [2] = "SPOOLUP", [3] = "RECOVERY", [4] = "ACTIVE", [5] = "THR-OFF", [6] = "LOST-HS", [7] = "AUTOROT", [8] = "BAILOUT", [100] = "DISABLED", [101] = "DISARMED"}

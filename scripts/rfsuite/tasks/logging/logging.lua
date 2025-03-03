@@ -47,7 +47,7 @@ function logging.queueLog(msg)
 end
 
 function logging.flushLogs(forceFlush)
-    local max_lines = forceFlush or not rfsuite.tasks.telemetry.active() and 1 or 10
+    local max_lines = forceFlush or not rfsuite.session.telemetryState and 1 or 10
     if #log_queue > 0 and rfsuite.tasks.msp.mspQueue:isProcessed() then
         local filePath = "logs/telemetry/" .. logFileName
         local f = io.open(filePath, 'a')
@@ -100,7 +100,7 @@ function logging.wakeup()
         logDirChecked = true
     end
 
-    if not rfsuite.tasks.telemetry.active() then
+    if not rfsuite.session.telemetryState then
         logFileName, logHeader = nil, nil
         logging.flushLogs(true)
         logdir = nil

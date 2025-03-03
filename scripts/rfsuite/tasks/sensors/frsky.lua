@@ -163,7 +163,7 @@ local function createSensor(physId, primId, appId, frameValue)
                 frsky.createSensorCache[appId]:name(v.name)
                 frsky.createSensorCache[appId]:appId(appId)
                 frsky.createSensorCache[appId]:physId(physId)
-                frsky.createSensorCache[appId]:module(rfsuite.session.rssiSensor:module())
+                frsky.createSensorCache[appId]:module(rfsuite.session.telemetrySensor:module())
 
                 frsky.createSensorCache[appId]:minimum(min or -1000000000)
                 frsky.createSensorCache[appId]:maximum(max or 2147483647)
@@ -315,10 +315,10 @@ function frsky.wakeup()
     end
 
     -- Flush sensor list if we kill the sensors
-    if not rfsuite.tasks.telemetry.active() or not rfsuite.session.rssiSensor then clearCaches() end
+    if not rfsuite.session.telemetryState or not rfsuite.session.telemetrySensor then clearCaches() end
 
     -- If GUI or queue is busy.. do not do this!
-    if rfsuite.tasks and rfsuite.tasks.telemetry and rfsuite.tasks.telemetry.active() and rfsuite.session.rssiSensor then if rfsuite.app.guiIsRunning == false and rfsuite.tasks.msp.mspQueue:isProcessed() then while telemetryPop() do end end end
+    if rfsuite.tasks and rfsuite.tasks.telemetry and rfsuite.session.telemetryState and rfsuite.session.telemetrySensor then if rfsuite.app.guiIsRunning == false and rfsuite.tasks.msp.mspQueue:isProcessed() then while telemetryPop() do end end end
 
 end
 
