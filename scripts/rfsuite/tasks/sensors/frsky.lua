@@ -59,7 +59,10 @@ createSensorList[0x51A4] = {name = "Throttle %", unit = UNIT_PERCENT, decimals =
 createSensorList[0x5258] = {name = "ESC1 Capacity", unit = UNIT_MILLIAMPERE_HOUR}
 createSensorList[0x5268] = {name = "ESC1 Power", unit = UNIT_PERCENT}
 createSensorList[0x5269] = {name = "ESC1 Throttle", unit = UNIT_PERCENT}
+createSensorList[0x512A] = {name = "ESC1 Status", unit = UNIT_RAW}
+createSensorList[0x512B] = {name = "ESC1 Model ID", unit = UNIT_RAW}
 createSensorList[0x525A] = {name = "ESC2 Capacity", unit = UNIT_MILLIAMPERE_HOUR}
+createSensorList[0x512C] = {name = "ESC2 Model ID", unit = UNIT_RAW}
 createSensorList[0x51D0] = {name = "CPU Load", unit = UNIT_PERCENT}
 createSensorList[0x51D1] = {name = "System Load", unit = UNIT_PERCENT}
 createSensorList[0x51D2] = {name = "RT Load", unit = UNIT_PERCENT}
@@ -163,7 +166,7 @@ local function createSensor(physId, primId, appId, frameValue)
                 frsky.createSensorCache[appId]:name(v.name)
                 frsky.createSensorCache[appId]:appId(appId)
                 frsky.createSensorCache[appId]:physId(physId)
-                frsky.createSensorCache[appId]:module(rfsuite.session.rssiSensor:module())
+                frsky.createSensorCache[appId]:module(rfsuite.session.telemetrySensor:module())
 
                 frsky.createSensorCache[appId]:minimum(min or -1000000000)
                 frsky.createSensorCache[appId]:maximum(max or 2147483647)
@@ -315,10 +318,10 @@ function frsky.wakeup()
     end
 
     -- Flush sensor list if we kill the sensors
-    if not rfsuite.tasks.telemetry.active() or not rfsuite.session.rssiSensor then clearCaches() end
+    if not rfsuite.session.telemetryState or not rfsuite.session.telemetrySensor then clearCaches() end
 
     -- If GUI or queue is busy.. do not do this!
-    if rfsuite.tasks and rfsuite.tasks.telemetry and rfsuite.tasks.telemetry.active() and rfsuite.session.rssiSensor then if rfsuite.app.guiIsRunning == false and rfsuite.tasks.msp.mspQueue:isProcessed() then while telemetryPop() do end end end
+    if rfsuite.tasks and rfsuite.tasks.telemetry and rfsuite.session.telemetryState and rfsuite.session.telemetrySensor then if rfsuite.app.guiIsRunning == false and rfsuite.tasks.msp.mspQueue:isProcessed() then while telemetryPop() do end end end
 
 end
 

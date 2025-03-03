@@ -122,7 +122,7 @@ local function startTest(duration)
             local now = os.clock()
 
             -- kill if we loose link - but not in sim mode
-            if rfsuite.tasks.telemetry.active() == false and startTest == true and system:getVersion().simulation ~= true then
+            if rfsuite.session.telemetryState == false and startTest == true and system:getVersion().simulation ~= true then
                 if testLoader then
                     testLoader:close()
                     testLoader = nil

@@ -1887,7 +1887,7 @@ local function wakeupUI(widget)
 
         status.refresh = false
 
-        status.linkUP = rfsuite.tasks.telemetry.active()
+        status.linkUP = rfsuite.session.telemetryState
         status.sensors = getSensors()
 
         if status.refresh == true then

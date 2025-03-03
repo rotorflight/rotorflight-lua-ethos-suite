@@ -84,8 +84,8 @@ function MspQueueController:processQueue()
     end
     rfsuite.app.triggers.mspBusy = true
 
-    if rfsuite.session.rssiSensor then
-        local module = model.getModule(rfsuite.session.rssiSensor:module())
+    if rfsuite.session.telemetrySensor then
+        local module = model.getModule(rfsuite.session.telemetrySensor:module())
         if module and module.muteSensorLost then module:muteSensorLost(2.0) end
     end
 
@@ -215,7 +215,7 @@ end
     - "Unable to queue - nil message." if the message is nil.
 ]]
 function MspQueueController:add(message)
-    if not rfsuite.tasks.telemetry.active() then return end
+    if not rfsuite.session.telemetryState then return end
     if message then
         if message.uuid and self.uuid == message.uuid then
             rfsuite.utils.log("Skipping duplicate message with UUID " .. message.uuid,"debug")

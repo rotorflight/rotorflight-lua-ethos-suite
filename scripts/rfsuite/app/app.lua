@@ -81,62 +81,6 @@ triggers.wasConnected = false
 triggers.isArmed = false
 triggers.showSaveArmedWarning = false
 
-
---[[
-This script initializes various session parameters for the rfsuite application to nil.
-The parameters include:
-- tailMode: Mode for the tail rotor.
-- swashMode: Mode for the swashplate.
-- activeProfile: Currently active profile.
-- activeRateProfile: Currently active rate profile.
-- activeProfileLast: Last active profile.
-- activeRateLast: Last active rate profile.
-- servoCount: Number of servos.
-- servoOverride: Override setting for servos.
-- clockSet: Clock setting.
-- apiVersion: Version of the API.
-- lastLabel: Last label used.
-- rssiSensor: RSSI sensor value.
-- formLineCnt: Form line count.
-- rateProfile: Rate profile.
-- governorMode: Mode for the governor.
-- ethosRunningVersion: Version of the Ethos running.
-- lcdWidth: Width of the LCD.
-- lcdHeight: Height of the LCD.
-- mspSignature - uses for mostly in sim to save esc type
-
--- Every attempt should be made if using session vars to record them here with a nil
--- to prevent conflicts with other scripts that may use the same session vars.
-]]
-rfsuite.session.tailMode = nil
-rfsuite.session.swashMode = nil
-rfsuite.session.activeProfile = nil
-rfsuite.session.activeRateProfile = nil
-rfsuite.session.activeProfileLast = nil
-rfsuite.session.activeRateLast = nil
-rfsuite.session.servoCount = nil
-rfsuite.session.servoOverride = nil
-rfsuite.session.clockSet = nil
-rfsuite.session.apiVersion = nil
-rfsuite.session.activeProfile = nil
-rfsuite.session.activeRateProfile = nil
-rfsuite.session.activeProfileLast = nil
-rfsuite.session.activeRateLast = nil
-rfsuite.session.servoCount = nil
-rfsuite.session.servoOverride = nil
-rfsuite.session.clockSet = nil
-rfsuite.session.lastLabel = nil
-rfsuite.session.tailMode = nil
-rfsuite.session.swashMode = nil
-rfsuite.session.rssiSensor = nil
-rfsuite.session.formLineCnt = nil
-rfsuite.session.rateProfile = nil
-rfsuite.session.governorMode = nil
-rfsuite.session.servoOverride = nil
-rfsuite.session.ethosRunningVersion = nil
-rfsuite.session.lcdWidth = nil
-rfsuite.session.lcdHeight = nil
-rfsuite.session.mspSignature = nil
 --[[
     Initializes the app.triggers table and assigns it to the triggers table.
     This is used to set up the triggers for the application.
@@ -348,7 +292,7 @@ app.dialogs.badversionDisplay = false
 function app.getRSSI()
     if system:getVersion().simulation == true or rfsuite.preferences.skipRssiSensorCheck == true or app.offlineMode == true then return 100 end
 
-    if rfsuite.tasks.telemetry.active() == true then
+    if rfsuite.session.telemetryState then
         return 100
     else
         return 0
@@ -824,7 +768,7 @@ end
 function app.updateTelemetryState()
 
     if system:getVersion().simulation ~= true then
-        if not rfsuite.session.rssiSensor then
+        if not rfsuite.session.telemetrySensor then
             app.triggers.telemetryState = app.telemetryStatus.noSensor
         elseif app.getRSSI() == 0 then
             app.triggers.telemetryState = app.telemetryStatus.noTelemetry
