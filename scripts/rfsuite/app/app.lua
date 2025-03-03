@@ -292,7 +292,7 @@ app.dialogs.badversionDisplay = false
 function app.getRSSI()
     if system:getVersion().simulation == true or rfsuite.preferences.skipRssiSensorCheck == true or app.offlineMode == true then return 100 end
 
-    if rfsuite.tasks.telemetry.active() == true then
+    if rfsuite.session.telemetryState then
         return 100
     else
         return 0

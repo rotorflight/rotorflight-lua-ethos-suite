@@ -215,7 +215,7 @@ end
     - "Unable to queue - nil message." if the message is nil.
 ]]
 function MspQueueController:add(message)
-    if not rfsuite.tasks.telemetry.active() then return end
+    if not rfsuite.session.telemetryState then return end
     if message then
         if message.uuid and self.uuid == message.uuid then
             rfsuite.utils.log("Skipping duplicate message with UUID " .. message.uuid,"debug")

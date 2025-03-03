@@ -315,10 +315,10 @@ function frsky.wakeup()
     end
 
     -- Flush sensor list if we kill the sensors
-    if not rfsuite.tasks.telemetry.active() or not rfsuite.session.telemetrySensor then clearCaches() end
+    if not rfsuite.session.telemetryState or not rfsuite.session.telemetrySensor then clearCaches() end
 
     -- If GUI or queue is busy.. do not do this!
-    if rfsuite.tasks and rfsuite.tasks.telemetry and rfsuite.tasks.telemetry.active() and rfsuite.session.telemetrySensor then if rfsuite.app.guiIsRunning == false and rfsuite.tasks.msp.mspQueue:isProcessed() then while telemetryPop() do end end end
+    if rfsuite.tasks and rfsuite.tasks.telemetry and rfsuite.session.telemetryState and rfsuite.session.telemetrySensor then if rfsuite.app.guiIsRunning == false and rfsuite.tasks.msp.mspQueue:isProcessed() then while telemetryPop() do end end end
 
 end
 
