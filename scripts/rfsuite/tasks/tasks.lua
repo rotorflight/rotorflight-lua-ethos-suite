@@ -18,6 +18,13 @@
  * 
 
 ]] --
+
+-- this stops it loading if we are not on the correct ethos version
+-- and is needed by main.lua to prevent errors
+if not rfsuite.utils.ethosVersionAtLeast() then
+    return
+end
+
 --
 -- background processing of system tasks
 --

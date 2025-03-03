@@ -28,6 +28,7 @@ config.toolName = "Rotorflight"                                     -- name of t
 config.icon = lcd.loadMask("app/gfx/icon.png")                      -- icon
 config.icon_logtool = lcd.loadMask("app/gfx/icon_logtool.png")      -- icon
 config.Version = "0.0.0.0"                                          -- version number of this software replace
+config.icon_unsupported = lcd.loadMask("app/gfx/unsupported.png")   -- icon
 config.ethosVersion = {1, 6, 2}                                     -- min version of ethos supported by this script                                                     
 config.supportedMspApiVersion = {"12.06", "12.07","12.08"}          -- supported msp versions
 config.simulatorApiVersionResponse = {0, 12, 8}                     -- version of api return by simulator
@@ -210,7 +211,29 @@ local function init()
 
     -- prevent this even getting close to running if version is not good
     if not rfsuite.utils.ethosVersionAtLeast() then
-        error("Ethos version is not supported")
+
+        system.registerSystemTool({
+            name = config.toolName,
+            icon = config.icon_unsupported ,
+            create = function () end,
+            wakeup = function () 
+                        lcd.invalidate()
+                        return
+                     end,
+            paint = function () 
+                        local w, h = lcd.getWindowSize()
+                        local textColor = lcd.RGB(255, 255, 255, 1) 
+                        lcd.color(textColor)
+                        lcd.font(FONT_STD)
+                        local badVersionMsg = string.format("ETHOS < V%d.%d.%d", table.unpack(config.ethosVersion))
+                        local textWidth, textHeight = lcd.getTextSize(badVersionMsg)
+                        local x = (w - textWidth) / 2
+                        local y = (h - textHeight) / 2
+                        lcd.drawText(x, y, badVersionMsg)
+                        return 
+                    end,
+            close = function () end,
+        })
         return
     end
 
