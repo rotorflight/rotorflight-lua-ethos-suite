@@ -30,20 +30,6 @@ jobs:
         echo "GH_TYPE=${GH_TYPE}" >> ${GITHUB_ENV}
         cat ${GITHUB_ENV}
 
-    - name: Update version and config in main.lua
-      run: |
-        # Set version from tag
-        sed -i "s/config.Version = \".*\"/config.Version = \"${{ env.GIT_VER }}\"/" scripts/rfsuite/main.lua
-
-        # Set logging settings
-        sed -i 's/\(config.logLevel= \)".*"/\1"off"/' scripts/rfsuite/main.lua
-        sed -i 's/\(config.logToFile = \)[^ ]*/\1false/' scripts/rfsuite/main.lua
-        sed -i 's/\(config.logMSP = \)[^ ]*/\1false/' scripts/rfsuite/main.lua
-
-
-        # Show updated file (for verification)
-        grep 'config\.' scripts/rfsuite/main.lua
-
     - name: Make release package
       run: zip -q -r -9 "rotorflight-lua-ethos-suite-${{ env.GIT_VER }}.zip" scripts
 
