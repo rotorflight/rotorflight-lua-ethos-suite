@@ -30,3 +30,4 @@ jobs:
         gh release create ${{ env.GIT_TAG }} --prerelease --notes-file Notes.md --title "Rotorflight Lua Suite for Ethos - Snapshot ${{ env.GIT_VER }}" *.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

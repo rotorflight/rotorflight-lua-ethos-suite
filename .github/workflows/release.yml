@@ -39,3 +39,4 @@ jobs:
         gh release create ${{ env.GIT_TAG }} --notes-file Notes.md --title "Rotorflight Lua Suite for Ethos - ${{ env.GH_TYPE }} ${{ env.GIT_VER }}" *.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
