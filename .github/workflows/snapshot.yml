@@ -21,25 +21,12 @@ jobs:
         echo "GIT_TAG=${GITHUB_REF##refs/tags/}" >> ${GITHUB_ENV}
         cat ${GITHUB_ENV}
 
-    - name: Update version and config in main.lua
+    - name: Make snapshot package
+      run: zip -q -r -9 "rotorflight-lua-ethos-suite-${{ env.GIT_VER }}.zip" scripts
+
+    - name: Create Snapshot
       run: |
-        # Set version from tag
-        sed -i "s/config.Version = \".*\"/config.Version = \"${{ env.GIT_VER }}\"/" scripts/rfsuite/main.lua
-
-        # Set logging settings
-        sed -i 's/\(config.logLevel= \)".*"/\1"off"/' scripts/rfsuite/main.lua
-        sed -i 's/\(config.logToFile = \)[^ ]*/\1false/' scripts/rfsuite/main.lua
-        sed -i 's/\(config.logMSP = \)[^ ]*/\1false/' scripts/rfsuite/main.lua
-
-
-        # Show updated file (for verification)
-        grep 'config\.' scripts/rfsuite/main.lua
-
-    - name: Upload Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: rotorflight-lua-ethos-suite-testing-${{ env.GIT_VER }}
-        path: scripts
-
-    - name: Delete tag
-      run: git push origin :${GITHUB_REF}
+        .github/scripts/extract-release-notes.py "${{ env.GIT_VER }}" Releases.md > Notes.md
+        gh release create ${{ env.GIT_TAG }} --prerelease --notes-file Notes.md --title "Rotorflight Lua Suite for Ethos - Snapshot ${{ env.GIT_VER }}" *.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
