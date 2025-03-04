@@ -9,7 +9,7 @@ local arg = {...}
 local config = arg[1]
 
 local logging = {}
-local logInterval = 1 -- default is 1 second
+local logInterval = 0.5 -- default is 1 second
 local logFileName
 local logRateLimit = os.clock()
 
