@@ -22,10 +22,10 @@ local MSP_API_CMD_WRITE = 216 -- Command identifier for saving Mixer Config Sett
 -- Define the MSP response data structures
 
 -- note. This api has currently only been tested for the last two entries
-local escTypes = {"NONE","BLHELI32", "HOBBYWING V4", "HOBBYWING V5", "SCORPION", "KONTRONIK", "OMPHOBBY", "ZTW", "APD", "APD", "OPENYGE", "FLYROTOR", "GRAUPNER", "XDFLY","RECORD"}
+local escTypes = {"NONE","BLHELI32", "HOBBYWING V4", "HOBBYWING V5", "SCORPION", "KONTRONIK", "OMPHOBBY", "ZTW", "APD", "OPENYGE", "FLYROTOR", "GRAUPNER", "XDFLY","RECORD"}
 local onOff = {"OFF","ON"}
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "protocol",                                       type = "U8",  apiVersion = 12.06, simResponse = {0},     table = escTypes, tableIdxInc= -1},
+    {field = "protocol",                                        type = "U8",  apiVersion = 12.06, simResponse = {0},     table = escTypes, tableIdxInc= -1},
     {field = "half_duplex",                                     type = "U8",  apiVersion = 12.06, simResponse = {0},     default = 0, min= 1, max = 2, table = onOff, tableIdxInc = -1, help="Half duplex mode for ESC telemetry"},
     {field = "update_hz",                                       type = "U16", apiVersion = 12.06, simResponse = {200, 0}, default = 200, min = 10, max = 500, unit = "Hz", help="ESC telemetry update rate"},
     {field = "current_offset",                                  type = "U16", apiVersion = 12.06, simResponse = {0, 15}, min = 0, max = 1000, default = 0, help="Current sensor offset adjustment"}, -- I am not convinced that this offset is used anywhere as the 0,15 translates to 32769
