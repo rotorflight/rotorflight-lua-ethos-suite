@@ -349,7 +349,11 @@ local function drawKey(name, keyindex, keyunit, keyminmax, keyfloor, color, mini
     lcd.drawText(x + 5, ty, name, LEFT)
 
     -- show min and max values
-    lcd.color(COLOR_WHITE)
+    if lcd.darkMode() then
+        lcd.color(COLOR_WHITE)
+    else
+        lcd.color(COLOR_BLACK)
+    end
     lcd.font(rfsuite.app.radio.logKeyFont)
     local mm_str
     if keyminmax == 1 then
@@ -377,12 +381,9 @@ local function drawCurrentIndex(points, position, totalPoints, keyindex, keyunit
 
     local linePos = map(position, 1, 100, 1, w - 10) + sliderPadding
 
-
     if linePos < 1 then linePos = 0 end
 
-    -- which side of line we display the index
-    local idxPos
-    local textAlign
+    local idxPos, textAlign
     if (position > 50) then
         idxPos = linePos - 15
         textAlign = RIGHT
@@ -394,52 +395,96 @@ local function drawCurrentIndex(points, position, totalPoints, keyindex, keyunit
     local current_s = calculateSeconds(totalPoints, position)
     local time_str = format_time(math.floor(current_s))
 
-    -- work out the current values based on position
     local value = getValueAtPercentage(points, position)
     if keyfloor == true then value = math.floor(value) end
     value = value .. keyunit
 
-    -- draw the vertical line
-    if keyindex == 1 then     -- only draw line once
+    if keyindex == 1 then
         lcd.color(COLOR_WHITE)
         lcd.drawLine(linePos, graphPos['menu_offset'] - 5, linePos, graphPos['height'] + graphPos['menu_offset'])
     end
 
-    -- show value
     lcd.font(FONT_BOLD)
     local tw, th = lcd.getTextSize(value)
-    lcd.color(color)
-    -- local ty = (h_height / 2 - th / 2) + y + (h_height*2)    
     local ty = (graphPos['menu_offset'] + (th * keyindex)) - keyindex
-    lcd.drawText(idxPos + 5, ty, value, textAlign)
 
-    -- display time
-    if keyindex == 1 then  -- only do this once
-        -- show current time of line
-        lcd.font(FONT_NORMAL)
-        local tw, th = lcd.getTextSize(time_str)
-        lcd.color(COLOR_WHITE)
-        local ty = graphPos['height'] + graphPos['menu_offset'] - th
-        lcd.drawText(idxPos + 5, ty, time_str, textAlign)
+    local padding = 2
 
-        if (idxPos + 5) <= w - tw then
-
-            local run_current_s = calculateSeconds(totalPoints, 100)
-            local run_time_str = format_time(math.floor(run_current_s))            
-            lcd.font(FONT_NORMAL)
-            local tw, th = lcd.getTextSize(run_time_str)
-
-            lcd.color(COLOR_WHITE)
-            local ty = graphPos['height'] + graphPos['menu_offset'] - th
-            lcd.drawText(graphPos['width'] - tw - 10, ty, run_time_str)
-
-
-        end
+    -- Determine box X position based on text alignment
+    local boxX
+    if textAlign == RIGHT then
+        boxX = idxPos - tw - padding
+    else
+        boxX = idxPos - padding
     end
 
+    -- Draw background box behind value
+    if lcd.darkMode() then
+        lcd.color(lcd.RGB(16 , 16 , 16, 0.8))
+    else
+        lcd.color(lcd.RGB(208 , 208 , 208, 0.8))
+    end
+    lcd.drawFilledRectangle(boxX, ty - padding, tw + 2 * padding, th + 2 * padding)
 
+    -- Draw value text
+    lcd.color(color)
+    lcd.drawText(idxPos, ty, value, textAlign)
 
+    if keyindex == 1 then
+        lcd.font(FONT_NORMAL)
+        local tw, th = lcd.getTextSize(time_str)
+        local ty = graphPos['height'] + graphPos['menu_offset'] - th
+
+        -- Box position for time string (follows same left/right rule)
+        if textAlign == RIGHT then
+            boxX = idxPos - tw - padding
+        else
+            boxX = idxPos - padding
+        end
+
+        -- Draw background box behind time
+        if lcd.darkMode() then
+            lcd.color(lcd.RGB(16 , 16 , 16, 0.8))
+        else
+            lcd.color(lcd.RGB(208 , 208 , 208, 0.8))
+        end
+        lcd.drawFilledRectangle(boxX, ty - padding, tw + 2 * padding, th + 2 * padding)
+
+        -- Draw time text
+        if lcd.darkMode() then
+            lcd.color(COLOR_WHITE)
+        else
+            lcd.color(COLOR_BLACK)
+        end
+        lcd.drawText(idxPos, ty, time_str, textAlign)
+
+        if (idxPos + 5) <= w - tw then
+            local run_current_s = calculateSeconds(totalPoints, 100)
+            local run_time_str = format_time(math.floor(run_current_s))
+            local tw, th = lcd.getTextSize(run_time_str)
+
+            local tx = graphPos['width'] - tw - 10
+            local ty = graphPos['height'] + graphPos['menu_offset'] - th
+
+            if lcd.darkMode() then
+                lcd.color(lcd.RGB(16 , 16 , 16, 0.8))
+            else
+                lcd.color(lcd.RGB(208 , 208 , 208, 0.8))
+            end
+            
+            lcd.drawFilledRectangle(tx - padding, ty - padding, 100, th + 2 * padding)
+
+            if lcd.darkMode() then
+                lcd.color(COLOR_WHITE)
+            else
+                lcd.color(COLOR_BLACK)
+            end
+            lcd.drawText(tx, ty, run_time_str)
+        end
+    end
 end
+
+
 
 function findMaxNumber(numbers)
     local max = numbers[1] -- Assume the first number is the largest initially
