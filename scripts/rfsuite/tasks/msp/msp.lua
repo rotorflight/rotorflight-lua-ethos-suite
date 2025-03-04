@@ -117,9 +117,6 @@ function msp.wakeup()
         msp.mspQueue:clear()
     end
 
-    -- api wakup hander
-    msp.api.wakeup()
-
 end
 
 return msp

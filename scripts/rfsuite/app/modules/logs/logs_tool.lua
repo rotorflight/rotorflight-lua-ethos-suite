@@ -158,40 +158,6 @@ function loadFileToMemory(filename)
     return table.concat(content) -- Join all chunks into a single string
 end
 
--- This function returns another function to read 10KB at a time
--- This function returns another function to read 10KB at a time
-function createFileReader(filename)
-    local file, err = io.open(filename, "rb")
-    if not file then return nil, "Error opening file: " .. err end
-
-    local file_pos = 0
-    local content = ""
-
-    -- Return the function to read the next chunk of 10KB
-    return function()
-        -- Seek to the current position in the file
-        file:seek("set", file_pos)  -- Explicitly set the seek mode
-
-
-        -- Read the next 10KB chunk
-        local chunk = file:read(10 * 1024)
-
-        if chunk then
-            -- Append the chunk to the content
-            content = content .. chunk
-            file_pos = file_pos + #chunk -- Update the position in the file
-        end
-
-        -- Return the current content and whether the file has ended
-        if not chunk then
-            file:close()
-            return content, true -- Finished reading the file
-        else
-            return content, false -- Continue reading
-        end
-    end
-end
-
 function map(x, in_min, in_max, out_min, out_max)
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
 end
@@ -532,16 +498,24 @@ local function openPage(pidx, title, script, logfile, displaymode)
     rfsuite.app.ui.fieldHeader("Logs - " .. extractShortTimestamp(logfile))
     activeLogFile = logfile
 
-    -- initialise the log file reader
-    -- this is a bit complex as it reads in chunks on each Loop
-    -- to help with loading large files.
-    readNextChunk = createFileReader(getLogDir() .. "/" .. logfile)
+    -- Directly load the full file into memory
+    local filePath = getLogDir() .. "/" .. logfile
+    local fileData, err = loadFileToMemory(filePath)
+
+    if not fileData then
+        system.messageBox("Failed to load log file: " .. err)
+        return
+    end
+
+    logDataRaw = fileData
+    logDataRawReadComplete = true  -- File is fully loaded at this point
 
     rfsuite.app.ui.progressDisplayClose()
 
     enableWakeup = true
     return
 end
+
 
 local function event(event, category, value, x, y)
 
@@ -562,19 +536,12 @@ local function wakeup()
         sliderPositionOld = sliderPosition
     end
 
-    if not logDataRawReadComplete then
-        -- Read chunks of the file until complete
-        logDataRaw, logDataRawReadComplete = readNextChunk()
-        return
-    end
-
     if not processedLogData then
 
         -- Show progress dialog if starting
         if currentDataIndex == 1 then
             progressLoader = form.openProgressDialog("Processing", "Please be patient - we have some work to do.")
             progressLoader:closeAllowed(false)
-
         else
             -- Update progress dialog
             local percentage = (currentDataIndex / #logColumns) * 100
@@ -582,9 +549,8 @@ local function wakeup()
         end
 
         -- Process the column and store the cleaned data
-
         logData[currentDataIndex] = {}
-        logData[currentDataIndex]['data'] = padTable(cleanColumn(getColumn(logDataRaw, currentDataIndex + 1)), logPadding) -- Note. We + 1 the currentDataIndex because  rfsuite.tasks.logging.getLogTable does not return the 1st column        
+        logData[currentDataIndex]['data'] = padTable(cleanColumn(getColumn(logDataRaw, currentDataIndex + 1)), logPadding)
         logData[currentDataIndex]['name'] = logColumns[currentDataIndex].name
         logData[currentDataIndex]['color'] = logColumns[currentDataIndex].color
         logData[currentDataIndex]['pen'] = logColumns[currentDataIndex].pen
@@ -598,21 +564,16 @@ local function wakeup()
         logData[currentDataIndex]['minimum'] = findMinNumber(logData[currentDataIndex]['data'])
         logData[currentDataIndex]['average'] = findAverage(logData[currentDataIndex]['data'])
 
-        -- Close progress loader when all columns are processed
         if currentDataIndex >= #logColumns then
-
-            -- put slider at bottom of form
             local posField = {x = graphPos['x_start'], y = graphPos['slider_y'], w = graphPos['width'] - 10, h = 40}
             rfsuite.app.formFields[1] = form.addSliderField(nil, posField, 0, 100, function()
                 return sliderPosition
             end, function(newValue)
                 sliderPosition = newValue
             end)
-  
+
             rfsuite.app.formFields[1]:step(1)
 
-
-            -- set log line count only once!
             logLineCount = #logData[currentDataIndex]['data']
 
             progressLoader:close()
@@ -620,11 +581,8 @@ local function wakeup()
         end
 
         currentDataIndex = currentDataIndex + 1
-
         return
     end
-
-    -- Logic for paging and navigation can go here when data processing is complete
 end
 
 local function paint()
