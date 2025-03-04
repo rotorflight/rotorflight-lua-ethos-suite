@@ -14,7 +14,7 @@ graphPos['slider_y'] = LCD_H - (graphPos['menu_offset'] + 30) + graphPos['height
 
 local triggerOverRide = false
 local triggerOverRideAll = false
-local lastServoCountTime = os.clock()
+
 local enableWakeup = false
 local wakeupScheduler = os.clock()
 local activeLogFile
@@ -24,7 +24,7 @@ local currentDisplayMode
 
 local logFileHandle = nil
 local logDataRaw = {}
-local logChunkSize = 5000
+local logChunkSize = 1000
 local logFileReadOffset = 0
 local logDataRawReadComplete = false
 local readNextChunk
@@ -579,7 +579,7 @@ local function openPage(pidx, title, script, logfile, displaymode)
     logDataRawReadComplete = false
 
     rfsuite.tasks.callbackEvery(0.05, readNextChunk)
-
+    rfsuite.app.triggers.closeProgressLoader = true
     enableWakeup = true
     return
 end
@@ -594,6 +594,10 @@ local function event(event, category, value, x, y)
     return false
 end
 
+local slowcount = 0
+local carriedOver = nil
+local subStepSize = nil
+
 local function wakeup()
     if not enableWakeup then
         return -- Exit early if wakeup is disabled
@@ -604,21 +608,31 @@ local function wakeup()
         sliderPositionOld = sliderPosition
     end
 
+    if not progressLoader then
+        progressLoader = form.openProgressDialog("Processing", "Loading log data")
+        progressLoader:closeAllowed(false)
+    end
+
+    if not logDataRawReadComplete then
+        progressLoader:value(slowcount)
+        slowcount = slowcount + 0.025
+        return
+    end
+
     if logDataRawReadComplete and not processedLogData then
 
-        -- Show progress dialog if starting
-        if currentDataIndex == 1 then
-            progressLoader = form.openProgressDialog("Processing", "Please be patient - we have some work to do.")
-            progressLoader:closeAllowed(false)
-        else
-            -- Update progress dialog
-            local percentage = (currentDataIndex / #logColumns) * 100
-            progressLoader:value(percentage)
+        -- Set up carryOver and subStepSize once, when processing starts
+        if not carriedOver then
+            carriedOver = slowcount
+            subStepSize = (100 - carriedOver) / (#logColumns * 5)  -- 5 subtasks per column
         end
 
-        -- Process the column and store the cleaned data
+        local function updateProgress(subStep)
+            local overallProgress = carriedOver + ((currentDataIndex - 1) * (subStepSize * 5)) + (subStep * subStepSize)
+            progressLoader:value(overallProgress)
+        end
+
         logData[currentDataIndex] = {}
-        logData[currentDataIndex]['data'] = padTable(cleanColumn(getColumn(logDataRaw, currentDataIndex + 1)), logPadding)
         logData[currentDataIndex]['name'] = logColumns[currentDataIndex].name
         logData[currentDataIndex]['color'] = logColumns[currentDataIndex].color
         logData[currentDataIndex]['pen'] = logColumns[currentDataIndex].pen
@@ -628,9 +642,29 @@ local function wakeup()
         logData[currentDataIndex]['keyminmax'] = logColumns[currentDataIndex].keyminmax
         logData[currentDataIndex]['keyfloor'] = logColumns[currentDataIndex].keyfloor
         logData[currentDataIndex]['graph'] = logColumns[currentDataIndex].graph
+
+        -- Step 1: Clean the column data
+        updateProgress(1)
+        local rawColumn = getColumn(logDataRaw, currentDataIndex + 1)
+        local cleanedColumn = cleanColumn(rawColumn)
+
+        -- Step 2: Pad the data
+        updateProgress(2)
+        logData[currentDataIndex]['data'] = padTable(cleanedColumn, logPadding)
+
+        -- Step 3: Find max value
+        updateProgress(3)
         logData[currentDataIndex]['maximum'] = findMaxNumber(logData[currentDataIndex]['data'])
+
+        -- Step 4: Find min value
+        updateProgress(4)
         logData[currentDataIndex]['minimum'] = findMinNumber(logData[currentDataIndex]['data'])
+
+        -- Step 5: Find average
+        updateProgress(5)
         logData[currentDataIndex]['average'] = findAverage(logData[currentDataIndex]['data'])
+
+        progressLoader:message("Processing data " .. currentDataIndex .. " of " .. #logColumns)
 
         if currentDataIndex >= #logColumns then
             local posField = {x = graphPos['x_start'], y = graphPos['slider_y'], w = graphPos['width'] - 10, h = 40}
@@ -652,6 +686,7 @@ local function wakeup()
         return
     end
 end
+
 
 local function paint()
 
@@ -693,7 +728,6 @@ local function paint()
                 end
 
             end
-            rfsuite.app.triggers.closeProgressLoader = true
         end
     end
 end
