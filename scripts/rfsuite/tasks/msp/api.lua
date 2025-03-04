@@ -25,30 +25,14 @@ local apiLoader = {}
 local apidir = "tasks/msp/api/"
 local api_path = apidir
 
-
--- Wakeup Manager for scheduling tasks over multiple frames
-
--- Function to wake up and execute one task from the wakeup queue.
--- If there are tasks in the queue, it removes the first task and executes it.
--- @function apiLoader.wakeup
-
--- Function to schedule a task to be executed later.
--- Adds the given function to the wakeup queue.
--- @param func The function to be scheduled for execution.
--- @function apiLoader.scheduleWakeup
-local wakeupQueue = {}
-
-function apiLoader.wakeup()
-    if #wakeupQueue > 0 then
-        local task = table.remove(wakeupQueue, 1)
-        task()  -- Execute one queued task per tick
+-- New version using the global callback system
+function apiLoader.scheduleWakeup(func)
+    if rfsuite and rfsuite.tasks and rfsuite.tasks.callbackNow then
+        rfsuite.tasks.callbackNow(func)
+    else
+        rfsuite.utils.log("ERROR: rfsuite.tasks.callbackNow() is missing!", "error")
     end
 end
-
-function apiLoader.scheduleWakeup(func)
-    table.insert(wakeupQueue, func)
-end
-
 
 --[[
     Loads a Lua API module by its name, checks for the existence of the file, and wraps its functions.
