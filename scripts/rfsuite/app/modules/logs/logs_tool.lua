@@ -22,7 +22,10 @@ local logPadding = 5
 local armTime
 local currentDisplayMode
 
-local logDataRaw
+local logFileHandle = nil
+local logDataRaw = {}
+local logChunkSize = 5000
+local logFileReadOffset = 0
 local logDataRawReadComplete = false
 local readNextChunk
 local logData = {}
@@ -38,6 +41,35 @@ local sliderPositionOld = 1
 local processedLogData = false
 local currentDataIndex = 1
 
+function readNextChunk()
+    if logDataRawReadComplete then
+        rfsuite.tasks.clearCallback(readNextChunk)
+        return
+    end
+
+    if not logFileHandle then
+        system.messageBox("Log file handle lost.")
+        rfsuite.tasks.clearCallback(readNextChunk)
+        return
+    end
+
+    logFileHandle:seek("set", logFileReadOffset)
+    local chunk = logFileHandle:read(logChunkSize)
+
+    if chunk then
+        table.insert(logDataRaw, chunk)
+        logFileReadOffset = logFileReadOffset + #chunk
+        rfsuite.utils.log("Read " .. #chunk .. " bytes from log file","debug")
+    else
+        logFileHandle:close()
+        logFileHandle = nil
+        logDataRawReadComplete = true
+        logDataRaw = table.concat(logDataRaw)
+
+        rfsuite.utils.log("Read complete, total size: " .. #logDataRaw .. " bytes","debug")
+        rfsuite.tasks.clearCallback(readNextChunk)
+    end
+end
 function format_time(seconds)
     -- Calculate minutes and remaining seconds
     local minutes = math.floor(seconds / 60)
@@ -519,7 +551,6 @@ function findAverage(numbers)
 end
 
 local function openPage(pidx, title, script, logfile, displaymode)
-
     currentDisplayMode = displaymode
 
     rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
@@ -533,29 +564,21 @@ local function openPage(pidx, title, script, logfile, displaymode)
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-    local w, h = rfsuite.utils.getWindowSize()
-    local windowWidth = w
-    local windowHeight = h
-    local padding = rfsuite.app.radio.buttonPadding
-    local sc
-    local panel
-
     rfsuite.app.ui.fieldHeader("Logs - " .. extractShortTimestamp(logfile))
     activeLogFile = logfile
 
-    -- Directly load the full file into memory
     local filePath = getLogDir() .. "/" .. logfile
-    local fileData, err = loadFileToMemory(filePath)
-
-    if not fileData then
+    logFileHandle, err = io.open(filePath, "rb")
+    if not logFileHandle then
         system.messageBox("Failed to load log file: " .. err)
         return
     end
 
-    logDataRaw = fileData
-    logDataRawReadComplete = true  -- File is fully loaded at this point
+    logDataRaw = {}
+    logFileReadOffset = 0
+    logDataRawReadComplete = false
 
-    rfsuite.app.ui.progressDisplayClose()
+    rfsuite.tasks.callbackEvery(0.05, readNextChunk)
 
     enableWakeup = true
     return
@@ -581,7 +604,7 @@ local function wakeup()
         sliderPositionOld = sliderPosition
     end
 
-    if not processedLogData then
+    if logDataRawReadComplete and not processedLogData then
 
         -- Show progress dialog if starting
         if currentDataIndex == 1 then
@@ -670,10 +693,9 @@ local function paint()
                 end
 
             end
-
+            rfsuite.app.triggers.closeProgressLoader = true
         end
     end
-
 end
 
 local function onNavMenu(self)
