@@ -9,16 +9,32 @@ local arg = {...}
 local config = arg[1]
 
 local logging = {}
-local logInterval = 1 -- default is 1 second
+local logInterval = 0.5 -- default is 1 second
 local logFileName
 local logRateLimit = os.clock()
 
+local colorTable = {}
+
+if lcd.darkMode() then
+    colorTable["voltage"] = COLOR_RED
+    colorTable["current"] = COLOR_ORANGE
+    colorTable["rpm"] = COLOR_GREEN
+    colorTable["temp_esc"] = COLOR_CYAN
+    colorTable["throttle_percentage"] = COLOR_YELLOW
+else
+    colorTable["voltage"] = lcd.RGB(200, 0, 0)  -- Bright red
+    colorTable["current"] = lcd.RGB(220, 100, 0)  -- Deep orange
+    colorTable["rpm"] = lcd.RGB(0, 140, 0)  -- Strong green
+    colorTable["temp_esc"] = lcd.RGB(0, 80, 200)  -- Bold blue
+    colorTable["throttle_percentage"] = lcd.RGB(180, 160, 0)  -- Deep gold
+end
+
 local logTable = {
-    {name = "voltage", keyindex = 1, keyname = "Voltage", keyunit = "v", keyminmax = 1, color = COLOR_RED, pen = SOLID, graph = true},
-    {name = "current", keyindex = 2, keyname = "Current", keyunit = "A", keyminmax = 0, color = COLOR_ORANGE, pen = SOLID, graph = true},
-    {name = "rpm", keyindex = 3, keyname = "Headspeed", keyunit = "rpm", keyminmax = 0, keyfloor = true, color = COLOR_GREEN, pen = SOLID, graph = true},
-    {name = "temp_esc", keyindex = 4, keyname = "Esc. Temperature", keyunit = "°", keyminmax = 1, color = COLOR_CYAN, pen = SOLID, graph = true},
-    {name = "throttle_percentage", keyindex = 5, keyname = "Throttle %", keyunit = "%", keyminmax = 0, color = COLOR_YELLOW, pen = SOLID, graph = true}
+    {name = "voltage", keyindex = 1, keyname = "Voltage", keyunit = "v", keyminmax = 1, color = colorTable['voltage'], pen = SOLID, graph = true},
+    {name = "current", keyindex = 2, keyname = "Current", keyunit = "A", keyminmax = 0, color = colorTable['current'], pen = SOLID, graph = true},
+    {name = "rpm", keyindex = 3, keyname = "Headspeed", keyunit = "rpm", keyminmax = 0, keyfloor = true, color = colorTable['rpm'], pen = SOLID, graph = true},
+    {name = "temp_esc", keyindex = 4, keyname = "Esc. Temperature", keyunit = "°", keyminmax = 1, color = colorTable['temp_esc'], pen = SOLID, graph = true},
+    {name = "throttle_percentage", keyindex = 5, keyname = "Throttle %", keyunit = "%", keyminmax = 0, color = colorTable['throttle_percentage'], pen = SOLID, graph = true}
 }
 
 local log_queue = {}

@@ -14,7 +14,7 @@ graphPos['slider_y'] = LCD_H - (graphPos['menu_offset'] + 30) + graphPos['height
 
 local triggerOverRide = false
 local triggerOverRideAll = false
-local lastServoCountTime = os.clock()
+
 local enableWakeup = false
 local wakeupScheduler = os.clock()
 local activeLogFile
@@ -22,7 +22,10 @@ local logPadding = 5
 local armTime
 local currentDisplayMode
 
-local logDataRaw
+local logFileHandle = nil
+local logDataRaw = {}
+local logChunkSize = 1000
+local logFileReadOffset = 0
 local logDataRawReadComplete = false
 local readNextChunk
 local logData = {}
@@ -38,6 +41,35 @@ local sliderPositionOld = 1
 local processedLogData = false
 local currentDataIndex = 1
 
+function readNextChunk()
+    if logDataRawReadComplete then
+        rfsuite.tasks.clearCallback(readNextChunk)
+        return
+    end
+
+    if not logFileHandle then
+        system.messageBox("Log file handle lost.")
+        rfsuite.tasks.clearCallback(readNextChunk)
+        return
+    end
+
+    logFileHandle:seek("set", logFileReadOffset)
+    local chunk = logFileHandle:read(logChunkSize)
+
+    if chunk then
+        table.insert(logDataRaw, chunk)
+        logFileReadOffset = logFileReadOffset + #chunk
+        rfsuite.utils.log("Read " .. #chunk .. " bytes from log file","debug")
+    else
+        logFileHandle:close()
+        logFileHandle = nil
+        logDataRawReadComplete = true
+        logDataRaw = table.concat(logDataRaw)
+
+        rfsuite.utils.log("Read complete, total size: " .. #logDataRaw .. " bytes","debug")
+        rfsuite.tasks.clearCallback(readNextChunk)
+    end
+end
 function format_time(seconds)
     -- Calculate minutes and remaining seconds
     local minutes = math.floor(seconds / 60)
@@ -349,7 +381,11 @@ local function drawKey(name, keyindex, keyunit, keyminmax, keyfloor, color, mini
     lcd.drawText(x + 5, ty, name, LEFT)
 
     -- show min and max values
-    lcd.color(COLOR_WHITE)
+    if lcd.darkMode() then
+        lcd.color(COLOR_WHITE)
+    else
+        lcd.color(COLOR_BLACK)
+    end
     lcd.font(rfsuite.app.radio.logKeyFont)
     local mm_str
     if keyminmax == 1 then
@@ -377,12 +413,9 @@ local function drawCurrentIndex(points, position, totalPoints, keyindex, keyunit
 
     local linePos = map(position, 1, 100, 1, w - 10) + sliderPadding
 
-
     if linePos < 1 then linePos = 0 end
 
-    -- which side of line we display the index
-    local idxPos
-    local textAlign
+    local idxPos, textAlign
     if (position > 50) then
         idxPos = linePos - 15
         textAlign = RIGHT
@@ -394,52 +427,96 @@ local function drawCurrentIndex(points, position, totalPoints, keyindex, keyunit
     local current_s = calculateSeconds(totalPoints, position)
     local time_str = format_time(math.floor(current_s))
 
-    -- work out the current values based on position
     local value = getValueAtPercentage(points, position)
     if keyfloor == true then value = math.floor(value) end
     value = value .. keyunit
 
-    -- draw the vertical line
-    if keyindex == 1 then     -- only draw line once
+    if keyindex == 1 then
         lcd.color(COLOR_WHITE)
         lcd.drawLine(linePos, graphPos['menu_offset'] - 5, linePos, graphPos['height'] + graphPos['menu_offset'])
     end
 
-    -- show value
     lcd.font(FONT_BOLD)
     local tw, th = lcd.getTextSize(value)
-    lcd.color(color)
-    -- local ty = (h_height / 2 - th / 2) + y + (h_height*2)    
     local ty = (graphPos['menu_offset'] + (th * keyindex)) - keyindex
-    lcd.drawText(idxPos + 5, ty, value, textAlign)
 
-    -- display time
-    if keyindex == 1 then  -- only do this once
-        -- show current time of line
-        lcd.font(FONT_NORMAL)
-        local tw, th = lcd.getTextSize(time_str)
-        lcd.color(COLOR_WHITE)
-        local ty = graphPos['height'] + graphPos['menu_offset'] - th
-        lcd.drawText(idxPos + 5, ty, time_str, textAlign)
+    local padding = 2
 
-        if (idxPos + 5) <= w - tw then
-
-            local run_current_s = calculateSeconds(totalPoints, 100)
-            local run_time_str = format_time(math.floor(run_current_s))            
-            lcd.font(FONT_NORMAL)
-            local tw, th = lcd.getTextSize(run_time_str)
-
-            lcd.color(COLOR_WHITE)
-            local ty = graphPos['height'] + graphPos['menu_offset'] - th
-            lcd.drawText(graphPos['width'] - tw - 10, ty, run_time_str)
-
-
-        end
+    -- Determine box X position based on text alignment
+    local boxX
+    if textAlign == RIGHT then
+        boxX = idxPos - tw - padding
+    else
+        boxX = idxPos - padding
     end
 
+    -- Draw background box behind value
+    if lcd.darkMode() then
+        lcd.color(lcd.RGB(16 , 16 , 16, 0.8))
+    else
+        lcd.color(lcd.RGB(208 , 208 , 208, 0.8))
+    end
+    lcd.drawFilledRectangle(boxX, ty - padding, tw + 2 * padding, th + 2 * padding)
 
+    -- Draw value text
+    lcd.color(color)
+    lcd.drawText(idxPos, ty, value, textAlign)
 
+    if keyindex == 1 then
+        lcd.font(FONT_NORMAL)
+        local tw, th = lcd.getTextSize(time_str)
+        local ty = graphPos['height'] + graphPos['menu_offset'] - th
+
+        -- Box position for time string (follows same left/right rule)
+        if textAlign == RIGHT then
+            boxX = idxPos - tw - padding
+        else
+            boxX = idxPos - padding
+        end
+
+        -- Draw background box behind time
+        if lcd.darkMode() then
+            lcd.color(lcd.RGB(16 , 16 , 16, 0.8))
+        else
+            lcd.color(lcd.RGB(208 , 208 , 208, 0.8))
+        end
+        lcd.drawFilledRectangle(boxX, ty - padding, tw + 2 * padding, th + 2 * padding)
+
+        -- Draw time text
+        if lcd.darkMode() then
+            lcd.color(COLOR_WHITE)
+        else
+            lcd.color(COLOR_BLACK)
+        end
+        lcd.drawText(idxPos, ty, time_str, textAlign)
+
+        if (idxPos + 5) <= w - tw then
+            local run_current_s = calculateSeconds(totalPoints, 100)
+            local run_time_str = format_time(math.floor(run_current_s))
+            local tw, th = lcd.getTextSize(run_time_str)
+
+            local tx = graphPos['width'] - tw - 10
+            local ty = graphPos['height'] + graphPos['menu_offset'] - th
+
+            if lcd.darkMode() then
+                lcd.color(lcd.RGB(16 , 16 , 16, 0.8))
+            else
+                lcd.color(lcd.RGB(208 , 208 , 208, 0.8))
+            end
+            
+            lcd.drawFilledRectangle(tx - padding, ty - padding, 100, th + 2 * padding)
+
+            if lcd.darkMode() then
+                lcd.color(COLOR_WHITE)
+            else
+                lcd.color(COLOR_BLACK)
+            end
+            lcd.drawText(tx, ty, run_time_str)
+        end
+    end
 end
+
+
 
 function findMaxNumber(numbers)
     local max = numbers[1] -- Assume the first number is the largest initially
@@ -474,7 +551,6 @@ function findAverage(numbers)
 end
 
 local function openPage(pidx, title, script, logfile, displaymode)
-
     currentDisplayMode = displaymode
 
     rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
@@ -488,30 +564,22 @@ local function openPage(pidx, title, script, logfile, displaymode)
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-    local w, h = rfsuite.utils.getWindowSize()
-    local windowWidth = w
-    local windowHeight = h
-    local padding = rfsuite.app.radio.buttonPadding
-    local sc
-    local panel
-
     rfsuite.app.ui.fieldHeader("Logs - " .. extractShortTimestamp(logfile))
     activeLogFile = logfile
 
-    -- Directly load the full file into memory
     local filePath = getLogDir() .. "/" .. logfile
-    local fileData, err = loadFileToMemory(filePath)
-
-    if not fileData then
+    logFileHandle, err = io.open(filePath, "rb")
+    if not logFileHandle then
         system.messageBox("Failed to load log file: " .. err)
         return
     end
 
-    logDataRaw = fileData
-    logDataRawReadComplete = true  -- File is fully loaded at this point
+    logDataRaw = {}
+    logFileReadOffset = 0
+    logDataRawReadComplete = false
 
-    rfsuite.app.ui.progressDisplayClose()
-
+    rfsuite.tasks.callbackEvery(0.05, readNextChunk)
+    rfsuite.app.triggers.closeProgressLoader = true
     enableWakeup = true
     return
 end
@@ -526,6 +594,10 @@ local function event(event, category, value, x, y)
     return false
 end
 
+local slowcount = 0
+local carriedOver = nil
+local subStepSize = nil
+
 local function wakeup()
     if not enableWakeup then
         return -- Exit early if wakeup is disabled
@@ -536,21 +608,31 @@ local function wakeup()
         sliderPositionOld = sliderPosition
     end
 
-    if not processedLogData then
+    if not progressLoader then
+        progressLoader = form.openProgressDialog("Processing", "Loading log data")
+        progressLoader:closeAllowed(false)
+    end
 
-        -- Show progress dialog if starting
-        if currentDataIndex == 1 then
-            progressLoader = form.openProgressDialog("Processing", "Please be patient - we have some work to do.")
-            progressLoader:closeAllowed(false)
-        else
-            -- Update progress dialog
-            local percentage = (currentDataIndex / #logColumns) * 100
-            progressLoader:value(percentage)
+    if not logDataRawReadComplete then
+        progressLoader:value(slowcount)
+        slowcount = slowcount + 0.025
+        return
+    end
+
+    if logDataRawReadComplete and not processedLogData then
+
+        -- Set up carryOver and subStepSize once, when processing starts
+        if not carriedOver then
+            carriedOver = slowcount
+            subStepSize = (100 - carriedOver) / (#logColumns * 5)  -- 5 subtasks per column
         end
 
-        -- Process the column and store the cleaned data
+        local function updateProgress(subStep)
+            local overallProgress = carriedOver + ((currentDataIndex - 1) * (subStepSize * 5)) + (subStep * subStepSize)
+            progressLoader:value(overallProgress)
+        end
+
         logData[currentDataIndex] = {}
-        logData[currentDataIndex]['data'] = padTable(cleanColumn(getColumn(logDataRaw, currentDataIndex + 1)), logPadding)
         logData[currentDataIndex]['name'] = logColumns[currentDataIndex].name
         logData[currentDataIndex]['color'] = logColumns[currentDataIndex].color
         logData[currentDataIndex]['pen'] = logColumns[currentDataIndex].pen
@@ -560,9 +642,29 @@ local function wakeup()
         logData[currentDataIndex]['keyminmax'] = logColumns[currentDataIndex].keyminmax
         logData[currentDataIndex]['keyfloor'] = logColumns[currentDataIndex].keyfloor
         logData[currentDataIndex]['graph'] = logColumns[currentDataIndex].graph
+
+        -- Step 1: Clean the column data
+        updateProgress(1)
+        local rawColumn = getColumn(logDataRaw, currentDataIndex + 1)
+        local cleanedColumn = cleanColumn(rawColumn)
+
+        -- Step 2: Pad the data
+        updateProgress(2)
+        logData[currentDataIndex]['data'] = padTable(cleanedColumn, logPadding)
+
+        -- Step 3: Find max value
+        updateProgress(3)
         logData[currentDataIndex]['maximum'] = findMaxNumber(logData[currentDataIndex]['data'])
+
+        -- Step 4: Find min value
+        updateProgress(4)
         logData[currentDataIndex]['minimum'] = findMinNumber(logData[currentDataIndex]['data'])
+
+        -- Step 5: Find average
+        updateProgress(5)
         logData[currentDataIndex]['average'] = findAverage(logData[currentDataIndex]['data'])
+
+        progressLoader:message("Processing data " .. currentDataIndex .. " of " .. #logColumns)
 
         if currentDataIndex >= #logColumns then
             local posField = {x = graphPos['x_start'], y = graphPos['slider_y'], w = graphPos['width'] - 10, h = 40}
@@ -584,6 +686,7 @@ local function wakeup()
         return
     end
 end
+
 
 local function paint()
 
@@ -625,10 +728,8 @@ local function paint()
                 end
 
             end
-
         end
     end
-
 end
 
 local function onNavMenu(self)
