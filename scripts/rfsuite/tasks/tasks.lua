@@ -116,6 +116,14 @@ function tasks.callback()
     end
 end
 
+function tasks.clearCallback(callback)
+    for i = #tasks._callbacks, 1, -1 do
+        if tasks._callbacks[i].func == callback then
+            table.remove(tasks._callbacks, i)
+        end
+    end
+end
+
 -- findTasks
 --[[
     Function: tasks.findTasks
