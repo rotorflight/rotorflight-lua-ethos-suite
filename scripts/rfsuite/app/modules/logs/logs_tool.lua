@@ -387,19 +387,37 @@ local function drawKey(name, keyunit, keyminmax, keyfloor, color, minimum, maxim
         lcd.color(COLOR_BLACK)
     end
 
-    local mm_str
+    -- shrink rpm if desirable
+    -- 10000rpm is prob never going to be hit
+    -- but we are safe!
+    local min_trunc
+    if keyunit == "rpm" and (minimum >= 10000 or maximum >= 10000) then
+        min_trunc = string.format("%.1fK", minimum / 10000)
+        max_trunc = string.format("%.1fK", maximum / 10000)
+    end
+    
+
+    local max_str
+    local min_str
     if keyminmax == 1 then
-        mm_str = "Min: " .. minimum .. keyunit .. " Max: " .. maximum .. keyunit
+        min_str = "↓ " .. (min_trunc or minimum) .. keyunit 
+        max_str = " ↑ " .. (max_trunc or maximum) .. keyunit
     else
-        mm_str = "Max: " .. maximum .. keyunit
+        min_str = ""
+        max_str = "↑ " .. (max_trun or maximum) .. keyunit
     end
 
+    -- left align min value
     local mmY = y + boxHeight + 2
-    lcd.drawText(x + 5, mmY, mm_str, LEFT)
+    lcd.drawText(x + 5, mmY, min_str, LEFT)
+
+    -- right align max value
+    local tw, th = lcd.getTextSize(max_str)
+    lcd.drawText((LCD_W - tw) + boxpadding, mmY, max_str, LEFT)
 
     -- display average (can only do on bigger radios due to space)
     if rfsuite.app.radio.logShowAvg == true then
-        local avg_str = "Avg: " .. math.floor((minimum + maximum) / 2) .. keyunit
+        local avg_str = "Ø " .. math.floor((minimum + maximum) / 2) .. keyunit
         local avgY = mmY + th -2
         lcd.drawText(x + 5, avgY, avg_str, LEFT)
     end    
