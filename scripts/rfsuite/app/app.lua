@@ -141,6 +141,7 @@ app.guiIsRunning: Boolean indicating if the GUI is running.
 app.menuLastSelected: Table to store the last selected menu item.
 app.adjfunctions: Table to store adjustment functions.
 app.profileCheckScheduler: Scheduler for profile checks using os.clock().
+app.offLineMode : Boolean indicating if the app is in offline mode.
 ]]
 app.sensors = {}
 app.formFields = {}
@@ -172,6 +173,7 @@ app.guiIsRunning = false
 app.menuLastSelected = {}
 app.adjfunctions = nil
 app.profileCheckScheduler = os.clock()
+app.offlineMode = false
 
 --[[
 app.audio: Table containing boolean flags for various audio states.
@@ -187,7 +189,7 @@ app.audio: Table containing boolean flags for various audio states.
     - playMixerOverideDisable: Flag to indicate if mixer override disable audio should be played.
     - playMixerOverideEnable: Flag to indicate if mixer override enable audio should be played.
     - playEraseFlash: Flag to indicate if erase flash audio should be played.
-app.offlineMode: Flag to indicate if the application is in offline mode.
+
 ]]
 app.audio = {}
 app.audio.playDemo = false
@@ -202,7 +204,7 @@ app.audio.playServoOverideEnable = false
 app.audio.playMixerOverideDisable = false
 app.audio.playMixerOverideEnable = false
 app.audio.playEraseFlash = false
-app.offlineMode = false
+
 
 --[[
     app.dialogs: Table to manage dialog states and properties.
@@ -980,7 +982,7 @@ function app.wakeupUI()
         if rfsuite.app.dialogs.progressDisplay == true then app.ui.progressDisplayClose() end
         if rfsuite.app.dialogs.saveDisplay == true then app.ui.progressDisplaySaveClose() end
 
-        if app.dialogs.nolinkDisplay == false and app.dialogs.nolinkDisplayErrorDialog ~= true then 
+        if app.dialogs.nolinkDisplay == false and app.dialogs.nolinkDisplayErrorDialog ~= true and app.offlineMode ~= true then 
             app.ui.progressNolinkDisplay() 
         end
     end
