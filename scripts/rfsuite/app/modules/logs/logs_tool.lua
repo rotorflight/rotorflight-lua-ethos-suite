@@ -409,33 +409,47 @@ local function drawCurrentIndex(points, position, totalPoints, keyindex, keyunit
     local linePos = map(position, 1, 100, 1, w - 10) + sliderPadding
     if linePos < 1 then linePos = 0 end
 
-    local idxPos, textAlign
+    local boxpadding = 5
+
+    local idxPos, textAlign, boxPos
     if position > 50 then
-        idxPos = linePos - 5  -- Just a small padding from the line
+        idxPos = linePos - (boxpadding*2)
         textAlign = RIGHT
+        boxPos = linePos - boxpadding  -- placeholder, adjusted after text size is known
     else
-        idxPos = linePos + 5
+        idxPos = linePos + (boxpadding*2)
         textAlign = LEFT
+        boxPos = linePos + boxpadding  
     end
 
     local value = getValueAtPercentage(points, position)
     if keyfloor then value = math.floor(value) end
     value = value .. keyunit
 
-    if laneNumber == 1 then
-        if lcd.darkMode() then
-            lcd.color(COLOR_WHITE)
-        else
-            lcd.color(COLOR_BLACK)
-        end
-        lcd.drawLine(linePos, graphPos['menu_offset'] - 5, linePos, graphPos['menu_offset'] + graphPos['height'])
+    lcd.font(FONT_S)
+    local tw, th = lcd.getTextSize(value)
+
+    local boxHeight = th + boxpadding
+    local boxY = laneY + boxpadding
+    local textY = boxY + (boxHeight / 2 - th / 2)
+
+    if position > 50 then
+        boxPos = boxPos - tw - (boxpadding*2)
     end
 
-    lcd.font(FONT_S)
-    local boxY = laneY + 5
+    -- Draw box
+    lcd.color(color)
+    lcd.drawFilledRectangle(boxPos, boxY, tw + (boxpadding*2), boxHeight)
 
-    lcd.drawText(idxPos, boxY, value, textAlign)
+    -- Draw text centered vertically in the box
+    if lcd.darkMode() then
+        lcd.color(COLOR_BLACK)
+    else
+        lcd.color(COLOR_WHITE)
+    end
+    lcd.drawText(idxPos, textY, value, textAlign)
 
+    -- Draw time label and vertical line (only for first graph/lane)
     if laneNumber == 1 then
         local current_s = calculateSeconds(totalPoints, position)
         local time_str = format_time(math.floor(current_s))
@@ -443,9 +457,18 @@ local function drawCurrentIndex(points, position, totalPoints, keyindex, keyunit
         lcd.font(FONT_NORMAL)
         local ty = graphPos['height'] + graphPos['menu_offset'] - 10
 
+        lcd.color(COLOR_WHITE)
         lcd.drawText(idxPos, ty, time_str, textAlign)
+
+        if lcd.darkMode() then
+            lcd.color(COLOR_WHITE)
+        else
+            lcd.color(COLOR_BLACK)
+        end
+        lcd.drawLine(linePos, graphPos['menu_offset'] - 5, linePos, graphPos['menu_offset'] + graphPos['height'])
     end
 end
+
 
 
 function findMaxNumber(numbers)
