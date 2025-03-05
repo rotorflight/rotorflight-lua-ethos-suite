@@ -292,7 +292,9 @@ app.dialogs.badversionDisplay = false
         number - The RSSI value (100 or 0).
 ]]
 function app.getRSSI()
-    if system:getVersion().simulation == true or rfsuite.preferences.skipRssiSensorCheck == true or app.offlineMode == true then return 100 end
+    --if system:getVersion().simulation == true or rfsuite.preferences.skipRssiSensorCheck == true or app.offlineMode == true then return 100 end
+    if app.offlineMode == true then return 100 end
+
 
     if rfsuite.session.telemetryState then
         return 100
@@ -1009,6 +1011,10 @@ function app.wakeupUI()
 
                 local message
                 local apiVersionAsString = tostring(rfsuite.session.apiVersion)
+                local moduleState = (model.getModule(0):enable()  or model.getModule(1):enable()) or false
+                local sportSensor = system.getSource({appId = 0xF101})
+                local elrsSensor = system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1})
+
                 if not rfsuite.utils.ethosVersionAtLeast() then
                     message = string.format("ETHOS < V%d.%d.%d", 
                     rfsuite.config.ethosVersion[1], 
@@ -1018,8 +1024,14 @@ function app.wakeupUI()
                 elseif not rfsuite.tasks.active() then
                     message = "Please enable the background task."
                     app.triggers.invalidConnectionSetup = true
+                elseif  moduleState == false and app.offlineMode == false then
+                    message = "Please check your rf module is turned on."
+                    app.triggers.invalidConnectionSetup = true 
+                elseif not (sportSensor or elrsSensor)  and app.offlineMode == false then
+                    message = "Please check you have discovered all sensors."
+                    app.triggers.invalidConnectionSetup = true                                            
                 elseif app.getRSSI() == 0 and app.offlineMode == false then
-                    message = "Please check your heli is powered on and telemetry is running."
+                    message = "Please check your heli is powered up and radio connected."
                     app.triggers.invalidConnectionSetup = true
                 elseif rfsuite.session.apiVersion == nil and app.offlineMode == false then
                     message = "Unable to determine MSP version in use."
