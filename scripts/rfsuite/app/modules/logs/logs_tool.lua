@@ -16,7 +16,7 @@ graphPos['slider_y'] = LCD_H - (graphPos['menu_offset'] + 30) + graphPos['height
 local triggerOverRide = false
 local triggerOverRideAll = false
 
-local zoomLevel = 3
+local zoomLevel = 1
 local enableWakeup = false
 local wakeupScheduler = os.clock()
 local activeLogFile
@@ -119,24 +119,30 @@ function calculateSeconds(totalSeconds, sliderValue)
     return secondsPassed
 end
 
-function paginate_table(data, step_size, position)
-    -- Validate inputs
-    if type(data) ~= "table" or type(step_size) ~= "number" or type(position) ~= "number" then error("Invalid arguments: data must be a table, step_size and position must be numbers.") end
 
-    -- Adjust position to be within valid bounds
-    if position < 1 then
-        position = 1
-    elseif position > #data then
-        position = #data
-    end
+-- Decimation table: how much to skip at each zoom level
+local zoomLevelToDecimation = {
+    [1] = 20,   -- Fully zoomed out: every 20th sample
+    [2] = 15,
+    [3] = 10,
+    [4] = 5,
+    [5] = 1,
 
-    -- Calculate start and end indices
-    local start_index = position
+}
+
+
+
+-- Enhanced paginate_table() to support decimation
+function paginate_table(data, step_size, position, decimationFactor)
+    decimationFactor = decimationFactor or 1
+
+    local start_index = math.max(1, position)
     local end_index = math.min(start_index + step_size - 1, #data)
 
-    -- Create a new table for the page
     local page = {}
-    for i = start_index, end_index do table.insert(page, data[i]) end
+    for i = start_index, end_index, decimationFactor do
+        table.insert(page, data[i])
+    end
 
     return page
 end
@@ -602,9 +608,17 @@ local function openPage(pidx, title, script, logfile, displaymode)
             if zoomLevel > 1 then
                 zoomLevel = zoomLevel - 1
                 lcd.invalidate()
+                rfsuite.app.formFields[2]:enable(true)
+                rfsuite.app.formFields[3]:enable(true)
+            end    
+            if zoomLevel == 1 then
+                rfsuite.app.formFields[2]:enable(false)
+                rfsuite.app.formFields[3]:focus()   
             end
         end
     })
+    -- disable on start
+    rfsuite.app.formFields[2]:enable(false)  
 
     --- zoom +
     local posField = {x = graphPos['width'] + zoomButtonWidth + 10 , y = graphPos['slider_y'], w = zoomButtonWidth, h = 40}
@@ -616,7 +630,13 @@ local function openPage(pidx, title, script, logfile, displaymode)
             if zoomLevel < 5 then
                 zoomLevel = zoomLevel + 1
                 lcd.invalidate()
-            end           
+                rfsuite.app.formFields[2]:enable(true)
+                rfsuite.app.formFields[3]:enable(true)
+            end    
+            if zoomLevel == 5 then
+                rfsuite.app.formFields[3]:enable(false)
+                rfsuite.app.formFields[2]:focus()   
+            end    
         end
     })
     
@@ -735,13 +755,14 @@ local function wakeup()
 end
 
 
-local zoomLevelToRange = {
-    [1] = {min = 80, max = 100},  -- Fully zoomed out (most records per page)
-    [2] = {min = 60, max = 80},
-    [3] = {min = 40, max = 60},   -- Default mid zoom
-    [4] = {min = 20, max = 40},
-    [5] = {min = 10, max = 20}    -- Fully zoomed in (fewer records per page, more detail)
+zoomLevelToRange = {
+    [1] = {min = 601, max = 750}, -- Fully zoomed out
+    [2] = {min = 451, max = 600},
+    [3] = {min = 301, max = 450},
+    [4] = {min = 151, max = 300},
+    [5] = {min = 10, max = 150}      -- Fully zoomed in
 }
+
 
 local function paint()
 
@@ -774,7 +795,11 @@ local function paint()
                     currentLane = currentLane + 1
                     local laneY = y_start + (currentLane - 1) * laneHeight
 
-                    local points = paginate_table(v.data, step_size, position)
+                    -- Apply zoom-level specific decimation
+                    local decimationFactor = zoomLevelToDecimation[zoomLevel] or 1
+
+                    -- Fetch the reduced data set to plot
+                    local points = paginate_table(v.data, step_size, position, decimationFactor)
 
                     drawGraph(points, v.color, v.pen, x_start, laneY, width, laneHeight, v.minimum, v.maximum)
 
@@ -786,7 +811,6 @@ local function paint()
         end
     end
 end
-
 
 local function onNavMenu(self)
 
