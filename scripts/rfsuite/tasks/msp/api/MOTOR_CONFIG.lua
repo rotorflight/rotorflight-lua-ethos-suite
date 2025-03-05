@@ -38,10 +38,10 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "motor_rpm_lpf_1",          type = "U8",  apiVersion = 12.06, simResponse = {7}},
     {field = "motor_rpm_lpf_2",          type = "U8",  apiVersion = 12.06, simResponse = {7}},
     {field = "motor_rpm_lpf_3",          type = "U8",  apiVersion = 12.06, simResponse = {8}},
-    {field = "main_rotor_gear_ratio_0",  type = "U16", apiVersion = 12.06, simResponse = {20, 0}, min = 0, max = 2000, default = 1, help = "Motor Pinion Gear Tooth Count"},
-    {field = "main_rotor_gear_ratio_1",  type = "U16", apiVersion = 12.06, simResponse = {50, 0}, min = 0, max = 2000, default = 1, help = "Main Gear Tooth Count"},
-    {field = "tail_rotor_gear_ratio_0",  type = "U16", apiVersion = 12.06, simResponse = {9, 0}, min = 0, max = 2000, default = 1, help = "Tail Gear Tooth Count"},
-    {field = "tail_rotor_gear_ratio_1",  type = "U16", apiVersion = 12.06, simResponse = {30, 0}, min = 0, max = 2000, default = 1, help = "Autorotation Gear Tooth Count"}
+    {field = "main_rotor_gear_ratio_0",  type = "U16", apiVersion = 12.06, simResponse = {20, 0}, min = 0, max = 50000, default = 1, help = "Motor Pinion Gear Tooth Count"},
+    {field = "main_rotor_gear_ratio_1",  type = "U16", apiVersion = 12.06, simResponse = {50, 0}, min = 0, max = 50000, default = 1, help = "Main Gear Tooth Count"},
+    {field = "tail_rotor_gear_ratio_0",  type = "U16", apiVersion = 12.06, simResponse = {9, 0}, min = 0, max = 50000, default = 1, help = "Tail Gear Tooth Count"},
+    {field = "tail_rotor_gear_ratio_1",  type = "U16", apiVersion = 12.06, simResponse = {30, 0}, min = 0, max = 50000, default = 1, help = "Autorotation Gear Tooth Count"}
 }
 
 local MSP_API_STRUCTURE_WRITE = {
@@ -62,10 +62,10 @@ local MSP_API_STRUCTURE_WRITE = {
     {field = "motor_rpm_lpf_1",          type = "U8",  apiVersion = 12.06, simResponse = {7}},
     {field = "motor_rpm_lpf_2",          type = "U8",  apiVersion = 12.06, simResponse = {7}},
     {field = "motor_rpm_lpf_3",          type = "U8",  apiVersion = 12.06, simResponse = {8}},
-    {field = "main_rotor_gear_ratio_0",  type = "U16", apiVersion = 12.06, simResponse = {20, 0}, min = 0, max = 2000, default = 1},
-    {field = "main_rotor_gear_ratio_1",  type = "U16", apiVersion = 12.06, simResponse = {50, 0}, min = 0, max = 2000, default = 1},
-    {field = "tail_rotor_gear_ratio_0",  type = "U16", apiVersion = 12.06, simResponse = {9, 0}, min = 0, max = 2000, default = 1},
-    {field = "tail_rotor_gear_ratio_1",  type = "U16", apiVersion = 12.06, simResponse = {30, 0}, min = 0, max = 2000, default = 1}
+    {field = "main_rotor_gear_ratio_0",  type = "U16", apiVersion = 12.06, simResponse = {20, 0}, min = 0, max = 50000, default = 1},
+    {field = "main_rotor_gear_ratio_1",  type = "U16", apiVersion = 12.06, simResponse = {50, 0}, min = 0, max = 50000, default = 1},
+    {field = "tail_rotor_gear_ratio_0",  type = "U16", apiVersion = 12.06, simResponse = {9, 0}, min = 0, max = 50000, default = 1},
+    {field = "tail_rotor_gear_ratio_1",  type = "U16", apiVersion = 12.06, simResponse = {30, 0}, min = 0, max = 50000, default = 1}
 }
 
 -- Process structure in one pass
