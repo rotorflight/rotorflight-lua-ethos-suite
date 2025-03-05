@@ -199,6 +199,16 @@ local function wakeup()
     end
 end
 
+local function onHelpMenu()
+
+    local helpPath = "app/modules/rates/help.lua"
+    local help = assert(loadfile(helpPath))()
+
+    rfsuite.app.ui.openPageHelp(help.help["table"][rfsuite.session.activeRateTable], "rates")
+
+
+end    
+
 return {
     mspapi = mspapi,
     title = "Rates",
@@ -211,5 +221,6 @@ return {
     postLoad = postLoad,
     openPage = openPage,
     wakeup = wakeup,
+    onHelpMenu = onHelpMenu,
     API = {},
 }
