@@ -25,7 +25,6 @@ local MSP_HEADER_BYTES = 2
 local flightMode = {"Helicopter", "Fixed Wing"}
 local motorDirection = {"CW", "CCW"}
 local becLvVoltage = {"6.0V", "7.4V","8.4V"}
-local becHvVoltage = {"6.0V", "6.2V", "6.4V", "6.6V", "6.8V", "7.0V", "7.2V", "7.4V", "7.6V", "7.8V", "8.0V", "8.2V", "8.4V", "8.6V", "8.8V", "9.0V", "9.2V", "9.4V", "9.6V", "9.8V", "10.0V", "10.2V", "10.4V", "10.6V", "10.8V", "11.0V", "11.2V", "11.4V", "11.6V", "11.8V", "12.0V"}
 local startupPower = {"Low", "Medium", "High"}
 local fanControl = {"On", "Off"}
 local ledColor = {"RED", "YELOW","ORANGE","GREEN","JADE GREEN","BLUE","CYAN","PURPLE","PINK","WHITE"}
@@ -46,13 +45,13 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "governor",            type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = govMode},
     {field = "cell_cutoff",         type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = lowVoltage},
     {field = "timing",              type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = timing},
-    {field = "lv_bec_voltage",      type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 60, max = 84, default = 74, step = 2, scale = 10, decimals = 1, table = becLvVoltage},
+    {field = "lv_bec_voltage",      type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = becLvVoltage},
     {field = "motor_direction",     type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = motorDirection},
     {field = "gov_p",               type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 10, default = 4},
     {field = "gov_i",               type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 10, default = 3},
     {field = "acceleration",        type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = accel},
     {field = "auto_restart_time",   type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = autoRestart},
-    {field = "hv_bec_voltage",      type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 60, max = 120, tableIdxInc = -1, table = becHvVoltage},
+    {field = "hv_bec_voltage",      type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 60, default = 74, max = 120, step = 2, scale = 10, decimals = 1, unit = "V"},
     {field = "startup_power",       type = "U16", apiVersion = 12.07, simResponse = {0, 0}, table = startupPower, tableIdxInc = -1},
     {field = "brake_type",          type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = brakeType},
     {field = "brake_force",         type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 100, default = 0, unit = "%"},
