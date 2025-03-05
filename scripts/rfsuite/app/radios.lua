@@ -33,7 +33,7 @@ local resolution = LCD_W .. "x" .. LCD_H
     - `logGraphKeyHeight`: Height of log graph key.
     - `logGraphHeightOffset`: Height offset for log graph.
     - `logKeyFont`: Font for log key.
-    - `sliderPaddingLeft`: Left padding for sliders.
+    - `logSliderPaddingLeft`: Left padding for sliders.
 ]]
 local supportedRadios = {
     -- TANDEM X20, TANDEM XE (800x480)
@@ -61,7 +61,8 @@ local supportedRadios = {
             logGraphHeightOffset = -15,
             logKeyFont = FONT_S,
             logKeyFontSmall = FONT_XS,
-            sliderPaddingLeft = 42,
+            logSliderPaddingLeft = 42,
+            logShowAvg = true,
         }
     },
     -- TANDEM X18, TWIN X Lite (480x320)
@@ -90,7 +91,8 @@ local supportedRadios = {
             logGraphHeightOffset = 10,
             logKeyFont = FONT_XS,
             logKeyFontSmall = FONT_XXS,
-            sliderPaddingLeft = 30,
+            logSliderPaddingLeft = 30,
+            logShowAvg = false,
         }
     },
     -- Horus X10, Horus X12 (480x272)
@@ -118,7 +120,8 @@ local supportedRadios = {
             logGraphHeightOffset = 0,
             logKeyFont = FONT_XS,
             logKeyFontSmall = FONT_XXS,
-            sliderPaddingLeft = 30,
+            logSliderPaddingLeft = 30,
+            logShowAvg = false,
         }
     },
     -- Twin X14 (632x314)
@@ -147,7 +150,8 @@ local supportedRadios = {
             logGraphHeightOffset = 0,
             logKeyFont = FONT_XXS,
             logKeyFontSmall = FONT_XXS,
-            sliderPaddingLeft = 30,
+            logSliderPaddingLeft = 30,
+            logShowAvg = false,
         }
     }
 }

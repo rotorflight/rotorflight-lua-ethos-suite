@@ -359,30 +359,27 @@ end
 local function drawKey(name, keyunit, keyminmax, keyfloor, color, minimum, maximum, laneY, laneHeight)
 
     local w = LCD_W - graphPos['width'] - 10
-    local boxpadding = 5
+    local boxpadding = 3
 
     lcd.font(rfsuite.app.radio.logKeyFont)
     local _, th = lcd.getTextSize(name)
     local boxHeight = th + boxpadding
 
     local x = graphPos['width']
-    local y = laneY + boxpadding  -- This is the magic - locks key box to lane position
+    local y = laneY  -- No more shifting, this is the real top of the lane
 
     if keyfloor then
         minimum = math.floor(minimum)
         maximum = math.floor(maximum)
     end
 
-    -- Draw filled box (color-coded to match graph line)
     lcd.color(color)
     lcd.drawFilledRectangle(x, y, w, boxHeight)
 
-    -- Draw key name (vertically centered in box)
     lcd.color(COLOR_BLACK)
     local textY = y + (boxHeight / 2 - th / 2)
     lcd.drawText(x + 5, textY, name, LEFT)
 
-    -- Draw min/max values below the box
     lcd.font(rfsuite.app.radio.logKeyFontSmall)
     if lcd.darkMode() then
         lcd.color(COLOR_WHITE)
@@ -400,29 +397,37 @@ local function drawKey(name, keyunit, keyminmax, keyfloor, color, minimum, maxim
     local mmY = y + boxHeight + 2
     lcd.drawText(x + 5, mmY, mm_str, LEFT)
 
+    -- display average (can only do on bigger radios due to space)
+    if rfsuite.app.radio.logShowAvg == true then
+        local avg_str = "Avg: " .. math.floor((minimum + maximum) / 2) .. keyunit
+        local avgY = mmY + th -2
+        lcd.drawText(x + 5, avgY, avg_str, LEFT)
+    end    
+
 end
+
 
 local function drawCurrentIndex(points, position, totalPoints, keyindex, keyunit, keyfloor, name, color, laneY, laneHeight, laneNumber, totalLanes)
 
     if position < 1 then position = 1 end
 
-    local sliderPadding = rfsuite.app.radio.sliderPaddingLeft
+    local sliderPadding = rfsuite.app.radio.logSliderPaddingLeft
     local w = graphPos['width'] - sliderPadding
 
     local linePos = map(position, 1, 100, 1, w - 10) + sliderPadding
     if linePos < 1 then linePos = 0 end
 
-    local boxpadding = 5
+    local boxpadding = 3
 
     local idxPos, textAlign, boxPos
     if position > 50 then
-        idxPos = linePos - (boxpadding*2)
+        idxPos = linePos - (boxpadding * 2)
         textAlign = RIGHT
-        boxPos = linePos - boxpadding  -- placeholder, adjusted after text size is known
+        boxPos = linePos - boxpadding
     else
-        idxPos = linePos + (boxpadding*2)
+        idxPos = linePos + (boxpadding * 2)
         textAlign = LEFT
-        boxPos = linePos + boxpadding  
+        boxPos = linePos + boxpadding
     end
 
     local value = getValueAtPercentage(points, position)
@@ -433,18 +438,16 @@ local function drawCurrentIndex(points, position, totalPoints, keyindex, keyunit
     local tw, th = lcd.getTextSize(value)
 
     local boxHeight = th + boxpadding
-    local boxY = laneY + boxpadding
+    local boxY = laneY  -- Top of the lane - no offset needed
     local textY = boxY + (boxHeight / 2 - th / 2)
 
     if position > 50 then
-        boxPos = boxPos - tw - (boxpadding*2)
+        boxPos = boxPos - tw - (boxpadding * 2)
     end
 
-    -- Draw box
     lcd.color(color)
-    lcd.drawFilledRectangle(boxPos, boxY, tw + (boxpadding*2), boxHeight)
+    lcd.drawFilledRectangle(boxPos, boxY, tw + (boxpadding * 2), boxHeight)
 
-    -- Draw text centered vertically in the box
     if lcd.darkMode() then
         lcd.color(COLOR_BLACK)
     else
@@ -452,7 +455,6 @@ local function drawCurrentIndex(points, position, totalPoints, keyindex, keyunit
     end
     lcd.drawText(idxPos, textY, value, textAlign)
 
-    -- Draw time label and vertical line (only for first graph/lane)
     if laneNumber == 1 then
         local current_s = calculateSeconds(totalPoints, position)
         local time_str = format_time(math.floor(current_s))
@@ -471,7 +473,6 @@ local function drawCurrentIndex(points, position, totalPoints, keyindex, keyunit
         lcd.drawLine(linePos, graphPos['menu_offset'] - 5, linePos, graphPos['menu_offset'] + graphPos['height'])
     end
 end
-
 
 
 function findMaxNumber(numbers)
