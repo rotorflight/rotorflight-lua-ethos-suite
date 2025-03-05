@@ -356,46 +356,49 @@ local function drawGraph(points, color, pen, x_start, y_start, width, height, mi
     end
 end
 
-local function drawKey(name, keyindex, keyunit, keyminmax, keyfloor, color, minimum, maximum)
+local function drawKey(name, keyunit, keyminmax, keyfloor, color, minimum, maximum, laneY, laneHeight)
 
     local w = LCD_W - graphPos['width'] - 10
-    local h = rfsuite.app.radio.logGraphKeyHeight
-    local h_height = h / 2
-    local x = graphPos['width']
-    local y = (graphPos['y_start'] + (keyindex * h)) - h
+    local boxpadding = 5
 
-    if keyfloor == true then
+    lcd.font(rfsuite.app.radio.logKeyFont)
+    local _, th = lcd.getTextSize(name)
+    local boxHeight = th + boxpadding
+
+    local x = graphPos['width']
+    local y = laneY + boxpadding  -- This is the magic - locks key box to lane position
+
+    if keyfloor then
         minimum = math.floor(minimum)
         maximum = math.floor(maximum)
     end
 
-    -- draw the header box
-    lcd.pen(solid)
-    lcd.drawFilledRectangle(x, y, w, h_height)
+    -- Draw filled box (color-coded to match graph line)
+    lcd.color(color)
+    lcd.drawFilledRectangle(x, y, w, boxHeight)
 
-    -- put text into the box
+    -- Draw key name (vertically centered in box)
     lcd.color(COLOR_BLACK)
-    lcd.font(rfsuite.app.radio.logKeyFont)
-    local tw, th = lcd.getTextSize(name)
-    local ty = (h_height / 2 - th / 2) + y
-    lcd.drawText(x + 5, ty, name, LEFT)
+    local textY = y + (boxHeight / 2 - th / 2)
+    lcd.drawText(x + 5, textY, name, LEFT)
 
-    -- show min and max values
+    -- Draw min/max values below the box
+    lcd.font(rfsuite.app.radio.logKeyFontSmall)
     if lcd.darkMode() then
         lcd.color(COLOR_WHITE)
     else
         lcd.color(COLOR_BLACK)
     end
-    lcd.font(rfsuite.app.radio.logKeyFont)
+
     local mm_str
     if keyminmax == 1 then
-        mm_str = "Min: " .. minimum .. keyunit .. " " .. "Max: " .. maximum .. keyunit
+        mm_str = "Min: " .. minimum .. keyunit .. " Max: " .. maximum .. keyunit
     else
         mm_str = "Max: " .. maximum .. keyunit
     end
-    local tw, th = lcd.getTextSize(mm_str)
-    local ty = (h_height / 2 - th / 2) + y + h_height
-    lcd.drawText(x + 5, ty, mm_str, LEFT)
+
+    local mmY = y + boxHeight + 2
+    lcd.drawText(x + 5, mmY, mm_str, LEFT)
 
 end
 
@@ -426,7 +429,7 @@ local function drawCurrentIndex(points, position, totalPoints, keyindex, keyunit
     if keyfloor then value = math.floor(value) end
     value = value .. keyunit
 
-    lcd.font(FONT_S)
+    lcd.font(rfsuite.app.radio.logKeyFont)
     local tw, th = lcd.getTextSize(value)
 
     local boxHeight = th + boxpadding
@@ -454,7 +457,7 @@ local function drawCurrentIndex(points, position, totalPoints, keyindex, keyunit
         local current_s = calculateSeconds(totalPoints, position)
         local time_str = format_time(math.floor(current_s))
 
-        lcd.font(FONT_NORMAL)
+        lcd.font(rfsuite.app.radio.logKeyFont)
         local ty = graphPos['height'] + graphPos['menu_offset'] - 10
 
         lcd.color(COLOR_WHITE)
@@ -527,6 +530,16 @@ local function openPage(pidx, title, script, logfile, displaymode)
         return
     end
 
+    local posField = {x = graphPos['x_start'], y = graphPos['slider_y'], w = graphPos['width'] - 10, h = 40}
+    rfsuite.app.formFields[1] = form.addSliderField(nil, posField, 0, 100, function()
+        return sliderPosition
+    end, function(newValue)
+        sliderPosition = newValue
+    end)
+
+    rfsuite.app.formFields[1]:step(1)
+    rfsuite.app.formFields[1]:focus(true)
+
     logDataRaw = {}
     logFileReadOffset = 0
     logDataRawReadComplete = false
@@ -576,6 +589,8 @@ local function wakeup()
 
         -- Set up carryOver and subStepSize once, when processing starts
         if not carriedOver then
+            -- this needs to be done to set focus or txt radios have issue
+            rfsuite.app.formNavigationFields['menu']:focus(true)
             carriedOver = slowcount
             subStepSize = (100 - carriedOver) / (#logColumns * 5)  -- 5 subtasks per column
         end
@@ -620,14 +635,7 @@ local function wakeup()
         progressLoader:message("Processing data " .. currentDataIndex .. " of " .. #logColumns)
 
         if currentDataIndex >= #logColumns then
-            local posField = {x = graphPos['x_start'], y = graphPos['slider_y'], w = graphPos['width'] - 10, h = 40}
-            rfsuite.app.formFields[1] = form.addSliderField(nil, posField, 0, 100, function()
-                return sliderPosition
-            end, function(newValue)
-                sliderPosition = newValue
-            end)
 
-            rfsuite.app.formFields[1]:step(1)
 
             logLineCount = #logData[currentDataIndex]['data']
 
@@ -649,35 +657,33 @@ local function paint()
     local width = graphPos['width'] - 10
     local height = graphPos['height']
 
-    if enableWakeup == true and processedLogData == true then
+    if enableWakeup and processedLogData then
 
-        if logData ~= nil then
-            local optimal_records_per_page, optimal_steps = calculate_optimal_records_per_page(logLineCount, 40, 80)
+        if logData then
+            local optimal_records_per_page, _ = calculate_optimal_records_per_page(logLineCount, 40, 80)
             local step_size = optimal_records_per_page
 
             local position = math.floor(map(sliderPosition, 1, 100, 1, logLineCount - step_size))
             if position < 1 then position = 1 end
 
-            -- Divide graph into lanes
             local graphCount = 0
             for _, v in ipairs(logData) do
-                if v.graph == true then
-                    graphCount = graphCount + 1
-                end
+                if v.graph then graphCount = graphCount + 1 end
             end
 
             local laneHeight = height / graphCount
             local currentLane = 0
 
-            for i, v in ipairs(logData) do
-                if v.graph == true then
+            for _, v in ipairs(logData) do
+                if v.graph then
                     currentLane = currentLane + 1
                     local laneY = y_start + (currentLane - 1) * laneHeight
 
                     local points = paginate_table(v.data, step_size, position)
+
                     drawGraph(points, v.color, v.pen, x_start, laneY, width, laneHeight, v.minimum, v.maximum)
 
-                    drawKey(v.keyname, v.keyindex, v.keyunit, v.keyminmax, v.keyfloor, v.color, v.minimum, v.maximum)
+                    drawKey(v.keyname, v.keyunit, v.keyminmax, v.keyfloor, v.color, v.minimum, v.maximum, laneY, laneHeight)
 
                     drawCurrentIndex(points, sliderPosition, logLineCount + logPadding, v.keyindex, v.keyunit, v.keyfloor, v.name, v.color, laneY, laneHeight, currentLane, graphCount)
                 end
