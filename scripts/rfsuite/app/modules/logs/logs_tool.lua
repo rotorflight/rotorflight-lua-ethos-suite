@@ -9,12 +9,14 @@ graphPos['height_offset'] = rfsuite.app.radio.logGraphHeightOffset or 0
 graphPos['x_start'] = 0
 graphPos['y_start'] = 0 + graphPos['menu_offset']
 graphPos['width'] = math.floor(LCD_W * rfsuite.app.radio.logGraphWidthPercentage)
+graphPos['key_width'] = LCD_W - graphPos['width']
 graphPos['height'] = LCD_H - graphPos['menu_offset'] - graphPos['menu_offset'] - 40 + graphPos['height_offset']
 graphPos['slider_y'] = LCD_H - (graphPos['menu_offset'] + 30) + graphPos['height_offset']
 
 local triggerOverRide = false
 local triggerOverRideAll = false
 
+local zoomLevel = 3
 local enableWakeup = false
 local wakeupScheduler = os.clock()
 local activeLogFile
@@ -489,6 +491,36 @@ local function drawCurrentIndex(points, position, totalPoints, keyindex, keyunit
             lcd.color(COLOR_BLACK)
         end
         lcd.drawLine(linePos, graphPos['menu_offset'] - 5, linePos, graphPos['menu_offset'] + graphPos['height'])
+
+        -- draw zoom level indicator
+
+        if lcd.darkMode() then
+            lcd.color(lcd.RGB(40, 40, 40))
+        else
+            lcd.color(lcd.RGB(240, 240, 240))
+        end
+
+        local z_x = (LCD_W - 25)
+        local z_y = graphPos['slider_y']
+        local z_w = 20
+        local z_h = 40
+        local z_lh = z_h/5
+        local z_ly = zoomLevel
+
+        -- calculate line offset
+        local lineOffsetY = (zoomLevel - 1) * z_lh
+
+        -- draw background
+        lcd.drawFilledRectangle(z_x, z_y, z_w, z_h)
+        -- draw line
+        if lcd.darkMode() then
+            lcd.color(COLOR_WHITE)
+        else
+            lcd.color(COLOR_BLACK)
+        end
+        lcd.drawFilledRectangle(z_x, z_y  + lineOffsetY, 20, z_lh)
+
+
     end
 end
 
@@ -549,6 +581,7 @@ local function openPage(pidx, title, script, logfile, displaymode)
         return
     end
 
+    -- slider
     local posField = {x = graphPos['x_start'], y = graphPos['slider_y'], w = graphPos['width'] - 10, h = 40}
     rfsuite.app.formFields[1] = form.addSliderField(nil, posField, 0, 100, function()
         return sliderPosition
@@ -556,8 +589,39 @@ local function openPage(pidx, title, script, logfile, displaymode)
         sliderPosition = newValue
     end)
 
+
+    local zoomButtonWidth = (graphPos['key_width'] / 2) - 20
+    --- zoom -
+    local posField = {x = graphPos['width'], y = graphPos['slider_y'], w = zoomButtonWidth, h = 40}
+    rfsuite.app.formFields[2] = form.addButton(line, posField, {
+        text = "-",
+        icon = nil,
+        options = FONT_STD,
+        press = function()
+            if zoomLevel > 1 then
+                zoomLevel = zoomLevel - 1
+                lcd.invalidate()
+            end
+        end
+    })
+
+    --- zoom +
+    local posField = {x = graphPos['width'] + zoomButtonWidth + 10 , y = graphPos['slider_y'], w = zoomButtonWidth, h = 40}
+    rfsuite.app.formFields[3] = form.addButton(line, posField, {
+        text = "+",
+        icon = nil,
+        options = FONT_STD,
+        press = function()
+            if zoomLevel < 5 then
+                zoomLevel = zoomLevel + 1
+                lcd.invalidate()
+            end           
+        end
+    })
+    
+
     rfsuite.app.formFields[1]:step(1)
-    --rfsuite.app.formFields[1]:focus(true)
+
 
     logDataRaw = {}
     logFileReadOffset = 0
@@ -565,6 +629,7 @@ local function openPage(pidx, title, script, logfile, displaymode)
 
     rfsuite.tasks.callbackEvery(0.05, readNextChunk)
     rfsuite.app.triggers.closeProgressLoader = true
+    lcd.invalidate()
     enableWakeup = true
     return
 end
@@ -589,7 +654,6 @@ local function wakeup()
     end
 
     if sliderPosition ~= sliderPositionOld then
-        lcd.invalidate()
         sliderPositionOld = sliderPosition
     end
 
@@ -605,7 +669,6 @@ local function wakeup()
     end
 
     if logDataRawReadComplete and not processedLogData then
-
         -- Set up carryOver and subStepSize once, when processing starts
         if not carriedOver then
             -- this needs to be done to set focus or txt radios have issue
@@ -660,6 +723,8 @@ local function wakeup()
 
             progressLoader:close()
             processedLogData = true
+            lcd.invalidate()
+            
         end
 
         currentDataIndex = currentDataIndex + 1
@@ -669,6 +734,8 @@ end
 
 
 local function paint()
+
+    print(zoomLevel)
 
     local menu_offset = graphPos['menu_offset']
     local x_start = graphPos['x_start']
