@@ -505,21 +505,22 @@ local function drawCurrentIndex(points, position, totalPoints, keyindex, keyunit
         local z_w = 20
         local z_h = 40
         local z_lh = z_h/5
-        local z_ly = zoomLevel
-
-        -- calculate line offset
-        local lineOffsetY = (zoomLevel - 1) * z_lh
-
+        
+        -- calculate line offset (inverted direction)
+        local lineOffsetY = (5 - zoomLevel) * z_lh
+        
         -- draw background
         lcd.drawFilledRectangle(z_x, z_y, z_w, z_h)
+        
         -- draw line
         if lcd.darkMode() then
             lcd.color(COLOR_WHITE)
         else
             lcd.color(COLOR_BLACK)
         end
-        lcd.drawFilledRectangle(z_x, z_y  + lineOffsetY, 20, z_lh)
+        lcd.drawFilledRectangle(z_x, z_y + lineOffsetY, z_w, z_lh)
 
+        
 
     end
 end
@@ -654,6 +655,7 @@ local function wakeup()
     end
 
     if sliderPosition ~= sliderPositionOld then
+        lcd.invalidate()
         sliderPositionOld = sliderPosition
     end
 
@@ -733,9 +735,15 @@ local function wakeup()
 end
 
 
-local function paint()
+local zoomLevelToRange = {
+    [1] = {min = 80, max = 100},  -- Fully zoomed out (most records per page)
+    [2] = {min = 60, max = 80},
+    [3] = {min = 40, max = 60},   -- Default mid zoom
+    [4] = {min = 20, max = 40},
+    [5] = {min = 10, max = 20}    -- Fully zoomed in (fewer records per page, more detail)
+}
 
-    print(zoomLevel)
+local function paint()
 
     local menu_offset = graphPos['menu_offset']
     local x_start = graphPos['x_start']
@@ -746,9 +754,10 @@ local function paint()
     if enableWakeup and processedLogData then
 
         if logData then
-            local optimal_records_per_page, _ = calculate_optimal_records_per_page(logLineCount, 40, 80)
-            local step_size = optimal_records_per_page
+            local zoomRange = zoomLevelToRange[zoomLevel]
+            local optimal_records_per_page, _ = calculate_optimal_records_per_page(logLineCount, zoomRange.min, zoomRange.max)
 
+            local step_size = optimal_records_per_page
             local position = math.floor(map(sliderPosition, 1, 100, 1, logLineCount - step_size))
             if position < 1 then position = 1 end
 
