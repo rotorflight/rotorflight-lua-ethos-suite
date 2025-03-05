@@ -198,10 +198,6 @@ end
 
 local function event(widget, category, value, x, y)
 
-    -- if category == 5 or value == 35 then
-    --    rfsuite.app.Page.onNavMenu(self)
-    --    return true
-    -- end
 
     return false
 end
@@ -209,9 +205,7 @@ end
 local function wakeup()
 
     if enableWakeup == true then
-        -- local now = os.clock()
-        -- if (now - wakeupScheduler) >= 0.5 then
-        -- end   
+
     end
 
 end
