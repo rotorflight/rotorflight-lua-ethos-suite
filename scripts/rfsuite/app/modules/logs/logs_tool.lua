@@ -557,7 +557,7 @@ local function openPage(pidx, title, script, logfile, displaymode)
     end)
 
     rfsuite.app.formFields[1]:step(1)
-    rfsuite.app.formFields[1]:focus(true)
+    --rfsuite.app.formFields[1]:focus(true)
 
     logDataRaw = {}
     logFileReadOffset = 0
