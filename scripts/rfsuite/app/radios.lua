@@ -33,7 +33,7 @@ local resolution = LCD_W .. "x" .. LCD_H
     - `logGraphKeyHeight`: Height of log graph key.
     - `logGraphHeightOffset`: Height offset for log graph.
     - `logKeyFont`: Font for log key.
-    - `sliderPaddingLeft`: Left padding for sliders.
+    - `logSliderPaddingLeft`: Left padding for sliders.
 ]]
 local supportedRadios = {
     -- TANDEM X20, TANDEM XE (800x480)
@@ -55,12 +55,14 @@ local supportedRadios = {
             linePaddingTop = 8,
             formRowHeight = 50,
             logGraphMenuOffset = 70,
-            logGraphWidthPercentage = 0.75,
+            logGraphWidthPercentage = 0.79,
             logGraphButtonsPerRow = 5,
             logGraphKeyHeight = 65,
             logGraphHeightOffset = -15,
             logKeyFont = FONT_S,
-            sliderPaddingLeft = 42,
+            logKeyFontSmall = FONT_XS,
+            logSliderPaddingLeft = 42,
+            logShowAvg = true,
         }
     },
     -- TANDEM X18, TWIN X Lite (480x320)
@@ -83,12 +85,14 @@ local supportedRadios = {
             linePaddingTop = 6,
             formRowHeight = 50,
             logGraphMenuOffset = 55,
-            logGraphWidthPercentage = 0.685,
+            logGraphWidthPercentage = 0.72,
             logGraphButtonsPerRow = 4,
             logGraphKeyHeight = 45,
             logGraphHeightOffset = 10,
             logKeyFont = FONT_XS,
-            sliderPaddingLeft = 30,
+            logKeyFontSmall = FONT_XXS,
+            logSliderPaddingLeft = 30,
+            logShowAvg = false,
         }
     },
     -- Horus X10, Horus X12 (480x272)
@@ -115,7 +119,9 @@ local supportedRadios = {
             logGraphKeyHeight = 38,
             logGraphHeightOffset = 0,
             logKeyFont = FONT_XS,
-            sliderPaddingLeft = 30,
+            logKeyFontSmall = FONT_XXS,
+            logSliderPaddingLeft = 30,
+            logShowAvg = false,
         }
     },
     -- Twin X14 (632x314)
@@ -138,12 +144,14 @@ local supportedRadios = {
             linePaddingTop = 6,
             formRowHeight = 50,
             logGraphMenuOffset = 60,
-            logGraphWidthPercentage = 0.65,
+            logGraphWidthPercentage = 0.76,
             logGraphButtonsPerRow = 4,
             logGraphKeyHeight = 50,
             logGraphHeightOffset = 0,
-            logKeyFont = FONT_XS,
-            sliderPaddingLeft = 30,
+            logKeyFont = FONT_XXS,
+            logKeyFontSmall = FONT_XXS,
+            logSliderPaddingLeft = 30,
+            logShowAvg = false,
         }
     }
 }

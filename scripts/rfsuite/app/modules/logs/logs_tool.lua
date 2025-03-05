@@ -9,12 +9,14 @@ graphPos['height_offset'] = rfsuite.app.radio.logGraphHeightOffset or 0
 graphPos['x_start'] = 0
 graphPos['y_start'] = 0 + graphPos['menu_offset']
 graphPos['width'] = math.floor(LCD_W * rfsuite.app.radio.logGraphWidthPercentage)
+graphPos['key_width'] = LCD_W - graphPos['width']
 graphPos['height'] = LCD_H - graphPos['menu_offset'] - graphPos['menu_offset'] - 40 + graphPos['height_offset']
 graphPos['slider_y'] = LCD_H - (graphPos['menu_offset'] + 30) + graphPos['height_offset']
 
 local triggerOverRide = false
 local triggerOverRideAll = false
 
+local zoomLevel = 3
 local enableWakeup = false
 local wakeupScheduler = os.clock()
 local activeLogFile
@@ -356,166 +358,172 @@ local function drawGraph(points, color, pen, x_start, y_start, width, height, mi
     end
 end
 
-local function drawKey(name, keyindex, keyunit, keyminmax, keyfloor, color, minimum, maximum)
+local function drawKey(name, keyunit, keyminmax, keyfloor, color, minimum, maximum, laneY, laneHeight)
 
     local w = LCD_W - graphPos['width'] - 10
-    local h = rfsuite.app.radio.logGraphKeyHeight
-    local h_height = h / 2
-    local x = graphPos['width']
-    local y = (graphPos['y_start'] + (keyindex * h)) - h
+    local boxpadding = 3
 
-    if keyfloor == true then
+    lcd.font(rfsuite.app.radio.logKeyFont)
+    local _, th = lcd.getTextSize(name)
+    local boxHeight = th + boxpadding
+
+    local x = graphPos['width']
+    local y = laneY  -- No more shifting, this is the real top of the lane
+
+    if keyfloor then
         minimum = math.floor(minimum)
         maximum = math.floor(maximum)
     end
 
-    -- draw the header box
-    lcd.pen(solid)
-    lcd.drawFilledRectangle(x, y, w, h_height)
+    lcd.color(color)
+    lcd.drawFilledRectangle(x, y, w, boxHeight)
 
-    -- put text into the box
     lcd.color(COLOR_BLACK)
-    lcd.font(rfsuite.app.radio.logKeyFont)
-    local tw, th = lcd.getTextSize(name)
-    local ty = (h_height / 2 - th / 2) + y
-    lcd.drawText(x + 5, ty, name, LEFT)
+    local textY = y + (boxHeight / 2 - th / 2)
+    lcd.drawText(x + 5, textY, name, LEFT)
 
-    -- show min and max values
+    lcd.font(rfsuite.app.radio.logKeyFontSmall)
     if lcd.darkMode() then
         lcd.color(COLOR_WHITE)
     else
         lcd.color(COLOR_BLACK)
     end
-    lcd.font(rfsuite.app.radio.logKeyFont)
-    local mm_str
-    if keyminmax == 1 then
-        mm_str = "Min: " .. minimum .. keyunit .. " " .. "Max: " .. maximum .. keyunit
-    else
-        mm_str = "Max: " .. maximum .. keyunit
+
+    -- shrink rpm if desirable
+    -- 10000rpm is prob never going to be hit
+    -- but we are safe!
+    local min_trunc
+    if keyunit == "rpm" and (minimum >= 10000 or maximum >= 10000) then
+        min_trunc = string.format("%.1fK", minimum / 10000)
+        max_trunc = string.format("%.1fK", maximum / 10000)
     end
-    local tw, th = lcd.getTextSize(mm_str)
-    local ty = (h_height / 2 - th / 2) + y + h_height
-    lcd.drawText(x + 5, ty, mm_str, LEFT)
+    
+
+    local max_str
+    local min_str
+    if keyminmax == 1 then
+        min_str = "↓ " .. (min_trunc or minimum) .. keyunit 
+        max_str = " ↑ " .. (max_trunc or maximum) .. keyunit
+    else
+        min_str = ""
+        max_str = "↑ " .. (max_trun or maximum) .. keyunit
+    end
+
+    -- left align min value
+    local mmY = y + boxHeight + 2
+    lcd.drawText(x + 5, mmY, min_str, LEFT)
+
+    -- right align max value
+    local tw, th = lcd.getTextSize(max_str)
+    lcd.drawText((LCD_W - tw) + boxpadding, mmY, max_str, LEFT)
+
+    -- display average (can only do on bigger radios due to space)
+    if rfsuite.app.radio.logShowAvg == true then
+        local avg_str = "Ø " .. math.floor((minimum + maximum) / 2) .. keyunit
+        local avgY = mmY + th -2
+        lcd.drawText(x + 5, avgY, avg_str, LEFT)
+    end    
 
 end
 
-local function drawCurrentIndex(points, position, totalPoints, keyindex, keyunit, keyfloor, name, color)
+
+local function drawCurrentIndex(points, position, totalPoints, keyindex, keyunit, keyfloor, name, color, laneY, laneHeight, laneNumber, totalLanes)
 
     if position < 1 then position = 1 end
 
-    local sliderPadding = rfsuite.app.radio.sliderPaddingLeft
+    local sliderPadding = rfsuite.app.radio.logSliderPaddingLeft
     local w = graphPos['width'] - sliderPadding
-    local h = 35
-    local h_height = 30
-    local x = 0
-    local y = (keyindex * h) - h_height / 2
-    local idx_w = 100
 
     local linePos = map(position, 1, 100, 1, w - 10) + sliderPadding
-
     if linePos < 1 then linePos = 0 end
 
-    local idxPos, textAlign
-    if (position > 50) then
-        idxPos = linePos - 15
-        textAlign = RIGHT
-    else
-        idxPos = linePos + 5
-        textAlign = LEFT
-    end
+    local boxpadding = 3
 
-    local current_s = calculateSeconds(totalPoints, position)
-    local time_str = format_time(math.floor(current_s))
+    local idxPos, textAlign, boxPos
+    if position > 50 then
+        idxPos = linePos - (boxpadding * 2)
+        textAlign = RIGHT
+        boxPos = linePos - boxpadding
+    else
+        idxPos = linePos + (boxpadding * 2)
+        textAlign = LEFT
+        boxPos = linePos + boxpadding
+    end
 
     local value = getValueAtPercentage(points, position)
-    if keyfloor == true then value = math.floor(value) end
+    if keyfloor then value = math.floor(value) end
     value = value .. keyunit
 
-    if keyindex == 1 then
-        lcd.color(COLOR_WHITE)
-        lcd.drawLine(linePos, graphPos['menu_offset'] - 5, linePos, graphPos['height'] + graphPos['menu_offset'])
-    end
-
-    lcd.font(FONT_BOLD)
+    lcd.font(rfsuite.app.radio.logKeyFont)
     local tw, th = lcd.getTextSize(value)
-    local ty = (graphPos['menu_offset'] + (th * keyindex)) - keyindex
 
-    local padding = 2
+    local boxHeight = th + boxpadding
+    local boxY = laneY  -- Top of the lane - no offset needed
+    local textY = boxY + (boxHeight / 2 - th / 2)
 
-    -- Determine box X position based on text alignment
-    local boxX
-    if textAlign == RIGHT then
-        boxX = idxPos - tw - padding
-    else
-        boxX = idxPos - padding
+    if position > 50 then
+        boxPos = boxPos - tw - (boxpadding * 2)
     end
 
-    -- Draw background box behind value
-    if lcd.darkMode() then
-        lcd.color(lcd.RGB(16 , 16 , 16, 0.8))
-    else
-        lcd.color(lcd.RGB(208 , 208 , 208, 0.8))
-    end
-    lcd.drawFilledRectangle(boxX, ty - padding, tw + 2 * padding, th + 2 * padding)
-
-    -- Draw value text
     lcd.color(color)
-    lcd.drawText(idxPos, ty, value, textAlign)
+    lcd.drawFilledRectangle(boxPos, boxY, tw + (boxpadding * 2), boxHeight)
 
-    if keyindex == 1 then
-        lcd.font(FONT_NORMAL)
-        local tw, th = lcd.getTextSize(time_str)
-        local ty = graphPos['height'] + graphPos['menu_offset'] - th
+    if lcd.darkMode() then
+        lcd.color(COLOR_BLACK)
+    else
+        lcd.color(COLOR_WHITE)
+    end
+    lcd.drawText(idxPos, textY, value, textAlign)
 
-        -- Box position for time string (follows same left/right rule)
-        if textAlign == RIGHT then
-            boxX = idxPos - tw - padding
-        else
-            boxX = idxPos - padding
-        end
+    if laneNumber == 1 then
+        local current_s = calculateSeconds(totalPoints, position)
+        local time_str = format_time(math.floor(current_s))
 
-        -- Draw background box behind time
-        if lcd.darkMode() then
-            lcd.color(lcd.RGB(16 , 16 , 16, 0.8))
-        else
-            lcd.color(lcd.RGB(208 , 208 , 208, 0.8))
-        end
-        lcd.drawFilledRectangle(boxX, ty - padding, tw + 2 * padding, th + 2 * padding)
+        lcd.font(rfsuite.app.radio.logKeyFont)
+        local ty = graphPos['height'] + graphPos['menu_offset'] - 10
 
-        -- Draw time text
+        lcd.color(COLOR_WHITE)
+        lcd.drawText(idxPos, ty, time_str, textAlign)
+
         if lcd.darkMode() then
             lcd.color(COLOR_WHITE)
         else
             lcd.color(COLOR_BLACK)
         end
-        lcd.drawText(idxPos, ty, time_str, textAlign)
+        lcd.drawLine(linePos, graphPos['menu_offset'] - 5, linePos, graphPos['menu_offset'] + graphPos['height'])
 
-        if (idxPos + 5) <= w - tw then
-            local run_current_s = calculateSeconds(totalPoints, 100)
-            local run_time_str = format_time(math.floor(run_current_s))
-            local tw, th = lcd.getTextSize(run_time_str)
+        -- draw zoom level indicator
 
-            local tx = graphPos['width'] - tw - 10
-            local ty = graphPos['height'] + graphPos['menu_offset'] - th
-
-            if lcd.darkMode() then
-                lcd.color(lcd.RGB(16 , 16 , 16, 0.8))
-            else
-                lcd.color(lcd.RGB(208 , 208 , 208, 0.8))
-            end
-            
-            lcd.drawFilledRectangle(tx - padding, ty - padding, 100, th + 2 * padding)
-
-            if lcd.darkMode() then
-                lcd.color(COLOR_WHITE)
-            else
-                lcd.color(COLOR_BLACK)
-            end
-            lcd.drawText(tx, ty, run_time_str)
+        if lcd.darkMode() then
+            lcd.color(lcd.RGB(40, 40, 40))
+        else
+            lcd.color(lcd.RGB(240, 240, 240))
         end
+
+        local z_x = (LCD_W - 25)
+        local z_y = graphPos['slider_y']
+        local z_w = 20
+        local z_h = 40
+        local z_lh = z_h/5
+        
+        -- calculate line offset (inverted direction)
+        local lineOffsetY = (5 - zoomLevel) * z_lh
+        
+        -- draw background
+        lcd.drawFilledRectangle(z_x, z_y, z_w, z_h)
+        
+        -- draw line
+        if lcd.darkMode() then
+            lcd.color(COLOR_WHITE)
+        else
+            lcd.color(COLOR_BLACK)
+        end
+        lcd.drawFilledRectangle(z_x, z_y + lineOffsetY, z_w, z_lh)
+
+        
+
     end
 end
-
 
 
 function findMaxNumber(numbers)
@@ -574,12 +582,55 @@ local function openPage(pidx, title, script, logfile, displaymode)
         return
     end
 
+    -- slider
+    local posField = {x = graphPos['x_start'], y = graphPos['slider_y'], w = graphPos['width'] - 10, h = 40}
+    rfsuite.app.formFields[1] = form.addSliderField(nil, posField, 0, 100, function()
+        return sliderPosition
+    end, function(newValue)
+        sliderPosition = newValue
+    end)
+
+
+    local zoomButtonWidth = (graphPos['key_width'] / 2) - 20
+    --- zoom -
+    local posField = {x = graphPos['width'], y = graphPos['slider_y'], w = zoomButtonWidth, h = 40}
+    rfsuite.app.formFields[2] = form.addButton(line, posField, {
+        text = "-",
+        icon = nil,
+        options = FONT_STD,
+        press = function()
+            if zoomLevel > 1 then
+                zoomLevel = zoomLevel - 1
+                lcd.invalidate()
+            end
+        end
+    })
+
+    --- zoom +
+    local posField = {x = graphPos['width'] + zoomButtonWidth + 10 , y = graphPos['slider_y'], w = zoomButtonWidth, h = 40}
+    rfsuite.app.formFields[3] = form.addButton(line, posField, {
+        text = "+",
+        icon = nil,
+        options = FONT_STD,
+        press = function()
+            if zoomLevel < 5 then
+                zoomLevel = zoomLevel + 1
+                lcd.invalidate()
+            end           
+        end
+    })
+    
+
+    rfsuite.app.formFields[1]:step(1)
+
+
     logDataRaw = {}
     logFileReadOffset = 0
     logDataRawReadComplete = false
 
     rfsuite.tasks.callbackEvery(0.05, readNextChunk)
     rfsuite.app.triggers.closeProgressLoader = true
+    lcd.invalidate()
     enableWakeup = true
     return
 end
@@ -620,9 +671,10 @@ local function wakeup()
     end
 
     if logDataRawReadComplete and not processedLogData then
-
         -- Set up carryOver and subStepSize once, when processing starts
         if not carriedOver then
+            -- this needs to be done to set focus or txt radios have issue
+            rfsuite.app.formNavigationFields['menu']:focus(true)
             carriedOver = slowcount
             subStepSize = (100 - carriedOver) / (#logColumns * 5)  -- 5 subtasks per column
         end
@@ -667,19 +719,14 @@ local function wakeup()
         progressLoader:message("Processing data " .. currentDataIndex .. " of " .. #logColumns)
 
         if currentDataIndex >= #logColumns then
-            local posField = {x = graphPos['x_start'], y = graphPos['slider_y'], w = graphPos['width'] - 10, h = 40}
-            rfsuite.app.formFields[1] = form.addSliderField(nil, posField, 0, 100, function()
-                return sliderPosition
-            end, function(newValue)
-                sliderPosition = newValue
-            end)
 
-            rfsuite.app.formFields[1]:step(1)
 
             logLineCount = #logData[currentDataIndex]['data']
 
             progressLoader:close()
             processedLogData = true
+            lcd.invalidate()
+            
         end
 
         currentDataIndex = currentDataIndex + 1
@@ -687,6 +734,14 @@ local function wakeup()
     end
 end
 
+
+local zoomLevelToRange = {
+    [1] = {min = 80, max = 100},  -- Fully zoomed out (most records per page)
+    [2] = {min = 60, max = 80},
+    [3] = {min = 40, max = 60},   -- Default mid zoom
+    [4] = {min = 20, max = 40},
+    [5] = {min = 10, max = 20}    -- Fully zoomed in (fewer records per page, more detail)
+}
 
 local function paint()
 
@@ -696,41 +751,42 @@ local function paint()
     local width = graphPos['width'] - 10
     local height = graphPos['height']
 
-    if enableWakeup == true and processedLogData == true then
+    if enableWakeup and processedLogData then
 
-        if logData ~= nil then
-            local optimal_records_per_page, optimal_steps = calculate_optimal_records_per_page(logLineCount, 40, 80)
+        if logData then
+            local zoomRange = zoomLevelToRange[zoomLevel]
+            local optimal_records_per_page, _ = calculate_optimal_records_per_page(logLineCount, zoomRange.min, zoomRange.max)
 
             local step_size = optimal_records_per_page
-
             local position = math.floor(map(sliderPosition, 1, 100, 1, logLineCount - step_size))
             if position < 1 then position = 1 end
 
-            for i, v in ipairs(logData) do
+            local graphCount = 0
+            for _, v in ipairs(logData) do
+                if v.graph then graphCount = graphCount + 1 end
+            end
 
-                if logData[i].graph == true then
-                    local points = paginate_table(logData[i].data, step_size, position)
-                    local color = logData[i].color
-                    local pen = logData[i].pen
-                    local name = logData[i].name
-                    local minimum = logData[i].minimum
-                    local maximum = logData[i].maximum
-                    local average = logData[i].average
-                    local keyindex = logData[i].keyindex
-                    local keyname = logData[i].keyname
-                    local keyunit = logData[i].keyunit
-                    local keyminmax = logData[i].keyminmax
-                    local keyfloor = logData[i].keyfloor
-                    drawGraph(points, color, pen, x_start, y_start, width, height, minimum, maximum)
-                    drawKey(keyname, keyindex, keyunit, keyminmax, keyfloor, color, minimum, maximum)
-                    drawCurrentIndex(points, sliderPosition, logLineCount + logPadding, keyindex, keyunit, keyfloor, name, color)
+            local laneHeight = height / graphCount
+            local currentLane = 0
 
+            for _, v in ipairs(logData) do
+                if v.graph then
+                    currentLane = currentLane + 1
+                    local laneY = y_start + (currentLane - 1) * laneHeight
+
+                    local points = paginate_table(v.data, step_size, position)
+
+                    drawGraph(points, v.color, v.pen, x_start, laneY, width, laneHeight, v.minimum, v.maximum)
+
+                    drawKey(v.keyname, v.keyunit, v.keyminmax, v.keyfloor, v.color, v.minimum, v.maximum, laneY, laneHeight)
+
+                    drawCurrentIndex(points, sliderPosition, logLineCount + logPadding, v.keyindex, v.keyunit, v.keyfloor, v.name, v.color, laneY, laneHeight, currentLane, graphCount)
                 end
-
             end
         end
     end
 end
+
 
 local function onNavMenu(self)
 
