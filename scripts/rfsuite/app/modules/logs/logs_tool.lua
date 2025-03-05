@@ -17,6 +17,7 @@ local triggerOverRide = false
 local triggerOverRideAll = false
 
 local zoomLevel = 1
+local zoomCount = 5
 local enableWakeup = false
 local wakeupScheduler = os.clock()
 local activeLogFile
@@ -42,6 +43,25 @@ local sliderPositionOld = 1
 
 local processedLogData = false
 local currentDataIndex = 1
+
+-- Range of samples to display for each zoom level
+local zoomLevelToRange = {
+    [1] = {min = 500, max = 600}, -- Fully zoomed out
+    [2] = {min = 400, max = 500},
+    [3] = {min = 200, max = 300},
+    [4] = {min = 100, max = 200},
+    [5] = {min = 10, max = 100}      -- Fully zoomed in
+}
+
+-- number of samples to skip for each zoom level
+local zoomLevelToDecimation = {
+    [1] = 20,   -- Fully zoomed out: every 20th sample
+    [2] = 15,
+    [3] = 10,
+    [4] = 5,
+    [5] = 1,    -- Fully zoomed in: every sample
+}
+
 
 function readNextChunk()
     if logDataRawReadComplete then
@@ -120,32 +140,23 @@ function calculateSeconds(totalSeconds, sliderValue)
 end
 
 
--- Decimation table: how much to skip at each zoom level
-local zoomLevelToDecimation = {
-    [1] = 20,   -- Fully zoomed out: every 20th sample
-    [2] = 15,
-    [3] = 10,
-    [4] = 5,
-    [5] = 1,
-
-}
-
-
-
 -- Enhanced paginate_table() to support decimation
 function paginate_table(data, step_size, position, decimationFactor)
-    decimationFactor = decimationFactor or 1
+     decimationFactor = decimationFactor or 1
 
-    local start_index = math.max(1, position)
-    local end_index = math.min(start_index + step_size - 1, #data)
+     local start_index = math.max(1, position)
+     local end_index = math.min(start_index + step_size - 1, #data)
 
-    local page = {}
-    for i = start_index, end_index, decimationFactor do
-        table.insert(page, data[i])
-    end
+     local page = {}
+     for i = start_index, end_index, decimationFactor do
+         table.insert(page, data[i])
+     end
 
-    return page
+     return page
 end
+
+
+
 
 function padTable(tbl, padCount)
     -- Get the first and last values of the table
@@ -510,10 +521,10 @@ local function drawCurrentIndex(points, position, totalPoints, keyindex, keyunit
         local z_y = graphPos['slider_y']
         local z_w = 20
         local z_h = 40
-        local z_lh = z_h/5
+        local z_lh = z_h/zoomCount
         
         -- calculate line offset (inverted direction)
-        local lineOffsetY = (5 - zoomLevel) * z_lh
+        local lineOffsetY = (zoomCount - zoomLevel) * z_lh
         
         -- draw background
         lcd.drawFilledRectangle(z_x, z_y, z_w, z_h)
@@ -627,13 +638,13 @@ local function openPage(pidx, title, script, logfile, displaymode)
         icon = nil,
         options = FONT_STD,
         press = function()
-            if zoomLevel < 5 then
+            if zoomLevel < zoomCount then
                 zoomLevel = zoomLevel + 1
                 lcd.invalidate()
                 rfsuite.app.formFields[2]:enable(true)
                 rfsuite.app.formFields[3]:enable(true)
             end    
-            if zoomLevel == 5 then
+            if zoomLevel == zoomCount then
                 rfsuite.app.formFields[3]:enable(false)
                 rfsuite.app.formFields[2]:focus()   
             end    
@@ -754,14 +765,18 @@ local function wakeup()
     end
 end
 
+local function calculateZoomSteps(logLineCount)
+    if logLineCount < 100 then
+        return 2
+    elseif logLineCount < 300 then
+        return 3
+    elseif logLineCount < 600 then
+        return 4
+    else
+        return 5
+    end
+end
 
-zoomLevelToRange = {
-    [1] = {min = 601, max = 750}, -- Fully zoomed out
-    [2] = {min = 451, max = 600},
-    [3] = {min = 301, max = 450},
-    [4] = {min = 151, max = 300},
-    [5] = {min = 10, max = 150}      -- Fully zoomed in
-}
 
 
 local function paint()
@@ -776,6 +791,7 @@ local function paint()
 
         if logData then
             local zoomRange = zoomLevelToRange[zoomLevel]
+            zoomCount = calculateZoomSteps(logLineCount)
             local optimal_records_per_page, _ = calculate_optimal_records_per_page(logLineCount, zoomRange.min, zoomRange.max)
 
             local step_size = optimal_records_per_page
