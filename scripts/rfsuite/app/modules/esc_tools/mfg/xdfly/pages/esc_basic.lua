@@ -17,7 +17,7 @@ local mspapi = {
         },
         fields = {
             {t = "LV BEC voltage", activeFieldPos = 5, type = 1, mspapi = 1, apikey = "lv_bec_voltage"},
-            {t = "HV BEC voltage", activeFieldPos = 11, type = 1, mspapi = 1, apikey = "hv_bec_voltage"},
+            {t = "HV BEC voltage", activeFieldPos = 11, mspapi = 1, apikey = "hv_bec_voltage"},
             {t = "Motor direction", activeFieldPos = 6, type = 1, mspapi = 1, apikey = "motor_direction"},
             {t = "Startup Power", activeFieldPos = 12, type = 1, mspapi = 1, apikey = "startup_power"},
             {t = "LED Colour", activeFieldPos = 18, type = 1, mspapi = 1, apikey = "led_color"},

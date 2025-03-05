@@ -44,7 +44,6 @@ local preferences = {}
 -- Configuration options that adjust behavior of the script (will be moved to a settings menu in the future)
 preferences.flightLog = true                                        -- will write a flight log into /scripts/rfsuite/logs/<modelname>/*.log
 preferences.reloadOnSave = false                                    -- trigger a reload on save [default = false]
-preferences.skipRssiSensorCheck = false                             -- skip checking for a valid rssi [ default = false]
 preferences.internalElrsSensors = true                              -- disable the integrated elrs telemetry processing [default = true]
 preferences.internalSportSensors = true                             -- disable the integrated smart port telemetry processing [default = true]
 preferences.internalSimSensors = true                               -- disable the integrated simulator telemetry processing [default = true]
