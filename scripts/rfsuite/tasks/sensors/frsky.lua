@@ -54,7 +54,7 @@ createSensorList[0x5260] = {name = "Cell Count", unit = UNIT_RAW}
 createSensorList[0x51A0] = {name = "Pitch Control", unit = UNIT_DEGREE, decimals = 2}
 createSensorList[0x51A1] = {name = "Roll Control", unit = UNIT_DEGREE, decimals = 2}
 createSensorList[0x51A2] = {name = "Yaw Control", unit = UNIT_DEGREE, decimals = 2}
-createSensorList[0x51A3] = {name = "Collective Control", unit = UNIT_DEGREE, decimals = 2}
+createSensorList[0x51A3] = {name = "Collective Ctrl", unit = UNIT_DEGREE, decimals = 2}
 createSensorList[0x51A4] = {name = "Throttle %", unit = UNIT_PERCENT, decimals = 1}
 createSensorList[0x5258] = {name = "ESC1 Capacity", unit = UNIT_MILLIAMPERE_HOUR}
 createSensorList[0x5268] = {name = "ESC1 Power", unit = UNIT_PERCENT}
@@ -68,10 +68,10 @@ createSensorList[0x51D1] = {name = "System Load", unit = UNIT_PERCENT}
 createSensorList[0x51D2] = {name = "RT Load", unit = UNIT_PERCENT}
 createSensorList[0x5120] = {name = "Model ID", unit = UNIT_RAW}
 createSensorList[0x5121] = {name = "Flight Mode", unit = UNIT_RAW}
-createSensorList[0x5122] = {name = "Arming Flags", unit = UNIT_RAW}
-createSensorList[0x5123] = {name = "Arming Disable Flags", unit = UNIT_RAW}
+createSensorList[0x5122] = {name = "Arm Flags", unit = UNIT_RAW}
+createSensorList[0x5123] = {name = "Arm Dis Flags", unit = UNIT_RAW}
 createSensorList[0x5124] = {name = "Rescue State", unit = UNIT_RAW}
-createSensorList[0x5125] = {name = "Governor State", unit = UNIT_RAW}
+createSensorList[0x5125] = {name = "Gov State", unit = UNIT_RAW}
 createSensorList[0x5130] = {name = "PID Profile", unit = UNIT_RAW}
 createSensorList[0x5131] = {name = "Rates Profile", unit = UNIT_RAW}
 createSensorList[0x5110] = {name = "Adj Function", unit = UNIT_RAW}
