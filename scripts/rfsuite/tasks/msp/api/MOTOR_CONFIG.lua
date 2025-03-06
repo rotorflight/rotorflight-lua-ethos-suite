@@ -20,6 +20,7 @@ local MSP_API_CMD_READ = 131 -- Command identifier
 local MSP_API_CMD_WRITE = 222 -- Command identifier 
 
 -- Define the MSP response data structures
+local pwmProtocol = {"PWM", "ONESHOT125", "ONESHOT42", "MULTISHOT", "DSHOT150", "DSHOT300", "DSHOT600", "PROSHOT", "DISABLED"}
 local MSP_API_STRUCTURE_READ_DATA = {
     {field = "minthrottle",              type = "U16", apiVersion = 12.06, simResponse = {45, 4}, min = 50, max = 2250, default = 1070, help = "This PWM value is sent to the ESC/Servo at low throttle"},
     {field = "maxthrottle",              type = "U16", apiVersion = 12.06, simResponse = {208, 7}, min = 50, max = 2250, default = 1070, help = "This PWM value is sent to the ESC/Servo at full throttle"},
@@ -27,7 +28,7 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "motor_count_blheli",       type = "U8",  apiVersion = 12.06, simResponse = {1}},
     {field = "motor_pole_count_blheli",  type = "U8",  apiVersion = 12.06, simResponse = {6}},
     {field = "use_dshot_telemetry",      type = "U8",  apiVersion = 12.06, simResponse = {0}},
-    {field = "motor_pwm_protocol",       type = "U8",  apiVersion = 12.06, simResponse = {0}},
+    {field = "motor_pwm_protocol",       type = "U8",  apiVersion = 12.06, simResponse = {0}, table = pwmProtocol, tableIdxInc = -1, help = "The protocol used to communicate with the ESC"},
     {field = "motor_pwm_rate",           type = "U16", apiVersion = 12.06, simResponse = {250, 0}, min=50, max = 8000, default = 250, unit="Hz", help = "The frequency at which the ESC sends PWM signals to the motor"},
     {field = "use_unsynced_pwm",         type = "U8",  apiVersion = 12.06, simResponse = {1}},
     {field = "motor_pole_count_0",       type = "U8",  apiVersion = 12.06, simResponse = {6}, min = 0, max = 256, default = 8, help = "The number of magnets on the motor bell."},
@@ -51,7 +52,7 @@ local MSP_API_STRUCTURE_WRITE = {
     --{field = "motor_count_blheli",       type = "U8",  simResponse = {1}}, -- compat: BLHeliSuite for no good reason this is missing from the write structure
     {field = "motor_pole_count_blheli",  type = "U8",  apiVersion = 12.06, simResponse = {6}}, -- compat: BLHeliSuite
     {field = "use_dshot_telemetry",      type = "U8",  apiVersion = 12.06, simResponse = {0}},
-    {field = "motor_pwm_protocol",       type = "U8",  apiVersion = 12.06, simResponse = {0}},
+    {field = "motor_pwm_protocol",       type = "U8",  apiVersion = 12.06, simResponse = {0}, table = pwmProtocol, tableIdxInc = -1},
     {field = "motor_pwm_rate",           type = "U16", apiVersion = 12.06, simResponse = {250, 0}},
     {field = "use_unsynced_pwm",         type = "U8",  apiVersion = 12.06, simResponse = {1}},
     {field = "motor_pole_count_0",       type = "U8",  apiVersion = 12.06, simResponse = {6}, min = 0, max = 256, default = 8},
