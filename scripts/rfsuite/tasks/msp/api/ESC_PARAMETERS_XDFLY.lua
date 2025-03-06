@@ -35,7 +35,7 @@ local accel = {"Fast", "Normal", "Slow", "Very Slow"}
 local brakeType = {"Normal", "Reverse"}
 local autoRestart = {"OFF", "90s"}
 local srFunc = {"ON", "OFF"}
-local govMode = {"External Governor", "ESC Governor" , "Fixed Wing"}
+local govMode = {"ESC Governor", "External Governor" , "Fixed Wing"}
 
 -- api structure
 local MSP_API_STRUCTURE_READ_DATA = {
