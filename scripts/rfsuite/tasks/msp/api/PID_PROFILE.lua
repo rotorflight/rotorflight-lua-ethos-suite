@@ -46,7 +46,7 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "yaw_precomp_cutoff",              type = "U8", apiVersion = 12.06, simResponse = {6},   min = 0,   max = 250, default = 5,   unit = "Hz", help = "Frequency limit for all yaw precompensation actions."},
     {field = "yaw_cyclic_ff_gain",              type = "U8", apiVersion = 12.06, simResponse = {0},   min = 0,   max = 250, default = 30,  help = "Cyclic feedforward mixed into yaw (cyclic-to-yaw precomp)."},
     {field = "yaw_collective_ff_gain",          type = "U8", apiVersion = 12.06, simResponse = {30},  min = 0,   max = 250, default = 0,   help = "Collective feedforward mixed into yaw (collective-to-yaw precomp)."},
-    {field = "yaw_collective_dynamic_gain",     type = "U8", apiVersion = 12.06, simResponse = {0},   min = 0,   max = 250, default = 0,   help = "An extra boost of yaw precomp on collective input."},
+    {field = "yaw_collective_dynamic_gain",     type = "U8", apiVersion = 12.06, simResponse = {0},   min = 0,   max = 125, default = 0,   help = "An extra boost of yaw precomp on collective input."},
     {field = "yaw_collective_dynamic_decay",    type = "U8", apiVersion = 12.06, simResponse = {0},   min = 0,   max = 250, default = 25,  unit = "s",  help = "Decay time for the extra yaw precomp on collective input."},
     {field = "pitch_collective_ff_gain",        type = "U8", apiVersion = 12.06, simResponse = {0},   min = 0,   max = 250, default = 0,   help = "Increasing will compensate for the pitching up motion caused by tail drag when climbing."},
     {field = "angle_level_strength",            type = "U8", apiVersion = 12.06, simResponse = {40},  min = 0,   max = 200, default = 40,  help = "Determines how aggressively the helicopter tilts back to level while in Angle Mode."},
@@ -62,7 +62,7 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "bterm_cutoff_0",                  type = "U8", apiVersion = 12.06, simResponse = {15},  min = 0,   max = 250, default = 15,  help = "B-term cutoff in Hz."},
     {field = "bterm_cutoff_1",                  type = "U8", apiVersion = 12.06, simResponse = {15},  min = 0,   max = 250, default = 15,  help = "B-term cutoff in Hz."},
     {field = "bterm_cutoff_2",                  type = "U8", apiVersion = 12.06, simResponse = {20},  min = 0,   max = 250, default = 20,  help = "B-term cutoff in Hz."},
-    {field = "yaw_inertia_precomp_gain",        type = "U8", apiVersion = 12.08, simResponse = {10},  min = 0,   max = 125, default = 0,   help = "Scalar gain. The strength of the main rotor inertia. Higher value means more precomp is applied to yaw control."},
+    {field = "yaw_inertia_precomp_gain",        type = "U8", apiVersion = 12.08, simResponse = {10},  min = 0,   max = 250, default = 0,   help = "Scalar gain. The strength of the main rotor inertia. Higher value means more precomp is applied to yaw control."},
     {field = "yaw_inertia_precomp_cutoff",      type = "U8", apiVersion = 12.08, simResponse = {20},  min = 0,   max = 250, default = 25,  unit = "Hz", help = "Cutoff. Derivative cutoff frequency in 1/10Hz steps. Controls how sharp the precomp is. Higher value is sharper."},
 }
 
