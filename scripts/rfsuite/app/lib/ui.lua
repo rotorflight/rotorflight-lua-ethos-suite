@@ -1144,16 +1144,11 @@ function ui.navigationButtons(x, y, w, h)
                     if rfsuite.app.Page and rfsuite.app.Page.onHelpMenu then
                         rfsuite.app.Page.onHelpMenu(rfsuite.app.Page)
                     else
-                        if section == 'rates' then
-                            -- rates is an oddball and has an exeption
-                            rfsuite.app.ui.openPageHelp(help.help["table"][rfsuite.session.rateProfile], section)
+                        -- choose default or custom
+                        if help.help[script] then
+                            rfsuite.app.ui.openPageHelp(help.help[script], section)
                         else
-                            -- choose default or custom
-                            if help.help[script] then
-                                rfsuite.app.ui.openPageHelp(help.help[script], section)
-                            else
-                                rfsuite.app.ui.openPageHelp(help.help['default'], section)
-                            end
+                            rfsuite.app.ui.openPageHelp(help.help['default'], section)
                         end
                     end
                 end
