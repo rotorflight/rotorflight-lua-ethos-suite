@@ -142,6 +142,7 @@ function rf2craftimage.wakeup(widget)
         rfsuite.utils.log("i18n: Switching locale to: " .. rfsuite.session.locale, "info")
         locale = rfsuite.session.locale
         lang.load(locale)
+        lcd.invalidate()
     end
 
 end

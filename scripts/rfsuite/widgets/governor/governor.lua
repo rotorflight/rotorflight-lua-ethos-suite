@@ -17,12 +17,36 @@
 
 local rf2gov = {refresh = true, environment = system.getVersion(), oldsensors = {govmode = ""}, wakeupSchedulerUI = os.clock()}
 
-local governorMap = {[0] = "OFF", [1] = "IDLE", [2] = "SPOOLUP", [3] = "RECOVERY", [4] = "ACTIVE", [5] = "THR-OFF", [6] = "LOST-HS", [7] = "AUTOROT", [8] = "BAILOUT", [100] = "DISABLED", [101] = "DISARMED"}
+-- load i18n
+local locale = rfsuite.session.locale or 'en'
+local lang  = assert(loadfile("lib/i18n.lua"))()
+      lang.setFolder("widgets/governor/i18n")
+      lang.load(locale)
 
 local sensors
 
+local function buildGovernorMap()
+    local map = {     
+        [0] =  lang.get("OFF"),
+        [1] =  lang.get("IDLE"),
+        [2] =  lang.get("SPOOLUP"),
+        [3] =  lang.get("RECOVERY"),
+        [4] =  lang.get("ACTIVE"),
+        [5] =  lang.get("THR-OFF"),
+        [6] =  lang.get("LOST-HS"),
+        [7] =  lang.get("AUTOROT"),
+        [8] =  lang.get("BAILOUT"),
+        [100] = lang.get("DISABLED"),
+        [101] = lang.get("DISARMED")
+    }
+
+    return map
+end
+
+local governorMap = buildGovernorMap()
+
 -- error function
-function screenError(msg)
+local function screenError(msg)
     local w, h = lcd.getWindowSize()
     local isDarkMode = lcd.darkMode()
 
@@ -73,7 +97,7 @@ end
 
 function rf2gov.paint(widget)
     if not rfsuite.utils.ethosVersionAtLeast() then
-        status.screenError(string.format("ETHOS < V%d.%d.%d", 
+        status.screenError(string.format(lang.get("ethos") .. " < V%d.%d.%d", 
             rfsuite.config.ethosVersion[1], 
             rfsuite.config.ethosVersion[2], 
             rfsuite.config.ethosVersion[3])
@@ -92,7 +116,7 @@ function rf2gov.paint(widget)
     local bestW, bestH = 0, 0
 
     -- Determine the text to display
-    local str = rfsuite.tasks.active() and (sensors and sensors.govmode or "") or "BG TASK DISABLED"
+    local str = rfsuite.tasks.active() and (sensors and sensors.govmode or "") or lang.get("BG TASK DISABLED")
 
     -- Loop through font sizes and find the largest one that fits
     for _, font in ipairs(fonts) do
@@ -124,18 +148,15 @@ function rf2gov.getSensors()
 
     local govmode = ""
 
-    if rf2gov.environment.simulation then
-        govmode = "DISABLED"
-    else
-        local govSOURCE = rfsuite.tasks.telemetry.getSensorSource("governor")
+    local govSOURCE = rfsuite.tasks.telemetry.getSensorSource("governor")
 
-        if rfsuite.tasks.telemetry.getSensorProtocol() == 'lcrsf' then
-            govmode = govSOURCE and govSOURCE:stringValue() or ""
-        else
-            local govId = govSOURCE and govSOURCE:value()
-            govmode = governorMap[govId] or (govId and "UNKNOWN" or "")
-        end
+    if rfsuite.tasks.telemetry.getSensorProtocol() == 'lcrsf' then
+        govmode = govSOURCE and govSOURCE:stringValue() or ""
+    else
+        local govId = govSOURCE and govSOURCE:value()
+        govmode = governorMap[govId] or (govId and lang.get("UNKNOWN") or "")
     end
+
 
     if rf2gov.oldsensors.govmode ~= govmode then rf2gov.refresh = true end
 
@@ -154,13 +175,24 @@ function rf2gov.wakeup(widget)
         rf2gov.wakeupSchedulerUI = now
         rf2gov.wakeupUI()
     end
+
+    -- detect and switch language
+    if locale ~= rfsuite.session.locale then
+        rfsuite.utils.log("i18n: Switching locale to: " .. rfsuite.session.locale, "info")
+        locale = rfsuite.session.locale
+        lang.load(rfsuite.session.locale)
+        governorMap = buildGovernorMap()
+        rf2gov.refresh = true 
+    end
+
 end
 
 function rf2gov.wakeupUI()
-    rf2gov.refresh = false
+
     rf2gov.getSensors()
 
     if rf2gov.refresh then lcd.invalidate() end
+    rf2gov.refresh = false
 end
 
 return rf2gov

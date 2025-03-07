@@ -28,7 +28,7 @@ local folder = 'languages'
 local translations = {}
 
 -- Current locale (defaulted to system locale, can be overridden later)
-local locale = system.getLocale() or defaultLocale
+--local locale = system.getLocale() or defaultLocale
 
 -- Set the folder to read language files from
 function i18n.setFolder(path)
@@ -57,7 +57,7 @@ local function loadLangFile(lang)
 end
 
 -- Load and merge language, falling back to English if keys are missing
-function i18n.load()
+function i18n.load(locale)
     rfsuite.utils.log("i18n: Loading translations for locale: " .. locale, "info")
 
     translations = loadLangFile(defaultLocale) -- Start with English base
