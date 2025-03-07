@@ -25,8 +25,14 @@ local default_image = "widgets/craftimage/default_image.png"
 local config = {}
 local LCD_W
 local LCD_H
-
 local LCD_MINH4IMAGE = 130
+
+-- load i18n
+local locale = rfsuite.session.locale or 'en'
+local lang  = assert(loadfile("lib/i18n.lua"))()
+      lang.setFolder("widgets/craftimage/i18n")
+      lang.load(locale)
+
 
 -- error function
 function screenError(msg)
@@ -78,7 +84,7 @@ function rf2craftimage.paint(widget)
     local h = LCD_H
 
     if not rfsuite.utils.ethosVersionAtLeast() then
-        status.screenError(string.format("ETHOS < V%d.%d.%d", 
+        status.screenError(string.format(lang.get('ethos') .. " < V%d.%d.%d", 
             rfsuite.config.ethosVersion[1], 
             rfsuite.config.ethosVersion[2], 
             rfsuite.config.ethosVersion[3])
@@ -130,6 +136,13 @@ function rf2craftimage.wakeup(widget)
         rf2craftimage.wakeupSchedulerUI = now
         rf2craftimage.wakeupUI()
     end
+
+    -- detect and switch language
+    if locale ~= rfsuite.session.locale then
+        locale = rfsuite.session.locale
+        lang.load(locale)
+    end
+
 end
 
 function rf2craftimage.wakeupUI()

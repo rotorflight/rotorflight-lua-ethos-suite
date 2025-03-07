@@ -23,10 +23,15 @@ local bitmapPtr
 local image
 local default_image = "widgets/craftname/default_image.png"
 local config = {}
-local LCD_W
-local LCD_H
 
+local LCD_W, LCD_H = lcd.getWindowSize()
 local LCD_MINH4IMAGE = 130
+
+-- load i18n
+local locale = rfsuite.session.locale or 'en'
+local lang  = assert(loadfile("lib/i18n.lua"))()
+      lang.setFolder("widgets/craftname/i18n")
+      lang.load(locale)
 
 -- error function
 function screenError(msg)
@@ -76,7 +81,7 @@ end
 -- Paint function
 function rf2craftname.paint(widget)
     if not rfsuite.utils.ethosVersionAtLeast() then
-        status.screenError(string.format("ETHOS < V%d.%d.%d", 
+        status.screenError(string.format(lang.get("ethos") .." < V%d.%d.%d", 
             rfsuite.config.ethosVersion[1], 
             rfsuite.config.ethosVersion[2], 
             rfsuite.config.ethosVersion[3])
@@ -87,7 +92,7 @@ function rf2craftname.paint(widget)
     local w, h = lcd.getWindowSize()  -- Ensure consistency with rf2gov.paint
 
     -- Text to display
-    local str = rfsuite.tasks.active() and rfsuite.session.craftName or "[NO LINK]"
+    local str = rfsuite.tasks.active() and rfsuite.session.craftName or "[".. lang.get("nolink") .. "]"
 
     -- Available font sizes ordered from smallest to largest
     local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL}
@@ -154,10 +159,8 @@ function rf2craftname.configure(widget)
     lastName = nil
     lastID = nil
     
-    LCD_W, LCD_H = lcd.getWindowSize()
-
     if LCD_H > LCD_MINH4IMAGE then
-        local line = form.addLine("Image")
+        local line = form.addLine(lang.get("image"))
         form.addBooleanField(line, nil, function()
             return config.image
         end, function(newValue)
@@ -195,6 +198,13 @@ function rf2craftname.wakeup(widget)
         rf2craftname.wakeupSchedulerUI = now
         rf2craftname.wakeupUI()
     end
+
+    -- detect and switch language
+    if locale ~= rfsuite.session.locale then
+        locale = rfsuite.session.locale
+        lang.load(locale)
+    end
+
 end
 
 function rf2craftname.wakeupUI()

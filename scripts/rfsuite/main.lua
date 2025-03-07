@@ -175,6 +175,7 @@ rfsuite.session.telemetryState = nil
 rfsuite.session.telemetryType = nil
 rfsuite.session.telemetryTypeChanged = nil
 rfsuite.session.telemetrySensor = nil
+rfsuite.session.locale = system.getLocale()
 
 
 --[[
