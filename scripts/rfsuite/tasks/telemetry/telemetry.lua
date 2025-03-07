@@ -307,6 +307,7 @@ local sensorTable = {
         },         
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x51A4},
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5269},
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5440}
         },
         crsf = {
