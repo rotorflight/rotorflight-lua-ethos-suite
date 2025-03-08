@@ -23,9 +23,7 @@ local bitmapPtr
 local image
 local default_image = "widgets/craftimage/default_image.png"
 local config = {}
-local LCD_W
-local LCD_H
-
+local LCD_W, LCD_H = lcd.getWindowSize()
 local LCD_MINH4IMAGE = 130
 
 -- error function
@@ -74,11 +72,11 @@ end
 
 -- Paint function
 function rf2craftimage.paint(widget)
-    local w = LCD_W
-    local h = LCD_H
+    local w = LCD_W or 0
+    local h = LCD_H or 0
 
     if not rfsuite.utils.ethosVersionAtLeast() then
-        status.screenError(string.format("ETHOS < V%d.%d.%d", 
+        status.screenError(string.format(rfsuite.i18n.get('ethos') .. " < V%d.%d.%d", 
             rfsuite.config.ethosVersion[1], 
             rfsuite.config.ethosVersion[2], 
             rfsuite.config.ethosVersion[3])
@@ -130,6 +128,8 @@ function rf2craftimage.wakeup(widget)
         rf2craftimage.wakeupSchedulerUI = now
         rf2craftimage.wakeupUI()
     end
+
+
 end
 
 function rf2craftimage.wakeupUI()
