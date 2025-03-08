@@ -59,7 +59,7 @@ Sensors included:
 - Flight Mode Sensors (governor)
 - Adjustment Sensors (adj_f, adj_v)
 - PID and Rate Profiles (pid_profile, rate_profile)
-- Throttle Sensors (throttle_percentage)
+- Throttle Sensors (throttle_percent)
 ]]
 local sensorTable = {
     -- RSSI Sensors

@@ -20,13 +20,13 @@ if lcd.darkMode() then
     colorTable["current"] = COLOR_ORANGE
     colorTable["rpm"] = COLOR_GREEN
     colorTable["temp_esc"] = COLOR_CYAN
-    colorTable["throttle_percentage"] = COLOR_YELLOW
+    colorTable["throttle_percent"] = COLOR_YELLOW
 else
     colorTable["voltage"] = lcd.RGB(200, 0, 0)  -- Bright red
     colorTable["current"] = lcd.RGB(220, 100, 0)  -- Deep orange
     colorTable["rpm"] = lcd.RGB(0, 140, 0)  -- Strong green
     colorTable["temp_esc"] = lcd.RGB(0, 80, 200)  -- Bold blue
-    colorTable["throttle_percentage"] = lcd.RGB(180, 160, 0)  -- Deep gold
+    colorTable["throttle_percent"] = lcd.RGB(180, 160, 0)  -- Deep gold
 end
 
 local logTable = {
@@ -34,7 +34,7 @@ local logTable = {
     {name = "current", keyindex = 2, keyname = "Current", keyunit = "A", keyminmax = 1, color = colorTable['current'], pen = SOLID, graph = true},
     {name = "rpm", keyindex = 3, keyname = "Headspeed", keyunit = "rpm", keyminmax = 1, keyfloor = true, color = colorTable['rpm'], pen = SOLID, graph = true},
     {name = "temp_esc", keyindex = 4, keyname = "Esc. Temperature", keyunit = "°", keyminmax = 1, color = colorTable['temp_esc'], pen = SOLID, graph = true},
-    {name = "throttle_percentage", keyindex = 5, keyname = "Throttle %", keyunit = "%", keyminmax = 1, color = colorTable['throttle_percentage'], pen = SOLID, graph = true}
+    {name = "throttle_percent", keyindex = 5, keyname = "Throttle %", keyunit = "%", keyminmax = 1, color = colorTable['throttle_percent'], pen = SOLID, graph = true}
 }
 
 local log_queue = {}

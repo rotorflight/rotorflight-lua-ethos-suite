@@ -3946,7 +3946,7 @@ function status.paint(widget)
                 end
             elseif status.idleupswitchParam and status.idleupswitchParam:state() then
                 local armSource = rfsuite.tasks.telemetry.getSensorSource("armflags")
-                if armSource then
+                if armSource and armSource:value() then
                     isArmed = math.floor(armSource:value())
                     if isArmed == 1 or isArmed == 3 then
                         if status.theTIME <= status.idleupdelayParam then

@@ -1,4 +1,4 @@
-time,voltage,current,rpm,temp_esc,throttle_percentage
+time,voltage,current,rpm,temp_esc,throttle_percent
 2025-03-02 18:23:13,28.46,20.0,1214.8,54.1,0
 2025-03-02 18:23:14,28.05,20.0,1238.4,54.4,0
 2025-03-02 18:23:15,28.25,21.0,1203.9,50.6,1
