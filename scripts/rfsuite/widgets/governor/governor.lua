@@ -143,11 +143,17 @@ function rf2gov.getSensors()
     local govmode = ""
 
     local govSOURCE = rfsuite.tasks.telemetry.getSensorSource("governor")
+    local armflagsSOURCE = rfsuite.tasks.telemetry.getSensorSource("armflags")
 
     if rfsuite.tasks.telemetry.getSensorProtocol() == 'lcrsf' then
         govmode = govSOURCE and govSOURCE:stringValue() or ""
     else
         local govId = govSOURCE and govSOURCE:value()
+        if rfsuite.session and rfsuite.session.apiVersion and rfsuite.session.apiVersion > 12.07 then
+                if armflagsSOURCE and (armflagsSOURCE:value() == 0 or armflagsSOURCE:value() == 2 )then
+                    govId = 101
+                end
+        end
         govmode = governorMap[govId] or (govId and rfsuite.i18n.get("widgets.governor.UNKNOWN") or "")
     end
 

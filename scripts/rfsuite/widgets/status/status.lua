@@ -261,6 +261,7 @@ local temp_mcuSOURCE
 local fuelSOURCE
 local govSOURCE
 local adjSOURCE
+local armflagsSOURCE
 local adjVALUE
 local mahSOURCE
 local telemetrySOURCE
@@ -704,6 +705,7 @@ local function getSensors()
         mahSOURCE = rfsuite.tasks.telemetry.getSensorSource("consumption")
         rssiSOURCE = rfsuite.tasks.telemetry.getSensorSource("rssi") 
         govSOURCE = rfsuite.tasks.telemetry.getSensorSource("governor")
+        armflagsSOURCE = rfsuite.tasks.telemetry.getSensorSource("armflags")
 
         if rfsuite.tasks.telemetry.getSensorProtocol() == 'crsf' then
 
@@ -794,6 +796,11 @@ local function getSensors()
                 if governorMap[govId] == nil then
                     govmode = "UNKNOWN"
                 else
+                    if rfsuite.session and rfsuite.session.apiVersion and rfsuite.session.apiVersion > 12.07 then
+                        if armflagsSOURCE and (armflagsSOURCE:value() == 0 or armflagsSOURCE:value() == 2 )then
+                            govId = 101
+                        end
+                    end                   
                     govmode = governorMap[govId]
                 end
 
@@ -1053,6 +1060,11 @@ local function getSensors()
                 if governorMap[govId] == nil then
                     govmode = "UNKNOWN"
                 else
+                    if rfsuite.session and rfsuite.session.apiVersion and rfsuite.session.apiVersion > 12.07 then
+                        if armflagsSOURCE and (armflagsSOURCE:value() == 0 or armflagsSOURCE:value() == 2 )then
+                            govId = 101
+                        end
+                    end                    
                     govmode = governorMap[govId]
                 end
 

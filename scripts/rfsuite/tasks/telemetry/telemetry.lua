@@ -306,7 +306,7 @@ local sensorTable = {
             {uid=0x5014, unit=nil, dec=0, value=function() return rfsuite.utils.simSensors('throttle_percent') end, min = 0, max = 100},
         },         
         sport = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5440}
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5440},
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x51A4},
         },
         crsf = {

@@ -9,7 +9,7 @@ local arg = {...}
 local config = arg[1]
 
 local logging = {}
-local logInterval = 0.5 -- default is 1 second
+local logInterval = 1 -- changing this will skew the log analysis - so dont change it
 local logFileName
 local logRateLimit = os.clock()
 
