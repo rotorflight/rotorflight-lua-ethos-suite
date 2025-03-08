@@ -64,7 +64,7 @@ end
 
 function logging.flushLogs(forceFlush)
     local max_lines = forceFlush or not rfsuite.session.telemetryState and 1 or 10
-    if #log_queue > 0 and rfsuite.tasks.msp.mspQueue:isProcessed() then
+    if #log_queue > 0 and rfsuite.tasks.msp.mspQueue:isProcessed() and logFileName then
         local filePath = "logs/telemetry/" .. logFileName
         local f = io.open(filePath, 'a')
         for i = 1, math.min(#log_queue, max_lines) do
