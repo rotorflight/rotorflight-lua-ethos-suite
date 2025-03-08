@@ -1,5 +1,4 @@
 --[[
-
  * Copyright (C) Rotorflight Project
  *
  *
@@ -16,27 +15,11 @@
  
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
-
 ]] --
-
-local de = {
-    -- General terms
-    ethos = "ETHOS",
-    ["BG TASK DISABLED"] = "BG-AUFGABE DEAKTIVIERT",
-    UNKNOWN = "UNBEKANNT",
-
-    -- Governor states
-    OFF = "AUS",
-    IDLE = "LEERLAUF",
-    SPOOLUP = "HOCHLAUF",
-    RECOVERY = "WIEDERHERSTELLUNG",
-    ACTIVE = "AKTIV",
-    ["THR-OFF"] = "GAS AUS",
-    ["LOST-HS"] = "HS VERLOREN",
-    AUTOROT = "AUTOROTATION",
-    BAILOUT = "NOTABSCHALTUNG",
-    DISABLED = "DEAKTIVIERT",
-    DISARMED = "ENTSICHERT"
+local init = {
+    interval = 2, -- run every 5s
+    script = "i18n.lua", -- run this script
+    msp = false -- do not run if busy with msp
 }
 
-return de
+return init

@@ -23,16 +23,8 @@ local bitmapPtr
 local image
 local default_image = "widgets/craftimage/default_image.png"
 local config = {}
-local LCD_W
-local LCD_H
+local LCD_W, LCD_H = lcd.getWindowSize()
 local LCD_MINH4IMAGE = 130
-
--- load i18n
-local locale = rfsuite.session.locale or 'en'
-local lang  = assert(loadfile("lib/i18n.lua"))()
-      lang.setFolder("widgets/craftimage/i18n")
-      lang.load(locale)
-
 
 -- error function
 function screenError(msg)
@@ -80,11 +72,11 @@ end
 
 -- Paint function
 function rf2craftimage.paint(widget)
-    local w = LCD_W
-    local h = LCD_H
+    local w = LCD_W or 0
+    local h = LCD_H or 0
 
     if not rfsuite.utils.ethosVersionAtLeast() then
-        status.screenError(string.format(lang.get('ethos') .. " < V%d.%d.%d", 
+        status.screenError(string.format(rfsuite.i18n.get('ethos') .. " < V%d.%d.%d", 
             rfsuite.config.ethosVersion[1], 
             rfsuite.config.ethosVersion[2], 
             rfsuite.config.ethosVersion[3])
@@ -137,13 +129,6 @@ function rf2craftimage.wakeup(widget)
         rf2craftimage.wakeupUI()
     end
 
-    -- detect and switch language
-    if locale ~= rfsuite.session.locale then
-        rfsuite.utils.log("i18n: Switching locale to: " .. rfsuite.session.locale, "info")
-        locale = rfsuite.session.locale
-        lang.load(locale)
-        lcd.invalidate()
-    end
 
 end
 

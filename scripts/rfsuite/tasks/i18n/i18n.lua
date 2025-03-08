@@ -20,10 +20,32 @@
 ]] --
 local arg = {...}
 
-local locale = {}
+local i18n = {}
 
-function locale.wakeup()
+local locale = system.getLocale()
+
+function i18n.wakeup()
+
     rfsuite.session.locale = system.getLocale()
+
+    -- lets reload the language file
+    if rfsuite.session.locale ~= locale then
+        rfsuite.utils.log("i18n: Switching locale to: " .. rfsuite.session.locale, "info")
+        rfsuite.i18n.load(rfsuite.session.locale)
+        locale = rfsuite.session.locale
+
+        -- step through and fire language swap events
+        for i,v in pairs(rfsuite.widgets) do
+            if v.i18n then
+                rfsuite.utils.log("i18n: Running i18n event for widget: " .. i, "info")
+                v.i18n()
+            end
+        end
+
+
+
+    end
+
 end
 
-return locale
+return i18n

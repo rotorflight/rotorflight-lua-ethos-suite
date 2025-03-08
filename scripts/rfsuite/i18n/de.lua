@@ -20,8 +20,28 @@
 ]] --
 
 local de = {
-    ethos = "ETHOS",  -- Assuming "ETHOS" remains the same in German
-    nolink = "KEINE VERBINDUNG"
+    -- General terms
+    ethos = "ETHOS",
+    bg_task_disabled = "BG-AUFGABE DEAKTIVIERT",
+
+    -- Governor translations
+    widgets = {
+        governor = {
+            UNKNOWN = "UNBEKANNT",
+            OFF = "AUS",
+            IDLE = "LEERLAUF",
+            SPOOLUP = "HOCHLAUF",
+            RECOVERY = "WIEDERHERSTELLUNG",
+            ACTIVE = "AKTIV",
+            THROFF = "GAS AUS",
+            LOSTHS = "HS VERLOREN",
+            AUTOROT = "AUTOROTATION",
+            BAILOUT = "NOTABSCHALTUNG",
+            DISABLED = "DEAKTIVIERT",
+            DISARMED = "ENTSICHERT"
+        }
+    },
 }
 
 return de
+
