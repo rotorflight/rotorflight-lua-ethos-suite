@@ -153,7 +153,14 @@ function tasks.findTasks()
                     if type(tconfig) ~= "table" or not tconfig.interval or not tconfig.script then
                         rfsuite.utils.log("Invalid configuration in " .. init_path,"debug")
                     else
-                        local task = {name = v, interval = tconfig.interval, script = tconfig.script, msp = tconfig.msp, last_run = os.clock()}
+                        local task = {
+                            name = v,
+                            interval = tconfig.interval,
+                            script = tconfig.script,
+                            msp = tconfig.msp,
+                            always_run = tconfig.always_run or false, -- Default is false
+                            last_run = os.clock()
+                        }
                         table.insert(tasksList, task)
 
                         local script = tasks_path .. v .. '/' .. tconfig.script
@@ -215,21 +222,20 @@ end
     - Runs tasks dynamically based on their defined intervals and conditions.
 --]]
 function tasks.wakeup()
-
     -- Check version only once after startup
     if ethosVersionGood == nil then
         ethosVersionGood = rfsuite.utils.ethosVersionAtLeast()
     end
 
-    -- kill if version is bad
+    -- Stop execution if Ethos version is incorrect
     if not ethosVersionGood then
         return
     end
 
-   -- process the log
-   rfsuite.log.process()    
+    -- Process the log
+    rfsuite.log.process()    
 
-    -- initialise tasks
+    -- Initialize tasks if not already done
     if tasks.init == false then
         tasks.findTasks()
         tasks.init = true
@@ -238,90 +244,72 @@ function tasks.wakeup()
 
     tasks.heartbeat = os.clock()
 
-    -- this should be before msp.hecks
-    -- doing this is heavy - lets run it every few seconds only
+    -- Run telemetry check every second
     local now = os.clock()
     if now - (telemetryCheckScheduler or 0) >= 1 then
-
-        -- get sport then elrs sensor
         telemetryState = tlm and tlm:state() or false
 
-        -- if we are in init - then we can abort here
         if not telemetryState then
+            -- **Reset telemetry environment variables**
             rfsuite.session.telemetryState = false
             rfsuite.session.telemetryType = nil
             rfsuite.session.telemetryTypeChanged = false
             rfsuite.session.telemetrySensor = nil
             lastTelemetrySensorName = nil
+            sportSensor = nil
+            elrsSensor = nil 
             telemetryCheckScheduler = now    
-            sportSensor = nil
-            elrsSensor = nil 
-            return
-        end
-
-        -- determine the telemetry sensor
-        if not sportSensor then sportSensor = system.getSource({appId = 0xF101}) end
-        if not elrsSensor then elrsSensor = system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1}) end
-
-        currentTelemetrySensor = sportSensor or elrsSensor or nil
-        rfsuite.session.telemetrySensor = currentTelemetrySensor
-
-        -- we can abort here if we have no sensor
-        if currentTelemetrySensor == nil then
-            rfsuite.session.telemetryState = false
-            rfsuite.session.telemetryType = nil
-            rfsuite.session.telemetryTypeChanged = false
-            rfsuite.session.telemetrySensor = nil
-            lastTelemetrySensorName = nil
-            sportSensor = nil
-            elrsSensor = nil 
-            telemetryCheckScheduler = now
-            return
-        end
-
-        -- we can now move on and store some session vars
-        -- and move on to processing tasks
-        rfsuite.session.telemetryState = true
-
-        if sportSensor then
-            rfsuite.session.telemetryType = "sport"
-        elseif elrsSensor then
-            rfsuite.session.telemetryType = "crsf"
         else
-            rfsuite.session.telemetryType = nil    
-        end
+            -- Determine telemetry sensor
+            if not sportSensor then sportSensor = system.getSource({appId = 0xF101}) end
+            if not elrsSensor then elrsSensor = system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1}) end
 
-        rfsuite.session.telemetryTypeChanged = currentTelemetrySensor and (lastTelemetrySensorName ~= currentTelemetrySensor:name()) or false
-        lastTelemetrySensorName = currentTelemetrySensor and currentTelemetrySensor:name() or nil    
-        
-        telemetryCheckScheduler = now
+            currentTelemetrySensor = sportSensor or elrsSensor or nil
+            rfsuite.session.telemetrySensor = currentTelemetrySensor
 
-
-    end
-
-
-    -- we load in tasks dynamically using the settings found in
-    -- tasks/<name>init.lua
-    -- check the existing scripts for more details.
-    if telemetryState then
-        local now = os.clock()
-        for _, task in ipairs(tasksList) do
-            if now - task.last_run >= task.interval then
-                if tasks[task.name].wakeup then
-                    if task.msp == true then
-                        tasks[task.name].wakeup()
-                    else
-                        if not rfsuite.app.triggers.mspBusy then tasks[task.name].wakeup() end
-                    end
-                    task.last_run = now
-                end
+            if currentTelemetrySensor == nil then
+                -- **Reset telemetry environment variables again**
+                rfsuite.session.telemetryState = false
+                rfsuite.session.telemetryType = nil
+                rfsuite.session.telemetryTypeChanged = false
+                rfsuite.session.telemetrySensor = nil
+                lastTelemetrySensorName = nil
+                sportSensor = nil
+                elrsSensor = nil 
+                telemetryCheckScheduler = now
+            else
+                -- **Telemetry is valid, store session variables**
+                rfsuite.session.telemetryState = true
+                rfsuite.session.telemetryType = sportSensor and "sport" or elrsSensor and "crsf" or nil
+                rfsuite.session.telemetryTypeChanged = currentTelemetrySensor and (lastTelemetrySensorName ~= currentTelemetrySensor:name()) or false
+                lastTelemetrySensorName = currentTelemetrySensor and currentTelemetrySensor:name() or nil    
+                telemetryCheckScheduler = now
             end
         end
     end
 
-    -- run the callbacks
-    tasks.callback()
+    -- **Modified Task Execution Loop**
+    local now = os.clock()
+    for _, task in ipairs(tasksList) do
+        if now - task.last_run >= task.interval then
+            if tasks[task.name].wakeup then
+                -- **Allow always_run tasks to execute even if telemetryState is false**
+                if task.always_run or telemetryState then
+                    if task.msp == true then
+                        tasks[task.name].wakeup()
+                    else
+                        if not rfsuite.app.triggers.mspBusy then
+                            tasks[task.name].wakeup() 
+                        end
+                    end
+                end
+                task.last_run = now
+            end
+        end
+    end
 
+    -- Run the callbacks
+    tasks.callback()
 end
 
 --[[
