@@ -23,9 +23,8 @@ local bitmapPtr
 local image
 local default_image = "widgets/craftname/default_image.png"
 local config = {}
-local LCD_W
-local LCD_H
 
+local LCD_W, LCD_H = lcd.getWindowSize()
 local LCD_MINH4IMAGE = 130
 
 -- error function
@@ -76,7 +75,7 @@ end
 -- Paint function
 function rf2craftname.paint(widget)
     if not rfsuite.utils.ethosVersionAtLeast() then
-        status.screenError(string.format("ETHOS < V%d.%d.%d", 
+        status.screenError(string.format(string.upper(rfsuite.i18n.get("ethos")) .." < V%d.%d.%d", 
             rfsuite.config.ethosVersion[1], 
             rfsuite.config.ethosVersion[2], 
             rfsuite.config.ethosVersion[3])
@@ -84,35 +83,22 @@ function rf2craftname.paint(widget)
         return
     end
 
-    local w, h = lcd.getWindowSize()  -- Ensure consistency with rf2gov.paint
-
-    -- Text to display
-    local str = rfsuite.tasks.active() and rfsuite.session.craftName or "[NO LINK]"
-
-    -- Available font sizes ordered from smallest to largest
+    local w, h = lcd.getWindowSize()
+    local str = rfsuite.tasks.active() and rfsuite.session.craftName or "[".. string.upper(rfsuite.i18n.get("no_link")) .. "]"
     local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL}
-
-    -- Layout variables
     local padding = 5
     local hasImage = config.image and bitmapPtr ~= nil
+    local imageY = hasImage and h * 0.1 or 0
+    local imageHeight = hasImage and h * 0.7 or 0
+    local textAvailableHeight = hasImage and (h - (imageY + imageHeight) - (h * 0.1)) or h * 0.9
 
-    -- Image handling
-    local imageY = hasImage and h * 0.1 or 0  -- Image starts 10% from the top if present
-    local imageHeight = hasImage and h * 0.7 or 0  -- Image takes 70% height if present
-
-    -- Determine available text area
-    local textAvailableHeight = hasImage and (h - (imageY + imageHeight) - (h * 0.1)) or h * 0.9  -- Ensure same as rf2gov.paint
-
-    -- Ensure there's enough space for text
     if textAvailableHeight < 20 then
-        textAvailableHeight = 20  -- Set a minimum height to avoid cutting text
+        textAvailableHeight = 20
     end
 
-    -- Max dimensions for text
     local maxW, maxH = w * 0.9, textAvailableHeight * 0.9
     local bestFont, bestW, bestH = FONT_XXS, 0, 0
 
-    -- Loop through font sizes and find the largest one that fits
     for _, font in ipairs(fonts) do
         lcd.font(font)
         local tsizeW, tsizeH = lcd.getTextSize(str)
@@ -120,20 +106,17 @@ function rf2craftname.paint(widget)
         if tsizeW <= maxW and tsizeH <= maxH then
             bestFont, bestW, bestH = font, tsizeW, tsizeH
         else
-            break  -- Stop checking larger fonts once one exceeds limits
+            break
         end
     end
 
-    -- Set the optimal font
     lcd.font(bestFont)
-
-    -- Correct Centering: Apply small correction factor
+    str = rfsuite.utils.truncateText(str, maxW)
     local centerY = (h - bestH) / 2
-    local correctionFactor = bestH * 0.1  -- Small correction (10% of text height)
+    local correctionFactor = bestH * 0.1
     local posX = (w - bestW) / 2
     local posY = hasImage and (h - (h * 0.1) - bestH) or (centerY + correctionFactor)
 
-    -- Draw the image if available
     if hasImage then
         local bitmapX = padding
         local bitmapW = w - (padding * 2)
@@ -142,7 +125,6 @@ function rf2craftname.paint(widget)
         lcd.drawBitmap(bitmapX, imageY, bitmapPtr, bitmapW, bitmapH)
     end
 
-    -- Draw the text
     lcd.drawText(posX, posY, str)
 end
 
@@ -155,9 +137,8 @@ function rf2craftname.configure(widget)
     lastID = nil
     
     LCD_W, LCD_H = lcd.getWindowSize()
-
     if LCD_H > LCD_MINH4IMAGE then
-        local line = form.addLine("Image")
+        local line = form.addLine(rfsuite.i18n.get("image"))
         form.addBooleanField(line, nil, function()
             return config.image
         end, function(newValue)
@@ -195,6 +176,7 @@ function rf2craftname.wakeup(widget)
         rf2craftname.wakeupSchedulerUI = now
         rf2craftname.wakeupUI()
     end
+
 end
 
 function rf2craftname.wakeupUI()
@@ -215,5 +197,10 @@ function rf2craftname.wakeupUI()
     lastName = rfsuite.session.craftName
     lastID = rfsuite.session.modelID
 end
+
+-- this is called if a langage swap event occurs
+function rf2craftname.i18n()
+
+end  
 
 return rf2craftname

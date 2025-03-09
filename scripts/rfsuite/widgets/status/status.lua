@@ -261,6 +261,7 @@ local temp_mcuSOURCE
 local fuelSOURCE
 local govSOURCE
 local adjSOURCE
+local armflagsSOURCE
 local adjVALUE
 local mahSOURCE
 local telemetrySOURCE
@@ -516,7 +517,7 @@ local function telemetryBox(x, y, w, h, title, value, unit, smallbox, alarm, min
         -- Set font
         lcd.font((smallbox == nil or smallbox == false) and theme.fontSENSOR or theme.fontSENSORSmallBox)
 
-        local str = value .. unit
+        local str  = rfsuite.utils.truncateText(value .. unit,w)
         local tsizeW, tsizeH = lcd.getTextSize(unit == "°" and value .. "." or str)
         local sx = (x + w / 2) - (tsizeW / 2)
         local sy = (y + h / 2) - (tsizeH / 2)
@@ -704,6 +705,7 @@ local function getSensors()
         mahSOURCE = rfsuite.tasks.telemetry.getSensorSource("consumption")
         rssiSOURCE = rfsuite.tasks.telemetry.getSensorSource("rssi") 
         govSOURCE = rfsuite.tasks.telemetry.getSensorSource("governor")
+        armflagsSOURCE = rfsuite.tasks.telemetry.getSensorSource("armflags")
 
         if rfsuite.tasks.telemetry.getSensorProtocol() == 'crsf' then
 
@@ -794,6 +796,11 @@ local function getSensors()
                 if governorMap[govId] == nil then
                     govmode = "UNKNOWN"
                 else
+                    if rfsuite.session and rfsuite.session.apiVersion and rfsuite.session.apiVersion > 12.07 then
+                        if armflagsSOURCE and (armflagsSOURCE:value() == 0 or armflagsSOURCE:value() == 2 )then
+                            govId = 101
+                        end
+                    end                   
                     govmode = governorMap[govId]
                 end
 
@@ -1053,6 +1060,11 @@ local function getSensors()
                 if governorMap[govId] == nil then
                     govmode = "UNKNOWN"
                 else
+                    if rfsuite.session and rfsuite.session.apiVersion and rfsuite.session.apiVersion > 12.07 then
+                        if armflagsSOURCE and (armflagsSOURCE:value() == 0 or armflagsSOURCE:value() == 2 )then
+                            govId = 101
+                        end
+                    end                    
                     govmode = governorMap[govId]
                 end
 
@@ -3934,7 +3946,7 @@ function status.paint(widget)
                 end
             elseif status.idleupswitchParam and status.idleupswitchParam:state() then
                 local armSource = rfsuite.tasks.telemetry.getSensorSource("armflags")
-                if armSource then
+                if armSource and armSource:value() then
                     isArmed = math.floor(armSource:value())
                     if isArmed == 1 or isArmed == 3 then
                         if status.theTIME <= status.idleupdelayParam then

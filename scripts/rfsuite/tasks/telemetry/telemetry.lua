@@ -59,7 +59,7 @@ Sensors included:
 - Flight Mode Sensors (governor)
 - Adjustment Sensors (adj_f, adj_v)
 - PID and Rate Profiles (pid_profile, rate_profile)
-- Throttle Sensors (throttle_percentage)
+- Throttle Sensors (throttle_percent)
 ]]
 local sensorTable = {
     -- RSSI Sensors
@@ -166,7 +166,8 @@ local sensorTable = {
             {uid=0x5005, unit=UNIT_DEGREE, dec=0, value=function() return rfsuite.utils.simSensors('temp_esc') end, min = 0, max = 100},
         },   
         sport = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0B70}
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0B70},
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0418}
         },
         crsf = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A0}
@@ -306,9 +307,9 @@ local sensorTable = {
             {uid=0x5014, unit=nil, dec=0, value=function() return rfsuite.utils.simSensors('throttle_percent') end, min = 0, max = 100},
         },         
         sport = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5440},
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x51A4},
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5269},
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5440}
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5269}
         },
         crsf = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1035}

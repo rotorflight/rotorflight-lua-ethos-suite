@@ -24,7 +24,7 @@ local config = {}
 -- LuaFormatter off
 
 -- Configuration settings for the Rotorflight Lua Ethos Suite
-config.toolName = "Rotorflight"                                     -- name of the tool
+config.toolName = "Rotorflight"                                     -- name of the tool 
 config.icon = lcd.loadMask("app/gfx/icon.png")                      -- icon
 config.icon_logtool = lcd.loadMask("app/gfx/icon_logtool.png")      -- icon
 config.icon_unsupported = lcd.loadMask("app/gfx/unsupported.png")   -- icon
@@ -102,6 +102,11 @@ rfsuite.log.config.log_to_file = config.logToFile
 -- library with utility functions used throughou the suite
 rfsuite.utils = assert(loadfile("lib/utils.lua"))(config)
 
+
+-- Load the i18n system
+rfsuite.i18n  = assert(loadfile("lib/i18n.lua"))(config)
+rfsuite.i18n.load()     
+
 -- 
 -- This script initializes the `rfsuite` tasks and background task.
 -- 
@@ -175,6 +180,7 @@ rfsuite.session.telemetryState = nil
 rfsuite.session.telemetryType = nil
 rfsuite.session.telemetryTypeChanged = nil
 rfsuite.session.telemetrySensor = nil
+rfsuite.session.locale = system.getLocale()
 
 
 --[[
@@ -299,35 +305,39 @@ local function init()
     --   - persistent: Boolean indicating if the widget is persistent (default is false).
     --   - menu: Menu definition for the widget.
     --   - title: Title of the widget.
+    rfsuite.widgets = {}
+
     for i, v in ipairs(widgetList) do
         if v.script then
-            -- Dynamically assign the loaded script to a variable inside rfsuite table
+            -- Load the script dynamically
             local scriptModule = assert(loadfile("widgets/" .. v.folder .. "/" .. v.script))(config)
-
-            -- Use the script name as a key to store in rfsuite dynamically
-            -- Assuming v.name is a valid Lua identifier-like string (without spaces or special characters)
-            local varname = v.varname or v.script:gsub(".lua", "")
-            rfsuite[varname] = scriptModule
-
-            -- Now register the widget with dynamically assigned variable
+    
+            -- Use the script filename (without .lua) as the key, or v.varname if provided
+            local varname = v.varname or v.script:gsub("%.lua$", "")
+    
+            -- Store the module inside rfsuite.widgets
+            rfsuite.widgets[varname] = scriptModule
+    
+            -- Register the widget with the system
             system.registerWidget({
                 name = v.name,
                 key = v.key,
-                event = scriptModule.event,      -- Reference dynamically assigned module
+                event = scriptModule.event,
                 create = scriptModule.create,
                 paint = scriptModule.paint,
                 wakeup = scriptModule.wakeup,
                 close = scriptModule.close,
                 configure = scriptModule.configure,
                 read = scriptModule.read,
-                write = scriptModule.write,                
+                write = scriptModule.write,
                 persistent = scriptModule.persistent or false,
                 menu = scriptModule.menu,
                 title = scriptModule.title
             })
         end
     end
-end
+    
+end    
 
 -- LuaFormatter on
 
