@@ -16,7 +16,7 @@ local mspapi = {
             {t = "Main",                              api = "MOTOR_CONFIG:main_rotor_gear_ratio_1",       label = 1, inline = 1},
             {t = "Rear",                              api = "MOTOR_CONFIG:tail_rotor_gear_ratio_0",       label = 2, inline = 2},
             {t = "Front",                             api = "MOTOR_CONFIG:tail_rotor_gear_ratio_1",       label = 2, inline = 1},
-            {t = "Motor Pole Count",                  api = "MOTOR_CONFIG:motor_pole_count_0"},
+            {t = "Motor Pole Count",                  api = "MOTOR_CONFIG:motor_pole_count_0",            step = 2},
             {t = "0% Throttle PWM Value",             api = "MOTOR_CONFIG:minthrottle"},
             {t = "100% Throttle PWM value",           api = "MOTOR_CONFIG:maxthrottle"},
             {t = "Motor Stop PWM Value",              api = "MOTOR_CONFIG:mincommand"},
