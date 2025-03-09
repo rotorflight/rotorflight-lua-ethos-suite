@@ -21,30 +21,67 @@
 
 local en = {
     -- General terms
-   ethos = "ethos",
-   version = "version",
-   bg_task_disabled = "bg task disabled",
-   background_task_disabled = "background task disabled",
-   no_link = "no link",
-   image = "image",
+    ethos                      = "ethos",
+    version                    = "version",
+    bg_task_disabled           = "bg task disabled",
+    background_task_disabled   = "background task disabled",
+    no_link                    = "no link",
+    image                      = "image",
+    error                      = "error",
+    reload                     = "reload",
+    save                       = "save",
 
-   -- govorner translations
-   widgets = {
+    -- Widgets
+    widgets = {
         governor = {
-                UNKNOWN = "UNKNOWN",
-                OFF = "OFF",
-                IDLE = "IDLE",
-                SPOOLUP = "SPOOLUP",
-                RECOVERY = "RECOVERY",
-                ACTIVE = "ACTIVE",
-                THROFF = "THR-OFF",
-                LOSTHS = "LOST-HS",
-                AUTOROT = "AUTOROT",
-                BAILOUT = "BAILOUT",
-                DISABLED = "DISABLED",
-                DISARMED = "DISARMED"
-        }
+                UNKNOWN   = "UNKNOWN",
+                OFF       = "OFF",
+                IDLE      = "IDLE",
+                SPOOLUP   = "SPOOLUP",
+                RECOVERY  = "RECOVERY",
+                ACTIVE    = "ACTIVE",
+                THROFF    = "THR-OFF",
+                LOSTHS    = "LOST-HS",
+                AUTOROT   = "AUTOROT",
+                BAILOUT   = "BAILOUT",
+                DISABLED  = "DISABLED",
+                DISARMED  = "DISARMED"
+        },
     },
+
+    -- App
+    app = {
+        -- startup checks
+        check_bg_task            = "Please enable the background task.",
+        check_rf_module_on       = "Please check your rf module is turned on.",
+        check_discovered_sensors = "Please check you have discovered all sensors.",
+        check_heli_on            = "Please check your heli is powered up and radio connected.",
+        check_msp_version        = "Unable to determine MSP version in use.",
+        check_supported_version  = "This version of the Lua script \ncan't be used with the selected model",
+
+        -- error messages
+        error_timed_out          = "Error: timed out",
+
+        -- messages
+        msg_save_current_page      = "Save current page to flight controller?",
+        msg_save_settings          = "Save settings",
+        msg_reload_settings        = "Reload data from flight controller?",
+        msg_saving_settings        = "Saving settings...",
+        msg_rebooting              = "Rebooting...",
+        msg_save_not_commited      = "Save not committed to EEPROM",
+        msg_please_disarm_to_save  = "Please disarm to save to ensure data integrity when saving.",
+
+        -- buttons
+        btn_ok                  = "          OK           ",    -- intentionaly padded to make it bigger
+        btn_cancel              = "CANCEL",
+
+        modules = {
+
+
+        },
+
+    },
+
 }
 
 return en
