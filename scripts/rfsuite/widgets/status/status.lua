@@ -517,7 +517,7 @@ local function telemetryBox(x, y, w, h, title, value, unit, smallbox, alarm, min
         -- Set font
         lcd.font((smallbox == nil or smallbox == false) and theme.fontSENSOR or theme.fontSENSORSmallBox)
 
-        local str = value .. unit
+        local str  = rfsuite.utils.truncateText(value .. unit,w)
         local tsizeW, tsizeH = lcd.getTextSize(unit == "°" and value .. "." or str)
         local sx = (x + w / 2) - (tsizeW / 2)
         local sy = (y + h / 2) - (tsizeH / 2)
