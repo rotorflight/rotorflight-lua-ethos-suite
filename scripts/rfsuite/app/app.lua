@@ -837,12 +837,6 @@ local function processNextAPI()
     API.read()
 end
 
-    
-    
-    
-    
-
-
     -- Start processing the first API
     processNextAPI()
 end
@@ -1103,28 +1097,28 @@ function app.wakeupUI()
                 local elrsSensor = system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1})
 
                 if not rfsuite.utils.ethosVersionAtLeast() then
-                    message = string.format("ETHOS < V%d.%d.%d", 
+                    message = string.format(string.upper(rfsuite.i18n.get("ethos")).. " < V%d.%d.%d", 
                     rfsuite.config.ethosVersion[1], 
                     rfsuite.config.ethosVersion[2], 
                     rfsuite.config.ethosVersion[3])
                     app.triggers.invalidConnectionSetup = true
                 elseif not rfsuite.tasks.active() then
-                    message = "Please enable the background task."
+                    message = rfsuite.i18n.get("app.check_bg_task") 
                     app.triggers.invalidConnectionSetup = true
                 elseif  moduleState == false and app.offlineMode == false then
-                    message = "Please check your rf module is turned on."
+                    message = rfsuite.i18n.get("app.check_rf_module_on") 
                     app.triggers.invalidConnectionSetup = true 
                 elseif not (sportSensor or elrsSensor)  and app.offlineMode == false then
-                    message = "Please check you have discovered all sensors."
+                    message = rfsuite.i8n.get("app.check_discovered_sensors")
                     app.triggers.invalidConnectionSetup = true                                            
                 elseif app.getRSSI() == 0 and app.offlineMode == false then
-                    message = "Please check your heli is powered up and radio connected."
+                    message =  rfsuite.i18n.get("app.check_heli_on")
                     app.triggers.invalidConnectionSetup = true
                 elseif rfsuite.session.apiVersion == nil and app.offlineMode == false then
-                    message = "Unable to determine MSP version in use."
+                    message = rfsuite.i18n.get("app.check_msp_version")
                     app.triggers.invalidConnectionSetup = true
                 elseif not rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiVersionAsString) and app.offlineMode == false then
-                    message = "This version of the Lua script \ncan't be used with the selected model (" .. rfsuite.session.apiVersion .. ")."
+                    message = rfsuite.i18n.get("app.check_supported_version") .. " (" .. rfsuite.session.apiVersion .. ")."
                     app.triggers.invalidConnectionSetup = true
                 end
 
@@ -1133,7 +1127,7 @@ function app.wakeupUI()
 
                     form.openDialog({
                         width = nil,
-                        title = "Error",
+                        title = rfsuite.i18n.get("error"):gsub("^%l", string.upper),
                         message = message,
                         buttons = buttons,
                         wakeup = function()
@@ -1166,7 +1160,7 @@ function app.wakeupUI()
         if app.dialogs.saveWatchDog ~= nil then
             if (os.clock() - app.dialogs.saveWatchDog) > (tonumber(app.protocol.saveTimeout + 5)) or (app.dialogs.saveProgressCounter > 120 and rfsuite.tasks.msp.mspQueue:isProcessed()) then
                 app.audio.playTimeout = true
-                app.ui.progressDisplaySaveMessage("Error: timed out")
+                app.ui.progressDisplaySaveMessage(rfsuite.i18n.get("error_timed_out"))
                 app.ui.progressDisplaySaveCloseAllowed(true)
                 app.dialogs.save:value(100)
                 app.dialogs.saveProgressCounter = 0
@@ -1190,7 +1184,7 @@ function app.wakeupUI()
             app.audio.playTimeout = true
 
             if app.dialogs.progress ~= nil then
-                app.ui.progressDisplayMessage("Error: timed out")
+                app.ui.progressDisplayMessage(rfsuite.i18n.get("error_timed_out"))
                 app.ui.progressDisplayCloseAllowed(true)
             end
 
@@ -1206,7 +1200,7 @@ function app.wakeupUI()
     -- a save was triggered - popup a box asking to save the data
     if app.triggers.triggerSave == true then
         local buttons = {{
-            label = "                OK                ",
+            label = rfsuite.i18n.get("app.btn_ok"),
             action = function()
 
                 app.audio.playSaving = true
@@ -1222,18 +1216,18 @@ function app.wakeupUI()
                 return true
             end
         }, {
-            label = "CANCEL",
+            label = rfsuite.i18n.get("app.btn_cancel"),
             action = function()
                 app.triggers.triggerSave = false
                 return true
             end
         }}
-        local theTitle = "Save settings"
+        local theTitle = rfsuite.i18n.get("app.msg_save_settings")
         local theMsg
         if rfsuite.app.Page.extraMsgOnSave then
-            theMsg = "Save current page to flight controller?" .. "\n\n" .. rfsuite.app.Page.extraMsgOnSave
+            theMsg = rfsuite.i18n.get("app.msg_save_current_page") .. "\n\n" .. rfsuite.app.Page.extraMsgOnSave
         else    
-            theMsg = "Save current page to flight controller?"
+            theMsg = rfsuite.i18n.get("app.msg_save_current_page")
         end
 
 
@@ -1261,22 +1255,23 @@ function app.wakeupUI()
     -- a reload was triggered - popup a box asking for the reload to be done
     if app.triggers.triggerReload == true then
         local buttons = {{
-            label = "                OK                ",
+            label = rfsuite.i18n.get("app.btn_ok"),
             action = function()
                 -- trigger RELOAD
                 app.triggers.reload = true
                 return true
             end
-        }, {
-            label = "CANCEL",
+        }, 
+        {
+            label = rfsuite.i18n.get("app.btn_cancel"),
             action = function()
                 return true
             end
         }}
         form.openDialog({
             width = nil,
-            title = "Reload",
-            message = "Reload data from flight controller?",
+            title = rfsuite.i18n.get("reload"):gsub("^%l", string.upper),
+            message = rfsuite.i18n.get("app.msg_reload_settings"),
             buttons = buttons,
             wakeup = function()
             end,
@@ -1291,22 +1286,22 @@ function app.wakeupUI()
    -- a full reload was triggered - popup a box asking for the reload to be done
    if app.triggers.triggerReloadFull == true then
     local buttons = {{
-        label = "                OK                ",
+        label = rfsuite.i18n.get("app.btn_ok"),
         action = function()
             -- trigger RELOAD
             app.triggers.reloadFull = true
             return true
         end
     }, {
-        label = "CANCEL",
+        label = rfsuite.i18n.get("app.btn_cancel"),
         action = function()
             return true
         end
     }}
     form.openDialog({
         width = nil,
-        title = "Reload",
-        message = "Reload data from flight controller?",
+        title = rfsuite.i18n.get("reload"):gsub("^%l", string.upper),
+        message = rfsuite.i18n.get("app.msg_reload_settings"),
         buttons = buttons,
         wakeup = function()
         end,
@@ -1329,11 +1324,11 @@ function app.wakeupUI()
                 rfsuite.tasks.msp.mspQueue.retryCount = 0
             end
             if app.pageState == app.pageStatus.saving then
-                app.ui.progressDisplaySaveValue(app.dialogs.saveProgressCounter, "Saving data...")
+                app.ui.progressDisplaySaveValue(app.dialogs.saveProgressCounter, rfsuite.i18n.get("app.msg_saving_settings"))
             elseif app.pageState == app.pageStatus.eepromWrite then
-                app.ui.progressDisplaySaveValue(app.dialogs.saveProgressCounter, "Saving data...")
+                app.ui.progressDisplaySaveValue(app.dialogs.saveProgressCounter, rfsuite.i18n.get("app.msg_saving_settings"))
             elseif app.pageState == app.pageStatus.rebooting then
-                app.ui.progressDisplaySaveValue(app.dialogs.saveProgressCounter, "Rebooting...")
+                app.ui.progressDisplaySaveValue(app.dialogs.saveProgressCounter, rfsuite.i18n.get("app.msg_rebooting"))
             end
 
         else
@@ -1358,7 +1353,7 @@ function app.wakeupUI()
         if app.triggers.showSaveArmedWarning == true and app.triggers.closeSave == false then
             if app.dialogs.progressDisplay == false then
                 app.dialogs.progressCounter = 0
-                app.ui.progressDisplay('Save not committed to EEPROM', 'Please disarm to save to ensure data integrity when saving.')
+                app.ui.progressDisplay(rfsuite.i18n.get("msg_save_not_commited"), rfsuite.i18n.get("app.msg_please_disarm_to_save"))
             end
             if app.dialogs.progressCounter >= 100 then
                 app.triggers.showSaveArmedWarning = false

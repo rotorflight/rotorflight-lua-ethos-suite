@@ -96,20 +96,25 @@ function i18n.load(locale)
     end
 end
 
--- Lookup function to get translations, supporting 3-level keys (e.g., "widgets.governor.OFF")
-function i18n.get(key)
-    local value = translations
-    for part in string.gmatch(key, "([^%.]+)") do
-        value = value and value[part] -- Drill down into nested tables
+-- Lookup function to get translations, supporting 4-level keys (e.g., "widgets.governor.OFF")
+    function i18n.get(key)
+        local value = translations
+        for part in string.gmatch(key, "([^%.]+)") do
+            if type(value) ~= "table" then
+                rfsuite.utils.log("i18n: WARNING - Incomplete translation path for key: " .. key, "warn")
+                return key -- Return the key itself as a fallback
+            end
+            value = value[part] -- Go deeper into the hierarchy
+        end
+    
+        if value == nil then
+            rfsuite.utils.log("i18n: WARNING - Missing translation for key: " .. key, "warn")
+            return key -- Fallback to key itself if missing
+        end
+    
+        return value
     end
 
-    if not value then
-        rfsuite.utils.log("i18n: WARNING - Missing translation for key: " .. key, "warn")
-        return key -- Fallback to key itself if missing
-    end
-
-    return value
-end
 
 return i18n
 

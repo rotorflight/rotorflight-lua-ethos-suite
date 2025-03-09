@@ -31,8 +31,8 @@ function ui.progressDisplay(title, message)
 
     rfsuite.app.audio.playLoading = true
 
-    title = title or "Loading"
-    message = message or "Loading data from flight controller..."
+    title = title or rfsuite.i18n.get("app.msg_loading")
+    message = message or rfsuite.i18n.get("app.msg_loading_from_fbl")
 
     rfsuite.app.dialogs.progressDisplay = true
     rfsuite.app.dialogs.progressWatchDog = os.clock()
@@ -54,7 +54,7 @@ end
 ]]
 function ui.progressNolinkDisplay()
     rfsuite.app.dialogs.nolinkDisplay = true
-    rfsuite.app.dialogs.noLink = form.openProgressDialog("Connecting", "Connecting...")
+    rfsuite.app.dialogs.noLink = form.openProgressDialog(rfsuite.i18n.get("app.msg_connecting"), rfsuite.i18n.get("app.msg_connecting_to_fbl"))
     rfsuite.app.dialogs.noLink:closeAllowed(false)
     rfsuite.app.dialogs.noLink:value(0)
 end
@@ -68,7 +68,7 @@ end
 function ui.progressDisplaySave()
     rfsuite.app.dialogs.saveDisplay = true
     rfsuite.app.dialogs.saveWatchDog = os.clock()
-    rfsuite.app.dialogs.save = form.openProgressDialog("Saving", "Saving data...")
+    rfsuite.app.dialogs.save = form.openProgressDialog(rfsuite.i18n.get("app.msg_saving"), rfsuite.i18n.get("msg_saving_to_fbl"))
     rfsuite.app.dialogs.save:value(0)
     rfsuite.app.dialogs.save:closeAllowed(false)
 end
@@ -1051,7 +1051,7 @@ function ui.navigationButtons(x, y, w, h)
     if navButtons.menu ~= nil and navButtons.menu == true then
 
         rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {x = menuOffset, y = y, w = w, h = h}, {
-            text = "MENU",
+            text = rfsuite.i18n.get("app.navigation_menu"),
             icon = nil,
             options = FONT_S,
             paint = function()
@@ -1071,7 +1071,7 @@ function ui.navigationButtons(x, y, w, h)
     if navButtons.save ~= nil and navButtons.save == true then
 
         rfsuite.app.formNavigationFields['save'] = form.addButton(line, {x = saveOffset, y = y, w = w, h = h}, {
-            text = "SAVE",
+            text = rfsuite.i18n.get("app.navigation_save"),
             icon = nil,
             options = FONT_S,
             paint = function()
@@ -1090,7 +1090,7 @@ function ui.navigationButtons(x, y, w, h)
     if navButtons.reload ~= nil and navButtons.reload == true then
 
         rfsuite.app.formNavigationFields['reload'] = form.addButton(line, {x = reloadOffset, y = y, w = w, h = h}, {
-            text = "RELOAD",
+            text = rfsuite.i18n.get("app.navigation_reload"),
             icon = nil,
             options = FONT_S,
             paint = function()
@@ -1110,7 +1110,7 @@ function ui.navigationButtons(x, y, w, h)
     -- TOOL BUTTON
     if navButtons.tool ~= nil and navButtons.tool == true then
         rfsuite.app.formNavigationFields['tool'] = form.addButton(line, {x = toolOffset, y = y, w = wS, h = h}, {
-            text = "*",
+            text = rfsuite.i18n.get("app.navigation_tools"),
             icon = nil,
             options = FONT_S,
             paint = function()
@@ -1135,7 +1135,7 @@ function ui.navigationButtons(x, y, w, h)
 
             -- Execution of the file succeeded
             rfsuite.app.formNavigationFields['help'] = form.addButton(line, {x = helpOffset, y = y, w = wS, h = h}, {
-                text = "?",
+                text = rfsuite.i18n.get("app.navigation_help"),
                 icon = nil,
                 options = FONT_S,
                 paint = function()
@@ -1158,7 +1158,7 @@ function ui.navigationButtons(x, y, w, h)
             -- File loading failed
             rfsuite.utils.log("Failed to load help.lua: " .. loadError,"debug")
             rfsuite.app.formNavigationFields['help'] = form.addButton(line, {x = helpOffset, y = y, w = wS, h = h}, {
-                text = "?",
+                text = rfsuite.i18n.get("app.navigation_help"),
                 icon = nil,
                 options = FONT_S,
                 paint = function()
@@ -1188,7 +1188,7 @@ function ui.openPageHelp(txtData, section)
         title = "Help - " .. rfsuite.app.lastTitle,
         message = message,
         buttons = {{
-            label = "CLOSE",
+            label = rfsuite.i18n.get("app.btn_close"),
             action = function() return true end
         }},
         options = TEXT_LEFT
