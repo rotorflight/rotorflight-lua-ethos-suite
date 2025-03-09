@@ -679,82 +679,169 @@ local function requestPage()
         state.currentIndex = 1
     end
 
-    -- Recursive function to process API calls sequentially
-    local function processNextAPI()
-        if state.currentIndex > #apiList or #apiList == 0 then
-            if state.isProcessing then  -- Ensure this runs only once
-                state.isProcessing = false  -- Reset processing flag
-                state.currentIndex = 1  -- Reset for next run
+-- Function to check for unresolved timeouts and trigger an alert
+local function checkForUnresolvedTimeouts()
+    if not app or not app.Page or not app.Page.mspapi then return end
 
-                app.triggers.isReady = true
-
-                -- Run the postRead function if it exists
-                if app.Page.postRead then app.Page.postRead(app.Page) end
-
-                -- Populate the form fields with data
-                app.mspApiUpdateFormAttributes(app.Page.mspapi.values,app.Page.mspapi.structure)
-
-                -- Run the postLoad function if it exists
-                -- if postload exits.. then it must take responsibility for 
-                -- closing the progress dialog.
-                if app.Page.postLoad then 
-                    app.Page.postLoad(app.Page) 
-                else
-                    rfsuite.app.triggers.closeProgressLoader = true    
-                end
-            end
-            return
+    local hasUnresolvedTimeouts = false
+    for apiKey, retries in pairs(app.Page.mspapi.retryCount or {}) do
+        if retries >= 3 then
+            hasUnresolvedTimeouts = true
+            rfsuite.utils.log("[ALERT] API " .. apiKey .. " failed after 3 timeouts.", "info")
         end
-
-        local v = apiList[state.currentIndex]
-        local apiKey = type(v) == "string" and v or v.name  -- Use API name or unique key
-
-        if not apiKey then
-            rfsuite.utils.log("API key is missing for index " .. tostring(state.currentIndex), "debug")
-            state.currentIndex = state.currentIndex + 1
-            processNextAPI()
-            return
-        end
-
-        local API = rfsuite.tasks.msp.api.load(v)
-
-        -- Handle API success
-        API.setCompleteHandler(function(self, buf)
-
-            if app.Page and app.Page.mspapi then
-                -- Store API response with API name as the key
-                app.Page.mspapi.values[apiKey] = API.data().parsed
-
-                -- Store the structure with the API name as the key
-                app.Page.mspapi.structure[apiKey] = API.data().structure
-
-                -- Store the receivedByte count with the API name as the key
-                app.Page.mspapi.receivedBytes[apiKey] = API.data().buffer
-
-                -- Store the receivedByte count with the API name as the key
-                app.Page.mspapi.receivedBytesCount[apiKey] = API.data().receivedBytesCount
-
-                -- Store the receivedByte count with the API name as the key
-                app.Page.mspapi.positionmap[apiKey] = API.data().positionmap
-
-                
-                -- Move to the next API
-                state.currentIndex = state.currentIndex + 1
-                processNextAPI()
-            end    
-        end)
-
-        -- Handle API errors
-        API.setErrorHandler(function(self, err)
-            rfsuite.utils.log("API error for " .. apiKey .. ": " .. tostring(err), "debug")
-
-            -- Move to the next API even if there's an error
-            state.currentIndex = state.currentIndex + 1
-            processNextAPI()
-        end)
-
-        API.read()
     end
+
+    if hasUnresolvedTimeouts then
+        -- disable all fields leaving only menu enabled
+        rfsuite.app.ui.disableAllFields()
+        rfsuite.app.ui.disableAllNavigationFields()
+        rfsuite.app.ui.enableNavigationField('menu')
+
+    end
+end
+
+-- Recursive function to process API calls sequentially
+local function processNextAPI()
+    -- **Exit gracefully if the app is closing**
+    if not app or not app.Page or not app.Page.mspapi then
+        rfsuite.utils.log("App is closing. Stopping processNextAPI.", "debug")
+        return
+    end
+
+    if state.currentIndex > #apiList or #apiList == 0 then
+        if state.isProcessing then  
+            state.isProcessing = false  
+            state.currentIndex = 1  
+
+            app.triggers.isReady = true
+
+            if app.Page.postRead then 
+                app.Page.postRead(app.Page) 
+            end
+
+            app.mspApiUpdateFormAttributes(app.Page.mspapi.values, app.Page.mspapi.structure)
+
+            if app.Page.postLoad then 
+                app.Page.postLoad(app.Page) 
+            else
+                rfsuite.app.triggers.closeProgressLoader = true    
+            end
+
+            -- **Check for unresolved timeouts AFTER all APIs have been processed**
+            checkForUnresolvedTimeouts()  -- 🔹 Added here
+        end
+        return
+    end
+
+    local v = apiList[state.currentIndex]
+    local apiKey = type(v) == "string" and v or v.name 
+
+    if not apiKey then
+        rfsuite.utils.log("API key is missing for index " .. tostring(state.currentIndex), "warning")
+        state.currentIndex = state.currentIndex + 1
+        rfsuite.tasks.callbackInSeconds(0.5, processNextAPI)
+        return
+    end
+
+    local API = rfsuite.tasks.msp.api.load(v)
+
+    -- **Ensure retryCount table exists**
+    if app and app.Page and app.Page.mspapi then
+        app.Page.mspapi.retryCount = app.Page.mspapi.retryCount or {}  
+    end
+
+    local retryCount = app.Page.mspapi.retryCount[apiKey] or 0
+    local handled = false
+
+    -- **Log API Start**
+    rfsuite.utils.log("[PROCESS] API: " .. apiKey .. " (Attempt " .. (retryCount + 1) .. ")", "info")
+
+    -- **Timeout handler function**
+    local function handleTimeout()
+        if handled then return end
+        handled = true  
+
+        -- **Exit safely if app is closed**
+        if not app or not app.Page or not app.Page.mspapi then
+            rfsuite.utils.log("App is closing. Timeout handling skipped.", "debug")
+            return
+        end
+
+        retryCount = retryCount + 1  
+        app.Page.mspapi.retryCount[apiKey] = retryCount  
+
+        if retryCount < 3 then  
+            rfsuite.utils.log("[TIMEOUT] API: " .. apiKey .. " (Retry " .. retryCount .. ")", "warning")
+            rfsuite.tasks.callbackInSeconds(0.5, processNextAPI)  
+        else
+            rfsuite.utils.log("[TIMEOUT FAIL] API: " .. apiKey .. " failed after 3 attempts. Skipping.", "error")
+            state.currentIndex = state.currentIndex + 1
+            rfsuite.tasks.callbackInSeconds(0.5, processNextAPI)  
+        end
+    end
+
+    -- **Schedule timeout callback**
+    rfsuite.tasks.callbackInSeconds(2, handleTimeout)
+
+    -- **API success handler**
+    API.setCompleteHandler(function(self, buf)
+        if handled then return end
+        handled = true  
+
+        -- **Exit safely if app is closed**
+        if not app or not app.Page or not app.Page.mspapi then
+            rfsuite.utils.log("App is closing. Skipping API success handling.", "debug")
+            return
+        end
+
+        -- **Log API Success**
+        rfsuite.utils.log("[SUCCESS] API: " .. apiKey .. " completed successfully.", "info")
+
+        app.Page.mspapi.values[apiKey] = API.data().parsed
+        app.Page.mspapi.structure[apiKey] = API.data().structure
+        app.Page.mspapi.receivedBytes[apiKey] = API.data().buffer
+        app.Page.mspapi.receivedBytesCount[apiKey] = API.data().receivedBytesCount
+        app.Page.mspapi.positionmap[apiKey] = API.data().positionmap
+
+        -- **Reset retry count on success**
+        app.Page.mspapi.retryCount[apiKey] = 0  
+
+        state.currentIndex = state.currentIndex + 1
+        rfsuite.tasks.callbackInSeconds(0.5, processNextAPI)  
+    end)
+
+    -- **API error handler**
+    API.setErrorHandler(function(self, err)
+        if handled then return end
+        handled = true  
+
+        -- **Exit safely if app is closed**
+        if not app or not app.Page or not app.Page.mspapi then
+            rfsuite.utils.log("App is closing. Skipping API error handling.", "debug")
+            return
+        end
+
+        retryCount = retryCount + 1  
+        app.Page.mspapi.retryCount[apiKey] = retryCount  
+
+        if retryCount < 3 then  
+            rfsuite.utils.log("[ERROR] API: " .. apiKey .. " failed (Retry " .. retryCount .. "): " .. tostring(err), "warning")
+            rfsuite.tasks.callbackInSeconds(0.5, processNextAPI)  
+        else
+            rfsuite.utils.log("[ERROR FAIL] API: " .. apiKey .. " failed after 3 attempts. Skipping.", "error")
+            state.currentIndex = state.currentIndex + 1
+            rfsuite.tasks.callbackInSeconds(0.5, processNextAPI)  
+        end
+    end)
+
+    API.read()
+end
+
+    
+    
+    
+    
+
 
     -- Start processing the first API
     processNextAPI()
