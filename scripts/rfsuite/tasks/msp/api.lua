@@ -522,44 +522,73 @@ function apiLoader.createHandlers()
     return {setCompleteHandler = setCompleteHandler, setErrorHandler = setErrorHandler, getCompleteHandler = getCompleteHandler, getErrorHandler = getErrorHandler}
 end
 
+
 --[[
-    Builds the payload for writing to the API.
+    Builds the payload for writing data to the specified API.
 
     @param apiname (string) - The name of the API.
     @param payload (table) - The data to be written.
-    @param api_structure (table) - The structure of the API fields.
+    @param api_structure (table) - The structure of the API.
+    @param noDelta (boolean) - Optional flag to disable delta updates. If true, a full rebuild will be used.
 
-    @return (table) - The byte stream representing the payload.
+    @return (table) - The payload to be written to the API.
 
-    The function performs the following steps:
-    1. Checks if delta updates can be used based on the presence of positionmap, receivedBytes, and receivedBytesCount.
-    2. Logs whether delta updates or a full rebuild will be used.
-    3. Precomputes a list of editable fields from formFields.
-    4. Initializes the byte stream with the last known bytes if available.
-    5. Defines a helper function to get the scale for a field from the page.
-    6. Iterates over the API structure to process each field:
-        - Skips non-editable fields.
-        - Retrieves the value, byte order, and scale for the field.
-        - Uses the appropriate write function based on the field type.
-        - If delta updates are used and the field has a position map, patches the field into the byte stream.
-        - Otherwise, performs a full write for the field.
-    7. Returns the constructed byte stream.
+    The function determines whether to use delta updates or a full rebuild based on the presence of positionmap,
+    receivedBytes, and receivedBytesCount for the given API name. If delta updates are available and noDelta is not set,
+    it will use delta updates. Otherwise, it will perform a full rebuild of the payload.
 --]]
-function apiLoader.buildWritePayload(apiname, payload, api_structure)
-
+function apiLoader.buildWritePayload(apiname, payload, api_structure, noDelta)
     local positionmap = rfsuite.app.Page.mspapi and rfsuite.app.Page.mspapi.positionmap[apiname]
     local receivedBytes = rfsuite.app.Page.mspapi and rfsuite.app.Page.mspapi.receivedBytes[apiname]
     local receivedBytesCount = rfsuite.app.Page.mspapi and rfsuite.app.Page.mspapi.receivedBytesCount[apiname]
 
     local useDelta = positionmap and receivedBytes and receivedBytesCount
 
-    if useDelta then
-        rfsuite.utils.log("[buildWritePayload] Using delta updates for " .. apiname, "info")
-    else
-        rfsuite.utils.log("[buildWritePayload] No valid delta for " .. apiname .. ", doing full rebuild", "info")
+    -- Override delta usage if noDelta is set
+    if noDelta == true then
+        useDelta = false
     end
 
-    -- Precompute list of editable fields from formFields
+    if useDelta then
+        rfsuite.utils.log("[buildWritePayload] Using delta updates for " .. apiname, "info")
+        return apiLoader.buildDeltaPayload(apiname, payload, api_structure, positionmap, receivedBytes, receivedBytesCount)
+    else
+        rfsuite.utils.log("[buildWritePayload] Using full rebuild for " .. apiname, "info")
+        return apiLoader.buildFullPayload(apiname, payload, api_structure)
+    end
+end
+
+--[[
+    Builds a delta payload for the given API name and payload.
+
+    @param apiname (string) The name of the API.
+    @param payload (table) The payload data to be processed.
+    @param api_structure (table) The structure of the API fields.
+    @param positionmap (table) A map of field names to their positions in the byte stream.
+    @param receivedBytes (table) The previously received bytes.
+    @param receivedBytesCount (number) The count of previously received bytes.
+
+    @return (table) The byte stream representing the delta payload.
+
+    The function performs the following steps:
+    1. Initializes the byte stream with the last known bytes.
+    2. Identifies editable fields from the form fields.
+    3. Iterates over the API structure and processes each field:
+        - Skips non-editable fields.
+        - Retrieves the value from the payload or uses the default value.
+        - Scales the value if necessary.
+        - Writes the value to the byte stream using the appropriate write function.
+        - Patches existing data in the byte stream for delta updates.
+--]]
+function apiLoader.buildDeltaPayload(apiname, payload, api_structure, positionmap, receivedBytes, receivedBytesCount)
+    local byte_stream = {}
+
+    -- Start with a copy of the last known bytes
+    for i = 1, receivedBytesCount or 0 do
+        byte_stream[i] = receivedBytes and receivedBytes[i] or 0
+    end
+
+    -- Get editable fields
     local editableFields = {}
     for idx, formField in ipairs(rfsuite.app.formFields) do
         local pageField = rfsuite.app.Page.fields[idx]
@@ -568,36 +597,16 @@ function apiLoader.buildWritePayload(apiname, payload, api_structure)
         end
     end
 
-    -- Start with a copy of the last known bytes
-    local byte_stream = {}
-    for i = 1, receivedBytesCount or 0 do
-        byte_stream[i] = receivedBytes and receivedBytes[i] or 0
-    end
-
-    local function get_scale_from_page(field_name)
-        if not rfsuite.app.Page.mspapi.api_reversed or not rfsuite.app.Page.fields then
-            return 1
-        end
-        for _, v in ipairs(rfsuite.app.Page.fields) do
-            if field_name == v.apikey and rfsuite.app.Page.mspapi.api_reversed[apiname] == v.mspapi then
-                return v.scale
-            end
-        end
-        return 1
-    end
-
     for _, field_def in ipairs(api_structure) do
         local field_name = field_def.field
-
-        -- Skip non-editable fields immediately
         if not editableFields[field_name] then
-            rfsuite.utils.log("[buildWritePayload] Skipping non-editable field: " .. field_name, "debug")
+            rfsuite.utils.log("[buildDeltaPayload] Skipping non-editable field: " .. field_name, "debug")
             goto continue
         end
 
         local value = payload[field_name] or field_def.default or 0
         local byteorder = field_def.byteorder
-        local scale = field_def.scale or get_scale_from_page(field_name) or 1
+        local scale = field_def.scale or 1
         value = math.floor(value * scale + 0.5)
 
         local writeFunction = rfsuite.tasks.msp.mspHelper["write" .. field_def.type]
@@ -605,7 +614,8 @@ function apiLoader.buildWritePayload(apiname, payload, api_structure)
             error("Unknown type: " .. tostring(field_def.type))
         end
 
-        if useDelta and positionmap[field_name] then
+        if positionmap[field_name] then
+            -- Delta update (patching existing data)
             local field_positions = positionmap[field_name]
             local tmpStream = {}
 
@@ -622,27 +632,9 @@ function apiLoader.buildWritePayload(apiname, payload, api_structure)
             end
 
             rfsuite.utils.log(string.format(
-                "[buildWritePayload] Patched field '%s' into positions [%s]",
+                "[buildDeltaPayload] Patched field '%s' into positions [%s]",
                 field_name, table.concat(field_positions, ",")
             ), "debug")
-
-        else
-            -- Full write fallback (non-patch mode)
-            local tmpStream = {}
-            if byteorder then
-                writeFunction(tmpStream, value, byteorder)
-            else
-                writeFunction(tmpStream, value)
-            end
-
-            for i, byte in ipairs(tmpStream) do
-                table.insert(byte_stream, byte)
-            end
-
-            rfsuite.utils.log(string.format(
-                "[buildWritePayload] Full write for field '%s', no positionmap entry",
-                field_name
-            ), "info")
         end
 
         ::continue::
@@ -650,6 +642,64 @@ function apiLoader.buildWritePayload(apiname, payload, api_structure)
 
     return byte_stream
 end
+
+--[[
+    Builds a full payload byte stream based on the provided API structure.
+
+    @param apiname (string) - The name of the API being used.
+    @param payload (table) - A table containing the data to be converted into a byte stream.
+    @param api_structure (table) - A table defining the structure of the API, including field names, types, byte order, and scaling factors.
+
+    @return (table) - A byte stream representing the full payload.
+
+    The function performs the following steps:
+    1. Clears the byte stream for a full rebuild.
+    2. Iterates over each field definition in the API structure.
+    3. Retrieves the value for each field from the payload, or uses the default value if not provided.
+    4. Scales the value if a scale factor is defined.
+    5. Converts the value to the appropriate byte representation using the corresponding write function.
+    6. Appends the byte representation to the byte stream.
+    7. Logs the process for each field.
+
+    @throws (error) - If an unknown type is encountered in the field definition.
+]]
+function apiLoader.buildFullPayload(apiname, payload, api_structure)
+    local byte_stream = {}
+
+    rfsuite.utils.log("[buildFullPayload] Clearing byte stream for full rebuild", "debug")
+
+    for _, field_def in ipairs(api_structure) do
+        local field_name = field_def.field
+        local value = payload[field_name] or field_def.default or 0
+        local byteorder = field_def.byteorder
+        local scale = field_def.scale or 1
+        value = math.floor(value * scale + 0.5)
+
+        local writeFunction = rfsuite.tasks.msp.mspHelper["write" .. field_def.type]
+        if not writeFunction then
+            error("Unknown type: " .. tostring(field_def.type))
+        end
+
+        local tmpStream = {}
+        if byteorder then
+            writeFunction(tmpStream, value, byteorder)
+        else
+            writeFunction(tmpStream, value)
+        end
+
+        for _, byte in ipairs(tmpStream) do
+            table.insert(byte_stream, byte)
+        end
+
+        rfsuite.utils.log(string.format(
+            "[buildFullPayload] Full write for field '%s'",
+            field_name
+        ), "debug")
+    end
+
+    return byte_stream
+end
+
 
 
 -- New function to process structure in one pass
