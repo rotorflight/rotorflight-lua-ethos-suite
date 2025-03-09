@@ -77,6 +77,10 @@ createSensorList[0x5472] = {name = "Rate Profile", unit = UNIT_RAW}
 createSensorList[0x5440] = {name = "Throttle %", unit = UNIT_PERCENT}
 createSensorList[0x5250] = {name = "Consumption", unit = UNIT_MILLIAMPERE_HOUR}
 createSensorList[0x5462] = {name = "Arming Flags", unit = UNIT_RAW}
+createSensorList[0x5463] = {name = "Arming Disable", unit = UNIT_RAW}
+createSensorList[0x5464] = {name = "Cell Count", unit = UNIT_RAW}
+createSensorList[0x5465] = {name = "ESC1 Status", unit = UNIT_RAW}
+createSensorList[0x5466] = {name = "ESC1 Model ID", unit = UNIT_RAW}
 
 -- drop
 local dropSensorList = {}
