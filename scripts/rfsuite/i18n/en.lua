@@ -70,10 +70,24 @@ local en = {
         msg_rebooting              = "Rebooting...",
         msg_save_not_commited      = "Save not committed to EEPROM",
         msg_please_disarm_to_save  = "Please disarm to save to ensure data integrity when saving.",
+        msg_loading                = "Loading...",
+        msg_loading_from_fbl       = "Loading data from flight controller...",
+        msg_connecting             = "Connecting",
+        msg_connecting_to_fbl      = "Connecting to flight controller...",
+        msg_saving                 = "Saving...",
+        msg_saving_to_fbl          = "Saving data to flight controller...",
 
         -- buttons
         btn_ok                  = "          OK           ",    -- intentionaly padded to make it bigger
         btn_cancel              = "CANCEL",
+        btn_close               = "CLOSE",
+
+        -- menu
+        navigation_menu               = "MENU",
+        navigation_save               = "SAVE",
+        navigation_reload             = "RELOAD",
+        navigation_tools              = "*",
+        navigation_help               = "?",
 
         modules = {
 
