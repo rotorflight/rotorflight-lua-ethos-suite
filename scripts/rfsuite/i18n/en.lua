@@ -31,36 +31,18 @@ local en = {
     reload                     = "reload",
     save                       = "save",
 
-    -- Widgets
-    widgets = {
-        governor = {
-                UNKNOWN   = "UNKNOWN",
-                OFF       = "OFF",
-                IDLE      = "IDLE",
-                SPOOLUP   = "SPOOLUP",
-                RECOVERY  = "RECOVERY",
-                ACTIVE    = "ACTIVE",
-                THROFF    = "THR-OFF",
-                LOSTHS    = "LOST-HS",
-                AUTOROT   = "AUTOROT",
-                BAILOUT   = "BAILOUT",
-                DISABLED  = "DISABLED",
-                DISARMED  = "DISARMED"
-        },
-    },
-
     -- App
     app = {
         -- startup checks
-        check_bg_task            = "Please enable the background task.",
-        check_rf_module_on       = "Please check your rf module is turned on.",
-        check_discovered_sensors = "Please check you have discovered all sensors.",
-        check_heli_on            = "Please check your heli is powered up and radio connected.",
-        check_msp_version        = "Unable to determine MSP version in use.",
-        check_supported_version  = "This version of the Lua script \ncan't be used with the selected model",
+        check_bg_task              = "Please enable the background task.",
+        check_rf_module_on         = "Please check your rf module is turned on.",
+        check_discovered_sensors   = "Please check you have discovered all sensors.",
+        check_heli_on              = "Please check your heli is powered up and radio connected.",
+        check_msp_version          = "Unable to determine MSP version in use.",
+        check_supported_version    = "This version of the Lua script \ncan't be used with the selected model",
 
         -- error messages
-        error_timed_out          = "Error: timed out",
+        error_timed_out            = "Error: timed out",
 
         -- messages
         msg_save_current_page      = "Save current page to flight controller?",
@@ -78,22 +60,49 @@ local en = {
         msg_saving_to_fbl          = "Saving data to flight controller...",
 
         -- buttons
-        btn_ok                  = "          OK           ",    -- intentionaly padded to make it bigger
-        btn_cancel              = "CANCEL",
-        btn_close               = "CLOSE",
+        btn_ok                     = "          OK           ",    -- intentionaly padded to make it bigger
+        btn_cancel                 = "CANCEL",
+        btn_close                  = "CLOSE",
 
         -- menu
-        navigation_menu               = "MENU",
-        navigation_save               = "SAVE",
-        navigation_reload             = "RELOAD",
-        navigation_tools              = "*",
-        navigation_help               = "?",
+        navigation_menu            = "MENU",
+        navigation_save            = "SAVE",
+        navigation_reload          = "RELOAD",
+        navigation_tools           = "*",
+        navigation_help            = "?",
 
+        -- sections
+        menu_section_flight_tuning = "Flight Tuning",
+        menu_section_advanced      = "Advanced",
+        menu_section_hardware      = "Hardware",
+        menu_section_tools         = "Tools",
+        menu_section_developer     = "Developer",
+        menu_section_about         = "About",
+
+        -- modules
         modules = {
 
 
         },
 
+    },
+
+    -- Widgets
+    widgets = {
+        governor = {
+                UNKNOWN   = "UNKNOWN",
+                OFF       = "OFF",
+                IDLE      = "IDLE",
+                SPOOLUP   = "SPOOLUP",
+                RECOVERY  = "RECOVERY",
+                ACTIVE    = "ACTIVE",
+                THROFF    = "THR-OFF",
+                LOSTHS    = "LOST-HS",
+                AUTOROT   = "AUTOROT",
+                BAILOUT   = "BAILOUT",
+                DISABLED  = "DISABLED",
+                DISARMED  = "DISARMED"
+        },
     },
 
 }
