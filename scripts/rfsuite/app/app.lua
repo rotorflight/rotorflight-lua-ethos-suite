@@ -692,7 +692,11 @@ local function checkForUnresolvedTimeouts()
     end
 
     if hasUnresolvedTimeouts then
-        showAlertForTimeouts()  -- 🔹 Call the function to display an alert
+        -- disable all fields leaving only menu enabled
+        rfsuite.app.ui.disableAllFields()
+        rfsuite.app.ui.disableAllNavigationFields()
+        rfsuite.app.ui.enableNavigationField('menu')
+
     end
 end
 
