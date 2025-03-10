@@ -343,7 +343,15 @@ local en = {
                 help_p7      = "Rate and Accel: Max rotation and acceleration rates when leveling during rescue.",
             },
             profile_select = {
-                name =              "Select Profile",
+                name            = "Select Profile",
+                pid_profile     = "PID profile",
+                rate_profile    = "Rate Profile",
+                save_settings   = "Save settings",
+                save_prompt     = "Save current page to flight controller?",
+                ok              = "OK",
+                cancel          = "CANCEL",
+                help_p1         = "Set the current flight profile or rate profile you would like to use.",
+                help_p2         = "If you use a switch on your radio to change flight or rate modes, this will override this choice as soon as you toggle the switch.",
             },
             profile_tailrotor = {
                 name =              "Tail Rotor",
