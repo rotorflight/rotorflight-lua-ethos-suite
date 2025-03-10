@@ -8,17 +8,17 @@ local mspapi = {
         labels = {
         },
         rows = {
-            "Roll",
-            "Pitch",
-            "Yaw"
+            rfsuite.i18n.get("app.modules.pids.roll"),
+            rfsuite.i18n.get("app.modules.pids.pitch"),
+            rfsuite.i18n.get("app.modules.pids.yaw")
         },
         cols = {
-            "P",
-            "I",
-            "D",
-            "F",
-            "O",
-            "B"
+            rfsuite.i18n.get("app.modules.pids.p"),
+            rfsuite.i18n.get("app.modules.pids.i"),
+            rfsuite.i18n.get("app.modules.pids.d"),
+            rfsuite.i18n.get("app.modules.pids.f"),
+            rfsuite.i18n.get("app.modules.pids.o"),
+            rfsuite.i18n.get("app.modules.pids.b")
         },
         fields = {
             -- P
@@ -158,7 +158,7 @@ end
 
 return {
     mspapi = mspapi,
-    title = "PIDs",
+    title = rfsuite.i18n.get("app.modules.pids.name"),
     reboot = false,
     eepromWrite = true,
     refreshOnProfileChange = true,
