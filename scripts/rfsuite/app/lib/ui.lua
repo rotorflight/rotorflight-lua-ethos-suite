@@ -106,7 +106,9 @@ end
 ]]
 function ui.progressDisplaySaveValue(value, message)
     if value >= 100 then
-        rfsuite.app.dialogs.save:value(value)
+        if rfsuite.app.dialogs.save then
+            rfsuite.app.dialogs.save:value(value)
+        end    
         if message then rfsuite.app.dialogs.save:message(message) end
         return
     end
@@ -114,7 +116,9 @@ function ui.progressDisplaySaveValue(value, message)
     local now = os.clock()
     if (now - rfsuite.app.dialogs.saveRateLimit) >= rfsuite.app.dialogs.saveRate then
         rfsuite.app.dialogs.saveRateLimit = now
-        rfsuite.app.dialogs.save:value(value)
+        if rfsuite.app.dialogs.save then
+            rfsuite.app.dialogs.save:value(value)
+        end    
         if message then rfsuite.app.dialogs.save:message(message) end
     end
 end

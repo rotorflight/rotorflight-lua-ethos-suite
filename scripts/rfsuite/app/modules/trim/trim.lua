@@ -35,44 +35,10 @@ local mspapi = {
 }
 
 
-local function saveDataEnd()
-    local message = {
-        command = 250,
-        payload = {},
-        processReply = function(self, buf)
-            clear2send = true
-        end,
-        errorHandler = function(self, buf)
-            clear2send = true
-        end
-    }
-    rfsuite.tasks.msp.mspQueue:add(message)
-
-end
 
 local function saveData()
-
-    clear2send = false
-    local payload = rfsuite.app.Page.values
-    local message = {
-        command = 43,
-        payload = payload,
-        processReply = function(self, buf)
-            saveDataEnd()
-        end,
-        errorHandler = function(self, buf)
-            clear2send = true
-        end
-    }
-
-
-    if rfsuite.config.logMSP then
-        local logData = "Saving: {" .. rfsuite.utils.joinTableItems(payload, ", ") .. "}"
-        rfsuite.utils.log(logData,"info")
-    end
-
-
-    rfsuite.tasks.msp.mspQueue:add(message)
+    clear2send = true
+    rfsuite.app.triggers.triggerSaveNoProgress = true
 end
 
 local function mixerOn(self)
@@ -80,17 +46,25 @@ local function mixerOn(self)
     rfsuite.app.audio.playMixerOverideEnable = true
 
     for i = 1, 4 do
-
         local message = {
             command = 191, -- MSP_SET_MIXER_OVERRIDE
             payload = {i}
         }
+
         rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
         rfsuite.tasks.msp.mspQueue:add(message)
 
+        if rfsuite.config.logMSP then
+            local logData = "mixerOn: {" .. rfsuite.utils.joinTableItems(message.payload, ", ") .. "}"
+            rfsuite.utils.log(logData,"info")
+        end
+
     end
 
+
+
     rfsuite.app.triggers.isReady = true
+    rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function mixerOff(self)
@@ -104,15 +78,24 @@ local function mixerOff(self)
         }
         rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2501)
         rfsuite.tasks.msp.mspQueue:add(message)
+
+        if rfsuite.config.logMSP then
+            local logData = "mixerOff: {" .. rfsuite.utils.joinTableItems(message.payload, ", ") .. "}"
+            rfsuite.utils.log(logData,"info")
+        end
+
     end
 
+
+
     rfsuite.app.triggers.isReady = true
+    rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function postLoad(self)
 
     if rfsuite.session.tailMode == nil then
-        local v = rfsuite.app.Page.values[2]
+        local v = rfsuite.app.Page.values['MIXER_CONFIG']["tail_rotor_mode"]
         rfsuite.session.tailMode = math.floor(v)
         rfsuite.app.triggers.reload = true
         return

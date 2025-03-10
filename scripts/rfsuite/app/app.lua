@@ -29,6 +29,7 @@ triggers table:
     - exitAPP: boolean, indicates if the app should exit.
     - noRFMsg: boolean, indicates if there is no RF message.
     - triggerSave: boolean, indicates if a save operation should be triggered.
+    - triggerSaveNoProgress: boolean, indicates if a save operation without progress should be triggered.
     - triggerReload: boolean, indicates if a reload operation should be triggered.
     - triggerReloadFull: boolean, indicates if a full reload operation should be triggered.
     - triggerReloadNoPrompt: boolean, indicates if a reload without prompt should be triggered.
@@ -57,6 +58,7 @@ local triggers = {}
 triggers.exitAPP = false
 triggers.noRFMsg = false
 triggers.triggerSave = false
+triggers.triggerSaveNoProgress = false
 triggers.triggerReload = false
 triggers.triggerReloadFull = false
 triggers.triggerReloadNoPrompt = false
@@ -1160,7 +1162,7 @@ function app.wakeupUI()
         if app.dialogs.saveWatchDog ~= nil then
             if (os.clock() - app.dialogs.saveWatchDog) > (tonumber(app.protocol.saveTimeout + 5)) or (app.dialogs.saveProgressCounter > 120 and rfsuite.tasks.msp.mspQueue:isProcessed()) then
                 app.audio.playTimeout = true
-                app.ui.progressDisplaySaveMessage(rfsuite.i18n.get("error_timed_out"))
+                app.ui.progressDisplaySaveMessage(rfsuite.i18n.get("app.error_timed_out"))
                 app.ui.progressDisplaySaveCloseAllowed(true)
                 app.dialogs.save:value(100)
                 app.dialogs.saveProgressCounter = 0
@@ -1184,7 +1186,7 @@ function app.wakeupUI()
             app.audio.playTimeout = true
 
             if app.dialogs.progress ~= nil then
-                app.ui.progressDisplayMessage(rfsuite.i18n.get("error_timed_out"))
+                app.ui.progressDisplayMessage(rfsuite.i18n.get("app.error_timed_out"))
                 app.ui.progressDisplayCloseAllowed(true)
             end
 
@@ -1245,6 +1247,13 @@ function app.wakeupUI()
 
         app.triggers.triggerSave = false
     end
+
+    if app.triggers.triggerSaveNoProgress == true then
+        app.triggers.triggerSaveNoProgress = false
+        app.PageTmp = app.Page     
+        saveSettings()
+    end     
+
 
     -- a reload that is pretty much instant with no prompt to ask them
     if app.triggers.triggerReloadNoPrompt == true then
