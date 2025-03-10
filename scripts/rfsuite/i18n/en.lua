@@ -125,7 +125,22 @@ local en = {
                 help_p2 =           "Choose the source and destinations and save to copy the profile.",
             },
             esc_motors = {
-                name =              "ESC/Motors",
+                name                    = "ESC/Motors",
+                main_motor_ratio        = "Main Motor Ratio",
+                tail_motor_ratio        = "Tail Motor Ratio",
+                pinion                  = "Pinion",
+                main                    = "Main",
+                rear                    = "Rear",
+                front                   = "Front",
+                motor_pole_count        = "Motor Pole Count",
+                min_throttle            = "0% Throttle PWM Value",
+                max_throttle            = "100% Throttle PWM value",
+                mincommand              = "Motor Stop PWM Value",
+                voltage_correction      = "Voltage Correction",
+                current_correction      = "Current Correction",
+                consumption_correction  = "Consumption Correction",
+                help_p1                 = "Configure the motor and speed controller features.",
+
             },
             esc_tools = {
                 name =              "ESC Tools",
