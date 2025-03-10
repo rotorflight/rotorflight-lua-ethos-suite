@@ -93,6 +93,8 @@ local en = {
                 opener              = "Rotorflight is an open source project. Contribution from other like minded people, keen to assist in making this software even better, is welcomed and encouraged. You do not have to be a hardcore programmer to help.",
                 credits             = "Notable contributors to both the Rotorflight firmware and this software are: Petri Mattila, Egon Lubbers, Rob Thomson, Rob Gayle, Phil Kaighin, Robert Burrow, Keith Williams, Bertrand Songis, Venbs Zhou... and many more who have spent hours testing and providing feedback!",
                 license             = "You may copy, distribute, and modify the software as long as you track changes/dates in source files. Any modifications to or software including (via compiler) GPL-licensed code must also be made available under the GPL along with build & install instructions.",       
+                help1               = "This page provides some useful information that you may be asked for when requesting support.",
+                help2               = "For support, please first read the help pages on www.rotorflight.org",
             },
             accelerometer = {
                 name =              "Accelerometer",
