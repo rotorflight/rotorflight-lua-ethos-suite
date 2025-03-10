@@ -9,8 +9,8 @@ local mspapi = {
         labels = {
         },
         fields = {
-            {t = "Roll", mspapi=1, apikey="roll"},
-            {t = "Pitch", mspapi=1,apikey="pitch"}
+            {t = rfsuite.i18n.get("app.modules.accelerometer.roll"), mspapi=1, apikey="roll"},
+            {t = rfsuite.i18n.get("app.modules.accelerometer.pitch"), mspapi=1,apikey="pitch"}
         }
     }                 
 }
@@ -20,6 +20,5 @@ return {
     mspapi=mspapi,
     eepromWrite = true,
     reboot = false,
-    title = "Accelerometer",
     API = {},
 }

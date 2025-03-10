@@ -22,8 +22,8 @@ local data = {}
 data['help'] = {}
 
 data['help']['default'] = {
-    rfsuite.i18n.get("app.modules.about.help1"), 
-    rfsuite.i18n.get("app.modules.about.help2")
+    rfsuite.i18n.get("app.modules.about.help_p1"), 
+    rfsuite.i18n.get("app.modules.about.help_p2")
 }
 
 data['fields'] = {}
