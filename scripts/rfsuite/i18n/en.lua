@@ -114,6 +114,15 @@ local en = {
             },
             copyprofiles = {
                 name =              "Copy Profiles",
+                profile_type =      "Profile Type",
+                source_profile =    "Source Profile",
+                dest_profile =      "Dest. Profile",
+                profile_type_pid =  "PID",
+                profile_type_rate = "Rate",
+                msgbox_save =       "Save settings",
+                msgbox_msg  =       "Save current page to flight controller?",
+                help_p1 =           "Copy PID profile or Rate profile from Source to Destination.", 
+                help_p2 =           "Choose the source and destinations and save to copy the profile.",
             },
             esc_motors = {
                 name =              "ESC/Motors",
