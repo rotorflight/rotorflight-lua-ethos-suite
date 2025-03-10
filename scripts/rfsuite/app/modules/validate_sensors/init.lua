@@ -18,7 +18,7 @@
 
 ]] --
 local init = {
-    title = "Sensors", -- title of the page
+    title = rfsuite.i18n.get("app.modules.validate_sensors.name"), -- title of the page
     section = "tools", -- do not run if busy with msp
     script = "validate.lua", -- run this script
     image = "sensors.png", -- image for the page

@@ -18,7 +18,7 @@
 
 ]] --
 local init = {
-    title = "Logs", -- title of the page
+    title = rfsuite.i18n.get("app.modules.logs.name"), -- title of the page
     section = "tools", -- do not run if busy with msp
     script = "logs.lua", -- run this script
     image = "logs.png", -- image for the page
