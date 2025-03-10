@@ -20,11 +20,11 @@
 ]] --
 local sections = {}
 
-sections[#sections + 1] = {title = rfsuite.i18n.get("app.menu_section_flight_tuning")}
-sections[#sections + 1] = {title = rfsuite.i18n.get("app.menu_section_advanced")}
-sections[#sections + 1] = {title = rfsuite.i18n.get("app.menu_section_hardware")}
-sections[#sections + 1] = {title = rfsuite.i18n.get("app.menu_section_tools")}
-sections[#sections + 1] = {title = rfsuite.i18n.get("app.menu_section_developer"), developer = true}
-sections[#sections + 1] = {title = rfsuite.i18n.get("app.menu_section_about")}
+sections[#sections + 1] = {title = rfsuite.i18n.get("app.menu_section_flight_tuning"), id = "flight_tuning"}
+sections[#sections + 1] = {title = rfsuite.i18n.get("app.menu_section_advanced"), id = "advanced"}
+sections[#sections + 1] = {title = rfsuite.i18n.get("app.menu_section_hardware"), id = "hardware"}
+sections[#sections + 1] = {title = rfsuite.i18n.get("app.menu_section_tools"), id = "tools"}
+sections[#sections + 1] = {title = rfsuite.i18n.get("app.menu_section_developer"), id = "developer", developer = true}
+sections[#sections + 1] = {title = rfsuite.i18n.get("app.menu_section_about"), id = "about"}
 
 return sections

@@ -19,7 +19,7 @@
 ]] --
 local init = {
     title = "PID Controller", -- title of the page
-    section = "Advanced", -- do not run if busy with msp
+    section = "advanced", -- do not run if busy with msp
     script = "pidcontroller.lua", -- run this script
     image = "pids-controller.png", -- image for the page
     order = 1, -- order in the section
