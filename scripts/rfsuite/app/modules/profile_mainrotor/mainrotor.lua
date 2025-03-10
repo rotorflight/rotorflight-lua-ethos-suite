@@ -7,17 +7,17 @@ local mspapi = {
     },
     formdata = {
         labels = {
-            {t = "Collective Pitch Compensation", t2 = "Col. Pitch Compensation", label = 1,  inline_size = 40.15},
-            {t = "Cyclic Cross coupling",                                         label = 2,  inline_size = 40.15},
+            {t = rfsuite.i18n.get("app.modules.profile_mainrotor.collective_pitch_comp"), t2 = rfsuite.i18n.get("app.modules.profile_mainrotor.collective_pitch_comp_short"), label = 1,  inline_size = 40.15},
+            {t = rfsuite.i18n.get("app.modules.profile_mainrotor.cyclic_cross_coupling"),                                         label = 2,  inline_size = 40.15},
             {t = "",                                                              label = 3,  inline_size = 40.15},
             {t = "",                                                              label = 4,  inline_size = 40.15}
 
         },
         fields = {
             {t = "",      inline = 1, label = 1, mspapi = 1, apikey = "pitch_collective_ff_gain"},
-            {t = "Gain",  inline = 1, label = 2, mspapi = 1, apikey = "cyclic_cross_coupling_gain"},
-            {t = "Ratio", inline = 1, label = 3, mspapi = 1, apikey = "cyclic_cross_coupling_ratio"},
-            {t = "Cutoff",inline = 1, label = 4, mspapi = 1, apikey = "cyclic_cross_coupling_cutoff"}
+            {t = rfsuite.i18n.get("app.modules.profile_mainrotor.gain"),  inline = 1, label = 2, mspapi = 1, apikey = "cyclic_cross_coupling_gain"},
+            {t = rfsuite.i18n.get("app.modules.profile_mainrotor.ratio"), inline = 1, label = 3, mspapi = 1, apikey = "cyclic_cross_coupling_ratio"},
+            {t = rfsuite.i18n.get("app.modules.profile_mainrotor.cutoff"),inline = 1, label = 4, mspapi = 1, apikey = "cyclic_cross_coupling_cutoff"}
         }
     }
 }
@@ -42,7 +42,7 @@ end
 
 return {
     mspapi = mspapi,
-    title = "Main Rotor",
+    title = rfsuite.i18n.get("app.modules.profile_mainrotor.name"),
     refreshOnProfileChange = true,
     reboot = false,
     eepromWrite = true,

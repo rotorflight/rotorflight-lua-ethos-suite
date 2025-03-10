@@ -275,7 +275,17 @@ local en = {
                 help_p6             = "Tail Torque Assist: For motorized tails. Gain and limit of headspeed increase when using main rotor torque for yaw assist.",
             },
             profile_mainrotor = {
-                name =              "Main Rotor",
+                name                        = "Main Rotor",
+                collective_pitch_comp       = "Collective Pitch Compensation",
+                collective_pitch_comp_short = "Col. Pitch Compensation",
+                cyclic_cross_coupling       = "Cyclic Cross coupling",
+                gain                        = "Gain",
+                ratio                       = "Ratio",
+                cutoff                      = "Cutoff",
+                help_p1                     = "Collective Pitch Compensation: Increasing will compensate for the pitching motion caused by tail drag when climbing.",
+                help_p2                     = "Cross Coupling Gain: Removes roll coupling when only elevator is applied.",
+                help_p3                     = "Cross Coupling Ratio: Amount of compensation (pitch vs roll) to apply.",
+                help_p4                     = "Cross Coupling Freq. Limit: Frequency limit for the compensation, higher value will make the compensation action faster.",
             },
             profile_pidbandwidth = {
                 name =              "PID Bandwidth",
