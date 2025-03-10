@@ -163,7 +163,16 @@ local en = {
                 help_p4             = "Dynamic Notch Filters: Automatically creates notch filters within the min and max frequency range.",
             },
             governor = {
-                name =              "Governor",
+                name                 = "Governor",
+                mode                 = "Mode",
+                handover_throttle    = "Handover throttle%",
+                spoolup_min_throttle = "Min spoolup throttle%",
+                startup_time         = "Startup time",
+                spoolup_time         = "Spoolup time",
+                tracking_time        = "Tracking time",
+                recovery_time        = "Recovery time",
+                help_p1              = "These parameters apply globally to the governor regardless of the profile in use.",
+                help_p2              = "Each parameter is simply a time value in seconds for each governor action."
             },
             logs = {
                 name =              "Logs",
