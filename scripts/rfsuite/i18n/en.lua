@@ -288,7 +288,15 @@ local en = {
                 help_p4                     = "Cross Coupling Freq. Limit: Frequency limit for the compensation, higher value will make the compensation action faster.",
             },
             profile_pidbandwidth = {
-                name =              "PID Bandwidth",
+                name         = "PID Bandwidth",
+                dterm_cutoff = "D-term cut-off",
+                bterm_cutoff = "B-term cut-off",
+                roll         = "R",
+                pitch        = "P",
+                yaw          = "Y",
+                help_p1      = "PID Bandwidth: Overall bandwidth in HZ used by the PID loop.",
+                help_p2      = "D-term cutoff: D-term cutoff frequency in HZ.",
+                help_p3      = "B-term cutoff: B-term cutoff frequency in HZ.",
             },
             profile_pidcontroller = {
                 name =              "PID Controller",
