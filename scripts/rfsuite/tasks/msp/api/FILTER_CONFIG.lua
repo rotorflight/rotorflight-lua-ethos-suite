@@ -18,7 +18,7 @@
 local API_NAME = "FILTER_CONFIG" -- API name (must be same as filename)
 local MSP_API_CMD_READ = 92 -- Command identifier 
 local MSP_API_CMD_WRITE = 93 -- Command identifier 
-local MSP_API_SIMULATOR_RESPONSE = {0, 1, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 25, 25, 0, 245, 0} -- Default simulator response
+local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write 
 
 local gyroFilterType = {[0]="NONE", [1]="1ST", [2]="2ND"}
 
@@ -103,7 +103,7 @@ local function write(suppliedPayload)
 
     local message = {
         command = MSP_API_CMD_WRITE,
-        payload = suppliedPayload or rfsuite.tasks.msp.api.buildWritePayload(API_NAME, payloadData,MSP_API_STRUCTURE_WRITE),
+        payload = suppliedPayload or rfsuite.tasks.msp.api.buildWritePayload(API_NAME, payloadData,MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE),
         processReply = function(self, buf)
             local completeHandler = handlers.getCompleteHandler()
             if completeHandler then completeHandler(self, buf) end
