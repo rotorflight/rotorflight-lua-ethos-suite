@@ -38,12 +38,12 @@ local mspapi = {
         labels = {
         },
         fields = {
-            {t = "Version", value = version, type = displayType, disable = disableType, position = displayPos},
-            {t = "Ethos Version", value = ethosVersion, type = displayType, disable = disableType, position = displayPos},
-            {t = "MSP Version", value = apiVersion, type = displayType, disable = disableType, position = displayPos},
-            {t = "MSP Transport", value = string.upper(rfsuite.tasks.msp.protocol.mspProtocol), type = displayType, disable = disableType, position = displayPos},
-            {t = "Supported MSP Versions", value = supportedMspVersion, type = displayType, disable = disableType, position = displayPos},
-            {t = "Simulation", value = simulation, type = displayType, disable = disableType, position = displayPos}
+            {t = rfsuite.i18n.get("app.modules.about.version"), value = version, type = displayType, disable = disableType, position = displayPos},
+            {t = rfsuite.i18n.get("app.modules.about.ethos_version"), value = ethosVersion, type = displayType, disable = disableType, position = displayPos},
+            {t = rfsuite.i18n.get("app.modules.about.msp_version"), value = apiVersion, type = displayType, disable = disableType, position = displayPos},
+            {t = rfsuite.i18n.get("app.modules.about.msp_transport"), value = string.upper(rfsuite.tasks.msp.protocol.mspProtocol), type = displayType, disable = disableType, position = displayPos},
+            {t = rfsuite.i18n.get("app.modules.about.supported_versions"), value = supportedMspVersion, type = displayType, disable = disableType, position = displayPos},
+            {t = rfsuite.i18n.get("app.modules.about.simulation"), value = simulation, type = displayType, disable = disableType, position = displayPos}
         }
     }
 }
@@ -51,14 +51,14 @@ local mspapi = {
 
 function onToolMenu()
 
-    local opener = "Rotorflight is an open source project. Contribution from other like minded people, keen to assist in making this software even better, is welcomed and encouraged. You do not have to be a hardcore programmer to help."
-    local credits = "Notable contributors to both the Rotorflight firmware and this software are: Petri Mattila, Egon Lubbers, Rob Thomson, Rob Gayle, Phil Kaighin, Robert Burrow, Keith Williams, Bertrand Songis, Venbs Zhou... and many more who have spent hours testing and providing feedback!"
-    local license = "You may copy, distribute, and modify the software as long as you track changes/dates in source files. Any modifications to or software including (via compiler) GPL-licensed code must also be made available under the GPL along with build & install instructions."
+    local opener = rfsuite.i18n.get("app.modules.about.opener")
+    local credits = rfsuite.i18n.get("app.modules.about.credits")
+    local license = rfsuite.i18n.get("app.modules.about.license")
 
     local message = opener .. "\r\n\r\n" .. credits .. "\r\n\r\n" .. license .. "\r\n\r\n"
 
     local buttons = {{
-        label = "CLOSE",
+        label = rfsuite.i18n.get("app.btn_close"),
         action = function()
             return true
         end
@@ -66,7 +66,7 @@ function onToolMenu()
 
     form.openDialog({
         width = rfsuite.session.lcdWidth,
-        title = "Credits",
+        title = rfsuite.i18n.get("app.modules.about.msgbox_credits"),
         message = message,
         buttons = buttons,
         wakeup = function()
@@ -87,7 +87,6 @@ end
 
 return {
     mspapi = mspapi,
-    title = "Status",
     reboot = false,
     eepromWrite = false,
     minBytes = 0,
