@@ -8,16 +8,16 @@ local mspapi = {
     },
     formdata = {
         labels = {
-            {t = "Acro trainer", inline_size = 13.6, label = 1},
-            {t = "Angle mode",   inline_size = 13.6, label = 2},
-            {t = "Horizon mode", inline_size = 13.6, label = 3}
+            {t = rfsuite.i18n.get("app.modules.profile_autolevel.acro_trainer"), inline_size = 13.6, label = 1},
+            {t = rfsuite.i18n.get("app.modules.profile_autolevel.angle_mode"),   inline_size = 13.6, label = 2},
+            {t = rfsuite.i18n.get("app.modules.profile_autolevel.horizon_mode"), inline_size = 13.6, label = 3}
         },
         fields = {
-            {t = "Gain", inline = 2, label = 1, mspapi = 1, apikey = "trainer_gain"},
-            {t = "Max",  inline = 1, label = 1, mspapi = 1, apikey = "trainer_angle_limit"},
-            {t = "Gain", inline = 2, label = 2, mspapi = 1, apikey = "angle_level_strength"},
-            {t = "Max",  inline = 1, label = 2, mspapi = 1, apikey = "angle_level_limit"},
-            {t = "Gain", inline = 2, label = 3, mspapi = 1, apikey = "horizon_level_strength"}
+            {t = rfsuite.i18n.get("app.modules.profile_autolevel.gain"), inline = 2, label = 1, mspapi = 1, apikey = "trainer_gain"},
+            {t = rfsuite.i18n.get("app.modules.profile_autolevel.max"),  inline = 1, label = 1, mspapi = 1, apikey = "trainer_angle_limit"},
+            {t = rfsuite.i18n.get("app.modules.profile_autolevel.gain"), inline = 2, label = 2, mspapi = 1, apikey = "angle_level_strength"},
+            {t = rfsuite.i18n.get("app.modules.profile_autolevel.max"),  inline = 1, label = 2, mspapi = 1, apikey = "angle_level_limit"},
+            {t = rfsuite.i18n.get("app.modules.profile_autolevel.gain"), inline = 2, label = 3, mspapi = 1, apikey = "horizon_level_strength"}
         }
     }
 }
@@ -39,7 +39,7 @@ end
 
 return {
     mspapi = mspapi,
-    title = "Auto Level",
+    title = rfsuite.i18n.get("app.modules.profile_autolevel.name"),
     refreshOnProfileChange = true,
     reboot = false,
     eepromWrite = true,

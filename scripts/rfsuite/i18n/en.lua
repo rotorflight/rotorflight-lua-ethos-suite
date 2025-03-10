@@ -238,7 +238,15 @@ local en = {
                 help_p5 = "Test & Adjust: Fly, observe, and fine-tune for best performance in real conditions.",
             },
             profile_autolevel = {
-                name =              "Autolevel",
+                name         = "Autolevel",
+                acro_trainer = "Acro trainer",
+                angle_mode   = "Angle mode",
+                horizon_mode = "Horizon mode",
+                gain         = "Gain",
+                max          = "Max",
+                help_p1      = "Acro Trainer: How aggressively the heli tilts back to level when flying in Acro Trainer Mode.",
+                help_p2      = "Angle Mode: How aggressively the heli tilts back to level when flying in Angle Mode.",
+                help_p3      = "Horizon Mode: How aggressively the heli tilts back to level when flying in Horizon Mode.",
             },
             profile_governor = {
                 name =              "Governor",
