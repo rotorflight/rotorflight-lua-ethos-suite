@@ -14,8 +14,9 @@ local mspapi = {
             {t = "Tail Torque Assist",   label = 3}
         },
         fields = {
-            {t = "Max throttle",            mspapi = 1, apikey = "governor_max_throttle", enablefunction = function() return (rfsuite.session.governorMode == 1) end},
-            {t = "Full headspeed",          mspapi = 1, apikey = "governor_headspeed", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
+            {t = "Full headspeed",          mspapi = 1, apikey = "governor_headspeed", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},   
+            {t = "Min throttle",            mspapi = 1, apikey = "governor_min_throttle", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
+            {t = "Max throttle",            mspapi = 1, apikey = "governor_max_throttle", enablefunction = function() return (rfsuite.session.governorMode >=1 ) end},                    
             {t = "PID master gain",         mspapi = 1, apikey = "governor_gain", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
             {t = "P",                       inline = 4, label = 1, mspapi = 1, apikey = "governor_p_gain", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
             {t = "I",                       inline = 3, label = 1, mspapi = 1, apikey = "governor_i_gain", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
@@ -26,8 +27,6 @@ local mspapi = {
             {t = "Col",                     inline = 1, label = 2, mspapi = 1, apikey = "governor_collective_ff_weight", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
             {t = "Gain",                    inline = 2, label = 3, mspapi = 1, apikey = "governor_tta_gain", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
             {t = "Limit",                   inline = 1, label = 3, mspapi = 1, apikey = "governor_tta_limit", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
-            {t = "Min throttle",                                   mspapi = 1, apikey = "governor_min_throttle", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
-            {t = "Max throttle",                                   mspapi = 1, apikey = "governor_max_throttle", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end}
         }
     }
 }
