@@ -64,7 +64,7 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "bterm_cutoff_1",                  type = "U8", apiVersion = 12.06, simResponse = {15},  min = 0,   max = 250, default = 15,  help = "B-term cutoff in Hz."},
     {field = "bterm_cutoff_2",                  type = "U8", apiVersion = 12.06, simResponse = {20},  min = 0,   max = 250, default = 20,  help = "B-term cutoff in Hz."},
     {field = "yaw_inertia_precomp_gain",        type = "U8", apiVersion = 12.08, simResponse = {10},  min = 0,   max = 250, default = 0,   help = "Scalar gain. The strength of the main rotor inertia. Higher value means more precomp is applied to yaw control."},
-    {field = "yaw_inertia_precomp_cutoff",      type = "U8", apiVersion = 12.08, simResponse = {20},  min = 0,   max = 250, default = 25,  unit = "Hz", help = "Cutoff. Derivative cutoff frequency in 1/10Hz steps. Controls how sharp the precomp is. Higher value is sharper."},
+    {field = "yaw_inertia_precomp_cutoff",      type = "U8", apiVersion = 12.08, simResponse = {20},  min = 0,   max = 250, default = 25,  scale = 10, decimals = 1, unit = "Hz", help = "Cutoff. Derivative cutoff frequency in 1/10Hz steps. Controls how sharp the precomp is. Higher value is sharper."},
 }
 
 -- Process structure in one pass
