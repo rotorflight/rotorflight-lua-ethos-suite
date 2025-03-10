@@ -18,8 +18,8 @@
 
 ]] --
 local init = {
-    title = "MSP Speed", -- title of the page
-    section = "Developer", -- do not run if busy with msp
+    title = rfsuite.i18n.get("app.modules.msp_speed.name"), -- title of the page
+    section = "developer", -- do not run if busy with msp
     script = "msp_speed.lua", -- run this script
     image = "msp_speed.png", -- image for the page
     order = 102, -- order in the section

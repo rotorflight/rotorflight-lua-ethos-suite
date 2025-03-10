@@ -1,15 +1,15 @@
 local labels = {}
 local fields = {}
 
-fields[#fields + 1] = {t = "Profile type", value = 0, min = 0, max = 1, table = {[0] = "PID", "Rate"}}
-fields[#fields + 1] = {t = "Source profile", value = 0, min = 0, max = 5, tableIdxInc = -1, table = {"1", "2", "3", "4", "5", "6"}}
-fields[#fields + 1] = {t = "Dest. profile", value = 0, min = 0, max = 5, tableIdxInc = -1, table = {"1", "2", "3", "4", "5", "6"}}
+fields[#fields + 1] = {t = rfsuite.i18n.get("app.modules.copyprofiles.profile_type"), value = 0, min = 0, max = 1, table = {[0] = rfsuite.i18n.get("app.modules.copyprofiles.profile_type_pid"), rfsuite.i18n.get("app.modules.copyprofiles.profile_type_rate")}}
+fields[#fields + 1] = {t = rfsuite.i18n.get("app.modules.copyprofiles.source_profile"), value = 0, min = 0, max = 5, tableIdxInc = -1, table = {"1", "2", "3", "4", "5", "6"}}
+fields[#fields + 1] = {t = rfsuite.i18n.get("app.modules.copyprofiles.dest_profile"), value = 0, min = 0, max = 5, tableIdxInc = -1, table = {"1", "2", "3", "4", "5", "6"}}
 
 local doSave = false
 
 local function onSaveMenu()
     local buttons = {{
-        label = "                OK                ",
+        label = rfsuite.i18n.get("app.btn_ok"),
         action = function()
 
             --- trigger a write here
@@ -18,17 +18,17 @@ local function onSaveMenu()
             return true
         end
     }, {
-        label = "CANCEL",
+        label = rfsuite.i18n.get("app.btn_cancel"),
         action = function()
             return true
         end
     }}
-    local theTitle = "Save settings"
+    local theTitle = rfsuite.i18n.get("app.modules.copyprofiles.msgbox_save")
     local theMsg
     if rfsuite.app.Page.extraMsgOnSave then
-        theMsg = "Save current page to flight controller?" .. "\n\n" .. rfsuite.app.Page.extraMsgOnSave
+        theMsg = rfsuite.i18n.get("app.modules.copyprofiles.msgbox_msg") .. "\n\n" .. rfsuite.app.Page.extraMsgOnSave
     else    
-        theMsg = "Save current page to flight controller?"
+        theMsg = rfsuite.i18n.get("app.modules.copyprofiles.msgbox_msg")
     end
 
 

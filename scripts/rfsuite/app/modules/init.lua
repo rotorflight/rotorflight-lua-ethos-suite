@@ -26,7 +26,7 @@ if rfsuite.app.moduleList == nil then rfsuite.app.moduleList = rfsuite.utils.fin
 
 -- Helper function to find section index
 local function findSectionIndex(sectionTitle)
-    for index, section in ipairs(sections) do if section.title == sectionTitle then return index end end
+    for index, section in ipairs(sections) do if section.id == sectionTitle then return index end end
     return nil -- Section not found
 end
 

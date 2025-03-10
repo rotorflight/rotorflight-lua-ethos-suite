@@ -21,7 +21,10 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {"These parameters apply globally to the governor regardless of the profile in use.", "Each parameter is simply a time value in seconds for each governor action."}
+data['help']['default'] = {
+    rfsuite.i18n.get("app.modules.governor.help_p1"), 
+    rfsuite.i18n.get("app.modules.governor.help_p2"), 
+}
 
 data['fields'] = {}
 

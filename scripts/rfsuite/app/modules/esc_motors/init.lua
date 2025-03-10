@@ -18,8 +18,8 @@
 
 ]] --
 local init = {
-    title = "ESC/Motors", -- title of the page
-    section = "Hardware", -- do not run if busy with msp
+    title = rfsuite.i18n.get("app.modules.esc_motors.name"), -- title of the page
+    section = "hardware", -- do not run if busy with msp
     script = "esc_motors.lua", -- run this script
     image = "esc.png", -- image for the page
     order = 5, -- order in the section

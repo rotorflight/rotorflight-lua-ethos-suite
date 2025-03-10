@@ -68,7 +68,7 @@ end
 function ui.progressDisplaySave()
     rfsuite.app.dialogs.saveDisplay = true
     rfsuite.app.dialogs.saveWatchDog = os.clock()
-    rfsuite.app.dialogs.save = form.openProgressDialog(rfsuite.i18n.get("app.msg_saving"), rfsuite.i18n.get("msg_saving_to_fbl"))
+    rfsuite.app.dialogs.save = form.openProgressDialog(rfsuite.i18n.get("app.msg_saving"), rfsuite.i18n.get("app.msg_saving_to_fbl"))
     rfsuite.app.dialogs.save:value(0)
     rfsuite.app.dialogs.save:closeAllowed(false)
 end

@@ -18,8 +18,8 @@
 
 ]] --
 local init = {
-    title = "Status", -- title of the page
-    section = "Tools", -- do not run if busy with msp
+    title = rfsuite.i18n.get("app.modules.status.name"), -- title of the page
+    section = "tools", -- do not run if busy with msp
     script = "status.lua", -- run this script
     image = "status.png", -- image for the page
     order = 10, -- order in the section
