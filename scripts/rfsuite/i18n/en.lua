@@ -82,7 +82,17 @@ local en = {
         -- modules
         modules = {
             about = {
-                name =              "About",
+                name                = "About",
+                version             = "Version",
+                ethos_version       = "Ethos Version",
+                msp_version         = "MSP Version",
+                msp_transport       = "MSP Transport",
+                supported_versions  = "Supported MSP Versions",
+                simulation          = "Simulation",
+                msgbox_credits      = "Credits",
+                opener              = "Rotorflight is an open source project. Contribution from other like minded people, keen to assist in making this software even better, is welcomed and encouraged. You do not have to be a hardcore programmer to help.",
+                credits             = "Notable contributors to both the Rotorflight firmware and this software are: Petri Mattila, Egon Lubbers, Rob Thomson, Rob Gayle, Phil Kaighin, Robert Burrow, Keith Williams, Bertrand Songis, Venbs Zhou... and many more who have spent hours testing and providing feedback!",
+                license             = "You may copy, distribute, and modify the software as long as you track changes/dates in source files. Any modifications to or software including (via compiler) GPL-licensed code must also be made available under the GPL along with build & install instructions.",       
             },
             accelerometer = {
                 name =              "Accelerometer",
