@@ -18,6 +18,7 @@
 local API_NAME = "REBOOT" -- API name (must be same as filename)
 local MSP_API_CMD_READ = nil -- Command identifier 
 local MSP_API_CMD_WRITE = 68 -- Command identifier 
+local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write 
 local MSP_API_SIMULATOR_RESPONSE = {} -- Default simulator response
 local MSP_MIN_BYTES = 0
 
@@ -78,7 +79,7 @@ local function write(suppliedPayload)
 
     local message = {
         command = MSP_API_CMD_WRITE,
-        payload = suppliedPayload or rfsuite.tasks.msp.api.buildWritePayload(API_NAME, payloadData,MSP_API_STRUCTURE_WRITE),
+        payload = suppliedPayload or rfsuite.tasks.msp.api.buildWritePayload(API_NAME, payloadData,MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE),
         processReply = function(self, buf)
             local completeHandler = handlers.getCompleteHandler()
             if completeHandler then completeHandler(self, buf) end

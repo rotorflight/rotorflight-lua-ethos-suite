@@ -18,6 +18,7 @@
 local API_NAME = "GOVERNOR_CONFIG" -- API name (must be same as filename)
 local MSP_API_CMD_READ = 142 -- Command identifier for MSP Mixer Config Read
 local MSP_API_CMD_WRITE = 143 -- Command identifier for saving Mixer Config Settings
+local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write 
 
 -- define msp structure for reading and writing
 
@@ -101,7 +102,7 @@ local function write(suppliedPayload)
 
     local message = {
         command = MSP_API_CMD_WRITE,
-        payload = suppliedPayload or rfsuite.tasks.msp.api.buildWritePayload(API_NAME, payloadData,MSP_API_STRUCTURE_WRITE),
+        payload = suppliedPayload or rfsuite.tasks.msp.api.buildWritePayload(API_NAME, payloadData,MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE),
         processReply = function(self, buf)
             local completeHandler = handlers.getCompleteHandler()
             if completeHandler then completeHandler(self, buf) end
