@@ -18,7 +18,7 @@
 
 ]] --
 local init = {
-    title = "Battery", -- title of the page
+    title = rfsuite.i18n.get("app.modules.battery.name"), -- title of the page
     section = "hardware", -- do not run if busy with msp
     script = "battery.lua", -- run this script
     image = "battery.png", -- image for the page

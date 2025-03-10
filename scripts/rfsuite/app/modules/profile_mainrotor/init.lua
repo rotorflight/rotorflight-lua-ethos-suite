@@ -18,7 +18,7 @@
 
 ]] --
 local init = {
-    title = "Main Rotor", -- title of the page
+    title = rfsuite.i18n.get("app.modules.profile_mainrotor.name"), -- title of the page
     section = "flight_tuning", -- do not run if busy with msp
     script = "mainrotor.lua", -- run this script
     image = "mainrotor.png", -- image for the page

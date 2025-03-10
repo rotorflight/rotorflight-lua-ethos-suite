@@ -18,7 +18,7 @@
 
 ]] --
 local init = {
-    title = "Filters", -- title of the page
+    title = rfsuite.i18n.get("app.modules.filters.name"), -- title of the page
     section = "hardware", -- do not run if busy with msp
     script = "filters.lua", -- run this script
     image = "filters.png", -- image for the page

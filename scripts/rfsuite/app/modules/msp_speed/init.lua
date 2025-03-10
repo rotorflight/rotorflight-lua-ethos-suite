@@ -18,7 +18,7 @@
 
 ]] --
 local init = {
-    title = "MSP Speed", -- title of the page
+    title = rfsuite.i18n.get("app.modules.msp_speed.name"), -- title of the page
     section = "developer", -- do not run if busy with msp
     script = "msp_speed.lua", -- run this script
     image = "msp_speed.png", -- image for the page

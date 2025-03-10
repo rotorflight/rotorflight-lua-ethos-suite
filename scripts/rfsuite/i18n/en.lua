@@ -81,7 +81,93 @@ local en = {
 
         -- modules
         modules = {
-            
+            about = {
+                name =              "About",
+            },
+            accelerometer = {
+                name =              "Accelerometer",
+            },
+            battery = {
+                name =              "Battery",
+            },
+            copyprofiles = {
+                name =              "Copy Profiles",
+            },
+            esc_motors = {
+                name =              "ESC/Motors",
+            },
+            esc_tools = {
+                name =              "ESC Tools",
+            },
+            filters = {
+                name =              "Filters",
+            },
+            governor = {
+                name =              "Governor",
+            },
+            logs = {
+                name =              "Logs",
+            },
+            mixer = {
+                name =              "Mixer",
+            },
+            msp_exp = {
+                name =              "MSP Expermintal",
+            },
+            msp_speed = {
+                name =              "MSP Speed",
+            },
+            pids = {
+                name =              "PIDs",
+            },
+            profile_autolevel = {
+                name =              "Autolevel",
+            },
+            profile_governor = {
+                name =              "Governor",
+            },
+            profile_mainrotor = {
+                name =              "Main Rotor",
+            },
+            profile_pidbandwidth = {
+                name =              "PID Bandwidth",
+            },
+            profile_pidcontroller = {
+                name =              "PID Controller",
+            },
+            profile_rescue = {
+                name =              "Rescue",
+            },
+            profile_select = {
+                name =              "Select Profile",
+            },
+            profile_tailrotor = {
+                name =              "Tail Rotor",
+            },
+            radio_config = {
+                name =              "Radio Config",
+            },
+            rates = {
+                name =              "Rates",
+            },
+            rates_advanced = {
+                name =              "Rates",
+            },
+            sbusout = {
+                name =              "SBUS Out",
+            },
+            servos  = {
+                name =              "Servos",
+            },
+            status = {
+                name =              "Status",
+            },
+            trim = {
+                name =              "Trim",
+            },
+            validate_sensors = {
+                name =              "Sensors",
+            },
 
         },
 
