@@ -19,7 +19,7 @@
 ]] --
 local init = {
     title = "Sensors", -- title of the page
-    section = "Tools", -- do not run if busy with msp
+    section = "tools", -- do not run if busy with msp
     script = "validate.lua", -- run this script
     image = "sensors.png", -- image for the page
     order = 10, -- order in the section

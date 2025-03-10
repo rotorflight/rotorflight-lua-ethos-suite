@@ -19,7 +19,7 @@
 ]] --
 local init = {
     title = "Rates", -- title of the page
-    section = "Flight Tuning", -- do not run if busy with msp
+    section = "flight_tuning", -- do not run if busy with msp
     script = "rates.lua", -- run this script
     image = "rates.png", -- image for the page
     order = 2, -- order in the section

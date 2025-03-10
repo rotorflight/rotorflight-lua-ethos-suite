@@ -19,7 +19,7 @@
 ]] --
 local init = {
     title = "Governor", -- title of the page
-    section = "Hardware", -- do not run if busy with msp
+    section = "hardware", -- do not run if busy with msp
     script = "governor.lua", -- run this script
     image = "governor.png", -- image for the page
     order = 11, -- order in the section

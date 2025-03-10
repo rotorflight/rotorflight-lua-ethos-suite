@@ -19,7 +19,7 @@
 ]] --
 local init = {
     title = "MSP Experimental", -- title of the page
-    section = "Developer", -- do not run if busy with msp
+    section = "developer", -- do not run if busy with msp
     script = "msp_exp.lua", -- run this script
     image = "msp_exp.png", -- image for the page
     order = 100, -- order in the section

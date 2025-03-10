@@ -19,7 +19,7 @@
 ]] --
 local init = {
     title = "SBUS Output", -- title of the page
-    section = "Hardware", -- do not run if busy with msp
+    section = "hardware", -- do not run if busy with msp
     script = "sbusout.lua", -- run this script
     image = "sbusout.png", -- image for the page
     order = 3, -- order in the section
