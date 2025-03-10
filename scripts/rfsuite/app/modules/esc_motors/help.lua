@@ -21,7 +21,9 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {"Configure the motor and speed controller features."}
+data['help']['default'] = {
+    rfsuite.i18n.get("app.modules.esc_motors.help_p1"),
+}
 
 data['fields'] = {}
 
