@@ -175,7 +175,12 @@ local en = {
                 help_p2              = "Each parameter is simply a time value in seconds for each governor action."
             },
             logs = {
-                name =              "Logs",
+                name                 = "Logs",
+                msg_no_logs_found    = "NO LOG FILES FOUND",
+                help_logs_p1         = "Please select a log file from the list below.",
+                help_logs_p2         = "Note. To enable logging it is essential for you to have the following sensors enabled.",
+                help_logs_p3         = "- arm status, voltage, headspeed, current, esc temperature",
+                help_logs_tool_p1    = "Please use the slider to navigate the graph.",
             },
             mixer = {
                 name =              "Mixer",

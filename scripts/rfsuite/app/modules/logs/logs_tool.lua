@@ -841,7 +841,6 @@ local function onNavMenu(self)
 end
 
 return {
-    title = "Logs",
     event = event,
     openPage = openPage,
     wakeup = wakeup,

@@ -146,7 +146,7 @@ local function openPage(pidx, title, script, displaymode)
     if #logs == 0 then
 
         LCD_W, LCD_H = rfsuite.utils.getWindowSize()
-        local str = "NO LOG FILES FOUND"
+        local str = rfsuite.i18n.get("app.modules.logs.msg_no_logs_found")
         local ew = LCD_W
         local eh = LCD_H
         local etsizeW, etsizeH = lcd.getTextSize(str)
@@ -221,7 +221,6 @@ local function onNavMenu()
 end
 
 return {
-    title = "Logs",
     event = event,
     openPage = openPage,
     wakeup = wakeup,
