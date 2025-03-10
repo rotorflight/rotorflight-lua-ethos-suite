@@ -183,7 +183,16 @@ local en = {
                 help_logs_tool_p1    = "Please use the slider to navigate the graph.",
             },
             mixer = {
-                name =              "Mixer",
+                name                           = "Mixer",
+                collective_tilt_correction     = "Collective Tilt Correction",
+                geo_correction                 = "Geo Correction",
+                swash_pitch_limit              = "Total Pitch Limit",
+                collective_tilt_correction_pos = "Positive",
+                collective_tilt_correction_neg = "Negative",
+                swash_phase                    = "Phase Angle",
+                swash_tta_precomp              = "TTA Precomp",
+                tail_motor_idle                = "Tail Idle Thr%",
+                help_p1                        = "Adust swash plate geometry, phase angles, and limits.",
             },
             msp_exp = {
                 name =              "MSP Expermintal",

@@ -21,7 +21,9 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {"Adust swash plate geometry, phase angles, and limits."}
+data['help']['default'] = {
+    rfsuite.i18n.get("app.modules.mixer.help_p1")
+}
 
 data['fields'] = {}
 
