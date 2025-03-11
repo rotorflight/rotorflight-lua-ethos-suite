@@ -23,7 +23,7 @@ local MSP_SIGNATURE = 0x53
 local MSP_HEADER_BYTES = 2
 
 -- Tables used in structure below
-local escMode = {rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_heligov"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_helistore"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_vbar"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_extgov"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_airplane"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_boat"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_quad")}
+local escMode = {rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_heligov"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_helistore"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_vbargov"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_extgov"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_airplane"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_boat"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_quad")}
 local rotation = {rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_ccw"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_cw")}
 local becVoltage = {"5.1 V", "6.1 V", "7.3 V", "8.3 V", "Disabled"}
 local teleProtocol = {rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_standard"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_vbar"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_exbus"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_unsolicited"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_futsbus")}

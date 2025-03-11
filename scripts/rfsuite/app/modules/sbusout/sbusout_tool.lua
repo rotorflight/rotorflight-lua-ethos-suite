@@ -127,7 +127,7 @@ end
 
 local function onSaveMenu()
     local buttons = {{
-        label = rfsuite.i18n.get("app.btn_ok"),
+        label = rfsuite.i18n.get("app.btn_ok_long"),
         action = function()
             rfsuite.app.audio.playSaving = true
             isSaving = true
