@@ -1121,7 +1121,7 @@ function app.wakeupUI()
                     message = rfsuite.i18n.get("app.check_rf_module_on") 
                     app.triggers.invalidConnectionSetup = true 
                 elseif not (sportSensor or elrsSensor)  and app.offlineMode == false then
-                    message = rfsuite.i8n.get("app.check_discovered_sensors")
+                    message = rfsuite.i18n.get("app.check_discovered_sensors")
                     app.triggers.invalidConnectionSetup = true                                            
                 elseif app.getRSSI() == 0 and app.offlineMode == false then
                     message =  rfsuite.i18n.get("app.check_heli_on")
