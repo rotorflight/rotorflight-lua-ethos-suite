@@ -247,7 +247,6 @@ local en = {
                         gov_p                   = "Gov-P",
                         gov_i                   = "Gov-I",
                         motor_poles             = "Motor Poles",
-
                     },
                     yge =  {
                         name = "YGE",
@@ -710,7 +709,6 @@ local en = {
                 help_p1        = "This tool attempts to list all the sensors that you are not receiving in a concise list.",
                 help_p2        = "Use this tool to ensure you are sending the correct sensors.",
             },
-
         },
 
     },
@@ -956,7 +954,7 @@ local en = {
         ESC_PARAMETERS_SCORPION = {
             tbl_heligov = "Heli Governor", 
             tbl_helistore = "Heli Governor (stored)", 
-            tbl_vbar = "VBar Governor", 
+            tbl_vbargov = "VBar Governor", 
             tbl_extgov = "External Governor", 
             tbl_airplane = "Airplane mode", 
             tbl_boat = "Boat mode", 
@@ -992,17 +990,11 @@ local en = {
             tbl_pink = "PINK",
             tbl_white = "WHITE",
             tbl_auto = "Auto", 
-            tbl_low = "Low", 
-            tbl_medium = "Medium", 
-            tbl_high = "High",
             tbl_fast = "Fast", 
             tbl_normal = "Normal", 
             tbl_slow = "Slow", 
             tbl_vslow = "Very Slow",
-            tbl_normal = "Normal",
             tbl_reverse = "Reverse",
-            tbl_on = "ON",
-            tbl_off = "OFF",
             tbl_escgov = "ESC Governor", 
             tbl_extgov = "External Governor" , 
             tbl_fwgov = "Fixed Wing"
@@ -1124,7 +1116,6 @@ local en = {
             txt_tempconversion = "Temperature Conversion",
             txt_esc = "ESC",
             txt_disable = "Disable",
-            txt_disabled = "Disabled",
             txt_mcu = "MCU",
             txt_sensitivity = "Sensitivity",
             txt_hight = "High",
@@ -1140,7 +1131,6 @@ local en = {
             txt_announcement_interval = "Announcement Interval",
             txt_calcfuel_local  = "Calculate Fuel Locally",
             txt_warnsensors = "Warn if missing sensors",
-            txt_fuel = "FUEL",
             txt_na = "N/A",
             txt_norepeat = "No Repeat",
             txt_please_enable_bgtask    = "Please enable background task",
@@ -1149,7 +1139,6 @@ local en = {
             txt_initialising    = "INITIALISING",
             txt_max = "max",
             txt_min = "min",
-
 
             layoutOptions = {
                     TIMER = "TIMER",
