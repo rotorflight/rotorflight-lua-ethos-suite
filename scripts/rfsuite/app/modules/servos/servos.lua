@@ -298,7 +298,7 @@ local function onToolMenu(self)
     local buttons
     if rfsuite.session.servoOverride == false then
         buttons = {{
-            label = "                OK                ",
+            label = rfsuite.i18n.get("app.btn_ok"),
             action = function()
 
                 -- we cant launch the loader here to se rely on the modules
@@ -315,7 +315,7 @@ local function onToolMenu(self)
         }}
     else
         buttons = {{
-            label = "                OK                ",
+            label = rfsuite.i18n.get("app.btn_ok"),
             action = function()
 
                 -- we cant launch the loader here to se rely on the modules
@@ -324,7 +324,7 @@ local function onToolMenu(self)
                 return true
             end
         }, {
-            label = "CANCEL",
+            label = rfsuite.i18n.get("app.btn_cancel"),
             action = function()
                 return true
             end
@@ -333,11 +333,11 @@ local function onToolMenu(self)
     local message
     local title
     if rfsuite.session.servoOverride == false then
-        title = rfsuite.i18n.get("app.modules.servos.enable_override")
-        message = rfsuite.i18n.get("app.modules.servos.enable_override_msg")
+        title = rfsuite.i18n.get("app.modules.servos.enable_servo_override")
+        message = rfsuite.i18n.get("app.modules.servos.enable_servo_override_msg")
     else
-        title = rfsuite.i18n.get("app.modules.servos.disable_override")
-        message = rfsuite.i18n.get("app.modules.servos.disable_override_msg")
+        title = rfsuite.i18n.get("app.modules.servos.disable_servo_override")
+        message = rfsuite.i18n.get("app.modules.servos.disable_servo_override_msg")
     end
 
     form.openDialog({
@@ -360,12 +360,12 @@ local function wakeup()
 
         if rfsuite.session.servoOverride == false then
             rfsuite.app.audio.playServoOverideEnable = true
-            rfsuite.app.ui.progressDisplay("Servo override", "Enabling servo override...")
+            rfsuite.app.ui.progressDisplay(rfsuite.i18n.get("app.modules.servos.servo_override"), rfsuite.i18n.get("app.modules.servos.enabling_servo_override"))
             rfsuite.app.Page.servoCenterFocusAllOn(self)
             rfsuite.session.servoOverride = true
         else
             rfsuite.app.audio.playServoOverideDisable = true
-            rfsuite.app.ui.progressDisplay("Servo override", "Disabling servo override...")
+            rfsuite.app.ui.progressDisplay(rfsuite.i18n.get("app.modules.servos.servo_override"), rfsuite.i18n.get("app.modules.servos.disabling_servo_override"))
             rfsuite.app.Page.servoCenterFocusAllOff(self)
             rfsuite.session.servoOverride = false
         end
@@ -419,7 +419,7 @@ local function onNavMenu(self)
         rfsuite.app.audio.playServoOverideDisable = true
         rfsuite.session.servoOverride = false
         inFocus = false
-        rfsuite.app.ui.progressDisplay("Servo override", "Disabling servo override...")
+        rfsuite.app.ui.progressDisplay(rfsuite.i18n.get("app.modules.servos.servo_override"), rfsuite.i18n.get("app.modules.servos.disabling_servo_override"))
         rfsuite.app.Page.servoCenterFocusAllOff(self)
         rfsuite.app.triggers.closeProgressLoader = true
     end
