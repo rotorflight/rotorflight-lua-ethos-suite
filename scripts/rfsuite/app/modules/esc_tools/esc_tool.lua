@@ -101,7 +101,7 @@ local function openPage(pidx, title, script)
 
     form.clear()
 
-    line = form.addLine("ESC" .. ' / ' .. ESC.toolName)
+    line = form.addLine(rfsuite.i18n.get("app.modules.esc_tools.name") .. ' / ' .. ESC.toolName)
 
     buttonW = 100
     local x = windowWidth - buttonW
@@ -324,7 +324,6 @@ local function event(widget, category, value, x, y)
 end
 
 return {
-    title = "ESC",
     openPage = openPage,
     wakeup = wakeup,
     event = event,
