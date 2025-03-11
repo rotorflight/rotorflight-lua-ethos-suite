@@ -3,19 +3,19 @@ local mspapi = {
         [1] = 'RC_TUNING',
     },
     formdata = {
-        name = "NONE",
+        name = rfsuite.i18n.get("app.modules.rates.none"),
         labels = {
         },
         rows = {
-            "Roll",
-            "Pitch",
-            "Yaw",
-            "Col"
+            rfsuite.i18n.get("app.modules.rates.roll"),
+            rfsuite.i18n.get("app.modules.rates.pitch"),
+            rfsuite.i18n.get("app.modules.rates.yaw"),
+            rfsuite.i18n.get("app.modules.rates.collective")
         },
         cols = {
-            "RC Rate", 
-            "Rate", 
-            "Expo"
+            rfsuite.i18n.get("app.modules.rates.rc_rate"),
+            rfsuite.i18n.get("app.modules.rates.rate"),
+            rfsuite.i18n.get("app.modules.rates.expo"),
         },
         fields = {
             -- rc rate
