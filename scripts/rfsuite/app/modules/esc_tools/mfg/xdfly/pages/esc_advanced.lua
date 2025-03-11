@@ -15,13 +15,13 @@ local mspapi = {
         labels = {
         },
         fields = {
-            {t = "Timing",              activeFieldPos = 4,  mspapi = 1, type = 1, apikey = "timing"},
-            {t = "Acceleration",        activeFieldPos = 9,  mspapi = 1, type = 1, apikey = "acceleration"},
-            {t = "Brake Force",         activeFieldPos = 14, mspapi = 1, apikey = "brake_force"},
-            {t = "SR Function",         activeFieldPos = 15, mspapi = 1, type = 1, apikey = "sr_function"},
-            {t = "Capacity Correction", activeFieldPos = 16, mspapi = 1, apikey = "capacity_correction"},
-            {t = "Auto Restart Time",   activeFieldPos = 10, mspapi = 1, type = 1, apikey = "auto_restart_time"},
-            {t = "Cell Cutoff",         activeFieldPos = 11, mspapi = 1, type = 1, apikey = "cell_cutoff"}
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.timing"),              activeFieldPos = 4,  mspapi = 1, type = 1, apikey = "timing"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.acceleration"),        activeFieldPos = 9,  mspapi = 1, type = 1, apikey = "acceleration"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.brake_force"),         activeFieldPos = 14, mspapi = 1, apikey = "brake_force"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.sr_function"),         activeFieldPos = 15, mspapi = 1, type = 1, apikey = "sr_function"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.capacity_correction"), activeFieldPos = 16, mspapi = 1, apikey = "capacity_correction"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.auto_restart_time"),   activeFieldPos = 10, mspapi = 1, type = 1, apikey = "auto_restart_time"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.cell_cutoff"),         activeFieldPos = 11, mspapi = 1, type = 1, apikey = "cell_cutoff"}
         }
     }                 
 }
@@ -70,16 +70,14 @@ return {
     mspapi=mspapi,
     eepromWrite = true,
     reboot = false,
-    title = "Advanced Setup",
     escinfo = escinfo,
-    simulatorResponse =  simulatorResponse,
     svTiming = 0,
     svFlags = 0,
     postLoad = postLoad,
     navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
     onNavMenu = onNavMenu,
     event = event,
-    pageTitle = "ESC / XDFLY / Advanced",
+    pageTitle = rfsuite.i18n.get("app.modules.esc_tools.name") .. " / " ..  rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.name") .. " / " .. rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.advanced"),
     headerLine = rfsuite.escHeaderLineText,
     wakeup = wakeup
 }
