@@ -10,12 +10,12 @@ local mspapi = {
         labels = {
         },
         fields = {
-            {t = "Soft Start Time", mspapi=1, apikey="soft_start_time"},
-            {t = "Runup Time", mspapi=1, apikey="runup_time"},
-            {t = "Bailout", mspapi=1, apikey="bailout"},
-            {t = "Gov Proportional", mspapi=1, apikey="gov_proportional"},
-            {t = "Gov Integral", mspapi=1, apikey="gov_integral"},
-            {t = "Motor Startup Sound", type = 1, mspapi=1, apikey="motor_startup_sound"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.soft_start_time"),     mspapi=1, apikey="soft_start_time"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.runup_time"),          mspapi=1, apikey="runup_time"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.bailout"),             mspapi=1, apikey="bailout"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.gov_proportional"),    mspapi=1, apikey="gov_proportional"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.gov_integral"),        mspapi=1, apikey="gov_integral"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.motor_startup_sound"), mspapi=1, apikey="motor_startup_sound", type = 1, },
         }
     }                 
 }
@@ -47,7 +47,6 @@ return {
     mspapi=mspapi,
     eepromWrite = false,
     reboot = false,
-    title = "Advanced Setup",
     escinfo = escinfo,
     svFlags = 0,
     preSavePayload = function(payload)
@@ -58,7 +57,7 @@ return {
     navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
     onNavMenu = onNavMenu,
     event = event,
-    pageTitle = "ESC / Scorpion / Advanced",
+    pageTitle = rfsuite.i18n.get("app.modules.esc_tools.name") .. " / " ..  rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.name") .. " / " .. rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.advanced"),
     headerLine = rfsuite.escHeaderLineText,
-    extraMsgOnSave = "Please reboot the ESC to apply the changes",   
+    extraMsgOnSave = rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.extra_msg_save"), 
 }

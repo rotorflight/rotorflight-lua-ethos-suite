@@ -1083,7 +1083,7 @@ function app.wakeupUI()
             if app.guiIsRunning == true and app.triggers.invalidConnectionSetup ~= true and app.triggers.wasConnected == false then
 
                 local buttons = {{
-                    label = "   OK   ",
+                    label = rfsuite.i18n.get("app.btn_ok"),
                     action = function()
 
                         app.triggers.exitAPP = true

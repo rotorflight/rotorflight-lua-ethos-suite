@@ -19,10 +19,10 @@ local mspapi = {
         labels = {
         },
         fields = {
-            {t = "Governor", activeFieldPos = 2, type = 1,  mspapi = 1, apikey = "governor"},
-            {t = "Gov-P", activeFieldPos = 6,  mspapi = 1, apikey="gov_p"},
-            {t = "Gov-I", activeFieldPos = 7,  mspapi = 1, apikey="gov_i"},
-            {t = "Motor Poles",  activeFieldPos = 17 ,  mspapi = 1, apikey="motor_poles"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.gov"), activeFieldPos = 2, type = 1,  mspapi = 1, apikey = "governor"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.gov_p"), activeFieldPos = 6,  mspapi = 1, apikey="gov_p"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.gov_i"), activeFieldPos = 7,  mspapi = 1, apikey="gov_i"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.motor_poles"),  activeFieldPos = 17 ,  mspapi = 1, apikey="motor_poles"},
         }
     }                 
 }
@@ -69,14 +69,12 @@ return {
     mspapi=mspapi,
     eepromWrite = true,
     reboot = false,
-    title = "Governor",
     escinfo = escinfo,
-    simulatorResponse =  simulatorResponse,
     postLoad = postLoad,
     navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
     onNavMenu = onNavMenu,
     event = event,
-    pageTitle = "ESC / XDFLY / Governor",
+    pageTitle = rfsuite.i18n.get("app.modules.esc_tools.name") .. " / " ..  rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.name") .. " / " .. rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.governor"),
     headerLine = rfsuite.escHeaderLineText,
     wakeup = wakeup
 }

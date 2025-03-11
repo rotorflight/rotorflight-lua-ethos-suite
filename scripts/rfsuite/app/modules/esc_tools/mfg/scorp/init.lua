@@ -1,4 +1,4 @@
-local toolName = "Scorpion"
+local toolName = rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.name")
 moduleName = "RF2SCORP"
 
 

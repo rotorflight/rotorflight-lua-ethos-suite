@@ -9,12 +9,12 @@ local mspapi = {
         labels = {
         },
         fields = {
-            {t = "Min Start Power", mspapi = 1, apikey="min_start_power"},
-            {t = "Max Start Power", mspapi = 1, apikey="max_start_power"},
-            {t = "Throttle Response", type = 1, mspapi = 1, apikey="throttle_response"},
-            {t = "Motor Timing", type = 1, mspapi = 1, apikey="timing"},
-            {t = "Active Freewheel", type = 1, mspapi = 1, apikey="active_freewheel"},
-            {t = "F3C Autorotation", type = 1, mspapi = 1, apikey="f3c_auto"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.yge.min_start_power"), mspapi = 1, apikey="min_start_power"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.yge.max_start_power"), mspapi = 1, apikey="max_start_power"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.yge.throttle_response"), type = 1, mspapi = 1, apikey="throttle_response"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.yge.timing"), type = 1, mspapi = 1, apikey="timing"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.yge.active_freewheel"), type = 1, mspapi = 1, apikey="active_freewheel"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.yge.f3c_auto"), type = 1, mspapi = 1, apikey="f3c_auto"},
         }
     }                 
 }
@@ -48,7 +48,6 @@ return {
     mspapi = mspapi,
     eepromWrite = true,
     reboot = false,
-    title = "Advanced Setup",
     escinfo = escinfo,
     svTiming = 0,
     svFlags = 0,
@@ -56,6 +55,6 @@ return {
     navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
     onNavMenu = onNavMenu,
     event = event,
-    pageTitle = "ESC / YGE / Advanced",
+    pageTitle = rfsuite.i18n.get("app.modules.esc_tools.name") .. " / " ..  rfsuite.i18n.get("app.modules.esc_tools.mfg.yge.name") .. " / " .. rfsuite.i18n.get("app.modules.esc_tools.mfg.yge.advanced"),
     headerLine = rfsuite.escHeaderLineText
 }

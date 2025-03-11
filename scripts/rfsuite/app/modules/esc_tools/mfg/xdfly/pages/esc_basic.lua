@@ -16,12 +16,12 @@ local mspapi = {
         labels = {
         },
         fields = {
-            {t = "LV BEC voltage", activeFieldPos = 5, type = 1, mspapi = 1, apikey = "lv_bec_voltage"},
-            {t = "HV BEC voltage", activeFieldPos = 11, type = 1, mspapi = 1, apikey = "hv_bec_voltage"},
-            {t = "Motor direction", activeFieldPos = 6, type = 1, mspapi = 1, apikey = "motor_direction"},
-            {t = "Startup Power", activeFieldPos = 12, type = 1, mspapi = 1, apikey = "startup_power"},
-            {t = "LED Colour", activeFieldPos = 18, type = 1, mspapi = 1, apikey = "led_color"},
-            {t = "Smart Fan", activeFieldPos = 19, type = 1, mspapi = 1, apikey = "smart_fan"}
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.lv_bec_voltage"),  activeFieldPos = 5, type = 1, mspapi = 1, apikey = "lv_bec_voltage"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.hv_bec_voltage"),  activeFieldPos = 11, type = 1, mspapi = 1, apikey = "hv_bec_voltage"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.motor_direction"), activeFieldPos = 6, type = 1, mspapi = 1, apikey = "motor_direction"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.startup_power"),   activeFieldPos = 12, type = 1, mspapi = 1, apikey = "startup_power"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.led_colour"),      activeFieldPos = 18, type = 1, mspapi = 1, apikey = "led_color"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.smart_fan"),       activeFieldPos = 19, type = 1, mspapi = 1, apikey = "smart_fan"}
         }
     }                 
 }
@@ -71,14 +71,13 @@ return {
     mspapi=mspapi,
     eepromWrite = false,
     reboot = false,
-    title = "Basic Setup",
     escinfo = escinfo,
     svFlags = 0,
     postLoad = postLoad,
     navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
     onNavMenu = onNavMenu,
     event = event,
-    pageTitle = "ESC / XDFLY / Basic",
+    pageTitle = rfsuite.i18n.get("app.modules.esc_tools.name") .. " / " ..  rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.name") .. " / " .. rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.basic"),
     headerLine = rfsuite.escHeaderLineText,
     wakeup = wakeup
 }
