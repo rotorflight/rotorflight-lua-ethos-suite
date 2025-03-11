@@ -715,6 +715,23 @@ local en = {
 
     },
 
+    -- API
+    api = {
+        ACC_TRIM = {
+            pitch = "Use to trim if the heli drifts in one of the stabilized modes (angle, horizon, etc.).",
+            roll = "Use to trim if the heli drifts in one of the stabilized modes (angle, horizon, etc.).",
+        },
+        BATTERY_CONFIG = {
+            batteryCapacity = "The milliamp hour capacity of your battery.",
+            batteryCellCount = "The number of cells in your battery.",
+            vbatmincellvoltage = "The minimum voltage per cell before the low voltage alarm is triggered.",
+            vbatmaxcellvoltage = "The maximum voltage per cell before the high voltage alarm is triggered.",
+            vbatfullcellvoltage = "The nominal voltage of a fully charged cell.",
+            vbatwarningcellvoltage = "The voltage per cell at which the low voltage alarm will start to sound.",
+        }
+
+    },
+
     -- Widgets
     widgets = {
         governor = {
