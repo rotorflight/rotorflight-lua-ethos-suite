@@ -23,8 +23,8 @@ local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "pitch", type = "U16", apiVersion = 12.06, simResponse = {0, 0}, min = -300, max = 300, default = 0, unit = "°", help="Use to trim if the heli drifts in one of the stabilized modes (angle, horizon, etc.)."},
-    { field = "roll",  type = "U16", apiVersion = 12.06, simResponse = {0, 0}, min = -300, max = 300, default = 0, unit = "°", help="Use to trim if the heli drifts in one of the stabilized modes (angle, horizon, etc.)."},
+    { field = "pitch", type = "U16", apiVersion = 12.06, simResponse = {0, 0}, min = -300, max = 300, default = 0, unit = "°"},
+    { field = "roll",  type = "U16", apiVersion = 12.06, simResponse = {0, 0}, min = -300, max = 300, default = 0, unit = "°"},
 }
 
 -- Process structure in one pass

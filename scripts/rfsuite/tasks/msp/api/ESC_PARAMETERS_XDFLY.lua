@@ -23,20 +23,20 @@ local MSP_SIGNATURE = 0xA6
 local MSP_HEADER_BYTES = 2
 
 -- tables used in structure below
-local flightMode = {"Helicopter", "Fixed Wing"}
-local motorDirection = {"CW", "CCW"}
+local flightMode = {rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_fmheli"), rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_fmfw")}
+local motorDirection = {rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_cw"), rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_ccw")}
 local becLvVoltage = {"6.0V", "7.4V","8.4V"}
-local startupPower = {"Low", "Medium", "High"}
-local fanControl = {"On", "Off"}
-local ledColor = {"RED", "YELOW","ORANGE","GREEN","JADE GREEN","BLUE","CYAN","PURPLE","PINK","WHITE"}
+local startupPower = {rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_low"), rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_medium"), rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_high")}
+local fanControl = {rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_on"), rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_off")}
+local ledColor = {rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_red"), rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_yellow"),rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_orange"),rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_green"),rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_jadegreen"),rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_blue"),rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_cyan"),rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_purple"),rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_pink"),rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_white")}
 local becHvVoltage = {"6.0V", "6.2V", "6.4V", "6.6V", "6.8V", "7.0V", "7.2V", "7.4V", "7.6V", "7.8V", "8.0V", "8.2V", "8.4V", "8.6V", "8.8V", "9.0V", "9.2V", "9.4V", "9.6V", "9.8V", "10.0V", "10.2V", "10.4V", "10.6V", "10.8V", "11.0V", "11.2V", "11.4V", "11.6V", "11.8V", "12.0V"}
-local lowVoltage = {"OFF", "2.7V", "3.0V", "3.2V", "3.4V", "3.6V", "3.8V"}
-local timing = {"Auto", "Low", "Medium", "High"}
-local accel = {"Fast", "Normal", "Slow", "Very Slow"}
-local brakeType = {"Normal", "Reverse"}
-local autoRestart = {"OFF", "90s"}
-local srFunc = {"ON", "OFF"}
-local govMode = {"ESC Governor", "External Governor" , "Fixed Wing"}
+local lowVoltage = {rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_off"), "2.7V", "3.0V", "3.2V", "3.4V", "3.6V", "3.8V"}
+local timing = {rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_auto"), rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_low"), rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_medium"), rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_high")}
+local accel = {rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_fast"), rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_normal"), rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_slow"), rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_vslow")}
+local brakeType = {rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_normal"), rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_reverse")}
+local autoRestart = {rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_off"), "90s"}
+local srFunc = {rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_on"), rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_off")}
+local govMode = {rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_escgov"), rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_extgov") , rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_fwgov")}
 
 -- api structure
 local MSP_API_STRUCTURE_READ_DATA = {

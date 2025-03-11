@@ -596,6 +596,16 @@ function app.mspApiUpdateFormAttributes(values, structure)
                 for _, v in ipairs(targetStructure) do
 
                     if v.field == apikey and mspapiID == f.mspapi then
+
+                        -- insert help string
+                        local help_target = "api." .. mspapiNAME .. "." .. apikey
+                        local help_return = rfsuite.i18n.get(help_target)
+                        if help_target ~=  help_return then
+                            v.help = help_return
+                        else
+                            v.help = nil    
+                        end
+
                         rfsuite.app.ui.injectApiAttributes(formField, f, v)
 
                         local scale = f.scale or 1

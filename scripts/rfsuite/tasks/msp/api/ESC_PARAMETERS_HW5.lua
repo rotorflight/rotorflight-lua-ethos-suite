@@ -23,16 +23,16 @@ local MSP_SIGNATURE = 0xFD
 local MSP_HEADER_BYTES = 2
 
 -- some tables used in structure below
-local flightMode = {"Fixed Wing", "Heli Ext Governor", "Heli Governor", "Heli Governor Store"}
-local rotation = {"CW", "CCW"}
+local flightMode = {rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_fixedwing"), rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_heliext"), rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_heligov"), rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_helistore")}
+local rotation = {rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_cw"), rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_ccw")}
 local voltages = {"5.0","5.1","5.2","5.3","5.4","5.5","5.6","5.7","5.8","5.9","6.0","6.1","6.2","6.3","6.4","6.5","6.6","6.7","6.8","6.9","7.0","7.1","7.2","7.3","7.4","7.5","7.6","7.7","7.8","7.9","8.0","8.1","8.2","8.3","8.4","8.5","8.6","8.7","8.8","8.9","9.0","9.1","9.2","9.3","9.4","9.5","9.6","9.7","9.8","9.9","10.0","10.1","10.2","10.3","10.4","10.5","10.6","10.7","10.8","10.9","11.0","11.1","11.2","11.3","11.4","11.5","11.6","11.7","11.8","11.9","12.0"}
-local lipoCellCount = {"Auto Calculate", "3S", "4S", "5S", "6S", "7S", "8S", "9S", "10S", "11S", "12S", "13S", "14S"}
-local cutoffType = {"Soft Cutoff", "Hard Cutoff"}
-local cutoffVoltage = {"Disabled", "2.8", "2.9", "3.0", "3.1", "3.2", "3.3", "3.4", "3.5", "3.6", "3.7", "3.8"}
+local lipoCellCount = {rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_autocalculate"), "3S", "4S", "5S", "6S", "7S", "8S", "9S", "10S", "11S", "12S", "13S", "14S"}
+local cutoffType = {rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_softcutoff"), rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_hardcutoff")}
+local cutoffVoltage = {rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_disabled"), "2.8", "2.9", "3.0", "3.1", "3.2", "3.3", "3.4", "3.5", "3.6", "3.7", "3.8"}
 local restartTime = {"1s", "1.5s", "2s", "2.5s", "3s"}
 local startupPower = {"1", "2", "3", "4", "5", "6", "7"}
-local enabledDisabled = {"Enabled", "Disabled"}
-local brakeType = {"Disabled", "Normal", "Proportional", "Reverse"}
+local enabledDisabled = {rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_enabled"), rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_disabled")}
+local brakeType = {rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_disabled"), rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_normal"), rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_proportional"), rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_reverse")}
 
 local MSP_API_STRUCTURE_READ_DATA = {
     {field = "esc_signature",       type = "U8", apiVersion = 12.07, simResponse = {253}},

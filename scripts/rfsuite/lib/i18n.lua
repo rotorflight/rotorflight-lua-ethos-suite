@@ -50,13 +50,13 @@ local function loadLangFile(lang)
     local chunk, err = loadfile(filepath)
 
     if not chunk then
-        rfsuite.utils.log("i18n: ERROR - Language file missing or unreadable: " .. filepath, "error")
+        rfsuite.utils.log("i18n: ERROR - Language file missing or unreadable: " .. filepath, "info")
         return nil -- Return nil instead of an empty table so we can detect failures
     end
 
     local success, result = pcall(chunk)
     if not success or type(result) ~= "table" then
-        rfsuite.utils.log("i18n: ERROR - Language file is corrupted or does not return a table: " .. filepath, "error")
+        rfsuite.utils.log("i18n: ERROR - Language file is corrupted or does not return a table: " .. filepath, "info")
         return nil
     end
 
@@ -91,30 +91,29 @@ function i18n.load(locale)
             end
             rfsuite.utils.log("i18n: Successfully merged translations for locale: " .. locale, "info")
         else
-            rfsuite.utils.log("i18n: WARNING - Falling back to English. Could not load requested locale: " .. locale, "warn")
+            rfsuite.utils.log("i18n: WARNING - Falling back to English. Could not load requested locale: " .. locale, "info")
         end
     end
 end
 
 -- Lookup function to get translations, supporting 4-level keys (e.g., "widgets.governor.OFF")
-    function i18n.get(key)
-        local value = translations
-        for part in string.gmatch(key, "([^%.]+)") do
-            if type(value) ~= "table" then
-                rfsuite.utils.log("i18n: WARNING - Incomplete translation path for key: " .. key, "warn")
-                return key -- Return the key itself as a fallback
-            end
-            value = value[part] -- Go deeper into the hierarchy
+function i18n.get(key)
+    local value = translations
+    for part in string.gmatch(key, "([^%.]+)") do
+        if type(value) ~= "table" then
+            rfsuite.utils.log("i18n: WARNING - Incomplete translation path for key: " .. key, "info")
+            return key -- Return the key itself as a fallback
         end
-    
-        if value == nil then
-            rfsuite.utils.log("i18n: WARNING - Missing translation for key: " .. key, "warn")
-            return key -- Fallback to key itself if missing
-        end
-    
-        return value
+        value = value[part] -- Go deeper into the hierarchy
     end
 
+    if value == nil then
+        rfsuite.utils.log("i18n: WARNING - Missing translation for key: " .. key, "info")
+        return key -- Fallback to key itself if missing
+    end
+
+    return value
+end
 
 return i18n
 

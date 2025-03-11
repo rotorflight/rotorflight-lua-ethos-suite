@@ -23,17 +23,17 @@ local MSP_SIGNATURE = 0xA5
 local MSP_HEADER_BYTES = 2
 
 -- tables used in structure below
-local escMode = {"Free (Attention!)", "Heli Ext Governor", "Heli Governor", "Heli Governor Store", "Aero Glider", "Aero Motor", "Aero F3A"}
-local direction = {"Normal", "Reverse"}
-local cuttoff = {"Off", "Slow Down", "Cutoff"}
+local escMode = {rfsuite.i18n.get("api.ESC_PARAMETERS_YGE.tbl_modefree"), rfsuite.i18n.get("api.ESC_PARAMETERS_YGE.tbl_modeext"), rfsuite.i18n.get("api.ESC_PARAMETERS_YGE.tbl_modeheli"), rfsuite.i18n.get("api.ESC_PARAMETERS_YGE.tbl_modestore"), rfsuite.i18n.get("api.ESC_PARAMETERS_YGE.tbl_modeglider"), rfsuite.i18n.get("api.ESC_PARAMETERS_YGE.tbl_modeair"), rfsuite.i18n.get("api.ESC_PARAMETERS_YGE.tbl_modef3a")}
+local direction = {rfsuite.i18n.get("api.ESC_PARAMETERS_YGE.tbl_normal"), rfsuite.i18n.get("api.ESC_PARAMETERS_YGE.tbl_reverse")}
+local cuttoff = {rfsuite.i18n.get("api.ESC_PARAMETERS_YGE.tbl_off"), rfsuite.i18n.get("api.ESC_PARAMETERS_YGE.tbl_slowdown"), rfsuite.i18n.get("api.ESC_PARAMETERS_YGE.tbl_cutoff")}
 local cuttoffVoltage = {"2.9 V", "3.0 V", "3.1 V", "3.2 V", "3.3 V", "3.4 V"}
-local offOn = {"Off", "On"}
-local startupResponse = {"Normal", "Smooth"}
-local throttleResponse = {"Slow", "Medium", "Fast", "Custom (PC defined)"}
-local motorTiming = {"Auto Normal", "Auto Efficient", "Auto Power", "Auto Extreme", "0 deg", "6 deg", "12 deg", "18 deg", "24 deg", "30 deg"}
+local offOn = {rfsuite.i18n.get("api.ESC_PARAMETERS_YGE.tbl_off"), rfsuite.i18n.get("api.ESC_PARAMETERS_YGE.tbl_on")}
+local startupResponse = {rfsuite.i18n.get("api.ESC_PARAMETERS_YGE.tbl_normal"), rfsuite.i18n.get("api.ESC_PARAMETERS_YGE.tbl_smooth")}
+local throttleResponse = {rfsuite.i18n.get("api.ESC_PARAMETERS_YGE.tbl_slow"), rfsuite.i18n.get("api.ESC_PARAMETERS_YGE.tbl_medium"), rfsuite.i18n.get("api.ESC_PARAMETERS_YGE.tbl_fast"), rfsuite.i18n.get("api.ESC_PARAMETERS_YGE.tbl_custom")}
+local motorTiming = {rfsuite.i18n.get("api.ESC_PARAMETERS_YGE.tbl_autonorm"), rfsuite.i18n.get("api.ESC_PARAMETERS_YGE.tbl_autoefficient"), rfsuite.i18n.get("api.ESC_PARAMETERS_YGE.tbl_autopower"), rfsuite.i18n.get("api.ESC_PARAMETERS_YGE.tbl_autoextreme"), "0°", "6°", "12°", "18°", "24°", "30°"}
 local motorTimingToUI = {0, 4, 5, 6, 7, 8, 9, [16] = 0, [17] = 1, [18] = 2, [19] = 3}
 local motorTimingFromUI = {0, 17, 18, 19, 1, 2, 3, 4, 5, 6}
-local freewheel = {"Off", "Auto", "*unused*", "Always On"}
+local freewheel = {rfsuite.i18n.get("api.ESC_PARAMETERS_YGE.tbl_off"), rfsuite.i18n.get("api.ESC_PARAMETERS_YGE.tbl_auto"), rfsuite.i18n.get("api.ESC_PARAMETERS_YGE.tbl_unused"), rfsuite.i18n.get("api.ESC_PARAMETERS_YGE.tbl_alwayson")}
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
