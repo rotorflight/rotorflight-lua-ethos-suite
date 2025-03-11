@@ -61,6 +61,7 @@ local en = {
 
         -- buttons
         btn_ok                     = "          OK           ",    -- intentionaly padded to make it bigger
+        btn_ok_long                = "                OK                ",
         btn_cancel                 = "CANCEL",
         btn_close                  = "CLOSE",
 
@@ -78,6 +79,8 @@ local en = {
         menu_section_tools         = "Tools",
         menu_section_developer     = "Developer",
         menu_section_about         = "About",
+
+        unit_hertz = "Hz",
 
         -- modules
         modules = {
@@ -468,7 +471,46 @@ local en = {
                 help_fields_max     = "The maximum pwm value to send"
             },
             servos  = {
-                name =              "Servos",
+                name                        = "Servos",
+                servo_prefix                = "SERVO ",
+                tail                        = "TAIL",
+                cyc_pitch                   = "CYC. PITCH",
+                cyc_left                    = "CYC. LEFT",
+                cyc_right                   = "CYC. RIGHT",
+                geometry                    = "Geometry",
+                speed                       = "Speed",
+                rate                        = "Rate",
+                scale_negative              = "Scale Negative",
+                scale_positive              = "Scale Positive",
+                center                      = "Center",
+                minimum                     = "Minimum",
+                maximum                     = "Maximum",
+                saving                      = "Saving",
+                saving_data                 = "Saving data...",
+                servo_override              = "Servo Override",
+                enable_servo_override       = "Enable servo override",
+                enabling_servo_override     = "Enabling servo override...",
+                disable_servo_override      = "Disable servo override",
+                disabling_servo_override    = "Disabling servo override...",
+                enable_servo_override_msg   = "Servo override allows you to 'trim' your servo center point in real time.",
+                disable_servo_override_msg  = "Return control of the servos to the flight controller.",
+                help_default_p1             = "Please select the servo you would like to configure from the list below.",
+                help_default_p2             = "Primary flight controls that use the rotoflight mixer will display in the section called 'mixer'.",
+                help_default_p3             = "Any other servos that are not controlled by the primary flight mixer will be displayed in the section called 'Other servos'.",
+                help_tool_p1                = "Override: [*] Enable override to allow real-time updates of servo center point.",
+                help_tool_p2                = "Center: Adjust the center position of the servo.",
+                help_tool_p3                = "Minimum/Maximum: Adjust the end points of the selected servo.",
+                help_tool_p4                = "Scale: Adjust the amount the servo moves for a given input.",
+                help_tool_p5                = "Rate: The frequency the servo runs best at - check with manufacturer.",
+                help_tool_p6                = "Speed: The speed the servo moves. Generally only used for the cyclic servos to help the swash move evenly. Optional - leave all at 0 if unsure.",
+                help_fields_mid             = "Servo center position pulse width.",
+                help_fields_min             = "Servo negative travel limit.",
+                help_fields_max             = "Servo positive travel limit.",
+                help_fields_scale_neg       = "Servo negative scaling.",
+                help_fields_scale_pos       = "Servo positive scaling.",
+                help_fields_rate            = "Servo PWM rate.",
+                help_fields_speed           = "Servo motion speed in milliseconds.",
+                help_fields_flags           = "0 = Default, 1=Reverse, 2 = Geo Correction, 3 = Reverse + Geo Correction"
             },
             status = {
                 name =              "Status",
