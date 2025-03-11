@@ -15,11 +15,11 @@ local mspapi = {
         labels = {
         },
         fields = {
-            { t = "Governor",        mspapi = 1, apikey = "governor",        type = 1 },
-            { t = "Gov-P",           mspapi = 1, apikey = "gov_p"                     },
-            { t = "Gov-I",           mspapi = 1, apikey = "gov_i"                     },
-            { t = "Gov-D",           mspapi = 1, apikey = "gov_d"                     },
-            { t = "Motor ERPM max",  mspapi = 1, apikey = "motor_erpm_max"            }
+            { t = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.gov"),             mspapi = 1, apikey = "governor",        type = 1 },
+            { t = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.gov_p"),           mspapi = 1, apikey = "gov_p"                     },
+            { t = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.gov_i"),           mspapi = 1, apikey = "gov_i"                     },
+            { t = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.gov_d"),           mspapi = 1, apikey = "gov_d"                     },
+            { t = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.motor_erpm_max"),  mspapi = 1, apikey = "motor_erpm_max"            }
         }
     }                 
 }
@@ -50,14 +50,13 @@ return {
     mspapi=mspapi,
     eepromWrite = true,
     reboot = false,
-    title = "Governor",
     escinfo = escinfo,
     postLoad = postLoad,
     simulatorResponse =  simulatorResponse,
     navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
     onNavMenu = onNavMenu,
     event = event,
-    pageTitle = "ESC / FLYROTOR / Governor",
+    pageTitle = rfsuite.i18n.get("app.modules.esc_tools.name") .. " / " ..  rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.name") .. " / " .. rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.governor"),
     headerLine = rfsuite.escHeaderLineText
 
 }
