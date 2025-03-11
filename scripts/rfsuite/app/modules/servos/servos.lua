@@ -298,7 +298,7 @@ local function onToolMenu(self)
     local buttons
     if rfsuite.session.servoOverride == false then
         buttons = {{
-            label = rfsuite.i18n.get("app.btn_ok"),
+            label = rfsuite.i18n.get("app.btn_ok_long"),
             action = function()
 
                 -- we cant launch the loader here to se rely on the modules
@@ -315,7 +315,7 @@ local function onToolMenu(self)
         }}
     else
         buttons = {{
-            label = rfsuite.i18n.get("app.btn_ok"),
+            label = rfsuite.i18n.get("app.btn_ok_long"),
             action = function()
 
                 -- we cant launch the loader here to se rely on the modules

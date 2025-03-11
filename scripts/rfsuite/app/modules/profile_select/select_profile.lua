@@ -58,7 +58,7 @@ end
 local function onSaveMenu()
 
     local buttons = {{
-        label = rfsuite.i18n.get("app.btn_ok"),
+        label = rfsuite.i18n.get("app.btn_ok_long"),
         action = function()
             triggerSave = true
             return true
