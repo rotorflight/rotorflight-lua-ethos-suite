@@ -21,7 +21,7 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {"This tool attempts to list all the sensors that your are not receiving in a consise list", "Use this tool to ensure you are sending the correct sensors."}
+data['help']['default'] = {rfsuite.i18n.get("app.modules.validate_sensors.help_p1"),rfsuite.i18n.get("app.modules.validate_sensors.help_p2")}
 
 data['fields'] = {}
 

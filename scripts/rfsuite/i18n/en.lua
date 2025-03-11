@@ -572,7 +572,11 @@ local en = {
                 help_p2                     = "Motorised tail: If using a motorised tail, use this to set the minimum idle speed and zero yaw.",
             },
             validate_sensors = {
-                name =              "Sensors",
+                name           = "Sensors",
+                invalid = "INVALID",
+                ok      = "OK",
+                help_p1        = "This tool attempts to list all the sensors that you are not receiving in a concise list.",
+                help_p2        = "Use this tool to ensure you are sending the correct sensors.",
             },
 
         },
