@@ -227,8 +227,32 @@ status.sensorRSSIMax = 0
 status.lastMaxMin = 0
 status.lastBitmap = nil
 status.wakeupSchedulerUI = os.clock()
-status.layoutOptions = {{"TIMER", 1}, {"VOLTAGE", 2}, {"FUEL", 3}, {"CURRENT", 4}, {"MAH", 17}, {"RPM", 5}, {"LQ", 6}, {"T.ESC", 7}, {"T.MCU", 8}, {"IMAGE", 9}, {"GOVERNOR", 10}, {"IMAGE, GOVERNOR", 11}, {"LQ, TIMER", 12}, {"T.ESC, T.MCU", 13}, {"VOLTAGE, FUEL", 14}, {"VOLTAGE, CURRENT", 15}, {"VOLTAGE, MAH", 16}, {"LQ, TIMER, T.ESC, T.MCU", 20}, {"MAX CURRENT", 21}, {"LQ, GOVERNOR", 22},
-                        {"CRAFT NAME", 18}, {"CUSTOMSENSOR #1", 23}, {"CUSTOMSENSOR #2", 24}, {"CUSTOMSENSOR #1, #2", 25}}
+status.layoutOptions = {
+    {rfsuite.i18n.get("widgets.status.layoutOptions.TIMER"), 1},
+    {rfsuite.i18n.get("widgets.status.layoutOptions.VOLTAGE"), 2},
+    {rfsuite.i18n.get("widgets.status.layoutOptions.FUEL"), 3},
+    {rfsuite.i18n.get("widgets.status.layoutOptions.CURRENT"), 4},
+    {rfsuite.i18n.get("widgets.status.layoutOptions.MAH"), 17},
+    {rfsuite.i18n.get("widgets.status.layoutOptions.RPM"), 5},
+    {rfsuite.i18n.get("widgets.status.layoutOptions.LQ"), 6},
+    {rfsuite.i18n.get("widgets.status.layoutOptions.TESC"), 7},
+    {rfsuite.i18n.get("widgets.status.layoutOptions.TMCU"), 8},
+    {rfsuite.i18n.get("widgets.status.layoutOptions.IMAGE"), 9},
+    {rfsuite.i18n.get("widgets.status.layoutOptions.GOVERNOR"), 10},
+    {rfsuite.i18n.get("widgets.status.layoutOptions.IMAGE_GOVERNOR"), 11},
+    {rfsuite.i18n.get("widgets.status.layoutOptions.LQ_TIMER"), 12},
+    {rfsuite.i18n.get("widgets.status.layoutOptions.TESC_TMCU"), 13},
+    {rfsuite.i18n.get("widgets.status.layoutOptions.VOLTAGE_FUEL"), 14},
+    {rfsuite.i18n.get("widgets.status.layoutOptions.VOLTAGE_CURRENT"), 15},
+    {rfsuite.i18n.get("widgets.status.layoutOptions.VOLTAGE_MAH"), 16},
+    {rfsuite.i18n.get("widgets.status.layoutOptions.LQ_TIMER_TESC_TMCU"), 20},
+    {rfsuite.i18n.get("widgets.status.layoutOptions.MAX_CURRENT"), 21},
+    {rfsuite.i18n.get("widgets.status.layoutOptions.LQ_GOVERNOR"), 22},
+    {rfsuite.i18n.get("widgets.status.layoutOptions.CRAFT_NAME"), 18},
+    {rfsuite.i18n.get("widgets.status.layoutOptions.CUSTOMSENSOR_1"), 23},
+    {rfsuite.i18n.get("widgets.status.layoutOptions.CUSTOMSENSOR_2"), 24},
+    {rfsuite.i18n.get("widgets.status.layoutOptions.CUSTOMSENSOR_1_2"), 25}
+}
 status.layoutBox1Param = 11 -- IMAGE, GOV
 status.layoutBox2Param = 2 -- VOLTAGE
 status.layoutBox3Param = 3 -- FUEL
@@ -240,18 +264,24 @@ status.fullCellVoltage = 410
 status.minCellVoltage = 330
 status.warnCellVoltage = 350
 
-local governorMap = {}
-governorMap[0] = "OFF"
-governorMap[1] = "IDLE"
-governorMap[2] = "SPOOLUP"
-governorMap[3] = "RECOVERY"
-governorMap[4] = "ACTIVE"
-governorMap[5] = "THR-OFF"
-governorMap[6] = "LOST-HS"
-governorMap[7] = "AUTOROT"
-governorMap[8] = "BAILOUT"
-governorMap[100] = "DISABLED"
-governorMap[101] = "DISARMED"
+local function buildGovernorMap()
+    local map = {     
+        [0] =  rfsuite.i18n.get("widgets.governor.OFF"),
+        [1] =  rfsuite.i18n.get("widgets.governor.IDLE"),
+        [2] =  rfsuite.i18n.get("widgets.governor.SPOOLUP"),
+        [3] =  rfsuite.i18n.get("widgets.governor.RECOVERY"),
+        [4] =  rfsuite.i18n.get("widgets.governor.ACTIVE"),
+        [5] =  rfsuite.i18n.get("widgets.governor.THROFF"),
+        [6] =  rfsuite.i18n.get("widgets.governor.LOSTHS"),
+        [7] =  rfsuite.i18n.get("widgets.governor.AUTOROT"),
+        [8] =  rfsuite.i18n.get("widgets.governor.BAILOUT"),
+        [100] = rfsuite.i18n.get("widgets.governor.DISABLED"),
+        [101] = rfsuite.i18n.get("widgets.governor.DISARMED")
+    }
+
+    return map
+end
+local governorMap = buildGovernorMap()
 
 local voltageSOURCE
 local rpmSOURCE
@@ -281,17 +311,17 @@ local function getThemeInfo()
 
     local defaultConfig = {
         supportedRADIO = true,
-        title_voltage = "VOLTAGE",
-        title_fuel = "FUEL",
-        title_mah = "MAH",
-        title_rpm = "RPM",
-        title_current = "CURRENT",
-        title_tempMCU = "T.MCU",
-        title_tempESC = "T.ESC",
-        title_time = "TIMER",
-        title_governor = "GOVERNOR",
-        title_fm = "FLIGHT MODE",
-        title_rssi = "LQ",
+        title_voltage = rfsuite.i18n.get("widgets.status.title_voltage"),
+        title_fuel = rfsuite.i18n.get("widgets.status.title_fuel"),
+        title_mah = rfsuite.i18n.get("widgets.status.title_mah"),
+        title_rpm = rfsuite.i18n.get("widgets.status.title_rpm"),
+        title_current = rfsuite.i18n.get("widgets.status.title_current"),
+        title_tempMCU = rfsuite.i18n.get("widgets.status.title_tempMCU"),
+        title_tempESC = rfsuite.i18n.get("widgets.status.title_tempESC"),
+        title_time = rfsuite.i18n.get("widgets.status.title_time"),
+        title_governor = rfsuite.i18n.get("widgets.status.title_governor"),
+        title_fm = rfsuite.i18n.get("widgets.status.title_fm"),
+        title_rssi = rfsuite.i18n.get("widgets.status.title_rssi"),
         fontSENSOR = FONT_XXL,
         fontSENSORSmallBox = FONT_STD,
         fontPopupTitle = FONT_S,
@@ -376,7 +406,7 @@ end
 
 local function missingSensors()
     lcd.font(FONT_STD)
-    local str = "MISSING REQUIRED SENSORS"
+    local str = rfsuite.i18n.get("widgets.status.warn_missing_sensors")
 
     status.theme = getThemeInfo()
     local w, h = lcd.getWindowSize()
@@ -495,7 +525,20 @@ local function govColorFlag(flag)
     -- 2 = orange (warning)
     -- 3 = green (ok)  
 
-    local flagColors = {["UNKNOWN"] = 1, ["DISARMED"] = 0, ["DISABLED"] = 0, ["BAILOUT"] = 2, ["AUTOROT"] = 2, ["LOST-HS"] = 2, ["THR-OFF"] = 2, ["ACTIVE"] = 3, ["RECOVERY"] = 2, ["SPOOLUP"] = 2, ["IDLE"] = 0, ["OFF"] = 0}
+    local flagColors = {
+        [rfsuite.i18n.get("widgets.governor.UNKNOWN")] = 1,
+        [rfsuite.i18n.get("widgets.governor.DISARMED")] = 0,
+        [rfsuite.i18n.get("widgets.governor.DISABLED")] = 0,
+        [rfsuite.i18n.get("widgets.governor.BAILOUT")] = 2,
+        [rfsuite.i18n.get("widgets.governor.AUTOROT")] = 2,
+        [rfsuite.i18n.get("widgets.governor.LOSTHS")] = 2,
+        [rfsuite.i18n.get("widgets.governor.THROFF")] = 2,
+        [rfsuite.i18n.get("widgets.governor.ACTIVE")] = 3,
+        [rfsuite.i18n.get("widgets.governor.RECOVERY")] = 2,
+        [rfsuite.i18n.get("widgets.governor.SPOOLUP")] = 2,
+        [rfsuite.i18n.get("widgets.governor.IDLE")] = 0,
+        [rfsuite.i18n.get("widgets.governor.OFF")] = 0
+    }
 
     -- Return the corresponding value or default to 0
     return flagColors[flag] or 0
@@ -1181,15 +1224,15 @@ local function getSensors()
     if status.idleupswitchParam and status.govmodeParam == 1 then
         if isArmed == 1 or isArmed == 3 then
             if status.idleupswitchParam:state() then
-                govmode = "ACTIVE"
-                fm = "ACTIVE"
+                govmode = rfsuite.i18n.get("widgets.governor.ACTIVE")
+                fm = rfsuite.i18n.get("widgets.governor.ACTIVE")
             else
-                govmode = "THR-OFF"
-                fm = "THR-OFF"
+                govmode = rfsuite.i18n.get("widgets.governor.THROFF")
+                fm = rfsuite.i18n.get("widgets.governor.THROFF")
             end
         else
-            govmode = "DISARMED"
-            fm = "DISARMED"
+            govmode = rfsuite.i18n.get("widgets.governor.DISARMED")
+            fm = rfsuite.i18n.get("widgets.governor.DISARMED")
         end
     end
 
@@ -1808,18 +1851,18 @@ local function playGovernor()
         playGovernorCount = 1
 
         local govmodeActions = {
-            ["UNKNOWN"] = {param = status.governorUNKNOWNParam, sound = "unknown.wav"},
-            ["DISARMED"] = {param = status.governorDISARMEDParam, sound = "disarmed.wav"},
-            ["DISABLED"] = {param = status.governorDISABLEDParam, sound = "disabled.wav"},
-            ["BAILOUT"] = {param = status.governorBAILOUTParam, sound = "bailout.wav"},
-            ["AUTOROT"] = {param = status.governorAUTOROTParam, sound = "autorot.wav"},
-            ["LOST-HS"] = {param = status.governorLOSTHSParam, sound = "lost-hs.wav"},
-            ["THR-OFF"] = {param = status.governorTHROFFParam, sound = "thr-off.wav"},
-            ["ACTIVE"] = {param = status.governorACTIVEParam, sound = "active.wav"},
-            ["RECOVERY"] = {param = status.governorRECOVERYParam, sound = "recovery.wav"},
-            ["SPOOLUP"] = {param = status.governorSPOOLUPParam, sound = "spoolup.wav"},
-            ["IDLE"] = {param = status.governorIDLEParam, sound = "idle.wav"},
-            ["OFF"] = {param = status.governorOFFParam, sound = "off.wav"}
+            [rfsuite.i18n.get("widgets.governor.UNKNOWN")] = {param = status.governorUNKNOWNParam, sound = "unknown.wav"},
+            [rfsuite.i18n.get("widgets.governor.DISARMED")] = {param = status.governorDISARMEDParam, sound = "disarmed.wav"},
+            [rfsuite.i18n.get("widgets.governor.DISABLED")] = {param = status.governorDISABLEDParam, sound = "disabled.wav"},
+            [rfsuite.i18n.get("widgets.governor.BAILOUT")] = {param = status.governorBAILOUTParam, sound = "bailout.wav"},
+            [rfsuite.i18n.get("widgets.governor.AUTOROT")] = {param = status.governorAUTOROTParam, sound = "autorot.wav"},
+            [rfsuite.i18n.get("widgets.governor.LOSTHS")] = {param = status.governorLOSTHSParam, sound = "lost-hs.wav"},
+            [rfsuite.i18n.get("widgets.governor.THROFF")] = {param = status.governorTHROFFParam, sound = "thr-off.wav"},
+            [rfsuite.i18n.get("widgets.governor.ACTIVE")] = {param = status.governorACTIVEParam, sound = "active.wav"},
+            [rfsuite.i18n.get("widgets.governor.RECOVERY")] = {param = status.governorRECOVERYParam, sound = "recovery.wav"},
+            [rfsuite.i18n.get("widgets.governor.SPOOLUP")] = {param = status.governorSPOOLUPParam, sound = "spoolup.wav"},
+            [rfsuite.i18n.get("widgets.governor.IDLE")] = {param = status.governorIDLEParam, sound = "idle.wav"},
+            [rfsuite.i18n.get("widgets.governor.OFF")] = {param = status.governorOFFParam, sound = "off.wav"}
         }
 
         local action = govmodeActions[status.sensors.govmode]
@@ -1835,7 +1878,7 @@ local function playRPMDiff()
     if not status.rpmAlertsParam then return end
 
     local govmode = status.sensors.govmode
-    local validGovModes = {"ACTIVE", "LOST-HS", "BAILOUT", "RECOVERY"}
+    local validGovModes = {rfsuite.i18n.get("widgets.governor.ACTIVE"), rfsuite.i18n.get("widgets.governor.LOSTHS"), rfsuite.i18n.get("widgets.governor.BAILOUT"), rfsuite.i18n.get("widgets.governor.RECOVERY")}
 
     -- Check if the current govmode is in the list of valid modes
     local isGovModeValid = false
@@ -2249,7 +2292,7 @@ function status.configure(widget)
     local line
     local field
 
-    local triggerpanel = form.addExpansionPanel("Triggers")
+    local triggerpanel = form.addExpansionPanel(rfsuite.i18n.get("widgets.status.txt_triggers"))
     triggerpanel:open(false)
 
     -- line = triggerpanel:addLine("Arm switch")
@@ -2259,14 +2302,14 @@ function status.configure(widget)
     --     armswitchParam = value
     -- end)
 
-    line = triggerpanel:addLine("Idleup switch")
+    line = triggerpanel:addLine(rfsuite.i18n.get("widgets.status.txt_idleupswitch"))
     local idleupswitch = form.addSwitchField(line, form.getFieldSlots(line)[0], function()
         return status.idleupswitchParam
     end, function(value)
         status.idleupswitchParam = value
     end)
 
-    line = triggerpanel:addLine("    " .. "Delay before active")
+    line = triggerpanel:addLine("    " .. rfsuite.i18n.get("widgets.status.txt_delaybeforeactive"))
     field = form.addNumberField(line, nil, 5, 60, function()
         return status.idleupdelayParam
     end, function(value)
@@ -2275,13 +2318,13 @@ function status.configure(widget)
     field:default(5)
     field:suffix("s")
 
-    local timerpanel = form.addExpansionPanel("Timer configuration")
+    local timerpanel = form.addExpansionPanel(rfsuite.i18n.get("widgets.status.txt_timerconfiguration"))
     timerpanel:open(false)
 
-    timeTable = {{"Disabled", 0}, {"00:30", 30}, {"01:00", 60}, {"01:30", 90}, {"02:00", 120}, {"02:30", 150}, {"03:00", 180}, {"03:30", 210}, {"04:00", 240}, {"04:30", 270}, {"05:00", 300}, {"05:30", 330}, {"06:00", 360}, {"06:30", 390}, {"07:00", 420}, {"07:30", 450}, {"08:00", 480}, {"08:30", 510}, {"09:00", 540}, {"09:30", 570}, {"10:00", 600}, {"10:30", 630}, {"11:00", 660}, {"11:30", 690},
+    timeTable = {{rfsuite.i18n.get("widgets.status.txt_disabled"), 0}, {"00:30", 30}, {"01:00", 60}, {"01:30", 90}, {"02:00", 120}, {"02:30", 150}, {"03:00", 180}, {"03:30", 210}, {"04:00", 240}, {"04:30", 270}, {"05:00", 300}, {"05:30", 330}, {"06:00", 360}, {"06:30", 390}, {"07:00", 420}, {"07:30", 450}, {"08:00", 480}, {"08:30", 510}, {"09:00", 540}, {"09:30", 570}, {"10:00", 600}, {"10:30", 630}, {"11:00", 660}, {"11:30", 690},
                  {"12:00", 720}, {"12:30", 750}, {"13:00", 780}, {"13:30", 810}, {"14:00", 840}, {"14:30", 870}, {"15:00", 900}, {"15:30", 930}, {"16:00", 960}, {"16:30", 990}, {"17:00", 1020}, {"17:30", 1050}, {"18:00", 1080}, {"18:30", 1110}, {"19:00", 1140}, {"19:30", 1170}, {"20:00", 1200}}
 
-    line = timerpanel:addLine("Play alarm at")
+    line = timerpanel:addLine(rfsuite.i18n.get("widgets.status.txt_playalarmat"))
     form.addChoiceField(line, nil, timeTable, function()
         return status.timeralarmParam
     end, function(newValue)
@@ -2295,11 +2338,11 @@ function status.configure(widget)
         status.timeralarmVibrateParam = newValue
     end)
 
-    local batterypanel = form.addExpansionPanel("Battery configuration")
+    local batterypanel = form.addExpansionPanel(rfsuite.i18n.get("widgets.status.txt_battery_configuration"))
     batterypanel:open(false)
 
     -- BATTERY CELLS
-    line = batterypanel:addLine("Cells")
+    line = batterypanel:addLine(rfsuite.i18n.get("widgets.status.txt_cells"))
     field = form.addNumberField(line, nil, 1, 14, function()
         return status.cellsParam
     end, function(value)
@@ -2308,7 +2351,7 @@ function status.configure(widget)
     field:default(6)
 
     -- BATTERY MAX
-    line = batterypanel:addLine("Maximum cell voltage")
+    line = batterypanel:addLine(rfsuite.i18n.get("widgets.status.txt_max_cell_voltage"))
     field = form.addNumberField(line, nil, 0, 1000, function()
         return status.maxCellVoltage
     end, function(value)
@@ -2319,7 +2362,7 @@ function status.configure(widget)
     field:suffix("V")
 
     -- BATTERY FULL
-    line = batterypanel:addLine("Minimum cell voltage")
+    line = batterypanel:addLine(rfsuite.i18n.get("widgets.status.txt_min_cell_voltage"))
     field = form.addNumberField(line, nil, 0, 1000, function()
         return status.minCellVoltage
     end, function(value)
@@ -2330,7 +2373,7 @@ function status.configure(widget)
     field:suffix("V")
 
     -- BATTERY WARN
-    line = batterypanel:addLine("Warning cell voltage")
+    line = batterypanel:addLine(rfsuite.i18n.get("widgets.status.txt_warn_cell_voltage"))
     field = form.addNumberField(line, nil, 0, 1000, function()
         return status.warnCellVoltage
     end, function(value)
@@ -2341,7 +2384,7 @@ function status.configure(widget)
     field:suffix("V")
 
     -- LOW FUEL announcement
-    line = batterypanel:addLine("Low fuel%")
+    line = batterypanel:addLine(rfsuite.i18n.get("widgets.status.txt_low_fuel_percentage"))
     field = form.addNumberField(line, nil, 0, 1000, function()
         return status.lowfuelParam
     end, function(value)
@@ -2351,8 +2394,8 @@ function status.configure(widget)
     field:suffix("%")
 
     -- ALERT ON
-    line = batterypanel:addLine("Play alert on")
-    form.addChoiceField(line, nil, {{"Low voltage", 0}, {"Low fuel", 1}, {"Low fuel & Low voltage", 2}, {"Disabled", 3}}, function()
+    line = batterypanel:addLine(rfsuite.i18n.get("widgets.status.txt_play_alerton"))
+    form.addChoiceField(line, nil, {{rfsuite.i18n.get("widgets.status.txt_low_voltage"), 0}, {rfsuite.i18n.get("widgets.status.txt_lowfuel"), 1}, {rfsuite.i18n.get("widgets.status.txt_low_fuel_voltage"), 2}, {rfsuite.i18n.get("widgets.status.txt_disabled"), 3}}, function()
         return status.alertonParam
     end, function(newValue)
         if newValue == 3 then
@@ -2366,7 +2409,7 @@ function status.configure(widget)
     end)
 
     -- ALERT INTERVAL
-    line = batterypanel:addLine("     " .. "Interval")
+    line = batterypanel:addLine("     " .. rfsuite.i18n.get("widgets.status.txt_interval"))
     plalrtint = form.addChoiceField(line, nil, {{"5S", 5}, {"10S", 10}, {"15S", 15}, {"20S", 20}, {"30S", 30}}, function()
         return status.alertintParam
     end, function(newValue)
@@ -2379,7 +2422,7 @@ function status.configure(widget)
     end
 
     -- HAPTIC
-    line = batterypanel:addLine("     " .. "Vibrate")
+    line = batterypanel:addLine("     " .. rfsuite.i18n.get("widgets.status.txt_vibrate"))
     plalrthap = form.addBooleanField(line, nil, function()
         return status.alrthptParam
     end, function(newValue)
@@ -2391,84 +2434,84 @@ function status.configure(widget)
         plalrthap:enable(true)
     end
 
-    local switchpanel = form.addExpansionPanel("Switch announcements")
+    local switchpanel = form.addExpansionPanel(rfsuite.i18n.get("widgets.status.txt_switch_announcements"))
     switchpanel:open(false)
 
-    line = switchpanel:addLine("Idle speed low")
+    line = switchpanel:addLine(rfsuite.i18n.get("widgets.status.txt_idlespeedlow"))
     form.addSwitchField(line, nil, function()
         return status.switchIdlelowParam
     end, function(value)
         status.switchIdlelowParam = value
     end)
 
-    line = switchpanel:addLine("Idle speed medium")
+    line = switchpanel:addLine(rfsuite.i18n.get("widgets.status.txt_idlespeedmedium"))
     form.addSwitchField(line, nil, function()
         return status.switchIdlemediumParam
     end, function(value)
         status.switchIdlemediumParam = value
     end)
 
-    line = switchpanel:addLine("Idle speed high")
+    line = switchpanel:addLine(rfsuite.i18n.get("widgets.status.txt_idlespeedhigh"))
     form.addSwitchField(line, nil, function()
         return status.switchIdlehighParam
     end, function(value)
         status.switchIdlehighParam = value
     end)
 
-    line = switchpanel:addLine("Rates low")
+    line = switchpanel:addLine(rfsuite.i18n.get("widgets.status.txt_rateslow"))
     form.addSwitchField(line, nil, function()
         return status.switchrateslowParam
     end, function(value)
         status.switchrateslowParam = value
     end)
 
-    line = switchpanel:addLine("Rates medium")
+    line = switchpanel:addLine(rfsuite.i18n.get("widgets.status.txt_ratesmedium"))
     form.addSwitchField(line, nil, function()
         return status.switchratesmediumParam
     end, function(value)
         status.switchratesmediumParam = value
     end)
 
-    line = switchpanel:addLine("Rates high")
+    line = switchpanel:addLine(rfsuite.i18n.get("widgets.status.txt_ratehigh"))
     form.addSwitchField(line, nil, function()
         return status.switchrateshighParam
     end, function(value)
         status.switchrateshighParam = value
     end)
 
-    line = switchpanel:addLine("Rescue on")
+    line = switchpanel:addLine(rfsuite.i18n.get("widgets.status.txt_rescueon"))
     form.addSwitchField(line, nil, function()
         return status.switchrescueonParam
     end, function(value)
         status.switchrescueonParam = value
     end)
 
-    line = switchpanel:addLine("Rescue off")
+    line = switchpanel:addLine(rfsuite.i18n.get("widgets.status.txt_rescueoff"))
     form.addSwitchField(line, nil, function()
         return status.switchrescueoffParam
     end, function(value)
         status.switchrescueoffParam = value
     end)
 
-    line = switchpanel:addLine("BBL enabled")
+    line = switchpanel:addLine(rfsuite.i18n.get("widgets.status.txt_bblon"))
     form.addSwitchField(line, nil, function()
         return status.switchbblonParam
     end, function(value)
         status.switchbblonParam = value
     end)
 
-    line = switchpanel:addLine("BBL disabled")
+    line = switchpanel:addLine(rfsuite.i18n.get("widgets.status.txt_bbloff"))
     form.addSwitchField(line, nil, function()
         return status.switchbbloffParam
     end, function(value)
         status.switchbbloffParam = value
     end)
 
-    local announcementpanel = form.addExpansionPanel("Telemetry announcements")
+    local announcementpanel = form.addExpansionPanel(rfsuite.i18n.get("widgets.status.txt_telemetry_announcements"))
     announcementpanel:open(false)
 
     -- announcement VOLTAGE READING
-    line = announcementpanel:addLine("Voltage")
+    line = announcementpanel:addLine(rfsuite.i18n.get("widgets.status.txt_voltage"))
     form.addSwitchField(line, form.getFieldSlots(line)[0], function()
         return status.announcementVoltageSwitchParam
     end, function(value)
@@ -2476,7 +2519,7 @@ function status.configure(widget)
     end)
 
     -- announcement RPM READING
-    line = announcementpanel:addLine("RPM")
+    line = announcementpanel:addLine(rfsuite.i18n.get("widgets.status.txt_rpm"))
     form.addSwitchField(line, nil, function()
         return status.announcementRPMSwitchParam
     end, function(value)
@@ -2484,7 +2527,7 @@ function status.configure(widget)
     end)
 
     -- announcement CURRENT READING
-    line = announcementpanel:addLine("Current")
+    line = announcementpanel:addLine(rfsuite.i18n.get("widgets.status.txt_current"))
     form.addSwitchField(line, nil, function()
         return status.announcementCurrentSwitchParam
     end, function(value)
@@ -2492,7 +2535,7 @@ function status.configure(widget)
     end)
 
     -- announcement FUEL READING
-    line = announcementpanel:addLine("Fuel")
+    line = announcementpanel:addLine(rfsuite.i18n.get("widgets.status.txt_fuel"))
     form.addSwitchField(line, form.getFieldSlots(line)[0], function()
         return status.announcementFuelSwitchParam
     end, function(value)
@@ -2500,7 +2543,7 @@ function status.configure(widget)
     end)
 
     -- announcement LQ READING
-    line = announcementpanel:addLine("LQ")
+    line = announcementpanel:addLine(rfsuite.i18n.get("widgets.status.txt_lq"))
     form.addSwitchField(line, form.getFieldSlots(line)[0], function()
         return status.announcementLQSwitchParam
     end, function(value)
@@ -2508,7 +2551,7 @@ function status.configure(widget)
     end)
 
     -- announcement LQ READING
-    line = announcementpanel:addLine("ESC temperature")
+    line = announcementpanel:addLine(rfsuite.i18n.get("widgets.status.txt_esc_temperature"))
     form.addSwitchField(line, form.getFieldSlots(line)[0], function()
         return status.announcementESCSwitchParam
     end, function(value)
@@ -2516,7 +2559,7 @@ function status.configure(widget)
     end)
 
     -- announcement MCU READING
-    line = announcementpanel:addLine("MCU temperature")
+    line = announcementpanel:addLine(rfsuite.i18n.get("widgets.status.txt_mcu_temperature"))
     form.addSwitchField(line, form.getFieldSlots(line)[0], function()
         return status.announcementMCUSwitchParam
     end, function(value)
@@ -2524,18 +2567,18 @@ function status.configure(widget)
     end)
 
     -- announcement TIMER READING
-    line = announcementpanel:addLine("Timer")
+    line = announcementpanel:addLine(rfsuite.i18n.get("widgets.status.txt_timer"))
     form.addSwitchField(line, form.getFieldSlots(line)[0], function()
         return status.announcementTimerSwitchParam
     end, function(value)
         status.announcementTimerSwitchParam = value
     end)
 
-    local govalertpanel = form.addExpansionPanel("Governor announcements")
+    local govalertpanel = form.addExpansionPanel(rfsuite.i18n.get("widgets.status.txt_governor_announcements"))
     govalertpanel:open(false)
 
     -- TITLE DISPLAY
-    line = govalertpanel:addLine("  " .. "OFF")
+    line = govalertpanel:addLine("  " .. rfsuite.i18n.get("widgets.governor.OFF"))
     form.addBooleanField(line, nil, function()
         return status.governorOFFParam
     end, function(newValue)
@@ -2543,7 +2586,7 @@ function status.configure(widget)
     end)
 
     -- TITLE DISPLAY
-    line = govalertpanel:addLine("  " .. "IDLE")
+    line = govalertpanel:addLine("  " .. rfsuite.i18n.get("widgets.governor.IDLE"))
     form.addBooleanField(line, nil, function()
         return status.governorIDLEParam
     end, function(newValue)
@@ -2551,115 +2594,115 @@ function status.configure(widget)
     end)
 
     -- TITLE DISPLAY
-    line = govalertpanel:addLine("  " .. "SPOOLUP")
+    line = govalertpanel:addLine("  " .. rfsuite.i18n.get("widgets.governor.SPOOLUP"))
     form.addBooleanField(line, nil, function()
         return status.governorSPOOLUPParam
     end, function(newValue)
         status.governorSPOOLUPParam = newValue
     end)
 
-    line = govalertpanel:addLine("  " .. "RECOVERY")
+    line = govalertpanel:addLine("  " .. rfsuite.i18n.get("widgets.governor.RECOVERY"))
     form.addBooleanField(line, nil, function()
         return status.governorRECOVERYParam
     end, function(newValue)
         status.governorRECOVERYParam = newValue
     end)
 
-    line = govalertpanel:addLine("  " .. "ACTIVE")
+    line = govalertpanel:addLine("  " .. rfsuite.i18n.get("widgets.governor.ACTIVE"))
     form.addBooleanField(line, nil, function()
         return status.governorACTIVEParam
     end, function(newValue)
         status.governorACTIVEParam = newValue
     end)
 
-    line = govalertpanel:addLine("  " .. "THR-OFF")
+    line = govalertpanel:addLine("  " .. rfsuite.i18n.get("widgets.governor.THROFF"))
     form.addBooleanField(line, nil, function()
         return status.governorTHROFFParam
     end, function(newValue)
         status.governorTHROFFParam = newValue
     end)
 
-    line = govalertpanel:addLine("  " .. "LOST-HS")
+    line = govalertpanel:addLine("  " .. rfsuite.i18n.get("widgets.governor.LOSTHS"))
     form.addBooleanField(line, nil, function()
         return status.governorLOSTHSParam
     end, function(newValue)
         status.governorLOSTHSParam = newValue
     end)
 
-    line = govalertpanel:addLine("  " .. "AUTOROT")
+    line = govalertpanel:addLine("  " .. rfsuite.i18n.get("widgets.governor.AUTOROT"))
     form.addBooleanField(line, nil, function()
         return status.governorAUTOROTParam
     end, function(newValue)
         status.governorAUTOROTParam = newValue
     end)
 
-    line = govalertpanel:addLine("  " .. "BAILOUT")
+    line = govalertpanel:addLine("  " .. rfsuite.i18n.get("widgets.governor.BAILOUT"))
     form.addBooleanField(line, nil, function()
         return status.governorBAILOUTParam
     end, function(newValue)
         status.governorBAILOUTParam = newValue
     end)
 
-    line = govalertpanel:addLine("  " .. "DISABLED")
+    line = govalertpanel:addLine("  " .. rfsuite.i18n.get("widgets.governor.DISABLED"))
     form.addBooleanField(line, nil, function()
         return status.governorDISABLEDParam
     end, function(newValue)
         status.governorDISABLEDParam = newValue
     end)
 
-    line = govalertpanel:addLine("  " .. "DISARMED")
+    line = govalertpanel:addLine("  " .. rfsuite.i18n.get("widgets.governor.DISARMED"))
     form.addBooleanField(line, nil, function()
         return status.governorDISARMEDParam
     end, function(newValue)
         status.governorDISARMEDParam = newValue
     end)
 
-    line = govalertpanel:addLine("   " .. "UNKNOWN")
+    line = govalertpanel:addLine("   " .. rfsuite.i18n.get("widgets.governor.UNKNOWN"))
     form.addBooleanField(line, nil, function()
         return status.governorUNKNOWNParam
     end, function(newValue)
         status.governorUNKNOWNParam = newValue
     end)
 
-    local displaypanel = form.addExpansionPanel("Customise display")
+    local displaypanel = form.addExpansionPanel(rfsuite.i18n.get("widgets.status.txt_customise_display"))
     displaypanel:open(false)
 
-    line = displaypanel:addLine("Box1")
+    line = displaypanel:addLine(rfsuite.i18n.get("widgets.status.txt_box1"))
     form.addChoiceField(line, nil, status.layoutOptions, function()
         return status.layoutBox1Param
     end, function(newValue)
         status.layoutBox1Param = newValue
     end)
 
-    line = displaypanel:addLine("Box2")
+    line = displaypanel:addLine(rfsuite.i18n.get("widgets.status.txt_box2"))
     form.addChoiceField(line, nil, status.layoutOptions, function()
         return status.layoutBox2Param
     end, function(newValue)
         status.layoutBox2Param = newValue
     end)
 
-    line = displaypanel:addLine("Box3")
+    line = displaypanel:addLine(rfsuite.i18n.get("widgets.status.txt_box3"))
     form.addChoiceField(line, nil, status.layoutOptions, function()
         return status.layoutBox3Param
     end, function(newValue)
         status.layoutBox3Param = newValue
     end)
 
-    line = displaypanel:addLine("Box4")
+    line = displaypanel:addLine(rfsuite.i18n.get("widgets.status.txt_box4"))
     form.addChoiceField(line, nil, status.layoutOptions, function()
         return status.layoutBox4Param
     end, function(newValue)
         status.layoutBox4Param = newValue
     end)
 
-    line = displaypanel:addLine("Box5")
+    line = displaypanel:addLine(rfsuite.i18n.get("widgets.status.txt_box5"))
     form.addChoiceField(line, nil, status.layoutOptions, function()
         return status.layoutBox5Param
     end, function(newValue)
         status.layoutBox5Param = newValue
     end)
 
-    line = displaypanel:addLine("Box6")
+    line = displaypanel:addLine(rfsuite.i18n.get("widgets.status.txt_box6"))
     form.addChoiceField(line, nil, status.layoutOptions, function()
         return status.layoutBox6Param
     end, function(newValue)
@@ -2667,7 +2710,7 @@ function status.configure(widget)
     end)
 
     -- TITLE DISPLAY
-    line = displaypanel:addLine("Display title")
+    line = displaypanel:addLine(rfsuite.i18n.get("widgets.status.txt_display_title"))
     form.addBooleanField(line, nil, function()
         return status.titleParam
     end, function(newValue)
@@ -2675,7 +2718,7 @@ function status.configure(widget)
     end)
 
     -- MAX MIN DISPLAY
-    line = displaypanel:addLine("Display max/min")
+    line = displaypanel:addLine(rfsuite.i18n.get("widgets.status.txt_display_maxmin"))
     form.addBooleanField(line, nil, function()
         return status.maxminParam
     end, function(newValue)
@@ -2683,7 +2726,7 @@ function status.configure(widget)
     end)
 
     -- color mode
-    line = displaypanel:addLine("Use colors to indicate status")
+    line = displaypanel:addLine(rfsuite.i18n.get("widgets.status.txt_usecolours"))
     form.addBooleanField(line, nil, function()
         return status.statusColorParam
     end, function(newValue)
@@ -2691,10 +2734,10 @@ function status.configure(widget)
     end)
 
     -- custom sensors
-    line = form.addLine("Custom Sensors", displaypanel)
+    line = form.addLine(rfsuite.i18n.get("widgets.status.txt_customsensors"), displaypanel)
 
     -- custom1
-    line = displaypanel:addLine("   " .. "Custom Sensor #1")
+    line = displaypanel:addLine("   " .. rfsuite.i18n.get("widgets.status.txt_customsensor_1"))
     form.addSensorField(line, nil, function()
         return status.customSensorParam1
     end, function(newValue)
@@ -2702,33 +2745,33 @@ function status.configure(widget)
     end)
 
     -- custom2
-    line = displaypanel:addLine("   " .. "Custom Sensor #2")
+    line = displaypanel:addLine("   " .. rfsuite.i18n.get("widgets.status.txt_customsensor_2"))
     form.addSensorField(line, nil, function()
         return status.customSensorParam2
     end, function(newValue)
         status.customSensorParam2 = newValue
     end)
 
-    local advpanel = form.addExpansionPanel("Advanced")
+    local advpanel = form.addExpansionPanel(rfsuite.i18n.get("widgets.status.txt_advanced"))
     advpanel:open(false)
 
-    line = advpanel:addLine("Governor")
-    extgov = form.addChoiceField(line, nil, {{"RF Governor", 0}, {"External Governor", 1}}, function()
+    line = advpanel:addLine(rfsuite.i18n.get("widgets.status.txt_governor"))
+    extgov = form.addChoiceField(line, nil, {{rfsuite.i18n.get("widgets.status.txt_rfgovernor"), 0}, {rfsuite.i18n.get("widgets.status.txt_extgovernor"), 1}}, function()
         return status.govmodeParam
     end, function(newValue)
         status.govmodeParam = newValue
     end)
 
-    line = form.addLine("Temperature conversion", advpanel)
+    line = form.addLine(rfsuite.i18n.get("widgets.status.txt_tempconversion"), advpanel)
 
-    line = advpanel:addLine("    " .. "ESC")
-    form.addChoiceField(line, nil, {{"Disable", 1}, {"°C -> °F", 2}, {"°F -> °C", 3}}, function()
+    line = advpanel:addLine("    " .. rfsuite.i18n.get("widgets.status.txt_esc"))
+    form.addChoiceField(line, nil, {{rfsuite.i18n.get("widgets.status.txt_disable"), 1}, {"°C -> °F", 2}, {"°F -> °C", 3}}, function()
         return status.tempconvertParamESC
     end, function(newValue)
         status.tempconvertParamESC = newValue
     end)
 
-    line = advpanel:addLine("   " .. "MCU")
+    line = advpanel:addLine("   " .. rfsuite.i18n.get("widgets.status.txt_mcu"))
     form.addChoiceField(line, nil, {{"Disable", 1}, {"°C -> °F", 2}, {"°F -> °C", 3}}, function()
         return status.tempconvertParamMCU
     end, function(newValue)
@@ -2738,14 +2781,14 @@ function status.configure(widget)
     line = form.addLine("Voltage", advpanel)
 
     -- LVannouncement DISPLAY
-    line = advpanel:addLine("    " .. "Sensitivity")
-    form.addChoiceField(line, nil, {{"HIGH", 1}, {"MEDIUM", 2}, {"LOW", 3}}, function()
+    line = advpanel:addLine("    " .. rfsuite.i18n.get("widgets.status.txt_sensitivity"))
+    form.addChoiceField(line, nil, {{rfsuite.i18n.get("widgets.status.txt_high"), 1}, {rfsuite.i18n.get("widgets.status.txt_medium"), 2}, {rfsuite.i18n.get("widgets.status.txt_low"), 3}}, function()
         return status.lowvoltagsenseParam
     end, function(newValue)
         status.lowvoltagsenseParam = newValue
     end)
 
-    line = advpanel:addLine("    " .. "Sag compensation")
+    line = advpanel:addLine("    " .. rfsuite.i18n.get("widgets.status.txt_sagcompensation"))
     field = form.addNumberField(line, nil, 0, 10, function()
         return status.sagParam
     end, function(value)
@@ -2756,8 +2799,8 @@ function status.configure(widget)
     -- field:decimals(1)
 
     -- LVSTICK MONITORING
-    line = advpanel:addLine("    " .. "Gimbal monitoring")
-    form.addChoiceField(line, nil, {{"DISABLED", 0}, -- 
+    line = advpanel:addLine("    " .. rfsuite.i18n.get("widgets.status.txt_gimbalmonitoring"))
+    form.addChoiceField(line, nil, {{rfsuite.i18n.get("widgets.status.txt_disabled"):upper(), 0}, -- 
     {"AECR1T23 (ELRS)", 1}, -- recomended
     {"AETRC123 (FRSKY)", 2}, -- frsky
     {"AETR1C23 (FUTABA)", 3}, -- fut/hitec
@@ -2773,7 +2816,7 @@ function status.configure(widget)
         status.lowvoltagStickParam = newValue
     end)
 
-    line = advpanel:addLine("       " .. "Stick cutoff")
+    line = advpanel:addLine("       " .. rfsuite.i18n.get("widgets.status.txt_stickcutoff"))
     fieldstckcutoff = form.addNumberField(line, nil, 65, 95, function()
         return status.lowvoltagStickCutoffParam
     end, function(value)
@@ -2790,7 +2833,7 @@ function status.configure(widget)
     line = form.addLine("Headspeed", advpanel)
 
     -- TITLE DISPLAY
-    line = advpanel:addLine("   " .. "Alert on RPM difference")
+    line = advpanel:addLine("   " .. rfsuite.i18n.get("widgets.status.txt_alertonrpmdiff"))
     form.addBooleanField(line, nil, function()
         return status.rpmAlertsParam
     end, function(newValue)
@@ -2804,7 +2847,7 @@ function status.configure(widget)
     end)
 
     -- TITLE DISPLAY
-    line = advpanel:addLine("   " .. "Alert if difference > than")
+    line = advpanel:addLine("   " .. rfsuite.i18n.get("widgets.status.txt_alertifdifflt"))
     rpmperfield = form.addNumberField(line, nil, 0, 200, function()
         return status.rpmAlertsPercentageParam
     end, function(value)
@@ -2831,15 +2874,15 @@ function status.configure(widget)
     ]] --
 
     -- LVannouncement DISPLAY
-    line = advpanel:addLine("Announcement interval")
-    form.addChoiceField(line, nil, {{"5s", 5}, {"10s", 10}, {"15s", 15}, {"20s", 20}, {"25s", 25}, {"30s", 30}, {"35s", 35}, {"40s", 40}, {"45s", 45}, {"50s", 50}, {"55s", 55}, {"60s", 60}, {"No repeat", 50000}}, function()
+    line = advpanel:addLine(rfsuite.i18n.get("widgets.status.txt_announcement_interval"))
+    form.addChoiceField(line, nil, {{"5s", 5}, {"10s", 10}, {"15s", 15}, {"20s", 20}, {"25s", 25}, {"30s", 30}, {"35s", 35}, {"40s", 40}, {"45s", 45}, {"50s", 50}, {"55s", 55}, {"60s", 60}, {rfsuite.i18n.get("widgets.status.txt_norepeat"), 50000}}, function()
         return status.announcementIntervalParam
     end, function(newValue)
         status.announcementIntervalParam = newValue
     end)
 
     -- calcfuel
-    line = advpanel:addLine("Calculate fuel locally")
+    line = advpanel:addLine(rfsuite.i18n.get("widgets.status.txt_calcfuel_local"))
     form.addBooleanField(line, nil, function()
         return status.calcfuelParam
     end, function(newValue)
@@ -2847,7 +2890,7 @@ function status.configure(widget)
     end)
 
     -- display warning about sensors
-    line = advpanel:addLine("Warn if missing sensors")
+    line = advpanel:addLine(rfsuite.i18n.get("widgets.status.txt_warnsensors"))
     form.addBooleanField(line, nil, function()
         return status.sensorwarningParam
     end, function(newValue)
@@ -2883,7 +2926,7 @@ function status.paint(widget)
         return
     elseif not rfsuite.tasks.active() then
 
-        if (os.clock() - status.initTime) >= 2 then screenError("PLEASE ENABLE THE BACKGROUND TASK") end
+        if (os.clock() - status.initTime) >= 2 then screenError(rfsuite.i18n.get("widgets.status.txt_please_enable_bgtask"):upper()) end
         lcd.invalidate()
         return
     else
@@ -2976,7 +3019,7 @@ function status.paint(widget)
 
             -- hard error
             if theme and theme.supportedRADIO ~= true then
-                screenError("UNKNOWN" .. " " .. environment.board)
+                screenError(rfsuite.i18n.get("widgets.status.txt_unknown") .. " " .. environment.board)
                 return
             end
 
@@ -3000,7 +3043,7 @@ function status.paint(widget)
 
             -- hard error
             if not isValidSize then
-                screenError("DISPLAY SIZE INVALID")
+                screenError(rfsuite.i18n.get("widgets.status.txt_displaysize_invalid"))
                 return
             end
 
@@ -3025,7 +3068,7 @@ function status.paint(widget)
                 if status.sensors.fuel < 5 then sensorVALUE = "0" end
 
                 if status.titleParam == true then
-                    sensorTITLE = "FUEL"
+                    sensorTITLE = rfsuite.i18n.get("widgets.status.txt_fuel")
                 else
                     sensorTITLE = ""
                 end
@@ -3467,8 +3510,8 @@ function status.paint(widget)
 
                 local sensorTGT = 'customsensor1'
                 status.sensordisplay[sensorTGT] = {}
-                status.sensordisplay[sensorTGT]['title'] = "CUSTOM SENSOR 1"
-                status.sensordisplay[sensorTGT]['value'] = "N/A"
+                status.sensordisplay[sensorTGT]['title'] = rfsuite.i18n.get("widgets.status.txt_customsensor_1"):upper()
+                status.sensordisplay[sensorTGT]['value'] = rfsuite.i18n.get("widgets.status.txt_na")
                 status.sensordisplay[sensorTGT]['warn'] = nil
                 status.sensordisplay[sensorTGT]['min'] = nil
                 status.sensordisplay[sensorTGT]['max'] = nil
@@ -3516,8 +3559,8 @@ function status.paint(widget)
 
                 local sensorTGT = 'customsensor2'
                 status.sensordisplay[sensorTGT] = {}
-                status.sensordisplay[sensorTGT]['title'] = "CUSTOM SENSOR 2"
-                status.sensordisplay[sensorTGT]['value'] = "N/A"
+                status.sensordisplay[sensorTGT]['title'] = rfsuite.i18n.get("widgets.status.txt_customsensor_2"):upper()
+                status.sensordisplay[sensorTGT]['value'] = rfsuite.i18n.get("widgets.status.txt_na")
                 status.sensordisplay[sensorTGT]['warn'] = nil
                 status.sensordisplay[sensorTGT]['min'] = nil
                 status.sensordisplay[sensorTGT]['max'] = nil
@@ -3924,7 +3967,7 @@ function status.paint(widget)
                             if sensorMAX == "-" or sensorMAX == nil then sensorMAX = 0 end
 
                             smallBOX = false
-                            telemetryBox(posX, posY, boxW, boxH, "MAX " .. sensorTITLE, sensorMAX, sensorUNIT, smallBOX)
+                            telemetryBox(posX, posY, boxW, boxH, rfsuite.i18n.get("widgets.status.txt_max"):upper() .. " " .. sensorTITLE, sensorMAX, sensorUNIT, smallBOX)
                         end
                     end
 
@@ -3951,7 +3994,7 @@ function status.paint(widget)
                     if isArmed == 1 or isArmed == 3 then
                         if status.theTIME <= status.idleupdelayParam then
                             local count = math.floor(status.idleupdelayParam - status.theTIME)
-                            message("INITIALISING..." .. count + 1)
+                            message(rfsuite.i18n.get("widgets.status.txt_initialising") .. count + 1)
                         end
                     end
                 end
