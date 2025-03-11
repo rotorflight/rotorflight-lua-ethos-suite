@@ -14,10 +14,10 @@ local mspapi = {
         },
         fields = {
 
-            {t = "ESC Mode", type = 1, mspapi=1, apikey="esc_mode"},
-            {t = "Rotation", type = 1, mspapi=1, apikey="rotation"},
-            {t = "BEC Voltage", type = 1, mspapi=1, apikey="bec_voltage"},
-            -- {t = "Telemetry Protocol", type = 1, mspapi=1, apikey="telemetry_protocol"} -- not used as dangerous to change
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.esc_mode"), type = 1, mspapi=1, apikey="esc_mode"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.rotation"), type = 1, mspapi=1, apikey="rotation"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.bec_voltage"), type = 1, mspapi=1, apikey="bec_voltage"},
+            -- {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.telemetry_protocol"),, type = 1, mspapi=1, apikey="telemetry_protocol"} -- not used as dangerous to change
         }
     }                 
 }
@@ -60,7 +60,7 @@ return {
     navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
     onNavMenu = onNavMenu,
     event = event,
-    pageTitle = "ESC / Scorpion / Basic",
+    pageTitle = rfsuite.i18n.get("app.modules.esc_tools.name") .. " / " ..  rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.name") .. " / " .. rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.basic"),
     headerLine = rfsuite.escHeaderLineText,
-    extraMsgOnSave = "Please reboot the ESC to apply the changes",    
+    extraMsgOnSave = rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.extra_msg_save"),    
 }

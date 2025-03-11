@@ -9,12 +9,12 @@ local mspapi = {
         labels = {
         },
         fields = {
-            {t = "Protection Delay", mspapi = 1, apikey="protection_delay"},
-            {t = "Cutoff Handling", mspapi = 1, apikey="cutoff_handling"},
-            {t = "Max Temperature", mspapi = 1, apikey="max_temperature"},
-            {t = "Max Current", mspapi = 1, apikey="max_current"},
-            {t = "Min Voltage", mspapi = 1, apikey="min_voltage"},
-            {t = "Max Used", mspapi = 1, apikey="max_used"}
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.protection_delay"), mspapi = 1, apikey="protection_delay"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.cutoff_handling"), mspapi = 1, apikey="cutoff_handling"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.max_temperature"), mspapi = 1, apikey="max_temperature"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.max_current"),     mspapi = 1, apikey="max_current"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.min_voltage"),     mspapi = 1, apikey="min_voltage"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.max_used"),        mspapi = 1, apikey="max_used"}
         }
     }                 
 }
@@ -61,7 +61,7 @@ return {
     navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
     onNavMenu = onNavMenu,
     event = event,
-    pageTitle = "ESC / Scorpion / Limits",
+    pageTitle = rfsuite.i18n.get("app.modules.esc_tools.name") .. " / " ..  rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.name") .. " / " .. rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.limits"),
     headerLine = rfsuite.escHeaderLineText,
-    extraMsgOnSave = "Please reboot the ESC to apply the changes",   
+    extraMsgOnSave = rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.extra_msg_save"), 
 }
