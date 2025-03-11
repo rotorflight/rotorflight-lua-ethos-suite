@@ -14,21 +14,21 @@ local mspapi = {
     },
     formdata = {
         labels = {
-            {t = "Roll dynamics",       label = 1, inline_size = 14.6},
-            {t = "Pitch dynamics",      label = 2, inline_size = 14.6},
-            {t = "Yaw dynamics",        label = 3, inline_size = 14.6},
-            {t = "Collective dynamics", label = 4, inline_size = 14.6}
+            {t = rfsuite.i18n.get("app.modules.rates_advanced.roll_dynamics"),       label = 1, inline_size = 14.6},
+            {t = rfsuite.i18n.get("app.modules.rates_advanced.pitch_dynamics"),      label = 2, inline_size = 14.6},
+            {t = rfsuite.i18n.get("app.modules.rates_advanced.yaw_dynamics"),        label = 3, inline_size = 14.6},
+            {t = rfsuite.i18n.get("app.modules.rates_advanced.collective_dynamics"), label = 4, inline_size = 14.6}
         },
         fields = {
-            {t = "Rates Type",                        mspapi = 1, apikey = "rates_type", type = 1, ratetype = 1, postEdit = function(self) self.flagRateChange(self, true) end},
-            {t = "Time",       inline = 2, label = 1, mspapi = 1, apikey = "response_time_1"},
-            {t = "Accel",      inline = 1, label = 1, mspapi = 1, apikey = "accel_limit_1"},
-            {t = "Time",       inline = 2, label = 2, mspapi = 1, apikey = "response_time_2"},
-            {t = "Accel",      inline = 1, label = 2, mspapi = 1, apikey = "accel_limit_2"},
-            {t = "Time",       inline = 2, label = 3, mspapi = 1, apikey = "response_time_3"},
-            {t = "Accel",      inline = 1, label = 3, mspapi = 1, apikey = "accel_limit_3"},
-            {t = "Time",       inline = 2, label = 4, mspapi = 1, apikey = "response_time_4"},
-            {t = "Accel",      inline = 1, label = 4, mspapi = 1, apikey = "accel_limit_4"},
+            {t = rfsuite.i18n.get("app.modules.rates_advanced.rates_type"),        mspapi = 1, apikey = "rates_type", type = 1, ratetype = 1, postEdit = function(self) self.flagRateChange(self, true) end},
+            {t = rfsuite.i18n.get("app.modules.rates_advanced.response_time"),     inline = 2, label = 1, mspapi = 1, apikey = "response_time_1"},
+            {t = rfsuite.i18n.get("app.modules.rates_advanced.accel_limit"),       inline = 1, label = 1, mspapi = 1, apikey = "accel_limit_1"},
+            {t = rfsuite.i18n.get("app.modules.rates_advanced.response_time"),     inline = 2, label = 2, mspapi = 1, apikey = "response_time_2"},
+            {t = rfsuite.i18n.get("app.modules.rates_advanced.accel_limit"),       inline = 1, label = 2, mspapi = 1, apikey = "accel_limit_2"},
+            {t = rfsuite.i18n.get("app.modules.rates_advanced.response_time"),     inline = 2, label = 3, mspapi = 1, apikey = "response_time_3"},
+            {t = rfsuite.i18n.get("app.modules.rates_advanced.accel_limit"),       inline = 1, label = 3, mspapi = 1, apikey = "accel_limit_3"},
+            {t = rfsuite.i18n.get("app.modules.rates_advanced.response_time"),     inline = 2, label = 4, mspapi = 1, apikey = "response_time_4"},
+            {t = rfsuite.i18n.get("app.modules.rates_advanced.accel_limit"),       inline = 1, label = 4, mspapi = 1, apikey = "accel_limit_4"},
         }
     }                 
 }
@@ -140,7 +140,7 @@ local function flagRateChange(self)
         rfsuite.app.ui.enableAllFields()
         resetRates = false
     else
-        self.extraMsgOnSave = "Rate type changed. Values will be reset to defaults."
+        self.extraMsgOnSave = rfsuite.i18n.get("app.modules.rates_advanced.msg_reset_to_defaults")
         resetRates = true
         rfsuite.app.ui.disableAllFields()
         rfsuite.app.formFields[1]:enable(true)
@@ -157,7 +157,7 @@ end
 
 return {
     mspapi = mspapi,
-    title = "Rates",
+    title = rfsuite.i18n.get("app.modules.rates_advanced.name"),
     reboot = false,
     eepromWrite = true,
     refreshOnRateChange = true,

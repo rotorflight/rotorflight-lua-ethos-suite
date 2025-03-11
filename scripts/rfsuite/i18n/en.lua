@@ -426,7 +426,17 @@ local en = {
                 help_table_5_p3     = "Expo: Reduces sensitivity near the stick's center where fine controls are needed.",
             },
             rates_advanced = {
-                name =              "Rates",
+                name                    = "Rates",
+                roll_dynamics           = "Roll dynamics",
+                pitch_dynamics          = "Pitch dynamics",
+                yaw_dynamics            = "Yaw dynamics",
+                collective_dynamics     = "Collective dynamics",
+                rates_type              = "Rates Type",
+                response_time           = "Time",
+                accel_limit             = "Accel",
+                msg_reset_to_defaults   = "Rate type changed. Values will be reset to defaults.",
+                help_p1                 = "Rates type: Choose the rate type you prefer flying with. Raceflight and Actual are the most straightforward.",
+                help_p2                 = "Dynamics: Applied regardless of rates type. Typically left on defaults but can be adjusted to smooth heli movements, like with scale helis.",
             },
             sbusout = {
                 name =              "SBUS Out",
