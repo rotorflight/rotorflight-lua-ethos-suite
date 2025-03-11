@@ -23,16 +23,16 @@ local MSP_REBUILD_ON_WRITE = true -- Rebuild the payload on write
 -- Define the MSP response data structures
 local pwmProtocol = {"PWM", "ONESHOT125", "ONESHOT42", "MULTISHOT", "DSHOT150", "DSHOT300", "DSHOT600", "PROSHOT", "DISABLED"}
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "minthrottle",              type = "U16", apiVersion = 12.06, simResponse = {45, 4}, min = 50, max = 2250, default = 1070, help = "This PWM value is sent to the ESC/Servo at low throttle"},
-    {field = "maxthrottle",              type = "U16", apiVersion = 12.06, simResponse = {208, 7}, min = 50, max = 2250, default = 1070, help = "This PWM value is sent to the ESC/Servo at full throttle"},
-    {field = "mincommand",               type = "U16", apiVersion = 12.06, simResponse = {232, 3}, min = 50, max = 2250, default = 1070, help = "This PWM value is sent when the motor is stopped"},
+    {field = "minthrottle",              type = "U16", apiVersion = 12.06, simResponse = {45, 4}, min = 50, max = 2250, default = 1070},
+    {field = "maxthrottle",              type = "U16", apiVersion = 12.06, simResponse = {208, 7}, min = 50, max = 2250, default = 1070},
+    {field = "mincommand",               type = "U16", apiVersion = 12.06, simResponse = {232, 3}, min = 50, max = 2250, default = 1070},
     {field = "motor_count_blheli",       type = "U8",  apiVersion = 12.06, simResponse = {1}},
     {field = "motor_pole_count_blheli",  type = "U8",  apiVersion = 12.06, simResponse = {6}},
     {field = "use_dshot_telemetry",      type = "U8",  apiVersion = 12.06, simResponse = {0}},
-    {field = "motor_pwm_protocol",       type = "U8",  apiVersion = 12.06, simResponse = {0}, table = pwmProtocol, tableIdxInc = -1, help = "The protocol used to communicate with the ESC"},
-    {field = "motor_pwm_rate",           type = "U16", apiVersion = 12.06, simResponse = {250, 0}, min=50, max = 8000, default = 250, unit="Hz", help = "The frequency at which the ESC sends PWM signals to the motor"},
+    {field = "motor_pwm_protocol",       type = "U8",  apiVersion = 12.06, simResponse = {0}, table = pwmProtocol, tableIdxInc = -1},
+    {field = "motor_pwm_rate",           type = "U16", apiVersion = 12.06, simResponse = {250, 0}, min=50, max = 8000, default = 250, unit="Hz"},
     {field = "use_unsynced_pwm",         type = "U8",  apiVersion = 12.06, simResponse = {1}},
-    {field = "motor_pole_count_0",       type = "U8",  apiVersion = 12.06, simResponse = {6}, min = 0, max = 256, default = 8, help = "The number of magnets on the motor bell."},
+    {field = "motor_pole_count_0",       type = "U8",  apiVersion = 12.06, simResponse = {6}, min = 0, max = 256, default = 8},
     {field = "motor_pole_count_1",       type = "U8",  apiVersion = 12.06, simResponse = {4}},
     {field = "motor_pole_count_2",       type = "U8",  apiVersion = 12.06, simResponse = {2}},
     {field = "motor_pole_count_3",       type = "U8",  apiVersion = 12.06, simResponse = {1}},
@@ -40,23 +40,23 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "motor_rpm_lpf_1",          type = "U8",  apiVersion = 12.06, simResponse = {7}},
     {field = "motor_rpm_lpf_2",          type = "U8",  apiVersion = 12.06, simResponse = {7}},
     {field = "motor_rpm_lpf_3",          type = "U8",  apiVersion = 12.06, simResponse = {8}},
-    {field = "main_rotor_gear_ratio_0",  type = "U16", apiVersion = 12.06, simResponse = {20, 0}, min = 0, max = 50000, default = 1, help = "Motor Pinion Gear Tooth Count"},
-    {field = "main_rotor_gear_ratio_1",  type = "U16", apiVersion = 12.06, simResponse = {50, 0}, min = 0, max = 50000, default = 1, help = "Main Gear Tooth Count"},
-    {field = "tail_rotor_gear_ratio_0",  type = "U16", apiVersion = 12.06, simResponse = {9, 0}, min = 0, max = 50000, default = 1, help = "Tail Gear Tooth Count"},
-    {field = "tail_rotor_gear_ratio_1",  type = "U16", apiVersion = 12.06, simResponse = {30, 0}, min = 0, max = 50000, default = 1, help = "Autorotation Gear Tooth Count"}
+    {field = "main_rotor_gear_ratio_0",  type = "U16", apiVersion = 12.06, simResponse = {20, 0}, min = 0, max = 50000, default = 1},
+    {field = "main_rotor_gear_ratio_1",  type = "U16", apiVersion = 12.06, simResponse = {50, 0}, min = 0, max = 50000, default = 1},
+    {field = "tail_rotor_gear_ratio_0",  type = "U16", apiVersion = 12.06, simResponse = {9, 0}, min = 0, max = 50000, default = 1},
+    {field = "tail_rotor_gear_ratio_1",  type = "U16", apiVersion = 12.06, simResponse = {30, 0}, min = 0, max = 50000, default = 1}
 }
 
 local MSP_API_STRUCTURE_WRITE = {
-    {field = "minthrottle",              type = "U16", apiVersion = 12.06, simResponse = {45, 4}, min = 50, max = 2250, default = 1070, help = "This PWM value is sent to the ESC/Servo at low throttle"},
-    {field = "maxthrottle",              type = "U16", apiVersion = 12.06, simResponse = {208, 7}, min = 50, max = 2250, default = 1070, help = "This PWM value is sent to the ESC/Servo at full throttle"},
-    {field = "mincommand",               type = "U16", apiVersion = 12.06, simResponse = {232, 3}, min = 50, max = 2250, default = 1070, help = "This PWM value is sent when the motor is stopped"},
+    {field = "minthrottle",              type = "U16", apiVersion = 12.06, simResponse = {45, 4}, min = 50, max = 2250, default = 1070},
+    {field = "maxthrottle",              type = "U16", apiVersion = 12.06, simResponse = {208, 7}, min = 50, max = 2250, default = 1070},
+    {field = "mincommand",               type = "U16", apiVersion = 12.06, simResponse = {232, 3}, min = 50, max = 2250, default = 1070},
     --{field = "motor_count_blheli",       type = "U8",  apiVersion = 12.06, simResponse = {1}},
     {field = "motor_pole_count_blheli",  type = "U8",  apiVersion = 12.06, simResponse = {6}},
     {field = "use_dshot_telemetry",      type = "U8",  apiVersion = 12.06, simResponse = {0}},
-    {field = "motor_pwm_protocol",       type = "U8",  apiVersion = 12.06, simResponse = {0}, table = pwmProtocol, tableIdxInc = -1, help = "The protocol used to communicate with the ESC"},
-    {field = "motor_pwm_rate",           type = "U16", apiVersion = 12.06, simResponse = {250, 0}, min=50, max = 8000, default = 250, unit="Hz", help = "The frequency at which the ESC sends PWM signals to the motor"},
+    {field = "motor_pwm_protocol",       type = "U8",  apiVersion = 12.06, simResponse = {0}, table = pwmProtocol, tableIdxInc = -1},
+    {field = "motor_pwm_rate",           type = "U16", apiVersion = 12.06, simResponse = {250, 0}, min=50, max = 8000, default = 250, unit="Hz"},
     {field = "use_unsynced_pwm",         type = "U8",  apiVersion = 12.06, simResponse = {1}},
-    {field = "motor_pole_count_0",       type = "U8",  apiVersion = 12.06, simResponse = {6}, min = 0, max = 256, default = 8, help = "The number of magnets on the motor bell."},
+    {field = "motor_pole_count_0",       type = "U8",  apiVersion = 12.06, simResponse = {6}, min = 0, max = 256, default = 8},
     {field = "motor_pole_count_1",       type = "U8",  apiVersion = 12.06, simResponse = {4}},
     {field = "motor_pole_count_2",       type = "U8",  apiVersion = 12.06, simResponse = {2}},
     {field = "motor_pole_count_3",       type = "U8",  apiVersion = 12.06, simResponse = {1}},
@@ -64,10 +64,10 @@ local MSP_API_STRUCTURE_WRITE = {
     {field = "motor_rpm_lpf_1",          type = "U8",  apiVersion = 12.06, simResponse = {7}},
     {field = "motor_rpm_lpf_2",          type = "U8",  apiVersion = 12.06, simResponse = {7}},
     {field = "motor_rpm_lpf_3",          type = "U8",  apiVersion = 12.06, simResponse = {8}},
-    {field = "main_rotor_gear_ratio_0",  type = "U16", apiVersion = 12.06, simResponse = {20, 0}, min = 0, max = 50000, default = 1, help = "Motor Pinion Gear Tooth Count"},
-    {field = "main_rotor_gear_ratio_1",  type = "U16", apiVersion = 12.06, simResponse = {50, 0}, min = 0, max = 50000, default = 1, help = "Main Gear Tooth Count"},
-    {field = "tail_rotor_gear_ratio_0",  type = "U16", apiVersion = 12.06, simResponse = {9, 0}, min = 0, max = 50000, default = 1, help = "Tail Gear Tooth Count"},
-    {field = "tail_rotor_gear_ratio_1",  type = "U16", apiVersion = 12.06, simResponse = {30, 0}, min = 0, max = 50000, default = 1, help = "Autorotation Gear Tooth Count"}
+    {field = "main_rotor_gear_ratio_0",  type = "U16", apiVersion = 12.06, simResponse = {20, 0}, min = 0, max = 50000, default = 1},
+    {field = "main_rotor_gear_ratio_1",  type = "U16", apiVersion = 12.06, simResponse = {50, 0}, min = 0, max = 50000, default = 1},
+    {field = "tail_rotor_gear_ratio_0",  type = "U16", apiVersion = 12.06, simResponse = {9, 0}, min = 0, max = 50000, default = 1},
+    {field = "tail_rotor_gear_ratio_1",  type = "U16", apiVersion = 12.06, simResponse = {30, 0}, min = 0, max = 50000, default = 1}
 }
 
 -- Process structure in one pass
