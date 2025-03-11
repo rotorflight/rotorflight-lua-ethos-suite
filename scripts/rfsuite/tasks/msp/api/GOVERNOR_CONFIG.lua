@@ -23,7 +23,7 @@ local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write
 -- define msp structure for reading and writing
 
 
-local gov_modeTable ={[0] = "OFF", "PASSTHROUGH", "STANDARD", "MODE1", "MODE2"}
+local gov_modeTable ={[0] = rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_govmode_off"), rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_govmode_passthrough"), rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_govmode_standard"), rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_govmode_mode1"), rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_govmode_mode2")}
 
 local MSP_API_STRUCTURE_READ_DATA = {
     {field = "gov_mode",                        type = "U8",  apiVersion = 12.06, simResponse = {3},    min = 0,  max = #gov_modeTable,   table = gov_modeTable},

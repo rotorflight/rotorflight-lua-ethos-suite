@@ -23,11 +23,11 @@ local MSP_SIGNATURE = 0x53
 local MSP_HEADER_BYTES = 2
 
 -- Tables used in structure below
-local escMode = {"Heli Governor", "Heli Governor (stored)", "VBar Governor", "External Governor", "Airplane mode", "Boat mode", "Quad mode"}
-local rotation = {"CCW", "CW"}
+local escMode = {rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_heligov"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_helistore"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_vbar"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_extgov"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_airplane"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_boat"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_quad")}
+local rotation = {rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_ccw"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_cw")}
 local becVoltage = {"5.1 V", "6.1 V", "7.3 V", "8.3 V", "Disabled"}
-local teleProtocol = {"Standard", "VBar", "Jeti Exbus", "Unsolicited", "Futaba SBUS"}
-local onOff = {"On", "Off"}
+local teleProtocol = {rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_standard"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_vbar"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_exbus"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_unsolicited"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_futsbus")}
+local onOff = {rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_on"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_off")}
 
 local MSP_API_STRUCTURE_READ_DATA = {
     {field = "esc_signature",       type = "U8",  apiVersion = 12.07, simResponse = {83}},
