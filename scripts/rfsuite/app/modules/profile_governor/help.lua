@@ -21,8 +21,14 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {"Full headspeed: Headspeed target when at 100% throttle input.", "PID master gain: How hard the governor works to hold the RPM.", "Gains: Fine tuning of the governor.", "Precomp: Governor precomp gain for yaw, cyclic, and collective inputs.", "Max throttle: The maximum throttle % the governor is allowed to use.",
-                           "Tail Torque Assist: For motorized tails. Gain and limit of headspeed increase when using main rotor torque for yaw assist."}
+data['help']['default'] = {
+    rfsuite.i18n.get("app.modules.profile_governor.help_p1"),
+    rfsuite.i18n.get("app.modules.profile_governor.help_p2"),
+    rfsuite.i18n.get("app.modules.profile_governor.help_p3"),
+    rfsuite.i18n.get("app.modules.profile_governor.help_p4"),
+    rfsuite.i18n.get("app.modules.profile_governor.help_p5"),
+    rfsuite.i18n.get("app.modules.profile_governor.help_p6")
+}
 
 data['fields'] = {}
 

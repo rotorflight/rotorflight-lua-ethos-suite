@@ -21,8 +21,13 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {"Yaw Stop Gain: Higher stop gain will make the tail stop more aggressively but may cause oscillations if too high. Adjust CW or CCW to make the yaw stops even.", "Precomp Cutoff: Frequency limit for all yaw precompensation actions.", "Cyclic FF Gain: Tail precompensation for cyclic inputs.", "Collective FF Gain: Tail precompensation for collective inputs.",
-                           "Collective Impulse FF: Impulse tail precompensation for collective inputs. If you need extra tail precompensation at the beginning of collective input."}
+data['help']['default'] = {
+    rfsuite.i18n.get("app.modules.profile_tailrotor.help_p1"),
+    rfsuite.i18n.get("app.modules.profile_tailrotor.help_p2"),
+    rfsuite.i18n.get("app.modules.profile_tailrotor.help_p3"),
+    rfsuite.i18n.get("app.modules.profile_tailrotor.help_p4"),
+    rfsuite.i18n.get("app.modules.profile_tailrotor.help_p5")
+}
 
 data['fields'] = {}
 

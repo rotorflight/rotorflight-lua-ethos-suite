@@ -21,8 +21,15 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {"Flip to upright: Flip the heli upright when rescue is activated.", "Pull-up: How much collective and for how long to arrest the fall.", "Climb: How much collective to maintain a steady climb - and how long.", "Hover: How much collective to maintain a steady hover.", "Flip: How long to wait before aborting because the flip did not work.",
-                           "Gains: How hard to fight to keep heli level when engaging rescue mode.", "Rate and Accel: Max rotation and acceleration rates when leveling during rescue."}
+data['help']['default'] = {
+    rfsuite.i18n.get("app.modules.profile_rescue.help_p1"),
+    rfsuite.i18n.get("app.modules.profile_rescue.help_p2"),
+    rfsuite.i18n.get("app.modules.profile_rescue.help_p3"),
+    rfsuite.i18n.get("app.modules.profile_rescue.help_p4"),
+    rfsuite.i18n.get("app.modules.profile_rescue.help_p5"),
+    rfsuite.i18n.get("app.modules.profile_rescue.help_p6"),
+    rfsuite.i18n.get("app.modules.profile_rescue.help_p7")
+}
 
 data['fields'] = {}
 

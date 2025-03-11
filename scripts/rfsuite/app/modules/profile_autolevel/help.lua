@@ -21,7 +21,7 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {"Acro Trainer: How aggressively the heli tilts back to level when flying in Acro Trainer Mode.", "Angle Mode: How aggressively the heli tilts back to level when flying in Angle Mode.", "Horizon Mode: How aggressively the heli tilts back to level when flying in Horizon Mode."}
+data['help']['default'] = {rfsuite.i18n.get("app.modules.profile_autolevel.help_p1"),rfsuite.i18n.get("app.modules.profile_autolevel.help_p2"),rfsuite.i18n.get("app.modules.profile_autolevel.help_p3")}
 
 data['fields'] = {}
 

@@ -18,8 +18,8 @@ local mspapi = {
         labels = {
         },
         fields = {
-            {t = "PID profile", type = 1, mspapi = 1, apikey="current_pid_profile_index"},
-            {t = "Rate Profile",type = 1, mspapi = 1, apikey="current_control_rate_profile_index"}
+            {t = rfsuite.i18n.get("app.modules.profile_select.pid_profile"), type = 1, mspapi = 1, apikey="current_pid_profile_index"},
+            {t = rfsuite.i18n.get("app.modules.profile_select.rate_profile"),type = 1, mspapi = 1, apikey="current_control_rate_profile_index"}
         }
     }                 
 }
@@ -64,7 +64,7 @@ local function onSaveMenu()
             return true
         end
     }, {
-        label = "CANCEL",
+        label = rfsuite.i18n.get("app.modules.profile_select.cancel"),
         action = function()
             triggerSave = false
             return true
@@ -73,8 +73,8 @@ local function onSaveMenu()
 
     form.openDialog({
         width = nil,
-        title = "Save settings",
-        message = "Save current page to flight controller?",
+        title = rfsuite.i18n.get("app.modules.profile_select.save_settings"),
+        message = rfsuite.i18n.get("app.modules.profile_select.save_prompt"),
         buttons = buttons,
         wakeup = function()
         end,
@@ -124,7 +124,6 @@ end
 
 return {
     mspapi = mspapi,
-    title = "Select Profile",
     reboot = false,
     eepromWrite = false,
     wakeup = wakeup,

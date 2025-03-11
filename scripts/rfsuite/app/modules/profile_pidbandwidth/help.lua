@@ -21,7 +21,11 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {"PID Bandwidth: Overall bandwidth in HZ used by the PID loop.", "D-term cutoff: D-term cutoff frequency in HZ.", "B-term cutoff: B-term cutoff frequency in HZ."}
+data['help']['default'] = {
+    rfsuite.i18n.get("app.modules.profile_pidbandwidth.help_p1"),
+    rfsuite.i18n.get("app.modules.profile_pidbandwidth.help_p2"),
+    rfsuite.i18n.get("app.modules.profile_pidbandwidth.help_p3")
+}
 
 data['fields'] = {}
 

@@ -9,24 +9,24 @@ local mspapi = {
     },
     formdata = {
         labels = {
-            {t = "Gains",                label = 1, inline_size = 8.15},
-            {t = "Precomp",              label = 2, inline_size = 8.15},
-            {t = "Tail Torque Assist",   label = 3}
+            {t = rfsuite.i18n.get("app.modules.profile_governor.gains"),                label = 1, inline_size = 8.15},
+            {t = rfsuite.i18n.get("app.modules.profile_governor.precomp"),              label = 2, inline_size = 8.15},
+            {t = rfsuite.i18n.get("app.modules.profile_governor.tail_torque_assist"),   label = 3}
         },
         fields = {
-            {t = "Full headspeed",          mspapi = 1, apikey = "governor_headspeed", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},   
-            {t = "Min throttle",            mspapi = 1, apikey = "governor_min_throttle", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
-            {t = "Max throttle",            mspapi = 1, apikey = "governor_max_throttle", enablefunction = function() return (rfsuite.session.governorMode >=1 ) end},                    
-            {t = "PID master gain",         mspapi = 1, apikey = "governor_gain", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
-            {t = "P",                       inline = 4, label = 1, mspapi = 1, apikey = "governor_p_gain", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
-            {t = "I",                       inline = 3, label = 1, mspapi = 1, apikey = "governor_i_gain", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
-            {t = "D",                       inline = 2, label = 1, mspapi = 1, apikey = "governor_d_gain", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
-            {t = "F",                       inline = 1, label = 1, mspapi = 1, apikey = "governor_f_gain", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
-            {t = "Yaw",                     inline = 3, label = 2, mspapi = 1, apikey = "governor_yaw_ff_weight", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
-            {t = "Cyc",                     inline = 2, label = 2, mspapi = 1, apikey = "governor_cyclic_ff_weight", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
-            {t = "Col",                     inline = 1, label = 2, mspapi = 1, apikey = "governor_collective_ff_weight", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
-            {t = "Gain",                    inline = 2, label = 3, mspapi = 1, apikey = "governor_tta_gain", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
-            {t = "Limit",                   inline = 1, label = 3, mspapi = 1, apikey = "governor_tta_limit", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
+            {t = rfsuite.i18n.get("app.modules.profile_governor.full_headspeed"),          mspapi = 1, apikey = "governor_headspeed", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},   
+            {t = rfsuite.i18n.get("app.modules.profile_governor.min_throttle"),            mspapi = 1, apikey = "governor_min_throttle", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
+            {t = rfsuite.i18n.get("app.modules.profile_governor.max_throttle"),            mspapi = 1, apikey = "governor_max_throttle", enablefunction = function() return (rfsuite.session.governorMode >=1 ) end},                    
+            {t = rfsuite.i18n.get("app.modules.profile_governor.gain"),                    mspapi = 1, apikey = "governor_gain", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
+            {t = rfsuite.i18n.get("app.modules.profile_governor.p"),                       inline = 4, label = 1, mspapi = 1, apikey = "governor_p_gain", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
+            {t = rfsuite.i18n.get("app.modules.profile_governor.i"),                       inline = 3, label = 1, mspapi = 1, apikey = "governor_i_gain", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
+            {t = rfsuite.i18n.get("app.modules.profile_governor.d"),                       inline = 2, label = 1, mspapi = 1, apikey = "governor_d_gain", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
+            {t = rfsuite.i18n.get("app.modules.profile_governor.f"),                       inline = 1, label = 1, mspapi = 1, apikey = "governor_f_gain", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
+            {t = rfsuite.i18n.get("app.modules.profile_governor.yaw"),                     inline = 3, label = 2, mspapi = 1, apikey = "governor_yaw_ff_weight", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
+            {t = rfsuite.i18n.get("app.modules.profile_governor.cyc"),                     inline = 2, label = 2, mspapi = 1, apikey = "governor_cyclic_ff_weight", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
+            {t = rfsuite.i18n.get("app.modules.profile_governor.col"),                     inline = 1, label = 2, mspapi = 1, apikey = "governor_collective_ff_weight", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
+            {t = rfsuite.i18n.get("app.modules.profile_governor.tta_gain"),                inline = 2, label = 3, mspapi = 1, apikey = "governor_tta_gain", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
+            {t = rfsuite.i18n.get("app.modules.profile_governor.tta_limit"),               inline = 1, label = 3, mspapi = 1, apikey = "governor_tta_limit", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
         }
     }
 }
@@ -56,7 +56,7 @@ local function wakeup()
                 -- disable reload button
                 rfsuite.app.formNavigationFields['reload']:enable(false)
                 -- add field to formFields
-                rfsuite.app.formLines[#rfsuite.app.formLines + 1] = form.addLine("Rotorflight governor is not enabled")
+                rfsuite.app.formLines[#rfsuite.app.formLines + 1] = form.addLine(rfsuite.i18n.get("app.modules.profile_governor.disabled_message"))
 
             end
         end
@@ -67,7 +67,7 @@ end
 
 return {
     mspapi = mspapi,
-    title = "Governor",
+    title = rfsuite.i18n.get("app.modules.profile_governor.name"),
     reboot = false,
     refreshOnProfileChange = true,
     eepromWrite = true,

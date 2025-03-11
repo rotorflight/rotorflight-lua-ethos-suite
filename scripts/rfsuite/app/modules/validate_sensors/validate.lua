@@ -31,7 +31,7 @@ local function openPage(pidx, title, script)
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-    rfsuite.app.ui.fieldHeader("Sensors")
+    rfsuite.app.ui.fieldHeader(rfsuite.i18n.get("app.modules.validate_sensors.name"))
 
     rfsuite.session.formLineCnt = 0
     local posText = {x = x - 5 - buttonW - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = 200, h = rfsuite.app.radio.navbuttonHeight}
@@ -69,14 +69,14 @@ local function wakeup()
     for i, v in ipairs(sensorList) do
         if sensorKeyExists(v.key, invalidSensors) then
             if v.mandatory == true then
-                rfsuite.app.formFields[v.key]:value("INVALID")
+                rfsuite.app.formFields[v.key]:value(rfsuite.i18n.get("app.modules.validate_sensors.invalid"))
                 rfsuite.app.formFields[v.key]:color(ORANGE)
             else
-                rfsuite.app.formFields[v.key]:value("INVALID")
+                rfsuite.app.formFields[v.key]:value(rfsuite.i18n.get("app.modules.validate_sensors.invalid"))
                 rfsuite.app.formFields[v.key]:color(RED)
             end
         else
-            rfsuite.app.formFields[v.key]:value("OK")
+            rfsuite.app.formFields[v.key]:value(rfsuite.i18n.get("app.modules.validate_sensors.ok"))
             rfsuite.app.formFields[v.key]:color(GREEN)
         end
     end
@@ -84,7 +84,6 @@ local function wakeup()
 end
 
 return {
-    title = "Status",
     reboot = false,
     eepromWrite = false,
     minBytes = 0,
