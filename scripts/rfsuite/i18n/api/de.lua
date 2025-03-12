@@ -156,18 +156,18 @@ de = {
     PID_TUNING = {
         pid_0_P = "Wie genau das System dem gewunschten Sollwert folgt.",
         pid_0_I = "Wie genau das System seine Position halt.",
-        pid_0_D = "Starke der Dampfung gegen jede Bewegung des Systems, einschlieBlich auBerer Einflusse. Reduziert auch das Überschwingen.",
-        pid_0_F = "Hilft, den P-Term basierend auf Knuppelbewegungen zu verstarken. Erhohen macht die Reaktion scharfer, kann aber zu Überschwingern fuhren.",
+        pid_0_D = "Starke der Dampfung gegen jede Bewegung des Systems, einschlieBlich auBerer Einflusse. Reduziert auch das Uberschwingen.",
+        pid_0_F = "Hilft, den P-Term basierend auf Knuppelbewegungen zu verstarken. Erhohen macht die Reaktion scharfer, kann aber zu Uberschwingern fuhren.",
     
         pid_1_P = "Wie genau das System dem gewunschten Sollwert folgt.",
         pid_1_I = "Wie genau das System seine Position halt.",
-        pid_1_D = "Starke der Dampfung gegen jede Bewegung des Systems, einschlieBlich auBerer Einflusse. Reduziert auch das Überschwingen.",
-        pid_1_F = "Hilft, den P-Term basierend auf Knuppelbewegungen zu verstarken. Erhohen macht die Reaktion scharfer, kann aber zu Überschwingern fuhren.",
+        pid_1_D = "Starke der Dampfung gegen jede Bewegung des Systems, einschlieBlich auBerer Einflusse. Reduziert auch das Uberschwingen.",
+        pid_1_F = "Hilft, den P-Term basierend auf Knuppelbewegungen zu verstarken. Erhohen macht die Reaktion scharfer, kann aber zu Uberschwingern fuhren.",
     
         pid_2_P = "Wie genau das System dem gewunschten Sollwert folgt.",
         pid_2_I = "Wie genau das System seine Position halt.",
-        pid_2_D = "Starke der Dampfung gegen jede Bewegung des Systems, einschlieBlich auBerer Einflusse. Reduziert auch das Überschwingen.",
-        pid_2_F = "Hilft, den P-Term basierend auf Knuppelbewegungen zu verstarken. Erhohen macht die Reaktion scharfer, kann aber zu Überschwingern fuhren.",
+        pid_2_D = "Starke der Dampfung gegen jede Bewegung des Systems, einschlieBlich auBerer Einflusse. Reduziert auch das Uberschwingen.",
+        pid_2_F = "Hilft, den P-Term basierend auf Knuppelbewegungen zu verstarken. Erhohen macht die Reaktion scharfer, kann aber zu Uberschwingern fuhren.",
     
         pid_0_B = "Zusatzlicher Feedforward-Boost, um das System reaktionsschneller auf schnelle Knuppelbewegungen zu machen.",
         pid_1_B = "Zusatzlicher Feedforward-Boost, um das System reaktionsschneller auf schnelle Knuppelbewegungen zu machen.",
