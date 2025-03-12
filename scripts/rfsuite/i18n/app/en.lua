@@ -310,7 +310,7 @@ en = {
             help_p1                        = "Adust swash plate geometry, phase angles, and limits.",
         },
         msp_exp = {
-            name                = "MSP Expermintal",
+            name                = "MSP Expermental",
             help_p1             = "This tool provides the ability to send a custom byte string to the flight controller. It is useful for developers when debugging values.", 
             help_p2             = "If you do not understand what you are doing, do not use it as bad things can happen.",
         },
