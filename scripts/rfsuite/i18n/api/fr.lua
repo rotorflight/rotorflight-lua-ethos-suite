@@ -21,11 +21,11 @@ fr = {
         roll = "Utiliser pour ajuster si l'helico derive dans l'un des modes stabilises (angle, horizon, etc.).",
     },
     BATTERY_CONFIG = {
-        batteryCapacity = "Capacite de votre batterie en milliampères-heure.",
+        batteryCapacity = "Capacite de votre batterie en milliamperes-heure.",
         batteryCellCount = "Nombre de cellules dans votre batterie.",
         vbatmincellvoltage = "Tension minimale par cellule avant le declenchement de l'alarme de basse tension.",
         vbatmaxcellvoltage = "Tension maximale par cellule avant le declenchement de l'alarme de haute tension.",
-        vbatfullcellvoltage = "Tension nominale d'une cellule complètement chargee.",
+        vbatfullcellvoltage = "Tension nominale d'une cellule completement chargee.",
         vbatwarningcellvoltage = "Tension par cellule a laquelle l'alarme de basse tension commencera a sonner.",
     },
     ESC_SENSOR_CONFIG  = {
