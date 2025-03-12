@@ -44,9 +44,9 @@ local de = {
     -- General terms
     ethos                      = "Ethos",
     version                    = "Version",
-    bg_task_disabled           = "Hintergrundaufgabe deaktiviert",
-    background_task_disabled   = "Hintergrundaufgabe deaktiviert",
-    no_link                    = "Kein Link",
+    bg_task_disabled           = "Hintergrundtask deaktiviert",
+    background_task_disabled   = "Hintergrundtask deaktiviert",
+    no_link                    = "Keine Verbindung",
     image                      = "Bild",
     error                      = "Fehler",
     reload                     = "Neu laden",
