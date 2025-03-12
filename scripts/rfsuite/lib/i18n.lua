@@ -88,36 +88,37 @@ end
 
 
 -- Load translations, ensuring missing keys fall back to English
+-- Load translations, strictly using requested language or English if missing
 function i18n.load(locale)
     locale = locale or system.getLocale() or defaultLocale
     rfsuite.utils.log("i18n: Loading translations for locale: " .. locale, "debug")
 
-    -- Load English as the base language
-    local baseFile = folder .. "/" .. defaultLocale .. ".lua"
-    local baseTranslations = loadLangFile(baseFile) or {}
-    
-    translations = baseTranslations
+    local localeFile = folder .. "/" .. locale .. ".lua"
+    local localeTranslations = loadLangFile(localeFile)
 
-    -- Load additional translations from subdirectories
-    local baseDirTranslations = loadLangFiles(defaultLocale, folder, "")
-    deepMerge(translations, baseDirTranslations)
+    local localeDirTranslations = loadLangFiles(locale, folder, "")
 
-    -- If another language is requested, merge it over English
-    if locale ~= defaultLocale then
-        local localeFile = folder .. "/" .. locale .. ".lua"
-        local localeTranslations = loadLangFile(localeFile) or {}
-        deepMerge(translations, localeTranslations)
+    if localeTranslations or next(localeDirTranslations) then
+        -- Use requested language if any translations are found
+        translations = localeTranslations or {}
+        for k, v in pairs(localeDirTranslations) do
+            translations[k] = v  -- Assign subdirectory translations without merging
+        end
+    else
+        -- Fallback to English if the requested language is completely missing
+        rfsuite.utils.log("i18n: Requested language not found, falling back to English", "debug")
+        local baseFile = folder .. "/" .. defaultLocale .. ".lua"
+        translations = loadLangFile(baseFile) or {}
 
-        local localeDirTranslations = loadLangFiles(locale, folder, "")
-        deepMerge(translations, localeDirTranslations)
-
-        rfsuite.utils.log("i18n: Merged translations for locale: " .. locale, "debug")
+        local baseDirTranslations = loadLangFiles(defaultLocale, folder, "")
+        for k, v in pairs(baseDirTranslations) do
+            translations[k] = v
+        end
     end
 
-    -- 🔍 Debug: Print the entire translations table
-    rfsuite.utils.log("i18n: Final Translations Table:", "debug")
-    print(rfsuite.utils.print_r(translations,0))
 end
+
+
 
 
 -- Get translation by key (supports nested lookup)
