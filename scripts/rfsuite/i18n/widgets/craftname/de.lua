@@ -17,7 +17,7 @@
 
 local de = {
     title = "FLUGGERÄT NAME",
-    txt_enter_craft_name = "Fluggerätname eingeben",
+    txt_enter_craft_name = "Fluggeratname eingeben",
     txt_save = "Speichern",
     txt_cancel = "Abbrechen"
 }

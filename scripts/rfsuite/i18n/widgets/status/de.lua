@@ -30,9 +30,9 @@ de = {
 
     warn_missing_sensors = "ERFORDERLICHE SENSOREN FEHLEN",
 
-    txt_triggers = "Auslöser",
+    txt_triggers = "Ausloser",
     txt_idleupswitch = "Idle Up Schalter",
-    txt_delaybeforeactive = "Verzögerung vor Aktivierung",
+    txt_delaybeforeactive = "Verzogerung vor Aktivierung",
     txt_timerconfiguration  = "Timer-Konfiguration",
     txt_playalarmat = "Alarm abspielen bei",
     txt_battery_configuration = "Batteriekonfiguration",
@@ -96,7 +96,7 @@ de = {
     txt_extgovernor = "Externer Governor",
     txt_sagcompensation = "Spannungsabfall-Kompensation",
     txt_gimbalmonitoring = "Gimbal-Überwachung",
-    txt_stickcutoff = "Knüppel-Abschaltung",
+    txt_stickcutoff = "Knuppel-Abschaltung",
     txt_alertonrpmdiff = "Alarm bei RPM-Differenz",
     txt_alertifdifflt = "Alarm wenn Differenz < als",
     txt_announcement_interval = "Ansage-Intervall",
