@@ -17,17 +17,17 @@
 
 local fr = {
     UNKNOWN   = "INCONNU",
-    OFF       = "ARRÊT",
+    OFF       = "ARRET",
     IDLE      = "RALENTI",
-    SPOOLUP   = "ACCÉLÉRATION",
-    RECOVERY  = "RÉCUPÉRATION",
+    SPOOLUP   = "ACCELERATION",
+    RECOVERY  = "RECUPERATION",
     ACTIVE    = "ACTIF",
-    THROFF    = "THR-ARRÊT",
+    THROFF    = "THR-ARRET",
     LOSTHS    = "PERTE-HS",
     AUTOROT   = "AUTOROTATION",
     BAILOUT   = "SAUVETAGE",
-    DISABLED  = "DÉSACTIVÉ",
-    DISARMED  = "DÉSARMÉ"
+    DISABLED  = "DESACTIVE",
+    DISARMED  = "DESARME"
 }
 
 return fr

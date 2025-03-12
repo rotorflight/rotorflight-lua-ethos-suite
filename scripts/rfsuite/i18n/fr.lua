@@ -20,11 +20,11 @@
 ]] --
 
 local fr = {
-    -- Termes généraux
+    -- Termes generaux
     ethos                      = "ethos",
     version                    = "version",
-    bg_task_disabled           = "tâche bg désactivée",
-    background_task_disabled   = "tâche en arrière-plan désactivée",
+    bg_task_disabled           = "tâche bg desactivee",
+    background_task_disabled   = "tâche en arrière-plan desactivee",
     no_link                    = "aucun lien",
     image                      = "image",
     error                      = "erreur",
