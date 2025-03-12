@@ -1,119 +1,141 @@
---[[
- * Copyright (C) Rotorflight Project
- *
- *
- * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 3 as
- * published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- 
- * Note.  Some icons have been sourced from https://www.flaticon.com/
- * 
-]] --
-
---[[ 
- * i18n System for Rotorflight Project
- * Centralized i18n system supporting 3-level nested keys
-]]--
-
---[[ 
- * i18n System for Rotorflight Project
- * Centralized i18n system supporting 3-level nested keys
-]]--
-
 local i18n = {}
 
 -- Default language
-local defaultLocale = 'en'
+local defaultLocale = "en"
 
 -- Centralized language folder
-local folder = 'i18n'
+local folder = "i18n"
 
 -- Loaded translations table
 local translations = {}
 
--- Set the locale
-function i18n.setLocale(newLocale)
-    locale = newLocale
-    rfsuite.utils.log("i18n: Locale set to: " .. locale, "info")
+local function deepMerge(base, new)
+    for k, v in pairs(new) do
+        if type(v) == "table" and type(base[k]) == "table" then
+            deepMerge(base[k], v)
+        else
+            base[k] = v
+        end
+    end
 end
 
--- Load a language file safely, returns the table or nil on error
-local function loadLangFile(lang)
-    local filepath = string.format("%s/%s.lua", folder, lang)
-    local chunk, err = loadfile(filepath)
+-- Load a language file safely
+local function loadLangFile(filepath)
+    rfsuite.utils.log("i18n: Attempting to load file: " .. filepath, "debug")
 
+    if not rfsuite.utils.file_exists(filepath) then
+        rfsuite.utils.log("i18n: ERROR - File does not exist: " .. filepath, "debug")
+        return nil
+    end
+
+    local chunk, err = loadfile(filepath)
     if not chunk then
-        rfsuite.utils.log("i18n: ERROR - Language file missing or unreadable: " .. filepath, "info")
-        return nil -- Return nil instead of an empty table so we can detect failures
+        rfsuite.utils.log("i18n: ERROR - Could not load language file: " .. filepath, "debug")
+        return nil
     end
 
     local success, result = pcall(chunk)
     if not success or type(result) ~= "table" then
-        rfsuite.utils.log("i18n: ERROR - Language file is corrupted or does not return a table: " .. filepath, "info")
+        rfsuite.utils.log("i18n: ERROR - Corrupted or invalid language file: " .. filepath, "debug")
         return nil
     end
 
-    rfsuite.utils.log("i18n: Successfully loaded language file: " .. filepath, "info")
     return result
 end
 
--- Load translations, ensuring missing keys fall back to English
-function i18n.load(locale)
-    -- Use system locale if none is provided
-    if not locale then
-        locale = system.getLocale() or defaultLocale
-    end
+-- Recursively search for en.lua inside subdirectories
+-- Recursively search for en.lua inside subdirectories
+local function loadLangFiles(langCode, basePath, parentKey)
+    local langData = {}
 
-    rfsuite.utils.log("i18n: Attempting to load translations for locale: " .. locale, "info")
+    local items = system.listFiles(basePath) or {}
+    for _, item in ipairs(items) do
 
-    -- Load English first
-    local baseTranslations = loadLangFile(defaultLocale)
-    if not baseTranslations then
-        rfsuite.utils.log("i18n: CRITICAL ERROR - Default language file ('en.lua') could not be loaded. Fallback not possible!", "error")
-        return
-    end
-
-    translations = baseTranslations -- Start with English as the base
-
-    -- Try to load the selected locale, but only overwrite if valid
-    if locale ~= defaultLocale then
-        local overrideTranslations = loadLangFile(locale)
-        if overrideTranslations then
-            for k, v in pairs(overrideTranslations) do
-                translations[k] = v -- Overwrite English values with the target language
-            end
-            rfsuite.utils.log("i18n: Successfully merged translations for locale: " .. locale, "info")
-        else
-            rfsuite.utils.log("i18n: WARNING - Falling back to English. Could not load requested locale: " .. locale, "info")
+        if item == "." or item == ".." then
+            goto continue
         end
+
+        local subPath = basePath .. "/" .. item
+
+        -- Ensure it's a directory before checking inside
+        if rfsuite.utils.dir_exists(basePath, item) then
+            local langFile = subPath .. "/" .. langCode .. ".lua"
+
+            rfsuite.utils.log("i18n: Checking for language file: " .. langFile, "debug")
+
+            if rfsuite.utils.file_exists(langFile) then
+                local fileData = loadLangFile(langFile)
+                if fileData then
+                    -- **Ensure this translation is placed in a subtable**
+                    langData[item] = langData[item] or {}
+                    deepMerge(langData[item], fileData)
+                end
+            end
+
+            -- Recursively check deeper folders ONLY IF subPath is a directory
+            local subLangData = loadLangFiles(langCode, subPath, item)
+            if next(subLangData) then  -- Prevent empty tables
+                langData[item] = langData[item] or {}
+                deepMerge(langData[item], subLangData)
+            end
+        end
+
+        ::continue::
     end
+
+    return langData
 end
 
--- Lookup function to get translations, supporting 4-level keys (e.g., "widgets.governor.OFF")
+
+-- Load translations, ensuring missing keys fall back to English
+-- Load translations, strictly using requested language or English if missing
+function i18n.load(locale)
+    locale = locale or system.getLocale() or defaultLocale
+    rfsuite.utils.log("i18n: Loading translations for locale: " .. locale, "debug")
+
+    local localeFile = folder .. "/" .. locale .. ".lua"
+    local localeTranslations = loadLangFile(localeFile)
+
+    local localeDirTranslations = loadLangFiles(locale, folder, "")
+
+    if localeTranslations or next(localeDirTranslations) then
+        -- Use requested language if any translations are found
+        translations = localeTranslations or {}
+        for k, v in pairs(localeDirTranslations) do
+            translations[k] = v  -- Assign subdirectory translations without merging
+        end
+    else
+        -- Fallback to English if the requested language is completely missing
+        rfsuite.utils.log("i18n: Requested language not found, falling back to English", "debug")
+        local baseFile = folder .. "/" .. defaultLocale .. ".lua"
+        translations = loadLangFile(baseFile) or {}
+
+        local baseDirTranslations = loadLangFiles(defaultLocale, folder, "")
+        for k, v in pairs(baseDirTranslations) do
+            translations[k] = v
+        end
+    end
+
+end
+
+
+
+
+-- Get translation by key (supports nested lookup)
 function i18n.get(key)
     local value = translations
     for part in string.gmatch(key, "([^%.]+)") do
         if type(value) ~= "table" then
-            rfsuite.utils.log("i18n: WARNING - Incomplete translation path for key: " .. key, "info")
-            return key -- Return the key itself as a fallback
+            return key
         end
-        value = value[part] -- Go deeper into the hierarchy
+        value = value[part]
     end
 
     if value == nil then
-        rfsuite.utils.log("i18n: WARNING - Missing translation for key: " .. key, "info")
-        return key -- Fallback to key itself if missing
+        return key
     end
 
     return value
 end
 
 return i18n
-

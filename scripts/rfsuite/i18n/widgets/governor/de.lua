@@ -1,7 +1,5 @@
 --[[
-
  * Copyright (C) Rotorflight Project
- *
  *
  * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
  *
@@ -13,24 +11,23 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- 
- * Note.  Some icons have been sourced from https://www.flaticon.com/
- * 
-
+ *
+ * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
 
-local en = {
-    -- General terms
-    ethos                      = "ethos",
-    version                    = "version",
-    bg_task_disabled           = "bg task disabled",
-    background_task_disabled   = "background task disabled",
-    no_link                    = "no link",
-    image                      = "image",
-    error                      = "error",
-    reload                     = "reload",
-    save                       = "save",
-
+local de = {
+    UNKNOWN   = "UNBEKANNT",
+    OFF       = "AUS",
+    IDLE      = "LEERLAUF",
+    SPOOLUP   = "HOCHLAUF",
+    RECOVERY  = "ERHOLUNG",
+    ACTIVE    = "AKTIV",
+    THROFF    = "GAS-AUS",
+    LOSTHS    = "VERLOREN-HS",
+    AUTOROT   = "AUTOROTATION",
+    BAILOUT   = "NOTAUS",
+    DISABLED  = "DEAKTIVIERT",
+    DISARMED  = "ENTWAFFNET"
 }
 
-return en
+return de
