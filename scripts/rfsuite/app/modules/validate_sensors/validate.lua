@@ -114,12 +114,12 @@ local function wakeup()
 
         -- extract list of sensors we require
         local requiredSensors = {}
-        for _, v in pairs(sensorList) do
+        for i, v in pairs(sensorList) do
             local name = v['name']
             local sensor_id = v['set_telemetry_sensors']
             if sensor_id ~= nil then
                 if not checkIfSensorExists(sensor_id, data) then
-                    requiredSensors[sensor_id] = true
+                    requiredSensors[i] = v
                 end
             end    
         end
