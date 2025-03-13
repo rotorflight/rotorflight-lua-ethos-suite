@@ -8,9 +8,13 @@ local buttonW = 100
 local buttonWs = buttonW - (buttonW * 20) / 100
 local x = w - 15
 
+local data = nil
+
 local displayPos = {x = x - buttonW - buttonWs - 5 - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = 100, h = rfsuite.app.radio.navbuttonHeight}
 
 local invalidSensors = rfsuite.tasks.telemetry.validateSensors()
+
+local repairSensors = false
 
 function sortSensorListByName(sensorList)
     table.sort(sensorList, function(a, b)
@@ -58,6 +62,17 @@ local function postRead(self)
     rfsuite.utils.log("postRead","debug")
 end
 
+-- Function to check if sensor exists in telemetry slots
+function checkIfSensorExists(value, data)
+    for key, v in pairs(data) do
+        if string.match(key, "^telem_sensor_slot_%d+$") and v == value then
+            return true
+        end
+    end
+    return false
+end
+
+
 local function wakeup()
 
     -- prevent wakeup running until after initialised
@@ -81,7 +96,80 @@ local function wakeup()
         end
     end
 
+  -- run process to repair all sensors
+  if repairSensors == true then
+
+    if data == nil then
+        API = rfsuite.tasks.msp.api.load("TELEMETRY_CONFIG")
+        API.setUUID("550e8400-e29b-41d4-a716-446655440000")
+        API.setCompleteHandler(function(self, buf)
+            data = API.data().parsed
+        end)
+        API.read()
+    end
+
+    -- we now have the valid msp data stream
+    if data ~= nil then
+        local sensorList = rfsuite.tasks.telemetry.listSensors()
+
+        -- extract list of sensors we require
+        local requiredSensors = {}
+        for _, v in pairs(sensorList) do
+            local name = v['name']
+            local sensor_id = v['set_telemetry_sensors']
+            if sensor_id ~= nil then
+                if not checkIfSensorExists(sensor_id, data) then
+                    requiredSensors[sensor_id] = true
+                end
+            end    
+        end
+
+        for i,v in pairs(data) do
+            print(i,v)
+        end    
+        repairSensors = false
+    end    
+
+
+end  
+
+
+
+
 end
+
+local function onToolMenu(self)
+
+    local buttons = {{
+        label = rfsuite.i18n.get("app.btn_ok"),
+        action = function()
+
+            -- we push this to the background task to do its job
+            repairSensors = true
+            writePayload = nil
+            return true
+        end
+    }, {
+        label = rfsuite.i18n.get("app.btn_cancel"),
+        action = function()
+            return true
+        end
+    }}
+
+    form.openDialog({
+        width = nil,
+        title =  rfsuite.i18n.get("app.modules.validate_sensors.name"),
+        message = rfsuite.i18n.get("app.modules.validate_sensors.msg_repair"),
+        buttons = buttons,
+        wakeup = function()
+        end,
+        paint = function()
+        end,
+        options = TEXT_LEFT
+    })
+
+end
+
 
 return {
     reboot = false,
@@ -93,11 +181,12 @@ return {
     postLoad = postLoad,
     postRead = postRead,
     openPage = openPage,
+    onToolMenu = onToolMenu,
     navButtons = {
         menu = true,
         save = false,
         reload = false,
-        tool = false,
+        tool = true,
         help = true
     },
     API = {},

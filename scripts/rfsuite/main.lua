@@ -143,6 +143,7 @@ The parameters include:
 - lcdHeight: Height of the LCD.
 - mspSignature - uses for mostly in sim to save esc type
 - telemetryType = sport or crsf
+- repairSensors: makes the background task repair sensors
 - 
 
 -- Every attempt should be made if using session vars to record them here with a nil
@@ -180,6 +181,7 @@ rfsuite.session.telemetryState = nil
 rfsuite.session.telemetryType = nil
 rfsuite.session.telemetryTypeChanged = nil
 rfsuite.session.telemetrySensor = nil
+rfsuite.session.repairSensors = false
 rfsuite.session.locale = system.getLocale()
 
 
