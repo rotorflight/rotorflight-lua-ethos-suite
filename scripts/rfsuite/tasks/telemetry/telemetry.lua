@@ -16,7 +16,6 @@
  
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
-
 ]] --
 local arg = {...}
 local config = arg[1]
@@ -60,7 +59,11 @@ Sensors included:
 - Adjustment Sensors (adj_f, adj_v)
 - PID and Rate Profiles (pid_profile, rate_profile)
 - Throttle Sensors (throttle_percent)
+
+ Check this url for some usefull id numbers when associated these sensors to the correct telemetry sensors "set telemetry_sensors"
+ https://github.com/rotorflight/rotorflight-firmware/blob/c7cad2c86fd833fe4bce76728f4914602614058d/src/main/telemetry/sensors.h#L34C15-L34C24
 ]]
+
 local sensorTable = {
     -- RSSI Sensors
     rssi = {
@@ -89,6 +92,7 @@ local sensorTable = {
     armflags = {
         name = "Arming Flags",
         mandatory = true,
+        set_telemetry_sensors = 90,
         sim = {
             {uid=0x5001, unit=nil, dec=nil, value=function() return rfsuite.utils.simSensors('armflags') end, min = 0, max = 2},
         },
@@ -106,6 +110,7 @@ local sensorTable = {
     voltage = {
         name = "Voltage",
         mandatory = true,
+        set_telemetry_sensors = 3,
         sim =  {
             {uid=0x5002, unit=UNIT_VOLT, dec=2, value=function() return rfsuite.utils.simSensors('voltage') end, min = 0, max = 3000},
         },
@@ -128,6 +133,7 @@ local sensorTable = {
     rpm = {
         name = "Head Speed",
         mandatory = true,
+        set_telemetry_sensors = 60,
         sim =  {
             {uid=0x5003, unit=UNIT_RPM, dec=nil, value=function() return rfsuite.utils.simSensors('rpm') end, min = 0, max = 2000},
         },
@@ -144,6 +150,7 @@ local sensorTable = {
     current = {
         name = "Current",
         mandatory = false,
+        set_telemetry_sensors = 4,
         sim =  {
             {uid=0x5004, unit=UNIT_AMPERE, dec=0, value=function() return rfsuite.utils.simSensors('current') end, min = 0, max = 25},
         },
@@ -162,6 +169,7 @@ local sensorTable = {
     temp_esc = {
         name = "ESC Temperature",
         mandatory = false,
+        set_telemetry_sensors = 23,
         sim =  {
             {uid=0x5005, unit=UNIT_DEGREE, dec=0, value=function() return rfsuite.utils.simSensors('temp_esc') end, min = 0, max = 100},
         },   
@@ -177,6 +185,7 @@ local sensorTable = {
     temp_mcu = {
         name = "MCU Temperature",
         mandatory = false,
+        set_telemetry_sensors = 52,
         sim =  {
             {uid=0x5006, unit=UNIT_DEGREE, dec=0, value=function() return rfsuite.utils.simSensors('temp_mcu') end, min = 0, max = 100},
         },         
@@ -194,6 +203,7 @@ local sensorTable = {
     fuel = {
         name = "Charge Level",
         mandatory = false,
+        set_telemetry_sensors = 6,
         sim =  {
             {uid=0x5007, unit=UNIT_PERCENT, dec=0, value=function() return rfsuite.utils.simSensors('fuel') end, min = 0, max = 100},
         },               
@@ -207,7 +217,8 @@ local sensorTable = {
     },
     consumption = {
         name = "Consumption",
-        mandatory = false,
+        mandatory = true,
+        set_telemetry_sensors = 5,
         sim =  {
             {uid=0x5008, unit=UNIT_MILLIAMPERE_HOUR, dec=0, value=function() return rfsuite.utils.simSensors('consumption') end, min = 0, max = 5000},
         },           
@@ -223,7 +234,8 @@ local sensorTable = {
     -- Flight Mode Sensors
     governor = {
         name = "Governor State",
-        mandatory = false,
+        mandatory = true,
+        set_telemetry_sensors = 93,
         sim =  {
             {uid=0x5009, unit=nil, dec=0, value=function() return rfsuite.utils.simSensors('governor') end, min = 0, max = 5},
         },        
@@ -240,7 +252,8 @@ local sensorTable = {
     -- Adjustment Sensors
     adj_f = {
         name = "Adj (Function)",
-        mandatory = false,
+        mandatory = true,
+        set_telemetry_sensors = 99,
         sim =  {
             {uid=0x5010, unit=nil, dec=0, value=function() return rfsuite.utils.simSensors('adj_f') end, min = 0, max = 10},
         },           
@@ -254,7 +267,8 @@ local sensorTable = {
     },
     adj_v = {
         name = "Adj (Value)",
-        mandatory = false,
+        mandatory = true,
+        --set_telemetry_sensors = 99,  (we dont do this because its grouped with the adjf sensor)
         sim =  {
             {uid=0x5011, unit=nil, dec=0, value=function() return rfsuite.utils.simSensors('adj_v') end, min = 0, max = 2000},
         },           
@@ -271,6 +285,7 @@ local sensorTable = {
     pid_profile = {
         name = "PID Profile",
         mandatory = true,
+        set_telemetry_sensors = 95,
         sim =  {
             {uid=0x5012, unit=nil, dec=0, value=function() return rfsuite.utils.simSensors('pid_profile') end, min = 0, max = 6},
         },            
@@ -286,6 +301,7 @@ local sensorTable = {
     rate_profile = {
         name = "Rate Profile",
         mandatory = true,
+        set_telemetry_sensors = 96,
         sim =  {
             {uid=0x5013, unit=nil, dec=0, value=function() return rfsuite.utils.simSensors('rate_profile') end, min = 0, max = 6},
         },            
@@ -303,6 +319,7 @@ local sensorTable = {
     throttle_percent = {
         name = "Throttle %",
         mandatory = true,
+        set_telemetry_sensors = 15,
         sim =  {
             {uid=0x5014, unit=nil, dec=0, value=function() return rfsuite.utils.simSensors('throttle_percent') end, min = 0, max = 100},
         },         
@@ -334,7 +351,7 @@ end
 function telemetry.listSensors()
     local sensorList = {}
 
-    for key, sensor in pairs(sensorTable) do table.insert(sensorList, {key = key, name = sensor.name, mandatory = sensor.mandatory}) end
+    for key, sensor in pairs(sensorTable) do table.insert(sensorList, {key = key, name = sensor.name, mandatory = sensor.mandatory, set_telemetry_sensors = sensor.set_telemetry_sensors }) end
 
     return sensorList
 end

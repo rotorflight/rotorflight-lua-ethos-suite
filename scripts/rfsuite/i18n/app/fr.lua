@@ -686,6 +686,7 @@ fr = {
             name    = "Capteurs",
             invalid = "INVALIDE",
             ok      = "OK",
+            msg_repair = "Activer les capteurs requis sur le contrôleur de vol ?",
             help_p1 = "Cet outil tente de lister tous les capteurs que vous ne recevez pas dans une liste concise.",
             help_p2 = "Utilisez cet outil pour vous assurer que vous envoyez les bons capteurs.",
         },

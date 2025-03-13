@@ -689,6 +689,7 @@ en = {
             name           = "Sensors",
             invalid = "INVALID",
             ok      = "OK",
+            msg_repair = "Enable required sensors on flight controller?",
             help_p1        = "This tool attempts to list all the sensors that you are not receiving in a concise list.",
             help_p2        = "Use this tool to ensure you are sending the correct sensors.",
         },
