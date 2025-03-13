@@ -23,11 +23,11 @@ local de = {
     RECOVERY  = "ERHOLUNG",
     ACTIVE    = "AKTIV",
     THROFF    = "GAS-AUS",
-    LOSTHS    = "VERLOREN-HS",
+    LOSTHS    = "KEIN SIGNAL",
     AUTOROT   = "AUTOROTATION",
     BAILOUT   = "NOTAUS",
     DISABLED  = "DEAKTIVIERT",
-    DISARMED  = "ENTWAFFNET"
+    DISARMED  = "DISARMED"
 }
 
 return de
