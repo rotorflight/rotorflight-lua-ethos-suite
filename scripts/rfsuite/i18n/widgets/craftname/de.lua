@@ -16,8 +16,8 @@
 ]] --
 
 local de = {
-    title = "FLUGGERÄT NAME",
-    txt_enter_craft_name = "Fluggerätname eingeben",
+    title = "FLUGGERAET NAME",
+    txt_enter_craft_name = "Fluggeraetname eingeben",
     txt_save = "Speichern",
     txt_cancel = "Abbrechen"
 }
