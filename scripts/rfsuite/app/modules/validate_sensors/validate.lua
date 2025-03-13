@@ -62,6 +62,24 @@ local function postRead(self)
     rfsuite.utils.log("postRead","debug")
 end
 
+
+local function rebootFC()
+    local RAPI = rfsuite.tasks.msp.api.load("REBOOT")
+    RAPI.setCompleteHandler(function(self)
+        rfsuite.utils.log("Rebooting FC","info")
+    end)
+    RAPI.write()
+end
+
+local function applySettings()
+    local EAPI = rfsuite.tasks.msp.api.load("EEPROM_WRITE")
+    EAPI.setCompleteHandler(function(self)
+        rfsuite.utils.log("Writing to EEPROM","info")
+        rebootFC()
+    end)
+    EAPI.write()
+end
+
 -- Function to check if sensor exists in telemetry slots
 function checkIfSensorExists(value, data)
     for key, v in pairs(data) do
@@ -112,21 +130,72 @@ local function wakeup()
     if data ~= nil then
         local sensorList = rfsuite.tasks.telemetry.listSensors()
 
-        -- extract list of sensors we require
+        -- Extract list of sensors we require
         local requiredSensors = {}
+        local newSensorList = {}  -- Use an array to maintain insertion order
+
         for i, v in pairs(sensorList) do
             local name = v['name']
             local sensor_id = v['set_telemetry_sensors']
             if sensor_id ~= nil then
-                if not checkIfSensorExists(sensor_id, data) then
+                if not checkIfSensorExists(sensor_id, data) and v ~= 0 then
                     requiredSensors[i] = v
+                    table.insert(newSensorList, v)  -- Maintain order
                 end
             end    
         end
 
-        for i,v in pairs(data) do
-            print(i,v)
+        local existingSensors = {}
+        for i, v in pairs(data) do
+            if string.match(i, "^telem_sensor_slot_%d+$") and v ~= 0 then  -- Exclude zero values
+                existingSensors[i] = v
+                table.insert(newSensorList, v)  -- Maintain order
+            end    
         end    
+
+        -- Count elements
+        local count = 0
+        for _, v in ipairs(newSensorList) do  -- Use ipairs to iterate in order
+            count = count + 1
+        end
+
+        if count <= 40 then
+            local WRITEAPI = rfsuite.tasks.msp.api.load("TELEMETRY_CONFIG")
+            for i, v in pairs(data) do
+                if not string.match(i, "^telem_sensor_slot_%d+$")  then
+                    rfsuite.utils.log("Writing sensor " .. i .. " with value " .. v,"debug")
+                    WRITEAPI.setValue(i, v)
+                end    
+            end    
+
+            local i = 1
+            for _, v in ipairs(newSensorList) do  -- Use ipairs to iterate in order
+                local tgt = "telem_sensor_slot_" .. i
+                rfsuite.utils.log("Writing sensor " .. tgt .. " with value " .. v, "debug")
+                WRITEAPI.setValue(tgt, v)
+                i = i + 1
+            end
+            
+            -- Fill the remaining slots with 0
+            while i <= 40 do
+                local tgt = "telem_sensor_slot_" .. i
+                rfsuite.utils.log("Writing sensor " .. tgt .. " with value 0", "debug")
+                WRITEAPI.setValue(tgt, 0)
+                i = i + 1
+            end
+
+            WRITEAPI.setCompleteHandler(function(self)
+                applySettings()
+            end)
+
+            WRITEAPI.write()
+
+
+        else
+            rfsuite.utils.log("Too many sensors to repair","info")
+        end
+
+
         repairSensors = false
     end    
 
