@@ -8,13 +8,14 @@ local buttonW = 100
 local buttonWs = buttonW - (buttonW * 20) / 100
 local x = w - 15
 
-local data = nil
-
 local displayPos = {x = x - buttonW - buttonWs - 5 - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = 100, h = rfsuite.app.radio.navbuttonHeight}
 
 local invalidSensors = rfsuite.tasks.telemetry.validateSensors()
 
 local repairSensors = false
+
+local progressLoader
+local progressLoaderCounter = 0
 
 function sortSensorListByName(sensorList)
     table.sort(sensorList, function(a, b)
@@ -64,7 +65,9 @@ end
 
 
 local function rebootFC()
+
     local RAPI = rfsuite.tasks.msp.api.load("REBOOT")
+    RAPI.setUUID("123e4567-e89b-12d3-a456-426614174000")
     RAPI.setCompleteHandler(function(self)
         rfsuite.utils.log("Rebooting FC","info")
     end)
@@ -73,21 +76,80 @@ end
 
 local function applySettings()
     local EAPI = rfsuite.tasks.msp.api.load("EEPROM_WRITE")
+    EAPI.setUUID("550e8400-e29b-41d4-a716-446655440000")
     EAPI.setCompleteHandler(function(self)
         rfsuite.utils.log("Writing to EEPROM","info")
         rebootFC()
     end)
     EAPI.write()
+
 end
 
--- Function to check if sensor exists in telemetry slots
-function checkIfSensorExists(value, data)
-    for key, v in pairs(data) do
-        if string.match(key, "^telem_sensor_slot_%d+$") and v == value then
-            return true
+
+local function runRepair(data)
+
+    local sensorList = rfsuite.tasks.telemetry.listSensors()
+    local newSensorList = {}
+
+    -- Grab list of required sensors
+    local count = 1
+    for _, v in pairs(sensorList) do
+        local sensor_id = v['set_telemetry_sensors']
+        if sensor_id ~= nil and not newSensorList[sensor_id] then
+            newSensorList[sensor_id] = true
+            count = count + 1
+        end    
+    end   
+
+    -- Include currently supplied sensors (excluding zeros)
+    for i, v in pairs(data['parsed']) do
+        if string.match(i, "^telem_sensor_slot_%d+$") and v ~= 0 then
+            local sensor_id = v
+            if sensor_id ~= nil and not newSensorList[sensor_id] then
+                newSensorList[sensor_id] = true
+                count = count + 1
+            end    
+        end    
+    end       
+
+
+    local WRITEAPI = rfsuite.tasks.msp.api.load("TELEMETRY_CONFIG")
+    WRITEAPI.setUUID("123e4567-e89b-12d3-a456-426614174000")
+    WRITEAPI.setCompleteHandler(function(self, buf)
+        applySettings()
+    end)
+
+    local buffer = data['buffer']  -- Existing buffer
+    local sensorIndex = 13  -- Start at byte 13 (1-based indexing)
+
+    -- Convert newSensorList keys to an array (since Lua tables are not ordered)
+    local sortedSensorIds = {}
+    for sensor_id, _ in pairs(newSensorList) do
+        table.insert(sortedSensorIds, sensor_id)
+    end
+
+    -- Sort sensor IDs to ensure consistency
+    table.sort(sortedSensorIds)
+
+    -- Insert new sensors into buffer
+    for _, sensor_id in ipairs(sortedSensorIds) do
+        if sensorIndex <= 52 then  -- 13 bytes + 40 sensor slots = 53 max (1-based)
+            buffer[sensorIndex] = sensor_id
+            sensorIndex = sensorIndex + 1
+        else
+            break  -- Stop if buffer limit is reached
         end
     end
-    return false
+
+    -- Fill remaining slots with zeros
+    while sensorIndex <= 52 do
+        buffer[sensorIndex] = 0
+        sensorIndex = sensorIndex + 1
+    end
+
+    -- Send updated buffer
+    WRITEAPI.write(buffer)
+
 end
 
 
@@ -117,93 +179,39 @@ local function wakeup()
   -- run process to repair all sensors
   if repairSensors == true then
 
-    if data == nil then
+        -- show the progress dialog
+        progressLoader = form.openProgressDialog(rfsuite.i18n.get("app.msg_saving"), rfsuite.i18n.get("app.msg_saving_to_fbl"))
+        progressLoader:closeAllowed(false)
+        progressLoaderCounter = 0
+
         API = rfsuite.tasks.msp.api.load("TELEMETRY_CONFIG")
         API.setUUID("550e8400-e29b-41d4-a716-446655440000")
         API.setCompleteHandler(function(self, buf)
-            data = API.data().parsed
+            local data = API.data()
+            if data['parsed'] then
+                runRepair(data)
+            end
         end)
         API.read()
+        repairSensors = false
+    end  
+
+    -- enable/disable the tool button
+    if rfsuite.session.apiVersion < 12.08 then
+        rfsuite.app.formNavigationFields['tool']:enable(false)
+    else
+        rfsuite.app.formNavigationFields['tool']:enable(true)
     end
 
-    -- we now have the valid msp data stream
-    if data ~= nil then
-        local sensorList = rfsuite.tasks.telemetry.listSensors()
-
-        -- Extract list of sensors we require
-        local requiredSensors = {}
-        local newSensorList = {}  -- Use an array to maintain insertion order
-
-        for i, v in pairs(sensorList) do
-            local name = v['name']
-            local sensor_id = v['set_telemetry_sensors']
-            if sensor_id ~= nil then
-                if not checkIfSensorExists(sensor_id, data) and v ~= 0 then
-                    requiredSensors[i] = v
-                    table.insert(newSensorList, v)  -- Maintain order
-                end
-            end    
-        end
-
-        local existingSensors = {}
-        for i, v in pairs(data) do
-            if string.match(i, "^telem_sensor_slot_%d+$") and v ~= 0 then  -- Exclude zero values
-                existingSensors[i] = v
-                table.insert(newSensorList, v)  -- Maintain order
-            end    
+    if progressLoader then
+        if progressLoaderCounter < 100 then
+            progressLoaderCounter = progressLoaderCounter + 5
+            progressLoader:value(progressLoaderCounter)
+        else    
+            progressLoader:close()    
+            progressLoader = nil
         end    
-
-        -- Count elements
-        local count = 0
-        for _, v in ipairs(newSensorList) do  -- Use ipairs to iterate in order
-            count = count + 1
-        end
-
-        if count <= 40 then
-            local WRITEAPI = rfsuite.tasks.msp.api.load("TELEMETRY_CONFIG")
-            for i, v in pairs(data) do
-                if not string.match(i, "^telem_sensor_slot_%d+$")  then
-                    rfsuite.utils.log("Writing sensor " .. i .. " with value " .. v,"debug")
-                    WRITEAPI.setValue(i, v)
-                end    
-            end    
-
-            local i = 1
-            for _, v in ipairs(newSensorList) do  -- Use ipairs to iterate in order
-                local tgt = "telem_sensor_slot_" .. i
-                rfsuite.utils.log("Writing sensor " .. tgt .. " with value " .. v, "debug")
-                WRITEAPI.setValue(tgt, v)
-                i = i + 1
-            end
-            
-            -- Fill the remaining slots with 0
-            while i <= 40 do
-                local tgt = "telem_sensor_slot_" .. i
-                rfsuite.utils.log("Writing sensor " .. tgt .. " with value 0", "debug")
-                WRITEAPI.setValue(tgt, 0)
-                i = i + 1
-            end
-
-            WRITEAPI.setCompleteHandler(function(self)
-                applySettings()
-            end)
-
-            WRITEAPI.write()
-
-
-        else
-            rfsuite.utils.log("Too many sensors to repair","info")
-        end
-
-
-        repairSensors = false
     end    
-
-
-end  
-
-
-
 
 end
 
