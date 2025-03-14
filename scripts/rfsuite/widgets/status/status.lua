@@ -2331,7 +2331,7 @@ function status.configure(widget)
         status.timeralarmParam = newValue
     end)
 
-    line = timerpanel:addLine("Vibrate")
+    line = timerpanel:addLine(rfsuite.i18n.get("widgets.status.txt_vibrate"))
     form.addBooleanField(line, nil, function()
         return status.timeralarmVibrateParam
     end, function(newValue)
