@@ -689,6 +689,8 @@ nl = {
             name           = "Sensors",
             invalid = "INVALID",
             ok      = "OK",
+            msg_repair     = "Zet de benodigde sensoren aan in de vliegcontroller?",
+            msg_repair_fin = "Is de vliegcontroller geconfigureerd? Het is waarschijnlijk benodigd om opnieuw 'Vind nieuwe sensoren' te gebruiken",
             help_p1        = "Deze tool probeert een beknopt overzicht te geven van alle sensoren die u niet ontvangt.",
             help_p2        = "Met deze tool kunt u controleren of u de juiste sensoren verzendt.",
         },
