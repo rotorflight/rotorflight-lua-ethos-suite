@@ -20,7 +20,7 @@ local MSP_API_CMD_READ = 92 -- Command identifier
 local MSP_API_CMD_WRITE = 93 -- Command identifier 
 local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write 
 
-local gyroFilterType = {[0]="NONE", [1]="1ST", [2]="2ND"}
+local gyroFilterType = {[0]=rfsuite.i18n.get("api.FILTER_CONFIG.tbl_none"), [1]=rfsuite.i18n.get("api.FILTER_CONFIG.tbl_1st"), [2]=rfsuite.i18n.get("api.FILTER_CONFIG.tbl_2nd")}
 
 local MSP_API_STRUCTURE_READ_DATA = {
     { field = "gyro_hardware_lpf",        type = "U8",  apiVersion = 12.07, simResponse = {0 }},          
