@@ -50,7 +50,10 @@ en = {
         gyro_soft_notch_hz_2 = "Center frequency to which the notch is applied.",
         gyro_soft_notch_cutoff_2 = "Width of the notch filter in Hz.",
         gyro_lpf1_dyn_min_hz = "Dynamic filter min cutoff in Hz.",
-        gyro_lpf1_dyn_max_hz = "Dynamic filter max cutoff in Hz."            
+        gyro_lpf1_dyn_max_hz = "Dynamic filter max cutoff in Hz.",
+        tbl_none = "NONE",
+        tbl_1st = "1ST",
+        tbl_2nd = "2ND",            
     },
     GOVERNOR_CONFIG = {
         gov_startup_time = "Time constant for slow startup, in seconds, measuring the time from zero to full headspeed.",
