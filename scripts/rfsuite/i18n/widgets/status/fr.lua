@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * Note. Some icons have been sourced from https://www.flaticon.com/
-]] --
+]] --scripts\rfsuite\i18n\api\fr.lua
 
 local fr = {
     title_voltage = "TENSION",
@@ -94,11 +94,11 @@ local fr = {
     txt_medium = "Moyen",
     txt_rfgovernor = "Gouverneur Rotorflight",
     txt_extgovernor = "Gouverneur externe",
-    txt_sagcompensation = "Compensation de l'affaissement",
+    txt_sagcompensation = "Comp. de l'affaissement",
     txt_gimbalmonitoring = "Surveillance des sticks",
     txt_stickcutoff = "Coupure du manche",
     txt_alertonrpmdiff = "Alerte sur difference de TR/MIN",
-    txt_alertifdifflt = "Alerte si la difference est < que",
+    txt_alertifdifflt = "Alerte si diff. est < que",
     txt_announcement_interval = "Intervalle d'annonce",
     txt_calcfuel_local  = "Calculer le carburant localement",
     txt_warnsensors = "Avertir si capteurs manquants",
