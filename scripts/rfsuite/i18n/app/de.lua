@@ -689,6 +689,7 @@ de = {
             name           = "Sensoren",
             invalid        = "UNGUELTIG",
             ok             = "OK",
+            msg_repair     = "Erforderliche Sensoren auf dem Flugcontroller aktivieren?",
             help_p1        = "Dieses Tool versucht, eine kurze Liste aller Sensoren zu erstellen, die nicht empfangen werden.",
             help_p2        = "Verwenden Sie dieses Tool, um sicherzustellen, dass Sie die richtigen Sensoren senden.",
         },
