@@ -3,7 +3,7 @@ local arg = {...}
 
 local currentProfileChecked = false
 local firstLoad = true
-local minMaxIndex
+local minMaxIndex = 1
 -- local sbus_out_frame_rate
 
 local ch = rfsuite.currentSbusServoIndex
@@ -30,7 +30,7 @@ local mspapi = {
         labels = {
         },
         fields = {
-            {t = rfsuite.i18n.get("app.modules.sbusout.type"), min=0, max = 16, mspapi = 1, apikey="Type_"..ch+1, table = {rfsuite.i18n.get("app.modules.sbusout.receiver"), rfsuite.i18n.get("app.modules.sbusout.mixer"), rfsuite.i18n.get("app.modules.sbusout.servo"), rfsuite.i18n.get("app.modules.sbusout.motor")}, postEdit = function(self) self.setMinMaxIndex(self, true) end},
+            {t = rfsuite.i18n.get("app.modules.sbusout.type"), min=0, max = 16, mspapi = 1, apikey="Type_"..ch+1, table = {[0] = rfsuite.i18n.get("app.modules.sbusout.receiver"), rfsuite.i18n.get("app.modules.sbusout.mixer"), rfsuite.i18n.get("app.modules.sbusout.servo"), rfsuite.i18n.get("app.modules.sbusout.motor")}, postEdit = function(self) self.setMinMaxIndex(self, true) end},
             {t = rfsuite.i18n.get("app.modules.sbusout.source"), min=0, max = 15, mspapi = 1, apikey = "Index_"..ch+1, help = "sbusOutSource"},
             {t = rfsuite.i18n.get("app.modules.sbusout.min"), min = -2000, max = 2000, mspapi = 1, apikey="RangeLow_"..ch+1, help = "sbusOutMin"},
             {t = rfsuite.i18n.get("app.modules.sbusout.max"), min = -2000, max = 2000, mspapi = 1, apikey="RangeHigh_"..ch+1 ,help = "sbusOutMax"},
@@ -78,7 +78,8 @@ end
 
 -- function to set min and max value based on index.
 local function setMinMaxIndex(self)
-    minMaxIndex = math.floor(rfsuite.app.Page.fields[1].value)
+    minMaxIndex = math.floor(rfsuite.app.Page.fields[1].value + 1) 
+
 
     if firstLoad == true then
         firstLoad = false
@@ -170,8 +171,12 @@ local function wakeup()
         -- to avoid a page reload we contrain the field values using a wakeup call.
         -- we could use postEdit on the fields line - but this does not update until 
         -- you exit the field!
-        local currentMin = minmax[minMaxIndex].min
-        local currentMax = minmax[minMaxIndex].max
+
+        if minmax == nil then return end
+
+
+        local currentMin = minmax[minMaxIndex].min 
+        local currentMax = minmax[minMaxIndex].max 
         local currentSourceMax = minmax[minMaxIndex].sourceMax
 
  
