@@ -178,7 +178,8 @@ local sensorTable = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0418}
         },
         crsf = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A0}
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A0},
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1047},
         },
         crsfLegacy = {"GPS Speed"}
     },
