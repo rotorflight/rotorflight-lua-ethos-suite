@@ -391,7 +391,7 @@ local mspEepromWrite = {
         else
             invalidatePages()
         end
-
+        collectgarbage()
     end,
     errorHandler = function(self)
         app.triggers.closeSave = true

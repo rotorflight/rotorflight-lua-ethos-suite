@@ -92,10 +92,10 @@ local es = {
                 name =              "Batería",
                 max_cell_voltage =  "Voltaje Máx Celda",
                 full_cell_voltage = "Voltaje de Celda llena",
-                warn_cell_voltage = "Advertencia Voltaje de Celda",
+                warn_cell_voltage = "Advert Voltaje de Celda",
                 min_cell_voltage =  "Voltaje Mín Celda",
                 battery_capacity =  "Capacidad Batería",
-                cell_count =        "Número de Celdas",
+                cell_count =        "Nro de Celdas",
                 help_p1 =           "La configuración de celdas se utiliza para que el controlador de vuelo pueda monitorear el voltaje de la batería y generar advertencias cuando esté por debajo de cierto nivel.",
             },
             copyprofiles = {

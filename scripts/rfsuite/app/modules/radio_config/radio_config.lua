@@ -11,7 +11,7 @@ local mspapi = {
         },
         fields = {
             { t = rfsuite.i18n.get("app.modules.radio_config.center"),     label = 1, inline = 2, mspapi = 1, apikey = "rc_center"       },
-            { t = rfsuite.i18n.get("app.modules.radio_config.deflection"), t2 = "Deflect", label = 1, inline = 1, mspapi = 1, apikey = "rc_deflection"   },
+            { t = rfsuite.i18n.get("app.modules.radio_config.deflection"), label = 1, inline = 1, mspapi = 1, apikey = "rc_deflection"   },
             { t = rfsuite.i18n.get("app.modules.radio_config.arming"),     label = 2, inline = 2, mspapi = 1, apikey = "rc_arm_throttle" },
             { t = rfsuite.i18n.get("app.modules.radio_config.min_throttle"),        label = 2, inline = 1, mspapi = 1, apikey = "rc_min_throttle" },
             { t = rfsuite.i18n.get("app.modules.radio_config.max_throttle"),        label = 3, inline = 1, mspapi = 1, apikey = "rc_max_throttle" },
