@@ -147,6 +147,7 @@ function tasks.wakeup()
         rfsuite.utils.log("All tasks complete.", "info")
         completionNotified = true
         rfsuite.utils.playFileCommon("beep.wav")
+        collectgarbage()
     end
 end
 
