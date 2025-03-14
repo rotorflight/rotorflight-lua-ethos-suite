@@ -50,9 +50,9 @@ fr = {
         gyro_soft_notch_hz_2 = "Frequence centrale a laquelle le notch est applique.",
         gyro_soft_notch_cutoff_2 = "Largeur du filtre notch en Hz.",
         gyro_lpf1_dyn_min_hz = "Filtre dynamique - frequence de coupure minimale en Hz.",
-        gyro_lpf1_dyn_max_hz = "Filtre dynamique - frequence de coupure maximale en Hz.",
+        gyro_lpf1_dyn_max_hz = "Filtre dynamique - frequence de coupure maximale en Hz."
         tbl_none = "AUCUN",
-        tbl_1st = "1ER",
+        tbl_1st = "1ER"
         tbl_2nd = "2EME"           
     },
     GOVERNOR_CONFIG = {
