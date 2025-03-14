@@ -2472,7 +2472,7 @@ function status.configure(widget)
         status.switchratesmediumParam = value
     end)
 
-    line = switchpanel:addLine(rfsuite.i18n.get("widgets.status.txt_ratehigh"))
+    line = switchpanel:addLine(rfsuite.i18n.get("widgets.status.txt_rateshigh"))
     form.addSwitchField(line, nil, function()
         return status.switchrateshighParam
     end, function(value)
