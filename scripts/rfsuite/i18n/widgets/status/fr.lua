@@ -108,8 +108,8 @@ local fr = {
     txt_unknown = "INCONNU",
     txt_displaysize_invalid = "TAILLE D'AFFICHAGE INVALIDE",
     txt_initialising    = "INITIALISATION",
-    txt_max = "max",
-    txt_min = "min",
+    txt_max = "MAX",
+    txt_min = "MIN",
 
     layoutOptions = {
             TIMER = "MINUTERIE",
