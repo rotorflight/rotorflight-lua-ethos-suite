@@ -16,6 +16,8 @@ local repairSensors = false
 
 local progressLoader
 local progressLoaderCounter = 0
+local doDiscoverNotify = false
+
 
 function sortSensorListByName(sensorList)
     table.sort(sensorList, function(a, b)
@@ -158,6 +160,32 @@ local function wakeup()
     -- prevent wakeup running until after initialised
     if enableWakeup == false then return end
 
+    if doDiscoverNotify == true then
+
+        doDiscoverNotify = false
+
+        local buttons = {{
+            label = rfsuite.i18n.get("app.btn_ok"),
+            action = function()
+                return true
+            end
+        }}
+    
+        form.openDialog({
+            width = nil,
+            title =  rfsuite.i18n.get("app.modules.validate_sensors.name"),
+            message = rfsuite.i18n.get("app.modules.validate_sensors.msg_repair_fin"),
+            buttons = buttons,
+            wakeup = function()
+            end,
+            paint = function()
+            end,
+            options = TEXT_LEFT
+        })
+
+    end
+
+
     -- check for updates
     invalidSensors = rfsuite.tasks.telemetry.validateSensors()
 
@@ -210,6 +238,10 @@ local function wakeup()
         else    
             progressLoader:close()    
             progressLoader = nil
+
+            -- notify user to do a discover sensors
+            doDiscoverNotify = true
+
         end    
     end    
 
