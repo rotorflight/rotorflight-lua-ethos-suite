@@ -22,12 +22,12 @@ local fr = {
     SPOOLUP   = "ACCELERATION",
     RECOVERY  = "RECUPERATION",
     ACTIVE    = "ACTIF",
-    THROFF    = "THR-ARRET",
-    LOSTHS    = "PERTE-HS",
+    THROFF    = "COUPURE MOTEUR",
+    LOSTHS    = "PERTE DES TOURS",
     AUTOROT   = "AUTOROTATION",
     BAILOUT   = "SAUVETAGE",
-    DISABLED  = "DESACTIVE",
-    DISARMED  = "DESARME"
+    DISABLED  = "DESACTIVER",
+    DISARMED  = "DESARMER"
 }
 
-return fr
+return fr 
