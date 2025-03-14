@@ -50,7 +50,10 @@ local es = {
         gyro_soft_notch_hz_2 = "Frecuencia central aplicada al punto.",
         gyro_soft_notch_cutoff_2 = "Ancho del filtro para el punto en Hz.",
         gyro_lpf1_dyn_min_hz = "Corte min del filtro dinamico en Hz.",
-        gyro_lpf1_dyn_max_hz = "Corte max del filtro dinamico en Hz."
+        gyro_lpf1_dyn_max_hz = "Corte max del filtro dinamico en Hz.",
+		    tbl_none = "NINGUNO",
+        tbl_1st = "1RO",
+        tbl_2nd = "2DO",
     },
     GOVERNOR_CONFIG = {
         gov_startup_time = "Constante de tiempo para inicio lento, en segundos, midiendo desde cero hasta la velocidad maxima del rotor.",
