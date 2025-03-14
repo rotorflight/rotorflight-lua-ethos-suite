@@ -92,10 +92,10 @@ local es = {
                 name =              "Batería",
                 max_cell_voltage =  "Voltaje Máx Celda",
                 full_cell_voltage = "Voltaje de Celda llena",
-                warn_cell_voltage = "Advert Voltaje de Celda",
+                warn_cell_voltage = "Advertencia Voltaje de Celda",
                 min_cell_voltage =  "Voltaje Mín Celda",
                 battery_capacity =  "Capacidad Batería",
-                cell_count =        "Nro de Celdas",
+                cell_count =        "Número de Celdas",
                 help_p1 =           "La configuración de celdas se utiliza para que el controlador de vuelo pueda monitorear el voltaje de la batería y generar advertencias cuando esté por debajo de cierto nivel.",
             },
             copyprofiles = {
@@ -685,15 +685,15 @@ local es = {
                 help_p1                     = "Ajuste de enlaces: Se utiliza para corregir pequeños problemas de nivelación en el swashplate. Normalmente se utiliza cuando los brazos del swashplate no son ajustables.",
                 help_p2                     = "Cola motorizada: Si tiene una cola motorizada, utilice este parámetro para configurar la velocidad mínima de ralentí a la que el heli no gira.",
             },
-			validate_sensors = {
-				name           = "Sensores",
-				invalid        = "INVALIDOS",
-				ok             = "OK",
-				msg_repair     = "Activa los sensores necesarios en el controlador de vuelo?",
-				msg_repair_fin = "El controlador de vuelo está configurado? Puede que necesite ejecutar 'Descubrir Sensores' para ver los cambios.",
-				help_p1        = "Esta herramienta intenta listar todos los sensores necesarios que faltan.",
-				help_p2        = "Utilice esta herramienta para asegurar que está enviando los sensores que corresponde.",
-			},
+            validate_sensors = {
+                name           = "Sensores",
+                invalid        = "INVALIDOS",
+                ok             = "OK",
+                msg_repair     = "Activa los sensores necesarios en el controlador de vuelo?",
+                msg_repair_fin = "El controlador de vuelo está configurado? Puede que necesite ejecutar 'Descubrir Sensores' para ver los cambios.",
+                help_p1        = "Esta herramienta intenta listar todos los sensores necesarios que faltan.",
+                help_p2        = "Utilice esta herramienta para asegurar que está enviando los sensores que corresponde.",
+            },
         },
 }
 
