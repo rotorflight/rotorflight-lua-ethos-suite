@@ -2395,7 +2395,7 @@ function status.configure(widget)
 
     -- ALERT ON
     line = batterypanel:addLine(rfsuite.i18n.get("widgets.status.txt_play_alerton"))
-    form.addChoiceField(line, nil, {{rfsuite.i18n.get("widgets.status.txt_low_voltage"), 0}, {rfsuite.i18n.get("widgets.status.txt_lowfuel"), 1}, {rfsuite.i18n.get("widgets.status.txt_low_fuel_voltage"), 2}, {rfsuite.i18n.get("widgets.status.txt_disabled"), 3}}, function()
+    form.addChoiceField(line, nil, {{rfsuite.i18n.get("widgets.status.txt_low_voltage"), 0}, {rfsuite.i18n.get("widgets.status.txt_low_fuel"), 1}, {rfsuite.i18n.get("widgets.status.txt_low_fuel_voltage"), 2}, {rfsuite.i18n.get("widgets.status.txt_disabled"), 3}}, function()
         return status.alertonParam
     end, function(newValue)
         if newValue == 3 then
