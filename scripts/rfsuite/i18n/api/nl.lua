@@ -50,7 +50,10 @@ nl = {
         gyro_soft_notch_hz_2 = "Center frequentie waar het filter wordt toegepast.",
         gyro_soft_notch_cutoff_2 = "Breedte van de het filter in Hz.",
         gyro_lpf1_dyn_min_hz = "Dynamisch filter min cutoff in Hz.",
-        gyro_lpf1_dyn_max_hz = "Dynamisch filter max cutoff in Hz."            
+        gyro_lpf1_dyn_max_hz = "Dynamisch filter max cutoff in Hz.",
+        tbl_none = "Geen",
+        tbl_1st = "1ST",
+        tbl_2nd = "2ND",
     },
     GOVERNOR_CONFIG = {
         gov_startup_time = "Tijdconstante voor een langzame opstart in seconden, van nul tot volledig rotortoerental, zonder rpm signaal.",
