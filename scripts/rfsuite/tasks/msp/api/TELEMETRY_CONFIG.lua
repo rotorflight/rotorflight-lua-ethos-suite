@@ -20,7 +20,12 @@ local MSP_API_CMD_READ = 73 -- Command identifier
 local MSP_API_CMD_WRITE = 74 -- Command identifier 
 local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write 
 
--- Define the MSP response data structures with simResponse
+-- Check this url for some usefull id numbers when associated these sensors to the correct telemetry sensors "set telemetry_sensors"
+-- https://github.com/rotorflight/rotorflight-firmware/blob/c7cad2c86fd833fe4bce76728f4914602614058d/src/main/telemetry/sensors.h#L34C15-L34C24
+
+-- in tasks/telemetry/telemetry.lua we specify set_telemetry_sensors with a map to these id's and use them
+-- when filling telem_sensor_slots.
+
 -- Define the MSP response data structures with simResponse
 local MSP_API_STRUCTURE_READ_DATA = {
     {field = "telemetry_inverted",        type = "U8",  apiVersion = 12.06 , simResponse = {0}},

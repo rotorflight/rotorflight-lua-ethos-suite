@@ -687,8 +687,10 @@ en = {
         },
         validate_sensors = {
             name           = "Sensors",
-            invalid = "INVALID",
-            ok      = "OK",
+            invalid        = "INVALID",
+            ok             = "OK",
+            msg_repair     = "Enable required sensors on flight controller?",
+            msg_repair_fin = "The flight controller has been configured? You may need to perform a discover sensors to see the changes.",
             help_p1        = "This tool attempts to list all the sensors that you are not receiving in a concise list.",
             help_p2        = "Use this tool to ensure you are sending the correct sensors.",
         },
