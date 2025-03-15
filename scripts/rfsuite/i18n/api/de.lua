@@ -50,7 +50,10 @@ de = {
         gyro_soft_notch_hz_2 = "Zentralfrequenz, auf die der Notch-Filter angewendet wird.",
         gyro_soft_notch_cutoff_2 = "Breite des Notch-Filters in Hz.",
         gyro_lpf1_dyn_min_hz = "Dynamischer Filter – minimale Grenzfrequenz in Hz.",
-        gyro_lpf1_dyn_max_hz = "Dynamischer Filter – maximale Grenzfrequenz in Hz."            
+        gyro_lpf1_dyn_max_hz = "Dynamischer Filter – maximale Grenzfrequenz in Hz.",
+        tbl_none = "KEINE",
+        tbl_1st = "1.",
+        tbl_2nd = "2.",
     },
     GOVERNOR_CONFIG = {
         gov_startup_time = "Zeitkonstante fuer den langsamen Start in Sekunden, gemessen von null bis zur vollen Drehzahl.",
