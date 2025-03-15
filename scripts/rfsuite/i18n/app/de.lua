@@ -692,7 +692,7 @@ de = {
             invalid        = "UNGUELTIG",
             ok             = "OK",
             msg_repair     = "Erforderliche Sensoren auf dem Flugcontroller aktivieren?",
-            msg_repair_fin = "Der Flugcontroller wurde konfiguriert? Moeglicherweise muessen Sie Sensoren neu suchen, um die Aenderungen zu sehen."
+            msg_repair_fin = "Der Flugcontroller wurde konfiguriert? Moeglicherweise muessen Sie Sensoren neu suchen, um die Aenderungen zu sehen.",
             help_p1        = "Dieses Tool versucht, eine kurze Liste aller Sensoren zu erstellen, die nicht empfangen werden.",
             help_p2        = "Verwenden Sie dieses Tool, um sicherzustellen, dass Sie die richtigen Sensoren senden.",
         },
