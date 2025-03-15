@@ -110,6 +110,7 @@ local fr = {
     txt_initialising    = "INITIALISATION",
     txt_max = "MAX",
     txt_min = "MIN",
+    txt_headspeed = "Tours Moteurs",
 
     layoutOptions = {
             TIMER = "MINUTERIE",
