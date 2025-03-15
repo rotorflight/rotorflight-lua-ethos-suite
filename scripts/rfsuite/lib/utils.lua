@@ -23,6 +23,36 @@ local utils = {}
 local arg = {...}
 local config = arg[1]
 
+
+function utils.logRotorFlightBanner()
+    local version = rfsuite.config.Version or "Unknown Version"
+
+    local banner = {
+        "===============================================",
+        "    ROTORFLIGHT RFSUITE - Version: " .. version,
+        "===============================================",
+        "   ______.........--=T=--.........______",
+        "      .             |:|",
+        " :-. //           /\"\"\"\"\"\"-.",
+        " ': '-._____..--\"\"(\"\"\"\"\"\")()`---.__",
+        "  /:   _..__   ''  \":\"\"\"\"'[] |\"\"`\\\\",
+        "  ': :'     `-.     _:._     '\"\"\"\" :",
+        "   ::          '--=:____:.___....-\"",
+        "                     O\"       O\"",
+        "===============================================",
+        "  Rotorflight is free software licensed under",
+        "  the GNU General Public License version 3.0",
+        "  https://www.gnu.org/licenses/gpl-3.0.en.html",
+        "                                              ",
+        " For more information, visit rotorflight.com",
+        "==============================================="
+    }
+
+    for _, line in ipairs(banner) do
+        rfsuite.utils.log(line, "info")
+    end
+end
+
 function utils.sanitize_filename(str)
     if not str then return nil end
     return str:match("^%s*(.-)%s*$"):gsub('[\\/:"*?<>|]', '')
