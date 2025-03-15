@@ -27,7 +27,7 @@ local LCD_W, LCD_H = lcd.getWindowSize()
 local LCD_MINH4IMAGE = 130
 
 -- error function
-function screenError(msg)
+local function screenError(msg)
     local w, h = lcd.getWindowSize()
     local isDarkMode = lcd.darkMode()
 
@@ -104,20 +104,6 @@ function rf2craftimage.configure(widget)
     return widget
 end
 
--- Read function
-function rf2craftimage.read(widget)
-
-end
-
--- Write function
-function rf2craftimage.write(widget)
-
-end
-
--- Event function
-function rf2craftimage.event(widget, event)
-    -- Placeholder for widget event logic
-end
 
 -- Main wakeup function
 function rf2craftimage.wakeup(widget)
