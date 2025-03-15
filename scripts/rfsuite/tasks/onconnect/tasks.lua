@@ -75,6 +75,7 @@ function tasks.wakeup()
     local telemetryActive = rfsuite.tasks.msp.onConnectChecksInit and rfsuite.session.telemetryState
 
     if rfsuite.session.telemetryTypeChanged then
+        rfsuite.utils.logRotorFlightBanner()
         rfsuite.utils.log("Telemetry type changed, resetting all tasks and reconnecting.", "info")
         rfsuite.session.telemetryTypeChanged = false
         tasks.resetAllTasks()
