@@ -471,7 +471,7 @@ local function openPage(idx, title, script, extra1)
         local table = {rfsuite.i18n.get("app.modules.servos.tbl_no"), rfsuite.i18n.get("app.modules.servos.tbl_yes")}
         local tableIdxInc = -1
         local value
-        rfsuite.app.formLines[idx] = form.addLine("Reverse")
+        rfsuite.app.formLines[idx] = form.addLine(rfsuite.i18n.get("app.modules.servos.reverse"))
         rfsuite.app.formFields[idx] = form.addChoiceField(rfsuite.app.formLines[idx], nil, rfsuite.app.utils.convertPageValueTable(table, tableIdxInc), function()
             return configs[servoIndex]['reverse']
         end, function(value)
