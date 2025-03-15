@@ -110,6 +110,7 @@ local en = {
     txt_initialising    = "INITIALISING",
     txt_max = "max",
     txt_min = "min",
+    txt_headspeed = "Headspeed",
 
     layoutOptions = {
             TIMER = "TIMER",
