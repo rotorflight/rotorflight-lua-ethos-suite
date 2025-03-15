@@ -78,6 +78,43 @@ local function screenError(msg)
     lcd.drawText(x, y, msg)
 end
 
+local function getSensors()
+    if not rfsuite.tasks.active() then return end
+
+    local govmode = ""
+
+    local govSOURCE = rfsuite.tasks.telemetry.getSensorSource("governor")
+    local armflagsSOURCE = rfsuite.tasks.telemetry.getSensorSource("armflags")
+
+    if rfsuite.tasks.telemetry.getSensorProtocol() == 'lcrsf' then
+        govmode = govSOURCE and govSOURCE:stringValue() or ""
+    else
+        local govId = govSOURCE and govSOURCE:value()
+        if rfsuite.session and rfsuite.session.apiVersion and rfsuite.session.apiVersion > 12.07 then
+                if armflagsSOURCE and (armflagsSOURCE:value() == 0 or armflagsSOURCE:value() == 2 )then
+                    govId = 101
+                end
+        end
+        govmode = governorMap[govId] or (govId and rfsuite.i18n.get("widgets.governor.UNKNOWN") or "")
+    end
+
+
+    if rf2gov.oldsensors.govmode ~= govmode then rf2gov.refresh = true end
+
+    sensors = {govmode = govmode}
+    rf2gov.oldsensors = sensors
+
+    return sensors
+end
+
+local function wakeupUI()
+
+    getSensors()
+
+    if rf2gov.refresh then lcd.invalidate() end
+    rf2gov.refresh = false
+end
+
 -- Helper function to convert a value to a valid number
 function rf2gov.sensorMakeNumber(value)
     value = value or 0
@@ -91,7 +128,7 @@ end
 
 function rf2gov.paint(widget)
     if not rfsuite.utils.ethosVersionAtLeast() then
-        status.screenError(string.format(string.upper(rfsuite.i18n.get("ethos")) .." < V%d.%d.%d", 
+        screenError(string.format(string.upper(rfsuite.i18n.get("ethos")) .." < V%d.%d.%d", 
             rfsuite.config.ethosVersion[1], 
             rfsuite.config.ethosVersion[2], 
             rfsuite.config.ethosVersion[3])
@@ -136,36 +173,6 @@ function rf2gov.paint(widget)
     lcd.drawText(posX, posY, str)
 end
 
-
-function rf2gov.getSensors()
-    if not rfsuite.tasks.active() then return end
-
-    local govmode = ""
-
-    local govSOURCE = rfsuite.tasks.telemetry.getSensorSource("governor")
-    local armflagsSOURCE = rfsuite.tasks.telemetry.getSensorSource("armflags")
-
-    if rfsuite.tasks.telemetry.getSensorProtocol() == 'lcrsf' then
-        govmode = govSOURCE and govSOURCE:stringValue() or ""
-    else
-        local govId = govSOURCE and govSOURCE:value()
-        if rfsuite.session and rfsuite.session.apiVersion and rfsuite.session.apiVersion > 12.07 then
-                if armflagsSOURCE and (armflagsSOURCE:value() == 0 or armflagsSOURCE:value() == 2 )then
-                    govId = 101
-                end
-        end
-        govmode = governorMap[govId] or (govId and rfsuite.i18n.get("widgets.governor.UNKNOWN") or "")
-    end
-
-
-    if rf2gov.oldsensors.govmode ~= govmode then rf2gov.refresh = true end
-
-    sensors = {govmode = govmode}
-    rf2gov.oldsensors = sensors
-
-    return sensors
-end
-
 -- Main wakeup function
 function rf2gov.wakeup(widget)
     local schedulerUI = lcd.isVisible() and 0.25 or 5
@@ -173,17 +180,9 @@ function rf2gov.wakeup(widget)
 
     if (now - rf2gov.wakeupSchedulerUI) >= schedulerUI then
         rf2gov.wakeupSchedulerUI = now
-        rf2gov.wakeupUI()
+        wakeupUI()
     end
 
-end
-
-function rf2gov.wakeupUI()
-
-    rf2gov.getSensors()
-
-    if rf2gov.refresh then lcd.invalidate() end
-    rf2gov.refresh = false
 end
 
 -- this is called if a langage swap event occurs
