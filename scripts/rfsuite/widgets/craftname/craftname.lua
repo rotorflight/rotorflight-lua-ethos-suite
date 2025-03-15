@@ -69,7 +69,7 @@ local function screenError(msg)
 end
 
 -- wakeup ui function
-function wakeupUI()
+local function wakeupUI()
 
     LCD_W, LCD_H = lcd.getWindowSize()
 
