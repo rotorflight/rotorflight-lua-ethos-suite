@@ -404,7 +404,7 @@ function ui.openMainMenu()
                             press = function()
                                 rfsuite.app.menuLastSelected["mainmenu"] = pidx
                                 rfsuite.app.ui.progressDisplay()
-                                rfsuite.app.ui.openPage(pidx, page.title, page.folder .. "/" .. page.script)
+                                rfsuite.app.ui.openPage(pidx, page.title, page.folder .. "/" .. page.script)                          
                             end
                         })
 
@@ -420,6 +420,7 @@ function ui.openMainMenu()
     end
 
     collectgarbage()
+    rfsuite.utils.reportMemoryUsage("MainMenu")
 end
 
 
@@ -932,6 +933,7 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
     -- If the Page has its own openPage function, use it and return early
     if rfsuite.app.Page.openPage then
         rfsuite.app.Page.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
+        rfsuite.utils.reportMemoryUsage(title)
         return
     end
 
@@ -992,6 +994,7 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
             end
         end
     end
+    rfsuite.utils.reportMemoryUsage(title)
 end
 
 

@@ -35,6 +35,7 @@ config.simulatorApiVersionResponse = {0, 12, 8}                     -- version o
 config.logLevel= "info"                                             -- off | info | debug [default = info]
 config.logToFile = false                                            -- log to file [default = false] (log file is in /scripts/rfsuite/logs)
 config.logMSP = false                                               -- log msp messages [default =  false]
+config.logMemoryUsage = false                                       -- log memory usage [default = false]
 config.developerMode = false                                        -- show developer tools on main menu [default = false]
 
 
@@ -144,6 +145,7 @@ The parameters include:
 - mspSignature - uses for mostly in sim to save esc type
 - telemetryType = sport or crsf
 - repairSensors: makes the background task repair sensors
+- lastMemoryUsage.  Used to track memory usage for debugging
 - 
 
 -- Every attempt should be made if using session vars to record them here with a nil
@@ -183,6 +185,7 @@ rfsuite.session.telemetryTypeChanged = nil
 rfsuite.session.telemetrySensor = nil
 rfsuite.session.repairSensors = false
 rfsuite.session.locale = system.getLocale()
+rfsuite.session.lastMemoryUsage = nil
 
 
 --[[
