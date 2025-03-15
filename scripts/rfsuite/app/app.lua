@@ -356,6 +356,7 @@ local function invalidatePages()
     app.Page = nil
     app.pageState = app.pageStatus.display
     app.saveTS = 0
+    collectgarbage()
 end
 
 -- Reboots the flight controller (FBL unit) by issuing an MSP command.
@@ -391,7 +392,6 @@ local mspEepromWrite = {
         else
             invalidatePages()
         end
-        collectgarbage()
     end,
     errorHandler = function(self)
         app.triggers.closeSave = true
