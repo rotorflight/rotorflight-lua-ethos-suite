@@ -59,20 +59,20 @@ end
 local function loadLangFile(filepath)
     rfsuite.utils.log("i18n: Attempting to load file: " .. filepath, "debug")
 
-    if not rfsuite.utils.file_exists(filepath) then
-        rfsuite.utils.log("i18n: ERROR - File does not exist: " .. filepath, "debug")
-        return nil
-    end
-
     local chunk, err = loadfile(filepath)
     if not chunk then
-        rfsuite.utils.log("i18n: ERROR - Could not load language file: " .. filepath, "debug")
+        rfsuite.utils.log("i18n: ERROR - Syntax error in language file: " .. filepath .. " - " .. err, "info")
         return nil
     end
-
+    
     local success, result = pcall(chunk)
-    if not success or type(result) ~= "table" then
-        rfsuite.utils.log("i18n: ERROR - Corrupted or invalid language file: " .. filepath, "debug")
+    if not success then
+        rfsuite.utils.log("i18n: ERROR - Runtime error in language file: " .. filepath .. " - " .. result, "info")
+        return nil
+    end
+    
+    if type(result) ~= "table" then
+        rfsuite.utils.log("i18n: ERROR - Invalid return type in language file: " .. filepath, "info")
         return nil
     end
 
@@ -114,7 +114,7 @@ local function loadLangFiles(langCode, basePath, parentKey)
         local subPath = basePath .. "/" .. item
 
         -- Ensure it's a directory before checking inside
-        if rfsuite.utils.dir_exists(basePath, item) then
+        if rfsuite.utils.dir_exists(basePath, item) and not item:match("%.lua$") then
             local langFile = subPath .. "/" .. langCode .. ".lua"
 
             rfsuite.utils.log("i18n: Checking for language file: " .. langFile, "debug")

@@ -151,7 +151,7 @@ end
     
     Returns: None
 ]]
-function logs.process_console_queue()
+local function process_console_queue()
     if not logs.config.enabled or logs.config.min_print_level == "off" then return end
 
     local now = os.clock()
@@ -183,7 +183,7 @@ end
         - logs.last_disk_write_time: Number indicating the last time logs were written to disk.
         - logs.disk_queue: Table containing log messages to be written to disk.
 ]]
-function logs.process_disk_queue()
+local function process_disk_queue()
     if not logs.config.enabled or logs.config.min_print_level == "off" or not logs.config.log_to_file then return end
 
     local now = os.clock()
@@ -207,8 +207,8 @@ end
     This function is responsible for handling log processing tasks.
 ]]
 function logs.process()
-    logs.process_console_queue()
-    logs.process_disk_queue()
+    process_console_queue()
+    process_disk_queue()
 end
 
 return logs

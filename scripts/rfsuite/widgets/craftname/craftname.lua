@@ -14,7 +14,8 @@
  *
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]] --
-local rf2craftname = {wakeupSchedulerUI = os.clock()}
+local rf2craftname = {}
+    
 
 local sensors
 local lastName
@@ -23,12 +24,13 @@ local bitmapPtr
 local image
 local default_image = "widgets/craftname/default_image.png"
 local config = {}
+local wakeupSchedulerUI = os.clock()
 
 local LCD_W, LCD_H = lcd.getWindowSize()
 local LCD_MINH4IMAGE = 130
 
 -- error function
-function screenError(msg)
+local function screenError(msg)
     local w, h = lcd.getWindowSize()
     local isDarkMode = lcd.darkMode()
 
@@ -66,6 +68,27 @@ function screenError(msg)
     lcd.drawText(x, y, msg)
 end
 
+-- wakeup ui function
+local function wakeupUI()
+
+    LCD_W, LCD_H = lcd.getWindowSize()
+
+    if LCD_H < LCD_MINH4IMAGE then config.image = false end
+
+    if lastName ~= rfsuite.session.craftName or lastID ~= rfsuite.session.modelID then
+        if rfsuite.session.craftName ~= nil then image1 = "/bitmaps/models/" .. rfsuite.session.craftName .. ".png" end
+        if rfsuite.session.modelID ~= nil then image2 = "/bitmaps/models/" .. rfsuite.session.modelID .. ".png" end
+
+        bitmapPtr = rfsuite.utils.loadImage(image1, image2, default_image)
+
+        lcd.invalidate()
+    end
+
+    lastName = rfsuite.session.craftName
+    lastID = rfsuite.session.modelID
+end
+
+
 -- Create function
 function rf2craftname.create(widget)
     LCD_W, LCD_H = lcd.getWindowSize()
@@ -75,7 +98,7 @@ end
 -- Paint function
 function rf2craftname.paint(widget)
     if not rfsuite.utils.ethosVersionAtLeast() then
-        status.screenError(string.format(string.upper(rfsuite.i18n.get("ethos")) .." < V%d.%d.%d", 
+        screenError(string.format(string.upper(rfsuite.i18n.get("ethos")) .." < V%d.%d.%d", 
             rfsuite.config.ethosVersion[1], 
             rfsuite.config.ethosVersion[2], 
             rfsuite.config.ethosVersion[3])
@@ -162,45 +185,17 @@ function rf2craftname.write(widget)
     storage.write("mem1", config.image)
 end
 
--- Event function
-function rf2craftname.event(widget, event)
-    -- Placeholder for widget event logic
-end
-
 -- Main wakeup function
 function rf2craftname.wakeup(widget)
     local schedulerUI = lcd.isVisible() and 0.5 or 5
     local now = os.clock()
 
-    if (now - rf2craftname.wakeupSchedulerUI) >= schedulerUI then
-        rf2craftname.wakeupSchedulerUI = now
-        rf2craftname.wakeupUI()
+    if (now - wakeupSchedulerUI) >= schedulerUI then
+        wakeupSchedulerUI = now
+        wakeupUI()
     end
 
 end
 
-function rf2craftname.wakeupUI()
-
-    LCD_W, LCD_H = lcd.getWindowSize()
-
-    if LCD_H < LCD_MINH4IMAGE then config.image = false end
-
-    if lastName ~= rfsuite.session.craftName or lastID ~= rfsuite.session.modelID then
-        if rfsuite.session.craftName ~= nil then image1 = "/bitmaps/models/" .. rfsuite.session.craftName .. ".png" end
-        if rfsuite.session.modelID ~= nil then image2 = "/bitmaps/models/" .. rfsuite.session.modelID .. ".png" end
-
-        bitmapPtr = rfsuite.utils.loadImage(image1, image2, default_image)
-
-        lcd.invalidate()
-    end
-
-    lastName = rfsuite.session.craftName
-    lastID = rfsuite.session.modelID
-end
-
--- this is called if a langage swap event occurs
-function rf2craftname.i18n()
-
-end  
 
 return rf2craftname
