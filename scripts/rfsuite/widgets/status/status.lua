@@ -2778,7 +2778,7 @@ function status.configure(widget)
         status.tempconvertParamMCU = newValue
     end)
 
-    line = form.addLine("Voltage", advpanel)
+    line = form.addLine(rfsuite.i18n.get("widgets.status.txt_voltage"), advpanel)
 
     -- LVannouncement DISPLAY
     line = advpanel:addLine("    " .. rfsuite.i18n.get("widgets.status.txt_sensitivity"))
@@ -2830,7 +2830,7 @@ function status.configure(widget)
         fieldstckcutoff:enable(true)
     end
 
-    line = form.addLine("Headspeed", advpanel)
+    line = form.addLine(rfsuite.i18n.get("widgets.status.txt_headspeed"), advpanel)
 
     -- TITLE DISPLAY
     line = advpanel:addLine("   " .. rfsuite.i18n.get("widgets.status.txt_alertonrpmdiff"))
