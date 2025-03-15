@@ -98,7 +98,7 @@ end
 -- Paint function
 function rf2craftname.paint(widget)
     if not rfsuite.utils.ethosVersionAtLeast() then
-        status.screenError(string.format(string.upper(rfsuite.i18n.get("ethos")) .." < V%d.%d.%d", 
+        screenError(string.format(string.upper(rfsuite.i18n.get("ethos")) .." < V%d.%d.%d", 
             rfsuite.config.ethosVersion[1], 
             rfsuite.config.ethosVersion[2], 
             rfsuite.config.ethosVersion[3])
