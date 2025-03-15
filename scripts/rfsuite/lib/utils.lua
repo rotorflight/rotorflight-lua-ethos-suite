@@ -553,4 +553,47 @@ function utils.truncateText(str, maxWidth)
     return truncatedStr .. ellipsis
 end
 
+function utils.reportMemoryUsage(location)
+
+    if config.logMemoryUsage == false then
+        return
+    end
+
+    -- Get current memory usage in bytes and convert to KB
+    local currentMemoryUsage = system.getMemoryUsage().luaRamAvailable / 1024
+
+    -- Retrieve the last memory usage from the session (convert it to KB if it exists)
+    local lastMemoryUsage = rfsuite.session.lastMemoryUsage
+
+    -- Ensure location is not nil or empty
+    location = location or "Unknown"
+
+    -- Construct the log message
+    local logMessage
+
+    if lastMemoryUsage then
+        lastMemoryUsage = lastMemoryUsage / 1024  -- Convert last recorded memory to KB
+        local difference = currentMemoryUsage - lastMemoryUsage
+        if difference > 0 then
+            logMessage = string.format("[%s] Memory usage decreased by %.2f KB (Current: %.2f KB)", location, difference, currentMemoryUsage)
+        elseif difference < 0 then
+            logMessage = string.format("[%s] Memory usage increased by %.2f KB (Current: %.2f KB)", location, -difference, currentMemoryUsage)
+        else
+            logMessage = string.format("[%s] Memory usage unchanged (Current: %.2f KB)", location, currentMemoryUsage)
+        end
+    else
+        logMessage = string.format("[%s] Initial memory usage: %.2f KB", location, currentMemoryUsage)
+    end
+
+    -- Log the message
+    rfsuite.utils.log(logMessage, "info")
+
+    -- Store the current memory usage in bytes for future calls (convert back to bytes)
+    rfsuite.session.lastMemoryUsage = system.getMemoryUsage().luaRamAvailable
+end
+
+    
+
+
+
 return utils
