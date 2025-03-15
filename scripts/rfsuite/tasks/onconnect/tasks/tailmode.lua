@@ -17,7 +17,7 @@
  * 
 ]] --
 
-tailmode = {}
+local tailmode = {}
 
 function tailmode.wakeup()
     -- quick exit if no apiVersion

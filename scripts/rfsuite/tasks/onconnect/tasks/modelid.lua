@@ -17,7 +17,7 @@
  * 
 ]] --
 
-modelid = {}
+local modelid = {}
 
 function modelid.wakeup()
     -- quick exit if no apiVersion
