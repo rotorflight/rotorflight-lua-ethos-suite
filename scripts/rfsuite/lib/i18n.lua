@@ -114,7 +114,7 @@ local function loadLangFiles(langCode, basePath, parentKey)
         local subPath = basePath .. "/" .. item
 
         -- Ensure it's a directory before checking inside
-        if rfsuite.utils.dir_exists(basePath, item) then
+        if rfsuite.utils.dir_exists(basePath, item) and not item:match("%.lua$") then
             local langFile = subPath .. "/" .. langCode .. ".lua"
 
             rfsuite.utils.log("i18n: Checking for language file: " .. langFile, "debug")
