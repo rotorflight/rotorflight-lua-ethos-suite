@@ -596,6 +596,7 @@ en = {
             rate                        = "Rate",
             scale_negative              = "Scale Negative",
             scale_positive              = "Scale Positive",
+            reverse                     = "Reverse",
             center                      = "Center",
             minimum                     = "Minimum",
             maximum                     = "Maximum",
@@ -624,7 +625,9 @@ en = {
             help_fields_scale_pos       = "Servo positive scaling.",
             help_fields_rate            = "Servo PWM rate.",
             help_fields_speed           = "Servo motion speed in milliseconds.",
-            help_fields_flags           = "0 = Default, 1=Reverse, 2 = Geo Correction, 3 = Reverse + Geo Correction"
+            help_fields_flags           = "0 = Default, 1=Reverse, 2 = Geo Correction, 3 = Reverse + Geo Correction",
+            tbl_yes                     = "YES",
+            tbl_no                      = "NO",
         },
         status = {
             name                    = "Status",

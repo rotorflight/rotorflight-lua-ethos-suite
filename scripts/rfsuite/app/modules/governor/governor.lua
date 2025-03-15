@@ -9,9 +9,9 @@ local mspapi = {
         fields = {
         { t = rfsuite.i18n.get("app.modules.governor.mode"),                  mspapi = 1, apikey = "gov_mode", postEdit = function(self) self.setGovernorMode(self) end,  type = 1},
         { t = rfsuite.i18n.get("app.modules.governor.handover_throttle"),     mspapi = 1, apikey = "gov_handover_throttle" },
-        { t = rfsuite.i18n.get("app.modules.governor.spoolup_min_throttle"),  mspapi = 1, apikey = "gov_spoolup_min_throttle", apiversion = 12.08 },
         { t = rfsuite.i18n.get("app.modules.governor.startup_time"),          mspapi = 1, apikey = "gov_startup_time" },
         { t = rfsuite.i18n.get("app.modules.governor.spoolup_time"),          mspapi = 1, apikey = "gov_spoolup_time" },
+        { t = rfsuite.i18n.get("app.modules.governor.spoolup_min_throttle"),  mspapi = 1, apikey = "gov_spoolup_min_throttle", apiversion = 12.08 },
         { t = rfsuite.i18n.get("app.modules.governor.tracking_time"),         mspapi = 1, apikey = "gov_tracking_time" },
         { t = rfsuite.i18n.get("app.modules.governor.recovery_time"),         mspapi = 1, apikey = "gov_recovery_time" },
         }

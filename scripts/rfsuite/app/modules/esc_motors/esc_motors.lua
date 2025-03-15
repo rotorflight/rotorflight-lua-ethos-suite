@@ -17,9 +17,9 @@ local mspapi = {
             {t = rfsuite.i18n.get("app.modules.esc_motors.rear"),                     api = "MOTOR_CONFIG:tail_rotor_gear_ratio_0",    label = 2, inline = 2},
             {t = rfsuite.i18n.get("app.modules.esc_motors.front"),                    api = "MOTOR_CONFIG:tail_rotor_gear_ratio_1",    label = 2, inline = 1},
             {t = rfsuite.i18n.get("app.modules.esc_motors.motor_pole_count"),         api = "MOTOR_CONFIG:motor_pole_count_0"},
+            {t = rfsuite.i18n.get("app.modules.esc_motors.mincommand"),               api = "MOTOR_CONFIG:mincommand"},
             {t = rfsuite.i18n.get("app.modules.esc_motors.min_throttle"),             api = "MOTOR_CONFIG:minthrottle"},
             {t = rfsuite.i18n.get("app.modules.esc_motors.max_throttle"),             api = "MOTOR_CONFIG:maxthrottle"},
-            {t = rfsuite.i18n.get("app.modules.esc_motors.mincommand"),               api = "MOTOR_CONFIG:mincommand"},
             {t = rfsuite.i18n.get("app.modules.esc_motors.voltage_correction"),       api = "ESC_SENSOR_CONFIG:voltage_correction",    apiversion = 12.08},
             {t = rfsuite.i18n.get("app.modules.esc_motors.current_correction"),       api = "ESC_SENSOR_CONFIG:current_correction",    apiversion = 12.08},
             {t = rfsuite.i18n.get("app.modules.esc_motors.consumption_correction"),   api = "ESC_SENSOR_CONFIG:consumption_correction", apiversion = 12.08}
