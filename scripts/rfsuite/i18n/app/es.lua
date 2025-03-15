@@ -596,6 +596,7 @@ local es = {
                 rate                        = "Tasa",
                 scale_negative              = "Escala Negativa",
                 scale_positive              = "Escala Positiva",
+                reverse                     = "Dirección",
                 center                      = "Centro",
                 minimum                     = "Mínimo",
                 maximum                     = "Máximo",
@@ -624,7 +625,9 @@ local es = {
                 help_fields_scale_pos       = "Escala positiva del servo.",
                 help_fields_rate            = "Tasa PWM del servo.",
                 help_fields_speed           = "Velocidad de movimiento del servo en milisegundos.",
-                help_fields_flags           = "0 = Por defecto, 1 = Reversa, 2 = Corrección-Geo, 3 = Reversa + Corrección-Geo"
+                help_fields_flags           = "0 = Por defecto, 1 = Reversa, 2 = Corrección-Geo, 3 = Reversa + Corrección-Geo",
+                tbl_yes                     = "Invertir",
+                tbl_no                      = "Normal",
             },
             status = {
                 name                    = "Estado",
