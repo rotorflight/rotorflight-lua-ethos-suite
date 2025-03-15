@@ -3994,7 +3994,7 @@ function status.paint(widget)
                     if isArmed == 1 or isArmed == 3 then
                         if status.theTIME <= status.idleupdelayParam then
                             local count = math.floor(status.idleupdelayParam - status.theTIME)
-                            message(rfsuite.i18n.get("widgets.status.txt_initialising") .. count + 1)
+                            message(rfsuite.i18n.get("widgets.status.txt_initialising").. " ".. count + 1)
                         end
                     end
                 end
