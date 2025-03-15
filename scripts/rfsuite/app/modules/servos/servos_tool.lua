@@ -468,7 +468,7 @@ local function openPage(idx, title, script, extra1)
         local idx = 9
         local minValue = 0
         local maxValue = 1000
-        local table = {"NO", "YES"}
+        local table = {rfsuite.i18n.get("app.modules.servos.tbl_no"), rfsuite.i18n.get("app.modules.servos.tbl_yes")}
         local tableIdxInc = -1
         local value
         rfsuite.app.formLines[idx] = form.addLine("Reverse")
@@ -484,7 +484,7 @@ local function openPage(idx, title, script, extra1)
         local idx = 10
         local minValue = 0
         local maxValue = 1000
-        local table = {"NO", "YES"}
+        local table = {rfsuite.i18n.get("app.modules.servos.tbl_no"), rfsuite.i18n.get("app.modules.servos.tbl_yes")}
         local tableIdxInc = -1
         local value
         rfsuite.app.formLines[idx] = form.addLine(rfsuite.i18n.get("app.modules.servos.geometry"))
