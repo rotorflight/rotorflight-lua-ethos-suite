@@ -624,7 +624,9 @@ de = {
             help_fields_scale_pos       = "Positives Servo-Scaling.",
             help_fields_rate            = "Servo-PWM-Frequenz.",
             help_fields_speed           = "Servo-Geschwindigkeit in Millisekunden.",
-            help_fields_flags           = "0 = Standard, 1 = Umkehren, 2 = Geo-Korrektur, 3 = Umkehren + Geo-Korrektur"
+            help_fields_flags           = "0 = Standard, 1 = Umkehren, 2 = Geo-Korrektur, 3 = Umkehren + Geo-Korrektur",
+            tbl_yes                     = "JA",
+            tbl_no                      = "NEIN",
         },
         status = {
             name                    = "Status",
@@ -690,6 +692,7 @@ de = {
             invalid        = "UNGUELTIG",
             ok             = "OK",
             msg_repair     = "Erforderliche Sensoren auf dem Flugcontroller aktivieren?",
+            msg_repair_fin = "Der Flugcontroller wurde konfiguriert? Moeglicherweise muessen Sie Sensoren neu suchen, um die Aenderungen zu sehen."
             help_p1        = "Dieses Tool versucht, eine kurze Liste aller Sensoren zu erstellen, die nicht empfangen werden.",
             help_p2        = "Verwenden Sie dieses Tool, um sicherzustellen, dass Sie die richtigen Sensoren senden.",
         },
