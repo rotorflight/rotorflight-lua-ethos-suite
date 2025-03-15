@@ -110,6 +110,7 @@ local es = {
     txt_initialising    = "INICIALIZANDO",
     txt_max = "máx",
     txt_min = "mín",
+    txt_headspeed = "Veloc. Rotor",
 
     layoutOptions = {
             TIMER = "TIMER",
