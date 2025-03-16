@@ -110,7 +110,7 @@ de = {
     txt_initialising    = "INITIALISIERUNG",
     txt_max = "max",
     txt_min = "min",
-    txt_headspeed = "Drehzahl"
+    txt_headspeed = "Drehzahl",
 
     layoutOptions = {
             TIMER = "TIMER",

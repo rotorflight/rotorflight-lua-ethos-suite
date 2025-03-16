@@ -16,10 +16,10 @@
 ]] --
 
 local es = {
-    title = "NOMBRE DE LA AERONAVE"
-    txt_enter_craft_name = "Ingrese el Nombre de la Aeronave"
-    txt_save = "Guardar"
-    txt_cancel = "Cancelar"
+    title = "NOMBRE DE LA AERONAVE",
+    txt_enter_craft_name = "Ingrese el Nombre de la Aeronave",
+    txt_save = "Guardar",
+    txt_cancel = "Cancelar",
 }
 
 return es
