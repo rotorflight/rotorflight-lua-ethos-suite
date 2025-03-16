@@ -1,13 +1,41 @@
--- Lua script to check missing translation keys in language files
--- Accepts a folder parameter instead of scanning automatically
+-- Lua script to recursively check missing translation keys in language files
+-- Scans all subdirectories for i18n files and processes them
+-- Usage: lua i18n-checker.lua <root-folder>
 
 local function normalize_path(path)
-    return path:gsub("\\", "/")  -- Normalize Windows backslashes to Unix-style slashes
+    return path:gsub("\\", "/"):gsub("//", "/")  -- Normalize slashes
+end
+
+local function print_divider()
+    print("----------------------------------------------------------------------------------------------------")
+end
+
+local function get_subdirectories(directory)
+    local subdirs = {}
+    local command = package.config:sub(1,1) == "\\" 
+        and ('dir /b /ad "%s" 2>nul'):format(directory)  -- Windows
+        or ('ls -1 "%s" 2>/dev/null'):format(directory)  -- Linux/macOS
+
+    local p = io.popen(command)
+    if p then
+        for dir in p:lines() do
+            local full_path = normalize_path(directory .. "/" .. dir)
+            if full_path ~= "." and full_path ~= ".." then
+                table.insert(subdirs, full_path)
+            end
+        end
+        p:close()
+    end
+    return subdirs
 end
 
 local function get_language_files(directory)
     local lang_files = {}
-    local p = io.popen('ls -1 "' .. directory .. '" 2>/dev/null || dir /b "' .. directory .. '"')
+    local command = package.config:sub(1,1) == "\\" 
+        and ('dir /b "%s" 2>nul'):format(directory)  -- Windows
+        or ('ls -1 "%s" 2>/dev/null'):format(directory)  -- Linux/macOS
+
+    local p = io.popen(command)
     if p then
         for file in p:lines() do
             if file:match("%.lua$") and file ~= "en.lua" then
@@ -25,8 +53,7 @@ local function extract_keys(tbl, prefix)
     for key, value in pairs(tbl) do
         local full_key = prefix .. key
         if type(value) == "table" then
-            local nested_keys = extract_keys(value, full_key .. ".")
-            for _, nested_key in ipairs(nested_keys) do
+            for _, nested_key in ipairs(extract_keys(value, full_key .. ".")) do
                 table.insert(keys, nested_key)
             end
         else
@@ -47,6 +74,17 @@ local function key_exists(tbl, key_path)
     return true
 end
 
+local function get_translation(tbl, key_path)
+    local current = tbl
+    for segment in key_path:gmatch("[^%.]+") do
+        if type(current) ~= "table" or current[segment] == nil then
+            return nil
+        end
+        current = current[segment]
+    end
+    return current
+end
+
 local function load_translation(file_path)
     local env = {}
     local chunk, err = loadfile(file_path, "t", env)
@@ -61,12 +99,10 @@ local function load_translation(file_path)
         return nil
     end
     
-    -- If the result is a table, use it
     if type(result) == "table" then
         return result
     end
     
-    -- If not, try to find the correct named table (e.g., 'en', 'de', 'es')
     local lang_code = file_path:match("([^/]+)%.lua$")
     if lang_code and env[lang_code] and type(env[lang_code]) == "table" then
         return env[lang_code]
@@ -86,32 +122,53 @@ local function check_translations(directory)
 
     local reference_keys = extract_keys(reference_translations)
     local lang_files = get_language_files(directory)
+    
     for _, lang_file in ipairs(lang_files) do
         local full_path = normalize_path(directory .. "/" .. lang_file)
-        print("\nChecking missing keys for:", full_path, "\n") -- Improved file path clarity
+        io.write("[OK] Checking: " .. full_path:gsub("^%.%./", "") .. "  -> ")
+
         local lang_translations = load_translation(full_path)
         if lang_translations then
             local missing_keys = {}
             for _, key in ipairs(reference_keys) do
                 if not key_exists(lang_translations, key) then
-                    table.insert(missing_keys, "    " .. key) -- Indent missing keys for readability
+                    local en_text = get_translation(reference_translations, key)
+                    local en_display = en_text and (' (English: "' .. tostring(en_text) .. '")') or ""
+                    table.insert(missing_keys, "    " .. key .. en_display)
                 end
             end
             if #missing_keys > 0 then
-                print(table.concat(missing_keys, "\n"))
+                print("\n[WARNING] Missing keys:\n" .. table.concat(missing_keys, "\n"))
             else
-                print("    All keys present.")
+                print("All keys present.")
             end
         else
-            print("Warning: Missing or unreadable translation file:", full_path)
+            print("[WARNING] Missing or unreadable translation file.")
         end
     end
 end
 
--- Get directory from command-line argument
-local folder = arg[1]
-if not folder then
-    print("Usage: lua script.lua <folder-path>")
+local function scan_for_translation_dirs(root_folder)
+    for _, dir in ipairs(get_subdirectories(root_folder)) do
+        local en_file = dir .. "/en.lua"
+        local f = io.open(en_file, "r")
+        if f then
+            f:close()
+            print_divider()
+            print("[INFO] Processing translation folder: " .. dir:gsub("^%.%./", ""))
+            print_divider()
+            check_translations(dir)
+        else
+            scan_for_translation_dirs(dir)  -- Recursively scan deeper
+        end
+    end
+end
+
+-- Get root directory from command-line argument
+local root_folder = arg[1]
+if not root_folder then
+    print("Usage: lua i18n-checker.lua <root-folder>")
     os.exit(1)
 end
-check_translations(normalize_path(folder))
+
+scan_for_translation_dirs(normalize_path(root_folder))
