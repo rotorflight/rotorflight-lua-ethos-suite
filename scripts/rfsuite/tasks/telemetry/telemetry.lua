@@ -67,7 +67,7 @@ Sensors included:
 local sensorTable = {
     -- RSSI Sensors
     rssi = {
-        name = "RSSI",
+        name = rfsuite.i18n.get("telemetry.sensors.rssi"),
         mandatory = true,
         sim = {
             {appId=0xF101, subId=0},
@@ -90,7 +90,7 @@ local sensorTable = {
 
     -- Arm Flags
     armflags = {
-        name = "Arming Flags",
+        name = rfsuite.i18n.get("telemetry.sensors.arming_flags"),
         mandatory = true,
         set_telemetry_sensors = 90,
         sim = {
@@ -108,7 +108,7 @@ local sensorTable = {
 
     -- Voltage Sensors
     voltage = {
-        name = "Voltage",
+        name = rfsuite.i18n.get("telemetry.sensors.voltage"),
         mandatory = true,
         set_telemetry_sensors = 3,
         sim =  {
@@ -131,7 +131,7 @@ local sensorTable = {
 
     -- RPM Sensors
     rpm = {
-        name = "Head Speed",
+        name = rfsuite.i18n.get("telemetry.sensors.headspeed"),
         mandatory = true,
         set_telemetry_sensors = 60,
         sim =  {
@@ -148,7 +148,7 @@ local sensorTable = {
 
     -- Current Sensors
     current = {
-        name = "Current",
+        name = rfsuite.i18n.get("telemetry.sensors.current"),
         mandatory = false,
         set_telemetry_sensors = 4,
         sim =  {
@@ -167,7 +167,7 @@ local sensorTable = {
 
     -- Temperature Sensors
     temp_esc = {
-        name = "ESC Temperature",
+        name = rfsuite.i18n.get("telemetry.sensors.esc_temp"),
         mandatory = false,
         set_telemetry_sensors = 23,
         sim =  {
@@ -184,7 +184,7 @@ local sensorTable = {
         crsfLegacy = {"GPS Speed"}
     },
     temp_mcu = {
-        name = "MCU Temperature",
+        name = rfsuite.i18n.get("telemetry.sensors.mcu_temp"),
         mandatory = false,
         set_telemetry_sensors = 52,
         sim =  {
@@ -202,7 +202,7 @@ local sensorTable = {
 
     -- Fuel and Capacity Sensors
     fuel = {
-        name = "Charge Level",
+        name = rfsuite.i18n.get("telemetry.sensors.fuel"),
         mandatory = false,
         set_telemetry_sensors = 6,
         sim =  {
@@ -217,7 +217,7 @@ local sensorTable = {
         crsfLegacy = {"Rx Batt%"}
     },
     consumption = {
-        name = "Consumption",
+        name = rfsuite.i18n.get("telemetry.sensors.consumption"),
         mandatory = true,
         set_telemetry_sensors = 5,
         sim =  {
@@ -234,7 +234,7 @@ local sensorTable = {
 
     -- Flight Mode Sensors
     governor = {
-        name = "Governor State",
+        name = rfsuite.i18n.get("telemetry.sensors.governor"),
         mandatory = true,
         set_telemetry_sensors = 93,
         sim =  {
@@ -252,7 +252,7 @@ local sensorTable = {
 
     -- Adjustment Sensors
     adj_f = {
-        name = "Adj (Function)",
+        name = rfsuite.i18n.get("telemetry.sensors.adj_func"),
         mandatory = true,
         set_telemetry_sensors = 99,
         sim =  {
@@ -267,7 +267,7 @@ local sensorTable = {
         crsfLegacy = {nil}
     },
     adj_v = {
-        name = "Adj (Value)",
+        name = rfsuite.i18n.get("telemetry.sensors.adj_val"),
         mandatory = true,
         --set_telemetry_sensors = 99,  (we dont do this because its grouped with the adjf sensor)
         sim =  {
@@ -284,7 +284,7 @@ local sensorTable = {
 
     -- PID and Rate Profiles
     pid_profile = {
-        name = "PID Profile",
+        name = rfsuite.i18n.get("telemetry.sensors.pid_profile"),
         mandatory = true,
         set_telemetry_sensors = 95,
         sim =  {
@@ -300,7 +300,7 @@ local sensorTable = {
         crsfLegacy = {nil}
     },
     rate_profile = {
-        name = "Rate Profile",
+        name = rfsuite.i18n.get("telemetry.sensors.rate_profile"),
         mandatory = true,
         set_telemetry_sensors = 96,
         sim =  {
@@ -318,7 +318,7 @@ local sensorTable = {
 
     -- Throttle Sensors
     throttle_percent = {
-        name = "Throttle %",
+        name = rfsuite.i18n.get("telemetry.sensors.throttle_pct"),
         mandatory = true,
         set_telemetry_sensors = 15,
         sim =  {
