@@ -19,7 +19,7 @@
 
 ]] --
 
-local en = {
+local es = {
     sensors = {
         rssi         = "RSSI",
         arming_flags = "Banderas Armado",
