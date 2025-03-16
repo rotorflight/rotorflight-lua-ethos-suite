@@ -122,7 +122,13 @@ local function check_translations(directory)
 
     local reference_keys = extract_keys(reference_translations)
     local lang_files = get_language_files(directory)
-    
+
+    -- NEW: Detect if no translation files exist (only en.lua is present)
+    if #lang_files == 0 then
+        print("[WARNING] No translation files found! Only en.lua exists.")
+        return
+    end
+
     for _, lang_file in ipairs(lang_files) do
         local full_path = normalize_path(directory .. "/" .. lang_file)
         io.write("[OK] Checking: " .. full_path:gsub("^%.%./", "") .. "  -> ")
@@ -156,7 +162,6 @@ local function scan_for_translation_dirs(root_folder)
             f:close()
             print_divider()
             print("[INFO] Processing translation folder: " .. dir:gsub("^%.%./", ""))
-            print_divider()
             check_translations(dir)
         else
             scan_for_translation_dirs(dir)  -- Recursively scan deeper
