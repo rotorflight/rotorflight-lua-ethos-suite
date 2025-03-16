@@ -51,7 +51,7 @@ fr = {
      -- menu
      navigation_menu            = "MENU",
      navigation_save            = "ENREG.",
-     navigation_reload          = "RECHARGER",
+     navigation_reload          = "RECHAR.",
      navigation_tools           = "*",
      navigation_help            = "?",
  
@@ -263,16 +263,18 @@ fr = {
             name                = "Filtres",
             lowpass_1           = "Passe-bas 1",
             lowpass_1_dyn       = "Passe-bas 1 dyn.",
+            lowpass_2           = "Passe-bas 2",
+            notch_1             = "Filtreur 1",
+            notch_2             = "Filtreur 2",
             filter_type         = "Type de filtre",
             cutoff              = "Coupure",
             min_cutoff          = "Coupure min",
             max_cutoff          = "Coupure max",
-            lowpass_2           = "Passe-bas 2",
             center              = "Centre",
             help_p1             = "Normalement, vous ne devriez pas modifier cette page sans verifier vos journaux Blackbox !", 
             help_p2             = "Le filtre passe-bas elimine les frequences elevees indesirables.",
             help_p3             = "Choisissez soigneusement les frequences minimales et maximales pour optimiser les performances.",
-            help_p4             = "Un filtre notch elimine une plage de frequences specifiques."
+            help_p4             = "Les Filtreurs elimine une plage de frequences specifiques."
         },
         governor = {
             name                 = "Gouverneur",
@@ -290,7 +292,9 @@ fr = {
             name                 = "Journaux",
             msg_no_logs_found    = "AUCUN FICHIER JOURNAL TROUVE",
             help_logs_p1         = "Veuillez selectionner un fichier journal dans la liste ci-dessous.",
-            help_logs_p2         = "Les journaux necessitent une analyse reguliere pour surveiller le comportement de vol."
+            help_logs_p2         = "Les journaux necessitent une analyse reguliere pour surveiller le comportement de vol.",
+            help_logs_p3         = "- Status Actuel d'Armement, Tension Actuelle, Tours Moteurs, Courant Amp, Temperature ESC",
+            help_logs_tool_p1    = "Veuillez utiliser le curseur pour naviguer dans le graphique.",
         },
         mixer = {
             name                           = "Mixeur",
@@ -593,6 +597,7 @@ fr = {
             rate                        = "Taux",
             scale_negative              = "Echelle Negative",
             scale_positive              = "Echelle Positive",
+            reverse                     = "Inversement",
             center                      = "Centre",
             minimum                     = "Minimum",
             maximum                     = "Maximum",
@@ -621,7 +626,9 @@ fr = {
             help_fields_scale_pos       = "Echelle positive du servo.",
             help_fields_rate            = "Taux PWM du servo.",
             help_fields_speed           = "Vitesse de mouvement du servo en millisecondes.",
-            help_fields_flags           = "0 = Par defaut, 1=Inverser, 2 = Correction Geometrique, 3 = Inverser + Correction Geometrique"
+            help_fields_flags           = "0 = Par defaut, 1=Inverser, 2 = Correction Geometrique, 3 = Inverser + Correction Geometrique",
+            tbl_yes                     = "OUI",
+            tbl_no                      = "NON",
         },
         status = {
             name                    = "Statut",
@@ -687,6 +694,7 @@ fr = {
             invalid = "INVALIDE",
             ok      = "OK",
 			msg_repair = "Activer les capteurs requis sur le controleur de vol ?",
+            msg_repair_fin = "Le controleur de vol a-t-il ete configure ? Vous devrez peut-etre effectuer une detection des capteurs pour voir les modifications.",
             help_p1 = "Cet outil tente de lister tous les capteurs que vous ne recevez pas dans une liste concise.",
             help_p2 = "Utilisez cet outil pour vous assurer que vous envoyez les bons capteurs.",
         },

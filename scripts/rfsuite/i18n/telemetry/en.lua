@@ -1,4 +1,5 @@
 --[[
+
  * Copyright (C) Rotorflight Project
  *
  *
@@ -15,11 +16,27 @@
  
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
+
 ]] --
-local init = {
-    interval = 5, -- run every 5s
-    script = "debug.lua", -- run this script
-    msp = false -- do not run if busy with msp
+
+local en = {
+    sensors = {
+        rssi         = "RSSI",
+        arming_flags = "Arming Flags",
+        voltage      = "Voltage",
+        headspeed    = "Headspeed",
+        current      = "Current",
+        esc_temp     = "ESC Temperature",
+        mcu_temp     = "MCU Temperature",
+        fuel         = "Charge Level",
+        consumption  = "Consumption",
+        governor     = "Governor State",
+        adj_func     = "Adj (Function)",
+        adj_val      = "Adj (Value)",
+        pid_profile  = "PID Profile",
+        rate_profile = "Rate Profile",
+        throttle_pct = "Throttle %",
+    }
 }
 
-return init
+return en

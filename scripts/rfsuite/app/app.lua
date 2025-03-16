@@ -430,6 +430,7 @@ function app.settingsSaved()
         app.triggers.closeSave = true
     end
     collectgarbage()
+    rfsuite.utils.reportMemoryUsage("app.settingsSaved")
 end
 
 --[[
@@ -626,6 +627,8 @@ function app.mspApiUpdateFormAttributes(values, structure)
             rfsuite.utils.log("Form field skipped; not valid for this api version?", "debug")    
         end    
     end
+    collectgarbage()
+    rfsuite.utils.reportMemoryUsage("app.mspApiUpdateFormAttributes")
 end
 
 
@@ -766,7 +769,7 @@ local function processNextAPI()
     local handled = false
 
     -- **Log API Start**
-    rfsuite.utils.log("[PROCESS] API: " .. apiKey .. " (Attempt " .. (retryCount + 1) .. ")", "info")
+    rfsuite.utils.log("[PROCESS] API: " .. apiKey .. " (Attempt " .. (retryCount + 1) .. ")", "debug")
 
     -- **Timeout handler function**
     local function handleTimeout()
@@ -807,7 +810,7 @@ local function processNextAPI()
         end
 
         -- **Log API Success**
-        rfsuite.utils.log("[SUCCESS] API: " .. apiKey .. " completed successfully.", "info")
+        rfsuite.utils.log("[SUCCESS] API: " .. apiKey .. " completed successfully.", "debug")
 
         app.Page.mspapi.values[apiKey] = API.data().parsed
         app.Page.mspapi.structure[apiKey] = API.data().structure
@@ -946,6 +949,7 @@ function app.wakeupUI()
         app.triggers.exitAPP = false
         form.invalidate()
         system.exit()
+        rfsuite.utils.reportMemoryUsage("Exit App")
         return
     end
 

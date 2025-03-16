@@ -239,6 +239,9 @@ function tasks.wakeup()
     -- Process the log
     rfsuite.log.process()    
 
+    -- Run the callbacks
+    tasks.callback()
+
     -- Initialize tasks if not already done
     if tasks.init == false then
         tasks.findTasks()
@@ -263,7 +266,6 @@ function tasks.wakeup()
             sportSensor = nil
             elrsSensor = nil 
             telemetryCheckScheduler = now    
-            tasks.clearAllCallbacks()
         else
             -- Determine telemetry sensor
             if not sportSensor then sportSensor = system.getSource({appId = 0xF101}) end
@@ -282,7 +284,6 @@ function tasks.wakeup()
                 sportSensor = nil
                 elrsSensor = nil 
                 telemetryCheckScheduler = now
-                tasks.clearAllCallbacks()
             else
                 -- **Telemetry is valid, store session variables**
                 rfsuite.session.telemetryState = true
@@ -313,9 +314,6 @@ function tasks.wakeup()
             end
         end
     end
-
-    -- Run the callbacks
-    tasks.callback()
 end
 
 --[[
