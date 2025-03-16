@@ -18,7 +18,7 @@
 local API_NAME = "RC_TUNING" -- API name (must be same as filename)
 local MSP_API_CMD_READ = 111 -- Command identifier 
 local MSP_API_CMD_WRITE = 204 -- Command identifier 
-local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write 
+local MSP_REBUILD_ON_WRITE = true -- Rebuild the payload on write; keep true to ensure proper defaults after changing rates type
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
