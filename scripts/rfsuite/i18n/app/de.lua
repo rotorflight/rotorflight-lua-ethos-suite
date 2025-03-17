@@ -596,6 +596,7 @@ de = {
             rate                        = "Rate",
             scale_negative              = "Negatives Scaling",
             scale_positive              = "Positives Scaling",
+            reverse                     = "Umkehren",
             center                      = "Zentrum",
             minimum                     = "Minimum",
             maximum                     = "Maximum",
