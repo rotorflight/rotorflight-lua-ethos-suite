@@ -58,7 +58,11 @@ en = {
         rpm_min_hz = "Minimum frequency for the RPM filter.",
         tbl_none = "NONE",
         tbl_1st = "1ST",
-        tbl_2nd = "2ND",            
+        tbl_2nd = "2ND",
+        tbl_custom = "CUSTOM",
+        tbl_low = "LOW",     
+        tbl_medium = "MEDIUM",
+        tbl_high = "HIGH",       
     },
     GOVERNOR_CONFIG = {
         gov_startup_time = "Time constant for slow startup, in seconds, measuring the time from zero to full headspeed.",
