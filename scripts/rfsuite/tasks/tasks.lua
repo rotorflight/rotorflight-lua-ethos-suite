@@ -50,6 +50,11 @@ local lastTelemetrySensorName = nil
 local sportSensor 
 local elrsSensor
 
+-- we delay wakeup and task finding by 2s to allow ethos to boot
+local wakeup_delay = 2 -- seconds
+local start_time = os.clock()
+
+
 -- Cache telemetry source
 local tlm = system.getSource({category = CATEGORY_SYSTEM_EVENT, member = TELEMETRY_ACTIVE})
 
@@ -242,14 +247,20 @@ function tasks.wakeup()
     -- Run the callbacks
     tasks.callback()
 
+    -- heartbeat
+    tasks.heartbeat = os.clock()
+
+    -- delay to allow system init speedups
+    if os.clock() - start_time < wakeup_delay then
+        return -- Exit early until delay is over
+    end   
+
     -- Initialize tasks if not already done
     if tasks.init == false then
         tasks.findTasks()
         tasks.init = true
         return
     end
-
-    tasks.heartbeat = os.clock()
 
     -- Run telemetry check every second
     local now = os.clock()
