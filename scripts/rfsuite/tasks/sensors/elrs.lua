@@ -533,7 +533,7 @@ elrs.RFSensors = {
     -- ESC#1 temperature
     [0x1047] = {original = "EscT", name = "ESC1 Temp", unit = UNIT_CELSIUS, prec = 0, min = 0, max = 255, dec = decU8},
     -- ESC#1 / BEC temperature
-    [0x1048] = {original = "BecT", name = "ESC1 BEC Temp", unit = UNIT_CELSIUS, prec = 0, min = 0, max = 255, dec = decU8},
+    [0x1048] = {original = "BecT", name = "ESC1 Temp 2", unit = UNIT_CELSIUS, prec = 0, min = 0, max = 255, dec = decU8},
     -- ESC#1 / BEC voltage
     [0x1049] = {original = "BecV", name = "ESC1 BEC Volt", unit = UNIT_VOLT, prec = 2, min = 0, max = 1500, dec = decU16},
     -- ESC#1 / BEC current

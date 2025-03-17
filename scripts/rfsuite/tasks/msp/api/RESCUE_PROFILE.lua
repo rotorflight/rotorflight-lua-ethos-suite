@@ -32,7 +32,7 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "rescue_exit_time",          type = "U8",  apiVersion = 12.06, simResponse = {5},   min = 0, max = 250, default = 50,  unit = "s", decimals = 1, scale = 10},
     {field = "rescue_pull_up_collective", type = "U16", apiVersion = 12.06, simResponse = {182, 3}, min = 0, max = 100, default = 65, unit = "%", scale = 10},
     {field = "rescue_climb_collective",   type = "U16", apiVersion = 12.06, simResponse = {188, 2}, min = 0, max = 100, default = 45, unit = "%", scale = 10},
-    {field = "rescue_hover_collective",   type = "U16", apiVersion = 12.06, simResponse = {194, 1}, min = 0, max = 1000, default = 350, unit = "%", decimals = 1, scale = 10},
+    {field = "rescue_hover_collective",   type = "U16", apiVersion = 12.06, simResponse = {194, 1}, min = 0, max = 1000, default = 350, unit = "%", scale = 10},
     {field = "rescue_hover_altitude",     type = "U16", apiVersion = 12.06, simResponse = {244, 1}},
     {field = "rescue_alt_p_gain",         type = "U16", apiVersion = 12.06, simResponse = {20, 0}},
     {field = "rescue_alt_i_gain",         type = "U16", apiVersion = 12.06, simResponse = {20, 0}},
