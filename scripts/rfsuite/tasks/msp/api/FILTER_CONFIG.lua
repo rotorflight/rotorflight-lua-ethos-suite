@@ -21,6 +21,7 @@ local MSP_API_CMD_WRITE = 93 -- Command identifier
 local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write 
 
 local gyroFilterType = {[0]=rfsuite.i18n.get("api.FILTER_CONFIG.tbl_none"), [1]=rfsuite.i18n.get("api.FILTER_CONFIG.tbl_1st"), [2]=rfsuite.i18n.get("api.FILTER_CONFIG.tbl_2nd")}
+local rpmPreset = {rfsuite.i18n.get("api.FILTER_CONFIG.tbl_custom"),rfsuite.i18n.get("api.FILTER_CONFIG.tbl_low"), rfsuite.i18n.get("api.FILTER_CONFIG.tbl_medium"), rfsuite.i18n.get("api.FILTER_CONFIG.tbl_high")}
 
 local MSP_API_STRUCTURE_READ_DATA = {
     { field = "gyro_hardware_lpf",        type = "U8",  apiVersion = 12.07, simResponse = {0 }},          
@@ -34,12 +35,12 @@ local MSP_API_STRUCTURE_READ_DATA = {
     { field = "gyro_soft_notch_cutoff_2", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 4000, unit = "Hz" },       
     { field = "gyro_lpf1_dyn_min_hz",     type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 1000, unit = "Hz" },       
     { field = "gyro_lpf1_dyn_max_hz",     type = "U16", apiVersion = 12.07, simResponse = {25, 0}, min = 0, max = 1000, unit = "Hz" },     
-    { field = "dyn_notch_count",          type = "U8",  apiVersion = 12.07, simResponse = {0 }},          
-    { field = "dyn_notch_q",              type = "U8",  apiVersion = 12.07, simResponse = {245 }},        
-    { field = "dyn_notch_min_hz",         type = "U16", apiVersion = 12.07, simResponse = {0, 0}},       
-    { field = "dyn_notch_max_hz",         type = "U16", apiVersion = 12.07, simResponse = {0, 0}},
-    { field = "rpm_preset",               type = "U8",  apiVersion = 12.08, simResponse = {0 }}, 
-    { field = "rpm_min_hz",               type = "U8",  apiVersion = 12.08, simResponse = {0 }}            
+    { field = "dyn_notch_count",          type = "U8",  apiVersion = 12.07, simResponse = {0 }, min = 0, max = 8},          
+    { field = "dyn_notch_q",              type = "U8",  apiVersion = 12.07, simResponse = {100}, min = 0, max = 100, decimals=1, scale = 10},       
+    { field = "dyn_notch_min_hz",         type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 10, max = 200, unit="Hz"},       
+    { field = "dyn_notch_max_hz",         type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 100, max = 500, unit="Hz"},
+    { field = "rpm_preset",               type = "U8",  apiVersion = 12.08, simResponse = {1 }, table = rpmPreset, tableIdxInc = -1}, 
+    { field = "rpm_min_hz",               type = "U8",  apiVersion = 12.08, simResponse = {20}, min = 1, max = 100, unit = "Hz" },            
 }
 
 
