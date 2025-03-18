@@ -108,73 +108,66 @@ transport.mspWrite = function(cmd, payload)
     return mspSendRequest(cmd, payload)
 end
 
---[[
-    Function: sportTelemetryPop
-    Description: Continuously polls for telemetry data from the sport transport layer. 
-                 It returns the sensorId, frameId, dataId, and value when new data is detected.
-    Returns: 
-        - sensorId: The ID of the sensor.
-        - frameId: The ID of the frame.
-        - dataId: The ID of the data.
-        - value: The value of the data.
-    Usage: 
-        local sensorId, frameId, dataId, value = sportTelemetryPop()
-        if sensorId then
-            -- Process the telemetry data
-        end
-]]
+
+-- This function retrieves telemetry data from the sportTelemetryPop function of the transport module.
+-- It ensures that the same telemetry data is not processed multiple times consecutively by comparing
+-- the current data with the last processed data.
+-- 
+-- @return sensorId, frameId, dataId, value - The telemetry data if it is different from the last processed data, otherwise nil.
+local lastSensorId, lastFrameId, lastDataId, lastValue = nil, nil, nil, nil
+
 local function sportTelemetryPop()
-    while true do
-        local sensorId, frameId, dataId, value = transport.sportTelemetryPop()
-        if not sensorId then
-            return nil
-        elseif (lastSensorId == sensorId) and (lastFrameId == frameId) and (lastDataId == dataId) and (lastValue == value) then
-            -- Keep checking
-        else
-            lastSensorId = sensorId
-            lastFrameId = frameId
-            lastDataId = dataId
-            lastValue = value
-            return sensorId, frameId, dataId, value
-        end
+    local sensorId, frameId, dataId, value = transport.sportTelemetryPop()
+    
+    if sensorId and not (sensorId == lastSensorId and frameId == lastFrameId and dataId == lastDataId and value == lastValue) then
+        lastSensorId, lastFrameId, lastDataId, lastValue = sensorId, frameId, dataId, value
+        return sensorId, frameId, dataId, value
     end
+    
+    return nil
 end
+
 
 --[[
     Function: transport.mspPoll
 
     Description:
-    Continuously polls for telemetry data from the sport or FPORT remote sensor. 
-    When a valid telemetry frame is received, it extracts the data and value, 
-    constructs a payload table, and returns it.
+    This function polls the telemetry data from the sportTelemetryPop function. It processes the data only if the correct sensor and frame IDs match. If the conditions are met, it returns a table containing the processed data. If no data is available or the conditions are not met, it returns nil.
 
     Returns:
-    - payload (table): A table containing the extracted data and value from the telemetry frame.
-    - nil: If no sensorId is received.
+    - A table containing the processed data if the correct sensor and frame IDs match.
+    - nil if no data is available or the conditions are not met.
 
-    Notes:
-    - The function runs in an infinite loop until a valid telemetry frame is received or sensorId is nil.
+    Example:
+    local result = transport.mspPoll()
+    if result then
+        -- Process the result
+    else
+        -- Handle the case where no data is available or conditions are not met
+    end
 ]]
 transport.mspPoll = function()
-    while true do
-        local sensorId, frameId, dataId, value = sportTelemetryPop()
-        if (sensorId == sport_REMOTE_SENSOR_ID or sensorId == FPORT_REMOTE_SENSOR_ID) and frameId == REPLY_FRAME_ID then
-            local payload = {}
-            payload[1] = dataId & 0xFF
-            dataId = dataId >> 8
-            payload[2] = dataId & 0xFF
-            payload[3] = value & 0xFF
-            value = value >> 8
-            payload[4] = value & 0xFF
-            value = value >> 8
-            payload[5] = value & 0xFF
-            value = value >> 8
-            payload[6] = value & 0xFF
-            return payload
-        elseif sensorId == nil then
-            return nil
-        end
+    local sensorId, frameId, dataId, value = sportTelemetryPop()
+
+    -- Return nil if no data is available
+    if not sensorId then
+        return nil
     end
+
+    -- Process only if the correct sensor and frame ID match
+    if (sensorId == sport_REMOTE_SENSOR_ID or sensorId == FPORT_REMOTE_SENSOR_ID) and frameId == REPLY_FRAME_ID then
+        return {
+            dataId & 0xFF,
+            (dataId >> 8) & 0xFF,
+            value & 0xFF,
+            (value >> 8) & 0xFF,
+            (value >> 16) & 0xFF,
+            (value >> 24) & 0xFF
+        }
+    end
+
+    return nil  -- Return nil if conditions are not met
 end
+
 
 return transport
