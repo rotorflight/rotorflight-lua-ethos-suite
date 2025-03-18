@@ -1,28 +1,31 @@
-local labels = {}
-local fields = {}
+
 
 local folder = "scorp"
 
+local mspapi = {
+    api = {
+        [1] = "ESC_PARAMETERS_SCORPION",
+    },
+    formdata = {
+        labels = {
+        },
+        fields = {
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.soft_start_time"),     mspapi=1, apikey="soft_start_time"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.runup_time"),          mspapi=1, apikey="runup_time"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.bailout"),             mspapi=1, apikey="bailout"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.gov_proportional"),    mspapi=1, apikey="gov_proportional"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.gov_integral"),        mspapi=1, apikey="gov_integral"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.motor_startup_sound"), mspapi=1, apikey="motor_startup_sound", type = 1, },
+        }
+    }                 
+}
 
-
-
-labels[#labels + 1] = {t = "Scorpion ESC"}
-
-fields[#fields + 1] = {t = "Soft Start Time", apikey="soft_start_time"}
-fields[#fields + 1] = {t = "Runup Time", apikey="runup_time"}
-fields[#fields + 1] = {t = "Bailout", apikey="bailout"}
-
--- data types are IQ22 - decoded/encoded by FC - regual scaled integers here
-fields[#fields + 1] = {t = "Gov Proportional", apikey="gov_proportional"}
-fields[#fields + 1] = {t = "Gov Integral", apikey="gov_integral"}
-
-fields[#fields + 1] = {t = "Motor Startup Sound", type = 1, apikey="motor_startup_sound"}
 
 local foundEsc = false
 local foundEscDone = false
 
 function postLoad()
-    rfsuite.app.triggers.isReady = true
+    rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function onNavMenu(self)
@@ -41,12 +44,9 @@ local function event(widget, category, value, x, y)
 end
 
 return {
-    mspapi="ESC_PARAMETERS_SCORPION",
+    mspapi=mspapi,
     eepromWrite = false,
     reboot = false,
-    title = "Advanced Setup",
-    labels = labels,
-    fields = fields,
     escinfo = escinfo,
     svFlags = 0,
     preSavePayload = function(payload)
@@ -57,7 +57,7 @@ return {
     navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
     onNavMenu = onNavMenu,
     event = event,
-    pageTitle = "ESC / Scorpion / Advanced",
+    pageTitle = rfsuite.i18n.get("app.modules.esc_tools.name") .. " / " ..  rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.name") .. " / " .. rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.advanced"),
     headerLine = rfsuite.escHeaderLineText,
-    extraMsgOnSave = "Please reboot the ESC to apply the changes",   
+    extraMsgOnSave = rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.extra_msg_save"), 
 }

@@ -28,6 +28,44 @@ local lastCacheFlushTime = os.clock() -- Store the initial time
 
 local frsky_legacy = {}
 
+-- used by sensors.lua to know if module has changed
+frsky_legacy.name = "frsky_legacy"
+
+--[[
+createSensorList: A table mapping sensor IDs to their respective sensor details.
+    - 0x5450: Governor Flags (UNIT_RAW)
+    - 0x5110: Adj. Source (UNIT_RAW)
+    - 0x5111: Adj. Value (UNIT_RAW)
+    - 0x5460: Model ID (UNIT_RAW)
+    - 0x5471: PID Profile (UNIT_RAW)
+    - 0x5472: Rate Profile (UNIT_RAW)
+    - 0x5440: Throttle % (UNIT_PERCENT)
+    - 0x5250: Consumption (UNIT_MILLIAMPERE_HOUR)
+    - 0x5462: Arming Flags (UNIT_RAW)
+
+dropSensorList: A table mapping sensor IDs to their respective sensor names to be dropped.
+    - 0x0400: Temp1
+    - 0x0410: Temp1
+
+renameSensorList: A table mapping sensor IDs to their new names, with conditions on the current name.
+    - 0x0500: Headspeed (only if name is "RPM")
+    - 0x0501: Tailspeed (only if name is "RPM")
+    - 0x0210: Voltage (only if name is "VFAS")
+    - 0x0200: Current (only if name is "Current")
+    - 0x0600: Charge Level (only if name is "Fuel")
+    - 0x0910: Cell Voltage (only if name is "ADC4")
+    - 0x0900: BEC Voltage (only if name is "ADC3")
+    - 0x0211: ESC Voltage (only if name is "VFAS")
+    - 0x0201: ESC Current (only if name is "Current")
+    - 0x0502: ESC RPM (only if name is "RPM")
+    - 0x0B70: ESC Temp (only if name is "ESC temp")
+    - 0x0212: ESC2 Voltage (only if name is "VFAS")
+    - 0x0202: ESC2 Current (only if name is "Current")
+    - 0x0503: ESC2 RPM (only if name is "RPM")
+    - 0x0B71: ESC2 Temp (only if name is "ESC temp")
+    - 0x0401: MCU Temp (only if name is "Temp1")
+    - 0x0840: Heading (only if name is "GPS course")
+]]
 -- create
 local createSensorList = {}
 createSensorList[0x5450] = {name = "Governor Flags", unit = UNIT_RAW}
@@ -73,6 +111,19 @@ frsky_legacy.createSensorCache = {}
 frsky_legacy.dropSensorCache = {}
 frsky_legacy.renameSensorCache = {}
 
+--[[
+    createSensor - Creates a custom sensor if it does not already exist in the cache.
+
+    Parameters:
+    physId (number) - The physical ID of the sensor.
+    primId (number) - The primary ID of the sensor.
+    appId (number) - The application ID of the sensor.
+    frameValue (number) - The frame value of the sensor.
+
+    This function checks if a custom sensor with the given appId exists in the createSensorList.
+    If it does, it then checks if the sensor is already cached in frsky_legacy.createSensorCache.
+    If the sensor is not cached, it creates a new sensor, sets its properties, and caches it.
+]]
 local function createSensor(physId, primId, appId, frameValue)
 
     -- check for custom sensors and create them if they dont exist
@@ -90,9 +141,9 @@ local function createSensor(physId, primId, appId, frameValue)
                 frsky_legacy.createSensorCache[appId]:name(v.name)
                 frsky_legacy.createSensorCache[appId]:appId(appId)
                 frsky_legacy.createSensorCache[appId]:physId(physId)
-                frsky_legacy.createSensorCache[appId]:module(rfsuite.rssiSensor:module())
+                frsky_legacy.createSensorCache[appId]:module(rfsuite.session.telemetrySensor:module())
 
-                frsky.createSensorCache[appId]:minimum(min or -1000000000)
+                frsky_legacy.createSensorCache[appId]:minimum(min or -1000000000)
                 frsky_legacy.createSensorCache[appId]:maximum(max or 2147483647)
                 if v.unit ~= nil then
                     frsky_legacy.createSensorCache[appId]:unit(v.unit)
@@ -108,6 +159,19 @@ local function createSensor(physId, primId, appId, frameValue)
 
 end
 
+--[[
+    dropSensor - Function to handle the dropping of a sensor based on its application ID.
+    
+    Parameters:
+    physId (number) - The physical ID of the sensor.
+    primId (number) - The primary ID of the sensor.
+    appId (number) - The application ID of the sensor.
+    frameValue (number) - The frame value associated with the sensor.
+    
+    This function checks if a custom sensor exists in the dropSensorList using the provided appId.
+    If the sensor exists and is not already cached in frsky_legacy.dropSensorCache, it retrieves the sensor
+    source using system.getSource and drops it if successfully retrieved.
+]]
 local function dropSensor(physId, primId, appId, frameValue)
 
     -- check for custom sensors and create them if they dont exist
@@ -125,6 +189,19 @@ local function dropSensor(physId, primId, appId, frameValue)
 
 end
 
+--[[
+    renameSensor - Renames a telemetry sensor based on provided parameters.
+
+    Parameters:
+    physId (number) - The physical ID of the sensor.
+    primId (number) - The primary ID of the sensor.
+    appId (number) - The application ID of the sensor.
+    frameValue (number) - The frame value of the sensor.
+
+    This function checks if a custom sensor exists in the renameSensorList using the appId.
+    If the sensor exists and is not already cached in frsky_legacy.renameSensorCache, it retrieves the sensor source.
+    If the sensor source is found and its name matches the specified condition, it renames the sensor.
+]]
 local function renameSensor(physId, primId, appId, frameValue)
 
     -- check for custom sensors and create them if they dont exist
@@ -142,9 +219,22 @@ local function renameSensor(physId, primId, appId, frameValue)
 
 end
 
+--[[
+    Function: telemetryPop
+    Description: Pops a received SPORT packet from the queue and processes it. 
+                 Only packets using a data ID within 0x5000 to 0x50FF (frame ID == 0x10), 
+                 as well as packets with a frame ID equal to 0x32 (regardless of the data ID) 
+                 will be passed to the LUA telemetry receive queue.
+    Returns: 
+        - true if a frame was processed
+        - false if no frame was available
+    Note: 
+        - The function calls createSensor, dropSensor, and renameSensor with the frame's 
+          physical ID, primary ID, application ID, and value.
+--]]
 local function telemetryPop()
     -- Pops a received SPORT packet from the queue. Please note that only packets using a data ID within 0x5000 to 0x50FF (frame ID == 0x10), as well as packets with a frame ID equal 0x32 (regardless of the data ID) will be passed to the LUA telemetry receive queue.
-    local frame = rfsuite.bg.msp.sensor:popFrame()
+    local frame = rfsuite.tasks.msp.sensorTlm:popFrame()
     if frame == nil then return false end
 
     if not frame.physId or not frame.primId then return end
@@ -155,6 +245,11 @@ local function telemetryPop()
     return true
 end
 
+--[[
+    Function: frsky_legacy.wakeup
+    Description: This function is responsible for managing sensor caches and ensuring they are cleared at appropriate times. It checks if the caches need to be expired based on a timer and clears them if necessary. Additionally, it flushes the sensor list if telemetry is inactive or if the RSSI sensor is not available. The function also ensures that certain operations are only performed when the GUI is not running and the MSP queue is processed.
+    Short: Manages sensor caches and ensures timely clearing.
+--]]
 function frsky_legacy.wakeup()
 
     -- Function to clear caches
@@ -171,10 +266,10 @@ function frsky_legacy.wakeup()
     end
 
     -- Flush sensor list if we kill the sensors
-    if not rfsuite.bg.telemetry.active() or not rfsuite.rssiSensor then clearCaches() end
+    if not rfsuite.session.telemetryState or not rfsuite.session.telemetrySensor then clearCaches() end
 
     -- If GUI or queue is busy.. do not do this!
-    if rfsuite.bg and rfsuite.bg.telemetry and rfsuite.bg.telemetry.active() and rfsuite.rssiSensor then if rfsuite.app.guiIsRunning == false and rfsuite.bg.msp.mspQueue:isProcessed() then while telemetryPop() do end end end
+    if rfsuite.tasks and rfsuite.tasks.telemetry and rfsuite.session.telemetryState and rfsuite.session.telemetrySensor then if rfsuite.app.guiIsRunning == false and rfsuite.tasks.msp.mspQueue:isProcessed() then while telemetryPop() do end end end
 
 end
 

@@ -2,7 +2,7 @@ local labels = {}
 local tables = {}
 
 local activateWakeup = false
-local currentProfileChecked = false
+
 
 tables[0] = "app/modules/rates/ratetables/none.lua"
 tables[1] = "app/modules/rates/ratetables/betaflight.lua"
@@ -11,47 +11,54 @@ tables[3] = "app/modules/rates/ratetables/kiss.lua"
 tables[4] = "app/modules/rates/ratetables/actual.lua"
 tables[5] = "app/modules/rates/ratetables/quick.lua"
 
-if rfsuite.rateProfile == nil then rfsuite.rateProfile = rfsuite.preferences.defaultRateProfile end
+if rfsuite.session.activeRateTable == nil then 
+    rfsuite.session.activeRateTable = rfsuite.preferences.defaultRateProfile 
+end
 
-local mytable = assert(loadfile(tables[rfsuite.rateProfile]))()
 
-local fields = mytable.fields
+rfsuite.utils.log("Loading Rate Table: " .. tables[rfsuite.session.activeRateTable],"debug")
+local mspapi = assert(loadfile(tables[rfsuite.session.activeRateTable]))()
+local mytable = mspapi.formdata
 
-fields[13] = {t = "Rates Type", hidden = true, ratetype = 1, min = 0, max = 5, vals = {1}}
+
 
 local function postLoad(self)
-    -- if the activeRateProfile is not what we are displaying
-    -- then we need to trigger a reload of the page
-    local v = rfsuite.app.Page.values[1]
-    if v ~= nil then rfsuite.activeRateProfile = math.floor(v) end
 
-    if rfsuite.activeRateProfile ~= nil then
-        if rfsuite.activeRateProfile ~= rfsuite.rateProfile then
-            rfsuite.rateProfile = rfsuite.activeRateProfile
-            rfsuite.app.triggers.reloadFull = true
-            return
-        end
-    end
+    local v = mspapi.values[mspapi.api[1]].rates_type
+    
+    rfsuite.utils.log("Active Rate Table: " .. rfsuite.session.activeRateTable,"info")
 
-    rfsuite.app.triggers.isReady = true
+    if v ~= rfsuite.session.activeRateTable then
+        rfsuite.utils.log("Switching Rate Table: " .. v,"info")
+        rfsuite.app.triggers.reloadFull = true
+        rfsuite.session.activeRateTable = v           
+        return
+    end 
 
+    rfsuite.app.triggers.closeProgressLoader = true
     activateWakeup = true
 
 end
 
-local function flagRateChange(self)
-    rfsuite.app.triggers.resetRates = true
+function rightAlignText(width, text)
+    local textWidth, _ = lcd.getTextSize(text)  -- Get the text width
+    local padding = width - textWidth  -- Calculate how much padding is needed
+    
+    if padding > 0 then
+        return string.rep(" ", math.floor(padding / lcd.getTextSize(" "))) .. text
+    else
+        return text  -- No padding needed if text is already wider than width
+    end
 end
 
 local function openPage(idx, title, script)
 
     rfsuite.app.Page = assert(loadfile("app/modules/" .. script))()
-    -- collectgarbage()
 
     rfsuite.app.lastIdx = idx
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
-    rfsuite.lastPage = script
+    rfsuite.session.lastPage = script
 
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
 
@@ -61,7 +68,18 @@ local function openPage(idx, title, script)
 
     rfsuite.app.ui.fieldHeader(title)
 
-    local numCols = #rfsuite.app.Page.cols
+    rfsuite.utils.log("Merging form data from mspapi","debug")
+    rfsuite.app.Page.fields = rfsuite.app.Page.mspapi.formdata.fields
+    rfsuite.app.Page.labels = rfsuite.app.Page.mspapi.formdata.labels
+    rfsuite.app.Page.rows = rfsuite.app.Page.mspapi.formdata.rows
+    rfsuite.app.Page.cols = rfsuite.app.Page.mspapi.formdata.cols
+
+    local numCols
+    if rfsuite.app.Page.cols ~= nil then
+        numCols = #rfsuite.app.Page.cols
+    else
+        numCols = 3
+    end
 
     -- we dont use the global due to scrollers
     local screenWidth, screenHeight = rfsuite.app.getWindowSize()
@@ -75,11 +93,16 @@ local function openPage(idx, title, script)
     local positions_r = {}
     local pos
 
-    line = form.addLine(rfsuite.app.Page.rTableName)
+    --line = form.addLine(mspapi.formdata.name)
+    line = form.addLine("")
+    pos = {x = 0, y = paddingTop, w = 200, h = h}
+    rfsuite.app.formFields['col_0'] = form.addStaticText(line, pos, mspapi.formdata.name)
 
     local loc = numCols
     local posX = screenWidth - paddingRight
     local posY = paddingTop
+
+    rfsuite.session.colWidth = w - paddingRight
 
     local c = 1
     while loc > 0 do
@@ -89,12 +112,13 @@ local function openPage(idx, title, script)
         positions_r[c] = posX - w
 
         lcd.font(FONT_STD)
-        local tsizeW, tsizeH = lcd.getTextSize(colLabel)
+        --local tsizeW, tsizeH = lcd.getTextSize(colLabel)
+        colLabel = rightAlignText(rfsuite.session.colWidth, colLabel)
 
-        local posTxt = (positions_r[c] + w) - tsizeW
+        local posTxt = positions_r[c] + paddingRight 
 
         pos = {x = posTxt, y = posY, w = w, h = h}
-        form.addStaticText(line, pos, colLabel)
+        rfsuite.app.formFields['col_'..tostring(c)] = form.addStaticText(line, pos, colLabel)
 
         posX = math.floor(posX - w)
 
@@ -117,8 +141,8 @@ local function openPage(idx, title, script)
 
             pos = {x = posX + padding, y = posY, w = w - padding, h = h}
 
-            minValue = f.min * rfsuite.utils.decimalInc(f.decimals)
-            maxValue = f.max * rfsuite.utils.decimalInc(f.decimals)
+            minValue = f.min * rfsuite.app.utils.decimalInc(f.decimals)
+            maxValue = f.max * rfsuite.app.utils.decimalInc(f.decimals)
             if f.mult ~= nil then
                 minValue = minValue * f.mult
                 maxValue = maxValue * f.mult
@@ -126,28 +150,27 @@ local function openPage(idx, title, script)
             if f.scale ~= nil then
                 minValue = minValue / f.scale
                 maxValue = maxValue / f.scale
-            end
+            end            
 
             rfsuite.app.formFields[i] = form.addNumberField(rateRows[f.row], pos, minValue, maxValue, function()
                 local value
-                if rfsuite.activeRateProfile == 0 then
+                if rfsuite.session.activeRateProfile == 0 then
                     value = 0
                 else
-                    value = rfsuite.utils.getFieldValue(rfsuite.app.Page.fields[i])
+                    value = rfsuite.app.utils.getFieldValue(rfsuite.app.Page.fields[i])
                 end
                 return value
             end, function(value)
-                f.value = rfsuite.utils.saveFieldValue(rfsuite.app.Page.fields[i], value)
-                rfsuite.app.saveValue(i)
+                f.value = rfsuite.app.utils.saveFieldValue(rfsuite.app.Page.fields[i], value)
             end)
             if f.default ~= nil then
-                local default = f.default * rfsuite.utils.decimalInc(f.decimals)
+                local default = f.default * rfsuite.app.utils.decimalInc(f.decimals)
                 if f.mult ~= nil then default = math.floor(default * f.mult) end
                 if f.scale ~= nil then default = math.floor(default / f.scale) end
                 rfsuite.app.formFields[i]:default(default)
             else
                 rfsuite.app.formFields[i]:default(0)
-            end
+            end           
             if f.decimals ~= nil then rfsuite.app.formFields[i]:decimals(f.decimals) end
             if f.unit ~= nil then rfsuite.app.formFields[i]:suffix(f.unit) end
             if f.step ~= nil then rfsuite.app.formFields[i]:step(f.step) end
@@ -156,8 +179,10 @@ local function openPage(idx, title, script)
                     local helpTxt = rfsuite.app.fieldHelpTxt[f.help]['t']
                     rfsuite.app.formFields[i]:help(helpTxt)
                 end
-            end
-            if f.disable == true then rfsuite.app.formFields[i]:enable(false) end
+            end   
+            if f.disable == true then 
+                rfsuite.app.formFields[i]:enable(false) 
+            end  
         end
     end
 
@@ -165,38 +190,37 @@ end
 
 local function wakeup()
 
-    if activateWakeup == true and currentProfileChecked == false and rfsuite.bg.msp.mspQueue:isProcessed() then
-
-        -- update active profile
-        -- the check happens in postLoad          
+    if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then       
         if rfsuite.session.activeRateProfile ~= nil then
-            rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeRateProfile)
-            currentProfileChecked = true
-        end
-
+            if rfsuite.app.formFields['title'] then
+                rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeRateProfile)
+            end
+        end 
     end
-
 end
 
+local function onHelpMenu()
+
+    local helpPath = "app/modules/rates/help.lua"
+    local help = assert(loadfile(helpPath))()
+
+    rfsuite.app.ui.openPageHelp(help.help["table"][rfsuite.session.activeRateTable], "rates")
+
+
+end    
+
 return {
-    --   read = "111", -- MSP_RC_TUNING    
-    --    write = 204, -- MSP_SET_RC_TUNING
-    mspapi = "RC_TUNING",
-    title = "Rates",
+    mspapi = mspapi,
+    title = rfsuite.i18n.get("app.modules.rates.name"),
     reboot = false,
     eepromWrite = true,
-    --    minBytes = 25,
-    labels = labels,
-    fields = fields,
     refreshOnRateChange = true,
     rows = mytable.rows,
     cols = mytable.cols,
-    --   simulatorResponse = {4, 18, 25, 32, 20, 0, 0, 18, 25, 32, 20, 0, 0, 32, 50, 45, 10, 0, 0, 56, 0, 56, 20, 0, 0},
-    rTableName = mytable.rTableName,
     flagRateChange = flagRateChange,
     postLoad = postLoad,
     openPage = openPage,
     wakeup = wakeup,
+    onHelpMenu = onHelpMenu,
     API = {},
-
 }

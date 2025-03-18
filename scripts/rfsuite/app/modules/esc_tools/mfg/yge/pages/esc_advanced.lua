@@ -1,26 +1,30 @@
-local labels = {}
-local fields = {}
 
 local folder = "yge"
 
+local mspapi = {
+    api = {
+        [1] = "ESC_PARAMETERS_YGE",
+    },
+    formdata = {
+        labels = {
+        },
+        fields = {
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.yge.min_start_power"), mspapi = 1, apikey="min_start_power"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.yge.max_start_power"), mspapi = 1, apikey="max_start_power"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.yge.throttle_response"), type = 1, mspapi = 1, apikey="throttle_response"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.yge.timing"), type = 1, mspapi = 1, apikey="timing"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.yge.active_freewheel"), type = 1, mspapi = 1, apikey="active_freewheel"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.yge.f3c_auto"), type = 1, mspapi = 1, apikey="f3c_auto"},
+        }
+    }                 
+}
 
-
-labels[#labels + 1] = {t = "ESC"}
-
-fields[#fields + 1] = {t = "Min Start Power", apikey="min_start_power"}
-fields[#fields + 1] = {t = "Max Start Power", apikey="max_start_power"}
-fields[#fields + 1] = {t = "Throttle Response", type = 1, apikey="throttle_response"}
-fields[#fields + 1] = {t = "Motor Timing", type = 1, apikey="timing"}
-fields[#fields + 1] = {t = "Active Freewheel", type = 1, apikey="active_freewheel"}
-fields[#fields + 1] = {t = "F3C Autorotation", type = 1, apikey="f3c_auto"}
--- not sure this field exists?
--- fields[#fields + 1] = {t = "Startup Response", min = 0, max = #startupResponse, vals = {11, 12}, table = startupResponse}
 
 local foundEsc = false
 local foundEscDone = false
 
 function postLoad()
-    rfsuite.app.triggers.isReady = true
+    rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function onNavMenu(self)
@@ -30,21 +34,20 @@ end
 
 local function event(widget, category, value, x, y)
 
-    if category == 5 or value == 35 then
+    -- if close event detected go to section home page
+    if category == EVT_CLOSE and value == 0 or value == 35 then
+        if powercycleLoader then powercycleLoader:close() end
         rfsuite.app.ui.openPage(pidx, folder, "esc_tools/esc_tool.lua")
         return true
     end
 
-    return false
+
 end
 
 return {
-    mspapi = "ESC_PARAMETERS_YGE",
+    mspapi = mspapi,
     eepromWrite = true,
     reboot = false,
-    title = "Advanced Setup",
-    labels = labels,
-    fields = fields,
     escinfo = escinfo,
     svTiming = 0,
     svFlags = 0,
@@ -52,6 +55,6 @@ return {
     navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
     onNavMenu = onNavMenu,
     event = event,
-    pageTitle = "ESC / YGE / Advanced",
+    pageTitle = rfsuite.i18n.get("app.modules.esc_tools.name") .. " / " ..  rfsuite.i18n.get("app.modules.esc_tools.mfg.yge.name") .. " / " .. rfsuite.i18n.get("app.modules.esc_tools.mfg.yge.advanced"),
     headerLine = rfsuite.escHeaderLineText
 }

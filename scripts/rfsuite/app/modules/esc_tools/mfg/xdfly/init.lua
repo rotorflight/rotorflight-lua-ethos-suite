@@ -1,5 +1,5 @@
 local MSP_API = "ESC_PARAMETERS_XDFLY"
-local toolName = "XDFLY"
+local toolName = rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.name")
 moduleName = "xdfly"
 
 

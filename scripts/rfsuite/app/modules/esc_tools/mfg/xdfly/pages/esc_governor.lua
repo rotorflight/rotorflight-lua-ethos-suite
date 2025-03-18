@@ -1,37 +1,46 @@
-local labels = {}
-local fields = {}
+
 
 local folder = "xdfly"
 local ESC = assert(loadfile("app/modules/esc_tools/mfg/" .. folder .. "/init.lua"))()
 local mspHeaderBytes = ESC.mspHeaderBytes
 local mspSignature = ESC.mspSignature
 local simulatorResponse = ESC.simulatorResponse
-local activeFields = ESC.getActiveFields(rfsuite.escBuffer)
+local activeFields = ESC.getActiveFields(rfsuite.session.escBuffer)
 local activateWakeup = false
 
 local foundEsc = false
 local foundEscDone = false
 
+local mspapi = {
+    api = {
+        [1] = "ESC_PARAMETERS_XDFLY",
+    },
+    formdata = {
+        labels = {
+        },
+        fields = {
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.gov"), activeFieldPos = 2, type = 1,  mspapi = 1, apikey = "governor"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.gov_p"), activeFieldPos = 6,  mspapi = 1, apikey="gov_p"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.gov_i"), activeFieldPos = 7,  mspapi = 1, apikey="gov_i"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.motor_poles"),  activeFieldPos = 17 ,  mspapi = 1, apikey="motor_poles"},
+        }
+    }                 
+}
 
-
-fields[#fields + 1] = {t = "Governor", activeFieldPos = 2, type = 1,  apikey = "governor"}
-fields[#fields + 1] = {t = "Gov-P", activeFieldPos = 6, apikey="governor_p"}
-fields[#fields + 1] = {t = "Gov-I", activeFieldPos = 7, apikey="governor_i"}
-fields[#fields + 1] = {t = "Motor Poles",  activeFieldPos = 17 , apikey="motor_poles"}
 
 -- This code will disable the field if the ESC does not support it
 -- It now uses the activeFieldsPos element to associate to the activeFields table
-for i = #fields, 1, -1 do 
-    local f = fields[i]
+for i = #mspapi.formdata.fields, 1, -1 do 
+    local f = mspapi.formdata.fields[i]
     local fieldIndex = f.activeFieldPos  -- Use activeFieldPos for association
     if activeFields[fieldIndex] == 0 then
-        table.remove(fields, i)  -- Remove the field from the table
+        table.remove(mspapi.formdata.fields, i)  -- Remove the field from the table
     end
 end
 
 
 function postLoad()
-    rfsuite.app.triggers.isReady = true
+    rfsuite.app.triggers.closeProgressLoader = true
     activateWakeup = true
 end
 
@@ -51,25 +60,21 @@ local function event(widget, category, value, x, y)
 end
 
 local function wakeup(self)
-    if activateWakeup == true and rfsuite.bg.msp.mspQueue:isProcessed() then
+    if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then
         activateWakeup = false
     end
 end
 
 return {
-    mspapi="ESC_PARAMETERS_XDFLY",
+    mspapi=mspapi,
     eepromWrite = true,
     reboot = false,
-    title = "Governor",
-    labels = labels,
-    fields = fields,
     escinfo = escinfo,
-    simulatorResponse =  simulatorResponse,
     postLoad = postLoad,
     navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
     onNavMenu = onNavMenu,
     event = event,
-    pageTitle = "ESC / XDFLY / Governor",
+    pageTitle = rfsuite.i18n.get("app.modules.esc_tools.name") .. " / " ..  rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.name") .. " / " .. rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.governor"),
     headerLine = rfsuite.escHeaderLineText,
     wakeup = wakeup
 }

@@ -15,34 +15,33 @@
  * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
 -- Constants for MSP Commands
+local API_NAME = "BATTERY_CONFIG" -- API name (must be same as filename)
 local MSP_API_CMD_READ = 32 -- Command identifier 
 local MSP_API_CMD_WRITE = 33 -- Command identifier 
+local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write 
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "batteryCapacity",              type = "U16", apiVersion = 12.06, simResponse = {138, 2}, min = 0,   max = 20000, step = 50, unit = "mAh", default = 0, "The milliamp hour capacity of your battery."  },
-    {field = "batteryCellCount",             type = "U8",  apiVersion = 12.06, simResponse = {3},      min = 1,   max = 24,    unit = nil,   default = 6, help = "The number of cells in your battery pack." },
+    {field = "batteryCapacity",              type = "U16", apiVersion = 12.06, simResponse = {138, 2}, min = 0,   max = 20000, step = 50, unit = "mAh", default = 0},
+    {field = "batteryCellCount",             type = "U8",  apiVersion = 12.06, simResponse = {3},      min = 1,   max = 24,    unit = nil,   default = 6},
     {field = "voltageMeterSource",           type = "U8",  apiVersion = 12.06, simResponse = {1}},
     {field = "currentMeterSource",           type = "U8",  apiVersion = 12.06, simResponse = {1}},
-    {field = "vbatmincellvoltage",           type = "U16", apiVersion = 12.06, simResponse = {74, 1},  min = 0,   decimals = 2, scale = 100, max = 500, unit = "V",   default = 3.3, help = "The minimum voltage a cell is safe to discharge to."  },
-    {field = "vbatmaxcellvoltage",           type = "U16", apiVersion = 12.06, simResponse = {174, 1}, min = 0,   decimals = 2, scale = 100, max = 500, unit = "V",   default = 4.3, help = "Maximum voltage each cell can be charged to."  },
-    {field = "vbatfullcellvoltage",          type = "U16", apiVersion = 12.06, simResponse = {154, 1}, min = 0,   decimals = 2, scale = 100, max = 500, unit = "V",   default = 4.1, help = "The nomimal voltage of a fully charged cell."  },
-    {field = "vbatwarningcellvoltage",       type = "U16", apiVersion = 12.06, simResponse = {94, 1},  min = 0,   decimals = 2, scale = 100, max = 500, unit = "V",   default = 3.5, help = "The voltage per cell when we trigger an alarm."  },
+    {field = "vbatmincellvoltage",           type = "U16", apiVersion = 12.06, simResponse = {74, 1},  min = 0,   decimals = 2, scale = 100, max = 500, unit = "V",   default = 3.3},
+    {field = "vbatmaxcellvoltage",           type = "U16", apiVersion = 12.06, simResponse = {174, 1}, min = 0,   decimals = 2, scale = 100, max = 500, unit = "V",   default = 4.3},
+    {field = "vbatfullcellvoltage",          type = "U16", apiVersion = 12.06, simResponse = {154, 1}, min = 0,   decimals = 2, scale = 100, max = 500, unit = "V",   default = 4.1},
+    {field = "vbatwarningcellvoltage",       type = "U16", apiVersion = 12.06, simResponse = {94, 1},  min = 0,   decimals = 2, scale = 100, max = 500, unit = "V",   default = 3.5},
     {field = "lvcPercentage",                type = "U8",  simResponse = {100}},
     {field = "consumptionWarningPercentage", type = "U8",  apiVersion = 12.06, simResponse = {10}},
 }
 
--- filter the structure to remove any params not supported by the running api version
-local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
-
--- calculate the min bytes value from the structure
-local MSP_MIN_BYTES = rfsuite.bg.msp.api.calculateMinBytes(MSP_API_STRUCTURE_READ)
+-- Process structure in one pass
+local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE =
+    rfsuite.tasks.msp.api.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 
 -- set read structure
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
 
--- generate a simulatorResponse from the read structure
-local MSP_API_SIMULATOR_RESPONSE = rfsuite.bg.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
+
 
 
 -- Variable to store parsed MSP data
@@ -52,7 +51,7 @@ local payloadData = {}
 local defaultData = {}
 
 -- Create a new instance
-local handlers = rfsuite.bg.msp.api.createHandlers()
+local handlers = rfsuite.tasks.msp.api.createHandlers()
 
 -- Variables to store optional the UUID and timeout for payload
 local MSP_API_UUID
@@ -68,11 +67,14 @@ local function read()
     local message = {
         command = MSP_API_CMD_READ,
         processReply = function(self, buf)
-            mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE_READ)
-            if #buf >= MSP_MIN_BYTES then
-                local completeHandler = handlers.getCompleteHandler()
-                if completeHandler then completeHandler(self, buf) end
-            end
+            local structure = MSP_API_STRUCTURE_READ
+            rfsuite.tasks.msp.api.parseMSPData(buf, structure, nil, nil, function(result)
+                mspData = result
+                if #buf >= MSP_MIN_BYTES then
+                    local completeHandler = handlers.getCompleteHandler()
+                    if completeHandler then completeHandler(self, buf) end
+                end
+            end)
         end,
         errorHandler = function(self, buf)
             local errorHandler = handlers.getErrorHandler()
@@ -82,7 +84,7 @@ local function read()
         uuid = MSP_API_UUID,
         timeout = MSP_API_MSG_TIMEOUT  
     }
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function write(suppliedPayload)
@@ -93,7 +95,7 @@ local function write(suppliedPayload)
 
     local message = {
         command = MSP_API_CMD_WRITE,
-        payload = suppliedPayload or payloadData,
+        payload = suppliedPayload or rfsuite.tasks.msp.api.buildWritePayload(API_NAME, payloadData,MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE),
         processReply = function(self, buf)
             local completeHandler = handlers.getCompleteHandler()
             if completeHandler then completeHandler(self, buf) end
@@ -107,7 +109,7 @@ local function write(suppliedPayload)
         uuid = MSP_API_UUID,
         timeout = MSP_API_MSG_TIMEOUT  
     }
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 -- Function to get the value of a specific field from MSP data
@@ -118,13 +120,7 @@ end
 
 -- Function to set a value dynamically
 local function setValue(fieldName, value)
-    for _, field in ipairs(MSP_API_STRUCTURE_WRITE) do
-        if field.field == fieldName then
-            payloadData[fieldName] = value
-            return true
-        end
-    end
-    error("Invalid field name: " .. fieldName)
+    payloadData[fieldName] = value
 end
 
 -- Function to check if the read operation is complete

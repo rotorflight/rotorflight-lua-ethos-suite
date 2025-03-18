@@ -15,17 +15,19 @@
  * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
 -- Constants for MSP Commands
+local API_NAME = "ESC_PARAMETERS_SCORPION" -- API name (must be same as filename)
 local MSP_API_CMD_READ = 217 -- Command identifier 
 local MSP_API_CMD_WRITE = 218 -- Command identifier 
+local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write 
 local MSP_SIGNATURE = 0x53
 local MSP_HEADER_BYTES = 2
 
 -- Tables used in structure below
-local escMode = {"Heli Governor", "Heli Governor (stored)", "VBar Governor", "External Governor", "Airplane mode", "Boat mode", "Quad mode"}
-local rotation = {"CCW", "CW"}
+local escMode = {rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_heligov"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_helistore"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_vbargov"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_extgov"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_airplane"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_boat"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_quad")}
+local rotation = {rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_ccw"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_cw")}
 local becVoltage = {"5.1 V", "6.1 V", "7.3 V", "8.3 V", "Disabled"}
-local teleProtocol = {"Standard", "VBar", "Jeti Exbus", "Unsolicited", "Futaba SBUS"}
-local onOff = {"On", "Off"}
+local teleProtocol = {rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_standard"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_vbar"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_exbus"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_unsolicited"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_futsbus")}
+local onOff = {rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_on"), rfsuite.i18n.get("api.ESC_PARAMETERS_SCORPION.tbl_off")}
 
 local MSP_API_STRUCTURE_READ_DATA = {
     {field = "esc_signature",       type = "U8",  apiVersion = 12.07, simResponse = {83}},
@@ -83,17 +85,12 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "gov_integral",        type = "U32", apiVersion = 12.07, simResponse = {200, 0, 0, 0}, min = 150, max = 250, scale = 100},
 }
 
--- filter the structure to remove any params not supported by the running api version
-local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
-
--- calculate the min bytes value from the structure
-local MSP_MIN_BYTES = rfsuite.bg.msp.api.calculateMinBytes(MSP_API_STRUCTURE_READ)
+-- Process structure in one pass
+local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE =
+    rfsuite.tasks.msp.api.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 
 -- set read structure
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
-
--- generate a simulatorResponse from the read structure
-local MSP_API_SIMULATOR_RESPONSE = rfsuite.bg.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
 
 -- Variable to store parsed MSP data
 local mspData = nil
@@ -102,7 +99,7 @@ local payloadData = {}
 local defaultData = {}
 
 -- Create a new instance
-local handlers = rfsuite.bg.msp.api.createHandlers()
+local handlers = rfsuite.tasks.msp.api.createHandlers()
 
 -- Variables to store optional the UUID and timeout for payload
 local MSP_API_UUID
@@ -118,11 +115,14 @@ local function read()
     local message = {
         command = MSP_API_CMD_READ,
         processReply = function(self, buf)
-            mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE_READ)
-            if #buf >= MSP_MIN_BYTES then
-                local completeHandler = handlers.getCompleteHandler()
-                if completeHandler then completeHandler(self, buf) end
-            end
+            local structure = MSP_API_STRUCTURE_READ
+            rfsuite.tasks.msp.api.parseMSPData(buf, structure, nil, nil, function(result)
+                mspData = result
+                if #buf >= MSP_MIN_BYTES then
+                    local completeHandler = handlers.getCompleteHandler()
+                    if completeHandler then completeHandler(self, buf) end
+                end
+            end)
         end,
         errorHandler = function(self, buf)
             local errorHandler = handlers.getErrorHandler()
@@ -132,7 +132,7 @@ local function read()
         uuid = MSP_API_UUID,
         timeout = MSP_API_MSG_TIMEOUT  
     }
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function write(suppliedPayload)
@@ -143,7 +143,7 @@ local function write(suppliedPayload)
 
     local message = {
         command = MSP_API_CMD_WRITE,
-        payload = suppliedPayload or payloadData,
+        payload = suppliedPayload or rfsuite.tasks.msp.api.buildWritePayload(API_NAME, payloadData,MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE),
         processReply = function(self, buf)
             local completeHandler = handlers.getCompleteHandler()
             if completeHandler then completeHandler(self, buf) end
@@ -157,7 +157,7 @@ local function write(suppliedPayload)
         uuid = MSP_API_UUID,
         timeout = MSP_API_MSG_TIMEOUT  
     }
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 -- Function to get the value of a specific field from MSP data
@@ -168,13 +168,7 @@ end
 
 -- Function to set a value dynamically
 local function setValue(fieldName, value)
-    for _, field in ipairs(MSP_API_STRUCTURE_WRITE) do
-        if field.field == fieldName then
-            payloadData[fieldName] = value
-            return true
-        end
-    end
-    error("Invalid field name: " .. fieldName)
+    payloadData[fieldName] = value
 end
 
 -- Function to check if the read operation is complete

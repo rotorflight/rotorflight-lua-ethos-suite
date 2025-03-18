@@ -20,9 +20,10 @@
 -- The actual servos module needs to be modified to use this structure.
 -- that is a task for another day
 -- net result - not tested - be prepaired to make it work!
-
+local API_NAME = "SERVO_CONFIGURATIONS" -- API name (must be same as filename)
 local MSP_API_CMD_READ = 120 -- Command identifier
 local MSP_API_CMD_WRITE = nil -- Command identifier 
+local MSP_REBUILD_ON_WRITE = true -- Rebuild the payload on write 
 local MSP_API_SIMULATOR_RESPONSE = {4, 180, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 160, 5, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 1, 0, 14, 6, 12, 254, 244, 1, 244, 1, 244, 1, 144, 0, 0, 0, 0, 0, 120, 5, 212, 254, 44, 1, 244, 1, 244, 1, 77, 1, 0, 0, 0, 0} -- Default simulator response
 local MSP_MIN_BYTES = 1
 
@@ -36,7 +37,7 @@ local payloadData = {}
 local defaultData = {}
 
 -- Create a new instance
-local handlers = rfsuite.bg.msp.api.createHandlers()
+local handlers = rfsuite.tasks.msp.api.createHandlers()
 
 -- Variables to store optional the UUID and timeout for payload
 local MSP_API_UUID
@@ -109,17 +110,27 @@ local function read()
     local message = {
         command = MSP_API_CMD_READ, -- Specify the MSP command
         processReply = function(self, buf)
-            -- Generate the MSP structure dynamically
+            -- Dynamically generate the structure
             local servoCount = buf[1]
-            MSP_MIN_BYTES = 1 + (servoCount * 16) -- Update MSP_MIN_BYTES dynamically
-
+            MSP_MIN_BYTES = 1 + (servoCount * 16)
+        
             local MSP_API_STRUCTURE_READ = generateMSPStructureRead(servoCount)
-            mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE_READ, processMSPData(buf, MSP_API_STRUCTURE_READ))
-            if #buf >= MSP_MIN_BYTES then
-                local completeHandler = handlers.getCompleteHandler()
-                if completeHandler then completeHandler(self, buf) end
+        
+            local function onParseComplete(result)
+                mspData = result
+                if #buf >= MSP_MIN_BYTES then
+                    local completeHandler = handlers.getCompleteHandler()
+                    if completeHandler then completeHandler(self, buf) end
+                end
             end
-        end,
+        
+            -- Always use chunked parser
+            rfsuite.tasks.msp.api.parseMSPData(buf, MSP_API_STRUCTURE_READ, processMSPData(buf, MSP_API_STRUCTURE_READ), nil, {
+                chunked = true,
+                fieldsPerTick = 10,  -- Tune if needed
+                completionCallback = onParseComplete
+            })
+        end,        
         errorHandler = function(self, buf)
             local errorHandler = handlers.getErrorHandler()
             if errorHandler then errorHandler(self, buf) end
@@ -130,7 +141,7 @@ local function read()
         timeout = MSP_API_MSG_TIMEOUT  
     }
     -- Add the message to the processing queue
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function write(suppliedPayload)
@@ -141,7 +152,7 @@ local function write(suppliedPayload)
 
     local message = {
         command = MSP_API_CMD_WRITE,
-        payload = suppliedPayload or payloadData,
+        payload = suppliedPayload or rfsuite.tasks.msp.api.buildWritePayload(API_NAME, payloadData,MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE),
         processReply = function(self, buf)
             local completeHandler = handlers.getCompleteHandler()
             if completeHandler then completeHandler(self, buf) end
@@ -155,7 +166,7 @@ local function write(suppliedPayload)
         uuid = MSP_API_UUID,
         timeout = MSP_API_MSG_TIMEOUT  
     }
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 -- Function to get the value of a specific field from MSP data
@@ -166,13 +177,7 @@ end
 
 -- Function to set a value dynamically
 local function setValue(fieldName, value)
-    for _, field in ipairs(MSP_API_STRUCTURE_WRITE) do
-        if field.field == fieldName then
-            payloadData[fieldName] = value
-            return true
-        end
-    end
-    error("Invalid field name: " .. fieldName)
+    payloadData[fieldName] = value
 end
 
 -- Function to check if the read operation is complete

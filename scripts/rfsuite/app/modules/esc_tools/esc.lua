@@ -31,7 +31,8 @@ end
 
 local function openPage(pidx, title, script)
 
-    rfsuite.bg.msp.protocol.mspIntervalOveride = nil
+
+    rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
 
     rfsuite.app.triggers.isReady = false
     rfsuite.app.uiState = rfsuite.app.uiStatus.mainMenu
@@ -72,7 +73,7 @@ local function openPage(pidx, title, script)
         end,
         press = function()
             rfsuite.app.lastIdx = nil
-            rfsuite.lastPage = nil
+            rfsuite.session.lastPage = nil
 
             if rfsuite.app.Page and rfsuite.app.Page.onNavMenu then rfsuite.app.Page.onNavMenu(rfsuite.app.Page) end
 
@@ -90,7 +91,7 @@ local function openPage(pidx, title, script)
     -- TEXT ICONS
     if rfsuite.preferences.iconSize == 0 then
         padding = rfsuite.app.radio.buttonPaddingSmall
-        buttonW = (rfsuite.config.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
+        buttonW = (rfsuite.session.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
         buttonH = rfsuite.app.radio.navbuttonHeight
         numPerRow = rfsuite.app.radio.buttonsPerRow
     end
@@ -163,14 +164,13 @@ local function openPage(pidx, title, script)
     end
 
     rfsuite.app.triggers.closeProgressLoader = true
-
+    collectgarbage()
     return
 end
 
 rfsuite.app.uiState = rfsuite.app.uiStatus.pages
 
 return {
-    title = "ESC", 
     pages = pages, 
     openPage = openPage,
     API = {},

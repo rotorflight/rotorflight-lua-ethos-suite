@@ -15,8 +15,10 @@
  * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
 -- Constants for MSP Commands
+local API_NAME = "ESC_PARAMETERS_FLYROTOR" -- API name (must be same as filename)
 local MSP_API_CMD_READ = 217 -- Command identifier 
 local MSP_API_CMD_WRITE = 218 -- Command identifier 
+local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write 
 local MSP_SIGNATURE = 0x73
 local MSP_HEADER_BYTES = 2
 
@@ -24,8 +26,8 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "esc_signature",           type = "U8",  apiVersion = 12.07, simResponse = {115}},
     {field = "esc_command",             type = "U8",  apiVersion = 12.07, simResponse = {0}},
     {field = "escinfo_1",               type = "U8",  apiVersion = 12.07, simResponse = {0}},
-    {field = "escinfo_2",               type = "U8",  apiVersion = 12.07, simResponse = {0}},
-    {field = "escinfo_3",               type = "U8",  apiVersion = 12.07, simResponse = {150}},
+    {field = "escinfo_2",               type = "U8",  apiVersion = 12.07, simResponse = {1}},
+    {field = "escinfo_3",               type = "U8",  apiVersion = 12.07, simResponse = {24}},
     {field = "escinfo_4",               type = "U8",  apiVersion = 12.07, simResponse = {231}},
     {field = "escinfo_5",               type = "U8",  apiVersion = 12.07, simResponse = {79}},
     {field = "escinfo_6",               type = "U8",  apiVersion = 12.07, simResponse = {190}},
@@ -41,38 +43,33 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "escinfo_16",              type = "U8",  apiVersion = 12.07, simResponse = {0}},
     {field = "escinfo_17",              type = "U8",  apiVersion = 12.07, simResponse = {8}},
     {field = "escinfo_18",              type = "U8",  apiVersion = 12.07, simResponse = {0}},
-    {field = "throttle_min",            type = "U16", apiVersion = 12.07, simResponse = {4, 76},       byteorder = "big", help = "Minimum throttle value"},
-    {field = "throttle_max",            type = "U16", apiVersion = 12.07, simResponse = {7, 148},      byteorder = "big", help = "Maximum throttle value"},
-    {field = "governor",                type = "U8",  apiVersion = 12.07, simResponse = {0},           table = {"External Governor", "ESC Governor"}, tableIdxInc = -1},
-    {field = "cell_count",              type = "U8",  apiVersion = 12.07, simResponse = {6},           min = 4, max = 14, default = 6, help = "Number of cells in the battery"},
-    {field = "low_voltage_protection",  type = "U8",  apiVersion = 12.07, simResponse = {30},          min = 28, max = 38, scale = 10, default = 30, decimals = 1, unit = "V", help = "Voltage at which we cut power by 50%"},
-    {field = "temperature_protection",  type = "U8",  apiVersion = 12.07, simResponse = {125},         min = 50, max = 135, default = 125, unit = "°", help = "Temperature at which we cut power by 50%"},
+    {field = "throttle_min",            type = "U16", apiVersion = 12.07, simResponse = {4, 76},       byteorder = "big"},
+    {field = "throttle_max",            type = "U16", apiVersion = 12.07, simResponse = {7, 148},      byteorder = "big"},
+    {field = "governor",                type = "U8",  apiVersion = 12.07, simResponse = {0},           table = {rfsuite.i18n.get("api.ESC_PARAMETERS_FLYROTOR.tbl_extgov"), rfsuite.i18n.get("api.ESC_PARAMETERS_FLYROTOR.tbl_escgov")}, tableIdxInc = -1},
+    {field = "cell_count",              type = "U8",  apiVersion = 12.07, simResponse = {6},           min = 4, max = 14, default = 6},
+    {field = "low_voltage_protection",  type = "U8",  apiVersion = 12.07, simResponse = {30},          min = 28, max = 38, scale = 10, default = 30, decimals = 1, unit = "V"},
+    {field = "temperature_protection",  type = "U8",  apiVersion = 12.07, simResponse = {125},         min = 50, max = 135, default = 125, unit = "°"},
     {field = "bec_voltage",             type = "U8",  apiVersion = 12.07, simResponse = {0},           unit = "V", table = {"7.5", "8.0", "8.5", "12"}, tableIdxInc = -1},
-    {field = "timing_angle",            type = "U8",  apiVersion = 12.07, simResponse = {10},          min = 1, max = 10, default = 5, unit = "°", help = "Timing angle for the motor"},
-    {field = "motor_direction",         type = "U8",  apiVersion = 12.07, simResponse = {0},           table = {"CW", "CCW"}, tableIdxInc = -1},
-    {field = "starting_torque",         type = "U8",  apiVersion = 12.07, simResponse = {3},           min = 1, max = 15, default = 3, help = "Starting torque for the motor"},
-    {field = "response_speed",          type = "U8",  apiVersion = 12.07, simResponse = {5},           min = 1, max = 15, default = 5, help = "Response speed for the motor"},
-    {field = "buzzer_volume",           type = "U8",  apiVersion = 12.07, simResponse = {1},           min = 1, max = 5, default = 2, help = "Buzzer volume"},
-    {field = "current_gain",            type = "S8",  apiVersion = 12.07, simResponse = {20},          min = 0, max = 40, default = 20, offset = -20, help = "Gain value for the current sensor"},
-    {field = "fan_control",             type = "U8",  apiVersion = 12.07, simResponse = {0},           table = {"Automatic", "Always On"}, tableIdxInc = -1},
-    {field = "soft_start",              type = "U8",  apiVersion = 12.07, simResponse = {15},          min = 5, max = 55, help = "Soft start value"},
-    {field = "gov_p",                   type = "U16", apiVersion = 12.07, simResponse = {0, 45},       min = 1, max = 100, default = 45, byteorder = "big", help = "Proportional value for the governor"},
-    {field = "gov_i",                   type = "U16", apiVersion = 12.07, simResponse = {0, 35},       min = 1, max = 100, default = 35, byteorder = "big", help = "Integral value for the governor"},
-    {field = "gov_d",                   type = "U16", apiVersion = 12.07, simResponse = {0, 0},        min = 0, max = 100, default = 0, byteorder = "big", help = "Derivative value for the governor"},
-    {field = "motor_erpm_max",          type = "U24", apiVersion = 12.07, simResponse = {1, 134, 160}, min = 0, max = 1000000, step = 100, byteorder = "big", help = "Maximum RPM"}
+    {field = "timing_angle",            type = "U8",  apiVersion = 12.07, simResponse = {10},          min = 1, max = 10, default = 5, unit = "°"},
+    {field = "motor_direction",         type = "U8",  apiVersion = 12.07, simResponse = {0},           table = {rfsuite.i18n.get("api.ESC_PARAMETERS_FLYROTOR.tbl_cw"), rfsuite.i18n.get("api.ESC_PARAMETERS_FLYROTOR.tbl_ccw")}, tableIdxInc = -1},
+    {field = "starting_torque",         type = "U8",  apiVersion = 12.07, simResponse = {3},           min = 1, max = 15, default = 3},
+    {field = "response_speed",          type = "U8",  apiVersion = 12.07, simResponse = {5},           min = 1, max = 15, default = 5},
+    {field = "buzzer_volume",           type = "U8",  apiVersion = 12.07, simResponse = {1},           min = 1, max = 5, default = 2},
+    {field = "current_gain",            type = "S8",  apiVersion = 12.07, simResponse = {20},          min = 0, max = 40, default = 20, offset = -20},
+    {field = "fan_control",             type = "U8",  apiVersion = 12.07, simResponse = {0},           table = {rfsuite.i18n.get("api.ESC_PARAMETERS_FLYROTOR.tbl_automatic"), rfsuite.i18n.get("api.ESC_PARAMETERS_FLYROTOR.tbl_alwayson")}, tableIdxInc = -1},
+    {field = "soft_start",              type = "U8",  apiVersion = 12.07, simResponse = {15},          min = 5, max = 55},
+    {field = "gov_p",                   type = "U16", apiVersion = 12.07, simResponse = {0, 45},       min = 1, max = 100, default = 45, byteorder = "big"},
+    {field = "gov_i",                   type = "U16", apiVersion = 12.07, simResponse = {0, 35},       min = 1, max = 100, default = 35,  byteorder = "big"},
+    {field = "gov_d",                   type = "U16", apiVersion = 12.07, simResponse = {0, 0},        min = 0, max = 100, default = 0,  byteorder = "big"},
+    {field = "motor_erpm_max",          type = "U24", apiVersion = 12.07, simResponse = {2, 23, 40}, min = 0, max = 1000000, step = 100, byteorder = "big"}
 }
 
--- filter the structure to remove any params not supported by the running api version
-local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
-
--- calculate the min bytes value from the structure
-local MSP_MIN_BYTES = rfsuite.bg.msp.api.calculateMinBytes(MSP_API_STRUCTURE_READ)
+-- Process structure in one pass
+local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE =
+    rfsuite.tasks.msp.api.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 
 -- set read structure
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
-
--- generate a simulatorResponse from the read structure
-local MSP_API_SIMULATOR_RESPONSE = rfsuite.bg.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
 
 local function processedData()
     rfsuite.utils.log("Processed data","debug")
@@ -86,7 +83,7 @@ local payloadData = {}
 local defaultData = {}
 
 -- Create a new instance
-local handlers = rfsuite.bg.msp.api.createHandlers()
+local handlers = rfsuite.tasks.msp.api.createHandlers()
 
 -- Variables to store optional the UUID and timeout for payload
 local MSP_API_UUID
@@ -102,11 +99,14 @@ local function read()
     local message = {
         command = MSP_API_CMD_READ,
         processReply = function(self, buf)
-            mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE_READ,processedData)
-            if #buf >= MSP_MIN_BYTES then
-                local completeHandler = handlers.getCompleteHandler()
-                if completeHandler then completeHandler(self, buf) end
-            end
+            local structure = MSP_API_STRUCTURE_READ
+            rfsuite.tasks.msp.api.parseMSPData(buf, structure, nil, nil, function(result)
+                mspData = result
+                if #buf >= MSP_MIN_BYTES then
+                    local completeHandler = handlers.getCompleteHandler()
+                    if completeHandler then completeHandler(self, buf) end
+                end
+            end)
         end,
         errorHandler = function(self, buf)
             local errorHandler = handlers.getErrorHandler()
@@ -116,7 +116,7 @@ local function read()
         uuid = MSP_API_UUID,
         timeout = MSP_API_MSG_TIMEOUT  
     }
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function write(suppliedPayload)
@@ -127,7 +127,7 @@ local function write(suppliedPayload)
 
     local message = {
         command = MSP_API_CMD_WRITE,
-        payload = suppliedPayload or payloadData,
+        payload = suppliedPayload or rfsuite.tasks.msp.api.buildWritePayload(API_NAME, payloadData,MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE),
         processReply = function(self, buf)
             local completeHandler = handlers.getCompleteHandler()
             if completeHandler then completeHandler(self, buf) end
@@ -141,7 +141,7 @@ local function write(suppliedPayload)
         uuid = MSP_API_UUID,
         timeout = MSP_API_MSG_TIMEOUT  
     }
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 -- Function to get the value of a specific field from MSP data
@@ -152,13 +152,7 @@ end
 
 -- Function to set a value dynamically
 local function setValue(fieldName, value)
-    for _, field in ipairs(MSP_API_STRUCTURE_WRITE) do
-        if field.field == fieldName then
-            payloadData[fieldName] = value
-            return true
-        end
-    end
-    error("Invalid field name: " .. fieldName)
+    payloadData[fieldName] = value
 end
 
 -- Function to check if the read operation is complete

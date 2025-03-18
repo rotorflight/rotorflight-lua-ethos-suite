@@ -18,13 +18,14 @@
 
 ]] --
 local init = {
-    title = "MSP Experimental", -- title of the page
-    section = "Developer", -- do not run if busy with msp
+    title = rfsuite.i18n.get("app.modules.msp_exp.name"), -- title of the page
+    section = "developer", -- do not run if busy with msp
     script = "msp_exp.lua", -- run this script
     image = "msp_exp.png", -- image for the page
     order = 100, -- order in the section
     developer = true, -- show if developer mode enabled
-    ethosversion = {1, 6, 2} -- disable button if ethos version is less than this
+    ethosversion = {1, 6, 2}, -- disable button if ethos version is less than this
+    disable = true
 }
 
 return init

@@ -23,13 +23,61 @@ local config = arg[1]
 
 protocol = {}
 
-local supportedProtocols = {smartPort = {mspTransport = "sp.lua", mspProtocol = "smartPort", push = sportTelemetryPush, maxTxBufferSize = 6, maxRxBufferSize = 6, maxRetries = 10, saveTimeout = 10.0, cms = {}, pageReqTimeout = 15}, crsf = {mspTransport = "crsf.lua", mspProtocol = "crsf", maxTxBufferSize = 8, maxRxBufferSize = 58, maxRetries = 5, saveTimeout = 10.0, cms = {}, pageReqTimeout = 10}}
+--[[
+    supportedProtocols table contains configurations for different communication protocols.
+    
+    Each protocol configuration includes:
+    - mspTransport: The Lua script responsible for handling the MSP transport layer.
+    - mspProtocol: The name of the MSP protocol.
+    - push: Function to push telemetry data (only for sport protocol).
+    - maxTxBufferSize: Maximum size of the transmission buffer.
+    - maxRxBufferSize: Maximum size of the reception buffer.
+    - maxRetries: Maximum number of retries for communication.
+    - saveTimeout: Timeout duration for saving data.
+    - cms: Configuration management system settings (currently empty).
+    - pageReqTimeout: Timeout duration for page requests.
+]]
+local supportedProtocols = {
+    sport = {
+        mspTransport = "sp.lua",
+        mspProtocol = "sport",
+        push = sportTelemetryPush,
+        maxTxBufferSize = 6,
+        maxRxBufferSize = 6,
+        maxRetries = 10,
+        saveTimeout = 10.0,
+        cms = {},
+        pageReqTimeout = 15
+    },
+    crsf = {
+        mspTransport = "crsf.lua",
+        mspProtocol = "crsf",
+        maxTxBufferSize = 8,
+        maxRxBufferSize = 58,
+        maxRetries = 5,
+        saveTimeout = 10.0,
+        cms = {},
+        pageReqTimeout = 10
+    }
+}
 
+--[[
+    Retrieves the communication protocol based on the availability of the "Rx RSSI1" source.
+    @return supportedProtocols.crsf if "Rx RSSI1" source is available, otherwise supportedProtocols.sport.
+]]
 function protocol.getProtocol()
     if system.getSource("Rx RSSI1") ~= nil then return supportedProtocols.crsf end
-    return supportedProtocols.smartPort
+    return supportedProtocols.sport
 end
 
+--[[
+    Retrieves the available transport protocols.
+    
+    This function iterates over the supportedProtocols table and constructs a new table
+    containing the transport paths for each protocol.
+
+    @return table A table where each key corresponds to a protocol and the value is the transport path.
+]]
 function protocol.getTransports()
     local transport = {}
     for i, v in pairs(supportedProtocols) do transport[i] = "tasks/msp/" .. v.mspTransport end

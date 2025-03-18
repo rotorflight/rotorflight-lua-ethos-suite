@@ -1,9 +1,8 @@
-local fields = {}
-local labels = {}
 
 local version = rfsuite.config.Version
 local ethosVersion = rfsuite.config.environment.major .. "." .. rfsuite.config.environment.minor .. "." .. rfsuite.config.environment.revision
 local apiVersion = rfsuite.session.apiVersion
+local closeProgressLoader = true
 
 local supportedMspVersion = ""
 for i, v in ipairs(rfsuite.config.supportedMspApiVersion) do
@@ -30,36 +29,44 @@ local x = w - 15
 
 displayPos = {x = x - buttonW - buttonWs - 5 - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = 300, h = rfsuite.app.radio.navbuttonHeight}
 
-fields[1] = {t = "Version", value = version, type = displayType, disable = disableType, position = displayPos}
-fields[2] = {t = "Ethos Version", value = ethosVersion, type = displayType, disable = disableType, position = displayPos}
-fields[3] = {t = "MSP Version", value = apiVersion, type = displayType, disable = disableType, position = displayPos}
-fields[4] = {t = "MSP Transport", value = string.upper(rfsuite.bg.msp.protocol.mspProtocol), type = displayType, disable = disableType, position = displayPos}
-fields[5] = {t = "Supported MSP Versions", value = supportedMspVersion, type = displayType, disable = disableType, position = displayPos}
-fields[6] = {t = "Simulation", value = simulation, type = displayType, disable = disableType, position = displayPos}
 
-function readMSP()
-    rfsuite.app.triggers.isReady = true
-    rfsuite.app.triggers.closeProgressLoader = true
-end
+local mspapi = {
+    api = {
+        [1] = nil,
+    },
+    formdata = {
+        labels = {
+        },
+        fields = {
+            {t = rfsuite.i18n.get("app.modules.about.version"), value = version, type = displayType, disable = disableType, position = displayPos},
+            {t = rfsuite.i18n.get("app.modules.about.ethos_version"), value = ethosVersion, type = displayType, disable = disableType, position = displayPos},
+            {t = rfsuite.i18n.get("app.modules.about.msp_version"), value = apiVersion, type = displayType, disable = disableType, position = displayPos},
+            {t = rfsuite.i18n.get("app.modules.about.msp_transport"), value = string.upper(rfsuite.tasks.msp.protocol.mspProtocol), type = displayType, disable = disableType, position = displayPos},
+            {t = rfsuite.i18n.get("app.modules.about.supported_versions"), value = supportedMspVersion, type = displayType, disable = disableType, position = displayPos},
+            {t = rfsuite.i18n.get("app.modules.about.simulation"), value = simulation, type = displayType, disable = disableType, position = displayPos}
+        }
+    }
+}
+
 
 function onToolMenu()
 
-    local opener = "Rotorflight is an open source project. Contribution from other like minded people, keen to assist in making this software even better, is welcomed and encouraged. You do not have to be a hardcore programmer to help."
-    local credits = "Notable contributors to both the Rotorflight firmware and this software are: Petri Mattila, Egon Lubbers, Rob Thomson, Rob Gayle, Phil Kaighin, Robert Burrow, Keith Williams, Bertrand Songis, Venbs Zhou... and many more who have spent hours testing and providing feedback!"
-    local license = "You may copy, distribute, and modify the software as long as you track changes/dates in source files. Any modifications to or software including (via compiler) GPL-licensed code must also be made available under the GPL along with build & install instructions."
+    local opener = rfsuite.i18n.get("app.modules.about.opener")
+    local credits = rfsuite.i18n.get("app.modules.about.credits")
+    local license = rfsuite.i18n.get("app.modules.about.license")
 
     local message = opener .. "\r\n\r\n" .. credits .. "\r\n\r\n" .. license .. "\r\n\r\n"
 
     local buttons = {{
-        label = "CLOSE",
+        label = rfsuite.i18n.get("app.btn_close"),
         action = function()
             return true
         end
     }}
 
     form.openDialog({
-        width = rfsuite.config.lcdWidth,
-        title = "Credits",
+        width = rfsuite.session.lcdWidth,
+        title = rfsuite.i18n.get("app.modules.about.msgbox_credits"),
         message = message,
         buttons = buttons,
         wakeup = function()
@@ -71,16 +78,19 @@ function onToolMenu()
 
 end
 
+local function wakeup()
+    if closeProgressLoader == false then
+        rfsuite.app.triggers.closeProgressLoader = true
+        closeProgressLoader = true
+    end    
+end
+
 return {
-    read = readMSP,
-    write = nil,
-    title = "Status",
+    mspapi = mspapi,
     reboot = false,
     eepromWrite = false,
     minBytes = 0,
     wakeup = wakeup,
-    labels = labels,
-    fields = fields,
     refreshswitch = false,
     simulatorResponse = {},
     onToolMenu = onToolMenu,

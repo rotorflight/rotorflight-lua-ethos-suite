@@ -21,8 +21,12 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {"Collective Pitch Compensation: Increasing will compensate for the pitching motion caused by tail drag when climbing.", "Cross Coupling Gain: Removes roll coupling when only elevator is applied.", "Cross Coupling Ratio: Amount of compensation (pitch vs roll) to apply.",
-                           "Cross Coupling Feq. Limit: Frequency limit for the compensation, higher value will make the compensation action faster."}
+data['help']['default'] = {
+    rfsuite.i18n.get("app.modules.profile_mainrotor.help_p1"),
+    rfsuite.i18n.get("app.modules.profile_mainrotor.help_p2"),
+    rfsuite.i18n.get("app.modules.profile_mainrotor.help_p3"),
+    rfsuite.i18n.get("app.modules.profile_mainrotor.help_p4")
+}
 
 data['fields'] = {}
 

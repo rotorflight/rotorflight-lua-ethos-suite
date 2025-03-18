@@ -21,7 +21,7 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {"Link trims: Use to trim out small leveling issues in your swash plate. Typically only used if the swash links are non-adjustable.", "Motorised tail: If using a motorised tail, use this to set the minimum idle speed and zero yaw."}
+data['help']['default'] = {rfsuite.i18n.get("app.modules.trim.help_p1"),rfsuite.i18n.get("app.modules.trim.help_p2")}
 
 data['fields'] = {}
 

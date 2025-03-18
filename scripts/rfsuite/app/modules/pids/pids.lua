@@ -1,44 +1,51 @@
-local fields = {}
-local rows = {}
-local cols = {}
-
 local activateWakeup = false
-local currentProfileChecked = false
 
-rows = {"Roll", "Pitch", "Yaw"}
-cols = {"P", "I", "D", "F", "O", "B"}
+local mspapi = {
+    api = {
+        [1] = 'PID_TUNING',
+    },
+    formdata = {
+        labels = {
+        },
+        rows = {
+            rfsuite.i18n.get("app.modules.pids.roll"),
+            rfsuite.i18n.get("app.modules.pids.pitch"),
+            rfsuite.i18n.get("app.modules.pids.yaw")
+        },
+        cols = {
+            rfsuite.i18n.get("app.modules.pids.p"),
+            rfsuite.i18n.get("app.modules.pids.i"),
+            rfsuite.i18n.get("app.modules.pids.d"),
+            rfsuite.i18n.get("app.modules.pids.f"),
+            rfsuite.i18n.get("app.modules.pids.o"),
+            rfsuite.i18n.get("app.modules.pids.b")
+        },
+        fields = {
+            -- P
+            {row = 1, col = 1, mspapi = 1, apikey = "pid_0_P"},
+            {row = 2, col = 1, mspapi = 1, apikey = "pid_1_P"},
+            {row = 3, col = 1, mspapi = 1, apikey = "pid_2_P"},
+            {row = 1, col = 2, mspapi = 1, apikey = "pid_0_I"},
+            {row = 2, col = 2, mspapi = 1, apikey = "pid_1_I"},
+            {row = 3, col = 2, mspapi = 1, apikey = "pid_2_I"},
+            {row = 1, col = 3, mspapi = 1, apikey = "pid_0_D"},
+            {row = 2, col = 3, mspapi = 1, apikey = "pid_1_D"},
+            {row = 3, col = 3, mspapi = 1, apikey = "pid_2_D"},
+            {row = 1, col = 4, mspapi = 1, apikey = "pid_0_F"},
+            {row = 2, col = 4, mspapi = 1, apikey = "pid_1_F"},
+            {row = 3, col = 4, mspapi = 1, apikey = "pid_2_F"},
+            {row = 1, col = 5, mspapi = 1, apikey = "pid_0_O"},
+            {row = 2, col = 5, mspapi = 1, apikey = "pid_1_O"},
+            {row = 1, col = 6, mspapi = 1, apikey = "pid_0_B"},
+            {row = 2, col = 6, mspapi = 1, apikey = "pid_1_B"},
+            {row = 3, col = 6, mspapi = 1, apikey = "pid_2_B"}
+        }
+    }                 
+}
 
--- P
-fields[1] = {row = 1, col = 1, apikey = "pid_0_P"}
-fields[2] = {row = 2, col = 1, apikey = "pid_1_P"}
-fields[3] = {row = 3, col = 1, apikey = "pid_2_P"}
-
--- I
-fields[4] = {help = "profilesIntegral", row = 1, col = 2, apikey = "pid_0_I"}
-fields[5] = {help = "profilesIntegral", row = 2, col = 2, apikey = "pid_1_I"}
-fields[6] = {help = "profilesIntegral", row = 3, col = 2, apikey = "pid_2_I"}
-
--- D
-fields[7] = {row = 1, col = 3, apikey = "pid_0_D"}
-fields[8] = {row = 2, col = 3, apikey = "pid_1_D"}
-fields[9] = {row = 3, col = 3, apikey = "pid_2_D"}
-
--- F
-fields[10] = {row = 1, col = 4, apikey = "pid_0_F"}
-fields[11] = {row = 2, col = 4, apikey = "pid_1_F"}
-fields[12] = {row = 3, col = 4, apikey = "pid_2_F"}
-
--- O
-fields[13] = {row = 1, col = 5, apikey = "pid_0_O"}
-fields[14] = {row = 2, col = 5, apikey = "pid_1_O"}
-
--- B
-fields[15] = {row = 1, col = 6, apikey = "pid_0_B"}
-fields[16] = {row = 2, col = 6, apikey = "pid_1_B"}
-fields[17] = {row = 3, col = 6, apikey = "pid_2_B"}
 
 local function postLoad(self)
-    rfsuite.app.triggers.isReady = true
+    rfsuite.app.triggers.closeProgressLoader = true
     activateWakeup = true
 end
 
@@ -53,7 +60,7 @@ local function openPage(idx, title, script)
     rfsuite.app.lastIdx = idx
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
-    rfsuite.lastPage = script
+    rfsuite.session.lastPage = script
 
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
 
@@ -68,7 +75,7 @@ local function openPage(idx, title, script)
     else
         numCols = 6
     end
-    local screenWidth = rfsuite.config.lcdWidth - 10
+    local screenWidth = rfsuite.session.lcdWidth - 10
     local padding = 10
     local paddingTop = rfsuite.app.radio.linePaddingTop
     local h = rfsuite.app.radio.navbuttonHeight
@@ -83,6 +90,13 @@ local function openPage(idx, title, script)
     local loc = numCols
     local posX = screenWidth - paddingRight
     local posY = paddingTop
+
+
+    rfsuite.utils.log("Merging form data from mspapi","debug")
+    rfsuite.app.Page.fields = rfsuite.app.Page.mspapi.formdata.fields
+    rfsuite.app.Page.labels = rfsuite.app.Page.mspapi.formdata.labels
+    rfsuite.app.Page.rows = rfsuite.app.Page.mspapi.formdata.rows
+    rfsuite.app.Page.cols = rfsuite.app.Page.mspapi.formdata.cols
 
     local c = 1
     while loc > 0 do
@@ -111,11 +125,18 @@ local function openPage(idx, title, script)
         pos = {x = posX + padding, y = posY, w = w - padding, h = h}
 
         rfsuite.app.formFields[i] = form.addNumberField(pidRows[f.row], pos, 0, 0, function()
-            local value = rfsuite.utils.getFieldValue(rfsuite.app.Page.fields[i])
-            return value
+            if rfsuite.app.Page.fields == nil or rfsuite.app.Page.fields[i] == nil then
+                ui.disableAllFields()
+                ui.disableAllNavigationFields()
+                ui.enableNavigationField('menu')
+                return nil
+            end
+            return rfsuite.app.utils.getFieldValue(rfsuite.app.Page.fields[i])
         end, function(value)
-            f.value = rfsuite.utils.saveFieldValue(rfsuite.app.Page.fields[i], value)
-            rfsuite.app.saveValue(i)
+            if f.postEdit then f.postEdit(rfsuite.app.Page) end
+            if f.onChange then f.onChange(rfsuite.app.Page) end
+    
+            f.value = rfsuite.app.utils.saveFieldValue(rfsuite.app.Page.fields[i], value)
         end)
     end
     
@@ -123,13 +144,12 @@ end
 
 local function wakeup()
 
-    if activateWakeup == true and currentProfileChecked == false and rfsuite.bg.msp.mspQueue:isProcessed() then
+    if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then
 
         -- update active profile
         -- the check happens in postLoad          
         if rfsuite.session.activeProfile ~= nil then
             rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeProfile)
-            currentProfileChecked = true
         end
 
     end
@@ -137,14 +157,11 @@ local function wakeup()
 end
 
 return {
-    mspapi = "PID_TUNING",
-    title = "PIDs",
+    mspapi = mspapi,
+    title = rfsuite.i18n.get("app.modules.pids.name"),
     reboot = false,
     eepromWrite = true,
     refreshOnProfileChange = true,
-    fields = fields,
-    rows = rows,
-    cols = cols,
     postLoad = postLoad,
     openPage = openPage,
     wakeup = wakeup,

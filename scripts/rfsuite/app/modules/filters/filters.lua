@@ -1,44 +1,47 @@
-local labels = {}
-local fields = {}
+local mspapi = {
+    api = {
+        [1] = 'FILTER_CONFIG',
+    },
+    formdata = {
+        labels = {
+            {t = rfsuite.i18n.get("app.modules.filters.lowpass_1"),     label = 1, inline_size = 40.15},
+            {t = "",                                                    label = 2, inline_size = 40.15},
+            {t = rfsuite.i18n.get("app.modules.filters.lowpass_1_dyn"), label = 3, inline_size = 40.15},
+            {t = "          ",                                          label = 4, inline_size = 40.15},
+            {t = rfsuite.i18n.get("app.modules.filters.lowpass_2"),     label = 5, inline_size = 40.15},
+            {t = "",                                                    label = 6, inline_size = 40.15},
+            {t = rfsuite.i18n.get("app.modules.filters.notch_1"),       label = 7, inline_size = 13.6},
+            {t = rfsuite.i18n.get("app.modules.filters.notch_2"),       label = 8, inline_size = 13.6},
+            {t = rfsuite.i18n.get("app.modules.filters.dyn_notch"),     label = 9, inline_size = 13.6},
+            {t = "",                                                    label = 10, inline_size = 13.6},
+            {t = rfsuite.i18n.get("app.modules.filters.rpm_filter"),    label = 11, inline_size = 40.15},
+            {t = "",                                                    label = 12, inline_size = 40.15},
+        },
+        fields = {
+            {t = rfsuite.i18n.get("app.modules.filters.filter_type"), label = 1, inline = 1, mspapi = 1, apikey = "gyro_lpf1_type", type = 1},
+            {t = rfsuite.i18n.get("app.modules.filters.cutoff"),      label = 2, inline = 1, mspapi = 1, apikey = "gyro_lpf1_static_hz"},
+            {t = rfsuite.i18n.get("app.modules.filters.min_cutoff"),  label = 3, inline = 1, mspapi = 1, apikey = "gyro_lpf1_dyn_min_hz"},
+            {t = rfsuite.i18n.get("app.modules.filters.max_cutoff"),  label = 4, inline = 1, mspapi = 1, apikey = "gyro_lpf1_dyn_max_hz"},
+            {t = rfsuite.i18n.get("app.modules.filters.filter_type"), label = 5, inline = 1, mspapi = 1, apikey = "gyro_lpf2_type", type = 1},
+            {t = rfsuite.i18n.get("app.modules.filters.cutoff"),      label = 6, inline = 1, mspapi = 1, apikey = "gyro_lpf2_static_hz"},
+            {t = rfsuite.i18n.get("app.modules.filters.center"),      label = 7, inline = 2, mspapi = 1, apikey = "gyro_soft_notch_hz_1"},
+            {t = rfsuite.i18n.get("app.modules.filters.cutoff"),      label = 7, inline = 1, mspapi = 1, apikey = "gyro_soft_notch_cutoff_1"},
+            {t = rfsuite.i18n.get("app.modules.filters.center"),      label = 8, inline = 2, mspapi = 1, apikey = "gyro_soft_notch_hz_2"},
+            {t = rfsuite.i18n.get("app.modules.filters.cutoff"),      label = 8, inline = 1, mspapi = 1, apikey = "gyro_soft_notch_cutoff_2"},
+            {t = rfsuite.i18n.get("app.modules.filters.notch_c"),     label = 9, inline = 2, mspapi = 1, apikey = "dyn_notch_count"},
+            {t = rfsuite.i18n.get("app.modules.filters.notch_q"),     label = 9, inline = 1, mspapi = 1, apikey = "dyn_notch_q"},
+            {t = rfsuite.i18n.get("app.modules.filters.notch_min_hz"),label = 10, inline = 2, mspapi = 1, apikey = "dyn_notch_min_hz"},
+            {t = rfsuite.i18n.get("app.modules.filters.notch_max_hz"),label = 10, inline = 1, mspapi = 1, apikey = "dyn_notch_max_hz"},
+            {t = rfsuite.i18n.get("app.modules.filters.rpm_preset"),  label = 11, inline = 1, mspapi = 1, apikey = "rpm_preset", type = 1, apiversiongte = 12.08},
+            {t = rfsuite.i18n.get("app.modules.filters.rpm_min_hz"),  label = 12, inline = 1, mspapi = 1, apikey = "rpm_min_hz", apiversiongte = 12.08},
+        }
+    }                 
+}
 
-
-labels[#labels + 1] = {t = "Gyro lowpass 1", t2 = "Lowpass 1", label = "line1", inline_size = 40.15}
-fields[#fields + 1] = {t = "Filter type", label = "line1", inline = 1, apikey="gyro_lpf1_type", type=1}
-
-labels[#labels + 1] = {t = "", label = "line2", inline_size = 40.15}
-fields[#fields + 1] = {t = "Cutoff", label = "line2", inline = 1, apikey="gyro_lpf1_static_hz"}
-
-labels[#labels + 1] = {t = "Gyro lowpass 1 dynamic", t2 = "Lowpass 1 dyn.", label = "line3", inline_size = 40.15, type = 1}
-fields[#fields + 1] = {t = "Min cutoff", label = "line3", inline = 1, apikey="gyro_lpf1_dyn_min_hz"}
-
-labels[#labels + 1] = {t = "", label = "line4", inline_size = 40.15}
-fields[#fields + 1] = {t = "Max cutoff", label = "line4", inline = 1, apikey="gyro_lpf1_dyn_max_hz"}
-
-labels[#labels + 1] = {t = "Gyro lowpass 2", t2 = "Lowpass 2", label = "line5", inline_size = 40.15}
-fields[#fields + 1] = {t = "Filter type", label = "line5", inline = 1, apikey="gyro_lpf2_type", type=1}
-
-labels[#labels + 1] = {t = "", label = "line6", inline_size = 40.15}
-fields[#fields + 1] = {t = "Cutoff", label = "line6", inline = 1, apikey="gyro_lpf2_static_hz"}
-
-labels[#labels + 1] = {t = "Gyro notch 1", t2 = "Notch 1", label = "line7", inline_size = 13.6}
-fields[#fields + 1] = {t = "Center", label = "line7", inline = 2, apikey="gyro_soft_notch_hz_1"}
-fields[#fields + 1] = {t = "Cutoff", label = "line7", inline = 1, apikey="gyro_soft_notch_cutoff_1"}
-
-labels[#labels + 1] = {t = "Gyro notch 2", t2 = "Notch 2", label = "line9", inline_size = 13.6}
-fields[#fields + 1] = {t = "Center", label = "line9", inline = 2, apikey="gyro_soft_notch_hz_2"}
-fields[#fields + 1] = {t = "Cutoff", label = "line9", inline = 1, apikey="gyro_soft_notch_cutoff_2"}
-
-local function postLoad(self)
-    rfsuite.app.triggers.isReady = true
-end
 
 return {
-    mspapi = "FILTER_CONFIG",
+    mspapi = mspapi,
     eepromWrite = true,
     reboot = true,
-    title = "Filters",
-    labels = labels,
-    fields = fields,
-    postLoad = postLoad,
     API = {},
 }

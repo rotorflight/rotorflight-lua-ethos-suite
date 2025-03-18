@@ -27,7 +27,100 @@ local firstRun = true
 
 local initTime = os.clock()
 
-adjfunc.adjFunctionsTable = {
+--[[
+adjFunctionsTable - A table containing adjustable functions for various parameters.
+
+Each entry in the table represents a specific adjustable function with the following structure:
+    idXX = {
+        name = "Descriptive Name",
+        wavs = {"wav1", "wav2", ...}
+    }
+
+Categories of adjustable functions:
+- Rates:
+    id5  - Pitch Rate
+    id6  - Roll Rate
+    id7  - Yaw Rate
+    id8  - Pitch RC Rate
+    id9  - Roll RC Rate
+    id10 - Yaw RC Rate
+    id11 - Pitch RC Expo
+    id12 - Roll RC Expo
+    id13 - Yaw RC Expo
+
+- PIDs:
+    id14 - Pitch P Gain
+    id15 - Pitch I Gain
+    id16 - Pitch D Gain
+    id17 - Pitch F Gain
+    id18 - Roll P Gain
+    id19 - Roll I Gain
+    id20 - Roll D Gain
+    id21 - Roll F Gain
+    id22 - Yaw P Gain
+    id23 - Yaw I Gain
+    id24 - Yaw D Gain
+    id25 - Yaw F Gain
+    id26 - Yaw CW Gain
+    id27 - Yaw CCW Gain
+    id28 - Yaw Cyclic FF
+    id29 - Yaw Coll FF
+    id30 - Yaw Coll Dyn
+    id31 - Yaw Coll Decay
+    id32 - Pitch Coll FF
+
+- Gyro Cutoffs:
+    id33 - Pitch Gyro Cutoff
+    id34 - Roll Gyro Cutoff
+    id35 - Yaw Gyro Cutoff
+
+- D-term Cutoffs:
+    id36 - Pitch D-term Cutoff
+    id37 - Roll D-term Cutoff
+    id38 - Yaw D-term Cutoff
+
+- Rescue:
+    id39 - Rescue Climb Coll
+    id40 - Rescue Hover Coll
+    id41 - Rescue Hover Alt
+    id42 - Rescue Alt P Gain
+    id43 - Rescue Alt I Gain
+    id44 - Rescue Alt D Gain
+
+- Leveling:
+    id45 - Angle Level Gain
+    id46 - Horizon Level Gain
+    id47 - Acro Trainer Gain
+
+- Governor:
+    id48 - Governor Gain
+    id49 - Governor P Gain
+    id50 - Governor I Gain
+    id51 - Governor D Gain
+    id52 - Governor F Gain
+    id53 - Governor TTA Gain
+    id54 - Governor Cyclic FF
+    id55 - Governor Coll FF
+
+- Boost Gains:
+    id56 - Pitch B Gain
+    id57 - Roll B Gain
+    id58 - Yaw B Gain
+
+- Offset Gains:
+    id59 - Pitch O Gain
+    id60 - Roll O Gain
+
+- Cross-Coupling:
+    id61 - Cross Coup Gain
+    id62 - Cross Coup Ratio
+    id63 - Cross Coup Cutoff
+
+- Accelerometer:
+    id64 - Accelerometer Pitch Trim
+    id65 - Accelerometer Roll Trim
+]]
+local adjFunctionsTable = {
     -- rates
     id5 = {name = "Pitch Rate", wavs = {"pitch", "rate"}},
     id6 = {name = "Roll Rate", wavs = {"roll", "rate"}},
@@ -113,74 +206,114 @@ adjfunc.adjFunctionsTable = {
     id65 = {name = "Accelerometer Roll Trim", wavs = {"acc", "roll", "trim"}}
 
 }
-adjfunc.adjValueSrc = nil
-adjfunc.adjFunctionSrc = nil
-adjfunc.adjValue = nil
-adjfunc.adjFunction = nil
-adjfunc.adjValueOld = nil
-adjfunc.adjFunctionOld = nil
-adjfunc.adjTimer = os.clock()
-adjfunc.adjfuncIdChanged = false
-adjfunc.adjfuncValueChanged = false
-adjfunc.adjJustUp = false
 
+-- adjfuncAdjValueSrc: Source of the adjustment value.
+-- adjfuncAdjFunctionSrc: Source of the adjustment function.
+-- adjfuncAdjValue: Current adjustment value.
+-- adjfuncAdjFunction: Current adjustment function.
+-- adjfuncAdjValueOld: Previous adjustment value.
+-- adjfuncAdjFunctionOld: Previous adjustment function.
+-- adjfuncAdjTimer: Timer to track adjustment function execution time.
+-- adjfuncAdjfuncIdChanged: Flag indicating if the adjustment function ID has changed.
+-- adjfuncAdjfuncValueChanged: Flag indicating if the adjustment function value has changed.
+-- adjfuncAdjJustUp: Flag indicating if the adjustment function was just incremented.
+local adjfuncAdjValueSrc = nil
+local adjfuncAdjFunctionSrc = nil
+local adjfuncAdjValue = nil
+local adjfuncAdjFunction = nil
+local adjfuncAdjValueOld = nil
+local adjfuncAdjFunctionOld = nil
+local adjfuncAdjTimer = os.clock()
+local adjfuncAdjfuncIdChanged = false
+local adjfuncAdjfuncValueChanged = false
+local adjfuncAdjJustUp = false
+
+--[[
+    Function: adjfunc.wakeup
+    Description: This function is responsible for handling the wakeup process of the adjfunc module. It checks various conditions and updates the state of the adjfunc module based on sensor values and preferences.
+    
+    Conditions:
+    - If both adjFunctionAlerts and adjValueAlerts preferences are false, the function returns early.
+    - If the rssiSensor is nil, the function returns early.
+    - If less than 5 seconds have passed since initTime or telemetry is not active, the function returns early.
+
+    Process:
+    - Retrieves sensor sources for "adjF" and "adjV".
+    - Updates adjValue and adjFunction based on sensor values.
+    - Checks if adjValue and adjFunction have changed and sets corresponding flags.
+    - Handles the adjJustUp state and its counter.
+    - If adjFunction is not zero, processes adjFunction and adjValue changes, plays alerts if necessary, and updates the adjTimer.
+
+    Variables:
+    - adjfuncAdjFunctionSrc: Source for adjFunction sensor.
+    - adjfuncAdjValueSrc: Source for adjValue sensor.
+    - adjfuncAdjValue: Current value of adjValue sensor.
+    - adjfunc.adjFunction: Current value of adjFunction sensor.
+    - adjfuncAdjValueOld: Previous value of adjValue sensor.
+    - adjfuncAdjFunctionOld: Previous value of adjFunction sensor.
+    - adjfunc.adjfuncIdChanged: Flag indicating if adjFunction has changed.
+    - adjfuncAdjfuncValueChanged: Flag indicating if adjValue has changed.
+    - adjfuncAdjJustUp: Flag indicating if adjFunction was just activated.
+    - adjfuncAdjJustUpCounter: Counter for adjJustUp state.
+    - adjfuncAdjTimer: Timer for adjFunction processing.
+    - firstRun: Flag indicating if this is the first run of the function.
+]]
 function adjfunc.wakeup()
 
     -- do not run the remaining code
     if rfsuite.preferences.adjFunctionAlerts == false and rfsuite.preferences.adjValueAlerts == false then return end
 
-    if rfsuite.rssiSensor == nil then return end
 
-    if (os.clock() - initTime) < 5 or rfsuite.bg.telemetry.active() == false then return end
+    if (os.clock() - initTime) < 5  then return end
 
+    -- getSensor source has a cache built in - win
+    adjfuncAdjFunctionSrc = rfsuite.tasks.telemetry.getSensorSource("adj_f")
+    adjfuncAdjValueSrc = rfsuite.tasks.telemetry.getSensorSource("adj_v")
 
-    adjfunc.adjFunctionSrc = rfsuite.bg.telemetry.getSensorSource("adjF")
-    adjfunc.adjValueSrc = rfsuite.bg.telemetry.getSensorSource("adjV")
+    if adjfuncAdjValueSrc ~= nil and adjfuncAdjFunctionSrc ~= nil then
 
-    if adjfunc.adjValueSrc ~= nil and adjfunc.adjFunctionSrc ~= nil then
+        adjfuncAdjValue = adjfuncAdjValueSrc:value()
+        adjfuncAdjFunction = adjfuncAdjFunctionSrc:value()
 
-        adjfunc.adjValue = adjfunc.adjValueSrc:value()
-        adjfunc.adjFunction = adjfunc.adjFunctionSrc:value()
+        if adjfuncAdjValue ~= nil then if type(adjfuncAdjValue) == "number" then adjfuncAdjValue = math.floor(adjfuncAdjValue) end end
+        if adjfuncAdjFunction ~= nil then if type(adjfunc.adjFunction) == "number" then adjfuncAdjFunction = math.floor(adjfunc.adjFunction) end end
 
-        if adjfunc.adjValue ~= nil then if type(adjfunc.adjValue) == "number" then adjfunc.adjValue = math.floor(adjfunc.adjValue) end end
-        if adjfunc.adjFunction ~= nil then if type(adjfunc.adjFunction) == "number" then adjfunc.adjFunction = math.floor(adjfunc.adjFunction) end end
+        if adjfuncAdjFunction ~= adjfuncAdjFunctionOld then adjfuncAdjfuncIdChanged = true end
+        if adjfuncAdjValue ~= adjfuncAdjValueOld then adjfuncAdjfuncValueChanged = true end
 
-        if adjfunc.adjFunction ~= adjfunc.adjFunctionOld then adjfunc.adjfuncIdChanged = true end
-        if adjfunc.adjValue ~= adjfunc.adjValueOld then adjfunc.adjfuncValueChanged = true end
+        if adjfuncAdjJustUp == true then
+            adjfuncAdjJustUpCounter = adjfuncAdjJustUpCounter + 1
+            adjfuncAdjfuncIdChanged = false
+            adjfuncAdjfuncValueChanged = false
 
-        if adjfunc.adjJustUp == true then
-            adjfunc.adjJustUpCounter = adjfunc.adjJustUpCounter + 1
-            adjfunc.adjfuncIdChanged = false
-            adjfunc.adjfuncValueChanged = false
-
-            if adjfunc.adjJustUpCounter == 10 then adjfunc.adjJustUp = false end
+            if adjfuncAdjJustUpCounter == 10 then adjfuncAdjJustUp = false end
 
         else
-            if adjfunc.adjFunction ~= 0 then
-                adjfunc.adjJustUpCounter = 0
-                if (os.clock() - adjfunc.adjTimer >= 2) then
-                    if adjfunc.adjfuncIdChanged == true then
+            if adjfuncAdjFunction ~= 0 then
+                adjfuncAdjJustUpCounter = 0
+                if (os.clock() - adjfuncAdjTimer >= 2) then
+                    if adjfuncAdjfuncIdChanged == true then
 
                         local tgt = "id" .. tostring(adjfunc.adjFunction)
-                        local adjfunction = adjfunc.adjFunctionsTable[tgt]
+                        local adjfunction = adjFunctionsTable[tgt]
                         if adjfunction ~= nil and firstRun == false then for wavi, wavv in ipairs(adjfunction.wavs) do if rfsuite.preferences.adjFunctionAlerts == true then rfsuite.utils.playFile("adjfunctions", wavv .. ".wav") end end end
-                        adjfunc.adjfuncIdChanged = false
+                        adjfuncAdjfuncIdChanged = false
                     end
-                    if adjfunc.adjfuncValueChanged == true or adjfunc.adjfuncIdChanged == true then
+                    if adjfuncAdjfuncValueChanged == true or adjfuncAdjfuncIdChanged == true then
 
-                        if adjfunc.adjValue ~= nil and firstRun == false then if rfsuite.preferences.adjValueAlerts == true then system.playNumber(adjfunc.adjValue) end end
+                        if adjfuncAdjValue ~= nil and firstRun == false then if rfsuite.preferences.adjValueAlerts == true then system.playNumber(adjfuncAdjValue) end end
 
-                        adjfunc.adjfuncValueChanged = false
+                        adjfuncAdjfuncValueChanged = false
 
                         firstRun = false
                     end
-                    adjfunc.adjTimer = os.clock()
+                    adjfuncAdjTimer = os.clock()
                 end
             end
         end
 
-        adjfunc.adjValueOld = adjfunc.adjValue
-        adjfunc.adjFunctionOld = adjfunc.adjFunction
+        adjfuncAdjValueOld = adjfuncAdjValue
+        adjfuncAdjFunctionOld = adjfunc.adjFunction
 
     end
 end
