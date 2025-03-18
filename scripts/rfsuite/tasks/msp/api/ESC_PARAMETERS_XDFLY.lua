@@ -15,66 +15,62 @@
  * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
 -- Constants for MSP Commands
+local API_NAME = "ESC_PARAMETERS_XDFLY" -- API name (must be same as filename)
 local MSP_API_CMD_READ = 217 -- Command identifier 
 local MSP_API_CMD_WRITE = 218 -- Command identifier 
+local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write 
 local MSP_SIGNATURE = 0xA6
 local MSP_HEADER_BYTES = 2
 
 -- tables used in structure below
-local flightMode = {"Helicopter", "Fixed Wing"}
-local motorDirection = {"CW", "CCW"}
+local flightMode = {rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_fmheli"), rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_fmfw")}
+local motorDirection = {rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_cw"), rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_ccw")}
 local becLvVoltage = {"6.0V", "7.4V","8.4V"}
+local startupPower = {rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_low"), rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_medium"), rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_high")}
+local fanControl = {rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_on"), rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_off")}
+local ledColor = {rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_red"), rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_yellow"),rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_orange"),rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_green"),rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_jadegreen"),rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_blue"),rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_cyan"),rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_purple"),rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_pink"),rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_white")}
 local becHvVoltage = {"6.0V", "6.2V", "6.4V", "6.6V", "6.8V", "7.0V", "7.2V", "7.4V", "7.6V", "7.8V", "8.0V", "8.2V", "8.4V", "8.6V", "8.8V", "9.0V", "9.2V", "9.4V", "9.6V", "9.8V", "10.0V", "10.2V", "10.4V", "10.6V", "10.8V", "11.0V", "11.2V", "11.4V", "11.6V", "11.8V", "12.0V"}
-local startupPower = {"Low", "Medium", "High"}
-local fanControl = {"On", "Off"}
-local ledColor = {"RED", "YELOW","ORANGE","GREEN","JADE GREEN","BLUE","CYAN","PURPLE","PINK","WHITE"}
-local lowVoltage = {"OFF", "2.7V", "3.0V", "3.2V", "3.4V", "3.6V", "3.8V"}
-local timing = {"Auto", "Low", "Medium", "High"}
-local startupPower = {"Low", "Medium", "High"}
-local accel = {"Fast", "Normal", "Slow", "Very Slow"}
-local brakeType = {"Normal", "Reverse"}
-local autoRestart = {"OFF", "90s"}
-local srFunc = {"ON", "OFF"}
-local govMode = {"External Governor", "ESC Governor" , "Fixed Wing"}
+local lowVoltage = {rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_off"), "2.7V", "3.0V", "3.2V", "3.4V", "3.6V", "3.8V"}
+local timing = {rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_auto"), rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_low"), rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_medium"), rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_high")}
+local accel = {rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_fast"), rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_normal"), rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_slow"), rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_vslow")}
+local brakeType = {rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_normal"), rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_reverse")}
+local autoRestart = {rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_off"), "90s"}
+local srFunc = {rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_on"), rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_off")}
+local govMode = {rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_escgov"), rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_extgov") , rfsuite.i18n.get("api.ESC_PARAMETERS_XDFLY.tbl_fwgov")}
 
 -- api structure
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "esc_signature",       type = "U8",  apiVersion = 12.08, simResponse = {166}},
-    {field = "esc_command",         type = "U8",  apiVersion = 12.08, simResponse = {64}},
-    {field = "esc_model",           type = "U8",  apiVersion = 12.08, simResponse = {20}},
-    {field = "esc_version",         type = "U8",  apiVersion = 12.08, simResponse = {4}},
-    {field = "governor",            type = "U16", apiVersion = 12.08, simResponse = {0, 0}, tableIdxInc = -1, table = govMode},
-    {field = "cell_cutoff",         type = "U16", apiVersion = 12.08, simResponse = {2, 0}, tableIdxInc = -1, table = lowVoltage},
-    {field = "timing",              type = "U16", apiVersion = 12.08, simResponse = {0, 0}, tableIdxInc = -1, table = timing},
-    {field = "lv_bec_voltage",      type = "U16", apiVersion = 12.08, simResponse = {0, 0}, min = 60, max = 84, default = 74, step = 2, scale = 10, decimals = 1, table = becLvVoltage},
-    {field = "motor_direction",     type = "U16", apiVersion = 12.08, simResponse = {0, 0}, tableIdxInc = -1, table = motorDirection},
-    {field = "gov_p",               type = "U16", apiVersion = 12.08, simResponse = {0, 0}, min = 1, max = 10, default = 4},
-    {field = "gov_i",               type = "U16", apiVersion = 12.08, simResponse = {0, 0}, min = 1, max = 10, default = 3},
-    {field = "acceleration",        type = "U16", apiVersion = 12.08, simResponse = {0, 0}, tableIdxInc = -1, table = accel},
-    {field = "auto_restart_time",   type = "U16", apiVersion = 12.08, simResponse = {0, 0}, tableIdxInc = -1, table = autoRestart},
-    {field = "hv_bec_voltage",      type = "U16", apiVersion = 12.08, simResponse = {4, 0}, min = 60, max = 120, tableIdxInc = -1, table = becHvVoltage},
-    {field = "startup_power",       type = "U16", apiVersion = 12.08, simResponse = {3, 0}, tableIdxInc = -1, table = startupPower},
-    {field = "brake_type",          type = "U16", apiVersion = 12.08, simResponse = {2, 0}, tableIdxInc = -1, table = brakeType},
-    {field = "brake_force",         type = "U16", apiVersion = 12.08, simResponse = {1, 0}, min = 0, max = 100, default = 0, unit = "%"},
-    {field = "sr_function",         type = "U16", apiVersion = 12.08, simResponse = {7, 0}, tableIdxInc = -1, table = srFunc},
-    {field = "capacity_correction", type = "U16", apiVersion = 12.08, simResponse = {1, 0}, min = 0, max = 20, default = 10, offset = -10, unit = "%"},
-    {field = "motor_poles",         type = "U16", apiVersion = 12.08, simResponse = {0, 0}, min = 1, max = 550, default = 1, step = 1},
-    {field = "led_color",           type = "U16", apiVersion = 12.08, simResponse = {0, 0}, tableIdxInc = -1, table = ledColor},
-    {field = "smart_fan",           type = "U16", apiVersion = 12.08, simResponse = {10, 0}, tableIdxInc = -1, table = fanControl},
-    {field = "activefields",        type = "U32", apiVersion = 12.08, simResponse = {238, 255, 1, 0}},
+    {field = "esc_signature",       type = "U8",  apiVersion = 12.07, simResponse = {166}},
+    {field = "esc_command",         type = "U8",  apiVersion = 12.07, simResponse = {0}},
+    {field = "esc_model",           type = "U8",  apiVersion = 12.07, simResponse = {23}},
+    {field = "esc_version",         type = "U8",  apiVersion = 12.07, simResponse = {3}},
+    {field = "governor",            type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = govMode},
+    {field = "cell_cutoff",         type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = lowVoltage},
+    {field = "timing",              type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = timing},
+    {field = "lv_bec_voltage",      type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = becLvVoltage},
+    {field = "motor_direction",     type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = motorDirection},
+    {field = "gov_p",               type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 1, max = 10, default = 4},
+    {field = "gov_i",               type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 1, max = 10, default = 3},
+    {field = "acceleration",        type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = accel},
+    {field = "auto_restart_time",   type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = autoRestart},
+    {field = "hv_bec_voltage",      type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = becHvVoltage},
+    {field = "startup_power",       type = "U16", apiVersion = 12.07, simResponse = {0, 0}, table = startupPower, tableIdxInc = -1},
+    {field = "brake_type",          type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = brakeType},
+    {field = "brake_force",         type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 100, default = 0, unit = "%"},
+    {field = "sr_function",         type = "U16", apiVersion = 12.07, simResponse = {0, 0}, table = srFunc, tableIdxInc = -1},
+    {field = "capacity_correction", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 20, default = 10, offset = -10, unit = "%"},
+    {field = "motor_poles",         type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 1, max = 55, default = 1, step = 1},
+    {field = "led_color",           type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = ledColor},
+    {field = "smart_fan",           type = "U16", apiVersion = 12.07, simResponse = {0, 0}, tableIdxInc = -1, table = fanControl},
+    {field = "activefields",        type = "U32", apiVersion = 12.07, simResponse = {238, 255, 1, 0}},
 }
 
--- filter the structure to remove any params not supported by the running api version
-local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
-
--- calculate the min bytes value from the structure
-local MSP_MIN_BYTES = rfsuite.bg.msp.api.calculateMinBytes(MSP_API_STRUCTURE_READ)
+-- Process structure in one pass
+local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE =
+    rfsuite.tasks.msp.api.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 
 -- set read structure
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
-
--- generate sim response
-local MSP_API_SIMULATOR_RESPONSE = rfsuite.bg.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
 
 
 -- Variable to store parsed MSP data
@@ -84,7 +80,7 @@ local payloadData = {}
 local defaultData = {}
 
 -- Create a new instance
-local handlers = rfsuite.bg.msp.api.createHandlers()
+local handlers = rfsuite.tasks.msp.api.createHandlers()
 
 -- Variables to store optional the UUID and timeout for payload
 local MSP_API_UUID
@@ -100,11 +96,14 @@ local function read()
     local message = {
         command = MSP_API_CMD_READ,
         processReply = function(self, buf)
-            mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE_READ)
-            if #buf >= MSP_MIN_BYTES then
-                local completeHandler = handlers.getCompleteHandler()
-                if completeHandler then completeHandler(self, buf) end
-            end
+            local structure = MSP_API_STRUCTURE_READ
+            rfsuite.tasks.msp.api.parseMSPData(buf, structure, nil, nil, function(result)
+                mspData = result
+                if #buf >= MSP_MIN_BYTES then
+                    local completeHandler = handlers.getCompleteHandler()
+                    if completeHandler then completeHandler(self, buf) end
+                end
+            end)
         end,
         errorHandler = function(self, buf)
             local errorHandler = handlers.getErrorHandler()
@@ -114,7 +113,7 @@ local function read()
         uuid = MSP_API_UUID,
         timeout = MSP_API_MSG_TIMEOUT  
     }
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function write(suppliedPayload)
@@ -125,7 +124,7 @@ local function write(suppliedPayload)
 
     local message = {
         command = MSP_API_CMD_WRITE,
-        payload = suppliedPayload or payloadData,
+        payload = suppliedPayload or rfsuite.tasks.msp.api.buildWritePayload(API_NAME, payloadData,MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE),
         processReply = function(self, buf)
             local completeHandler = handlers.getCompleteHandler()
             if completeHandler then completeHandler(self, buf) end
@@ -139,7 +138,7 @@ local function write(suppliedPayload)
         uuid = MSP_API_UUID,
         timeout = MSP_API_MSG_TIMEOUT  
     }
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 -- Function to get the value of a specific field from MSP data
@@ -150,13 +149,7 @@ end
 
 -- Function to set a value dynamically
 local function setValue(fieldName, value)
-    for _, field in ipairs(MSP_API_STRUCTURE_WRITE) do
-        if field.field == fieldName then
-            payloadData[fieldName] = value
-            return true
-        end
-    end
-    error("Invalid field name: " .. fieldName)
+    payloadData[fieldName] = value
 end
 
 -- Function to check if the read operation is complete

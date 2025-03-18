@@ -21,7 +21,10 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {"Set the current flight profile or rate profile you would like to use.", "If you use use a switch on your radio to change flight or rate modes, this will over-ride this choice as soon as you toggle the switch."}
+data['help']['default'] = {
+    rfsuite.i18n.get("app.modules.profile_select.help_p1"),
+    rfsuite.i18n.get("app.modules.profile_select.help_p2")
+}
 
 data['fields'] = {}
 

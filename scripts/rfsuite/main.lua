@@ -24,16 +24,20 @@ local config = {}
 -- LuaFormatter off
 
 -- Configuration settings for the Rotorflight Lua Ethos Suite
-config.toolName = "Rotorflight"                                     -- name of the tool
+config.toolName = "Rotorflight"                                     -- name of the tool 
 config.icon = lcd.loadMask("app/gfx/icon.png")                      -- icon
 config.icon_logtool = lcd.loadMask("app/gfx/icon_logtool.png")      -- icon
-config.Version = "1.0.0"                                            -- version number of this software replace
+config.icon_unsupported = lcd.loadMask("app/gfx/unsupported.png")   -- icon
+config.Version = "0.0.0.0"                                            -- version number of this software replace
 config.ethosVersion = {1, 6, 2}                                     -- min version of ethos supported by this script                                                     
 config.supportedMspApiVersion = {"12.06", "12.07","12.08"}          -- supported msp versions
 config.simulatorApiVersionResponse = {0, 12, 8}                     -- version of api return by simulator
 config.logLevel= "info"                                             -- off | info | debug [default = info]
 config.logToFile = false                                            -- log to file [default = false] (log file is in /scripts/rfsuite/logs)
+config.logMSP = false                                               -- log msp messages [default =  false]
+config.logMemoryUsage = false                                       -- log memory usage [default = false]
 config.developerMode = false                                        -- show developer tools on main menu [default = false]
+
 
 -- RotorFlight + ETHOS LUA preferences
 local preferences = {}
@@ -41,9 +45,9 @@ local preferences = {}
 -- Configuration options that adjust behavior of the script (will be moved to a settings menu in the future)
 preferences.flightLog = true                                        -- will write a flight log into /scripts/rfsuite/logs/<modelname>/*.log
 preferences.reloadOnSave = false                                    -- trigger a reload on save [default = false]
-preferences.skipRssiSensorCheck = false                             -- skip checking for a valid rssi [ default = false]
 preferences.internalElrsSensors = true                              -- disable the integrated elrs telemetry processing [default = true]
 preferences.internalSportSensors = true                             -- disable the integrated smart port telemetry processing [default = true]
+preferences.internalSimSensors = true                               -- disable the integrated simulator telemetry processing [default = true]
 preferences.adjFunctionAlerts = false                               -- do not alert on adjfunction telemetry.  [default = false]
 preferences.adjValueAlerts = true                                   -- play adjvalue alerts if sensor changes [default = true]  
 preferences.saveWhenArmedWarning = true                             -- do not display the save when armed warning. [default = true]
@@ -55,6 +59,7 @@ preferences.syncCraftName = false                                   -- sync the 
 preferences.mspExpBytes = 8                                         -- number of bytes for msp_exp [default = 8] 
 preferences.defaultRateProfile = 4 -- ACTUAL                        -- default rate table [default = 4]
 preferences.watchdogParam = 10                                      -- watchdog timeout for progress boxes [default = 10]
+
 
 -- tasks
 config.bgTaskName = config.toolName .. " [Background]"              -- background task name for msp services etc
@@ -93,23 +98,95 @@ rfsuite.log = assert(loadfile("lib/log.lua"))(config)
 rfsuite.log.config.log_file = "logs/rfsuite_" .. os.date("%Y-%m-%d_%H-%M-%S") .. ".log"
 rfsuite.log.config.min_print_level  = config.logLevel
 rfsuite.log.config.log_to_file = config.logToFile
-if system:getVersion().simulation == true then rfsuite.log.print_interval = 0.1 end
+
 
 -- library with utility functions used throughou the suite
 rfsuite.utils = assert(loadfile("lib/utils.lua"))(config)
+
+
+-- Load the i18n system
+rfsuite.i18n  = assert(loadfile("lib/i18n.lua"))(config)
+rfsuite.i18n.load()     
 
 -- 
 -- This script initializes the `rfsuite` tasks and background task.
 -- 
 -- The `rfsuite.tasks` table is created to hold various tasks.
--- The `rfsuite.bg` is assigned the result of executing the "tasks/bg.lua" file with the `config` parameter.
--- The `loadfile` function is used to load the "tasks/bg.lua" file, and `assert` ensures that the file is loaded successfully.
--- The loaded file is then executed with the `config` parameter, and its return value is assigned to `rfsuite.bg`.
+-- The `rfsuite.tasks` is assigned the result of executing the "tasks/tasks.lua" file with the `config` parameter.
+-- The `loadfile` function is used to load the "tasks/tasks.lua" file, and `assert` ensures that the file is loaded successfully.
+-- The loaded file is then executed with the `config` parameter, and its return value is assigned to `rfsuite.tasks`.
 -- tasks
-rfsuite.tasks = {}
-rfsuite.bg = assert(loadfile("tasks/bg.lua"))(config)
+rfsuite.tasks = assert(loadfile("tasks/tasks.lua"))(config)
 
 -- LuaFormatter off
+
+
+--[[
+This script initializes various session parameters for the rfsuite application to nil.
+The parameters include:
+- tailMode: Mode for the tail rotor.
+- swashMode: Mode for the swashplate.
+- activeProfile: Currently active profile.
+- activeRateProfile: Currently active rate profile.
+- activeProfileLast: Last active profile.
+- activeRateLast: Last active rate profile.
+- servoCount: Number of servos.
+- servoOverride: Override setting for servos.
+- clockSet: Clock setting.
+- apiVersion: Version of the API.
+- lastLabel: Last label used.
+- rssiSensor: RSSI sensor value.
+- formLineCnt: Form line count.
+- rateProfile: Rate profile.
+- governorMode: Mode for the governor.
+- ethosRunningVersion: Version of the Ethos running.
+- lcdWidth: Width of the LCD.
+- lcdHeight: Height of the LCD.
+- mspSignature - uses for mostly in sim to save esc type
+- telemetryType = sport or crsf
+- repairSensors: makes the background task repair sensors
+- lastMemoryUsage.  Used to track memory usage for debugging
+- 
+
+-- Every attempt should be made if using session vars to record them here with a nil
+-- to prevent conflicts with other scripts that may use the same session vars.
+]]
+rfsuite.session.tailMode = nil
+rfsuite.session.swashMode = nil
+rfsuite.session.activeProfile = nil
+rfsuite.session.activeRateProfile = nil
+rfsuite.session.activeProfileLast = nil
+rfsuite.session.activeRateLast = nil
+rfsuite.session.servoCount = nil
+rfsuite.session.servoOverride = nil
+rfsuite.session.clockSet = nil
+rfsuite.session.apiVersion = nil
+rfsuite.session.activeProfile = nil
+rfsuite.session.activeRateProfile = nil
+rfsuite.session.activeProfileLast = nil
+rfsuite.session.activeRateLast = nil
+rfsuite.session.servoCount = nil
+rfsuite.session.servoOverride = nil
+rfsuite.session.clockSet = nil
+rfsuite.session.lastLabel = nil
+rfsuite.session.tailMode = nil
+rfsuite.session.swashMode = nil
+rfsuite.session.formLineCnt = nil
+rfsuite.session.rateProfile = nil
+rfsuite.session.governorMode = nil
+rfsuite.session.servoOverride = nil
+rfsuite.session.ethosRunningVersion = nil
+rfsuite.session.lcdWidth = nil
+rfsuite.session.lcdHeight = nil
+rfsuite.session.mspSignature = nil
+rfsuite.session.telemetryState = nil
+rfsuite.session.telemetryType = nil
+rfsuite.session.telemetryTypeChanged = nil
+rfsuite.session.telemetrySensor = nil
+rfsuite.session.repairSensors = false
+rfsuite.session.locale = system.getLocale()
+rfsuite.session.lastMemoryUsage = nil
+
 
 --[[
     Initializes the main script for the rotorflight-lua-ethos-suite.
@@ -144,7 +221,29 @@ local function init()
 
     -- prevent this even getting close to running if version is not good
     if not rfsuite.utils.ethosVersionAtLeast() then
-        error("Ethos version is not supported")
+
+        system.registerSystemTool({
+            name = config.toolName,
+            icon = config.icon_unsupported ,
+            create = function () end,
+            wakeup = function () 
+                        lcd.invalidate()
+                        return
+                     end,
+            paint = function () 
+                        local w, h = lcd.getWindowSize()
+                        local textColor = lcd.RGB(255, 255, 255, 1) 
+                        lcd.color(textColor)
+                        lcd.font(FONT_STD)
+                        local badVersionMsg = string.format("ETHOS < V%d.%d.%d", table.unpack(config.ethosVersion))
+                        local textWidth, textHeight = lcd.getTextSize(badVersionMsg)
+                        local x = (w - textWidth) / 2
+                        local y = (h - textHeight) / 2
+                        lcd.drawText(x, y, badVersionMsg)
+                        return 
+                    end,
+            close = function () end,
+        })
         return
     end
 
@@ -177,8 +276,8 @@ local function init()
     system.registerTask({
         name = config.bgTaskName,
         key = config.bgTaskKey,
-        wakeup = rfsuite.bg.wakeup,
-        event = rfsuite.bg.event
+        wakeup = rfsuite.tasks.wakeup,
+        event = rfsuite.tasks.event
     })
 
     -- widgets are loaded dynamically
@@ -211,35 +310,39 @@ local function init()
     --   - persistent: Boolean indicating if the widget is persistent (default is false).
     --   - menu: Menu definition for the widget.
     --   - title: Title of the widget.
+    rfsuite.widgets = {}
+
     for i, v in ipairs(widgetList) do
         if v.script then
-            -- Dynamically assign the loaded script to a variable inside rfsuite table
+            -- Load the script dynamically
             local scriptModule = assert(loadfile("widgets/" .. v.folder .. "/" .. v.script))(config)
-
-            -- Use the script name as a key to store in rfsuite dynamically
-            -- Assuming v.name is a valid Lua identifier-like string (without spaces or special characters)
-            local varname = v.varname or v.script:gsub(".lua", "")
-            rfsuite[varname] = scriptModule
-
-            -- Now register the widget with dynamically assigned variable
+    
+            -- Use the script filename (without .lua) as the key, or v.varname if provided
+            local varname = v.varname or v.script:gsub("%.lua$", "")
+    
+            -- Store the module inside rfsuite.widgets
+            rfsuite.widgets[varname] = scriptModule
+    
+            -- Register the widget with the system
             system.registerWidget({
                 name = v.name,
                 key = v.key,
-                event = scriptModule.event,      -- Reference dynamically assigned module
+                event = scriptModule.event,
                 create = scriptModule.create,
                 paint = scriptModule.paint,
                 wakeup = scriptModule.wakeup,
                 close = scriptModule.close,
                 configure = scriptModule.configure,
                 read = scriptModule.read,
-                write = scriptModule.write,                
+                write = scriptModule.write,
                 persistent = scriptModule.persistent or false,
                 menu = scriptModule.menu,
                 title = scriptModule.title
             })
         end
     end
-end
+    
+end    
 
 -- LuaFormatter on
 

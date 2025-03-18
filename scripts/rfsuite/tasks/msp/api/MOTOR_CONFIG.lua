@@ -15,48 +15,22 @@
  * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
 -- Constants for MSP Commands
+local API_NAME = "MOTOR_CONFIG" -- API name (must be same as filename)
 local MSP_API_CMD_READ = 131 -- Command identifier 
 local MSP_API_CMD_WRITE = 222 -- Command identifier 
-local MSP_API_SIMULATOR_RESPONSE = {
-    45, 4, 208, 7, 232, 3, 1, 6, 0, 0,
-    250, 0, 1, 6, 4, 2, 1, 8, 7, 7,
-    8, 20, 0, 50, 0, 9, 0, 30, 0
-} -- Default simulator response
+local MSP_REBUILD_ON_WRITE = true -- Rebuild the payload on write
 
 -- Define the MSP response data structures
+local pwmProtocol = {"PWM", "ONESHOT125", "ONESHOT42", "MULTISHOT", "DSHOT150", "DSHOT300", "DSHOT600", "PROSHOT", "DISABLED"}
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "minthrottle",              type = "U16", apiVersion = 12.06, simResponse = {45, 4}, min = 50, max = 2250, default = 1070, help = "This PWM value is sent to the ESC/Servo at low throttle"},
-    {field = "maxthrottle",              type = "U16", apiVersion = 12.06, simResponse = {208, 7}, min = 50, max = 2250, default = 1070, help = "This PWM value is sent to the ESC/Servo at full throttle"},
-    {field = "mincommand",               type = "U16", apiVersion = 12.06, simResponse = {232, 3}, min = 50, max = 2250, default = 1070, help = "This PWM value is sent when the motor is stopped"},
-    {field = "motor_count_blheli",       type = "U8",  apiVersion = 12.06, simResponse = {1}},
-    {field = "motor_pole_count_blheli",  type = "U8",  apiVersion = 12.06, simResponse = {6}},
-    {field = "use_dshot_telemetry",      type = "U8",  apiVersion = 12.06, simResponse = {0}},
-    {field = "motor_pwm_protocol",       type = "U8",  apiVersion = 12.06, simResponse = {0}},
-    {field = "motor_pwm_rate",           type = "U16", apiVersion = 12.06, simResponse = {250, 0}},
-    {field = "use_unsynced_pwm",         type = "U8",  apiVersion = 12.06, simResponse = {1}},
-    {field = "motor_pole_count_0",       type = "U8",  apiVersion = 12.06, simResponse = {6}, min = 0, max = 256, default = 8, help = "The number of magnets on the motor bell."},
-    {field = "motor_pole_count_1",       type = "U8",  apiVersion = 12.06, simResponse = {4}},
-    {field = "motor_pole_count_2",       type = "U8",  apiVersion = 12.06, simResponse = {2}},
-    {field = "motor_pole_count_3",       type = "U8",  apiVersion = 12.06, simResponse = {1}},
-    {field = "motor_rpm_lpf_0",          type = "U8",  apiVersion = 12.06, simResponse = {8}},
-    {field = "motor_rpm_lpf_1",          type = "U8",  apiVersion = 12.06, simResponse = {7}},
-    {field = "motor_rpm_lpf_2",          type = "U8",  apiVersion = 12.06, simResponse = {7}},
-    {field = "motor_rpm_lpf_3",          type = "U8",  apiVersion = 12.06, simResponse = {8}},
-    {field = "main_rotor_gear_ratio_0",  type = "U16", apiVersion = 12.06, simResponse = {20, 0}, min = 0, max = 2000, default = 1, help = "Motor Pinion Gear Tooth Count"},
-    {field = "main_rotor_gear_ratio_1",  type = "U16", apiVersion = 12.06, simResponse = {50, 0}, min = 0, max = 2000, default = 1, help = "Main Gear Tooth Count"},
-    {field = "tail_rotor_gear_ratio_0",  type = "U16", apiVersion = 12.06, simResponse = {9, 0}, min = 0, max = 2000, default = 1, help = "Tail Gear Tooth Count"},
-    {field = "tail_rotor_gear_ratio_1",  type = "U16", apiVersion = 12.06, simResponse = {30, 0}, min = 0, max = 2000, default = 1, help = "Autorotation Gear Tooth Count"}
-}
-
-local MSP_API_STRUCTURE_WRITE = {
     {field = "minthrottle",              type = "U16", apiVersion = 12.06, simResponse = {45, 4}, min = 50, max = 2250, default = 1070},
     {field = "maxthrottle",              type = "U16", apiVersion = 12.06, simResponse = {208, 7}, min = 50, max = 2250, default = 1070},
     {field = "mincommand",               type = "U16", apiVersion = 12.06, simResponse = {232, 3}, min = 50, max = 2250, default = 1070},
-    --{field = "motor_count_blheli",       type = "U8",  simResponse = {1}}, -- compat: BLHeliSuite for no good reason this is missing from the write structure
-    {field = "motor_pole_count_blheli",  type = "U8",  apiVersion = 12.06, simResponse = {6}}, -- compat: BLHeliSuite
+    {field = "motor_count_blheli",       type = "U8",  apiVersion = 12.06, simResponse = {1}},
+    {field = "motor_pole_count_blheli",  type = "U8",  apiVersion = 12.06, simResponse = {6}},
     {field = "use_dshot_telemetry",      type = "U8",  apiVersion = 12.06, simResponse = {0}},
-    {field = "motor_pwm_protocol",       type = "U8",  apiVersion = 12.06, simResponse = {0}},
-    {field = "motor_pwm_rate",           type = "U16", apiVersion = 12.06, simResponse = {250, 0}},
+    {field = "motor_pwm_protocol",       type = "U8",  apiVersion = 12.06, simResponse = {0}, table = pwmProtocol, tableIdxInc = -1},
+    {field = "motor_pwm_rate",           type = "U16", apiVersion = 12.06, simResponse = {250, 0}, min=50, max = 8000, default = 250, unit="Hz"},
     {field = "use_unsynced_pwm",         type = "U8",  apiVersion = 12.06, simResponse = {1}},
     {field = "motor_pole_count_0",       type = "U8",  apiVersion = 12.06, simResponse = {6}, min = 0, max = 256, default = 8},
     {field = "motor_pole_count_1",       type = "U8",  apiVersion = 12.06, simResponse = {4}},
@@ -66,20 +40,40 @@ local MSP_API_STRUCTURE_WRITE = {
     {field = "motor_rpm_lpf_1",          type = "U8",  apiVersion = 12.06, simResponse = {7}},
     {field = "motor_rpm_lpf_2",          type = "U8",  apiVersion = 12.06, simResponse = {7}},
     {field = "motor_rpm_lpf_3",          type = "U8",  apiVersion = 12.06, simResponse = {8}},
-    {field = "main_rotor_gear_ratio_0",  type = "U16", apiVersion = 12.06, simResponse = {20, 0}, min = 0, max = 2000, default = 1},
-    {field = "main_rotor_gear_ratio_1",  type = "U16", apiVersion = 12.06, simResponse = {50, 0}, min = 0, max = 2000, default = 1},
-    {field = "tail_rotor_gear_ratio_0",  type = "U16", apiVersion = 12.06, simResponse = {9, 0}, min = 0, max = 2000, default = 1},
-    {field = "tail_rotor_gear_ratio_1",  type = "U16", apiVersion = 12.06, simResponse = {30, 0}, min = 0, max = 2000, default = 1}
+    {field = "main_rotor_gear_ratio_0",  type = "U16", apiVersion = 12.06, simResponse = {20, 0}, min = 0, max = 50000, default = 1},
+    {field = "main_rotor_gear_ratio_1",  type = "U16", apiVersion = 12.06, simResponse = {50, 0}, min = 0, max = 50000, default = 1},
+    {field = "tail_rotor_gear_ratio_0",  type = "U16", apiVersion = 12.06, simResponse = {9, 0}, min = 0, max = 50000, default = 1},
+    {field = "tail_rotor_gear_ratio_1",  type = "U16", apiVersion = 12.06, simResponse = {30, 0}, min = 0, max = 50000, default = 1}
 }
 
--- filter the structure to remove any params not supported by the running api version
-local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
+local MSP_API_STRUCTURE_WRITE = {
+    {field = "minthrottle",              type = "U16", apiVersion = 12.06, simResponse = {45, 4}, min = 50, max = 2250, default = 1070},
+    {field = "maxthrottle",              type = "U16", apiVersion = 12.06, simResponse = {208, 7}, min = 50, max = 2250, default = 1070},
+    {field = "mincommand",               type = "U16", apiVersion = 12.06, simResponse = {232, 3}, min = 50, max = 2250, default = 1070},
+    --{field = "motor_count_blheli",       type = "U8",  apiVersion = 12.06, simResponse = {1}},
+    {field = "motor_pole_count_blheli",  type = "U8",  apiVersion = 12.06, simResponse = {6}},
+    {field = "use_dshot_telemetry",      type = "U8",  apiVersion = 12.06, simResponse = {0}},
+    {field = "motor_pwm_protocol",       type = "U8",  apiVersion = 12.06, simResponse = {0}, table = pwmProtocol, tableIdxInc = -1},
+    {field = "motor_pwm_rate",           type = "U16", apiVersion = 12.06, simResponse = {250, 0}, min=50, max = 8000, default = 250, unit="Hz"},
+    {field = "use_unsynced_pwm",         type = "U8",  apiVersion = 12.06, simResponse = {1}},
+    {field = "motor_pole_count_0",       type = "U8",  apiVersion = 12.06, simResponse = {6}, min = 0, max = 256, default = 8},
+    {field = "motor_pole_count_1",       type = "U8",  apiVersion = 12.06, simResponse = {4}},
+    {field = "motor_pole_count_2",       type = "U8",  apiVersion = 12.06, simResponse = {2}},
+    {field = "motor_pole_count_3",       type = "U8",  apiVersion = 12.06, simResponse = {1}},
+    {field = "motor_rpm_lpf_0",          type = "U8",  apiVersion = 12.06, simResponse = {8}},
+    {field = "motor_rpm_lpf_1",          type = "U8",  apiVersion = 12.06, simResponse = {7}},
+    {field = "motor_rpm_lpf_2",          type = "U8",  apiVersion = 12.06, simResponse = {7}},
+    {field = "motor_rpm_lpf_3",          type = "U8",  apiVersion = 12.06, simResponse = {8}},
+    {field = "main_rotor_gear_ratio_0",  type = "U16", apiVersion = 12.06, simResponse = {20, 0}, min = 0, max = 50000, default = 1},
+    {field = "main_rotor_gear_ratio_1",  type = "U16", apiVersion = 12.06, simResponse = {50, 0}, min = 0, max = 50000, default = 1},
+    {field = "tail_rotor_gear_ratio_0",  type = "U16", apiVersion = 12.06, simResponse = {9, 0}, min = 0, max = 50000, default = 1},
+    {field = "tail_rotor_gear_ratio_1",  type = "U16", apiVersion = 12.06, simResponse = {30, 0}, min = 0, max = 50000, default = 1}
+}
 
--- calculate the min bytes value from the structure
-local MSP_MIN_BYTES = rfsuite.bg.msp.api.calculateMinBytes(MSP_API_STRUCTURE_READ)
+-- Process structure in one pass
+local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE =
+    rfsuite.tasks.msp.api.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 
--- generate a simulatorResponse from the read structure
-local MSP_API_SIMULATOR_RESPONSE = rfsuite.bg.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
 
 -- Variable to store parsed MSP data
 local mspData = nil
@@ -88,7 +82,7 @@ local payloadData = {}
 local defaultData = {}
 
 -- Create a new instance
-local handlers = rfsuite.bg.msp.api.createHandlers()
+local handlers = rfsuite.tasks.msp.api.createHandlers()
 
 -- Variables to store optional the UUID and timeout for payload
 local MSP_API_UUID
@@ -104,11 +98,14 @@ local function read()
     local message = {
         command = MSP_API_CMD_READ,
         processReply = function(self, buf)
-            mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE_READ)
-            if #buf >= MSP_MIN_BYTES then
-                local completeHandler = handlers.getCompleteHandler()
-                if completeHandler then completeHandler(self, buf) end
-            end
+            local structure = MSP_API_STRUCTURE_READ
+            rfsuite.tasks.msp.api.parseMSPData(buf, structure, nil, nil, function(result)
+                mspData = result
+                if #buf >= MSP_MIN_BYTES then
+                    local completeHandler = handlers.getCompleteHandler()
+                    if completeHandler then completeHandler(self, buf) end
+                end
+            end)
         end,
         errorHandler = function(self, buf)
             local errorHandler = handlers.getErrorHandler()
@@ -118,21 +115,7 @@ local function read()
         uuid = MSP_API_UUID,
         timeout = MSP_API_MSG_TIMEOUT  
     }
-    rfsuite.bg.msp.mspQueue:add(message)
-end
-
--- helper function to shift payload position when writing with a supplied payload
-local function shiftSuppliedPayload(payload)
-    local newPayload = {}
-    for i, v in ipairs(payload) do
-        if i > 6 then
-            newPayload[i] = payload[i + 1]
-        else
-            newPayload[i] = payload[i]
-        end
-
-    end
-    return newPayload
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function write(suppliedPayload)
@@ -140,15 +123,10 @@ local function write(suppliedPayload)
         rfsuite.utils.log("No value set for MSP_API_CMD_WRITE", "debug")
         return
     end
-
-    -- If suppliedPayload is not nil, shift the payload as this write api does not honour the order of the read command
-    if suppliedPayload ~=nil then
-        suppliedPayload = shiftSuppliedPayload(suppliedPayload)
-    end
         
     local message = {
         command = MSP_API_CMD_WRITE,
-        payload = suppliedPayload or payloadData,
+        payload = suppliedPayload or rfsuite.tasks.msp.api.buildWritePayload(API_NAME, payloadData,MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE), -- we do a true on write as we will force rebuild the payload
         processReply = function(self, buf)
             local completeHandler = handlers.getCompleteHandler()
             if completeHandler then completeHandler(self, buf) end
@@ -162,7 +140,7 @@ local function write(suppliedPayload)
         uuid = MSP_API_UUID,
         timeout = MSP_API_MSG_TIMEOUT  
     }
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 -- Function to get the value of a specific field from MSP data
@@ -173,13 +151,7 @@ end
 
 -- Function to set a value dynamically
 local function setValue(fieldName, value)
-    for _, field in ipairs(MSP_API_STRUCTURE_WRITE) do
-        if field.field == fieldName then
-            payloadData[fieldName] = value
-            return true
-        end
-    end
-    error("Invalid field name: " .. fieldName)
+    payloadData[fieldName] = value
 end
 
 -- Function to check if the read operation is complete
@@ -225,5 +197,5 @@ return {
     setErrorHandler = handlers.setErrorHandler,
     data = data,
     setUUID = setUUID,
-    setTimeout = setTimeout
+    setTimeout = setTimeout,
 }

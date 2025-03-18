@@ -15,118 +15,56 @@
  * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
 -- Constants for MSP Commands
+local API_NAME = "ESC_PARAMETERS_HW5" -- API name (must be same as filename)
 local MSP_API_CMD_READ = 217 -- Command identifier 
 local MSP_API_CMD_WRITE = 218 -- Command identifier 
+local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write 
 local MSP_SIGNATURE = 0xFD
 local MSP_HEADER_BYTES = 2
 
 -- some tables used in structure below
-local flightMode = {"Fixed Wing", "Heli Ext Governor", "Heli Governor", "Heli Governor Store"}
-local rotation = {"CW", "CCW"}
-local voltages = {"5.4", "5.5", "5.6", "5.7", "5.8", "5.9", "6.0", "6.1", "6.2", "6.3", "6.4", "6.5", "6.6", "6.7", "6.8", "6.9", "7.0", "7.1", "7.2", "7.3", "7.4", "7.5", "7.6", "7.7", "7.8", "7.9", "8.0", "8.1", "8.2", "8.3", "8.4"}
-local lipoCellCount = {"Auto Calculate", "3S", "4S", "5S", "6S", "7S", "8S", "9S", "10S", "11S", "12S", "13S", "14S"}
-local cutoffType = {"Soft Cutoff", "Hard Cutoff"}
-local cutoffVoltage = {"Disabled", "2.8", "2.9", "3.0", "3.1", "3.2", "3.3", "3.4", "3.5", "3.6", "3.7", "3.8"}
+local flightMode = {rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_fixedwing"), rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_heliext"), rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_heligov"), rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_helistore")}
+local rotation = {rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_cw"), rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_ccw")}
+local voltages = {"5.0","5.1","5.2","5.3","5.4","5.5","5.6","5.7","5.8","5.9","6.0","6.1","6.2","6.3","6.4","6.5","6.6","6.7","6.8","6.9","7.0","7.1","7.2","7.3","7.4","7.5","7.6","7.7","7.8","7.9","8.0","8.1","8.2","8.3","8.4","8.5","8.6","8.7","8.8","8.9","9.0","9.1","9.2","9.3","9.4","9.5","9.6","9.7","9.8","9.9","10.0","10.1","10.2","10.3","10.4","10.5","10.6","10.7","10.8","10.9","11.0","11.1","11.2","11.3","11.4","11.5","11.6","11.7","11.8","11.9","12.0"}
+local lipoCellCount = {rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_autocalculate"), "3S", "4S", "5S", "6S", "7S", "8S", "9S", "10S", "11S", "12S", "13S", "14S"}
+local cutoffType = {rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_softcutoff"), rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_hardcutoff")}
+local cutoffVoltage = {rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_disabled"), "2.8", "2.9", "3.0", "3.1", "3.2", "3.3", "3.4", "3.5", "3.6", "3.7", "3.8"}
 local restartTime = {"1s", "1.5s", "2s", "2.5s", "3s"}
 local startupPower = {"1", "2", "3", "4", "5", "6", "7"}
-local enabledDisabled = {"Enabled", "Disabled"}
-local brakeType = {"Disabled", "Normal", "Proportional", "Reverse"}
+local enabledDisabled = {rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_enabled"), rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_disabled")}
+local brakeType = {rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_disabled"), rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_normal"), rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_proportional"), rfsuite.i18n.get("api.ESC_PARAMETERS_HW5.tbl_reverse")}
 
 local MSP_API_STRUCTURE_READ_DATA = {
     {field = "esc_signature",       type = "U8", apiVersion = 12.07, simResponse = {253}},
     {field = "esc_command",         type = "U8", apiVersion = 12.07, simResponse = {0}},
-    {field = "escinfo_1",           type = "U8", apiVersion = 12.07, simResponse = {32}},
-    {field = "escinfo_2",           type = "U8", apiVersion = 12.07, simResponse = {32}},
-    {field = "escinfo_3",           type = "U8", apiVersion = 12.07, simResponse = {32}},
-    {field = "escinfo_4",           type = "U8", apiVersion = 12.07, simResponse = {80}},
-    {field = "escinfo_5",           type = "U8", apiVersion = 12.07, simResponse = {76}},
-    {field = "escinfo_6",           type = "U8", apiVersion = 12.07, simResponse = {45}},
-    {field = "escinfo_7",           type = "U8", apiVersion = 12.07, simResponse = {48}},
-    {field = "escinfo_8",           type = "U8", apiVersion = 12.07, simResponse = {52}},
-    {field = "escinfo_9",           type = "U8", apiVersion = 12.07, simResponse = {46}},
-    {field = "escinfo_10",          type = "U8", apiVersion = 12.07, simResponse = {49}},
-    {field = "escinfo_11",          type = "U8", apiVersion = 12.07, simResponse = {46}},
-    {field = "escinfo_12",          type = "U8", apiVersion = 12.07, simResponse = {48}},
-    {field = "escinfo_13",          type = "U8", apiVersion = 12.07, simResponse = {50}},
-    {field = "escinfo_14",          type = "U8", apiVersion = 12.07, simResponse = {32}},
-    {field = "escinfo_15",          type = "U8", apiVersion = 12.07, simResponse = {32}},
-    {field = "escinfo_16",          type = "U8", apiVersion = 12.07, simResponse = {32}},
-    {field = "escinfo_17",          type = "U8", apiVersion = 12.07, simResponse = {72}},
-    {field = "escinfo_18",          type = "U8", apiVersion = 12.07, simResponse = {87}},
-    {field = "escinfo_19",          type = "U8", apiVersion = 12.07, simResponse = {49}},
-    {field = "escinfo_20",          type = "U8", apiVersion = 12.07, simResponse = {49}},
-    {field = "escinfo_21",          type = "U8", apiVersion = 12.07, simResponse = {48}},
-    {field = "escinfo_22",          type = "U8", apiVersion = 12.07, simResponse = {54}},
-    {field = "escinfo_23",          type = "U8", apiVersion = 12.07, simResponse = {95}},
-    {field = "escinfo_24",          type = "U8", apiVersion = 12.07, simResponse = {86}},
-    {field = "escinfo_25",          type = "U8", apiVersion = 12.07, simResponse = {49}},
-    {field = "escinfo_26",          type = "U8", apiVersion = 12.07, simResponse = {48}},
-    {field = "escinfo_27",          type = "U8", apiVersion = 12.07, simResponse = {48}},
-    {field = "escinfo_28",          type = "U8", apiVersion = 12.07, simResponse = {52}},
-    {field = "escinfo_29",          type = "U8", apiVersion = 12.07, simResponse = {53}},
-    {field = "escinfo_30",          type = "U8", apiVersion = 12.07, simResponse = {54}},
-    {field = "escinfo_31",          type = "U8", apiVersion = 12.07, simResponse = {78}},
-    {field = "escinfo_32",          type = "U8", apiVersion = 12.07, simResponse = {66}},
-    {field = "escinfo_33",          type = "U8", apiVersion = 12.07, simResponse = {80}},
-    {field = "escinfo_34",          type = "U8", apiVersion = 12.07, simResponse = {108}},
-    {field = "escinfo_35",          type = "U8", apiVersion = 12.07, simResponse = {97}},
-    {field = "escinfo_36",          type = "U8", apiVersion = 12.07, simResponse = {116}},
-    {field = "escinfo_37",          type = "U8", apiVersion = 12.07, simResponse = {105}},
-    {field = "escinfo_38",          type = "U8", apiVersion = 12.07, simResponse = {110}},
-    {field = "escinfo_39",          type = "U8", apiVersion = 12.07, simResponse = {117}},
-    {field = "escinfo_40",          type = "U8", apiVersion = 12.07, simResponse = {109}},
-    {field = "escinfo_41",          type = "U8", apiVersion = 12.07, simResponse = {95}},
-    {field = "escinfo_42",          type = "U8", apiVersion = 12.07, simResponse = {86}},
-    {field = "escinfo_43",          type = "U8", apiVersion = 12.07, simResponse = {53}},
-    {field = "escinfo_44",          type = "U8", apiVersion = 12.07, simResponse = {32}},
-    {field = "escinfo_45",          type = "U8", apiVersion = 12.07, simResponse = {32}},
-    {field = "escinfo_46",          type = "U8", apiVersion = 12.07, simResponse = {32}},
-    {field = "escinfo_47",          type = "U8", apiVersion = 12.07, simResponse = {32}},
-    {field = "escinfo_48",          type = "U8", apiVersion = 12.07, simResponse = {32}},
-    {field = "escinfo_49",          type = "U8", apiVersion = 12.07, simResponse = {80}},
-    {field = "escinfo_50",          type = "U8", apiVersion = 12.07, simResponse = {108}},
-    {field = "escinfo_51",          type = "U8", apiVersion = 12.07, simResponse = {97}},
-    {field = "escinfo_52",          type = "U8", apiVersion = 12.07, simResponse = {116}},
-    {field = "escinfo_53",          type = "U8", apiVersion = 12.07, simResponse = {105}},
-    {field = "escinfo_54",          type = "U8", apiVersion = 12.07, simResponse = {110}},
-    {field = "escinfo_55",          type = "U8", apiVersion = 12.07, simResponse = {117}},
-    {field = "escinfo_56",          type = "U8", apiVersion = 12.07, simResponse = {109}},
-    {field = "escinfo_57",          type = "U8", apiVersion = 12.07, simResponse = {32}},
-    {field = "escinfo_58",          type = "U8", apiVersion = 12.07, simResponse = {86}},
-    {field = "escinfo_59",          type = "U8", apiVersion = 12.07, simResponse = {53}},
-    {field = "escinfo_60",          type = "U8", apiVersion = 12.07, simResponse = {32}},
-    {field = "escinfo_61",          type = "U8", apiVersion = 12.07, simResponse = {32}},
-    {field = "escinfo_62",          type = "U8", apiVersion = 12.07, simResponse = {32}},
-    {field = "escinfo_63",          type = "U8", apiVersion = 12.07, simResponse = {32}},
+    {field = "firmware_version",    type = "U128", apiVersion = 12.07, simResponse = {32, 32, 32, 80, 76, 45, 48, 52, 46, 49, 46, 48, 50, 32, 32, 32}},      
+    {field = "hardware_version",    type = "U128", apiVersion = 12.07, simResponse = {72, 87, 49, 49, 48, 54, 95, 86, 49, 48, 48, 52, 53, 54, 78, 66}},    
+    {field = "esc_type",            type = "U128", apiVersion = 12.07, simResponse = {80, 108, 97, 116, 105, 110, 117, 109, 95, 86, 53, 32, 32, 32, 32, 32}},   
+    {field = "com_version",         type = "U120", apiVersion = 12.07, simResponse = {80, 108, 97, 116, 105, 110, 117, 109, 32, 86, 53, 32, 32, 32, 32}},  
     {field = "flight_mode",         type = "U8", apiVersion = 12.07, simResponse = {0}, default = 0, min = 0, max = #flightMode, tableIdxInc = -1, table = flightMode},
     {field = "lipo_cell_count",     type = "U8", apiVersion = 12.07, simResponse = {0}, default = 0, min = 0, max = #lipoCellCount, tableIdxInc = -1, table = lipoCellCount},
     {field = "volt_cutoff_type",    type = "U8", apiVersion = 12.07, simResponse = {0}, default = 0, min = 0, max = #cutoffType, tableIdxInc = -1, table = cutoffType},
     {field = "cutoff_voltage",      type = "U8", apiVersion = 12.07, simResponse = {3}, default = 3, min = 0, max = #cutoffVoltage, tableIdxInc = -1, table = cutoffVoltage},
     {field = "bec_voltage",         type = "U8", apiVersion = 12.07, simResponse = {0}, default = 0, min = 0, max = #voltages, tableIdxInc = -1, table = voltages},
-    {field = "startup_time",        type = "U8", apiVersion = 12.07, simResponse = {11}},
-    {field = "gov_p_gain",          type = "U8", apiVersion = 12.07, simResponse = {6}},
-    {field = "gov_i_gain",          type = "U8", apiVersion = 12.07, simResponse = {5}},
+    {field = "startup_time",        type = "U8", apiVersion = 12.07, simResponse = {11}, default = 0, min = 4, max = 25, unit = "s"},
+    {field = "gov_p_gain",          type = "U8", apiVersion = 12.07, simResponse = {6}, default = 0, min = 0, max = 9},
+    {field = "gov_i_gain",          type = "U8", apiVersion = 12.07, simResponse = {5}, default = 0, min = 0, max = 9},
     {field = "auto_restart",        type = "U8", apiVersion = 12.07, simResponse = {25}, default = 25, units = "s", min = 0, max = 90},
-    {field = "restart_time",        type = "U8", apiVersion = 12.07, simResponse = {1} , default = 1, tableIdxInc = -1, min = 0, max = #restartTime, table = restartTime},
-    {field = "brake_type",          type = "U8", apiVersion = 12.07, simResponse = {0} , default = 0, min = 0, max = #brakeType, xvals = {76}, table = brakeType, tableIdxInc = -1},
+    {field = "restart_time",        type = "U8", apiVersion = 12.07, simResponse = {1}, default = 1, tableIdxInc = -1, min = 0, max = #restartTime, table = restartTime},
+    {field = "brake_type",          type = "U8", apiVersion = 12.07, simResponse = {0}, default = 0, min = 0, max = #brakeType, xvals = {76}, table = brakeType, tableIdxInc = -1},
     {field = "brake_force",         type = "U8", apiVersion = 12.07, simResponse = {0}, default = 0, min = 0, max = 100},
-    {field = "timing",              type = "U8", apiVersion = 12.07, simResponse = {24}},
+    {field = "timing",              type = "U8", apiVersion = 12.07, simResponse = {24}, default = 0, min = 0, max = 30},
     {field = "rotation",            type = "U8", apiVersion = 12.07, simResponse = {0}, default = 0, min = 0, max = #rotation, tableIdxInc = -1, table = rotation},
     {field = "active_freewheel",    type = "U8", apiVersion = 12.07, simResponse = {0}, min = 0, max = #enabledDisabled, table = enabledDisabled, tableIdxInc = -1},
     {field = "startup_power",       type = "U8", apiVersion = 12.07, simResponse = {2}, default = 2, min = 0, max = #startupPower, tableIdxInc = -1, table = startupPower}
 }
 
--- filter the structure to remove any params not supported by the running api version
-local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
-
--- calculate the min bytes value from the structure
-local MSP_MIN_BYTES = rfsuite.bg.msp.api.calculateMinBytes(MSP_API_STRUCTURE_READ)
+-- Process structure in one pass
+local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE =
+    rfsuite.tasks.msp.api.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 
 -- set read structure
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
-
--- generate a simulatorResponse from the read structure
-local MSP_API_SIMULATOR_RESPONSE = rfsuite.bg.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
 
 -- Variable to store parsed MSP data
 local mspData = nil
@@ -135,7 +73,7 @@ local payloadData = {}
 local defaultData = {}
 
 -- Create a new instance
-local handlers = rfsuite.bg.msp.api.createHandlers()
+local handlers = rfsuite.tasks.msp.api.createHandlers()
 
 -- Variables to store optional the UUID and timeout for payload
 local MSP_API_UUID
@@ -151,11 +89,14 @@ local function read()
     local message = {
         command = MSP_API_CMD_READ,
         processReply = function(self, buf)
-            mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE_READ)
-            if #buf >= MSP_MIN_BYTES then
-                local completeHandler = handlers.getCompleteHandler()
-                if completeHandler then completeHandler(self, buf) end
-            end
+            local structure = MSP_API_STRUCTURE_READ
+            rfsuite.tasks.msp.api.parseMSPData(buf, structure, nil, nil, function(result)
+                mspData = result
+                if #buf >= MSP_MIN_BYTES then
+                    local completeHandler = handlers.getCompleteHandler()
+                    if completeHandler then completeHandler(self, buf) end
+                end
+            end)
         end,
         errorHandler = function(self, buf)
             local errorHandler = handlers.getErrorHandler()
@@ -165,7 +106,7 @@ local function read()
         uuid = MSP_API_UUID,
         timeout = MSP_API_MSG_TIMEOUT  
     }
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function write(suppliedPayload)
@@ -176,7 +117,7 @@ local function write(suppliedPayload)
 
     local message = {
         command = MSP_API_CMD_WRITE,
-        payload = suppliedPayload or payloadData,
+        payload = suppliedPayload or rfsuite.tasks.msp.api.buildWritePayload(API_NAME, payloadData,MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE),
         processReply = function(self, buf)
             local completeHandler = handlers.getCompleteHandler()
             if completeHandler then completeHandler(self, buf) end
@@ -190,7 +131,7 @@ local function write(suppliedPayload)
         uuid = MSP_API_UUID,
         timeout = MSP_API_MSG_TIMEOUT  
     }
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 -- Function to get the value of a specific field from MSP data
@@ -201,13 +142,7 @@ end
 
 -- Function to set a value dynamically
 local function setValue(fieldName, value)
-    for _, field in ipairs(MSP_API_STRUCTURE_WRITE) do
-        if field.field == fieldName then
-            payloadData[fieldName] = value
-            return true
-        end
-    end
-    error("Invalid field name: " .. fieldName)
+    payloadData[fieldName] = value
 end
 
 -- Function to check if the read operation is complete

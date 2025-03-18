@@ -9,7 +9,8 @@ local validSerialConfig = false
 
 local function openPage(pidx, title, script)
 
-    rfsuite.bg.msp.protocol.mspIntervalOveride = nil
+
+    rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
 
     rfsuite.app.triggers.isReady = false
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
@@ -38,7 +39,7 @@ local function openPage(pidx, title, script)
     buttonW = 100
     local x = windowWidth - buttonW - 10
 
-    rfsuite.app.ui.fieldHeader("SBUS Output")
+    rfsuite.app.ui.fieldHeader(rfsuite.i18n.get("app.modules.sbusout.title") .. "")
 
     local buttonW
     local buttonH
@@ -49,7 +50,7 @@ local function openPage(pidx, title, script)
     -- TEXT ICONS
     if rfsuite.preferences.iconSize == 0 then
         padding = rfsuite.app.radio.buttonPaddingSmall
-        buttonW = (rfsuite.config.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
+        buttonW = (rfsuite.session.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
         buttonH = rfsuite.app.radio.navbuttonHeight
         numPerRow = rfsuite.app.radio.buttonsPerRow
     end
@@ -94,7 +95,7 @@ local function openPage(pidx, title, script)
         end
 
         rfsuite.app.formFields[pidx] = form.addButton(nil, {x = bx, y = y, w = buttonW, h = buttonH}, {
-            text = "CHANNEL " .. tostring(pidx + 1),
+            text = rfsuite.i18n.get("app.modules.sbusout.channel_prefix") .. "" .. tostring(pidx + 1),
             icon = rfsuite.app.gfx_buttons["sbuschannel"][pidx],
             options = FONT_S,
             paint = function()
@@ -103,7 +104,7 @@ local function openPage(pidx, title, script)
                 rfsuite.app.menuLastSelected["sbuschannel"] = pidx
                 rfsuite.currentSbusServoIndex = pidx
                 rfsuite.app.ui.progressDisplay()
-                rfsuite.app.ui.openPage(pidx, "Sbus out / CH" .. tostring(rfsuite.currentSbusServoIndex + 1), "sbusout/sbusout_tool.lua")
+                rfsuite.app.ui.openPage(pidx, rfsuite.i18n.get("app.modules.sbusout.channel_page") .. "" .. tostring(rfsuite.currentSbusServoIndex + 1), "sbusout/sbusout_tool.lua")
             end
         })
 
@@ -117,7 +118,7 @@ local function openPage(pidx, title, script)
     rfsuite.app.triggers.closeProgressLoader = true
 
     enableWakeup = true
-
+    collectgarbage()
     return
 end
 
@@ -136,30 +137,21 @@ local function getSerialConfig()
             buf.offset = 1
             for i = 1, 6 do
                 data[i] = {}
-                data[i].identifier = rfsuite.bg.msp.mspHelper.readU8(buf)
-                data[i].functionMask = rfsuite.bg.msp.mspHelper.readU32(buf)
-                data[i].msp_baudrateIndex = rfsuite.bg.msp.mspHelper.readU8(buf)
-                data[i].gps_baudrateIndex = rfsuite.bg.msp.mspHelper.readU8(buf)
-                data[i].telemetry_baudrateIndex = rfsuite.bg.msp.mspHelper.readU8(buf)
-                data[i].blackbox_baudrateIndex = rfsuite.bg.msp.mspHelper.readU8(buf)
+                data[i].identifier = rfsuite.tasks.msp.mspHelper.readU8(buf)
+                data[i].functionMask = rfsuite.tasks.msp.mspHelper.readU32(buf)
+                data[i].msp_baudrateIndex = rfsuite.tasks.msp.mspHelper.readU8(buf)
+                data[i].gps_baudrateIndex = rfsuite.tasks.msp.mspHelper.readU8(buf)
+                data[i].telemetry_baudrateIndex = rfsuite.tasks.msp.mspHelper.readU8(buf)
+                data[i].blackbox_baudrateIndex = rfsuite.tasks.msp.mspHelper.readU8(buf)
             end
 
             processSerialConfig(data)
         end,
         simulatorResponse = {20, 1, 0, 0, 0, 5, 4, 0, 5, 0, 0, 0, 4, 0, 5, 4, 0, 5, 1, 0, 0, 4, 0, 5, 4, 0, 5, 2, 0, 0, 0, 0, 5, 4, 0, 5, 3, 0, 0, 0, 0, 5, 4, 0, 5, 4, 64, 0, 0, 0, 5, 4, 0, 5}
     }
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
-local function event(widget, category, value, x, y)
-
-    if category == 5 or value == 35 then
-        rfsuite.app.Page.onNavMenu(self)
-        return true
-    end
-
-    return false
-end
 
 local function wakeup()
 
@@ -185,7 +177,6 @@ end
 -- its not worth the effort
 return {
     title = "Sbus Out",
-    event = event,
     openPage = openPage,
     wakeup = wakeup,
     navButtons = {

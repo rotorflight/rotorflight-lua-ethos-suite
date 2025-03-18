@@ -21,12 +21,12 @@
 local pages = {}
 local sections = loadfile("app/modules/sections.lua")()
 
--- find the modules (this should already have been done in the tasks/bg.lua script but we catch and retry on the offchance it hasn't)
+-- find the modules (this should already have been done in the tasks/tasks.lua script but we catch and retry on the offchance it hasn't)
 if rfsuite.app.moduleList == nil then rfsuite.app.moduleList = rfsuite.utils.findModules() end
 
 -- Helper function to find section index
 local function findSectionIndex(sectionTitle)
-    for index, section in ipairs(sections) do if section.title == sectionTitle then return index end end
+    for index, section in ipairs(sections) do if section.id == sectionTitle then return index end end
     return nil -- Section not found
 end
 
@@ -34,7 +34,7 @@ end
 for _, module in ipairs(rfsuite.app.moduleList) do
     local sectionIndex = findSectionIndex(module.section)
     if sectionIndex then
-        pages[#pages + 1] = {title = module.title, section = sectionIndex, script = module.script, order = module.order or 0, image = module.image, folder = module.folder, ethosversion = module.ethosversion, mspversion = module.mspversion}
+        pages[#pages + 1] = {title = module.title, section = sectionIndex, script = module.script, order = module.order or 0, image = module.image, folder = module.folder, ethosversion = module.ethosversion, mspversion = module.mspversion, apiform = module.apiform}
     else
         rfsuite.utils.log("Warning: Section '" .. module.section .. "' not found for module '" .. module.title .. "'","debug")
     end

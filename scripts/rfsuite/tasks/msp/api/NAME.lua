@@ -15,23 +15,25 @@
  * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
 -- Constants for MSP Commands
+local API_NAME = "NAME" -- API name (must be same as filename)
 local MSP_API_CMD_READ = 10 -- Command identifier 
 local MSP_API_CMD_WRITE = nil -- Command identifier 
+local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write 
 local MSP_MIN_BYTES = 0
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "name", type = "U8", apiVersion = 12.06, simResponse = {80, 105, 108, 111, 116}}
+    { field = "name", mandatory = false, type = "U8", apiVersion = 12.06, simResponse = {80, 105, 108, 111, 116}}
 }
 
 -- filter the structure to remove any params not supported by the running api version
-local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
+local MSP_API_STRUCTURE_READ = rfsuite.tasks.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
 
 -- set read structure
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
 
 -- generate a simulatorResponse from the read structure
-local MSP_API_SIMULATOR_RESPONSE = rfsuite.bg.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
+local MSP_API_SIMULATOR_RESPONSE = rfsuite.tasks.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
 
 -- Variable to store parsed MSP data
 local mspData = nil
@@ -40,7 +42,7 @@ local payloadData = {}
 local defaultData = {}
 
 -- Create a new instance
-local handlers = rfsuite.bg.msp.api.createHandlers()
+local handlers = rfsuite.tasks.msp.api.createHandlers()
 
 -- Variables to store optional the UUID and timeout for payload
 local MSP_API_UUID
@@ -54,7 +56,7 @@ local function parseMSPData(buf)
     local offset = 1
 
     while offset <= #buf do
-        local char = rfsuite.bg.msp.mspHelper.readU8(buf, offset)
+        local char = rfsuite.tasks.msp.mspHelper.readU8(buf, offset)
         if char == 0 then -- Null terminator found, break
             break
         end
@@ -97,7 +99,7 @@ local function read()
         timeout = MSP_API_MSG_TIMEOUT  
     }
     -- Add the message to the processing queue
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function write(suppliedPayload)
@@ -108,7 +110,7 @@ local function write(suppliedPayload)
 
     local message = {
         command = MSP_API_CMD_WRITE,
-        payload = suppliedPayload or payloadData,
+        payload = suppliedPayload or rfsuite.tasks.msp.api.buildWritePayload(API_NAME, payloadData,MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE),
         processReply = function(self, buf)
             local completeHandler = handlers.getCompleteHandler()
             if completeHandler then completeHandler(self, buf) end
@@ -122,7 +124,7 @@ local function write(suppliedPayload)
         uuid = MSP_API_UUID,
         timeout = MSP_API_MSG_TIMEOUT  
     }
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 -- Function to get the value of a specific field from MSP data
@@ -133,13 +135,7 @@ end
 
 -- Function to set a value dynamically
 local function setValue(fieldName, value)
-    for _, field in ipairs(MSP_API_STRUCTURE_WRITE) do
-        if field.field == fieldName then
-            payloadData[fieldName] = value
-            return true
-        end
-    end
-    error("Invalid field name: " .. fieldName)
+    payloadData[fieldName] = value
 end
 
 -- Function to check if the read operation is complete

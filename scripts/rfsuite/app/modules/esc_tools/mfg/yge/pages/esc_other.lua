@@ -1,5 +1,4 @@
-local labels = {}
-local fields = {}
+
 
 local folder = "yge"
 
@@ -7,20 +6,30 @@ local folder = "yge"
 local foundEsc = false
 local foundEscDone = false
 
-labels[#labels + 1] = {t = "ESC"}
+local mspapi = {
+    api = {
+        [1] = "ESC_PARAMETERS_YGE",
+    },
+    formdata = {
+        labels = {
+        },
+        fields = {
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.yge.gov_p"), mspapi = 1, apikey="gov_p"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.yge.gov_i"), mspapi = 1, apikey="gov_i"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.yge.motor_pole_pairs"), mspapi = 1, apikey="motor_pole_pairs"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.yge.main_teeth"), mspapi = 1, apikey="main_teeth"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.yge.pinion_teeth") , mspapi = 1, apikey="pinion_teeth"} ,
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.yge.stick_zero_us"), mspapi = 1, apikey="stick_zero_us"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.yge.stick_range_us"), mspapi = 1, apikey="stick_range_us"},
+        }
+    }                 
+}
 
-fields[#fields + 1] = {t = "P-Gain", apikey="gov_p"}
-fields[#fields + 1] = {t = "I-Gain", apikey="gov_i"}
 
-fields[#fields + 1] = {t = "Motor Pole Pairs", apikey="motor_pole_pairs"}
-fields[#fields + 1] = {t = "Main Teeth", apikey="main_teeth"}
-fields[#fields + 1] = {t = "Pinion Teeth" , apikey="pinion_teeth"}
 
-fields[#fields + 1] = {t = "Stick Zero (us)", apikey="stick_zero_us"}
-fields[#fields + 1] = {t = "Stick Range (us)", apikey="stick_range_us"}
 
 function postLoad()
-    rfsuite.app.triggers.isReady = true
+    rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function onNavMenu(self)
@@ -39,18 +48,15 @@ local function event(widget, category, value, x, y)
 end
 
 return {
-    mspapi = "ESC_PARAMETERS_YGE",
+    mspapi = mspapi,
     eepromWrite = true,
     reboot = false,
-    title = "Other Settings",
-    labels = labels,
-    fields = fields,
     escinfo = escinfo,
     postLoad = postLoad,
     navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
     onNavMenu = onNavMenu,
     event = event,
-    pageTitle = "ESC / YGE / Other",
+    pageTitle = rfsuite.i18n.get("app.modules.esc_tools.name") .. " / " ..  rfsuite.i18n.get("app.modules.esc_tools.mfg.yge.name") .. " / " .. rfsuite.i18n.get("app.modules.esc_tools.mfg.yge.other"),
     headerLine = rfsuite.escHeaderLineText
 
 }

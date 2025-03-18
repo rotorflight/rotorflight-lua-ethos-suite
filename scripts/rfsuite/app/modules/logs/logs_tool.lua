@@ -9,12 +9,15 @@ graphPos['height_offset'] = rfsuite.app.radio.logGraphHeightOffset or 0
 graphPos['x_start'] = 0
 graphPos['y_start'] = 0 + graphPos['menu_offset']
 graphPos['width'] = math.floor(LCD_W * rfsuite.app.radio.logGraphWidthPercentage)
+graphPos['key_width'] = LCD_W - graphPos['width']
 graphPos['height'] = LCD_H - graphPos['menu_offset'] - graphPos['menu_offset'] - 40 + graphPos['height_offset']
 graphPos['slider_y'] = LCD_H - (graphPos['menu_offset'] + 30) + graphPos['height_offset']
 
 local triggerOverRide = false
 local triggerOverRideAll = false
-local lastServoCountTime = os.clock()
+
+local zoomLevel = 1
+local zoomCount = 5
 local enableWakeup = false
 local wakeupScheduler = os.clock()
 local activeLogFile
@@ -22,7 +25,10 @@ local logPadding = 5
 local armTime
 local currentDisplayMode
 
-local logDataRaw
+local logFileHandle = nil
+local logDataRaw = {}
+local logChunkSize = 1000
+local logFileReadOffset = 0
 local logDataRawReadComplete = false
 local readNextChunk
 local logData = {}
@@ -30,7 +36,7 @@ local maxMinData = {}
 local progressLoader
 local logLineCount
 
-local logColumns = rfsuite.bg.logging.getLogTable()
+local logColumns = rfsuite.tasks.logging.getLogTable()
 
 local sliderPosition = 1
 local sliderPositionOld = 1
@@ -38,6 +44,54 @@ local sliderPositionOld = 1
 local processedLogData = false
 local currentDataIndex = 1
 
+-- Range of samples to display for each zoom level
+local zoomLevelToRange = {
+    [1] = {min = 500, max = 600}, -- Fully zoomed out
+    [2] = {min = 400, max = 500},
+    [3] = {min = 200, max = 300},
+    [4] = {min = 100, max = 200},
+    [5] = {min = 10, max = 100}      -- Fully zoomed in
+}
+
+-- number of samples to skip for each zoom level
+local zoomLevelToDecimation = {
+    [1] = 20,   -- Fully zoomed out: every 20th sample
+    [2] = 15,
+    [3] = 10,
+    [4] = 5,
+    [5] = 1,    -- Fully zoomed in: every sample
+}
+
+
+function readNextChunk()
+    if logDataRawReadComplete then
+        rfsuite.tasks.clearCallback(readNextChunk)
+        return
+    end
+
+    if not logFileHandle then
+        system.messageBox("Log file handle lost.")
+        rfsuite.tasks.clearCallback(readNextChunk)
+        return
+    end
+
+    logFileHandle:seek("set", logFileReadOffset)
+    local chunk = logFileHandle:read(logChunkSize)
+
+    if chunk then
+        table.insert(logDataRaw, chunk)
+        logFileReadOffset = logFileReadOffset + #chunk
+        rfsuite.utils.log("Read " .. #chunk .. " bytes from log file","debug")
+    else
+        logFileHandle:close()
+        logFileHandle = nil
+        logDataRawReadComplete = true
+        logDataRaw = table.concat(logDataRaw)
+
+        rfsuite.utils.log("Read complete, total size: " .. #logDataRaw .. " bytes","debug")
+        rfsuite.tasks.clearCallback(readNextChunk)
+    end
+end
 function format_time(seconds)
     -- Calculate minutes and remaining seconds
     local minutes = math.floor(seconds / 60)
@@ -85,27 +139,24 @@ function calculateSeconds(totalSeconds, sliderValue)
     return secondsPassed
 end
 
-function paginate_table(data, step_size, position)
-    -- Validate inputs
-    if type(data) ~= "table" or type(step_size) ~= "number" or type(position) ~= "number" then error("Invalid arguments: data must be a table, step_size and position must be numbers.") end
 
-    -- Adjust position to be within valid bounds
-    if position < 1 then
-        position = 1
-    elseif position > #data then
-        position = #data
-    end
+-- Enhanced paginate_table() to support decimation
+function paginate_table(data, step_size, position, decimationFactor)
+     decimationFactor = decimationFactor or 1
 
-    -- Calculate start and end indices
-    local start_index = position
-    local end_index = math.min(start_index + step_size - 1, #data)
+     local start_index = math.max(1, position)
+     local end_index = math.min(start_index + step_size - 1, #data)
 
-    -- Create a new table for the page
-    local page = {}
-    for i = start_index, end_index do table.insert(page, data[i]) end
+     local page = {}
+     for i = start_index, end_index, decimationFactor do
+         table.insert(page, data[i])
+     end
 
-    return page
+     return page
 end
+
+
+
 
 function padTable(tbl, padCount)
     -- Get the first and last values of the table
@@ -156,40 +207,6 @@ function loadFileToMemory(filename)
 
     file:close()
     return table.concat(content) -- Join all chunks into a single string
-end
-
--- This function returns another function to read 10KB at a time
--- This function returns another function to read 10KB at a time
-function createFileReader(filename)
-    local file, err = io.open(filename, "rb")
-    if not file then return nil, "Error opening file: " .. err end
-
-    local file_pos = 0
-    local content = ""
-
-    -- Return the function to read the next chunk of 10KB
-    return function()
-        -- Seek to the current position in the file
-        file:seek("set", file_pos)  -- Explicitly set the seek mode
-
-
-        -- Read the next 10KB chunk
-        local chunk = file:read(10 * 1024)
-
-        if chunk then
-            -- Append the chunk to the content
-            content = content .. chunk
-            file_pos = file_pos + #chunk -- Update the position in the file
-        end
-
-        -- Return the current content and whether the file has ended
-        if not chunk then
-            file:close()
-            return content, true -- Finished reading the file
-        else
-            return content, false -- Continue reading
-        end
-    end
 end
 
 function map(x, in_min, in_max, out_min, out_max)
@@ -358,122 +375,173 @@ local function drawGraph(points, color, pen, x_start, y_start, width, height, mi
     end
 end
 
-local function drawKey(name, keyindex, keyunit, keyminmax, keyfloor, color, minimum, maximum)
+local function drawKey(name, keyunit, keyminmax, keyfloor, color, minimum, maximum, laneY, laneHeight)
 
     local w = LCD_W - graphPos['width'] - 10
-    local h = rfsuite.app.radio.logGraphKeyHeight
-    local h_height = h / 2
-    local x = graphPos['width']
-    local y = (graphPos['y_start'] + (keyindex * h)) - h
+    local boxpadding = 3
 
-    if keyfloor == true then
+    lcd.font(rfsuite.app.radio.logKeyFont)
+    local _, th = lcd.getTextSize(name)
+    local boxHeight = th + boxpadding
+
+    local x = graphPos['width']
+    local y = laneY  -- No more shifting, this is the real top of the lane
+
+    if keyfloor then
         minimum = math.floor(minimum)
         maximum = math.floor(maximum)
     end
 
-    -- draw the header box
-    lcd.pen(solid)
-    lcd.drawFilledRectangle(x, y, w, h_height)
+    lcd.color(color)
+    lcd.drawFilledRectangle(x, y, w, boxHeight)
 
-    -- put text into the box
     lcd.color(COLOR_BLACK)
-    lcd.font(rfsuite.app.radio.logKeyFont)
-    local tw, th = lcd.getTextSize(name)
-    local ty = (h_height / 2 - th / 2) + y
-    lcd.drawText(x + 5, ty, name, LEFT)
+    local textY = y + (boxHeight / 2 - th / 2)
+    lcd.drawText(x + 5, textY, name, LEFT)
 
-    -- show min and max values
-    lcd.color(COLOR_WHITE)
-    lcd.font(rfsuite.app.radio.logKeyFont)
-    local mm_str
-    if keyminmax == 1 then
-        mm_str = "Min: " .. minimum .. keyunit .. " " .. "Max: " .. maximum .. keyunit
+    lcd.font(rfsuite.app.radio.logKeyFontSmall)
+    if lcd.darkMode() then
+        lcd.color(COLOR_WHITE)
     else
-        mm_str = "Max: " .. maximum .. keyunit
+        lcd.color(COLOR_BLACK)
     end
-    local tw, th = lcd.getTextSize(mm_str)
-    local ty = (h_height / 2 - th / 2) + y + h_height
-    lcd.drawText(x + 5, ty, mm_str, LEFT)
+
+    -- shrink rpm if desirable
+    -- 10000rpm is prob never going to be hit
+    -- but we are safe!
+    local min_trunc
+    if keyunit == "rpm" and (minimum >= 10000 or maximum >= 10000) then
+        min_trunc = string.format("%.1fK", minimum / 10000)
+        max_trunc = string.format("%.1fK", maximum / 10000)
+    end
+    
+
+    local max_str
+    local min_str
+    if keyminmax == 1 then
+        min_str = "↓ " .. (min_trunc or minimum) .. keyunit 
+        max_str = " ↑ " .. (max_trunc or maximum) .. keyunit
+    else
+        min_str = ""
+        max_str = "↑ " .. (max_trun or maximum) .. keyunit
+    end
+
+    -- left align min value
+    local mmY = y + boxHeight + 2
+    lcd.drawText(x + 5, mmY, min_str, LEFT)
+
+    -- right align max value
+    local tw, th = lcd.getTextSize(max_str)
+    lcd.drawText((LCD_W - tw) + boxpadding, mmY, max_str, LEFT)
+
+    -- display average (can only do on bigger radios due to space)
+    if rfsuite.app.radio.logShowAvg == true then
+        local avg_str = "Ø " .. math.floor((minimum + maximum) / 2) .. keyunit
+        local avgY = mmY + th -2
+        lcd.drawText(x + 5, avgY, avg_str, LEFT)
+    end    
 
 end
 
-local function drawCurrentIndex(points, position, totalPoints, keyindex, keyunit, keyfloor, name, color)
+
+local function drawCurrentIndex(points, position, totalPoints, keyindex, keyunit, keyfloor, name, color, laneY, laneHeight, laneNumber, totalLanes)
 
     if position < 1 then position = 1 end
 
-    local sliderPadding = rfsuite.app.radio.sliderPaddingLeft
+    local sliderPadding = rfsuite.app.radio.logSliderPaddingLeft
     local w = graphPos['width'] - sliderPadding
-    local h = 35
-    local h_height = 30
-    local x = 0
-    local y = (keyindex * h) - h_height / 2
-    local idx_w = 100
 
     local linePos = map(position, 1, 100, 1, w - 10) + sliderPadding
-
-
     if linePos < 1 then linePos = 0 end
 
-    -- which side of line we display the index
-    local idxPos
-    local textAlign
-    if (position > 50) then
-        idxPos = linePos - 15
+    local boxpadding = 3
+
+    local idxPos, textAlign, boxPos
+    if position > 50 then
+        idxPos = linePos - (boxpadding * 2)
         textAlign = RIGHT
+        boxPos = linePos - boxpadding
     else
-        idxPos = linePos + 5
+        idxPos = linePos + (boxpadding * 2)
         textAlign = LEFT
+        boxPos = linePos + boxpadding
     end
 
-    local current_s = calculateSeconds(totalPoints, position)
-    local time_str = format_time(math.floor(current_s))
-
-    -- work out the current values based on position
     local value = getValueAtPercentage(points, position)
-    if keyfloor == true then value = math.floor(value) end
+    if keyfloor then value = math.floor(value) end
     value = value .. keyunit
 
-    -- draw the vertical line
-    if keyindex == 1 then     -- only draw line once
-        lcd.color(COLOR_WHITE)
-        lcd.drawLine(linePos, graphPos['menu_offset'] - 5, linePos, graphPos['height'] + graphPos['menu_offset'])
-    end
-
-    -- show value
-    lcd.font(FONT_BOLD)
+    lcd.font(rfsuite.app.radio.logKeyFont)
     local tw, th = lcd.getTextSize(value)
-    lcd.color(color)
-    -- local ty = (h_height / 2 - th / 2) + y + (h_height*2)    
-    local ty = (graphPos['menu_offset'] + (th * keyindex)) - keyindex
-    lcd.drawText(idxPos + 5, ty, value, textAlign)
 
-    -- display time
-    if keyindex == 1 then  -- only do this once
-        -- show current time of line
-        lcd.font(FONT_NORMAL)
-        local tw, th = lcd.getTextSize(time_str)
-        lcd.color(COLOR_WHITE)
-        local ty = graphPos['height'] + graphPos['menu_offset'] - th
-        lcd.drawText(idxPos + 5, ty, time_str, textAlign)
+    local boxHeight = th + boxpadding
+    local boxY = laneY  -- Top of the lane - no offset needed
+    local textY = boxY + (boxHeight / 2 - th / 2)
 
-        if (idxPos + 5) <= w - tw then
-
-            local run_current_s = calculateSeconds(totalPoints, 100)
-            local run_time_str = format_time(math.floor(run_current_s))            
-            lcd.font(FONT_NORMAL)
-            local tw, th = lcd.getTextSize(run_time_str)
-
-            lcd.color(COLOR_WHITE)
-            local ty = graphPos['height'] + graphPos['menu_offset'] - th
-            lcd.drawText(graphPos['width'] - tw - 10, ty, run_time_str)
-
-
-        end
+    if position > 50 then
+        boxPos = boxPos - tw - (boxpadding * 2)
     end
 
+    lcd.color(color)
+    lcd.drawFilledRectangle(boxPos, boxY, tw + (boxpadding * 2), boxHeight)
 
+    if lcd.darkMode() then
+        lcd.color(COLOR_BLACK)
+    else
+        lcd.color(COLOR_WHITE)
+    end
+    lcd.drawText(idxPos, textY, value, textAlign)
 
+    if laneNumber == 1 then
+        local current_s = calculateSeconds(totalPoints, position)
+        local time_str = format_time(math.floor(current_s))
+
+        lcd.font(rfsuite.app.radio.logKeyFont)
+        local ty = graphPos['height'] + graphPos['menu_offset'] - 10
+
+        lcd.color(COLOR_WHITE)
+        lcd.drawText(idxPos, ty, time_str, textAlign)
+
+        if lcd.darkMode() then
+            lcd.color(COLOR_WHITE)
+        else
+            lcd.color(COLOR_BLACK)
+        end
+        lcd.drawLine(linePos, graphPos['menu_offset'] - 5, linePos, graphPos['menu_offset'] + graphPos['height'])
+
+        -- draw zoom level indicator
+
+        if lcd.darkMode() then
+            lcd.color(lcd.RGB(40, 40, 40))
+        else
+            lcd.color(lcd.RGB(240, 240, 240))
+        end
+
+        local z_x = (LCD_W - 25)
+        local z_y = graphPos['slider_y']
+        local z_w = 20
+        local z_h = 40
+        local z_lh = z_h/zoomCount
+        
+        -- calculate line offset (inverted direction)
+        local lineOffsetY = (zoomCount - zoomLevel) * z_lh
+        
+        -- draw background
+        lcd.drawFilledRectangle(z_x, z_y, z_w, z_h)
+        
+        -- draw line
+        if lcd.darkMode() then
+            lcd.color(COLOR_WHITE)
+        else
+            lcd.color(COLOR_BLACK)
+        end
+        lcd.drawFilledRectangle(z_x, z_y + lineOffsetY, z_w, z_lh)
+
+        
+
+    end
 end
+
 
 function findMaxNumber(numbers)
     local max = numbers[1] -- Assume the first number is the largest initially
@@ -508,10 +576,9 @@ function findAverage(numbers)
 end
 
 local function openPage(pidx, title, script, logfile, displaymode)
-
     currentDisplayMode = displaymode
 
-    rfsuite.bg.msp.protocol.mspIntervalOveride = nil
+    rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
 
     rfsuite.app.triggers.isReady = false
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
@@ -522,26 +589,83 @@ local function openPage(pidx, title, script, logfile, displaymode)
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-    local w, h = rfsuite.utils.getWindowSize()
-    local windowWidth = w
-    local windowHeight = h
-    local padding = rfsuite.app.radio.buttonPadding
-    local sc
-    local panel
-
     rfsuite.app.ui.fieldHeader("Logs - " .. extractShortTimestamp(logfile))
     activeLogFile = logfile
 
-    -- initialise the log file reader
-    -- this is a bit complex as it reads in chunks on each Loop
-    -- to help with loading large files.
-    readNextChunk = createFileReader(getLogDir() .. "/" .. logfile)
+    local filePath = getLogDir() .. "/" .. logfile
+    logFileHandle, err = io.open(filePath, "rb")
+    if not logFileHandle then
+        system.messageBox("Failed to load log file: " .. err)
+        return
+    end
 
-    rfsuite.app.ui.progressDisplayClose()
+    -- slider
+    local posField = {x = graphPos['x_start'], y = graphPos['slider_y'], w = graphPos['width'] - 10, h = 40}
+    rfsuite.app.formFields[1] = form.addSliderField(nil, posField, 0, 100, function()
+        return sliderPosition
+    end, function(newValue)
+        sliderPosition = newValue
+    end)
 
+
+    local zoomButtonWidth = (graphPos['key_width'] / 2) - 20
+    --- zoom -
+    local posField = {x = graphPos['width'], y = graphPos['slider_y'], w = zoomButtonWidth, h = 40}
+    rfsuite.app.formFields[2] = form.addButton(line, posField, {
+        text = "-",
+        icon = nil,
+        options = FONT_STD,
+        press = function()
+            if zoomLevel > 1 then
+                zoomLevel = zoomLevel - 1
+                lcd.invalidate()
+                rfsuite.app.formFields[2]:enable(true)
+                rfsuite.app.formFields[3]:enable(true)
+            end    
+            if zoomLevel == 1 then
+                rfsuite.app.formFields[2]:enable(false)
+                rfsuite.app.formFields[3]:focus()   
+            end
+        end
+    })
+    -- disable on start
+    rfsuite.app.formFields[2]:enable(false)  
+
+    --- zoom +
+    local posField = {x = graphPos['width'] + zoomButtonWidth + 10 , y = graphPos['slider_y'], w = zoomButtonWidth, h = 40}
+    rfsuite.app.formFields[3] = form.addButton(line, posField, {
+        text = "+",
+        icon = nil,
+        options = FONT_STD,
+        press = function()
+            if zoomLevel < zoomCount then
+                zoomLevel = zoomLevel + 1
+                lcd.invalidate()
+                rfsuite.app.formFields[2]:enable(true)
+                rfsuite.app.formFields[3]:enable(true)
+            end    
+            if zoomLevel == zoomCount then
+                rfsuite.app.formFields[3]:enable(false)
+                rfsuite.app.formFields[2]:focus()   
+            end    
+        end
+    })
+    
+
+    rfsuite.app.formFields[1]:step(1)
+
+
+    logDataRaw = {}
+    logFileReadOffset = 0
+    logDataRawReadComplete = false
+
+    rfsuite.tasks.callbackEvery(0.05, readNextChunk)
+    rfsuite.app.triggers.closeProgressLoader = true
+    lcd.invalidate()
     enableWakeup = true
     return
 end
+
 
 local function event(event, category, value, x, y)
 
@@ -551,6 +675,10 @@ local function event(event, category, value, x, y)
     end
     return false
 end
+
+local slowcount = 0
+local carriedOver = nil
+local subStepSize = nil
 
 local function wakeup()
     if not enableWakeup then
@@ -562,29 +690,32 @@ local function wakeup()
         sliderPositionOld = sliderPosition
     end
 
+    if not progressLoader then
+        progressLoader = form.openProgressDialog("Processing", "Loading log data")
+        progressLoader:closeAllowed(false)
+    end
+
     if not logDataRawReadComplete then
-        -- Read chunks of the file until complete
-        logDataRaw, logDataRawReadComplete = readNextChunk()
+        progressLoader:value(slowcount)
+        slowcount = slowcount + 0.025
         return
     end
 
-    if not processedLogData then
-
-        -- Show progress dialog if starting
-        if currentDataIndex == 1 then
-            progressLoader = form.openProgressDialog("Processing", "Please be patient - we have some work to do.")
-            progressLoader:closeAllowed(false)
-
-        else
-            -- Update progress dialog
-            local percentage = (currentDataIndex / #logColumns) * 100
-            progressLoader:value(percentage)
+    if logDataRawReadComplete and not processedLogData then
+        -- Set up carryOver and subStepSize once, when processing starts
+        if not carriedOver then
+            -- this needs to be done to set focus or txt radios have issue
+            rfsuite.app.formNavigationFields['menu']:focus(true)
+            carriedOver = slowcount
+            subStepSize = (100 - carriedOver) / (#logColumns * 5)  -- 5 subtasks per column
         end
 
-        -- Process the column and store the cleaned data
+        local function updateProgress(subStep)
+            local overallProgress = carriedOver + ((currentDataIndex - 1) * (subStepSize * 5)) + (subStep * subStepSize)
+            progressLoader:value(overallProgress)
+        end
 
         logData[currentDataIndex] = {}
-        logData[currentDataIndex]['data'] = padTable(cleanColumn(getColumn(logDataRaw, currentDataIndex + 1)), logPadding) -- Note. We + 1 the currentDataIndex because  rfsuite.bg.logging.getLogTable does not return the 1st column        
         logData[currentDataIndex]['name'] = logColumns[currentDataIndex].name
         logData[currentDataIndex]['color'] = logColumns[currentDataIndex].color
         logData[currentDataIndex]['pen'] = logColumns[currentDataIndex].pen
@@ -594,38 +725,59 @@ local function wakeup()
         logData[currentDataIndex]['keyminmax'] = logColumns[currentDataIndex].keyminmax
         logData[currentDataIndex]['keyfloor'] = logColumns[currentDataIndex].keyfloor
         logData[currentDataIndex]['graph'] = logColumns[currentDataIndex].graph
+
+        -- Step 1: Clean the column data
+        updateProgress(1)
+        local rawColumn = getColumn(logDataRaw, currentDataIndex + 1)
+        local cleanedColumn = cleanColumn(rawColumn)
+
+        -- Step 2: Pad the data
+        updateProgress(2)
+        logData[currentDataIndex]['data'] = padTable(cleanedColumn, logPadding)
+
+        -- Step 3: Find max value
+        updateProgress(3)
         logData[currentDataIndex]['maximum'] = findMaxNumber(logData[currentDataIndex]['data'])
+
+        -- Step 4: Find min value
+        updateProgress(4)
         logData[currentDataIndex]['minimum'] = findMinNumber(logData[currentDataIndex]['data'])
+
+        -- Step 5: Find average
+        updateProgress(5)
         logData[currentDataIndex]['average'] = findAverage(logData[currentDataIndex]['data'])
 
-        -- Close progress loader when all columns are processed
+        progressLoader:message("Processing data " .. currentDataIndex .. " of " .. #logColumns)
+
         if currentDataIndex >= #logColumns then
 
-            -- put slider at bottom of form
-            local posField = {x = graphPos['x_start'], y = graphPos['slider_y'], w = graphPos['width'] - 10, h = 40}
-            rfsuite.app.formFields[1] = form.addSliderField(nil, posField, 0, 100, function()
-                return sliderPosition
-            end, function(newValue)
-                sliderPosition = newValue
-            end)
-  
-            rfsuite.app.formFields[1]:step(1)
 
-
-            -- set log line count only once!
             logLineCount = #logData[currentDataIndex]['data']
 
             progressLoader:close()
             processedLogData = true
+            lcd.invalidate()
+            
         end
 
         currentDataIndex = currentDataIndex + 1
-
         return
     end
-
-    -- Logic for paging and navigation can go here when data processing is complete
 end
+
+local function calculateZoomSteps(logLineCount)
+    if logLineCount < 100 then
+        return 2
+    elseif logLineCount < 300 then
+        return 3
+    elseif logLineCount < 600 then
+        return 4
+    else
+        return 5
+    end
+end
+
+
 
 local function paint()
 
@@ -635,42 +787,45 @@ local function paint()
     local width = graphPos['width'] - 10
     local height = graphPos['height']
 
-    if enableWakeup == true and processedLogData == true then
+    if enableWakeup and processedLogData then
 
-        if logData ~= nil then
-            local optimal_records_per_page, optimal_steps = calculate_optimal_records_per_page(logLineCount, 40, 80)
+        if logData then
+            local zoomRange = zoomLevelToRange[zoomLevel]
+            zoomCount = calculateZoomSteps(logLineCount)
+            local optimal_records_per_page, _ = calculate_optimal_records_per_page(logLineCount, zoomRange.min, zoomRange.max)
 
             local step_size = optimal_records_per_page
-
             local position = math.floor(map(sliderPosition, 1, 100, 1, logLineCount - step_size))
             if position < 1 then position = 1 end
 
-            for i, v in ipairs(logData) do
-
-                if logData[i].graph == true then
-                    local points = paginate_table(logData[i].data, step_size, position)
-                    local color = logData[i].color
-                    local pen = logData[i].pen
-                    local name = logData[i].name
-                    local minimum = logData[i].minimum
-                    local maximum = logData[i].maximum
-                    local average = logData[i].average
-                    local keyindex = logData[i].keyindex
-                    local keyname = logData[i].keyname
-                    local keyunit = logData[i].keyunit
-                    local keyminmax = logData[i].keyminmax
-                    local keyfloor = logData[i].keyfloor
-                    drawGraph(points, color, pen, x_start, y_start, width, height, minimum, maximum)
-                    drawKey(keyname, keyindex, keyunit, keyminmax, keyfloor, color, minimum, maximum)
-                    drawCurrentIndex(points, sliderPosition, logLineCount + logPadding, keyindex, keyunit, keyfloor, name, color)
-
-                end
-
+            local graphCount = 0
+            for _, v in ipairs(logData) do
+                if v.graph then graphCount = graphCount + 1 end
             end
 
+            local laneHeight = height / graphCount
+            local currentLane = 0
+
+            for _, v in ipairs(logData) do
+                if v.graph then
+                    currentLane = currentLane + 1
+                    local laneY = y_start + (currentLane - 1) * laneHeight
+
+                    -- Apply zoom-level specific decimation
+                    local decimationFactor = zoomLevelToDecimation[zoomLevel] or 1
+
+                    -- Fetch the reduced data set to plot
+                    local points = paginate_table(v.data, step_size, position, decimationFactor)
+
+                    drawGraph(points, v.color, v.pen, x_start, laneY, width, laneHeight, v.minimum, v.maximum)
+
+                    drawKey(v.keyname, v.keyunit, v.keyminmax, v.keyfloor, v.color, v.minimum, v.maximum, laneY, laneHeight)
+
+                    drawCurrentIndex(points, sliderPosition, logLineCount + logPadding, v.keyindex, v.keyunit, v.keyfloor, v.name, v.color, laneY, laneHeight, currentLane, graphCount)
+                end
+            end
         end
     end
-
 end
 
 local function onNavMenu(self)
@@ -686,7 +841,6 @@ local function onNavMenu(self)
 end
 
 return {
-    title = "Logs",
     event = event,
     openPage = openPage,
     wakeup = wakeup,

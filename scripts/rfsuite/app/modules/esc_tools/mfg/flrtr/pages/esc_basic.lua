@@ -1,5 +1,3 @@
-local labels = {}
-local fields = {}
 
 local folder = "flrtr"
 local ESC = assert(loadfile("app/modules/esc_tools/mfg/" .. folder .. "/init.lua"))()
@@ -8,19 +6,26 @@ local mspSignature = ESC.mspSignature
 local simulatorResponse = ESC.simulatorResponse
 
 
+local mspapi = {
+    api = {
+        [1] = "ESC_PARAMETERS_FLYROTOR",
+    },
+    formdata = {
+        labels = {
+        },
+        fields = {
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.cell_count"),       mspapi = 1, apikey = "cell_count"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.bec_voltage"),      mspapi = 1, apikey = "bec_voltage",    type = 1},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.motor_direction"),  mspapi = 1, apikey = "motor_direction", type = 1},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.soft_start"),       mspapi = 1, apikey = "soft_start"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.fan_control"),      mspapi = 1, apikey = "fan_control", type = 1}
+        }
+    }                 
+}
 
-fields[#fields + 1] = {t = "Cell count", apikey="cell_count"}
-fields[#fields + 1] = {t = "BEC voltage", apikey="bec_voltage", type = 1}
-fields[#fields + 1] = {t = "Motor direction", apikey="motor_direction", type = 1}
-fields[#fields + 1] = {t = "Soft start", apikey="soft_start"}
-fields[#fields + 1] = {t = "Fan control", apikey="fan_control"}
-
--- fields[#fields + 1] = {t = "Hardware version", vals = {mspHeaderBytes + 18}}  -- this val does not look correct.  regardless not in right place
-
-rfsuite.utils.print_r(rfsuite.app.Page.values)
 
 function postLoad()
-    rfsuite.app.triggers.isReady = true
+    rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function onNavMenu(self)
@@ -30,24 +35,23 @@ end
 
 local function event(widget, category, value, x, y)
 
-    if category == 5 or value == 35 then
+    -- if close event detected go to section home page
+    if category == EVT_CLOSE and value == 0 or value == 35 then
+        if powercycleLoader then powercycleLoader:close() end
         rfsuite.app.ui.openPage(pidx, folder, "esc_tools/esc_tool.lua")
         return true
     end
 
-    return false
+
 end
 
 local foundEsc = false
 local foundEscDone = false
 
 return {
-    mspapi="ESC_PARAMETERS_FLYROTOR",
+    mspapi=mspapi,
     eepromWrite = false,
     reboot = false,
-    title = "Basic Setup",
-    labels = labels,
-    fields = fields,
     escinfo = escinfo,
     svFlags = 0,
     simulatorResponse =  simulatorResponse,
@@ -55,7 +59,7 @@ return {
     navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
     onNavMenu = onNavMenu,
     event = event,
-    pageTitle = "ESC / FLYROTOR / Basic",
+    pageTitle = rfsuite.i18n.get("app.modules.esc_tools.name") .. " / " ..  rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.name") .. " / " .. rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.basic"),
     headerLine = rfsuite.escHeaderLineText
 }
 

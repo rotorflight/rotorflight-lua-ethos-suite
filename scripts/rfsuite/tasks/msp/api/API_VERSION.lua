@@ -26,8 +26,9 @@
  * setErrorHandler(handlerFunction): Set function to run on error  
 ]] --
 -- Constants for MSP Commands
+local API_NAME = "API_VERSION" -- API name (must be same as filename)
 local MSP_API_CMD_READ = 1 -- Command identifier for MSP API request
-local MSP_API_SIMULATOR_RESPONSE = {0, 12, 8} -- Default simulator response
+local MSP_API_SIMULATOR_RESPONSE = {0, 12, 7} -- Default simulator response
 
 
 -- Define the MSP response data structure
@@ -43,7 +44,7 @@ local MSP_MIN_BYTES = #MSP_API_STRUCTURE_READ -- Minimum bytes required for the 
 local mspData = nil
 
 -- Create a new instance
-local handlers = rfsuite.bg.msp.api.createHandlers()
+local handlers = rfsuite.tasks.msp.api.createHandlers()
 
 -- Variables to store optional the UUID and timeout for payload
 local MSP_API_UUID
@@ -55,7 +56,7 @@ local function read()
         command = MSP_API_CMD_READ, -- Specify the MSP command
         processReply = function(self, buf)
             -- Parse the MSP data using the defined structure
-            mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE_READ)
+            mspData = rfsuite.tasks.msp.api.parseMSPData(buf, MSP_API_STRUCTURE_READ)
             if #buf >= MSP_MIN_BYTES then
                 local completeHandler = handlers.getCompleteHandler()
                 if completeHandler then completeHandler(self, buf) end
@@ -70,7 +71,7 @@ local function read()
         timeout = MSP_API_MSG_TIMEOUT  
     }
     -- Add the message to the processing queue
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 -- Function to return the parsed MSP data

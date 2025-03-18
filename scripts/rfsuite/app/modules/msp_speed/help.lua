@@ -21,7 +21,7 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {"This tool attempts to determine the quality of your MSP data link by performing as many large MSP queries within 30 seconds as possible."}
+data['help']['default'] = {rfsuite.i18n.get("app.modules.msp_speed.help_p1")}
 
 data['fields'] = {}
 

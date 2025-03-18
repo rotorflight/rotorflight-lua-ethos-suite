@@ -15,38 +15,36 @@
  * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
 -- Constants for MSP Commands
+local API_NAME = "ESC_SENSOR_CONFIG" -- API name (must be same as filename)
 local MSP_API_CMD_READ = 123-- Command identifier for MSP Mixer Config Read
 local MSP_API_CMD_WRITE = 216 -- Command identifier for saving Mixer Config Settings
+local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write 
 
 -- Define the MSP response data structures
 
 -- note. This api has currently only been tested for the last two entries
-local escTypes = {"NONE","BLHELI32", "HOBBYWING V4", "HOBBYWING V5", "SCORPION", "KONTRONIK", "OMPHOBBY", "ZTW", "APD", "APD", "OPENYGE", "FLYROTOR", "GRAUPNER", "XDFLY","RECORD"}
-local onOff = {"OFF","ON"}
+local escTypes = {"NONE","BLHELI32", "HOBBYWING V4", "HOBBYWING V5", "SCORPION", "KONTRONIK", "OMPHOBBY", "ZTW", "APD", "OPENYGE", "FLYROTOR", "GRAUPNER", "XDFLY","RECORD"}
+local onOff = {rfsuite.i18n.get("api.ESC_SENSOR_CONFIG.tbl_off"),rfsuite.i18n.get("api.ESC_SENSOR_CONFIG.tbl_on")}
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "protocol",                     type = "U8",  apiVersion = 12.06, simResponse = {0},     table = escTypes, tableIdxInc= -1},
-    {field = "half_duplex",                  type = "U8",  apiVersion = 12.06, simResponse = {0},     default = 0, min= 1, max = 2, table = onOff, tableIdxInc = -1, help="Half duplex mode for ESC telemetry"},
-    {field = "update_hz",                    type = "U16", apiVersion = 12.06, simResponse = {200, 0}, default = 200, min = 10, max = 500, unit = "Hz", help="ESC telemetry update rate"},
-    {field = "current_offset",               type = "U16", apiVersion = 12.06, simResponse = {0, 15}, min = 0, max = 1000, default = 0, help="Current sensor offset adjustment"}, -- I am not convinced that this offset is used anywhere as the 0,15 translates to 32769
-    {field = "hw4_current_offset",           type = "U16", apiVersion = 12.06, simResponse = {0, 0},  min = 0, max = 1000, default = 0, help="Hobbywing v4 current offset adjustment"},
-    {field = "hw4_current_gain",             type = "U8",  apiVersion = 12.06, simResponse = {0},     min = 0, max = 250, default = 0,  help="Hobbywing v4 current gain adjustment"},
-    {field = "hw4_voltage_gain",             type = "U8",  apiVersion = 12.06, simResponse = {30},    min = 0, max = 250,  default = 30, help="Hobbywing v4 voltage gain adjustment"},
-    {field = "pin_swap",                     type = "U8",  apiVersion = 12.07, simResponse = {0},     table = onOff, tableIdxInc = -1, help="Swap the TX and RX pins for the ESC telemetry"},
-    {field = "current_correction_factor",    type = "U16", apiVersion = 12.08, simResponse = {100, 0}, scale=100, decimals=1, default = 1, min = 0, max = 100, help = "Adjust the current sensor reading to match the actual current draw. 1.0 and lower will reduce the gain.  1.0 and higher will increase the gain."},
-    {field = "consumption_correction_factor",type = "U16", apiVersion = 12.08, simResponse = {100, 0}, scale=100, decimals=1, default = 1, min = 0, max = 100, help = "Adjust the consumption sensor reading to match the actual consumption. 1.0 and lower will reduce the gain.  1.0 and higher will increase the gain."},
+    {field = "protocol",                                        type = "U8",  apiVersion = 12.06, simResponse = {0},     table = escTypes, tableIdxInc= -1},
+    {field = "half_duplex",                                     type = "U8",  apiVersion = 12.06, simResponse = {0},     default = 0, min= 1, max = 2, table = onOff, tableIdxInc = -1},
+    {field = "update_hz",                                       type = "U16", apiVersion = 12.06, simResponse = {200, 0}, default = 200, min = 10, max = 500, unit = "Hz"},
+    {field = "current_offset",                                  type = "U16", apiVersion = 12.06, simResponse = {0, 15}, min = 0, max = 1000, default = 0},
+    {field = "hw4_current_offset",                              type = "U16", apiVersion = 12.06, simResponse = {0, 0},  min = 0, max = 1000, default = 0},
+    {field = "hw4_current_gain",                                type = "U8",  apiVersion = 12.06, simResponse = {0},     min = 0, max = 250, default = 0},
+    {field = "hw4_voltage_gain",                                type = "U8",  apiVersion = 12.06, simResponse = {30},    min = 0, max = 250,  default = 30},
+    {field = "pin_swap",                                        type = "U8",  apiVersion = 12.07, simResponse = {0},     table = onOff, tableIdxInc = -1},
+    {field = "voltage_correction",           mandatory = false, type = "S8",  apiVersion = 12.08, simResponse = {0},     unit = "%", default = 1, min = -100, max = 125},
+    {field = "current_correction",           mandatory = false, type = "S8",  apiVersion = 12.08, simResponse = {0},     unit = "%", default = 1, min = -100, max = 125},
+    {field = "consumption_correction",       mandatory = false, type = "S8",  apiVersion = 12.08, simResponse = {0},     unit = "%", default = 1, min = -100, max = 125},
 }
 
--- filter the structure to remove any params not supported by the running api version
-local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
-
--- calculate the min bytes value from the structure
-local MSP_MIN_BYTES = rfsuite.bg.msp.api.calculateMinBytes(MSP_API_STRUCTURE_READ)
+-- Process structure in one pass
+local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE =
+    rfsuite.tasks.msp.api.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 
 -- set read structure
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
-
--- generate a simulatorResponse from the read structure
-local MSP_API_SIMULATOR_RESPONSE = rfsuite.bg.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
 
 -- Variable to store parsed MSP data
 local mspData = nil
@@ -55,7 +53,7 @@ local payloadData = {}
 local defaultData = {}
 
 -- Create a new instance
-local handlers = rfsuite.bg.msp.api.createHandlers()
+local handlers = rfsuite.tasks.msp.api.createHandlers()
 
 -- Variables to store optional the UUID and timeout for payload
 local MSP_API_UUID
@@ -71,11 +69,14 @@ local function read()
     local message = {
         command = MSP_API_CMD_READ,
         processReply = function(self, buf)
-            mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE_READ)
-            if #buf >= MSP_MIN_BYTES then
-                local completeHandler = handlers.getCompleteHandler()
-                if completeHandler then completeHandler(self, buf) end
-            end
+            local structure = MSP_API_STRUCTURE_READ
+            rfsuite.tasks.msp.api.parseMSPData(buf, structure, nil, nil, function(result)
+                mspData = result
+                if #buf >= MSP_MIN_BYTES then
+                    local completeHandler = handlers.getCompleteHandler()
+                    if completeHandler then completeHandler(self, buf) end
+                end
+            end)
         end,
         errorHandler = function(self, buf)
             local errorHandler = handlers.getErrorHandler()
@@ -85,7 +86,7 @@ local function read()
         uuid = MSP_API_UUID,
         timeout = MSP_API_MSG_TIMEOUT  
     }
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function write(suppliedPayload)
@@ -96,7 +97,7 @@ local function write(suppliedPayload)
 
     local message = {
         command = MSP_API_CMD_WRITE,
-        payload = suppliedPayload or payloadData,
+        payload = suppliedPayload or rfsuite.tasks.msp.api.buildWritePayload(API_NAME, payloadData,MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE),
         processReply = function(self, buf)
             local completeHandler = handlers.getCompleteHandler()
             if completeHandler then completeHandler(self, buf) end
@@ -110,7 +111,7 @@ local function write(suppliedPayload)
         uuid = MSP_API_UUID,
         timeout = MSP_API_MSG_TIMEOUT  
     }
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 -- Function to get the value of a specific field from MSP data
@@ -121,13 +122,7 @@ end
 
 -- Function to set a value dynamically
 local function setValue(fieldName, value)
-    for _, field in ipairs(MSP_API_STRUCTURE_WRITE) do
-        if field.field == fieldName then
-            payloadData[fieldName] = value
-            return true
-        end
-    end
-    error("Invalid field name: " .. fieldName)
+    payloadData[fieldName] = value
 end
 
 -- Function to check if the read operation is complete

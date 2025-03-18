@@ -1,5 +1,3 @@
-local fields = {}
-local labels = {}
 local fcStatus = {}
 local dataflashSummary = {}
 local wakeupScheduler = os.clock()
@@ -12,11 +10,23 @@ local saveCounter = 0
 local triggerSaveCounter = false
 local triggerMSPWrite = false
 
-fields[1] = {t = "PID profile", value = "0", vals = {24}, type = 1, table = {"1", "2", "3", "4", "5", "6"}, tableIdxInc = -1}
-fields[2] = {t = "Rate Profile", value = "0", vals = {26}, type = 1, table = {"1", "2", "3", "4", "5", "6"}, tableIdxInc = -1}
+local mspapi = {
+    api = {
+        [1] = "STATUS",
+    },
+    formdata = {
+        labels = {
+        },
+        fields = {
+            {t = rfsuite.i18n.get("app.modules.profile_select.pid_profile"), type = 1, mspapi = 1, apikey="current_pid_profile_index"},
+            {t = rfsuite.i18n.get("app.modules.profile_select.rate_profile"),type = 1, mspapi = 1, apikey="current_control_rate_profile_index"}
+        }
+    }                 
+}
+
 
 local function postLoad(self)
-    rfsuite.app.triggers.isReady = true
+    rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function postRead(self)
@@ -30,7 +40,7 @@ local function setPidProfile(profileIndex)
         end,
         simulatorResponse = {}
     }
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function setRateProfile(profileIndex)
@@ -42,19 +52,19 @@ local function setRateProfile(profileIndex)
         end,
         simulatorResponse = {}
     }
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function onSaveMenu()
 
     local buttons = {{
-        label = "                OK                ",
+        label = rfsuite.i18n.get("app.btn_ok_long"),
         action = function()
             triggerSave = true
             return true
         end
     }, {
-        label = "CANCEL",
+        label = rfsuite.i18n.get("app.modules.profile_select.cancel"),
         action = function()
             triggerSave = false
             return true
@@ -63,8 +73,8 @@ local function onSaveMenu()
 
     form.openDialog({
         width = nil,
-        title = "Save settings",
-        message = "Save current page to flight controller?",
+        title = rfsuite.i18n.get("app.modules.profile_select.save_settings"),
+        message = rfsuite.i18n.get("app.modules.profile_select.save_prompt"),
         buttons = buttons,
         wakeup = function()
         end,
@@ -113,20 +123,12 @@ local function wakeup()
 end
 
 return {
-    -- leaving this as legacy api for now as move to new api will require a rewrite.
-    -- no value to change this at this time.
-    read = 101,
-    write = nil,
-    title = "Select Profile",
+    mspapi = mspapi,
     reboot = false,
     eepromWrite = false,
-    minBytes = 30,
-    labels = labels,
-    fields = fields,
     wakeup = wakeup,
     onSaveMenu = onSaveMenu,
     refreshOnProfileChange = true,
-    simulatorResponse = {240, 1, 124, 0, 35, 0, 0, 0, 0, 0, 0, 224, 1, 10, 1, 0, 26, 0, 0, 0, 0, 0, 2, 0, 6, 0, 6, 1, 4, 1},
     postLoad = postLoad,
     navButtons = {menu = true, save = true, reload = false, tool = false, help = true},
     API = {},

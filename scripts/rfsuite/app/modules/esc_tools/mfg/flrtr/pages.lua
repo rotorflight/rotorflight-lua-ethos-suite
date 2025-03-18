@@ -1,8 +1,8 @@
 local PageFiles = {}
 
 -- ESC pages.
-PageFiles[#PageFiles + 1] = {title = "Basic", script = "esc_basic.lua", image = "basic.png"}
-PageFiles[#PageFiles + 1] = {title = "Advanced", script = "esc_advanced.lua", image = "advanced.png"}
-PageFiles[#PageFiles + 1] = {title = "Governor", script = "esc_governor.lua", image = "other.png"}
+PageFiles[#PageFiles + 1] = {title = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.basic"), script = "esc_basic.lua", image = "basic.png"}
+PageFiles[#PageFiles + 1] = {title = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.advanced"), script = "esc_advanced.lua", image = "advanced.png"}
+PageFiles[#PageFiles + 1] = {title = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.governor"), script = "esc_governor.lua", image = "other.png"}
 
 return PageFiles

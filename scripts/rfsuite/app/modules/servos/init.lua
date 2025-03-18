@@ -18,8 +18,8 @@
 
 ]] --
 local init = {
-    title = "Servos", -- title of the page
-    section = "Hardware", -- do not run if busy with msp
+    title = rfsuite.i18n.get("app.modules.servos.name"), -- title of the page
+    section = "hardware", -- do not run if busy with msp
     script = "servos.lua", -- run this script
     image = "servos.png", -- image for the page
     order = 2, -- order in the section

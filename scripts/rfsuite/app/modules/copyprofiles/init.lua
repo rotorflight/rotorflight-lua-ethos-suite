@@ -18,12 +18,13 @@
 
 ]] --
 local init = {
-    title = "Copy Profiles", -- title of the page
-    section = "Tools", -- do not run if busy with msp
+    title = rfsuite.i18n.get("app.modules.copyprofiles.name"), -- title of the page
+    section = "tools", -- do not run if busy with msp
     script = "copyprofiles.lua", -- run this script
     image = "copy.png", -- image for the page
     order = 1, -- order in the section
-    ethosversion = {1, 6, 2} -- disable button if ethos version is less than this
+    ethosversion = {1, 6, 2}, -- disable button if ethos version is less than this,
+    disable = true
 }
 
 return init

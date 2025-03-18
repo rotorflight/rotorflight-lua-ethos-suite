@@ -1,22 +1,32 @@
-local labels = {}
-local fields = {}
+
 
 local folder = "scorp"
 
 
 local ESC = assert(loadfile("app/modules/esc_tools/mfg/" .. folder .. "/init.lua"))()
 
+local mspapi = {
+    api = {
+        [1] = "ESC_PARAMETERS_SCORPION",
+    },
+    formdata = {
+        labels = {
+        },
+        fields = {
+
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.esc_mode"), type = 1, mspapi=1, apikey="esc_mode"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.rotation"), type = 1, mspapi=1, apikey="rotation"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.bec_voltage"), type = 1, mspapi=1, apikey="bec_voltage"},
+            -- {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.telemetry_protocol"),, type = 1, mspapi=1, apikey="telemetry_protocol"} -- not used as dangerous to change
+        }
+    }                 
+}
 
 
-labels[#labels + 1] = {t = "Scorpion ESC"}
 
-fields[#fields + 1] = {t = "ESC Mode", type = 1, apikey="esc_mode"}
-fields[#fields + 1] = {t = "Rotation", type = 1, apikey="rotation"}
-fields[#fields + 1] = {t = "BEC Voltage", type = 1, apikey="bec_voltage"}
--- fields[#fields + 1] = {t = "Telemetry Protocol", type = 1, apikey="telemetry_protocol"} -- not used as dangerous to change
 
 function postLoad()
-    rfsuite.app.triggers.isReady = true
+    rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function onNavMenu(self)
@@ -26,21 +36,21 @@ end
 
 local function event(widget, category, value, x, y)
 
-    if category == 5 or value == 35 then
+    -- if close event detected go to section home page
+    if category == EVT_CLOSE and value == 0 or value == 35 then
+        if powercycleLoader then powercycleLoader:close() end
         rfsuite.app.ui.openPage(pidx, folder, "esc_tools/esc_tool.lua")
         return true
     end
 
-    return false
+
 end
 
 return {
-    mspapi="ESC_PARAMETERS_SCORPION",
+    mspapi=mspapi,
     eepromWrite = false,
     reboot = false,
     title = "Basic Setup",
-    labels = labels,
-    fields = fields,
     svFlags = 0,
     preSavePayload = function(payload)
         payload[2] = 0
@@ -50,7 +60,7 @@ return {
     navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
     onNavMenu = onNavMenu,
     event = event,
-    pageTitle = "ESC / Scorpion / Basic",
+    pageTitle = rfsuite.i18n.get("app.modules.esc_tools.name") .. " / " ..  rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.name") .. " / " .. rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.basic"),
     headerLine = rfsuite.escHeaderLineText,
-    extraMsgOnSave = "Please reboot the ESC to apply the changes",    
+    extraMsgOnSave = rfsuite.i18n.get("app.modules.esc_tools.mfg.scorp.extra_msg_save"),    
 }

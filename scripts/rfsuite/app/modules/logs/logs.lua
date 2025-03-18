@@ -96,7 +96,7 @@ local function openPage(pidx, title, script, displaymode)
 
     currentDisplayMode = displaymode
 
-    rfsuite.bg.msp.protocol.mspIntervalOveride = nil
+    rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
 
     rfsuite.app.triggers.isReady = false
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
@@ -123,8 +123,8 @@ local function openPage(pidx, title, script, displaymode)
     local numPerRow
 
     padding = rfsuite.app.radio.buttonPaddingSmall
-    -- buttonW = (rfsuite.config.lcdWidth - padding) / (rfsuite.app.radio.logGraphButtonsPerRow - 1) - padding
-    buttonW = (rfsuite.config.lcdWidth - padding) / (2) - padding / 2
+    -- buttonW = (rfsuite.session.lcdWidth - padding) / (rfsuite.app.radio.logGraphButtonsPerRow - 1) - padding
+    buttonW = (rfsuite.session.lcdWidth - padding) / (2) - padding / 2
     buttonH = rfsuite.app.radio.navbuttonHeight
     numPerRow = 2 -- = rfsuite.app.radio.buttonsPerRow - 1
 
@@ -146,7 +146,7 @@ local function openPage(pidx, title, script, displaymode)
     if #logs == 0 then
 
         LCD_W, LCD_H = rfsuite.utils.getWindowSize()
-        local str = "NO LOG FILES FOUND"
+        local str = rfsuite.i18n.get("app.modules.logs.msg_no_logs_found")
         local ew = LCD_W
         local eh = LCD_H
         local etsizeW, etsizeH = lcd.getTextSize(str)
@@ -198,10 +198,6 @@ end
 
 local function event(widget, category, value, x, y)
 
-    -- if category == 5 or value == 35 then
-    --    rfsuite.app.Page.onNavMenu(self)
-    --    return true
-    -- end
 
     return false
 end
@@ -209,9 +205,7 @@ end
 local function wakeup()
 
     if enableWakeup == true then
-        -- local now = os.clock()
-        -- if (now - wakeupScheduler) >= 0.5 then
-        -- end   
+
     end
 
 end
@@ -227,7 +221,6 @@ local function onNavMenu()
 end
 
 return {
-    title = "Logs",
     event = event,
     openPage = openPage,
     wakeup = wakeup,

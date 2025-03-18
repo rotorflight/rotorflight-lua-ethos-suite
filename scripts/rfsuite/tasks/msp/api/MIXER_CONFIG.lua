@@ -15,39 +15,36 @@
  * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
 -- Constants for MSP Commands
+local API_NAME = "MIXER_CONFIG" -- API name (must be same as filename)
 local MSP_API_CMD_READ = 42 -- Command identifier for MSP Mixer Config Read
 local MSP_API_CMD_WRITE = 43 -- Command identifier for saving Mixer Config Settings
+local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write 
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "main_rotor_dir",                 type = "U8",  apiVersion = 12.06, simResponse = {0}},
-    {field = "tail_rotor_mode",                type = "U8",  apiVersion = 12.06, simResponse = {1}},
-    {field = "tail_motor_idle",                type = "U8",  apiVersion = 12.06, simResponse = {0},  default = 0, unit = "%", min = 0,  max = 250, decimals = 1, scale = 10, help = "Minimum throttle signal sent to the tail motor. This should be set just high enough that the motor does not stop."},
-    {field = "tail_center_trim",               type = "U16", apiVersion = 12.06, simResponse = {0, 0}, default = 0,  max = 500, decimals = 1, scale = 10, help ="Sets tail rotor trim for 0 yaw for variable pitch, or tail motor throttle for 0 yaw for motorized."},
-    {field = "swash_type",                     type = "U8",  apiVersion = 12.06, simResponse = {0}},
+    {field = "main_rotor_dir",                 type = "U8",  apiVersion = 12.06, simResponse = {0}, table={rfsuite.i18n.get("api.MIXER_CONFIG.tbl_cw"),rfsuite.i18n.get("api.MIXER_CONFIG.tbl_ccw")} , tableIdxInc = -1},
+    {field = "tail_rotor_mode",                type = "U8",  apiVersion = 12.06, simResponse = {0}},
+    {field = "tail_motor_idle",                type = "U8",  apiVersion = 12.06, simResponse = {0},  default = 0, unit = "%", min = 0,  max = 250, decimals = 1, scale = 10},
+    {field = "tail_center_trim",               type = "U16", apiVersion = 12.06, simResponse = {165, 1}, default = 0,  min = -500, max = 500, decimals = 1, scale = 10, mult = 0.239923224568138},
+    {field = "swash_type",                     type = "U8",  apiVersion = 12.06, simResponse = {0}, table={"None", "Direct","CPPM 120","CPPM 135","CPPM 140","FPM 90 L","FPM 90 V"}, tableIdxInc = -1},
     {field = "swash_ring",                     type = "U8",  apiVersion = 12.06, simResponse = {2}},
-    {field = "swash_phase",                    type = "U16", apiVersion = 12.06, simResponse = {100, 0}, default = 0, max = 1800, decimals = 1, scale = 10, help = "Phase offset for the swashplate controls."},
-    {field = "swash_pitch_limit",              type = "U16", apiVersion = 12.06, simResponse = {0, 0},   default = 0, min = 0, max = 3000, decimals = 1, scale = 83.33333333333333, step = 1, help = "Maximum amount of combined cyclic and collective blade pitch."},
-    {field = "swash_trim_0",                   type = "U16", apiVersion = 12.06, simResponse = {0, 0}, default = 0, max = 1000, decimals = 1, scale = 10, help ="Swash trim to level the swash plate when using fixed links."},
-    {field = "swash_trim_1",                   type = "U16", apiVersion = 12.06, simResponse = {0, 0}, default = 0,  max = 1000, decimals = 1, scale = 10, help ="Swash trim to level the swash plate when using fixed links."},
-    {field = "swash_trim_2",                   type = "U16", apiVersion = 12.06, simResponse = {0, 0},default = 0,  max = 1000, decimals = 1, scale = 10, help ="Swash trim to level the swash plate when using fixed links."},
-    {field = "swash_tta_precomp",              type = "U8",  apiVersion = 12.06, simResponse = {0},  default = 0, min = 0, max = 250, help = "Mixer precomp for 0 yaw."},
-    {field = "swash_geo_correction",           type = "U8",  apiVersion = 12.07, simResponse = {0},  default = 0, max = 125, decimals = 1, scale = 5, step = 2, help = "Adjust if there is too much negative collective or too much positive collective."},
-    {field = "collective_tilt_correction_pos", type = "S8",  apiVersion = 12.08, simResponse = {0},  default = 0, max = 100, help = "Adjust the collective tilt correction scaling for postive collective pitch."},
-    {field = "collective_tilt_correction_neg", type = "S8",  apiVersion = 12.08, simResponse = {10}, default = 10, max = 100, help = "Adjust the collective tilt correction scaling for negative collective pitch."},
+    {field = "swash_phase",                    type = "U16", apiVersion = 12.06, simResponse = {100, 0}, default = 0, max = 1800, decimals = 1, scale = 10},
+    {field = "swash_pitch_limit",              type = "U16", apiVersion = 12.06, simResponse = {131, 6},   default = 0, min = 0, max = 360, decimals = 1, step = 1, mult = 0.012002652519893899},
+    {field = "swash_trim_0",                   type = "U16", apiVersion = 12.06, simResponse = {0, 0}, default = -1000, min = -1000, max = 1000, decimals = 1, scale = 10},
+    {field = "swash_trim_1",                   type = "U16", apiVersion = 12.06, simResponse = {0, 0}, default = -1000,  min = -1000, max = 1000, decimals = 1, scale = 10},
+    {field = "swash_trim_2",                   type = "U16", apiVersion = 12.06, simResponse = {0, 0},default = -1000,  min = -1000, max = 1000, decimals = 1, scale = 10},
+    {field = "swash_tta_precomp",              type = "U8",  apiVersion = 12.06, simResponse = {0},  default = 0, min = 0, max = 250},
+    {field = "swash_geo_correction",           type = "U8",  apiVersion = 12.07, simResponse = {0},  default = 0, min = -250, max = 250, decimals = 1, scale = 5, step = 2},
+    {field = "collective_tilt_correction_pos", type = "S8",  apiVersion = 12.08, simResponse = {0},  default = 0, max = 100},
+    {field = "collective_tilt_correction_neg", type = "S8",  apiVersion = 12.08, simResponse = {10}, default = 10, max = 100},
 }
 
--- filter the structure to remove any params not supported by the running api version
-local MSP_API_STRUCTURE_READ = rfsuite.bg.msp.api.filterByApiVersion(MSP_API_STRUCTURE_READ_DATA)
-
--- calculate the min bytes value from the structure
-local MSP_MIN_BYTES = rfsuite.bg.msp.api.calculateMinBytes(MSP_API_STRUCTURE_READ)
+-- Process structure in one pass
+local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE =
+    rfsuite.tasks.msp.api.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 
 -- set read structure
 local MSP_API_STRUCTURE_WRITE = MSP_API_STRUCTURE_READ
-
--- generate a simulatorResponse from the read structure
-local MSP_API_SIMULATOR_RESPONSE = rfsuite.bg.msp.api.buildSimResponse(MSP_API_STRUCTURE_READ)
 
 -- Variable to store parsed MSP data
 local mspData = nil
@@ -56,7 +53,7 @@ local payloadData = {}
 local defaultData = {}
 
 -- Create a new instance
-local handlers = rfsuite.bg.msp.api.createHandlers()
+local handlers = rfsuite.tasks.msp.api.createHandlers()
 
 -- Variables to store optional the UUID and timeout for payload
 local MSP_API_UUID
@@ -72,11 +69,14 @@ local function read()
     local message = {
         command = MSP_API_CMD_READ,
         processReply = function(self, buf)
-            mspData = rfsuite.bg.msp.api.parseMSPData(buf, MSP_API_STRUCTURE_READ)
-            if #buf >= MSP_MIN_BYTES then
-                local completeHandler = handlers.getCompleteHandler()
-                if completeHandler then completeHandler(self, buf) end
-            end
+            local structure = MSP_API_STRUCTURE_READ
+            rfsuite.tasks.msp.api.parseMSPData(buf, structure, nil, nil, function(result)
+                mspData = result
+                if #buf >= MSP_MIN_BYTES then
+                    local completeHandler = handlers.getCompleteHandler()
+                    if completeHandler then completeHandler(self, buf) end
+                end
+            end)
         end,
         errorHandler = function(self, buf)
             local errorHandler = handlers.getErrorHandler()
@@ -86,7 +86,7 @@ local function read()
         uuid = MSP_API_UUID,
         timeout = MSP_API_MSG_TIMEOUT  
     }
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 local function write(suppliedPayload)
@@ -97,7 +97,7 @@ local function write(suppliedPayload)
 
     local message = {
         command = MSP_API_CMD_WRITE,
-        payload = suppliedPayload or payloadData,
+        payload = suppliedPayload or rfsuite.tasks.msp.api.buildWritePayload(API_NAME, payloadData,MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE),
         processReply = function(self, buf)
             local completeHandler = handlers.getCompleteHandler()
             if completeHandler then completeHandler(self, buf) end
@@ -111,7 +111,7 @@ local function write(suppliedPayload)
         uuid = MSP_API_UUID,
         timeout = MSP_API_MSG_TIMEOUT  
     }
-    rfsuite.bg.msp.mspQueue:add(message)
+    rfsuite.tasks.msp.mspQueue:add(message)
 end
 
 -- Function to get the value of a specific field from MSP data
@@ -122,13 +122,7 @@ end
 
 -- Function to set a value dynamically
 local function setValue(fieldName, value)
-    for _, field in ipairs(MSP_API_STRUCTURE_WRITE) do
-        if field.field == fieldName then
-            payloadData[fieldName] = value
-            return true
-        end
-    end
-    error("Invalid field name: " .. fieldName)
+    payloadData[fieldName] = value
 end
 
 -- Function to check if the read operation is complete

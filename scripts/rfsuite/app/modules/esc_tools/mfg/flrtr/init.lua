@@ -1,7 +1,6 @@
 local MSP_API = "ESC_PARAMETERS_FLYROTOR"
-local toolName = "FLYROTOR"
+local toolName = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.name")
 moduleName = "FLRTR"
-
 
 function getUInt(page, vals)
     local v = 0
@@ -19,41 +18,37 @@ end
 
 -- required by framework
 local function getEscModel(self)
-
     -- buffer is the whole msp payload
     -- looks like prob have to extract
 
     local hw = "1." .. getPageValue(self, 20) .. '/' .. getPageValue(self, 14) .. "." .. getPageValue(self, 15) .. "." .. getPageValue(self, 16)
+    local result = self[4] * 256 + self[5]
 
-    return "FLYROTOR " .. string.format(self[5]) .. "A " .. hw .. " "
-
+    return "FLYROTOR " .. string.format(result) .. "A " .. hw .. " "
 end
 
 -- required by framework
 local function getEscVersion(self)
-
     -- buffer is the whole msp payload
     -- looks like prob have to extract
-    -- DATA[3-10]: Serial number. Example: 7771BED8DE25A9EA 
+    -- DATA[3-10]: Serial number. Example: 7771BED8DE25A9EA
 
     -- return string.format("%.5f", getUInt(buffer, {mspHeaderBytes + 18}) / 100000)
 
-    local sn = string.format("%08X", getUInt(self, {9, 8, 7, 6})) .. string.format("%08X", getUInt(self, {13, 12, 11, 9}))
+    local sn = string.format("%08X", getUInt(self, { 9, 8, 7, 6 })) .. string.format("%08X", getUInt(self, { 13, 12, 11, 9 }))
+    
     return sn
-
 end
 
 -- required by framework
 local function getEscFirmware(self)
-
-    local version = getPageValue(self, 15) .. "." .. getPageValue(self, 16) .. "." .. getPageValue(self, 17)
+    local version = getPageValue(self, 17) .. "." .. getPageValue(self, 18) .. "." .. getPageValue(self, 19)
 
     return version
-
 end
 
 return {
-    mspapi=MSP_API,    
+    mspapi = MSP_API,
     toolName = toolName,
     image = "flrtr.png",
     powerCycle = false,
