@@ -144,9 +144,8 @@ local function runRepair(data)
     end
 
     -- Fill remaining slots with zeros
-    while sensorIndex <= 52 do
-        buffer[sensorIndex] = 0
-        sensorIndex = sensorIndex + 1
+    for i = sensorIndex, 52 do
+        buffer[i] = 0
     end
 
     -- Send updated buffer
