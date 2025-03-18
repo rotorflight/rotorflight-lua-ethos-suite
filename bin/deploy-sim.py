@@ -228,6 +228,7 @@ def main():
     #check if required tools are installed and env vars are set
     radio_info = {}
     radio_info["connected"] = False
+    radio_info["debug"] = False
 
     parser = argparse.ArgumentParser(description='Deploy simulation files.')
     parser.add_argument('--src', type=str, help='Source folder')
@@ -242,13 +243,13 @@ def main():
 
     args = parser.parse_args()
 
-    if os.getenv('FRSKY_ETHOS_SUITE_BIN'):
+    if os.getenv('FRSKY_ETHOS_SUITE_BIN') and not args.sim:
         # call radio_cmd.exe from FRSKY_RADIO_TOOL_SRC
-        result = radioGetInfo(radio_info)
-        radio_info = result
+        result = radioGetInfo(radio_info) 
         if result == False:
             print("Radio not connected")
         else: 
+            radio_info = result
             print("Radio connected")
             radio_info["connected"] = True
             print(f"Radio product: {result['product']}") 
@@ -259,7 +260,10 @@ def main():
         radio_info = radioGetInfo(radio_info)
 
     if args.radioDeploy and radio_info["connected"]:             
-        copy_files(args.src, args.fileext, launch = args.sim, destfolders = args.destfolders)
+        copy_files(args.src, args.fileext, launch = args.sim, destfolders = radio_info['scripts'])
+    elif args.sim:
+        args.destfolders = os.getenv('FRSKY_SIM_SRC')
+        copy_files(args.src, None, launch = args.sim, destfolders = args.destfolders)
 
     # rewrite this section to use ethos suite!
     if args.radioDebug:
@@ -272,7 +276,7 @@ def main():
                         #subprocess.run(f'powershell -Command "Remove-Item -Path {radio_volume} -Recurse -Force"', shell=True, check=True)
                     #else:  # Unix-based systems
                         #subprocess.run(f"umount {radio_volume}", shell=True, check=True)
-                    print("Radio volume ejected successfully.")
+                    #print("Radio volume ejected successfully.")
             except subprocess.CalledProcessError as e:
                 print(f"Failed to eject radio volume: {e}")
             try:
