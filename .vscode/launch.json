@@ -8,7 +8,6 @@
             "program": "${workspaceFolder}/bin/deploy-sim.py",
             "args": [
                 "--src", "${workspaceFolder}",
-                "--destfolders","${env:FRSKY_SIM_SRC}"
             ],
             "console": "integratedTerminal",
             "justMyCode": true,
@@ -21,7 +20,6 @@
             "args": [
                 "--src", "${workspaceFolder}",
                 "--sim", "${env:FRSKY_SIM_BIN}",
-                "--destfolders","${env:FRSKY_SIM_SRC}"
             ],
             "console": "integratedTerminal",
             "justMyCode": true,
@@ -33,8 +31,7 @@
             "program": "${workspaceFolder}/bin/deploy-sim.py",
             "args": [
                 "--src", "${workspaceFolder}",
-                "--destfolders","${env:FRSKY_REMOTE_SRC}",
-                "--radio",
+                "--radioDeploy",
                 "--fileext","fast"
             ],
             "console": "integratedTerminal",
@@ -47,37 +44,9 @@
             "program": "${workspaceFolder}/bin/deploy-sim.py",
             "args": [
                 "--src", "${workspaceFolder}",
-                "--destfolders","${env:FRSKY_REMOTE_SRC}",
-                "--radio",
+                "--radioDeploy",
                 "--radioDebug",
                 "--fileext","fast"
-            ],
-            "console": "integratedTerminal",
-            "justMyCode": true,
-        },
-        {
-            "name": "Radio: Deploy (All)",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/bin/deploy-sim.py",
-            "args": [
-                "--src", "${workspaceFolder}",
-                "--destfolders","${env:FRSKY_REMOTE_SRC}",
-                "--radio"
-            ],
-            "console": "integratedTerminal",
-            "justMyCode": true,
-        },
-        {
-            "name": "Radio: Deploy & Debug (All)",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/bin/deploy-sim.py",
-            "args": [
-                "--src", "${workspaceFolder}",
-                "--destfolders","${env:FRSKY_REMOTE_SRC}",
-                "--radio",
-                "--radioDebug"
             ],
             "console": "integratedTerminal",
             "justMyCode": true,
@@ -88,9 +57,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/bin/deploy-sim.py",
             "args": [
-                "--radio",
                 "--radioDebug",
-                "--radioDebugOnly"
             ],
             "console": "integratedTerminal",
             "justMyCode": true,
