@@ -16,6 +16,14 @@ local mspapi = {
         },
         fields = {
             {t = "Direction", type = 1, mspapi = 1, apikey = "motor_direction"},
+            {t = "Motor KV", mspapi = 1, apikey = "motor_kv"},
+            {t = "Motor Poles", mspapi = 1, apikey = "motor_poles"},
+            {t = "startup Power", mspapi = 1, apikey = "startup_power"},
+            {t = "Complementary PWM", type = 1, mspapi = 1, apikey = "complementary_pwm"},
+            {t = "Brake on Stop", type = 1, mspapi = 1, apikey = "brake_on_stop"},
+            {t = "Brake Strength", mspapi = 1, apikey = "brake_strength"},
+            {t = "Running Brake", mspapi = 1, apikey = "running_brake_level"},
+
         }
     }                 
 }

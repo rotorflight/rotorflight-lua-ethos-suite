@@ -18,9 +18,7 @@ end
 local function getEscModel(self)
 
     local escModelName = ""
-
     escModelName = getText(self, 8, 19)
-
     return "AM32 " .. escModelName .. " "
 
 end

@@ -15,6 +15,12 @@ local mspapi = {
         },
         fields = {
             {t = "Timing",  mspapi = 1, type = 1, apikey = "timing_advance"},
+            {t = "Stuck Rotor Protection",  mspapi = 1, type = 1, apikey = "stuck_rotor_protection"},
+            {t = "Sinusoidal Startup",  mspapi = 1, type = 1, apikey = "sinusoidal_startup"},
+            {t = "Sine Mode Power",  mspapi = 1, apikey = "sine_mode_power"},
+            {t = "Sine Mode Range",  mspapi = 1, apikey = "sine_mode_range"},
+            {t = "Bidirectional Mode",  mspapi = 1, type = 1, apikey = "bidirectional_mode"},
+            {t = "Protocol",  mspapi = 1, type = 1, apikey = "esc_protocol"},
         }
     }                 
 }

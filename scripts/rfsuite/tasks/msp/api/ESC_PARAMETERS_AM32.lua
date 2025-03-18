@@ -36,7 +36,7 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "boot_loader_revision",      type = "U8",  apiVersion = 12.07, simResponse = {13}},
     {field = "main_revision",             type = "U8",  apiVersion = 12.07, simResponse = {2}},
     {field = "sub_revision",              type = "U8",  apiVersion = 12.07, simResponse = {17}},
-    {field = "name",                      type = "U96", apiVersion = 12.07, simResponse = {86,105,109,100,114,111,110,101,76,52,51,49,0,0,0}}, -- string
+    {field = "name",                      type = "U96", apiVersion = 12.07, simResponse = {86,105,109,100,114,111,110,101,76,52,51,49}}, -- string
     {field = "motor_direction",           type = "U8",  apiVersion = 12.07, simResponse = {0}, tableIdxInc = -1, table = motorDirection},
     {field = "bidirectional_mode",        type = "U8",  apiVersion = 12.07, simResponse = {0}, tableIdxInc = -1, table = onOff},
     {field = "sinusoidal_startup",        type = "U8",  apiVersion = 12.07, simResponse = {0}, tableIdxInc = -1, table = onOff},
@@ -46,7 +46,7 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "timing_advance",            type = "U8",  apiVersion = 12.07, simResponse = {2}, tableIdxInc = -1, table = timingAdvance}, -- *7.5
     {field = "pwm_frequency",             type = "U8",  apiVersion = 12.07, simResponse = {24}},
     {field = "startup_power",             type = "U8",  apiVersion = 12.07, simResponse = {150}, default = 100, min = 50, max = 150},
-    {field = "motor_kv",                  type = "U8",  apiVersion = 12.07, simResponse = {107}}, -- *40+20
+    {field = "motor_kv",                  type = "U8",  apiVersion = 12.07, simResponse = {107}, min = 20, max = 10220, scale = 40}, -- *40+20
     {field = "motor_poles",               type = "U8",  apiVersion = 12.07, simResponse = {14}, default = 14, min = 2, max = 36},
     {field = "brake_on_stop",             type = "U8",  apiVersion = 12.07, simResponse = {1}, tableIdxInc = -1, table = onOff},
     {field = "stall_protection",          type = "U8",  apiVersion = 12.07, simResponse = {0}, tableIdxInc = -1, table = onOff},
