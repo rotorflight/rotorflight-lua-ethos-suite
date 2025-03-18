@@ -4,10 +4,10 @@ local mspapi = {
     },
     formdata = {
         labels = {
-            { t = rfsuite.i18n.get("app.modules.radio_config.stick"),    label = 1, inline_size = 14.5 },
-            { t = rfsuite.i18n.get("app.modules.radio_config.throttle"), label = 2, inline_size = 14.5 },
-            { t = "",         label = 3, inline_size = 14.5 },
-            { t = rfsuite.i18n.get("app.modules.radio_config.deadband"), label = 4, inline_size = 14.5 }
+            { t = rfsuite.i18n.get("app.modules.radio_config.stick"),    label = 1, inline_size = 16 },
+            { t = rfsuite.i18n.get("app.modules.radio_config.throttle"), label = 2, inline_size = 16 },
+            { t = "",         label = 3, inline_size = 16 },
+            { t = rfsuite.i18n.get("app.modules.radio_config.deadband"), label = 4, inline_size = 16 }
         },
         fields = {
             { t = rfsuite.i18n.get("app.modules.radio_config.center"),     label = 1, inline = 2, mspapi = 1, apikey = "rc_center"       },
