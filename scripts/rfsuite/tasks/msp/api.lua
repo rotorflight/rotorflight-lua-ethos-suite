@@ -601,7 +601,9 @@ function apiLoader.buildDeltaPayload(apiname, payload, api_structure, positionma
     local actual_fields = {}
     if rfsuite.app.Page and rfsuite.app.Page.mspapi then
         for _, field in ipairs(rfsuite.app.Page.mspapi.formdata.fields) do
-            actual_fields[field.apikey] = field
+            if actual_fields[field.apikey] then -- we check this because its possible a field may not be there is mspgt or msplt is used on page.
+                actual_fields[field.apikey] = field
+            end
         end
     end 
 
