@@ -144,9 +144,8 @@ local function runRepair(data)
     end
 
     -- Fill remaining slots with zeros
-    while sensorIndex <= 52 do
-        buffer[sensorIndex] = 0
-        sensorIndex = sensorIndex + 1
+    for i = sensorIndex, 52 do
+        buffer[i] = 0
     end
 
     -- Send updated buffer
@@ -171,18 +170,23 @@ local function wakeup()
             end
         }}
     
-        form.openDialog({
-            width = nil,
-            title =  rfsuite.i18n.get("app.modules.validate_sensors.name"),
-            message = rfsuite.i18n.get("app.modules.validate_sensors.msg_repair_fin"),
-            buttons = buttons,
-            wakeup = function()
-            end,
-            paint = function()
-            end,
-            options = TEXT_LEFT
-        })
-
+        if rfsuite.utils.ethosVersionAtLeast({1,6,3}) then
+            rfsuite.utils.log("Starting discover sensors", "info")
+            rfsuite.tasks.msp.sensorTlm:discover()
+            rfsuite.utils.playFileCommon("beep.wav")
+        else    
+            form.openDialog({
+                width = nil,
+                title =  rfsuite.i18n.get("app.modules.validate_sensors.name"),
+                message = rfsuite.i18n.get("app.modules.validate_sensors.msg_repair_fin"),
+                buttons = buttons,
+                wakeup = function()
+                end,
+                paint = function()
+                end,
+                options = TEXT_LEFT
+            })
+        end
     end
 
 
