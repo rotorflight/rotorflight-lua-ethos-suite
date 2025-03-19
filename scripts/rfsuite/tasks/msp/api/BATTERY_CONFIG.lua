@@ -32,6 +32,25 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "vbatwarningcellvoltage",       type = "U16", apiVersion = 12.06, simResponse = {94, 1},  min = 0,   decimals = 2, scale = 100, max = 500, unit = "V",   default = 3.5},
     {field = "lvcPercentage",                type = "U8",  simResponse = {100}},
     {field = "consumptionWarningPercentage", type = "U8",  apiVersion = 12.06, simResponse = {10}},
+    -- question.  Why do we not do these as 2-5.. and use the original as 1?
+    -- battery 1
+    {field = "batteryCapacity_1", type = "U16",  apiVersion = 12.08, simResponse = {10}, mandatory = false},
+    {field = "batteryCellCount_1", type = "U8",  apiVersion = 12.08, simResponse = {6}, mandatory = false},
+    -- battery 2
+    {field = "batteryCapacity_2", type = "U16",  apiVersion = 12.08, simResponse = {10}, mandatory = false},
+    {field = "batteryCellCount_2", type = "U8",  apiVersion = 12.08, simResponse = {6}, mandatory = false},
+    -- battery 3
+    {field = "batteryCapacity_3", type = "U16",  apiVersion = 12.08, simResponse = {10}, mandatory = false},
+    {field = "batteryCellCount_3", type = "U8",  apiVersion = 12.08, simResponse = {6}, mandatory = false},
+    -- battery 4
+    {field = "batteryCapacity_4", type = "U16",  apiVersion = 12.08, simResponse = {10}, mandatory = false},
+    {field = "batteryCellCount_4", type = "U8",  apiVersion = 12.08, simResponse = {6}, mandatory = false},
+    -- battery 5
+    {field = "batteryCapacity_5", type = "U16",  apiVersion = 12.08, simResponse = {10}, mandatory = false},
+    {field = "batteryCellCount_5", type = "U8",  apiVersion = 12.08, simResponse = {6}, mandatory = false},    
+    -- battery 6
+    {field = "batteryCapacity_6", type = "U16",  apiVersion = 12.08, simResponse = {10}, mandatory = false},
+    {field = "batteryCellCount_6", type = "U8",  apiVersion = 12.08, simResponse = {6}, mandatory = false},       
 }
 
 -- Process structure in one pass
