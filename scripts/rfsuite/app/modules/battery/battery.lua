@@ -149,6 +149,10 @@ local function wakeup()
                 setActiveProfile = nil
 
             end)
+            API.setErrorHandler(function(self, buf)
+                rfsuite.utils.log("Failed to set battery profile " .. setActiveProfile - 1,"info")
+                setActiveProfile = nil
+            end)
             API.setUUID("123e4567-e89b-12d3-a456-426614174000")
             API.setValue("id", setActiveProfile - 1)
             API.write()
