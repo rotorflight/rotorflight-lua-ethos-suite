@@ -114,7 +114,7 @@ local nl = {
 
     layoutOptions = {
             TIMER = "TIMER",
-            VOLTAGE = "Spanning",
+            VOLTAGE = "SPANNING",
             FUEL = "BRANDSTOF",
             CURRENT = "STROOM",
             MAH = "MAH",
