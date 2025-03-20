@@ -3068,7 +3068,7 @@ function status.paint(widget)
                 if status.sensors.fuel < 5 then sensorVALUE = "0" end
 
                 if status.titleParam == true then
-                    sensorTITLE = rfsuite.i18n.get("widgets.status.txt_fuel")
+                    sensorTITLE = rfsuite.i18n.get("widgets.status.title_fuel")
                 else
                     sensorTITLE = ""
                 end
