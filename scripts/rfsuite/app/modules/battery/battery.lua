@@ -150,7 +150,7 @@ local function wakeup()
 
             end)
             API.setUUID("123e4567-e89b-12d3-a456-426614174000")
-            API.setValue("id", setActiveProfile)
+            API.setValue("id", setActiveProfile - 1)
             API.write()
            
         end
@@ -215,7 +215,7 @@ local function onToolMenu(self)
 
     form.openDialog({
         width = nil,
-        title = title,
+        title = "Battery Profile",
         message = "Please set the active profile",
         buttons = buttons,
         wakeup = function()
