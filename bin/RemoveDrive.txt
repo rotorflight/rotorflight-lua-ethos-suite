@@ -1,0 +1,186 @@
+
+RemoveDrive V3.4.6 - prepares removable drives for safe removal
+Freeware by Uwe Sieber - www.uwe-sieber.de
+
+Win32 version works on Windows XP and higher including x64 version of Windows.
+x64 version works on x64 versions Windows only.
+
+Homepage: http://www.uwe-sieber.de/drivetools_e.html
+
+
+Usage:
+RemoveDrive DriveSpec [-47][-v][-d][-f][-l][-h][-a][-b][-i][-s][-na][-w:nnnn]
+                     
+DriveSpec  is the drive to remove, e.g. U: or an NTFS mountpoint as "C:\CardReader\Multi Reader SD"
+           or . for the current drive
+           or \ for the drive of the RemoveDrive.exe
+           or a volume name like \\?\Volume{433619ed-c6ea-11d9-a3b2-806d6172696f}
+           or a kernel name like \Device\HarddiskVolume2 (Volume)
+           or a kernel name like \Device\Harddisk2\DR0 (Disk)
+           or a partition name like \Device\Harddisk2\Partition1
+           or a device ID
+           or a friendly name like 'Corsair Voyager'
+           Wildcards can be used.
+-47      perform safe removal resulting in problem code 47 (default without admin privileges)
+-v       remove the volume only instead of the drive or whole device (needs admin privileges)
+-d       remove the drive only instead of the whole device (needs admin privileges)
+-f       force safe removal when failed (needs admin privileges, Vista+)
+-l       loop until success
+-t       'eject' TrueCrypt/VeraCrypt volumes hosted by the drive to remove
+-vhd     detach VHD/VHDX/ISO the removed drive is hosted by (Win7+)
+-h       show open handles
+-h:X     show open handles on a different drive (e.g. a TrueCrypt volume whose container is on the drive to remove)
+-a       activates Windows of applications owning the open handles
+-w:nnnn  wait nnnn milliseconds before close
+-s       self delete removedrive.exe
+-b       show the "Safe now to remove Hardware" balloon tip
+-i       stop Windows indexing service (XP: CiSvc, Vista+: WSearch) for a moment if required (needs admin privileges)
+-na      no about info
+-dbg     show debug information
+
+Parameters are case-insensitive.
+
+Only one drive or device is prepared for safe removal.
+
+
+Sample:
+
+removedrive U: -L -H -A -W:1000
+
+
+
+Returns Errorlevels:
+
+0 - successfully removed a device
+1 - device identified but not removed
+2 - device not found
+3 - parameters are invalid
+4 - RemoveDrive.exe located on the drive to remove -> temporary copy
+    created and executed
+
+If the removal fails then someone still accesses the drive. This can be
+something banal like an open Word document, a mounted TrueCrypt container
+or some kind of monitoring tool like a virus scanner.
+
+If removedrive -h does not show a handle then maybe the SysInternals
+ProcessExplorer can. Using a kernel driver it finds handles of restritive
+system processes too which RemoveDrive cannot:
+http://www.microsoft.com/technet/sysinternals/utilities/ProcessExplorer.html
+
+After starting it go to 'Find' -> 'Find Handle or DLL', enter the drive letter
+and search. Old versions did not resolve drive letter, here the handles kernel
+name had to be searched for, as volume12 or disk5. RemoveDrives gives a hint
+what to search for.
+
+When started with parameter -L and the removal failed then the F key can
+be pressed to force the safe removal (Vista+) or perform a media eject after
+locking and dismounting the volume (XP).
+
+Forcing the safe removal under Vista+ is done by setting the "offline" disk
+attribute for the disk to remove. This kicks out all its volume without
+damage.
+
+When a TrueCrypt (or VeraCrypt) volume is found which is hosted by the drive
+to remove and the -T parameter is set then RemoveDrive tries to 'eject' the
+TrueCrypt volume in a loop. By pressing the F key this can be forced. Open file
+handles on the TrueCrypt volume become invalid and the TrueCrypt container is
+released.
+
+If started with admin privileges or the USBDLM command interface available,
+then a removed USB drive ends up with problem code 21 and can be reactivated
+by means of RestartSrDev:
+http://www.uwe-sieber.de/drivetools_e.html#restart
+Or in UsbDriveInfo by right-clicking the device -> Restart:
+http://www.uwe-sieber.de/usbdriveinfo_e.html
+
+On some USB3 controllers the USB device completely disappears after safe
+removal instead staying present with a problem code.
+Here you can use the parameter -d to remove the drive only which then gets
+problem code 21 and can be reactivated.
+
+If as drive identifier a device ID, volume name, friendly name etc is given
+then either
+- a full match
+- a wildcard match (* 0..n chars, ? exactly one char)
+- a length >= 8 and appearance of the given string
+is required to get a match.
+
+For volume labels either
+- a full match
+- a wildcard match
+is required.
+
+Since V3.2 it can detach VHDs under Windows 7 and higher. Admin privileges or
+USBDLM V5.4.6 with enabled command interface is required for that.
+
+
+About open handles
+
+RemoveDrive does no use a driver for gaterhing handle information. Therefore
+when hitting the handle of a waiting pipe under XP the function for getting
+the handle name does not return, the thread freezes. Since V3.0 RemoveDrive
+uses the Win32 call GetFileType to filter out pipes before calling NtQueryObject.
+GetFileType freezes too when hitting a pipe but when the RemoveDrive process
+ends Windows sucessfully kills it in contrast to a hanging NtQueryObject call.
+Since Vista GetFileType doesn't freeze at all, so no more problem since V3.0.
+
+RemoveDrive finds handles of processes of the same or lower trust level. So if
+it is called restricted then it finds handles of restricted processes only.
+Since V3.1 it gets handles of system processes too if started with admin previleges.
+
+
+Windows Task Manager blocks the safe removal
+
+The Windows Task-Manager holds an open handle to each disk device shown on its
+"Performance" tab. Since Windows 10 Release 20/04 it shows all drives here,
+before only drives configured for "optimize for performance".
+Usually the Taskmanger closes the handle on first safe removal attempt but
+sometimes it does not. If not then this blocks the safe removal, it succeeds
+after closing the Task Manager.
+The -f (force) option does not help here, it can overrule only open handles
+on the volume but not on the disk device.
+RemoveDrive since V3.4 therefore can close the Task Manager (-tm) and optionally
+restart it again afterwards (-tmr). This needs admin privileges if the Task Manager
+is running "As Admin".
+When started the Task Manager ignores the SW_SHOWNOACTIVATE flag, it gets active
+anyway even when minimized by SW_SHOWMINNOACTIVE. RemoveDrive tries to activate
+the window again that was active when it restarted the Task Manager.
+
+
+About the "It's safe now" balloon tip (parameter -b)
+
+Windows XP .. Windows 7:
+To get the balloon tip CM_Request_Device_Eject is used, so the result is
+problem code 47, even when started with admin privileges.
+
+Windows 8..11:
+Even the documentation for CM_Request_Device_Eject still says that "If pszVetoName
+is NULL, the PnP manager displays a message to the user indicating the device was
+removed", this does not work anymore since Windows 8.
+On Windows 8 and higher RemoveDrive since V3.4 shows its own balloon tip in english
+language for 5 seconds. Time and message can be changed like so:
+-bt:10000 -bm:"It is safe now to remove the device"
+
+
+
+Licence
+
+
+RemoveDrive is Freeware.
+
+Allowed:
+- usage in any environment, including commercial
+- include in software products, including commercial
+- include on CD/DVD of computer magazines
+- making available for download by means of package managers
+
+Not allowed:
+- changing any of the files
+- offer for download by means of a 'Downloader' software
+
+
+
+
+Uwe Sieber
+March 2025
+

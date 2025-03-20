@@ -57,3 +57,7 @@ REM Dismount the volume as the last step
 fsutil volume dismount %driveLetter%
 
 echo Script execution completed.
+
+REM Unmount the drive using DevEject
+echo Unmounting drive %driveLetter%...
+removedrive %driveLetter% -f -e
