@@ -1,3 +1,5 @@
+from ctypes import windll, wintypes
+import ctypes
 import os
 import shutil
 import argparse
@@ -7,7 +9,8 @@ import serial
 import serial.tools.list_ports
 import subprocess
 import time
-import ast
+import winioctlcon
+import win32file
 
 pbar = None
 
@@ -134,11 +137,18 @@ def checkEnvVar(var):
     return True
 
 def CheckTools():
+    if not os.name == 'nt':
+        print("This script currently supports Windows only.")
+        return False
+
     if not checkEnvVar('FRSKY_SIM_BIN'):
+        print("FRSKY_SIM_BIN not set.")
         return False
     if not checkEnvVar('FRSKY_SIM_SRC'):        
+        print("FRSKY_SIM_SRC not set.")
         return False
     if not checkEnvVar('FRSKY_ETHOS_SUITE_BIN'):
+        print("FRSKY_ETHOS_SUITE_BIN not set.")
         return False
     
     #check if paths do exist
@@ -199,6 +209,36 @@ def waitForSerialPort(vid, pid):
             return False
     return port
 
+def fsctl_drive(drive, commands):
+    handle = windll.kernel32.CreateFileW(
+            ctypes.c_wchar_p(r'\\.\%s' % drive),
+            win32file.GENERIC_READ | win32file.GENERIC_WRITE,
+            win32file.FILE_SHARE_READ | win32file.FILE_SHARE_WRITE,
+            0,
+            win32file.OPEN_EXISTING,
+            win32file.FILE_ATTRIBUTE_NORMAL,
+            0)
+    if handle != win32file.INVALID_HANDLE_VALUE:
+        for command in commands:
+            bytes_returned = wintypes.DWORD()
+            inBuffer = wintypes.DWORD()
+            retry = 10
+            while retry > 0:
+                status = windll.kernel32.DeviceIoControl(handle, command, ctypes.byref(inBuffer), 4, None, 0, ctypes.byref(bytes_returned), 0)
+                if status > 0:
+                    break
+                retry -= 1
+                if retry > 0:
+                    print("DiskIoControl(%s, %X) failed, retrying after 1 second ..." % (drive, command))
+                    time.sleep(1)
+                else:
+                    print("DiskIoControl(%s, %X) failed" % (drive, command))
+    else:
+        print("Open drive %s failed" % drive)
+
+def unmount_drive(drive):
+    fsctl_drive(drive, [winioctlcon.FSCTL_LOCK_VOLUME, winioctlcon.FSCTL_DISMOUNT_VOLUME, winioctlcon.IOCTL_STORAGE_MEDIA_REMOVAL, winioctlcon.IOCTL_STORAGE_EJECT_MEDIA])
+
 def ethosSuiteParsePath(output, info):
     lines = output.splitlines()
     if len(lines) < 8:
@@ -211,6 +251,11 @@ def ethosSuiteParsePath(output, info):
     info['screenshots'] = lines[5].split("|")[1].strip()
     info['audio'] = lines[6].split("|")[1].strip()
     info['i18n'] = lines[7].split("|")[1].strip()
+    drive_letters = set()
+    for key, value in info.items():
+        if isinstance(value, str) and len(value) > 1 and value[1] == ':':
+            drive_letters.add(value[0].upper()+":")
+    info['drive_letters'] = list(drive_letters)
     return info
 
 def radioGetInfo(info):
@@ -243,7 +288,7 @@ def main():
 
     args = parser.parse_args()
 
-    if os.getenv('FRSKY_ETHOS_SUITE_BIN') and not args.sim:
+    if not args.sim:
         # call radio_cmd.exe from FRSKY_RADIO_TOOL_SRC
         result = radioGetInfo(radio_info) 
         if result == False:
@@ -266,12 +311,15 @@ def main():
         copy_files(args.src, None, launch = args.sim, destfolders = args.destfolders)
 
     # rewrite this section to use ethos suite!
-    if args.radioDebug:
+    if radio_info["connected"] and args.radioDebug:
         if os.getenv('FRSKY_ETHOS_SUITE_BIN'):
             # Eject radio volume
             try:
                 if not radio_info["debug"]:
                     radio_volume = os.path.dirname(radio_info['scripts'])
+                    if radio_info["drive_letters"]:
+                        for drive in radio_info["drive_letters"]:
+                            unmount_drive(drive)
                     #if os.name == 'nt':  # Windows
                         #subprocess.run(f'powershell -Command "Remove-Item -Path {radio_volume} -Recurse -Force"', shell=True, check=True)
                     #else:  # Unix-based systems
