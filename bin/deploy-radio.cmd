@@ -27,7 +27,7 @@ if "%fileext%"==".lua" (
     
     echo Syncing only .lua files to target...
     mkdir "%dstfolder%\%tgt%"
-    xcopy "%srcfolder%\scripts\%tgt%\*.lua" "%dstfolder%\%tgt%" /h /i /c /k /e /r /y
+    xcopy "%srcfolder%\scripts\%tgt%\*.lua" "%dstfolder%\%tgt%" /h /i /c /k /e /r /y /j
 ) else (
     REM Remove the entire destination folder
     RMDIR "%dstfolder%\%tgt%" /S /Q
@@ -38,18 +38,18 @@ if "%fileext%"==".lua" (
     REM Restore the logs folder
     if exist "%dstfolder%\logs_temp\" (
         mkdir "%dstfolder%\%tgt%\logs"
-        xcopy "%dstfolder%\logs_temp\*" "%dstfolder%\%tgt%\logs" /h /i /c /k /e /r /y
+        xcopy "%dstfolder%\logs_temp\*" "%dstfolder%\%tgt%\logs" /h /i /c /k /e /r /y /j
         RMDIR "%dstfolder%\logs_temp" /S /Q
     )
     
     REM Copy all files to the destination folder
-    xcopy "%srcfolder%\scripts\%tgt%" "%dstfolder%\%tgt%" /h /i /c /k /e /r /y
+    xcopy "%srcfolder%\scripts\%tgt%" "%dstfolder%\%tgt%" /h /i /c /k /e /r /y /j
 )
 
 REM Restore logs if not handled already
 if exist "%dstfolder%\logs_temp\" (
     mkdir "%dstfolder%\%tgt%\logs"
-    xcopy "%dstfolder%\logs_temp\*" "%dstfolder%\%tgt%\logs" /h /i /c /k /e /r /y
+    xcopy "%dstfolder%\logs_temp\*" "%dstfolder%\%tgt%\logs" /h /i /c /k /e /r /y /j
     RMDIR "%dstfolder%\logs_temp" /S /Q
 )
 
