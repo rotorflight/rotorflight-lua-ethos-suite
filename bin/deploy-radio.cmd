@@ -60,4 +60,4 @@ echo Script execution completed.
 
 REM Unmount the drive using DevEject
 echo Unmounting drive %driveLetter%...
-removedrive %driveLetter% -f
+removedrive %driveLetter% -f -e
