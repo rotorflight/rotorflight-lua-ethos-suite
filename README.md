@@ -91,13 +91,16 @@ You need to set the following system variables:
 ```
 FRSKY_SIM_BIN = e.g. %ProgramFiles(x86)%\FrSky\Ethos\X18S\simulator.exe
 FRSKY_SIM_SRC = e.g. %ProgramFiles(x86)%\FrSky\Ethos\X18S\scripts
-FRSKY_REMOTE_SRC = e.g. F:\scripts
+FRSKY_ETHOS_SUITE_BIN = e.g. C:\Program Files\Ethos Suite\Ethos Suite.exe
 ```
 FRSKY_SIM_SRC can also be a comma separated list of paths for deploying to multiple sims simultaneously.
 ### Launch Configurations
 - SIM: Deploy - deploys the current scripts to the sim (also while the sim is running, you may reload the sim with F12)
 - SIM: Deploy & Launch - deploys current scripts to the sim and launches the sim afterwards with debug output in the VS Code terminal
-- Remote: Deploy - to a radio that is connected via USB
+- Remote: Deploy - deploy to a radio that is connected via USB
+- Remote: Deploy (Fast) - does not do a full deploay to the radio, only copies changed files to the radio. Files which were deleted on the PC remain on the radio.
+- Remote & Debug - deploy to a radio that is connected via USB and start a debug session. Output of rfsuite is shown in VS code terminal
+  
 
 
 ## Installation

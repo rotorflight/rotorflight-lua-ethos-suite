@@ -189,7 +189,7 @@ def read_screen(fd, encode):
     return lines
 
 
-def subprocess_conout(*args, nrows=9999, encode=True, **kwargs):
+def subprocess_conout(*args, nrows=9999, encode=True):
     # based on https://stackoverflow.com/a/38749458/15096247
     r"""
     Function to run a subprocess and capture its CONOUT$ console output.
@@ -204,15 +204,19 @@ def subprocess_conout(*args, nrows=9999, encode=True, **kwargs):
         The captured console output.
     """
     ret_line = "Sim exited"
+    preflightChecksDone = False
     with allocate_console() as allocated:
         with console_screen(nrows=nrows) as fd_conout:
-            child = subprocess.Popen(*args, **kwargs)
+            child = subprocess.Popen(*args)
             try:
                 while child.poll() is None:
                     time.sleep(0.2)
                     conout = read_screen(fd_conout, encode)
                     for line in conout:
-                        if "error:" in line.decode("utf-8"):
+                        if "doPreflightChecks" in line.decode("utf-8") and not preflightChecksDone:
+                            preflightChecksDone = True
+
+                        if "error:" in line.decode("utf-8") and not preflightChecksDone:
                             child.kill()
                             ret_line = "Sim closed due to error: \n\033[31m"+line.decode("utf-8")+"\033[0m"
                             break
