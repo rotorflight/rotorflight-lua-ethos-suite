@@ -461,7 +461,7 @@ end
 
     Description:
         This function attempts to load a telemetry Lua script from two possible paths:
-        1. "../rfsuite.sim/sensors/<id>.lua"
+        1. "LOGS:/rfsuite/sensors/<id>.lua"
         2. "lib/sim/sensors/<id>.lua"
         
         It first checks if the file exists at the local path. If not, it checks the fallback path.
@@ -470,9 +470,13 @@ end
 --]]
 function utils.simSensors(id)
 
+    os.mkdir("LOGS:")
+    os.mkdir("LOGS:/rfsuite")
+    os.mkdir("LOGS:/rfsuite/sensors")
+
     if id == nil then return 0 end
 
-    local localPath = "../rfsuite.sim/sensors/" .. id .. ".lua"
+    local localPath = "LOGS:/rfsuite/sensors/" .. id .. ".lua"
     local fallbackPath = "sim/sensors/" .. id .. ".lua"
 
     local filepath

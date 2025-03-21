@@ -27,16 +27,11 @@ local function getModelName()
 end
 
 local function getLogPath()
-
-    -- do some checks to make sure stuff exists
-    local base_path = "./"
-    local logs_path = "logs"
-    local logs_path_telemetry = "logs/telemetry" 
-
-    if not dir_exists(base_path, logs_path) then os.mkdir(logs_path) end
-    if not dir_exists(logs_path_telemetry) then os.mkdir(logs_path_telemetry) end
-
-    return logs_path_telemetry
+    -- make sure folder exists
+    os.mkdir("LOGS:")
+    os.mkdir("LOGS:/rfsuite")
+    os.mkdir("LOGS:/rfsuite/telemetry")
+    return "LOGS:/rfsuite/telemetry/"
 end
 
 local function getLogs(logDir)
