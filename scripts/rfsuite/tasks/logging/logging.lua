@@ -52,10 +52,9 @@ local function generateLogFilename()
 end
 
 local function checkLogdirExists()
-    local logdir = "telemetry"
-    local logs_path = "logs/"
-    if not rfsuite.utils.dir_exists(logdir, "./") then os.mkdir(logdir) end
-    if not rfsuite.utils.dir_exists(logs_path, logdir) then os.mkdir(logs_path .. logdir) end
+        os.mkdir("LOGS:")
+        os.mkdir("LOGS:/rfsuite")
+        os.mkdir("LOGS:/rfsuite/telemetry")
 end
 
 function logging.queueLog(msg)
@@ -65,7 +64,7 @@ end
 function logging.flushLogs(forceFlush)
     local max_lines = forceFlush or not rfsuite.session.telemetryState and 1 or 10
     if #log_queue > 0 and logFileName then
-        local filePath = "logs/telemetry/" .. logFileName
+        local filePath = "LOGS:rfsuite/telemetry/" .. logFileName
         local f = io.open(filePath, 'a')
         for i = 1, math.min(#log_queue, max_lines) do
             io.write(f, table.remove(log_queue, 1) .. "\n")
