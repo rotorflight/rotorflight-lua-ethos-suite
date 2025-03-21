@@ -227,32 +227,6 @@ status.sensorRSSIMax = 0
 status.lastMaxMin = 0
 status.lastBitmap = nil
 status.wakeupSchedulerUI = os.clock()
-status.layoutOptions = {
-    {rfsuite.i18n.get("widgets.status.layoutOptions.TIMER"), 1},
-    {rfsuite.i18n.get("widgets.status.layoutOptions.VOLTAGE"), 2},
-    {rfsuite.i18n.get("widgets.status.layoutOptions.FUEL"), 3},
-    {rfsuite.i18n.get("widgets.status.layoutOptions.CURRENT"), 4},
-    {rfsuite.i18n.get("widgets.status.layoutOptions.MAH"), 17},
-    {rfsuite.i18n.get("widgets.status.layoutOptions.RPM"), 5},
-    {rfsuite.i18n.get("widgets.status.layoutOptions.LQ"), 6},
-    {rfsuite.i18n.get("widgets.status.layoutOptions.TESC"), 7},
-    {rfsuite.i18n.get("widgets.status.layoutOptions.TMCU"), 8},
-    {rfsuite.i18n.get("widgets.status.layoutOptions.IMAGE"), 9},
-    {rfsuite.i18n.get("widgets.status.layoutOptions.GOVERNOR"), 10},
-    {rfsuite.i18n.get("widgets.status.layoutOptions.IMAGE_GOVERNOR"), 11},
-    {rfsuite.i18n.get("widgets.status.layoutOptions.LQ_TIMER"), 12},
-    {rfsuite.i18n.get("widgets.status.layoutOptions.TESC_TMCU"), 13},
-    {rfsuite.i18n.get("widgets.status.layoutOptions.VOLTAGE_FUEL"), 14},
-    {rfsuite.i18n.get("widgets.status.layoutOptions.VOLTAGE_CURRENT"), 15},
-    {rfsuite.i18n.get("widgets.status.layoutOptions.VOLTAGE_MAH"), 16},
-    {rfsuite.i18n.get("widgets.status.layoutOptions.LQ_TIMER_TESC_TMCU"), 20},
-    {rfsuite.i18n.get("widgets.status.layoutOptions.MAX_CURRENT"), 21},
-    {rfsuite.i18n.get("widgets.status.layoutOptions.LQ_GOVERNOR"), 22},
-    {rfsuite.i18n.get("widgets.status.layoutOptions.CRAFT_NAME"), 18},
-    {rfsuite.i18n.get("widgets.status.layoutOptions.CUSTOMSENSOR_1"), 23},
-    {rfsuite.i18n.get("widgets.status.layoutOptions.CUSTOMSENSOR_2"), 24},
-    {rfsuite.i18n.get("widgets.status.layoutOptions.CUSTOMSENSOR_1_2"), 25}
-}
 status.layoutBox1Param = 11 -- IMAGE, GOV
 status.layoutBox2Param = 2 -- VOLTAGE
 status.layoutBox3Param = 3 -- FUEL
@@ -282,6 +256,39 @@ local function buildGovernorMap()
     return map
 end
 local governorMap = buildGovernorMap()
+
+
+local function buildLayoutOptions()
+    return {
+        {rfsuite.i18n.get("widgets.status.layoutOptions.TIMER"), 1},
+        {rfsuite.i18n.get("widgets.status.layoutOptions.VOLTAGE"), 2},
+        {rfsuite.i18n.get("widgets.status.layoutOptions.FUEL"), 3},
+        {rfsuite.i18n.get("widgets.status.layoutOptions.CURRENT"), 4},
+        {rfsuite.i18n.get("widgets.status.layoutOptions.MAH"), 17},
+        {rfsuite.i18n.get("widgets.status.layoutOptions.RPM"), 5},
+        {rfsuite.i18n.get("widgets.status.layoutOptions.LQ"), 6},
+        {rfsuite.i18n.get("widgets.status.layoutOptions.TESC"), 7},
+        {rfsuite.i18n.get("widgets.status.layoutOptions.TMCU"), 8},
+        {rfsuite.i18n.get("widgets.status.layoutOptions.IMAGE"), 9},
+        {rfsuite.i18n.get("widgets.status.layoutOptions.GOVERNOR"), 10},
+        {rfsuite.i18n.get("widgets.status.layoutOptions.IMAGE_GOVERNOR"), 11},
+        {rfsuite.i18n.get("widgets.status.layoutOptions.LQ_TIMER"), 12},
+        {rfsuite.i18n.get("widgets.status.layoutOptions.TESC_TMCU"), 13},
+        {rfsuite.i18n.get("widgets.status.layoutOptions.VOLTAGE_FUEL"), 14},
+        {rfsuite.i18n.get("widgets.status.layoutOptions.VOLTAGE_CURRENT"), 15},
+        {rfsuite.i18n.get("widgets.status.layoutOptions.VOLTAGE_MAH"), 16},
+        {rfsuite.i18n.get("widgets.status.layoutOptions.LQ_TIMER_TESC_TMCU"), 20},
+        {rfsuite.i18n.get("widgets.status.layoutOptions.MAX_CURRENT"), 21},
+        {rfsuite.i18n.get("widgets.status.layoutOptions.LQ_GOVERNOR"), 22},
+        {rfsuite.i18n.get("widgets.status.layoutOptions.CRAFT_NAME"), 18},
+        {rfsuite.i18n.get("widgets.status.layoutOptions.CUSTOMSENSOR_1"), 23},
+        {rfsuite.i18n.get("widgets.status.layoutOptions.CUSTOMSENSOR_2"), 24},
+        {rfsuite.i18n.get("widgets.status.layoutOptions.CUSTOMSENSOR_1_2"), 25}
+    }
+end
+
+status.layoutOptions = buildLayoutOptions()
+
 
 local voltageSOURCE
 local rpmSOURCE
@@ -4007,6 +4014,7 @@ end
 
 function status.i18n()
     governorMap = buildGovernorMap()
+    status.layoutOptions = buildLayoutOptions()
 end    
 
 return status
