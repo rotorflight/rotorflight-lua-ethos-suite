@@ -4005,4 +4005,8 @@ function status.paint(widget)
 
 end
 
+function status.i18n()
+    governorMap = buildGovernorMap()
+end    
+
 return status
