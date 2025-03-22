@@ -94,8 +94,11 @@ rfsuite.app = assert(loadfile("app/app.lua"))(config)
 -- If the system is running in simulation mode, the log print interval is 
 -- set to 0.1 seconds.
 -- logging
+os.mkdir("LOGS:")
+os.mkdir("LOGS:/rfsuite")
+os.mkdir("LOGS:/rfsuite/logs")
 rfsuite.log = assert(loadfile("lib/log.lua"))(config)
-rfsuite.log.config.log_file = "logs/rfsuite_" .. os.date("%Y-%m-%d_%H-%M-%S") .. ".log"
+rfsuite.log.config.log_file = "LOGS:/rfsuite/logs/rfsuite_" .. os.date("%Y-%m-%d_%H-%M-%S") .. ".log"
 rfsuite.log.config.min_print_level  = config.logLevel
 rfsuite.log.config.log_to_file = config.logToFile
 

@@ -304,9 +304,12 @@ end
 
 local function getLogDir()
 
-    local logs_path = "logs/"
+    -- make sure folder exists
+    os.mkdir("LOGS:")
+    os.mkdir("LOGS:/rfsuite")
+    os.mkdir("LOGS:/rfsuite/telemetry")
 
-    return logs_path .. "telemetry/"
+    return "LOGS:/rfsuite/telemetry/"
 
 end
 
