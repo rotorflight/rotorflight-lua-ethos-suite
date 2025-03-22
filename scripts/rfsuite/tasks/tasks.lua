@@ -19,20 +19,14 @@
 
 ]] --
 
--- this stops it loading if we are not on the correct ethos version
--- and is needed by main.lua to prevent errors
 if not rfsuite.utils.ethosVersionAtLeast() then
     return
 end
 
---
--- background processing of system tasks
---
 local arg = {...}
 local config = arg[1]
 local currentTelemetrySensor
 
--- declare vars
 local tasks = {}
 tasks.heartbeat = nil
 tasks.init = false
@@ -42,7 +36,6 @@ local tasksList = {}
 
 rfsuite.session.telemetryTypeChanged = true
 
-
 local ethosVersionGood = nil  
 local telemetryCheckScheduler = os.clock()
 local lastTelemetrySensorName = nil
@@ -50,34 +43,10 @@ local lastTelemetrySensorName = nil
 local sportSensor 
 local elrsSensor
 
--- Cache telemetry source
 local tlm = system.getSource({category = CATEGORY_SYSTEM_EVENT, member = TELEMETRY_ACTIVE})
 
--- findModules on task init to ensure we are precached  
 if rfsuite.app.moduleList == nil then rfsuite.app.moduleList = rfsuite.utils.findModules() end
 
---[[
-    tasks._callbacks: Table to store callback functions with their scheduled times and repeat intervals.
-
-    get_time: Function to get the current time using os.clock().
-
-    tasks.callbackNow(callback):
-        - Registers a callback function to be executed immediately.
-        - Parameters:
-            - callback (function): The function to be executed.
-
-    tasks.callbackInSeconds(seconds, callback):
-        - Registers a callback function to be executed after a specified number of seconds.
-        - Parameters:
-            - seconds (number): The delay in seconds before the callback is executed.
-            - callback (function): The function to be executed.
-
-    tasks.callbackEvery(seconds, callback):
-        - Registers a callback function to be executed repeatedly at specified intervals.
-        - Parameters:
-            - seconds (number): The interval in seconds between each execution of the callback.
-            - callback (function): The function to be executed.
-]]
 tasks._callbacks = {}
 
 local function get_time()
@@ -103,7 +72,6 @@ function tasks.callback()
         local entry = tasks._callbacks[i]
         if not entry.time or entry.time <= now then
             entry.func()
-
             if entry.repeat_interval then
                 entry.time = now + entry.repeat_interval
                 i = i + 1
@@ -128,134 +96,128 @@ function tasks.clearAllCallbacks()
     tasks._callbacks = {}
 end
 
--- findTasks
---[[
-    Function: tasks.findTasks
-    Description: This function scans the "tasks" directory for task configurations and scripts. 
-                 It loads and validates each task's configuration, then adds valid tasks to the tasksList.
-                 It also loads and initializes the corresponding task scripts.
-    Usage: Call tasks.findTasks() to initialize and load all tasks from the "tasks" directory.
-]]
+-- Modified findTasks to return metadata for caching
 function tasks.findTasks()
-
     local taskdir = "tasks"
     local tasks_path = "tasks/"
+    local taskMetadata = {}
 
     for _, v in pairs(system.listFiles(tasks_path)) do
-       
-        if v ~= ".." and v ~= "tasks.lua" then  -- exlude ourself
+        if v ~= ".." and v ~= "tasks.lua" then
             local init_path = tasks_path .. v .. '/init.lua'
+            local func, err = loadfile(init_path)
 
-                local func, err = loadfile(init_path)
+            if err then
+                rfsuite.utils.log("Error loading " .. init_path .. ": " .. err, "info")
+            end
 
-                if err then
-                    rfsuite.utils.log("Error loading " .. init_path .. ": " .. err,"info")
-                end
+            if func then
+                local tconfig = func()
+                if type(tconfig) ~= "table" or not tconfig.interval or not tconfig.script then
+                    rfsuite.utils.log("Invalid configuration in " .. init_path, "debug")
+                else
+                    local task = {
+                        name = v,
+                        interval = tconfig.interval,
+                        script = tconfig.script,
+                        msp = tconfig.msp,
+                        always_run = tconfig.always_run or false,
+                        last_run = os.clock()
+                    }
+                    table.insert(tasksList, task)
 
-                if func then
-                    local tconfig = func()
-                    if type(tconfig) ~= "table" or not tconfig.interval or not tconfig.script then
-                        rfsuite.utils.log("Invalid configuration in " .. init_path,"debug")
-                    else
-                        local task = {
-                            name = v,
-                            interval = tconfig.interval,
-                            script = tconfig.script,
-                            msp = tconfig.msp,
-                            always_run = tconfig.always_run or false, -- Default is false
-                            last_run = os.clock()
-                        }
-                        table.insert(tasksList, task)
+                    taskMetadata[v] = {
+                        interval = tconfig.interval,
+                        script = tconfig.script,
+                        msp = tconfig.msp,
+                        always_run = tconfig.always_run or false
+                    }
 
-                        local script = tasks_path .. v .. '/' .. tconfig.script
-                        local fs = io.open(script, "r")
-                        if fs then
-                            io.close(fs)
-                            tasks[v] = assert(loadfile(script))(config)
-                        end
+                    local script = tasks_path .. v .. '/' .. tconfig.script
+                    local fs = io.open(script, "r")
+                    if fs then
+                        io.close(fs)
+                        tasks[v] = assert(loadfile(script))(config)
                     end
                 end
+            end
         end    
     end
+
+    return taskMetadata
 end
 
-
---[[
-    Checks if the tasks script is active based on the heartbeat and MSP status.
-
-    Returns:
-        boolean: True if the tasks script is active, otherwise false.
-]]
 function tasks.active()
-
     if tasks.heartbeat == nil then return false end
-
     if (os.clock() - tasks.heartbeat) >= 2 then
         tasks.wasOn = true
     else
         tasks.wasOn = false
     end
-
-    -- if msp is busy.. we are 100% ok
     if rfsuite.app.triggers.mspBusy == true then return true end
-
-    -- if we have not run within 2 seconds.. notify that tasks script is down
     if (os.clock() - tasks.heartbeat) <= 2 then return true end
-
     return false
 end
 
---[[
-    Function: tasks.wakeup
-
-    Short:
-    Handles the periodic wakeup tasks for the rotorflight suite.
-
-    Use:
-    This function is responsible for processing logs, checking the Ethos version, initializing tasks, updating the heartbeat, 
-    managing Telemetry sensor checks, and dynamically loading tasks based on settings.
-
-    Details:
-    - Processes the log using `rfsuite.log.process()`.
-    - Checks if the Ethos version is at least the required version using `rfsuite.utils.ethosVersionAtLeast()`.
-    - Initializes tasks if not already initialized by calling `tasks.findTasks()`.
-    - Updates the heartbeat timestamp using `os.clock()`.
-    - Manages Telemetry sensor checks and updates the current Telemetry sensor and its type.
-    - Runs tasks dynamically based on their defined intervals and conditions.
---]]
 function tasks.wakeup()
-    -- Check version only once after startup
     if ethosVersionGood == nil then
         ethosVersionGood = rfsuite.utils.ethosVersionAtLeast()
     end
 
-    -- Stop execution if Ethos version is incorrect
     if not ethosVersionGood then
         return
     end
 
-    -- Process the log
     rfsuite.log.process()    
-
-    -- Run the callbacks
     tasks.callback()
 
-    -- Initialize tasks if not already done
     if tasks.init == false then
-        tasks.findTasks()
+        local cacheFile = "tasks.cache"
+        local cachePath = "cache/" .. cacheFile
+        local taskMetadata
+
+        if io.open(cachePath, "r") then
+            local ok, cached = pcall(dofile, cachePath)
+            if ok and type(cached) == "table" then
+                taskMetadata = cached
+                rfsuite.utils.log("[cache] Loaded task metadata from cache","info")
+            else
+                rfsuite.utils.log("[cache] Failed to load tasks cache","info")
+            end
+        end
+
+        if not taskMetadata then
+            taskMetadata = tasks.findTasks()
+            rfsuite.utils.createCacheFile(taskMetadata, cacheFile)
+            rfsuite.utils.log("[cache] Created new tasks cache file","info")
+        else
+            for name, meta in pairs(taskMetadata) do
+                local script = "tasks/" .. name .. "/" .. meta.script
+                local module = assert(loadfile(script))(config)
+
+                tasks[name] = module
+                table.insert(tasksList, {
+                    name = name,
+                    interval = meta.interval,
+                    script = meta.script,
+                    msp = meta.msp,
+                    always_run = meta.always_run,
+                    last_run = os.clock()
+                })
+            end
+        end
+
         tasks.init = true
         return
     end
 
     tasks.heartbeat = os.clock()
 
-    -- Run telemetry check every second
     local now = os.clock()
     if now - (telemetryCheckScheduler or 0) >= 1 then
         telemetryState = tlm and tlm:state() or false
 
         if not telemetryState then
-            -- **Reset telemetry environment variables**
             rfsuite.session.telemetryState = false
             rfsuite.session.telemetryType = nil
             rfsuite.session.telemetryTypeChanged = false
@@ -265,7 +227,6 @@ function tasks.wakeup()
             elrsSensor = nil 
             telemetryCheckScheduler = now    
         else
-            -- Determine telemetry sensor
             if not sportSensor then sportSensor = system.getSource({appId = 0xF101}) end
             if not elrsSensor then elrsSensor = system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1}) end
 
@@ -273,7 +234,6 @@ function tasks.wakeup()
             rfsuite.session.telemetrySensor = currentTelemetrySensor
 
             if currentTelemetrySensor == nil then
-                -- **Reset telemetry environment variables again**
                 rfsuite.session.telemetryState = false
                 rfsuite.session.telemetryType = nil
                 rfsuite.session.telemetryTypeChanged = false
@@ -283,7 +243,6 @@ function tasks.wakeup()
                 elrsSensor = nil 
                 telemetryCheckScheduler = now
             else
-                -- **Telemetry is valid, store session variables**
                 rfsuite.session.telemetryState = true
                 rfsuite.session.telemetryType = sportSensor and "sport" or elrsSensor and "crsf" or nil
                 rfsuite.session.telemetryTypeChanged = currentTelemetrySensor and (lastTelemetrySensorName ~= currentTelemetrySensor:name()) or false
@@ -293,12 +252,9 @@ function tasks.wakeup()
         end
     end
 
-    -- **Modified Task Execution Loop**
-    local now = os.clock()
     for _, task in ipairs(tasksList) do
         if now - task.last_run >= task.interval then
             if tasks[task.name].wakeup then
-                -- **Allow always_run tasks to execute even if telemetryState is false**
                 if task.always_run or telemetryState then
                     if task.msp == true then
                         tasks[task.name].wakeup()
@@ -314,13 +270,6 @@ function tasks.wakeup()
     end
 end
 
---[[
-    Handles events for the tasks module by delegating to specific event handlers.
-
-    @param widget The widget that triggered the event.
-    @param category The category of the event.
-    @param value The value associated with the event.
-]]
 function tasks.event(widget, category, value)
     -- currently does nothing.
 end
