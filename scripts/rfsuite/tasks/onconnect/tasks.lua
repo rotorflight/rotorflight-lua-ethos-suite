@@ -1,25 +1,17 @@
 --[[
  * Copyright (C) Rotorflight Project
  * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
- *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
  * published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * Note.  Some icons have been sourced from https://www.flaticon.com/
- *
-]] --
+--]]
+
 local tasks = {}
 local tasksList = {}
 local tasksLoaded = false
 local completionNotified = false
 
-local TASK_TIMEOUT_SECONDS = 10  -- Customize this if needed
+local TASK_TIMEOUT_SECONDS = 10
 
 function tasks.findTasks()
     if tasksLoaded then
@@ -27,6 +19,7 @@ function tasks.findTasks()
     end
 
     local basePath = "tasks/onconnect/tasks/"
+    local taskMetadata = {}
 
     for _, file in pairs(system.listFiles(basePath)) do
         if file ~= ".." and file:match("%.lua$") then
@@ -47,6 +40,7 @@ function tasks.findTasks()
                         resetPending = false,
                         startTime = nil
                     }
+                    taskMetadata[taskName] = file
                 else
                     rfsuite.utils.log("Invalid task file: " .. file .. " (must return table with wakeup()).", "info")
                 end
@@ -55,6 +49,7 @@ function tasks.findTasks()
     end
 
     tasksLoaded = true
+    return taskMetadata
 end
 
 function tasks.resetAllTasks()
@@ -67,7 +62,6 @@ function tasks.resetAllTasks()
         task.resetPending = false
         task.startTime = nil
     end
-
     completionNotified = false
 end
 
@@ -79,18 +73,52 @@ function tasks.wakeup()
         rfsuite.utils.log("Telemetry type changed, resetting all tasks and reconnecting.", "info")
         rfsuite.session.telemetryTypeChanged = false
         tasks.resetAllTasks()
-        tasksLoaded = false -- force re-scan of tasks on reconnect
+        tasksLoaded = false
         return
     end
 
     if not telemetryActive then
         tasks.resetAllTasks()
-        tasksLoaded = false -- tasks will reload on next valid telemetry
+        tasksLoaded = false
         return
     end
 
     if not tasksLoaded then
-        tasks.findTasks()
+        local cacheFile = "onconnect.cache"
+        local cachePath = "cache/" .. cacheFile
+        local taskMetadata
+
+        if io.open(cachePath, "r") then
+            local ok, cached = pcall(dofile, cachePath)
+            if ok and type(cached) == "table" then
+                taskMetadata = cached
+                rfsuite.utils.log("[cache] Loaded onconnect task metadata from cache","info")
+            else
+                rfsuite.utils.log("[cache] Failed to load onconnect cache","info")
+            end
+        end
+
+        if not taskMetadata then
+            taskMetadata = tasks.findTasks()
+            rfsuite.utils.createCacheFile(taskMetadata, cacheFile)
+            rfsuite.utils.log("[cache] Created onconnect cache file","info")
+        else
+            local basePath = "tasks/onconnect/tasks/"
+            for taskName, file in pairs(taskMetadata) do
+                local fullPath = basePath .. file
+                local chunk = assert(loadfile(fullPath))
+                local taskModule = assert(chunk())
+                tasksList[taskName] = {
+                    module = taskModule,
+                    initialized = false,
+                    complete = false,
+                    resetPending = false,
+                    startTime = nil
+                }
+            end
+            tasksLoaded = true
+        end
+
         completionNotified = false
     end
 
@@ -109,7 +137,7 @@ function tasks.wakeup()
 
         if not task.initialized then
             task.initialized = true
-            task.startTime = now  -- Start timing when task first runs
+            task.startTime = now
         end
 
         if not task.complete then
@@ -119,26 +147,20 @@ function tasks.wakeup()
             if task.module.isComplete and task.module.isComplete() then
                 rfsuite.utils.log("Task '" .. name .. "' is complete.", "debug")
                 task.complete = true
-                task.startTime = nil  -- Clear timer on successful completion
+                task.startTime = nil
             else
                 if not task.module.isComplete then
                     rfsuite.utils.log("Task '" .. name .. "' does not implement isComplete(). This may block task completion detection.", "info")
                 elseif task.startTime and (now - task.startTime) > TASK_TIMEOUT_SECONDS then
                     rfsuite.utils.log("Task '" .. name .. "' has not completed within " .. TASK_TIMEOUT_SECONDS .. " seconds.", "info")
-                    task.startTime = nil  -- Only log once per stuck task
+                    task.startTime = nil
                 end
             end
         end
     end
 
-    -- Log task completion state every time
-    --rfsuite.utils.log("Task completion state:", "info")
     local allComplete = true
     for name, task in pairs(tasksList) do
-        local state = task.complete and "complete" or "incomplete"
-        --if state == "incomplete" then
-        --    rfsuite.utils.log(" - " .. name .. ": " .. state, "info")
-        --end
         if not task.complete then
             allComplete = false
         end
