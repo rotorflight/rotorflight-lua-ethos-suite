@@ -247,6 +247,7 @@ en = {
         tbl_ccw = "CCW",
         tbl_automatic = "Automatic",
         tbl_alwayson = "Always On",
+        tbl_disabled = "Disabled",
     },
     ESC_PARAMETERS_HW5 = {
         tbl_fixedwing = "Fixed Wing", 
