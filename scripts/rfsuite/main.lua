@@ -284,7 +284,27 @@ local function init()
     })
 
     -- widgets are loaded dynamically
-    local widgetList = rfsuite.utils.findWidgets()
+    local cacheFile = "widgets.cache"
+    local cachePath = "cache/" .. cacheFile
+    local widgetList
+    
+    -- Try to load from cache if it exists
+    if io.open(cachePath, "r") then
+        local ok, cached = pcall(dofile, cachePath)
+        if ok and type(cached) == "table" then
+            widgetList = cached
+            rfsuite.utils.log("[cache] Loaded widget list from cache","info")
+        else
+            rfsuite.utils.log("[cache] Failed to load cache, rebuilding...","info")
+        end
+    end
+    
+    -- If no valid cache, build and write new one
+    if not widgetList then
+        widgetList = rfsuite.utils.findWidgets()
+        rfsuite.utils.createCacheFile(widgetList, cacheFile, true)
+        rfsuite.utils.log("[cache] Created new widgets cache file","info")
+    end
 
     -- Iterates over the widgetList table and dynamically loads and registers widget scripts.
     -- For each widget in the list:
@@ -315,35 +335,35 @@ local function init()
     --   - title: Title of the widget.
     rfsuite.widgets = {}
 
-    for i, v in ipairs(widgetList) do
-        if v.script then
-            -- Load the script dynamically
-            local scriptModule = assert(loadfile("widgets/" .. v.folder .. "/" .. v.script))(config)
-    
-            -- Use the script filename (without .lua) as the key, or v.varname if provided
-            local varname = v.varname or v.script:gsub("%.lua$", "")
-    
-            -- Store the module inside rfsuite.widgets
-            rfsuite.widgets[varname] = scriptModule
-    
-            -- Register the widget with the system
-            system.registerWidget({
-                name = v.name,
-                key = v.key,
-                event = scriptModule.event,
-                create = scriptModule.create,
-                paint = scriptModule.paint,
-                wakeup = scriptModule.wakeup,
-                close = scriptModule.close,
-                configure = scriptModule.configure,
-                read = scriptModule.read,
-                write = scriptModule.write,
-                persistent = scriptModule.persistent or false,
-                menu = scriptModule.menu,
-                title = scriptModule.title
-            })
+        for i, v in ipairs(widgetList) do
+            if v.script then
+                -- Load the script dynamically
+                local scriptModule = assert(loadfile("widgets/" .. v.folder .. "/" .. v.script))(config)
+        
+                -- Use the script filename (without .lua) as the key, or v.varname if provided
+                local varname = v.varname or v.script:gsub("%.lua$", "")
+        
+                -- Store the module inside rfsuite.widgets
+                rfsuite.widgets[varname] = scriptModule
+        
+                -- Register the widget with the system
+                system.registerWidget({
+                    name = v.name,
+                    key = v.key,
+                    event = scriptModule.event,
+                    create = scriptModule.create,
+                    paint = scriptModule.paint,
+                    wakeup = scriptModule.wakeup,
+                    close = scriptModule.close,
+                    configure = scriptModule.configure,
+                    read = scriptModule.read,
+                    write = scriptModule.write,
+                    persistent = scriptModule.persistent or false,
+                    menu = scriptModule.menu,
+                    title = scriptModule.title
+                })
+            end
         end
-    end
     
 end    
 

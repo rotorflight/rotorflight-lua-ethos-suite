@@ -41,6 +41,7 @@ local log_queue = {}
 local logDirChecked = false
 local cachedSensors = {} -- cache for sensor sources
 local armSource = nil    -- separate cache for armflags sensor
+local govSource = nil    -- separate cache for governor sensor
 
 local function generateLogFilename()
     local craftName = rfsuite.utils.sanitize_filename(rfsuite.session.craftName)
@@ -61,9 +62,10 @@ function logging.queueLog(msg)
     table.insert(log_queue, msg)
 end
 
-function logging.flushLogs(forceFlush)
-    local max_lines = forceFlush or not rfsuite.session.telemetryState and 1 or 10
+function logging.writeLogs(forcewrite)
+    local max_lines = forcewrite and #log_queue or 10
     if #log_queue > 0 and logFileName then
+        rfsuite.utils.log("Write " .. #log_queue .. " lines to " .. logFileName,"info")
         local filePath = "LOGS:rfsuite/telemetry/" .. logFileName
         local f = io.open(filePath, 'a')
         for i = 1, math.min(#log_queue, max_lines) do
@@ -72,6 +74,7 @@ function logging.flushLogs(forceFlush)
         io.close(f)
     end
 end
+
 
 function logging.getLogHeader()
     local names = {}
@@ -99,6 +102,7 @@ local function cacheSensorSources()
         cachedSensors[sensor.name] = rfsuite.tasks.telemetry.getSensorSource(sensor.name)
     end
     armSource = rfsuite.tasks.telemetry.getSensorSource("armflags")
+    govSource = rfsuite.tasks.telemetry.getSensorSource("governor")
 end
 
 -- Clear all cached sensors
@@ -106,6 +110,16 @@ local function clearSensorCache()
     cachedSensors = {}
     armSource = nil
 end
+
+function logging.flushLogs()
+    if logFileName or logHeader then
+        rfsuite.utils.log("Flushing logs - ".. logFileName,"debug")
+        logFileName, logHeader = nil, nil
+        logging.writeLogs(true)
+        logdir = nil
+    end    
+end
+
 
 function logging.wakeup()
     if not rfsuite.preferences.flightLog then return end
@@ -116,9 +130,7 @@ function logging.wakeup()
     end
 
     if not rfsuite.session.telemetryState then
-        logFileName, logHeader = nil, nil
-        logging.flushLogs(true)
-        logdir = nil
+        logging.flushLogs()
         clearSensorCache()
         return
     end
@@ -129,27 +141,65 @@ function logging.wakeup()
     end
 
     if armSource then
-        local isArmed = armSource:value()
 
-        if isArmed == 1 or isArmed == 3 then
-            if not logFileName then logFileName = generateLogFilename() end
-            if not logHeader then
-                logHeader = logging.getLogHeader()
-                logging.queueLog(logHeader)
+        if armSource and not govSource then
+
+            local isArmed = armSource:value()
+
+            if isArmed == 1 or isArmed == 3 then
+                if not logFileName then 
+                    logFileName = generateLogFilename() 
+                    rfsuite.utils.log("Logging triggered by arm state - " .. logFileName,"debug")
+                end
+                if not logHeader then
+                    logHeader = logging.getLogHeader()
+                    logging.queueLog(logHeader)
+                end
+
+                if os.clock() - logRateLimit >= logInterval then
+                    logRateLimit = os.clock()
+                    logging.queueLog(logging.getLogLine())
+                
+                    -- only write if queue has built up a bit
+                    if #log_queue >= 5 then
+                        logging.writeLogs()
+                    end
+                end
+
+            else
+                logging.flushLogs()    
             end
+        elseif armSource and govSource then
 
-            if os.clock() - logRateLimit >= logInterval then
-                logRateLimit = os.clock()
-                logging.queueLog(logging.getLogLine())
+            local isArmed = armSource:value()
+            local governor = govSource:value()
+
+            if isArmed == 1 or isArmed == 3 and governor > 0 and governor < 100 then
+                if not logFileName then 
+                    logFileName = generateLogFilename() 
+                    rfsuite.utils.log("Logging triggered by governor state - " .. logFileName,"debug")
+                end
+                if not logHeader then
+                    logHeader = logging.getLogHeader()
+                    logging.queueLog(logHeader)
+                end
+
+                if os.clock() - logRateLimit >= logInterval then
+                    logRateLimit = os.clock()
+                    logging.queueLog(logging.getLogLine())
+                
+                    -- only write if queue has built up a bit
+                    if #log_queue >= 5 then
+                        logging.writeLogs()
+                    end
+                end
+            else    
+                logging.flushLogs()
             end
+        end   
 
-            logging.flushLogs()
+        
 
-        else
-            logFileName, logHeader = nil, nil
-            logging.flushLogs(true)
-            logdir = nil
-        end
     end
 end
 
