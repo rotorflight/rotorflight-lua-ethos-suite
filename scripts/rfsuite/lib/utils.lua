@@ -44,7 +44,7 @@ function utils.logRotorFlightBanner()
         "  the GNU General Public License version 3.0",
         "  https://www.gnu.org/licenses/gpl-3.0.en.html",
         "                                              ",
-        " For more information, visit rotorflight.com",
+        " For more information, visit rotorflight.org",
         "==============================================="
     }
 
