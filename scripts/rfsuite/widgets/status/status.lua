@@ -2911,7 +2911,7 @@ end
 
 -- MAIN WAKEUP FUNCTION. THIS SIMPLY FARMS OUT AT DIFFERING SCHEDULES TO SUB FUNCTIONS
 function status.wakeup(widget)
-    local schedulerUI = lcd.isVisible() and 0.25 or 2 -- Set interval based on visibility
+    local schedulerUI = lcd.isVisible() and 0.5 or 2 -- Set interval based on visibility
 
     -- Run UI at reduced interval to minimize CPU load
     local now = os.clock()
