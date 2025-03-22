@@ -143,14 +143,14 @@ function tasks.findTasks()
 
     for _, v in pairs(system.listFiles(tasks_path)) do
        
-        if v ~= ".." then
+        if v ~= ".." and v ~= "tasks.lua" then  -- exlude ourself
             local init_path = tasks_path .. v .. '/init.lua'
-            local f = io.open(init_path, "r")
-
-            if f then
-                io.close(f)
 
                 local func, err = loadfile(init_path)
+
+                if err then
+                    rfsuite.utils.log("Error loading " .. init_path .. ": " .. err,"info")
+                end
 
                 if func then
                     local tconfig = func()
@@ -175,8 +175,6 @@ function tasks.findTasks()
                         end
                     end
                 end
-            end
-
         end    
     end
 end
