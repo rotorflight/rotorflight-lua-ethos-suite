@@ -23,6 +23,49 @@ local utils = {}
 local arg = {...}
 local config = arg[1]
 
+function utils.createCacheFile(tbl, path, options)
+
+    os.mkdir("cache")
+
+    path = "cache/" .. path
+
+    local f, err = io.open(path, "w")
+    if not f then
+        rfsuite.utils.log("Error creating cache file: " .. err, "info")
+        return
+    end
+
+    local function serialize(value, indent)
+        indent = indent or ""
+        local t = type(value)
+
+        if t == "string" then
+            return string.format("%q", value)
+        elseif t == "number" or t == "boolean" then
+            return tostring(value)
+        elseif t == "table" then
+            local result = "{\n"
+            for k, v in pairs(value) do
+                local keyStr
+                if type(k) == "string" and k:match("^%a[%w_]*$") then
+                    keyStr = k .. " = "
+                else
+                    keyStr = "[" .. serialize(k) .. "] = "
+                end
+                result = result .. indent .. "  " .. keyStr .. serialize(v, indent .. "  ") .. ",\n"
+            end
+            result = result .. indent .. "}"
+            return result
+        else
+            error("Cannot serialize type: " .. t)
+        end
+    end
+
+    f:write("return ", serialize(tbl), "\n")
+    f:close()
+end
+
+
 
 function utils.logRotorFlightBanner()
     local version = rfsuite.config.Version or "Unknown Version"
