@@ -35,7 +35,7 @@ config.simulatorApiVersionResponse = {0, 12, 8}                     -- version o
 config.baseDir = "rfsuite"                                          -- base directory for the suite. This is only used by msp api to ensure correct path
 config.logLevel= "info"                                             -- off | info | debug [default = info]
 config.logToFile = false                                            -- log to file [default = false] (log file is in /scripts/rfsuite/logs)
-config.logMSP = true                                               -- log msp messages [default =  false]
+config.logMSP = false                                               -- log msp messages [default =  false]
 config.logMemoryUsage = false                                       -- log memory usage [default = false]
 config.developerMode = false                                        -- show developer tools on main menu [default = false]
 
