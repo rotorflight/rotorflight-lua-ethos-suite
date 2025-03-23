@@ -247,6 +247,7 @@ local es = {
         tbl_ccw = "AntiH.",
         tbl_automatic = "Automatico",
         tbl_alwayson = "Siempre Encendido",
+        tbl_disabled = "Deshabilitado",
     },
     ESC_PARAMETERS_HW5 = {
         tbl_fixedwing = "Ala Fija", 

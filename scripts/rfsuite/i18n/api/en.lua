@@ -15,7 +15,7 @@
  * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
 
-en = {
+local en = {
     ACC_TRIM = {
         pitch = "Use to trim if the heli drifts in one of the stabilized modes (angle, horizon, etc.).",
         roll = "Use to trim if the heli drifts in one of the stabilized modes (angle, horizon, etc.).",
