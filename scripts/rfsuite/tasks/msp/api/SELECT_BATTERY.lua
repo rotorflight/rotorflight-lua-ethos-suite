@@ -17,7 +17,7 @@
 -- Constants for MSP Commands
 local API_NAME = "SELECT_BATTERY" -- API name (must be same as filename)
 local MSP_API_CMD_READ = nil -- Command identifier 
-local MSP_API_CMD_WRITE = 256 -- Command identifier 
+local MSP_API_CMD_WRITE = 244 -- Command identifier 
 local MSP_REBUILD_ON_WRITE = true -- Rebuild the payload on write; keep true to ensure proper defaults after changing rates type
 
 -- Define the MSP response data structures

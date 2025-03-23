@@ -1,4 +1,5 @@
 local idx = rfsuite.app.batteryIndex
+local setActiveProfile = nil
 
 local mspapi = {
     api = {
@@ -26,10 +27,14 @@ local function onNavMenu(self)
 end
 
 
+
 return {
     mspapi = mspapi,
     eepromWrite = true,
     reboot = false,
     API = {},
+    wakeup = wakeup,
+    navButtons = getNavButtons,
+    onToolMenu = onToolMenu,
     onNavMenu = onNavMenu,
 }

@@ -22,8 +22,8 @@ local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "batteryCapacityOld",              type = "U16", apiVersion = 12.06, simResponse = {138, 2}, min = 0,   max = 20000, step = 50, unit = "mAh", default = 0},
-    {field = "batteryCellCountOld",             type = "U8",  apiVersion = 12.06, simResponse = {3},      min = 0,   max = 24,    unit = nil,   default = 6},
+    {field = "batteryCapacity",              type = "U16", apiVersion = 12.06, simResponse = {138, 2}, min = 0,   max = 20000, step = 50, unit = "mAh", default = 0},
+    {field = "batteryCellCount",             type = "U8",  apiVersion = 12.06, simResponse = {3},      min = 0,   max = 24,    unit = nil,   default = 6},
     {field = "voltageMeterSource",           type = "U8",  apiVersion = 12.06, simResponse = {1}},
     {field = "currentMeterSource",           type = "U8",  apiVersion = 12.06, simResponse = {1}},
     {field = "vbatmincellvoltage",           type = "U16", apiVersion = 12.06, simResponse = {74, 1},  min = 0,   decimals = 2, scale = 100, max = 500, unit = "V",   default = 3.3},
@@ -47,9 +47,6 @@ local MSP_API_STRUCTURE_READ_DATA = {
     -- battery 5
     {field = "batteryCapacity_5",              type = "U16", apiVersion = 12.06, simResponse = {138, 2}, min = 0,   max = 20000, step = 50, unit = "mAh", default = 0},
     {field = "batteryCellCount_5",             type = "U8",  apiVersion = 12.06, simResponse = {3},      min = 0,   max = 24,    unit = nil,   default = 6},
-    -- battery 6
-    {field = "batteryCapacity_6",              type = "U16", apiVersion = 12.06, simResponse = {138, 2}, min = 0,   max = 20000, step = 50, unit = "mAh", default = 0},
-    {field = "batteryCellCount_6",             type = "U8",  apiVersion = 12.06, simResponse = {3},      min = 0,   max = 24,    unit = nil,   default = 6},
 }
 
 -- Process structure in one pass

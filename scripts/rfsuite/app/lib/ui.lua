@@ -1033,6 +1033,9 @@ function ui.navigationButtons(x, y, w, h)
         navButtons = {menu = true, save = true, reload = true, help = true}
     else
         navButtons = rfsuite.app.Page.navButtons
+        if type(navButtons) == "function" then
+            navButtons = navButtons()
+        end
     end
 
     -- calc all offsets

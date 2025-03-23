@@ -95,8 +95,11 @@ en = {
             warn_cell_voltage = "Warn Cell Voltage",
             min_cell_voltage =  "Min Cell Voltage",
             battery_capacity =  "Battery Capacity",
-            cell_count =        "Cell Count",
-            help_p1 =           "The battery settings are used to configure the flight controller to monitor the battery voltage and provide warnings when the voltage drops below a certain level.",   
+            battery_profile  =  "Battery",
+            capacity =          "Capacity",
+            cells =             "Cells",
+            help_p1 =           "The battery settings are used to configure the flight controller to monitor the battery voltage and provide warnings when the voltage drops below a certain level.",
+
         },
         copyprofiles = {
             name =              "Copy Profiles",

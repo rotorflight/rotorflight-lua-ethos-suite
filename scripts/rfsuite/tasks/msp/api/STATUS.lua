@@ -41,6 +41,8 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "motor_count",                        type = "U8",  apiVersion = 12.06, simResponse = {1}},
     {field = "servo_count",                        type = "U8",  apiVersion = 12.06, simResponse = {4}},
     {field = "gyro_detection_flags",               type = "U8",  apiVersion = 12.06, simResponse = {1}},
+    {field = "battery_profile",                    type = "U8",  apiVersion = 12.08, simResponse = {2}, mandatory = false},
+    {field = "battery_profile_count",              type = "U8",  apiVersion = 12.08, simResponse = {6}, mandatory = false},
 }
 
 -- Process structure in one pass
