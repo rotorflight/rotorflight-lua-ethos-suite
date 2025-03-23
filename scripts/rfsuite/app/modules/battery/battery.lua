@@ -93,8 +93,10 @@ local function onToolMenu(self)
         }
     }
 
+    local LCD_W, LCD_H = rfsuite.utils.getWindowSize()
+
     form.openDialog({
-        width = nil,
+        width = LCD_W * 0.8,
         title = "Battery Profile",
         message = "Please set the active profile",
         buttons = buttons,
