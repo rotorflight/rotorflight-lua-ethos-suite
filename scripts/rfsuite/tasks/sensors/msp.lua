@@ -41,22 +41,13 @@ local msp_sensors = {
         battery_profile = {
             sensorname = "Battery Profile",
             sessionname = nil,
+            appId = 0x11000,
             interval = 5,
             unit = UNIT_RAW,
             minimum = 0,
             maximum = 100,
         },
     },
-    GOVERNOR_CONFIG = {
-        gov_mode = {
-            sensorname = "Governor Config",
-            sessionname = "governorMode",
-            interval = 5,
-            unit = UNIT_RAW,
-            minimum = 0,
-            maximum = 3,
-        }    
-    }
 }
 
 msp.sensors = msp_sensors
@@ -125,18 +116,6 @@ local function updateSessionField(meta, value)
 end
 
 --[[
-    Generates a unique application ID based on the provided API name and field key.
-    
-    @param api_name (string): The name of the API.
-    @param field_key (string): The key of the field.
-    
-    @return (number): A unique application ID generated from the API name and field key.
-]]
-local function generateAppId(api_name, field_key)
-    return math.abs((string.byte(api_name, 1) or 0) * 256 + (string.byte(field_key, 1) or 0)) + 0x5000
-end
-
---[[
     Function: msp.wakeup
 
     Description:
@@ -193,8 +172,10 @@ function msp.wakeup()
 
                             -- Create or update telemetry sensor if defined
                             if meta.sensorname then
-                                local appId = generateAppId(api_name, field_key)
-                                createOrUpdateSensor(appId, meta, value)
+                                local appId = meta.appId
+                                if appId then
+                                    createOrUpdateSensor(appId, meta, value)
+                                end
                             end
 
                             -- Log what we updated
