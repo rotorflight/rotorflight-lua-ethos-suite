@@ -24,8 +24,10 @@
  
 local environment = system.getVersion()
 
-local lastPrintTime = 0  -- Store the last time the debug was printed
-local printInterval = 2   -- Interval in seconds
+local lastPrintTime = 0  -- Store the last time the debug was rfsuite.utils.loged
+local printInterval = 5   -- Interval in seconds
+
+local apiValue = nil
 
 local function create()
     -- this is where we create the widget
@@ -48,31 +50,49 @@ local function wakeup(widget)
 
     if currentTime - lastPrintTime >= printInterval then
         if rfsuite and rfsuite.tasks.active() then
-            -- Useful info
-            print("Craft Name: " .. (rfsuite.session.craftName or "-"))
-            print("Model Id: " .. (rfsuite.session.modelID or "-"))
-			print("API Version: " .. (rfsuite.session.apiVersion or "-"))
-			print("Tail Mode: " .. (rfsuite.session.tailMode or "-"))
-			print("Swash Mode: " .. (rfsuite.session.swashMode or "-"))
-			print("Servo count: " .. (rfsuite.session.servoCount or "-"))
-			print("Governor mode: " .. (rfsuite.session.governorMode or "-"))
+
+            -- We have a number of session vars you can access
+            -- These are set by the rotorflight system and are available to you
+            rfsuite.utils.log("Craft Name: " .. (rfsuite.session.craftName or "-"),"info")
+            rfsuite.utils.log("Model Id: " .. (rfsuite.session.modelID or "-"),"info")
+			rfsuite.utils.log("API Version: " .. (rfsuite.session.apiVersion or "-"),"info")
+			rfsuite.utils.log("Tail Mode: " .. (rfsuite.session.tailMode or "-"),"info")
+			rfsuite.utils.log("Swash Mode: " .. (rfsuite.session.swashMode or "-"),"info")
+			rfsuite.utils.log("Servo count: " .. (rfsuite.session.servoCount or "-"),"info")
+			rfsuite.utils.log("Governor mode: " .. (rfsuite.session.governorMode or "-"),"info")
 
             -- Get a sensor source regardless of protocol
             -- You can see sensor names in rfsuite/tasks/telemetry/telemetry.lua 
             -- Look at the sensorTable
             local armflags = rfsuite.tasks.telemetry.getSensorSource("armflags")
-            print("Arm Flags: " .. (armflags:value() or "-"))
+            rfsuite.utils.log("Arm Flags: " .. (armflags:value() or "-"),"info")
 
             local rpm = rfsuite.tasks.telemetry.getSensorSource("rpm")
-            print("Headspeed: " .. (rpm:value() or "-"))
+            rfsuite.utils.log("Headspeed: " .. (rpm:value() or "-"),"info")
 
             local voltage = rfsuite.tasks.telemetry.getSensorSource("voltage")
-            print("Voltage: " .. (voltage:value() or "-"))
+            rfsuite.utils.log("Voltage: " .. (voltage:value() or "-"),"info")
+
+            -- perform an api request via msp
+            if (apiValue == nil) then
+                local API = rfsuite.tasks.msp.api.load("GOVERNOR_CONFIG","SCRIPTS:/rfsuite/tasks/msp/api/")
+                API.setCompleteHandler(function(self, buf)
+                    local governorMode = API.readValue("gov_mode")
+                    rfsuite.utils.log("Api value: " .. governorMode, "info")
+                    apiValue = governorMode
+                end)
+                API.setUUID("550e8400-e29b-41d4-a716-446655440000")
+                API.read()
+            else
+                rfsuite.utils.log("Api value: " .. (apiValue or "-"), "info")    
+            end   
+
+
         else
-            print("Init...")
+            rfsuite.utils.log("Init...","info")
         end
 
-        lastPrintTime = currentTime -- Update the last print time
+        lastPrintTime = currentTime -- Update the last rfsuite.utils.log time
     end
 
     return
@@ -83,7 +103,7 @@ local function init()
 	-- this is where we 'setup' the widget
 	
 	local key = "rfgbss"			        -- unique key - keep it less that 8 chars
-	local name = "Rotorflight Sessions"		-- name of widget
+	local name = "Rotorflight API Demo"		-- name of widget
 
     system.registerWidget(
         {

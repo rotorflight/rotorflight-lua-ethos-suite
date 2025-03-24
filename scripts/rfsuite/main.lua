@@ -32,6 +32,7 @@ config.Version = "0.0.0.0"                                            -- version
 config.ethosVersion = {1, 6, 2}                                     -- min version of ethos supported by this script                                                     
 config.supportedMspApiVersion = {"12.06", "12.07","12.08"}          -- supported msp versions
 config.simulatorApiVersionResponse = {0, 12, 8}                     -- version of api return by simulator
+config.baseDir = "rfsuite"                                          -- base directory for the suite. This is only used by msp api to ensure correct path
 config.logLevel= "info"                                             -- off | info | debug [default = info]
 config.logToFile = false                                            -- log to file [default = false] (log file is in /scripts/rfsuite/logs)
 config.logMSP = false                                               -- log msp messages [default =  false]
