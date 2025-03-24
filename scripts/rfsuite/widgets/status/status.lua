@@ -286,7 +286,9 @@ local function buildLayoutOptions()
         {i18n.get("widgets.status.layoutOptions.CRAFT_NAME"), 18},
         {i18n.get("widgets.status.layoutOptions.CUSTOMSENSOR_1"), 23},
         {i18n.get("widgets.status.layoutOptions.CUSTOMSENSOR_2"), 24},
-        {i18n.get("widgets.status.layoutOptions.CUSTOMSENSOR_1_2"), 25}
+        {i18n.get("widgets.status.layoutOptions.CUSTOMSENSOR_1_2"), 25},
+        {i18n.get("widgets.status.layoutOptions.BATTERY_PROFILE"), 26},
+
     }
 end
 
@@ -704,6 +706,17 @@ local function telemetryBoxImage(x, y, w, h, gfx)
         lcd.drawBitmap(x, y, gfx, w - theme.colSpacing, h - theme.colSpacing)
     else
         lcd.drawBitmap(x, y, default_image, w - theme.colSpacing, h - theme.colSpacing)
+    end
+end
+
+local lastBatCheck = os.clock()
+local function activeBatteryProfile()
+    if os.clock() - lastBatCheck >= 5 then
+        lastBatCheck = os.clock()
+
+
+
+        
     end
 end
 
@@ -3578,6 +3591,17 @@ function status.paint(widget)
 
             end
 
+            -- battery profile
+            local sensorTGT = 'batteryprofile'
+            status.sensordisplay[sensorTGT] = {}
+            status.sensordisplay[sensorTGT]['title'] = i18n.get("widgets.status.txt_batteryprofile"):upper()
+            status.sensordisplay[sensorTGT]['value'] = activeBatteryProfile()
+            status.sensordisplay[sensorTGT]['warn'] = nil
+            status.sensordisplay[sensorTGT]['min'] = nil
+            status.sensordisplay[sensorTGT]['max'] = nil
+            status.sensordisplay[sensorTGT]['unit'] = ""
+
+
             -- loop throught 6 box and link into status.sensordisplay to choose where to put things
             local c = 1
             while c <= 6 do
@@ -3649,6 +3673,7 @@ function status.paint(widget)
                 if sensorTGT == 23 then sensorTGT = 'customsensor1' end
                 if sensorTGT == 24 then sensorTGT = 'customsensor2' end
                 if sensorTGT == 25 then sensorTGT = 'customsensor1_2' end
+                if sensorTGT == 26 then sensorTGT = 'batteryprofile' end
 
                 -- set sensor values based on sensorTGT
                 if status.sensordisplay[sensorTGT] ~= nil then
@@ -3966,6 +3991,23 @@ function status.paint(widget)
                     if sensorTGT == 'max_current' then
 
                         sensorTGT = "current"
+                        if status.sensordisplay[sensorTGT] then
+                            sensorVALUE = status.sensordisplay[sensorTGT]['value']
+                            sensorUNIT = status.sensordisplay[sensorTGT]['unit']
+                            sensorMIN = status.sensordisplay[sensorTGT]['min']
+                            sensorMAX = status.sensordisplay[sensorTGT]['max']
+                            sensorWARN = status.sensordisplay[sensorTGT]['warn']
+                            sensorTITLE = status.sensordisplay[sensorTGT]['title']
+
+                            if sensorMAX == "-" or sensorMAX == nil then sensorMAX = 0 end
+
+                            smallBOX = false
+                            telemetryBox(posX, posY, boxW, boxH, i18n.get("widgets.status.txt_max"):upper() .. " " .. sensorTITLE, sensorMAX, sensorUNIT, smallBOX)
+                        end
+                    end
+
+                    if sensorTGT == 'batteryprofile' then
+
                         if status.sensordisplay[sensorTGT] then
                             sensorVALUE = status.sensordisplay[sensorTGT]['value']
                             sensorUNIT = status.sensordisplay[sensorTGT]['unit']
