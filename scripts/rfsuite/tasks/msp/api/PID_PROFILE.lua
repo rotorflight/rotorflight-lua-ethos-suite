@@ -23,8 +23,8 @@ local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
     {field = "pid_mode",                        type = "U8", apiVersion = 12.06, simResponse = {3}},
-    {field = "error_decay_time_ground",         type = "U8", apiVersion = 12.06, simResponse = {25},  min = 0,   max = 250, default = 25, unit = "s",  decimals = 1, scale = 10},
-    {field = "error_decay_time_cyclic",         type = "U8", apiVersion = 12.06, simResponse = {250}, min = 0,   max = 250, default = 250, unit = "s",  decimals = 1, scale = 10},
+    {field = "error_decay_time_ground",         type = "U8", apiVersion = 12.06, simResponse = {25},  min = 0,   max = 250, default = 2.5, unit = "s",  decimals = 1, scale = 10},
+    {field = "error_decay_time_cyclic",         type = "U8", apiVersion = 12.06, simResponse = {250}, min = 0,   max = 250, default = 25, unit = "s",  decimals = 1, scale = 10},
     {field = "error_decay_time_yaw",            type = "U8", apiVersion = 12.06, simResponse = {0}},
     {field = "error_decay_limit_cyclic",        type = "U8", apiVersion = 12.06, simResponse = {12},  min = 0,   max = 25, default = 12,  unit = "°"},
     {field = "error_decay_limit_yaw",           type = "U8", apiVersion = 12.06, simResponse = {0}},
