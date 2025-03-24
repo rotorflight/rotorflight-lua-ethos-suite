@@ -27,6 +27,8 @@ local environment = system.getVersion()
 
 local i18n = rfsuite.i18n
 
+local setActiveProfile = nil
+
 status.oldsensors = {"status.refresh", "voltage", "rpm", "current", "temp_esc", "temp_mcu", "fuel", "mah", "rssi", "fm", "govmode"}
 status.isVisible = nil
 status.isDARKMODE = nil
@@ -2967,6 +2969,26 @@ function status.wakeup(widget)
         wakeupUI()
         -- collectgarbage()  -- Uncomment if garbage collection is needed
     end
+
+    if setActiveProfile ~= nil then
+        local API = rfsuite.tasks.msp.api.load("SELECT_BATTERY")
+        API.setCompleteHandler(function(self, buf)
+            rfsuite.utils.log("Battery Profile Set to " .. setActiveProfile,"info")
+            setActiveProfile = nil
+        end)
+        API.setErrorHandler(function(self, buf)
+            rfsuite.utils.log("Failed to set battery profile " .. setActiveProfile,"info")
+            setActiveProfile = nil
+        end)
+        API.setUUID("123e4567-e89b-12d3-a456-426614174000")
+        if setActiveProfile ~= nil then
+            API.setValue("id", setActiveProfile)
+            API.write()
+        end
+        
+    end
+
+
 end
 
 function status.paint(widget)
@@ -2983,6 +3005,21 @@ function status.paint(widget)
         if (os.clock() - status.initTime) >= 2 then screenError(i18n.get("widgets.status.txt_please_enable_bgtask"):upper()) end
         lcd.invalidate()
         return
+    elseif status.isConfiguringBattery == true then
+        -- black out display
+        local w, h = lcd.getWindowSize()
+        local sensorTITLE
+        -- blank out display
+        if status.isDARKMODE then
+            -- dark theme
+            lcd.color(lcd.RGB(16, 16, 16))
+        else
+            -- light theme
+            lcd.color(lcd.RGB(209, 208, 208))
+        end
+        lcd.drawFilledRectangle(0, 0, w, h)
+
+
     else
 
         status.isVisible = lcd.isVisible()
@@ -3628,7 +3665,7 @@ function status.paint(widget)
 
             local capacity = "-"
             if status.battery["batteryCapacity"] ~= nil then
-                capacity = status.battery["batteryCapacity"] .. "MAH"
+                capacity = status.battery["batteryCapacity"] .. "mAh"
             end
 
             local title = i18n.get("widgets.status.txt_batteryprofile"):upper()
@@ -4104,5 +4141,80 @@ function status.i18n()
     governorMap = buildGovernorMap()
     status.layoutOptions = buildLayoutOptions()
 end    
+
+function status.configureBattery()
+
+    -- setting this results in the paint function blanking out the display so a form can be rendered
+    -- we dont actually need to do this as we are using alert function - so just leaving it here as 
+    -- a reference of fact you can do it!
+    --status.isConfiguringBattery = true
+
+    local buttons = {
+        {
+            label = " 6 ",
+            action = function()
+                setActiveProfile = 6
+                return true
+            end
+        },{
+            label = " 5 ",
+            action = function()
+                setActiveProfile = 5
+                return true
+            end
+        },{
+            label = " 4 ",
+            action = function()
+                setActiveProfile = 4
+                return true
+            end
+        },{
+            label = " 3 ",
+            action = function()
+                setActiveProfile = 3
+                return true
+            end
+        },{
+            label = " 2 ",
+            action = function()
+                setActiveProfile = 2
+                return true
+            end
+        }, {
+            label = " 1 ",
+            action = function()
+                setActiveProfile = 1
+                return true
+            end
+        }
+    }
+
+    local LCD_W, LCD_H = rfsuite.utils.getWindowSize()
+
+    form.openDialog({
+        width = LCD_W * 0.8,
+        title = "Battery Profile",
+        message = "Please set the active profile",
+        buttons = buttons,
+        wakeup = function()
+        end,
+        paint = function()
+        end,
+        options = TEXT_LEFT
+    })
+
+
+
+end
+
+function status.menu()
+    return {
+        {
+            "Select battery profile", function()
+                status.configureBattery()
+            end
+        }
+    }
+end
 
 return status
