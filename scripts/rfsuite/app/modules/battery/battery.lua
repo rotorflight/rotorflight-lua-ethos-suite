@@ -55,39 +55,45 @@ local function onToolMenu(self)
 
     local buttons = {
         {
-            label = " 6 ",
+            label = rfsuite.i18n.get("app.btn_cancel"),
             action = function()
-                setActiveProfile = 6
                 return true
             end
-        },{
-            label = " 5 ",
+        },         
+        {
+            label = " 6 ",
             action = function()
                 setActiveProfile = 5
                 return true
             end
         },{
-            label = " 4 ",
+            label = " 5 ",
             action = function()
                 setActiveProfile = 4
                 return true
             end
         },{
-            label = " 3 ",
+            label = " 4 ",
             action = function()
                 setActiveProfile = 3
                 return true
             end
         },{
-            label = " 2 ",
+            label = " 3 ",
             action = function()
                 setActiveProfile = 2
+                return true
+            end
+        },{
+            label = " 2 ",
+            action = function()
+                setActiveProfile = 1
                 return true
             end
         }, {
             label = " 1 ",
             action = function()
-                setActiveProfile = 1
+                setActiveProfile = 0
                 return true
             end
         }
