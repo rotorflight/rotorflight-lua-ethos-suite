@@ -3624,10 +3624,21 @@ function status.paint(widget)
 
             -- battery profile
             local sensorTGT = 'batteryprofile'
-            local batteryProfile, batteryCapacity, batteryCellCount = activeBatteryProfile()
+            activeBatteryProfile()
+
+            local capacity = "-"
+            if status.battery["batteryCapacity"] ~= nil then
+                capacity = status.battery["batteryCapacity"] .. "MAH"
+            end
+
+            local title = i18n.get("widgets.status.txt_batteryprofile"):upper()
+            if status.battery["batteryProfile"] ~= nil and  status.battery["batteryProfile"] ~= "-" then
+                title = i18n.get("widgets.status.txt_batteryprofile"):upper() .. " " .. status.battery["batteryProfile"]
+            end
+
             status.sensordisplay[sensorTGT] = {}
-            status.sensordisplay[sensorTGT]['title'] = i18n.get("widgets.status.txt_batteryprofile"):upper() .. " " .. status.battery["batteryProfile"]
-            status.sensordisplay[sensorTGT]['value'] = (status.battery["batteryCapacity"] or "-") .. "mAh " 
+            status.sensordisplay[sensorTGT]['title'] = title
+            status.sensordisplay[sensorTGT]['value'] = capacity
             status.sensordisplay[sensorTGT]['warn'] = nil
             status.sensordisplay[sensorTGT]['min'] = nil
             status.sensordisplay[sensorTGT]['max'] = nil
