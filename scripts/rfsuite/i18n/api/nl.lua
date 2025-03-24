@@ -247,6 +247,7 @@ nl = {
         tbl_ccw = "CCW",
         tbl_automatic = "Automatisch",
         tbl_alwayson = "Altijd Aan",
+        tbl_disabled = "Uit",
     },
     ESC_PARAMETERS_HW5 = {
         tbl_fixedwing = "Fixed Wing", 

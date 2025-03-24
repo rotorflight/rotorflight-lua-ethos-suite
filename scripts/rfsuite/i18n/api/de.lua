@@ -247,6 +247,7 @@ de = {
         tbl_ccw = "CCW",
         tbl_automatic = "Automatisch",
         tbl_alwayson = "Immer an",
+        tbl_disabled = "Deaktiviert",
     },
     ESC_PARAMETERS_HW5 = {
         tbl_fixedwing = "Flaechenflugzeug", 
