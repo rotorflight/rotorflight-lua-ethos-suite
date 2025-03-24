@@ -241,6 +241,11 @@ status.fullCellVoltage = 410
 status.minCellVoltage = 330
 status.warnCellVoltage = 350
 
+status.battery = {}
+status.battery["batteryProfile"] = "-"
+status.battery["batteryCapacity"] = nil
+status.battery["batteryCellCount"] = nil
+
 local function buildGovernorMap()
     local map = {     
         [0] =  i18n.get("widgets.governor.OFF"),
@@ -711,13 +716,39 @@ end
 
 local lastBatCheck = os.clock()
 local function activeBatteryProfile()
+
+    function getBatteryCapacity(id)
+        local API = rfsuite.tasks.msp.api.load("BATTERY_CONFIG")
+        API.setCompleteHandler(function(self, buf)
+            if id == "0" then
+                status.battery["batteryCapacity"] = API.readValue("batteryCapacity")
+                status.battery["batteryCellCount"] = API.readValue("batteryCellCount")
+            else
+                status.battery["batteryCapacity"] = API.readValue("batteryCapacity_" .. id)
+                status.battery["batteryCellCount"] = API.readValue("batteryCellCount_" .. id)
+            end    
+        end)
+        API.setUUID("123e4567-e89b-12d3-a456-426614174001")
+        API.read()
+
+    end    
+
     if os.clock() - lastBatCheck >= 5 then
         lastBatCheck = os.clock()
 
+        if rfsuite.tasks.msp.mspQueue:isProcessed() then
+            local API = rfsuite.tasks.msp.api.load("STATUS")
+            API.setCompleteHandler(function(self, buf)
+                status.battery["batteryProfile"] = API.readValue("battery_profile")
+                getBatteryCapacity(status.battery["batteryProfile"])
+            end)
+            API.setUUID("123e4567-e89b-12d3-a456-426614174000")
+            API.read()
+        end  
 
-
-        
     end
+
+
 end
 
 local function getChannelValue(ich)
@@ -3593,9 +3624,10 @@ function status.paint(widget)
 
             -- battery profile
             local sensorTGT = 'batteryprofile'
+            local batteryProfile, batteryCapacity, batteryCellCount = activeBatteryProfile()
             status.sensordisplay[sensorTGT] = {}
-            status.sensordisplay[sensorTGT]['title'] = i18n.get("widgets.status.txt_batteryprofile"):upper()
-            status.sensordisplay[sensorTGT]['value'] = activeBatteryProfile()
+            status.sensordisplay[sensorTGT]['title'] = i18n.get("widgets.status.txt_batteryprofile"):upper() .. " " .. status.battery["batteryProfile"]
+            status.sensordisplay[sensorTGT]['value'] = (status.battery["batteryCapacity"] or "-") .. "mAh " 
             status.sensordisplay[sensorTGT]['warn'] = nil
             status.sensordisplay[sensorTGT]['min'] = nil
             status.sensordisplay[sensorTGT]['max'] = nil
