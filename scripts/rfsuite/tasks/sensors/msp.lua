@@ -48,17 +48,6 @@ local msp_sensors = {
             maximum = 100,
         },
     },
-    GOVERNOR_CONFIG = {
-        gov_mode = {
-            sensorname = "Governor Config",
-            sessionname = "governorMode",
-            appId = 0x11001,
-            interval = 5,
-            unit = UNIT_RAW,
-            minimum = 0,
-            maximum = 3,
-        }    
-    }
 }
 
 msp.sensors = msp_sensors
