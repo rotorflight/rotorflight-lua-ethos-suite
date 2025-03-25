@@ -72,12 +72,12 @@ local function rebootFC()
     RAPI.setUUID("123e4567-e89b-12d3-a456-426614174000")
     RAPI.setCompleteHandler(function(self)
         rfsuite.utils.log("Rebooting FC","info")
+
+        rfsuite.session.telemetryTypeChanged = true
+
     end)
     RAPI.write()
 
-    -- mute sensor lost
-    local module = model.getModule(rfsuite.session.telemetrySensor:module())
-    if module and module.muteSensorLost then module:muteSensorLost(2.0) end
 end
 
 local function applySettings()
@@ -177,7 +177,6 @@ local function wakeup()
         if rfsuite.utils.ethosVersionAtLeast({1,6,3}) then
             rfsuite.utils.log("Starting discover sensors", "info")
             rfsuite.tasks.msp.sensorTlm:discover()
-            rfsuite.utils.playFileCommon("beep.wav")
         else    
             form.openDialog({
                 width = nil,
