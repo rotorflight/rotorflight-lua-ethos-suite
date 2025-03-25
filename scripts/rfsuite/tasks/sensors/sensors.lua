@@ -25,6 +25,10 @@ local config = arg[1]
 local sensors = {}
 local loadedSensorModule = nil
 
+local delayDuration = 2  -- seconds
+local delayStartTime = nil
+local delayPending = false
+
 --[[
     loadSensorModule - Loads the appropriate sensor module based on the current protocol and preferences.
 
@@ -71,6 +75,26 @@ local function loadSensorModule()
 end
 
 function sensors.wakeup()
+
+    if rfsuite.session.resetTelemetry and not delayPending then
+        delayStartTime = os.clock()
+        delayPending = true
+        rfsuite.session.resetTelemetry = false  -- Reset immediately
+        rfsuite.utils.log("Delaying sensor wakeup for " .. delayDuration .. " seconds","info")
+        return  -- Exit early; wait starts now
+    end
+
+    if delayPending then
+        if os.clock() - delayStartTime >= delayDuration then
+            rfsuite.utils.log("Delay complete; resuming sensor wakeup","info")
+            delayPending = false
+        else
+            local module = model.getModule(rfsuite.session.telemetrySensor:module())
+            if module ~= nil and module.muteSensorLost ~= nil then module:muteSensorLost(5.0) end
+            return  -- Still waiting; do nothing
+        end
+    end
+
     loadSensorModule()
     if loadedSensorModule and loadedSensorModule.module.wakeup then
         loadedSensorModule.module.wakeup()

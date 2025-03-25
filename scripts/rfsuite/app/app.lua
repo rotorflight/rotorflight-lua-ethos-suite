@@ -369,7 +369,8 @@ local function rebootFc()
         command = 68, -- MSP_REBOOT
         processReply = function(self, buf)
             invalidatePages()
-            rfsuite.session.telemetryTypeChanged = true
+            rfsuite.session.resetTelemetry = true
+            rfsuite.session.resetMSP = true
         end,
         simulatorResponse = {}
     })
