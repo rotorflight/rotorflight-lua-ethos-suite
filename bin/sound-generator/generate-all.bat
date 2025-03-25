@@ -13,12 +13,15 @@ REM English - US
 python generate-googleapi.py --csv en.csv --voice en-GB-Neural2-A --base-dir en --variant gb --engine google 
 
 REM French - Default
-python generate-googleapi.py --csv fr.csv --voice en-GB-Neural2-A --base-dir en --variant default --engine google 
+python generate-googleapi.py --csv fr.csv --voice fr-FR-Neural2-F --base-dir fr --variant default --engine google 
 
 REM French - Femme
-python generate-googleapi.py --csv fr.csv --voice en-GB-Neural2-A --base-dir en --variant femme --engine google 
+python generate-googleapi.py --csv fr.csv --voice fr-FR-Neural2-F --base-dir fr --variant femme --engine google 
 
 REM French - Homme
-python generate-googleapi.py --csv fr.csv --voice fr-FR-Standard-B --base-dir en --variant homme --engine google 
+python generate-googleapi.py --csv fr.csv --voice fr-FR-Standard-B --base-dir fr --variant homme --engine google 
+
+REM Spanish - Default
+python generate-googleapi.py --csv es.csv --voice es-ES-Wavenet-C --base-dir es --variant default --engine google 
 
 endlocal
