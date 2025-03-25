@@ -1,0 +1,45 @@
+name: Create rfsuite-lua-ethos ZIP on PR
+
+on:
+on:
+  push:
+    branches:
+      - 'master'
+      - 'RF-*'
+
+jobs:
+  create-zip:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set build variables (PR version)
+      run: |
+        PR_NUMBER=${{ github.event.pull_request.number }}
+        echo "GIT_VER=PR-${PR_NUMBER}" >> $GITHUB_ENV
+
+    - name: Update version and config in main.lua
+      run: |
+        # Use GIT_VER set in previous step
+        sed -i "s/config.Version = \".*\"/config.Version = \"${{ env.GIT_VER }}\"/" scripts/rfsuite/main.lua
+
+        # Set logging settings
+        sed -i 's/\(config.logLevel= \)".*"/\1"off"/' scripts/rfsuite/main.lua
+        sed -i 's/\(config.logToFile = \)[^ ]*/\1false/' scripts/rfsuite/main.lua
+        sed -i 's/\(config.logMSP = \)[^ ]*/\1false/' scripts/rfsuite/main.lua
+
+        # Show updated file (for verification)
+        grep 'config\.' scripts/rfsuite/main.lua
+
+    - name: Create rotorflight-lua-ethos-suite-PR-<number>.zip (entire scripts folder)
+      run: |
+        zip -q -r -9 "rotorflight-lua-ethos-suite-${{ env.GIT_VER }}.zip" scripts
+
+    - name: Upload rotorflight-lua-ethos-suite-PR-<number>.zip as Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: rotorflight-lua-ethos-suite-${{ env.GIT_VER }}
+        path: rotorflight-lua-ethos-suite-${{ env.GIT_VER }}.zip
+        if-no-files-found: error
