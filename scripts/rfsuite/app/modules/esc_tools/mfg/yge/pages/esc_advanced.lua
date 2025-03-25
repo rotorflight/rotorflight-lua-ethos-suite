@@ -14,7 +14,7 @@ local mspapi = {
             {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.yge.throttle_response"), type = 1, mspapi = 1, apikey="throttle_response"},
             {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.yge.timing"), type = 1, mspapi = 1, apikey="timing"},
             {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.yge.active_freewheel"), type = 1, mspapi = 1, apikey="active_freewheel"},
-            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.yge.f3c_auto"), type = 1, mspapi = 1, apikey="f3c_auto"},
+            --{t = rfsuite.i18n.get("app.modules.esc_tools.mfg.yge.f3c_auto"), type = 1, mspapi = 1, apikey="flags"},
         }
     }                 
 }
