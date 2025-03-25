@@ -32,6 +32,7 @@ def extract_csv(path):
         for row in reader:
             if len(row) == 4:
                 path, text, options_text, description = row
+                path = os.path.join("..", "..", path)  # Prefix with ../../
                 options = {}
                 for part in options_text.split(";"):
                     if part:
@@ -114,11 +115,21 @@ class GoogleCloudTextToSpeechGenerator(BaseGenerator):
         tts_output = os.path.join(temp_path, "output.wav")
         with open(tts_output, "wb") as out:
             out.write(response.audio_content)
+
+        # Ensure the output directory exists
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+
         self.sox(tts_output, path, silence=True)
         shutil.rmtree(temp_path)
 
 
 def build(engine, voice, speed, csv, cache, only_missing=False, recreate_cache=False):
+    # Abort if required audio folder is not found
+    required_audio_path = os.path.join("..", "..", "scripts", "rfsuite", "audio")
+    if not os.path.exists(required_audio_path):
+        print(f"Error: Required audio path not found: {required_audio_path}")
+        return 1
+
     if engine == "google":
         generator = GoogleCloudTextToSpeechGenerator(voice, speed)
     else:
