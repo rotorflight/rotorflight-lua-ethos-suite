@@ -22,6 +22,7 @@ Release version for 2.2.0-RC1 Rotorflight
     - New ESC FWD Programing
         - XDFly 
     - SBUS Out configuration
+    - Added framework to handle MSP Sensors for slow async msp queries
     - Automatic Sensor Creation for 'custom sensors'
     - ADJ Function fixes for ELRS protocol
     - New Widgets
