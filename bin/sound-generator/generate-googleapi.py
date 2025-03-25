@@ -21,18 +21,15 @@ except:
     sys.exit(1)
 
 
-def extract_csv(path):
+def extract_csv(path, base_dir, variant):
     result = []
     with codecs.open(path, "r", "utf-8") as f:
         reader = csv.reader(f)
-
-        # This skips the first row of the CSV file
         next(reader)
-    
         for row in reader:
             if len(row) == 4:
-                path, text, options_text, description = row
-                path = os.path.join("..", "..", path)  # Prefix with ../../
+                rel_path, text, options_text, description = row
+                path = os.path.join("..", "..", "scripts", "rfsuite", "audio", base_dir, variant, rel_path)
                 options = {}
                 for part in options_text.split(";"):
                     if part:
@@ -47,9 +44,9 @@ def extract_csv(path):
 class NullCache:
     def get(self, *args, **kwargs):
         return False
-    
     def push(self, *args, **kwargs):
         pass
+
 
 class PromptsCache:
     def __init__(self, directory):
@@ -116,15 +113,12 @@ class GoogleCloudTextToSpeechGenerator(BaseGenerator):
         with open(tts_output, "wb") as out:
             out.write(response.audio_content)
 
-        # Ensure the output directory exists
         os.makedirs(os.path.dirname(path), exist_ok=True)
-
         self.sox(tts_output, path, silence=True)
         shutil.rmtree(temp_path)
 
 
-def build(engine, voice, speed, csv, cache, only_missing=False, recreate_cache=False):
-    # Abort if required audio folder is not found
+def build(engine, voice, speed, csv, cache, base_dir, variant, only_missing=False, recreate_cache=False):
     required_audio_path = os.path.join("..", "..", "scripts", "rfsuite", "audio")
     if not os.path.exists(required_audio_path):
         print(f"Error: Required audio path not found: {required_audio_path}")
@@ -136,7 +130,7 @@ def build(engine, voice, speed, csv, cache, only_missing=False, recreate_cache=F
         print("Unknown engine %s" % engine)
         return 1
 
-    prompts = extract_csv(csv)
+    prompts = extract_csv(csv, base_dir, variant)
     cache = PromptsCache(os.path.join(cache, generator.cache_prefix())) if cache else NullCache()
 
     for path, text, options, _ in prompts:
@@ -164,9 +158,14 @@ def main():
     parser.add_argument('--recreate-cache', action="store_true", help="Recreate files cache")
     parser.add_argument('--only-missing', action="store_true", help="Generate only missing files")
     parser.add_argument('--speed', type=float, help="Voice speed", default=1.0)
+    parser.add_argument('--base-dir', action="store", required=True, help="i18n folder name (e.g., en, es)")
+    parser.add_argument('--variant', action="store", required=True, help="i18n variant (e.g., male, female)")
     args = parser.parse_args()
 
-    return build(args.engine, args.voice, args.speed, args.csv, args.cache, args.only_missing, args.recreate_cache)
+    return build(
+        args.engine, args.voice, args.speed, args.csv, args.cache,
+        args.base_dir, args.variant, args.only_missing, args.recreate_cache
+    )
 
 
 if __name__ == "__main__":
