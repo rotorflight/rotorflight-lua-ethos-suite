@@ -17,7 +17,7 @@
  * 
 ]] --
 
-clocksync = {}
+local clocksync = {}
 
 function clocksync.wakeup()
     -- quick exit if no apiVersion

@@ -18,8 +18,8 @@
 
 ]] --
 local init = {
-    title = "Select Profile", -- title of the page
-    section = "Tools", -- do not run if busy with msp
+    title = rfsuite.i18n.get("app.modules.profile_select.name"), -- title of the page
+    section = "tools", -- do not run if busy with msp
     script = "select_profile.lua", -- run this script
     image = "select_profile.png", -- image for the page
     order = 4, -- order in the section

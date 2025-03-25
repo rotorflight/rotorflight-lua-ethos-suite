@@ -18,49 +18,38 @@
 local API_NAME = "ESC_PARAMETERS_FLYROTOR" -- API name (must be same as filename)
 local MSP_API_CMD_READ = 217 -- Command identifier 
 local MSP_API_CMD_WRITE = 218 -- Command identifier 
+local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write 
 local MSP_SIGNATURE = 0x73
 local MSP_HEADER_BYTES = 2
 
 local MSP_API_STRUCTURE_READ_DATA = {
     {field = "esc_signature",           type = "U8",  apiVersion = 12.07, simResponse = {115}},
     {field = "esc_command",             type = "U8",  apiVersion = 12.07, simResponse = {0}},
-    {field = "escinfo_1",               type = "U8",  apiVersion = 12.07, simResponse = {0}},
-    {field = "escinfo_2",               type = "U8",  apiVersion = 12.07, simResponse = {1}},
-    {field = "escinfo_3",               type = "U8",  apiVersion = 12.07, simResponse = {24}},
-    {field = "escinfo_4",               type = "U8",  apiVersion = 12.07, simResponse = {231}},
-    {field = "escinfo_5",               type = "U8",  apiVersion = 12.07, simResponse = {79}},
-    {field = "escinfo_6",               type = "U8",  apiVersion = 12.07, simResponse = {190}},
-    {field = "escinfo_7",               type = "U8",  apiVersion = 12.07, simResponse = {216}},
-    {field = "escinfo_8",               type = "U8",  apiVersion = 12.07, simResponse = {78}},
-    {field = "escinfo_9",               type = "U8",  apiVersion = 12.07, simResponse = {29}},
-    {field = "escinfo_10",              type = "U8",  apiVersion = 12.07, simResponse = {169}},
-    {field = "escinfo_11",              type = "U8",  apiVersion = 12.07, simResponse = {244}},
-    {field = "escinfo_12",              type = "U8",  apiVersion = 12.07, simResponse = {1}},
-    {field = "escinfo_13",              type = "U8",  apiVersion = 12.07, simResponse = {0}},
-    {field = "escinfo_14",              type = "U8",  apiVersion = 12.07, simResponse = {0}},
-    {field = "escinfo_15",              type = "U8",  apiVersion = 12.07, simResponse = {1}},
-    {field = "escinfo_16",              type = "U8",  apiVersion = 12.07, simResponse = {0}},
-    {field = "escinfo_17",              type = "U8",  apiVersion = 12.07, simResponse = {8}},
-    {field = "escinfo_18",              type = "U8",  apiVersion = 12.07, simResponse = {0}},
-    {field = "throttle_min",            type = "U16", apiVersion = 12.07, simResponse = {4, 76},       byteorder = "big", help = "Minimum throttle value"},
-    {field = "throttle_max",            type = "U16", apiVersion = 12.07, simResponse = {7, 148},      byteorder = "big", help = "Maximum throttle value"},
-    {field = "governor",                type = "U8",  apiVersion = 12.07, simResponse = {0},           table = {"External Governor", "ESC Governor"}, tableIdxInc = -1},
-    {field = "cell_count",              type = "U8",  apiVersion = 12.07, simResponse = {6},           min = 4, max = 14, default = 6, help = "Number of cells in the battery"},
-    {field = "low_voltage_protection",  type = "U8",  apiVersion = 12.07, simResponse = {30},          min = 28, max = 38, scale = 10, default = 30, decimals = 1, unit = "V", help = "Voltage at which we cut power by 50%"},
-    {field = "temperature_protection",  type = "U8",  apiVersion = 12.07, simResponse = {125},         min = 50, max = 135, default = 125, unit = "°", help = "Temperature at which we cut power by 50%"},
-    {field = "bec_voltage",             type = "U8",  apiVersion = 12.07, simResponse = {0},           unit = "V", table = {"7.5", "8.0", "8.5", "12"}, tableIdxInc = -1},
-    {field = "timing_angle",            type = "U8",  apiVersion = 12.07, simResponse = {10},          min = 1, max = 10, default = 5, unit = "°", help = "Timing angle for the motor"},
-    {field = "motor_direction",         type = "U8",  apiVersion = 12.07, simResponse = {0},           table = {"CW", "CCW"}, tableIdxInc = -1},
-    {field = "starting_torque",         type = "U8",  apiVersion = 12.07, simResponse = {3},           min = 1, max = 15, default = 3, help = "Starting torque for the motor"},
-    {field = "response_speed",          type = "U8",  apiVersion = 12.07, simResponse = {5},           min = 1, max = 15, default = 5, help = "Response speed for the motor"},
-    {field = "buzzer_volume",           type = "U8",  apiVersion = 12.07, simResponse = {1},           min = 1, max = 5, default = 2, help = "Buzzer volume"},
-    {field = "current_gain",            type = "S8",  apiVersion = 12.07, simResponse = {20},          min = 0, max = 40, default = 20, offset = -20, help = "Gain value for the current sensor"},
-    {field = "fan_control",             type = "U8",  apiVersion = 12.07, simResponse = {0},           table = {"Automatic", "Always On"}, tableIdxInc = -1},
-    {field = "soft_start",              type = "U8",  apiVersion = 12.07, simResponse = {15},          min = 5, max = 55, help = "Soft start value"},
-    {field = "gov_p",                   type = "U16", apiVersion = 12.07, simResponse = {0, 45},       min = 1, max = 100, default = 45, byteorder = "big", help = "Proportional value for the governor"},
-    {field = "gov_i",                   type = "U16", apiVersion = 12.07, simResponse = {0, 35},       min = 1, max = 100, default = 35,  byteorder = "big", help = "Integral value for the governor"},
-    {field = "gov_d",                   type = "U16", apiVersion = 12.07, simResponse = {0, 0},        min = 0, max = 100, default = 0,  byteorder = "big", help = "Derivative value for the governor"},
-    {field = "motor_erpm_max",          type = "U24", apiVersion = 12.07, simResponse = {2, 23, 40}, min = 0, max = 1000000, step = 100, byteorder = "big", help = "Maximum RPM"}
+    {field = "esc_type",                type = "U8",  apiVersion = 12.07, simResponse = {0}},
+    {field = "esc_model",               type = "U16", apiVersion = 12.07, simResponse = {1, 24}},
+    {field = "esc_sn",                  type = "U64", apiVersion = 12.07, simResponse = {231, 79, 190, 216, 78, 29, 169, 244}},
+    {field = "esc_iap",                 type = "U24", apiVersion = 12.07, simResponse = {1, 0, 0}},
+    {field = "esc_fw",                  type = "U24", apiVersion = 12.07, simResponse = {1, 0, 1}},
+    {field = "esc_hardware",            type = "U8",  apiVersion = 12.07, simResponse = {0}},
+    {field = "throttle_min",            type = "U16", apiVersion = 12.07, simResponse = {4, 76},       byteorder = "big"},
+    {field = "throttle_max",            type = "U16", apiVersion = 12.07, simResponse = {7, 148},      byteorder = "big"},
+    {field = "governor",                type = "U8",  apiVersion = 12.07, simResponse = {0},           table = {rfsuite.i18n.get("api.ESC_PARAMETERS_FLYROTOR.tbl_extgov"), rfsuite.i18n.get("api.ESC_PARAMETERS_FLYROTOR.tbl_escgov")}, tableIdxInc = -1},
+    {field = "cell_count",              type = "U8",  apiVersion = 12.07, simResponse = {6},           min = 4, max = 14, default = 6},
+    {field = "low_voltage_protection",  type = "U8",  apiVersion = 12.07, simResponse = {30},          min = 28, max = 38, scale = 10, default = 30, decimals = 1, unit = "V"},
+    {field = "temperature_protection",  type = "U8",  apiVersion = 12.07, simResponse = {125},         min = 50, max = 135, default = 125, unit = "°"},
+    {field = "bec_voltage",             type = "U8",  apiVersion = 12.07, simResponse = {1},           table = {rfsuite.i18n.get("api.ESC_PARAMETERS_FLYROTOR.tbl_disabled"), "7.5V", "8.0V", "8.5V", "12.0V"}, tableIdxInc = -1},
+    {field = "timing_angle",            type = "U8",  apiVersion = 12.07, simResponse = {10},          min = 1, max = 10, default = 5, unit = "°"},
+    {field = "motor_direction",         type = "U8",  apiVersion = 12.07, simResponse = {0},           table = {rfsuite.i18n.get("api.ESC_PARAMETERS_FLYROTOR.tbl_cw"), rfsuite.i18n.get("api.ESC_PARAMETERS_FLYROTOR.tbl_ccw")}, tableIdxInc = -1},
+    {field = "starting_torque",         type = "U8",  apiVersion = 12.07, simResponse = {3},           min = 1, max = 15, default = 3},
+    {field = "response_speed",          type = "U8",  apiVersion = 12.07, simResponse = {5},           min = 1, max = 15, default = 5},
+    {field = "buzzer_volume",           type = "U8",  apiVersion = 12.07, simResponse = {1},           min = 1, max = 5, default = 2},
+    {field = "current_gain",            type = "S8",  apiVersion = 12.07, simResponse = {20},          min = 0, max = 40, default = 20, offset = -20},
+    {field = "fan_control",             type = "U8",  apiVersion = 12.07, simResponse = {0},           table = {rfsuite.i18n.get("api.ESC_PARAMETERS_FLYROTOR.tbl_automatic"), rfsuite.i18n.get("api.ESC_PARAMETERS_FLYROTOR.tbl_alwayson")}, tableIdxInc = -1},
+    {field = "soft_start",              type = "U8",  apiVersion = 12.07, simResponse = {15},          min = 5, max = 55},
+    {field = "gov_p",                   type = "U16", apiVersion = 12.07, simResponse = {0, 45},       min = 1, max = 100, default = 45, byteorder = "big"},
+    {field = "gov_i",                   type = "U16", apiVersion = 12.07, simResponse = {0, 35},       min = 1, max = 100, default = 35,  byteorder = "big"},
+    {field = "gov_d",                   type = "U16", apiVersion = 12.07, simResponse = {0, 0},        min = 0, max = 100, default = 0,  byteorder = "big"},
+    {field = "motor_erpm_max",          type = "U24", apiVersion = 12.07, simResponse = {2, 23, 40}, min = 0, max = 1000000, step = 100, byteorder = "big"}
 }
 
 -- Process structure in one pass
@@ -126,7 +115,7 @@ local function write(suppliedPayload)
 
     local message = {
         command = MSP_API_CMD_WRITE,
-        payload = suppliedPayload or rfsuite.tasks.msp.api.buildWritePayload(API_NAME, payloadData,MSP_API_STRUCTURE_WRITE),
+        payload = suppliedPayload or rfsuite.tasks.msp.api.buildWritePayload(API_NAME, payloadData,MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE),
         processReply = function(self, buf)
             local completeHandler = handlers.getCompleteHandler()
             if completeHandler then completeHandler(self, buf) end

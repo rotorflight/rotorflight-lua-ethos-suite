@@ -18,28 +18,29 @@
 local API_NAME = "FILTER_CONFIG" -- API name (must be same as filename)
 local MSP_API_CMD_READ = 92 -- Command identifier 
 local MSP_API_CMD_WRITE = 93 -- Command identifier 
-local MSP_API_SIMULATOR_RESPONSE = {0, 1, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 25, 25, 0, 245, 0} -- Default simulator response
+local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write 
 
-local gyroFilterType = {[0]="NONE", [1]="1ST", [2]="2ND"}
+local gyroFilterType = {[0]=rfsuite.i18n.get("api.FILTER_CONFIG.tbl_none"), [1]=rfsuite.i18n.get("api.FILTER_CONFIG.tbl_1st"), [2]=rfsuite.i18n.get("api.FILTER_CONFIG.tbl_2nd")}
+local rpmPreset = {rfsuite.i18n.get("api.FILTER_CONFIG.tbl_custom"),rfsuite.i18n.get("api.FILTER_CONFIG.tbl_low"), rfsuite.i18n.get("api.FILTER_CONFIG.tbl_medium"), rfsuite.i18n.get("api.FILTER_CONFIG.tbl_high")}
 
 local MSP_API_STRUCTURE_READ_DATA = {
     { field = "gyro_hardware_lpf",        type = "U8",  apiVersion = 12.07, simResponse = {0 }},          
     { field = "gyro_lpf1_type",           type = "U8",  apiVersion = 12.07, simResponse = {1 }, min = 0, max = #gyroFilterType, table = gyroFilterType},          
-    { field = "gyro_lpf1_static_hz",      type = "U16", apiVersion = 12.07, simResponse = {100, 0}, min = 0, max = 4000, unit = "Hz", default = 100, help = "Lowpass filter cutoff frequency in Hz." },     
+    { field = "gyro_lpf1_static_hz",      type = "U16", apiVersion = 12.07, simResponse = {100, 0}, min = 0, max = 4000, unit = "Hz", default = 100 },     
     { field = "gyro_lpf2_type",           type = "U8",  apiVersion = 12.07, simResponse = {0 }, min = 0, max = #gyroFilterType, table = gyroFilterType},          
-    { field = "gyro_lpf2_static_hz",      type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 4000, unit = "Hz", help = "Lowpass filter cutoff frequency in Hz." },       
-    { field = "gyro_soft_notch_hz_1",     type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 4000, unit = "Hz", help = "Center frequency to which the notch is applied." },       
-    { field = "gyro_soft_notch_cutoff_1", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 4000, unit = "Hz", help = "Width of the notch filter in Hz." },       
-    { field = "gyro_soft_notch_hz_2",     type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 4000, unit = "Hz", help = "Center frequency to which the notch is applied." },       
-    { field = "gyro_soft_notch_cutoff_2", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 4000, unit = "Hz", help = "Width of the notch filter in Hz." },       
-    { field = "gyro_lpf1_dyn_min_hz",     type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 1000, unit = "Hz", help = "Dynamic filter min cutoff in Hz." },       
-    { field = "gyro_lpf1_dyn_max_hz",     type = "U16", apiVersion = 12.07, simResponse = {25, 0}, min = 0, max = 1000, unit = "Hz", help = "Dynamic filter max cutoff in Hz."},     
-    { field = "dyn_notch_count",          type = "U8",  apiVersion = 12.07, simResponse = {0 }},          
-    { field = "dyn_notch_q",              type = "U8",  apiVersion = 12.07, simResponse = {245 }},        
-    { field = "dyn_notch_min_hz",         type = "U16", apiVersion = 12.07, simResponse = {0, 0}},       
-    { field = "dyn_notch_max_hz",         type = "U16", apiVersion = 12.07, simResponse = {0, 0}},
-    { field = "rpm_preset",               type = "U8",  apiVersion = 12.08, simResponse = {0 }}, 
-    { field = "rpm_min_hz",               type = "U8",  apiVersion = 12.08, simResponse = {0 }}            
+    { field = "gyro_lpf2_static_hz",      type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 4000, unit = "Hz" },       
+    { field = "gyro_soft_notch_hz_1",     type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 4000, unit = "Hz" },       
+    { field = "gyro_soft_notch_cutoff_1", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 4000, unit = "Hz" },       
+    { field = "gyro_soft_notch_hz_2",     type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 4000, unit = "Hz" },       
+    { field = "gyro_soft_notch_cutoff_2", type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 4000, unit = "Hz" },       
+    { field = "gyro_lpf1_dyn_min_hz",     type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 0, max = 1000, unit = "Hz" },       
+    { field = "gyro_lpf1_dyn_max_hz",     type = "U16", apiVersion = 12.07, simResponse = {25, 0}, min = 0, max = 1000, unit = "Hz" },     
+    { field = "dyn_notch_count",          type = "U8",  apiVersion = 12.07, simResponse = {0 }, min = 0, max = 8},          
+    { field = "dyn_notch_q",              type = "U8",  apiVersion = 12.07, simResponse = {100}, min = 0, max = 100, decimals=1, scale = 10},       
+    { field = "dyn_notch_min_hz",         type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 10, max = 200, unit="Hz"},       
+    { field = "dyn_notch_max_hz",         type = "U16", apiVersion = 12.07, simResponse = {0, 0}, min = 100, max = 500, unit="Hz"},
+    { field = "rpm_preset",               type = "U8",  apiVersion = 12.08, simResponse = {1 }, table = rpmPreset, tableIdxInc = -1}, 
+    { field = "rpm_min_hz",               type = "U8",  apiVersion = 12.08, simResponse = {20}, min = 1, max = 100, unit = "Hz" },            
 }
 
 
@@ -103,7 +104,7 @@ local function write(suppliedPayload)
 
     local message = {
         command = MSP_API_CMD_WRITE,
-        payload = suppliedPayload or rfsuite.tasks.msp.api.buildWritePayload(API_NAME, payloadData,MSP_API_STRUCTURE_WRITE),
+        payload = suppliedPayload or rfsuite.tasks.msp.api.buildWritePayload(API_NAME, payloadData,MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE),
         processReply = function(self, buf)
             local completeHandler = handlers.getCompleteHandler()
             if completeHandler then completeHandler(self, buf) end

@@ -17,7 +17,7 @@
  * 
 ]] --
 
-servos = {}
+local servos = {}
 
 function servos.wakeup()
     -- quick exit if no apiVersion

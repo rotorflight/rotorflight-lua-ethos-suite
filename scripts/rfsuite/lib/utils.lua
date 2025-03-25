@@ -23,6 +23,79 @@ local utils = {}
 local arg = {...}
 local config = arg[1]
 
+function utils.createCacheFile(tbl, path, options)
+
+    os.mkdir("cache")
+
+    path = "cache/" .. path
+
+    local f, err = io.open(path, "w")
+    if not f then
+        rfsuite.utils.log("Error creating cache file: " .. err, "info")
+        return
+    end
+
+    local function serialize(value, indent)
+        indent = indent or ""
+        local t = type(value)
+
+        if t == "string" then
+            return string.format("%q", value)
+        elseif t == "number" or t == "boolean" then
+            return tostring(value)
+        elseif t == "table" then
+            local result = "{\n"
+            for k, v in pairs(value) do
+                local keyStr
+                if type(k) == "string" and k:match("^%a[%w_]*$") then
+                    keyStr = k .. " = "
+                else
+                    keyStr = "[" .. serialize(k) .. "] = "
+                end
+                result = result .. indent .. "  " .. keyStr .. serialize(v, indent .. "  ") .. ",\n"
+            end
+            result = result .. indent .. "}"
+            return result
+        else
+            error("Cannot serialize type: " .. t)
+        end
+    end
+
+    f:write("return ", serialize(tbl), "\n")
+    f:close()
+end
+
+
+
+function utils.logRotorFlightBanner()
+    local version = rfsuite.config.Version or "Unknown Version"
+
+    local banner = {
+        "===============================================",
+        "    ROTORFLIGHT RFSUITE - Version: " .. version,
+        "===============================================",
+        "   ______.........--=T=--.........______",
+        "      .             |:|",
+        " :-. //           /\"\"\"\"\"\"-.",
+        " ': '-._____..--\"\"(\"\"\"\"\"\")()`---.__",
+        "  /:   _..__   ''  \":\"\"\"\"'[] |\"\"`\\\\",
+        "  ': :'     `-.     _:._     '\"\"\"\" :",
+        "   ::          '--=:____:.___....-\"",
+        "                     O\"       O\"",
+        "===============================================",
+        "  Rotorflight is free software licensed under",
+        "  the GNU General Public License version 3.0",
+        "  https://www.gnu.org/licenses/gpl-3.0.en.html",
+        "                                              ",
+        " For more information, visit rotorflight.org",
+        "==============================================="
+    }
+
+    for _, line in ipairs(banner) do
+        rfsuite.utils.log(line, "info")
+    end
+end
+
 function utils.sanitize_filename(str)
     if not str then return nil end
     return str:match("^%s*(.-)%s*$"):gsub('[\\/:"*?<>|]', '')
@@ -431,7 +504,7 @@ end
 
     Description:
         This function attempts to load a telemetry Lua script from two possible paths:
-        1. "../rfsuite.sim/sensors/<id>.lua"
+        1. "LOGS:/rfsuite/sensors/<id>.lua"
         2. "lib/sim/sensors/<id>.lua"
         
         It first checks if the file exists at the local path. If not, it checks the fallback path.
@@ -440,9 +513,13 @@ end
 --]]
 function utils.simSensors(id)
 
+    os.mkdir("LOGS:")
+    os.mkdir("LOGS:/rfsuite")
+    os.mkdir("LOGS:/rfsuite/sensors")
+
     if id == nil then return 0 end
 
-    local localPath = "../rfsuite.sim/sensors/" .. id .. ".lua"
+    local localPath = "LOGS:/rfsuite/sensors/" .. id .. ".lua"
     local fallbackPath = "sim/sensors/" .. id .. ".lua"
 
     local filepath
@@ -522,5 +599,48 @@ function utils.truncateText(str, maxWidth)
     end
     return truncatedStr .. ellipsis
 end
+
+function utils.reportMemoryUsage(location)
+
+    if config.logMemoryUsage == false then
+        return
+    end
+
+    -- Get current memory usage in bytes and convert to KB
+    local currentMemoryUsage = system.getMemoryUsage().luaRamAvailable / 1024
+
+    -- Retrieve the last memory usage from the session (convert it to KB if it exists)
+    local lastMemoryUsage = rfsuite.session.lastMemoryUsage
+
+    -- Ensure location is not nil or empty
+    location = location or "Unknown"
+
+    -- Construct the log message
+    local logMessage
+
+    if lastMemoryUsage then
+        lastMemoryUsage = lastMemoryUsage / 1024  -- Convert last recorded memory to KB
+        local difference = currentMemoryUsage - lastMemoryUsage
+        if difference > 0 then
+            logMessage = string.format("[%s] Memory usage decreased by %.2f KB (Current: %.2f KB)", location, difference, currentMemoryUsage)
+        elseif difference < 0 then
+            logMessage = string.format("[%s] Memory usage increased by %.2f KB (Current: %.2f KB)", location, -difference, currentMemoryUsage)
+        else
+            logMessage = string.format("[%s] Memory usage unchanged (Current: %.2f KB)", location, currentMemoryUsage)
+        end
+    else
+        logMessage = string.format("[%s] Initial memory usage: %.2f KB", location, currentMemoryUsage)
+    end
+
+    -- Log the message
+    rfsuite.utils.log(logMessage, "info")
+
+    -- Store the current memory usage in bytes for future calls (convert back to bytes)
+    rfsuite.session.lastMemoryUsage = system.getMemoryUsage().luaRamAvailable
+end
+
+    
+
+
 
 return utils

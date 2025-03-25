@@ -18,8 +18,8 @@
 
 ]] --
 local init = {
-    title = "Trim", -- title of the page
-    section = "Flight Tuning", -- do not run if busy with msp
+    title = rfsuite.i18n.get("app.modules.trim.name"), -- title of the page
+    section = "flight_tuning", -- do not run if busy with msp
     script = "trim.lua", -- run this script
     image = "trim.png", -- image for the page
     order = 6, -- order in the section

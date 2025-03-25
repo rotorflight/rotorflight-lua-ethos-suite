@@ -27,16 +27,11 @@ local function getModelName()
 end
 
 local function getLogPath()
-
-    -- do some checks to make sure stuff exists
-    local base_path = "./"
-    local logs_path = "logs"
-    local logs_path_telemetry = "logs/telemetry" 
-
-    if not dir_exists(base_path, logs_path) then os.mkdir(logs_path) end
-    if not dir_exists(logs_path_telemetry) then os.mkdir(logs_path_telemetry) end
-
-    return logs_path_telemetry
+    -- make sure folder exists
+    os.mkdir("LOGS:")
+    os.mkdir("LOGS:/rfsuite")
+    os.mkdir("LOGS:/rfsuite/telemetry")
+    return "LOGS:/rfsuite/telemetry/"
 end
 
 local function getLogs(logDir)
@@ -146,7 +141,7 @@ local function openPage(pidx, title, script, displaymode)
     if #logs == 0 then
 
         LCD_W, LCD_H = rfsuite.utils.getWindowSize()
-        local str = "NO LOG FILES FOUND"
+        local str = rfsuite.i18n.get("app.modules.logs.msg_no_logs_found")
         local ew = LCD_W
         local eh = LCD_H
         local etsizeW, etsizeH = lcd.getTextSize(str)
@@ -221,7 +216,6 @@ local function onNavMenu()
 end
 
 return {
-    title = "Logs",
     event = event,
     openPage = openPage,
     wakeup = wakeup,

@@ -17,7 +17,7 @@
  * 
 ]] --
 
-apiversion = {}
+local apiversion = {}
 
 function apiversion.wakeup()
     if rfsuite.session.apiVersion == nil then

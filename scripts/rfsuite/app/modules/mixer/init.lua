@@ -18,8 +18,8 @@
 
 ]] --
 local init = {
-    title = "Mixer", -- title of the page
-    section = "Hardware", -- do not run if busy with msp
+    title = rfsuite.i18n.get("app.modules.mixer.name"), -- title of the page
+    section = "hardware", -- do not run if busy with msp
     script = "mixer.lua", -- run this script
     image = "mixer.png", -- image for the page
     order = 4, -- order in the section

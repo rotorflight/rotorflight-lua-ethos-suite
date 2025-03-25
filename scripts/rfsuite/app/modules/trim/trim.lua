@@ -25,54 +25,20 @@ local mspapi = {
         labels = {
         },
         fields = {
-            {t = "Roll trim %",                  mspapi = 1, apikey = "swash_trim_0"},
-            {t = "Pitch trim %",                 mspapi = 1, apikey = "swash_trim_1"},
-            {t = "Col. trim %",                  mspapi = 1, apikey = "swash_trim_2"},
-            {t = "Tail Motor idle  %", mspapi = 1, apikey = "tail_motor_idle", enablefunction = function() return (rfsuite.session.tailMode >= 1) end},
-            {t = "Yaw. trim %",                  mspapi = 1, apikey = "tail_center_trim", enablefunction = function() return (rfsuite.session.tailMode == 0) end }
+            {t = rfsuite.i18n.get("app.modules.trim.roll_trim"),         mspapi = 1, apikey = "swash_trim_0"},
+            {t = rfsuite.i18n.get("app.modules.trim.pitch_trim"),        mspapi = 1, apikey = "swash_trim_1"},
+            {t = rfsuite.i18n.get("app.modules.trim.collective_trim"),   mspapi = 1, apikey = "swash_trim_2"},
+            {t = rfsuite.i18n.get("app.modules.trim.tail_motor_idle"),   mspapi = 1, apikey = "tail_motor_idle", enablefunction = function() return (rfsuite.session.tailMode >= 1) end},
+            {t = rfsuite.i18n.get("app.modules.trim.yaw_trim"),          mspapi = 1, apikey = "tail_center_trim", enablefunction = function() return (rfsuite.session.tailMode == 0) end }
         }
     }                 
 }
 
 
-local function saveDataEnd()
-    local message = {
-        command = 250,
-        payload = {},
-        processReply = function(self, buf)
-            clear2send = true
-        end,
-        errorHandler = function(self, buf)
-            clear2send = true
-        end
-    }
-    rfsuite.tasks.msp.mspQueue:add(message)
-
-end
 
 local function saveData()
-
-    clear2send = false
-    local payload = rfsuite.app.Page.values
-    local message = {
-        command = 43,
-        payload = payload,
-        processReply = function(self, buf)
-            saveDataEnd()
-        end,
-        errorHandler = function(self, buf)
-            clear2send = true
-        end
-    }
-
-
-    if rfsuite.config.logMSP then
-        local logData = "Saving: {" .. rfsuite.utils.joinTableItems(payload, ", ") .. "}"
-        rfsuite.utils.log(logData,"info")
-    end
-
-
-    rfsuite.tasks.msp.mspQueue:add(message)
+    clear2send = true
+    rfsuite.app.triggers.triggerSaveNoProgress = true
 end
 
 local function mixerOn(self)
@@ -80,17 +46,25 @@ local function mixerOn(self)
     rfsuite.app.audio.playMixerOverideEnable = true
 
     for i = 1, 4 do
-
         local message = {
             command = 191, -- MSP_SET_MIXER_OVERRIDE
             payload = {i}
         }
+
         rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
         rfsuite.tasks.msp.mspQueue:add(message)
 
+        if rfsuite.config.logMSP then
+            local logData = "mixerOn: {" .. rfsuite.utils.joinTableItems(message.payload, ", ") .. "}"
+            rfsuite.utils.log(logData,"info")
+        end
+
     end
 
+
+
     rfsuite.app.triggers.isReady = true
+    rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function mixerOff(self)
@@ -104,15 +78,24 @@ local function mixerOff(self)
         }
         rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2501)
         rfsuite.tasks.msp.mspQueue:add(message)
+
+        if rfsuite.config.logMSP then
+            local logData = "mixerOff: {" .. rfsuite.utils.joinTableItems(message.payload, ", ") .. "}"
+            rfsuite.utils.log(logData,"info")
+        end
+
     end
 
+
+
     rfsuite.app.triggers.isReady = true
+    rfsuite.app.triggers.closeProgressLoader = true
 end
 
 local function postLoad(self)
 
     if rfsuite.session.tailMode == nil then
-        local v = rfsuite.app.Page.values[2]
+        local v = rfsuite.app.Page.values['MIXER_CONFIG']["tail_rotor_mode"]
         rfsuite.session.tailMode = math.floor(v)
         rfsuite.app.triggers.reload = true
         return
@@ -203,7 +186,7 @@ local function wakeup(self)
 
             rfsuite.app.audio.playMixerOverideEnable = true
 
-            rfsuite.app.ui.progressDisplay("Mixer override", "Enabling mixer override...")
+            rfsuite.app.ui.progressDisplay(rfsuite.i18n.get("app.modules.trim.mixer_override"), rfsuite.i18n.get("app.modules.trim.mixer_override_enabling"))
 
             rfsuite.app.Page.mixerOn(self)
             inOverRide = true
@@ -211,7 +194,7 @@ local function wakeup(self)
 
             rfsuite.app.audio.playMixerOverideDisable = true
 
-            rfsuite.app.ui.progressDisplay("Mixer override", "Disabling mixer override...")
+            rfsuite.app.ui.progressDisplay(rfsuite.i18n.get("app.modules.trim.mixer_override"), rfsuite.i18n.get("app.modules.trim.mixer_override_disabling"))
 
             rfsuite.app.Page.mixerOff(self)
             inOverRide = false
@@ -223,7 +206,7 @@ end
 local function onToolMenu(self)
 
     local buttons = {{
-        label = "                OK                ",
+        label = rfsuite.i18n.get("app.btn_ok"),
         action = function()
 
             -- we cant launch the loader here to se rely on the modules
@@ -232,7 +215,7 @@ local function onToolMenu(self)
             return true
         end
     }, {
-        label = "CANCEL",
+        label = rfsuite.i18n.get("app.btn_cancel"),
         action = function()
             return true
         end
@@ -240,11 +223,11 @@ local function onToolMenu(self)
     local message
     local title
     if inOverRide == false then
-        title = "Enable mixer override"
-        message = "Set all servos to their configured center position. \r\n\r\nThis will result in all values on this page being saved when adjusting the servo trim."
+        title = rfsuite.i18n.get("app.modules.trim.enable_mixer_override")
+        message = rfsuite.i18n.get("app.modules.trim.enable_mixer_message")
     else
-        title = "Disable mixer override"
-        message = "Return control of the servos to the flight controller."
+        title = rfsuite.i18n.get("app.modules.trim.disable_mixer_override")
+        message = rfsuite.i18n.get("app.modules.trim.disable_mixer_message")
     end
 
     form.openDialog({
@@ -269,7 +252,7 @@ local function onNavMenu(self)
         inOverRide = false
         inFocus = false
 
-        rfsuite.app.ui.progressDisplay("Mixer override", "Disabling mixer override...")
+        rfsuite.app.ui.progressDisplay(rfsuite.i18n.get("app.modules.trim.mixer_override"), rfsuite.i18n.get("app.modules.trim.mixer_override_disabling"))
 
         mixerOff(self)
         rfsuite.app.triggers.closeProgressLoader = true
@@ -283,7 +266,6 @@ return {
     mspapi = mspapi,
     eepromWrite = true,
     reboot = false,
-    title = "Trim",
     mixerOff = mixerOff,
     mixerOn = mixerOn,
     postLoad = postLoad,

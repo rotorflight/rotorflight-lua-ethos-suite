@@ -21,30 +21,16 @@
 
 local en = {
     -- General terms
-   ethos = "ethos",
-   version = "version",
-   bg_task_disabled = "bg task disabled",
-   background_task_disabled = "background task disabled",
-   no_link = "no link",
-   image = "image",
+    ethos                      = "ethos",
+    version                    = "version",
+    bg_task_disabled           = "bg task disabled",
+    background_task_disabled   = "background task disabled",
+    no_link                    = "no link",
+    image                      = "image",
+    error                      = "error",
+    reload                     = "reload",
+    save                       = "save",
 
-   -- govorner translations
-   widgets = {
-        governor = {
-                UNKNOWN = "UNKNOWN",
-                OFF = "OFF",
-                IDLE = "IDLE",
-                SPOOLUP = "SPOOLUP",
-                RECOVERY = "RECOVERY",
-                ACTIVE = "ACTIVE",
-                THROFF = "THR-OFF",
-                LOSTHS = "LOST-HS",
-                AUTOROT = "AUTOROT",
-                BAILOUT = "BAILOUT",
-                DISABLED = "DISABLED",
-                DISARMED = "DISARMED"
-        }
-    },
 }
 
 return en

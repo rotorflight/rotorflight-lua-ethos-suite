@@ -12,13 +12,13 @@ local mspapi = {
         labels = {
         },
         fields = {
-            {t = "Low voltage protection", mspapi = 1, apikey = "low_voltage_protection"},
-            {t = "Temperature protection",  mspapi = 1, apikey = "temperature_protection"},
-            {t = "Timing angle",            mspapi = 1, apikey = "timing_angle"},
-            {t = "Starting torque",         mspapi = 1, apikey = "starting_torque"},
-            {t = "Response speed",          mspapi = 1, apikey = "response_speed"},
-            {t = "Buzzer volume",           mspapi = 1, apikey = "buzzer_volume"},
-            {t = "Current gain",            mspapi = 1, apikey = "current_gain"}
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.low_voltage_protection"),    mspapi = 1, apikey = "low_voltage_protection"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.temperature_protection"),    mspapi = 1, apikey = "temperature_protection"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.timing_angle"),              mspapi = 1, apikey = "timing_angle"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.starting_torque"),           mspapi = 1, apikey = "starting_torque"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.response_speed"),            mspapi = 1, apikey = "response_speed"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.buzzer_volume"),             mspapi = 1, apikey = "buzzer_volume"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.current_gain"),              mspapi = 1, apikey = "current_gain"}
         }
     }                 
 }
@@ -53,7 +53,6 @@ return {
     mspapi=mspapi,    
     eepromWrite = true,
     reboot = false,
-    title = "Advanced Setup",
     escinfo = escinfo,
     svTiming = 0,
     svFlags = 0,
@@ -61,6 +60,6 @@ return {
     navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
     onNavMenu = onNavMenu,
     event = event,
-    pageTitle = "ESC / FLYROTOR / Advanced",
+    pageTitle = rfsuite.i18n.get("app.modules.esc_tools.name") .. " / " ..  rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.name") .. " / " .. rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.advanced"),
     headerLine = rfsuite.escHeaderLineText
 }

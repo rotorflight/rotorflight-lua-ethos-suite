@@ -184,7 +184,7 @@ end
 ]]
 local function mspPollReply()
     local startTime = os.clock()
-    while os.clock() - startTime < 0.1 do
+    while os.clock() - startTime < 0.05 do
         local mspData = rfsuite.tasks.msp.protocol.mspPoll()
         if mspData and mspReceivedReply(mspData) then
             mspLastReq = 0

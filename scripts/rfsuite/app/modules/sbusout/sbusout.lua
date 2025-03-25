@@ -39,7 +39,7 @@ local function openPage(pidx, title, script)
     buttonW = 100
     local x = windowWidth - buttonW - 10
 
-    rfsuite.app.ui.fieldHeader("SBUS Output")
+    rfsuite.app.ui.fieldHeader(rfsuite.i18n.get("app.modules.sbusout.title") .. "")
 
     local buttonW
     local buttonH
@@ -95,7 +95,7 @@ local function openPage(pidx, title, script)
         end
 
         rfsuite.app.formFields[pidx] = form.addButton(nil, {x = bx, y = y, w = buttonW, h = buttonH}, {
-            text = "CHANNEL " .. tostring(pidx + 1),
+            text = rfsuite.i18n.get("app.modules.sbusout.channel_prefix") .. "" .. tostring(pidx + 1),
             icon = rfsuite.app.gfx_buttons["sbuschannel"][pidx],
             options = FONT_S,
             paint = function()
@@ -104,7 +104,7 @@ local function openPage(pidx, title, script)
                 rfsuite.app.menuLastSelected["sbuschannel"] = pidx
                 rfsuite.currentSbusServoIndex = pidx
                 rfsuite.app.ui.progressDisplay()
-                rfsuite.app.ui.openPage(pidx, "Sbus out / CH" .. tostring(rfsuite.currentSbusServoIndex + 1), "sbusout/sbusout_tool.lua")
+                rfsuite.app.ui.openPage(pidx, rfsuite.i18n.get("app.modules.sbusout.channel_page") .. "" .. tostring(rfsuite.currentSbusServoIndex + 1), "sbusout/sbusout_tool.lua")
             end
         })
 

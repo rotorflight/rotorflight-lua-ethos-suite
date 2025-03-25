@@ -21,7 +21,9 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {"Configure parameters related to your battery setup.", "These settings are used to calculate your fuel capacity."}
+data['help']['default'] = {
+    rfsuite.i18n.get("app.modules.battery.help_p1")
+}
 
 data['fields'] = {}
 

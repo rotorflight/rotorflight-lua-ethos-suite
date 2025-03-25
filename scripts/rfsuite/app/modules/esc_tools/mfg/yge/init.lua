@@ -1,4 +1,4 @@
-local toolName = "YGE"
+local toolName = rfsuite.i18n.get("app.modules.esc_tools.mfg.yge.name")
 moduleName = "RF2YGE"
 
 local mspHeaderBytes = 2

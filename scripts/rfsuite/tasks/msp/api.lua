@@ -22,7 +22,7 @@
 local apiLoader = {}
 
 -- Define the API directory path based on the ethos version
-local apidir = "tasks/msp/api/"
+local apidir = "SCRIPTS:/".. rfsuite.config.baseDir  .. "/tasks/msp/api/"
 local api_path = apidir
 
 -- New version using the global callback system
@@ -33,6 +33,7 @@ function apiLoader.scheduleWakeup(func)
         rfsuite.utils.log("ERROR: rfsuite.tasks.callbackNow() is missing!", "error")
     end
 end
+
 
 --[[
     Loads a Lua API module by its name, checks for the existence of the file, and wraps its functions.
@@ -597,6 +598,17 @@ function apiLoader.buildDeltaPayload(apiname, payload, api_structure, positionma
         end
     end
 
+    -- Extract parameters from actual.lua
+    local actual_fields = {}
+    if rfsuite.app.Page and rfsuite.app.Page.mspapi then
+        for _, field in ipairs(rfsuite.app.Page.mspapi.formdata.fields) do
+            if actual_fields[field.apikey] then -- we check this because its possible a field may not be there is mspgt or msplt is used on page.
+                actual_fields[field.apikey] = field
+            end
+        end
+    end 
+
+    -- Iterate over the API structure and apply updates
     for _, field_def in ipairs(api_structure) do
         local field_name = field_def.field
         if not editableFields[field_name] then
@@ -604,23 +616,34 @@ function apiLoader.buildDeltaPayload(apiname, payload, api_structure, positionma
             goto continue
         end
 
+        -- Merge missing parameters from rendered page
+        local actual_field = actual_fields[field_name]
+        if actual_field then
+            field_def.scale = field_def.scale or actual_field.scale
+            field_def.mult = field_def.mult or actual_field.mult
+            field_def.step = field_def.step or actual_field.step
+            field_def.min = field_def.min or actual_field.min
+            field_def.max = field_def.max or actual_field.max
+        end
+
+        -- Process value with scale
         local value = payload[field_name] or field_def.default or 0
-        local byteorder = field_def.byteorder
         local scale = field_def.scale or 1
         value = math.floor(value * scale + 0.5)
 
+        -- Determine write function
         local writeFunction = rfsuite.tasks.msp.mspHelper["write" .. field_def.type]
         if not writeFunction then
             error("Unknown type: " .. tostring(field_def.type))
         end
 
+        -- Handle delta update (patching existing data)
         if positionmap[field_name] then
-            -- Delta update (patching existing data)
             local field_positions = positionmap[field_name]
             local tmpStream = {}
 
-            if byteorder then
-                writeFunction(tmpStream, value, byteorder)
+            if field_def.byteorder then
+                writeFunction(tmpStream, value, field_def.byteorder)
             else
                 writeFunction(tmpStream, value)
             end
@@ -642,6 +665,7 @@ function apiLoader.buildDeltaPayload(apiname, payload, api_structure, positionma
 
     return byte_stream
 end
+
 
 --[[
     Builds a full payload byte stream based on the provided API structure.
@@ -668,21 +692,42 @@ function apiLoader.buildFullPayload(apiname, payload, api_structure)
 
     rfsuite.utils.log("[buildFullPayload] Clearing byte stream for full rebuild", "debug")
 
+    -- Extract parameters from actual.lua
+    local actual_fields = {}
+    if rfsuite.app.Page and rfsuite.app.Page.mspapi then
+        for _, field in ipairs(rfsuite.app.Page.mspapi.formdata.fields) do
+            actual_fields[field.apikey] = field
+        end
+    end
+
     for _, field_def in ipairs(api_structure) do
         local field_name = field_def.field
+
+        -- Merge missing parameters from rendered page
+        local actual_field = actual_fields[field_name]
+        if actual_field then
+            field_def.scale = field_def.scale or actual_field.scale
+            field_def.mult = field_def.mult or actual_field.mult
+            field_def.step = field_def.step or actual_field.step
+            field_def.min = field_def.min or actual_field.min
+            field_def.max = field_def.max or actual_field.max
+        end
+
+        -- Process value with scale
         local value = payload[field_name] or field_def.default or 0
-        local byteorder = field_def.byteorder
         local scale = field_def.scale or 1
         value = math.floor(value * scale + 0.5)
 
+        -- Determine write function
         local writeFunction = rfsuite.tasks.msp.mspHelper["write" .. field_def.type]
         if not writeFunction then
             error("Unknown type: " .. tostring(field_def.type))
         end
 
+        -- Write the value to the byte stream
         local tmpStream = {}
-        if byteorder then
-            writeFunction(tmpStream, value, byteorder)
+        if field_def.byteorder then
+            writeFunction(tmpStream, value, field_def.byteorder)
         else
             writeFunction(tmpStream, value)
         end
@@ -692,15 +737,13 @@ function apiLoader.buildFullPayload(apiname, payload, api_structure)
         end
 
         rfsuite.utils.log(string.format(
-            "[buildFullPayload] Full write for field '%s'",
-            field_name
+            "[buildFullPayload] Full write for field '%s' with value %d",
+            field_name, value
         ), "debug")
     end
 
     return byte_stream
 end
-
-
 
 -- New function to process structure in one pass
 function apiLoader.prepareStructureData(structure)

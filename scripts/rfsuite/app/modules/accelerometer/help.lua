@@ -21,7 +21,9 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {"If your helicopter drifts forward, back, left, or right when in angle mode, use the trim values to compensate."}
+data['help']['default'] = {
+    rfsuite.i18n.get("app.modules.accelerometer.help_p1")
+}
 
 data['fields'] = {}
 

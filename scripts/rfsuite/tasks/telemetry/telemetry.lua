@@ -16,7 +16,6 @@
  
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
-
 ]] --
 local arg = {...}
 local config = arg[1]
@@ -60,11 +59,15 @@ Sensors included:
 - Adjustment Sensors (adj_f, adj_v)
 - PID and Rate Profiles (pid_profile, rate_profile)
 - Throttle Sensors (throttle_percent)
+
+ Check this url for some usefull id numbers when associated these sensors to the correct telemetry sensors "set telemetry_sensors"
+ https://github.com/rotorflight/rotorflight-firmware/blob/c7cad2c86fd833fe4bce76728f4914602614058d/src/main/telemetry/sensors.h#L34C15-L34C24
 ]]
+
 local sensorTable = {
     -- RSSI Sensors
     rssi = {
-        name = "RSSI",
+        name = rfsuite.i18n.get("telemetry.sensors.rssi"),
         mandatory = true,
         sim = {
             {appId=0xF101, subId=0},
@@ -87,8 +90,9 @@ local sensorTable = {
 
     -- Arm Flags
     armflags = {
-        name = "Arming Flags",
+        name = rfsuite.i18n.get("telemetry.sensors.arming_flags"),
         mandatory = true,
+        set_telemetry_sensors = 90,
         sim = {
             {uid=0x5001, unit=nil, dec=nil, value=function() return rfsuite.utils.simSensors('armflags') end, min = 0, max = 2},
         },
@@ -104,8 +108,9 @@ local sensorTable = {
 
     -- Voltage Sensors
     voltage = {
-        name = "Voltage",
+        name = rfsuite.i18n.get("telemetry.sensors.voltage"),
         mandatory = true,
+        set_telemetry_sensors = 3,
         sim =  {
             {uid=0x5002, unit=UNIT_VOLT, dec=2, value=function() return rfsuite.utils.simSensors('voltage') end, min = 0, max = 3000},
         },
@@ -126,8 +131,9 @@ local sensorTable = {
 
     -- RPM Sensors
     rpm = {
-        name = "Head Speed",
+        name = rfsuite.i18n.get("telemetry.sensors.headspeed"),
         mandatory = true,
+        set_telemetry_sensors = 60,
         sim =  {
             {uid=0x5003, unit=UNIT_RPM, dec=nil, value=function() return rfsuite.utils.simSensors('rpm') end, min = 0, max = 2000},
         },
@@ -142,8 +148,9 @@ local sensorTable = {
 
     -- Current Sensors
     current = {
-        name = "Current",
+        name = rfsuite.i18n.get("telemetry.sensors.current"),
         mandatory = false,
+        set_telemetry_sensors = 4,
         sim =  {
             {uid=0x5004, unit=UNIT_AMPERE, dec=0, value=function() return rfsuite.utils.simSensors('current') end, min = 0, max = 25},
         },
@@ -160,8 +167,9 @@ local sensorTable = {
 
     -- Temperature Sensors
     temp_esc = {
-        name = "ESC Temperature",
+        name = rfsuite.i18n.get("telemetry.sensors.esc_temp"),
         mandatory = false,
+        set_telemetry_sensors = 23,
         sim =  {
             {uid=0x5005, unit=UNIT_DEGREE, dec=0, value=function() return rfsuite.utils.simSensors('temp_esc') end, min = 0, max = 100},
         },   
@@ -170,13 +178,15 @@ local sensorTable = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0418}
         },
         crsf = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A0}
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A0},
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1047},
         },
         crsfLegacy = {"GPS Speed"}
     },
     temp_mcu = {
-        name = "MCU Temperature",
+        name = rfsuite.i18n.get("telemetry.sensors.mcu_temp"),
         mandatory = false,
+        set_telemetry_sensors = 52,
         sim =  {
             {uid=0x5006, unit=UNIT_DEGREE, dec=0, value=function() return rfsuite.utils.simSensors('temp_mcu') end, min = 0, max = 100},
         },         
@@ -192,8 +202,9 @@ local sensorTable = {
 
     -- Fuel and Capacity Sensors
     fuel = {
-        name = "Charge Level",
+        name = rfsuite.i18n.get("telemetry.sensors.fuel"),
         mandatory = false,
+        set_telemetry_sensors = 6,
         sim =  {
             {uid=0x5007, unit=UNIT_PERCENT, dec=0, value=function() return rfsuite.utils.simSensors('fuel') end, min = 0, max = 100},
         },               
@@ -206,8 +217,9 @@ local sensorTable = {
         crsfLegacy = {"Rx Batt%"}
     },
     consumption = {
-        name = "Consumption",
-        mandatory = false,
+        name = rfsuite.i18n.get("telemetry.sensors.consumption"),
+        mandatory = true,
+        set_telemetry_sensors = 5,
         sim =  {
             {uid=0x5008, unit=UNIT_MILLIAMPERE_HOUR, dec=0, value=function() return rfsuite.utils.simSensors('consumption') end, min = 0, max = 5000},
         },           
@@ -222,8 +234,9 @@ local sensorTable = {
 
     -- Flight Mode Sensors
     governor = {
-        name = "Governor State",
-        mandatory = false,
+        name = rfsuite.i18n.get("telemetry.sensors.governor"),
+        mandatory = true,
+        set_telemetry_sensors = 93,
         sim =  {
             {uid=0x5009, unit=nil, dec=0, value=function() return rfsuite.utils.simSensors('governor') end, min = 0, max = 5},
         },        
@@ -239,8 +252,9 @@ local sensorTable = {
 
     -- Adjustment Sensors
     adj_f = {
-        name = "Adj (Function)",
-        mandatory = false,
+        name = rfsuite.i18n.get("telemetry.sensors.adj_func"),
+        mandatory = true,
+        set_telemetry_sensors = 99,
         sim =  {
             {uid=0x5010, unit=nil, dec=0, value=function() return rfsuite.utils.simSensors('adj_f') end, min = 0, max = 10},
         },           
@@ -253,8 +267,9 @@ local sensorTable = {
         crsfLegacy = {nil}
     },
     adj_v = {
-        name = "Adj (Value)",
-        mandatory = false,
+        name = rfsuite.i18n.get("telemetry.sensors.adj_val"),
+        mandatory = true,
+        --set_telemetry_sensors = 99,  (we dont do this because its grouped with the adjf sensor)
         sim =  {
             {uid=0x5011, unit=nil, dec=0, value=function() return rfsuite.utils.simSensors('adj_v') end, min = 0, max = 2000},
         },           
@@ -269,8 +284,9 @@ local sensorTable = {
 
     -- PID and Rate Profiles
     pid_profile = {
-        name = "PID Profile",
+        name = rfsuite.i18n.get("telemetry.sensors.pid_profile"),
         mandatory = true,
+        set_telemetry_sensors = 95,
         sim =  {
             {uid=0x5012, unit=nil, dec=0, value=function() return rfsuite.utils.simSensors('pid_profile') end, min = 0, max = 6},
         },            
@@ -284,8 +300,9 @@ local sensorTable = {
         crsfLegacy = {nil}
     },
     rate_profile = {
-        name = "Rate Profile",
+        name = rfsuite.i18n.get("telemetry.sensors.rate_profile"),
         mandatory = true,
+        set_telemetry_sensors = 96,
         sim =  {
             {uid=0x5013, unit=nil, dec=0, value=function() return rfsuite.utils.simSensors('rate_profile') end, min = 0, max = 6},
         },            
@@ -301,8 +318,9 @@ local sensorTable = {
 
     -- Throttle Sensors
     throttle_percent = {
-        name = "Throttle %",
+        name = rfsuite.i18n.get("telemetry.sensors.throttle_pct"),
         mandatory = true,
+        set_telemetry_sensors = 15,
         sim =  {
             {uid=0x5014, unit=nil, dec=0, value=function() return rfsuite.utils.simSensors('throttle_percent') end, min = 0, max = 100},
         },         
@@ -334,7 +352,7 @@ end
 function telemetry.listSensors()
     local sensorList = {}
 
-    for key, sensor in pairs(sensorTable) do table.insert(sensorList, {key = key, name = sensor.name, mandatory = sensor.mandatory}) end
+    for key, sensor in pairs(sensorTable) do table.insert(sensorList, {key = key, name = sensor.name, mandatory = sensor.mandatory, set_telemetry_sensors = sensor.set_telemetry_sensors }) end
 
     return sensorList
 end

@@ -17,7 +17,7 @@
  * 
 ]] --
 
-craftname = {}
+local craftname = {}
 
 function craftname.wakeup()
     -- quick exit if no apiVersion

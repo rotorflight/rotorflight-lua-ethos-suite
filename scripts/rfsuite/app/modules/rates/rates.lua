@@ -211,7 +211,7 @@ end
 
 return {
     mspapi = mspapi,
-    title = "Rates",
+    title = rfsuite.i18n.get("app.modules.rates.name"),
     reboot = false,
     eepromWrite = true,
     refreshOnRateChange = true,

@@ -17,13 +17,14 @@
 -- Constants for MSP Commands
 local API_NAME = "ACC_TRIM" -- API name (must be same as filename)
 local MSP_API_CMD_READ = 240 -- Command identifier 
-local MSP_API_CMD_WRITE = 239 -- Command identifier 
+local MSP_API_CMD_WRITE = 239 -- Command identifier
+local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write 
 
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "pitch", type = "U16", apiVersion = 12.06, simResponse = {0, 0}, min = -300, max = 300, default = 0, unit = "°", help="Use to trim if the heli drifts in one of the stabilized modes (angle, horizon, etc.)."},
-    { field = "roll",  type = "U16", apiVersion = 12.06, simResponse = {0, 0}, min = -300, max = 300, default = 0, unit = "°", help="Use to trim if the heli drifts in one of the stabilized modes (angle, horizon, etc.)."},
+    { field = "pitch", type = "S16", apiVersion = 12.06, simResponse = {0, 0}, min = -300, max = 300, default = 0, unit = "°"},
+    { field = "roll",  type = "S16", apiVersion = 12.06, simResponse = {0, 0}, min = -300, max = 300, default = 0, unit = "°"},
 }
 
 -- Process structure in one pass
@@ -84,7 +85,7 @@ local function write(suppliedPayload)
 
     local message = {
         command = MSP_API_CMD_WRITE,
-        payload = suppliedPayload or rfsuite.tasks.msp.api.buildWritePayload(API_NAME, payloadData,MSP_API_STRUCTURE_WRITE),
+        payload = suppliedPayload or rfsuite.tasks.msp.api.buildWritePayload(API_NAME, payloadData,MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE),
         processReply = function(self, buf)
             local completeHandler = handlers.getCompleteHandler()
             if completeHandler then completeHandler(self, buf) end

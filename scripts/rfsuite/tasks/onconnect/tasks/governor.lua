@@ -17,7 +17,7 @@
  * 
 ]] --
 
-governor = {}
+local governor = {}
 
 function governor.wakeup()
     -- quick exit if no apiVersion

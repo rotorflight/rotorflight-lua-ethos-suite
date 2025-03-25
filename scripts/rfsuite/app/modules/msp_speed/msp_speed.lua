@@ -112,8 +112,8 @@ local function startTest(duration)
     startTestTime = os.clock()
 
     testLoader = form.openProgressDialog({
-        title = "Testing",
-        message = "Testing MSP performance...",
+        title = rfsuite.i18n.get("app.modules.msp_speed.testing"),
+        message = rfsuite.i18n.get("app.modules.msp_speed.testing_performance"),
         close = function()
             updateStats()
             testLoader = nil
@@ -166,31 +166,31 @@ end
 
 local function openSpeedTestDialog()
     local buttons = {{
-        label = "  600S  ",
+        label = rfsuite.i18n.get("app.modules.msp_speed.seconds_600"),
         action = function()
             startTest(600)
             return true
         end
     }, {
-        label = "  300S  ",
+        label = rfsuite.i18n.get("app.modules.msp_speed.seconds_300"),
         action = function()
             startTest(300)
             return true
         end
     }, {
-        label = "  120S  ",
+        label = rfsuite.i18n.get("app.modules.msp_speed.seconds_120"),
         action = function()
             startTest(120)
             return true
         end
     }, {
-        label = "  30S  ",
+        label = rfsuite.i18n.get("app.modules.msp_speed.seconds_30"),
         action = function()
             startTest(30)
             return true
         end
     }}
-    form.openDialog({title = "Start", message = "Would you like to start the test? Choose the test run time below.", buttons = buttons, options = TEXT_LEFT})
+    form.openDialog({title = rfsuite.i18n.get("app.modules.msp_speed.start"), message = rfsuite.i18n.get("app.modules.msp_speed.start_prompt"), buttons = buttons, options = TEXT_LEFT})
 end
 
 local function openPage(pidx, title, script)
@@ -205,7 +205,7 @@ local function openPage(pidx, title, script)
 
     form.clear()
 
-    local titleline = form.addLine("MSP Speed")
+    local titleline = form.addLine(rfsuite.i18n.get("app.modules.msp_speed.name"))
 
     local buttonW = 100
     local buttonWs = buttonW - (buttonW * 20) / 100
@@ -247,37 +247,37 @@ local function openPage(pidx, title, script)
 
     local posText = {x = x - 5 - buttonW - buttonWs - 5 - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = 200, h = rfsuite.app.radio.navbuttonHeight}
 
-    line['rf'] = form.addLine("RF protocol")
+    line['rf'] = form.addLine(rfsuite.i18n.get("app.modules.msp_speed.rf_protocol"))
     fields['rf'] = form.addStaticText(line['rf'], posText, string.upper(rfsuite.tasks.msp.protocol.mspProtocol))
 
-    line['memory'] = form.addLine("Memory free")
+    line['memory'] = form.addLine(rfsuite.i18n.get("app.modules.msp_speed.memory_free"))
     fields['memory'] = form.addStaticText(line['memory'], posText, rfsuite.utils.round(system.getMemoryUsage().luaRamAvailable / 1000, 2) .. 'kB')
 
-    line['runtime'] = form.addLine("Test length")
+    line['runtime'] = form.addLine(rfsuite.i18n.get("app.modules.msp_speed.test_length"))
     fields['runtime'] = form.addStaticText(line['runtime'], posText, "-")
 
-    line['total'] = form.addLine("Total queries")
+    line['total'] = form.addLine(rfsuite.i18n.get("app.modules.msp_speed.total_queries"))
     fields['total'] = form.addStaticText(line['total'], posText, "-")
 
-    line['success'] = form.addLine("Successful queries")
+    line['success'] = form.addLine(rfsuite.i18n.get("app.modules.msp_speed.successful_queries"))
     fields['success'] = form.addStaticText(line['success'], posText, "-")
 
-    line['timeouts'] = form.addLine("Timeouts")
+    line['timeouts'] = form.addLine(rfsuite.i18n.get("app.modules.msp_speed.timeouts"))
     fields['timeouts'] = form.addStaticText(line['timeouts'], posText, "-")
 
-    line['retries'] = form.addLine("Retries")
+    line['retries'] = form.addLine(rfsuite.i18n.get("app.modules.msp_speed.retries"))
     fields['retries'] = form.addStaticText(line['retries'], posText, "-")
 
-    line['checksum'] = form.addLine("Checksum errors")
+    line['checksum'] = form.addLine(rfsuite.i18n.get("app.modules.msp_speed.checksum_errors"))
     fields['checksum'] = form.addStaticText(line['checksum'], posText, "-")
 
-    line['mintime'] = form.addLine("Minimum query time")
+    line['mintime'] = form.addLine(rfsuite.i18n.get("app.modules.msp_speed.min_query_time"))
     fields['mintime'] = form.addStaticText(line['mintime'], posText, "-")
 
-    line['maxtime'] = form.addLine("Maximum query time")
+    line['maxtime'] = form.addLine(rfsuite.i18n.get("app.modules.msp_speed.max_query_time"))
     fields['maxtime'] = form.addStaticText(line['maxtime'], posText, "-")
 
-    line['time'] = form.addLine("Average query time")
+    line['time'] = form.addLine(rfsuite.i18n.get("app.modules.msp_speed.avg_query_time"))
     fields['time'] = form.addStaticText(line['time'], posText, "-")
 
     formLoaded = true
@@ -319,7 +319,6 @@ function close()
 end
 
 return {
-    title = title,
     openPage = openPage,
     mspRetry = mspRetry,
     mspSuccess = mspSuccess,

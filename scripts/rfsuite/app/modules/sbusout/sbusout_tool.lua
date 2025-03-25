@@ -3,11 +3,11 @@ local arg = {...}
 
 local currentProfileChecked = false
 local firstLoad = true
-local minMaxIndex
+local minMaxIndex = 1
 -- local sbus_out_frame_rate
 
 local ch = rfsuite.currentSbusServoIndex
-local ch_str = "CH" .. tostring(ch + 1)
+local ch_str = rfsuite.i18n.get("app.modules.sbusout.ch_prefix") .. tostring(ch + 1)
 local offset = 6 * ch -- 6 bytes per channel
 
 local servoCount = rfsuite.session.servoCount or 6
@@ -30,10 +30,10 @@ local mspapi = {
         labels = {
         },
         fields = {
-            {t = "Type", min=0, max = 16, mspapi = 1, apikey="Type_"..ch+1, table = {"Receiver", "Mixer", "Servo", "Motor"}, postEdit = function(self) self.setMinMaxIndex(self, true) end},
-            {t = "Source", min=0, max = 15, mspapi = 1, apikey = "Index_"..ch+1, help = "sbusOutSource"},
-            {t = "Min", min = -2000, max = 2000, mspapi = 1, apikey="RangeLow_"..ch+1, help = "sbusOutMin"},
-            {t = "Max", min = -2000, max = 2000, mspapi = 1, apikey="RangeHigh_"..ch+1 ,help = "sbusOutMax"},
+            {t = rfsuite.i18n.get("app.modules.sbusout.type"), min=0, max = 16, mspapi = 1, apikey="Type_"..ch+1, table = {[0] = rfsuite.i18n.get("app.modules.sbusout.receiver"), rfsuite.i18n.get("app.modules.sbusout.mixer"), rfsuite.i18n.get("app.modules.sbusout.servo"), rfsuite.i18n.get("app.modules.sbusout.motor")}, postEdit = function(self) self.setMinMaxIndex(self, true) end},
+            {t = rfsuite.i18n.get("app.modules.sbusout.source"), min=0, max = 15, mspapi = 1, apikey = "Index_"..ch+1, help = "sbusOutSource"},
+            {t = rfsuite.i18n.get("app.modules.sbusout.min"), min = -2000, max = 2000, mspapi = 1, apikey="RangeLow_"..ch+1, help = "sbusOutMin"},
+            {t = rfsuite.i18n.get("app.modules.sbusout.max"), min = -2000, max = 2000, mspapi = 1, apikey="RangeHigh_"..ch+1 ,help = "sbusOutMax"},
         }
     }                 
 }
@@ -70,7 +70,7 @@ local function saveServoSettings(self)
 end
 
 local function onSaveMenuProgress()
-    rfsuite.app.ui.progressDisplay("Saving", "Saving data...")
+    rfsuite.app.ui.progressDisplay(rfsuite.i18n.get("app.modules.sbusout.saving"), rfsuite.i18n.get("app.modules.sbusout.saving_data"))
     saveServoSettings()
     rfsuite.app.triggers.isReady = true
     rfsuite.app.triggers.closeProgressLoader = true
@@ -78,7 +78,8 @@ end
 
 -- function to set min and max value based on index.
 local function setMinMaxIndex(self)
-    minMaxIndex = math.floor(rfsuite.app.Page.fields[1].value)
+    minMaxIndex = math.floor(rfsuite.app.Page.fields[1].value + 1) 
+
 
     if firstLoad == true then
         firstLoad = false
@@ -127,7 +128,7 @@ end
 
 local function onSaveMenu()
     local buttons = {{
-        label = "                OK                ",
+        label = rfsuite.i18n.get("app.btn_ok_long"),
         action = function()
             rfsuite.app.audio.playSaving = true
             isSaving = true
@@ -135,13 +136,13 @@ local function onSaveMenu()
             return true
         end
     }, {
-        label = "CANCEL",
+        label = rfsuite.i18n.get("app.modules.sbusout.cancel"),
         action = function()
             return true
         end
     }}
-    local theTitle = "Save settings"
-    local theMsg = "Save current page to flight controller?"
+    local theTitle = rfsuite.i18n.get("app.modules.sbusout.save_settings")
+    local theMsg = rfsuite.i18n.get("app.modules.sbusout.save_prompt")
 
     form.openDialog({
         width = nil,
@@ -170,8 +171,12 @@ local function wakeup()
         -- to avoid a page reload we contrain the field values using a wakeup call.
         -- we could use postEdit on the fields line - but this does not update until 
         -- you exit the field!
-        local currentMin = minmax[minMaxIndex].min
-        local currentMax = minmax[minMaxIndex].max
+
+        if minmax == nil then return end
+
+
+        local currentMin = minmax[minMaxIndex].min 
+        local currentMax = minmax[minMaxIndex].max 
         local currentSourceMax = minmax[minMaxIndex].sourceMax
 
  
@@ -194,7 +199,6 @@ end
 -- its not worth the effort
 return {
     mspapi = mspapi,
-    title = "SBUS Output",
     reboot = false,
     eepromWrite = true,
     postLoad = postLoad,

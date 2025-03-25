@@ -14,11 +14,11 @@ local mspapi = {
         labels = {
         },
         fields = {
-            {t = "Cell count",       mspapi = 1, apikey = "cell_count"},
-            {t = "BEC voltage",      mspapi = 1, apikey = "bec_voltage",    type = 1},
-            {t = "Motor direction",  mspapi = 1, apikey = "motor_direction", type = 1},
-            {t = "Soft start",       mspapi = 1, apikey = "soft_start"},
-            {t = "Fan control",      mspapi = 1, apikey = "fan_control", type = 1}
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.cell_count"),       mspapi = 1, apikey = "cell_count"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.bec_voltage"),      mspapi = 1, apikey = "bec_voltage",    type = 1},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.motor_direction"),  mspapi = 1, apikey = "motor_direction", type = 1},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.soft_start"),       mspapi = 1, apikey = "soft_start"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.fan_control"),      mspapi = 1, apikey = "fan_control", type = 1}
         }
     }                 
 }
@@ -52,7 +52,6 @@ return {
     mspapi=mspapi,
     eepromWrite = false,
     reboot = false,
-    title = "Basic Setup",
     escinfo = escinfo,
     svFlags = 0,
     simulatorResponse =  simulatorResponse,
@@ -60,7 +59,7 @@ return {
     navButtons = {menu = true, save = true, reload = true, tool = false, help = false},
     onNavMenu = onNavMenu,
     event = event,
-    pageTitle = "ESC / FLYROTOR / Basic",
+    pageTitle = rfsuite.i18n.get("app.modules.esc_tools.name") .. " / " ..  rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.name") .. " / " .. rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.basic"),
     headerLine = rfsuite.escHeaderLineText
 }
 

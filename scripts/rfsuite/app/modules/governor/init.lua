@@ -18,8 +18,8 @@
 
 ]] --
 local init = {
-    title = "Governor", -- title of the page
-    section = "Hardware", -- do not run if busy with msp
+    title = rfsuite.i18n.get("app.modules.governor.name"), -- title of the page
+    section = "hardware", -- do not run if busy with msp
     script = "governor.lua", -- run this script
     image = "governor.png", -- image for the page
     order = 11, -- order in the section
