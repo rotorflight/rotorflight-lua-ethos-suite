@@ -74,6 +74,10 @@ local function rebootFC()
         rfsuite.utils.log("Rebooting FC","info")
     end)
     RAPI.write()
+
+    -- mute sensor lost
+    local module = model.getModule(rfsuite.session.telemetrySensor:module())
+    if module and module.muteSensorLost then module:muteSensorLost(2.0) end
 end
 
 local function applySettings()

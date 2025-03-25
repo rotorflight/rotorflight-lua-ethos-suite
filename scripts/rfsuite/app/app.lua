@@ -389,6 +389,9 @@ local mspEepromWrite = {
         if app.Page.reboot then
             -- app.audio.playSaveArmed = true
             rebootFc()
+            -- mute sensor lost
+            local module = model.getModule(rfsuite.session.telemetrySensor:module())
+            if module and module.muteSensorLost then module:muteSensorLost(2.0) end
         else
             invalidatePages()
         end
