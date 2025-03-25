@@ -389,6 +389,8 @@ local mspEepromWrite = {
         if app.Page.reboot then
             -- app.audio.playSaveArmed = true
             rebootFc()
+
+            rfsuite.session.telemetryTypeChanged = true
         else
             invalidatePages()
         end

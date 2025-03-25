@@ -72,8 +72,12 @@ local function rebootFC()
     RAPI.setUUID("123e4567-e89b-12d3-a456-426614174000")
     RAPI.setCompleteHandler(function(self)
         rfsuite.utils.log("Rebooting FC","info")
+
+        rfsuite.session.telemetryTypeChanged = true
+
     end)
     RAPI.write()
+
 end
 
 local function applySettings()
@@ -173,7 +177,6 @@ local function wakeup()
         if rfsuite.utils.ethosVersionAtLeast({1,6,3}) then
             rfsuite.utils.log("Starting discover sensors", "info")
             rfsuite.tasks.msp.sensorTlm:discover()
-            rfsuite.utils.playFileCommon("beep.wav")
         else    
             form.openDialog({
                 width = nil,
@@ -229,7 +232,7 @@ local function wakeup()
     end  
 
     -- enable/disable the tool button
-    if rfsuite.session.apiVersion < 12.08 then
+    if rfsuite.session and rfsuite.session.apiVersion and rfsuite.session.apiVersion < 12.08 then
         rfsuite.app.formNavigationFields['tool']:enable(false)
     else
         rfsuite.app.formNavigationFields['tool']:enable(true)
