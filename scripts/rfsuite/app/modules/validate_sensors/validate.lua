@@ -77,7 +77,7 @@ local function rebootFC()
 
     end)
     RAPI.write()
-
+    
 end
 
 local function applySettings()

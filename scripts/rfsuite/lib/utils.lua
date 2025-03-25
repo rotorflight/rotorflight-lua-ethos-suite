@@ -245,6 +245,10 @@ function utils.stringInArray(array, s)
 end
 
 function utils.round(num, places)
+    if num == nil then 
+        return nil 
+    end
+
     local places = places or 2
     if places == 0 then
         return math.floor(num + 0.5)  -- return integer (no .0)
