@@ -126,12 +126,8 @@ function utils.playFile(pkg, file)
     -- Get and clean audio voice path
     local av = system.getAudioVoice():gsub("SD:", ""):gsub("RADIO:", ""):gsub("AUDIO:", ""):gsub("VOICE[1-4]:", "")
 
-    -- Pre-define the base directory paths
-    local soundPack = rfsuite.preferences.soundPack
-    local audioPath = soundPack and ("/audio/" .. soundPack) or av
-
     -- Construct file paths
-    local wavLocale = audioPath .. "/" .. pkg .. "/" .. file
+    local wavLocale = "audio/" .. av .. "/" .. pkg .. "/" .. file
     local wavDefault = "audio/en/default/" .. pkg .. "/" .. file
 
     -- Check if locale file exists, else use the default
