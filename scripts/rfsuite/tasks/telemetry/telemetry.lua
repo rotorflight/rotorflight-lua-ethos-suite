@@ -315,7 +315,21 @@ local sensorTable = {
         },
         crsfLegacy = {nil}
     },
-
+    battery_profile = {
+        name = rfsuite.i18n.get("telemetry.sensors.battery_profile"),
+        mandatory = true,
+        set_telemetry_sensors = 97,
+        sim =  {
+            {uid=0x5015, unit=nil, dec=0, value=function() return rfsuite.utils.simSensors('battery_profile') end, min = 0, max = 6},
+        },            
+        sport = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5132},
+        },
+        crsf = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1213}
+        },
+        crsfLegacy = {nil}
+    },
     -- Throttle Sensors
     throttle_percent = {
         name = rfsuite.i18n.get("telemetry.sensors.throttle_pct"),
