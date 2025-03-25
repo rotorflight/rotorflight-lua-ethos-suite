@@ -25,8 +25,6 @@ local config = arg[1]
 local sensors = {}
 local loadedSensorModule = nil
 
-local msp = assert(loadfile("tasks/sensors/msp.lua"))(config)
-
 --[[
     loadSensorModule - Loads the appropriate sensor module based on the current protocol and preferences.
 
@@ -78,9 +76,6 @@ function sensors.wakeup()
         loadedSensorModule.module.wakeup()
     end
 
-    if msp and msp.wakeup then
-        msp.wakeup()
-    end
 end
 
 return sensors
