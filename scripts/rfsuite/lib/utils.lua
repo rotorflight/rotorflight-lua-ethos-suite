@@ -639,8 +639,12 @@ function utils.reportMemoryUsage(location)
     rfsuite.session.lastMemoryUsage = system.getMemoryUsage().luaRamAvailable
 end
 
-    
 
+function utils.onReboot()
+    rfsuite.session.resetSensors = true
+    rfsuite.session.resetTelemetry = true
+    rfsuite.session.resetMSP = true
+end
 
 
 return utils
