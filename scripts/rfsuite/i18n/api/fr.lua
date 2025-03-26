@@ -248,6 +248,7 @@ fr = {
         tbl_automatic = "Automatique",
         tbl_alwayson = "Toujours Allume",
         tbl_disabled = "Desactive",
+        tbl_enabled = "Active",
     },
     ESC_PARAMETERS_HW5 = {
         tbl_fixedwing = "Aile Fixe", 

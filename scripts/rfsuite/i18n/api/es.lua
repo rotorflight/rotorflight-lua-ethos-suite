@@ -248,6 +248,7 @@ local es = {
         tbl_automatic = "Automatico",
         tbl_alwayson = "Siempre Encendido",
         tbl_disabled = "Deshabilitado",
+        tbl_enabled = "Habilitado",
     },
     ESC_PARAMETERS_HW5 = {
         tbl_fixedwing = "Ala Fija", 

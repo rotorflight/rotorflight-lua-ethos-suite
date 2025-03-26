@@ -22,6 +22,40 @@ local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write
 local MSP_SIGNATURE = 0x73
 local MSP_HEADER_BYTES = 2
 
+
+local tblLed = {
+    [0xFF0000] = "RED",
+    [0x00FF00] = "GREEN",
+    [0x0000FF] = "BLUE",
+    [0xFFFF00] = "YELLOW",
+    [0xFF00FF] = "MAGENTA",
+    [0x00FFFF] = "CYAN",
+    [0xFFFFFF] = "WHITE",
+    [0xFFA500] = "ORANGE",
+    [0x808080] = "GRAY",
+    [0x800000] = "MAROON",
+    [0x008000] = "DARK GREEN",
+    [0x000080] = "NAVY",
+    [0x800080] = "PURPLE",
+    [0x008080] = "TEAL",
+    [0xC0C0C0] = "SILVER",
+    [0xFFC0CB] = "PINK",
+    [0xFFD700] = "GOLD",
+    [0xA52A2A] = "BROWN",
+    [0xADD8E6] = "LIGHT BLUE",
+    [0xFF007F] = "FLUORESCENT PINK", 
+    [0xFF7F00] = "FLUORESCENT ORANGE",
+    [0x7FFF00] = "FLUORESCENT LIME",
+    [0x00FF7F] = "FLUORESCENT MINT",
+    [0x007FFF] = "FLUORESCENT CYAN",
+    [0x7F00FF] = "FLUORESCENT PURPLE",
+    [0xFFFF7F] = "FLUORESCENT LIGHT YELLOW",
+    [0x7FFFD4] = "FLUORESCENT AQUAMARINE",
+    [0xFF1493] = "FLUORESCENT DEEP PINK",
+    [0xFF4500] = "FLUORESCENT ORANGE RED",
+}
+
+
 local MSP_API_STRUCTURE_READ_DATA = {
     {field = "esc_signature",           type = "U8",  apiVersion = 12.07, simResponse = {115}},
     {field = "esc_command",             type = "U8",  apiVersion = 12.07, simResponse = {0}},
@@ -49,7 +83,13 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "gov_p",                   type = "U16", apiVersion = 12.07, simResponse = {0, 45},       min = 1, max = 100, default = 45, byteorder = "big"},
     {field = "gov_i",                   type = "U16", apiVersion = 12.07, simResponse = {0, 35},       min = 1, max = 100, default = 35,  byteorder = "big"},
     {field = "gov_d",                   type = "U16", apiVersion = 12.07, simResponse = {0, 0},        min = 0, max = 100, default = 0,  byteorder = "big"},
-    {field = "motor_erpm_max",          type = "U24", apiVersion = 12.07, simResponse = {2, 23, 40}, min = 0, max = 1000000, step = 100, byteorder = "big"}
+    {field = "motor_erpm_max",          type = "U24", apiVersion = 12.07, simResponse = {2, 23, 40},   min = 0, max = 1000000, step = 100, byteorder = "big"},
+    {field = "throttle_protocol",       type = "U8",  apiVersion = 12.08, simResponse = {0},            min = 0, max = 2, table={"PWM", "DSHOT", "Serial Port"}, tableIdxInc = -1},
+    {field = "telemetry_protocol",      type = "U8",  apiVersion = 12.08, simResponse = {0},            min = 0, max = 1, table={"FLYROTOR", "SBUS2"}, tableIdxInc = -1},
+    {field = "led_color",               type = "U32", apiVersion = 12.08, simResponse = {255, 0, 255, 0}, min = 0, max = 1, table=tblLed},
+    {field = "motor_temp_sensor",       type = "U8",  apiVersion = 12.08, simResponse = {0},            min = 0, max = 1, table={rfsuite.i18n.get("api.ESC_PARAMETERS_FLYROTOR.tbl_disabled"), rfsuite.i18n.get("api.ESC_PARAMETERS_FLYROTOR.tbl_enabled")}, tableIdxInc = -1},
+    {field = "motor_temp",              type = "U8",  apiVersion = 12.08, simResponse = {100},           min = 50, max = 175, unit = "°"},
+    {field = "battery_capacity",        type = "U16", apiVersion = 12.08, simResponse = {0, 0},           min = 0, max = 5000, step = 100, unit = "mAh"},
 }
 
 -- Process structure in one pass
