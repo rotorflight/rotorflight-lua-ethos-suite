@@ -369,6 +369,7 @@ local function rebootFc()
         command = 68, -- MSP_REBOOT
         processReply = function(self, buf)
             invalidatePages()
+            rfsuite.utils.onReboot()
         end,
         simulatorResponse = {}
     })
@@ -389,6 +390,7 @@ local mspEepromWrite = {
         if app.Page.reboot then
             -- app.audio.playSaveArmed = true
             rebootFc()
+
         else
             invalidatePages()
         end

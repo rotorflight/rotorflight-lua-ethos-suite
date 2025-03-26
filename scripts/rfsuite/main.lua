@@ -55,7 +55,6 @@ preferences.saveWhenArmedWarning = true                             -- do not di
 preferences.audioAlerts = 1                                         -- 0 = all, 1 = alerts, 2 = disable [default = 1]
 preferences.profileSwitching = true                                 -- enable auto profile switching [default = true]
 preferences.iconSize = 1                                            -- 0 = text, 1 = small, 2 = large [default = 1]
-preferences.soundPack = nil                                         -- use an custom sound pack. [default = nil]
 preferences.syncCraftName = false                                   -- sync the craft name with the model name [default = false]
 preferences.mspExpBytes = 8                                         -- number of bytes for msp_exp [default = 8] 
 preferences.defaultRateProfile = 4 -- ACTUAL                        -- default rate table [default = 4]
