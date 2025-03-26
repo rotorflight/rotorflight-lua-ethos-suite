@@ -4,12 +4,12 @@ setlocal
 REM Official voices can be found here:  https://github.com/FrSkyRC/ETHOS-Feedback-Community/blob/1.6/tools/audio_packs.json
 
 REM English - Default
-python generate-googleapi.py --csv en.csv --voice en-US-Wavenet-D --base-dir en --variant default --engine google 
+python generate-googleapi.py --csv en.csv --voice en-US-Wavenet-F --base-dir en --variant default --engine google 
 
 REM English - US
-python generate-googleapi.py --csv en.csv --voice en-US-Wavenet-D --base-dir en --variant us --engine google 
+python generate-googleapi.py --csv en.csv --voice en-US-Wavenet-F --base-dir en --variant us --engine google 
 
-REM English - US
+REM English - GB
 python generate-googleapi.py --csv en.csv --voice en-GB-Neural2-A --base-dir en --variant gb --engine google 
 
 REM French - Default
