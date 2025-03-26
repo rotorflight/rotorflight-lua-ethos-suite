@@ -24,4 +24,11 @@ python generate-googleapi.py --csv fr.csv --voice fr-FR-Standard-B --base-dir fr
 REM Spanish - Default
 python generate-googleapi.py --csv es.csv --voice es-ES-Wavenet-C --base-dir es --variant default --engine google 
 
+REM German - Default
+python generate-googleapi.py --csv de.csv --voice de-DE-Wavenet-E --base-dir de --variant default --engine google 
+
+REM Dutch - Default
+python generate-googleapi.py --csv nl.csv --voice nl-NL-Standard-A --base-dir nl --variant default --engine google 
+
+
 endlocal
