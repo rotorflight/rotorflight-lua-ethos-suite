@@ -28,7 +28,7 @@ REM German - Default
 python generate-googleapi.py --csv de.csv --voice de-DE-Wavenet-E --base-dir de --variant default --engine google 
 
 REM Dutch - Default
-python generate-googleapi.py --csv de.csv --voice nl-NL-Chirp3-HD-Aoede --base-dir nl --variant default --engine google 
+python generate-googleapi.py --csv nl.csv --voice nl-NL-Standard-A --base-dir nl --variant default --engine google 
 
 
 endlocal
