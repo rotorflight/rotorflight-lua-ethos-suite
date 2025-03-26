@@ -73,8 +73,7 @@ local function rebootFC()
     RAPI.setCompleteHandler(function(self)
         rfsuite.utils.log("Rebooting FC","info")
 
-        rfsuite.session.resetTelemetry = true
-        rfsuite.session.resetMSP = true
+        rfsuite.utils.onReboot()
 
     end)
     RAPI.write()

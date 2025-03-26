@@ -76,10 +76,10 @@ end
 
 function sensors.wakeup()
 
-    if rfsuite.session.resetTelemetry and not delayPending then
+    if rfsuite.session.resetSensors and not delayPending then
         delayStartTime = os.clock()
         delayPending = true
-        rfsuite.session.resetTelemetry = false  -- Reset immediately
+        rfsuite.session.resetSensors = false  -- Reset immediately
         rfsuite.utils.log("Delaying sensor wakeup for " .. delayDuration .. " seconds","info")
         return  -- Exit early; wait starts now
     end
