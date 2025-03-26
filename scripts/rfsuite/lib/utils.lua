@@ -124,7 +124,13 @@ end
 
 function utils.playFile(pkg, file)
     -- Get and clean audio voice path
-    local av = system.getAudioVoice():gsub("SD:", ""):gsub("RADIO:", ""):gsub("AUDIO:", ""):gsub("VOICE[1-4]:", "")
+    local av = system.getAudioVoice():gsub("SD:", ""):gsub("RADIO:", ""):gsub("AUDIO:", ""):gsub("VOICE[1-4]:", ""):gsub("audio/", "")
+    
+    
+    -- Ensure av does not start with a slash
+    if av:sub(1, 1) == "/" then
+        av = av:sub(2)
+    end
 
     -- Construct file paths
     local wavLocale = "audio/" .. av .. "/" .. pkg .. "/" .. file
