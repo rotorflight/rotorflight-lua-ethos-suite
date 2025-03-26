@@ -304,9 +304,12 @@ end
 
 local function getLogDir()
 
-    local logs_path = "logs/"
+    -- make sure folder exists
+    os.mkdir("LOGS:")
+    os.mkdir("LOGS:/rfsuite")
+    os.mkdir("LOGS:/rfsuite/telemetry")
 
-    return logs_path .. "telemetry/"
+    return "LOGS:/rfsuite/telemetry/"
 
 end
 
@@ -510,12 +513,11 @@ local function drawCurrentIndex(points, position, totalPoints, keyindex, keyunit
         lcd.drawLine(linePos, graphPos['menu_offset'] - 5, linePos, graphPos['menu_offset'] + graphPos['height'])
 
         -- draw zoom level indicator
-
         if lcd.darkMode() then
             lcd.color(lcd.RGB(40, 40, 40))
         else
             lcd.color(lcd.RGB(240, 240, 240))
-        end
+        end           
 
         local z_x = (LCD_W - 25)
         local z_y = graphPos['slider_y']
@@ -530,10 +532,14 @@ local function drawCurrentIndex(points, position, totalPoints, keyindex, keyunit
         lcd.drawFilledRectangle(z_x, z_y, z_w, z_h)
         
         -- draw line
-        if lcd.darkMode() then
-            lcd.color(COLOR_WHITE)
+        if zoomCount > 1 then
+            if lcd.darkMode() then
+                lcd.color(COLOR_WHITE)
+            else
+                lcd.color(COLOR_BLACK)
+            end
         else
-            lcd.color(COLOR_BLACK)
+                lcd.color(COLOR_GREY)        
         end
         lcd.drawFilledRectangle(z_x, z_y + lineOffsetY, z_w, z_lh)
 
@@ -651,7 +657,6 @@ local function openPage(pidx, title, script, logfile, displaymode)
         end
     })
     
-
     rfsuite.app.formFields[1]:step(1)
 
 
@@ -766,7 +771,9 @@ local function wakeup()
 end
 
 local function calculateZoomSteps(logLineCount)
-    if logLineCount < 100 then
+    if logLineCount < 50 then
+        return 1
+    elseif logLineCount < 100 then
         return 2
     elseif logLineCount < 300 then
         return 3
@@ -806,6 +813,11 @@ local function paint()
             local laneHeight = height / graphCount
             local currentLane = 0
 
+            if zoomCount == 1 then
+                rfsuite.app.formFields[2]:enable(false)
+                rfsuite.app.formFields[3]:enable(false)
+            end
+
             for _, v in ipairs(logData) do
                 if v.graph then
                     currentLane = currentLane + 1
@@ -813,6 +825,10 @@ local function paint()
 
                     -- Apply zoom-level specific decimation
                     local decimationFactor = zoomLevelToDecimation[zoomLevel] or 1
+
+                    if zoomCount == 1 then
+                        decimationFactor = 1
+                    end
 
                     -- Fetch the reduced data set to plot
                     local points = paginate_table(v.data, step_size, position, decimationFactor)

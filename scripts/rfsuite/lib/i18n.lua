@@ -26,6 +26,9 @@ local folder = "i18n"
 -- Loaded translations table
 local translations = {}
 
+-- Cache for key translations
+local keyCache = {}
+
 --[[
     deepMerge - Recursively merges two tables.
     
@@ -158,6 +161,9 @@ end
     8. Merges translations from the default locale file and subdirectories into the `translations` table.
 --]]
 function i18n.load(locale)
+
+    keyCache = {}  -- Clear cache
+
     locale = locale or system.getLocale() or defaultLocale
     rfsuite.utils.log("i18n: Loading translations for locale: " .. locale, "debug")
 
@@ -194,18 +200,25 @@ end
     @return string: The translation value corresponding to the key, or the key itself if no translation is found.
 ]]
 function i18n.get(key)
+    if keyCache[key] ~= nil then
+        return keyCache[key]
+    end
+
     local value = translations
     for part in string.gmatch(key, "([^%.]+)") do
         if type(value) ~= "table" then
+            keyCache[key] = key  -- Cache fallback
             return key
         end
         value = value[part]
     end
 
     if value == nil then
+        keyCache[key] = key  -- Cache fallback
         return key
     end
 
+    keyCache[key] = value
     return value
 end
 

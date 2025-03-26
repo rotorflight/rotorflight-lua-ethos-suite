@@ -969,6 +969,7 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
             local label = rfsuite.app.Page.labels
             local version = rfsuite.utils.round(rfsuite.session.apiVersion,2)
+            if version == nil then return end
             local valid = (field.apiversion    == nil or rfsuite.utils.round(field.apiversion,2)    <= version) and
                           (field.apiversionlt  == nil or rfsuite.utils.round(field.apiversionlt,2)  >  version) and
                           (field.apiversiongt  == nil or rfsuite.utils.round(field.apiversiongt,2)  <  version) and

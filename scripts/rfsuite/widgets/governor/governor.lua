@@ -175,7 +175,7 @@ end
 
 -- Main wakeup function
 function rf2gov.wakeup(widget)
-    local schedulerUI = lcd.isVisible() and 0.25 or 5
+    local schedulerUI = lcd.isVisible() and 0.5 or 5
     local now = os.clock()
 
     if (now - rf2gov.wakeupSchedulerUI) >= schedulerUI then

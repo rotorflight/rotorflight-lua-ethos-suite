@@ -72,8 +72,12 @@ local function rebootFC()
     RAPI.setUUID("123e4567-e89b-12d3-a456-426614174000")
     RAPI.setCompleteHandler(function(self)
         rfsuite.utils.log("Rebooting FC","info")
+
+        rfsuite.utils.onReboot()
+
     end)
     RAPI.write()
+    
 end
 
 local function applySettings()
@@ -144,9 +148,8 @@ local function runRepair(data)
     end
 
     -- Fill remaining slots with zeros
-    while sensorIndex <= 52 do
-        buffer[sensorIndex] = 0
-        sensorIndex = sensorIndex + 1
+    for i = sensorIndex, 52 do
+        buffer[i] = 0
     end
 
     -- Send updated buffer
@@ -171,18 +174,22 @@ local function wakeup()
             end
         }}
     
-        form.openDialog({
-            width = nil,
-            title =  rfsuite.i18n.get("app.modules.validate_sensors.name"),
-            message = rfsuite.i18n.get("app.modules.validate_sensors.msg_repair_fin"),
-            buttons = buttons,
-            wakeup = function()
-            end,
-            paint = function()
-            end,
-            options = TEXT_LEFT
-        })
-
+        if rfsuite.utils.ethosVersionAtLeast({1,6,3}) then
+            rfsuite.utils.log("Starting discover sensors", "info")
+            rfsuite.tasks.msp.sensorTlm:discover()
+        else    
+            form.openDialog({
+                width = nil,
+                title =  rfsuite.i18n.get("app.modules.validate_sensors.name"),
+                message = rfsuite.i18n.get("app.modules.validate_sensors.msg_repair_fin"),
+                buttons = buttons,
+                wakeup = function()
+                end,
+                paint = function()
+                end,
+                options = TEXT_LEFT
+            })
+        end
     end
 
 
@@ -225,7 +232,7 @@ local function wakeup()
     end  
 
     -- enable/disable the tool button
-    if rfsuite.session.apiVersion < 12.08 then
+    if rfsuite.session and rfsuite.session.apiVersion and rfsuite.session.apiVersion < 12.08 then
         rfsuite.app.formNavigationFields['tool']:enable(false)
     else
         rfsuite.app.formNavigationFields['tool']:enable(true)

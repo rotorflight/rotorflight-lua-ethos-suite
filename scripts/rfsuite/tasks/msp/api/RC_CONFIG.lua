@@ -24,9 +24,9 @@ local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write
 local MSP_API_STRUCTURE_READ_DATA = {
     {field = "rc_center",       type = "U16", apiVersion = 12.06, simResponse = {220, 5}, min = 1400, max = 1600, default = 1500, unit = "us"},
     {field = "rc_deflection",   type = "U16", apiVersion = 12.06, simResponse = {254, 1}, min = 200,  max = 700,  default = 510,  unit = "us"},
-    {field = "rc_arm_throttle", type = "U16", apiVersion = 12.06, simResponse = {232, 3}, min = 850,  max = 1880, default = 1050, unit = "us"},
-    {field = "rc_min_throttle", type = "U16", apiVersion = 12.06, simResponse = {242, 3}, min = 860,  max = 1890, default = 1100, unit = "us"},
-    {field = "rc_max_throttle", type = "U16", apiVersion = 12.06, simResponse = {208, 7}, min = 1900, max = 2150, default = 1900, unit = "us"},
+    {field = "rc_arm_throttle", type = "U16", apiVersion = 12.06, simResponse = {232, 3}, min = 850,  max = 1500, default = 1050, unit = "us"},
+    {field = "rc_min_throttle", type = "U16", apiVersion = 12.06, simResponse = {242, 3}, min = 860,  max = 1500, default = 1100, unit = "us"},
+    {field = "rc_max_throttle", type = "U16", apiVersion = 12.06, simResponse = {208, 7}, min = 1510, max = 2150, default = 1900, unit = "us"},
     {field = "rc_deadband",     type = "U8",  apiVersion = 12.06, simResponse = {4},      min = 0,    max = 100,  default = 2,    unit = "us"},
     {field = "rc_yaw_deadband", type = "U8",  apiVersion = 12.06, simResponse = {4},      min = 0,    max = 100,  default = 2,    unit = "us"}
 }

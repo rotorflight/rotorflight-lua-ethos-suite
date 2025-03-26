@@ -32,7 +32,7 @@ local lastValidationTime = 0
 local VALIDATION_RATE_LIMIT = 2 -- Rate limit in seconds
 
 local lastCacheFlushTime = 0
-local CACHE_FLUSH_INTERVAL = 10 -- Flush cache every 10 seconds
+local CACHE_FLUSH_INTERVAL = 5 -- Flush cache every 5 seconds
 
 local telemetryState = false
 
@@ -591,8 +591,12 @@ function telemetry.wakeup()
         sensorRateLimit = now
     end
 
-    -- Periodic cache flush every 10 seconds
-    if (now - lastCacheFlushTime) >= CACHE_FLUSH_INTERVAL then
+    -- Periodic cache flush every 5 seconds
+    if ((now - lastCacheFlushTime) >= CACHE_FLUSH_INTERVAL) or rfsuite.session.resetTelemetry == true then
+        if rfsuite.session.resetTelemetry == true then
+            rfsuite.utils.log("Telemetry cache reset", "info")
+            rfsuite.session.resetTelemetry = false
+        end
         lastCacheFlushTime = now
         sensors = {} -- Reset cached sensors
         telemetrySOURCE, crsfSOURCE, protocol = nil, nil, nil

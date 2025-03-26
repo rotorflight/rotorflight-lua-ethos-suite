@@ -32,6 +32,7 @@ config.Version = "0.0.0.0"                                            -- version
 config.ethosVersion = {1, 6, 2}                                     -- min version of ethos supported by this script                                                     
 config.supportedMspApiVersion = {"12.06", "12.07","12.08"}          -- supported msp versions
 config.simulatorApiVersionResponse = {0, 12, 8}                     -- version of api return by simulator
+config.baseDir = "rfsuite"                                          -- base directory for the suite. This is only used by msp api to ensure correct path
 config.logLevel= "info"                                             -- off | info | debug [default = info]
 config.logToFile = false                                            -- log to file [default = false] (log file is in /scripts/rfsuite/logs)
 config.logMSP = false                                               -- log msp messages [default =  false]
@@ -54,7 +55,6 @@ preferences.saveWhenArmedWarning = true                             -- do not di
 preferences.audioAlerts = 1                                         -- 0 = all, 1 = alerts, 2 = disable [default = 1]
 preferences.profileSwitching = true                                 -- enable auto profile switching [default = true]
 preferences.iconSize = 1                                            -- 0 = text, 1 = small, 2 = large [default = 1]
-preferences.soundPack = nil                                         -- use an custom sound pack. [default = nil]
 preferences.syncCraftName = false                                   -- sync the craft name with the model name [default = false]
 preferences.mspExpBytes = 8                                         -- number of bytes for msp_exp [default = 8] 
 preferences.defaultRateProfile = 4 -- ACTUAL                        -- default rate table [default = 4]
@@ -94,8 +94,11 @@ rfsuite.app = assert(loadfile("app/app.lua"))(config)
 -- If the system is running in simulation mode, the log print interval is 
 -- set to 0.1 seconds.
 -- logging
+os.mkdir("LOGS:")
+os.mkdir("LOGS:/rfsuite")
+os.mkdir("LOGS:/rfsuite/logs")
 rfsuite.log = assert(loadfile("lib/log.lua"))(config)
-rfsuite.log.config.log_file = "logs/rfsuite_" .. os.date("%Y-%m-%d_%H-%M-%S") .. ".log"
+rfsuite.log.config.log_file = "LOGS:/rfsuite/logs/rfsuite_" .. os.date("%Y-%m-%d_%H-%M-%S") .. ".log"
 rfsuite.log.config.min_print_level  = config.logLevel
 rfsuite.log.config.log_to_file = config.logToFile
 
@@ -281,7 +284,27 @@ local function init()
     })
 
     -- widgets are loaded dynamically
-    local widgetList = rfsuite.utils.findWidgets()
+    local cacheFile = "widgets.cache"
+    local cachePath = "cache/" .. cacheFile
+    local widgetList
+    
+    -- Try to load from cache if it exists
+    if io.open(cachePath, "r") then
+        local ok, cached = pcall(dofile, cachePath)
+        if ok and type(cached) == "table" then
+            widgetList = cached
+            rfsuite.utils.log("[cache] Loaded widget list from cache","info")
+        else
+            rfsuite.utils.log("[cache] Failed to load cache, rebuilding...","info")
+        end
+    end
+    
+    -- If no valid cache, build and write new one
+    if not widgetList then
+        widgetList = rfsuite.utils.findWidgets()
+        rfsuite.utils.createCacheFile(widgetList, cacheFile, true)
+        rfsuite.utils.log("[cache] Created new widgets cache file","info")
+    end
 
     -- Iterates over the widgetList table and dynamically loads and registers widget scripts.
     -- For each widget in the list:
@@ -312,35 +335,35 @@ local function init()
     --   - title: Title of the widget.
     rfsuite.widgets = {}
 
-    for i, v in ipairs(widgetList) do
-        if v.script then
-            -- Load the script dynamically
-            local scriptModule = assert(loadfile("widgets/" .. v.folder .. "/" .. v.script))(config)
-    
-            -- Use the script filename (without .lua) as the key, or v.varname if provided
-            local varname = v.varname or v.script:gsub("%.lua$", "")
-    
-            -- Store the module inside rfsuite.widgets
-            rfsuite.widgets[varname] = scriptModule
-    
-            -- Register the widget with the system
-            system.registerWidget({
-                name = v.name,
-                key = v.key,
-                event = scriptModule.event,
-                create = scriptModule.create,
-                paint = scriptModule.paint,
-                wakeup = scriptModule.wakeup,
-                close = scriptModule.close,
-                configure = scriptModule.configure,
-                read = scriptModule.read,
-                write = scriptModule.write,
-                persistent = scriptModule.persistent or false,
-                menu = scriptModule.menu,
-                title = scriptModule.title
-            })
+        for i, v in ipairs(widgetList) do
+            if v.script then
+                -- Load the script dynamically
+                local scriptModule = assert(loadfile("widgets/" .. v.folder .. "/" .. v.script))(config)
+        
+                -- Use the script filename (without .lua) as the key, or v.varname if provided
+                local varname = v.varname or v.script:gsub("%.lua$", "")
+        
+                -- Store the module inside rfsuite.widgets
+                rfsuite.widgets[varname] = scriptModule
+        
+                -- Register the widget with the system
+                system.registerWidget({
+                    name = v.name,
+                    key = v.key,
+                    event = scriptModule.event,
+                    create = scriptModule.create,
+                    paint = scriptModule.paint,
+                    wakeup = scriptModule.wakeup,
+                    close = scriptModule.close,
+                    configure = scriptModule.configure,
+                    read = scriptModule.read,
+                    write = scriptModule.write,
+                    persistent = scriptModule.persistent or false,
+                    menu = scriptModule.menu,
+                    title = scriptModule.title
+                })
+            end
         end
-    end
     
 end    
 

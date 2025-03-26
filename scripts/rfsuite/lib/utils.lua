@@ -23,6 +23,49 @@ local utils = {}
 local arg = {...}
 local config = arg[1]
 
+function utils.createCacheFile(tbl, path, options)
+
+    os.mkdir("cache")
+
+    path = "cache/" .. path
+
+    local f, err = io.open(path, "w")
+    if not f then
+        rfsuite.utils.log("Error creating cache file: " .. err, "info")
+        return
+    end
+
+    local function serialize(value, indent)
+        indent = indent or ""
+        local t = type(value)
+
+        if t == "string" then
+            return string.format("%q", value)
+        elseif t == "number" or t == "boolean" then
+            return tostring(value)
+        elseif t == "table" then
+            local result = "{\n"
+            for k, v in pairs(value) do
+                local keyStr
+                if type(k) == "string" and k:match("^%a[%w_]*$") then
+                    keyStr = k .. " = "
+                else
+                    keyStr = "[" .. serialize(k) .. "] = "
+                end
+                result = result .. indent .. "  " .. keyStr .. serialize(v, indent .. "  ") .. ",\n"
+            end
+            result = result .. indent .. "}"
+            return result
+        else
+            error("Cannot serialize type: " .. t)
+        end
+    end
+
+    f:write("return ", serialize(tbl), "\n")
+    f:close()
+end
+
+
 
 function utils.logRotorFlightBanner()
     local version = rfsuite.config.Version or "Unknown Version"
@@ -44,7 +87,7 @@ function utils.logRotorFlightBanner()
         "  the GNU General Public License version 3.0",
         "  https://www.gnu.org/licenses/gpl-3.0.en.html",
         "                                              ",
-        " For more information, visit rotorflight.com",
+        " For more information, visit rotorflight.org",
         "==============================================="
     }
 
@@ -81,14 +124,16 @@ end
 
 function utils.playFile(pkg, file)
     -- Get and clean audio voice path
-    local av = system.getAudioVoice():gsub("SD:", ""):gsub("RADIO:", ""):gsub("AUDIO:", ""):gsub("VOICE[1-4]:", "")
-
-    -- Pre-define the base directory paths
-    local soundPack = rfsuite.preferences.soundPack
-    local audioPath = soundPack and ("/audio/" .. soundPack) or av
+    local av = system.getAudioVoice():gsub("SD:", ""):gsub("RADIO:", ""):gsub("AUDIO:", ""):gsub("VOICE[1-4]:", ""):gsub("audio/", "")
+    
+    
+    -- Ensure av does not start with a slash
+    if av:sub(1, 1) == "/" then
+        av = av:sub(2)
+    end
 
     -- Construct file paths
-    local wavLocale = audioPath .. "/" .. pkg .. "/" .. file
+    local wavLocale = "audio/" .. av .. "/" .. pkg .. "/" .. file
     local wavDefault = "audio/en/default/" .. pkg .. "/" .. file
 
     -- Check if locale file exists, else use the default
@@ -202,6 +247,10 @@ function utils.stringInArray(array, s)
 end
 
 function utils.round(num, places)
+    if num == nil then 
+        return nil 
+    end
+
     local places = places or 2
     if places == 0 then
         return math.floor(num + 0.5)  -- return integer (no .0)
@@ -461,7 +510,7 @@ end
 
     Description:
         This function attempts to load a telemetry Lua script from two possible paths:
-        1. "../rfsuite.sim/sensors/<id>.lua"
+        1. "LOGS:/rfsuite/sensors/<id>.lua"
         2. "lib/sim/sensors/<id>.lua"
         
         It first checks if the file exists at the local path. If not, it checks the fallback path.
@@ -470,9 +519,13 @@ end
 --]]
 function utils.simSensors(id)
 
+    os.mkdir("LOGS:")
+    os.mkdir("LOGS:/rfsuite")
+    os.mkdir("LOGS:/rfsuite/sensors")
+
     if id == nil then return 0 end
 
-    local localPath = "../rfsuite.sim/sensors/" .. id .. ".lua"
+    local localPath = "LOGS:/rfsuite/sensors/" .. id .. ".lua"
     local fallbackPath = "sim/sensors/" .. id .. ".lua"
 
     local filepath
@@ -592,8 +645,12 @@ function utils.reportMemoryUsage(location)
     rfsuite.session.lastMemoryUsage = system.getMemoryUsage().luaRamAvailable
 end
 
-    
 
+function utils.onReboot()
+    rfsuite.session.resetSensors = true
+    rfsuite.session.resetTelemetry = true
+    rfsuite.session.resetMSP = true
+end
 
 
 return utils
