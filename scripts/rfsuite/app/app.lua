@@ -369,6 +369,8 @@ local function rebootFc()
         command = 68, -- MSP_REBOOT
         processReply = function(self, buf)
             invalidatePages()
+            rfsuite.session.resetTelemetry = true
+            rfsuite.session.resetMSP = true
         end,
         simulatorResponse = {}
     })
@@ -390,7 +392,6 @@ local mspEepromWrite = {
             -- app.audio.playSaveArmed = true
             rebootFc()
 
-            rfsuite.session.telemetryTypeChanged = true
         else
             invalidatePages()
         end
