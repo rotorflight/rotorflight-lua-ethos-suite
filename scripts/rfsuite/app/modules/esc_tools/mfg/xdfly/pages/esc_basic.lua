@@ -20,7 +20,7 @@ local mspapi = {
             {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.hv_bec_voltage"),  activeFieldPos = 11, type = 1, mspapi = 1, apikey = "hv_bec_voltage"},
             {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.motor_direction"), activeFieldPos = 6, type = 1, mspapi = 1, apikey = "motor_direction"},
             {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.startup_power"),   activeFieldPos = 12, type = 1, mspapi = 1, apikey = "startup_power"},
-            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.led_colour"),      activeFieldPos = 18, type = 1, mspapi = 1, apikey = "led_color"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.led_color"),       activeFieldPos = 18, type = 1, mspapi = 1, apikey = "led_color"},
             {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.xdfly.smart_fan"),       activeFieldPos = 19, type = 1, mspapi = 1, apikey = "smart_fan"}
         }
     }                 
