@@ -87,6 +87,7 @@ en = {
             roll =              "Roll",
             pitch =             "Pitch",
             help_p1 =            "The accelerometer is used to measure the angle of the flight controller in relation to the horizon. This data is used to stabilize the aircraft and provide self-leveling functionality.",
+            msg_calibrate =     "Calibrate the accelerometer?",
         },
         battery = {
             name =              "Battery",

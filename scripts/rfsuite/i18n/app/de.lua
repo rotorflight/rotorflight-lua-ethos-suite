@@ -87,6 +87,7 @@ de = {
             roll =              "Roll",
             pitch =             "Nick",
             help_p1 =           "Der Beschleunigungssensor wird verwendet, um den Winkel des Flugcontrollers in Bezug auf den Horizont zu messen. Diese Daten werden zur Stabilisierung des Fluggeraets und zur Bereitstellung der Selbstnivellierungsfunktion verwendet.",
+            msg_calibrate =     "Beschleunigungssensor kalibrieren?",
         },
         battery = {
             name =              "Batterie",

@@ -87,6 +87,7 @@ fr = {
             roll =              "Roulis",
             pitch =             "Tangage",
             help_p1 =           "L'accelerometre est utilise pour mesurer l'angle du controleur de vol par rapport a l'horizon. Ces donnees sont utilisees pour stabiliser l'aeronef et fournir une fonctionnalite d'auto-nivellement.",
+            msg_calibrate =     "Calibrer l'accelerometre ?",
         },
         battery = {
             name =              "Batterie",
