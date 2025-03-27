@@ -1650,7 +1650,11 @@ function app.event(widget, category, value, x, y)
             rfsuite.utils.log("EVT_ENTER_LONG (PAGES)", "info")
             if app.dialogs.progressDisplay then app.ui.progressDisplayClose() end
             if app.dialogs.saveDisplay then app.ui.progressDisplaySaveClose() end
-            app.triggers.triggerSave = true
+            if rfsuite.app.Page and rfsuite.app.Page.onSaveMenu then
+                rfsuite.app.Page.onSaveMenu(rfsuite.app.Page)
+            else
+                rfsuite.app.triggers.triggerSave = true
+            end
             system.killEvents(KEY_ENTER_BREAK)
             return true
         end
