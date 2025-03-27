@@ -242,7 +242,7 @@ local function openPage(pidx, title, script)
     end
 
     rfsuite.app.triggers.escToolEnableButtons = false
-    getESCDetails()
+    --getESCDetails()
     collectgarbage()
 end
 
