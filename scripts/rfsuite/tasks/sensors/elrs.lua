@@ -30,6 +30,7 @@ local elrs = {}
 -- used by sensors.lua to know if module has changed
 elrs.name = "elrs"
 
+
 --[[
 This script checks if the `crsf.getSensor` function is available.
 If available, it retrieves the sensor object and assigns the `popFrame` and `pushFrame` methods from the sensor object to the `elrs` table.
@@ -72,6 +73,9 @@ local CRSF_FRAME_CUSTOM_TELEM = 0x88
     @param max (number) - Maximum value for the sensor (optional, default is 2147483647).
 ]]
 local function createTelemetrySensor(uid, name, unit, dec, value, min, max)
+
+    if rfsuite.session.telemetryState == false then return end
+
     sensors['uid'][uid] = model.createSensor()
     sensors['uid'][uid]:name(name)
     sensors['uid'][uid]:appId(uid)
@@ -108,6 +112,8 @@ end
     has been deleted or is missing and handles it accordingly.
 ]]
 local function setTelemetryValue(uid, subid, instance, value, unit, dec, name, min, max)
+
+    if rfsuite.session.telemetryState == false then return end
 
     if sensors['uid'][uid] == nil then
         sensors['uid'][uid] = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = uid})
@@ -689,9 +695,15 @@ elrs.telemetryFrameCount = 0
 ]]
 function elrs.crossfirePop()
 
-    if (CRSF_PAUSE_TELEMETRY == true or rfsuite.app.triggers.mspBusy == true) then
+    if (CRSF_PAUSE_TELEMETRY == true or rfsuite.app.triggers.mspBusy == true or rfsuite.session.telemetryState == false) then
         local module = model.getModule(rfsuite.session.telemetrySensor:module())
         if module ~= nil and module.muteSensorLost ~= nil then module:muteSensorLost(5.0) end
+
+        if rfsuite.session.telemetryState == false then
+            sensors['uid'] = {}
+            sensors['lastvalue'] = {}
+        end
+
         return false
     else
 
@@ -736,14 +748,16 @@ end
 ]]
 function elrs.wakeup()
 
-    -- in the event we delete the sensors - then we need on elrs to force a full reset
-    -- if we dont do this; elrs custom telem gets into a proper mess
-    if system.getSource("Rx RSSI1") then
-        rfsuite.session.resetSensors = true
-        return
+    if rfsuite.session.telemetryState and rfsuite.session.telemetrySensor then
+        while elrs.crossfirePop() do
+            if CRSF_PAUSE_TELEMETRY == true or rfsuite.app.triggers.mspBusy == true  then
+                break
+            end
+        end
+    else
+        sensors['uid'] = {}
+        sensors['lastvalue'] = {}          
     end
-
-    if rfsuite.session.telemetryState and rfsuite.session.telemetrySensor then while elrs.crossfirePop() do if (CRSF_PAUSE_TELEMETRY == true or rfsuite.app.triggers.mspBusy == true) then break end end end
 end
 
 return elrs
