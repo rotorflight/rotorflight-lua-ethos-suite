@@ -25,6 +25,24 @@ local mspapi = {
     }
 }
 
+if rfsuite.session.escDetails and rfsuite.session.escDetails.model then
+    -- known models strings are
+    -- FLYROTOR 280A
+    -- FLYROTOR 150A
+
+    -- note.  if you change the order of items in mspapi above - this will need to be updated
+    if string.find(rfsuite.session.escDetails.model, "FLYROTOR 150A") then
+        -- this works because battery capacity is last item in list.
+        -- we just keep popping off the first item until we get to the battery capacity
+        table.remove(mspapi.formdata.fields, 1)  -- throttle protocol
+        table.remove(mspapi.formdata.fields, 1)  -- telemetry protocol
+        table.remove(mspapi.formdata.fields, 1)  -- led color
+        table.remove(mspapi.formdata.fields, 1)  -- motor temp sensor
+        table.remove(mspapi.formdata.fields, 1)  -- motor temp
+    end    
+
+end
+
 function postLoad()
     rfsuite.app.triggers.closeProgressLoader = true
 end
