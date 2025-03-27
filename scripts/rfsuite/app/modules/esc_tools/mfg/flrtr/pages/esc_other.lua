@@ -72,5 +72,6 @@ return {
     onNavMenu = onNavMenu,
     event = event,
     pageTitle = rfsuite.i18n.get("app.modules.esc_tools.name") .. " / " .. rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.name") .. " / " .. rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.other"),
-    headerLine = rfsuite.escHeaderLineText
+    headerLine = rfsuite.escHeaderLineText,
+    progressCounter = 0.5,
 }

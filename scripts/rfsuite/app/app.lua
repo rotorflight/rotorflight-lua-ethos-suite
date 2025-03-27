@@ -966,7 +966,7 @@ function app.wakeupUI()
             app.dialogs.progressCounter = app.dialogs.progressCounter + 0.5
             if app.dialogs.progress ~= nil then app.ui.progressDisplayValue(app.dialogs.progressCounter) end
         else
-            app.dialogs.progressCounter = app.dialogs.progressCounter + 10
+            app.dialogs.progressCounter = app.dialogs.progressCounter + 5
             if app.dialogs.progress ~= nil then app.ui.progressDisplayValue(app.dialogs.progressCounter) end
         end
 
@@ -987,7 +987,7 @@ function app.wakeupUI()
 
         if rfsuite.tasks.msp.mspQueue:isProcessed() then
             if (app.dialogs.saveProgressCounter > 40 and app.dialogs.saveProgressCounter <= 80) then
-                app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 5
+                app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 3
             elseif (app.dialogs.saveProgressCounter > 90) then
                 app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 2
             else
@@ -1197,7 +1197,7 @@ function app.wakeupUI()
     -- a watchdog to enable the close button on a progress box dialog when loading data from the fbl
     if app.dialogs.progressDisplay == true and app.dialogs.progressWatchDog ~= nil then
 
-        app.dialogs.progressCounter = app.dialogs.progressCounter + 2
+        app.dialogs.progressCounter = app.dialogs.progressCounter + (rfsuite.app.Page.progressCounter or 1.5)
         app.ui.progressDisplayValue(app.dialogs.progressCounter)
 
         if (os.clock() - app.dialogs.progressWatchDog) > (tonumber(rfsuite.tasks.msp.protocol.pageReqTimeout)) then
