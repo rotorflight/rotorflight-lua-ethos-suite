@@ -87,6 +87,7 @@ de = {
             roll =              "Roll",
             pitch =             "Nick",
             help_p1 =           "Der Beschleunigungssensor wird verwendet, um den Winkel des Flugcontrollers in Bezug auf den Horizont zu messen. Diese Daten werden zur Stabilisierung des Fluggeraets und zur Bereitstellung der Selbstnivellierungsfunktion verwendet.",
+            msg_calibrate =     "Beschleunigungssensor kalibrieren?",
         },
         battery = {
             name =              "Batterie",
@@ -569,6 +570,12 @@ de = {
             msg_reset_to_defaults   = "Rate-Typ geaendert. Werte werden auf Standardwerte zurueckgesetzt.",
             help_p1                 = "Raten-Typ: Waehlen Sie den Rate-Typ aus, mit dem Sie fliegen moechten. Raceflight und Actual sind die einfachsten.",
             help_p2                 = "Dynamik: Wird unabhaengig vom Rate-Typ angewendet. Normalerweise auf Standard belassen, kann aber angepasst werden, um Heli-Bewegungen weicher zu machen, z. B. fuer Scale-Helis.",
+            roll_boost              = "Roll-Verstärkung",
+            pitch_boost             = "Nick-Verstärkung",
+            yaw_boost               = "Gier-Verstärkung",
+            collective_boost        = "Kollektiv-Verstärkung",
+            gain                    = "Verst.",
+            cutoff                  = "Grenz.",
         },
         sbusout = {
             name                = "SBUS-Ausgang",

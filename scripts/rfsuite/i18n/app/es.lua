@@ -87,6 +87,7 @@ local es = {
                 roll =              "Rolido",
                 pitch =             "Cabeceo",
                 help_p1 =           "El acelerómetro se utiliza para medir el ángulo del controlador de vuelo respecto del horizonte. Los datos obtenidos son utilizados para estabilizar la aeronave y porveer funcionalidad de nivelado automático.",
+                msg_calibrate =     "Calibrar el acelerómetro?",
             },
             battery = {
                 name =              "Batería",
@@ -569,6 +570,12 @@ local es = {
                 msg_reset_to_defaults   = "Cambió el tipo de tasa. Los valores se cambiaron a los por defecto.",
                 help_p1                 = "Tipo de Tasas: Seleccione el tipo de tasa con la que prefiere volar. Raceflight y Actual son las mas directas.",
                 help_p2                 = "Dinámicas: Se aplican independientemente de los tipos de tasas. Normalmente se dejan los valores por defecto, pero pueden ser ajustados para suavizar los movimientos del heli, como es el caso de los modelos a escala.",
+                roll_boost              = "Impulso de alabeo",
+                pitch_boost             = "Impulso de cabeceo",
+                yaw_boost               = "Impulso de guiñada",
+                collective_boost        = "Impulso colectivo",
+                gain                    = "Ganancia",
+                cutoff                  = "Límite",   
             },
             sbusout = {
                 name                = "Salida SBUS",

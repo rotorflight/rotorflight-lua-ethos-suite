@@ -205,7 +205,15 @@ de = {
         response_time_3 = "Erhoeht oder verringert die Reaktionszeit der Rate, um die Heli-Bewegungen zu glaetten.",
         accel_limit_3 = "Maximale Beschleunigung des Modells als Reaktion auf eine Knueppelbewegung.",
         response_time_4 = "Erhoeht oder verringert die Reaktionszeit der Rate, um die Heli-Bewegungen zu glaetten.",
-        accel_limit_4 = "Maximale Beschleunigung des Modells als Reaktion auf eine Knueppelbewegung."
+        accel_limit_4 = "Maximale Beschleunigung des Modells als Reaktion auf eine Knueppelbewegung.",
+        setpoint_boost_gain_1 = "Boost-Verstaerkung fuer den Sollwert.",
+        setpoint_boost_cutoff_1 = "Boost-Grenzwert fuer den Sollwert.",
+        setpoint_boost_gain_2 = "Boost-Verstaerkung fuer den Sollwert.",
+        setpoint_boost_cutoff_2 = "Boost-Grenzwert fuer den Sollwert.",
+        setpoint_boost_gain_3 = "Boost-Verstaerkung fuer den Sollwert.",
+        setpoint_boost_cutoff_3 = "Boost-Grenzwert fuer den Sollwert.",
+        setpoint_boost_gain_4 = "Boost-Verstaerkung fuer den Sollwert.",
+        setpoint_boost_cutoff_4 = "Boost-Grenzwert fuer den Sollwert.",
     },
     RESCUE_PROFILE = {
         rescue_flip_mode = "Falls die Rettung im invertierten Zustand aktiviert wird: Aufrichten oder invertiert bleiben.",

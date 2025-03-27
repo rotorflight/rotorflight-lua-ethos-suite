@@ -87,6 +87,7 @@ en = {
             roll =              "Roll",
             pitch =             "Pitch",
             help_p1 =            "The accelerometer is used to measure the angle of the flight controller in relation to the horizon. This data is used to stabilize the aircraft and provide self-leveling functionality.",
+            msg_calibrate =     "Calibrate the accelerometer?",
         },
         battery = {
             name =              "Battery",
@@ -569,6 +570,12 @@ en = {
             msg_reset_to_defaults   = "Rate type changed. Values will be reset to defaults.",
             help_p1                 = "Rates type: Choose the rate type you prefer flying with. Raceflight and Actual are the most straightforward.",
             help_p2                 = "Dynamics: Applied regardless of rates type. Typically left on defaults but can be adjusted to smooth heli movements, like with scale helis.",
+            roll_boost              = "Roll boost",
+            pitch_boost             = "Pitch boost",
+            yaw_boost               = "Yaw boost",
+            collective_boost        = "Collective boost",
+            gain                    = "Gain",
+            cutoff                  = "Cutoff",
         },
         sbusout = {
             name                = "SBUS Out",

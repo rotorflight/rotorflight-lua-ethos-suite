@@ -205,7 +205,15 @@ nl = {
         response_time_3 = "Verhoog of verlaag de reactietijd van de rates om de helikopterbewegingen soepeler te maken.",
         accel_limit_3 = "Maximale versnelling van de heli als reactie op een stickbeweging.",
         response_time_4 = "Verhoog of verlaag de reactietijd van de rates om de helikopterbewegingen soepeler te maken.",
-        accel_limit_4 = "Maximale versnelling van de heli als reactie op een stickbeweging."
+        accel_limit_4 = "Maximale versnelling van de heli als reactie op een stickbeweging.",
+        setpoint_boost_gain_1 = "Boostversterking voor het setpoint.",
+        setpoint_boost_cutoff_1 = "Boostdrempel voor het setpoint.",
+        setpoint_boost_gain_2 = "Boostversterking voor het setpoint.",
+        setpoint_boost_cutoff_2 = "Boostdrempel voor het setpoint.",
+        setpoint_boost_gain_3 = "Boostversterking voor het setpoint.",
+        setpoint_boost_cutoff_3 = "Boostdrempel voor het setpoint.",
+        setpoint_boost_gain_4 = "Boostversterking voor het setpoint.",
+        setpoint_boost_cutoff_4 = "Boostdrempel voor het setpoint.",       
     },
     RESCUE_PROFILE = {
         rescue_flip_mode = "Als de rescue wordt geactiveerd terwijl inverted, flip positief - of blijf inverted.",

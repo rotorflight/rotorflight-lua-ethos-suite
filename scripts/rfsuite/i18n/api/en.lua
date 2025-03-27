@@ -205,7 +205,15 @@ local en = {
         response_time_3 = "Increase or decrease the response time of the rate to smooth heli movements.",
         accel_limit_3 = "Maximum acceleration of the craft in response to a stick movement.",
         response_time_4 = "Increase or decrease the response time of the rate to smooth heli movements.",
-        accel_limit_4 = "Maximum acceleration of the craft in response to a stick movement."
+        accel_limit_4 = "Maximum acceleration of the craft in response to a stick movement.",
+        setpoint_boost_gain_1 = "Boost gain for the setpoint.",
+        setpoint_boost_cutoff_1 = "Boost cutoff for the setpoint.",
+        setpoint_boost_gain_2 = "Boost gain for the setpoint.",
+        setpoint_boost_cutoff_2 = "Boost cutoff for the setpoint.",
+        setpoint_boost_gain_3 = "Boost gain for the setpoint.",
+        setpoint_boost_cutoff_3 = "Boost cutoff for the setpoint.",
+        setpoint_boost_gain_4 = "Boost gain for the setpoint.",
+        setpoint_boost_cutoff_4 = "Boost cutoff for the setpoint."
     },
     RESCUE_PROFILE = {
         rescue_flip_mode = "If rescue is activated while inverted, flip to upright - or remain inverted.",

@@ -736,6 +736,13 @@ end
 ]]
 function elrs.wakeup()
 
+    -- in the event we delete the sensors - then we need on elrs to force a full reset
+    -- if we dont do this; elrs custom telem gets into a proper mess
+    if system.getSource("Rx RSSI1") then
+        rfsuite.session.resetSensors = true
+        return
+    end
+
     if rfsuite.session.telemetryState and rfsuite.session.telemetrySensor then while elrs.crossfirePop() do if (CRSF_PAUSE_TELEMETRY == true or rfsuite.app.triggers.mspBusy == true) then break end end end
 end
 

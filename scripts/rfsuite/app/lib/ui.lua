@@ -1319,6 +1319,9 @@ function ui.injectApiAttributes(formField, f, v)
         formField:help(v.help)
     end  
 
+    -- force focus to ensure field updates
+    formField:focus(true)
+
 end
 
 
