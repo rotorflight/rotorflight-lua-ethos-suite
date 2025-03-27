@@ -631,6 +631,9 @@ function app.mspApiUpdateFormAttributes(values, structure)
     end
     collectgarbage()
     rfsuite.utils.reportMemoryUsage("app.mspApiUpdateFormAttributes")
+
+    -- set focus back to menu
+    rfsuite.app.formNavigationFields['menu']:focus(true)
 end
 
 
@@ -958,7 +961,7 @@ function app.wakeupUI()
     -- close progress loader.  this essentially just accelerates 
     -- the close of the progress bar once the data is loaded.
     -- so if not yet at 100%.. it says.. move there quickly
-    if app.triggers.closeProgressLoader == true then
+    if app.triggers.closeProgressLoader == true  then
         if app.dialogs.progressCounter >= 90 then
             app.dialogs.progressCounter = app.dialogs.progressCounter + 0.5
             if app.dialogs.progress ~= nil then app.ui.progressDisplayValue(app.dialogs.progressCounter) end
@@ -967,7 +970,7 @@ function app.wakeupUI()
             if app.dialogs.progress ~= nil then app.ui.progressDisplayValue(app.dialogs.progressCounter) end
         end
 
-        if app.dialogs.progressCounter >= 101 then
+        if app.dialogs.progressCounter >= 101 and rfsuite.tasks.msp.mspQueue:isProcessed() then
             app.dialogs.progressWatchDog = nil
             app.dialogs.progressDisplay = false
             if app.dialogs.progress ~= nil then app.ui.progressDisplayClose() end
