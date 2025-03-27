@@ -205,7 +205,15 @@ fr = {
         response_time_3 = "Augmenter ou diminuer le temps de reponse du taux pour lisser les mouvements de l'helico.",
         accel_limit_3 = "Acceleration maximale de l'appareil en reponse a un mouvement du manche.",
         response_time_4 = "Augmenter ou diminuer le temps de reponse du taux pour lisser les mouvements de l'helico.",
-        accel_limit_4 = "Acceleration maximale de l'appareil en reponse a un mouvement du manche."
+        accel_limit_4 = "Acceleration maximale de l'appareil en reponse a un mouvement du manche.",
+        setpoint_boost_gain_1 = "Gain de boost pour le point de consigne.",
+        setpoint_boost_cutoff_1 = "Seuil de boost pour le point de consigne.",
+        setpoint_boost_gain_2 = "Gain de boost pour le point de consigne.",
+        setpoint_boost_cutoff_2 = "Seuil de boost pour le point de consigne.",
+        setpoint_boost_gain_3 = "Gain de boost pour le point de consigne.",
+        setpoint_boost_cutoff_3 = "Seuil de boost pour le point de consigne.",
+        setpoint_boost_gain_4 = "Gain de boost pour le point de consigne.",
+        setpoint_boost_cutoff_4 = "Seuil de boost pour le point de consigne.",
     },
     RESCUE_PROFILE = {
         rescue_flip_mode = "Si le sauvetage est active en etant inverse, retourner a l'endroit - ou rester inverse.",

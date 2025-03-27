@@ -205,7 +205,15 @@ local es = {
         response_time_3 = "Incrementar o decrementar el tiempo de respuesta de la tasa para suavizar los movimientos del heli.",
         accel_limit_3 = "Aceleracion maxima de la aeronave en respuesta a un movimiento del joystick.",
         response_time_4 = "Incrementar o decrementar el tiempo de respuesta de la tasa para suavizar los movimientos del heli.",
-        accel_limit_4 = "Aceleracion maxima de la aeronave en respuesta a un movimiento del joystick."
+        accel_limit_4 = "Aceleracion maxima de la aeronave en respuesta a un movimiento del joystick.",
+        setpoint_boost_gain_1 = "Ganancia de impulso para el punto de consigna.",
+        setpoint_boost_cutoff_1 = "Limite de impulso para el punto de consigna.",
+        setpoint_boost_gain_2 = "Ganancia de impulso para el punto de consigna.",
+        setpoint_boost_cutoff_2 = "Limite de impulso para el punto de consigna.",
+        setpoint_boost_gain_3 = "Ganancia de impulso para el punto de consigna.",
+        setpoint_boost_cutoff_3 = "Limite de impulso para el punto de consigna.",
+        setpoint_boost_gain_4 = "Ganancia de impulso para el punto de consigna.",
+        setpoint_boost_cutoff_4 = "Limite de impulso para el punto de consigna.",       
     },
     RESCUE_PROFILE = {
         rescue_flip_mode = "Si se activa la funcion rescate mientras esta invertido, dar vuelta a vertical - o permanecer invertido.",

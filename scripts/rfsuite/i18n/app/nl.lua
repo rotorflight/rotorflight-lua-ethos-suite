@@ -570,6 +570,12 @@ nl = {
             msg_reset_to_defaults   = "Rate type changed. Values will be reset to defaults.",
             help_p1                 = "Rates type: Choose the rate type you prefer flying with. Raceflight and Actual are the most straightforward.",
             help_p2                 = "Dynamics: Applied regardless of rates type. Typically left on defaults but can be adjusted to smooth heli movements, like with scale helis.\n\n",
+            roll_boost              = "Rolboost",
+            pitch_boost             = "Pitch boost",
+            yaw_boost               = "Yaw boost",
+            collective_boost        = "Collective boost",
+            gain                    = "Versterk.",
+            cutoff                  = "Drempel",
         },
         sbusout = {
             name                = "SBUS Out",
