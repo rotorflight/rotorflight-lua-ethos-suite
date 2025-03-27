@@ -87,6 +87,7 @@ local es = {
                 roll =              "Rolido",
                 pitch =             "Cabeceo",
                 help_p1 =           "El acelerómetro se utiliza para medir el ángulo del controlador de vuelo respecto del horizonte. Los datos obtenidos son utilizados para estabilizar la aeronave y porveer funcionalidad de nivelado automático.",
+                msg_calibrate =     "Calibrar el acelerómetro?",
             },
             battery = {
                 name =              "Batería",

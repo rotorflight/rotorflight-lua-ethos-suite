@@ -86,7 +86,8 @@ nl = {
             name =              "Versnellingsmeter",
             roll =              "Roll",
             pitch =             "Pitch",
-            help_p1 =            "De accelerometer wordt gebruikt om de hoek van de flight controller te meten ten opzichte van de horizon. Deze data wordt gebruikt om het vliegtuig te stabiliseren en zelf leveling functionaliteit te bieden.",
+            help_p1 =           "De accelerometer wordt gebruikt om de hoek van de flight controller te meten ten opzichte van de horizon. Deze data wordt gebruikt om het vliegtuig te stabiliseren en zelf leveling functionaliteit te bieden.",
+            msg_calibrate =     "Kalibreer de versnellingsmeter?",
         },
         battery = {
             name =              "Batterij",
