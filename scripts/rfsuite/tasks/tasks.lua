@@ -43,6 +43,7 @@ local lastTelemetrySensorName = nil
 local sportSensor 
 local elrsSensor
 
+
 local tlm = system.getSource({category = CATEGORY_SYSTEM_EVENT, member = TELEMETRY_ACTIVE})
 
 if rfsuite.app.moduleList == nil then rfsuite.app.moduleList = rfsuite.utils.findModules() end
@@ -227,13 +228,15 @@ function tasks.wakeup()
             elrsSensor = nil 
             telemetryCheckScheduler = now    
         else
-            if not sportSensor then sportSensor = system.getSource({appId = 0xF101}) end
-            if not elrsSensor then elrsSensor = system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1}) end
+
+            -- always do a lookup.  we cannot cache this
+            sportSensor = system.getSource({appId = 0xF101}) 
+            elrsSensor = system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1}) 
 
             currentTelemetrySensor = sportSensor or elrsSensor or nil
             rfsuite.session.telemetrySensor = currentTelemetrySensor
 
-            if currentTelemetrySensor == nil then
+            if currentTelemetrySensor == nil  then
                 rfsuite.session.telemetryState = false
                 rfsuite.session.telemetryType = nil
                 rfsuite.session.telemetryTypeChanged = false
