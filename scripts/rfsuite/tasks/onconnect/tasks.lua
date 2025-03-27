@@ -79,7 +79,6 @@ function tasks.wakeup()
         local module = model.getModule(rfsuite.session.telemetrySensor:module())
         if module and module.muteSensorLost then module:muteSensorLost(2.0) end
         
-
         return
     end
 

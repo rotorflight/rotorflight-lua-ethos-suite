@@ -252,13 +252,6 @@ function tasks.wakeup()
         end
     end
 
-    -- in the event we delete the sensors - then we need on elrs to force a full reset
-    -- if we dont do this; elrs custom telem gets into a proper mess
-    if elrsSensor and not system.getSource("Rx RSSI1") then
-            rfsuite.session.resetSensors = true
-            return
-    end
-
     for _, task in ipairs(tasksList) do
         if now - task.last_run >= task.interval then
             if tasks[task.name].wakeup then

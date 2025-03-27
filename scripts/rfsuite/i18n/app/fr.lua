@@ -571,6 +571,12 @@ fr = {
             msg_reset_to_defaults   = "Type de taux change. Les valeurs seront reinitialisees par defaut.",
             help_p1                 = "Type de taux : Choisissez le type de taux avec lequel vous preferez voler. Raceflight et Actual sont les plus simples.",
             help_p2                 = "Dynamique : Applique independamment du type de taux. Typiquement laisse par defaut mais peut etre ajuste pour lisser les mouvements de l'helicoptere, comme avec les helicopteres de maquette.",
+            roll_boost              = "Boost de roulis",
+            pitch_boost             = "Boost de tangage",
+            yaw_boost               = "Boost de lacet",
+            collective_boost        = "Boost collectif",
+            gain                    = "Gain",
+            cutoff                  = "Seuil",
         },
         sbusout = {
             name                = "SBUS Sortie",

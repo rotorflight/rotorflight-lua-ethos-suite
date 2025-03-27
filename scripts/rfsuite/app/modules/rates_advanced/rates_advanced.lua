@@ -17,7 +17,11 @@ local mspapi = {
             {t = rfsuite.i18n.get("app.modules.rates_advanced.roll_dynamics"),       label = 1, inline_size = 14.6},
             {t = rfsuite.i18n.get("app.modules.rates_advanced.pitch_dynamics"),      label = 2, inline_size = 14.6},
             {t = rfsuite.i18n.get("app.modules.rates_advanced.yaw_dynamics"),        label = 3, inline_size = 14.6},
-            {t = rfsuite.i18n.get("app.modules.rates_advanced.collective_dynamics"), label = 4, inline_size = 14.6}
+            {t = rfsuite.i18n.get("app.modules.rates_advanced.collective_dynamics"), label = 4, inline_size = 14.6},
+            {t = rfsuite.i18n.get("app.modules.rates_advanced.roll_boost"), label = 5, inline_size = 14.6},
+            {t = rfsuite.i18n.get("app.modules.rates_advanced.pitch_boost"), label = 6, inline_size = 14.6},
+            {t = rfsuite.i18n.get("app.modules.rates_advanced.yaw_boost"), label = 7, inline_size = 14.6},
+            {t = rfsuite.i18n.get("app.modules.rates_advanced.collective_boost"), label = 8, inline_size = 14.6},
         },
         fields = {
             {t = rfsuite.i18n.get("app.modules.rates_advanced.rates_type"),        mspapi = 1, apikey = "rates_type", type = 1, ratetype = 1, postEdit = function(self) self.flagRateChange(self, true) end},
@@ -29,6 +33,15 @@ local mspapi = {
             {t = rfsuite.i18n.get("app.modules.rates_advanced.accel_limit"),       inline = 1, label = 3, mspapi = 1, apikey = "accel_limit_3"},
             {t = rfsuite.i18n.get("app.modules.rates_advanced.response_time"),     inline = 2, label = 4, mspapi = 1, apikey = "response_time_4"},
             {t = rfsuite.i18n.get("app.modules.rates_advanced.accel_limit"),       inline = 1, label = 4, mspapi = 1, apikey = "accel_limit_4"},
+            {t = rfsuite.i18n.get("app.modules.rates_advanced.gain"),       inline = 2, label = 5, mspapi = 1, apikey = "setpoint_boost_gain_1", apiversiongte = 12.08},
+            {t = rfsuite.i18n.get("app.modules.rates_advanced.cutoff"),     inline = 1, label = 5, mspapi = 1, apikey = "setpoint_boost_cutoff_1", apiversiongte = 12.08},
+            {t = rfsuite.i18n.get("app.modules.rates_advanced.gain"),       inline = 2, label = 6, mspapi = 1, apikey = "setpoint_boost_gain_2",apiversiongte = 12.08},
+            {t = rfsuite.i18n.get("app.modules.rates_advanced.cutoff"),     inline = 1, label = 6, mspapi = 1, apikey = "setpoint_boost_cutoff_2", apiversiongte = 12.08},
+            {t = rfsuite.i18n.get("app.modules.rates_advanced.gain"),       inline = 2, label = 7, mspapi = 1, apikey = "setpoint_boost_gain_3", apiversiongte = 12.08},
+            {t = rfsuite.i18n.get("app.modules.rates_advanced.cutoff"),     inline = 1, label = 7, mspapi = 1, apikey = "setpoint_boost_cutoff_3", apiversiongte = 12.08},
+            {t = rfsuite.i18n.get("app.modules.rates_advanced.gain"),       inline = 2, label = 8, mspapi = 1, apikey = "setpoint_boost_gain_4", apiversiongte = 12.08},
+            {t = rfsuite.i18n.get("app.modules.rates_advanced.cutoff"),     inline = 1, label = 8, mspapi = 1, apikey = "setpoint_boost_cutoff_4", apiversiongte = 12.08},
+
         }
     }                 
 }
