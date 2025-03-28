@@ -214,6 +214,9 @@ de = {
         setpoint_boost_cutoff_3 = "Boost-Grenzwert fuer den Sollwert.",
         setpoint_boost_gain_4 = "Boost-Verstaerkung fuer den Sollwert.",
         setpoint_boost_cutoff_4 = "Boost-Grenzwert fuer den Sollwert.",
+        yaw_dynamic_ceiling_gain = "Der maximale Gewinn, der auf die dynamische Yaw-Obergrenze angewendet wird.",
+        yaw_dynamic_deadband_gain = "Der maximale Gewinn, der auf die dynamische Yaw-Totzone angewendet wird.",
+        yaw_dynamic_deadband_filter = "Der maximale Filter, der auf die dynamische Yaw-Totzone angewendet wird."
     },
     RESCUE_PROFILE = {
         rescue_flip_mode = "Falls die Rettung im invertierten Zustand aktiviert wird: Aufrichten oder invertiert bleiben.",

@@ -577,7 +577,7 @@ local es = {
                 gain                    = "Ganancia",
                 cutoff                  = "Límite",   
                 yaw_dynamic_ceiling_gain = "Techo",
-                yaw_dynamic_deadband_gain = "B, muerta",
+                yaw_dynamic_deadband_gain = "B. Muerta",
                 yaw_dynamic_deadband_filter = "Filtro",
             },
             sbusout = {
