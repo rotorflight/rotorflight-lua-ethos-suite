@@ -576,6 +576,9 @@ de = {
             collective_boost        = "Kollektiv-Verstärkung",
             gain                    = "Verst.",
             cutoff                  = "Grenz.",
+            yaw_dynamic_ceiling_gain = "Decke",
+            yaw_dynamic_deadband_gain = "Totband",
+            yaw_dynamic_deadband_filter = "Filter",
         },
         sbusout = {
             name                = "SBUS-Ausgang",
