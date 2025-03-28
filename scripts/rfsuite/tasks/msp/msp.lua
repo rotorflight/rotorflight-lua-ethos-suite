@@ -31,8 +31,7 @@ msp.onConnectChecksInit = true
 
 local protocol = assert(loadfile("tasks/msp/protocols.lua"))()
 
-msp.sensor = sport.getSensor({primId = 0x32})
-msp.sensorTlm = sport.getSensor()
+
 msp.mspQueue = mspQueue
 
 -- set active protocol to use
@@ -72,6 +71,17 @@ end
 
 function msp.wakeup()
 
+    if rfsuite.session.telemetrySensor == nil then return end
+
+    if not msp.sensor then
+        msp.sensor = sport.getSensor({primId = 0x32})
+        msp.sensor:module(rfsuite.session.telemetrySensor:module())
+    end
+    
+    if not msp.sensorTlm then
+        msp.sensorTlm = sport.getSensor()
+        msp.sensorTlm:module(rfsuite.session.telemetrySensor:module())
+    end
 
     if rfsuite.session.resetMSP and not delayPending then
         delayStartTime = os.clock()
