@@ -15,12 +15,12 @@ local mspapi = {
         labels = {
         },
         fields = {
-            { t = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.throttle_protocol"),  mspapi = 1, apikey = "throttle_protocol",  type = 1,        mspapigt = 12.08 },
-            { t = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.telemetry_protocol"), mspapi = 1, apikey = "telemetry_protocol", type = 1,        mspapigt = 12.08 },
-            { t = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.led_color"),          mspapi = 1, apikey = "led_color_index",    type = 1,        mspapigt = 12.08 },
-            { t = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.motor_temp_sensor"),  mspapi = 1, apikey = "motor_temp_sensor",  type = 1,        mspapigt = 12.08 },
-            { t = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.motor_temp"),         mspapi = 1, apikey = "motor_temp",         mspapigt = 12.08 },
-            { t = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.battery_capacity"),   mspapi = 1, apikey = "battery_capacity",   mspapigt = 12.08 },
+            { t = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.throttle_protocol"),  mspapi = 1, apikey = "throttle_protocol",  type = 1,        apiversiongte = 12.08 },
+            { t = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.telemetry_protocol"), mspapi = 1, apikey = "telemetry_protocol", type = 1,        apiversiongte = 12.08 },
+            { t = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.led_color"),          mspapi = 1, apikey = "led_color_index",    type = 1,        apiversiongte = 12.08 },
+            { t = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.motor_temp_sensor"),  mspapi = 1, apikey = "motor_temp_sensor",  type = 1,        apiversiongte = 12.08 },
+            { t = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.motor_temp"),         mspapi = 1, apikey = "motor_temp",         apiversiongte = 12.08 },
+            { t = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.battery_capacity"),   mspapi = 1, apikey = "battery_capacity",   apiversiongte = 12.08 },
         }
     }
 }
