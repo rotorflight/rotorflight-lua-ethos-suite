@@ -35,6 +35,7 @@ local es = {
         msg_rebooting              = "Reiniciando...",
         msg_save_not_commited      = "No se copió a EEPROM",
         msg_please_disarm_to_save  = "Desarme para guardar a fin de asegurar la integridad de los datos.",
+        msg_please_disarm_to_save_warning = "La configuracion solo se guardara en EEPROM al desarmar",
         msg_loading                = "Cargando...",
         msg_loading_from_fbl       = "Cargando datos del controlador de vuelo...",
         msg_connecting             = "Conectando",

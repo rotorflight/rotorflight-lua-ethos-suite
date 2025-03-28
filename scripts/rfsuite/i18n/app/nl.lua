@@ -35,6 +35,7 @@ nl = {
     msg_rebooting              = "Opnieuw opstarten...",
     msg_save_not_commited      = "Opslaan niet gelukt naar EEPROM",
     msg_please_disarm_to_save  = "Disarm voor opslaan om data integriteit te verzekeren.",
+    msg_please_disarm_to_save_warning = "Instellingen worden alleen opgeslagen in EEPROM na uitschakelen",
     msg_loading                = "Laden...",
     msg_loading_from_fbl       = "Laden data van vliegcontroller...",
     msg_connecting             = "Verbinden",

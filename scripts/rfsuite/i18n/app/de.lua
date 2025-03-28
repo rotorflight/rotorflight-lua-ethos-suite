@@ -35,6 +35,7 @@ de = {
     msg_rebooting              = "Neustart...",
     msg_save_not_commited      = "Speicherung nicht im EEPROM uebernommen",
     msg_please_disarm_to_save  = "Bitte disarmen, um die Datensicherheit zu gewaehrleisten.",
+    msg_please_disarm_to_save_warning = "Einstellungen werden nur beim Entschaerfen im EEPROM gespeichert",
     msg_loading                = "Laedt...",
     msg_loading_from_fbl       = "Daten vom Flugcontroller werden geladen...",
     msg_connecting             = "Verbindung wird hergestellt",
