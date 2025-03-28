@@ -8,6 +8,7 @@ if rfsuite.session.activeRateTable == nil then
     rfsuite.session.activeRateTable = rfsuite.preferences.defaultRateProfile 
 end
 
+--[[
 local mspapi = {
     api = {
         [1] = 'RC_TUNING',
@@ -33,6 +34,7 @@ local mspapi = {
             {t = rfsuite.i18n.get("app.modules.rates_advanced.accel_limit"),       inline = 1, label = 2, mspapi = 1, apikey = "accel_limit_2"},
             {t = rfsuite.i18n.get("app.modules.rates_advanced.response_time"),     inline = 2, label = 3, mspapi = 1, apikey = "response_time_3"},
             {t = rfsuite.i18n.get("app.modules.rates_advanced.accel_limit"),       inline = 1, label = 3, mspapi = 1, apikey = "accel_limit_3"},
+
             {t = rfsuite.i18n.get("app.modules.rates_advanced.yaw_dynamic_ceiling_gain"),     inline = 3, label = 3.5, mspapi = 1, apikey = "yaw_dynamic_ceiling_gain", apiversiongte = 12.08},
             {t = rfsuite.i18n.get("app.modules.rates_advanced.yaw_dynamic_deadband_gain"),     inline = 2, label = 3.5, mspapi = 1, apikey = "yaw_dynamic_deadband_gain", apiversiongte = 12.08},
             {t = rfsuite.i18n.get("app.modules.rates_advanced.yaw_dynamic_deadband_filter"),     inline = 1, label = 3.5, mspapi = 1, apikey = "yaw_dynamic_deadband_filter", apiversiongte = 12.08},
@@ -52,6 +54,183 @@ local mspapi = {
         }
     }                 
 }
+    ]]--
+   
+
+local mspapi = {
+    api = {
+        [1] = 'RC_TUNING',
+    },
+    formdata = {
+        name = "Dynamics",
+        labels = {
+        },
+        rows = {
+            "Response Time",
+            "Accelerometer Limit",
+            "Setpoint Boost Gain",
+            "Setpoint Boost Cutoff",
+            "Dyn. Ceiling Gain",
+            "Dyn. Deadband. Gain",
+            "Dyn. Deadband. Filter",
+            rfsuite.i18n.get("app.modules.rates_advanced.rates_type")
+        },
+        cols = {
+            "Roll",
+            "Pitch",
+            "Yaw",
+            "Col"
+        },
+        fields = {
+            -- response time
+            {row = 1, col = 1, mspapi = 1, apikey = "response_time_1"},
+            {row = 1, col = 2, mspapi = 1, apikey = "response_time_2"},
+            {row = 1, col = 3, mspapi = 1, apikey = "response_time_3"},
+            {row = 1, col = 4, mspapi = 1, apikey = "response_time_4"},
+
+            {row = 2, col = 1, mspapi = 1, apikey = "accel_limit_1"},
+            {row = 2, col = 2, mspapi = 1, apikey = "accel_limit_2"},
+            {row = 2, col = 3, mspapi = 1, apikey = "accel_limit_3"},
+            {row = 2, col = 4, mspapi = 1, apikey = "accel_limit_4"},
+
+            {row = 3, col = 1, mspapi = 1, apikey = "setpoint_boost_gain_1", apiversiongte = 12.08},
+            {row = 3, col = 2, mspapi = 1, apikey = "setpoint_boost_gain_2", apiversiongte = 12.08},
+            {row = 3, col = 3, mspapi = 1, apikey = "setpoint_boost_gain_3", apiversiongte = 12.08},
+            {row = 3, col = 4, mspapi = 1, apikey = "setpoint_boost_gain_4", apiversiongte = 12.08},
+            
+            {row = 4, col = 1, mspapi = 1, apikey = "setpoint_boost_cutoff_1", apiversiongte = 12.08},
+            {row = 4, col = 2, mspapi = 1, apikey = "setpoint_boost_cutoff_2", apiversiongte = 12.08},
+            {row = 4, col = 3, mspapi = 1, apikey = "setpoint_boost_cutoff_3", apiversiongte = 12.08},
+            {row = 4, col = 4, mspapi = 1, apikey = "setpoint_boost_cutoff_4", apiversiongte = 12.08},
+
+            {row = 5, col = 3, mspapi = 1, apikey = "yaw_dynamic_ceiling_gain", apiversiongte = 12.08},
+            {row = 6, col = 3, mspapi = 1, apikey = "yaw_dynamic_deadband_gain", apiversiongte = 12.08},
+            {row = 7, col = 3, mspapi = 1, apikey = "yaw_dynamic_deadband_filter", apiversiongte = 12.08},
+
+            {mspapi = 1, apikey = "rates_type", type = 1, ratetype = 1, postEdit = function(self) self.flagRateChange(self, true) end},
+
+        }
+    }                 
+}
+
+function rightAlignText(width, text)
+    local textWidth, _ = lcd.getTextSize(text)  -- Get the text width
+    local padding = width - textWidth  -- Calculate how much padding is needed
+    
+    if padding > 0 then
+        return string.rep(" ", math.floor(padding / lcd.getTextSize(" "))) .. text
+    else
+        return text  -- No padding needed if text is already wider than width
+    end
+end
+
+
+local function openPage(idx, title, script)
+
+    rfsuite.app.uiState = rfsuite.app.uiStatus.pages
+    rfsuite.app.triggers.isReady = false
+
+    rfsuite.app.Page = assert(loadfile("app/modules/" .. script))()
+    -- collectgarbage()
+
+    rfsuite.app.lastIdx = idx
+    rfsuite.app.lastTitle = title
+    rfsuite.app.lastScript = script
+    rfsuite.session.lastPage = script
+
+    rfsuite.app.uiState = rfsuite.app.uiStatus.pages
+
+    longPage = false
+
+    form.clear()
+
+    rfsuite.app.ui.fieldHeader(title)
+    local numCols
+    if rfsuite.app.Page.cols ~= nil then
+        numCols = #rfsuite.app.Page.cols
+    else
+        numCols = 4
+    end
+    local screenWidth = rfsuite.session.lcdWidth - 10
+    local padding = 10
+    local paddingTop = rfsuite.app.radio.linePaddingTop
+    local h = rfsuite.app.radio.navbuttonHeight
+    local w = ((screenWidth * 60 / 100) / numCols)
+    local paddingRight = 20
+    local positions = {}
+    local positions_r = {}
+    local pos
+
+    line = form.addLine("")
+
+    local loc = numCols
+    local posX = screenWidth - paddingRight
+    local posY = paddingTop
+
+
+    rfsuite.utils.log("Merging form data from mspapi","debug")
+    rfsuite.app.Page.fields = rfsuite.app.Page.mspapi.formdata.fields
+    rfsuite.app.Page.labels = rfsuite.app.Page.mspapi.formdata.labels
+    rfsuite.app.Page.rows = rfsuite.app.Page.mspapi.formdata.rows
+    rfsuite.app.Page.cols = rfsuite.app.Page.mspapi.formdata.cols
+
+    rfsuite.session.colWidth = w - paddingRight
+
+    local c = 1
+    while loc > 0 do
+        local colLabel = rfsuite.app.Page.cols[loc]
+
+        positions[loc] = posX - w
+        positions_r[c] = posX - w
+
+        lcd.font(FONT_STD)
+        --local tsizeW, tsizeH = lcd.getTextSize(colLabel)
+        colLabel = rightAlignText(rfsuite.session.colWidth, colLabel)
+
+        local posTxt = positions_r[c] + paddingRight 
+
+        pos = {x = posTxt, y = posY, w = w, h = h}
+        rfsuite.app.formFields['col_'..tostring(c)] = form.addStaticText(line, pos, colLabel)
+
+        posX = math.floor(posX - w)
+
+        loc = loc - 1
+        c = c + 1
+    end
+
+    -- display each row
+    local fieldRows = {}
+    for ri, rv in ipairs(rfsuite.app.Page.rows) do fieldRows[ri] = form.addLine(rv) end
+
+    for i = 1, #rfsuite.app.Page.fields do
+        local f = rfsuite.app.Page.fields[i]
+        if f.row and f.col then
+            local l = rfsuite.app.Page.labels
+            local pageIdx = i
+            local currentField = i
+
+            posX = positions[f.col]
+
+            pos = {x = posX + padding, y = posY, w = w - padding, h = h}
+
+            rfsuite.app.formFields[i] = form.addNumberField(fieldRows[f.row], pos, 0, 0, function()
+                if rfsuite.app.Page.fields == nil or rfsuite.app.Page.fields[i] == nil then
+                    ui.disableAllFields()
+                    ui.disableAllNavigationFields()
+                    ui.enableNavigationField('menu')
+                    return nil
+                end
+                return rfsuite.app.utils.getFieldValue(rfsuite.app.Page.fields[i])
+            end, function(value)
+                if f.postEdit then f.postEdit(rfsuite.app.Page) end
+                if f.onChange then f.onChange(rfsuite.app.Page) end
+        
+                f.value = rfsuite.app.utils.saveFieldValue(rfsuite.app.Page.fields[i], value)
+            end)
+        end
+    end
+    
+end
 
 local function preSave(self)
     if resetRates == true then
@@ -179,6 +358,7 @@ return {
     mspapi = mspapi,
     title = rfsuite.i18n.get("app.modules.rates_advanced.name"),
     reboot = false,
+    openPage = openPage,
     eepromWrite = true,
     refreshOnRateChange = true,
     rTableName = rTableName,
