@@ -132,6 +132,15 @@ local function postLoad()
     uint8_dirty = true
     enableWakeup = false
 
+    -- Check if we have received any data
+    if rfsuite.app.Page.mspapi.receivedBytesCount['EXPERIMENTAL'] == 0 then
+        rfsuite.app.triggers.closeProgressLoader = true
+        rfsuite.app.ui.disableAllFields()
+        rfsuite.app.ui.disableAllNavigationFields()
+        rfsuite.app.ui.enableNavigationField('menu')
+        return
+    end
+
     if total_bytes ~= rfsuite.app.Page.mspapi.receivedBytesCount['EXPERIMENTAL'] then
 
         rfsuite.preferences.mspExpBytes = rfsuite.app.Page.mspapi.receivedBytesCount['EXPERIMENTAL']

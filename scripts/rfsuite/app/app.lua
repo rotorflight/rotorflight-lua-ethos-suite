@@ -716,7 +716,7 @@ local function checkForUnresolvedTimeouts()
         rfsuite.app.ui.disableAllFields()
         rfsuite.app.ui.disableAllNavigationFields()
         rfsuite.app.ui.enableNavigationField('menu')
-
+        rfsuite.app.triggers.closeProgressLoader = true
     end
 end
 
