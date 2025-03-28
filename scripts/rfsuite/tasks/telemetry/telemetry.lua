@@ -150,7 +150,7 @@ local sensorTable = {
     current = {
         name = rfsuite.i18n.get("telemetry.sensors.current"),
         mandatory = false,
-        set_telemetry_sensors = 4,
+        set_telemetry_sensors = 18,
         sim =  {
             {uid=0x5004, unit=UNIT_AMPERE, dec=0, value=function() return rfsuite.utils.simSensors('current') end, min = 0, max = 25},
         },
