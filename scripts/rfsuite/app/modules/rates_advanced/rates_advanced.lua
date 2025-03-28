@@ -8,78 +8,39 @@ if rfsuite.session.activeRateTable == nil then
     rfsuite.session.activeRateTable = rfsuite.preferences.defaultRateProfile 
 end
 
---[[
-local mspapi = {
-    api = {
-        [1] = 'RC_TUNING',
-    },
-    formdata = {
-        labels = {
-            {t = rfsuite.i18n.get("app.modules.rates_advanced.roll_dynamics"),       label = 1, inline_size = 12.1},
-            {t = rfsuite.i18n.get("app.modules.rates_advanced.pitch_dynamics"),      label = 2, inline_size = 12.1},
-            {t = rfsuite.i18n.get("app.modules.rates_advanced.yaw_dynamics"),        label = 3, inline_size = 12.1},
-            {t = "",        label = 3.5, inline_size = 12.1},
-            --{t = "",        label = 3.6, inline_size = 14.8},
-            {t = rfsuite.i18n.get("app.modules.rates_advanced.collective_dynamics"), label = 4, inline_size = 12.1},
-            {t = rfsuite.i18n.get("app.modules.rates_advanced.roll_boost"), label = 5, inline_size = 12.1},
-            {t = rfsuite.i18n.get("app.modules.rates_advanced.pitch_boost"), label = 6, inline_size = 12.1},
-            {t = rfsuite.i18n.get("app.modules.rates_advanced.yaw_boost"), label = 7, inline_size = 12.1},
-            {t = rfsuite.i18n.get("app.modules.rates_advanced.collective_boost"), label = 8, inline_size = 12.1},
-        },
-        fields = {
-            {t = rfsuite.i18n.get("app.modules.rates_advanced.rates_type"),        mspapi = 1, apikey = "rates_type", type = 1, ratetype = 1, postEdit = function(self) self.flagRateChange(self, true) end},
-            {t = rfsuite.i18n.get("app.modules.rates_advanced.response_time"),     inline = 2, label = 1, mspapi = 1, apikey = "response_time_1"},
-            {t = rfsuite.i18n.get("app.modules.rates_advanced.accel_limit"),       inline = 1, label = 1, mspapi = 1, apikey = "accel_limit_1"},
-            {t = rfsuite.i18n.get("app.modules.rates_advanced.response_time"),     inline = 2, label = 2, mspapi = 1, apikey = "response_time_2"},
-            {t = rfsuite.i18n.get("app.modules.rates_advanced.accel_limit"),       inline = 1, label = 2, mspapi = 1, apikey = "accel_limit_2"},
-            {t = rfsuite.i18n.get("app.modules.rates_advanced.response_time"),     inline = 2, label = 3, mspapi = 1, apikey = "response_time_3"},
-            {t = rfsuite.i18n.get("app.modules.rates_advanced.accel_limit"),       inline = 1, label = 3, mspapi = 1, apikey = "accel_limit_3"},
+local rows
+if rfsuite.session.apiVersion >= 12.08 then
+    rows = {
+        rfsuite.i18n.get("app.modules.rates_advanced.response_time"),
+        rfsuite.i18n.get("app.modules.rates_advanced.acc_limit"),
+        rfsuite.i18n.get("app.modules.rates_advanced.setpoint_boost_gain"),
+        rfsuite.i18n.get("app.modules.rates_advanced.setpoint_boost_cutoff"),
+        rfsuite.i18n.get("app.modules.rates_advanced.dyn_ceiling_gain"),
+        rfsuite.i18n.get("app.modules.rates_advanced.dyn_deadband_gain"),
+        rfsuite.i18n.get("app.modules.rates_advanced.dyn_deadband_filter"),
+    }
+else
+    rows = {
+        rfsuite.i18n.get("app.modules.rates_advanced.response_time"),
+        rfsuite.i18n.get("app.modules.rates_advanced.acc_limit"),
+    }
+end
 
-            {t = rfsuite.i18n.get("app.modules.rates_advanced.yaw_dynamic_ceiling_gain"),     inline = 3, label = 3.5, mspapi = 1, apikey = "yaw_dynamic_ceiling_gain", apiversiongte = 12.08},
-            {t = rfsuite.i18n.get("app.modules.rates_advanced.yaw_dynamic_deadband_gain"),     inline = 2, label = 3.5, mspapi = 1, apikey = "yaw_dynamic_deadband_gain", apiversiongte = 12.08},
-            {t = rfsuite.i18n.get("app.modules.rates_advanced.yaw_dynamic_deadband_filter"),     inline = 1, label = 3.5, mspapi = 1, apikey = "yaw_dynamic_deadband_filter", apiversiongte = 12.08},
-
-
-            {t = rfsuite.i18n.get("app.modules.rates_advanced.response_time"),     inline = 2, label = 4, mspapi = 1, apikey = "response_time_4"},
-            {t = rfsuite.i18n.get("app.modules.rates_advanced.accel_limit"),       inline = 1, label = 4, mspapi = 1, apikey = "accel_limit_4"},
-            {t = rfsuite.i18n.get("app.modules.rates_advanced.gain"),       inline = 2, label = 5, mspapi = 1, apikey = "setpoint_boost_gain_1", apiversiongte = 12.08},
-            {t = rfsuite.i18n.get("app.modules.rates_advanced.cutoff"),     inline = 1, label = 5, mspapi = 1, apikey = "setpoint_boost_cutoff_1", apiversiongte = 12.08},
-            {t = rfsuite.i18n.get("app.modules.rates_advanced.gain"),       inline = 2, label = 6, mspapi = 1, apikey = "setpoint_boost_gain_2",apiversiongte = 12.08},
-            {t = rfsuite.i18n.get("app.modules.rates_advanced.cutoff"),     inline = 1, label = 6, mspapi = 1, apikey = "setpoint_boost_cutoff_2", apiversiongte = 12.08},
-            {t = rfsuite.i18n.get("app.modules.rates_advanced.gain"),       inline = 2, label = 7, mspapi = 1, apikey = "setpoint_boost_gain_3", apiversiongte = 12.08},
-            {t = rfsuite.i18n.get("app.modules.rates_advanced.cutoff"),     inline = 1, label = 7, mspapi = 1, apikey = "setpoint_boost_cutoff_3", apiversiongte = 12.08},
-            {t = rfsuite.i18n.get("app.modules.rates_advanced.gain"),       inline = 2, label = 8, mspapi = 1, apikey = "setpoint_boost_gain_4", apiversiongte = 12.08},
-            {t = rfsuite.i18n.get("app.modules.rates_advanced.cutoff"),     inline = 1, label = 8, mspapi = 1, apikey = "setpoint_boost_cutoff_4", apiversiongte = 12.08},
-
-        }
-    }                 
-}
-    ]]--
    
-
 local mspapi = {
     api = {
         [1] = 'RC_TUNING',
     },
     formdata = {
-        name = "Dynamics",
+        name = rfsuite.i18n.get("app.modules.rates_advanced.dynamics"),
         labels = {
         },
-        rows = {
-            "Response Time",
-            "Accelerometer Limit",
-            "Setpoint Boost Gain",
-            "Setpoint Boost Cutoff",
-            "Dyn. Ceiling Gain",
-            "Dyn. Deadband. Gain",
-            "Dyn. Deadband. Filter",
-            rfsuite.i18n.get("app.modules.rates_advanced.rates_type")
-        },
+        rows = rows,
         cols = {
-            "Roll",
-            "Pitch",
-            "Yaw",
-            "Col"
+            rfsuite.i18n.get("app.modules.rates_advanced.roll"),
+            rfsuite.i18n.get("app.modules.rates_advanced.pitch"),
+            rfsuite.i18n.get("app.modules.rates_advanced.yaw"),
+            rfsuite.i18n.get("app.modules.rates_advanced.col")
         },
         fields = {
             -- response time
@@ -106,8 +67,6 @@ local mspapi = {
             {row = 5, col = 3, mspapi = 1, apikey = "yaw_dynamic_ceiling_gain", apiversiongte = 12.08},
             {row = 6, col = 3, mspapi = 1, apikey = "yaw_dynamic_deadband_gain", apiversiongte = 12.08},
             {row = 7, col = 3, mspapi = 1, apikey = "yaw_dynamic_deadband_filter", apiversiongte = 12.08},
-
-            {mspapi = 1, apikey = "rates_type", type = 1, ratetype = 1, postEdit = function(self) self.flagRateChange(self, true) end},
 
         }
     }                 
@@ -204,7 +163,17 @@ local function openPage(idx, title, script)
 
     for i = 1, #rfsuite.app.Page.fields do
         local f = rfsuite.app.Page.fields[i]
-        if f.row and f.col then
+
+        local version = rfsuite.utils.round(rfsuite.session.apiVersion,2)
+        local valid = (f.apiversion    == nil or rfsuite.utils.round(f.apiversion,2)    <= version) and
+        (f.apiversionlt  == nil or rfsuite.utils.round(f.apiversionlt,2)  >  version) and
+        (f.apiversiongt  == nil or rfsuite.utils.round(f.apiversiongt,2)  <  version) and
+        (f.apiversionlte == nil or rfsuite.utils.round(f.apiversionlte,2) >= version) and
+        (f.apiversiongte == nil or rfsuite.utils.round(f.apiversiongte,2) <= version) and
+        (f.enablefunction == nil or f.enablefunction())
+
+        
+        if f.row and f.col and valid then
             local l = rfsuite.app.Page.labels
             local pageIdx = i
             local currentField = i
@@ -232,69 +201,7 @@ local function openPage(idx, title, script)
     
 end
 
-local function preSave(self)
-    if resetRates == true then
-        rfsuite.utils.log("Resetting rates to defaults","info")
 
-        -- selected id
-        local table_id = rfsuite.app.Page.fields[1].value
-
-        -- load the respective rate table
-        local tables = {}
-        tables[0] = "app/modules/rates/ratetables/none.lua"
-        tables[1] = "app/modules/rates/ratetables/betaflight.lua"
-        tables[2] = "app/modules/rates/ratetables/raceflight.lua"
-        tables[3] = "app/modules/rates/ratetables/kiss.lua"
-        tables[4] = "app/modules/rates/ratetables/actual.lua"
-        tables[5] = "app/modules/rates/ratetables/quick.lua"
-        
-        local mytable = assert(loadfile(tables[table_id]))()
-
-        rfsuite.utils.log("Using defaults from table " .. tables[table_id], "info")
-
-        -- pull all the values to the fields table as not created because not rendered!
-        for _, y in pairs(mytable.formdata.fields) do
-            if y.default then
-                local found = false
-        
-
-                -- Check if an entry with the same apikey exists
-                for i, v in ipairs(rfsuite.app.Page.fields) do
-                    if v.apikey == y.apikey then
-                        -- Update existing entry
-                        rfsuite.app.Page.fields[i] = y
-                        found = true
-                        break
-                    end
-                end
-        
-                -- If no match was found, insert as a new entry and set value to default
-                if not found then
-                    table.insert(rfsuite.app.Page.fields, y)
-                end
-            end
-        end
-
-        -- save all the values
-        for i,v in ipairs(rfsuite.app.Page.fields) do
-
-                if v.apikey == "rates_type" then
-                    v.value = table_id
-                else 
-
-                    local default = v.default or 0
-                    default = default * rfsuite.app.utils.decimalInc(v.decimals)
-                    if v.mult ~= nil then default = math.floor(default * (v.mult)) end
-                    if v.scale ~= nil then default = math.floor(default / v.scale) end
-                    
-                    rfsuite.utils.log("Saving default value for " .. v.apikey .. " as " .. default, "debug")
-                    rfsuite.app.utils.saveFieldValue(v, default)
-                end    
-        end    
-            
-    end
- 
-end    
 
 local function postLoad(self)
 
@@ -331,28 +238,11 @@ local function wakeup()
     end
 end
 
--- enable and disable fields if rate type changes
-local function flagRateChange(self)
-
-    if math.floor(rfsuite.app.Page.fields[1].value) == math.floor(rfsuite.session.activeRateTable) then
-        self.extraMsgOnSave = nil
-        rfsuite.app.ui.enableAllFields()
-        resetRates = false
-    else
-        self.extraMsgOnSave = rfsuite.i18n.get("app.modules.rates_advanced.msg_reset_to_defaults")
-        resetRates = true
-        rfsuite.app.ui.disableAllFields()
-        rfsuite.app.formFields[1]:enable(true)
-    end
-end
-
-local function postEepromWrite(self)
-        -- trigger full reload after writting eeprom - needed as we are changing the rate type
-        if resetRates == true then
-            doFullReload = true
-        end
+local function onToolMenu()
         
 end
+
+
 
 return {
     mspapi = mspapi,
@@ -362,11 +252,15 @@ return {
     eepromWrite = true,
     refreshOnRateChange = true,
     rTableName = rTableName,
-    flagRateChange = flagRateChange,
     postLoad = postLoad,
     wakeup = wakeup,
-    preSave = preSave,
-    postEepromWrite = postEepromWrite,
-    extraMsgOnSave = extraMsgOnSave,
     API = {},
+    onToolMenu = onToolMenu,
+    navButtons = {
+        menu = true,
+        save = true,
+        reload = true,
+        tool = false,
+        help = true
+    },
 }
