@@ -35,6 +35,7 @@ fr = {
      msg_rebooting              = "Redemarrage...",
      msg_save_not_commited      = "Enregistrement non confirme dans l'EEPROM",
      msg_please_disarm_to_save  = "Veuillez desarmer pour enregistrer afin d'assurer l'integrite des donnees.",
+     msg_please_disarm_to_save_warning = "Les parametres ne seront sauvegardes dans l'EEPROM qu'apres desarmement",
      msg_loading                = "Chargement...",
      msg_loading_from_fbl       = "Chargement des donnees du controleur de vol...",
      msg_connecting             = "Connexion",

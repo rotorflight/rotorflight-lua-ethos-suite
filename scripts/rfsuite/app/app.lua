@@ -387,6 +387,7 @@ local mspEepromWrite = {
         if app.Page.postEepromWrite then 
             app.Page.postEepromWrite() 
         end
+        
         if app.Page.reboot then
             -- app.audio.playSaveArmed = true
             rebootFc()
@@ -1381,7 +1382,11 @@ function app.wakeupUI()
         if app.triggers.showSaveArmedWarning == true and app.triggers.closeSave == false then
             if app.dialogs.progressDisplay == false then
                 app.dialogs.progressCounter = 0
-                app.ui.progressDisplay(rfsuite.i18n.get("msg_save_not_commited"), rfsuite.i18n.get("app.msg_please_disarm_to_save"))
+                if rfsuite.session.apiVersion >= 12.08 then
+                    app.ui.progressDisplay(rfsuite.i18n.get("app.msg_save_not_commited"), rfsuite.i18n.get("app.msg_please_disarm_to_save_warning"))
+                else    
+                    app.ui.progressDisplay(rfsuite.i18n.get("app.msg_save_not_commited"), rfsuite.i18n.get("app.msg_please_disarm_to_save"))
+                end    
             end
             if app.dialogs.progressCounter >= 100 then
                 app.triggers.showSaveArmedWarning = false
