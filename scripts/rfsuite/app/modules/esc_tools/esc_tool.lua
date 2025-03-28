@@ -195,7 +195,14 @@ local function openPage(pidx, title, script)
 
     for pidx, pvalue in ipairs(ESC.pages) do 
 
-        if not pvalue.disablebutton or (pvalue and pvalue.disablebutton(mspBytes) == false) then
+
+        local section = pvalue
+        local hideSection = (section.ethosversion and rfsuite.session.ethosRunningVersion < section.ethosversion) or
+                            (section.mspversion and (rfsuite.session.apiVersion or 1) < section.mspversion) 
+                            --or
+                            --(section.developer and not rfsuite.config.developerMode)
+
+        if not pvalue.disablebutton or (pvalue and pvalue.disablebutton(mspBytes) == false) or not hideSection then
 
             if lc == 0 then
                 if rfsuite.preferences.iconSize == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
