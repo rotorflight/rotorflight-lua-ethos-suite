@@ -214,6 +214,9 @@ fr = {
         setpoint_boost_cutoff_3 = "Seuil de boost pour le point de consigne.",
         setpoint_boost_gain_4 = "Gain de boost pour le point de consigne.",
         setpoint_boost_cutoff_4 = "Seuil de boost pour le point de consigne.",
+        yaw_dynamic_ceiling_gain = "Le gain maximal applique au plafond dynamique du yaw.",
+        yaw_dynamic_deadband_gain = "Le gain maximal applique a la zone morte dynamique du yaw.",
+        yaw_dynamic_deadband_filter = "Le filtre maximal applique a la zone morte dynamique du yaw."
     },
     RESCUE_PROFILE = {
         rescue_flip_mode = "Si le sauvetage est active en etant inverse, retourner a l'endroit - ou rester inverse.",

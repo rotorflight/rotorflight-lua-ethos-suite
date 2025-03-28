@@ -213,7 +213,10 @@ local en = {
         setpoint_boost_gain_3 = "Boost gain for the setpoint.",
         setpoint_boost_cutoff_3 = "Boost cutoff for the setpoint.",
         setpoint_boost_gain_4 = "Boost gain for the setpoint.",
-        setpoint_boost_cutoff_4 = "Boost cutoff for the setpoint."
+        setpoint_boost_cutoff_4 = "Boost cutoff for the setpoint.",
+        yaw_dynamic_ceiling_gain = "The maximum gain applied to the yaw dynamic ceiling.",
+        yaw_dynamic_deadband_gain = "The maximum gain applied to the yaw dynamic deadband.",
+        yaw_dynamic_deadband_filter = "The maximum filter applied to the yaw dynamic deadband.",
     },
     RESCUE_PROFILE = {
         rescue_flip_mode = "If rescue is activated while inverted, flip to upright - or remain inverted.",

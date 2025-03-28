@@ -213,7 +213,10 @@ local es = {
         setpoint_boost_gain_3 = "Ganancia de impulso para el punto de consigna.",
         setpoint_boost_cutoff_3 = "Limite de impulso para el punto de consigna.",
         setpoint_boost_gain_4 = "Ganancia de impulso para el punto de consigna.",
-        setpoint_boost_cutoff_4 = "Limite de impulso para el punto de consigna.",       
+        setpoint_boost_cutoff_4 = "Limite de impulso para el punto de consigna.",     
+        yaw_dynamic_ceiling_gain = "La ganancia maxima aplicada al limite dinamico de yaw.",
+        yaw_dynamic_deadband_gain = "La ganancia maxima aplicada a la zona muerta dinamica de yaw.",
+        yaw_dynamic_deadband_filter = "El filtro maximo aplicado a la zona muerta dinamica de yaw."  
     },
     RESCUE_PROFILE = {
         rescue_flip_mode = "Si se activa la funcion rescate mientras esta invertido, dar vuelta a vertical - o permanecer invertido.",

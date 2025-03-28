@@ -214,6 +214,9 @@ nl = {
         setpoint_boost_cutoff_3 = "Boostdrempel voor het setpoint.",
         setpoint_boost_gain_4 = "Boostversterking voor het setpoint.",
         setpoint_boost_cutoff_4 = "Boostdrempel voor het setpoint.",       
+        yaw_dynamic_ceiling_gain = "De maximale gain toegepast op het dynamische yaw plafond.",
+        yaw_dynamic_deadband_gain = "De maximale gain toegepast op de dynamische yaw dode zone.",
+        yaw_dynamic_deadband_filter = "Het maximale filter toegepast op de dynamische yaw dode zone."
     },
     RESCUE_PROFILE = {
         rescue_flip_mode = "Als de rescue wordt geactiveerd terwijl inverted, flip positief - of blijf inverted.",

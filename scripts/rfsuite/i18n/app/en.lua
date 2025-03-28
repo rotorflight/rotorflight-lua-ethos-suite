@@ -577,7 +577,7 @@ en = {
             gain                    = "Gain",
             cutoff                  = "Cutoff",
             yaw_dynamic_ceiling_gain = "Ceiling",
-            yaw_dynamic_deadband_gain = "Deadband",
+            yaw_dynamic_deadband_gain = "D. Band",
             yaw_dynamic_deadband_filter = "Filter",
         },
         sbusout = {
