@@ -576,6 +576,9 @@ nl = {
             collective_boost        = "Collective boost",
             gain                    = "Versterk.",
             cutoff                  = "Drempel",
+            yaw_dynamic_ceiling_gain = "Plafond",
+            yaw_dynamic_deadband_gain = "Dode band",
+            yaw_dynamic_deadband_filter = "Filter",
         },
         sbusout = {
             name                = "SBUS Out",

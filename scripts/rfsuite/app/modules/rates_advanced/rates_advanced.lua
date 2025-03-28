@@ -17,6 +17,8 @@ local mspapi = {
             {t = rfsuite.i18n.get("app.modules.rates_advanced.roll_dynamics"),       label = 1, inline_size = 14.6},
             {t = rfsuite.i18n.get("app.modules.rates_advanced.pitch_dynamics"),      label = 2, inline_size = 14.6},
             {t = rfsuite.i18n.get("app.modules.rates_advanced.yaw_dynamics"),        label = 3, inline_size = 14.6},
+            {t = "",        label = 3.5, inline_size = 14.8},
+            {t = "",        label = 3.6, inline_size = 14.8},
             {t = rfsuite.i18n.get("app.modules.rates_advanced.collective_dynamics"), label = 4, inline_size = 14.6},
             {t = rfsuite.i18n.get("app.modules.rates_advanced.roll_boost"), label = 5, inline_size = 14.6},
             {t = rfsuite.i18n.get("app.modules.rates_advanced.pitch_boost"), label = 6, inline_size = 14.6},
@@ -31,6 +33,11 @@ local mspapi = {
             {t = rfsuite.i18n.get("app.modules.rates_advanced.accel_limit"),       inline = 1, label = 2, mspapi = 1, apikey = "accel_limit_2"},
             {t = rfsuite.i18n.get("app.modules.rates_advanced.response_time"),     inline = 2, label = 3, mspapi = 1, apikey = "response_time_3"},
             {t = rfsuite.i18n.get("app.modules.rates_advanced.accel_limit"),       inline = 1, label = 3, mspapi = 1, apikey = "accel_limit_3"},
+            {t = rfsuite.i18n.get("app.modules.rates_advanced.yaw_dynamic_ceiling_gain"),     inline = 2, label = 3.5, mspapi = 1, apikey = "yaw_dynamic_ceiling_gain", apiversiongte = 12.08},
+            {t = rfsuite.i18n.get("app.modules.rates_advanced.yaw_dynamic_deadband_gain"),     inline = 1, label = 3.5, mspapi = 1, apikey = "yaw_dynamic_deadband_gain", apiversiongte = 12.08},
+            {t = rfsuite.i18n.get("app.modules.rates_advanced.yaw_dynamic_deadband_filter"),     inline = 1, label = 3.6, mspapi = 1, apikey = "yaw_dynamic_deadband_filter", apiversiongte = 12.08},
+
+
             {t = rfsuite.i18n.get("app.modules.rates_advanced.response_time"),     inline = 2, label = 4, mspapi = 1, apikey = "response_time_4"},
             {t = rfsuite.i18n.get("app.modules.rates_advanced.accel_limit"),       inline = 1, label = 4, mspapi = 1, apikey = "accel_limit_4"},
             {t = rfsuite.i18n.get("app.modules.rates_advanced.gain"),       inline = 2, label = 5, mspapi = 1, apikey = "setpoint_boost_gain_1", apiversiongte = 12.08},

@@ -577,6 +577,9 @@ fr = {
             collective_boost        = "Boost collectif",
             gain                    = "Gain",
             cutoff                  = "Seuil",
+            yaw_dynamic_ceiling_gain = "Plafond",
+            yaw_dynamic_deadband_gain = "B. morte",
+            yaw_dynamic_deadband_filter = "Filtre",
         },
         sbusout = {
             name                = "SBUS Sortie",

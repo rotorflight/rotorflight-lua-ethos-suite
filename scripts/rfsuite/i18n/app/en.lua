@@ -576,6 +576,9 @@ en = {
             collective_boost        = "Collective boost",
             gain                    = "Gain",
             cutoff                  = "Cutoff",
+            yaw_dynamic_ceiling_gain = "Ceiling",
+            yaw_dynamic_deadband_gain = "Deadband",
+            yaw_dynamic_deadband_filter = "Filter",
         },
         sbusout = {
             name                = "SBUS Out",
