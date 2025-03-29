@@ -387,6 +387,7 @@ local mspEepromWrite = {
         if app.Page.postEepromWrite then 
             app.Page.postEepromWrite() 
         end
+        
         if app.Page.reboot then
             -- app.audio.playSaveArmed = true
             rebootFc()
@@ -631,6 +632,9 @@ function app.mspApiUpdateFormAttributes(values, structure)
     end
     collectgarbage()
     rfsuite.utils.reportMemoryUsage("app.mspApiUpdateFormAttributes")
+
+    -- set focus back to menu
+    rfsuite.app.formNavigationFields['menu']:focus(true)
 end
 
 
@@ -713,7 +717,7 @@ local function checkForUnresolvedTimeouts()
         rfsuite.app.ui.disableAllFields()
         rfsuite.app.ui.disableAllNavigationFields()
         rfsuite.app.ui.enableNavigationField('menu')
-
+        rfsuite.app.triggers.closeProgressLoader = true
     end
 end
 
@@ -958,16 +962,16 @@ function app.wakeupUI()
     -- close progress loader.  this essentially just accelerates 
     -- the close of the progress bar once the data is loaded.
     -- so if not yet at 100%.. it says.. move there quickly
-    if app.triggers.closeProgressLoader == true then
+    if app.triggers.closeProgressLoader == true  then
         if app.dialogs.progressCounter >= 90 then
             app.dialogs.progressCounter = app.dialogs.progressCounter + 0.5
             if app.dialogs.progress ~= nil then app.ui.progressDisplayValue(app.dialogs.progressCounter) end
         else
-            app.dialogs.progressCounter = app.dialogs.progressCounter + 10
+            app.dialogs.progressCounter = app.dialogs.progressCounter + 5
             if app.dialogs.progress ~= nil then app.ui.progressDisplayValue(app.dialogs.progressCounter) end
         end
 
-        if app.dialogs.progressCounter >= 101 then
+        if app.dialogs.progressCounter >= 101 and rfsuite.tasks.msp.mspQueue:isProcessed() then
             app.dialogs.progressWatchDog = nil
             app.dialogs.progressDisplay = false
             if app.dialogs.progress ~= nil then app.ui.progressDisplayClose() end
@@ -984,7 +988,7 @@ function app.wakeupUI()
 
         if rfsuite.tasks.msp.mspQueue:isProcessed() then
             if (app.dialogs.saveProgressCounter > 40 and app.dialogs.saveProgressCounter <= 80) then
-                app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 5
+                app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 3
             elseif (app.dialogs.saveProgressCounter > 90) then
                 app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 2
             else
@@ -1194,7 +1198,7 @@ function app.wakeupUI()
     -- a watchdog to enable the close button on a progress box dialog when loading data from the fbl
     if app.dialogs.progressDisplay == true and app.dialogs.progressWatchDog ~= nil then
 
-        app.dialogs.progressCounter = app.dialogs.progressCounter + 2
+        app.dialogs.progressCounter = app.dialogs.progressCounter + (rfsuite.app.Page.progressCounter or 1.5)
         app.ui.progressDisplayValue(app.dialogs.progressCounter)
 
         if (os.clock() - app.dialogs.progressWatchDog) > (tonumber(rfsuite.tasks.msp.protocol.pageReqTimeout)) then
@@ -1378,7 +1382,11 @@ function app.wakeupUI()
         if app.triggers.showSaveArmedWarning == true and app.triggers.closeSave == false then
             if app.dialogs.progressDisplay == false then
                 app.dialogs.progressCounter = 0
-                app.ui.progressDisplay(rfsuite.i18n.get("msg_save_not_commited"), rfsuite.i18n.get("app.msg_please_disarm_to_save"))
+                if rfsuite.session.apiVersion >= 12.08 then
+                    app.ui.progressDisplay(rfsuite.i18n.get("app.msg_save_not_commited"), rfsuite.i18n.get("app.msg_please_disarm_to_save_warning"))
+                else    
+                    app.ui.progressDisplay(rfsuite.i18n.get("app.msg_save_not_commited"), rfsuite.i18n.get("app.msg_please_disarm_to_save"))
+                end    
             end
             if app.dialogs.progressCounter >= 100 then
                 app.triggers.showSaveArmedWarning = false
@@ -1647,7 +1655,11 @@ function app.event(widget, category, value, x, y)
             rfsuite.utils.log("EVT_ENTER_LONG (PAGES)", "info")
             if app.dialogs.progressDisplay then app.ui.progressDisplayClose() end
             if app.dialogs.saveDisplay then app.ui.progressDisplaySaveClose() end
-            app.triggers.triggerSave = true
+            if rfsuite.app.Page and rfsuite.app.Page.onSaveMenu then
+                rfsuite.app.Page.onSaveMenu(rfsuite.app.Page)
+            else
+                rfsuite.app.triggers.triggerSave = true
+            end
             system.killEvents(KEY_ENTER_BREAK)
             return true
         end

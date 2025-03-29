@@ -28,6 +28,11 @@ local modelTextPos = {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.s
 
 local function getESCDetails()
 
+    if rfsuite.session.escDetails ~= nil then
+        escDetails = rfsuite.session.escDetails
+        foundESC = true 
+        return
+    end
 
     if foundESC == true then 
         return
@@ -42,21 +47,26 @@ local function getESCDetails()
                 mspBytesCheck = mspBytes
             end
  
-            if #buf >= mspBytesCheck and buf[1] == mspSignature then
-
+            --if #buf >= mspBytesCheck and buf[1] == mspSignature then
+            if buf[1] == mspSignature then
                 escDetails.model = ESC.getEscModel(buf)
                 escDetails.version = ESC.getEscVersion(buf)
                 escDetails.firmware = ESC.getEscFirmware(buf)
+
+                rfsuite.session.escDetails = escDetails
 
                 if ESC.mspBufferCache == true then
                     rfsuite.session.escBuffer = buf 
                 end    
 
-                foundESC = true
+                if escDetails.model ~= nil  then
+                    foundESC = true
+                end
 
             end
 
         end,
+        uuid = "123e4567-e89b-12d3-b456-426614174201",
         simulatorResponse = simulatorResponse
     }
 
@@ -70,6 +80,7 @@ local function openPage(pidx, title, script)
     rfsuite.app.lastScript = script
 
     rfsuite.session.escBuffer = nil -- clear the buffer
+    
 
     local folder = title
 
@@ -184,7 +195,14 @@ local function openPage(pidx, title, script)
 
     for pidx, pvalue in ipairs(ESC.pages) do 
 
-        if not pvalue.disablebutton or (pvalue and pvalue.disablebutton(mspBytes) == false) then
+
+        local section = pvalue
+        local hideSection = (section.ethosversion and rfsuite.session.ethosRunningVersion < section.ethosversion) or
+                            (section.mspversion and (rfsuite.session.apiVersion or 1) < section.mspversion) 
+                            --or
+                            --(section.developer and not rfsuite.config.developerMode)
+
+        if not pvalue.disablebutton or (pvalue and pvalue.disablebutton(mspBytes) == false) or not hideSection then
 
             if lc == 0 then
                 if rfsuite.preferences.iconSize == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
@@ -231,7 +249,7 @@ local function openPage(pidx, title, script)
     end
 
     rfsuite.app.triggers.escToolEnableButtons = false
-    getESCDetails()
+    --getESCDetails()
     collectgarbage()
 end
 

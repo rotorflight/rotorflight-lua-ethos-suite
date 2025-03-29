@@ -292,7 +292,7 @@ function apiLoader.parseMSPData(buf, structure, processed, other, options)
                 state.index - processedFields, state.index - 1), "debug")
 
             if state.index > #structure then
-                if completionCallback then
+                if completionCallback and buf.offset then
                     completionCallback({
                         parsed = state.parsedData,
                         buffer = buf,
@@ -301,6 +301,17 @@ function apiLoader.parseMSPData(buf, structure, processed, other, options)
                         processed = state.processed,
                         other = state.other,
                         receivedBytesCount = math.floor(buf.offset - 1)
+                    })
+                else
+                    rfsuite.utils.log("Completion callback not provided or buffer offset not available", "info")
+                    completionCallback({
+                        parsed = {state.parsedData},
+                        buffer = {},
+                        structure = structure,
+                        positionmap = state.positionmap,
+                        processed = state.processed,
+                        other = state.other,
+                        receivedBytesCount = 0
                     })
                 end
             else
