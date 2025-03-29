@@ -550,9 +550,9 @@ end
     it will use delta updates. Otherwise, it will perform a full rebuild of the payload.
 --]]
 function apiLoader.buildWritePayload(apiname, payload, api_structure, noDelta)
-    local positionmap = rfsuite.app.Page.mspapi and rfsuite.app.Page.mspapi.positionmap[apiname]
-    local receivedBytes = rfsuite.app.Page.mspapi and rfsuite.app.Page.mspapi.receivedBytes[apiname]
-    local receivedBytesCount = rfsuite.app.Page.mspapi and rfsuite.app.Page.mspapi.receivedBytesCount[apiname]
+    local positionmap = rfsuite.app.Page and rfsuite.app.Page.mspapi and rfsuite.app.Page.mspapi.positionmap[apiname]
+    local receivedBytes = rfsuite.app.Page and rfsuite.app.Page.mspapi and rfsuite.app.Page.mspapi.receivedBytes[apiname]
+    local receivedBytesCount = rfsuite.app.Page and rfsuite.app.Page.mspapi and rfsuite.app.Page.mspapi.receivedBytesCount[apiname]
 
     local useDelta = positionmap and receivedBytes and receivedBytesCount
 

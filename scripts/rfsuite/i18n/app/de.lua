@@ -98,6 +98,9 @@ de = {
             min_cell_voltage =  "Minimale Zellenspannung",
             battery_capacity =  "Batteriekapazitaet",
             cell_count =        "Zellenanzahl",
+            battery_profile  =  "Batterie",
+            capacity =          "Kapazitaet",
+            cells =             "Zellen",
             help_p1 =           "Die Batterieeinstellungen werden verwendet, um den Flugcontroller so zu konfigurieren, dass er die Batteriespannung ueberwacht und Warnungen ausgibt, wenn die Spannung unter ein bestimmtes Niveau faellt.",   
         },
         copyprofiles = {

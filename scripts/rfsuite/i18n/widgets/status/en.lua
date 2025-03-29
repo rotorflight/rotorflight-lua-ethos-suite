@@ -111,6 +111,7 @@ local en = {
     txt_max = "max",
     txt_min = "min",
     txt_headspeed = "Headspeed",
+    txt_batteryprofile = "Battery Profile",
 
     layoutOptions = {
             TIMER = "TIMER",
@@ -137,6 +138,7 @@ local en = {
             CUSTOMSENSOR_1 = "CUSTOMSENSOR #1",
             CUSTOMSENSOR_2 = "CUSTOMSENSOR #2",
             CUSTOMSENSOR_1_2 = "CUSTOMSENSOR #1, #2",
+            BATTERY_PROFILE = "BATTERY PROFILE",
     },
 }
 
