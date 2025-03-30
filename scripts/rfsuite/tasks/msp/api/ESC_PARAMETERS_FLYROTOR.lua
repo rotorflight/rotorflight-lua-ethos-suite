@@ -89,11 +89,11 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "motor_erpm_max",          type = "U24", apiVersion = 12.07, simResponse = {2, 23, 40},   min = 0, max = 1000000, step = 100, byteorder = "big"},
     {field = "throttle_protocol",       type = "U8",  apiVersion = 12.08, simResponse = {0},           min = 0, max = 2, table = {"PWM", "DSHOT", "Serial Port"}, tableIdxInc = -1},
     {field = "telemetry_protocol",      type = "U8",  apiVersion = 12.08, simResponse = {0},           min = 0, max = 1, table = {"FLYROTOR", "SBUS2"}, tableIdxInc = -1},
-    {field = "led_color_index",         type = "U8", apiVersion = 12.08, simResponse = {3},            min = 0, max = #tblLed - 1, table = tblLed, tableIdxInc = -1},
+    {field = "led_color_index",         type = "U8",  apiVersion = 12.08, simResponse = {3},           min = 0, max = #tblLed - 1, table = tblLed, tableIdxInc = -1},
     {field = "led_color_rgb",           type = "U24", apiVersion = 12.08, simResponse = {0, 0, 0}},
     {field = "motor_temp_sensor",       type = "U8",  apiVersion = 12.08, simResponse = {0},           min = 0, max = 1, table={rfsuite.i18n.get("api.ESC_PARAMETERS_FLYROTOR.tbl_disabled"), rfsuite.i18n.get("api.ESC_PARAMETERS_FLYROTOR.tbl_enabled")}, tableIdxInc = -1},
     {field = "motor_temp",              type = "U8",  apiVersion = 12.08, simResponse = {100},         min = 50, max = 175, unit = "°"},
-    {field = "battery_capacity",        type = "U16", apiVersion = 12.08, simResponse = {0, 0},        min = 0, max = 10000, step = 100, unit = "mAh"},
+    {field = "battery_capacity",        type = "U16", apiVersion = 12.08, simResponse = {0, 0},        min = 0, max = 10000, step = 100, unit = "mAh", byteorder = "big"},
 }
 
 -- Process structure in one pass
