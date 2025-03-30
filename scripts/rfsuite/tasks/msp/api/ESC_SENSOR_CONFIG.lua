@@ -34,9 +34,9 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "hw4_current_gain",                                type = "U8",  apiVersion = 12.06, simResponse = {0},     min = 0, max = 250, default = 0},
     {field = "hw4_voltage_gain",                                type = "U8",  apiVersion = 12.06, simResponse = {30},    min = 0, max = 250,  default = 30},
     {field = "pin_swap",                                        type = "U8",  apiVersion = 12.07, simResponse = {0},     table = onOff, tableIdxInc = -1},
-    {field = "voltage_correction",           mandatory = false, type = "S8",  apiVersion = 12.08, simResponse = {0},     unit = "%", default = 1, min = -100, max = 125},
-    {field = "current_correction",           mandatory = false, type = "S8",  apiVersion = 12.08, simResponse = {0},     unit = "%", default = 1, min = -100, max = 125},
-    {field = "consumption_correction",       mandatory = false, type = "S8",  apiVersion = 12.08, simResponse = {0},     unit = "%", default = 1, min = -100, max = 125},
+    {field = "voltage_correction",           mandatory = false, type = "S8",  apiVersion = 12.08, simResponse = {0},     unit = "%", default = 1, min = -99, max = 125},
+    {field = "current_correction",           mandatory = false, type = "S8",  apiVersion = 12.08, simResponse = {0},     unit = "%", default = 1, min = -99, max = 125},
+    {field = "consumption_correction",       mandatory = false, type = "S8",  apiVersion = 12.08, simResponse = {0},     unit = "%", default = 1, min = -99, max = 125},
 }
 
 -- Process structure in one pass
