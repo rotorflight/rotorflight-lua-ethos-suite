@@ -16,14 +16,14 @@
 ]] --
 -- Constants for MSP Commands
 local API_NAME = "BATTERY_CONFIG" -- API name (must be same as filename)
-local MSP_API_CMD_READ = 32 -- Command identifier 
-local MSP_API_CMD_WRITE = 33 -- Command identifier 
-local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write 
+local MSP_API_CMD_READ = 32 -- Command identifier
+local MSP_API_CMD_WRITE = 33 -- Command identifier
+local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
     {field = "batteryCapacity",              type = "U16", apiVersion = 12.06, simResponse = {138, 2}, min = 0,   max = 20000, step = 50, unit = "mAh", default = 0},
-    {field = "batteryCellCount",             type = "U8",  apiVersion = 12.06, simResponse = {3},      min = 1,   max = 24,    unit = nil,   default = 6},
+    {field = "batteryCellCount",             type = "U8",  apiVersion = 12.06, simResponse = {3},      min = 0,   max = 24,    unit = nil,   default = 6},
     {field = "voltageMeterSource",           type = "U8",  apiVersion = 12.06, simResponse = {1}},
     {field = "currentMeterSource",           type = "U8",  apiVersion = 12.06, simResponse = {1}},
     {field = "vbatmincellvoltage",           type = "U16", apiVersion = 12.06, simResponse = {74, 1},  min = 0,   decimals = 2, scale = 100, max = 500, unit = "V",   default = 3.3},
@@ -32,6 +32,21 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "vbatwarningcellvoltage",       type = "U16", apiVersion = 12.06, simResponse = {94, 1},  min = 0,   decimals = 2, scale = 100, max = 500, unit = "V",   default = 3.5},
     {field = "lvcPercentage",                type = "U8",  simResponse = {100}},
     {field = "consumptionWarningPercentage", type = "U8",  apiVersion = 12.06, simResponse = {10}},
+    -- battery 1
+    {field = "batteryCapacity_1",              type = "U16", apiVersion = 12.06, simResponse = {138, 2}, min = 0,   max = 20000, step = 50, unit = "mAh", default = 0},
+    {field = "batteryCellCount_1",             type = "U8",  apiVersion = 12.06, simResponse = {3},      min = 0,   max = 24,    unit = nil,   default = 6},
+    -- battery 2
+    {field = "batteryCapacity_2",              type = "U16", apiVersion = 12.06, simResponse = {138, 2}, min = 0,   max = 20000, step = 50, unit = "mAh", default = 0},
+    {field = "batteryCellCount_2",             type = "U8",  apiVersion = 12.06, simResponse = {3},      min = 0,   max = 24,    unit = nil,   default = 6},
+    -- battery 3
+    {field = "batteryCapacity_3",              type = "U16", apiVersion = 12.06, simResponse = {138, 2}, min = 0,   max = 20000, step = 50, unit = "mAh", default = 0},
+    {field = "batteryCellCount_3",             type = "U8",  apiVersion = 12.06, simResponse = {3},      min = 0,   max = 24,    unit = nil,   default = 6},
+    -- battery 4
+    {field = "batteryCapacity_4",              type = "U16", apiVersion = 12.06, simResponse = {138, 2}, min = 0,   max = 20000, step = 50, unit = "mAh", default = 0},
+    {field = "batteryCellCount_4",             type = "U8",  apiVersion = 12.06, simResponse = {3},      min = 0,   max = 24,    unit = nil,   default = 6},
+    -- battery 5
+    {field = "batteryCapacity_5",              type = "U16", apiVersion = 12.06, simResponse = {138, 2}, min = 0,   max = 20000, step = 50, unit = "mAh", default = 0},
+    {field = "batteryCellCount_5",             type = "U8",  apiVersion = 12.06, simResponse = {3},      min = 0,   max = 24,    unit = nil,   default = 6},
 }
 
 -- Process structure in one pass
@@ -82,7 +97,7 @@ local function read()
         end,
         simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
         uuid = MSP_API_UUID,
-        timeout = MSP_API_MSG_TIMEOUT  
+        timeout = MSP_API_MSG_TIMEOUT
     }
     rfsuite.tasks.msp.mspQueue:add(message)
 end
@@ -107,7 +122,7 @@ local function write(suppliedPayload)
         end,
         simulatorResponse = {},
         uuid = MSP_API_UUID,
-        timeout = MSP_API_MSG_TIMEOUT  
+        timeout = MSP_API_MSG_TIMEOUT
     }
     rfsuite.tasks.msp.mspQueue:add(message)
 end

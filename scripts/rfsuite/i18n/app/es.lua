@@ -98,6 +98,9 @@ local es = {
                 min_cell_voltage =  "Voltaje Mín Celda",
                 battery_capacity =  "Capacidad Batería",
                 cell_count =        "Número de Celdas",
+                battery_profile  =  "Batería",
+                capacity =          "Capacidad",
+                cells =             "Celdas",                
                 help_p1 =           "La configuración de celdas se utiliza para que el controlador de vuelo pueda monitorear el voltaje de la batería y generar advertencias cuando esté por debajo de cierto nivel.",
             },
             copyprofiles = {

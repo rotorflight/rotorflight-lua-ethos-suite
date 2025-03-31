@@ -98,6 +98,9 @@ nl = {
             min_cell_voltage =  "Min Cel Spanning",
             battery_capacity =  "Batterij Capaciteit",
             cell_count =        "Aantal cellen",
+            battery_profile  =  "Batterij",
+            capacity =          "Capaciteit",
+            cells =             "Cellen",
             help_p1 =           "De batterij instellingen worden ingesteld zodat de vliegcontroller de batterij spanning kan monitoren en waarschuwingen kan geven als de spanning onder een bepaald niveau komt.\n\n",   
         },
         copyprofiles = {

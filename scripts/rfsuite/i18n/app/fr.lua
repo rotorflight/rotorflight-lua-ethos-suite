@@ -98,6 +98,9 @@ fr = {
             min_cell_voltage =  "Tension min cellule",
             battery_capacity =  "Capacite de la batterie",
             cell_count =        "Nombre de cellules",
+            battery_profile  =  "Batterie",
+            capacity =          "Capacite",
+            cells =             "Cellules",
             help_p1 =           "Les parametres de la batterie sont utilises pour configurer le controleur de vol afin de surveiller la tension de la batterie et fournir des avertissements lorsque la tension descend en dessous d'un certain niveau.",
         },
         copyprofiles = {

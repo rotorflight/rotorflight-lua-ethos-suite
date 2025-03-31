@@ -27,6 +27,8 @@ local environment = system.getVersion()
 
 local i18n = rfsuite.i18n
 
+local setActiveProfile = nil
+
 status.oldsensors = {"status.refresh", "voltage", "rpm", "current", "temp_esc", "temp_mcu", "fuel", "mah", "rssi", "fm", "govmode"}
 status.isVisible = nil
 status.isDARKMODE = nil
@@ -241,6 +243,11 @@ status.fullCellVoltage = 410
 status.minCellVoltage = 330
 status.warnCellVoltage = 350
 
+status.battery = {}
+status.battery["batteryProfile"] = "-"
+status.battery["batteryCapacity"] = nil
+status.battery["batteryCellCount"] = nil
+
 local function buildGovernorMap()
     local map = {     
         [0] =  i18n.get("widgets.governor.OFF"),
@@ -286,7 +293,9 @@ local function buildLayoutOptions()
         {i18n.get("widgets.status.layoutOptions.CRAFT_NAME"), 18},
         {i18n.get("widgets.status.layoutOptions.CUSTOMSENSOR_1"), 23},
         {i18n.get("widgets.status.layoutOptions.CUSTOMSENSOR_2"), 24},
-        {i18n.get("widgets.status.layoutOptions.CUSTOMSENSOR_1_2"), 25}
+        {i18n.get("widgets.status.layoutOptions.CUSTOMSENSOR_1_2"), 25},
+        {i18n.get("widgets.status.layoutOptions.BATTERY_PROFILE"), 26},
+
     }
 end
 
@@ -705,6 +714,52 @@ local function telemetryBoxImage(x, y, w, h, gfx)
     else
         lcd.drawBitmap(x, y, default_image, w - theme.colSpacing, h - theme.colSpacing)
     end
+end
+
+local lastBatCheck = os.clock()
+local function activeBatteryProfile()
+
+    if rfsuite.session and rfsuite.session.apiVersion and rfsuite.session.apiVersion <= 12.07 then
+        return
+    end
+
+    function getBatteryCapacity(profile)
+        local API = rfsuite.tasks.msp.api.load("BATTERY_CONFIG")
+        API.setCompleteHandler(function(self, buf)
+            if status.battery["batteryProfile"] ~= nil then
+                if status.battery["batteryProfile"] == 0 then
+                    status.battery["batteryCapacity"] = API.readValue("batteryCapacity")
+                    status.battery["batteryCellCount"] = API.readValue("batteryCellCount")
+                else
+                    status.battery["batteryCapacity"] = API.readValue("batteryCapacity_" .. status.battery["batteryProfile"])
+                    status.battery["batteryCellCount"] = API.readValue("batteryCellCount_" .. status.battery["batteryProfile"])
+                end    
+                status.battery["batteryProfile"] = profile
+            end    
+        end)
+        API.setUUID("123e4567-e89b-12d3-a456-426614174001")
+        API.read()
+
+    end    
+
+    if os.clock() - lastBatCheck >= 2 then
+        lastBatCheck = os.clock()
+
+        if rfsuite.tasks.msp.mspQueue:isProcessed() then
+            local API = rfsuite.tasks.msp.api.load("STATUS")
+            API.setCompleteHandler(function(self, buf)
+                local profile = API.readValue("battery_profile")
+                if profile ~= nil then
+                    getBatteryCapacity(profile)
+                end
+            end)
+            API.setUUID("123e4567-e89b-12d3-a456-426614174000")
+            API.read()
+        end  
+
+    end
+
+
 end
 
 local function getChannelValue(ich)
@@ -2923,6 +2978,38 @@ function status.wakeup(widget)
         wakeupUI()
         -- collectgarbage()  -- Uncomment if garbage collection is needed
     end
+
+    if setActiveProfile ~= nil then
+
+        status.battery["batteryProfile"] = "-"
+        status.battery["batteryCapacity"] = nil
+        status.battery["batteryCellCount"] = nil
+
+        local API = rfsuite.tasks.msp.api.load("SELECT_BATTERY")
+        API.setCompleteHandler(function(self, buf)
+            if setActiveProfile ~= nil then
+                rfsuite.utils.log("Battery Profile Set to " .. setActiveProfile,"info")
+            end
+            setActiveProfile = nil
+            lcd.invalidate()
+        end)
+        API.setErrorHandler(function(self, buf)
+            if setActiveProfile ~= nil then
+            rfsuite.utils.log("Failed to set battery profile " .. setActiveProfile,"info")
+            end
+            setActiveProfile = nil
+        end)
+        API.setUUID("123e4567-e89b-12d3-a456-426614174000")
+        if setActiveProfile ~= nil then
+            API.setValue("id", setActiveProfile)
+            API.write()
+        end
+        
+
+        
+    end
+
+
 end
 
 function status.paint(widget)
@@ -2939,6 +3026,21 @@ function status.paint(widget)
         if (os.clock() - status.initTime) >= 2 then screenError(i18n.get("widgets.status.txt_please_enable_bgtask"):upper()) end
         lcd.invalidate()
         return
+    elseif status.isConfiguringBattery == true then
+        -- black out display
+        local w, h = lcd.getWindowSize()
+        local sensorTITLE
+        -- blank out display
+        if status.isDARKMODE then
+            -- dark theme
+            lcd.color(lcd.RGB(16, 16, 16))
+        else
+            -- light theme
+            lcd.color(lcd.RGB(209, 208, 208))
+        end
+        lcd.drawFilledRectangle(0, 0, w, h)
+
+
     else
 
         status.isVisible = lcd.isVisible()
@@ -3578,6 +3680,39 @@ function status.paint(widget)
 
             end
 
+            -- battery profile
+            activeBatteryProfile()
+            if status.battery["batteryProfile"] ~= nil and status.battery["batteryCapacity"] ~= nil then
+                local sensorTGT = 'batteryprofile'
+
+                local capacity = "-"
+                if status.battery["batteryCapacity"] ~= nil and setActiveProfile == nil then
+                    capacity = status.battery["batteryCapacity"] .. "mAh"
+                end
+
+                local title = i18n.get("widgets.status.txt_batteryprofile"):upper()
+                if status.battery["batteryProfile"] ~= nil and  status.battery["batteryProfile"] ~= "-"  then
+                    title = i18n.get("widgets.status.txt_batteryprofile"):upper() .. " " .. (status.battery["batteryProfile"] + 1)
+                end
+
+                status.sensordisplay[sensorTGT] = {}
+                status.sensordisplay[sensorTGT]['title'] = title
+                status.sensordisplay[sensorTGT]['value'] = capacity
+                status.sensordisplay[sensorTGT]['warn'] = nil
+                status.sensordisplay[sensorTGT]['min'] = nil
+                status.sensordisplay[sensorTGT]['max'] = nil
+                status.sensordisplay[sensorTGT]['unit'] = ""
+            else
+                local sensorTGT = 'batteryprofile'
+                status.sensordisplay[sensorTGT] = {}
+                status.sensordisplay[sensorTGT]['title'] = i18n.get("widgets.status.txt_batteryprofile"):upper()
+                status.sensordisplay[sensorTGT]['value'] = "-"
+                status.sensordisplay[sensorTGT]['warn'] = nil
+                status.sensordisplay[sensorTGT]['min'] = nil
+                status.sensordisplay[sensorTGT]['max'] = nil
+                status.sensordisplay[sensorTGT]['unit'] = ""                   
+            end
+
             -- loop throught 6 box and link into status.sensordisplay to choose where to put things
             local c = 1
             while c <= 6 do
@@ -3649,6 +3784,7 @@ function status.paint(widget)
                 if sensorTGT == 23 then sensorTGT = 'customsensor1' end
                 if sensorTGT == 24 then sensorTGT = 'customsensor2' end
                 if sensorTGT == 25 then sensorTGT = 'customsensor1_2' end
+                if sensorTGT == 26 then sensorTGT = 'batteryprofile' end
 
                 -- set sensor values based on sensorTGT
                 if status.sensordisplay[sensorTGT] ~= nil then
@@ -3981,6 +4117,23 @@ function status.paint(widget)
                         end
                     end
 
+                    if sensorTGT == 'batteryprofile' then
+
+                        if status.sensordisplay[sensorTGT] then
+                            sensorVALUE = status.sensordisplay[sensorTGT]['value']
+                            sensorUNIT = status.sensordisplay[sensorTGT]['unit']
+                            sensorMIN = status.sensordisplay[sensorTGT]['min']
+                            sensorMAX = status.sensordisplay[sensorTGT]['max']
+                            sensorWARN = status.sensordisplay[sensorTGT]['warn']
+                            sensorTITLE = status.sensordisplay[sensorTGT]['title']
+
+                            if sensorMAX == "-" or sensorMAX == nil then sensorMAX = 0 end
+
+                            smallBOX = false
+                            telemetryBox(posX, posY, boxW, boxH, i18n.get("widgets.status.txt_max"):upper() .. " " .. sensorTITLE, sensorMAX, sensorUNIT, smallBOX)
+                        end
+                    end
+
                 end
 
                 c = c + 1
@@ -4019,5 +4172,86 @@ function status.i18n()
     governorMap = buildGovernorMap()
     status.layoutOptions = buildLayoutOptions()
 end    
+
+function status.configureBattery()
+
+    -- setting this results in the paint function blanking out the display so a form can be rendered
+    -- we dont actually need to do this as we are using alert function - so just leaving it here as 
+    -- a reference of fact you can do it!
+    --status.isConfiguringBattery = true
+
+    local buttons = {
+        {
+            label = rfsuite.i18n.get("app.btn_cancel"),
+            action = function()
+                return true
+            end
+        },        
+        {
+            label = " 6 ",
+            action = function()
+                setActiveProfile = 5
+                return true
+            end
+        },{
+            label = " 5 ",
+            action = function()
+                setActiveProfile = 4
+                return true
+            end
+        },{
+            label = " 4 ",
+            action = function()
+                setActiveProfile = 3
+                return true
+            end
+        },{
+            label = " 3 ",
+            action = function()
+                setActiveProfile = 2
+                return true
+            end
+        },{
+            label = " 2 ",
+            action = function()
+                setActiveProfile = 1
+                return true
+            end
+        }, {
+            label = " 1 ",
+            action = function()
+                setActiveProfile = 0
+                return true
+            end
+        }
+    }
+
+    local LCD_W, LCD_H = rfsuite.utils.getWindowSize()
+
+    form.openDialog({
+        width = LCD_W * 0.8,
+        title = "Battery Profile",
+        message = "Please set the active profile",
+        buttons = buttons,
+        wakeup = function()
+        end,
+        paint = function()
+        end,
+        options = TEXT_LEFT
+    })
+
+
+
+end
+
+function status.menu()
+    return {
+        {
+            "Select battery profile", function()
+                status.configureBattery()
+            end
+        }
+    }
+end
 
 return status
