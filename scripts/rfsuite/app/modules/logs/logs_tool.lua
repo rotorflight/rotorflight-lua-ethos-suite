@@ -802,7 +802,11 @@ local function paint()
             local optimal_records_per_page, _ = calculate_optimal_records_per_page(logLineCount, zoomRange.min, zoomRange.max)
 
             local step_size = optimal_records_per_page
-            local position = math.floor(map(sliderPosition, 1, 100, 1, logLineCount - step_size))
+            local maxPosition = math.max(1, logLineCount - step_size)
+            local position = math.floor(map(sliderPosition, 1, 100, 1, maxPosition))
+            if step_size > logLineCount then
+                step_size = logLineCount
+            end
             if position < 1 then position = 1 end
 
             local graphCount = 0
