@@ -1,0 +1,50 @@
+{
+  "LOSTHS":{
+    "english":"LOST-HS",
+    "translation":"PERTE DES TOURS"
+  },
+  "SPOOLUP":{
+    "english":"SPOOLUP",
+    "translation":"ACCELERATION"
+  },
+  "AUTOROT":{
+    "english":"AUTOROT",
+    "translation":"AUTOROTATION"
+  },
+  "BAILOUT":{
+    "english":"BAILOUT",
+    "translation":"SAUVETAGE"
+  },
+  "ACTIVE":{
+    "english":"ACTIVE",
+    "translation":"ACTIF"
+  },
+  "OFF":{
+    "english":"OFF",
+    "translation":"ARRET"
+  },
+  "IDLE":{
+    "english":"IDLE",
+    "translation":"RALENTI"
+  },
+  "DISARMED":{
+    "english":"DISARMED",
+    "translation":"DESARMER"
+  },
+  "DISABLED":{
+    "english":"DISABLED",
+    "translation":"DESACTIVER"
+  },
+  "THROFF":{
+    "english":"THR-OFF",
+    "translation":"COUPURE MOTEUR"
+  },
+  "UNKNOWN":{
+    "english":"UNKNOWN",
+    "translation":"INCONNU"
+  },
+  "RECOVERY":{
+    "english":"RECOVERY",
+    "translation":"RECUPERATION"
+  }
+}

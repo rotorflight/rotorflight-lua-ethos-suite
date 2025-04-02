@@ -1,0 +1,38 @@
+{
+  "image":{
+    "english":"image",
+    "translation":"Bild"
+  },
+  "no_link":{
+    "english":"no link",
+    "translation":"Keine Verbindung"
+  },
+  "ethos":{
+    "english":"ethos",
+    "translation":"Ethos"
+  },
+  "save":{
+    "english":"save",
+    "translation":"Speichern"
+  },
+  "error":{
+    "english":"error",
+    "translation":"Fehler"
+  },
+  "reload":{
+    "english":"reload",
+    "translation":"Neu laden"
+  },
+  "background_task_disabled":{
+    "english":"background task disabled",
+    "translation":"Hintergrundtask deaktiviert"
+  },
+  "version":{
+    "english":"version",
+    "translation":"Version"
+  },
+  "bg_task_disabled":{
+    "english":"bg task disabled",
+    "translation":"Hintergrundtask deaktiviert"
+  }
+}

@@ -17,5 +17,4 @@ bin/TelemetryEdit/build/main/PYZ-00.pyz
 bin/TelemetryEdit/build/main/PYZ-00.toc
 bin/TelemetryEdit/build/main/warn-main.txt
 bin/TelemetryEdit/build/main/xref-main.html
-bin/__pycache__/subprocess_conout.cpython-310.pyc
-bin/deploy/vscode/__pycache__/subprocess_conout.cpython-312.pyc
+bin/deploy/vscode/__pycache__/*

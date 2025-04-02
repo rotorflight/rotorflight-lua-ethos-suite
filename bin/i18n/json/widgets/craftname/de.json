@@ -1,0 +1,18 @@
+{
+  "txt_cancel":{
+    "english":"Cancel",
+    "translation":"Abbrechen"
+  },
+  "txt_enter_craft_name":{
+    "english":"Enter Craft Name",
+    "translation":"Fluggeraetname eingeben"
+  },
+  "title":{
+    "english":"CRAFT NAME",
+    "translation":"FLUGGERAET NAME"
+  },
+  "txt_save":{
+    "english":"Save",
+    "translation":"Speichern"
+  }
+}
