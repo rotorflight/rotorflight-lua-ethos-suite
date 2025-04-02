@@ -1,29 +1,27 @@
+-- json-to-lua.lua (now grouping by top-level JSON folders: api, app, telemetry, widgets, etc.)
+
 local json = dofile("lib/dkjson.lua")
 
 local jsonRoot = "json"
-local rawRoot = "../../scripts/rfsuite/i18n"
+local outRoot = "../../scripts/rfsuite/i18n"
+local isWindows = package.config:sub(1,1) == "\\"
 
-local isWindows = package.config:sub(1, 1) == "\\"
-local generatedEn = {}  -- Track dirs where en.lua has been written
-
--- List files
+-- Helper: list files/dirs
 local function listDir(path)
     local cmd = isWindows
         and ('dir /b "%s" 2>nul'):format(path)
         or ('ls -1 "%s" 2>/dev/null'):format(path)
     local pipe = io.popen(cmd)
     local result = {}
-    for line in pipe:lines() do
-        table.insert(result, line)
-    end
+    for line in pipe:lines() do table.insert(result, line) end
     pipe:close()
     return result
 end
 
--- Is directory?
+-- Helper: is directory?
 local function isDir(path)
     local cmd = isWindows
-        and ('if exist "%s\\\" (echo d)'):format(path)
+        and ('if exist "%s\\" (echo d)'):format(path)
         or ('[ -d "%s" ] && echo d'):format(path)
     local pipe = io.popen(cmd)
     local result = pipe:read("*a")
@@ -31,7 +29,7 @@ local function isDir(path)
     return result:match("d")
 end
 
--- Create dir
+-- Ensure output dir exists
 local function ensureDir(path)
     local cmd = isWindows
         and ('mkdir "%s" >nul 2>nul'):format(path)
@@ -39,7 +37,7 @@ local function ensureDir(path)
     os.execute(cmd)
 end
 
--- Unflatten keys
+-- Unflatten keys ("a.b.c" => nested table)
 local function unflatten(flat)
     local nested = {}
     for key, value in pairs(flat) do
@@ -56,7 +54,37 @@ local function unflatten(flat)
     return nested
 end
 
--- Lua table serializer
+-- Merge nested tables (recursive)
+local function deepMerge(base, new)
+    for k, v in pairs(new) do
+        if type(v) == "table" and type(base[k]) == "table" then
+            deepMerge(base[k], v)
+        else
+            base[k] = v
+        end
+    end
+end
+
+-- Set nested value by path array
+local function insertAtPath(root, pathParts, value)
+    if #pathParts == 0 then
+        deepMerge(root, value)
+        return
+    end
+
+    local current = root
+    for i = 1, #pathParts - 1 do
+        local part = pathParts[i]
+        current[part] = current[part] or {}
+        current = current[part]
+    end
+
+    local lastKey = pathParts[#pathParts]
+    current[lastKey] = current[lastKey] or {}
+    deepMerge(current[lastKey], value)
+end
+
+-- Serialize Lua table to string
 local function serializeLuaTable(tbl, indent)
     indent = indent or ""
     local nextIndent = indent .. "  "
@@ -73,59 +101,78 @@ local function serializeLuaTable(tbl, indent)
     return table.concat(parts)
 end
 
--- Scan recursively
-local function scanDir(path, rel)
+-- Recursively collect JSON files
+local function collectFiles(path, rel, files)
     rel = rel or ""
+    files = files or {}
     local fullPath = path .. (rel ~= "" and "/" .. rel or "")
     for _, entry in ipairs(listDir(fullPath)) do
-        local entryPath = rel ~= "" and (rel .. "/" .. entry) or entry
-        local fullEntryPath = fullPath .. "/" .. entry
-        if isDir(fullEntryPath) then
-            scanDir(path, entryPath)
+        local subRel = rel ~= "" and (rel .. "/" .. entry) or entry
+        local subFull = fullPath .. "/" .. entry
+        if isDir(subFull) then
+            collectFiles(path, subRel, files)
         elseif entry:match("^(%w+)%.json$") then
-            local lang = entry:match("^(%w+)%.json$")
-            local inFile = path .. "/" .. entryPath
-            local outPath = rawRoot .. "/" .. entryPath:gsub("%.json$", ".lua")
-            local outDir = outPath:match("(.+)/[^/]+%.lua$")
-
-            ensureDir(outDir)
-
-            local file = io.open(inFile, "r")
-            local content = file:read("*a")
-            file:close()
-
-            local parsed = json.decode(content)
-            local flatTr = {}
-            local flatEn = {}
-
-            for k, v in pairs(parsed) do
-                flatTr[k] = v.translation or ""
-                flatEn[k] = v.english or ""
-            end
-
-            local nestedTr = unflatten(flatTr)
-            local nestedEn = unflatten(flatEn)
-
-            -- Write translation file
-            local out = io.open(outPath, "w")
-            out:write("return ")
-            out:write(serializeLuaTable(nestedTr))
-            out:close()
-            print("✅ Wrote", outPath)
-
-            -- Write English file (once per folder)
-            if not generatedEn[outDir] then
-                local enOutPath = outDir .. "/en.lua"
-                local enOut = io.open(enOutPath, "w")
-                enOut:write("return ")
-                enOut:write(serializeLuaTable(nestedEn))
-                enOut:close()
-                print("✅ Wrote", enOutPath)
-                generatedEn[outDir] = true
-            end
+            table.insert(files, {
+                lang = entry:match("^(%w+)"),
+                path = path .. "/" .. subRel,
+                relPath = subRel:match("(.+)/%w+%.json$") or ""
+            })
         end
+    end
+    return files
+end
+
+-- Process all JSON files and group by folder path
+local function buildLanguageTables()
+    local allFiles = collectFiles(jsonRoot)
+    local translations = {} -- lang -> table
+    local english = {} -- for en.lua
+
+    for _, file in ipairs(allFiles) do
+        local lang = file.lang
+        local relPathParts = {}
+        for part in string.gmatch(file.relPath, "[^/]+") do
+            table.insert(relPathParts, part)
+        end
+
+        local f = io.open(file.path, "r")
+        local content = f:read("*a")
+        f:close()
+
+        local parsed = json.decode(content)
+        local flatTr, flatEn = {}, {}
+
+        for k, v in pairs(parsed) do
+            flatTr[k] = v.translation or ""
+            flatEn[k] = v.english or ""
+        end
+
+        local nestedTr = unflatten(flatTr)
+        local nestedEn = unflatten(flatEn)
+
+        translations[lang] = translations[lang] or {}
+        insertAtPath(translations[lang], relPathParts, nestedTr)
+
+        insertAtPath(english, relPathParts, nestedEn)
+    end
+
+    translations["en"] = english
+    return translations
+end
+
+-- Main
+local function writeAll()
+    local translations = buildLanguageTables()
+    ensureDir(outRoot)
+
+    for lang, data in pairs(translations) do
+        local outPath = outRoot .. "/" .. lang .. ".lua"
+        local f = io.open(outPath, "w")
+        f:write("return ")
+        f:write(serializeLuaTable(data))
+        f:close()
+        print("✅ Wrote:", outPath)
     end
 end
 
--- Run
-scanDir(jsonRoot)
+writeAll()
