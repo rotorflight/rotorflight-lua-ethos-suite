@@ -6,7 +6,7 @@
             "name": "SIM: Deploy",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/bin/deploy-sim.py",
+            "program": "${workspaceFolder}/bin/deploy/vscode/deploy-sim.py",
             "args": [
                 "--src", "${workspaceFolder}",
                 "--destfolders","${env:FRSKY_SIM_SRC}"
@@ -18,7 +18,7 @@
             "name": "SIM: Deploy & Launch",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/bin/deploy-sim.py",
+            "program": "${workspaceFolder}/bin/deploy/vscode/deploy-sim.py",
             "args": [
                 "--src", "${workspaceFolder}",
                 "--sim", "${env:FRSKY_SIM_BIN}",
@@ -31,7 +31,7 @@
             "name": "Radio: Deploy (Fast)",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/bin/deploy-sim.py",
+            "program": "${workspaceFolder}/bin/deploy/vscode/deploy-sim.py",
             "args": [
                 "--src", "${workspaceFolder}",
                 "--destfolders","${env:FRSKY_REMOTE_SRC}",
@@ -45,7 +45,7 @@
             "name": "Radio: Deploy & Debug (Fast)",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/bin/deploy-sim.py",
+            "program": "${workspaceFolder}/bin/deploy/vscode/deploy-sim.py",
             "args": [
                 "--src", "${workspaceFolder}",
                 "--destfolders","${env:FRSKY_REMOTE_SRC}",
@@ -60,7 +60,7 @@
             "name": "Radio: Deploy (All)",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/bin/deploy-sim.py",
+            "program": "${workspaceFolder}/bin/deploy/vscode/deploy-sim.py",
             "args": [
                 "--src", "${workspaceFolder}",
                 "--destfolders","${env:FRSKY_REMOTE_SRC}",
@@ -73,7 +73,7 @@
             "name": "Radio: Deploy & Debug (All)",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/bin/deploy-sim.py",
+            "program": "${workspaceFolder}/bin/deploy/vscode/deploy-sim.py",
             "args": [
                 "--src", "${workspaceFolder}",
                 "--destfolders","${env:FRSKY_REMOTE_SRC}",
@@ -87,7 +87,7 @@
             "name": "Radio: Debug",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/bin/deploy-sim.py",
+            "program": "${workspaceFolder}/bin/deploy/vscode/deploy-sim.py",
             "args": [
                 "--radio",
                 "--radioDebug",
