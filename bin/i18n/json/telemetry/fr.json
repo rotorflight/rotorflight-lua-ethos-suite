@@ -1,0 +1,62 @@
+{
+  "sensors.headspeed":{
+    "english":"Headspeed",
+    "translation":"Tours Moteurs"
+  },
+  "sensors.esc_temp":{
+    "english":"ESC Temperature",
+    "translation":"Temperature ESC"
+  },
+  "sensors.voltage":{
+    "english":"Voltage",
+    "translation":"Tension"
+  },
+  "sensors.mcu_temp":{
+    "english":"MCU Temperature",
+    "translation":"Temperature Micro Processeur"
+  },
+  "sensors.governor":{
+    "english":"Governor State",
+    "translation":"Status du Gouverneur"
+  },
+  "sensors.pid_profile":{
+    "english":"PID Profile",
+    "translation":"Profile de PID"
+  },
+  "sensors.adj_val":{
+    "english":"Adj (Value)",
+    "translation":"Ajustements Valeurs"
+  },
+  "sensors.adj_func":{
+    "english":"Adj (Function)",
+    "translation":"Ajustements Fonctions"
+  },
+  "sensors.throttle_pct":{
+    "english":"Throttle %",
+    "translation":"Pourcentage de Gaz"
+  },
+  "sensors.arming_flags":{
+    "english":"Arming Flags",
+    "translation":"Drapeaux Armements"
+  },
+  "sensors.rate_profile":{
+    "english":"Rate Profile",
+    "translation":"Profile de Rates"
+  },
+  "sensors.fuel":{
+    "english":"Charge Level",
+    "translation":"Niveau de Carburant"
+  },
+  "sensors.current":{
+    "english":"Current",
+    "translation":"Courant"
+  },
+  "sensors.rssi":{
+    "english":"RSSI",
+    "translation":"Signal du Recepteur"
+  },
+  "sensors.consumption":{
+    "english":"Consumption",
+    "translation":"Consommation"
+  }
+}
