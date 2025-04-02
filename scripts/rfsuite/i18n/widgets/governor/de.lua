@@ -1,33 +1,14 @@
---[[
- * Copyright (C) Rotorflight Project
- *
- * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 3 as
- * published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * Note. Some icons have been sourced from https://www.flaticon.com/
-]] --
-
-local de = {
-    UNKNOWN   = "UNBEKANNT",
-    OFF       = "AUS",
-    IDLE      = "LEERLAUF",
-    SPOOLUP   = "HOCHLAUF",
-    RECOVERY  = "ERHOLUNG",
-    ACTIVE    = "AKTIV",
-    THROFF    = "GAS-AUS",
-    LOSTHS    = "KEIN SIGNAL",
-    AUTOROT   = "AUTOROTATION",
-    BAILOUT   = "NOTAUS",
-    DISABLED  = "DEAKTIVIERT",
-    DISARMED  = "DISARMED"
+return {
+  ["THROFF"] = "GAS-AUS",
+  ["UNKNOWN"] = "UNBEKANNT",
+  ["OFF"] = "AUS",
+  ["DISARMED"] = "DISARMED",
+  ["RECOVERY"] = "ERHOLUNG",
+  ["LOSTHS"] = "KEIN SIGNAL",
+  ["DISABLED"] = "DEAKTIVIERT",
+  ["AUTOROT"] = "AUTOROTATION",
+  ["BAILOUT"] = "NOTAUS",
+  ["ACTIVE"] = "AKTIV",
+  ["SPOOLUP"] = "HOCHLAUF",
+  ["IDLE"] = "LEERLAUF",
 }
-
-return de

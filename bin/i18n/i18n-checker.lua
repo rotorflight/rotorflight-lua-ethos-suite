@@ -169,11 +169,11 @@ local function scan_for_translation_dirs(root_folder)
     end
 end
 
--- Get root directory from command-line argument
+-- Determine root directory from command-line or default
 local root_folder = arg[1]
-if not root_folder then
-    print("Usage: lua i18n-checker.lua <root-folder>")
-    os.exit(1)
+if not root_folder or root_folder == "" then
+    print("[INFO] No root folder provided. Using default: ../../scripts/rfsuite/i18n/")
+    root_folder = "../../scripts/rfsuite/i18n/"
 end
 
 scan_for_translation_dirs(normalize_path(root_folder))
