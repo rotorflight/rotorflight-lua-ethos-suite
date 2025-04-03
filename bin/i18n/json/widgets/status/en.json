@@ -1,11 +1,11 @@
 {
   "txt_governor_announcements":{
     "english":"Governor Announcements",
-    "translation":"Anuncios Governor"
+    "translation":"Governor Announcements"
   },
   "txt_rateshigh":{
     "english":"Rates high",
-    "translation":"Tasas altas"
+    "translation":"Rates high"
   },
   "layoutOptions.LQ_GOVERNOR":{
     "english":"LQ, GOVERNOR",
@@ -13,19 +13,19 @@
   },
   "layoutOptions.CUSTOMSENSOR_1":{
     "english":"CUSTOMSENSOR #1",
-    "translation":"SENSOR PERS #1"
+    "translation":"CUSTOMSENSOR #1"
   },
   "txt_voltage":{
     "english":"Voltage",
-    "translation":"Voltaje"
+    "translation":"Voltage"
   },
   "txt_idlespeedlow":{
     "english":"Idle Speed Low",
-    "translation":"Velocidad Ralentí Baja"
+    "translation":"Idle Speed Low"
   },
   "txt_cells":{
     "english":"Cells",
-    "translation":"Celdas"
+    "translation":"Cells"
   },
   "layoutOptions.MAH":{
     "english":"MAH",
@@ -37,15 +37,15 @@
   },
   "txt_rfgovernor":{
     "english":"Rotorflight Governor",
-    "translation":"Governor Rotorflight"
+    "translation":"Rotorflight Governor"
   },
   "txt_warnsensors":{
     "english":"Warn if missing sensors",
-    "translation":"Advertir si faltan sensores"
+    "translation":"Warn if missing sensors"
   },
   "txt_max_cell_voltage":{
     "english":"Maximum Cell Voltage",
-    "translation":"Voltaje Máximo Celda"
+    "translation":"Maximum Cell Voltage"
   },
   "title_tempESC":{
     "english":"T.ESC",
@@ -53,11 +53,11 @@
   },
   "txt_norepeat":{
     "english":"No Repeat",
-    "translation":"No Repetir"
+    "translation":"No Repeat"
   },
   "txt_vibrate":{
     "english":"Vibrate",
-    "translation":"Vibrar"
+    "translation":"Vibrate"
   },
   "txt_governor":{
     "english":"Governor",
@@ -65,15 +65,15 @@
   },
   "warn_missing_sensors":{
     "english":"MISSING REQUIRED SENSORS",
-    "translation":"FALTAN SENSORES NECESARIOS"
+    "translation":"MISSING REQUIRED SENSORS"
   },
   "txt_rescueoff":{
     "english":"Rescue Off",
-    "translation":"Rescate Apagado"
+    "translation":"Rescue Off"
   },
   "txt_play_alerton":{
     "english":"Play Alert on",
-    "translation":"Reprod. Alerta en"
+    "translation":"Play Alert on"
   },
   "layoutOptions.TESC":{
     "english":"T.ESC",
@@ -81,7 +81,7 @@
   },
   "txt_rescueon":{
     "english":"Rescue On",
-    "translation":"Rescate Encendido"
+    "translation":"Rescue On"
   },
   "layoutOptions.LQ_TIMER":{
     "english":"LQ, TIMER",
@@ -89,15 +89,15 @@
   },
   "txt_low_voltage":{
     "english":"Low Voltage",
-    "translation":"Bajo Voltaje"
+    "translation":"Low Voltage"
   },
   "layoutOptions.CUSTOMSENSOR_1_2":{
     "english":"CUSTOMSENSOR #1, #2",
-    "translation":"SENSOR PERS #1, #2"
+    "translation":"CUSTOMSENSOR #1, #2"
   },
   "txt_alertifdifflt":{
     "english":"Alert if difference is < than",
-    "translation":"Alertar si diferencia es < que"
+    "translation":"Alert if difference is < than"
   },
   "txt_box4":{
     "english":"Box 4",
@@ -105,11 +105,11 @@
   },
   "layoutOptions.VOLTAGE_MAH":{
     "english":"VOLTAGE, MAH",
-    "translation":"VOLTAJE, MAH"
+    "translation":"VOLTAGE, MAH"
   },
   "txt_alertonrpmdiff":{
     "english":"Alert on RPM difference",
-    "translation":"Alertar diferencia RPM"
+    "translation":"Alert on RPM difference"
   },
   "layoutOptions.TIMER":{
     "english":"TIMER",
@@ -117,7 +117,7 @@
   },
   "txt_warn_cell_voltage":{
     "english":"Warning Cell Voltage",
-    "translation":"Votaje Advertencia Celda"
+    "translation":"Warning Cell Voltage"
   },
   "txt_mcu":{
     "english":"MCU",
@@ -129,23 +129,23 @@
   },
   "layoutOptions.CURRENT":{
     "english":"CURRENT",
-    "translation":"CORRIENTE"
+    "translation":"CURRENT"
   },
   "txt_stickcutoff":{
     "english":"Stick Cutoff",
-    "translation":"Corte Joystick"
+    "translation":"Stick Cutoff"
   },
   "layoutOptions.IMAGE_GOVERNOR":{
     "english":"IMAGE, GOVERNOR",
-    "translation":"IMAGEN, GOVERNOR"
+    "translation":"IMAGE, GOVERNOR"
   },
   "txt_customsensor_1":{
     "english":"Custom Sensor #1",
-    "translation":"Sensor Personal #1"
+    "translation":"Custom Sensor #1"
   },
   "txt_disable":{
     "english":"Disable",
-    "translation":"Deshabilitar"
+    "translation":"Disable"
   },
   "txt_box3":{
     "english":"Box 3",
@@ -153,23 +153,23 @@
   },
   "txt_min":{
     "english":"min",
-    "translation":"mín"
+    "translation":"min"
   },
   "txt_usecolours":{
     "english":"Use colours to indicate status",
-    "translation":"Use colores para indicar estados"
+    "translation":"Use colours to indicate status"
   },
   "txt_initialising":{
     "english":"INITIALISING",
-    "translation":"INICIALIZANDO"
+    "translation":"INITIALISING"
   },
   "txt_extgovernor":{
     "english":"External Governor",
-    "translation":"Governor Externo"
+    "translation":"External Governor"
   },
   "txt_battery_configuration":{
     "english":"Battery Configuration",
-    "translation":"Configuración Batería"
+    "translation":"Battery Configuration"
   },
   "title_time":{
     "english":"TIMER",
@@ -177,23 +177,23 @@
   },
   "layoutOptions.VOLTAGE_FUEL":{
     "english":"VOLTAGE, FUEL",
-    "translation":"VOLTAJE, COMBUST."
+    "translation":"VOLTAGE, FUEL"
   },
   "txt_triggers":{
     "english":"Triggers",
-    "translation":"Gatillos"
+    "translation":"Triggers"
   },
   "txt_calcfuel_local":{
     "english":"Calculate Fuel Locally",
-    "translation":"Calcular Combustible Localmente"
+    "translation":"Calculate Fuel Locally"
   },
   "layoutOptions.CUSTOMSENSOR_2":{
     "english":"CUSTOMSENSOR #2",
-    "translation":"SENSOR PERS #2"
+    "translation":"CUSTOMSENSOR #2"
   },
   "txt_customsensor_2":{
     "english":"Custom Sensor #2",
-    "translation":"Sensor Personal #2"
+    "translation":"Custom Sensor #2"
   },
   "layoutOptions.TMCU":{
     "english":"T.MCU",
@@ -201,15 +201,15 @@
   },
   "txt_timerconfiguration":{
     "english":"Timer Configuration",
-    "translation":"Configuración Timer"
+    "translation":"Timer Configuration"
   },
   "txt_rateslow":{
     "english":"Rates low",
-    "translation":"Tasas bajas"
+    "translation":"Rates low"
   },
   "txt_current":{
     "english":"Current",
-    "translation":"Corriente"
+    "translation":"Current"
   },
   "txt_rpm":{
     "english":"RPM",
@@ -217,11 +217,11 @@
   },
   "title_fm":{
     "english":"FLIGHT MODE",
-    "translation":"MODO VUELO"
+    "translation":"FLIGHT MODE"
   },
   "txt_bblon":{
     "english":"BBL On",
-    "translation":"BBL Encendido"
+    "translation":"BBL On"
   },
   "title_governor":{
     "english":"GOVERNOR",
@@ -233,15 +233,15 @@
   },
   "layoutOptions.MAX_CURRENT":{
     "english":"MAX CURRENT",
-    "translation":"CORRIENTE MAX"
+    "translation":"MAX CURRENT"
   },
   "txt_idlespeedhigh":{
     "english":"Idle Speed High",
-    "translation":"Velocidad Ralentí Alta"
+    "translation":"Idle Speed High"
   },
   "title_current":{
     "english":"CURRENT",
-    "translation":"CORRIENTE"
+    "translation":"CURRENT"
   },
   "txt_box1":{
     "english":"Box 1",
@@ -249,7 +249,7 @@
   },
   "txt_displaysize_invalid":{
     "english":"DISPLAY SIZE INVALID",
-    "translation":"TAMAÑO DISPLAY INVALIDO"
+    "translation":"DISPLAY SIZE INVALID"
   },
   "txt_unknown":{
     "english":"UNKNOWN",
@@ -257,47 +257,47 @@
   },
   "txt_please_enable_bgtask":{
     "english":"Please enable background task",
-    "translation":"Active tarea en segundo plano (LUA modelo)"
+    "translation":"Please enable background task"
   },
   "txt_delaybeforeactive":{
     "english":"Delay Before Active",
-    "translation":"Retardo Previo Activar"
+    "translation":"Delay Before Active"
   },
   "txt_disabled":{
     "english":"Disabled",
-    "translation":"Deshabilitado"
+    "translation":"Disabled"
   },
   "title_voltage":{
     "english":"VOLTAGE",
-    "translation":"VOLTAJE"
+    "translation":"VOLTAGE"
   },
   "layoutOptions.IMAGE":{
     "english":"IMAGE",
-    "translation":"IMAGEN"
+    "translation":"IMAGE"
   },
   "txt_gimbalmonitoring":{
     "english":"Gimbal Monitoring",
-    "translation":"Monitoreo Gimbal"
+    "translation":"Gimbal Monitoring"
   },
   "txt_interval":{
     "english":"Interval",
-    "translation":"Intervalo"
+    "translation":"Interval"
   },
   "txt_announcement_interval":{
     "english":"Announcement Interval",
-    "translation":"Intervalo Anuncio"
+    "translation":"Announcement Interval"
   },
   "txt_fuel":{
     "english":"Fuel",
-    "translation":"Combustible"
+    "translation":"Fuel"
   },
   "txt_sagcompensation":{
     "english":"Sag Compensation",
-    "translation":"Compensación Caída"
+    "translation":"Sag Compensation"
   },
   "layoutOptions.FUEL":{
     "english":"FUEL",
-    "translation":"COMBUSTIBLE"
+    "translation":"FUEL"
   },
   "txt_display_maxmin":{
     "english":"Display Max/Min",
@@ -305,39 +305,39 @@
   },
   "txt_headspeed":{
     "english":"Headspeed",
-    "translation":"Veloc. Rotor"
+    "translation":"Headspeed"
   },
   "txt_advanced":{
     "english":"Advanced",
-    "translation":"Avanzado"
+    "translation":"Advanced"
   },
   "txt_customise_display":{
     "english":"Customise Display",
-    "translation":"Personalizar Display"
+    "translation":"Customise Display"
   },
   "txt_low":{
     "english":"Low",
-    "translation":"Baja"
+    "translation":"Low"
   },
   "txt_sensitivity":{
     "english":"Sensitivity",
-    "translation":"Sensibilidad"
+    "translation":"Sensitivity"
   },
   "layoutOptions.VOLTAGE":{
     "english":"VOLTAGE",
-    "translation":"VOLTAJE"
+    "translation":"VOLTAGE"
   },
   "txt_tempconversion":{
     "english":"Temperature Conversion",
-    "translation":"Conversión Temperatura"
+    "translation":"Temperature Conversion"
   },
   "layoutOptions.VOLTAGE_CURRENT":{
     "english":"VOLTAGE, CURRENT",
-    "translation":"VOLTAJE, CORRIENTE"
+    "translation":"VOLTAGE, CURRENT"
   },
   "layoutOptions.CRAFT_NAME":{
     "english":"CRAFT NAME",
-    "translation":"NOMBRE AERONAVE"
+    "translation":"CRAFT NAME"
   },
   "txt_esc":{
     "english":"ESC",
@@ -345,23 +345,23 @@
   },
   "txt_low_fuel_voltage":{
     "english":"Low Fuel & Low Voltage",
-    "translation":"Poco combust. y bajo voltaje"
+    "translation":"Low Fuel & Low Voltage"
   },
   "txt_playalarmat":{
     "english":"Play Alarm at",
-    "translation":"Sonar Alarma en"
+    "translation":"Play Alarm at"
   },
   "title_fuel":{
     "english":"FUEL",
-    "translation":"COMBUSTIBLE"
+    "translation":"FUEL"
   },
   "txt_max":{
     "english":"max",
-    "translation":"máx"
+    "translation":"max"
   },
   "txt_hight":{
     "english":"High",
-    "translation":"Alta"
+    "translation":"High"
   },
   "title_rpm":{
     "english":"RPM",
@@ -373,7 +373,7 @@
   },
   "txt_low_fuel":{
     "english":"Low Fuel",
-    "translation":"Poco Combustible"
+    "translation":"Low Fuel"
   },
   "txt_box5":{
     "english":"Box 5",
@@ -385,11 +385,11 @@
   },
   "txt_idlespeedmedium":{
     "english":"Idle Speed Medium",
-    "translation":"Velocidad Ralentí Media"
+    "translation":"Idle Speed Medium"
   },
   "txt_customsensors":{
     "english":"Custom Sensors",
-    "translation":"Sensores Personaliz."
+    "translation":"Custom Sensors"
   },
   "layoutOptions.RPM":{
     "english":"RPM",
@@ -405,11 +405,11 @@
   },
   "txt_medium":{
     "english":"Medium",
-    "translation":"Media"
+    "translation":"Medium"
   },
   "txt_low_fuel_percentage":{
     "english":"Low Fuel %",
-    "translation":"Combustible bajo %"
+    "translation":"Low Fuel %"
   },
   "layoutOptions.TESC_TMCU":{
     "english":"T.ESC, T.MCU",
@@ -417,7 +417,7 @@
   },
   "txt_display_title":{
     "english":"Display Title",
-    "translation":"Título Display"
+    "translation":"Display Title"
   },
   "title_rssi":{
     "english":"LQ",
@@ -425,7 +425,7 @@
   },
   "txt_bbloff":{
     "english":"BBL Off",
-    "translation":"BBL Apagado"
+    "translation":"BBL Off"
   },
   "txt_timer":{
     "english":"Timer",
@@ -433,11 +433,11 @@
   },
   "txt_esc_temperature":{
     "english":"ESC Temperature",
-    "translation":"Temperatura ESC"
+    "translation":"ESC Temperature"
   },
   "txt_min_cell_voltage":{
     "english":"Minimum Cell Voltage",
-    "translation":"Voltaje Mínimo Celda"
+    "translation":"Minimum Cell Voltage"
   },
   "layoutOptions.LQ_TIMER_TESC_TMCU":{
     "english":"LQ, TIMER, T.ESC, T.MCU",
@@ -445,11 +445,11 @@
   },
   "txt_mcu_temperature":{
     "english":"MCU Temperature",
-    "translation":"Temperatura MCU"
+    "translation":"MCU Temperature"
   },
   "txt_idleupswitch":{
     "english":"Idle Up Switch",
-    "translation":"Botón Idle-Up"
+    "translation":"Idle Up Switch"
   },
   "layoutOptions.GOVERNOR":{
     "english":"GOVERNOR",
@@ -457,14 +457,14 @@
   },
   "txt_ratesmedium":{
     "english":"Rates medium",
-    "translation":"Tasas medias"
+    "translation":"Rates medium"
   },
   "txt_switch_announcements":{
     "english":"Switch Announcements",
-    "translation":"Anuncios Botón"
+    "translation":"Switch Announcements"
   },
   "txt_telemetry_announcements":{
     "english":"Telemetry Announcements",
-    "translation":"Anuncios Telemetía"
+    "translation":"Telemetry Announcements"
   }
 }

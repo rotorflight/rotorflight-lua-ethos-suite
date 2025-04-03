@@ -1,23 +1,19 @@
 {
-  "LOSTHS":{
-    "english":"LOST-HS",
-    "translation":"LOST-HS"
+  "ACTIVE":{
+    "english":"ACTIVE",
+    "translation":"ACTIEF"
+  },
+  "THROFF":{
+    "english":"THR-OFF",
+    "translation":"THR-UIT"
   },
   "SPOOLUP":{
     "english":"SPOOLUP",
     "translation":"OPSTARTEN"
   },
-  "AUTOROT":{
-    "english":"AUTOROT",
-    "translation":"AUTOROT"
-  },
-  "BAILOUT":{
-    "english":"BAILOUT",
-    "translation":"BAILOUT"
-  },
-  "ACTIVE":{
-    "english":"ACTIVE",
-    "translation":"ACTIEF"
+  "DISARMED":{
+    "english":"DISARMED",
+    "translation":"DISARMED"
   },
   "OFF":{
     "english":"OFF",
@@ -27,24 +23,28 @@
     "english":"IDLE",
     "translation":"IDLE"
   },
-  "DISARMED":{
-    "english":"DISARMED",
-    "translation":"DISARMED"
+  "RECOVERY":{
+    "english":"RECOVERY",
+    "translation":"HERSTELLEN"
   },
   "DISABLED":{
     "english":"DISABLED",
     "translation":"UITGESCHAKELD"
   },
-  "THROFF":{
-    "english":"THR-OFF",
-    "translation":"THR-UIT"
-  },
   "UNKNOWN":{
     "english":"UNKNOWN",
     "translation":"ONBEKEND"
   },
-  "RECOVERY":{
-    "english":"RECOVERY",
-    "translation":"HERSTELLEN"
+  "BAILOUT":{
+    "english":"BAILOUT",
+    "translation":"BAILOUT"
+  },
+  "LOSTHS":{
+    "english":"LOST-HS",
+    "translation":"LOST-HS"
+  },
+  "AUTOROT":{
+    "english":"AUTOROT",
+    "translation":"AUTOROT"
   }
 }

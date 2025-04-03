@@ -1,10 +1,34 @@
--- json-to-lua.lua (now grouping by top-level JSON folders: api, app, telemetry, widgets, etc.)
+--[[
+ * Copyright (C) Rotorflight Project
+ *
+ * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+]]
 
 local json = dofile("lib/dkjson.lua")
 
 local jsonRoot = "json"
 local outRoot = "../../scripts/rfsuite/i18n"
 local isWindows = package.config:sub(1,1) == "\\"
+
+local function readHeader(path)
+    local f = io.open(path, "r")
+    if not f then return "" end
+    local content = f:read("*a")
+    f:close()
+    return content .. "\n\n"
+end
+
+local fileHeader = readHeader("lib/header.txt")
 
 -- Helper: list files/dirs
 local function listDir(path)
@@ -122,11 +146,10 @@ local function collectFiles(path, rel, files)
     return files
 end
 
--- Process all JSON files and group by folder path
+-- Process JSON files: use translation for others, only en.json for English
 local function buildLanguageTables()
     local allFiles = collectFiles(jsonRoot)
     local translations = {} -- lang -> table
-    local english = {} -- for en.lua
 
     for _, file in ipairs(allFiles) do
         local lang = file.lang
@@ -140,23 +163,21 @@ local function buildLanguageTables()
         f:close()
 
         local parsed = json.decode(content)
-        local flatTr, flatEn = {}, {}
+        local flat = {}
 
         for k, v in pairs(parsed) do
-            flatTr[k] = v.translation or ""
-            flatEn[k] = v.english or ""
+            if lang == "en" then
+                flat[k] = v.default or v.label or v.translation or v.english or ""
+            else
+                flat[k] = v.translation or ""
+            end
         end
 
-        local nestedTr = unflatten(flatTr)
-        local nestedEn = unflatten(flatEn)
-
+        local nested = unflatten(flat)
         translations[lang] = translations[lang] or {}
-        insertAtPath(translations[lang], relPathParts, nestedTr)
-
-        insertAtPath(english, relPathParts, nestedEn)
+        insertAtPath(translations[lang], relPathParts, nested)
     end
 
-    translations["en"] = english
     return translations
 end
 
@@ -168,10 +189,11 @@ local function writeAll()
     for lang, data in pairs(translations) do
         local outPath = outRoot .. "/" .. lang .. ".lua"
         local f = io.open(outPath, "w")
+        f:write(fileHeader)
         f:write("return ")
         f:write(serializeLuaTable(data))
         f:close()
-        print("✅ Wrote:", outPath)
+        print("Wrote:", outPath)
     end
 end
 

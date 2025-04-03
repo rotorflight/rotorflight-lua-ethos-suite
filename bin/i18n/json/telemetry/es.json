@@ -1,62 +1,62 @@
 {
-  "sensors.headspeed":{
-    "english":"Headspeed",
-    "translation":"Veloc. Rotor"
-  },
-  "sensors.esc_temp":{
-    "english":"ESC Temperature",
-    "translation":"Temperatura ESC"
-  },
-  "sensors.voltage":{
-    "english":"Voltage",
-    "translation":"Voltaje"
-  },
-  "sensors.mcu_temp":{
-    "english":"MCU Temperature",
-    "translation":"Temperatura MCU"
-  },
   "sensors.governor":{
     "english":"Governor State",
     "translation":"Estado Governor"
-  },
-  "sensors.pid_profile":{
-    "english":"PID Profile",
-    "translation":"Perfil PID"
-  },
-  "sensors.adj_val":{
-    "english":"Adj (Value)",
-    "translation":"Ajus.(Valor)"
-  },
-  "sensors.adj_func":{
-    "english":"Adj (Function)",
-    "translation":"Ajus.(Función)"
-  },
-  "sensors.throttle_pct":{
-    "english":"Throttle %",
-    "translation":"% Acelerador"
-  },
-  "sensors.arming_flags":{
-    "english":"Arming Flags",
-    "translation":"Banderas Armado"
-  },
-  "sensors.rate_profile":{
-    "english":"Rate Profile",
-    "translation":"Perfil Tasas"
   },
   "sensors.fuel":{
     "english":"Charge Level",
     "translation":"Nivel de Carga"
   },
-  "sensors.current":{
-    "english":"Current",
-    "translation":"Corriente"
+  "sensors.adj_val":{
+    "english":"Adj (Value)",
+    "translation":"Ajus.(Valor)"
+  },
+  "sensors.pid_profile":{
+    "english":"PID Profile",
+    "translation":"Perfil PID"
+  },
+  "sensors.consumption":{
+    "english":"Consumption",
+    "translation":"Consumo"
+  },
+  "sensors.voltage":{
+    "english":"Voltage",
+    "translation":"Voltaje"
   },
   "sensors.rssi":{
     "english":"RSSI",
     "translation":"RSSI"
   },
-  "sensors.consumption":{
-    "english":"Consumption",
-    "translation":"Consumo"
+  "sensors.rate_profile":{
+    "english":"Rate Profile",
+    "translation":"Perfil Tasas"
+  },
+  "sensors.arming_flags":{
+    "english":"Arming Flags",
+    "translation":"Banderas Armado"
+  },
+  "sensors.esc_temp":{
+    "english":"ESC Temperature",
+    "translation":"Temperatura ESC"
+  },
+  "sensors.throttle_pct":{
+    "english":"Throttle %",
+    "translation":"% Acelerador"
+  },
+  "sensors.adj_func":{
+    "english":"Adj (Function)",
+    "translation":"Ajus.(Función)"
+  },
+  "sensors.current":{
+    "english":"Current",
+    "translation":"Corriente"
+  },
+  "sensors.headspeed":{
+    "english":"Headspeed",
+    "translation":"Veloc. Rotor"
+  },
+  "sensors.mcu_temp":{
+    "english":"MCU Temperature",
+    "translation":"Temperatura MCU"
   }
 }

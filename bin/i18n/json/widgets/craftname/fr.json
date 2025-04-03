@@ -1,18 +1,18 @@
 {
-  "txt_cancel":{
-    "english":"Cancel",
-    "translation":"Annuler"
-  },
   "txt_enter_craft_name":{
     "english":"Enter Craft Name",
     "translation":"Entrez le nom de l'appareil"
   },
-  "title":{
-    "english":"CRAFT NAME",
-    "translation":"NOM DE L'APPAREIL"
+  "txt_cancel":{
+    "english":"Cancel",
+    "translation":"Annuler"
   },
   "txt_save":{
     "english":"Save",
     "translation":"Enregistrer"
+  },
+  "title":{
+    "english":"CRAFT NAME",
+    "translation":"NOM DE L'APPAREIL"
   }
 }
