@@ -1,10 +1,34 @@
--- json-to-lua.lua (builds en.lua only from en.json files; others from translation fields)
+--[[
+ * Copyright (C) Rotorflight Project
+ *
+ * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+]]
 
 local json = dofile("lib/dkjson.lua")
 
 local jsonRoot = "json"
 local outRoot = "../../scripts/rfsuite/i18n"
 local isWindows = package.config:sub(1,1) == "\\"
+
+local function readHeader(path)
+    local f = io.open(path, "r")
+    if not f then return "" end
+    local content = f:read("*a")
+    f:close()
+    return content .. "\n\n"
+end
+
+local fileHeader = readHeader("lib/header.txt")
 
 -- Helper: list files/dirs
 local function listDir(path)
@@ -165,6 +189,7 @@ local function writeAll()
     for lang, data in pairs(translations) do
         local outPath = outRoot .. "/" .. lang .. ".lua"
         local f = io.open(outPath, "w")
+        f:write(fileHeader)
         f:write("return ")
         f:write(serializeLuaTable(data))
         f:close()

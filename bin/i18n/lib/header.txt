@@ -1,0 +1,25 @@
+--[[
+ * Copyright (C) Rotorflight Project
+ *
+ * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * Please do not edit these files directly. These files are generated
+ * from JSON files contained within the folder:
+ *
+ *   bin/i18n/json/*.json
+ *
+ * Running the script:
+ *
+ *   lua54 json-to-lua.lua
+ *
+ * will create these files for you.
+]]
