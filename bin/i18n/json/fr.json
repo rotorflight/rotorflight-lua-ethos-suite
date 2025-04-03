@@ -1,38 +1,38 @@
 {
-  "image":{
-    "english":"image",
-    "translation":"image"
-  },
-  "no_link":{
-    "english":"no link",
-    "translation":"aucun lien"
+  "error":{
+    "english":"error",
+    "translation":"erreur"
   },
   "ethos":{
     "english":"ethos",
     "translation":"ethos"
   },
+  "reload":{
+    "english":"reload",
+    "translation":"recharger"
+  },
   "save":{
     "english":"save",
     "translation":"enregistrer"
   },
-  "error":{
-    "english":"error",
-    "translation":"erreur"
+  "no_link":{
+    "english":"no link",
+    "translation":"aucun lien"
   },
-  "reload":{
-    "english":"reload",
-    "translation":"recharger"
+  "image":{
+    "english":"image",
+    "translation":"image"
   },
   "background_task_disabled":{
     "english":"background task disabled",
     "translation":"tache en arriere-plan desactivee"
   },
-  "version":{
-    "english":"version",
-    "translation":"version"
-  },
   "bg_task_disabled":{
     "english":"bg task disabled",
     "translation":"tache AR plan desactivee"
+  },
+  "version":{
+    "english":"version",
+    "translation":"version"
   }
 }
