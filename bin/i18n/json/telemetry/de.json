@@ -1,36 +1,12 @@
 {
   "sensors":{
+    "pid_profile":{
+      "english":"PID Profile",
+      "translation":"PID-Profil"
+    },
     "esc_temp":{
       "english":"ESC Temperature",
       "translation":"ESC Temperatur"
-    },
-    "rate_profile":{
-      "english":"Rate Profile",
-      "translation":"Rate-Profil"
-    },
-    "headspeed":{
-      "english":"Headspeed",
-      "translation":"Drehzahl"
-    },
-    "voltage":{
-      "english":"Voltage",
-      "translation":"Spannung"
-    },
-    "governor":{
-      "english":"Governor State",
-      "translation":"Governor Status"
-    },
-    "adj_func":{
-      "english":"Adj (Function)",
-      "translation":"Adj (Funktion)"
-    },
-    "fuel":{
-      "english":"Charge Level",
-      "translation":"Kraftstoffstand"
-    },
-    "rssi":{
-      "english":"RSSI",
-      "translation":"RSSI"
     },
     "adj_val":{
       "english":"Adj (Value)",
@@ -40,25 +16,49 @@
       "english":"Arming Flags",
       "translation":"Arming-Flags"
     },
-    "current":{
-      "english":"Current",
-      "translation":"Strom"
+    "consumption":{
+      "english":"Consumption",
+      "translation":"Verbrauch"
     },
     "throttle_pct":{
       "english":"Throttle %",
       "translation":"Gas %"
     },
-    "consumption":{
-      "english":"Consumption",
-      "translation":"Verbrauch"
+    "headspeed":{
+      "english":"Headspeed",
+      "translation":"Drehzahl"
     },
-    "pid_profile":{
-      "english":"PID Profile",
-      "translation":"PID-Profil"
+    "current":{
+      "english":"Current",
+      "translation":"Strom"
+    },
+    "rate_profile":{
+      "english":"Rate Profile",
+      "translation":"Rate-Profil"
+    },
+    "governor":{
+      "english":"Governor State",
+      "translation":"Governor Status"
+    },
+    "adj_func":{
+      "english":"Adj (Function)",
+      "translation":"Adj (Funktion)"
+    },
+    "voltage":{
+      "english":"Voltage",
+      "translation":"Spannung"
+    },
+    "rssi":{
+      "english":"RSSI",
+      "translation":"RSSI"
     },
     "mcu_temp":{
       "english":"MCU Temperature",
       "translation":"MCU Temperatur"
+    },
+    "fuel":{
+      "english":"Charge Level",
+      "translation":"Kraftstoffstand"
     }
   }
 }

@@ -1,36 +1,12 @@
 {
   "sensors":{
+    "pid_profile":{
+      "english":"PID Profile",
+      "translation":"PID Profiel"
+    },
     "esc_temp":{
       "english":"ESC Temperature",
       "translation":"ESC Temperatuur"
-    },
-    "rate_profile":{
-      "english":"Rate Profile",
-      "translation":"Rate Profiel"
-    },
-    "headspeed":{
-      "english":"Headspeed",
-      "translation":"Rotortoerental"
-    },
-    "voltage":{
-      "english":"Voltage",
-      "translation":"Voltage"
-    },
-    "governor":{
-      "english":"Governor State",
-      "translation":"Governor Status"
-    },
-    "adj_func":{
-      "english":"Adj (Function)",
-      "translation":"Adj (Functies)"
-    },
-    "fuel":{
-      "english":"Charge Level",
-      "translation":"Laad niveau"
-    },
-    "rssi":{
-      "english":"RSSI",
-      "translation":"RSSI"
     },
     "adj_val":{
       "english":"Adj (Value)",
@@ -40,25 +16,49 @@
       "english":"Arming Flags",
       "translation":"Arming Flags"
     },
-    "current":{
-      "english":"Current",
-      "translation":"Stroom"
+    "consumption":{
+      "english":"Consumption",
+      "translation":"Verbruik"
     },
     "throttle_pct":{
       "english":"Throttle %",
       "translation":"Throttle %"
     },
-    "consumption":{
-      "english":"Consumption",
-      "translation":"Verbruik"
+    "headspeed":{
+      "english":"Headspeed",
+      "translation":"Rotortoerental"
     },
-    "pid_profile":{
-      "english":"PID Profile",
-      "translation":"PID Profiel"
+    "current":{
+      "english":"Current",
+      "translation":"Stroom"
+    },
+    "rate_profile":{
+      "english":"Rate Profile",
+      "translation":"Rate Profiel"
+    },
+    "governor":{
+      "english":"Governor State",
+      "translation":"Governor Status"
+    },
+    "adj_func":{
+      "english":"Adj (Function)",
+      "translation":"Adj (Functies)"
+    },
+    "voltage":{
+      "english":"Voltage",
+      "translation":"Voltage"
+    },
+    "rssi":{
+      "english":"RSSI",
+      "translation":"RSSI"
     },
     "mcu_temp":{
       "english":"MCU Temperature",
       "translation":"MCU Temperatuur"
+    },
+    "fuel":{
+      "english":"Charge Level",
+      "translation":"Laad niveau"
     }
   }
 }

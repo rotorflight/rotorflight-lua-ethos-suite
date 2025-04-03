@@ -3,29 +3,13 @@
     "english":"UNKNOWN",
     "translation":"DESCONOCIDO"
   },
-  "IDLE":{
-    "english":"IDLE",
-    "translation":"RALENTI"
-  },
-  "DISARMED":{
-    "english":"DISARMED",
-    "translation":"DESARMADO"
-  },
-  "OFF":{
-    "english":"OFF",
-    "translation":"APAGADO"
-  },
-  "SPOOLUP":{
-    "english":"SPOOLUP",
-    "translation":"ARRANQUE"
-  },
-  "ACTIVE":{
-    "english":"ACTIVE",
-    "translation":"ACTIVO"
-  },
   "RECOVERY":{
     "english":"RECOVERY",
     "translation":"RECUPERACION"
+  },
+  "BAILOUT":{
+    "english":"BAILOUT",
+    "translation":"SALVATAJE"
   },
   "THROFF":{
     "english":"THR-OFF",
@@ -39,12 +23,28 @@
     "english":"AUTOROT",
     "translation":"AUTOROT"
   },
+  "OFF":{
+    "english":"OFF",
+    "translation":"APAGADO"
+  },
+  "SPOOLUP":{
+    "english":"SPOOLUP",
+    "translation":"ARRANQUE"
+  },
   "DISABLED":{
     "english":"DISABLED",
     "translation":"DESHABIL."
   },
-  "BAILOUT":{
-    "english":"BAILOUT",
-    "translation":"SALVATAJE"
+  "IDLE":{
+    "english":"IDLE",
+    "translation":"RALENTI"
+  },
+  "DISARMED":{
+    "english":"DISARMED",
+    "translation":"DESARMADO"
+  },
+  "ACTIVE":{
+    "english":"ACTIVE",
+    "translation":"ACTIVO"
   }
 }

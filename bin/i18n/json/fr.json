@@ -1,15 +1,23 @@
 {
+  "bg_task_disabled":{
+    "english":"bg task disabled",
+    "translation":"tache AR plan desactivee"
+  },
   "reload":{
     "english":"reload",
     "translation":"recharger"
   },
-  "image":{
-    "english":"image",
-    "translation":"image"
-  },
   "error":{
     "english":"error",
     "translation":"erreur"
+  },
+  "no_link":{
+    "english":"no link",
+    "translation":"aucun lien"
+  },
+  "version":{
+    "english":"version",
+    "translation":"version"
   },
   "save":{
     "english":"save",
@@ -19,20 +27,12 @@
     "english":"ethos",
     "translation":"ethos"
   },
-  "version":{
-    "english":"version",
-    "translation":"version"
-  },
-  "bg_task_disabled":{
-    "english":"bg task disabled",
-    "translation":"tache AR plan desactivee"
-  },
-  "no_link":{
-    "english":"no link",
-    "translation":"aucun lien"
-  },
   "background_task_disabled":{
     "english":"background task disabled",
     "translation":"tache en arriere-plan desactivee"
+  },
+  "image":{
+    "english":"image",
+    "translation":"image"
   }
 }
