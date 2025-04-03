@@ -1,15 +1,11 @@
 {
-  "ACTIVE":{
-    "english":"ACTIVE",
-    "translation":"ACTIEF"
+  "UNKNOWN":{
+    "english":"UNKNOWN",
+    "translation":"ONBEKEND"
   },
-  "THROFF":{
-    "english":"THR-OFF",
-    "translation":"THR-UIT"
-  },
-  "SPOOLUP":{
-    "english":"SPOOLUP",
-    "translation":"OPSTARTEN"
+  "IDLE":{
+    "english":"IDLE",
+    "translation":"IDLE"
   },
   "DISARMED":{
     "english":"DISARMED",
@@ -19,25 +15,21 @@
     "english":"OFF",
     "translation":"UIT"
   },
-  "IDLE":{
-    "english":"IDLE",
-    "translation":"IDLE"
+  "SPOOLUP":{
+    "english":"SPOOLUP",
+    "translation":"OPSTARTEN"
+  },
+  "ACTIVE":{
+    "english":"ACTIVE",
+    "translation":"ACTIEF"
   },
   "RECOVERY":{
     "english":"RECOVERY",
     "translation":"HERSTELLEN"
   },
-  "DISABLED":{
-    "english":"DISABLED",
-    "translation":"UITGESCHAKELD"
-  },
-  "UNKNOWN":{
-    "english":"UNKNOWN",
-    "translation":"ONBEKEND"
-  },
-  "BAILOUT":{
-    "english":"BAILOUT",
-    "translation":"BAILOUT"
+  "THROFF":{
+    "english":"THR-OFF",
+    "translation":"THR-UIT"
   },
   "LOSTHS":{
     "english":"LOST-HS",
@@ -46,5 +38,13 @@
   "AUTOROT":{
     "english":"AUTOROT",
     "translation":"AUTOROT"
+  },
+  "DISABLED":{
+    "english":"DISABLED",
+    "translation":"UITGESCHAKELD"
+  },
+  "BAILOUT":{
+    "english":"BAILOUT",
+    "translation":"BAILOUT"
   }
 }

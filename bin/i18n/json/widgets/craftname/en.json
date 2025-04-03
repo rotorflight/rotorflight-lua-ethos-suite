@@ -3,6 +3,10 @@
     "english":"Enter Craft Name",
     "translation":"Enter Craft Name"
   },
+  "title":{
+    "english":"CRAFT NAME",
+    "translation":"CRAFT NAME"
+  },
   "txt_cancel":{
     "english":"Cancel",
     "translation":"Cancel"
@@ -10,9 +14,5 @@
   "txt_save":{
     "english":"Save",
     "translation":"Save"
-  },
-  "title":{
-    "english":"CRAFT NAME",
-    "translation":"CRAFT NAME"
   }
 }

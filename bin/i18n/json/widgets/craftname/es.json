@@ -3,6 +3,10 @@
     "english":"Enter Craft Name",
     "translation":"Ingrese el Nombre de la Aeronave"
   },
+  "title":{
+    "english":"CRAFT NAME",
+    "translation":"NOMBRE DE LA AERONAVE"
+  },
   "txt_cancel":{
     "english":"Cancel",
     "translation":"Cancelar"
@@ -10,9 +14,5 @@
   "txt_save":{
     "english":"Save",
     "translation":"Guardar"
-  },
-  "title":{
-    "english":"CRAFT NAME",
-    "translation":"NOMBRE DE LA AERONAVE"
   }
 }
