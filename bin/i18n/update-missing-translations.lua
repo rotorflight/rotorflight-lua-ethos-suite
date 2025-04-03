@@ -74,7 +74,7 @@ local function mergeDefaults(ref, target)
     for k, v in pairs(ref) do
         if type(v) == "table" and v.english ~= nil and v.translation ~= nil then
             if target[k] == nil then
-                target[k] = { english = v.english, translation = "MISSING TRANSLATION" }
+                target[k] = { english = v.english, translation = v.english, needs_translation = "true" }
             end
         elseif type(v) == "table" then
             if type(target[k]) ~= "table" then
@@ -112,7 +112,7 @@ local function processDirectory(dirPath)
     f:close()
     local enData = json.decode(enContent)
     if not enData then
-        print("⚠️ Failed to decode", enFilePath)
+        print("Failed to decode", enFilePath)
         return
     end
 
@@ -133,7 +133,7 @@ local function processDirectory(dirPath)
                     outFile:close()
                     print("Updated:", filePath)
                 else
-                    print("⚠️ Could not open for writing:", filePath)
+                    print("Could not open for writing:", filePath)
                 end
             end
         end
