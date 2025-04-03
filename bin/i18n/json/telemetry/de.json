@@ -1,62 +1,64 @@
 {
-  "sensors.governor":{
-    "english":"Governor State",
-    "translation":"Governor Status"
-  },
-  "sensors.fuel":{
-    "english":"Charge Level",
-    "translation":"Kraftstoffstand"
-  },
-  "sensors.adj_val":{
-    "english":"Adj (Value)",
-    "translation":"Adj (Wert)"
-  },
-  "sensors.pid_profile":{
-    "english":"PID Profile",
-    "translation":"PID-Profil"
-  },
-  "sensors.consumption":{
-    "english":"Consumption",
-    "translation":"Verbrauch"
-  },
-  "sensors.voltage":{
-    "english":"Voltage",
-    "translation":"Spannung"
-  },
-  "sensors.rssi":{
-    "english":"RSSI",
-    "translation":"RSSI"
-  },
-  "sensors.rate_profile":{
-    "english":"Rate Profile",
-    "translation":"Rate-Profil"
-  },
-  "sensors.arming_flags":{
-    "english":"Arming Flags",
-    "translation":"Arming-Flags"
-  },
-  "sensors.esc_temp":{
-    "english":"ESC Temperature",
-    "translation":"ESC Temperatur"
-  },
-  "sensors.throttle_pct":{
-    "english":"Throttle %",
-    "translation":"Gas %"
-  },
-  "sensors.adj_func":{
-    "english":"Adj (Function)",
-    "translation":"Adj (Funktion)"
-  },
-  "sensors.current":{
-    "english":"Current",
-    "translation":"Strom"
-  },
-  "sensors.headspeed":{
-    "english":"Headspeed",
-    "translation":"Drehzahl"
-  },
-  "sensors.mcu_temp":{
-    "english":"MCU Temperature",
-    "translation":"MCU Temperatur"
+  "sensors":{
+    "pid_profile":{
+      "english":"PID Profile",
+      "translation":"PID-Profil"
+    },
+    "esc_temp":{
+      "english":"ESC Temperature",
+      "translation":"ESC Temperatur"
+    },
+    "adj_val":{
+      "english":"Adj (Value)",
+      "translation":"Adj (Wert)"
+    },
+    "arming_flags":{
+      "english":"Arming Flags",
+      "translation":"Arming-Flags"
+    },
+    "consumption":{
+      "english":"Consumption",
+      "translation":"Verbrauch"
+    },
+    "throttle_pct":{
+      "english":"Throttle %",
+      "translation":"Gas %"
+    },
+    "headspeed":{
+      "english":"Headspeed",
+      "translation":"Drehzahl"
+    },
+    "current":{
+      "english":"Current",
+      "translation":"Strom"
+    },
+    "rate_profile":{
+      "english":"Rate Profile",
+      "translation":"Rate-Profil"
+    },
+    "governor":{
+      "english":"Governor State",
+      "translation":"Governor Status"
+    },
+    "adj_func":{
+      "english":"Adj (Function)",
+      "translation":"Adj (Funktion)"
+    },
+    "voltage":{
+      "english":"Voltage",
+      "translation":"Spannung"
+    },
+    "rssi":{
+      "english":"RSSI",
+      "translation":"RSSI"
+    },
+    "mcu_temp":{
+      "english":"MCU Temperature",
+      "translation":"MCU Temperatur"
+    },
+    "fuel":{
+      "english":"Charge Level",
+      "translation":"Kraftstoffstand"
+    }
   }
 }

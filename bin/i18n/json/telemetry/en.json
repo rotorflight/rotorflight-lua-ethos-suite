@@ -1,62 +1,64 @@
 {
-  "sensors.governor":{
-    "english":"Governor State",
-    "translation":"Governor State"
-  },
-  "sensors.fuel":{
-    "english":"Charge Level",
-    "translation":"Charge Level"
-  },
-  "sensors.adj_val":{
-    "english":"Adj (Value)",
-    "translation":"Adj (Value)"
-  },
-  "sensors.pid_profile":{
-    "english":"PID Profile",
-    "translation":"PID Profile"
-  },
-  "sensors.consumption":{
-    "english":"Consumption",
-    "translation":"Consumption"
-  },
-  "sensors.voltage":{
-    "english":"Voltage",
-    "translation":"Voltage"
-  },
-  "sensors.rssi":{
-    "english":"RSSI",
-    "translation":"RSSI"
-  },
-  "sensors.rate_profile":{
-    "english":"Rate Profile",
-    "translation":"Rate Profile"
-  },
-  "sensors.arming_flags":{
-    "english":"Arming Flags",
-    "translation":"Arming Flags"
-  },
-  "sensors.esc_temp":{
-    "english":"ESC Temperature",
-    "translation":"ESC Temperature"
-  },
-  "sensors.throttle_pct":{
-    "english":"Throttle %",
-    "translation":"Throttle %"
-  },
-  "sensors.adj_func":{
-    "english":"Adj (Function)",
-    "translation":"Adj (Function)"
-  },
-  "sensors.current":{
-    "english":"Current",
-    "translation":"Current"
-  },
-  "sensors.headspeed":{
-    "english":"Headspeed",
-    "translation":"Headspeed"
-  },
-  "sensors.mcu_temp":{
-    "english":"MCU Temperature",
-    "translation":"MCU Temperature"
+  "sensors":{
+    "esc_temp":{
+      "english":"ESC Temperature",
+      "translation":"ESC Temperature"
+    },
+    "rate_profile":{
+      "english":"Rate Profile",
+      "translation":"Rate Profile"
+    },
+    "headspeed":{
+      "english":"Headspeed",
+      "translation":"Headspeed"
+    },
+    "voltage":{
+      "english":"Voltage",
+      "translation":"Voltage"
+    },
+    "governor":{
+      "english":"Governor State",
+      "translation":"Governor State"
+    },
+    "adj_func":{
+      "english":"Adj (Function)",
+      "translation":"Adj (Function)"
+    },
+    "fuel":{
+      "english":"Charge Level",
+      "translation":"Charge Level"
+    },
+    "rssi":{
+      "english":"RSSI",
+      "translation":"RSSI"
+    },
+    "adj_val":{
+      "english":"Adj (Value)",
+      "translation":"Adj (Value)"
+    },
+    "arming_flags":{
+      "english":"Arming Flags",
+      "translation":"Arming Flags"
+    },
+    "current":{
+      "english":"Current",
+      "translation":"Current"
+    },
+    "throttle_pct":{
+      "english":"Throttle %",
+      "translation":"Throttle %"
+    },
+    "consumption":{
+      "english":"Consumption",
+      "translation":"Consumption"
+    },
+    "pid_profile":{
+      "english":"PID Profile",
+      "translation":"PID Profile"
+    },
+    "mcu_temp":{
+      "english":"MCU Temperature",
+      "translation":"MCU Temperature"
+    }
   }
 }

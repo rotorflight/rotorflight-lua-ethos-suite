@@ -1,62 +1,64 @@
 {
-  "sensors.governor":{
-    "english":"Governor State",
-    "translation":"Status du Gouverneur"
-  },
-  "sensors.fuel":{
-    "english":"Charge Level",
-    "translation":"Niveau de Carburant"
-  },
-  "sensors.adj_val":{
-    "english":"Adj (Value)",
-    "translation":"Ajustements Valeurs"
-  },
-  "sensors.pid_profile":{
-    "english":"PID Profile",
-    "translation":"Profile de PID"
-  },
-  "sensors.consumption":{
-    "english":"Consumption",
-    "translation":"Consommation"
-  },
-  "sensors.voltage":{
-    "english":"Voltage",
-    "translation":"Tension"
-  },
-  "sensors.rssi":{
-    "english":"RSSI",
-    "translation":"Signal du Recepteur"
-  },
-  "sensors.rate_profile":{
-    "english":"Rate Profile",
-    "translation":"Profile de Rates"
-  },
-  "sensors.arming_flags":{
-    "english":"Arming Flags",
-    "translation":"Drapeaux Armements"
-  },
-  "sensors.esc_temp":{
-    "english":"ESC Temperature",
-    "translation":"Temperature ESC"
-  },
-  "sensors.throttle_pct":{
-    "english":"Throttle %",
-    "translation":"Pourcentage de Gaz"
-  },
-  "sensors.adj_func":{
-    "english":"Adj (Function)",
-    "translation":"Ajustements Fonctions"
-  },
-  "sensors.current":{
-    "english":"Current",
-    "translation":"Courant"
-  },
-  "sensors.headspeed":{
-    "english":"Headspeed",
-    "translation":"Tours Moteurs"
-  },
-  "sensors.mcu_temp":{
-    "english":"MCU Temperature",
-    "translation":"Temperature Micro Processeur"
+  "sensors":{
+    "pid_profile":{
+      "english":"PID Profile",
+      "translation":"Profile de PID"
+    },
+    "esc_temp":{
+      "english":"ESC Temperature",
+      "translation":"Temperature ESC"
+    },
+    "adj_val":{
+      "english":"Adj (Value)",
+      "translation":"Ajustements Valeurs"
+    },
+    "arming_flags":{
+      "english":"Arming Flags",
+      "translation":"Drapeaux Armements"
+    },
+    "consumption":{
+      "english":"Consumption",
+      "translation":"Consommation"
+    },
+    "throttle_pct":{
+      "english":"Throttle %",
+      "translation":"Pourcentage de Gaz"
+    },
+    "headspeed":{
+      "english":"Headspeed",
+      "translation":"Tours Moteurs"
+    },
+    "current":{
+      "english":"Current",
+      "translation":"Courant"
+    },
+    "rate_profile":{
+      "english":"Rate Profile",
+      "translation":"Profile de Rates"
+    },
+    "governor":{
+      "english":"Governor State",
+      "translation":"Status du Gouverneur"
+    },
+    "adj_func":{
+      "english":"Adj (Function)",
+      "translation":"Ajustements Fonctions"
+    },
+    "voltage":{
+      "english":"Voltage",
+      "translation":"Tension"
+    },
+    "rssi":{
+      "english":"RSSI",
+      "translation":"Signal du Recepteur"
+    },
+    "mcu_temp":{
+      "english":"MCU Temperature",
+      "translation":"Temperature Micro Processeur"
+    },
+    "fuel":{
+      "english":"Charge Level",
+      "translation":"Niveau de Carburant"
+    }
   }
 }

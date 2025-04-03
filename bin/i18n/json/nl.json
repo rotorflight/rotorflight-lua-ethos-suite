@@ -1,38 +1,38 @@
 {
-  "error":{
-    "english":"error",
-    "translation":"fout"
-  },
-  "ethos":{
-    "english":"ethos",
-    "translation":"ethos"
+  "bg_task_disabled":{
+    "english":"bg task disabled",
+    "translation":"bg task uitgeschakeld"
   },
   "reload":{
     "english":"reload",
     "translation":"herlaad"
   },
-  "save":{
-    "english":"save",
-    "translation":"opslaan"
+  "error":{
+    "english":"error",
+    "translation":"fout"
   },
   "no_link":{
     "english":"no link",
     "translation":"geen verbinding"
   },
-  "image":{
-    "english":"image",
-    "translation":"foto"
+  "version":{
+    "english":"version",
+    "translation":"versie"
+  },
+  "save":{
+    "english":"save",
+    "translation":"opslaan"
+  },
+  "ethos":{
+    "english":"ethos",
+    "translation":"ethos"
   },
   "background_task_disabled":{
     "english":"background task disabled",
     "translation":"background task uitgeschakeld"
   },
-  "bg_task_disabled":{
-    "english":"bg task disabled",
-    "translation":"bg task uitgeschakeld"
-  },
-  "version":{
-    "english":"version",
-    "translation":"versie"
+  "image":{
+    "english":"image",
+    "translation":"foto"
   }
 }

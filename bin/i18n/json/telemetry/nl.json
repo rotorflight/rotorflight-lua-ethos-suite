@@ -1,62 +1,64 @@
 {
-  "sensors.governor":{
-    "english":"Governor State",
-    "translation":"Governor Status"
-  },
-  "sensors.fuel":{
-    "english":"Charge Level",
-    "translation":"Laad niveau"
-  },
-  "sensors.adj_val":{
-    "english":"Adj (Value)",
-    "translation":"Adj (Waarde)"
-  },
-  "sensors.pid_profile":{
-    "english":"PID Profile",
-    "translation":"PID Profiel"
-  },
-  "sensors.consumption":{
-    "english":"Consumption",
-    "translation":"Verbruik"
-  },
-  "sensors.voltage":{
-    "english":"Voltage",
-    "translation":"Voltage"
-  },
-  "sensors.rssi":{
-    "english":"RSSI",
-    "translation":"RSSI"
-  },
-  "sensors.rate_profile":{
-    "english":"Rate Profile",
-    "translation":"Rate Profiel"
-  },
-  "sensors.arming_flags":{
-    "english":"Arming Flags",
-    "translation":"Arming Flags"
-  },
-  "sensors.esc_temp":{
-    "english":"ESC Temperature",
-    "translation":"ESC Temperatuur"
-  },
-  "sensors.throttle_pct":{
-    "english":"Throttle %",
-    "translation":"Throttle %"
-  },
-  "sensors.adj_func":{
-    "english":"Adj (Function)",
-    "translation":"Adj (Functies)"
-  },
-  "sensors.current":{
-    "english":"Current",
-    "translation":"Stroom"
-  },
-  "sensors.headspeed":{
-    "english":"Headspeed",
-    "translation":"Rotortoerental"
-  },
-  "sensors.mcu_temp":{
-    "english":"MCU Temperature",
-    "translation":"MCU Temperatuur"
+  "sensors":{
+    "pid_profile":{
+      "english":"PID Profile",
+      "translation":"PID Profiel"
+    },
+    "esc_temp":{
+      "english":"ESC Temperature",
+      "translation":"ESC Temperatuur"
+    },
+    "adj_val":{
+      "english":"Adj (Value)",
+      "translation":"Adj (Waarde)"
+    },
+    "arming_flags":{
+      "english":"Arming Flags",
+      "translation":"Arming Flags"
+    },
+    "consumption":{
+      "english":"Consumption",
+      "translation":"Verbruik"
+    },
+    "throttle_pct":{
+      "english":"Throttle %",
+      "translation":"Throttle %"
+    },
+    "headspeed":{
+      "english":"Headspeed",
+      "translation":"Rotortoerental"
+    },
+    "current":{
+      "english":"Current",
+      "translation":"Stroom"
+    },
+    "rate_profile":{
+      "english":"Rate Profile",
+      "translation":"Rate Profiel"
+    },
+    "governor":{
+      "english":"Governor State",
+      "translation":"Governor Status"
+    },
+    "adj_func":{
+      "english":"Adj (Function)",
+      "translation":"Adj (Functies)"
+    },
+    "voltage":{
+      "english":"Voltage",
+      "translation":"Voltage"
+    },
+    "rssi":{
+      "english":"RSSI",
+      "translation":"RSSI"
+    },
+    "mcu_temp":{
+      "english":"MCU Temperature",
+      "translation":"MCU Temperatuur"
+    },
+    "fuel":{
+      "english":"Charge Level",
+      "translation":"Laad niveau"
+    }
   }
 }

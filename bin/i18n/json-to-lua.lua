@@ -53,7 +53,7 @@ local function isDir(path)
     return result:match("d")
 end
 
--- Ensure output dir exists
+-- Ensure output directory exists
 local function ensureDir(path)
     local cmd = isWindows
         and ('mkdir "%s" >nul 2>nul'):format(path)
@@ -61,24 +61,7 @@ local function ensureDir(path)
     os.execute(cmd)
 end
 
--- Unflatten keys ("a.b.c" => nested table)
-local function unflatten(flat)
-    local nested = {}
-    for key, value in pairs(flat) do
-        local current = nested
-        for part in string.gmatch(key, "[^%.]+") do
-            if not current[part] then current[part] = {} end
-            if part == key:match("[^%.]+$") then
-                current[part] = value
-            else
-                current = current[part]
-            end
-        end
-    end
-    return nested
-end
-
--- Merge nested tables (recursive)
+-- Deep merge two nested tables
 local function deepMerge(base, new)
     for k, v in pairs(new) do
         if type(v) == "table" and type(base[k]) == "table" then
@@ -89,7 +72,7 @@ local function deepMerge(base, new)
     end
 end
 
--- Set nested value by path array
+-- Insert nested value at a given path array into a table using deepMerge
 local function insertAtPath(root, pathParts, value)
     if #pathParts == 0 then
         deepMerge(root, value)
@@ -146,7 +129,9 @@ local function collectFiles(path, rel, files)
     return files
 end
 
--- Process JSON files: use translation for others, only en.json for English
+-- Process JSON files
+-- For each file, we assume the JSON structure is already nested and each leaf is an object with
+-- keys "english" and "translation". For English, we extract the english text; for other languages, the translation.
 local function buildLanguageTables()
     local allFiles = collectFiles(jsonRoot)
     local translations = {} -- lang -> table
@@ -163,17 +148,29 @@ local function buildLanguageTables()
         f:close()
 
         local parsed = json.decode(content)
-        local flat = {}
-
-        for k, v in pairs(parsed) do
-            if lang == "en" then
-                flat[k] = v.default or v.label or v.translation or v.english or ""
-            else
-                flat[k] = v.translation or ""
+        -- Instead of flattening, use the nested structure directly.
+        -- For each leaf, extract the appropriate field.
+        local function processNode(node)
+            if type(node) ~= "table" then
+                return node
             end
+            local result = {}
+            for k, v in pairs(node) do
+                if type(v) == "table" and (v.english or v.translation) then
+                    -- Leaf node; choose the field based on language.
+                    if lang == "en" then
+                        result[k] = v.english or ""
+                    else
+                        result[k] = v.translation or ""
+                    end
+                else
+                    result[k] = processNode(v)
+                end
+            end
+            return result
         end
 
-        local nested = unflatten(flat)
+        local nested = processNode(parsed)
         translations[lang] = translations[lang] or {}
         insertAtPath(translations[lang], relPathParts, nested)
     end
@@ -181,7 +178,7 @@ local function buildLanguageTables()
     return translations
 end
 
--- Main
+-- Main: write the final Lua files
 local function writeAll()
     local translations = buildLanguageTables()
     ensureDir(outRoot)

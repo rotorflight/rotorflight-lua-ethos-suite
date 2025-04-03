@@ -1,2534 +1,2606 @@
 {
-  "modules.status.unsupported":{
-    "english":"Unsupported",
-    "translation":"Niet ondersteund"
-  },
-  "modules.radio_config.yaw_deadband":{
-    "english":"Yaw",
-    "translation":"Yaw"
-  },
-  "msg_saving_settings":{
-    "english":"Saving settings...",
-    "translation":"Instellingen opslaan..."
-  },
-  "modules.radio_config.stick":{
-    "english":"Stick",
-    "translation":"Stick"
-  },
-  "modules.profile_pidbandwidth.help_p2":{
-    "english":"D-term cutoff: D-term cutoff frequency in HZ.",
-    "translation":"D-term cutoff: D-term afsnijdingsfrequentie in HZ."
-  },
-  "modules.status.name":{
-    "english":"Status",
-    "translation":"Status"
-  },
-  "modules.servos.disable_servo_override":{
-    "english":"Disable servo override",
-    "translation":"Servo overschrijven uitschakelen"
-  },
-  "modules.rates.expo":{
-    "english":"Expo",
-    "translation":"Expo"
-  },
-  "navigation_menu":{
-    "english":"MENU",
-    "translation":"MENU"
-  },
-  "modules.servos.help_fields_max":{
-    "english":"Servo positive travel limit.",
-    "translation":"Servo positief limiet."
-  },
-  "modules.sbusout.motor":{
-    "english":"Motor",
-    "translation":"Motor"
-  },
-  "modules.profile_select.pid_profile":{
-    "english":"PID profile",
-    "translation":"PID profiel"
-  },
-  "modules.profile_mainrotor.help_p2":{
-    "english":"Cross Coupling Gain: Removes roll coupling when only elevator is applied.",
-    "translation":"Cross Coupling Gain: Verwijderd Roll koppeling wanneer alleen elevator wordt gebruikt."
-  },
-  "modules.profile_governor.i":{
-    "english":"I",
-    "translation":"I"
-  },
-  "modules.rates_advanced.rate_table":{
-    "english":"Rate Table",
-    "translation":"Tarieftabel"
-  },
-  "modules.copyprofiles.help_p2":{
-    "english":"Choose the source and destinations and save to copy the profile.",
-    "translation":"Kies de bron en doel en klik op opslaan om het kopieren te starten.\n\n"
-  },
-  "modules.esc_tools.mfg.yge.auto_restart_time":{
-    "english":"Auto Restart Time",
-    "translation":"Auto herstart tijd"
-  },
-  "modules.profile_governor.full_headspeed":{
-    "english":"Full headspeed",
-    "translation":"Max rotortoerental"
-  },
-  "modules.pids.help_p4":{
-    "english":"Tail Stop Gain (CW/CCW): Adjust separately for clean, bounce-free stops in both directions.",
-    "translation":"Tail Stop Gain (CW/CCW): Afzonderlijk instelbaar voor een zuivere stop in beide richtingen."
-  },
-  "modules.status.help_p1":{
-    "english":"Use this page to view your current flight controller status. This can be useful when determining why your heli will not arm.",
-    "translation":"Gebruik deze pagina om uw huidige flight controller status te bekijken. Dit kan handig zijn om te bepalen waarom heli niet wilt armen"
-  },
-  "modules.profile_tailrotor.gain":{
-    "english":"Gain",
-    "translation":"Gain"
-  },
-  "modules.esc_tools.mfg.hw5.brake":{
-    "english":"Brake",
-    "translation":"Rem"
-  },
-  "modules.rates_advanced.yaw_dynamic_deadband_gain":{
-    "english":"D. Band",
-    "translation":"Dode band"
-  },
-  "modules.radio_config.deflection":{
-    "english":"Deflection",
-    "translation":"Deflection"
-  },
-  "modules.status.arming_disable_flag_8":{
-    "english":"Angle",
-    "translation":"Angle"
-  },
-  "modules.validate_sensors.msg_repair":{
-    "english":"Enable required sensors on flight controller?",
-    "translation":"Zet de benodigde sensoren aan in de vliegcontroller?"
-  },
-  "modules.profile_pidcontroller.roll":{
-    "english":"R",
-    "translation":"R"
-  },
-  "modules.profile_governor.cyc":{
-    "english":"Cyc",
-    "translation":"Cyc"
-  },
-  "modules.profile_pidcontroller.help_p3":{
-    "english":"Offset limit: Angle limit for High Speed Integral (O-term).",
-    "translation":"Offset limit: Hoek limiet voor High Speed Integral (O-term)."
-  },
-  "modules.about.credits":{
-    "english":"Notable contributors to both the Rotorflight firmware and this software are: Petri Mattila, Egon Lubbers, Rob Thomson, Rob Gayle, Phil Kaighin, Robert Burrow, Keith Williams, Bertrand Songis, Venbs Zhou... and many more who have spent hours testing and providing feedback!",
-    "translation":"Bekende personen die aan de Rotorflight-firmware en deze software hebben bijgedragen zijn: Petri Mattila, Egon Lubbers, Rob Thomson, Rob Gayle, Phil Kaighin, Robert Burrow, Keith Williams, Bertrand Songis, Venbs Zhou... en nog veel meer mensen die urenlang hebben getest en feedback hebben gegeven!"
-  },
-  "modules.filters.help_p3":{
-    "english":"Gyro notch filters: Use for filtering specific frequency ranges. Typically not needed in most helis.",
-    "translation":"Gyro notch filters: Gebruik voor het filteren van specifieke frequentiebereiken. Meestal niet nodig in de meeste heli's."
-  },
-  "navigation_save":{
-    "english":"SAVE",
-    "translation":"Save"
-  },
-  "modules.profile_autolevel.help_p1":{
-    "english":"Acro Trainer: How aggressively the heli tilts back to level when flying in Acro Trainer Mode.",
-    "translation":"Acro Trainer: Hoe agressief de heli terugkantelt naar een horizontale positie tijdens het vliegen in de Acro Trainer-modus."
-  },
-  "modules.validate_sensors.ok":{
-    "english":"OK",
-    "translation":"OK"
-  },
-  "modules.profile_governor.tta_limit":{
-    "english":"Limit",
-    "translation":"Limit"
-  },
-  "modules.servos.cyc_left":{
-    "english":"CYC.LEFT",
-    "translation":"CYC. LEFT"
-  },
-  "modules.filters.name":{
-    "english":"Filters",
-    "translation":"Filters"
-  },
-  "modules.pids.i":{
-    "english":"I",
-    "translation":"I"
-  },
-  "modules.msp_speed.memory_free":{
-    "english":"Memory free",
-    "translation":"Memory free"
-  },
-  "modules.validate_sensors.msg_repair_fin":{
-    "english":"The flight controller has been configured? You may need to perform a discover sensors to see the changes.",
-    "translation":"Is de vliegcontroller geconfigureerd? Het is waarschijnlijk benodigd om opnieuw 'Vind nieuwe sensoren' te gebruiken"
-  },
-  "modules.about.opener":{
-    "english":"Rotorflight is an open source project. Contribution from other like minded people, keen to assist in making this software even better, is welcomed and encouraged. You do not have to be a hardcore programmer to help.",
-    "translation":"Rotorflight is een open source project. Bijdragen van andere mensen, die graag willen helpen deze software nog beter te maken, zijn welkom en worden aangemoedigd. Je hoeft geen hardcore programmeur te zijn om te helpen."
-  },
-  "modules.sbusout.max":{
-    "english":"Max",
-    "translation":"Max"
-  },
-  "modules.profile_rescue.help_p1":{
-    "english":"Flip to upright: Flip the heli upright when rescue is activated.",
-    "translation":"Omkeren naar rechtop: Keert de heli rechtop als rescue wordt geactiveerd."
-  },
-  "modules.rates.betaflight":{
-    "english":"BETAFLIGHT",
-    "translation":"BETAFLIGHT"
-  },
-  "modules.status.arming_disable_flag_25":{
-    "english":"Arm Switch",
-    "translation":"Arm Schakelaar"
-  },
-  "modules.msp_speed.rf_protocol":{
-    "english":"RF protocol",
-    "translation":"RF protocol"
-  },
-  "modules.msp_speed.testing_performance":{
-    "english":"Testing MSP performance...",
-    "translation":"Testing MSP performance..."
-  },
-  "modules.rates.rc_curve":{
-    "english":"RC Curve",
-    "translation":"RC Curve"
-  },
-  "modules.esc_tools.mfg.scorp.min_voltage":{
-    "english":"Min Voltage",
-    "translation":"Min Spanning"
-  },
-  "menu_section_hardware":{
-    "english":"Hardware",
-    "translation":"Hardware"
-  },
-  "modules.rates.max_rate":{
-    "english":"Max Rate",
-    "translation":"Max Rate"
-  },
-  "modules.esc_tools.mfg.scorp.advanced":{
-    "english":"Advanced",
-    "translation":"Geavanceerd"
-  },
-  "modules.rates.yaw":{
-    "english":"Yaw",
-    "translation":"Yaw"
-  },
-  "modules.esc_tools.mfg.scorp.extra_msg_save":{
-    "english":"Please reboot the ESC to apply the changes",
-    "translation":"Herstart de ESC om de wijzigingen op te slaan"
-  },
-  "modules.esc_tools.mfg.hw5.brake_type":{
-    "english":"Brake Type",
-    "translation":"Rem type"
-  },
-  "modules.servos.saving_data":{
-    "english":"Saving data...",
-    "translation":"Opslaan data..."
-  },
-  "modules.servos.help_fields_flags":{
-    "english":"0 = Default, 1=Reverse, 2 = Geo Correction, 3 = Reverse + Geo Correction",
-    "translation":"0 = Default, 1=Reverse, 2 = Geo Correction, 3 = Reverse + Geo Correction\n\n"
-  },
-  "modules.profile_autolevel.name":{
-    "english":"Autolevel",
-    "translation":"Autolevel"
-  },
-  "modules.esc_tools.mfg.scorp.max_used":{
-    "english":"Max Used",
-    "translation":"Max Gebruikt"
-  },
-  "modules.battery.warn_cell_voltage":{
-    "english":"Warn Cell Voltage",
-    "translation":"Waarschuwing Cel Spanning"
-  },
-  "modules.esc_tools.mfg.xdfly.acceleration":{
-    "english":"Acceleration",
-    "translation":"Acceleratie"
-  },
-  "modules.esc_motors.max_throttle":{
-    "english":"100% Throttle PWM value",
-    "translation":"100% Throttle PWM waarde"
-  },
-  "modules.profile_governor.f":{
-    "english":"F",
-    "translation":"F"
-  },
-  "modules.esc_tools.mfg.yge.stick_zero_us":{
-    "english":"Stick Zero",
-    "translation":"Stick nul"
-  },
-  "modules.rates_advanced.pitch_boost":{
-    "english":"Pitch boost",
-    "translation":"Pitch boost"
-  },
-  "modules.sbusout.ch_prefix":{
-    "english":"CH",
-    "translation":"CH"
-  },
-  "modules.profile_tailrotor.cutoff":{
-    "english":"Cutoff",
-    "translation":"Cutoff"
-  },
-  "error_timed_out":{
-    "english":"Error: timed out",
-    "translation":"Error: timed out"
-  },
-  "modules.profile_tailrotor.cw":{
-    "english":"CW",
-    "translation":"CW"
-  },
-  "modules.profile_governor.disabled_message":{
-    "english":"Rotorflight governor is not enabled",
-    "translation":"Rotorflight governor is niet aangezet"
-  },
-  "modules.status.arming_disable_flag_1":{
-    "english":"Fail Safe",
-    "translation":"Fail Safe"
-  },
-  "modules.profile_governor.gains":{
-    "english":"Gains",
-    "translation":"Gains"
-  },
-  "modules.profile_governor.tail_torque_assist":{
-    "english":"Tail Torque Assist",
-    "translation":"Tail Torque Assist"
-  },
-  "modules.pids.d":{
-    "english":"D",
-    "translation":"D"
-  },
-  "modules.esc_tools.mfg.yge.esc":{
-    "english":"ESC",
-    "translation":"ESC"
-  },
-  "modules.servos.maximum":{
-    "english":"Maximum",
-    "translation":"Maximum"
-  },
-  "modules.status.cpu_load":{
-    "english":"CPU Load",
-    "translation":"CPU belasting"
-  },
-  "modules.servos.help_tool_p6":{
-    "english":"Speed: The speed the servo moves. Generally only used for the cyclic servos to help the swash move evenly. Optional - leave all at 0 if unsure.",
-    "translation":"Snelheid: De snelheid waarmee de servo beweegt. Wordt over het algemeen alleen gebruikt voor cyclische servo's om de swash gelijkmatig te laten bewegen. Optioneel - laat alles op 0 staan ​​als u het niet zeker weet."
-  },
-  "modules.radio_config.throttle":{
-    "english":"Throttle",
-    "translation":"Throttle"
-  },
-  "modules.rates.help_table_5_p2":{
-    "english":"Max Rate: Maximum rotation rate at full stick deflection in degrees per second.",
-    "translation":"Max Rate: Maximale rotatiesnelheid bij volledige stickuitslag in graden per seconde."
-  },
-  "modules.esc_tools.mfg.yge.other":{
-    "english":"Other",
-    "translation":"Andere"
-  },
-  "modules.mixer.swash_phase":{
-    "english":"Phase Angle",
-    "translation":"Phase Angle"
-  },
-  "modules.filters.notch_min_hz":{
-    "english":"Min",
-    "translation":"Min"
-  },
-  "modules.validate_sensors.invalid":{
-    "english":"INVALID",
-    "translation":"INVALID"
-  },
-  "modules.esc_motors.main":{
-    "english":"Main",
-    "translation":"Main gear"
-  },
-  "modules.profile_pidcontroller.help_p2":{
-    "english":"Error limit: Angle limit for I-term.",
-    "translation":"Error limit: Hoek limiet voor I-term."
-  },
-  "modules.filters.rpm_min_hz":{
-    "english":"Min. Frequency",
-    "translation":"Min. Frequentie"
-  },
-  "modules.servos.scale_negative":{
-    "english":"Scale Negative",
-    "translation":"Schaal negatief"
-  },
-  "modules.esc_tools.mfg.hw5.motor":{
-    "english":"Motor",
-    "translation":"Motor"
-  },
-  "modules.rates_advanced.yaw":{
-    "english":"Yaw",
-    "translation":"Gier"
-  },
-  "modules.governor.handover_throttle":{
-    "english":"Handover throttle%",
-    "translation":"Overdracht throttle%"
-  },
-  "modules.profile_pidcontroller.help_p4":{
-    "english":"Error rotation: Allow errors to be shared between all axes.",
-    "translation":"Error rotation: Zorg ervoor dat fouten tussen alle assen worden gedeeld."
-  },
-  "modules.esc_motors.consumption_correction":{
-    "english":"Consumption Correction",
-    "translation":"Verbruik correctie"
-  },
-  "modules.profile_select.save_settings":{
-    "english":"Save settings",
-    "translation":"Instellingen opslaan"
-  },
-  "modules.profile_rescue.collective":{
-    "english":"Collective",
-    "translation":"Collective"
-  },
-  "modules.status.arming_disable_flag_15":{
-    "english":"BST",
-    "translation":"BST"
-  },
-  "modules.servos.minimum":{
-    "english":"Minimum",
-    "translation":"Minimum"
-  },
-  "modules.filters.lowpass_2":{
-    "english":"Lowpass 2",
-    "translation":"Lowpass 2"
-  },
-  "modules.profile_tailrotor.help_p3":{
-    "english":"Cyclic FF Gain: Tail precompensation for cyclic inputs.",
-    "translation":"Cyclic FF Gain: Tail precompensation voor cyclic inputs."
-  },
-  "modules.profile_governor.col":{
-    "english":"Col",
-    "translation":"Col"
-  },
-  "modules.accelerometer.msg_calibrate":{
-    "english":"Calibrate the accelerometer?",
-    "translation":"Kalibreer de versnellingsmeter?"
-  },
-  "modules.esc_tools.mfg.xdfly.gov":{
-    "english":"Governor",
-    "translation":"Governor"
-  },
-  "modules.esc_tools.mfg.xdfly.auto_restart_time":{
-    "english":"Auto Restart Time",
-    "translation":"Auto herstart tijd"
-  },
-  "modules.esc_tools.mfg.flrtr.battery_capacity":{
-    "english":"Battery capacity",
-    "translation":"Batterij capaciteit"
-  },
-  "modules.sbusout.name":{
-    "english":"SBUS Out",
-    "translation":"SBUS Out"
-  },
-  "modules.copyprofiles.profile_type_pid":{
-    "english":"PID",
-    "translation":"PID"
-  },
-  "modules.profile_rescue.rate":{
-    "english":"Rate",
-    "translation":"Rate"
-  },
-  "modules.esc_tools.mfg.xdfly.gov_i":{
-    "english":"Gov-I",
-    "translation":"Gov-I"
-  },
-  "modules.trim.disable_mixer_message":{
-    "english":"Return control of the servos to the flight controller.",
-    "translation":"Geef de besturing van de servo's terug aan de vliegcontroller."
-  },
-  "modules.accelerometer.roll":{
-    "english":"Roll",
-    "translation":"Roll"
-  },
-  "modules.about.supported_versions":{
-    "english":"Supported MSP Versions",
-    "translation":"Ondersteunde MSP Versies"
-  },
-  "modules.rates.help_table_3_p2":{
-    "english":"Rate: Increases maximum rotation rate while reducing sensitivity around half stick.",
-    "translation":"Rate: Verhoogt de maximale rotatiesnelheid en vermindert de gevoeligheid tot ongeveer de helft van de stick."
-  },
-  "modules.sbusout.help_default_p5":{
-    "english":"- Or you can customize your own mapping.",
-    "translation":"- Of je kunt een eigen mapping gebruiken."
-  },
-  "modules.copyprofiles.msgbox_save":{
-    "english":"Save settings",
-    "translation":"Instellingen opslaan"
-  },
-  "modules.servos.help_fields_min":{
-    "english":"Servo negative travel limit.",
-    "translation":"Servo negatief limiet."
-  },
-  "modules.esc_tools.mfg.hw5.auto_restart":{
-    "english":"Auto Restart",
-    "translation":"Auto Herstart"
-  },
-  "modules.mixer.help_p1":{
-    "english":"Adust swash plate geometry, phase angles, and limits.",
-    "translation":"Adust swash plate geometry, phase angles, and limits."
-  },
-  "modules.esc_motors.front":{
-    "english":"Front",
-    "translation":"Voor"
-  },
-  "modules.servos.center":{
-    "english":"Center",
-    "translation":"Center"
-  },
-  "modules.governor.spoolup_time":{
-    "english":"Spoolup time",
-    "translation":"Optoer tijd"
-  },
-  "modules.esc_tools.mfg.flrtr.gov_d":{
-    "english":"Gov-D",
-    "translation":"Gov-D"
-  },
-  "modules.trim.roll_trim":{
-    "english":"Roll trim %",
-    "translation":"Roll trim %"
-  },
-  "modules.status.arming_disable_flag_17":{
-    "english":"Paralyze",
-    "translation":"Paralyze"
-  },
-  "modules.esc_tools.mfg.scorp.limits":{
-    "english":"Limits",
-    "translation":"Limieten"
-  },
-  "modules.esc_tools.mfg.xdfly.hv_bec_voltage":{
-    "english":"HV BEC Voltage",
-    "translation":"HV BEC Spanning"
-  },
-  "modules.radio_config.deadband":{
-    "english":"Deadband",
-    "translation":"Deadband"
-  },
-  "modules.rates.help_table_2_p3":{
-    "english":"Expo: Reduces sensitivity near the stick's center where fine controls are needed.",
-    "translation":"Expo: Vermindert de gevoeligheid in het midden van de stick, waar nauwkeurige bediening nodig is."
-  },
-  "modules.profile_rescue.climb":{
-    "english":"Climb",
-    "translation":"Klimmen"
-  },
-  "modules.esc_tools.mfg.xdfly.led_color":{
-    "english":"LED Color",
-    "translation":"LED Kleur"
-  },
-  "modules.sbusout.help_fields_max":{
-    "english":"The maximum pwm value to send",
-    "translation":"De maximum pwm waarde welke gestuurd wordt.\n\n"
-  },
-  "menu_section_developer":{
-    "english":"Developer",
-    "translation":"Ontwikkelaar"
-  },
-  "modules.profile_pidbandwidth.dterm_cutoff":{
-    "english":"D-term cut-off",
-    "translation":"D-term cut-off"
-  },
-  "modules.esc_tools.mfg.xdfly.lv_bec_voltage":{
-    "english":"LV BEC Voltage",
-    "translation":"LV BEC Spanning"
-  },
-  "modules.profile_rescue.help_p4":{
-    "english":"Hover: How much collective to maintain a steady hover.",
-    "translation":"Hover: Hoeveel collective nodig is voor stabiele hover."
-  },
-  "modules.esc_tools.mfg.flrtr.motor_erpm_max":{
-    "english":"Motor ERPM max",
-    "translation":"Motor ERPM max"
-  },
-  "modules.profile_autolevel.max":{
-    "english":"Max",
-    "translation":"Max"
-  },
-  "modules.rates_advanced.cutoff":{
-    "english":"Cutoff",
-    "translation":"Drempel"
-  },
-  "modules.servos.name":{
-    "english":"Servos",
-    "translation":"Servos"
-  },
-  "modules.profile_rescue.accel":{
-    "english":"Accel",
-    "translation":"Accel"
-  },
-  "modules.servos.help_tool_p1":{
-    "english":"Override: [*] Enable override to allow real-time updates of servo center point.",
-    "translation":"Override: [*] Schakel override in om realtime veranderingen van het servo-middenpunt toe te staan."
-  },
-  "modules.profile_pidcontroller.inflight_error_decay":{
-    "english":"Inflight Error Decay",
-    "translation":"Inflight Error Decay"
-  },
-  "modules.esc_tools.mfg.flrtr.cell_count":{
-    "english":"Cell count",
-    "translation":"Aantal cellen"
-  },
-  "modules.esc_tools.mfg.flrtr.response_speed":{
-    "english":"Response speed",
-    "translation":"Reactiesnelheid"
-  },
-  "modules.radio_config.arming":{
-    "english":"Arming",
-    "translation":"Arming"
-  },
-  "modules.filters.help_p1":{
-    "english":"Typically you would not edit this page without checking your Blackbox logs!",
-    "translation":"Normaal gesproken zou u deze pagina niet bewerken zonder eerst uw Blackbox log te controleren!"
-  },
-  "modules.servos.saving":{
-    "english":"Saving",
-    "translation":"Opslaan"
-  },
-  "modules.validate_sensors.help_p1":{
-    "english":"This tool attempts to list all the sensors that you are not receiving in a concise list.",
-    "translation":"Deze tool probeert een beknopt overzicht te geven van alle sensoren die u niet ontvangt."
-  },
-  "modules.esc_tools.mfg.xdfly.brake_force":{
-    "english":"Brake Force",
-    "translation":"Remkracht"
-  },
-  "modules.mixer.tail_motor_idle":{
-    "english":"Tail Idle Thr%",
-    "translation":"Tail Idle Thr%"
-  },
-  "modules.profile_mainrotor.ratio":{
-    "english":"Ratio",
-    "translation":"Ratio"
-  },
-  "modules.esc_tools.mfg.flrtr.led_color":{
-    "english":"LED color",
-    "translation":"LED kleur"
-  },
-  "modules.profile_governor.name":{
-    "english":"Governor",
-    "translation":"Governor"
-  },
-  "modules.profile_rescue.level_gain":{
-    "english":"Level",
-    "translation":"Level"
-  },
-  "msg_loading_from_fbl":{
-    "english":"Loading data from flight controller...",
-    "translation":"Laden data van vliegcontroller..."
-  },
-  "modules.esc_tools.mfg.hw5.governor":{
-    "english":"Governor",
-    "translation":"Governor"
-  },
-  "modules.servos.help_fields_speed":{
-    "english":"Servo motion speed in milliseconds.",
-    "translation":"Servo bewegingssnelheid in milliseconds."
-  },
-  "modules.pids.pitch":{
-    "english":"Pitch",
-    "translation":"Pitch"
-  },
-  "modules.trim.enable_mixer_message":{
-    "english":"Set all servos to their configured center position. \r\n\r\nThis will result in all values on this page being saved when adjusting the servo trim.",
-    "translation":"Zet alle servo's in de geconfigureerde middenpositie. \r\n\r\nDit heeft tot gevolg dat alle waarden op deze pagina worden opgeslagen bij het aanpassen van de servo-trim."
-  },
-  "modules.esc_motors.mincommand":{
-    "english":"Motor Stop PWM Value",
-    "translation":"Motor Stop PWM waarde"
-  },
-  "modules.rates_advanced.help_p2":{
-    "english":"Dynamics: Applied regardless of rates type. Typically left on defaults but can be adjusted to smooth heli movements, like with scale helis.",
-    "translation":"Dynamics: Applied regardless of rates type. Typically left on defaults but can be adjusted to smooth heli movements, like with scale helis.\n\n"
-  },
-  "modules.rates.help_table_4_p3":{
-    "english":"Expo: Reduces sensitivity near the stick's center where fine controls are needed.",
-    "translation":"Expo: Vermindert de gevoeligheid in het midden van de stick, waar nauwkeurige bediening nodig is."
-  },
-  "modules.msp_speed.total_queries":{
-    "english":"Total queries",
-    "translation":"Total queries"
-  },
-  "modules.profile_select.help_p1":{
-    "english":"Set the current flight profile or rate profile you would like to use.",
-    "translation":"Stel het huidige pid profiel of rateprofiel in dat u wilt gebruiken."
-  },
-  "modules.esc_tools.mfg.yge.max_start_power":{
-    "english":"Max Start Power",
-    "translation":"Max Start vermogen"
-  },
-  "modules.servos.help_fields_mid":{
-    "english":"Servo center position pulse width.",
-    "translation":"Pulsbreedte van de servomiddenpositie."
-  },
-  "modules.profile_mainrotor.name":{
-    "english":"Main Rotor",
-    "translation":"Hoofdrotor"
-  },
-  "modules.esc_motors.name":{
-    "english":"ESC/Motors",
-    "translation":"ESC/Motor"
-  },
-  "modules.msp_speed.max_query_time":{
-    "english":"Maximum query time",
-    "translation":"Maximum query time"
-  },
-  "modules.esc_tools.mfg.flrtr.bec_voltage":{
-    "english":"BEC voltage",
-    "translation":"BEC spanning"
-  },
-  "modules.profile_pidbandwidth.roll":{
-    "english":"R",
-    "translation":"R"
-  },
-  "modules.copyprofiles.source_profile":{
-    "english":"Source Profile",
-    "translation":"Bron Profiel"
-  },
-  "modules.esc_tools.mfg.scorp.basic":{
-    "english":"Basic",
-    "translation":"Basis"
-  },
-  "modules.rates_advanced.acc_limit":{
-    "english":"Accelerometer Limit",
-    "translation":"VersnGrens"
-  },
-  "modules.rates_advanced.roll":{
-    "english":"Roll",
-    "translation":"Roll"
-  },
-  "modules.profile_governor.yaw":{
-    "english":"Yaw",
-    "translation":"Yaw"
-  },
-  "modules.filters.notch_c":{
-    "english":"Notch Count",
-    "translation":"Notch aantal"
-  },
-  "modules.battery.min_cell_voltage":{
-    "english":"Min Cell Voltage",
-    "translation":"Min Cel Spanning"
-  },
-  "modules.mixer.collective_tilt_correction_pos":{
-    "english":"Positive",
-    "translation":"Positive"
-  },
-  "modules.servos.help_default_p1":{
-    "english":"Please select the servo you would like to configure from the list below.",
-    "translation":"Selecteer de servo die u wilt configureren uit de onderstaande lijst."
-  },
-  "modules.esc_tools.mfg.flrtr.starting_torque":{
-    "english":"Starting torque",
-    "translation":"Start koppel"
-  },
-  "modules.esc_tools.mfg.scorp.soft_start_time":{
-    "english":"Soft Start Time",
-    "translation":"Langzame opstart tijd"
-  },
-  "modules.esc_tools.mfg.scorp.gov_proportional":{
-    "english":"Gov Proportional",
-    "translation":"Gov Proportional"
-  },
-  "modules.esc_tools.mfg.scorp.name":{
-    "english":"Scorpion",
-    "translation":"Scorpion"
-  },
-  "modules.radio_config.help_p1":{
-    "english":"Configure your radio settings. Stick center, arm, throttle hold, and throttle cut.",
-    "translation":"Configureer uw radio settings. Stick center, arm, throttle hold, en throttle cut.\n"
-  },
-  "modules.servos.help_tool_p4":{
-    "english":"Scale: Adjust the amount the servo moves for a given input.",
-    "translation":"Schaal: Pas de mate aan waarin de servo beweegt voor een bepaalde invoer."
-  },
-  "msg_saving":{
-    "english":"Saving...",
-    "translation":"Opslaan..."
-  },
-  "modules.msp_exp.help_p1":{
-    "english":"This tool provides the ability to send a custom byte string to the flight controller. It is useful for developers when debugging values.",
-    "translation":"Deze tool biedt de mogelijkheid om een ​​aangepaste bytestring naar de flight controller te sturen. Het is handig voor ontwikkelaars bij het debuggen van waarden."
-  },
-  "menu_section_about":{
-    "english":"About",
-    "translation":"Over"
-  },
-  "check_rf_module_on":{
-    "english":"Please check your rf module is turned on.",
-    "translation":"Controleer of de rf module aanstaat."
-  },
-  "check_msp_version":{
-    "english":"Unable to determine MSP version in use.",
-    "translation":"Het is niet mogelijk om de MSP versie te bepalen."
-  },
-  "modules.esc_tools.mfg.flrtr.current_gain":{
-    "english":"Current gain",
-    "translation":"Stroom gain"
-  },
-  "msg_loading":{
-    "english":"Loading...",
-    "translation":"Laden..."
-  },
-  "modules.rates.help_table_0_p1":{
-    "english":"All values are set to zero because no RATE TABLE is in use.",
-    "translation":"Alle waarden zijn op nul gezet omdat er geen RATE TABEL in gebruik is."
-  },
-  "modules.copyprofiles.dest_profile":{
-    "english":"Dest. Profile",
-    "translation":"Doel. Profiel"
-  },
-  "btn_cancel":{
-    "english":"CANCEL",
-    "translation":"ANNULEREN"
-  },
-  "modules.rates_advanced.collective_boost":{
-    "english":"Collective boost",
-    "translation":"Collective boost"
-  },
-  "modules.profile_pidcontroller.limit":{
-    "english":"Limit",
-    "translation":"Limit"
-  },
-  "modules.about.simulation":{
-    "english":"Simulation",
-    "translation":"Simulatie"
-  },
-  "modules.sbusout.save_prompt":{
-    "english":"Save current page to flight controller?",
-    "translation":"Sla huidige pagina op in de vliegcontroller?"
-  },
-  "modules.about.version":{
-    "english":"Version",
-    "translation":"Versie"
-  },
-  "check_supported_version":{
-    "english":"This version of the Lua script \ncan't be used with the selected model",
-    "translation":"Deze versie van het lua script \n kan niet gebruikt worden met het geselecteerde model"
-  },
-  "modules.profile_mainrotor.collective_pitch_comp_short":{
-    "english":"Col. Pitch Compensation",
-    "translation":"Col. Pitch Compensation"
-  },
-  "modules.rates_advanced.help_rate_table":{
-    "english":"Please select the rate you would like to use. Saving will apply the choice to the active profile.",
-    "translation":"Selecteer het tarief dat u wilt gebruiken. Opslaan zal de keuze toepassen op het actieve profiel."
-  },
-  "modules.msp_speed.seconds_300":{
-    "english":"  300S  ",
-    "translation":"  300S  "
-  },
-  "modules.governor.name":{
-    "english":"Governor",
-    "translation":"Governor"
-  },
-  "modules.msp_speed.seconds_30":{
-    "english":"  30S  ",
-    "translation":"  30S  "
-  },
-  "modules.esc_tools.mfg.scorp.esc_mode":{
-    "english":"ESC Mode",
-    "translation":"ESC Modus"
-  },
-  "modules.rates.help_table_1_p3":{
-    "english":"Expo: Reduces sensitivity near the stick's center where fine controls are needed.",
-    "translation":"Expo: Vermindert de gevoeligheid in het midden van de stick, waar nauwkeurige bediening nodig is."
-  },
-  "modules.battery.help_p1":{
-    "english":"The battery settings are used to configure the flight controller to monitor the battery voltage and provide warnings when the voltage drops below a certain level.",
-    "translation":"De batterij instellingen worden ingesteld zodat de vliegcontroller de batterij spanning kan monitoren en waarschuwingen kan geven als de spanning onder een bepaald niveau komt.\n\n"
-  },
-  "modules.profile_pidcontroller.pitch":{
-    "english":"P",
-    "translation":"P"
-  },
-  "modules.esc_tools.mfg.flrtr.advanced":{
-    "english":"Advanced",
-    "translation":"Geavanceerd"
-  },
-  "navigation_tools":{
-    "english":"*",
-    "translation":"*"
-  },
-  "modules.esc_tools.mfg.hw5.brake_force":{
-    "english":"Brake Force%",
-    "translation":"Remkracht %"
-  },
-  "modules.esc_tools.mfg.yge.basic":{
-    "english":"Basic",
-    "translation":"Basis"
-  },
-  "navigation_help":{
-    "english":"?",
-    "translation":"?"
-  },
-  "modules.profile_governor.gain":{
-    "english":"PID master gain",
-    "translation":"PID master gain"
-  },
-  "modules.pids.roll":{
-    "english":"Roll",
-    "translation":"Roll"
-  },
-  "navigation_reload":{
-    "english":"RELOAD",
-    "translation":"Reload"
-  },
-  "modules.profile_governor.p":{
-    "english":"P",
-    "translation":"P"
-  },
-  "modules.rates_advanced.collective_dynamics":{
-    "english":"Collective dynamics",
-    "translation":"Collective dynamics"
-  },
-  "modules.esc_tools.mfg.yge.cell_cutoff":{
-    "english":"Cell Cutoff",
-    "translation":"Cell Cutoff"
-  },
-  "modules.profile_autolevel.help_p2":{
-    "english":"Angle Mode: How aggressively the heli tilts back to level when flying in Angle Mode.",
-    "translation":"Angle Mode: Hoe agressief de heli terug kantelt naar een horizontaal wanneer  in de angled mode gevlogen word."
-  },
-  "modules.esc_tools.mfg.xdfly.governor":{
-    "english":"Governor",
-    "translation":"Governor"
-  },
-  "modules.filters.max_cutoff":{
-    "english":"Max cutoff",
-    "translation":"Max cutoff"
-  },
-  "modules.esc_tools.name":{
-    "english":"ESC Tools",
-    "translation":"ESC Tools"
-  },
-  "modules.esc_tools.mfg.yge.name":{
-    "english":"YGE",
-    "translation":"YGE"
-  },
-  "modules.trim.mixer_override_enabling":{
-    "english":"Enabling mixer override...",
-    "translation":"Inschakelen mixer overschrijven..."
-  },
-  "modules.status.erasing":{
-    "english":"Erasing",
-    "translation":"Wissen"
-  },
-  "modules.status.arming_disable_flag_10":{
-    "english":"No Pre Arm",
-    "translation":"No Pre Arm"
-  },
-  "modules.esc_tools.mfg.hw5.bec_voltage":{
-    "english":"BEC Voltage",
-    "translation":"BEC Spanning"
-  },
-  "modules.profile_tailrotor.inertia_precomp":{
-    "english":"Inertia Precomp",
-    "translation":"Inertia Precomp"
-  },
-  "modules.esc_tools.mfg.flrtr.other":{
-    "english":"Other",
-    "translation":"Ander"
-  },
-  "modules.esc_tools.mfg.hw5.cutoff_voltage":{
-    "english":"Cutoff Voltage",
-    "translation":"Uitschakelingsspanning"
-  },
-  "modules.pids.o":{
-    "english":"O",
-    "translation":"O"
-  },
-  "modules.rates.acroplus":{
-    "english":"Acro+",
-    "translation":"Acro+"
-  },
-  "modules.battery.name":{
-    "english":"Battery",
-    "translation":"Batterij"
-  },
-  "modules.pids.help_p3":{
-    "english":"Tail P/I/D Gains: Increase P until slight wobble in funnels, then back off slightly. Raise I until tail holds firm in hard moves (too high causes slow wag). Adjust D for smooth stops—higher for slow servos, lower for fast ones.",
-    "translation":"Tail P/I/D Gains: Verhoog P tot een lichte wag in hurricanes, en ga dan iets terug. Verhoog I tot de staart locked-in is in harde bewegingen (te hoog veroorzaakt langzame wag). Pas D aan voor soepele stops: hoger voor langzame servo's, lager voor snelle."
-  },
-  "modules.validate_sensors.help_p2":{
-    "english":"Use this tool to ensure you are sending the correct sensors.",
-    "translation":"Met deze tool kunt u controleren of u de juiste sensoren verzendt."
-  },
-  "modules.trim.name":{
-    "english":"Trim",
-    "translation":"Trim"
-  },
-  "modules.sbusout.mixer":{
-    "english":"Mixer",
-    "translation":"Mixer"
-  },
-  "modules.esc_tools.mfg.yge.min_start_power":{
-    "english":"Min Start Power",
-    "translation":"Min Start vermogen"
-  },
-  "modules.servos.servo_prefix":{
-    "english":"SERVO ",
-    "translation":"SERVO "
-  },
-  "modules.rates.none":{
-    "english":"NONE",
-    "translation":"NONE"
-  },
-  "modules.accelerometer.help_p1":{
-    "english":"The accelerometer is used to measure the angle of the flight controller in relation to the horizon. This data is used to stabilize the aircraft and provide self-leveling functionality.",
-    "translation":"De accelerometer wordt gebruikt om de hoek van de flight controller te meten ten opzichte van de horizon. Deze data wordt gebruikt om het vliegtuig te stabiliseren en zelf leveling functionaliteit te bieden."
-  },
-  "modules.profile_select.name":{
-    "english":"Select Profile",
-    "translation":"Selecteer profiel"
-  },
-  "modules.status.ok":{
-    "english":"OK",
-    "translation":"OK"
-  },
-  "modules.radio_config.max_throttle":{
-    "english":"Max",
-    "translation":"Max"
-  },
-  "modules.rates_advanced.pitch_dynamics":{
-    "english":"Pitch dynamics",
-    "translation":"Pitch dynamics"
-  },
-  "modules.rates.help_table_1_p1":{
-    "english":"RC Rate: Maximum rotation rate at full stick deflection.",
-    "translation":"RC Rate: Maximale rotatie rate met volledige stick input."
-  },
-  "modules.profile_rescue.help_p7":{
-    "english":"Rate and Accel: Max rotation and acceleration rates when leveling during rescue.",
-    "translation":"Rate and Accel: Maximale rotatie- en acceleratiesnelheden bij het nivelleren tijdens een reddingsactie./n/n"
-  },
-  "modules.status.arming_disable_flag_14":{
-    "english":"CMS Menu",
-    "translation":"CMS Menu"
-  },
-  "modules.status.arming_disable_flag_11":{
-    "english":"Load",
-    "translation":"Belasting"
-  },
-  "modules.profile_pidbandwidth.help_p1":{
-    "english":"PID Bandwidth: Overall bandwidth in HZ used by the PID loop.",
-    "translation":"PID Bandwidth: Totale bandbreedte in Hz die door de PID-loop wordt gebruikt."
-  },
-  "modules.rates_advanced.roll_boost":{
-    "english":"Roll boost",
-    "translation":"Rolboost"
-  },
-  "modules.profile_tailrotor.help_p1":{
-    "english":"Yaw Stop Gain: Higher stop gain will make the tail stop more aggressively but may cause oscillations if too high. Adjust CW or CCW to make the yaw stops even.",
-    "translation":"Staart Stop Gain: Hogere stop gain zal de tail stop agressiever maken, maar kan oscillaties veroorzaken als deze te hoog is. Pas CW of CCW aan om de yaw stops gelijkmatiger te maken."
-  },
-  "modules.sbusout.help_fields_source":{
-    "english":"Source id for the mix, counting from 0-15.",
-    "translation":"Source id voor de mix, optellend van 0-15."
-  },
-  "modules.profile_rescue.pull_up":{
-    "english":"Pull-up",
-    "translation":"Omhoog"
-  },
-  "modules.esc_tools.mfg.flrtr.motor_temp_sensor":{
-    "english":"Motor temp sensor",
-    "translation":"Motor temp sensor"
-  },
-  "msg_save_not_commited":{
-    "english":"Save not committed to EEPROM",
-    "translation":"Opslaan niet gelukt naar EEPROM"
-  },
-  "modules.filters.help_p2":{
-    "english":"Gyro lowpass: Lowpass filters for the gyro signal. Typically left at default.",
-    "translation":"Gyro lowpass: Lowpassfilters voor het gyrosignaal. Meestal op standaard gelaten."
-  },
-  "modules.servos.disabling_servo_override":{
-    "english":"Disabling servo override...",
-    "translation":"Servo overschrijven uitschakelen..."
-  },
-  "modules.rates_advanced.gain":{
-    "english":"Gain",
-    "translation":"Versterk."
-  },
-  "modules.rates_advanced.dyn_deadband_gain":{
-    "english":"Dynamic deadband gain",
-    "translation":"DynDodeVerst"
-  },
-  "modules.profile_pidbandwidth.bterm_cutoff":{
-    "english":"B-term cut-off",
-    "translation":"B-term cut-off"
-  },
-  "modules.profile_tailrotor.precomp_cutoff":{
-    "english":"Precomp Cutoff",
-    "translation":"Precomp Cutoff"
-  },
-  "modules.esc_tools.mfg.flrtr.gov":{
-    "english":"Governor",
-    "translation":"Governor"
-  },
-  "modules.filters.rpm_filter":{
-    "english":"RPM filter",
-    "translation":"RPM filter"
-  },
-  "modules.msp_speed.test_length":{
-    "english":"Test length",
-    "translation":"Test length"
-  },
-  "modules.filters.center":{
-    "english":"Center",
-    "translation":"Center"
-  },
-  "modules.about.ethos_version":{
-    "english":"Ethos Version",
-    "translation":"Ethos Versie"
-  },
-  "modules.esc_tools.mfg.scorp.max_temperature":{
-    "english":"Max Temperature",
-    "translation":"Max Temperatuur"
-  },
-  "modules.trim.pitch_trim":{
-    "english":"Pitch trim %",
-    "translation":"Pitch trim %"
-  },
-  "btn_ok":{
-    "english":"          OK           ",
-    "translation":"          OK           "
-  },
-  "modules.rates_advanced.rates_type":{
-    "english":"Rates Type",
-    "translation":"Rates Type"
-  },
-  "modules.esc_tools.mfg.yge.lv_bec_voltage":{
-    "english":"BEC",
-    "translation":"BEC Spanning"
-  },
-  "modules.status.arming_disable_flag_23":{
-    "english":"Acc Calibration",
-    "translation":"Acc Calibratie"
-  },
-  "modules.servos.help_tool_p2":{
-    "english":"Center: Adjust the center position of the servo.",
-    "translation":"Center: Pas de middenpositie van de servo aan."
-  },
-  "modules.rates_advanced.pitch":{
-    "english":"Pitch",
-    "translation":"Nick"
-  },
-  "modules.profile_pidcontroller.name":{
-    "english":"PID Controller",
-    "translation":"PID Controller"
-  },
-  "modules.esc_motors.voltage_correction":{
-    "english":"Voltage Correction",
-    "translation":"Spanning correctie"
-  },
-  "modules.sbusout.help_default_p2":{
-    "english":"- For RX channels or servos (wideband), use 1000, 2000 or 500,1000 for narrow band servos.",
-    "translation":"- Voor RX kanalen of servos (wideband), gebruik 1000, 2000 of 500,1000 voor narrow band servos."
-  },
-  "modules.rates.help_table_4_p1":{
-    "english":"Center Sensitivity: Use to reduce sensitivity around center stick. Set Center Sensitivity to the same as Max Rate for a linear response. A lower number than Max Rate will reduce sensitivity around center stick. Note that higher than Max Rate will increase the Max Rate - not recommended as it causes issues in the Blackbox log.",
-    "translation":"Center Sensitivity: Gebruik om de gevoeligheid rond de center stick te verminderen. Stel Center Sensitivity in op hetzelfde als Max Rate voor een lineaire respons. Een lager getal dan Max Rate zal de gevoeligheid rond de center stick verminderen. Let op dat hoger dan Max Rate de Max Rate zal verhogen - niet aanbevolen omdat het problemen veroorzaakt in het Blackbox-logboek."
-  },
-  "modules.esc_tools.mfg.flrtr.governor":{
-    "english":"Governor",
-    "translation":"Governor"
-  },
-  "modules.esc_tools.mfg.xdfly.name":{
-    "english":"XDFLY",
-    "translation":"XDFLY"
-  },
-  "modules.status.erase_prompt":{
-    "english":"Would you like to erase the dataflash?",
-    "translation":"Wilt u de dataflash wissen?"
-  },
-  "modules.esc_tools.mfg.yge.stick_range_us":{
-    "english":"Stick Range",
-    "translation":"Stick bereik"
-  },
-  "modules.sbusout.help_default_p4":{
-    "english":"- For motors, use 0, 1000.",
-    "translation":"- For motoren, gebruik 0, 1000."
-  },
-  "modules.rates_advanced.col":{
-    "english":"Col",
-    "translation":"Kol"
-  },
-  "modules.about.msp_transport":{
-    "english":"MSP Transport",
-    "translation":"MSP Transport"
-  },
-  "modules.profile_rescue.flip_upright":{
-    "english":"Flip to upright",
-    "translation":"Omkeren naar rechtop"
-  },
-  "modules.rates.help_table_4_p2":{
-    "english":"Max Rate: Maximum rotation rate at full stick deflection in degrees per second.",
-    "translation":"Max Rate: Maximale rotatiesnelheid bij volledige stickuitslag in graden per seconde."
-  },
-  "modules.esc_tools.mfg.xdfly.advanced":{
-    "english":"Advanced",
-    "translation":"Geavanceerd"
-  },
-  "modules.esc_tools.mfg.yge.direction":{
-    "english":"Direction",
-    "translation":"Motor draairichting"
-  },
-  "modules.rates.kiss":{
-    "english":"KISS",
-    "translation":"KISS"
-  },
-  "modules.trim.help_p2":{
-    "english":"Motorised tail: If using a motorised tail, use this to set the minimum idle speed and zero yaw.",
-    "translation":"Gemotoriseerde staart: Als u een gemotoriseerde staart gebruikt, kunt u hiermee het minimale stationair toerental en de nul yaw instellen.\n\n"
-  },
-  "modules.esc_tools.mfg.yge.active_freewheel":{
-    "english":"Active Freewheel",
-    "translation":"Active Freewheel"
-  },
-  "modules.rates.collective":{
-    "english":"Col",
-    "translation":"Col"
-  },
-  "modules.radio_config.cyclic":{
-    "english":"Cyclic",
-    "translation":"Cyclic"
-  },
-  "modules.rates.help_table_1_p2":{
-    "english":"SuperRate: Increases maximum rotation rate while reducing sensitivity around half stick.",
-    "translation":"SuperRate: Verhoogt de maximale rotatiesnelheid en vermindert de gevoeligheid tot ongeveer de helft van de stick."
-  },
-  "modules.rates.roll":{
-    "english":"Roll",
-    "translation":"Roll"
-  },
-  "modules.esc_tools.mfg.flrtr.fan_control":{
-    "english":"Fan control",
-    "translation":"Fan besturing"
-  },
-  "modules.esc_tools.mfg.hw5.startup_time":{
-    "english":"Startup Time",
-    "translation":"Opstart tijd"
-  },
-  "modules.battery.max_cell_voltage":{
-    "english":"Max Cell Voltage",
-    "translation":"Max Cel Spanning"
-  },
-  "modules.esc_tools.mfg.flrtr.gov_i":{
-    "english":"Gov-I",
-    "translation":"Gov-I"
-  },
-  "msg_please_disarm_to_save_warning":{
-    "english":"Settings will only be saved to eeprom on disarm",
-    "translation":"Instellingen worden alleen opgeslagen in EEPROM na uitschakelen"
-  },
-  "msg_please_disarm_to_save":{
-    "english":"Please disarm to save",
-    "translation":"Disarm voor opslaan om data integriteit te verzekeren."
-  },
-  "modules.servos.tbl_no":{
-    "english":"NO",
-    "translation":"NO"
-  },
-  "modules.profile_mainrotor.help_p1":{
-    "english":"Collective Pitch Compensation: Increasing will compensate for the pitching motion caused by tail drag when climbing.",
-    "translation":"Collective Pitch Compensation: Verhogen compenseert voor de pitch beweging wat wordt veroorzaakt door staart drag bij het klimmen."
-  },
-  "modules.msp_speed.avg_query_time":{
-    "english":"Average query time",
-    "translation":"Average query time"
-  },
-  "modules.rates_advanced.yaw_dynamics":{
-    "english":"Yaw dynamics",
-    "translation":"Yaw dynamics"
-  },
-  "modules.profile_pidcontroller.ground_error_decay":{
-    "english":"Ground Error Decay",
-    "translation":"Ground Error Decay"
-  },
-  "modules.pids.f":{
-    "english":"F",
-    "translation":"F"
-  },
-  "modules.status.arming_disable_flag_0":{
-    "english":"No Gyro",
-    "translation":"No Gyro"
-  },
-  "modules.filters.cutoff":{
-    "english":"Cutoff",
-    "translation":"Cutoff"
-  },
-  "modules.rates.raceflight":{
-    "english":"RACEFLIGHT",
-    "translation":"RACEFLIGHT"
-  },
-  "modules.profile_rescue.hover":{
-    "english":"Hover",
-    "translation":"Hover"
-  },
-  "modules.rates_advanced.setpoint_boost_cutoff":{
-    "english":"Setpoint boost cutoff",
-    "translation":"SetpAfkap"
-  },
-  "modules.profile_mainrotor.help_p3":{
-    "english":"Cross Coupling Ratio: Amount of compensation (pitch vs roll) to apply.",
-    "translation":"Cross Coupling Ratio: Hoeveelheid compensatie (pitch vs roll) toe te passen."
-  },
-  "modules.profile_autolevel.horizon_mode":{
-    "english":"Horizon mode",
-    "translation":"Horizon mode"
-  },
-  "modules.status.megabyte":{
-    "english":"MB",
-    "translation":"MB"
-  },
-  "modules.rates.center_sensitivity":{
-    "english":"Cntr. Sens.",
-    "translation":"Cntr. Sens."
-  },
-  "modules.logs.help_logs_tool_p1":{
-    "english":"Please use the slider to navigate the graph.",
-    "translation":"Gebruik de schuifbalk om door de grafiek te navigeren.\n"
-  },
-  "modules.pids.help_p5":{
-    "english":"Test & Adjust: Fly, observe, and fine-tune for best performance in real conditions.",
-    "translation":"Test & Adjust: Vlieg, observeer en optimaliseer voor de beste prestaties onder reële omstandigheden.\n\n"
-  },
-  "modules.servos.help_default_p2":{
-    "english":"Primary flight controls that use the rotorflight mixer will display in the section called 'mixer'.",
-    "translation":"Primaire vluchtbesturingen die gebruikmaken van de rotorflight-mixer worden weergegeven in het gedeelte 'mixer'."
-  },
-  "modules.profile_rescue.time":{
-    "english":"Time",
-    "translation":"Tijd"
-  },
-  "modules.accelerometer.pitch":{
-    "english":"Pitch",
-    "translation":"Pitch"
-  },
-  "modules.esc_tools.mfg.yge.current_limit":{
-    "english":"Current Limit",
-    "translation":"Stroom limiet"
-  },
-  "modules.pids.name":{
-    "english":"PIDs",
-    "translation":"PIDs"
-  },
-  "modules.status.arming_disable_flag_3":{
-    "english":"Bad RX Recovery",
-    "translation":"Bad RX Recovery"
-  },
-  "modules.esc_tools.mfg.flrtr.basic":{
-    "english":"Basic",
-    "translation":"Basis"
-  },
-  "modules.trim.collective_trim":{
-    "english":"Col. trim %",
-    "translation":"Col. trim %"
-  },
-  "modules.msp_speed.checksum_errors":{
-    "english":"Checksum errors",
-    "translation":"Checksum errors"
-  },
-  "modules.esc_tools.mfg.hw5.gov_p_gain":{
-    "english":"P-Gain",
-    "translation":"P-Gain"
-  },
-  "modules.profile_rescue.help_p2":{
-    "english":"Pull-up: How much collective and for how long to arrest the fall.",
-    "translation":"Omhoog: Hoeveel collective en voor hoelang."
-  },
-  "modules.filters.notch_q":{
-    "english":"Notch Q",
-    "translation":"Notch Q"
-  },
-  "modules.battery.cell_count":{
-    "english":"Cell Count",
-    "translation":"Aantal cellen"
-  },
-  "modules.esc_tools.mfg.hw5.name":{
-    "english":"Hobbywing V5",
-    "translation":"Hobbywing V5"
-  },
-  "modules.profile_tailrotor.yaw_stop_gain":{
-    "english":"Yaw stop gain",
-    "translation":"Staart stop gain"
-  },
-  "modules.profile_pidcontroller.cutoff_point":{
-    "english":"Cut-off point",
-    "translation":"Cut-off point"
-  },
-  "modules.rates_advanced.response_time":{
-    "english":"Response Time",
-    "translation":"ReactieTijd"
-  },
-  "modules.esc_tools.mfg.xdfly.smart_fan":{
-    "english":"Smart Fan",
-    "translation":"Smart Fan"
-  },
-  "modules.esc_tools.mfg.hw5.timing":{
-    "english":"Timing",
-    "translation":"Motor timing"
-  },
-  "modules.profile_pidcontroller.iterm_relax":{
-    "english":"I-term relax",
-    "translation":"I-term relax"
-  },
-  "modules.esc_motors.tail_motor_ratio":{
-    "english":"Tail Motor Ratio",
-    "translation":"Tail Ratio"
-  },
-  "modules.esc_tools.mfg.scorp.protection_delay":{
-    "english":"Protection Delay",
-    "translation":"Beveiliging delay"
-  },
-  "modules.esc_motors.min_throttle":{
-    "english":"0% Throttle PWM Value",
-    "translation":"0% Throttle PWM waarde"
-  },
-  "modules.profile_rescue.flip":{
-    "english":"Flip",
-    "translation":"Omkeren"
-  },
-  "modules.profile_pidbandwidth.name":{
-    "english":"PID Bandwidth",
-    "translation":"PID Bandbreedte"
-  },
-  "modules.esc_tools.mfg.xdfly.timing":{
-    "english":"Timing",
-    "translation":"Motortiming"
-  },
-  "modules.esc_tools.mfg.flrtr.motor_direction":{
-    "english":"Motor direction",
-    "translation":"Motor draairichting"
-  },
-  "modules.servos.tbl_yes":{
-    "english":"YES",
-    "translation":"YES"
-  },
-  "modules.profile_autolevel.angle_mode":{
-    "english":"Angle mode",
-    "translation":"Angle mode"
-  },
-  "modules.esc_tools.mfg.yge.throttle_response":{
-    "english":"Throttle Response",
-    "translation":"Throttle Reactie"
-  },
-  "modules.rates.help_table_2_p1":{
-    "english":"Rate: Maximum rotation rate at full stick deflection in degrees per second.",
-    "translation":"Rate: Maximale rotatiesnelheid bij volledige stickuitslag in graden per seconde."
-  },
-  "modules.esc_tools.mfg.yge.advanced":{
-    "english":"Advanced",
-    "translation":"Geavanceerd"
-  },
-  "modules.esc_tools.mfg.flrtr.timing_angle":{
-    "english":"Timing angle",
-    "translation":"Motor Timing"
-  },
-  "modules.esc_tools.mfg.flrtr.throttle_protocol":{
-    "english":"Throttle protocol",
-    "translation":"Throttle protocol"
-  },
-  "modules.esc_tools.mfg.flrtr.telemetry_protocol":{
-    "english":"Telemetry protocol",
-    "translation":"Telemetry protocol"
-  },
-  "modules.profile_tailrotor.help_p2":{
-    "english":"Precomp Cutoff: Frequency limit for all yaw precompensation actions.",
-    "translation":"Precomp Cutoff: Frequentie limiet voor alle staart precompensatie acties."
-  },
-  "modules.profile_pidcontroller.time":{
-    "english":"Time",
-    "translation":"Time"
-  },
-  "modules.esc_tools.mfg.hw5.basic":{
-    "english":"Basic",
-    "translation":"Basis"
-  },
-  "modules.status.arming_disable_flag_12":{
-    "english":"Calibrating",
-    "translation":"Calibreren"
-  },
-  "modules.status.arming_disable_flag_20":{
-    "english":"RPM Filter",
-    "translation":"RPM Filter"
-  },
-  "modules.servos.help_tool_p3":{
-    "english":"Minimum/Maximum: Adjust the end points of the selected servo.",
-    "translation":"Minimum/Maximum: Pas de eindpunten van de geselecteerde servo aan."
-  },
-  "modules.servos.help_tool_p5":{
-    "english":"Rate: The frequency the servo runs best at - check with manufacturer.",
-    "translation":"Rotatiesnelheid: Op welke frequentie de servo het beste werkt, kunt u navragen bij de fabrikant."
-  },
-  "modules.profile_mainrotor.collective_pitch_comp":{
-    "english":"Collective Pitch Compensation",
-    "translation":"Collective Pitch Compensation"
-  },
-  "modules.esc_tools.mfg.hw5.gov_i_gain":{
-    "english":"I-Gain",
-    "translation":"I-Gain"
-  },
-  "modules.esc_tools.mfg.xdfly.gov_p":{
-    "english":"Gov-P",
-    "translation":"Gov-P"
-  },
   "menu_section_tools":{
     "english":"Tools",
     "translation":"Tools"
-  },
-  "modules.mixer.collective_tilt_correction":{
-    "english":"Collective Tilt Correction",
-    "translation":"Collective Tilt Correction"
-  },
-  "modules.filters.dyn_notch":{
-    "english":"Dynamic Filters",
-    "translation":"Dynamische Filters"
-  },
-  "modules.validate_sensors.name":{
-    "english":"Sensors",
-    "translation":"Sensors"
-  },
-  "modules.profile_rescue.exit_time":{
-    "english":"Exit time",
-    "translation":"Exit tijd"
-  },
-  "modules.governor.mode":{
-    "english":"Mode",
-    "translation":"Mode"
-  },
-  "modules.sbusout.help_fields_min":{
-    "english":"The minimum pwm value to send.",
-    "translation":"De minimum pwm waarde welke gestuurd wordt."
-  },
-  "modules.esc_motors.main_motor_ratio":{
-    "english":"Main Motor Ratio",
-    "translation":"Main Ratio"
-  },
-  "modules.status.arming_disable_flag_16":{
-    "english":"MSP",
-    "translation":"MSP"
-  },
-  "modules.about.msgbox_credits":{
-    "english":"Credits",
-    "translation":"Credits"
-  },
-  "modules.pids.p":{
-    "english":"P",
-    "translation":"P"
-  },
-  "modules.profile_pidcontroller.hsi_offset_limit":{
-    "english":"HSI Offset limit",
-    "translation":"HSI Offset limit"
-  },
-  "modules.profile_tailrotor.help_p4":{
-    "english":"Collective FF Gain: Tail precompensation for collective inputs.",
-    "translation":"Collective FF Gain: Tail precompensation voor collective inputs."
-  },
-  "modules.profile_pidcontroller.help_p5":{
-    "english":"I-term relax: Limit accumulation of I-term during fast movements - helps reduce bounce back after fast stick movements. Generally needs to be lower for large helis and can be higher for small helis. Best to only reduce as much as is needed for your flying style.",
-    "translation":"I-term relax: Beperk de ophoping van I-term tijdens snelle bewegingen - helpt de bounce back na snelle stickbewegingen te verminderen. Moet over het algemeen lager zijn voor grote heli's en kan hoger zijn voor kleine heli's. Het beste is om alleen zoveel te verminderen als nodig is voor uw vliegstijl.\n\n"
-  },
-  "modules.servos.help_default_p3":{
-    "english":"Any other servos that are not controlled by the primary flight mixer will be displayed in the section called 'Other servos'.",
-    "translation":"Alle andere servo's die niet door de primaire vluchtmixer worden aangestuurd, worden weergegeven in het gedeelte 'Andere servos'."
-  },
-  "modules.sbusout.saving":{
-    "english":"Saving",
-    "translation":"Opslaan"
-  },
-  "modules.mixer.swash_pitch_limit":{
-    "english":"Total Pitch Limit",
-    "translation":"Total Pitch Limit"
-  },
-  "modules.profile_select.rate_profile":{
-    "english":"Rate Profile",
-    "translation":"Rate Profiel"
-  },
-  "modules.profile_mainrotor.cyclic_cross_coupling":{
-    "english":"Cyclic Cross coupling",
-    "translation":"Cyclic Cross coupling"
-  },
-  "modules.pids.b":{
-    "english":"B",
-    "translation":"B"
-  },
-  "modules.rates_advanced.yaw_dynamic_ceiling_gain":{
-    "english":"Ceiling",
-    "translation":"Plafond"
-  },
-  "modules.esc_tools.mfg.hw5.soft_start":{
-    "english":"Soft Start",
-    "translation":"Langzame opstart"
-  },
-  "modules.msp_speed.testing":{
-    "english":"Testing",
-    "translation":"Testing"
-  },
-  "modules.logs.help_logs_p2":{
-    "english":"Note. To enable logging it is essential for you to have the following sensors enabled.",
-    "translation":"Let op. Om logging in te schakelen, is het essentieel dat u de volgende sensoren hebt ingeschakeld."
-  },
-  "modules.esc_motors.motor_pole_count":{
-    "english":"Motor Pole Count",
-    "translation":"Motor Polen"
-  },
-  "modules.servos.disable_servo_override_msg":{
-    "english":"Return control of the servos to the flight controller.",
-    "translation":"Geef de besturing van de servo's terug aan de vliegcontroller."
-  },
-  "modules.about.license":{
-    "english":"You may copy, distribute, and modify the software as long as you track changes/dates in source files. Any modifications to or software including (via compiler) GPL-licensed code must also be made available under the GPL along with build & install instructions.",
-    "translation":"You may copy, distribute, and modify the software as long as you track changes/dates in source files. Any modifications to or software including (via compiler) GPL-licensed code must also be made available under the GPL along with build & install instructions."
-  },
-  "modules.esc_tools.mfg.scorp.bec_voltage":{
-    "english":"BEC Voltage",
-    "translation":"BEC Spanning"
-  },
-  "modules.status.erase":{
-    "english":"Erase",
-    "translation":"Wissen"
-  },
-  "modules.status.arming_disable_flag_2":{
-    "english":"RX Fail Safe",
-    "translation":"RX Fail Safe"
-  },
-  "modules.servos.servo_override":{
-    "english":"Servo Override",
-    "translation":"Servo Overschrijven"
-  },
-  "modules.profile_rescue.mode_enable":{
-    "english":"Rescue mode enable",
-    "translation":"Rescue mode Aan"
-  },
-  "modules.msp_speed.start_prompt":{
-    "english":"Would you like to start the test? Choose the test run time below.",
-    "translation":"Would you like to start the test? Choose the test run time below."
-  },
-  "modules.profile_select.ok":{
-    "english":"OK",
-    "translation":"OK"
-  },
-  "modules.filters.rpm_preset":{
-    "english":"Type",
-    "translation":"Type"
-  },
-  "modules.about.help_p2":{
-    "english":"For support, please first read the help pages on www.rotorflight.org",
-    "translation":"Voor ondersteuning, lees eerst de helppagina's op www.rotorflight.org\n\n"
-  },
-  "modules.esc_motors.help_p1":{
-    "english":"Configure the motor and speed controller features.",
-    "translation":"Motor en esc functies."
-  },
-  "modules.profile_pidcontroller.yaw":{
-    "english":"Y",
-    "translation":"Y"
-  },
-  "modules.pids.help_p1":{
-    "english":"FeedForward (Roll/Pitch): Start at 70, increase until stops are sharp with no drift. Keep roll and pitch equal.",
-    "translation":"FeedForward (Roll/Pitch): Begin bij 70, verhoog tot stops scherp zijn zonder drift. Houd roll en pitch gelijk."
-  },
-  "modules.profile_select.cancel":{
-    "english":"CANCEL",
-    "translation":"Afbreken"
-  },
-  "modules.copyprofiles.name":{
-    "english":"Copy Profiles",
-    "translation":"Kopieer Profiel"
-  },
-  "modules.profile_governor.help_p4":{
-    "english":"Precomp: Governor precomp gain for yaw, cyclic, and collective inputs.",
-    "translation":"Precomp: Governor precomp gain voor yaw, cyclic, en collective inputs."
-  },
-  "modules.esc_tools.mfg.hw5.lipo_cell_count":{
-    "english":"LiPo Cell Count",
-    "translation":"LiPo aantal cellen"
-  },
-  "modules.profile_autolevel.help_p3":{
-    "english":"Horizon Mode: How aggressively the heli tilts back to level when flying in Horizon Mode.",
-    "translation":"Horizon Mode: Hoe agressief de heli terug kantelt naar horizontaal tijdens het vliegen in de Horizon modus.\n\n"
-  },
-  "modules.profile_pidcontroller.error_rotation":{
-    "english":"Error rotation",
-    "translation":"Error rotation"
-  },
-  "modules.profile_governor.precomp":{
-    "english":"Precomp",
-    "translation":"Precomp"
-  },
-  "msg_saving_to_fbl":{
-    "english":"Saving data to flight controller...",
-    "translation":"Data opslaan op vliegcontroller..."
-  },
-  "modules.profile_rescue.fail_time":{
-    "english":"Fail time",
-    "translation":"Fail tijd"
-  },
-  "modules.profile_governor.min_throttle":{
-    "english":"Min throttle",
-    "translation":"Min throttle"
-  },
-  "modules.sbusout.receiver":{
-    "english":"Receiver",
-    "translation":"Receiver"
-  },
-  "modules.esc_tools.mfg.flrtr.low_voltage_protection":{
-    "english":"Low voltage protection",
-    "translation":"Lage spanning beveil."
-  },
-  "modules.servos.cyc_right":{
-    "english":"CYC.RIGHT",
-    "translation":"CYC. RIGHT"
-  },
-  "modules.filters.notch_2":{
-    "english":"Notch 2",
-    "translation":"Notch 2"
-  },
-  "modules.profile_select.help_p2":{
-    "english":"If you use a switch on your radio to change flight or rate modes, this will override this choice as soon as you toggle the switch.",
-    "translation":"Als u een schakelaar op uw radio gebruikt om de pid- of ratemodus te wijzigen, wordt deze keuze genegeerd zodra u de schakelaar omzet.\n"
-  },
-  "modules.profile_tailrotor.cyclic_ff_gain":{
-    "english":"Cyclic FF gain",
-    "translation":"Cyclic FF gain"
-  },
-  "modules.esc_tools.mfg.scorp.telemetry_protocol":{
-    "english":"Telemetry Protocol",
-    "translation":"Telemetrie Protocol"
-  },
-  "modules.status.dataflash_free_space":{
-    "english":"Dataflash Free Space",
-    "translation":"Dataflash vrije ruimte"
-  },
-  "modules.esc_tools.mfg.xdfly.capacity_correction":{
-    "english":"Capacity Correction",
-    "translation":"Capaciteit correctie"
-  },
-  "modules.pids.yaw":{
-    "english":"Yaw",
-    "translation":"Yaw"
-  },
-  "modules.accelerometer.name":{
-    "english":"Accelerometer",
-    "translation":"Versnellingsmeter"
-  },
-  "modules.status.help_p2":{
-    "english":"To erase the dataflash for more log file storage, press the button on the menu denoted by a '*'.",
-    "translation":"Om de dataflash te wissen voor meer opslag van logbestanden, drukt u op de knop in het menu die wordt aangegeven met een '*'.\n\n"
-  },
-  "modules.profile_pidcontroller.help_p1":{
-    "english":"Error decay ground: PID decay to help prevent heli from tipping over when on the ground.",
-    "translation":"Error decay ground: PID-verval om te voorkomen dat de helikopter omvalt als hij op de grond staat."
-  },
-  "modules.esc_tools.mfg.yge.timing":{
-    "english":"Motor Timing",
-    "translation":"Motor Timing"
-  },
-  "modules.logs.help_logs_p1":{
-    "english":"Please select a log file from the list below.",
-    "translation":"Selecteer een logbestand uit onderstaande lijst."
-  },
-  "modules.profile_rescue.help_p5":{
-    "english":"Flip: How long to wait before aborting because the flip did not work.",
-    "translation":"Flip: Hoe lang moet je wachten voordat rescue afgebroken wordt omdat de flip niet werkte?."
-  },
-  "modules.esc_tools.mfg.flrtr.gov_p":{
-    "english":"Gov-P",
-    "translation":"Gov-P"
-  },
-  "msg_save_current_page":{
-    "english":"Save current page to flight controller?",
-    "translation":"Sla huidige pagina op in de vliegcontroller?"
-  },
-  "modules.esc_tools.mfg.xdfly.motor_direction":{
-    "english":"Motor Direction",
-    "translation":"Motor draairichting"
-  },
-  "modules.profile_tailrotor.name":{
-    "english":"Tail Rotor",
-    "translation":"Staart Rotor"
-  },
-  "modules.msp_exp.help_p2":{
-    "english":"If you do not understand what you are doing, do not use it as bad things can happen.",
-    "translation":"Als je niet begrijpt wat je doet, gebruik het dan niet, want er kunnen rare dingen gebeuren."
-  },
-  "modules.logs.name":{
-    "english":"Logs",
-    "translation":"Logs"
-  },
-  "modules.esc_tools.mfg.flrtr.name":{
-    "english":"FLYROTOR",
-    "translation":"FLYROTOR"
-  },
-  "modules.msp_speed.timeouts":{
-    "english":"Timeouts",
-    "translation":"Timeouts"
-  },
-  "modules.rates_advanced.yaw_boost":{
-    "english":"Yaw boost",
-    "translation":"Yaw boost"
-  },
-  "modules.governor.recovery_time":{
-    "english":"Recovery time",
-    "translation":"Herstel tijd"
-  },
-  "btn_close":{
-    "english":"CLOSE",
-    "translation":"SLUITEN"
-  },
-  "modules.copyprofiles.msgbox_msg":{
-    "english":"Save current page to flight controller?",
-    "translation":"Sla huidige pagina op in de vliegcontroller?"
-  },
-  "modules.esc_tools.mfg.yge.pinion_teeth":{
-    "english":"Pinion Teeth",
-    "translation":"Pinion Tabdeb"
-  },
-  "modules.esc_tools.mfg.yge.gov_i":{
-    "english":"Gov-I",
-    "translation":"Gov-I"
-  },
-  "modules.status.arming_disable_flag_21":{
-    "english":"Reboot Required",
-    "translation":"Herstart vereist"
-  },
-  "modules.status.arming_disable_flag_4":{
-    "english":"Box Fail Safe",
-    "translation":"Box Fail Safe"
-  },
-  "modules.servos.help_fields_rate":{
-    "english":"Servo PWM rate.",
-    "translation":"Servo PWM snelheid."
-  },
-  "modules.profile_governor.help_p5":{
-    "english":"Max throttle: The maximum throttle % the governor is allowed to use.",
-    "translation":"Max throttle: Het maximale throttle % de governor mag gebruiken."
-  },
-  "modules.servos.help_fields_scale_neg":{
-    "english":"Servo negative scaling.",
-    "translation":"Servo negatief schalen."
-  },
-  "modules.rates.help_default_p2":{
-    "english":"We will use the sub keys below.",
-    "translation":"We gebruiken de onderstaande subsleutels."
-  },
-  "modules.profile_rescue.name":{
-    "english":"Rescue",
-    "translation":"Rescue"
-  },
-  "modules.rates.help_table_5_p1":{
-    "english":"RC Rate: Use to reduce sensitivity around center stick. RC Rate set to one half of the Max Rate is linear. A lower number will reduce sensitivity around center stick. Higher than one half of the Max Rate will also increase the Max Rate.",
-    "translation":"RC Rate: Gebruik om de gevoeligheid rond de center stick te verminderen. RC Rate ingesteld op de helft van de Max Rate is lineair. Een lager getal zal de gevoeligheid rond de center stick verminderen. Hoger dan de helft van de Max Rate zal ook de Max Rate verhogen."
-  },
-  "modules.servos.enable_servo_override_msg":{
-    "english":"Servo override allows you to 'trim' your servo center point in real time.",
-    "translation":"Servo overschrijven Hiermee kunt u het middelpunt van uw servo in realtime 'trimmen'."
-  },
-  "check_heli_on":{
-    "english":"Please check your heli is powered up and radio connected.",
-    "translation":"Controleer of de heli aanstaat en de radio is verbonden."
-  },
-  "modules.sbusout.channel_page":{
-    "english":"Sbus out / CH",
-    "translation":"Sbus out / CH"
-  },
-  "modules.sbusout.min":{
-    "english":"Min",
-    "translation":"Min"
-  },
-  "btn_ok_long":{
-    "english":"                OK                ",
-    "translation":"                OK                "
-  },
-  "modules.rates.rc_rate":{
-    "english":"RC Rate",
-    "translation":"RC Rate"
-  },
-  "modules.profile_tailrotor.ccw":{
-    "english":"CCW",
-    "translation":"CCW"
-  },
-  "modules.esc_motors.rear":{
-    "english":"Rear",
-    "translation":"Achter"
-  },
-  "modules.sbusout.source":{
-    "english":"Source",
-    "translation":"Source"
-  },
-  "modules.trim.mixer_override_disabling":{
-    "english":"Disabling mixer override...",
-    "translation":"Uitschakelen mixer overschrijven..."
-  },
-  "modules.governor.startup_time":{
-    "english":"Startup time",
-    "translation":"Opstarttijd"
-  },
-  "modules.radio_config.name":{
-    "english":"Radio Config",
-    "translation":"Radio Config"
-  },
-  "modules.radio_config.center":{
-    "english":"Center",
-    "translation":"Center"
-  },
-  "modules.copyprofiles.profile_type_rate":{
-    "english":"Rate",
-    "translation":"Rate"
-  },
-  "modules.esc_tools.mfg.yge.gov_p":{
-    "english":"Gov-P",
-    "translation":"Gov-P"
-  },
-  "modules.copyprofiles.help_p1":{
-    "english":"Copy PID profile or Rate profile from Source to Destination.",
-    "translation":"Kopieer PID profiel of Hoeksnelheid profiel van bron naar doel."
-  },
-  "modules.esc_motors.current_correction":{
-    "english":"Current Correction",
-    "translation":"Stroom correctie"
-  },
-  "modules.rates_advanced.setpoint_boost_gain":{
-    "english":"Setpoint boost gain",
-    "translation":"SetpVersterk"
-  },
-  "modules.logs.help_logs_p3":{
-    "english":"- arm status, voltage, headspeed, current, esc temperature",
-    "translation":"- arm status, voltage, headspeed, current, esc temperature"
-  },
-  "modules.sbusout.type":{
-    "english":"Type",
-    "translation":"Type"
-  },
-  "modules.esc_tools.mfg.yge.main_teeth":{
-    "english":"Main Teeth",
-    "translation":"Hoofdtandwiel tanden"
-  },
-  "modules.esc_tools.mfg.xdfly.basic":{
-    "english":"Basic",
-    "translation":"Basis"
-  },
-  "modules.rates_advanced.dynamics":{
-    "english":"Dynamics",
-    "translation":"Dynamics"
-  },
-  "modules.rates_advanced.dyn_deadband_filter":{
-    "english":"Dynamic deadband filter",
-    "translation":"DynDodeFilter"
-  },
-  "modules.rates_advanced.dyn_ceiling_gain":{
-    "english":"Dynamic ceiling gain",
-    "translation":"DynPlafVerst"
-  },
-  "modules.profile_autolevel.gain":{
-    "english":"Gain",
-    "translation":"Gain"
-  },
-  "modules.profile_autolevel.acro_trainer":{
-    "english":"Acro trainer",
-    "translation":"Acro trainer"
-  },
-  "modules.rates_advanced.accel_limit":{
-    "english":"Accel",
-    "translation":"Accel"
-  },
-  "modules.about.name":{
-    "english":"About",
-    "translation":"Over"
-  },
-  "modules.rates_advanced.roll_dynamics":{
-    "english":"Roll dynamics",
-    "translation":"Roll dynamics"
-  },
-  "modules.esc_motors.pinion":{
-    "english":"Pinion",
-    "translation":"Pinion"
-  },
-  "modules.profile_governor.d":{
-    "english":"D",
-    "translation":"D"
-  },
-  "modules.rates_advanced.name":{
-    "english":"Rates",
-    "translation":"Rates"
-  },
-  "modules.sbusout.help_default_p1":{
-    "english":"Configure advanced mixing and channel mapping if you have SBUS Out enabled on a serial port.",
-    "translation":"Configureer geavanceerde mixing en kanaal mapping als je SBUS uitgang aangezet hebt op een seriele poort."
-  },
-  "modules.servos.enable_servo_override":{
-    "english":"Enable servo override",
-    "translation":"Servo overschrijven inschakelen"
-  },
-  "modules.status.real_time_load":{
-    "english":"Real-time Load",
-    "translation":"Real-time belasting"
-  },
-  "modules.governor.tracking_time":{
-    "english":"Tracking time",
-    "translation":"Tracking time"
-  },
-  "modules.esc_tools.mfg.xdfly.sr_function":{
-    "english":"SR Function",
-    "translation":"SR Function"
-  },
-  "modules.esc_tools.unknown":{
-    "english":"UNKNOWN",
-    "translation":"Onbekend"
-  },
-  "modules.filters.lowpass_1":{
-    "english":"Lowpass 1",
-    "translation":"Lowpass 1"
-  },
-  "modules.profile_mainrotor.cutoff":{
-    "english":"Cutoff",
-    "translation":"Cutoff"
-  },
-  "modules.sbusout.save_settings":{
-    "english":"Save settings",
-    "translation":"Instellingen opslaan"
-  },
-  "modules.servos.cyc_pitch":{
-    "english":"CYC.PITCH",
-    "translation":"CYC. PITCH"
-  },
-  "menu_section_advanced":{
-    "english":"Advanced",
-    "translation":"Geavanceerd"
-  },
-  "modules.sbusout.title":{
-    "english":"SBUS Output",
-    "translation":"SBUS Output"
-  },
-  "modules.status.arming_disable_flag_7":{
-    "english":"Throttle",
-    "translation":"Throttle"
-  },
-  "modules.profile_pidbandwidth.pitch":{
-    "english":"P",
-    "translation":"P"
-  },
-  "modules.sbusout.cancel":{
-    "english":"CANCEL",
-    "translation":"Afbreken"
-  },
-  "modules.esc_tools.mfg.hw5.startup_power":{
-    "english":"Startup Power",
-    "translation":"Opstart vermogen"
-  },
-  "modules.mixer.swash_tta_precomp":{
-    "english":"TTA Precomp",
-    "translation":"TTA Precomp"
-  },
-  "modules.profile_governor.tta_gain":{
-    "english":"Gain",
-    "translation":"Gain"
-  },
-  "modules.status.arming_disable_flag_9":{
-    "english":"Boot Grace Time",
-    "translation":"Boot Grace Time"
-  },
-  "modules.profile_pidbandwidth.yaw":{
-    "english":"Y",
-    "translation":"Y"
-  },
-  "modules.profile_tailrotor.help_p5":{
-    "english":"Collective Impulse FF: Impulse tail precompensation for collective inputs. If you need extra tail precompensation at the beginning of collective input.",
-    "translation":"Collective Impuls FF: Impuls staart precompensatie voor collectieve inputs. Als u extra precompensatie nodig met begin van de klim.\n\n"
-  },
-  "modules.trim.mixer_override":{
-    "english":"Mixer Override",
-    "translation":"Mixer Override"
-  },
-  "modules.esc_tools.mfg.scorp.max_current":{
-    "english":"Max Current",
-    "translation":"Max Stroom"
-  },
-  "modules.sbusout.servo":{
-    "english":"Servo",
-    "translation":"Servo"
-  },
-  "modules.msp_speed.seconds_600":{
-    "english":"  600S  ",
-    "translation":"  600S  "
-  },
-  "modules.rates.help_table_3_p1":{
-    "english":"RC Rate: Maximum rotation rate at full stick deflection.",
-    "translation":"RC Rate: Maximale rotatie bij volledige stick inut."
-  },
-  "modules.rates.pitch":{
-    "english":"Pitch",
-    "translation":"Pitch"
-  },
-  "modules.servos.help_fields_scale_pos":{
-    "english":"Servo positive scaling.",
-    "translation":"Servo positief schalen."
-  },
-  "modules.profile_governor.help_p3":{
-    "english":"Gains: Fine tuning of the governor.",
-    "translation":"Gains: Fijntuning van de governor."
-  },
-  "modules.servos.speed":{
-    "english":"Speed",
-    "translation":"Snelheid"
-  },
-  "modules.profile_governor.max_throttle":{
-    "english":"Max throttle",
-    "translation":"Max throttle"
-  },
-  "modules.profile_governor.help_p2":{
-    "english":"PID master gain: How hard the governor works to hold the RPM.",
-    "translation":"PID master gain: Hoe hard de governor werkt om de RPM in stand te houden."
-  },
-  "modules.msp_speed.successful_queries":{
-    "english":"Successful queries",
-    "translation":"Successful queries"
-  },
-  "modules.servos.reverse":{
-    "english":"Reverse",
-    "translation":"Omgekeerd"
-  },
-  "modules.servos.tail":{
-    "english":"TAIL",
-    "translation":"TAIL"
-  },
-  "modules.profile_mainrotor.help_p4":{
-    "english":"Cross Coupling Freq. Limit: Frequency limit for the compensation, higher value will make the compensation action faster.",
-    "translation":"Cross Coupling Freq. Limit: Frequentie limiet voor de compensatie, Hogere waarde wil de compensatie actie sneller.\n\n"
-  },
-  "modules.profile_governor.help_p6":{
-    "english":"Tail Torque Assist: For motorized tails. Gain and limit of headspeed increase when using main rotor torque for yaw assist.",
-    "translation":"Tail Torque Assist: Voor gemotoriseerde staart. Gains en minimale rotortoerental nemen toe voorhoofdrotorkoppel voor yaw-assistentie./n"
-  },
-  "modules.msp_speed.seconds_120":{
-    "english":"  120S  ",
-    "translation":"  120S  "
-  },
-  "modules.profile_tailrotor.collective_ff_gain":{
-    "english":"Collective FF gain",
-    "translation":"Collective FF gain"
-  },
-  "modules.mixer.geo_correction":{
-    "english":"Geo Correction",
-    "translation":"Geo Correction"
-  },
-  "msg_connecting_to_fbl":{
-    "english":"Connecting to flight controller...",
-    "translation":"Verbinden met vliegcontroller..."
-  },
-  "modules.esc_tools.mfg.scorp.cutoff_handling":{
-    "english":"Cutoff Handling",
-    "translation":"Stop beveiliging"
-  },
-  "modules.esc_tools.mfg.hw5.esc":{
-    "english":"ESC",
-    "translation":"ESC"
-  },
-  "modules.servos.scale_positive":{
-    "english":"Scale Positive",
-    "translation":"Schaal positief"
-  },
-  "modules.rates.help_table_3_p3":{
-    "english":"RC Curve: Reduces sensitivity near the stick's center where fine controls are needed.",
-    "translation":"RC Curve: Vermindert de gevoeligheid in het midden van de stick, waar nauwkeurige bediening nodig is."
-  },
-  "modules.trim.yaw_trim":{
-    "english":"Yaw. trim %",
-    "translation":"Yaw. trim %"
-  },
-  "msg_rebooting":{
-    "english":"Rebooting...",
-    "translation":"Opnieuw opstarten..."
-  },
-  "modules.mixer.name":{
-    "english":"Mixer",
-    "translation":"Mixer"
-  },
-  "modules.esc_tools.mfg.xdfly.startup_power":{
-    "english":"Startup Power",
-    "translation":"Opstart geluid"
-  },
-  "modules.rates.help_table_5_p3":{
-    "english":"Expo: Reduces sensitivity near the stick's center where fine controls are needed.",
-    "translation":"Expo: Vermindert de gevoeligheid in het midden van de stick, waar nauwkeurige bediening nodig is.\n\n"
-  },
-  "modules.battery.battery_capacity":{
-    "english":"Battery Capacity",
-    "translation":"Batterij Capaciteit"
-  },
-  "modules.logs.msg_no_logs_found":{
-    "english":"NO LOG FILES FOUND",
-    "translation":"Geen log bestand gevonden"
-  },
-  "modules.status.arming_disable_flag_13":{
-    "english":"CLI",
-    "translation":"CLI"
-  },
-  "modules.governor.help_p2":{
-    "english":"Each parameter is simply a time value in seconds for each governor action.",
-    "translation":"Elke parameter is een tijdswaarde in seconden voor elke governor actie.\n\n"
-  },
-  "modules.profile_tailrotor.collective_impulse_ff":{
-    "english":"Collective Impulse FF",
-    "translation":"Collective Impulse FF"
-  },
-  "modules.msp_speed.min_query_time":{
-    "english":"Minimum query time",
-    "translation":"Minimum query time"
-  },
-  "modules.msp_exp.name":{
-    "english":"MSP Expermental",
-    "translation":"MSP Experimenteel"
-  },
-  "modules.esc_tools.mfg.flrtr.soft_start":{
-    "english":"Soft start",
-    "translation":"Langzame opstart"
-  },
-  "modules.esc_tools.mfg.scorp.motor_startup_sound":{
-    "english":"Motor Startup Sound",
-    "translation":"Motor opstart geluid"
-  },
-  "modules.rates.quick":{
-    "english":"QUICK",
-    "translation":"QUICK"
-  },
-  "modules.filters.filter_type":{
-    "english":"Filter type",
-    "translation":"Filter type"
-  },
-  "modules.esc_tools.mfg.hw5.rotation":{
-    "english":"Rotation",
-    "translation":"Motor Draairichting"
-  },
-  "modules.esc_tools.mfg.scorp.rotation":{
-    "english":"Rotation",
-    "translation":"Motor draairichting"
-  },
-  "modules.profile_rescue.gains":{
-    "english":"Gains",
-    "translation":"Gains"
-  },
-  "modules.status.arming_disable_flag_5":{
-    "english":"Governor",
-    "translation":"Governor"
-  },
-  "modules.profile_mainrotor.gain":{
-    "english":"Gain",
-    "translation":"Gain"
-  },
-  "menu_section_flight_tuning":{
-    "english":"Flight Tuning",
-    "translation":"Vlucht Tuning"
-  },
-  "modules.profile_pidcontroller.error_limit":{
-    "english":"Error limit",
-    "translation":"Error limit"
-  },
-  "modules.msp_speed.start":{
-    "english":"Start",
-    "translation":"Start"
-  },
-  "modules.filters.notch_max_hz":{
-    "english":"Max",
-    "translation":"Max"
-  },
-  "modules.about.msp_version":{
-    "english":"MSP Version",
-    "translation":"MSP Versie"
-  },
-  "modules.esc_tools.mfg.scorp.gov_integral":{
-    "english":"Gov Integral",
-    "translation":"Gov Integral"
-  },
-  "modules.status.arming_disable_flag_19":{
-    "english":"Resc",
-    "translation":"Resc"
-  },
-  "modules.profile_pidbandwidth.help_p3":{
-    "english":"B-term cutoff: B-term cutoff frequency in HZ.",
-    "translation":"B-term cutoff: B-term afsnijdingsfrequentie in HZ.\n\n"
-  },
-  "modules.trim.enable_mixer_override":{
-    "english":"Enable mixer override",
-    "translation":"Schakel mixer overschrijven in"
-  },
-  "modules.rates.help_default_p1":{
-    "english":"Default: We keep this to make button appear for rates.",
-    "translation":"Default: We gebruiken dit zodat de knop voor de rates zichtbaar is."
-  },
-  "modules.esc_tools.mfg.flrtr.temperature_protection":{
-    "english":"Temperature protection",
-    "translation":"Temperatuur beveilig."
-  },
-  "modules.sbusout.saving_data":{
-    "english":"Saving data...",
-    "translation":"Opslaan..."
-  },
-  "modules.rates.name":{
-    "english":"Rates",
-    "translation":"Rates"
-  },
-  "modules.servos.rate":{
-    "english":"Rate",
-    "translation":"PWM snelheid"
-  },
-  "modules.mixer.collective_tilt_correction_neg":{
-    "english":"Negative",
-    "translation":"Negative"
-  },
-  "modules.trim.disable_mixer_override":{
-    "english":"Disable mixer override",
-    "translation":"Schakel mixer overschrijven uit"
-  },
-  "modules.rates_advanced.msg_reset_to_defaults":{
-    "english":"Rate type changed. Values will be reset to defaults.",
-    "translation":"Rate type changed. Values will be reset to defaults."
-  },
-  "modules.trim.help_p1":{
-    "english":"Link trims: Use to trim out small leveling issues in your swash plate. Typically only used if the swash links are non-adjustable.",
-    "translation":"Link trims: Gebruiken om kleine afwijkingen in uw swashplate bij te werken. Wordt doorgaans alleen gebruikt als de swashlinks niet verstelbaar zijn."
-  },
-  "modules.msp_speed.help_p1":{
-    "english":"This tool attempts to determine the quality of your MSP data link by performing as many large MSP queries within 30 seconds as possible.",
-    "translation":"Deze tool probeert de kwaliteit van uw MSP-datalink te bepalen door binnen 30 seconden zoveel mogelijk grote MSP-query's uit te voeren.\n\n"
-  },
-  "modules.status.arming_disable_flag_18":{
-    "english":"GPS",
-    "translation":"GPS"
-  },
-  "modules.trim.tail_motor_idle":{
-    "english":"Tail Motor idle  %",
-    "translation":"Tail Motor idle  %"
-  },
-  "msg_reload_settings":{
-    "english":"Reload data from flight controller?",
-    "translation":"Herlaad data van vliegcontroller?"
-  },
-  "modules.rates_advanced.help_p1":{
-    "english":"Rates type: Choose the rate type you prefer flying with. Raceflight and Actual are the most straightforward.",
-    "translation":"Rates type: Choose the rate type you prefer flying with. Raceflight and Actual are the most straightforward."
   },
   "check_bg_task":{
     "english":"Please enable the background task.",
     "translation":"Schakel de achtergrond taak in."
   },
-  "msg_save_settings":{
-    "english":"Save settings",
-    "translation":"Instellingen opslaan"
+  "check_msp_version":{
+    "english":"Unable to determine MSP version in use.",
+    "translation":"Het is niet mogelijk om de MSP versie te bepalen."
   },
-  "modules.status.arming_disable_flag_22":{
-    "english":"DSHOT Bitbang",
-    "translation":"DSHOT Bitbang"
+  "msg_reload_settings":{
+    "english":"Reload data from flight controller?",
+    "translation":"Herlaad data van vliegcontroller?"
+  },
+  "btn_close":{
+    "english":"CLOSE",
+    "translation":"SLUITEN"
+  },
+  "msg_saving":{
+    "english":"Saving...",
+    "translation":"Opslaan..."
+  },
+  "menu_section_hardware":{
+    "english":"Hardware",
+    "translation":"Hardware"
+  },
+  "menu_section_developer":{
+    "english":"Developer",
+    "translation":"Ontwikkelaar"
+  },
+  "btn_ok_long":{
+    "english":"                OK                ",
+    "translation":"                OK                "
+  },
+  "navigation_save":{
+    "english":"SAVE",
+    "translation":"Save"
+  },
+  "navigation_reload":{
+    "english":"RELOAD",
+    "translation":"Reload"
+  },
+  "msg_connecting_to_fbl":{
+    "english":"Connecting to flight controller...",
+    "translation":"Verbinden met vliegcontroller..."
+  },
+  "navigation_tools":{
+    "english":"*",
+    "translation":"*"
+  },
+  "menu_section_advanced":{
+    "english":"Advanced",
+    "translation":"Geavanceerd"
+  },
+  "msg_save_not_commited":{
+    "english":"Save not committed to EEPROM",
+    "translation":"Opslaan niet gelukt naar EEPROM"
   },
   "msg_connecting":{
     "english":"Connecting",
     "translation":"Verbinden"
   },
-  "modules.esc_tools.mfg.yge.f3c_auto":{
-    "english":"F3C Autorotation",
-    "translation":"F3C Autorotation"
+  "msg_please_disarm_to_save_warning":{
+    "english":"Settings will only be saved to eeprom on disarm",
+    "translation":"Instellingen worden alleen opgeslagen in EEPROM na uitschakelen"
   },
-  "check_discovered_sensors":{
-    "english":"Please check you have discovered all sensors.",
-    "translation":"Controleer of je alle sensors discovered hebt."
+  "msg_saving_settings":{
+    "english":"Saving settings...",
+    "translation":"Instellingen opslaan..."
   },
-  "modules.esc_tools.mfg.yge.limits":{
-    "english":"Limits",
-    "translation":"Limieten"
+  "msg_loading_from_fbl":{
+    "english":"Loading data from flight controller...",
+    "translation":"Laden data van vliegcontroller..."
   },
-  "modules.esc_tools.mfg.scorp.runup_time":{
-    "english":"Runup Time",
-    "translation":"Opstarttijd"
+  "msg_loading":{
+    "english":"Loading...",
+    "translation":"Laden..."
   },
-  "modules.esc_tools.mfg.xdfly.cell_cutoff":{
-    "english":"Cell Cutoff",
-    "translation":"Cell Cutoff"
+  "msg_please_disarm_to_save":{
+    "english":"Please disarm to save",
+    "translation":"Disarm voor opslaan om data integriteit te verzekeren."
   },
-  "modules.esc_tools.mfg.hw5.flight_mode":{
-    "english":"Flight Mode",
-    "translation":"Vlucht modus"
+  "msg_saving_to_fbl":{
+    "english":"Saving data to flight controller...",
+    "translation":"Data opslaan op vliegcontroller..."
   },
-  "modules.rates.rate":{
-    "english":"Rate",
-    "translation":"Rate"
+  "check_rf_module_on":{
+    "english":"Please check your rf module is turned on.",
+    "translation":"Controleer of de rf module aanstaat."
   },
-  "modules.esc_tools.mfg.flrtr.motor_temp":{
-    "english":"Motor temperture",
-    "translation":"Motor temperatuur"
+  "check_heli_on":{
+    "english":"Please check your heli is powered up and radio connected.",
+    "translation":"Controleer of de heli aanstaat en de radio is verbonden."
   },
-  "modules.filters.notch_1":{
-    "english":"Notch 1",
-    "translation":"Notch 1"
+  "error_timed_out":{
+    "english":"Error: timed out",
+    "translation":"Error: timed out"
   },
-  "modules.msp_speed.name":{
-    "english":"MSP Speed",
-    "translation":"MSP Speed"
-  },
-  "modules.esc_tools.mfg.flrtr.buzzer_volume":{
-    "english":"Buzzer volume",
-    "translation":"Piep volume"
-  },
-  "modules.radio_config.min_throttle":{
-    "english":"Min",
-    "translation":"Min"
-  },
-  "modules.rates.superrate":{
-    "english":"SuperRate",
-    "translation":"SuperRate"
-  },
-  "modules.esc_tools.mfg.hw5.volt_cutoff_type":{
-    "english":"Volt Cutoff Type",
-    "translation":"Lage spanning limiet"
-  },
-  "modules.filters.lowpass_1_dyn":{
-    "english":"Lowpass 1 dyn.",
-    "translation":"Lowpass 1 dyn."
-  },
-  "modules.copyprofiles.profile_type":{
-    "english":"Profile Type",
-    "translation":"Profiel Type"
-  },
-  "modules.esc_tools.please_powercycle":{
-    "english":"Please power cycle the ESC...",
-    "translation":"Restart de esc..."
-  },
-  "modules.esc_tools.mfg.hw5.other":{
-    "english":"Other",
-    "translation":"Ander"
-  },
-  "modules.profile_tailrotor.decay":{
-    "english":"Decay",
-    "translation":"Decay"
-  },
-  "modules.esc_tools.searching":{
-    "english":"Searching",
-    "translation":"Zoeken"
-  },
-  "modules.profile_select.save_prompt":{
-    "english":"Save current page to flight controller?",
-    "translation":"Sla huidige pagina op in de vliegcontroller?"
+  "check_supported_version":{
+    "english":"This version of the Lua script \ncan't be used with the selected model",
+    "translation":"Deze versie van het lua script \n kan niet gebruikt worden met het geselecteerde model"
   },
   "unit_hertz":{
     "english":"Hz",
     "translation":"Hz"
   },
-  "modules.rates_advanced.yaw_dynamic_deadband_filter":{
-    "english":"Filter",
-    "translation":"Filter"
+  "navigation_menu":{
+    "english":"MENU",
+    "translation":"MENU"
   },
-  "modules.esc_tools.mfg.hw5.restart_time":{
-    "english":"Restart Time",
-    "translation":"Herstart tijd"
+  "navigation_help":{
+    "english":"?",
+    "translation":"?"
   },
-  "modules.status.arming_flags":{
-    "english":"Arming Flags",
-    "translation":"Arming Flags"
+  "btn_ok":{
+    "english":"          OK           ",
+    "translation":"          OK           "
   },
-  "modules.msp_speed.retries":{
-    "english":"Retries",
-    "translation":"Retries"
+  "menu_section_about":{
+    "english":"About",
+    "translation":"Over"
   },
-  "modules.filters.help_p4":{
-    "english":"Dynamic Notch Filters: Automatically creates notch filters within the min and max frequency range.",
-    "translation":"Dynamic Notch Filters: Maakt automatisch notchfilters aan binnen het minimale en maximale frequentiebereik.\n\n"
+  "msg_save_current_page":{
+    "english":"Save current page to flight controller?",
+    "translation":"Sla huidige pagina op in de vliegcontroller?"
   },
-  "modules.profile_rescue.help_p3":{
-    "english":"Climb: How much collective to maintain a steady climb - and how long.",
-    "translation":"Klimmen: Hoeveel collective om continue te klimmen - en hoelang."
+  "msg_save_settings":{
+    "english":"Save settings",
+    "translation":"Instellingen opslaan"
   },
-  "modules.pids.help_p2":{
-    "english":"I Gain (Roll/Pitch): Raise gradually for stable piro pitch pumps. Too high causes wobbles; match roll/pitch values.",
-    "translation":"I Gain (Roll/Pitch): Verhoog geleidelijk voor stabiele piro-pitch pumps. Te hoog veroorzaakt wiebelen; match rol-/pitchwaarden."
+  "btn_cancel":{
+    "english":"CANCEL",
+    "translation":"ANNULEREN"
   },
-  "modules.rates.actual":{
-    "english":"ACTUAL",
-    "translation":"ACTUAL"
+  "check_discovered_sensors":{
+    "english":"Please check you have discovered all sensors.",
+    "translation":"Controleer of je alle sensors discovered hebt."
   },
-  "modules.servos.geometry":{
-    "english":"Geometry",
-    "translation":"Geometrie"
+  "modules":{
+    "esc_tools":{
+      "mfg":{
+        "flrtr":{
+          "bec_voltage":{
+            "english":"BEC voltage",
+            "translation":"BEC spanning"
+          },
+          "basic":{
+            "english":"Basic",
+            "translation":"Basis"
+          },
+          "response_speed":{
+            "english":"Response speed",
+            "translation":"Reactiesnelheid"
+          },
+          "gov_p":{
+            "english":"Gov-P",
+            "translation":"Gov-P"
+          },
+          "gov_i":{
+            "english":"Gov-I",
+            "translation":"Gov-I"
+          },
+          "telemetry_protocol":{
+            "english":"Telemetry protocol",
+            "translation":"Telemetry protocol"
+          },
+          "name":{
+            "english":"FLYROTOR",
+            "translation":"FLYROTOR"
+          },
+          "low_voltage_protection":{
+            "english":"Low voltage protection",
+            "translation":"Lage spanning beveil."
+          },
+          "gov":{
+            "english":"Governor",
+            "translation":"Governor"
+          },
+          "fan_control":{
+            "english":"Fan control",
+            "translation":"Fan besturing"
+          },
+          "motor_temp":{
+            "english":"Motor temperture",
+            "translation":"Motor temperatuur"
+          },
+          "gov_d":{
+            "english":"Gov-D",
+            "translation":"Gov-D"
+          },
+          "buzzer_volume":{
+            "english":"Buzzer volume",
+            "translation":"Piep volume"
+          },
+          "soft_start":{
+            "english":"Soft start",
+            "translation":"Langzame opstart"
+          },
+          "battery_capacity":{
+            "english":"Battery capacity",
+            "translation":"Batterij capaciteit"
+          },
+          "other":{
+            "english":"Other",
+            "translation":"Ander"
+          },
+          "current_gain":{
+            "english":"Current gain",
+            "translation":"Stroom gain"
+          },
+          "motor_erpm_max":{
+            "english":"Motor ERPM max",
+            "translation":"Motor ERPM max"
+          },
+          "throttle_protocol":{
+            "english":"Throttle protocol",
+            "translation":"Throttle protocol"
+          },
+          "motor_direction":{
+            "english":"Motor direction",
+            "translation":"Motor draairichting"
+          },
+          "advanced":{
+            "english":"Advanced",
+            "translation":"Geavanceerd"
+          },
+          "governor":{
+            "english":"Governor",
+            "translation":"Governor"
+          },
+          "cell_count":{
+            "english":"Cell count",
+            "translation":"Aantal cellen"
+          },
+          "timing_angle":{
+            "english":"Timing angle",
+            "translation":"Motor Timing"
+          },
+          "temperature_protection":{
+            "english":"Temperature protection",
+            "translation":"Temperatuur beveilig."
+          },
+          "motor_temp_sensor":{
+            "english":"Motor temp sensor",
+            "translation":"Motor temp sensor"
+          },
+          "starting_torque":{
+            "english":"Starting torque",
+            "translation":"Start koppel"
+          },
+          "led_color":{
+            "english":"LED color",
+            "translation":"LED kleur"
+          }
+        },
+        "yge":{
+          "stick_zero_us":{
+            "english":"Stick Zero",
+            "translation":"Stick nul"
+          },
+          "basic":{
+            "english":"Basic",
+            "translation":"Basis"
+          },
+          "stick_range_us":{
+            "english":"Stick Range",
+            "translation":"Stick bereik"
+          },
+          "gov_p":{
+            "english":"Gov-P",
+            "translation":"Gov-P"
+          },
+          "gov_i":{
+            "english":"Gov-I",
+            "translation":"Gov-I"
+          },
+          "name":{
+            "english":"YGE",
+            "translation":"YGE"
+          },
+          "pinion_teeth":{
+            "english":"Pinion Teeth",
+            "translation":"Pinion Tabdeb"
+          },
+          "f3c_auto":{
+            "english":"F3C Autorotation",
+            "translation":"F3C Autorotation"
+          },
+          "esc":{
+            "english":"ESC",
+            "translation":"ESC"
+          },
+          "other":{
+            "english":"Other",
+            "translation":"Andere"
+          },
+          "min_start_power":{
+            "english":"Min Start Power",
+            "translation":"Min Start vermogen"
+          },
+          "timing":{
+            "english":"Motor Timing",
+            "translation":"Motor Timing"
+          },
+          "main_teeth":{
+            "english":"Main Teeth",
+            "translation":"Hoofdtandwiel tanden"
+          },
+          "motor_pole_pairs":{
+            "english":"Motor Pole Pairs",
+            "translation":"Motor Polen pair"
+          },
+          "throttle_response":{
+            "english":"Throttle Response",
+            "translation":"Throttle Reactie"
+          },
+          "lv_bec_voltage":{
+            "english":"BEC",
+            "translation":"BEC Spanning"
+          },
+          "esc_mode":{
+            "english":"ESC Mode",
+            "translation":"ESC Modus"
+          },
+          "current_limit":{
+            "english":"Current Limit",
+            "translation":"Stroom limiet"
+          },
+          "cell_cutoff":{
+            "english":"Cell Cutoff",
+            "translation":"Cell Cutoff"
+          },
+          "limits":{
+            "english":"Limits",
+            "translation":"Limieten"
+          },
+          "advanced":{
+            "english":"Advanced",
+            "translation":"Geavanceerd"
+          },
+          "direction":{
+            "english":"Direction",
+            "translation":"Motor draairichting"
+          },
+          "auto_restart_time":{
+            "english":"Auto Restart Time",
+            "translation":"Auto herstart tijd"
+          },
+          "max_start_power":{
+            "english":"Max Start Power",
+            "translation":"Max Start vermogen"
+          },
+          "active_freewheel":{
+            "english":"Active Freewheel",
+            "translation":"Active Freewheel"
+          }
+        },
+        "scorp":{
+          "bec_voltage":{
+            "english":"BEC Voltage",
+            "translation":"BEC Spanning"
+          },
+          "basic":{
+            "english":"Basic",
+            "translation":"Basis"
+          },
+          "max_used":{
+            "english":"Max Used",
+            "translation":"Max Gebruikt"
+          },
+          "protection_delay":{
+            "english":"Protection Delay",
+            "translation":"Beveiliging delay"
+          },
+          "min_voltage":{
+            "english":"Min Voltage",
+            "translation":"Min Spanning"
+          },
+          "name":{
+            "english":"Scorpion",
+            "translation":"Scorpion"
+          },
+          "cutoff_handling":{
+            "english":"Cutoff Handling",
+            "translation":"Stop beveiliging"
+          },
+          "bailout":{
+            "english":"Bailout",
+            "translation":"Bailout"
+          },
+          "motor_startup_sound":{
+            "english":"Motor Startup Sound",
+            "translation":"Motor opstart geluid"
+          },
+          "max_temperature":{
+            "english":"Max Temperature",
+            "translation":"Max Temperatuur"
+          },
+          "max_current":{
+            "english":"Max Current",
+            "translation":"Max Stroom"
+          },
+          "extra_msg_save":{
+            "english":"Please reboot the ESC to apply the changes",
+            "translation":"Herstart de ESC om de wijzigingen op te slaan"
+          },
+          "esc_mode":{
+            "english":"ESC Mode",
+            "translation":"ESC Modus"
+          },
+          "limits":{
+            "english":"Limits",
+            "translation":"Limieten"
+          },
+          "gov_proportional":{
+            "english":"Gov Proportional",
+            "translation":"Gov Proportional"
+          },
+          "soft_start_time":{
+            "english":"Soft Start Time",
+            "translation":"Langzame opstart tijd"
+          },
+          "advanced":{
+            "english":"Advanced",
+            "translation":"Geavanceerd"
+          },
+          "gov_integral":{
+            "english":"Gov Integral",
+            "translation":"Gov Integral"
+          },
+          "rotation":{
+            "english":"Rotation",
+            "translation":"Motor draairichting"
+          },
+          "telemetry_protocol":{
+            "english":"Telemetry Protocol",
+            "translation":"Telemetrie Protocol"
+          },
+          "runup_time":{
+            "english":"Runup Time",
+            "translation":"Opstarttijd"
+          }
+        },
+        "hw5":{
+          "bec_voltage":{
+            "english":"BEC Voltage",
+            "translation":"BEC Spanning"
+          },
+          "basic":{
+            "english":"Basic",
+            "translation":"Basis"
+          },
+          "brake":{
+            "english":"Brake",
+            "translation":"Rem"
+          },
+          "auto_restart":{
+            "english":"Auto Restart",
+            "translation":"Auto Herstart"
+          },
+          "name":{
+            "english":"Hobbywing V5",
+            "translation":"Hobbywing V5"
+          },
+          "brake_type":{
+            "english":"Brake Type",
+            "translation":"Rem type"
+          },
+          "soft_start":{
+            "english":"Soft Start",
+            "translation":"Langzame opstart"
+          },
+          "motor":{
+            "english":"Motor",
+            "translation":"Motor"
+          },
+          "esc":{
+            "english":"ESC",
+            "translation":"ESC"
+          },
+          "cutoff_voltage":{
+            "english":"Cutoff Voltage",
+            "translation":"Uitschakelingsspanning"
+          },
+          "lipo_cell_count":{
+            "english":"LiPo Cell Count",
+            "translation":"LiPo aantal cellen"
+          },
+          "active_freewheel":{
+            "english":"Active Freewheel",
+            "translation":"Active Freewheel"
+          },
+          "timing":{
+            "english":"Timing",
+            "translation":"Motor timing"
+          },
+          "other":{
+            "english":"Other",
+            "translation":"Ander"
+          },
+          "gov_p_gain":{
+            "english":"P-Gain",
+            "translation":"P-Gain"
+          },
+          "governor":{
+            "english":"Governor",
+            "translation":"Governor"
+          },
+          "flight_mode":{
+            "english":"Flight Mode",
+            "translation":"Vlucht modus"
+          },
+          "rotation":{
+            "english":"Rotation",
+            "translation":"Motor Draairichting"
+          },
+          "restart_time":{
+            "english":"Restart Time",
+            "translation":"Herstart tijd"
+          },
+          "volt_cutoff_type":{
+            "english":"Volt Cutoff Type",
+            "translation":"Lage spanning limiet"
+          },
+          "limits":{
+            "english":"Limits",
+            "translation":"Limieten"
+          },
+          "advanced":{
+            "english":"Advanced",
+            "translation":"Geavanceerd"
+          },
+          "gov_i_gain":{
+            "english":"I-Gain",
+            "translation":"I-Gain"
+          },
+          "startup_time":{
+            "english":"Startup Time",
+            "translation":"Opstart tijd"
+          },
+          "brake_force":{
+            "english":"Brake Force%",
+            "translation":"Remkracht %"
+          },
+          "startup_power":{
+            "english":"Startup Power",
+            "translation":"Opstart vermogen"
+          }
+        },
+        "xdfly":{
+          "basic":{
+            "english":"Basic",
+            "translation":"Basis"
+          },
+          "gov_p":{
+            "english":"Gov-P",
+            "translation":"Gov-P"
+          },
+          "gov_i":{
+            "english":"Gov-I",
+            "translation":"Gov-I"
+          },
+          "name":{
+            "english":"XDFLY",
+            "translation":"XDFLY"
+          },
+          "capacity_correction":{
+            "english":"Capacity Correction",
+            "translation":"Capaciteit correctie"
+          },
+          "smart_fan":{
+            "english":"Smart Fan",
+            "translation":"Smart Fan"
+          },
+          "motor_poles":{
+            "english":"Motor Poles",
+            "translation":"Motor Polen"
+          },
+          "timing":{
+            "english":"Timing",
+            "translation":"Motortiming"
+          },
+          "sr_function":{
+            "english":"SR Function",
+            "translation":"SR Function"
+          },
+          "cell_cutoff":{
+            "english":"Cell Cutoff",
+            "translation":"Cell Cutoff"
+          },
+          "hv_bec_voltage":{
+            "english":"HV BEC Voltage",
+            "translation":"HV BEC Spanning"
+          },
+          "lv_bec_voltage":{
+            "english":"LV BEC Voltage",
+            "translation":"LV BEC Spanning"
+          },
+          "led_color":{
+            "english":"LED Color",
+            "translation":"LED Kleur"
+          },
+          "gov":{
+            "english":"Governor",
+            "translation":"Governor"
+          },
+          "governor":{
+            "english":"Governor",
+            "translation":"Governor"
+          },
+          "motor_direction":{
+            "english":"Motor Direction",
+            "translation":"Motor draairichting"
+          },
+          "advanced":{
+            "english":"Advanced",
+            "translation":"Geavanceerd"
+          },
+          "acceleration":{
+            "english":"Acceleration",
+            "translation":"Acceleratie"
+          },
+          "auto_restart_time":{
+            "english":"Auto Restart Time",
+            "translation":"Auto herstart tijd"
+          },
+          "brake_force":{
+            "english":"Brake Force",
+            "translation":"Remkracht"
+          },
+          "startup_power":{
+            "english":"Startup Power",
+            "translation":"Opstart geluid"
+          }
+        }
+      },
+      "name":{
+        "english":"ESC Tools",
+        "translation":"ESC Tools"
+      },
+      "searching":{
+        "english":"Searching",
+        "translation":"Zoeken"
+      },
+      "please_powercycle":{
+        "english":"Please power cycle the ESC...",
+        "translation":"Restart de esc..."
+      },
+      "unknown":{
+        "english":"UNKNOWN",
+        "translation":"Onbekend"
+      }
+    },
+    "copyprofiles":{
+      "profile_type_pid":{
+        "english":"PID",
+        "translation":"PID"
+      },
+      "help_p1":{
+        "english":"Copy PID profile or Rate profile from Source to Destination.",
+        "translation":"Kopieer PID profiel of Hoeksnelheid profiel van bron naar doel."
+      },
+      "dest_profile":{
+        "english":"Dest. Profile",
+        "translation":"Doel. Profiel"
+      },
+      "source_profile":{
+        "english":"Source Profile",
+        "translation":"Bron Profiel"
+      },
+      "name":{
+        "english":"Copy Profiles",
+        "translation":"Kopieer Profiel"
+      },
+      "profile_type":{
+        "english":"Profile Type",
+        "translation":"Profiel Type"
+      },
+      "profile_type_rate":{
+        "english":"Rate",
+        "translation":"Rate"
+      },
+      "msgbox_msg":{
+        "english":"Save current page to flight controller?",
+        "translation":"Sla huidige pagina op in de vliegcontroller?"
+      },
+      "help_p2":{
+        "english":"Choose the source and destinations and save to copy the profile.",
+        "translation":"Kies de bron en doel en klik op opslaan om het kopieren te starten.\n\n"
+      },
+      "msgbox_save":{
+        "english":"Save settings",
+        "translation":"Instellingen opslaan"
+      }
+    },
+    "profile_mainrotor":{
+      "collective_pitch_comp_short":{
+        "english":"Col. Pitch Compensation",
+        "translation":"Col. Pitch Compensation"
+      },
+      "help_p1":{
+        "english":"Collective Pitch Compensation: Increasing will compensate for the pitching motion caused by tail drag when climbing.",
+        "translation":"Collective Pitch Compensation: Verhogen compenseert voor de pitch beweging wat wordt veroorzaakt door staart drag bij het klimmen."
+      },
+      "help_p2":{
+        "english":"Cross Coupling Gain: Removes roll coupling when only elevator is applied.",
+        "translation":"Cross Coupling Gain: Verwijderd Roll koppeling wanneer alleen elevator wordt gebruikt."
+      },
+      "help_p4":{
+        "english":"Cross Coupling Freq. Limit: Frequency limit for the compensation, higher value will make the compensation action faster.",
+        "translation":"Cross Coupling Freq. Limit: Frequentie limiet voor de compensatie, Hogere waarde wil de compensatie actie sneller.\n\n"
+      },
+      "gain":{
+        "english":"Gain",
+        "translation":"Gain"
+      },
+      "name":{
+        "english":"Main Rotor",
+        "translation":"Hoofdrotor"
+      },
+      "cutoff":{
+        "english":"Cutoff",
+        "translation":"Cutoff"
+      },
+      "collective_pitch_comp":{
+        "english":"Collective Pitch Compensation",
+        "translation":"Collective Pitch Compensation"
+      },
+      "ratio":{
+        "english":"Ratio",
+        "translation":"Ratio"
+      },
+      "help_p3":{
+        "english":"Cross Coupling Ratio: Amount of compensation (pitch vs roll) to apply.",
+        "translation":"Cross Coupling Ratio: Hoeveelheid compensatie (pitch vs roll) toe te passen."
+      },
+      "cyclic_cross_coupling":{
+        "english":"Cyclic Cross coupling",
+        "translation":"Cyclic Cross coupling"
+      }
+    },
+    "profile_pidbandwidth":{
+      "yaw":{
+        "english":"Y",
+        "translation":"Y"
+      },
+      "roll":{
+        "english":"R",
+        "translation":"R"
+      },
+      "pitch":{
+        "english":"P",
+        "translation":"P"
+      },
+      "bterm_cutoff":{
+        "english":"B-term cut-off",
+        "translation":"B-term cut-off"
+      },
+      "dterm_cutoff":{
+        "english":"D-term cut-off",
+        "translation":"D-term cut-off"
+      },
+      "help_p3":{
+        "english":"B-term cutoff: B-term cutoff frequency in HZ.",
+        "translation":"B-term cutoff: B-term afsnijdingsfrequentie in HZ.\n\n"
+      },
+      "help_p2":{
+        "english":"D-term cutoff: D-term cutoff frequency in HZ.",
+        "translation":"D-term cutoff: D-term afsnijdingsfrequentie in HZ."
+      },
+      "help_p1":{
+        "english":"PID Bandwidth: Overall bandwidth in HZ used by the PID loop.",
+        "translation":"PID Bandwidth: Totale bandbreedte in Hz die door de PID-loop wordt gebruikt."
+      },
+      "name":{
+        "english":"PID Bandwidth",
+        "translation":"PID Bandbreedte"
+      }
+    },
+    "msp_exp":{
+      "help_p2":{
+        "english":"If you do not understand what you are doing, do not use it as bad things can happen.",
+        "translation":"Als je niet begrijpt wat je doet, gebruik het dan niet, want er kunnen rare dingen gebeuren."
+      },
+      "help_p1":{
+        "english":"This tool provides the ability to send a custom byte string to the flight controller. It is useful for developers when debugging values.",
+        "translation":"Deze tool biedt de mogelijkheid om een ​​aangepaste bytestring naar de flight controller te sturen. Het is handig voor ontwikkelaars bij het debuggen van waarden."
+      },
+      "name":{
+        "english":"MSP Expermental",
+        "translation":"MSP Experimenteel"
+      }
+    },
+    "servos":{
+      "help_tool_p2":{
+        "english":"Center: Adjust the center position of the servo.",
+        "translation":"Center: Pas de middenpositie van de servo aan."
+      },
+      "help_fields_scale_neg":{
+        "english":"Servo negative scaling.",
+        "translation":"Servo negatief schalen."
+      },
+      "tbl_yes":{
+        "english":"YES",
+        "translation":"YES"
+      },
+      "help_fields_rate":{
+        "english":"Servo PWM rate.",
+        "translation":"Servo PWM snelheid."
+      },
+      "cyc_pitch":{
+        "english":"CYC.PITCH",
+        "translation":"CYC. PITCH"
+      },
+      "scale_positive":{
+        "english":"Scale Positive",
+        "translation":"Schaal positief"
+      },
+      "help_fields_min":{
+        "english":"Servo negative travel limit.",
+        "translation":"Servo negatief limiet."
+      },
+      "disable_servo_override":{
+        "english":"Disable servo override",
+        "translation":"Servo overschrijven uitschakelen"
+      },
+      "help_fields_flags":{
+        "english":"0 = Default, 1=Reverse, 2 = Geo Correction, 3 = Reverse + Geo Correction",
+        "translation":"0 = Default, 1=Reverse, 2 = Geo Correction, 3 = Reverse + Geo Correction\n\n"
+      },
+      "center":{
+        "english":"Center",
+        "translation":"Center"
+      },
+      "help_fields_speed":{
+        "english":"Servo motion speed in milliseconds.",
+        "translation":"Servo bewegingssnelheid in milliseconds."
+      },
+      "geometry":{
+        "english":"Geometry",
+        "translation":"Geometrie"
+      },
+      "help_default_p1":{
+        "english":"Please select the servo you would like to configure from the list below.",
+        "translation":"Selecteer de servo die u wilt configureren uit de onderstaande lijst."
+      },
+      "speed":{
+        "english":"Speed",
+        "translation":"Snelheid"
+      },
+      "scale_negative":{
+        "english":"Scale Negative",
+        "translation":"Schaal negatief"
+      },
+      "cyc_right":{
+        "english":"CYC.RIGHT",
+        "translation":"CYC. RIGHT"
+      },
+      "help_default_p2":{
+        "english":"Primary flight controls that use the rotorflight mixer will display in the section called 'mixer'.",
+        "translation":"Primaire vluchtbesturingen die gebruikmaken van de rotorflight-mixer worden weergegeven in het gedeelte 'mixer'."
+      },
+      "help_tool_p1":{
+        "english":"Override: [*] Enable override to allow real-time updates of servo center point.",
+        "translation":"Override: [*] Schakel override in om realtime veranderingen van het servo-middenpunt toe te staan."
+      },
+      "reverse":{
+        "english":"Reverse",
+        "translation":"Omgekeerd"
+      },
+      "cyc_left":{
+        "english":"CYC.LEFT",
+        "translation":"CYC. LEFT"
+      },
+      "help_fields_max":{
+        "english":"Servo positive travel limit.",
+        "translation":"Servo positief limiet."
+      },
+      "name":{
+        "english":"Servos",
+        "translation":"Servos"
+      },
+      "help_tool_p3":{
+        "english":"Minimum/Maximum: Adjust the end points of the selected servo.",
+        "translation":"Minimum/Maximum: Pas de eindpunten van de geselecteerde servo aan."
+      },
+      "help_tool_p5":{
+        "english":"Rate: The frequency the servo runs best at - check with manufacturer.",
+        "translation":"Rotatiesnelheid: Op welke frequentie de servo het beste werkt, kunt u navragen bij de fabrikant."
+      },
+      "servo_override":{
+        "english":"Servo Override",
+        "translation":"Servo Overschrijven"
+      },
+      "saving_data":{
+        "english":"Saving data...",
+        "translation":"Opslaan data..."
+      },
+      "tail":{
+        "english":"TAIL",
+        "translation":"TAIL"
+      },
+      "tbl_no":{
+        "english":"NO",
+        "translation":"NO"
+      },
+      "disable_servo_override_msg":{
+        "english":"Return control of the servos to the flight controller.",
+        "translation":"Geef de besturing van de servo's terug aan de vliegcontroller."
+      },
+      "saving":{
+        "english":"Saving",
+        "translation":"Opslaan"
+      },
+      "servo_prefix":{
+        "english":"SERVO ",
+        "translation":"SERVO "
+      },
+      "maximum":{
+        "english":"Maximum",
+        "translation":"Maximum"
+      },
+      "minimum":{
+        "english":"Minimum",
+        "translation":"Minimum"
+      },
+      "help_fields_scale_pos":{
+        "english":"Servo positive scaling.",
+        "translation":"Servo positief schalen."
+      },
+      "help_tool_p6":{
+        "english":"Speed: The speed the servo moves. Generally only used for the cyclic servos to help the swash move evenly. Optional - leave all at 0 if unsure.",
+        "translation":"Snelheid: De snelheid waarmee de servo beweegt. Wordt over het algemeen alleen gebruikt voor cyclische servo's om de swash gelijkmatig te laten bewegen. Optioneel - laat alles op 0 staan ​​als u het niet zeker weet."
+      },
+      "rate":{
+        "english":"Rate",
+        "translation":"PWM snelheid"
+      },
+      "help_tool_p4":{
+        "english":"Scale: Adjust the amount the servo moves for a given input.",
+        "translation":"Schaal: Pas de mate aan waarin de servo beweegt voor een bepaalde invoer."
+      },
+      "help_fields_mid":{
+        "english":"Servo center position pulse width.",
+        "translation":"Pulsbreedte van de servomiddenpositie."
+      },
+      "disabling_servo_override":{
+        "english":"Disabling servo override...",
+        "translation":"Servo overschrijven uitschakelen..."
+      },
+      "enable_servo_override_msg":{
+        "english":"Servo override allows you to 'trim' your servo center point in real time.",
+        "translation":"Servo overschrijven Hiermee kunt u het middelpunt van uw servo in realtime 'trimmen'."
+      },
+      "enable_servo_override":{
+        "english":"Enable servo override",
+        "translation":"Servo overschrijven inschakelen"
+      },
+      "enabling_servo_override":{
+        "english":"Enabling servo override...",
+        "translation":"Servo overschrijven inschakelen..."
+      },
+      "help_default_p3":{
+        "english":"Any other servos that are not controlled by the primary flight mixer will be displayed in the section called 'Other servos'.",
+        "translation":"Alle andere servo's die niet door de primaire vluchtmixer worden aangestuurd, worden weergegeven in het gedeelte 'Andere servos'."
+      }
+    },
+    "profile_pidcontroller":{
+      "help_p1":{
+        "english":"Error decay ground: PID decay to help prevent heli from tipping over when on the ground.",
+        "translation":"Error decay ground: PID-verval om te voorkomen dat de helikopter omvalt als hij op de grond staat."
+      },
+      "error_limit":{
+        "english":"Error limit",
+        "translation":"Error limit"
+      },
+      "name":{
+        "english":"PID Controller",
+        "translation":"PID Controller"
+      },
+      "error_rotation":{
+        "english":"Error rotation",
+        "translation":"Error rotation"
+      },
+      "help_p4":{
+        "english":"Error rotation: Allow errors to be shared between all axes.",
+        "translation":"Error rotation: Zorg ervoor dat fouten tussen alle assen worden gedeeld."
+      },
+      "hsi_offset_limit":{
+        "english":"HSI Offset limit",
+        "translation":"HSI Offset limit"
+      },
+      "yaw":{
+        "english":"Y",
+        "translation":"Y"
+      },
+      "help_p2":{
+        "english":"Error limit: Angle limit for I-term.",
+        "translation":"Error limit: Hoek limiet voor I-term."
+      },
+      "inflight_error_decay":{
+        "english":"Inflight Error Decay",
+        "translation":"Inflight Error Decay"
+      },
+      "cutoff_point":{
+        "english":"Cut-off point",
+        "translation":"Cut-off point"
+      },
+      "pitch":{
+        "english":"P",
+        "translation":"P"
+      },
+      "help_p5":{
+        "english":"I-term relax: Limit accumulation of I-term during fast movements - helps reduce bounce back after fast stick movements. Generally needs to be lower for large helis and can be higher for small helis. Best to only reduce as much as is needed for your flying style.",
+        "translation":"I-term relax: Beperk de ophoping van I-term tijdens snelle bewegingen - helpt de bounce back na snelle stickbewegingen te verminderen. Moet over het algemeen lager zijn voor grote heli's en kan hoger zijn voor kleine heli's. Het beste is om alleen zoveel te verminderen als nodig is voor uw vliegstijl.\n\n"
+      },
+      "limit":{
+        "english":"Limit",
+        "translation":"Limit"
+      },
+      "roll":{
+        "english":"R",
+        "translation":"R"
+      },
+      "help_p3":{
+        "english":"Offset limit: Angle limit for High Speed Integral (O-term).",
+        "translation":"Offset limit: Hoek limiet voor High Speed Integral (O-term)."
+      },
+      "time":{
+        "english":"Time",
+        "translation":"Time"
+      },
+      "iterm_relax":{
+        "english":"I-term relax",
+        "translation":"I-term relax"
+      },
+      "ground_error_decay":{
+        "english":"Ground Error Decay",
+        "translation":"Ground Error Decay"
+      }
+    },
+    "radio_config":{
+      "help_p1":{
+        "english":"Configure your radio settings. Stick center, arm, throttle hold, and throttle cut.",
+        "translation":"Configureer uw radio settings. Stick center, arm, throttle hold, en throttle cut.\n"
+      },
+      "cyclic":{
+        "english":"Cyclic",
+        "translation":"Cyclic"
+      },
+      "max_throttle":{
+        "english":"Max",
+        "translation":"Max"
+      },
+      "yaw_deadband":{
+        "english":"Yaw",
+        "translation":"Yaw"
+      },
+      "stick":{
+        "english":"Stick",
+        "translation":"Stick"
+      },
+      "center":{
+        "english":"Center",
+        "translation":"Center"
+      },
+      "deflection":{
+        "english":"Deflection",
+        "translation":"Deflection"
+      },
+      "name":{
+        "english":"Radio Config",
+        "translation":"Radio Config"
+      },
+      "deadband":{
+        "english":"Deadband",
+        "translation":"Deadband"
+      },
+      "min_throttle":{
+        "english":"Min",
+        "translation":"Min"
+      },
+      "arming":{
+        "english":"Arming",
+        "translation":"Arming"
+      },
+      "throttle":{
+        "english":"Throttle",
+        "translation":"Throttle"
+      }
+    },
+    "status":{
+      "arming_disable_flag_2":{
+        "english":"RX Fail Safe",
+        "translation":"RX Fail Safe"
+      },
+      "arming_flags":{
+        "english":"Arming Flags",
+        "translation":"Arming Flags"
+      },
+      "erase":{
+        "english":"Erase",
+        "translation":"Wissen"
+      },
+      "arming_disable_flag_8":{
+        "english":"Angle",
+        "translation":"Angle"
+      },
+      "arming_disable_flag_22":{
+        "english":"DSHOT Bitbang",
+        "translation":"DSHOT Bitbang"
+      },
+      "arming_disable_flag_9":{
+        "english":"Boot Grace Time",
+        "translation":"Boot Grace Time"
+      },
+      "arming_disable_flag_4":{
+        "english":"Box Fail Safe",
+        "translation":"Box Fail Safe"
+      },
+      "arming_disable_flag_15":{
+        "english":"BST",
+        "translation":"BST"
+      },
+      "megabyte":{
+        "english":"MB",
+        "translation":"MB"
+      },
+      "unsupported":{
+        "english":"Unsupported",
+        "translation":"Niet ondersteund"
+      },
+      "arming_disable_flag_17":{
+        "english":"Paralyze",
+        "translation":"Paralyze"
+      },
+      "arming_disable_flag_3":{
+        "english":"Bad RX Recovery",
+        "translation":"Bad RX Recovery"
+      },
+      "help_p1":{
+        "english":"Use this page to view your current flight controller status. This can be useful when determining why your heli will not arm.",
+        "translation":"Gebruik deze pagina om uw huidige flight controller status te bekijken. Dit kan handig zijn om te bepalen waarom heli niet wilt armen"
+      },
+      "erasing":{
+        "english":"Erasing",
+        "translation":"Wissen"
+      },
+      "erasing_dataflash":{
+        "english":"Erasing dataflash...",
+        "translation":"Wissen dataflash..."
+      },
+      "arming_disable_flag_25":{
+        "english":"Arm Switch",
+        "translation":"Arm Schakelaar"
+      },
+      "arming_disable_flag_5":{
+        "english":"Governor",
+        "translation":"Governor"
+      },
+      "name":{
+        "english":"Status",
+        "translation":"Status"
+      },
+      "arming_disable_flag_18":{
+        "english":"GPS",
+        "translation":"GPS"
+      },
+      "arming_disable_flag_21":{
+        "english":"Reboot Required",
+        "translation":"Herstart vereist"
+      },
+      "arming_disable_flag_10":{
+        "english":"No Pre Arm",
+        "translation":"No Pre Arm"
+      },
+      "ok":{
+        "english":"OK",
+        "translation":"OK"
+      },
+      "dataflash_free_space":{
+        "english":"Dataflash Free Space",
+        "translation":"Dataflash vrije ruimte"
+      },
+      "arming_disable_flag_13":{
+        "english":"CLI",
+        "translation":"CLI"
+      },
+      "arming_disable_flag_19":{
+        "english":"Resc",
+        "translation":"Resc"
+      },
+      "help_p2":{
+        "english":"To erase the dataflash for more log file storage, press the button on the menu denoted by a '*'.",
+        "translation":"Om de dataflash te wissen voor meer opslag van logbestanden, drukt u op de knop in het menu die wordt aangegeven met een '*'.\n\n"
+      },
+      "cpu_load":{
+        "english":"CPU Load",
+        "translation":"CPU belasting"
+      },
+      "arming_disable_flag_24":{
+        "english":"Motor Protocol",
+        "translation":"Motor Protocol"
+      },
+      "arming_disable_flag_12":{
+        "english":"Calibrating",
+        "translation":"Calibreren"
+      },
+      "arming_disable_flag_7":{
+        "english":"Throttle",
+        "translation":"Throttle"
+      },
+      "arming_disable_flag_1":{
+        "english":"Fail Safe",
+        "translation":"Fail Safe"
+      },
+      "arming_disable_flag_0":{
+        "english":"No Gyro",
+        "translation":"No Gyro"
+      },
+      "real_time_load":{
+        "english":"Real-time Load",
+        "translation":"Real-time belasting"
+      },
+      "arming_disable_flag_11":{
+        "english":"Load",
+        "translation":"Belasting"
+      },
+      "erase_prompt":{
+        "english":"Would you like to erase the dataflash?",
+        "translation":"Wilt u de dataflash wissen?"
+      },
+      "arming_disable_flag_23":{
+        "english":"Acc Calibration",
+        "translation":"Acc Calibratie"
+      },
+      "arming_disable_flag_16":{
+        "english":"MSP",
+        "translation":"MSP"
+      },
+      "arming_disable_flag_14":{
+        "english":"CMS Menu",
+        "translation":"CMS Menu"
+      },
+      "arming_disable_flag_20":{
+        "english":"RPM Filter",
+        "translation":"RPM Filter"
+      }
+    },
+    "profile_governor":{
+      "help_p6":{
+        "english":"Tail Torque Assist: For motorized tails. Gain and limit of headspeed increase when using main rotor torque for yaw assist.",
+        "translation":"Tail Torque Assist: Voor gemotoriseerde staart. Gains en minimale rotortoerental nemen toe voorhoofdrotorkoppel voor yaw-assistentie./n"
+      },
+      "help_p1":{
+        "english":"Full headspeed: Headspeed target when at 100% throttle input.",
+        "translation":"Max rotortoerental: Rotortoerental doel bij 100% throttle"
+      },
+      "max_throttle":{
+        "english":"Max throttle",
+        "translation":"Max throttle"
+      },
+      "p":{
+        "english":"P",
+        "translation":"P"
+      },
+      "col":{
+        "english":"Col",
+        "translation":"Col"
+      },
+      "gain":{
+        "english":"PID master gain",
+        "translation":"PID master gain"
+      },
+      "name":{
+        "english":"Governor",
+        "translation":"Governor"
+      },
+      "min_throttle":{
+        "english":"Min throttle",
+        "translation":"Min throttle"
+      },
+      "tta_limit":{
+        "english":"Limit",
+        "translation":"Limit"
+      },
+      "d":{
+        "english":"D",
+        "translation":"D"
+      },
+      "help_p2":{
+        "english":"PID master gain: How hard the governor works to hold the RPM.",
+        "translation":"PID master gain: Hoe hard de governor werkt om de RPM in stand te houden."
+      },
+      "f":{
+        "english":"F",
+        "translation":"F"
+      },
+      "precomp":{
+        "english":"Precomp",
+        "translation":"Precomp"
+      },
+      "gains":{
+        "english":"Gains",
+        "translation":"Gains"
+      },
+      "help_p4":{
+        "english":"Precomp: Governor precomp gain for yaw, cyclic, and collective inputs.",
+        "translation":"Precomp: Governor precomp gain voor yaw, cyclic, en collective inputs."
+      },
+      "i":{
+        "english":"I",
+        "translation":"I"
+      },
+      "cyc":{
+        "english":"Cyc",
+        "translation":"Cyc"
+      },
+      "disabled_message":{
+        "english":"Rotorflight governor is not enabled",
+        "translation":"Rotorflight governor is niet aangezet"
+      },
+      "yaw":{
+        "english":"Yaw",
+        "translation":"Yaw"
+      },
+      "help_p5":{
+        "english":"Max throttle: The maximum throttle % the governor is allowed to use.",
+        "translation":"Max throttle: Het maximale throttle % de governor mag gebruiken."
+      },
+      "help_p3":{
+        "english":"Gains: Fine tuning of the governor.",
+        "translation":"Gains: Fijntuning van de governor."
+      },
+      "tail_torque_assist":{
+        "english":"Tail Torque Assist",
+        "translation":"Tail Torque Assist"
+      },
+      "full_headspeed":{
+        "english":"Full headspeed",
+        "translation":"Max rotortoerental"
+      },
+      "tta_gain":{
+        "english":"Gain",
+        "translation":"Gain"
+      }
+    },
+    "logs":{
+      "msg_no_logs_found":{
+        "english":"NO LOG FILES FOUND",
+        "translation":"Geen log bestand gevonden"
+      },
+      "help_logs_p1":{
+        "english":"Please select a log file from the list below.",
+        "translation":"Selecteer een logbestand uit onderstaande lijst."
+      },
+      "name":{
+        "english":"Logs",
+        "translation":"Logs"
+      },
+      "help_logs_tool_p1":{
+        "english":"Please use the slider to navigate the graph.",
+        "translation":"Gebruik de schuifbalk om door de grafiek te navigeren.\n"
+      },
+      "help_logs_p3":{
+        "english":"- arm status, voltage, headspeed, current, esc temperature",
+        "translation":"- arm status, voltage, headspeed, current, esc temperature"
+      },
+      "help_logs_p2":{
+        "english":"Note. To enable logging it is essential for you to have the following sensors enabled.",
+        "translation":"Let op. Om logging in te schakelen, is het essentieel dat u de volgende sensoren hebt ingeschakeld."
+      }
+    },
+    "sbusout":{
+      "servo":{
+        "english":"Servo",
+        "translation":"Servo"
+      },
+      "title":{
+        "english":"SBUS Output",
+        "translation":"SBUS Output"
+      },
+      "help_default_p2":{
+        "english":"- For RX channels or servos (wideband), use 1000, 2000 or 500,1000 for narrow band servos.",
+        "translation":"- Voor RX kanalen of servos (wideband), gebruik 1000, 2000 of 500,1000 voor narrow band servos."
+      },
+      "channel_page":{
+        "english":"Sbus out / CH",
+        "translation":"Sbus out / CH"
+      },
+      "save_prompt":{
+        "english":"Save current page to flight controller?",
+        "translation":"Sla huidige pagina op in de vliegcontroller?"
+      },
+      "ch_prefix":{
+        "english":"CH",
+        "translation":"CH"
+      },
+      "saving_data":{
+        "english":"Saving data...",
+        "translation":"Opslaan..."
+      },
+      "name":{
+        "english":"SBUS Out",
+        "translation":"SBUS Out"
+      },
+      "help_default_p4":{
+        "english":"- For motors, use 0, 1000.",
+        "translation":"- For motoren, gebruik 0, 1000."
+      },
+      "motor":{
+        "english":"Motor",
+        "translation":"Motor"
+      },
+      "ok":{
+        "english":"OK",
+        "translation":"OK"
+      },
+      "help_fields_min":{
+        "english":"The minimum pwm value to send.",
+        "translation":"De minimum pwm waarde welke gestuurd wordt."
+      },
+      "cancel":{
+        "english":"CANCEL",
+        "translation":"Afbreken"
+      },
+      "saving":{
+        "english":"Saving",
+        "translation":"Opslaan"
+      },
+      "help_default_p1":{
+        "english":"Configure advanced mixing and channel mapping if you have SBUS Out enabled on a serial port.",
+        "translation":"Configureer geavanceerde mixing en kanaal mapping als je SBUS uitgang aangezet hebt op een seriele poort."
+      },
+      "help_fields_source":{
+        "english":"Source id for the mix, counting from 0-15.",
+        "translation":"Source id voor de mix, optellend van 0-15."
+      },
+      "save_settings":{
+        "english":"Save settings",
+        "translation":"Instellingen opslaan"
+      },
+      "min":{
+        "english":"Min",
+        "translation":"Min"
+      },
+      "channel_prefix":{
+        "english":"CHANNEL ",
+        "translation":"CHANNEL "
+      },
+      "help_default_p5":{
+        "english":"- Or you can customize your own mapping.",
+        "translation":"- Of je kunt een eigen mapping gebruiken."
+      },
+      "source":{
+        "english":"Source",
+        "translation":"Source"
+      },
+      "help_fields_max":{
+        "english":"The maximum pwm value to send",
+        "translation":"De maximum pwm waarde welke gestuurd wordt.\n\n"
+      },
+      "type":{
+        "english":"Type",
+        "translation":"Type"
+      },
+      "max":{
+        "english":"Max",
+        "translation":"Max"
+      },
+      "mixer":{
+        "english":"Mixer",
+        "translation":"Mixer"
+      },
+      "receiver":{
+        "english":"Receiver",
+        "translation":"Receiver"
+      },
+      "help_default_p3":{
+        "english":"- For mixer rules, use -1000, 1000.",
+        "translation":"- Voor mixer rules, gebruik -1000, 1000."
+      }
+    },
+    "profile_tailrotor":{
+      "cw":{
+        "english":"CW",
+        "translation":"CW"
+      },
+      "help_p1":{
+        "english":"Yaw Stop Gain: Higher stop gain will make the tail stop more aggressively but may cause oscillations if too high. Adjust CW or CCW to make the yaw stops even.",
+        "translation":"Staart Stop Gain: Hogere stop gain zal de tail stop agressiever maken, maar kan oscillaties veroorzaken als deze te hoog is. Pas CW of CCW aan om de yaw stops gelijkmatiger te maken."
+      },
+      "gain":{
+        "english":"Gain",
+        "translation":"Gain"
+      },
+      "name":{
+        "english":"Tail Rotor",
+        "translation":"Staart Rotor"
+      },
+      "cyclic_ff_gain":{
+        "english":"Cyclic FF gain",
+        "translation":"Cyclic FF gain"
+      },
+      "decay":{
+        "english":"Decay",
+        "translation":"Decay"
+      },
+      "help_p4":{
+        "english":"Collective FF Gain: Tail precompensation for collective inputs.",
+        "translation":"Collective FF Gain: Tail precompensation voor collective inputs."
+      },
+      "inertia_precomp":{
+        "english":"Inertia Precomp",
+        "translation":"Inertia Precomp"
+      },
+      "collective_impulse_ff":{
+        "english":"Collective Impulse FF",
+        "translation":"Collective Impulse FF"
+      },
+      "yaw_stop_gain":{
+        "english":"Yaw stop gain",
+        "translation":"Staart stop gain"
+      },
+      "collective_ff_gain":{
+        "english":"Collective FF gain",
+        "translation":"Collective FF gain"
+      },
+      "ccw":{
+        "english":"CCW",
+        "translation":"CCW"
+      },
+      "cutoff":{
+        "english":"Cutoff",
+        "translation":"Cutoff"
+      },
+      "help_p3":{
+        "english":"Cyclic FF Gain: Tail precompensation for cyclic inputs.",
+        "translation":"Cyclic FF Gain: Tail precompensation voor cyclic inputs."
+      },
+      "precomp_cutoff":{
+        "english":"Precomp Cutoff",
+        "translation":"Precomp Cutoff"
+      },
+      "help_p2":{
+        "english":"Precomp Cutoff: Frequency limit for all yaw precompensation actions.",
+        "translation":"Precomp Cutoff: Frequentie limiet voor alle staart precompensatie acties."
+      },
+      "help_p5":{
+        "english":"Collective Impulse FF: Impulse tail precompensation for collective inputs. If you need extra tail precompensation at the beginning of collective input.",
+        "translation":"Collective Impuls FF: Impuls staart precompensatie voor collectieve inputs. Als u extra precompensatie nodig met begin van de klim.\n\n"
+      }
+    },
+    "profile_rescue":{
+      "help_p6":{
+        "english":"Gains: How hard to fight to keep heli level when engaging rescue mode.",
+        "translation":"Gains: Hoe hard de heli moet vechten om de heli horizontaal te houden als je rescue inschakelt?"
+      },
+      "rate":{
+        "english":"Rate",
+        "translation":"Rate"
+      },
+      "flip_upright":{
+        "english":"Flip to upright",
+        "translation":"Omkeren naar rechtop"
+      },
+      "pull_up":{
+        "english":"Pull-up",
+        "translation":"Omhoog"
+      },
+      "name":{
+        "english":"Rescue",
+        "translation":"Rescue"
+      },
+      "exit_time":{
+        "english":"Exit time",
+        "translation":"Exit tijd"
+      },
+      "help_p4":{
+        "english":"Hover: How much collective to maintain a steady hover.",
+        "translation":"Hover: Hoeveel collective nodig is voor stabiele hover."
+      },
+      "hover":{
+        "english":"Hover",
+        "translation":"Hover"
+      },
+      "mode_enable":{
+        "english":"Rescue mode enable",
+        "translation":"Rescue mode Aan"
+      },
+      "help_p2":{
+        "english":"Pull-up: How much collective and for how long to arrest the fall.",
+        "translation":"Omhoog: Hoeveel collective en voor hoelang."
+      },
+      "gains":{
+        "english":"Gains",
+        "translation":"Gains"
+      },
+      "level_gain":{
+        "english":"Level",
+        "translation":"Level"
+      },
+      "flip":{
+        "english":"Flip",
+        "translation":"Omkeren"
+      },
+      "help_p5":{
+        "english":"Flip: How long to wait before aborting because the flip did not work.",
+        "translation":"Flip: Hoe lang moet je wachten voordat rescue afgebroken wordt omdat de flip niet werkte?."
+      },
+      "accel":{
+        "english":"Accel",
+        "translation":"Accel"
+      },
+      "help_p7":{
+        "english":"Rate and Accel: Max rotation and acceleration rates when leveling during rescue.",
+        "translation":"Rate and Accel: Maximale rotatie- en acceleratiesnelheden bij het nivelleren tijdens een reddingsactie./n/n"
+      },
+      "fail_time":{
+        "english":"Fail time",
+        "translation":"Fail tijd"
+      },
+      "time":{
+        "english":"Time",
+        "translation":"Tijd"
+      },
+      "help_p3":{
+        "english":"Climb: How much collective to maintain a steady climb - and how long.",
+        "translation":"Klimmen: Hoeveel collective om continue te klimmen - en hoelang."
+      },
+      "climb":{
+        "english":"Climb",
+        "translation":"Klimmen"
+      },
+      "collective":{
+        "english":"Collective",
+        "translation":"Collective"
+      },
+      "help_p1":{
+        "english":"Flip to upright: Flip the heli upright when rescue is activated.",
+        "translation":"Omkeren naar rechtop: Keert de heli rechtop als rescue wordt geactiveerd."
+      }
+    },
+    "about":{
+      "help_p1":{
+        "english":"This page provides some useful information that you may be asked for when requesting support.",
+        "translation":"Op deze pagina vindt u nuttige informatie die u mogelijk wordt gevraagd wanneer u ondersteuning nodig heeft"
+      },
+      "ethos_version":{
+        "english":"Ethos Version",
+        "translation":"Ethos Versie"
+      },
+      "help_p2":{
+        "english":"For support, please first read the help pages on www.rotorflight.org",
+        "translation":"Voor ondersteuning, lees eerst de helppagina's op www.rotorflight.org\n\n"
+      },
+      "msgbox_credits":{
+        "english":"Credits",
+        "translation":"Credits"
+      },
+      "simulation":{
+        "english":"Simulation",
+        "translation":"Simulatie"
+      },
+      "license":{
+        "english":"You may copy, distribute, and modify the software as long as you track changes/dates in source files. Any modifications to or software including (via compiler) GPL-licensed code must also be made available under the GPL along with build & install instructions.",
+        "translation":"You may copy, distribute, and modify the software as long as you track changes/dates in source files. Any modifications to or software including (via compiler) GPL-licensed code must also be made available under the GPL along with build & install instructions."
+      },
+      "supported_versions":{
+        "english":"Supported MSP Versions",
+        "translation":"Ondersteunde MSP Versies"
+      },
+      "name":{
+        "english":"About",
+        "translation":"Over"
+      },
+      "version":{
+        "english":"Version",
+        "translation":"Versie"
+      },
+      "credits":{
+        "english":"Notable contributors to both the Rotorflight firmware and this software are: Petri Mattila, Egon Lubbers, Rob Thomson, Rob Gayle, Phil Kaighin, Robert Burrow, Keith Williams, Bertrand Songis, Venbs Zhou... and many more who have spent hours testing and providing feedback!",
+        "translation":"Bekende personen die aan de Rotorflight-firmware en deze software hebben bijgedragen zijn: Petri Mattila, Egon Lubbers, Rob Thomson, Rob Gayle, Phil Kaighin, Robert Burrow, Keith Williams, Bertrand Songis, Venbs Zhou... en nog veel meer mensen die urenlang hebben getest en feedback hebben gegeven!"
+      },
+      "msp_transport":{
+        "english":"MSP Transport",
+        "translation":"MSP Transport"
+      },
+      "msp_version":{
+        "english":"MSP Version",
+        "translation":"MSP Versie"
+      },
+      "opener":{
+        "english":"Rotorflight is an open source project. Contribution from other like minded people, keen to assist in making this software even better, is welcomed and encouraged. You do not have to be a hardcore programmer to help.",
+        "translation":"Rotorflight is een open source project. Bijdragen van andere mensen, die graag willen helpen deze software nog beter te maken, zijn welkom en worden aangemoedigd. Je hoeft geen hardcore programmeur te zijn om te helpen."
+      }
+    },
+    "profile_autolevel":{
+      "help_p1":{
+        "english":"Acro Trainer: How aggressively the heli tilts back to level when flying in Acro Trainer Mode.",
+        "translation":"Acro Trainer: Hoe agressief de heli terugkantelt naar een horizontale positie tijdens het vliegen in de Acro Trainer-modus."
+      },
+      "horizon_mode":{
+        "english":"Horizon mode",
+        "translation":"Horizon mode"
+      },
+      "acro_trainer":{
+        "english":"Acro trainer",
+        "translation":"Acro trainer"
+      },
+      "gain":{
+        "english":"Gain",
+        "translation":"Gain"
+      },
+      "name":{
+        "english":"Autolevel",
+        "translation":"Autolevel"
+      },
+      "max":{
+        "english":"Max",
+        "translation":"Max"
+      },
+      "help_p2":{
+        "english":"Angle Mode: How aggressively the heli tilts back to level when flying in Angle Mode.",
+        "translation":"Angle Mode: Hoe agressief de heli terug kantelt naar een horizontaal wanneer  in de angled mode gevlogen word."
+      },
+      "angle_mode":{
+        "english":"Angle mode",
+        "translation":"Angle mode"
+      },
+      "help_p3":{
+        "english":"Horizon Mode: How aggressively the heli tilts back to level when flying in Horizon Mode.",
+        "translation":"Horizon Mode: Hoe agressief de heli terug kantelt naar horizontaal tijdens het vliegen in de Horizon modus.\n\n"
+      }
+    },
+    "rates":{
+      "roll":{
+        "english":"Roll",
+        "translation":"Roll"
+      },
+      "help_table_5_p2":{
+        "english":"Max Rate: Maximum rotation rate at full stick deflection in degrees per second.",
+        "translation":"Max Rate: Maximale rotatiesnelheid bij volledige stickuitslag in graden per seconde."
+      },
+      "help_table_2_p2":{
+        "english":"Acro+: Increases the maximum rotation rate while reducing sensitivity around half stick.",
+        "translation":"Acro+: Verhoogt de maximale rotatiesnelheid terwijl de gevoeligheid met ongeveer de helft wordt verlaagd."
+      },
+      "help_table_1_p2":{
+        "english":"SuperRate: Increases maximum rotation rate while reducing sensitivity around half stick.",
+        "translation":"SuperRate: Verhoogt de maximale rotatiesnelheid en vermindert de gevoeligheid tot ongeveer de helft van de stick."
+      },
+      "center_sensitivity":{
+        "english":"Cntr. Sens.",
+        "translation":"Cntr. Sens."
+      },
+      "help_table_1_p1":{
+        "english":"RC Rate: Maximum rotation rate at full stick deflection.",
+        "translation":"RC Rate: Maximale rotatie rate met volledige stick input."
+      },
+      "quick":{
+        "english":"QUICK",
+        "translation":"QUICK"
+      },
+      "help_table_5_p3":{
+        "english":"Expo: Reduces sensitivity near the stick's center where fine controls are needed.",
+        "translation":"Expo: Vermindert de gevoeligheid in het midden van de stick, waar nauwkeurige bediening nodig is.\n\n"
+      },
+      "kiss":{
+        "english":"KISS",
+        "translation":"KISS"
+      },
+      "help_table_4_p3":{
+        "english":"Expo: Reduces sensitivity near the stick's center where fine controls are needed.",
+        "translation":"Expo: Vermindert de gevoeligheid in het midden van de stick, waar nauwkeurige bediening nodig is."
+      },
+      "help_table_0_p1":{
+        "english":"All values are set to zero because no RATE TABLE is in use.",
+        "translation":"Alle waarden zijn op nul gezet omdat er geen RATE TABEL in gebruik is."
+      },
+      "help_table_2_p3":{
+        "english":"Expo: Reduces sensitivity near the stick's center where fine controls are needed.",
+        "translation":"Expo: Vermindert de gevoeligheid in het midden van de stick, waar nauwkeurige bediening nodig is."
+      },
+      "raceflight":{
+        "english":"RACEFLIGHT",
+        "translation":"RACEFLIGHT"
+      },
+      "rate":{
+        "english":"Rate",
+        "translation":"Rate"
+      },
+      "actual":{
+        "english":"ACTUAL",
+        "translation":"ACTUAL"
+      },
+      "help_table_4_p1":{
+        "english":"Center Sensitivity: Use to reduce sensitivity around center stick. Set Center Sensitivity to the same as Max Rate for a linear response. A lower number than Max Rate will reduce sensitivity around center stick. Note that higher than Max Rate will increase the Max Rate - not recommended as it causes issues in the Blackbox log.",
+        "translation":"Center Sensitivity: Gebruik om de gevoeligheid rond de center stick te verminderen. Stel Center Sensitivity in op hetzelfde als Max Rate voor een lineaire respons. Een lager getal dan Max Rate zal de gevoeligheid rond de center stick verminderen. Let op dat hoger dan Max Rate de Max Rate zal verhogen - niet aanbevolen omdat het problemen veroorzaakt in het Blackbox-logboek."
+      },
+      "help_table_3_p2":{
+        "english":"Rate: Increases maximum rotation rate while reducing sensitivity around half stick.",
+        "translation":"Rate: Verhoogt de maximale rotatiesnelheid en vermindert de gevoeligheid tot ongeveer de helft van de stick."
+      },
+      "name":{
+        "english":"Rates",
+        "translation":"Rates"
+      },
+      "expo":{
+        "english":"Expo",
+        "translation":"Expo"
+      },
+      "help_table_4_p2":{
+        "english":"Max Rate: Maximum rotation rate at full stick deflection in degrees per second.",
+        "translation":"Max Rate: Maximale rotatiesnelheid bij volledige stickuitslag in graden per seconde."
+      },
+      "superrate":{
+        "english":"SuperRate",
+        "translation":"SuperRate"
+      },
+      "help_table_2_p1":{
+        "english":"Rate: Maximum rotation rate at full stick deflection in degrees per second.",
+        "translation":"Rate: Maximale rotatiesnelheid bij volledige stickuitslag in graden per seconde."
+      },
+      "yaw":{
+        "english":"Yaw",
+        "translation":"Yaw"
+      },
+      "help_table_1_p3":{
+        "english":"Expo: Reduces sensitivity near the stick's center where fine controls are needed.",
+        "translation":"Expo: Vermindert de gevoeligheid in het midden van de stick, waar nauwkeurige bediening nodig is."
+      },
+      "betaflight":{
+        "english":"BETAFLIGHT",
+        "translation":"BETAFLIGHT"
+      },
+      "acroplus":{
+        "english":"Acro+",
+        "translation":"Acro+"
+      },
+      "pitch":{
+        "english":"Pitch",
+        "translation":"Pitch"
+      },
+      "help_default_p1":{
+        "english":"Default: We keep this to make button appear for rates.",
+        "translation":"Default: We gebruiken dit zodat de knop voor de rates zichtbaar is."
+      },
+      "rc_curve":{
+        "english":"RC Curve",
+        "translation":"RC Curve"
+      },
+      "rc_rate":{
+        "english":"RC Rate",
+        "translation":"RC Rate"
+      },
+      "help_table_3_p3":{
+        "english":"RC Curve: Reduces sensitivity near the stick's center where fine controls are needed.",
+        "translation":"RC Curve: Vermindert de gevoeligheid in het midden van de stick, waar nauwkeurige bediening nodig is."
+      },
+      "collective":{
+        "english":"Col",
+        "translation":"Col"
+      },
+      "help_table_5_p1":{
+        "english":"RC Rate: Use to reduce sensitivity around center stick. RC Rate set to one half of the Max Rate is linear. A lower number will reduce sensitivity around center stick. Higher than one half of the Max Rate will also increase the Max Rate.",
+        "translation":"RC Rate: Gebruik om de gevoeligheid rond de center stick te verminderen. RC Rate ingesteld op de helft van de Max Rate is lineair. Een lager getal zal de gevoeligheid rond de center stick verminderen. Hoger dan de helft van de Max Rate zal ook de Max Rate verhogen."
+      },
+      "max_rate":{
+        "english":"Max Rate",
+        "translation":"Max Rate"
+      },
+      "none":{
+        "english":"NONE",
+        "translation":"NONE"
+      },
+      "help_table_3_p1":{
+        "english":"RC Rate: Maximum rotation rate at full stick deflection.",
+        "translation":"RC Rate: Maximale rotatie bij volledige stick inut."
+      },
+      "help_default_p2":{
+        "english":"We will use the sub keys below.",
+        "translation":"We gebruiken de onderstaande subsleutels."
+      }
+    },
+    "profile_select":{
+      "cancel":{
+        "english":"CANCEL",
+        "translation":"Afbreken"
+      },
+      "help_p1":{
+        "english":"Set the current flight profile or rate profile you would like to use.",
+        "translation":"Stel het huidige pid profiel of rateprofiel in dat u wilt gebruiken."
+      },
+      "save_prompt":{
+        "english":"Save current page to flight controller?",
+        "translation":"Sla huidige pagina op in de vliegcontroller?"
+      },
+      "save_settings":{
+        "english":"Save settings",
+        "translation":"Instellingen opslaan"
+      },
+      "rate_profile":{
+        "english":"Rate Profile",
+        "translation":"Rate Profiel"
+      },
+      "name":{
+        "english":"Select Profile",
+        "translation":"Selecteer profiel"
+      },
+      "help_p2":{
+        "english":"If you use a switch on your radio to change flight or rate modes, this will override this choice as soon as you toggle the switch.",
+        "translation":"Als u een schakelaar op uw radio gebruikt om de pid- of ratemodus te wijzigen, wordt deze keuze genegeerd zodra u de schakelaar omzet.\n"
+      },
+      "ok":{
+        "english":"OK",
+        "translation":"OK"
+      },
+      "pid_profile":{
+        "english":"PID profile",
+        "translation":"PID profiel"
+      }
+    },
+    "filters":{
+      "rpm_filter":{
+        "english":"RPM filter",
+        "translation":"RPM filter"
+      },
+      "help_p1":{
+        "english":"Typically you would not edit this page without checking your Blackbox logs!",
+        "translation":"Normaal gesproken zou u deze pagina niet bewerken zonder eerst uw Blackbox log te controleren!"
+      },
+      "notch_max_hz":{
+        "english":"Max",
+        "translation":"Max"
+      },
+      "min_cutoff":{
+        "english":"Min cutoff",
+        "translation":"Min cutoff"
+      },
+      "lowpass_1":{
+        "english":"Lowpass 1",
+        "translation":"Lowpass 1"
+      },
+      "name":{
+        "english":"Filters",
+        "translation":"Filters"
+      },
+      "rpm_preset":{
+        "english":"Type",
+        "translation":"Type"
+      },
+      "notch_1":{
+        "english":"Notch 1",
+        "translation":"Notch 1"
+      },
+      "help_p4":{
+        "english":"Dynamic Notch Filters: Automatically creates notch filters within the min and max frequency range.",
+        "translation":"Dynamic Notch Filters: Maakt automatisch notchfilters aan binnen het minimale en maximale frequentiebereik.\n\n"
+      },
+      "dyn_notch":{
+        "english":"Dynamic Filters",
+        "translation":"Dynamische Filters"
+      },
+      "filter_type":{
+        "english":"Filter type",
+        "translation":"Filter type"
+      },
+      "help_p2":{
+        "english":"Gyro lowpass: Lowpass filters for the gyro signal. Typically left at default.",
+        "translation":"Gyro lowpass: Lowpassfilters voor het gyrosignaal. Meestal op standaard gelaten."
+      },
+      "lowpass_1_dyn":{
+        "english":"Lowpass 1 dyn.",
+        "translation":"Lowpass 1 dyn."
+      },
+      "max_cutoff":{
+        "english":"Max cutoff",
+        "translation":"Max cutoff"
+      },
+      "center":{
+        "english":"Center",
+        "translation":"Center"
+      },
+      "lowpass_2":{
+        "english":"Lowpass 2",
+        "translation":"Lowpass 2"
+      },
+      "notch_min_hz":{
+        "english":"Min",
+        "translation":"Min"
+      },
+      "rpm_min_hz":{
+        "english":"Min. Frequency",
+        "translation":"Min. Frequentie"
+      },
+      "notch_2":{
+        "english":"Notch 2",
+        "translation":"Notch 2"
+      },
+      "help_p3":{
+        "english":"Gyro notch filters: Use for filtering specific frequency ranges. Typically not needed in most helis.",
+        "translation":"Gyro notch filters: Gebruik voor het filteren van specifieke frequentiebereiken. Meestal niet nodig in de meeste heli's."
+      },
+      "cutoff":{
+        "english":"Cutoff",
+        "translation":"Cutoff"
+      },
+      "notch_q":{
+        "english":"Notch Q",
+        "translation":"Notch Q"
+      },
+      "notch_c":{
+        "english":"Notch Count",
+        "translation":"Notch aantal"
+      }
+    },
+    "battery":{
+      "full_cell_voltage":{
+        "english":"Full Cell Voltage",
+        "translation":"Volle Cell Spanning"
+      },
+      "min_cell_voltage":{
+        "english":"Min Cell Voltage",
+        "translation":"Min Cel Spanning"
+      },
+      "name":{
+        "english":"Battery",
+        "translation":"Batterij"
+      },
+      "battery_capacity":{
+        "english":"Battery Capacity",
+        "translation":"Batterij Capaciteit"
+      },
+      "max_cell_voltage":{
+        "english":"Max Cell Voltage",
+        "translation":"Max Cel Spanning"
+      },
+      "warn_cell_voltage":{
+        "english":"Warn Cell Voltage",
+        "translation":"Waarschuwing Cel Spanning"
+      },
+      "help_p1":{
+        "english":"The battery settings are used to configure the flight controller to monitor the battery voltage and provide warnings when the voltage drops below a certain level.",
+        "translation":"De batterij instellingen worden ingesteld zodat de vliegcontroller de batterij spanning kan monitoren en waarschuwingen kan geven als de spanning onder een bepaald niveau komt.\n\n"
+      },
+      "cell_count":{
+        "english":"Cell Count",
+        "translation":"Aantal cellen"
+      }
+    },
+    "validate_sensors":{
+      "msg_repair":{
+        "english":"Enable required sensors on flight controller?",
+        "translation":"Zet de benodigde sensoren aan in de vliegcontroller?"
+      },
+      "name":{
+        "english":"Sensors",
+        "translation":"Sensors"
+      },
+      "invalid":{
+        "english":"INVALID",
+        "translation":"INVALID"
+      },
+      "help_p2":{
+        "english":"Use this tool to ensure you are sending the correct sensors.",
+        "translation":"Met deze tool kunt u controleren of u de juiste sensoren verzendt."
+      },
+      "help_p1":{
+        "english":"This tool attempts to list all the sensors that you are not receiving in a concise list.",
+        "translation":"Deze tool probeert een beknopt overzicht te geven van alle sensoren die u niet ontvangt."
+      },
+      "ok":{
+        "english":"OK",
+        "translation":"OK"
+      },
+      "msg_repair_fin":{
+        "english":"The flight controller has been configured? You may need to perform a discover sensors to see the changes.",
+        "translation":"Is de vliegcontroller geconfigureerd? Het is waarschijnlijk benodigd om opnieuw 'Vind nieuwe sensoren' te gebruiken"
+      }
+    },
+    "trim":{
+      "collective_trim":{
+        "english":"Col. trim %",
+        "translation":"Col. trim %"
+      },
+      "help_p1":{
+        "english":"Link trims: Use to trim out small leveling issues in your swash plate. Typically only used if the swash links are non-adjustable.",
+        "translation":"Link trims: Gebruiken om kleine afwijkingen in uw swashplate bij te werken. Wordt doorgaans alleen gebruikt als de swashlinks niet verstelbaar zijn."
+      },
+      "mixer_override_enabling":{
+        "english":"Enabling mixer override...",
+        "translation":"Inschakelen mixer overschrijven..."
+      },
+      "enable_mixer_message":{
+        "english":"Set all servos to their configured center position. \r\n\r\nThis will result in all values on this page being saved when adjusting the servo trim.",
+        "translation":"Zet alle servo's in de geconfigureerde middenpositie. \r\n\r\nDit heeft tot gevolg dat alle waarden op deze pagina worden opgeslagen bij het aanpassen van de servo-trim."
+      },
+      "roll_trim":{
+        "english":"Roll trim %",
+        "translation":"Roll trim %"
+      },
+      "mixer_override":{
+        "english":"Mixer Override",
+        "translation":"Mixer Override"
+      },
+      "yaw_trim":{
+        "english":"Yaw. trim %",
+        "translation":"Yaw. trim %"
+      },
+      "pitch_trim":{
+        "english":"Pitch trim %",
+        "translation":"Pitch trim %"
+      },
+      "help_p2":{
+        "english":"Motorised tail: If using a motorised tail, use this to set the minimum idle speed and zero yaw.",
+        "translation":"Gemotoriseerde staart: Als u een gemotoriseerde staart gebruikt, kunt u hiermee het minimale stationair toerental en de nul yaw instellen.\n\n"
+      },
+      "name":{
+        "english":"Trim",
+        "translation":"Trim"
+      },
+      "enable_mixer_override":{
+        "english":"Enable mixer override",
+        "translation":"Schakel mixer overschrijven in"
+      },
+      "mixer_override_disabling":{
+        "english":"Disabling mixer override...",
+        "translation":"Uitschakelen mixer overschrijven..."
+      },
+      "disable_mixer_override":{
+        "english":"Disable mixer override",
+        "translation":"Schakel mixer overschrijven uit"
+      },
+      "disable_mixer_message":{
+        "english":"Return control of the servos to the flight controller.",
+        "translation":"Geef de besturing van de servo's terug aan de vliegcontroller."
+      },
+      "tail_motor_idle":{
+        "english":"Tail Motor idle  %",
+        "translation":"Tail Motor idle  %"
+      }
+    },
+    "governor":{
+      "help_p1":{
+        "english":"These parameters apply globally to the governor regardless of the profile in use.",
+        "translation":"Deze parameters zijn van toepassing op de governor, ongeacht het gebruikte profiel."
+      },
+      "spoolup_time":{
+        "english":"Spoolup time",
+        "translation":"Optoer tijd"
+      },
+      "spoolup_min_throttle":{
+        "english":"Spoolup min throttle%",
+        "translation":"Min opstart throttle%"
+      },
+      "mode":{
+        "english":"Mode",
+        "translation":"Mode"
+      },
+      "recovery_time":{
+        "english":"Recovery time",
+        "translation":"Herstel tijd"
+      },
+      "help_p2":{
+        "english":"Each parameter is simply a time value in seconds for each governor action.",
+        "translation":"Elke parameter is een tijdswaarde in seconden voor elke governor actie.\n\n"
+      },
+      "name":{
+        "english":"Governor",
+        "translation":"Governor"
+      },
+      "startup_time":{
+        "english":"Startup time",
+        "translation":"Opstarttijd"
+      },
+      "tracking_time":{
+        "english":"Tracking time",
+        "translation":"Tracking time"
+      },
+      "handover_throttle":{
+        "english":"Handover throttle%",
+        "translation":"Overdracht throttle%"
+      }
+    },
+    "accelerometer":{
+      "name":{
+        "english":"Accelerometer",
+        "translation":"Versnellingsmeter"
+      },
+      "msg_calibrate":{
+        "english":"Calibrate the accelerometer?",
+        "translation":"Kalibreer de versnellingsmeter?"
+      },
+      "pitch":{
+        "english":"Pitch",
+        "translation":"Pitch"
+      },
+      "roll":{
+        "english":"Roll",
+        "translation":"Roll"
+      },
+      "help_p1":{
+        "english":"The accelerometer is used to measure the angle of the flight controller in relation to the horizon. This data is used to stabilize the aircraft and provide self-leveling functionality.",
+        "translation":"De accelerometer wordt gebruikt om de hoek van de flight controller te meten ten opzichte van de horizon. Deze data wordt gebruikt om het vliegtuig te stabiliseren en zelf leveling functionaliteit te bieden."
+      }
+    },
+    "msp_speed":{
+      "seconds_30":{
+        "english":"  30S  ",
+        "translation":"  30S  "
+      },
+      "timeouts":{
+        "english":"Timeouts",
+        "translation":"Timeouts"
+      },
+      "seconds_120":{
+        "english":"  120S  ",
+        "translation":"  120S  "
+      },
+      "testing":{
+        "english":"Testing",
+        "translation":"Testing"
+      },
+      "seconds_300":{
+        "english":"  300S  ",
+        "translation":"  300S  "
+      },
+      "rf_protocol":{
+        "english":"RF protocol",
+        "translation":"RF protocol"
+      },
+      "name":{
+        "english":"MSP Speed",
+        "translation":"MSP Speed"
+      },
+      "start":{
+        "english":"Start",
+        "translation":"Start"
+      },
+      "start_prompt":{
+        "english":"Would you like to start the test? Choose the test run time below.",
+        "translation":"Would you like to start the test? Choose the test run time below."
+      },
+      "successful_queries":{
+        "english":"Successful queries",
+        "translation":"Successful queries"
+      },
+      "min_query_time":{
+        "english":"Minimum query time",
+        "translation":"Minimum query time"
+      },
+      "max_query_time":{
+        "english":"Maximum query time",
+        "translation":"Maximum query time"
+      },
+      "test_length":{
+        "english":"Test length",
+        "translation":"Test length"
+      },
+      "avg_query_time":{
+        "english":"Average query time",
+        "translation":"Average query time"
+      },
+      "testing_performance":{
+        "english":"Testing MSP performance...",
+        "translation":"Testing MSP performance..."
+      },
+      "retries":{
+        "english":"Retries",
+        "translation":"Retries"
+      },
+      "memory_free":{
+        "english":"Memory free",
+        "translation":"Memory free"
+      },
+      "total_queries":{
+        "english":"Total queries",
+        "translation":"Total queries"
+      },
+      "checksum_errors":{
+        "english":"Checksum errors",
+        "translation":"Checksum errors"
+      },
+      "seconds_600":{
+        "english":"  600S  ",
+        "translation":"  600S  "
+      },
+      "help_p1":{
+        "english":"This tool attempts to determine the quality of your MSP data link by performing as many large MSP queries within 30 seconds as possible.",
+        "translation":"Deze tool probeert de kwaliteit van uw MSP-datalink te bepalen door binnen 30 seconden zoveel mogelijk grote MSP-query's uit te voeren.\n\n"
+      }
+    },
+    "rates_advanced":{
+      "roll":{
+        "english":"Roll",
+        "translation":"Roll"
+      },
+      "dyn_deadband_filter":{
+        "english":"Dynamic deadband filter",
+        "translation":"DynDodeFilter"
+      },
+      "yaw_dynamics":{
+        "english":"Yaw dynamics",
+        "translation":"Yaw dynamics"
+      },
+      "pitch_boost":{
+        "english":"Pitch boost",
+        "translation":"Pitch boost"
+      },
+      "yaw_dynamic_ceiling_gain":{
+        "english":"Ceiling",
+        "translation":"Plafond"
+      },
+      "setpoint_boost_cutoff":{
+        "english":"Setpoint boost cutoff",
+        "translation":"SetpAfkap"
+      },
+      "msg_reset_to_defaults":{
+        "english":"Rate type changed. Values will be reset to defaults.",
+        "translation":"Rate type changed. Values will be reset to defaults."
+      },
+      "dyn_deadband_gain":{
+        "english":"Dynamic deadband gain",
+        "translation":"DynDodeVerst"
+      },
+      "yaw_dynamic_deadband_filter":{
+        "english":"Filter",
+        "translation":"Filter"
+      },
+      "dynamics":{
+        "english":"Dynamics",
+        "translation":"Dynamics"
+      },
+      "cutoff":{
+        "english":"Cutoff",
+        "translation":"Drempel"
+      },
+      "dyn_ceiling_gain":{
+        "english":"Dynamic ceiling gain",
+        "translation":"DynPlafVerst"
+      },
+      "collective_boost":{
+        "english":"Collective boost",
+        "translation":"Collective boost"
+      },
+      "help_p1":{
+        "english":"Rates type: Choose the rate type you prefer flying with. Raceflight and Actual are the most straightforward.",
+        "translation":"Rates type: Choose the rate type you prefer flying with. Raceflight and Actual are the most straightforward."
+      },
+      "setpoint_boost_gain":{
+        "english":"Setpoint boost gain",
+        "translation":"SetpVersterk"
+      },
+      "col":{
+        "english":"Col",
+        "translation":"Kol"
+      },
+      "rates_type":{
+        "english":"Rates Type",
+        "translation":"Rates Type"
+      },
+      "gain":{
+        "english":"Gain",
+        "translation":"Versterk."
+      },
+      "name":{
+        "english":"Rates",
+        "translation":"Rates"
+      },
+      "help_rate_table":{
+        "english":"Please select the rate you would like to use. Saving will apply the choice to the active profile.",
+        "translation":"Selecteer het tarief dat u wilt gebruiken. Opslaan zal de keuze toepassen op het actieve profiel."
+      },
+      "collective_dynamics":{
+        "english":"Collective dynamics",
+        "translation":"Collective dynamics"
+      },
+      "yaw_dynamic_deadband_gain":{
+        "english":"D. Band",
+        "translation":"Dode band"
+      },
+      "pitch_dynamics":{
+        "english":"Pitch dynamics",
+        "translation":"Pitch dynamics"
+      },
+      "pitch":{
+        "english":"Pitch",
+        "translation":"Nick"
+      },
+      "yaw_boost":{
+        "english":"Yaw boost",
+        "translation":"Yaw boost"
+      },
+      "roll_boost":{
+        "english":"Roll boost",
+        "translation":"Rolboost"
+      },
+      "help_p2":{
+        "english":"Dynamics: Applied regardless of rates type. Typically left on defaults but can be adjusted to smooth heli movements, like with scale helis.",
+        "translation":"Dynamics: Applied regardless of rates type. Typically left on defaults but can be adjusted to smooth heli movements, like with scale helis.\n\n"
+      },
+      "acc_limit":{
+        "english":"Accelerometer Limit",
+        "translation":"VersnGrens"
+      },
+      "accel_limit":{
+        "english":"Accel",
+        "translation":"Accel"
+      },
+      "response_time":{
+        "english":"Response Time",
+        "translation":"ReactieTijd"
+      },
+      "yaw":{
+        "english":"Yaw",
+        "translation":"Gier"
+      },
+      "roll_dynamics":{
+        "english":"Roll dynamics",
+        "translation":"Roll dynamics"
+      },
+      "rate_table":{
+        "english":"Rate Table",
+        "translation":"Tarieftabel"
+      }
+    },
+    "pids":{
+      "yaw":{
+        "english":"Yaw",
+        "translation":"Yaw"
+      },
+      "help_p1":{
+        "english":"FeedForward (Roll/Pitch): Start at 70, increase until stops are sharp with no drift. Keep roll and pitch equal.",
+        "translation":"FeedForward (Roll/Pitch): Begin bij 70, verhoog tot stops scherp zijn zonder drift. Houd roll en pitch gelijk."
+      },
+      "f":{
+        "english":"F",
+        "translation":"F"
+      },
+      "o":{
+        "english":"O",
+        "translation":"O"
+      },
+      "p":{
+        "english":"P",
+        "translation":"P"
+      },
+      "help_p2":{
+        "english":"I Gain (Roll/Pitch): Raise gradually for stable piro pitch pumps. Too high causes wobbles; match roll/pitch values.",
+        "translation":"I Gain (Roll/Pitch): Verhoog geleidelijk voor stabiele piro-pitch pumps. Te hoog veroorzaakt wiebelen; match rol-/pitchwaarden."
+      },
+      "b":{
+        "english":"B",
+        "translation":"B"
+      },
+      "d":{
+        "english":"D",
+        "translation":"D"
+      },
+      "help_p4":{
+        "english":"Tail Stop Gain (CW/CCW): Adjust separately for clean, bounce-free stops in both directions.",
+        "translation":"Tail Stop Gain (CW/CCW): Afzonderlijk instelbaar voor een zuivere stop in beide richtingen."
+      },
+      "name":{
+        "english":"PIDs",
+        "translation":"PIDs"
+      },
+      "pitch":{
+        "english":"Pitch",
+        "translation":"Pitch"
+      },
+      "help_p3":{
+        "english":"Tail P/I/D Gains: Increase P until slight wobble in funnels, then back off slightly. Raise I until tail holds firm in hard moves (too high causes slow wag). Adjust D for smooth stops—higher for slow servos, lower for fast ones.",
+        "translation":"Tail P/I/D Gains: Verhoog P tot een lichte wag in hurricanes, en ga dan iets terug. Verhoog I tot de staart locked-in is in harde bewegingen (te hoog veroorzaakt langzame wag). Pas D aan voor soepele stops: hoger voor langzame servo's, lager voor snelle."
+      },
+      "help_p5":{
+        "english":"Test & Adjust: Fly, observe, and fine-tune for best performance in real conditions.",
+        "translation":"Test & Adjust: Vlieg, observeer en optimaliseer voor de beste prestaties onder reële omstandigheden.\n\n"
+      },
+      "i":{
+        "english":"I",
+        "translation":"I"
+      },
+      "roll":{
+        "english":"Roll",
+        "translation":"Roll"
+      }
+    },
+    "mixer":{
+      "swash_pitch_limit":{
+        "english":"Total Pitch Limit",
+        "translation":"Total Pitch Limit"
+      },
+      "collective_tilt_correction_neg":{
+        "english":"Negative",
+        "translation":"Negative"
+      },
+      "help_p1":{
+        "english":"Adust swash plate geometry, phase angles, and limits.",
+        "translation":"Adust swash plate geometry, phase angles, and limits."
+      },
+      "collective_tilt_correction_pos":{
+        "english":"Positive",
+        "translation":"Positive"
+      },
+      "collective_tilt_correction":{
+        "english":"Collective Tilt Correction",
+        "translation":"Collective Tilt Correction"
+      },
+      "swash_tta_precomp":{
+        "english":"TTA Precomp",
+        "translation":"TTA Precomp"
+      },
+      "geo_correction":{
+        "english":"Geo Correction",
+        "translation":"Geo Correction"
+      },
+      "name":{
+        "english":"Mixer",
+        "translation":"Mixer"
+      },
+      "swash_phase":{
+        "english":"Phase Angle",
+        "translation":"Phase Angle"
+      },
+      "tail_motor_idle":{
+        "english":"Tail Idle Thr%",
+        "translation":"Tail Idle Thr%"
+      }
+    },
+    "esc_motors":{
+      "help_p1":{
+        "english":"Configure the motor and speed controller features.",
+        "translation":"Motor en esc functies."
+      },
+      "motor_pole_count":{
+        "english":"Motor Pole Count",
+        "translation":"Motor Polen"
+      },
+      "main":{
+        "english":"Main",
+        "translation":"Main gear"
+      },
+      "max_throttle":{
+        "english":"100% Throttle PWM value",
+        "translation":"100% Throttle PWM waarde"
+      },
+      "voltage_correction":{
+        "english":"Voltage Correction",
+        "translation":"Spanning correctie"
+      },
+      "current_correction":{
+        "english":"Current Correction",
+        "translation":"Stroom correctie"
+      },
+      "front":{
+        "english":"Front",
+        "translation":"Voor"
+      },
+      "pinion":{
+        "english":"Pinion",
+        "translation":"Pinion"
+      },
+      "rear":{
+        "english":"Rear",
+        "translation":"Achter"
+      },
+      "name":{
+        "english":"ESC/Motors",
+        "translation":"ESC/Motor"
+      },
+      "main_motor_ratio":{
+        "english":"Main Motor Ratio",
+        "translation":"Main Ratio"
+      },
+      "consumption_correction":{
+        "english":"Consumption Correction",
+        "translation":"Verbruik correctie"
+      },
+      "min_throttle":{
+        "english":"0% Throttle PWM Value",
+        "translation":"0% Throttle PWM waarde"
+      },
+      "tail_motor_ratio":{
+        "english":"Tail Motor Ratio",
+        "translation":"Tail Ratio"
+      },
+      "mincommand":{
+        "english":"Motor Stop PWM Value",
+        "translation":"Motor Stop PWM waarde"
+      }
+    }
   },
-  "modules.servos.enabling_servo_override":{
-    "english":"Enabling servo override...",
-    "translation":"Servo overschrijven inschakelen..."
+  "menu_section_flight_tuning":{
+    "english":"Flight Tuning",
+    "translation":"Vlucht Tuning"
   },
-  "modules.esc_tools.mfg.hw5.advanced":{
-    "english":"Advanced",
-    "translation":"Geavanceerd"
-  },
-  "modules.rates.help_table_2_p2":{
-    "english":"Acro+: Increases the maximum rotation rate while reducing sensitivity around half stick.",
-    "translation":"Acro+: Verhoogt de maximale rotatiesnelheid terwijl de gevoeligheid met ongeveer de helft wordt verlaagd."
-  },
-  "modules.esc_tools.mfg.hw5.active_freewheel":{
-    "english":"Active Freewheel",
-    "translation":"Active Freewheel"
-  },
-  "modules.status.erasing_dataflash":{
-    "english":"Erasing dataflash...",
-    "translation":"Wissen dataflash..."
-  },
-  "modules.esc_tools.mfg.hw5.limits":{
-    "english":"Limits",
-    "translation":"Limieten"
-  },
-  "modules.sbusout.ok":{
-    "english":"OK",
-    "translation":"OK"
-  },
-  "modules.governor.spoolup_min_throttle":{
-    "english":"Spoolup min throttle%",
-    "translation":"Min opstart throttle%"
-  },
-  "modules.esc_tools.mfg.yge.esc_mode":{
-    "english":"ESC Mode",
-    "translation":"ESC Modus"
-  },
-  "modules.sbusout.channel_prefix":{
-    "english":"CHANNEL ",
-    "translation":"CHANNEL "
-  },
-  "modules.esc_tools.mfg.scorp.bailout":{
-    "english":"Bailout",
-    "translation":"Bailout"
-  },
-  "modules.status.arming_disable_flag_24":{
-    "english":"Motor Protocol",
-    "translation":"Motor Protocol"
-  },
-  "modules.esc_tools.mfg.xdfly.motor_poles":{
-    "english":"Motor Poles",
-    "translation":"Motor Polen"
-  },
-  "modules.about.help_p1":{
-    "english":"This page provides some useful information that you may be asked for when requesting support.",
-    "translation":"Op deze pagina vindt u nuttige informatie die u mogelijk wordt gevraagd wanneer u ondersteuning nodig heeft"
-  },
-  "modules.esc_tools.mfg.yge.motor_pole_pairs":{
-    "english":"Motor Pole Pairs",
-    "translation":"Motor Polen pair"
-  },
-  "modules.profile_governor.help_p1":{
-    "english":"Full headspeed: Headspeed target when at 100% throttle input.",
-    "translation":"Max rotortoerental: Rotortoerental doel bij 100% throttle"
-  },
-  "modules.sbusout.help_default_p3":{
-    "english":"- For mixer rules, use -1000, 1000.",
-    "translation":"- Voor mixer rules, gebruik -1000, 1000."
-  },
-  "modules.governor.help_p1":{
-    "english":"These parameters apply globally to the governor regardless of the profile in use.",
-    "translation":"Deze parameters zijn van toepassing op de governor, ongeacht het gebruikte profiel."
-  },
-  "modules.filters.min_cutoff":{
-    "english":"Min cutoff",
-    "translation":"Min cutoff"
-  },
-  "modules.battery.full_cell_voltage":{
-    "english":"Full Cell Voltage",
-    "translation":"Volle Cell Spanning"
-  },
-  "modules.profile_rescue.help_p6":{
-    "english":"Gains: How hard to fight to keep heli level when engaging rescue mode.",
-    "translation":"Gains: Hoe hard de heli moet vechten om de heli horizontaal te houden als je rescue inschakelt?"
+  "msg_rebooting":{
+    "english":"Rebooting...",
+    "translation":"Opnieuw opstarten..."
   }
 }
