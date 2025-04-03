@@ -1,4 +1,4 @@
--- json-to-lua.lua (now grouping by top-level JSON folders: api, app, telemetry, widgets, etc.)
+-- json-to-lua.lua (builds en.lua only from en.json files; others from translation fields)
 
 local json = dofile("lib/dkjson.lua")
 
@@ -122,11 +122,10 @@ local function collectFiles(path, rel, files)
     return files
 end
 
--- Process all JSON files and group by folder path
+-- Process JSON files: use translation for others, only en.json for English
 local function buildLanguageTables()
     local allFiles = collectFiles(jsonRoot)
     local translations = {} -- lang -> table
-    local english = {} -- for en.lua
 
     for _, file in ipairs(allFiles) do
         local lang = file.lang
@@ -140,23 +139,21 @@ local function buildLanguageTables()
         f:close()
 
         local parsed = json.decode(content)
-        local flatTr, flatEn = {}, {}
+        local flat = {}
 
         for k, v in pairs(parsed) do
-            flatTr[k] = v.translation or ""
-            flatEn[k] = v.english or ""
+            if lang == "en" then
+                flat[k] = v.default or v.label or v.translation or v.english or ""
+            else
+                flat[k] = v.translation or ""
+            end
         end
 
-        local nestedTr = unflatten(flatTr)
-        local nestedEn = unflatten(flatEn)
-
+        local nested = unflatten(flat)
         translations[lang] = translations[lang] or {}
-        insertAtPath(translations[lang], relPathParts, nestedTr)
-
-        insertAtPath(english, relPathParts, nestedEn)
+        insertAtPath(translations[lang], relPathParts, nested)
     end
 
-    translations["en"] = english
     return translations
 end
 
@@ -171,7 +168,7 @@ local function writeAll()
         f:write("return ")
         f:write(serializeLuaTable(data))
         f:close()
-        print("✅ Wrote:", outPath)
+        print("Wrote:", outPath)
     end
 end
 
