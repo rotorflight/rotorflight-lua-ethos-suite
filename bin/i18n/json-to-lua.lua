@@ -1,10 +1,34 @@
--- json-to-lua.lua (now grouping by top-level JSON folders: api, app, telemetry, widgets, etc.)
+--[[
+ * Copyright (C) Rotorflight Project
+ *
+ * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+]]
 
 local json = dofile("lib/dkjson.lua")
 
 local jsonRoot = "json"
 local outRoot = "../../scripts/rfsuite/i18n"
 local isWindows = package.config:sub(1,1) == "\\"
+
+local function readHeader(path)
+    local f = io.open(path, "r")
+    if not f then return "" end
+    local content = f:read("*a")
+    f:close()
+    return content .. "\n\n"
+end
+
+local fileHeader = readHeader("lib/header.txt")
 
 -- Helper: list files/dirs
 local function listDir(path)
@@ -29,7 +53,7 @@ local function isDir(path)
     return result:match("d")
 end
 
--- Ensure output dir exists
+-- Ensure output directory exists
 local function ensureDir(path)
     local cmd = isWindows
         and ('mkdir "%s" >nul 2>nul'):format(path)
@@ -37,24 +61,7 @@ local function ensureDir(path)
     os.execute(cmd)
 end
 
--- Unflatten keys ("a.b.c" => nested table)
-local function unflatten(flat)
-    local nested = {}
-    for key, value in pairs(flat) do
-        local current = nested
-        for part in string.gmatch(key, "[^%.]+") do
-            if not current[part] then current[part] = {} end
-            if part == key:match("[^%.]+$") then
-                current[part] = value
-            else
-                current = current[part]
-            end
-        end
-    end
-    return nested
-end
-
--- Merge nested tables (recursive)
+-- Deep merge two nested tables
 local function deepMerge(base, new)
     for k, v in pairs(new) do
         if type(v) == "table" and type(base[k]) == "table" then
@@ -65,7 +72,7 @@ local function deepMerge(base, new)
     end
 end
 
--- Set nested value by path array
+-- Insert nested value at a given path array into a table using deepMerge
 local function insertAtPath(root, pathParts, value)
     if #pathParts == 0 then
         deepMerge(root, value)
@@ -122,11 +129,12 @@ local function collectFiles(path, rel, files)
     return files
 end
 
--- Process all JSON files and group by folder path
+-- Process JSON files
+-- For each file, we assume the JSON structure is already nested and each leaf is an object with
+-- keys "english" and "translation". For English, we extract the english text; for other languages, the translation.
 local function buildLanguageTables()
     local allFiles = collectFiles(jsonRoot)
     local translations = {} -- lang -> table
-    local english = {} -- for en.lua
 
     for _, file in ipairs(allFiles) do
         local lang = file.lang
@@ -140,27 +148,37 @@ local function buildLanguageTables()
         f:close()
 
         local parsed = json.decode(content)
-        local flatTr, flatEn = {}, {}
-
-        for k, v in pairs(parsed) do
-            flatTr[k] = v.translation or ""
-            flatEn[k] = v.english or ""
+        -- Instead of flattening, use the nested structure directly.
+        -- For each leaf, extract the appropriate field.
+        local function processNode(node)
+            if type(node) ~= "table" then
+                return node
+            end
+            local result = {}
+            for k, v in pairs(node) do
+                if type(v) == "table" and (v.english or v.translation) then
+                    -- Leaf node; choose the field based on language.
+                    if lang == "en" then
+                        result[k] = v.english or ""
+                    else
+                        result[k] = v.translation or ""
+                    end
+                else
+                    result[k] = processNode(v)
+                end
+            end
+            return result
         end
 
-        local nestedTr = unflatten(flatTr)
-        local nestedEn = unflatten(flatEn)
-
+        local nested = processNode(parsed)
         translations[lang] = translations[lang] or {}
-        insertAtPath(translations[lang], relPathParts, nestedTr)
-
-        insertAtPath(english, relPathParts, nestedEn)
+        insertAtPath(translations[lang], relPathParts, nested)
     end
 
-    translations["en"] = english
     return translations
 end
 
--- Main
+-- Main: write the final Lua files
 local function writeAll()
     local translations = buildLanguageTables()
     ensureDir(outRoot)
@@ -168,10 +186,11 @@ local function writeAll()
     for lang, data in pairs(translations) do
         local outPath = outRoot .. "/" .. lang .. ".lua"
         local f = io.open(outPath, "w")
+        f:write(fileHeader)
         f:write("return ")
         f:write(serializeLuaTable(data))
         f:close()
-        print("✅ Wrote:", outPath)
+        print("Wrote:", outPath)
     end
 end
 

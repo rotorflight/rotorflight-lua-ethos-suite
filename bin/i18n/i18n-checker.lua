@@ -1,5 +1,18 @@
--- Simplified i18n-checker.lua: Compare all language files in a flat folder to en.lua
--- Usage: lua i18n-checker.lua <folder>
+--[[
+ * Copyright (C) Rotorflight Project
+ *
+ * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+]]
 
 local function normalize_path(path)
     return path:gsub("\\", "/"):gsub("//", "/")

@@ -1,6 +1,6 @@
 # 2.2.0-RC1
 
-Release version for 2.2.0-RC1 Rotorflight
+Release candidate version for 2.2.0-RC1 Rotorflight
 
  - Total rewrite of framework to use an API driven model.
     - Ability to easily build modules/pages with data from multiple msp calls.
