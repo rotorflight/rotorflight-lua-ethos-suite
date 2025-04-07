@@ -89,9 +89,38 @@ local function openPage(pidx, title, script, displaymode)
         return
     end
 
+    if not rfsuite.tasks.active() then
+
+        local buttons = {{
+            label = rfsuite.i18n.get("app.btn_ok"),
+            action = function()
+
+                rfsuite.app.triggers.exitAPP = true
+                rfsuite.app.dialogs.nolinkDisplayErrorDialog = false
+                return true
+            end
+        }}
+
+        form.openDialog({
+            width = nil,
+            title = rfsuite.i18n.get("error"):gsub("^%l", string.upper),
+            message = rfsuite.i18n.get("app.check_bg_task") ,
+            buttons = buttons,
+            wakeup = function()
+            end,
+            paint = function()
+            end,
+            options = TEXT_LEFT
+        })
+
+    end
+
+
     currentDisplayMode = displaymode
 
-    rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
+    if rfsuite.tasks.msp then
+        rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
+    end
 
     rfsuite.app.triggers.isReady = false
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
@@ -184,8 +213,9 @@ local function openPage(pidx, title, script, displaymode)
         end
     end
 
-    rfsuite.app.triggers.closeProgressLoader = true
-
+    if rfsuite.tasks.msp then
+        rfsuite.app.triggers.closeProgressLoader = true
+    end
     enableWakeup = true
 
     return
