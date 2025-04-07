@@ -152,7 +152,12 @@ local function mspReceivedReply(payload)
 
     while (idx <= rfsuite.tasks.msp.protocol.maxRxBufferSize) and (#mspRxBuf < mspRxSize) do
         mspRxBuf[#mspRxBuf + 1] = payload[idx]
-        mspRxCRC = mspRxCRC ~ payload[idx]
+        local value = tonumber(payload[idx]) 
+        if value then
+            mspRxCRC = mspRxCRC ~ value
+        else
+            rfsuite.utils.log("Non-numeric value at payload index " .. idx,"debug")
+        end
         idx = idx + 1
     end
 
