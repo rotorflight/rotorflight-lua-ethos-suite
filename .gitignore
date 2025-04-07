@@ -18,3 +18,4 @@ bin/TelemetryEdit/build/main/PYZ-00.toc
 bin/TelemetryEdit/build/main/warn-main.txt
 bin/TelemetryEdit/build/main/xref-main.html
 bin/deploy/vscode/__pycache__/*
+/bin/deploy/vscode/__pycache__

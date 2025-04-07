@@ -79,7 +79,6 @@ local function openPage(pidx, title, script)
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-    rfsuite.session.escBuffer = nil -- clear the buffer
     
 
     local folder = title
