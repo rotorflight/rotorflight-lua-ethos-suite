@@ -1294,7 +1294,7 @@ local function sensorsMAXMIN(sensors)
                 return
             end
 
-            if status.theTIME > (status.idleupdelayParam + idleupdelayOFFSET) and status.idleupswitchParam:state() then
+            if status.theTIME > (status.idleupdelayParam + idleupdelayOFFSET) and (status.idleupswitchParam and status.idleupswitchParam:state()) then
                 for _, sensor in pairs(sensorTypes) do
                     local value = sensors[sensor:lower()] or 0
                     status["sensor" .. sensor .. "Min"] = math.min(status["sensor" .. sensor .. "Min"] or math.huge, value)
@@ -1309,7 +1309,7 @@ local function sensorsMAXMIN(sensors)
             end
         end
 
-        if status.motorWasActive and not status.idleupswitchParam:state() then
+        if status.motorWasActive and status.idleupswitchParam and not status.idleupswitchParam:state() then
             status.motorWasActive = false
 
             status.sensorCurrentMinAlt = status.sensorCurrentMin > 0 and status.sensorCurrentMin or 1

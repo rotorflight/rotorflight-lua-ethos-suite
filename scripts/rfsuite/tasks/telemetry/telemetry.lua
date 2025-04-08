@@ -155,12 +155,14 @@ local sensorTable = {
             {uid=0x5004, unit=UNIT_AMPERE, dec=0, value=function() return rfsuite.utils.simSensors('current') end, min = 0, max = 25},
         },
         sport = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0200},
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0201}
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0208},
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0201},
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0200}
         },
         crsf = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1042},
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1012},
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1042}
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x104A}
         },
         crsfLegacy = {"Rx Curr"}
     },
