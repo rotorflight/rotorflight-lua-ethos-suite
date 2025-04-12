@@ -30,5 +30,7 @@ python generate-googleapi.py --csv de.csv --voice de-DE-Wavenet-E --base-dir de 
 REM Dutch - Default
 python generate-googleapi.py --csv nl.csv --voice nl-NL-Standard-A --base-dir nl --variant default --engine google 
 
+REM Italian - Default
+python generate-googleapi.py --csv it.csv --voice it-IT-Wavenet-B --base-dir it --variant default --engine google 
 
 endlocal
