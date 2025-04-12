@@ -1,0 +1,38 @@
+{
+  "bg_task_disabled":{
+    "translation":"bg task disabilitato",
+    "english":"bg task disabled"
+  },
+  "ethos":{
+    "translation":"ethos",
+    "english":"ethos"
+  },
+  "no_link":{
+    "translation":"no link",
+    "english":"no link"
+  },
+  "image":{
+    "translation":"immagine",
+    "english":"image"
+  },
+  "reload":{
+    "translation":"ricarica",
+    "english":"reload"
+  },
+  "version":{
+    "translation":"versione",
+    "english":"version"
+  },
+  "save":{
+    "translation":"salva",
+    "english":"save"
+  },
+  "background_task_disabled":{
+    "translation":"background task disabilitato",
+    "english":"background task disabled"
+  },
+  "error":{
+    "translation":"errore",
+    "english":"error"
+  }
+}
