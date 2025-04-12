@@ -1,50 +1,50 @@
 {
-  "UNKNOWN":{
-    "english":"UNKNOWN",
-    "translation":"DESCONOCIDO"
-  },
-  "RECOVERY":{
-    "english":"RECOVERY",
-    "translation":"RECUPERACION"
-  },
-  "BAILOUT":{
-    "english":"BAILOUT",
-    "translation":"SALVATAJE"
-  },
-  "THROFF":{
-    "english":"THR-OFF",
-    "translation":"ACEL-APAG"
-  },
-  "LOSTHS":{
-    "english":"LOST-HS",
-    "translation":"PERDIDA-HS"
-  },
-  "AUTOROT":{
-    "english":"AUTOROT",
-    "translation":"AUTOROT"
-  },
-  "OFF":{
-    "english":"OFF",
-    "translation":"APAGADO"
-  },
   "SPOOLUP":{
-    "english":"SPOOLUP",
-    "translation":"ARRANQUE"
-  },
-  "DISABLED":{
-    "english":"DISABLED",
-    "translation":"DESHABIL."
+    "translation":"ARRANQUE",
+    "english":"SPOOLUP"
   },
   "IDLE":{
-    "english":"IDLE",
-    "translation":"RALENTI"
+    "translation":"RALENTI",
+    "english":"IDLE"
   },
-  "DISARMED":{
-    "english":"DISARMED",
-    "translation":"DESARMADO"
+  "AUTOROT":{
+    "translation":"AUTOROT",
+    "english":"AUTOROT"
+  },
+  "OFF":{
+    "translation":"APAGADO",
+    "english":"OFF"
+  },
+  "RECOVERY":{
+    "translation":"RECUPERACION",
+    "english":"RECOVERY"
+  },
+  "BAILOUT":{
+    "translation":"SALVATAJE",
+    "english":"BAILOUT"
   },
   "ACTIVE":{
-    "english":"ACTIVE",
-    "translation":"ACTIVO"
+    "translation":"ACTIVO",
+    "english":"ACTIVE"
+  },
+  "DISARMED":{
+    "translation":"DESARMADO",
+    "english":"DISARMED"
+  },
+  "THROFF":{
+    "translation":"ACEL-APAG",
+    "english":"THR-OFF"
+  },
+  "LOSTHS":{
+    "translation":"PERDIDA-HS",
+    "english":"LOST-HS"
+  },
+  "DISABLED":{
+    "translation":"DESHABIL.",
+    "english":"DISABLED"
+  },
+  "UNKNOWN":{
+    "translation":"DESCONOCIDO",
+    "english":"UNKNOWN"
   }
 }

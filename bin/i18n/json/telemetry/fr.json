@@ -1,64 +1,64 @@
 {
   "sensors":{
-    "pid_profile":{
-      "english":"PID Profile",
-      "translation":"Profile de PID"
-    },
-    "esc_temp":{
-      "english":"ESC Temperature",
-      "translation":"Temperature ESC"
-    },
-    "adj_val":{
-      "english":"Adj (Value)",
-      "translation":"Ajustements Valeurs"
+    "consumption":{
+      "translation":"Consommation",
+      "english":"Consumption"
     },
     "arming_flags":{
-      "english":"Arming Flags",
-      "translation":"Drapeaux Armements"
-    },
-    "consumption":{
-      "english":"Consumption",
-      "translation":"Consommation"
-    },
-    "throttle_pct":{
-      "english":"Throttle %",
-      "translation":"Pourcentage de Gaz"
-    },
-    "headspeed":{
-      "english":"Headspeed",
-      "translation":"Tours Moteurs"
-    },
-    "current":{
-      "english":"Current",
-      "translation":"Courant"
-    },
-    "rate_profile":{
-      "english":"Rate Profile",
-      "translation":"Profile de Rates"
-    },
-    "governor":{
-      "english":"Governor State",
-      "translation":"Status du Gouverneur"
-    },
-    "adj_func":{
-      "english":"Adj (Function)",
-      "translation":"Ajustements Fonctions"
-    },
-    "voltage":{
-      "english":"Voltage",
-      "translation":"Tension"
-    },
-    "rssi":{
-      "english":"RSSI",
-      "translation":"Signal du Recepteur"
-    },
-    "mcu_temp":{
-      "english":"MCU Temperature",
-      "translation":"Temperature Micro Processeur"
+      "translation":"Drapeaux Armements",
+      "english":"Arming Flags"
     },
     "fuel":{
-      "english":"Charge Level",
-      "translation":"Niveau de Carburant"
+      "translation":"Niveau de Carburant",
+      "english":"Charge Level"
+    },
+    "mcu_temp":{
+      "translation":"Temperature Micro Processeur",
+      "english":"MCU Temperature"
+    },
+    "adj_func":{
+      "translation":"Ajustements Fonctions",
+      "english":"Adj (Function)"
+    },
+    "governor":{
+      "translation":"Status du Gouverneur",
+      "english":"Governor State"
+    },
+    "rate_profile":{
+      "translation":"Profile de Rates",
+      "english":"Rate Profile"
+    },
+    "throttle_pct":{
+      "translation":"Pourcentage de Gaz",
+      "english":"Throttle %"
+    },
+    "voltage":{
+      "translation":"Tension",
+      "english":"Voltage"
+    },
+    "pid_profile":{
+      "translation":"Profile de PID",
+      "english":"PID Profile"
+    },
+    "headspeed":{
+      "translation":"Tours Moteurs",
+      "english":"Headspeed"
+    },
+    "rssi":{
+      "translation":"Signal du Recepteur",
+      "english":"RSSI"
+    },
+    "esc_temp":{
+      "translation":"Temperature ESC",
+      "english":"ESC Temperature"
+    },
+    "adj_val":{
+      "translation":"Ajustements Valeurs",
+      "english":"Adj (Value)"
+    },
+    "current":{
+      "translation":"Courant",
+      "english":"Current"
     }
   }
 }

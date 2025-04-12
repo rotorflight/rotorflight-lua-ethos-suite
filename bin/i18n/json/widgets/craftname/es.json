@@ -1,18 +1,18 @@
 {
-  "txt_save":{
-    "english":"Save",
-    "translation":"Guardar"
-  },
   "txt_cancel":{
-    "english":"Cancel",
-    "translation":"Cancelar"
+    "translation":"Cancelar",
+    "english":"Cancel"
   },
-  "title":{
-    "english":"CRAFT NAME",
-    "translation":"NOMBRE DE LA AERONAVE"
+  "txt_save":{
+    "translation":"Guardar",
+    "english":"Save"
   },
   "txt_enter_craft_name":{
-    "english":"Enter Craft Name",
-    "translation":"Ingrese el Nombre de la Aeronave"
+    "translation":"Ingrese el Nombre de la Aeronave",
+    "english":"Enter Craft Name"
+  },
+  "title":{
+    "translation":"NOMBRE DE LA AERONAVE",
+    "english":"CRAFT NAME"
   }
 }

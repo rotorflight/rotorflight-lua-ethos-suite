@@ -1,18 +1,18 @@
 {
-  "txt_save":{
-    "english":"Save",
-    "translation":"Enregistrer"
-  },
   "txt_cancel":{
-    "english":"Cancel",
-    "translation":"Annuler"
+    "translation":"Annuler",
+    "english":"Cancel"
   },
-  "title":{
-    "english":"CRAFT NAME",
-    "translation":"NOM DE L'APPAREIL"
+  "txt_save":{
+    "translation":"Enregistrer",
+    "english":"Save"
   },
   "txt_enter_craft_name":{
-    "english":"Enter Craft Name",
-    "translation":"Entrez le nom de l'appareil"
+    "translation":"Entrez le nom de l'appareil",
+    "english":"Enter Craft Name"
+  },
+  "title":{
+    "translation":"NOM DE L'APPAREIL",
+    "english":"CRAFT NAME"
   }
 }

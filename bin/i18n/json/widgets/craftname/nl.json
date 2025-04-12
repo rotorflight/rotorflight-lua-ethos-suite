@@ -1,18 +1,18 @@
 {
-  "txt_save":{
-    "english":"Save",
-    "translation":"Opslaan"
-  },
   "txt_cancel":{
-    "english":"Cancel",
-    "translation":"Cancel"
+    "translation":"Cancel",
+    "english":"Cancel"
   },
-  "title":{
-    "english":"CRAFT NAME",
-    "translation":"Model naam"
+  "txt_save":{
+    "translation":"Opslaan",
+    "english":"Save"
   },
   "txt_enter_craft_name":{
-    "english":"Enter Craft Name",
-    "translation":"Vul Model naam in"
+    "translation":"Vul Model naam in",
+    "english":"Enter Craft Name"
+  },
+  "title":{
+    "translation":"Model naam",
+    "english":"CRAFT NAME"
   }
 }
