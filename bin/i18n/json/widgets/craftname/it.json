@@ -3,13 +3,13 @@
     "english":"Cancel",
     "translation":"Cancella"
   },
-  "txt_save":{
-    "english":"Save",
-    "translation":"Salva"
-  },
   "txt_enter_craft_name":{
     "english":"Enter Craft Name",
     "translation":"Nome Velivolo"
+  },
+  "txt_save":{
+    "english":"Save",
+    "translation":"Salva"
   },
   "title":{
     "english":"CRAFT NAME",

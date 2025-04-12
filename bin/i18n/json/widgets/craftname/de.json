@@ -1,18 +1,18 @@
 {
+  "txt_enter_craft_name":{
+    "english":"Enter Craft Name",
+    "translation":"Fluggeraetname eingeben"
+  },
   "txt_cancel":{
-    "translation":"Abbrechen",
-    "english":"Cancel"
+    "english":"Cancel",
+    "translation":"Abbrechen"
   },
   "txt_save":{
-    "translation":"Speichern",
-    "english":"Save"
-  },
-  "txt_enter_craft_name":{
-    "translation":"Fluggeraetname eingeben",
-    "english":"Enter Craft Name"
+    "english":"Save",
+    "translation":"Speichern"
   },
   "title":{
-    "translation":"FLUGGERAET NAME",
-    "english":"CRAFT NAME"
+    "english":"CRAFT NAME",
+    "translation":"FLUGGERAET NAME"
   }
 }

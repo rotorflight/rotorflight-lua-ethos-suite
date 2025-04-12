@@ -1,12 +1,16 @@
 {
   "sensors":{
-    "consumption":{
-      "english":"Consumption",
-      "translation":"Consumo"
+    "rssi":{
+      "english":"RSSI",
+      "translation":"RSSI"
     },
-    "arming_flags":{
-      "english":"Arming Flags",
-      "translation":"Flags Armo"
+    "current":{
+      "english":"Current",
+      "translation":"Corrente"
+    },
+    "mcu_temp":{
+      "english":"MCU Temperature",
+      "translation":"Temperatura MCU"
     },
     "voltage":{
       "english":"Voltage",
@@ -16,42 +20,6 @@
       "english":"Adj (Value)",
       "translation":"Adj (Valore)"
     },
-    "mcu_temp":{
-      "english":"MCU Temperature",
-      "translation":"Temperatura MCU"
-    },
-    "fuel":{
-      "english":"Charge Level",
-      "translation":"Carica Livello"
-    },
-    "rate_profile":{
-      "english":"Rate Profile",
-      "translation":"Valori Profilo"
-    },
-    "current":{
-      "english":"Current",
-      "translation":"Corrente"
-    },
-    "adj_func":{
-      "english":"Adj (Function)",
-      "translation":"Adj (Funzione)"
-    },
-    "pid_profile":{
-      "english":"PID Profile",
-      "translation":"Profilo PID"
-    },
-    "headspeed":{
-      "english":"Headspeed",
-      "translation":"Velocità Testa"
-    },
-    "rssi":{
-      "english":"RSSI",
-      "translation":"RSSI"
-    },
-    "esc_temp":{
-      "english":"ESC Temperature",
-      "translation":"Temperatura ESC"
-    },
     "governor":{
       "english":"Governor State",
       "translation":"Stato Governor"
@@ -59,6 +27,38 @@
     "throttle_pct":{
       "english":"Throttle %",
       "translation":"Acceleratore %"
+    },
+    "consumption":{
+      "english":"Consumption",
+      "translation":"Consumo"
+    },
+    "headspeed":{
+      "english":"Headspeed",
+      "translation":"Velocita' Rotore"
+    },
+    "esc_temp":{
+      "english":"ESC Temperature",
+      "translation":"Temperatura ESC"
+    },
+    "rate_profile":{
+      "english":"Rate Profile",
+      "translation":"Valori Profilo"
+    },
+    "fuel":{
+      "english":"Charge Level",
+      "translation":"Carica Livello"
+    },
+    "pid_profile":{
+      "english":"PID Profile",
+      "translation":"Profilo PID"
+    },
+    "arming_flags":{
+      "english":"Arming Flags",
+      "translation":"Flags Armo"
+    },
+    "adj_func":{
+      "english":"Adj (Function)",
+      "translation":"Adj (Funzione)"
     }
   }
 }

@@ -1,64 +1,64 @@
 {
   "sensors":{
-    "consumption":{
-      "translation":"Verbrauch",
-      "english":"Consumption"
-    },
-    "arming_flags":{
-      "translation":"Arming-Flags",
-      "english":"Arming Flags"
-    },
-    "fuel":{
-      "translation":"Kraftstoffstand",
-      "english":"Charge Level"
-    },
-    "mcu_temp":{
-      "translation":"MCU Temperatur",
-      "english":"MCU Temperature"
-    },
     "adj_func":{
-      "translation":"Adj (Funktion)",
-      "english":"Adj (Function)"
-    },
-    "governor":{
-      "translation":"Governor Status",
-      "english":"Governor State"
-    },
-    "rate_profile":{
-      "translation":"Rate-Profil",
-      "english":"Rate Profile"
-    },
-    "throttle_pct":{
-      "translation":"Gas %",
-      "english":"Throttle %"
-    },
-    "voltage":{
-      "translation":"Spannung",
-      "english":"Voltage"
-    },
-    "pid_profile":{
-      "translation":"PID-Profil",
-      "english":"PID Profile"
-    },
-    "headspeed":{
-      "translation":"Drehzahl",
-      "english":"Headspeed"
-    },
-    "rssi":{
-      "translation":"RSSI",
-      "english":"RSSI"
-    },
-    "esc_temp":{
-      "translation":"ESC Temperatur",
-      "english":"ESC Temperature"
-    },
-    "adj_val":{
-      "translation":"Adj (Wert)",
-      "english":"Adj (Value)"
+      "english":"Adj (Function)",
+      "translation":"Adj (Funktion)"
     },
     "current":{
-      "translation":"Strom",
-      "english":"Current"
+      "english":"Current",
+      "translation":"Strom"
+    },
+    "mcu_temp":{
+      "english":"MCU Temperature",
+      "translation":"MCU Temperatur"
+    },
+    "rate_profile":{
+      "english":"Rate Profile",
+      "translation":"Rate-Profil"
+    },
+    "voltage":{
+      "english":"Voltage",
+      "translation":"Spannung"
+    },
+    "adj_val":{
+      "english":"Adj (Value)",
+      "translation":"Adj (Wert)"
+    },
+    "throttle_pct":{
+      "english":"Throttle %",
+      "translation":"Gas %"
+    },
+    "rssi":{
+      "english":"RSSI",
+      "translation":"RSSI"
+    },
+    "headspeed":{
+      "english":"Headspeed",
+      "translation":"Drehzahl"
+    },
+    "esc_temp":{
+      "english":"ESC Temperature",
+      "translation":"ESC Temperatur"
+    },
+    "governor":{
+      "english":"Governor State",
+      "translation":"Governor Status"
+    },
+    "fuel":{
+      "english":"Charge Level",
+      "translation":"Kraftstoffstand"
+    },
+    "pid_profile":{
+      "english":"PID Profile",
+      "translation":"PID-Profil"
+    },
+    "arming_flags":{
+      "english":"Arming Flags",
+      "translation":"Arming-Flags"
+    },
+    "consumption":{
+      "english":"Consumption",
+      "translation":"Verbrauch"
     }
   }
 }

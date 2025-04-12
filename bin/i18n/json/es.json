@@ -1,38 +1,38 @@
 {
-  "background_task_disabled":{
-    "translation":"MISSING TRANSLATION",
-    "english":"background task disabled"
-  },
-  "bg_task_disabled":{
-    "translation":"MISSING TRANSLATION",
-    "english":"bg task disabled"
-  },
-  "version":{
-    "translation":"MISSING TRANSLATION",
-    "english":"version"
-  },
-  "image":{
-    "translation":"MISSING TRANSLATION",
-    "english":"image"
-  },
   "ethos":{
-    "translation":"MISSING TRANSLATION",
-    "english":"ethos"
-  },
-  "save":{
-    "translation":"MISSING TRANSLATION",
-    "english":"save"
-  },
-  "no_link":{
-    "translation":"MISSING TRANSLATION",
-    "english":"no link"
+    "english":"ethos",
+    "translation":"MISSING TRANSLATION"
   },
   "reload":{
-    "translation":"MISSING TRANSLATION",
-    "english":"reload"
+    "english":"reload",
+    "translation":"MISSING TRANSLATION"
+  },
+  "version":{
+    "english":"version",
+    "translation":"MISSING TRANSLATION"
+  },
+  "save":{
+    "english":"save",
+    "translation":"MISSING TRANSLATION"
+  },
+  "no_link":{
+    "english":"no link",
+    "translation":"MISSING TRANSLATION"
+  },
+  "bg_task_disabled":{
+    "english":"bg task disabled",
+    "translation":"MISSING TRANSLATION"
+  },
+  "image":{
+    "english":"image",
+    "translation":"MISSING TRANSLATION"
+  },
+  "background_task_disabled":{
+    "english":"background task disabled",
+    "translation":"MISSING TRANSLATION"
   },
   "error":{
-    "translation":"MISSING TRANSLATION",
-    "english":"error"
+    "english":"error",
+    "translation":"MISSING TRANSLATION"
   }
 }
