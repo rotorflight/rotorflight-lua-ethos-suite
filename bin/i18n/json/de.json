@@ -1,38 +1,38 @@
 {
-  "background_task_disabled":{
-    "translation":"Hintergrundtask deaktiviert",
-    "english":"background task disabled"
-  },
-  "bg_task_disabled":{
-    "translation":"Hintergrundtask deaktiviert",
-    "english":"bg task disabled"
-  },
-  "version":{
-    "translation":"Version",
-    "english":"version"
-  },
-  "image":{
-    "translation":"Bild",
-    "english":"image"
-  },
   "ethos":{
-    "translation":"Ethos",
-    "english":"ethos"
-  },
-  "save":{
-    "translation":"Speichern",
-    "english":"save"
-  },
-  "no_link":{
-    "translation":"Keine Verbindung",
-    "english":"no link"
+    "english":"ethos",
+    "translation":"Ethos"
   },
   "reload":{
-    "translation":"Neu laden",
-    "english":"reload"
+    "english":"reload",
+    "translation":"Neu laden"
+  },
+  "version":{
+    "english":"version",
+    "translation":"Version"
+  },
+  "save":{
+    "english":"save",
+    "translation":"Speichern"
+  },
+  "no_link":{
+    "english":"no link",
+    "translation":"Keine Verbindung"
+  },
+  "bg_task_disabled":{
+    "english":"bg task disabled",
+    "translation":"Hintergrundtask deaktiviert"
+  },
+  "image":{
+    "english":"image",
+    "translation":"Bild"
+  },
+  "background_task_disabled":{
+    "english":"background task disabled",
+    "translation":"Hintergrundtask deaktiviert"
   },
   "error":{
-    "translation":"Fehler",
-    "english":"error"
+    "english":"error",
+    "translation":"Fehler"
   }
 }

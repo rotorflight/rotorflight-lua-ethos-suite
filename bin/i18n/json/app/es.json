@@ -1,2606 +1,2606 @@
 {
-  "navigation_reload":{
-    "translation":"Recarga",
-    "english":"RELOAD"
-  },
-  "msg_reload_settings":{
-    "translation":"Recargar datos del controlador de vuelo?",
-    "english":"Reload data from flight controller?"
-  },
-  "msg_loading_from_fbl":{
-    "translation":"Cargando datos del controlador de vuelo...",
-    "english":"Loading data from flight controller..."
-  },
-  "menu_section_about":{
-    "translation":"Acerca de",
-    "english":"About"
-  },
-  "navigation_menu":{
-    "translation":"Menú",
-    "english":"MENU"
-  },
-  "msg_loading":{
-    "translation":"Cargando...",
-    "english":"Loading..."
-  },
-  "msg_saving":{
-    "translation":"Guardando...",
-    "english":"Saving..."
-  },
-  "msg_save_settings":{
-    "translation":"Guardar configuración",
-    "english":"Save settings"
-  },
-  "error_timed_out":{
-    "translation":"Error: tiempo agotado",
-    "english":"Error: timed out"
-  },
   "msg_saving_to_fbl":{
-    "translation":"Guardando datos en el controlador de vuelo...",
-    "english":"Saving data to flight controller..."
-  },
-  "btn_ok_long":{
-    "translation":"                OK                ",
-    "english":"                OK                "
-  },
-  "navigation_help":{
-    "translation":"?",
-    "english":"?"
-  },
-  "msg_save_current_page":{
-    "translation":"Guarda esta página en el controlador de vuelo?",
-    "english":"Save current page to flight controller?"
-  },
-  "msg_please_disarm_to_save_warning":{
-    "translation":"La configuracion solo se guardara en EEPROM al desarmar",
-    "english":"Settings will only be saved to eeprom on disarm"
-  },
-  "msg_please_disarm_to_save":{
-    "translation":"Desarme para guardar a fin de asegurar la integridad de los datos.",
-    "english":"Please disarm to save"
-  },
-  "menu_section_developer":{
-    "translation":"Desarrollador",
-    "english":"Developer"
+    "english":"Saving data to flight controller...",
+    "translation":"Guardando datos en el controlador de vuelo..."
   },
   "check_bg_task":{
-    "translation":"Habilite tarea en segundo plano (LUA modelo).",
-    "english":"Please enable the background task."
+    "english":"Please enable the background task.",
+    "translation":"Habilite tarea en segundo plano (LUA modelo)."
+  },
+  "menu_section_advanced":{
+    "english":"Advanced",
+    "translation":"Advanzado"
+  },
+  "msg_reload_settings":{
+    "english":"Reload data from flight controller?",
+    "translation":"Recargar datos del controlador de vuelo?"
+  },
+  "menu_section_about":{
+    "english":"About",
+    "translation":"Acerca de"
+  },
+  "btn_ok_long":{
+    "english":"                OK                ",
+    "translation":"                OK                "
+  },
+  "navigation_reload":{
+    "english":"RELOAD",
+    "translation":"Recarga"
+  },
+  "menu_section_hardware":{
+    "english":"Hardware",
+    "translation":"Hardware"
   },
   "btn_close":{
-    "translation":"CERRAR",
-    "english":"CLOSE"
+    "english":"CLOSE",
+    "translation":"CERRAR"
   },
-  "check_discovered_sensors":{
-    "translation":"Verifique que ha descubierto todos los sensores.",
-    "english":"Please check you have discovered all sensors."
-  },
-  "msg_save_not_commited":{
-    "translation":"No se copió a EEPROM",
-    "english":"Save not committed to EEPROM"
-  },
-  "msg_connecting":{
-    "translation":"Conectando",
-    "english":"Connecting"
-  },
-  "navigation_tools":{
-    "translation":"*",
-    "english":"*"
-  },
-  "btn_cancel":{
-    "translation":"CANCELAR",
-    "english":"CANCEL"
+  "msg_connecting_to_fbl":{
+    "english":"Connecting to flight controller...",
+    "translation":"Conectando al controlador de vuelo..."
   },
   "msg_rebooting":{
-    "translation":"Reiniciando...",
-    "english":"Rebooting..."
+    "english":"Rebooting...",
+    "translation":"Reiniciando..."
   },
-  "menu_section_flight_tuning":{
-    "translation":"Ajustes de Vuelo",
-    "english":"Flight Tuning"
+  "navigation_save":{
+    "english":"SAVE",
+    "translation":"Guarda"
+  },
+  "error_timed_out":{
+    "english":"Error: timed out",
+    "translation":"Error: tiempo agotado"
+  },
+  "msg_saving_settings":{
+    "english":"Saving settings...",
+    "translation":"Guardando configuración..."
+  },
+  "msg_please_disarm_to_save_warning":{
+    "english":"Settings will only be saved to eeprom on disarm",
+    "translation":"La configuracion solo se guardara en EEPROM al desarmar"
+  },
+  "navigation_help":{
+    "english":"?",
+    "translation":"?"
+  },
+  "check_rf_module_on":{
+    "english":"Please check your rf module is turned on.",
+    "translation":"Verifique que el módulo rf esté encendido."
+  },
+  "btn_ok":{
+    "english":"          OK           ",
+    "translation":"          OK           "
+  },
+  "check_discovered_sensors":{
+    "english":"Please check you have discovered all sensors.",
+    "translation":"Verifique que ha descubierto todos los sensores."
+  },
+  "msg_connecting":{
+    "english":"Connecting",
+    "translation":"Conectando"
   },
   "modules":{
     "esc_tools":{
-      "name":{
-        "translation":"Herramientas ESC",
-        "english":"ESC Tools"
-      },
-      "please_powercycle":{
-        "translation":"Apague y reencienda el ESC...",
-        "english":"Please power cycle the ESC..."
+      "unknown":{
+        "english":"UNKNOWN",
+        "translation":"DESCONOCIDO"
       },
       "searching":{
-        "translation":"Buscando",
-        "english":"Searching"
+        "english":"Searching",
+        "translation":"Buscando"
       },
-      "unknown":{
-        "translation":"DESCONOCIDO",
-        "english":"UNKNOWN"
+      "name":{
+        "english":"ESC Tools",
+        "translation":"Herramientas ESC"
       },
       "mfg":{
-        "flrtr":{
-          "motor_erpm_max":{
-            "translation":"Max ERPM Motor",
-            "english":"Motor ERPM max"
-          },
-          "name":{
-            "translation":"FLYROTOR",
-            "english":"FLYROTOR"
-          },
-          "gov_p":{
-            "translation":"Gov-P",
-            "english":"Gov-P"
-          },
-          "temperature_protection":{
-            "translation":"Proteccion Temperatura",
-            "english":"Temperature protection"
-          },
-          "soft_start":{
-            "translation":"Arranque Suave",
-            "english":"Soft start"
-          },
-          "basic":{
-            "translation":"Basico",
-            "english":"Basic"
-          },
-          "cell_count":{
-            "translation":"Nro. de Celdas",
-            "english":"Cell count"
-          },
-          "timing_angle":{
-            "translation":"Angulo de Timing",
-            "english":"Timing angle"
-          },
-          "fan_control":{
-            "translation":"Control de Ventilador",
-            "english":"Fan control"
-          },
-          "response_speed":{
-            "translation":"Velocidad de Respuesta",
-            "english":"Response speed"
-          },
-          "motor_temp":{
-            "translation":"Temperatura del motor",
-            "english":"Motor temperture"
-          },
-          "led_color":{
-            "translation":"Color LED",
-            "english":"LED color"
-          },
-          "motor_temp_sensor":{
-            "translation":"Sensor de temperatura del motor",
-            "english":"Motor temp sensor"
-          },
-          "starting_torque":{
-            "translation":"Torque de Inicio",
-            "english":"Starting torque"
-          },
-          "governor":{
-            "translation":"Governor",
-            "english":"Governor"
-          },
-          "buzzer_volume":{
-            "translation":"Volumen del Buzzer",
-            "english":"Buzzer volume"
-          },
-          "gov_i":{
-            "translation":"Gov-I",
-            "english":"Gov-I"
-          },
-          "current_gain":{
-            "translation":"Ganancia Corriente",
-            "english":"Current gain"
-          },
-          "advanced":{
-            "translation":"Avanzado",
-            "english":"Advanced"
-          },
-          "telemetry_protocol":{
-            "translation":"Protocolo de telemetria",
-            "english":"Telemetry protocol"
-          },
-          "motor_direction":{
-            "translation":"Direccion del Motor",
-            "english":"Motor direction"
-          },
-          "other":{
-            "translation":"Otro",
-            "english":"Other"
-          },
-          "throttle_protocol":{
-            "translation":"Protocolo de acelerador",
-            "english":"Throttle protocol"
-          },
-          "gov_d":{
-            "translation":"Gov-D",
-            "english":"Gov-D"
-          },
-          "bec_voltage":{
-            "translation":"Voltaje BEC",
-            "english":"BEC voltage"
-          },
-          "gov":{
-            "translation":"Governor",
-            "english":"Governor"
-          },
-          "low_voltage_protection":{
-            "translation":"Proteccion bajo voltaje",
-            "english":"Low voltage protection"
-          },
-          "battery_capacity":{
-            "translation":"Capacidad de la bateria",
-            "english":"Battery capacity"
-          }
-        },
         "xdfly":{
-          "name":{
-            "translation":"XDFLY",
-            "english":"XDFLY"
-          },
-          "motor_direction":{
-            "translation":"Dirección Motor",
-            "english":"Motor Direction"
-          },
-          "led_color":{
-            "translation":"Color LED",
-            "english":"LED Color"
-          },
-          "cell_cutoff":{
-            "translation":"Corte Celdas",
-            "english":"Cell Cutoff"
-          },
-          "basic":{
-            "translation":"Básico",
-            "english":"Basic"
-          },
-          "governor":{
-            "translation":"Governor",
-            "english":"Governor"
-          },
-          "sr_function":{
-            "translation":"Función SR",
-            "english":"SR Function"
-          },
-          "acceleration":{
-            "translation":"Aceleración",
-            "english":"Acceleration"
+          "motor_poles":{
+            "english":"Motor Poles",
+            "translation":"Polos del Motor"
           },
           "startup_power":{
-            "translation":"Potencia Inicio",
-            "english":"Startup Power"
+            "english":"Startup Power",
+            "translation":"Potencia Inicio"
           },
-          "gov_i":{
-            "translation":"Gov-I",
-            "english":"Gov-I"
+          "governor":{
+            "english":"Governor",
+            "translation":"Governor"
           },
-          "timing":{
-            "translation":"Timing",
-            "english":"Timing"
+          "brake_force":{
+            "english":"Brake Force",
+            "translation":"Fuerza Frenado"
+          },
+          "name":{
+            "english":"XDFLY",
+            "translation":"XDFLY"
+          },
+          "motor_direction":{
+            "english":"Motor Direction",
+            "translation":"Dirección Motor"
+          },
+          "gov_p":{
+            "english":"Gov-P",
+            "translation":"Gov-P"
+          },
+          "gov":{
+            "english":"Governor",
+            "translation":"Governor"
           },
           "hv_bec_voltage":{
-            "translation":"Voltaje HV BEC",
-            "english":"HV BEC Voltage"
+            "english":"HV BEC Voltage",
+            "translation":"Voltaje HV BEC"
           },
           "capacity_correction":{
-            "translation":"Corrección Capacidad",
-            "english":"Capacity Correction"
+            "english":"Capacity Correction",
+            "translation":"Corrección Capacidad"
           },
-          "brake_force":{
-            "translation":"Fuerza Frenado",
-            "english":"Brake Force"
+          "advanced":{
+            "english":"Advanced",
+            "translation":"Avanzado"
           },
-          "motor_poles":{
-            "translation":"Polos del Motor",
-            "english":"Motor Poles"
+          "auto_restart_time":{
+            "english":"Auto Restart Time",
+            "translation":"Tiempo Auto Reinicio"
           },
           "lv_bec_voltage":{
-            "translation":"Voltaje LV BEC",
-            "english":"LV BEC Voltage"
+            "english":"LV BEC Voltage",
+            "translation":"Voltaje LV BEC"
+          },
+          "led_color":{
+            "english":"LED Color",
+            "translation":"Color LED"
+          },
+          "basic":{
+            "english":"Basic",
+            "translation":"Básico"
           },
           "smart_fan":{
-            "translation":"Ventilador Inteligente",
-            "english":"Smart Fan"
-          },
-          "auto_restart_time":{
-            "translation":"Tiempo Auto Reinicio",
-            "english":"Auto Restart Time"
-          },
-          "advanced":{
-            "translation":"Avanzado",
-            "english":"Advanced"
-          },
-          "gov":{
-            "translation":"Governor",
-            "english":"Governor"
-          },
-          "gov_p":{
-            "translation":"Gov-P",
-            "english":"Gov-P"
-          }
-        },
-        "yge":{
-          "current_limit":{
-            "translation":"Límite de Corriente",
-            "english":"Current Limit"
-          },
-          "name":{
-            "translation":"YGE",
-            "english":"YGE"
-          },
-          "gov_p":{
-            "translation":"Gov-P",
-            "english":"Gov-P"
-          },
-          "limits":{
-            "translation":"Límites",
-            "english":"Limits"
-          },
-          "stick_zero_us":{
-            "translation":"Cero Joystick",
-            "english":"Stick Zero"
-          },
-          "cell_cutoff":{
-            "translation":"Corte Celdas",
-            "english":"Cell Cutoff"
-          },
-          "basic":{
-            "translation":"Básico",
-            "english":"Basic"
-          },
-          "direction":{
-            "translation":"Dirección",
-            "english":"Direction"
-          },
-          "motor_pole_pairs":{
-            "translation":"Pares Polos Motor",
-            "english":"Motor Pole Pairs"
-          },
-          "min_start_power":{
-            "translation":"Potencia Mín Inicio",
-            "english":"Min Start Power"
-          },
-          "active_freewheel":{
-            "translation":"Corona Liberada",
-            "english":"Active Freewheel"
-          },
-          "max_start_power":{
-            "translation":"Potencia Máx Inicio",
-            "english":"Max Start Power"
-          },
-          "esc_mode":{
-            "translation":"Modo ESC",
-            "english":"ESC Mode"
+            "english":"Smart Fan",
+            "translation":"Ventilador Inteligente"
           },
           "gov_i":{
-            "translation":"Gov-I",
-            "english":"Gov-I"
+            "english":"Gov-I",
+            "translation":"Gov-I"
+          },
+          "cell_cutoff":{
+            "english":"Cell Cutoff",
+            "translation":"Corte Celdas"
+          },
+          "acceleration":{
+            "english":"Acceleration",
+            "translation":"Aceleración"
+          },
+          "sr_function":{
+            "english":"SR Function",
+            "translation":"Función SR"
           },
           "timing":{
-            "translation":"Timing del Motor",
-            "english":"Motor Timing"
-          },
-          "advanced":{
-            "translation":"Avanzado",
-            "english":"Advanced"
-          },
-          "auto_restart_time":{
-            "translation":"Tiempo Auto Reinicio",
-            "english":"Auto Restart Time"
-          },
-          "pinion_teeth":{
-            "translation":"Dientes Piñón",
-            "english":"Pinion Teeth"
-          },
-          "other":{
-            "translation":"Otro",
-            "english":"Other"
-          },
-          "lv_bec_voltage":{
-            "translation":"BEC",
-            "english":"BEC"
-          },
-          "stick_range_us":{
-            "translation":"Rango Joystick",
-            "english":"Stick Range"
-          },
-          "f3c_auto":{
-            "translation":"Autorrotación F3C",
-            "english":"F3C Autorotation"
-          },
-          "esc":{
-            "translation":"ESC",
-            "english":"ESC"
-          },
-          "main_teeth":{
-            "translation":"Dientes Corona",
-            "english":"Main Teeth"
-          },
-          "throttle_response":{
-            "translation":"Respuesta Acelerador",
-            "english":"Throttle Response"
-          }
-        },
-        "hw5":{
-          "name":{
-            "translation":"Hobbywing V5",
-            "english":"Hobbywing V5"
-          },
-          "lipo_cell_count":{
-            "translation":"Nro. Celdas LiPo",
-            "english":"LiPo Cell Count"
-          },
-          "limits":{
-            "translation":"Límites",
-            "english":"Limits"
-          },
-          "esc":{
-            "translation":"ESC",
-            "english":"ESC"
-          },
-          "gov_p_gain":{
-            "translation":"Ganancia-P",
-            "english":"P-Gain"
-          },
-          "basic":{
-            "translation":"Básico",
-            "english":"Basic"
-          },
-          "flight_mode":{
-            "translation":"Modo de Vuelo",
-            "english":"Flight Mode"
-          },
-          "governor":{
-            "translation":"Governor",
-            "english":"Governor"
-          },
-          "bec_voltage":{
-            "translation":"Voltaje BEC",
-            "english":"BEC Voltage"
-          },
-          "brake":{
-            "translation":"Freno",
-            "english":"Brake"
-          },
-          "brake_type":{
-            "translation":"Tipo Freno",
-            "english":"Brake Type"
-          },
-          "brake_force":{
-            "translation":"Fuerza frenado %",
-            "english":"Brake Force%"
-          },
-          "auto_restart":{
-            "translation":"Reinicio Auto",
-            "english":"Auto Restart"
-          },
-          "startup_time":{
-            "translation":"T. Arranque",
-            "english":"Startup Time"
-          },
-          "gov_i_gain":{
-            "translation":"Ganancia-I",
-            "english":"I-Gain"
-          },
-          "motor":{
-            "translation":"Motor",
-            "english":"Motor"
-          },
-          "advanced":{
-            "translation":"Advanzado",
-            "english":"Advanced"
-          },
-          "timing":{
-            "translation":"Timing",
-            "english":"Timing"
-          },
-          "restart_time":{
-            "translation":"Tiempo Reinicio",
-            "english":"Restart Time"
-          },
-          "other":{
-            "translation":"Otro",
-            "english":"Other"
-          },
-          "rotation":{
-            "translation":"Rotación",
-            "english":"Rotation"
-          },
-          "startup_power":{
-            "translation":"Potencia Inicio",
-            "english":"Startup Power"
-          },
-          "active_freewheel":{
-            "translation":"Corona Liberada",
-            "english":"Active Freewheel"
-          },
-          "soft_start":{
-            "translation":"Arranque Suave",
-            "english":"Soft Start"
-          },
-          "cutoff_voltage":{
-            "translation":"Voltaje de Corte",
-            "english":"Cutoff Voltage"
-          },
-          "volt_cutoff_type":{
-            "translation":"Tipo Corte Voltaje",
-            "english":"Volt Cutoff Type"
+            "english":"Timing",
+            "translation":"Timing"
           }
         },
         "scorp":{
-          "max_current":{
-            "translation":"Corriente Máx",
-            "english":"Max Current"
-          },
-          "extra_msg_save":{
-            "translation":"Renicie el ESC para aplicar los cambios",
-            "english":"Please reboot the ESC to apply the changes"
-          },
-          "name":{
-            "translation":"Scorpion",
-            "english":"Scorpion"
-          },
-          "limits":{
-            "translation":"Límites",
-            "english":"Limits"
-          },
-          "motor_startup_sound":{
-            "translation":"Sonido Inicio Motor",
-            "english":"Motor Startup Sound"
-          },
-          "gov_proportional":{
-            "translation":"Gov Proporcional",
-            "english":"Gov Proportional"
-          },
-          "max_temperature":{
-            "translation":"Temperatura Máx",
-            "english":"Max Temperature"
-          },
-          "soft_start_time":{
-            "translation":"Tiempo Inicio Suave",
-            "english":"Soft Start Time"
-          },
-          "bec_voltage":{
-            "translation":"Voltaje BEC",
-            "english":"BEC Voltage"
+          "protection_delay":{
+            "english":"Protection Delay",
+            "translation":"Retardo Protección"
           },
           "gov_integral":{
-            "translation":"Gov Integral",
-            "english":"Gov Integral"
-          },
-          "protection_delay":{
-            "translation":"Retardo Protección",
-            "english":"Protection Delay"
+            "english":"Gov Integral",
+            "translation":"Gov Integral"
           },
           "runup_time":{
-            "translation":"Tiempo Previo",
-            "english":"Runup Time"
-          },
-          "max_used":{
-            "translation":"Máx Usado",
-            "english":"Max Used"
-          },
-          "telemetry_protocol":{
-            "translation":"Protocolo Telemetría",
-            "english":"Telemetry Protocol"
-          },
-          "advanced":{
-            "translation":"Advanzado",
-            "english":"Advanced"
-          },
-          "min_voltage":{
-            "translation":"Voltaje Mín",
-            "english":"Min Voltage"
-          },
-          "rotation":{
-            "translation":"Rotación",
-            "english":"Rotation"
-          },
-          "esc_mode":{
-            "translation":"Modo ESC",
-            "english":"ESC Mode"
-          },
-          "cutoff_handling":{
-            "translation":"Manejo de Corte",
-            "english":"Cutoff Handling"
+            "english":"Runup Time",
+            "translation":"Tiempo Previo"
           },
           "bailout":{
-            "translation":"Rescate",
-            "english":"Bailout"
+            "english":"Bailout",
+            "translation":"Rescate"
+          },
+          "name":{
+            "english":"Scorpion",
+            "translation":"Scorpion"
+          },
+          "motor_startup_sound":{
+            "english":"Motor Startup Sound",
+            "translation":"Sonido Inicio Motor"
+          },
+          "max_current":{
+            "english":"Max Current",
+            "translation":"Corriente Máx"
+          },
+          "cutoff_handling":{
+            "english":"Cutoff Handling",
+            "translation":"Manejo de Corte"
           },
           "basic":{
-            "translation":"Básico",
-            "english":"Basic"
+            "english":"Basic",
+            "translation":"Básico"
+          },
+          "max_used":{
+            "english":"Max Used",
+            "translation":"Máx Usado"
+          },
+          "esc_mode":{
+            "english":"ESC Mode",
+            "translation":"Modo ESC"
+          },
+          "min_voltage":{
+            "english":"Min Voltage",
+            "translation":"Voltaje Mín"
+          },
+          "soft_start_time":{
+            "english":"Soft Start Time",
+            "translation":"Tiempo Inicio Suave"
+          },
+          "gov_proportional":{
+            "english":"Gov Proportional",
+            "translation":"Gov Proporcional"
+          },
+          "limits":{
+            "english":"Limits",
+            "translation":"Límites"
+          },
+          "rotation":{
+            "english":"Rotation",
+            "translation":"Rotación"
+          },
+          "bec_voltage":{
+            "english":"BEC Voltage",
+            "translation":"Voltaje BEC"
+          },
+          "max_temperature":{
+            "english":"Max Temperature",
+            "translation":"Temperatura Máx"
+          },
+          "telemetry_protocol":{
+            "english":"Telemetry Protocol",
+            "translation":"Protocolo Telemetría"
+          },
+          "advanced":{
+            "english":"Advanced",
+            "translation":"Advanzado"
+          },
+          "extra_msg_save":{
+            "english":"Please reboot the ESC to apply the changes",
+            "translation":"Renicie el ESC para aplicar los cambios"
+          }
+        },
+        "flrtr":{
+          "other":{
+            "english":"Other",
+            "translation":"Otro"
+          },
+          "battery_capacity":{
+            "english":"Battery capacity",
+            "translation":"Capacidad de la bateria"
+          },
+          "governor":{
+            "english":"Governor",
+            "translation":"Governor"
+          },
+          "low_voltage_protection":{
+            "english":"Low voltage protection",
+            "translation":"Proteccion bajo voltaje"
+          },
+          "gov":{
+            "english":"Governor",
+            "translation":"Governor"
+          },
+          "bec_voltage":{
+            "english":"BEC voltage",
+            "translation":"Voltaje BEC"
+          },
+          "motor_temp_sensor":{
+            "english":"Motor temp sensor",
+            "translation":"Sensor de temperatura del motor"
+          },
+          "gov_i":{
+            "english":"Gov-I",
+            "translation":"Gov-I"
+          },
+          "name":{
+            "english":"FLYROTOR",
+            "translation":"FLYROTOR"
+          },
+          "advanced":{
+            "english":"Advanced",
+            "translation":"Avanzado"
+          },
+          "telemetry_protocol":{
+            "english":"Telemetry protocol",
+            "translation":"Protocolo de telemetria"
+          },
+          "motor_direction":{
+            "english":"Motor direction",
+            "translation":"Direccion del Motor"
+          },
+          "gov_p":{
+            "english":"Gov-P",
+            "translation":"Gov-P"
+          },
+          "gov_d":{
+            "english":"Gov-D",
+            "translation":"Gov-D"
+          },
+          "throttle_protocol":{
+            "english":"Throttle protocol",
+            "translation":"Protocolo de acelerador"
+          },
+          "led_color":{
+            "english":"LED color",
+            "translation":"Color LED"
+          },
+          "basic":{
+            "english":"Basic",
+            "translation":"Basico"
+          },
+          "soft_start":{
+            "english":"Soft start",
+            "translation":"Arranque Suave"
+          },
+          "current_gain":{
+            "english":"Current gain",
+            "translation":"Ganancia Corriente"
+          },
+          "starting_torque":{
+            "english":"Starting torque",
+            "translation":"Torque de Inicio"
+          },
+          "temperature_protection":{
+            "english":"Temperature protection",
+            "translation":"Proteccion Temperatura"
+          },
+          "cell_count":{
+            "english":"Cell count",
+            "translation":"Nro. de Celdas"
+          },
+          "timing_angle":{
+            "english":"Timing angle",
+            "translation":"Angulo de Timing"
+          },
+          "motor_erpm_max":{
+            "english":"Motor ERPM max",
+            "translation":"Max ERPM Motor"
+          },
+          "motor_temp":{
+            "english":"Motor temperture",
+            "translation":"Temperatura del motor"
+          },
+          "response_speed":{
+            "english":"Response speed",
+            "translation":"Velocidad de Respuesta"
+          },
+          "buzzer_volume":{
+            "english":"Buzzer volume",
+            "translation":"Volumen del Buzzer"
+          },
+          "fan_control":{
+            "english":"Fan control",
+            "translation":"Control de Ventilador"
+          }
+        },
+        "yge":{
+          "limits":{
+            "english":"Limits",
+            "translation":"Límites"
+          },
+          "esc_mode":{
+            "english":"ESC Mode",
+            "translation":"Modo ESC"
+          },
+          "stick_zero_us":{
+            "english":"Stick Zero",
+            "translation":"Cero Joystick"
+          },
+          "other":{
+            "english":"Other",
+            "translation":"Otro"
+          },
+          "direction":{
+            "english":"Direction",
+            "translation":"Dirección"
+          },
+          "name":{
+            "english":"YGE",
+            "translation":"YGE"
+          },
+          "stick_range_us":{
+            "english":"Stick Range",
+            "translation":"Rango Joystick"
+          },
+          "main_teeth":{
+            "english":"Main Teeth",
+            "translation":"Dientes Corona"
+          },
+          "f3c_auto":{
+            "english":"F3C Autorotation",
+            "translation":"Autorrotación F3C"
+          },
+          "gov_p":{
+            "english":"Gov-P",
+            "translation":"Gov-P"
+          },
+          "max_start_power":{
+            "english":"Max Start Power",
+            "translation":"Potencia Máx Inicio"
+          },
+          "throttle_response":{
+            "english":"Throttle Response",
+            "translation":"Respuesta Acelerador"
+          },
+          "esc":{
+            "english":"ESC",
+            "translation":"ESC"
+          },
+          "advanced":{
+            "english":"Advanced",
+            "translation":"Avanzado"
+          },
+          "lv_bec_voltage":{
+            "english":"BEC",
+            "translation":"BEC"
+          },
+          "pinion_teeth":{
+            "english":"Pinion Teeth",
+            "translation":"Dientes Piñón"
+          },
+          "auto_restart_time":{
+            "english":"Auto Restart Time",
+            "translation":"Tiempo Auto Reinicio"
+          },
+          "active_freewheel":{
+            "english":"Active Freewheel",
+            "translation":"Corona Liberada"
+          },
+          "basic":{
+            "english":"Basic",
+            "translation":"Básico"
+          },
+          "min_start_power":{
+            "english":"Min Start Power",
+            "translation":"Potencia Mín Inicio"
+          },
+          "gov_i":{
+            "english":"Gov-I",
+            "translation":"Gov-I"
+          },
+          "cell_cutoff":{
+            "english":"Cell Cutoff",
+            "translation":"Corte Celdas"
+          },
+          "current_limit":{
+            "english":"Current Limit",
+            "translation":"Límite de Corriente"
+          },
+          "motor_pole_pairs":{
+            "english":"Motor Pole Pairs",
+            "translation":"Pares Polos Motor"
+          },
+          "timing":{
+            "english":"Motor Timing",
+            "translation":"Timing del Motor"
+          }
+        },
+        "hw5":{
+          "limits":{
+            "english":"Limits",
+            "translation":"Límites"
+          },
+          "brake_type":{
+            "english":"Brake Type",
+            "translation":"Tipo Freno"
+          },
+          "other":{
+            "english":"Other",
+            "translation":"Otro"
+          },
+          "motor":{
+            "english":"Motor",
+            "translation":"Motor"
+          },
+          "governor":{
+            "english":"Governor",
+            "translation":"Governor"
+          },
+          "brake_force":{
+            "english":"Brake Force%",
+            "translation":"Fuerza frenado %"
+          },
+          "gov_p_gain":{
+            "english":"P-Gain",
+            "translation":"Ganancia-P"
+          },
+          "esc":{
+            "english":"ESC",
+            "translation":"ESC"
+          },
+          "name":{
+            "english":"Hobbywing V5",
+            "translation":"Hobbywing V5"
+          },
+          "volt_cutoff_type":{
+            "english":"Volt Cutoff Type",
+            "translation":"Tipo Corte Voltaje"
+          },
+          "brake":{
+            "english":"Brake",
+            "translation":"Freno"
+          },
+          "auto_restart":{
+            "english":"Auto Restart",
+            "translation":"Reinicio Auto"
+          },
+          "soft_start":{
+            "english":"Soft Start",
+            "translation":"Arranque Suave"
+          },
+          "gov_i_gain":{
+            "english":"I-Gain",
+            "translation":"Ganancia-I"
+          },
+          "basic":{
+            "english":"Basic",
+            "translation":"Básico"
+          },
+          "restart_time":{
+            "english":"Restart Time",
+            "translation":"Tiempo Reinicio"
+          },
+          "advanced":{
+            "english":"Advanced",
+            "translation":"Advanzado"
+          },
+          "startup_power":{
+            "english":"Startup Power",
+            "translation":"Potencia Inicio"
+          },
+          "active_freewheel":{
+            "english":"Active Freewheel",
+            "translation":"Corona Liberada"
+          },
+          "flight_mode":{
+            "english":"Flight Mode",
+            "translation":"Modo de Vuelo"
+          },
+          "rotation":{
+            "english":"Rotation",
+            "translation":"Rotación"
+          },
+          "bec_voltage":{
+            "english":"BEC Voltage",
+            "translation":"Voltaje BEC"
+          },
+          "lipo_cell_count":{
+            "english":"LiPo Cell Count",
+            "translation":"Nro. Celdas LiPo"
+          },
+          "cutoff_voltage":{
+            "english":"Cutoff Voltage",
+            "translation":"Voltaje de Corte"
+          },
+          "startup_time":{
+            "english":"Startup Time",
+            "translation":"T. Arranque"
+          },
+          "timing":{
+            "english":"Timing",
+            "translation":"Timing"
           }
         }
-      }
-    },
-    "profile_select":{
-      "help_p1":{
-        "translation":"Indique el perfil de vuelo o de tasa que desee utilizar.",
-        "english":"Set the current flight profile or rate profile you would like to use."
       },
-      "ok":{
-        "translation":"OK",
-        "english":"OK"
-      },
-      "save_settings":{
-        "translation":"Guardar config",
-        "english":"Save settings"
-      },
-      "save_prompt":{
-        "translation":"Guarda esta página en el controlador de vuelo?",
-        "english":"Save current page to flight controller?"
-      },
-      "help_p2":{
-        "translation":"Si utiliza un botón en su radio para cambiar los modos de vuelo o tasas, esta función anula la elección tan pronto como cambie la posición del botón.",
-        "english":"If you use a switch on your radio to change flight or rate modes, this will override this choice as soon as you toggle the switch."
-      },
-      "rate_profile":{
-        "translation":"Perfil Tasa",
-        "english":"Rate Profile"
-      },
-      "pid_profile":{
-        "translation":"Perfil PID",
-        "english":"PID profile"
-      },
-      "cancel":{
-        "translation":"CANCELAR",
-        "english":"CANCEL"
-      },
-      "name":{
-        "translation":"Selección Perfil",
-        "english":"Select Profile"
-      }
-    },
-    "validate_sensors":{
-      "help_p1":{
-        "translation":"Esta herramienta intenta listar todos los sensores necesarios que faltan.",
-        "english":"This tool attempts to list all the sensors that you are not receiving in a concise list."
-      },
-      "msg_repair":{
-        "translation":"Activa los sensores necesarios en el controlador de vuelo?",
-        "english":"Enable required sensors on flight controller?"
-      },
-      "name":{
-        "translation":"Sensores",
-        "english":"Sensors"
-      },
-      "msg_repair_fin":{
-        "translation":"El controlador de vuelo está configurado? Puede que necesite ejecutar 'Descubrir Sensores' para ver los cambios.",
-        "english":"The flight controller has been configured? You may need to perform a discover sensors to see the changes."
-      },
-      "ok":{
-        "translation":"OK",
-        "english":"OK"
-      },
-      "help_p2":{
-        "translation":"Utilice esta herramienta para asegurar que está enviando los sensores que corresponde.",
-        "english":"Use this tool to ensure you are sending the correct sensors."
-      },
-      "invalid":{
-        "translation":"INVALIDOS",
-        "english":"INVALID"
-      }
-    },
-    "rates_advanced":{
-      "col":{
-        "translation":"Colec.",
-        "english":"Col"
-      },
-      "response_time":{
-        "translation":"T. Respuesta",
-        "english":"Response Time"
-      },
-      "roll_dynamics":{
-        "translation":"Dinámica de Rolido",
-        "english":"Roll dynamics"
-      },
-      "msg_reset_to_defaults":{
-        "translation":"Cambió el tipo de tasa. Los valores se cambiaron a los por defecto.",
-        "english":"Rate type changed. Values will be reset to defaults."
-      },
-      "collective_dynamics":{
-        "translation":"Dinám. de Colectivo",
-        "english":"Collective dynamics"
-      },
-      "yaw_dynamics":{
-        "translation":"Dinám. de Rotación",
-        "english":"Yaw dynamics"
-      },
-      "pitch_boost":{
-        "translation":"Impulso de cabeceo",
-        "english":"Pitch boost"
-      },
-      "dyn_deadband_gain":{
-        "translation":"Gan. Zona Muerta",
-        "english":"Dynamic deadband gain"
-      },
-      "setpoint_boost_cutoff":{
-        "translation":"Corte Ref.",
-        "english":"Setpoint boost cutoff"
-      },
-      "setpoint_boost_gain":{
-        "translation":"Ganancia Ref.",
-        "english":"Setpoint boost gain"
-      },
-      "yaw_dynamic_deadband_filter":{
-        "translation":"Filtro Rot.",
-        "english":"Filter"
-      },
-      "pitch":{
-        "translation":"Cabeceo",
-        "english":"Pitch"
-      },
-      "name":{
-        "translation":"Tasas",
-        "english":"Rates"
-      },
-      "yaw_boost":{
-        "translation":"Impulso de giro",
-        "english":"Yaw boost"
-      },
-      "yaw":{
-        "translation":"Giro",
-        "english":"Yaw"
-      },
-      "roll":{
-        "translation":"Rolido",
-        "english":"Roll"
-      },
-      "rate_table":{
-        "translation":"Tabla de Tasas",
-        "english":"Rate Table"
-      },
-      "rates_type":{
-        "translation":"Tipo de Tasas",
-        "english":"Rates Type"
-      },
-      "yaw_dynamic_deadband_gain":{
-        "translation":"Banda Muerta Rot.",
-        "english":"D. Band"
-      },
-      "dyn_deadband_filter":{
-        "translation":"Filtro Zona Muerta",
-        "english":"Dynamic deadband filter"
-      },
-      "yaw_dynamic_ceiling_gain":{
-        "translation":"Tope Rotación",
-        "english":"Ceiling"
-      },
-      "dynamics":{
-        "translation":"Dinámica",
-        "english":"Dynamics"
-      },
-      "dyn_ceiling_gain":{
-        "translation":"Tope Ganancia",
-        "english":"Dynamic ceiling gain"
-      },
-      "help_p2":{
-        "translation":"Dinámicas: Se aplican independientemente de los tipos de tasas. Normalmente se dejan los valores por defecto, pero pueden ser ajustados para suavizar los movimientos del heli, como es el caso de los modelos a escala.",
-        "english":"Dynamics: Applied regardless of rates type. Typically left on defaults but can be adjusted to smooth heli movements, like with scale helis."
-      },
-      "collective_boost":{
-        "translation":"Impulso colectivo",
-        "english":"Collective boost"
-      },
-      "help_p1":{
-        "translation":"Tipo de Tasas: Seleccione el tipo de tasa con la que prefiere volar. Raceflight y Actual son las mas directas.",
-        "english":"Rates type: Choose the rate type you prefer flying with. Raceflight and Actual are the most straightforward."
-      },
-      "gain":{
-        "translation":"Ganancia",
-        "english":"Gain"
-      },
-      "help_rate_table":{
-        "translation":"Seleccione la tasa que desea utilizar. Al guardar se aplicará la elección al perfil activo.",
-        "english":"Please select the rate you would like to use. Saving will apply the choice to the active profile."
-      },
-      "pitch_dynamics":{
-        "translation":"Dinám. de Cabeceo",
-        "english":"Pitch dynamics"
-      },
-      "accel_limit":{
-        "translation":"Acel.",
-        "english":"Accel"
-      },
-      "cutoff":{
-        "translation":"Límite",
-        "english":"Cutoff"
-      },
-      "acc_limit":{
-        "translation":"Límite Acel.",
-        "english":"Accelerometer Limit"
-      },
-      "roll_boost":{
-        "translation":"Impulso de rolido",
-        "english":"Roll boost"
-      }
-    },
-    "profile_pidcontroller":{
-      "pitch":{
-        "translation":"P",
-        "english":"P"
-      },
-      "hsi_offset_limit":{
-        "translation":"Límite Compensación HSI",
-        "english":"HSI Offset limit"
-      },
-      "name":{
-        "translation":"Controlador PID",
-        "english":"PID Controller"
-      },
-      "help_p4":{
-        "translation":"Error rotación: Permitir que se compartan los errores entre todos los ejes.",
-        "english":"Error rotation: Allow errors to be shared between all axes."
-      },
-      "yaw":{
-        "translation":"Y",
-        "english":"Y"
-      },
-      "roll":{
-        "translation":"R",
-        "english":"R"
-      },
-      "limit":{
-        "translation":"Límite",
-        "english":"Limit"
-      },
-      "time":{
-        "translation":"Tiempo",
-        "english":"Time"
-      },
-      "error_rotation":{
-        "translation":"Error rotación",
-        "english":"Error rotation"
-      },
-      "help_p1":{
-        "translation":"Distensión Error en Tierra: Distensión de PID para ayudar a prevenir que el heli se vuelque estando en tierra.",
-        "english":"Error decay ground: PID decay to help prevent heli from tipping over when on the ground."
-      },
-      "error_limit":{
-        "translation":"Límite Error",
-        "english":"Error limit"
-      },
-      "cutoff_point":{
-        "translation":"Punto de Corte",
-        "english":"Cut-off point"
-      },
-      "help_p2":{
-        "translation":"Límite Error: Angulo límite para I-term.",
-        "english":"Error limit: Angle limit for I-term."
-      },
-      "help_p5":{
-        "translation":"Distensión I-term: Limita la acumulación de I-term durante movimientos rápidos - ayuda a reducir el rebote luego de movimientos rápidos del joystick. En general debe ser menor para helis grandes y puede ser mayor en helis pequeños. Lo mejor es reducir tanto como sea necesario para su estilo de vuelo.",
-        "english":"I-term relax: Limit accumulation of I-term during fast movements - helps reduce bounce back after fast stick movements. Generally needs to be lower for large helis and can be higher for small helis. Best to only reduce as much as is needed for your flying style."
-      },
-      "ground_error_decay":{
-        "translation":"Distensión Error Tierra",
-        "english":"Ground Error Decay"
-      },
-      "iterm_relax":{
-        "translation":"Distensión I-term",
-        "english":"I-term relax"
-      },
-      "help_p3":{
-        "translation":"Límite de compensación: Angulo límite para Integral de Alta Velocidad (HSI O-term).",
-        "english":"Offset limit: Angle limit for High Speed Integral (O-term)."
-      },
-      "inflight_error_decay":{
-        "translation":"Distens. Err en Vuelo",
-        "english":"Inflight Error Decay"
-      }
-    },
-    "rates":{
-      "rc_curve":{
-        "translation":"Curva RC",
-        "english":"RC Curve"
-      },
-      "help_table_1_p3":{
-        "translation":"Expo: Reduce la sensibilidad cerca del centro del joystick donde hacen falta controles finos.",
-        "english":"Expo: Reduces sensitivity near the stick's center where fine controls are needed."
-      },
-      "expo":{
-        "translation":"Expo",
-        "english":"Expo"
-      },
-      "help_default_p1":{
-        "translation":"Por Defecto: Mantenemos esto para hacer que el botón esté disponible para tasas.",
-        "english":"Default: We keep this to make button appear for rates."
-      },
-      "help_table_1_p1":{
-        "translation":"Tasa RC: Tasa de rotación máxima durante el desplazamiento máximo del joystick.",
-        "english":"RC Rate: Maximum rotation rate at full stick deflection."
-      },
-      "quick":{
-        "translation":"QUICK",
-        "english":"QUICK"
-      },
-      "center_sensitivity":{
-        "translation":"Sens.Cntro.",
-        "english":"Cntr. Sens."
-      },
-      "help_table_0_p1":{
-        "translation":"Todos los valores en cero porque no hay TABLA DE TASAS en uso.",
-        "english":"All values are set to zero because no RATE TABLE is in use."
-      },
-      "help_table_2_p1":{
-        "translation":"Tasa: Tasa de rotación máxima durante el desplazamiento máximo del joystick en grados por segundo.",
-        "english":"Rate: Maximum rotation rate at full stick deflection in degrees per second."
-      },
-      "acroplus":{
-        "translation":"Acro+",
-        "english":"Acro+"
-      },
-      "help_table_5_p2":{
-        "translation":"Tasa Máx.: Tasa de rotación máxima durante el desplazamiento máximo del joystick en grados por segundo.",
-        "english":"Max Rate: Maximum rotation rate at full stick deflection in degrees per second."
-      },
-      "superrate":{
-        "translation":"SuperTasa",
-        "english":"SuperRate"
-      },
-      "rc_rate":{
-        "translation":"Tasa RC",
-        "english":"RC Rate"
-      },
-      "betaflight":{
-        "translation":"BETAFLIGHT",
-        "english":"BETAFLIGHT"
-      },
-      "help_table_2_p3":{
-        "translation":"Expo: Reduce la sensibilidad cerca del centro del joystick donde hacen falta controles finos.",
-        "english":"Expo: Reduces sensitivity near the stick's center where fine controls are needed."
-      },
-      "help_table_3_p2":{
-        "translation":"Tasa: Incrementa la tasa de rotación máxima al tiempo que reduce la sensibilidad cerca del desplazamiento medio del joystick.",
-        "english":"Rate: Increases maximum rotation rate while reducing sensitivity around half stick."
-      },
-      "yaw":{
-        "translation":"Rotación",
-        "english":"Yaw"
-      },
-      "roll":{
-        "translation":"Rolido",
-        "english":"Roll"
-      },
-      "help_table_2_p2":{
-        "translation":"Acro+: Incrementa la tasa de rotación al tiempo que reduce la sensibilidad cerca del desplazamiento medio del joystick.",
-        "english":"Acro+: Increases the maximum rotation rate while reducing sensitivity around half stick."
-      },
-      "collective":{
-        "translation":"Colectivo",
-        "english":"Col"
-      },
-      "help_default_p2":{
-        "translation":"Usaremos las teclas que siguen abajo.",
-        "english":"We will use the sub keys below."
-      },
-      "help_table_4_p3":{
-        "translation":"Expo: Reduce la sensibilidad cerca del centro del joystick donde hacen falta controles finos.",
-        "english":"Expo: Reduces sensitivity near the stick's center where fine controls are needed."
-      },
-      "help_table_1_p2":{
-        "translation":"SuperTasa: Aumenta la tasa máxima de rotación al tiempo que reduce la sensibilidad cerca del desplazamiento medio del joystick.",
-        "english":"SuperRate: Increases maximum rotation rate while reducing sensitivity around half stick."
-      },
-      "help_table_4_p1":{
-        "translation":"Sensibilidad Central: Para reducir sensibilidad cerca del centro del joystick. Configure la Sensibilidad Central igual que Tasa Máx para una respuesta lineal. Un valor menor que Tasa Máx reducirá la sensibilidad cerca del centro del joystick. Si es mayor que Tasa Máx se incrementa la Tasa Máx - No se recomienda porque causa problemas en el log de la Caja Negra.",
-        "english":"Center Sensitivity: Use to reduce sensitivity around center stick. Set Center Sensitivity to the same as Max Rate for a linear response. A lower number than Max Rate will reduce sensitivity around center stick. Note that higher than Max Rate will increase the Max Rate - not recommended as it causes issues in the Blackbox log."
-      },
-      "help_table_3_p1":{
-        "translation":"Tasa RC: Tasa de rotación máxima durante el desplazamiento máximo del joystick.",
-        "english":"RC Rate: Maximum rotation rate at full stick deflection."
-      },
-      "pitch":{
-        "translation":"Cabeceo",
-        "english":"Pitch"
-      },
-      "help_table_5_p3":{
-        "translation":"Expo: Reduce la sensibilidad cerca del centro del joystick donde hacen falta controles finos.",
-        "english":"Expo: Reduces sensitivity near the stick's center where fine controls are needed."
-      },
-      "help_table_4_p2":{
-        "translation":"Tasa Máx: Tasa máxima de rotación durante el desplazamiento máximo del joystick en grados por segundo.",
-        "english":"Max Rate: Maximum rotation rate at full stick deflection in degrees per second."
-      },
-      "rate":{
-        "translation":"Tasa",
-        "english":"Rate"
-      },
-      "name":{
-        "translation":"Tasas",
-        "english":"Rates"
-      },
-      "actual":{
-        "translation":"ACTUAL",
-        "english":"ACTUAL"
-      },
-      "help_table_3_p3":{
-        "translation":"Curva RC: Reduce la sensibilidad cerca del centro del joystick donde hacen falta controles finos.",
-        "english":"RC Curve: Reduces sensitivity near the stick's center where fine controls are needed."
-      },
-      "raceflight":{
-        "translation":"RACEFLIGHT",
-        "english":"RACEFLIGHT"
-      },
-      "kiss":{
-        "translation":"KISS",
-        "english":"KISS"
-      },
-      "none":{
-        "translation":"NINGUNA",
-        "english":"NONE"
-      },
-      "max_rate":{
-        "translation":"Tasa Máx",
-        "english":"Max Rate"
-      },
-      "help_table_5_p1":{
-        "translation":"Tasa RC: Se usa para reducir le sensibilidad cerca del centro del joystick. Configurar la Tasa RC a la mitad de la Tasa Máx da por resultado una función lineal. Un valor menor reduce la sesibilidad cerca del centro del joystick y un valor mayor incrementará la Tasa Máx.",
-        "english":"RC Rate: Use to reduce sensitivity around center stick. RC Rate set to one half of the Max Rate is linear. A lower number will reduce sensitivity around center stick. Higher than one half of the Max Rate will also increase the Max Rate."
-      }
-    },
-    "msp_exp":{
-      "help_p1":{
-        "translation":"Esta herramienta provee la capacidad de enviar un string de bytes al controlador de vuelo. Lo utilizan los desarrolladores durante el debugging.",
-        "english":"This tool provides the ability to send a custom byte string to the flight controller. It is useful for developers when debugging values."
-      },
-      "help_p2":{
-        "translation":"Si no sabe lo que está haciendo no la use, podrian suceder cosas peligrosas.",
-        "english":"If you do not understand what you are doing, do not use it as bad things can happen."
-      },
-      "name":{
-        "translation":"MSP Experimental",
-        "english":"MSP Expermental"
+      "please_powercycle":{
+        "english":"Please power cycle the ESC...",
+        "translation":"Apague y reencienda el ESC..."
       }
     },
     "esc_motors":{
-      "help_p1":{
-        "translation":"Configure características del motor y ESC.",
-        "english":"Configure the motor and speed controller features."
-      },
-      "front":{
-        "translation":"Frontal",
-        "english":"Front"
-      },
-      "name":{
-        "translation":"ESC/Motores",
-        "english":"ESC/Motors"
-      },
-      "pinion":{
-        "translation":"Piñón",
-        "english":"Pinion"
-      },
-      "mincommand":{
-        "translation":"Valor PWM Motor Detenido",
-        "english":"Motor Stop PWM Value"
-      },
-      "max_throttle":{
-        "translation":"Valor PWM Acelerador 100%",
-        "english":"100% Throttle PWM value"
-      },
       "current_correction":{
-        "translation":"Corrección de Corriente",
-        "english":"Current Correction"
+        "english":"Current Correction",
+        "translation":"Corrección de Corriente"
       },
       "min_throttle":{
-        "translation":"Valor PWM Acelerador 0%",
-        "english":"0% Throttle PWM Value"
-      },
-      "consumption_correction":{
-        "translation":"Corrección de Consumo",
-        "english":"Consumption Correction"
-      },
-      "main":{
-        "translation":"Principal",
-        "english":"Main"
-      },
-      "voltage_correction":{
-        "translation":"Corrección de Voltaje",
-        "english":"Voltage Correction"
-      },
-      "motor_pole_count":{
-        "translation":"Nro. de Polos del Motor",
-        "english":"Motor Pole Count"
-      },
-      "main_motor_ratio":{
-        "translation":"Relación Motor ",
-        "english":"Main Motor Ratio"
-      },
-      "rear":{
-        "translation":"de Cola",
-        "english":"Rear"
+        "english":"0% Throttle PWM Value",
+        "translation":"Valor PWM Acelerador 0%"
       },
       "tail_motor_ratio":{
-        "translation":"Relación Motor ",
-        "english":"Tail Motor Ratio"
-      }
-    },
-    "mixer":{
-      "collective_tilt_correction_neg":{
-        "translation":"Negativo",
-        "english":"Negative"
+        "english":"Tail Motor Ratio",
+        "translation":"Relación Motor "
       },
-      "swash_tta_precomp":{
-        "translation":"Precomp TTA",
-        "english":"TTA Precomp"
+      "voltage_correction":{
+        "english":"Voltage Correction",
+        "translation":"Corrección de Voltaje"
       },
-      "name":{
-        "translation":"Mezclador",
-        "english":"Mixer"
+      "max_throttle":{
+        "english":"100% Throttle PWM value",
+        "translation":"Valor PWM Acelerador 100%"
       },
-      "collective_tilt_correction_pos":{
-        "translation":"Positivo",
-        "english":"Positive"
+      "pinion":{
+        "english":"Pinion",
+        "translation":"Piñón"
       },
-      "swash_pitch_limit":{
-        "translation":"Límite Total Cabeceo",
-        "english":"Total Pitch Limit"
+      "rear":{
+        "english":"Rear",
+        "translation":"de Cola"
       },
-      "tail_motor_idle":{
-        "translation":"% Acel Ralentí Cola",
-        "english":"Tail Idle Thr%"
+      "main_motor_ratio":{
+        "english":"Main Motor Ratio",
+        "translation":"Relación Motor "
       },
-      "collective_tilt_correction":{
-        "translation":"Corrección Inclinación Colectivo",
-        "english":"Collective Tilt Correction"
+      "motor_pole_count":{
+        "english":"Motor Pole Count",
+        "translation":"Nro. de Polos del Motor"
       },
-      "geo_correction":{
-        "translation":"Geo-Corrección",
-        "english":"Geo Correction"
+      "consumption_correction":{
+        "english":"Consumption Correction",
+        "translation":"Corrección de Consumo"
       },
-      "swash_phase":{
-        "translation":"Angulo de Fase",
-        "english":"Phase Angle"
-      },
-      "help_p1":{
-        "translation":"Ajuste de geometría del swashplate, ángulos de fase, y límites.",
-        "english":"Adust swash plate geometry, phase angles, and limits."
-      }
-    },
-    "accelerometer":{
-      "pitch":{
-        "translation":"Cabeceo",
-        "english":"Pitch"
+      "main":{
+        "english":"Main",
+        "translation":"Principal"
       },
       "name":{
-        "translation":"Acelerómetro",
-        "english":"Accelerometer"
+        "english":"ESC/Motors",
+        "translation":"ESC/Motores"
       },
-      "msg_calibrate":{
-        "translation":"Calibrar el acelerómetro?",
-        "english":"Calibrate the accelerometer?"
+      "front":{
+        "english":"Front",
+        "translation":"Frontal"
+      },
+      "mincommand":{
+        "english":"Motor Stop PWM Value",
+        "translation":"Valor PWM Motor Detenido"
       },
       "help_p1":{
-        "translation":"El acelerómetro se utiliza para medir el ángulo del controlador de vuelo respecto del horizonte. Los datos obtenidos son utilizados para estabilizar la aeronave y porveer funcionalidad de nivelado automático.",
-        "english":"The accelerometer is used to measure the angle of the flight controller in relation to the horizon. This data is used to stabilize the aircraft and provide self-leveling functionality."
+        "english":"Configure the motor and speed controller features.",
+        "translation":"Configure características del motor y ESC."
+      }
+    },
+    "profile_governor":{
+      "yaw":{
+        "english":"Yaw",
+        "translation":"Giro"
+      },
+      "precomp":{
+        "english":"Precomp",
+        "translation":"Precomp"
+      },
+      "f":{
+        "english":"F",
+        "translation":"F"
+      },
+      "max_throttle":{
+        "english":"Max throttle",
+        "translation":"Acelerador Máx"
+      },
+      "gains":{
+        "english":"Gains",
+        "translation":"Ganancias"
+      },
+      "d":{
+        "english":"D",
+        "translation":"D"
+      },
+      "cyc":{
+        "english":"Cyc",
+        "translation":"Cícl."
+      },
+      "name":{
+        "english":"Governor",
+        "translation":"Governor"
+      },
+      "help_p1":{
+        "english":"Full headspeed: Headspeed target when at 100% throttle input.",
+        "translation":"Velocidad Rotor Máx: Velocidad deseada del rotor con el acelerador al 100%."
+      },
+      "help_p6":{
+        "english":"Tail Torque Assist: For motorized tails. Gain and limit of headspeed increase when using main rotor torque for yaw assist.",
+        "translation":"Asistencia de Torque de Cola: Para colas motorizadas. Ganancia y límite de aceleracion del rotor cuando se utiliza el torque del rotor principal para asistir al giro sobre el eje vertical."
+      },
+      "help_p2":{
+        "english":"PID master gain: How hard the governor works to hold the RPM.",
+        "translation":"Ganacia PID maestra: Que tanto trabaja el governor para sostener las RPM."
+      },
+      "min_throttle":{
+        "english":"Min throttle",
+        "translation":"Acelerador Mín"
+      },
+      "col":{
+        "english":"Col",
+        "translation":"Colec."
+      },
+      "disabled_message":{
+        "english":"Rotorflight governor is not enabled",
+        "translation":"Governor Rotorflight está deshabilitado"
+      },
+      "full_headspeed":{
+        "english":"Full headspeed",
+        "translation":"Velocidad Máx Rotor"
+      },
+      "i":{
+        "english":"I",
+        "translation":"I"
+      },
+      "gain":{
+        "english":"PID master gain",
+        "translation":"Ganacia PID maestra"
+      },
+      "help_p5":{
+        "english":"Max throttle: The maximum throttle % the governor is allowed to use.",
+        "translation":"Acelerador Máx: El porcentaje máximo de acelerador que se le permite utilizar al governor."
+      },
+      "tta_limit":{
+        "english":"Limit",
+        "translation":"Limite"
+      },
+      "p":{
+        "english":"P",
+        "translation":"P"
+      },
+      "help_p3":{
+        "english":"Gains: Fine tuning of the governor.",
+        "translation":"Ganancias: Ajuste fino del governor."
+      },
+      "help_p4":{
+        "english":"Precomp: Governor precomp gain for yaw, cyclic, and collective inputs.",
+        "translation":"Precomp: Precompensación del Governor para comandos de cíclico, colectivo, y giro (cola)."
+      },
+      "tail_torque_assist":{
+        "english":"Tail Torque Assist",
+        "translation":"Asist. Torque Cola"
+      },
+      "tta_gain":{
+        "english":"Gain",
+        "translation":"Ganancia"
+      }
+    },
+    "profile_pidcontroller":{
+      "yaw":{
+        "english":"Y",
+        "translation":"Y"
+      },
+      "iterm_relax":{
+        "english":"I-term relax",
+        "translation":"Distensión I-term"
+      },
+      "ground_error_decay":{
+        "english":"Ground Error Decay",
+        "translation":"Distensión Error Tierra"
+      },
+      "help_p5":{
+        "english":"I-term relax: Limit accumulation of I-term during fast movements - helps reduce bounce back after fast stick movements. Generally needs to be lower for large helis and can be higher for small helis. Best to only reduce as much as is needed for your flying style.",
+        "translation":"Distensión I-term: Limita la acumulación de I-term durante movimientos rápidos - ayuda a reducir el rebote luego de movimientos rápidos del joystick. En general debe ser menor para helis grandes y puede ser mayor en helis pequeños. Lo mejor es reducir tanto como sea necesario para su estilo de vuelo."
+      },
+      "name":{
+        "english":"PID Controller",
+        "translation":"Controlador PID"
+      },
+      "help_p1":{
+        "english":"Error decay ground: PID decay to help prevent heli from tipping over when on the ground.",
+        "translation":"Distensión Error en Tierra: Distensión de PID para ayudar a prevenir que el heli se vuelque estando en tierra."
       },
       "roll":{
-        "translation":"Rolido",
-        "english":"Roll"
+        "english":"R",
+        "translation":"R"
+      },
+      "help_p2":{
+        "english":"Error limit: Angle limit for I-term.",
+        "translation":"Límite Error: Angulo límite para I-term."
+      },
+      "pitch":{
+        "english":"P",
+        "translation":"P"
+      },
+      "inflight_error_decay":{
+        "english":"Inflight Error Decay",
+        "translation":"Distens. Err en Vuelo"
+      },
+      "help_p3":{
+        "english":"Offset limit: Angle limit for High Speed Integral (O-term).",
+        "translation":"Límite de compensación: Angulo límite para Integral de Alta Velocidad (HSI O-term)."
+      },
+      "limit":{
+        "english":"Limit",
+        "translation":"Límite"
+      },
+      "error_limit":{
+        "english":"Error limit",
+        "translation":"Límite Error"
+      },
+      "cutoff_point":{
+        "english":"Cut-off point",
+        "translation":"Punto de Corte"
+      },
+      "hsi_offset_limit":{
+        "english":"HSI Offset limit",
+        "translation":"Límite Compensación HSI"
+      },
+      "help_p4":{
+        "english":"Error rotation: Allow errors to be shared between all axes.",
+        "translation":"Error rotación: Permitir que se compartan los errores entre todos los ejes."
+      },
+      "time":{
+        "english":"Time",
+        "translation":"Tiempo"
+      },
+      "error_rotation":{
+        "english":"Error rotation",
+        "translation":"Error rotación"
+      }
+    },
+    "radio_config":{
+      "center":{
+        "english":"Center",
+        "translation":"Centro"
+      },
+      "min_throttle":{
+        "english":"Min",
+        "translation":"Mín"
+      },
+      "deflection":{
+        "english":"Deflection",
+        "translation":"Deflección"
+      },
+      "max_throttle":{
+        "english":"Max",
+        "translation":"Máx"
+      },
+      "cyclic":{
+        "english":"Cyclic",
+        "translation":"Cíclico"
+      },
+      "stick":{
+        "english":"Stick",
+        "translation":"Joystick"
+      },
+      "deadband":{
+        "english":"Deadband",
+        "translation":"Zona muerta"
+      },
+      "yaw_deadband":{
+        "english":"Yaw",
+        "translation":"Rotación"
+      },
+      "name":{
+        "english":"Radio Config",
+        "translation":"Config Radio"
+      },
+      "arming":{
+        "english":"Arming",
+        "translation":"Armado"
+      },
+      "throttle":{
+        "english":"Throttle",
+        "translation":"Acelerador"
+      },
+      "help_p1":{
+        "english":"Configure your radio settings. Stick center, arm, throttle hold, and throttle cut.",
+        "translation":"Configure su radio. Centro del joystick, armado, retención de acelerador, y corte de acelerador."
       }
     },
     "governor":{
-      "help_p1":{
-        "translation":"Estos parámetros se aplican globalmente al governor independientemente del perfil en uso.",
-        "english":"These parameters apply globally to the governor regardless of the profile in use."
-      },
-      "spoolup_min_throttle":{
-        "translation":"% Acelerador Mín Arranque",
-        "english":"Spoolup min throttle%"
-      },
-      "name":{
-        "translation":"Governor",
-        "english":"Governor"
+      "spoolup_time":{
+        "english":"Spoolup time",
+        "translation":"Tiempo de Arranque"
       },
       "help_p2":{
-        "translation":"Todos los parámetros son tiempos en segundos para cada acción del governor.",
-        "english":"Each parameter is simply a time value in seconds for each governor action."
-      },
-      "tracking_time":{
-        "translation":"Tiempo de Tracking",
-        "english":"Tracking time"
-      },
-      "handover_throttle":{
-        "translation":"% Acelerador Transferencia",
-        "english":"Handover throttle%"
+        "english":"Each parameter is simply a time value in seconds for each governor action.",
+        "translation":"Todos los parámetros son tiempos en segundos para cada acción del governor."
       },
       "startup_time":{
-        "translation":"Tiempo de Inicio",
-        "english":"Startup time"
+        "english":"Startup time",
+        "translation":"Tiempo de Inicio"
       },
-      "spoolup_time":{
-        "translation":"Tiempo de Arranque",
-        "english":"Spoolup time"
+      "tracking_time":{
+        "english":"Tracking time",
+        "translation":"Tiempo de Tracking"
       },
-      "recovery_time":{
-        "translation":"Tiempo de Recuperación",
-        "english":"Recovery time"
+      "handover_throttle":{
+        "english":"Handover throttle%",
+        "translation":"% Acelerador Transferencia"
       },
       "mode":{
-        "translation":"Modo",
-        "english":"Mode"
-      }
-    },
-    "msp_speed":{
-      "seconds_30":{
-        "translation":"  30S  ",
-        "english":"  30S  "
+        "english":"Mode",
+        "translation":"Modo"
       },
-      "checksum_errors":{
-        "translation":"Errores de checksum",
-        "english":"Checksum errors"
+      "name":{
+        "english":"Governor",
+        "translation":"Governor"
       },
-      "rf_protocol":{
-        "translation":"Protocolo RF",
-        "english":"RF protocol"
-      },
-      "max_query_time":{
-        "translation":"Tiempo Máx Consulta",
-        "english":"Maximum query time"
-      },
-      "test_length":{
-        "translation":"Longitud del Test",
-        "english":"Test length"
-      },
-      "retries":{
-        "translation":"Reintentos",
-        "english":"Retries"
-      },
-      "memory_free":{
-        "translation":"Memoria libre",
-        "english":"Memory free"
-      },
-      "min_query_time":{
-        "translation":"Tiempo Mín Consulta",
-        "english":"Minimum query time"
-      },
-      "successful_queries":{
-        "translation":"Consultas exitosas",
-        "english":"Successful queries"
-      },
-      "testing_performance":{
-        "translation":"Probando performance MSP...",
-        "english":"Testing MSP performance..."
+      "recovery_time":{
+        "english":"Recovery time",
+        "translation":"Tiempo de Recuperación"
       },
       "help_p1":{
-        "translation":"Esta herramienta intenta determinar la calidad de la conexión de datos MSP llevando a cabo tantas consultas MSP grandes como sea posible en 30 segundos.",
-        "english":"This tool attempts to determine the quality of your MSP data link by performing as many large MSP queries within 30 seconds as possible."
-      },
-      "seconds_600":{
-        "translation":"  600S  ",
-        "english":"  600S  "
-      },
-      "seconds_120":{
-        "translation":"  120S  ",
-        "english":"  120S  "
-      },
-      "total_queries":{
-        "translation":"Total de consultas",
-        "english":"Total queries"
-      },
-      "start":{
-        "translation":"Inicio",
-        "english":"Start"
-      },
-      "avg_query_time":{
-        "translation":"Tiempo Promedio Consulta",
-        "english":"Average query time"
-      },
-      "timeouts":{
-        "translation":"Tiempo agotado",
-        "english":"Timeouts"
-      },
-      "name":{
-        "translation":"Velocidad MSP",
-        "english":"MSP Speed"
-      },
-      "start_prompt":{
-        "translation":"Desea comenzar la prueba? Seleccione el tiempo de ejecución que sigue.",
-        "english":"Would you like to start the test? Choose the test run time below."
-      },
-      "testing":{
-        "translation":"Probando",
-        "english":"Testing"
-      },
-      "seconds_300":{
-        "translation":"  300S  ",
-        "english":"  300S  "
-      }
-    },
-    "trim":{
-      "help_p1":{
-        "translation":"Ajuste de enlaces: Se utiliza para corregir pequeños problemas de nivelación en el swashplate. Normalmente se utiliza cuando los brazos del swashplate no son ajustables.",
-        "english":"Link trims: Use to trim out small leveling issues in your swash plate. Typically only used if the swash links are non-adjustable."
-      },
-      "pitch_trim":{
-        "translation":"% ajuste Cabeceo",
-        "english":"Pitch trim %"
-      },
-      "name":{
-        "translation":"Ajuste",
-        "english":"Trim"
-      },
-      "mixer_override":{
-        "translation":"Toma de Mezclador",
-        "english":"Mixer Override"
-      },
-      "tail_motor_idle":{
-        "translation":"% Motor cola ralentí",
-        "english":"Tail Motor idle  %"
-      },
-      "help_p2":{
-        "translation":"Cola motorizada: Si tiene una cola motorizada, utilice este parámetro para configurar la velocidad mínima de ralentí a la que el heli no gira.",
-        "english":"Motorised tail: If using a motorised tail, use this to set the minimum idle speed and zero yaw."
-      },
-      "enable_mixer_message":{
-        "translation":"Ponga todos los servos en su posición central configurada.\r\n\r\nEsto permitirá que se guarden todos los valores de ajuste de los servos.",
-        "english":"Set all servos to their configured center position. \r\n\r\nThis will result in all values on this page being saved when adjusting the servo trim."
-      },
-      "disable_mixer_message":{
-        "translation":"Devolver el control de los servos al controlador de vuelo.",
-        "english":"Return control of the servos to the flight controller."
-      },
-      "roll_trim":{
-        "translation":"% ajuste Rolido",
-        "english":"Roll trim %"
-      },
-      "collective_trim":{
-        "translation":"% ajuste Colectivo",
-        "english":"Col. trim %"
-      },
-      "enable_mixer_override":{
-        "translation":"Permitir toma de mezclador",
-        "english":"Enable mixer override"
-      },
-      "mixer_override_disabling":{
-        "translation":"Desactivando toma de mezclador...",
-        "english":"Disabling mixer override..."
-      },
-      "disable_mixer_override":{
-        "translation":"No permitir toma de mezclador",
-        "english":"Disable mixer override"
-      },
-      "yaw_trim":{
-        "translation":"% ajuste Giro",
-        "english":"Yaw. trim %"
-      },
-      "mixer_override_enabling":{
-        "translation":"Activando toma de mezclador...",
-        "english":"Enabling mixer override..."
-      }
-    },
-    "profile_rescue":{
-      "exit_time":{
-        "translation":"T.Salida",
-        "english":"Exit time"
-      },
-      "name":{
-        "translation":"Rescate",
-        "english":"Rescue"
-      },
-      "hover":{
-        "translation":"Sobrevuelo",
-        "english":"Hover"
-      },
-      "help_p4":{
-        "translation":"Sobrevuelo: Cuánto colectivo se necesita para mantener el heli sobrevolando el lugar.",
-        "english":"Hover: How much collective to maintain a steady hover."
-      },
-      "flip":{
-        "translation":"Invers.",
-        "english":"Flip"
-      },
-      "climb":{
-        "translation":"Trepada",
-        "english":"Climb"
-      },
-      "collective":{
-        "translation":"Colectivo",
-        "english":"Collective"
-      },
-      "fail_time":{
-        "translation":"Tiempo Falla",
-        "english":"Fail time"
-      },
-      "accel":{
-        "translation":"Acel.",
-        "english":"Accel"
-      },
-      "gains":{
-        "translation":"Ganancias",
-        "english":"Gains"
-      },
-      "help_p1":{
-        "translation":"Invertir a Vertical: Dar vuelta el heli a posición vertical cuando se activa la función rescate.",
-        "english":"Flip to upright: Flip the heli upright when rescue is activated."
-      },
-      "level_gain":{
-        "translation":"Nivel",
-        "english":"Level"
-      },
-      "flip_upright":{
-        "translation":"Invertir a Vertical",
-        "english":"Flip to upright"
-      },
-      "rate":{
-        "translation":"Tasa",
-        "english":"Rate"
-      },
-      "help_p5":{
-        "translation":"Inversión: Cuánto tiempo esperar antes de abortar una inversión que no funcionó.",
-        "english":"Flip: How long to wait before aborting because the flip did not work."
-      },
-      "help_p3":{
-        "translation":"Trepada: Cantidad y tiempo de colectivo para mantener una trepada constante.",
-        "english":"Climb: How much collective to maintain a steady climb - and how long."
-      },
-      "time":{
-        "translation":"Tiempo",
-        "english":"Time"
-      },
-      "pull_up":{
-        "translation":"Levantado",
-        "english":"Pull-up"
-      },
-      "help_p6":{
-        "translation":"Ganancias: Que tan duro debe luchar para mantener el helicóptero horizontal en modo rescate.",
-        "english":"Gains: How hard to fight to keep heli level when engaging rescue mode."
-      },
-      "help_p2":{
-        "translation":"Levantado: Cantidad de colectivo y tiempo que se aplica para detener la caída.",
-        "english":"Pull-up: How much collective and for how long to arrest the fall."
-      },
-      "help_p7":{
-        "translation":"Tasa y Acel.: Máxima tasa de rotación y aceleración durante el nivelado de rescate.",
-        "english":"Rate and Accel: Max rotation and acceleration rates when leveling during rescue."
-      },
-      "mode_enable":{
-        "translation":"Habilitar Modo Rescate",
-        "english":"Rescue mode enable"
-      }
-    },
-    "pids":{
-      "help_p1":{
-        "translation":"Ganancia F (Rolido/Cabeceo): Comience en 70, aumente hasta que las paradas sean en seco sin derivas. Mantenga rolido y cabeceo en rangos similares.",
-        "english":"FeedForward (Roll/Pitch): Start at 70, increase until stops are sharp with no drift. Keep roll and pitch equal."
-      },
-      "name":{
-        "translation":"PIDs",
-        "english":"PIDs"
-      },
-      "i":{
-        "translation":"I",
-        "english":"I"
-      },
-      "help_p4":{
-        "translation":"Ganancia Detención Cola (Horaria CW/Antihoraria CCW): Ajuste separadamente para detenciones limpias, sin rebotes, en ambos sentidos.",
-        "english":"Tail Stop Gain (CW/CCW): Adjust separately for clean, bounce-free stops in both directions."
-      },
-      "roll":{
-        "translation":"Rolido",
-        "english":"Roll"
-      },
-      "help_p2":{
-        "translation":"Ganancia I (Rolido/Cabeceo): Aumente gradualmente para bombeo de cabeceo estable en piruetas. Demasiado alto causa tambaleo; mantega rolido/cabeceo en rangos similares.",
-        "english":"I Gain (Roll/Pitch): Raise gradually for stable piro pitch pumps. Too high causes wobbles; match roll/pitch values."
-      },
-      "yaw":{
-        "translation":"Giro",
-        "english":"Yaw"
-      },
-      "d":{
-        "translation":"D",
-        "english":"D"
-      },
-      "help_p5":{
-        "translation":"Prueba & Ajuste: Vuele, observe, y afine hasta la mejor performance en condiciones reales.",
-        "english":"Test & Adjust: Fly, observe, and fine-tune for best performance in real conditions."
-      },
-      "b":{
-        "translation":"B",
-        "english":"B"
-      },
-      "pitch":{
-        "translation":"Cabeceo",
-        "english":"Pitch"
-      },
-      "p":{
-        "translation":"P",
-        "english":"P"
-      },
-      "o":{
-        "translation":"O",
-        "english":"O"
-      },
-      "help_p3":{
-        "translation":"Ganacia P/I/D de cola: Incremente P hasta un leve tambaleo durante embudos, luego disminuya levemente. Aumente I hasta que la cola se mantenga firme durante movimientos rápidos (demasiado alto causa un meneo lento de la cola). Ajuste D para paradas suaves —más alto para servos lentos, más bajo para rápidos.",
-        "english":"Tail P/I/D Gains: Increase P until slight wobble in funnels, then back off slightly. Raise I until tail holds firm in hard moves (too high causes slow wag). Adjust D for smooth stops—higher for slow servos, lower for fast ones."
-      },
-      "f":{
-        "translation":"F",
-        "english":"F"
-      }
-    },
-    "profile_autolevel":{
-      "help_p1":{
-        "translation":"Entrenador Acro: Que tan agresivamente el helicótero vuelve a nivel en el modo Entrenador Acro.",
-        "english":"Acro Trainer: How aggressively the heli tilts back to level when flying in Acro Trainer Mode."
-      },
-      "name":{
-        "translation":"Autonivelado",
-        "english":"Autolevel"
-      },
-      "help_p2":{
-        "translation":"Modo Angular: Que tan agresivamente el helicótero vuelve a nivel en el modo Angular.",
-        "english":"Angle Mode: How aggressively the heli tilts back to level when flying in Angle Mode."
-      },
-      "horizon_mode":{
-        "translation":"Modo Horizonte",
-        "english":"Horizon mode"
-      },
-      "max":{
-        "translation":"Máx",
-        "english":"Max"
-      },
-      "help_p3":{
-        "translation":"Modo Horizonte: Que tan agresivamente el helicótero vuelve a nivel en el modo Horizonte.",
-        "english":"Horizon Mode: How aggressively the heli tilts back to level when flying in Horizon Mode."
-      },
-      "gain":{
-        "translation":"Ganancia",
-        "english":"Gain"
-      },
-      "angle_mode":{
-        "translation":"Modo Angular",
-        "english":"Angle mode"
-      },
-      "acro_trainer":{
-        "translation":"Entrenador Acro",
-        "english":"Acro trainer"
-      }
-    },
-    "profile_tailrotor":{
-      "gain":{
-        "translation":"Ganancia",
-        "english":"Gain"
-      },
-      "name":{
-        "translation":"Rotor de Cola",
-        "english":"Tail Rotor"
-      },
-      "yaw_stop_gain":{
-        "translation":"Ganacia parada rot.",
-        "english":"Yaw stop gain"
-      },
-      "help_p4":{
-        "translation":"Ganancia FF Colectivo: Precompensación de cola para comandos de colectivo.",
-        "english":"Collective FF Gain: Tail precompensation for collective inputs."
-      },
-      "cutoff":{
-        "translation":"Corte",
-        "english":"Cutoff"
-      },
-      "ccw":{
-        "translation":"AntiH.",
-        "english":"CCW"
-      },
-      "collective_impulse_ff":{
-        "translation":"Impulso Colectivo FF",
-        "english":"Collective Impulse FF"
-      },
-      "help_p1":{
-        "translation":"Ganancia de parada de rotación: Un valor más alto hará que la cola se detenga más agresivamente, pero puede causar oscilaciones si el valor es demasiado alto. Ajuste horario (CW) y antihorario (CCW) para hacer que las paradas de rotación sean parejas para ambos lados.",
-        "english":"Yaw Stop Gain: Higher stop gain will make the tail stop more aggressively but may cause oscillations if too high. Adjust CW or CCW to make the yaw stops even."
-      },
-      "help_p2":{
-        "translation":"Corte Precomp.: Límite de frecuencia para todas las acciones de precompensación de rotación.",
-        "english":"Precomp Cutoff: Frequency limit for all yaw precompensation actions."
-      },
-      "collective_ff_gain":{
-        "translation":"Ganancia FF Colectivo",
-        "english":"Collective FF gain"
-      },
-      "precomp_cutoff":{
-        "translation":"Corte de Precomp.",
-        "english":"Precomp Cutoff"
-      },
-      "inertia_precomp":{
-        "translation":"Precomp. Inercia",
-        "english":"Inertia Precomp"
-      },
-      "help_p5":{
-        "translation":"Impulso Colectivo FF: Precompensación de impulso de cola para comandos de colectivo. Si se necesita precompensación de la cola al principio de un comando de colectivo.",
-        "english":"Collective Impulse FF: Impulse tail precompensation for collective inputs. If you need extra tail precompensation at the beginning of collective input."
-      },
-      "cyclic_ff_gain":{
-        "translation":"Ganancia FF Cíclico",
-        "english":"Cyclic FF gain"
-      },
-      "decay":{
-        "translation":"Distensión",
-        "english":"Decay"
-      },
-      "help_p3":{
-        "translation":"Ganancia FF Cíclico: Precompensación de cola para comandos de cíclico.",
-        "english":"Cyclic FF Gain: Tail precompensation for cyclic inputs."
-      },
-      "cw":{
-        "translation":"Horario",
-        "english":"CW"
-      }
-    },
-    "battery":{
-      "warn_cell_voltage":{
-        "translation":"Advertencia Voltaje de Celda",
-        "english":"Warn Cell Voltage"
-      },
-      "cell_count":{
-        "translation":"Número de Celdas",
-        "english":"Cell Count"
-      },
-      "name":{
-        "translation":"Batería",
-        "english":"Battery"
-      },
-      "help_p1":{
-        "translation":"La configuración de celdas se utiliza para que el controlador de vuelo pueda monitorear el voltaje de la batería y generar advertencias cuando esté por debajo de cierto nivel.",
-        "english":"The battery settings are used to configure the flight controller to monitor the battery voltage and provide warnings when the voltage drops below a certain level."
-      },
-      "max_cell_voltage":{
-        "translation":"Voltaje Máx Celda",
-        "english":"Max Cell Voltage"
-      },
-      "full_cell_voltage":{
-        "translation":"Voltaje de Celda llena",
-        "english":"Full Cell Voltage"
-      },
-      "min_cell_voltage":{
-        "translation":"Voltaje Mín Celda",
-        "english":"Min Cell Voltage"
-      },
-      "battery_capacity":{
-        "translation":"Capacidad Batería",
-        "english":"Battery Capacity"
-      }
-    },
-    "sbusout":{
-      "name":{
-        "translation":"Salida SBUS",
-        "english":"SBUS Out"
-      },
-      "save_prompt":{
-        "translation":"Guarda esta página en el controlador de vuelo?",
-        "english":"Save current page to flight controller?"
-      },
-      "help_fields_min":{
-        "translation":"El valor mínimo PWM a enviar.",
-        "english":"The minimum pwm value to send."
-      },
-      "title":{
-        "translation":"Salida SBUS",
-        "english":"SBUS Output"
-      },
-      "saving":{
-        "translation":"Guardando",
-        "english":"Saving"
-      },
-      "channel_page":{
-        "translation":"Salida Sbus/CH",
-        "english":"Sbus out / CH"
-      },
-      "help_default_p1":{
-        "translation":"Configure las mezclas avanzadas y el mapeo de canales si utiliza la salida SBUS en un puerto serial.",
-        "english":"Configure advanced mixing and channel mapping if you have SBUS Out enabled on a serial port."
-      },
-      "help_default_p2":{
-        "translation":"- Para canales RX o servos comunes use 1000, 2000; para servos de banda angosta use 500, 1000.",
-        "english":"- For RX channels or servos (wideband), use 1000, 2000 or 500,1000 for narrow band servos."
-      },
-      "cancel":{
-        "translation":"CANCELAR",
-        "english":"CANCEL"
-      },
-      "help_default_p3":{
-        "translation":"- Para reglas de mezclador, use -1000, 1000.",
-        "english":"- For mixer rules, use -1000, 1000."
-      },
-      "receiver":{
-        "translation":"Receptor",
-        "english":"Receiver"
-      },
-      "mixer":{
-        "translation":"Mezclador",
-        "english":"Mixer"
-      },
-      "help_default_p4":{
-        "translation":"- Para motores, use 0, 1000.",
-        "english":"- For motors, use 0, 1000."
-      },
-      "help_fields_source":{
-        "translation":"ID Fuente para la mezcla , contando desde 0-15.",
-        "english":"Source id for the mix, counting from 0-15."
-      },
-      "servo":{
-        "translation":"Servo",
-        "english":"Servo"
-      },
-      "saving_data":{
-        "translation":"Guardando datos...",
-        "english":"Saving data..."
-      },
-      "motor":{
-        "translation":"Motor",
-        "english":"Motor"
-      },
-      "max":{
-        "translation":"Máx",
-        "english":"Max"
-      },
-      "type":{
-        "translation":"Tipo",
-        "english":"Type"
-      },
-      "ok":{
-        "translation":"OK",
-        "english":"OK"
-      },
-      "source":{
-        "translation":"Fuente",
-        "english":"Source"
-      },
-      "help_default_p5":{
-        "translation":"- O bien puede personalizar su propio mapeo.",
-        "english":"- Or you can customize your own mapping."
-      },
-      "channel_prefix":{
-        "translation":"CANAL ",
-        "english":"CHANNEL "
-      },
-      "save_settings":{
-        "translation":"Guardar Config.",
-        "english":"Save settings"
-      },
-      "min":{
-        "translation":"Mín",
-        "english":"Min"
-      },
-      "ch_prefix":{
-        "translation":"CH",
-        "english":"CH"
-      },
-      "help_fields_max":{
-        "translation":"El valor máximo PWM a enviar",
-        "english":"The maximum pwm value to send"
-      }
-    },
-    "filters":{
-      "notch_q":{
-        "translation":"Punto Q",
-        "english":"Notch Q"
-      },
-      "name":{
-        "translation":"Filtros",
-        "english":"Filters"
-      },
-      "help_p4":{
-        "translation":"Puntos de Filtros Dinámicos: Crea automáticamente los puntos de filtro dentro del rango de frecuencias mín y máx",
-        "english":"Dynamic Notch Filters: Automatically creates notch filters within the min and max frequency range."
-      },
-      "center":{
-        "translation":"Centro",
-        "english":"Center"
-      },
-      "notch_min_hz":{
-        "translation":"Mín",
-        "english":"Min"
-      },
-      "rpm_preset":{
-        "translation":"Tipo",
-        "english":"Type"
-      },
-      "max_cutoff":{
-        "translation":"Corte Máx",
-        "english":"Max cutoff"
-      },
-      "notch_max_hz":{
-        "translation":"Max",
-        "english":"Max"
-      },
-      "help_p1":{
-        "translation":"Normalente no se edita esta página sin verificar los logs de la Caja Negra!",
-        "english":"Typically you would not edit this page without checking your Blackbox logs!"
-      },
-      "notch_1":{
-        "translation":"Punto 1",
-        "english":"Notch 1"
-      },
-      "notch_c":{
-        "translation":"Nro. de Puntos",
-        "english":"Notch Count"
-      },
-      "rpm_filter":{
-        "translation":"Filtro RPM",
-        "english":"RPM filter"
-      },
-      "lowpass_1":{
-        "translation":"Pasabajos 1",
-        "english":"Lowpass 1"
-      },
-      "min_cutoff":{
-        "translation":"Corte Mín",
-        "english":"Min cutoff"
-      },
-      "lowpass_1_dyn":{
-        "translation":"Pasabajos 1 din.",
-        "english":"Lowpass 1 dyn."
-      },
-      "filter_type":{
-        "translation":"Tipo de Filtro",
-        "english":"Filter type"
-      },
-      "dyn_notch":{
-        "translation":"Filtros Dinámicos",
-        "english":"Dynamic Filters"
-      },
-      "cutoff":{
-        "translation":"Corte",
-        "english":"Cutoff"
-      },
-      "lowpass_2":{
-        "translation":"Pasabajos 2",
-        "english":"Lowpass 2"
-      },
-      "help_p3":{
-        "translation":"Puntos de filtro de Gyro: Utilizado para filtrar rangos específicos de frecuencia. Generalmente no se necesitan en la mayoría de los helicópteros.",
-        "english":"Gyro notch filters: Use for filtering specific frequency ranges. Typically not needed in most helis."
-      },
-      "notch_2":{
-        "translation":"Punto 2",
-        "english":"Notch 2"
-      },
-      "rpm_min_hz":{
-        "translation":"Frecuencia Mín.",
-        "english":"Min. Frequency"
-      },
-      "help_p2":{
-        "translation":"Pasabajos Gyro: Filtros pasabajos para la señal del giroscopio. Normalmente se dejan los valores por defecto.",
-        "english":"Gyro lowpass: Lowpass filters for the gyro signal. Typically left at default."
-      }
-    },
-    "about":{
-      "help_p1":{
-        "translation":"Esta página provee información que le puede ser requerida cuando solicite soporte técnico.",
-        "english":"This page provides some useful information that you may be asked for when requesting support."
-      },
-      "msgbox_credits":{
-        "translation":"Créditos",
-        "english":"Credits"
-      },
-      "name":{
-        "translation":"Acerca de",
-        "english":"About"
-      },
-      "simulation":{
-        "translation":"Simulación",
-        "english":"Simulation"
-      },
-      "help_p2":{
-        "translation":"Para obtener soporte por favor lea primero las páginas de ayuda en www.rotorflight.org",
-        "english":"For support, please first read the help pages on www.rotorflight.org"
-      },
-      "opener":{
-        "translation":"Rotorflight es un proyecto de código abierto. Contribuciones de gente que piensa como nosotros, entusiasta en ayudar a mejorar este software, es bienvenida y motivada. No hace falta que que sea un programador de élite para ayudar.",
-        "english":"Rotorflight is an open source project. Contribution from other like minded people, keen to assist in making this software even better, is welcomed and encouraged. You do not have to be a hardcore programmer to help."
-      },
-      "ethos_version":{
-        "translation":"Versión de Ethos",
-        "english":"Ethos Version"
-      },
-      "msp_transport":{
-        "translation":"Transporte MSP",
-        "english":"MSP Transport"
-      },
-      "version":{
-        "translation":"Versión",
-        "english":"Version"
-      },
-      "credits":{
-        "translation":"Contribuyentes notables tanto para el firmware de Rotorflight como a este software son: Petri Mattila, Egon Lubbers, Rob Thomson, Rob Gayle, Phil Kaighin, Robert Burrow, Keith Williams, Bertrand Songis, Venbs Zhou... y muchos más que han dedicado horas probando y proveyendo feedback!",
-        "english":"Notable contributors to both the Rotorflight firmware and this software are: Petri Mattila, Egon Lubbers, Rob Thomson, Rob Gayle, Phil Kaighin, Robert Burrow, Keith Williams, Bertrand Songis, Venbs Zhou... and many more who have spent hours testing and providing feedback!"
-      },
-      "msp_version":{
-        "translation":"Versión de MSP",
-        "english":"MSP Version"
-      },
-      "license":{
-        "translation":"Puede copiar, distribuir, y modifiar este software siempre y cuando se comprometa a marcar/fechar los cambios en el código fuente. Todas las modificaciones a nuestro software incluyendo código licenciado mediante GPL (via compilador) deben ser distribuidos bajo licencia GPL junto con instrucciones de compilación e instalación.",
-        "english":"You may copy, distribute, and modify the software as long as you track changes/dates in source files. Any modifications to or software including (via compiler) GPL-licensed code must also be made available under the GPL along with build & install instructions."
-      },
-      "supported_versions":{
-        "translation":"Ver. MSP Soportadas",
-        "english":"Supported MSP Versions"
-      }
-    },
-    "profile_pidbandwidth":{
-      "help_p1":{
-        "translation":"Ancho Banda PID: Es el ancho de banda en Hertz utilizado por el loop PID.",
-        "english":"PID Bandwidth: Overall bandwidth in HZ used by the PID loop."
-      },
-      "name":{
-        "translation":"Ancho Banda PID",
-        "english":"PID Bandwidth"
-      },
-      "dterm_cutoff":{
-        "translation":"Corte D-term",
-        "english":"D-term cut-off"
-      },
-      "help_p2":{
-        "translation":"Corte D-term: Frecuencia en Hz del corte D-term.",
-        "english":"D-term cutoff: D-term cutoff frequency in HZ."
-      },
-      "yaw":{
-        "translation":"Y",
-        "english":"Y"
-      },
-      "roll":{
-        "translation":"R",
-        "english":"R"
-      },
-      "bterm_cutoff":{
-        "translation":"Corte B-term",
-        "english":"B-term cut-off"
-      },
-      "help_p3":{
-        "translation":"Corte B-term: Frecuencia en Hz del corte B-term.",
-        "english":"B-term cutoff: B-term cutoff frequency in HZ."
-      },
-      "pitch":{
-        "translation":"P",
-        "english":"P"
+        "english":"These parameters apply globally to the governor regardless of the profile in use.",
+        "translation":"Estos parámetros se aplican globalmente al governor independientemente del perfil en uso."
+      },
+      "spoolup_min_throttle":{
+        "english":"Spoolup min throttle%",
+        "translation":"% Acelerador Mín Arranque"
       }
     },
     "profile_mainrotor":{
-      "help_p1":{
-        "translation":"Compensación de Angulo de Colectivo: Incrementar este valor compensa el movimiento de cabeceo causado por el arrastre de la cola durante la trepada.",
-        "english":"Collective Pitch Compensation: Increasing will compensate for the pitching motion caused by tail drag when climbing."
-      },
-      "name":{
-        "translation":"Rotor Principal",
-        "english":"Main Rotor"
-      },
-      "help_p4":{
-        "translation":"Límite de Frecuencia de Acople Cruzado: Límite de Frecuencia para la compensación; un valor mayor aumentará la velocidad de la compensación.",
-        "english":"Cross Coupling Freq. Limit: Frequency limit for the compensation, higher value will make the compensation action faster."
-      },
       "help_p2":{
-        "translation":"Ganancia de Acople Cruzado: Cancela el acople de rolido cuando se aplica solo elevador.",
-        "english":"Cross Coupling Gain: Removes roll coupling when only elevator is applied."
-      },
-      "cutoff":{
-        "translation":"Corte",
-        "english":"Cutoff"
-      },
-      "collective_pitch_comp_short":{
-        "translation":"Compens. Ang. Colectivo.",
-        "english":"Col. Pitch Compensation"
-      },
-      "collective_pitch_comp":{
-        "translation":"Compensación de Angulo de Colectivo",
-        "english":"Collective Pitch Compensation"
-      },
-      "gain":{
-        "translation":"Ganancia",
-        "english":"Gain"
-      },
-      "ratio":{
-        "translation":"Relación",
-        "english":"Ratio"
-      },
-      "help_p3":{
-        "translation":"Relación de Acople Cruzado: Cantidad de compensación (cabeceo vs rolido) a aplicar.",
-        "english":"Cross Coupling Ratio: Amount of compensation (pitch vs roll) to apply."
+        "english":"Cross Coupling Gain: Removes roll coupling when only elevator is applied.",
+        "translation":"Ganancia de Acople Cruzado: Cancela el acople de rolido cuando se aplica solo elevador."
       },
       "cyclic_cross_coupling":{
-        "translation":"Acople inter-Ciclico",
-        "english":"Cyclic Cross coupling"
+        "english":"Cyclic Cross coupling",
+        "translation":"Acople inter-Ciclico"
+      },
+      "gain":{
+        "english":"Gain",
+        "translation":"Ganancia"
+      },
+      "cutoff":{
+        "english":"Cutoff",
+        "translation":"Corte"
+      },
+      "collective_pitch_comp_short":{
+        "english":"Col. Pitch Compensation",
+        "translation":"Compens. Ang. Colectivo."
+      },
+      "help_p3":{
+        "english":"Cross Coupling Ratio: Amount of compensation (pitch vs roll) to apply.",
+        "translation":"Relación de Acople Cruzado: Cantidad de compensación (cabeceo vs rolido) a aplicar."
+      },
+      "ratio":{
+        "english":"Ratio",
+        "translation":"Relación"
+      },
+      "name":{
+        "english":"Main Rotor",
+        "translation":"Rotor Principal"
+      },
+      "help_p4":{
+        "english":"Cross Coupling Freq. Limit: Frequency limit for the compensation, higher value will make the compensation action faster.",
+        "translation":"Límite de Frecuencia de Acople Cruzado: Límite de Frecuencia para la compensación; un valor mayor aumentará la velocidad de la compensación."
+      },
+      "collective_pitch_comp":{
+        "english":"Collective Pitch Compensation",
+        "translation":"Compensación de Angulo de Colectivo"
+      },
+      "help_p1":{
+        "english":"Collective Pitch Compensation: Increasing will compensate for the pitching motion caused by tail drag when climbing.",
+        "translation":"Compensación de Angulo de Colectivo: Incrementar este valor compensa el movimiento de cabeceo causado por el arrastre de la cola durante la trepada."
+      }
+    },
+    "status":{
+      "arming_disable_flag_24":{
+        "english":"Motor Protocol",
+        "translation":"Protocolo Motor"
+      },
+      "arming_disable_flag_20":{
+        "english":"RPM Filter",
+        "translation":"Filtro RPM"
+      },
+      "arming_disable_flag_9":{
+        "english":"Boot Grace Time",
+        "translation":"Tiempo gracia inicio"
+      },
+      "arming_disable_flag_17":{
+        "english":"Paralyze",
+        "translation":"Paralizar"
+      },
+      "arming_disable_flag_2":{
+        "english":"RX Fail Safe",
+        "translation":"Pérdida RX"
+      },
+      "arming_disable_flag_15":{
+        "english":"BST",
+        "translation":"BST"
+      },
+      "arming_disable_flag_7":{
+        "english":"Throttle",
+        "translation":"Acelerador"
+      },
+      "name":{
+        "english":"Status",
+        "translation":"Estado"
+      },
+      "arming_disable_flag_11":{
+        "english":"Load",
+        "translation":"Carga"
+      },
+      "help_p1":{
+        "english":"Use this page to view your current flight controller status. This can be useful when determining why your heli will not arm.",
+        "translation":"Utilice esta página para ver el estado del controlador de vuelo. Puede ser útil para determinar la razón por la que el heli no se puede armar."
+      },
+      "help_p2":{
+        "english":"To erase the dataflash for more log file storage, press the button on the menu denoted by a '*'.",
+        "translation":"Para borrar la flash de datos y guardar nuevos LOGs, oprima el botón del menú marcado con '*'."
+      },
+      "arming_disable_flag_14":{
+        "english":"CMS Menu",
+        "translation":"Menú CMS"
+      },
+      "erase":{
+        "english":"Erase",
+        "translation":"Borrar"
+      },
+      "cpu_load":{
+        "english":"CPU Load",
+        "translation":"Carga de CPU"
+      },
+      "arming_disable_flag_18":{
+        "english":"GPS",
+        "translation":"GPS"
+      },
+      "erasing_dataflash":{
+        "english":"Erasing dataflash...",
+        "translation":"Borrando flash de datos..."
+      },
+      "unsupported":{
+        "english":"Unsupported",
+        "translation":"No soportado"
+      },
+      "arming_disable_flag_22":{
+        "english":"DSHOT Bitbang",
+        "translation":"DSHOT Bitbang"
+      },
+      "ok":{
+        "english":"OK",
+        "translation":"OK"
+      },
+      "megabyte":{
+        "english":"MB",
+        "translation":"MB"
+      },
+      "arming_disable_flag_8":{
+        "english":"Angle",
+        "translation":"Angulo"
+      },
+      "real_time_load":{
+        "english":"Real-time Load",
+        "translation":"Carga Tiempo-Real"
+      },
+      "arming_disable_flag_13":{
+        "english":"CLI",
+        "translation":"CLI"
+      },
+      "arming_disable_flag_10":{
+        "english":"No Pre Arm",
+        "translation":"No Pre Armado"
+      },
+      "arming_disable_flag_19":{
+        "english":"Resc",
+        "translation":"Resc"
+      },
+      "erasing":{
+        "english":"Erasing",
+        "translation":"Borrando"
+      },
+      "arming_disable_flag_1":{
+        "english":"Fail Safe",
+        "translation":"A prueba de fallos"
+      },
+      "arming_disable_flag_23":{
+        "english":"Acc Calibration",
+        "translation":"Calibración Acc."
+      },
+      "arming_disable_flag_25":{
+        "english":"Arm Switch",
+        "translation":"Botón Armado"
+      },
+      "arming_disable_flag_4":{
+        "english":"Box Fail Safe",
+        "translation":"Pérdida Box"
+      },
+      "arming_disable_flag_21":{
+        "english":"Reboot Required",
+        "translation":"Reinicio requerido"
+      },
+      "arming_disable_flag_12":{
+        "english":"Calibrating",
+        "translation":"Calibrando"
+      },
+      "arming_flags":{
+        "english":"Arming Flags",
+        "translation":"Flags de Armado"
+      },
+      "dataflash_free_space":{
+        "english":"Dataflash Free Space",
+        "translation":"Espacio libre en flash"
+      },
+      "arming_disable_flag_0":{
+        "english":"No Gyro",
+        "translation":"No hay Gyro"
+      },
+      "arming_disable_flag_16":{
+        "english":"MSP",
+        "translation":"MSP"
+      },
+      "erase_prompt":{
+        "english":"Would you like to erase the dataflash?",
+        "translation":"Quiere borrar la flash de datos?"
+      },
+      "arming_disable_flag_3":{
+        "english":"Bad RX Recovery",
+        "translation":"Falla Recup. RX"
+      },
+      "arming_disable_flag_5":{
+        "english":"Governor",
+        "translation":"Governor"
+      }
+    },
+    "copyprofiles":{
+      "profile_type_pid":{
+        "english":"PID",
+        "translation":"PID"
+      },
+      "help_p2":{
+        "english":"Choose the source and destinations and save to copy the profile.",
+        "translation":"Seleccione fuente y destino y oprima Guardar para copiar el perfil."
+      },
+      "profile_type":{
+        "english":"Profile Type",
+        "translation":"Tipo de Perfil"
+      },
+      "msgbox_msg":{
+        "english":"Save current page to flight controller?",
+        "translation":"Guarda esta página en el controlador de vuelo?"
+      },
+      "msgbox_save":{
+        "english":"Save settings",
+        "translation":"Guardar Configuración"
+      },
+      "dest_profile":{
+        "english":"Dest. Profile",
+        "translation":"Perfil Destino"
+      },
+      "name":{
+        "english":"Copy Profiles",
+        "translation":"Copiar Perfiles"
+      },
+      "profile_type_rate":{
+        "english":"Rate",
+        "translation":"Tasa"
+      },
+      "source_profile":{
+        "english":"Source Profile",
+        "translation":"Perfil Fuente"
+      },
+      "help_p1":{
+        "english":"Copy PID profile or Rate profile from Source to Destination.",
+        "translation":"Copiar perfil PID o perfil de tasas de Fuente a Destino."
+      }
+    },
+    "rates_advanced":{
+      "dyn_deadband_gain":{
+        "english":"Dynamic deadband gain",
+        "translation":"Gan. Zona Muerta"
+      },
+      "gain":{
+        "english":"Gain",
+        "translation":"Ganancia"
+      },
+      "dyn_deadband_filter":{
+        "english":"Dynamic deadband filter",
+        "translation":"Filtro Zona Muerta"
+      },
+      "collective_boost":{
+        "english":"Collective boost",
+        "translation":"Impulso colectivo"
+      },
+      "yaw_dynamic_ceiling_gain":{
+        "english":"Ceiling",
+        "translation":"Tope Rotación"
+      },
+      "accel_limit":{
+        "english":"Accel",
+        "translation":"Acel."
+      },
+      "yaw_boost":{
+        "english":"Yaw boost",
+        "translation":"Impulso de giro"
+      },
+      "name":{
+        "english":"Rates",
+        "translation":"Tasas"
+      },
+      "help_rate_table":{
+        "english":"Please select the rate you would like to use. Saving will apply the choice to the active profile.",
+        "translation":"Seleccione la tasa que desea utilizar. Al guardar se aplicará la elección al perfil activo."
+      },
+      "help_p1":{
+        "english":"Rates type: Choose the rate type you prefer flying with. Raceflight and Actual are the most straightforward.",
+        "translation":"Tipo de Tasas: Seleccione el tipo de tasa con la que prefiere volar. Raceflight y Actual son las mas directas."
+      },
+      "roll":{
+        "english":"Roll",
+        "translation":"Rolido"
+      },
+      "help_p2":{
+        "english":"Dynamics: Applied regardless of rates type. Typically left on defaults but can be adjusted to smooth heli movements, like with scale helis.",
+        "translation":"Dinámicas: Se aplican independientemente de los tipos de tasas. Normalmente se dejan los valores por defecto, pero pueden ser ajustados para suavizar los movimientos del heli, como es el caso de los modelos a escala."
+      },
+      "acc_limit":{
+        "english":"Accelerometer Limit",
+        "translation":"Límite Acel."
+      },
+      "yaw":{
+        "english":"Yaw",
+        "translation":"Giro"
+      },
+      "roll_boost":{
+        "english":"Roll boost",
+        "translation":"Impulso de rolido"
+      },
+      "pitch_dynamics":{
+        "english":"Pitch dynamics",
+        "translation":"Dinám. de Cabeceo"
+      },
+      "setpoint_boost_cutoff":{
+        "english":"Setpoint boost cutoff",
+        "translation":"Corte Ref."
+      },
+      "dyn_ceiling_gain":{
+        "english":"Dynamic ceiling gain",
+        "translation":"Tope Ganancia"
+      },
+      "rates_type":{
+        "english":"Rates Type",
+        "translation":"Tipo de Tasas"
+      },
+      "pitch":{
+        "english":"Pitch",
+        "translation":"Cabeceo"
+      },
+      "col":{
+        "english":"Col",
+        "translation":"Colec."
+      },
+      "pitch_boost":{
+        "english":"Pitch boost",
+        "translation":"Impulso de cabeceo"
+      },
+      "response_time":{
+        "english":"Response Time",
+        "translation":"T. Respuesta"
+      },
+      "setpoint_boost_gain":{
+        "english":"Setpoint boost gain",
+        "translation":"Ganancia Ref."
+      },
+      "cutoff":{
+        "english":"Cutoff",
+        "translation":"Límite"
+      },
+      "rate_table":{
+        "english":"Rate Table",
+        "translation":"Tabla de Tasas"
+      },
+      "yaw_dynamic_deadband_filter":{
+        "english":"Filter",
+        "translation":"Filtro Rot."
+      },
+      "yaw_dynamic_deadband_gain":{
+        "english":"D. Band",
+        "translation":"Banda Muerta Rot."
+      },
+      "dynamics":{
+        "english":"Dynamics",
+        "translation":"Dinámica"
+      },
+      "msg_reset_to_defaults":{
+        "english":"Rate type changed. Values will be reset to defaults.",
+        "translation":"Cambió el tipo de tasa. Los valores se cambiaron a los por defecto."
+      },
+      "yaw_dynamics":{
+        "english":"Yaw dynamics",
+        "translation":"Dinám. de Rotación"
+      },
+      "roll_dynamics":{
+        "english":"Roll dynamics",
+        "translation":"Dinámica de Rolido"
+      },
+      "collective_dynamics":{
+        "english":"Collective dynamics",
+        "translation":"Dinám. de Colectivo"
+      }
+    },
+    "accelerometer":{
+      "roll":{
+        "english":"Roll",
+        "translation":"Rolido"
+      },
+      "msg_calibrate":{
+        "english":"Calibrate the accelerometer?",
+        "translation":"Calibrar el acelerómetro?"
+      },
+      "name":{
+        "english":"Accelerometer",
+        "translation":"Acelerómetro"
+      },
+      "pitch":{
+        "english":"Pitch",
+        "translation":"Cabeceo"
+      },
+      "help_p1":{
+        "english":"The accelerometer is used to measure the angle of the flight controller in relation to the horizon. This data is used to stabilize the aircraft and provide self-leveling functionality.",
+        "translation":"El acelerómetro se utiliza para medir el ángulo del controlador de vuelo respecto del horizonte. Los datos obtenidos son utilizados para estabilizar la aeronave y porveer funcionalidad de nivelado automático."
+      }
+    },
+    "mixer":{
+      "swash_tta_precomp":{
+        "english":"TTA Precomp",
+        "translation":"Precomp TTA"
+      },
+      "tail_motor_idle":{
+        "english":"Tail Idle Thr%",
+        "translation":"% Acel Ralentí Cola"
+      },
+      "geo_correction":{
+        "english":"Geo Correction",
+        "translation":"Geo-Corrección"
+      },
+      "swash_phase":{
+        "english":"Phase Angle",
+        "translation":"Angulo de Fase"
+      },
+      "collective_tilt_correction_neg":{
+        "english":"Negative",
+        "translation":"Negativo"
+      },
+      "help_p1":{
+        "english":"Adust swash plate geometry, phase angles, and limits.",
+        "translation":"Ajuste de geometría del swashplate, ángulos de fase, y límites."
+      },
+      "name":{
+        "english":"Mixer",
+        "translation":"Mezclador"
+      },
+      "collective_tilt_correction_pos":{
+        "english":"Positive",
+        "translation":"Positivo"
+      },
+      "swash_pitch_limit":{
+        "english":"Total Pitch Limit",
+        "translation":"Límite Total Cabeceo"
+      },
+      "collective_tilt_correction":{
+        "english":"Collective Tilt Correction",
+        "translation":"Corrección Inclinación Colectivo"
+      }
+    },
+    "filters":{
+      "filter_type":{
+        "english":"Filter type",
+        "translation":"Tipo de Filtro"
+      },
+      "max_cutoff":{
+        "english":"Max cutoff",
+        "translation":"Corte Máx"
+      },
+      "notch_min_hz":{
+        "english":"Min",
+        "translation":"Mín"
+      },
+      "lowpass_1_dyn":{
+        "english":"Lowpass 1 dyn.",
+        "translation":"Pasabajos 1 din."
+      },
+      "min_cutoff":{
+        "english":"Min cutoff",
+        "translation":"Corte Mín"
+      },
+      "rpm_min_hz":{
+        "english":"Min. Frequency",
+        "translation":"Frecuencia Mín."
+      },
+      "notch_c":{
+        "english":"Notch Count",
+        "translation":"Nro. de Puntos"
+      },
+      "help_p1":{
+        "english":"Typically you would not edit this page without checking your Blackbox logs!",
+        "translation":"Normalente no se edita esta página sin verificar los logs de la Caja Negra!"
+      },
+      "center":{
+        "english":"Center",
+        "translation":"Centro"
+      },
+      "help_p2":{
+        "english":"Gyro lowpass: Lowpass filters for the gyro signal. Typically left at default.",
+        "translation":"Pasabajos Gyro: Filtros pasabajos para la señal del giroscopio. Normalmente se dejan los valores por defecto."
+      },
+      "lowpass_1":{
+        "english":"Lowpass 1",
+        "translation":"Pasabajos 1"
+      },
+      "notch_2":{
+        "english":"Notch 2",
+        "translation":"Punto 2"
+      },
+      "notch_1":{
+        "english":"Notch 1",
+        "translation":"Punto 1"
+      },
+      "name":{
+        "english":"Filters",
+        "translation":"Filtros"
+      },
+      "cutoff":{
+        "english":"Cutoff",
+        "translation":"Corte"
+      },
+      "lowpass_2":{
+        "english":"Lowpass 2",
+        "translation":"Pasabajos 2"
+      },
+      "rpm_filter":{
+        "english":"RPM filter",
+        "translation":"Filtro RPM"
+      },
+      "dyn_notch":{
+        "english":"Dynamic Filters",
+        "translation":"Filtros Dinámicos"
+      },
+      "notch_q":{
+        "english":"Notch Q",
+        "translation":"Punto Q"
+      },
+      "help_p3":{
+        "english":"Gyro notch filters: Use for filtering specific frequency ranges. Typically not needed in most helis.",
+        "translation":"Puntos de filtro de Gyro: Utilizado para filtrar rangos específicos de frecuencia. Generalmente no se necesitan en la mayoría de los helicópteros."
+      },
+      "help_p4":{
+        "english":"Dynamic Notch Filters: Automatically creates notch filters within the min and max frequency range.",
+        "translation":"Puntos de Filtros Dinámicos: Crea automáticamente los puntos de filtro dentro del rango de frecuencias mín y máx"
+      },
+      "rpm_preset":{
+        "english":"Type",
+        "translation":"Tipo"
+      },
+      "notch_max_hz":{
+        "english":"Max",
+        "translation":"Max"
+      }
+    },
+    "msp_exp":{
+      "name":{
+        "english":"MSP Expermental",
+        "translation":"MSP Experimental"
+      },
+      "help_p2":{
+        "english":"If you do not understand what you are doing, do not use it as bad things can happen.",
+        "translation":"Si no sabe lo que está haciendo no la use, podrian suceder cosas peligrosas."
+      },
+      "help_p1":{
+        "english":"This tool provides the ability to send a custom byte string to the flight controller. It is useful for developers when debugging values.",
+        "translation":"Esta herramienta provee la capacidad de enviar un string de bytes al controlador de vuelo. Lo utilizan los desarrolladores durante el debugging."
+      }
+    },
+    "profile_autolevel":{
+      "help_p2":{
+        "english":"Angle Mode: How aggressively the heli tilts back to level when flying in Angle Mode.",
+        "translation":"Modo Angular: Que tan agresivamente el helicótero vuelve a nivel en el modo Angular."
+      },
+      "gain":{
+        "english":"Gain",
+        "translation":"Ganancia"
+      },
+      "angle_mode":{
+        "english":"Angle mode",
+        "translation":"Modo Angular"
+      },
+      "horizon_mode":{
+        "english":"Horizon mode",
+        "translation":"Modo Horizonte"
+      },
+      "name":{
+        "english":"Autolevel",
+        "translation":"Autonivelado"
+      },
+      "help_p3":{
+        "english":"Horizon Mode: How aggressively the heli tilts back to level when flying in Horizon Mode.",
+        "translation":"Modo Horizonte: Que tan agresivamente el helicótero vuelve a nivel en el modo Horizonte."
+      },
+      "max":{
+        "english":"Max",
+        "translation":"Máx"
+      },
+      "acro_trainer":{
+        "english":"Acro trainer",
+        "translation":"Entrenador Acro"
+      },
+      "help_p1":{
+        "english":"Acro Trainer: How aggressively the heli tilts back to level when flying in Acro Trainer Mode.",
+        "translation":"Entrenador Acro: Que tan agresivamente el helicótero vuelve a nivel en el modo Entrenador Acro."
+      }
+    },
+    "pids":{
+      "roll":{
+        "english":"Roll",
+        "translation":"Rolido"
+      },
+      "i":{
+        "english":"I",
+        "translation":"I"
+      },
+      "pitch":{
+        "english":"Pitch",
+        "translation":"Cabeceo"
+      },
+      "f":{
+        "english":"F",
+        "translation":"F"
+      },
+      "help_p3":{
+        "english":"Tail P/I/D Gains: Increase P until slight wobble in funnels, then back off slightly. Raise I until tail holds firm in hard moves (too high causes slow wag). Adjust D for smooth stops—higher for slow servos, lower for fast ones.",
+        "translation":"Ganacia P/I/D de cola: Incremente P hasta un leve tambaleo durante embudos, luego disminuya levemente. Aumente I hasta que la cola se mantenga firme durante movimientos rápidos (demasiado alto causa un meneo lento de la cola). Ajuste D para paradas suaves —más alto para servos lentos, más bajo para rápidos."
+      },
+      "o":{
+        "english":"O",
+        "translation":"O"
+      },
+      "help_p2":{
+        "english":"I Gain (Roll/Pitch): Raise gradually for stable piro pitch pumps. Too high causes wobbles; match roll/pitch values.",
+        "translation":"Ganancia I (Rolido/Cabeceo): Aumente gradualmente para bombeo de cabeceo estable en piruetas. Demasiado alto causa tambaleo; mantega rolido/cabeceo en rangos similares."
+      },
+      "b":{
+        "english":"B",
+        "translation":"B"
+      },
+      "help_p5":{
+        "english":"Test & Adjust: Fly, observe, and fine-tune for best performance in real conditions.",
+        "translation":"Prueba & Ajuste: Vuele, observe, y afine hasta la mejor performance en condiciones reales."
+      },
+      "d":{
+        "english":"D",
+        "translation":"D"
+      },
+      "yaw":{
+        "english":"Yaw",
+        "translation":"Giro"
+      },
+      "name":{
+        "english":"PIDs",
+        "translation":"PIDs"
+      },
+      "help_p4":{
+        "english":"Tail Stop Gain (CW/CCW): Adjust separately for clean, bounce-free stops in both directions.",
+        "translation":"Ganancia Detención Cola (Horaria CW/Antihoraria CCW): Ajuste separadamente para detenciones limpias, sin rebotes, en ambos sentidos."
+      },
+      "p":{
+        "english":"P",
+        "translation":"P"
+      },
+      "help_p1":{
+        "english":"FeedForward (Roll/Pitch): Start at 70, increase until stops are sharp with no drift. Keep roll and pitch equal.",
+        "translation":"Ganancia F (Rolido/Cabeceo): Comience en 70, aumente hasta que las paradas sean en seco sin derivas. Mantenga rolido y cabeceo en rangos similares."
+      }
+    },
+    "rates":{
+      "actual":{
+        "english":"ACTUAL",
+        "translation":"ACTUAL"
+      },
+      "collective":{
+        "english":"Col",
+        "translation":"Colectivo"
+      },
+      "superrate":{
+        "english":"SuperRate",
+        "translation":"SuperTasa"
+      },
+      "raceflight":{
+        "english":"RACEFLIGHT",
+        "translation":"RACEFLIGHT"
+      },
+      "acroplus":{
+        "english":"Acro+",
+        "translation":"Acro+"
+      },
+      "help_default_p2":{
+        "english":"We will use the sub keys below.",
+        "translation":"Usaremos las teclas que siguen abajo."
+      },
+      "name":{
+        "english":"Rates",
+        "translation":"Tasas"
+      },
+      "help_table_3_p3":{
+        "english":"RC Curve: Reduces sensitivity near the stick's center where fine controls are needed.",
+        "translation":"Curva RC: Reduce la sensibilidad cerca del centro del joystick donde hacen falta controles finos."
+      },
+      "rc_rate":{
+        "english":"RC Rate",
+        "translation":"Tasa RC"
+      },
+      "expo":{
+        "english":"Expo",
+        "translation":"Expo"
+      },
+      "help_table_1_p3":{
+        "english":"Expo: Reduces sensitivity near the stick's center where fine controls are needed.",
+        "translation":"Expo: Reduce la sensibilidad cerca del centro del joystick donde hacen falta controles finos."
+      },
+      "help_table_4_p1":{
+        "english":"Center Sensitivity: Use to reduce sensitivity around center stick. Set Center Sensitivity to the same as Max Rate for a linear response. A lower number than Max Rate will reduce sensitivity around center stick. Note that higher than Max Rate will increase the Max Rate - not recommended as it causes issues in the Blackbox log.",
+        "translation":"Sensibilidad Central: Para reducir sensibilidad cerca del centro del joystick. Configure la Sensibilidad Central igual que Tasa Máx para una respuesta lineal. Un valor menor que Tasa Máx reducirá la sensibilidad cerca del centro del joystick. Si es mayor que Tasa Máx se incrementa la Tasa Máx - No se recomienda porque causa problemas en el log de la Caja Negra."
+      },
+      "rate":{
+        "english":"Rate",
+        "translation":"Tasa"
+      },
+      "none":{
+        "english":"NONE",
+        "translation":"NINGUNA"
+      },
+      "help_default_p1":{
+        "english":"Default: We keep this to make button appear for rates.",
+        "translation":"Por Defecto: Mantenemos esto para hacer que el botón esté disponible para tasas."
+      },
+      "help_table_2_p3":{
+        "english":"Expo: Reduces sensitivity near the stick's center where fine controls are needed.",
+        "translation":"Expo: Reduce la sensibilidad cerca del centro del joystick donde hacen falta controles finos."
+      },
+      "kiss":{
+        "english":"KISS",
+        "translation":"KISS"
+      },
+      "yaw":{
+        "english":"Yaw",
+        "translation":"Rotación"
+      },
+      "help_table_5_p1":{
+        "english":"RC Rate: Use to reduce sensitivity around center stick. RC Rate set to one half of the Max Rate is linear. A lower number will reduce sensitivity around center stick. Higher than one half of the Max Rate will also increase the Max Rate.",
+        "translation":"Tasa RC: Se usa para reducir le sensibilidad cerca del centro del joystick. Configurar la Tasa RC a la mitad de la Tasa Máx da por resultado una función lineal. Un valor menor reduce la sesibilidad cerca del centro del joystick y un valor mayor incrementará la Tasa Máx."
+      },
+      "help_table_0_p1":{
+        "english":"All values are set to zero because no RATE TABLE is in use.",
+        "translation":"Todos los valores en cero porque no hay TABLA DE TASAS en uso."
+      },
+      "help_table_3_p1":{
+        "english":"RC Rate: Maximum rotation rate at full stick deflection.",
+        "translation":"Tasa RC: Tasa de rotación máxima durante el desplazamiento máximo del joystick."
+      },
+      "quick":{
+        "english":"QUICK",
+        "translation":"QUICK"
+      },
+      "help_table_5_p3":{
+        "english":"Expo: Reduces sensitivity near the stick's center where fine controls are needed.",
+        "translation":"Expo: Reduce la sensibilidad cerca del centro del joystick donde hacen falta controles finos."
+      },
+      "help_table_5_p2":{
+        "english":"Max Rate: Maximum rotation rate at full stick deflection in degrees per second.",
+        "translation":"Tasa Máx.: Tasa de rotación máxima durante el desplazamiento máximo del joystick en grados por segundo."
+      },
+      "rc_curve":{
+        "english":"RC Curve",
+        "translation":"Curva RC"
+      },
+      "help_table_4_p2":{
+        "english":"Max Rate: Maximum rotation rate at full stick deflection in degrees per second.",
+        "translation":"Tasa Máx: Tasa máxima de rotación durante el desplazamiento máximo del joystick en grados por segundo."
+      },
+      "pitch":{
+        "english":"Pitch",
+        "translation":"Cabeceo"
+      },
+      "center_sensitivity":{
+        "english":"Cntr. Sens.",
+        "translation":"Sens.Cntro."
+      },
+      "max_rate":{
+        "english":"Max Rate",
+        "translation":"Tasa Máx"
+      },
+      "help_table_2_p1":{
+        "english":"Rate: Maximum rotation rate at full stick deflection in degrees per second.",
+        "translation":"Tasa: Tasa de rotación máxima durante el desplazamiento máximo del joystick en grados por segundo."
+      },
+      "help_table_3_p2":{
+        "english":"Rate: Increases maximum rotation rate while reducing sensitivity around half stick.",
+        "translation":"Tasa: Incrementa la tasa de rotación máxima al tiempo que reduce la sensibilidad cerca del desplazamiento medio del joystick."
+      },
+      "help_table_1_p1":{
+        "english":"RC Rate: Maximum rotation rate at full stick deflection.",
+        "translation":"Tasa RC: Tasa de rotación máxima durante el desplazamiento máximo del joystick."
+      },
+      "help_table_2_p2":{
+        "english":"Acro+: Increases the maximum rotation rate while reducing sensitivity around half stick.",
+        "translation":"Acro+: Incrementa la tasa de rotación al tiempo que reduce la sensibilidad cerca del desplazamiento medio del joystick."
+      },
+      "help_table_1_p2":{
+        "english":"SuperRate: Increases maximum rotation rate while reducing sensitivity around half stick.",
+        "translation":"SuperTasa: Aumenta la tasa máxima de rotación al tiempo que reduce la sensibilidad cerca del desplazamiento medio del joystick."
+      },
+      "roll":{
+        "english":"Roll",
+        "translation":"Rolido"
+      },
+      "betaflight":{
+        "english":"BETAFLIGHT",
+        "translation":"BETAFLIGHT"
+      },
+      "help_table_4_p3":{
+        "english":"Expo: Reduces sensitivity near the stick's center where fine controls are needed.",
+        "translation":"Expo: Reduce la sensibilidad cerca del centro del joystick donde hacen falta controles finos."
+      }
+    },
+    "profile_tailrotor":{
+      "decay":{
+        "english":"Decay",
+        "translation":"Distensión"
+      },
+      "yaw_stop_gain":{
+        "english":"Yaw stop gain",
+        "translation":"Ganacia parada rot."
+      },
+      "ccw":{
+        "english":"CCW",
+        "translation":"AntiH."
+      },
+      "collective_impulse_ff":{
+        "english":"Collective Impulse FF",
+        "translation":"Impulso Colectivo FF"
+      },
+      "help_p5":{
+        "english":"Collective Impulse FF: Impulse tail precompensation for collective inputs. If you need extra tail precompensation at the beginning of collective input.",
+        "translation":"Impulso Colectivo FF: Precompensación de impulso de cola para comandos de colectivo. Si se necesita precompensación de la cola al principio de un comando de colectivo."
+      },
+      "name":{
+        "english":"Tail Rotor",
+        "translation":"Rotor de Cola"
+      },
+      "precomp_cutoff":{
+        "english":"Precomp Cutoff",
+        "translation":"Corte de Precomp."
+      },
+      "inertia_precomp":{
+        "english":"Inertia Precomp",
+        "translation":"Precomp. Inercia"
+      },
+      "help_p1":{
+        "english":"Yaw Stop Gain: Higher stop gain will make the tail stop more aggressively but may cause oscillations if too high. Adjust CW or CCW to make the yaw stops even.",
+        "translation":"Ganancia de parada de rotación: Un valor más alto hará que la cola se detenga más agresivamente, pero puede causar oscilaciones si el valor es demasiado alto. Ajuste horario (CW) y antihorario (CCW) para hacer que las paradas de rotación sean parejas para ambos lados."
+      },
+      "help_p2":{
+        "english":"Precomp Cutoff: Frequency limit for all yaw precompensation actions.",
+        "translation":"Corte Precomp.: Límite de frecuencia para todas las acciones de precompensación de rotación."
+      },
+      "collective_ff_gain":{
+        "english":"Collective FF gain",
+        "translation":"Ganancia FF Colectivo"
+      },
+      "cyclic_ff_gain":{
+        "english":"Cyclic FF gain",
+        "translation":"Ganancia FF Cíclico"
+      },
+      "cw":{
+        "english":"CW",
+        "translation":"Horario"
+      },
+      "help_p3":{
+        "english":"Cyclic FF Gain: Tail precompensation for cyclic inputs.",
+        "translation":"Ganancia FF Cíclico: Precompensación de cola para comandos de cíclico."
+      },
+      "help_p4":{
+        "english":"Collective FF Gain: Tail precompensation for collective inputs.",
+        "translation":"Ganancia FF Colectivo: Precompensación de cola para comandos de colectivo."
+      },
+      "cutoff":{
+        "english":"Cutoff",
+        "translation":"Corte"
+      },
+      "gain":{
+        "english":"Gain",
+        "translation":"Ganancia"
+      }
+    },
+    "about":{
+      "help_p2":{
+        "english":"For support, please first read the help pages on www.rotorflight.org",
+        "translation":"Para obtener soporte por favor lea primero las páginas de ayuda en www.rotorflight.org"
+      },
+      "supported_versions":{
+        "english":"Supported MSP Versions",
+        "translation":"Ver. MSP Soportadas"
+      },
+      "simulation":{
+        "english":"Simulation",
+        "translation":"Simulación"
+      },
+      "version":{
+        "english":"Version",
+        "translation":"Versión"
+      },
+      "license":{
+        "english":"You may copy, distribute, and modify the software as long as you track changes/dates in source files. Any modifications to or software including (via compiler) GPL-licensed code must also be made available under the GPL along with build & install instructions.",
+        "translation":"Puede copiar, distribuir, y modifiar este software siempre y cuando se comprometa a marcar/fechar los cambios en el código fuente. Todas las modificaciones a nuestro software incluyendo código licenciado mediante GPL (via compilador) deben ser distribuidos bajo licencia GPL junto con instrucciones de compilación e instalación."
+      },
+      "msp_version":{
+        "english":"MSP Version",
+        "translation":"Versión de MSP"
+      },
+      "credits":{
+        "english":"Notable contributors to both the Rotorflight firmware and this software are: Petri Mattila, Egon Lubbers, Rob Thomson, Rob Gayle, Phil Kaighin, Robert Burrow, Keith Williams, Bertrand Songis, Venbs Zhou... and many more who have spent hours testing and providing feedback!",
+        "translation":"Contribuyentes notables tanto para el firmware de Rotorflight como a este software son: Petri Mattila, Egon Lubbers, Rob Thomson, Rob Gayle, Phil Kaighin, Robert Burrow, Keith Williams, Bertrand Songis, Venbs Zhou... y muchos más que han dedicado horas probando y proveyendo feedback!"
+      },
+      "ethos_version":{
+        "english":"Ethos Version",
+        "translation":"Versión de Ethos"
+      },
+      "opener":{
+        "english":"Rotorflight is an open source project. Contribution from other like minded people, keen to assist in making this software even better, is welcomed and encouraged. You do not have to be a hardcore programmer to help.",
+        "translation":"Rotorflight es un proyecto de código abierto. Contribuciones de gente que piensa como nosotros, entusiasta en ayudar a mejorar este software, es bienvenida y motivada. No hace falta que que sea un programador de élite para ayudar."
+      },
+      "msgbox_credits":{
+        "english":"Credits",
+        "translation":"Créditos"
+      },
+      "msp_transport":{
+        "english":"MSP Transport",
+        "translation":"Transporte MSP"
+      },
+      "name":{
+        "english":"About",
+        "translation":"Acerca de"
+      },
+      "help_p1":{
+        "english":"This page provides some useful information that you may be asked for when requesting support.",
+        "translation":"Esta página provee información que le puede ser requerida cuando solicite soporte técnico."
+      }
+    },
+    "battery":{
+      "battery_capacity":{
+        "english":"Battery Capacity",
+        "translation":"Capacidad Batería"
+      },
+      "min_cell_voltage":{
+        "english":"Min Cell Voltage",
+        "translation":"Voltaje Mín Celda"
+      },
+      "cell_count":{
+        "english":"Cell Count",
+        "translation":"Número de Celdas"
+      },
+      "name":{
+        "english":"Battery",
+        "translation":"Batería"
+      },
+      "warn_cell_voltage":{
+        "english":"Warn Cell Voltage",
+        "translation":"Advertencia Voltaje de Celda"
+      },
+      "full_cell_voltage":{
+        "english":"Full Cell Voltage",
+        "translation":"Voltaje de Celda llena"
+      },
+      "max_cell_voltage":{
+        "english":"Max Cell Voltage",
+        "translation":"Voltaje Máx Celda"
+      },
+      "help_p1":{
+        "english":"The battery settings are used to configure the flight controller to monitor the battery voltage and provide warnings when the voltage drops below a certain level.",
+        "translation":"La configuración de celdas se utiliza para que el controlador de vuelo pueda monitorear el voltaje de la batería y generar advertencias cuando esté por debajo de cierto nivel."
       }
     },
     "servos":{
-      "tail":{
-        "translation":"COLA",
-        "english":"TAIL"
-      },
-      "help_fields_scale_pos":{
-        "translation":"Escala positiva del servo.",
-        "english":"Servo positive scaling."
-      },
-      "cyc_right":{
-        "translation":"CICL. DER",
-        "english":"CYC.RIGHT"
-      },
-      "enable_servo_override_msg":{
-        "translation":"Toma de servo permite ajustar en tiempo real el punto central de su servo.",
-        "english":"Servo override allows you to 'trim' your servo center point in real time."
-      },
-      "help_default_p1":{
-        "translation":"Seleccione el servo que desea configurar en la lista que sigue.",
-        "english":"Please select the servo you would like to configure from the list below."
-      },
-      "enabling_servo_override":{
-        "translation":"Activando toma de servo...",
-        "english":"Enabling servo override..."
-      },
-      "help_tool_p2":{
-        "translation":"Centro: Ajuste de la posición central del servo.",
-        "english":"Center: Adjust the center position of the servo."
-      },
       "disable_servo_override_msg":{
-        "translation":"Devolver el control de los servos al controlador de vuelo.",
-        "english":"Return control of the servos to the flight controller."
-      },
-      "saving_data":{
-        "translation":"Guardando datos...",
-        "english":"Saving data..."
-      },
-      "help_tool_p6":{
-        "translation":"Velocidad: La velocidad a la que se mueve el servo. Generalmente se utiliza solamente para los servos del cíclico para ayudar a que el swashplate se mueva en forma pareja. Opcional - deje todo en 0 si no está seguro.",
-        "english":"Speed: The speed the servo moves. Generally only used for the cyclic servos to help the swash move evenly. Optional - leave all at 0 if unsure."
-      },
-      "tbl_no":{
-        "translation":"NO",
-        "english":"NO"
-      },
-      "scale_positive":{
-        "translation":"Escala Positiva",
-        "english":"Scale Positive"
-      },
-      "help_tool_p5":{
-        "translation":"Tasa: La frecuencia a la que el servo trabaja mejor. - consulte al fabricante.",
-        "english":"Rate: The frequency the servo runs best at - check with manufacturer."
-      },
-      "geometry":{
-        "translation":"Corrección Geometría",
-        "english":"Geometry"
-      },
-      "help_fields_max":{
-        "translation":"Límite de desplazamiento positivo del servo.",
-        "english":"Servo positive travel limit."
-      },
-      "help_fields_flags":{
-        "translation":"0 = Por defecto, 1 = Reversa, 2 = Corrección-Geo, 3 = Reversa + Corrección-Geo",
-        "english":"0 = Default, 1=Reverse, 2 = Geo Correction, 3 = Reverse + Geo Correction"
-      },
-      "name":{
-        "translation":"Servos",
-        "english":"Servos"
-      },
-      "servo_override":{
-        "translation":"Toma de Servo",
-        "english":"Servo Override"
-      },
-      "scale_negative":{
-        "translation":"Escala Negativa",
-        "english":"Scale Negative"
-      },
-      "center":{
-        "translation":"Centro",
-        "english":"Center"
-      },
-      "saving":{
-        "translation":"Guardando",
-        "english":"Saving"
-      },
-      "disable_servo_override":{
-        "translation":"Desactivar toma de servo",
-        "english":"Disable servo override"
-      },
-      "help_fields_min":{
-        "translation":"Límite de desplazamiento negativo del servo.",
-        "english":"Servo negative travel limit."
-      },
-      "help_default_p2":{
-        "translation":"Los controles primarios que utilizan el mezclador de Rotorflight aparecen en la sección llamada 'mezclador'.",
-        "english":"Primary flight controls that use the rotorflight mixer will display in the section called 'mixer'."
-      },
-      "disabling_servo_override":{
-        "translation":"Desactivando toma de servo...",
-        "english":"Disabling servo override..."
-      },
-      "help_fields_rate":{
-        "translation":"Tasa PWM del servo.",
-        "english":"Servo PWM rate."
-      },
-      "help_fields_mid":{
-        "translation":"Ancho del pulso de la posición central del servo.",
-        "english":"Servo center position pulse width."
-      },
-      "help_fields_speed":{
-        "translation":"Velocidad de movimiento del servo en milisegundos.",
-        "english":"Servo motion speed in milliseconds."
-      },
-      "rate":{
-        "translation":"Tasa",
-        "english":"Rate"
-      },
-      "minimum":{
-        "translation":"Mínimo",
-        "english":"Minimum"
-      },
-      "help_default_p3":{
-        "translation":"Aquellos servos que no están controlados por el controlador de vuelo primario aparecen en la sección llamada 'Otros servos'.",
-        "english":"Any other servos that are not controlled by the primary flight mixer will be displayed in the section called 'Other servos'."
-      },
-      "enable_servo_override":{
-        "translation":"Activar toma de servo",
-        "english":"Enable servo override"
-      },
-      "tbl_yes":{
-        "translation":"SI",
-        "english":"YES"
-      },
-      "help_tool_p1":{
-        "translation":"Toma de servo: [*] Active la toma de servo para permitir la actualización en tiempo real del punto central del servo.",
-        "english":"Override: [*] Enable override to allow real-time updates of servo center point."
-      },
-      "cyc_pitch":{
-        "translation":"ANGULO CICL.",
-        "english":"CYC.PITCH"
-      },
-      "speed":{
-        "translation":"Velocidad",
-        "english":"Speed"
-      },
-      "reverse":{
-        "translation":"Invertir sentido",
-        "english":"Reverse"
-      },
-      "cyc_left":{
-        "translation":"CICL. IZQ",
-        "english":"CYC.LEFT"
-      },
-      "help_tool_p3":{
-        "translation":"Mínimo/Máximo: Ajuste de los puntos límites del servo seleccionado.",
-        "english":"Minimum/Maximum: Adjust the end points of the selected servo."
-      },
-      "help_fields_scale_neg":{
-        "translation":"Escala negativa del servo.",
-        "english":"Servo negative scaling."
-      },
-      "help_tool_p4":{
-        "translation":"Escala: Ajuste de la cantidad de movimiento del servo en función del movimiento del comamdo.",
-        "english":"Scale: Adjust the amount the servo moves for a given input."
+        "english":"Return control of the servos to the flight controller.",
+        "translation":"Devolver el control de los servos al controlador de vuelo."
       },
       "servo_prefix":{
-        "translation":"SERVO ",
-        "english":"SERVO "
+        "english":"SERVO ",
+        "translation":"SERVO "
+      },
+      "help_fields_mid":{
+        "english":"Servo center position pulse width.",
+        "translation":"Ancho del pulso de la posición central del servo."
+      },
+      "tail":{
+        "english":"TAIL",
+        "translation":"COLA"
+      },
+      "tbl_yes":{
+        "english":"YES",
+        "translation":"SI"
+      },
+      "help_default_p2":{
+        "english":"Primary flight controls that use the rotorflight mixer will display in the section called 'mixer'.",
+        "translation":"Los controles primarios que utilizan el mezclador de Rotorflight aparecen en la sección llamada 'mezclador'."
+      },
+      "help_fields_rate":{
+        "english":"Servo PWM rate.",
+        "translation":"Tasa PWM del servo."
+      },
+      "minimum":{
+        "english":"Minimum",
+        "translation":"Mínimo"
+      },
+      "help_fields_flags":{
+        "english":"0 = Default, 1=Reverse, 2 = Geo Correction, 3 = Reverse + Geo Correction",
+        "translation":"0 = Por defecto, 1 = Reversa, 2 = Corrección-Geo, 3 = Reversa + Corrección-Geo"
+      },
+      "disabling_servo_override":{
+        "english":"Disabling servo override...",
+        "translation":"Desactivando toma de servo..."
+      },
+      "help_fields_scale_neg":{
+        "english":"Servo negative scaling.",
+        "translation":"Escala negativa del servo."
+      },
+      "center":{
+        "english":"Center",
+        "translation":"Centro"
+      },
+      "help_fields_min":{
+        "english":"Servo negative travel limit.",
+        "translation":"Límite de desplazamiento negativo del servo."
+      },
+      "disable_servo_override":{
+        "english":"Disable servo override",
+        "translation":"Desactivar toma de servo"
+      },
+      "enable_servo_override_msg":{
+        "english":"Servo override allows you to 'trim' your servo center point in real time.",
+        "translation":"Toma de servo permite ajustar en tiempo real el punto central de su servo."
+      },
+      "rate":{
+        "english":"Rate",
+        "translation":"Tasa"
+      },
+      "help_default_p1":{
+        "english":"Please select the servo you would like to configure from the list below.",
+        "translation":"Seleccione el servo que desea configurar en la lista que sigue."
+      },
+      "help_fields_max":{
+        "english":"Servo positive travel limit.",
+        "translation":"Límite de desplazamiento positivo del servo."
+      },
+      "saving":{
+        "english":"Saving",
+        "translation":"Guardando"
+      },
+      "help_fields_speed":{
+        "english":"Servo motion speed in milliseconds.",
+        "translation":"Velocidad de movimiento del servo en milisegundos."
+      },
+      "help_tool_p2":{
+        "english":"Center: Adjust the center position of the servo.",
+        "translation":"Centro: Ajuste de la posición central del servo."
+      },
+      "cyc_right":{
+        "english":"CYC.RIGHT",
+        "translation":"CICL. DER"
+      },
+      "help_tool_p5":{
+        "english":"Rate: The frequency the servo runs best at - check with manufacturer.",
+        "translation":"Tasa: La frecuencia a la que el servo trabaja mejor. - consulte al fabricante."
+      },
+      "enable_servo_override":{
+        "english":"Enable servo override",
+        "translation":"Activar toma de servo"
+      },
+      "help_tool_p6":{
+        "english":"Speed: The speed the servo moves. Generally only used for the cyclic servos to help the swash move evenly. Optional - leave all at 0 if unsure.",
+        "translation":"Velocidad: La velocidad a la que se mueve el servo. Generalmente se utiliza solamente para los servos del cíclico para ayudar a que el swashplate se mueva en forma pareja. Opcional - deje todo en 0 si no está seguro."
       },
       "maximum":{
-        "translation":"Máximo",
-        "english":"Maximum"
+        "english":"Maximum",
+        "translation":"Máximo"
+      },
+      "enabling_servo_override":{
+        "english":"Enabling servo override...",
+        "translation":"Activando toma de servo..."
+      },
+      "help_tool_p4":{
+        "english":"Scale: Adjust the amount the servo moves for a given input.",
+        "translation":"Escala: Ajuste de la cantidad de movimiento del servo en función del movimiento del comamdo."
+      },
+      "help_tool_p3":{
+        "english":"Minimum/Maximum: Adjust the end points of the selected servo.",
+        "translation":"Mínimo/Máximo: Ajuste de los puntos límites del servo seleccionado."
+      },
+      "help_default_p3":{
+        "english":"Any other servos that are not controlled by the primary flight mixer will be displayed in the section called 'Other servos'.",
+        "translation":"Aquellos servos que no están controlados por el controlador de vuelo primario aparecen en la sección llamada 'Otros servos'."
+      },
+      "cyc_left":{
+        "english":"CYC.LEFT",
+        "translation":"CICL. IZQ"
+      },
+      "saving_data":{
+        "english":"Saving data...",
+        "translation":"Guardando datos..."
+      },
+      "tbl_no":{
+        "english":"NO",
+        "translation":"NO"
+      },
+      "speed":{
+        "english":"Speed",
+        "translation":"Velocidad"
+      },
+      "help_fields_scale_pos":{
+        "english":"Servo positive scaling.",
+        "translation":"Escala positiva del servo."
+      },
+      "scale_positive":{
+        "english":"Scale Positive",
+        "translation":"Escala Positiva"
+      },
+      "help_tool_p1":{
+        "english":"Override: [*] Enable override to allow real-time updates of servo center point.",
+        "translation":"Toma de servo: [*] Active la toma de servo para permitir la actualización en tiempo real del punto central del servo."
+      },
+      "geometry":{
+        "english":"Geometry",
+        "translation":"Corrección Geometría"
+      },
+      "reverse":{
+        "english":"Reverse",
+        "translation":"Invertir sentido"
+      },
+      "servo_override":{
+        "english":"Servo Override",
+        "translation":"Toma de Servo"
+      },
+      "cyc_pitch":{
+        "english":"CYC.PITCH",
+        "translation":"ANGULO CICL."
+      },
+      "scale_negative":{
+        "english":"Scale Negative",
+        "translation":"Escala Negativa"
+      },
+      "name":{
+        "english":"Servos",
+        "translation":"Servos"
       }
     },
     "logs":{
       "help_logs_tool_p1":{
-        "translation":"Utilice el control deslizante para navegar en el gráfico.",
-        "english":"Please use the slider to navigate the graph."
-      },
-      "name":{
-        "translation":"Logs",
-        "english":"Logs"
-      },
-      "msg_no_logs_found":{
-        "translation":"NO HAY LOGS",
-        "english":"NO LOG FILES FOUND"
-      },
-      "help_logs_p2":{
-        "translation":"Nota: Para activar los LOGs es escencial que estén activados los siguientes sensores..",
-        "english":"Note. To enable logging it is essential for you to have the following sensors enabled."
-      },
-      "help_logs_p1":{
-        "translation":"Seleccione un archivo de la lista que sigue.",
-        "english":"Please select a log file from the list below."
+        "english":"Please use the slider to navigate the graph.",
+        "translation":"Utilice el control deslizante para navegar en el gráfico."
       },
       "help_logs_p3":{
-        "translation":"- estado de armado, voltaje, velocidad del rotor, corriente, temperatura del ESC",
-        "english":"- arm status, voltage, headspeed, current, esc temperature"
-      }
-    },
-    "copyprofiles":{
-      "help_p1":{
-        "translation":"Copiar perfil PID o perfil de tasas de Fuente a Destino.",
-        "english":"Copy PID profile or Rate profile from Source to Destination."
+        "english":"- arm status, voltage, headspeed, current, esc temperature",
+        "translation":"- estado de armado, voltaje, velocidad del rotor, corriente, temperatura del ESC"
+      },
+      "help_logs_p2":{
+        "english":"Note. To enable logging it is essential for you to have the following sensors enabled.",
+        "translation":"Nota: Para activar los LOGs es escencial que estén activados los siguientes sensores.."
+      },
+      "help_logs_p1":{
+        "english":"Please select a log file from the list below.",
+        "translation":"Seleccione un archivo de la lista que sigue."
+      },
+      "msg_no_logs_found":{
+        "english":"NO LOG FILES FOUND",
+        "translation":"NO HAY LOGS"
       },
       "name":{
-        "translation":"Copiar Perfiles",
-        "english":"Copy Profiles"
-      },
-      "profile_type_pid":{
-        "translation":"PID",
-        "english":"PID"
-      },
-      "help_p2":{
-        "translation":"Seleccione fuente y destino y oprima Guardar para copiar el perfil.",
-        "english":"Choose the source and destinations and save to copy the profile."
-      },
-      "msgbox_msg":{
-        "translation":"Guarda esta página en el controlador de vuelo?",
-        "english":"Save current page to flight controller?"
-      },
-      "profile_type_rate":{
-        "translation":"Tasa",
-        "english":"Rate"
-      },
-      "source_profile":{
-        "translation":"Perfil Fuente",
-        "english":"Source Profile"
-      },
-      "profile_type":{
-        "translation":"Tipo de Perfil",
-        "english":"Profile Type"
-      },
-      "dest_profile":{
-        "translation":"Perfil Destino",
-        "english":"Dest. Profile"
-      },
-      "msgbox_save":{
-        "translation":"Guardar Configuración",
-        "english":"Save settings"
+        "english":"Logs",
+        "translation":"Logs"
       }
     },
-    "status":{
-      "arming_disable_flag_5":{
-        "translation":"Governor",
-        "english":"Governor"
+    "sbusout":{
+      "help_fields_source":{
+        "english":"Source id for the mix, counting from 0-15.",
+        "translation":"ID Fuente para la mezcla , contando desde 0-15."
       },
-      "erasing_dataflash":{
-        "translation":"Borrando flash de datos...",
-        "english":"Erasing dataflash..."
+      "motor":{
+        "english":"Motor",
+        "translation":"Motor"
       },
-      "arming_disable_flag_9":{
-        "translation":"Tiempo gracia inicio",
-        "english":"Boot Grace Time"
+      "help_fields_max":{
+        "english":"The maximum pwm value to send",
+        "translation":"El valor máximo PWM a enviar"
       },
-      "arming_disable_flag_17":{
-        "translation":"Paralizar",
-        "english":"Paralyze"
+      "ch_prefix":{
+        "english":"CH",
+        "translation":"CH"
       },
-      "arming_disable_flag_2":{
-        "translation":"Pérdida RX",
-        "english":"RX Fail Safe"
+      "receiver":{
+        "english":"Receiver",
+        "translation":"Receptor"
       },
-      "arming_disable_flag_8":{
-        "translation":"Angulo",
-        "english":"Angle"
+      "help_default_p2":{
+        "english":"- For RX channels or servos (wideband), use 1000, 2000 or 500,1000 for narrow band servos.",
+        "translation":"- Para canales RX o servos comunes use 1000, 2000; para servos de banda angosta use 500, 1000."
       },
-      "arming_flags":{
-        "translation":"Flags de Armado",
-        "english":"Arming Flags"
+      "source":{
+        "english":"Source",
+        "translation":"Fuente"
       },
-      "arming_disable_flag_16":{
-        "translation":"MSP",
-        "english":"MSP"
+      "channel_page":{
+        "english":"Sbus out / CH",
+        "translation":"Salida Sbus/CH"
       },
-      "dataflash_free_space":{
-        "translation":"Espacio libre en flash",
-        "english":"Dataflash Free Space"
+      "max":{
+        "english":"Max",
+        "translation":"Máx"
       },
-      "arming_disable_flag_0":{
-        "translation":"No hay Gyro",
-        "english":"No Gyro"
+      "mixer":{
+        "english":"Mixer",
+        "translation":"Mezclador"
       },
-      "arming_disable_flag_14":{
-        "translation":"Menú CMS",
-        "english":"CMS Menu"
+      "type":{
+        "english":"Type",
+        "translation":"Tipo"
       },
-      "arming_disable_flag_12":{
-        "translation":"Calibrando",
-        "english":"Calibrating"
+      "min":{
+        "english":"Min",
+        "translation":"Mín"
       },
-      "megabyte":{
-        "translation":"MB",
-        "english":"MB"
+      "channel_prefix":{
+        "english":"CHANNEL ",
+        "translation":"CANAL "
+      },
+      "help_fields_min":{
+        "english":"The minimum pwm value to send.",
+        "translation":"El valor mínimo PWM a enviar."
+      },
+      "help_default_p4":{
+        "english":"- For motors, use 0, 1000.",
+        "translation":"- Para motores, use 0, 1000."
+      },
+      "save_settings":{
+        "english":"Save settings",
+        "translation":"Guardar Config."
+      },
+      "saving_data":{
+        "english":"Saving data...",
+        "translation":"Guardando datos..."
+      },
+      "help_default_p5":{
+        "english":"- Or you can customize your own mapping.",
+        "translation":"- O bien puede personalizar su propio mapeo."
+      },
+      "help_default_p3":{
+        "english":"- For mixer rules, use -1000, 1000.",
+        "translation":"- Para reglas de mezclador, use -1000, 1000."
       },
       "name":{
-        "translation":"Estado",
-        "english":"Status"
+        "english":"SBUS Out",
+        "translation":"Salida SBUS"
       },
-      "arming_disable_flag_23":{
-        "translation":"Calibración Acc.",
-        "english":"Acc Calibration"
+      "cancel":{
+        "english":"CANCEL",
+        "translation":"CANCELAR"
       },
-      "arming_disable_flag_7":{
-        "translation":"Acelerador",
-        "english":"Throttle"
+      "help_default_p1":{
+        "english":"Configure advanced mixing and channel mapping if you have SBUS Out enabled on a serial port.",
+        "translation":"Configure las mezclas avanzadas y el mapeo de canales si utiliza la salida SBUS en un puerto serial."
       },
-      "unsupported":{
-        "translation":"No soportado",
-        "english":"Unsupported"
+      "title":{
+        "english":"SBUS Output",
+        "translation":"Salida SBUS"
       },
-      "arming_disable_flag_24":{
-        "translation":"Protocolo Motor",
-        "english":"Motor Protocol"
+      "save_prompt":{
+        "english":"Save current page to flight controller?",
+        "translation":"Guarda esta página en el controlador de vuelo?"
       },
-      "arming_disable_flag_20":{
-        "translation":"Filtro RPM",
-        "english":"RPM Filter"
+      "servo":{
+        "english":"Servo",
+        "translation":"Servo"
       },
-      "erase_prompt":{
-        "translation":"Quiere borrar la flash de datos?",
-        "english":"Would you like to erase the dataflash?"
-      },
-      "arming_disable_flag_11":{
-        "translation":"Carga",
-        "english":"Load"
-      },
-      "real_time_load":{
-        "translation":"Carga Tiempo-Real",
-        "english":"Real-time Load"
-      },
-      "arming_disable_flag_25":{
-        "translation":"Botón Armado",
-        "english":"Arm Switch"
-      },
-      "help_p1":{
-        "translation":"Utilice esta página para ver el estado del controlador de vuelo. Puede ser útil para determinar la razón por la que el heli no se puede armar.",
-        "english":"Use this page to view your current flight controller status. This can be useful when determining why your heli will not arm."
+      "saving":{
+        "english":"Saving",
+        "translation":"Guardando"
       },
       "ok":{
-        "translation":"OK",
-        "english":"OK"
-      },
-      "cpu_load":{
-        "translation":"Carga de CPU",
-        "english":"CPU Load"
-      },
-      "arming_disable_flag_3":{
-        "translation":"Falla Recup. RX",
-        "english":"Bad RX Recovery"
-      },
-      "arming_disable_flag_22":{
-        "translation":"DSHOT Bitbang",
-        "english":"DSHOT Bitbang"
-      },
-      "arming_disable_flag_18":{
-        "translation":"GPS",
-        "english":"GPS"
-      },
-      "help_p2":{
-        "translation":"Para borrar la flash de datos y guardar nuevos LOGs, oprima el botón del menú marcado con '*'.",
-        "english":"To erase the dataflash for more log file storage, press the button on the menu denoted by a '*'."
-      },
-      "erase":{
-        "translation":"Borrar",
-        "english":"Erase"
-      },
-      "arming_disable_flag_15":{
-        "translation":"BST",
-        "english":"BST"
-      },
-      "arming_disable_flag_4":{
-        "translation":"Pérdida Box",
-        "english":"Box Fail Safe"
-      },
-      "arming_disable_flag_21":{
-        "translation":"Reinicio requerido",
-        "english":"Reboot Required"
-      },
-      "arming_disable_flag_13":{
-        "translation":"CLI",
-        "english":"CLI"
-      },
-      "arming_disable_flag_19":{
-        "translation":"Resc",
-        "english":"Resc"
-      },
-      "arming_disable_flag_10":{
-        "translation":"No Pre Armado",
-        "english":"No Pre Arm"
-      },
-      "erasing":{
-        "translation":"Borrando",
-        "english":"Erasing"
-      },
-      "arming_disable_flag_1":{
-        "translation":"A prueba de fallos",
-        "english":"Fail Safe"
+        "english":"OK",
+        "translation":"OK"
       }
     },
-    "profile_governor":{
-      "col":{
-        "translation":"Colec.",
-        "english":"Col"
+    "trim":{
+      "help_p2":{
+        "english":"Motorised tail: If using a motorised tail, use this to set the minimum idle speed and zero yaw.",
+        "translation":"Cola motorizada: Si tiene una cola motorizada, utilice este parámetro para configurar la velocidad mínima de ralentí a la que el heli no gira."
+      },
+      "yaw_trim":{
+        "english":"Yaw. trim %",
+        "translation":"% ajuste Giro"
+      },
+      "enable_mixer_override":{
+        "english":"Enable mixer override",
+        "translation":"Permitir toma de mezclador"
+      },
+      "tail_motor_idle":{
+        "english":"Tail Motor idle  %",
+        "translation":"% Motor cola ralentí"
+      },
+      "disable_mixer_message":{
+        "english":"Return control of the servos to the flight controller.",
+        "translation":"Devolver el control de los servos al controlador de vuelo."
+      },
+      "disable_mixer_override":{
+        "english":"Disable mixer override",
+        "translation":"No permitir toma de mezclador"
+      },
+      "mixer_override_disabling":{
+        "english":"Disabling mixer override...",
+        "translation":"Desactivando toma de mezclador..."
+      },
+      "mixer_override_enabling":{
+        "english":"Enabling mixer override...",
+        "translation":"Activando toma de mezclador..."
+      },
+      "enable_mixer_message":{
+        "english":"Set all servos to their configured center position. \r\n\r\nThis will result in all values on this page being saved when adjusting the servo trim.",
+        "translation":"Ponga todos los servos en su posición central configurada.\r\n\r\nEsto permitirá que se guarden todos los valores de ajuste de los servos."
+      },
+      "mixer_override":{
+        "english":"Mixer Override",
+        "translation":"Toma de Mezclador"
+      },
+      "roll_trim":{
+        "english":"Roll trim %",
+        "translation":"% ajuste Rolido"
       },
       "name":{
-        "translation":"Governor",
-        "english":"Governor"
+        "english":"Trim",
+        "translation":"Ajuste"
       },
-      "help_p4":{
-        "translation":"Precomp: Precompensación del Governor para comandos de cíclico, colectivo, y giro (cola).",
-        "english":"Precomp: Governor precomp gain for yaw, cyclic, and collective inputs."
+      "collective_trim":{
+        "english":"Col. trim %",
+        "translation":"% ajuste Colectivo"
       },
-      "yaw":{
-        "translation":"Giro",
-        "english":"Yaw"
+      "pitch_trim":{
+        "english":"Pitch trim %",
+        "translation":"% ajuste Cabeceo"
       },
-      "p":{
-        "translation":"P",
-        "english":"P"
+      "help_p1":{
+        "english":"Link trims: Use to trim out small leveling issues in your swash plate. Typically only used if the swash links are non-adjustable.",
+        "translation":"Ajuste de enlaces: Se utiliza para corregir pequeños problemas de nivelación en el swashplate. Normalmente se utiliza cuando los brazos del swashplate no son ajustables."
+      }
+    },
+    "profile_rescue":{
+      "collective":{
+        "english":"Collective",
+        "translation":"Colectivo"
       },
-      "tta_gain":{
-        "translation":"Ganancia",
-        "english":"Gain"
-      },
-      "f":{
-        "translation":"F",
-        "english":"F"
+      "flip_upright":{
+        "english":"Flip to upright",
+        "translation":"Invertir a Vertical"
       },
       "gains":{
-        "translation":"Ganancias",
-        "english":"Gains"
+        "english":"Gains",
+        "translation":"Ganancias"
       },
-      "max_throttle":{
-        "translation":"Acelerador Máx",
-        "english":"Max throttle"
-      },
-      "precomp":{
-        "translation":"Precomp",
-        "english":"Precomp"
-      },
-      "min_throttle":{
-        "translation":"Acelerador Mín",
-        "english":"Min throttle"
-      },
-      "i":{
-        "translation":"I",
-        "english":"I"
-      },
-      "tta_limit":{
-        "translation":"Limite",
-        "english":"Limit"
-      },
-      "tail_torque_assist":{
-        "translation":"Asist. Torque Cola",
-        "english":"Tail Torque Assist"
-      },
-      "help_p2":{
-        "translation":"Ganacia PID maestra: Que tanto trabaja el governor para sostener las RPM.",
-        "english":"PID master gain: How hard the governor works to hold the RPM."
-      },
-      "help_p1":{
-        "translation":"Velocidad Rotor Máx: Velocidad deseada del rotor con el acelerador al 100%.",
-        "english":"Full headspeed: Headspeed target when at 100% throttle input."
-      },
-      "d":{
-        "translation":"D",
-        "english":"D"
+      "flip":{
+        "english":"Flip",
+        "translation":"Invers."
       },
       "help_p5":{
-        "translation":"Acelerador Máx: El porcentaje máximo de acelerador que se le permite utilizar al governor.",
-        "english":"Max throttle: The maximum throttle % the governor is allowed to use."
-      },
-      "disabled_message":{
-        "translation":"Governor Rotorflight está deshabilitado",
-        "english":"Rotorflight governor is not enabled"
-      },
-      "cyc":{
-        "translation":"Cícl.",
-        "english":"Cyc"
-      },
-      "help_p6":{
-        "translation":"Asistencia de Torque de Cola: Para colas motorizadas. Ganancia y límite de aceleracion del rotor cuando se utiliza el torque del rotor principal para asistir al giro sobre el eje vertical.",
-        "english":"Tail Torque Assist: For motorized tails. Gain and limit of headspeed increase when using main rotor torque for yaw assist."
-      },
-      "gain":{
-        "translation":"Ganacia PID maestra",
-        "english":"PID master gain"
-      },
-      "help_p3":{
-        "translation":"Ganancias: Ajuste fino del governor.",
-        "english":"Gains: Fine tuning of the governor."
-      },
-      "full_headspeed":{
-        "translation":"Velocidad Máx Rotor",
-        "english":"Full headspeed"
-      }
-    },
-    "radio_config":{
-      "help_p1":{
-        "translation":"Configure su radio. Centro del joystick, armado, retención de acelerador, y corte de acelerador.",
-        "english":"Configure your radio settings. Stick center, arm, throttle hold, and throttle cut."
+        "english":"Flip: How long to wait before aborting because the flip did not work.",
+        "translation":"Inversión: Cuánto tiempo esperar antes de abortar una inversión que no funcionó."
       },
       "name":{
-        "translation":"Config Radio",
-        "english":"Radio Config"
+        "english":"Rescue",
+        "translation":"Rescate"
       },
-      "deadband":{
-        "translation":"Zona muerta",
-        "english":"Deadband"
+      "help_p1":{
+        "english":"Flip to upright: Flip the heli upright when rescue is activated.",
+        "translation":"Invertir a Vertical: Dar vuelta el heli a posición vertical cuando se activa la función rescate."
       },
-      "deflection":{
-        "translation":"Deflección",
-        "english":"Deflection"
+      "time":{
+        "english":"Time",
+        "translation":"Tiempo"
       },
-      "stick":{
-        "translation":"Joystick",
-        "english":"Stick"
+      "help_p2":{
+        "english":"Pull-up: How much collective and for how long to arrest the fall.",
+        "translation":"Levantado: Cantidad de colectivo y tiempo que se aplica para detener la caída."
       },
-      "center":{
-        "translation":"Centro",
-        "english":"Center"
+      "hover":{
+        "english":"Hover",
+        "translation":"Sobrevuelo"
       },
-      "max_throttle":{
-        "translation":"Máx",
-        "english":"Max"
+      "fail_time":{
+        "english":"Fail time",
+        "translation":"Tiempo Falla"
       },
-      "cyclic":{
-        "translation":"Cíclico",
-        "english":"Cyclic"
+      "accel":{
+        "english":"Accel",
+        "translation":"Acel."
       },
-      "min_throttle":{
-        "translation":"Mín",
-        "english":"Min"
+      "rate":{
+        "english":"Rate",
+        "translation":"Tasa"
       },
-      "arming":{
-        "translation":"Armado",
-        "english":"Arming"
+      "help_p6":{
+        "english":"Gains: How hard to fight to keep heli level when engaging rescue mode.",
+        "translation":"Ganancias: Que tan duro debe luchar para mantener el helicóptero horizontal en modo rescate."
       },
-      "throttle":{
-        "translation":"Acelerador",
-        "english":"Throttle"
+      "level_gain":{
+        "english":"Level",
+        "translation":"Nivel"
       },
-      "yaw_deadband":{
-        "translation":"Rotación",
-        "english":"Yaw"
+      "pull_up":{
+        "english":"Pull-up",
+        "translation":"Levantado"
+      },
+      "climb":{
+        "english":"Climb",
+        "translation":"Trepada"
+      },
+      "mode_enable":{
+        "english":"Rescue mode enable",
+        "translation":"Habilitar Modo Rescate"
+      },
+      "help_p3":{
+        "english":"Climb: How much collective to maintain a steady climb - and how long.",
+        "translation":"Trepada: Cantidad y tiempo de colectivo para mantener una trepada constante."
+      },
+      "help_p4":{
+        "english":"Hover: How much collective to maintain a steady hover.",
+        "translation":"Sobrevuelo: Cuánto colectivo se necesita para mantener el heli sobrevolando el lugar."
+      },
+      "help_p7":{
+        "english":"Rate and Accel: Max rotation and acceleration rates when leveling during rescue.",
+        "translation":"Tasa y Acel.: Máxima tasa de rotación y aceleración durante el nivelado de rescate."
+      },
+      "exit_time":{
+        "english":"Exit time",
+        "translation":"T.Salida"
+      }
+    },
+    "validate_sensors":{
+      "msg_repair":{
+        "english":"Enable required sensors on flight controller?",
+        "translation":"Activa los sensores necesarios en el controlador de vuelo?"
+      },
+      "help_p2":{
+        "english":"Use this tool to ensure you are sending the correct sensors.",
+        "translation":"Utilice esta herramienta para asegurar que está enviando los sensores que corresponde."
+      },
+      "invalid":{
+        "english":"INVALID",
+        "translation":"INVALIDOS"
+      },
+      "name":{
+        "english":"Sensors",
+        "translation":"Sensores"
+      },
+      "ok":{
+        "english":"OK",
+        "translation":"OK"
+      },
+      "msg_repair_fin":{
+        "english":"The flight controller has been configured? You may need to perform a discover sensors to see the changes.",
+        "translation":"El controlador de vuelo está configurado? Puede que necesite ejecutar 'Descubrir Sensores' para ver los cambios."
+      },
+      "help_p1":{
+        "english":"This tool attempts to list all the sensors that you are not receiving in a concise list.",
+        "translation":"Esta herramienta intenta listar todos los sensores necesarios que faltan."
+      }
+    },
+    "profile_pidbandwidth":{
+      "yaw":{
+        "english":"Y",
+        "translation":"Y"
+      },
+      "dterm_cutoff":{
+        "english":"D-term cut-off",
+        "translation":"Corte D-term"
+      },
+      "pitch":{
+        "english":"P",
+        "translation":"P"
+      },
+      "help_p1":{
+        "english":"PID Bandwidth: Overall bandwidth in HZ used by the PID loop.",
+        "translation":"Ancho Banda PID: Es el ancho de banda en Hertz utilizado por el loop PID."
+      },
+      "help_p2":{
+        "english":"D-term cutoff: D-term cutoff frequency in HZ.",
+        "translation":"Corte D-term: Frecuencia en Hz del corte D-term."
+      },
+      "help_p3":{
+        "english":"B-term cutoff: B-term cutoff frequency in HZ.",
+        "translation":"Corte B-term: Frecuencia en Hz del corte B-term."
+      },
+      "roll":{
+        "english":"R",
+        "translation":"R"
+      },
+      "name":{
+        "english":"PID Bandwidth",
+        "translation":"Ancho Banda PID"
+      },
+      "bterm_cutoff":{
+        "english":"B-term cut-off",
+        "translation":"Corte B-term"
+      }
+    },
+    "profile_select":{
+      "help_p2":{
+        "english":"If you use a switch on your radio to change flight or rate modes, this will override this choice as soon as you toggle the switch.",
+        "translation":"Si utiliza un botón en su radio para cambiar los modos de vuelo o tasas, esta función anula la elección tan pronto como cambie la posición del botón."
+      },
+      "name":{
+        "english":"Select Profile",
+        "translation":"Selección Perfil"
+      },
+      "cancel":{
+        "english":"CANCEL",
+        "translation":"CANCELAR"
+      },
+      "help_p1":{
+        "english":"Set the current flight profile or rate profile you would like to use.",
+        "translation":"Indique el perfil de vuelo o de tasa que desee utilizar."
+      },
+      "save_settings":{
+        "english":"Save settings",
+        "translation":"Guardar config"
+      },
+      "pid_profile":{
+        "english":"PID profile",
+        "translation":"Perfil PID"
+      },
+      "ok":{
+        "english":"OK",
+        "translation":"OK"
+      },
+      "save_prompt":{
+        "english":"Save current page to flight controller?",
+        "translation":"Guarda esta página en el controlador de vuelo?"
+      },
+      "rate_profile":{
+        "english":"Rate Profile",
+        "translation":"Perfil Tasa"
+      }
+    },
+    "msp_speed":{
+      "start_prompt":{
+        "english":"Would you like to start the test? Choose the test run time below.",
+        "translation":"Desea comenzar la prueba? Seleccione el tiempo de ejecución que sigue."
+      },
+      "testing_performance":{
+        "english":"Testing MSP performance...",
+        "translation":"Probando performance MSP..."
+      },
+      "min_query_time":{
+        "english":"Minimum query time",
+        "translation":"Tiempo Mín Consulta"
+      },
+      "testing":{
+        "english":"Testing",
+        "translation":"Probando"
+      },
+      "seconds_30":{
+        "english":"  30S  ",
+        "translation":"  30S  "
+      },
+      "name":{
+        "english":"MSP Speed",
+        "translation":"Velocidad MSP"
+      },
+      "seconds_600":{
+        "english":"  600S  ",
+        "translation":"  600S  "
+      },
+      "checksum_errors":{
+        "english":"Checksum errors",
+        "translation":"Errores de checksum"
+      },
+      "start":{
+        "english":"Start",
+        "translation":"Inicio"
+      },
+      "total_queries":{
+        "english":"Total queries",
+        "translation":"Total de consultas"
+      },
+      "help_p1":{
+        "english":"This tool attempts to determine the quality of your MSP data link by performing as many large MSP queries within 30 seconds as possible.",
+        "translation":"Esta herramienta intenta determinar la calidad de la conexión de datos MSP llevando a cabo tantas consultas MSP grandes como sea posible en 30 segundos."
+      },
+      "avg_query_time":{
+        "english":"Average query time",
+        "translation":"Tiempo Promedio Consulta"
+      },
+      "seconds_120":{
+        "english":"  120S  ",
+        "translation":"  120S  "
+      },
+      "timeouts":{
+        "english":"Timeouts",
+        "translation":"Tiempo agotado"
+      },
+      "seconds_300":{
+        "english":"  300S  ",
+        "translation":"  300S  "
+      },
+      "retries":{
+        "english":"Retries",
+        "translation":"Reintentos"
+      },
+      "rf_protocol":{
+        "english":"RF protocol",
+        "translation":"Protocolo RF"
+      },
+      "max_query_time":{
+        "english":"Maximum query time",
+        "translation":"Tiempo Máx Consulta"
+      },
+      "successful_queries":{
+        "english":"Successful queries",
+        "translation":"Consultas exitosas"
+      },
+      "test_length":{
+        "english":"Test length",
+        "translation":"Longitud del Test"
+      },
+      "memory_free":{
+        "english":"Memory free",
+        "translation":"Memoria libre"
       }
     }
   },
-  "msg_saving_settings":{
-    "translation":"Guardando configuración...",
-    "english":"Saving settings..."
+  "unit_hertz":{
+    "english":"Hz",
+    "translation":"Hz"
   },
-  "check_msp_version":{
-    "translation":"Imposible determinar la versión MSP en uso.",
-    "english":"Unable to determine MSP version in use."
-  },
-  "menu_section_hardware":{
-    "translation":"Hardware",
-    "english":"Hardware"
-  },
-  "menu_section_tools":{
-    "translation":"Herramientas",
-    "english":"Tools"
-  },
-  "check_rf_module_on":{
-    "translation":"Verifique que el módulo rf esté encendido.",
-    "english":"Please check your rf module is turned on."
-  },
-  "menu_section_advanced":{
-    "translation":"Advanzado",
-    "english":"Advanced"
+  "msg_save_current_page":{
+    "english":"Save current page to flight controller?",
+    "translation":"Guarda esta página en el controlador de vuelo?"
   },
   "check_supported_version":{
-    "translation":"Esta versión del script Lua \nno se puede utilizar con el modelo seleccionado",
-    "english":"This version of the Lua script \ncan't be used with the selected model"
+    "english":"This version of the Lua script \ncan't be used with the selected model",
+    "translation":"Esta versión del script Lua \nno se puede utilizar con el modelo seleccionado"
+  },
+  "msg_loading":{
+    "english":"Loading...",
+    "translation":"Cargando..."
+  },
+  "menu_section_flight_tuning":{
+    "english":"Flight Tuning",
+    "translation":"Ajustes de Vuelo"
+  },
+  "msg_save_settings":{
+    "english":"Save settings",
+    "translation":"Guardar configuración"
+  },
+  "menu_section_developer":{
+    "english":"Developer",
+    "translation":"Desarrollador"
+  },
+  "msg_loading_from_fbl":{
+    "english":"Loading data from flight controller...",
+    "translation":"Cargando datos del controlador de vuelo..."
+  },
+  "navigation_tools":{
+    "english":"*",
+    "translation":"*"
+  },
+  "menu_section_tools":{
+    "english":"Tools",
+    "translation":"Herramientas"
+  },
+  "navigation_menu":{
+    "english":"MENU",
+    "translation":"Menú"
+  },
+  "msg_please_disarm_to_save":{
+    "english":"Please disarm to save",
+    "translation":"Desarme para guardar a fin de asegurar la integridad de los datos."
+  },
+  "check_msp_version":{
+    "english":"Unable to determine MSP version in use.",
+    "translation":"Imposible determinar la versión MSP en uso."
+  },
+  "msg_save_not_commited":{
+    "english":"Save not committed to EEPROM",
+    "translation":"No se copió a EEPROM"
+  },
+  "btn_cancel":{
+    "english":"CANCEL",
+    "translation":"CANCELAR"
+  },
+  "msg_saving":{
+    "english":"Saving...",
+    "translation":"Guardando..."
   },
   "check_heli_on":{
-    "translation":"Verifique que el helicóptero esté encendido y el radio conectado.",
-    "english":"Please check your heli is powered up and radio connected."
-  },
-  "navigation_save":{
-    "translation":"Guarda",
-    "english":"SAVE"
-  },
-  "unit_hertz":{
-    "translation":"Hz",
-    "english":"Hz"
-  },
-  "btn_ok":{
-    "translation":"          OK           ",
-    "english":"          OK           "
-  },
-  "msg_connecting_to_fbl":{
-    "translation":"Conectando al controlador de vuelo...",
-    "english":"Connecting to flight controller..."
+    "english":"Please check your heli is powered up and radio connected.",
+    "translation":"Verifique que el helicóptero esté encendido y el radio conectado."
   }
 }

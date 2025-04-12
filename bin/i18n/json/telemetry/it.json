@@ -1,48 +1,28 @@
 {
   "sensors":{
-    "esc_temp":{
-      "english":"ESC Temperature",
-      "translation":"Temperatura ESC"
+    "rssi":{
+      "english":"RSSI",
+      "translation":"RSSI"
     },
-    "rate_profile":{
-      "english":"Rate Profile",
-      "translation":"Valori Profilo"
+    "current":{
+      "english":"Current",
+      "translation":"Corrente"
     },
-    "headspeed":{
-      "english":"Headspeed",
-      "translation":"Velocita' Rotore"
+    "mcu_temp":{
+      "english":"MCU Temperature",
+      "translation":"Temperatura MCU"
     },
     "voltage":{
       "english":"Voltage",
       "translation":"Voltaggio"
     },
-    "governor":{
-      "english":"Governor State",
-      "translation":"Stato Governor"
-    },
-    "adj_func":{
-      "english":"Adj (Function)",
-      "translation":"Adj (Funzione)"
-    },
-    "fuel":{
-      "english":"Charge Level",
-      "translation":"Carica Livello"
-    },
-    "rssi":{
-      "english":"RSSI",
-      "translation":"RSSI"
-    },
     "adj_val":{
       "english":"Adj (Value)",
       "translation":"Adj (Valore)"
     },
-    "arming_flags":{
-      "english":"Arming Flags",
-      "translation":"Flags Armo"
-    },
-    "current":{
-      "english":"Current",
-      "translation":"Corrente"
+    "governor":{
+      "english":"Governor State",
+      "translation":"Stato Governor"
     },
     "throttle_pct":{
       "english":"Throttle %",
@@ -52,13 +32,33 @@
       "english":"Consumption",
       "translation":"Consumo"
     },
+    "headspeed":{
+      "english":"Headspeed",
+      "translation":"Velocita' Rotore"
+    },
+    "esc_temp":{
+      "english":"ESC Temperature",
+      "translation":"Temperatura ESC"
+    },
+    "rate_profile":{
+      "english":"Rate Profile",
+      "translation":"Valori Profilo"
+    },
+    "fuel":{
+      "english":"Charge Level",
+      "translation":"Carica Livello"
+    },
     "pid_profile":{
       "english":"PID Profile",
       "translation":"Profilo PID"
     },
-    "mcu_temp":{
-      "english":"MCU Temperature",
-      "translation":"Temperatura MCU"
+    "arming_flags":{
+      "english":"Arming Flags",
+      "translation":"Flags Armo"
+    },
+    "adj_func":{
+      "english":"Adj (Function)",
+      "translation":"Adj (Funzione)"
     }
   }
 }
