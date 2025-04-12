@@ -1,38 +1,38 @@
 {
+  "background_task_disabled":{
+    "translation":"Hintergrundtask deaktiviert",
+    "english":"background task disabled"
+  },
   "bg_task_disabled":{
-    "english":"bg task disabled",
-    "translation":"Hintergrundtask deaktiviert"
-  },
-  "reload":{
-    "english":"reload",
-    "translation":"Neu laden"
-  },
-  "error":{
-    "english":"error",
-    "translation":"Fehler"
-  },
-  "no_link":{
-    "english":"no link",
-    "translation":"Keine Verbindung"
+    "translation":"Hintergrundtask deaktiviert",
+    "english":"bg task disabled"
   },
   "version":{
-    "english":"version",
-    "translation":"Version"
-  },
-  "save":{
-    "english":"save",
-    "translation":"Speichern"
-  },
-  "ethos":{
-    "english":"ethos",
-    "translation":"Ethos"
-  },
-  "background_task_disabled":{
-    "english":"background task disabled",
-    "translation":"Hintergrundtask deaktiviert"
+    "translation":"Version",
+    "english":"version"
   },
   "image":{
-    "english":"image",
-    "translation":"Bild"
+    "translation":"Bild",
+    "english":"image"
+  },
+  "ethos":{
+    "translation":"Ethos",
+    "english":"ethos"
+  },
+  "save":{
+    "translation":"Speichern",
+    "english":"save"
+  },
+  "no_link":{
+    "translation":"Keine Verbindung",
+    "english":"no link"
+  },
+  "reload":{
+    "translation":"Neu laden",
+    "english":"reload"
+  },
+  "error":{
+    "translation":"Fehler",
+    "english":"error"
   }
 }
