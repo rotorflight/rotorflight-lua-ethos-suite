@@ -1,64 +1,64 @@
 {
   "sensors":{
-    "rssi":{
-      "english":"RSSI",
-      "translation":"RSSI"
+    "adj_func":{
+      "english":"Adj (Function)",
+      "translation":"Adj (Funzione)"
     },
     "current":{
       "english":"Current",
       "translation":"Corrente"
     },
-    "mcu_temp":{
-      "english":"MCU Temperature",
-      "translation":"Temperatura MCU"
-    },
-    "voltage":{
-      "english":"Voltage",
-      "translation":"Voltaggio"
-    },
-    "adj_val":{
-      "english":"Adj (Value)",
-      "translation":"Adj (Valore)"
-    },
-    "governor":{
-      "english":"Governor State",
-      "translation":"Stato Governor"
-    },
-    "throttle_pct":{
-      "english":"Throttle %",
-      "translation":"Acceleratore %"
-    },
-    "consumption":{
-      "english":"Consumption",
-      "translation":"Consumo"
-    },
     "headspeed":{
       "english":"Headspeed",
       "translation":"Velocita' Rotore"
-    },
-    "esc_temp":{
-      "english":"ESC Temperature",
-      "translation":"Temperatura ESC"
     },
     "rate_profile":{
       "english":"Rate Profile",
       "translation":"Valori Profilo"
     },
+    "mcu_temp":{
+      "english":"MCU Temperature",
+      "translation":"Temperatura MCU"
+    },
     "fuel":{
       "english":"Charge Level",
       "translation":"Carica Livello"
     },
-    "pid_profile":{
-      "english":"PID Profile",
-      "translation":"Profilo PID"
+    "adj_val":{
+      "english":"Adj (Value)",
+      "translation":"Adj (Valore)"
+    },
+    "consumption":{
+      "english":"Consumption",
+      "translation":"Consumo"
+    },
+    "voltage":{
+      "english":"Voltage",
+      "translation":"Voltaggio"
+    },
+    "rssi":{
+      "english":"RSSI",
+      "translation":"RSSI"
+    },
+    "esc_temp":{
+      "english":"ESC Temperature",
+      "translation":"Temperatura ESC"
     },
     "arming_flags":{
       "english":"Arming Flags",
       "translation":"Flags Armo"
     },
-    "adj_func":{
-      "english":"Adj (Function)",
-      "translation":"Adj (Funzione)"
+    "throttle_pct":{
+      "english":"Throttle %",
+      "translation":"Acceleratore %"
+    },
+    "pid_profile":{
+      "english":"PID Profile",
+      "translation":"Profilo PID"
+    },
+    "governor":{
+      "english":"Governor State",
+      "translation":"Stato Governor"
     }
   }
 }

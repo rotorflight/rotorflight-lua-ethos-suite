@@ -1,720 +1,4 @@
 {
-  "FILTER_CONFIG":{
-    "tbl_custom":{
-      "english":"CUSTOM",
-      "translation":"CUSTOM"
-    },
-    "tbl_1st":{
-      "english":"1ST",
-      "translation":"1ST"
-    },
-    "dyn_notch_count":{
-      "english":"Number of notches to apply.",
-      "translation":"Number of notches to apply."
-    },
-    "dyn_notch_min_hz":{
-      "english":"Minimum frequency to which the notch is applied.",
-      "translation":"Minimum frequentie waar het filter start met filteren."
-    },
-    "dyn_notch_max_hz":{
-      "english":"Maximum frequency to which the notch is applied.",
-      "translation":"Maximum frequenctie tot waar het filter stopt met filteren."
-    },
-    "rpm_min_hz":{
-      "english":"Minimum frequency for the RPM filter.",
-      "translation":"Minimum frequenctie voor het rpm filter."
-    },
-    "gyro_soft_notch_hz_1":{
-      "english":"Center frequency to which the notch is applied.",
-      "translation":"Frequentie waar het filter wordt toegepast."
-    },
-    "gyro_lpf2_static_hz":{
-      "english":"Lowpass filter cutoff frequency in Hz.",
-      "translation":"Lowpass filter cutoff frequentie in Hz."
-    },
-    "gyro_soft_notch_hz_2":{
-      "english":"Center frequency to which the notch is applied.",
-      "translation":"Frequentie waar het filter wordt toegepast."
-    },
-    "tbl_medium":{
-      "english":"MEDIUM",
-      "translation":"MEDIUM"
-    },
-    "gyro_lpf1_dyn_min_hz":{
-      "english":"Dynamic filter min cutoff in Hz.",
-      "translation":"Dynamisch filter minimale frequentie in Hz."
-    },
-    "tbl_2nd":{
-      "english":"2ND",
-      "translation":"2ND"
-    },
-    "gyro_lpf1_dyn_max_hz":{
-      "english":"Dynamic filter max cutoff in Hz.",
-      "translation":"Dynamisch filter maximale frequentie in Hz."
-    },
-    "gyro_soft_notch_cutoff_1":{
-      "english":"Width of the notch filter in Hz.",
-      "translation":"Breedte van de het filter in Hz."
-    },
-    "gyro_lpf1_static_hz":{
-      "english":"Lowpass filter cutoff frequency in Hz.",
-      "translation":"Lowpass filter cutoff frequentie in Hz."
-    },
-    "tbl_high":{
-      "english":"HIGH",
-      "translation":"Hoog"
-    },
-    "tbl_low":{
-      "english":"LOW",
-      "translation":"Laag"
-    },
-    "gyro_soft_notch_cutoff_2":{
-      "english":"Width of the notch filter in Hz.",
-      "translation":"Breedte van het filter in Hz."
-    },
-    "tbl_none":{
-      "english":"NONE",
-      "translation":"Geen"
-    },
-    "dyn_notch_q":{
-      "english":"Quality factor of the notch filter.",
-      "translation":"Breedte van het notch filter in het spectrum."
-    }
-  },
-  "MOTOR_CONFIG":{
-    "motor_pole_count_0":{
-      "english":"The number of magnets on the motor bell.",
-      "translation":"Het aantal magneten in de motor."
-    },
-    "motor_pwm_protocol":{
-      "english":"The protocol used to communicate with the ESC",
-      "translation":"Het protocol wat gebruikt wordt om met de esc te communiceren"
-    },
-    "tail_rotor_gear_ratio_1":{
-      "english":"Autorotation Gear Tooth Count",
-      "translation":"Autorotatie tandwiel aantal tanden"
-    },
-    "main_rotor_gear_ratio_0":{
-      "english":"Motor Pinion Gear Tooth Count",
-      "translation":"Motor tandwiel aantal tanden"
-    },
-    "tail_rotor_gear_ratio_0":{
-      "english":"Tail Gear Tooth Count",
-      "translation":"Staart tandwiel aantal tanden"
-    },
-    "maxthrottle":{
-      "english":"This PWM value is sent to the ESC/Servo at full throttle",
-      "translation":"Deze PWM waarde wordt gestuurd naar de ESC/Servo op volledig throttle"
-    },
-    "minthrottle":{
-      "english":"This PWM value is sent to the ESC/Servo at low throttle",
-      "translation":"Deze PWM waarde wordt gestuurd naar de ESC/Servo op laag throttle"
-    },
-    "motor_pwm_rate":{
-      "english":"The frequency at which the ESC sends PWM signals to the motor",
-      "translation":"De frequentie snelheid waarmee het throttle signaal wordt gestuurd naar de esc"
-    },
-    "mincommand":{
-      "english":"This PWM value is sent when the motor is stopped",
-      "translation":"Deze PWM waarde wordt gestuurd wanneer de motor gestopt is"
-    },
-    "main_rotor_gear_ratio_1":{
-      "english":"Main Gear Tooth Count",
-      "translation":"Hoofd tandwiel aantal tanden"
-    }
-  },
-  "RESCUE_PROFILE":{
-    "rescue_hover_collective":{
-      "english":"Collective value for hover.",
-      "translation":"Collective waarde voor hoover"
-    },
-    "rescue_level_gain":{
-      "english":"Determine how aggressively the heli levels during rescue.",
-      "translation":"Bepaald hoe agressief de heli levels tijdens rescue."
-    },
-    "tbl_flip":{
-      "english":"FLIP",
-      "translation":"FLIP"
-    },
-    "rescue_pull_up_collective":{
-      "english":"Collective value for pull-up climb.",
-      "translation":"Collective waarde voor omhoog klimmen."
-    },
-    "tbl_noflip":{
-      "english":"NO FLIP",
-      "translation":"GEEN FLIP"
-    },
-    "rescue_flip_time":{
-      "english":"If the helicopter is in rescue and is trying to flip to upright and does not within this time, rescue will be aborted.",
-      "translation":" Wanneer de heli is in rescue en probeert te flippen wat niet binnen deze tijd lukt dan wordt rescue afgebroken."
-    },
-    "rescue_flip_mode":{
-      "english":"If rescue is activated while inverted, flip to upright - or remain inverted.",
-      "translation":"Als de rescue wordt geactiveerd terwijl inverted, flip positief - of blijf inverted."
-    },
-    "rescue_climb_time":{
-      "english":"Length of time the climb collective is applied before switching to hover.",
-      "translation":"Tijdsduur de klim collective wordt gegeven voor omgeschakeld wordt naar hover."
-    },
-    "rescue_flip_gain":{
-      "english":"Determine how aggressively the heli flips during inverted rescue.",
-      "translation":"Bepaald hoe agressief de heli flips bij een inverted rescue."
-    },
-    "rescue_max_setpoint_accel":{
-      "english":"Limit how fast the helicopter accelerates into a roll/pitch. Larger helicopters may need slower acceleration.",
-      "translation":"Limiet de acceleratie in een roll/pitch. Grotere heli's hebben een lagere acceleratie nodig."
-    },
-    "rescue_max_setpoint_rate":{
-      "english":"Limit rescue roll/pitch rate. Larger helicopters may need slower rotation rates.",
-      "translation":"Limiet de rescue roll/pitch rotatiesnelheid. Grote heli's hebben lagere rotatiesnelheden benodigd."
-    },
-    "tbl_on":{
-      "english":"ON",
-      "translation":"AAN"
-    },
-    "rescue_pull_up_time":{
-      "english":"When rescue is activated, helicopter will apply pull-up collective for this time period before moving to flip or climb stage.",
-      "translation":"Wanneer rescue is geactiveerd, helicopter geeft collective omhoog voor deze tijd voordat heli flipt of overgaat naar klim stap."
-    },
-    "rescue_exit_time":{
-      "english":"This limits rapid application of negative collective if the helicopter has rolled during rescue.",
-      "translation":"Dit beperkt de snelle toepassing van negatieve collective als de helikopter tijdens de reddingsactie is gerold."
-    },
-    "rescue_climb_collective":{
-      "english":"Collective value for rescue climb.",
-      "translation":"Collective waarde voor rescue klim."
-    },
-    "tbl_off":{
-      "english":"OFF",
-      "translation":"UIT"
-    }
-  },
-  "PID_TUNING":{
-    "pid_2_F":{
-      "english":"Helps push P-term based on stick input. Increasing will make response more sharp, but can cause overshoot.",
-      "translation":"Helpt P-term te pushen op basis van stick input. Verhogen zal de respons scherper maken, maar kan overshoot veroorzaken."
-    },
-    "pid_0_F":{
-      "english":"Helps push P-term based on stick input. Increasing will make response more sharp, but can cause overshoot.",
-      "translation":"Helpt P-term te pushen op basis van stick input. Verhogen zal de respons scherper maken, maar kan overshoot veroorzaken."
-    },
-    "pid_0_D":{
-      "english":"Strength of dampening to any motion on the system, including external influences. Also reduces overshoot.",
-      "translation":"Sterkte van demping van elke beweging op het systeem, inclusief externe invloeden. Vermindert ook overshoot."
-    },
-    "pid_1_P":{
-      "english":"How tightly the system tracks the desired setpoint.",
-      "translation":"Hoe nauwkeurig het systeem de gewenste instelwaarde volgt."
-    },
-    "pid_2_D":{
-      "english":"Strength of dampening to any motion on the system, including external influences. Also reduces overshoot.",
-      "translation":"Sterkte van demping van elke beweging op het systeem, inclusief externe invloeden. Vermindert ook overshoot."
-    },
-    "pid_2_B":{
-      "english":"Additional boost on the feedforward to make the heli react more to quick stick movements.",
-      "translation":"Extra boost op de feedforward zodat de heli beter reageert op snelle stickbewegingen."
-    },
-    "pid_0_O":{
-      "english":"Used to prevent the craft from rolling when using high collective.",
-      "translation":"Wordt gebruikt om te voorkomen dat de heli gaat rollen bij gebruik van veel collective."
-    },
-    "pid_1_B":{
-      "english":"Additional boost on the feedforward to make the heli react more to quick stick movements.",
-      "translation":"Extra boost op de feedforward zodat de heli beter reageert op snelle stickbewegingen."
-    },
-    "pid_0_I":{
-      "english":"How tightly the system holds its position.",
-      "translation":"Hoe nauwkeurig het systeem zijn positie vasthoudt."
-    },
-    "pid_1_D":{
-      "english":"Strength of dampening to any motion on the system, including external influences. Also reduces overshoot.",
-      "translation":"Sterkte van demping van elke beweging op het systeem, inclusief externe invloeden. Vermindert ook overshoot."
-    },
-    "pid_2_I":{
-      "english":"How tightly the system holds its position.",
-      "translation":"Hoe nauwkeurig het systeem zijn positie vasthoudt."
-    },
-    "pid_1_I":{
-      "english":"How tightly the system holds its position.",
-      "translation":"Hoe nauwkeurig het systeem zijn positie vasthoudt."
-    },
-    "pid_1_F":{
-      "english":"Helps push P-term based on stick input. Increasing will make response more sharp, but can cause overshoot.",
-      "translation":"Helpt P-term te pushen op basis van stick input. Verhogen zal de respons scherper maken, maar kan overshoot veroorzaken."
-    },
-    "pid_0_B":{
-      "english":"Additional boost on the feedforward to make the heli react more to quick stick movements.",
-      "translation":"Extra boost op de feedforward zodat de heli beter reageert op snelle stickbewegingen."
-    },
-    "pid_1_O":{
-      "english":"Used to prevent the craft from pitching when using high collective.",
-      "translation":"Wordt gebruikt om te voorkomen dat de heli gaat rollen bij gebruik van veel collective."
-    },
-    "pid_2_P":{
-      "english":"How tightly the system tracks the desired setpoint.",
-      "translation":"Hoe nauwkeurig het systeem de gewenste instelwaarde volgt."
-    },
-    "pid_0_P":{
-      "english":"How tightly the system tracks the desired setpoint.",
-      "translation":"Hoe nauwkeurig het systeem de gewenste instelwaarde volgt."
-    }
-  },
-  "ESC_PARAMETERS_SCORPION":{
-    "tbl_ccw":{
-      "english":"CCW",
-      "translation":"CCW"
-    },
-    "tbl_standard":{
-      "english":"Standard",
-      "translation":"Standaard"
-    },
-    "tbl_cw":{
-      "english":"CW",
-      "translation":"CW"
-    },
-    "tbl_helistore":{
-      "english":"Heli Governor (stored)",
-      "translation":"Heli Governor (stored)"
-    },
-    "tbl_futsbus":{
-      "english":"Futaba SBUS",
-      "translation":"Futaba SBUS"
-    },
-    "tbl_airplane":{
-      "english":"Airplane mode",
-      "translation":"Airplane mode"
-    },
-    "tbl_unsolicited":{
-      "english":"Unsolicited",
-      "translation":"Unsolicited"
-    },
-    "tbl_boat":{
-      "english":"Boat mode",
-      "translation":"Boat mode"
-    },
-    "tbl_heligov":{
-      "english":"Heli Governor",
-      "translation":"Heli Governor"
-    },
-    "tbl_quad":{
-      "english":"Quad mode",
-      "translation":"Quad mode"
-    },
-    "tbl_on":{
-      "english":"On",
-      "translation":"Aan"
-    },
-    "tbl_exbus":{
-      "english":"Jeti Exbus",
-      "translation":"Jeti Exbus"
-    },
-    "tbl_extgov":{
-      "english":"External Governor",
-      "translation":"External Governor"
-    },
-    "tbl_vbar":{
-      "english":"VBar",
-      "translation":"VBar"
-    },
-    "tbl_vbargov":{
-      "english":"VBar Governor",
-      "translation":"VBar Governor"
-    },
-    "tbl_off":{
-      "english":"Off",
-      "translation":"Uit"
-    }
-  },
-  "GOVERNOR_CONFIG":{
-    "gov_recovery_time":{
-      "english":"Time constant for recovery spoolup, in seconds, measuring the time from zero to full headspeed.",
-      "translation":"Tijdconstante voor herstel opstart in seconden, van nul tot volledig rotortoerental."
-    },
-    "gov_startup_time":{
-      "english":"Time constant for slow startup, in seconds, measuring the time from zero to full headspeed.",
-      "translation":"Tijdconstante voor een langzame opstart in seconden, van nul tot volledig rotortoerental, zonder rpm signaal."
-    },
-    "gov_tracking_time":{
-      "english":"Time constant for headspeed changes, in seconds, measuring the time from zero to full headspeed.",
-      "translation":"Tijdconstante voor rotortoerental veranderingen in seconden, van nul tot volledig rotortoerental."
-    },
-    "gov_handover_throttle":{
-      "english":"Governor activates above this %. Below this the input throttle is passed to the ESC.",
-      "translation":"Governor activeert als throttle hoger is als deze waarde. Als throttle lager is wordt deze doorgestuurd naar de esc"
-    },
-    "tbl_govmode_mode2":{
-      "english":"MODE2",
-      "translation":"MODE2"
-    },
-    "tbl_govmode_passthrough":{
-      "english":"PASSTHROUGH",
-      "translation":"PASSTHROUGH"
-    },
-    "gov_spoolup_time":{
-      "english":"Time constant for slow spoolup, in seconds, measuring the time from zero to full headspeed.",
-      "translation":"Tijdconstante voor een langzame opstart in seconden, van nul tot volledig rotortoerental, met rpm signaal."
-    },
-    "tbl_govmode_mode1":{
-      "english":"MODE1",
-      "translation":"MODE1"
-    },
-    "gov_spoolup_min_throttle":{
-      "english":"Minimum throttle to use for slow spoolup, in percent. For electric motors the default is 5%, for nitro this should be set so the clutch starts to engage for a smooth spoolup 10-15%.",
-      "translation":"Minimale throttle wat gebruikt wordt voor de langzame opstart in procent. Voor elektrisch 5%, voor nitro zo hoog dat de clutch net aangrijpt meestal rond 10-15%."
-    },
-    "tbl_govmode_off":{
-      "english":"OFF",
-      "translation":"Uit"
-    },
-    "tbl_govmode_standard":{
-      "english":"STANDARD",
-      "translation":"STANDAARD"
-    }
-  },
-  "ESC_PARAMETERS_YGE":{
-    "tbl_custom":{
-      "english":"Custom (PC Defined)",
-      "translation":"Custom (PC Defined)"
-    },
-    "tbl_modeglider":{
-      "english":"Aero Glider",
-      "translation":"Aero Glider"
-    },
-    "tbl_modeheli":{
-      "english":"Heli Governor",
-      "translation":"Heli Governor"
-    },
-    "tbl_modefree":{
-      "english":"Free (Attention!)",
-      "translation":"Free (Attention!)"
-    },
-    "tbl_autonorm":{
-      "english":"Auto Normal",
-      "translation":"Auto Normaal"
-    },
-    "tbl_slow":{
-      "english":"Slow",
-      "translation":"Langzaam"
-    },
-    "tbl_modestore":{
-      "english":"Heli Governor Store",
-      "translation":"Heli Governor Store"
-    },
-    "tbl_slowdown":{
-      "english":"Slowdown",
-      "translation":"Vertraging"
-    },
-    "tbl_modeair":{
-      "english":"Aero Motor",
-      "translation":"Aero Motor"
-    },
-    "tbl_alwayson":{
-      "english":"Always On",
-      "translation":"Altijd aan"
-    },
-    "tbl_autoefficient":{
-      "english":"Auto Efficient",
-      "translation":"Auto Efficient"
-    },
-    "tbl_medium":{
-      "english":"Medium",
-      "translation":"Gemiddeld"
-    },
-    "tbl_normal":{
-      "english":"Normal",
-      "translation":"Normaal"
-    },
-    "tbl_smooth":{
-      "english":"Smooth",
-      "translation":"Smooth"
-    },
-    "tbl_autoextreme":{
-      "english":"Auto Extreme",
-      "translation":"Auto Extreme"
-    },
-    "tbl_unused":{
-      "english":"*Unused*",
-      "translation":"*Unused*"
-    },
-    "tbl_autopower":{
-      "english":"Auto Power",
-      "translation":"Auto Power"
-    },
-    "tbl_off":{
-      "english":"Off",
-      "translation":"Uit"
-    },
-    "tbl_auto":{
-      "english":"Auto",
-      "translation":"Auto"
-    },
-    "tbl_on":{
-      "english":"On",
-      "translation":"Aan"
-    },
-    "tbl_fast":{
-      "english":"Fast",
-      "translation":"Snel"
-    },
-    "tbl_modef3a":{
-      "english":"Aero F3A",
-      "translation":"Aero F3A"
-    },
-    "tbl_modeext":{
-      "english":"Heli Ext Governor",
-      "translation":"Heli Ext Governor"
-    },
-    "tbl_cutoff":{
-      "english":"Cutoff",
-      "translation":"Afsnijding"
-    },
-    "tbl_reverse":{
-      "english":"Reverse",
-      "translation":"Omgekeerd"
-    }
-  },
-  "ESC_SENSOR_CONFIG":{
-    "half_duplex":{
-      "english":"Half duplex mode for ESC telemetry",
-      "translation":"Half duplex mode voor ESC telemetry"
-    },
-    "update_hz":{
-      "english":"ESC telemetry update rate",
-      "translation":"ESC telemetrie update rate"
-    },
-    "hw4_current_gain":{
-      "english":"Hobbywing v4 current gain adjustment",
-      "translation":"Hobbywing v4 stroom gain instelling"
-    },
-    "current_correction":{
-      "english":"Adjust current correction",
-      "translation":"Pas de stroom correctie aan"
-    },
-    "current_offset":{
-      "english":"Current sensor offset adjustment",
-      "translation":"Stroomsensor afwijking instelling"
-    },
-    "hw4_current_offset":{
-      "english":"Hobbywing v4 current offset adjustment",
-      "translation":"Hobbywing v4 stroom afwijking instelling"
-    },
-    "tbl_on":{
-      "english":"On",
-      "translation":"Aan"
-    },
-    "hw4_voltage_gain":{
-      "english":"Hobbywing v4 voltage gain adjustment",
-      "translation":"Hobbywing v4 voltage gain instelling"
-    },
-    "voltage_correction":{
-      "english":"Adjust the voltage correction",
-      "translation":"Pas de voltage correctie aan"
-    },
-    "consumption_correction":{
-      "english":"Adjust the consumption correction",
-      "translation":"Pas het verbruik correctie aan"
-    },
-    "pin_swap":{
-      "english":"Swap the TX and RX pins for the ESC telemetry",
-      "translation":"Verwissel de TX en RX pins voor de esc telemetrie"
-    },
-    "tbl_off":{
-      "english":"Off",
-      "translation":"Uit"
-    }
-  },
-  "RC_TUNING":{
-    "setpoint_boost_gain_3":{
-      "english":"Boost gain for the setpoint.",
-      "translation":"Boostversterking voor het setpoint."
-    },
-    "setpoint_boost_gain_2":{
-      "english":"Boost gain for the setpoint.",
-      "translation":"Boostversterking voor het setpoint."
-    },
-    "yaw_dynamic_ceiling_gain":{
-      "english":"The maximum gain applied to the yaw dynamic ceiling.",
-      "translation":"De maximale gain toegepast op het dynamische yaw plafond."
-    },
-    "setpoint_boost_cutoff_3":{
-      "english":"Boost cutoff for the setpoint.",
-      "translation":"Boostdrempel voor het setpoint."
-    },
-    "response_time_2":{
-      "english":"Increase or decrease the response time of the rate to smooth heli movements.",
-      "translation":"Verhoog of verlaag de reactietijd van de rates om de helikopterbewegingen soepeler te maken."
-    },
-    "yaw_dynamic_deadband_gain":{
-      "english":"The maximum gain applied to the yaw dynamic deadband.",
-      "translation":"De maximale gain toegepast op de dynamische yaw dode zone."
-    },
-    "setpoint_boost_gain_4":{
-      "english":"Boost gain for the setpoint.",
-      "translation":"Boostversterking voor het setpoint."
-    },
-    "setpoint_boost_gain_1":{
-      "english":"Boost gain for the setpoint.",
-      "translation":"Boostversterking voor het setpoint."
-    },
-    "response_time_1":{
-      "english":"Increase or decrease the response time of the rate to smooth heli movements.",
-      "translation":"Verhoog of verlaag de reactietijd van de rates om de helikopterbewegingen soepeler te maken."
-    },
-    "accel_limit_1":{
-      "english":"Maximum acceleration of the craft in response to a stick movement.",
-      "translation":"Maximale versnelling van de heli als reactie op een stickbeweging."
-    },
-    "yaw_dynamic_deadband_filter":{
-      "english":"The maximum filter applied to the yaw dynamic deadband.",
-      "translation":"Het maximale filter toegepast op de dynamische yaw dode zone."
-    },
-    "setpoint_boost_cutoff_2":{
-      "english":"Boost cutoff for the setpoint.",
-      "translation":"Boostdrempel voor het setpoint."
-    },
-    "response_time_3":{
-      "english":"Increase or decrease the response time of the rate to smooth heli movements.",
-      "translation":"Verhoog of verlaag de reactietijd van de rates om de helikopterbewegingen soepeler te maken."
-    },
-    "setpoint_boost_cutoff_1":{
-      "english":"Boost cutoff for the setpoint.",
-      "translation":"Boostdrempel voor het setpoint."
-    },
-    "accel_limit_2":{
-      "english":"Maximum acceleration of the craft in response to a stick movement.",
-      "translation":"Maximale versnelling van de heli als reactie op een stickbeweging."
-    },
-    "accel_limit_4":{
-      "english":"Maximum acceleration of the craft in response to a stick movement.",
-      "translation":"Maximale versnelling van de heli als reactie op een stickbeweging."
-    },
-    "response_time_4":{
-      "english":"Increase or decrease the response time of the rate to smooth heli movements.",
-      "translation":"Verhoog of verlaag de reactietijd van de rates om de helikopterbewegingen soepeler te maken."
-    },
-    "accel_limit_3":{
-      "english":"Maximum acceleration of the craft in response to a stick movement.",
-      "translation":"Maximale versnelling van de heli als reactie op een stickbeweging."
-    },
-    "setpoint_boost_cutoff_4":{
-      "english":"Boost cutoff for the setpoint.",
-      "translation":"Boostdrempel voor het setpoint."
-    }
-  },
-  "ESC_PARAMETERS_XDFLY":{
-    "tbl_ccw":{
-      "english":"CCW",
-      "translation":"CCW"
-    },
-    "tbl_fast":{
-      "english":"Fast",
-      "translation":"Snel"
-    },
-    "tbl_red":{
-      "english":"Red",
-      "translation":"Red"
-    },
-    "tbl_fmheli":{
-      "english":"Helicopter",
-      "translation":"Helicopter"
-    },
-    "tbl_cw":{
-      "english":"CW",
-      "translation":"CW"
-    },
-    "tbl_fwgov":{
-      "english":"Fixed Wing",
-      "translation":"Fixed Wing"
-    },
-    "tbl_slow":{
-      "english":"Slow",
-      "translation":"Langzaam"
-    },
-    "tbl_normal":{
-      "english":"Normal",
-      "translation":"Normaal"
-    },
-    "tbl_white":{
-      "english":"WHITE",
-      "translation":"WHITE"
-    },
-    "tbl_yellow":{
-      "english":"YELOW",
-      "translation":"YELOW"
-    },
-    "tbl_purple":{
-      "english":"PURPLE",
-      "translation":"PURPLE"
-    },
-    "tbl_green":{
-      "english":"GREEN",
-      "translation":"GREEN"
-    },
-    "tbl_orange":{
-      "english":"ORANGE",
-      "translation":"ORANGE"
-    },
-    "tbl_vslow":{
-      "english":"Very Slow",
-      "translation":"Heel langzaam"
-    },
-    "tbl_medium":{
-      "english":"Medium",
-      "translation":"Medium"
-    },
-    "tbl_escgov":{
-      "english":"ESC Governor",
-      "translation":"ESC Governor"
-    },
-    "tbl_jadegreen":{
-      "english":"JADE GREEN",
-      "translation":"JADE GREEN"
-    },
-    "tbl_fmfw":{
-      "english":"Fixed Wing",
-      "translation":"Fixed Wing"
-    },
-    "tbl_blue":{
-      "english":"BLUE",
-      "translation":"BLUE"
-    },
-    "tbl_pink":{
-      "english":"PINK",
-      "translation":"PINK"
-    },
-    "tbl_reverse":{
-      "english":"Reverse",
-      "translation":"Omgekeerd"
-    },
-    "tbl_auto":{
-      "english":"Auto",
-      "translation":"Auto"
-    },
-    "tbl_on":{
-      "english":"On",
-      "translation":"Aan"
-    },
-    "tbl_high":{
-      "english":"High",
-      "translation":"High"
-    },
-    "tbl_extgov":{
-      "english":"External Governor",
-      "translation":"External Governor"
-    },
-    "tbl_low":{
-      "english":"Low",
-      "translation":"Low"
-    },
-    "tbl_cyan":{
-      "english":"CYAN",
-      "translation":"CYAN"
-    },
-    "tbl_off":{
-      "english":"Off",
-      "translation":"Uit"
-    }
-  },
   "ACC_TRIM":{
     "roll":{
       "english":"Use to trim if the heli drifts in one of the stabilized modes (angle, horizon, etc.).",
@@ -725,255 +9,315 @@
       "translation":"Gebruik de trim als de heli niet stil hangt in de stabilisatie modes (angle, horizon, etc.)."
     }
   },
+  "GOVERNOR_CONFIG":{
+    "tbl_govmode_mode1":{
+      "english":"MODE1",
+      "translation":"MODE1"
+    },
+    "gov_recovery_time":{
+      "english":"Time constant for recovery spoolup, in seconds, measuring the time from zero to full headspeed.",
+      "translation":"Tijdconstante voor herstel opstart in seconden, van nul tot volledig rotortoerental."
+    },
+    "tbl_govmode_mode2":{
+      "english":"MODE2",
+      "translation":"MODE2"
+    },
+    "tbl_govmode_standard":{
+      "english":"STANDARD",
+      "translation":"STANDAARD"
+    },
+    "tbl_govmode_passthrough":{
+      "english":"PASSTHROUGH",
+      "translation":"PASSTHROUGH"
+    },
+    "gov_startup_time":{
+      "english":"Time constant for slow startup, in seconds, measuring the time from zero to full headspeed.",
+      "translation":"Tijdconstante voor een langzame opstart in seconden, van nul tot volledig rotortoerental, zonder rpm signaal."
+    },
+    "tbl_govmode_off":{
+      "english":"OFF",
+      "translation":"Uit"
+    },
+    "gov_tracking_time":{
+      "english":"Time constant for headspeed changes, in seconds, measuring the time from zero to full headspeed.",
+      "translation":"Tijdconstante voor rotortoerental veranderingen in seconden, van nul tot volledig rotortoerental."
+    },
+    "gov_handover_throttle":{
+      "english":"Governor activates above this %. Below this the input throttle is passed to the ESC.",
+      "translation":"Governor activeert als throttle hoger is als deze waarde. Als throttle lager is wordt deze doorgestuurd naar de esc"
+    },
+    "gov_spoolup_min_throttle":{
+      "english":"Minimum throttle to use for slow spoolup, in percent. For electric motors the default is 5%, for nitro this should be set so the clutch starts to engage for a smooth spoolup 10-15%.",
+      "translation":"Minimale throttle wat gebruikt wordt voor de langzame opstart in procent. Voor elektrisch 5%, voor nitro zo hoog dat de clutch net aangrijpt meestal rond 10-15%."
+    },
+    "gov_spoolup_time":{
+      "english":"Time constant for slow spoolup, in seconds, measuring the time from zero to full headspeed.",
+      "translation":"Tijdconstante voor een langzame opstart in seconden, van nul tot volledig rotortoerental, met rpm signaal."
+    }
+  },
   "GOVERNOR_PROFILE":{
-    "governor_i_gain":{
-      "english":"PID loop I-term gain.",
-      "translation":"PID loop I-term gain."
+    "governor_max_throttle":{
+      "english":"Maximum output throttle the governor is allowed to use.",
+      "translation":"Maximale throttle welke de governor mag gebruiken."
     },
     "governor_d_gain":{
       "english":"PID loop D-term gain.",
       "translation":"PID loop D-term gain."
     },
-    "governor_f_gain":{
-      "english":"Feedforward gain.",
-      "translation":"Feedforward gain."
-    },
-    "governor_collective_ff_weight":{
-      "english":"Collective precompensation weight - how much collective is mixed into the feedforward.",
-      "translation":"Collective precompensation weight - how much collective is mixed into the feedforward."
-    },
-    "governor_min_throttle":{
-      "english":"Minimum output throttle the governor is allowed to use.",
-      "translation":"Minimum throttle de governor mag gebruiken."
-    },
-    "governor_tta_gain":{
-      "english":"TTA gain applied to increase headspeed to control the tail in the negative direction (e.g. motorised tail less than idle speed).",
-      "translation":"TTA gain toegepast om rotortoerental te verhogen om de staart in negatieve richting te sturen (e.g. gemotoriseerde staart onder idle rpm)."
-    },
-    "governor_max_throttle":{
-      "english":"Maximum output throttle the governor is allowed to use.",
-      "translation":"Maximale throttle welke de governor mag gebruiken."
-    },
     "governor_p_gain":{
       "english":"PID loop P-term gain.",
       "translation":"PID loop P-term gain."
     },
-    "governor_tta_limit":{
-      "english":"TTA max headspeed increase over full headspeed.",
-      "translation":"TTA max rotortoerental boven volledige rotortoerental."
+    "governor_f_gain":{
+      "english":"Feedforward gain.",
+      "translation":"Feedforward gain."
     },
     "governor_gain":{
       "english":"Master PID loop gain.",
       "translation":"Master PID loop gain."
     },
+    "governor_tta_limit":{
+      "english":"TTA max headspeed increase over full headspeed.",
+      "translation":"TTA max rotortoerental boven volledige rotortoerental."
+    },
+    "governor_tta_gain":{
+      "english":"TTA gain applied to increase headspeed to control the tail in the negative direction (e.g. motorised tail less than idle speed).",
+      "translation":"TTA gain toegepast om rotortoerental te verhogen om de staart in negatieve richting te sturen (e.g. gemotoriseerde staart onder idle rpm)."
+    },
     "governor_headspeed":{
       "english":"Target headspeed for the current profile.",
       "translation":"Doel rotortoerental voor het huidige profiel."
+    },
+    "governor_cyclic_ff_weight":{
+      "english":"Cyclic precompensation weight - how much cyclic is mixed into the feedforward.",
+      "translation":"Gewicht Cyclic precompensation - Hoeveel cyclic is mixed in de feedforward."
+    },
+    "governor_min_throttle":{
+      "english":"Minimum output throttle the governor is allowed to use.",
+      "translation":"Minimum throttle de governor mag gebruiken."
+    },
+    "governor_collective_ff_weight":{
+      "english":"Collective precompensation weight - how much collective is mixed into the feedforward.",
+      "translation":"Collective precompensation weight - how much collective is mixed into the feedforward."
     },
     "governor_yaw_ff_weight":{
       "english":"Yaw precompensation weight - how much yaw is mixed into the feedforward.",
       "translation":"Gewicht voor yaw precompensation - Hoeveel yaw is mixed in de feedforward."
     },
-    "governor_cyclic_ff_weight":{
-      "english":"Cyclic precompensation weight - how much cyclic is mixed into the feedforward.",
-      "translation":"Gewicht Cyclic precompensation - Hoeveel cyclic is mixed in de feedforward."
+    "governor_i_gain":{
+      "english":"PID loop I-term gain.",
+      "translation":"PID loop I-term gain."
     }
   },
-  "PID_PROFILE":{
-    "cyclic_cross_coupling_cutoff":{
-      "english":"Frequency limit for the compensation. Higher value will make the compensation action faster.",
-      "translation":"Frequentielimiet voor de compensatie. Hogere waarde zal de compensatieactie sneller maken."
+  "ESC_PARAMETERS_XDFLY":{
+    "tbl_jadegreen":{
+      "english":"JADE GREEN",
+      "translation":"JADE GREEN"
     },
-    "iterm_relax_cutoff_2":{
-      "english":"Helps reduce bounce back after fast stick movements. Can cause inconsistency in small stick movements if too low.",
-      "translation":"Helpt bounce back te verminderen na snelle stickbewegingen. Kan inconsistentie veroorzaken in kleine stickbewegingen als deze te laag is."
+    "tbl_normal":{
+      "english":"Normal",
+      "translation":"Normaal"
     },
-    "angle_level_strength":{
-      "english":"Determines how aggressively the helicopter tilts back to level while in Angle Mode.",
-      "translation":"Bepaalt hoe agressief de helikopter terug kantelt naar horizontaal in de anglemodus."
+    "tbl_vslow":{
+      "english":"Very Slow",
+      "translation":"Heel langzaam"
     },
-    "pitch_collective_ff_gain":{
-      "english":"Increasing will compensate for the pitching up motion caused by tail drag when climbing.",
-      "translation":"Door de snelheid te verhogen, compenseert u de opwaartse beweging die ontstaat door de staartweerstand tijdens het klimmen."
+    "tbl_reverse":{
+      "english":"Reverse",
+      "translation":"Omgekeerd"
     },
-    "gyro_cutoff_2":{
-      "english":"PID loop overall bandwidth in Hz.",
-      "translation":"Totale bandbreedte van de PID-loop in Hz."
+    "tbl_white":{
+      "english":"WHITE",
+      "translation":"WHITE"
     },
-    "tbl_rpy":{
-      "english":"RPY",
-      "translation":"RPY"
+    "tbl_cyan":{
+      "english":"CYAN",
+      "translation":"CYAN"
     },
-    "error_decay_time_cyclic":{
-      "english":"Time constant for bleeding off cyclic I-term. Higher will stabilize hover, lower will drift.",
-      "translation":"Tijdconstante voor het afkappen van cyclische I-term. Hoger stabiliseert de hover, lager zal driften."
+    "tbl_fmheli":{
+      "english":"Helicopter",
+      "translation":"Helicopter"
     },
-    "yaw_ccw_stop_gain":{
-      "english":"Stop gain (PD) for counter-clockwise rotation.",
-      "translation":"Stop gain (PD) voor tegen de klok in rotatie."
+    "tbl_pink":{
+      "english":"PINK",
+      "translation":"PINK"
     },
-    "gyro_cutoff_0":{
-      "english":"PID loop overall bandwidth in Hz.",
-      "translation":"Totale bandbreedte van de PID-loop in Hz."
+    "tbl_escgov":{
+      "english":"ESC Governor",
+      "translation":"ESC Governor"
     },
-    "yaw_cw_stop_gain":{
-      "english":"Stop gain (PD) for clockwise rotation.",
-      "translation":"Stop gain (PD) voor klok mee rotatie."
-    },
-    "offset_limit_0":{
-      "english":"Hard limit for the High Speed Integral offset angle in the PID loop. The O-term will never go over these limits.",
-      "translation":"Harde limiet voor de High Speed ​​Integral offset in de PID-loop. De O-term zal nooit over deze limieten heen gaan."
-    },
-    "tbl_on":{
-      "english":"ON",
-      "translation":"Aan"
-    },
-    "error_rotation":{
-      "english":"Rotates the current roll and pitch error terms around yaw when the craft rotates. This is sometimes called Piro Compensation.",
-      "translation":"Draait de huidige rol- en pitch-fout termen rond de yaw wanneer het toestel roteert. Dit wordt soms Piro-compensatie genoemd."
-    },
-    "iterm_relax_cutoff_0":{
-      "english":"Helps reduce bounce back after fast stick movements. Can cause inconsistency in small stick movements if too low.",
-      "translation":"Helpt bounce back te verminderen na snelle stickbewegingen. Kan inconsistentie veroorzaken in kleine stickbewegingen als deze te laag is."
-    },
-    "yaw_inertia_precomp_cutoff":{
-      "english":"Cutoff. Derivative cutoff frequency in 1/10Hz steps. Controls how sharp the precomp is. Higher value is sharper.",
-      "translation":"Afsnijding. Afgeleide cutoff-frequentie in stappen van 1/10 Hz. Bepaalt hoe scherp de precomp is. Hogere waarde is scherper."
-    },
-    "cyclic_cross_coupling_ratio":{
-      "english":"Amount of roll-to-pitch compensation needed, vs. pitch-to-roll.",
-      "translation":"Hoeveelheid benodigde rol-to-pitch compensatie, versus pitch-roll."
-    },
-    "iterm_relax_cutoff_1":{
-      "english":"Helps reduce bounce back after fast stick movements. Can cause inconsistency in small stick movements if too low.",
-      "translation":"Helpt bounce back te verminderen na snelle stickbewegingen. Kan inconsistentie veroorzaken in kleine stickbewegingen als deze te laag is."
-    },
-    "error_limit_0":{
-      "english":"Hard limit for the angle error in the PID loop. The absolute error and thus the I-term will never go above these limits.",
-      "translation":"Harde limiet voor de hoekfout in de PID-loop. De absolute fout en dus de I-term zal nooit boven deze limieten uitkomen."
-    },
-    "yaw_precomp_cutoff":{
-      "english":"Frequency limit for all yaw precompensation actions.",
-      "translation":"Frequentie limiet voor alle yaw precompensation acties."
-    },
-    "trainer_angle_limit":{
-      "english":"Limit the maximum angle the helicopter will pitch/roll to while in Acro Trainer Mode.",
-      "translation":"Beperk de maximale hoek waarin de helikopter kan rollen/hellen in de Acro Trainer-modus."
-    },
-    "bterm_cutoff_0":{
-      "english":"B-term cutoff in Hz.",
-      "translation":"B-term afsnijding in Hz."
-    },
-    "horizon_level_strength":{
-      "english":"Determines how aggressively the helicopter tilts back to level while in Horizon Mode.",
-      "translation":"Bepaalt hoe agressief de helikopter terugkantelt naar horizontaal in de Horizonmodus."
-    },
-    "yaw_collective_ff_gain":{
-      "english":"Collective feedforward mixed into yaw (collective-to-yaw precomp).",
-      "translation":"Collective feedforward mixed in de yaw (collective-to-yaw precomp)."
-    },
-    "dterm_cutoff_0":{
-      "english":"D-term cutoff in Hz.",
-      "translation":"D-term-afsnijding in Hz."
-    },
-    "error_limit_2":{
-      "english":"Hard limit for the angle error in the PID loop. The absolute error and thus the I-term will never go above these limits.",
-      "translation":"Harde limiet voor de hoekfout in de PID-loop. De absolute fout en dus de I-term zal nooit boven deze limieten uitkomen."
-    },
-    "error_decay_limit_cyclic":{
-      "english":"Maximum bleed-off speed for cyclic I-term.",
-      "translation":"Maximale afkap snelheid voor cyclische I-term."
-    },
-    "bterm_cutoff_1":{
-      "english":"B-term cutoff in Hz.",
-      "translation":"B-term afsnijding in Hz."
-    },
-    "tbl_rp":{
-      "english":"RP",
-      "translation":"RP"
-    },
-    "trainer_gain":{
-      "english":"Determines how aggressively the helicopter tilts back to the maximum angle (if exceeded) while in Acro Trainer Mode.",
-      "translation":"Bepaalt hoe agressief de helikopter terugkantelt naar de maximale hoek (indien deze wordt overschreden) in de Acro Trainer-modus."
-    },
-    "yaw_cyclic_ff_gain":{
-      "english":"Cyclic feedforward mixed into yaw (cyclic-to-yaw precomp).",
-      "translation":"Cyclic feedforward mixed in de yaw (cyclic-to-yaw precomp)."
-    },
-    "yaw_inertia_precomp_gain":{
-      "english":"Scalar gain. The strength of the main rotor inertia. Higher value means more precomp is applied to yaw control.",
-      "translation":"Scalar gain. De sterkte van de main rotor inertia. Hogere waarde betekend meer precomp wordt toegepast op yaw besturing."
-    },
-    "cyclic_cross_coupling_gain":{
-      "english":"Amount of compensation applied for pitch-to-roll decoupling.",
-      "translation":"Hoeveelheid toegepaste compensatie voor pitch-to-roll-koppeling gain."
+    "tbl_slow":{
+      "english":"Slow",
+      "translation":"Langzaam"
     },
     "tbl_off":{
-      "english":"OFF",
+      "english":"Off",
       "translation":"Uit"
     },
-    "yaw_collective_dynamic_decay":{
-      "english":"Decay time for the extra yaw precomp on collective input.",
-      "translation":"Vervaltijd voor de extra yaw-precomp op collectieve invoer."
+    "tbl_purple":{
+      "english":"PURPLE",
+      "translation":"PURPLE"
     },
-    "dterm_cutoff_1":{
-      "english":"D-term cutoff in Hz.",
-      "translation":"D-term-afsnijding in Hz."
+    "tbl_red":{
+      "english":"Red",
+      "translation":"Red"
     },
-    "error_limit_1":{
-      "english":"Hard limit for the angle error in the PID loop. The absolute error and thus the I-term will never go above these limits.",
-      "translation":"Harde limiet voor de hoekfout in de PID-loop. De absolute fout en dus de I-term zal nooit boven deze limieten uitkomen."
+    "tbl_fmfw":{
+      "english":"Fixed Wing",
+      "translation":"Fixed Wing"
     },
-    "iterm_relax_type":{
-      "english":"Choose the axes in which this is active. RP: Roll, Pitch. RPY: Roll, Pitch, Yaw.",
-      "translation":"Kies de assen waarin dit actief is. RP: Roll, Pitch. RPY: Roll, Pitch, Yaw."
+    "tbl_on":{
+      "english":"On",
+      "translation":"Aan"
     },
-    "offset_limit_1":{
-      "english":"Hard limit for the High Speed Integral offset angle in the PID loop. The O-term will never go over these limits.",
-      "translation":"Harde limiet voor de High Speed ​​Integral offset in de PID-loop. De O-term zal nooit over deze limieten heen gaan."
+    "tbl_orange":{
+      "english":"ORANGE",
+      "translation":"ORANGE"
     },
-    "error_decay_time_ground":{
-      "english":"Bleeds off the current controller error when the craft is not airborne to stop the craft tipping over.",
-      "translation":"Verwijdert de controllerfout wanneer het toestel niet in de lucht is, om te voorkomen dat het toestel omvalt."
+    "tbl_yellow":{
+      "english":"YELOW",
+      "translation":"YELOW"
     },
-    "angle_level_limit":{
-      "english":"Limit the maximum angle the helicopter will pitch/roll to while in Angle mode.",
-      "translation":"Beperk de maximale hoek waarin de helikopter kan kantelen/rollen in de anglemodus."
+    "tbl_high":{
+      "english":"High",
+      "translation":"High"
     },
-    "gyro_cutoff_1":{
-      "english":"PID loop overall bandwidth in Hz.",
-      "translation":"Totale bandbreedte van de PID-loop in Hz."
+    "tbl_fast":{
+      "english":"Fast",
+      "translation":"Snel"
     },
-    "bterm_cutoff_2":{
-      "english":"B-term cutoff in Hz.",
-      "translation":"B-term afsnijding in Hz."
+    "tbl_ccw":{
+      "english":"CCW",
+      "translation":"CCW"
     },
-    "yaw_collective_dynamic_gain":{
-      "english":"An extra boost of yaw precomp on collective input.",
-      "translation":"Een extra boost van yaw precomp met collective input."
+    "tbl_fwgov":{
+      "english":"Fixed Wing",
+      "translation":"Fixed Wing"
     },
-    "dterm_cutoff_2":{
-      "english":"D-term cutoff in Hz.",
-      "translation":"D-term-afsnijding in Hz."
+    "tbl_cw":{
+      "english":"CW",
+      "translation":"CW"
+    },
+    "tbl_low":{
+      "english":"Low",
+      "translation":"Low"
+    },
+    "tbl_blue":{
+      "english":"BLUE",
+      "translation":"BLUE"
+    },
+    "tbl_extgov":{
+      "english":"External Governor",
+      "translation":"External Governor"
+    },
+    "tbl_auto":{
+      "english":"Auto",
+      "translation":"Auto"
+    },
+    "tbl_medium":{
+      "english":"Medium",
+      "translation":"Medium"
+    },
+    "tbl_green":{
+      "english":"GREEN",
+      "translation":"GREEN"
+    }
+  },
+  "ESC_PARAMETERS_FLYROTOR":{
+    "starting_torque":{
+      "english":"Starting torque for the motor",
+      "translation":"Start koppel voor de motor"
+    },
+    "timing_angle":{
+      "english":"Timing angle for the motor",
+      "translation":"Timing voor de motor"
+    },
+    "gov_d":{
+      "english":"Derivative value for the governor",
+      "translation":"Derivative gain voor de governor"
+    },
+    "soft_start":{
+      "english":"Soft start value",
+      "translation":"Soft start waarde"
+    },
+    "tbl_automatic":{
+      "english":"Automatic",
+      "translation":"Automatisch"
+    },
+    "temperature_protection":{
+      "english":"Temperature at which we cut power by 50%",
+      "translation":"Temperatuur waarbij vermogen wordt verlaagd met 50%"
+    },
+    "tbl_escgov":{
+      "english":"Esc Governor",
+      "translation":"Esc Governor"
+    },
+    "tbl_alwayson":{
+      "english":"Always On",
+      "translation":"Altijd Aan"
+    },
+    "motor_erpm_max":{
+      "english":"Maximum RPM",
+      "translation":"Maximale RPM"
+    },
+    "buzzer_volume":{
+      "english":"Buzzer volume",
+      "translation":"Buzzer volume"
+    },
+    "low_voltage_protection":{
+      "english":"Voltage at which we cut power by 50%",
+      "translation":"Voltage waarbij vermogen wordt verlaagd met 50%"
+    },
+    "tbl_cw":{
+      "english":"CW",
+      "translation":"CW"
+    },
+    "gov_i":{
+      "english":"Integral value for the governor",
+      "translation":"Integral gain voor de governor"
+    },
+    "response_speed":{
+      "english":"Response speed for the motor",
+      "translation":"Respons snelheid voor de motor"
+    },
+    "tbl_ccw":{
+      "english":"CCW",
+      "translation":"CCW"
+    },
+    "throttle_max":{
+      "english":"Maximum throttle value",
+      "translation":"Maximale throttle waarde"
+    },
+    "gov_p":{
+      "english":"Proportional value for the governor",
+      "translation":"Proportional gain voor de governor"
+    },
+    "throttle_min":{
+      "english":"Minimum throttle value",
+      "translation":"Minimale throttle waarde"
+    },
+    "tbl_enabled":{
+      "english":"Enabled",
+      "translation":"Aan"
+    },
+    "tbl_extgov":{
+      "english":"External Governor",
+      "translation":"Externe Governor"
+    },
+    "current_gain":{
+      "english":"Gain value for the current sensor",
+      "translation":"Gain waarde voor stroomsensor"
+    },
+    "tbl_disabled":{
+      "english":"Disabled",
+      "translation":"Uit"
+    },
+    "cell_count":{
+      "english":"Number of cells in the battery",
+      "translation":"Aantal cellen in de batterij"
     }
   },
   "RC_CONFIG":{
-    "rc_deflection":{
-      "english":"Stick deflection from center in microseconds (us).",
-      "translation":"Stick afwijking van het midden in microseconds (us)."
-    },
-    "rc_yaw_deadband":{
-      "english":"Deadband for yaw control in microseconds (us).",
-      "translation":"Deadband voor yaw control in microseconds (us)."
-    },
-    "rc_center":{
-      "english":"Stick center in microseconds (us).",
-      "translation":"Stick center in microseconds (us)."
-    },
-    "rc_arm_throttle":{
-      "english":"Throttle must be at or below this value in microseconds (us) to allow arming. Must be at least 10us lower than minimum throttle.",
-      "translation":"Throttle moet op of onder deze waarde in microseconden (us) staan ​​om arming toe te staan. Moet ten minste 10us lager zijn dan minimum throttle."
-    },
     "rc_max_throttle":{
       "english":"Maximum throttle (100% throttle output) expected from radio, in microseconds (us).",
       "translation":"Maximum verwachte throttle (100% throttle output) van de radio, in microseconds (us)."
@@ -985,190 +329,146 @@
     "rc_min_throttle":{
       "english":"Minimum throttle (0% throttle output) expected from radio, in microseconds (us).",
       "translation":"Minimaal verwachte throttle (0% throttleoutput) van de radio, in microseconden (VS)."
+    },
+    "rc_yaw_deadband":{
+      "english":"Deadband for yaw control in microseconds (us).",
+      "translation":"Deadband voor yaw control in microseconds (us)."
+    },
+    "rc_center":{
+      "english":"Stick center in microseconds (us).",
+      "translation":"Stick center in microseconds (us)."
+    },
+    "rc_deflection":{
+      "english":"Stick deflection from center in microseconds (us).",
+      "translation":"Stick afwijking van het midden in microseconds (us)."
+    },
+    "rc_arm_throttle":{
+      "english":"Throttle must be at or below this value in microseconds (us) to allow arming. Must be at least 10us lower than minimum throttle.",
+      "translation":"Throttle moet op of onder deze waarde in microseconden (us) staan ​​om arming toe te staan. Moet ten minste 10us lager zijn dan minimum throttle."
     }
   },
-  "ESC_PARAMETERS_HW5":{
-    "tbl_ccw":{
-      "english":"CCW",
-      "translation":"CCW"
+  "FILTER_CONFIG":{
+    "gyro_soft_notch_hz_1":{
+      "english":"Center frequency to which the notch is applied.",
+      "translation":"Frequentie waar het filter wordt toegepast."
     },
-    "tbl_heliext":{
-      "english":"Heli Ext Governor",
-      "translation":"Heli Ext Governor"
+    "gyro_lpf1_static_hz":{
+      "english":"Lowpass filter cutoff frequency in Hz.",
+      "translation":"Lowpass filter cutoff frequentie in Hz."
     },
-    "tbl_cw":{
-      "english":"CW",
-      "translation":"CW"
+    "dyn_notch_q":{
+      "english":"Quality factor of the notch filter.",
+      "translation":"Breedte van het notch filter in het spectrum."
     },
-    "tbl_normal":{
-      "english":"Normal",
-      "translation":"Normaal"
+    "gyro_soft_notch_hz_2":{
+      "english":"Center frequency to which the notch is applied.",
+      "translation":"Frequentie waar het filter wordt toegepast."
     },
-    "tbl_helistore":{
-      "english":"Heli Governor Store",
-      "translation":"Heli Governor Store"
+    "tbl_none":{
+      "english":"NONE",
+      "translation":"Geen"
     },
-    "tbl_disabled":{
-      "english":"Disabled",
-      "translation":"Uit"
+    "tbl_2nd":{
+      "english":"2ND",
+      "translation":"2ND"
     },
-    "tbl_heligov":{
-      "english":"Heli Governor",
-      "translation":"Heli Governor"
+    "dyn_notch_min_hz":{
+      "english":"Minimum frequency to which the notch is applied.",
+      "translation":"Minimum frequentie waar het filter start met filteren."
     },
-    "tbl_autocalculate":{
-      "english":"Auto Calculate",
-      "translation":"Auto Calculate"
+    "gyro_soft_notch_cutoff_1":{
+      "english":"Width of the notch filter in Hz.",
+      "translation":"Breedte van de het filter in Hz."
     },
-    "tbl_enabled":{
-      "english":"Enabled",
-      "translation":"Aan"
+    "tbl_1st":{
+      "english":"1ST",
+      "translation":"1ST"
     },
-    "tbl_softcutoff":{
-      "english":"Soft Cutoff",
-      "translation":"Soft Cutoff"
+    "gyro_lpf1_dyn_min_hz":{
+      "english":"Dynamic filter min cutoff in Hz.",
+      "translation":"Dynamisch filter minimale frequentie in Hz."
     },
-    "tbl_hardcutoff":{
-      "english":"Hard Cutoff",
-      "translation":"Hard Cutoff"
+    "dyn_notch_max_hz":{
+      "english":"Maximum frequency to which the notch is applied.",
+      "translation":"Maximum frequenctie tot waar het filter stopt met filteren."
     },
-    "tbl_fixedwing":{
-      "english":"Fixed Wing",
-      "translation":"Fixed Wing"
+    "gyro_lpf2_static_hz":{
+      "english":"Lowpass filter cutoff frequency in Hz.",
+      "translation":"Lowpass filter cutoff frequentie in Hz."
     },
-    "tbl_proportional":{
-      "english":"Proportional",
-      "translation":"Proportional"
+    "rpm_min_hz":{
+      "english":"Minimum frequency for the RPM filter.",
+      "translation":"Minimum frequenctie voor het rpm filter."
     },
-    "tbl_reverse":{
-      "english":"Reverse",
-      "translation":"Omgekeerd"
-    }
-  },
-  "BATTERY_CONFIG":{
-    "vbatmaxcellvoltage":{
-      "english":"The maximum voltage per cell before the high voltage alarm is triggered.",
-      "translation":"Het maximale voltage per cel wanneer hoog voltage alarm wordt getriggerd."
+    "gyro_soft_notch_cutoff_2":{
+      "english":"Width of the notch filter in Hz.",
+      "translation":"Breedte van het filter in Hz."
     },
-    "batteryCapacity":{
-      "english":"The milliamp hour capacity of your battery.",
-      "translation":"De Mah capaciteit van de batterij."
+    "tbl_low":{
+      "english":"LOW",
+      "translation":"Laag"
     },
-    "vbatfullcellvoltage":{
-      "english":"The nominal voltage of a fully charged cell.",
-      "translation":"Het nominale voltage van een volledig geladen cel."
+    "tbl_custom":{
+      "english":"CUSTOM",
+      "translation":"CUSTOM"
     },
-    "vbatmincellvoltage":{
-      "english":"The minimum voltage per cell before the low voltage alarm is triggered.",
-      "translation":"Het minimale voltage wanneer laag voltage alarm wordt getriggerd."
+    "tbl_medium":{
+      "english":"MEDIUM",
+      "translation":"MEDIUM"
     },
-    "vbatwarningcellvoltage":{
-      "english":"The voltage per cell at which the low voltage alarm will start to sound.",
-      "translation":"Het voltage per cel wanneer het laag voltage alarm af gaat."
+    "tbl_high":{
+      "english":"HIGH",
+      "translation":"Hoog"
     },
-    "batteryCellCount":{
-      "english":"The number of cells in your battery.",
-      "translation":"Het aantal cellen in je batterij."
-    }
-  },
-  "ESC_PARAMETERS_FLYROTOR":{
-    "tbl_ccw":{
-      "english":"CCW",
-      "translation":"CCW"
+    "gyro_lpf1_dyn_max_hz":{
+      "english":"Dynamic filter max cutoff in Hz.",
+      "translation":"Dynamisch filter maximale frequentie in Hz."
     },
-    "tbl_alwayson":{
-      "english":"Always On",
-      "translation":"Altijd Aan"
-    },
-    "tbl_cw":{
-      "english":"CW",
-      "translation":"CW"
-    },
-    "cell_count":{
-      "english":"Number of cells in the battery",
-      "translation":"Aantal cellen in de batterij"
-    },
-    "throttle_max":{
-      "english":"Maximum throttle value",
-      "translation":"Maximale throttle waarde"
-    },
-    "timing_angle":{
-      "english":"Timing angle for the motor",
-      "translation":"Timing voor de motor"
-    },
-    "tbl_extgov":{
-      "english":"External Governor",
-      "translation":"Externe Governor"
-    },
-    "gov_p":{
-      "english":"Proportional value for the governor",
-      "translation":"Proportional gain voor de governor"
-    },
-    "gov_d":{
-      "english":"Derivative value for the governor",
-      "translation":"Derivative gain voor de governor"
-    },
-    "low_voltage_protection":{
-      "english":"Voltage at which we cut power by 50%",
-      "translation":"Voltage waarbij vermogen wordt verlaagd met 50%"
-    },
-    "tbl_escgov":{
-      "english":"Esc Governor",
-      "translation":"Esc Governor"
-    },
-    "response_speed":{
-      "english":"Response speed for the motor",
-      "translation":"Respons snelheid voor de motor"
-    },
-    "soft_start":{
-      "english":"Soft start value",
-      "translation":"Soft start waarde"
-    },
-    "current_gain":{
-      "english":"Gain value for the current sensor",
-      "translation":"Gain waarde voor stroomsensor"
-    },
-    "tbl_disabled":{
-      "english":"Disabled",
-      "translation":"Uit"
-    },
-    "starting_torque":{
-      "english":"Starting torque for the motor",
-      "translation":"Start koppel voor de motor"
-    },
-    "temperature_protection":{
-      "english":"Temperature at which we cut power by 50%",
-      "translation":"Temperatuur waarbij vermogen wordt verlaagd met 50%"
-    },
-    "tbl_enabled":{
-      "english":"Enabled",
-      "translation":"Aan"
-    },
-    "gov_i":{
-      "english":"Integral value for the governor",
-      "translation":"Integral gain voor de governor"
-    },
-    "tbl_automatic":{
-      "english":"Automatic",
-      "translation":"Automatisch"
-    },
-    "motor_erpm_max":{
-      "english":"Maximum RPM",
-      "translation":"Maximale RPM"
-    },
-    "buzzer_volume":{
-      "english":"Buzzer volume",
-      "translation":"Buzzer volume"
-    },
-    "throttle_min":{
-      "english":"Minimum throttle value",
-      "translation":"Minimale throttle waarde"
+    "dyn_notch_count":{
+      "english":"Number of notches to apply.",
+      "translation":"Number of notches to apply."
     }
   },
   "MIXER_CONFIG":{
+    "swash_phase":{
+      "english":"Phase offset for the swashplate controls.",
+      "translation":"De fase verschuiving voor de tuimelschijf."
+    },
+    "swash_trim_0":{
+      "english":"Swash trim to level the swash plate when using fixed links.",
+      "translation":"Trim voor de tuimelschijf koppelingen. Alleen gebruiken wanneer de koppeling niet verstelbaar is."
+    },
+    "collective_tilt_correction_pos":{
+      "english":"Adjust the collective tilt correction scaling for positive collective pitch.",
+      "translation":"Past de collective schaal correctie aan voor positive collective pitch."
+    },
+    "swash_geo_correction":{
+      "english":"Adjust if there is too much negative collective or too much positive collective.",
+      "translation":"Past de positieve en negatieve collective aan totdat deze gelijk zijn."
+    },
+    "tbl_cw":{
+      "english":"CW",
+      "translation":"CW"
+    },
+    "swash_pitch_limit":{
+      "english":"Maximum amount of combined cyclic and collective blade pitch.",
+      "translation":"Maximale cyclische en collective rotorbladhoek."
+    },
+    "collective_tilt_correction_neg":{
+      "english":"Adjust the collective tilt correction scaling for negative collective pitch.",
+      "translation":"Past de collective schaal correctie aan voor negatieve collective pitch."
+    },
+    "tail_motor_idle":{
+      "english":"Minimum throttle signal sent to the tail motor. This should be set just high enough that the motor does not stop.",
+      "translation":"Minimale throttle signaal welke wordt gestuurd naar de staartmotor. Precies hoog genoeg zodat de staartmotor niet stil staat"
+    },
     "tbl_ccw":{
       "english":"CCW",
       "translation":"CCW"
+    },
+    "tail_center_trim":{
+      "english":"Sets tail rotor trim for 0 yaw for variable pitch, or tail motor throttle for 0 yaw for motorized.",
+      "translation":"Stel de trim van de staartrotor in om 0 graden bladhoek te bereiken, of staartmotor throttle voor 0 yaw voor gemotoriseerde staart."
     },
     "swash_tta_precomp":{
       "english":"Mixer precomp for 0 yaw.",
@@ -1178,45 +478,745 @@
       "english":"Swash trim to level the swash plate when using fixed links.",
       "translation":"Trim voor de tuimelschijf koppelingen. Alleen gebruiken wanneer de koppeling niet verstelbaar is."
     },
-    "tail_motor_idle":{
-      "english":"Minimum throttle signal sent to the tail motor. This should be set just high enough that the motor does not stop.",
-      "translation":"Minimale throttle signaal welke wordt gestuurd naar de staartmotor. Precies hoog genoeg zodat de staartmotor niet stil staat"
-    },
-    "swash_trim_0":{
+    "swash_trim_2":{
       "english":"Swash trim to level the swash plate when using fixed links.",
       "translation":"Trim voor de tuimelschijf koppelingen. Alleen gebruiken wanneer de koppeling niet verstelbaar is."
+    }
+  },
+  "PID_TUNING":{
+    "pid_2_I":{
+      "english":"How tightly the system holds its position.",
+      "translation":"Hoe nauwkeurig het systeem zijn positie vasthoudt."
     },
-    "swash_geo_correction":{
-      "english":"Adjust if there is too much negative collective or too much positive collective.",
-      "translation":"Past de positieve en negatieve collective aan totdat deze gelijk zijn."
+    "pid_1_B":{
+      "english":"Additional boost on the feedforward to make the heli react more to quick stick movements.",
+      "translation":"Extra boost op de feedforward zodat de heli beter reageert op snelle stickbewegingen."
     },
-    "swash_phase":{
-      "english":"Phase offset for the swashplate controls.",
-      "translation":"De fase verschuiving voor de tuimelschijf."
+    "pid_0_D":{
+      "english":"Strength of dampening to any motion on the system, including external influences. Also reduces overshoot.",
+      "translation":"Sterkte van demping van elke beweging op het systeem, inclusief externe invloeden. Vermindert ook overshoot."
     },
-    "collective_tilt_correction_neg":{
-      "english":"Adjust the collective tilt correction scaling for negative collective pitch.",
-      "translation":"Past de collective schaal correctie aan voor negatieve collective pitch."
+    "pid_2_B":{
+      "english":"Additional boost on the feedforward to make the heli react more to quick stick movements.",
+      "translation":"Extra boost op de feedforward zodat de heli beter reageert op snelle stickbewegingen."
+    },
+    "pid_1_P":{
+      "english":"How tightly the system tracks the desired setpoint.",
+      "translation":"Hoe nauwkeurig het systeem de gewenste instelwaarde volgt."
+    },
+    "pid_0_O":{
+      "english":"Used to prevent the craft from rolling when using high collective.",
+      "translation":"Wordt gebruikt om te voorkomen dat de heli gaat rollen bij gebruik van veel collective."
+    },
+    "pid_1_F":{
+      "english":"Helps push P-term based on stick input. Increasing will make response more sharp, but can cause overshoot.",
+      "translation":"Helpt P-term te pushen op basis van stick input. Verhogen zal de respons scherper maken, maar kan overshoot veroorzaken."
+    },
+    "pid_0_P":{
+      "english":"How tightly the system tracks the desired setpoint.",
+      "translation":"Hoe nauwkeurig het systeem de gewenste instelwaarde volgt."
+    },
+    "pid_1_O":{
+      "english":"Used to prevent the craft from pitching when using high collective.",
+      "translation":"Wordt gebruikt om te voorkomen dat de heli gaat rollen bij gebruik van veel collective."
+    },
+    "pid_2_D":{
+      "english":"Strength of dampening to any motion on the system, including external influences. Also reduces overshoot.",
+      "translation":"Sterkte van demping van elke beweging op het systeem, inclusief externe invloeden. Vermindert ook overshoot."
+    },
+    "pid_2_F":{
+      "english":"Helps push P-term based on stick input. Increasing will make response more sharp, but can cause overshoot.",
+      "translation":"Helpt P-term te pushen op basis van stick input. Verhogen zal de respons scherper maken, maar kan overshoot veroorzaken."
+    },
+    "pid_1_I":{
+      "english":"How tightly the system holds its position.",
+      "translation":"Hoe nauwkeurig het systeem zijn positie vasthoudt."
+    },
+    "pid_2_P":{
+      "english":"How tightly the system tracks the desired setpoint.",
+      "translation":"Hoe nauwkeurig het systeem de gewenste instelwaarde volgt."
+    },
+    "pid_1_D":{
+      "english":"Strength of dampening to any motion on the system, including external influences. Also reduces overshoot.",
+      "translation":"Sterkte van demping van elke beweging op het systeem, inclusief externe invloeden. Vermindert ook overshoot."
+    },
+    "pid_0_B":{
+      "english":"Additional boost on the feedforward to make the heli react more to quick stick movements.",
+      "translation":"Extra boost op de feedforward zodat de heli beter reageert op snelle stickbewegingen."
+    },
+    "pid_0_F":{
+      "english":"Helps push P-term based on stick input. Increasing will make response more sharp, but can cause overshoot.",
+      "translation":"Helpt P-term te pushen op basis van stick input. Verhogen zal de respons scherper maken, maar kan overshoot veroorzaken."
+    },
+    "pid_0_I":{
+      "english":"How tightly the system holds its position.",
+      "translation":"Hoe nauwkeurig het systeem zijn positie vasthoudt."
+    }
+  },
+  "ESC_PARAMETERS_SCORPION":{
+    "tbl_boat":{
+      "english":"Boat mode",
+      "translation":"Boat mode"
+    },
+    "tbl_airplane":{
+      "english":"Airplane mode",
+      "translation":"Airplane mode"
+    },
+    "tbl_futsbus":{
+      "english":"Futaba SBUS",
+      "translation":"Futaba SBUS"
+    },
+    "tbl_helistore":{
+      "english":"Heli Governor (stored)",
+      "translation":"Heli Governor (stored)"
+    },
+    "tbl_on":{
+      "english":"On",
+      "translation":"Aan"
+    },
+    "tbl_ccw":{
+      "english":"CCW",
+      "translation":"CCW"
+    },
+    "tbl_vbargov":{
+      "english":"VBar Governor",
+      "translation":"VBar Governor"
     },
     "tbl_cw":{
       "english":"CW",
       "translation":"CW"
     },
-    "tail_center_trim":{
-      "english":"Sets tail rotor trim for 0 yaw for variable pitch, or tail motor throttle for 0 yaw for motorized.",
-      "translation":"Stel de trim van de staartrotor in om 0 graden bladhoek te bereiken, of staartmotor throttle voor 0 yaw voor gemotoriseerde staart."
+    "tbl_vbar":{
+      "english":"VBar",
+      "translation":"VBar"
     },
-    "collective_tilt_correction_pos":{
-      "english":"Adjust the collective tilt correction scaling for positive collective pitch.",
-      "translation":"Past de collective schaal correctie aan voor positive collective pitch."
+    "tbl_quad":{
+      "english":"Quad mode",
+      "translation":"Quad mode"
     },
-    "swash_pitch_limit":{
-      "english":"Maximum amount of combined cyclic and collective blade pitch.",
-      "translation":"Maximale cyclische en collective rotorbladhoek."
+    "tbl_standard":{
+      "english":"Standard",
+      "translation":"Standaard"
     },
-    "swash_trim_2":{
-      "english":"Swash trim to level the swash plate when using fixed links.",
-      "translation":"Trim voor de tuimelschijf koppelingen. Alleen gebruiken wanneer de koppeling niet verstelbaar is."
+    "tbl_exbus":{
+      "english":"Jeti Exbus",
+      "translation":"Jeti Exbus"
+    },
+    "tbl_extgov":{
+      "english":"External Governor",
+      "translation":"External Governor"
+    },
+    "tbl_unsolicited":{
+      "english":"Unsolicited",
+      "translation":"Unsolicited"
+    },
+    "tbl_off":{
+      "english":"Off",
+      "translation":"Uit"
+    },
+    "tbl_heligov":{
+      "english":"Heli Governor",
+      "translation":"Heli Governor"
+    }
+  },
+  "PID_PROFILE":{
+    "error_limit_1":{
+      "english":"Hard limit for the angle error in the PID loop. The absolute error and thus the I-term will never go above these limits.",
+      "translation":"Harde limiet voor de hoekfout in de PID-loop. De absolute fout en dus de I-term zal nooit boven deze limieten uitkomen."
+    },
+    "iterm_relax_type":{
+      "english":"Choose the axes in which this is active. RP: Roll, Pitch. RPY: Roll, Pitch, Yaw.",
+      "translation":"Kies de assen waarin dit actief is. RP: Roll, Pitch. RPY: Roll, Pitch, Yaw."
+    },
+    "error_limit_2":{
+      "english":"Hard limit for the angle error in the PID loop. The absolute error and thus the I-term will never go above these limits.",
+      "translation":"Harde limiet voor de hoekfout in de PID-loop. De absolute fout en dus de I-term zal nooit boven deze limieten uitkomen."
+    },
+    "tbl_on":{
+      "english":"ON",
+      "translation":"Aan"
+    },
+    "yaw_collective_dynamic_decay":{
+      "english":"Decay time for the extra yaw precomp on collective input.",
+      "translation":"Vervaltijd voor de extra yaw-precomp op collectieve invoer."
+    },
+    "error_rotation":{
+      "english":"Rotates the current roll and pitch error terms around yaw when the craft rotates. This is sometimes called Piro Compensation.",
+      "translation":"Draait de huidige rol- en pitch-fout termen rond de yaw wanneer het toestel roteert. Dit wordt soms Piro-compensatie genoemd."
+    },
+    "tbl_off":{
+      "english":"OFF",
+      "translation":"Uit"
+    },
+    "trainer_gain":{
+      "english":"Determines how aggressively the helicopter tilts back to the maximum angle (if exceeded) while in Acro Trainer Mode.",
+      "translation":"Bepaalt hoe agressief de helikopter terugkantelt naar de maximale hoek (indien deze wordt overschreden) in de Acro Trainer-modus."
+    },
+    "pitch_collective_ff_gain":{
+      "english":"Increasing will compensate for the pitching up motion caused by tail drag when climbing.",
+      "translation":"Door de snelheid te verhogen, compenseert u de opwaartse beweging die ontstaat door de staartweerstand tijdens het klimmen."
+    },
+    "yaw_collective_dynamic_gain":{
+      "english":"An extra boost of yaw precomp on collective input.",
+      "translation":"Een extra boost van yaw precomp met collective input."
+    },
+    "yaw_cw_stop_gain":{
+      "english":"Stop gain (PD) for clockwise rotation.",
+      "translation":"Stop gain (PD) voor klok mee rotatie."
+    },
+    "cyclic_cross_coupling_gain":{
+      "english":"Amount of compensation applied for pitch-to-roll decoupling.",
+      "translation":"Hoeveelheid toegepaste compensatie voor pitch-to-roll-koppeling gain."
+    },
+    "error_decay_time_ground":{
+      "english":"Bleeds off the current controller error when the craft is not airborne to stop the craft tipping over.",
+      "translation":"Verwijdert de controllerfout wanneer het toestel niet in de lucht is, om te voorkomen dat het toestel omvalt."
+    },
+    "cyclic_cross_coupling_ratio":{
+      "english":"Amount of roll-to-pitch compensation needed, vs. pitch-to-roll.",
+      "translation":"Hoeveelheid benodigde rol-to-pitch compensatie, versus pitch-roll."
+    },
+    "yaw_collective_ff_gain":{
+      "english":"Collective feedforward mixed into yaw (collective-to-yaw precomp).",
+      "translation":"Collective feedforward mixed in de yaw (collective-to-yaw precomp)."
+    },
+    "yaw_cyclic_ff_gain":{
+      "english":"Cyclic feedforward mixed into yaw (cyclic-to-yaw precomp).",
+      "translation":"Cyclic feedforward mixed in de yaw (cyclic-to-yaw precomp)."
+    },
+    "dterm_cutoff_1":{
+      "english":"D-term cutoff in Hz.",
+      "translation":"D-term-afsnijding in Hz."
+    },
+    "offset_limit_0":{
+      "english":"Hard limit for the High Speed Integral offset angle in the PID loop. The O-term will never go over these limits.",
+      "translation":"Harde limiet voor de High Speed ​​Integral offset in de PID-loop. De O-term zal nooit over deze limieten heen gaan."
+    },
+    "bterm_cutoff_1":{
+      "english":"B-term cutoff in Hz.",
+      "translation":"B-term afsnijding in Hz."
+    },
+    "horizon_level_strength":{
+      "english":"Determines how aggressively the helicopter tilts back to level while in Horizon Mode.",
+      "translation":"Bepaalt hoe agressief de helikopter terugkantelt naar horizontaal in de Horizonmodus."
+    },
+    "yaw_precomp_cutoff":{
+      "english":"Frequency limit for all yaw precompensation actions.",
+      "translation":"Frequentie limiet voor alle yaw precompensation acties."
+    },
+    "bterm_cutoff_0":{
+      "english":"B-term cutoff in Hz.",
+      "translation":"B-term afsnijding in Hz."
+    },
+    "iterm_relax_cutoff_1":{
+      "english":"Helps reduce bounce back after fast stick movements. Can cause inconsistency in small stick movements if too low.",
+      "translation":"Helpt bounce back te verminderen na snelle stickbewegingen. Kan inconsistentie veroorzaken in kleine stickbewegingen als deze te laag is."
+    },
+    "dterm_cutoff_0":{
+      "english":"D-term cutoff in Hz.",
+      "translation":"D-term-afsnijding in Hz."
+    },
+    "error_decay_time_cyclic":{
+      "english":"Time constant for bleeding off cyclic I-term. Higher will stabilize hover, lower will drift.",
+      "translation":"Tijdconstante voor het afkappen van cyclische I-term. Hoger stabiliseert de hover, lager zal driften."
+    },
+    "gyro_cutoff_1":{
+      "english":"PID loop overall bandwidth in Hz.",
+      "translation":"Totale bandbreedte van de PID-loop in Hz."
+    },
+    "gyro_cutoff_0":{
+      "english":"PID loop overall bandwidth in Hz.",
+      "translation":"Totale bandbreedte van de PID-loop in Hz."
+    },
+    "angle_level_strength":{
+      "english":"Determines how aggressively the helicopter tilts back to level while in Angle Mode.",
+      "translation":"Bepaalt hoe agressief de helikopter terug kantelt naar horizontaal in de anglemodus."
+    },
+    "offset_limit_1":{
+      "english":"Hard limit for the High Speed Integral offset angle in the PID loop. The O-term will never go over these limits.",
+      "translation":"Harde limiet voor de High Speed ​​Integral offset in de PID-loop. De O-term zal nooit over deze limieten heen gaan."
+    },
+    "trainer_angle_limit":{
+      "english":"Limit the maximum angle the helicopter will pitch/roll to while in Acro Trainer Mode.",
+      "translation":"Beperk de maximale hoek waarin de helikopter kan rollen/hellen in de Acro Trainer-modus."
+    },
+    "cyclic_cross_coupling_cutoff":{
+      "english":"Frequency limit for the compensation. Higher value will make the compensation action faster.",
+      "translation":"Frequentielimiet voor de compensatie. Hogere waarde zal de compensatieactie sneller maken."
+    },
+    "angle_level_limit":{
+      "english":"Limit the maximum angle the helicopter will pitch/roll to while in Angle mode.",
+      "translation":"Beperk de maximale hoek waarin de helikopter kan kantelen/rollen in de anglemodus."
+    },
+    "yaw_inertia_precomp_gain":{
+      "english":"Scalar gain. The strength of the main rotor inertia. Higher value means more precomp is applied to yaw control.",
+      "translation":"Scalar gain. De sterkte van de main rotor inertia. Hogere waarde betekend meer precomp wordt toegepast op yaw besturing."
+    },
+    "error_limit_0":{
+      "english":"Hard limit for the angle error in the PID loop. The absolute error and thus the I-term will never go above these limits.",
+      "translation":"Harde limiet voor de hoekfout in de PID-loop. De absolute fout en dus de I-term zal nooit boven deze limieten uitkomen."
+    },
+    "tbl_rpy":{
+      "english":"RPY",
+      "translation":"RPY"
+    },
+    "bterm_cutoff_2":{
+      "english":"B-term cutoff in Hz.",
+      "translation":"B-term afsnijding in Hz."
+    },
+    "dterm_cutoff_2":{
+      "english":"D-term cutoff in Hz.",
+      "translation":"D-term-afsnijding in Hz."
+    },
+    "error_decay_limit_cyclic":{
+      "english":"Maximum bleed-off speed for cyclic I-term.",
+      "translation":"Maximale afkap snelheid voor cyclische I-term."
+    },
+    "yaw_ccw_stop_gain":{
+      "english":"Stop gain (PD) for counter-clockwise rotation.",
+      "translation":"Stop gain (PD) voor tegen de klok in rotatie."
+    },
+    "iterm_relax_cutoff_2":{
+      "english":"Helps reduce bounce back after fast stick movements. Can cause inconsistency in small stick movements if too low.",
+      "translation":"Helpt bounce back te verminderen na snelle stickbewegingen. Kan inconsistentie veroorzaken in kleine stickbewegingen als deze te laag is."
+    },
+    "tbl_rp":{
+      "english":"RP",
+      "translation":"RP"
+    },
+    "iterm_relax_cutoff_0":{
+      "english":"Helps reduce bounce back after fast stick movements. Can cause inconsistency in small stick movements if too low.",
+      "translation":"Helpt bounce back te verminderen na snelle stickbewegingen. Kan inconsistentie veroorzaken in kleine stickbewegingen als deze te laag is."
+    },
+    "yaw_inertia_precomp_cutoff":{
+      "english":"Cutoff. Derivative cutoff frequency in 1/10Hz steps. Controls how sharp the precomp is. Higher value is sharper.",
+      "translation":"Afsnijding. Afgeleide cutoff-frequentie in stappen van 1/10 Hz. Bepaalt hoe scherp de precomp is. Hogere waarde is scherper."
+    },
+    "gyro_cutoff_2":{
+      "english":"PID loop overall bandwidth in Hz.",
+      "translation":"Totale bandbreedte van de PID-loop in Hz."
+    }
+  },
+  "MOTOR_CONFIG":{
+    "maxthrottle":{
+      "english":"This PWM value is sent to the ESC/Servo at full throttle",
+      "translation":"Deze PWM waarde wordt gestuurd naar de ESC/Servo op volledig throttle"
+    },
+    "mincommand":{
+      "english":"This PWM value is sent when the motor is stopped",
+      "translation":"Deze PWM waarde wordt gestuurd wanneer de motor gestopt is"
+    },
+    "main_rotor_gear_ratio_0":{
+      "english":"Motor Pinion Gear Tooth Count",
+      "translation":"Motor tandwiel aantal tanden"
+    },
+    "main_rotor_gear_ratio_1":{
+      "english":"Main Gear Tooth Count",
+      "translation":"Hoofd tandwiel aantal tanden"
+    },
+    "tail_rotor_gear_ratio_1":{
+      "english":"Autorotation Gear Tooth Count",
+      "translation":"Autorotatie tandwiel aantal tanden"
+    },
+    "motor_pwm_protocol":{
+      "english":"The protocol used to communicate with the ESC",
+      "translation":"Het protocol wat gebruikt wordt om met de esc te communiceren"
+    },
+    "motor_pole_count_0":{
+      "english":"The number of magnets on the motor bell.",
+      "translation":"Het aantal magneten in de motor."
+    },
+    "tail_rotor_gear_ratio_0":{
+      "english":"Tail Gear Tooth Count",
+      "translation":"Staart tandwiel aantal tanden"
+    },
+    "motor_pwm_rate":{
+      "english":"The frequency at which the ESC sends PWM signals to the motor",
+      "translation":"De frequentie snelheid waarmee het throttle signaal wordt gestuurd naar de esc"
+    },
+    "minthrottle":{
+      "english":"This PWM value is sent to the ESC/Servo at low throttle",
+      "translation":"Deze PWM waarde wordt gestuurd naar de ESC/Servo op laag throttle"
+    }
+  },
+  "ESC_PARAMETERS_HW5":{
+    "tbl_helistore":{
+      "english":"Heli Governor Store",
+      "translation":"Heli Governor Store"
+    },
+    "tbl_softcutoff":{
+      "english":"Soft Cutoff",
+      "translation":"Soft Cutoff"
+    },
+    "tbl_normal":{
+      "english":"Normal",
+      "translation":"Normaal"
+    },
+    "tbl_disabled":{
+      "english":"Disabled",
+      "translation":"Uit"
+    },
+    "tbl_reverse":{
+      "english":"Reverse",
+      "translation":"Omgekeerd"
+    },
+    "tbl_hardcutoff":{
+      "english":"Hard Cutoff",
+      "translation":"Hard Cutoff"
+    },
+    "tbl_heliext":{
+      "english":"Heli Ext Governor",
+      "translation":"Heli Ext Governor"
+    },
+    "tbl_cw":{
+      "english":"CW",
+      "translation":"CW"
+    },
+    "tbl_enabled":{
+      "english":"Enabled",
+      "translation":"Aan"
+    },
+    "tbl_ccw":{
+      "english":"CCW",
+      "translation":"CCW"
+    },
+    "tbl_fixedwing":{
+      "english":"Fixed Wing",
+      "translation":"Fixed Wing"
+    },
+    "tbl_autocalculate":{
+      "english":"Auto Calculate",
+      "translation":"Auto Calculate"
+    },
+    "tbl_proportional":{
+      "english":"Proportional",
+      "translation":"Proportional"
+    },
+    "tbl_heligov":{
+      "english":"Heli Governor",
+      "translation":"Heli Governor"
+    }
+  },
+  "RC_TUNING":{
+    "accel_limit_2":{
+      "english":"Maximum acceleration of the craft in response to a stick movement.",
+      "translation":"Maximale versnelling van de heli als reactie op een stickbeweging."
+    },
+    "accel_limit_3":{
+      "english":"Maximum acceleration of the craft in response to a stick movement.",
+      "translation":"Maximale versnelling van de heli als reactie op een stickbeweging."
+    },
+    "setpoint_boost_gain_2":{
+      "english":"Boost gain for the setpoint.",
+      "translation":"Boostversterking voor het setpoint."
+    },
+    "response_time_2":{
+      "english":"Increase or decrease the response time of the rate to smooth heli movements.",
+      "translation":"Verhoog of verlaag de reactietijd van de rates om de helikopterbewegingen soepeler te maken."
+    },
+    "setpoint_boost_gain_4":{
+      "english":"Boost gain for the setpoint.",
+      "translation":"Boostversterking voor het setpoint."
+    },
+    "yaw_dynamic_deadband_gain":{
+      "english":"The maximum gain applied to the yaw dynamic deadband.",
+      "translation":"De maximale gain toegepast op de dynamische yaw dode zone."
+    },
+    "response_time_3":{
+      "english":"Increase or decrease the response time of the rate to smooth heli movements.",
+      "translation":"Verhoog of verlaag de reactietijd van de rates om de helikopterbewegingen soepeler te maken."
+    },
+    "yaw_dynamic_deadband_filter":{
+      "english":"The maximum filter applied to the yaw dynamic deadband.",
+      "translation":"Het maximale filter toegepast op de dynamische yaw dode zone."
+    },
+    "setpoint_boost_cutoff_4":{
+      "english":"Boost cutoff for the setpoint.",
+      "translation":"Boostdrempel voor het setpoint."
+    },
+    "response_time_1":{
+      "english":"Increase or decrease the response time of the rate to smooth heli movements.",
+      "translation":"Verhoog of verlaag de reactietijd van de rates om de helikopterbewegingen soepeler te maken."
+    },
+    "setpoint_boost_cutoff_3":{
+      "english":"Boost cutoff for the setpoint.",
+      "translation":"Boostdrempel voor het setpoint."
+    },
+    "setpoint_boost_cutoff_2":{
+      "english":"Boost cutoff for the setpoint.",
+      "translation":"Boostdrempel voor het setpoint."
+    },
+    "setpoint_boost_gain_3":{
+      "english":"Boost gain for the setpoint.",
+      "translation":"Boostversterking voor het setpoint."
+    },
+    "yaw_dynamic_ceiling_gain":{
+      "english":"The maximum gain applied to the yaw dynamic ceiling.",
+      "translation":"De maximale gain toegepast op het dynamische yaw plafond."
+    },
+    "response_time_4":{
+      "english":"Increase or decrease the response time of the rate to smooth heli movements.",
+      "translation":"Verhoog of verlaag de reactietijd van de rates om de helikopterbewegingen soepeler te maken."
+    },
+    "accel_limit_4":{
+      "english":"Maximum acceleration of the craft in response to a stick movement.",
+      "translation":"Maximale versnelling van de heli als reactie op een stickbeweging."
+    },
+    "setpoint_boost_cutoff_1":{
+      "english":"Boost cutoff for the setpoint.",
+      "translation":"Boostdrempel voor het setpoint."
+    },
+    "accel_limit_1":{
+      "english":"Maximum acceleration of the craft in response to a stick movement.",
+      "translation":"Maximale versnelling van de heli als reactie op een stickbeweging."
+    },
+    "setpoint_boost_gain_1":{
+      "english":"Boost gain for the setpoint.",
+      "translation":"Boostversterking voor het setpoint."
+    }
+  },
+  "ESC_SENSOR_CONFIG":{
+    "update_hz":{
+      "english":"ESC telemetry update rate",
+      "translation":"ESC telemetrie update rate"
+    },
+    "hw4_current_offset":{
+      "english":"Hobbywing v4 current offset adjustment",
+      "translation":"Hobbywing v4 stroom afwijking instelling"
+    },
+    "tbl_on":{
+      "english":"On",
+      "translation":"Aan"
+    },
+    "pin_swap":{
+      "english":"Swap the TX and RX pins for the ESC telemetry",
+      "translation":"Verwissel de TX en RX pins voor de esc telemetrie"
+    },
+    "current_offset":{
+      "english":"Current sensor offset adjustment",
+      "translation":"Stroomsensor afwijking instelling"
+    },
+    "current_correction":{
+      "english":"Adjust current correction",
+      "translation":"Pas de stroom correctie aan"
+    },
+    "voltage_correction":{
+      "english":"Adjust the voltage correction",
+      "translation":"Pas de voltage correctie aan"
+    },
+    "consumption_correction":{
+      "english":"Adjust the consumption correction",
+      "translation":"Pas het verbruik correctie aan"
+    },
+    "hw4_voltage_gain":{
+      "english":"Hobbywing v4 voltage gain adjustment",
+      "translation":"Hobbywing v4 voltage gain instelling"
+    },
+    "hw4_current_gain":{
+      "english":"Hobbywing v4 current gain adjustment",
+      "translation":"Hobbywing v4 stroom gain instelling"
+    },
+    "tbl_off":{
+      "english":"Off",
+      "translation":"Uit"
+    },
+    "half_duplex":{
+      "english":"Half duplex mode for ESC telemetry",
+      "translation":"Half duplex mode voor ESC telemetry"
+    }
+  },
+  "BATTERY_CONFIG":{
+    "batteryCapacity":{
+      "english":"The milliamp hour capacity of your battery.",
+      "translation":"De Mah capaciteit van de batterij."
+    },
+    "batteryCellCount":{
+      "english":"The number of cells in your battery.",
+      "translation":"Het aantal cellen in je batterij."
+    },
+    "vbatfullcellvoltage":{
+      "english":"The nominal voltage of a fully charged cell.",
+      "translation":"Het nominale voltage van een volledig geladen cel."
+    },
+    "vbatmincellvoltage":{
+      "english":"The minimum voltage per cell before the low voltage alarm is triggered.",
+      "translation":"Het minimale voltage wanneer laag voltage alarm wordt getriggerd."
+    },
+    "vbatmaxcellvoltage":{
+      "english":"The maximum voltage per cell before the high voltage alarm is triggered.",
+      "translation":"Het maximale voltage per cel wanneer hoog voltage alarm wordt getriggerd."
+    },
+    "vbatwarningcellvoltage":{
+      "english":"The voltage per cell at which the low voltage alarm will start to sound.",
+      "translation":"Het voltage per cel wanneer het laag voltage alarm af gaat."
+    }
+  },
+  "ESC_PARAMETERS_YGE":{
+    "tbl_unused":{
+      "english":"*Unused*",
+      "translation":"*Unused*"
+    },
+    "tbl_normal":{
+      "english":"Normal",
+      "translation":"Normaal"
+    },
+    "tbl_reverse":{
+      "english":"Reverse",
+      "translation":"Omgekeerd"
+    },
+    "tbl_autoextreme":{
+      "english":"Auto Extreme",
+      "translation":"Auto Extreme"
+    },
+    "tbl_cutoff":{
+      "english":"Cutoff",
+      "translation":"Afsnijding"
+    },
+    "tbl_modeglider":{
+      "english":"Aero Glider",
+      "translation":"Aero Glider"
+    },
+    "tbl_slow":{
+      "english":"Slow",
+      "translation":"Langzaam"
+    },
+    "tbl_alwayson":{
+      "english":"Always On",
+      "translation":"Altijd aan"
+    },
+    "tbl_off":{
+      "english":"Off",
+      "translation":"Uit"
+    },
+    "tbl_autonorm":{
+      "english":"Auto Normal",
+      "translation":"Auto Normaal"
+    },
+    "tbl_medium":{
+      "english":"Medium",
+      "translation":"Gemiddeld"
+    },
+    "tbl_modefree":{
+      "english":"Free (Attention!)",
+      "translation":"Free (Attention!)"
+    },
+    "tbl_on":{
+      "english":"On",
+      "translation":"Aan"
+    },
+    "tbl_modeext":{
+      "english":"Heli Ext Governor",
+      "translation":"Heli Ext Governor"
+    },
+    "tbl_autoefficient":{
+      "english":"Auto Efficient",
+      "translation":"Auto Efficient"
+    },
+    "tbl_smooth":{
+      "english":"Smooth",
+      "translation":"Smooth"
+    },
+    "tbl_fast":{
+      "english":"Fast",
+      "translation":"Snel"
+    },
+    "tbl_modef3a":{
+      "english":"Aero F3A",
+      "translation":"Aero F3A"
+    },
+    "tbl_custom":{
+      "english":"Custom (PC Defined)",
+      "translation":"Custom (PC Defined)"
+    },
+    "tbl_modeair":{
+      "english":"Aero Motor",
+      "translation":"Aero Motor"
+    },
+    "tbl_autopower":{
+      "english":"Auto Power",
+      "translation":"Auto Power"
+    },
+    "tbl_auto":{
+      "english":"Auto",
+      "translation":"Auto"
+    },
+    "tbl_modeheli":{
+      "english":"Heli Governor",
+      "translation":"Heli Governor"
+    },
+    "tbl_slowdown":{
+      "english":"Slowdown",
+      "translation":"Vertraging"
+    },
+    "tbl_modestore":{
+      "english":"Heli Governor Store",
+      "translation":"Heli Governor Store"
+    }
+  },
+  "RESCUE_PROFILE":{
+    "rescue_pull_up_time":{
+      "english":"When rescue is activated, helicopter will apply pull-up collective for this time period before moving to flip or climb stage.",
+      "translation":"Wanneer rescue is geactiveerd, helicopter geeft collective omhoog voor deze tijd voordat heli flipt of overgaat naar klim stap."
+    },
+    "tbl_flip":{
+      "english":"FLIP",
+      "translation":"FLIP"
+    },
+    "rescue_flip_time":{
+      "english":"If the helicopter is in rescue and is trying to flip to upright and does not within this time, rescue will be aborted.",
+      "translation":" Wanneer de heli is in rescue en probeert te flippen wat niet binnen deze tijd lukt dan wordt rescue afgebroken."
+    },
+    "tbl_noflip":{
+      "english":"NO FLIP",
+      "translation":"GEEN FLIP"
+    },
+    "tbl_on":{
+      "english":"ON",
+      "translation":"AAN"
+    },
+    "rescue_hover_collective":{
+      "english":"Collective value for hover.",
+      "translation":"Collective waarde voor hoover"
+    },
+    "rescue_max_setpoint_accel":{
+      "english":"Limit how fast the helicopter accelerates into a roll/pitch. Larger helicopters may need slower acceleration.",
+      "translation":"Limiet de acceleratie in een roll/pitch. Grotere heli's hebben een lagere acceleratie nodig."
+    },
+    "rescue_flip_mode":{
+      "english":"If rescue is activated while inverted, flip to upright - or remain inverted.",
+      "translation":"Als de rescue wordt geactiveerd terwijl inverted, flip positief - of blijf inverted."
+    },
+    "rescue_pull_up_collective":{
+      "english":"Collective value for pull-up climb.",
+      "translation":"Collective waarde voor omhoog klimmen."
+    },
+    "rescue_exit_time":{
+      "english":"This limits rapid application of negative collective if the helicopter has rolled during rescue.",
+      "translation":"Dit beperkt de snelle toepassing van negatieve collective als de helikopter tijdens de reddingsactie is gerold."
+    },
+    "rescue_climb_time":{
+      "english":"Length of time the climb collective is applied before switching to hover.",
+      "translation":"Tijdsduur de klim collective wordt gegeven voor omgeschakeld wordt naar hover."
+    },
+    "rescue_climb_collective":{
+      "english":"Collective value for rescue climb.",
+      "translation":"Collective waarde voor rescue klim."
+    },
+    "rescue_level_gain":{
+      "english":"Determine how aggressively the heli levels during rescue.",
+      "translation":"Bepaald hoe agressief de heli levels tijdens rescue."
+    },
+    "rescue_max_setpoint_rate":{
+      "english":"Limit rescue roll/pitch rate. Larger helicopters may need slower rotation rates.",
+      "translation":"Limiet de rescue roll/pitch rotatiesnelheid. Grote heli's hebben lagere rotatiesnelheden benodigd."
+    },
+    "tbl_off":{
+      "english":"OFF",
+      "translation":"UIT"
+    },
+    "rescue_flip_gain":{
+      "english":"Determine how aggressively the heli flips during inverted rescue.",
+      "translation":"Bepaald hoe agressief de heli flips bij een inverted rescue."
     }
   }
 }

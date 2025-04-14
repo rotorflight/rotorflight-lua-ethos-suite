@@ -8,8 +8,8 @@ if not "%fileext%"==".lua" (
 )
 
 set tgt=rfsuite
-set srcfolder=%DEV_RFSUITE_GIT_SRC%
-set dstfolder=%DEV_RADIO_SRC%
+set srcfolder=%FRSKY_RFSUITE_GIT_SRC%
+set dstfolder=%FRSKY_RADIO_SRC%
 
 REM Extract the drive letter from dstfolder
 for %%A in ("%dstfolder%") do set "driveLetter=%%~dA"

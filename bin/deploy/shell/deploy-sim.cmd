@@ -3,7 +3,7 @@ REM ------------------------------------------------------
 REM   FILE COPY SCRIPT FOR MULTIPLE DESTINATION FOLDERS
 REM ------------------------------------------------------
 REM   This script copies files from a Git source folder to multiple destination folders.
-REM   Destination folders are specified in a CSV list using the %DEV_SIM_SRC% environment variable.
+REM   Destination folders are specified in a CSV list using the %FRSKY_SIM_SRC% environment variable.
 REM   The script can optionally handle specific file extensions (e.g., .lua files).
 
 REM ------------------------------------------------------
@@ -11,8 +11,8 @@ REM   SETUP INSTRUCTIONS (WINDOWS)
 REM ------------------------------------------------------
 REM 1. Set the environment variables in Windows Command Prompt (or add them to System Variables):
 REM    Example:
-REM    set DEV_RFSUITE_GIT_SRC=C:\Path\To\Your\Source
-REM    set DEV_SIM_SRC="C:\Program Files (x86)\FrSky\Ethos\X20S\scripts","C:\Program Files (x86)\FrSky\Ethos\X14S\scripts","C:\Program Files (x86)\FrSky\Ethos\X18S\scripts"
+REM    set FRSKY_RFSUITE_GIT_SRC=C:\Path\To\Your\Source
+REM    set FRSKY_SIM_SRC="C:\Program Files (x86)\FrSky\Ethos\X20S\scripts","C:\Program Files (x86)\FrSky\Ethos\X14S\scripts","C:\Program Files (x86)\FrSky\Ethos\X18S\scripts"
 
 REM 2. Run the script from the Command Prompt:
 REM    Example (copy all files):
@@ -37,8 +37,8 @@ if not defined fileext (
 )
 
 set "tgt=rfsuite"
-set "srcfolder=%DEV_RFSUITE_GIT_SRC%"
-set "destfolders=%DEV_SIM_SRC%"
+set "srcfolder=%FRSKY_RFSUITE_GIT_SRC%"
+set "destfolders=%FRSKY_SIM_SRC%"
 
 REM Convert CSV list to array by replacing commas with spaces and handling quotes
 for %%d in ("%destfolders:,=" "%") do (
