@@ -8,45 +8,37 @@
       "english":"Current",
       "translation":"Corriente"
     },
-    "mcu_temp":{
-      "english":"MCU Temperature",
-      "translation":"Temperatura MCU"
+    "headspeed":{
+      "english":"Headspeed",
+      "translation":"Veloc. Rotor"
     },
     "rate_profile":{
       "english":"Rate Profile",
       "translation":"Perfil Tasas"
     },
-    "voltage":{
-      "english":"Voltage",
-      "translation":"Voltaje"
+    "mcu_temp":{
+      "english":"MCU Temperature",
+      "translation":"Temperatura MCU"
+    },
+    "fuel":{
+      "english":"Charge Level",
+      "translation":"Nivel de Carga"
     },
     "adj_val":{
       "english":"Adj (Value)",
       "translation":"Ajus.(Valor)"
     },
-    "throttle_pct":{
-      "english":"Throttle %",
-      "translation":"% Acelerador"
+    "consumption":{
+      "english":"Consumption",
+      "translation":"Consumo"
+    },
+    "voltage":{
+      "english":"Voltage",
+      "translation":"Voltaje"
     },
     "rssi":{
       "english":"RSSI",
       "translation":"RSSI"
-    },
-    "headspeed":{
-      "english":"Headspeed",
-      "translation":"Veloc. Rotor"
-    },
-    "esc_temp":{
-      "english":"ESC Temperature",
-      "translation":"Temperatura ESC"
-    },
-    "governor":{
-      "english":"Governor State",
-      "translation":"Estado Governor"
-    },
-    "fuel":{
-      "english":"Charge Level",
-      "translation":"Nivel de Carga"
     },
     "pid_profile":{
       "english":"PID Profile",
@@ -56,9 +48,17 @@
       "english":"Arming Flags",
       "translation":"Banderas Armado"
     },
-    "consumption":{
-      "english":"Consumption",
-      "translation":"Consumo"
+    "throttle_pct":{
+      "english":"Throttle %",
+      "translation":"% Acelerador"
+    },
+    "esc_temp":{
+      "english":"ESC Temperature",
+      "translation":"Temperatura ESC"
+    },
+    "governor":{
+      "english":"Governor State",
+      "translation":"Estado Governor"
     }
   }
 }

@@ -8,45 +8,37 @@
       "english":"Current",
       "translation":"Courant"
     },
-    "mcu_temp":{
-      "english":"MCU Temperature",
-      "translation":"Temperature Micro Processeur"
+    "headspeed":{
+      "english":"Headspeed",
+      "translation":"Tours Moteurs"
     },
     "rate_profile":{
       "english":"Rate Profile",
       "translation":"Profile de Rates"
     },
-    "voltage":{
-      "english":"Voltage",
-      "translation":"Tension"
+    "mcu_temp":{
+      "english":"MCU Temperature",
+      "translation":"Temperature Micro Processeur"
+    },
+    "fuel":{
+      "english":"Charge Level",
+      "translation":"Niveau de Carburant"
     },
     "adj_val":{
       "english":"Adj (Value)",
       "translation":"Ajustements Valeurs"
     },
-    "throttle_pct":{
-      "english":"Throttle %",
-      "translation":"Pourcentage de Gaz"
+    "consumption":{
+      "english":"Consumption",
+      "translation":"Consommation"
+    },
+    "voltage":{
+      "english":"Voltage",
+      "translation":"Tension"
     },
     "rssi":{
       "english":"RSSI",
       "translation":"Signal du Recepteur"
-    },
-    "headspeed":{
-      "english":"Headspeed",
-      "translation":"Tours Moteurs"
-    },
-    "esc_temp":{
-      "english":"ESC Temperature",
-      "translation":"Temperature ESC"
-    },
-    "governor":{
-      "english":"Governor State",
-      "translation":"Status du Gouverneur"
-    },
-    "fuel":{
-      "english":"Charge Level",
-      "translation":"Niveau de Carburant"
     },
     "pid_profile":{
       "english":"PID Profile",
@@ -56,9 +48,17 @@
       "english":"Arming Flags",
       "translation":"Drapeaux Armements"
     },
-    "consumption":{
-      "english":"Consumption",
-      "translation":"Consommation"
+    "throttle_pct":{
+      "english":"Throttle %",
+      "translation":"Pourcentage de Gaz"
+    },
+    "esc_temp":{
+      "english":"ESC Temperature",
+      "translation":"Temperature ESC"
+    },
+    "governor":{
+      "english":"Governor State",
+      "translation":"Status du Gouverneur"
     }
   }
 }

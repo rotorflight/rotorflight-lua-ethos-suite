@@ -8,45 +8,37 @@
       "english":"Current",
       "translation":"Stroom"
     },
-    "mcu_temp":{
-      "english":"MCU Temperature",
-      "translation":"MCU Temperatuur"
+    "headspeed":{
+      "english":"Headspeed",
+      "translation":"Rotortoerental"
     },
     "rate_profile":{
       "english":"Rate Profile",
       "translation":"Rate Profiel"
     },
-    "voltage":{
-      "english":"Voltage",
-      "translation":"Voltage"
+    "mcu_temp":{
+      "english":"MCU Temperature",
+      "translation":"MCU Temperatuur"
+    },
+    "fuel":{
+      "english":"Charge Level",
+      "translation":"Laad niveau"
     },
     "adj_val":{
       "english":"Adj (Value)",
       "translation":"Adj (Waarde)"
     },
-    "throttle_pct":{
-      "english":"Throttle %",
-      "translation":"Throttle %"
+    "consumption":{
+      "english":"Consumption",
+      "translation":"Verbruik"
+    },
+    "voltage":{
+      "english":"Voltage",
+      "translation":"Voltage"
     },
     "rssi":{
       "english":"RSSI",
       "translation":"RSSI"
-    },
-    "headspeed":{
-      "english":"Headspeed",
-      "translation":"Rotortoerental"
-    },
-    "esc_temp":{
-      "english":"ESC Temperature",
-      "translation":"ESC Temperatuur"
-    },
-    "governor":{
-      "english":"Governor State",
-      "translation":"Governor Status"
-    },
-    "fuel":{
-      "english":"Charge Level",
-      "translation":"Laad niveau"
     },
     "pid_profile":{
       "english":"PID Profile",
@@ -56,9 +48,17 @@
       "english":"Arming Flags",
       "translation":"Arming Flags"
     },
-    "consumption":{
-      "english":"Consumption",
-      "translation":"Verbruik"
+    "throttle_pct":{
+      "english":"Throttle %",
+      "translation":"Throttle %"
+    },
+    "esc_temp":{
+      "english":"ESC Temperature",
+      "translation":"ESC Temperatuur"
+    },
+    "governor":{
+      "english":"Governor State",
+      "translation":"Governor Status"
     }
   }
 }

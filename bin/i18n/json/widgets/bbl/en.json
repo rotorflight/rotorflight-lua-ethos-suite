@@ -1,0 +1,10 @@
+{
+  "erase_dataflash":{
+    "english":"Erase dataflash",
+    "translation":"Erase dataflash"
+  },
+    "erasing":{
+    "english":"Erasing...",
+    "translation":"Erasing..."
+  },
+}
