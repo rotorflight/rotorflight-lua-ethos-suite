@@ -23,6 +23,9 @@ local wakeupSchedulerUI = os.clock()
 local isErase = false
 local init = true
 
+local progress = nil
+local progressCounter = 0
+
 local summary = {}
 
 -- error function
@@ -85,6 +88,12 @@ end
 local function eraseDataflash()
 
     isErase = true
+
+    progress = form.openProgressDialog(rfsuite.i18n.get("app.msg_saving"), rfsuite.i18n.get("app.msg_saving_to_fbl"))
+    progress:value(0)
+    progress:closeAllowed(false)
+    progressCounter = 0
+
 
     local message = {
         command = 72, -- MSP_DATAFLASH_ERASE
@@ -208,6 +217,16 @@ function rf2bbl.wakeup(widget)
                 wakeupUI()
                 lcd.invalidate()
                 init = false
+        end
+    end
+
+    if progress then
+        progressCounter = progressCounter + 10
+        progress:value(progressCounter)
+
+        if progressCounter >= 100 then
+            progress:close()
+            progress = nil
         end
     end
 
