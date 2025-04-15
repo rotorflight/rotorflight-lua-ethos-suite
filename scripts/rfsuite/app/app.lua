@@ -523,8 +523,8 @@ local function saveSettings()
                 local newValue = originalValue
         
                 for bit, fieldIndex in pairs(fieldMapBitmap[i]) do
-                    local fieldVal = tonumber(app.Page.fields[fieldIndex].value) or 0
-                    local mask = 1 << (bit - 1)
+                    local fieldVal = math.floor(tonumber(app.Page.fields[fieldIndex].value) or 0)
+                    local mask = 1 << (bit)
                     if fieldVal ~= 0 then
                         newValue = newValue | mask  -- Set bit
                     else
@@ -683,7 +683,7 @@ function app.mspApiUpdateFormAttributes(values, structure)
                                     -- extract bit at position bidx
                                     if values and values[mspapiNAME] and values[mspapiNAME][v.field] then
                                         local raw_value = values[mspapiNAME][v.field]
-                                        local bit_value = (raw_value >> bidx) & 1  
+                                        local bit_value = (raw_value >> bidx - 1) & 1  
                                         rfsuite.app.Page.fields[i].value = bit_value / scale
                                     end
         
@@ -693,7 +693,7 @@ function app.mspApiUpdateFormAttributes(values, structure)
                                     end
 
                                     -- insert bit location for later reference
-                                    rfsuite.app.Page.fields[i].bitmap = bidx
+                                    rfsuite.app.Page.fields[i].bitmap = bidx - 1
 
 
                             end    
