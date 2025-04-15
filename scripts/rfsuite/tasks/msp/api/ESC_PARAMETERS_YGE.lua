@@ -35,6 +35,14 @@ local motorTimingToUI = {0, 4, 5, 6, 7, 8, 9, [16] = 0, [17] = 1, [18] = 2, [19]
 local motorTimingFromUI = {0, 17, 18, 19, 1, 2, 3, 4, 5, 6}
 local freewheel = {rfsuite.i18n.get("api.ESC_PARAMETERS_YGE.tbl_off"), rfsuite.i18n.get("api.ESC_PARAMETERS_YGE.tbl_auto"), rfsuite.i18n.get("api.ESC_PARAMETERS_YGE.tbl_unused"), rfsuite.i18n.get("api.ESC_PARAMETERS_YGE.tbl_alwayson")}
 
+
+local flags_bitmap = {
+    {field = "direction", tableIdxInc = -1, table = direction},
+    {field = "f3cauto", tableIdxInc = -1, table = offOn},
+    {field = "keepmah", tableIdxInc = -1, table = offOn},
+    {field = "bec12v", tableIdxInc = -1, table = offOn},
+}
+
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
     {field = "esc_signature",      type = "U8",  apiVersion = 12.07, simResponse = {165}},
@@ -64,7 +72,7 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "min_start_power",    type = "U16", apiVersion = 12.07, simResponse = {20, 0}, min = 0, max = 26, unit = "%"},
     {field = "max_start_power",    type = "U16", apiVersion = 12.07, simResponse = {20, 0}, min = 0, max = 31, unit = "%"},
     {field = "unknown_3",          type = "U16", apiVersion = 12.07, simResponse = {0, 0}},
-    {field = "direction",              type = "U8",  apiVersion = 12.07, simResponse = {0}, min = 0, max = 1, tableIdxInc = -1, table = direction},
+    {field = "flags",              type = "U8",  apiVersion = 12.07, simResponse = {0}, bitmap = flags_bitmap},
     {field = "unknown_4",          type = "U8",  apiVersion = 12.07, simResponse = {0}, min = 0, max = 1, tableIdxInc = -1, table = offOn},
     {field = "current_limit",      type = "U16", apiVersion = 12.07, simResponse = {2, 19},  unit="A", min = 1, max = 65500, decimals = 2, scale = 100},
 }
