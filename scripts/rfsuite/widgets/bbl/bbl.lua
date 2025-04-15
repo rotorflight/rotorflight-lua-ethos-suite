@@ -108,17 +108,28 @@ local function eraseDataflash()
 end
 
 -- Wakeup UI function
+local lastSummaryTime = 0  -- Time when getDataflashSummary was last called
+
 local function wakeupUI()
-
-    LCD_W, LCD_H = lcd.getWindowSize()
-
-    if rfsuite and rfsuite.tasks.active() then
-        getDataflashSummary()
-    else
+    if not rfsuite or not rfsuite.tasks.active() then
         summary = {}
+        return
     end
 
+    LCD_W, LCD_H = lcd.getWindowSize()
+    local armflagsSOURCE = rfsuite.tasks.telemetry.getSensorSource("armflags")
+    local armValue = armflagsSOURCE:value()
+    local now = os.clock()
 
+    if armValue == 0 or armValue == 2 then
+        getDataflashSummary()
+        lastSummaryTime = now
+    else
+        if now - lastSummaryTime >= 30 then
+            getDataflashSummary()
+            lastSummaryTime = now
+        end
+    end
 end
 
 local function getFreeDataflashSpace()
