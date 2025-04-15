@@ -493,25 +493,58 @@ local function saveSettings()
 
         -- Create lookup table for fields by apikey
         local fieldMap = {}
+        local fieldMapBitmap = {}
         for fidx, f in ipairs(app.Page.mspapi.formdata.fields) do
-            if f.mspapi == apiID then
-                fieldMap[f.apikey] = fidx
-            end
+            if not f.bitmap then
+                -- normal fields
+                if f.mspapi == apiID then
+                    fieldMap[f.apikey] = fidx
+                end
+            else
+                -- bitmap fields
+                local bitmap_part1, bitmap_part2 = string.match(f.apikey, "([^%-]+)%-%>(.+)")
+                if not fieldMapBitmap[bitmap_part1] then
+                    fieldMapBitmap[bitmap_part1] = {}
+                end
+                fieldMapBitmap[bitmap_part1][f.bitmap] = fidx
+            end    
         end
+
 
         -- Inject values into the payload
         for i, v in pairs(payloadData) do
             local fieldIndex = fieldMap[i]
             if fieldIndex then
+                -- Normal field
                 payloadData[i] = app.Page.fields[fieldIndex].value
+            elseif fieldMapBitmap[i] then
+                -- Bitmap field
+                local originalValue = tonumber(v) or 0
+                local newValue = originalValue
+        
+                for bit, fieldIndex in pairs(fieldMapBitmap[i]) do
+                    local fieldVal = tonumber(app.Page.fields[fieldIndex].value) or 0
+                    local mask = 1 << (bit - 1)
+                    if fieldVal ~= 0 then
+                        newValue = newValue | mask  -- Set bit
+                    else
+                        newValue = newValue & (~mask)  -- Clear bit
+                    end
+                end
+        
+                payloadData[i] = newValue
             end
+        
         end
+
 
         -- Send the payload
         for i, v in pairs(payloadData) do
             rfsuite.utils.log("Set value for " .. i .. " to " .. v, "debug")
             API.setValue(i, v)
         end
+        
+             
 
         API.write()
     end
@@ -651,7 +684,7 @@ function app.mspApiUpdateFormAttributes(values, structure)
                                     if values and values[mspapiNAME] and values[mspapiNAME][v.field] then
                                         local raw_value = values[mspapiNAME][v.field]
                                         local bit_value = (raw_value >> bidx) & 1  
-                                        rfsuite.app.Page.fields[i].value = bit_value
+                                        rfsuite.app.Page.fields[i].value = bit_value / scale
                                     end
         
                                     if values[mspapiNAME][v.field] == nil then
@@ -660,8 +693,8 @@ function app.mspApiUpdateFormAttributes(values, structure)
                                     end
 
                                     -- insert bit location for later reference
-                                    rfsuite.app.Page.fields[i].bitmap = v.bitmap
-                                    rfsuite.app.Page.fields[i].bitmapPos = bidx
+                                    rfsuite.app.Page.fields[i].bitmap = bidx
+
 
                             end    
                         end
