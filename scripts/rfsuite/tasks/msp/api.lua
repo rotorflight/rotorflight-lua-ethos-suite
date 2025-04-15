@@ -605,7 +605,8 @@ function apiLoader.buildDeltaPayload(apiname, payload, api_structure, positionma
     for idx, formField in ipairs(rfsuite.app.formFields) do
         local pageField = rfsuite.app.Page.fields[idx]
         if pageField and pageField.apikey then
-            editableFields[pageField.apikey] = true
+            local key = pageField.apikey:match("([^%-]+)%-%>") or pageField.apikey
+            editableFields[key] = true
         end
     end
 
@@ -618,6 +619,7 @@ function apiLoader.buildDeltaPayload(apiname, payload, api_structure, positionma
             end
         end
     end 
+
 
     -- Iterate over the API structure and apply updates
     for _, field_def in ipairs(api_structure) do

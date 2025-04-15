@@ -18,7 +18,7 @@
 local API_NAME = "ESC_PARAMETERS_YGE" -- API name (must be same as filename)
 local MSP_API_CMD_READ = 217 -- Command identifier 
 local MSP_API_CMD_WRITE = 218 -- Command identifier
-local MSP_REBUILD_ON_WRITE = true -- Rebuild the payload on write  - keep true as we use bitmap for flags
+local MSP_REBUILD_ON_WRITE = false 
 local MSP_SIGNATURE = 0xA5
 local MSP_HEADER_BYTES = 2
 
