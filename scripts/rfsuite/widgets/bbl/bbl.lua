@@ -138,13 +138,15 @@ local function wakeupUI()
     end
 
     LCD_W, LCD_H = lcd.getWindowSize()
-    local armValue = rfsuite.tasks.telemetry.getSensorSource("armflags"):value()
-    local now = os.clock()
+    if rfsuite.tasks.telemetry.getSensorSource("armflags") then
+        local armValue = rfsuite.tasks.telemetry.getSensorSource("armflags"):value()
+        local now = os.clock()
 
-    if armValue == 0 or armValue == 2 or (now - lastSummaryTime >= 30) then
-        getDataflashSummary()
-        lastSummaryTime = now
-    end
+        if armValue == 0 or armValue == 2 or (now - lastSummaryTime >= 30) then
+            getDataflashSummary()
+            lastSummaryTime = now
+        end
+    end    
 end
 
 local function getFreeDataflashSpace()
@@ -192,7 +194,11 @@ function rf2bbl.paint(widget)
     elseif summary.totalSize and summary.usedSize then
         msg = getFreeDataflashSpace()
     else
-        msg = rfsuite.i18n.get('app.msg_loading')
+        if rfsuite.tasks.telemetry.active() then
+            msg = rfsuite.i18n.get('app.msg_loading')
+        else
+            msg = rfsuite.i18n.get("no_link"):upper()
+        end    
     end
 
     drawCenteredMessage(msg)

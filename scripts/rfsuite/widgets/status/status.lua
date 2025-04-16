@@ -453,7 +453,7 @@ end
 
 local function noTelem()
     lcd.font(FONT_STD)
-    local str = "NO LINK"
+    local str = rfsuite.i18n.get("no_link"):upper()
 
     status.theme = getThemeInfo()
     local w, h = lcd.getWindowSize()
