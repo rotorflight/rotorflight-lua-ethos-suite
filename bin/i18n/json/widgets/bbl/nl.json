@@ -1,32 +1,32 @@
 {
-  "display_used":{
-    "needs_translation":"false",
-    "translation":"Gebruikt",
-    "english":"Used"
+  "erase_dataflash": {
+    "english": "Erase dataflash",
+    "translation": "Gegevensflash wissen",
+    "needs_translation": "false"
   },
-  "display_outof":{
-    "needs_translation":"false",
-    "translation":"Gebruikt/Totaal",
-    "english":"Used/Total"
+  "erasing": {
+    "english": "Erasing...",
+    "translation": "Bezig met wissen...",
+    "needs_translation": "false"
   },
-  "display_free":{
-    "needs_translation":"false",
-    "translation":"Vrij",
-    "english":"Free"
+  "display": {
+    "english": "Display",
+    "translation": "Weergave",
+    "needs_translation": "false"
   },
-  "erasing":{
-    "needs_translation":"false",
-    "translation":"Bezig met wissen...",
-    "english":"Erasing..."
+  "display_free": {
+    "english": "Free",
+    "translation": "Vrij",
+    "needs_translation": "false"
   },
-  "display":{
-    "needs_translation":"false",
-    "translation":"Weergave",
-    "english":"Display"
+  "display_used": {
+    "english": "Used",
+    "translation": "Gebruikt",
+    "needs_translation": "false"
   },
-  "erase_dataflash":{
-    "needs_translation":"false",
-    "translation":"Gegevensflash wissen",
-    "english":"Erase dataflash"
+  "display_outof": {
+    "english": "Used/Total",
+    "translation": "Gebruikt/Totaal",
+    "needs_translation": "false"
   }
 }

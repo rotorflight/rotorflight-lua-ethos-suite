@@ -1,47 +1,47 @@
 {
-  "ethos":{
-    "needs_translation":"false",
-    "translation":"ethos",
-    "english":"ethos"
+  "reload": {
+    "english": "reload",
+    "translation": "herlaad",
+    "needs_translation": "false"
   },
-  "error":{
-    "needs_translation":"false",
-    "translation":"fout",
-    "english":"error"
+  "image": {
+    "english": "image",
+    "translation": "foto",
+    "needs_translation": "false"
   },
-  "image":{
-    "needs_translation":"false",
-    "translation":"foto",
-    "english":"image"
+  "error": {
+    "english": "error",
+    "translation": "fout",
+    "needs_translation": "false"
   },
-  "background_task_disabled":{
-    "needs_translation":"false",
-    "translation":"background task uitgeschakeld",
-    "english":"background task disabled"
+  "save": {
+    "english": "save",
+    "translation": "opslaan",
+    "needs_translation": "false"
   },
-  "save":{
-    "needs_translation":"false",
-    "translation":"opslaan",
-    "english":"save"
+  "ethos": {
+    "english": "ethos",
+    "translation": "ethos",
+    "needs_translation": "false"
   },
-  "version":{
-    "needs_translation":"false",
-    "translation":"versie",
-    "english":"version"
+  "version": {
+    "english": "version",
+    "translation": "versie",
+    "needs_translation": "false"
   },
-  "bg_task_disabled":{
-    "needs_translation":"false",
-    "translation":"bg task uitgeschakeld",
-    "english":"bg task disabled"
+  "bg_task_disabled": {
+    "english": "bg task disabled",
+    "translation": "bg task uitgeschakeld",
+    "needs_translation": "false"
   },
-  "no_link":{
-    "needs_translation":"false",
-    "translation":"geen verbinding",
-    "english":"no link"
+  "no_link": {
+    "english": "no link",
+    "translation": "geen verbinding",
+    "needs_translation": "false"
   },
-  "reload":{
-    "needs_translation":"false",
-    "translation":"herlaad",
-    "english":"reload"
+  "background_task_disabled": {
+    "english": "background task disabled",
+    "translation": "background task uitgeschakeld",
+    "needs_translation": "false"
   }
 }

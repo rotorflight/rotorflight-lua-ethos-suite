@@ -1,79 +1,79 @@
 {
-  "sensors":{
-    "rssi":{
-      "needs_translation":"false",
-      "translation":"Signal du Recepteur",
-      "english":"RSSI"
+  "sensors": {
+    "esc_temp": {
+      "english": "ESC Temperature",
+      "translation": "Temperature ESC",
+      "needs_translation": "false"
     },
-    "pid_profile":{
-      "needs_translation":"false",
-      "translation":"Profile de PID",
-      "english":"PID Profile"
+    "rate_profile": {
+      "english": "Rate Profile",
+      "translation": "Profile de Rates",
+      "needs_translation": "false"
     },
-    "fuel":{
-      "needs_translation":"false",
-      "translation":"Niveau de Carburant",
-      "english":"Charge Level"
+    "headspeed": {
+      "english": "Headspeed",
+      "translation": "Tours Moteurs",
+      "needs_translation": "false"
     },
-    "headspeed":{
-      "needs_translation":"false",
-      "translation":"Tours Moteurs",
-      "english":"Headspeed"
+    "voltage": {
+      "english": "Voltage",
+      "translation": "Tension",
+      "needs_translation": "false"
     },
-    "adj_func":{
-      "needs_translation":"false",
-      "translation":"Ajustements Fonctions",
-      "english":"Adj (Function)"
+    "governor": {
+      "english": "Governor State",
+      "translation": "Status du Gouverneur",
+      "needs_translation": "false"
     },
-    "throttle_pct":{
-      "needs_translation":"false",
-      "translation":"Pourcentage de Gaz",
-      "english":"Throttle %"
+    "adj_func": {
+      "english": "Adj (Function)",
+      "translation": "Ajustements Fonctions",
+      "needs_translation": "false"
     },
-    "current":{
-      "needs_translation":"false",
-      "translation":"Courant",
-      "english":"Current"
+    "fuel": {
+      "english": "Charge Level",
+      "translation": "Niveau de Carburant",
+      "needs_translation": "false"
     },
-    "consumption":{
-      "needs_translation":"false",
-      "translation":"Consommation",
-      "english":"Consumption"
+    "rssi": {
+      "english": "RSSI",
+      "translation": "Signal du Recepteur",
+      "needs_translation": "false"
     },
-    "esc_temp":{
-      "needs_translation":"false",
-      "translation":"Temperature ESC",
-      "english":"ESC Temperature"
+    "adj_val": {
+      "english": "Adj (Value)",
+      "translation": "Ajustements Valeurs",
+      "needs_translation": "false"
     },
-    "rate_profile":{
-      "needs_translation":"false",
-      "translation":"Profile de Rates",
-      "english":"Rate Profile"
+    "arming_flags": {
+      "english": "Arming Flags",
+      "translation": "Drapeaux Armements",
+      "needs_translation": "false"
     },
-    "mcu_temp":{
-      "needs_translation":"false",
-      "translation":"Temperature Micro Processeur",
-      "english":"MCU Temperature"
+    "current": {
+      "english": "Current",
+      "translation": "Courant",
+      "needs_translation": "false"
     },
-    "arming_flags":{
-      "needs_translation":"false",
-      "translation":"Drapeaux Armements",
-      "english":"Arming Flags"
+    "throttle_pct": {
+      "english": "Throttle %",
+      "translation": "Pourcentage de Gaz",
+      "needs_translation": "false"
     },
-    "governor":{
-      "needs_translation":"false",
-      "translation":"Status du Gouverneur",
-      "english":"Governor State"
+    "consumption": {
+      "english": "Consumption",
+      "translation": "Consommation",
+      "needs_translation": "false"
     },
-    "adj_val":{
-      "needs_translation":"false",
-      "translation":"Ajustements Valeurs",
-      "english":"Adj (Value)"
+    "pid_profile": {
+      "english": "PID Profile",
+      "translation": "Profile de PID",
+      "needs_translation": "false"
     },
-    "voltage":{
-      "needs_translation":"false",
-      "translation":"Tension",
-      "english":"Voltage"
+    "mcu_temp": {
+      "english": "MCU Temperature",
+      "translation": "Temperature Micro Processeur",
+      "needs_translation": "false"
     }
   }
 }

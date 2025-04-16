@@ -1,32 +1,32 @@
 {
-  "display_used":{
-    "needs_translation":"false",
-    "translation":"Usato",
-    "english":"Used"
+  "erase_dataflash": {
+    "english": "Erase dataflash",
+    "translation": "Cancella memoria flash",
+    "needs_translation": "false"
   },
-  "display_outof":{
-    "needs_translation":"false",
-    "translation":"Usato/Totale",
-    "english":"Used/Total"
+  "erasing": {
+    "english": "Erasing...",
+    "translation": "Cancellazione in corso...",
+    "needs_translation": "false"
   },
-  "display_free":{
-    "needs_translation":"false",
-    "translation":"Libero",
-    "english":"Free"
+  "display": {
+    "english": "Display",
+    "translation": "Schermo",
+    "needs_translation": "false"
   },
-  "erasing":{
-    "needs_translation":"false",
-    "translation":"Cancellazione in corso...",
-    "english":"Erasing..."
+  "display_free": {
+    "english": "Free",
+    "translation": "Libero",
+    "needs_translation": "false"
   },
-  "display":{
-    "needs_translation":"false",
-    "translation":"Schermo",
-    "english":"Display"
+  "display_used": {
+    "english": "Used",
+    "translation": "Usato",
+    "needs_translation": "false"
   },
-  "erase_dataflash":{
-    "needs_translation":"false",
-    "translation":"Cancella memoria flash",
-    "english":"Erase dataflash"
+  "display_outof": {
+    "english": "Used/Total",
+    "translation": "Usato/Totale",
+    "needs_translation": "false"
   }
 }

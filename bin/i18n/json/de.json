@@ -1,47 +1,47 @@
 {
-  "ethos":{
-    "needs_translation":"false",
-    "translation":"Ethos",
-    "english":"ethos"
+  "reload": {
+    "english": "reload",
+    "translation": "Neu laden",
+    "needs_translation": "false"
   },
-  "error":{
-    "needs_translation":"false",
-    "translation":"Fehler",
-    "english":"error"
+  "image": {
+    "english": "image",
+    "translation": "Bild",
+    "needs_translation": "false"
   },
-  "image":{
-    "needs_translation":"false",
-    "translation":"Bild",
-    "english":"image"
+  "error": {
+    "english": "error",
+    "translation": "Fehler",
+    "needs_translation": "false"
   },
-  "background_task_disabled":{
-    "needs_translation":"false",
-    "translation":"Hintergrundtask deaktiviert",
-    "english":"background task disabled"
+  "save": {
+    "english": "save",
+    "translation": "Speichern",
+    "needs_translation": "false"
   },
-  "save":{
-    "needs_translation":"false",
-    "translation":"Speichern",
-    "english":"save"
+  "ethos": {
+    "english": "ethos",
+    "translation": "Ethos",
+    "needs_translation": "false"
   },
-  "version":{
-    "needs_translation":"false",
-    "translation":"Version",
-    "english":"version"
+  "version": {
+    "english": "version",
+    "translation": "Version",
+    "needs_translation": "false"
   },
-  "bg_task_disabled":{
-    "needs_translation":"false",
-    "translation":"Hintergrundtask deaktiviert",
-    "english":"bg task disabled"
+  "bg_task_disabled": {
+    "english": "bg task disabled",
+    "translation": "Hintergrundtask deaktiviert",
+    "needs_translation": "false"
   },
-  "no_link":{
-    "needs_translation":"false",
-    "translation":"Keine Verbindung",
-    "english":"no link"
+  "no_link": {
+    "english": "no link",
+    "translation": "Keine Verbindung",
+    "needs_translation": "false"
   },
-  "reload":{
-    "needs_translation":"false",
-    "translation":"Neu laden",
-    "english":"reload"
+  "background_task_disabled": {
+    "english": "background task disabled",
+    "translation": "Hintergrundtask deaktiviert",
+    "needs_translation": "false"
   }
 }

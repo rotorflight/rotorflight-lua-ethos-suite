@@ -1,47 +1,47 @@
 {
-  "ethos":{
-    "needs_translation":"false",
-    "translation":"ethos",
-    "english":"ethos"
+  "reload": {
+    "english": "reload",
+    "translation": "recharger",
+    "needs_translation": "false"
   },
-  "error":{
-    "needs_translation":"false",
-    "translation":"erreur",
-    "english":"error"
+  "image": {
+    "english": "image",
+    "translation": "image",
+    "needs_translation": "false"
   },
-  "image":{
-    "needs_translation":"false",
-    "translation":"image",
-    "english":"image"
+  "error": {
+    "english": "error",
+    "translation": "erreur",
+    "needs_translation": "false"
   },
-  "background_task_disabled":{
-    "needs_translation":"false",
-    "translation":"tache en arriere-plan desactivee",
-    "english":"background task disabled"
+  "save": {
+    "english": "save",
+    "translation": "enregistrer",
+    "needs_translation": "false"
   },
-  "save":{
-    "needs_translation":"false",
-    "translation":"enregistrer",
-    "english":"save"
+  "ethos": {
+    "english": "ethos",
+    "translation": "ethos",
+    "needs_translation": "false"
   },
-  "version":{
-    "needs_translation":"false",
-    "translation":"version",
-    "english":"version"
+  "version": {
+    "english": "version",
+    "translation": "version",
+    "needs_translation": "false"
   },
-  "bg_task_disabled":{
-    "needs_translation":"false",
-    "translation":"tache AR plan desactivee",
-    "english":"bg task disabled"
+  "bg_task_disabled": {
+    "english": "bg task disabled",
+    "translation": "tache AR plan desactivee",
+    "needs_translation": "false"
   },
-  "no_link":{
-    "needs_translation":"false",
-    "translation":"aucun lien",
-    "english":"no link"
+  "no_link": {
+    "english": "no link",
+    "translation": "aucun lien",
+    "needs_translation": "false"
   },
-  "reload":{
-    "needs_translation":"false",
-    "translation":"recharger",
-    "english":"reload"
+  "background_task_disabled": {
+    "english": "background task disabled",
+    "translation": "tache en arriere-plan desactivee",
+    "needs_translation": "false"
   }
 }

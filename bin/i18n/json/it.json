@@ -1,47 +1,47 @@
 {
-  "ethos":{
-    "needs_translation":"false",
-    "translation":"ethos",
-    "english":"ethos"
+  "reload": {
+    "english": "reload",
+    "translation": "ricarica",
+    "needs_translation": "false"
   },
-  "error":{
-    "needs_translation":"false",
-    "translation":"errore",
-    "english":"error"
+  "image": {
+    "english": "image",
+    "translation": "immagine",
+    "needs_translation": "false"
   },
-  "image":{
-    "needs_translation":"false",
-    "translation":"immagine",
-    "english":"image"
+  "error": {
+    "english": "error",
+    "translation": "errore",
+    "needs_translation": "false"
   },
-  "background_task_disabled":{
-    "needs_translation":"false",
-    "translation":"background task disabilitato",
-    "english":"background task disabled"
+  "save": {
+    "english": "save",
+    "translation": "salva",
+    "needs_translation": "false"
   },
-  "save":{
-    "needs_translation":"false",
-    "translation":"salva",
-    "english":"save"
+  "ethos": {
+    "english": "ethos",
+    "translation": "ethos",
+    "needs_translation": "false"
   },
-  "version":{
-    "needs_translation":"false",
-    "translation":"versione",
-    "english":"version"
+  "version": {
+    "english": "version",
+    "translation": "versione",
+    "needs_translation": "false"
   },
-  "bg_task_disabled":{
-    "needs_translation":"false",
-    "translation":"bg task disabilitato",
-    "english":"bg task disabled"
+  "bg_task_disabled": {
+    "english": "bg task disabled",
+    "translation": "bg task disabilitato",
+    "needs_translation": "false"
   },
-  "no_link":{
-    "needs_translation":"false",
-    "translation":"no link",
-    "english":"no link"
+  "no_link": {
+    "english": "no link",
+    "translation": "no link",
+    "needs_translation": "false"
   },
-  "reload":{
-    "needs_translation":"false",
-    "translation":"ricarica",
-    "english":"reload"
+  "background_task_disabled": {
+    "english": "background task disabled",
+    "translation": "background task disabilitato",
+    "needs_translation": "false"
   }
 }
