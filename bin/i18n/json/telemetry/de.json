@@ -1,64 +1,79 @@
 {
   "sensors":{
-    "adj_func":{
-      "english":"Adj (Function)",
-      "translation":"Adj (Funktion)"
-    },
-    "current":{
-      "english":"Current",
-      "translation":"Strom"
-    },
-    "headspeed":{
-      "english":"Headspeed",
-      "translation":"Drehzahl"
-    },
-    "rate_profile":{
-      "english":"Rate Profile",
-      "translation":"Rate-Profil"
-    },
-    "mcu_temp":{
-      "english":"MCU Temperature",
-      "translation":"MCU Temperatur"
-    },
-    "fuel":{
-      "english":"Charge Level",
-      "translation":"Kraftstoffstand"
-    },
-    "adj_val":{
-      "english":"Adj (Value)",
-      "translation":"Adj (Wert)"
-    },
-    "consumption":{
-      "english":"Consumption",
-      "translation":"Verbrauch"
-    },
-    "voltage":{
-      "english":"Voltage",
-      "translation":"Spannung"
-    },
     "rssi":{
-      "english":"RSSI",
-      "translation":"RSSI"
+      "needs_translation":"false",
+      "translation":"RSSI",
+      "english":"RSSI"
     },
     "pid_profile":{
-      "english":"PID Profile",
-      "translation":"PID-Profil"
+      "needs_translation":"false",
+      "translation":"PID-Profil",
+      "english":"PID Profile"
     },
-    "arming_flags":{
-      "english":"Arming Flags",
-      "translation":"Arming-Flags"
+    "fuel":{
+      "needs_translation":"false",
+      "translation":"Kraftstoffstand",
+      "english":"Charge Level"
+    },
+    "headspeed":{
+      "needs_translation":"false",
+      "translation":"Drehzahl",
+      "english":"Headspeed"
+    },
+    "adj_func":{
+      "needs_translation":"false",
+      "translation":"Adj (Funktion)",
+      "english":"Adj (Function)"
     },
     "throttle_pct":{
-      "english":"Throttle %",
-      "translation":"Gas %"
+      "needs_translation":"false",
+      "translation":"Gas %",
+      "english":"Throttle %"
+    },
+    "current":{
+      "needs_translation":"false",
+      "translation":"Strom",
+      "english":"Current"
+    },
+    "consumption":{
+      "needs_translation":"false",
+      "translation":"Verbrauch",
+      "english":"Consumption"
     },
     "esc_temp":{
-      "english":"ESC Temperature",
-      "translation":"ESC Temperatur"
+      "needs_translation":"false",
+      "translation":"ESC Temperatur",
+      "english":"ESC Temperature"
+    },
+    "rate_profile":{
+      "needs_translation":"false",
+      "translation":"Rate-Profil",
+      "english":"Rate Profile"
+    },
+    "mcu_temp":{
+      "needs_translation":"false",
+      "translation":"MCU Temperatur",
+      "english":"MCU Temperature"
+    },
+    "arming_flags":{
+      "needs_translation":"false",
+      "translation":"Arming-Flags",
+      "english":"Arming Flags"
     },
     "governor":{
-      "english":"Governor State",
-      "translation":"Governor Status"
+      "needs_translation":"false",
+      "translation":"Governor Status",
+      "english":"Governor State"
+    },
+    "adj_val":{
+      "needs_translation":"false",
+      "translation":"Adj (Wert)",
+      "english":"Adj (Value)"
+    },
+    "voltage":{
+      "needs_translation":"false",
+      "translation":"Spannung",
+      "english":"Voltage"
     }
   }
 }

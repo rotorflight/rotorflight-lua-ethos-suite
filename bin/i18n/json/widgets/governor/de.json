@@ -1,50 +1,62 @@
 {
-  "SPOOLUP":{
-    "english":"SPOOLUP",
-    "translation":"HOCHLAUF"
-  },
-  "DISARMED":{
-    "english":"DISARMED",
-    "translation":"DISARMED"
-  },
-  "UNKNOWN":{
-    "english":"UNKNOWN",
-    "translation":"UNBEKANNT"
-  },
-  "RECOVERY":{
-    "english":"RECOVERY",
-    "translation":"ERHOLUNG"
-  },
-  "ACTIVE":{
-    "english":"ACTIVE",
-    "translation":"AKTIV"
-  },
-  "DISABLED":{
-    "english":"DISABLED",
-    "translation":"DEAKTIVIERT"
-  },
-  "THROFF":{
-    "english":"THR-OFF",
-    "translation":"GAS-AUS"
+  "OFF":{
+    "needs_translation":"false",
+    "translation":"AUS",
+    "english":"OFF"
   },
   "BAILOUT":{
-    "english":"BAILOUT",
-    "translation":"NOTAUS"
+    "needs_translation":"false",
+    "translation":"NOTAUS",
+    "english":"BAILOUT"
   },
-  "IDLE":{
-    "english":"IDLE",
-    "translation":"LEERLAUF"
-  },
-  "AUTOROT":{
-    "english":"AUTOROT",
-    "translation":"AUTOROTATION"
+  "DISABLED":{
+    "needs_translation":"false",
+    "translation":"DEAKTIVIERT",
+    "english":"DISABLED"
   },
   "LOSTHS":{
-    "english":"LOST-HS",
-    "translation":"KEIN SIGNAL"
+    "needs_translation":"false",
+    "translation":"KEIN SIGNAL",
+    "english":"LOST-HS"
   },
-  "OFF":{
-    "english":"OFF",
-    "translation":"AUS"
+  "ACTIVE":{
+    "needs_translation":"false",
+    "translation":"AKTIV",
+    "english":"ACTIVE"
+  },
+  "UNKNOWN":{
+    "needs_translation":"false",
+    "translation":"UNBEKANNT",
+    "english":"UNKNOWN"
+  },
+  "SPOOLUP":{
+    "needs_translation":"false",
+    "translation":"HOCHLAUF",
+    "english":"SPOOLUP"
+  },
+  "THROFF":{
+    "needs_translation":"false",
+    "translation":"GAS-AUS",
+    "english":"THR-OFF"
+  },
+  "RECOVERY":{
+    "needs_translation":"false",
+    "translation":"ERHOLUNG",
+    "english":"RECOVERY"
+  },
+  "AUTOROT":{
+    "needs_translation":"false",
+    "translation":"AUTOROTATION",
+    "english":"AUTOROT"
+  },
+  "DISARMED":{
+    "needs_translation":"false",
+    "translation":"DISARMED",
+    "english":"DISARMED"
+  },
+  "IDLE":{
+    "needs_translation":"false",
+    "translation":"LEERLAUF",
+    "english":"IDLE"
   }
 }

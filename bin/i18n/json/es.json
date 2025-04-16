@@ -1,38 +1,47 @@
 {
-  "version":{
-    "english":"version",
-    "translation":"MISSING TRANSLATION"
+  "ethos": {
+    "needs_translation": "false",
+    "translation": "ethos",
+    "english": "ethos"
   },
-  "reload":{
-    "english":"reload",
-    "translation":"MISSING TRANSLATION"
+  "error": {
+    "needs_translation": "false",
+    "translation": "error",
+    "english": "error"
   },
-  "background_task_disabled":{
-    "english":"background task disabled",
-    "translation":"MISSING TRANSLATION"
+  "image": {
+    "needs_translation": "false",
+    "translation": "imagen",
+    "english": "image"
   },
-  "no_link":{
-    "english":"no link",
-    "translation":"MISSING TRANSLATION"
+  "background_task_disabled": {
+    "needs_translation": "false",
+    "translation": "tarea en segundo plano deshabilitada",
+    "english": "background task disabled"
   },
-  "error":{
-    "english":"error",
-    "translation":"MISSING TRANSLATION"
+  "save": {
+    "needs_translation": "false",
+    "translation": "guardar",
+    "english": "save"
   },
-  "save":{
-    "english":"save",
-    "translation":"MISSING TRANSLATION"
+  "version": {
+    "needs_translation": "false",
+    "translation": "versión",
+    "english": "version"
   },
-  "image":{
-    "english":"image",
-    "translation":"MISSING TRANSLATION"
+  "bg_task_disabled": {
+    "needs_translation": "false",
+    "translation": "tarea en segundo plano deshabilitada",
+    "english": "bg task disabled"
   },
-  "ethos":{
-    "english":"ethos",
-    "translation":"MISSING TRANSLATION"
+  "no_link": {
+    "needs_translation": "false",
+    "translation": "sin enlace",
+    "english": "no link"
   },
-  "bg_task_disabled":{
-    "english":"bg task disabled",
-    "translation":"MISSING TRANSLATION"
+  "reload": {
+    "needs_translation": "false",
+    "translation": "recargar",
+    "english": "reload"
   }
 }

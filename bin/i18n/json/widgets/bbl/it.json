@@ -1,10 +1,32 @@
 {
-  "erase_dataflash":{
-    "english":"Erase dataflash",
-    "translation":"Cancella la memoria flash"
+  "display_used":{
+    "needs_translation":"false",
+    "translation":"Usato",
+    "english":"Used"
+  },
+  "display_outof":{
+    "needs_translation":"false",
+    "translation":"Usato/Totale",
+    "english":"Used/Total"
+  },
+  "display_free":{
+    "needs_translation":"false",
+    "translation":"Libero",
+    "english":"Free"
   },
   "erasing":{
-    "english":"Erasing...",
-    "translation":"Cancellazione in corso..."
+    "needs_translation":"false",
+    "translation":"Cancellazione in corso...",
+    "english":"Erasing..."
+  },
+  "display":{
+    "needs_translation":"false",
+    "translation":"Schermo",
+    "english":"Display"
+  },
+  "erase_dataflash":{
+    "needs_translation":"false",
+    "translation":"Cancella memoria flash",
+    "english":"Erase dataflash"
   }
 }

@@ -1,50 +1,62 @@
 {
-  "SPOOLUP":{
-    "english":"SPOOLUP",
-    "translation":"ARRANQUE"
-  },
-  "DISARMED":{
-    "english":"DISARMED",
-    "translation":"DESARMADO"
-  },
-  "UNKNOWN":{
-    "english":"UNKNOWN",
-    "translation":"DESCONOCIDO"
-  },
-  "RECOVERY":{
-    "english":"RECOVERY",
-    "translation":"RECUPERACION"
-  },
-  "ACTIVE":{
-    "english":"ACTIVE",
-    "translation":"ACTIVO"
-  },
-  "DISABLED":{
-    "english":"DISABLED",
-    "translation":"DESHABIL."
-  },
-  "THROFF":{
-    "english":"THR-OFF",
-    "translation":"ACEL-APAG"
+  "OFF":{
+    "needs_translation":"false",
+    "translation":"APAGADO",
+    "english":"OFF"
   },
   "BAILOUT":{
-    "english":"BAILOUT",
-    "translation":"SALVATAJE"
+    "needs_translation":"false",
+    "translation":"SALVATAJE",
+    "english":"BAILOUT"
   },
-  "IDLE":{
-    "english":"IDLE",
-    "translation":"RALENTI"
-  },
-  "AUTOROT":{
-    "english":"AUTOROT",
-    "translation":"AUTOROT"
+  "DISABLED":{
+    "needs_translation":"false",
+    "translation":"DESHABIL.",
+    "english":"DISABLED"
   },
   "LOSTHS":{
-    "english":"LOST-HS",
-    "translation":"PERDIDA-HS"
+    "needs_translation":"false",
+    "translation":"PERDIDA-HS",
+    "english":"LOST-HS"
   },
-  "OFF":{
-    "english":"OFF",
-    "translation":"APAGADO"
+  "ACTIVE":{
+    "needs_translation":"false",
+    "translation":"ACTIVO",
+    "english":"ACTIVE"
+  },
+  "UNKNOWN":{
+    "needs_translation":"false",
+    "translation":"DESCONOCIDO",
+    "english":"UNKNOWN"
+  },
+  "SPOOLUP":{
+    "needs_translation":"false",
+    "translation":"ARRANQUE",
+    "english":"SPOOLUP"
+  },
+  "THROFF":{
+    "needs_translation":"false",
+    "translation":"ACEL-APAG",
+    "english":"THR-OFF"
+  },
+  "RECOVERY":{
+    "needs_translation":"false",
+    "translation":"RECUPERACION",
+    "english":"RECOVERY"
+  },
+  "AUTOROT":{
+    "needs_translation":"false",
+    "translation":"AUTOROT",
+    "english":"AUTOROT"
+  },
+  "DISARMED":{
+    "needs_translation":"false",
+    "translation":"DESARMADO",
+    "english":"DISARMED"
+  },
+  "IDLE":{
+    "needs_translation":"false",
+    "translation":"RALENTI",
+    "english":"IDLE"
   }
 }
