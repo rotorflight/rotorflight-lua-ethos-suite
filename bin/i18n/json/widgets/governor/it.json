@@ -1,62 +1,62 @@
 {
-  "OFF":{
-    "needs_translation":"false",
-    "translation":"OFF",
-    "english":"OFF"
+  "UNKNOWN": {
+    "english": "UNKNOWN",
+    "translation": "SCONOSCIUTO",
+    "needs_translation": "false"
   },
-  "BAILOUT":{
-    "needs_translation":"false",
-    "translation":"SALVATAGGIO",
-    "english":"BAILOUT"
+  "IDLE": {
+    "english": "IDLE",
+    "translation": "MINIMO",
+    "needs_translation": "false"
   },
-  "DISABLED":{
-    "needs_translation":"false",
-    "translation":"DISABILITA",
-    "english":"DISABLED"
+  "DISARMED": {
+    "english": "DISARMED",
+    "translation": "DISARMATO",
+    "needs_translation": "false"
   },
-  "LOSTHS":{
-    "needs_translation":"false",
-    "translation":"HS-PERSO",
-    "english":"LOST-HS"
+  "OFF": {
+    "english": "OFF",
+    "translation": "OFF",
+    "needs_translation": "false"
   },
-  "ACTIVE":{
-    "needs_translation":"false",
-    "translation":"ATTIVO",
-    "english":"ACTIVE"
+  "SPOOLUP": {
+    "english": "SPOOLUP",
+    "translation": "SPOOLUP",
+    "needs_translation": "false"
   },
-  "UNKNOWN":{
-    "needs_translation":"false",
-    "translation":"SCONOSCIUTO",
-    "english":"UNKNOWN"
+  "ACTIVE": {
+    "english": "ACTIVE",
+    "translation": "ATTIVO",
+    "needs_translation": "false"
   },
-  "SPOOLUP":{
-    "needs_translation":"false",
-    "translation":"SPOOLUP",
-    "english":"SPOOLUP"
+  "RECOVERY": {
+    "english": "RECOVERY",
+    "translation": "RECUPERA",
+    "needs_translation": "false"
   },
-  "THROFF":{
-    "needs_translation":"false",
-    "translation":"THR-OFF",
-    "english":"THR-OFF"
+  "THROFF": {
+    "english": "THR-OFF",
+    "translation": "THR-OFF",
+    "needs_translation": "false"
   },
-  "RECOVERY":{
-    "needs_translation":"false",
-    "translation":"RECUPERA",
-    "english":"RECOVERY"
+  "LOSTHS": {
+    "english": "LOST-HS",
+    "translation": "HS-PERSO",
+    "needs_translation": "false"
   },
-  "AUTOROT":{
-    "needs_translation":"false",
-    "translation":"AUTOROTAZIONE",
-    "english":"AUTOROT"
+  "AUTOROT": {
+    "english": "AUTOROT",
+    "translation": "AUTOROTAZIONE",
+    "needs_translation": "false"
   },
-  "DISARMED":{
-    "needs_translation":"false",
-    "translation":"DISARMATO",
-    "english":"DISARMED"
+  "DISABLED": {
+    "english": "DISABLED",
+    "translation": "DISABILITA",
+    "needs_translation": "false"
   },
-  "IDLE":{
-    "needs_translation":"false",
-    "translation":"MINIMO",
-    "english":"IDLE"
+  "BAILOUT": {
+    "english": "BAILOUT",
+    "translation": "SALVATAGGIO",
+    "needs_translation": "false"
   }
 }

@@ -1,64 +1,79 @@
 {
-  "sensors":{
-    "esc_temp":{
-      "english":"ESC Temperature",
-      "translation":"ESC Temperature"
+  "sensors": {
+    "esc_temp": {
+      "english": "ESC Temperature",
+      "translation": "ESC Temperature",
+      "needs_translation": "false"
     },
-    "rate_profile":{
-      "english":"Rate Profile",
-      "translation":"Rate Profile"
+    "rate_profile": {
+      "english": "Rate Profile",
+      "translation": "Rate Profile",
+      "needs_translation": "false"
     },
-    "headspeed":{
-      "english":"Headspeed",
-      "translation":"Headspeed"
+    "headspeed": {
+      "english": "Headspeed",
+      "translation": "Headspeed",
+      "needs_translation": "false"
     },
-    "voltage":{
-      "english":"Voltage",
-      "translation":"Voltage"
+    "voltage": {
+      "english": "Voltage",
+      "translation": "Voltage",
+      "needs_translation": "false"
     },
-    "governor":{
-      "english":"Governor State",
-      "translation":"Governor State"
+    "governor": {
+      "english": "Governor State",
+      "translation": "Governor State",
+      "needs_translation": "false"
     },
-    "adj_func":{
-      "english":"Adj (Function)",
-      "translation":"Adj (Function)"
+    "adj_func": {
+      "english": "Adj (Function)",
+      "translation": "Adj (Function)",
+      "needs_translation": "false"
     },
-    "fuel":{
-      "english":"Charge Level",
-      "translation":"Charge Level"
+    "fuel": {
+      "english": "Charge Level",
+      "translation": "Charge Level",
+      "needs_translation": "false"
     },
-    "rssi":{
-      "english":"RSSI",
-      "translation":"RSSI"
+    "rssi": {
+      "english": "RSSI",
+      "translation": "RSSI",
+      "needs_translation": "false"
     },
-    "adj_val":{
-      "english":"Adj (Value)",
-      "translation":"Adj (Value)"
+    "adj_val": {
+      "english": "Adj (Value)",
+      "translation": "Adj (Value)",
+      "needs_translation": "false"
     },
-    "arming_flags":{
-      "english":"Arming Flags",
-      "translation":"Arming Flags"
+    "arming_flags": {
+      "english": "Arming Flags",
+      "translation": "Arming Flags",
+      "needs_translation": "false"
     },
-    "current":{
-      "english":"Current",
-      "translation":"Current"
+    "current": {
+      "english": "Current",
+      "translation": "Current",
+      "needs_translation": "false"
     },
-    "throttle_pct":{
-      "english":"Throttle %",
-      "translation":"Throttle %"
+    "throttle_pct": {
+      "english": "Throttle %",
+      "translation": "Throttle %",
+      "needs_translation": "false"
     },
-    "consumption":{
-      "english":"Consumption",
-      "translation":"Consumption"
+    "consumption": {
+      "english": "Consumption",
+      "translation": "Consumption",
+      "needs_translation": "false"
     },
-    "pid_profile":{
-      "english":"PID Profile",
-      "translation":"PID Profile"
+    "pid_profile": {
+      "english": "PID Profile",
+      "translation": "PID Profile",
+      "needs_translation": "false"
     },
-    "mcu_temp":{
-      "english":"MCU Temperature",
-      "translation":"MCU Temperature"
+    "mcu_temp": {
+      "english": "MCU Temperature",
+      "translation": "MCU Temperature",
+      "needs_translation": "false"
     }
   }
 }

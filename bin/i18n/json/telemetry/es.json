@@ -1,79 +1,79 @@
 {
-  "sensors":{
-    "rssi":{
-      "needs_translation":"false",
-      "translation":"RSSI",
-      "english":"RSSI"
+  "sensors": {
+    "esc_temp": {
+      "english": "ESC Temperature",
+      "translation": "Temperatura ESC",
+      "needs_translation": "false"
     },
-    "pid_profile":{
-      "needs_translation":"false",
-      "translation":"Perfil PID",
-      "english":"PID Profile"
+    "rate_profile": {
+      "english": "Rate Profile",
+      "translation": "Perfil Tasas",
+      "needs_translation": "false"
     },
-    "fuel":{
-      "needs_translation":"false",
-      "translation":"Nivel de Carga",
-      "english":"Charge Level"
+    "headspeed": {
+      "english": "Headspeed",
+      "translation": "Veloc. Rotor",
+      "needs_translation": "false"
     },
-    "headspeed":{
-      "needs_translation":"false",
-      "translation":"Veloc. Rotor",
-      "english":"Headspeed"
+    "voltage": {
+      "english": "Voltage",
+      "translation": "Voltaje",
+      "needs_translation": "false"
     },
-    "adj_func":{
-      "needs_translation":"false",
-      "translation":"Ajus.(Función)",
-      "english":"Adj (Function)"
+    "governor": {
+      "english": "Governor State",
+      "translation": "Estado Governor",
+      "needs_translation": "false"
     },
-    "throttle_pct":{
-      "needs_translation":"false",
-      "translation":"% Acelerador",
-      "english":"Throttle %"
+    "adj_func": {
+      "english": "Adj (Function)",
+      "translation": "Ajus.(Función)",
+      "needs_translation": "false"
     },
-    "current":{
-      "needs_translation":"false",
-      "translation":"Corriente",
-      "english":"Current"
+    "fuel": {
+      "english": "Charge Level",
+      "translation": "Nivel de Carga",
+      "needs_translation": "false"
     },
-    "consumption":{
-      "needs_translation":"false",
-      "translation":"Consumo",
-      "english":"Consumption"
+    "rssi": {
+      "english": "RSSI",
+      "translation": "RSSI",
+      "needs_translation": "false"
     },
-    "esc_temp":{
-      "needs_translation":"false",
-      "translation":"Temperatura ESC",
-      "english":"ESC Temperature"
+    "adj_val": {
+      "english": "Adj (Value)",
+      "translation": "Ajus.(Valor)",
+      "needs_translation": "false"
     },
-    "rate_profile":{
-      "needs_translation":"false",
-      "translation":"Perfil Tasas",
-      "english":"Rate Profile"
+    "arming_flags": {
+      "english": "Arming Flags",
+      "translation": "Banderas Armado",
+      "needs_translation": "false"
     },
-    "mcu_temp":{
-      "needs_translation":"false",
-      "translation":"Temperatura MCU",
-      "english":"MCU Temperature"
+    "current": {
+      "english": "Current",
+      "translation": "Corriente",
+      "needs_translation": "false"
     },
-    "arming_flags":{
-      "needs_translation":"false",
-      "translation":"Banderas Armado",
-      "english":"Arming Flags"
+    "throttle_pct": {
+      "english": "Throttle %",
+      "translation": "% Acelerador",
+      "needs_translation": "false"
     },
-    "governor":{
-      "needs_translation":"false",
-      "translation":"Estado Governor",
-      "english":"Governor State"
+    "consumption": {
+      "english": "Consumption",
+      "translation": "Consumo",
+      "needs_translation": "false"
     },
-    "adj_val":{
-      "needs_translation":"false",
-      "translation":"Ajus.(Valor)",
-      "english":"Adj (Value)"
+    "pid_profile": {
+      "english": "PID Profile",
+      "translation": "Perfil PID",
+      "needs_translation": "false"
     },
-    "voltage":{
-      "needs_translation":"false",
-      "translation":"Voltaje",
-      "english":"Voltage"
+    "mcu_temp": {
+      "english": "MCU Temperature",
+      "translation": "Temperatura MCU",
+      "needs_translation": "false"
     }
   }
 }

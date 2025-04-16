@@ -1,62 +1,62 @@
 {
-  "OFF":{
-    "needs_translation":"false",
-    "translation":"UIT",
-    "english":"OFF"
+  "UNKNOWN": {
+    "english": "UNKNOWN",
+    "translation": "ONBEKEND",
+    "needs_translation": "false"
   },
-  "BAILOUT":{
-    "needs_translation":"false",
-    "translation":"BAILOUT",
-    "english":"BAILOUT"
+  "IDLE": {
+    "english": "IDLE",
+    "translation": "IDLE",
+    "needs_translation": "false"
   },
-  "DISABLED":{
-    "needs_translation":"false",
-    "translation":"UITGESCHAKELD",
-    "english":"DISABLED"
+  "DISARMED": {
+    "english": "DISARMED",
+    "translation": "DISARMED",
+    "needs_translation": "false"
   },
-  "LOSTHS":{
-    "needs_translation":"false",
-    "translation":"LOST-HS",
-    "english":"LOST-HS"
+  "OFF": {
+    "english": "OFF",
+    "translation": "UIT",
+    "needs_translation": "false"
   },
-  "ACTIVE":{
-    "needs_translation":"false",
-    "translation":"ACTIEF",
-    "english":"ACTIVE"
+  "SPOOLUP": {
+    "english": "SPOOLUP",
+    "translation": "OPSTARTEN",
+    "needs_translation": "false"
   },
-  "UNKNOWN":{
-    "needs_translation":"false",
-    "translation":"ONBEKEND",
-    "english":"UNKNOWN"
+  "ACTIVE": {
+    "english": "ACTIVE",
+    "translation": "ACTIEF",
+    "needs_translation": "false"
   },
-  "SPOOLUP":{
-    "needs_translation":"false",
-    "translation":"OPSTARTEN",
-    "english":"SPOOLUP"
+  "RECOVERY": {
+    "english": "RECOVERY",
+    "translation": "HERSTELLEN",
+    "needs_translation": "false"
   },
-  "THROFF":{
-    "needs_translation":"false",
-    "translation":"THR-UIT",
-    "english":"THR-OFF"
+  "THROFF": {
+    "english": "THR-OFF",
+    "translation": "THR-UIT",
+    "needs_translation": "false"
   },
-  "RECOVERY":{
-    "needs_translation":"false",
-    "translation":"HERSTELLEN",
-    "english":"RECOVERY"
+  "LOSTHS": {
+    "english": "LOST-HS",
+    "translation": "LOST-HS",
+    "needs_translation": "false"
   },
-  "AUTOROT":{
-    "needs_translation":"false",
-    "translation":"AUTOROT",
-    "english":"AUTOROT"
+  "AUTOROT": {
+    "english": "AUTOROT",
+    "translation": "AUTOROT",
+    "needs_translation": "false"
   },
-  "DISARMED":{
-    "needs_translation":"false",
-    "translation":"DISARMED",
-    "english":"DISARMED"
+  "DISABLED": {
+    "english": "DISABLED",
+    "translation": "UITGESCHAKELD",
+    "needs_translation": "false"
   },
-  "IDLE":{
-    "needs_translation":"false",
-    "translation":"IDLE",
-    "english":"IDLE"
+  "BAILOUT": {
+    "english": "BAILOUT",
+    "translation": "BAILOUT",
+    "needs_translation": "false"
   }
 }
