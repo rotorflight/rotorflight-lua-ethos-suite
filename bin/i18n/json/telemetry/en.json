@@ -46,8 +46,8 @@
       "needs_translation": "false"
     },
     "arming_flags": {
-      "english": "Arming Disable",
-      "translation": "Arming Disable",
+      "english": "Arming Flags",
+      "translation": "Arming Flags",
       "needs_translation": "false"
     },
     "current": {
@@ -73,6 +73,11 @@
     "mcu_temp": {
       "english": "MCU Temperature",
       "translation": "MCU Temperature",
+      "needs_translation": "false"
+    },
+    "armdisableflags": {
+      "english": "Arming Disable",
+      "translation": "Arming Disable",
       "needs_translation": "false"
     }
   }

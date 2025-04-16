@@ -1091,7 +1091,8 @@ return {
       ["throttle_pct"] = "% Acelerador",
       ["consumption"] = "Consumo",
       ["pid_profile"] = "Perfil PID",
-      ["mcu_temp"] = "Temperatura MCU"
+      ["mcu_temp"] = "Temperatura MCU",
+      ["armdisableflags"] = "Desactivar Armado"
     }
   },
   ["widgets"] = {
