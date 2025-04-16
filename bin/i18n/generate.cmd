@@ -1,3 +1,3 @@
 python update-missing-translations.py
-lua54 json-to-lua.lua
+python json-to-lua.py
 lua54 i18n-checker.lua
