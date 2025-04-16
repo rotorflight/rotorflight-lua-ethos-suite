@@ -338,22 +338,22 @@ local sensorTable = {
         crsfLegacy = {nil}
     },
 
-        -- Arm Disable Flags
-        armdisableflags = {
-            name = rfsuite.i18n.get("telemetry.sensors.arming_disableflags"),
-            mandatory = true,
-            set_telemetry_sensors = 91,
-            sim = {
-                {uid=0x5015, unit=nil, dec=nil, value=function() return rfsuite.utils.simSensors('armdisableflags') end, min = 0, max = 65536},
-            },
-            sport = {
-                {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5123},
-            },
-            crsf = {
-                {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1203}
-            },
-            crsfLegacy = {nil}
-        }
+    -- Arm Disable Flags
+    armdisableflags = {
+        name = rfsuite.i18n.get("telemetry.sensors.armdisableflags"),
+        mandatory = true,
+        set_telemetry_sensors = 91,
+        sim = {
+            {uid=0x5015, unit=nil, dec=nil, value=function() return rfsuite.utils.simSensors('armdisableflags') end, min = 0, max = 65536},
+        },
+        sport = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5123},
+        },
+        crsf = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1203}
+        },
+        crsfLegacy = {nil}
+    }
 }
 
 --[[

@@ -143,6 +143,11 @@ local function wakeupUI()
         return
     end
 
+    if not rfsuite.tasks.msp.mspQueue:isProcessed() then
+        summary = {}
+        return
+    end
+
     LCD_W, LCD_H = lcd.getWindowSize()
     if rfsuite.tasks.telemetry.getSensorSource("armflags") then
         local armValue = rfsuite.tasks.telemetry.getSensorSource("armflags"):value()

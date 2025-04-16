@@ -1086,12 +1086,13 @@ return {
       ["fuel"] = "Charge Level",
       ["rssi"] = "RSSI",
       ["adj_val"] = "Adj (Value)",
-      ["arming_flags"] = "Arming Disable",
+      ["arming_flags"] = "Arming Flags",
       ["current"] = "Current",
       ["throttle_pct"] = "Throttle %",
       ["consumption"] = "Consumption",
       ["pid_profile"] = "PID Profile",
-      ["mcu_temp"] = "MCU Temperature"
+      ["mcu_temp"] = "MCU Temperature",
+      ["armdisableflags"] = "Arming Disable"
     }
   },
   ["widgets"] = {

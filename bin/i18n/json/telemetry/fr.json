@@ -46,7 +46,7 @@
       "needs_translation": "false"
     },
     "arming_flags": {
-      "english": "Arming Disable",
+      "english": "Arming Flags",
       "translation": "Drapeaux Armements",
       "needs_translation": "false"
     },
@@ -73,6 +73,11 @@
     "mcu_temp": {
       "english": "MCU Temperature",
       "translation": "Temperature Micro Processeur",
+      "needs_translation": "false"
+    },
+    "armdisableflags": {
+      "english": "Arming Disable",
+      "translation": "Désactivation Armement",
       "needs_translation": "false"
     }
   }

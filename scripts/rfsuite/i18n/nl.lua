@@ -1091,7 +1091,8 @@ return {
       ["throttle_pct"] = "Throttle %",
       ["consumption"] = "Verbruik",
       ["pid_profile"] = "PID Profiel",
-      ["mcu_temp"] = "MCU Temperatuur"
+      ["mcu_temp"] = "MCU Temperatuur",
+      ["armdisableflags"] = "Arming Disable"
     }
   },
   ["widgets"] = {

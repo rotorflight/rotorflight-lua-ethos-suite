@@ -1091,7 +1091,8 @@ return {
       ["throttle_pct"] = "Gas %",
       ["consumption"] = "Verbrauch",
       ["pid_profile"] = "PID-Profil",
-      ["mcu_temp"] = "MCU Temperatur"
+      ["mcu_temp"] = "MCU Temperatur",
+      ["armdisableflags"] = "Arming-Disable"
     }
   },
   ["widgets"] = {

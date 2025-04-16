@@ -1091,7 +1091,8 @@ return {
       ["throttle_pct"] = "Pourcentage de Gaz",
       ["consumption"] = "Consommation",
       ["pid_profile"] = "Profile de PID",
-      ["mcu_temp"] = "Temperature Micro Processeur"
+      ["mcu_temp"] = "Temperature Micro Processeur",
+      ["armdisableflags"] = "Désactivation Armement"
     }
   },
   ["widgets"] = {
