@@ -302,6 +302,7 @@ local fuelSOURCE
 local govSOURCE
 local adjSOURCE
 local armflagsSOURCE
+local armdisableflagsSOURCE
 local adjVALUE
 local mahSOURCE
 local telemetrySOURCE
@@ -759,6 +760,7 @@ local function getSensors()
         rssiSOURCE = rfsuite.tasks.telemetry.getSensorSource("rssi") 
         govSOURCE = rfsuite.tasks.telemetry.getSensorSource("governor")
         armflagsSOURCE = rfsuite.tasks.telemetry.getSensorSource("armflags")
+        armdisableflagsSOURCE = rfsuite.tasks.telemetry.getSensorSource("armdisableflags")
 
         if rfsuite.tasks.telemetry.getSensorProtocol() == 'crsf' then
 
@@ -3448,6 +3450,19 @@ function status.paint(widget)
                 str = status.sensors.fm
                 sensorTITLE = theme.title_fm
             end
+
+            if armdisableflagsSOURCE then
+                local avalue = armdisableflagsSOURCE:value()
+                if avalue ~= nil then
+                    avalue = math.floor(avalue)
+                    local astring = rfsuite.app.utils.armingDisableFlagsToString(avalue)
+                    if astring ~= "OK" then
+                        str = astring
+                        lcd.invalidate()
+                    end
+                end
+            end
+
             sensorVALUE = str
 
             if status.titleParam ~= true then sensorTITLE = "" end

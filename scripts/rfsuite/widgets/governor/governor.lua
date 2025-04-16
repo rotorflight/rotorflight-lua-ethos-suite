@@ -85,6 +85,7 @@ local function getSensors()
 
     local govSOURCE = rfsuite.tasks.telemetry.getSensorSource("governor")
     local armflagsSOURCE = rfsuite.tasks.telemetry.getSensorSource("armflags")
+    local armdisableflagsSOURCE = rfsuite.tasks.telemetry.getSensorSource("armdisableflags")
 
     if rfsuite.tasks.telemetry.getSensorProtocol() == 'lcrsf' then
         govmode = govSOURCE and govSOURCE:stringValue() or ""
@@ -96,6 +97,18 @@ local function getSensors()
                 end
         end
         govmode = governorMap[govId] or (govId and rfsuite.i18n.get("widgets.governor.UNKNOWN") or "")
+    end
+
+    if armdisableflagsSOURCE then
+        local avalue = armdisableflagsSOURCE:value()
+        if avalue ~= nil then
+            avalue = math.floor(avalue)
+            local astring = rfsuite.app.utils.armingDisableFlagsToString(avalue)
+            if astring ~= "OK" then
+                govmode = astring
+                lcd.invalidate()
+            end
+        end
     end
 
 
