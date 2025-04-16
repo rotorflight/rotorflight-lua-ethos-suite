@@ -1,3 +1,15 @@
+# 2.2.0-RC3
+
+Release candidate version for 2.2.0-RC3 Rotorflight
+
+- Various minor bug fixes
+- Improved i18n functions
+- added blackbox status widget
+
+# 2.2.0-RC2
+
+No changes as not released with firmware
+
 # 2.2.0-RC1
 
 Release candidate version for 2.2.0-RC1 Rotorflight
