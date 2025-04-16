@@ -29,11 +29,13 @@ Release candidate version for 2.2.0-RC1 Rotorflight
         - Governor
         - Craftname
         - Craftimage
+        - BBL Status
     - i18n support
         - English
         - German
         - Dutch
         - Spanish
+        - Italian
     - Additional Radio support
         - Kavan V20
         - X18RS
