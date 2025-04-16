@@ -32,6 +32,11 @@ local config = arg[1]
 --- @param flags number The bitfield representing arming disable flags.
 --- @return string A comma-separated string of human-readable flag descriptions, or "OK" if no flags are set.
 function utils.armingDisableFlagsToString(flags)
+
+    if flags == nil then
+        return rfsuite.i18n.get("app.modules.status.ok") 
+    end
+
     local t = ""
     for i = 0, 25 do
         if (flags & (1 << i)) ~= 0 then
