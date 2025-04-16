@@ -34,6 +34,7 @@ local config = {}
 -- Helper to display a centered message using the largest possible font
 local function drawCenteredMessage(msg)
     local w, h = lcd.getWindowSize()
+
     local isDarkMode = lcd.darkMode()
     local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL}
 
@@ -52,7 +53,7 @@ local function drawCenteredMessage(msg)
 
     lcd.font(bestFont)
     lcd.color(isDarkMode and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90))
-    lcd.drawText((w - bestW) / 2, (h - bestH) / 2, msg)
+    lcd.drawText((w - bestW) / 2, ((h - bestH ) / 2) + 5, msg)
 end
 
 -- Show critical version error
@@ -144,7 +145,10 @@ local function wakeupUI()
 
     LCD_W, LCD_H = lcd.getWindowSize()
     if rfsuite.tasks.telemetry.getSensorSource("armflags") then
-        local armValue = math.floor(rfsuite.tasks.telemetry.getSensorSource("armflags"):value())
+        local armValue = rfsuite.tasks.telemetry.getSensorSource("armflags"):value()
+        if armValue ~= nil then
+            armValue = math.floor(armValue)
+        end
         local now = os.clock()
 
         if armValue == 0 or armValue == 2 or (now - lastSummaryTime >= 30) then
