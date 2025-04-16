@@ -1,32 +1,9 @@
---[[
- * Copyright (C) Rotorflight Project
- *
- * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 3 as
- * published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
-
- * This script scans the en.json files and then updates all other
- * language files to ensure we have no missing keys.
- * 
- * the updated file will be written back to the original location.
- * the translation will be set to "MISSING TRANSLATION" for any missing keys. 
-
-]]
-
 local json = dofile("lib/dkjson.lua")
 
 local jsonRoot = "json"
 local isWindows = package.config:sub(1,1) == "\\"
 
--- Helper: list files/dirs in a folder
+-- List directory contents
 local function listDir(path)
     local cmd = isWindows
         and ('dir /b "%s" 2>nul'):format(path)
@@ -40,7 +17,7 @@ local function listDir(path)
     return result
 end
 
--- Helper: check if a path is a directory
+-- Check if path is a directory
 local function isDir(path)
     local cmd = isWindows
         and ('if exist "%s\\" (echo d)'):format(path)
@@ -51,7 +28,7 @@ local function isDir(path)
     return result:match("d")
 end
 
--- Recursively collect directories under a given path
+-- Recursively gather subdirectories
 local function collectDirs(path, rel, dirs)
     rel = rel or ""
     dirs = dirs or {}
@@ -67,29 +44,48 @@ local function collectDirs(path, rel, dirs)
     return dirs
 end
 
--- Merge defaults from the reference table (ref) into target.
--- For leaf nodes (objects with "english" and "translation" keys),
--- if missing in target, insert with the english text and "MISSING TRANSLATION" as the translation.
-local function mergeDefaults(ref, target)
-    for k, v in pairs(ref) do
-        if type(v) == "table" and v.english ~= nil and v.translation ~= nil then
-            if target[k] == nil then
-                target[k] = { english = v.english, translation = v.english, needs_translation = "true" }
-            end
-        elseif type(v) == "table" then
-            if type(target[k]) ~= "table" then
-                target[k] = {}
-            end
-            mergeDefaults(v, target[k])
-        else
-            if target[k] == nil then
-                target[k] = v
-            end
-        end
+-- Get sorted key order from table
+local function getKeyOrder(tbl)
+    local keys = {}
+    for k in pairs(tbl) do
+        table.insert(keys, k)
     end
+    table.sort(keys) -- Remove if you prefer raw insertion order
+    return keys
 end
 
--- Process a single directory: if an en.json exists, update all other *.json files in that directory.
+-- Rebuild translation table using ref structure and key order
+local function buildOrderedTranslation(ref, target, order)
+    local new = {}
+    order = order or getKeyOrder(ref) -- 👈 ensure it's never nil
+    for _, key in ipairs(order) do
+        local refVal = ref[key]
+        local tgtVal = target and target[key]
+        if type(refVal) == "table" and refVal.english ~= nil and refVal.translation ~= nil then
+            if type(tgtVal) == "table" and tgtVal.translation then
+                new[key] = {
+                    english = refVal.english,
+                    translation = tgtVal.translation,
+                    needs_translation = tgtVal.needs_translation or "false"
+                }
+            else
+                new[key] = {
+                    english = refVal.english,
+                    translation = refVal.english,
+                    needs_translation = "true"
+                }
+            end
+        elseif type(refVal) == "table" then
+            local subOrder = getKeyOrder(refVal)
+            new[key] = buildOrderedTranslation(refVal, tgtVal or {}, subOrder)
+        else
+            new[key] = refVal
+        end
+    end
+    return new
+end
+
+-- Process a translation directory
 local function processDirectory(dirPath)
     local files = listDir(dirPath)
     local enFilePath = nil
@@ -100,23 +96,19 @@ local function processDirectory(dirPath)
         end
     end
 
-    if not enFilePath then
-        -- Nothing to do if there's no English reference file.
-        return
-    end
+    if not enFilePath then return end
 
-    -- Load the reference English JSON file.
     local f = io.open(enFilePath, "r")
     if not f then return end
     local enContent = f:read("*a")
     f:close()
-    local enData = json.decode(enContent)
+
+    local enData, _, enOrder = json.decode(enContent, 1, nil)
     if not enData then
         print("Failed to decode", enFilePath)
         return
     end
 
-    -- Update each non-English JSON file in this directory.
     for _, filename in ipairs(files) do
         if filename:match("^(%w+)%.json$") and filename ~= "en.json" then
             local filePath = dirPath .. "/" .. filename
@@ -125,11 +117,15 @@ local function processDirectory(dirPath)
                 local content = f2:read("*a")
                 f2:close()
                 local data = json.decode(content) or {}
-                mergeDefaults(enData, data)
-                -- Write back the updated JSON.
+
+                local rebuilt = buildOrderedTranslation(enData, data, enOrder)
+
                 local outFile = io.open(filePath, "w")
                 if outFile then
-                    outFile:write(json.encode(data, { indent = true }))
+                    outFile:write(json.encode(rebuilt, {
+                        keyorder = enOrder,
+                        indent = true,
+                    }))
                     outFile:close()
                     print("Updated:", filePath)
                 else
@@ -140,9 +136,8 @@ local function processDirectory(dirPath)
     end
 end
 
--- Main: recursively process every directory in the JSON tree
+-- Run the updater
 local function updateMissingTranslations()
-    -- Process the root directory as well.
     processDirectory(jsonRoot)
     local dirs = collectDirs(jsonRoot)
     for _, dir in ipairs(dirs) do

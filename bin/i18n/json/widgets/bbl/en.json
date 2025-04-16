@@ -7,4 +7,20 @@
     "english":"Erasing...",
     "translation":"Erasing..."
   },
+  "display":{
+    "english":"Display",
+    "translation":"Display"
+  },
+  "display_free":{
+    "english":"Free",
+    "translation":"Free"
+  },  
+  "display_used":{
+    "english":"Used",
+    "translation":"Used"
+  }, 
+  "display_outof":{
+    "english":"Used/Total",
+    "translation":"Used/Total"
+  },   
 }

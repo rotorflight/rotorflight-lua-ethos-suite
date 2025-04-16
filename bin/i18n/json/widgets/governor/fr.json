@@ -1,50 +1,62 @@
 {
-  "SPOOLUP":{
-    "english":"SPOOLUP",
-    "translation":"ACCELERATION"
-  },
-  "DISARMED":{
-    "english":"DISARMED",
-    "translation":"DESARMER"
-  },
-  "UNKNOWN":{
-    "english":"UNKNOWN",
-    "translation":"INCONNU"
-  },
-  "RECOVERY":{
-    "english":"RECOVERY",
-    "translation":"RECUPERATION"
-  },
-  "ACTIVE":{
-    "english":"ACTIVE",
-    "translation":"ACTIF"
-  },
-  "DISABLED":{
-    "english":"DISABLED",
-    "translation":"DESACTIVER"
-  },
-  "THROFF":{
-    "english":"THR-OFF",
-    "translation":"COUPURE MOTEUR"
+  "OFF":{
+    "needs_translation":"false",
+    "translation":"ARRET",
+    "english":"OFF"
   },
   "BAILOUT":{
-    "english":"BAILOUT",
-    "translation":"SAUVETAGE"
+    "needs_translation":"false",
+    "translation":"SAUVETAGE",
+    "english":"BAILOUT"
   },
-  "IDLE":{
-    "english":"IDLE",
-    "translation":"RALENTI"
-  },
-  "AUTOROT":{
-    "english":"AUTOROT",
-    "translation":"AUTOROTATION"
+  "DISABLED":{
+    "needs_translation":"false",
+    "translation":"DESACTIVER",
+    "english":"DISABLED"
   },
   "LOSTHS":{
-    "english":"LOST-HS",
-    "translation":"PERTE DES TOURS"
+    "needs_translation":"false",
+    "translation":"PERTE DES TOURS",
+    "english":"LOST-HS"
   },
-  "OFF":{
-    "english":"OFF",
-    "translation":"ARRET"
+  "ACTIVE":{
+    "needs_translation":"false",
+    "translation":"ACTIF",
+    "english":"ACTIVE"
+  },
+  "UNKNOWN":{
+    "needs_translation":"false",
+    "translation":"INCONNU",
+    "english":"UNKNOWN"
+  },
+  "SPOOLUP":{
+    "needs_translation":"false",
+    "translation":"ACCELERATION",
+    "english":"SPOOLUP"
+  },
+  "THROFF":{
+    "needs_translation":"false",
+    "translation":"COUPURE MOTEUR",
+    "english":"THR-OFF"
+  },
+  "RECOVERY":{
+    "needs_translation":"false",
+    "translation":"RECUPERATION",
+    "english":"RECOVERY"
+  },
+  "AUTOROT":{
+    "needs_translation":"false",
+    "translation":"AUTOROTATION",
+    "english":"AUTOROT"
+  },
+  "DISARMED":{
+    "needs_translation":"false",
+    "translation":"DESARMER",
+    "english":"DISARMED"
+  },
+  "IDLE":{
+    "needs_translation":"false",
+    "translation":"RALENTI",
+    "english":"IDLE"
   }
 }

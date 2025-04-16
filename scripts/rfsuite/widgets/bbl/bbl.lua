@@ -16,7 +16,6 @@
 ]] --
 local rf2bbl = {}
 
-local config = {}
 local LCD_W, LCD_H = lcd.getWindowSize()
 local wakeupSchedulerUI = os.clock()
 
@@ -25,91 +24,113 @@ local init = true
 
 local progress = nil
 local progressCounter = 0
+local eraseDataflashGo = false
 
 local summary = {}
+local lastSummaryTime = 0
 
--- error function
-local function screenError(msg)
+local config = {}
+
+-- Helper to display a centered message using the largest possible font
+local function drawCenteredMessage(msg)
     local w, h = lcd.getWindowSize()
     local isDarkMode = lcd.darkMode()
-
-    -- Available font sizes in order from smallest to largest
     local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL}
 
-    -- Determine the maximum width and height with 10% padding
     local maxW, maxH = w * 0.9, h * 0.9
-    local bestFont = FONT_XXS
-    local bestW, bestH = 0, 0
+    local bestFont, bestW, bestH = FONT_XXS, 0, 0
 
-    -- Loop through font sizes and find the largest one that fits
     for _, font in ipairs(fonts) do
         lcd.font(font)
-        local tsizeW, tsizeH = lcd.getTextSize(msg)
-        
-        if tsizeW <= maxW and tsizeH <= maxH then
-            bestFont = font
-            bestW, bestH = tsizeW, tsizeH
+        local tW, tH = lcd.getTextSize(msg)
+        if tW <= maxW and tH <= maxH then
+            bestFont, bestW, bestH = font, tW, tH
         else
-            break  -- Stop checking larger fonts once one exceeds limits
+            break
         end
     end
 
-    -- Set the optimal font
     lcd.font(bestFont)
-
-    -- Set text color based on dark mode
-    local textColor = isDarkMode and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90)
-    lcd.color(textColor)
-
-    -- Center the text on the screen
-    local x = (w - bestW) / 2
-    local y = (h - bestH) / 2
-    lcd.drawText(x, y, msg)
+    lcd.color(isDarkMode and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90))
+    lcd.drawText((w - bestW) / 2, (h - bestH) / 2, msg)
 end
 
+-- Show critical version error
+local function screenError(msg)
+    drawCenteredMessage(msg)
+end
+
+-- Request summary from dataflash
 local function getDataflashSummary()
     local message = {
-        command = 70, -- MSP_DATAFLASH_SUMMARY
-        processReply = function(self, buf)
-
-            local flags = rfsuite.tasks.msp.mspHelper.readU8(buf)
+        command = 70,
+        processReply = function(_, buf)
+            local helper = rfsuite.tasks.msp.mspHelper
+            local flags = helper.readU8(buf)
             summary.ready = (flags & 1) ~= 0
             summary.supported = (flags & 2) ~= 0
-            summary.sectors = rfsuite.tasks.msp.mspHelper.readU32(buf)
-            summary.totalSize = rfsuite.tasks.msp.mspHelper.readU32(buf)
-            summary.usedSize = rfsuite.tasks.msp.mspHelper.readU32(buf)
-
+            summary.sectors = helper.readU32(buf)
+            summary.totalSize = helper.readU32(buf)
+            summary.usedSize = helper.readU32(buf)
         end,
         simulatorResponse = {3, 1, 0, 0, 0, 0, 4, 0, 0, 0, 3, 0, 0}
     }
     rfsuite.tasks.msp.mspQueue:add(message)
 end
 
+
+-- Ask user for confirmation before erasing dataflash
+local function eraseDataflashAsk()
+
+    local buttons = {{
+        label = rfsuite.i18n.get("app.btn_ok"),
+        action = function()
+
+            -- we push this to the background task to do its job
+            eraseDataflashGo = true
+            return true
+        end
+    }, {
+        label = rfsuite.i18n.get("app.btn_cancel"),
+        action = function()
+            return true
+        end
+    }}
+
+    form.openDialog({
+        width = nil,
+        title =  rfsuite.i18n.get("widgets.bbl.erase_dataflash"),
+        message = rfsuite.i18n.get("widgets.bbl.erase_dataflash") .. "?",
+        buttons = buttons,
+        wakeup = function()
+        end,
+        paint = function()
+        end,
+        options = TEXT_LEFT
+    })
+
+end    
+
+-- Trigger erase command
 local function eraseDataflash()
-
     isErase = true
-
     progress = form.openProgressDialog(rfsuite.i18n.get("app.msg_saving"), rfsuite.i18n.get("app.msg_saving_to_fbl"))
     progress:value(0)
     progress:closeAllowed(false)
     progressCounter = 0
 
-
     local message = {
-        command = 72, -- MSP_DATAFLASH_ERASE
-        processReply = function(self, buf)
+        command = 72,
+        processReply = function()
             summary = {}
             isErase = false
             getDataflashSummary()
-        end,
-        simulatorResponse = {}
+        end
     }
     rfsuite.tasks.msp.mspQueue:add(message)
 end
 
--- Wakeup UI function
-local lastSummaryTime = 0  -- Time when getDataflashSummary was last called
-
+-- Periodically refresh telemetry info
 local function wakeupUI()
     if not rfsuite or not rfsuite.tasks.active() then
         summary = {}
@@ -117,46 +138,54 @@ local function wakeupUI()
     end
 
     LCD_W, LCD_H = lcd.getWindowSize()
-    local armflagsSOURCE = rfsuite.tasks.telemetry.getSensorSource("armflags")
-    local armValue = armflagsSOURCE:value()
+    local armValue = rfsuite.tasks.telemetry.getSensorSource("armflags"):value()
     local now = os.clock()
 
-    if armValue == 0 or armValue == 2 then
+    if armValue == 0 or armValue == 2 or (now - lastSummaryTime >= 30) then
         getDataflashSummary()
         lastSummaryTime = now
-    else
-        if now - lastSummaryTime >= 30 then
-            getDataflashSummary()
-            lastSummaryTime = now
-        end
     end
 end
 
 local function getFreeDataflashSpace()
-    if not summary.supported then return rfsuite.i18n.get("app.modules.status.unsupported") end
+    if not summary.supported then
+        return rfsuite.i18n.get("app.modules.status.unsupported")
+    end
     local freeSpace = summary.totalSize - summary.usedSize
-    return string.format("%.1f " .. rfsuite.i18n.get("app.modules.status.megabyte"), freeSpace / (1024 * 1024))
-end
 
--- Create function
-function rf2bbl.create(widget)
+    local msg
 
-end
-
--- Paint function
-function rf2bbl.paint(widget)
-    local w = LCD_W or 0
-    local h = LCD_H or 0
-
-    if not rfsuite.utils.ethosVersionAtLeast() then
-        screenError(string.format(rfsuite.i18n.get('ethos') .. " < V%d.%d.%d", 
-            rfsuite.config.ethosVersion[1], 
-            rfsuite.config.ethosVersion[2], 
-            rfsuite.config.ethosVersion[3])
-        )
-        return
+    if config.display == 0 then
+        msg = string.format("%.1f/%.1f " .. rfsuite.i18n.get("app.modules.status.megabyte"),
+        summary.usedSize / (1024 * 1024),
+        summary.totalSize / (1024 * 1024))
+    elseif config.display == 1 then
+        msg = string.format("%.1f " .. rfsuite.i18n.get("app.modules.status.megabyte"), freeSpace / (1024 * 1024))
+    elseif config.display == 2 then 
+        msg = string.format("%.1f " .. rfsuite.i18n.get("app.modules.status.megabyte"), summary.usedSize / (1024 * 1024))
+    else    
+        msg = "Unknown"
     end
 
+    return msg
+end
+
+function rf2bbl.create(widget)
+    -- Stub: Initialize if needed
+end
+
+function rf2bbl.paint(widget)
+    local msg
+
+    if not rfsuite.utils.ethosVersionAtLeast() then
+        msg = string.format(rfsuite.i18n.get('ethos') .. " < V%d.%d.%d",
+            rfsuite.config.ethosVersion[1],
+            rfsuite.config.ethosVersion[2],
+            rfsuite.config.ethosVersion[3]
+        )
+        screenError(msg)
+        return
+    end
 
     if isErase then
         msg = rfsuite.i18n.get("widgets.bbl.erasing")
@@ -166,82 +195,63 @@ function rf2bbl.paint(widget)
         msg = rfsuite.i18n.get('app.msg_loading')
     end
 
-    local w, h = lcd.getWindowSize()
-    local isDarkMode = lcd.darkMode()
-
-    -- Available font sizes in order from smallest to largest
-    local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL}
-
-    -- Determine the maximum width and height with 10% padding
-    local maxW, maxH = w * 0.9, h * 0.9
-    local bestFont = FONT_XXS
-    local bestW, bestH = 0, 0
-
-    -- Loop through font sizes and find the largest one that fits
-    for _, font in ipairs(fonts) do
-        lcd.font(font)
-        local tsizeW, tsizeH = lcd.getTextSize(msg)
-        
-        if tsizeW <= maxW and tsizeH <= maxH then
-            bestFont = font
-            bestW, bestH = tsizeW, tsizeH
-        else
-            break  -- Stop checking larger fonts once one exceeds limits
-        end
-    end
-
-    -- Set the optimal font
-    lcd.font(bestFont)
-
-    -- Set text color based on dark mode
-    local textColor = isDarkMode and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90)
-    lcd.color(textColor)
-
-    -- Center the text on the screen
-    local x = (w - bestW) / 2
-    local y = (h - bestH) / 2
-    lcd.drawText(x, y, msg)
-
-
-
+    drawCenteredMessage(msg)
 end
 
--- Configure function
 function rf2bbl.configure(widget)
-    return widget
+    local spaceTable = {{rfsuite.i18n.get("widgets.bbl.display_outof"), 0}, {rfsuite.i18n.get("widgets.bbl.display_free"), 1},{rfsuite.i18n.get("widgets.bbl.display_used"), 2} }
+
+    line = form.addLine(rfsuite.i18n.get("widgets.bbl.display"))
+    form.addChoiceField(line, nil, spaceTable, function()
+        return config.display
+    end, function(newValue)
+        config.display = newValue
+    end)
 end
 
 function rf2bbl.menu(widget)
-	return {
-		{ rfsuite.i18n.get("widgets.bbl.erase_dataflash"), function() eraseDataflash() end},
-	}
+    return {
+        {rfsuite.i18n.get("widgets.bbl.erase_dataflash"), eraseDataflashAsk}
+    }
 end
 
--- Main wakeup function
+function rf2bbl.read(widget)
+    config.display = storage.read("mem1")
+    if config.display == nil then config.display = 0 end
+end
+
+-- Write function
+function rf2bbl.write(widget)
+    storage.write("mem1", config.display)
+end
+
 function rf2bbl.wakeup(widget)
+
+    -- update the display every 2 seconds
     local schedulerUI = 2
     local now = os.clock()
-
-    if lcd.isVisible() then
-        if ((now - wakeupSchedulerUI) >= schedulerUI) or init == true then
-            wakeupSchedulerUI = now
-                wakeupUI()
-                lcd.invalidate()
-                init = false
-        end
+    if lcd.isVisible() and ((now - wakeupSchedulerUI) >= schedulerUI or init) then
+        wakeupSchedulerUI = now
+        wakeupUI()
+        lcd.invalidate()
+        init = false
     end
 
+    -- run the erase process if requested
+    if eraseDataflashGo then
+        eraseDataflashGo = false
+        eraseDataflash()
+    end
+
+    -- draw progress bar if needed
     if progress then
         progressCounter = progressCounter + 10
         progress:value(progressCounter)
-
         if progressCounter >= 100 then
             progress:close()
             progress = nil
         end
     end
-
-
 end
 
 return rf2bbl

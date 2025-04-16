@@ -1,10 +1,32 @@
 {
-  "erase_dataflash":{
-    "english":"Erase dataflash",
-    "translation":"Effacer la mémoire flash"
+  "display_used":{
+    "needs_translation":"false",
+    "translation":"Utilisé",
+    "english":"Used"
+  },
+  "display_outof":{
+    "needs_translation":"false",
+    "translation":"Utilisé/Total",
+    "english":"Used/Total"
+  },
+  "display_free":{
+    "needs_translation":"false",
+    "translation":"Libre",
+    "english":"Free"
   },
   "erasing":{
-    "english":"Erasing...",
-    "translation":"Effacement en cours..."
+    "needs_translation":"false",
+    "translation":"Effacement...",
+    "english":"Erasing..."
+  },
+  "display":{
+    "needs_translation":"false",
+    "translation":"Affichage",
+    "english":"Display"
+  },
+  "erase_dataflash":{
+    "needs_translation":"false",
+    "translation":"Effacer la mémoire flash",
+    "english":"Erase dataflash"
   }
 }

@@ -1,18 +1,22 @@
 {
-  "txt_enter_craft_name":{
-    "english":"Enter Craft Name",
-    "translation":"Nome Velivolo"
-  },
   "title":{
-    "english":"CRAFT NAME",
-    "translation":"NOME VELIVOLO"
+    "needs_translation":"false",
+    "translation":"NOME VELIVOLO",
+    "english":"CRAFT NAME"
   },
   "txt_save":{
-    "english":"Save",
-    "translation":"Salva"
+    "needs_translation":"false",
+    "translation":"Salva",
+    "english":"Save"
+  },
+  "txt_enter_craft_name":{
+    "needs_translation":"false",
+    "translation":"Nome Velivolo",
+    "english":"Enter Craft Name"
   },
   "txt_cancel":{
-    "english":"Cancel",
-    "translation":"Cancella"
+    "needs_translation":"false",
+    "translation":"Cancella",
+    "english":"Cancel"
   }
 }

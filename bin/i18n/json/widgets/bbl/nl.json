@@ -1,10 +1,32 @@
 {
-  "erase_dataflash":{
-    "english":"Erase dataflash",
-    "translation":"Gegevensflash wissen"
+  "display_used":{
+    "needs_translation":"false",
+    "translation":"Gebruikt",
+    "english":"Used"
+  },
+  "display_outof":{
+    "needs_translation":"false",
+    "translation":"Gebruikt/Totaal",
+    "english":"Used/Total"
+  },
+  "display_free":{
+    "needs_translation":"false",
+    "translation":"Vrij",
+    "english":"Free"
   },
   "erasing":{
-    "english":"Erasing...",
-    "translation":"Bezig met wissen..."
+    "needs_translation":"false",
+    "translation":"Bezig met wissen...",
+    "english":"Erasing..."
+  },
+  "display":{
+    "needs_translation":"false",
+    "translation":"Weergave",
+    "english":"Display"
+  },
+  "erase_dataflash":{
+    "needs_translation":"false",
+    "translation":"Gegevensflash wissen",
+    "english":"Erase dataflash"
   }
 }

@@ -1,64 +1,79 @@
 {
   "sensors":{
-    "adj_func":{
-      "english":"Adj (Function)",
-      "translation":"Ajustements Fonctions"
-    },
-    "current":{
-      "english":"Current",
-      "translation":"Courant"
-    },
-    "headspeed":{
-      "english":"Headspeed",
-      "translation":"Tours Moteurs"
-    },
-    "rate_profile":{
-      "english":"Rate Profile",
-      "translation":"Profile de Rates"
-    },
-    "mcu_temp":{
-      "english":"MCU Temperature",
-      "translation":"Temperature Micro Processeur"
-    },
-    "fuel":{
-      "english":"Charge Level",
-      "translation":"Niveau de Carburant"
-    },
-    "adj_val":{
-      "english":"Adj (Value)",
-      "translation":"Ajustements Valeurs"
-    },
-    "consumption":{
-      "english":"Consumption",
-      "translation":"Consommation"
-    },
-    "voltage":{
-      "english":"Voltage",
-      "translation":"Tension"
-    },
     "rssi":{
-      "english":"RSSI",
-      "translation":"Signal du Recepteur"
+      "needs_translation":"false",
+      "translation":"Signal du Recepteur",
+      "english":"RSSI"
     },
     "pid_profile":{
-      "english":"PID Profile",
-      "translation":"Profile de PID"
+      "needs_translation":"false",
+      "translation":"Profile de PID",
+      "english":"PID Profile"
     },
-    "arming_flags":{
-      "english":"Arming Flags",
-      "translation":"Drapeaux Armements"
+    "fuel":{
+      "needs_translation":"false",
+      "translation":"Niveau de Carburant",
+      "english":"Charge Level"
+    },
+    "headspeed":{
+      "needs_translation":"false",
+      "translation":"Tours Moteurs",
+      "english":"Headspeed"
+    },
+    "adj_func":{
+      "needs_translation":"false",
+      "translation":"Ajustements Fonctions",
+      "english":"Adj (Function)"
     },
     "throttle_pct":{
-      "english":"Throttle %",
-      "translation":"Pourcentage de Gaz"
+      "needs_translation":"false",
+      "translation":"Pourcentage de Gaz",
+      "english":"Throttle %"
+    },
+    "current":{
+      "needs_translation":"false",
+      "translation":"Courant",
+      "english":"Current"
+    },
+    "consumption":{
+      "needs_translation":"false",
+      "translation":"Consommation",
+      "english":"Consumption"
     },
     "esc_temp":{
-      "english":"ESC Temperature",
-      "translation":"Temperature ESC"
+      "needs_translation":"false",
+      "translation":"Temperature ESC",
+      "english":"ESC Temperature"
+    },
+    "rate_profile":{
+      "needs_translation":"false",
+      "translation":"Profile de Rates",
+      "english":"Rate Profile"
+    },
+    "mcu_temp":{
+      "needs_translation":"false",
+      "translation":"Temperature Micro Processeur",
+      "english":"MCU Temperature"
+    },
+    "arming_flags":{
+      "needs_translation":"false",
+      "translation":"Drapeaux Armements",
+      "english":"Arming Flags"
     },
     "governor":{
-      "english":"Governor State",
-      "translation":"Status du Gouverneur"
+      "needs_translation":"false",
+      "translation":"Status du Gouverneur",
+      "english":"Governor State"
+    },
+    "adj_val":{
+      "needs_translation":"false",
+      "translation":"Ajustements Valeurs",
+      "english":"Adj (Value)"
+    },
+    "voltage":{
+      "needs_translation":"false",
+      "translation":"Tension",
+      "english":"Voltage"
     }
   }
 }
