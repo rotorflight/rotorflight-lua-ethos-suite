@@ -66,7 +66,7 @@ function utils.armingDisableFlagsToString(flags)
     end
 
     if t == "" then t = rfsuite.i18n.get("app.modules.status.ok") end
-    return t
+    return t:upper()
 end
 
 
