@@ -38,7 +38,7 @@ Rotorflight is based on **Betaflight 4.3**, but includes a wide range of advance
 
 You can preview the experience using the interactive simulator:
 
-👉 [**Launch Web Simulator**](https://ethos.studio1247.com/nightly16/X20PRO_FCC?backup=https://github.com/rotorflight/rotorflight-lua-ethos-suite/raw/refs/heads/master/demo/ETHOS_20250319-1830.zip&reset=all&language=en)
+👉 [**Launch Web Simulator**](https://ethos.studio1247.com/nightly16/X20PRO_FCC?backup=https://github.com/rotorflight/rotorflight-lua-ethos-suite/raw/refs/heads/master/demo/DEMO.zip&reset=all&language=en)
 
 This opens the RFSuite in your browser, showcasing its functionality within the Ethos UI.
 
