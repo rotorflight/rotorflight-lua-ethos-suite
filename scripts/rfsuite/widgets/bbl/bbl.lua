@@ -137,9 +137,14 @@ local function wakeupUI()
         return
     end
 
+    if rfsuite.session.apiVersion == nil then
+        summary = {}
+        return
+    end
+
     LCD_W, LCD_H = lcd.getWindowSize()
     if rfsuite.tasks.telemetry.getSensorSource("armflags") then
-        local armValue = rfsuite.tasks.telemetry.getSensorSource("armflags"):value()
+        local armValue = math.floor(rfsuite.tasks.telemetry.getSensorSource("armflags"):value())
         local now = os.clock()
 
         if armValue == 0 or armValue == 2 or (now - lastSummaryTime >= 30) then
@@ -191,15 +196,16 @@ function rf2bbl.paint(widget)
 
     if isErase then
         msg = rfsuite.i18n.get("widgets.bbl.erasing")
+        local summary = {}
+    elseif not rfsuite.tasks.telemetry.active() then
+        msg = rfsuite.i18n.get("no_link"):upper()
+        local summary = {}
     elseif summary.totalSize and summary.usedSize then
-        msg = getFreeDataflashSpace()
+        msg = getFreeDataflashSpace()   
     else
-        if rfsuite.tasks.telemetry.active() then
-            msg = rfsuite.i18n.get('app.msg_loading')
-        else
-            msg = rfsuite.i18n.get("no_link"):upper()
-        end    
-    end
+        msg = rfsuite.i18n.get('app.msg_loading')
+        local summary = {}
+    end    
 
     drawCenteredMessage(msg)
 end
