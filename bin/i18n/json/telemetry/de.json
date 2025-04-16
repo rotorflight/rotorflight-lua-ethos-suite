@@ -46,7 +46,7 @@
       "needs_translation": "false"
     },
     "arming_flags": {
-      "english": "Arming Flags",
+      "english": "Arming Disable",
       "translation": "Arming-Flags",
       "needs_translation": "false"
     },

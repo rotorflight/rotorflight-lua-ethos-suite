@@ -1086,7 +1086,7 @@ return {
       ["fuel"] = "Charge Level",
       ["rssi"] = "RSSI",
       ["adj_val"] = "Adj (Value)",
-      ["arming_flags"] = "Arming Flags",
+      ["arming_flags"] = "Arming Disable",
       ["current"] = "Current",
       ["throttle_pct"] = "Throttle %",
       ["consumption"] = "Consumption",
