@@ -97,6 +97,7 @@ end
 
 -- Sensor cache setup — runs once when telemetry becomes active
 local function cacheSensorSources()
+    rfsuite.utils.log("Logging - Clearing sensor sources","info")
     cachedSensors = {}
     for _, sensor in ipairs(logTable) do
         cachedSensors[sensor.name] = rfsuite.tasks.telemetry.getSensorSource(sensor.name)
@@ -107,13 +108,15 @@ end
 
 -- Clear all cached sensors
 local function clearSensorCache()
+    rfsuite.utils.log("Logging - Clearing sensor cache","info")
     cachedSensors = {}
     armSource = nil
+    govSource = nil
 end
 
 function logging.flushLogs()
     if logFileName or logHeader then
-        rfsuite.utils.log("Flushing logs - ".. logFileName,"debug")
+        rfsuite.utils.log("Flushing logs - ".. logFileName,"info")
         logFileName, logHeader = nil, nil
         logging.writeLogs(true)
         logdir = nil
@@ -129,9 +132,11 @@ function logging.wakeup()
         logDirChecked = true
     end
 
-    if not rfsuite.session.telemetryState then
+    --if not rfsuite.session.telemetryState then
+    if not rfsuite.tasks.telemetry.active() then
         logging.flushLogs()
         clearSensorCache()
+        cacheSensorSources()
         return
     end
 
@@ -149,7 +154,7 @@ function logging.wakeup()
             if isArmed == 1 or isArmed == 3 then
                 if not logFileName then 
                     logFileName = generateLogFilename() 
-                    rfsuite.utils.log("Logging triggered by arm state - " .. logFileName,"debug")
+                    rfsuite.utils.log("Logging triggered by arm state - " .. logFileName,"info")
                 end
                 if not logHeader then
                     logHeader = logging.getLogHeader()
@@ -177,7 +182,7 @@ function logging.wakeup()
             if isArmed == 1 or isArmed == 3 and governor > 0 and governor < 100 then
                 if not logFileName then 
                     logFileName = generateLogFilename() 
-                    rfsuite.utils.log("Logging triggered by governor state - " .. logFileName,"debug")
+                    rfsuite.utils.log("Logging triggered by governor state - " .. logFileName,"info")
                 end
                 if not logHeader then
                     logHeader = logging.getLogHeader()
