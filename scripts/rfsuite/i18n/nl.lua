@@ -34,6 +34,7 @@ return {
   ["bg_task_disabled"] = "bg task uitgeschakeld",
   ["no_link"] = "geen verbinding",
   ["background_task_disabled"] = "background task uitgeschakeld",
+  ["no_sensor"] = "geen sensor",
   ["api"] = {
     ["RC_TUNING"] = {
       ["setpoint_boost_cutoff_2"] = "Boostdrempel voor het setpoint.",

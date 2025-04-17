@@ -34,6 +34,7 @@ return {
   ["bg_task_disabled"] = "Hintergrundtask deaktiviert",
   ["no_link"] = "Keine Verbindung",
   ["background_task_disabled"] = "Hintergrundtask deaktiviert",
+  ["no_sensor"] = "kein sensor",
   ["api"] = {
     ["RC_TUNING"] = {
       ["setpoint_boost_cutoff_2"] = "Boost-Grenzwert fuer den Sollwert.",

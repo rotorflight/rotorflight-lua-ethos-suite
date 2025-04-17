@@ -345,7 +345,13 @@ local function init()
                 local varname = v.varname or v.script:gsub("%.lua$", "")
         
                 -- Store the module inside rfsuite.widgets
-                rfsuite.widgets[varname] = scriptModule
+                if rfsuite.widgets[varname] then
+                    math.randomseed(os.time())
+                    local rand = math.random()
+                    rfsuite.widgets[varname .. rand] = scriptModule
+                else
+                    rfsuite.widgets[varname] = scriptModule
+                end    
         
                 -- Register the widget with the system
                 system.registerWidget({

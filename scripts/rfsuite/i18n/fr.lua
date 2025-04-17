@@ -34,6 +34,7 @@ return {
   ["bg_task_disabled"] = "tache AR plan desactivee",
   ["no_link"] = "aucun lien",
   ["background_task_disabled"] = "tache en arriere-plan desactivee",
+  ["no_sensor"] = "pas de capteur",
   ["api"] = {
     ["RC_TUNING"] = {
       ["setpoint_boost_cutoff_2"] = "Seuil de boost pour le point de consigne.",

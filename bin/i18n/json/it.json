@@ -43,5 +43,10 @@
     "english": "background task disabled",
     "translation": "background task disabilitato",
     "needs_translation": "false"
+  },
+  "no_sensor": {
+    "english": "no sensor",
+    "translation": "nessun sensore",
+    "needs_translation": "false"
   }
 }

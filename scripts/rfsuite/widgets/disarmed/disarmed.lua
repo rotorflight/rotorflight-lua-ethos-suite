@@ -72,13 +72,18 @@ local function getSensors()
 
     if not rfsuite.tasks.telemetry.active() then
         armdisableflags = rfsuite.i18n.get("no_link"):upper()
+    elseif rfsuite.session.apiVersion and rfsuite.session.apiVersion < 12.08 then
+        armdisableflags = "RF < 2.2"
     elseif armdisableflagsSOURCE then
         local value = armdisableflagsSOURCE:value()
         if value ~= nil then
             value = math.floor(value)
         end
         armdisableflags = rfsuite.app.utils.armingDisableFlagsToString(value)
-    else    
+
+    elseif armdisableflagsSOURCE  == nil then
+        armdisableflags = rfsuite.i18n.get("no_sensor"):upper()
+    else            
         armdisableflags = rfsuite.i18n.get("no_link"):upper()
     end
 

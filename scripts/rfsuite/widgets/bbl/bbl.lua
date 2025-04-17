@@ -171,7 +171,7 @@ local function getFreeDataflashSpace()
 
     local msg
 
-    if config.display == 0 then
+    if config.display == 0 or config.display == nil then
         msg = string.format("%.1f/%.1f " .. rfsuite.i18n.get("app.modules.status.megabyte"),
         summary.usedSize / (1024 * 1024),
         summary.totalSize / (1024 * 1024))
@@ -179,8 +179,6 @@ local function getFreeDataflashSpace()
         msg = string.format("%.1f " .. rfsuite.i18n.get("app.modules.status.megabyte"), freeSpace / (1024 * 1024))
     elseif config.display == 2 then 
         msg = string.format("%.1f " .. rfsuite.i18n.get("app.modules.status.megabyte"), summary.usedSize / (1024 * 1024))
-    else    
-        msg = "Unknown"
     end
 
     return msg
@@ -207,7 +205,7 @@ function rf2bbl.paint(widget)
         msg = rfsuite.i18n.get("widgets.bbl.erasing")
         local summary = {}
     elseif not rfsuite.tasks.telemetry.active() then
-        msg = rfsuite.i18n.get("no_link"):upper()
+        msg = rfsuite.i18n.get("no_link"):upper() 
         local summary = {}
     elseif summary.totalSize and summary.usedSize then
         msg = getFreeDataflashSpace()   

@@ -34,6 +34,7 @@ return {
   ["bg_task_disabled"] = "bg task disabilitato",
   ["no_link"] = "no link",
   ["background_task_disabled"] = "background task disabilitato",
+  ["no_sensor"] = "nessun sensore",
   ["api"] = {
     ["RC_TUNING"] = {
       ["setpoint_boost_cutoff_2"] = "Boost taglio setpoint.",

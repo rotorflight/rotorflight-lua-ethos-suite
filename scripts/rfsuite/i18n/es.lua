@@ -34,6 +34,7 @@ return {
   ["bg_task_disabled"] = "tarea en segundo plano deshabilitada",
   ["no_link"] = "sin enlace",
   ["background_task_disabled"] = "tarea en segundo plano deshabilitada",
+  ["no_sensor"] = "sin sensor",
   ["api"] = {
     ["RC_TUNING"] = {
       ["setpoint_boost_cutoff_2"] = "Limite de impulso para el punto de consigna.",
