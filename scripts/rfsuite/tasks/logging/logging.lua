@@ -97,7 +97,6 @@ end
 
 -- Sensor cache setup — runs once when telemetry becomes active
 local function cacheSensorSources()
-    rfsuite.utils.log("Logging - Clearing sensor sources","info")
     cachedSensors = {}
     for _, sensor in ipairs(logTable) do
         cachedSensors[sensor.name] = rfsuite.tasks.telemetry.getSensorSource(sensor.name)
@@ -108,7 +107,6 @@ end
 
 -- Clear all cached sensors
 local function clearSensorCache()
-    rfsuite.utils.log("Logging - Clearing sensor cache","info")
     cachedSensors = {}
     armSource = nil
     govSource = nil
@@ -123,6 +121,10 @@ function logging.flushLogs()
     end    
 end
 
+function logging.reset()
+    clearSensorCache()
+    cacheSensorSources()
+end
 
 function logging.wakeup()
     if not rfsuite.preferences.flightLog then return end
@@ -155,6 +157,8 @@ function logging.wakeup()
                 if not logFileName then 
                     logFileName = generateLogFilename() 
                     rfsuite.utils.log("Logging triggered by arm state - " .. logFileName,"info")
+                    rfsuite.utils.log("Governor value - " .. governor ,"info")
+                    rfsuite.utils.log("Armed value - " .. isArmed  ,"info")
                 end
                 if not logHeader then
                     logHeader = logging.getLogHeader()
@@ -182,7 +186,9 @@ function logging.wakeup()
             if isArmed == 1 or isArmed == 3 and governor > 0 and governor < 100 then
                 if not logFileName then 
                     logFileName = generateLogFilename() 
-                    rfsuite.utils.log("Logging triggered by governor state - " .. logFileName,"info")
+                    rfsuite.utils.log("Logging triggered by governor state - " .. logFileName ,"info")
+                    rfsuite.utils.log("Governor value - " .. governor ,"info")
+                    rfsuite.utils.log("Armed value - " .. isArmed  ,"info")
                 end
                 if not logHeader then
                     logHeader = logging.getLogHeader()
