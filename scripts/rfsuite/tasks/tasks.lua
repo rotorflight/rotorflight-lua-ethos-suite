@@ -273,6 +273,16 @@ function tasks.wakeup()
     end
 end
 
+-- call a reset function on all tasks if it exists
+function tasks.reset()
+    for _, task in ipairs(tasksList) do
+        if tasks[task.name].reset then
+            rfsuite.utils.log("Reset task [" .. task.name .. "]", "info")
+            tasks[task.name].reset()
+        end
+    end    
+end
+
 function tasks.event(widget, category, value)
     -- currently does nothing.
 end

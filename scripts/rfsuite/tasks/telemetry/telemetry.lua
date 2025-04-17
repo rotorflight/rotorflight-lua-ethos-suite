@@ -585,6 +585,18 @@ function telemetry.active()
 end
 
 
+--- Resets the telemetry module by clearing all relevant variables and data.
+---
+--- This function performs the following actions:
+--- - Sets `telemetrySOURCE`, `crsfSOURCE`, and `protocol` to `nil`.
+--- - Clears the `sensors` table by reinitializing it as an empty table.
+---
+--- Use this function to reset the telemetry state to its initial condition.
+function telemetry.reset()
+    telemetrySOURCE, crsfSOURCE, protocol = nil, nil, nil
+    sensors = {}
+end
+
 --[[
     Function: telemetry.wakeup
 
@@ -618,15 +630,14 @@ function telemetry.wakeup()
             rfsuite.session.resetTelemetry = false
         end
         lastCacheFlushTime = now
-        sensors = {} -- Reset cached sensors
-        telemetrySOURCE, crsfSOURCE, protocol = nil, nil, nil
+        telemetry.reset()
     end
 
     -- Reset if telemetry is inactive or RSSI sensor changed
     if not rfsuite.session.telemetryState or rfsuite.session.telemetryTypeChanged then
-        telemetrySOURCE, crsfSOURCE, protocol = nil, nil, nil
-        sensors = {}
+        telemetry.reset()
     end
 end
+
 
 return telemetry
