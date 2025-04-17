@@ -87,29 +87,36 @@ local function getSensors()
     local armflagsSOURCE = rfsuite.tasks.telemetry.getSensorSource("armflags")
     local armdisableflagsSOURCE = rfsuite.tasks.telemetry.getSensorSource("armdisableflags")
 
-    if rfsuite.tasks.telemetry.getSensorProtocol() == 'lcrsf' then
-        govmode = govSOURCE and govSOURCE:stringValue() or ""
-    else
-        local govId = govSOURCE and govSOURCE:value()
-        if rfsuite.session and rfsuite.session.apiVersion and rfsuite.session.apiVersion > 12.07 then
-                if armflagsSOURCE and (armflagsSOURCE:value() == 0 or armflagsSOURCE:value() == 2 )then
-                    govId = 101
-                end
-        end
-        govmode = governorMap[govId] or (govId and rfsuite.i18n.get("widgets.governor.UNKNOWN") or "")
-    end
 
-    if armdisableflagsSOURCE then
-        local avalue = armdisableflagsSOURCE:value()
-        if avalue ~= nil then
-            avalue = math.floor(avalue)
-            local astring = rfsuite.app.utils.armingDisableFlagsToString(avalue)
-            if astring ~= "OK" then
-                govmode = astring
-                lcd.invalidate()
+    if not rfsuite.tasks.telemetry.active() then
+        govmode = rfsuite.i18n.get("no_link"):upper() 
+    elseif govSOURCE == nil or armflagsSOURCE == nil or armdisableflagsSOURCE == nil then
+        govmode = rfsuite.i18n.get("no_sensor"):upper()  
+    else    
+        if rfsuite.tasks.telemetry.getSensorProtocol() == 'lcrsf' then
+            govmode = govSOURCE and govSOURCE:stringValue() or ""
+        else
+            local govId = govSOURCE and govSOURCE:value()
+            if rfsuite.session and rfsuite.session.apiVersion and rfsuite.session.apiVersion > 12.07 then
+                    if armflagsSOURCE and (armflagsSOURCE:value() == 0 or armflagsSOURCE:value() == 2 )then
+                        govId = 101
+                    end
+            end
+            govmode = governorMap[govId] or (govId and rfsuite.i18n.get("widgets.governor.UNKNOWN") or "")
+        end
+
+        if armdisableflagsSOURCE then
+            local avalue = armdisableflagsSOURCE:value()
+            if avalue ~= nil then
+                avalue = math.floor(avalue)
+                local astring = rfsuite.app.utils.armingDisableFlagsToString(avalue)
+                if astring ~= "OK" then
+                    govmode = astring
+                    lcd.invalidate()
+                end
             end
         end
-    end
+    end    
 
 
     if rf2gov.oldsensors.govmode ~= govmode then rf2gov.refresh = true end

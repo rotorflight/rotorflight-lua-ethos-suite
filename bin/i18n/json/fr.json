@@ -43,5 +43,10 @@
     "english": "background task disabled",
     "translation": "tache en arriere-plan desactivee",
     "needs_translation": "false"
+  },
+  "no_sensor": {
+    "english": "no sensor",
+    "translation": "pas de capteur",
+    "needs_translation": "false"
   }
 }

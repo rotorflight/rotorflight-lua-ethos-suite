@@ -72,7 +72,7 @@ local function getSensors()
     local armflagsSOURCE = rfsuite.tasks.telemetry.getSensorSource("armflags")
 
     if not rfsuite.tasks.telemetry.active() then
-        armflags = rfsuite.i18n.get("no_link"):upper()
+        armflags = rfsuite.i18n.get("no_link"):upper() 
     elseif armflagsSOURCE then
         local value = armflagsSOURCE:value()
         if (value == 0 or value == 2 )then
@@ -80,6 +80,8 @@ local function getSensors()
         else
             armflags = rfsuite.i18n.get("ARMED")
         end
+    elseif armflagsSOURCE == nil then
+        armflags = rfsuite.i18n.get("no_sensor"):upper()    
     else    
         armflags = rfsuite.i18n.get("no_link"):upper()
     end
@@ -162,7 +164,8 @@ end
 
 -- Main wakeup function
 function armed.wakeup(widget)
-    local schedulerUI = lcd.isVisible() and 0.5 or 5
+    --local schedulerUI = lcd.isVisible() and 0.5 or 5
+    local schedulerUI = 1
     local now = os.clock()
 
     if (now - armed.wakeupSchedulerUI) >= schedulerUI then
