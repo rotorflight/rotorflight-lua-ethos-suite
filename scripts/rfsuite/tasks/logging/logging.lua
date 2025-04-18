@@ -183,7 +183,9 @@ function logging.wakeup()
             local isArmed = armSource:value()
             local governor = govSource:value()
 
-            if isArmed == 1 or isArmed == 3 and governor > 0 and governor < 100 then
+            if isArmed == nil or governor == nil then
+                logging.flushLogs()
+            elseif isArmed == 1 or isArmed == 3 and governor > 0 and governor < 100 then
                 if not logFileName then 
                     logFileName = generateLogFilename() 
                     rfsuite.utils.log("Logging triggered by governor state - " .. logFileName ,"info")
