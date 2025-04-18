@@ -53,7 +53,7 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "setpoint_boost_cutoff_4", type = "U8",  apiVersion = 12.08, simResponse = {15}, min = 0, max = 250, unit = "Hz", default = 15},
     {field = "yaw_dynamic_ceiling_gain", type = "U8",  apiVersion = 12.08, simResponse = {30} , default = 30, min = 0, max = 250},
     {field = "yaw_dynamic_deadband_gain", type = "U8", apiVersion = 12.08, simResponse = {30}, default = 30, min = 0, max = 250},
-    {field = "yaw_dynamic_deadband_filter", type = "U8", apiVersion = 12.08, simResponse = {60}, scale=10,decimals = 1, default = 60, min = 0, max = 250, unit="Hz"},
+    {field = "yaw_dynamic_deadband_filter", type = "U8", apiVersion = 12.08, simResponse = {60}, scale = 10, decimals = 1, default = 60, min = 0, max = 250, unit="Hz"},
 
 }
 
