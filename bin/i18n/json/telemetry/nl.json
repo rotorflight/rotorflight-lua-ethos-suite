@@ -1,64 +1,84 @@
 {
-  "sensors":{
-    "pid_profile":{
-      "english":"PID Profile",
-      "translation":"PID Profiel"
+  "sensors": {
+    "esc_temp": {
+      "english": "ESC Temperature",
+      "translation": "ESC Temperatuur",
+      "needs_translation": "false"
     },
-    "esc_temp":{
-      "english":"ESC Temperature",
-      "translation":"ESC Temperatuur"
+    "rate_profile": {
+      "english": "Rate Profile",
+      "translation": "Rate Profiel",
+      "needs_translation": "false"
     },
-    "adj_val":{
-      "english":"Adj (Value)",
-      "translation":"Adj (Waarde)"
+    "headspeed": {
+      "english": "Headspeed",
+      "translation": "Rotortoerental",
+      "needs_translation": "false"
     },
-    "arming_flags":{
-      "english":"Arming Flags",
-      "translation":"Arming Flags"
+    "voltage": {
+      "english": "Voltage",
+      "translation": "Voltage",
+      "needs_translation": "false"
     },
-    "consumption":{
-      "english":"Consumption",
-      "translation":"Verbruik"
+    "governor": {
+      "english": "Governor State",
+      "translation": "Governor Status",
+      "needs_translation": "false"
     },
-    "throttle_pct":{
-      "english":"Throttle %",
-      "translation":"Throttle %"
+    "adj_func": {
+      "english": "Adj (Function)",
+      "translation": "Adj (Functies)",
+      "needs_translation": "false"
     },
-    "headspeed":{
-      "english":"Headspeed",
-      "translation":"Rotortoerental"
+    "fuel": {
+      "english": "Charge Level",
+      "translation": "Laad niveau",
+      "needs_translation": "false"
     },
-    "current":{
-      "english":"Current",
-      "translation":"Stroom"
+    "rssi": {
+      "english": "RSSI",
+      "translation": "RSSI",
+      "needs_translation": "false"
     },
-    "rate_profile":{
-      "english":"Rate Profile",
-      "translation":"Rate Profiel"
+    "adj_val": {
+      "english": "Adj (Value)",
+      "translation": "Adj (Waarde)",
+      "needs_translation": "false"
     },
-    "governor":{
-      "english":"Governor State",
-      "translation":"Governor Status"
+    "arming_flags": {
+      "english": "Arming Flags",
+      "translation": "Arming Flags",
+      "needs_translation": "false"
     },
-    "adj_func":{
-      "english":"Adj (Function)",
-      "translation":"Adj (Functies)"
+    "current": {
+      "english": "Current",
+      "translation": "Stroom",
+      "needs_translation": "false"
     },
-    "voltage":{
-      "english":"Voltage",
-      "translation":"Voltage"
+    "throttle_pct": {
+      "english": "Throttle %",
+      "translation": "Throttle %",
+      "needs_translation": "false"
     },
-    "rssi":{
-      "english":"RSSI",
-      "translation":"RSSI"
+    "consumption": {
+      "english": "Consumption",
+      "translation": "Verbruik",
+      "needs_translation": "false"
     },
-    "mcu_temp":{
-      "english":"MCU Temperature",
-      "translation":"MCU Temperatuur"
+    "pid_profile": {
+      "english": "PID Profile",
+      "translation": "PID Profiel",
+      "needs_translation": "false"
     },
-    "fuel":{
-      "english":"Charge Level",
-      "translation":"Laad niveau"
+    "mcu_temp": {
+      "english": "MCU Temperature",
+      "translation": "MCU Temperatuur",
+      "needs_translation": "false"
+    },
+    "armdisableflags": {
+      "english": "Arming Disable",
+      "translation": "Arming Disable",
+      "needs_translation": "false"
     }
   }
 }

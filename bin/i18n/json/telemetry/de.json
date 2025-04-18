@@ -1,64 +1,84 @@
 {
-  "sensors":{
-    "pid_profile":{
-      "english":"PID Profile",
-      "translation":"PID-Profil"
+  "sensors": {
+    "esc_temp": {
+      "english": "ESC Temperature",
+      "translation": "ESC Temperatur",
+      "needs_translation": "false"
     },
-    "esc_temp":{
-      "english":"ESC Temperature",
-      "translation":"ESC Temperatur"
+    "rate_profile": {
+      "english": "Rate Profile",
+      "translation": "Rate-Profil",
+      "needs_translation": "false"
     },
-    "adj_val":{
-      "english":"Adj (Value)",
-      "translation":"Adj (Wert)"
+    "headspeed": {
+      "english": "Headspeed",
+      "translation": "Drehzahl",
+      "needs_translation": "false"
     },
-    "arming_flags":{
-      "english":"Arming Flags",
-      "translation":"Arming-Flags"
+    "voltage": {
+      "english": "Voltage",
+      "translation": "Spannung",
+      "needs_translation": "false"
     },
-    "consumption":{
-      "english":"Consumption",
-      "translation":"Verbrauch"
+    "governor": {
+      "english": "Governor State",
+      "translation": "Governor Status",
+      "needs_translation": "false"
     },
-    "throttle_pct":{
-      "english":"Throttle %",
-      "translation":"Gas %"
+    "adj_func": {
+      "english": "Adj (Function)",
+      "translation": "Adj (Funktion)",
+      "needs_translation": "false"
     },
-    "headspeed":{
-      "english":"Headspeed",
-      "translation":"Drehzahl"
+    "fuel": {
+      "english": "Charge Level",
+      "translation": "Kraftstoffstand",
+      "needs_translation": "false"
     },
-    "current":{
-      "english":"Current",
-      "translation":"Strom"
+    "rssi": {
+      "english": "RSSI",
+      "translation": "RSSI",
+      "needs_translation": "false"
     },
-    "rate_profile":{
-      "english":"Rate Profile",
-      "translation":"Rate-Profil"
+    "adj_val": {
+      "english": "Adj (Value)",
+      "translation": "Adj (Wert)",
+      "needs_translation": "false"
     },
-    "governor":{
-      "english":"Governor State",
-      "translation":"Governor Status"
+    "arming_flags": {
+      "english": "Arming Flags",
+      "translation": "Arming-Flags",
+      "needs_translation": "false"
     },
-    "adj_func":{
-      "english":"Adj (Function)",
-      "translation":"Adj (Funktion)"
+    "current": {
+      "english": "Current",
+      "translation": "Strom",
+      "needs_translation": "false"
     },
-    "voltage":{
-      "english":"Voltage",
-      "translation":"Spannung"
+    "throttle_pct": {
+      "english": "Throttle %",
+      "translation": "Gas %",
+      "needs_translation": "false"
     },
-    "rssi":{
-      "english":"RSSI",
-      "translation":"RSSI"
+    "consumption": {
+      "english": "Consumption",
+      "translation": "Verbrauch",
+      "needs_translation": "false"
     },
-    "mcu_temp":{
-      "english":"MCU Temperature",
-      "translation":"MCU Temperatur"
+    "pid_profile": {
+      "english": "PID Profile",
+      "translation": "PID-Profil",
+      "needs_translation": "false"
     },
-    "fuel":{
-      "english":"Charge Level",
-      "translation":"Kraftstoffstand"
+    "mcu_temp": {
+      "english": "MCU Temperature",
+      "translation": "MCU Temperatur",
+      "needs_translation": "false"
+    },
+    "armdisableflags": {
+      "english": "Arming Disable",
+      "translation": "Arming-Disable",
+      "needs_translation": "false"
     }
   }
 }

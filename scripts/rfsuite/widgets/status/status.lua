@@ -302,6 +302,7 @@ local fuelSOURCE
 local govSOURCE
 local adjSOURCE
 local armflagsSOURCE
+local armdisableflagsSOURCE
 local adjVALUE
 local mahSOURCE
 local telemetrySOURCE
@@ -453,7 +454,7 @@ end
 
 local function noTelem()
     lcd.font(FONT_STD)
-    local str = "NO LINK"
+    local str = rfsuite.i18n.get("no_link"):upper()
 
     status.theme = getThemeInfo()
     local w, h = lcd.getWindowSize()
@@ -759,6 +760,7 @@ local function getSensors()
         rssiSOURCE = rfsuite.tasks.telemetry.getSensorSource("rssi") 
         govSOURCE = rfsuite.tasks.telemetry.getSensorSource("governor")
         armflagsSOURCE = rfsuite.tasks.telemetry.getSensorSource("armflags")
+        armdisableflagsSOURCE = rfsuite.tasks.telemetry.getSensorSource("armdisableflags")
 
         if rfsuite.tasks.telemetry.getSensorProtocol() == 'crsf' then
 
@@ -1294,7 +1296,7 @@ local function sensorsMAXMIN(sensors)
                 return
             end
 
-            if status.theTIME > (status.idleupdelayParam + idleupdelayOFFSET) and status.idleupswitchParam:state() then
+            if status.theTIME > (status.idleupdelayParam + idleupdelayOFFSET) and (status.idleupswitchParam and status.idleupswitchParam:state()) then
                 for _, sensor in pairs(sensorTypes) do
                     local value = sensors[sensor:lower()] or 0
                     status["sensor" .. sensor .. "Min"] = math.min(status["sensor" .. sensor .. "Min"] or math.huge, value)
@@ -1309,7 +1311,7 @@ local function sensorsMAXMIN(sensors)
             end
         end
 
-        if status.motorWasActive and not status.idleupswitchParam:state() then
+        if status.motorWasActive and status.idleupswitchParam and not status.idleupswitchParam:state() then
             status.motorWasActive = false
 
             status.sensorCurrentMinAlt = status.sensorCurrentMin > 0 and status.sensorCurrentMin or 1
@@ -3448,6 +3450,19 @@ function status.paint(widget)
                 str = status.sensors.fm
                 sensorTITLE = theme.title_fm
             end
+
+            if armdisableflagsSOURCE then
+                local avalue = armdisableflagsSOURCE:value()
+                if avalue ~= nil then
+                    avalue = math.floor(avalue)
+                    local astring = rfsuite.app.utils.armingDisableFlagsToString(avalue)
+                    if astring ~= "OK" then
+                        str = astring
+                        lcd.invalidate()
+                    end
+                end
+            end
+
             sensorVALUE = str
 
             if status.titleParam ~= true then sensorTITLE = "" end

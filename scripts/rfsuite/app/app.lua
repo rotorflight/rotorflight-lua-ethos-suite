@@ -493,25 +493,58 @@ local function saveSettings()
 
         -- Create lookup table for fields by apikey
         local fieldMap = {}
+        local fieldMapBitmap = {}
         for fidx, f in ipairs(app.Page.mspapi.formdata.fields) do
-            if f.mspapi == apiID then
-                fieldMap[f.apikey] = fidx
-            end
+            if not f.bitmap then
+                -- normal fields
+                if f.mspapi == apiID then
+                    fieldMap[f.apikey] = fidx
+                end
+            else
+                -- bitmap fields
+                local bitmap_part1, bitmap_part2 = string.match(f.apikey, "([^%-]+)%-%>(.+)")
+                if not fieldMapBitmap[bitmap_part1] then
+                    fieldMapBitmap[bitmap_part1] = {}
+                end
+                fieldMapBitmap[bitmap_part1][f.bitmap] = fidx
+            end    
         end
+
 
         -- Inject values into the payload
         for i, v in pairs(payloadData) do
             local fieldIndex = fieldMap[i]
             if fieldIndex then
+                -- Normal field
                 payloadData[i] = app.Page.fields[fieldIndex].value
+            elseif fieldMapBitmap[i] then
+                -- Bitmap field
+                local originalValue = tonumber(v) or 0
+                local newValue = originalValue
+        
+                for bit, fieldIndex in pairs(fieldMapBitmap[i]) do
+                    local fieldVal = math.floor(tonumber(app.Page.fields[fieldIndex].value) or 0)
+                    local mask = 1 << (bit)
+                    if fieldVal ~= 0 then
+                        newValue = newValue | mask  -- Set bit
+                    else
+                        newValue = newValue & (~mask)  -- Clear bit
+                    end
+                end
+        
+                payloadData[i] = newValue
             end
+        
         end
+
 
         -- Send the payload
         for i, v in pairs(payloadData) do
             rfsuite.utils.log("Set value for " .. i .. " to " .. v, "debug")
             API.setValue(i, v)
         end
+        
+             
 
         API.write()
     end
@@ -599,31 +632,73 @@ function app.mspApiUpdateFormAttributes(values, structure)
             else        
                 for _, v in ipairs(targetStructure) do
 
-                    if v.field == apikey and mspapiID == f.mspapi then
+                    if not v.bitmap then
+                        -- we have a standard api field - proceed to injecting values
+                        if v.field == apikey and mspapiID == f.mspapi then
 
-                        -- insert help string
-                        local help_target = "api." .. mspapiNAME .. "." .. apikey
-                        local help_return = rfsuite.i18n.get(help_target)
-                        if help_target ~=  help_return then
-                            v.help = help_return
-                        else
-                            v.help = nil    
+                            -- insert help string
+                            local help_target = "api." .. mspapiNAME .. "." .. apikey
+                            local help_return = rfsuite.i18n.get(help_target)
+                            if help_target ~=  help_return then
+                                v.help = help_return
+                            else
+                                v.help = nil    
+                            end
+
+                            rfsuite.app.ui.injectApiAttributes(formField, f, v)
+
+                            local scale = f.scale or 1
+                            if values and values[mspapiNAME] and values[mspapiNAME][apikey] then
+                                rfsuite.app.Page.fields[i].value = values[mspapiNAME][apikey] / scale
+                            end
+
+                            if values[mspapiNAME][apikey] == nil then
+                                rfsuite.utils.log("API field value is nil: " .. mspapiNAME .. " " .. apikey, "info")
+                                formField:enable(false)
+                            end
+
+                            break -- Found field, can move on
                         end
+                    else
+                        -- bitmap fields 
+                        for bidx, b in ipairs(v.bitmap) do
+                            local bitmapField = v.field .. "->" .. b.field
 
-                        rfsuite.app.ui.injectApiAttributes(formField, f, v)
+                            if bitmapField  == apikey  and mspapiID == f.mspapi then
+                                    -- we have now found a bitmap field so should proceed with injecting
+                                    -- the values into the form field
+                                    -- insert help string
+                                    local help_target = "api." .. mspapiNAME .. "." .. apikey
+                                    local help_return = rfsuite.i18n.get(help_target)
+                                    if help_target ~=  help_return then
+                                        v.help = help_return
+                                    else
+                                        v.help = nil    
+                                    end
 
-                        local scale = f.scale or 1
-                        if values and values[mspapiNAME] and values[mspapiNAME][apikey] then
-                            rfsuite.app.Page.fields[i].value = values[mspapiNAME][apikey] / scale
+                                    rfsuite.app.ui.injectApiAttributes(formField, f, b)
+
+                                    local scale = f.scale or 1
+
+                                    -- extract bit at position bidx
+                                    if values and values[mspapiNAME] and values[mspapiNAME][v.field] then
+                                        local raw_value = values[mspapiNAME][v.field]
+                                        local bit_value = (raw_value >> bidx - 1) & 1  
+                                        rfsuite.app.Page.fields[i].value = bit_value / scale
+                                    end
+        
+                                    if values[mspapiNAME][v.field] == nil then
+                                        rfsuite.utils.log("API field value is nil: " .. mspapiNAME .. " " .. apikey, "info")
+                                        formField:enable(false)
+                                    end
+
+                                    -- insert bit location for later reference
+                                    rfsuite.app.Page.fields[i].bitmap = bidx - 1
+
+
+                            end    
                         end
-
-                        if values[mspapiNAME][apikey] == nil then
-                            rfsuite.utils.log("API field value is nil: " .. mspapiNAME .. " " .. apikey, "info")
-                            formField:enable(false)
-                        end
-
-                        break -- Found field, can move on
-                    end
+                    end    
                 end
             end
         else

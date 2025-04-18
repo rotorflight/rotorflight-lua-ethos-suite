@@ -50,6 +50,7 @@ Each sensor configuration includes:
 Sensors included:
 - RSSI Sensors (rssi)
 - Arm Flags (armflags)
+- Arm Disabled (arm_disabled)
 - Voltage Sensors (voltage)
 - RPM Sensors (rpm)
 - Current Sensors (current)
@@ -155,12 +156,14 @@ local sensorTable = {
             {uid=0x5004, unit=UNIT_AMPERE, dec=0, value=function() return rfsuite.utils.simSensors('current') end, min = 0, max = 25},
         },
         sport = {
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0200},
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0201}
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0208},
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0201},
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0200}
         },
         crsf = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1042},
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1012},
-            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1042}
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x104A}
         },
         crsfLegacy = {"Rx Curr"}
     },
@@ -331,6 +334,23 @@ local sensorTable = {
         },
         crsf = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1035}
+        },
+        crsfLegacy = {nil}
+    },
+
+    -- Arm Disable Flags
+    armdisableflags = {
+        name = rfsuite.i18n.get("telemetry.sensors.armdisableflags"),
+        mandatory = true,
+        set_telemetry_sensors = 91,
+        sim = {
+            {uid=0x5015, unit=nil, dec=nil, value=function() return rfsuite.utils.simSensors('armdisableflags') end, min = 0, max = 65536},
+        },
+        sport = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5123},
+        },
+        crsf = {
+            {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1203}
         },
         crsfLegacy = {nil}
     }
@@ -565,6 +585,18 @@ function telemetry.active()
 end
 
 
+--- Resets the telemetry module by clearing all relevant variables and data.
+---
+--- This function performs the following actions:
+--- - Sets `telemetrySOURCE`, `crsfSOURCE`, and `protocol` to `nil`.
+--- - Clears the `sensors` table by reinitializing it as an empty table.
+---
+--- Use this function to reset the telemetry state to its initial condition.
+function telemetry.reset()
+    telemetrySOURCE, crsfSOURCE, protocol = nil, nil, nil
+    sensors = {}
+end
+
 --[[
     Function: telemetry.wakeup
 
@@ -598,15 +630,14 @@ function telemetry.wakeup()
             rfsuite.session.resetTelemetry = false
         end
         lastCacheFlushTime = now
-        sensors = {} -- Reset cached sensors
-        telemetrySOURCE, crsfSOURCE, protocol = nil, nil, nil
+        telemetry.reset()
     end
 
     -- Reset if telemetry is inactive or RSSI sensor changed
     if not rfsuite.session.telemetryState or rfsuite.session.telemetryTypeChanged then
-        telemetrySOURCE, crsfSOURCE, protocol = nil, nil, nil
-        sensors = {}
+        telemetry.reset()
     end
 end
+
 
 return telemetry

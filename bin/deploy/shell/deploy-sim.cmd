@@ -3,7 +3,7 @@ REM ------------------------------------------------------
 REM   FILE COPY SCRIPT FOR MULTIPLE DESTINATION FOLDERS
 REM ------------------------------------------------------
 REM   This script copies files from a Git source folder to multiple destination folders.
-REM   Destination folders are specified in a CSV list using the %DEV_SIM_SRC% environment variable.
+REM   Destination folders are specified in a CSV list using the %FRSKY_SIM_SRC% environment variable.
 REM   The script can optionally handle specific file extensions (e.g., .lua files).
 
 REM ------------------------------------------------------
@@ -11,8 +11,8 @@ REM   SETUP INSTRUCTIONS (WINDOWS)
 REM ------------------------------------------------------
 REM 1. Set the environment variables in Windows Command Prompt (or add them to System Variables):
 REM    Example:
-REM    set DEV_RFSUITE_GIT_SRC=C:\Path\To\Your\Source
-REM    set DEV_SIM_SRC="C:\Program Files (x86)\FrSky\Ethos\X20S\scripts","C:\Program Files (x86)\FrSky\Ethos\X14S\scripts","C:\Program Files (x86)\FrSky\Ethos\X18S\scripts"
+REM    set FRSKY_RFSUITE_GIT_SRC=C:\Path\To\Your\Source
+REM    set FRSKY_SIM_SRC="C:\Program Files (x86)\FrSky\Ethos\X20S\scripts","C:\Program Files (x86)\FrSky\Ethos\X14S\scripts","C:\Program Files (x86)\FrSky\Ethos\X18S\scripts"
 
 REM 2. Run the script from the Command Prompt:
 REM    Example (copy all files):
@@ -37,18 +37,13 @@ if not defined fileext (
 )
 
 set "tgt=rfsuite"
-set "srcfolder=%DEV_RFSUITE_GIT_SRC%"
-set "destfolders=%DEV_SIM_SRC%"
+set "srcfolder=%FRSKY_RFSUITE_GIT_SRC%"
+set "destfolders=%FRSKY_SIM_SRC%"
 
 REM Convert CSV list to array by replacing commas with spaces and handling quotes
 for %%d in ("%destfolders:,=" "%") do (
     echo Processing destination folder: %%~d
 
-    REM Preserve the logs folder by moving it temporarily
-    if exist "%%~d\%tgt%\logs\" (
-        mkdir "%%~d\logs_temp" >nul 2>&1
-        xcopy "%%~d\%tgt%\logs\*" "%%~d\logs_temp" /h /i /c /k /e /r /y >nul 2>&1
-    )
 
     REM Handle the case where .lua is passed as a parameter
     if "%fileext%"==".lua" (
@@ -65,22 +60,8 @@ for %%d in ("%destfolders:,=" "%") do (
         REM Recreate the destination folder
         mkdir "%%~d\%tgt%" >nul 2>&1
 
-        REM Restore the logs folder
-        if exist "%%~d\logs_temp\" (
-            mkdir "%%~d\%tgt%\logs" >nul 2>&1
-            xcopy "%%~d\logs_temp\*" "%%~d\%tgt%\logs" /h /i /c /k /e /r /y >nul 2>&1
-            RMDIR "%%~d\logs_temp" /S /Q >nul 2>&1
-        )
-
         REM Copy all files to the destination folder
         xcopy "%srcfolder%\scripts\%tgt%" "%%~d\%tgt%" /h /i /c /k /e /r /y >nul 2>&1
-    )
-
-    REM Restore logs if not handled already
-    if exist "%%~d\logs_temp\" (
-        mkdir "%%~d\%tgt%\logs" >nul 2>&1
-        xcopy "%%~d\logs_temp\*" "%%~d\%tgt%\logs" /h /i /c /k /e /r /y >nul 2>&1
-        RMDIR "%%~d\logs_temp" /S /Q >nul 2>&1
     )
 
     echo Copy completed for: %%~d
