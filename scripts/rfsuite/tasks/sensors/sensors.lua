@@ -29,6 +29,8 @@ local delayDuration = 2  -- seconds
 local delayStartTime = nil
 local delayPending = false
 
+local msp = assert(loadfile("tasks/sensors/msp.lua"))(config)
+
 --[[
     loadSensorModule - Loads the appropriate sensor module based on the current protocol and preferences.
 
@@ -98,6 +100,11 @@ function sensors.wakeup()
     loadSensorModule()
     if loadedSensorModule and loadedSensorModule.module.wakeup then
         loadedSensorModule.module.wakeup()
+    end
+
+    -- run msp sensors
+    if msp and msp.wakeup then
+        msp.wakeup()
     end
 
 end
