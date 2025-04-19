@@ -30,25 +30,56 @@ A table containing status-related sensor configurations.
         sensorname: The name of the sensor.
         sessionname: The session name associated with the sensor .
         appId: The application ID for the sensor.
-        interval: The interval at which the sensor data is updated (2 seconds minimum).
+        interval_armed: The interval at which the sensor data is updated when armed (2 seconds minimum).
+        interval_disarmed: The interval at which the sensor data is updated when not armed (2 seconds minimum).
         unit: The unit of measurement for the sensor data (UNIT_RAW).
         minimum: The minimum value for the sensor data (0).
         maximum: The maximum value for the sensor data (100).
+        process: A function to process the sensor data before updating the sensor value.
 
  The code below will create an ethos sensor, or session, or both at the set interval       
 ]]
 local msp_sensors = {
- --   GOVERNOR_CONFIG = {
- --       gov_mode = {
- --           sensorname = "Governor Config",
- --           sessionname = "governorMode",
- --           appId = 0x11000,
- --           interval = 5,
- --           unit = UNIT_RAW,
- --           minimum = 0,
- --           maximum = 3,
- --       },
- --   },
+    DATAFLASH_SUMMARY = {      
+        flags = {
+            sensorname = "BBL Support",
+            sessionname = "bblSupported",
+            appId = 0x2001,
+            interval_armed = 20,
+            interval_disarmed = 5,
+            unit = UNIT_RAW,
+            process = function(value)
+                    local value = (value & 2) ~= 0
+                    if value then
+                        return 1
+                    else
+                        return 0
+                    end
+            end,
+        },
+        total = {
+            sensorname = "BBL Size",
+            sessionname = "bblSize",
+            appId = 0x2002,
+            interval_armed = 20,
+            interval_disarmed = 5,
+            unit = UNIT_RAW,
+            process = function(value)
+                return value
+            end,
+        },
+        used = {
+            sensorname = "BBL Used",
+            sessionname = "bblUsed",
+            appId = 0x2003,
+            interval_armed = 20,
+            interval_disarmed = 5,
+            unit = UNIT_RAW,
+            process = function(value)
+                    return value
+            end,
+        },        
+    },
 }
 
 msp.sensors = msp_sensors
@@ -82,29 +113,36 @@ end
     If the sensor already exists in the cache, its value is updated with the provided value.
 --]]
 local function createOrUpdateSensor(appId, fieldMeta, value)
-    if sensorCache[appId] == nil then
-        local sensor = model.createSensor()
-        sensor:name(fieldMeta.sensorname)
-        sensor:appId(appId)
-        sensor:physId(0) -- Replace with actual physId if needed
-        sensor:module(rfsuite.session.telemetrySensor:module())
-        
-        -- Optional settings
-        if fieldMeta.unit then
-            sensor:unit(fieldMeta.unit)
-            sensor:protocolUnit(fieldMeta.unit)
-        end
-        sensor:minimum(fieldMeta.minimum or -1000000000)
-        sensor:maximum(fieldMeta.maximum or 2147483647)
+    if not sensorCache[appId] then
+        local existingSensor = system.getSource({ category = CATEGORY_TELEMETRY_SENSOR, appId = appId })
 
-        sensorCache[appId] = sensor
+        if existingSensor then
+            -- Cache the existing sensor instead of trying to recreate it next time
+            sensorCache[appId] = existingSensor
+        else
+            -- Create a new sensor
+            local sensor = model.createSensor()
+            sensor:name(fieldMeta.sensorname)
+            sensor:appId(appId)
+            sensor:physId(0)
+            sensor:module(rfsuite.session.telemetrySensor:module())
+
+            if fieldMeta.unit then
+                sensor:unit(fieldMeta.unit)
+                sensor:protocolUnit(fieldMeta.unit)
+            end
+            sensor:minimum(fieldMeta.minimum or -1000000000)
+            sensor:maximum(fieldMeta.maximum or 1000000000)
+
+            sensorCache[appId] = sensor
+        end
     end
 
+    -- Update the sensor's value if it's cached
     if sensorCache[appId] then
         sensorCache[appId]:value(value)
     end
 end
-
 
 --- Updates a session field in the `rfsuite.session` table.
 -- @param meta A table containing metadata, including the session field name.
@@ -149,9 +187,24 @@ function msp.wakeup()
         return
     end
 
+    local armSource = rfsuite.tasks.telemetry.getSensorSource("armflags")
+
+    if not armSource then
+        return
+    end
+    local isArmed = armSource:value()
+
+
     for api_name, fields in pairs(msp_sensors) do
         local should_query = false
         for field_key, meta in pairs(fields) do
+
+            if isArmed == 1 or isArmed == 3 then
+                meta.interval = meta.interval_armed or 2
+            else
+                meta.interval = meta.interval_disarmed or 2
+            end
+
             if (now - (meta.last_time or 0)) >= meta.interval then
                 should_query = true
                 break
@@ -163,6 +216,14 @@ function msp.wakeup()
 
             API.setCompleteHandler(function(self, buf)
                 for field_key, meta in pairs(fields) do
+
+
+                    if isArmed == 1 or isArmed == 3 then
+                        meta.interval = meta.interval_armed or 2
+                    else
+                        meta.interval = meta.interval_disarmed or 2
+                    end
+
                     if (now - (meta.last_time or 0)) >= meta.interval then
                         local value = API.readValue(field_key)
                         if value ~= nil then
@@ -175,12 +236,18 @@ function msp.wakeup()
                             if meta.sensorname then
                                 local appId = meta.appId
                                 if appId then
+                                    
+                                    -- process received value with suppled function
+                                    if meta.process and type(meta.process) == "function" then
+                                        value = meta.process(value)
+                                    end
+
                                     createOrUpdateSensor(appId, meta, value)
                                 end
                             end
 
                             -- Log what we updated
-                            --rfsuite.utils.log((meta.sensorname or meta.sessionname or field_key) .. ": " .. tostring(value), "info")
+                            -- rfsuite.utils.log((meta.sensorname or meta.sessionname or field_key) .. ": " .. tostring(value), "info")
                         end
                     end
                 end
