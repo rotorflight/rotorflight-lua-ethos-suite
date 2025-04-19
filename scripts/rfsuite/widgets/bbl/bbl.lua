@@ -43,6 +43,7 @@ local function drawCenteredMessage(msg)
 
     for _, font in ipairs(fonts) do
         lcd.font(font)
+        if msg == nil then msg = "" end
         local tW, tH = lcd.getTextSize(msg)
         if tW <= maxW and tH <= maxH then
             bestFont, bestW, bestH = font, tW, tH
@@ -194,14 +195,15 @@ function rf2bbl.paint(widget)
         return
     end
 
+
     if isErase then
         msg = rfsuite.i18n.get("widgets.bbl.erasing")
-        local summary = {}
     elseif not rfsuite.tasks.telemetry.active() then
         msg = rfsuite.i18n.get("no_link"):upper() 
-        local summary = {}
     elseif summary.totalSize and summary.usedSize then
-        msg = getFreeDataflashSpace()   
+        msg = getFreeDataflashSpace()       
+    else
+        msg = "-"
     end    
 
     drawCenteredMessage(msg)
