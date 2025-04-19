@@ -109,4 +109,14 @@ function sensors.wakeup()
 
 end
 
+function sensors.reset()
+
+    if loadedSensorModule and loadedSensorModule.module and loadedSensorModule.module.reset then
+        loadedSensorModule.module.reset()
+    end
+
+    loadedSensorModule = nil  -- Clear loaded sensor module
+    msp.reset()
+end
+
 return sensors

@@ -277,7 +277,7 @@ end
 function tasks.reset()
     for _, task in ipairs(tasksList) do
         if tasks[task.name].reset then
-            rfsuite.utils.log("Reset task [" .. task.name .. "]", "info")
+            --rfsuite.utils.log("Reset task [" .. task.name .. "]", "info")
             tasks[task.name].reset()
         end
     end    

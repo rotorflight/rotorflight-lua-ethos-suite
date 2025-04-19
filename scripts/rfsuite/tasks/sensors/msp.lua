@@ -204,4 +204,8 @@ function msp.wakeup()
     end
 end
 
+function msp.reset()
+    sensorCache = {}
+end
+
 return msp
