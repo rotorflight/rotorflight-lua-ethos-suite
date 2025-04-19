@@ -63,20 +63,13 @@ end
 
 -- Request summary from dataflash
 local function getDataflashSummary()
-    local message = {
-        command = 70,
-        processReply = function(_, buf)
-            local helper = rfsuite.tasks.msp.mspHelper
-            local flags = helper.readU8(buf)
-            summary.ready = (flags & 1) ~= 0
-            summary.supported = (flags & 2) ~= 0
-            summary.sectors = helper.readU32(buf)
-            summary.totalSize = helper.readU32(buf)
-            summary.usedSize = helper.readU32(buf)
-        end,
-        simulatorResponse = {3, 1, 0, 0, 0, 0, 4, 0, 0, 0, 3, 0, 0}
-    }
-    rfsuite.tasks.msp.mspQueue:add(message)
+
+    summary.totalSize = rfsuite.session.bblSize
+    summary.usedSize = rfsuite.session.bblUsed
+    local flags = rfsuite.session.bblFlags
+    summary.ready = (flags & 1) ~= 0
+    summary.supported = (flags & 2) ~= 0
+
 end
 
 
@@ -209,9 +202,6 @@ function rf2bbl.paint(widget)
         local summary = {}
     elseif summary.totalSize and summary.usedSize then
         msg = getFreeDataflashSpace()   
-    else
-        msg = rfsuite.i18n.get('app.msg_loading')
-        local summary = {}
     end    
 
     drawCenteredMessage(msg)
@@ -264,7 +254,7 @@ function rf2bbl.wakeup(widget)
 
     -- draw progress bar if needed
     if progress then
-        progressCounter = progressCounter + 10
+        progressCounter = progressCounter + 5
         progress:value(progressCounter)
         if progressCounter >= 100 then
             progress:close()
