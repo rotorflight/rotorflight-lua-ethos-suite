@@ -43,7 +43,7 @@ local function drawCenteredMessage(msg)
 
     for _, font in ipairs(fonts) do
         lcd.font(font)
-        if msg == nil then msg = "" end
+        if msg == nil then msg = "-" end
         local tW, tH = lcd.getTextSize(msg)
         if tW <= maxW and tH <= maxH then
             bestFont, bestW, bestH = font, tW, tH
@@ -150,10 +150,8 @@ local function wakeupUI()
         end
         local now = os.clock()
 
-        if armValue == 0 or armValue == 2 or (now - lastSummaryTime >= 30) then
-            getDataflashSummary()
-            lastSummaryTime = now
-        end
+
+        getDataflashSummary()
     end    
 end
 
@@ -259,6 +257,8 @@ function rf2bbl.wakeup(widget)
         progressCounter = progressCounter + 5
         progress:value(progressCounter)
         if progressCounter >= 100 then
+            summary.usedSize = 0
+            rfsuite.session.bblUsed = 0
             progress:close()
             progress = nil
         end
