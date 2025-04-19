@@ -156,9 +156,7 @@ local function wakeupUI()
 end
 
 local function getFreeDataflashSpace()
-    if not summary.supported then
-        return rfsuite.i18n.get("app.modules.status.unsupported")
-    end
+
     local freeSpace = summary.totalSize - summary.usedSize
 
     local msg

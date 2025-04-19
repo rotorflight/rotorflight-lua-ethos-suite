@@ -650,6 +650,7 @@ function utils.onReboot()
     rfsuite.session.resetSensors = true
     rfsuite.session.resetTelemetry = true
     rfsuite.session.resetMSP = true
+    rfsuite.session.resetMSPSensors = true
 end
 
 

@@ -138,6 +138,13 @@ end
 
 local lastWakeupTime = 0
 function msp.wakeup()
+
+
+    if rfsuite.session.resetMSPSensors == true then
+        sensorCache = {}
+        rfsuite.session.resetMSPSensors = false  -- Reset immediately
+    end
+
     local now = getCurrentTime()
     if (now - lastWakeupTime) < 2 then return end
     lastWakeupTime = now

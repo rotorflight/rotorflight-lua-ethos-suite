@@ -65,6 +65,7 @@ function tasks.resetAllTasks()
 
     -- reset all main tasks
     rfsuite.tasks.reset()
+    rfsuite.session.resetMSPSensors = true
 
     completionNotified = false
 end
