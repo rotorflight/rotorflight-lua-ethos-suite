@@ -26,6 +26,8 @@ local environment = system.getVersion()
 
 
 local i18n = rfsuite.i18n
+local eraseDataflashGo = false
+local progress = false
 
 status.oldsensors = {"status.refresh", "voltage", "rpm", "current", "temp_esc", "temp_mcu", "fuel", "mah", "rssi", "fm", "govmode"}
 status.isVisible = nil
@@ -284,6 +286,7 @@ local function buildLayoutOptions()
         {i18n.get("widgets.status.layoutOptions.MAX_CURRENT"), 21},
         {i18n.get("widgets.status.layoutOptions.LQ_GOVERNOR"), 22},
         {i18n.get("widgets.status.layoutOptions.CRAFT_NAME"), 18},
+        {i18n.get("widgets.status.layoutOptions.BBL"), 19},
         {i18n.get("widgets.status.layoutOptions.CUSTOMSENSOR_1"), 23},
         {i18n.get("widgets.status.layoutOptions.CUSTOMSENSOR_2"), 24},
         {i18n.get("widgets.status.layoutOptions.CUSTOMSENSOR_1_2"), 25}
@@ -311,6 +314,55 @@ local lastName
 local lastID
 local default_image
 
+-- Trigger erase command
+local function eraseDataflash()
+    isErase = true
+    progress = form.openProgressDialog(rfsuite.i18n.get("app.msg_saving"), rfsuite.i18n.get("app.msg_saving_to_fbl"))
+    progress:value(0)
+    progress:closeAllowed(false)
+    progressCounter = 0
+
+    local message = {
+        command = 72,
+        processReply = function()
+            isErase = false
+        end
+    }
+    rfsuite.tasks.msp.mspQueue:add(message)
+end
+
+-- Ask user for confirmation before erasing dataflash
+local function eraseDataflashAsk()
+
+    local buttons = {{
+        label = rfsuite.i18n.get("app.btn_ok"),
+        action = function()
+
+            -- we push this to the background task to do its job
+            eraseDataflashGo = true
+            return true
+        end
+    }, {
+        label = rfsuite.i18n.get("app.btn_cancel"),
+        action = function()
+            return true
+        end
+    }}
+
+    form.openDialog({
+        width = nil,
+        title =  rfsuite.i18n.get("widgets.bbl.erase_dataflash"),
+        message = rfsuite.i18n.get("widgets.bbl.erase_dataflash") .. "?",
+        buttons = buttons,
+        wakeup = function()
+        end,
+        paint = function()
+        end,
+        options = TEXT_LEFT
+    })
+
+end 
+
 local function getThemeInfo()
     local environment = system.getVersion()
     local w, h = lcd.getWindowSize()
@@ -333,8 +385,6 @@ local function getThemeInfo()
         title_governor = i18n.get("widgets.status.title_governor"),
         title_fm = i18n.get("widgets.status.title_fm"),
         title_rssi = i18n.get("widgets.status.title_rssi"),
-        fontSENSOR = FONT_XXL,
-        fontSENSORSmallBox = FONT_STD,
         fontPopupTitle = FONT_S,
         widgetTitleOffset = 20
     }
@@ -568,16 +618,37 @@ local function telemetryBox(x, y, w, h, title, value, unit, smallbox, alarm, min
     lcd.color(status.isDARKMODE and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90))
 
     if value ~= nil then
-        -- Set font
-        lcd.font((smallbox == nil or smallbox == false) and theme.fontSENSOR or theme.fontSENSORSmallBox)
+        local str = value .. unit
 
-        local str  = rfsuite.utils.truncateText(value .. unit,w)
-        local tsizeW, tsizeH = lcd.getTextSize(unit == "°" and value .. "." or str)
-        local sx = (x + w / 2) - (tsizeW / 2)
-        local sy = (y + h / 2) - (tsizeH / 2)
 
-        if smallbox and (status.maxminParam or status.titleParam) then sy = sy + theme.smallBoxSensortextOFFSET end
+        local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL}
+        if smallbox == true then
+            fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD}
+        end
 
+
+        local maxW, maxH = w * 0.9, h * 0.9
+        local bestFont, bestW, bestH = FONT_XXS, 0, 0
+    
+        for _, font in ipairs(fonts) do
+            lcd.font(font)
+            local tW, tH = lcd.getTextSize(unit == "°" and value .. "." or str)
+            if tW <= (maxW) and tH <= (maxH) then
+                bestFont, bestW, bestH = font, tW, tH
+            else
+                break
+            end
+        end
+    
+        local sx = (x + w / 2) - (bestW / 2)
+        local sy = (y + h / 2) - (bestH / 2)
+    
+        if smallbox and (status.maxminParam or status.titleParam) then
+            sy = sy + theme.smallBoxSensortextOFFSET
+        end
+    
+        lcd.font(bestFont)
+    
         -- Set text color based on alarm flag
         if status.statusColorParam then
             if alarm == 1 then
@@ -590,11 +661,13 @@ local function telemetryBox(x, y, w, h, title, value, unit, smallbox, alarm, min
         elseif alarm == 1 then
             lcd.color(lcd.RGB(255, 0, 0, 1)) -- red
         end
-
+    
         lcd.drawText(sx, sy, str)
-
-        -- Reset text color after alarm handling
-        if alarm ~= 0 then lcd.color(status.isDARKMODE and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90)) end
+    
+        -- Reset text color after alarm
+        if alarm ~= 0 then
+            lcd.color(status.isDARKMODE and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90))
+        end
     end
 
     if title and status.titleParam then
@@ -625,62 +698,6 @@ local function telemetryBox(x, y, w, h, title, value, unit, smallbox, alarm, min
             local sy = (y + h) - tsizeH - theme.colSpacing
             lcd.drawText(sx, sy, maxStr)
         end
-    end
-end
-
-local function telemetryBoxMAX(x, y, w, h, title, value, unit, smallbox)
-    status.isVisible = lcd.isVisible()
-    status.isDARKMODE = lcd.darkMode()
-    local theme = getThemeInfo()
-
-    -- Set background color based on dark mode
-    if status.isDARKMODE then
-        lcd.color(lcd.RGB(40, 40, 40))
-    else
-        lcd.color(lcd.RGB(240, 240, 240))
-    end
-
-    -- Draw background rectangle
-    lcd.drawFilledRectangle(x, y, w, h)
-
-    -- Set text color based on dark mode
-    if status.isDARKMODE then
-        lcd.color(lcd.RGB(255, 255, 255, 1))
-    else
-        lcd.color(lcd.RGB(90, 90, 90))
-    end
-
-    -- Draw sensor value text if available
-    if value then
-        lcd.font(smallbox and theme.fontSENSORSmallBox or theme.fontSENSOR)
-
-        local str = value .. unit
-        local tsizeW, tsizeH
-
-        if unit == "°" then
-            tsizeW, tsizeH = lcd.getTextSize(value .. ".")
-        else
-            tsizeW, tsizeH = lcd.getTextSize(str)
-        end
-
-        local sx = x + w / 2 - tsizeW / 2
-        local sy = y + h / 2 - tsizeH / 2
-
-        if smallbox then if status.maxminParam or status.titleParam then sy = sy + theme.smallBoxSensortextOFFSET end end
-
-        lcd.drawText(sx, sy, str)
-    end
-
-    -- Draw title text if available and enabled
-    if title and status.titleParam then
-        lcd.font(theme.fontTITLE)
-        local str = title
-        local tsizeW, tsizeH = lcd.getTextSize(str)
-
-        local sx = x + w / 2 - tsizeW / 2
-        local sy = y + h - tsizeH - theme.colSpacing
-
-        lcd.drawText(sx, sy, str)
     end
 end
 
@@ -2925,6 +2942,24 @@ function status.wakeup(widget)
         wakeupUI()
         -- collectgarbage()  -- Uncomment if garbage collection is needed
     end
+
+    -- run the erase process if requested
+    if eraseDataflashGo then
+        eraseDataflashGo = false
+        eraseDataflash()
+    end
+
+    -- draw progress bar if needed
+    if progress then
+        progressCounter = progressCounter + 5
+        progress:value(progressCounter)
+        if progressCounter >= 100 then
+            rfsuite.session.bblUsed = 0
+            progress:close()
+            progress = nil
+        end
+    end
+
 end
 
 function status.paint(widget)
@@ -3658,6 +3693,7 @@ function status.paint(widget)
                 if sensorTGT == 16 then sensorTGT = 'voltage__mah' end
                 if sensorTGT == 17 then sensorTGT = 'mah' end
                 if sensorTGT == 18 then sensorTGT = 'craft_name' end
+                if sensorTGT == 19 then sensorTGT = 'bbl' end
                 if sensorTGT == 20 then sensorTGT = 'rssi_timer_temp_esc_temp_mcu' end
                 if sensorTGT == 21 then sensorTGT = 'max_current' end
                 if sensorTGT == 22 then sensorTGT = 'lq__gov' end
@@ -3996,6 +4032,27 @@ function status.paint(widget)
                         end
                     end
 
+                    if sensorTGT == 'bbl' then
+                            local used
+                            local total
+                            if rfsuite.session and rfsuite.session.bblUsed and rfsuite.session.bblSize then
+                             used = rfsuite.utils.round((rfsuite.session.bblUsed / (1024 * 1024)),1) or 0
+                             total =rfsuite.utils.round( (rfsuite.session.bblSize / (1024 * 1024)),1) or 0
+                             sensorVALUE = used .. "/" .. total
+                            else
+                             sensorVALUE = "-"
+                            end
+
+                            sensorUNIT = "MB"
+                            sensorMIN = nil
+                            sensorMAX = nil
+                            sensorWARN = nil
+                            sensorTITLE = nil
+                            smallBOX = false
+                            
+                            telemetryBox(posX, posY, boxW, boxH, i18n.get("widgets.status.layoutOptions.BBL"), sensorVALUE, sensorUNIT, smallBOX)
+                    end
+
                 end
 
                 c = c + 1
@@ -4028,6 +4085,12 @@ function status.paint(widget)
         end
     end
 
+end
+
+function status.menu(widget)
+    return {
+        {rfsuite.i18n.get("widgets.bbl.erase_dataflash"), eraseDataflashAsk}
+    }
 end
 
 function status.i18n()
