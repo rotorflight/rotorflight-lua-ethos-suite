@@ -1169,7 +1169,8 @@ return {
         ["TESC"] = "Temp. ESC",
         ["LQ_TIMER_TESC_TMCU"] = "RSSI, MINUTERIE, T.ESC, T.PROC.",
         ["TIMER"] = "MINUTERIE",
-        ["GOVERNOR"] = "GOUVERNEUR"
+        ["GOVERNOR"] = "GOUVERNEUR",
+        ["BBL"] = "BBL"
       },
       ["title_tempESC"] = "T.ESC",
       ["txt_battery_configuration"] = "Configuration de la batterie",
