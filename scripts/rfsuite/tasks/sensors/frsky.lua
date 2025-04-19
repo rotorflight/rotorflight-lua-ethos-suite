@@ -359,4 +359,10 @@ function frsky.wakeup()
 
 end
 
+function frsky.reset()
+    frsky.createSensorCache = {}
+    frsky.dropSensorCache = {}
+    frsky.renameSensorCache = {}
+end
+
 return frsky

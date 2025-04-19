@@ -231,5 +231,11 @@ local function wakeup()
     flushCacheIfNeeded()
 end
 
+-- reset
+function sim.reset()
+    sensors.uid = {}
+    sensors.lastvalue = {}
+end
+
 sim.wakeup = wakeup
 return sim

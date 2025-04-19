@@ -273,4 +273,10 @@ function frsky_legacy.wakeup()
 
 end
 
+function frsky_legacy.reset()
+    frsky_legacy.createSensorCache = {}
+    frsky_legacy.renameSensorCache = {}
+    frsky_legacy.dropSensorCache = {} 
+end
+
 return frsky_legacy
