@@ -117,7 +117,6 @@ local function eraseDataflash()
     local message = {
         command = 72,
         processReply = function()
-            summary = {}
             isErase = false
             getDataflashSummary()
         end
@@ -138,7 +137,6 @@ local function wakeupUI()
     end
 
     if not rfsuite.tasks.msp.mspQueue:isProcessed() then
-        summary = {}
         return
     end
 
