@@ -151,4 +151,12 @@ function msp.wakeup()
 
 end
 
+function msp.reset()
+    rfsuite.tasks.msp.mspQueue:clear()
+    msp.sensor = nil
+    msp.activeProtocol = nil
+    msp.onConnectChecksInit = true
+    msp.resetState()
+end
+
 return msp
