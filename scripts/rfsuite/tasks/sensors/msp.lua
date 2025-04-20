@@ -14,6 +14,7 @@
  *   API_NAME = {
  *     interval_armed: <number>         -- Interval (in seconds) to poll this API when the model is armed
  *     interval_disarmed: <number>      -- Interval (in seconds) when disarmed
+ *     interval_admin: <number>         -- Interval (in seconds) when admin module loaded
  *
  *     fields = {
  *       field_key = {
@@ -71,6 +72,7 @@ local msp_sensors = {
     DATAFLASH_SUMMARY = {
         interval_armed = 10,
         interval_disarmed = 5,
+        interval_admin = 15,
         fields = {
             flags = {
                 sensorname = "BBL Flags",
@@ -157,11 +159,19 @@ function msp.wakeup()
     local armSource = rfsuite.tasks.telemetry.getSensorSource("armflags")
     if not armSource then return end
     local isArmed = armSource:value()
+    local isAdmin = rfsuite.app.guiIsRunning
 
     for api_name, api_meta in pairs(msp_sensors) do
         api_meta.last_time = api_meta.last_time or 0
 
-        local interval = (isArmed == 1 or isArmed == 3) and (api_meta.interval_armed or 2) or (api_meta.interval_disarmed or 2)
+        local interval
+        if isAdmin and api_meta.interval_admin then
+            interval = api_meta.interval_admin
+        elseif isArmed == 1 or isArmed == 3 then
+            interval = api_meta.interval_armed or 2
+        else
+            interval = api_meta.interval_disarmed or 2
+        end
 
         local fields = api_meta.fields
         for _, meta in pairs(fields) do
@@ -177,6 +187,8 @@ function msp.wakeup()
 
         if (now - api_meta.last_time) >= interval then
             api_meta.last_time = now
+
+            rfsuite.utils.log("MSP API: " .. api_name .. " interval: " .. interval, "debug")
 
             local API = rfsuite.tasks.msp.api.load(api_name)
             API.setCompleteHandler(function(self, buf)
