@@ -7,6 +7,9 @@ Release candidate version for 2.2.0-RC3 Rotorflight
 - blackbox status widget
 - arm status widget
 - disarm flags widget
+- msp sensor framework
+- small fixes to improve speed of connect/reconnect
+- added italian translation & audio
 
 # 2.2.0-RC2
 
