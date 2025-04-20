@@ -1769,6 +1769,7 @@ Returns:
 function app.close()
     app.guiIsRunning = false
     app.offlineMode = false
+    app.uiState = app.uiStatus.init
 
     if app.Page and (app.uiState == app.uiStatus.pages or app.uiState == app.uiStatus.mainMenu) and app.Page.close then
         app.Page.close()
