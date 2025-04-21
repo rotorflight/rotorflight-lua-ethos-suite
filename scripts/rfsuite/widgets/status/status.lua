@@ -2801,7 +2801,7 @@ function status.configure(widget)
     end)
 
     line = advpanel:addLine("   " .. i18n.get("widgets.status.txt_mcu"))
-    form.addChoiceField(line, nil, {{"Disable", 1}, {"°C -> °F", 2}, {"°F -> °C", 3}}, function()
+    form.addChoiceField(line, nil, {{rfsuite.i18n.get("widgets.status.txt_disable"), 1}, {"°C -> °F", 2}, {"°F -> °C", 3}}, function()
         return status.tempconvertParamMCU
     end, function(newValue)
         status.tempconvertParamMCU = newValue
