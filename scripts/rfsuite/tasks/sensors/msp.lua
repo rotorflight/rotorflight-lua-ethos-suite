@@ -141,8 +141,13 @@ end
 local lastWakeupTime = 0
 function msp.wakeup()
 
+    if rfsuite.session.apiVersion == nil then
+        rfsuite.utils.log("MSP API version not set; skipping MSP sensors", "debug")
+        rfsuite.session.resetMSPSensors = true  -- Reset on next wakeup
+        return
+    end
 
-    if rfsuite.session.resetMSPSensors == true then
+    if rfsuite.session.resetMSPSensors == true  then
         sensorCache = {}
         rfsuite.session.resetMSPSensors = false  -- Reset immediately
     end
