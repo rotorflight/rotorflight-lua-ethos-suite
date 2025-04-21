@@ -1,7 +1,7 @@
 {
   "erase_dataflash": {
     "english": "Erase dataflash",
-    "translation": "Datenflash löschen",
+    "translation": "Blackbox speicher loeschen",
     "needs_translation": "false"
   },
   "erasing": {
