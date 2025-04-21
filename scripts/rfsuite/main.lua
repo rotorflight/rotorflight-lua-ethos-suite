@@ -190,6 +190,7 @@ rfsuite.session.telemetrySensor = nil
 rfsuite.session.repairSensors = false
 rfsuite.session.locale = system.getLocale()
 rfsuite.session.lastMemoryUsage = nil
+rfsuite.session.mcu_id = nil
 
 
 --[[
