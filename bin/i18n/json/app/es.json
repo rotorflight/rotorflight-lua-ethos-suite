@@ -21,7 +21,7 @@
   },
   "msg_please_disarm_to_save_warning": {
     "english": "Settings will only be saved to eeprom on disarm",
-    "translation": "La configuracion solo se guardara en EEPROM al desarmar",
+    "translation": "La configuración solo se guardara en EEPROM al desarmar",
     "needs_translation": "false"
   },
   "msg_saving_settings": {
@@ -229,7 +229,7 @@
           },
           "brake_type": {
             "english": "Brake Type",
-            "translation": "Tipo Freno",
+            "translation": "Tipo de Freno",
             "needs_translation": "false"
           },
           "brake": {
@@ -274,7 +274,7 @@
           },
           "startup_power": {
             "english": "Startup Power",
-            "translation": "Potencia Inicio",
+            "translation": "Potencia de Inicio",
             "needs_translation": "false"
           },
           "other": {
@@ -306,7 +306,7 @@
           },
           "brake_force": {
             "english": "Brake Force",
-            "translation": "Fuerza Frenado",
+            "translation": "Fuerza de Frenado",
             "needs_translation": "false"
           },
           "sr_function": {
@@ -376,7 +376,7 @@
           },
           "startup_power": {
             "english": "Startup Power",
-            "translation": "Potencia Inicio",
+            "translation": "Potencia de Inicio",
             "needs_translation": "false"
           },
           "motor_poles": {
@@ -408,7 +408,7 @@
           },
           "motor_temp_sensor": {
             "english": "Motor temp sensor",
-            "translation": "Sensor de temperatura del motor",
+            "translation": "Sensor temp. motor",
             "needs_translation": "false"
           },
           "starting_torque": {
@@ -786,7 +786,7 @@
     "pids": {
       "help_p1": {
         "english": "FeedForward (Roll/Pitch): Start at 70, increase until stops are sharp with no drift. Keep roll and pitch equal.",
-        "translation": "Ganancia F (Rolido/Cabeceo): Comience en 70, aumente hasta que las paradas sean en seco sin derivas. Mantenga rolido y cabeceo en rangos similares.",
+        "translation": "Ganancia F (Alabeo/Cabeceo): Comience en 70, aumente hasta que las paradas sean en seco sin derivas. Mantenga alabeo y cabeceo en rangos similares.",
         "needs_translation": "false"
       },
       "o": {
@@ -806,12 +806,12 @@
       },
       "yaw": {
         "english": "Yaw",
-        "translation": "Giro",
+        "translation": "Dirección",
         "needs_translation": "false"
       },
       "roll": {
         "english": "Roll",
-        "translation": "Rolido",
+        "translation": "Alabeo",
         "needs_translation": "false"
       },
       "help_p5": {
@@ -836,7 +836,7 @@
       },
       "help_p2": {
         "english": "I Gain (Roll/Pitch): Raise gradually for stable piro pitch pumps. Too high causes wobbles; match roll/pitch values.",
-        "translation": "Ganancia I (Rolido/Cabeceo): Aumente gradualmente para bombeo de cabeceo estable en piruetas. Demasiado alto causa tambaleo; mantega rolido/cabeceo en rangos similares.",
+        "translation": "Ganancia I (Alabeo/Cabeceo): Aumente gradualmente para bombeo de cabeceo estable en piruetas. Demasiado alto causa tambaleo; mantega alabeo/cabeceo en rangos similares.",
         "needs_translation": "false"
       },
       "d": {
@@ -856,7 +856,7 @@
       },
       "help_p3": {
         "english": "Tail P/I/D Gains: Increase P until slight wobble in funnels, then back off slightly. Raise I until tail holds firm in hard moves (too high causes slow wag). Adjust D for smooth stops—higher for slow servos, lower for fast ones.",
-        "translation": "Ganacia P/I/D de cola: Incremente P hasta un leve tambaleo durante embudos, luego disminuya levemente. Aumente I hasta que la cola se mantenga firme durante movimientos rápidos (demasiado alto causa un meneo lento de la cola). Ajuste D para paradas suaves —más alto para servos lentos, más bajo para rápidos.",
+        "translation": "Ganacia P/I/D de cola: Incremente P hasta un leve tambaleo durante embudos, luego disminuya levemente. Aumente I hasta que la cola se mantenga firme durante movimientos rápidos (demasiado alto causa un meneo lento de la cola). Ajuste D para paradas suaves — más alto para servos lentos, más bajo para rápidos.",
         "needs_translation": "false"
       }
     },
@@ -918,7 +918,7 @@
       },
       "start_prompt": {
         "english": "Would you like to start the test? Choose the test run time below.",
-        "translation": "Desea comenzar la prueba? Seleccione el tiempo de ejecución que sigue.",
+        "translation": "Desea comenzar la prueba? A continuacion seleccione el tiempo de ejecución.",
         "needs_translation": "false"
       },
       "rf_protocol": {
@@ -1119,7 +1119,7 @@
       },
       "yaw_deadband": {
         "english": "Yaw",
-        "translation": "Rotación",
+        "translation": "Dirección",
         "needs_translation": "false"
       },
       "cyclic": {
@@ -1161,7 +1161,7 @@
     "profile_select": {
       "help_p1": {
         "english": "Set the current flight profile or rate profile you would like to use.",
-        "translation": "Indique el perfil de vuelo o de tasa que desee utilizar.",
+        "translation": "Indique el perfil de vuelo o perfil de tasa que desee utilizar.",
         "needs_translation": "false"
       },
       "rate_profile": {
@@ -1223,7 +1223,7 @@
       },
       "yaw": {
         "english": "Yaw",
-        "translation": "Giro",
+        "translation": "Dirección",
         "needs_translation": "false"
       },
       "cyc": {
@@ -1258,7 +1258,7 @@
       },
       "help_p4": {
         "english": "Precomp: Governor precomp gain for yaw, cyclic, and collective inputs.",
-        "translation": "Precomp: Precompensación del Governor para comandos de cíclico, colectivo, y giro (cola).",
+        "translation": "Precomp: Precompensación del Governor para comandos de cíclico, colectivo, y dirección (cola).",
         "needs_translation": "false"
       },
       "max_throttle": {
@@ -1345,7 +1345,7 @@
       },
       "help_p2": {
         "english": "Precomp Cutoff: Frequency limit for all yaw precompensation actions.",
-        "translation": "Corte Precomp.: Límite de frecuencia para todas las acciones de precompensación de rotación.",
+        "translation": "Corte Precomp.: Límite de frecuencia para todas las acciones de precompensación de dirección.",
         "needs_translation": "false"
       },
       "cutoff": {
@@ -1360,7 +1360,7 @@
       },
       "help_p1": {
         "english": "Yaw Stop Gain: Higher stop gain will make the tail stop more aggressively but may cause oscillations if too high. Adjust CW or CCW to make the yaw stops even.",
-        "translation": "Ganancia de parada de rotación: Un valor más alto hará que la cola se detenga más agresivamente, pero puede causar oscilaciones si el valor es demasiado alto. Ajuste horario (CW) y antihorario (CCW) para hacer que las paradas de rotación sean parejas para ambos lados.",
+        "translation": "Ganancia de parada de dirección: Un valor más alto hará que la cola se detenga más agresivamente, pero puede causar oscilaciones si el valor es demasiado alto. Ajuste horario (CW) y antihorario (CCW) para hacer que las paradas de dirección sean parejas para ambos lados.",
         "needs_translation": "false"
       },
       "inertia_precomp": {
@@ -1390,7 +1390,7 @@
       },
       "yaw_stop_gain": {
         "english": "Yaw stop gain",
-        "translation": "Ganacia parada rot.",
+        "translation": "Ganacia parada dir.",
         "needs_translation": "false"
       },
       "precomp_cutoff": {
@@ -1502,7 +1502,7 @@
       },
       "help_p1": {
         "english": "Error decay ground: PID decay to help prevent heli from tipping over when on the ground.",
-        "translation": "Distensión Error en Tierra: Distensión de PID para ayudar a prevenir que el heli se vuelque estando en tierra.",
+        "translation": "Distensión de Error en Tierra: Distensión de PID para ayudar a prevenir que el heli se vuelque estando en tierra.",
         "needs_translation": "false"
       }
     },
@@ -1628,12 +1628,12 @@
       },
       "help_p2": {
         "english": "Cross Coupling Gain: Removes roll coupling when only elevator is applied.",
-        "translation": "Ganancia de Acople Cruzado: Cancela el acople de rolido cuando se aplica solo elevador.",
+        "translation": "Ganancia de Acople Cruzado: Cancela el acople de alabeo cuando se aplica solo elevador.",
         "needs_translation": "false"
       },
       "help_p3": {
         "english": "Cross Coupling Ratio: Amount of compensation (pitch vs roll) to apply.",
-        "translation": "Relación de Acople Cruzado: Cantidad de compensación (cabeceo vs rolido) a aplicar.",
+        "translation": "Relación de Acople Cruzado: Cantidad de compensación (cabeceo vs alabeo) a aplicar.",
         "needs_translation": "false"
       }
     },
@@ -1837,7 +1837,7 @@
       },
       "exit_time": {
         "english": "Exit time",
-        "translation": "T.Salida",
+        "translation": "T. Salida",
         "needs_translation": "false"
       },
       "help_p5": {
@@ -1904,7 +1904,7 @@
       },
       "yaw_trim": {
         "english": "Yaw. trim %",
-        "translation": "% ajuste Giro",
+        "translation": "% ajuste Direccion",
         "needs_translation": "false"
       },
       "enable_mixer_message": {
@@ -1919,7 +1919,7 @@
       },
       "roll_trim": {
         "english": "Roll trim %",
-        "translation": "% ajuste Rolido",
+        "translation": "% ajuste Alabeo",
         "needs_translation": "false"
       },
       "pitch_trim": {
@@ -2038,7 +2038,7 @@
       },
       "roll": {
         "english": "Roll",
-        "translation": "Rolido",
+        "translation": "Alabeo",
         "needs_translation": "false"
       }
     },
@@ -2090,7 +2090,7 @@
       },
       "roll": {
         "english": "Roll",
-        "translation": "Rolido",
+        "translation": "Alabeo",
         "needs_translation": "false"
       },
       "none": {
@@ -2140,7 +2140,7 @@
       },
       "yaw": {
         "english": "Yaw",
-        "translation": "Rotación",
+        "translation": "Dirección",
         "needs_translation": "false"
       },
       "collective": {
@@ -2309,7 +2309,7 @@
       },
       "license": {
         "english": "You may copy, distribute, and modify the software as long as you track changes/dates in source files. Any modifications to or software including (via compiler) GPL-licensed code must also be made available under the GPL along with build & install instructions.",
-        "translation": "Puede copiar, distribuir, y modifiar este software siempre y cuando se comprometa a marcar/fechar los cambios en el código fuente. Todas las modificaciones a nuestro software incluyendo código licenciado mediante GPL (via compilador) deben ser distribuidos bajo licencia GPL junto con instrucciones de compilación e instalación.",
+        "translation": "Puede copiar, distribuir, y modificar este software siempre y cuando se comprometa a marcar/fechar los cambios en el código fuente. Todas las modificaciones a nuestro software incluyendo código licenciado mediante GPL (via compilador) deben ser distribuidas bajo licencia GPL junto con instrucciones de compilación e instalación.",
         "needs_translation": "false"
       },
       "simulation": {
@@ -2339,7 +2339,7 @@
       },
       "credits": {
         "english": "Notable contributors to both the Rotorflight firmware and this software are: Petri Mattila, Egon Lubbers, Rob Thomson, Rob Gayle, Phil Kaighin, Robert Burrow, Keith Williams, Bertrand Songis, Venbs Zhou... and many more who have spent hours testing and providing feedback!",
-        "translation": "Contribuyentes notables tanto para el firmware de Rotorflight como a este software son: Petri Mattila, Egon Lubbers, Rob Thomson, Rob Gayle, Phil Kaighin, Robert Burrow, Keith Williams, Bertrand Songis, Venbs Zhou... y muchos más que han dedicado horas probando y proveyendo feedback!",
+        "translation": "Contribuyentes notables tanto para el firmware de Rotorflight como a este software son: Petri Mattila, Egon Lubbers, Rob Thomson, Rob Gayle, Phil Kaighin, Robert Burrow, Keith Williams, Bertrand Songis, Venbs Zhou... y muchos más que han dedicado horas probando y proveyendo feedback! Traducción al Español: Pablo Montoreano",
         "needs_translation": "false"
       },
       "msp_transport": {
@@ -2361,12 +2361,12 @@
       },
       "roll": {
         "english": "Roll",
-        "translation": "Rolido",
+        "translation": "Alabeo",
         "needs_translation": "false"
       },
       "yaw_dynamics": {
         "english": "Yaw dynamics",
-        "translation": "Dinám. de Rotación",
+        "translation": "Dinám. de Dirección",
         "needs_translation": "false"
       },
       "pitch": {
@@ -2406,12 +2406,12 @@
       },
       "yaw_dynamic_ceiling_gain": {
         "english": "Ceiling",
-        "translation": "Tope Rotación",
+        "translation": "Tope Dirección",
         "needs_translation": "false"
       },
       "yaw_boost": {
         "english": "Yaw boost",
-        "translation": "Impulso de giro",
+        "translation": "Impulso de Dirección",
         "needs_translation": "false"
       },
       "gain": {
@@ -2431,7 +2431,7 @@
       },
       "yaw": {
         "english": "Yaw",
-        "translation": "Giro",
+        "translation": "Dirección",
         "needs_translation": "false"
       },
       "yaw_dynamic_deadband_filter": {
@@ -2481,7 +2481,7 @@
       },
       "roll_boost": {
         "english": "Roll boost",
-        "translation": "Impulso de rolido",
+        "translation": "Impulso de alabeo",
         "needs_translation": "false"
       },
       "dyn_deadband_gain": {
@@ -2496,7 +2496,7 @@
       },
       "roll_dynamics": {
         "english": "Roll dynamics",
-        "translation": "Dinámica de Rolido",
+        "translation": "Dinámica de Alabeo",
         "needs_translation": "false"
       },
       "collective_boost": {
@@ -2548,7 +2548,7 @@
       },
       "help_tool_p1": {
         "english": "Override: [*] Enable override to allow real-time updates of servo center point.",
-        "translation": "Toma de servo: [*] Active la toma de servo para permitir la actualización en tiempo real del punto central del servo.",
+        "translation": "Toma de servo: [*] Active la toma de control del servo para permitir la actualización en tiempo real del punto central del servo.",
         "needs_translation": "false"
       },
       "tbl_no": {
@@ -2573,7 +2573,7 @@
       },
       "cyc_pitch": {
         "english": "CYC.PITCH",
-        "translation": "ANGULO CICL.",
+        "translation": "PASO CICL.",
         "needs_translation": "false"
       },
       "center": {
@@ -2653,7 +2653,7 @@
       },
       "enable_servo_override_msg": {
         "english": "Servo override allows you to 'trim' your servo center point in real time.",
-        "translation": "Toma de servo permite ajustar en tiempo real el punto central de su servo.",
+        "translation": "La toma de control del servo permite ajustar en tiempo real el punto central de su servo.",
         "needs_translation": "false"
       },
       "cyc_right": {
@@ -2698,7 +2698,7 @@
       },
       "help_fields_mid": {
         "english": "Servo center position pulse width.",
-        "translation": "Ancho del pulso de la posición central del servo.",
+        "translation": "Ancho del pulso en la posición central del servo.",
         "needs_translation": "false"
       },
       "help_fields_scale_neg": {
@@ -2740,7 +2740,7 @@
       },
       "angle_mode": {
         "english": "Angle mode",
-        "translation": "Modo Angular",
+        "translation": "Modo Angulo",
         "needs_translation": "false"
       },
       "max": {
@@ -2770,7 +2770,7 @@
       },
       "help_p2": {
         "english": "Angle Mode: How aggressively the heli tilts back to level when flying in Angle Mode.",
-        "translation": "Modo Angular: Que tan agresivamente el helicótero vuelve a nivel en el modo Angular.",
+        "translation": "Modo Angulo: Que tan agresivamente el helicótero vuelve a nivel en el modo Angulo.",
         "needs_translation": "false"
       },
       "help_p3": {
@@ -3158,7 +3158,7 @@
   },
   "check_rf_module_on": {
     "english": "Please check your rf module is turned on.",
-    "translation": "Verifique que el módulo rf esté encendido.",
+    "translation": "Verifique que el módulo RF esté encendido.",
     "needs_translation": "false"
   },
   "msg_saving": {
@@ -3223,7 +3223,7 @@
   },
   "check_bg_task": {
     "english": "Please enable the background task.",
-    "translation": "Habilite tarea en segundo plano (LUA modelo).",
+    "translation": "Habilite tarea en segundo plano (en LUA del modelo).",
     "needs_translation": "false"
   },
   "navigation_tools": {

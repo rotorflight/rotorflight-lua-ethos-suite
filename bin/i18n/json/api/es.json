@@ -2,7 +2,7 @@
   "RC_TUNING": {
     "setpoint_boost_cutoff_2": {
       "english": "Boost cutoff for the setpoint.",
-      "translation": "Limite de impulso para el punto de consigna.",
+      "translation": "Limite de impulso para el punto seleccionado.",
       "needs_translation": "false"
     },
     "response_time_3": {
@@ -17,17 +17,17 @@
     },
     "setpoint_boost_gain_4": {
       "english": "Boost gain for the setpoint.",
-      "translation": "Ganancia de impulso para el punto de consigna.",
+      "translation": "Ganancia de impulso para el punto seleccionado.",
       "needs_translation": "false"
     },
     "yaw_dynamic_deadband_filter": {
       "english": "The maximum filter applied to the yaw dynamic deadband.",
-      "translation": "El filtro maximo aplicado a la zona muerta dinamica de yaw.",
+      "translation": "El filtro maximo aplicado a la zona muerta dinamica de la direccion.",
       "needs_translation": "false"
     },
     "setpoint_boost_gain_3": {
       "english": "Boost gain for the setpoint.",
-      "translation": "Ganancia de impulso para el punto de consigna.",
+      "translation": "Ganancia de impulso para el punto seleccionado.",
       "needs_translation": "false"
     },
     "response_time_2": {
@@ -42,17 +42,17 @@
     },
     "setpoint_boost_cutoff_1": {
       "english": "Boost cutoff for the setpoint.",
-      "translation": "Limite de impulso para el punto de consigna.",
+      "translation": "Limite de impulso para el punto seleccionado.",
       "needs_translation": "false"
     },
     "setpoint_boost_cutoff_4": {
       "english": "Boost cutoff for the setpoint.",
-      "translation": "Limite de impulso para el punto de consigna.",
+      "translation": "Limite de impulso para el punto seleccionado.",
       "needs_translation": "false"
     },
     "setpoint_boost_gain_2": {
       "english": "Boost gain for the setpoint.",
-      "translation": "Ganancia de impulso para el punto de consigna.",
+      "translation": "Ganancia de impulso para el punto seleccionado.",
       "needs_translation": "false"
     },
     "accel_limit_2": {
@@ -62,7 +62,7 @@
     },
     "yaw_dynamic_deadband_gain": {
       "english": "The maximum gain applied to the yaw dynamic deadband.",
-      "translation": "La ganancia maxima aplicada a la zona muerta dinamica de yaw.",
+      "translation": "La ganancia maxima aplicada a la zona muerta dinamica de la direccion.",
       "needs_translation": "false"
     },
     "accel_limit_3": {
@@ -77,17 +77,17 @@
     },
     "setpoint_boost_cutoff_3": {
       "english": "Boost cutoff for the setpoint.",
-      "translation": "Limite de impulso para el punto de consigna.",
+      "translation": "Limite de impulso para el punto deseado.",
       "needs_translation": "false"
     },
     "setpoint_boost_gain_1": {
       "english": "Boost gain for the setpoint.",
-      "translation": "Ganancia de impulso para el punto de consigna.",
+      "translation": "Ganancia de impulso para el punto deseado.",
       "needs_translation": "false"
     },
     "yaw_dynamic_ceiling_gain": {
       "english": "The maximum gain applied to the yaw dynamic ceiling.",
-      "translation": "La ganancia maxima aplicada al limite dinamico de yaw.",
+      "translation": "Ganancia maxima aplicada al limite dinamico de la direccion.",
       "needs_translation": "false"
     },
     "response_time_1": {
@@ -119,7 +119,7 @@
     },
     "rescue_max_setpoint_rate": {
       "english": "Limit rescue roll/pitch rate. Larger helicopters may need slower rotation rates.",
-      "translation": "Limite de tasa de rolido/cabeceo en rescate. Helicopteros mas grandes pueden necesitar menores tasas de rotacion.",
+      "translation": "Limite de tasa de alabeo/cabeceo en rescate. Helicopteros mas grandes pueden necesitar menores tasas de rotacion.",
       "needs_translation": "false"
     },
     "tbl_flip": {
@@ -154,7 +154,7 @@
     },
     "rescue_max_setpoint_accel": {
       "english": "Limit how fast the helicopter accelerates into a roll/pitch. Larger helicopters may need slower acceleration.",
-      "translation": "Limite de que tan rapido el helicoptero acelera entrando a un rolido/cabeceo. Helicopteros mas grandes pueden necesitar menores tasas de aceleracion.",
+      "translation": "Limite de que tan rapido el helicoptero acelera entrando a un alabeo/cabeceo. Helicopteros mas grandes pueden necesitar menores tasas de aceleracion.",
       "needs_translation": "false"
     },
     "tbl_on": {
@@ -201,7 +201,7 @@
     },
     "consumption_correction": {
       "english": "Adjust the consumption correction",
-      "translation": "Ajuste la correccion de consumo",
+      "translation": "Ajuste de la correccion de consumo",
       "needs_translation": "false"
     },
     "current_offset": {
@@ -211,7 +211,7 @@
     },
     "voltage_correction": {
       "english": "Adjust the voltage correction",
-      "translation": "Ajuste la correccion de voltaje",
+      "translation": "Ajuste de la correccion de voltaje",
       "needs_translation": "false"
     },
     "hw4_voltage_gain": {
@@ -231,7 +231,7 @@
     },
     "current_correction": {
       "english": "Adjust current correction",
-      "translation": "Ajuste la correccion de corriente",
+      "translation": "Ajuste de la correccion de corriente",
       "needs_translation": "false"
     },
     "pin_swap": {
@@ -537,7 +537,7 @@
     },
     "governor_yaw_ff_weight": {
       "english": "Yaw precompensation weight - how much yaw is mixed into the feedforward.",
-      "translation": "Precompensacion de rotacion - cuanta rotacion se mezcla con el avance (feedforward).",
+      "translation": "Precompensacion de direccion - cuanto comando de direccion se mezcla con el avance (feedforward).",
       "needs_translation": "false"
     },
     "governor_max_throttle": {
@@ -584,7 +584,7 @@
     },
     "yaw_inertia_precomp_cutoff": {
       "english": "Cutoff. Derivative cutoff frequency in 1/10Hz steps. Controls how sharp the precomp is. Higher value is sharper.",
-      "translation": "Corte. Frecuencia de corte derivada, en pasos de 1/10Hz. Controla que tan duramente se precompensa. Un valor mayor es mas fuerte.",
+      "translation": "Corte. Frecuencia de corte derivada, en pasos de 1/10Hz. Controla que tan agresivamente se precompensa. Un valor mayor es mas fuerte.",
       "needs_translation": "false"
     },
     "offset_limit_0": {
@@ -594,12 +594,12 @@
     },
     "cyclic_cross_coupling_ratio": {
       "english": "Amount of roll-to-pitch compensation needed, vs. pitch-to-roll.",
-      "translation": "Cantidad de compensacion rolido-a-cabeceo necesaria, vs. cabeceo-a-rolido.",
+      "translation": "Cantidad de compensacion alabeo-a-cabeceo necesaria, vs. cabeceo-a-alabeo.",
       "needs_translation": "false"
     },
     "yaw_precomp_cutoff": {
       "english": "Frequency limit for all yaw precompensation actions.",
-      "translation": "Limite de frecuencia para todas las acciones de precompensacion de rotacion.",
+      "translation": "Limite de frecuencia para todas las acciones de precompensacion de direccion.",
       "needs_translation": "false"
     },
     "error_limit_0": {
@@ -614,7 +614,7 @@
     },
     "tbl_rpy": {
       "english": "RPY",
-      "translation": "RPY",
+      "translation": "ACD (RPY)",
       "needs_translation": "false"
     },
     "gyro_cutoff_2": {
@@ -629,7 +629,7 @@
     },
     "trainer_angle_limit": {
       "english": "Limit the maximum angle the helicopter will pitch/roll to while in Acro Trainer Mode.",
-      "translation": "Limita el angulo maximo de cabeceo/rolido que alcanzara el helicoptero en modo Entrenador Acro.",
+      "translation": "Limita el angulo maximo de cabeceo/alabeo que alcanzara el helicoptero en modo Entrenador Acro.",
       "needs_translation": "false"
     },
     "tbl_rp": {
@@ -639,7 +639,7 @@
     },
     "yaw_cyclic_ff_gain": {
       "english": "Cyclic feedforward mixed into yaw (cyclic-to-yaw precomp).",
-      "translation": "Avance de ciclico mezclado con rotacion (precomp. ciclico-a-rotacion).",
+      "translation": "Avance de ciclico mezclado con direccion (precomp. ciclico-a-direccion).",
       "needs_translation": "false"
     },
     "error_decay_time_cyclic": {
@@ -654,7 +654,7 @@
     },
     "cyclic_cross_coupling_gain": {
       "english": "Amount of compensation applied for pitch-to-roll decoupling.",
-      "translation": "Cantidad de compensacion aplicada al desacople cabeceo-a-rolido.",
+      "translation": "Cantidad de compensacion aplicada al desacople cabeceo-a-alabeo.",
       "needs_translation": "false"
     },
     "yaw_collective_dynamic_decay": {
@@ -669,7 +669,7 @@
     },
     "iterm_relax_type": {
       "english": "Choose the axes in which this is active. RP: Roll, Pitch. RPY: Roll, Pitch, Yaw.",
-      "translation": "Seleccione los ejes en los que esta activado. RP: Rollido, Cabeceo. RPY: Rolido, Cabeceo, Rotacion.",
+      "translation": "Seleccione los ejes en los que esta activado. AC (RP): Alabeo, Cabeceo. ACD (RPY): Alabeo, Cabeceo, Direccion.",
       "needs_translation": "false"
     },
     "offset_limit_1": {
@@ -709,7 +709,7 @@
     },
     "yaw_collective_ff_gain": {
       "english": "Collective feedforward mixed into yaw (collective-to-yaw precomp).",
-      "translation": "Avance de colectivo mezclado con rotacion (precomp colectivo-a-rotacion).",
+      "translation": "Avance de colectivo mezclado con direccion (precomp colectivo-a-direccion).",
       "needs_translation": "false"
     },
     "gyro_cutoff_0": {
@@ -719,7 +719,7 @@
     },
     "yaw_collective_dynamic_gain": {
       "english": "An extra boost of yaw precomp on collective input.",
-      "translation": "Aumento precompensacion extra de rotacion para comandos de colectivo.",
+      "translation": "Aumento de precompensacion extra de direccion para comandos de colectivo.",
       "needs_translation": "false"
     },
     "cyclic_cross_coupling_cutoff": {
@@ -729,12 +729,12 @@
     },
     "error_rotation": {
       "english": "Rotates the current roll and pitch error terms around yaw when the craft rotates. This is sometimes called Piro Compensation.",
-      "translation": "Rota los valores actuales de rolido y cabeceo alrededor del eje de rotacion vertical mientras el heli esta girando. Este termino se suele llamar Compensacion Piro (de pirueta).",
+      "translation": "Rota los valores actuales de alabeo y cabeceo alrededor del eje de rotacion vertical mientras el heli esta girando. Este termino se suele llamar Compensacion Piro (de pirueta).",
       "needs_translation": "false"
     },
     "angle_level_limit": {
       "english": "Limit the maximum angle the helicopter will pitch/roll to while in Angle mode.",
-      "translation": "Limita el angulo maximo de inclinacion de cabeceo/rolido en modo angulo.",
+      "translation": "Limita el angulo maximo de inclinacion de cabeceo/alabeo en modo angulo.",
       "needs_translation": "false"
     },
     "yaw_cw_stop_gain": {
@@ -749,7 +749,7 @@
     },
     "yaw_inertia_precomp_gain": {
       "english": "Scalar gain. The strength of the main rotor inertia. Higher value means more precomp is applied to yaw control.",
-      "translation": "Ganacia escalar. La fuerza de inercia del rotor principal. Un valor mayor implica mayor precompensacion aplicada al control de rotacion.",
+      "translation": "Ganacia escalar. La fuerza de inercia del rotor principal. Un valor mayor implica mayor precompensacion aplicada al control de direccion.",
       "needs_translation": "false"
     },
     "dterm_cutoff_0": {
@@ -786,7 +786,7 @@
     },
     "tail_center_trim": {
       "english": "Sets tail rotor trim for 0 yaw for variable pitch, or tail motor throttle for 0 yaw for motorized.",
-      "translation": "Define el ajuste de cola para rotacion 0 en paso variable, o acelerador del motor para rotacion 0 en cola motorizada.",
+      "translation": "Define el ajuste de cola para direccion 0 en paso variable, o acelerador del motor para direccion 0 en cola motorizada.",
       "needs_translation": "false"
     },
     "tbl_cw": {
@@ -796,7 +796,7 @@
     },
     "swash_tta_precomp": {
       "english": "Mixer precomp for 0 yaw.",
-      "translation": "Precompensacion de mezclador para rotacion 0.",
+      "translation": "Precompensacion de mezclador para direccion 0.",
       "needs_translation": "false"
     },
     "swash_trim_2": {
@@ -883,7 +883,7 @@
     },
     "tail_rotor_gear_ratio_0": {
       "english": "Tail Gear Tooth Count",
-      "translation": "Numero de dientes del del engranaje de cola",
+      "translation": "Numero de dientes del engranaje de cola",
       "needs_translation": "false"
     },
     "motor_pole_count_0": {
@@ -1031,7 +1031,7 @@
     },
     "pid_1_F": {
       "english": "Helps push P-term based on stick input. Increasing will make response more sharp, but can cause overshoot.",
-      "translation": "Ayuda a empujar el P-term en funcion de la posicion del joystick. Aumentarlo hara la respuesta mas fuerte, pero puede causar que se pase de largo.",
+      "translation": "Ayuda a empujar el P-term en funcion de la posicion del joystick. Aumentarlo hara la respuesta mas agresiva, pero puede causar que se pase de largo.",
       "needs_translation": "false"
     },
     "pid_0_D": {
@@ -1056,7 +1056,7 @@
     },
     "pid_0_O": {
       "english": "Used to prevent the craft from rolling when using high collective.",
-      "translation": "Se utiliza para evitar que la aeronave role cuando se utiliza colectivo alto.",
+      "translation": "Se utiliza para evitar que la aeronave se alabee cuando se utiliza colectivo alto.",
       "needs_translation": "false"
     },
     "pid_0_F": {
@@ -1160,12 +1160,12 @@
     },
     "rc_min_throttle": {
       "english": "Minimum throttle (0% throttle output) expected from radio, in microseconds (us).",
-      "translation": "Acelerador minimo que se espera del radio (salida del acelerador 0%), en microseconds (uS).",
+      "translation": "Acelerador minimo que se espera del radio (salida del acelerador 0%), en microsegundos (uS).",
       "needs_translation": "false"
     },
     "rc_max_throttle": {
       "english": "Maximum throttle (100% throttle output) expected from radio, in microseconds (us).",
-      "translation": "Acelerador maximo que se espera del radio (salida del acelerador 100%), en microseconds (uS).",
+      "translation": "Acelerador maximo que se espera del radio (salida del acelerador 100%), en microsegundos (uS).",
       "needs_translation": "false"
     },
     "rc_arm_throttle": {
@@ -1175,7 +1175,7 @@
     },
     "rc_yaw_deadband": {
       "english": "Deadband for yaw control in microseconds (us).",
-      "translation": "Zona muerta para control de rotacion sobre su eje en microsegundos (uS).",
+      "translation": "Zona muerta para control de direccion en microsegundos (uS).",
       "needs_translation": "false"
     },
     "rc_deadband": {
@@ -1192,7 +1192,7 @@
   "FILTER_CONFIG": {
     "gyro_soft_notch_cutoff_2": {
       "english": "Width of the notch filter in Hz.",
-      "translation": "Ancho del filtro para el punto en Hz.",
+      "translation": "Ancho del filtro para el Punto en Hz.",
       "needs_translation": "false"
     },
     "gyro_lpf1_static_hz": {
@@ -1237,12 +1237,12 @@
     },
     "gyro_soft_notch_cutoff_1": {
       "english": "Width of the notch filter in Hz.",
-      "translation": "Ancho del filtro para el punto en Hz.",
+      "translation": "Ancho del filtro para el Punto en Hz.",
       "needs_translation": "false"
     },
     "gyro_soft_notch_hz_1": {
       "english": "Center frequency to which the notch is applied.",
-      "translation": "Frecuencia central aplicada al punto.",
+      "translation": "Frecuencia central aplicada al Punto.",
       "needs_translation": "false"
     },
     "dyn_notch_count": {

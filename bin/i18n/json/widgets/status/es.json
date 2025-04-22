@@ -303,7 +303,7 @@
   },
   "txt_please_enable_bgtask": {
     "english": "Please enable background task",
-    "translation": "Active tarea en segundo plano (LUA modelo)",
+    "translation": "Active tarea en segundo plano (en LUA del modelo)",
     "needs_translation": "false"
   },
   "txt_calcfuel_local": {
@@ -438,7 +438,7 @@
   },
   "txt_telemetry_announcements": {
     "english": "Telemetry Announcements",
-    "translation": "Anuncios Telemetía",
+    "translation": "Anuncios Telemetría",
     "needs_translation": "false"
   },
   "txt_extgovernor": {
@@ -573,7 +573,7 @@
   },
   "txt_low_fuel_percentage": {
     "english": "Low Fuel %",
-    "translation": "Combustible bajo %",
+    "translation": "% combustible bajo",
     "needs_translation": "false"
   },
   "txt_na": {
