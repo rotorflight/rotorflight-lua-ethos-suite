@@ -1074,7 +1074,8 @@ return {
     ["check_heli_on"] = "Bitte ueberpruefen Sie, ob Ihr Heli eingeschaltet und der Empfaenger verbunden ist.",
     ["check_bg_task"] = "Bitte aktivieren Sie die Background-Task.",
     ["navigation_tools"] = "*",
-    ["check_supported_version"] = "Diese Version des Lua-Skripts\nkann nicht mit dem ausgewaehlten Modell verwendet werden."
+    ["check_supported_version"] = "Diese Version des Lua-Skripts\nkann nicht mit dem ausgewaehlten Modell verwendet werden.",
+    ["check_rf2"] = "Pech gehabt. Die Textmodus-Version von RF2 verträgt sich nicht mit der Suite – die einzige Lösung ist jetzt ein Neustart deines Radios, um wieder zum Normalbetrieb zurückzukehren."
   },
   ["telemetry"] = {
     ["sensors"] = {

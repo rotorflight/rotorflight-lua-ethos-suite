@@ -1074,7 +1074,8 @@ return {
     ["check_heli_on"] = "Verifique que el helicóptero esté encendido y el radio conectado.",
     ["check_bg_task"] = "Habilite tarea en segundo plano (LUA modelo).",
     ["navigation_tools"] = "*",
-    ["check_supported_version"] = "Esta versión del script Lua \nno se puede utilizar con el modelo seleccionado"
+    ["check_supported_version"] = "Esta versión del script Lua \nno se puede utilizar con el modelo seleccionado",
+    ["check_rf2"] = "Sin suerte. Usar la versión en modo texto de RF2 no funciona bien con la suite; la única solución ahora es reiniciar tu radio para volver a la normalidad."
   },
   ["telemetry"] = {
     ["sensors"] = {

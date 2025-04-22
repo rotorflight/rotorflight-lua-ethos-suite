@@ -216,7 +216,9 @@ function msp.wakeup()
             end)
 
             API.setUUID("uuid-" .. api_name)
-            API.read()
+            if rf2.rssiSensor ~= nil then  --- if you load and use rf2; we abort due to compatibility issues
+                API.read()
+            end
         end
     end
 end
