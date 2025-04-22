@@ -1074,8 +1074,7 @@ return {
     ["check_heli_on"] = "Controleer of de heli aanstaat en de radio is verbonden.",
     ["check_bg_task"] = "Schakel de achtergrond taak in.",
     ["navigation_tools"] = "*",
-    ["check_supported_version"] = "Deze versie van het lua script \n kan niet gebruikt worden met het geselecteerde model",
-    ["check_rf2"] = "Helaas. Het gebruik van de tekstmodusversie van RF2 werkt niet goed samen met de suite – de enige oplossing is nu om je radio opnieuw op te starten om alles weer normaal te krijgen."
+    ["check_supported_version"] = "Deze versie van het lua script \n kan niet gebruikt worden met het geselecteerde model"
   },
   ["telemetry"] = {
     ["sensors"] = {

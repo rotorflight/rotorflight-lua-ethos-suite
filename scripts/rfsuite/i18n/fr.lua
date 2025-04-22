@@ -1074,8 +1074,7 @@ return {
     ["check_heli_on"] = "Veuillez verifier que votre helicoptere est sous tension et connecte a la radio.",
     ["check_bg_task"] = "Veuillez activer la tache en arriere-plan.",
     ["navigation_tools"] = "*",
-    ["check_supported_version"] = "Cette version du script Lua ne peut pas etre utilisee avec le modele selectionne.",
-    ["check_rf2"] = "Pas de chance. Utiliser la version en mode texte de RF2 ne fonctionne pas bien avec la suite – la seule solution maintenant est de redémarrer votre radio pour revenir à la normale."
+    ["check_supported_version"] = "Cette version du script Lua ne peut pas etre utilisee avec le modele selectionne."
   },
   ["telemetry"] = {
     ["sensors"] = {

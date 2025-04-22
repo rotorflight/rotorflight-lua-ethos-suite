@@ -1074,8 +1074,7 @@ return {
     ["check_heli_on"] = "Please check your heli is powered up and radio connected.",
     ["check_bg_task"] = "Please enable the background task.",
     ["navigation_tools"] = "*",
-    ["check_supported_version"] = "This version of the Lua script \ncan't be used with the selected model",
-    ["check_rf2"] = "Out of luck. Using the text mode version of RF2 does not play nice with suite - the only solution now is a restart of your radio to get back to normal."
+    ["check_supported_version"] = "This version of the Lua script \ncan't be used with the selected model"
   },
   ["telemetry"] = {
     ["sensors"] = {

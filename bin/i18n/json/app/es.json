@@ -3235,10 +3235,5 @@
     "english": "This version of the Lua script \ncan't be used with the selected model",
     "translation": "Esta versión del script Lua \nno se puede utilizar con el modelo seleccionado",
     "needs_translation": "false"
-  },
-  "check_rf2": {
-    "english": "Out of luck. Using the text mode version of RF2 does not play nice with suite - the only solution now is a restart of your radio to get back to normal.",
-    "translation": "Sin suerte. Usar la versión en modo texto de RF2 no funciona bien con la suite; la única solución ahora es reiniciar tu radio para volver a la normalidad.",
-    "needs_translation": "false"
   }
 }
