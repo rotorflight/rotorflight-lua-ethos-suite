@@ -1199,9 +1199,6 @@ function app.wakeupUI()
                     rfsuite.config.ethosVersion[2], 
                     rfsuite.config.ethosVersion[3])
                     app.triggers.invalidConnectionSetup = true
-                elseif rf2.rssiSensor ~= nil then
-                    message = rfsuite.i18n.get("app.check_rf2")
-                    app.triggers.invalidConnectionSetup = true
                 elseif not rfsuite.tasks.active() then
                     message = rfsuite.i18n.get("app.check_bg_task") 
                     app.triggers.invalidConnectionSetup = true

@@ -1074,8 +1074,7 @@ return {
     ["check_heli_on"] = "Assicurati che la radiosia connessa e l'elicottero sia acceso.",
     ["check_bg_task"] = "Abilita i Task Background per favore.",
     ["navigation_tools"] = "*",
-    ["check_supported_version"] = "Questa Versione del Lua Script \nnon puo' essere usata con il modello selezionato",
-    ["check_rf2"] = "Niente da fare. L’uso della versione in modalità testo di RF2 non va d’accordo con la suite – l’unica soluzione ora è riavviare la radio per tornare alla normalità."
+    ["check_supported_version"] = "Questa Versione del Lua Script \nnon puo' essere usata con il modello selezionato"
   },
   ["telemetry"] = {
     ["sensors"] = {
