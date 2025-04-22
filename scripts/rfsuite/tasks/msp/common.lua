@@ -55,7 +55,7 @@ local mspTxCRC = 0
         MSP_VERSION (number): The version of the MSP protocol.
         MSP_STARTFLAG (number): The start flag for the MSP protocol.
 ]]
-function mspProcessTxQ()
+local function mspProcessTxQ()
     if #mspTxBuf == 0 then return false end
 
     rfsuite.utils.log("Sending mspTxBuf size " .. tostring(#mspTxBuf) .. " at Idx " .. tostring(mspTxIdx) .. " for cmd: " .. tostring(mspLastReq),"debug")
@@ -95,7 +95,7 @@ end
     @return nil
     Logs an error and returns nil if the command is invalid, the payload is not a table, or if there is an existing transmission buffer still sending.
 ]]
-function mspSendRequest(cmd, payload)
+local function mspSendRequest(cmd, payload)
     if not cmd or type(payload) ~= "table" then
         rfsuite.utils.log("Invalid command or payload","debug")
         return nil
