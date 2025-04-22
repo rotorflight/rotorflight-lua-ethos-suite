@@ -1098,7 +1098,7 @@ return {
   },
   ["widgets"] = {
     ["bbl"] = {
-      ["erase_dataflash"] = "Datenflash löschen",
+      ["erase_dataflash"] = "Blackbox speicher loeschen",
       ["erasing"] = "Lösche...",
       ["display"] = "Anzeige",
       ["display_free"] = "Frei",
