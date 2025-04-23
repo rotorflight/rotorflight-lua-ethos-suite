@@ -12,7 +12,7 @@ local function findMFG()
         if f then
             io.close(f)
 
-            local func, err = loadfile(init_path)
+            local func, err = rfsuite.compiler.loadfile(init_path)
 
             if func then
                 local mconfig = func()
@@ -118,7 +118,7 @@ local function openPage(pidx, title, script)
     if rfsuite.app.menuLastSelected["escmain"] == nil then rfsuite.app.menuLastSelected["escmain"] = 1 end
 
 
-    local ESCMenu = assert(loadfile("app/modules/" .. script))()
+    local ESCMenu = assert(rfsuite.compiler.loadfile("app/modules/" .. script))()
     local pages = findMFG()
     local lc = 0
     local bx = 0

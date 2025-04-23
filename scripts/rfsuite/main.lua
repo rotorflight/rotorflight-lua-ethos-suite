@@ -68,6 +68,7 @@ config.bgTaskKey = "rf2bg"                                          -- key id us
 
 -- LuaFormatter on
 
+
 -- main
 -- rfsuite: Main table for the rotorflight-lua-ethos-suite script.
 -- rfsuite.config: Configuration table for the suite.
@@ -77,7 +78,10 @@ rfsuite = {}
 rfsuite.config = config
 rfsuite.preferences = preferences
 rfsuite.session = {}
-rfsuite.app = assert(loadfile("app/app.lua"))(config)
+
+rfsuite.compiler = assert(loadfile("lib/compile.lua"))(config) 
+rfsuite.app = assert(rfsuite.compiler.loadfile("app/app.lua"))(config)
+
 
 -- 
 -- This script initializes the logging configuration for the rfsuite module.
@@ -98,18 +102,18 @@ rfsuite.app = assert(loadfile("app/app.lua"))(config)
 os.mkdir("LOGS:")
 os.mkdir("LOGS:/rfsuite")
 os.mkdir("LOGS:/rfsuite/logs")
-rfsuite.log = assert(loadfile("lib/log.lua"))(config)
+rfsuite.log = assert(rfsuite.compiler.loadfile("lib/log.lua"))(config)
 rfsuite.log.config.log_file = "LOGS:/rfsuite/logs/rfsuite_" .. os.date("%Y-%m-%d_%H-%M-%S") .. ".log"
 rfsuite.log.config.min_print_level  = config.logLevel
 rfsuite.log.config.log_to_file = config.logToFile
 
 
 -- library with utility functions used throughou the suite
-rfsuite.utils = assert(loadfile("lib/utils.lua"))(config)
+rfsuite.utils = assert(rfsuite.compiler.loadfile("lib/utils.lua"))(config)
 
 
 -- Load the i18n system
-rfsuite.i18n  = assert(loadfile("lib/i18n.lua"))(config)
+rfsuite.i18n  = assert(rfsuite.compiler.loadfile("lib/i18n.lua"))(config)
 rfsuite.i18n.load()     
 
 -- 
@@ -117,10 +121,10 @@ rfsuite.i18n.load()
 -- 
 -- The `rfsuite.tasks` table is created to hold various tasks.
 -- The `rfsuite.tasks` is assigned the result of executing the "tasks/tasks.lua" file with the `config` parameter.
--- The `loadfile` function is used to load the "tasks/tasks.lua" file, and `assert` ensures that the file is loaded successfully.
+-- The `rfsuite.compiler.loadfile` function is used to load the "tasks/tasks.lua" file, and `assert` ensures that the file is loaded successfully.
 -- The loaded file is then executed with the `config` parameter, and its return value is assigned to `rfsuite.tasks`.
 -- tasks
-rfsuite.tasks = assert(loadfile("tasks/tasks.lua"))(config)
+rfsuite.tasks = assert(rfsuite.compiler.loadfile("tasks/tasks.lua"))(config)
 
 -- LuaFormatter off
 
@@ -227,7 +231,7 @@ end
     3. Registers a background task using `system.registerTask()` with configurations from `config`.
     4. Dynamically loads and registers widgets:
        - Finds widget scripts using `rfsuite.utils.findWidgets()`.
-       - Loads each widget script dynamically using `loadfile()`.
+       - Loads each widget script dynamically using `rfsuite.compiler.loadfile()`.
        - Assigns the loaded script to a variable inside the `rfsuite` table.
        - Registers each widget with `system.registerWidget()` using the dynamically assigned module.
 
@@ -243,7 +247,7 @@ end
     - `system.registerSystemTool()`
     - `system.registerTask()`
     - `rfsuite.utils.findWidgets()`
-    - `loadfile()`
+    - `rfsuite.compiler.loadfile()`
     - `system.registerWidget()`
 ]]
 local function init()
@@ -316,7 +320,7 @@ local function init()
     
     -- Try to load from cache if it exists
     if io.open(cachePath, "r") then
-        local ok, cached = pcall(dofile, cachePath)
+        local ok, cached = pcall(rfsuite.compiler.dofile, cachePath)
         if ok and type(cached) == "table" then
             widgetList = cached
             rfsuite.utils.log("[cache] Loaded widget list from cache","info")
@@ -364,7 +368,7 @@ local function init()
         for i, v in ipairs(widgetList) do
             if v.script then
                 -- Load the script dynamically
-                local scriptModule = assert(loadfile("widgets/" .. v.folder .. "/" .. v.script))(config)
+                local scriptModule = assert(rfsuite.compiler.loadfile("widgets/" .. v.folder .. "/" .. v.script))(config)
         
                 -- Use the script filename (without .lua) as the key, or v.varname if provided
                 local varname = v.varname or v.script:gsub("%.lua$", "")

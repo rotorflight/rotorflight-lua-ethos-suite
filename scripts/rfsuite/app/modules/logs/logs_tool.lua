@@ -194,7 +194,7 @@ function unpadTable(paddedTable, padCount)
 end
 
 
-function loadFileToMemory(filename)
+function rfsuite.compiler.loadfileToMemory(filename)
     local file, err = io.open(filename, "rb")
     if not file then return nil, "Error opening file: " .. err end
 

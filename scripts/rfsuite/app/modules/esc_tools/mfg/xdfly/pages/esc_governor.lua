@@ -1,7 +1,7 @@
 
 
 local folder = "xdfly"
-local ESC = assert(loadfile("app/modules/esc_tools/mfg/" .. folder .. "/init.lua"))()
+local ESC = assert(rfsuite.compiler.loadfile("app/modules/esc_tools/mfg/" .. folder .. "/init.lua"))()
 local mspHeaderBytes = ESC.mspHeaderBytes
 local mspSignature = ESC.mspSignature
 local simulatorResponse = ESC.simulatorResponse

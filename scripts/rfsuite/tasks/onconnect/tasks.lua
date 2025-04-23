@@ -26,7 +26,7 @@ function tasks.findTasks()
             local fullPath = basePath .. file
             local taskName = file:gsub("%.lua$", "")
 
-            local chunk, err = loadfile(fullPath)
+            local chunk, err = rfsuite.compiler.loadfile(fullPath)
             if not chunk then
                 rfsuite.utils.log("Error loading task file " .. file .. ": " .. err, "error")
             else
@@ -99,7 +99,7 @@ function tasks.wakeup()
         local taskMetadata
 
         if io.open(cachePath, "r") then
-            local ok, cached = pcall(dofile, cachePath)
+            local ok, cached = pcall(rfsuite.compiler.dofile, cachePath)
             if ok and type(cached) == "table" then
                 taskMetadata = cached
                 rfsuite.utils.log("[cache] Loaded onconnect task metadata from cache","info")
@@ -116,7 +116,7 @@ function tasks.wakeup()
             local basePath = "tasks/onconnect/tasks/"
             for taskName, file in pairs(taskMetadata) do
                 local fullPath = basePath .. file
-                local chunk = assert(loadfile(fullPath))
+                local chunk = assert(rfsuite.compiler.loadfile(fullPath))
                 local taskModule = assert(chunk())
                 tasksList[taskName] = {
                     module = taskModule,

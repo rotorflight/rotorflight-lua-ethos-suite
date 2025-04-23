@@ -95,12 +95,12 @@ app.triggers = triggers
     Initializes the app.ui table and loads the UI library.
 
     The app.ui table is first initialized as an empty table.
-    Then, the UI library is loaded from "app/lib/ui.lua" using the loadfile function,
+    Then, the UI library is loaded from "app/lib/ui.lua" using the rfsuite.compiler.loadfile function,
     and the result is assigned to app.ui. The config parameter is passed to the loaded file.
 
 ]]
 app.ui = {}
-app.ui = assert(loadfile("app/lib/ui.lua"))(config)
+app.ui = assert(rfsuite.compiler.loadfile("app/lib/ui.lua"))(config)
 
 
 --[[
@@ -109,7 +109,7 @@ app.ui = assert(loadfile("app/lib/ui.lua"))(config)
     If the file cannot be loaded, an error will be thrown.
 ]]
 app.utils = {}
-app.utils = assert(loadfile("app/lib/utils.lua"))(config)
+app.utils = assert(rfsuite.compiler.loadfile("app/lib/utils.lua"))(config)
 
 
 --[[
@@ -1624,7 +1624,7 @@ function app.create_logtool()
     config.ethosRunningVersion = {config.environment.major, config.environment.minor, config.environment.revision}
 
     rfsuite.session.lcdWidth, rfsuite.session.lcdHeight = rfsuite.utils.getWindowSize()
-    app.radio = assert(loadfile("app/radios.lua"))().msp
+    app.radio = assert(rfsuite.compiler.loadfile("app/radios.lua"))().msp
 
     app.uiState = app.uiStatus.init
 
@@ -1662,7 +1662,7 @@ function app.create()
     config.ethosRunningVersion = {config.environment.major, config.environment.minor, config.environment.revision}
 
     rfsuite.session.lcdWidth, rfsuite.session.lcdHeight = rfsuite.utils.getWindowSize()
-    app.radio = assert(loadfile("app/radios.lua"))().msp
+    app.radio = assert(rfsuite.compiler.loadfile("app/radios.lua"))().msp
 
     app.uiState = app.uiStatus.init
 

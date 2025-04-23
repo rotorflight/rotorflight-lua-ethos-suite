@@ -59,7 +59,7 @@ local function loadAPI(apiName)
 
     -- Check if file exists before trying to load it
     if rfsuite.utils.file_exists(apiFilePath) then
-        local apiModule = dofile(apiFilePath) -- Load the Lua API file
+        local apiModule = rfsuite.compiler.dofile(apiFilePath) -- Load the Lua API file
 
         if type(apiModule) == "table" and (apiModule.read or apiModule.write) then
 
