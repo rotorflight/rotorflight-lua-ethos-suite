@@ -24,21 +24,21 @@ local config = {}
 -- LuaFormatter off
 
 -- Configuration settings for the Rotorflight Lua Ethos Suite
-config.toolName = "Rotorflight"                                     -- name of the tool 
-config.icon = lcd.loadMask("app/gfx/icon.png")                      -- icon
-config.icon_logtool = lcd.loadMask("app/gfx/icon_logtool.png")      -- icon
-config.icon_unsupported = lcd.loadMask("app/gfx/unsupported.png")   -- icon
-config.Version = "0.0.0.0"                                          -- version number of this software replace
-config.ethosVersion = {1, 6, 2}                                     -- min version of ethos supported by this script                                                     
-config.supportedMspApiVersion = {"12.06", "12.07","12.08"}          -- supported msp versions
-config.simulatorApiVersionResponse = {0, 12, 8}                     -- version of api return by simulator
-config.baseDir = "rfsuite"                                          -- base directory for the suite. This is only used by msp api to ensure correct path
-config.logLevel= "info"                                               -- off | info | debug [default = info]
-config.logToFile = false                                            -- log to file [default = false] (log file is in /scripts/rfsuite/logs)
-config.logMSP = false                                               -- log msp messages [default =  false]
-config.logMSPQueue = false                                          -- log msp queue size [default = false]
-config.logMemoryUsage = false                                       -- log memory usage [default = false]
-config.developerMode = false                                        -- show developer tools on main menu [default = false]
+config.toolName = "Rotorflight"                                         -- name of the tool 
+config.icon = lcd.loadMask("app/gfx/icon.png")                          -- icon
+config.icon_logtool = lcd.loadMask("app/gfx/icon_logtool.png")          -- icon
+config.icon_unsupported = lcd.loadMask("app/gfx/unsupported.png")       -- icon
+config.version = {major = 2, minor = 2, revision = 0, suffix = "RC1"}   -- version of the script
+config.ethosVersion = {1, 6, 2}                                         -- min version of ethos supported by this script                                                     
+config.supportedMspApiVersion = {"12.06", "12.07","12.08"}              -- supported msp versions
+config.simulatorApiVersionResponse = {0, 12, 8}                         -- version of api return by simulator
+config.baseDir = "rfsuite"                                              -- base directory for the suite. This is only used by msp api to ensure correct path
+config.logLevel= "info"                                                 -- off | info | debug [default = info]
+config.logToFile = false                                                -- log to file [default = false] (log file is in /scripts/rfsuite/logs)
+config.logMSP = false                                                   -- log msp messages [default =  false]
+config.logMSPQueue = false                                              -- log msp queue size [default = false]
+config.logMemoryUsage = false                                           -- log memory usage [default = false]
+config.developerMode = false                                            -- show developer tools on main menu [default = false]
 
 
 -- RotorFlight + ETHOS LUA preferences
@@ -191,6 +191,30 @@ rfsuite.session.repairSensors = false
 rfsuite.session.locale = system.getLocale()
 rfsuite.session.lastMemoryUsage = nil
 rfsuite.session.mcu_id = nil
+
+
+--- Retrieves the version information of the rfsuite module.
+--- 
+--- This function constructs a version string and returns a table containing
+--- detailed version information, including the major, minor, revision, and suffix
+--- components.
+---
+--- @return table A table containing the following fields:
+---   - `version` (string): The full version string in the format "X.Y.Z-SUFFIX".
+---   - `major` (number): The major version number.
+---   - `minor` (number): The minor version number.
+---   - `revision` (number): The revision version number.
+---   - `suffix` (string): The version suffix (e.g., "alpha", "beta").
+function rfsuite.version()
+    local version = config.version.major .. "." .. config.version.minor .. "." .. config.version.revision .. "-" .. config.version.suffix
+    return {
+        version = version,
+        major = config.version.major,
+        minor = config.version.minor,
+        revision = config.version.revision,
+        suffix = config.version.suffix
+    }
+end
 
 
 --[[
