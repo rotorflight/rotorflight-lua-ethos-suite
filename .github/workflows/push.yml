@@ -22,7 +22,7 @@ jobs:
     - name: Update version and config in main.lua
       run: |
         # Use GIT_VER set in previous step
-        sed -i "s/config.Version = \".*\"/config.Version = \"${{ env.GIT_VER }}\"/" scripts/rfsuite/main.lua
+        sed -i 's/\(config.version = {[^}]*suffix = \)"[^"]*"/\1"${{ env.GIT_VER }}"/' scripts/rfsuite/main.lua
 
         # Set logging settings
         sed -i 's/\(config.logLevel= \)".*"/\1"off"/' scripts/rfsuite/main.lua

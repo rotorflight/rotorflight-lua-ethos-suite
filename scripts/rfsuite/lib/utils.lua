@@ -68,7 +68,7 @@ end
 
 
 function utils.logRotorFlightBanner()
-    local version = rfsuite.config.Version or "Unknown Version"
+    local version = rfsuite.version().version or "Unknown Version"
 
     local banner = {
         "===============================================",
