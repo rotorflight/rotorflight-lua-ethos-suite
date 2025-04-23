@@ -22,6 +22,9 @@ local arg = {...}
 local baseDir     = "./"
 local compiledDir = baseDir .. "cache/"
 
+-- Prefix for special script paths
+local SCRIPT_PREFIX = "SCRIPTS:"
+
 -- Ensure cache directory exists
 local function ensure_dir(dir)
   if os.mkdir then
@@ -45,6 +48,14 @@ end
 -- In-memory cache for loaded chunks
 local chunk_cache = {}
 
+-- Helper to strip SCRIPT_PREFIX
+local function strip_prefix(name)
+  if name:sub(1, #SCRIPT_PREFIX) == SCRIPT_PREFIX then
+    return name:sub(#SCRIPT_PREFIX + 1)
+  end
+  return name
+end
+
 -- Core loadfile replacement
 function compile.loadfile(script)
   -- Return already-loaded chunk
@@ -52,19 +63,13 @@ function compile.loadfile(script)
     return chunk_cache[script]
   end
 
-  -- Strip "SCRIPTS:" prefix for cache naming
-  local name_for_cache = script
-  local prefix = "SCRIPTS:"
-  if name_for_cache:sub(1, #prefix) == prefix then
-    name_for_cache = name_for_cache:sub(#prefix + 1)
-  end
+  -- Prepare name for cache: strip prefix and sanitize path
+  local name_for_cache = strip_prefix(script)
+  local sanitized      = name_for_cache:gsub("/", "_")
+  local cache_fname    = sanitized .. "c"
+  local cache_path     = compiledDir .. cache_fname
 
-  -- Determine cache filename
-  local sanitized  = name_for_cache:gsub("/", "_")
-  local cache_fname = sanitized .. "c"
-  local cache_path  = compiledDir .. cache_fname
-
-  -- Compile if not on disk
+  -- Compile if missing
   if not disk_cache[cache_fname] then
     system.compile(script)
     os.rename(script .. "c", cache_path)
@@ -79,8 +84,7 @@ end
 
 -- Wrapper for dofile: loads via compile.loadfile and executes it with args
 function compile.dofile(script, ...)
-  local chunk = compile.loadfile(script)
-  return chunk(...)
+  return compile.loadfile(script)(...)
 end
 
 -- Custom require that compiles and loads modules via our cache
@@ -88,8 +92,10 @@ function compile.require(modname)
   if package.loaded[modname] then
     return package.loaded[modname]
   end
-  -- Convert module name to path
-  local path = modname:gsub("%.", "/") .. ".lua"
+  -- Convert module name to path and strip prefix
+  local raw_path = modname:gsub("%.", "/") .. ".lua"
+  local path     = strip_prefix(raw_path)
+
   local chunk = compile.loadfile(path)
   local result = chunk()
   -- Per Lua convention, module returns value or true
