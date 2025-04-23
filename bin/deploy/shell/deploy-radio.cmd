@@ -25,6 +25,7 @@ if "%fileext%"==".lua" (
 
     echo Remove all cache files
     del "%srcfolder%\scripts\%tgt%\cache\*.cache" /q /s
+    del "%srcfolder%\scripts\%tgt%\cache\*.luac" /q /s
 
 ) else (
     REM Remove the entire destination folder

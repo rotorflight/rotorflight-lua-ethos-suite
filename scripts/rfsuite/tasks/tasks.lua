@@ -173,7 +173,7 @@ function tasks.wakeup()
     tasks.callback()
 
     if tasks.init == false then
-        local cacheFile = "tasks.cache"
+        local cacheFile = "tasks_cache.lua"
         local cachePath = "cache/" .. cacheFile
         local taskMetadata
 

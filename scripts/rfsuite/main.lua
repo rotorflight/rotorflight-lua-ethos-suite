@@ -314,7 +314,7 @@ local function init()
     })
 
     -- widgets are loaded dynamically
-    local cacheFile = "widgets.cache"
+    local cacheFile = "widgets_cache.lua"
     local cachePath = "cache/" .. cacheFile
     local widgetList
     

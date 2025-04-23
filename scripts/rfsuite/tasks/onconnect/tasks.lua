@@ -94,7 +94,7 @@ function tasks.wakeup()
     end
 
     if not tasksLoaded then
-        local cacheFile = "onconnect.cache"
+        local cacheFile = "onconnect_cache.lua"
         local cachePath = "cache/" .. cacheFile
         local taskMetadata
 
