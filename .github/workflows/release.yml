@@ -30,6 +30,25 @@ jobs:
         echo "GH_TYPE=${GH_TYPE}" >> ${GITHUB_ENV}
         cat ${GITHUB_ENV}
 
+    - name: Inject version info into main.lua
+      run: |
+        # Parse GIT_VER into components
+        IFS='.-' read -r MAJOR MINOR REVISION SUFFIX <<< "${{ env.GIT_VER }}"
+
+        echo "Parsed version: $MAJOR $MINOR $REVISION $SUFFIX"
+
+        # Update full config.version line
+        sed -i "s/config.version = {.*}/config.version = {major = $MAJOR, minor = $MINOR, revision = $REVISION, suffix = \"$SUFFIX\"}/" scripts/rfsuite/main.lua
+
+        # Set logging settings
+        sed -i 's/\(config.logLevel= \)".*"/\1"off"/' scripts/rfsuite/main.lua
+        sed -i 's/\(config.logToFile = \)[^ ]*/\1false/' scripts/rfsuite/main.lua
+        sed -i 's/\(config.logMSP = \)[^ ]*/\1false/' scripts/rfsuite/main.lua
+
+        # Output for verification
+        grep 'config.version' scripts/rfsuite/main.lua
+        grep 'config.log' scripts/rfsuite/main.lua
+
     - name: Make release package
       run: zip -q -r -9 "rotorflight-lua-ethos-suite-${{ env.GIT_VER }}.zip" scripts
 
@@ -39,4 +58,3 @@ jobs:
         gh release create ${{ env.GIT_TAG }} --notes-file Notes.md --title "Rotorflight Lua Suite for Ethos - ${{ env.GH_TYPE }} ${{ env.GIT_VER }}" *.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-

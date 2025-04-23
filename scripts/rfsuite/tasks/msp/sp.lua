@@ -92,7 +92,7 @@ end
         The response from the mspSendRequest function.
 ]]
 transport.mspRead = function(cmd)
-    return mspSendRequest(cmd, {})
+    return rfsuite.tasks.msp.common.mspSendRequest(cmd, {})
 end
 
 --[[
@@ -105,7 +105,7 @@ end
         The result of the mspSendRequest function.
 ]]
 transport.mspWrite = function(cmd, payload)
-    return mspSendRequest(cmd, payload)
+    return rfsuite.tasks.msp.common.mspSendRequest(cmd, payload)
 end
 
 

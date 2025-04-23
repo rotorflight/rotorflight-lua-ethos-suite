@@ -77,7 +77,7 @@ end
 ]]
 transport.mspRead = function(cmd)
     crsfMspCmd = CRSF_FRAMETYPE_MSP_REQ
-    return mspSendRequest(cmd, {})
+    return rfsuite.tasks.msp.common.mspSendRequest(cmd, {})
 end
 
 --[[
@@ -91,7 +91,7 @@ end
 ]]
 transport.mspWrite = function(cmd, payload)
     crsfMspCmd = CRSF_FRAMETYPE_MSP_WRITE
-    return mspSendRequest(cmd, payload)
+    return rfsuite.tasks.msp.common.mspSendRequest(cmd, payload)
 end
 
 --[[

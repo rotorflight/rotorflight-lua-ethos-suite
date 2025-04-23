@@ -119,7 +119,7 @@ function MspQueueController:processQueue()
             if rfsuite.app.Page and rfsuite.app.Page.mspRetry then rfsuite.app.Page.mspRetry(self) end
         end
 
-        mspProcessTxQ()
+        rfsuite.tasks.msp.common.mspProcessTxQ()
         -- return the radio response
         cmd, buf, err = rfsuite.tasks.msp.common.mspPollReply()
 
