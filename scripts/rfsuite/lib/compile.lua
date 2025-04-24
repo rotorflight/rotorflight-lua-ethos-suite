@@ -1,7 +1,19 @@
--- compile.lua (disk-cached only, no in-memory cache)
+-- compile.lua (disk-cached only, respects useCompiler flag, optional load timings, filters sim/sensors logs)
 
 local compile = {}
 local arg = {...}
+
+-- Configuration: expects rfsuite.config to be globally available
+local useCompiler = false
+local logTimings = true
+if rfsuite and rfsuite.config then
+  if type(rfsuite.config.useCompiler) == "boolean" then
+    useCompiler = rfsuite.config.useCompiler
+  end
+  if type(rfsuite.config.logLoadTimings) == "boolean" then
+    logTimings = rfsuite.config.logLoadTimings
+  end
+end
 
 -- Base and cache directories
 local baseDir     = "./"
@@ -22,7 +34,7 @@ local function ensure_dir(dir)
 end
 ensure_dir(compiledDir)
 
--- In-memory set of on-disk compiled files
+-- On-disk compiled files index
 local disk_cache = {}
 do
   for _, fname in ipairs(system.listFiles(compiledDir)) do
@@ -38,42 +50,74 @@ local function strip_prefix(name)
   return name
 end
 
--- Core loadfile replacement: always load from compiled or source disk file
+-- Core loadfile replacement
 function compile.loadfile(script)
-  -- Prepare name for cache: strip prefix and sanitize path
-  local name_for_cache = strip_prefix(script)
-  local sanitized      = name_for_cache:gsub("/", "_")
-  local cache_fname    = sanitized .. "c"
-  local cache_path     = compiledDir .. cache_fname
-
-  -- If compiled file exists on disk, load it
-  if disk_cache[cache_fname] then
-    return assert(loadfile(cache_path))
+  local startTime
+  if logTimings then
+    startTime = os.clock()
   end
 
-  -- Otherwise, compile source and load
-  system.compile(script)
-  os.rename(script .. "c", cache_path)
-  disk_cache[cache_fname] = true
-  return assert(loadfile(cache_path))
+  local loader, which
+  if not useCompiler then
+    loader = loadfile
+    which = "raw"
+    loader = loader(script)
+  else
+    -- Prepare cache filename
+    local name_for_cache = strip_prefix(script)
+    local sanitized      = name_for_cache:gsub("/", "_")
+    local cache_fname    = sanitized .. "c"
+    local cache_path     = compiledDir .. cache_fname
+
+    if disk_cache[cache_fname] then
+      loader = loadfile(cache_path)
+      which = "cached"
+    else
+      system.compile(script)
+      os.rename(script .. "c", cache_path)
+      disk_cache[cache_fname] = true
+      loader = loadfile(cache_path)
+      which = "compiled"
+    end
+  end
+
+  local chunk = assert(loader)
+  if logTimings then
+    local elapsed = os.clock() - startTime
+    -- Only log if not loading sim/sensors files
+    if not script:find("sim/sensors/", 1, true) then
+      if rfsuite.utils and rfsuite.utils.log then
+        rfsuite.utils.log(("loadfile '%s' (%s) took %.4f sec"):format(script, which, elapsed), "info")
+      else
+        print(("loadfile '%s' (%s) took %.4f sec"):format(script, which, elapsed))
+      end
+    end
+  end
+
+  return chunk
 end
 
--- Wrapper for dofile: loads via compile.loadfile and executes it with args
+-- Wrapper for dofile
 function compile.dofile(script, ...)
   return compile.loadfile(script)(...)
 end
 
--- Custom require that compiles and loads modules via our cache
-table.insert = table.insert -- ensure table.insert availability
+-- Custom require that compiles modules via cache
 function compile.require(modname)
   if package.loaded[modname] then
     return package.loaded[modname]
   end
-  -- Convert module name to path and strip prefix
-  local raw_path = modname:gsub("%.", "/") .. ".lua"
-  local path     = strip_prefix(raw_path)
 
-  local chunk = compile.loadfile(path)
+  local raw_path = modname:gsub("%%.", "/") .. ".lua"
+  local path     = strip_prefix(raw_path)
+  local chunk
+
+  if not useCompiler then
+    chunk = assert(loadfile(path))
+  else
+    chunk = compile.loadfile(path)
+  end
+
   local result = chunk()
   package.loaded[modname] = (result == nil) and true or result
   return package.loaded[modname]

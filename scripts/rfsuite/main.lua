@@ -39,6 +39,8 @@ config.logMSP = false                                                   -- log m
 config.logMSPQueue = false                                              -- log msp queue size [default = false]
 config.logMemoryUsage = false                                           -- log memory usage [default = false]
 config.developerMode = false                                            -- show developer tools on main menu [default = false]
+config.useCompiler = false                                              -- use the compiled version of the script [default = true]
+
 
 
 -- RotorFlight + ETHOS LUA preferences
