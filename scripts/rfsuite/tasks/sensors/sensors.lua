@@ -100,11 +100,12 @@ function sensors.wakeup()
     loadSensorModule()
     if loadedSensorModule and loadedSensorModule.module.wakeup then
         loadedSensorModule.module.wakeup()
-    end
 
-    -- run msp sensors
-    if msp and msp.wakeup then
-        msp.wakeup()
+        -- run msp sensors
+        if msp and msp.wakeup then
+            msp.wakeup()
+        end
+
     end
 
 end
