@@ -27,7 +27,9 @@ function servos.wakeup()
         local API = rfsuite.tasks.msp.api.load("STATUS")
         API.setCompleteHandler(function(self, buf)
             rfsuite.session.servoCount = API.readValue("servo_count")
-            rfsuite.utils.log("Servo count: " .. rfsuite.session.servoCount, "info")
+            if rfsuite.session.servoCount then
+                rfsuite.utils.log("Servo count: " .. rfsuite.session.servoCount, "info")
+            end    
         end)
         API.setUUID("d7e0db36-ca3c-4e19-9a64-40e76c78329c")
         API.read()

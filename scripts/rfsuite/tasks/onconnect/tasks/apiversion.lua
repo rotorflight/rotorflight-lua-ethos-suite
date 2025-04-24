@@ -24,7 +24,9 @@ function apiversion.wakeup()
         local API = rfsuite.tasks.msp.api.load("API_VERSION")
         API.setCompleteHandler(function(self, buf)
             rfsuite.session.apiVersion = API.readVersion()
-            rfsuite.utils.log("API version: " .. rfsuite.session.apiVersion, "info")
+            if rfsuite.session.apiVersion  then
+                rfsuite.utils.log("API version: " .. rfsuite.session.apiVersion, "info")
+            end
         end)
         API.setUUID("22a683cb-db0e-439f-8d04-04687c9360f3")
         API.read()

@@ -43,6 +43,9 @@ local lastTelemetrySensorName = nil
 local sportSensor 
 local elrsSensor
 
+local telemetryLostTime = nil  
+
+
 
 local tlm = system.getSource({category = CATEGORY_SYSTEM_EVENT, member = TELEMETRY_ACTIVE})
 
@@ -216,18 +219,29 @@ function tasks.wakeup()
 
     local now = os.clock()
     if now - (telemetryCheckScheduler or 0) >= 1 then
+
         telemetryState = tlm and tlm:state() or false
 
         if not telemetryState then
-            rfsuite.session.telemetryState = false
-            rfsuite.session.telemetryType = nil
-            rfsuite.session.telemetryTypeChanged = false
-            rfsuite.session.telemetrySensor = nil
-            lastTelemetrySensorName = nil
-            sportSensor = nil
-            elrsSensor = nil 
-            telemetryCheckScheduler = now    
+            if not telemetryLostTime then
+                telemetryLostTime = now  -- Record when telemetry was first lost
+            end
+
+            if now - telemetryLostTime >= 2 then  -- Wait for 2 seconds before acting
+                rfsuite.utils.log("Telemetry not active for 2 seconds", "info")
+                rfsuite.session.telemetryState = false
+                rfsuite.session.telemetryType = nil
+                rfsuite.session.telemetryTypeChanged = false
+                rfsuite.session.telemetrySensor = nil
+                lastTelemetrySensorName = nil
+                sportSensor = nil
+                elrsSensor = nil 
+                telemetryCheckScheduler = now    
+                rfsuite.tasks.msp.reset()
+            end
+
         else
+            telemetryLostTime = nil  -- Reset timer when telemetry returns
 
             -- always do a lookup.  we cannot cache this
             sportSensor = system.getSource({appId = 0xF101}) 
@@ -286,6 +300,7 @@ end
 
 function tasks.event(widget, category, value)
     -- currently does nothing.
+    print("Event: " .. widget .. " " .. category .. " " .. value)
 end
 
 return tasks

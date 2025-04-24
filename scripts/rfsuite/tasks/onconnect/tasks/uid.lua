@@ -40,7 +40,9 @@ function uid.wakeup()
                 end
             
                 local uid = u32_to_hex_le(U_ID_0) .. u32_to_hex_le(U_ID_1) .. u32_to_hex_le(U_ID_2)
-                rfsuite.utils.log("MCU ID: " .. uid, "info")
+                if uid then
+                    rfsuite.utils.log("MCU ID: " .. uid, "info")
+                end
                 rfsuite.session.mcu_id = uid
             end
 
