@@ -157,7 +157,6 @@ function logging.wakeup()
                 if not logFileName then 
                     logFileName = generateLogFilename() 
                     rfsuite.utils.log("Logging triggered by arm state - " .. logFileName,"info")
-                    rfsuite.utils.log("Governor value - " .. governor ,"info")
                     rfsuite.utils.log("Armed value - " .. isArmed  ,"info")
                 end
                 if not logHeader then
