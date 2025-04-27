@@ -26,7 +26,6 @@ end
 local arg = {...}
 local config = arg[1]
 local currentTelemetrySensor
-local callbackPhase = true
 
 local tasks = {}
 tasks.heartbeat = nil
@@ -173,6 +172,8 @@ function tasks.wakeup()
         return
     end
 
+    rfsuite.log.process()    
+    tasks.callback()
 
     if tasks.init == false then
         local cacheFile = "tasks.cache"
@@ -268,26 +269,22 @@ function tasks.wakeup()
         end
     end
 
-    rfsuite.log.process()    
-    if callbackPhase then
-        tasks.callback()
-    else
-        for _, task in ipairs(tasksList) do
+    for _, task in ipairs(tasksList) do
         if now - task.last_run >= task.interval then
             if tasks[task.name].wakeup then
-            if task.always_run or telemetryState then
-                if task.msp == true or not rfsuite.app.triggers.mspBusy then
-                tasks[task.name].wakeup()
+                if task.always_run or telemetryState then
+                    if task.msp == true then
+                        tasks[task.name].wakeup()
+                    else
+                        if not rfsuite.app.triggers.mspBusy then
+                            tasks[task.name].wakeup() 
+                        end
+                    end
                 end
+                task.last_run = now
             end
-            task.last_run = now
-            end
-        end
         end
     end
-
-    -- flip for next cycle
-    callbackPhase = not callbackPhase
 end
 
 -- call a reset function on all tasks if it exists
