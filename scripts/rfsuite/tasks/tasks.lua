@@ -172,7 +172,6 @@ function tasks.wakeup()
         return
     end
 
-    rfsuite.log.process()    
     tasks.callback()
 
     if tasks.init == false then

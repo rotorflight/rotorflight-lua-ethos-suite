@@ -34,7 +34,7 @@ config.supportedMspApiVersion = {"12.06", "12.07","12.08"}              -- suppo
 config.simulatorApiVersionResponse = {0, 12, 8}                         -- version of api return by simulator
 config.baseDir = "rfsuite"                                              -- base directory for the suite. This is only used by msp api to ensure correct path
 config.logLevel= "info"                                                 -- off | info | debug [default = info]
-config.logToFile = false                                                -- log to file [default = false] (log file is in /scripts/rfsuite/logs)
+config.logToFile = true                                                -- log to file [default = false] (log file is in /scripts/rfsuite/logs)
 config.logMSP = false                                                   -- log msp messages [default =  false]
 config.logMSPQueue = false                                              -- log msp queue size [default = false]
 config.logMemoryUsage = false                                           -- log memory usage [default = false]
@@ -78,30 +78,6 @@ rfsuite.config = config
 rfsuite.preferences = preferences
 rfsuite.session = {}
 rfsuite.app = assert(loadfile("app/app.lua"))(config)
-
--- 
--- This script initializes the logging configuration for the rfsuite module.
--- 
--- The logging configuration is loaded from the "lib/log.lua" file and is 
--- customized based on the provided configuration (`config`).
--- 
--- The log file is named using the current date and time in the format 
--- "logs/rfsuite_YYYY-MM-DD_HH-MM-SS.log".
--- 
--- The minimum print level for logging is set from `config.logLevel`.
--- 
--- The option to log to a file is set from `config.logToFile`.
--- 
--- If the system is running in simulation mode, the log print interval is 
--- set to 0.1 seconds.
--- logging
-os.mkdir("LOGS:")
-os.mkdir("LOGS:/rfsuite")
-os.mkdir("LOGS:/rfsuite/logs")
-rfsuite.log = assert(loadfile("lib/log.lua"))(config)
-rfsuite.log.config.log_file = "LOGS:/rfsuite/logs/rfsuite_" .. os.date("%Y-%m-%d_%H-%M-%S") .. ".log"
-rfsuite.log.config.min_print_level  = config.logLevel
-rfsuite.log.config.log_to_file = config.logToFile
 
 
 -- library with utility functions used throughou the suite
