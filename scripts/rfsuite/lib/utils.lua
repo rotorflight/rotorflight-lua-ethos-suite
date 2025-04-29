@@ -293,7 +293,9 @@ end
     @param level string (optional): The log level (e.g., "debug", "info", "warn", "error"). Defaults to "debug".
 ]]
 function utils.log(msg, level)
-    rfsuite.log.log(msg, level or "debug")
+    if rfsuite.tasks and rfsuite.tasks.logger then
+        rfsuite.tasks.logger.add(msg, level or "debug")
+    end
 end
 
 -- Function to print a table to the debug console in a readable format.

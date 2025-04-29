@@ -111,7 +111,7 @@ The message is then added to the console queue and, if file logging is enabled, 
 Returns:
 - None
 ]]
-function logs.log(message, level)
+function logs.add(message, level)
     if not logs.config.enabled or logs.config.min_print_level == "off" then return end
 
     level = level or "info"
