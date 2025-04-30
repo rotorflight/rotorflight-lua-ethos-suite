@@ -19,7 +19,7 @@
 local init = {
     interval = 0.5, -- run every 0.5s
     script = "logging.lua", -- run this script
-    msp = true, -- do not run if busy with msp 
+    msp = false, -- do not run if busy with msp 
     always_run = false -- run this script always
 }
 

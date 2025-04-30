@@ -65,13 +65,13 @@ local zoomLevelToDecimation = {
 
 function readNextChunk()
     if logDataRawReadComplete then
-        rfsuite.tasks.clearCallback(readNextChunk)
+        rfsuite.tasks.callback.clear(readNextChunk)
         return
     end
 
     if not logFileHandle then
         system.messageBox("Log file handle lost.")
-        rfsuite.tasks.clearCallback(readNextChunk)
+        rfsuite.tasks.callback.clear(readNextChunk)
         return
     end
 
@@ -89,7 +89,7 @@ function readNextChunk()
         logDataRaw = table.concat(logDataRaw)
 
         rfsuite.utils.log("Read complete, total size: " .. #logDataRaw .. " bytes","debug")
-        rfsuite.tasks.clearCallback(readNextChunk)
+        rfsuite.tasks.callback.clear(readNextChunk)
     end
 end
 function format_time(seconds)
@@ -664,7 +664,7 @@ local function openPage(pidx, title, script, logfile, displaymode)
     logFileReadOffset = 0
     logDataRawReadComplete = false
 
-    rfsuite.tasks.callbackEvery(0.05, readNextChunk)
+    rfsuite.tasks.callback.every(0.05, readNextChunk)
     rfsuite.app.triggers.closeProgressLoader = true
     lcd.invalidate()
     enableWakeup = true

@@ -51,55 +51,6 @@ local tlm = system.getSource({category = CATEGORY_SYSTEM_EVENT, member = TELEMET
 
 if rfsuite.app.moduleList == nil then rfsuite.app.moduleList = rfsuite.utils.findModules() end
 
-tasks._callbacks = {}
-
-local function get_time()
-    return os.clock()
-end
-
-function tasks.callbackNow(callback)
-    table.insert(tasks._callbacks, {time = nil, func = callback, repeat_interval = nil})
-end
-
-function tasks.callbackInSeconds(seconds, callback)
-    table.insert(tasks._callbacks, {time = get_time() + seconds, func = callback, repeat_interval = nil})
-end
-
-function tasks.callbackEvery(seconds, callback)
-    table.insert(tasks._callbacks, {time = get_time() + seconds, func = callback, repeat_interval = seconds})
-end
-
-function tasks.callback()
-    local now = get_time()
-    local i = 1
-    while i <= #tasks._callbacks do
-        local entry = tasks._callbacks[i]
-        if not entry.time or entry.time <= now then
-            entry.func()
-            if entry.repeat_interval then
-                entry.time = now + entry.repeat_interval
-                i = i + 1
-            else
-                table.remove(tasks._callbacks, i)
-            end
-        else
-            i = i + 1
-        end
-    end
-end
-
-function tasks.clearCallback(callback)
-    for i = #tasks._callbacks, 1, -1 do
-        if tasks._callbacks[i].func == callback then
-            table.remove(tasks._callbacks, i)
-        end
-    end
-end
-
-function tasks.clearAllCallbacks()
-    tasks._callbacks = {}
-end
-
 -- Modified findTasks to return metadata for caching
 function tasks.findTasks()
     local taskdir = "tasks"
@@ -171,8 +122,6 @@ function tasks.wakeup()
     if not ethosVersionGood then
         return
     end
-
-    tasks.callback()
 
     if tasks.init == false then
         local cacheFile = "tasks.cache"
@@ -289,7 +238,6 @@ end
 -- call a reset function on all tasks if it exists
 function tasks.reset()
     rfsuite.utils.log("Reset all tasks", "info")
-    tasks.clearAllCallbacks()
     for _, task in ipairs(tasksList) do
         if tasks[task.name].reset then
             tasks[task.name].reset()

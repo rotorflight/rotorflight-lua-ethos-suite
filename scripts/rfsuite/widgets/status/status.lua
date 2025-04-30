@@ -4065,7 +4065,7 @@ function status.paint(widget)
             if status.linkUP == false then
                 noTelem()
                 status.initTime = os.clock()
-            elseif (os.clock() - status.initTime) >= 10 and validateSensors and (#rfsuite.tasks.telemetry.validateSensors() > 0) then
+            elseif (os.clock() - status.initTime) >= 20 and validateSensors and (#rfsuite.tasks.telemetry.validateSensors() > 0) then
                 if status.sensorwarningParam == true or status.sensorwarningParam == nil then
                     missingSensors()
                 end
