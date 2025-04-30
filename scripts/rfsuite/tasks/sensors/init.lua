@@ -19,8 +19,7 @@
 local init = {
     interval = 0.005, -- run every 0.005s
     script = "sensors.lua", -- run this script
-    msp = false, -- do not run if busy with msp 
-    always_run = false -- run this script always
+    msp = false -- do not run if busy with msp 
 }
 
 return init
