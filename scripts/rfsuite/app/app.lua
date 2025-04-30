@@ -835,7 +835,7 @@ local function processNextAPI()
     if not apiKey then
         rfsuite.utils.log("API key is missing for index " .. tostring(state.currentIndex), "warning")
         state.currentIndex = state.currentIndex + 1
-        rfsuite.tasks.callbackInSeconds(0.5, processNextAPI)
+        rfsuite.tasks.callback.inSeconds(0.5, processNextAPI)
         return
     end
 
@@ -868,16 +868,16 @@ local function processNextAPI()
 
         if retryCount < 3 then  
             rfsuite.utils.log("[TIMEOUT] API: " .. apiKey .. " (Retry " .. retryCount .. ")", "warning")
-            rfsuite.tasks.callbackInSeconds(0.5, processNextAPI)  
+            rfsuite.tasks.callback.inSeconds(0.5, processNextAPI)  
         else
             rfsuite.utils.log("[TIMEOUT FAIL] API: " .. apiKey .. " failed after 3 attempts. Skipping.", "error")
             state.currentIndex = state.currentIndex + 1
-            rfsuite.tasks.callbackInSeconds(0.5, processNextAPI)  
+            rfsuite.tasks.callback.inSeconds(0.5, processNextAPI)  
         end
     end
 
     -- **Schedule timeout callback**
-    rfsuite.tasks.callbackInSeconds(2, handleTimeout)
+    rfsuite.tasks.callback.inSeconds(2, handleTimeout)
 
     -- **API success handler**
     API.setCompleteHandler(function(self, buf)
@@ -903,7 +903,7 @@ local function processNextAPI()
         app.Page.mspapi.retryCount[apiKey] = 0  
 
         state.currentIndex = state.currentIndex + 1
-        rfsuite.tasks.callbackInSeconds(0.5, processNextAPI)  
+        rfsuite.tasks.callback.inSeconds(0.5, processNextAPI)  
     end)
 
     -- **API error handler**
@@ -922,11 +922,11 @@ local function processNextAPI()
 
         if retryCount < 3 then  
             rfsuite.utils.log("[ERROR] API: " .. apiKey .. " failed (Retry " .. retryCount .. "): " .. tostring(err), "warning")
-            rfsuite.tasks.callbackInSeconds(0.5, processNextAPI)  
+            rfsuite.tasks.callback.inSeconds(0.5, processNextAPI)  
         else
             rfsuite.utils.log("[ERROR FAIL] API: " .. apiKey .. " failed after 3 attempts. Skipping.", "error")
             state.currentIndex = state.currentIndex + 1
-            rfsuite.tasks.callbackInSeconds(0.5, processNextAPI)  
+            rfsuite.tasks.callback.inSeconds(0.5, processNextAPI)  
         end
     end)
 

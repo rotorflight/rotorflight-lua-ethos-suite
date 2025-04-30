@@ -27,10 +27,10 @@ local api_path = apidir
 
 -- New version using the global callback system
 function apiLoader.scheduleWakeup(func)
-    if rfsuite and rfsuite.tasks and rfsuite.tasks.callbackNow then
-        rfsuite.tasks.callbackNow(func)
+    if rfsuite and rfsuite.tasks and  rfsuite.tasks.callback and rfsuite.tasks.callback.now then
+        rfsuite.tasks.callback.now(func)
     else
-        rfsuite.utils.log("ERROR: rfsuite.tasks.callbackNow() is missing!", "error")
+        rfsuite.utils.log("ERROR: rfsuite.tasks.callback.now() is missing!", "info")
     end
 end
 
