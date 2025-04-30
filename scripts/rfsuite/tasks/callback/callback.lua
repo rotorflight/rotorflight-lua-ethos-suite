@@ -62,9 +62,9 @@ function callback.wakeup()
     end
 end
 
-function callback.clear(callback)
+function callback.clear(callbackParam)
     for i = #callback._queue, 1, -1 do
-        if callback_queue[i].func == callback then
+        if callback._queue[i].func == callbackParam then
             table.remove(callback._queue, i)
         end
     end
