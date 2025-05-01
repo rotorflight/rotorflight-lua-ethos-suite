@@ -34,6 +34,11 @@ tasks.wasOn = false
 
 local tasksList = {}
 
+local taskIndex = 1
+local taskMode = rfsuite.preferences.spreadScheduling or true
+local taskSchedulerPercentage = 0.2  -- 0.5 = 50%
+local tasksPerCycle = nil
+
 rfsuite.session.telemetryTypeChanged = true
 
 local ethosVersionGood = nil  
@@ -76,6 +81,7 @@ function tasks.findTasks()
                         interval = tconfig.interval,
                         script = tconfig.script,
                         msp = tconfig.msp,
+                        no_link = tconfig.no_link or false,
                         always_run = tconfig.always_run or false,
                         last_run = os.clock()
                     }
@@ -85,7 +91,8 @@ function tasks.findTasks()
                         interval = tconfig.interval,
                         script = tconfig.script,
                         msp = tconfig.msp,
-                        always_run = tconfig.always_run or false
+                        always_run = tconfig.always_run or false,
+                        no_link = tconfig.no_link or false
                     }
 
                     local script = tasks_path .. v .. '/' .. tconfig.script
@@ -153,6 +160,7 @@ function tasks.wakeup()
                     interval = meta.interval,
                     script = meta.script,
                     msp = meta.msp,
+                    no_link = meta.no_link,
                     always_run = meta.always_run,
                     last_run = os.clock()
                 })
@@ -217,22 +225,71 @@ function tasks.wakeup()
         end
     end
 
-    for _, task in ipairs(tasksList) do
-        if now - task.last_run >= task.interval then
-            if tasks[task.name].wakeup then
-                if task.always_run or telemetryState then
-                    if task.msp == true then
-                        tasks[task.name].wakeup()
-                    else
-                        if not rfsuite.app.triggers.mspBusy then
-                            tasks[task.name].wakeup() 
+
+    -- run all tasks on all cycles
+    if taskMode == false then
+        for _, task in ipairs(tasksList) do
+            if now - task.last_run >= task.interval then
+                if tasks[task.name].wakeup then
+                    if task.no_link or telemetryState then
+                        if task.msp == true then
+                            tasks[task.name].wakeup()
+                        else
+                            if not rfsuite.app.triggers.mspBusy then
+                                tasks[task.name].wakeup() 
+                            end
                         end
                     end
+                    task.last_run = now
                 end
+            end
+        end
+    
+    else
+        
+        -- Calculate how many tasks to run per cycle, if not already set
+        if not tasksPerCycle then
+            local count = 0
+            for _, task in ipairs(tasksList) do
+                if not task.always_run then
+                    count = count + 1
+                end
+            end
+            tasksPerCycle = math.ceil(count * taskSchedulerPercentage)
+            rfsuite.utils.log("Tasks per cycle (excluding always_run): " .. tasksPerCycle, "debug")
+        end
+
+        -- Helper function to determine if a task can run
+        local function canRunTask(task)
+            return (task.no_link or telemetryState) and (task.msp == true or not rfsuite.app.triggers.mspBusy)
+        end
+
+        -- Run always_run tasks
+        for _, task in ipairs(tasksList) do
+            if task.always_run and tasks[task.name].wakeup and canRunTask(task) then
+                tasks[task.name].wakeup()
                 task.last_run = now
             end
         end
-    end
+
+        -- Run scheduled tasks
+        for i = 1, tasksPerCycle do
+            local task = tasksList[taskIndex]
+            if task then
+                if not task.always_run and now - task.last_run >= task.interval then
+                    if tasks[task.name].wakeup and canRunTask(task) then
+                        tasks[task.name].wakeup()
+                        task.last_run = now
+                    end
+                end
+                taskIndex = (taskIndex % #tasksList) + 1
+            end
+        end
+
+
+
+    end  
+
 end
 
 -- call a reset function on all tasks if it exists

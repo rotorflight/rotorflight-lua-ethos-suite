@@ -1042,7 +1042,7 @@ function app.wakeupUI()
             app.dialogs.progressCounter = app.dialogs.progressCounter + 0.5
             if app.dialogs.progress ~= nil then app.ui.progressDisplayValue(app.dialogs.progressCounter) end
         else
-            app.dialogs.progressCounter = app.dialogs.progressCounter + 5
+            app.dialogs.progressCounter = app.dialogs.progressCounter + 2
             if app.dialogs.progress ~= nil then app.ui.progressDisplayValue(app.dialogs.progressCounter) end
         end
 
@@ -1063,11 +1063,11 @@ function app.wakeupUI()
 
         if rfsuite.tasks.msp.mspQueue:isProcessed() then
             if (app.dialogs.saveProgressCounter > 40 and app.dialogs.saveProgressCounter <= 80) then
-                app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 3
+                app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 1.5
             elseif (app.dialogs.saveProgressCounter > 90) then
-                app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 2
+                app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 1
             else
-                app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 5
+                app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 2
             end
         end
 
