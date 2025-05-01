@@ -60,6 +60,7 @@ preferences.syncCraftName = false                                   -- sync the 
 preferences.mspExpBytes = 8                                         -- number of bytes for msp_exp [default = 8] 
 preferences.defaultRateProfile = 4 -- ACTUAL                        -- default rate table [default = 4]
 preferences.watchdogParam = 10                                      -- watchdog timeout for progress boxes [default = 10]
+preferences.spreadScheduling = true                                 -- false = all tasks run on all cycles.  true = tasks are spread over multiple cycles. [default = true]
 
 
 -- tasks
