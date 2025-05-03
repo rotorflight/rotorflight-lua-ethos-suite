@@ -12,9 +12,9 @@
  * Structure:
  * {
  *   API_NAME = {
- *     interval_armed: <number>         -- Interval (in seconds) to poll this API when the model is armed
- *     interval_disarmed: <number>      -- Interval (in seconds) when disarmed
- *     interval_admin: <number>         -- Interval (in seconds) when admin module loaded
+ *     interval_armed: <number>         -- Interval (in seconds) to poll this API when the model is armed (-1 for no polling)
+ *     interval_disarmed: <number>      -- Interval (in seconds) when disarmed (-1 for no polling)
+ *     interval_admin: <number>         -- Interval (in seconds) when admin module loaded (-1 for no polling)
  *
  *     fields = {
  *       field_key = {
@@ -70,7 +70,7 @@ local msp = {}
 
 local msp_sensors = {
     DATAFLASH_SUMMARY = {
-        interval_armed = 10,
+        interval_armed = -1,
         interval_disarmed = 5,
         interval_admin = 15,
         fields = {
@@ -190,7 +190,7 @@ function msp.wakeup()
             end
         end
 
-        if (now - api_meta.last_time) >= interval then
+        if interval > 0 and (now - api_meta.last_time) >= interval then
             api_meta.last_time = now
 
             rfsuite.utils.log("MSP API: " .. api_name .. " interval: " .. interval, "debug")
