@@ -1,3 +1,10 @@
+# 2.2.0-RC4
+
+Release candidate version for 2.2.0-RC4 Rotorflight
+
+- prevent msp sensors when armed
+- improve cpu load of bgtask (spread scheduling)
+
 # 2.2.0-RC3
 
 Release candidate version for 2.2.0-RC3 Rotorflight
