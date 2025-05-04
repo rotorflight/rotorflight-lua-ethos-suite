@@ -768,6 +768,7 @@ local function requestPage()
         rfsuite.app.Page.mspapi.receivedBytesCount = {}  -- Initialize if first run
         rfsuite.app.Page.mspapi.receivedBytes = {}  -- Initialize if first run
         rfsuite.app.Page.mspapi.positionmap = {}  -- Initialize if first run
+        rfsuite.app.Page.mspapi.other = {} 
     end
 
     -- Ensure state.currentIndex is initialized
@@ -898,6 +899,7 @@ local function processNextAPI()
         app.Page.mspapi.receivedBytes[apiKey] = API.data().buffer
         app.Page.mspapi.receivedBytesCount[apiKey] = API.data().receivedBytesCount
         app.Page.mspapi.positionmap[apiKey] = API.data().positionmap
+        app.Page.mspapi.other[apiKey] = API.data().other or {}
 
         -- **Reset retry count on success**
         app.Page.mspapi.retryCount[apiKey] = 0  
