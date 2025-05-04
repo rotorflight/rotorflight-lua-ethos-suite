@@ -920,16 +920,6 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
     local modulePath = "app/modules/" .. script
     rfsuite.app.Page = assert(rfsuite.compiler.loadfile(modulePath))(idx)
 
-    -- Load the help file if it exists
-    local section = script:match("([^/]+)")
-    local helpPath = "app/modules/" .. section .. "/help.lua"
-    if rfsuite.utils.file_exists(helpPath) then
-        local helpData = assert(rfsuite.compiler.loadfile(helpPath))()
-        rfsuite.app.fieldHelpTxt = helpData.fields
-    else
-        rfsuite.app.fieldHelpTxt = nil
-    end
-
     -- If the Page has its own openPage function, use it and return early
     if rfsuite.app.Page.openPage then
         rfsuite.app.Page.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)

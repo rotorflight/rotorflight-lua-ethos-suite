@@ -57,7 +57,7 @@ function compile.loadfile(script)
     startTime = os.clock()
   end
 
-  local loader, which
+  local loader, which, cache_fname
   if not useCompiler then
     loader = loadfile
     which = "raw"
@@ -66,36 +66,40 @@ function compile.loadfile(script)
     -- Prepare cache filename
     local name_for_cache = strip_prefix(script)
     local sanitized      = name_for_cache:gsub("/", "_")
-    local cache_fname    = sanitized .. "c"
+    cache_fname          = sanitized .. "c"
     local cache_path     = compiledDir .. cache_fname
 
     if disk_cache[cache_fname] then
       loader = loadfile(cache_path)
-      which = "cached"
+      which = "compiled"
     else
       system.compile(script)
       os.rename(script .. "c", cache_path)
       disk_cache[cache_fname] = true
       loader = loadfile(cache_path)
-      which = "compiled"
+      which = "not compiled"
     end
   end
 
   local chunk = assert(loader)
   if logTimings then
     local elapsed = os.clock() - startTime
-    -- Only log if not loading sim/sensors files
     if not script:find("sim/sensors/", 1, true) then
+      local msg = ("loadfile '%s' (%s) took %.4f sec"):format(script, which, elapsed)
+      if which == "compiled" and cache_fname then
+        msg = msg .. (" [cache: %s]"):format(cache_fname)
+      end
       if rfsuite.utils and rfsuite.utils.log then
-        rfsuite.utils.log(("loadfile '%s' (%s) took %.4f sec"):format(script, which, elapsed), "info")
+        rfsuite.utils.log(msg, "info")
       else
-        print(("loadfile '%s' (%s) took %.4f sec"):format(script, which, elapsed))
+        print(msg)
       end
     end
   end
 
   return chunk
 end
+
 
 -- Wrapper for dofile
 function compile.dofile(script, ...)
