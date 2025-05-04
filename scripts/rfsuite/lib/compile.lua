@@ -15,6 +15,11 @@ if rfsuite and rfsuite.config then
   end
 end
 
+-- developer overwide
+if rfsuite.config.developerMode then
+  useCompiler = false
+end
+
 -- Base and cache directories
 local baseDir     = "./"
 local compiledDir = baseDir .. "cache/"

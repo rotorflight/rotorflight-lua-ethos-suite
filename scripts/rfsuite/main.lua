@@ -21,8 +21,6 @@
 -- RotorFlight + ETHOS LUA configuration
 local config = {}
 
--- LuaFormatter off
-
 -- Configuration settings for the Rotorflight Lua Ethos Suite
 config.toolName = "Rotorflight"                                         -- name of the tool 
 config.icon = lcd.loadMask("app/gfx/icon.png")                          -- icon
@@ -68,7 +66,24 @@ preferences.spreadScheduling = true                                 -- false = a
 config.bgTaskName = config.toolName .. " [Background]"              -- background task name for msp services etc
 config.bgTaskKey = "rf2bg"                                          -- key id used for msp services
 
--- LuaFormatter on
+
+--- Checks if the `developerMode` is disabled in the `config` table.
+--- If disabled, attempts to enable it by checking for the existence of a 
+--- file named `../developermode`. If the file exists, it sets 
+--- `config.developerMode` to `true`.
+---
+--- Note:
+--- - The file path `../developermode` is relative to the script's execution directory.
+--- - This functionality is likely used to toggle developer-specific features 
+---   during runtime.
+if not config.developerMode then
+    local f = io.open("../developermode", "r")
+    if f then
+        io.close(f)
+        config.developerMode = true
+    end
+end
+
 
 -- main
 -- rfsuite: Main table for the rotorflight-lua-ethos-suite script.
