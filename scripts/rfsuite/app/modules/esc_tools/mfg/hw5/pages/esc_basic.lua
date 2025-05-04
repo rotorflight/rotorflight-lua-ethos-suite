@@ -1,6 +1,7 @@
 
 local folder = "hw5"
 
+
 local mspapi = {
     api = {
         [1] = "ESC_PARAMETERS_HW5",
@@ -17,7 +18,7 @@ local mspapi = {
         fields = {
             {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.hw5.flight_mode"),       inline = 1, label = "esc1",    type = 1, mspapi = 1, apikey = "flight_mode"},
             {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.hw5.rotation"),          inline = 1, label = "esc2",    type = 1, mspapi = 1, apikey = "rotation"},
-            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.hw5.bec_voltage"),       inline = 1, label = "esc3",    type = 1, mspapi = 1, apikey = "bec_voltage"},
+            {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.hw5.bec_voltage"),       inline = 1, label = "esc3",    type = 1, mspapi = 1, apikey = "bec_voltage", table = voltageRange},
             {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.hw5.lipo_cell_count"),   inline = 1, label = "limits1", type = 1, mspapi = 1, apikey = "lipo_cell_count"},
             {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.hw5.volt_cutoff_type"),  inline = 1, label = "limits2", type = 1, mspapi = 1, apikey = "volt_cutoff_type"},
             {t = rfsuite.i18n.get("app.modules.esc_tools.mfg.hw5.cutoff_voltage"),    inline = 1, label = "limits3", type = 1, mspapi = 1, apikey = "cutoff_voltage"}
@@ -27,6 +28,30 @@ local mspapi = {
 
 
 function postLoad()
+
+
+    -- inject new voltage lookup table
+    if rfsuite.app.Page.mspapi and rfsuite.app.Page.mspapi.other  and rfsuite.app.Page.mspapi.other['ESC_PARAMETERS_HW5'] then
+        local version
+        if rfsuite.session.escDetails and rfsuite.session.escDetails.version then
+            version = rfsuite.session.escDetails.version
+        else
+            version = "default"
+        end
+
+        if rfsuite.app.Page.mspapi.other['ESC_PARAMETERS_HW5'][version] then
+            local newVoltage = rfsuite.app.Page.mspapi.other['ESC_PARAMETERS_HW5'][version]
+
+            local voltageTable = rfsuite.app.utils.convertPageValueTable(newVoltage, -1)   
+    
+            -- we target field 3 as we know it is bec_voltage
+            rfsuite.app.formFields[3]:values(voltageTable)
+        end
+        
+
+    end
+    
+
     rfsuite.app.triggers.closeProgressLoader = true
 end
 

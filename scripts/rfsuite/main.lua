@@ -38,7 +38,7 @@ config.logMSPQueue = false                                              -- log m
 config.logMemoryUsage = false                                           -- log memory usage [default = false]
 config.developerMode = false                                            -- show developer tools on main menu [default = false]
 config.compile = true                                                   -- use the compiler [default = true]
-config.compilerTiming = true                                           -- log compiler timings [default = false]
+config.compilerTiming = false                                           -- log compiler timings [default = false]
 
 -- RotorFlight + ETHOS LUA preferences
 local preferences = {}
