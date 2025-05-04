@@ -43,7 +43,7 @@ local logger = {}
 os.mkdir("LOGS:")
 os.mkdir("LOGS:/rfsuite")
 os.mkdir("LOGS:/rfsuite/logs")
-logger.queue = assert(loadfile("tasks/logger/lib/log.lua"))(config)
+logger.queue = assert(rfsuite.compiler.loadfile("tasks/logger/lib/log.lua"))(config)
 logger.queue.config.log_file = "LOGS:/rfsuite/logs/rfsuite_" .. os.date("%Y-%m-%d_%H-%M-%S") .. ".log"
 logger.queue.config.min_print_level  = rfsuite.config.logLevel
 logger.queue.config.log_to_file = rfsuite.config.logToFile

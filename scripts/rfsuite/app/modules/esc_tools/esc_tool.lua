@@ -83,7 +83,7 @@ local function openPage(pidx, title, script)
 
     local folder = title
 
-    ESC = assert(loadfile("app/modules/esc_tools/mfg/" .. folder .. "/init.lua"))()
+    ESC = assert(rfsuite.compiler.loadfile("app/modules/esc_tools/mfg/" .. folder .. "/init.lua"))()
 
     if ESC.mspapi ~= nil then
         -- we are using the api so get values from that!
@@ -146,7 +146,7 @@ local function openPage(pidx, title, script)
     })
     rfsuite.app.formNavigationFields['menu']:focus()
 
-    ESC.pages = assert(loadfile("app/modules/esc_tools/mfg/" .. folder .. "/pages.lua"))()
+    ESC.pages = assert(rfsuite.compiler.loadfile("app/modules/esc_tools/mfg/" .. folder .. "/pages.lua"))()
 
     modelLine = form.addLine("")
     modelText = form.addStaticText(modelLine, modelTextPos, "")
