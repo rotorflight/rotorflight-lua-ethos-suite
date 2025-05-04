@@ -29,7 +29,7 @@ local msp = {}
 msp.activeProtocol = nil
 msp.onConnectChecksInit = true
 
-local protocol = assert(loadfile("tasks/msp/protocols.lua"))()
+local protocol = assert(rfsuite.compiler.loadfile("tasks/msp/protocols.lua"))()
 
 
 msp.mspQueue = mspQueue
@@ -39,7 +39,7 @@ msp.protocol = protocol.getProtocol()
 
 -- preload all transport methods
 msp.protocolTransports = {}
-for i, v in pairs(protocol.getTransports()) do msp.protocolTransports[i] = assert(loadfile(v))() end
+for i, v in pairs(protocol.getTransports()) do msp.protocolTransports[i] = assert(rfsuite.compiler.loadfile(v))() end
 
 -- set active transport table to use
 local transport = msp.protocolTransports[msp.protocol.mspProtocol]
@@ -48,11 +48,11 @@ msp.protocol.mspSend = transport.mspSend
 msp.protocol.mspWrite = transport.mspWrite
 msp.protocol.mspPoll = transport.mspPoll
 
-msp.mspQueue = assert(loadfile("tasks/msp/mspQueue.lua"))()
+msp.mspQueue = assert(rfsuite.compiler.loadfile("tasks/msp/mspQueue.lua"))()
 msp.mspQueue.maxRetries = msp.protocol.maxRetries
-msp.mspHelper = assert(loadfile("tasks/msp/mspHelper.lua"))()
-msp.api = assert(loadfile("tasks/msp/api.lua"))()
-msp.common = assert(loadfile("tasks/msp/common.lua"))()
+msp.mspHelper = assert(rfsuite.compiler.loadfile("tasks/msp/mspHelper.lua"))()
+msp.api = assert(rfsuite.compiler.loadfile("tasks/msp/api.lua"))()
+msp.common = assert(rfsuite.compiler.loadfile("tasks/msp/common.lua"))()
 
 local delayDuration = 2  -- seconds
 local delayStartTime = nil

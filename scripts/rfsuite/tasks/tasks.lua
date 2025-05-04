@@ -65,7 +65,7 @@ function tasks.findTasks()
     for _, v in pairs(system.listFiles(tasks_path)) do
         if v ~= ".." and v ~= "tasks.lua" then
             local init_path = tasks_path .. v .. '/init.lua'
-            local func, err = loadfile(init_path)
+            local func, err = rfsuite.compiler.loadfile(init_path)
 
             if err then
                 rfsuite.utils.log("Error loading " .. init_path .. ": " .. err, "info")
@@ -99,7 +99,7 @@ function tasks.findTasks()
                     local fs = io.open(script, "r")
                     if fs then
                         io.close(fs)
-                        tasks[v] = assert(loadfile(script))(config)
+                        tasks[v] = assert(rfsuite.compiler.loadfile(script))(config)
                     end
                 end
             end
@@ -131,7 +131,7 @@ function tasks.wakeup()
     end
 
     if tasks.init == false then
-        local cacheFile = "tasks.cache"
+        local cacheFile = "tasks.lua"
         local cachePath = "cache/" .. cacheFile
         local taskMetadata
 
@@ -152,7 +152,7 @@ function tasks.wakeup()
         else
             for name, meta in pairs(taskMetadata) do
                 local script = "tasks/" .. name .. "/" .. meta.script
-                local module = assert(loadfile(script))(config)
+                local module = assert(rfsuite.compiler.loadfile(script))(config)
 
                 tasks[name] = module
                 table.insert(tasksList, {

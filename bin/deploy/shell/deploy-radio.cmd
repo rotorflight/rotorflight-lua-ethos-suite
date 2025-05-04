@@ -23,9 +23,6 @@ if "%fileext%"==".lua" (
     mkdir "%dstfolder%\%tgt%"
     xcopy "%srcfolder%\scripts\%tgt%\*.lua" "%dstfolder%\%tgt%" /h /i /c /k /e /r /y /j
 
-    echo Remove all cache files
-    del "%srcfolder%\scripts\%tgt%\cache\*.cache" /q /s
-
 ) else (
     REM Remove the entire destination folder
     RMDIR "%dstfolder%\%tgt%" /S /Q

@@ -12,7 +12,7 @@ local keyCache = {}
 
 -- Helper: load a single Lua translation file
 local function loadLangFile(filepath)
-    local chunk, err = loadfile(filepath)
+    local chunk, err = rfsuite.compiler.loadfile(filepath)
     if not chunk then return nil end
     local ok, result = pcall(chunk)
     if not ok or type(result) ~= "table" then return nil end
