@@ -34,6 +34,11 @@ tasks.wasOn = false
 
 local tasksList = {}
 
+local taskIndex = 1
+local taskMode = rfsuite.preferences.spreadScheduling or true
+local taskSchedulerPercentage = 0.2  -- 0.5 = 50%
+local tasksPerCycle = nil
+
 rfsuite.session.telemetryTypeChanged = true
 
 local ethosVersionGood = nil  
@@ -43,59 +48,13 @@ local lastTelemetrySensorName = nil
 local sportSensor 
 local elrsSensor
 
+local telemetryLostTime = nil  
+
+
 
 local tlm = system.getSource({category = CATEGORY_SYSTEM_EVENT, member = TELEMETRY_ACTIVE})
 
 if rfsuite.app.moduleList == nil then rfsuite.app.moduleList = rfsuite.utils.findModules() end
-
-tasks._callbacks = {}
-
-local function get_time()
-    return os.clock()
-end
-
-function tasks.callbackNow(callback)
-    table.insert(tasks._callbacks, {time = nil, func = callback, repeat_interval = nil})
-end
-
-function tasks.callbackInSeconds(seconds, callback)
-    table.insert(tasks._callbacks, {time = get_time() + seconds, func = callback, repeat_interval = nil})
-end
-
-function tasks.callbackEvery(seconds, callback)
-    table.insert(tasks._callbacks, {time = get_time() + seconds, func = callback, repeat_interval = seconds})
-end
-
-function tasks.callback()
-    local now = get_time()
-    local i = 1
-    while i <= #tasks._callbacks do
-        local entry = tasks._callbacks[i]
-        if not entry.time or entry.time <= now then
-            entry.func()
-            if entry.repeat_interval then
-                entry.time = now + entry.repeat_interval
-                i = i + 1
-            else
-                table.remove(tasks._callbacks, i)
-            end
-        else
-            i = i + 1
-        end
-    end
-end
-
-function tasks.clearCallback(callback)
-    for i = #tasks._callbacks, 1, -1 do
-        if tasks._callbacks[i].func == callback then
-            table.remove(tasks._callbacks, i)
-        end
-    end
-end
-
-function tasks.clearAllCallbacks()
-    tasks._callbacks = {}
-end
 
 -- Modified findTasks to return metadata for caching
 function tasks.findTasks()
@@ -106,7 +65,7 @@ function tasks.findTasks()
     for _, v in pairs(system.listFiles(tasks_path)) do
         if v ~= ".." and v ~= "tasks.lua" then
             local init_path = tasks_path .. v .. '/init.lua'
-            local func, err = loadfile(init_path)
+            local func, err = rfsuite.compiler.loadfile(init_path)
 
             if err then
                 rfsuite.utils.log("Error loading " .. init_path .. ": " .. err, "info")
@@ -122,6 +81,7 @@ function tasks.findTasks()
                         interval = tconfig.interval,
                         script = tconfig.script,
                         msp = tconfig.msp,
+                        no_link = tconfig.no_link or false,
                         always_run = tconfig.always_run or false,
                         last_run = os.clock()
                     }
@@ -131,14 +91,15 @@ function tasks.findTasks()
                         interval = tconfig.interval,
                         script = tconfig.script,
                         msp = tconfig.msp,
-                        always_run = tconfig.always_run or false
+                        always_run = tconfig.always_run or false,
+                        no_link = tconfig.no_link or false
                     }
 
                     local script = tasks_path .. v .. '/' .. tconfig.script
                     local fs = io.open(script, "r")
                     if fs then
                         io.close(fs)
-                        tasks[v] = assert(loadfile(script))(config)
+                        tasks[v] = assert(rfsuite.compiler.loadfile(script))(config)
                     end
                 end
             end
@@ -169,11 +130,8 @@ function tasks.wakeup()
         return
     end
 
-    rfsuite.log.process()    
-    tasks.callback()
-
     if tasks.init == false then
-        local cacheFile = "tasks.cache"
+        local cacheFile = "tasks.lua"
         local cachePath = "cache/" .. cacheFile
         local taskMetadata
 
@@ -194,7 +152,7 @@ function tasks.wakeup()
         else
             for name, meta in pairs(taskMetadata) do
                 local script = "tasks/" .. name .. "/" .. meta.script
-                local module = assert(loadfile(script))(config)
+                local module = assert(rfsuite.compiler.loadfile(script))(config)
 
                 tasks[name] = module
                 table.insert(tasksList, {
@@ -202,6 +160,7 @@ function tasks.wakeup()
                     interval = meta.interval,
                     script = meta.script,
                     msp = meta.msp,
+                    no_link = meta.no_link,
                     always_run = meta.always_run,
                     last_run = os.clock()
                 })
@@ -216,18 +175,29 @@ function tasks.wakeup()
 
     local now = os.clock()
     if now - (telemetryCheckScheduler or 0) >= 1 then
+
         telemetryState = tlm and tlm:state() or false
 
         if not telemetryState then
-            rfsuite.session.telemetryState = false
-            rfsuite.session.telemetryType = nil
-            rfsuite.session.telemetryTypeChanged = false
-            rfsuite.session.telemetrySensor = nil
-            lastTelemetrySensorName = nil
-            sportSensor = nil
-            elrsSensor = nil 
-            telemetryCheckScheduler = now    
+            if not telemetryLostTime then
+                telemetryLostTime = now  -- Record when telemetry was first lost
+            end
+
+            if now - telemetryLostTime >= 2 then  -- Wait for 2 seconds before acting
+                rfsuite.utils.log("Telemetry not active for 2 seconds", "info")
+                rfsuite.session.telemetryState = false
+                rfsuite.session.telemetryType = nil
+                rfsuite.session.telemetryTypeChanged = false
+                rfsuite.session.telemetrySensor = nil
+                lastTelemetrySensorName = nil
+                sportSensor = nil
+                elrsSensor = nil 
+                telemetryCheckScheduler = now    
+                rfsuite.tasks.msp.reset()
+            end
+
         else
+            telemetryLostTime = nil  -- Reset timer when telemetry returns
 
             -- always do a lookup.  we cannot cache this
             sportSensor = system.getSource({appId = 0xF101}) 
@@ -255,29 +225,78 @@ function tasks.wakeup()
         end
     end
 
-    for _, task in ipairs(tasksList) do
-        if now - task.last_run >= task.interval then
-            if tasks[task.name].wakeup then
-                if task.always_run or telemetryState then
-                    if task.msp == true then
-                        tasks[task.name].wakeup()
-                    else
-                        if not rfsuite.app.triggers.mspBusy then
-                            tasks[task.name].wakeup() 
+
+    -- run all tasks on all cycles
+    if taskMode == false then
+        for _, task in ipairs(tasksList) do
+            if now - task.last_run >= task.interval then
+                if tasks[task.name].wakeup then
+                    if task.no_link or telemetryState then
+                        if task.msp == true then
+                            tasks[task.name].wakeup()
+                        else
+                            if not rfsuite.app.triggers.mspBusy then
+                                tasks[task.name].wakeup() 
+                            end
                         end
                     end
+                    task.last_run = now
                 end
+            end
+        end
+    
+    else
+        
+        -- Calculate how many tasks to run per cycle, if not already set
+        if not tasksPerCycle then
+            local count = 0
+            for _, task in ipairs(tasksList) do
+                if not task.always_run then
+                    count = count + 1
+                end
+            end
+            tasksPerCycle = math.ceil(count * taskSchedulerPercentage)
+            rfsuite.utils.log("Tasks per cycle (excluding always_run): " .. tasksPerCycle, "debug")
+        end
+
+        -- Helper function to determine if a task can run
+        local function canRunTask(task)
+            return (task.no_link or telemetryState) and (task.msp == true or not rfsuite.app.triggers.mspBusy)
+        end
+
+        -- Run always_run tasks
+        for _, task in ipairs(tasksList) do
+            if task.always_run and tasks[task.name].wakeup and canRunTask(task) then
+                tasks[task.name].wakeup()
                 task.last_run = now
             end
         end
-    end
+
+        -- Run scheduled tasks
+        for i = 1, tasksPerCycle do
+            local task = tasksList[taskIndex]
+            if task then
+                if not task.always_run and now - task.last_run >= task.interval then
+                    if tasks[task.name].wakeup and canRunTask(task) then
+                        tasks[task.name].wakeup()
+                        task.last_run = now
+                    end
+                end
+                taskIndex = (taskIndex % #tasksList) + 1
+            end
+        end
+
+
+
+    end  
+
 end
 
 -- call a reset function on all tasks if it exists
 function tasks.reset()
+    rfsuite.utils.log("Reset all tasks", "info")
     for _, task in ipairs(tasksList) do
         if tasks[task.name].reset then
-            rfsuite.utils.log("Reset task [" .. task.name .. "]", "info")
             tasks[task.name].reset()
         end
     end    
@@ -285,6 +304,7 @@ end
 
 function tasks.event(widget, category, value)
     -- currently does nothing.
+    print("Event: " .. widget .. " " .. category .. " " .. value)
 end
 
 return tasks

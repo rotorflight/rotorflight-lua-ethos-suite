@@ -760,4 +760,10 @@ function elrs.wakeup()
     end
 end
 
+-- reset
+function elrs.reset()
+    sensors.uid = {}
+    sensors.lastvalue = {}
+end
+
 return elrs

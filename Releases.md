@@ -1,3 +1,12 @@
+# 2.2.0-RC4
+
+Release candidate version for 2.2.0-RC4 Rotorflight
+
+- prevent msp sensors when armed
+- improve cpu load of bgtask (spread scheduling)
+- Average 10% reduction in memory usage
+- Hobbywing ESC - fix bec voltage in fwd programing
+
 # 2.2.0-RC3
 
 Release candidate version for 2.2.0-RC3 Rotorflight
@@ -7,6 +16,9 @@ Release candidate version for 2.2.0-RC3 Rotorflight
 - blackbox status widget
 - arm status widget
 - disarm flags widget
+- msp sensor framework
+- small fixes to improve speed of connect/reconnect
+- added italian translation & audio
 
 # 2.2.0-RC2
 

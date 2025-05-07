@@ -21,25 +21,24 @@
 -- RotorFlight + ETHOS LUA configuration
 local config = {}
 
--- LuaFormatter off
-
 -- Configuration settings for the Rotorflight Lua Ethos Suite
-config.toolName = "Rotorflight"                                     -- name of the tool 
-config.icon = lcd.loadMask("app/gfx/icon.png")                      -- icon
-config.icon_logtool = lcd.loadMask("app/gfx/icon_logtool.png")      -- icon
-config.icon_unsupported = lcd.loadMask("app/gfx/unsupported.png")   -- icon
-config.Version = "0.0.0.0"                                          -- version number of this software replace
-config.ethosVersion = {1, 6, 2}                                     -- min version of ethos supported by this script                                                     
-config.supportedMspApiVersion = {"12.06", "12.07","12.08"}          -- supported msp versions
-config.simulatorApiVersionResponse = {0, 12, 8}                     -- version of api return by simulator
-config.baseDir = "rfsuite"                                          -- base directory for the suite. This is only used by msp api to ensure correct path
-config.logLevel= "info"                                               -- off | info | debug [default = info]
-config.logToFile = false                                            -- log to file [default = false] (log file is in /scripts/rfsuite/logs)
-config.logMSP = false                                               -- log msp messages [default =  false]
-config.logMSPQueue = false                                          -- log msp queue size [default = false]
-config.logMemoryUsage = false                                       -- log memory usage [default = false]
-config.developerMode = false                                        -- show developer tools on main menu [default = false]
-
+config.toolName = "Rotorflight"                                         -- name of the tool 
+config.icon = lcd.loadMask("app/gfx/icon.png")                          -- icon
+config.icon_logtool = lcd.loadMask("app/gfx/icon_logtool.png")          -- icon
+config.icon_unsupported = lcd.loadMask("app/gfx/unsupported.png")       -- icon
+config.version = {major = 2, minor = 2, revision = 0, suffix = "RC4"}   -- version of the script
+config.ethosVersion = {1, 6, 2}                                         -- min version of ethos supported by this script                                                     
+config.supportedMspApiVersion = {"12.06", "12.07","12.08"}              -- supported msp versions
+config.simulatorApiVersionResponse = {0, 12, 8}                         -- version of api return by simulator
+config.baseDir = "rfsuite"                                              -- base directory for the suite. This is only used by msp api to ensure correct path
+config.logLevel= "info"                                                 -- off | info | debug [default = info]
+config.logToFile = false                                                -- log to file [default = false] (log file is in /scripts/rfsuite/logs)
+config.logMSP = false                                                   -- log msp messages [default =  false]
+config.logMSPQueue = false                                              -- log msp queue size [default = false]
+config.logMemoryUsage = false                                           -- log memory usage [default = false]
+config.developerMode = false                                            -- show developer tools on main menu [default = false]
+config.compile = true                                                   -- use the compiler [default = true]
+config.compilerTiming = false                                           -- log compiler timings [default = false]
 
 -- RotorFlight + ETHOS LUA preferences
 local preferences = {}
@@ -60,13 +59,31 @@ preferences.syncCraftName = false                                   -- sync the 
 preferences.mspExpBytes = 8                                         -- number of bytes for msp_exp [default = 8] 
 preferences.defaultRateProfile = 4 -- ACTUAL                        -- default rate table [default = 4]
 preferences.watchdogParam = 10                                      -- watchdog timeout for progress boxes [default = 10]
+preferences.spreadScheduling = true                                 -- false = all tasks run on all cycles.  true = tasks are spread over multiple cycles. [default = true]
 
 
 -- tasks
 config.bgTaskName = config.toolName .. " [Background]"              -- background task name for msp services etc
 config.bgTaskKey = "rf2bg"                                          -- key id used for msp services
 
--- LuaFormatter on
+
+--- Checks if the `developerMode` is disabled in the `config` table.
+--- If disabled, attempts to enable it by checking for the existence of a 
+--- file named `../developermode`. If the file exists, it sets 
+--- `config.developerMode` to `true`.
+---
+--- Note:
+--- - The file path `../developermode` is relative to the script's execution directory.
+--- - This functionality is likely used to toggle developer-specific features 
+---   during runtime.
+if not config.developerMode then
+    local f = io.open("../developermode", "r")
+    if f then
+        io.close(f)
+        config.developerMode = true
+    end
+end
+
 
 -- main
 -- rfsuite: Main table for the rotorflight-lua-ethos-suite script.
@@ -77,39 +94,17 @@ rfsuite = {}
 rfsuite.config = config
 rfsuite.preferences = preferences
 rfsuite.session = {}
-rfsuite.app = assert(loadfile("app/app.lua"))(config)
+rfsuite.compiler = assert(loadfile("lib/compile.lua"))(config) 
+rfsuite.app = assert(rfsuite.compiler.loadfile("app/app.lua"))(config)
 
--- 
--- This script initializes the logging configuration for the rfsuite module.
--- 
--- The logging configuration is loaded from the "lib/log.lua" file and is 
--- customized based on the provided configuration (`config`).
--- 
--- The log file is named using the current date and time in the format 
--- "logs/rfsuite_YYYY-MM-DD_HH-MM-SS.log".
--- 
--- The minimum print level for logging is set from `config.logLevel`.
--- 
--- The option to log to a file is set from `config.logToFile`.
--- 
--- If the system is running in simulation mode, the log print interval is 
--- set to 0.1 seconds.
--- logging
-os.mkdir("LOGS:")
-os.mkdir("LOGS:/rfsuite")
-os.mkdir("LOGS:/rfsuite/logs")
-rfsuite.log = assert(loadfile("lib/log.lua"))(config)
-rfsuite.log.config.log_file = "LOGS:/rfsuite/logs/rfsuite_" .. os.date("%Y-%m-%d_%H-%M-%S") .. ".log"
-rfsuite.log.config.min_print_level  = config.logLevel
-rfsuite.log.config.log_to_file = config.logToFile
 
 
 -- library with utility functions used throughou the suite
-rfsuite.utils = assert(loadfile("lib/utils.lua"))(config)
+rfsuite.utils = assert(rfsuite.compiler.loadfile("lib/utils.lua"))(config)
 
 
 -- Load the i18n system
-rfsuite.i18n  = assert(loadfile("lib/i18n.lua"))(config)
+rfsuite.i18n  = assert(rfsuite.compiler.loadfile("lib/i18n.lua"))(config)
 rfsuite.i18n.load()     
 
 -- 
@@ -117,10 +112,10 @@ rfsuite.i18n.load()
 -- 
 -- The `rfsuite.tasks` table is created to hold various tasks.
 -- The `rfsuite.tasks` is assigned the result of executing the "tasks/tasks.lua" file with the `config` parameter.
--- The `loadfile` function is used to load the "tasks/tasks.lua" file, and `assert` ensures that the file is loaded successfully.
+-- The `rfsuite.compiler.loadfile` function is used to load the "tasks/tasks.lua" file, and `assert` ensures that the file is loaded successfully.
 -- The loaded file is then executed with the `config` parameter, and its return value is assigned to `rfsuite.tasks`.
 -- tasks
-rfsuite.tasks = assert(loadfile("tasks/tasks.lua"))(config)
+rfsuite.tasks = assert(rfsuite.compiler.loadfile("tasks/tasks.lua"))(config)
 
 -- LuaFormatter off
 
@@ -190,6 +185,31 @@ rfsuite.session.telemetrySensor = nil
 rfsuite.session.repairSensors = false
 rfsuite.session.locale = system.getLocale()
 rfsuite.session.lastMemoryUsage = nil
+rfsuite.session.mcu_id = nil
+
+
+--- Retrieves the version information of the rfsuite module.
+--- 
+--- This function constructs a version string and returns a table containing
+--- detailed version information, including the major, minor, revision, and suffix
+--- components.
+---
+--- @return table A table containing the following fields:
+---   - `version` (string): The full version string in the format "X.Y.Z-SUFFIX".
+---   - `major` (number): The major version number.
+---   - `minor` (number): The minor version number.
+---   - `revision` (number): The revision version number.
+---   - `suffix` (string): The version suffix (e.g., "alpha", "beta").
+function rfsuite.version()
+    local version = config.version.major .. "." .. config.version.minor .. "." .. config.version.revision .. "-" .. config.version.suffix
+    return {
+        version = version,
+        major = config.version.major,
+        minor = config.version.minor,
+        revision = config.version.revision,
+        suffix = config.version.suffix
+    }
+end
 
 
 --[[
@@ -202,7 +222,7 @@ rfsuite.session.lastMemoryUsage = nil
     3. Registers a background task using `system.registerTask()` with configurations from `config`.
     4. Dynamically loads and registers widgets:
        - Finds widget scripts using `rfsuite.utils.findWidgets()`.
-       - Loads each widget script dynamically using `loadfile()`.
+       - Loads each widget script dynamically using `rfsuite.compiler.loadfile()`.
        - Assigns the loaded script to a variable inside the `rfsuite` table.
        - Registers each widget with `system.registerWidget()` using the dynamically assigned module.
 
@@ -218,7 +238,7 @@ rfsuite.session.lastMemoryUsage = nil
     - `system.registerSystemTool()`
     - `system.registerTask()`
     - `rfsuite.utils.findWidgets()`
-    - `loadfile()`
+    - `rfsuite.compiler.loadfile()`
     - `system.registerWidget()`
 ]]
 local function init()
@@ -285,7 +305,7 @@ local function init()
     })
 
     -- widgets are loaded dynamically
-    local cacheFile = "widgets.cache"
+    local cacheFile = "widgets.lua"
     local cachePath = "cache/" .. cacheFile
     local widgetList
     
@@ -339,7 +359,7 @@ local function init()
         for i, v in ipairs(widgetList) do
             if v.script then
                 -- Load the script dynamically
-                local scriptModule = assert(loadfile("widgets/" .. v.folder .. "/" .. v.script))(config)
+                local scriptModule = assert(rfsuite.compiler.loadfile("widgets/" .. v.folder .. "/" .. v.script))(config)
         
                 -- Use the script filename (without .lua) as the key, or v.varname if provided
                 local varname = v.varname or v.script:gsub("%.lua$", "")

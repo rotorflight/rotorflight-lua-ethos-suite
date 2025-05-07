@@ -43,6 +43,7 @@ local function drawCenteredMessage(msg)
 
     for _, font in ipairs(fonts) do
         lcd.font(font)
+        if msg == nil then msg = "-" end
         local tW, tH = lcd.getTextSize(msg)
         if tW <= maxW and tH <= maxH then
             bestFont, bestW, bestH = font, tW, tH
@@ -63,20 +64,13 @@ end
 
 -- Request summary from dataflash
 local function getDataflashSummary()
-    local message = {
-        command = 70,
-        processReply = function(_, buf)
-            local helper = rfsuite.tasks.msp.mspHelper
-            local flags = helper.readU8(buf)
-            summary.ready = (flags & 1) ~= 0
-            summary.supported = (flags & 2) ~= 0
-            summary.sectors = helper.readU32(buf)
-            summary.totalSize = helper.readU32(buf)
-            summary.usedSize = helper.readU32(buf)
-        end,
-        simulatorResponse = {3, 1, 0, 0, 0, 0, 4, 0, 0, 0, 3, 0, 0}
-    }
-    rfsuite.tasks.msp.mspQueue:add(message)
+
+    summary.totalSize = rfsuite.session.bblSize
+    summary.usedSize = rfsuite.session.bblUsed
+    local flags = rfsuite.session.bblFlags
+    summary.ready = (flags & 1) ~= 0
+    summary.supported = (flags & 2) ~= 0
+
 end
 
 
@@ -123,7 +117,6 @@ local function eraseDataflash()
     local message = {
         command = 72,
         processReply = function()
-            summary = {}
             isErase = false
             getDataflashSummary()
         end
@@ -144,7 +137,6 @@ local function wakeupUI()
     end
 
     if not rfsuite.tasks.msp.mspQueue:isProcessed() then
-        summary = {}
         return
     end
 
@@ -156,17 +148,13 @@ local function wakeupUI()
         end
         local now = os.clock()
 
-        if armValue == 0 or armValue == 2 or (now - lastSummaryTime >= 30) then
-            getDataflashSummary()
-            lastSummaryTime = now
-        end
+
+        getDataflashSummary()
     end    
 end
 
 local function getFreeDataflashSpace()
-    if not summary.supported then
-        return rfsuite.i18n.get("app.modules.status.unsupported")
-    end
+
     local freeSpace = summary.totalSize - summary.usedSize
 
     local msg
@@ -201,17 +189,15 @@ function rf2bbl.paint(widget)
         return
     end
 
+
     if isErase then
         msg = rfsuite.i18n.get("widgets.bbl.erasing")
-        local summary = {}
     elseif not rfsuite.tasks.telemetry.active() then
         msg = rfsuite.i18n.get("no_link"):upper() 
-        local summary = {}
     elseif summary.totalSize and summary.usedSize then
-        msg = getFreeDataflashSpace()   
+        msg = getFreeDataflashSpace()       
     else
-        msg = rfsuite.i18n.get('app.msg_loading')
-        local summary = {}
+        msg = "-"
     end    
 
     drawCenteredMessage(msg)
@@ -264,9 +250,11 @@ function rf2bbl.wakeup(widget)
 
     -- draw progress bar if needed
     if progress then
-        progressCounter = progressCounter + 10
+        progressCounter = progressCounter + 5
         progress:value(progressCounter)
         if progressCounter >= 100 then
+            summary.usedSize = 0
+            rfsuite.session.bblUsed = 0
             progress:close()
             progress = nil
         end

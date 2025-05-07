@@ -68,7 +68,7 @@ end
 
 
 function utils.logRotorFlightBanner()
-    local version = rfsuite.config.Version or "Unknown Version"
+    local version = rfsuite.version().version or "Unknown Version"
 
     local banner = {
         "===============================================",
@@ -293,7 +293,9 @@ end
     @param level string (optional): The log level (e.g., "debug", "info", "warn", "error"). Defaults to "debug".
 ]]
 function utils.log(msg, level)
-    rfsuite.log.log(msg, level or "debug")
+    if rfsuite.tasks and rfsuite.tasks.logger then
+        rfsuite.tasks.logger.add(msg, level or "debug")
+    end
 end
 
 -- Function to print a table to the debug console in a readable format.
@@ -363,7 +365,7 @@ function utils.findModules()
             local f = io.open(init_path, "r")
             if f then
                 io.close(f)
-                local func, err = loadfile(init_path)
+                local func, err = rfsuite.compiler.loadfile(init_path)
                 if err then
                     rfsuite.utils.log("Error loading " .. init_path, "info")
                     rfsuite.utils.log(err, "info")
@@ -411,7 +413,7 @@ function utils.findWidgets()
             if f then
                 io.close(f)
 
-                local func, err = loadfile(init_path)
+                local func, err = rfsuite.compiler.loadfile(init_path)
 
                 if func then
                     local wconfig = func()
@@ -538,7 +540,7 @@ function utils.simSensors(id)
         return 0
     end
 
-    local chunk, err = loadfile(filepath)
+    local chunk, err = rfsuite.compiler.loadfile(filepath)
     if not chunk then
         print("Error loading telemetry file: " .. err)
         return 0
@@ -650,6 +652,7 @@ function utils.onReboot()
     rfsuite.session.resetSensors = true
     rfsuite.session.resetTelemetry = true
     rfsuite.session.resetMSP = true
+    rfsuite.session.resetMSPSensors = true
 end
 
 

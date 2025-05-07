@@ -17,7 +17,7 @@ end
 
 
 rfsuite.utils.log("Loading Rate Table: " .. tables[rfsuite.session.activeRateTable],"debug")
-local mspapi = assert(loadfile(tables[rfsuite.session.activeRateTable]))()
+local mspapi = assert(rfsuite.compiler.loadfile(tables[rfsuite.session.activeRateTable]))()
 local mytable = mspapi.formdata
 
 
@@ -53,7 +53,7 @@ end
 
 local function openPage(idx, title, script)
 
-    rfsuite.app.Page = assert(loadfile("app/modules/" .. script))()
+    rfsuite.app.Page = assert(rfsuite.compiler.loadfile("app/modules/" .. script))()
 
     rfsuite.app.lastIdx = idx
     rfsuite.app.lastTitle = title
@@ -202,7 +202,7 @@ end
 local function onHelpMenu()
 
     local helpPath = "app/modules/rates/help.lua"
-    local help = assert(loadfile(helpPath))()
+    local help = assert(rfsuite.compiler.loadfile(helpPath))()
 
     rfsuite.app.ui.openPageHelp(help.help["table"][rfsuite.session.activeRateTable], "rates")
 

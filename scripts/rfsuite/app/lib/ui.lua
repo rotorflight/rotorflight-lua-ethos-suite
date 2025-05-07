@@ -325,7 +325,7 @@ function ui.openMainMenu()
         return
     end    
 
-    local MainMenu = assert(loadfile("app/modules/init.lua"))()
+    local MainMenu = assert(rfsuite.compiler.loadfile("app/modules/init.lua"))()
 
     -- Clear all navigation variables
     rfsuite.app.lastIdx = nil
@@ -918,6 +918,7 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
     -- Load the module
     local modulePath = "app/modules/" .. script
+
     rfsuite.app.Page = assert(loadfile(modulePath))(idx)
 
     -- Load the help file if it exists
@@ -929,6 +930,8 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
     else
         rfsuite.app.fieldHelpTxt = nil
     end
+
+    rfsuite.app.Page = assert(rfsuite.compiler.loadfile(modulePath))(idx)
 
     -- If the Page has its own openPage function, use it and return early
     if rfsuite.app.Page.openPage then
@@ -1139,7 +1142,7 @@ function ui.navigationButtons(x, y, w, h)
 
         if rfsuite.utils.file_exists(helpPath) then
 
-            local help = assert(loadfile(helpPath))()
+            local help = assert(rfsuite.compiler.loadfile(helpPath))()
 
             -- Execution of the file succeeded
             rfsuite.app.formNavigationFields['help'] = form.addButton(line, {x = helpOffset, y = y, w = wS, h = h}, {

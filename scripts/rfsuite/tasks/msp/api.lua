@@ -27,10 +27,10 @@ local api_path = apidir
 
 -- New version using the global callback system
 function apiLoader.scheduleWakeup(func)
-    if rfsuite and rfsuite.tasks and rfsuite.tasks.callbackNow then
-        rfsuite.tasks.callbackNow(func)
+    if rfsuite and rfsuite.tasks and  rfsuite.tasks.callback and rfsuite.tasks.callback.now then
+        rfsuite.tasks.callback.now(func)
     else
-        rfsuite.utils.log("ERROR: rfsuite.tasks.callbackNow() is missing!", "error")
+        rfsuite.utils.log("ERROR: rfsuite.tasks.callback.now() is missing!", "info")
     end
 end
 
@@ -550,6 +550,11 @@ end
     it will use delta updates. Otherwise, it will perform a full rebuild of the payload.
 --]]
 function apiLoader.buildWritePayload(apiname, payload, api_structure, noDelta)
+    if not rfsuite.app.Page then
+        rfsuite.utils.log("[buildWritePayload] No page context available", "info")
+        return nil
+    end
+
     local positionmap = rfsuite.app.Page.mspapi and rfsuite.app.Page.mspapi.positionmap[apiname]
     local receivedBytes = rfsuite.app.Page.mspapi and rfsuite.app.Page.mspapi.receivedBytes[apiname]
     local receivedBytesCount = rfsuite.app.Page.mspapi and rfsuite.app.Page.mspapi.receivedBytesCount[apiname]
@@ -724,11 +729,17 @@ function apiLoader.buildFullPayload(apiname, payload, api_structure)
             field_def.step = field_def.step or actual_field.step
             field_def.min = field_def.min or actual_field.min
             field_def.max = field_def.max or actual_field.max
+            field_def.decimals = field_def.decimals or actual_field.decimals
         end
 
         -- Process value with scale
         local value = payload[field_name] or field_def.default or 0
         local scale = field_def.scale or 1
+        
+        -- scale is an odd one and needs to be handled differently
+        if not actual_field and field_def.decimals then
+            scale = scale / rfsuite.app.utils.decimalInc(field_def.decimals)
+        end
         value = math.floor(value * scale + 0.5)
 
         -- Determine write function

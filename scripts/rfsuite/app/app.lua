@@ -95,12 +95,12 @@ app.triggers = triggers
     Initializes the app.ui table and loads the UI library.
 
     The app.ui table is first initialized as an empty table.
-    Then, the UI library is loaded from "app/lib/ui.lua" using the loadfile function,
+    Then, the UI library is loaded from "app/lib/ui.lua" using the rfsuite.compiler.loadfile function,
     and the result is assigned to app.ui. The config parameter is passed to the loaded file.
 
 ]]
 app.ui = {}
-app.ui = assert(loadfile("app/lib/ui.lua"))(config)
+app.ui = assert(rfsuite.compiler.loadfile("app/lib/ui.lua"))(config)
 
 
 --[[
@@ -109,7 +109,7 @@ app.ui = assert(loadfile("app/lib/ui.lua"))(config)
     If the file cannot be loaded, an error will be thrown.
 ]]
 app.utils = {}
-app.utils = assert(loadfile("app/lib/utils.lua"))(config)
+app.utils = assert(rfsuite.compiler.loadfile("app/lib/utils.lua"))(config)
 
 
 --[[
@@ -768,6 +768,7 @@ local function requestPage()
         rfsuite.app.Page.mspapi.receivedBytesCount = {}  -- Initialize if first run
         rfsuite.app.Page.mspapi.receivedBytes = {}  -- Initialize if first run
         rfsuite.app.Page.mspapi.positionmap = {}  -- Initialize if first run
+        rfsuite.app.Page.mspapi.other = {} 
     end
 
     -- Ensure state.currentIndex is initialized
@@ -835,7 +836,7 @@ local function processNextAPI()
     if not apiKey then
         rfsuite.utils.log("API key is missing for index " .. tostring(state.currentIndex), "warning")
         state.currentIndex = state.currentIndex + 1
-        rfsuite.tasks.callbackInSeconds(0.5, processNextAPI)
+        rfsuite.tasks.callback.inSeconds(0.5, processNextAPI)
         return
     end
 
@@ -868,16 +869,16 @@ local function processNextAPI()
 
         if retryCount < 3 then  
             rfsuite.utils.log("[TIMEOUT] API: " .. apiKey .. " (Retry " .. retryCount .. ")", "warning")
-            rfsuite.tasks.callbackInSeconds(0.5, processNextAPI)  
+            rfsuite.tasks.callback.inSeconds(0.5, processNextAPI)  
         else
             rfsuite.utils.log("[TIMEOUT FAIL] API: " .. apiKey .. " failed after 3 attempts. Skipping.", "error")
             state.currentIndex = state.currentIndex + 1
-            rfsuite.tasks.callbackInSeconds(0.5, processNextAPI)  
+            rfsuite.tasks.callback.inSeconds(0.5, processNextAPI)  
         end
     end
 
     -- **Schedule timeout callback**
-    rfsuite.tasks.callbackInSeconds(2, handleTimeout)
+    rfsuite.tasks.callback.inSeconds(2, handleTimeout)
 
     -- **API success handler**
     API.setCompleteHandler(function(self, buf)
@@ -898,12 +899,13 @@ local function processNextAPI()
         app.Page.mspapi.receivedBytes[apiKey] = API.data().buffer
         app.Page.mspapi.receivedBytesCount[apiKey] = API.data().receivedBytesCount
         app.Page.mspapi.positionmap[apiKey] = API.data().positionmap
+        app.Page.mspapi.other[apiKey] = API.data().other or {}
 
         -- **Reset retry count on success**
         app.Page.mspapi.retryCount[apiKey] = 0  
 
         state.currentIndex = state.currentIndex + 1
-        rfsuite.tasks.callbackInSeconds(0.5, processNextAPI)  
+        rfsuite.tasks.callback.inSeconds(0.5, processNextAPI)  
     end)
 
     -- **API error handler**
@@ -922,11 +924,11 @@ local function processNextAPI()
 
         if retryCount < 3 then  
             rfsuite.utils.log("[ERROR] API: " .. apiKey .. " failed (Retry " .. retryCount .. "): " .. tostring(err), "warning")
-            rfsuite.tasks.callbackInSeconds(0.5, processNextAPI)  
+            rfsuite.tasks.callback.inSeconds(0.5, processNextAPI)  
         else
             rfsuite.utils.log("[ERROR FAIL] API: " .. apiKey .. " failed after 3 attempts. Skipping.", "error")
             state.currentIndex = state.currentIndex + 1
-            rfsuite.tasks.callbackInSeconds(0.5, processNextAPI)  
+            rfsuite.tasks.callback.inSeconds(0.5, processNextAPI)  
         end
     end)
 
@@ -1042,7 +1044,7 @@ function app.wakeupUI()
             app.dialogs.progressCounter = app.dialogs.progressCounter + 0.5
             if app.dialogs.progress ~= nil then app.ui.progressDisplayValue(app.dialogs.progressCounter) end
         else
-            app.dialogs.progressCounter = app.dialogs.progressCounter + 5
+            app.dialogs.progressCounter = app.dialogs.progressCounter + 2
             if app.dialogs.progress ~= nil then app.ui.progressDisplayValue(app.dialogs.progressCounter) end
         end
 
@@ -1063,11 +1065,11 @@ function app.wakeupUI()
 
         if rfsuite.tasks.msp.mspQueue:isProcessed() then
             if (app.dialogs.saveProgressCounter > 40 and app.dialogs.saveProgressCounter <= 80) then
-                app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 3
+                app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 1.5
             elseif (app.dialogs.saveProgressCounter > 90) then
-                app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 2
+                app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 1
             else
-                app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 5
+                app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 2
             end
         end
 
@@ -1624,7 +1626,7 @@ function app.create_logtool()
     config.ethosRunningVersion = {config.environment.major, config.environment.minor, config.environment.revision}
 
     rfsuite.session.lcdWidth, rfsuite.session.lcdHeight = rfsuite.utils.getWindowSize()
-    app.radio = assert(loadfile("app/radios.lua"))().msp
+    app.radio = assert(rfsuite.compiler.loadfile("app/radios.lua"))().msp
 
     app.uiState = app.uiStatus.init
 
@@ -1662,7 +1664,7 @@ function app.create()
     config.ethosRunningVersion = {config.environment.major, config.environment.minor, config.environment.revision}
 
     rfsuite.session.lcdWidth, rfsuite.session.lcdHeight = rfsuite.utils.getWindowSize()
-    app.radio = assert(loadfile("app/radios.lua"))().msp
+    app.radio = assert(rfsuite.compiler.loadfile("app/radios.lua"))().msp
 
     app.uiState = app.uiStatus.init
 
@@ -1769,6 +1771,7 @@ Returns:
 function app.close()
     app.guiIsRunning = false
     app.offlineMode = false
+    app.uiState = app.uiStatus.init
 
     if app.Page and (app.uiState == app.uiStatus.pages or app.uiState == app.uiStatus.mainMenu) and app.Page.close then
         app.Page.close()

@@ -70,7 +70,7 @@ local function createSensor(uid, name, unit, dec, value, min, max)
     local sensor = model.createSensor()
     sensor:name(name)
     sensor:appId(uid)
-    sensor:module(1)
+    sensor:module(rfsuite.session.telemetrySensor:module())
     sensor:minimum(min or -1000000000)
     sensor:maximum(max or 2147483647)
 
@@ -229,6 +229,12 @@ local function wakeup()
     end
 
     flushCacheIfNeeded()
+end
+
+-- reset
+function sim.reset()
+    sensors.uid = {}
+    sensors.lastvalue = {}
 end
 
 sim.wakeup = wakeup

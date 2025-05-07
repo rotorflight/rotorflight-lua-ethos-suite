@@ -28,8 +28,10 @@ function tailmode.wakeup()
         API.setCompleteHandler(function(self, buf)
             rfsuite.session.tailMode = API.readValue("tail_rotor_mode")
             rfsuite.session.swashMode = API.readValue("swash_type")
-            rfsuite.utils.log("Tail mode: " .. rfsuite.session.tailMode, "info")
-            rfsuite.utils.log("Swash mode: " .. rfsuite.session.swashMode, "info")
+            if rfsuite.session.tailMode and rfsuite.session.swashMode then
+                rfsuite.utils.log("Tail mode: " .. rfsuite.session.tailMode, "info")
+                rfsuite.utils.log("Swash mode: " .. rfsuite.session.swashMode, "info")
+            end
         end)
         API.setUUID("fbccd634-c9b7-4b48-8c02-08ef560dc515")
         API.read()  

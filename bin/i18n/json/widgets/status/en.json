@@ -204,6 +204,11 @@
       "english": "GOVERNOR",
       "translation": "GOVERNOR",
       "needs_translation": "false"
+    },
+    "BBL": {
+      "english": "BBL",
+      "translation": "BBL",
+      "needs_translation": "false"
     }
   },
   "title_tempESC": {
