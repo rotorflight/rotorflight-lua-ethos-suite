@@ -19,30 +19,39 @@
 
 local clocksync = {}
 
+local syncStartTime = nil
+
 function clocksync.wakeup()
-    -- quick exit if no apiVersion
-    if rfsuite.session.apiVersion == nil then return end    
+    if rfsuite.session.apiVersion == nil then return end
 
     if rfsuite.session.clockSet == nil then
+        -- Record the time when the sync attempt starts
+        if syncStartTime == nil then
+            syncStartTime = os.clock()
+        end
+
         local API = rfsuite.tasks.msp.api.load("RTC", 1)
         API.setCompleteHandler(function(self, buf)
-            rfsuite.session.clockSet = true
-            rfsuite.utils.log("Sync clock: " .. os.clock(), "info")
+            -- Wait until at least 1 second has passed since syncStartTime
+            if os.clock() - syncStartTime >= 1 then
+                rfsuite.utils.log("Sync clock: " .. os.date("%Y-%m-%d %H:%M:%S"), "info")
+                rfsuite.session.clockSet = true
+            end
         end)
+
         API.setUUID("eaeb0028-219b-4cec-9f57-3c7f74dd49ac")
         API.write()
     end
-
 end
 
 function clocksync.reset()
     rfsuite.session.clockSet = nil
+    syncStartTime = nil
 end
 
 function clocksync.isComplete()
-    if rfsuite.session.clockSet ~= nil then
-        return true
-    end
+    return rfsuite.session.clockSet ~= nil
 end
+
 
 return clocksync
