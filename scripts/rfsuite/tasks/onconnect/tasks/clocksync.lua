@@ -27,9 +27,11 @@ function clocksync.wakeup()
         local API = rfsuite.tasks.msp.api.load("RTC", 1)
         API.setCompleteHandler(function(self, buf)
             rfsuite.session.clockSet = true
-            rfsuite.utils.log("Sync clock: " .. os.clock(), "info")
+            rfsuite.utils.log("Sync clock: " .. os.date("%c"), "info")
         end)
         API.setUUID("eaeb0028-219b-4cec-9f57-3c7f74dd49ac")
+        API.setValue("seconds", os.time())
+        API.setValue("milliseconds", 0)
         API.write()
     end
 
