@@ -30,18 +30,25 @@ function battery.wakeup()
             local batteryCapacity = API.readValue("batteryCapacity")
             local batteryCellCount = API.readValue("batteryCellCount")
             local vbatwarningcellvoltage = API.readValue("vbatwarningcellvoltage")/100
+            local vbatmincellvoltage = API.readValue("vbatmincellvoltage")/100
+            local vbatmaxcellvoltage = API.readValue("vbatmaxcellvoltage")/100
             local consumptionWarningPercentage = API.readValue("consumptionWarningPercentage")
 
             rfsuite.session.batteryConfig = {}
             rfsuite.session.batteryConfig.batteryCapacity = batteryCapacity
             rfsuite.session.batteryConfig.batteryCellCount = batteryCellCount
             rfsuite.session.batteryConfig.vbatwarningcellvoltage = vbatwarningcellvoltage
+            rfsuite.session.batteryConfig.vbatmincellvoltage = vbatmincellvoltage
+            rfsuite.session.batteryConfig.vbatmaxcellvoltage = vbatmaxcellvoltage
             rfsuite.session.batteryConfig.consumptionWarningPercentage = consumptionWarningPercentage
 
-            rfsuite.utils.log("Battery capacity: " .. batteryCapacity .. " mAh","info")
+            rfsuite.utils.log("Battery capacity: " .. batteryCapacity .. "mAh","info")
+            rfsuite.utils.log("Consumption warning percentage: " .. consumptionWarningPercentage .. "%","info")
             rfsuite.utils.log("Battery cell count: " .. batteryCellCount,"info")
-            rfsuite.utils.log("Battery warning voltage: " .. vbatwarningcellvoltage .. " V","info")
-            rfsuite.utils.log("Consumption warning percentage: " .. consumptionWarningPercentage .. " %","info")
+            rfsuite.utils.log("Battery warning voltage: " .. vbatwarningcellvoltage .. "V","info")
+            rfsuite.utils.log("Battery min voltage: " .. vbatmincellvoltage .. "V","info")
+            rfsuite.utils.log("Battery max voltage: " .. vbatmaxcellvoltage .. "V","info")
+
             
         end)
         API.setUUID("a3f9c2b4-5d7e-4e8a-9c3b-2f6d8e7a1b2d")
