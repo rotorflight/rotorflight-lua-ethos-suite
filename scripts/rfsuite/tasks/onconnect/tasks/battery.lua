@@ -29,7 +29,7 @@ function battery.wakeup()
         API.setCompleteHandler(function(self, buf)
             local batteryCapacity = API.readValue("batteryCapacity")
             local batteryCellCount = API.readValue("batteryCellCount")
-            local vbatwarningcellvoltage = API.readValue("vbatwarningcellvoltage")
+            local vbatwarningcellvoltage = API.readValue("vbatwarningcellvoltage")/100
             local consumptionWarningPercentage = API.readValue("consumptionWarningPercentage")
 
             rfsuite.session.batteryConfig = {}
