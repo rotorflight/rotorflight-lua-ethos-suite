@@ -168,34 +168,6 @@ function utils.getCurrentProfile()
             rfsuite.session.activeRateProfile = nil
         end
 
-    else
-        -- msp call to get data
-        
-                local message = {
-                    command = 101, -- MSP_SERVO_CONFIGURATIONS
-                    uuid = "getProfile",
-                    processReply = function(self, buf)
-
-                        if #buf >= 30 then
-
-                            buf.offset = 24
-                            local activeProfile = rfsuite.tasks.msp.mspHelper.readU8(buf)
-                            buf.offset = 26
-                            local activeRate = rfsuite.tasks.msp.mspHelper.readU8(buf)
-
-                            rfsuite.session.activeProfileLast = rfsuite.session.activeProfile
-                            rfsuite.session.activeRateProfileLast = rfsuite.session.activeRateProfile
-
-                            rfsuite.session.activeProfile = activeProfile + 1
-                            rfsuite.session.activeRateProfile = activeRate + 1
-
-                        end
-                    end,
-                    simulatorResponse = {240, 1, 124, 0, 35, 0, 0, 0, 0, 0, 0, 224, 1, 10, 1, 0, 26, 0, 0, 0, 0, 0, 2, 0, 6, 0, 6, 1, 4, 1}
-
-                }
-                rfsuite.tasks.msp.mspQueue:add(message)
-
     end
 end
 
