@@ -241,7 +241,7 @@ local sensorTable = {
         mandatory = true,
         set_telemetry_sensors = 93,
         sim =  {
-            {uid=0x5009, unit=nil, dec=0, value=function() return rfsuite.utils.simSensors('governor') end, min = 0, max = 5},
+            {uid=0x5009, unit=nil, dec=0, value=function() return rfsuite.utils.simSensors('governor') end, min = 0, max = 101},
         },        
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5125},
