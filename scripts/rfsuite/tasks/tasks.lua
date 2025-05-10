@@ -183,8 +183,9 @@ function tasks.wakeup()
                 telemetryLostTime = now  -- Record when telemetry was first lost
             end
 
-            if now - telemetryLostTime >= 2 then  -- Wait for 2 seconds before acting
-                rfsuite.utils.log("Telemetry not active for 2 seconds", "info")
+            local waitTime = rfsuite.preferences.telemetryLostReset or 5
+            if now - telemetryLostTime >= waitTime then  -- Wait for X seconds before acting
+                rfsuite.utils.log("Telemetry not active for "..waitTime.." seconds", "info")
                 rfsuite.session.telemetryState = false
                 rfsuite.session.telemetryType = nil
                 rfsuite.session.telemetryTypeChanged = false

@@ -86,7 +86,12 @@ function compile.loadfile(script)
     end
   end
 
-  local chunk = assert(loader)
+  -- Return the chunk or error
+  if not loader then
+    return nil, ("Failed to load script '%s' (%s)"):format(script, which or "unknown")
+  end
+
+  local chunk = loader
   if logTimings then
     local elapsed = os.clock() - startTime
     if not script:find("sim/sensors/", 1, true) then
