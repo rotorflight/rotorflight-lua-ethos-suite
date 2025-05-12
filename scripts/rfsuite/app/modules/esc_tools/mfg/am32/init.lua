@@ -45,4 +45,5 @@ return {
     getEscVersion = getEscVersion,
     getEscFirmware = getEscFirmware,
     mspHeaderBytes = mspHeaderBytes,
+    esc4way = true,
 }

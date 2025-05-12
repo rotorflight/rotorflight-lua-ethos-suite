@@ -556,9 +556,6 @@ function utils.logMsp(cmd, rwState, buf, err)
     if rfsuite.preferences.developer.logmsp then
         local payload = rfsuite.utils.joinTableItems(buf, ", ")
         rfsuite.utils.log(rwState .. " [" .. cmd .. "]" .. " {" .. payload .. "}", "info")
-        if err then
-            rfsuite.utils.log("Error: " .. err, "info")
-        end
     end
 end
 
