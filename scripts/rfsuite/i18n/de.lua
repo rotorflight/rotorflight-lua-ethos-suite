@@ -389,6 +389,10 @@ return {
     ["msg_connecting_to_fbl"] = "Verbindung zum Flugcontroller wird hergestellt...",
     ["navigation_help"] = "?",
     ["modules"] = {
+      ["settings"] = {
+        ["name"] = "Einstellungen",
+        ["txt_telemetry_announcements"] = "Telemetrie-Ansagen"
+      },
       ["validate_sensors"] = {
         ["help_p1"] = "Dieses Tool versucht, eine kurze Liste aller Sensoren zu erstellen, die nicht empfangen werden.",
         ["invalid"] = "UNGUELTIG",

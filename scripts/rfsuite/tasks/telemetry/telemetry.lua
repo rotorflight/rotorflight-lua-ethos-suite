@@ -448,7 +448,7 @@ end
 function telemetry.listSensors()
     local sensorList = {}
 
-    for key, sensor in pairs(sensorTable) do table.insert(sensorList, {key = key, name = sensor.name, mandatory = sensor.mandatory, set_telemetry_sensors = sensor.set_telemetry_sensors }) end
+    for key, sensor in pairs(sensorTable) do table.insert(sensorList, {key = key, name = sensor.name, mandatory = sensor.mandatory, set_telemetry_sensors = sensor.set_telemetry_sensors, onchange = sensor.onchange }) end
 
     return sensorList
 end
