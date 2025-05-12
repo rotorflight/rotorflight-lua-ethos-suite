@@ -186,6 +186,8 @@ rfsuite.session.repairSensors = false
 rfsuite.session.locale = system.getLocale()
 rfsuite.session.lastMemoryUsage = nil
 rfsuite.session.mcu_id = nil
+rfsuite.session.isConnected = false
+rfsuite.session.isArmed = false
 
 
 --- Retrieves the version information of the rfsuite module.
