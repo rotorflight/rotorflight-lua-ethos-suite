@@ -19,7 +19,7 @@ local progressLoaderCounter = 0
 local doDiscoverNotify = false
 
 
-function sortSensorListByName(sensorList)
+local function sortSensorListByName(sensorList)
     table.sort(sensorList, function(a, b)
         return a.name:lower() < b.name:lower()
     end)

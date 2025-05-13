@@ -389,6 +389,10 @@ return {
     ["msg_connecting_to_fbl"] = "Connessione al flight controller...",
     ["navigation_help"] = "?",
     ["modules"] = {
+      ["settings"] = {
+        ["name"] = "Impostazioni",
+        ["txt_telemetry_announcements"] = "Annunci Telemetria"
+      },
       ["validate_sensors"] = {
         ["help_p1"] = "Questo strumento prova a elencare tutti i sensori che non ricevi in una lista concisa.",
         ["invalid"] = "INVALIDO",
@@ -717,7 +721,8 @@ return {
         ["help_p1"] = "Le impostazioni della batteria utilizzate per configurare il controller di volo in modo da monitorare la tensione e fornire avvisi quando la tensione scende al di sotto di un certo livello.",
         ["battery_capacity"] = "Capacita' Batteria",
         ["warn_cell_voltage"] = "Avviso tensione cella",
-        ["cell_count"] = "Conto Celle"
+        ["cell_count"] = "Conto Celle",
+        ["consumption_warning_percentage"] = "Avviso Consumo %"
       },
       ["profile_mainrotor"] = {
         ["gain"] = "Guadagno",

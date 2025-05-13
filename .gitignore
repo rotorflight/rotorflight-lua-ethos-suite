@@ -6,3 +6,4 @@ bin/deploy/vscode/__pycache__/*.pyc
 bin/deploy/vscode/__pycache__/*.pyo
 /bin/deploy/vscode/__pycache__/*.pyc
 /bin/deploy/vscode/__pycache__/*.pyo
+/bin/deploy/vscode/__pycache__

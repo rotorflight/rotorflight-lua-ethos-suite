@@ -23,6 +23,108 @@ local utils = {}
 local arg = {...}
 local config = arg[1]
 
+-- Reads a file's full contents into a string, compatible with limited Lua
+function utils.load_file_as_string(path)
+    local f = io.open(path, "rb")
+    if not f then
+        return nil, "Cannot open file: " .. path
+    end
+
+    local content = ""
+    local chunk
+    repeat
+        chunk = io.read(f, "L")  -- "L" = read a line, including newline (fallback chunk method)
+        if chunk then
+            content = content .. chunk
+        end
+    until not chunk
+
+    io.close(f)
+    return content
+end
+
+function utils.load_ini_file(fileName)
+    assert(type(fileName) == 'string', 'Parameter "fileName" must be a string.')
+
+    if not rfsuite.utils.file_exists(fileName) then
+        rfsuite.utils.log("INI: Unable to find file: " .. fileName, "info")
+        return nil
+    end
+
+    local content, err = utils.load_file_as_string(fileName)
+    if not content then
+        rfsuite.utils.log("INI: Failed to read file: " .. err, "info")
+        return nil
+    end
+
+    local data = {}
+    local section = nil
+
+    for line in string.gmatch(content, "[^\r\n]+") do
+        line = line:match("^%s*(.-)%s*$")  -- Trim line
+
+        if line == "" or line:sub(1, 1) == ";" then
+            -- Skip comments and empty lines
+        elseif line:match("^%[.+%]$") then
+            section = line:match("^%[(.+)%]$")
+            if section then
+                section = section:match("^%s*(.-)%s*$")  -- Trim spaces inside brackets
+                section = tonumber(section) or section
+                data[section] = data[section] or {}
+            end
+        else
+            local param, value = line:match("^([%w_]+)%s-=%s-(.*)$")
+            if param and value then
+                param = tonumber(param) or param
+
+                -- Convert value types
+                if value == "true" then
+                    value = true
+                elseif value == "false" then
+                    value = false
+                elseif tonumber(value) then
+                    value = tonumber(value)
+                end
+
+                if section then
+                    data[section][param] = value
+                else
+                    rfsuite.utils.log("INI: Warning - Key-value pair found outside section in " .. fileName, "info")
+                end
+            end
+        end
+    end
+
+    return data
+end
+
+function utils.save_ini_file(fileName, data)
+    assert(type(fileName) == 'string', 'Parameter "fileName" must be a string.')
+    assert(type(data) == 'table', 'Parameter "data" must be a table.')
+
+    local file, err = io.open(fileName, 'w')
+    if not file then
+        rfsuite.utils.log("INI: Failed to open file for writing: " .. err, "info")
+        return false
+    end
+
+    for section, params in pairs(data) do
+        file:write(("[" .. tostring(section) .. "]\n"))  -- Removed extra spaces
+        for key, value in pairs(params) do
+            if type(value) == "boolean" then
+                value = value and "true" or "false"
+            end
+            file:write(("%s=%s\n"):format(tostring(key), tostring(value)))
+        end
+        file:write("\n")
+    end
+
+    file:close()
+    rfsuite.utils.log("INI: Saved preferences to: " .. fileName, "info")
+    return true
+end
+
+
 function utils.createCacheFile(tbl, path, options)
 
     os.mkdir("cache")

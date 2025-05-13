@@ -389,6 +389,10 @@ return {
     ["msg_connecting_to_fbl"] = "Connecting to flight controller...",
     ["navigation_help"] = "?",
     ["modules"] = {
+      ["settings"] = {
+        ["name"] = "Settings",
+        ["txt_telemetry_announcements"] = "Telemetry Announcements"
+      },
       ["validate_sensors"] = {
         ["help_p1"] = "This tool attempts to list all the sensors that you are not receiving in a concise list.",
         ["invalid"] = "INVALID",
@@ -717,7 +721,8 @@ return {
         ["help_p1"] = "The battery settings are used to configure the flight controller to monitor the battery voltage and provide warnings when the voltage drops below a certain level.",
         ["battery_capacity"] = "Battery Capacity",
         ["warn_cell_voltage"] = "Warn Cell Voltage",
-        ["cell_count"] = "Cell Count"
+        ["cell_count"] = "Cell Count",
+        ["consumption_warning_percentage"] = "Consumption Warning %"
       },
       ["profile_mainrotor"] = {
         ["gain"] = "Gain",

@@ -389,6 +389,10 @@ return {
     ["msg_connecting_to_fbl"] = "Connexion au controleur de vol...",
     ["navigation_help"] = "?",
     ["modules"] = {
+      ["settings"] = {
+        ["name"] = "Paramètres",
+        ["txt_telemetry_announcements"] = "Annonces de telemetrie"
+      },
       ["validate_sensors"] = {
         ["help_p1"] = "Cet outil tente de lister tous les capteurs que vous ne recevez pas dans une liste concise.",
         ["invalid"] = "INVALIDE",
@@ -717,7 +721,8 @@ return {
         ["help_p1"] = "Les parametres de la batterie sont utilises pour configurer le controleur de vol afin de surveiller la tension de la batterie et fournir des avertissements lorsque la tension descend en dessous d'un certain niveau.",
         ["battery_capacity"] = "Capacite de la batterie",
         ["warn_cell_voltage"] = "Tension d'alerte de cellule",
-        ["cell_count"] = "Nombre de cellules"
+        ["cell_count"] = "Nombre de cellules",
+        ["consumption_warning_percentage"] = "Avert. conso %"
       },
       ["profile_mainrotor"] = {
         ["gain"] = "Gain",
