@@ -26,6 +26,22 @@ local modelLine
 local modelText
 local modelTextPos = {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.session.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}
 
+
+local function setESC4WayMode()
+
+        local API = rfsuite.tasks.msp.api.load("4WIF_ESC_FWD_PROG")
+        API.setValue("target", 1)
+        API.setCompleteHandler(function(self, buf)
+               rfsuite.utils.log("Set ESC target", "info")
+               rfsuite.session.esc4WaySet = true
+               rfsuite.session.esc4WaySetAt = os.clock()
+        end)
+        API.setUUID("eaeb0028-219b-4cec-9f57-3c7f74dd49ac")
+        API.write()
+
+end
+
+
 local function getESCDetails()
 
     if rfsuite.session.escDetails ~= nil then
@@ -38,27 +54,17 @@ local function getESCDetails()
         return
     end
 
-    if ESC.esc4way == true then
-        local API = rfsuite.tasks.msp.api.load("MSP_SET_4WIF_ESC_FWD_PROG")
-        API.setValue("target", 1)
-        API.setCompleteHandler(function(self, buf)
-               rfsuite.utils.log("Set ESC target", "info")
-        end)
-        API.setUUID("eaeb0028-219b-4cec-9f57-3c7f74dd49ac")
-        API.write()
-    end
-
     local message = {
         command = 217, -- MSP_STATUS
         processReply = function(self, buf)
-
+            
             local mspBytesCheck = 2 -- we query 2 only unless the flack to cache the init buffer is set
             if ESC and ESC.mspBufferCache == true then
                 mspBytesCheck = mspBytes
             end
- 
-            --if #buf >= mspBytesCheck and buf[1] == mspSignature then
-            if buf[1] == mspSignature then
+            rfsuite.utils.log("ESC Buffer size: " .. #buf,"info")
+            if #buf >= mspBytesCheck and buf[1] == mspSignature then
+            --if buf[1] == mspSignature then
                 escDetails.model = ESC.getEscModel(buf)
                 escDetails.version = ESC.getEscVersion(buf)
                 escDetails.firmware = ESC.getEscFirmware(buf)
@@ -74,9 +80,9 @@ local function getESCDetails()
                 end
 
             end
-
+            rfsuite.utils.log("Fetch esc details", "info")
         end,
-        uuid = "123e4567-e89b-12d3-b456-426614174201",
+        uuid = "123e4567-e89b-12d3-b456-426614174202",
         simulatorResponse = simulatorResponse
     }
 
@@ -133,6 +139,7 @@ local function openPage(pidx, title, script)
         paint = function()
         end,
         press = function()
+            rfsuite.session.esc4WaySet = nil
             rfsuite.app.ui.openPage(pidx, rfsuite.i18n.get("app.modules.esc_tools.name"), "esc_tools/esc.lua")
 
         end
@@ -264,7 +271,20 @@ end
 
 local function wakeup()
 
-    if foundESC == false and rfsuite.tasks.msp.mspQueue:isProcessed() then getESCDetails() end
+
+    if rfsuite.tasks.msp.mspQueue:isProcessed() then
+        if ESC.esc4way then
+            if not rfsuite.session.esc4WaySet then
+                setESC4WayMode()
+            elseif not foundESC then
+                if os.clock() - (rfsuite.session.esc4WaySetAt or 0) >= 1.5 then  -- 1.5s delay
+                    getESCDetails()
+                end
+            end
+        elseif not foundESC then
+            getESCDetails()
+        end
+    end
 
     -- enable the form
     if foundESC == true and foundESCupdateTag == false then

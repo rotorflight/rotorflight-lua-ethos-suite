@@ -15,10 +15,10 @@
  * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
 -- Constants for MSP Commands
-local API_NAME = "MSP_SET_4WIF_ESC_FWD_PROG" -- API name (must be same as filename)
+local API_NAME = "4WIF_ESC_FWD_PROG" -- API name (must be same as filename)
 local MSP_API_CMD_READ = nil -- Command identifier 
-local MSP_API_CMD_WRITE = 240 -- Command identifier 
-local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write 
+local MSP_API_CMD_WRITE = 244 -- Command identifier 
+local MSP_REBUILD_ON_WRITE = true -- Rebuild the payload on write 
 local MSP_API_SIMULATOR_RESPONSE = {} -- Default simulator response
 local MSP_MIN_BYTES = 0
 
