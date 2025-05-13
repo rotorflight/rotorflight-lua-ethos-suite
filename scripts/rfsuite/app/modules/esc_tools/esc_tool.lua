@@ -52,16 +52,6 @@ local function getESCDetails()
         return
     end
 
-    if ESC.esc4way == true then
-        local API = rfsuite.tasks.msp.api.load("MSP_SET_4WIF_ESC_FWD_PROG")
-        API.setValue("target", 1)
-        API.setCompleteHandler(function(self, buf)
-               rfsuite.utils.log("Set ESC target", "info")
-        end)
-        API.setUUID("eaeb0028-219b-4cec-9f57-3c7f74dd49ac")
-        API.write()
-    end
-
     local message = {
         command = 217, -- MSP_STATUS
         processReply = function(self, buf)
