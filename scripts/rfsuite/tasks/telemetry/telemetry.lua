@@ -35,6 +35,8 @@ local lastCacheFlushTime = 0
 local CACHE_FLUSH_INTERVAL = 5 -- Flush cache every 5 seconds
 
 local telemetryState = false
+local previousSensorValues = {}
+local onchangeMeta = {}
 
 -- Predefined sensor mappings
 --[[
@@ -94,6 +96,20 @@ local sensorTable = {
         name = rfsuite.i18n.get("telemetry.sensors.arming_flags"),
         mandatory = true,
         set_telemetry_sensors = 90,
+        onchange = {
+            event = function(value)
+                local armMap = {[0] = "disarmed.wav", [1] = "armed.wav", [2] = "disarmed.wav", [3] = "armed.wav"}
+                rfsuite.utils.playFile("events", "alerts/" .. armMap[math.floor(value)])
+                if value == 1 or value == 3 then
+                    rfsuite.session.isArmed = true
+                else
+                    rfsuite.session.isArmed = false    
+                end
+
+            end,
+            ratelimit = nil,
+            interval = nil
+        },
         sim = {
             {uid=0x5001, unit=nil, dec=nil, value=function() return rfsuite.utils.simSensors('armflags') end, min = 0, max = 2},
         },
@@ -112,6 +128,22 @@ local sensorTable = {
         name = rfsuite.i18n.get("telemetry.sensors.voltage"),
         mandatory = true,
         set_telemetry_sensors = 3,
+        onchange = {
+            event = function(value)
+                local session = rfsuite.session
+                if session.batteryConfig then
+                    if session.batteryConfig.batteryCellCount and session.batteryConfig.vbatwarningcellvoltage then
+                        local cellVoltage = value / session.batteryConfig.batteryCellCount
+                        if cellVoltage < session.batteryConfig.vbatwarningcellvoltage then
+                            rfsuite.utils.playFile("events", "alerts/lowvoltage.wav")
+                        end
+                    end
+                end
+            end,
+            ratelimit = 10,
+            interval = 10,
+            armed = true
+        },    
         sim =  {
             {uid=0x5002, unit=UNIT_VOLT, dec=2, value=function() return rfsuite.utils.simSensors('voltage') end, min = 0, max = 3000},
         },
@@ -208,6 +240,21 @@ local sensorTable = {
         name = rfsuite.i18n.get("telemetry.sensors.fuel"),
         mandatory = false,
         set_telemetry_sensors = 6,
+        onchange = {
+            event = function(value)
+                local session = rfsuite.session
+                if session.batteryConfig then
+                    if session.batteryConfig.consumptionWarningPercentage then
+                        if value < session.batteryConfig.consumptionWarningPercentage then
+                            rfsuite.utils.playFile("events", "alerts/lowfuel.wav")
+                        end
+                    end
+                end
+            end,
+            ratelimit = 10,
+            interval = 10,
+            armed = true
+        },                  
         sim =  {
             {uid=0x5007, unit=UNIT_PERCENT, dec=0, value=function() return rfsuite.utils.simSensors('fuel') end, min = 0, max = 100},
         },               
@@ -240,8 +287,17 @@ local sensorTable = {
         name = rfsuite.i18n.get("telemetry.sensors.governor"),
         mandatory = true,
         set_telemetry_sensors = 93,
+        onchange = {
+            event = function(value)
+                local governorMap = {[0] = "off.wav", [1] = "idle.wav", [2] = "spoolup.wav", [3] = "recovery.wav", [4] = "active.wav", [5] = "thr-off.wav", [6] = "lost-hs.wav", [7] = "autorot.wav", [8] = "bailout.wav", [100] = "disabled.wav", [101] = "disarmed.wav"}
+                rfsuite.utils.playFile("events", "gov/" .. governorMap[math.floor(value)])
+            end,
+            ratelimit = nil,
+            interval = nil,
+            armed = true    
+        },      
         sim =  {
-            {uid=0x5009, unit=nil, dec=0, value=function() return rfsuite.utils.simSensors('governor') end, min = 0, max = 5},
+            {uid=0x5009, unit=nil, dec=0, value=function() return rfsuite.utils.simSensors('governor') end, min = 0, max = 101},
         },        
         sport = {
             {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5125},
@@ -290,6 +346,16 @@ local sensorTable = {
         name = rfsuite.i18n.get("telemetry.sensors.pid_profile"),
         mandatory = true,
         set_telemetry_sensors = 95,
+        onchange = {
+            event = function(value)
+                rfsuite.utils.playFile("events", "alerts/profile.wav")
+                system.playNumber(math.floor(value))
+            end,
+            ratelimit = nil,
+            interval = nil,
+            armed = true,
+            debounce = 0.25               
+        },    
         sim =  {
             {uid=0x5012, unit=nil, dec=0, value=function() return rfsuite.utils.simSensors('pid_profile') end, min = 0, max = 6},
         },            
@@ -306,6 +372,16 @@ local sensorTable = {
         name = rfsuite.i18n.get("telemetry.sensors.rate_profile"),
         mandatory = true,
         set_telemetry_sensors = 96,
+        onchange = {
+            event = function(value)
+                rfsuite.utils.playFile("events", "alerts/rates.wav")
+                system.playNumber(math.floor(value))
+            end,
+            ratelimit = nil,
+            interval = nil,
+            armed = true,
+            debounce = 0.25          
+        },
         sim =  {
             {uid=0x5013, unit=nil, dec=0, value=function() return rfsuite.utils.simSensors('rate_profile') end, min = 0, max = 6},
         },            
@@ -372,7 +448,7 @@ end
 function telemetry.listSensors()
     local sensorList = {}
 
-    for key, sensor in pairs(sensorTable) do table.insert(sensorList, {key = key, name = sensor.name, mandatory = sensor.mandatory, set_telemetry_sensors = sensor.set_telemetry_sensors }) end
+    for key, sensor in pairs(sensorTable) do table.insert(sensorList, {key = key, name = sensor.name, mandatory = sensor.mandatory, set_telemetry_sensors = sensor.set_telemetry_sensors, onchange = sensor.onchange }) end
 
     return sensorList
 end
@@ -595,22 +671,27 @@ end
 function telemetry.reset()
     telemetrySOURCE, crsfSOURCE, protocol = nil, nil, nil
     sensors = {}
+    previousSensorValues = {}
 end
 
 --[[
     Function: telemetry.wakeup
 
     Description:
-    This function is called periodically to handle telemetry updates and cache management. It prioritizes MSP traffic, performs rate-limited telemetry checks, flushes the cache periodically, and resets telemetry sources if necessary.
+    Periodically processes telemetry sensor updates and invokes defined `onchange` callbacks 
+    based on value changes or elapsed repeat intervals.
 
-    Usage:
-    This function should be called in a loop or scheduled task to ensure telemetry data is processed and managed correctly.
+    Features:
+    - Rate-limited evaluation using `ratelimit` and `interval` parameters.
+    - Optional `armed` flag to restrict callbacks to when the system is armed.
+    - Triggers `onchange` events immediately when arming occurs, if applicable.
+    - Prioritizes MSP activity and skips processing when MSP is busy.
+    - Automatically resets telemetry sources on cache interval expiry or telemetry state change.
 
     Notes:
-    - MSP traffic is prioritized by checking the rfsuite.app.triggers.mspBusy flag.
-    - Telemetry checks are rate-limited based on SENSOR_RATE.
-    - The cache is flushed every CACHE_FLUSH_INTERVAL seconds.
-    - Telemetry sources and cached sensors are reset if telemetry is inactive or the RSSI sensor has changed.
+    - Should be called continuously in a runtime loop.
+    - Uses `onchangeMeta` to track last values and timings per sensor.
+    - Uses `rfsuite.session.isConnected` and `rfsuite.session.isArmed` to gate logic.
 ]]
 function telemetry.wakeup()
     local now = os.clock()
@@ -618,9 +699,63 @@ function telemetry.wakeup()
     -- Prioritize MSP traffic
     if rfsuite.app.triggers.mspBusy then return end
 
-    -- Rate-limited telemetry checks
-    if (now - sensorRateLimit) >= SENSOR_RATE then
-        sensorRateLimit = now
+    -- Detect arm state transition
+    local prevArmed = telemetry._lastArmedState
+    local currArmed = rfsuite.session.isArmed
+    local armedTransitioned = (prevArmed ~= nil and currArmed == true and prevArmed == false)
+    telemetry._lastArmedState = currArmed
+
+    -- Rate limited checks + onchange callback
+    if rfsuite.session.isConnected then
+        for key, sensor in pairs(sensorTable) do
+            local source = telemetry.getSensorSource(key)
+            if source and source:state() ~= false then
+                local currentValue = source:value()
+                local meta = onchangeMeta[key] or { lastValue = nil, lastTrigger = 0, lastInterval = 0, lastValueTime = 0 }
+                local valueChanged = (currentValue ~= meta.lastValue)
+                local callOnChange = false
+
+                if sensor.onchange and type(sensor.onchange.event) == "function" then
+                    local ratelimit = sensor.onchange.ratelimit or 0
+                    local interval = sensor.onchange.interval or math.huge
+                    local debounce = sensor.onchange.debounce or 0
+                    local isArmedOnly = sensor.onchange.armed == true
+                    local skipDueToArming = isArmedOnly and not currArmed
+                    if skipDueToArming then goto continue end
+
+                    if valueChanged then
+                        local timeSinceLastValue = now - (meta.lastValueTime or 0)
+                        if timeSinceLastValue >= debounce and (now - meta.lastTrigger >= ratelimit) then
+                            callOnChange = true
+                            meta.lastTrigger = now
+                            meta.lastInterval = now
+                            meta.lastValueTime = now
+                        end
+                    elseif (now - meta.lastInterval >= interval) then
+                        callOnChange = true
+                        meta.lastInterval = now
+                    elseif armedTransitioned and isArmedOnly then
+                        callOnChange = true
+                        meta.lastTrigger = now
+                        meta.lastInterval = now
+                        meta.lastValueTime = now
+                    end
+
+                    if callOnChange then
+                        if not rfsuite.userpref or not rfsuite.userpref.announcements or rfsuite.userpref.announcements[key] ~= false then
+                            pcall(sensor.onchange.event, currentValue)
+                        end
+                    end
+                end
+
+                ::continue::
+                if valueChanged then
+                    meta.lastValueTime = now
+                end
+                meta.lastValue = currentValue
+                onchangeMeta[key] = meta
+            end
+        end
     end
 
     -- Periodic cache flush every 5 seconds

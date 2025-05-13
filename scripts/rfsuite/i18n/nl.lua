@@ -389,6 +389,10 @@ return {
     ["msg_connecting_to_fbl"] = "Verbinden met vliegcontroller...",
     ["navigation_help"] = "?",
     ["modules"] = {
+      ["settings"] = {
+        ["name"] = "Instellingen",
+        ["txt_telemetry_announcements"] = "Telemetrie meldingen"
+      },
       ["validate_sensors"] = {
         ["help_p1"] = "Deze tool probeert een beknopt overzicht te geven van alle sensoren die u niet ontvangt.",
         ["invalid"] = "INVALID",

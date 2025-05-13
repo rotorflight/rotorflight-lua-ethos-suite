@@ -389,6 +389,10 @@ return {
     ["msg_connecting_to_fbl"] = "Connecting to flight controller...",
     ["navigation_help"] = "?",
     ["modules"] = {
+      ["settings"] = {
+        ["name"] = "Settings",
+        ["txt_telemetry_announcements"] = "Telemetry Announcements"
+      },
       ["validate_sensors"] = {
         ["help_p1"] = "This tool attempts to list all the sensors that you are not receiving in a concise list.",
         ["invalid"] = "INVALID",

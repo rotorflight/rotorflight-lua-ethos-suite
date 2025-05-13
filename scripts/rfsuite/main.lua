@@ -98,14 +98,15 @@ rfsuite.compiler = assert(loadfile("lib/compile.lua"))(config)
 rfsuite.app = assert(rfsuite.compiler.loadfile("app/app.lua"))(config)
 
 
-
 -- library with utility functions used throughou the suite
 rfsuite.utils = assert(rfsuite.compiler.loadfile("lib/utils.lua"))(config)
-
 
 -- Load the i18n system
 rfsuite.i18n  = assert(rfsuite.compiler.loadfile("lib/i18n.lua"))(config)
 rfsuite.i18n.load()     
+
+-- load up the userpreferences
+rfsuite.userpref = rfsuite.utils.load_ini_file("userpref.ini")
 
 -- 
 -- This script initializes the `rfsuite` tasks and background task.
@@ -186,6 +187,8 @@ rfsuite.session.repairSensors = false
 rfsuite.session.locale = system.getLocale()
 rfsuite.session.lastMemoryUsage = nil
 rfsuite.session.mcu_id = nil
+rfsuite.session.isConnected = false
+rfsuite.session.isArmed = false
 
 
 --- Retrieves the version information of the rfsuite module.

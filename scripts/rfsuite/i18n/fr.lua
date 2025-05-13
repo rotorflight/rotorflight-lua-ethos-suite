@@ -389,6 +389,10 @@ return {
     ["msg_connecting_to_fbl"] = "Connexion au controleur de vol...",
     ["navigation_help"] = "?",
     ["modules"] = {
+      ["settings"] = {
+        ["name"] = "Paramètres",
+        ["txt_telemetry_announcements"] = "Annonces de telemetrie"
+      },
       ["validate_sensors"] = {
         ["help_p1"] = "Cet outil tente de lister tous les capteurs que vous ne recevez pas dans une liste concise.",
         ["invalid"] = "INVALIDE",
