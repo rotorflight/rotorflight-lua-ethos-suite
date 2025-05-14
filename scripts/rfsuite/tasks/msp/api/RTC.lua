@@ -16,20 +16,36 @@
 ]] --
 -- Constants for MSP Commands
 local API_NAME = "RTC" -- API name (must be same as filename)
-local MSP_API_CMD_WRITE = 246 -- Command identifier for setting RTC
+local MSP_API_CMD_READ = 247 -- Command identifier 
+local MSP_API_CMD_WRITE = 246 -- Command identifier 
+local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write 
 
--- Define the MSP request data structure
---  field (name)
---  type (U8|U16|S16|etc) (see api.lua)
---  byteorder (big|little)
-local MSP_STRUCTURE_WRITE = {{field = "seconds", type = "U32"}, -- 32-bit seconds since epoch
-{field = "milliseconds", type = "U16"} -- 16-bit milliseconds
+
+-- Define the MSP response data structures
+local MSP_API_STRUCTURE_READ_DATA = {
+    {field = "year",     type = "U16", apiVersion = 12.06, simResponse = {180, 7}},
+    {field = "month",    type = "U8",  apiVersion = 12.06, simResponse = {1}},
+    {field = "day",      type = "U8",  apiVersion = 12.06, simResponse = {40}},
+    {field = "hours",    type = "U8",  apiVersion = 12.06, simResponse = {233}},
+    {field = "minutes",  type = "U8",  apiVersion = 12.06, simResponse = {197}},
+    {field = "seconds",  type = "U8",  apiVersion = 12.06, simResponse = {202}},
+    {field = "millis",   type = "U16", apiVersion = 12.06, simResponse = {62, 2}},
 }
 
--- Variable to track write completion
-local mspWriteComplete = false
+-- Process structure in one pass
+local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE =
+    rfsuite.tasks.msp.api.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
 
--- Function to create a payload table
+-- set read structure
+local MSP_API_STRUCTURE_WRITE = {
+    {field = "seconds", type = "U32"}, -- 32-bit seconds since epoch
+    {field = "milliseconds", type = "U16"} -- 16-bit milliseconds
+}
+
+
+-- Variable to store parsed MSP data
+local mspData = nil
+local mspWriteComplete = false
 local payloadData = {}
 local defaultData = {}
 
@@ -40,32 +56,46 @@ local handlers = rfsuite.tasks.msp.api.createHandlers()
 local MSP_API_UUID
 local MSP_API_MSG_TIMEOUT
 
--- Function to get default values (stub for now)
-local function getDefaults()
-    -- This function should return a table with default values
-    -- Typically we should be performing a 'read' to populate this data
-    -- however this api only ever writes data
-    return {seconds = os.time(), milliseconds = 0}
-end
 
--- Function to initiate MSP write operation
-local function write()
-    local defaults = getDefaults()
-    -- Validate if all fields have been set or fallback to defaults
-    for _, field in ipairs(MSP_STRUCTURE_WRITE) do
-        if payloadData[field.field] == nil then
-            if defaults[field.field] ~= nil then
-                payloadData[field.field] = defaults[field.field]
-            else
-                error("Missing value for field: " .. field.field)
-                return
-            end
-        end
+-- Function to initiate MSP read operation
+local function read()
+    if MSP_API_CMD_READ == nil then
+        rfsuite.utils.log("No value set for MSP_API_CMD_READ", "debug")
+        return
     end
 
     local message = {
-        command = MSP_API_CMD_WRITE, -- Specify the MSP command
-        payload = {},
+        command = MSP_API_CMD_READ,
+        processReply = function(self, buf)
+            local structure = MSP_API_STRUCTURE_READ
+            rfsuite.tasks.msp.api.parseMSPData(buf, structure, nil, nil, function(result)
+                mspData = result
+                if #buf >= MSP_MIN_BYTES then
+                    local completeHandler = handlers.getCompleteHandler()
+                    if completeHandler then completeHandler(self, buf) end
+                end
+            end)
+        end,
+        errorHandler = function(self, buf)
+            local errorHandler = handlers.getErrorHandler()
+            if errorHandler then errorHandler(self, buf) end
+        end,
+        simulatorResponse = MSP_API_SIMULATOR_RESPONSE,
+        uuid = MSP_API_UUID,
+        timeout = MSP_API_MSG_TIMEOUT  
+    }
+    rfsuite.tasks.msp.mspQueue:add(message)
+end
+
+local function write(suppliedPayload)
+    if MSP_API_CMD_WRITE == nil then
+        rfsuite.utils.log("No value set for MSP_API_CMD_WRITE", "debug")
+        return
+    end
+
+    local message = {
+        command = MSP_API_CMD_WRITE,
+        payload = suppliedPayload or rfsuite.tasks.msp.api.buildWritePayload(API_NAME, payloadData,MSP_API_STRUCTURE_WRITE, MSP_REBUILD_ON_WRITE),
         processReply = function(self, buf)
             local completeHandler = handlers.getCompleteHandler()
             if completeHandler then completeHandler(self, buf) end
@@ -79,44 +109,23 @@ local function write()
         uuid = MSP_API_UUID,
         timeout = MSP_API_MSG_TIMEOUT  
     }
-
-    -- Fill payload with data from payloadData table
-    for _, field in ipairs(MSP_STRUCTURE_WRITE) do
-
-        local byteorder = field.byteorder or "little" -- Default to little-endian
-
-        if field.type == "U32" then
-            rfsuite.tasks.msp.mspHelper.writeU32(message.payload, payloadData[field.field], byteorder)
-        elseif field.type == "S32" then
-            rfsuite.tasks.msp.mspHelper.writeU32(message.payload, payloadData[field.field], byteorder)
-        elseif field.type == "U24" then
-            rfsuite.tasks.msp.mspHelper.writeU24(message.payload, payloadData[field.field], byteorder)
-        elseif field.type == "S24" then
-            rfsuite.tasks.msp.mspHelper.writeU24(message.payload, payloadData[field.field], byteorder)
-        elseif field.type == "U16" then
-            rfsuite.tasks.msp.mspHelper.writeU16(message.payload, payloadData[field.field], byteorder)
-        elseif field.type == "S16" then
-            rfsuite.tasks.msp.mspHelper.writeU16(message.payload, payloadData[field.field], byteorder)
-        elseif field.type == "U8" then
-            rfsuite.tasks.msp.mspHelper.writeU8(message.payload, payloadData[field.field])
-        elseif field.type == "S8" then
-            rfsuite.tasks.msp.mspHelper.writeU8(message.payload, payloadData[field.field])
-        end
-    end
-
-    -- Add the message to the processing queue
     rfsuite.tasks.msp.mspQueue:add(message)
+end
+
+-- Function to get the value of a specific field from MSP data
+local function readValue(fieldName)
+    if mspData and mspData['parsed'][fieldName] ~= nil then return mspData['parsed'][fieldName] end
+    return nil
 end
 
 -- Function to set a value dynamically
 local function setValue(fieldName, value)
-    for _, field in ipairs(MSP_STRUCTURE_WRITE) do
-        if field.field == fieldName then
-            payloadData[fieldName] = value
-            return true
-        end
-    end
-    error("Invalid field name: " .. fieldName)
+    payloadData[fieldName] = value
+end
+
+-- Function to check if the read operation is complete
+local function readComplete()
+    return mspData ~= nil and #mspData['buffer'] >= MSP_MIN_BYTES
 end
 
 -- Function to check if the write operation is complete
@@ -146,11 +155,13 @@ end
 
 -- Return the module's API functions
 return {
+    read = read,
     write = write,
-    setValue = setValue,
+    readComplete = readComplete,
     writeComplete = writeComplete,
+    readValue = readValue,
+    setValue = setValue,
     resetWriteStatus = resetWriteStatus,
-    getDefaults = getDefaults,
     setCompleteHandler = handlers.setCompleteHandler,
     setErrorHandler = handlers.setErrorHandler,
     data = data,
