@@ -28,17 +28,15 @@ local modelTextPos = {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.s
 
 
 local function setESC4WayMode()
-
-        local API = rfsuite.tasks.msp.api.load("4WIF_ESC_FWD_PROG")
-        API.setValue("target", 1)
-        API.setCompleteHandler(function(self, buf)
-               rfsuite.utils.log("Set ESC target", "info")
-               rfsuite.session.esc4WaySet = true
-               rfsuite.session.esc4WaySetAt = os.clock()
-        end)
-        API.setUUID("eaeb0028-219b-4cec-9f57-3c7f74dd49ac")
-        API.write()
-
+    local API = rfsuite.tasks.msp.api.load("4WIF_ESC_FWD_PROG")
+    API.setValue("target", 1)
+    API.setCompleteHandler(function(self, buf)
+        rfsuite.utils.log("4WIF mode set handler triggered", "info")
+        rfsuite.session.esc4WaySetComplete = true
+        rfsuite.session.esc4WaySetAt = os.clock()
+    end)
+    API.setUUID("eaeb0028-219b-4cec-9f57-3c7f74dd49ac")
+    API.write()
 end
 
 
@@ -271,18 +269,32 @@ end
 
 local function wakeup()
 
-
     if rfsuite.tasks.msp.mspQueue:isProcessed() then
         if ESC.esc4way then
-            if not rfsuite.session.esc4WaySet then
+
+            -- Step 1: Set 4WIF mode if not done
+            if not rfsuite.session.esc4WaySet and not foundESC then
+                rfsuite.utils.log("ESC 4WIF mode set", "info")
+                rfsuite.session.esc4WaySet = true
                 setESC4WayMode()
-            elseif not foundESC then
-                if os.clock() - (rfsuite.session.esc4WaySetAt or 0) >= 1.5 then  -- 1.5s delay
-                    getESCDetails()
+            end
+
+            -- Step 2: After set completes
+            if not foundESC then
+                rfsuite.utils.log("Checking for esc4WaySetComplete...", "info")
+                if rfsuite.session.esc4WaySetComplete then
+                    rfsuite.utils.log("4WIF Complete Flag True, At = " .. tostring(rfsuite.session.esc4WaySetAt), "info")
+                    if os.clock() - (rfsuite.session.esc4WaySetAt or 0) >= 1.5 then
+                        rfsuite.utils.log("ESC 4WIF mode set, now searching for ESC", "info")
+                        getESCDetails()
+                    end
                 end
             end
-        elseif not foundESC then
-            getESCDetails()
+
+        else
+            if not foundESC then
+                getESCDetails()
+            end
         end
     end
 
