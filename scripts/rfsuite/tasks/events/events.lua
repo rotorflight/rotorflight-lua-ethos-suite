@@ -27,6 +27,8 @@ local lastValues = {}
 
 local userpref = rfsuite.userpref
 
+local telemetryStartTime = nil
+
 local eventTable = {
     telemetry = {
         {
@@ -47,8 +49,16 @@ local eventTable = {
             event = function(value)
                 local session = rfsuite.session
                 if session.batteryConfig then
-                    if session.batteryConfig.batteryCellCount and session.batteryConfig.vbatwarningcellvoltage then
+                    if session.batteryConfig.batteryCellCount and session.batteryConfig.vbatwarningcellvoltage and session.batteryConfig.vbatmincellvoltage then
                         local cellVoltage = value / session.batteryConfig.batteryCellCount
+                        local suppressThreshold = session.batteryConfig.vbatmincellvoltage / 2
+
+                        -- Only proceed if cellVoltage is either zero or above the suppression threshold
+                        if cellVoltage > 0 and cellVoltage < suppressThreshold then
+                            -- Suppress alert
+                            return
+                        end
+
                         if cellVoltage < session.batteryConfig.vbatwarningcellvoltage then
                             rfsuite.utils.playFile("events", "alerts/lowvoltage.wav")
                         end
@@ -63,7 +73,7 @@ local eventTable = {
                 local session = rfsuite.session
                 if session.batteryConfig then
                     if session.batteryConfig.consumptionWarningPercentage then
-                        if value < session.batteryConfig.lvcPercentage then
+                        if value < session.batteryConfig.consumptionWarningPercentage then
                             rfsuite.utils.playFile("events", "alerts/lowfuel.wav")
                         end
                     end
@@ -106,10 +116,19 @@ local eventTable = {
 function events.wakeup()
     local currentTime = os.clock()
 
-    -- Handle telemetry events
     if rfsuite.session.isConnected and rfsuite.session.telemetryState then
+        if telemetryStartTime == nil then
+            telemetryStartTime = currentTime
+        end
+
+        -- Wait 2.5 seconds after telemetry becomes active
+        if (currentTime - telemetryStartTime) < 2.5 then
+            return
+        end
+
+        -- Handle telemetry events
         for _, item in ipairs(eventTable.telemetry) do
-            local key = item.sensor  -- <-- fixed
+            local key = item.sensor
             local data = item
             local sensor = rfsuite.tasks.telemetry.getSensorSource(key)
 
@@ -139,14 +158,15 @@ function events.wakeup()
                     data.event(value)
                     lastEventTimes[key] = currentTime
                     lastValues[key] = value
-
                 end
-
                 ::continue::
             end
         end
-    end    
+    else
+        telemetryStartTime = nil  -- Reset when telemetry disconnects
+    end
 end
+
 
 -- allow events table to be called from other modules
 events.eventTable = eventTable
