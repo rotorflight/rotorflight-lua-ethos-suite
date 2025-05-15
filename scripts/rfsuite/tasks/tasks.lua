@@ -48,9 +48,6 @@ local lastTelemetrySensorName = nil
 local sportSensor 
 local elrsSensor
 
-local telemetryLostTime = nil  
-
-
 
 local tlm = system.getSource({category = CATEGORY_SYSTEM_EVENT, member = TELEMETRY_ACTIVE})
 
@@ -174,28 +171,23 @@ function tasks.wakeup()
     tasks.heartbeat = os.clock()
 
     local now = os.clock()
-    if now - (telemetryCheckScheduler or 0) >= 1 then
+    if now - (telemetryCheckScheduler or 0) >= 0.5 then
 
         telemetryState = tlm and tlm:state() or false
 
         if not telemetryState then
-            if not telemetryLostTime then
-                telemetryLostTime = now  -- Record when telemetry was first lost
-            end
 
-            local waitTime = rfsuite.preferences.telemetryLostReset or 5
-            if now - telemetryLostTime >= waitTime then  -- Wait for X seconds before acting
-                rfsuite.utils.log("Telemetry not active for "..waitTime.." seconds", "info")
-                rfsuite.session.telemetryState = false
-                rfsuite.session.telemetryType = nil
-                rfsuite.session.telemetryTypeChanged = false
-                rfsuite.session.telemetrySensor = nil
-                lastTelemetrySensorName = nil
-                sportSensor = nil
-                elrsSensor = nil 
-                telemetryCheckScheduler = now    
-                rfsuite.tasks.msp.reset()
-            end
+            rfsuite.utils.log("Telemetry not active.", "info")
+            rfsuite.session.telemetryState = false
+            rfsuite.session.telemetryType = nil
+            rfsuite.session.telemetryTypeChanged = false
+            rfsuite.session.telemetrySensor = nil
+            lastTelemetrySensorName = nil
+            sportSensor = nil
+            elrsSensor = nil 
+            telemetryCheckScheduler = now    
+            rfsuite.tasks.msp.reset()
+
 
         else
             telemetryLostTime = nil  -- Reset timer when telemetry returns
