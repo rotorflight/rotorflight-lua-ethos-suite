@@ -60,7 +60,6 @@ preferences.mspExpBytes = 8                                         -- number of
 preferences.defaultRateProfile = 4 -- ACTUAL                        -- default rate table [default = 4]
 preferences.watchdogParam = 10                                      -- watchdog timeout for progress boxes [default = 10]
 preferences.spreadScheduling = true                                 -- false = all tasks run on all cycles.  true = tasks are spread over multiple cycles. [default = true]
-preferences.telemetryLostReset = 5                                  -- how long to to wait before resetting msp link due to a link loss [default = 5]
 
 -- tasks
 config.bgTaskName = config.toolName .. " [Background]"              -- background task name for msp services etc
