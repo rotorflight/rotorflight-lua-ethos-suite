@@ -721,7 +721,8 @@ return {
         ["help_p1"] = "Die Batterieeinstellungen werden verwendet, um den Flugcontroller so zu konfigurieren, dass er die Batteriespannung ueberwacht und Warnungen ausgibt, wenn die Spannung unter ein bestimmtes Niveau faellt.",
         ["battery_capacity"] = "Batteriekapazitaet",
         ["warn_cell_voltage"] = "Warnung Zellenspannung",
-        ["cell_count"] = "Zellenanzahl"
+        ["cell_count"] = "Zellenanzahl",
+        ["consumption_warning_percentage"] = "Verbrauchswarnung %"
       },
       ["profile_mainrotor"] = {
         ["gain"] = "Verstaerkung",

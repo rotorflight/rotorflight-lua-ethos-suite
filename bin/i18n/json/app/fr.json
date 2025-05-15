@@ -1590,6 +1590,11 @@
         "english": "Cell Count",
         "translation": "Nombre de cellules",
         "needs_translation": "false"
+      },
+      "consumption_warning_percentage": {
+        "english": "Consumption Warning %",
+        "translation": "Avert. conso %",
+        "needs_translation": "false"
       }
     },
     "profile_mainrotor": {

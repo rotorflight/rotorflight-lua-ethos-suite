@@ -721,7 +721,8 @@ return {
         ["help_p1"] = "The battery settings are used to configure the flight controller to monitor the battery voltage and provide warnings when the voltage drops below a certain level.",
         ["battery_capacity"] = "Battery Capacity",
         ["warn_cell_voltage"] = "Warn Cell Voltage",
-        ["cell_count"] = "Cell Count"
+        ["cell_count"] = "Cell Count",
+        ["consumption_warning_percentage"] = "Consumption Warning %"
       },
       ["profile_mainrotor"] = {
         ["gain"] = "Gain",

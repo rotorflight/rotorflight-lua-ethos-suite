@@ -47,13 +47,13 @@ function utils.load_ini_file(fileName)
     assert(type(fileName) == 'string', 'Parameter "fileName" must be a string.')
 
     if not rfsuite.utils.file_exists(fileName) then
-        rfsuite.utils.log("INI: Unable to find file: " .. fileName,"info")
+        rfsuite.utils.log("INI: Unable to find file: " .. fileName, "info")
         return nil
     end
 
     local content, err = utils.load_file_as_string(fileName)
     if not content then
-        rfsuite.utils.log("INI: Failed to read file: " .. err,"info")
+        rfsuite.utils.log("INI: Failed to read file: " .. err, "info")
         return nil
     end
 
@@ -61,20 +61,23 @@ function utils.load_ini_file(fileName)
     local section = nil
 
     for line in string.gmatch(content, "[^\r\n]+") do
-        line = line:match("^%s*(.-)%s*$")  -- Trim whitespace
+        line = line:match("^%s*(.-)%s*$")  -- Trim line
 
         if line == "" or line:sub(1, 1) == ";" then
-            -- Skip empty lines or comments
+            -- Skip comments and empty lines
         elseif line:match("^%[.+%]$") then
             section = line:match("^%[(.+)%]$")
-            section = tonumber(section) or section
-            data[section] = data[section] or {}
+            if section then
+                section = section:match("^%s*(.-)%s*$")  -- Trim spaces inside brackets
+                section = tonumber(section) or section
+                data[section] = data[section] or {}
+            end
         else
             local param, value = line:match("^([%w_]+)%s-=%s-(.*)$")
             if param and value then
                 param = tonumber(param) or param
 
-                -- Type conversion for values
+                -- Convert value types
                 if value == "true" then
                     value = true
                 elseif value == "false" then
@@ -86,7 +89,7 @@ function utils.load_ini_file(fileName)
                 if section then
                     data[section][param] = value
                 else
-                    rfsuite.utils.log("INI: Warning - Key-value pair found outside section in " .. fileName,"info")
+                    rfsuite.utils.log("INI: Warning - Key-value pair found outside section in " .. fileName, "info")
                 end
             end
         end
@@ -101,12 +104,12 @@ function utils.save_ini_file(fileName, data)
 
     local file, err = io.open(fileName, 'w')
     if not file then
-        rfsuite.utils.log("INI: Failed to open file for writing: " .. err,"info")
+        rfsuite.utils.log("INI: Failed to open file for writing: " .. err, "info")
         return false
     end
 
     for section, params in pairs(data) do
-        file:write(("[ %s ]\n"):format(tostring(section)))
+        file:write(("[" .. tostring(section) .. "]\n"))  -- Removed extra spaces
         for key, value in pairs(params) do
             if type(value) == "boolean" then
                 value = value and "true" or "false"
@@ -117,7 +120,7 @@ function utils.save_ini_file(fileName, data)
     end
 
     file:close()
-    rfsuite.utils.log("INI: Saved preferences to: " .. fileName,"info")
+    rfsuite.utils.log("INI: Saved preferences to: " .. fileName, "info")
     return true
 end
 

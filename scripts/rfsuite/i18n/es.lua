@@ -721,7 +721,8 @@ return {
         ["help_p1"] = "La configuración de celdas se utiliza para que el controlador de vuelo pueda monitorear el voltaje de la batería y generar advertencias cuando esté por debajo de cierto nivel.",
         ["battery_capacity"] = "Capacidad Batería",
         ["warn_cell_voltage"] = "Advertencia Voltaje de Celda",
-        ["cell_count"] = "Número de Celdas"
+        ["cell_count"] = "Número de Celdas",
+        ["consumption_warning_percentage"] = "Advertencia Consumo %"
       },
       ["profile_mainrotor"] = {
         ["gain"] = "Ganancia",

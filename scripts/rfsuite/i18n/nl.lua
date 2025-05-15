@@ -721,7 +721,8 @@ return {
         ["help_p1"] = "De batterij instellingen worden ingesteld zodat de vliegcontroller de batterij spanning kan monitoren en waarschuwingen kan geven als de spanning onder een bepaald niveau komt.\n\n",
         ["battery_capacity"] = "Batterij Capaciteit",
         ["warn_cell_voltage"] = "Waarschuwing Cel Spanning",
-        ["cell_count"] = "Aantal cellen"
+        ["cell_count"] = "Aantal cellen",
+        ["consumption_warning_percentage"] = "Verbruik Waarschuwing %"
       },
       ["profile_mainrotor"] = {
         ["gain"] = "Gain",

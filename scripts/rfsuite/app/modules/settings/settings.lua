@@ -1,17 +1,10 @@
 
-
-local function sortSensorList(rawSensorList)
-    local sensorList = {}
-    for i, v in ipairs(rawSensorList) do
-        if type(v.onchange) == "table" then
-            sensorList[#sensorList + 1] = {key = v.key, name = v.name}
-        end
+function sensorNameMap(sensorList)
+    local nameMap = {}
+    for _, sensor in ipairs(sensorList) do
+        nameMap[sensor.key] = sensor.name
     end
-
-    table.sort(sensorList, function(a, b)
-        return a.name:lower() < b.name:lower()
-    end)
-    return sensorList
+    return nameMap
 end
 
 
@@ -29,27 +22,28 @@ local function openPage(pidx, title, script)
 
     rfsuite.session.formLineCnt = 0
 
-    local sensorList = sortSensorList(rfsuite.tasks.telemetry.listSensors())
+    local eventList = rfsuite.tasks.events.eventTable.telemetry
+    local eventNames = sensorNameMap(rfsuite.tasks.telemetry.listSensors())
+
+    
     local alertpanel = form.addExpansionPanel(rfsuite.i18n.get("app.modules.settings.txt_telemetry_announcements"))
     alertpanel:open(false)
-    for i, v in ipairs(sensorList) do
-
+    for i, v in ipairs(eventList) do
         rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-        rfsuite.app.formLines[rfsuite.session.formLineCnt] = alertpanel:addLine(v.name)
-        rfsuite.app.formFields[v.key] = form.addBooleanField(rfsuite.app.formLines[rfsuite.session.formLineCnt], 
+        rfsuite.app.formLines[rfsuite.session.formLineCnt] = alertpanel:addLine(eventNames[v.sensor] or "unknown")
+        rfsuite.app.formFields[i] = form.addBooleanField(rfsuite.app.formLines[rfsuite.session.formLineCnt], 
                                                             nil, 
                                                             function() 
                                                                 if rfsuite.userpref and rfsuite.userpref.announcements then
-                                                                    return rfsuite.userpref.announcements[v.key] 
+                                                                    return rfsuite.userpref.announcements[v.sensor] 
                                                                 end
                                                             end, 
                                                             function(newValue) 
                                                                 if rfsuite.userpref and rfsuite.userpref.announcements then
-                                                                    rfsuite.userpref.announcements[v.key] = newValue 
-                                                                    rfsuite.utils.save_ini_file("userpref.ini", rfsuite.userpref)
+                                                                    rfsuite.userpref.announcements[v.sensor] = newValue 
+                                                                    rfsuite.utils.save_ini_file(rfsuite.config.userPreferences, rfsuite.userpref)
                                                                 end    
                                                             end)
-
     end
 
 end

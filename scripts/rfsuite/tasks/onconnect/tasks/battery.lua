@@ -32,6 +32,7 @@ function battery.wakeup()
             local vbatwarningcellvoltage = API.readValue("vbatwarningcellvoltage")/100
             local vbatmincellvoltage = API.readValue("vbatmincellvoltage")/100
             local vbatmaxcellvoltage = API.readValue("vbatmaxcellvoltage")/100
+            local lvcPercentage = API.readValue("lvcPercentage")
             local consumptionWarningPercentage = API.readValue("consumptionWarningPercentage")
 
             rfsuite.session.batteryConfig = {}
@@ -40,14 +41,8 @@ function battery.wakeup()
             rfsuite.session.batteryConfig.vbatwarningcellvoltage = vbatwarningcellvoltage
             rfsuite.session.batteryConfig.vbatmincellvoltage = vbatmincellvoltage
             rfsuite.session.batteryConfig.vbatmaxcellvoltage = vbatmaxcellvoltage
+            rfsuite.session.batteryConfig.lvcPercentage = lvcPercentage
             rfsuite.session.batteryConfig.consumptionWarningPercentage = consumptionWarningPercentage
-
-            rfsuite.utils.log("Battery capacity: " .. batteryCapacity .. "mAh","info")
-            rfsuite.utils.log("Consumption warning percentage: " .. consumptionWarningPercentage .. "%","info")
-            rfsuite.utils.log("Battery cell count: " .. batteryCellCount,"info")
-            rfsuite.utils.log("Battery warning voltage: " .. vbatwarningcellvoltage .. "V","info")
-            rfsuite.utils.log("Battery min voltage: " .. vbatmincellvoltage .. "V","info")
-            rfsuite.utils.log("Battery max voltage: " .. vbatmaxcellvoltage .. "V","info")
 
             
         end)

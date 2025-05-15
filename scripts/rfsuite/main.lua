@@ -22,23 +22,24 @@
 local config = {}
 
 -- Configuration settings for the Rotorflight Lua Ethos Suite
-config.toolName = "Rotorflight"                                         -- name of the tool 
-config.icon = lcd.loadMask("app/gfx/icon.png")                          -- icon
-config.icon_logtool = lcd.loadMask("app/gfx/icon_logtool.png")          -- icon
-config.icon_unsupported = lcd.loadMask("app/gfx/unsupported.png")       -- icon
-config.version = {major = 2, minor = 2, revision = 0, suffix = "RC4"}   -- version of the script
-config.ethosVersion = {1, 6, 2}                                         -- min version of ethos supported by this script                                                     
-config.supportedMspApiVersion = {"12.06", "12.07","12.08"}              -- supported msp versions
-config.simulatorApiVersionResponse = {0, 12, 8}                         -- version of api return by simulator
-config.baseDir = "rfsuite"                                              -- base directory for the suite. This is only used by msp api to ensure correct path
-config.logLevel= "info"                                                 -- off | info | debug [default = info]
-config.logToFile = false                                                -- log to file [default = false] (log file is in /scripts/rfsuite/logs)
-config.logMSP = false                                                   -- log msp messages [default =  false]
-config.logMSPQueue = false                                              -- log msp queue size [default = false]
-config.logMemoryUsage = false                                           -- log memory usage [default = false]
-config.developerMode = false                                            -- show developer tools on main menu [default = false]
-config.compile = true                                                   -- use the compiler [default = true]
-config.compilerTiming = false                                           -- log compiler timings [default = false]
+config.toolName = "Rotorflight"                                                     -- name of the tool 
+config.icon = lcd.loadMask("app/gfx/icon.png")                                      -- icon
+config.icon_logtool = lcd.loadMask("app/gfx/icon_logtool.png")                      -- icon
+config.icon_unsupported = lcd.loadMask("app/gfx/unsupported.png")                   -- icon
+config.version = {major = 2, minor = 2, revision = 0, suffix = "RC4"}               -- version of the script
+config.ethosVersion = {1, 6, 2}                                                      -- min version of ethos supported by this script                                                     
+config.supportedMspApiVersion = {"12.06", "12.07","12.08"}                          -- supported msp versions
+config.simulatorApiVersionResponse = {0, 12, 8}                                     -- version of api return by simulator
+config.baseDir = "rfsuite"                                                          -- base directory for the suite. This is only used by msp api to ensure correct path
+config.logLevel= "info"                                                             -- off | info | debug [default = info]
+config.logToFile = false                                                            -- log to file [default = false] (log file is in /scripts/rfsuite/logs)
+config.logMSP = false                                                               -- log msp messages [default =  false]
+config.logMSPQueue = false                                                          -- log msp queue size [default = false]
+config.logMemoryUsage = false                                                       -- log memory usage [default = false]
+config.developerMode = false                                                        -- show developer tools on main menu [default = false]
+config.compile = true                                                               -- use the compiler [default = true]
+config.compilerTiming = false                                                       -- log compiler timings [default = false]
+config.userPreferences = "SCRIPTS:/".. config.baseDir .. "/userpref.ini"            -- user preferences file
 
 -- RotorFlight + ETHOS LUA preferences
 local preferences = {}
@@ -60,7 +61,6 @@ preferences.mspExpBytes = 8                                         -- number of
 preferences.defaultRateProfile = 4 -- ACTUAL                        -- default rate table [default = 4]
 preferences.watchdogParam = 10                                      -- watchdog timeout for progress boxes [default = 10]
 preferences.spreadScheduling = true                                 -- false = all tasks run on all cycles.  true = tasks are spread over multiple cycles. [default = true]
-preferences.telemetryLostReset = 5                                  -- how long to to wait before resetting msp link due to a link loss [default = 5]
 
 -- tasks
 config.bgTaskName = config.toolName .. " [Background]"              -- background task name for msp services etc
@@ -106,7 +106,7 @@ rfsuite.i18n  = assert(rfsuite.compiler.loadfile("lib/i18n.lua"))(config)
 rfsuite.i18n.load()     
 
 -- load up the userpreferences
-rfsuite.userpref = rfsuite.utils.load_ini_file("userpref.ini")
+rfsuite.userpref = rfsuite.utils.load_ini_file(config.userPreferences)
 
 -- 
 -- This script initializes the `rfsuite` tasks and background task.
@@ -146,7 +146,7 @@ The parameters include:
 - telemetryType = sport or crsf
 - repairSensors: makes the background task repair sensors
 - lastMemoryUsage.  Used to track memory usage for debugging
-- 
+- isArmed.  Used to track if the craft is armed
 
 -- Every attempt should be made if using session vars to record them here with a nil
 -- to prevent conflicts with other scripts that may use the same session vars.
@@ -189,6 +189,7 @@ rfsuite.session.lastMemoryUsage = nil
 rfsuite.session.mcu_id = nil
 rfsuite.session.isConnected = false
 rfsuite.session.isArmed = false
+
 
 
 --- Retrieves the version information of the rfsuite module.
