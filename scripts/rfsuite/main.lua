@@ -146,7 +146,7 @@ The parameters include:
 - telemetryType = sport or crsf
 - repairSensors: makes the background task repair sensors
 - lastMemoryUsage.  Used to track memory usage for debugging
-- 
+- isArmed.  Used to track if the craft is armed
 
 -- Every attempt should be made if using session vars to record them here with a nil
 -- to prevent conflicts with other scripts that may use the same session vars.
@@ -189,6 +189,7 @@ rfsuite.session.lastMemoryUsage = nil
 rfsuite.session.mcu_id = nil
 rfsuite.session.isConnected = false
 rfsuite.session.isArmed = false
+
 
 
 --- Retrieves the version information of the rfsuite module.

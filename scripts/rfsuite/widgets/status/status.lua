@@ -1595,14 +1595,14 @@ local function playLQ(widget)
             -- Start the timer and make the initial announcement
             status.lqtime.lqannouncementTimerStart = os.time()
             status.lqtime.lqaudioannouncementCounter = os.clock()
-            rfsuite.utils.playFile("status", "alerts/lq.wav")
+            --rfsuite.utils.playFile("status", "alerts/lq.wav")
             system.playNumber(status.sensors.rssi, UNIT_PERCENT, 2)
             lqDoneFirst = true
         elseif status.lqtime.lqannouncementTimerStart then
             -- Make repeated announcements based on the interval
             if os.clock() - status.lqtime.lqaudioannouncementCounter >= status.announcementIntervalParam then
                 status.lqtime.lqaudioannouncementCounter = os.clock()
-                rfsuite.utils.playFile("status", "alerts/lq.wav")
+                --rfsuite.utils.playFile("status", "alerts/lq.wav")
                 system.playNumber(status.sensors.rssi, UNIT_PERCENT, 2)
             end
         end
@@ -1626,7 +1626,7 @@ local function playMCU(widget)
             if not status.mcutime.mcuannouncementTimerStart and not mcuDoneFirst then
                 status.mcutime.mcuannouncementTimerStart = os.time()
                 status.mcutime.mcuaudioannouncementCounter = os.clock()
-                rfsuite.utils.playFile("status", "alerts/mcu.wav")
+                --rfsuite.utils.playFile("status", "alerts/mcu.wav")
                 system.playNumber(status.sensors.temp_mcu / 100, UNIT_DEGREE, 2)
                 mcuDoneFirst = true
             end
@@ -1640,7 +1640,7 @@ local function playMCU(widget)
             local elapsedTime = os.clock() - status.mcutime.mcuaudioannouncementCounter
             if elapsedTime >= status.announcementIntervalParam then
                 status.mcutime.mcuaudioannouncementCounter = os.clock()
-                rfsuite.utils.playFile("status", "alerts/mcu.wav")
+                --rfsuite.utils.playFile("status", "alerts/mcu.wav")
                 system.playNumber(status.sensors.temp_mcu / 100, UNIT_DEGREE, 2)
             end
         end
@@ -1666,7 +1666,7 @@ local function playESC(widget)
         if not status.esctime.escannouncementTimerStart and not escDoneFirst then
             status.esctime.escannouncementTimerStart = os.time()
             status.esctime.escaudioannouncementCounter = os.clock()
-            rfsuite.utils.playFile("status", "alerts/esc.wav")
+            --rfsuite.utils.playFile("status", "alerts/esc.wav")
             system.playNumber(status.sensors.temp_esc / 100, UNIT_DEGREE, 2)
             escDoneFirst = true
         end
@@ -1674,7 +1674,7 @@ local function playESC(widget)
         -- Handle repeating announcements
         if status.esctime.escannouncementTimerStart and (os.clock() - status.esctime.escaudioannouncementCounter >= status.announcementIntervalParam) then
             status.esctime.escaudioannouncementCounter = os.clock()
-            rfsuite.utils.playFile("status", "alerts/esc.wav")
+            --rfsuite.utils.playFile("status", "alerts/esc.wav")
             system.playNumber(status.sensors.temp_esc / 100, UNIT_DEGREE, 2)
         end
     else
@@ -1766,7 +1766,7 @@ local function playFuel(widget)
         if not status.fueltime.fuelannouncementTimerStart and not fuelDoneFirst then
             status.fueltime.fuelannouncementTimerStart = os.time()
             status.fueltime.fuelaudioannouncementCounter = os.clock()
-            rfsuite.utils.playFile("status", "alerts/fuel.wav")
+            --rfsuite.utils.playFile("status", "alerts/fuel.wav")
             system.playNumber(status.sensors.fuel, UNIT_PERCENT, 2)
             fuelDoneFirst = true
         end
@@ -1779,7 +1779,7 @@ local function playFuel(widget)
         local timeElapsed = os.clock() - status.fueltime.fuelaudioannouncementCounter
         if not fuelDoneFirst and timeElapsed >= status.announcementIntervalParam then
             status.fueltime.fuelaudioannouncementCounter = os.clock()
-            rfsuite.utils.playFile("status", "alerts/fuel.wav")
+            --rfsuite.utils.playFile("status", "alerts/fuel.wav")
             system.playNumber(status.sensors.fuel, UNIT_PERCENT, 2)
         end
     else
@@ -2243,7 +2243,7 @@ local function wakeupUI(widget)
                             if status.lvStickannouncement == false and status.voltageIsLowAlert == true then -- do not play if sticks at high end points
                                 --rfsuite.utils.playFile("status", "alerts/lowvoltage.wav")
                                 -- system.playNumber(status.sensors.voltage / 100, 2, 2)
-                                if status.alrthptParam == true then system.playHaptic("- . -") end
+                                --if status.alrthptParam == true then system.playHaptic("- . -") end
                             end
 
                         end

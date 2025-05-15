@@ -54,7 +54,7 @@ local eventTable = {
                         local suppressThreshold = session.batteryConfig.vbatmincellvoltage / 2
 
                         -- Only proceed if cellVoltage is either zero or above the suppression threshold
-                        if cellVoltage > 0 and cellVoltage < suppressThreshold then
+                        if cellVoltage >= 0 and cellVoltage < suppressThreshold then
                             -- Suppress alert
                             return
                         end
@@ -84,7 +84,7 @@ local eventTable = {
         {
             sensor = "governor",
             event = function(value)
-                if rfsuite.session.isArmed == false then
+                if rfsuite.session.isArmed == false or rfsuite.session.governorMode == 0 then
                     return
                 end
                 local governorMap = {[0] = "off.wav", [1] = "idle.wav", [2] = "spoolup.wav", [3] = "recovery.wav", [4] = "active.wav", [5] = "thr-off.wav", [6] = "lost-hs.wav", [7] = "autorot.wav", [8] = "bailout.wav", [100] = "disabled.wav", [101] = "disarmed.wav"}
