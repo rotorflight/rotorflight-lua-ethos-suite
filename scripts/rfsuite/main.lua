@@ -26,12 +26,12 @@ config.toolName = "Rotorflight"                                                 
 config.icon = lcd.loadMask("app/gfx/icon.png")                                      -- icon
 config.icon_logtool = lcd.loadMask("app/gfx/icon_logtool.png")                      -- icon
 config.icon_unsupported = lcd.loadMask("app/gfx/unsupported.png")                   -- icon
-config.version = {major = 2, minor = 2, revision = 0, suffix = "RC4"}               -- version of the script
+config.version = {major = 2, minor = 2, revision = 0, suffix = "PR-636"}               -- version of the script
 config.ethosVersion = {1, 6, 2}                                                      -- min version of ethos supported by this script                                                     
 config.supportedMspApiVersion = {"12.06", "12.07","12.08"}                          -- supported msp versions
 config.simulatorApiVersionResponse = {0, 12, 8}                                     -- version of api return by simulator
 config.baseDir = "rfsuite"                                                          -- base directory for the suite. This is only used by msp api to ensure correct path
-config.logLevel= "info"                                                             -- off | info | debug [default = info]
+config.logLevel= "off"                                                             -- off | info | debug [default = info]
 config.logToFile = false                                                            -- log to file [default = false] (log file is in /scripts/rfsuite/logs)
 config.logMSP = false                                                               -- log msp messages [default =  false]
 config.logMSPQueue = false                                                          -- log msp queue size [default = false]
