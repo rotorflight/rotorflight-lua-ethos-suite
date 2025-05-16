@@ -29,8 +29,6 @@ local config = arg[1]
 function ui.progressDisplay(title, message)
     if rfsuite.app.dialogs.progressDisplay then return end
 
-    rfsuite.app.audio.playLoading = true
-
     title = title or rfsuite.i18n.get("app.msg_loading")
     message = message or rfsuite.i18n.get("app.msg_loading_from_fbl")
 

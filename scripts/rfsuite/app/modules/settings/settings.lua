@@ -25,13 +25,17 @@ local function openPage(pidx, title, script)
     local eventList = rfsuite.tasks.events.eventTable.telemetry
     local eventNames = sensorNameMap(rfsuite.tasks.telemetry.listSensors())
 
-    
+    local formFieldCount = 0
+
+    -- telemetry announcements
     local alertpanel = form.addExpansionPanel(rfsuite.i18n.get("app.modules.settings.txt_telemetry_announcements"))
     alertpanel:open(false)
+
     for i, v in ipairs(eventList) do
+        formFieldCount = formFieldCount + 1
         rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
         rfsuite.app.formLines[rfsuite.session.formLineCnt] = alertpanel:addLine(eventNames[v.sensor] or "unknown")
-        rfsuite.app.formFields[i] = form.addBooleanField(rfsuite.app.formLines[rfsuite.session.formLineCnt], 
+        rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.session.formLineCnt], 
                                                             nil, 
                                                             function() 
                                                                 if rfsuite.userpref and rfsuite.userpref.announcements then
@@ -41,10 +45,51 @@ local function openPage(pidx, title, script)
                                                             function(newValue) 
                                                                 if rfsuite.userpref and rfsuite.userpref.announcements then
                                                                     rfsuite.userpref.announcements[v.sensor] = newValue 
-                                                                    rfsuite.utils.save_ini_file(rfsuite.config.userPreferences, rfsuite.userpref)
+                                                                    rfsuite.ini.save_ini_file(rfsuite.config.userPreferences, rfsuite.userpref)
                                                                 end    
                                                             end)
     end
+
+    -- development mode
+    local devpanel = form.addExpansionPanel("Development")
+    devpanel:open(false)
+
+    formFieldCount = formFieldCount + 1
+    rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.session.formLineCnt] = devpanel:addLine("Developer Tools")
+    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.session.formLineCnt], 
+                                                        nil, 
+                                                        function() 
+                                                            if rfsuite.userpref and rfsuite.userpref.developer then
+                                                                return rfsuite.userpref.developer['devtools'] 
+                                                            end
+                                                        end, 
+                                                        function(newValue) 
+                                                            if rfsuite.userpref and rfsuite.userpref.developer then
+                                                                rfsuite.userpref.developer['devtools'] = newValue 
+                                                                rfsuite.config.developerMode = newValue
+                                                                rfsuite.ini.save_ini_file(rfsuite.config.userPreferences, rfsuite.userpref)
+                                                            end    
+                                                        end)    
+
+    formFieldCount = formFieldCount + 1
+    rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.session.formLineCnt] = devpanel:addLine("Compilation")
+    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.session.formLineCnt], 
+                                                        nil, 
+                                                        function() 
+                                                            if rfsuite.userpref and rfsuite.userpref.developer then
+                                                                return rfsuite.userpref.developer['compile'] 
+                                                            end
+                                                        end, 
+                                                        function(newValue) 
+                                                            if rfsuite.userpref and rfsuite.userpref.developer then
+                                                                rfsuite.userpref.developer['compile'] = newValue 
+                                                                rfsuite.config.compile = newValue
+                                                                rfsuite.ini.save_ini_file(rfsuite.config.userPreferences, rfsuite.userpref)
+                                                            end    
+                                                        end)                                                        
+
 
 end
 

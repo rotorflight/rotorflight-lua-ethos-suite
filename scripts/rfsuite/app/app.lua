@@ -179,9 +179,6 @@ app.offlineMode = false
 
 --[[
 app.audio: Table containing boolean flags for various audio states.
-    - playDemo: Flag to indicate if demo audio should be played.
-    - playConnecting: Flag to indicate if connecting audio should be played.
-    - playConnected: Flag to indicate if connected audio should be played.
     - playTimeout: Flag to indicate if timeout audio should be played.
     - playSaving: Flag to indicate if saving audio should be played.
     - playLoading: Flag to indicate if loading audio should be played.
@@ -194,12 +191,7 @@ app.audio: Table containing boolean flags for various audio states.
 
 ]]
 app.audio = {}
-app.audio.playDemo = false
-app.audio.playConnecting = false
-app.audio.playConnected = false
 app.audio.playTimeout = false
-app.audio.playSaving = false
-app.audio.playLoading = false
 app.audio.playEscPowerCycle = false
 app.audio.playServoOverideDisable = false
 app.audio.playServoOverideEnable = false
@@ -1302,8 +1294,6 @@ function app.wakeupUI()
             label = rfsuite.i18n.get("app.btn_ok"),
             action = function()
 
-                app.audio.playSaving = true
-
                 -- we have to fake a save dialog in sim as its not actually possible 
                 -- to save in sim!
                 app.PageTmp = app.Page
@@ -1524,21 +1514,6 @@ function app.wakeupUI()
             app.audio.playEraseFlash = false
         end
 
-        if app.audio.playConnected == true then
-            rfsuite.utils.playFile("app", "connected.wav")
-            app.audio.playConnected = false
-        end
-
-        if app.audio.playConnecting == true then
-            rfsuite.utils.playFile("app", "connecting.wav")
-            app.audio.playConnecting = false
-        end
-
-        if app.audio.playDemo == true then
-            rfsuite.utils.playFile("app", "demo.wav")
-            app.audio.playDemo = false
-        end
-
         if app.audio.playTimeout == true then
             rfsuite.utils.playFile("app", "timeout.wav")
             app.audio.playTimeout = false
@@ -1569,21 +1544,6 @@ function app.wakeupUI()
             app.audio.playMixerOverideDisable = false
         end
 
-        if app.audio.playSaving == true and rfsuite.preferences.audioAlerts == 0 then
-            rfsuite.utils.playFile("app", "saving.wav")
-            app.audio.playSaving = false
-        end
-
-        if app.audio.playLoading == true and rfsuite.preferences.audioAlerts == 0 then
-            rfsuite.utils.playFile("app", "loading.wav")
-            app.audio.playLoading = false
-        end
-
-        if app.audio.playSave == true then
-            rfsuite.utils.playFile("app", "save.wav")
-            app.audio.playSave = false
-        end
-
         if app.audio.playSaveArmed == true then
             rfsuite.utils.playFileCommon("warn.wav")
             app.audio.playSaveArmed = false
@@ -1596,12 +1556,7 @@ function app.wakeupUI()
 
 
     else
-        app.audio.playLoading = false
-        app.audio.playSaving = false
         app.audio.playTimeout = false
-        app.audio.playDemo = false
-        app.audio.playConnecting = false
-        app.audio.playConnected = false
         app.audio.playEscPowerCycle = false
         app.audio.playServoOverideDisable = false
         app.audio.playServoOverideEnable = false

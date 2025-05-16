@@ -18,6 +18,9 @@
  * 
 
 ]] --
+rfsuite = {}
+rfsuite.session = {}
+
 -- RotorFlight + ETHOS LUA configuration
 local config = {}
 
@@ -36,10 +39,10 @@ config.logToFile = false                                                        
 config.logMSP = false                                                               -- log msp messages [default =  false]
 config.logMSPQueue = false                                                          -- log msp queue size [default = false]
 config.logMemoryUsage = false                                                       -- log memory usage [default = false]
-config.developerMode = false                                                        -- show developer tools on main menu [default = false]
-config.compile = true                                                               -- use the compiler [default = true]
 config.compilerTiming = false                                                       -- log compiler timings [default = false]
-config.userPreferences = "SCRIPTS:/".. config.baseDir .. "/userpref.ini"            -- user preferences file
+config.userPreferences = "SCRIPTS:/rfsuite.ini"                                     -- user preferences file
+
+rfsuite.config = config
 
 -- RotorFlight + ETHOS LUA preferences
 local preferences = {}
@@ -62,51 +65,79 @@ preferences.defaultRateProfile = 4 -- ACTUAL                        -- default r
 preferences.watchdogParam = 10                                      -- watchdog timeout for progress boxes [default = 10]
 preferences.spreadScheduling = true                                 -- false = all tasks run on all cycles.  true = tasks are spread over multiple cycles. [default = true]
 
--- tasks
-config.bgTaskName = config.toolName .. " [Background]"              -- background task name for msp services etc
-config.bgTaskKey = "rf2bg"                                          -- key id used for msp services
+rfsuite.preferences = preferences
 
+--[[
+    Loads and updates user preferences from an INI file.
 
---- Checks if the `developerMode` is disabled in the `config` table.
---- If disabled, attempts to enable it by checking for the existence of a 
---- file named `../developermode`. If the file exists, it sets 
---- `config.developerMode` to `true`.
----
---- Note:
---- - The file path `../developermode` is relative to the script's execution directory.
---- - This functionality is likely used to toggle developer-specific features 
----   during runtime.
-if not config.developerMode then
-    local f = io.open("../developermode", "r")
-    if f then
-        io.close(f)
-        config.developerMode = true
-    end
+    Steps:
+    1. Retrieves the user preferences file path from the configuration.
+    2. Sets `slave_ini` to the default user preferences.
+    3. Initializes `master_ini` as an empty table.
+    4. If the user preferences file exists, loads its contents into `master_ini`.
+    5. Merges `master_ini` (existing preferences) with `slave_ini` (defaults) to ensure all default values are present.
+    6. Assigns the merged preferences to `rfsuite.userpref`.
+    7. If the loaded preferences differ from the defaults, saves the updated preferences back to the file and logs the update.
+
+    This ensures that any missing default preferences are added to the user's preferences file without overwriting existing values.
+]]
+rfsuite.ini = assert(loadfile("lib/ini.lua"))(config) -- self contantaind and never compiled
+
+local userpref_defaults ={
+    announcements = {
+        armflags = true,
+        voltage = true,
+        fuel = true,
+        governor = true,
+        pid_profile = true,
+        rate_profile = true
+    },
+    developer = {
+        compile = true,
+        devtools = false,
+    }
+}
+
+local userpref_file = rfsuite.config.userPreferences
+local slave_ini = userpref_defaults
+local master_ini = {}
+
+if rfsuite.ini.file_exists(userpref_file) then
+    master_ini = rfsuite.ini.load_ini_file(userpref_file) or {}
 end
 
+local updated_ini = rfsuite.ini.merge_ini_tables(master_ini, slave_ini)
+rfsuite.userpref = updated_ini
+
+if not rfsuite.ini.ini_tables_equal(master_ini, slave_ini) then
+    rfsuite.ini.save_ini_file(userpref_file, updated_ini)
+end 
+
+-- handle user preference overides.
+-- these will override values set at top of this file
+rfsuite.config.developerMode = rfsuite.userpref.developer.devtools 
+rfsuite.config.compile = rfsuite.userpref.developer.compile 
+
+
+-- tasks
+rfsuite.config.bgTaskName = rfsuite.config.toolName .. " [Background]"              -- background task name for msp services etc
+rfsuite.config.bgTaskKey = "rf2bg"                                          -- key id used for msp services
 
 -- main
 -- rfsuite: Main table for the rotorflight-lua-ethos-suite script.
 -- rfsuite.config: Configuration table for the suite.
 -- rfsuite.session: Session table for the suite.
 -- rfsuite.app: Application module loaded from "app/app.lua" with the provided configuration.
-rfsuite = {}
-rfsuite.config = config
-rfsuite.preferences = preferences
-rfsuite.session = {}
-rfsuite.compiler = assert(loadfile("lib/compile.lua"))(config) 
-rfsuite.app = assert(rfsuite.compiler.loadfile("app/app.lua"))(config)
+rfsuite.compiler = assert(loadfile("lib/compile.lua"))(rfsuite.config) 
+rfsuite.app = assert(rfsuite.compiler.loadfile("app/app.lua"))(rfsuite.config)
 
 
 -- library with utility functions used throughou the suite
-rfsuite.utils = assert(rfsuite.compiler.loadfile("lib/utils.lua"))(config)
+rfsuite.utils = assert(rfsuite.compiler.loadfile("lib/utils.lua"))(rfsuite.config)
 
 -- Load the i18n system
-rfsuite.i18n  = assert(rfsuite.compiler.loadfile("lib/i18n.lua"))(config)
+rfsuite.i18n  = assert(rfsuite.compiler.loadfile("lib/i18n.lua"))(rfsuite.config)
 rfsuite.i18n.load()     
-
--- load up the userpreferences
-rfsuite.userpref = rfsuite.utils.load_ini_file(config.userPreferences)
 
 -- 
 -- This script initializes the `rfsuite` tasks and background task.
@@ -116,7 +147,7 @@ rfsuite.userpref = rfsuite.utils.load_ini_file(config.userPreferences)
 -- The `rfsuite.compiler.loadfile` function is used to load the "tasks/tasks.lua" file, and `assert` ensures that the file is loaded successfully.
 -- The loaded file is then executed with the `config` parameter, and its return value is assigned to `rfsuite.tasks`.
 -- tasks
-rfsuite.tasks = assert(rfsuite.compiler.loadfile("tasks/tasks.lua"))(config)
+rfsuite.tasks = assert(rfsuite.compiler.loadfile("tasks/tasks.lua"))(rfsuite.config)
 
 -- LuaFormatter off
 
@@ -190,8 +221,6 @@ rfsuite.session.mcu_id = nil
 rfsuite.session.isConnected = false
 rfsuite.session.isArmed = false
 
-
-
 --- Retrieves the version information of the rfsuite module.
 --- 
 --- This function constructs a version string and returns a table containing
@@ -205,13 +234,13 @@ rfsuite.session.isArmed = false
 ---   - `revision` (number): The revision version number.
 ---   - `suffix` (string): The version suffix (e.g., "alpha", "beta").
 function rfsuite.version()
-    local version = config.version.major .. "." .. config.version.minor .. "." .. config.version.revision .. "-" .. config.version.suffix
+    local version = rfsuite.config.version.major .. "." .. rfsuite.config.version.minor .. "." .. rfsuite.config.version.revision .. "-" .. rfsuite.config.version.suffix
     return {
         version = version,
-        major = config.version.major,
-        minor = config.version.minor,
-        revision = config.version.revision,
-        suffix = config.version.suffix
+        major = rfsuite.config.version.major,
+        minor = rfsuite.config.version.minor,
+        revision = rfsuite.config.version.revision,
+        suffix = rfsuite.config.version.suffix
     }
 end
 
@@ -251,8 +280,8 @@ local function init()
     if not rfsuite.utils.ethosVersionAtLeast() then
 
         system.registerSystemTool({
-            name = config.toolName,
-            icon = config.icon_unsupported ,
+            name = rfsuite.config.toolName,
+            icon = rfsuite.config.icon_unsupported ,
             create = function () end,
             wakeup = function () 
                         lcd.invalidate()
@@ -279,8 +308,8 @@ local function init()
     -- This tool handles events, creation, wakeup, painting, and closing.
     system.registerSystemTool({
         event = rfsuite.app.event,
-        name = config.toolName,
-        icon = config.icon,
+        name = rfsuite.config.toolName,
+        icon = rfsuite.config.icon,
         create = rfsuite.app.create,
         wakeup = rfsuite.app.wakeup,
         paint = rfsuite.app.paint,
@@ -291,8 +320,8 @@ local function init()
     -- This tool handles events, creation, wakeup, painting, and closing.
     system.registerSystemTool({
         event = rfsuite.app.event,
-        name = config.toolName,
-        icon = config.icon_logtool,
+        name = rfsuite.config.toolName,
+        icon = rfsuite.config.icon_logtool,
         create = rfsuite.app.create_logtool,
         wakeup = rfsuite.app.wakeup,
         paint = rfsuite.app.paint,
@@ -302,8 +331,8 @@ local function init()
     -- Registers a background task with the specified configuration.
     -- This task handles wakeup and event processing.
     system.registerTask({
-        name = config.bgTaskName,
-        key = config.bgTaskKey,
+        name = rfsuite.config.bgTaskName,
+        key = rfsuite.config.bgTaskKey,
         wakeup = rfsuite.tasks.wakeup,
         event = rfsuite.tasks.event
     })
