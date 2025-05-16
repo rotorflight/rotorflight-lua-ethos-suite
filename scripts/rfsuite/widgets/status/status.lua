@@ -1595,14 +1595,14 @@ local function playLQ(widget)
             -- Start the timer and make the initial announcement
             status.lqtime.lqannouncementTimerStart = os.time()
             status.lqtime.lqaudioannouncementCounter = os.clock()
-            --rfsuite.utils.playFile("status", "alerts/lq.wav")
+            rfsuite.utils.playFile("status", "alerts/lq.wav")
             system.playNumber(status.sensors.rssi, UNIT_PERCENT, 2)
             lqDoneFirst = true
         elseif status.lqtime.lqannouncementTimerStart then
             -- Make repeated announcements based on the interval
             if os.clock() - status.lqtime.lqaudioannouncementCounter >= status.announcementIntervalParam then
                 status.lqtime.lqaudioannouncementCounter = os.clock()
-                --rfsuite.utils.playFile("status", "alerts/lq.wav")
+                rfsuite.utils.playFile("status", "alerts/lq.wav")
                 system.playNumber(status.sensors.rssi, UNIT_PERCENT, 2)
             end
         end
@@ -1626,7 +1626,7 @@ local function playMCU(widget)
             if not status.mcutime.mcuannouncementTimerStart and not mcuDoneFirst then
                 status.mcutime.mcuannouncementTimerStart = os.time()
                 status.mcutime.mcuaudioannouncementCounter = os.clock()
-                --rfsuite.utils.playFile("status", "alerts/mcu.wav")
+                rfsuite.utils.playFile("status", "alerts/mcu.wav")
                 system.playNumber(status.sensors.temp_mcu / 100, UNIT_DEGREE, 2)
                 mcuDoneFirst = true
             end
@@ -1640,7 +1640,7 @@ local function playMCU(widget)
             local elapsedTime = os.clock() - status.mcutime.mcuaudioannouncementCounter
             if elapsedTime >= status.announcementIntervalParam then
                 status.mcutime.mcuaudioannouncementCounter = os.clock()
-                --rfsuite.utils.playFile("status", "alerts/mcu.wav")
+                rfsuite.utils.playFile("status", "alerts/mcu.wav")
                 system.playNumber(status.sensors.temp_mcu / 100, UNIT_DEGREE, 2)
             end
         end
@@ -1666,7 +1666,7 @@ local function playESC(widget)
         if not status.esctime.escannouncementTimerStart and not escDoneFirst then
             status.esctime.escannouncementTimerStart = os.time()
             status.esctime.escaudioannouncementCounter = os.clock()
-            --rfsuite.utils.playFile("status", "alerts/esc.wav")
+            rfsuite.utils.playFile("status", "alerts/esc.wav")
             system.playNumber(status.sensors.temp_esc / 100, UNIT_DEGREE, 2)
             escDoneFirst = true
         end
@@ -1674,7 +1674,7 @@ local function playESC(widget)
         -- Handle repeating announcements
         if status.esctime.escannouncementTimerStart and (os.clock() - status.esctime.escaudioannouncementCounter >= status.announcementIntervalParam) then
             status.esctime.escaudioannouncementCounter = os.clock()
-            --rfsuite.utils.playFile("status", "alerts/esc.wav")
+            rfsuite.utils.playFile("status", "alerts/esc.wav")
             system.playNumber(status.sensors.temp_esc / 100, UNIT_DEGREE, 2)
         end
     else
@@ -1766,7 +1766,7 @@ local function playFuel(widget)
         if not status.fueltime.fuelannouncementTimerStart and not fuelDoneFirst then
             status.fueltime.fuelannouncementTimerStart = os.time()
             status.fueltime.fuelaudioannouncementCounter = os.clock()
-            --rfsuite.utils.playFile("status", "alerts/fuel.wav")
+            rfsuite.utils.playFile("status", "alerts/fuel.wav")
             system.playNumber(status.sensors.fuel, UNIT_PERCENT, 2)
             fuelDoneFirst = true
         end
@@ -1779,7 +1779,7 @@ local function playFuel(widget)
         local timeElapsed = os.clock() - status.fueltime.fuelaudioannouncementCounter
         if not fuelDoneFirst and timeElapsed >= status.announcementIntervalParam then
             status.fueltime.fuelaudioannouncementCounter = os.clock()
-            --rfsuite.utils.playFile("status", "alerts/fuel.wav")
+            rfsuite.utils.playFile("status", "alerts/fuel.wav")
             system.playNumber(status.sensors.fuel, UNIT_PERCENT, 2)
         end
     else
@@ -1866,6 +1866,7 @@ local function playVoltage(widget)
     end
 end
 
+--[[
 local function playGovernor()
     if not status.governorAlertsParam then return end
 
@@ -1896,13 +1897,15 @@ local function playGovernor()
 
         local action = govmodeActions[status.sensors.govmode]
 
-        --if action and action.param then
-        --    if status.govmodeParam == 0 then rfsuite.utils.playFile("status", "events/governor.wav") end
-        --    rfsuite.utils.playFile("status", "events/" .. action.sound)
-        --end
+        if action and action.param then
+            if status.govmodeParam == 0 then rfsuite.utils.playFile("status", "events/governor.wav") end
+            rfsuite.utils.playFile("status", "events/" .. action.sound)
+        end
     end
 end
+]]
 
+--[[
 local function playRPMDiff()
     if not status.rpmAlertsParam then return end
 
@@ -1944,6 +1947,7 @@ local function playRPMDiff()
         system.playNumber(currentRPM, UNIT_RPM, 2)
     end
 end
+]]
 
 function status.event(widget, category, value, x, y)
 
@@ -1999,29 +2003,30 @@ local function wakeupUI(widget)
 
             if status.linkUPTime ~= nil and ((tonumber(os.clock()) - tonumber(status.linkUPTime)) >= 5) then
                 -- voltage alerts
-                --playVoltage(widget)
+                playVoltage(widget)
                 -- governor callouts
                 --playGovernor(widget)
                 -- rpm diff
                 --playRPMDiff(widget)
                 -- rpm
-                --playRPM(widget)
+                playRPM(widget)
                 -- current
-                --playCurrent(widget)
+                playCurrent(widget)
                 -- fuel
-                --playFuel(widget)
+                playFuel(widget)
                 -- lq
-                --playLQ(widget)
+                playLQ(widget)
                 -- esc
-                --playESC(widget)
+                playESC(widget)
                 -- mcu
-                --playMCU(widget)
+                playMCU(widget)
                 -- timer
                 playTIMER(widget)
                 -- timer alarm
                 playTIMERALARM(widget)
 
-                --[[if ((tonumber(os.clock()) - tonumber(status.linkUPTime)) >= 10) then
+                --[[
+                if ((tonumber(os.clock()) - tonumber(status.linkUPTime)) >= 10) then
 
                     -- IDLE
                     if status.switchIdlelowParam ~= nil and status.switchIdlelowParam:state() == true then
@@ -2128,7 +2133,7 @@ local function wakeupUI(widget)
                     end
 
                 end
-                ]]--
+                ]]
 
                 ---
                 -- TIME
@@ -2159,6 +2164,7 @@ local function wakeupUI(widget)
 
                 -- LOW FUEL ALERTS
                 -- big conditional to announcement status.lfTimer if needed
+                --[[
                 if status.linkUP == true then
                     if status.idleupswitchParam ~= nil then
                         if status.idleupswitchParam:state() then
@@ -2193,7 +2199,7 @@ local function wakeupUI(widget)
                         status.lfAudioAlertCounter = os.clock()
 
                         if status.sensors.fuel >= 10 then
-                            --rfsuite.utils.playFile("status", "alerts/lowfuel.wav")
+                            rfsuite.utils.playFile("status", "alerts/lowfuel.wav")
 
                             -- system.playNumber(status.sensors.voltage / 100, 2, 2)
                             if status.alrthptParam == true then system.playHaptic("- . -") end
@@ -2203,9 +2209,11 @@ local function wakeupUI(widget)
                     -- stop timer
                     status.lfTimerStart = nil
                 end
+                ]]
 
                 -- LOW VOLTAGE ALERTS
                 -- big conditional to announcement status.lvTimer if needed
+                --[[
                 if status.linkUP == true then
 
                     if status.idleupswitchParam ~= nil then
@@ -2241,9 +2249,9 @@ local function wakeupUI(widget)
                             status.lvAudioAlertCounter = os.clock()
 
                             if status.lvStickannouncement == false and status.voltageIsLowAlert == true then -- do not play if sticks at high end points
-                                --rfsuite.utils.playFile("status", "alerts/lowvoltage.wav")
+                                rfsuite.utils.playFile("status", "alerts/lowvoltage.wav")
                                 -- system.playNumber(status.sensors.voltage / 100, 2, 2)
-                                --if status.alrthptParam == true then system.playHaptic("- . -") end
+                                if status.alrthptParam == true then system.playHaptic("- . -") end
                             end
 
                         end
@@ -2253,6 +2261,7 @@ local function wakeupUI(widget)
                     status.lvTimerStart = nil
                 end
                 ---
+                ]]
 
             else
                 status.adjJUSTUP = true
@@ -2368,7 +2377,337 @@ function status.configure(widget)
         status.timeralarmVibrateParam = newValue
     end)
 
- 
+    --[[
+    local batterypanel = form.addExpansionPanel(i18n.get("widgets.status.txt_battery_configuration"))
+    batterypanel:open(false)
+
+    -- BATTERY CELLS
+    line = batterypanel:addLine(i18n.get("widgets.status.txt_cells"))
+    field = form.addNumberField(line, nil, 1, 14, function()
+        return status.cellsParam
+    end, function(value)
+        status.cellsParam = value
+    end)
+    field:default(6)
+
+    -- BATTERY MAX
+    line = batterypanel:addLine(i18n.get("widgets.status.txt_max_cell_voltage"))
+    field = form.addNumberField(line, nil, 0, 1000, function()
+        return status.maxCellVoltage
+    end, function(value)
+        status.maxCellVoltage = value
+    end)
+    field:default(430)
+    field:decimals(2)
+    field:suffix("V")
+
+    -- BATTERY FULL
+    line = batterypanel:addLine(i18n.get("widgets.status.txt_min_cell_voltage"))
+    field = form.addNumberField(line, nil, 0, 1000, function()
+        return status.minCellVoltage
+    end, function(value)
+        status.minCellVoltage = value
+    end)
+    field:default(330)
+    field:decimals(2)
+    field:suffix("V")
+
+    -- BATTERY WARN
+    line = batterypanel:addLine(i18n.get("widgets.status.txt_warn_cell_voltage"))
+    field = form.addNumberField(line, nil, 0, 1000, function()
+        return status.warnCellVoltage
+    end, function(value)
+        status.warnCellVoltage = value
+    end)
+    field:default(350)
+    field:decimals(2)
+    field:suffix("V")
+
+    -- LOW FUEL announcement
+    line = batterypanel:addLine(i18n.get("widgets.status.txt_low_fuel_percentage"))
+    field = form.addNumberField(line, nil, 0, 1000, function()
+        return status.lowfuelParam
+    end, function(value)
+        status.lowfuelParam = value
+    end)
+    field:default(20)
+    field:suffix("%")
+
+    -- ALERT ON
+    line = batterypanel:addLine(i18n.get("widgets.status.txt_play_alerton"))
+    form.addChoiceField(line, nil, {{i18n.get("widgets.status.txt_low_voltage"), 0}, {i18n.get("widgets.status.txt_low_fuel"), 1}, {i18n.get("widgets.status.txt_low_fuel_voltage"), 2}, {i18n.get("widgets.status.txt_disabled"), 3}}, function()
+        return status.alertonParam
+    end, function(newValue)
+        if newValue == 3 then
+            plalrtint:enable(false)
+            plalrthap:enable(false)
+        else
+            plalrtint:enable(true)
+            plalrthap:enable(true)
+        end
+        status.alertonParam = newValue
+    end)
+
+    -- ALERT INTERVAL
+    line = batterypanel:addLine("     " .. i18n.get("widgets.status.txt_interval"))
+    plalrtint = form.addChoiceField(line, nil, {{"5S", 5}, {"10S", 10}, {"15S", 15}, {"20S", 20}, {"30S", 30}}, function()
+        return status.alertintParam
+    end, function(newValue)
+        status.alertintParam = newValue
+    end)
+    if status.alertonParam == 3 then
+        plalrtint:enable(false)
+    else
+        plalrtint:enable(true)
+    end
+
+    -- HAPTIC
+    line = batterypanel:addLine("     " .. i18n.get("widgets.status.txt_vibrate"))
+    plalrthap = form.addBooleanField(line, nil, function()
+        return status.alrthptParam
+    end, function(newValue)
+        status.alrthptParam = newValue
+    end)
+    if status.alertonParam == 3 then
+        plalrthap:enable(false)
+    else
+        plalrthap:enable(true)
+    end
+    --]]
+
+    --[[
+    local switchpanel = form.addExpansionPanel(i18n.get("widgets.status.txt_switch_announcements"))
+    switchpanel:open(false)
+
+    line = switchpanel:addLine(i18n.get("widgets.status.txt_idlespeedlow"))
+    form.addSwitchField(line, nil, function()
+        return status.switchIdlelowParam
+    end, function(value)
+        status.switchIdlelowParam = value
+    end)
+
+    line = switchpanel:addLine(i18n.get("widgets.status.txt_idlespeedmedium"))
+    form.addSwitchField(line, nil, function()
+        return status.switchIdlemediumParam
+    end, function(value)
+        status.switchIdlemediumParam = value
+    end)
+
+    line = switchpanel:addLine(i18n.get("widgets.status.txt_idlespeedhigh"))
+    form.addSwitchField(line, nil, function()
+        return status.switchIdlehighParam
+    end, function(value)
+        status.switchIdlehighParam = value
+    end)
+
+    line = switchpanel:addLine(i18n.get("widgets.status.txt_rateslow"))
+    form.addSwitchField(line, nil, function()
+        return status.switchrateslowParam
+    end, function(value)
+        status.switchrateslowParam = value
+    end)
+
+    line = switchpanel:addLine(i18n.get("widgets.status.txt_ratesmedium"))
+    form.addSwitchField(line, nil, function()
+        return status.switchratesmediumParam
+    end, function(value)
+        status.switchratesmediumParam = value
+    end)
+
+    line = switchpanel:addLine(i18n.get("widgets.status.txt_rateshigh"))
+    form.addSwitchField(line, nil, function()
+        return status.switchrateshighParam
+    end, function(value)
+        status.switchrateshighParam = value
+    end)
+
+    line = switchpanel:addLine(i18n.get("widgets.status.txt_rescueon"))
+    form.addSwitchField(line, nil, function()
+        return status.switchrescueonParam
+    end, function(value)
+        status.switchrescueonParam = value
+    end)
+
+    line = switchpanel:addLine(i18n.get("widgets.status.txt_rescueoff"))
+    form.addSwitchField(line, nil, function()
+        return status.switchrescueoffParam
+    end, function(value)
+        status.switchrescueoffParam = value
+    end)
+
+    line = switchpanel:addLine(i18n.get("widgets.status.txt_bblon"))
+    form.addSwitchField(line, nil, function()
+        return status.switchbblonParam
+    end, function(value)
+        status.switchbblonParam = value
+    end)
+
+    line = switchpanel:addLine(i18n.get("widgets.status.txt_bbloff"))
+    form.addSwitchField(line, nil, function()
+        return status.switchbbloffParam
+    end, function(value)
+        status.switchbbloffParam = value
+    end)
+    ]]
+
+    local announcementpanel = form.addExpansionPanel(i18n.get("widgets.status.txt_telemetry_announcements"))
+    announcementpanel:open(false)
+
+    -- announcement VOLTAGE READING
+    line = announcementpanel:addLine(i18n.get("widgets.status.txt_voltage"))
+    form.addSwitchField(line, form.getFieldSlots(line)[0], function()
+        return status.announcementVoltageSwitchParam
+    end, function(value)
+        status.announcementVoltageSwitchParam = value
+    end)
+
+    -- announcement RPM READING
+    line = announcementpanel:addLine(i18n.get("widgets.status.txt_rpm"))
+    form.addSwitchField(line, nil, function()
+        return status.announcementRPMSwitchParam
+    end, function(value)
+        status.announcementRPMSwitchParam = value
+    end)
+
+    -- announcement CURRENT READING
+    line = announcementpanel:addLine(i18n.get("widgets.status.txt_current"))
+    form.addSwitchField(line, nil, function()
+        return status.announcementCurrentSwitchParam
+    end, function(value)
+        status.announcementCurrentSwitchParam = value
+    end)
+
+    -- announcement FUEL READING
+    line = announcementpanel:addLine(i18n.get("widgets.status.txt_fuel"))
+    form.addSwitchField(line, form.getFieldSlots(line)[0], function()
+        return status.announcementFuelSwitchParam
+    end, function(value)
+        status.announcementFuelSwitchParam = value
+    end)
+
+    -- announcement LQ READING
+    line = announcementpanel:addLine(i18n.get("widgets.status.txt_lq"))
+    form.addSwitchField(line, form.getFieldSlots(line)[0], function()
+        return status.announcementLQSwitchParam
+    end, function(value)
+        status.announcementLQSwitchParam = value
+    end)
+
+    -- announcement LQ READING
+    line = announcementpanel:addLine(i18n.get("widgets.status.txt_esc_temperature"))
+    form.addSwitchField(line, form.getFieldSlots(line)[0], function()
+        return status.announcementESCSwitchParam
+    end, function(value)
+        status.announcementESCSwitchParam = value
+    end)
+
+    -- announcement MCU READING
+    line = announcementpanel:addLine(i18n.get("widgets.status.txt_mcu_temperature"))
+    form.addSwitchField(line, form.getFieldSlots(line)[0], function()
+        return status.announcementMCUSwitchParam
+    end, function(value)
+        status.announcementMCUSwitchParam = value
+    end)
+
+    -- announcement TIMER READING
+    line = announcementpanel:addLine(i18n.get("widgets.status.txt_timer"))
+    form.addSwitchField(line, form.getFieldSlots(line)[0], function()
+        return status.announcementTimerSwitchParam
+    end, function(value)
+        status.announcementTimerSwitchParam = value
+    end)
+
+    --[[
+    local govalertpanel = form.addExpansionPanel(i18n.get("widgets.status.txt_governor_announcements"))
+    govalertpanel:open(false)
+
+    -- TITLE DISPLAY
+    line = govalertpanel:addLine("  " .. i18n.get("widgets.governor.OFF"))
+    form.addBooleanField(line, nil, function()
+        return status.governorOFFParam
+    end, function(newValue)
+        status.governorOFFParam = newValue
+    end)
+
+    -- TITLE DISPLAY
+    line = govalertpanel:addLine("  " .. i18n.get("widgets.governor.IDLE"))
+    form.addBooleanField(line, nil, function()
+        return status.governorIDLEParam
+    end, function(newValue)
+        status.governorIDLEParam = newValue
+    end)
+
+    -- TITLE DISPLAY
+    line = govalertpanel:addLine("  " .. i18n.get("widgets.governor.SPOOLUP"))
+    form.addBooleanField(line, nil, function()
+        return status.governorSPOOLUPParam
+    end, function(newValue)
+        status.governorSPOOLUPParam = newValue
+    end)
+
+    line = govalertpanel:addLine("  " .. i18n.get("widgets.governor.RECOVERY"))
+    form.addBooleanField(line, nil, function()
+        return status.governorRECOVERYParam
+    end, function(newValue)
+        status.governorRECOVERYParam = newValue
+    end)
+
+    line = govalertpanel:addLine("  " .. i18n.get("widgets.governor.ACTIVE"))
+    form.addBooleanField(line, nil, function()
+        return status.governorACTIVEParam
+    end, function(newValue)
+        status.governorACTIVEParam = newValue
+    end)
+
+    line = govalertpanel:addLine("  " .. i18n.get("widgets.governor.THROFF"))
+    form.addBooleanField(line, nil, function()
+        return status.governorTHROFFParam
+    end, function(newValue)
+        status.governorTHROFFParam = newValue
+    end)
+
+    line = govalertpanel:addLine("  " .. i18n.get("widgets.governor.LOSTHS"))
+    form.addBooleanField(line, nil, function()
+        return status.governorLOSTHSParam
+    end, function(newValue)
+        status.governorLOSTHSParam = newValue
+    end)
+
+    line = govalertpanel:addLine("  " .. i18n.get("widgets.governor.AUTOROT"))
+    form.addBooleanField(line, nil, function()
+        return status.governorAUTOROTParam
+    end, function(newValue)
+        status.governorAUTOROTParam = newValue
+    end)
+
+    line = govalertpanel:addLine("  " .. i18n.get("widgets.governor.BAILOUT"))
+    form.addBooleanField(line, nil, function()
+        return status.governorBAILOUTParam
+    end, function(newValue)
+        status.governorBAILOUTParam = newValue
+    end)
+
+    line = govalertpanel:addLine("  " .. i18n.get("widgets.governor.DISABLED"))
+    form.addBooleanField(line, nil, function()
+        return status.governorDISABLEDParam
+    end, function(newValue)
+        status.governorDISABLEDParam = newValue
+    end)
+
+    line = govalertpanel:addLine("  " .. i18n.get("widgets.governor.DISARMED"))
+    form.addBooleanField(line, nil, function()
+        return status.governorDISARMEDParam
+    end, function(newValue)
+        status.governorDISARMEDParam = newValue
+    end)
+
+    line = govalertpanel:addLine("   " .. i18n.get("widgets.governor.UNKNOWN"))
+    form.addBooleanField(line, nil, function()
+        return status.governorUNKNOWNParam
+    end, function(newValue)
+        status.governorUNKNOWNParam = newValue
+    end)
+    ]]
 
     local displaypanel = form.addExpansionPanel(i18n.get("widgets.status.txt_customise_display"))
     displaypanel:open(false)
@@ -2461,14 +2800,92 @@ function status.configure(widget)
     local advpanel = form.addExpansionPanel(i18n.get("widgets.status.txt_advanced"))
     advpanel:open(false)
 
+    --[[
     line = advpanel:addLine(i18n.get("widgets.status.txt_governor"))
     extgov = form.addChoiceField(line, nil, {{i18n.get("widgets.status.txt_rfgovernor"), 0}, {i18n.get("widgets.status.txt_extgovernor"), 1}}, function()
         return status.govmodeParam
     end, function(newValue)
         status.govmodeParam = newValue
     end)
+    ]]
 
+    line = form.addLine(i18n.get("widgets.status.txt_tempconversion"), advpanel)
 
+    line = advpanel:addLine("    " .. i18n.get("widgets.status.txt_esc"))
+    form.addChoiceField(line, nil, {{i18n.get("widgets.status.txt_disable"), 1}, {"°C -> °F", 2}, {"°F -> °C", 3}}, function()
+        return status.tempconvertParamESC
+    end, function(newValue)
+        status.tempconvertParamESC = newValue
+    end)
+
+    line = advpanel:addLine("   " .. i18n.get("widgets.status.txt_mcu"))
+    form.addChoiceField(line, nil, {{rfsuite.i18n.get("widgets.status.txt_disable"), 1}, {"°C -> °F", 2}, {"°F -> °C", 3}}, function()
+        return status.tempconvertParamMCU
+    end, function(newValue)
+        status.tempconvertParamMCU = newValue
+    end)
+
+    
+    --[[
+    line = form.addLine(i18n.get("widgets.status.txt_headspeed"), advpanel)
+
+    -- TITLE DISPLAY
+    line = advpanel:addLine("   " .. i18n.get("widgets.status.txt_alertonrpmdiff"))
+    form.addBooleanField(line, nil, function()
+        return status.rpmAlertsParam
+    end, function(newValue)
+        if newValue == false then
+            rpmperfield:enable(false)
+        else
+            rpmperfield:enable(true)
+        end
+
+        status.rpmAlertsParam = newValue
+    end)
+
+    -- TITLE DISPLAY
+    line = advpanel:addLine("   " .. i18n.get("widgets.status.txt_alertifdifflt"))
+    rpmperfield = form.addNumberField(line, nil, 0, 200, function()
+        return status.rpmAlertsPercentageParam
+    end, function(value)
+        status.rpmAlertsPercentageParam = value
+    end)
+    if status.rpmAlertsParam == false then
+        rpmperfield:enable(false)
+    else
+        rpmperfield:enable(true)
+    end
+    rpmperfield:default(100)
+    rpmperfield:decimals(1)
+    rpmperfield:suffix("%")
+]]
+    --[[
+    -- FILTER
+    -- MAX MIN DISPLAY
+    line = advpanel:addLine("Telemetry filtering")
+    form.addChoiceField(line, nil, {{"LOW", 1}, {"MEDIUM", 2}, {"HIGH", 3}}, function()
+        return status.filteringParam
+    end, function(newValue)
+        status.filteringParam = newValue
+    end)
+    ]] --
+
+    -- LVannouncement DISPLAY
+    --[[
+    line = advpanel:addLine(i18n.get("widgets.status.txt_announcement_interval"))
+    form.addChoiceField(line, nil, {{"5s", 5}, {"10s", 10}, {"15s", 15}, {"20s", 20}, {"25s", 25}, {"30s", 30}, {"35s", 35}, {"40s", 40}, {"45s", 45}, {"50s", 50}, {"55s", 55}, {"60s", 60}, {i18n.get("widgets.status.txt_norepeat"), 50000}}, function()
+        return status.announcementIntervalParam
+    end, function(newValue)
+        status.announcementIntervalParam = newValue
+    end)
+    ]]--
+    -- calcfuel
+    line = advpanel:addLine(i18n.get("widgets.status.txt_calcfuel_local"))
+    form.addBooleanField(line, nil, function()
+        return status.calcfuelParam
+    end, function(newValue)
+        status.calcfuelParam = newValue
+    end)
 
     -- display warning about sensors
     line = advpanel:addLine(i18n.get("widgets.status.txt_warnsensors"))
