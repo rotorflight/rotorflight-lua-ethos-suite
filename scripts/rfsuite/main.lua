@@ -95,6 +95,7 @@ local userpref_defaults ={
     developer = {
         compile = true,
         devtools = false,
+        loglevel = "off",
     }
 }
 
@@ -117,7 +118,7 @@ end
 -- these will override values set at top of this file
 rfsuite.config.developerMode = rfsuite.userpref.developer.devtools 
 rfsuite.config.compile = rfsuite.userpref.developer.compile 
-
+rfsuite.config.logLevel = rfsuite.userpref.developer.loglevel
 
 -- tasks
 rfsuite.config.bgTaskName = rfsuite.config.toolName .. " [Background]"              -- background task name for msp services etc

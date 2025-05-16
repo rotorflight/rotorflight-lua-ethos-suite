@@ -91,6 +91,40 @@ local function openPage(pidx, title, script)
                                                         end)                                                        
 
 
+    formFieldCount = formFieldCount + 1
+    rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.session.formLineCnt] = devpanel:addLine("Debug log")
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.session.formLineCnt], nil, 
+                                                        {{"OFF", 0}, {"INFO", 1}, {"DEBUG", 2}}, 
+                                                        function() 
+                                                            if rfsuite.userpref and rfsuite.userpref.developer then
+                                                                if rfsuite.userpref.developer['loglevel']  == "off" then
+                                                                    return 0
+                                                                elseif rfsuite.userpref.developer['loglevel']  == "info" then
+                                                                    return 1
+                                                                else
+                                                                    return 2
+                                                                end   
+                                                            end
+                                                        end, 
+                                                        function(newValue) 
+                                                            if rfsuite.userpref and rfsuite.userpref.developer then
+                                                                local value
+                                                                if newValue == 0 then
+                                                                    value = "off"
+                                                                elseif newValue == 1 then
+                                                                    value = "info"
+                                                                else
+                                                                    value = "debug"
+                                                                end    
+                                                                rfsuite.userpref.developer['loglevel'] = value 
+                                                                rfsuite.config.logLevel = value
+                                                                rfsuite.ini.save_ini_file(rfsuite.config.userPreferences, rfsuite.userpref)
+                                                            end    
+                                                        end) 
+ 
+
+
 end
 
 

@@ -58,6 +58,7 @@ function logger.reset()
 end
 
 function logger.add(message, level)
+    logger.queue.config.min_print_level  = rfsuite.config.logLevel
     logger.queue.add(message,level)
 end
 
