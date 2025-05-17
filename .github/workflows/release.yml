@@ -40,11 +40,6 @@ jobs:
         # Update full config.version line
         sed -i "s/config.version = {.*}/config.version = {major = $MAJOR, minor = $MINOR, revision = $REVISION, suffix = \"$SUFFIX\"}/" scripts/rfsuite/main.lua
 
-        # Set logging settings
-        sed -i 's/\(config.logLevel= \)".*"/\1"off"/' scripts/rfsuite/main.lua
-        sed -i 's/\(config.logToFile = \)[^ ]*/\1false/' scripts/rfsuite/main.lua
-        sed -i 's/\(config.logMSP = \)[^ ]*/\1false/' scripts/rfsuite/main.lua
-
         # Output for verification
         grep 'config.version' scripts/rfsuite/main.lua
         grep 'config.log' scripts/rfsuite/main.lua

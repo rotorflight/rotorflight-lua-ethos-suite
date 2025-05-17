@@ -25,7 +25,7 @@
 
  * This can be done by setting the ENABLE_TASK flag to true or false.
 
- * It can be usefull when using the task to enable the config.logMSP 
+ * It can be usefull when using the task to enable the preferences.developer.logmsp 
  * flag in main.lua. This will print out the msp request and response.
 
 ]] --

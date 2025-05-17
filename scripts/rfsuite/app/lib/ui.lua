@@ -29,8 +29,6 @@ local config = arg[1]
 function ui.progressDisplay(title, message)
     if rfsuite.app.dialogs.progressDisplay then return end
 
-    rfsuite.app.audio.playLoading = true
-
     title = title or rfsuite.i18n.get("app.msg_loading")
     message = message or rfsuite.i18n.get("app.msg_loading_from_fbl")
 
@@ -337,23 +335,23 @@ function ui.openMainMenu()
     rfsuite.app.triggers.disableRssiTimeout = false
 
     -- Determine button size based on preferences
-    rfsuite.preferences.iconSize = tonumber(rfsuite.preferences.iconSize) or 1
+    rfsuite.preferences.general.iconsize = tonumber(rfsuite.preferences.general.iconsize) or 1
 
     local buttonW, buttonH, padding, numPerRow
 
-    if rfsuite.preferences.iconSize == 0 then
+    if rfsuite.preferences.general.iconsize == 0 then
         -- Text icons
         padding = rfsuite.app.radio.buttonPaddingSmall
-        buttonW = (session.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
+        buttonW = (rfsuite.session.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
         buttonH = rfsuite.app.radio.navbuttonHeight
         numPerRow = rfsuite.app.radio.buttonsPerRow
-    elseif rfsuite.preferences.iconSize == 1 then
+    elseif rfsuite.preferences.general.iconsize == 1 then
         -- Small icons
         padding = rfsuite.app.radio.buttonPaddingSmall
         buttonW = rfsuite.app.radio.buttonWidthSmall
         buttonH = rfsuite.app.radio.buttonHeightSmall
         numPerRow = rfsuite.app.radio.buttonsPerRowSmall
-    elseif rfsuite.preferences.iconSize == 2 then
+    elseif rfsuite.preferences.general.iconsize == 2 then
         -- Large icons
         padding = rfsuite.app.radio.buttonPadding
         buttonW = rfsuite.app.radio.buttonWidth
@@ -372,7 +370,7 @@ function ui.openMainMenu()
     for idx, section in ipairs(MainMenu.sections) do
         local hideSection = (section.ethosversion and rfsuite.session.ethosRunningVersion < section.ethosversion) or
                             (section.mspversion and (rfsuite.session.apiVersion or 1) < section.mspversion) or
-                            (section.developer and not rfsuite.config.developerMode)
+                            (section.developer and not rfsuite.preferences.developer.devtools)
 
         if not hideSection then
             form.addLine(section.title)
@@ -382,15 +380,15 @@ function ui.openMainMenu()
                 if page.section == idx then
                     local hideEntry = (page.ethosversion and not rfsuite.utils.ethosVersionAtLeast(page.ethosversion)) or
                                       (page.mspversion and (rfsuite.session.apiVersion or 1) < page.mspversion) or
-                                      (page.developer and not rfsuite.config.developerMode)
+                                      (page.developer and not rfsuite.preferences.developer.devtools)
 
                     if not hideEntry then
                         if lc == 0 then
-                            y = form.height() + (rfsuite.preferences.iconSize == 2 and rfsuite.app.radio.buttonPadding or rfsuite.app.radio.buttonPaddingSmall)
+                            y = form.height() + (rfsuite.preferences.general.iconsize == 2 and rfsuite.app.radio.buttonPadding or rfsuite.app.radio.buttonPaddingSmall)
                         end
 
                         local x = (buttonW + padding) * lc
-                        if rfsuite.preferences.iconSize ~= 0 then
+                        if rfsuite.preferences.general.iconsize ~= 0 then
                             rfsuite.app.gfx_buttons["mainmenu"][pidx] = rfsuite.app.gfx_buttons["mainmenu"][pidx] or lcd.loadMask("app/modules/" .. page.folder .. "/" .. page.image)
                         else
                             rfsuite.app.gfx_buttons["mainmenu"][pidx] = nil
@@ -539,11 +537,6 @@ function ui.fieldNumber(i)
     local f      = fields[i]
     local formLines  = app.formLines
     local formFields = app.formFields
-
-    -- Apply radio text override once
-    if app.radio.text == 2 and f.t2 then
-        f.t = f.t2
-    end
 
     local posField, posText
 

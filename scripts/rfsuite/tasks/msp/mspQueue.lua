@@ -80,7 +80,7 @@ end
 ]]
 function MspQueueController:processQueue()
 
-    if rfsuite.config.logMSPQueue then
+    if rfsuite.preferences.developer.logmspQueue then
         local count = #self.messageQueue
         if count ~= lastQueueCount then
             rfsuite.utils.log("MSP Queue: " .. count .. " messages in queue","info")

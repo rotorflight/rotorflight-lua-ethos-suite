@@ -5,7 +5,7 @@ local resetRates = false
 local doFullReload = false
 
 if rfsuite.session.activeRateTable == nil then 
-    rfsuite.session.activeRateTable = rfsuite.preferences.defaultRateProfile 
+    rfsuite.session.activeRateTable = rfsuite.config.defaultRateProfile 
 end
 
 local mspapi = {

@@ -66,6 +66,7 @@ function tasks.resetAllTasks()
     -- reset all main tasks
     rfsuite.tasks.reset()
     rfsuite.session.resetMSPSensors = true
+    rfsuite.session.isConnected = false
 
     completionNotified = false
 end
@@ -180,6 +181,7 @@ function tasks.wakeup()
         rfsuite.utils.log("All tasks complete.", "info")
         completionNotified = true
         rfsuite.utils.playFileCommon("beep.wav")
+        rfsuite.session.isConnected = true
         collectgarbage()
     end
 end

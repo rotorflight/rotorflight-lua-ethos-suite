@@ -90,6 +90,18 @@
     "needs_translation": "false"
   },
   "modules": {
+    "settings": {
+      "name": {
+        "english": "Settings",
+        "translation": "Paramètres",
+        "needs_translation": "false"
+      },
+      "txt_telemetry_announcements": {
+        "english": "Telemetry Announcements",
+        "translation": "Annonces de telemetrie",
+        "needs_translation": "false"
+      }
+    },
     "validate_sensors": {
       "help_p1": {
         "english": "This tool attempts to list all the sensors that you are not receiving in a concise list.",
@@ -1577,6 +1589,11 @@
       "cell_count": {
         "english": "Cell Count",
         "translation": "Nombre de cellules",
+        "needs_translation": "false"
+      },
+      "consumption_warning_percentage": {
+        "english": "Consumption Warning %",
+        "translation": "Avert. conso %",
         "needs_translation": "false"
       }
     },

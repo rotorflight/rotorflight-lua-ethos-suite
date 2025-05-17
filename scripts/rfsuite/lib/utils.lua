@@ -23,6 +23,7 @@ local utils = {}
 local arg = {...}
 local config = arg[1]
 
+
 function utils.createCacheFile(tbl, path, options)
 
     os.mkdir("cache")
@@ -552,7 +553,7 @@ end
 -- @usage
 -- utils.logMsp("MSP_STATUS", "read", {0x01, 0x02, 0x03}, nil)
 function utils.logMsp(cmd, rwState, buf, err)
-    if rfsuite.config.logMSP then
+    if rfsuite.preferences.developer.logmsp then
         local payload = rfsuite.utils.joinTableItems(buf, ", ")
         rfsuite.utils.log(rwState .. " [" .. cmd .. "]" .. " {" .. payload .. "}", "info")
         if err then
@@ -582,7 +583,7 @@ end
 
 function utils.reportMemoryUsage(location)
 
-    if config.logMemoryUsage == false then
+    if rfsuite.preferences.developer.memstats == false then
         return
     end
 

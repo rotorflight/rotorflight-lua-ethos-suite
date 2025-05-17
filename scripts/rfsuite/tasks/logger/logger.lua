@@ -33,9 +33,9 @@ local logger = {}
 -- The log file is named using the current date and time in the format 
 -- "logs/rfsuite_YYYY-MM-DD_HH-MM-SS.log".
 -- 
--- The minimum print level for logging is set from `config.logLevel`.
+-- The minimum print level for logging is set from `rfsuite.preferences.developer.loglevel`.
 -- 
--- The option to log to a file is set from `config.logToFile`.
+-- The option to log to a file is set from `preferences.developer.logtofile`.
 -- 
 -- If the system is running in simulation mode, the log print interval is 
 -- set to 0.1 seconds.
@@ -45,8 +45,8 @@ os.mkdir("LOGS:/rfsuite")
 os.mkdir("LOGS:/rfsuite/logs")
 logger.queue = assert(rfsuite.compiler.loadfile("tasks/logger/lib/log.lua"))(config)
 logger.queue.config.log_file = "LOGS:/rfsuite/logs/rfsuite_" .. os.date("%Y-%m-%d_%H-%M-%S") .. ".log"
-logger.queue.config.min_print_level  = rfsuite.config.logLevel
-logger.queue.config.log_to_file = rfsuite.config.logToFile
+logger.queue.config.min_print_level  = rfsuite.preferences.developer.loglevel
+logger.queue.config.log_to_file = tostring(rfsuite.preferences.developer.logtofile)
 
 
 function logger.wakeup()
@@ -58,6 +58,8 @@ function logger.reset()
 end
 
 function logger.add(message, level)
+    logger.queue.config.min_print_level  = rfsuite.preferences.developer.loglevel
+    logger.queue.config.log_to_file  = tostring(rfsuite.preferences.developer.logtofile)
     logger.queue.add(message,level)
 end
 

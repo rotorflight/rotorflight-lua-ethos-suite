@@ -54,7 +54,7 @@ local function mixerOn(self)
         rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 0)
         rfsuite.tasks.msp.mspQueue:add(message)
 
-        if rfsuite.config.logMSP then
+        if rfsuite.preferences.developer.logmsp then
             local logData = "mixerOn: {" .. rfsuite.utils.joinTableItems(message.payload, ", ") .. "}"
             rfsuite.utils.log(logData,"info")
         end
@@ -79,7 +79,7 @@ local function mixerOff(self)
         rfsuite.tasks.msp.mspHelper.writeU16(message.payload, 2501)
         rfsuite.tasks.msp.mspQueue:add(message)
 
-        if rfsuite.config.logMSP then
+        if rfsuite.preferences.developer.logmsp then
             local logData = "mixerOff: {" .. rfsuite.utils.joinTableItems(message.payload, ", ") .. "}"
             rfsuite.utils.log(logData,"info")
         end

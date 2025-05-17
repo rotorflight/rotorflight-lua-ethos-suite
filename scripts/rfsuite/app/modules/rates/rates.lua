@@ -12,7 +12,7 @@ tables[4] = "app/modules/rates/ratetables/actual.lua"
 tables[5] = "app/modules/rates/ratetables/quick.lua"
 
 if rfsuite.session.activeRateTable == nil then 
-    rfsuite.session.activeRateTable = rfsuite.preferences.defaultRateProfile 
+    rfsuite.session.activeRateTable = rfsuite.config.defaultRateProfile 
 end
 
 

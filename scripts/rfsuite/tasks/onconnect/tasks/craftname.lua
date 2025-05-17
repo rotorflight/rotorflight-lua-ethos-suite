@@ -27,7 +27,7 @@ function craftname.wakeup()
         local API = rfsuite.tasks.msp.api.load("NAME")
         API.setCompleteHandler(function(self, buf)
             rfsuite.session.craftName = API.readValue("name")
-            if rfsuite.preferences.syncCraftName == true and model.name and rfsuite.session.craftName ~= nil then
+            if rfsuite.preferences.general.syncname == true and model.name and rfsuite.session.craftName ~= nil then
                 rfsuite.utils.log("Setting model name to: " .. rfsuite.session.craftName, "info")
                 model.name(rfsuite.session.craftName)
                 lcd.invalidate()

@@ -248,10 +248,10 @@ local adjfuncAdjJustUp = false
     - adjfuncAdjFunctionSrc: Source for adjFunction sensor.
     - adjfuncAdjValueSrc: Source for adjValue sensor.
     - adjfuncAdjValue: Current value of adjValue sensor.
-    - adjfunc.adjFunction: Current value of adjFunction sensor.
+    - adjfuncAdjFunction: Current value of adjFunction sensor.
     - adjfuncAdjValueOld: Previous value of adjValue sensor.
     - adjfuncAdjFunctionOld: Previous value of adjFunction sensor.
-    - adjfunc.adjfuncIdChanged: Flag indicating if adjFunction has changed.
+    - adjfuncAdjfuncIdChanged: Flag indicating if adjFunction has changed.
     - adjfuncAdjfuncValueChanged: Flag indicating if adjValue has changed.
     - adjfuncAdjJustUp: Flag indicating if adjFunction was just activated.
     - adjfuncAdjJustUpCounter: Counter for adjJustUp state.
@@ -261,8 +261,7 @@ local adjfuncAdjJustUp = false
 function adjfunc.wakeup()
 
     -- do not run the remaining code
-    if rfsuite.preferences.adjFunctionAlerts == false and rfsuite.preferences.adjValueAlerts == false then return end
-
+    if rfsuite.preferences.announcements.adj_f == false and rfsuite.preferences.announcements.adj_v == false then return end
 
     if (os.clock() - initTime) < 5  then return end
 
@@ -276,7 +275,7 @@ function adjfunc.wakeup()
         adjfuncAdjFunction = adjfuncAdjFunctionSrc:value()
 
         if adjfuncAdjValue ~= nil then if type(adjfuncAdjValue) == "number" then adjfuncAdjValue = math.floor(adjfuncAdjValue) end end
-        if adjfuncAdjFunction ~= nil then if type(adjfunc.adjFunction) == "number" then adjfuncAdjFunction = math.floor(adjfunc.adjFunction) end end
+        if adjfuncAdjFunction ~= nil then if type(adjfuncAdjFunction) == "number" then adjfuncAdjFunction = math.floor(adjfuncAdjFunction) end end
 
         if adjfuncAdjFunction ~= adjfuncAdjFunctionOld then adjfuncAdjfuncIdChanged = true end
         if adjfuncAdjValue ~= adjfuncAdjValueOld then adjfuncAdjfuncValueChanged = true end
@@ -292,16 +291,24 @@ function adjfunc.wakeup()
             if adjfuncAdjFunction ~= 0 then
                 adjfuncAdjJustUpCounter = 0
                 if (os.clock() - adjfuncAdjTimer >= 2) then
+
                     if adjfuncAdjfuncIdChanged == true then
 
-                        local tgt = "id" .. tostring(adjfunc.adjFunction)
+                        local tgt = "id" .. tostring(adjfuncAdjFunction)
+         
                         local adjfunction = adjFunctionsTable[tgt]
-                        if adjfunction ~= nil and firstRun == false then for wavi, wavv in ipairs(adjfunction.wavs) do if rfsuite.preferences.adjFunctionAlerts == true then rfsuite.utils.playFile("adjfunctions", wavv .. ".wav") end end end
+                        if adjfunction ~= nil and firstRun == false then 
+                            for wavi, wavv in ipairs(adjfunction.wavs) do 
+                                if rfsuite.preferences.announcements.adj_f == true then 
+                                    rfsuite.utils.playFile("adjfunctions", wavv .. ".wav") 
+                                end 
+                            end 
+                        end
                         adjfuncAdjfuncIdChanged = false
                     end
                     if adjfuncAdjfuncValueChanged == true or adjfuncAdjfuncIdChanged == true then
 
-                        if adjfuncAdjValue ~= nil and firstRun == false then if rfsuite.preferences.adjValueAlerts == true then system.playNumber(adjfuncAdjValue) end end
+                        if adjfuncAdjValue ~= nil and firstRun == false then if rfsuite.preferences.announcements.adj_v == true then system.playNumber(adjfuncAdjValue) end end
 
                         adjfuncAdjfuncValueChanged = false
 
@@ -313,7 +320,7 @@ function adjfunc.wakeup()
         end
 
         adjfuncAdjValueOld = adjfuncAdjValue
-        adjfuncAdjFunctionOld = adjfunc.adjFunction
+        adjfuncAdjFunctionOld = adjfuncAdjFunction
 
     end
 end

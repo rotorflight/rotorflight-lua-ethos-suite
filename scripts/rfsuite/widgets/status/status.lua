@@ -1866,6 +1866,7 @@ local function playVoltage(widget)
     end
 end
 
+--[[
 local function playGovernor()
     if not status.governorAlertsParam then return end
 
@@ -1902,7 +1903,9 @@ local function playGovernor()
         end
     end
 end
+]]
 
+--[[
 local function playRPMDiff()
     if not status.rpmAlertsParam then return end
 
@@ -1944,6 +1947,7 @@ local function playRPMDiff()
         system.playNumber(currentRPM, UNIT_RPM, 2)
     end
 end
+]]
 
 function status.event(widget, category, value, x, y)
 
@@ -2001,9 +2005,9 @@ local function wakeupUI(widget)
                 -- voltage alerts
                 playVoltage(widget)
                 -- governor callouts
-                playGovernor(widget)
+                --playGovernor(widget)
                 -- rpm diff
-                playRPMDiff(widget)
+                --playRPMDiff(widget)
                 -- rpm
                 playRPM(widget)
                 -- current
@@ -2021,6 +2025,7 @@ local function wakeupUI(widget)
                 -- timer alarm
                 playTIMERALARM(widget)
 
+                --[[
                 if ((tonumber(os.clock()) - tonumber(status.linkUPTime)) >= 10) then
 
                     -- IDLE
@@ -2128,6 +2133,7 @@ local function wakeupUI(widget)
                     end
 
                 end
+                ]]
 
                 ---
                 -- TIME
@@ -2158,6 +2164,7 @@ local function wakeupUI(widget)
 
                 -- LOW FUEL ALERTS
                 -- big conditional to announcement status.lfTimer if needed
+                --[[
                 if status.linkUP == true then
                     if status.idleupswitchParam ~= nil then
                         if status.idleupswitchParam:state() then
@@ -2202,9 +2209,11 @@ local function wakeupUI(widget)
                     -- stop timer
                     status.lfTimerStart = nil
                 end
+                ]]
 
                 -- LOW VOLTAGE ALERTS
                 -- big conditional to announcement status.lvTimer if needed
+                --[[
                 if status.linkUP == true then
 
                     if status.idleupswitchParam ~= nil then
@@ -2252,6 +2261,7 @@ local function wakeupUI(widget)
                     status.lvTimerStart = nil
                 end
                 ---
+                ]]
 
             else
                 status.adjJUSTUP = true
@@ -2367,6 +2377,7 @@ function status.configure(widget)
         status.timeralarmVibrateParam = newValue
     end)
 
+    --[[
     local batterypanel = form.addExpansionPanel(i18n.get("widgets.status.txt_battery_configuration"))
     batterypanel:open(false)
 
@@ -2462,7 +2473,9 @@ function status.configure(widget)
     else
         plalrthap:enable(true)
     end
+    --]]
 
+    --[[
     local switchpanel = form.addExpansionPanel(i18n.get("widgets.status.txt_switch_announcements"))
     switchpanel:open(false)
 
@@ -2535,6 +2548,7 @@ function status.configure(widget)
     end, function(value)
         status.switchbbloffParam = value
     end)
+    ]]
 
     local announcementpanel = form.addExpansionPanel(i18n.get("widgets.status.txt_telemetry_announcements"))
     announcementpanel:open(false)
@@ -2603,6 +2617,7 @@ function status.configure(widget)
         status.announcementTimerSwitchParam = value
     end)
 
+    --[[
     local govalertpanel = form.addExpansionPanel(i18n.get("widgets.status.txt_governor_announcements"))
     govalertpanel:open(false)
 
@@ -2692,6 +2707,7 @@ function status.configure(widget)
     end, function(newValue)
         status.governorUNKNOWNParam = newValue
     end)
+    ]]
 
     local displaypanel = form.addExpansionPanel(i18n.get("widgets.status.txt_customise_display"))
     displaypanel:open(false)
@@ -2784,12 +2800,14 @@ function status.configure(widget)
     local advpanel = form.addExpansionPanel(i18n.get("widgets.status.txt_advanced"))
     advpanel:open(false)
 
+    --[[
     line = advpanel:addLine(i18n.get("widgets.status.txt_governor"))
     extgov = form.addChoiceField(line, nil, {{i18n.get("widgets.status.txt_rfgovernor"), 0}, {i18n.get("widgets.status.txt_extgovernor"), 1}}, function()
         return status.govmodeParam
     end, function(newValue)
         status.govmodeParam = newValue
     end)
+    ]]
 
     line = form.addLine(i18n.get("widgets.status.txt_tempconversion"), advpanel)
 
@@ -2807,58 +2825,8 @@ function status.configure(widget)
         status.tempconvertParamMCU = newValue
     end)
 
-    line = form.addLine(i18n.get("widgets.status.txt_voltage"), advpanel)
-
-    -- LVannouncement DISPLAY
-    line = advpanel:addLine("    " .. i18n.get("widgets.status.txt_sensitivity"))
-    form.addChoiceField(line, nil, {{i18n.get("widgets.status.txt_high"), 1}, {i18n.get("widgets.status.txt_medium"), 2}, {i18n.get("widgets.status.txt_low"), 3}}, function()
-        return status.lowvoltagsenseParam
-    end, function(newValue)
-        status.lowvoltagsenseParam = newValue
-    end)
-
-    line = advpanel:addLine("    " .. i18n.get("widgets.status.txt_sagcompensation"))
-    field = form.addNumberField(line, nil, 0, 10, function()
-        return status.sagParam
-    end, function(value)
-        status.sagParam = value
-    end)
-    field:default(5)
-    field:suffix("s")
-    -- field:decimals(1)
-
-    -- LVSTICK MONITORING
-    line = advpanel:addLine("    " .. i18n.get("widgets.status.txt_gimbalmonitoring"))
-    form.addChoiceField(line, nil, {{i18n.get("widgets.status.txt_disabled"):upper(), 0}, -- 
-    {"AECR1T23 (ELRS)", 1}, -- recomended
-    {"AETRC123 (FRSKY)", 2}, -- frsky
-    {"AETR1C23 (FUTABA)", 3}, -- fut/hitec
-    {"TAER1C23 (SPEKTRUM)", 4} -- spec
-    }, function()
-        return status.lowvoltagStickParam
-    end, function(newValue)
-        if newValue == 0 then
-            fieldstckcutoff:enable(false)
-        else
-            fieldstckcutoff:enable(true)
-        end
-        status.lowvoltagStickParam = newValue
-    end)
-
-    line = advpanel:addLine("       " .. i18n.get("widgets.status.txt_stickcutoff"))
-    fieldstckcutoff = form.addNumberField(line, nil, 65, 95, function()
-        return status.lowvoltagStickCutoffParam
-    end, function(value)
-        status.lowvoltagStickCutoffParam = value
-    end)
-    fieldstckcutoff:default(80)
-    fieldstckcutoff:suffix("%")
-    if status.lowvoltagStickParam == 0 then
-        fieldstckcutoff:enable(false)
-    else
-        fieldstckcutoff:enable(true)
-    end
-
+    
+    --[[
     line = form.addLine(i18n.get("widgets.status.txt_headspeed"), advpanel)
 
     -- TITLE DISPLAY
@@ -2890,7 +2858,7 @@ function status.configure(widget)
     rpmperfield:default(100)
     rpmperfield:decimals(1)
     rpmperfield:suffix("%")
-
+]]
     --[[
     -- FILTER
     -- MAX MIN DISPLAY
@@ -2903,13 +2871,14 @@ function status.configure(widget)
     ]] --
 
     -- LVannouncement DISPLAY
+    --[[
     line = advpanel:addLine(i18n.get("widgets.status.txt_announcement_interval"))
     form.addChoiceField(line, nil, {{"5s", 5}, {"10s", 10}, {"15s", 15}, {"20s", 20}, {"25s", 25}, {"30s", 30}, {"35s", 35}, {"40s", 40}, {"45s", 45}, {"50s", 50}, {"55s", 55}, {"60s", 60}, {i18n.get("widgets.status.txt_norepeat"), 50000}}, function()
         return status.announcementIntervalParam
     end, function(newValue)
         status.announcementIntervalParam = newValue
     end)
-
+    ]]--
     -- calcfuel
     line = advpanel:addLine(i18n.get("widgets.status.txt_calcfuel_local"))
     form.addBooleanField(line, nil, function()

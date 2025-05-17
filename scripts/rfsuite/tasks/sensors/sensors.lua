@@ -49,17 +49,17 @@ local function loadSensorModule()
 
     local protocol = rfsuite.tasks.msp.protocol.mspProtocol
 
-    if system:getVersion().simulation == true and rfsuite.preferences.internalSimSensors == true then
+    if system:getVersion().simulation == true then
         if not loadedSensorModule or loadedSensorModule.name ~= "sim" then
             --rfsuite.utils.log("Loading Simulator sensor module","info")
             loadedSensorModule = {name = "sim", module = assert(rfsuite.compiler.loadfile("tasks/sensors/sim.lua"))(config)}
         end   
-    elseif protocol == "crsf" and rfsuite.preferences.internalElrsSensors then
+    elseif protocol == "crsf" then
         if not loadedSensorModule or loadedSensorModule.name ~= "elrs" then
             --rfsuite.utils.log("Loading ELRS sensor module","info")
             loadedSensorModule = {name = "elrs", module = assert(rfsuite.compiler.loadfile("tasks/sensors/elrs.lua"))(config)}
         end
-    elseif protocol == "sport" and rfsuite.preferences.internalSportSensors then
+    elseif protocol == "sport" then
         if rfsuite.utils.round(rfsuite.session.apiVersion,2) >= 12.08 then
             if not loadedSensorModule or loadedSensorModule.name ~= "frsky" then
                 --rfsuite.utils.log("Loading FrSky sensor module","info")

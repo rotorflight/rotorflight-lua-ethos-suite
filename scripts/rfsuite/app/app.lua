@@ -179,9 +179,6 @@ app.offlineMode = false
 
 --[[
 app.audio: Table containing boolean flags for various audio states.
-    - playDemo: Flag to indicate if demo audio should be played.
-    - playConnecting: Flag to indicate if connecting audio should be played.
-    - playConnected: Flag to indicate if connected audio should be played.
     - playTimeout: Flag to indicate if timeout audio should be played.
     - playSaving: Flag to indicate if saving audio should be played.
     - playLoading: Flag to indicate if loading audio should be played.
@@ -194,12 +191,7 @@ app.audio: Table containing boolean flags for various audio states.
 
 ]]
 app.audio = {}
-app.audio.playDemo = false
-app.audio.playConnecting = false
-app.audio.playConnected = false
 app.audio.playTimeout = false
-app.audio.playSaving = false
-app.audio.playLoading = false
 app.audio.playEscPowerCycle = false
 app.audio.playServoOverideDisable = false
 app.audio.playServoOverideEnable = false
@@ -294,7 +286,6 @@ app.dialogs.badversionDisplay = false
         number - The RSSI value (100 or 0).
 ]]
 function app.getRSSI()
-    --if system:getVersion().simulation == true or rfsuite.preferences.skipRssiSensorCheck == true or app.offlineMode == true then return 100 end
     if app.offlineMode == true then return 100 end
 
 
@@ -399,7 +390,7 @@ local mspEepromWrite = {
     errorHandler = function(self)
         app.triggers.closeSave = true
         app.audio.playSaveArmed = true
-        if rfsuite.preferences.saveWhenArmedWarning == true then app.triggers.showSaveArmedWarning = true end
+        app.triggers.showSaveArmedWarning = true
     end,
     simulatorResponse = {}
 }
@@ -1084,8 +1075,6 @@ function app.wakeupUI()
 
                 app.ui.progressDisplaySaveClose()
 
-                if rfsuite.preferences.reloadOnSave == true then app.triggers.triggerReloadNoPrompt = true end
-
             end
         end
     end
@@ -1109,7 +1098,7 @@ function app.wakeupUI()
     end
 
     -- profile switching - trigger a reload when profile changes
-    if rfsuite.preferences.profileSwitching == true and app.Page ~= nil and (app.Page.refreshOnProfileChange == true or app.Page.refreshOnRateChange == true or app.Page.refreshFullOnProfileChange == true or app.Page.refreshFullOnRateChange == true) and app.uiState == app.uiStatus.pages and app.triggers.isSaving == false and rfsuite.app.dialogs.saveDisplay ~= true and rfsuite.app.dialogs.progressDisplay ~= true and rfsuite.tasks.msp.mspQueue:isProcessed() then
+    if app.Page ~= nil and (app.Page.refreshOnProfileChange == true or app.Page.refreshOnRateChange == true or app.Page.refreshFullOnProfileChange == true or app.Page.refreshFullOnRateChange == true) and app.uiState == app.uiStatus.pages and app.triggers.isSaving == false and rfsuite.app.dialogs.saveDisplay ~= true and rfsuite.app.dialogs.progressDisplay ~= true and rfsuite.tasks.msp.mspQueue:isProcessed() then
 
         local now = os.clock()
         local profileCheckInterval
@@ -1254,7 +1243,7 @@ function app.wakeupUI()
     -- display a warning if we trigger one of these events
     -- we only show this if we are on an actual form for a page.
     -- a watchdog to enable the close button when saving data if we exheed the save timout
-    if rfsuite.preferences.watchdogParam ~= nil and rfsuite.preferences.watchdogParam ~= 1 then app.protocol.saveTimeout = rfsuite.preferences.watchdogParam end
+    if rfsuite.config.watchdogParam ~= nil and rfsuite.config.watchdogParam ~= 1 then app.protocol.saveTimeout = rfsuite.config.watchdogParam end
     if app.dialogs.saveDisplay == true then
         if app.dialogs.saveWatchDog ~= nil then
             if (os.clock() - app.dialogs.saveWatchDog) > (tonumber(app.protocol.saveTimeout + 5)) or (app.dialogs.saveProgressCounter > 120 and rfsuite.tasks.msp.mspQueue:isProcessed()) then
@@ -1301,8 +1290,6 @@ function app.wakeupUI()
         local buttons = {{
             label = rfsuite.i18n.get("app.btn_ok"),
             action = function()
-
-                app.audio.playSaving = true
 
                 -- we have to fake a save dialog in sim as its not actually possible 
                 -- to save in sim!
@@ -1454,23 +1441,22 @@ function app.wakeupUI()
         end
     end
 
-    -- after saving show brief warning if armed (we only show this if feature it turned on as default option is to not allow save when armed for safety.
-    if rfsuite.preferences.saveWhenArmedWarning == true then
-        if app.triggers.showSaveArmedWarning == true and app.triggers.closeSave == false then
-            if app.dialogs.progressDisplay == false then
-                app.dialogs.progressCounter = 0
-                if rfsuite.session.apiVersion >= 12.08 then
-                    app.ui.progressDisplay(rfsuite.i18n.get("app.msg_save_not_commited"), rfsuite.i18n.get("app.msg_please_disarm_to_save_warning"))
-                else    
-                    app.ui.progressDisplay(rfsuite.i18n.get("app.msg_save_not_commited"), rfsuite.i18n.get("app.msg_please_disarm_to_save"))
-                end    
-            end
-            if app.dialogs.progressCounter >= 100 then
-                app.triggers.showSaveArmedWarning = false
-                app.ui.progressDisplayClose()
-            end
+    -- after saving show brief warning if armed 
+    if app.triggers.showSaveArmedWarning == true and app.triggers.closeSave == false then
+        if app.dialogs.progressDisplay == false then
+            app.dialogs.progressCounter = 0
+            if rfsuite.session.apiVersion >= 12.08 then
+                app.ui.progressDisplay(rfsuite.i18n.get("app.msg_save_not_commited"), rfsuite.i18n.get("app.msg_please_disarm_to_save_warning"))
+            else    
+                app.ui.progressDisplay(rfsuite.i18n.get("app.msg_save_not_commited"), rfsuite.i18n.get("app.msg_please_disarm_to_save"))
+            end    
+        end
+        if app.dialogs.progressCounter >= 100 then
+            app.triggers.showSaveArmedWarning = false
+            app.ui.progressDisplayClose()
         end
     end
+
 
     -- check we have telemetry
     app.updateTelemetryState()
@@ -1517,95 +1503,51 @@ function app.wakeupUI()
 
     -- play audio
     -- alerts 
-    if rfsuite.preferences.audioAlerts == 0 or rfsuite.preferences.audioAlerts == 1 then
+    if app.audio.playEraseFlash == true then
+        rfsuite.utils.playFile("app", "eraseflash.wav")
+        app.audio.playEraseFlash = false
+    end
 
-        if app.audio.playEraseFlash == true then
-            rfsuite.utils.playFile("app", "eraseflash.wav")
-            app.audio.playEraseFlash = false
-        end
-
-        if app.audio.playConnected == true then
-            rfsuite.utils.playFile("app", "connected.wav")
-            app.audio.playConnected = false
-        end
-
-        if app.audio.playConnecting == true then
-            rfsuite.utils.playFile("app", "connecting.wav")
-            app.audio.playConnecting = false
-        end
-
-        if app.audio.playDemo == true then
-            rfsuite.utils.playFile("app", "demo.wav")
-            app.audio.playDemo = false
-        end
-
-        if app.audio.playTimeout == true then
-            rfsuite.utils.playFile("app", "timeout.wav")
-            app.audio.playTimeout = false
-        end
-
-        if app.audio.playEscPowerCycle == true then
-            rfsuite.utils.playFile("app", "powercycleesc.wav")
-            app.audio.playEscPowerCycle = false
-        end
-
-        if app.audio.playServoOverideEnable == true then
-            rfsuite.utils.playFile("app", "soverideen.wav")
-            app.audio.playServoOverideEnable = false
-        end
-
-        if app.audio.playServoOverideDisable == true then
-            rfsuite.utils.playFile("app", "soveridedis.wav")
-            app.audio.playServoOverideDisable = false
-        end
-
-        if app.audio.playMixerOverideEnable == true then
-            rfsuite.utils.playFile("app", "moverideen.wav")
-            app.audio.playMixerOverideEnable = false
-        end
-
-        if app.audio.playMixerOverideDisable == true then
-            rfsuite.utils.playFile("app", "moveridedis.wav")
-            app.audio.playMixerOverideDisable = false
-        end
-
-        if app.audio.playSaving == true and rfsuite.preferences.audioAlerts == 0 then
-            rfsuite.utils.playFile("app", "saving.wav")
-            app.audio.playSaving = false
-        end
-
-        if app.audio.playLoading == true and rfsuite.preferences.audioAlerts == 0 then
-            rfsuite.utils.playFile("app", "loading.wav")
-            app.audio.playLoading = false
-        end
-
-        if app.audio.playSave == true then
-            rfsuite.utils.playFile("app", "save.wav")
-            app.audio.playSave = false
-        end
-
-        if app.audio.playSaveArmed == true then
-            rfsuite.utils.playFileCommon("warn.wav")
-            app.audio.playSaveArmed = false
-        end
-
-        if app.audio.playBufferWarn == true then
-            rfsuite.utils.playFileCommon("warn.wav")
-            app.audio.playBufferWarn = false
-        end
-
-
-    else
-        app.audio.playLoading = false
-        app.audio.playSaving = false
+    if app.audio.playTimeout == true then
+        rfsuite.utils.playFile("app", "timeout.wav")
         app.audio.playTimeout = false
-        app.audio.playDemo = false
-        app.audio.playConnecting = false
-        app.audio.playConnected = false
+    end
+
+    if app.audio.playEscPowerCycle == true then
+        rfsuite.utils.playFile("app", "powercycleesc.wav")
         app.audio.playEscPowerCycle = false
-        app.audio.playServoOverideDisable = false
+    end
+
+    if app.audio.playServoOverideEnable == true then
+        rfsuite.utils.playFile("app", "soverideen.wav")
         app.audio.playServoOverideEnable = false
     end
+
+    if app.audio.playServoOverideDisable == true then
+        rfsuite.utils.playFile("app", "soveridedis.wav")
+        app.audio.playServoOverideDisable = false
+    end
+
+    if app.audio.playMixerOverideEnable == true then
+        rfsuite.utils.playFile("app", "moverideen.wav")
+        app.audio.playMixerOverideEnable = false
+    end
+
+    if app.audio.playMixerOverideDisable == true then
+        rfsuite.utils.playFile("app", "moveridedis.wav")
+        app.audio.playMixerOverideDisable = false
+    end
+
+    if app.audio.playSaveArmed == true then
+        rfsuite.utils.playFileCommon("warn.wav")
+        app.audio.playSaveArmed = false
+    end
+
+    if app.audio.playBufferWarn == true then
+        rfsuite.utils.playFileCommon("warn.wav")
+        app.audio.playBufferWarn = false
+    end
+
 
 end
 
@@ -1626,13 +1568,13 @@ function app.create_logtool()
     config.ethosRunningVersion = {config.environment.major, config.environment.minor, config.environment.revision}
 
     rfsuite.session.lcdWidth, rfsuite.session.lcdHeight = rfsuite.utils.getWindowSize()
-    app.radio = assert(rfsuite.compiler.loadfile("app/radios.lua"))().msp
+    app.radio = assert(rfsuite.compiler.loadfile("app/radios.lua"))()
 
     app.uiState = app.uiStatus.init
 
     -- override developermode if file exists.
-    if not rfsuite.config.developerMode and rfsuite.utils.file_exists("../developermode") then
-        rfsuite.config.developerMode = true
+    if not rfsuite.preferences.developer.devtools and rfsuite.utils.file_exists("../developermode") then
+        rfsuite.preferences.developer.devtools = true
     end
 
     rfsuite.app.menuLastSelected["mainmenu"] = pidx
@@ -1664,13 +1606,13 @@ function app.create()
     config.ethosRunningVersion = {config.environment.major, config.environment.minor, config.environment.revision}
 
     rfsuite.session.lcdWidth, rfsuite.session.lcdHeight = rfsuite.utils.getWindowSize()
-    app.radio = assert(rfsuite.compiler.loadfile("app/radios.lua"))().msp
+    app.radio = assert(rfsuite.compiler.loadfile("app/radios.lua"))()
 
     app.uiState = app.uiStatus.init
 
     -- override developermode if file exists.
-    if not rfsuite.config.developerMode and rfsuite.utils.file_exists("../developermode") then
-        rfsuite.config.developerMode = true
+    if not rfsuite.preferences.developer.devtools and rfsuite.utils.file_exists("../developermode") then
+        rfsuite.preferences.developer.devtools = true
     end
 
     app.ui.openMainMenu()
