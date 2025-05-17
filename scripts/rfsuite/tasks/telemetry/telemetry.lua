@@ -36,6 +36,8 @@ local CACHE_FLUSH_INTERVAL = 5 -- Flush cache every 5 seconds
 
 local telemetryState = false
 
+local sensorStats = {}
+
 -- Predefined sensor mappings
 --[[
 sensorTable: A table containing various telemetry sensor configurations for different protocols (sport, crsf, crsfLegacy).
@@ -46,6 +48,7 @@ Each sensor configuration includes:
 - sport: A table of sensor configurations for the sport protocol.
 - crsf: A table of sensor configurations for the crsf protocol.
 - crsfLegacy: A table of sensor configurations for the crsfLegacy protocol.
+- maxmin_trigger: A function to determine if min/max tracking should be active.
 
 Sensors included:
 - RSSI Sensors (rssi)
@@ -70,6 +73,7 @@ local sensorTable = {
     rssi = {
         name = rfsuite.i18n.get("telemetry.sensors.rssi"),
         mandatory = true,
+        maxmin_trigger = nil,
         sensors = {
             sim = {
                 { appId = 0xF101, subId = 0 },
@@ -95,6 +99,7 @@ local sensorTable = {
     armflags = {
         name = rfsuite.i18n.get("telemetry.sensors.arming_flags"),
         mandatory = true,
+        maxmin_trigger = nil,
         set_telemetry_sensors = 90,
         sensors = {
             sim = {
@@ -117,6 +122,7 @@ local sensorTable = {
     voltage = {
         name = rfsuite.i18n.get("telemetry.sensors.voltage"),
         mandatory = true,
+        maxmin_trigger = nil,
         set_telemetry_sensors = 3,
         sensors = {
             sim = {
@@ -144,6 +150,7 @@ local sensorTable = {
     rpm = {
         name = rfsuite.i18n.get("telemetry.sensors.headspeed"),
         mandatory = true,
+        maxmin_trigger = nil,
         set_telemetry_sensors = 60,
         sensors = {
             sim = {
@@ -165,6 +172,7 @@ local sensorTable = {
     current = {
         name = rfsuite.i18n.get("telemetry.sensors.current"),
         mandatory = false,
+        maxmin_trigger = nil,
         set_telemetry_sensors = 18,
         sensors = {
             sim = {
@@ -190,6 +198,7 @@ local sensorTable = {
     temp_esc = {
         name = rfsuite.i18n.get("telemetry.sensors.esc_temp"),
         mandatory = false,
+        maxmin_trigger = nil,
         set_telemetry_sensors = 23,
         sensors = {
             sim = {
@@ -213,6 +222,7 @@ local sensorTable = {
     temp_mcu = {
         name = rfsuite.i18n.get("telemetry.sensors.mcu_temp"),
         mandatory = false,
+        maxmin_trigger = nil,
         set_telemetry_sensors = 52,
         sensors = {
             sim = {
@@ -235,6 +245,7 @@ local sensorTable = {
     fuel = {
         name = rfsuite.i18n.get("telemetry.sensors.fuel"),
         mandatory = false,
+        maxmin_trigger = nil,
         set_telemetry_sensors = 6,
         sensors = {
             sim = {
@@ -255,6 +266,7 @@ local sensorTable = {
     consumption = {
         name = rfsuite.i18n.get("telemetry.sensors.consumption"),
         mandatory = true,
+        maxmin_trigger = nil,
         set_telemetry_sensors = 5,
         sensors = {
             sim = {
@@ -276,6 +288,7 @@ local sensorTable = {
     governor = {
         name = rfsuite.i18n.get("telemetry.sensors.governor"),
         mandatory = true,
+        maxmin_trigger = nil,
         set_telemetry_sensors = 93,
         sensors = {
             sim = {
@@ -298,6 +311,7 @@ local sensorTable = {
     adj_f = {
         name = rfsuite.i18n.get("telemetry.sensors.adj_func"),
         mandatory = true,
+        maxmin_trigger = nil,
         set_telemetry_sensors = 99,
         sensors = {
             sim = {
@@ -318,6 +332,7 @@ local sensorTable = {
     adj_v = {
         name = rfsuite.i18n.get("telemetry.sensors.adj_val"),
         mandatory = true,
+        maxmin_trigger = nil,
         -- grouped with adj_f, so no set_telemetry_sensors here
         sensors = {
             sim = {
@@ -339,6 +354,7 @@ local sensorTable = {
     pid_profile = {
         name = rfsuite.i18n.get("telemetry.sensors.pid_profile"),
         mandatory = true,
+        maxmin_trigger = nil,
         set_telemetry_sensors = 95,
         sensors = {
             sim = {
@@ -360,6 +376,7 @@ local sensorTable = {
     rate_profile = {
         name = rfsuite.i18n.get("telemetry.sensors.rate_profile"),
         mandatory = true,
+        maxmin_trigger = nil,
         set_telemetry_sensors = 96,
         sensors = {
             sim = {
@@ -382,6 +399,7 @@ local sensorTable = {
     throttle_percent = {
         name = rfsuite.i18n.get("telemetry.sensors.throttle_pct"),
         mandatory = true,
+        maxmin_trigger = nil,
         set_telemetry_sensors = 15,
         sensors = {
             sim = {
@@ -405,6 +423,7 @@ local sensorTable = {
     armdisableflags = {
         name = rfsuite.i18n.get("telemetry.sensors.armdisableflags"),
         mandatory = true,
+        maxmin_trigger = nil,
         set_telemetry_sensors = 91,
         sensors = {
             sim = {
@@ -663,6 +682,7 @@ end
 function telemetry.reset()
     telemetrySOURCE, crsfSOURCE, protocol = nil, nil, nil
     sensors = {}
+        sensorStats = {} -- Clear min/max tracking
 end
 
 --[[
@@ -691,6 +711,30 @@ function telemetry.wakeup()
         sensorRateLimit = now
     end
 
+    -- Track sensor max/min values
+    for sensorKey, sensorDef in pairs(sensorTable) do
+        local source = telemetry.getSensorSource(sensorKey)
+        if source and source:state() then
+            local val = source:value()
+            if val then
+                -- Check optional per-sensor trigger
+                local shouldTrack = false
+                if type(sensorDef.maxmin_trigger) == "function" then
+                    shouldTrack = sensorDef.maxmin_trigger()
+                else
+                    shouldTrack = rfsuite.session.isArmed == true
+                end
+
+                -- Record min/max if tracking is active
+                if shouldTrack then
+                    sensorStats[sensorKey] = sensorStats[sensorKey] or {min = math.huge, max = -math.huge}
+                    sensorStats[sensorKey].min = math.min(sensorStats[sensorKey].min, val)
+                    sensorStats[sensorKey].max = math.max(sensorStats[sensorKey].max, val)
+                end
+            end
+        end
+    end
+
     -- Periodic cache flush every 5 seconds
     if ((now - lastCacheFlushTime) >= CACHE_FLUSH_INTERVAL) or rfsuite.session.resetTelemetry == true then
         if rfsuite.session.resetTelemetry == true then
@@ -707,5 +751,9 @@ function telemetry.wakeup()
     end
 end
 
+-- retrieve min/max values for a sensor
+function telemetry.getSensorStats(sensorKey)
+    return sensorStats[sensorKey] or {min = nil, max = nil}
+end
 
 return telemetry
