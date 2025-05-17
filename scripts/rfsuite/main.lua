@@ -59,7 +59,7 @@ rfsuite.ini = assert(loadfile("lib/ini.lua"))(config) -- self contantained and n
 -- set defaults for user preferences
 local userpref_defaults ={
     general ={
-        iconsize = 1,
+        iconsize = 2,
         syncname = false,
     },
     announcements = {

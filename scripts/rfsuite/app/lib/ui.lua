@@ -538,11 +538,6 @@ function ui.fieldNumber(i)
     local formLines  = app.formLines
     local formFields = app.formFields
 
-    -- Apply radio text override once
-    if app.radio.text == 2 and f.t2 then
-        f.t = f.t2
-    end
-
     local posField, posText
 
     if f.inline and f.inline >= 1 and f.label then
