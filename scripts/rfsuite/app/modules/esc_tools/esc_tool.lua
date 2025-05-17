@@ -26,6 +26,22 @@ local modelLine
 local modelText
 local modelTextPos = {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.session.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}
 
+
+local function setESC4WayMode(id)
+
+    local target = id or 1
+
+    local API = rfsuite.tasks.msp.api.load("4WIF_ESC_FWD_PROG")
+    API.setValue("target", target)
+    API.setCompleteHandler(function(self, buf)
+        rfsuite.utils.log("4WIF mode set handler triggered", "info")
+        rfsuite.session.esc4WaySetComplete = true
+    end)
+    API.setUUID("eaeb0028-219b-4cec-9f57-3c7f74dd49ac")
+    API.write()
+end
+
+
 local function getESCDetails()
 
     if rfsuite.session.escDetails ~= nil then
@@ -41,14 +57,14 @@ local function getESCDetails()
     local message = {
         command = 217, -- MSP_STATUS
         processReply = function(self, buf)
-
-            local mspBytesCheck = 2 -- we query 2 only unless the flack to cache the init buffer is set
+            
+            local mspBytesCheck = 10 -- we query 2 only unless the flack to cache the init buffer is set
             if ESC and ESC.mspBufferCache == true then
                 mspBytesCheck = mspBytes
             end
- 
-            --if #buf >= mspBytesCheck and buf[1] == mspSignature then
-            if buf[1] == mspSignature then
+            rfsuite.utils.log("ESC Buffer size: " .. #buf,"info")
+            if #buf >= mspBytesCheck and buf[1] == mspSignature then
+            --if buf[1] == mspSignature then
                 escDetails.model = ESC.getEscModel(buf)
                 escDetails.version = ESC.getEscVersion(buf)
                 escDetails.firmware = ESC.getEscFirmware(buf)
@@ -64,9 +80,9 @@ local function getESCDetails()
                 end
 
             end
-
+            rfsuite.utils.log("Fetch esc details", "info")
         end,
-        uuid = "123e4567-e89b-12d3-b456-426614174201",
+        uuid = "123e4567-e89b-12d3-b456-426614174202",
         simulatorResponse = simulatorResponse
     }
 
@@ -123,6 +139,15 @@ local function openPage(pidx, title, script)
         paint = function()
         end,
         press = function()
+            rfsuite.session.esc4WaySet = nil
+            if powercycleLoader then powercycleLoader:close() end
+
+            if ESC.esc4way then
+                    rfsuite.session.esc4WaySet = nil
+                    rfsuite.session.esc4WaySetComplete = nil
+                    setESC4WayMode(100)
+            end
+
             rfsuite.app.ui.openPage(pidx, rfsuite.i18n.get("app.modules.esc_tools.name"), "esc_tools/esc.lua")
 
         end
@@ -254,7 +279,29 @@ end
 
 local function wakeup()
 
-    if foundESC == false and rfsuite.tasks.msp.mspQueue:isProcessed() then getESCDetails() end
+    --if rfsuite.tasks.msp.mspQueue:isProcessed() then
+        if ESC.esc4way then
+
+            -- Step 1: Set 4WIF mode if not done
+            if not rfsuite.session.esc4WaySet and not foundESC then
+                rfsuite.utils.log("ESC 4WIF mode set", "info")
+                rfsuite.session.esc4WaySet = true
+                setESC4WayMode(1)
+            end
+
+            -- Step 2: After set completes
+            if foundESC == false and rfsuite.session.esc4WaySet == true  then
+                rfsuite.utils.log("Searching for esc..", "info")
+                getESCDetails()
+            end
+
+        else
+            if foundESC == false  then
+                rfsuite.utils.log("Searching for esc..", "info")
+                getESCDetails()
+            end
+        end
+    --end
 
     -- enable the form
     if foundESC == true and foundESCupdateTag == false then
@@ -297,6 +344,7 @@ local function wakeup()
         local now = os.clock()
         if (now - powercycleLoaderRateLimit) >= 2 then
 
+            rfsuite.utils.log("Searching for esc..", "info")
             getESCDetails()
 
             powercycleLoaderRateLimit = now
@@ -336,12 +384,21 @@ local function event(widget, category, value, x, y)
     -- if close event detected go to section home page
     if category == EVT_CLOSE and value == 0 or value == 35 then
         if powercycleLoader then powercycleLoader:close() end
+
+        if ESC.esc4way then
+            rfsuite.session.esc4WaySet = nil
+            rfsuite.session.esc4WaySetComplete = nil
+            setESC4WayMode(100)
+        end
+
+
         rfsuite.app.ui.openPage(pidx, rfsuite.i18n.get("app.modules.esc_tools.name"), "esc_tools/esc.lua")
         return true
     end
 
 
 end
+
 
 return {
     openPage = openPage,
