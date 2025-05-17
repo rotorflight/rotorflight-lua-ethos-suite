@@ -2,7 +2,7 @@ local fields = {}
 local rows = {}
 local cols = {}
 
-local total_bytes = rfsuite.preferences.mspExpBytes
+local total_bytes = rfsuite.preferences.developer.mspexpbytes
 local fieldMap = {}
 
 -- Dirty flags and enable control
@@ -115,7 +115,7 @@ local function generateMSPAPI(numLabels)
 end
 
 -- Init API
-local mspapi = generateMSPAPI(rfsuite.preferences.mspExpBytes)
+local mspapi = generateMSPAPI(rfsuite.preferences.developer.mspexpbytes)
 
 -- Periodic updater (called each wakeup)
 local function periodicSync()
@@ -143,7 +143,7 @@ local function postLoad()
 
     if total_bytes ~= rfsuite.app.Page.mspapi.receivedBytesCount['EXPERIMENTAL'] then
 
-        rfsuite.preferences.mspExpBytes = rfsuite.app.Page.mspapi.receivedBytesCount['EXPERIMENTAL']
+        rfsuite.preferences.developer.mspexpbytes = rfsuite.app.Page.mspapi.receivedBytesCount['EXPERIMENTAL']
         rfsuite.app.triggers.reloadFull = true
     end
 

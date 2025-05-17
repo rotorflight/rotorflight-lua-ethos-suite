@@ -22,11 +22,6 @@ jobs:
         # Use GIT_VER set in previous step
         sed -i 's/\(config.version = {[^}]*suffix = \)"[^"]*"/\1"${{ env.GIT_VER }}"/' scripts/rfsuite/main.lua
 
-        # Set logging settings
-        sed -i 's/\(config.logLevel= \)".*"/\1"off"/' scripts/rfsuite/main.lua
-        sed -i 's/\(config.logToFile = \)[^ ]*/\1false/' scripts/rfsuite/main.lua
-        sed -i 's/\(config.logMSP = \)[^ ]*/\1false/' scripts/rfsuite/main.lua
-
         # Show updated file (for verification)
         grep 'config\.' scripts/rfsuite/main.lua
 

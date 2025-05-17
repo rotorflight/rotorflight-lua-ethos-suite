@@ -25,7 +25,7 @@ local events = {}
 local lastEventTimes = {}
 local lastValues = {}
 
-local userpref = rfsuite.userpref
+local userpref = rfsuite.preferences
 
 local telemetryStartTime = nil
 
@@ -109,6 +109,14 @@ local eventTable = {
             end,
             interval = nil,
             debounce = 0.25          
+        },
+        {
+            sensor = "adj_f",
+            event = function(value) end,
+        },
+        {
+            sensor = "adj_v",
+            event = function(value) end,
         }
     }
 }
@@ -151,7 +159,7 @@ function events.wakeup()
                         goto continue
                     end
 
-                    if not rfsuite.userpref or not rfsuite.userpref.announcements or rfsuite.userpref.announcements[key] ~= true then
+                    if not rfsuite.preferences or not rfsuite.preferences.announcements or rfsuite.preferences.announcements[key] ~= true then
                         goto continue
                     end
 

@@ -34,38 +34,11 @@ config.ethosVersion = {1, 6, 2}                                                 
 config.supportedMspApiVersion = {"12.06", "12.07","12.08"}                          -- supported msp versions
 config.simulatorApiVersionResponse = {0, 12, 8}                                     -- version of api return by simulator
 config.baseDir = "rfsuite"                                                          -- base directory for the suite. This is only used by msp api to ensure correct path
-config.logLevel= "off"                                                             -- off | info | debug [default = info]
-config.logToFile = false                                                            -- log to file [default = false] (log file is in /scripts/rfsuite/logs)
-config.logMSP = false                                                               -- log msp messages [default =  false]
-config.logMSPQueue = false                                                          -- log msp queue size [default = false]
-config.logMemoryUsage = false                                                       -- log memory usage [default = false]
-config.compilerTiming = false                                                       -- log compiler timings [default = false]
-config.userPreferences = "SCRIPTS:/rfsuite.ini"                                     -- user preferences file
+config.preferences = "SCRIPTS:/rfsuite.ini"                                         -- user preferences file
+config.defaultRateProfile = 4 -- ACTUAL                                             -- default rate table [default = 4]
+config.watchdogParam = 10                                                           -- watchdog timeout for progress boxes [default = 10]
 
 rfsuite.config = config
-
--- RotorFlight + ETHOS LUA preferences
-local preferences = {}
-
--- Configuration options that adjust behavior of the script (will be moved to a settings menu in the future)
-preferences.flightLog = true                                        -- will write a flight log into /scripts/rfsuite/logs/<modelname>/*.log
-preferences.reloadOnSave = false                                    -- trigger a reload on save [default = false]
-preferences.internalElrsSensors = true                              -- disable the integrated elrs telemetry processing [default = true]
-preferences.internalSportSensors = true                             -- disable the integrated smart port telemetry processing [default = true]
-preferences.internalSimSensors = true                               -- disable the integrated simulator telemetry processing [default = true]
-preferences.adjFunctionAlerts = false                               -- do not alert on adjfunction telemetry.  [default = false]
-preferences.adjValueAlerts = true                                   -- play adjvalue alerts if sensor changes [default = true]  
-preferences.saveWhenArmedWarning = true                             -- do not display the save when armed warning. [default = true]
-preferences.audioAlerts = 1                                         -- 0 = all, 1 = alerts, 2 = disable [default = 1]
-preferences.profileSwitching = true                                 -- enable auto profile switching [default = true]
-preferences.iconSize = 1                                            -- 0 = text, 1 = small, 2 = large [default = 1]
-preferences.syncCraftName = false                                   -- sync the craft name with the model name [default = false]
-preferences.mspExpBytes = 8                                         -- number of bytes for msp_exp [default = 8] 
-preferences.defaultRateProfile = 4 -- ACTUAL                        -- default rate table [default = 4]
-preferences.watchdogParam = 10                                      -- watchdog timeout for progress boxes [default = 10]
-preferences.spreadScheduling = true                                 -- false = all tasks run on all cycles.  true = tasks are spread over multiple cycles. [default = true]
-
-rfsuite.preferences = preferences
 
 --[[
     Loads and updates user preferences from an INI file.
@@ -76,30 +49,42 @@ rfsuite.preferences = preferences
     3. Initializes `master_ini` as an empty table.
     4. If the user preferences file exists, loads its contents into `master_ini`.
     5. Merges `master_ini` (existing preferences) with `slave_ini` (defaults) to ensure all default values are present.
-    6. Assigns the merged preferences to `rfsuite.userpref`.
+    6. Assigns the merged preferences to `rfsuite.preferences`.
     7. If the loaded preferences differ from the defaults, saves the updated preferences back to the file and logs the update.
 
     This ensures that any missing default preferences are added to the user's preferences file without overwriting existing values.
 ]]
-rfsuite.ini = assert(loadfile("lib/ini.lua"))(config) -- self contantaind and never compiled
+rfsuite.ini = assert(loadfile("lib/ini.lua"))(config) -- self contantained and never compiled
 
+-- set defaults for user preferences
 local userpref_defaults ={
+    general ={
+        iconsize = 1,
+        syncname = false,
+    },
     announcements = {
         armflags = true,
         voltage = true,
         fuel = true,
         governor = true,
         pid_profile = true,
-        rate_profile = true
+        rate_profile = true,
+        adj_v = true,
+        adj_f = false,
     },
     developer = {
-        compile = true,
-        devtools = false,
-        loglevel = "off",
+        compile = true,             -- compile the script
+        devtools = false,           -- show dev tools menu
+        logtofile = false,          -- log to file
+        loglevel = "off",           -- off, info, debug
+        logmsp = false,             -- print msp byte stream to log  
+        logmspQueue = false,        -- periodic print the msp queue size
+        memstats = false,           -- perioid print memory usage 
+        mspexpbytes = 8,
     }
 }
 
-local userpref_file = rfsuite.config.userPreferences
+local userpref_file = rfsuite.config.preferences
 local slave_ini = userpref_defaults
 local master_ini = {}
 
@@ -108,17 +93,11 @@ if rfsuite.ini.file_exists(userpref_file) then
 end
 
 local updated_ini = rfsuite.ini.merge_ini_tables(master_ini, slave_ini)
-rfsuite.userpref = updated_ini
+rfsuite.preferences = updated_ini
 
 if not rfsuite.ini.ini_tables_equal(master_ini, slave_ini) then
     rfsuite.ini.save_ini_file(userpref_file, updated_ini)
 end 
-
--- handle user preference overides.
--- these will override values set at top of this file
-rfsuite.config.developerMode = rfsuite.userpref.developer.devtools 
-rfsuite.config.compile = rfsuite.userpref.developer.compile 
-rfsuite.config.logLevel = rfsuite.userpref.developer.loglevel
 
 -- tasks
 rfsuite.config.bgTaskName = rfsuite.config.toolName .. " [Background]"              -- background task name for msp services etc

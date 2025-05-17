@@ -27,6 +27,46 @@ local function openPage(pidx, title, script)
 
     local formFieldCount = 0
 
+
+    -- general
+    local generalpanel = form.addExpansionPanel("General")
+    generalpanel:open(true)
+
+    formFieldCount = formFieldCount + 1
+    rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.session.formLineCnt] = generalpanel:addLine("Icon size")
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.session.formLineCnt], nil, 
+                                                        {{"TEXT", 0}, {"SMALL", 1}, {"LARGE", 2}},
+                                                        function() 
+                                                            if rfsuite.preferences and rfsuite.preferences.general then
+                                                                    return rfsuite.preferences.general.iconsize or 1
+                                                            end
+                                                        end, 
+                                                        function(newValue) 
+                                                            if rfsuite.preferences and rfsuite.preferences.general then
+                                                                rfsuite.preferences.general.iconsize = newValue
+                                                                rfsuite.ini.save_ini_file(rfsuite.config.preferences, rfsuite.preferences)
+                                                            end    
+                                                        end) 
+
+    formFieldCount = formFieldCount + 1
+    rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.session.formLineCnt] = generalpanel:addLine("Sync Model Name to FBL")
+    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.session.formLineCnt], 
+                                                        nil, 
+                                                        function() 
+                                                            if rfsuite.preferences and rfsuite.preferences.general then
+                                                                return rfsuite.preferences.general['syncname'] 
+                                                            end
+                                                        end, 
+                                                        function(newValue) 
+                                                            if rfsuite.preferences and rfsuite.preferences.general then
+                                                                rfsuite.preferences.general.syncname = newValue
+                                                                rfsuite.ini.save_ini_file(rfsuite.config.preferences, rfsuite.preferences)
+                                                            end    
+                                                        end)    
+
+
     -- telemetry announcements
     local alertpanel = form.addExpansionPanel(rfsuite.i18n.get("app.modules.settings.txt_telemetry_announcements"))
     alertpanel:open(false)
@@ -38,14 +78,14 @@ local function openPage(pidx, title, script)
         rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.session.formLineCnt], 
                                                             nil, 
                                                             function() 
-                                                                if rfsuite.userpref and rfsuite.userpref.announcements then
-                                                                    return rfsuite.userpref.announcements[v.sensor] 
+                                                                if rfsuite.preferences and rfsuite.preferences.announcements then
+                                                                    return rfsuite.preferences.announcements[v.sensor] 
                                                                 end
                                                             end, 
                                                             function(newValue) 
-                                                                if rfsuite.userpref and rfsuite.userpref.announcements then
-                                                                    rfsuite.userpref.announcements[v.sensor] = newValue 
-                                                                    rfsuite.ini.save_ini_file(rfsuite.config.userPreferences, rfsuite.userpref)
+                                                                if rfsuite.preferences and rfsuite.preferences.announcements then
+                                                                    rfsuite.preferences.announcements[v.sensor] = newValue 
+                                                                    rfsuite.ini.save_ini_file(rfsuite.config.preferences, rfsuite.preferences)
                                                                 end    
                                                             end)
     end
@@ -60,15 +100,14 @@ local function openPage(pidx, title, script)
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.session.formLineCnt], 
                                                         nil, 
                                                         function() 
-                                                            if rfsuite.userpref and rfsuite.userpref.developer then
-                                                                return rfsuite.userpref.developer['devtools'] 
+                                                            if rfsuite.preferences and rfsuite.preferences.developer then
+                                                                return rfsuite.preferences.developer['devtools'] 
                                                             end
                                                         end, 
                                                         function(newValue) 
-                                                            if rfsuite.userpref and rfsuite.userpref.developer then
-                                                                rfsuite.userpref.developer['devtools'] = newValue 
-                                                                rfsuite.config.developerMode = newValue
-                                                                rfsuite.ini.save_ini_file(rfsuite.config.userPreferences, rfsuite.userpref)
+                                                            if rfsuite.preferences and rfsuite.preferences.developer then
+                                                                rfsuite.preferences.developer.devtools = newValue
+                                                                rfsuite.ini.save_ini_file(rfsuite.config.preferences, rfsuite.preferences)
                                                             end    
                                                         end)    
 
@@ -78,29 +117,55 @@ local function openPage(pidx, title, script)
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.session.formLineCnt], 
                                                         nil, 
                                                         function() 
-                                                            if rfsuite.userpref and rfsuite.userpref.developer then
-                                                                return rfsuite.userpref.developer['compile'] 
+                                                            if rfsuite.preferences and rfsuite.preferences.developer then
+                                                                return rfsuite.preferences.developer['compile'] 
                                                             end
                                                         end, 
                                                         function(newValue) 
-                                                            if rfsuite.userpref and rfsuite.userpref.developer then
-                                                                rfsuite.userpref.developer['compile'] = newValue 
-                                                                rfsuite.config.compile = newValue
-                                                                rfsuite.ini.save_ini_file(rfsuite.config.userPreferences, rfsuite.userpref)
+                                                            if rfsuite.preferences and rfsuite.preferences.developer then
+                                                                rfsuite.preferences.developer.compile = newValue
+                                                                rfsuite.ini.save_ini_file(rfsuite.config.preferences, rfsuite.preferences)
                                                             end    
                                                         end)                                                        
 
 
     formFieldCount = formFieldCount + 1
     rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = devpanel:addLine("Debug log")
+    rfsuite.app.formLines[rfsuite.session.formLineCnt] = devpanel:addLine("Log Location")
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.session.formLineCnt], nil, 
+                                                        {{"CONSOLE", 0}, {"CONSOLE & FILE", 1}}, 
+                                                        function() 
+                                                            if rfsuite.preferences and rfsuite.preferences.developer then
+                                                                if rfsuite.preferences.developer.logtofile  == false then
+                                                                    return 0
+                                                                else
+                                                                    return 1
+                                                                end   
+                                                            end
+                                                        end, 
+                                                        function(newValue) 
+                                                            if rfsuite.preferences and rfsuite.preferences.developer then
+                                                                local value
+                                                                if newValue == 0 then
+                                                                    value = false
+                                                                else    
+                                                                    value = true
+                                                                end    
+                                                                rfsuite.preferences.developer.logtofile = value
+                                                                rfsuite.ini.save_ini_file(rfsuite.config.preferences, rfsuite.preferences)
+                                                            end    
+                                                        end) 
+
+    formFieldCount = formFieldCount + 1
+    rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.session.formLineCnt] = devpanel:addLine("Log Level")
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.session.formLineCnt], nil, 
                                                         {{"OFF", 0}, {"INFO", 1}, {"DEBUG", 2}}, 
                                                         function() 
-                                                            if rfsuite.userpref and rfsuite.userpref.developer then
-                                                                if rfsuite.userpref.developer['loglevel']  == "off" then
+                                                            if rfsuite.preferences and rfsuite.preferences.developer then
+                                                                if rfsuite.preferences.developer['loglevel']  == "off" then
                                                                     return 0
-                                                                elseif rfsuite.userpref.developer['loglevel']  == "info" then
+                                                                elseif rfsuite.preferences.developer['loglevel']  == "info" then
                                                                     return 1
                                                                 else
                                                                     return 2
@@ -108,7 +173,7 @@ local function openPage(pidx, title, script)
                                                             end
                                                         end, 
                                                         function(newValue) 
-                                                            if rfsuite.userpref and rfsuite.userpref.developer then
+                                                            if rfsuite.preferences and rfsuite.preferences.developer then
                                                                 local value
                                                                 if newValue == 0 then
                                                                     value = "off"
@@ -117,13 +182,62 @@ local function openPage(pidx, title, script)
                                                                 else
                                                                     value = "debug"
                                                                 end    
-                                                                rfsuite.userpref.developer['loglevel'] = value 
-                                                                rfsuite.config.logLevel = value
-                                                                rfsuite.ini.save_ini_file(rfsuite.config.userPreferences, rfsuite.userpref)
+                                                                rfsuite.preferences.developer['loglevel'] = value 
+                                                                rfsuite.preferences.developer.loglevel = value
+                                                                rfsuite.ini.save_ini_file(rfsuite.config.preferences, rfsuite.preferences)
                                                             end    
                                                         end) 
  
+    formFieldCount = formFieldCount + 1
+    rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.session.formLineCnt] = devpanel:addLine("Log MSP Data")
+    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.session.formLineCnt], 
+                                                        nil, 
+                                                        function() 
+                                                            if rfsuite.preferences and rfsuite.preferences.developer then
+                                                                return rfsuite.preferences.developer['logmsp'] 
+                                                            end
+                                                        end, 
+                                                        function(newValue) 
+                                                            if rfsuite.preferences and rfsuite.preferences.developer then
+                                                                rfsuite.preferences.developer.logmsp = newValue
+                                                                rfsuite.ini.save_ini_file(rfsuite.config.preferences, rfsuite.preferences)
+                                                            end    
+                                                        end)     
 
+    formFieldCount = formFieldCount + 1
+    rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.session.formLineCnt] = devpanel:addLine("Log MSP Queue Size")
+    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.session.formLineCnt], 
+                                                        nil, 
+                                                        function() 
+                                                            if rfsuite.preferences and rfsuite.preferences.developer then
+                                                                return rfsuite.preferences.developer['logmspQueue'] 
+                                                            end
+                                                        end, 
+                                                        function(newValue) 
+                                                            if rfsuite.preferences and rfsuite.preferences.developer then
+                                                                rfsuite.preferences.developer.logmspQueue = newValue
+                                                                rfsuite.ini.save_ini_file(rfsuite.config.preferences, rfsuite.preferences)
+                                                            end    
+                                                        end)                                                             
+
+    formFieldCount = formFieldCount + 1
+    rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.session.formLineCnt] = devpanel:addLine("Log Memory Usage")
+    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.session.formLineCnt], 
+                                                        nil, 
+                                                        function() 
+                                                            if rfsuite.preferences and rfsuite.preferences.developer then
+                                                                return rfsuite.preferences.developer['memstats'] 
+                                                            end
+                                                        end, 
+                                                        function(newValue) 
+                                                            if rfsuite.preferences and rfsuite.preferences.developer then
+                                                                rfsuite.preferences.developer.memstats = newValue
+                                                                rfsuite.ini.save_ini_file(rfsuite.config.preferences, rfsuite.preferences)
+                                                            end    
+                                                        end)  
 
 end
 

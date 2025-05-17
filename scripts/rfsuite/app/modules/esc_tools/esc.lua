@@ -47,10 +47,10 @@ local function openPage(pidx, title, script)
     ESC = {}
 
     -- size of buttons
-    if rfsuite.preferences.iconSize == nil or rfsuite.preferences.iconSize == "" then
-        rfsuite.preferences.iconSize = 1
+    if rfsuite.preferences.general.iconsize == nil or rfsuite.preferences.general.iconsize == "" then
+        rfsuite.preferences.general.iconsize = 1
     else
-        rfsuite.preferences.iconSize = tonumber(rfsuite.preferences.iconSize)
+        rfsuite.preferences.general.iconsize = tonumber(rfsuite.preferences.general.iconsize)
     end
 
     local w, h = rfsuite.utils.getWindowSize()
@@ -90,14 +90,14 @@ local function openPage(pidx, title, script)
 
     -- TEXT ICONS
     -- TEXT ICONS
-    if rfsuite.preferences.iconSize == 0 then
+    if rfsuite.preferences.general.iconsize == 0 then
         padding = rfsuite.app.radio.buttonPaddingSmall
         buttonW = (rfsuite.session.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
         buttonH = rfsuite.app.radio.navbuttonHeight
         numPerRow = rfsuite.app.radio.buttonsPerRow
     end
     -- SMALL ICONS
-    if rfsuite.preferences.iconSize == 1 then
+    if rfsuite.preferences.general.iconsize == 1 then
 
         padding = rfsuite.app.radio.buttonPaddingSmall
         buttonW = rfsuite.app.radio.buttonWidthSmall
@@ -105,7 +105,7 @@ local function openPage(pidx, title, script)
         numPerRow = rfsuite.app.radio.buttonsPerRowSmall
     end
     -- LARGE ICONS
-    if rfsuite.preferences.iconSize == 2 then
+    if rfsuite.preferences.general.iconsize == 2 then
 
         padding = rfsuite.app.radio.buttonPadding
         buttonW = rfsuite.app.radio.buttonWidth
@@ -128,14 +128,14 @@ local function openPage(pidx, title, script)
     for pidx, pvalue in ipairs(pages) do
 
         if lc == 0 then
-            if rfsuite.preferences.iconSize == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
-            if rfsuite.preferences.iconSize == 1 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
-            if rfsuite.preferences.iconSize == 2 then y = form.height() + rfsuite.app.radio.buttonPadding end
+            if rfsuite.preferences.general.iconsize == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
+            if rfsuite.preferences.general.iconsize == 1 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
+            if rfsuite.preferences.general.iconsize == 2 then y = form.height() + rfsuite.app.radio.buttonPadding end
         end
 
         if lc >= 0 then bx = (buttonW + padding) * lc end
 
-        if rfsuite.preferences.iconSize ~= 0 then
+        if rfsuite.preferences.general.iconsize ~= 0 then
             if rfsuite.app.gfx_buttons["escmain"][pidx] == nil then rfsuite.app.gfx_buttons["escmain"][pidx] = lcd.loadMask("app/modules/esc_tools/mfg/" .. pvalue.folder .. "/" .. pvalue.image) end
         else
             rfsuite.app.gfx_buttons["escmain"][pidx] = nil

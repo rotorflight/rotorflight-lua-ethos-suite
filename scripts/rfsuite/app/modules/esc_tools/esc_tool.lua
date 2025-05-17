@@ -156,21 +156,21 @@ local function openPage(pidx, title, script)
     local padding
     local numPerRow
 
-    if rfsuite.preferences.iconSize == nil or rfsuite.preferences.iconSize == "" then
-        rfsuite.preferences.iconSize = 1
+    if rfsuite.preferences.general.iconsize == nil or rfsuite.preferences.general.iconsize == "" then
+        rfsuite.preferences.general.iconsize = 1
     else
-        rfsuite.preferences.iconSize = tonumber(rfsuite.preferences.iconSize)
+        rfsuite.preferences.general.iconsize = tonumber(rfsuite.preferences.general.iconsize)
     end
 
     -- TEXT ICONS
-    if rfsuite.preferences.iconSize == 0 then
+    if rfsuite.preferences.general.iconsize == 0 then
         padding = rfsuite.app.radio.buttonPaddingSmall
         buttonW = (rfsuite.session.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
         buttonH = rfsuite.app.radio.navbuttonHeight
         numPerRow = rfsuite.app.radio.buttonsPerRow
     end
     -- SMALL ICONS
-    if rfsuite.preferences.iconSize == 1 then
+    if rfsuite.preferences.general.iconsize == 1 then
 
         padding = rfsuite.app.radio.buttonPaddingSmall
         buttonW = rfsuite.app.radio.buttonWidthSmall
@@ -178,7 +178,7 @@ local function openPage(pidx, title, script)
         numPerRow = rfsuite.app.radio.buttonsPerRowSmall
     end
     -- LARGE ICONS
-    if rfsuite.preferences.iconSize == 2 then
+    if rfsuite.preferences.general.iconsize == 2 then
 
         padding = rfsuite.app.radio.buttonPadding
         buttonW = rfsuite.app.radio.buttonWidth
@@ -199,19 +199,19 @@ local function openPage(pidx, title, script)
         local hideSection = (section.ethosversion and rfsuite.session.ethosRunningVersion < section.ethosversion) or
                             (section.mspversion and (rfsuite.session.apiVersion or 1) < section.mspversion) 
                             --or
-                            --(section.developer and not rfsuite.config.developerMode)
+                            --(section.developer and not rfsuite.preferences.developer.devtools)
 
         if not pvalue.disablebutton or (pvalue and pvalue.disablebutton(mspBytes) == false) or not hideSection then
 
             if lc == 0 then
-                if rfsuite.preferences.iconSize == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
-                if rfsuite.preferences.iconSize == 1 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
-                if rfsuite.preferences.iconSize == 2 then y = form.height() + rfsuite.app.radio.buttonPadding end
+                if rfsuite.preferences.general.iconsize == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
+                if rfsuite.preferences.general.iconsize == 1 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
+                if rfsuite.preferences.general.iconsize == 2 then y = form.height() + rfsuite.app.radio.buttonPadding end
             end
 
             if lc >= 0 then bx = (buttonW + padding) * lc end
 
-            if rfsuite.preferences.iconSize ~= 0 then
+            if rfsuite.preferences.general.iconsize ~= 0 then
                 if rfsuite.app.gfx_buttons["esctool"][pvalue.image] == nil then rfsuite.app.gfx_buttons["esctool"][pvalue.image] = lcd.loadMask("app/modules/esc_tools/mfg/" .. folder .. "/gfx/" .. pvalue.image) end
             else
                 rfsuite.app.gfx_buttons["esctool"][pvalue.image] = nil

@@ -6,8 +6,8 @@ local arg = {...}
 -- Configuration: expects rfsuite.config to be globally available
 local logTimings = true
 if rfsuite and rfsuite.config then
-  if type(rfsuite.config.compilerTiming) == "boolean" then
-    logTimings = rfsuite.config.compilerTiming or false
+  if type(rfsuite.preferences.developer.compilerTiming) == "boolean" then
+    logTimings = rfsuite.preferences.developer.compilerTiming or false
   end
 end
 
@@ -54,7 +54,7 @@ function compile.loadfile(script)
   end
 
   local loader, which, cache_fname
-  if not rfsuite.config.compile then
+  if not rfsuite.preferences.developer.compile then
     loader = loadfile
     which = "raw"
     loader = loader(script)
@@ -117,7 +117,7 @@ function compile.require(modname)
   local path     = strip_prefix(raw_path)
   local chunk
 
-  if not rfsuite.config.compile then
+  if not rfsuite.preferences.developer.compile then
     chunk = assert(loadfile(path))
   else
     chunk = compile.loadfile(path)

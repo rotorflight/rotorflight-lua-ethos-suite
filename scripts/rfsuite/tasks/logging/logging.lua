@@ -127,7 +127,6 @@ function logging.reset()
 end
 
 function logging.wakeup()
-    if not rfsuite.preferences.flightLog then return end
 
     if not logDirChecked then
         checkLogdirExists()
