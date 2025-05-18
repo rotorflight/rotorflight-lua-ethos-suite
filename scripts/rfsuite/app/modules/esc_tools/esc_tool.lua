@@ -64,7 +64,6 @@ local function getESCDetails()
             end
             rfsuite.utils.log("ESC Buffer size: " .. #buf,"info")
             if #buf >= mspBytesCheck and buf[1] == mspSignature then
-            --if buf[1] == mspSignature then
                 escDetails.model = ESC.getEscModel(buf)
                 escDetails.version = ESC.getEscVersion(buf)
                 escDetails.firmware = ESC.getEscFirmware(buf)
@@ -78,7 +77,9 @@ local function getESCDetails()
                 if escDetails.model ~= nil  then
                     foundESC = true
                 end
-
+            else
+                foundESC = false
+                escDetails = {}
             end
             rfsuite.utils.log("Fetch esc details", "info")
         end,
@@ -279,7 +280,7 @@ end
 
 local function wakeup()
 
-    --if rfsuite.tasks.msp.mspQueue:isProcessed() then
+    if rfsuite.tasks.msp.mspQueue:isProcessed() then
         if ESC.esc4way then
 
             -- Step 1: Set 4WIF mode if not done
@@ -301,15 +302,17 @@ local function wakeup()
                 getESCDetails()
             end
         end
-    --end
+    end
 
     -- enable the form
     if foundESC == true and foundESCupdateTag == false then
+
         foundESCupdateTag = true
 
         if escDetails.model ~= nil and escDetails.model ~= nil and escDetails.firmware ~= nil then
             local text = escDetails.model .. " " .. escDetails.version .. " " .. escDetails.firmware
             rfsuite.escHeaderLineText = text
+            rfsuite.utils.log("Found esc.. " .. text, "info")
             modelText = form.addStaticText(modelLine, modelTextPos, text)
         end
 
@@ -399,10 +402,17 @@ local function event(widget, category, value, x, y)
 
 end
 
+local function mspRetry(data)
+
+    if ESC.esc4way then
+        rfsuite.utils.log("I seem to be retrying", "info")
+    end
+end
 
 return {
     openPage = openPage,
     wakeup = wakeup,
     event = event,
-    API = {}
+    API = {},
+    mspRetry = mspRetry
 }
