@@ -62,6 +62,12 @@ adjfunctions/gov.wav,Governor,,
 adjfunctions/crossc.wav,Cross Coupling,,
 adjfunctions/acc.wav,Accelerometer,,
 adjfunctions/trim.wav,Trim,,
+adjfunctions/setpoint.wav,Setpoint,,
+adjfunctions/precomp.wav,Precomp,,
+adjfunctions/inertia.wav,Inertia,,
+adjfunctions/boost.wav,Boost,,
+adjfunctions/filter.wav,Filter,,
+adjfunctions/deadband.wav,Deadband,,
 
 #status,#text to play
 status/alerts/current.wav,Current,,

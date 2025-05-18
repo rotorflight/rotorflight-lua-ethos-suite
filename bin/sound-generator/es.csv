@@ -62,6 +62,12 @@ adjfunctions/gov.wav,Govérno,,
 adjfunctions/crossc.wav,Acoplamiento Cruzado,,
 adjfunctions/acc.wav,Acelerómetro,,
 adjfunctions/trim.wav,Recorte,,
+adjfunctions/setpoint.wav,Punto de ajuste,,
+adjfunctions/precomp.wav,Precompensación,,
+adjfunctions/inertia.wav,Inercia,,
+adjfunctions/boost.wav,Impulso,,
+adjfunctions/filter.wav,Filtro,,
+adjfunctions/deadband.wav,Zona muerta,,
 
 #status,#text to play
 status/alerts/current.wav,Corriente,,
