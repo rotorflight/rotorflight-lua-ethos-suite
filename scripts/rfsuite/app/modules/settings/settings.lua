@@ -29,14 +29,14 @@ local function openPage(pidx, title, script)
 
 
     -- general
-    local generalpanel = form.addExpansionPanel("General")
+    local generalpanel = form.addExpansionPanel(rfsuite.i18n.get("app.modules.settings.txt_general"))
     generalpanel:open(true)
 
     formFieldCount = formFieldCount + 1
     rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = generalpanel:addLine("Icon size")
+    rfsuite.app.formLines[rfsuite.session.formLineCnt] = generalpanel:addLine(rfsuite.i18n.get("app.modules.settings.txt_iconsize"))
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.session.formLineCnt], nil, 
-                                                        {{"TEXT", 0}, {"SMALL", 1}, {"LARGE", 2}},
+                                                        {{rfsuite.i18n.get("app.modules.settings.txt_text"), 0}, {rfsuite.i18n.get("app.modules.settings.txt_small"), 1}, {rfsuite.i18n.get("app.modules.settings.txt_large"), 2}},
                                                         function() 
                                                             if rfsuite.preferences and rfsuite.preferences.general then
                                                                     return rfsuite.preferences.general.iconsize or 1
@@ -51,7 +51,7 @@ local function openPage(pidx, title, script)
 
     formFieldCount = formFieldCount + 1
     rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = generalpanel:addLine("Sync Model Name to FBL")
+    rfsuite.app.formLines[rfsuite.session.formLineCnt] = generalpanel:addLine(rfsuite.i18n.get("app.modules.settings.txt_syncname"))
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.session.formLineCnt], 
                                                         nil, 
                                                         function() 
@@ -96,7 +96,7 @@ local function openPage(pidx, title, script)
 
     formFieldCount = formFieldCount + 1
     rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = devpanel:addLine("Developer Tools")
+    rfsuite.app.formLines[rfsuite.session.formLineCnt] = devpanel:addLine(rfsuite.i18n.get("app.modules.settings.txt_devtools"))
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.session.formLineCnt], 
                                                         nil, 
                                                         function() 
@@ -113,7 +113,7 @@ local function openPage(pidx, title, script)
 
     formFieldCount = formFieldCount + 1
     rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = devpanel:addLine("Compilation")
+    rfsuite.app.formLines[rfsuite.session.formLineCnt] = devpanel:addLine(rfsuite.i18n.get("app.modules.settings.txt_compilation"))
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.session.formLineCnt], 
                                                         nil, 
                                                         function() 
@@ -131,9 +131,9 @@ local function openPage(pidx, title, script)
 
     formFieldCount = formFieldCount + 1
     rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = devpanel:addLine("Log Location")
+    rfsuite.app.formLines[rfsuite.session.formLineCnt] = devpanel:addLine(rfsuite.i18n.get("app.modules.settings.txt_loglocation"))
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.session.formLineCnt], nil, 
-                                                        {{"CONSOLE", 0}, {"CONSOLE & FILE", 1}}, 
+                                                        {{rfsuite.i18n.get("app.modules.settings.txt_console"), 0}, {rfsuite.i18n.get("app.modules.settings.txt_consolefile"), 1}}, 
                                                         function() 
                                                             if rfsuite.preferences and rfsuite.preferences.developer then
                                                                 if rfsuite.preferences.developer.logtofile  == false then
@@ -158,9 +158,9 @@ local function openPage(pidx, title, script)
 
     formFieldCount = formFieldCount + 1
     rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = devpanel:addLine("Log Level")
+    rfsuite.app.formLines[rfsuite.session.formLineCnt] = devpanel:addLine(rfsuite.i18n.get("app.modules.settings.txt_loglevel"))
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.session.formLineCnt], nil, 
-                                                        {{"OFF", 0}, {"INFO", 1}, {"DEBUG", 2}}, 
+                                                        {{rfsuite.i18n.get("app.modules.settings.txt_off"), 0}, {rfsuite.i18n.get("app.modules.settings.txt_info"), 1}, {rfsuite.i18n.get("app.modules.settings.txt_debug"), 2}}, 
                                                         function() 
                                                             if rfsuite.preferences and rfsuite.preferences.developer then
                                                                 if rfsuite.preferences.developer['loglevel']  == "off" then
@@ -190,7 +190,7 @@ local function openPage(pidx, title, script)
  
     formFieldCount = formFieldCount + 1
     rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = devpanel:addLine("Log MSP Data")
+    rfsuite.app.formLines[rfsuite.session.formLineCnt] = devpanel:addLine(rfsuite.i18n.get("app.modules.settings.txt_mspdata"))
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.session.formLineCnt], 
                                                         nil, 
                                                         function() 
@@ -207,7 +207,7 @@ local function openPage(pidx, title, script)
 
     formFieldCount = formFieldCount + 1
     rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = devpanel:addLine("Log MSP Queue Size")
+    rfsuite.app.formLines[rfsuite.session.formLineCnt] = devpanel:addLine(rfsuite.i18n.get("app.modules.settings.txt_queuesize"))
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.session.formLineCnt], 
                                                         nil, 
                                                         function() 
@@ -224,7 +224,7 @@ local function openPage(pidx, title, script)
 
     formFieldCount = formFieldCount + 1
     rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = devpanel:addLine("Log Memory Usage")
+    rfsuite.app.formLines[rfsuite.session.formLineCnt] = devpanel:addLine(rfsuite.i18n.get("app.modules.settings.txt_memusage"))
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.session.formLineCnt], 
                                                         nil, 
                                                         function() 
