@@ -203,7 +203,25 @@ local adjFunctionsTable = {
 
     -- accelerometer
     id64 = {name = "Accelerometer Pitch Trim", wavs = {"acc", "pitch", "trim"}},
-    id65 = {name = "Accelerometer Roll Trim", wavs = {"acc", "roll", "trim"}}
+    id65 = {name = "Accelerometer Roll Trim", wavs = {"acc", "roll", "trim"}},
+
+    -- Yaw Inertia precomp
+    id66 = { name = "Yaw Inertia Precomp Gain", wavs = {"yaw","inertia","precomp","gain"}},
+    id67 = { name = "Yaw Inertia Precomp Cutoff", wavs = {"yaw","inertia","precomp","cutoff"}},
+
+    -- Setpoint boost
+    id68 = { name = "Pitch Setpoint Boost Gain", wavs = { "pitch", "setpoint", "boost", "gain" }},
+    id69 = { name = "Roll Setpoint Boost Gain", wavs = {"roll", "setpoint", "boost", "gain"}},
+    id70 = { name = "Yaw Setpoint Boost Gain", wavs = {"yaw", "setpoint", "boost", "gain"}},
+    id71 = { name = "Collective Setpoint Boost Gain", wavs = {"collective", "setpoint", "boost", "gain"}},
+
+    -- Yaw dynamic deadband
+    id72 = { name = "Yaw Dynamic Ceiling Gain", wavs = {"yaw", "dyn", "ceiling", "gain"} },
+    id73 = { name = "Yaw Dynamic Deadband Gain", wavs = {"yaw", "dyn", "deadband", "gain"} },
+    id74 = { name = "Yaw Dynamic Deadband Filter", wavs = {"yaw", "dyn", "deadband", "filter"} },
+
+    -- Precomp cutoff
+    id75 = { name = "Yaw Precomp Cutoff", wavs = {"yaw", "precomp", "cutoff"} },
 
 }
 
