@@ -391,7 +391,25 @@ return {
     ["modules"] = {
       ["settings"] = {
         ["name"] = "Impostazioni",
-        ["txt_telemetry_announcements"] = "Annunci Telemetria"
+        ["txt_telemetry_announcements"] = "Annunci Telemetria",
+        ["txt_iconsize"] = "Icon Size",
+        ["txt_general"] = "General",
+        ["txt_text"] = "TEXT",
+        ["txt_small"] = "SMALL",
+        ["txt_large"] = "LARGE",
+        ["txt_syncname"] = "Sync model name",
+        ["txt_devtools"] = "Developer Tools",
+        ["txt_compilation"] = "Compilation",
+        ["txt_loglocation"] = "Log location",
+        ["txt_console"] = "CONSOLE",
+        ["txt_consolefile"] = "CONSOLE & FILE",
+        ["txt_loglevel"] = "Log level",
+        ["txt_off"] = "OFF",
+        ["txt_info"] = "INFO",
+        ["txt_debug"] = "DEBUG",
+        ["txt_mspdata"] = "Log msp data",
+        ["txt_queuesize"] = "Log MSP queue size",
+        ["txt_memusage"] = "Log memory usage"
       },
       ["validate_sensors"] = {
         ["help_p1"] = "Questo strumento prova a elencare tutti i sensori che non ricevi in una lista concisa.",

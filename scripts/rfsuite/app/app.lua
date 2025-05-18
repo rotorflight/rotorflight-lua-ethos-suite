@@ -1671,6 +1671,9 @@ function app.event(widget, category, value, x, y)
 
         -- long press on enter should result in a save dialog box
         if value == KEY_ENTER_LONG then
+            if rfsuite.app.Page.navButtons and rfsuite.app.Page.navButtons.save == false then
+                return true
+            end
             rfsuite.utils.log("EVT_ENTER_LONG (PAGES)", "info")
             if app.dialogs.progressDisplay then app.ui.progressDisplayClose() end
             if app.dialogs.saveDisplay then app.ui.progressDisplaySaveClose() end
