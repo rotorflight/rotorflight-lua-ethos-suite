@@ -719,10 +719,36 @@ function telemetry.wakeup()
             if val then
                 -- Check optional per-sensor trigger
                 local shouldTrack = false
+
+                --[[
+                    Determines whether telemetry tracking should be enabled based on various sensor conditions.
+
+                    The logic follows these rules:
+                    1. If `sensorDef.maxmin_trigger` is a function, its return value decides tracking.
+                    2. If the session is armed and the "governor" sensor exists with a value of 4, tracking is enabled.
+                    3. If the session is armed and the "rpm" sensor exists with a value greater than 500, tracking is enabled.
+                    4. If the session is armed and the "throttle_percent" sensor exists with a value greater than 30, tracking is enabled.
+                    5. If the session is armed (fallback), tracking is enabled.
+                    6. Otherwise, tracking is disabled.
+
+                    Variables:
+                    - sensorDef: Table containing sensor definitions, possibly with a custom trigger function.
+                    - shouldTrack: Boolean flag indicating whether telemetry tracking should occur.
+                    - rfsuite.session.isArmed: Boolean indicating if the session is currently armed.
+                    - telemetry.getSensorSource: Function to retrieve sensor data by name.
+                ]]
                 if type(sensorDef.maxmin_trigger) == "function" then
                     shouldTrack = sensorDef.maxmin_trigger()
+                elseif rfsuite.session.isArmed == true and telemetry.getSensorSource("governor") and telemetry.getSensorSource("governor"):value() == 4 then
+                    shouldTrack = true
+                elseif rfsuite.session.isArmed == true and telemetry.getSensorSource("rpm") and telemetry.getSensorSource("rpm"):value() > 500 then
+                    shouldTrack = true    
+                elseif rfsuite.session.isArmed == true and telemetry.getSensorSource("throttle_percent") and telemetry.getSensorSource("throttle_percent"):value() > 30 then               
+                    shouldTrack = true
+                elseif rfsuite.session.isArmed == true then
+                    shouldTrack = true
                 else
-                    shouldTrack = rfsuite.session.isArmed == true
+                    shouldTrack = false
                 end
 
                 -- Record min/max if tracking is active
