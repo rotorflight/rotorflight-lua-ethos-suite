@@ -100,6 +100,96 @@
         "english": "Telemetry Announcements",
         "translation": "Annunci Telemetria",
         "needs_translation": "false"
+      },
+      "txt_iconsize": {
+        "english": "Icon Size",
+        "translation": "Icon Size",
+        "needs_translation": "true"
+      },
+      "txt_general": {
+        "english": "General",
+        "translation": "General",
+        "needs_translation": "true"
+      },
+      "txt_text": {
+        "english": "TEXT",
+        "translation": "TEXT",
+        "needs_translation": "true"
+      },
+      "txt_small": {
+        "english": "SMALL",
+        "translation": "SMALL",
+        "needs_translation": "true"
+      },
+      "txt_large": {
+        "english": "LARGE",
+        "translation": "LARGE",
+        "needs_translation": "true"
+      },
+      "txt_syncname": {
+        "english": "Sync model name",
+        "translation": "Sync model name",
+        "needs_translation": "true"
+      },
+      "txt_devtools": {
+        "english": "Developer Tools",
+        "translation": "Developer Tools",
+        "needs_translation": "true"
+      },
+      "txt_compilation": {
+        "english": "Compilation",
+        "translation": "Compilation",
+        "needs_translation": "true"
+      },
+      "txt_loglocation": {
+        "english": "Log location",
+        "translation": "Log location",
+        "needs_translation": "true"
+      },
+      "txt_console": {
+        "english": "CONSOLE",
+        "translation": "CONSOLE",
+        "needs_translation": "true"
+      },
+      "txt_consolefile": {
+        "english": "CONSOLE & FILE",
+        "translation": "CONSOLE & FILE",
+        "needs_translation": "true"
+      },
+      "txt_loglevel": {
+        "english": "Log level",
+        "translation": "Log level",
+        "needs_translation": "true"
+      },
+      "txt_off": {
+        "english": "OFF",
+        "translation": "OFF",
+        "needs_translation": "true"
+      },
+      "txt_info": {
+        "english": "INFO",
+        "translation": "INFO",
+        "needs_translation": "true"
+      },
+      "txt_debug": {
+        "english": "DEBUG",
+        "translation": "DEBUG",
+        "needs_translation": "true"
+      },
+      "txt_mspdata": {
+        "english": "Log msp data",
+        "translation": "Log msp data",
+        "needs_translation": "true"
+      },
+      "txt_queuesize": {
+        "english": "Log MSP queue size",
+        "translation": "Log MSP queue size",
+        "needs_translation": "true"
+      },
+      "txt_memusage": {
+        "english": "Log memory usage",
+        "translation": "Log memory usage",
+        "needs_translation": "true"
       }
     },
     "validate_sensors": {
