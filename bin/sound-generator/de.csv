@@ -62,6 +62,12 @@ adjfunctions/gov.wav,Regler,,
 adjfunctions/crossc.wav,Kreuzkopplung,,
 adjfunctions/acc.wav,Beschleunigungssensor,,
 adjfunctions/trim.wav,Trimmen,,
+adjfunctions/setpoint.wav,Sollwert,,
+adjfunctions/precomp.wav,Vorkompensation,,
+adjfunctions/inertia.wav,Trägheit,,
+adjfunctions/boost.wav,Verstärkung,,
+adjfunctions/filter.wav,Filter,,
+adjfunctions/deadband.wav,Totzone,,
 
 #status,#text to play
 status/alerts/current.wav,Stroom,,

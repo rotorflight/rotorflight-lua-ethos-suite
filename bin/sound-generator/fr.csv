@@ -61,6 +61,12 @@ adjfunctions/gov.wav,Gouverneur,,
 adjfunctions/crossc.wav,Couplage croisé,,
 adjfunctions/acc.wav,Accélèromètre,,
 adjfunctions/trim.wav,Trim,,
+adjfunctions/setpoint.wav,Consigne,,
+adjfunctions/precomp.wav,Précompensation,,
+adjfunctions/inertia.wav,Inertie,,
+adjfunctions/boost.wav,Amplification,,
+adjfunctions/filter.wav,Filtre,,
+adjfunctions/deadband.wav,Zone morte,,
 
 #status,#text to play
 status/alerts/current.wav,Courant,,
