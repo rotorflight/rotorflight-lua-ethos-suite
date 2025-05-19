@@ -190,6 +190,16 @@
         "english": "Log memory usage",
         "translation": "Log memory usage",
         "needs_translation": "true"
+      },
+      "dashboard": {
+        "english": "Dashboard",
+        "translation": "Dashboard",
+        "needs_translation": "true"
+      },
+      "dashboard_theme": {
+        "english": "Theme",
+        "translation": "Theme",
+        "needs_translation": "true"
       }
     },
     "validate_sensors": {

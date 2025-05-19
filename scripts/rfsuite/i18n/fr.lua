@@ -409,7 +409,9 @@ return {
         ["txt_debug"] = "DEBUG",
         ["txt_mspdata"] = "Log msp data",
         ["txt_queuesize"] = "Log MSP queue size",
-        ["txt_memusage"] = "Log memory usage"
+        ["txt_memusage"] = "Log memory usage",
+        ["dashboard"] = "Dashboard",
+        ["dashboard_theme"] = "Theme"
       },
       ["validate_sensors"] = {
         ["help_p1"] = "Cet outil tente de lister tous les capteurs que vous ne recevez pas dans une liste concise.",

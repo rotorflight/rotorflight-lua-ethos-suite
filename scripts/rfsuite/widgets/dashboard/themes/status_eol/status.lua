@@ -2902,15 +2902,15 @@ end
 
 -- MAIN WAKEUP FUNCTION. THIS SIMPLY FARMS OUT AT DIFFERING SCHEDULES TO SUB FUNCTIONS
 function status.wakeup(widget)
-    local schedulerUI = lcd.isVisible() and 0.5 or 2 -- Set interval based on visibility
+    --local schedulerUI = lcd.isVisible() and 0.5 or 2 -- Set interval based on visibility
 
     -- Run UI at reduced interval to minimize CPU load
-    local now = os.clock()
-    if (now - status.wakeupSchedulerUI) >= schedulerUI then
-        status.wakeupSchedulerUI = now
+    --local now = os.clock()
+    --if (now - status.wakeupSchedulerUI) >= schedulerUI then
+    --    status.wakeupSchedulerUI = now
         wakeupUI()
         -- collectgarbage()  -- Uncomment if garbage collection is needed
-    end
+    --end
 
     -- run the erase process if requested
     if eraseDataflashGo then

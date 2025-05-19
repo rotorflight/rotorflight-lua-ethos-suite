@@ -62,6 +62,9 @@ local userpref_defaults ={
         iconsize = 2,
         syncname = false,
     },
+    dashboard = {
+        theme = "status_eol",
+    },
     announcements = {
         armflags = true,
         voltage = true,

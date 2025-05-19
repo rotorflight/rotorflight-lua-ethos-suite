@@ -30,7 +30,7 @@ local function openPage(pidx, title, script)
 
     -- general
     local generalpanel = form.addExpansionPanel(rfsuite.i18n.get("app.modules.settings.txt_general"))
-    generalpanel:open(true)
+    generalpanel:open(false)
 
     formFieldCount = formFieldCount + 1
     rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
@@ -65,6 +65,46 @@ local function openPage(pidx, title, script)
                                                                 rfsuite.ini.save_ini_file(rfsuite.config.preferences, rfsuite.preferences)
                                                             end    
                                                         end)    
+
+
+    -- dashboard
+    local dashboardpanel = form.addExpansionPanel(rfsuite.i18n.get("app.modules.settings.dashboard"))
+    dashboardpanel:open(false)
+
+    formFieldCount = formFieldCount + 1
+    rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.session.formLineCnt] = dashboardpanel:addLine(rfsuite.i18n.get("app.modules.settings.dashboard_theme"))
+
+    -- get theme list
+    local themeList = rfsuite.widgets.dashboard.listThemes() 
+    local formattedThemes = {}
+    for i, theme in ipairs(themeList) do
+        table.insert(formattedThemes, { theme.name, theme.idx })
+    end
+                                              
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.session.formLineCnt], nil, 
+                                                        formattedThemes, 
+                                                        function()
+                                                            if rfsuite.preferences and rfsuite.preferences.dashboard then
+                                                                local folderName = rfsuite.preferences.dashboard.theme
+                                                                for _, theme in ipairs(themeList) do
+                                                                    if theme.folder == folderName then
+                                                                        return theme.idx
+                                                                    end
+                                                                end
+                                                            end
+                                                            return nil
+                                                        end, 
+                                                        function(newValue) 
+                                                            if rfsuite.preferences and rfsuite.preferences.dashboard then
+                                                                local theme = themeList[newValue]
+                                                                if theme then
+                                                                    rfsuite.preferences.dashboard.theme = theme.folder
+                                                                    rfsuite.ini.save_ini_file(rfsuite.config.preferences, rfsuite.preferences)
+                                                                    rfsuite.widgets.dashboard.reload_theme()
+                                                                end
+                                                            end
+                                                        end) 
 
 
     -- telemetry announcements
