@@ -391,7 +391,7 @@ return {
     ["modules"] = {
       ["settings"] = {
         ["name"] = "Paramètres",
-        ["txt_telemetry_announcements"] = "Annonces de telemetrie",
+        ["txt_telemetry_announcements"] = "Telemetrie",
         ["txt_iconsize"] = "Icon Size",
         ["txt_general"] = "General",
         ["txt_text"] = "TEXT",
@@ -411,7 +411,8 @@ return {
         ["txt_queuesize"] = "Log MSP queue size",
         ["txt_memusage"] = "Log memory usage",
         ["dashboard"] = "Dashboard",
-        ["dashboard_theme"] = "Theme"
+        ["dashboard_theme"] = "Theme",
+        ["txt_development"] = "Development"
       },
       ["validate_sensors"] = {
         ["help_p1"] = "Cet outil tente de lister tous les capteurs que vous ne recevez pas dans une liste concise.",
@@ -654,6 +655,7 @@ return {
         ["rate_profile"] = "Profil de taux",
         ["pid_profile"] = "Profil PID",
         ["save_prompt"] = "Enregistrer la page actuelle dans le controleur de vol ?",
+        ["save_prompt_local"] = "Save current settings?",
         ["cancel"] = "ANNULER",
         ["name"] = "Selectionner le profil",
         ["save_settings"] = "Enregistrer les parametres",

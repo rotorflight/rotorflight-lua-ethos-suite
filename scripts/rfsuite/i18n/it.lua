@@ -391,7 +391,7 @@ return {
     ["modules"] = {
       ["settings"] = {
         ["name"] = "Impostazioni",
-        ["txt_telemetry_announcements"] = "Annunci Telemetria",
+        ["txt_telemetry_announcements"] = "Telemetria",
         ["txt_iconsize"] = "Icon Size",
         ["txt_general"] = "General",
         ["txt_text"] = "TEXT",
@@ -411,7 +411,8 @@ return {
         ["txt_queuesize"] = "Log MSP queue size",
         ["txt_memusage"] = "Log memory usage",
         ["dashboard"] = "Dashboard",
-        ["dashboard_theme"] = "Theme"
+        ["dashboard_theme"] = "Theme",
+        ["txt_development"] = "Development"
       },
       ["validate_sensors"] = {
         ["help_p1"] = "Questo strumento prova a elencare tutti i sensori che non ricevi in una lista concisa.",
@@ -654,6 +655,7 @@ return {
         ["rate_profile"] = "Profilo Escurioni",
         ["pid_profile"] = "Profilo PID",
         ["save_prompt"] = "Salvare la pagina corrente sul controller di volo?",
+        ["save_prompt_local"] = "Save current settings?",
         ["cancel"] = "CANCELLA",
         ["name"] = "Seleziona Profilo",
         ["save_settings"] = "Salva settaggi",

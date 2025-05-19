@@ -391,7 +391,7 @@ return {
     ["modules"] = {
       ["settings"] = {
         ["name"] = "Einstellungen",
-        ["txt_telemetry_announcements"] = "Telemetrie-Ansagen",
+        ["txt_telemetry_announcements"] = "Telemetrie",
         ["txt_iconsize"] = "Icon Size",
         ["txt_general"] = "General",
         ["txt_text"] = "TEXT",
@@ -411,7 +411,8 @@ return {
         ["txt_queuesize"] = "Log MSP queue size",
         ["txt_memusage"] = "Log memory usage",
         ["dashboard"] = "Dashboard",
-        ["dashboard_theme"] = "Theme"
+        ["dashboard_theme"] = "Theme",
+        ["txt_development"] = "Development"
       },
       ["validate_sensors"] = {
         ["help_p1"] = "Dieses Tool versucht, eine kurze Liste aller Sensoren zu erstellen, die nicht empfangen werden.",
@@ -654,6 +655,7 @@ return {
         ["rate_profile"] = "Rate-Profil",
         ["pid_profile"] = "PID-Profil",
         ["save_prompt"] = "Aktuelle Seite auf dem Flugcontroller speichern?",
+        ["save_prompt_local"] = "Save current settings?",
         ["cancel"] = "ABBRECHEN",
         ["name"] = "Profil auswaehlen",
         ["save_settings"] = "Einstellungen speichern",
@@ -1242,7 +1244,7 @@ return {
       ["txt_headspeed"] = "Drehzahl",
       ["txt_low_fuel_voltage"] = "Niedriger Kraftstoff- & Spannungsstand",
       ["txt_idlespeedhigh"] = "Drehzahl hoch",
-      ["txt_telemetry_announcements"] = "Telemetrie-Ansagen",
+      ["txt_telemetry_announcements"] = "Telemetrie",
       ["txt_extgovernor"] = "Externer Governor",
       ["txt_esc"] = "ESC",
       ["txt_bblon"] = "BBL an",

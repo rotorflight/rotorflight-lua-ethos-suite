@@ -391,7 +391,7 @@ return {
     ["modules"] = {
       ["settings"] = {
         ["name"] = "Settings",
-        ["txt_telemetry_announcements"] = "Telemetry Announcements",
+        ["txt_telemetry_announcements"] = "Telemetry",
         ["txt_iconsize"] = "Icon Size",
         ["txt_general"] = "General",
         ["txt_text"] = "TEXT",
@@ -411,7 +411,8 @@ return {
         ["txt_queuesize"] = "Log MSP queue size",
         ["txt_memusage"] = "Log memory usage",
         ["dashboard"] = "Dashboard",
-        ["dashboard_theme"] = "Theme"
+        ["dashboard_theme"] = "Theme",
+        ["txt_development"] = "Development"
       },
       ["validate_sensors"] = {
         ["help_p1"] = "This tool attempts to list all the sensors that you are not receiving in a concise list.",
@@ -654,6 +655,7 @@ return {
         ["rate_profile"] = "Rate Profile",
         ["pid_profile"] = "PID profile",
         ["save_prompt"] = "Save current page to flight controller?",
+        ["save_prompt_local"] = "Save current page to radio?",
         ["cancel"] = "CANCEL",
         ["name"] = "Select Profile",
         ["save_settings"] = "Save settings",

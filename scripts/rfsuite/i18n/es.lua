@@ -391,7 +391,7 @@ return {
     ["modules"] = {
       ["settings"] = {
         ["name"] = "Configuración",
-        ["txt_telemetry_announcements"] = "Anuncios Telemetría",
+        ["txt_telemetry_announcements"] = "Telemetría",
         ["txt_iconsize"] = "Icon Size",
         ["txt_general"] = "General",
         ["txt_text"] = "TEXT",
@@ -411,7 +411,8 @@ return {
         ["txt_queuesize"] = "Log MSP queue size",
         ["txt_memusage"] = "Log memory usage",
         ["dashboard"] = "Dashboard",
-        ["dashboard_theme"] = "Theme"
+        ["dashboard_theme"] = "Theme",
+        ["txt_development"] = "Development"
       },
       ["validate_sensors"] = {
         ["help_p1"] = "Esta herramienta intenta listar todos los sensores necesarios que faltan.",
@@ -654,6 +655,7 @@ return {
         ["rate_profile"] = "Perfil Tasa",
         ["pid_profile"] = "Perfil PID",
         ["save_prompt"] = "Guarda esta página en el controlador de vuelo?",
+        ["save_prompt_local"] = "Save current settings?",
         ["cancel"] = "CANCELAR",
         ["name"] = "Selección Perfil",
         ["save_settings"] = "Guardar config",

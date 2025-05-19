@@ -391,7 +391,7 @@ return {
     ["modules"] = {
       ["settings"] = {
         ["name"] = "Instellingen",
-        ["txt_telemetry_announcements"] = "Telemetrie meldingen",
+        ["txt_telemetry_announcements"] = "Telemetrie",
         ["txt_iconsize"] = "Icon Size",
         ["txt_general"] = "General",
         ["txt_text"] = "TEXT",
@@ -411,7 +411,8 @@ return {
         ["txt_queuesize"] = "Log MSP queue size",
         ["txt_memusage"] = "Log memory usage",
         ["dashboard"] = "Dashboard",
-        ["dashboard_theme"] = "Theme"
+        ["dashboard_theme"] = "Theme",
+        ["txt_development"] = "Development"
       },
       ["validate_sensors"] = {
         ["help_p1"] = "Deze tool probeert een beknopt overzicht te geven van alle sensoren die u niet ontvangt.",
@@ -654,6 +655,7 @@ return {
         ["rate_profile"] = "Rate Profiel",
         ["pid_profile"] = "PID profiel",
         ["save_prompt"] = "Sla huidige pagina op in de vliegcontroller?",
+        ["save_prompt_local"] = "Save current settings?",
         ["cancel"] = "Afbreken",
         ["name"] = "Selecteer profiel",
         ["save_settings"] = "Instellingen opslaan",
