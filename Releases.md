@@ -1,3 +1,12 @@
+# 2.2.0-RC5
+
+Release candidate version for 2.2.0-RC5 Rotorflight
+
+- aligned pid defaults to fbl
+- added in new adjfunction sounds
+- fix compiler for i8n characters
+- improve reconnect tasks
+
 # 2.2.0-RC4
 
 Release candidate version for 2.2.0-RC4 Rotorflight
