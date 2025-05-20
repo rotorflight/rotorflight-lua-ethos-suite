@@ -88,10 +88,10 @@ function utils.telemetryBox(x, y, w, h, color, title, value, unit, titletop)
         local sy
         if titletop then
             -- Draw at the top with a little padding
-            sy = y + 2
+            sy = y + tsizeH/4
         else
             -- Draw at the bottom (original behavior)
-            sy = (y + h) - tsizeH
+            sy = (y + h) - (tsizeH + tsizeH / 4)
         end
         lcd.drawText(sx, sy, title)
     end

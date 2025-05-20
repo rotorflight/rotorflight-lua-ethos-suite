@@ -32,11 +32,11 @@ function preflight.paint(widget)
     -- Layout config
     local COLS = 3
     local ROWS = 2
-    local PADDING = 4  -- Used for spacing between boxes and top/bottom margin
+    local PADDING = 2  -- Padding between boxes and top/bottom edges
 
-    -- Calculate drawable area
+    -- Compute drawable space
     local contentWidth = WIDGET_W - ((COLS - 1) * PADDING)
-    local contentHeight = WIDGET_H - ((ROWS + 1) * PADDING)  -- rows+1 vertical paddings
+    local contentHeight = WIDGET_H - ((ROWS + 1) * PADDING)  -- vertical padding includes top/bottom
 
     local boxWidth = math.floor(contentWidth / COLS)
     local boxHeight = math.floor(contentHeight / ROWS)
@@ -44,30 +44,35 @@ function preflight.paint(widget)
     -- Background
     utils.setBackgroundColourBasedOnTheme()
 
-    -- Positioning helper
+    -- Get box position
     local function getBoxPosition(col, row)
         local x = (col - 1) * (boxWidth + PADDING)
         local y = PADDING + (row - 1) * (boxHeight + PADDING)
         return x, y
     end
 
-    -- Box layout definitions
+    -- Define box layout
     local boxes = {
-        {col=1, row=1, key="voltage", title="VOLTAGE", unit="V", color=nil},
-        {col=2, row=1, key="current", title="CURRENT", unit="A", color=2},
-        {col=3, row=1, key="rpm", title="RPM", unit="RPM", color=3, format=math.floor},
-        {col=1, row=2, colspan=3, key=nil, title="", value="PRE-FLIGHT", unit="", color=0}
+        {col=1, row=1, sensor="voltage", title="VOLTAGE", unit="V", color=nil},
+        {col=2, row=1, sensor="current", title="CURRENT", unit="A", color=2},
+        {col=3, row=1, sensor="rpm", title="RPM", unit="RPM", color=3, format=math.floor},
+        {col=1, row=2, colspan=3, sensor=nil, title="", value="PRE-FLIGHT", unit="", color=0},
+        -- Example with rowspan:
+        -- {col=3, row=1, rowspan=2, sensor="altitude", title="ALT", unit="m", color=4}
     }
 
     -- Draw boxes
     for _, box in ipairs(boxes) do
+        local colspan = box.colspan or 1
+        local rowspan = box.rowspan or 1
+
         local x, y = getBoxPosition(box.col, box.row)
-        local w = box.colspan and (boxWidth * box.colspan + PADDING * (box.colspan - 1)) or boxWidth
-        local h = boxHeight
+        local w = boxWidth * colspan + PADDING * (colspan - 1)
+        local h = boxHeight * rowspan + PADDING * (rowspan - 1)
 
         local value
-        if box.key then
-            value = telemetry.getSensorSource(box.key):value()
+        if box.sensor then
+            value = telemetry.getSensorSource(box.sensor):value()
             if box.format and value then
                 value = box.format(value)
             end
@@ -78,6 +83,7 @@ function preflight.paint(widget)
         utils.telemetryBox(x, y, w, h, box.color, box.title, value, box.unit, false)
     end
 end
+
 
 
 -- Main wakeup function
