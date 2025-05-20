@@ -63,7 +63,9 @@ local userpref_defaults ={
         syncname = false,
     },
     dashboard = {
-        theme = "status_eol",
+        theme_preflight = "default",
+        theme_inflight = "default",
+        theme_postflight = "default",
     },
     announcements = {
         armflags = true,
@@ -161,6 +163,7 @@ The parameters include:
 - repairSensors: makes the background task repair sensors
 - lastMemoryUsage.  Used to track memory usage for debugging
 - isArmed.  Used to track if the craft is armed
+- flightMode.  Used to track the flight mode [preflight, inflight, postflight]
 
 -- Every attempt should be made if using session vars to record them here with a nil
 -- to prevent conflicts with other scripts that may use the same session vars.
@@ -203,6 +206,7 @@ rfsuite.session.lastMemoryUsage = nil
 rfsuite.session.mcu_id = nil
 rfsuite.session.isConnected = false
 rfsuite.session.isArmed = false
+rfsuite.session.flightMode = nil
 
 --- Retrieves the version information of the rfsuite module.
 --- 

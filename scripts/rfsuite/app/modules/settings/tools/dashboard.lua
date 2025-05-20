@@ -20,7 +20,7 @@ local function openPage(pageIdx, title, script)
 
     formFieldCount = formFieldCount + 1
     rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = form.addLine(rfsuite.i18n.get("app.modules.settings.dashboard_theme"))
+    rfsuite.app.formLines[rfsuite.session.formLineCnt] = form.addLine(rfsuite.i18n.get("app.modules.settings.dashboard_theme_preflight"))
 
     -- get theme list
     local themeList = rfsuite.widgets.dashboard.listThemes() 
@@ -33,7 +33,7 @@ local function openPage(pageIdx, title, script)
                                                         formattedThemes, 
                                                         function()
                                                             if rfsuite.preferences and rfsuite.preferences.dashboard then
-                                                                local folderName = settings.theme
+                                                                local folderName = settings.theme_preflight
                                                                 for _, theme in ipairs(themeList) do
                                                                     if theme.folder == folderName then
                                                                         return theme.idx
@@ -46,11 +46,77 @@ local function openPage(pageIdx, title, script)
                                                             if rfsuite.preferences and rfsuite.preferences.dashboard then
                                                                 local theme = themeList[newValue]
                                                                 if theme then
-                                                                    settings.theme = theme.folder
+                                                                    settings.theme_preflight = theme.folder
                                                                 end
                                                             end
                                                         end)     
+
+    formFieldCount = formFieldCount + 1
+    rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.session.formLineCnt] = form.addLine(rfsuite.i18n.get("app.modules.settings.dashboard_theme_inflight"))
+
+    -- get theme list
+    local themeList = rfsuite.widgets.dashboard.listThemes() 
+    local formattedThemes = {}
+    for i, theme in ipairs(themeList) do
+        table.insert(formattedThemes, { theme.name, theme.idx })
+    end
+                                              
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.session.formLineCnt], nil, 
+                                                        formattedThemes, 
+                                                        function()
+                                                            if rfsuite.preferences and rfsuite.preferences.dashboard then
+                                                                local folderName = settings.theme_inflight
+                                                                for _, theme in ipairs(themeList) do
+                                                                    if theme.folder == folderName then
+                                                                        return theme.idx
+                                                                    end
+                                                                end
+                                                            end
+                                                            return nil
+                                                        end, 
+                                                        function(newValue) 
+                                                            if rfsuite.preferences and rfsuite.preferences.dashboard then
+                                                                local theme = themeList[newValue]
+                                                                if theme then
+                                                                    settings.theme_inflight = theme.folder
+                                                                end
+                                                            end
+                                                        end)                                                             
     
+    formFieldCount = formFieldCount + 1
+    rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.session.formLineCnt] = form.addLine(rfsuite.i18n.get("app.modules.settings.dashboard_theme_postflight"))
+
+    -- get theme list
+    local themeList = rfsuite.widgets.dashboard.listThemes() 
+    local formattedThemes = {}
+    for i, theme in ipairs(themeList) do
+        table.insert(formattedThemes, { theme.name, theme.idx })
+    end
+                                              
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.session.formLineCnt], nil, 
+                                                        formattedThemes, 
+                                                        function()
+                                                            if rfsuite.preferences and rfsuite.preferences.dashboard then
+                                                                local folderName = settings.theme_postflight
+                                                                for _, theme in ipairs(themeList) do
+                                                                    if theme.folder == folderName then
+                                                                        return theme.idx
+                                                                    end
+                                                                end
+                                                            end
+                                                            return nil
+                                                        end, 
+                                                        function(newValue) 
+                                                            if rfsuite.preferences and rfsuite.preferences.dashboard then
+                                                                local theme = themeList[newValue]
+                                                                if theme then
+                                                                    settings.theme_postflight = theme.folder
+                                                                end
+                                                            end
+                                                        end)      
+
 end
 
 local function onNavMenu()
@@ -76,7 +142,11 @@ local function onSaveMenu()
                     rfsuite.config.preferences,
                     rfsuite.preferences
                 )
-                rfsuite.widgets.dashboard.reload_theme()
+                -- update dashboard theme
+                rfsuite.widgets.dashboard.THEME_PREFLIGHT = settings.theme_preflight
+                rfsuite.widgets.dashboard.THEME_INFLIGHT  = settings.theme_inflight
+                rfsuite.widgets.dashboard.THEME_POSTFLIGHT = settings.theme_postflight
+                -- close save progress
                 rfsuite.app.triggers.closeSave = true
                 return true
             end,

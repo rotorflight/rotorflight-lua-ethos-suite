@@ -201,6 +201,21 @@
         "translation": "Theme",
         "needs_translation": "false"
       },
+      "dashboard_theme_preflight": {
+        "english": "Preflight Theme",
+        "translation": "Preflight Theme",
+        "needs_translation": "false"
+      },
+      "dashboard_theme_inflight": {
+        "english": "Inflight Theme",
+        "translation": "Inflight Theme",
+        "needs_translation": "false"
+      },
+      "dashboard_theme_postflight": {
+        "english": "Postflight Theme",
+        "translation": "Postflight Theme",
+        "needs_translation": "false"
+      },
       "txt_development": {
         "english": "Development",
         "translation": "Development",

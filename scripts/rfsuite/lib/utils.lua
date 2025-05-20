@@ -23,6 +23,32 @@ local utils = {}
 local arg = {...}
 local config = arg[1]
 
+function utils.inFlight()
+    local telemetry = rfsuite.tasks.telemetry
+
+    if not telemetry.active() then
+        return false
+    end
+
+    if rfsuite.session.isArmed == true then
+        local governor = telemetry.getSensorSource("governor")
+        local rpm = telemetry.getSensorSource("rpm")
+        local throttle = telemetry.getSensorSource("throttle_percent")
+
+        if governor and governor:value() == 4 then
+            return true
+        elseif rpm and rpm:value() > 500 then
+            return true
+        elseif throttle and throttle:value() > 30 then
+            return true
+        end
+
+    end
+
+    return false
+end
+
+
 
 function utils.createCacheFile(tbl, path, options)
 

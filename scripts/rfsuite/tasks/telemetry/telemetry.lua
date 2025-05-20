@@ -739,16 +739,8 @@ function telemetry.wakeup()
                 ]]
                 if type(sensorDef.maxmin_trigger) == "function" then
                     shouldTrack = sensorDef.maxmin_trigger()
-                elseif rfsuite.session.isArmed == true and telemetry.getSensorSource("governor") and telemetry.getSensorSource("governor"):value() == 4 then
-                    shouldTrack = true
-                elseif rfsuite.session.isArmed == true and telemetry.getSensorSource("rpm") and telemetry.getSensorSource("rpm"):value() > 500 then
-                    shouldTrack = true    
-                elseif rfsuite.session.isArmed == true and telemetry.getSensorSource("throttle_percent") and telemetry.getSensorSource("throttle_percent"):value() > 30 then               
-                    shouldTrack = true
-                elseif rfsuite.session.isArmed == true then
-                    shouldTrack = true
                 else
-                    shouldTrack = false
+                    shouldTrack = rfsuite.utils.inFlight()
                 end
 
                 -- Record min/max if tracking is active
