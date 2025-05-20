@@ -25,33 +25,60 @@ end
 
 -- Paint function
 function preflight.paint(widget)
-
     local WIDGET_W, WIDGET_H = lcd.getWindowSize()
     local telemetry = rfsuite.tasks.telemetry
+    local utils = rfsuite.widgets.dashboard.utils
 
-    -- Set background color based on theme
-    rfsuite.widgets.dashboard.utils.setBackgroundColourBasedOnTheme()
+    -- Layout config
+    local COLS = 3
+    local ROWS = 2
+    local PADDING = 4  -- Used for spacing between boxes and top/bottom margin
 
-    -- example 
-    --rfsuite.widgets.dashboard.utils.telemetryBox(x, y, w, h, color, title, value, unit, titleTop)
+    -- Calculate drawable area
+    local contentWidth = WIDGET_W - ((COLS - 1) * PADDING)
+    local contentHeight = WIDGET_H - ((ROWS + 1) * PADDING)  -- rows+1 vertical paddings
 
-    -- voltage
-    local value = telemetry.getSensorSource("voltage"):value()
-    rfsuite.widgets.dashboard.utils.telemetryBox(0, 2, 200, 100, nil, "VOLTAGE", value, "V", false)
+    local boxWidth = math.floor(contentWidth / COLS)
+    local boxHeight = math.floor(contentHeight / ROWS)
 
-    -- current
-    local value = telemetry.getSensorSource("current"):value()
-    rfsuite.widgets.dashboard.utils.telemetryBox(202, 2, 200, 100, 2, "CURRENT", value, "A", false)
+    -- Background
+    utils.setBackgroundColourBasedOnTheme()
 
-    -- current
-    local value = telemetry.getSensorSource("rpm"):value()
-    value = value and math.floor(value)
-    rfsuite.widgets.dashboard.utils.telemetryBox(404, 2, 200, 100, 3, "RPM", value, "RPM", false)
+    -- Positioning helper
+    local function getBoxPosition(col, row)
+        local x = (col - 1) * (boxWidth + PADDING)
+        local y = PADDING + (row - 1) * (boxHeight + PADDING)
+        return x, y
+    end
 
-    -- STATUS
-    rfsuite.widgets.dashboard.utils.telemetryBox(0, 104, 604, 100, 0, "", "PRE-FLIGHT", "", false)
+    -- Box layout definitions
+    local boxes = {
+        {col=1, row=1, key="voltage", title="VOLTAGE", unit="V", color=nil},
+        {col=2, row=1, key="current", title="CURRENT", unit="A", color=2},
+        {col=3, row=1, key="rpm", title="RPM", unit="RPM", color=3, format=math.floor},
+        {col=1, row=2, colspan=3, key=nil, title="", value="PRE-FLIGHT", unit="", color=0}
+    }
 
+    -- Draw boxes
+    for _, box in ipairs(boxes) do
+        local x, y = getBoxPosition(box.col, box.row)
+        local w = box.colspan and (boxWidth * box.colspan + PADDING * (box.colspan - 1)) or boxWidth
+        local h = boxHeight
+
+        local value
+        if box.key then
+            value = telemetry.getSensorSource(box.key):value()
+            if box.format and value then
+                value = box.format(value)
+            end
+        else
+            value = box.value
+        end
+
+        utils.telemetryBox(x, y, w, h, box.color, box.title, value, box.unit, false)
+    end
 end
+
 
 -- Main wakeup function
 function preflight.wakeup(widget)
