@@ -18,7 +18,9 @@
 ]] --
 local init = {
     name = "RFSTATUS [EOL]",
-    script = "status.lua", -- run this script
+    preflight = "status.lua", -- run this script before taking off
+    inflight = "status.lua", -- run this script when flying
+    postflight = "status.lua", -- run this script when landed
     wakeup = 0.5, -- seconds
     wakeup_bg = 2, -- seconds
 }

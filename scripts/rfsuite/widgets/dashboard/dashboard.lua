@@ -17,10 +17,8 @@
 local dashboard = {}
 local lastFlightMode = nil
 
--- User parameters (set these somewhere in your app)
-dashboard.THEME_PREFLIGHT = rfsuite.preferences.theme_preflight or "default"
-dashboard.THEME_INFLIGHT  = rfsuite.preferences.theme_inflight or "default"
-dashboard.THEME_POSTFLIGHT = rfsuite.preferences.theme_postflight or "default"
+
+
 dashboard.DEFAULT_THEME = "default" -- fallback
 
 local themesBasePath = "SCRIPTS:/".. rfsuite.config.baseDir.. "/widgets/dashboard/themes/"
@@ -33,30 +31,71 @@ dashboard.flightmode = rfsuite.session.flightMode or "preflight" -- To be set by
 dashboard.utils = assert(rfsuite.compiler.loadfile("SCRIPTS:/".. rfsuite.config.baseDir.. "/widgets/dashboard/utils.lua"))()
 
 local function load_state_script(theme_folder, state)
-    local script_path = themesBasePath .. theme_folder .. "/" .. state .. ".lua"
+    -- 1) Load init.lua so we can read the init table
+    local initPath  = themesBasePath .. theme_folder .. "/init.lua"
+    local initChunk, initErr = rfsuite.compiler.loadfile(initPath)
+    if not initChunk then
+        rfsuite.utils.log(
+          "dashboard: Could not load init.lua for " .. theme_folder ..
+          ". Error: " .. tostring(initErr),
+          "error"
+        )
+        return nil
+    end
+
+    local ok, initTable = pcall(initChunk)
+    if not ok or type(initTable) ~= "table" then
+        rfsuite.utils.log(
+          "dashboard: Error running init.lua for " .. theme_folder ..
+          ": " .. tostring(initTable),
+          "error"
+        )
+        return nil
+    end
+
+    -- 2) Pick the file name from init (e.g. initTable.preflight == "status.lua")
+    local scriptName = initTable[state]
+    if type(scriptName) ~= "string" or scriptName == "" then
+        scriptName = state .. ".lua"
+    end
+
+    -- 3) Try loading that file
+    local script_path = themesBasePath .. theme_folder .. "/" .. scriptName
     local chunk, err = rfsuite.compiler.loadfile(script_path)
+
+    -- 4) If it fails, fall back to default theme (using the same scriptName)
     if not chunk then
-        -- fallback to default
-        script_path = themesBasePath .. dashboard.DEFAULT_THEME .. "/" .. state .. ".lua"
-        chunk, err = rfsuite.compiler.loadfile(script_path)
+        local fallbackPath = themesBasePath .. dashboard.DEFAULT_THEME .. "/" .. scriptName
+        chunk, err = rfsuite.compiler.loadfile(fallbackPath)
         if not chunk then
-            --rfsuite.utils.log("dashboard: Could not load " .. state .. ".lua for " .. theme_folder .. " or default. Error: " .. tostring(err), "error")
+            rfsuite.utils.log(
+              "dashboard: Could not load " .. scriptName ..
+              " for " .. theme_folder .. " or default. Error: " .. tostring(err),
+              "error"
+            )
             return nil
         end
     end
-    local ok, module = pcall(chunk)
-    if not ok then
-        --rfsuite.utils.log("dashboard: Error running " .. state .. ".lua: " .. tostring(module), "error")
+
+    -- 5) Run it and return the module
+    local ok2, module = pcall(chunk)
+    if not ok2 then
+        rfsuite.utils.log(
+          "dashboard: Error running " .. scriptName .. ": " .. tostring(module),
+          "error"
+        )
         return nil
     end
+
     return module
 end
 
+
 function dashboard.reload_themes()
     loadedStateModules = {
-        preflight  = load_state_script(dashboard.THEME_PREFLIGHT  or dashboard.DEFAULT_THEME, "preflight"),
-        inflight   = load_state_script(dashboard.THEME_INFLIGHT   or dashboard.DEFAULT_THEME, "inflight"),
-        postflight = load_state_script(dashboard.THEME_POSTFLIGHT or dashboard.DEFAULT_THEME, "postflight"),
+        preflight  = load_state_script(rfsuite.preferences.dashboard.theme_preflight  or dashboard.DEFAULT_THEME, "preflight"),
+        inflight   = load_state_script(rfsuite.preferences.dashboard.theme_inflight    or dashboard.DEFAULT_THEME, "inflight"),
+        postflight = load_state_script(rfsuite.preferences.dashboard.theme_postflight  or dashboard.DEFAULT_THEME, "postflight"),
     }
     wakeupScheduler = 0
 end

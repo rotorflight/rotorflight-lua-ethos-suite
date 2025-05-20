@@ -143,9 +143,7 @@ local function onSaveMenu()
                     rfsuite.preferences
                 )
                 -- update dashboard theme
-                rfsuite.widgets.dashboard.THEME_PREFLIGHT = settings.theme_preflight
-                rfsuite.widgets.dashboard.THEME_INFLIGHT  = settings.theme_inflight
-                rfsuite.widgets.dashboard.THEME_POSTFLIGHT = settings.theme_postflight
+                rfsuite.widgets.dashboard.reload_themes()
                 -- close save progress
                 rfsuite.app.triggers.closeSave = true
                 return true

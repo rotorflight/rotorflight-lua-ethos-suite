@@ -1264,7 +1264,7 @@ function app.wakeupUI()
     -- a watchdog to enable the close button on a progress box dialog when loading data from the fbl
     if app.dialogs.progressDisplay == true and app.dialogs.progressWatchDog ~= nil then
 
-        app.dialogs.progressCounter = app.dialogs.progressCounter + (rfsuite.app.Page.progressCounter or 1.5)
+        app.dialogs.progressCounter = app.dialogs.progressCounter + (rfsuite.app.Page and rfsuite.app.Page.progressCounter or 1.5)
         app.ui.progressDisplayValue(app.dialogs.progressCounter)
 
         if (os.clock() - app.dialogs.progressWatchDog) > (tonumber(rfsuite.tasks.msp.protocol.pageReqTimeout)) then
