@@ -30,6 +30,57 @@ dashboard.flightmode = rfsuite.session.flightMode or "preflight" -- To be set by
 
 dashboard.utils = assert(rfsuite.compiler.loadfile("SCRIPTS:/".. rfsuite.config.baseDir.. "/widgets/dashboard/utils.lua"))()
 
+function dashboard.renderLayout(widget, config)
+    local telemetry = rfsuite.tasks.telemetry
+    local utils = dashboard.utils
+
+    local WIDGET_W, WIDGET_H = lcd.getWindowSize()
+    local COLS, ROWS = config.layout.cols, config.layout.rows
+    local PADDING = config.layout.padding
+
+    local contentWidth = WIDGET_W - ((COLS - 1) * PADDING)
+    local contentHeight = WIDGET_H - ((ROWS + 1) * PADDING)
+
+    local boxWidth = math.floor(contentWidth / COLS)
+    local boxHeight = math.floor(contentHeight / ROWS)
+
+    utils.setBackgroundColourBasedOnTheme()
+
+    local function getBoxPosition(col, row)
+        local x = (col - 1) * (boxWidth + PADDING)
+        local y = PADDING + (row - 1) * (boxHeight + PADDING)
+        return x, y
+    end
+
+    for _, box in ipairs(config.boxes or {}) do
+        local x, y = getBoxPosition(box.col, box.row)
+        local w = (box.colspan or 1) * boxWidth + (box.colspan and (box.colspan - 1) * PADDING or 0)
+        local h = (box.rowspan or 1) * boxHeight + (box.rowspan and (box.rowspan - 1) * PADDING or 0)
+
+        -- Process sensor value
+        local value = box.value
+        if not value and box.source then
+            local sensor = telemetry.getSensorSource(box.source)
+            value = sensor and sensor:value()
+
+            local transform = box.transform
+            if type(transform) == "string" and math[transform] then
+                if value then
+                    value = math[transform](value)
+                end
+            elseif type(transform) == "function" then
+                if value then
+                    value = transform(value)
+                end
+            end
+        end
+
+
+        utils.telemetryBox(x, y, w, h, box.color, box.title, value, box.unit, false, box.bgcolor)
+    end
+end
+
+
 local function load_state_script(theme_folder, state)
     -- 1) Load init.lua so we can read the init table
     local initPath  = themesBasePath .. theme_folder .. "/init.lua"
@@ -78,13 +129,18 @@ local function load_state_script(theme_folder, state)
     end
 
     -- 5) Run it and return the module
-    local ok2, module = pcall(chunk)
-    if not ok2 then
-        rfsuite.utils.log(
-          "dashboard: Error running " .. scriptName .. ": " .. tostring(module),
-          "error"
-        )
-        return nil
+    if initTable.standalone then
+        return chunk  -- theme takes full control
+    else
+        local ok2, module = pcall(chunk)
+        if not ok2 then
+            rfsuite.utils.log(
+                "dashboard: Error running " .. scriptName .. ": " .. tostring(module),
+                "error"
+            )
+            return nil
+        end
+        return module
     end
 
     return module
@@ -105,25 +161,37 @@ dashboard.reload_themes()
 local function callStateFunc(funcName, widget, paintFallback)
     local state = dashboard.flightmode or "preflight"
     local module = loadedStateModules[state]
+
     if not rfsuite.tasks.active() then
         return nil
-    elseif module and type(module[funcName]) == "function" then
+    end
+
+    -- Declarative module: directly a layout table
+    if type(module) == "table" and module.layout and funcName == "paint" then
+        return module  -- Let `dashboard.paint()` handle rendering
+    end
+
+    -- Traditional function-based module
+    if module and type(module[funcName]) == "function" then
         return module[funcName](widget)
-    else
+    end
+
+    if paintFallback then
         local msg = "dashboard: " .. funcName .. " not implemented for " .. state .. "."
-        --rfsuite.utils.log(msg, "info")
-        if paintFallback then
-            dashboard.utils.screenError(msg)
-        end
+        dashboard.utils.screenError(msg)
     end
 end
+
 
 function dashboard.create(widget)
     return callStateFunc("create", widget)
 end
 
 function dashboard.paint(widget)
-    return callStateFunc("paint", widget, true)
+    local result = callStateFunc("paint", widget, true)
+    if type(result) == "table" and result.layout then
+        dashboard.renderLayout(widget, result)
+    end
 end
 
 function dashboard.configure(widget)
@@ -157,7 +225,16 @@ function dashboard.wakeup(widget)
 
     if (now - wakeupScheduler) >= interval then
         wakeupScheduler = now
-        return callStateFunc("wakeup", widget)
+
+        local state = dashboard.flightmode or "preflight"
+        local module = loadedStateModules[state]
+
+        if type(module) == "table" and module.layout then
+            -- Declarative layout → force redraw
+            lcd.invalidate(widget)
+        else
+            return callStateFunc("wakeup", widget)
+        end
     end
 end
 

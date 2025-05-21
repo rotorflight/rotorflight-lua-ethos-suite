@@ -22,7 +22,8 @@ local init = {
     inflight = "inflight.lua", -- run this script when flying
     postflight = "postflight.lua", -- run this script when landed
     wakeup = 0.5, -- seconds
-    wakeup_bg = 2, -- seconds
+    wakeup_bg = 2, -- seconds,
+    standalone = false, -- if true - then it is up to the theme to handle all rendering.  
 }
 
 return init
