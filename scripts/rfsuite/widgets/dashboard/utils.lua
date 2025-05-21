@@ -341,7 +341,7 @@ function utils.modelImageBox(
     local modelID = rfsuite and rfsuite.session and rfsuite.session.modelID
     local image1 = craftName and ("/bitmaps/models/" .. craftName .. ".png") or nil
     local image2 = modelID and ("/bitmaps/models/" .. modelID .. ".png") or nil
-    local default_image = "widgets/dashboard/default_image.png"
+    local default_image = model.bitmap() or "widgets/dashboard/default_image.png"
 
     local bitmapPtr = rfsuite and rfsuite.utils and rfsuite.utils.loadImage and rfsuite.utils.loadImage(image1, image2, default_image) or nil
 
