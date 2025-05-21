@@ -41,21 +41,21 @@ function dashboard.renderLayout(widget, config)
     local contentWidth = WIDGET_W - ((COLS - 1) * PADDING)
     local contentHeight = WIDGET_H - ((ROWS + 1) * PADDING)
 
-    local boxWidth = math.floor(contentWidth / COLS)
-    local boxHeight = math.floor(contentHeight / ROWS)
+    local boxWidth = contentWidth / COLS
+    local boxHeight = contentHeight / ROWS
 
     utils.setBackgroundColourBasedOnTheme()
 
     local function getBoxPosition(col, row)
-        local x = (col - 1) * (boxWidth + PADDING)
-        local y = PADDING + (row - 1) * (boxHeight + PADDING)
+        local x = math.floor((col - 1) * (boxWidth + PADDING))
+        local y = math.floor(PADDING + (row - 1) * (boxHeight + PADDING))
         return x, y
     end
 
     for _, box in ipairs(config.boxes or {}) do
         local x, y = getBoxPosition(box.col, box.row)
-        local w = (box.colspan or 1) * boxWidth + ((box.colspan or 1) - 1) * PADDING
-        local h = (box.rowspan or 1) * boxHeight + ((box.rowspan or 1) - 1) * PADDING
+        local w = math.floor((box.colspan or 1) * boxWidth + ((box.colspan or 1) - 1) * PADDING)
+        local h = math.floor((box.rowspan or 1) * boxHeight + ((box.rowspan or 1) - 1) * PADDING)
 
         if box.type == "telemetry" then
             local value = nil
