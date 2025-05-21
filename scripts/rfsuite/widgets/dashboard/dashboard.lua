@@ -54,29 +54,55 @@ function dashboard.renderLayout(widget, config)
 
     for _, box in ipairs(config.boxes or {}) do
         local x, y = getBoxPosition(box.col, box.row)
-        local w = (box.colspan or 1) * boxWidth + (box.colspan and (box.colspan - 1) * PADDING or 0)
-        local h = (box.rowspan or 1) * boxHeight + (box.rowspan and (box.rowspan - 1) * PADDING or 0)
+        local w = (box.colspan or 1) * boxWidth + ((box.colspan or 1) - 1) * PADDING
+        local h = (box.rowspan or 1) * boxHeight + ((box.rowspan or 1) - 1) * PADDING
 
-        -- Process sensor value
-        local value = box.value
-        if not value and box.source then
-            local sensor = telemetry.getSensorSource(box.source)
-            value = sensor and sensor:value()
-
-            local transform = box.transform
-            if type(transform) == "string" and math[transform] then
-                if value then
-                    value = math[transform](value)
-                end
-            elseif type(transform) == "function" then
-                if value then
-                    value = transform(value)
+        if box.type == "telemetry" then
+            local value = nil
+            if box.source then
+                local sensor = telemetry.getSensorSource(box.source)
+                value = sensor and sensor:value()
+                if type(box.transform) == "string" and math[box.transform] then
+                    value = value and math[box.transform](value)
+                elseif type(box.transform) == "function" then
+                    value = value and box.transform(value)
                 end
             end
-        end
-
-
-        utils.telemetryBox(x, y, w, h, box.color, box.title, value, box.unit, false, box.bgcolor)
+            utils.telemetryBox(
+                x, y, w, h,
+                box.color, box.title, value, box.unit, box.bgcolor,
+                box.titlealign, box.valuealign, box.titlecolor, box.titlepos,
+                box.titlepadding, box.titlepaddingleft, box.titlepaddingright, box.titlepaddingtop, box.titlepaddingbottom,
+                box.valuepadding, box.valuepaddingleft, box.valuepaddingright, box.valuepaddingtop, box.valuepaddingbottom
+            )
+        elseif box.type == "text" then
+            utils.telemetryBox(
+                x, y, w, h,
+                box.color, box.title, box.value, box.unit,
+                box.bgcolor,
+                box.titlealign, box.valuealign,
+                box.titlecolor, box.titlepos,
+                box.titlepadding, box.titlepaddingleft, box.titlepaddingright, box.titlepaddingtop, box.titlepaddingbottom,
+                box.valuepadding, box.valuepaddingleft, box.valuepaddingright, box.valuepaddingtop, box.valuepaddingbottom
+            )
+        elseif box.type == "image" then
+            utils.imageBox(
+                x, y, w, h,
+                box.color, box.title,
+                box.value or box.source or "widgets/dashboard/default_image.png",
+                box.imagewidth, box.imageheight, box.imagealign,
+                box.bgcolor, box.titlealign, box.titlecolor, box.titlepos,
+                box.imagepadding, box.imagepaddingleft, box.imagepaddingright, box.imagepaddingtop, box.imagepaddingbottom
+            )
+        elseif box.type == "modelimage" then
+            utils.modelImageBox(
+                x, y, w, h,
+                box.color, box.title,
+                box.imagewidth, box.imageheight, box.imagealign,
+                box.bgcolor, box.titlealign, box.titlecolor, box.titlepos,
+                box.imagepadding, box.imagepaddingleft, box.imagepaddingright, box.imagepaddingtop, box.imagepaddingbottom
+            )
+        end    
     end
 end
 

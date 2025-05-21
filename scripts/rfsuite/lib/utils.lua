@@ -48,6 +48,26 @@ function utils.inFlight()
     return false
 end
 
+-- get the governor text from the value
+function utils.getGovernorState(value)
+    local map = {     
+        [0] =  rfsuite.i18n.get("widgets.governor.OFF"),
+        [1] =  rfsuite.i18n.get("widgets.governor.IDLE"),
+        [2] =  rfsuite.i18n.get("widgets.governor.SPOOLUP"),
+        [3] =  rfsuite.i18n.get("widgets.governor.RECOVERY"),
+        [4] =  rfsuite.i18n.get("widgets.governor.ACTIVE"),
+        [5] =  rfsuite.i18n.get("widgets.governor.THROFF"),
+        [6] =  rfsuite.i18n.get("widgets.governor.LOSTHS"),
+        [7] =  rfsuite.i18n.get("widgets.governor.AUTOROT"),
+        [8] =  rfsuite.i18n.get("widgets.governor.BAILOUT"),
+        [100] = rfsuite.i18n.get("widgets.governor.DISABLED"),
+        [101] = rfsuite.i18n.get("widgets.governor.DISARMED")
+    }
+
+    if map[value] then
+        return map[value]
+    end
+end
 
 
 function utils.createCacheFile(tbl, path, options)
