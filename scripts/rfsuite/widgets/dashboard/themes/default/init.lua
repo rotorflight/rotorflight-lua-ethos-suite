@@ -16,14 +16,15 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 ]] --
+-- Theme initialization table
 local init = {
-    name = "Default",
-    preflight = "preflight.lua", -- run this script before taking off
-    inflight = "inflight.lua", -- run this script when flying
-    postflight = "postflight.lua", -- run this script when landed
-    wakeup = 0.5, -- seconds
-    wakeup_bg = 2, -- seconds,
-    standalone = false, -- if true - then it is up to the theme to handle all rendering.  
+    name = "Default",                -- Theme name
+    preflight = "preflight.lua",     -- Script to run before takeoff
+    inflight = "inflight.lua",       -- Script to run during flight
+    postflight = "postflight.lua",   -- Script to run after landing
+    wakeup = 0.5,                    -- Interval (seconds) to run wakeup script when display is visible
+    wakeup_bg = 60,                  -- Interval (seconds) to run wakeup script when display is not visible
+    standalone = false,              -- If true, theme handles all rendering itself
 }
 
 return init

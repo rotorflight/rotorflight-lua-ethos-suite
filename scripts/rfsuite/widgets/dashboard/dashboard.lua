@@ -46,6 +46,11 @@ function dashboard.renderLayout(widget, config)
 
     utils.setBackgroundColourBasedOnTheme()
 
+    if not rfsuite.tasks.active() then
+        utils.screenError("RFSUITEG TASK NOT ENABLED")
+        return
+    end
+
     local function getBoxPosition(col, row)
         local x = (col - 1) * (boxWidth + PADDING)
         local y = PADDING + (row - 1) * (boxHeight + PADDING)
@@ -60,7 +65,7 @@ function dashboard.renderLayout(widget, config)
         if box.type == "telemetry" then
             local value = nil
             if box.source then
-                local sensor = telemetry.getSensorSource(box.source)
+                local sensor = telemetry and telemetry.getSensorSource(box.source)
                 value = sensor and sensor:value()
                 if type(box.transform) == "string" and math[box.transform] then
                     value = value and math[box.transform](value)
@@ -228,9 +233,19 @@ function dashboard.create(widget)
 end
 
 function dashboard.paint(widget)
-    local result = callStateFunc("paint", widget, true)
-    if type(result) == "table" and result.layout then
-        dashboard.renderLayout(widget, result)
+    local state = dashboard.flightmode or "preflight"
+    local module = loadedStateModules[state]
+
+    if type(module) == "table" and module.layout and module.boxes then
+        -- Normal layout rendering
+        dashboard.renderLayout(widget, module)
+        -- Custom overlay if present
+        if type(module.paint) == "function" then
+            module.paint(widget, module.layout, module.boxes)
+        end
+    else
+        -- legacy fallback, etc.
+        callStateFunc("paint", widget)
     end
 end
 
@@ -246,8 +261,17 @@ function dashboard.write(widget)
     return callStateFunc("write", widget)
 end
 
-function dashboard.event(widget)
-    return callStateFunc("event", widget)
+function dashboard.event(widget, category, code)
+    local state = dashboard.flightmode or "preflight"
+    local module = loadedStateModules[state]
+
+    if type(module) == "table" and type(module.event) == "function" then
+        -- Declarative theme with event handler
+        return module.event(widget, category, code)
+    else
+        -- For old style, callStateFunc will search for event
+        return callStateFunc("event", widget, category, code)
+    end
 end
 
 function dashboard.wakeup(widget)
@@ -272,6 +296,10 @@ function dashboard.wakeup(widget)
         if type(module) == "table" and module.layout then
             -- Declarative layout → force redraw
             lcd.invalidate(widget)
+            -- If module has a wakeup function, run it
+            if type(module.wakeup) == "function" then
+                module.wakeup(widget)
+            end
         else
             return callStateFunc("wakeup", widget)
         end
