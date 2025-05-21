@@ -1,6 +1,12 @@
 local utils = {}
 
-local bitmapPtr
+local imageCache = {}
+
+function utils.resetImageCache()
+    for k in pairs(imageCache) do
+        imageCache[k] = nil
+    end
+end
 
 function utils.screenError(msg)
     local w, h = lcd.getWindowSize()
@@ -249,7 +255,12 @@ function utils.imageBox(
     local region_h = h - imagepaddingtop - imagepaddingbottom
 
     if rfsuite and rfsuite.utils and rfsuite.utils.loadImage and lcd and lcd.drawBitmap then
-        local bitmapPtr = rfsuite.utils.loadImage(imagePath, nil, "widgets/dashboard/default_image.png")
+        local cacheKey = imagePath
+        local bitmapPtr = imageCache[cacheKey]
+        if not bitmapPtr then
+            bitmapPtr = rfsuite.utils.loadImage(imagePath, nil, "widgets/dashboard/default_image.png")
+            imageCache[cacheKey] = bitmapPtr
+        end
         if bitmapPtr then
             local img_w = imagewidth or region_w
             local img_h = imageheight or region_h
@@ -343,8 +354,12 @@ function utils.modelImageBox(
     local image2 = modelID and ("/bitmaps/models/" .. modelID .. ".png") or nil
     local default_image = model.bitmap() or "widgets/dashboard/default_image.png"
 
-    local bitmapPtr = rfsuite and rfsuite.utils and rfsuite.utils.loadImage and rfsuite.utils.loadImage(image1, image2, default_image) or nil
-
+    local cacheKey = image1 or image2 or default_image
+    local bitmapPtr = imageCache[cacheKey]
+    if not bitmapPtr and rfsuite and rfsuite.utils and rfsuite.utils.loadImage then
+        bitmapPtr = rfsuite.utils.loadImage(image1, image2, default_image)
+        imageCache[cacheKey] = bitmapPtr
+    end
     if bitmapPtr then
         local img_w = imagewidth or region_w
         local img_h = imageheight or region_h

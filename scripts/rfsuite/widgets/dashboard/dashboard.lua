@@ -70,13 +70,17 @@ function dashboard.renderLayout(widget, config)
                     value = value and box.transform(value)
                 end
             end
+            local displayValue = value
+            local displayUnit = box.unit
+
             if value == nil then
-                value = box.novalue or "-"   
-                box.unit = nil 
+                displayValue = box.novalue or "-"
+                displayUnit = nil
             end
+
             utils.telemetryBox(
                 x, y, w, h,
-                box.color, box.title, value, box.unit, box.bgcolor,
+                box.color, box.title, displayValue, displayUnit, box.bgcolor,
                 box.titlealign, box.valuealign, box.titlecolor, box.titlepos,
                 box.titlepadding, box.titlepaddingleft, box.titlepaddingright, box.titlepaddingtop, box.titlepaddingbottom,
                 box.valuepadding, box.valuepaddingleft, box.valuepaddingright, box.valuepaddingtop, box.valuepaddingbottom
@@ -94,16 +98,18 @@ function dashboard.renderLayout(widget, config)
                     value = value and box.transform(value)
                 end
             end
+            local displayValue = value
+            local displayUnit = box.unit
+
             if value == nil then
-                value = box.novalue or "-"    
-                box.unit = nil
-            end        
+                displayValue = box.novalue or "-"
+                displayUnit = nil
+            end
+
             utils.telemetryBox(
                 x, y, w, h,
-                box.color, box.title, box.value, box.unit,
-                box.bgcolor,
-                box.titlealign, box.valuealign,
-                box.titlecolor, box.titlepos,
+                box.color, box.title, displayValue, displayUnit, box.bgcolor,
+                box.titlealign, box.valuealign, box.titlecolor, box.titlepos,
                 box.titlepadding, box.titlepaddingleft, box.titlepaddingright, box.titlepaddingtop, box.titlepaddingbottom,
                 box.valuepadding, box.valuepaddingleft, box.valuepaddingright, box.valuepaddingtop, box.valuepaddingbottom
             )
@@ -219,6 +225,7 @@ end
 
 
 function dashboard.reload_themes()
+    dashboard.utils.resetImageCache()  -- clear cached images
     loadedStateModules = {
         preflight  = load_state_script(rfsuite.preferences.dashboard.theme_preflight  or dashboard.DEFAULT_THEME, "preflight"),
         inflight   = load_state_script(rfsuite.preferences.dashboard.theme_inflight    or dashboard.DEFAULT_THEME, "inflight"),
