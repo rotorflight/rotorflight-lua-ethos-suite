@@ -99,14 +99,29 @@ function utils.telemetryBox(
     valuepaddingbottom = valuepaddingbottom or valuepadding or 0
 
     -- Draw value (centered by default, alignment can be overridden)
-    if value ~= nil then
+if value ~= nil then
         local str = tostring(value) .. (unit or "")
+        local unitIsDegree = (unit == "°" or (unit and unit:find("°")))
+        local strForWidth = unitIsDegree and (tostring(value) .. "0") or str
+
+        -- Compute available height for value
+        local availH = h - valuepaddingtop - valuepaddingbottom
+
+        -- Start with largest font set
         local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL}
-        local maxW, maxH = w - valuepaddingleft - valuepaddingright, h - valuepaddingtop - valuepaddingbottom
+
+        -- If the box is short, limit max font
+        lcd.font(FONT_XL)
+        local _, xlFontHeight = lcd.getTextSize("8")
+        if xlFontHeight > availH * 0.5 then
+            fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L}
+        end
+
+        local maxW, maxH = w - valuepaddingleft - valuepaddingright, availH
         local bestFont, bestW, bestH = FONT_XXS, 0, 0
         for _, font in ipairs(fonts) do
             lcd.font(font)
-            local tW, tH = lcd.getTextSize(str)
+            local tW, tH = lcd.getTextSize(strForWidth)
             if tW <= maxW and tH <= maxH then
                 bestFont, bestW, bestH = font, tW, tH
             else
@@ -138,6 +153,7 @@ function utils.telemetryBox(
         end
         lcd.drawText(sx, sy, str)
     end
+
 
     -- Draw title (top or bottom, color and alignment)
     if title then

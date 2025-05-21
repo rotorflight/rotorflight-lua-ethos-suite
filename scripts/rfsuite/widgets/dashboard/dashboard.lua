@@ -66,6 +66,8 @@ function dashboard.renderLayout(widget, config)
                     value = value and math[box.transform](value)
                 elseif type(box.transform) == "function" then
                     value = value and box.transform(value)
+                elseif type(box.transform) == "number" then
+                    value = value and box.transform(value)
                 end
             end
             utils.telemetryBox(
@@ -76,6 +78,18 @@ function dashboard.renderLayout(widget, config)
                 box.valuepadding, box.valuepaddingleft, box.valuepaddingright, box.valuepaddingtop, box.valuepaddingbottom
             )
         elseif box.type == "text" then
+            local value = nil
+            if box.source then
+                local sensor = telemetry.getSensorSource(box.source)
+                value = sensor and sensor:value()
+                if type(box.transform) == "string" and math[box.transform] then
+                    value = value and math[box.transform](value)
+                elseif type(box.transform) == "function" then
+                    value = value and box.transform(value)
+                elseif type(box.transform) == "number" then
+                    value = value and box.transform(value)
+                end
+            end            
             utils.telemetryBox(
                 x, y, w, h,
                 box.color, box.title, box.value, box.unit,
