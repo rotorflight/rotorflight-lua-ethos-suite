@@ -17,7 +17,7 @@
 local dashboard = {}
 local lastFlightMode = nil
 
-
+local initTime = os.clock()
 
 dashboard.DEFAULT_THEME = "default" -- fallback
 
@@ -46,11 +46,6 @@ function dashboard.renderLayout(widget, config)
 
     utils.setBackgroundColourBasedOnTheme()
 
-    if not rfsuite.tasks.active() then
-        utils.screenError("RFSUITEG TASK NOT ENABLED")
-        return
-    end
-
     local function getBoxPosition(col, row)
         local x = (col - 1) * (boxWidth + PADDING)
         local y = PADDING + (row - 1) * (boxHeight + PADDING)
@@ -75,6 +70,10 @@ function dashboard.renderLayout(widget, config)
                     value = value and box.transform(value)
                 end
             end
+            if value == nil then
+                value = box.novalue or "-"   
+                box.unit = nil 
+            end
             utils.telemetryBox(
                 x, y, w, h,
                 box.color, box.title, value, box.unit, box.bgcolor,
@@ -94,7 +93,11 @@ function dashboard.renderLayout(widget, config)
                 elseif type(box.transform) == "number" then
                     value = value and box.transform(value)
                 end
-            end            
+            end
+            if value == nil then
+                value = box.novalue or "-"    
+                box.unit = nil
+            end        
             utils.telemetryBox(
                 x, y, w, h,
                 box.color, box.title, box.value, box.unit,
@@ -123,6 +126,29 @@ function dashboard.renderLayout(widget, config)
             )
         end    
     end
+
+    -- display overlay error message if any
+    local apiVersionAsString = tostring(rfsuite.session.apiVersion)
+    local moduleState = (model.getModule(0):enable()  or model.getModule(1):enable()) or false
+    local sportSensor = system.getSource({appId = 0xF101})
+    local elrsSensor = system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1})
+    if not rfsuite.utils.ethosVersionAtLeast() then
+        message = string.format(string.upper(rfsuite.i18n.get("ethos")).. " < V%d.%d.%d", 
+        rfsuite.config.ethosVersion[1], 
+        rfsuite.config.ethosVersion[2], 
+        rfsuite.config.ethosVersion[3])
+        utils.screenErrorOverlay(message)
+    elseif not rfsuite.tasks.active() then
+        message = rfsuite.i18n.get("app.check_bg_task") 
+        utils.screenErrorOverlay(message)
+    elseif  moduleState == false then
+        message = rfsuite.i18n.get("app.check_rf_module_on") 
+        utils.screenErrorOverlay(message)
+    elseif not (sportSensor or elrsSensor)  then
+        message = rfsuite.i18n.get("app.check_discovered_sensors")
+        utils.screenErrorOverlay(message)                                        
+    end
+
 end
 
 

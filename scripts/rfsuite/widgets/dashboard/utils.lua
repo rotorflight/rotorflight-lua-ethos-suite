@@ -1,5 +1,7 @@
 local utils = {}
 
+local bitmapPtr
+
 function utils.screenError(msg)
     local w, h = lcd.getWindowSize()
     local isDarkMode = lcd.darkMode()
@@ -23,6 +25,52 @@ function utils.screenError(msg)
     local y = (h - bestH) / 2
     lcd.drawText(x, y, msg)
 end
+
+function utils.screenErrorOverlay(msg)
+    local w, h = lcd.getWindowSize()
+    local isDarkMode = lcd.darkMode()
+    local boxW = w * 0.8
+
+    -- Dynamically scale font for text
+    local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL}
+    local bestFont, bestW, bestH = FONT_XXS, 0, 0
+    local maxW = boxW * 0.9  -- Allow margin inside the box
+
+    for _, font in ipairs(fonts) do
+        lcd.font(font)
+        local tW, tH = lcd.getTextSize(msg)
+        if tW <= maxW then
+            bestFont, bestW, bestH = font, tW, tH
+        else
+            break
+        end
+    end
+
+    -- Add 20% vertical padding to text height
+    local boxH = bestH * 2
+
+    -- Center the box on screen
+    local boxX = (w - boxW) / 2
+    local boxY = (h - boxH) / 2
+
+    -- Draw background box
+    lcd.color(isDarkMode and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
+    lcd.drawFilledRectangle(boxX, boxY, boxW, boxH)
+
+    -- Draw border
+    lcd.color(isDarkMode and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90))
+    lcd.drawRectangle(boxX, boxY, boxW, boxH)
+
+    -- Draw text
+    lcd.font(bestFont)
+    local textColor = isDarkMode and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90)
+    lcd.color(textColor)
+    local textX = (w - bestW) / 2
+    local textY = (h - bestH) / 2
+    lcd.drawText(textX, textY, msg)
+end
+
+
 
 function utils.getAlignedX(text, align, x, w)
     local tsize = lcd.getTextSize(text)
@@ -99,7 +147,7 @@ function utils.telemetryBox(
     valuepaddingbottom = valuepaddingbottom or valuepadding or 0
 
     -- Draw value (centered by default, alignment can be overridden)
-if value ~= nil then
+    if value ~= nil then
         local str = tostring(value) .. (unit or "")
         local unitIsDegree = (unit == "°" or (unit and unit:find("°")))
         local strForWidth = unitIsDegree and (tostring(value) .. "0") or str

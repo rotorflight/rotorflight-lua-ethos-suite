@@ -133,7 +133,7 @@ Declarative themes can define any of these functions:
 * `boxes`: Array of box definitions with options:
 
   * `col`, `row`, `rowspan`, `colspan`
-  * `type`: `"telemetry"`, `"text"`, `"image"`, `"modelimage"`, etc.
+  * `type`: `"telemetry"`, `"text"`, `"image"`, `"modelimage"`, `"nosource"`, etc.
   * Box-specific options: `title`, `unit`, `color`, `bgcolor`, `align`, `transform`, paddings, etc.
 * All boxes can use **padding**, **alignment**, and many visual options.
   See code for advanced features (e.g., degree unit handling, custom images).
