@@ -9,6 +9,18 @@ function ini.file_exists(name)
     return false
 end
 
+function ini.dir_exists(base, name)
+    base = base or "./"
+    local list = system.listFiles(base)
+    if list == nil then return false end
+    for i = 1, #list do
+        if list[i] == name then
+            return true
+        end
+    end
+    return false
+end
+
 -- Reads a file's full contents into a string, compatible with limited Lua
 function ini.load_file_as_string(path)
     local f = io.open(path, "rb")

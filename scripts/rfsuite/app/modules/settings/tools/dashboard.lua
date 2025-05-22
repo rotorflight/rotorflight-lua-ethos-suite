@@ -139,7 +139,7 @@ local function onSaveMenu()
                     rfsuite.preferences.dashboard[key] = value
                 end
                 rfsuite.ini.save_ini_file(
-                    rfsuite.config.preferences,
+                    "SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini",
                     rfsuite.preferences
                 )
                 -- update dashboard theme

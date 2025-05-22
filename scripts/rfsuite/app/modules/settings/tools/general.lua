@@ -88,7 +88,7 @@ local function onSaveMenu()
                     rfsuite.preferences.general[key] = value
                 end
                 rfsuite.ini.save_ini_file(
-                    rfsuite.config.preferences,
+                    "SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini",
                     rfsuite.preferences
                 )
                 rfsuite.app.triggers.closeSave = true
