@@ -15,9 +15,24 @@
       "translation": "Headspeed",
       "needs_translation": "false"
     },
+    "altitude": {
+      "english": "Altitude",
+      "translation": "Altitude",
+      "needs_translation": "false"
+    },
     "voltage": {
       "english": "Voltage",
       "translation": "Voltage",
+      "needs_translation": "false"
+    },
+    "bec_voltage": {
+      "english": "Bec voltage",
+      "translation": "Bec Voltage",
+      "needs_translation": "false"
+    },
+    "cell_count": {
+      "english": "Cell count",
+      "translation": "Cell count",
       "needs_translation": "false"
     },
     "governor": {

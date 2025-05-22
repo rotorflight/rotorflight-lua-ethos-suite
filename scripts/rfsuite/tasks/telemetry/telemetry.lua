@@ -150,7 +150,7 @@ local sensorTable = {
     rpm = {
         name = rfsuite.i18n.get("telemetry.sensors.headspeed"),
         mandatory = true,
-        maxmin_trigger = nil,
+        maxmin_trigger = true,
         set_telemetry_sensors = 60,
         sensors = {
             sim = {
@@ -172,7 +172,7 @@ local sensorTable = {
     current = {
         name = rfsuite.i18n.get("telemetry.sensors.current"),
         mandatory = false,
-        maxmin_trigger = nil,
+        maxmin_trigger = true,
         set_telemetry_sensors = 18,
         sensors = {
             sim = {
@@ -198,7 +198,7 @@ local sensorTable = {
     temp_esc = {
         name = rfsuite.i18n.get("telemetry.sensors.esc_temp"),
         mandatory = false,
-        maxmin_trigger = nil,
+        maxmin_trigger = true,
         set_telemetry_sensors = 23,
         sensors = {
             sim = {
@@ -222,7 +222,7 @@ local sensorTable = {
     temp_mcu = {
         name = rfsuite.i18n.get("telemetry.sensors.mcu_temp"),
         mandatory = false,
-        maxmin_trigger = nil,
+        maxmin_trigger = true,
         set_telemetry_sensors = 52,
         sensors = {
             sim = {
@@ -399,7 +399,7 @@ local sensorTable = {
     throttle_percent = {
         name = rfsuite.i18n.get("telemetry.sensors.throttle_pct"),
         mandatory = true,
-        maxmin_trigger = nil,
+        maxmin_trigger = true,
         set_telemetry_sensors = 15,
         sensors = {
             sim = {
@@ -440,6 +440,75 @@ local sensorTable = {
             crsfLegacy = { nil },
         },
     },
+
+    -- Altitude
+    altitude = {
+        name = rfsuite.i18n.get("telemetry.sensors.altitude"),
+        mandatory = false,
+        maxmin_trigger = true,
+        set_telemetry_sensors = nil,
+        sensors = {
+            sim = {
+                { uid = 0x5016, unit = UNIT_METER, dec = 0,
+                  value = function() return rfsuite.utils.simSensors('altitude') end,
+                  min = 0, max = 50000 },
+            },
+            sport = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0100 }
+            },
+            crsf = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10B2 },
+            },
+            crsfLegacy = { nil },
+        },
+    },     
+
+    -- Bec Voltage
+    bec_voltage = {
+        name = rfsuite.i18n.get("telemetry.sensors.bec_voltage"),
+        mandatory = false,
+        maxmin_trigger = true,
+        set_telemetry_sensors = nil,
+        sensors = {
+            sim = {
+                { uid = 0x5017, unit = UNIT_VOLT, dec = 2,
+                  value = function() return rfsuite.utils.simSensors('bec_voltage') end,
+                  min = 0, max = 3000 },
+            },
+            sport = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0901 },
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0219 },
+            },
+            crsf = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1081 },
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1049 },
+            },
+            crsfLegacy = { nil },
+        },
+    },  
+
+    -- Cell Count
+    cell_count = {
+        name = rfsuite.i18n.get("telemetry.sensors.cell_count"),
+        mandatory = false,
+        maxmin_trigger = true,
+        set_telemetry_sensors = nil,
+        sensors = {
+            sim = {
+                { uid = 0x5018, unit = nil, dec = 0,
+                  value = function() return rfsuite.utils.simSensors('cell_count') end,
+                  min = 0, max = 50 },
+            },
+            sport = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5260 },
+            },
+            crsf = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1020 },
+            },
+            crsfLegacy = { nil },
+        },
+    },  
+
 }
 
 
