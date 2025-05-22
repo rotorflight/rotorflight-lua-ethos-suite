@@ -2,6 +2,7 @@ local utils = {}
 
 local imageCache = {}
 
+
 function utils.resetImageCache()
     for k in pairs(imageCache) do
         imageCache[k] = nil
@@ -11,7 +12,7 @@ end
 function utils.screenError(msg)
     local w, h = lcd.getWindowSize()
     local isDarkMode = lcd.darkMode()
-    local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL}
+    local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL, FONT_XXXXL}
     local maxW, maxH = w * 0.9, h * 0.9
     local bestFont, bestW, bestH = FONT_XXS, 0, 0
     for _, font in ipairs(fonts) do
@@ -162,7 +163,7 @@ function utils.telemetryBox(
         local availH = h - valuepaddingtop - valuepaddingbottom
 
         -- Start with largest font set
-        local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL}
+        local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL, FONT_XXXXL}
 
         -- If the box is short, limit max font
         lcd.font(FONT_XL)

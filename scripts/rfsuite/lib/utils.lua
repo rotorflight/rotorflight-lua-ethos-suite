@@ -559,7 +559,7 @@ function utils.simSensors(id)
         return 0
     end
 
-    local chunk, err = rfsuite.compiler.loadfile(filepath)
+    local chunk, err = loadfile(filepath)  -- intentionally not using rfsuite.compiler.loadfile here
     if not chunk then
         print("Error loading telemetry file: " .. err)
         return 0
