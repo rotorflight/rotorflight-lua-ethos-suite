@@ -67,7 +67,7 @@ local userpref_defaults ={
         theme_inflight = "default",
         theme_postflight = "default",
     },
-    announcements = {
+    events = {
         armflags = true,
         voltage = true,
         fuel = true,
@@ -76,6 +76,8 @@ local userpref_defaults ={
         rate_profile = true,
         adj_v = true,
         adj_f = false,
+    },
+    switches = {
     },
     developer = {
         compile = true,             -- compile the script
@@ -405,6 +407,7 @@ local function init()
                     create = scriptModule.create,
                     paint = scriptModule.paint,
                     wakeup = scriptModule.wakeup,
+                    build = scriptModule.build,
                     close = scriptModule.close,
                     configure = scriptModule.configure,
                     read = scriptModule.read,

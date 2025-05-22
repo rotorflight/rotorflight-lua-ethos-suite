@@ -391,7 +391,8 @@ return {
     ["modules"] = {
       ["settings"] = {
         ["name"] = "Impostazioni",
-        ["txt_telemetry_announcements"] = "Telemetria",
+        ["txt_telemetry_events"] = "Eventi",
+        ["txt_telemetry_switches"] = "Switches",
         ["txt_iconsize"] = "Icon Size",
         ["txt_general"] = "General",
         ["txt_text"] = "TEXT",

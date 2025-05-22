@@ -96,9 +96,14 @@
         "translation": "Settings",
         "needs_translation": "false"
       },
-      "txt_telemetry_announcements": {
-        "english": "Telemetry",
-        "translation": "Telemetry",
+      "txt_telemetry_events": {
+        "english": "Events",
+        "translation": "Events",
+        "needs_translation": "false"
+      },
+      "txt_telemetry_switches": {
+        "english": "Switches",
+        "translation": "Switches",
         "needs_translation": "false"
       },
       "txt_iconsize": {

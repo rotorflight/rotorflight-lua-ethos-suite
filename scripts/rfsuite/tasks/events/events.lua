@@ -29,6 +29,7 @@ local userpref = rfsuite.preferences
 
 local telemetryStartTime = nil
 
+
 local eventTable = {
     telemetry = {
         {
@@ -118,7 +119,8 @@ local eventTable = {
             sensor = "adj_v",
             event = function(value) end,
         }
-    }
+    },
+    switches = {}
     
 }
 
@@ -160,7 +162,7 @@ function events.wakeup()
                         goto continue
                     end
 
-                    if not rfsuite.preferences or not rfsuite.preferences.announcements or rfsuite.preferences.announcements[key] ~= true then
+                    if not rfsuite.preferences or not rfsuite.preferences.events or rfsuite.preferences.events[key] ~= true then
                         goto continue
                     end
 
@@ -171,6 +173,29 @@ function events.wakeup()
                 ::continue::
             end
         end
+
+        -- populate switches -- we do this only if the table is empty (means we can reset if switches are changed)
+        if next(eventTable.switches) == nil and rfsuite.preferences.switches then
+            for key, v in pairs(rfsuite.preferences.switches) do
+                if v then
+                    local scategory, smember = v:match("([^,]+),([^,]+)")
+                    scategory = tonumber(scategory)
+                    smember = tonumber(smember)
+                    if scategory and smember then
+                        eventTable.switches[key] = system.getSource({ category = scategory, member = smember }) 
+                    end  
+                end    
+            end
+        end
+
+        -- Handle switch events
+        for key, sensor in pairs(eventTable.switches) do
+            if sensor:state() then
+                print("Switch " .. key .. " is ON")
+            end
+        end
+
+
     else
         telemetryStartTime = nil  -- Reset when telemetry disconnects
     end

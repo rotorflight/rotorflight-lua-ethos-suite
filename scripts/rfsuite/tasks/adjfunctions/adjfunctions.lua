@@ -279,7 +279,7 @@ local adjfuncAdjJustUp = false
 function adjfunc.wakeup()
 
     -- do not run the remaining code
-    if rfsuite.preferences.announcements.adj_f == false and rfsuite.preferences.announcements.adj_v == false then return end
+    if rfsuite.preferences.events.adj_f == false and rfsuite.preferences.events.adj_v == false then return end
 
     if (os.clock() - initTime) < 5  then return end
 
@@ -317,7 +317,7 @@ function adjfunc.wakeup()
                         local adjfunction = adjFunctionsTable[tgt]
                         if adjfunction ~= nil and firstRun == false then 
                             for wavi, wavv in ipairs(adjfunction.wavs) do 
-                                if rfsuite.preferences.announcements.adj_f == true then 
+                                if rfsuite.preferences.events.adj_f == true then 
                                     rfsuite.utils.playFile("adjfunctions", wavv .. ".wav") 
                                 end 
                             end 
@@ -326,7 +326,7 @@ function adjfunc.wakeup()
                     end
                     if adjfuncAdjfuncValueChanged == true or adjfuncAdjfuncIdChanged == true then
 
-                        if adjfuncAdjValue ~= nil and firstRun == false then if rfsuite.preferences.announcements.adj_v == true then system.playNumber(adjfuncAdjValue) end end
+                        if adjfuncAdjValue ~= nil and firstRun == false then if rfsuite.preferences.events.adj_v == true then system.playNumber(adjfuncAdjValue) end end
 
                         adjfuncAdjfuncValueChanged = false
 

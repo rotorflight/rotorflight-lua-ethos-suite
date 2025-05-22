@@ -19,7 +19,7 @@ local function openPage(pageIdx, title, script)
     rfsuite.app.lastScript = script
 
     rfsuite.app.ui.fieldHeader(
-        rfsuite.i18n.get("app.modules.settings.name")
+        rfsuite.i18n.get("app.modules.settings.name") .. " / " .. rfsuite.i18n.get("app.modules.settings.txt_telemetry_events")
     )
     rfsuite.session.formLineCnt = 0
 
@@ -28,7 +28,7 @@ local function openPage(pageIdx, title, script)
     local eventList = rfsuite.tasks.events.eventTable.telemetry
     local eventNames = sensorNameMap(rfsuite.tasks.telemetry.listSensors())
 
-    settings = rfsuite.preferences.announcements
+    settings = rfsuite.preferences.events
 
     for i, v in ipairs(eventList) do
     formFieldCount = formFieldCount + 1
@@ -37,12 +37,12 @@ local function openPage(pageIdx, title, script)
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.session.formLineCnt], 
                                                         nil, 
                                                         function() 
-                                                            if rfsuite.preferences and rfsuite.preferences.announcements then
+                                                            if rfsuite.preferences and rfsuite.preferences.events then
                                                                 return settings[v.sensor] 
                                                             end
                                                         end, 
                                                         function(newValue) 
-                                                            if rfsuite.preferences and rfsuite.preferences.announcements then
+                                                            if rfsuite.preferences and rfsuite.preferences.events then
                                                                 settings[v.sensor] = newValue 
                                                             end    
                                                         end)
@@ -67,7 +67,7 @@ local function onSaveMenu()
                 local msg = rfsuite.i18n.get("app.modules.profile_select.save_prompt_local")
                 rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
                 for key, value in pairs(settings) do
-                    rfsuite.preferences.announcements[key] = value
+                    rfsuite.preferences.events[key] = value
                 end
                 rfsuite.ini.save_ini_file(
                     "SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini",

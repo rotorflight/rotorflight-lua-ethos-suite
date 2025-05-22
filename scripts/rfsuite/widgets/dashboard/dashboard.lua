@@ -321,6 +321,10 @@ function dashboard.write(widget)
     return callStateFunc("write", widget)
 end
 
+function dashboard.build(widget)
+    return callStateFunc("build", widget)
+end
+
 function dashboard.event(widget, category, code)
     local state = dashboard.flightmode or "preflight"
     local module = loadedStateModules[state]
