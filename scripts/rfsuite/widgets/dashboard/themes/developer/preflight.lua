@@ -15,6 +15,35 @@
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]]--
 
+-- must be delared before the layout and boxes so its available to the layout
+local function customRenderFunction(x, y, w, h)
+    -- Custom rendering logic goes here
+    -- This function will be called to render the custom box
+    -- You can use the widget parameter to access the widget properties
+    -- and perform any custom rendering you need
+
+    local msg = "Render Function"
+
+    -- Example: Draw a rectangle with a custom color
+    local isDarkMode = lcd.darkMode()
+    lcd.color(isDarkMode and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
+    lcd.drawFilledRectangle(x, y, w, h)
+
+    -- Example: Draw some text
+    local textColor = isDarkMode and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90)
+    lcd.color(textColor)
+
+    -- display in the center of the box
+    -- note.  x, y are the top-left coordinates of the box
+    -- w, h are the width and height of the box
+    -- you need to offset the coordinates by the box's position:
+    local tsizeW, tsizeH = lcd.getTextSize(msg)
+    local tx = x + (w - tsizeW) / 2
+    local ty = y + (h - tsizeH) / 2
+    lcd.drawText(tx, ty, msg)
+
+end
+
 local layout = {
     cols = 3,
     rows = 4,
@@ -24,11 +53,11 @@ local layout = {
 local boxes = {
     {col=1, row=1, rowspan=2, type="modelimage"},
     {col=1, row=3, type="telemetry", source="rssi", nosource="-", title="LQ", unit="dB", titlepos="bottom", transform="floor"},
-    {col=1, row=4, type="telemetry", source="governor", nosource="-", title="GOVERNOR", titlepos="bottom", transform=function(v) return rfsuite.utils.getGovernorState(v) end},
+    {col=1, row=4, type="governor", title="GOVERNOR", nosource="-", titlepos="bottom"},
     {col=2, row=1, rowspan=2, type="telemetry", source="voltage", nosource="-", title="VOLTAGE", unit="v", titlepos="bottom"},
     {col=2, row=3, rowspan=2, type="telemetry", source="current", nosource="-", title="CURRENT", unit="A", titlepos="bottom"},
     {col=3, row=1, rowspan=2, type="telemetry", source="fuel", nosource="-", title="FUEL", unit="%", titlepos="bottom", transform="floor"},
-    {col=3, row=3, rowspan=2, type="telemetry", source="rpm", nosource="-", title="RPM", unit="rpm", titlepos="bottom", transform="floor"},
+    {col=3, row=3, rowspan=2, type = "function", value=customRenderFunction, title = "FUNCTION", titlepos = "bottom"}
 }
 
 local function wakeup()
@@ -58,4 +87,5 @@ return {
     event = event,
     paint = paint,
     overlayMessage = nil,
+    customRenderFunction = customRenderFunction
 }

@@ -134,11 +134,13 @@ function dashboard.renderLayout(widget, config)
             )
         elseif box.type == "governor" then
             local value = nil
-            if box.source then
-                local sensor = telemetry and telemetry.getSensorSource("governor")
-                value = sensor and sensor:value()
-                rfsuite.utils.getGovernorState(value)
+            local sensor = telemetry and telemetry.getSensorSource("governor")
+            value = sensor and sensor:value()
+            local displayValue = rfsuite.utils.getGovernorState(value)
+            if displayValue == nil then
+                displayValue = box.novalue or "-"
             end
+
             utils.telemetryBox(
                 x, y, w, h,
                 box.color, box.title, displayValue, box.unit, box.bgcolor,
@@ -146,6 +148,10 @@ function dashboard.renderLayout(widget, config)
                 box.titlepadding, box.titlepaddingleft, box.titlepaddingright, box.titlepaddingtop, box.titlepaddingbottom,
                 box.valuepadding, box.valuepaddingleft, box.valuepaddingright, box.valuepaddingtop, box.valuepaddingbottom
             )
+        elseif box.type == "function" then
+            if box.value and type(box.value) == "function" then
+                box.value(x, y, w, h)
+            end  
         end  
     end
 
