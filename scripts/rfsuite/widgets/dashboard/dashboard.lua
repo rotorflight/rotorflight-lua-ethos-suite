@@ -132,7 +132,21 @@ function dashboard.renderLayout(widget, config)
                 box.bgcolor, box.titlealign, box.titlecolor, box.titlepos,
                 box.imagepadding, box.imagepaddingleft, box.imagepaddingright, box.imagepaddingtop, box.imagepaddingbottom
             )
-        end    
+        elseif box.type == "governor" then
+            local value = nil
+            if box.source then
+                local sensor = telemetry and telemetry.getSensorSource("governor")
+                value = sensor and sensor:value()
+                rfsuite.utils.getGovernorState(value)
+            end
+            utils.telemetryBox(
+                x, y, w, h,
+                box.color, box.title, displayValue, box.unit, box.bgcolor,
+                box.titlealign, box.valuealign, box.titlecolor, box.titlepos,
+                box.titlepadding, box.titlepaddingleft, box.titlepaddingright, box.titlepaddingtop, box.titlepaddingbottom,
+                box.valuepadding, box.valuepaddingleft, box.valuepaddingright, box.valuepaddingtop, box.valuepaddingbottom
+            )
+        end  
     end
 
     -- display overlay error message if any
