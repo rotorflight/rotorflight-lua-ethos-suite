@@ -33,6 +33,8 @@ dashboard.utils = assert(rfsuite.compiler.loadfile("SCRIPTS:/".. rfsuite.config.
 function dashboard.renderLayout(widget, config)
     local telemetry = rfsuite.tasks.telemetry
     local utils = dashboard.utils
+    local state = dashboard.flightmode or "preflight"
+    local module = loadedStateModules[state]
 
     local WIDGET_W, WIDGET_H = lcd.getWindowSize()
     local COLS, ROWS = config.layout.cols, config.layout.rows
@@ -138,22 +140,27 @@ function dashboard.renderLayout(widget, config)
     local moduleState = (model.getModule(0):enable()  or model.getModule(1):enable()) or false
     local sportSensor = system.getSource({appId = 0xF101})
     local elrsSensor = system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1})
+    local overlayMessage = nil
     if not rfsuite.utils.ethosVersionAtLeast() then
-        message = string.format(string.upper(rfsuite.i18n.get("ethos")).. " < V%d.%d.%d", 
+        overlayMessage = string.format(string.upper(rfsuite.i18n.get("ethos")).. " < V%d.%d.%d", 
         rfsuite.config.ethosVersion[1], 
         rfsuite.config.ethosVersion[2], 
         rfsuite.config.ethosVersion[3])
-        utils.screenErrorOverlay(message)
     elseif not rfsuite.tasks.active() then
-        message = rfsuite.i18n.get("app.check_bg_task") 
-        utils.screenErrorOverlay(message)
+        overlayMessage = rfsuite.i18n.get("app.check_bg_task") 
     elseif  moduleState == false then
-        message = rfsuite.i18n.get("app.check_rf_module_on") 
-        utils.screenErrorOverlay(message)
+        overlayMessage = rfsuite.i18n.get("app.check_rf_module_on") 
     elseif not (sportSensor or elrsSensor)  then
-        message = rfsuite.i18n.get("app.check_discovered_sensors")
-        utils.screenErrorOverlay(message)                                        
+        overlayMessage = rfsuite.i18n.get("app.check_discovered_sensors")                               
     end
+    if overlayMessage then
+        if module.overlayMessage then
+            module.screenErrorOverlay(overlayMessage)
+        else
+            -- Fallback to utils if no screenErrorOverlay function is defined
+            utils.screenErrorOverlay(overlayMessage)
+        end
+    end    
 
 end
 
