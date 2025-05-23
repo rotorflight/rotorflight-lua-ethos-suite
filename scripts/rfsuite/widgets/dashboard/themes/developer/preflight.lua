@@ -44,6 +44,12 @@ local function customRenderFunction(x, y, w, h)
 
 end
 
+local function onpressFunction()
+    -- This function will be called when the blackbox box is pressed
+    -- You can implement your custom logic here
+    rfsuite.utils.log("Blackbox box pressed", "info")
+end
+
 local layout = {
     cols = 4,
     rows = 4,
@@ -63,7 +69,7 @@ local boxes = {
 
     {col=3, row=1, type="telemetry", source="fuel", nosource="-", title="FUEL", unit="%", titlepos="bottom", transform="floor"},
     {col=3, row=2, type = "function", value=customRenderFunction, title = "FUNCTION", titlepos = "bottom"},
-    {col=3, row=3, type="blackbox", title="BLACKBOX", nosource="-", titlepos="bottom"}  
+    {col=3, row=3, type="blackbox", title="BLACKBOX", nosource="-", titlepos="bottom", onpress=onpressFunction}  
 }
 
 local function wakeup()

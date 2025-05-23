@@ -26,12 +26,15 @@ local loadedStateModules = {}
 local loadedThemeIntervals = { wakeup = 0.5, wakeup_bg = 2 }
 local wakeupScheduler = 0
 
+dashboard.boxRects = {}  -- Will store {x, y, w, h, box} for each box
 
 dashboard.flightmode = rfsuite.session.flightMode or "preflight" -- To be set by your state logic
 
 dashboard.utils = assert(rfsuite.compiler.loadfile("SCRIPTS:/".. rfsuite.config.baseDir.. "/widgets/dashboard/utils.lua"))()
 
 function dashboard.renderLayout(widget, config)
+    dashboard.boxRects = {} -- clear previous box rectangles
+
     local telemetry = rfsuite.tasks.telemetry
     local utils = dashboard.utils
     local state = dashboard.flightmode or "preflight"
@@ -59,6 +62,8 @@ function dashboard.renderLayout(widget, config)
         local x, y = getBoxPosition(box.col, box.row)
         local w = math.floor((box.colspan or 1) * boxWidth + ((box.colspan or 1) - 1) * PADDING)
         local h = math.floor((box.rowspan or 1) * boxHeight + ((box.rowspan or 1) - 1) * PADDING)
+
+        dashboard.boxRects[#dashboard.boxRects + 1] = {x = x, y = y, w = w, h = h, box = box}
 
         if box.type == "telemetry" then
             local value = nil
@@ -389,15 +394,34 @@ function dashboard.build(widget)
 end
 
 function dashboard.event(widget, category, value, x, y)
+    -- Only check boxes if coordinates are provided
+    if x and y then
+        for _, rect in ipairs(dashboard.boxRects) do
+            if x >= rect.x and x < rect.x + rect.w and y >= rect.y and y < rect.y + rect.h then
+                -- Found the touched box!
+                if rect.box.onpress then
+                    -- Call a per-box handler if present
+                    rect.box.onpress(widget, rect.box, x, y, category, value)
+                    return true
+                end
+                -- Optional: call the current theme's event for fallback logic
+                local state = dashboard.flightmode or "preflight"
+                local module = loadedStateModules[state]
+                if type(module) == "table" and type(module.event) == "function" then
+                    return module.event(widget, category, value, x, y, rect.box)
+                end
+                -- Or just log which box was pressed
+                rfsuite.utils.log("Pressed box at row="..rect.box.row..", col="..rect.box.col, "info")
+                return
+            end
+        end
+    end
+
+    -- If no box was pressed, fallback to theme's event if needed
     local state = dashboard.flightmode or "preflight"
     local module = loadedStateModules[state]
-
     if type(module) == "table" and type(module.event) == "function" then
-        -- Declarative theme with event handler
         return module.event(widget, category, value, x, y)
-    else
-        -- For old style, callStateFunc will search for event
-        return callStateFunc("event", widget, category, value, x, y)
     end
 end
 
