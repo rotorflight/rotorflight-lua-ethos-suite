@@ -27,10 +27,21 @@ local loadedThemeIntervals = { wakeup = 0.5, wakeup_bg = 2 }
 local wakeupScheduler = 0
 
 dashboard.boxRects = {}  -- Will store {x, y, w, h, box} for each box
+dashboard.selectedBoxIndex = 1 -- track the selected box index
 
 dashboard.flightmode = rfsuite.session.flightMode or "preflight" -- To be set by your state logic
 
 dashboard.utils = assert(rfsuite.compiler.loadfile("SCRIPTS:/".. rfsuite.config.baseDir.. "/widgets/dashboard/utils.lua"))()
+
+local function getOnpressBoxIndices()
+    local indices = {}
+    for i, rect in ipairs(dashboard.boxRects) do
+        if rect.box.onpress then
+            indices[#indices + 1] = i
+        end
+    end
+    return indices
+end
 
 function dashboard.renderLayout(widget, config)
     dashboard.boxRects = {} -- clear previous box rectangles
@@ -39,6 +50,9 @@ function dashboard.renderLayout(widget, config)
     local utils = dashboard.utils
     local state = dashboard.flightmode or "preflight"
     local module = loadedStateModules[state]
+
+    local selectColor = (config.layout and config.layout.selectcolor) or dashboard.utils.resolveColor("yellow") or lcd.RGB(255, 255, 0)
+    local selectBorder = (config.layout and config.layout.selectborder) or 2
 
     local WIDGET_W, WIDGET_H = lcd.getWindowSize()
     local COLS, ROWS = config.layout.cols, config.layout.rows
@@ -58,7 +72,7 @@ function dashboard.renderLayout(widget, config)
         return x, y
     end
 
-    for _, box in ipairs(config.boxes or {}) do
+    for i, box in ipairs(config.boxes or {}) do
         local x, y = getBoxPosition(box.col, box.row)
         local w = math.floor((box.colspan or 1) * boxWidth + ((box.colspan or 1) - 1) * PADDING)
         local h = math.floor((box.rowspan or 1) * boxHeight + ((box.rowspan or 1) - 1) * PADDING)
@@ -221,6 +235,14 @@ function dashboard.renderLayout(widget, config)
                 box.value(x, y, w, h)
             end  
         end  
+
+        -- Is this the selected onpress-enabled box?
+        if dashboard.selectedBoxIndex == i and box.onpress then
+            lcd.color(selectColor)
+            lcd.drawRectangle(x, y, w, h, selectBorder)
+        end
+
+
     end
 
     -- display overlay error message if any
@@ -394,36 +416,71 @@ function dashboard.build(widget)
 end
 
 function dashboard.event(widget, category, value, x, y)
-    -- Only check boxes if coordinates are provided
-    if x and y then
-        for _, rect in ipairs(dashboard.boxRects) do
-            if x >= rect.x and x < rect.x + rect.w and y >= rect.y and y < rect.y + rect.h then
-                -- Found the touched box!
-                if rect.box.onpress then
-                    -- Call a per-box handler if present
-                    rect.box.onpress(widget, rect.box, x, y, category, value)
-                    return true
-                end
-                -- Optional: call the current theme's event for fallback logic
-                local state = dashboard.flightmode or "preflight"
-                local module = loadedStateModules[state]
-                if type(module) == "table" and type(module.event) == "function" then
-                    return module.event(widget, category, value, x, y, rect.box)
-                end
-                -- Or just log which box was pressed
-                rfsuite.utils.log("Pressed box at row="..rect.box.row..", col="..rect.box.col, "info")
-                return
+    -- Handle keypad/rotary
+    if category == EVT_KEY then
+        local indices = getOnpressBoxIndices()
+        local count = #indices
+        if count == 0 then return end
+
+        local current = dashboard.selectedBoxIndex or 1
+        -- Find current index position in the onpress-only array:
+        local pos = 1
+        for i, idx in ipairs(indices) do
+            if idx == current then pos = i break end
+        end
+
+        if value == 4099 then -- rotary left
+            pos = pos - 1
+            if pos < 1 then pos = count end
+            dashboard.selectedBoxIndex = indices[pos]
+            lcd.invalidate(widget) -- Force redraw
+            return true
+        elseif value == 4100 then -- rotary right
+            pos = pos + 1
+            if pos > count then pos = 1 end
+            dashboard.selectedBoxIndex = indices[pos]
+            lcd.invalidate(widget) -- Force redraw
+            return true
+        elseif value == 33 and category == 0 then -- ENTER press (sometimes category==EVT_KEY as well)
+            local idx = dashboard.selectedBoxIndex or indices[1]
+            local rect = dashboard.boxRects[idx]
+            if rect and rect.box.onpress then
+                rect.box.onpress(widget, rect.box, rect.x, rect.y, category, value)
+                return true
             end
         end
     end
 
-    -- If no box was pressed, fallback to theme's event if needed
+    -- Handle EXIT key (category 0, value 35)
+    if value == 35 then
+        dashboard.selectedBoxIndex = nil
+        lcd.invalidate(widget)
+        return true
+    end
+
+    -- Touch handling (already present)
+    if x and y then
+        for i, rect in ipairs(dashboard.boxRects) do
+            if x >= rect.x and x < rect.x + rect.w and y >= rect.y and y < rect.y + rect.h then
+                if rect.box.onpress then
+                    dashboard.selectedBoxIndex = i  -- Shift highlight focus!
+                    lcd.invalidate(widget)
+                    rect.box.onpress(widget, rect.box, x, y, category, value)
+                    return true
+                end
+                -- fallback etc.
+            end
+        end
+    end
+
+    -- fallback to theme event
     local state = dashboard.flightmode or "preflight"
     local module = loadedStateModules[state]
     if type(module) == "table" and type(module.event) == "function" then
         return module.event(widget, category, value, x, y)
     end
 end
+
 
 function dashboard.wakeup(widget)
     local now = os.clock()
@@ -455,6 +512,14 @@ function dashboard.wakeup(widget)
             return callStateFunc("wakeup", widget)
         end
     end
+
+    -- Handle removing highlighted box if no focus
+    if not lcd.hasFocus(widget) and dashboard.selectedBoxIndex ~= nil then
+        rfsuite.utils.log("Removing focus from box " .. tostring(dashboard.selectedBoxIndex), "info")
+        dashboard.selectedBoxIndex = nil
+        lcd.invalidate(widget)
+    end
+
 end
 
 function dashboard.listThemes()

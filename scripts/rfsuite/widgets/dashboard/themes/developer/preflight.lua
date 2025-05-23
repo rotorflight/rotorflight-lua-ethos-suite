@@ -44,16 +44,24 @@ local function customRenderFunction(x, y, w, h)
 
 end
 
-local function onpressFunction()
+local function onpressFunctionBlackbox()
     -- This function will be called when the blackbox box is pressed
     -- You can implement your custom logic here
     rfsuite.utils.log("Blackbox box pressed", "info")
 end
 
+local function onpressFunctionSession()
+    -- This function will be called when the blackbox box is pressed
+    -- You can implement your custom logic here
+    rfsuite.utils.log("Session box pressed", "info")
+end
+
 local layout = {
     cols = 4,
     rows = 4,
-    padding = 4
+    padding = 4,
+    selectcolor = lcd.RGB(255, 255, 255),
+    selectborder = 2
 }
 
 local boxes = {
@@ -65,11 +73,11 @@ local boxes = {
     {col=2, row=1, type="telemetry", source="voltage", nosource="-", title="VOLTAGE", unit="v", titlepos="bottom"},
     {col=2, row=2, type="telemetry", source="current", nosource="-", title="CURRENT", unit="A", titlepos="bottom"},
     {col=2, row=3, type="craftname", title="CRAFT NAME", nosource="-", titlepos="bottom"},  
-    {col=2, row=4, type="session", source="isArmed", title="IS ARMED", nosource="-", titlepos="bottom"}, 
+    {col=2, row=4, type="session", source="isArmed", title="IS ARMED", nosource="-", titlepos="bottom", onpress=onpressFunctionSession}, 
 
     {col=3, row=1, type="telemetry", source="fuel", nosource="-", title="FUEL", unit="%", titlepos="bottom", transform="floor"},
     {col=3, row=2, type = "function", value=customRenderFunction, title = "FUNCTION", titlepos = "bottom"},
-    {col=3, row=3, type="blackbox", title="BLACKBOX", nosource="-", titlepos="bottom", onpress=onpressFunction}  
+    {col=3, row=3, type="blackbox", title="BLACKBOX", nosource="-", titlepos="bottom", onpress=onpressFunctionBlackbox},  
 }
 
 local function wakeup()
@@ -78,18 +86,18 @@ end
 
 local function event(widget, category, value, x, y)
     --rfsuite.utils.log("Event triggered: " .. category .. " - " .. code, "info")
-    if widget then
-        rfsuite.utils.log("Widget: " .. widget, "info")
-    end
-    if category then
-        rfsuite.utils.log("Category: " .. category, "info")
-    end
-    if value then
-        rfsuite.utils.log("Value: " .. value, "info")
-    end
-    if x and y then
-        rfsuite.utils.log("Coordinates: (" .. x .. ", " .. y .. ")", "info")
-    end
+    --if widget then
+    --    rfsuite.utils.log("Widget: " .. widget, "info")
+    --end
+    --if category then
+    --    rfsuite.utils.log("Category: " .. category, "info")
+    --end
+    --if value then
+    --    rfsuite.utils.log("Value: " .. value, "info")
+    --end
+    --if x and y then
+    --    rfsuite.utils.log("Coordinates: (" .. x .. ", " .. y .. ")", "info")
+    --end
 
 end    
 
