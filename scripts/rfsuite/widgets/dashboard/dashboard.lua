@@ -173,7 +173,20 @@ function dashboard.renderLayout(widget, config)
                 box.titlealign, box.valuealign, box.titlecolor, box.titlepos,
                 box.titlepadding, box.titlepaddingleft, box.titlepaddingright, box.titlepaddingtop, box.titlepaddingbottom,
                 box.valuepadding, box.valuepaddingleft, box.valuepaddingright, box.valuepaddingtop, box.valuepaddingbottom
-            )            
+            )
+        elseif box.type == "session" then
+            local displayValue = rfsuite.session[box.source]
+            if displayValue == nil then
+                displayValue = box.novalue or "-"
+            end
+
+            utils.telemetryBox(
+                x, y, w, h,
+                box.color, box.title, displayValue, box.unit, box.bgcolor,
+                box.titlealign, box.valuealign, box.titlecolor, box.titlepos,
+                box.titlepadding, box.titlepaddingleft, box.titlepaddingright, box.titlepaddingtop, box.titlepaddingbottom,
+                box.valuepadding, box.valuepaddingleft, box.valuepaddingright, box.valuepaddingtop, box.valuepaddingbottom
+            )                        
         elseif box.type == "function" then
             if box.value and type(box.value) == "function" then
                 box.value(x, y, w, h)

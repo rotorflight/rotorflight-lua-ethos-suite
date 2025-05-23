@@ -58,7 +58,8 @@ local boxes = {
 
     {col=2, row=1, type="telemetry", source="voltage", nosource="-", title="VOLTAGE", unit="v", titlepos="bottom"},
     {col=2, row=2, type="telemetry", source="current", nosource="-", title="CURRENT", unit="A", titlepos="bottom"},
-    {col=2, row=3, type="craftname", title="CRAFT NAME", nosource="-", titlepos="bottom"},   
+    {col=2, row=3, type="craftname", title="CRAFT NAME", nosource="-", titlepos="bottom"},  
+    {col=2, row=4, type="session", source="isArmed", title="IS ARMED", nosource="-", titlepos="bottom"}, 
 
     {col=3, row=1, type="telemetry", source="fuel", nosource="-", title="FUEL", unit="%", titlepos="bottom", transform="floor"},
     {col=3, row=2, type = "function", value=customRenderFunction, title = "FUNCTION", titlepos = "bottom"}
