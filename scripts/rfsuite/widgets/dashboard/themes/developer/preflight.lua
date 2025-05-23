@@ -54,6 +54,7 @@ local boxes = {
     {col=1, row=1, type="modelimage"},
     {col=1, row=2, type="telemetry", source="rssi", nosource="-", title="LQ", unit="dB", titlepos="bottom", transform="floor"},
     {col=1, row=3, type="governor", title="GOVERNOR", nosource="-", titlepos="bottom"},
+    {col=1, row=4, type="apiversion", title="API VERSION", nosource="-", titlepos="bottom"},
 
     {col=2, row=1, type="telemetry", source="voltage", nosource="-", title="VOLTAGE", unit="v", titlepos="bottom"},
     {col=2, row=2, type="telemetry", source="current", nosource="-", title="CURRENT", unit="A", titlepos="bottom"},
