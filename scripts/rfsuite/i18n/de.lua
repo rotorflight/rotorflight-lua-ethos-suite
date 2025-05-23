@@ -1147,6 +1147,10 @@ return {
       ["txt_cancel"] = "Abbrechen",
       ["txt_save"] = "Speichern"
     },
+    ["dashboard"] = {
+      ["theme_load_error"] = "Your theme did not load correctly. Falling back to default theme.",
+      ["validate_sensors"] = "MISSING REQUIRED SENSORS"
+    },
     ["governor"] = {
       ["UNKNOWN"] = "UNBEKANNT",
       ["IDLE"] = "LEERLAUF",

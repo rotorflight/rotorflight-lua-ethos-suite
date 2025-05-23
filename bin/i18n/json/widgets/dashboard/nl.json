@@ -1,0 +1,12 @@
+{
+  "theme_load_error": {
+    "english": "Your theme did not load correctly. Falling back to default theme.",
+    "translation": "Your theme did not load correctly. Falling back to default theme.",
+    "needs_translation": "true"
+  },
+  "validate_sensors": {
+    "english": "MISSING REQUIRED SENSORS",
+    "translation": "MISSING REQUIRED SENSORS",
+    "needs_translation": "true"
+  }
+}

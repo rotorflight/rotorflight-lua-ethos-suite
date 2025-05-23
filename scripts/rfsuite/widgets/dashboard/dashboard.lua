@@ -29,6 +29,8 @@ local wakeupScheduler = 0
 
 dashboard.boxRects = {}  -- Will store {x, y, w, h, box} for each box
 dashboard.selectedBoxIndex = 1 -- track the selected box index
+dashboard.themeFallbackUsed = { preflight = false, inflight = false, postflight = false }
+dashboard.themeFallbackTime = { preflight = 0, inflight = 0, postflight = 0 }
 
 dashboard.flightmode = rfsuite.session.flightMode or "preflight" -- To be set by your state logic
 
@@ -252,55 +254,115 @@ function dashboard.renderLayout(widget, config)
     local sportSensor = system.getSource({appId = 0xF101})
     local elrsSensor = system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1})
     local overlayMessage = nil
-    if not rfsuite.utils.ethosVersionAtLeast() then
-        overlayMessage = string.format(string.upper(rfsuite.i18n.get("ethos")).. " < V%d.%d.%d", 
-        rfsuite.config.ethosVersion[1], 
-        rfsuite.config.ethosVersion[2], 
-        rfsuite.config.ethosVersion[3])
+
+    -- Check for fallback theme message FIRST, and display for 20 seconds max
+    local state = dashboard.flightmode or "preflight"
+    if dashboard.themeFallbackUsed and dashboard.themeFallbackUsed[state] and
+        (os.clock() - (dashboard.themeFallbackTime and dashboard.themeFallbackTime[state] or 0)) < 10 then
+        overlayMessage = rfsuite.i18n.get("widgets.dashboard.theme_load_error")
+    elseif not rfsuite.utils.ethosVersionAtLeast() then
+        overlayMessage = string.format(string.upper(rfsuite.i18n.get("ethos")).. " < V%d.%d.%d",
+            rfsuite.config.ethosVersion[1],
+            rfsuite.config.ethosVersion[2],
+            rfsuite.config.ethosVersion[3])
     elseif not rfsuite.tasks.active() then
-        overlayMessage = rfsuite.i18n.get("app.check_bg_task") 
-    elseif  moduleState == false then
-        overlayMessage = rfsuite.i18n.get("app.check_rf_module_on") 
-    elseif not (sportSensor or elrsSensor)  then
-        overlayMessage = rfsuite.i18n.get("app.check_discovered_sensors")                               
+        overlayMessage = rfsuite.i18n.get("app.check_bg_task")
+    elseif moduleState == false then
+        overlayMessage = rfsuite.i18n.get("app.check_rf_module_on")
+    elseif not (sportSensor or elrsSensor) then
+        overlayMessage = rfsuite.i18n.get("app.check_discovered_sensors")
+    elseif rfsuite.session.telemetryState and rfsuite.tasks.telemetry and not rfsuite.tasks.telemetry.validateSensors() then
+        overlayMessage = rfsuite.i18n.get("widgets.dashboard.validate_sensors")    
     end
+
     if overlayMessage then
-        if module.overlayMessage then
+        if module and module.overlayMessage then
             module.screenErrorOverlay(overlayMessage)
         else
             -- Fallback to utils if no screenErrorOverlay function is defined
             utils.screenErrorOverlay(overlayMessage)
         end
-    end    
+    end 
 
 end
 
-
 local function load_state_script(theme_folder, state)
+    local usedFallback = false
+
     -- theme_folder is now "system/foo" or "user/bar"
     local source, folder = theme_folder:match("([^/]+)/(.+)")
     local themeBasePath = (source == "user") and themesUserPath or themesBasePath
 
-    -- 1) Load init.lua so we can read the init table
-    local initPath  = themeBasePath .. folder .. "/init.lua"
+    -- Handle mangled or empty paths (fallback immediately)
+    if not source or not folder then
+        theme_folder = dashboard.DEFAULT_THEME
+        source, folder = theme_folder:match("([^/]+)/(.+)")
+        themeBasePath = (source == "user") and themesUserPath or themesBasePath
+        usedFallback = true
+    end
+
+    -- 1) Try to load init.lua from selected theme, else fallback to default
+    local initPath = themeBasePath .. folder .. "/init.lua"
     local initChunk, initErr = rfsuite.compiler.loadfile(initPath)
+
     if not initChunk then
+        usedFallback = true
+        local fallbackSource, fallbackFolder = dashboard.DEFAULT_THEME:match("([^/]+)/(.+)")
+        local fallbackBasePath = (fallbackSource == "user") and themesUserPath or themesBasePath
+        local fallbackInitPath = fallbackBasePath .. fallbackFolder .. "/init.lua"
         rfsuite.utils.log(
-          "dashboard: Could not load init.lua for " .. folder ..
-          ". Error: " .. tostring(initErr),
-          "error"
+            "dashboard: Could not load init.lua for " .. tostring(folder) ..
+            ". Falling back to default. Error: " .. tostring(initErr),
+            "info"
         )
-        return nil
+        initChunk, initErr = rfsuite.compiler.loadfile(fallbackInitPath)
+        if not initChunk then
+            rfsuite.utils.log(
+                "dashboard: Could not load default theme's init.lua. Error: " .. tostring(initErr),
+                "error"
+            )
+            dashboard.themeFallbackUsed[state] = true
+            dashboard.themeFallbackTime[state] = os.clock()
+            return nil
+        end
+        folder = fallbackFolder
+        themeBasePath = fallbackBasePath
     end
 
     local ok, initTable = pcall(initChunk)
     if not ok or type(initTable) ~= "table" then
         rfsuite.utils.log(
-          "dashboard: Error running init.lua for " .. folder ..
-          ": " .. tostring(initTable),
-          "error"
+            "dashboard: Error running init.lua for " .. tostring(folder) ..
+            ": " .. tostring(initTable) .. ". Falling back to default.",
+            "error"
         )
-        return nil
+        -- Try default theme's init.lua as a last resort
+        if theme_folder ~= dashboard.DEFAULT_THEME then
+            usedFallback = true
+            local fallbackSource, fallbackFolder = dashboard.DEFAULT_THEME:match("([^/]+)/(.+)")
+            local fallbackBasePath = (fallbackSource == "user") and themesUserPath or themesBasePath
+            local fallbackInitPath = fallbackBasePath .. fallbackFolder .. "/init.lua"
+            local fallbackChunk, fallbackErr = rfsuite.compiler.loadfile(fallbackInitPath)
+            if fallbackChunk then
+                ok, initTable = pcall(fallbackChunk)
+                if ok and type(initTable) == "table" then
+                    folder = fallbackFolder
+                    themeBasePath = fallbackBasePath
+                else
+                    dashboard.themeFallbackUsed[state] = true
+                    dashboard.themeFallbackTime[state] = os.clock()
+                    return nil
+                end
+            else
+                dashboard.themeFallbackUsed[state] = true
+                dashboard.themeFallbackTime[state] = os.clock()
+                return nil
+            end
+        else
+            dashboard.themeFallbackUsed[state] = true
+            dashboard.themeFallbackTime[state] = os.clock()
+            return nil
+        end
     end
 
     -- 2) Pick the file name from init (e.g. initTable.preflight == "status.lua")
@@ -315,16 +377,28 @@ local function load_state_script(theme_folder, state)
 
     -- 4) If it fails, fall back to default theme (using the same scriptName)
     if not chunk then
-        local fallbackPath = themesBasePath .. dashboard.DEFAULT_THEME .. "/" .. scriptName
+        usedFallback = true
+        local fallbackPath = themesBasePath .. dashboard.DEFAULT_THEME:match("[^/]+/(.+)") .. "/" .. scriptName
         chunk, err = rfsuite.compiler.loadfile(fallbackPath)
         if not chunk then
             rfsuite.utils.log(
-              "dashboard: Could not load " .. scriptName ..
-              " for " .. folder .. " or default. Error: " .. tostring(err),
-              "error"
+                "dashboard: Could not load " .. scriptName ..
+                " for " .. tostring(folder) .. " or default. Error: " .. tostring(err),
+                "info"
             )
+            dashboard.themeFallbackUsed[state] = true
+            dashboard.themeFallbackTime[state] = os.clock()
             return nil
         end
+    end
+
+    -- Set fallback flag/timer if any fallback happened
+    if usedFallback then
+        dashboard.themeFallbackUsed[state] = true
+        dashboard.themeFallbackTime[state] = os.clock()
+    else
+        dashboard.themeFallbackUsed[state] = false
+        dashboard.themeFallbackTime[state] = 0
     end
 
     -- 5) Run it and return the module
@@ -337,12 +411,12 @@ local function load_state_script(theme_folder, state)
                 "dashboard: Error running " .. scriptName .. ": " .. tostring(module),
                 "error"
             )
+            dashboard.themeFallbackUsed[state] = true
+            dashboard.themeFallbackTime[state] = os.clock()
             return nil
         end
         return module
     end
-
-    return module
 end
 
 
