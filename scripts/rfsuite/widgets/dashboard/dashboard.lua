@@ -170,7 +170,7 @@ function dashboard.renderLayout(widget, config)
             )
         elseif box.type == "craftname" then
             local displayValue = rfsuite.session.craftName
-            if displayValue == nil then
+            if displayValue == nil or (type(displayValue) == "string" and displayValue:match("^%s*$")) then
                 displayValue = box.novalue or "-"
             end
 
