@@ -49,17 +49,25 @@ end
 function dashboard.renderLayout(widget, config)
     dashboard.boxRects = {} -- clear previous box rectangles
 
+    local function resolve(val, ...)
+        if type(val) == "function" then
+            return val(...)
+        else
+            return val
+        end
+    end
+
     local telemetry = rfsuite.tasks.telemetry
     local utils = dashboard.utils
     local state = dashboard.flightmode or "preflight"
     local module = loadedStateModules[state]
 
-    local selectColor = (config.layout and config.layout.selectcolor) or dashboard.utils.resolveColor("yellow") or lcd.RGB(255, 255, 0)
-    local selectBorder = (config.layout and config.layout.selectborder) or 2
+    local selectColor = (resolve(config.layout) and resolve(config.layout).selectcolor) or dashboard.utils.resolveColor("yellow") or lcd.RGB(255, 255, 0)
+    local selectBorder = (resolve(config.layout) and resolve(config.layout).selectborder) or 2
 
     local WIDGET_W, WIDGET_H = lcd.getWindowSize()
-    local COLS, ROWS = config.layout.cols, config.layout.rows
-    local PADDING = config.layout.padding
+    local COLS, ROWS = resolve(config.layout).cols, resolve(config.layout).rows
+    local PADDING = resolve(config.layout).padding
 
     local contentWidth = WIDGET_W - ((COLS - 1) * PADDING)
     local contentHeight = WIDGET_H - ((ROWS + 1) * PADDING)
@@ -75,7 +83,7 @@ function dashboard.renderLayout(widget, config)
         return x, y
     end
 
-    for i, box in ipairs(config.boxes or {}) do
+    for i, box in ipairs(resolve(config.boxes) or {}) do
         local x, y = getBoxPosition(box.col, box.row)
         local w = math.floor((box.colspan or 1) * boxWidth + ((box.colspan or 1) - 1) * PADDING)
         local h = math.floor((box.rowspan or 1) * boxHeight + ((box.rowspan or 1) - 1) * PADDING)
@@ -111,25 +119,10 @@ function dashboard.renderLayout(widget, config)
                 box.valuepadding, box.valuepaddingleft, box.valuepaddingright, box.valuepaddingtop, box.valuepaddingbottom
             )
         elseif box.type == "text" then
-            local value = nil
-            if box.source then
-                local sensor = telemetry.getSensorSource(box.source)
-                value = sensor and sensor:value()
-                if type(box.transform) == "string" and math[box.transform] then
-                    value = value and math[box.transform](value)
-                elseif type(box.transform) == "function" then
-                    value = value and box.transform(value)
-                elseif type(box.transform) == "number" then
-                    value = value and box.transform(value)
-                end
-            end
-            local displayValue = value
-            local displayUnit = box.unit
 
-            if value == nil then
-                displayValue = box.novalue or "-"
-                displayUnit = nil
-            end
+            local displayValue = box.value
+            local displayUnit = ""
+
 
             utils.telemetryBox(
                 x, y, w, h,
@@ -495,6 +488,7 @@ function dashboard.build(widget)
 end
 
 function dashboard.event(widget, category, value, x, y)
+
     -- Handle keypad/rotary
     if category == EVT_KEY then
         local indices = getOnpressBoxIndices()
@@ -520,15 +514,31 @@ function dashboard.event(widget, category, value, x, y)
             dashboard.selectedBoxIndex = indices[pos]
             lcd.invalidate(widget) -- Force redraw
             return true
-        elseif value == 33 and category == 0 then -- ENTER press (sometimes category==EVT_KEY as well)
-            local idx = dashboard.selectedBoxIndex or indices[1]
-            local rect = dashboard.boxRects[idx]
-            if rect and rect.box.onpress then
-                rect.box.onpress(widget, rect.box, rect.x, rect.y, category, value)
-                return true
+        elseif value == 33 and category == EVT_KEY then 
+            local inIndices = false
+            for i=1, #indices do
+                if indices[i] == dashboard.selectedBoxIndex then inIndices = true break end
             end
+
+            if not inIndices then
+                -- No highlight or highlight is not valid: set it
+                dashboard.selectedBoxIndex = indices[1]
+                lcd.invalidate(widget)
+                return true
+            else
+                -- Valid highlight: trigger onpress
+                local idx = dashboard.selectedBoxIndex
+                local rect = dashboard.boxRects[idx]
+                if rect and rect.box.onpress then
+                    rect.box.onpress(widget, rect.box, rect.x, rect.y, category, value)
+                    system.killEvents(97)
+                    return true
+                end
+            end            
         end
     end
+
+
 
     -- Handle EXIT key (category 0, value 35)
     if value == 35 then
@@ -538,19 +548,22 @@ function dashboard.event(widget, category, value, x, y)
     end
 
     -- Touch handling (already present)
-    if x and y then
-        for i, rect in ipairs(dashboard.boxRects) do
-            if x >= rect.x and x < rect.x + rect.w and y >= rect.y and y < rect.y + rect.h then
-                if rect.box.onpress then
-                    dashboard.selectedBoxIndex = i  -- Shift highlight focus!
-                    lcd.invalidate(widget)
-                    rect.box.onpress(widget, rect.box, x, y, category, value)
-                    return true
+    if category == 1 and value == 16641 and lcd.hasFocus() then
+        if x and y then
+            for i, rect in ipairs(dashboard.boxRects) do
+                if x >= rect.x and x < rect.x + rect.w and y >= rect.y and y < rect.y + rect.h then
+                    if rect.box.onpress then
+                        dashboard.selectedBoxIndex = i  -- Shift highlight focus!
+                        lcd.invalidate(widget)
+                        rect.box.onpress(widget, rect.box, x, y, category, value)
+                        system.killEvents(16640)
+                        return true
+                    end
+                    -- fallback etc.
                 end
-                -- fallback etc.
             end
         end
-    end
+    end    
 
     -- fallback to theme event
     local state = dashboard.flightmode or "preflight"
