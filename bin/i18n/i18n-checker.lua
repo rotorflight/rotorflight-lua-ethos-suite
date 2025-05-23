@@ -36,7 +36,7 @@ local function list_lua_files(folder)
 end
 
 local function load_table(filepath)
-    local chunk, err = rfsuite.compiler.loadfile(filepath)
+    local chunk, err = loadfile(filepath)
     if not chunk then return nil, err end
     local ok, result = pcall(chunk)
     if not ok or type(result) ~= "table" then return nil, "Invalid return" end

@@ -1147,6 +1147,9 @@ return {
       ["txt_cancel"] = "Cancel",
       ["txt_save"] = "Save"
     },
+    ["dashboard"] = {
+      ["theme_load_error"] = "Your theme did not load correctly. Falling back to default theme."
+    },
     ["governor"] = {
       ["UNKNOWN"] = "UNKNOWN",
       ["IDLE"] = "IDLE",

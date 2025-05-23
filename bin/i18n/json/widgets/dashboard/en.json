@@ -1,0 +1,7 @@
+{
+  "theme_load_error": {
+    "english": "Your theme did not load correctly. Falling back to default theme.",
+    "translation": "Your theme did not load correctly. Falling back to default theme.",
+    "needs_translation": "false"
+  }
+}
