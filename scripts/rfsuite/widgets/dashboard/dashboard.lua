@@ -271,6 +271,8 @@ function dashboard.renderLayout(widget, config)
         overlayMessage = rfsuite.i18n.get("app.check_rf_module_on")
     elseif not (sportSensor or elrsSensor) then
         overlayMessage = rfsuite.i18n.get("app.check_discovered_sensors")
+    elseif rfsuite.session.telemetryState and rfsuite.tasks.telemetry and not rfsuite.tasks.telemetry.validateSensors() then
+        overlayMessage = rfsuite.i18n.get("widgets.dashboard.validate_sensors")    
     end
 
     if overlayMessage then

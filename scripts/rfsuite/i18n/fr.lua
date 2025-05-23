@@ -1148,7 +1148,8 @@ return {
       ["txt_save"] = "Enregistrer"
     },
     ["dashboard"] = {
-      ["theme_load_error"] = "Your theme did not load correctly. Falling back to default theme."
+      ["theme_load_error"] = "Your theme did not load correctly. Falling back to default theme.",
+      ["validate_sensors"] = "MISSING REQUIRED SENSORS"
     },
     ["governor"] = {
       ["UNKNOWN"] = "INCONNU",
