@@ -74,6 +74,7 @@ local sensorTable = {
         name = rfsuite.i18n.get("telemetry.sensors.rssi"),
         mandatory = true,
         maxmin_trigger = nil,
+        switch_alerts = true,
         sensors = {
             sim = {
                 { appId = 0xF101, subId = 0 },
@@ -124,6 +125,7 @@ local sensorTable = {
         mandatory = true,
         maxmin_trigger = nil,
         set_telemetry_sensors = 3,
+        switch_alerts = true,
         sensors = {
             sim = {
                 { uid = 0x5002, unit = UNIT_VOLT, dec = 2,
@@ -150,8 +152,9 @@ local sensorTable = {
     rpm = {
         name = rfsuite.i18n.get("telemetry.sensors.headspeed"),
         mandatory = true,
-        maxmin_trigger = nil,
+        maxmin_trigger = true,
         set_telemetry_sensors = 60,
+        switch_alerts = true,
         sensors = {
             sim = {
                 { uid = 0x5003, unit = UNIT_RPM, dec = nil,
@@ -172,8 +175,9 @@ local sensorTable = {
     current = {
         name = rfsuite.i18n.get("telemetry.sensors.current"),
         mandatory = false,
-        maxmin_trigger = nil,
+        maxmin_trigger = true,
         set_telemetry_sensors = 18,
+        switch_alerts = true,
         sensors = {
             sim = {
                 { uid = 0x5004, unit = UNIT_AMPERE, dec = 0,
@@ -198,8 +202,9 @@ local sensorTable = {
     temp_esc = {
         name = rfsuite.i18n.get("telemetry.sensors.esc_temp"),
         mandatory = false,
-        maxmin_trigger = nil,
+        maxmin_trigger = true,
         set_telemetry_sensors = 23,
+        switch_alerts = true,
         sensors = {
             sim = {
                 { uid = 0x5005, unit = UNIT_DEGREE, dec = 0,
@@ -222,8 +227,9 @@ local sensorTable = {
     temp_mcu = {
         name = rfsuite.i18n.get("telemetry.sensors.mcu_temp"),
         mandatory = false,
-        maxmin_trigger = nil,
+        maxmin_trigger = true,
         set_telemetry_sensors = 52,
+        switch_alerts = true,
         sensors = {
             sim = {
                 { uid = 0x5006, unit = UNIT_DEGREE, dec = 0,
@@ -247,6 +253,7 @@ local sensorTable = {
         mandatory = false,
         maxmin_trigger = nil,
         set_telemetry_sensors = 6,
+        switch_alerts = true,
         sensors = {
             sim = {
                 { uid = 0x5007, unit = UNIT_PERCENT, dec = 0,
@@ -268,6 +275,7 @@ local sensorTable = {
         mandatory = true,
         maxmin_trigger = nil,
         set_telemetry_sensors = 5,
+        switch_alerts = true,
         sensors = {
             sim = {
                 { uid = 0x5008, unit = UNIT_MILLIAMPERE_HOUR, dec = 0,
@@ -399,7 +407,7 @@ local sensorTable = {
     throttle_percent = {
         name = rfsuite.i18n.get("telemetry.sensors.throttle_pct"),
         mandatory = true,
-        maxmin_trigger = nil,
+        maxmin_trigger = true,
         set_telemetry_sensors = 15,
         sensors = {
             sim = {
@@ -440,6 +448,77 @@ local sensorTable = {
             crsfLegacy = { nil },
         },
     },
+
+    -- Altitude
+    altitude = {
+        name = rfsuite.i18n.get("telemetry.sensors.altitude"),
+        mandatory = false,
+        maxmin_trigger = true,
+        set_telemetry_sensors = nil,
+        switch_alerts = true,
+        sensors = {
+            sim = {
+                { uid = 0x5016, unit = UNIT_METER, dec = 0,
+                  value = function() return rfsuite.utils.simSensors('altitude') end,
+                  min = 0, max = 50000 },
+            },
+            sport = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0100 }
+            },
+            crsf = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10B2 },
+            },
+            crsfLegacy = { nil },
+        },
+    },     
+
+    -- Bec Voltage
+    bec_voltage = {
+        name = rfsuite.i18n.get("telemetry.sensors.bec_voltage"),
+        mandatory = false,
+        maxmin_trigger = true,
+        set_telemetry_sensors = nil,
+        switch_alerts = true,
+        sensors = {
+            sim = {
+                { uid = 0x5017, unit = UNIT_VOLT, dec = 2,
+                  value = function() return rfsuite.utils.simSensors('bec_voltage') end,
+                  min = 0, max = 3000 },
+            },
+            sport = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0901 },
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0219 },
+            },
+            crsf = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1081 },
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1049 },
+            },
+            crsfLegacy = { nil },
+        },
+    },  
+
+    -- Cell Count
+    cell_count = {
+        name = rfsuite.i18n.get("telemetry.sensors.cell_count"),
+        mandatory = false,
+        maxmin_trigger = true,
+        set_telemetry_sensors = nil,
+        sensors = {
+            sim = {
+                { uid = 0x5018, unit = nil, dec = 0,
+                  value = function() return rfsuite.utils.simSensors('cell_count') end,
+                  min = 0, max = 50 },
+            },
+            sport = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5260 },
+            },
+            crsf = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1020 },
+            },
+            crsfLegacy = { nil },
+        },
+    },  
+
 }
 
 
@@ -460,6 +539,23 @@ function telemetry.listSensors()
     local sensorList = {}
 
     for key, sensor in pairs(sensorTable) do table.insert(sensorList, {key = key, name = sensor.name, mandatory = sensor.mandatory, set_telemetry_sensors = sensor.set_telemetry_sensors }) end
+
+    return sensorList
+end
+
+--[[
+    Function: telemetry.listSensors
+    Description: Generates a list of sensors from the sensorTable.
+    Returns: A table containing sensor details (key, name, and mandatory status).
+]]
+function telemetry.listSwitchSensors()
+    local sensorList = {}
+
+    for key, sensor in pairs(sensorTable) do 
+        if sensor.switch_alerts then
+            table.insert(sensorList, {key = key, name = sensor.name, mandatory = sensor.mandatory, set_telemetry_sensors = sensor.set_telemetry_sensors }) 
+        end    
+    end
 
     return sensorList
 end
@@ -739,16 +835,8 @@ function telemetry.wakeup()
                 ]]
                 if type(sensorDef.maxmin_trigger) == "function" then
                     shouldTrack = sensorDef.maxmin_trigger()
-                elseif rfsuite.session.isArmed == true and telemetry.getSensorSource("governor") and telemetry.getSensorSource("governor"):value() == 4 then
-                    shouldTrack = true
-                elseif rfsuite.session.isArmed == true and telemetry.getSensorSource("rpm") and telemetry.getSensorSource("rpm"):value() > 500 then
-                    shouldTrack = true    
-                elseif rfsuite.session.isArmed == true and telemetry.getSensorSource("throttle_percent") and telemetry.getSensorSource("throttle_percent"):value() > 30 then               
-                    shouldTrack = true
-                elseif rfsuite.session.isArmed == true then
-                    shouldTrack = true
                 else
-                    shouldTrack = false
+                    shouldTrack = rfsuite.utils.inFlight()
                 end
 
                 -- Record min/max if tracking is active

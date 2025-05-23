@@ -34,7 +34,7 @@ config.ethosVersion = {1, 6, 2}                                                 
 config.supportedMspApiVersion = {"12.06", "12.07","12.08"}                          -- supported msp versions
 config.simulatorApiVersionResponse = {0, 12, 8}                                     -- version of api return by simulator
 config.baseDir = "rfsuite"                                                          -- base directory for the suite. This is only used by msp api to ensure correct path
-config.preferences = "SCRIPTS:/rfsuite.ini"                                         -- user preferences file
+config.preferences = config.baseDir .. ".user"                                      -- user preferences folder location
 config.defaultRateProfile = 4 -- ACTUAL                                             -- default rate table [default = 4]
 config.watchdogParam = 10                                                           -- watchdog timeout for progress boxes [default = 10]
 
@@ -62,7 +62,12 @@ local userpref_defaults ={
         iconsize = 2,
         syncname = false,
     },
-    announcements = {
+    dashboard = {
+        theme_preflight = "default",
+        theme_inflight = "default",
+        theme_postflight = "default",
+    },
+    events = {
         armflags = true,
         voltage = true,
         fuel = true,
@@ -71,6 +76,8 @@ local userpref_defaults ={
         rate_profile = true,
         adj_v = true,
         adj_f = false,
+    },
+    switches = {
     },
     developer = {
         compile = true,             -- compile the script
@@ -84,9 +91,13 @@ local userpref_defaults ={
     }
 }
 
-local userpref_file = rfsuite.config.preferences
+local userpref_file = "SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini"
 local slave_ini = userpref_defaults
 local master_ini = {}
+
+if not ini.dir_exists("SCRIPTS:/", rfsuite.config.preferences) then
+        os.mkdir("SCRIPTS:/" .. rfsuite.config.preferences)
+end
 
 if rfsuite.ini.file_exists(userpref_file) then
     master_ini = rfsuite.ini.load_ini_file(userpref_file) or {}
@@ -158,6 +169,7 @@ The parameters include:
 - repairSensors: makes the background task repair sensors
 - lastMemoryUsage.  Used to track memory usage for debugging
 - isArmed.  Used to track if the craft is armed
+- flightMode.  Used to track the flight mode [preflight, inflight, postflight]
 
 -- Every attempt should be made if using session vars to record them here with a nil
 -- to prevent conflicts with other scripts that may use the same session vars.
@@ -200,6 +212,17 @@ rfsuite.session.lastMemoryUsage = nil
 rfsuite.session.mcu_id = nil
 rfsuite.session.isConnected = false
 rfsuite.session.isArmed = false
+rfsuite.session.flightMode = nil
+rfsuite.session.bblSize = nil
+rfsuite.session.bblUsed = nil
+rfsuite.session.batteryConfig = {}
+rfsuite.session.batteryConfig.batteryCapacity = nil
+rfsuite.session.batteryConfig.batteryCellCount = nil
+rfsuite.session.batteryConfig.vbatwarningcellvoltage = nil
+rfsuite.session.batteryConfig.vbatmincellvoltage = nil
+rfsuite.session.batteryConfig.vbatmaxcellvoltage = nil
+rfsuite.session.batteryConfig.lvcPercentage = nil
+rfsuite.session.batteryConfig.consumptionWarningPercentage = nil
 
 --- Retrieves the version information of the rfsuite module.
 --- 
@@ -394,6 +417,7 @@ local function init()
                     create = scriptModule.create,
                     paint = scriptModule.paint,
                     wakeup = scriptModule.wakeup,
+                    build = scriptModule.build,
                     close = scriptModule.close,
                     configure = scriptModule.configure,
                     read = scriptModule.read,

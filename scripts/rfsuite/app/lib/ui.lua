@@ -63,10 +63,14 @@ end
                  Sets the save display flag, initializes the save watchdog timer, 
                  and configures the progress dialog with initial values.
 ]]
-function ui.progressDisplaySave()
+function ui.progressDisplaySave(msg)
     rfsuite.app.dialogs.saveDisplay = true
     rfsuite.app.dialogs.saveWatchDog = os.clock()
-    rfsuite.app.dialogs.save = form.openProgressDialog(rfsuite.i18n.get("app.msg_saving"), rfsuite.i18n.get("app.msg_saving_to_fbl"))
+    if msg then
+                 rfsuite.app.dialogs.save = form.openProgressDialog(rfsuite.i18n.get("app.msg_saving"),msg)   
+    else
+         rfsuite.app.dialogs.save = form.openProgressDialog(rfsuite.i18n.get("app.msg_saving"), rfsuite.i18n.get("app.msg_saving_to_fbl"))       
+    end
     rfsuite.app.dialogs.save:value(0)
     rfsuite.app.dialogs.save:closeAllowed(false)
 end

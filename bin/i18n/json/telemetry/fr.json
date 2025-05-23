@@ -15,10 +15,25 @@
       "translation": "Tours Moteurs",
       "needs_translation": "false"
     },
+    "altitude": {
+      "english": "Altitude",
+      "translation": "Altitude",
+      "needs_translation": "true"
+    },
     "voltage": {
       "english": "Voltage",
       "translation": "Tension",
       "needs_translation": "false"
+    },
+    "bec_voltage": {
+      "english": "Bec voltage",
+      "translation": "Bec voltage",
+      "needs_translation": "true"
+    },
+    "cell_count": {
+      "english": "Cell count",
+      "translation": "Cell Count",
+      "needs_translation": "true"
     },
     "governor": {
       "english": "Governor State",

@@ -1,0 +1,419 @@
+local utils = {}
+
+local imageCache = {}
+
+
+function utils.resetImageCache()
+    for k in pairs(imageCache) do
+        imageCache[k] = nil
+    end
+end
+
+function utils.screenError(msg)
+    local w, h = lcd.getWindowSize()
+    local isDarkMode = lcd.darkMode()
+    local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL, FONT_XXXXL}
+    local maxW, maxH = w * 0.9, h * 0.9
+    local bestFont, bestW, bestH = FONT_XXS, 0, 0
+    for _, font in ipairs(fonts) do
+        lcd.font(font)
+        local tsizeW, tsizeH = lcd.getTextSize(msg)
+        if tsizeW <= maxW and tsizeH <= maxH then
+            bestFont = font
+            bestW, bestH = tsizeW, tsizeH
+        else
+            break
+        end
+    end
+    lcd.font(bestFont)
+    local textColor = isDarkMode and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90)
+    lcd.color(textColor)
+    local x = (w - bestW) / 2
+    local y = (h - bestH) / 2
+    lcd.drawText(x, y, msg)
+end
+
+function utils.screenErrorOverlay(msg)
+    local w, h = lcd.getWindowSize()
+    local isDarkMode = lcd.darkMode()
+    local boxW = w * 0.8
+
+    -- Dynamically scale font for text
+    local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL}
+    local bestFont, bestW, bestH = FONT_XXS, 0, 0
+    local maxW = boxW * 0.9  -- Allow margin inside the box
+
+    for _, font in ipairs(fonts) do
+        lcd.font(font)
+        local tW, tH = lcd.getTextSize(msg)
+        if tW <= maxW then
+            bestFont, bestW, bestH = font, tW, tH
+        else
+            break
+        end
+    end
+
+    -- Add 20% vertical padding to text height
+    local boxH = bestH * 2
+
+    -- Center the box on screen
+    local boxX = (w - boxW) / 2
+    local boxY = (h - boxH) / 2
+
+    -- Draw background box
+    lcd.color(isDarkMode and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
+    lcd.drawFilledRectangle(boxX, boxY, boxW, boxH)
+
+    -- Draw border
+    lcd.color(isDarkMode and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90))
+    lcd.drawRectangle(boxX, boxY, boxW, boxH)
+
+    -- Draw text
+    lcd.font(bestFont)
+    local textColor = isDarkMode and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90)
+    lcd.color(textColor)
+    local textX = (w - bestW) / 2
+    local textY = (h - bestH) / 2
+    lcd.drawText(textX, textY, msg)
+end
+
+
+
+function utils.getAlignedX(text, align, x, w)
+    local tsize = lcd.getTextSize(text)
+    if align == "right" then
+        return x + w - tsize
+    elseif align == "left" then
+        return x
+    else -- center
+        return x + (w - tsize) / 2
+    end
+end
+
+function utils.resolveColor(value)
+    local namedColors = {
+        red       = {255, 0, 0},
+        green     = {0, 188, 4},
+        blue      = {0, 122, 255},
+        white     = {255, 255, 255},
+        black     = {0, 0, 0},
+        gray      = {90, 90, 90},
+        grey      = {90, 90, 90},
+        orange    = {255, 204, 0},
+        yellow    = {255, 255, 0},
+        cyan      = {0, 255, 255},
+        magenta   = {255, 0, 255},
+        pink      = {255, 105, 180},
+        purple    = {128, 0, 128},
+        violet    = {143, 0, 255},
+        brown     = {139, 69, 19},
+        lime      = {0, 255, 0},
+        olive     = {128, 128, 0},
+        gold      = {255, 215, 0},
+        silver    = {192, 192, 192},
+        teal      = {0, 128, 128},
+        navy      = {0, 0, 128},
+        maroon    = {128, 0, 0},
+        beige     = {245, 245, 220},
+        turquoise = {64, 224, 208},
+        indigo    = {75, 0, 130},
+        coral     = {255, 127, 80},
+        salmon    = {250, 128, 114},
+        mint      = {62, 180, 137},
+    }
+
+    if type(value) == "string" and namedColors[value] then
+        return lcd.RGB(namedColors[value][1], namedColors[value][2], namedColors[value][3], 1)
+    elseif type(value) == "table" and #value >= 3 then
+        return lcd.RGB(value[1], value[2], value[3], 1)
+    end
+
+    return nil -- fallback handling will occur elsewhere
+end
+
+function utils.telemetryBox(
+    x, y, w, h, color, title, value, unit, bgcolor,
+    titlealign, valuealign, titlecolor, titlepos,
+    titlepadding, titlepaddingleft, titlepaddingright, titlepaddingtop, titlepaddingbottom,
+    valuepadding, valuepaddingleft, valuepaddingright, valuepaddingtop, valuepaddingbottom
+)
+    local isDARKMODE = lcd.darkMode()
+    local resolvedBg = utils.resolveColor(bgcolor)
+    lcd.color(resolvedBg or (isDARKMODE and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)))
+    lcd.drawFilledRectangle(x, y, w, h)
+
+    -- Padding resolution (default 0)
+    titlepaddingleft = titlepaddingleft or titlepadding or 0
+    titlepaddingright = titlepaddingright or titlepadding or 0
+    titlepaddingtop = titlepaddingtop or titlepadding or 0
+    titlepaddingbottom = titlepaddingbottom or titlepadding or 0
+
+    valuepaddingleft = valuepaddingleft or valuepadding or 0
+    valuepaddingright = valuepaddingright or valuepadding or 0
+    valuepaddingtop = valuepaddingtop or valuepadding or 0
+    valuepaddingbottom = valuepaddingbottom or valuepadding or 0
+
+    -- Draw value (centered by default, alignment can be overridden)
+    if value ~= nil then
+        local str = tostring(value) .. (unit or "")
+        local unitIsDegree = (unit == "°" or (unit and unit:find("°")))
+        local strForWidth = unitIsDegree and (tostring(value) .. "0") or str
+
+        -- Compute available height for value
+        local availH = h - valuepaddingtop - valuepaddingbottom
+
+        -- Start with largest font set
+        local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL, FONT_XXXXL}
+
+        -- If the box is short, limit max font
+        lcd.font(FONT_XL)
+        local _, xlFontHeight = lcd.getTextSize("8")
+        if xlFontHeight > availH * 0.5 then
+            fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L}
+        end
+
+        local maxW, maxH = w - valuepaddingleft - valuepaddingright, availH
+        local bestFont, bestW, bestH = FONT_XXS, 0, 0
+        for _, font in ipairs(fonts) do
+            lcd.font(font)
+            local tW, tH = lcd.getTextSize(strForWidth)
+            if tW <= maxW and tH <= maxH then
+                bestFont, bestW, bestH = font, tW, tH
+            else
+                break
+            end
+        end
+        lcd.font(bestFont)
+        local region_x = x + valuepaddingleft
+        local region_y = y + valuepaddingtop
+        local region_w = w - valuepaddingleft - valuepaddingright
+        local region_h = h - valuepaddingtop - valuepaddingbottom
+
+        local sy = region_y + (region_h - bestH) / 2
+        local align = (valuealign or "center"):lower()
+        local sx
+        if align == "left" then
+            sx = region_x
+        elseif align == "right" then
+            sx = region_x + region_w - bestW
+        else
+            sx = region_x + (region_w - bestW) / 2
+        end
+
+        local resolvedColor = utils.resolveColor(color)
+        if resolvedColor then
+            lcd.color(resolvedColor)
+        else
+            lcd.color(isDARKMODE and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
+        end
+        lcd.drawText(sx, sy, str)
+    end
+
+
+    -- Draw title (top or bottom, color and alignment)
+    if title then
+        lcd.font(FONT_XS)
+        local tsizeW, tsizeH = lcd.getTextSize(title)
+        local region_x = x + titlepaddingleft
+        local region_w = w - titlepaddingleft - titlepaddingright
+        local sy = (titlepos == "bottom")
+            and (y + h - titlepaddingbottom - tsizeH)
+            or (y + titlepaddingtop)
+        local align = (titlealign or "center"):lower()
+        local sx
+        if align == "left" then
+            sx = region_x
+        elseif align == "right" then
+            sx = region_x + region_w - tsizeW
+        else
+            sx = region_x + (region_w - tsizeW) / 2
+        end
+        lcd.color(utils.resolveColor(titlecolor) or (isDARKMODE and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90)))
+        lcd.drawText(sx, sy, title)
+    end
+end
+
+
+
+function utils.imageBox(
+    x, y, w, h, color, title, imagePath, imagewidth, imageheight, imagealign, bgcolor,
+    titlealign, titlecolor, titlepos,
+    imagepadding, imagepaddingleft, imagepaddingright, imagepaddingtop, imagepaddingbottom
+)
+    local isDARKMODE = lcd.darkMode()
+    local resolvedBg = utils.resolveColor(bgcolor)
+    lcd.color(resolvedBg or (isDARKMODE and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)))
+    lcd.drawFilledRectangle(x, y, w, h)
+
+    imagepaddingleft = imagepaddingleft or imagepadding or 0
+    imagepaddingright = imagepaddingright or imagepadding or 0
+    imagepaddingtop = imagepaddingtop or imagepadding or 0
+    imagepaddingbottom = imagepaddingbottom or imagepadding or 0
+
+    local region_x = x + imagepaddingleft
+    local region_y = y + imagepaddingtop
+    local region_w = w - imagepaddingleft - imagepaddingright
+    local region_h = h - imagepaddingtop - imagepaddingbottom
+
+    if rfsuite and rfsuite.utils and rfsuite.utils.loadImage and lcd and lcd.drawBitmap then
+        local cacheKey = imagePath
+        local bitmapPtr = imageCache[cacheKey]
+        if not bitmapPtr then
+            bitmapPtr = rfsuite.utils.loadImage(imagePath, nil, "widgets/dashboard/default_image.png")
+            imageCache[cacheKey] = bitmapPtr
+        end
+        if bitmapPtr then
+            local img_w = imagewidth or region_w
+            local img_h = imageheight or region_h
+            local align = imagealign or "center"
+            local img_x, img_y = region_x, region_y
+
+            -- Horizontal alignment within padded region
+            if align == "center" then
+                img_x = region_x + (region_w - img_w) / 2
+            elseif align == "right" then
+                img_x = region_x + region_w - img_w
+            else -- left
+                img_x = region_x
+            end
+            -- Vertical alignment within padded region
+            if align == "center" then
+                img_y = region_y + (region_h - img_h) / 2
+            elseif align == "bottom" then
+                img_y = region_y + region_h - img_h
+            else -- top
+                img_y = region_y
+            end
+
+            -- Draw title (unaffected by image padding, but could add titlepadding the same way)
+            if title and title ~= "" then
+                lcd.font(FONT_S)
+                local tsize_w, tsize_h = lcd.getTextSize(title)
+                local sx
+                if titlealign == "left" then
+                    sx = x
+                elseif titlealign == "right" then
+                    sx = x + w - tsize_w
+                else -- center
+                    sx = x + (w - tsize_w) / 2
+                end
+                local useColor = utils.resolveColor(titlecolor) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
+                lcd.color(useColor)
+                if titlepos == "bottom" then
+                    lcd.drawText(sx, y + h - tsize_h, title)
+                else
+                    lcd.drawText(sx, y, title)
+                    img_y = img_y + tsize_h + 2
+                end
+            end
+
+            lcd.drawBitmap(img_x, img_y, bitmapPtr, img_w, img_h)
+        end
+    end
+end
+
+
+function utils.setBackgroundColourBasedOnTheme()
+    local w, h = lcd.getWindowSize()
+    if lcd.darkMode() then
+        -- dark theme
+        lcd.color(lcd.RGB(16, 16, 16))
+    else
+        -- light theme
+        lcd.color(lcd.RGB(209, 208, 208))
+    end
+    lcd.drawFilledRectangle(0, 0, w, h)
+end
+
+function utils.modelImageBox(
+    x, y, w, h,
+    color, title, imagewidth, imageheight, imagealign, bgcolor,
+    titlealign, titlecolor, titlepos,
+    imagepadding, imagepaddingleft, imagepaddingright, imagepaddingtop, imagepaddingbottom
+)
+    -- Draw background
+    local isDARKMODE = lcd.darkMode()
+    local resolvedBg = utils.resolveColor(bgcolor)
+    lcd.color(resolvedBg or (isDARKMODE and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)))
+    lcd.drawFilledRectangle(x, y, w, h)
+
+    -- Padding resolution (default 0)
+    imagepaddingleft = imagepaddingleft or imagepadding or 0
+    imagepaddingright = imagepaddingright or imagepadding or 0
+    imagepaddingtop = imagepaddingtop or imagepadding or 0
+    imagepaddingbottom = imagepaddingbottom or imagepadding or 0
+
+    local region_x = x + imagepaddingleft
+    local region_y = y + imagepaddingtop
+    local region_w = w - imagepaddingleft - imagepaddingright
+    local region_h = h - imagepaddingtop - imagepaddingbottom
+
+    -- Figure out best image path
+    local craftName = rfsuite and rfsuite.session and rfsuite.session.craftName
+    local modelID = rfsuite and rfsuite.session and rfsuite.session.modelID
+    local image1 = craftName and ("/bitmaps/models/" .. craftName .. ".png") or nil
+    local image2 = modelID and ("/bitmaps/models/" .. modelID .. ".png") or nil
+    local default_image = model.bitmap() or "widgets/dashboard/default_image.png"
+
+    local cacheKey = image1 or image2 or default_image
+    local bitmapPtr = imageCache[cacheKey]
+    if not bitmapPtr and rfsuite and rfsuite.utils and rfsuite.utils.loadImage then
+        bitmapPtr = rfsuite.utils.loadImage(image1, image2, default_image)
+        imageCache[cacheKey] = bitmapPtr
+    end
+    if bitmapPtr then
+        local img_w = imagewidth or region_w
+        local img_h = imageheight or region_h
+        local align = imagealign or "center"
+        local img_x, img_y = region_x, region_y
+
+        -- Horizontal alignment within padded region
+        if align == "center" then
+            img_x = region_x + (region_w - img_w) / 2
+        elseif align == "right" then
+            img_x = region_x + region_w - img_w
+        else -- left
+            img_x = region_x
+        end
+        -- Vertical alignment within padded region
+        if align == "center" then
+            img_y = region_y + (region_h - img_h) / 2
+        elseif align == "bottom" then
+            img_y = region_y + region_h - img_h
+        else -- top
+            img_y = region_y
+        end
+
+        -- Draw title if present (top or bottom)
+        if title and title ~= "" then
+            lcd.font(FONT_S)
+            local tsize_w, tsize_h = lcd.getTextSize(title)
+            local sx
+            if titlealign == "left" then
+                sx = x
+            elseif titlealign == "right" then
+                sx = x + w - tsize_w
+            else -- center
+                sx = x + (w - tsize_w) / 2
+            end
+            local useColor = utils.resolveColor(titlecolor) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
+            lcd.color(useColor)
+            if titlepos == "bottom" then
+                lcd.drawText(sx, y + h - tsize_h, title)
+            else
+                lcd.drawText(sx, y, title)
+                img_y = img_y + tsize_h + 2
+            end
+        end
+
+        lcd.drawBitmap(img_x, img_y, bitmapPtr, img_w, img_h)
+    else
+        -- Fallback: draw an error if no image
+        lcd.font(FONT_S)
+        lcd.color(lcd.RGB(200,50,50))
+        lcd.drawText(x + 10, y + 10, "No Model Image")
+    end
+end
+
+
+return utils

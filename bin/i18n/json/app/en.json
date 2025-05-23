@@ -96,9 +96,14 @@
         "translation": "Settings",
         "needs_translation": "false"
       },
-      "txt_telemetry_announcements": {
-        "english": "Telemetry Announcements",
-        "translation": "Telemetrie-Ansagen",
+      "txt_telemetry_events": {
+        "english": "Events",
+        "translation": "Events",
+        "needs_translation": "false"
+      },
+      "txt_telemetry_switches": {
+        "english": "Switches",
+        "translation": "Switches",
         "needs_translation": "false"
       },
       "txt_iconsize": {
@@ -189,6 +194,36 @@
       "txt_memusage": {
         "english": "Log memory usage",
         "translation": "Log memory usage",
+        "needs_translation": "false"
+      },
+      "dashboard": {
+        "english": "Dashboard",
+        "translation": "Dashboard",
+        "needs_translation": "false"
+      },
+      "dashboard_theme": {
+        "english": "Theme",
+        "translation": "Theme",
+        "needs_translation": "false"
+      },
+      "dashboard_theme_preflight": {
+        "english": "Preflight Theme",
+        "translation": "Preflight Theme",
+        "needs_translation": "false"
+      },
+      "dashboard_theme_inflight": {
+        "english": "Inflight Theme",
+        "translation": "Inflight Theme",
+        "needs_translation": "false"
+      },
+      "dashboard_theme_postflight": {
+        "english": "Postflight Theme",
+        "translation": "Postflight Theme",
+        "needs_translation": "false"
+      },
+      "txt_development": {
+        "english": "Development",
+        "translation": "Development",
         "needs_translation": "false"
       }
     },
@@ -1279,6 +1314,11 @@
       "save_prompt": {
         "english": "Save current page to flight controller?",
         "translation": "Save current page to flight controller?",
+        "needs_translation": "false"
+      },
+      "save_prompt_local": {
+        "english": "Save current page to radio?",
+        "translation": "Save current page to radio?",
         "needs_translation": "false"
       },
       "cancel": {
