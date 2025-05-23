@@ -70,8 +70,21 @@ local function wakeup()
     --rfsuite.utils.log("wakeup preflight", "info")
 end
 
-local function event(widget, category, code)
+local function event(widget, category, value, x, y)
     --rfsuite.utils.log("Event triggered: " .. category .. " - " .. code, "info")
+    if widget then
+        rfsuite.utils.log("Widget: " .. widget, "info")
+    end
+    if category then
+        rfsuite.utils.log("Category: " .. category, "info")
+    end
+    if value then
+        rfsuite.utils.log("Value: " .. value, "info")
+    end
+    if x and y then
+        rfsuite.utils.log("Coordinates: (" .. x .. ", " .. y .. ")", "info")
+    end
+
 end    
 
 local function paint()

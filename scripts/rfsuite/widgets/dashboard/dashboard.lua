@@ -26,6 +26,7 @@ local loadedStateModules = {}
 local loadedThemeIntervals = { wakeup = 0.5, wakeup_bg = 2 }
 local wakeupScheduler = 0
 
+
 dashboard.flightmode = rfsuite.session.flightMode or "preflight" -- To be set by your state logic
 
 dashboard.utils = assert(rfsuite.compiler.loadfile("SCRIPTS:/".. rfsuite.config.baseDir.. "/widgets/dashboard/utils.lua"))()
@@ -387,16 +388,16 @@ function dashboard.build(widget)
     return callStateFunc("build", widget)
 end
 
-function dashboard.event(widget, category, code)
+function dashboard.event(widget, category, value, x, y)
     local state = dashboard.flightmode or "preflight"
     local module = loadedStateModules[state]
 
     if type(module) == "table" and type(module.event) == "function" then
         -- Declarative theme with event handler
-        return module.event(widget, category, code)
+        return module.event(widget, category, value, x, y)
     else
         -- For old style, callStateFunc will search for event
-        return callStateFunc("event", widget, category, code)
+        return callStateFunc("event", widget, category, value, x, y)
     end
 end
 

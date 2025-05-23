@@ -35,7 +35,7 @@ local function wakeup()
     --rfsuite.utils.log("wakeup preflight", "info")
 end
 
-local function event(widget, category, code)
+local function event(widget, category, value, x, y)
     --rfsuite.utils.log("Event triggered: " .. category .. " - " .. code, "info")
 end    
 
