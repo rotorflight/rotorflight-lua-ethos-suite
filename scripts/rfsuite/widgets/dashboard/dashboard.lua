@@ -148,6 +148,19 @@ function dashboard.renderLayout(widget, config)
                 box.titlepadding, box.titlepaddingleft, box.titlepaddingright, box.titlepaddingtop, box.titlepaddingbottom,
                 box.valuepadding, box.valuepaddingleft, box.valuepaddingright, box.valuepaddingtop, box.valuepaddingbottom
             )
+        elseif box.type == "craftname" then
+            local displayValue = rfsuite.session.craftName
+            if displayValue == nil then
+                displayValue = box.novalue or "-"
+            end
+
+            utils.telemetryBox(
+                x, y, w, h,
+                box.color, box.title, displayValue, box.unit, box.bgcolor,
+                box.titlealign, box.valuealign, box.titlecolor, box.titlepos,
+                box.titlepadding, box.titlepaddingleft, box.titlepaddingright, box.titlepaddingtop, box.titlepaddingbottom,
+                box.valuepadding, box.valuepaddingleft, box.valuepaddingright, box.valuepaddingtop, box.valuepaddingbottom
+            )
         elseif box.type == "function" then
             if box.value and type(box.value) == "function" then
                 box.value(x, y, w, h)
