@@ -186,7 +186,30 @@ function dashboard.renderLayout(widget, config)
                 box.titlealign, box.valuealign, box.titlecolor, box.titlepos,
                 box.titlepadding, box.titlepaddingleft, box.titlepaddingright, box.titlepaddingtop, box.titlepaddingbottom,
                 box.valuepadding, box.valuepaddingleft, box.valuepaddingright, box.valuepaddingtop, box.valuepaddingbottom
-            )                        
+            )   
+        elseif box.type == "blackbox" then
+
+            local displayValue = nil
+            local totalSize = rfsuite.session.bblSize 
+            local usedSize = rfsuite.session.bblUsed
+
+            if totalSize and usedSize then
+                displayValue= string.format("%.1f/%.1f " .. rfsuite.i18n.get("app.modules.status.megabyte"),
+                usedSize / (1024 * 1024),
+                totalSize / (1024 * 1024))
+            end    
+
+            if displayValue == nil then
+                displayValue = box.novalue or "-"
+            end
+
+            utils.telemetryBox(
+                x, y, w, h,
+                box.color, box.title, displayValue, box.unit, box.bgcolor,
+                box.titlealign, box.valuealign, box.titlecolor, box.titlepos,
+                box.titlepadding, box.titlepaddingleft, box.titlepaddingright, box.titlepaddingtop, box.titlepaddingbottom,
+                box.valuepadding, box.valuepaddingleft, box.valuepaddingright, box.valuepaddingtop, box.valuepaddingbottom
+            )                                  
         elseif box.type == "function" then
             if box.value and type(box.value) == "function" then
                 box.value(x, y, w, h)

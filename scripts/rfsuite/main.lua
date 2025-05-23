@@ -213,6 +213,16 @@ rfsuite.session.mcu_id = nil
 rfsuite.session.isConnected = false
 rfsuite.session.isArmed = false
 rfsuite.session.flightMode = nil
+rfsuite.session.bblSize = nil
+rfsuite.session.bblUsed = nil
+rfsuite.session.batteryConfig = {}
+rfsuite.session.batteryConfig.batteryCapacity = nil
+rfsuite.session.batteryConfig.batteryCellCount = nil
+rfsuite.session.batteryConfig.vbatwarningcellvoltage = nil
+rfsuite.session.batteryConfig.vbatmincellvoltage = nil
+rfsuite.session.batteryConfig.vbatmaxcellvoltage = nil
+rfsuite.session.batteryConfig.lvcPercentage = nil
+rfsuite.session.batteryConfig.consumptionWarningPercentage = nil
 
 --- Retrieves the version information of the rfsuite module.
 --- 
