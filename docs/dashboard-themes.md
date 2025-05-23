@@ -104,6 +104,31 @@ For complete control, use a box with `type = "function"` and a custom function a
 
 ---
 
+## 🎨 Theme Locations: System Themes vs User Themes
+
+Rotorflight supports two distinct locations for dashboard themes:
+
+### **System Themes**
+- **Path:**  
+  `/scripts/rfsuite/widgets/dashboard/themes/<themename>`
+- **Description:**  
+  System themes come pre-installed with Rotorflight. These serve as the built-in or default options, and provide a great starting point or reference for customizations.
+
+### **User Themes**
+- **Path:**  
+  `/scripts/rfsuite.user/dashboard/<themename>`
+- **Description:**  
+  User themes are your personal, editable copies. To add a custom theme, simply place your theme folder here. User themes can be modified freely and will not be overwritten by updates.
+
+> **Tip:** If a user theme and a system theme have the same name, both will appear in the theme selector—user themes are clearly marked and can be prioritized as needed.
+
+**How the theme selector works:**
+- The dashboard will display both user and system themes when you choose a theme.
+- Your selection is saved using a key like `user/themename` or `system/themename`, so the dashboard knows exactly where to look.
+- You can safely test or modify themes in the user location without affecting system files.
+
+---
+
 For more information, examples, and advanced customization, see the rest of this documentation or the default themes in the `themes/` folder.
 
 ---

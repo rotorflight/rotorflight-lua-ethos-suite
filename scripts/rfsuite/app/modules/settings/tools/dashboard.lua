@@ -35,7 +35,7 @@ local function openPage(pageIdx, title, script)
                                                             if rfsuite.preferences and rfsuite.preferences.dashboard then
                                                                 local folderName = settings.theme_preflight
                                                                 for _, theme in ipairs(themeList) do
-                                                                    if theme.folder == folderName then
+                                                                    if (theme.source .. "/" .. theme.folder) == folderName then
                                                                         return theme.idx
                                                                     end
                                                                 end
@@ -46,7 +46,7 @@ local function openPage(pageIdx, title, script)
                                                             if rfsuite.preferences and rfsuite.preferences.dashboard then
                                                                 local theme = themeList[newValue]
                                                                 if theme then
-                                                                    settings.theme_preflight = theme.folder
+                                                                    settings.theme_preflight = theme.source .. "/" .. theme.folder
                                                                 end
                                                             end
                                                         end)     
@@ -68,7 +68,7 @@ local function openPage(pageIdx, title, script)
                                                             if rfsuite.preferences and rfsuite.preferences.dashboard then
                                                                 local folderName = settings.theme_inflight
                                                                 for _, theme in ipairs(themeList) do
-                                                                    if theme.folder == folderName then
+                                                                    if (theme.source .. "/" .. theme.folder) == folderName then
                                                                         return theme.idx
                                                                     end
                                                                 end
@@ -79,7 +79,7 @@ local function openPage(pageIdx, title, script)
                                                             if rfsuite.preferences and rfsuite.preferences.dashboard then
                                                                 local theme = themeList[newValue]
                                                                 if theme then
-                                                                    settings.theme_inflight = theme.folder
+                                                                    settings.theme_inflight = theme.source .. "/" .. theme.folder
                                                                 end
                                                             end
                                                         end)                                                             
@@ -101,7 +101,7 @@ local function openPage(pageIdx, title, script)
                                                             if rfsuite.preferences and rfsuite.preferences.dashboard then
                                                                 local folderName = settings.theme_postflight
                                                                 for _, theme in ipairs(themeList) do
-                                                                    if theme.folder == folderName then
+                                                                    if (theme.source .. "/" .. theme.folder) == folderName then
                                                                         return theme.idx
                                                                     end
                                                                 end
@@ -112,7 +112,7 @@ local function openPage(pageIdx, title, script)
                                                             if rfsuite.preferences and rfsuite.preferences.dashboard then
                                                                 local theme = themeList[newValue]
                                                                 if theme then
-                                                                    settings.theme_postflight = theme.folder
+                                                                    settings.theme_postflight = theme.source .. "/" .. theme.folder
                                                                 end
                                                             end
                                                         end)      

@@ -63,9 +63,9 @@ local userpref_defaults ={
         syncname = false,
     },
     dashboard = {
-        theme_preflight = "default",
-        theme_inflight = "default",
-        theme_postflight = "default",
+        theme_preflight = "system/default",
+        theme_inflight = "system/default",
+        theme_postflight = "system/default",
     },
     events = {
         armflags = true,

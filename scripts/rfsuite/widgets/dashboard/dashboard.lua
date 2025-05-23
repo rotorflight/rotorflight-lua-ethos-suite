@@ -19,9 +19,10 @@ local lastFlightMode = nil
 
 local initTime = os.clock()
 
-dashboard.DEFAULT_THEME = "default" -- fallback
+dashboard.DEFAULT_THEME = "system/default" -- fallback
 
 local themesBasePath = "SCRIPTS:/".. rfsuite.config.baseDir.. "/widgets/dashboard/themes/"
+local themesUserPath = "SCRIPTS:/".. rfsuite.config.preferences.. "/dashboard/"
 local loadedStateModules = {}
 local loadedThemeIntervals = { wakeup = 0.5, wakeup_bg = 2 }
 local wakeupScheduler = 0
@@ -276,12 +277,16 @@ end
 
 
 local function load_state_script(theme_folder, state)
+    -- theme_folder is now "system/foo" or "user/bar"
+    local source, folder = theme_folder:match("([^/]+)/(.+)")
+    local themeBasePath = (source == "user") and themesUserPath or themesBasePath
+
     -- 1) Load init.lua so we can read the init table
-    local initPath  = themesBasePath .. theme_folder .. "/init.lua"
+    local initPath  = themeBasePath .. folder .. "/init.lua"
     local initChunk, initErr = rfsuite.compiler.loadfile(initPath)
     if not initChunk then
         rfsuite.utils.log(
-          "dashboard: Could not load init.lua for " .. theme_folder ..
+          "dashboard: Could not load init.lua for " .. folder ..
           ". Error: " .. tostring(initErr),
           "error"
         )
@@ -291,7 +296,7 @@ local function load_state_script(theme_folder, state)
     local ok, initTable = pcall(initChunk)
     if not ok or type(initTable) ~= "table" then
         rfsuite.utils.log(
-          "dashboard: Error running init.lua for " .. theme_folder ..
+          "dashboard: Error running init.lua for " .. folder ..
           ": " .. tostring(initTable),
           "error"
         )
@@ -305,7 +310,7 @@ local function load_state_script(theme_folder, state)
     end
 
     -- 3) Try loading that file
-    local script_path = themesBasePath .. theme_folder .. "/" .. scriptName
+    local script_path = themeBasePath .. folder .. "/" .. scriptName
     local chunk, err = rfsuite.compiler.loadfile(script_path)
 
     -- 4) If it fails, fall back to default theme (using the same scriptName)
@@ -315,7 +320,7 @@ local function load_state_script(theme_folder, state)
         if not chunk then
             rfsuite.utils.log(
               "dashboard: Could not load " .. scriptName ..
-              " for " .. theme_folder .. " or default. Error: " .. tostring(err),
+              " for " .. folder .. " or default. Error: " .. tostring(err),
               "error"
             )
             return nil
@@ -524,34 +529,49 @@ end
 
 function dashboard.listThemes()
     local themes = {}
-    local folders = system.listFiles(themesBasePath)
-    if not folders then return themes end
     local num = 0
-    for _, folder in ipairs(folders) do
-        if folder ~= ".." and folder ~= "." then
-            local themeDir = themesBasePath .. folder .. "/"
-            local initPath = themeDir .. "init.lua"
-            if rfsuite.utils.dir_exists(themesBasePath, folder) then
-                local chunk, err = rfsuite.compiler.loadfile(initPath)
-                if chunk then
-                    local ok, initTable = pcall(chunk)
-                    if ok and initTable and type(initTable.name) == "string" then
-                        -- Only show dev themes if devmode is enabled
-                        if not initTable.developer or rfsuite.preferences.developer.devtools == true then
-                            num = num + 1
-                            themes[num] = {
-                                name = initTable.name,
-                                folder = folder,
-                                idx = num
-                            }
+
+    local function scanThemes(basePath, sourceType)
+        local folders = system.listFiles(basePath)
+        if not folders then return end
+        for _, folder in ipairs(folders) do
+            if folder ~= ".." and folder ~= "." then
+                local themeDir = basePath .. folder .. "/"
+                local initPath = themeDir .. "init.lua"
+                if rfsuite.utils.dir_exists(basePath, folder) then
+                    local chunk, err = rfsuite.compiler.loadfile(initPath)
+                    if chunk then
+                        local ok, initTable = pcall(chunk)
+                        if ok and initTable and type(initTable.name) == "string" then
+                            -- Only show dev themes if devmode is enabled
+                            if not initTable.developer or rfsuite.preferences.developer.devtools == true then
+                                num = num + 1
+                                themes[num] = {
+                                    name = initTable.name,
+                                    folder = folder,
+                                    idx = num,
+                                    source = sourceType, -- 'system' or 'user'
+                                }
+                            end
                         end
                     end
                 end
             end
         end
     end
+
+    -- Scan system themes
+    scanThemes(themesBasePath, "system")
+
+    -- Scan user themes if path exists
+    local basePath = "SCRIPTS:/".. rfsuite.config.preferences
+    if rfsuite.utils.dir_exists(basePath, 'dashboard') then
+        scanThemes(themesUserPath, "user")
+    end
+
     return themes
 end
+
 
 
 return dashboard
