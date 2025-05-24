@@ -12,17 +12,20 @@ if errorlevel 1 (
 echo [2/5] Compiling sensors.py to standalone EXE...
 pyinstaller --onefile sensors.py --name sensors --windowed || goto :error
 
-echo [3/5] Moving sensors.exe to parent folder...
+echo [3/5] Moving sensors.exe into parent folder...
+if exist ..\sensors.exe (
+    del ..\sensors.exe
+)
 move /Y dist\sensors.exe ..\sensors.exe >nul
 
-echo [4/5] Cleaning up build files...
+echo [4/5] Cleaning up build tree...
 rd /s /q build
 rd /s /q dist
 del /q sensors.spec
 
-echo [5/5] Done. sensors.exe is ready in: ..\sensors.exe
+echo [5/5] ✅ Build complete. sensors.exe is ready at: ..\sensors.exe
 goto :eof
 
 :error
-echo Build failed.
+echo ❌ Build failed.
 exit /b 1
