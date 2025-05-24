@@ -60,7 +60,7 @@ local boxes = {
     {col=1, row=3, type="governor", title="GOVERNOR", nosource="-", titlepos="bottom"},
     {col=1, row=4, type="apiversion", title="API VERSION", nosource="-", titlepos="bottom"},
 
-    {col=2, row=1, type="telemetry", source="voltage", nosource="-", title="VOLTAGE", unit="v", titlepos="bottom"},
+    {col=2, row=1, type="telemetry", source="voltage", nosource="-", title="VOLTAGE", unit="v", titlepos="bottom", thresholds = {{ value = 20,  color = "red",    textcolor = "white" }, { value = 50,  color = "orange", textcolor = "black" }}},
     {col=2, row=2, type="telemetry", source="current", nosource="-", title="CURRENT", unit="A", titlepos="bottom"},
     {col=2, row=3, type="craftname", title="CRAFT NAME", nosource="-", titlepos="bottom"},  
     {col=2, row=4, type="session", source="isArmed", title="IS ARMED", nosource="-", titlepos="bottom", onpress=onpressFunctionSession}, 
@@ -70,6 +70,8 @@ local boxes = {
     {col=3, row=3, type="blackbox", title="BLACKBOX", nosource="-", titlepos="bottom", onpress=function() end},  
 
 }
+
+        
 
 
 return {

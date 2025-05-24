@@ -53,9 +53,24 @@ function render.telemetryBox(x, y, w, h, box, telemetry)
         displayValue = getParam(box, "novalue") or "-"
         displayUnit = nil
     end
+
+    -- Threshold color logic (borrowed from gaugeBox)
+    local color = getParam(box, "color")
+    local thresholds = getParam(box, "thresholds")
+    if thresholds and value ~= nil then
+        for _, t in ipairs(thresholds) do
+            local t_val = type(t.value) == "function" and t.value(box, value) or t.value
+            local t_color = type(t.color) == "function" and t.color(box, value) or t.color
+            if value < t_val then
+                color = t_color or color
+                break
+            end
+        end
+    end
+
     utils.telemetryBox(
         x, y, w, h,
-        getParam(box, "color"), getParam(box, "title"), displayValue, displayUnit, getParam(box, "bgcolor"),
+        color, getParam(box, "title"), displayValue, displayUnit, getParam(box, "bgcolor"),
         getParam(box, "titlealign"), getParam(box, "valuealign"), getParam(box, "titlecolor"), getParam(box, "titlepos"),
         getParam(box, "titlepadding"), getParam(box, "titlepaddingleft"), getParam(box, "titlepaddingright"),
         getParam(box, "titlepaddingtop"), getParam(box, "titlepaddingbottom"),
@@ -63,6 +78,7 @@ function render.telemetryBox(x, y, w, h, box, telemetry)
         getParam(box, "valuepaddingtop"), getParam(box, "valuepaddingbottom")
     )
 end
+
 
 -- Static text box
 function render.textBox(x, y, w, h, box)
@@ -206,9 +222,13 @@ end
 
 -- Function box
 function render.functionBox(x, y, w, h, box)
-    local v = getParam(box, "value")
+    local v = box.value
     if type(v) == "function" then
-        v(x, y, w, h)
+        -- In case someone set value = function() return actual_function end
+        v = v(x, y, w, h) or v
+        if type(v) == "function" then
+            v(x, y, w, h)
+        end
     end
 end
 
