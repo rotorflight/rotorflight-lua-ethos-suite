@@ -101,7 +101,7 @@ def update_status_message(sensor_key, val1, val2):
 class SensorApp:
     def __init__(self, root):
         self.root = root
-        root.title("Rotorflight RFSUITE Sensor Updator")
+        root.title("Rotorflight RFSUITE Sensor Updater")
         self.main_frame = tk.Frame(root)
         self.main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         self.refresh_sensors()
