@@ -447,6 +447,98 @@ function render.gaugeBox(x, y, w, h, box, telemetry)
     end
 end
 
+-- Fuel Gauge Box: Easy, ready-to-use fuel gauge for end users.
+function render.functionFuelGuage(x, y, w, h, box, telemetry)
+    -- Default parameters for fuel gauge
+    local defaults = {
+        source = "fuel",  -- Telemetry source
+        gaugemin = 0,
+        gaugemax = 100,
+        gaugeorientation = "vertical",
+        gaugepadding = 4,
+        gaugebelowtitle = true,
+        title = "FUEL",
+        unit = "%",
+        color = "white",
+        valuealign = "center",
+        titlealign = "center",
+        titlepos = "bottom",
+        titlecolor = "white",
+        gaugecolor = "green",
+        thresholds = {
+            { value = 20,  color = "red",    textcolor = "white" },
+            { value = 50,  color = "orange", textcolor = "black" }
+        }
+    }
+
+    -- Allow box to override defaults if user provided (for flexibility)
+    local fuelBox = {}
+    for k,v in pairs(defaults) do fuelBox[k] = v end
+    for k,v in pairs(box or {}) do fuelBox[k] = v end
+
+    -- Use the existing gaugeBox rendering logic (re-uses your existing styling)
+    return render.gaugeBox(x, y, w, h, fuelBox, telemetry)
+end
+
+function render.functionVoltageGauge(x, y, w, h, box, telemetry)
+    -- Default parameters for voltage gauge
+    local defaults = {
+        source = "voltage",  -- Telemetry source
+        gaugemin = function()
+            local cfg = rfsuite.session.batteryConfig
+            local cells = (cfg and cfg.batteryCellCount) or 3
+            local minV = (cfg and cfg.vbatmincellvoltage) or 3.0
+            return math.max(0, cells * minV)
+        end,
+        gaugemax = function()
+            local cfg = rfsuite.session.batteryConfig
+            local cells = (cfg and cfg.batteryCellCount) or 3
+            local maxV = (cfg and cfg.vbatmaxcellvoltage) or 4.2
+            return math.max(0, cells * maxV)
+        end,
+        gaugebgcolor = "gray",
+        gaugeorientation = "horizontal",
+        gaugepadding = 4,
+        gaugebelowtitle = true,
+        title = "VOLTAGE",
+        unit = "V",
+        color = "black",
+        valuealign = "center",
+        titlealign = "center",
+        titlepos = "bottom",
+        titlecolor = "white",
+        gaugecolor = "green",
+        thresholds = {
+            {
+                value = function()
+                    local cfg = rfsuite.session.batteryConfig
+                    local cells = (cfg and cfg.batteryCellCount) or 3
+                    local minV = (cfg and cfg.vbatmincellvoltage) or 3.0
+                    return cells * minV * 1.2 -- 20% above minimum voltage
+                end,
+                color = "red", textcolor = "white"
+            },
+            {
+                value = function()
+                    local cfg = rfsuite.session.batteryConfig
+                    local cells = (cfg and cfg.batteryCellCount) or 3
+                    local warnV = (cfg and cfg.vbatwarningcellvoltage) or 3.5
+                    return cells * warnV * 1.2
+                end,
+                color = "orange", textcolor = "black"
+            }
+        }
+    }
+
+    -- Allow box to override defaults if provided
+    local voltBox = {}
+    for k,v in pairs(defaults) do voltBox[k] = v end
+    for k,v in pairs(box or {}) do voltBox[k] = v end
+
+    return render.gaugeBox(x, y, w, h, voltBox, telemetry)
+end
+
+
 
 -- Dispatcher for rendering boxes by type.
 function render.renderBox(boxType, x, y, w, h, box, telemetry)
@@ -461,6 +553,8 @@ function render.renderBox(boxType, x, y, w, h, box, telemetry)
         session = render.sessionBox,
         blackbox = render.blackboxBox,
         gauge = render.gaugeBox,
+        fuelgauge = render.functionFuelGuage,
+        voltagegauge = render.functionVoltageGauge,
         ["function"] = render.functionBox,
     }
     local fn = funcMap[boxType]
