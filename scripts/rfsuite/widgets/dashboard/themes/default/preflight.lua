@@ -31,31 +31,7 @@ local boxes = {
     {col=3, row=3, rowspan=2, type="telemetry", source="rpm", nosource="-", title="RPM", unit="rpm", titlepos="bottom", transform="floor"},
 }
 
-local function wakeup()
-    --rfsuite.utils.log("wakeup preflight", "info")
-end
-
-local function event(widget, category, value, x, y)
-    --rfsuite.utils.log("Event triggered: " .. category .. " - " .. code, "info")
-end    
-
-local function paint()
-    --rfsuite.utils.log("paint preflight", "info")
-end
-
-local function screenErrorOverlay(message)
-    -- if you want a custom overlay message, you can handle the full screen overlay here
-    -- this is for messages like "BG TASK NOT RUNNING"
-    -- the framework will display a centered message if this function is not defined
-    -- the option is here to allow a them to create a custom overlay
-    rfsuuite.utils.screenErrorOverlay(overlayMessage)
-end
-
 return {
     layout = layout,
     boxes = boxes,
-    wakeup = wakeup,
-    event = event,
-    paint = paint,
-    overlayMessage = nil,
 }
