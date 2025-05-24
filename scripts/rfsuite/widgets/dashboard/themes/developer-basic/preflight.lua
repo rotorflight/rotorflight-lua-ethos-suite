@@ -15,6 +15,7 @@
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]]--
 
+
 -- must be delared before the layout and boxes so its available to the layout
 local function customRenderFunction(x, y, w, h)
     -- Custom rendering logic goes here
@@ -44,17 +45,6 @@ local function customRenderFunction(x, y, w, h)
 
 end
 
-local function onpressFunctionBlackbox()
-    -- This function will be called when the blackbox box is pressed
-    -- You can implement your custom logic here
-    rfsuite.utils.log("Blackbox box pressed", "info")
-end
-
-local function onpressFunctionSession()
-    -- This function will be called when the blackbox box is pressed
-    -- You can implement your custom logic here
-    rfsuite.utils.log("Session box pressed", "info")
-end
 
 local layout = {
     cols = 4,
@@ -77,41 +67,10 @@ local boxes = {
 
     {col=3, row=1, type="telemetry", source="fuel", nosource="-", title="FUEL", unit="%", titlepos="bottom", transform="floor"},
     {col=3, row=2, type = "function", value=customRenderFunction, title = "FUNCTION", titlepos = "bottom"},
-    {col=3, row=3, type="blackbox", title="BLACKBOX", nosource="-", titlepos="bottom", onpress=onpressFunctionBlackbox},  
+    {col=3, row=3, type="blackbox", title="BLACKBOX", nosource="-", titlepos="bottom", onpress=function() end},  
+
 }
 
-local function wakeup()
-    --rfsuite.utils.log("wakeup preflight", "info")
-end
-
-local function event(widget, category, value, x, y)
-    --rfsuite.utils.log("Event triggered: " .. category .. " - " .. code, "info")
-    --if widget then
-    --    rfsuite.utils.log("Widget: " .. widget, "info")
-    --end
-    --if category then
-    --    rfsuite.utils.log("Category: " .. category, "info")
-    --end
-    --if value then
-    --    rfsuite.utils.log("Value: " .. value, "info")
-    --end
-    --if x and y then
-    --    rfsuite.utils.log("Coordinates: (" .. x .. ", " .. y .. ")", "info")
-    --end
-
-end    
-
-local function paint()
-    --rfsuite.utils.log("paint preflight", "info")
-end
-
-local function screenErrorOverlay(message)
-    -- if you want a custom overlay message, you can handle the full screen overlay here
-    -- this is for messages like "BG TASK NOT RUNNING"
-    -- the framework will display a centered message if this function is not defined
-    -- the option is here to allow a them to create a custom overlay
-    rfsuuite.utils.screenErrorOverlay(overlayMessage)
-end
 
 return {
     layout = layout,

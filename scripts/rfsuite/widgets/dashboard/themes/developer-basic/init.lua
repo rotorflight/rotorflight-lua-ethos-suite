@@ -18,7 +18,7 @@
 ]] --
 -- Theme initialization table
 local init = {
-    name = "Developer Examples",                -- Theme name
+    name = "Developer Basic",                -- Theme name
     preflight = "preflight.lua",     -- Script to run before takeoff
     inflight = "inflight.lua",       -- Script to run during flight
     postflight = "postflight.lua",   -- Script to run after landing

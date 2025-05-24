@@ -21,181 +21,164 @@ local utils = assert(
     rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/lib/utils.lua")
 )()
 
---[[
-    Draws a telemetry data box.
-    Applies any transformation to the value if specified.
-    Args: x, y, w, h - box position and size
-          box - box definition table (includes source, transform, color, etc.)
-          telemetry - telemetry source accessor
-]]
+-- === Function-param support ===
+local function getParam(box, key, ...)
+    local v = box[key]
+    if type(v) == "function" then
+        return v(box, key, ...)
+    else
+        return v
+    end
+end
+
+-- Telemetry data box
 function render.telemetryBox(x, y, w, h, box, telemetry)
     local value = nil
-    if box.source then
-        local sensor = telemetry and telemetry.getSensorSource(box.source)
+    local source = getParam(box, "source")
+    if source then
+        local sensor = telemetry and telemetry.getSensorSource(source)
         value = sensor and sensor:value()
-        if type(box.transform) == "string" and math[box.transform] then
-            value = value and math[box.transform](value)
-        elseif type(box.transform) == "function" then
-            value = value and box.transform(value)
-        elseif type(box.transform) == "number" then
-            value = value and box.transform(value)
+        local transform = getParam(box, "transform")
+        if type(transform) == "string" and math[transform] then
+            value = value and math[transform](value)
+        elseif type(transform) == "function" then
+            value = value and transform(value)
+        elseif type(transform) == "number" then
+            value = value and transform(value)
         end
     end
     local displayValue = value
-    local displayUnit = box.unit
+    local displayUnit = getParam(box, "unit")
     if value == nil then
-        displayValue = box.novalue or "-"
+        displayValue = getParam(box, "novalue") or "-"
         displayUnit = nil
     end
     utils.telemetryBox(
         x, y, w, h,
-        box.color, box.title, displayValue, displayUnit, box.bgcolor,
-        box.titlealign, box.valuealign, box.titlecolor, box.titlepos,
-        box.titlepadding, box.titlepaddingleft, box.titlepaddingright, box.titlepaddingtop, box.titlepaddingbottom,
-        box.valuepadding, box.valuepaddingleft, box.valuepaddingright, box.valuepaddingtop, box.valuepaddingbottom
+        getParam(box, "color"), getParam(box, "title"), displayValue, displayUnit, getParam(box, "bgcolor"),
+        getParam(box, "titlealign"), getParam(box, "valuealign"), getParam(box, "titlecolor"), getParam(box, "titlepos"),
+        getParam(box, "titlepadding"), getParam(box, "titlepaddingleft"), getParam(box, "titlepaddingright"),
+        getParam(box, "titlepaddingtop"), getParam(box, "titlepaddingbottom"),
+        getParam(box, "valuepadding"), getParam(box, "valuepaddingleft"), getParam(box, "valuepaddingright"),
+        getParam(box, "valuepaddingtop"), getParam(box, "valuepaddingbottom")
     )
 end
 
---[[
-    Draws a static text box.
-    Args: x, y, w, h - box position and size
-          box - box definition table (includes title, value, etc.)
-]]
+-- Static text box
 function render.textBox(x, y, w, h, box)
+    local displayValue = getParam(box, "value")
     if displayValue == nil then
-        displayValue = box.novalue or "-"
+        displayValue = getParam(box, "novalue") or "-"
     end
     utils.telemetryBox(
         x, y, w, h,
-        box.color, box.title, box.value, box.unit, box.bgcolor,
-        box.titlealign, box.valuealign, box.titlecolor, box.titlepos,
-        box.titlepadding, box.titlepaddingleft, box.titlepaddingright, box.titlepaddingtop, box.titlepaddingbottom,
-        box.valuepadding, box.valuepaddingleft, box.valuepaddingright, box.valuepaddingtop, box.valuepaddingbottom
+        getParam(box, "color"), getParam(box, "title"), displayValue, getParam(box, "unit"), getParam(box, "bgcolor"),
+        getParam(box, "titlealign"), getParam(box, "valuealign"), getParam(box, "titlecolor"), getParam(box, "titlepos"),
+        getParam(box, "titlepadding"), getParam(box, "titlepaddingleft"), getParam(box, "titlepaddingright"),
+        getParam(box, "titlepaddingtop"), getParam(box, "titlepaddingbottom"),
+        getParam(box, "valuepadding"), getParam(box, "valuepaddingleft"), getParam(box, "valuepaddingright"),
+        getParam(box, "valuepaddingtop"), getParam(box, "valuepaddingbottom")
     )
 end
 
---[[
-    Draws an image box.
-    Uses box.value or box.source as the image, or defaults if missing.
-    Args: x, y, w, h - box position and size
-          box - box definition table
-]]
+-- Image box
 function render.imageBox(x, y, w, h, box)
     utils.imageBox(
         x, y, w, h,
-        box.color, box.title,
-        box.value or box.source or "widgets/dashboard/default_image.png",
-        box.imagewidth, box.imageheight, box.imagealign,
-        box.bgcolor, box.titlealign, box.titlecolor, box.titlepos,
-        box.imagepadding, box.imagepaddingleft, box.imagepaddingright, box.imagepaddingtop, box.imagepaddingbottom
+        getParam(box, "color"), getParam(box, "title"),
+        getParam(box, "value") or getParam(box, "source") or "widgets/dashboard/default_image.png",
+        getParam(box, "imagewidth"), getParam(box, "imageheight"), getParam(box, "imagealign"),
+        getParam(box, "bgcolor"), getParam(box, "titlealign"), getParam(box, "titlecolor"), getParam(box, "titlepos"),
+        getParam(box, "imagepadding"), getParam(box, "imagepaddingleft"), getParam(box, "imagepaddingright"),
+        getParam(box, "imagepaddingtop"), getParam(box, "imagepaddingbottom")
     )
 end
 
---[[
-    Draws a model image box (usually shows the model's icon).
-    Args: x, y, w, h - box position and size
-          box - box definition table
-]]
+-- Model image box
 function render.modelImageBox(x, y, w, h, box)
     utils.modelImageBox(
         x, y, w, h,
-        box.color, box.title,
-        box.imagewidth, box.imageheight, box.imagealign,
-        box.bgcolor, box.titlealign, box.titlecolor, box.titlepos,
-        box.imagepadding, box.imagepaddingleft, box.imagepaddingright, box.imagepaddingtop, box.imagepaddingbottom
+        getParam(box, "color"), getParam(box, "title"),
+        getParam(box, "imagewidth"), getParam(box, "imageheight"), getParam(box, "imagealign"),
+        getParam(box, "bgcolor"), getParam(box, "titlealign"), getParam(box, "titlecolor"), getParam(box, "titlepos"),
+        getParam(box, "imagepadding"), getParam(box, "imagepaddingleft"), getParam(box, "imagepaddingright"),
+        getParam(box, "imagepaddingtop"), getParam(box, "imagepaddingbottom")
     )
 end
 
---[[
-    Draws a governor status box.
-    Converts sensor value to state string via rfsuite.utils.getGovernorState.
-    Args: x, y, w, h - box position and size
-          box - box definition table
-          telemetry - telemetry source accessor
-]]
+-- Governor status box
 function render.governorBox(x, y, w, h, box, telemetry)
     local value = nil
     local sensor = telemetry and telemetry.getSensorSource("governor")
     value = sensor and sensor:value()
     local displayValue = rfsuite.utils.getGovernorState(value)
     if displayValue == nil then
-        displayValue = box.novalue or "-"
+        displayValue = getParam(box, "novalue") or "-"
     end
     utils.telemetryBox(
         x, y, w, h,
-        box.color, box.title, displayValue, box.unit, box.bgcolor,
-        box.titlealign, box.valuealign, box.titlecolor, box.titlepos,
-        box.titlepadding, box.titlepaddingleft, box.titlepaddingright, box.titlepaddingtop, box.titlepaddingbottom,
-        box.valuepadding, box.valuepaddingleft, box.valuepaddingright, box.valuepaddingtop, box.valuepaddingbottom
+        getParam(box, "color"), getParam(box, "title"), displayValue, getParam(box, "unit"), getParam(box, "bgcolor"),
+        getParam(box, "titlealign"), getParam(box, "valuealign"), getParam(box, "titlecolor"), getParam(box, "titlepos"),
+        getParam(box, "titlepadding"), getParam(box, "titlepaddingleft"), getParam(box, "titlepaddingright"),
+        getParam(box, "titlepaddingtop"), getParam(box, "titlepaddingbottom"),
+        getParam(box, "valuepadding"), getParam(box, "valuepaddingleft"), getParam(box, "valuepaddingright"),
+        getParam(box, "valuepaddingtop"), getParam(box, "valuepaddingbottom")
     )
 end
 
---[[
-    Draws the craft name box.
-    Falls back to novalue if craft name is not set or empty.
-    Args: x, y, w, h - box position and size
-          box - box definition table
-]]
+-- Craft name box
 function render.craftnameBox(x, y, w, h, box)
     local displayValue = rfsuite.session.craftName
     if displayValue == nil or (type(displayValue) == "string" and displayValue:match("^%s*$")) then
-        displayValue = box.novalue or "-"
+        displayValue = getParam(box, "novalue") or "-"
     end
     utils.telemetryBox(
         x, y, w, h,
-        box.color, box.title, displayValue, box.unit, box.bgcolor,
-        box.titlealign, box.valuealign, box.titlecolor, box.titlepos,
-        box.titlepadding, box.titlepaddingleft, box.titlepaddingright, box.titlepaddingtop, box.titlepaddingbottom,
-        box.valuepadding, box.valuepaddingleft, box.valuepaddingright, box.valuepaddingtop, box.valuepaddingbottom
+        getParam(box, "color"), getParam(box, "title"), displayValue, getParam(box, "unit"), getParam(box, "bgcolor"),
+        getParam(box, "titlealign"), getParam(box, "valuealign"), getParam(box, "titlecolor"), getParam(box, "titlepos"),
+        getParam(box, "titlepadding"), getParam(box, "titlepaddingleft"), getParam(box, "titlepaddingright"),
+        getParam(box, "titlepaddingtop"), getParam(box, "titlepaddingbottom"),
+        getParam(box, "valuepadding"), getParam(box, "valuepaddingleft"), getParam(box, "valuepaddingright"),
+        getParam(box, "valuepaddingtop"), getParam(box, "valuepaddingbottom")
     )
 end
 
---[[
-    Draws an API version box.
-    Shows the current API version or novalue if not available.
-    Args: x, y, w, h - box position and size
-          box - box definition table
-]]
+-- API version box
 function render.apiversionBox(x, y, w, h, box)
     local displayValue = rfsuite.session.apiVersion
     if displayValue == nil then
-        displayValue = box.novalue or "-"
+        displayValue = getParam(box, "novalue") or "-"
     end
     utils.telemetryBox(
         x, y, w, h,
-        box.color, box.title, displayValue, box.unit, box.bgcolor,
-        box.titlealign, box.valuealign, box.titlecolor, box.titlepos,
-        box.titlepadding, box.titlepaddingleft, box.titlepaddingright, box.titlepaddingtop, box.titlepaddingbottom,
-        box.valuepadding, box.valuepaddingleft, box.valuepaddingright, box.valuepaddingtop, box.valuepaddingbottom
+        getParam(box, "color"), getParam(box, "title"), displayValue, getParam(box, "unit"), getParam(box, "bgcolor"),
+        getParam(box, "titlealign"), getParam(box, "valuealign"), getParam(box, "titlecolor"), getParam(box, "titlepos"),
+        getParam(box, "titlepadding"), getParam(box, "titlepaddingleft"), getParam(box, "titlepaddingright"),
+        getParam(box, "titlepaddingtop"), getParam(box, "titlepaddingbottom"),
+        getParam(box, "valuepadding"), getParam(box, "valuepaddingleft"), getParam(box, "valuepaddingright"),
+        getParam(box, "valuepaddingtop"), getParam(box, "valuepaddingbottom")
     )
 end
 
---[[
-    Draws a session variable box.
-    Looks up the value from rfsuite.session using box.source.
-    Args: x, y, w, h - box position and size
-          box - box definition table
-]]
+-- Session variable box
 function render.sessionBox(x, y, w, h, box)
-    local displayValue = rfsuite.session[box.source]
+    local src = getParam(box, "source")
+    local displayValue = rfsuite.session[src]
     if displayValue == nil then
-        displayValue = box.novalue or "-"
+        displayValue = getParam(box, "novalue") or "-"
     end
     utils.telemetryBox(
         x, y, w, h,
-        box.color, box.title, displayValue, box.unit, box.bgcolor,
-        box.titlealign, box.valuealign, box.titlecolor, box.titlepos,
-        box.titlepadding, box.titlepaddingleft, box.titlepaddingright, box.titlepaddingtop, box.titlepaddingbottom,
-        box.valuepadding, box.valuepaddingleft, box.valuepaddingright, box.valuepaddingtop, box.valuepaddingbottom
+        getParam(box, "color"), getParam(box, "title"), displayValue, getParam(box, "unit"), getParam(box, "bgcolor"),
+        getParam(box, "titlealign"), getParam(box, "valuealign"), getParam(box, "titlecolor"), getParam(box, "titlepos"),
+        getParam(box, "titlepadding"), getParam(box, "titlepaddingleft"), getParam(box, "titlepaddingright"),
+        getParam(box, "titlepaddingtop"), getParam(box, "titlepaddingbottom"),
+        getParam(box, "valuepadding"), getParam(box, "valuepaddingleft"), getParam(box, "valuepaddingright"),
+        getParam(box, "valuepaddingtop"), getParam(box, "valuepaddingbottom")
     )
 end
 
---[[
-    Draws a blackbox storage usage box.
-    Shows used/total space in MB if available, else novalue.
-    Args: x, y, w, h - box position and size
-          box - box definition table
-]]
+-- Blackbox storage usage box
 function render.blackboxBox(x, y, w, h, box)
     local displayValue = nil
     local totalSize = rfsuite.session.bblSize
@@ -208,37 +191,244 @@ function render.blackboxBox(x, y, w, h, box)
         )
     end
     if displayValue == nil then
-        displayValue = box.novalue or "-"
+        displayValue = getParam(box, "novalue") or "-"
     end
     utils.telemetryBox(
         x, y, w, h,
-        box.color, box.title, displayValue, box.unit, box.bgcolor,
-        box.titlealign, box.valuealign, box.titlecolor, box.titlepos,
-        box.titlepadding, box.titlepaddingleft, box.titlepaddingright, box.titlepaddingtop, box.titlepaddingbottom,
-        box.valuepadding, box.valuepaddingleft, box.valuepaddingright, box.valuepaddingtop, box.valuepaddingbottom
+        getParam(box, "color"), getParam(box, "title"), displayValue, getParam(box, "unit"), getParam(box, "bgcolor"),
+        getParam(box, "titlealign"), getParam(box, "valuealign"), getParam(box, "titlecolor"), getParam(box, "titlepos"),
+        getParam(box, "titlepadding"), getParam(box, "titlepaddingleft"), getParam(box, "titlepaddingright"),
+        getParam(box, "titlepaddingtop"), getParam(box, "titlepaddingbottom"),
+        getParam(box, "valuepadding"), getParam(box, "valuepaddingleft"), getParam(box, "valuepaddingright"),
+        getParam(box, "valuepaddingtop"), getParam(box, "valuepaddingbottom")
     )
 end
 
---[[
-    Calls a custom function stored in box.value (if it is a function).
-    For advanced or custom box render logic.
-    Args: x, y, w, h - box position and size
-          box - box definition table
-]]
+-- Function box
 function render.functionBox(x, y, w, h, box)
-    if box.value and type(box.value) == "function" then
-        box.value(x, y, w, h)
+    local v = getParam(box, "value")
+    if type(v) == "function" then
+        v(x, y, w, h)
     end
 end
 
---[[
-    Dispatcher for rendering boxes by type.
-    Looks up the render function from a map and calls it with box details.
-    Args: boxType - the box type string (e.g., "telemetry", "text", etc.)
-          x, y, w, h - box position and size
-          box - box definition table
-          telemetry - telemetry accessor (optional)
-]]
+-- Gauge box (fully function-param ready)
+function render.gaugeBox(x, y, w, h, box, telemetry)
+    -- Get value
+    local value = nil
+    local source = getParam(box, "source")
+    if source then
+        if type(source) == "function" then
+            value = source(box, telemetry)
+        else
+            local sensor = telemetry and telemetry.getSensorSource(source)
+            value = sensor and sensor:value()
+            local transform = getParam(box, "transform")
+            if type(transform) == "string" and math[transform] then
+                value = value and math[transform](value)
+            elseif type(transform) == "function" then
+                value = value and transform(value)
+            elseif type(transform) == "number" then
+                value = value and transform(value)
+            end
+        end
+    end
+
+    local displayValue = value
+    local displayUnit = getParam(box, "unit")
+    if value == nil then
+        displayValue = getParam(box, "novalue") or "-"
+        displayUnit = nil
+    end
+
+    -- Padding for gauge area
+    local gpad_left   = getParam(box, "gaugepaddingleft")   or getParam(box, "gaugepadding") or 0
+    local gpad_right  = getParam(box, "gaugepaddingright")  or getParam(box, "gaugepadding") or 0
+    local gpad_top    = getParam(box, "gaugepaddingtop")    or getParam(box, "gaugepadding") or 0
+    local gpad_bottom = getParam(box, "gaugepaddingbottom") or getParam(box, "gaugepadding") or 0
+
+    -- Figure out title area height (for gaugebelowtitle)
+    local title_area_top = 0
+    local title_area_bottom = 0
+    if getParam(box, "gaugebelowtitle") and getParam(box, "title") then
+        lcd.font(FONT_XS)
+        local _, tsizeH = lcd.getTextSize(getParam(box, "title"))
+        local titlepadding = getParam(box, "titlepadding") or 0
+        local titlepaddingtop = getParam(box, "titlepaddingtop") or titlepadding
+        local titlepaddingbottom = getParam(box, "titlepaddingbottom") or titlepadding
+        if getParam(box, "titlepos") == "bottom" then
+            title_area_bottom = tsizeH + titlepaddingtop + titlepaddingbottom
+        else
+            title_area_top = tsizeH + titlepaddingtop + titlepaddingbottom
+        end
+    end
+
+    local gauge_x = x + gpad_left
+    local gauge_y = y + gpad_top + title_area_top
+    local gauge_w = w - gpad_left - gpad_right
+    local gauge_h = h - gpad_top - gpad_bottom - title_area_top - title_area_bottom
+
+    -- Draw overall box background
+    local bgColor = utils.resolveColor(getParam(box, "bgcolor")) or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
+    lcd.color(bgColor)
+    lcd.drawFilledRectangle(x, y, w, h)
+
+
+    -- Threshold gauge color logic (+ threshold value text color)
+    local gaugeColor = utils.resolveColor(getParam(box, "gaugecolor")) or lcd.RGB(255, 204, 0)
+    local valueTextColor = utils.resolveColor(getParam(box, "color")) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
+    local matchingTextColor = nil
+    local thresholds = getParam(box, "thresholds")
+    if thresholds and value ~= nil then
+            for _, t in ipairs(thresholds) do
+                local t_val = type(t.value) == "function" and t.value(box, value) or t.value
+                local t_color = type(t.color) == "function" and t.color(box, value) or t.color
+                local t_textcolor = type(t.textcolor) == "function" and t.textcolor(box, value) or t.textcolor
+                if value < t_val then
+                    gaugeColor = utils.resolveColor(t_color) or gaugeColor
+                    if t_textcolor then matchingTextColor = utils.resolveColor(t_textcolor) end
+                    break
+                end
+            end
+    end
+
+
+    -- Draw gauge background & fill ONLY if gauge percent > 0
+    local gaugeMin = getParam(box, "gaugemin") or 0
+    local gaugeMax = getParam(box, "gaugemax") or 100
+    local gaugeOrientation = getParam(box, "gaugeorientation") or "vertical"
+    local percent = 0
+    if value ~= nil and gaugeMax ~= gaugeMin then
+        percent = (value - gaugeMin) / (gaugeMax - gaugeMin)
+        if percent < 0 then percent = 0 end
+        if percent > 1 then percent = 1 end
+    end
+    if percent > 0 then
+        local gaugeBgColor = utils.resolveColor(getParam(box, "gaugebgcolor")) or bgColor
+        lcd.color(gaugeBgColor)
+        lcd.drawFilledRectangle(gauge_x, gauge_y, gauge_w, gauge_h)
+        lcd.color(gaugeColor)
+        if gaugeOrientation == "vertical" then
+            local fillH = math.floor(gauge_h * percent)
+            lcd.drawFilledRectangle(gauge_x, gauge_y + gauge_h - fillH, gauge_w, fillH)
+        else
+            local fillW = math.floor(gauge_w * percent)
+            lcd.drawFilledRectangle(gauge_x, gauge_y, fillW, gauge_h)
+        end
+    end
+
+    -- Overlay value text (with clever threshold coloring)
+    local valuepadding = getParam(box, "valuepadding") or 0
+    local valuepaddingleft = getParam(box, "valuepaddingleft") or valuepadding
+    local valuepaddingright = getParam(box, "valuepaddingright") or valuepadding
+    local valuepaddingtop = getParam(box, "valuepaddingtop") or valuepadding
+    local valuepaddingbottom = getParam(box, "valuepaddingbottom") or valuepadding
+
+    if displayValue ~= nil then
+        local str = tostring(displayValue) .. (displayUnit or "")
+        local unitIsDegree = (displayUnit == "°" or (displayUnit and tostring(displayUnit):find("°")))
+        local strForWidth = unitIsDegree and (tostring(displayValue) .. "0") or str
+
+        local availH = h - valuepaddingtop - valuepaddingbottom
+        local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL, FONT_XXXXL}
+
+        lcd.font(FONT_XL)
+        local _, xlFontHeight = lcd.getTextSize("8")
+        if xlFontHeight > availH * 0.5 then
+            fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L}
+        end
+
+        local maxW, maxH = w - valuepaddingleft - valuepaddingright, availH
+        local bestFont, bestW, bestH = FONT_XXS, 0, 0
+        for _, font in ipairs(fonts) do
+            lcd.font(font)
+            local tW, tH = lcd.getTextSize(strForWidth)
+            if tW <= maxW and tH <= maxH then
+                bestFont, bestW, bestH = font, tW, tH
+            else
+                break
+            end
+        end
+        lcd.font(bestFont)
+        local region_x = x + valuepaddingleft
+        local region_y = y + valuepaddingtop
+        local region_w = w - valuepaddingleft - valuepaddingright
+        local region_h = h - valuepaddingtop - valuepaddingbottom
+
+        local sy = region_y + (region_h - bestH) / 2
+        local align = (getParam(box, "valuealign") or "center"):lower()
+        local sx
+        if align == "left" then
+            sx = region_x
+        elseif align == "right" then
+            sx = region_x + region_w - bestW
+        else
+            sx = region_x + (region_w - bestW) / 2
+        end
+
+        -- Smart threshold text color based on gauge fill coverage
+        local useThresholdTextColor = false
+        if matchingTextColor and percent > 0 then
+            local tW, tH = bestW, bestH
+            if gaugeOrientation == "vertical" then
+                local text_top = sy
+                local text_bottom = sy + tH
+                local fill_top = gauge_y + gauge_h * (1 - percent)
+                local fill_bottom = gauge_y + gauge_h
+                local overlap = math.min(text_bottom, fill_bottom) - math.max(text_top, fill_top)
+                if overlap > tH / 2 then
+                    useThresholdTextColor = true
+                end
+            else
+                local text_left = sx
+                local text_right = sx + tW
+                local fill_left = gauge_x
+                local fill_right = gauge_x + gauge_w * percent
+                local overlap = math.min(text_right, fill_right) - math.max(text_left, fill_left)
+                if overlap > tW / 2 then
+                    useThresholdTextColor = true
+                end
+            end
+        end
+        if useThresholdTextColor then
+            valueTextColor = matchingTextColor
+        end
+
+        lcd.color(valueTextColor)
+        lcd.drawText(sx, sy, str)
+    end
+
+    -- Overlay title (top or bottom)
+    if getParam(box, "title") then
+        local titlepadding = getParam(box, "titlepadding") or 0
+        local titlepaddingleft = getParam(box, "titlepaddingleft") or titlepadding
+        local titlepaddingright = getParam(box, "titlepaddingright") or titlepadding
+        local titlepaddingtop = getParam(box, "titlepaddingtop") or titlepadding
+        local titlepaddingbottom = getParam(box, "titlepaddingbottom") or titlepadding
+
+        lcd.font(FONT_XS)
+        local tsizeW, tsizeH = lcd.getTextSize(getParam(box, "title"))
+        local region_x = x + titlepaddingleft
+        local region_w = w - titlepaddingleft - titlepaddingright
+        local sy = (getParam(box, "titlepos") == "bottom")
+            and (y + h - titlepaddingbottom - tsizeH)
+            or (y + titlepaddingtop)
+        local align = (getParam(box, "titlealign") or "center"):lower()
+        local sx
+        if align == "left" then
+            sx = region_x
+        elseif align == "right" then
+            sx = region_x + region_w - tsizeW
+        else
+            sx = region_x + (region_w - tsizeW) / 2
+        end
+        lcd.color(utils.resolveColor(getParam(box, "titlecolor")) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90)))
+        lcd.drawText(sx, sy, getParam(box, "title"))
+    end
+end
+
+
+-- Dispatcher for rendering boxes by type.
 function render.renderBox(boxType, x, y, w, h, box, telemetry)
     local funcMap = {
         telemetry = render.telemetryBox,
@@ -250,6 +440,7 @@ function render.renderBox(boxType, x, y, w, h, box, telemetry)
         apiversion = render.apiversionBox,
         session = render.sessionBox,
         blackbox = render.blackboxBox,
+        gauge = render.gaugeBox,
         ["function"] = render.functionBox,
     }
     local fn = funcMap[boxType]
