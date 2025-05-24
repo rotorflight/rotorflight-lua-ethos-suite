@@ -15,7 +15,14 @@
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]]--
 
-
+--[[
+There are two ways to add gauges:
+1. Full manual: Use type="gauge" and specify all properties and thresholds for full control.
+2. Simple/auto: Use type="fuelgauge" or "voltagegauge" for quick setup with good defaults.
+   You can still override any property if needed.
+The simple types are easiest for most users—just set the title, unit, etc.
+Manual type is best for advanced customization.
+]]
 
 local layout = {
     cols = 4,
@@ -58,6 +65,9 @@ local boxes = {
         source = "voltage",
         gaugemin = function()
             local cfg = rfsuite.session.batteryConfig
+
+            --print(rfsuite.session.batteryConfig.vbatmincellvoltage)
+
             local cells = (cfg and cfg.batteryCellCount) or 3
             local minV = (cfg and cfg.vbatmincellvoltage) or 3.0
             local value = math.max(0, cells * minV)
@@ -102,7 +112,10 @@ local boxes = {
             }
         },
         gaugecolor = "green",
-    }
+    },
+    -- super simple way
+    { col = 1, row = 2, type = "fuelgauge", title = "Fuel", unit = "%", titlepos = "bottom", gaugeorientation = "vertical" },
+    { col = 2, row = 2, type = "voltagegauge", title = "Voltage", unit = "v", titlepos = "bottom", gaugeorientation = "horizontal" }
 
 }
 

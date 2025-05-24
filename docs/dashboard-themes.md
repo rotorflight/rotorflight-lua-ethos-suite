@@ -9,18 +9,21 @@ This section describes all supported **box types**, new **selection/navigation**
 
 You can use the following `type` values for each box in your theme’s `boxes` array. Each type has its own display logic and available options:
 
-| `type`       | Description                                                                   | Box Options Used                              |
-|--------------|-------------------------------------------------------------------------------|-----------------------------------------------|
-| `telemetry`  | Telemetry sensor value (numeric or text, with units/transform)                | `source`, `title`, `unit`, `transform`, etc.  |
-| `text`       | Arbitrary text value, can use source or be static                             | `source`, `title`, `unit`, etc.               |
-| `image`      | Display an image from a path or value                                         | `source` or `value` (path), `imagewidth`, etc.|
-| `modelimage` | Automatically show the current model’s image                                  | (auto-detects model)                          |
-| `governor`   | Show Governor state from telemetry                                            | (auto)                                        |
-| `craftname`  | Show current model/craft name                                                 | (auto)                                        |
-| `apiversion` | Show the API version of Rotorflight                                           | (auto)                                        |
-| `session`    | Display a value from the session (use `source` for key)                       | `source` (e.g., `"rx_rssi"`), etc.            |
-| `blackbox`   | Show Blackbox storage used/total                                              | (auto, shows MB)                              |
-| `function`   | Call a custom drawing function (`value` is your function)                     | `value = function(x, y, w, h) ... end`        |
+| `type`         | Description                                                                      | Box Options Used                              |
+|----------------|----------------------------------------------------------------------------------|-----------------------------------------------|
+| `telemetry`    | Telemetry sensor value (numeric or text, with units/transform)                   | `source`, `title`, `unit`, `transform`, etc.  |
+| `text`         | Arbitrary text value, can use source or be static                                | `source`, `title`, `unit`, etc.               |
+| `image`        | Display an image from a path or value                                            | `source` or `value` (path), `imagewidth`, etc.|
+| `modelimage`   | Automatically show the current model’s image                                     | (auto-detects model)                          |
+| `governor`     | Show Governor state from telemetry                                               | (auto)                                        |
+| `craftname`    | Show current model/craft name                                                    | (auto)                                        |
+| `apiversion`   | Show the API version of Rotorflight                                              | (auto)                                        |
+| `session`      | Display a value from the session (use `source` for key)                          | `source` (e.g., `"rx_rssi"`), etc.            |
+| `blackbox`     | Show Blackbox storage used/total                                                 | (auto, shows MB)                              |
+| `function`     | Call a custom drawing function (`value` is your function)                        | `value = function(x, y, w, h) ... end`        |
+| `gauge`        | Draw a gauge (bar, horizontal or vertical), fully customizable                   | See **Manual Gauge** below                    |
+| `fuelgauge`    | **Simple:** Draw a ready-to-use fuel gauge with built-in thresholds and defaults | See **Simple Gauge** below                    |
+| `voltagegauge` | **Simple:** Draw a ready-to-use voltage gauge with built-in thresholds and defaults| See **Simple Gauge** below                   |
 
 **Example usage:**
 
@@ -29,6 +32,8 @@ You can use the following `type` values for each box in your theme’s `boxes` a
 { type = "session", source = "rx_rssi", title = "RSSI" }
 { type = "governor", title = "Governor" }
 { type = "blackbox", title = "Blackbox" }
+{ type = "fuelgauge", title = "Fuel", unit = "%", col = 1, row = 2 }
+{ type = "voltagegauge", title = "Voltage", unit = "V", col = 2, row = 2 }
 { type = "function", value = function(x, y, w, h) lcd.drawText(x, y, "Custom!") end }
 ```
 
@@ -79,28 +84,62 @@ layout = {
 
 ---
 
-## 🛠️ Advanced: Custom Drawing
+## 🛠️ Gauges: Manual vs Simple Approach
 
-For complete control, use a box with `type = "function"` and a custom function as the `value`:
+There are **two ways** to add gauge bars to your dashboard, depending on your needs:
 
+### 1. **Full Manual Gauge (`type = "gauge"`)**
+
+- **Use for**: Full control and customization.
+- **Must specify**: All relevant properties, thresholds, and styling.
+- **Best for**: Advanced layouts, special threshold colors, or custom sources.
+
+**Example:**
 ```lua
 {
-    col = 4, row = 1, type = "function",
-    value = function(x, y, w, h)
-        lcd.drawRectangle(x, y, w, h, 1)
-        lcd.drawText(x+10, y+10, "Special!")
-    end
+    type = "gauge",
+    col = 1, row = 1,
+    source = "fuel",
+    gaugemin = 0,
+    gaugemax = 100,
+    gaugeorientation = "vertical",
+    thresholds = {
+        { value = 20,  color = "red",    textcolor = "white" },
+        { value = 50,  color = "orange", textcolor = "black" }
+    },
+    gaugecolor = "green",
+    title = "FUEL",
+    unit = "%",
 }
 ```
 
+### 2. **Simple/Auto Gauge (`type = "fuelgauge"` or `type = "voltagegauge"`)**
+
+- **Use for**: Quick setup with good defaults.
+- **Automatically**: Applies common thresholds and styling (can still override).
+- **Best for**: End users or quick layouts.
+
+**Example:**
+```lua
+{ col = 1, row = 2, type = "fuelgauge", title = "Fuel", unit = "%", titlepos = "bottom", gaugeorientation = "vertical" }
+{ col = 2, row = 2, type = "voltagegauge", title = "Voltage", unit = "V", titlepos = "bottom", gaugeorientation = "horizontal" }
+```
+You can override any parameter from the manual approach, but usually only `title`, `unit`, and `orientation` are needed.
+
 ---
 
-## 📚 Other Box and Layout Options
+## 📚 Box and Layout Options (Common Across Types)
 
-- **Padding/Alignment**: Use `padding`, `titlealign`, `valuealign`, etc., for finer control.
-- **Transforms**: Apply math transforms to telemetry values (see code for details).
-- **Images**: Use `imagewidth`, `imageheight`, `imagealign`, etc.
-- **Overlay and Wakeup**: Add `paint` or `wakeup` functions to the theme table for overlays or polling.
+- **col, row**: Grid position (1-based, left-to-right/top-to-bottom).
+- **colspan, rowspan**: (Optional) Span multiple columns or rows.
+- **title, unit**: Label and unit display.
+- **color, titlecolor, bgcolor**: Value/text/background color.
+- **gaugemin, gaugemax**: Min/max value for bar fill (can be number or function).
+- **gaugecolor, gaugebgcolor**: Main and background color of the gauge bar.
+- **gaugeorientation**: `"vertical"` or `"horizontal"` (fill direction).
+- **thresholds**: List of value breakpoints for dynamic color changes (see above).
+- **padding, titlealign, valuealign**: Fine-tune spacing and alignment.
+- **onpress**: Add a function to make any box selectable/clickable.
 
 ---
 
