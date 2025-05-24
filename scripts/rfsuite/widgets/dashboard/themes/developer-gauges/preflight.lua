@@ -25,7 +25,7 @@ Manual type is best for advanced customization.
 ]]
 
 local layout = {
-    cols = 4,
+    cols = 6,
     rows = 4,
     padding = 4,
     selectcolor = lcd.RGB(255, 255, 255),
@@ -115,8 +115,13 @@ local boxes = {
     },
     -- super simple way
     { col = 1, row = 2, type = "fuelgauge", title = "Fuel", unit = "%", titlepos = "bottom", gaugeorientation = "vertical" },
-    { col = 2, row = 2, type = "voltagegauge", title = "Voltage", unit = "v", titlepos = "bottom", gaugeorientation = "horizontal" }
+    { col = 2, row = 2, type = "voltagegauge", title = "Voltage", unit = "v", titlepos = "bottom", gaugeorientation = "horizontal" },
 
+    -- dial
+    { col = 1, row = 3, rowspan = 2, type = "dial", title = "Voltage", unit = "v", titlepos = "bottom", style = 1, source = "voltage" },
+    { col = 2, row = 3, rowspan = 2, type = "dial", title = "fuel", unit = "%", titlepos = "bottom", style = 2, source = "fuel" },
+    { col = 4, row = 3, rowspan = 2, type = "dial", title = "current", unit = "mAh", titlepos = "bottom", style = 3, source = "current" },
+    { col = 5, row = 1, rowspan = 2, type = "dial", title = "T.ESC", unit = "%", titlepos = "bottom", style = 4, source = "temp_esc" }
 }
 
 

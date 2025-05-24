@@ -538,7 +538,82 @@ function render.functionVoltageGauge(x, y, w, h, box, telemetry)
     return render.gaugeBox(x, y, w, h, voltBox, telemetry)
 end
 
+-- Extend render.lua with support for type = "dial"
 
+local dialAssets = {
+    [1] = { panel = "widgets/dashboard/gfx/panel1.png", pointer = "widgets/dashboard/gfx/pointer1.png" },
+    [2] = { panel = "widgets/dashboard/gfx/panel2.png", pointer = "widgets/dashboard/gfx/pointer2.png" },
+    [3] = { panel = "widgets/dashboard/gfx/panel3.png", pointer = "widgets/dashboard/gfx/pointer3.png" },
+    [4] = { panel = "widgets/dashboard/gfx/panel4.png", pointer = "widgets/dashboard/gfx/pointer4.png" },
+}
+
+local dialImageCache = {}
+
+local function loadDialAssets(style)
+    local assets = dialAssets[style or 1] or dialAssets[1]
+    if not dialImageCache[style] then
+        dialImageCache[style] = {
+            panel = rfsuite.utils.loadImage(assets.panel),
+            pointer = rfsuite.utils.loadImage(assets.pointer)
+        }
+    end
+    return dialImageCache[style].panel, dialImageCache[style].pointer
+end
+
+local function calDialAngle(percent)
+    local angle = 315 + percent * 270 / 100
+    while angle > 360 do angle = angle - 360 end
+    return angle
+end
+
+function render.dialBox(x, y, w, h, box, telemetry)
+    local value = nil
+    local source = getParam(box, "source")
+    if source then
+        local sensor = telemetry and telemetry.getSensorSource(source)
+        value = sensor and sensor:value()
+    end
+
+    local displayValue = value or getParam(box, "novalue") or "-"
+    local unit = getParam(box, "unit")
+    local style = getParam(box, "style") or 1
+    local min = getParam(box, "min") or 0
+    local max = getParam(box, "max") or 100
+    local percent = 0
+
+    if value and max ~= min then
+        percent = ((value - min) / (max - min)) * 100
+        percent = math.max(0, math.min(100, percent))
+    end
+
+    local panelImg, pointerImg = loadDialAssets(style)
+    if panelImg and pointerImg then
+        lcd.drawBitmap(x, y, panelImg, w, h)
+
+        local angle = calDialAngle(percent)
+        local rotated = pointerImg:rotate(angle)
+        if rotated then
+            lcd.drawBitmap(x, y, rotated, w, h)
+        end
+    end
+
+    -- Optional title and value
+    local title = getParam(box, "title")
+    if title then
+        lcd.font(FONT_XS)
+        local tW, tH = lcd.getTextSize(title)
+        lcd.color(lcd.RGB(255, 255, 255))
+        lcd.drawText(x + (w - tW) / 2, y + h - tH, title)
+    end
+
+    if displayValue ~= nil then
+        lcd.font(FONT_STD)
+        local str = tostring(displayValue) .. (unit or "")
+        local vW, vH = lcd.getTextSize(str)
+        lcd.color(lcd.RGB(255, 255, 255))
+        lcd.drawText(x + (w - vW) / 2, y + h - vH - 16, str)
+    end
+end
 
 -- Dispatcher for rendering boxes by type.
 function render.renderBox(boxType, x, y, w, h, box, telemetry)
@@ -555,6 +630,7 @@ function render.renderBox(boxType, x, y, w, h, box, telemetry)
         gauge = render.gaugeBox,
         fuelgauge = render.functionFuelGuage,
         voltagegauge = render.functionVoltageGauge,
+        dial = render.dialBox,
         ["function"] = render.functionBox,
     }
     local fn = funcMap[boxType]
