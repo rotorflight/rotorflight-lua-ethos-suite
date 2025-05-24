@@ -16,6 +16,7 @@
 ]]--
 
 
+
 local layout = {
     cols = 4,
     rows = 4,
@@ -26,14 +27,13 @@ local layout = {
 
 local boxes = {
 
-    {
+   {
         col =1,
         row = 1,
         type = "gauge",
         source = "fuel",
         gaugemin = 0,
         gaugemax = 100,
-        gaugecolor = "yellow",
         --gaugebgcolor = "black",
         gaugeorientation = "vertical",  -- or "horizontal"
         gaugepadding = 4,
@@ -46,35 +46,62 @@ local boxes = {
         titlepos = "bottom",
         titlecolor = "white",
         thresholds = {
-            { value = 20,  color = "red",    textcolor = "white" },     -- value < 20: red gauge & red value text
-            { value = 50,  color = "orange", textcolor = "black" },  -- 20 <= value < 50: orange
-            { value = 80,  color = "green", textcolor = "black" }   -- 50 <= value < 80: yellow
-        }
+            { value = 20,  color = "red",    textcolor = "white" },   -- value < 20: red
+            { value = 50,  color = "orange", textcolor = "black" },   -- 20 <= value < 40: orange
+        },
+        gaugecolor = "green",
     },
     {
-        col =2,
+        col = 2,
         row = 1,
         type = "gauge",
         source = "voltage",
-        gaugemin = function() return 0 end,
-        gaugemax = function() return 50 end,
-        gaugecolor = "yellow",
-        --gaugebgcolor = "black",
-        gaugeorientation = "horizontal",  -- or "vertical"
+        gaugemin = function()
+            local cfg = rfsuite.session.batteryConfig
+            local cells = (cfg and cfg.batteryCellCount) or 3
+            local minV = (cfg and cfg.vbatmincellvoltage) or 3.0
+            local value = math.max(0, cells * minV)
+            return value
+        end,
+        gaugemax = function()
+            local cfg = rfsuite.session.batteryConfig
+            local cells = (cfg and cfg.batteryCellCount) or 3
+            local maxV = (cfg and cfg.vbatmaxcellvoltage) or 4.2
+            local value = math.max(0, cells * maxV)
+            return value
+        end,
+        gaugebgcolor = "gray",
+        gaugeorientation = "horizontal",
         gaugepadding = 4,
-        gaugebelowtitle = true,  -- <<--- do not draw under title area!
+        gaugebelowtitle = true,
         title = "VOLTAGE",
-        unit = "%",
-        color = "white",
+        unit = "V",
+        color = "black",
         valuealign = "center",
         titlealign = "center",
         titlepos = "bottom",
         titlecolor = "white",
         thresholds = {
-            { value = 20,  color = "red",    textcolor = "white" },     -- value < 20: red gauge & red value text
-            { value = 50,  color = "orange", textcolor = "black" },  -- 20 <= value < 50: orange
-            { value = 80,  color = "green", textcolor = "black" }   -- 50 <= value < 80: yellow
-        }
+            {
+                value = function()
+                    local cfg = rfsuite.session.batteryConfig
+                    local cells = (cfg and cfg.batteryCellCount) or 3
+                    local minV = (cfg and cfg.vbatmincellvoltage) or 3.0
+                    return cells * minV * 1.2 -- 20% above minimum voltage
+                end,
+                color = "red", textcolor = "white"
+            },
+            {
+                value = function()
+                    local cfg = rfsuite.session.batteryConfig
+                    local cells = (cfg and cfg.batteryCellCount) or 3
+                    local warnV = (cfg and cfg.vbatwarningcellvoltage) or 3.5
+                    return cells * warnV * 1.2 -- 20% above minimum voltage
+                end,
+                color = "orange", textcolor = "black"
+            }
+        },
+        gaugecolor = "green",
     }
 
 }
