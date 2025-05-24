@@ -102,7 +102,7 @@ function render.imageBox(x, y, w, h, box)
     utils.imageBox(
         x, y, w, h,
         getParam(box, "color"), getParam(box, "title"),
-        getParam(box, "value") or getParam(box, "source") or "widgets/dashboard/default_image.png",
+        getParam(box, "value") or getParam(box, "source") or "widgets/dashboard/gfx/default_image.png",
         getParam(box, "imagewidth"), getParam(box, "imageheight"), getParam(box, "imagealign"),
         getParam(box, "bgcolor"), getParam(box, "titlealign"), getParam(box, "titlecolor"), getParam(box, "titlepos"),
         getParam(box, "imagepadding"), getParam(box, "imagepaddingleft"), getParam(box, "imagepaddingright"),
@@ -545,19 +545,29 @@ local dialAssets = {
     [2] = { panel = "widgets/dashboard/gfx/panel2.png", pointer = "widgets/dashboard/gfx/pointer2.png" },
     [3] = { panel = "widgets/dashboard/gfx/panel3.png", pointer = "widgets/dashboard/gfx/pointer3.png" },
     [4] = { panel = "widgets/dashboard/gfx/panel4.png", pointer = "widgets/dashboard/gfx/pointer4.png" },
+    [5] = { panel = "widgets/dashboard/gfx/panel5.png", pointer = "widgets/dashboard/gfx/pointer4.png" },
+    [6] = { panel = "widgets/dashboard/gfx/panel6.png", pointer = "widgets/dashboard/gfx/pointer4.png" },
+    [7] = { panel = "widgets/dashboard/gfx/panel7.png", pointer = "widgets/dashboard/gfx/pointer7.png" },
+    [8] = { panel = "widgets/dashboard/gfx/panel8.png", pointer = "widgets/dashboard/gfx/pointer8.png" },
 }
 
-local dialImageCache = {}
+rfsuite.session.dialImageCachee = {}
+local rotatedPointerCache = {}
+local lastDialValue = {}
+local lastRotatedKey = {}
 
-local function loadDialAssets(style)
-    local assets = dialAssets[style or 1] or dialAssets[1]
-    if not dialImageCache[style] then
-        dialImageCache[style] = {
-            panel = rfsuite.utils.loadImage(assets.panel),
-            pointer = rfsuite.utils.loadImage(assets.pointer)
+local function loadDialAssets(style, customPanelPath, customPointerPath)
+    local key = tostring(style or "default") .. ":" .. (customPanelPath or "") .. ":" .. (customPointerPath or "")
+    if not rfsuite.session.dialImageCachee[key] then
+        local assets = dialAssets[style or 1] or dialAssets[1]
+        local panelPath = customPanelPath or assets.panel
+        local pointerPath = customPointerPath or assets.pointer
+        rfsuite.session.dialImageCachee[key] = {
+            panel = rfsuite.utils.loadImage(panelPath),
+            pointer = rfsuite.utils.loadImage(pointerPath)
         }
     end
-    return dialImageCache[style].panel, dialImageCache[style].pointer
+    return rfsuite.session.dialImageCachee[key].panel, rfsuite.session.dialImageCachee[key].pointer
 end
 
 local function calDialAngle(percent)
@@ -566,17 +576,60 @@ local function calDialAngle(percent)
     return angle
 end
 
+local function computeDrawArea(img, x, y, w, h, aspect, align)
+    local iw, ih = img:width(), img:height()
+    local drawW, drawH = w, h
+
+    if aspect == "fit" then
+        local scale = math.min(w / iw, h / ih)
+        drawW = iw * scale
+        drawH = ih * scale
+    elseif aspect == "fill" then
+        local scale = math.max(w / iw, h / ih)
+        drawW = iw * scale
+        drawH = ih * scale
+    elseif not aspect or aspect == "original" then
+        drawW = iw
+        drawH = ih
+    end
+
+    local drawX, drawY = x, y
+    align = align or "center"
+    if align:find("right") then
+        drawX = x + w - drawW
+    elseif align:find("center") or not align:find("left") then
+        drawX = x + (w - drawW) / 2
+    end
+    if align:find("bottom") then
+        drawY = y + h - drawH
+    elseif align:find("center") or not align:find("top") then
+        drawY = y + (h - drawH) / 2
+    end
+
+    return drawX, drawY, drawW, drawH
+end
+
 function render.dialBox(x, y, w, h, box, telemetry)
     local value = nil
     local source = getParam(box, "source")
     if source then
         local sensor = telemetry and telemetry.getSensorSource(source)
         value = sensor and sensor:value()
+        local transform = getParam(box, "transform")
+        if type(transform) == "string" and math[transform] then
+            value = value and math[transform](value)
+        elseif type(transform) == "function" then
+            value = value and transform(value)
+        elseif type(transform) == "number" then
+            value = value and transform(value)
+        end
     end
 
     local displayValue = value or getParam(box, "novalue") or "-"
     local unit = getParam(box, "unit")
     local style = getParam(box, "style") or 1
+    local customPanel = getParam(box, "panelpath")
+    local customPointer = getParam(box, "pointerpath")
     local min = getParam(box, "min") or 0
     local max = getParam(box, "max") or 100
     local percent = 0
@@ -586,14 +639,28 @@ function render.dialBox(x, y, w, h, box, telemetry)
         percent = math.max(0, math.min(100, percent))
     end
 
-    local panelImg, pointerImg = loadDialAssets(style)
+    local aspect = getParam(box, "aspect")
+    local align = getParam(box, "align") or "center"
+
+    local panelImg, pointerImg = loadDialAssets(style, customPanel, customPointer)
     if panelImg and pointerImg then
-        lcd.drawBitmap(x, y, panelImg, w, h)
+        local drawX, drawY, drawW, drawH = computeDrawArea(panelImg, x, y, w, h, aspect, align)
+        lcd.drawBitmap(drawX, drawY, panelImg, drawW, drawH)
 
         local angle = calDialAngle(percent)
-        local rotated = pointerImg:rotate(angle)
+        local boxId = tostring(box)
+        local rotatedKey = tostring(style) .. ":" .. angle .. ":" .. (customPointer or "")
+
+        if lastRotatedKey[boxId] ~= rotatedKey then
+            if not rotatedPointerCache[rotatedKey] then
+                rotatedPointerCache[rotatedKey] = pointerImg:rotate(angle)
+            end
+            lastRotatedKey[boxId] = rotatedKey
+        end
+
+        local rotated = rotatedPointerCache[rotatedKey]
         if rotated then
-            lcd.drawBitmap(x, y, rotated, w, h)
+            lcd.drawBitmap(drawX, drawY, rotated, drawW, drawH)
         end
     end
 
@@ -614,6 +681,8 @@ function render.dialBox(x, y, w, h, box, telemetry)
         lcd.drawText(x + (w - vW) / 2, y + h - vH - 16, str)
     end
 end
+
+
 
 -- Dispatcher for rendering boxes by type.
 function render.renderBox(boxType, x, y, w, h, box, telemetry)
