@@ -538,6 +538,8 @@ function render.functionVoltageGauge(x, y, w, h, box, telemetry)
     return render.gaugeBox(x, y, w, h, voltBox, telemetry)
 end
 
+-- Extend render.lua with support for type = "dial"
+
 local dialAssets = {
     [1] = { panel = "widgets/dashboard/gfx/panel1.png", pointer = "widgets/dashboard/gfx/pointer1.png" },
     [2] = { panel = "widgets/dashboard/gfx/panel2.png", pointer = "widgets/dashboard/gfx/pointer2.png" },
@@ -586,15 +588,13 @@ function render.dialBox(x, y, w, h, box, telemetry)
 
     local panelImg, pointerImg = loadDialAssets(style)
     if panelImg and pointerImg then
-        local panelW = panelImg:width()
-        local panelH = panelImg:height()
-        local cx = x + (w - panelW) / 2
-        local cy = y + (h - panelH) / 2
-        lcd.drawBitmap(cx, cy, panelImg)
+        lcd.drawBitmap(x, y, panelImg, w, h)
 
         local angle = calDialAngle(percent)
         local rotated = pointerImg:rotate(angle)
-        lcd.drawBitmap(cx, cy, rotated)
+        if rotated then
+            lcd.drawBitmap(x, y, rotated, w, h)
+        end
     end
 
     -- Optional title and value
@@ -614,7 +614,6 @@ function render.dialBox(x, y, w, h, box, telemetry)
         lcd.drawText(x + (w - vW) / 2, y + h - vH - 16, str)
     end
 end
-
 
 -- Dispatcher for rendering boxes by type.
 function render.renderBox(boxType, x, y, w, h, box, telemetry)
