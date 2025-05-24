@@ -44,7 +44,14 @@ function battery.wakeup()
             rfsuite.session.batteryConfig.lvcPercentage = lvcPercentage
             rfsuite.session.batteryConfig.consumptionWarningPercentage = consumptionWarningPercentage
 
-            
+            rfsuite.utils.log("Capacity: " .. batteryCapacity .. "mAh","info")
+            rfsuite.utils.log("Cell Count: " .. batteryCellCount,"info")
+            rfsuite.utils.log("Warning Voltage: " .. vbatwarningcellvoltage .. "V","info")
+            rfsuite.utils.log("Min Voltage: " .. vbatmincellvoltage .. "V","info")
+            rfsuite.utils.log("Max Voltage: " .. vbatmaxcellvoltage .. "V","info")
+            rfsuite.utils.log("LVC Percentage: " .. lvcPercentage .. "%","info")
+            rfsuite.utils.log("Consumption Warning Percentage: " .. consumptionWarningPercentage .. "%","info")
+            rfsuite.utils.log("Battery Config Complete","info")
         end)
         API.setUUID("a3f9c2b4-5d7e-4e8a-9c3b-2f6d8e7a1b2d")
         API.read()

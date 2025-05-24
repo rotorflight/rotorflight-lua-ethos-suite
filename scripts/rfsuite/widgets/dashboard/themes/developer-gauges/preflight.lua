@@ -58,6 +58,9 @@ local boxes = {
         source = "voltage",
         gaugemin = function()
             local cfg = rfsuite.session.batteryConfig
+
+            --print(rfsuite.session.batteryConfig.vbatmincellvoltage)
+
             local cells = (cfg and cfg.batteryCellCount) or 3
             local minV = (cfg and cfg.vbatmincellvoltage) or 3.0
             local value = math.max(0, cells * minV)
