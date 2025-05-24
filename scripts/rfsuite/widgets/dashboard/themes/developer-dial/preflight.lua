@@ -48,7 +48,9 @@ local boxes = {
         - align            : "center" (default), "top-left", "bottom-right", etc.
         - transform        : "floor", "ceil", or "round" to adjust value display or  function
         - panelpath        : "SCRIPTS:/mydials/custom_panel.png"  optonal custom panel background
-        - pointerpath =    : "SCRIPTS:/mydials/custom_pointer.png"  optional custom pointer image
+        - pointerpath      : "SCRIPTS:/mydials/custom_pointer.png"  optional custom pointer image
+        - offsetx          : Horizontal offset for custom pointer (default 0)
+        - offsety          : Vertical offset for custom pointer (default 0)
     ]]
 
     {

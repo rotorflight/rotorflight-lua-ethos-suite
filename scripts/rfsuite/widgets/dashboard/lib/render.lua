@@ -31,8 +31,17 @@ local function getParam(box, key, ...)
     end
 end
 
+local function applyOffset(x, y, box)
+    local ox = getParam(box, "offsetx") or 0
+    local oy = getParam(box, "offsety") or 0
+    return x + ox, y + oy
+end
+
 -- Telemetry data box
 function render.telemetryBox(x, y, w, h, box, telemetry)
+
+    x, y = applyOffset(x, y, box)
+
     local value = nil
     local source = getParam(box, "source")
     if source then
@@ -82,6 +91,9 @@ end
 
 -- Static text box
 function render.textBox(x, y, w, h, box)
+
+    x, y = applyOffset(x, y, box)
+
     local displayValue = getParam(box, "value")
     if displayValue == nil then
         displayValue = getParam(box, "novalue") or "-"
@@ -99,6 +111,9 @@ end
 
 -- Image box
 function render.imageBox(x, y, w, h, box)
+
+    x, y = applyOffset(x, y, box)
+
     utils.imageBox(
         x, y, w, h,
         getParam(box, "color"), getParam(box, "title"),
@@ -124,6 +139,9 @@ end
 
 -- Governor status box
 function render.governorBox(x, y, w, h, box, telemetry)
+
+    x, y = applyOffset(x, y, box)
+
     local value = nil
     local sensor = telemetry and telemetry.getSensorSource("governor")
     value = sensor and sensor:value()
@@ -144,6 +162,9 @@ end
 
 -- Craft name box
 function render.craftnameBox(x, y, w, h, box)
+
+    x, y = applyOffset(x, y, box)
+
     local displayValue = rfsuite.session.craftName
     if displayValue == nil or (type(displayValue) == "string" and displayValue:match("^%s*$")) then
         displayValue = getParam(box, "novalue") or "-"
@@ -161,6 +182,9 @@ end
 
 -- API version box
 function render.apiversionBox(x, y, w, h, box)
+
+    x, y = applyOffset(x, y, box)
+
     local displayValue = rfsuite.session.apiVersion
     if displayValue == nil then
         displayValue = getParam(box, "novalue") or "-"
@@ -178,6 +202,9 @@ end
 
 -- Session variable box
 function render.sessionBox(x, y, w, h, box)
+
+    x, y = applyOffset(x, y, box)
+
     local src = getParam(box, "source")
     local displayValue = rfsuite.session[src]
     if displayValue == nil then
@@ -196,6 +223,9 @@ end
 
 -- Blackbox storage usage box
 function render.blackboxBox(x, y, w, h, box)
+
+    x, y = applyOffset(x, y, box)
+
     local displayValue = nil
     local totalSize = rfsuite.session.bblSize
     local usedSize = rfsuite.session.bblUsed
@@ -222,6 +252,9 @@ end
 
 -- Function box
 function render.functionBox(x, y, w, h, box)
+
+    x, y = applyOffset(x, y, box)
+
     local v = box.value
     if type(v) == "function" then
         -- In case someone set value = function() return actual_function end
@@ -234,6 +267,9 @@ end
 
 -- Gauge box (fully function-param ready)
 function render.gaugeBox(x, y, w, h, box, telemetry)
+
+    x, y = applyOffset(x, y, box)
+
     -- Get value
     local value = nil
     local source = getParam(box, "source")
@@ -449,6 +485,9 @@ end
 
 -- Fuel Gauge Box: Easy, ready-to-use fuel gauge for end users.
 function render.functionFuelGuage(x, y, w, h, box, telemetry)
+
+    x, y = applyOffset(x, y, box)
+
     -- Default parameters for fuel gauge
     local defaults = {
         source = "fuel",  -- Telemetry source
@@ -481,6 +520,9 @@ function render.functionFuelGuage(x, y, w, h, box, telemetry)
 end
 
 function render.functionVoltageGauge(x, y, w, h, box, telemetry)
+
+    x, y = applyOffset(x, y, box)
+
     -- Default parameters for voltage gauge
     local defaults = {
         source = "voltage",  -- Telemetry source
@@ -610,6 +652,9 @@ local function computeDrawArea(img, x, y, w, h, aspect, align)
 end
 
 function render.dialBox(x, y, w, h, box, telemetry)
+
+    x, y = applyOffset(x, y, box)
+
     local value = nil
     local source = getParam(box, "source")
     if source then
