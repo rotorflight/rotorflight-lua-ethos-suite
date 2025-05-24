@@ -25,39 +25,15 @@ local layout = {
 }
 
 local boxes = {
-    {col=1, row=1, type="text", value=telemetry.getSensorStats('voltage').min, title="MIN VOLTAGE", unit="v", titlepos="bottom"},
-    {col=2, row=1, type="text", value=telemetry.getSensorStats('voltage').max, title="MAX VOLTAGE", unit="v", titlepos="bottom"},
-    {col=1, row=2, type="text", value=telemetry.getSensorStats('current').min, title="MIN CURRENT", unit="A", titlepos="bottom", transform="floor"},
-    {col=2, row=2, type="text", value=telemetry.getSensorStats('current').max, title="MAX CURRENT", unit="A", titlepos="bottom", transform="floor"},
-    {col=1, row=3, type="text", value=telemetry.getSensorStats('temp_mcu').max, title="MAX T.MCU", unit="°", titlepos="bottom", transform="floor"},
-    {col=2, row=3, type="text", value=telemetry.getSensorStats('temp_esc').max, title="MAX E.MCU", unit="°", titlepos="bottom", transform="floor"}
+    {col=1, row=1, type="text", value=telemetry.getSensorStats('voltage').min, novalue="-", title="MIN VOLTAGE", unit="v", titlepos="bottom"},
+    {col=2, row=1, type="text", value=telemetry.getSensorStats('voltage').max, novalue="-", title="MAX VOLTAGE", unit="v", titlepos="bottom"},
+    {col=1, row=2, type="text", value=telemetry.getSensorStats('current').min, novalue="-", title="MIN CURRENT", unit="A", titlepos="bottom", transform="floor"},
+    {col=2, row=2, type="text", value=telemetry.getSensorStats('current').max, novalue="-", title="MAX CURRENT", unit="A", titlepos="bottom", transform="floor"},
+    {col=1, row=3, type="text", value=telemetry.getSensorStats('temp_mcu').max, novalue="-", title="MAX T.MCU", unit="°", titlepos="bottom", transform="floor"},
+    {col=2, row=3, type="text", value=telemetry.getSensorStats('temp_esc').max, novalue="-", title="MAX E.MCU", unit="°", titlepos="bottom", transform="floor"}
 }
-
-local function wakeup()
-    --rfsuite.utils.log("wakeup postflight", "info")
-end
-
-local function (widget, category, value, x, y)
-    --rfsuite.utils.log("Event triggered: " .. category .. " - " .. code, "info")
-end    
-
-local function paint()
-    --rfsuite.utils.log("paint postflight", "info")
-end
-
-local function screenErrorOverlay(message)
-    -- if you want a custom overlay message, you can handle the full screen overlay here
-    -- this is for messages like "BG TASK NOT RUNNING"
-    -- the framework will display a centered message if this function is not defined
-    -- the option is here to allow a them to create a custom overlay
-    rfsuuite.utils.screenErrorOverlay(overlayMessage)
-end
 
 return {
     layout = layout,
     boxes = boxes,
-    wakeup = wakeup,
-    event = event,
-    paint = paint,
-    overlayMessage = nil,
 }

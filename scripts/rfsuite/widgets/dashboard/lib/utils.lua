@@ -1,14 +1,39 @@
+--[[
+ * Copyright (C) Rotorflight Project
+ *
+ * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * Note: Some icons have been sourced from https://www.flaticon.com/
+]] --
+ 
 local utils = {}
 
 local imageCache = {}
 
-
+--[[
+    Clears all cached images from the image cache.
+    Call this to free memory or when themes/images change.
+]]
 function utils.resetImageCache()
     for k in pairs(imageCache) do
         imageCache[k] = nil
     end
 end
 
+--[[
+    Displays a centered error message on the screen,
+    choosing the largest font that fits.
+    Args: msg (string) - message to display
+]]
 function utils.screenError(msg)
     local w, h = lcd.getWindowSize()
     local isDarkMode = lcd.darkMode()
@@ -33,6 +58,10 @@ function utils.screenError(msg)
     lcd.drawText(x, y, msg)
 end
 
+--[[
+    Displays a translucent error overlay box with centered message.
+    Args: msg (string) - error message
+]]
 function utils.screenErrorOverlay(msg)
     local w, h = lcd.getWindowSize()
     local isDarkMode = lcd.darkMode()
@@ -41,7 +70,7 @@ function utils.screenErrorOverlay(msg)
     -- Dynamically scale font for text
     local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL}
     local bestFont, bestW, bestH = FONT_XXS, 0, 0
-    local maxW = boxW * 0.9  -- Allow margin inside the box
+    local maxW = boxW * 0.9
 
     for _, font in ipairs(fonts) do
         lcd.font(font)
@@ -53,10 +82,7 @@ function utils.screenErrorOverlay(msg)
         end
     end
 
-    -- Add 20% vertical padding to text height
     local boxH = bestH * 2
-
-    -- Center the box on screen
     local boxX = (w - boxW) / 2
     local boxY = (h - boxH) / 2
 
@@ -77,8 +103,14 @@ function utils.screenErrorOverlay(msg)
     lcd.drawText(textX, textY, msg)
 end
 
-
-
+--[[
+    Calculates the starting X coordinate for a string based on alignment.
+    Args: text (string)   - text to align
+          align (string)  - "left", "center", or "right"
+          x (number)      - left of region
+          w (number)      - width of region
+    Returns: number (aligned X)
+]]
 function utils.getAlignedX(text, align, x, w)
     local tsize = lcd.getTextSize(text)
     if align == "right" then
@@ -90,6 +122,11 @@ function utils.getAlignedX(text, align, x, w)
     end
 end
 
+--[[
+    Resolves a color name (string) or RGB table to a display color value.
+    Args: value (string or table) - color name or {r,g,b}
+    Returns: lcd.RGB color value or nil if not recognized
+]]
 function utils.resolveColor(value)
     local namedColors = {
         red       = {255, 0, 0},
@@ -131,6 +168,14 @@ function utils.resolveColor(value)
     return nil -- fallback handling will occur elsewhere
 end
 
+--[[
+    Draws a telemetry value box with colored background, value, title, unit, and flexible padding.
+    Handles alignment and font sizing for both title and value.
+    Args: x, y, w, h         - Box geometry
+          color, title, value, unit, bgcolor
+          titlealign, valuealign, titlecolor, titlepos
+          (plus many optional paddings)
+]]
 function utils.telemetryBox(
     x, y, w, h, color, title, value, unit, bgcolor,
     titlealign, valuealign, titlecolor, titlepos,
@@ -153,19 +198,15 @@ function utils.telemetryBox(
     valuepaddingtop = valuepaddingtop or valuepadding or 0
     valuepaddingbottom = valuepaddingbottom or valuepadding or 0
 
-    -- Draw value (centered by default, alignment can be overridden)
+    -- Draw value
     if value ~= nil then
         local str = tostring(value) .. (unit or "")
         local unitIsDegree = (unit == "°" or (unit and unit:find("°")))
         local strForWidth = unitIsDegree and (tostring(value) .. "0") or str
 
-        -- Compute available height for value
         local availH = h - valuepaddingtop - valuepaddingbottom
-
-        -- Start with largest font set
         local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL, FONT_XXXXL}
 
-        -- If the box is short, limit max font
         lcd.font(FONT_XL)
         local _, xlFontHeight = lcd.getTextSize("8")
         if xlFontHeight > availH * 0.5 then
@@ -209,8 +250,7 @@ function utils.telemetryBox(
         lcd.drawText(sx, sy, str)
     end
 
-
-    -- Draw title (top or bottom, color and alignment)
+    -- Draw title (top or bottom)
     if title then
         lcd.font(FONT_XS)
         local tsizeW, tsizeH = lcd.getTextSize(title)
@@ -233,8 +273,11 @@ function utils.telemetryBox(
     end
 end
 
-
-
+--[[
+    Draws an image box, using imageCache and flexible alignment/padding.
+    Optionally overlays a title.
+    Args: x, y, w, h, ...   - see code above for full param list.
+]]
 function utils.imageBox(
     x, y, w, h, color, title, imagePath, imagewidth, imageheight, imagealign, bgcolor,
     titlealign, titlecolor, titlepos,
@@ -268,7 +311,7 @@ function utils.imageBox(
             local align = imagealign or "center"
             local img_x, img_y = region_x, region_y
 
-            -- Horizontal alignment within padded region
+            -- Horizontal alignment
             if align == "center" then
                 img_x = region_x + (region_w - img_w) / 2
             elseif align == "right" then
@@ -276,7 +319,7 @@ function utils.imageBox(
             else -- left
                 img_x = region_x
             end
-            -- Vertical alignment within padded region
+            -- Vertical alignment
             if align == "center" then
                 img_y = region_y + (region_h - img_h) / 2
             elseif align == "bottom" then
@@ -285,7 +328,6 @@ function utils.imageBox(
                 img_y = region_y
             end
 
-            -- Draw title (unaffected by image padding, but could add titlepadding the same way)
             if title and title ~= "" then
                 lcd.font(FONT_S)
                 local tsize_w, tsize_h = lcd.getTextSize(title)
@@ -294,7 +336,7 @@ function utils.imageBox(
                     sx = x
                 elseif titlealign == "right" then
                     sx = x + w - tsize_w
-                else -- center
+                else
                     sx = x + (w - tsize_w) / 2
                 end
                 local useColor = utils.resolveColor(titlecolor) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
@@ -312,32 +354,36 @@ function utils.imageBox(
     end
 end
 
-
+--[[
+    Sets the background color of the LCD based on the current theme.
+    Covers the entire widget area.
+]]
 function utils.setBackgroundColourBasedOnTheme()
     local w, h = lcd.getWindowSize()
     if lcd.darkMode() then
-        -- dark theme
         lcd.color(lcd.RGB(16, 16, 16))
     else
-        -- light theme
         lcd.color(lcd.RGB(209, 208, 208))
     end
     lcd.drawFilledRectangle(0, 0, w, h)
 end
 
+--[[
+    Draws the model image (icon) box, trying craftName, modelID, or model.bitmap().
+    Uses padding and alignment. Shows error if no image found.
+    Args: x, y, w, h, ...   - see code above for full param list.
+]]
 function utils.modelImageBox(
     x, y, w, h,
     color, title, imagewidth, imageheight, imagealign, bgcolor,
     titlealign, titlecolor, titlepos,
     imagepadding, imagepaddingleft, imagepaddingright, imagepaddingtop, imagepaddingbottom
 )
-    -- Draw background
     local isDARKMODE = lcd.darkMode()
     local resolvedBg = utils.resolveColor(bgcolor)
     lcd.color(resolvedBg or (isDARKMODE and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)))
     lcd.drawFilledRectangle(x, y, w, h)
 
-    -- Padding resolution (default 0)
     imagepaddingleft = imagepaddingleft or imagepadding or 0
     imagepaddingright = imagepaddingright or imagepadding or 0
     imagepaddingtop = imagepaddingtop or imagepadding or 0
@@ -348,7 +394,6 @@ function utils.modelImageBox(
     local region_w = w - imagepaddingleft - imagepaddingright
     local region_h = h - imagepaddingtop - imagepaddingbottom
 
-    -- Figure out best image path
     local craftName = rfsuite and rfsuite.session and rfsuite.session.craftName
     local modelID = rfsuite and rfsuite.session and rfsuite.session.modelID
     local image1 = craftName and ("/bitmaps/models/" .. craftName .. ".png") or nil
@@ -367,24 +412,21 @@ function utils.modelImageBox(
         local align = imagealign or "center"
         local img_x, img_y = region_x, region_y
 
-        -- Horizontal alignment within padded region
         if align == "center" then
             img_x = region_x + (region_w - img_w) / 2
         elseif align == "right" then
             img_x = region_x + region_w - img_w
-        else -- left
+        else
             img_x = region_x
         end
-        -- Vertical alignment within padded region
         if align == "center" then
             img_y = region_y + (region_h - img_h) / 2
         elseif align == "bottom" then
             img_y = region_y + region_h - img_h
-        else -- top
+        else
             img_y = region_y
         end
 
-        -- Draw title if present (top or bottom)
         if title and title ~= "" then
             lcd.font(FONT_S)
             local tsize_w, tsize_h = lcd.getTextSize(title)
@@ -393,7 +435,7 @@ function utils.modelImageBox(
                 sx = x
             elseif titlealign == "right" then
                 sx = x + w - tsize_w
-            else -- center
+            else
                 sx = x + (w - tsize_w) / 2
             end
             local useColor = utils.resolveColor(titlecolor) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
@@ -408,12 +450,10 @@ function utils.modelImageBox(
 
         lcd.drawBitmap(img_x, img_y, bitmapPtr, img_w, img_h)
     else
-        -- Fallback: draw an error if no image
         lcd.font(FONT_S)
         lcd.color(lcd.RGB(200,50,50))
         lcd.drawText(x + 10, y + 10, "No Model Image")
     end
 end
-
 
 return utils
