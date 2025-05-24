@@ -232,6 +232,221 @@ function render.functionBox(x, y, w, h, box)
 end
 
 --[[
+    Draws a telemetry data box.
+    Applies any transformation to the value if specified.
+    Args: x, y, w, h - box position and size
+          box - box definition table (includes source, transform, color, etc.)
+          telemetry - telemetry source accessor
+]]
+function render.gaugeBox(x, y, w, h, box, telemetry)
+    -- Get value
+    local value = nil
+    if box.source then
+        local sensor = telemetry and telemetry.getSensorSource(box.source)
+        value = sensor and sensor:value()
+        if type(box.transform) == "string" and math[box.transform] then
+            value = value and math[box.transform](value)
+        elseif type(box.transform) == "function" then
+            value = value and box.transform(value)
+        elseif type(box.transform) == "number" then
+            value = value and box.transform(value)
+        end
+    end
+
+    local displayValue = value
+    local displayUnit = box.unit
+    if value == nil then
+        displayValue = box.novalue or "-"
+        displayUnit = nil
+    end
+
+    -- --- Padding for gauge area
+    local gpad_left = box.gaugepaddingleft or box.gaugepadding or 0
+    local gpad_right = box.gaugepaddingright or box.gaugepadding or 0
+    local gpad_top = box.gaugepaddingtop or box.gaugepadding or 0
+    local gpad_bottom = box.gaugepaddingbottom or box.gaugepadding or 0
+
+    -- --- Figure out title area height (for gaugebelowtitle)
+    local title_area_top = 0
+    local title_area_bottom = 0
+    if box.gaugebelowtitle and box.title then
+        lcd.font(FONT_XS)
+        local _, tsizeH = lcd.getTextSize(box.title)
+        local titlepadding = box.titlepadding or 0
+        local titlepaddingtop = box.titlepaddingtop or titlepadding
+        local titlepaddingbottom = box.titlepaddingbottom or titlepadding
+        if box.titlepos == "bottom" then
+            title_area_bottom = tsizeH + titlepaddingtop + titlepaddingbottom
+        else
+            title_area_top = tsizeH + titlepaddingtop + titlepaddingbottom
+        end
+    end
+
+    local gauge_x = x + gpad_left
+    local gauge_y = y + gpad_top + title_area_top
+    local gauge_w = w - gpad_left - gpad_right
+    local gauge_h = h - gpad_top - gpad_bottom - title_area_top - title_area_bottom
+
+    -- --- Draw overall box background
+    local bgColor = utils.resolveColor(box.bgcolor) or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
+    lcd.color(bgColor)
+    lcd.drawFilledRectangle(x, y, w, h)
+
+    -- --- Threshold gauge color logic (+ threshold value text color)
+    local gaugeColor = utils.resolveColor(box.gaugecolor) or lcd.RGB(255, 204, 0)
+    local valueTextColor = utils.resolveColor(box.color) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
+    local matchingTextColor = nil
+    if box.thresholds and value ~= nil then
+        for _, t in ipairs(box.thresholds) do
+            if value < t.value then
+                gaugeColor = utils.resolveColor(t.color) or gaugeColor
+                if t.textcolor then matchingTextColor = utils.resolveColor(t.textcolor) end
+                break
+            end
+            gaugeColor = utils.resolveColor(t.color) or gaugeColor
+            if t.textcolor then matchingTextColor = utils.resolveColor(t.textcolor) end
+        end
+    end
+
+    -- --- Draw gauge background & fill ONLY if gauge percent > 0
+    local gaugeMin = box.gaugemin or 0
+    local gaugeMax = box.gaugemax or 100
+    local gaugeOrientation = box.gaugeorientation or "vertical"  -- or "horizontal"
+    local percent = 0
+    if value ~= nil and gaugeMax ~= gaugeMin then
+        percent = (value - gaugeMin) / (gaugeMax - gaugeMin)
+        if percent < 0 then percent = 0 end
+        if percent > 1 then percent = 1 end
+    end
+    if percent > 0 then
+        -- gauge area bg color
+        local gaugeBgColor = utils.resolveColor(box.gaugebgcolor) or bgColor
+        lcd.color(gaugeBgColor)
+        lcd.drawFilledRectangle(gauge_x, gauge_y, gauge_w, gauge_h)
+        -- gauge fill
+        lcd.color(gaugeColor)
+        if gaugeOrientation == "vertical" then
+            local fillH = math.floor(gauge_h * percent)
+            lcd.drawFilledRectangle(gauge_x, gauge_y + gauge_h - fillH, gauge_w, fillH)
+        else -- horizontal
+            local fillW = math.floor(gauge_w * percent)
+            lcd.drawFilledRectangle(gauge_x, gauge_y, fillW, gauge_h)
+        end
+    end
+
+    -- --- Overlay value text (with clever threshold coloring)
+    local valuepadding = box.valuepadding or 0
+    local valuepaddingleft = box.valuepaddingleft or valuepadding
+    local valuepaddingright = box.valuepaddingright or valuepadding
+    local valuepaddingtop = box.valuepaddingtop or valuepadding
+    local valuepaddingbottom = box.valuepaddingbottom or valuepadding
+
+    if displayValue ~= nil then
+        local str = tostring(displayValue) .. (displayUnit or "")
+        local unitIsDegree = (displayUnit == "°" or (displayUnit and displayUnit:find("°")))
+        local strForWidth = unitIsDegree and (tostring(displayValue) .. "0") or str
+
+        local availH = h - valuepaddingtop - valuepaddingbottom
+        local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL, FONT_XXXXL}
+
+        lcd.font(FONT_XL)
+        local _, xlFontHeight = lcd.getTextSize("8")
+        if xlFontHeight > availH * 0.5 then
+            fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L}
+        end
+
+        local maxW, maxH = w - valuepaddingleft - valuepaddingright, availH
+        local bestFont, bestW, bestH = FONT_XXS, 0, 0
+        for _, font in ipairs(fonts) do
+            lcd.font(font)
+            local tW, tH = lcd.getTextSize(strForWidth)
+            if tW <= maxW and tH <= maxH then
+                bestFont, bestW, bestH = font, tW, tH
+            else
+                break
+            end
+        end
+        lcd.font(bestFont)
+        local region_x = x + valuepaddingleft
+        local region_y = y + valuepaddingtop
+        local region_w = w - valuepaddingleft - valuepaddingright
+        local region_h = h - valuepaddingtop - valuepaddingbottom
+
+        local sy = region_y + (region_h - bestH) / 2
+        local align = (box.valuealign or "center"):lower()
+        local sx
+        if align == "left" then
+            sx = region_x
+        elseif align == "right" then
+            sx = region_x + region_w - bestW
+        else
+            sx = region_x + (region_w - bestW) / 2
+        end
+
+        -- -------- Smart threshold text color based on gauge fill coverage
+        local useThresholdTextColor = false
+        if matchingTextColor and percent > 0 then
+            local tW, tH = bestW, bestH
+            if gaugeOrientation == "vertical" then
+                local text_top = sy
+                local text_bottom = sy + tH
+                local fill_top = gauge_y + gauge_h * (1 - percent)
+                local fill_bottom = gauge_y + gauge_h
+                local overlap = math.min(text_bottom, fill_bottom) - math.max(text_top, fill_top)
+                if overlap > tH / 2 then
+                    useThresholdTextColor = true
+                end
+            else -- horizontal
+                local text_left = sx
+                local text_right = sx + tW
+                local fill_left = gauge_x
+                local fill_right = gauge_x + gauge_w * percent
+                local overlap = math.min(text_right, fill_right) - math.max(text_left, fill_left)
+                if overlap > tW / 2 then
+                    useThresholdTextColor = true
+                end
+            end
+        end
+        if useThresholdTextColor then
+            valueTextColor = matchingTextColor
+        end
+
+        lcd.color(valueTextColor)
+        lcd.drawText(sx, sy, str)
+    end
+
+    -- --- Overlay title (top or bottom, mirrors utils.telemetryBox)
+    if box.title then
+        local titlepadding = box.titlepadding or 0
+        local titlepaddingleft = box.titlepaddingleft or titlepadding
+        local titlepaddingright = box.titlepaddingright or titlepadding
+        local titlepaddingtop = box.titlepaddingtop or titlepadding
+        local titlepaddingbottom = box.titlepaddingbottom or titlepadding
+
+        lcd.font(FONT_XS)
+        local tsizeW, tsizeH = lcd.getTextSize(box.title)
+        local region_x = x + titlepaddingleft
+        local region_w = w - titlepaddingleft - titlepaddingright
+        local sy = (box.titlepos == "bottom")
+            and (y + h - titlepaddingbottom - tsizeH)
+            or (y + titlepaddingtop)
+        local align = (box.titlealign or "center"):lower()
+        local sx
+        if align == "left" then
+            sx = region_x
+        elseif align == "right" then
+            sx = region_x + region_w - tsizeW
+        else
+            sx = region_x + (region_w - tsizeW) / 2
+        end
+        lcd.color(utils.resolveColor(box.titlecolor) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90)))
+        lcd.drawText(sx, sy, box.title)
+    end
+end
+
+
+
+--[[
     Dispatcher for rendering boxes by type.
     Looks up the render function from a map and calls it with box details.
     Args: boxType - the box type string (e.g., "telemetry", "text", etc.)
@@ -250,6 +465,7 @@ function render.renderBox(boxType, x, y, w, h, box, telemetry)
         apiversion = render.apiversionBox,
         session = render.sessionBox,
         blackbox = render.blackboxBox,
+        gauge = render.gaugeBox,
         ["function"] = render.functionBox,
     }
     local fn = funcMap[boxType]
