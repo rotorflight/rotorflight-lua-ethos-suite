@@ -41,16 +41,16 @@ local boxes = {
         - title            : Label shown above/below the dial
         - unit             : Unit shown after the value (e.g. "v", "%")
         - titlepos         : "top" or "bottom"
-        - style            : Which dial design (1–4) to use
         - source           : Telemetry field name
+        - bgcolor         : Background color (optional)
         - min, max         : Value range for angle mapping (optional)
         - aspect           : "fit" (default), "fill", or "stretch"
         - align            : "center" (default), "top-left", "bottom-right", etc.
         - transform        : "floor", "ceil", or "round" to adjust value display or  function
-        - panelpath        : "SCRIPTS:/mydials/custom_panel.png"  optonal custom panel background
-        - pointerpath      : "SCRIPTS:/mydials/custom_pointer.png"  optional custom pointer image
         - offsetx          : Horizontal offset for custom pointer (default 0)
         - offsety          : Vertical offset for custom pointer (default 0)
+        - dial = 2,  -- or "custom/path.png", or function() return "..." end
+        - pointer = "widgets/dashboard/gfx/pointers/needle_red.png",  -- or 3, or function()...
     ]]
 
     {
@@ -59,10 +59,11 @@ local boxes = {
         title = "Voltage",
         unit = "v",
         titlepos = "bottom",
-        style = 1,
         source = "voltage",
         aspect = "fit",
         align = "center",
+        dial = 2,  
+        pointer = 1,
         min = function()
             local cfg = rfsuite.session.batteryConfig
 
@@ -85,6 +86,8 @@ local boxes = {
         col = 2, row = 1,
         type = "dial",
         title = "Fuel",
+        dial = 3,  
+        pointer = 3,        
         unit = "%",
         titlepos = "bottom",
         style = 2,
