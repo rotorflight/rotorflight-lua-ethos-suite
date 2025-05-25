@@ -164,4 +164,24 @@ function ini.ini_tables_equal(a, b)
     return true
 end
 
+function ini.getvalue(data, section, key)
+    if data and section and key then
+        if data[section] and data[section][key] ~= nil then
+            return data[section][key]
+        end
+    end
+    return nil
+end
+
+function ini.section_exists(data, section)
+    return data and data[section] ~= nil
+end
+
+function ini.setvalue(data, section, key, value)
+    if not data[section] then
+        data[section] = {}
+    end
+    data[section][key] = value
+end
+
 return ini

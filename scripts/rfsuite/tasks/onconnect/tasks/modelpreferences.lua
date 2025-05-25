@@ -56,6 +56,7 @@ function modelpreferences.wakeup()
 
             local updated_ini = rfsuite.ini.merge_ini_tables(master_ini, slave_ini)
             rfsuite.session.modelPreferences = updated_ini
+            rfsuite.session.modelPreferencesFile = modelpref_file
 
             if not rfsuite.ini.ini_tables_equal(master_ini, slave_ini) then
                 rfsuite.ini.save_ini_file(modelpref_file, updated_ini)
