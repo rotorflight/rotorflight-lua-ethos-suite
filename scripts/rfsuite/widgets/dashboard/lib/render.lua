@@ -764,6 +764,138 @@ function render.flightCountBox(x, y, w, h, box)
     )
 end
 
+-- Draws an arc from angle1 to angle2 (degrees, counter-clockwise, 0°=right)
+-- Draws a thick arc by stamping filled circles along the arc path.
+function render.drawArc(cx, cy, radius, thickness, angleStart, angleEnd, color)
+    local step = 4  -- degrees per circle; decrease for smoother, increase for speed
+    local rad_thick = thickness / 2
+    angleStart = math.rad(angleStart)
+    angleEnd = math.rad(angleEnd)
+    if angleEnd > angleStart then
+        angleEnd = angleEnd - 2 * math.pi
+    end
+    lcd.color(color or lcd.RGB(255,128,0))
+    for a = angleStart, angleEnd, -math.rad(step) do
+        local x = cx + radius * math.cos(a)
+        local y = cy - radius * math.sin(a)
+        lcd.drawFilledCircle(x, y, rad_thick)
+    end
+    -- Ensure end cap is filled
+    local x_end = cx + radius * math.cos(angleEnd)
+    local y_end = cy - radius * math.sin(angleEnd)
+    lcd.drawFilledCircle(x_end, y_end, rad_thick)
+end
+
+
+function render.arcGaugeBox(x, y, w, h, box, telemetry)
+    local cx, cy = x + w/2, y + h/2
+    local radius = math.min(w, h) * 0.42
+    local thickness = math.max(6, radius * 0.22)
+
+    -- Get values using getParam for function/constant support
+    local min = getParam(box, "min") or 0
+    local max = getParam(box, "max") or 100
+
+    -- Value: support function for box.value or box.source
+    local value = nil
+    local source = getParam(box, "source")
+    if source and telemetry then
+        if type(source) == "function" then
+            value = source(box, telemetry)
+        else
+            local sensor = telemetry.getSensorSource(source)
+            value = sensor and sensor:value() or min
+        end
+    else
+        value = getParam(box, "value") or min
+    end
+
+    local percent = (value - min) / (max - min)
+    percent = math.max(0, math.min(1, percent))
+
+    -- Arc angles
+    local startAngle = getParam(box, "startAngle") or 135
+    local sweep = getParam(box, "sweep") or 270
+    local endAngle = startAngle - sweep * percent
+
+    -- Draw base (background) arc
+    render.drawArc(
+        cx, cy, radius, thickness,
+        startAngle, startAngle - sweep,
+        utils.resolveColor(getParam(box, "arcBgColor")) or lcd.RGB(55,55,55)
+    )
+
+    -- Draw value arc (with thresholds, supporting function in thresholds)
+    local arcColor = utils.resolveColor(getParam(box, "arcColor")) or lcd.RGB(255,128,0)
+    local thresholds = getParam(box, "thresholds")
+    if thresholds and value ~= nil then
+        for _, t in ipairs(thresholds) do
+            local t_val = type(t.value) == "function" and t.value(box, value) or t.value
+            local t_color = type(t.color) == "function" and t.color(box, value) or t.color
+            if value < t_val then
+                arcColor = utils.resolveColor(t_color) or arcColor
+                break
+            end
+        end
+    end
+    if percent > 0 then
+        render.drawArc(cx, cy, radius, thickness, startAngle, endAngle, arcColor)
+    end
+
+    -- Value text (centered)
+    lcd.font(FONT_XL)
+    lcd.color(utils.resolveColor(getParam(box, "textColor")) or lcd.RGB(255,255,255))
+    local valueFormat = getParam(box, "valueFormat")
+    local unit = getParam(box, "unit") or ""
+    local valStr
+    if valueFormat then
+        valStr = valueFormat(value)
+    else
+        valStr = string.format("%.1f", value)
+    end
+    valStr = valStr .. unit
+    local tw, th = lcd.getTextSize(valStr)
+    lcd.drawText(cx - tw/2, cy - th/2, valStr)
+
+    -- Title above, subText below
+    local title = getParam(box, "title")
+    if title then
+        local titlepadding = getParam(box, "titlepadding") or 0
+        local titlepaddingleft = getParam(box, "titlepaddingleft") or titlepadding
+        local titlepaddingright = getParam(box, "titlepaddingright") or titlepadding
+        local titlepaddingtop = getParam(box, "titlepaddingtop") or titlepadding
+        local titlepaddingbottom = getParam(box, "titlepaddingbottom") or titlepadding
+
+        lcd.font(FONT_XS)
+        local tsizeW, tsizeH = lcd.getTextSize(title)
+        local region_x = x + titlepaddingleft
+        local region_w = w - titlepaddingleft - titlepaddingright
+        local sy = (getParam(box, "titlepos") == "bottom")
+            and (y + h - titlepaddingbottom - tsizeH)
+            or (y + titlepaddingtop)
+        local align = (getParam(box, "titlealign") or "center"):lower()
+        local sx
+        if align == "left" then
+            sx = region_x
+        elseif align == "right" then
+            sx = region_x + region_w - tsizeW
+        else
+            sx = region_x + (region_w - tsizeW) / 2
+        end
+        lcd.color(utils.resolveColor(getParam(box, "titlecolor")) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90)))
+        lcd.drawText(sx, sy, title)
+    end
+    local subText = getParam(box, "subText")
+    if subText then
+        lcd.font(FONT_XS)
+        local tw, th = lcd.getTextSize(subText)
+        lcd.drawText(cx - tw/2, cy + radius * 0.55, subText)
+    end
+end
+
+
+
+
 -- Dispatcher for rendering boxes by type.
 function render.renderBox(boxType, x, y, w, h, box, telemetry)
     local funcMap = {
@@ -781,6 +913,7 @@ function render.renderBox(boxType, x, y, w, h, box, telemetry)
         voltagegauge = render.functionVoltageGauge,
         flightcount = render.flightCountBox,
         dial = render.dialBox,
+        arcgauge = render.arcGaugeBox,
         ["function"] = render.functionBox,
     }
     local fn = funcMap[boxType]
