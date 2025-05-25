@@ -130,16 +130,57 @@ function dashboard.renderLayout(widget, config)
 
     utils.setBackgroundColourBasedOnTheme()
 
-    local function getBoxPosition(col, row)
-        local x = math.floor((col - 1) * (boxWidth + PADDING))
-        local y = math.floor(PADDING + (row - 1) * (boxHeight + PADDING))
-        return x, y
+    -- Helper to get box width/height (percent, pixel, or grid)
+    local function getBoxSize(box)
+        if box.w_pct and box.h_pct then
+            local wp = box.w_pct
+            local hp = box.h_pct
+            if wp > 1 then wp = wp / 100 end
+            if hp > 1 then hp = hp / 100 end
+            local w = math.floor(wp * WIDGET_W)
+            local h = math.floor(hp * WIDGET_H)
+            return w, h
+        elseif box.w and box.h then
+            return tonumber(box.w) or boxWidth, tonumber(box.h) or boxHeight
+        elseif box.colspan or box.rowspan then
+            local w = math.floor((box.colspan or 1) * boxWidth + ((box.colspan or 1) - 1) * PADDING)
+            local h = math.floor((box.rowspan or 1) * boxHeight + ((box.rowspan or 1) - 1) * PADDING)
+            return w, h
+        else
+            return boxWidth, boxHeight
+        end
+    end
+
+    -- Helper to get box position (percent, pixel, or grid)
+    local function getBoxPosition(box, w, h)
+        -- Priority: x_pct/y_pct > x/y > col/row
+        if box.x_pct and box.y_pct then
+            local xp = box.x_pct
+            local yp = box.y_pct
+            if xp > 1 then xp = xp / 100 end
+            if yp > 1 then yp = yp / 100 end
+            -- x/y is top-left corner; w/h is known
+            local x = math.floor(xp * (WIDGET_W - (w or boxWidth)))
+            local y = math.floor(yp * (WIDGET_H - (h or boxHeight)))
+            return x, y
+        elseif box.x and box.y then
+            local x = tonumber(box.x) or 0
+            local y = tonumber(box.y) or 0
+            return x, y
+        elseif box.col and box.row then
+            local col = box.col or 1
+            local row = box.row or 1
+            local x = math.floor((col - 1) * (boxWidth + PADDING))
+            local y = math.floor(PADDING + (row - 1) * (boxHeight + PADDING))
+            return x, y
+        else
+            return 0, 0
+        end
     end
 
     for i, box in ipairs(resolve(config.boxes) or {}) do
-        local x, y = getBoxPosition(box.col, box.row)
-        local w = math.floor((box.colspan or 1) * boxWidth + ((box.colspan or 1) - 1) * PADDING)
-        local h = math.floor((box.rowspan or 1) * boxHeight + ((box.rowspan or 1) - 1) * PADDING)
+        local w, h = getBoxSize(box)
+        local x, y = getBoxPosition(box, w, h)
 
         dashboard.boxRects[#dashboard.boxRects + 1] = { x = x, y = y, w = w, h = h, box = box }
         dashboard.render.renderBox(box.type, x, y, w, h, box, telemetry)
