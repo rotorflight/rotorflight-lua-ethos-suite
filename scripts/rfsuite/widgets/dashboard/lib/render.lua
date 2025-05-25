@@ -266,29 +266,23 @@ function render.functionBox(x, y, w, h, box)
 end
 
 function render.drawFilledRoundedRectangle(x, y, w, h, r)
-    -- Ensure integer math for safety
     x = math.floor(x + 0.5)
     y = math.floor(y + 0.5)
     w = math.floor(w + 0.5)
     h = math.floor(h + 0.5)
     r = math.floor(r + 0.5)
     if r > 0 then
-        -- Center rectangle
         lcd.drawFilledRectangle(x + r, y, w - 2*r, h)
-        -- Side rectangles (left/right)
         lcd.drawFilledRectangle(x, y + r, r, h - 2*r)
         lcd.drawFilledRectangle(x + w - r, y + r, r, h - 2*r)
-        -- Corners: never draw beyond the outer box
-        lcd.drawFilledCircle(x + r,     y + r,     r)
-        lcd.drawFilledCircle(x + w - r - 1, y + r,     r)
-        lcd.drawFilledCircle(x + r,     y + h - r - 1, r)
+        lcd.drawFilledCircle(x + r, y + r, r)
+        lcd.drawFilledCircle(x + w - r - 1, y + r, r)
+        lcd.drawFilledCircle(x + r, y + h - r - 1, r)
         lcd.drawFilledCircle(x + w - r - 1, y + h - r - 1, r)
     else
         lcd.drawFilledRectangle(x, y, w, h)
     end
 end
-
-
 
 function render.gaugeBox(x, y, w, h, box, telemetry)
     x, y = applyOffset(x, y, box)
@@ -326,7 +320,7 @@ function render.gaugeBox(x, y, w, h, box, telemetry)
     local gpad_top    = getParam(box, "gaugepaddingtop")    or getParam(box, "gaugepadding") or 0
     local gpad_bottom = getParam(box, "gaugepaddingbottom") or getParam(box, "gaugepadding") or 0
 
-    -- Figure out title area height (for gaugebelowtitle)
+    -- Title area height if needed
     local title_area_top = 0
     local title_area_bottom = 0
     if getParam(box, "gaugebelowtitle") and getParam(box, "title") then
@@ -347,12 +341,11 @@ function render.gaugeBox(x, y, w, h, box, telemetry)
     local gauge_w = w - gpad_left - gpad_right
     local gauge_h = h - gpad_top - gpad_bottom - title_area_top - title_area_bottom
 
-    -- Draw overall box background (always square corners)
-    local bgColor = utils.resolveColor(getParam(box, "bgcolor")) or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
-    lcd.color(bgColor)
-    lcd.drawFilledRectangle(x, y, w, h)
+    local roundradius = getParam(box, "roundradius") or 0
 
-    -- Threshold gauge color logic (+ threshold value text color)
+    -- Colors
+    local bgColor = utils.resolveColor(getParam(box, "bgcolor")) or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
+    local gaugeBgColor = utils.resolveColor(getParam(box, "gaugebgcolor")) or bgColor
     local gaugeColor = utils.resolveColor(getParam(box, "gaugecolor")) or lcd.RGB(255, 204, 0)
     local valueTextColor = utils.resolveColor(getParam(box, "color")) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
     local matchingTextColor = nil
@@ -370,7 +363,15 @@ function render.gaugeBox(x, y, w, h, box, telemetry)
         end
     end
 
-    -- Draw gauge background & fill ONLY if gauge percent > 0
+    -- Draw overall box background (outer rectangle, always square)
+    lcd.color(bgColor)
+    lcd.drawFilledRectangle(x, y, w, h)
+
+    -- Draw rounded background for the gauge (full size)
+    lcd.color(gaugeBgColor)
+    render.drawFilledRoundedRectangle(gauge_x, gauge_y, gauge_w, gauge_h, roundradius)
+
+    -- Draw the gauge fill as a rounded rectangle (or circle/capsule)
     local gaugeMin = getParam(box, "gaugemin") or 0
     local gaugeMax = getParam(box, "gaugemax") or 100
     local gaugeOrientation = getParam(box, "gaugeorientation") or "vertical"
@@ -380,33 +381,35 @@ function render.gaugeBox(x, y, w, h, box, telemetry)
         if percent < 0 then percent = 0 end
         if percent > 1 then percent = 1 end
     end
-    if percent > 0 then
-        local gaugeBgColor = utils.resolveColor(getParam(box, "gaugebgcolor")) or bgColor
-        lcd.color(gaugeBgColor)
-        lcd.drawFilledRectangle(gauge_x, gauge_y, gauge_w, gauge_h)
 
+    if percent > 0 then
         lcd.color(gaugeColor)
-        local roundradius = getParam(box, "roundradius") or 0
         if gaugeOrientation == "vertical" then
             local fillH = math.floor(gauge_h * percent)
-            local useRadius = (roundradius > 0) and (gauge_w > 2*roundradius and fillH > 2*roundradius)
-            if useRadius then
-                render.drawFilledRoundedRectangle(gauge_x, gauge_y + gauge_h - fillH, gauge_w, fillH, roundradius)
-            else
-                lcd.drawFilledRectangle(gauge_x, gauge_y + gauge_h - fillH, gauge_w, fillH)
+            local fillY = gauge_y + gauge_h - fillH
+            if fillH > 2*roundradius then
+                render.drawFilledRoundedRectangle(gauge_x, fillY, gauge_w, fillH, roundradius)
+            elseif fillH > 0 then
+                -- Capsule or circle
+                local cx = gauge_x + gauge_w/2
+                local cy = fillY + fillH/2
+                local r = fillH/2
+                lcd.drawFilledCircle(cx, cy, r)
             end
         else
             local fillW = math.floor(gauge_w * percent)
-            local useRadius = (roundradius > 0) and (fillW > 2*roundradius and gauge_h > 2*roundradius)
-            if useRadius then
+            if fillW > 2*roundradius then
                 render.drawFilledRoundedRectangle(gauge_x, gauge_y, fillW, gauge_h, roundradius)
-            else
-                lcd.drawFilledRectangle(gauge_x, gauge_y, fillW, gauge_h)
+            elseif fillW > 0 then
+                local cx = gauge_x + fillW/2
+                local cy = gauge_y + gauge_h/2
+                local r = fillW/2
+                lcd.drawFilledCircle(cx, cy, r)
             end
         end
     end
 
-    -- Overlay value text (with clever threshold coloring)
+    -- Overlay value text (same as before)
     local valuepadding = getParam(box, "valuepadding") or 0
     local valuepaddingleft = getParam(box, "valuepaddingleft") or valuepadding
     local valuepaddingright = getParam(box, "valuepaddingright") or valuepadding
