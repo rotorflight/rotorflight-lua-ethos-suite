@@ -75,6 +75,7 @@ local sensorTable = {
         mandatory = true,
         maxmin_trigger = nil,
         switch_alerts = true,
+        unit = UNIT_DB,
         sensors = {
             sim = {
                 { appId = 0xF101, subId = 0 },
@@ -126,6 +127,7 @@ local sensorTable = {
         maxmin_trigger = nil,
         set_telemetry_sensors = 3,
         switch_alerts = true,
+        unit = UNIT_VOLT,
         sensors = {
             sim = {
                 { uid = 0x5002, unit = UNIT_VOLT, dec = 2,
@@ -155,6 +157,7 @@ local sensorTable = {
         maxmin_trigger = true,
         set_telemetry_sensors = 60,
         switch_alerts = true,
+        unit = UNIT_RPM,
         sensors = {
             sim = {
                 { uid = 0x5003, unit = UNIT_RPM, dec = nil,
@@ -178,6 +181,7 @@ local sensorTable = {
         maxmin_trigger = true,
         set_telemetry_sensors = 18,
         switch_alerts = true,
+        unit = UNIT_AMPERE,
         sensors = {
             sim = {
                 { uid = 0x5004, unit = UNIT_AMPERE, dec = 0,
@@ -205,6 +209,7 @@ local sensorTable = {
         maxmin_trigger = true,
         set_telemetry_sensors = 23,
         switch_alerts = true,
+        unit = UNIT_DEGREE,
         sensors = {
             sim = {
                 { uid = 0x5005, unit = UNIT_DEGREE, dec = 0,
@@ -230,6 +235,7 @@ local sensorTable = {
         maxmin_trigger = true,
         set_telemetry_sensors = 52,
         switch_alerts = true,
+        unit = UNIT_DEGREE,
         sensors = {
             sim = {
                 { uid = 0x5006, unit = UNIT_DEGREE, dec = 0,
@@ -254,6 +260,7 @@ local sensorTable = {
         maxmin_trigger = nil,
         set_telemetry_sensors = 6,
         switch_alerts = true,
+        unit = UNIT_PERCENT,
         sensors = {
             sim = {
                 { uid = 0x5007, unit = UNIT_PERCENT, dec = 0,
@@ -276,6 +283,7 @@ local sensorTable = {
         maxmin_trigger = nil,
         set_telemetry_sensors = 5,
         switch_alerts = true,
+        unit = UNIT_MILLIAMPERE_HOUR,
         sensors = {
             sim = {
                 { uid = 0x5008, unit = UNIT_MILLIAMPERE_HOUR, dec = 0,
@@ -456,6 +464,7 @@ local sensorTable = {
         maxmin_trigger = true,
         set_telemetry_sensors = nil,
         switch_alerts = true,
+        unit = UNIT_METER,
         sensors = {
             sim = {
                 { uid = 0x5016, unit = UNIT_METER, dec = 0,
@@ -479,6 +488,7 @@ local sensorTable = {
         maxmin_trigger = true,
         set_telemetry_sensors = nil,
         switch_alerts = true,
+        unit = UNIT_VOLT,
         sensors = {
             sim = {
                 { uid = 0x5017, unit = UNIT_VOLT, dec = 2,
@@ -538,9 +548,27 @@ end
 function telemetry.listSensors()
     local sensorList = {}
 
-    for key, sensor in pairs(sensorTable) do table.insert(sensorList, {key = key, name = sensor.name, mandatory = sensor.mandatory, set_telemetry_sensors = sensor.set_telemetry_sensors }) end
+    for key, sensor in pairs(sensorTable) do 
+        table.insert(sensorList, {key = key, name = sensor.name, mandatory = sensor.mandatory, set_telemetry_sensors = sensor.set_telemetry_sensors }) end
 
     return sensorList
+end
+
+--[[
+    Function: telemetry.listSensors
+    Description: Generates a list of sensors from the sensorTable.
+    Returns: A table map containing audio units.
+]]
+function telemetry.listSensorAudioUnits()
+    local sensorMap = {}
+
+    for key, sensor in pairs(sensorTable) do 
+        if sensor.unit  then
+            sensorMap[key] = sensor.unit
+        end    
+    end
+
+    return sensorMap
 end
 
 --[[
