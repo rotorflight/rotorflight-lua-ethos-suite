@@ -28,6 +28,7 @@ local lastValues = {}
 local userpref = rfsuite.preferences
 
 local telemetryStartTime = nil
+local switchStartTime = nil
 
 -- Tables to store last play times and previous states
 local lastPlayTime = lastPlayTime or {}
@@ -193,43 +194,48 @@ function events.wakeup()
             eventTable.units = rfsuite.tasks.telemetry.listSensorAudioUnits() 
         end
 
-
-        -- Handle switch events
-        for key, sensor in pairs(eventTable.switches) do
-            local currentState = sensor:state()             -- true if switch is ON
-            local prevState = lastSwitchState[key] or false
-            local currentTime = os.clock()                  -- time in seconds
-            local lastTime = lastPlayTime[key] or 0
-            local shouldPlay = false
-
-            if currentState then
-                -- If switch was just toggled ON: play immediately
-                if not prevState then
-                    shouldPlay = true
-                -- If switch is held ON: throttle to once every 10s
-                elseif (currentTime - lastTime) >= 10 then
-                    shouldPlay = true
-                end
-
-                if shouldPlay then
-                    local sensorSrc = rfsuite.tasks.telemetry.getSensorSource(key)
-                    local value = sensorSrc:value()
-                    if value and type(value) == "number" then
-
-                        local unit = eventTable.units[key]
-                        local decimals = tonumber(sensorSrc:decimals())
-
-                        system.playNumber(value,unit,decimals)
-                        lastPlayTime[key] = currentTime
-                    
-                    end
-                end
-            end
-
-            -- Update state
-            lastSwitchState[key] = currentState
+        if switchStartTime == nil then
+            switchStartTime = currentTime
         end
 
+        -- Wait 5 seconds after telemety become active before processing switches
+        if (currentTime - switchStartTime) > 5 then
+            -- Handle switch events
+            for key, sensor in pairs(eventTable.switches) do
+                local currentState = sensor:state()             -- true if switch is ON
+                local prevState = lastSwitchState[key] or false
+                local currentTime = os.clock()                  -- time in seconds
+                local lastTime = lastPlayTime[key] or 0
+                local shouldPlay = false
+
+                if currentState then
+                    -- If switch was just toggled ON: play immediately
+                    if not prevState then
+                        shouldPlay = true
+                    -- If switch is held ON: throttle to once every 10s
+                    elseif (currentTime - lastTime) >= 10 then
+                        shouldPlay = true
+                    end
+
+                    if shouldPlay then
+                        local sensorSrc = rfsuite.tasks.telemetry.getSensorSource(key)
+                        local value = sensorSrc:value()
+                        if value and type(value) == "number" then
+
+                            local unit = eventTable.units[key]
+                            local decimals = tonumber(sensorSrc:decimals())
+
+                            system.playNumber(value,unit,decimals)
+                            lastPlayTime[key] = currentTime
+                        
+                        end
+                    end
+                end
+
+                -- Update state
+                lastSwitchState[key] = currentState
+            end
+        end
 
     else
         telemetryStartTime = nil  -- Reset when telemetry disconnects
