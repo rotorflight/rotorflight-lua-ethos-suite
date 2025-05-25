@@ -23,17 +23,13 @@ You can use the following `type` values for each box in your theme’s `boxes` a
 | `gauge`        | Draw a gauge (bar, horizontal or vertical), fully customizable                      | See **Manual Gauge** below                     |
 | `fuelgauge`    | **Simple:** Draw a ready-to-use fuel gauge with built-in thresholds and defaults    | See **Simple Gauge** below                     |
 | `voltagegauge` | **Simple:** Draw a ready-to-use voltage gauge with built-in thresholds and defaults | See **Simple Gauge** below                     |
+| `arcgauge`     | Draw a circular/semi-circular arc gauge with min, max, thresholds, and rich styling | See **Arc Gauge** below                        |
 
 **Example usage:**
 
 ```lua
 { type = "telemetry", source = "voltage", title = "VOLTAGE", unit = "V" }
-{ type = "session", source = "rx_rssi", title = "RSSI" }
-{ type = "governor", title = "Governor" }
-{ type = "blackbox", title = "Blackbox" }
-{ type = "fuelgauge", title = "Fuel", unit = "%", col = 1, row = 2 }
-{ type = "voltagegauge", title = "Voltage", unit = "V", col = 2, row = 2 }
-{ type = "function", value = function(x, y, w, h) lcd.drawText(x, y, "Custom!") end }
+{ type = "arcgauge", source = "voltage", arcColor = "red", startAngle = 225, arcThickness = 12, ... }
 ```
 
 > All box types can also use: `col`, `row`, `x_pct`, `y_pct`, `w_pct`, `h_pct`, `x`, `y`, `w`, `h`, `offsetx`, `offsety`, `colspan`, `rowspan`, `padding`, `color`, `bgcolor`, `title`, `unit`, `onpress`, and more.
@@ -125,9 +121,9 @@ layout = {
 
 ---
 
-## 🛠️ Gauges: Manual vs Simple Approach
+## 🛠️ Gauges: Manual, Simple, and Arc
 
-There are **two ways** to add gauge bars to your dashboard, depending on your needs:
+There are now **three ways** to add gauges to your dashboard:
 
 ### 1. **Full Manual Gauge (`type = "gauge"`)**
 
@@ -170,6 +166,49 @@ There are **two ways** to add gauge bars to your dashboard, depending on your ne
 
 You can override any parameter from the manual approach, but usually only `title`, `unit`, and `orientation` are needed.
 
+### 3. **Arc Gauge (`type = "arcgauge"`)**
+
+* **Use for**: Circular/semi-circular value gauge (like analog dials).
+* **Parameters:**
+
+  * `source`        : Telemetry field or function for value
+  * `gaugemin`      : Minimum value (number or function)
+  * `gaugemax`      : Maximum value (number or function)
+  * `unit`          : Display unit (e.g., "V", "A")
+  * `arcColor`      : Main color of arc (named string, lcd.RGB, or function)
+  * `arcBgColor`    : Background arc color (named string, lcd.RGB, or function)
+  * `arcThickness`  : Thickness of the arc in pixels (default: auto)
+  * `startAngle`    : Starting angle in degrees (0=right, 90=up, 180=left, 270=down; default: 135)
+  * `sweep`         : Degrees covered by the arc (default: 270)
+  * `thresholds`    : Table of `{ value, color }` to change color by value
+  * `title`         : Gauge label
+  * `titlepos`      : "top" or "bottom" (default: "top")
+  * `titlealign`    : "left", "center", or "right" (default: "center")
+  * `titlecolor`    : Title color
+  * `textColor`     : Color of the value text
+  * All standard position/sizing params supported (see above)
+
+**Example:**
+
+```lua
+{
+    type = "arcgauge",
+    col = 2, row = 2, rowspan = 2,
+    source = "voltage",
+    arcColor = "red",
+    arcBgColor = "gray",
+    arcThickness = 14,
+    gaugemin = 9.0,
+    gaugemax = 12.6,
+    startAngle = 225, -- Open at bottom
+    sweep = 270,
+    title = "VOLTAGE",
+    unit = "V",
+    titlepos = "bottom",
+    titlealign = "center"
+}
+```
+
 ---
 
 ## 📚 Box and Layout Options (Common Across Types)
@@ -183,7 +222,7 @@ You can override any parameter from the manual approach, but usually only `title
 * **color, titlecolor, bgcolor**: Value/text/background color.
 * **gaugemin, gaugemax**: Min/max value for bar fill (can be number or function).
 * **gaugecolor, gaugebgcolor**: Main and background color of the gauge bar.
-* **gaugeorientation**: `"vertical"` or `"horizontal"` (fill direction).
+* **gaugeorientation**: "vertical" or "horizontal" (fill direction).
 * **thresholds**: List of value breakpoints for dynamic color changes (see above).
 * **padding, titlealign, valuealign**: Fine-tune spacing and alignment.
 * **onpress**: Add a function to make any box selectable/clickable.
