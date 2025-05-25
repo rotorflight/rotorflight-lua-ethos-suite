@@ -225,6 +225,7 @@ rfsuite.session.batteryConfig = nil
     -- vbatmaxcellvoltage = nil
     -- lvcPercentage = nil
     -- consumptionWarningPercentage = nil
+rfsuite.session.modelPreferences = nil -- this is used to store the model preferences
 
 --- Retrieves the version information of the rfsuite module.
 --- 
