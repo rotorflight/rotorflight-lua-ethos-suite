@@ -1,0 +1,80 @@
+--[[
+ * Copyright (C) Rotorflight Project
+ *
+ *
+ * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ 
+ * Note.  Some icons have been sourced from https://www.flaticon.com/
+ * 
+]] --
+
+local modelpreferences = {}
+
+local modelpref_defaults ={
+    general ={
+        flightcount = 0,
+    }
+}
+
+function modelpreferences.wakeup()
+    -- quick exit if no apiVersion
+    if rfsuite.session.apiVersion == nil then return end    
+
+    --- check if we have a mcu_id
+    if rfsuite.session.mcu_id == nil then
+        return
+    end
+
+    if (rfsuite.session.modelPreferences == nil)  then
+             -- populate the model preferences variable
+            local modelpref_file = "SCRIPTS:/" .. rfsuite.config.preferences .. "/models/" .. rfsuite.session.mcu_id ..".ini"
+            rfsuite.utils.log("Preferences file: " .. modelpref_file, "info")
+
+            if not rfsuite.ini.dir_exists("SCRIPTS:/", rfsuite.config.preferences ) then
+                    rfsuite.utils.log("Creating preferences directory: " .. rfsuite.config.preferences, "info") 
+                    os.mkdir("SCRIPTS:/" .. rfsuite.config.preferences)
+            end              
+            if not rfsuite.ini.dir_exists("SCRIPTS:/", rfsuite.config.preferences .. "/models" ) then
+                    rfsuite.utils.log("Creating models directory: " .. rfsuite.config.preferences .. "/models", "info")
+                    os.mkdir("SCRIPTS:/" .. rfsuite.config.preferences .. "/models")
+            end   
+
+            local slave_ini = modelpref_defaults
+            local master_ini = {}            
+            if rfsuite.ini.file_exists(modelpref_file) then
+                master_ini = rfsuite.ini.load_ini_file(modelpref_file) or {}
+            end
+
+            local updated_ini = rfsuite.ini.merge_ini_tables(master_ini, slave_ini)
+            rfsuite.session.modelPreferences = updated_ini
+            rfsuite.session.modelPreferencesFile = modelpref_file
+
+            if not rfsuite.ini.ini_tables_equal(master_ini, slave_ini) then
+                rfsuite.ini.save_ini_file(modelpref_file, updated_ini)
+            end             
+
+
+    end
+
+end
+
+function modelpreferences.reset()
+    rfsuite.session.modelPreferences = nil
+end
+
+function modelpreferences.isComplete()
+    if rfsuite.session.modelPreferences ~= nil  then
+        return true
+    end
+end
+
+return modelpreferences

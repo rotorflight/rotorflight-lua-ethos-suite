@@ -746,6 +746,24 @@ function render.dialBox(x, y, w, h, box, telemetry)
 end
 
 
+function render.flightCountBox(x, y, w, h, box)
+    x, y = applyOffset(x, y, box)
+
+    local displayValue = rfsuite.ini.getvalue(rfsuite.session.modelPreferences, "general", "flightcount")
+    if displayValue == nil then
+        displayValue = getParam(box, "novalue") or "-"
+    end
+    utils.telemetryBox(
+        x, y, w, h,
+        getParam(box, "color"), getParam(box, "title"), displayValue, getParam(box, "unit"), getParam(box, "bgcolor"),
+        getParam(box, "titlealign"), getParam(box, "valuealign"), getParam(box, "titlecolor"), getParam(box, "titlepos"),
+        getParam(box, "titlepadding"), getParam(box, "titlepaddingleft"), getParam(box, "titlepaddingright"),
+        getParam(box, "titlepaddingtop"), getParam(box, "titlepaddingbottom"),
+        getParam(box, "valuepadding"), getParam(box, "valuepaddingleft"), getParam(box, "valuepaddingright"),
+        getParam(box, "valuepaddingtop"), getParam(box, "valuepaddingbottom")
+    )
+end
+
 -- Dispatcher for rendering boxes by type.
 function render.renderBox(boxType, x, y, w, h, box, telemetry)
     local funcMap = {
@@ -761,6 +779,7 @@ function render.renderBox(boxType, x, y, w, h, box, telemetry)
         gauge = render.gaugeBox,
         fuelgauge = render.functionFuelGuage,
         voltagegauge = render.functionVoltageGauge,
+        flightcount = render.flightCountBox,
         dial = render.dialBox,
         ["function"] = render.functionBox,
     }

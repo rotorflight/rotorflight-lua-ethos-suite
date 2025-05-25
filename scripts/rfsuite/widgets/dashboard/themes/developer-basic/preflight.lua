@@ -69,6 +69,8 @@ local boxes = {
     {col=3, row=2, type = "function", value=customRenderFunction, title = "FUNCTION", titlepos = "bottom"},
     {col=3, row=3, type="blackbox", title="BLACKBOX", nosource="-", titlepos="bottom", onpress=function() end},  
 
+    {col=4, row=1, type="flightcount", title="FLIGHT COUNT", nosource="-", titlepos="bottom"}, 
+
 }
 
         
