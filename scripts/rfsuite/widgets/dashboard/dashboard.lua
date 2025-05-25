@@ -377,6 +377,15 @@ end
     Manages box selection and onpress handlers, then delegates to theme if present.
 ]]
 function dashboard.event(widget, category, value, x, y)
+
+    local state = dashboard.flightmode or "preflight"
+    local module = loadedStateModules[state]
+
+    if state == "postflight" and category == EVT_KEY and value == 131 then
+        rfsuite.widgets.dashboard.flightmode = "preflight"
+        state = "preflight"
+    end
+
     if category == EVT_KEY then
         local indices = getOnpressBoxIndices()
         local count = #indices
@@ -444,8 +453,7 @@ function dashboard.event(widget, category, value, x, y)
         end
     end
 
-    local state = dashboard.flightmode or "preflight"
-    local module = loadedStateModules[state]
+
     if type(module) == "table" and type(module.event) == "function" then
         return module.event(widget, category, value, x, y)
     end
