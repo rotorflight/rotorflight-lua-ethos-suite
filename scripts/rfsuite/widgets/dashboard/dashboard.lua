@@ -33,6 +33,8 @@ dashboard.themeFallbackUsed = { preflight = false, inflight = false, postflight 
 dashboard.themeFallbackTime = { preflight = 0, inflight = 0, postflight = 0 }
 dashboard.flightmode = rfsuite.session.flightMode or "preflight" -- To be set by your state logic
 
+dashboard.currentWidgetPath = nil 
+
 dashboard.utils = assert(
     rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/lib/utils.lua")
 )()
@@ -201,10 +203,10 @@ end
 ]]
 local function load_state_script(theme_folder, state)
     local usedFallback = false
-
     local source, folder = theme_folder:match("([^/]+)/(.+)")
     local themeBasePath = (source == "user") and themesUserPath or themesBasePath
 
+    -- fallback if parsing failed
     if not source or not folder then
         theme_folder = dashboard.DEFAULT_THEME
         source, folder = theme_folder:match("([^/]+)/(.+)")
@@ -212,6 +214,11 @@ local function load_state_script(theme_folder, state)
         usedFallback = true
     end
 
+    local function setCurrentWidgetPath()
+        dashboard.currentWidgetPath = source .. "/" .. folder
+    end
+
+    -- Try to load init.lua
     local initPath = themeBasePath .. folder .. "/init.lua"
     local initChunk, initErr = rfsuite.compiler.loadfile(initPath)
 
@@ -220,39 +227,38 @@ local function load_state_script(theme_folder, state)
         local fallbackSource, fallbackFolder = dashboard.DEFAULT_THEME:match("([^/]+)/(.+)")
         local fallbackBasePath = (fallbackSource == "user") and themesUserPath or themesBasePath
         local fallbackInitPath = fallbackBasePath .. fallbackFolder .. "/init.lua"
-        rfsuite.utils.log(
-            "dashboard: Could not load init.lua for " .. tostring(folder) ..
-            ". Falling back to default. Error: " .. tostring(initErr), "info"
-        )
+
+        rfsuite.utils.log("dashboard: Could not load init.lua for " .. tostring(folder) ..
+                          ". Falling back to default. Error: " .. tostring(initErr), "info")
+
         initChunk, initErr = rfsuite.compiler.loadfile(fallbackInitPath)
         if not initChunk then
-            rfsuite.utils.log(
-                "dashboard: Could not load default theme's init.lua. Error: " .. tostring(initErr), "error"
-            )
+            rfsuite.utils.log("dashboard: Could not load default theme's init.lua. Error: " .. tostring(initErr), "error")
             dashboard.themeFallbackUsed[state] = true
             dashboard.themeFallbackTime[state] = os.clock()
             return nil
         end
-        folder = fallbackFolder
+
+        source, folder = fallbackSource, fallbackFolder
         themeBasePath = fallbackBasePath
     end
 
     local ok, initTable = pcall(initChunk)
     if not ok or type(initTable) ~= "table" then
-        rfsuite.utils.log(
-            "dashboard: Error running init.lua for " .. tostring(folder) ..
-            ": " .. tostring(initTable) .. ". Falling back to default.", "error"
-        )
+        rfsuite.utils.log("dashboard: Error running init.lua for " .. tostring(folder) .. ": " ..
+                          tostring(initTable) .. ". Falling back to default.", "error")
+
         if theme_folder ~= dashboard.DEFAULT_THEME then
             usedFallback = true
             local fallbackSource, fallbackFolder = dashboard.DEFAULT_THEME:match("([^/]+)/(.+)")
             local fallbackBasePath = (fallbackSource == "user") and themesUserPath or themesBasePath
             local fallbackInitPath = fallbackBasePath .. fallbackFolder .. "/init.lua"
             local fallbackChunk, fallbackErr = rfsuite.compiler.loadfile(fallbackInitPath)
+
             if fallbackChunk then
                 ok, initTable = pcall(fallbackChunk)
                 if ok and type(initTable) == "table" then
-                    folder = fallbackFolder
+                    source, folder = fallbackSource, fallbackFolder
                     themeBasePath = fallbackBasePath
                 else
                     dashboard.themeFallbackUsed[state] = true
@@ -284,10 +290,8 @@ local function load_state_script(theme_folder, state)
         local fallbackPath = themesBasePath .. dashboard.DEFAULT_THEME:match("[^/]+/(.+)") .. "/" .. scriptName
         chunk, err = rfsuite.compiler.loadfile(fallbackPath)
         if not chunk then
-            rfsuite.utils.log(
-                "dashboard: Could not load " .. scriptName ..
-                " for " .. tostring(folder) .. " or default. Error: " .. tostring(err), "info"
-            )
+            rfsuite.utils.log("dashboard: Could not load " .. scriptName .. " for " .. tostring(folder) ..
+                              " or default. Error: " .. tostring(err), "info")
             dashboard.themeFallbackUsed[state] = true
             dashboard.themeFallbackTime[state] = os.clock()
             return nil
@@ -302,14 +306,14 @@ local function load_state_script(theme_folder, state)
         dashboard.themeFallbackTime[state] = 0
     end
 
+    setCurrentWidgetPath()  -- <<< IMPORTANT: Set the correct widget path
+
     if initTable.standalone then
-        return chunk  -- theme takes full control
+        return chunk
     else
         local ok2, module = pcall(chunk)
         if not ok2 then
-            rfsuite.utils.log(
-                "dashboard: Error running " .. scriptName .. ": " .. tostring(module), "error"
-            )
+            rfsuite.utils.log("dashboard: Error running " .. scriptName .. ": " .. tostring(module), "error")
             dashboard.themeFallbackUsed[state] = true
             dashboard.themeFallbackTime[state] = os.clock()
             return nil
@@ -317,6 +321,7 @@ local function load_state_script(theme_folder, state)
         return module
     end
 end
+
 
 --[[
     Reloads all dashboard state modules for each flight mode.
@@ -582,6 +587,19 @@ function dashboard.listThemes()
     end
 
     return themes
+end
+
+function dashboard.getPreference(key)
+    if not rfsuite.session.modelPreferences or not dashboard.currentWidgetPath then return nil end
+    return rfsuite.ini.getvalue(rfsuite.session.modelPreferences, dashboard.currentWidgetPath, key)
+end
+
+function dashboard.savePreference(key, value)
+    if not rfsuite.session.modelPreferences or not rfsuite.session.modelPreferencesFile or not dashboard.currentWidgetPath then
+        return false
+    end
+    rfsuite.ini.setvalue(rfsuite.session.modelPreferences, dashboard.currentWidgetPath, key, value)
+    return rfsuite.ini.save_ini_file(rfsuite.session.modelPreferencesFile, rfsuite.session.modelPreferences)
 end
 
 return dashboard
