@@ -93,6 +93,7 @@ local boxes = {
         source = "fuel",
         gaugemin = 0,
         gaugemax = 100,
+        roundradius = 9,
         --gaugebgcolor = "black",
         gaugeorientation = "vertical",  -- or "horizontal"
         gaugepadding = 8,

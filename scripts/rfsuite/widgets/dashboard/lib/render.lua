@@ -265,9 +265,32 @@ function render.functionBox(x, y, w, h, box)
     end
 end
 
--- Gauge box (fully function-param ready)
-function render.gaugeBox(x, y, w, h, box, telemetry)
+function render.drawFilledRoundedRectangle(x, y, w, h, r)
+    -- Ensure integer math for safety
+    x = math.floor(x + 0.5)
+    y = math.floor(y + 0.5)
+    w = math.floor(w + 0.5)
+    h = math.floor(h + 0.5)
+    r = math.floor(r + 0.5)
+    if r > 0 then
+        -- Center rectangle
+        lcd.drawFilledRectangle(x + r, y, w - 2*r, h)
+        -- Side rectangles (left/right)
+        lcd.drawFilledRectangle(x, y + r, r, h - 2*r)
+        lcd.drawFilledRectangle(x + w - r, y + r, r, h - 2*r)
+        -- Corners: never draw beyond the outer box
+        lcd.drawFilledCircle(x + r,     y + r,     r)
+        lcd.drawFilledCircle(x + w - r - 1, y + r,     r)
+        lcd.drawFilledCircle(x + r,     y + h - r - 1, r)
+        lcd.drawFilledCircle(x + w - r - 1, y + h - r - 1, r)
+    else
+        lcd.drawFilledRectangle(x, y, w, h)
+    end
+end
 
+
+
+function render.gaugeBox(x, y, w, h, box, telemetry)
     x, y = applyOffset(x, y, box)
 
     -- Get value
@@ -324,11 +347,10 @@ function render.gaugeBox(x, y, w, h, box, telemetry)
     local gauge_w = w - gpad_left - gpad_right
     local gauge_h = h - gpad_top - gpad_bottom - title_area_top - title_area_bottom
 
-    -- Draw overall box background
+    -- Draw overall box background (always square corners)
     local bgColor = utils.resolveColor(getParam(box, "bgcolor")) or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
     lcd.color(bgColor)
     lcd.drawFilledRectangle(x, y, w, h)
-
 
     -- Threshold gauge color logic (+ threshold value text color)
     local gaugeColor = utils.resolveColor(getParam(box, "gaugecolor")) or lcd.RGB(255, 204, 0)
@@ -336,18 +358,17 @@ function render.gaugeBox(x, y, w, h, box, telemetry)
     local matchingTextColor = nil
     local thresholds = getParam(box, "thresholds")
     if thresholds and value ~= nil then
-            for _, t in ipairs(thresholds) do
-                local t_val = type(t.value) == "function" and t.value(box, value) or t.value
-                local t_color = type(t.color) == "function" and t.color(box, value) or t.color
-                local t_textcolor = type(t.textcolor) == "function" and t.textcolor(box, value) or t.textcolor
-                if value < t_val then
-                    gaugeColor = utils.resolveColor(t_color) or gaugeColor
-                    if t_textcolor then matchingTextColor = utils.resolveColor(t_textcolor) end
-                    break
-                end
+        for _, t in ipairs(thresholds) do
+            local t_val = type(t.value) == "function" and t.value(box, value) or t.value
+            local t_color = type(t.color) == "function" and t.color(box, value) or t.color
+            local t_textcolor = type(t.textcolor) == "function" and t.textcolor(box, value) or t.textcolor
+            if value < t_val then
+                gaugeColor = utils.resolveColor(t_color) or gaugeColor
+                if t_textcolor then matchingTextColor = utils.resolveColor(t_textcolor) end
+                break
             end
+        end
     end
-
 
     -- Draw gauge background & fill ONLY if gauge percent > 0
     local gaugeMin = getParam(box, "gaugemin") or 0
@@ -363,13 +384,25 @@ function render.gaugeBox(x, y, w, h, box, telemetry)
         local gaugeBgColor = utils.resolveColor(getParam(box, "gaugebgcolor")) or bgColor
         lcd.color(gaugeBgColor)
         lcd.drawFilledRectangle(gauge_x, gauge_y, gauge_w, gauge_h)
+
         lcd.color(gaugeColor)
+        local roundradius = getParam(box, "roundradius") or 0
         if gaugeOrientation == "vertical" then
             local fillH = math.floor(gauge_h * percent)
-            lcd.drawFilledRectangle(gauge_x, gauge_y + gauge_h - fillH, gauge_w, fillH)
+            local useRadius = (roundradius > 0) and (gauge_w > 2*roundradius and fillH > 2*roundradius)
+            if useRadius then
+                render.drawFilledRoundedRectangle(gauge_x, gauge_y + gauge_h - fillH, gauge_w, fillH, roundradius)
+            else
+                lcd.drawFilledRectangle(gauge_x, gauge_y + gauge_h - fillH, gauge_w, fillH)
+            end
         else
             local fillW = math.floor(gauge_w * percent)
-            lcd.drawFilledRectangle(gauge_x, gauge_y, fillW, gauge_h)
+            local useRadius = (roundradius > 0) and (fillW > 2*roundradius and gauge_h > 2*roundradius)
+            if useRadius then
+                render.drawFilledRoundedRectangle(gauge_x, gauge_y, fillW, gauge_h, roundradius)
+            else
+                lcd.drawFilledRectangle(gauge_x, gauge_y, fillW, gauge_h)
+            end
         end
     end
 
@@ -482,6 +515,8 @@ function render.gaugeBox(x, y, w, h, box, telemetry)
         lcd.drawText(sx, sy, getParam(box, "title"))
     end
 end
+
+
 
 -- Fuel Gauge Box: Easy, ready-to-use fuel gauge for end users.
 function render.functionFuelGuage(x, y, w, h, box, telemetry)
