@@ -123,8 +123,9 @@ local eventTable = {
             event = function(value) end,
         }
     },
-    switches = {}
-    
+    switches = {},
+    units = {},
+
 }
 
 function events.wakeup()
@@ -185,10 +186,11 @@ function events.wakeup()
                     scategory = tonumber(scategory)
                     smember = tonumber(smember)
                     if scategory and smember then
-                        eventTable.switches[key] = system.getSource({ category = scategory, member = smember }) 
+                        eventTable.switches[key] = system.getSource({ category = scategory, member = smember })
                     end  
                 end    
             end
+            eventTable.units = rfsuite.tasks.telemetry.listSensorAudioUnits() 
         end
 
 
@@ -212,8 +214,15 @@ function events.wakeup()
                 if shouldPlay then
                     local sensorSrc = rfsuite.tasks.telemetry.getSensorSource(key)
                     local value = sensorSrc:value()
-                    system.playNumber(value, sensorSrc:decimals(), sensorSrc:unit())
-                    lastPlayTime[key] = currentTime
+                    if value and type(value) == "number" then
+
+                        local unit = eventTable.units[key]
+                        local decimals = tonumber(sensorSrc:decimals())
+
+                        system.playNumber(value,unit,decimals)
+                        lastPlayTime[key] = currentTime
+                    
+                    end
                 end
             end
 
