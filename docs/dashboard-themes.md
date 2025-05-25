@@ -37,7 +37,7 @@ You can use the following `type` values for each box in your theme’s `boxes` a
 { type = "function", value = function(x, y, w, h) lcd.drawText(x, y, "Custom!") end }
 ```
 
-> All box types can also use: `col`, `row`, `colspan`, `rowspan`, `padding`, `color`, `bgcolor`, `title`, `unit`, `onpress`, and more.
+> All box types can also use: `col`, `row`, `offsetx','offsety',`colspan`, `rowspan`, `padding`, `color`, `bgcolor`, `title`, `unit`, `onpress`, and more.
 
 ---
 

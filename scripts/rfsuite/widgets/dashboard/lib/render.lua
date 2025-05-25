@@ -31,8 +31,17 @@ local function getParam(box, key, ...)
     end
 end
 
+local function applyOffset(x, y, box)
+    local ox = getParam(box, "offsetx") or 0
+    local oy = getParam(box, "offsety") or 0
+    return x + ox, y + oy
+end
+
 -- Telemetry data box
 function render.telemetryBox(x, y, w, h, box, telemetry)
+
+    x, y = applyOffset(x, y, box)
+
     local value = nil
     local source = getParam(box, "source")
     if source then
@@ -82,6 +91,9 @@ end
 
 -- Static text box
 function render.textBox(x, y, w, h, box)
+
+    x, y = applyOffset(x, y, box)
+
     local displayValue = getParam(box, "value")
     if displayValue == nil then
         displayValue = getParam(box, "novalue") or "-"
@@ -99,6 +111,9 @@ end
 
 -- Image box
 function render.imageBox(x, y, w, h, box)
+
+    x, y = applyOffset(x, y, box)
+
     utils.imageBox(
         x, y, w, h,
         getParam(box, "color"), getParam(box, "title"),
@@ -124,6 +139,9 @@ end
 
 -- Governor status box
 function render.governorBox(x, y, w, h, box, telemetry)
+
+    x, y = applyOffset(x, y, box)
+
     local value = nil
     local sensor = telemetry and telemetry.getSensorSource("governor")
     value = sensor and sensor:value()
@@ -144,6 +162,9 @@ end
 
 -- Craft name box
 function render.craftnameBox(x, y, w, h, box)
+
+    x, y = applyOffset(x, y, box)
+
     local displayValue = rfsuite.session.craftName
     if displayValue == nil or (type(displayValue) == "string" and displayValue:match("^%s*$")) then
         displayValue = getParam(box, "novalue") or "-"
@@ -161,6 +182,9 @@ end
 
 -- API version box
 function render.apiversionBox(x, y, w, h, box)
+
+    x, y = applyOffset(x, y, box)
+
     local displayValue = rfsuite.session.apiVersion
     if displayValue == nil then
         displayValue = getParam(box, "novalue") or "-"
@@ -178,6 +202,9 @@ end
 
 -- Session variable box
 function render.sessionBox(x, y, w, h, box)
+
+    x, y = applyOffset(x, y, box)
+
     local src = getParam(box, "source")
     local displayValue = rfsuite.session[src]
     if displayValue == nil then
@@ -196,6 +223,9 @@ end
 
 -- Blackbox storage usage box
 function render.blackboxBox(x, y, w, h, box)
+
+    x, y = applyOffset(x, y, box)
+
     local displayValue = nil
     local totalSize = rfsuite.session.bblSize
     local usedSize = rfsuite.session.bblUsed
@@ -222,6 +252,9 @@ end
 
 -- Function box
 function render.functionBox(x, y, w, h, box)
+
+    x, y = applyOffset(x, y, box)
+
     local v = box.value
     if type(v) == "function" then
         -- In case someone set value = function() return actual_function end
@@ -234,6 +267,9 @@ end
 
 -- Gauge box (fully function-param ready)
 function render.gaugeBox(x, y, w, h, box, telemetry)
+
+    x, y = applyOffset(x, y, box)
+
     -- Get value
     local value = nil
     local source = getParam(box, "source")
@@ -449,6 +485,9 @@ end
 
 -- Fuel Gauge Box: Easy, ready-to-use fuel gauge for end users.
 function render.functionFuelGuage(x, y, w, h, box, telemetry)
+
+    x, y = applyOffset(x, y, box)
+
     -- Default parameters for fuel gauge
     local defaults = {
         source = "fuel",  -- Telemetry source
@@ -481,6 +520,9 @@ function render.functionFuelGuage(x, y, w, h, box, telemetry)
 end
 
 function render.functionVoltageGauge(x, y, w, h, box, telemetry)
+
+    x, y = applyOffset(x, y, box)
+
     -- Default parameters for voltage gauge
     local defaults = {
         source = "voltage",  -- Telemetry source
@@ -540,28 +582,34 @@ end
 
 -- Extend render.lua with support for type = "dial"
 
-local dialAssets = {
-    [1] = { panel = "widgets/dashboard/gfx/panel1.png", pointer = "widgets/dashboard/gfx/pointer1.png" },
-    [2] = { panel = "widgets/dashboard/gfx/panel2.png", pointer = "widgets/dashboard/gfx/pointer2.png" },
-    [3] = { panel = "widgets/dashboard/gfx/panel3.png", pointer = "widgets/dashboard/gfx/pointer3.png" },
-    [4] = { panel = "widgets/dashboard/gfx/panel4.png", pointer = "widgets/dashboard/gfx/pointer4.png" },
-    [5] = { panel = "widgets/dashboard/gfx/panel5.png", pointer = "widgets/dashboard/gfx/pointer4.png" },
-    [6] = { panel = "widgets/dashboard/gfx/panel6.png", pointer = "widgets/dashboard/gfx/pointer4.png" },
-    [7] = { panel = "widgets/dashboard/gfx/panel7.png", pointer = "widgets/dashboard/gfx/pointer7.png" },
-    [8] = { panel = "widgets/dashboard/gfx/panel8.png", pointer = "widgets/dashboard/gfx/pointer8.png" },
-}
 
 rfsuite.session.dialImageCachee = {}
 local rotatedPointerCache = {}
 local lastDialValue = {}
 local lastRotatedKey = {}
 
-local function loadDialAssets(style, customPanelPath, customPointerPath)
-    local key = tostring(style or "default") .. ":" .. (customPanelPath or "") .. ":" .. (customPointerPath or "")
+
+-- New helper: resolves dial or pointer value to an image path
+local function resolveDialAsset(value, basePath)
+    if type(value) == "function" then
+        value = value()
+    end
+    if type(value) == "number" then
+        return string.format("%s/%d.png", basePath, value)
+    elseif type(value) == "string" then
+        if value:match("^%d+$") then
+            -- If it's a numeric string, treat as number (for backward compat)
+            return string.format("%s/%s.png", basePath, value)
+        else
+            return value
+        end
+    end
+    return nil
+end
+
+local function loadDialAssets(panelPath, pointerPath)
+    local key = (panelPath or "") .. ":" .. (pointerPath or "")
     if not rfsuite.session.dialImageCachee[key] then
-        local assets = dialAssets[style or 1] or dialAssets[1]
-        local panelPath = customPanelPath or assets.panel
-        local pointerPath = customPointerPath or assets.pointer
         rfsuite.session.dialImageCachee[key] = {
             panel = rfsuite.utils.loadImage(panelPath),
             pointer = rfsuite.utils.loadImage(pointerPath)
@@ -610,6 +658,13 @@ local function computeDrawArea(img, x, y, w, h, aspect, align)
 end
 
 function render.dialBox(x, y, w, h, box, telemetry)
+    x, y = applyOffset(x, y, box)
+
+    -- Draw box background (support bgColor)
+    local bgColor = utils.resolveColor(getParam(box, "bgcolor")) or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
+    lcd.color(bgColor)
+    lcd.drawFilledRectangle(x, y, w, h)
+
     local value = nil
     local source = getParam(box, "source")
     if source then
@@ -627,13 +682,9 @@ function render.dialBox(x, y, w, h, box, telemetry)
 
     local displayValue = value or getParam(box, "novalue") or "-"
     local unit = getParam(box, "unit")
-    local style = getParam(box, "style") or 1
-    local customPanel = getParam(box, "panelpath")
-    local customPointer = getParam(box, "pointerpath")
     local min = getParam(box, "min") or 0
     local max = getParam(box, "max") or 100
     local percent = 0
-
     if value and max ~= min then
         percent = ((value - min) / (max - min)) * 100
         percent = math.max(0, math.min(100, percent))
@@ -642,14 +693,20 @@ function render.dialBox(x, y, w, h, box, telemetry)
     local aspect = getParam(box, "aspect")
     local align = getParam(box, "align") or "center"
 
-    local panelImg, pointerImg = loadDialAssets(style, customPanel, customPointer)
+    -- New flexible dial/pointer asset logic:
+    local dial = getParam(box, "dial")
+    local pointer = getParam(box, "pointer")
+    local panelPath = resolveDialAsset(dial, "widgets/dashboard/gfx/dials") or "widgets/dashboard/gfx/panel1.png"
+    local pointerPath = resolveDialAsset(pointer, "widgets/dashboard/gfx/pointers") or "widgets/dashboard/gfx/pointer1.png"
+
+    local panelImg, pointerImg = loadDialAssets(panelPath, pointerPath)
     if panelImg and pointerImg then
         local drawX, drawY, drawW, drawH = computeDrawArea(panelImg, x, y, w, h, aspect, align)
         lcd.drawBitmap(drawX, drawY, panelImg, drawW, drawH)
 
         local angle = calDialAngle(percent)
         local boxId = tostring(box)
-        local rotatedKey = tostring(style) .. ":" .. angle .. ":" .. (customPointer or "")
+        local rotatedKey = (panelPath or "") .. ":" .. (pointerPath or "") .. ":" .. angle
 
         if lastRotatedKey[boxId] ~= rotatedKey then
             if not rotatedPointerCache[rotatedKey] then
@@ -664,24 +721,29 @@ function render.dialBox(x, y, w, h, box, telemetry)
         end
     end
 
-    -- Optional title and value
+ -- Optional title and value
     local title = getParam(box, "title")
     if title then
         lcd.font(FONT_XS)
         local tW, tH = lcd.getTextSize(title)
+        tW = tW or 0
+        tH = tH or 0
         lcd.color(lcd.RGB(255, 255, 255))
         lcd.drawText(x + (w - tW) / 2, y + h - tH, title)
     end
 
     if displayValue ~= nil then
         lcd.font(FONT_STD)
-        local str = tostring(displayValue) .. (unit or "")
+        local str = tostring(displayValue or "") .. (unit or "")
+        if str == "" then str = "-" end
         local vW, vH = lcd.getTextSize(str)
+        vW = vW or 0
+        vH = vH or 0
         lcd.color(lcd.RGB(255, 255, 255))
         lcd.drawText(x + (w - vW) / 2, y + h - vH - 16, str)
     end
-end
 
+end
 
 
 -- Dispatcher for rendering boxes by type.
