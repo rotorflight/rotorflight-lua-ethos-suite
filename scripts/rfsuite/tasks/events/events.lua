@@ -41,11 +41,6 @@ local eventTable = {
             event = function(value)
                 local armMap = {[0] = "disarmed.wav", [1] = "armed.wav", [2] = "disarmed.wav", [3] = "armed.wav"}
                 rfsuite.utils.playFile("events", "alerts/" .. armMap[math.floor(value)])
-                if value == 1 or value == 3 then
-                    rfsuite.session.isArmed = true
-                else
-                    rfsuite.session.isArmed = false    
-                end
             end,
             interval = nil
         },

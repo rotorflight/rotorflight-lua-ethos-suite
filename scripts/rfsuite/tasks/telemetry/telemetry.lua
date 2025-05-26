@@ -37,6 +37,7 @@ local CACHE_FLUSH_INTERVAL = 5 -- Flush cache every 5 seconds
 local telemetryState = false
 
 local sensorStats = {}
+local lastSensorValues = {}
 
 -- Predefined sensor mappings
 --[[
@@ -118,6 +119,13 @@ local sensorTable = {
             },
             crsfLegacy = { nil },
         },
+        onchange = function(value)
+                if value == 1 or value == 3 then
+                    rfsuite.session.isArmed = true
+                else
+                    rfsuite.session.isArmed = false    
+                end
+        end,
     },
 
     -- Voltage Sensors
@@ -806,7 +814,8 @@ end
 function telemetry.reset()
     telemetrySOURCE, crsfSOURCE, protocol = nil, nil, nil
     sensors = {}
-        sensorStats = {} -- Clear min/max tracking
+    sensorStats = {} -- Clear min/max tracking
+    local lastSensorValues = {} -- clear last sensor values
 end
 
 --[[
@@ -865,6 +874,14 @@ function telemetry.wakeup()
                     shouldTrack = sensorDef.maxmin_trigger()
                 else
                     shouldTrack = rfsuite.utils.inFlight()
+                end
+
+                -- onchange tracking
+                if lastSensorValues[sensorKey] ~= val then
+                    if type(sensorDef.onchange) == "function" then
+                        sensorDef.onchange(val)
+                    end
+                    lastSensorValues[sensorKey] = val
                 end
 
                 -- Record min/max if tracking is active
