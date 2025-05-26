@@ -1030,7 +1030,7 @@ function ui.openPageDashboard(idx, title, script, source, folder)
     local x = windowWidth - (buttonW * 2) - 15
 
     rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {x = x, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}, {
-        text = "MENU",
+        text = rfsuite.i18n.get("app.navigation_menu"),
         icon = nil,
         options = FONT_S,
         paint = function()
