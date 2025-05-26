@@ -176,7 +176,7 @@ end
           titlealign, valuealign, titlecolor, titlepos
           (plus many optional paddings)
 ]]
-function utils.telemetryBox(
+function utils.box(
     x, y, w, h, color, title, value, unit, bgcolor,
     titlealign, valuealign, titlecolor, titlepos,
     titlepadding, titlepaddingleft, titlepaddingright, titlepaddingtop, titlepaddingbottom,
@@ -454,6 +454,22 @@ function utils.modelImageBox(
         lcd.color(lcd.RGB(200,50,50))
         lcd.drawText(x + 10, y + 10, "No Model Image")
     end
+end
+
+-- === Function-param support ===
+function utils.getParam(box, key, ...)
+    local v = box[key]
+    if type(v) == "function" then
+        return v(box, key, ...)
+    else
+        return v
+    end
+end
+
+function utils.applyOffset(x, y, box)
+    local ox = utils.getParam(box, "offsetx") or 0
+    local oy = utils.getParam(box, "offsety") or 0
+    return x + ox, y + oy
 end
 
 return utils

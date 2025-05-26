@@ -17,37 +17,18 @@
 
 local render = {}
 
-local utils = assert(
-    rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/lib/utils.lua")
-)()
-
--- === Function-param support ===
-local function getParam(box, key, ...)
-    local v = box[key]
-    if type(v) == "function" then
-        return v(box, key, ...)
-    else
-        return v
-    end
-end
-
-local function applyOffset(x, y, box)
-    local ox = getParam(box, "offsetx") or 0
-    local oy = getParam(box, "offsety") or 0
-    return x + ox, y + oy
-end
 
 -- Telemetry data box
-function render.telemetryBox(x, y, w, h, box, telemetry)
+function render.telemetry(x, y, w, h, box, telemetry)
 
-    x, y = applyOffset(x, y, box)
+    x, y = utils.applyOffset(x, y, box)
 
     local value = nil
-    local source = getParam(box, "source")
+    local source = utils.getParam(box, "source")
     if source then
         local sensor = telemetry and telemetry.getSensorSource(source)
         value = sensor and sensor:value()
-        local transform = getParam(box, "transform")
+        local transform = utils.getParam(box, "transform")
         if type(transform) == "string" and math[transform] then
             value = value and math[transform](value)
         elseif type(transform) == "function" then
@@ -57,15 +38,15 @@ function render.telemetryBox(x, y, w, h, box, telemetry)
         end
     end
     local displayValue = value
-    local displayUnit = getParam(box, "unit")
+    local displayUnit = utils.getParam(box, "unit")
     if value == nil then
-        displayValue = getParam(box, "novalue") or "-"
+        displayValue = utils.getParam(box, "novalue") or "-"
         displayUnit = nil
     end
 
     -- Threshold color logic (borrowed from gaugeBox)
-    local color = getParam(box, "color")
-    local thresholds = getParam(box, "thresholds")
+    local color = utils.getParam(box, "color")
+    local thresholds = utils.getParam(box, "thresholds")
     if thresholds and value ~= nil then
         for _, t in ipairs(thresholds) do
             local t_val = type(t.value) == "function" and t.value(box, value) or t.value
@@ -77,154 +58,154 @@ function render.telemetryBox(x, y, w, h, box, telemetry)
         end
     end
 
-    utils.telemetryBox(
+    utils.box(
         x, y, w, h,
-        color, getParam(box, "title"), displayValue, displayUnit, getParam(box, "bgcolor"),
-        getParam(box, "titlealign"), getParam(box, "valuealign"), getParam(box, "titlecolor"), getParam(box, "titlepos"),
-        getParam(box, "titlepadding"), getParam(box, "titlepaddingleft"), getParam(box, "titlepaddingright"),
-        getParam(box, "titlepaddingtop"), getParam(box, "titlepaddingbottom"),
-        getParam(box, "valuepadding"), getParam(box, "valuepaddingleft"), getParam(box, "valuepaddingright"),
-        getParam(box, "valuepaddingtop"), getParam(box, "valuepaddingbottom")
+        color, utils.getParam(box, "title"), displayValue, displayUnit, utils.getParam(box, "bgcolor"),
+        utils.getParam(box, "titlealign"), utils.getParam(box, "valuealign"), utils.getParam(box, "titlecolor"), utils.getParam(box, "titlepos"),
+        utils.getParam(box, "titlepadding"), utils.getParam(box, "titlepaddingleft"), utils.getParam(box, "titlepaddingright"),
+        utils.getParam(box, "titlepaddingtop"), utils.getParam(box, "titlepaddingbottom"),
+        utils.getParam(box, "valuepadding"), utils.getParam(box, "valuepaddingleft"), utils.getParam(box, "valuepaddingright"),
+        utils.getParam(box, "valuepaddingtop"), utils.getParam(box, "valuepaddingbottom")
     )
 end
 
 
 -- Static text box
-function render.textBox(x, y, w, h, box)
+function render.text(x, y, w, h, box)
 
-    x, y = applyOffset(x, y, box)
+    x, y = utils.applyOffset(x, y, box)
 
-    local displayValue = getParam(box, "value")
+    local displayValue = utils.getParam(box, "value")
     if displayValue == nil then
-        displayValue = getParam(box, "novalue") or "-"
+        displayValue = utils.getParam(box, "novalue") or "-"
     end
-    utils.telemetryBox(
+    utils.box(
         x, y, w, h,
-        getParam(box, "color"), getParam(box, "title"), displayValue, getParam(box, "unit"), getParam(box, "bgcolor"),
-        getParam(box, "titlealign"), getParam(box, "valuealign"), getParam(box, "titlecolor"), getParam(box, "titlepos"),
-        getParam(box, "titlepadding"), getParam(box, "titlepaddingleft"), getParam(box, "titlepaddingright"),
-        getParam(box, "titlepaddingtop"), getParam(box, "titlepaddingbottom"),
-        getParam(box, "valuepadding"), getParam(box, "valuepaddingleft"), getParam(box, "valuepaddingright"),
-        getParam(box, "valuepaddingtop"), getParam(box, "valuepaddingbottom")
+        utils.getParam(box, "color"), utils.getParam(box, "title"), displayValue, utils.getParam(box, "unit"), utils.getParam(box, "bgcolor"),
+        utils.getParam(box, "titlealign"), utils.getParam(box, "valuealign"), utils.getParam(box, "titlecolor"), utils.getParam(box, "titlepos"),
+        utils.getParam(box, "titlepadding"), utils.getParam(box, "titlepaddingleft"), utils.getParam(box, "titlepaddingright"),
+        utils.getParam(box, "titlepaddingtop"), utils.getParam(box, "titlepaddingbottom"),
+        utils.getParam(box, "valuepadding"), utils.getParam(box, "valuepaddingleft"), utils.getParam(box, "valuepaddingright"),
+        utils.getParam(box, "valuepaddingtop"), utils.getParam(box, "valuepaddingbottom")
     )
 end
 
 -- Image box
-function render.imageBox(x, y, w, h, box)
+function render.image(x, y, w, h, box)
 
-    x, y = applyOffset(x, y, box)
+    x, y = utils.applyOffset(x, y, box)
 
     utils.imageBox(
         x, y, w, h,
-        getParam(box, "color"), getParam(box, "title"),
-        getParam(box, "value") or getParam(box, "source") or "widgets/dashboard/gfx/default_image.png",
-        getParam(box, "imagewidth"), getParam(box, "imageheight"), getParam(box, "imagealign"),
-        getParam(box, "bgcolor"), getParam(box, "titlealign"), getParam(box, "titlecolor"), getParam(box, "titlepos"),
-        getParam(box, "imagepadding"), getParam(box, "imagepaddingleft"), getParam(box, "imagepaddingright"),
-        getParam(box, "imagepaddingtop"), getParam(box, "imagepaddingbottom")
+        utils.getParam(box, "color"), utils.getParam(box, "title"),
+        utils.getParam(box, "value") or utils.getParam(box, "source") or "widgets/dashboard/gfx/default_image.png",
+        utils.getParam(box, "imagewidth"), utils.getParam(box, "imageheight"), utils.getParam(box, "imagealign"),
+        utils.getParam(box, "bgcolor"), utils.getParam(box, "titlealign"), utils.getParam(box, "titlecolor"), utils.getParam(box, "titlepos"),
+        utils.getParam(box, "imagepadding"), utils.getParam(box, "imagepaddingleft"), utils.getParam(box, "imagepaddingright"),
+        utils.getParam(box, "imagepaddingtop"), utils.getParam(box, "imagepaddingbottom")
     )
 end
 
 -- Model image box
-function render.modelImageBox(x, y, w, h, box)
+function render.modelimage(x, y, w, h, box)
     utils.modelImageBox(
         x, y, w, h,
-        getParam(box, "color"), getParam(box, "title"),
-        getParam(box, "imagewidth"), getParam(box, "imageheight"), getParam(box, "imagealign"),
-        getParam(box, "bgcolor"), getParam(box, "titlealign"), getParam(box, "titlecolor"), getParam(box, "titlepos"),
-        getParam(box, "imagepadding"), getParam(box, "imagepaddingleft"), getParam(box, "imagepaddingright"),
-        getParam(box, "imagepaddingtop"), getParam(box, "imagepaddingbottom")
+        utils.getParam(box, "color"), utils.getParam(box, "title"),
+        utils.getParam(box, "imagewidth"), utils.getParam(box, "imageheight"), utils.getParam(box, "imagealign"),
+        utils.getParam(box, "bgcolor"), utils.getParam(box, "titlealign"), utils.getParam(box, "titlecolor"), utils.getParam(box, "titlepos"),
+        utils.getParam(box, "imagepadding"), utils.getParam(box, "imagepaddingleft"), utils.getParam(box, "imagepaddingright"),
+        utils.getParam(box, "imagepaddingtop"), utils.getParam(box, "imagepaddingbottom")
     )
 end
 
 -- Governor status box
-function render.governorBox(x, y, w, h, box, telemetry)
+function render.governor(x, y, w, h, box, telemetry)
 
-    x, y = applyOffset(x, y, box)
+    x, y = utils.applyOffset(x, y, box)
 
     local value = nil
     local sensor = telemetry and telemetry.getSensorSource("governor")
     value = sensor and sensor:value()
     local displayValue = rfsuite.utils.getGovernorState(value)
     if displayValue == nil then
-        displayValue = getParam(box, "novalue") or "-"
+        displayValue = utils.getParam(box, "novalue") or "-"
     end
-    utils.telemetryBox(
+    utils.box(
         x, y, w, h,
-        getParam(box, "color"), getParam(box, "title"), displayValue, getParam(box, "unit"), getParam(box, "bgcolor"),
-        getParam(box, "titlealign"), getParam(box, "valuealign"), getParam(box, "titlecolor"), getParam(box, "titlepos"),
-        getParam(box, "titlepadding"), getParam(box, "titlepaddingleft"), getParam(box, "titlepaddingright"),
-        getParam(box, "titlepaddingtop"), getParam(box, "titlepaddingbottom"),
-        getParam(box, "valuepadding"), getParam(box, "valuepaddingleft"), getParam(box, "valuepaddingright"),
-        getParam(box, "valuepaddingtop"), getParam(box, "valuepaddingbottom")
+        utils.getParam(box, "color"), utils.getParam(box, "title"), displayValue, utils.getParam(box, "unit"), utils.getParam(box, "bgcolor"),
+        utils.getParam(box, "titlealign"), utils.getParam(box, "valuealign"), utils.getParam(box, "titlecolor"), utils.getParam(box, "titlepos"),
+        utils.getParam(box, "titlepadding"), utils.getParam(box, "titlepaddingleft"), utils.getParam(box, "titlepaddingright"),
+        utils.getParam(box, "titlepaddingtop"), utils.getParam(box, "titlepaddingbottom"),
+        utils.getParam(box, "valuepadding"), utils.getParam(box, "valuepaddingleft"), utils.getParam(box, "valuepaddingright"),
+        utils.getParam(box, "valuepaddingtop"), utils.getParam(box, "valuepaddingbottom")
     )
 end
 
 -- Craft name box
-function render.craftnameBox(x, y, w, h, box)
+function render.craftname(x, y, w, h, box)
 
-    x, y = applyOffset(x, y, box)
+    x, y = utils.applyOffset(x, y, box)
 
     local displayValue = rfsuite.session.craftName
     if displayValue == nil or (type(displayValue) == "string" and displayValue:match("^%s*$")) then
-        displayValue = getParam(box, "novalue") or "-"
+        displayValue = utils.getParam(box, "novalue") or "-"
     end
-    utils.telemetryBox(
+    utils.box(
         x, y, w, h,
-        getParam(box, "color"), getParam(box, "title"), displayValue, getParam(box, "unit"), getParam(box, "bgcolor"),
-        getParam(box, "titlealign"), getParam(box, "valuealign"), getParam(box, "titlecolor"), getParam(box, "titlepos"),
-        getParam(box, "titlepadding"), getParam(box, "titlepaddingleft"), getParam(box, "titlepaddingright"),
-        getParam(box, "titlepaddingtop"), getParam(box, "titlepaddingbottom"),
-        getParam(box, "valuepadding"), getParam(box, "valuepaddingleft"), getParam(box, "valuepaddingright"),
-        getParam(box, "valuepaddingtop"), getParam(box, "valuepaddingbottom")
+        utils.getParam(box, "color"), utils.getParam(box, "title"), displayValue, utils.getParam(box, "unit"), utils.getParam(box, "bgcolor"),
+        utils.getParam(box, "titlealign"), utils.getParam(box, "valuealign"), utils.getParam(box, "titlecolor"), utils.getParam(box, "titlepos"),
+        utils.getParam(box, "titlepadding"), utils.getParam(box, "titlepaddingleft"), utils.getParam(box, "titlepaddingright"),
+        utils.getParam(box, "titlepaddingtop"), utils.getParam(box, "titlepaddingbottom"),
+        utils.getParam(box, "valuepadding"), utils.getParam(box, "valuepaddingleft"), utils.getParam(box, "valuepaddingright"),
+        utils.getParam(box, "valuepaddingtop"), utils.getParam(box, "valuepaddingbottom")
     )
 end
 
 -- API version box
-function render.apiversionBox(x, y, w, h, box)
+function render.apiversion(x, y, w, h, box)
 
-    x, y = applyOffset(x, y, box)
+    x, y = utils.applyOffset(x, y, box)
 
     local displayValue = rfsuite.session.apiVersion
     if displayValue == nil then
-        displayValue = getParam(box, "novalue") or "-"
+        displayValue = utils.getParam(box, "novalue") or "-"
     end
-    utils.telemetryBox(
+    utils.box(
         x, y, w, h,
-        getParam(box, "color"), getParam(box, "title"), displayValue, getParam(box, "unit"), getParam(box, "bgcolor"),
-        getParam(box, "titlealign"), getParam(box, "valuealign"), getParam(box, "titlecolor"), getParam(box, "titlepos"),
-        getParam(box, "titlepadding"), getParam(box, "titlepaddingleft"), getParam(box, "titlepaddingright"),
-        getParam(box, "titlepaddingtop"), getParam(box, "titlepaddingbottom"),
-        getParam(box, "valuepadding"), getParam(box, "valuepaddingleft"), getParam(box, "valuepaddingright"),
-        getParam(box, "valuepaddingtop"), getParam(box, "valuepaddingbottom")
+        utils.getParam(box, "color"), utils.getParam(box, "title"), displayValue, utils.getParam(box, "unit"), utils.getParam(box, "bgcolor"),
+        utils.getParam(box, "titlealign"), utils.getParam(box, "valuealign"), utils.getParam(box, "titlecolor"), utils.getParam(box, "titlepos"),
+        utils.getParam(box, "titlepadding"), utils.getParam(box, "titlepaddingleft"), utils.getParam(box, "titlepaddingright"),
+        utils.getParam(box, "titlepaddingtop"), utils.getParam(box, "titlepaddingbottom"),
+        utils.getParam(box, "valuepadding"), utils.getParam(box, "valuepaddingleft"), utils.getParam(box, "valuepaddingright"),
+        utils.getParam(box, "valuepaddingtop"), utils.getParam(box, "valuepaddingbottom")
     )
 end
 
 -- Session variable box
-function render.sessionBox(x, y, w, h, box)
+function render.session(x, y, w, h, box)
 
-    x, y = applyOffset(x, y, box)
+    x, y = utils.applyOffset(x, y, box)
 
-    local src = getParam(box, "source")
+    local src = utils.getParam(box, "source")
     local displayValue = rfsuite.session[src]
     if displayValue == nil then
-        displayValue = getParam(box, "novalue") or "-"
+        displayValue = utils.getParam(box, "novalue") or "-"
     end
-    utils.telemetryBox(
+    utils.box(
         x, y, w, h,
-        getParam(box, "color"), getParam(box, "title"), displayValue, getParam(box, "unit"), getParam(box, "bgcolor"),
-        getParam(box, "titlealign"), getParam(box, "valuealign"), getParam(box, "titlecolor"), getParam(box, "titlepos"),
-        getParam(box, "titlepadding"), getParam(box, "titlepaddingleft"), getParam(box, "titlepaddingright"),
-        getParam(box, "titlepaddingtop"), getParam(box, "titlepaddingbottom"),
-        getParam(box, "valuepadding"), getParam(box, "valuepaddingleft"), getParam(box, "valuepaddingright"),
-        getParam(box, "valuepaddingtop"), getParam(box, "valuepaddingbottom")
+        utils.getParam(box, "color"), utils.getParam(box, "title"), displayValue, utils.getParam(box, "unit"), utils.getParam(box, "bgcolor"),
+        utils.getParam(box, "titlealign"), utils.getParam(box, "valuealign"), utils.getParam(box, "titlecolor"), utils.getParam(box, "titlepos"),
+        utils.getParam(box, "titlepadding"), utils.getParam(box, "titlepaddingleft"), utils.getParam(box, "titlepaddingright"),
+        utils.getParam(box, "titlepaddingtop"), utils.getParam(box, "titlepaddingbottom"),
+        utils.getParam(box, "valuepadding"), utils.getParam(box, "valuepaddingleft"), utils.getParam(box, "valuepaddingright"),
+        utils.getParam(box, "valuepaddingtop"), utils.getParam(box, "valuepaddingbottom")
     )
 end
 
 -- Blackbox storage usage box
-function render.blackboxBox(x, y, w, h, box)
+function render.blackbox(x, y, w, h, box)
 
-    x, y = applyOffset(x, y, box)
+    x, y = utils.applyOffset(x, y, box)
 
     local displayValue = nil
     local totalSize = rfsuite.session.bblSize
@@ -237,23 +218,23 @@ function render.blackboxBox(x, y, w, h, box)
         )
     end
     if displayValue == nil then
-        displayValue = getParam(box, "novalue") or "-"
+        displayValue = utils.getParam(box, "novalue") or "-"
     end
-    utils.telemetryBox(
+    utils.box(
         x, y, w, h,
-        getParam(box, "color"), getParam(box, "title"), displayValue, getParam(box, "unit"), getParam(box, "bgcolor"),
-        getParam(box, "titlealign"), getParam(box, "valuealign"), getParam(box, "titlecolor"), getParam(box, "titlepos"),
-        getParam(box, "titlepadding"), getParam(box, "titlepaddingleft"), getParam(box, "titlepaddingright"),
-        getParam(box, "titlepaddingtop"), getParam(box, "titlepaddingbottom"),
-        getParam(box, "valuepadding"), getParam(box, "valuepaddingleft"), getParam(box, "valuepaddingright"),
-        getParam(box, "valuepaddingtop"), getParam(box, "valuepaddingbottom")
+        utils.getParam(box, "color"), utils.getParam(box, "title"), displayValue, utils.getParam(box, "unit"), utils.getParam(box, "bgcolor"),
+        utils.getParam(box, "titlealign"), utils.getParam(box, "valuealign"), utils.getParam(box, "titlecolor"), utils.getParam(box, "titlepos"),
+        utils.getParam(box, "titlepadding"), utils.getParam(box, "titlepaddingleft"), utils.getParam(box, "titlepaddingright"),
+        utils.getParam(box, "titlepaddingtop"), utils.getParam(box, "titlepaddingbottom"),
+        utils.getParam(box, "valuepadding"), utils.getParam(box, "valuepaddingleft"), utils.getParam(box, "valuepaddingright"),
+        utils.getParam(box, "valuepaddingtop"), utils.getParam(box, "valuepaddingbottom")
     )
 end
 
 -- Function box
-function render.functionBox(x, y, w, h, box)
+function render.func(x, y, w, h, box)
 
-    x, y = applyOffset(x, y, box)
+    x, y = utils.applyOffset(x, y, box)
 
     local v = box.value
     if type(v) == "function" then
@@ -265,7 +246,7 @@ function render.functionBox(x, y, w, h, box)
     end
 end
 
-function render.drawFilledRoundedRectangle(x, y, w, h, r)
+local function drawFilledRoundedRectangle(x, y, w, h, r)
     x = math.floor(x + 0.5)
     y = math.floor(y + 0.5)
     w = math.floor(w + 0.5)
@@ -284,19 +265,19 @@ function render.drawFilledRoundedRectangle(x, y, w, h, r)
     end
 end
 
-function render.gaugeBox(x, y, w, h, box, telemetry)
-    x, y = applyOffset(x, y, box)
+function render.gauge(x, y, w, h, box, telemetry)
+    x, y = utils.applyOffset(x, y, box)
 
     -- Get value
     local value = nil
-    local source = getParam(box, "source")
+    local source = utils.getParam(box, "source")
     if source then
         if type(source) == "function" then
             value = source(box, telemetry)
         else
             local sensor = telemetry and telemetry.getSensorSource(source)
             value = sensor and sensor:value()
-            local transform = getParam(box, "transform")
+            local transform = utils.getParam(box, "transform")
             if type(transform) == "string" and math[transform] then
                 value = value and math[transform](value)
             elseif type(transform) == "function" then
@@ -308,28 +289,28 @@ function render.gaugeBox(x, y, w, h, box, telemetry)
     end
 
     local displayValue = value
-    local displayUnit = getParam(box, "unit")
+    local displayUnit = utils.getParam(box, "unit")
     if value == nil then
-        displayValue = getParam(box, "novalue") or "-"
+        displayValue = utils.getParam(box, "novalue") or "-"
         displayUnit = nil
     end
 
     -- Padding for gauge area
-    local gpad_left   = getParam(box, "gaugepaddingleft")   or getParam(box, "gaugepadding") or 0
-    local gpad_right  = getParam(box, "gaugepaddingright")  or getParam(box, "gaugepadding") or 0
-    local gpad_top    = getParam(box, "gaugepaddingtop")    or getParam(box, "gaugepadding") or 0
-    local gpad_bottom = getParam(box, "gaugepaddingbottom") or getParam(box, "gaugepadding") or 0
+    local gpad_left   = utils.getParam(box, "gaugepaddingleft")   or utils.getParam(box, "gaugepadding") or 0
+    local gpad_right  = utils.getParam(box, "gaugepaddingright")  or utils.getParam(box, "gaugepadding") or 0
+    local gpad_top    = utils.getParam(box, "gaugepaddingtop")    or utils.getParam(box, "gaugepadding") or 0
+    local gpad_bottom = utils.getParam(box, "gaugepaddingbottom") or utils.getParam(box, "gaugepadding") or 0
 
     -- Title area height if needed
     local title_area_top = 0
     local title_area_bottom = 0
-    if getParam(box, "gaugebelowtitle") and getParam(box, "title") then
+    if utils.getParam(box, "gaugebelowtitle") and utils.getParam(box, "title") then
         lcd.font(FONT_XS)
-        local _, tsizeH = lcd.getTextSize(getParam(box, "title"))
-        local titlepadding = getParam(box, "titlepadding") or 0
-        local titlepaddingtop = getParam(box, "titlepaddingtop") or titlepadding
-        local titlepaddingbottom = getParam(box, "titlepaddingbottom") or titlepadding
-        if getParam(box, "titlepos") == "bottom" then
+        local _, tsizeH = lcd.getTextSize(utils.getParam(box, "title"))
+        local titlepadding = utils.getParam(box, "titlepadding") or 0
+        local titlepaddingtop = utils.getParam(box, "titlepaddingtop") or titlepadding
+        local titlepaddingbottom = utils.getParam(box, "titlepaddingbottom") or titlepadding
+        if utils.getParam(box, "titlepos") == "bottom" then
             title_area_bottom = tsizeH + titlepaddingtop + titlepaddingbottom
         else
             title_area_top = tsizeH + titlepaddingtop + titlepaddingbottom
@@ -341,15 +322,15 @@ function render.gaugeBox(x, y, w, h, box, telemetry)
     local gauge_w = w - gpad_left - gpad_right
     local gauge_h = h - gpad_top - gpad_bottom - title_area_top - title_area_bottom
 
-    local roundradius = getParam(box, "roundradius") or 0
+    local roundradius = utils.getParam(box, "roundradius") or 0
 
     -- Colors
-    local bgColor = utils.resolveColor(getParam(box, "bgcolor")) or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
-    local gaugeBgColor = utils.resolveColor(getParam(box, "gaugebgcolor")) or bgColor
-    local gaugeColor = utils.resolveColor(getParam(box, "gaugecolor")) or lcd.RGB(255, 204, 0)
-    local valueTextColor = utils.resolveColor(getParam(box, "color")) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
+    local bgColor = utils.resolveColor(utils.getParam(box, "bgcolor")) or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
+    local gaugeBgColor = utils.resolveColor(utils.getParam(box, "gaugebgcolor")) or bgColor
+    local gaugeColor = utils.resolveColor(utils.getParam(box, "gaugecolor")) or lcd.RGB(255, 204, 0)
+    local valueTextColor = utils.resolveColor(utils.getParam(box, "color")) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
     local matchingTextColor = nil
-    local thresholds = getParam(box, "thresholds")
+    local thresholds = utils.getParam(box, "thresholds")
     if thresholds and value ~= nil then
         for _, t in ipairs(thresholds) do
             local t_val = type(t.value) == "function" and t.value(box, value) or t.value
@@ -369,12 +350,12 @@ function render.gaugeBox(x, y, w, h, box, telemetry)
 
     -- Draw rounded background for the gauge (full size)
     lcd.color(gaugeBgColor)
-    render.drawFilledRoundedRectangle(gauge_x, gauge_y, gauge_w, gauge_h, roundradius)
+    drawFilledRoundedRectangle(gauge_x, gauge_y, gauge_w, gauge_h, roundradius)
 
     -- Draw the gauge fill as a rounded rectangle (or circle/capsule)
-    local gaugeMin = getParam(box, "gaugemin") or 0
-    local gaugeMax = getParam(box, "gaugemax") or 100
-    local gaugeOrientation = getParam(box, "gaugeorientation") or "vertical"
+    local gaugeMin = utils.getParam(box, "gaugemin") or 0
+    local gaugeMax = utils.getParam(box, "gaugemax") or 100
+    local gaugeOrientation = utils.getParam(box, "gaugeorientation") or "vertical"
     local percent = 0
     if value ~= nil and gaugeMax ~= gaugeMin then
         percent = (value - gaugeMin) / (gaugeMax - gaugeMin)
@@ -388,7 +369,7 @@ function render.gaugeBox(x, y, w, h, box, telemetry)
             local fillH = math.floor(gauge_h * percent)
             local fillY = gauge_y + gauge_h - fillH
             if fillH > 2*roundradius then
-                render.drawFilledRoundedRectangle(gauge_x, fillY, gauge_w, fillH, roundradius)
+                drawFilledRoundedRectangle(gauge_x, fillY, gauge_w, fillH, roundradius)
             elseif fillH > 0 then
                 -- Capsule or circle
                 local cx = gauge_x + gauge_w/2
@@ -399,7 +380,7 @@ function render.gaugeBox(x, y, w, h, box, telemetry)
         else
             local fillW = math.floor(gauge_w * percent)
             if fillW > 2*roundradius then
-                render.drawFilledRoundedRectangle(gauge_x, gauge_y, fillW, gauge_h, roundradius)
+                drawFilledRoundedRectangle(gauge_x, gauge_y, fillW, gauge_h, roundradius)
             elseif fillW > 0 then
                 local cx = gauge_x + fillW/2
                 local cy = gauge_y + gauge_h/2
@@ -410,11 +391,11 @@ function render.gaugeBox(x, y, w, h, box, telemetry)
     end
 
     -- Overlay value text (same as before)
-    local valuepadding = getParam(box, "valuepadding") or 0
-    local valuepaddingleft = getParam(box, "valuepaddingleft") or valuepadding
-    local valuepaddingright = getParam(box, "valuepaddingright") or valuepadding
-    local valuepaddingtop = getParam(box, "valuepaddingtop") or valuepadding
-    local valuepaddingbottom = getParam(box, "valuepaddingbottom") or valuepadding
+    local valuepadding = utils.getParam(box, "valuepadding") or 0
+    local valuepaddingleft = utils.getParam(box, "valuepaddingleft") or valuepadding
+    local valuepaddingright = utils.getParam(box, "valuepaddingright") or valuepadding
+    local valuepaddingtop = utils.getParam(box, "valuepaddingtop") or valuepadding
+    local valuepaddingbottom = utils.getParam(box, "valuepaddingbottom") or valuepadding
 
     if displayValue ~= nil then
         local str = tostring(displayValue) .. (displayUnit or "")
@@ -448,7 +429,7 @@ function render.gaugeBox(x, y, w, h, box, telemetry)
         local region_h = h - valuepaddingtop - valuepaddingbottom
 
         local sy = region_y + (region_h - bestH) / 2
-        local align = (getParam(box, "valuealign") or "center"):lower()
+        local align = (utils.getParam(box, "valuealign") or "center"):lower()
         local sx
         if align == "left" then
             sx = region_x
@@ -491,21 +472,21 @@ function render.gaugeBox(x, y, w, h, box, telemetry)
     end
 
     -- Overlay title (top or bottom)
-    if getParam(box, "title") then
-        local titlepadding = getParam(box, "titlepadding") or 0
-        local titlepaddingleft = getParam(box, "titlepaddingleft") or titlepadding
-        local titlepaddingright = getParam(box, "titlepaddingright") or titlepadding
-        local titlepaddingtop = getParam(box, "titlepaddingtop") or titlepadding
-        local titlepaddingbottom = getParam(box, "titlepaddingbottom") or titlepadding
+    if utils.getParam(box, "title") then
+        local titlepadding = utils.getParam(box, "titlepadding") or 0
+        local titlepaddingleft = utils.getParam(box, "titlepaddingleft") or titlepadding
+        local titlepaddingright = utils.getParam(box, "titlepaddingright") or titlepadding
+        local titlepaddingtop = utils.getParam(box, "titlepaddingtop") or titlepadding
+        local titlepaddingbottom = utils.getParam(box, "titlepaddingbottom") or titlepadding
 
         lcd.font(FONT_XS)
-        local tsizeW, tsizeH = lcd.getTextSize(getParam(box, "title"))
+        local tsizeW, tsizeH = lcd.getTextSize(utils.getParam(box, "title"))
         local region_x = x + titlepaddingleft
         local region_w = w - titlepaddingleft - titlepaddingright
-        local sy = (getParam(box, "titlepos") == "bottom")
+        local sy = (utils.getParam(box, "titlepos") == "bottom")
             and (y + h - titlepaddingbottom - tsizeH)
             or (y + titlepaddingtop)
-        local align = (getParam(box, "titlealign") or "center"):lower()
+        local align = (utils.getParam(box, "titlealign") or "center"):lower()
         local sx
         if align == "left" then
             sx = region_x
@@ -514,17 +495,17 @@ function render.gaugeBox(x, y, w, h, box, telemetry)
         else
             sx = region_x + (region_w - tsizeW) / 2
         end
-        lcd.color(utils.resolveColor(getParam(box, "titlecolor")) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90)))
-        lcd.drawText(sx, sy, getParam(box, "title"))
+        lcd.color(utils.resolveColor(utils.getParam(box, "titlecolor")) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90)))
+        lcd.drawText(sx, sy, utils.getParam(box, "title"))
     end
 end
 
 
 
 -- Fuel Gauge Box: Easy, ready-to-use fuel gauge for end users.
-function render.functionFuelGuage(x, y, w, h, box, telemetry)
+function render.fuelgauge(x, y, w, h, box, telemetry)
 
-    x, y = applyOffset(x, y, box)
+    x, y = utils.applyOffset(x, y, box)
 
     -- Default parameters for fuel gauge
     local defaults = {
@@ -554,12 +535,12 @@ function render.functionFuelGuage(x, y, w, h, box, telemetry)
     for k,v in pairs(box or {}) do fuelBox[k] = v end
 
     -- Use the existing gaugeBox rendering logic (re-uses your existing styling)
-    return render.gaugeBox(x, y, w, h, fuelBox, telemetry)
+    return render.gauge(x, y, w, h, fuelBox, telemetry)
 end
 
-function render.functionVoltageGauge(x, y, w, h, box, telemetry)
+function render.voltagegauge(x, y, w, h, box, telemetry)
 
-    x, y = applyOffset(x, y, box)
+    x, y = utils.applyOffset(x, y, box)
 
     -- Default parameters for voltage gauge
     local defaults = {
@@ -615,15 +596,15 @@ function render.functionVoltageGauge(x, y, w, h, box, telemetry)
     for k,v in pairs(defaults) do voltBox[k] = v end
     for k,v in pairs(box or {}) do voltBox[k] = v end
 
-    return render.gaugeBox(x, y, w, h, voltBox, telemetry)
+    return render.gauge(x, y, w, h, voltBox, telemetry)
 end
 
 -- Advanced Battery Gauge Box
-function render.batteryAdvancedBox(x, y, w, h, box, telemetry)
-    x, y = applyOffset(x, y, box)
+function render.batteryadvanced(x, y, w, h, box, telemetry)
+    x, y = utils.applyOffset(x, y, box)
 
     -- default gauge rendering
-    render.gaugeBox(x, y, w, h, box, telemetry)
+    render.gauge(x, y, w, h, box, telemetry)
 
     -- Retrieve battery telemetry
     local get = telemetry and telemetry.getSensorSource
@@ -634,7 +615,7 @@ function render.batteryAdvancedBox(x, y, w, h, box, telemetry)
     local cellCount = cellCountSensor and cellCountSensor:value()
     local consumption = consumptionSensor and consumptionSensor:value()
 
-    local transform = getParam(box, "transform")
+    local transform = utils.getParam(box, "transform")
     if transform then
         if type(transform) == "string" and math[transform] then
             voltage = voltage and math[transform](voltage)
@@ -666,7 +647,7 @@ function render.batteryAdvancedBox(x, y, w, h, box, telemetry)
     local infoX = x + w - infoW + paddingX
     local maxRight = x + w - 2
 
-    lcd.color(utils.resolveColor(getParam(box, "textColor")) or lcd.RGB(255, 255, 255))
+    lcd.color(utils.resolveColor(utils.getParam(box, "textColor")) or lcd.RGB(255, 255, 255))
     lcd.drawText(math.min(infoX, maxRight - textW1), yStart, line1)
     lcd.drawText(math.min(infoX, maxRight - textW2), yStart + textH1 + 2, line2)
 end
@@ -674,7 +655,7 @@ end
 -- Extend render.lua with support for type = "dial"
 
 
-rfsuite.session.dialImageCachee = {}
+rfsuite.session.dialImageCache = {}
 local rotatedPointerCache = {}
 local lastDialValue = {}
 local lastRotatedKey = {}
@@ -700,13 +681,13 @@ end
 
 local function loadDialAssets(panelPath, pointerPath)
     local key = (panelPath or "") .. ":" .. (pointerPath or "")
-    if not rfsuite.session.dialImageCachee[key] then
-        rfsuite.session.dialImageCachee[key] = {
+    if not rfsuite.session.dialImageCache[key] then
+        rfsuite.session.dialImageCache[key] = {
             panel = rfsuite.utils.loadImage(panelPath),
             pointer = rfsuite.utils.loadImage(pointerPath)
         }
     end
-    return rfsuite.session.dialImageCachee[key].panel, rfsuite.session.dialImageCachee[key].pointer
+    return rfsuite.session.dialImageCache[key].panel, rfsuite.session.dialImageCache[key].pointer
 end
 
 local function calDialAngle(percent)
@@ -748,20 +729,20 @@ local function computeDrawArea(img, x, y, w, h, aspect, align)
     return drawX, drawY, drawW, drawH
 end
 
-function render.dialBox(x, y, w, h, box, telemetry)
-    x, y = applyOffset(x, y, box)
+function render.dial(x, y, w, h, box, telemetry)
+    x, y = utils.applyOffset(x, y, box)
 
     -- Draw box background (support bgColor)
-    local bgColor = utils.resolveColor(getParam(box, "bgcolor")) or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
+    local bgColor = utils.resolveColor(utils.getParam(box, "bgcolor")) or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
     lcd.color(bgColor)
     lcd.drawFilledRectangle(x, y, w, h)
 
     local value = nil
-    local source = getParam(box, "source")
+    local source = utils.getParam(box, "source")
     if source then
         local sensor = telemetry and telemetry.getSensorSource(source)
         value = sensor and sensor:value()
-        local transform = getParam(box, "transform")
+        local transform = utils.getParam(box, "transform")
         if type(transform) == "string" and math[transform] then
             value = value and math[transform](value)
         elseif type(transform) == "function" then
@@ -771,22 +752,22 @@ function render.dialBox(x, y, w, h, box, telemetry)
         end
     end
 
-    local displayValue = value or getParam(box, "novalue") or "-"
-    local unit = getParam(box, "unit")
-    local min = getParam(box, "min") or 0
-    local max = getParam(box, "max") or 100
+    local displayValue = value or utils.getParam(box, "novalue") or "-"
+    local unit = utils.getParam(box, "unit")
+    local min = utils.getParam(box, "min") or 0
+    local max = utils.getParam(box, "max") or 100
     local percent = 0
     if value and max ~= min then
         percent = ((value - min) / (max - min)) * 100
         percent = math.max(0, math.min(100, percent))
     end
 
-    local aspect = getParam(box, "aspect")
-    local align = getParam(box, "align") or "center"
+    local aspect = utils.getParam(box, "aspect")
+    local align = utils.getParam(box, "align") or "center"
 
     -- New flexible dial/pointer asset logic:
-    local dial = getParam(box, "dial")
-    local pointer = getParam(box, "pointer")
+    local dial = utils.getParam(box, "dial")
+    local pointer = utils.getParam(box, "pointer")
     local panelPath = resolveDialAsset(dial, "widgets/dashboard/gfx/dials") or "widgets/dashboard/gfx/panel1.png"
     local pointerPath = resolveDialAsset(pointer, "widgets/dashboard/gfx/pointers") or "widgets/dashboard/gfx/pointer1.png"
 
@@ -813,7 +794,7 @@ function render.dialBox(x, y, w, h, box, telemetry)
     end
 
  -- Optional title and value
-    local title = getParam(box, "title")
+    local title = utils.getParam(box, "title")
     if title then
         lcd.font(FONT_XS)
         local tW, tH = lcd.getTextSize(title)
@@ -837,27 +818,27 @@ function render.dialBox(x, y, w, h, box, telemetry)
 end
 
 
-function render.flightCountBox(x, y, w, h, box)
-    x, y = applyOffset(x, y, box)
+function render.flightcount(x, y, w, h, box)
+    x, y = utils.applyOffset(x, y, box)
 
     local displayValue = rfsuite.ini.getvalue(rfsuite.session.modelPreferences, "general", "flightcount")
     if displayValue == nil then
-        displayValue = getParam(box, "novalue") or "-"
+        displayValue = utils.getParam(box, "novalue") or "-"
     end
-    utils.telemetryBox(
+    utils.box(
         x, y, w, h,
-        getParam(box, "color"), getParam(box, "title"), displayValue, getParam(box, "unit"), getParam(box, "bgcolor"),
-        getParam(box, "titlealign"), getParam(box, "valuealign"), getParam(box, "titlecolor"), getParam(box, "titlepos"),
-        getParam(box, "titlepadding"), getParam(box, "titlepaddingleft"), getParam(box, "titlepaddingright"),
-        getParam(box, "titlepaddingtop"), getParam(box, "titlepaddingbottom"),
-        getParam(box, "valuepadding"), getParam(box, "valuepaddingleft"), getParam(box, "valuepaddingright"),
-        getParam(box, "valuepaddingtop"), getParam(box, "valuepaddingbottom")
+        utils.getParam(box, "color"), utils.getParam(box, "title"), displayValue, utils.getParam(box, "unit"), utils.getParam(box, "bgcolor"),
+        utils.getParam(box, "titlealign"), utils.getParam(box, "valuealign"), utils.getParam(box, "titlecolor"), utils.getParam(box, "titlepos"),
+        utils.getParam(box, "titlepadding"), utils.getParam(box, "titlepaddingleft"), utils.getParam(box, "titlepaddingright"),
+        utils.getParam(box, "titlepaddingtop"), utils.getParam(box, "titlepaddingbottom"),
+        utils.getParam(box, "valuepadding"), utils.getParam(box, "valuepaddingleft"), utils.getParam(box, "valuepaddingright"),
+        utils.getParam(box, "valuepaddingtop"), utils.getParam(box, "valuepaddingbottom")
     )
 end
 
 -- Draws an arc from angle1 to angle2 (degrees, counter-clockwise, 0°=right)
 -- Draws a thick arc by stamping filled circles along the arc path.
-function render.drawArc(cx, cy, radius, thickness, angleStart, angleEnd, color)
+local function drawArc(cx, cy, radius, thickness, angleStart, angleEnd, color)
     local step = 4  -- degrees per circle; decrease for smoother, increase for speed
     local rad_thick = thickness / 2
     angleStart = math.rad(angleStart)
@@ -878,27 +859,27 @@ function render.drawArc(cx, cy, radius, thickness, angleStart, angleEnd, color)
 end
 
 
-function render.arcGaugeBox(x, y, w, h, box, telemetry)
-    local bgColor = utils.resolveColor(getParam(box, "bgcolor")) or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
+function render.arcgauge(x, y, w, h, box, telemetry)
+    local bgColor = utils.resolveColor(utils.getParam(box, "bgcolor")) or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
     lcd.color(bgColor)
     lcd.drawFilledRectangle(x, y, w, h)
-    local arcOffsetY = getParam(box, "arcOffsetY") or 0
+    local arcOffsetY = utils.getParam(box, "arcOffsetY") or 0
     local cx = x + w/2
     local cy = y + h/2 - arcOffsetY
     local radius = math.min(w, h) * 0.42
     local thickness = math.max(6, radius * 0.22)
 
-    -- Get values using getParam for function/constant support
-    local min = getParam(box, "min") or 0
-    local max = getParam(box, "max") or 100
+    -- Get values using utils.getParam for function/constant support
+    local min = utils.getParam(box, "min") or 0
+    local max = utils.getParam(box, "max") or 100
 
     -- Value: support function for box.value or box.source
     local value = nil
-    local source = getParam(box, "source")
+    local source = utils.getParam(box, "source")
     if source then
         local sensor = telemetry and telemetry.getSensorSource(source)
         value = sensor and sensor:value()
-        local transform = getParam(box, "transform")
+        local transform = utils.getParam(box, "transform")
         if type(transform) == "string" and math[transform] then
             value = value and math[transform](value)
         elseif type(transform) == "function" then
@@ -908,10 +889,10 @@ function render.arcGaugeBox(x, y, w, h, box, telemetry)
         end
     end
 
-    local displayValue = value or getParam(box, "novalue") or "-"
-    local displayUnit = getParam(box, "unit")
-    local min = getParam(box, "gaugemin") or 0
-    local max = getParam(box, "gaugemax") or 100
+    local displayValue = value or utils.getParam(box, "novalue") or "-"
+    local displayUnit = utils.getParam(box, "unit")
+    local min = utils.getParam(box, "gaugemin") or 0
+    local max = utils.getParam(box, "gaugemax") or 100
 
     local percent = 0
     if value and max ~= min then
@@ -920,20 +901,20 @@ function render.arcGaugeBox(x, y, w, h, box, telemetry)
     end
 
     -- Arc angles
-    local startAngle = getParam(box, "startAngle") or 135
-    local sweep = getParam(box, "sweep") or 270
+    local startAngle = utils.getParam(box, "startAngle") or 135
+    local sweep = utils.getParam(box, "sweep") or 270
     local endAngle = startAngle - sweep * percent
 
     -- Draw base (background) arc
-    render.drawArc(
+    drawArc(
         cx, cy, radius, thickness,
         startAngle, startAngle - sweep,
-        utils.resolveColor(getParam(box, "arcBgColor")) or lcd.RGB(55,55,55)
+        utils.resolveColor(utils.getParam(box, "arcBgColor")) or lcd.RGB(55,55,55)
     )
 
     -- Draw value arc (with thresholds, supporting function in thresholds)
-    local arcColor = utils.resolveColor(getParam(box, "arcColor")) or lcd.RGB(255,128,0)
-    local thresholds = getParam(box, "thresholds")
+    local arcColor = utils.resolveColor(utils.getParam(box, "arcColor")) or lcd.RGB(255,128,0)
+    local thresholds = utils.getParam(box, "thresholds")
     if thresholds and value ~= nil then
         for _, t in ipairs(thresholds) do
             local t_val = type(t.value) == "function" and t.value(box, value) or t.value
@@ -945,17 +926,17 @@ function render.arcGaugeBox(x, y, w, h, box, telemetry)
         end
     end
     if percent > 0 then
-        render.drawArc(cx, cy, radius, thickness, startAngle, endAngle, arcColor)
+        drawArc(cx, cy, radius, thickness, startAngle, endAngle, arcColor)
     end
 
     -- Value text (centered)
-    local fontName = getParam(box, "font")
+    local fontName = utils.getParam(box, "font")
     lcd.font(fontName and _G[fontName] or FONT_XL)
-    lcd.color(utils.resolveColor(getParam(box, "textColor")) or lcd.RGB(255,255,255))
+    lcd.color(utils.resolveColor(utils.getParam(box, "textColor")) or lcd.RGB(255,255,255))
 
-    local valueFormat = getParam(box, "valueFormat")
-    local unit = getParam(box, "unit") or ""
-    local decimals = getParam(box, "decimals")
+    local valueFormat = utils.getParam(box, "valueFormat")
+    local unit = utils.getParam(box, "unit") or ""
+    local decimals = utils.getParam(box, "decimals")
     local valStr
 
     if valueFormat then
@@ -983,26 +964,26 @@ function render.arcGaugeBox(x, y, w, h, box, telemetry)
     valStr = valStr .. unit
 
     local tw, th = lcd.getTextSize(valStr)
-    local xOffset = getParam(box, "textoffsetx") or 0
+    local xOffset = utils.getParam(box, "textoffsetx") or 0
     lcd.drawText(cx - tw/2 + xOffset, cy - th/2, valStr)
 
     -- Title above, subText below
-    local title = getParam(box, "title")
+    local title = utils.getParam(box, "title")
     if title then
-        local titlepadding = getParam(box, "titlepadding") or 0
-        local titlepaddingleft = getParam(box, "titlepaddingleft") or titlepadding
-        local titlepaddingright = getParam(box, "titlepaddingright") or titlepadding
-        local titlepaddingtop = getParam(box, "titlepaddingtop") or titlepadding
-        local titlepaddingbottom = getParam(box, "titlepaddingbottom") or titlepadding
+        local titlepadding = utils.getParam(box, "titlepadding") or 0
+        local titlepaddingleft = utils.getParam(box, "titlepaddingleft") or titlepadding
+        local titlepaddingright = utils.getParam(box, "titlepaddingright") or titlepadding
+        local titlepaddingtop = utils.getParam(box, "titlepaddingtop") or titlepadding
+        local titlepaddingbottom = utils.getParam(box, "titlepaddingbottom") or titlepadding
 
         lcd.font(FONT_XS)
         local tsizeW, tsizeH = lcd.getTextSize(title)
         local region_x = x + titlepaddingleft
         local region_w = w - titlepaddingleft - titlepaddingright
-        local sy = (getParam(box, "titlepos") == "bottom")
+        local sy = (utils.getParam(box, "titlepos") == "bottom")
             and (y + h - titlepaddingbottom - tsizeH)
             or (y + titlepaddingtop)
-        local align = (getParam(box, "titlealign") or "center"):lower()
+        local align = (utils.getParam(box, "titlealign") or "center"):lower()
         local sx
         if align == "left" then
             sx = region_x
@@ -1011,10 +992,10 @@ function render.arcGaugeBox(x, y, w, h, box, telemetry)
         else
             sx = region_x + (region_w - tsizeW) / 2
         end
-        lcd.color(utils.resolveColor(getParam(box, "titlecolor")) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90)))
+        lcd.color(utils.resolveColor(utils.getParam(box, "titlecolor")) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90)))
         lcd.drawText(sx, sy, title)
     end
-    local subText = getParam(box, "subText")
+    local subText = utils.getParam(box, "subText")
     if subText then
         lcd.font(FONT_XS)
         local tw, th = lcd.getTextSize(subText)
@@ -1026,25 +1007,25 @@ end
 
 
 -- Dispatcher for rendering boxes by type.
-function render.renderBox(boxType, x, y, w, h, box, telemetry)
+function render.object(boxType, x, y, w, h, box, telemetry)
     local funcMap = {
-        telemetry = render.telemetryBox,
-        text = render.textBox,
-        image = render.imageBox,
-        modelimage = render.modelImageBox,
-        governor = render.governorBox,
-        craftname = render.craftnameBox,
-        apiversion = render.apiversionBox,
-        session = render.sessionBox,
-        blackbox = render.blackboxBox,
-        gauge = render.gaugeBox,
-        fuelgauge = render.functionFuelGuage,
-        voltagegauge = render.functionVoltageGauge,
-        flightcount = render.flightCountBox,
-        dial = render.dialBox,
-        arcgauge = render.arcGaugeBox,
-        batteryadvanced = render.batteryAdvancedBox,
-        ["function"] = render.functionBox,
+        telemetry = render.telemetry,
+        text = render.text,
+        image = render.image,
+        modelimage = render.modelimage,
+        governor = render.governor,
+        craftname = render.craftname,
+        apiversion = render.apiversion,
+        session = render.session,
+        blackbox = render.blackbox,
+        gauge = render.gauge,
+        fuelgauge = render.fuelgauge,
+        voltagegauge = render.voltagegauge,
+        flightcount = render.flightcount,
+        dial = render.dial,
+        arcgauge = render.arcgauge,
+        batteryadvanced = render.batteryadvanced,
+        ["function"] = render.func,
     }
     local fn = funcMap[boxType]
     if fn then
