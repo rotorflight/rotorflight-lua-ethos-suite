@@ -27,7 +27,6 @@ local config = {}
 -- Configuration settings for the Rotorflight Lua Ethos Suite
 config.toolName = "Rotorflight"                                                     -- name of the tool 
 config.icon = lcd.loadMask("app/gfx/icon.png")                                      -- icon
-config.icon_logtool = lcd.loadMask("app/gfx/icon_logtool.png")                      -- icon
 config.icon_unsupported = lcd.loadMask("app/gfx/unsupported.png")                   -- icon
 config.version = {major = 2, minor = 2, revision = 0, suffix = "RC4"}               -- version of the script
 config.ethosVersion = {1, 6, 2}                                                      -- min version of ethos supported by this script                                                     
@@ -319,18 +318,6 @@ local function init()
         name = rfsuite.config.toolName,
         icon = rfsuite.config.icon,
         create = rfsuite.app.create,
-        wakeup = rfsuite.app.wakeup,
-        paint = rfsuite.app.paint,
-        close = rfsuite.app.close
-    })
-
-    -- Registers the log tool with the specified configuration.
-    -- This tool handles events, creation, wakeup, painting, and closing.
-    system.registerSystemTool({
-        event = rfsuite.app.event,
-        name = rfsuite.config.toolName,
-        icon = rfsuite.config.icon_logtool,
-        create = rfsuite.app.create_logtool,
         wakeup = rfsuite.app.wakeup,
         paint = rfsuite.app.paint,
         close = rfsuite.app.close

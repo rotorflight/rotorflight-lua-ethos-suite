@@ -31,18 +31,21 @@ local function getLogPath()
     os.mkdir("LOGS:")
     os.mkdir("LOGS:/rfsuite")
     os.mkdir("LOGS:/rfsuite/telemetry")
-    return "LOGS:/rfsuite/telemetry/"
+    os.mkdir("LOGS:/rfsuite/telemetry/" .. rfsuite.session.mcu_id)
+    return "LOGS:/rfsuite/telemetry/" .. rfsuite.session.mcu_id .. "/"
 end
 
 local function getLogs(logDir)
+
     local files = system.listFiles(logDir)
     local csvFiles = {}
 
     -- Extract CSV files and parse date-time from filenames
     for i = 1, #files do
         if files[i] ~= ".." and files[i]:sub(-4) == ".csv" then
-            local datePart, timePart = files[i]:match("_(%d%d%d%d%-%d%d%-%d%d)_(%d%d%-%d%d%-%d%d)_")
+            local datePart, timePart = files[i]:match("(%d%d%d%d%-%d%d%-%d%d)_(%d%d%-%d%d%-%d%d)_")
             if datePart and timePart then
+                print("Found CSV file: " .. files[i])
                 local sortableDateTime = datePart .. "T" .. timePart -- Concatenating for sorting
                 table.insert(csvFiles, {filename = files[i], datetime = sortableDateTime})
             end
@@ -73,13 +76,6 @@ local function extractShortTimestamp(filename)
         return date:gsub("%-", "/") .. " " .. time:gsub("%-", ":")
     end
     return nil -- Return nil if the pattern doesn't match
-end
-
-function extractName(input)
-    -- Match everything before the first underscore followed by a date pattern
-    local name = input:match("^(.-)_%d%d%d%d%-%d%d%-%d%d")
-    name = string.gsub(name, "_", " ")
-    return name
 end
 
 local function openPage(pidx, title, script, displaymode)
@@ -146,11 +142,12 @@ local function openPage(pidx, title, script, displaymode)
     local padding
     local numPerRow
 
+    numPerRow = 3 -- = rfsuite.app.radio.buttonsPerRow - 1
     padding = rfsuite.app.radio.buttonPaddingSmall
     -- buttonW = (rfsuite.session.lcdWidth - padding) / (rfsuite.app.radio.logGraphButtonsPerRow - 1) - padding
-    buttonW = (rfsuite.session.lcdWidth - padding) / (2) - padding / 2
+    buttonW = (rfsuite.session.lcdWidth - (numPerRow + 1) * padding) / numPerRow
     buttonH = rfsuite.app.radio.navbuttonHeight
-    numPerRow = 2 -- = rfsuite.app.radio.buttonsPerRow - 1
+
 
     local x = windowWidth - buttonW + 10
 
@@ -191,7 +188,7 @@ local function openPage(pidx, title, script, displaymode)
             if lc >= 0 then bx = (buttonW + padding) * lc end
 
             rfsuite.app.formFields[pidx] = form.addButton(nil, {x = bx, y = y, w = buttonW, h = buttonH}, {
-                text = extractName(name) .. " " .. extractShortTimestamp(name),
+                text = extractShortTimestamp(name),
                 options = FONT_S,
                 paint = function()
                 end,

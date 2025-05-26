@@ -43,18 +43,16 @@ local cachedSensors = {} -- cache for sensor sources
 
 
 local function generateLogFilename()
-    local craftName = rfsuite.utils.sanitize_filename(rfsuite.session.craftName)
-    local modelName = (craftName and craftName ~= "") and craftName or model.name()
-    modelName = string.gsub(modelName, "%s+", "_"):gsub("%W", "_")
     local timestamp = os.date("%Y-%m-%d_%H-%M-%S")
     local uniquePart = math.floor(os.clock() * 1000)
-    return modelName .. "_" .. timestamp .. "_" .. uniquePart .. ".csv"
+    return  timestamp .. "_" .. uniquePart .. ".csv"
 end
 
 local function checkLogdirExists()
         os.mkdir("LOGS:")
         os.mkdir("LOGS:/rfsuite")
         os.mkdir("LOGS:/rfsuite/telemetry")
+        os.mkdir("LOGS:/rfsuite/telemetry/" .. rfsuite.session.mcu_id)
 end
 
 function logging.queueLog(msg)
@@ -65,7 +63,7 @@ function logging.writeLogs(forcewrite)
     local max_lines = forcewrite and #log_queue or 10
     if #log_queue > 0 and logFileName then
         rfsuite.utils.log("Write " .. #log_queue .. " lines to " .. logFileName,"info")
-        local filePath = "LOGS:rfsuite/telemetry/" .. logFileName
+        local filePath = "LOGS:rfsuite/telemetry/" .. rfsuite.session.mcu_id .. "/" .. logFileName
         local f = io.open(filePath, 'a')
         for i = 1, math.min(#log_queue, max_lines) do
             io.write(f, table.remove(log_queue, 1) .. "\n")
@@ -122,6 +120,11 @@ function logging.reset()
 end
 
 function logging.wakeup()
+
+    if not rfsuite.session.mcu_id then
+        return
+    end
+
     if not logDirChecked then
         checkLogdirExists()
         logDirChecked = true
