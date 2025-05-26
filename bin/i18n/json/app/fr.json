@@ -206,6 +206,11 @@
         "translation": "Theme",
         "needs_translation": "true"
       },
+      "dashboard_settings": {
+        "english": "Settings",
+        "translation": "Settings",
+        "needs_translation": "true"
+      },
       "dashboard_theme_preflight": {
         "english": "Preflight Theme",
         "translation": "Preflight Theme",

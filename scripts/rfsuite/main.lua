@@ -226,7 +226,7 @@ rfsuite.session.batteryConfig = nil
     -- consumptionWarningPercentage = nil
 rfsuite.session.modelPreferences = nil -- this is used to store the model preferences
 rfsuite.session.modelPreferencesFile = nil -- this is used to store the model preferences file path
-
+rfsuite.session.dashboardEditingTheme = nil -- this is used to store the dashboard theme being edited in settings
 
 --- Retrieves the version information of the rfsuite module.
 --- 

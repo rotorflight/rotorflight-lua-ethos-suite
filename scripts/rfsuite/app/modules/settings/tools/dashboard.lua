@@ -1,197 +1,154 @@
-local settings = {}
 
-local function openPage(pageIdx, title, script)
-    enableWakeup = true
-    rfsuite.app.triggers.closeProgressLoader = true
+
+local S_PAGES = {
+    {name = rfsuite.i18n.get("app.modules.settings.dashboard_theme"), script = "dashboard_theme.lua", image = "dashboard_theme.png"},
+    {name = rfsuite.i18n.get("app.modules.settings.dashboard_settings"), script = "dashboard_settings.lua", image = "dashboard_settings.png"},
+}
+
+local function openPage(pidx, title, script)
+
+
+    rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
+
+
+    rfsuite.app.triggers.isReady = false
+    rfsuite.app.uiState = rfsuite.app.uiStatus.mainMenu
+
     form.clear()
 
-    rfsuite.app.lastIdx    = pageIdx
-    rfsuite.app.lastTitle  = title
+    rfsuite.app.lastIdx = idx
+    rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-    rfsuite.app.ui.fieldHeader(
-        rfsuite.i18n.get("app.modules.settings.name") .. " / " .. rfsuite.i18n.get("app.modules.settings.dashboard")
-    )
-    rfsuite.session.formLineCnt = 0
+    ESC = {}
 
-    local formFieldCount = 0
-
-    settings = rfsuite.preferences.dashboard
-
-    formFieldCount = formFieldCount + 1
-    rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = form.addLine(rfsuite.i18n.get("app.modules.settings.dashboard_theme_preflight"))
-
-    -- get theme list
-    local themeList = rfsuite.widgets.dashboard.listThemes() 
-    local formattedThemes = {}
-    for i, theme in ipairs(themeList) do
-        table.insert(formattedThemes, { theme.name, theme.idx })
+    -- size of buttons
+    if rfsuite.preferences.general.iconsize == nil or rfsuite.preferences.general.iconsize == "" then
+        rfsuite.preferences.general.iconsize = 1
+    else
+        rfsuite.preferences.general.iconsize = tonumber(rfsuite.preferences.general.iconsize)
     end
-                                              
-    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.session.formLineCnt], nil, 
-                                                        formattedThemes, 
-                                                        function()
-                                                            if rfsuite.preferences and rfsuite.preferences.dashboard then
-                                                                local folderName = settings.theme_preflight
-                                                                for _, theme in ipairs(themeList) do
-                                                                    if (theme.source .. "/" .. theme.folder) == folderName then
-                                                                        return theme.idx
-                                                                    end
-                                                                end
-                                                            end
-                                                            return nil
-                                                        end, 
-                                                        function(newValue) 
-                                                            if rfsuite.preferences and rfsuite.preferences.dashboard then
-                                                                local theme = themeList[newValue]
-                                                                if theme then
-                                                                    settings.theme_preflight = theme.source .. "/" .. theme.folder
-                                                                end
-                                                            end
-                                                        end)     
 
-    formFieldCount = formFieldCount + 1
-    rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = form.addLine(rfsuite.i18n.get("app.modules.settings.dashboard_theme_inflight"))
+    local w, h = rfsuite.utils.getWindowSize()
+    local windowWidth = w
+    local windowHeight = h
+    local padding = rfsuite.app.radio.buttonPadding
 
-    -- get theme list
-    local themeList = rfsuite.widgets.dashboard.listThemes() 
-    local formattedThemes = {}
-    for i, theme in ipairs(themeList) do
-        table.insert(formattedThemes, { theme.name, theme.idx })
-    end
-                                              
-    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.session.formLineCnt], nil, 
-                                                        formattedThemes, 
-                                                        function()
-                                                            if rfsuite.preferences and rfsuite.preferences.dashboard then
-                                                                local folderName = settings.theme_inflight
-                                                                for _, theme in ipairs(themeList) do
-                                                                    if (theme.source .. "/" .. theme.folder) == folderName then
-                                                                        return theme.idx
-                                                                    end
-                                                                end
-                                                            end
-                                                            return nil
-                                                        end, 
-                                                        function(newValue) 
-                                                            if rfsuite.preferences and rfsuite.preferences.dashboard then
-                                                                local theme = themeList[newValue]
-                                                                if theme then
-                                                                    settings.theme_inflight = theme.source .. "/" .. theme.folder
-                                                                end
-                                                            end
-                                                        end)                                                             
-    
-    formFieldCount = formFieldCount + 1
-    rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = form.addLine(rfsuite.i18n.get("app.modules.settings.dashboard_theme_postflight"))
+    local sc
+    local panel
 
-    -- get theme list
-    local themeList = rfsuite.widgets.dashboard.listThemes() 
-    local formattedThemes = {}
-    for i, theme in ipairs(themeList) do
-        table.insert(formattedThemes, { theme.name, theme.idx })
-    end
-                                              
-    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.session.formLineCnt], nil, 
-                                                        formattedThemes, 
-                                                        function()
-                                                            if rfsuite.preferences and rfsuite.preferences.dashboard then
-                                                                local folderName = settings.theme_postflight
-                                                                for _, theme in ipairs(themeList) do
-                                                                    if (theme.source .. "/" .. theme.folder) == folderName then
-                                                                        return theme.idx
-                                                                    end
-                                                                end
-                                                            end
-                                                            return nil
-                                                        end, 
-                                                        function(newValue) 
-                                                            if rfsuite.preferences and rfsuite.preferences.dashboard then
-                                                                local theme = themeList[newValue]
-                                                                if theme then
-                                                                    settings.theme_postflight = theme.source .. "/" .. theme.folder
-                                                                end
-                                                            end
-                                                        end)      
+    form.addLine(rfsuite.i18n.get("app.modules.settings.name") .. " / " .. rfsuite.i18n.get("app.modules.settings.dashboard"))
 
-end
+    buttonW = 100
+    local x = windowWidth - buttonW - 10
 
-local function onNavMenu()
-    rfsuite.app.ui.progressDisplay()
-    rfsuite.app.ui.openPage(
-        pageIdx,
-        rfsuite.i18n.get("app.modules.settings.name"),
-        "settings/settings.lua"
-    )
-end
+    rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {x = x, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}, {
+        text = "MENU",
+        icon = nil,
+        options = FONT_S,
+        paint = function()
+        end,
+        press = function()
+            rfsuite.app.lastIdx = nil
+            rfsuite.session.lastPage = nil
 
-local function onSaveMenu()
-    local buttons = {
-        {
-            label  = rfsuite.i18n.get("app.btn_ok_long"),
-            action = function()
-                local msg = rfsuite.i18n.get("app.modules.profile_select.save_prompt_local")
-                rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
-                for key, value in pairs(settings) do
-                    rfsuite.preferences.dashboard[key] = value
-                end
-                rfsuite.ini.save_ini_file(
-                    "SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini",
-                    rfsuite.preferences
-                )
-                -- update dashboard theme
-                rfsuite.widgets.dashboard.reload_themes()
-                -- close save progress
-                rfsuite.app.triggers.closeSave = true
-                return true
-            end,
-        },
-        {
-            label  = rfsuite.i18n.get("app.modules.profile_select.cancel"),
-            action = function()
-                return true
-            end,
-        },
-    }
+            if rfsuite.app.Page and rfsuite.app.Page.onNavMenu then rfsuite.app.Page.onNavMenu(rfsuite.app.Page) end
 
-    form.openDialog({
-        width   = nil,
-        title   = rfsuite.i18n.get("app.modules.profile_select.save_settings"),
-        message = rfsuite.i18n.get("app.modules.profile_select.save_prompt_local"),
-        buttons = buttons,
-        wakeup  = function() end,
-        paint   = function() end,
-        options = TEXT_LEFT,
+            rfsuite.app.ui.openMainMenu()
+        end
     })
+    rfsuite.app.formNavigationFields['menu']:focus()
+
+    local buttonW
+    local buttonH
+    local padding
+    local numPerRow
+
+    -- TEXT ICONS
+    -- TEXT ICONS
+    if rfsuite.preferences.general.iconsize == 0 then
+        padding = rfsuite.app.radio.buttonPaddingSmall
+        buttonW = (rfsuite.session.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
+        buttonH = rfsuite.app.radio.navbuttonHeight
+        numPerRow = rfsuite.app.radio.buttonsPerRow
+    end
+    -- SMALL ICONS
+    if rfsuite.preferences.general.iconsize == 1 then
+
+        padding = rfsuite.app.radio.buttonPaddingSmall
+        buttonW = rfsuite.app.radio.buttonWidthSmall
+        buttonH = rfsuite.app.radio.buttonHeightSmall
+        numPerRow = rfsuite.app.radio.buttonsPerRowSmall
+    end
+    -- LARGE ICONS
+    if rfsuite.preferences.general.iconsize == 2 then
+
+        padding = rfsuite.app.radio.buttonPadding
+        buttonW = rfsuite.app.radio.buttonWidth
+        buttonH = rfsuite.app.radio.buttonHeight
+        numPerRow = rfsuite.app.radio.buttonsPerRow
+    end
+
+
+    if rfsuite.app.gfx_buttons["settings_dashboard"] == nil then rfsuite.app.gfx_buttons["settings_dashboard"] = {} end
+    if rfsuite.app.menuLastSelected["settings_dashboard"] == nil then rfsuite.app.menuLastSelected["settings_dashboard"] = 1 end
+
+
+    local Menu = assert(rfsuite.compiler.loadfile("app/modules/" .. script))()
+    local pages = S_PAGES
+    local lc = 0
+    local bx = 0
+
+
+
+    for pidx, pvalue in ipairs(S_PAGES) do
+
+        if lc == 0 then
+            if rfsuite.preferences.general.iconsize == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
+            if rfsuite.preferences.general.iconsize == 1 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
+            if rfsuite.preferences.general.iconsize == 2 then y = form.height() + rfsuite.app.radio.buttonPadding end
+        end
+
+        if lc >= 0 then bx = (buttonW + padding) * lc end
+
+        if rfsuite.preferences.general.iconsize ~= 0 then
+            if rfsuite.app.gfx_buttons["settings_dashboard"][pidx] == nil then rfsuite.app.gfx_buttons["settings_dashboard"][pidx] = lcd.loadMask("app/modules/settings/gfx/" .. pvalue.image) end
+        else
+            rfsuite.app.gfx_buttons["settings_dashboard"][pidx] = nil
+        end
+
+        rfsuite.app.formFields[pidx] = form.addButton(line, {x = bx, y = y, w = buttonW, h = buttonH}, {
+            text = pvalue.name,
+            icon = rfsuite.app.gfx_buttons["settings_dashboard"][pidx],
+            options = FONT_S,
+            paint = function()
+            end,
+            press = function()
+                rfsuite.app.menuLastSelected["settings_dashboard"] = pidx
+                rfsuite.app.ui.progressDisplay()
+                rfsuite.app.ui.openPage(pidx, pvalue.folder, "settings/tools/" .. pvalue.script)
+            end
+        })
+
+        if pvalue.disabled == true then rfsuite.app.formFields[pidx]:enable(false) end
+
+        if rfsuite.app.menuLastSelected["settings_dashboard"] == pidx then rfsuite.app.formFields[pidx]:focus() end
+
+        lc = lc + 1
+
+        if lc == numPerRow then lc = 0 end
+
+    end
+
+    rfsuite.app.triggers.closeProgressLoader = true
+    collectgarbage()
+    return
 end
 
-local function event(widget, category, value, x, y)
-    -- if close event detected go to section home page
-    if category == EVT_CLOSE and value == 0 or value == 35 then
-        rfsuite.app.ui.openPage(
-            pageIdx,
-            rfsuite.i18n.get("app.modules.settings.name"),
-            "settings/settings.lua"
-        )
-        return true
-    end
-end
+rfsuite.app.uiState = rfsuite.app.uiStatus.pages
 
 return {
-    event      = event,
-    openPage   = openPage,
-    wakeup     = wakeup,
-    onNavMenu  = onNavMenu,
-    onSaveMenu = onSaveMenu,
-    navButtons = {
-        menu   = true,
-        save   = true,
-        reload = false,
-        tool   = false,
-        help   = false,
-    },
+    pages = pages, 
+    openPage = openPage,
     API = {},
 }
