@@ -1,55 +1,13 @@
 --[[
 
  * Copyright (C) Rotorflight Project
- *
- *
  * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 3 as
- * published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- 
- * Note.  Some icons have been sourced from https://www.flaticon.com/
- * 
+ * compile.lua - Deferred/Throttled Lua Script Compilation and Caching with LRU in-memory cache
 
-* compile.lua - Deferred/Throttled Lua Script Compilation and Caching for Rotorflight Suite (Ethos)
-*
-* This module provides a system for deferred, throttled compilation and caching of Lua scripts
-* within the Rotorflight Suite for Ethos radios. It is designed to improve performance by
-* compiling scripts in the background and caching the compiled bytecode, while also supporting
-* developer options for raw or compiled loading.
-*
-* Features:
-*   - Deferred compilation: Scripts are queued and compiled at a throttled interval to avoid
-*     blocking the main thread or causing performance spikes.
-*   - Caching: Compiled scripts are stored in a cache directory and loaded from cache when available.
-*   - Startup delay: Compilation does not begin until a configurable delay after startup.
-*   - Logging: Optional timing and debug logging for developer diagnostics.
-*   - Compatibility: Falls back to raw script loading if compilation is disabled in preferences.
-*   - Safe: Uses pcall to catch and log errors during compilation or file operations.
-*   - Utility functions: Provides loadfile, dofile, and require replacements that respect the
-*     deferred compilation and caching system.
-*
-* Configuration:
-*   - Expects `rfsuite.config` and `rfsuite.preferences.developer` to be globally available.
-*   - Developer options can enable/disable compilation and timing logs.
-*
-* Notes:
-*   - The cache directory is created if it does not exist.
-*   - Script paths with the "SCRIPTS:" prefix are supported and sanitized for caching.
-*   - Some icons referenced in the project are sourced from https://www.flaticon.com/
-*   - Licensed under GPLv3 (see https://www.gnu.org/licenses/gpl-3.0.en.html).
-*
 * Usage:
 *   local compile = require("rfsuite.lib.compile")
 *   local chunk = compile.loadfile("myscript.lua")
 *   chunk() -- executes the loaded script
-*
 *   -- Or use compile.dofile / compile.require as drop-in replacements
 
 ]] --
@@ -67,11 +25,8 @@ if rfsuite and rfsuite.config then
   end
 end
 
--- Base and cache directories
 local baseDir     = "./"
 local compiledDir = baseDir .. "cache/"
-
--- Prefix for special script paths
 local SCRIPT_PREFIX = "SCRIPTS:"
 
 -- Ensure cache directory exists
@@ -94,7 +49,6 @@ do
   end
 end
 
--- Helper to strip SCRIPT_PREFIX
 local function strip_prefix(name)
   if name:sub(1, #SCRIPT_PREFIX) == SCRIPT_PREFIX then
     return name:sub(#SCRIPT_PREFIX + 1)
@@ -103,12 +57,61 @@ local function strip_prefix(name)
 end
 
 --------------------------------------------------
--- Throttled Compile Queue System (NEW SECTION)
+-- LRU Cache (in-memory loaders)
+--------------------------------------------------
+local function LRUCache(max_size)
+  local self = {
+    max_size = max_size or 10,
+    cache = {},
+    order = {},
+  }
+
+  function self:get(key)
+    local value = self.cache[key]
+    if value then
+      -- Move key to end (MRU)
+      for i, k in ipairs(self.order) do
+        if k == key then
+          table.remove(self.order, i)
+          break
+        end
+      end
+      table.insert(self.order, key)
+    end
+    return value
+  end
+
+  function self:set(key, value)
+    if not self.cache[key] then
+      table.insert(self.order, key)
+      if #self.order > self.max_size then
+        local oldest = table.remove(self.order, 1)
+        self.cache[oldest] = nil
+      end
+    else
+      for i, k in ipairs(self.order) do
+        if k == key then
+          table.remove(self.order, i)
+          break
+        end
+      end
+      table.insert(self.order, key)
+    end
+    self.cache[key] = value
+  end
+
+  return self
+end
+
+local lru_cache = LRUCache(20)
+
+--------------------------------------------------
+-- Throttled Compile Queue System
 --------------------------------------------------
 compile._queue = {}
 compile._queued_map = {}
 compile._lastCompile = 0
-compile._compileInterval = 2 -- seconds (adjust as needed)
+compile._compileInterval = 2 -- seconds
 
 function compile._enqueue(script, cache_path, cache_fname)
   if not compile._queued_map[cache_fname] then
@@ -119,14 +122,12 @@ end
 
 function compile.tick()
   local now = os.clock()
-  -- Only start compiling after startup delay
   if (now - compile._startTime) < compile._startupDelay then
     return
   end
   if #compile._queue > 0 and (now - compile._lastCompile) >= compile._compileInterval then
     local entry = table.remove(compile._queue, 1)
     compile._queued_map[entry.cache_fname] = nil
-    -- Try-catch in case compile or rename fails
     local ok, err = pcall(function()
       system.compile(entry.script)
       os.rename(entry.script .. "c", entry.cache_path)
@@ -144,34 +145,42 @@ function compile.tick()
 end
 
 function compile.loadfile(script)
-
-  compile.tick() 
-
+  compile.tick()
   local startTime
   if logTimings then
     startTime = os.clock()
   end
 
   local loader, which, cache_fname
-  if not rfsuite.preferences.developer.compile then
-    loader = loadfile
-    which = "raw"
-    loader = loader(script)
-  else
-    -- Prepare cache filename
-    local name_for_cache = strip_prefix(script)
-    local sanitized      = name_for_cache:gsub("/", "_")
-    cache_fname          = sanitized .. "c"
-    local cache_path     = compiledDir .. cache_fname
+  -- Prepare cache filename
+  local name_for_cache = strip_prefix(script)
+  local sanitized      = name_for_cache:gsub("/", "_")
+  cache_fname          = sanitized .. "c"
+  local cache_key      = cache_fname
 
-    if disk_cache[cache_fname] then
-      loader = loadfile(cache_path)
-      which = "compiled"
-    else
-      -- Queue compile, but return raw code for now
-      compile._enqueue(script, cache_path, cache_fname)
+  -- 1. Try LRU in-memory cache
+  loader = lru_cache:get(cache_key)
+  if loader then
+    which = "in-memory"
+  else
+    -- 2. Fallback: disk compiled, or raw
+    if not rfsuite.preferences.developer.compile then
       loader = loadfile(script)
-      which = "raw (queued for deferred compile)"
+      which = "raw"
+    else
+      local cache_path = compiledDir .. cache_fname
+      if disk_cache[cache_fname] then
+        loader = loadfile(cache_path)
+        which = "compiled"
+      else
+        compile._enqueue(script, cache_path, cache_fname)
+        loader = loadfile(script)
+        which = "raw (queued for deferred compile)"
+      end
+    end
+    -- If successfully loaded, store in LRU
+    if loader then
+      lru_cache:set(cache_key, loader)
     end
   end
 
