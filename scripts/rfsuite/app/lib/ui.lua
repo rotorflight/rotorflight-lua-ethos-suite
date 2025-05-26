@@ -916,19 +916,19 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
     -- Load the module
     local modulePath = "app/modules/" .. script
 
-    rfsuite.app.Page = assert(loadfile(modulePath))(idx)
+    rfsuite.app.Page = assert(rfsuite.compiler.loadfile(modulePath))(idx)
 
     -- Load the help file if it exists
     local section = script:match("([^/]+)")
     local helpPath = "app/modules/" .. section .. "/help.lua"
     if rfsuite.utils.file_exists(helpPath) then
-        local helpData = assert(loadfile(helpPath))()
+        local helpData = assert(rfsuite.compiler.loadfile(helpPath))()
         rfsuite.app.fieldHelpTxt = helpData.fields
     else
         rfsuite.app.fieldHelpTxt = nil
     end
 
-    rfsuite.app.Page = assert(rfsuite.compiler.loadfile(modulePath))(idx)
+   -- rfsuite.app.Page = assert(rfsuite.compiler.loadfile(modulePath))(idx)
 
     -- If the Page has its own openPage function, use it and return early
     if rfsuite.app.Page.openPage then
@@ -996,6 +996,118 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
         end
     end
     rfsuite.utils.reportMemoryUsage(title)
+end
+
+function ui.openPageDashboard(idx, title, script, source, folder)
+    -- Initialize global UI state and clear form data
+    rfsuite.app.uiState = rfsuite.app.uiStatus.pages
+    rfsuite.app.triggers.isReady = false
+    rfsuite.app.formFields = {}
+    rfsuite.app.formLines = {}
+    rfsuite.session.lastLabel = nil
+
+    rfsuite.session.dashboardEditingTheme = source .. "/" .. folder
+
+    -- Load the module
+    local modulePath =  script
+
+    rfsuite.app.Page = assert(rfsuite.compiler.loadfile(modulePath))(idx)
+
+    -- load up the menu
+    local w, h = rfsuite.utils.getWindowSize()
+    local windowWidth = w
+    local windowHeight = h
+    local padding = rfsuite.app.radio.buttonPadding
+
+    local sc
+    local panel   
+
+    form.clear()
+
+    --form.addLine("../ " .. rfsuite.i18n.get("app.modules.settings.dashboard") .. " / " .. rfsuite.i18n.get("app.modules.settings.name") .. " / " .. title)
+    form.addLine( rfsuite.i18n.get("app.modules.settings.name") .. " / " .. title)
+    buttonW = 100
+    local x = windowWidth - (buttonW * 2) - 15
+
+    rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {x = x, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}, {
+        text = "MENU",
+        icon = nil,
+        options = FONT_S,
+        paint = function()
+        end,
+        press = function()
+            rfsuite.app.lastIdx = nil
+            rfsuite.session.lastPage = nil
+
+            if rfsuite.app.Page and rfsuite.app.Page.onNavMenu then rfsuite.app.Page.onNavMenu(rfsuite.app.Page) end
+
+
+            rfsuite.app.ui.openPage(
+                pageIdx,
+                rfsuite.i18n.get("app.modules.settings.dashboard"),
+                "settings/tools/dashboard_settings.lua"
+            )
+        end
+    })
+    rfsuite.app.formNavigationFields['menu']:focus()
+
+
+    local x = windowWidth - buttonW - 10
+    rfsuite.app.formNavigationFields['save'] = form.addButton(line, {x = x, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}, {
+        text = "SAVE",
+        icon = nil,
+        options = FONT_S,
+        paint = function()
+        end,
+        press = function()
+
+                local buttons = {
+                    {
+                        label  = rfsuite.i18n.get("app.btn_ok_long"),
+                        action = function()
+                            local msg = rfsuite.i18n.get("app.modules.profile_select.save_prompt_local")
+                            rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
+                            if rfsuite.app.Page.write then
+                                rfsuite.app.Page.write()
+                            end    
+                            -- update dashboard theme
+                            rfsuite.widgets.dashboard.reload_themes()
+                            rfsuite.app.triggers.closeSave = true
+                            return true
+                        end,
+                    },
+                    {
+                        label  = rfsuite.i18n.get("app.modules.profile_select.cancel"),
+                        action = function()
+                            return true
+                        end,
+                    },
+                }
+
+                form.openDialog({
+                    width   = nil,
+                    title   = rfsuite.i18n.get("app.modules.profile_select.save_settings"),
+                    message = rfsuite.i18n.get("app.modules.profile_select.save_prompt_local"),
+                    buttons = buttons,
+                    wakeup  = function() end,
+                    paint   = function() end,
+                    options = TEXT_LEFT,
+                })
+
+        end
+    })
+    rfsuite.app.formNavigationFields['menu']:focus()
+
+
+    
+    -- If the Page has its own openPage function, use it and return early
+    if rfsuite.app.Page.configure then
+        rfsuite.app.Page.configure(idx, title, script, extra1, extra2, extra3, extra5, extra6)
+        rfsuite.utils.reportMemoryUsage(title)
+        rfsuite.app.triggers.closeProgressLoader = true
+        return
+    end
+
 end
 
 

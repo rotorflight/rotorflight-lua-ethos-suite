@@ -568,6 +568,7 @@ function dashboard.listThemes()
                                 num = num + 1
                                 themes[num] = {
                                     name = initTable.name,
+                                    configure = initTable.configure,
                                     folder = folder,
                                     idx = num,
                                     source = sourceType,
@@ -591,15 +592,25 @@ end
 
 function dashboard.getPreference(key)
     if not rfsuite.session.modelPreferences or not dashboard.currentWidgetPath then return nil end
-    return rfsuite.ini.getvalue(rfsuite.session.modelPreferences, dashboard.currentWidgetPath, key)
+
+    if not rfsuite.app.guiIsRunning then
+        return rfsuite.ini.getvalue(rfsuite.session.modelPreferences, dashboard.currentWidgetPath, key)
+    else
+        return rfsuite.ini.getvalue(rfsuite.session.modelPreferences, rfsuite.session.dashboardEditingTheme, key)
+    end
 end
 
 function dashboard.savePreference(key, value)
     if not rfsuite.session.modelPreferences or not rfsuite.session.modelPreferencesFile or not dashboard.currentWidgetPath then
         return false
     end
-    rfsuite.ini.setvalue(rfsuite.session.modelPreferences, dashboard.currentWidgetPath, key, value)
-    return rfsuite.ini.save_ini_file(rfsuite.session.modelPreferencesFile, rfsuite.session.modelPreferences)
+    if not rfsuite.app.guiIsRunning then
+        rfsuite.ini.setvalue(rfsuite.session.modelPreferences, dashboard.currentWidgetPath, key, value)
+        return rfsuite.ini.save_ini_file(rfsuite.session.modelPreferencesFile, rfsuite.session.modelPreferences)
+    else
+        rfsuite.ini.setvalue(rfsuite.session.modelPreferences, rfsuite.session.dashboardEditingTheme, key, value)
+        return rfsuite.ini.save_ini_file(rfsuite.session.modelPreferencesFile, rfsuite.session.modelPreferences)
+    end
 end
 
 return dashboard
