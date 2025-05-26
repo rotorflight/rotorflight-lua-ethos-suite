@@ -308,8 +308,9 @@ local function getLogDir()
     os.mkdir("LOGS:")
     os.mkdir("LOGS:/rfsuite")
     os.mkdir("LOGS:/rfsuite/telemetry")
+    os.mkdir("LOGS:/rfsuite/telemetry/" .. rfsuite.session.mcu_id)
 
-    return "LOGS:/rfsuite/telemetry/"
+    return "LOGS:/rfsuite/telemetry/" .. rfsuite.session.mcu_id .. "/"
 
 end
 
