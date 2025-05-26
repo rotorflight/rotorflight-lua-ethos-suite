@@ -85,7 +85,7 @@ local boxes = {
     {col=2, row=4, type="session", source="isArmed", title="IS ARMED", nosource="-", titlepos="bottom"}, 
 
     {col=3, row=1, type="telemetry", source="fuel", nosource="-", title="FUEL", unit="%", titlepos="bottom", transform="floor"},
-    {col=3, row=2, type = "function", value=customRenderFunction, title = "FUNCTION", titlepos = "bottom"},
+    {col=3, row=2, type = "func", value=customRenderFunction, title = "FUNCTION", titlepos = "bottom"},
     {col=3, row=3, type="blackbox", title="BLACKBOX", nosource="-", titlepos="bottom"},  
 
     {col=4, row=2, type="flightcount", title="FLIGHT COUNT", nosource="-", titlepos="bottom"}, 

@@ -185,7 +185,7 @@ function dashboard.renderLayout(widget, config)
         local x, y = getBoxPosition(box, w, h)
 
         dashboard.boxRects[#dashboard.boxRects + 1] = { x = x, y = y, w = w, h = h, box = box }
-        dashboard.render.renderBox(box.type, x, y, w, h, box, telemetry)
+        dashboard.render.object(box.type, x, y, w, h, box, telemetry)
 
         if dashboard.selectedBoxIndex == i and box.onpress then
             lcd.color(selectColor)
