@@ -2,7 +2,7 @@
 
  * Copyright (C) Rotorflight Project
  * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
- * compile.lua - Deferred/Throttled Lua Script Compilation and Caching with LRU in-memory cache
+ * compile.lua - Deferred/Throttled Lua Script Compilation and Caching with adaptive LRU in-memory cache
 
 * Usage:
 *   local compile = require("rfsuite.lib.compile")
@@ -57,19 +57,22 @@ local function strip_prefix(name)
 end
 
 --------------------------------------------------
--- LRU Cache (in-memory loaders)
+-- Adaptive LRU Cache (in-memory loaders, interval-based eviction)
 --------------------------------------------------
-local function LRUCache(max_size)
+local LUA_RAM_THRESHOLD = 32 * 1024 -- 32 KB free (adjust as needed)
+local LRU_HARD_LIMIT = 200          -- absolute maximum (safety)
+local EVICT_INTERVAL = 5            -- seconds between eviction checks
+
+local function LRUCache()
   local self = {
-    max_size = max_size or 10,
     cache = {},
     order = {},
+    _last_evict = 0,
   }
 
   function self:get(key)
     local value = self.cache[key]
     if value then
-      -- Move key to end (MRU)
       for i, k in ipairs(self.order) do
         if k == key then
           table.remove(self.order, i)
@@ -81,13 +84,32 @@ local function LRUCache(max_size)
     return value
   end
 
+  function self:evict_if_low_memory()
+    self._last_evict = os.clock()
+    local usage = system.getMemoryUsage and system.getMemoryUsage()
+    while #self.order > 0 do
+      if usage and usage.luaRamAvailable and usage.luaRamAvailable < LUA_RAM_THRESHOLD then
+        local oldest = table.remove(self.order, 1)
+        self.cache[oldest] = nil
+        if rfsuite and rfsuite.utils and rfsuite.utils.log then
+          rfsuite.utils.log("Evicted script from cache due to low Lua RAM: " .. tostring(oldest), "info")
+        end
+        usage = system.getMemoryUsage()
+      elseif #self.order > LRU_HARD_LIMIT then
+        local oldest = table.remove(self.order, 1)
+        self.cache[oldest] = nil
+        if rfsuite and rfsuite.utils and rfsuite.utils.log then
+          rfsuite.utils.log("Evicted script from cache due to hitting hard limit: " .. tostring(oldest), "info")
+        end
+      else
+        break
+      end
+    end
+  end
+
   function self:set(key, value)
     if not self.cache[key] then
       table.insert(self.order, key)
-      if #self.order > self.max_size then
-        local oldest = table.remove(self.order, 1)
-        self.cache[oldest] = nil
-      end
     else
       for i, k in ipairs(self.order) do
         if k == key then
@@ -98,12 +120,18 @@ local function LRUCache(max_size)
       table.insert(self.order, key)
     end
     self.cache[key] = value
+
+    -- Only check for eviction if at least EVICT_INTERVAL seconds since last check
+    local now = os.clock()
+    if now - self._last_evict > EVICT_INTERVAL then
+      self:evict_if_low_memory()
+    end
   end
 
   return self
 end
 
-local lru_cache = LRUCache(20)
+local lru_cache = LRUCache()
 
 --------------------------------------------------
 -- Throttled Compile Queue System
