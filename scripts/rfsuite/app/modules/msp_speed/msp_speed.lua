@@ -212,7 +212,7 @@ local function openPage(pidx, title, script)
     local x = w - 10
 
     rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {x = x - 5 - buttonW - buttonWs - 5 - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}, {
-        text = "MENU",
+        text = rfsuite.i18n.get("app.navigation_menu"),
         icon = nil,
         options = FONT_S,
         press = function()
