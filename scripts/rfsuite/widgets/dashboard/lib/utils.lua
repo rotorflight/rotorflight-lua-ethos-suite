@@ -18,6 +18,55 @@
 local utils = {}
 
 local imageCache = {}
+local fontCache 
+
+
+--[[
+    Returns a table of available font lists (default and reduced) based on the current LCD resolution.
+    The function detects the screen size and selects appropriate font sizes for supported radio models.
+    If the resolution is not recognized, a default set of fonts is returned.
+]]
+function utils.getFontListsForResolution()
+    local version = system.getVersion()
+    local LCD_W = version.lcdWidth
+    local LCD_H = version.lcdHeight
+    local resolution = LCD_W .. "x" .. LCD_H
+
+
+    local radios = {
+        -- TANDEM X20, TANDEM XE (800x480)
+        ["800x480"] = {
+            value_default = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL, FONT_XXXXL},
+            value_reduced = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L},
+            value_title = FONT_XS
+        },
+        -- TANDEM X18, TWIN X Lite (480x320)
+        ["480x320"] = {
+            value_default = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL},
+            value_reduced = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L},
+            value_title = FONT_XXS
+        },
+        -- Horus X10, Horus X12 (480x272)
+        ["480x272"] = {
+            value_default = {FONT_XXS, FONT_XS, FONT_S, FONT_STD},
+            value_reduced = {FONT_XXS, FONT_XS, FONT_S},
+            value_title = FONT_XXS
+        },
+        -- Twin X14 (632x314)
+        ["640x360"] = {
+            value_default = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL},
+            value_reduced = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L},
+            value_title = FONT_XXS
+        }
+    }
+    if not radios[resolution] then
+        rfsuite.utils.log("Unsupported resolution: " .. resolution .. ". Using default fonts.","info")
+        return radios["800x480"]
+    end
+    return radios[resolution] 
+
+end
+
 
 --[[
     Clears all cached images from the image cache.
@@ -198,6 +247,10 @@ function utils.box(
     valuepaddingtop = valuepaddingtop or valuepadding or 0
     valuepaddingbottom = valuepaddingbottom or valuepadding or 0
 
+    if not fontCache then
+        fontCache = utils.getFontListsForResolution()
+    end
+
     -- Draw value
     if value ~= nil then
         local str = tostring(value) .. (unit or "")
@@ -205,12 +258,12 @@ function utils.box(
         local strForWidth = unitIsDegree and (tostring(value) .. "0") or str
 
         local availH = h - valuepaddingtop - valuepaddingbottom
-        local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL, FONT_XXXXL}
+        local fonts = fontCache.value_default
 
         lcd.font(FONT_XL)
         local _, xlFontHeight = lcd.getTextSize("8")
         if xlFontHeight > availH * 0.5 then
-            fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L}
+            fonts = fontCache.value_reduced
         end
 
         local maxW, maxH = w - valuepaddingleft - valuepaddingright, availH
@@ -252,7 +305,7 @@ function utils.box(
 
     -- Draw title (top or bottom)
     if title then
-        lcd.font(FONT_XS)
+        lcd.font(fontCache.value_title)
         local tsizeW, tsizeH = lcd.getTextSize(title)
         local region_x = x + titlepaddingleft
         local region_w = w - titlepaddingleft - titlepaddingright
