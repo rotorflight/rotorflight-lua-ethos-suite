@@ -45,6 +45,25 @@ local function customRenderFunction(x, y, w, h)
 
 end
 
+local function onpressFunctionSave()
+
+
+
+
+    local key = "test"
+    local value = "testValue"
+    rfsuite.widgets.dashboard.savePreference(key, value)
+
+        rfsuite.utils.log("Saving value to model preferences: ".. value,"info")
+
+    rfsuite.utils.log("Reading value from model preferences","info")
+    local value = rfsuite.widgets.dashboard.getPreference(key)
+
+    rfsuite.utils.log("Value read from model preferences: " .. tostring(value), "info")
+
+
+end
+
 
 local layout = {
     cols = 4,
@@ -63,13 +82,14 @@ local boxes = {
     {col=2, row=1, type="telemetry", source="voltage", nosource="-", title="VOLTAGE", unit="v", titlepos="bottom", thresholds = {{ value = 20,  color = "red",    textcolor = "white" }, { value = 50,  color = "orange", textcolor = "black" }}},
     {col=2, row=2, type="telemetry", source="current", nosource="-", title="CURRENT", unit="A", titlepos="bottom"},
     {col=2, row=3, type="craftname", title="CRAFT NAME", nosource="-", titlepos="bottom"},  
-    {col=2, row=4, type="session", source="isArmed", title="IS ARMED", nosource="-", titlepos="bottom", onpress=onpressFunctionSession}, 
+    {col=2, row=4, type="session", source="isArmed", title="IS ARMED", nosource="-", titlepos="bottom"}, 
 
     {col=3, row=1, type="telemetry", source="fuel", nosource="-", title="FUEL", unit="%", titlepos="bottom", transform="floor"},
     {col=3, row=2, type = "function", value=customRenderFunction, title = "FUNCTION", titlepos = "bottom"},
-    {col=3, row=3, type="blackbox", title="BLACKBOX", nosource="-", titlepos="bottom", onpress=function() end},  
+    {col=3, row=3, type="blackbox", title="BLACKBOX", nosource="-", titlepos="bottom"},  
 
-    {col=4, row=1, type="flightcount", title="FLIGHT COUNT", nosource="-", titlepos="bottom"}, 
+    {col=4, row=2, type="flightcount", title="FLIGHT COUNT", nosource="-", titlepos="bottom"}, 
+    {col=4, row=1, type="text", value="PRESS ME", title="ON PRESS", nosource="-", titlepos="bottom", onpress=onpressFunctionSave}
 
 }
 

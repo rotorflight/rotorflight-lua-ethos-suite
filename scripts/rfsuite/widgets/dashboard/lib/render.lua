@@ -618,6 +618,59 @@ function render.functionVoltageGauge(x, y, w, h, box, telemetry)
     return render.gaugeBox(x, y, w, h, voltBox, telemetry)
 end
 
+-- Advanced Battery Gauge Box
+function render.batteryAdvancedBox(x, y, w, h, box, telemetry)
+    x, y = applyOffset(x, y, box)
+
+    -- default gauge rendering
+    render.gaugeBox(x, y, w, h, box, telemetry)
+
+    -- Retrieve battery telemetry
+    local get = telemetry and telemetry.getSensorSource
+    local voltageSensor = get and get("voltage")
+    local cellCountSensor = get and get("cell_count")
+    local consumptionSensor = get and get("consumption")
+    local voltage = voltageSensor and voltageSensor:value()
+    local cellCount = cellCountSensor and cellCountSensor:value()
+    local consumption = consumptionSensor and consumptionSensor:value()
+
+    local transform = getParam(box, "transform")
+    if transform then
+        if type(transform) == "string" and math[transform] then
+            voltage = voltage and math[transform](voltage)
+            cellCount = cellCount and math[transform](cellCount)
+            consumed = consumed and math[transform](consumed)
+        elseif type(transform) == "function" then
+            voltage = voltage and transform(voltage)
+            cellCount = cellCount and transform(cellCount)
+            consumed = consumed and transform(consumed)
+        end
+    end
+
+    local perCellVoltage = (voltage and cellCount and cellCount > 0)
+        and (voltage / cellCount) or nil
+
+    -- Format text lines
+    local line1 = string.format("V: %.1f / C: %.2f", voltage or 0, perCellVoltage or 0)
+    local line2 = string.format("Used: %d mAh (%dS)", consumed or 0, cellCount or 0)
+
+    -- Draw text block to the right
+    lcd.font(FONT_S)
+    local textW1, textH1 = lcd.getTextSize(line1)
+    local textW2, textH2 = lcd.getTextSize(line2)
+    local totalH = textH1 + textH2 + 2
+
+    local infoW = math.floor(w * 0.20)
+    local paddingX = 8
+    local yStart = y + (h - totalH) / 2
+    local infoX = x + w - infoW + paddingX
+    local maxRight = x + w - 2
+
+    lcd.color(utils.resolveColor(getParam(box, "textColor")) or lcd.RGB(255, 255, 255))
+    lcd.drawText(math.min(infoX, maxRight - textW1), yStart, line1)
+    lcd.drawText(math.min(infoX, maxRight - textW2), yStart + textH1 + 2, line2)
+end
+
 -- Extend render.lua with support for type = "dial"
 
 
@@ -826,7 +879,12 @@ end
 
 
 function render.arcGaugeBox(x, y, w, h, box, telemetry)
-    local cx, cy = x + w/2, y + h/2
+    local bgColor = utils.resolveColor(getParam(box, "bgcolor")) or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
+    lcd.color(bgColor)
+    lcd.drawFilledRectangle(x, y, w, h)
+    local arcOffsetY = getParam(box, "arcOffsetY") or 0
+    local cx = x + w/2
+    local cy = y + h/2 - arcOffsetY
     local radius = math.min(w, h) * 0.42
     local thickness = math.max(6, radius * 0.22)
 
@@ -837,19 +895,29 @@ function render.arcGaugeBox(x, y, w, h, box, telemetry)
     -- Value: support function for box.value or box.source
     local value = nil
     local source = getParam(box, "source")
-    if source and telemetry then
-        if type(source) == "function" then
-            value = source(box, telemetry)
-        else
-            local sensor = telemetry.getSensorSource(source)
-            value = sensor and sensor:value() or min
+    if source then
+        local sensor = telemetry and telemetry.getSensorSource(source)
+        value = sensor and sensor:value()
+        local transform = getParam(box, "transform")
+        if type(transform) == "string" and math[transform] then
+            value = value and math[transform](value)
+        elseif type(transform) == "function" then
+            value = value and transform(value)
+        elseif type(transform) == "number" then
+            value = value and transform
         end
-    else
-        value = getParam(box, "value") or min
     end
 
-    local percent = (value - min) / (max - min)
-    percent = math.max(0, math.min(1, percent))
+    local displayValue = value or getParam(box, "novalue") or "-"
+    local displayUnit = getParam(box, "unit")
+    local min = getParam(box, "gaugemin") or 0
+    local max = getParam(box, "gaugemax") or 100
+
+    local percent = 0
+    if value and max ~= min then
+        percent = (value - min) / (max - min)
+        percent = math.max(0, math.min(1, percent))
+    end
 
     -- Arc angles
     local startAngle = getParam(box, "startAngle") or 135
@@ -881,19 +949,42 @@ function render.arcGaugeBox(x, y, w, h, box, telemetry)
     end
 
     -- Value text (centered)
-    lcd.font(FONT_XL)
+    local fontName = getParam(box, "font")
+    lcd.font(fontName and _G[fontName] or FONT_XL)
     lcd.color(utils.resolveColor(getParam(box, "textColor")) or lcd.RGB(255,255,255))
+
     local valueFormat = getParam(box, "valueFormat")
     local unit = getParam(box, "unit") or ""
+    local decimals = getParam(box, "decimals")
     local valStr
+
     if valueFormat then
         valStr = valueFormat(value)
+    elseif type(value) == "number" then
+        if decimals ~= nil then
+            -- Always use fixed decimal formatting if explicitly requested
+            if decimals == 0 then
+                valStr = string.format("%d", value)
+            else
+                valStr = string.format("%." .. decimals .. "f", value)
+            end
+        else
+            -- Default smart formatting: remove .0 if unnecessary
+            if math.floor(value) == value then
+                valStr = string.format("%d", value)
+            else
+                valStr = string.format("%.1f", value)
+            end
+        end
     else
-        valStr = string.format("%.1f", value)
+        valStr = "-"
     end
+
     valStr = valStr .. unit
+
     local tw, th = lcd.getTextSize(valStr)
-    lcd.drawText(cx - tw/2, cy - th/2, valStr)
+    local xOffset = getParam(box, "textoffsetx") or 0
+    lcd.drawText(cx - tw/2 + xOffset, cy - th/2, valStr)
 
     -- Title above, subText below
     local title = getParam(box, "title")
@@ -952,6 +1043,7 @@ function render.renderBox(boxType, x, y, w, h, box, telemetry)
         flightcount = render.flightCountBox,
         dial = render.dialBox,
         arcgauge = render.arcGaugeBox,
+        batteryadvanced = render.batteryAdvancedBox,
         ["function"] = render.functionBox,
     }
     local fn = funcMap[boxType]
