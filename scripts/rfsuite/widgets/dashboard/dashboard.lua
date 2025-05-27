@@ -423,7 +423,6 @@ end
     Manages box selection and onpress handlers, then delegates to theme if present.
 ]]
 function dashboard.event(widget, category, value, x, y)
-
     local state = dashboard.flightmode or "preflight"
     local module = loadedStateModules[state]
 
@@ -447,13 +446,15 @@ function dashboard.event(widget, category, value, x, y)
             pos = pos - 1
             if pos < 1 then pos = count end
             dashboard.selectedBoxIndex = indices[pos]
-            lcd.invalidate(widget)
+            local rect = dashboard.boxRects[dashboard.selectedBoxIndex]
+            if rect then dashboard.markDirty(rect.box) end
             return true
         elseif value == 4100 then -- rotary right
             pos = pos + 1
             if pos > count then pos = 1 end
             dashboard.selectedBoxIndex = indices[pos]
-            lcd.invalidate(widget)
+            local rect = dashboard.boxRects[dashboard.selectedBoxIndex]
+            if rect then dashboard.markDirty(rect.box) end
             return true
         elseif value == 33 and category == EVT_KEY then
             local inIndices = false
@@ -463,12 +464,14 @@ function dashboard.event(widget, category, value, x, y)
 
             if not inIndices then
                 dashboard.selectedBoxIndex = indices[1]
-                lcd.invalidate(widget)
+                local rect = dashboard.boxRects[dashboard.selectedBoxIndex]
+                if rect then dashboard.markDirty(rect.box) end
                 return true
             else
                 local idx = dashboard.selectedBoxIndex
                 local rect = dashboard.boxRects[idx]
                 if rect and rect.box.onpress then
+                    dashboard.markDirty(rect.box)
                     rect.box.onpress(widget, rect.box, rect.x, rect.y, category, value)
                     system.killEvents(97)
                     return true
@@ -479,7 +482,7 @@ function dashboard.event(widget, category, value, x, y)
 
     if value == 35 then -- EXIT key
         dashboard.selectedBoxIndex = nil
-        lcd.invalidate(widget)
+        dashboard.markAllDirty() -- Or mark just the last selected box if you prefer
         return true
     end
 
@@ -489,7 +492,7 @@ function dashboard.event(widget, category, value, x, y)
                 if x >= rect.x and x < rect.x + rect.w and y >= rect.y and y < rect.y + rect.h then
                     if rect.box.onpress then
                         dashboard.selectedBoxIndex = i
-                        lcd.invalidate(widget)
+                        dashboard.markDirty(rect.box)
                         rect.box.onpress(widget, rect.box, x, y, category, value)
                         system.killEvents(16640)
                         return true
@@ -499,11 +502,11 @@ function dashboard.event(widget, category, value, x, y)
         end
     end
 
-
     if type(module) == "table" and type(module.event) == "function" then
         return module.event(widget, category, value, x, y)
     end
 end
+
 
 --[[
     Called periodically; manages redraw intervals, reloads themes if flightmode changes,
