@@ -687,5 +687,20 @@ function utils.onReboot()
     rfsuite.session.resetMSPSensors = true
 end
 
+--- Parses a version string into a table of numbers.
+-- The function splits the input version string by numeric components and returns a table
+-- where each element is a number from the version string. The table starts with 0 as the first element.
+-- @param versionString string: The version string to parse (e.g., "1.2.3").
+-- @return table|nil: A table of numbers representing the version, or nil if the input is nil.
+function utils.splitVersionStringToNumbers(versionString)
+    if not versionString then return nil end
+
+    local parts = {0} -- start with 0
+    for num in versionString:gmatch("%d+") do
+        table.insert(parts, tonumber(num))
+    end
+    return parts
+end
+
 
 return utils

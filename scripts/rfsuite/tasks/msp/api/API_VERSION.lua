@@ -25,20 +25,11 @@
  * setCompleteHandler(handlerFunction):  Set function to run on completion
  * setErrorHandler(handlerFunction): Set function to run on error  
 ]] --
-
-local function parseApiVersionAll(versionString)
-    local parts = {0} -- start with 0
-    for num in versionString:gmatch("%d+") do
-        table.insert(parts, tonumber(num))
-    end
-    return parts
-end
-
 -- Constants for MSP Commands
 local API_NAME = "API_VERSION" -- API name (must be same as filename)
 local MSP_API_CMD_READ = 1 -- Command identifier for MSP API request
 --local MSP_API_SIMULATOR_RESPONSE = {0, 12, 7} -- Default simulator response
-local MSP_API_SIMULATOR_RESPONSE = parseApiVersionAll(rfsuite.config.supportedMspApiVersion[rfsuite.preferences.developer.apiversion])
+local MSP_API_SIMULATOR_RESPONSE = rfsuite.utils.splitVersionStringToNumbers(rfsuite.config.supportedMspApiVersion[rfsuite.preferences.developer.apiversion])
 
 -- Define the MSP response data structure
 local MSP_API_STRUCTURE_READ = {
