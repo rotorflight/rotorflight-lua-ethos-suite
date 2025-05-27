@@ -400,6 +400,8 @@ return {
         ["txt_large"] = "LARGE",
         ["txt_syncname"] = "Sync model name",
         ["txt_devtools"] = "Developer Tools",
+        ["txt_apiversion"] = "API Version",
+        ["txt_logging"] = "Logging",
         ["txt_compilation"] = "Compilation",
         ["txt_loglocation"] = "Log location",
         ["txt_console"] = "CONSOLE",

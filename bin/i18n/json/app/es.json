@@ -141,6 +141,16 @@
         "translation": "Developer Tools",
         "needs_translation": "true"
       },
+      "txt_apiversion": {
+        "english": "API Version",
+        "translation": "API Version",
+        "needs_translation": "true"
+      },
+      "txt_logging": {
+        "english": "Logging",
+        "translation": "Logging",
+        "needs_translation": "true"
+      },
       "txt_compilation": {
         "english": "Compilation",
         "translation": "Compilation",
