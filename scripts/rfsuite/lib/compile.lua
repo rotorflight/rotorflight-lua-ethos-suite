@@ -139,7 +139,7 @@ local lru_cache = LRUCache()
 compile._queue = {}
 compile._queued_map = {}
 compile._lastCompile = 0
-compile._compileInterval = 2 -- seconds
+compile._compileInterval = 5 -- seconds
 
 function compile._enqueue(script, cache_path, cache_fname)
   if not compile._queued_map[cache_fname] then
@@ -189,6 +189,7 @@ function compile.loadfile(script)
   -- 1. Try LRU in-memory cache
   loader = lru_cache:get(cache_key)
   if loader then
+    rfsuite.utils.log("Loaded from in-memory cache: " .. script, "info")
     which = "in-memory"
   else
     -- 2. Fallback: disk compiled, or raw

@@ -96,6 +96,54 @@ local function renderOverlayMessage(module, utils)
     end
 end
 
+-- Helper to get box width/height (percent, pixel, or grid)
+local function getBoxSize(box,boxWidth, boxHeight, PADDING, WIDGET_W, WIDGET_H)
+    if box.w_pct and box.h_pct then
+        local wp = box.w_pct
+        local hp = box.h_pct
+        if wp > 1 then wp = wp / 100 end
+        if hp > 1 then hp = hp / 100 end
+        local w = math.floor(wp * WIDGET_W)
+        local h = math.floor(hp * WIDGET_H)
+        return w, h
+    elseif box.w and box.h then
+        return tonumber(box.w) or boxWidth, tonumber(box.h) or boxHeight
+    elseif box.colspan or box.rowspan then
+        local w = math.floor((box.colspan or 1) * boxWidth + ((box.colspan or 1) - 1) * PADDING)
+        local h = math.floor((box.rowspan or 1) * boxHeight + ((box.rowspan or 1) - 1) * PADDING)
+        return w, h
+    else
+        return boxWidth, boxHeight
+    end
+end
+
+-- Helper to get box position (percent, pixel, or grid)
+local function getBoxPosition(box, w, h, boxWidth, boxHeight, PADDING, WIDGET_W, WIDGET_H)
+    -- Priority: x_pct/y_pct > x/y > col/row
+    if box.x_pct and box.y_pct then
+        local xp = box.x_pct
+        local yp = box.y_pct
+        if xp > 1 then xp = xp / 100 end
+        if yp > 1 then yp = yp / 100 end
+        -- x/y is top-left corner; w/h is known
+        local x = math.floor(xp * (WIDGET_W - (w or boxWidth)))
+        local y = math.floor(yp * (WIDGET_H - (h or boxHeight)))
+        return x, y
+    elseif box.x and box.y then
+        local x = tonumber(box.x) or 0
+        local y = tonumber(box.y) or 0
+        return x, y
+    elseif box.col and box.row then
+        local col = box.col or 1
+        local row = box.row or 1
+        local x = math.floor((col - 1) * (boxWidth + PADDING))
+        local y = math.floor(PADDING + (row - 1) * (boxHeight + PADDING))
+        return x, y
+    else
+        return 0, 0
+    end
+end
+
 --[[ 
     Renders the main dashboard layout, drawing all boxes and handling highlights.
     Called automatically by paint().
@@ -132,57 +180,10 @@ function dashboard.renderLayout(widget, config)
 
     utils.setBackgroundColourBasedOnTheme()
 
-    -- Helper to get box width/height (percent, pixel, or grid)
-    local function getBoxSize(box)
-        if box.w_pct and box.h_pct then
-            local wp = box.w_pct
-            local hp = box.h_pct
-            if wp > 1 then wp = wp / 100 end
-            if hp > 1 then hp = hp / 100 end
-            local w = math.floor(wp * WIDGET_W)
-            local h = math.floor(hp * WIDGET_H)
-            return w, h
-        elseif box.w and box.h then
-            return tonumber(box.w) or boxWidth, tonumber(box.h) or boxHeight
-        elseif box.colspan or box.rowspan then
-            local w = math.floor((box.colspan or 1) * boxWidth + ((box.colspan or 1) - 1) * PADDING)
-            local h = math.floor((box.rowspan or 1) * boxHeight + ((box.rowspan or 1) - 1) * PADDING)
-            return w, h
-        else
-            return boxWidth, boxHeight
-        end
-    end
-
-    -- Helper to get box position (percent, pixel, or grid)
-    local function getBoxPosition(box, w, h)
-        -- Priority: x_pct/y_pct > x/y > col/row
-        if box.x_pct and box.y_pct then
-            local xp = box.x_pct
-            local yp = box.y_pct
-            if xp > 1 then xp = xp / 100 end
-            if yp > 1 then yp = yp / 100 end
-            -- x/y is top-left corner; w/h is known
-            local x = math.floor(xp * (WIDGET_W - (w or boxWidth)))
-            local y = math.floor(yp * (WIDGET_H - (h or boxHeight)))
-            return x, y
-        elseif box.x and box.y then
-            local x = tonumber(box.x) or 0
-            local y = tonumber(box.y) or 0
-            return x, y
-        elseif box.col and box.row then
-            local col = box.col or 1
-            local row = box.row or 1
-            local x = math.floor((col - 1) * (boxWidth + PADDING))
-            local y = math.floor(PADDING + (row - 1) * (boxHeight + PADDING))
-            return x, y
-        else
-            return 0, 0
-        end
-    end
 
     for i, box in ipairs(resolve(config.boxes) or {}) do
-        local w, h = getBoxSize(box)
-        local x, y = getBoxPosition(box, w, h)
+        local w, h = getBoxSize(box, boxWidth, boxHeight, PADDING, WIDGET_W, WIDGET_H)
+        local x, y = getBoxPosition(box, w, h, boxWidth, boxHeight, PADDING, WIDGET_W, WIDGET_H)
 
         dashboard.boxRects[#dashboard.boxRects + 1] = { x = x, y = y, w = w, h = h, box = box }
         dashboard.render.object(box.type, x, y, w, h, box, telemetry)
@@ -432,7 +433,7 @@ function dashboard.event(widget, category, value, x, y)
         state = "preflight"
     end
 
-    if category == EVT_KEY then
+    if category == EVT_KEY and lcd.hasFocus() then
         local indices = getOnpressBoxIndices()
         local count = #indices
         if count == 0 then return end
@@ -454,13 +455,12 @@ function dashboard.event(widget, category, value, x, y)
             if pos > count then pos = 1 end
             dashboard.selectedBoxIndex = indices[pos]
             lcd.invalidate(widget)
-            return true
+            return true  
         elseif value == 33 and category == EVT_KEY then
             local inIndices = false
             for i = 1, #indices do
                 if indices[i] == dashboard.selectedBoxIndex then inIndices = true break end
             end
-
             if not inIndices then
                 dashboard.selectedBoxIndex = indices[1]
                 lcd.invalidate(widget)
@@ -476,8 +476,7 @@ function dashboard.event(widget, category, value, x, y)
             end
         end
     end
-
-    if value == 35 then -- EXIT key
+    if value == 35 and dashboard.selectedBoxIndex then -- EXIT key
         dashboard.selectedBoxIndex = nil
         lcd.invalidate(widget)
         return true
@@ -503,6 +502,7 @@ function dashboard.event(widget, category, value, x, y)
     if type(module) == "table" and type(module.event) == "function" then
         return module.event(widget, category, value, x, y)
     end
+
 end
 
 --[[
