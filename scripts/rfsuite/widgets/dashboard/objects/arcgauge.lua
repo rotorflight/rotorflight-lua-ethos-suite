@@ -3,9 +3,8 @@ local render = {}
 
 
 -- Draws an arc from angle1 to angle2 (degrees, counter-clockwise, 0°=right)
--- Draws a thick arc by stamping filled circles along the arc path.
-local function drawArc(cx, cy, radius, thickness, angleStart, angleEnd, color)
-    local step = 4  -- degrees per circle; decrease for smoother, increase for speed
+local function drawArc(cx, cy, radius, thickness, angleStart, angleEnd, color, cachedStepRad)
+    local step = 4  -- degrees per circle
     local rad_thick = thickness / 2
     angleStart = math.rad(angleStart)
     angleEnd = math.rad(angleEnd)
@@ -13,7 +12,8 @@ local function drawArc(cx, cy, radius, thickness, angleStart, angleEnd, color)
         angleEnd = angleEnd - 2 * math.pi
     end
     lcd.color(color or lcd.RGB(255,128,0))
-    for a = angleStart, angleEnd, -math.rad(step) do
+    local stepRad = cachedStepRad or math.rad(step)
+    for a = angleStart, angleEnd, -stepRad do
         local x = cx + radius * math.cos(a)
         local y = cy - radius * math.sin(a)
         lcd.drawFilledCircle(x, y, rad_thick)
@@ -26,20 +26,32 @@ end
 
 
 function render.arcgauge(x, y, w, h, box, telemetry)
+    -- Cache only geometry/layout math (not getParam or resolveColor)
+    box._layoutcache = box._layoutcache or {}
+    local cache = box._layoutcache
+
+    -- Only recalculate geometry when x/y/w/h/arcOffsetY changes
+    local arcOffsetY = rfsuite.widgets.dashboard.utils.getParam(box, "arcOffsetY") or 0
+    local layoutKey = string.format("%d,%d,%d,%d,%d", x, y, w, h, arcOffsetY)
+    if cache._layoutKey ~= layoutKey then
+        cache.cx = x + w / 2
+        cache.cy = y + h / 2 - arcOffsetY
+        cache.radius = math.min(w, h) * 0.42
+        cache.thickness = math.max(6, cache.radius * 0.22)
+        cache.stepRad = math.rad(4) -- for drawArc
+        cache._layoutKey = layoutKey
+    end
+
+    local cx, cy, radius, thickness, stepRad = cache.cx, cache.cy, cache.radius, cache.thickness, cache.stepRad
+
+    -- The rest: run as usual, DO NOT cache
     local bgColor = rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "bgcolor")) or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
     lcd.color(bgColor)
     lcd.drawFilledRectangle(x, y, w, h)
-    local arcOffsetY = rfsuite.widgets.dashboard.utils.getParam(box, "arcOffsetY") or 0
-    local cx = x + w/2
-    local cy = y + h/2 - arcOffsetY
-    local radius = math.min(w, h) * 0.42
-    local thickness = math.max(6, radius * 0.22)
 
-    -- Get values using rfsuite.widgets.dashboard.utils.getParam for function/constant support
     local min = rfsuite.widgets.dashboard.utils.getParam(box, "min") or 0
     local max = rfsuite.widgets.dashboard.utils.getParam(box, "max") or 100
 
-    -- Value: support function for box.value or box.source
     local value = nil
     local source = rfsuite.widgets.dashboard.utils.getParam(box, "source")
     if source then
@@ -57,8 +69,8 @@ function render.arcgauge(x, y, w, h, box, telemetry)
 
     local displayValue = value or rfsuite.widgets.dashboard.utils.getParam(box, "novalue") or "-"
     local displayUnit = rfsuite.widgets.dashboard.utils.getParam(box, "unit")
-    local min = rfsuite.widgets.dashboard.utils.getParam(box, "gaugemin") or 0
-    local max = rfsuite.widgets.dashboard.utils.getParam(box, "gaugemax") or 100
+    min = rfsuite.widgets.dashboard.utils.getParam(box, "gaugemin") or 0
+    max = rfsuite.widgets.dashboard.utils.getParam(box, "gaugemax") or 100
 
     local percent = 0
     if value and max ~= min then
@@ -66,19 +78,19 @@ function render.arcgauge(x, y, w, h, box, telemetry)
         percent = math.max(0, math.min(1, percent))
     end
 
-    -- Arc angles
     local startAngle = rfsuite.widgets.dashboard.utils.getParam(box, "startAngle") or 135
     local sweep = rfsuite.widgets.dashboard.utils.getParam(box, "sweep") or 270
     local endAngle = startAngle - sweep * percent
 
-    -- Draw base (background) arc
+    -- Draw base arc
     drawArc(
         cx, cy, radius, thickness,
         startAngle, startAngle - sweep,
-        rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "arcBgColor")) or lcd.RGB(55,55,55)
+        rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "arcBgColor")) or lcd.RGB(55,55,55),
+        stepRad
     )
 
-    -- Draw value arc (with thresholds, supporting function in thresholds)
+    -- Draw value arc (with thresholds)
     local arcColor = rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "arcColor")) or lcd.RGB(255,128,0)
     local thresholds = rfsuite.widgets.dashboard.utils.getParam(box, "thresholds")
     if thresholds and value ~= nil then
@@ -92,8 +104,9 @@ function render.arcgauge(x, y, w, h, box, telemetry)
         end
     end
     if percent > 0 then
-        drawArc(cx, cy, radius, thickness, startAngle, endAngle, arcColor)
+        drawArc(cx, cy, radius, thickness, startAngle, endAngle, arcColor, stepRad)
     end
+
 
     -- Value text (centered)
     local fontName = rfsuite.widgets.dashboard.utils.getParam(box, "font")
