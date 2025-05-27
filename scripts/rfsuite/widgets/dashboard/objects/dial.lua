@@ -25,12 +25,13 @@ local function resolveDialAsset(value, basePath)
     return nil
 end
 
-local function loadDialAssets(panelPath)
-    -- Simple image cache: loads panel image only if not already loaded
-    if not rfsuite.session.dialImageCache[panelPath] then
-        rfsuite.session.dialImageCache[panelPath] = rfsuite.utils.loadImage(panelPath)
+local function loadDialPanelCached(dialId)
+    local key = tostring(dialId)
+    if not rfsuite.session.dialImageCache[key] then
+        local panelPath = resolveDialAsset(dialId, "widgets/dashboard/gfx/dials") or "widgets/dashboard/gfx/dials/panel1.png"
+        rfsuite.session.dialImageCache[key] = rfsuite.utils.loadImage(panelPath)
     end
-    return rfsuite.session.dialImageCache[panelPath]
+    return rfsuite.session.dialImageCache[key]
 end
 
 -- Calculate angle
@@ -40,6 +41,7 @@ end
 
 -- Draw bar-style needle using two triangles (Ethos only!)
 local function drawBarNeedle(cx, cy, length, thickness, angleDeg, color)
+    
     local angleRad = math.rad(angleDeg)
     local cosA = math.cos(angleRad)
     local sinA = math.sin(angleRad)
@@ -63,13 +65,11 @@ local function drawBarNeedle(cx, cy, length, thickness, angleDeg, color)
     local tip2X = tipX - dx
     local tip2Y = tipY - dy
 
-    lcd.color(color)
     -- Main bar as two triangles
+    lcd.color(color)
     lcd.drawFilledTriangle(base1X, base1Y, tip1X, tip1Y, tip2X, tip2Y)
-    lcd.drawFilledTriangle(base1X, base1Y, tip2X, tip2Y, base2X, base2Y)
-    -- Overlay triangles in both directions to close all gaps
-    lcd.drawFilledTriangle(base1X, base1Y, tip1X, tip1Y, cx, cy)
-    lcd.drawFilledTriangle(base2X, base2Y, tip2X, tip2Y, cx, cy)
+    lcd.drawFilledTriangle(base1X+1, base1Y, tip2X, tip2Y, base2X, base2Y)
+    lcd.drawLine(cx, cy, tipX, tipY)
 end
 
 
@@ -155,9 +155,8 @@ function render.dial(x, y, w, h, box, telemetry)
     local align = rfsuite.widgets.dashboard.utils.getParam(box, "align") or "center"
 
     -- Panel image logic
-    local dial = rfsuite.widgets.dashboard.utils.getParam(box, "dial")
-    local panelPath = resolveDialAsset(dial, "widgets/dashboard/gfx/dials") or "widgets/dashboard/gfx/panel1.png"
-    local panelImg = loadDialAssets(panelPath)
+    local dialId = rfsuite.widgets.dashboard.utils.getParam(box, "dial")
+    local panelImg = loadDialPanelCached(dialId)
     local drawX, drawY, drawW, drawH
 
     if panelImg then
