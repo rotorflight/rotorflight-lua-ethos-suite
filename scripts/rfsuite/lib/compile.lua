@@ -139,7 +139,7 @@ local lru_cache = LRUCache()
 compile._queue = {}
 compile._queued_map = {}
 compile._lastCompile = 0
-compile._compileInterval = 2 -- seconds
+compile._compileInterval = 5 -- seconds
 
 function compile._enqueue(script, cache_path, cache_fname)
   if not compile._queued_map[cache_fname] then

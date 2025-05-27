@@ -90,17 +90,10 @@ local userpref_defaults ={
     }
 }
 
+os.mkdir("SCRIPTS:/" .. rfsuite.config.preferences)
 local userpref_file = "SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini"
 local slave_ini = userpref_defaults
-local master_ini = {}
-
-if not ini.dir_exists("SCRIPTS:/", rfsuite.config.preferences) then
-        os.mkdir("SCRIPTS:/" .. rfsuite.config.preferences)
-end
-
-if rfsuite.ini.file_exists(userpref_file) then
-    master_ini = rfsuite.ini.load_ini_file(userpref_file) or {}
-end
+local master_ini = rfsuite.ini.load_ini_file(userpref_file) or {}
 
 local updated_ini = rfsuite.ini.merge_ini_tables(master_ini, slave_ini)
 rfsuite.preferences = updated_ini

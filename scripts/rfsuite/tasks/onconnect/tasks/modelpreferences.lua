@@ -39,20 +39,13 @@ function modelpreferences.wakeup()
             local modelpref_file = "SCRIPTS:/" .. rfsuite.config.preferences .. "/models/" .. rfsuite.session.mcu_id ..".ini"
             rfsuite.utils.log("Preferences file: " .. modelpref_file, "info")
 
-            if not rfsuite.ini.dir_exists("SCRIPTS:/", rfsuite.config.preferences ) then
-                    rfsuite.utils.log("Creating preferences directory: " .. rfsuite.config.preferences, "info") 
-                    os.mkdir("SCRIPTS:/" .. rfsuite.config.preferences)
-            end              
-            if not rfsuite.ini.dir_exists("SCRIPTS:/", rfsuite.config.preferences .. "/models" ) then
-                    rfsuite.utils.log("Creating models directory: " .. rfsuite.config.preferences .. "/models", "info")
-                    os.mkdir("SCRIPTS:/" .. rfsuite.config.preferences .. "/models")
-            end   
+            os.mkdir("SCRIPTS:/" .. rfsuite.config.preferences)
+            os.mkdir("SCRIPTS:/" .. rfsuite.config.preferences .. "/models")
+
 
             local slave_ini = modelpref_defaults
-            local master_ini = {}            
-            if rfsuite.ini.file_exists(modelpref_file) then
-                master_ini = rfsuite.ini.load_ini_file(modelpref_file) or {}
-            end
+            local master_ini = master_ini = rfsuite.ini.load_ini_file(modelpref_file) or {}
+
 
             local updated_ini = rfsuite.ini.merge_ini_tables(master_ini, slave_ini)
             rfsuite.session.modelPreferences = updated_ini
