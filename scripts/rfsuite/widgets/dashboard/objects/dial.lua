@@ -68,7 +68,7 @@ local function drawBarNeedle(cx, cy, length, thickness, angleDeg, color)
     -- Main bar as two triangles
     lcd.color(color)
     lcd.drawFilledTriangle(base1X, base1Y, tip1X, tip1Y, tip2X, tip2Y)
-    lcd.drawFilledTriangle(base1X+1, base1Y, tip2X, tip2Y, base2X, base2Y)
+    lcd.drawFilledTriangle(base1X, base1Y, tip2X, tip2Y, base2X, base2Y)
     lcd.drawLine(cx, cy, tipX, tipY)
 end
 
