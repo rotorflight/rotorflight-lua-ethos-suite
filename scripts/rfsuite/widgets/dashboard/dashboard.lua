@@ -32,7 +32,7 @@ dashboard.selectedBoxIndex = 1 -- track the selected box index
 dashboard.themeFallbackUsed = { preflight = false, inflight = false, postflight = false }
 dashboard.themeFallbackTime = { preflight = 0, inflight = 0, postflight = 0 }
 dashboard.flightmode = rfsuite.session.flightMode or "preflight" -- To be set by your state logic
-
+dashboard._overlayActive = dashboard._overlayActive or false
 dashboard.currentWidgetPath = nil 
 
 dashboard.utils = assert(
@@ -59,7 +59,10 @@ end
     Renders an overlay message if there are any dashboard, theme, or telemetry errors.
     Chooses the right overlay function depending on the module.
 ]]
-local function renderOverlayMessage(module, utils)
+local function renderOverlayMessage(module, utils, widget)
+    -- Track overlay state globally
+    dashboard._overlayActive = dashboard._overlayActive or false
+
     local apiVersionAsString = tostring(rfsuite.session.apiVersion)
     local moduleState = (model.getModule(0):enable() or model.getModule(1):enable()) or false
     local sportSensor = system.getSource({appId = 0xF101})
@@ -87,14 +90,25 @@ local function renderOverlayMessage(module, utils)
         overlayMessage = rfsuite.i18n.get("widgets.dashboard.validate_sensors")
     end
 
+    -- Overlay show/hide invalidation logic
     if overlayMessage then
+        if not dashboard._overlayActive then
+            lcd.invalidate(widget)              -- Overlay just appeared: redraw everything
+            dashboard._overlayActive = true
+        end
         if module and module.overlayMessage then
             module.screenErrorOverlay(overlayMessage)
         else
             utils.screenErrorOverlay(overlayMessage)
         end
+    else
+        if dashboard._overlayActive then
+            lcd.invalidate(widget)              -- Overlay just disappeared: redraw everything
+            dashboard._overlayActive = false
+        end
     end
 end
+
 
 --[[ 
     Renders the main dashboard layout, drawing all boxes and handling highlights.
@@ -192,7 +206,7 @@ function dashboard.renderLayout(widget, config)
         end
     end
 
-    renderOverlayMessage(module, utils)
+    renderOverlayMessage(module, utils, widget)
 end
 
 
