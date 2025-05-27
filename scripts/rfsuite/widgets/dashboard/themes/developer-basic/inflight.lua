@@ -19,7 +19,7 @@ local telemetry = rfsuite.tasks.telemetry
 
 local layout = {
     cols = 2,
-    rows = 5,
+    rows = 6,
     padding = 4
 }
 
@@ -27,7 +27,9 @@ local boxes = {
     {col = 1, row = 1, rowspan = 4, type = "telemetry", source = "voltage", title = "VOLTAGE", unit = "v", titlepos = "bottom"},
     {col = 2, row = 1, rowspan = 4, type = "telemetry", source = "fuel", title = "FUEL", unit = "%", titlepos = "bottom", transform = "floor"},
     {col = 1, row = 5, type = "telemetry", source = "governor", title = "GOVERNOR", titlepos = "bottom", transform = function(v) return rfsuite.utils.getGovernorState(v) end},
-    {col = 2, row = 5, type = "telemetry", source = "rpm", title = "RPM", unit = "rpm", titlepos = "bottom", transform = "floor"}
+    {col = 2, row = 5, type = "telemetry", source = "rpm", title = "RPM", unit = "rpm", titlepos = "bottom", transform = "floor"},
+    {col = 1, row = 6, type = "flighttime", title = "FLIGHT TIME", titlepos = "bottom"},
+    {col = 2, row = 6, type = "totalflighttime", title = "TOTAL FLIGHT TIME", titlepos = "bottom"}
 }
 
 local function wakeup()

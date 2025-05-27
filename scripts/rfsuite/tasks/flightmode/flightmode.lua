@@ -35,7 +35,7 @@ function flightmode.wakeup()
 
         -- Live running total while inflight
         local currentSegment = os.clock() - rfsuite.session.timer.start
-        rfsuite.session.timer.live = (rfsuite.session.timer.total or 0) + currentSegment
+        rfsuite.session.timer.live = (rfsuite.session.timer.accrued or 0) + currentSegment
 
 
         hasBeenInFlight  = true
@@ -46,9 +46,17 @@ function flightmode.wakeup()
             -- Accumulate time once flight ends
             if rfsuite.session.timer.start ~= nil then
                 local flightDuration = os.clock() - rfsuite.session.timer.start
-                rfsuite.session.timer.total = (rfsuite.session.timer.total or 0) + flightDuration
+                rfsuite.session.timer.accrued = (rfsuite.session.timer.accrued or 0) + flightDuration
                 rfsuite.session.timer.start = nil
-                rfsuite.utils.log("Accrued flight time: " .. rfsuite.session.timer.total, "info")
+                rfsuite.utils.log("Accrued flight time: " .. rfsuite.session.timer.accrued, "info")
+
+                -- Save the total flight time to model preferences
+                local savedtime = rfsuite.ini.getvalue(rfsuite.session.modelPreferences, "general", "totalflighttime") or 0
+                local totaltime = rfsuite.session.timer.accrued + savedtime
+
+                rfsuite.ini.setvalue(rfsuite.session.modelPreferences, "general", "totalflighttime", totaltime)
+                rfsuite.ini.setvalue(rfsuite.session.modelPreferences, "general", "lastflighttime", rfsuite.session.timer.accrued)
+                rfsuite.ini.save_ini_file(rfsuite.session.modelPreferencesFile, rfsuite.session.modelPreferences)
             end            
 
         else

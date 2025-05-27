@@ -22,17 +22,21 @@ local modelpreferences = {}
 local modelpref_defaults ={
     general ={
         flightcount = 0,
+        totalflighttime = 0,
+        lastflighttime = 0,
     }
 }
 
 function modelpreferences.wakeup()
+
     -- quick exit if no apiVersion
     if rfsuite.session.apiVersion == nil then return end    
 
     --- check if we have a mcu_id
-    if rfsuite.session.mcu_id == nil then
+    if not rfsuite.session.mcu_id then
         return
     end
+  
 
     if (rfsuite.session.modelPreferences == nil)  then
              -- populate the model preferences variable
@@ -44,7 +48,7 @@ function modelpreferences.wakeup()
 
 
             local slave_ini = modelpref_defaults
-            local master_ini = master_ini = rfsuite.ini.load_ini_file(modelpref_file) or {}
+            local master_ini  = rfsuite.ini.load_ini_file(modelpref_file) or {}
 
 
             local updated_ini = rfsuite.ini.merge_ini_tables(master_ini, slave_ini)
@@ -54,7 +58,6 @@ function modelpreferences.wakeup()
             if not rfsuite.ini.ini_tables_equal(master_ini, slave_ini) then
                 rfsuite.ini.save_ini_file(modelpref_file, updated_ini)
             end             
-
 
     end
 
