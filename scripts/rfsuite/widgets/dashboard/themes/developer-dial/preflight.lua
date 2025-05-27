@@ -50,7 +50,12 @@ local boxes = {
         - offsetx          : Horizontal offset for custom pointer (default 0)
         - offsety          : Vertical offset for custom pointer (default 0)
         - dial = 2,  -- or "custom/path.png", or function() return "..." end
-        - pointer = "widgets/dashboard/gfx/pointers/needle_red.png",  -- or 3, or function()...
+        - needlecolor      : red"
+        - needlehubcolor   : "black"
+        - needlehubsize    :  10
+        - needlethickness  : 5
+        - needlestartangle = 135,   -- Degrees (where 0% starts)
+        - needlesweepangle = 279,   -- Degrees (arc of full sweep)
     ]]
 
     {
@@ -62,8 +67,11 @@ local boxes = {
         source = "voltage",
         aspect = "fit",
         align = "center",
-        dial = 2,  
-        pointer = 1,
+        dial = 1,  
+        needlecolor = "red",
+        needlehubcolor = "red",
+        needlehubsize = 15,
+        needlethickness = 5,        
         min = function()
             local cfg = rfsuite.session.batteryConfig
 
@@ -86,8 +94,7 @@ local boxes = {
         col = 2, row = 1,
         type = "dial",
         title = "Fuel",
-        dial = 3,  
-        pointer = 3,        
+        dial = 1,       
         unit = "%",
         titlepos = "bottom",
         style = 2,
@@ -96,7 +103,13 @@ local boxes = {
         align = "bottom",
         min = 0,
         max = 100,
-        transform = "floor"
+        transform = "floor",
+        needlecolor = "red",
+        needlehubcolor = "black",
+        needlehubsize = 10,
+        needlethickness = 5,
+        needlestartangle = 135, 
+        needlesweepangle = 270,  
     },
 
 }
