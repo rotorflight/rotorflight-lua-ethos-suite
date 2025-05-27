@@ -48,6 +48,19 @@ function utils.inFlight()
     return false
 end
 
+--- Converts a version array into an indexed array of tables.
+-- Each element in the input table is paired with its zero-based index in a new table.
+-- @param tbl Table containing version elements.
+-- @return arr Array of tables, each containing the value and its zero-based index: {value, index}.
+function utils.msp_version_array_to_indexed()
+    local arr = {}
+    local tbl = rfsuite.config.supportedMspApiVersion or {"12.06", "12.07","12.08"} 
+    for i, v in ipairs(tbl) do
+        arr[#arr+1] = {v, i}
+    end
+    return arr
+end
+
 -- get the governor text from the value
 function utils.getGovernorState(value)
     local map = {     

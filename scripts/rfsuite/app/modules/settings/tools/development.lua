@@ -34,6 +34,7 @@ formFieldCount = formFieldCount + 1
                                                             end    
                                                         end)    
 
+
     formFieldCount = formFieldCount + 1
     rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
     rfsuite.app.formLines[rfsuite.session.formLineCnt] = form.addLine(rfsuite.i18n.get("app.modules.settings.txt_compilation"))
@@ -50,10 +51,26 @@ formFieldCount = formFieldCount + 1
                                                             end    
                                                         end)                                                        
 
+    formFieldCount = formFieldCount + 1
+    rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.session.formLineCnt] = form.addLine(rfsuite.i18n.get("app.modules.settings.txt_apiversion"))
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.session.formLineCnt], nil, 
+                                                        rfsuite.utils.msp_version_array_to_indexed(),
+                                                        function() 
+                                                                return settings.apiversion
+                                                        end, 
+                                                        function(newValue) 
+                                                                settings.apiversion = newValue
+                                                        end) 
+
+
+
+    local logpanel = form.addExpansionPanel(rfsuite.i18n.get("app.modules.settings.txt_logging"))
+    logpanel:open(false) 
 
     formFieldCount = formFieldCount + 1
     rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = form.addLine(rfsuite.i18n.get("app.modules.settings.txt_loglocation"))
+    rfsuite.app.formLines[rfsuite.session.formLineCnt] = logpanel:addLine(rfsuite.i18n.get("app.modules.settings.txt_loglocation"))
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.session.formLineCnt], nil, 
                                                         {{rfsuite.i18n.get("app.modules.settings.txt_console"), 0}, {rfsuite.i18n.get("app.modules.settings.txt_consolefile"), 1}}, 
                                                         function() 
@@ -79,7 +96,7 @@ formFieldCount = formFieldCount + 1
 
     formFieldCount = formFieldCount + 1
     rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = form.addLine(rfsuite.i18n.get("app.modules.settings.txt_loglevel"))
+    rfsuite.app.formLines[rfsuite.session.formLineCnt] = logpanel:addLine(rfsuite.i18n.get("app.modules.settings.txt_loglevel"))
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.session.formLineCnt], nil, 
                                                         {{rfsuite.i18n.get("app.modules.settings.txt_off"), 0}, {rfsuite.i18n.get("app.modules.settings.txt_info"), 1}, {rfsuite.i18n.get("app.modules.settings.txt_debug"), 2}}, 
                                                         function() 
@@ -109,7 +126,7 @@ formFieldCount = formFieldCount + 1
  
     formFieldCount = formFieldCount + 1
     rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = form.addLine(rfsuite.i18n.get("app.modules.settings.txt_mspdata"))
+    rfsuite.app.formLines[rfsuite.session.formLineCnt] = logpanel:addLine(rfsuite.i18n.get("app.modules.settings.txt_mspdata"))
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.session.formLineCnt], 
                                                         nil, 
                                                         function() 
@@ -125,7 +142,7 @@ formFieldCount = formFieldCount + 1
 
     formFieldCount = formFieldCount + 1
     rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = form.addLine(rfsuite.i18n.get("app.modules.settings.txt_queuesize"))
+    rfsuite.app.formLines[rfsuite.session.formLineCnt] = logpanel:addLine(rfsuite.i18n.get("app.modules.settings.txt_queuesize"))
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.session.formLineCnt], 
                                                         nil, 
                                                         function() 
@@ -141,7 +158,7 @@ formFieldCount = formFieldCount + 1
 
     formFieldCount = formFieldCount + 1
     rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = form.addLine(rfsuite.i18n.get("app.modules.settings.txt_memusage"))
+    rfsuite.app.formLines[rfsuite.session.formLineCnt] = logpanel:addLine(rfsuite.i18n.get("app.modules.settings.txt_memusage"))
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.session.formLineCnt], 
                                                         nil, 
                                                         function() 
@@ -181,6 +198,7 @@ local function onSaveMenu()
                     "SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini",
                     rfsuite.preferences
                 )
+                
                 rfsuite.app.triggers.closeSave = true
                 return true
             end,
