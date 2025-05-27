@@ -86,7 +86,7 @@ local userpref_defaults ={
         logmspQueue = false,        -- periodic print the msp queue size
         memstats = false,           -- perioid print memory usage 
         mspexpbytes = 8,
-        apiversion = 3,             -- msp api version to use for simulator    
+        apiversion = 2,             -- msp api version to use for simulator    
     }
 }
 
