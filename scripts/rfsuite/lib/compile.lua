@@ -189,6 +189,7 @@ function compile.loadfile(script)
   -- 1. Try LRU in-memory cache
   loader = lru_cache:get(cache_key)
   if loader then
+    rfsuite.utils.log("Loaded from in-memory cache: " .. script, "info")
     which = "in-memory"
   else
     -- 2. Fallback: disk compiled, or raw
