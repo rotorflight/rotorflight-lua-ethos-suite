@@ -80,7 +80,6 @@ function render.arcdial(x, y, w, h, box, telemetry)
     if source and telemetry then
         local sensor = telemetry.getSensorSource and telemetry.getSensorSource(source)
         value = sensor and sensor:value()
-        print("ArcDial value for source '" .. source .. "': " .. tostring(value))
     end
     if value and max ~= min then
         percent = (value - min) / (max - min)
