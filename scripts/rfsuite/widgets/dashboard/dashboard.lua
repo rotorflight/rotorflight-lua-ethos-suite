@@ -132,7 +132,6 @@ function dashboard.renderLayout(widget, config)
 
     utils.setBackgroundColourBasedOnTheme()
 
-    -- Helper to get box width/height (percent, pixel, or grid)
     local function getBoxSize(box)
         if box.w_pct and box.h_pct then
             local wp = box.w_pct
@@ -153,15 +152,12 @@ function dashboard.renderLayout(widget, config)
         end
     end
 
-    -- Helper to get box position (percent, pixel, or grid)
     local function getBoxPosition(box, w, h)
-        -- Priority: x_pct/y_pct > x/y > col/row
         if box.x_pct and box.y_pct then
             local xp = box.x_pct
             local yp = box.y_pct
             if xp > 1 then xp = xp / 100 end
             if yp > 1 then yp = yp / 100 end
-            -- x/y is top-left corner; w/h is known
             local x = math.floor(xp * (WIDGET_W - (w or boxWidth)))
             local y = math.floor(yp * (WIDGET_H - (h or boxHeight)))
             return x, y
@@ -184,6 +180,9 @@ function dashboard.renderLayout(widget, config)
         local w, h = getBoxSize(box)
         local x, y = getBoxPosition(box, w, h)
 
+        -- PATCH: initialize each box as dirty on layout (for first render, or after a full layout change)
+        box.dirty = true
+
         dashboard.boxRects[#dashboard.boxRects + 1] = { x = x, y = y, w = w, h = h, box = box }
         dashboard.render.object(box.type, x, y, w, h, box, telemetry)
 
@@ -195,6 +194,7 @@ function dashboard.renderLayout(widget, config)
 
     renderOverlayMessage(module, utils)
 end
+
 
 --[[
     Loads the Lua state module for the specified theme and state.
@@ -528,7 +528,19 @@ function dashboard.wakeup(widget)
         local module = loadedStateModules[state]
 
         if type(module) == "table" and module.layout then
-            lcd.invalidate(widget)
+            -- PATCH: Only invalidate "dirty" widgets, not the whole widget
+            local anyDirty = false
+            for _, rect in ipairs(dashboard.boxRects) do
+                if rect.box.dirty then
+                    --rfsuite.utils.log("dashboard: Invalidating box at " .. rect.x .. ", " .. rect.y .. " with size " .. rect.w .. "x" .. rect.h, "info")
+                    lcd.invalidate(rect.x, rect.y, rect.w, rect.h)
+                    rect.box.dirty = false
+                    anyDirty = true
+                end
+            end
+            -- Optionally, if *nothing* was dirty, you might want to fallback to lcd.invalidate(widget) for overlays, etc.
+            -- if not anyDirty then lcd.invalidate(widget) end
+
             if type(module.wakeup) == "function" then
                 module.wakeup(widget)
             end
@@ -543,6 +555,7 @@ function dashboard.wakeup(widget)
         lcd.invalidate(widget)
     end
 end
+
 
 --[[
     Scans and lists available system and user dashboard themes.
@@ -612,5 +625,35 @@ function dashboard.savePreference(key, value)
         return rfsuite.ini.save_ini_file(rfsuite.session.modelPreferencesFile, rfsuite.session.modelPreferences)
     end
 end
+
+function dashboard.markDirty(box)
+    --rfsuite.utils.log("dashboard: Marking box as dirty: " .. tostring(box.type), "info")
+    box.dirty = true
+end
+
+function dashboard.markAllDirty()
+    if dashboard.boxRects then
+        for _, rect in ipairs(dashboard.boxRects) do
+            rect.box.dirty = true
+        end
+    end
+end
+
+-- this is called by the telemetry module when a sensor value changes
+function dashboard.markBoxesDirtyForSensor(sensorKey, value)
+    if not dashboard.boxRects then return end
+    for _, rect in ipairs(dashboard.boxRects) do
+        local box = rect.box
+        local boxSource = rfsuite.widgets.dashboard.utils.getParam(box, "source")
+        if boxSource == sensorKey then
+            -- Optionally: only mark dirty if value is different from last
+            if box._lastValue ~= value then
+                box._lastValue = value
+                rfsuite.widgets.dashboard.markDirty(box)
+            end
+        end
+    end
+end
+
 
 return dashboard

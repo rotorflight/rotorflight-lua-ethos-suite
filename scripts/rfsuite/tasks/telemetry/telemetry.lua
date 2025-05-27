@@ -881,6 +881,12 @@ function telemetry.wakeup()
                     if type(sensorDef.onchange) == "function" then
                         sensorDef.onchange(val)
                     end
+
+                    -- DASHBOARD DIRTY HOOK
+                    if rfsuite.widgets and rfsuite.widgets.dashboard and rfsuite.widgets.dashboard.markBoxesDirtyForSensor then
+                        rfsuite.widgets.dashboard.markBoxesDirtyForSensor(sensorKey, val)
+                    end
+
                     lastSensorValues[sensorKey] = val
                 end
 
