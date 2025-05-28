@@ -57,4 +57,8 @@ function render.paint(x, y, w, h, box, telemetry)
     lcd.drawText(math.min(infoX, maxRight - textW2), yStart + textH1 + 2, line2)
 end
 
+function render.wakeup()
+    -- This widget does not need to do anything on wakeup
+end
+
 return render

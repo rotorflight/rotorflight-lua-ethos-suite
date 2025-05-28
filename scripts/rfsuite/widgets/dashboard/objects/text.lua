@@ -33,4 +33,8 @@ function render.paint(x, y, w, h, box)
     )
 end
 
+function render.wakeup()
+    -- This widget does not need to do anything on wakeup
+end
+
 return render

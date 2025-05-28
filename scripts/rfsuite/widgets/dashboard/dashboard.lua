@@ -35,12 +35,34 @@ dashboard.flightmode = rfsuite.session.flightMode or "preflight" -- To be set by
 
 dashboard.currentWidgetPath = nil 
 dashboard.overlayMessage = nil
+
+dashboard.objectsByType = {}
+
 dashboard.utils = assert(
     rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/lib/utils.lua")
 )()
-dashboard.render = assert(
-    rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/lib/render.lua")
-)()
+
+function dashboard.loadAllObjects(boxConfigs)
+    dashboard.objectsByType = {}  -- clear old cache!
+    local loaded = {}
+    for _, box in ipairs(boxConfigs or {}) do
+        local typ = box.type
+        if typ and not loaded[typ] then
+            local baseDir = rfsuite.config.baseDir or "default"
+            local objPath = "SCRIPTS:/" .. baseDir .. "/widgets/dashboard/objects/" .. typ .. ".lua"
+            local ok, obj = pcall(function()
+                return assert(rfsuite.compiler.loadfile(objPath))()
+            end)
+            if ok and type(obj) == "table" then
+                dashboard.objectsByType[typ] = obj
+            else
+                rfsuite.utils.log("Failed to load object: " .. tostring(typ), "info")
+            end
+            loaded[typ] = true
+        end
+    end
+end
+
 
 --[[ 
     Returns a list of indices of boxes that have an `onpress` handler.
@@ -139,6 +161,8 @@ end
     Called automatically by paint().
 ]]
 function dashboard.renderLayout(widget, config)
+
+
     dashboard.boxRects = {} -- clear previous box rectangles
 
     local function resolve(val, ...)
@@ -176,7 +200,10 @@ function dashboard.renderLayout(widget, config)
         local x, y = getBoxPosition(box, w, h, boxWidth, boxHeight, PADDING, WIDGET_W, WIDGET_H)
 
         dashboard.boxRects[#dashboard.boxRects + 1] = { x = x, y = y, w = w, h = h, box = box }
-        dashboard.render.object(box.type, x, y, w, h, box, telemetry)
+        local obj = dashboard.objectsByType[box.type]
+        if obj and obj.paint then
+            obj.paint(x, y, w, h, box, telemetry)
+        end
 
         if dashboard.selectedBoxIndex == i and box.onpress then
             lcd.color(selectColor)
@@ -327,8 +354,21 @@ function dashboard.reload_themes()
         inflight   = load_state_script(rfsuite.preferences.dashboard.theme_inflight    or dashboard.DEFAULT_THEME, "inflight"),
         postflight = load_state_script(rfsuite.preferences.dashboard.theme_postflight  or dashboard.DEFAULT_THEME, "postflight"),
     }
+    -- PATCH: Load objects for all boxes in all states
+    local allBoxes = {}
+    for _, mod in pairs(loadedStateModules) do
+        if mod and mod.boxes then
+            local boxes = type(mod.boxes) == "function" and mod.boxes() or mod.boxes
+            for _, box in ipairs(boxes or {}) do
+                table.insert(allBoxes, box)
+            end
+        end
+    end
+    dashboard.loadAllObjects(allBoxes)
     wakeupScheduler = 0
+    dashboard.boxRects = {}
 end
+
 
 dashboard.reload_themes()
 
@@ -513,6 +553,7 @@ function dashboard.wakeup(widget)
         lastFlightMode = currentFlightMode
     end
 
+
     if (now - wakeupScheduler) >= interval then
         wakeupScheduler = now
         -- Periodically check for overlay message changes
@@ -532,6 +573,13 @@ function dashboard.wakeup(widget)
             end
         else
              callStateFunc("wakeup", widget)
+        end
+
+        for _, rect in ipairs(dashboard.boxRects or {}) do
+            local obj = dashboard.objectsByType[rect.box.type]
+            if obj and obj.wakeup then
+                obj.wakeup(rect.box, rfsuite.tasks.telemetry)
+            end
         end
 
     end

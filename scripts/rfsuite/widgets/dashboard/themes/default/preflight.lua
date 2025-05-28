@@ -24,7 +24,7 @@ local layout = {
 local boxes = {
     {col=1, row=1, rowspan=2, type="modelimage"},
     {col=1, row=3, type="telemetry", source="rssi", nosource="-", title="LQ", unit="dB", titlepos="bottom", transform="floor"},
-    {col=1, row=4, type="telemetry", source="governor", nosource="-", title="GOVERNOR", titlepos="bottom", transform=function(v) return rfsuite.utils.getGovernorState(v) end},
+    {col=1, row=4, type="governor", nosource="-", title="GOVERNOR", titlepos="bottom"},
     {col=2, row=1, rowspan=2, type="telemetry", source="voltage", nosource="-", title="VOLTAGE", unit="v", titlepos="bottom"},
     {col=2, row=3, rowspan=2, type="telemetry", source="current", nosource="-", title="CURRENT", unit="A", titlepos="bottom"},
     {col=3, row=1, rowspan=2, type="telemetry", source="fuel", nosource="-", title="FUEL", unit="%", titlepos="bottom", transform="floor"},

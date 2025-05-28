@@ -39,4 +39,8 @@ function render.paint(x, y, w, h, box, telemetry)
     return gaugeObj.gauge(x, y, w, h, fuelBox, telemetry)
 end
 
+function render.wakeup()
+    -- This widget does not need to do anything on wakeup
+end
+
 return render
