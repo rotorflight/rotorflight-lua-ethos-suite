@@ -27,6 +27,11 @@ local loadedStateModules = {}
 local loadedThemeIntervals = { wakeup = 0.5, wakeup_bg = 2 }
 local wakeupScheduler = 0
 
+-- spreash scheduling of object wakeups
+local objectWakeupIndex = 1
+local objectWakeupsPerCycle = nil
+local objectSchedulerPercentage = 0.2  -- Example: 20% per cycle
+
 dashboard.boxRects = {}  -- Will store {x, y, w, h, box} for each box
 dashboard.selectedBoxIndex = 1 -- track the selected box index
 dashboard.themeFallbackUsed = { preflight = false, inflight = false, postflight = false }
@@ -209,6 +214,13 @@ function dashboard.renderLayout(widget, config)
             lcd.color(selectColor)
             lcd.drawRectangle(x, y, w, h, selectBorder)
         end
+    end
+
+    -- Calculate objects per cycle for spread scheduling
+    if #dashboard.boxRects ~= lastBoxRectsCount or not objectWakeupsPerCycle then
+        objectWakeupsPerCycle = math.ceil(#dashboard.boxRects * objectSchedulerPercentage)
+        lastBoxRectsCount = #dashboard.boxRects
+        objectWakeupIndex = 1
     end
 
     if dashboard.overlayMessage then
@@ -575,10 +587,18 @@ function dashboard.wakeup(widget)
              callStateFunc("wakeup", widget)
         end
 
-        for _, rect in ipairs(dashboard.boxRects or {}) do
-            local obj = dashboard.objectsByType[rect.box.type]
-            if obj and obj.wakeup then
-                obj.wakeup(rect.box, rfsuite.tasks.telemetry)
+        -- Spread-scheduled wakeup for dashboard objects
+        if #dashboard.boxRects > 0 and objectWakeupsPerCycle then
+            for i = 1, objectWakeupsPerCycle do
+                local idx = objectWakeupIndex
+                local rect = dashboard.boxRects[idx]
+                if rect then
+                    local obj = dashboard.objectsByType[rect.box.type]
+                    if obj and obj.wakeup then
+                        obj.wakeup(rect.box, rfsuite.tasks.telemetry)
+                    end
+                end
+                objectWakeupIndex = (objectWakeupIndex % #dashboard.boxRects) + 1
             end
         end
 
