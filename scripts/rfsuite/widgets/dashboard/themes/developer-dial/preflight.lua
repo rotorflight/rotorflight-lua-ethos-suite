@@ -423,5 +423,10 @@ return {
     event = event,
     paint = paint,
     overlayMessage = nil,
-    customRenderFunction = customRenderFunction
+    customRenderFunction = customRenderFunction,
+    scheduler = {
+        wakeup_interval = 0.25,          -- Interval (seconds) to run wakeup script when display is visible
+        wakeup_interval_bg = 5,         -- (optional: run wakeup this often when not visible; set nil/empty to skip)
+        paint_interval = 0.5,            -- Interval (seconds) to run paint script when display is visible 
+    }    
 }
