@@ -5,7 +5,7 @@ local gaugeObj = assert(rfsuite.compiler.loadfile("SCRIPTS:/" .. baseDir .. "/wi
 
 
 -- Advanced Battery Gauge Box
-function render.batteryadvanced(x, y, w, h, box, telemetry)
+function render.paint(x, y, w, h, box, telemetry)
     x, y = rfsuite.widgets.dashboard.utils.applyOffset(x, y, box)
 
     -- default gauge rendering

@@ -1,7 +1,7 @@
 local render = {}
 
 -- Armflags status box
-function render.armflags(x, y, w, h, box, telemetry)
+function render.paint(x, y, w, h, box, telemetry)
 
     x, y = rfsuite.widgets.dashboard.utils.applyOffset(x, y, box)
 

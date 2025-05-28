@@ -25,7 +25,7 @@ local function drawArc(cx, cy, radius, thickness, angleStart, angleEnd, color, c
 end
 
 
-function render.arcgauge(x, y, w, h, box, telemetry)
+function render.paint(x, y, w, h, box, telemetry)
     -- Cache only geometry/layout math (not getParam or resolveColor)
     box._layoutcache = box._layoutcache or {}
     local cache = box._layoutcache

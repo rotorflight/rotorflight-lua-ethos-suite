@@ -4,7 +4,7 @@ local baseDir = rfsuite.config.baseDir or "default"
 local gaugeObj = assert(rfsuite.compiler.loadfile("SCRIPTS:/" .. baseDir .. "/widgets/dashboard/objects/gauge.lua"))()
 
 -- Fuel Gauge Box: Easy, ready-to-use fuel gauge for end users.
-function render.fuelgauge(x, y, w, h, box, telemetry)
+function render.paint(x, y, w, h, box, telemetry)
 
     x, y = rfsuite.widgets.dashboard.utils.applyOffset(x, y, box)
 

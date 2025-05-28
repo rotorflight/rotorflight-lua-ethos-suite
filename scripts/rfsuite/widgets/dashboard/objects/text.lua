@@ -1,7 +1,7 @@
 local render = {}
 
 -- Static text box
-function render.text(x, y, w, h, box)
+function render.paint(x, y, w, h, box)
 
     x, y = rfsuite.widgets.dashboard.utils.applyOffset(x, y, box)
 

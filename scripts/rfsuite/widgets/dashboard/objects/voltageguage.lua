@@ -3,7 +3,7 @@ local render = {}
 local baseDir = rfsuite.config.baseDir or "default"
 local gaugeObj = assert(rfsuite.compiler.loadfile("SCRIPTS:/" .. baseDir .. "/widgets/dashboard/objects/gauge.lua"))()
 
-function render.voltagegauge(x, y, w, h, box, telemetry)
+function render.paint(x, y, w, h, box, telemetry)
 
     x, y = rfsuite.widgets.dashboard.utils.applyOffset(x, y, box)
 

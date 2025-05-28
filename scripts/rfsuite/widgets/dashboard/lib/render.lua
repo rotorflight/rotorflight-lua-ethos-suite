@@ -22,9 +22,9 @@ function render.object(boxType, x, y, w, h, box, telemetry)
         objectCache[cacheKey] = obj -- Cache it
     end
 
-    local func = obj[boxType]
+    local func = obj.paint
     if type(func) ~= "function" then
-        rfsuite.utils.log("No function '" .. boxType .. "' in object file: " .. tostring(boxType),"info")
+        rfsuite.utils.log("No .paint function in object file: " .. tostring(boxType),"info")
         return
     end
     return func(x, y, w, h, box, telemetry)

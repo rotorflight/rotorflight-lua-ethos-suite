@@ -10,7 +10,7 @@ local function drawSolidRing(cx, cy, radius, thickness, ringColor, bgColor)
     lcd.drawFilledCircle(cx, cy, radius - thickness)
 end
 
-function render.heatring(x, y, w, h, box, telemetry)
+function render.paint(x, y, w, h, box, telemetry)
     -- Ring size (percentage of area)
     local ringsize = rfsuite.widgets.dashboard.utils.getParam(box, "ringsize") or 0.88
     ringsize = math.max(0.1, math.min(ringsize, 1.0))

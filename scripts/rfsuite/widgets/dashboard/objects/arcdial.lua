@@ -22,7 +22,7 @@ local function drawArc(cx, cy, radius, thickness, angleStart, angleEnd, color, c
 end
 
 -- Main render function
-function render.arcdial(x, y, w, h, box, telemetry)
+function render.paint(x, y, w, h, box, telemetry)
 
     -- Parameters & defaults
     local bandLabels = rfsuite.widgets.dashboard.utils.getParam(box, "bandLabels") or {"Bad", "OK", "Good", "Excellent"}

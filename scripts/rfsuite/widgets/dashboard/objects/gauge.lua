@@ -20,7 +20,7 @@ local function drawFilledRoundedRectangle(x, y, w, h, r)
     end
 end
 
-function render.gauge(x, y, w, h, box, telemetry)
+function render.paint(x, y, w, h, box, telemetry)
     x, y = rfsuite.widgets.dashboard.utils.applyOffset(x, y, box)
 
     -- Get value

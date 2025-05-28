@@ -2,7 +2,7 @@ local render = {}
 
 
 -- Model image box
-function render.modelimage(x, y, w, h, box)
+function render.paint(x, y, w, h, box)
     rfsuite.widgets.dashboard.utils.modelImageBox(
         x, y, w, h,
         rfsuite.widgets.dashboard.utils.getParam(box, "color"), rfsuite.widgets.dashboard.utils.getParam(box, "title"),

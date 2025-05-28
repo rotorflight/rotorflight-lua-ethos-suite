@@ -1,7 +1,7 @@
 local render = {}
 
 -- Governor status box
-function render.governor(x, y, w, h, box, telemetry)
+function render.paint(x, y, w, h, box, telemetry)
 
     x, y = rfsuite.widgets.dashboard.utils.applyOffset(x, y, box)
 
