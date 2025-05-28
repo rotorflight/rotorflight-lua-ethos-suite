@@ -21,30 +21,6 @@ local function drawArc(cx, cy, radius, thickness, angleStart, angleEnd, color, c
     lcd.drawFilledCircle(x_end, y_end, rad_thick)
 end
 
--- Needle drawing helper
-local function drawBarNeedle(cx, cy, length, thickness, angleDeg, color)
-    local angleRad = math.rad(angleDeg)
-    local cosA = math.cos(angleRad)
-    local sinA = math.sin(angleRad)
-    local tipX = cx + cosA * length
-    local tipY = cy + sinA * length
-    local perpA = angleRad + math.pi / 2
-    local dx = math.cos(perpA) * (thickness / 2)
-    local dy = math.sin(perpA) * (thickness / 2)
-    local base1X = cx + dx
-    local base1Y = cy + dy
-    local base2X = cx - dx
-    local base2Y = cy - dy
-    local tip1X = tipX + dx
-    local tip1Y = tipY + dy
-    local tip2X = tipX - dx
-    local tip2Y = tipY - dy
-    lcd.color(color)
-    lcd.drawFilledTriangle(base1X, base1Y, tip1X, tip1Y, tip2X, tip2Y)
-    lcd.drawFilledTriangle(base1X, base1Y, tip2X, tip2Y, base2X, base2Y)
-    lcd.drawLine(cx, cy, tipX, tipY)
-end
-
 -- Main render function
 function render.arcdial(x, y, w, h, box, telemetry)
 
@@ -100,7 +76,7 @@ function render.arcdial(x, y, w, h, box, telemetry)
         local needleThickness = rfsuite.widgets.dashboard.utils.getParam(box, "needlethickness") or 5
         local needleLen = radius - 8
         local needleAngle = startAngle + sweep * percent
-        drawBarNeedle(cx, cy, needleLen, needleThickness, needleAngle, needleColor)
+        rfsuite.widgets.dashboard.utils.drawBarNeedle(cx, cy, needleLen, needleThickness, needleAngle, needleColor)
         local hubColor = rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "needlehubcolor")) or lcd.RGB(0,0,0)
         local hubSize = rfsuite.widgets.dashboard.utils.getParam(box, "needlehubsize") or 7
         lcd.color(hubColor)

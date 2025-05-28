@@ -65,7 +65,6 @@ function render.heatring(x, y, w, h, box, telemetry)
     ) or lcd.RGB(0,200,0)
     local thresholds = rfsuite.widgets.dashboard.utils.getParam(box, "thresholds")
 
-
     if thresholds and value ~= nil then
         -- Always set to last color as default
         local last = thresholds[#thresholds]
@@ -76,11 +75,11 @@ function render.heatring(x, y, w, h, box, telemetry)
             local t_val = type(t.value) == "function" and t.value(box, value) or t.value
             local t_color = type(t.color) == "function" and t.color(box, value) or t.color
             if value < t_val then
-                    if type(t_color) == "number" then
-                        ringColor = t_color
-                    else
-                        ringColor = rfsuite.widgets.dashboard.utils.resolveColor(t_color) or ringColor
-                    end
+                if type(t_color) == "number" then
+                    ringColor = t_color
+                else
+                    ringColor = rfsuite.widgets.dashboard.utils.resolveColor(t_color) or ringColor
+                end
                 break
             end
         end
@@ -89,13 +88,36 @@ function render.heatring(x, y, w, h, box, telemetry)
     -- Draw ring (solid style: outer, then inner as mask)
     drawSolidRing(cx, cy, radius, thickness, ringColor, bgColor)
 
-    -- Value text (centered, offset, aligned)
+    -- Value text (centered, autosized)
     local displayValue = value or rfsuite.widgets.dashboard.utils.getParam(box, "novalue") or "-"
     local unit = rfsuite.widgets.dashboard.utils.getParam(box, "unit") or ""
-    local fontName = rfsuite.widgets.dashboard.utils.getParam(box, "font") or "FONT_XXL"
-    lcd.font(_G[fontName] or FONT_XXL)
     local valStr = tostring(displayValue) .. unit
-    local vw, vh = lcd.getTextSize(valStr)
+
+    -- Auto-size value font to fit inside ring
+    local fontSizes = {"FONT_XXL", "FONT_XL", "FONT_L", "FONT_M", "FONT_S"}
+    local maxWidth = radius * 1.6   -- play with these for best appearance
+    local maxHeight = radius * 0.7  -- don't use full diameter to leave space for title
+
+    local bestFont = FONT_XXL
+    local vw, vh
+
+    for _, fname in ipairs(fontSizes) do
+        lcd.font(_G[fname])
+        local tw, th = lcd.getTextSize(valStr)
+        if tw <= maxWidth and th <= maxHeight then
+            bestFont = _G[fname]
+            vw, vh = tw, th
+            break
+        end
+    end
+    -- If nothing fit, use smallest font
+    if not vw then
+        lcd.font(_G[fontSizes[#fontSizes]])
+        vw, vh = lcd.getTextSize(valStr)
+        bestFont = _G[fontSizes[#fontSizes]]
+    end
+    lcd.font(bestFont)
+
     local textColor = rfsuite.widgets.dashboard.utils.resolveColor(
         rfsuite.widgets.dashboard.utils.getParam(box, "textColor")
     ) or lcd.RGB(255,255,255)
@@ -110,25 +132,29 @@ function render.heatring(x, y, w, h, box, telemetry)
     else
         text_x = cx - vw/2
     end
-    lcd.drawText(text_x, cy - vh/2 + textoffset, valStr)
 
-    -- Title (above/below, align, offset)
+    -- Title text (above or below value)
     local title = rfsuite.widgets.dashboard.utils.getParam(box, "title")
     if title then
         lcd.font(FONT_XS)
         local tw, th = lcd.getTextSize(title)
         lcd.color(lcd.RGB(255,255,255))
         local titlealign = rfsuite.widgets.dashboard.utils.getParam(box, "titlealign") or "center"
-        local titlepos = rfsuite.widgets.dashboard.utils.getParam(box, "titlepos") or "top"
+        local titlepos = rfsuite.widgets.dashboard.utils.getParam(box, "titlepos") or "above"  -- "above" or "below"
         local titleoffset = rfsuite.widgets.dashboard.utils.getParam(box, "titleoffset") or 0
+
+        -- Title just above or below value (centered to value)
         local title_y
-        if titlepos == "bottom" then
-            title_y = cy + radius + thickness/2 + 4 + titleoffset
-            if title_y > (y + h - th) then title_y = y + h - th - 2 end
+        if titlepos == "below" then
+            title_y = cy + vh/2 + 2 + titleoffset
         else
-            title_y = cy - radius - thickness/2 - th - 4 + titleoffset
-            if title_y < y then title_y = y + 2 end
+            title_y = cy - vh/2 - th - 2 + titleoffset
         end
+
+        -- Clamp to widget area
+        if title_y < y then title_y = y + 2 end
+        if title_y + th > y + h then title_y = y + h - th - 2 end
+
         local title_x
         if titlealign == "left" then
             title_x = cx - radius + 4
@@ -139,6 +165,12 @@ function render.heatring(x, y, w, h, box, telemetry)
         end
         lcd.drawText(title_x, title_y, title)
     end
+
+    -- Draw value text last (overlapping the ring, below/above title as needed)
+    lcd.font(bestFont)
+    lcd.color(textColor)
+    lcd.drawText(text_x, cy - vh/2 + textoffset, valStr)
 end
+
 
 return render

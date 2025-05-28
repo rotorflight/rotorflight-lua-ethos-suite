@@ -32,7 +32,11 @@ function render.arcgauge(x, y, w, h, box, telemetry)
 
     -- Only recalculate geometry when x/y/w/h/arcOffsetY changes
     local arcOffsetY = rfsuite.widgets.dashboard.utils.getParam(box, "arcOffsetY") or 0
-    local layoutKey = string.format("%d,%d,%d,%d,%d", x, y, w, h, arcOffsetY)
+    local layoutKey = string.format("%d,%d,%d,%d,%d",
+        math.floor(x + 0.5), math.floor(y + 0.5),
+        math.floor(w + 0.5), math.floor(h + 0.5),
+        math.floor(arcOffsetY + 0.5)
+    )
     if cache._layoutKey ~= layoutKey then
         cache.cx = x + w / 2
         cache.cy = y + h / 2 - arcOffsetY

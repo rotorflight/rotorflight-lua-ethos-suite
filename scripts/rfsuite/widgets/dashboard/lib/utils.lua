@@ -21,6 +21,54 @@ local imageCache = {}
 local fontCache 
 
 
+function utils.drawBarNeedle(cx, cy, length, thickness, angleDeg, color)
+    local angleRad = math.rad(angleDeg)
+    local cosA = math.cos(angleRad)
+    local sinA = math.sin(angleRad)
+    local perpA = angleRad + math.pi / 2
+
+    local tipFudge = 2   -- px: overlap past tip for both ends
+
+    local dx = math.cos(perpA) * (thickness / 2)
+    local dy = math.sin(perpA) * (thickness / 2)
+
+    -- First set: needle from base to tip (with tip overdrawn)
+    local base1X = cx + dx
+    local base1Y = cy + dy
+    local base2X = cx - dx
+    local base2Y = cy - dy
+    local tipX = cx + cosA * (length + tipFudge)
+    local tipY = cy + sinA * (length + tipFudge)
+    local tip1X = tipX + dx
+    local tip1Y = tipY + dy
+    local tip2X = tipX - dx
+    local tip2Y = tipY - dy
+
+    -- Second set: from tip *back* to base, mirrored
+    local base3X = tipX + dx
+    local base3Y = tipY + dy
+    local base4X = tipX - dx
+    local base4Y = tipY - dy
+    local backX = cx - cosA * tipFudge
+    local backY = cy - sinA * tipFudge
+    local back1X = backX + dx
+    local back1Y = backY + dy
+    local back2X = backX - dx
+    local back2Y = backY - dy
+
+    lcd.color(color)
+    -- First rectangle/needle: base to tip
+    lcd.drawFilledTriangle(base1X, base1Y, tip1X, tip1Y, tip2X, tip2Y)
+    lcd.drawFilledTriangle(base1X, base1Y, tip2X, tip2Y, base2X, base2Y)
+    -- Second rectangle/needle: tip (thick end) overlaps back toward base
+    lcd.drawFilledTriangle(base3X, base3Y, back1X, back1Y, back2X, back2Y)
+    lcd.drawFilledTriangle(base3X, base3Y, back2X, back2Y, base4X, base4Y)
+    -- (You can draw a centerline if you like)
+    lcd.drawLine(cx, cy, tipX, tipY)
+end
+
+
+
 --[[
     Returns a table of available font lists (default and reduced) based on the current LCD resolution.
     The function detects the screen size and selects appropriate font sizes for supported radio models.
