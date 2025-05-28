@@ -34,7 +34,7 @@ dashboard.themeFallbackTime = { preflight = 0, inflight = 0, postflight = 0 }
 dashboard.flightmode = rfsuite.session.flightMode or "preflight" -- To be set by your state logic
 
 dashboard.currentWidgetPath = nil 
-
+dashboard.overlayMessage = nil
 dashboard.utils = assert(
     rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/lib/utils.lua")
 )()
@@ -55,45 +55,35 @@ local function getOnpressBoxIndices()
     return indices
 end
 
---[[ 
-    Renders an overlay message if there are any dashboard, theme, or telemetry errors.
-    Chooses the right overlay function depending on the module.
-]]
-local function renderOverlayMessage(module, utils)
+-- Returns the current overlay message string (or nil), based on error state
+function dashboard.computeOverlayMessage()
     local apiVersionAsString = tostring(rfsuite.session.apiVersion)
+    local state = dashboard.flightmode or "preflight"
     local moduleState = (model.getModule(0):enable() or model.getModule(1):enable()) or false
     local sportSensor = system.getSource({appId = 0xF101})
     local elrsSensor = system.getSource({crsfId = 0x14, subIdStart = 0, subIdEnd = 1})
-    local overlayMessage = nil
 
-    local state = dashboard.flightmode or "preflight"
     if dashboard.themeFallbackUsed and dashboard.themeFallbackUsed[state] and
        (os.clock() - (dashboard.themeFallbackTime and dashboard.themeFallbackTime[state] or 0)) < 10 then
-        overlayMessage = rfsuite.i18n.get("widgets.dashboard.theme_load_error")
+        return rfsuite.i18n.get("widgets.dashboard.theme_load_error")
     elseif not rfsuite.utils.ethosVersionAtLeast() then
-        overlayMessage = string.format(
+        return string.format(
             string.upper(rfsuite.i18n.get("ethos")) .. " < V%d.%d.%d",
             rfsuite.config.ethosVersion[1],
             rfsuite.config.ethosVersion[2],
             rfsuite.config.ethosVersion[3]
         )
     elseif not rfsuite.tasks.active() then
-        overlayMessage = rfsuite.i18n.get("app.check_bg_task")
+        return rfsuite.i18n.get("app.check_bg_task")
     elseif moduleState == false then
-        overlayMessage = rfsuite.i18n.get("app.check_rf_module_on")
+        return rfsuite.i18n.get("app.check_rf_module_on")
     elseif not (sportSensor or elrsSensor) then
-        overlayMessage = rfsuite.i18n.get("app.check_discovered_sensors")
+        return rfsuite.i18n.get("app.check_discovered_sensors")
     elseif rfsuite.session.telemetryState and rfsuite.tasks.telemetry and not rfsuite.tasks.telemetry.validateSensors() then
-        overlayMessage = rfsuite.i18n.get("widgets.dashboard.validate_sensors")
+        return rfsuite.i18n.get("widgets.dashboard.validate_sensors")
     end
 
-    if overlayMessage then
-        if module and module.overlayMessage then
-            module.screenErrorOverlay(overlayMessage)
-        else
-            utils.screenErrorOverlay(overlayMessage)
-        end
-    end
+    return nil
 end
 
 -- Helper to get box width/height (percent, pixel, or grid)
@@ -194,7 +184,9 @@ function dashboard.renderLayout(widget, config)
         end
     end
 
-    renderOverlayMessage(module, utils)
+    if dashboard.overlayMessage then
+        dashboard.utils.screenErrorOverlay(dashboard.overlayMessage)
+    end
 end
 
 --[[
@@ -523,6 +515,12 @@ function dashboard.wakeup(widget)
 
     if (now - wakeupScheduler) >= interval then
         wakeupScheduler = now
+        -- Periodically check for overlay message changes
+        local newMessage = dashboard.computeOverlayMessage()
+        if dashboard.overlayMessage ~= newMessage then
+            dashboard.overlayMessage = newMessage
+            lcd.invalidate(widget) -- Redraw only if message changed
+        end
 
         local state = dashboard.flightmode or "preflight"
         local module = loadedStateModules[state]
@@ -533,8 +531,9 @@ function dashboard.wakeup(widget)
                 module.wakeup(widget)
             end
         else
-            return callStateFunc("wakeup", widget)
+             callStateFunc("wakeup", widget)
         end
+
     end
 
     if not lcd.hasFocus(widget) and dashboard.selectedBoxIndex ~= nil then
