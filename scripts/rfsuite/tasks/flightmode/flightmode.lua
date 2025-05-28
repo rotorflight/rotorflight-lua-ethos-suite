@@ -16,6 +16,7 @@ function flightmode.reset()
     lastFlightMode = nil
     hasBeenInFlight = false
     rfsuite.session.timer = {}
+    rfsuite.session.flightCounted = false
 end
 
 function flightmode.wakeup()
@@ -37,8 +38,25 @@ function flightmode.wakeup()
         local currentSegment = os.clock() - rfsuite.session.timer.start
         rfsuite.session.timer.live = (rfsuite.session.timer.accrued or 0) + currentSegment
 
-
         hasBeenInFlight  = true
+
+        -- flight counter delay of 25 seconds before incrementing flight count
+        local duration = os.clock() - rfsuite.session.timer.start
+        if duration >= 25 and not rfsuite.session.flightCounted then
+            rfsuite.session.flightCounted = true
+
+            if rfsuite.session.modelPreferences and rfsuite.ini.section_exists(rfsuite.session.modelPreferences, "general") then
+                local current_value = rfsuite.ini.getvalue(rfsuite.session.modelPreferences, "general", "flightcount")
+                rfsuite.utils.log("Current flight count: " .. tostring(current_value), "info")
+
+                local new_value = (current_value or 0) + 1
+                rfsuite.utils.log("Incrementing flight counter: " .. new_value, "info")
+
+                rfsuite.ini.setvalue(rfsuite.session.modelPreferences, "general", "flightcount", new_value)
+                rfsuite.ini.save_ini_file(rfsuite.session.modelPreferencesFile, rfsuite.session.modelPreferences)
+            end
+        end
+
     else
         if hasBeenInFlight  then
             mode = "postflight"
@@ -71,27 +89,7 @@ function flightmode.wakeup()
         rfsuite.utils.log("Flight mode: " .. mode,"info")
         rfsuite.session.flightMode = mode
         lastFlightMode = mode
-        
-        if mode == "inflight" then
-            -- increment flight count
-            if rfsuite.session.modelPreferences and rfsuite.ini.section_exists(rfsuite.session.modelPreferences, "general") then
-
-                local current_value = rfsuite.ini.getvalue(rfsuite.session.modelPreferences, "general", "flightcount")
-                rfsuite.utils.log("Current flight count: " .. tostring(current_value), "info")
-
-                local new_value = (current_value or 0) + 1
-
-                rfsuite.utils.log("Incrementing flight counter: " .. new_value, "info")
-
-                rfsuite.ini.setvalue(rfsuite.session.modelPreferences, "general", "flightcount", new_value)
-
-                rfsuite.ini.save_ini_file(rfsuite.session.modelPreferencesFile, rfsuite.session.modelPreferences)
-
-            end
-        end
-
     end
 end
-
 
 return flightmode

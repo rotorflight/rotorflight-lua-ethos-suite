@@ -185,7 +185,7 @@ function utils.resolveColor(value)
         black     = {0, 0, 0},
         gray      = {90, 90, 90},
         grey      = {90, 90, 90},
-        orange    = {255, 204, 0},
+        orange    = {255, 165, 0},
         yellow    = {255, 255, 0},
         cyan      = {0, 255, 255},
         magenta   = {255, 0, 255},
