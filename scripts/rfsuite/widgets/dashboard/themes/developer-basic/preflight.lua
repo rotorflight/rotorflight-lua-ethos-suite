@@ -281,6 +281,8 @@ local boxes = {
 
     {col = 2, row = 5, type = "telemetry", source = "rpm", title = "RPM", unit = "rpm", titlepos = "bottom", transform = "floor"},
 
+    {col = 3, row = 4, type = "armflags", title = "ARM FLAGS", titlepos = "bottom"},
+
     {col = 4, row = 3, type = "flighttime", title = "FLIGHT TIME", titlepos = "bottom"},
     {col = 4, row = 4, type = "totalflighttime", title = "TOTAL FLIGHT TIME", titlepos = "bottom"}
 
