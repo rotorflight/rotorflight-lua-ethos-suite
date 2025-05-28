@@ -5,10 +5,23 @@ function render.text(x, y, w, h, box)
 
     x, y = rfsuite.widgets.dashboard.utils.applyOffset(x, y, box)
 
-    local displayValue = rfsuite.widgets.dashboard.utils.getParam(box, "value")
-    if displayValue == nil then
+    local value = rfsuite.widgets.dashboard.utils.getParam(box, "value")
+
+    -- Apply transform if defined
+    local transform = rfsuite.widgets.dashboard.utils.getParam(box, "transform")
+    if type(transform) == "string" and math[transform] then
+        value = value and math[transform](value)
+    elseif type(transform) == "function" then
+        value = value and transform(value)
+    elseif type(transform) == "number" then
+        value = value and transform(value)
+    end
+
+    local displayValue = value
+    if value == nil then
         displayValue = rfsuite.widgets.dashboard.utils.getParam(box, "novalue") or "-"
     end
+
     rfsuite.widgets.dashboard.utils.box(
         x, y, w, h,
         rfsuite.widgets.dashboard.utils.getParam(box, "color"), rfsuite.widgets.dashboard.utils.getParam(box, "title"), displayValue, rfsuite.widgets.dashboard.utils.getParam(box, "unit"), rfsuite.widgets.dashboard.utils.getParam(box, "bgcolor"),
