@@ -181,6 +181,7 @@ function tasks.wakeup()
             rfsuite.session.telemetryType = nil
             rfsuite.session.telemetryTypeChanged = false
             rfsuite.session.telemetrySensor = nil
+            rfsuite.session.timer = {}
             lastTelemetrySensorName = nil
             sportSensor = nil
             elrsSensor = nil 

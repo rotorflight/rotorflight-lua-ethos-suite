@@ -220,6 +220,13 @@ rfsuite.session.batteryConfig = nil
 rfsuite.session.modelPreferences = nil -- this is used to store the model preferences
 rfsuite.session.modelPreferencesFile = nil -- this is used to store the model preferences file path
 rfsuite.session.dashboardEditingTheme = nil -- this is used to store the dashboard theme being edited in settings
+rfsuite.session.timer = {}
+rfsuite.session.timer.start = nil -- this is used to store the start time of the timer
+rfsuite.session.timer.live = nil -- this is used to store the live timer value while inflight
+rfsuite.session.timer.accrued = nil -- this is used to store the total timer value while inflight
+rfsuite.session.timer.total = nil -- this is used to store the total timer value
+
+
 
 --- Retrieves the version information of the rfsuite module.
 --- 

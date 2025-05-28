@@ -15,6 +15,7 @@ local hasBeenInFlight = false
 function flightmode.reset()
     lastFlightMode = nil
     hasBeenInFlight = false
+    rfsuite.session.timer = {}
 end
 
 function flightmode.wakeup()
@@ -26,13 +27,44 @@ function flightmode.wakeup()
     local mode
     if rfsuite.utils.inFlight() then
         mode = "inflight"
+
+        if rfsuite.session.timer.start == nil then
+            rfsuite.utils.log("Starting inflight timer", "info")
+            rfsuite.session.timer.start = os.clock()
+        end
+
+        -- Live running total while inflight
+        local currentSegment = os.clock() - rfsuite.session.timer.start
+        rfsuite.session.timer.live = (rfsuite.session.timer.accrued or 0) + currentSegment
+
+
         hasBeenInFlight  = true
     else
         if hasBeenInFlight  then
             mode = "postflight"
+
+            -- Accumulate time once flight ends
+            if rfsuite.session.timer.start ~= nil then
+                local flightDuration = os.clock() - rfsuite.session.timer.start
+                rfsuite.session.timer.accrued = (rfsuite.session.timer.accrued or 0) + flightDuration
+                rfsuite.session.timer.start = nil
+                rfsuite.utils.log("Accrued flight time: " .. rfsuite.session.timer.accrued, "info")
+
+                -- Save the total flight time to model preferences
+                local savedtime = rfsuite.ini.getvalue(rfsuite.session.modelPreferences, "general", "totalflighttime") or 0
+                local totaltime = rfsuite.session.timer.accrued + savedtime
+
+                rfsuite.ini.setvalue(rfsuite.session.modelPreferences, "general", "totalflighttime", totaltime)
+                rfsuite.ini.setvalue(rfsuite.session.modelPreferences, "general", "lastflighttime", rfsuite.session.timer.accrued)
+                rfsuite.ini.save_ini_file(rfsuite.session.modelPreferencesFile, rfsuite.session.modelPreferences)
+            end            
+
         else
             mode = "preflight"
         end
+
+        -- While not inflight, live total is just the accumulated time
+        rfsuite.session.timer.live = rfsuite.session.timer.total or 0
     end
 
     if lastFlightMode ~= mode then
