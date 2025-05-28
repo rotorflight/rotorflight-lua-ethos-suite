@@ -1,6 +1,5 @@
 local render = {}
 
-
 local function drawFilledRoundedRectangle(x, y, w, h, r)
     x = math.floor(x + 0.5)
     y = math.floor(y + 0.5)
@@ -20,9 +19,7 @@ local function drawFilledRoundedRectangle(x, y, w, h, r)
     end
 end
 
-function render.gauge(x, y, w, h, box, telemetry)
-    x, y = rfsuite.widgets.dashboard.utils.applyOffset(x, y, box)
-
+function render.wakeup(box, telemetry)
     -- Get value
     local value = nil
     local source = rfsuite.widgets.dashboard.utils.getParam(box, "source")
@@ -43,8 +40,8 @@ function render.gauge(x, y, w, h, box, telemetry)
         end
     end
 
-    local displayValue = value
     local displayUnit = rfsuite.widgets.dashboard.utils.getParam(box, "unit")
+    local displayValue = value
     if value == nil then
         displayValue = rfsuite.widgets.dashboard.utils.getParam(box, "novalue") or "-"
         displayUnit = nil
@@ -56,27 +53,6 @@ function render.gauge(x, y, w, h, box, telemetry)
     local gpad_top    = rfsuite.widgets.dashboard.utils.getParam(box, "gaugepaddingtop")    or rfsuite.widgets.dashboard.utils.getParam(box, "gaugepadding") or 0
     local gpad_bottom = rfsuite.widgets.dashboard.utils.getParam(box, "gaugepaddingbottom") or rfsuite.widgets.dashboard.utils.getParam(box, "gaugepadding") or 0
 
-    -- Title area height if needed
-    local title_area_top = 0
-    local title_area_bottom = 0
-    if rfsuite.widgets.dashboard.utils.getParam(box, "gaugebelowtitle") and rfsuite.widgets.dashboard.utils.getParam(box, "title") then
-        lcd.font(FONT_XS)
-        local _, tsizeH = lcd.getTextSize(rfsuite.widgets.dashboard.utils.getParam(box, "title"))
-        local titlepadding = rfsuite.widgets.dashboard.utils.getParam(box, "titlepadding") or 0
-        local titlepaddingtop = rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingtop") or titlepadding
-        local titlepaddingbottom = rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingbottom") or titlepadding
-        if rfsuite.widgets.dashboard.utils.getParam(box, "titlepos") == "bottom" then
-            title_area_bottom = tsizeH + titlepaddingtop + titlepaddingbottom
-        else
-            title_area_top = tsizeH + titlepaddingtop + titlepaddingbottom
-        end
-    end
-
-    local gauge_x = x + gpad_left
-    local gauge_y = y + gpad_top + title_area_top
-    local gauge_w = w - gpad_left - gpad_right
-    local gauge_h = h - gpad_top - gpad_bottom - title_area_top - title_area_bottom
-
     local roundradius = rfsuite.widgets.dashboard.utils.getParam(box, "roundradius") or 0
 
     -- Colors
@@ -84,8 +60,9 @@ function render.gauge(x, y, w, h, box, telemetry)
     local gaugeBgColor = rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "gaugebgcolor")) or bgColor
     local gaugeColor = rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "gaugecolor")) or lcd.RGB(255, 204, 0)
     local valueTextColor = rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "color")) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
-    local matchingTextColor = nil
+
     local thresholds = rfsuite.widgets.dashboard.utils.getParam(box, "thresholds")
+    local matchingTextColor = nil
     if thresholds and value ~= nil then
         for _, t in ipairs(thresholds) do
             local t_val = type(t.value) == "function" and t.value(box, value) or t.value
@@ -99,15 +76,6 @@ function render.gauge(x, y, w, h, box, telemetry)
         end
     end
 
-    -- Draw overall box background (outer rectangle, always square)
-    lcd.color(bgColor)
-    lcd.drawFilledRectangle(x, y, w, h)
-
-    -- Draw rounded background for the gauge (full size)
-    lcd.color(gaugeBgColor)
-    drawFilledRoundedRectangle(gauge_x, gauge_y, gauge_w, gauge_h, roundradius)
-
-    -- Draw the gauge fill as a rounded rectangle (or circle/capsule)
     local gaugeMin = rfsuite.widgets.dashboard.utils.getParam(box, "gaugemin") or 0
     local gaugeMax = rfsuite.widgets.dashboard.utils.getParam(box, "gaugemax") or 100
     local gaugeOrientation = rfsuite.widgets.dashboard.utils.getParam(box, "gaugeorientation") or "vertical"
@@ -118,6 +86,137 @@ function render.gauge(x, y, w, h, box, telemetry)
         if percent > 1 then percent = 1 end
     end
 
+    -- Value text formatting and padding
+    local valuepadding = rfsuite.widgets.dashboard.utils.getParam(box, "valuepadding") or 0
+    local valuepaddingleft = rfsuite.widgets.dashboard.utils.getParam(box, "valuepaddingleft") or valuepadding
+    local valuepaddingright = rfsuite.widgets.dashboard.utils.getParam(box, "valuepaddingright") or valuepadding
+    local valuepaddingtop = rfsuite.widgets.dashboard.utils.getParam(box, "valuepaddingtop") or valuepadding
+    local valuepaddingbottom = rfsuite.widgets.dashboard.utils.getParam(box, "valuepaddingbottom") or valuepadding
+
+    -- Title parameters
+    local title = rfsuite.widgets.dashboard.utils.getParam(box, "title")
+    local titlepadding = rfsuite.widgets.dashboard.utils.getParam(box, "titlepadding") or 0
+    local titlepaddingleft = rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingleft") or titlepadding
+    local titlepaddingright = rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingright") or titlepadding
+    local titlepaddingtop = rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingtop") or titlepadding
+    local titlepaddingbottom = rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingbottom") or titlepadding
+    local titlealign = rfsuite.widgets.dashboard.utils.getParam(box, "titlealign") or "center"
+    local titlepos = rfsuite.widgets.dashboard.utils.getParam(box, "titlepos") or "top"
+    local titlecolor = rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "titlecolor")) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
+
+    local valuealign = rfsuite.widgets.dashboard.utils.getParam(box, "valuealign") or "center"
+
+    -- Gauge below title?
+    local gaugebelowtitle = rfsuite.widgets.dashboard.utils.getParam(box, "gaugebelowtitle")
+
+    -- Title area height
+    local title_area_top = 0
+    local title_area_bottom = 0
+    if gaugebelowtitle and title then
+        lcd.font(FONT_XS)
+        local _, tsizeH = lcd.getTextSize(title)
+        if titlepos == "bottom" then
+            title_area_bottom = tsizeH + titlepaddingtop + titlepaddingbottom
+        else
+            title_area_top = tsizeH + titlepaddingtop + titlepaddingbottom
+        end
+    end
+
+    box._cache = {
+        value = value,
+        displayValue = displayValue,
+        displayUnit = displayUnit,
+        gpad_left = gpad_left,
+        gpad_right = gpad_right,
+        gpad_top = gpad_top,
+        gpad_bottom = gpad_bottom,
+        roundradius = roundradius,
+        bgColor = bgColor,
+        gaugeBgColor = gaugeBgColor,
+        gaugeColor = gaugeColor,
+        valueTextColor = valueTextColor,
+        matchingTextColor = matchingTextColor,
+        thresholds = thresholds,
+        gaugeMin = gaugeMin,
+        gaugeMax = gaugeMax,
+        gaugeOrientation = gaugeOrientation,
+        percent = percent,
+        valuepadding = valuepadding,
+        valuepaddingleft = valuepaddingleft,
+        valuepaddingright = valuepaddingright,
+        valuepaddingtop = valuepaddingtop,
+        valuepaddingbottom = valuepaddingbottom,
+        title = title,
+        titlepadding = titlepadding,
+        titlepaddingleft = titlepaddingleft,
+        titlepaddingright = titlepaddingright,
+        titlepaddingtop = titlepaddingtop,
+        titlepaddingbottom = titlepaddingbottom,
+        titlealign = titlealign,
+        titlepos = titlepos,
+        titlecolor = titlecolor,
+        valuealign = valuealign,
+        gaugebelowtitle = gaugebelowtitle,
+        title_area_top = title_area_top,
+        title_area_bottom = title_area_bottom,
+    }
+end
+
+function render.paint(x, y, w, h, box)
+    x, y = rfsuite.widgets.dashboard.utils.applyOffset(x, y, box)
+    local c = box._cache or {}
+
+    -- Safe values
+    local value = c.value
+    local displayValue = c.displayValue or "-"
+    local displayUnit = c.displayUnit
+    local gpad_left = c.gpad_left or 0
+    local gpad_right = c.gpad_right or 0
+    local gpad_top = c.gpad_top or 0
+    local gpad_bottom = c.gpad_bottom or 0
+    local roundradius = c.roundradius or 0
+    local bgColor = c.bgColor or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
+    local gaugeBgColor = c.gaugeBgColor or bgColor
+    local gaugeColor = c.gaugeColor or lcd.RGB(255, 204, 0)
+    local valueTextColor = c.valueTextColor or lcd.RGB(90,90,90)
+    local matchingTextColor = c.matchingTextColor
+    local gaugeMin = c.gaugeMin or 0
+    local gaugeMax = c.gaugeMax or 100
+    local gaugeOrientation = c.gaugeOrientation or "vertical"
+    local percent = c.percent or 0
+    local valuepaddingleft = c.valuepaddingleft or 0
+    local valuepaddingright = c.valuepaddingright or 0
+    local valuepaddingtop = c.valuepaddingtop or 0
+    local valuepaddingbottom = c.valuepaddingbottom or 0
+    local valuealign = c.valuealign or "center"
+    local title = c.title
+    local titlepadding = c.titlepadding or 0
+    local titlepaddingleft = c.titlepaddingleft or 0
+    local titlepaddingright = c.titlepaddingright or 0
+    local titlepaddingtop = c.titlepaddingtop or 0
+    local titlepaddingbottom = c.titlepaddingbottom or 0
+    local titlealign = c.titlealign or "center"
+    local titlepos = c.titlepos or "top"
+    local titlecolor = c.titlecolor or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
+    local gaugebelowtitle = c.gaugebelowtitle
+    local title_area_top = c.title_area_top or 0
+    local title_area_bottom = c.title_area_bottom or 0
+
+    -- Draw overall box background
+    lcd.color(bgColor)
+    lcd.drawFilledRectangle(x, y, w, h)
+
+    -- Gauge rectangle (with padding and title space)
+    local gauge_x = x + gpad_left
+    local gauge_y = y + gpad_top + title_area_top
+    local gauge_w = w - gpad_left - gpad_right
+    local gauge_h = h - gpad_top - gpad_bottom - title_area_top - title_area_bottom
+
+    -- Rounded background for the gauge
+    lcd.color(gaugeBgColor)
+    drawFilledRoundedRectangle(gauge_x, gauge_y, gauge_w, gauge_h, roundradius)
+
+    -- Gauge fill
     if percent > 0 then
         lcd.color(gaugeColor)
         if gaugeOrientation == "vertical" then
@@ -126,7 +225,6 @@ function render.gauge(x, y, w, h, box, telemetry)
             if fillH > 2*roundradius then
                 drawFilledRoundedRectangle(gauge_x, fillY, gauge_w, fillH, roundradius)
             elseif fillH > 0 then
-                -- Capsule or circle
                 local cx = gauge_x + gauge_w/2
                 local cy = fillY + fillH/2
                 local r = fillH/2
@@ -145,13 +243,7 @@ function render.gauge(x, y, w, h, box, telemetry)
         end
     end
 
-    -- Overlay value text (same as before)
-    local valuepadding = rfsuite.widgets.dashboard.utils.getParam(box, "valuepadding") or 0
-    local valuepaddingleft = rfsuite.widgets.dashboard.utils.getParam(box, "valuepaddingleft") or valuepadding
-    local valuepaddingright = rfsuite.widgets.dashboard.utils.getParam(box, "valuepaddingright") or valuepadding
-    local valuepaddingtop = rfsuite.widgets.dashboard.utils.getParam(box, "valuepaddingtop") or valuepadding
-    local valuepaddingbottom = rfsuite.widgets.dashboard.utils.getParam(box, "valuepaddingbottom") or valuepadding
-
+    -- Overlay value text (with smart threshold text color based on gauge fill coverage)
     if displayValue ~= nil then
         local str = tostring(displayValue) .. (displayUnit or "")
         local unitIsDegree = (displayUnit == "°" or (displayUnit and tostring(displayUnit):find("°")))
@@ -184,7 +276,7 @@ function render.gauge(x, y, w, h, box, telemetry)
         local region_h = h - valuepaddingtop - valuepaddingbottom
 
         local sy = region_y + (region_h - bestH) / 2
-        local align = (rfsuite.widgets.dashboard.utils.getParam(box, "valuealign") or "center"):lower()
+        local align = valuealign:lower()
         local sx
         if align == "left" then
             sx = region_x
@@ -194,7 +286,7 @@ function render.gauge(x, y, w, h, box, telemetry)
             sx = region_x + (region_w - bestW) / 2
         end
 
-        -- Smart threshold text color based on gauge fill coverage
+        -- Smart threshold text color
         local useThresholdTextColor = false
         if matchingTextColor and percent > 0 then
             local tW, tH = bestW, bestH
@@ -227,21 +319,15 @@ function render.gauge(x, y, w, h, box, telemetry)
     end
 
     -- Overlay title (top or bottom)
-    if rfsuite.widgets.dashboard.utils.getParam(box, "title") then
-        local titlepadding = rfsuite.widgets.dashboard.utils.getParam(box, "titlepadding") or 0
-        local titlepaddingleft = rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingleft") or titlepadding
-        local titlepaddingright = rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingright") or titlepadding
-        local titlepaddingtop = rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingtop") or titlepadding
-        local titlepaddingbottom = rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingbottom") or titlepadding
-
+    if title then
         lcd.font(FONT_XS)
-        local tsizeW, tsizeH = lcd.getTextSize(rfsuite.widgets.dashboard.utils.getParam(box, "title"))
+        local tsizeW, tsizeH = lcd.getTextSize(title)
         local region_x = x + titlepaddingleft
         local region_w = w - titlepaddingleft - titlepaddingright
-        local sy = (rfsuite.widgets.dashboard.utils.getParam(box, "titlepos") == "bottom")
+        local sy = (titlepos == "bottom")
             and (y + h - titlepaddingbottom - tsizeH)
             or (y + titlepaddingtop)
-        local align = (rfsuite.widgets.dashboard.utils.getParam(box, "titlealign") or "center"):lower()
+        local align = titlealign:lower()
         local sx
         if align == "left" then
             sx = region_x
@@ -250,10 +336,9 @@ function render.gauge(x, y, w, h, box, telemetry)
         else
             sx = region_x + (region_w - tsizeW) / 2
         end
-        lcd.color(rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "titlecolor")) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90)))
-        lcd.drawText(sx, sy, rfsuite.widgets.dashboard.utils.getParam(box, "title"))
+        lcd.color(titlecolor)
+        lcd.drawText(sx, sy, title)
     end
 end
-
 
 return render

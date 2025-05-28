@@ -21,10 +21,9 @@ local function drawArc(cx, cy, radius, thickness, angleStart, angleEnd, color, c
     lcd.drawFilledCircle(x_end, y_end, rad_thick)
 end
 
--- Main render function
-function render.arcdial(x, y, w, h, box, telemetry)
-
-    -- Parameters & defaults
+-- Wakeup: all calculations and caching
+function render.wakeup(box, telemetry)
+    -- Fallbacks for all params
     local bandLabels = rfsuite.widgets.dashboard.utils.getParam(box, "bandLabels") or {"Bad", "OK", "Good", "Excellent"}
     local bandColors = rfsuite.widgets.dashboard.utils.getParam(box, "bandColors") or {
         lcd.RGB(180,50,50),
@@ -34,25 +33,10 @@ function render.arcdial(x, y, w, h, box, telemetry)
     }
     local startAngle = rfsuite.widgets.dashboard.utils.getParam(box, "startAngle") or 180
     local sweep = rfsuite.widgets.dashboard.utils.getParam(box, "sweep") or 180
-    local bgColor = rfsuite.widgets.dashboard.utils.resolveColor(
-        rfsuite.widgets.dashboard.utils.getParam(box, "bgcolor")
-    ) or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
-
-    -- Center & sizing
-    local cx = x + w / 2
-    local cy = y + h * 0.92
-    local radius = math.min(w, h*2) * 0.40
-    local thickness = math.max(8, radius * 0.25)
-
-    -- Background
-    lcd.color(bgColor)
-    lcd.drawFilledRectangle(x, y, w, h)
-
-    -- Value
     local min = rfsuite.widgets.dashboard.utils.getParam(box, "min") or 0
     local max = rfsuite.widgets.dashboard.utils.getParam(box, "max") or 100
-    local value, percent = nil, 0
     local source = rfsuite.widgets.dashboard.utils.getParam(box, "source")
+    local value, percent = nil, 0
     if source and telemetry then
         local sensor = telemetry.getSensorSource and telemetry.getSensorSource(source)
         value = sensor and sensor:value()
@@ -62,8 +46,65 @@ function render.arcdial(x, y, w, h, box, telemetry)
         percent = math.max(0, math.min(1, percent))
     end
 
-    -- Draw colored bands
+    -- Cache all params for paint
+    box._cache = {
+        bandLabels = bandLabels,
+        bandColors = bandColors,
+        startAngle = startAngle,
+        sweep = sweep,
+        min = min,
+        max = max,
+        value = value,
+        percent = percent,
+        unit = rfsuite.widgets.dashboard.utils.getParam(box, "unit") or "",
+        title = rfsuite.widgets.dashboard.utils.getParam(box, "title"),
+        needleColor = rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "needlecolor")) or lcd.RGB(0,0,0),
+        needleThickness = rfsuite.widgets.dashboard.utils.getParam(box, "needlethickness") or 5,
+        needlehubcolor = rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "needlehubcolor")) or lcd.RGB(0,0,0),
+        needlehubsize = rfsuite.widgets.dashboard.utils.getParam(box, "needlehubsize") or 7,
+        bgcolor = rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "bgcolor")) or (lcd.darkMode() and lcd.RGB(40,40,40) or lcd.RGB(240,240,240)),
+        novalue = rfsuite.widgets.dashboard.utils.getParam(box, "novalue") or "-",
+    }
+end
+
+-- Paint: robust fallbacks for all cached fields!
+function render.paint(x, y, w, h, box)
+    local c = box._cache or {}
+    -- Robust band labels/colors
+    local bandLabels = (c.bandLabels and type(c.bandLabels) == "table") and c.bandLabels or {"Bad", "OK", "Good", "Excellent"}
+    local bandColors = (c.bandColors and type(c.bandColors) == "table") and c.bandColors or {
+        lcd.RGB(180,50,50),
+        lcd.RGB(220,150,40),
+        lcd.RGB(90,180,90),
+        lcd.RGB(170,180,120)
+    }
     local bandCount = #bandLabels
+    local startAngle = c.startAngle or 180
+    local sweep = c.sweep or 180
+    local min = c.min or 0
+    local max = c.max or 100
+    local value = c.value
+    local percent = c.percent or 0
+    local unit = c.unit or ""
+    local title = c.title
+    local needleColor = c.needleColor or lcd.RGB(0,0,0)
+    local needleThickness = c.needleThickness or 5
+    local needlehubcolor = c.needlehubcolor or lcd.RGB(0,0,0)
+    local needlehubsize = c.needlehubsize or 7
+    local bgcolor = c.bgcolor or (lcd.darkMode() and lcd.RGB(40,40,40) or lcd.RGB(240,240,240))
+    local novalue = c.novalue or "-"
+
+    -- Center & sizing
+    local cx = x + w / 2
+    local cy = y + h * 0.92
+    local radius = math.min(w, h*2) * 0.40
+    local thickness = math.max(8, radius * 0.25)
+
+    -- Background
+    lcd.color(bgcolor)
+    lcd.drawFilledRectangle(x, y, w, h)
+
+    -- Draw colored bands
     for i=1,bandCount do
         local segStart = startAngle - (i-1)*(sweep/bandCount)
         local segEnd   = startAngle - i*(sweep/bandCount)
@@ -72,15 +113,11 @@ function render.arcdial(x, y, w, h, box, telemetry)
 
     -- Draw needle
     if percent then
-        local needleColor = rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "needlecolor")) or lcd.RGB(0,0,0)
-        local needleThickness = rfsuite.widgets.dashboard.utils.getParam(box, "needlethickness") or 5
         local needleLen = radius - 8
         local needleAngle = startAngle + sweep * percent
         rfsuite.widgets.dashboard.utils.drawBarNeedle(cx, cy, needleLen, needleThickness, needleAngle, needleColor)
-        local hubColor = rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "needlehubcolor")) or lcd.RGB(0,0,0)
-        local hubSize = rfsuite.widgets.dashboard.utils.getParam(box, "needlehubsize") or 7
-        lcd.color(hubColor)
-        lcd.drawFilledCircle(cx, cy, hubSize)
+        lcd.color(needlehubcolor)
+        lcd.drawFilledCircle(cx, cy, needlehubsize)
     end
 
     -- Draw band labels
@@ -98,8 +135,7 @@ function render.arcdial(x, y, w, h, box, telemetry)
     end
 
     -- Value display
-    local displayValue = value or rfsuite.widgets.dashboard.utils.getParam(box, "novalue") or "-"
-    local unit = rfsuite.widgets.dashboard.utils.getParam(box, "unit") or ""
+    local displayValue = value or novalue
     lcd.font(FONT_STD)
     local valStr = tostring(displayValue) .. unit
     local vw, vh = lcd.getTextSize(valStr)
@@ -107,7 +143,6 @@ function render.arcdial(x, y, w, h, box, telemetry)
     lcd.drawText(cx-vw/2, cy-thickness-18, valStr)
 
     -- Title (below)
-    local title = rfsuite.widgets.dashboard.utils.getParam(box, "title")
     if title then
         lcd.font(FONT_XS)
         local tw, th = lcd.getTextSize(title)

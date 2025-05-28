@@ -22,8 +22,6 @@ local init = {
     preflight   = "preflight.lua",     -- Script to run before takeoff
     inflight    = "preflight.lua",     -- Script to run during flight
     postflight  = "preflight.lua",     -- Script to run after landing
-    wakeup      = 0.5,                 -- Interval (seconds) to run wakeup script when display is visible
-    wakeup_bg   = 60,                  -- Interval (seconds) to run wakeup script when display is not visible
     standalone  = false,               -- If true, theme handles all rendering itself
     developer   = true,                -- If true, theme is only visible in developer mode
 }

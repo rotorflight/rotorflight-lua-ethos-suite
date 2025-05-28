@@ -221,7 +221,7 @@
 
 
 -- Custom render function for a box
-local function customRenderFunction(x, y, w, h)
+local function customPaintFunction(x, y, w, h)
     local msg = "Render Function"
     local isDarkMode = lcd.darkMode()
     lcd.color(isDarkMode and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
@@ -234,6 +234,10 @@ local function customRenderFunction(x, y, w, h)
     local tx = x + (w - tsizeW) / 2
     local ty = y + (h - tsizeH) / 2
     lcd.drawText(tx, ty, msg)
+end
+
+local function customWakeupFunction()
+   -- rfsuite.utils.log("Custom wakeup function called", "info")
 end
 
 -- Example on-press function to save and read a preference
@@ -273,7 +277,7 @@ local boxes = {
     { col = 2, row = 4, type = "session", source = "isArmed", title = "IS ARMED", nosource = "-", titlepos = "bottom" },
 
     { col = 3, row = 1, type = "telemetry", source = "fuel", nosource = "-", title = "FUEL", unit = "%", titlepos = "bottom", transform = "floor" },
-    { col = 3, row = 2, type = "func", value = customRenderFunction, title = "FUNCTION", titlepos = "bottom" },
+    { col = 3, row = 2, type = "func", paint = customPaintFunction, wakeup = customWakeupFunction, title = "FUNCTION", titlepos = "bottom" },
     { col = 3, row = 3, type = "blackbox", title = "BLACKBOX", nosource = "-", titlepos = "bottom" },
 
     { col = 4, row = 1, type = "text", value = "PRESS ME", title = "ON PRESS", nosource = "-", titlepos = "bottom", onpress = onpressFunctionSave },
@@ -288,6 +292,10 @@ local boxes = {
 
 }
 
+local function wakeup()
+   --print("Preflight wakeup function called")
+end
+
 return {
     layout = layout,
     boxes = boxes,
@@ -295,5 +303,10 @@ return {
     event = event,
     paint = paint,
     overlayMessage = nil,
-    customRenderFunction = customRenderFunction
+    customRenderFunction = customRenderFunction,
+    scheduler = {
+        wakeup_interval = 0.25,          -- Interval (seconds) to run wakeup script when display is visible
+        wakeup_interval_bg = 5,         -- (optional: run wakeup this often when not visible; set nil/empty to skip)
+        paint_interval = 0.5,            -- Interval (seconds) to run paint script when display is visible 
+    }    
 }

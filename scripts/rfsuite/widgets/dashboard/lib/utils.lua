@@ -298,7 +298,7 @@ function utils.box(
     if not fontCache then
         fontCache = utils.getFontListsForResolution()
     end
-
+   
     -- Draw value
     if value ~= nil then
         local str = tostring(value) .. (unit or "")
@@ -348,7 +348,9 @@ function utils.box(
         else
             lcd.color(isDARKMODE and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
         end
+        
         lcd.drawText(sx, sy, str)
+        
     end
 
     -- Draw title (top or bottom)

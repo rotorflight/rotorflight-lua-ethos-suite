@@ -24,8 +24,17 @@ dashboard.DEFAULT_THEME = "system/default" -- fallback
 local themesBasePath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/themes/"
 local themesUserPath = "SCRIPTS:/" .. rfsuite.config.preferences .. "/dashboard/"
 local loadedStateModules = {}
-local loadedThemeIntervals = { wakeup = 0.5, wakeup_bg = 2 }
+local loadedThemeIntervals = {
+    wakeup_interval     = 0.25,
+    wakeup_interval_bg  = nil,
+    paint_interval      = 0.5,
+}
 local wakeupScheduler = 0
+
+-- spreash scheduling of object wakeups
+local objectWakeupIndex = 1
+local objectWakeupsPerCycle = nil
+local objectSchedulerPercentage = 0.5  -- Example: 50% per cycle
 
 dashboard.boxRects = {}  -- Will store {x, y, w, h, box} for each box
 dashboard.selectedBoxIndex = 1 -- track the selected box index
@@ -34,13 +43,41 @@ dashboard.themeFallbackTime = { preflight = 0, inflight = 0, postflight = 0 }
 dashboard.flightmode = rfsuite.session.flightMode or "preflight" -- To be set by your state logic
 
 dashboard.currentWidgetPath = nil 
+dashboard.overlayMessage = nil
+
+dashboard.objectsByType = {}
+
+-- Track last run for both intervals
+local lastWakeup = 0
+local lastWakeupBg = 0
 
 dashboard.utils = assert(
     rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/lib/utils.lua")
 )()
-dashboard.render = assert(
-    rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/lib/render.lua")
-)()
+
+
+
+function dashboard.loadAllObjects(boxConfigs)
+    dashboard.objectsByType = {}  -- clear old cache!
+    local loaded = {}
+    for _, box in ipairs(boxConfigs or {}) do
+        local typ = box.type
+        if typ and not loaded[typ] then
+            local baseDir = rfsuite.config.baseDir or "default"
+            local objPath = "SCRIPTS:/" .. baseDir .. "/widgets/dashboard/objects/" .. typ .. ".lua"
+            local ok, obj = pcall(function()
+                return assert(rfsuite.compiler.loadfile(objPath))()
+            end)
+            if ok and type(obj) == "table" then
+                dashboard.objectsByType[typ] = obj
+            else
+                rfsuite.utils.log("Failed to load object: " .. tostring(typ), "info")
+            end
+            loaded[typ] = true
+        end
+    end
+end
+
 
 --[[ 
     Returns a list of indices of boxes that have an `onpress` handler.
@@ -55,45 +92,35 @@ local function getOnpressBoxIndices()
     return indices
 end
 
---[[ 
-    Renders an overlay message if there are any dashboard, theme, or telemetry errors.
-    Chooses the right overlay function depending on the module.
-]]
-local function renderOverlayMessage(module, utils)
+-- Returns the current overlay message string (or nil), based on error state
+function dashboard.computeOverlayMessage()
     local apiVersionAsString = tostring(rfsuite.session.apiVersion)
+    local state = dashboard.flightmode or "preflight"
     local moduleState = (model.getModule(0):enable() or model.getModule(1):enable()) or false
     local sportSensor = system.getSource({appId = 0xF101})
     local elrsSensor = system.getSource({crsfId = 0x14, subIdStart = 0, subIdEnd = 1})
-    local overlayMessage = nil
 
-    local state = dashboard.flightmode or "preflight"
     if dashboard.themeFallbackUsed and dashboard.themeFallbackUsed[state] and
        (os.clock() - (dashboard.themeFallbackTime and dashboard.themeFallbackTime[state] or 0)) < 10 then
-        overlayMessage = rfsuite.i18n.get("widgets.dashboard.theme_load_error")
+        return rfsuite.i18n.get("widgets.dashboard.theme_load_error")
     elseif not rfsuite.utils.ethosVersionAtLeast() then
-        overlayMessage = string.format(
+        return string.format(
             string.upper(rfsuite.i18n.get("ethos")) .. " < V%d.%d.%d",
             rfsuite.config.ethosVersion[1],
             rfsuite.config.ethosVersion[2],
             rfsuite.config.ethosVersion[3]
         )
     elseif not rfsuite.tasks.active() then
-        overlayMessage = rfsuite.i18n.get("app.check_bg_task")
+        return rfsuite.i18n.get("app.check_bg_task")
     elseif moduleState == false then
-        overlayMessage = rfsuite.i18n.get("app.check_rf_module_on")
+        return rfsuite.i18n.get("app.check_rf_module_on")
     elseif not (sportSensor or elrsSensor) then
-        overlayMessage = rfsuite.i18n.get("app.check_discovered_sensors")
+        return rfsuite.i18n.get("app.check_discovered_sensors")
     elseif rfsuite.session.telemetryState and rfsuite.tasks.telemetry and not rfsuite.tasks.telemetry.validateSensors() then
-        overlayMessage = rfsuite.i18n.get("widgets.dashboard.validate_sensors")
+        return rfsuite.i18n.get("widgets.dashboard.validate_sensors")
     end
 
-    if overlayMessage then
-        if module and module.overlayMessage then
-            module.screenErrorOverlay(overlayMessage)
-        else
-            utils.screenErrorOverlay(overlayMessage)
-        end
-    end
+    return nil
 end
 
 -- Helper to get box width/height (percent, pixel, or grid)
@@ -149,6 +176,8 @@ end
     Called automatically by paint().
 ]]
 function dashboard.renderLayout(widget, config)
+
+
     dashboard.boxRects = {} -- clear previous box rectangles
 
     local function resolve(val, ...)
@@ -186,7 +215,10 @@ function dashboard.renderLayout(widget, config)
         local x, y = getBoxPosition(box, w, h, boxWidth, boxHeight, PADDING, WIDGET_W, WIDGET_H)
 
         dashboard.boxRects[#dashboard.boxRects + 1] = { x = x, y = y, w = w, h = h, box = box }
-        dashboard.render.object(box.type, x, y, w, h, box, telemetry)
+        local obj = dashboard.objectsByType[box.type]
+        if obj and obj.paint then
+            obj.paint(x, y, w, h, box, telemetry)
+        end
 
         if dashboard.selectedBoxIndex == i and box.onpress then
             lcd.color(selectColor)
@@ -194,7 +226,16 @@ function dashboard.renderLayout(widget, config)
         end
     end
 
-    renderOverlayMessage(module, utils)
+    -- Calculate objects per cycle for spread scheduling
+    if #dashboard.boxRects ~= lastBoxRectsCount or not objectWakeupsPerCycle then
+        objectWakeupsPerCycle = math.ceil(#dashboard.boxRects * objectSchedulerPercentage)
+        lastBoxRectsCount = #dashboard.boxRects
+        objectWakeupIndex = 1
+    end
+
+    if dashboard.overlayMessage then
+        dashboard.utils.screenErrorOverlay(dashboard.overlayMessage)
+    end
 end
 
 --[[
@@ -335,8 +376,38 @@ function dashboard.reload_themes()
         inflight   = load_state_script(rfsuite.preferences.dashboard.theme_inflight    or dashboard.DEFAULT_THEME, "inflight"),
         postflight = load_state_script(rfsuite.preferences.dashboard.theme_postflight  or dashboard.DEFAULT_THEME, "postflight"),
     }
+
+    local function tryLoadIntervals()
+        -- Look for an init.lua table in any of the loaded states
+        for _, mod in pairs(loadedStateModules) do
+            if mod and mod.scheduler then
+                local initTable = (type(mod.scheduler) == "function") and mod.scheduler() or mod.scheduler
+                if type(initTable) == "table" then
+                    loadedThemeIntervals.wakeup_interval      = initTable.wakeup_interval or 0.25
+                    loadedThemeIntervals.wakeup_interval_bg   = initTable.wakeup_interval_bg
+                    loadedThemeIntervals.paint_interval       = initTable.paint_interval or 0.5
+                    return
+                end
+            end
+        end
+    end
+    tryLoadIntervals()
+
+    -- PATCH: Load objects for all boxes in all states
+    local allBoxes = {}
+    for _, mod in pairs(loadedStateModules) do
+        if mod and mod.boxes then
+            local boxes = type(mod.boxes) == "function" and mod.boxes() or mod.boxes
+            for _, box in ipairs(boxes or {}) do
+                table.insert(allBoxes, box)
+            end
+        end
+    end
+    dashboard.loadAllObjects(allBoxes)
     wakeupScheduler = 0
+    dashboard.boxRects = {}
 end
+
 
 dashboard.reload_themes()
 
@@ -511,8 +582,33 @@ end
 ]]
 function dashboard.wakeup(widget)
     local now = os.clock()
-    local visible = lcd.isVisible and lcd.isVisible() or true
-    local interval = visible and loadedThemeIntervals.wakeup or loadedThemeIntervals.wakeup_bg
+    local visible = lcd.isVisible() 
+
+    -- These values must be assigned from your config/init table after loading!
+    -- Example:
+    -- loadedThemeIntervals.wakeup_interval      = initTable.wakeup_interval or 0.25
+    -- loadedThemeIntervals.wakeup_interval_bg   = initTable.wakeup_interval_bg -- may be nil
+    -- loadedThemeIntervals.paint_interval       = initTable.paint_interval or 0.5
+
+    if visible then
+        local interval = loadedThemeIntervals.wakeup_interval or 0.25
+        if (now - lastWakeup) < interval then
+            return
+        end
+        lastWakeup = now
+    else
+        local interval_bg = loadedThemeIntervals.wakeup_interval_bg
+        if interval_bg == nil then
+            -- Not visible, and no background interval set: skip entirely
+            return
+        end
+        if (now - lastWakeupBg) < interval_bg then
+            return
+        end
+        lastWakeupBg = now
+    end
+
+    -- ==== Main wakeup logic starts here ====
 
     local currentFlightMode = rfsuite.session.flightMode or "preflight"
     if lastFlightMode ~= currentFlightMode then
@@ -521,19 +617,37 @@ function dashboard.wakeup(widget)
         lastFlightMode = currentFlightMode
     end
 
-    if (now - wakeupScheduler) >= interval then
-        wakeupScheduler = now
+    -- Periodically check for overlay message changes
+    local newMessage = dashboard.computeOverlayMessage()
+    if dashboard.overlayMessage ~= newMessage then
+        dashboard.overlayMessage = newMessage
+        lcd.invalidate(widget) -- Redraw only if message changed
+    end
 
-        local state = dashboard.flightmode or "preflight"
-        local module = loadedStateModules[state]
+    local state = dashboard.flightmode or "preflight"
+    local module = loadedStateModules[state]
 
-        if type(module) == "table" and module.layout then
-            lcd.invalidate(widget)
-            if type(module.wakeup) == "function" then
-                module.wakeup(widget)
+    if type(module) == "table" and module.layout then
+        lcd.invalidate(widget)
+        if type(module.wakeup) == "function" then
+            module.wakeup(widget)
+        end
+    else
+        callStateFunc("wakeup", widget)
+    end
+
+    -- Spread-scheduled wakeup for dashboard objects
+    if #dashboard.boxRects > 0 and objectWakeupsPerCycle then
+        for i = 1, objectWakeupsPerCycle do
+            local idx = objectWakeupIndex
+            local rect = dashboard.boxRects[idx]
+            if rect then
+                local obj = dashboard.objectsByType[rect.box.type]
+                if obj and obj.wakeup then
+                    obj.wakeup(rect.box, rfsuite.tasks.telemetry)
+                end
             end
-        else
-            return callStateFunc("wakeup", widget)
+            objectWakeupIndex = (objectWakeupIndex % #dashboard.boxRects) + 1
         end
     end
 
@@ -543,6 +657,7 @@ function dashboard.wakeup(widget)
         lcd.invalidate(widget)
     end
 end
+
 
 --[[
     Scans and lists available system and user dashboard themes.

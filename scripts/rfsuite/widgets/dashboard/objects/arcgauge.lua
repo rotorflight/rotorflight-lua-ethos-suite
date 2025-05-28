@@ -1,10 +1,8 @@
 local render = {}
 
-
-
--- Draws an arc from angle1 to angle2 (degrees, counter-clockwise, 0°=right)
+-- Arc drawing helper
 local function drawArc(cx, cy, radius, thickness, angleStart, angleEnd, color, cachedStepRad)
-    local step = 4  -- degrees per circle
+    local step = 4
     local rad_thick = thickness / 2
     angleStart = math.rad(angleStart)
     angleEnd = math.rad(angleEnd)
@@ -18,46 +16,20 @@ local function drawArc(cx, cy, radius, thickness, angleStart, angleEnd, color, c
         local y = cy - radius * math.sin(a)
         lcd.drawFilledCircle(x, y, rad_thick)
     end
-    -- Ensure end cap is filled
     local x_end = cx + radius * math.cos(angleEnd)
     local y_end = cy - radius * math.sin(angleEnd)
     lcd.drawFilledCircle(x_end, y_end, rad_thick)
 end
 
-
-function render.arcgauge(x, y, w, h, box, telemetry)
-    -- Cache only geometry/layout math (not getParam or resolveColor)
-    box._layoutcache = box._layoutcache or {}
-    local cache = box._layoutcache
-
-    -- Only recalculate geometry when x/y/w/h/arcOffsetY changes
-    local arcOffsetY = rfsuite.widgets.dashboard.utils.getParam(box, "arcOffsetY") or 0
-    local layoutKey = string.format("%d,%d,%d,%d,%d",
-        math.floor(x + 0.5), math.floor(y + 0.5),
-        math.floor(w + 0.5), math.floor(h + 0.5),
-        math.floor(arcOffsetY + 0.5)
-    )
-    if cache._layoutKey ~= layoutKey then
-        cache.cx = x + w / 2
-        cache.cy = y + h / 2 - arcOffsetY
-        cache.radius = math.min(w, h) * 0.42
-        cache.thickness = math.max(6, cache.radius * 0.22)
-        cache.stepRad = math.rad(4) -- for drawArc
-        cache._layoutKey = layoutKey
-    end
-
-    local cx, cy, radius, thickness, stepRad = cache.cx, cache.cy, cache.radius, cache.thickness, cache.stepRad
-
-    -- The rest: run as usual, DO NOT cache
-    local bgColor = rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "bgcolor")) or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
-    lcd.color(bgColor)
-    lcd.drawFilledRectangle(x, y, w, h)
-
+-- Caches value, param, and display settings
+function render.wakeup(box, telemetry)
     local min = rfsuite.widgets.dashboard.utils.getParam(box, "min") or 0
     local max = rfsuite.widgets.dashboard.utils.getParam(box, "max") or 100
+    local gaugemin = rfsuite.widgets.dashboard.utils.getParam(box, "gaugemin") or min
+    local gaugemax = rfsuite.widgets.dashboard.utils.getParam(box, "gaugemax") or max
 
-    local value = nil
     local source = rfsuite.widgets.dashboard.utils.getParam(box, "source")
+    local value = nil
     if source then
         local sensor = telemetry and telemetry.getSensorSource(source)
         value = sensor and sensor:value()
@@ -71,32 +43,90 @@ function render.arcgauge(x, y, w, h, box, telemetry)
         end
     end
 
-    local displayValue = value or rfsuite.widgets.dashboard.utils.getParam(box, "novalue") or "-"
-    local displayUnit = rfsuite.widgets.dashboard.utils.getParam(box, "unit")
-    min = rfsuite.widgets.dashboard.utils.getParam(box, "gaugemin") or 0
-    max = rfsuite.widgets.dashboard.utils.getParam(box, "gaugemax") or 100
-
     local percent = 0
-    if value and max ~= min then
-        percent = (value - min) / (max - min)
+    if value and gaugemax ~= gaugemin then
+        percent = (value - gaugemin) / (gaugemax - gaugemin)
         percent = math.max(0, math.min(1, percent))
     end
 
-    local startAngle = rfsuite.widgets.dashboard.utils.getParam(box, "startAngle") or 135
-    local sweep = rfsuite.widgets.dashboard.utils.getParam(box, "sweep") or 270
+    -- Main config cache
+    box._cache = {
+        min = min,
+        max = max,
+        gaugemin = gaugemin,
+        gaugemax = gaugemax,
+        value = value,
+        percent = percent,
+        arcOffsetY = rfsuite.widgets.dashboard.utils.getParam(box, "arcOffsetY") or 0,
+        startAngle = rfsuite.widgets.dashboard.utils.getParam(box, "startAngle") or 135,
+        sweep = rfsuite.widgets.dashboard.utils.getParam(box, "sweep") or 270,
+        arcBgColor = rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "arcBgColor")) or lcd.RGB(55,55,55),
+        arcColor = rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "arcColor")) or lcd.RGB(255,128,0),
+        thresholds = rfsuite.widgets.dashboard.utils.getParam(box, "thresholds"),
+        font = rfsuite.widgets.dashboard.utils.getParam(box, "font"),
+        textColor = rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "textColor")) or lcd.RGB(255,255,255),
+        valueFormat = rfsuite.widgets.dashboard.utils.getParam(box, "valueFormat"),
+        unit = rfsuite.widgets.dashboard.utils.getParam(box, "unit") or "",
+        decimals = rfsuite.widgets.dashboard.utils.getParam(box, "decimals"),
+        title = rfsuite.widgets.dashboard.utils.getParam(box, "title"),
+        titlepadding = rfsuite.widgets.dashboard.utils.getParam(box, "titlepadding") or 0,
+        titlepaddingleft = rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingleft"),
+        titlepaddingright = rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingright"),
+        titlepaddingtop = rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingtop"),
+        titlepaddingbottom = rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingbottom"),
+        titlepos = rfsuite.widgets.dashboard.utils.getParam(box, "titlepos"),
+        titlealign = rfsuite.widgets.dashboard.utils.getParam(box, "titlealign"),
+        titlecolor = rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "titlecolor")) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90)),
+        subText = rfsuite.widgets.dashboard.utils.getParam(box, "subText"),
+        textoffsetx = rfsuite.widgets.dashboard.utils.getParam(box, "textoffsetx") or 0,
+        novalue = rfsuite.widgets.dashboard.utils.getParam(box, "novalue") or "-",
+        bgcolor = rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "bgcolor")) or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)),
+    }
+end
+
+function render.paint(x, y, w, h, box)
+    local c = box._cache or {}
+
+    -- Geometry/layout caching (safe if cache missing)
+    box._layoutcache = box._layoutcache or {}
+    local layoutcache = box._layoutcache
+
+    local arcOffsetY = c.arcOffsetY or 0
+    local layoutKey = string.format("%d,%d,%d,%d,%d",
+        math.floor(x + 0.5), math.floor(y + 0.5),
+        math.floor(w + 0.5), math.floor(h + 0.5),
+        math.floor(arcOffsetY + 0.5)
+    )
+    if layoutcache._layoutKey ~= layoutKey then
+        layoutcache.cx = x + w / 2
+        layoutcache.cy = y + h / 2 - arcOffsetY
+        layoutcache.radius = math.min(w, h) * 0.42
+        layoutcache.thickness = math.max(6, layoutcache.radius * 0.22)
+        layoutcache.stepRad = math.rad(4)
+        layoutcache._layoutKey = layoutKey
+    end
+
+    local cx, cy, radius, thickness, stepRad = layoutcache.cx, layoutcache.cy, layoutcache.radius, layoutcache.thickness, layoutcache.stepRad
+
+    -- Paint everything else
+    local bgColor = c.bgcolor or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
+    lcd.color(bgColor)
+    lcd.drawFilledRectangle(x, y, w, h)
+
+    local min = c.min or 0
+    local max = c.max or 100
+    local value = c.value
+    local percent = c.percent or 0
+    local startAngle = c.startAngle or 135
+    local sweep = c.sweep or 270
     local endAngle = startAngle - sweep * percent
 
-    -- Draw base arc
-    drawArc(
-        cx, cy, radius, thickness,
-        startAngle, startAngle - sweep,
-        rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "arcBgColor")) or lcd.RGB(55,55,55),
-        stepRad
-    )
+    -- Base arc
+    drawArc(cx, cy, radius, thickness, startAngle, startAngle - sweep, c.arcBgColor or lcd.RGB(55,55,55), stepRad)
 
-    -- Draw value arc (with thresholds)
-    local arcColor = rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "arcColor")) or lcd.RGB(255,128,0)
-    local thresholds = rfsuite.widgets.dashboard.utils.getParam(box, "thresholds")
+    -- Value arc with thresholds
+    local arcColor = c.arcColor or lcd.RGB(255,128,0)
+    local thresholds = c.thresholds
     if thresholds and value ~= nil then
         for _, t in ipairs(thresholds) do
             local t_val = type(t.value) == "function" and t.value(box, value) or t.value
@@ -111,29 +141,21 @@ function render.arcgauge(x, y, w, h, box, telemetry)
         drawArc(cx, cy, radius, thickness, startAngle, endAngle, arcColor, stepRad)
     end
 
-
     -- Value text (centered)
-    local fontName = rfsuite.widgets.dashboard.utils.getParam(box, "font")
-    lcd.font(fontName and _G[fontName] or FONT_XL)
-    lcd.color(rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "textColor")) or lcd.RGB(255,255,255))
+    lcd.font(c.font and _G[c.font] or FONT_XL)
+    lcd.color(c.textColor or lcd.RGB(255,255,255))
 
-    local valueFormat = rfsuite.widgets.dashboard.utils.getParam(box, "valueFormat")
-    local unit = rfsuite.widgets.dashboard.utils.getParam(box, "unit") or ""
-    local decimals = rfsuite.widgets.dashboard.utils.getParam(box, "decimals")
     local valStr
-
-    if valueFormat then
-        valStr = valueFormat(value)
+    if c.valueFormat then
+        valStr = c.valueFormat(value)
     elseif type(value) == "number" then
-        if decimals ~= nil then
-            -- Always use fixed decimal formatting if explicitly requested
-            if decimals == 0 then
+        if c.decimals ~= nil then
+            if c.decimals == 0 then
                 valStr = string.format("%d", value)
             else
-                valStr = string.format("%." .. decimals .. "f", value)
+                valStr = string.format("%." .. c.decimals .. "f", value)
             end
         else
-            -- Default smart formatting: remove .0 if unnecessary
             if math.floor(value) == value then
                 valStr = string.format("%d", value)
             else
@@ -141,32 +163,28 @@ function render.arcgauge(x, y, w, h, box, telemetry)
             end
         end
     else
-        valStr = "-"
+        valStr = c.novalue or "-"
     end
-
-    valStr = valStr .. unit
-
+    valStr = valStr .. (c.unit or "")
     local tw, th = lcd.getTextSize(valStr)
-    local xOffset = rfsuite.widgets.dashboard.utils.getParam(box, "textoffsetx") or 0
-    lcd.drawText(cx - tw/2 + xOffset, cy - th/2, valStr)
+    lcd.drawText(cx - tw/2 + (c.textoffsetx or 0), cy - th/2, valStr)
 
     -- Title above, subText below
-    local title = rfsuite.widgets.dashboard.utils.getParam(box, "title")
+    local title = c.title
     if title then
-        local titlepadding = rfsuite.widgets.dashboard.utils.getParam(box, "titlepadding") or 0
-        local titlepaddingleft = rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingleft") or titlepadding
-        local titlepaddingright = rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingright") or titlepadding
-        local titlepaddingtop = rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingtop") or titlepadding
-        local titlepaddingbottom = rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingbottom") or titlepadding
-
+        local titlepadding = c.titlepadding or 0
+        local titlepaddingleft = c.titlepaddingleft or titlepadding
+        local titlepaddingright = c.titlepaddingright or titlepadding
+        local titlepaddingtop = c.titlepaddingtop or titlepadding
+        local titlepaddingbottom = c.titlepaddingbottom or titlepadding
         lcd.font(FONT_XS)
         local tsizeW, tsizeH = lcd.getTextSize(title)
         local region_x = x + titlepaddingleft
         local region_w = w - titlepaddingleft - titlepaddingright
-        local sy = (rfsuite.widgets.dashboard.utils.getParam(box, "titlepos") == "bottom")
+        local sy = (c.titlepos == "bottom")
             and (y + h - titlepaddingbottom - tsizeH)
             or (y + titlepaddingtop)
-        local align = (rfsuite.widgets.dashboard.utils.getParam(box, "titlealign") or "center"):lower()
+        local align = (c.titlealign or "center"):lower()
         local sx
         if align == "left" then
             sx = region_x
@@ -175,16 +193,16 @@ function render.arcgauge(x, y, w, h, box, telemetry)
         else
             sx = region_x + (region_w - tsizeW) / 2
         end
-        lcd.color(rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "titlecolor")) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90)))
+        lcd.color(c.titlecolor)
         lcd.drawText(sx, sy, title)
     end
-    local subText = rfsuite.widgets.dashboard.utils.getParam(box, "subText")
+
+    local subText = c.subText
     if subText then
         lcd.font(FONT_XS)
         local tw, th = lcd.getTextSize(subText)
         lcd.drawText(cx - tw/2, cy + radius * 0.55, subText)
     end
 end
-
 
 return render

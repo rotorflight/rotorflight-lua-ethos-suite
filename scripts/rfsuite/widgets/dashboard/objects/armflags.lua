@@ -1,10 +1,6 @@
 local render = {}
 
--- Armflags status box
-function render.armflags(x, y, w, h, box, telemetry)
-
-    x, y = rfsuite.widgets.dashboard.utils.applyOffset(x, y, box)
-
+function render.wakeup(box, telemetry)
     local value = nil
     local sensor = telemetry and telemetry.getSensorSource("armflags")
     value = sensor and sensor:value()
@@ -44,9 +40,20 @@ function render.armflags(x, y, w, h, box, telemetry)
         end
     end
 
+    box._cache = {
+        displayValue = displayValue,
+        color = color,
+        bgcolor = rfsuite.widgets.dashboard.utils.getParam(box, "bgcolor"),
+    }
+end
+
+function render.paint(x, y, w, h, box)
+    x, y = rfsuite.widgets.dashboard.utils.applyOffset(x, y, box)
+    local cache = box._cache or {}
+
     rfsuite.widgets.dashboard.utils.box(
         x, y, w, h,
-        color, rfsuite.widgets.dashboard.utils.getParam(box, "title"), displayValue, nil, rfsuite.widgets.dashboard.utils.getParam(box, "bgcolor"),
+        cache.color, rfsuite.widgets.dashboard.utils.getParam(box, "title"), cache.displayValue, nil, cache.bgcolor,
         rfsuite.widgets.dashboard.utils.getParam(box, "titlealign"), rfsuite.widgets.dashboard.utils.getParam(box, "valuealign"), rfsuite.widgets.dashboard.utils.getParam(box, "titlecolor"), rfsuite.widgets.dashboard.utils.getParam(box, "titlepos"),
         rfsuite.widgets.dashboard.utils.getParam(box, "titlepadding"), rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingleft"), rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingright"),
         rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingtop"), rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingbottom"),

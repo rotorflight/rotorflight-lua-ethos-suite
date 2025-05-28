@@ -1,10 +1,6 @@
 local render = {}
 
--- Telemetry data box
-function render.telemetry(x, y, w, h, box, telemetry)
-
-    x, y = rfsuite.widgets.dashboard.utils.applyOffset(x, y, box)
-
+function render.wakeup(box, telemetry)
     local value = nil
     local source = rfsuite.widgets.dashboard.utils.getParam(box, "source")
     if source then
@@ -19,14 +15,7 @@ function render.telemetry(x, y, w, h, box, telemetry)
             value = value and transform(value)
         end
     end
-    local displayValue = value
-    local displayUnit = rfsuite.widgets.dashboard.utils.getParam(box, "unit")
-    if value == nil then
-        displayValue = rfsuite.widgets.dashboard.utils.getParam(box, "novalue") or "-"
-        displayUnit = nil
-    end
-
-    -- Threshold color logic (borrowed from gaugeBox)
+    -- Threshold color logic
     local color = rfsuite.widgets.dashboard.utils.getParam(box, "color")
     local thresholds = rfsuite.widgets.dashboard.utils.getParam(box, "thresholds")
     if thresholds and value ~= nil then
@@ -39,10 +28,28 @@ function render.telemetry(x, y, w, h, box, telemetry)
             end
         end
     end
+    -- Cache results for paint
+    box._cache = {
+        value = value,
+        color = color,
+        unit = rfsuite.widgets.dashboard.utils.getParam(box, "unit"),
+        novalue = rfsuite.widgets.dashboard.utils.getParam(box, "novalue"),
+        -- add more if needed
+    }
+end
 
+function render.paint(x, y, w, h, box, telemetry)
+    x, y = rfsuite.widgets.dashboard.utils.applyOffset(x, y, box)
+    local cache = box._cache or {}
+    local displayValue = cache.value
+    local displayUnit = cache.unit
+    if displayValue == nil then
+        displayValue = cache.novalue or "-"
+        displayUnit = nil
+    end
     rfsuite.widgets.dashboard.utils.box(
         x, y, w, h,
-        color, rfsuite.widgets.dashboard.utils.getParam(box, "title"), displayValue, displayUnit, rfsuite.widgets.dashboard.utils.getParam(box, "bgcolor"),
+        cache.color, rfsuite.widgets.dashboard.utils.getParam(box, "title"), displayValue, displayUnit, rfsuite.widgets.dashboard.utils.getParam(box, "bgcolor"),
         rfsuite.widgets.dashboard.utils.getParam(box, "titlealign"), rfsuite.widgets.dashboard.utils.getParam(box, "valuealign"), rfsuite.widgets.dashboard.utils.getParam(box, "titlecolor"), rfsuite.widgets.dashboard.utils.getParam(box, "titlepos"),
         rfsuite.widgets.dashboard.utils.getParam(box, "titlepadding"), rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingleft"), rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingright"),
         rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingtop"), rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingbottom"),
@@ -50,6 +57,5 @@ function render.telemetry(x, y, w, h, box, telemetry)
         rfsuite.widgets.dashboard.utils.getParam(box, "valuepaddingtop"), rfsuite.widgets.dashboard.utils.getParam(box, "valuepaddingbottom")
     )
 end
-
 
 return render

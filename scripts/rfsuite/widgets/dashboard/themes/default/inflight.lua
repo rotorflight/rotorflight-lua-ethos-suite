@@ -24,11 +24,93 @@ local layout = {
 }
 
 local boxes = {
-    {col = 1, row = 1, rowspan = 4, type = "telemetry", source = "voltage", title = "VOLTAGE", unit = "v", titlepos = "bottom"},
-    {col = 2, row = 1, rowspan = 4, type = "telemetry", source = "fuel", title = "FUEL", unit = "%", titlepos = "bottom", transform = "floor"},
+    {
+        type = "arcgauge",
+        col = 1, row = 1,
+        source = "voltage",
+        transform = "floor",
+        gaugemin = 0,
+        gaugemax = 140,
+        unit = "V",
+        font = "FONT_XXL",
+        textoffsetx = 12,
+        arcOffsetY = 4,
+        arcThickness = 1,
+        startAngle = 225,
+        sweep = 270,
+        arcBgColor = "lightgrey",
+        title = "VOLTAGE",
+        titlepos = "bottom",
+        thresholds = {
+            { value = 70,  color = "green" },
+            { value = 90,  color = "orange" },
+            { value = 140, color = "red" }
+        },
+        min = function()
+            local cfg = rfsuite.session.batteryConfig
+            local cells = (cfg and cfg.batteryCellCount) or 3
+            local minV = (cfg and cfg.vbatmincellvoltage) or 3.0
+            local value = math.max(0, cells * minV)
+            return value
+        end,
+        max = function()
+            local cfg = rfsuite.session.batteryConfig
+            local cells = (cfg and cfg.batteryCellCount) or 3
+            local maxV = (cfg and cfg.vbatmaxcellvoltage) or 4.2
+            local value = math.max(0, cells * maxV)
+            return value
+        end,   
+        gaugemin = function()
+            local cfg = rfsuite.session.batteryConfig
+
+            --print(rfsuite.session.batteryConfig.vbatmincellvoltage)
+
+            local cells = (cfg and cfg.batteryCellCount) or 3
+            local minV = (cfg and cfg.vbatmincellvoltage) or 3.0
+            local value = math.max(0, cells * minV)
+            return value
+        end,
+        gaugemax = function()
+            local cfg = rfsuite.session.batteryConfig
+            local cells = (cfg and cfg.batteryCellCount) or 3
+            local maxV = (cfg and cfg.vbatmaxcellvoltage) or 4.2
+            local value = math.max(0, cells * maxV)
+            return value
+        end,     
+    },
+    {
+        type = "arcgauge",
+        col = 2, row = 1,
+        source = "fuel",
+        transform = "floor",
+        gaugemin = 0,
+        gaugemax = 140,
+        unit = "°",
+        font = "FONT_XXL",
+        textoffsetx = 12,
+        arcOffsetY = 4,
+        arcThickness = 1,
+        startAngle = 225,
+        sweep = 270,
+        arcBgColor = "lightgrey",
+        title = "FUEL",
+        titlepos = "bottom",
+        thresholds = {
+            { value = 70,  color = "green" },
+            { value = 90,  color = "orange" },
+            { value = 140, color = "red" }
+        },  
+        gaugemin = 0,
+        gaugemax = 100,     
+    }
 }
 
 return {
     layout = layout,
     boxes = boxes,
+    scheduler = {
+        wakeup_interval = 0.25,          -- Interval (seconds) to run wakeup script when display is visible
+        wakeup_interval_bg = 5,         -- (optional: run wakeup this often when not visible; set nil/empty to skip)
+        paint_interval = 0.5,            -- Interval (seconds) to run paint script when display is visible 
+    }    
 }

@@ -1,10 +1,6 @@
 local render = {}
 
--- Static text box
-function render.text(x, y, w, h, box)
-
-    x, y = rfsuite.widgets.dashboard.utils.applyOffset(x, y, box)
-
+function render.wakeup(box)
     local value = rfsuite.widgets.dashboard.utils.getParam(box, "value")
 
     -- Apply transform if defined
@@ -17,14 +13,27 @@ function render.text(x, y, w, h, box)
         value = value and transform(value)
     end
 
-    local displayValue = value
-    if value == nil then
-        displayValue = rfsuite.widgets.dashboard.utils.getParam(box, "novalue") or "-"
+    box._cache = {
+        value = value,
+        unit = rfsuite.widgets.dashboard.utils.getParam(box, "unit"),
+        novalue = rfsuite.widgets.dashboard.utils.getParam(box, "novalue"),
+        color = rfsuite.widgets.dashboard.utils.getParam(box, "color"),
+        bgcolor = rfsuite.widgets.dashboard.utils.getParam(box, "bgcolor"),
+        -- Add other frequently used params if you like
+    }
+end
+
+function render.paint(x, y, w, h, box)
+    x, y = rfsuite.widgets.dashboard.utils.applyOffset(x, y, box)
+    local cache = box._cache or {}
+    local displayValue = cache.value
+    if displayValue == nil then
+        displayValue = cache.novalue or "-"
     end
 
     rfsuite.widgets.dashboard.utils.box(
         x, y, w, h,
-        rfsuite.widgets.dashboard.utils.getParam(box, "color"), rfsuite.widgets.dashboard.utils.getParam(box, "title"), displayValue, rfsuite.widgets.dashboard.utils.getParam(box, "unit"), rfsuite.widgets.dashboard.utils.getParam(box, "bgcolor"),
+        cache.color, rfsuite.widgets.dashboard.utils.getParam(box, "title"), displayValue, cache.unit, cache.bgcolor,
         rfsuite.widgets.dashboard.utils.getParam(box, "titlealign"), rfsuite.widgets.dashboard.utils.getParam(box, "valuealign"), rfsuite.widgets.dashboard.utils.getParam(box, "titlecolor"), rfsuite.widgets.dashboard.utils.getParam(box, "titlepos"),
         rfsuite.widgets.dashboard.utils.getParam(box, "titlepadding"), rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingleft"), rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingright"),
         rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingtop"), rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingbottom"),

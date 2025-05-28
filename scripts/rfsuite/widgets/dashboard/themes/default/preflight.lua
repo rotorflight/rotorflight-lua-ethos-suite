@@ -24,7 +24,7 @@ local layout = {
 local boxes = {
     {col=1, row=1, rowspan=2, type="modelimage"},
     {col=1, row=3, type="telemetry", source="rssi", nosource="-", title="LQ", unit="dB", titlepos="bottom", transform="floor"},
-    {col=1, row=4, type="telemetry", source="governor", nosource="-", title="GOVERNOR", titlepos="bottom", transform=function(v) return rfsuite.utils.getGovernorState(v) end},
+    {col=1, row=4, type="governor", nosource="-", title="GOVERNOR", titlepos="bottom"},
     {col=2, row=1, rowspan=2, type="telemetry", source="voltage", nosource="-", title="VOLTAGE", unit="v", titlepos="bottom"},
     {col=2, row=3, rowspan=2, type="telemetry", source="current", nosource="-", title="CURRENT", unit="A", titlepos="bottom"},
     {col=3, row=1, rowspan=2, type="telemetry", source="fuel", nosource="-", title="FUEL", unit="%", titlepos="bottom", transform="floor"},
@@ -34,4 +34,9 @@ local boxes = {
 return {
     layout = layout,
     boxes = boxes,
+    scheduler = {
+        wakeup_interval = 0.25,          -- Interval (seconds) to run wakeup script when display is visible
+        wakeup_interval_bg = nil,         -- (optional: run wakeup this often when not visible; set nil/empty to skip)
+        paint_interval = 0.5,            -- Interval (seconds) to run paint script when display is visible 
+    }    
 }
