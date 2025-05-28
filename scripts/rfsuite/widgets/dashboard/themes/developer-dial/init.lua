@@ -18,10 +18,10 @@
 ]] --
 -- Theme initialization table
 local init = {
-    name = "Developer Dials",                -- Theme name
+    name = "Developer Dials",        -- Theme name
     preflight = "preflight.lua",     -- Script to run before takeoff
-    inflight = "inflight.lua",       -- Script to run during flight
-    postflight = "postflight.lua",   -- Script to run after landing
+    inflight = "preflight.lua",      -- Script to run during flight
+    postflight = "preflight.lua",    -- Script to run after landing
     wakeup = 0.5,                    -- Interval (seconds) to run wakeup script when display is visible (keep round 0.5 for responsive touch events)
     wakeup_bg = 60,                  -- Interval (seconds) to run wakeup script when display is not visible
     standalone = false,              -- If true, theme handles all rendering itself

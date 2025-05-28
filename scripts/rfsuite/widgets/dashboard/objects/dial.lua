@@ -39,40 +39,6 @@ local function calDialAngle(percent, startAngle, sweepAngle)
     return (startAngle or 315) + (sweepAngle or 270) * (percent or 0) / 100
 end
 
--- Draw bar-style needle using two triangles (Ethos only!)
-local function drawBarNeedle(cx, cy, length, thickness, angleDeg, color)
-    
-    local angleRad = math.rad(angleDeg)
-    local cosA = math.cos(angleRad)
-    local sinA = math.sin(angleRad)
-
-    -- Tip position
-    local tipX = cx + cosA * length
-    local tipY = cy + sinA * length
-
-    -- Perpendicular for thickness
-    local perpA = angleRad + math.pi / 2
-    local dx = math.cos(perpA) * (thickness / 2)
-    local dy = math.sin(perpA) * (thickness / 2)
-
-    -- Four corners of the bar
-    local base1X = cx + dx
-    local base1Y = cy + dy
-    local base2X = cx - dx
-    local base2Y = cy - dy
-    local tip1X = tipX + dx
-    local tip1Y = tipY + dy
-    local tip2X = tipX - dx
-    local tip2Y = tipY - dy
-
-    -- Main bar as two triangles
-    lcd.color(color)
-    lcd.drawFilledTriangle(base1X, base1Y, tip1X, tip1Y, tip2X, tip2Y)
-    lcd.drawFilledTriangle(base1X, base1Y, tip2X, tip2Y, base2X, base2Y)
-    lcd.drawLine(cx, cy, tipX, tipY)
-end
-
-
 
 local function computeDrawArea(img, x, y, w, h, aspect, align)
     local iw, ih = img:width(), img:height()
@@ -204,7 +170,7 @@ function render.dial(x, y, w, h, box, telemetry)
         local needleLength = radius - 6
 
         if percent and type(percent) == "number" and not (percent ~= percent) then
-            drawBarNeedle(cx, cy, needleLength, needleThickness, angle, needleColor)
+            rfsuite.widgets.dashboard.utils.drawBarNeedle(cx, cy, needleLength, needleThickness, angle, needleColor)
         end
 
         lcd.color(hubColor)
