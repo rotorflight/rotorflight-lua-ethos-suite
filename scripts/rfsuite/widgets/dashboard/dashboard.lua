@@ -35,13 +35,6 @@ dashboard.flightmode = rfsuite.session.flightMode or "preflight" -- To be set by
 
 dashboard.currentWidgetPath = nil 
 dashboard.overlayMessage = nil
-
-dashboard._initStage = 0
-dashboard._initStageMessage = nil
-dashboard._initInProgress = false
-
-
-
 dashboard.utils = assert(
     rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/lib/utils.lua")
 )()
@@ -146,22 +139,9 @@ end
     Called automatically by paint().
 ]]
 function dashboard.renderLayout(widget, config)
-    -- Caching window/layout/box rects for performance
-    dashboard._boxLayoutCache = dashboard._boxLayoutCache or {
-        config = nil,
-        windowSize = nil,
-        rects = nil,
-        boxesId = nil,
-    }
+    dashboard.boxRects = {} -- clear previous box rectangles
 
-    local function getBoxesId(boxes)
-        -- Simple ID: count + first box type + maybe a hash
-        if not boxes then return 0 end
-        local b = boxes[1] or {}
-        return #boxes .. "_" .. tostring(b.type or "") .. "_" .. tostring(b.id or "")
-    end
-
-    local resolve = function(val, ...)
+    local function resolve(val, ...)
         if type(val) == "function" then
             return val(...)
         else
@@ -184,53 +164,30 @@ function dashboard.renderLayout(widget, config)
 
     local contentWidth = WIDGET_W - ((COLS - 1) * PADDING)
     local contentHeight = WIDGET_H - ((ROWS + 1) * PADDING)
+
     local boxWidth = contentWidth / COLS
     local boxHeight = contentHeight / ROWS
 
-    local boxes = resolve(config.boxes) or {}
-    local boxesId = getBoxesId(boxes)
-
-    -- Cache is valid if config/layout/size/boxes are unchanged
-    local cache = dashboard._boxLayoutCache
-    local cacheValid =
-        cache.config == config.layout and
-        cache.windowSize and
-        cache.windowSize[1] == WIDGET_W and
-        cache.windowSize[2] == WIDGET_H and
-        cache.boxesId == boxesId
-
-    if not cacheValid then
-        cache.config = config.layout
-        cache.windowSize = { WIDGET_W, WIDGET_H }
-        cache.rects = {}
-        cache.boxesId = boxesId
-
-        for i, box in ipairs(boxes) do
-            local w, h = getBoxSize(box, boxWidth, boxHeight, PADDING, WIDGET_W, WIDGET_H)
-            local x, y = getBoxPosition(box, w, h, boxWidth, boxHeight, PADDING, WIDGET_W, WIDGET_H)
-            cache.rects[i] = { x = x, y = y, w = w, h = h, box = box }
-        end
-    end
-
-    dashboard.boxRects = cache.rects or {}
-
     utils.setBackgroundColourBasedOnTheme()
 
-    for i, rect in ipairs(dashboard.boxRects) do
-        dashboard.render.object(rect.box.type, rect.x, rect.y, rect.w, rect.h, rect.box, telemetry)
 
-        if dashboard.selectedBoxIndex == i and rect.box.onpress then
+    for i, box in ipairs(resolve(config.boxes) or {}) do
+        local w, h = getBoxSize(box, boxWidth, boxHeight, PADDING, WIDGET_W, WIDGET_H)
+        local x, y = getBoxPosition(box, w, h, boxWidth, boxHeight, PADDING, WIDGET_W, WIDGET_H)
+
+        dashboard.boxRects[#dashboard.boxRects + 1] = { x = x, y = y, w = w, h = h, box = box }
+        dashboard.render.object(box.type, x, y, w, h, box, telemetry)
+
+        if dashboard.selectedBoxIndex == i and box.onpress then
             lcd.color(selectColor)
-            lcd.drawRectangle(rect.x, rect.y, rect.w, rect.h, selectBorder)
+            lcd.drawRectangle(x, y, w, h, selectBorder)
         end
     end
 
-    -- Overlay error message (now handled efficiently)
     if dashboard.overlayMessage then
         dashboard.utils.screenErrorOverlay(dashboard.overlayMessage)
     end
 end
-
 
 --[[
     Loads the Lua state module for the specified theme and state.
@@ -364,9 +321,12 @@ end
     Also resets theme fallback flags and the image cache.
 ]]
 function dashboard.reload_themes()
-    dashboard._initStage = 0
-    dashboard._initInProgress = true
-    dashboard._initStageMessage = "Loading dashboard..."
+    dashboard.utils.resetImageCache()
+    loadedStateModules = {
+        preflight  = load_state_script(rfsuite.preferences.dashboard.theme_preflight  or dashboard.DEFAULT_THEME, "preflight"),
+        inflight   = load_state_script(rfsuite.preferences.dashboard.theme_inflight    or dashboard.DEFAULT_THEME, "inflight"),
+        postflight = load_state_script(rfsuite.preferences.dashboard.theme_postflight  or dashboard.DEFAULT_THEME, "postflight"),
+    }
     wakeupScheduler = 0
 end
 
@@ -410,12 +370,6 @@ end
     Uses either a table-based layout or falls back to the state's paint method.
 ]]
 function dashboard.paint(widget)
-
-    if dashboard._initInProgress and dashboard._initStageMessage then
-        dashboard.utils.screenErrorOverlay(dashboard._initStageMessage)
-        return
-    end
-
     local state = dashboard.flightmode or "preflight"
     local module = loadedStateModules[state]
 
@@ -561,36 +515,6 @@ function dashboard.wakeup(widget)
 
     if (now - wakeupScheduler) >= interval then
         wakeupScheduler = now
-
-        if dashboard._initInProgress then
-            if dashboard._initStage == 0 then
-                dashboard.utils.resetImageCache()
-                dashboard._initStageMessage = "Loading themes..."
-                dashboard._initStage = 1
-                return
-            elseif dashboard._initStage == 1 then
-                dashboard._initStageMessage = "Loading preflight module..."
-                loadedStateModules = {
-                    preflight  = load_state_script(rfsuite.preferences.dashboard.theme_preflight  or dashboard.DEFAULT_THEME, "preflight"),
-                }
-                dashboard._initStage = 2
-                return
-            elseif dashboard._initStage == 2 then
-                dashboard._initStageMessage = "Loading inflight/postflight modules..."
-                loadedStateModules.inflight   = load_state_script(rfsuite.preferences.dashboard.theme_inflight    or dashboard.DEFAULT_THEME, "inflight")
-                loadedStateModules.postflight = load_state_script(rfsuite.preferences.dashboard.theme_postflight  or dashboard.DEFAULT_THEME, "postflight")
-                dashboard._initStage = 3
-                return
-            elseif dashboard._initStage == 3 then
-                dashboard._initInProgress = false
-                dashboard._initStageMessage = nil
-                dashboard._boxLayoutCache = { config = nil, windowSize = nil, rects = nil, boxesId = nil }
-                lcd.invalidate(widget)
-                return
-            end
-        end
-
-
         -- Periodically check for overlay message changes
         local newMessage = dashboard.computeOverlayMessage()
         if dashboard.overlayMessage ~= newMessage then
