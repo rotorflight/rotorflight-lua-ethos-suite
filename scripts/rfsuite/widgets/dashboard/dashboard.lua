@@ -34,7 +34,7 @@ local wakeupScheduler = 0
 -- spreash scheduling of object wakeups
 local objectWakeupIndex = 1
 local objectWakeupsPerCycle = nil
-local objectSchedulerPercentage = 0.5  -- Example: 50% per cycle
+local objectSchedulerPercentage = 0.2  -- Example: 20% per cycle
 
 dashboard.boxRects = {}  -- Will store {x, y, w, h, box} for each box
 dashboard.selectedBoxIndex = 1 -- track the selected box index
