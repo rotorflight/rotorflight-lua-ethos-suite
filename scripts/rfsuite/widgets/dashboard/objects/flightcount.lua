@@ -2,16 +2,18 @@ local render = {}
 
 function render.wakeup(box)
     local displayValue = rfsuite.ini.getvalue(rfsuite.session.modelPreferences, "general", "flightcount")
+    local unit = rfsuite.widgets.dashboard.utils.getParam(box, "unit")
+
     if displayValue == nil then
         displayValue = rfsuite.widgets.dashboard.utils.getParam(box, "novalue") or "-"
+        unit = nil  -- Suppress unit when fallback is shown
     end
 
     box._cache = {
         displayValue = displayValue,
         color = rfsuite.widgets.dashboard.utils.getParam(box, "color"),
-        unit = rfsuite.widgets.dashboard.utils.getParam(box, "unit"),
+        unit = unit,
         bgcolor = rfsuite.widgets.dashboard.utils.getParam(box, "bgcolor"),
-        -- add any other commonly used params here if you want
     }
 end
 

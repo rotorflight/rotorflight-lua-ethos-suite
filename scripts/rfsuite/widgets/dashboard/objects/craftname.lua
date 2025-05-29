@@ -2,16 +2,18 @@ local render = {}
 
 function render.wakeup(box)
     local displayValue = rfsuite.session.craftName
+    local unit = rfsuite.widgets.dashboard.utils.getParam(box, "unit")
+
     if displayValue == nil or (type(displayValue) == "string" and displayValue:match("^%s*$")) then
         displayValue = rfsuite.widgets.dashboard.utils.getParam(box, "novalue") or "-"
+        unit = nil  -- suppress unit if fallback is shown
     end
 
     box._cache = {
         displayValue = displayValue,
         color = rfsuite.widgets.dashboard.utils.getParam(box, "color"),
-        unit = rfsuite.widgets.dashboard.utils.getParam(box, "unit"),
+        unit = unit,
         bgcolor = rfsuite.widgets.dashboard.utils.getParam(box, "bgcolor"),
-        -- Add more cached params if you use them often
     }
 end
 

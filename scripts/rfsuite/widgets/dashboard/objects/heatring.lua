@@ -75,7 +75,7 @@ function render.wakeup(box, telemetry)
         ringColor = ringColor,
         thresholds = thresholds,
         novalue = rfsuite.widgets.dashboard.utils.getParam(box, "novalue") or "-",
-        unit = rfsuite.widgets.dashboard.utils.getParam(box, "unit") or "",
+        unit = (value ~= nil) and rfsuite.widgets.dashboard.utils.getParam(box, "unit") or nil,
         textColor = rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "textColor")) or lcd.RGB(255,255,255),
         textalign = rfsuite.widgets.dashboard.utils.getParam(box, "textalign") or "center",
         textoffset = rfsuite.widgets.dashboard.utils.getParam(box, "textoffset") or 0,
@@ -120,7 +120,7 @@ function render.paint(x, y, w, h, box)
 
     -- Value text
     local displayValue = value or novalue
-    local valStr = tostring(displayValue) .. unit
+    local valStr = tostring(displayValue) .. (unit or "")
 
     -- Auto-size value font to fit inside ring
     local fontSizes = {"FONT_XXL", "FONT_XL", "FONT_L", "FONT_M", "FONT_S"}

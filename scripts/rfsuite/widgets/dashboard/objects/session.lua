@@ -3,14 +3,16 @@ local render = {}
 function render.wakeup(box)
     local src = rfsuite.widgets.dashboard.utils.getParam(box, "source")
     local displayValue = rfsuite.session[src]
+    local unit = rfsuite.widgets.dashboard.utils.getParam(box, "unit")
     if displayValue == nil then
         displayValue = rfsuite.widgets.dashboard.utils.getParam(box, "novalue") or "-"
+        unit = nil
     end
 
     box._cache = {
         displayValue = displayValue,
         color = rfsuite.widgets.dashboard.utils.getParam(box, "color"),
-        unit = rfsuite.widgets.dashboard.utils.getParam(box, "unit"),
+        unit = unit,
         bgcolor = rfsuite.widgets.dashboard.utils.getParam(box, "bgcolor"),
         -- add other frequently used params here if you wish
     }
