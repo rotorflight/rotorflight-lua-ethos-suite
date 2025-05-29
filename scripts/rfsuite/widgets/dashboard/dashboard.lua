@@ -267,7 +267,12 @@ function dashboard.renderLayout(widget, config)
         dashboard.boxRects[#dashboard.boxRects + 1] = { x = x, y = y, w = w, h = h, box = box }
         local obj = dashboard.objectsByType[box.type]
         if obj and obj.paint then
-            obj.paint(x, y, w, h, box, telemetry)
+            -- Overlay hourglass if data is not yet ready
+            if not box._cache or box._cache.value == nil then
+                dashboard.utils.hourglass(x, y, w, h)
+            else
+                obj.paint(x, y, w, h, box, telemetry)
+            end    
         end
 
         if dashboard.selectedBoxIndex == i and box.onpress then
@@ -667,6 +672,17 @@ function dashboard.wakeup(widget)
     if firstWakeup then
         firstWakeup = false
         dashboard.reload_themes()
+
+        -- load hourglass image
+        local path
+        if lcd.darkMode() then
+            path = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/gfx/hourglass-w.png"
+        else
+            path = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/gfx/hourglass-b.png"
+        end   
+        dashboard.hourglassIcon = rfsuite.utils.loadImage(path) -- Adjust path as needed
+
+
     end
 
 

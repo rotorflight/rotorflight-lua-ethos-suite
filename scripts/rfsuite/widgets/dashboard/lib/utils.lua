@@ -20,6 +20,43 @@ local utils = {}
 local imageCache = {}
 local fontCache 
 
+--- Draws a scaled and centered hourglass icon within the specified rectangle.
+-- 
+-- @param x number: The x-coordinate of the top-left corner of the drawing area.
+-- @param y number: The y-coordinate of the top-left corner of the drawing area.
+-- @param w number: The width of the drawing area.
+-- @param h number: The height of the drawing area.
+--
+-- The function retrieves the hourglass icon from `rfsuite.widgets.dashboard.hourglassIcon`.
+-- It scales the icon to fit within the given width and height, maintaining the aspect ratio,
+-- and draws it centered in the specified rectangle using `lcd.drawBitmap`.
+function utils.hourglass(x, y, w, h)
+    local icon = rfsuite.widgets.dashboard.hourglassIcon
+    if not icon then return end
+
+    local originalW, originalH = 100, 100  -- actual image dimensions
+    local scale = 0.5
+
+    local maxW = w * scale
+    local maxH = h * scale
+
+    local aspect = originalW / originalH
+    local iconW, iconH
+
+    if maxW / maxH > aspect then
+        iconH = maxH
+        iconW = iconH * aspect
+    else
+        iconW = maxW
+        iconH = iconW / aspect
+    end
+
+    local cx = x + (w - iconW) / 2
+    local cy = y + (h - iconH) / 2
+
+    lcd.drawBitmap(cx, cy, icon, iconW, iconH)
+end
+
 --- Draws a bar-style needle (such as for a gauge or meter) at a specified position, angle, and size.
 -- The needle is rendered as a thick, filled bar with a specified thickness and length, centered at (cx, cy),
 -- and rotated by angleDeg degrees. The needle is drawn with a slight overlap at both ends for visual effect.
