@@ -188,10 +188,14 @@ function render.paint(x, y, w, h, box)
                     break
                 end
             end
-            lcd.font(bestFont)
-            lcd.drawText(innerX + (innerW - bestW) / 2, innerY + (innerH - bestH) / 2, str)
-        end
 
+            lcd.font(bestFont)
+            local sx = innerX + math.floor((innerW - bestW) / 2 + 0.5)
+            -- Shift slightly *down* (5–10% of height)
+            local verticalOffset = math.floor(bestH * 0.07 + 0.5)
+            local sy = innerY + math.floor((innerH - bestH) / 2 + 0.5) + verticalOffset
+            lcd.drawText(sx, sy, str)
+        end
 
         if c.valueFontSize and type(c.valueFontSize) == "number" then
             lcd.font(c.valueFontSize)
