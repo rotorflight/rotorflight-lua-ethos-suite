@@ -87,7 +87,8 @@ local userpref_defaults ={
         memstats = false,           -- perioid print memory usage 
         mspexpbytes = 8,
         apiversion = 2,             -- msp api version to use for simulator    
-    }
+    },
+    menulastselected = {}
 }
 
 os.mkdir("SCRIPTS:/" .. rfsuite.config.preferences)

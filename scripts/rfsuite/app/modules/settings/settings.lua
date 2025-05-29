@@ -92,7 +92,7 @@ local function openPage(pidx, title, script)
 
 
     if rfsuite.app.gfx_buttons["settings"] == nil then rfsuite.app.gfx_buttons["settings"] = {} end
-    if rfsuite.app.menuLastSelected["settings"] == nil then rfsuite.app.menuLastSelected["settings"] = 1 end
+    if rfsuite.preferences.menulastselected["settings"] == nil then rfsuite.preferences.menulastselected["settings"] = 1 end
 
 
     local Menu = assert(rfsuite.compiler.loadfile("app/modules/" .. script))()
@@ -125,7 +125,7 @@ local function openPage(pidx, title, script)
             paint = function()
             end,
             press = function()
-                rfsuite.app.menuLastSelected["settings"] = pidx
+                rfsuite.preferences.menulastselected["settings"] = pidx
                 rfsuite.app.ui.progressDisplay()
                 rfsuite.app.ui.openPage(pidx, pvalue.folder, "settings/tools/" .. pvalue.script)
             end
@@ -133,7 +133,7 @@ local function openPage(pidx, title, script)
 
         if pvalue.disabled == true then rfsuite.app.formFields[pidx]:enable(false) end
 
-        if rfsuite.app.menuLastSelected["settings"] == pidx then rfsuite.app.formFields[pidx]:focus() end
+        if rfsuite.preferences.menulastselected["settings"] == pidx then rfsuite.app.formFields[pidx]:focus() end
 
         lc = lc + 1
 

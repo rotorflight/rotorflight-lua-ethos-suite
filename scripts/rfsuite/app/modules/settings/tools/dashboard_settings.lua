@@ -43,8 +43,8 @@ local function openPage(pidx, title, script)
     if rfsuite.app.gfx_buttons["settings_dashboard_themes"] == nil then
         rfsuite.app.gfx_buttons["settings_dashboard_themes"] = {}
     end
-    if rfsuite.app.menuLastSelected["settings_dashboard_themes"] == nil then
-        rfsuite.app.menuLastSelected["settings_dashboard_themes"] = 1
+    if rfsuite.preferences.menulastselected["settings_dashboard_themes"] == nil then
+        rfsuite.preferences.menulastselected["settings_dashboard_themes"] = 1
     end
 
     local lc, bx, y = 0, 0, 0
@@ -76,7 +76,7 @@ local function openPage(pidx, title, script)
             press = function()
                 -- Optional: your action when pressing a theme
                 -- Example: rfsuite.app.ui.loadTheme(theme.folder)
-                rfsuite.app.menuLastSelected["settings_dashboard_themes"] = idx
+                rfsuite.preferences.menulastselected["settings_dashboard_themes"] = idx
                rfsuite.app.ui.progressDisplay()
                 local configure = theme.configure
                 local source = theme.source
@@ -97,7 +97,7 @@ local function openPage(pidx, title, script)
             rfsuite.app.formFields[idx]:enable(false)
         end
 
-        if rfsuite.app.menuLastSelected["settings_dashboard_themes"] == idx then
+        if rfsuite.preferences.menulastselected["settings_dashboard_themes"] == idx then
             rfsuite.app.formFields[idx]:focus()
         end
 

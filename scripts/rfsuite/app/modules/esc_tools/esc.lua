@@ -115,7 +115,7 @@ local function openPage(pidx, title, script)
 
 
     if rfsuite.app.gfx_buttons["escmain"] == nil then rfsuite.app.gfx_buttons["escmain"] = {} end
-    if rfsuite.app.menuLastSelected["escmain"] == nil then rfsuite.app.menuLastSelected["escmain"] = 1 end
+    if rfsuite.preferences.menulastselected["escmain"] == nil then rfsuite.preferences.menulastselected["escmain"] = 1 end
 
 
     local ESCMenu = assert(rfsuite.compiler.loadfile("app/modules/" .. script))()
@@ -148,7 +148,7 @@ local function openPage(pidx, title, script)
             paint = function()
             end,
             press = function()
-                rfsuite.app.menuLastSelected["escmain"] = pidx
+                rfsuite.preferences.menulastselected["escmain"] = pidx
                 rfsuite.app.ui.progressDisplay()
                 rfsuite.app.ui.openPage(pidx, pvalue.folder, "esc_tools/esc_tool.lua")
             end
@@ -156,7 +156,7 @@ local function openPage(pidx, title, script)
 
         if pvalue.disabled == true then rfsuite.app.formFields[pidx]:enable(false) end
 
-        if rfsuite.app.menuLastSelected["escmain"] == pidx then rfsuite.app.formFields[pidx]:focus() end
+        if rfsuite.preferences.menulastselected["escmain"] == pidx then rfsuite.app.formFields[pidx]:focus() end
 
         lc = lc + 1
 

@@ -155,10 +155,10 @@ local function openPage(pidx, title, script)
     local bx = 0
 
     if rfsuite.app.gfx_buttons["servos"] == nil then rfsuite.app.gfx_buttons["servos"] = {} end
-    if rfsuite.app.menuLastSelected["servos"] == nil then rfsuite.app.menuLastSelected["servos"] = 1 end
+    if rfsuite.preferences.menulastselected["servos"] == nil then rfsuite.preferences.menulastselected["servos"] = 1 end
 
     if rfsuite.app.gfx_buttons["servos"] == nil then rfsuite.app.gfx_buttons["servos"] = {} end
-    if rfsuite.app.menuLastSelected["servos"] == nil then rfsuite.app.menuLastSelected["servos"] = 1 end
+    if rfsuite.preferences.menulastselected["servos"] == nil then rfsuite.preferences.menulastselected["servos"] = 1 end
 
     for pidx, pvalue in ipairs(servoTable) do
 
@@ -200,7 +200,7 @@ local function openPage(pidx, title, script)
                 paint = function()
                 end,
                 press = function()
-                    rfsuite.app.menuLastSelected["servos"] = pidx
+                    rfsuite.preferences.menulastselected["servos"] = pidx
                     rfsuite.currentServoIndex = pidx
                     rfsuite.app.ui.progressDisplay()
                     rfsuite.app.ui.openPage(pidx, pvalue.title, "servos/servos_tool.lua", servoTable)
@@ -209,7 +209,7 @@ local function openPage(pidx, title, script)
 
             if pvalue.disabled == true then rfsuite.app.formFields[pidx]:enable(false) end
 
-            if rfsuite.app.menuLastSelected["servos"] == pidx then rfsuite.app.formFields[pidx]:focus() end
+            if rfsuite.preferences.menulastselected["servos"] == pidx then rfsuite.app.formFields[pidx]:focus() end
 
             lc = lc + 1
 

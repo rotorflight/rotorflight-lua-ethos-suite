@@ -155,10 +155,10 @@ local function openPage(pidx, title, script, displaymode)
     local bx = 0
 
     if rfsuite.app.gfx_buttons["logs"] == nil then rfsuite.app.gfx_buttons["logs"] = {} end
-    if rfsuite.app.menuLastSelected["logs"] == nil then rfsuite.app.menuLastSelected["logs"] = 1 end
+    if rfsuite.preferences.menulastselected["logs"] == nil then rfsuite.preferences.menulastselected["logs"] = 1 end
 
     if rfsuite.app.gfx_buttons["logs"] == nil then rfsuite.app.gfx_buttons["logs"] = {} end
-    if rfsuite.app.menuLastSelected["logs"] == nil then rfsuite.app.menuLastSelected["logs"] = 1 end
+    if rfsuite.preferences.menulastselected["logs"] == nil then rfsuite.preferences.menulastselected["logs"] = 1 end
 
     local logDir = getLogPath()
 
@@ -193,7 +193,7 @@ local function openPage(pidx, title, script, displaymode)
                 paint = function()
                 end,
                 press = function()
-                    rfsuite.app.menuLastSelected["logs"] = pidx
+                    rfsuite.preferences.menulastselected["logs"] = pidx
                     rfsuite.app.ui.progressDisplay()
                     rfsuite.app.ui.openPage(pidx, "Logs", "logs/logs_tool.lua", name, currentDisplayMode)
                 end
@@ -201,7 +201,7 @@ local function openPage(pidx, title, script, displaymode)
 
             rfsuite.app.formFields[pidx]:enable(true)
 
-            if rfsuite.app.menuLastSelected["logs"] == pidx then rfsuite.app.formFields[pidx]:focus() end
+            if rfsuite.preferences.menulastselected["logs"] == pidx then rfsuite.app.formFields[pidx]:focus() end
 
             lc = lc + 1
 
