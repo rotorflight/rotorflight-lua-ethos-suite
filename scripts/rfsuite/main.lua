@@ -223,10 +223,9 @@ rfsuite.session.dashboardEditingTheme = nil -- this is used to store the dashboa
 rfsuite.session.timer = {}
 rfsuite.session.timer.start = nil -- this is used to store the start time of the timer
 rfsuite.session.timer.live = nil -- this is used to store the live timer value while inflight
-rfsuite.session.timer.accrued = nil -- this is used to store the total timer value while inflight
-rfsuite.session.timer.total = nil -- this is used to store the total timer value
+rfsuite.session.timer.lifetime = nil -- this is used to store the total flight time of a model and store it in the user ini file
+rfsuite.session.timer.session = nil -- this is used to track flight time for the session
 rfsuite.session.flightCounted = false
-
 
 
 --- Retrieves the version information of the rfsuite module.
