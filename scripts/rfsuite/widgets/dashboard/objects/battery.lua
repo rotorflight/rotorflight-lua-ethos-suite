@@ -49,6 +49,28 @@ function render.wakeup(box, telemetry)
     local gaugeFrameColor = rfsuite.widgets.dashboard.utils.resolveColor(
         rfsuite.widgets.dashboard.utils.getParam(box, "gaugeframecolor")) or lcd.RGB(255, 255, 255)
 
+    local gaugeColor = rfsuite.widgets.dashboard.utils.resolveColor(
+        rfsuite.widgets.dashboard.utils.getParam(box, "gaugecolor")) or lcd.RGB(0, 255, 0)
+
+    local thresholds = rfsuite.widgets.dashboard.utils.getParam(box, "thresholds")
+    if type(thresholds) == "table" and value then
+        for _, threshold in ipairs(thresholds) do
+        local thresholdValue = threshold.value
+        if type(thresholdValue) == "function" then
+            thresholdValue = thresholdValue()
+        end
+        if value <= thresholdValue then
+                if threshold.color then
+                    gaugeColor = rfsuite.widgets.dashboard.utils.resolveColor(threshold.color)
+                end
+                if threshold.valuecolor then
+                    valueColor = rfsuite.widgets.dashboard.utils.resolveColor(threshold.valuecolor)
+                end
+                break
+            end
+        end
+    end
+
     box._cache = {
         value = value,
         percent = percent or 0,
@@ -64,8 +86,7 @@ function render.wakeup(box, telemetry)
         gaugepadding = gaugepadding,
         gaugeSegments = gaugeSegments,
         gaugeframecolor = gaugeFrameColor,
-        gaugecolor = rfsuite.widgets.dashboard.utils.resolveColor(
-            rfsuite.widgets.dashboard.utils.getParam(box, "gaugecolor")) or lcd.RGB(0, 255, 0),
+        gaugecolor = gaugeColor,
         gaugebgcolor = rfsuite.widgets.dashboard.utils.resolveColor(
             rfsuite.widgets.dashboard.utils.getParam(box, "gaugebgcolor")) or lcd.RGB(0, 0, 0)
     }

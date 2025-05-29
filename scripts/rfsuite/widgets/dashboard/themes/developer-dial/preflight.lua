@@ -508,7 +508,7 @@ local boxes = {
         titlepos = "bottom",
         titlecolor = "white",
         gaugecolor = "green",
-        gaugeframecolor = "red",
+        gaugeframecolor = "white",
          thresholds = {
             {
                 value = function()
