@@ -1,6 +1,6 @@
 local activateWakeup = false
 
-local mspapi = {
+local apidata = {
     api = {
         [1] = "RESCUE_PROFILE",
     },
@@ -54,7 +54,7 @@ local function wakeup()
 end
 
 return {
-    mspapi = mspapi,
+    apidata = apidata,
     title = rfsuite.i18n.get("app.modules.profile_rescue.name"),
     reboot = false,
     refreshOnProfileChange = true,

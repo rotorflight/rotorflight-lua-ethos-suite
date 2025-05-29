@@ -22,7 +22,7 @@ minmax[4] = {min = 0, max = 1000, sourceMax = motorCount, defaultMin = 0, defaul
 
 local enableWakeup = false
 
-local mspapi = {
+local apidata = {
     api = {
         [1] = "SBUS_OUTPUT_CONFIG",
     },
@@ -197,7 +197,7 @@ end
 -- not changing to api for this module due to the unusual read/write scenario.
 -- its not worth the effort
 return {
-    mspapi = mspapi,
+    apidata = apidata,
     reboot = false,
     eepromWrite = true,
     postLoad = postLoad,

@@ -1,4 +1,4 @@
-local mspapi = {
+local apidata = {
     api = {
         [1] = "RC_CONFIG",
     },
@@ -37,7 +37,7 @@ local function validateThrottleValues(self)
 end
 
 return {
-    mspapi=mspapi,
+    apidata = apidata,
     reboot = true,
     eepromWrite = true,
     postLoad = postLoad,

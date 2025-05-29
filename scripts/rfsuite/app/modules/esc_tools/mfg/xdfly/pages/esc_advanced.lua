@@ -7,7 +7,7 @@ local simulatorResponse = ESC.simulatorResponse
 local activeFields = ESC.getActiveFields(rfsuite.session.escBuffer)
 local activateWakeup = false
 
-local mspapi = {
+local apidata = {
     api = {
         [1] = "ESC_PARAMETERS_XDFLY",
     },
@@ -69,7 +69,7 @@ local function wakeup(self)
 end
 
 return {
-    mspapi=mspapi,
+    apidata = apidata,
     eepromWrite = true,
     reboot = false,
     escinfo = escinfo,

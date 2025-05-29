@@ -1,5 +1,5 @@
 
-local mspapi = {
+local apidata = {
     api = {
         [1] = 'GOVERNOR_CONFIG',
     },
@@ -63,7 +63,7 @@ local function postSave(self)
 end
 
 return {
-    mspapi=mspapi,
+    apidata = apidata,
     reboot = true,
     eepromWrite = true,
     labels = labels,
