@@ -85,6 +85,94 @@ dashboard.utils = assert(
     rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/lib/utils.lua")
 )()
 
+-- small helper to draw a thick arc from angleStart down to angleEnd
+local function drawArc(cx, cy, radius, thickness, angleStart, angleEnd, color)
+  local stepDeg   = 4
+  local radThick  = thickness / 2
+  angleStart = math.rad(angleStart)
+  angleEnd   = math.rad(angleEnd)
+  if angleEnd > angleStart then
+    angleEnd = angleEnd - 2 * math.pi
+  end
+  lcd.color(color or lcd.RGB(255,255,255))
+  local stepRad = math.rad(stepDeg)
+  for a = angleStart, angleEnd, -stepRad do
+    local x = cx + radius * math.cos(a)
+    local y = cy - radius * math.sin(a)
+    lcd.drawFilledCircle(x, y, radThick)
+  end
+  -- end‐cap dot
+  local xe = cx + radius * math.cos(angleEnd)
+  local ye = cy - radius * math.sin(angleEnd)
+  lcd.drawFilledCircle(xe, ye, radThick)
+end
+
+-- a spinning loader + counter in one
+-- at top of dashboard.lua, ensure you still have drawArc defined…
+
+-- spinning loader + dynamically-scaled counter
+function dashboard.hourglass(x, y, w, h)
+
+  -- set color
+  local color
+  if lcd.darkMode() then
+    color = lcd.RGB(255,255,255)
+  else   
+    color = lcd.RGB(0,0,0)
+  end  
+  lcd.color(color)
+
+  -- spin state
+  dashboard._loader = dashboard._loader or { angle = 0 }
+  local st = dashboard._loader
+
+  -- center + sizing
+  local cx, cy    = x + w/2,       y + h/2
+  local radius    = math.min(w, h) * 0.3
+  local thickness = math.max(6, radius * 0.15)
+  local sweepDeg  = 90  -- how large the arc is
+
+  -- darken bg (optional)
+  --if dashboard.utils and dashboard.utils.setBackgroundColourBasedOnTheme then
+  --  dashboard.utils.setBackgroundColourBasedOnTheme()
+  --end
+
+  -- draw the rotating arc
+  drawArc(cx, cy, radius, thickness, st.angle, st.angle - sweepDeg, color)
+  st.angle = (st.angle + 20) % 360  -- advance
+
+  -- build our counter text
+  local total = dashboard.boxRects and #dashboard.boxRects or 0
+  local done  = math.min(objectsThreadedWakeupCount or 0, total)
+  local pct   = total>0 and math.floor(done/total * 100) or 0
+  local txt   = string.format("%d%%", pct)
+
+  -- get resolution-aware font list (see utils.box dynamic sizing) :contentReference[oaicite:0]{index=0}
+  local fontLists = dashboard.utils.getFontListsForResolution()
+  local fonts     = fontLists.value_default
+
+  -- compute available space (60% of diameter)
+  local avail   = radius * 2 * 0.6
+  local bestF, bestW, bestH = fonts[1], 0, 0
+
+  -- pick largest font that fits
+  for i = #fonts, 1, -1 do
+    local f = fonts[i]
+    lcd.font(f)
+    local tw, th = lcd.getTextSize(txt)
+    if tw <= avail and th <= avail then
+      bestF, bestW, bestH = f, tw, th
+      break
+    end
+  end
+
+  -- draw centered text
+  lcd.font(bestF)
+  lcd.drawText(cx - bestW/2, cy - bestH/2, txt)
+end
+
+
+
 --- Loads and caches dashboard object modules based on the provided box configurations.
 -- Iterates through each box config, loading the corresponding object Lua file only once per type.
 -- Loaded objects are stored in `dashboard.objectsByType` for later use.
@@ -275,7 +363,7 @@ function dashboard.renderLayout(widget, config)
     -- PHASE 2: HOURGLASS until first threaded‐wakeup pass completes
     ----------------------------------------------------------------
     if objectsThreadedWakeupCount < 1 then
-        utils.hourglass(0, 0, W, H)
+        dashboard.hourglass    (0, 0, W, H)
         lcd.invalidate()
         return
     end
@@ -703,17 +791,6 @@ function dashboard.wakeup(widget)
     if firstWakeup then
         firstWakeup = false
         dashboard.reload_themes()
-
-        -- load hourglass image
-        local path
-        if lcd.darkMode() then
-            path = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/gfx/hourglass-w.png"
-        else
-            path = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/gfx/hourglass-b.png"
-        end   
-        dashboard.hourglassIcon = rfsuite.utils.loadImage(path) -- Adjust path as needed
-
-
     end
 
 
