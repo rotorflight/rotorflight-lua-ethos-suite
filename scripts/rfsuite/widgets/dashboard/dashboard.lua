@@ -51,6 +51,7 @@ local objectWakeupIndex = 1             -- current object index for wakeup
 local objectWakeupsPerCycle = nil       -- number of objects to wake per cycle (calculated later)
 local objectSchedulerPercentage = 0.2   -- fraction of total objects to wake each cycle (20%)
 local objectsThreadedWakeupCount = 0
+local lastLoadedBoxCount = 0
 
 -- Flag to perform initialization logic only once on first wakeup
 local firstWakeup = true
@@ -221,9 +222,6 @@ local function getBoxPosition(box, w, h, boxWidth, boxHeight, PADDING, WIDGET_W,
         return 0, 0
     end
 end
-
--- at module scope, to track when we need to reload widget modules:
-local lastLoadedBoxCount = 0
 
 function dashboard.renderLayout(widget, config)
     local utils     = dashboard.utils
@@ -456,22 +454,25 @@ end
 -- 4. Collects all box objects from all loaded state modules and loads them into the dashboard.
 -- 5. Resets the wakeup scheduler and clears the dashboard's box rectangles.
 function dashboard.reload_themes()
+    -- Clear any cached images
     dashboard.utils.resetImageCache()
+
+    -- Load each theme state (preflight, inflight, postflight)
     loadedStateModules = {
         preflight  = load_state_script(rfsuite.preferences.dashboard.theme_preflight  or dashboard.DEFAULT_THEME, "preflight"),
-        inflight   = load_state_script(rfsuite.preferences.dashboard.theme_inflight    or dashboard.DEFAULT_THEME, "inflight"),
-        postflight = load_state_script(rfsuite.preferences.dashboard.theme_postflight  or dashboard.DEFAULT_THEME, "postflight"),
+        inflight   = load_state_script(rfsuite.preferences.dashboard.theme_inflight   or dashboard.DEFAULT_THEME, "inflight"),
+        postflight = load_state_script(rfsuite.preferences.dashboard.theme_postflight or dashboard.DEFAULT_THEME, "postflight"),
     }
 
+    -- Try to pick up any custom scheduler intervals defined by the theme
     local function tryLoadIntervals()
-        -- Look for an init.lua table in any of the loaded states
         for _, mod in pairs(loadedStateModules) do
             if mod and mod.scheduler then
                 local initTable = (type(mod.scheduler) == "function") and mod.scheduler() or mod.scheduler
                 if type(initTable) == "table" then
-                    loadedThemeIntervals.wakeup_interval      = initTable.wakeup_interval or 0.25
-                    loadedThemeIntervals.wakeup_interval_bg   = initTable.wakeup_interval_bg
-                    loadedThemeIntervals.paint_interval       = initTable.paint_interval or 0.5
+                    loadedThemeIntervals.wakeup_interval    = initTable.wakeup_interval    or 0.25
+                    loadedThemeIntervals.wakeup_interval_bg = initTable.wakeup_interval_bg
+                    loadedThemeIntervals.paint_interval     = initTable.paint_interval     or 0.5
                     return
                 end
             end
@@ -479,7 +480,7 @@ function dashboard.reload_themes()
     end
     tryLoadIntervals()
 
-    -- PATCH: Load objects for all boxes in all states
+    -- Gather every box from all loaded states so we can preload their object modules
     local allBoxes = {}
     for _, mod in pairs(loadedStateModules) do
         if mod and mod.boxes then
@@ -489,10 +490,23 @@ function dashboard.reload_themes()
             end
         end
     end
+
+    -- Preload all object types used by these boxes
     dashboard.loadAllObjects(allBoxes)
-    wakeupScheduler = 0
-    dashboard.boxRects = {}
+
+    -- Reset scheduler & layout state so the hourglass & wakeup cycle restart cleanly
+    wakeupScheduler             = 0
+    dashboard.boxRects          = {}
+    objectsThreadedWakeupCount  = 0
+    objectWakeupIndex           = 1
+    lastLoadedBoxCount          = 0
+    lastBoxRectsCount           = 0
+    objectWakeupsPerCycle       = nil
+
+    -- Force an immediate repaint so the spinner appears right away
+    lcd.invalidate()
 end
+
 
 --- Calls a state-specific function for the dashboard widget, handling fallbacks and errors.
 -- @param funcName string: The name of the function to call (e.g., "paint").
