@@ -172,7 +172,6 @@ app.radio = {}
 app.sensor = {}
 app.init = nil
 app.guiIsRunning = false
-app.menuLastSelected = {}
 app.adjfunctions = nil
 app.profileCheckScheduler = os.clock()
 app.offlineMode = false
@@ -1577,7 +1576,7 @@ function app.create_logtool()
         rfsuite.preferences.developer.devtools = true
     end
 
-    rfsuite.app.menuLastSelected["mainmenu"] = pidx
+    rfsuite.preferences.menulastselected["mainmenu"] = pidx
     rfsuite.app.ui.progressDisplay()
 
     rfsuite.app.offlineMode = true
@@ -1714,6 +1713,11 @@ Returns:
     true: Always returns true to indicate successful closure.
 ]]
 function app.close()
+
+    -- save user preferences
+    local userpref_file = "SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini"
+    rfsuite.ini.save_ini_file(userpref_file, rfsuite.preferences)
+
     app.guiIsRunning = false
     app.offlineMode = false
     app.uiState = app.uiStatus.init

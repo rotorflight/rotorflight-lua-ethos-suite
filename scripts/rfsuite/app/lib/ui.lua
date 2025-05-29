@@ -369,7 +369,7 @@ function ui.openMainMenu()
     form.clear()
 
     rfsuite.app.gfx_buttons["mainmenu"] = rfsuite.app.gfx_buttons["mainmenu"] or {}
-    rfsuite.app.menuLastSelected["mainmenu"] = rfsuite.app.menuLastSelected["mainmenu"] or 1
+    rfsuite.preferences.menulastselected["mainmenu"] = rfsuite.preferences.menulastselected["mainmenu"] or 1
 
     for idx, section in ipairs(MainMenu.sections) do
         local hideSection = (section.ethosversion and rfsuite.session.ethosRunningVersion < section.ethosversion) or
@@ -404,13 +404,13 @@ function ui.openMainMenu()
                             options = FONT_S,
                             paint = function() end,
                             press = function()
-                                rfsuite.app.menuLastSelected["mainmenu"] = pidx
+                                rfsuite.preferences.menulastselected["mainmenu"] = pidx
                                 rfsuite.app.ui.progressDisplay()
                                 rfsuite.app.ui.openPage(pidx, page.title, page.folder .. "/" .. page.script)                          
                             end
                         })
 
-                        if rfsuite.app.menuLastSelected["mainmenu"] == pidx then
+                        if rfsuite.preferences.menulastselected["mainmenu"] == pidx then
                             rfsuite.app.formFields[pidx]:focus()
                         end
 
