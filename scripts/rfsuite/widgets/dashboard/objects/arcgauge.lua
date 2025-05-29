@@ -2,7 +2,7 @@ local render = {}
 
 -- Arc drawing helper
 local function drawArc(cx, cy, radius, thickness, angleStart, angleEnd, color, cachedStepRad)
-    local step = 4
+    local step = 1
     local rad_thick = thickness / 2
     angleStart = math.rad(angleStart)
     angleEnd = math.rad(angleEnd)

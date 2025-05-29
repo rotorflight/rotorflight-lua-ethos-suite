@@ -2,12 +2,12 @@ local render = {}
 
 -- Arc drawing helper
 local function drawArc(cx, cy, radius, thickness, angleStart, angleEnd, color, cachedStepRad)
-    local step = 4
+    local step = 1
     local rad_thick = thickness / 2
     angleStart = math.rad(angleStart)
     angleEnd = math.rad(angleEnd)
     if angleEnd > angleStart then
-        angleEnd = angleEnd - 2 * math.pi
+        angleEnd = angleEnd2 - 2 * math.pi
     end
     lcd.color(color or lcd.RGB(255,128,0))
     local stepRad = cachedStepRad or math.rad(step)
