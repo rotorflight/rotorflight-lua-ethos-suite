@@ -50,6 +50,8 @@ local wakeupScheduler = 0
 local objectWakeupIndex = 1             -- current object index for wakeup
 local objectWakeupsPerCycle = nil       -- number of objects to wake per cycle (calculated later)
 local objectSchedulerPercentage = 0.2   -- fraction of total objects to wake each cycle (20%)
+local objectsThreadedWakeupCount = 0
+local lastLoadedBoxCount = 0
 
 -- Flag to perform initialization logic only once on first wakeup
 local firstWakeup = true
@@ -82,6 +84,86 @@ local lastWakeupBg = 0  -- for background wakeup
 dashboard.utils = assert(
     rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/lib/utils.lua")
 )()
+
+-- small helper to draw a thick arc from angleStart down to angleEnd
+local function drawArc(cx, cy, radius, thickness, angleStart, angleEnd, color)
+  local stepDeg   = 4
+  local radThick  = thickness / 2
+  angleStart = math.rad(angleStart)
+  angleEnd   = math.rad(angleEnd)
+  if angleEnd > angleStart then
+    angleEnd = angleEnd - 2 * math.pi
+  end
+  lcd.color(color or lcd.RGB(255,255,255))
+  local stepRad = math.rad(stepDeg)
+  for a = angleStart, angleEnd, -stepRad do
+    local x = cx + radius * math.cos(a)
+    local y = cy - radius * math.sin(a)
+    lcd.drawFilledCircle(x, y, radThick)
+  end
+  -- end‐cap dot
+  local xe = cx + radius * math.cos(angleEnd)
+  local ye = cy - radius * math.sin(angleEnd)
+  lcd.drawFilledCircle(xe, ye, radThick)
+end
+
+-- a spinning loader + counter in one
+-- at top of dashboard.lua, ensure you still have drawArc defined…
+
+-- spinning loader + dynamically-scaled counter
+function dashboard.hourglass(x, y, w, h)
+
+  -- set color
+  local color
+  if lcd.darkMode() then
+    color = lcd.RGB(255,255,255)
+  else   
+    color = lcd.RGB(0,0,0)
+  end  
+  lcd.color(color)
+
+  -- spin state
+  dashboard._loader = dashboard._loader or { angle = 0 }
+  local st = dashboard._loader
+
+  -- center + sizing
+  local cx, cy    = x + w/2,       y + h/2
+  local radius    = math.min(w, h) * 0.3
+  local thickness = math.max(6, radius * 0.15)
+  local sweepDeg  = 90  -- how large the arc is
+
+  -- draw the rotating arc
+  drawArc(cx, cy, radius, thickness, st.angle, st.angle - sweepDeg, color)
+  st.angle = (st.angle + 20) % 360  -- advance
+
+  -- build our counter text
+  txt = rfsuite.i18n.get("widgets.dashboard.loading") 
+
+  -- get resolution-aware font list (see utils.box dynamic sizing) :contentReference[oaicite:0]{index=0}
+  local fontLists = dashboard.utils.getFontListsForResolution()
+  local fonts     = fontLists.value_default
+
+  -- compute available space (60% of diameter)
+  local avail   = radius * 2 * 0.6
+  local bestF, bestW, bestH = fonts[1], 0, 0
+
+  -- pick largest font that fits
+  for i = #fonts, 1, -1 do
+    local f = fonts[i]
+    lcd.font(f)
+    local tw, th = lcd.getTextSize(txt)
+    if tw <= avail and th <= avail then
+      bestF, bestW, bestH = f, tw, th
+      break
+    end
+  end
+
+  -- draw centered text
+  lcd.font(bestF)
+  lcd.drawText(cx - bestW/2, cy - bestH/2, txt)
+end
+
+
 
 --- Loads and caches dashboard object modules based on the provided box configurations.
 -- Iterates through each box config, loading the corresponding object Lua file only once per type.
@@ -221,77 +303,90 @@ local function getBoxPosition(box, w, h, boxWidth, boxHeight, PADDING, WIDGET_W,
     end
 end
 
---- Renders the dashboard layout by arranging and drawing widget boxes based on the provided configuration.
--- Handles box positioning, sizing, selection highlighting, and overlays.
--- @param widget The widget instance to render.
--- @param config Table containing layout and box configuration.
 function dashboard.renderLayout(widget, config)
+    local utils     = dashboard.utils
+    local telemetry = rfsuite.tasks.telemetry
 
-
-    dashboard.boxRects = {} -- clear previous box rectangles
-
+    -- tiny resolver for function-or-value patterns
     local function resolve(val, ...)
-        if type(val) == "function" then
-            return val(...)
-        else
-            return val
-        end
+      if type(val) == "function" then return val(...) else return val end
     end
 
-    local telemetry = rfsuite.tasks.telemetry
-    local utils = dashboard.utils
-    local state = dashboard.flightmode or "preflight"
-    local module = loadedStateModules[state]
+    -- grab layout & boxes
+    local layout   = resolve(config.layout) or {}
+    local rawBoxes = config.boxes or layout.boxes or {}
+    local boxes    = (type(rawBoxes) == "function") and rawBoxes() or rawBoxes
 
-    local selectColor = (resolve(config.layout) and resolve(config.layout).selectcolor) or
-        dashboard.utils.resolveColor("yellow") or lcd.RGB(255, 255, 0)
-    local selectBorder = (resolve(config.layout) and resolve(config.layout).selectborder) or 2
+    -- only reload widget modules if your boxes definition changed
+    if #boxes ~= lastLoadedBoxCount then
+        dashboard.loadAllObjects(boxes)
+        lastLoadedBoxCount = #boxes
+    end
 
-    local WIDGET_W, WIDGET_H = lcd.getWindowSize()
-    local COLS, ROWS = resolve(config.layout).cols, resolve(config.layout).rows
-    local PADDING = resolve(config.layout).padding
+    -- overall size
+    local W, H = lcd.getWindowSize()
 
-    local contentWidth = WIDGET_W - ((COLS - 1) * PADDING)
-    local contentHeight = WIDGET_H - ((ROWS + 1) * PADDING)
+    ----------------------------------------------------------------
+    -- PHASE 1: ALWAYS MEASURE & BUILD dashboard.boxRects
+    ----------------------------------------------------------------
+    dashboard.boxRects = {}
+    local cols    = layout.cols    or 1
+    local rows    = layout.rows    or 1
+    local pad     = layout.padding or 0
 
-    local boxWidth = contentWidth / COLS
-    local boxHeight = contentHeight / ROWS
+    local contentW = W - ((cols - 1) * pad)
+    local contentH = H - ((rows + 1) * pad)
+    local boxW     = contentW / cols
+    local boxH     = contentH / rows
 
+    for i, box in ipairs(boxes) do
+        local w, h = getBoxSize(box, boxW, boxH, pad, W, H)
+        local x, y = getBoxPosition(box, w, h, boxW, boxH, pad, W, H)
+        dashboard.boxRects[#dashboard.boxRects+1] = { x=x, y=y, w=w, h=h, box=box }
+    end
+
+    -- recompute how many objects to wake per cycle if the count changed
+    if not objectWakeupsPerCycle or lastBoxRectsCount ~= #dashboard.boxRects then
+        objectWakeupsPerCycle = math.max(1, math.ceil(#dashboard.boxRects * objectSchedulerPercentage))
+        lastBoxRectsCount     = #dashboard.boxRects
+    end
+
+    ----------------------------------------------------------------
+    -- PHASE 2: HOURGLASS until first threaded‐wakeup pass completes
+    ----------------------------------------------------------------
+    if objectsThreadedWakeupCount < 1 then
+        dashboard.hourglass    (0, 0, W, H)
+        lcd.invalidate()
+        return
+    end
+
+    ----------------------------------------------------------------
+    -- PHASE 3: REAL PAINT (only fill background once here)
+    ----------------------------------------------------------------
     utils.setBackgroundColourBasedOnTheme()
 
+    local selColor  = layout.selectcolor  or utils.resolveColor("yellow") or lcd.RGB(255,255,0)
+    local selBorder = layout.selectborder or 2
 
-    for i, box in ipairs(resolve(config.boxes) or {}) do
-        local w, h = getBoxSize(box, boxWidth, boxHeight, PADDING, WIDGET_W, WIDGET_H)
-        local x, y = getBoxPosition(box, w, h, boxWidth, boxHeight, PADDING, WIDGET_W, WIDGET_H)
-
-        dashboard.boxRects[#dashboard.boxRects + 1] = { x = x, y = y, w = w, h = h, box = box }
+    for i, rect in ipairs(dashboard.boxRects) do
+        local x, y, w, h, box = rect.x, rect.y, rect.w, rect.h, rect.box
         local obj = dashboard.objectsByType[box.type]
         if obj and obj.paint then
-            -- Overlay hourglass if data is not yet ready
-            if not box._cache or box._cache.value == nil then
-                dashboard.utils.hourglass(x, y, w, h)
-            else
-                obj.paint(x, y, w, h, box, telemetry)
-            end    
+            -- paint the widget’s content
+            obj.paint(x, y, w, h, box, telemetry)
         end
-
+        -- highlight if selected
         if dashboard.selectedBoxIndex == i and box.onpress then
-            lcd.color(selectColor)
-            lcd.drawRectangle(x, y, w, h, selectBorder)
+            lcd.color(selColor)
+            lcd.drawRectangle(x, y, w, h, selBorder)
         end
     end
 
-    -- Calculate objects per cycle for spread scheduling
-    if #dashboard.boxRects ~= lastBoxRectsCount or not objectWakeupsPerCycle then
-        objectWakeupsPerCycle = math.ceil(#dashboard.boxRects * objectSchedulerPercentage)
-        lastBoxRectsCount = #dashboard.boxRects
-        objectWakeupIndex = 1
-    end
-
-    if dashboard.overlayMessage then
-        dashboard.utils.screenErrorOverlay(dashboard.overlayMessage)
-    end
+    -- no second background fill here!
 end
+
+
+
 
 --- Loads a state-specific script for the dashboard widget, handling theme selection and fallbacks.
 -- 
@@ -439,22 +534,25 @@ end
 -- 4. Collects all box objects from all loaded state modules and loads them into the dashboard.
 -- 5. Resets the wakeup scheduler and clears the dashboard's box rectangles.
 function dashboard.reload_themes()
+    -- Clear any cached images
     dashboard.utils.resetImageCache()
+
+    -- Load each theme state (preflight, inflight, postflight)
     loadedStateModules = {
         preflight  = load_state_script(rfsuite.preferences.dashboard.theme_preflight  or dashboard.DEFAULT_THEME, "preflight"),
-        inflight   = load_state_script(rfsuite.preferences.dashboard.theme_inflight    or dashboard.DEFAULT_THEME, "inflight"),
-        postflight = load_state_script(rfsuite.preferences.dashboard.theme_postflight  or dashboard.DEFAULT_THEME, "postflight"),
+        inflight   = load_state_script(rfsuite.preferences.dashboard.theme_inflight   or dashboard.DEFAULT_THEME, "inflight"),
+        postflight = load_state_script(rfsuite.preferences.dashboard.theme_postflight or dashboard.DEFAULT_THEME, "postflight"),
     }
 
+    -- Try to pick up any custom scheduler intervals defined by the theme
     local function tryLoadIntervals()
-        -- Look for an init.lua table in any of the loaded states
         for _, mod in pairs(loadedStateModules) do
             if mod and mod.scheduler then
                 local initTable = (type(mod.scheduler) == "function") and mod.scheduler() or mod.scheduler
                 if type(initTable) == "table" then
-                    loadedThemeIntervals.wakeup_interval      = initTable.wakeup_interval or 0.25
-                    loadedThemeIntervals.wakeup_interval_bg   = initTable.wakeup_interval_bg
-                    loadedThemeIntervals.paint_interval       = initTable.paint_interval or 0.5
+                    loadedThemeIntervals.wakeup_interval    = initTable.wakeup_interval    or 0.25
+                    loadedThemeIntervals.wakeup_interval_bg = initTable.wakeup_interval_bg
+                    loadedThemeIntervals.paint_interval     = initTable.paint_interval     or 0.5
                     return
                 end
             end
@@ -462,7 +560,7 @@ function dashboard.reload_themes()
     end
     tryLoadIntervals()
 
-    -- PATCH: Load objects for all boxes in all states
+    -- Gather every box from all loaded states so we can preload their object modules
     local allBoxes = {}
     for _, mod in pairs(loadedStateModules) do
         if mod and mod.boxes then
@@ -472,10 +570,23 @@ function dashboard.reload_themes()
             end
         end
     end
+
+    -- Preload all object types used by these boxes
     dashboard.loadAllObjects(allBoxes)
-    wakeupScheduler = 0
-    dashboard.boxRects = {}
+
+    -- Reset scheduler & layout state so the hourglass & wakeup cycle restart cleanly
+    wakeupScheduler             = 0
+    dashboard.boxRects          = {}
+    objectsThreadedWakeupCount  = 0
+    objectWakeupIndex           = 1
+    lastLoadedBoxCount          = 0
+    lastBoxRectsCount           = 0
+    objectWakeupsPerCycle       = nil
+
+    -- Force an immediate repaint so the spinner appears right away
+    lcd.invalidate()
 end
+
 
 --- Calls a state-specific function for the dashboard widget, handling fallbacks and errors.
 -- @param funcName string: The name of the function to call (e.g., "paint").
@@ -672,17 +783,6 @@ function dashboard.wakeup(widget)
     if firstWakeup then
         firstWakeup = false
         dashboard.reload_themes()
-
-        -- load hourglass image
-        local path
-        if lcd.darkMode() then
-            path = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/gfx/hourglass-w.png"
-        else
-            path = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/gfx/hourglass-b.png"
-        end   
-        dashboard.hourglassIcon = rfsuite.utils.loadImage(path) -- Adjust path as needed
-
-
     end
 
 
@@ -753,6 +853,10 @@ function dashboard.wakeup(widget)
                 end
             end
             objectWakeupIndex = (objectWakeupIndex % #dashboard.boxRects) + 1
+        end
+        -- Increment objectsThreadedWakeupCount when all objects have been processed
+        if objectWakeupIndex == 1 then
+            objectsThreadedWakeupCount = objectsThreadedWakeupCount + 1
         end
     end
 

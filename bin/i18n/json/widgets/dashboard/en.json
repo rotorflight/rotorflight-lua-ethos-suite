@@ -8,5 +8,10 @@
     "english": "MISSING REQUIRED SENSORS",
     "translation": "MISSING REQUIRED SENSORS",
     "needs_translation": "false"
+  },
+  "loading": {
+    "english": "LOADING",
+    "translation": "LOADING",
+    "needs_translation": "false"
   }
 }
