@@ -135,12 +135,16 @@ function render.paint(x, y, w, h, box)
     end
 
     -- Value display
-    local displayValue = value or novalue
     lcd.font(FONT_STD)
-    local valStr = tostring(displayValue) .. unit
+    local valStr = ""
+    if value ~= nil then
+        valStr = tostring(value) .. unit
+    else
+        valStr = novalue
+    end
     local vw, vh = lcd.getTextSize(valStr)
     lcd.color(lcd.RGB(255,255,255))
-    lcd.drawText(cx-vw/2, cy-thickness-18, valStr)
+    lcd.drawText(cx - vw / 2, cy - thickness - 18, valStr)
 
     -- Title (below)
     if title then

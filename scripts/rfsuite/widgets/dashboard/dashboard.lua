@@ -15,48 +15,79 @@
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]] --
 
-local dashboard = {}
+-- Dashboard module table
+local dashboard = {}  -- main namespace for all dashboard functionality
+
+-- Track the previous flight mode so we can detect changes on wakeup
 local lastFlightMode = nil
+
+-- Capture the script start time for uptime or performance measurements
 local initTime = os.clock()
 
-dashboard.DEFAULT_THEME = "system/default" -- fallback
+-- Default theme to fall back on if user or system theme fails to load
+dashboard.DEFAULT_THEME = "system/default"
 
+-- Base paths for loading themes:
+--   themesBasePath: where system themes are stored
+--   themesUserPath: where user-defined themes are stored (preferences)
 local themesBasePath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/themes/"
 local themesUserPath = "SCRIPTS:/" .. rfsuite.config.preferences .. "/dashboard/"
+
+-- Cache for loaded state modules (preflight, inflight, postflight)
 local loadedStateModules = {}
+
+-- Intervals (in seconds) for various scheduler and paint operations:
 local loadedThemeIntervals = {
-    wakeup_interval     = 0.25,
-    wakeup_interval_bg  = nil,
-    paint_interval      = 0.5,
+    wakeup_interval     = 0.25,  -- how often to wake the widget when visible
+    wakeup_interval_bg  = nil,   -- how often to wake when not visible (nil = skip)
+    paint_interval      = 0.5,   -- how often to force a repaint
 }
+
+-- Counter used by wakeup to cycle through tasks
 local wakeupScheduler = 0
 
--- spreash scheduling of object wakeups
-local objectWakeupIndex = 1
-local objectWakeupsPerCycle = nil
-local objectSchedulerPercentage = 0.5  -- Example: 50% per cycle
+-- Spread scheduling of object wakeups to avoid doing them all at once:
+local objectWakeupIndex = 1             -- current object index for wakeup
+local objectWakeupsPerCycle = nil       -- number of objects to wake per cycle (calculated later)
+local objectSchedulerPercentage = 0.2   -- fraction of total objects to wake each cycle (20%)
 
-dashboard.boxRects = {}  -- Will store {x, y, w, h, box} for each box
-dashboard.selectedBoxIndex = 1 -- track the selected box index
+-- Flag to perform initialization logic only once on first wakeup
+local firstWakeup = true
+
+-- Layout state for boxes (UI elements):
+dashboard.boxRects = {}              -- will hold {x, y, w, h, box} for each box
+dashboard.selectedBoxIndex = 1       -- tracks which box is currently selected (for input)
+
+-- Track whether a fallback theme was used, and when, per state:
 dashboard.themeFallbackUsed = { preflight = false, inflight = false, postflight = false }
-dashboard.themeFallbackTime = { preflight = 0, inflight = 0, postflight = 0 }
-dashboard.flightmode = rfsuite.session.flightMode or "preflight" -- To be set by your state logic
+dashboard.themeFallbackTime = { preflight = 0,     inflight = 0,        postflight = 0 }
 
-dashboard.currentWidgetPath = nil 
+-- Current flightmode driving which state module to use (preflight/inflight/postflight)
+dashboard.flightmode = rfsuite.session.flightMode or "preflight"
+
+-- Path to the current widget/theme in use (set during theme loading)
+dashboard.currentWidgetPath = nil
+
+-- Any overlay message to display on screen (e.g., error or status)
 dashboard.overlayMessage = nil
 
+-- Loaded dashboard objects organized by their "type" field
 dashboard.objectsByType = {}
 
--- Track last run for both intervals
-local lastWakeup = 0
-local lastWakeupBg = 0
+-- Timestamps of the last wakeup calls to throttle based on intervals:
+local lastWakeup   = 0  -- for visible wakeup
+local lastWakeupBg = 0  -- for background wakeup
 
+-- Utility methods loaded from external utils.lua (drawing, color helpers, etc.)
 dashboard.utils = assert(
     rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/lib/utils.lua")
 )()
 
-
-
+--- Loads and caches dashboard object modules based on the provided box configurations.
+-- Iterates through each box config, loading the corresponding object Lua file only once per type.
+-- Loaded objects are stored in `dashboard.objectsByType` for later use.
+-- Logs a message if an object fails to load.
+-- @param boxConfigs Table of box configuration tables, each containing a `type` field.
 function dashboard.loadAllObjects(boxConfigs)
     dashboard.objectsByType = {}  -- clear old cache!
     local loaded = {}
@@ -78,10 +109,8 @@ function dashboard.loadAllObjects(boxConfigs)
     end
 end
 
-
---[[ 
-    Returns a list of indices of boxes that have an `onpress` handler.
-]]
+--- Returns a table of indices for boxes in `dashboard.boxRects` that have an `onpress` handler.
+-- @return table Indices of boxes with an `onpress` function.
 local function getOnpressBoxIndices()
     local indices = {}
     for i, rect in ipairs(dashboard.boxRects) do
@@ -92,7 +121,10 @@ local function getOnpressBoxIndices()
     return indices
 end
 
--- Returns the current overlay message string (or nil), based on error state
+--- Computes and returns an overlay message for the dashboard widget based on the current system state.
+-- The message indicates issues such as theme load errors, incompatible Ethos version, inactive background tasks,
+-- disabled RF modules, missing sensors, or invalid telemetry sensors. Returns `nil` if no issues are detected.
+-- @return string|nil Overlay message if an issue is detected, otherwise `nil`.
 function dashboard.computeOverlayMessage()
     local apiVersionAsString = tostring(rfsuite.session.apiVersion)
     local state = dashboard.flightmode or "preflight"
@@ -123,7 +155,15 @@ function dashboard.computeOverlayMessage()
     return nil
 end
 
--- Helper to get box width/height (percent, pixel, or grid)
+--- Calculates the width and height of a box based on its properties.
+-- Supports percentage-based, fixed, and grid-span sizing.
+-- @param box Table containing box properties (w_pct, h_pct, w, h, colspan, rowspan)
+-- @param boxWidth Default width for a single box/grid cell
+-- @param boxHeight Default height for a single box/grid cell
+-- @param PADDING Padding between boxes/cells
+-- @param WIDGET_W Total widget width (for percentage calculations)
+-- @param WIDGET_H Total widget height (for percentage calculations)
+-- @return w, h Calculated width and height of the box
 local function getBoxSize(box,boxWidth, boxHeight, PADDING, WIDGET_W, WIDGET_H)
     if box.w_pct and box.h_pct then
         local wp = box.w_pct
@@ -144,7 +184,17 @@ local function getBoxSize(box,boxWidth, boxHeight, PADDING, WIDGET_W, WIDGET_H)
     end
 end
 
--- Helper to get box position (percent, pixel, or grid)
+--- Calculates the (x, y) position for a UI box based on its configuration.
+-- Priority for position: percentage (x_pct/y_pct) > absolute (x/y) > grid (col/row).
+-- @param box Table containing box position properties.
+-- @param w Optional width override for the box.
+-- @param h Optional height override for the box.
+-- @param boxWidth Default width of the box.
+-- @param boxHeight Default height of the box.
+-- @param PADDING Padding between boxes.
+-- @param WIDGET_W Total widget width.
+-- @param WIDGET_H Total widget height.
+-- @return x, y Calculated top-left position of the box.
 local function getBoxPosition(box, w, h, boxWidth, boxHeight, PADDING, WIDGET_W, WIDGET_H)
     -- Priority: x_pct/y_pct > x/y > col/row
     if box.x_pct and box.y_pct then
@@ -171,10 +221,10 @@ local function getBoxPosition(box, w, h, boxWidth, boxHeight, PADDING, WIDGET_W,
     end
 end
 
---[[ 
-    Renders the main dashboard layout, drawing all boxes and handling highlights.
-    Called automatically by paint().
-]]
+--- Renders the dashboard layout by arranging and drawing widget boxes based on the provided configuration.
+-- Handles box positioning, sizing, selection highlighting, and overlays.
+-- @param widget The widget instance to render.
+-- @param config Table containing layout and box configuration.
 function dashboard.renderLayout(widget, config)
 
 
@@ -238,11 +288,22 @@ function dashboard.renderLayout(widget, config)
     end
 end
 
---[[
-    Loads the Lua state module for the specified theme and state.
-    Handles fallback logic and logs any failures.
-    Returns the loaded module, or nil on failure.
-]]
+--- Loads a state-specific script for the dashboard widget, handling theme selection and fallbacks.
+-- 
+-- This function attempts to load the `init.lua` file from the specified `theme_folder` to determine
+-- the script to use for the given `state`. If loading fails at any point, it falls back to the default theme.
+-- It also updates fallback tracking and the current widget path.
+--
+-- @param theme_folder (string) The theme folder in the format "source/folder" (e.g., "user/mytheme").
+-- @param state (string) The dashboard state for which to load the script (e.g., "main", "settings").
+-- @return (function|table|nil) Returns the loaded script chunk or module table, or nil if loading fails.
+--
+-- Side effects:
+--   - Updates `dashboard.themeFallbackUsed[state]` and `dashboard.themeFallbackTime[state]` on fallback.
+--   - Sets `dashboard.currentWidgetPath` to the active theme path.
+--
+-- Logging:
+--   - Logs info and error messages if loading or execution fails.
 local function load_state_script(theme_folder, state)
     local usedFallback = false
     local source, folder = theme_folder:match("([^/]+)/(.+)")
@@ -364,11 +425,14 @@ local function load_state_script(theme_folder, state)
     end
 end
 
-
---[[
-    Reloads all dashboard state modules for each flight mode.
-    Also resets theme fallback flags and the image cache.
-]]
+--- Reloads dashboard themes and updates related state modules and intervals.
+-- This function performs the following steps:
+-- 1. Resets the dashboard image cache.
+-- 2. Loads state modules (`preflight`, `inflight`, `postflight`) using the selected or default themes.
+-- 3. Attempts to load interval settings (`wakeup_interval`, `wakeup_interval_bg`, `paint_interval`)
+--    from the `scheduler` table or function in any loaded state module.
+-- 4. Collects all box objects from all loaded state modules and loads them into the dashboard.
+-- 5. Resets the wakeup scheduler and clears the dashboard's box rectangles.
 function dashboard.reload_themes()
     dashboard.utils.resetImageCache()
     loadedStateModules = {
@@ -408,13 +472,11 @@ function dashboard.reload_themes()
     dashboard.boxRects = {}
 end
 
-
-dashboard.reload_themes()
-
---[[
-    Helper: Calls the named function for the current state module, if available.
-    Used to delegate widget lifecycle calls.
-]]
+--- Calls a state-specific function for the dashboard widget, handling fallbacks and errors.
+-- @param funcName string: The name of the function to call (e.g., "paint").
+-- @param widget table: The widget instance to pass to the state function.
+-- @param paintFallback boolean: If true, displays an error if the function is not implemented for the current state.
+-- @return any: The result of the called state function, the module (for "paint" layout), or nil if not applicable.
 local function callStateFunc(funcName, widget, paintFallback)
     local state = dashboard.flightmode or "preflight"
     local module = loadedStateModules[state]
@@ -437,17 +499,19 @@ local function callStateFunc(funcName, widget, paintFallback)
     end
 end
 
---[[
-    Creates the widget using the state module's `create` method, if present.
-]]
+--- Creates a dashboard widget by invoking the "create" state function.
+-- @param widget The widget instance to be created.
+-- @return The result of the "create" state function for the given widget.
 function dashboard.create(widget)
     return callStateFunc("create", widget)
 end
 
---[[
-    Main paint/draw function for the dashboard.
-    Uses either a table-based layout or falls back to the state's paint method.
-]]
+
+--- Paints the dashboard widget based on the current flight mode state.
+-- Determines the current state and retrieves the corresponding module from `loadedStateModules`.
+-- If the module is valid and contains `layout` and `boxes`, it renders the layout and calls the module's custom paint function if available.
+-- Otherwise, it falls back to calling a generic state paint function.
+-- @param widget The widget object to be painted.
 function dashboard.paint(widget)
     local state = dashboard.flightmode or "preflight"
     local module = loadedStateModules[state]
@@ -462,38 +526,52 @@ function dashboard.paint(widget)
     end
 end
 
---[[
-    Calls the state's configure method, or returns the widget as is.
-]]
+--- Configures the given dashboard widget by invoking the "configure" state function.
+-- If the state function does not return a value, the original widget is returned.
+-- @param widget table: The widget instance to configure.
+-- @return table: The configured widget, or the original widget if no configuration was applied.
 function dashboard.configure(widget)
     return callStateFunc("configure", widget) or widget
 end
 
---[[
-    Calls the state's read method, if available.
-]]
+--- Reads data from the given dashboard widget by invoking the appropriate state function.
+-- @param widget The widget instance to read data from.
+-- @return The result of the state function call for reading the widget.
 function dashboard.read(widget)
     return callStateFunc("read", widget)
 end
 
---[[
-    Calls the state's write method, if available.
-]]
+--- Writes data to the specified widget by invoking the appropriate state function.
+-- @param widget The widget object to write data to.
+-- @return The result of the state function call for writing.
 function dashboard.write(widget)
     return callStateFunc("write", widget)
 end
 
---[[
-    Calls the state's build method, if available.
-]]
+--- Builds the dashboard widget by invoking the appropriate state function.
+-- @param widget The widget instance to be built.
+-- @return The result of the state function call for building the widget.
 function dashboard.build(widget)
     return callStateFunc("build", widget)
 end
 
---[[
-    Handles all user input events (key, rotary, touch).
-    Manages box selection and onpress handlers, then delegates to theme if present.
-]]
+--- Handles events for the dashboard widget, including key presses, rotary encoder, and touch events.
+-- 
+-- @param widget The widget instance receiving the event.
+-- @param category The event category (e.g., EVT_KEY for key events, 1 for touch).
+-- @param value The event value (e.g., key code, touch code).
+-- @param x (optional) The x-coordinate for touch events.
+-- @param y (optional) The y-coordinate for touch events.
+--
+-- Handles the following:
+--   - State transitions between "preflight" and "postflight" modes.
+--   - Navigation between selectable boxes using rotary encoder or keys.
+--   - Selection and activation of boxes via key or touch events.
+--   - Delegates event handling to the current state module if available.
+--   - Clears selection on EXIT key.
+--   - Ensures focus and valid indices before processing events.
+-- 
+-- @return true if the event was handled, otherwise delegates to the state module or returns nil.
 function dashboard.event(widget, category, value, x, y)
 
     local state = dashboard.flightmode or "preflight"
@@ -569,18 +647,29 @@ function dashboard.event(widget, category, value, x, y)
         end
     end
 
-
     if type(module) == "table" and type(module.event) == "function" then
         return module.event(widget, category, value, x, y)
     end
 
 end
 
---[[
-    Called periodically; manages redraw intervals, reloads themes if flightmode changes,
-    and clears highlight when widget loses focus.
-]]
+--- Handles the periodic wakeup logic for the dashboard widget.
+-- 
+-- This function is called regularly by the Ethos system to update the dashboard's state.
+-- It manages theme reloading on first wakeup, interval-based updates depending on widget visibility,
+-- flight mode changes, overlay message updates, state-specific wakeup logic, and per-object wakeups.
+-- It also handles focus removal from selected boxes when the widget loses focus.
+--
+-- @param widget The widget instance to update.
 function dashboard.wakeup(widget)
+
+    -- load themes on first wakeup
+    if firstWakeup then
+        firstWakeup = false
+        dashboard.reload_themes()
+    end
+
+
     local now = os.clock()
     local visible = lcd.isVisible() 
 
@@ -658,11 +747,17 @@ function dashboard.wakeup(widget)
     end
 end
 
-
---[[
-    Scans and lists available system and user dashboard themes.
-    Returns a table of {name, folder, idx, source}.
-]]
+--- Lists available dashboard themes by scanning system and user theme directories.
+-- 
+-- This function searches for theme folders in predefined base paths, loads their `init.lua` files,
+-- and collects theme metadata if the theme is valid and permitted by developer settings.
+--
+-- @return themes (table) A list of theme tables, each containing:
+--   - name (string): The display name of the theme.
+--   - configure (function|nil): Optional configuration function for the theme.
+--   - folder (string): The folder name where the theme is located.
+--   - idx (number): The index of the theme in the list.
+--   - source (string): The source type ("system" or "user").
 function dashboard.listThemes()
     local themes = {}
     local num = 0
@@ -705,6 +800,11 @@ function dashboard.listThemes()
     return themes
 end
 
+--- Retrieves a preference value for the dashboard widget.
+-- Depending on whether the GUI is running, this function fetches the preference value
+-- from either the current widget path or the dashboard editing theme.
+-- @param key string: The preference key to retrieve.
+-- @return any|nil: The value associated with the given key, or nil if not found or prerequisites are missing.
 function dashboard.getPreference(key)
     if not rfsuite.session.modelPreferences or not dashboard.currentWidgetPath then return nil end
 
@@ -715,6 +815,12 @@ function dashboard.getPreference(key)
     end
 end
 
+--- Saves a user preference for the dashboard widget.
+-- Depending on whether the GUI is running, the preference is saved either for the current widget path
+-- or for the dashboard editing theme.
+-- @param key string: The preference key to save.
+-- @param value any: The value to associate with the key.
+-- @return boolean: True if the preference was saved successfully, false otherwise.
 function dashboard.savePreference(key, value)
     if not rfsuite.session.modelPreferences or not rfsuite.session.modelPreferencesFile or not dashboard.currentWidgetPath then
         return false

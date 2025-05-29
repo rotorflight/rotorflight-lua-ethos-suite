@@ -165,7 +165,9 @@ function render.paint(x, y, w, h, box)
     else
         valStr = c.novalue or "-"
     end
-    valStr = valStr .. (c.unit or "")
+    if value ~= nil then
+        valStr = valStr .. (c.unit or "")
+    end
     local tw, th = lcd.getTextSize(valStr)
     lcd.drawText(cx - tw/2 + (c.textoffsetx or 0), cy - th/2, valStr)
 

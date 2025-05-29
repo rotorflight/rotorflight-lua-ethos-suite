@@ -81,8 +81,15 @@ function render.wakeup(box, telemetry)
             value = value and transform(value)
         end
     end
-    local displayValue = value or rfsuite.widgets.dashboard.utils.getParam(box, "novalue") or "-"
+    local displayValue
     local unit = rfsuite.widgets.dashboard.utils.getParam(box, "unit") or ""
+
+    if value ~= nil then
+        displayValue = value
+    else
+        displayValue = rfsuite.widgets.dashboard.utils.getParam(box, "novalue") or "-"
+        unit = nil --Suppress unit if using fallback
+    end
     local min = rfsuite.widgets.dashboard.utils.getParam(box, "min") or 0
     local max = rfsuite.widgets.dashboard.utils.getParam(box, "max") or 100
     local percent = 0

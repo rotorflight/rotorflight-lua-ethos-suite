@@ -118,7 +118,7 @@ function render.wakeup(box, telemetry)
     local displayValue = value
     if value == nil then
         displayValue = voltBox.novalue or "-"
-        displayUnit = nil
+        displayUnit = nil  -- suppress unit if no value
     end
 
     -- Padding for gauge area

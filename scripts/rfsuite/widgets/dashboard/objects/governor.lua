@@ -1,22 +1,25 @@
 local render = {}
 
 function render.wakeup(box, telemetry)
-    -- Get governor value and decoded display value at wakeup time
     local value
     if telemetry and telemetry.getSensorSource then
         local sensor = telemetry.getSensorSource("governor")
         value = sensor and sensor:value()
     end
+
     local displayValue = rfsuite.utils.getGovernorState(value)
+    local unit = rfsuite.widgets.dashboard.utils.getParam(box, "unit")
+
     if displayValue == nil then
         displayValue = rfsuite.widgets.dashboard.utils.getParam(box, "novalue") or "-"
+        unit = nil  -- Suppress unit if no valid governor state
     end
 
     box._cache = {
         color             = rfsuite.widgets.dashboard.utils.getParam(box, "color"),
         title             = rfsuite.widgets.dashboard.utils.getParam(box, "title"),
         displayValue      = displayValue,
-        unit              = rfsuite.widgets.dashboard.utils.getParam(box, "unit"),
+        unit              = unit,
         bgcolor           = rfsuite.widgets.dashboard.utils.getParam(box, "bgcolor"),
         titlealign        = rfsuite.widgets.dashboard.utils.getParam(box, "titlealign"),
         valuealign        = rfsuite.widgets.dashboard.utils.getParam(box, "valuealign"),
@@ -34,6 +37,7 @@ function render.wakeup(box, telemetry)
         valuepaddingbottom= rfsuite.widgets.dashboard.utils.getParam(box, "valuepaddingbottom"),
     }
 end
+
 
 function render.paint(x, y, w, h, box)
     x, y = rfsuite.widgets.dashboard.utils.applyOffset(x, y, box)
