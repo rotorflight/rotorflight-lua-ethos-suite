@@ -10,8 +10,8 @@
     "needs_translation": "true"
   },
   "loading": {
-    "english": "LOADING",
-    "translation": "LOADING",
-    "needs_translation": "true"
+    "english": "ROTORFLIGHT",
+    "translation": "ROTORFLIGHT",
+    "needs_translation": "false"
   }
 }
