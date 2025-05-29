@@ -154,7 +154,7 @@ function render.wakeup(box, telemetry)
     local valuealign = fuelBox.valuealign or "center"
 
     -- Gauge below title?
-    local gaugebelowtitle = voltBox.gaugebelowtitle
+    local gaugebelowtitle = fuelBox.gaugebelowtitle
 
     -- Title area height
     local title_area_top = 0
