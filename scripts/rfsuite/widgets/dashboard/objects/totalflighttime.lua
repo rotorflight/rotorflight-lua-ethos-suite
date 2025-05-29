@@ -1,29 +1,22 @@
 local render = {}
 
 function render.wakeup(box)
-    local displayValue = rfsuite.ini.getvalue(rfsuite.session.modelPreferences, "general", "totalflighttime")
-    if displayValue == nil then
-        displayValue = rfsuite.widgets.dashboard.utils.getParam(box, "novalue") or "-"
-    else
-        if rfsuite.session.timer and rfsuite.session.timer.live then
-            displayValue = rfsuite.session.timer.live + (displayValue or 0)
-        end
+    -- Show sum of persistent total + session time (not yet persisted)
+    local lifetime = rfsuite.ini.getvalue(rfsuite.session.modelPreferences, "general", "totalflighttime") or 0
+    local session = rfsuite.session.timer and rfsuite.session.timer.session or 0
+    local displayValue = lifetime + session
 
-        -- Convert to hours, minutes, seconds
-        local hours = math.floor(displayValue / 3600)
-        local minutes = math.floor((displayValue % 3600) / 60)
-        local seconds = math.floor(displayValue % 60)
-
-        -- Format to HH:MM:SS with leading zeros
-        displayValue = string.format("%02d:%02d:%02d", hours, minutes, seconds)
-    end
+    -- Format to HH:MM:SS
+    local hours = math.floor(displayValue / 3600)
+    local minutes = math.floor((displayValue % 3600) / 60)
+    local seconds = math.floor(displayValue % 60)
+    displayValue = string.format("%02d:%02d:%02d", hours, minutes, seconds)
 
     box._cache = {
         displayValue = displayValue,
         color = rfsuite.widgets.dashboard.utils.getParam(box, "color"),
         unit = rfsuite.widgets.dashboard.utils.getParam(box, "unit"),
         bgcolor = rfsuite.widgets.dashboard.utils.getParam(box, "bgcolor"),
-        -- add more if you wish
     }
 end
 

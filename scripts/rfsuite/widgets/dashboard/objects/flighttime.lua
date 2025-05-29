@@ -1,11 +1,10 @@
 local render = {}
 
 function render.wakeup(box)
-    local displayValue = rfsuite.session.timer.live
+    -- Always show the session time (accumulated time since last disconnect)
+    local displayValue = rfsuite.session.timer and rfsuite.session.timer.live or 0
 
-    if displayValue == nil then
-        displayValue = rfsuite.widgets.dashboard.utils.getParam(box, "novalue") or "-"
-    else
+    if type(displayValue) == "number" then
         local minutes = math.floor(displayValue / 60)
         local seconds = math.floor(displayValue % 60)
         displayValue = string.format("%02d:%02d", minutes, seconds)
@@ -16,7 +15,6 @@ function render.wakeup(box)
         color = rfsuite.widgets.dashboard.utils.getParam(box, "color"),
         unit = rfsuite.widgets.dashboard.utils.getParam(box, "unit"),
         bgcolor = rfsuite.widgets.dashboard.utils.getParam(box, "bgcolor"),
-        -- Add others if needed
     }
 end
 

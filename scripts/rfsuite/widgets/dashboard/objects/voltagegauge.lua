@@ -1,24 +1,51 @@
 local render = {}
 
--- Default parameters for fuel gauge (only declared once)
+-- Default parameters for voltage gauge (only declared once)
 local defaults = {
-    source = "fuel",
-    gaugemin = 0,
-    gaugemax = 100,
-    gaugeorientation = "vertical",
+    source = "voltage",
+    gaugemin = function()
+        local cfg = rfsuite.session.batteryConfig
+        local cells = (cfg and cfg.batteryCellCount) or 3
+        local minV = (cfg and cfg.vbatmincellvoltage) or 3.0
+        return math.max(0, cells * minV)
+    end,
+    gaugemax = function()
+        local cfg = rfsuite.session.batteryConfig
+        local cells = (cfg and cfg.batteryCellCount) or 3
+        local maxV = (cfg and cfg.vbatmaxcellvoltage) or 4.2
+        return math.max(0, cells * maxV)
+    end,
+    gaugebgcolor = "gray",
+    gaugeorientation = "horizontal",
     gaugepadding = 4,
     gaugebelowtitle = true,
-    title = "FUEL",
-    unit = "%",
-    color = "white",
+    title = "VOLTAGE",
+    unit = "V",
+    color = "black",
     valuealign = "center",
     titlealign = "center",
     titlepos = "bottom",
     titlecolor = "white",
     gaugecolor = "green",
     thresholds = {
-        { value = 20,  color = "red",    textcolor = "white" },
-        { value = 50,  color = "orange", textcolor = "black" }
+        {
+            value = function()
+                local cfg = rfsuite.session.batteryConfig
+                local cells = (cfg and cfg.batteryCellCount) or 3
+                local minV = (cfg and cfg.vbatmincellvoltage) or 3.0
+                return cells * minV * 1.2
+            end,
+            color = "red", textcolor = "white"
+        },
+        {
+            value = function()
+                local cfg = rfsuite.session.batteryConfig
+                local cells = (cfg and cfg.batteryCellCount) or 3
+                local warnV = (cfg and cfg.vbatwarningcellvoltage) or 3.5
+                return cells * warnV * 1.2
+            end,
+            color = "orange", textcolor = "black"
+        }
     }
 }
 
@@ -44,39 +71,39 @@ end
 
 function render.wakeup(box, telemetry)
     -- Merge defaults and user box (user overrides)
-    local fuelBox = {}
-    for k, v in pairs(defaults) do fuelBox[k] = v end
-    for k, v in pairs(box or {}) do fuelBox[k] = v end
+    local voltBox = {}
+    for k, v in pairs(defaults) do voltBox[k] = v end
+    for k, v in pairs(box or {}) do voltBox[k] = v end
 
     -- Evaluate gaugemin/gaugemax if functions
-    if type(fuelBox.gaugemin) == "function" then
-        fuelBox.gaugemin = fuelBox.gaugemin()
+    if type(voltBox.gaugemin) == "function" then
+        voltBox.gaugemin = voltBox.gaugemin()
     end
-    if type(fuelBox.gaugemax) == "function" then
-        fuelBox.gaugemax = fuelBox.gaugemax()
+    if type(voltBox.gaugemax) == "function" then
+        voltBox.gaugemax = voltBox.gaugemax()
     end
 
-    -- Evaluate threshold .value if function (not needed here, but for consistency)
-    if type(fuelBox.thresholds) == "table" then
-        for i, t in ipairs(fuelBox.thresholds) do
+    -- Evaluate thresholds' .value if function, so they're cached per-wakeup
+    if type(voltBox.thresholds) == "table" then
+        for i, t in ipairs(voltBox.thresholds) do
             if type(t.value) == "function" then
-                fuelBox.thresholds[i] = {}
-                for k,v in pairs(t) do fuelBox.thresholds[i][k] = v end
-                fuelBox.thresholds[i].value = t.value()
+                voltBox.thresholds[i] = {}
+                for k,v in pairs(t) do voltBox.thresholds[i][k] = v end
+                voltBox.thresholds[i].value = t.value()
             end
         end
     end
 
     -- Get value from telemetry
     local value = nil
-    local source = fuelBox.source
+    local source = voltBox.source
     if source then
         if type(source) == "function" then
             value = source(box, telemetry)
         else
             local sensor = telemetry and telemetry.getSensorSource(source)
             value = sensor and sensor:value()
-            local transform = fuelBox.transform
+            local transform = voltBox.transform
             if type(transform) == "string" and math[transform] then
                 value = value and math[transform](value)
             elseif type(transform) == "function" then
@@ -87,28 +114,28 @@ function render.wakeup(box, telemetry)
         end
     end
 
-    local displayUnit = fuelBox.unit
+    local displayUnit = voltBox.unit
     local displayValue = value
     if value == nil then
-        displayValue = fuelBox.novalue or "-"
+        displayValue = voltBox.novalue or "-"
         displayUnit = nil
     end
 
     -- Padding for gauge area
-    local gpad_left   = fuelBox.gaugepaddingleft   or fuelBox.gaugepadding or 0
-    local gpad_right  = fuelBox.gaugepaddingright  or fuelBox.gaugepadding or 0
-    local gpad_top    = fuelBox.gaugepaddingtop    or fuelBox.gaugepadding or 0
-    local gpad_bottom = fuelBox.gaugepaddingbottom or fuelBox.gaugepadding or 0
+    local gpad_left   = voltBox.gaugepaddingleft   or voltBox.gaugepadding or 0
+    local gpad_right  = voltBox.gaugepaddingright  or voltBox.gaugepadding or 0
+    local gpad_top    = voltBox.gaugepaddingtop    or voltBox.gaugepadding or 0
+    local gpad_bottom = voltBox.gaugepaddingbottom or voltBox.gaugepadding or 0
 
-    local roundradius = fuelBox.roundradius or 0
+    local roundradius = voltBox.roundradius or 0
 
     -- Colors
-    local bgColor = rfsuite.widgets.dashboard.utils.resolveColor(fuelBox.bgcolor) or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
-    local gaugeBgColor = rfsuite.widgets.dashboard.utils.resolveColor(fuelBox.gaugebgcolor) or bgColor
-    local gaugeColor = rfsuite.widgets.dashboard.utils.resolveColor(fuelBox.gaugecolor) or lcd.RGB(255, 204, 0)
-    local valueTextColor = rfsuite.widgets.dashboard.utils.resolveColor(fuelBox.color) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
+    local bgColor = rfsuite.widgets.dashboard.utils.resolveColor(voltBox.bgcolor) or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
+    local gaugeBgColor = rfsuite.widgets.dashboard.utils.resolveColor(voltBox.gaugebgcolor) or bgColor
+    local gaugeColor = rfsuite.widgets.dashboard.utils.resolveColor(voltBox.gaugecolor) or lcd.RGB(255, 204, 0)
+    local valueTextColor = rfsuite.widgets.dashboard.utils.resolveColor(voltBox.color) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
 
-    local thresholds = fuelBox.thresholds
+    local thresholds = voltBox.thresholds
     local matchingTextColor = nil
     if thresholds and value ~= nil then
         for _, t in ipairs(thresholds) do
@@ -123,9 +150,9 @@ function render.wakeup(box, telemetry)
         end
     end
 
-    local gaugeMin = fuelBox.gaugemin or 0
-    local gaugeMax = fuelBox.gaugemax or 100
-    local gaugeOrientation = fuelBox.gaugeorientation or "vertical"
+    local gaugeMin = voltBox.gaugemin or 0
+    local gaugeMax = voltBox.gaugemax or 100
+    local gaugeOrientation = voltBox.gaugeorientation or "vertical"
     local percent = 0
     if value ~= nil and gaugeMax ~= gaugeMin then
         percent = (value - gaugeMin) / (gaugeMax - gaugeMin)
@@ -134,27 +161,27 @@ function render.wakeup(box, telemetry)
     end
 
     -- Value text formatting and padding
-    local valuepadding = fuelBox.valuepadding or 0
-    local valuepaddingleft = fuelBox.valuepaddingleft or valuepadding
-    local valuepaddingright = fuelBox.valuepaddingright or valuepadding
-    local valuepaddingtop = fuelBox.valuepaddingtop or valuepadding
-    local valuepaddingbottom = fuelBox.valuepaddingbottom or valuepadding
+    local valuepadding = voltBox.valuepadding or 0
+    local valuepaddingleft = voltBox.valuepaddingleft or valuepadding
+    local valuepaddingright = voltBox.valuepaddingright or valuepadding
+    local valuepaddingtop = voltBox.valuepaddingtop or valuepadding
+    local valuepaddingbottom = voltBox.valuepaddingbottom or valuepadding
 
     -- Title parameters
-    local title = fuelBox.title
-    local titlepadding = fuelBox.titlepadding or 0
-    local titlepaddingleft = fuelBox.titlepaddingleft or titlepadding
-    local titlepaddingright = fuelBox.titlepaddingright or titlepadding
-    local titlepaddingtop = fuelBox.titlepaddingtop or titlepadding
-    local titlepaddingbottom = fuelBox.titlepaddingbottom or titlepadding
-    local titlealign = fuelBox.titlealign or "center"
-    local titlepos = fuelBox.titlepos or "top"
-    local titlecolor = rfsuite.widgets.dashboard.utils.resolveColor(fuelBox.titlecolor) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
+    local title = voltBox.title
+    local titlepadding = voltBox.titlepadding or 0
+    local titlepaddingleft = voltBox.titlepaddingleft or titlepadding
+    local titlepaddingright = voltBox.titlepaddingright or titlepadding
+    local titlepaddingtop = voltBox.titlepaddingtop or titlepadding
+    local titlepaddingbottom = voltBox.titlepaddingbottom or titlepadding
+    local titlealign = voltBox.titlealign or "center"
+    local titlepos = voltBox.titlepos or "top"
+    local titlecolor = rfsuite.widgets.dashboard.utils.resolveColor(voltBox.titlecolor) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
 
-    local valuealign = fuelBox.valuealign or "center"
+    local valuealign = voltBox.valuealign or "center"
 
     -- Gauge below title?
-    local gaugebelowtitle = fuelBox.gaugebelowtitle
+    local gaugebelowtitle = voltBox.gaugebelowtitle
 
     -- Title area height
     local title_area_top = 0
