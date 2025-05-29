@@ -42,24 +42,22 @@ function render.wakeup(box, telemetry)
     if type(valueFontSize) == "string" then
         valueFontSize = _G[valueFontSize]
     end
+    local fontList = rfsuite.widgets.dashboard.utils.getFontListsForResolution().value_default
     local gaugepadding = tonumber(rfsuite.widgets.dashboard.utils.getParam(box, "gaugepadding")) or 2
-
     local gaugeSegments = tonumber(rfsuite.widgets.dashboard.utils.getParam(box, "gaugesegments")) or 6
-
     local gaugeFrameColor = rfsuite.widgets.dashboard.utils.resolveColor(
         rfsuite.widgets.dashboard.utils.getParam(box, "gaugeframecolor")) or lcd.RGB(255, 255, 255)
-
     local gaugeColor = rfsuite.widgets.dashboard.utils.resolveColor(
         rfsuite.widgets.dashboard.utils.getParam(box, "gaugecolor")) or lcd.RGB(0, 255, 0)
 
     local thresholds = rfsuite.widgets.dashboard.utils.getParam(box, "thresholds")
     if type(thresholds) == "table" and value then
         for _, threshold in ipairs(thresholds) do
-        local thresholdValue = threshold.value
-        if type(thresholdValue) == "function" then
-            thresholdValue = thresholdValue()
-        end
-        if value <= thresholdValue then
+            local thresholdValue = threshold.value
+            if type(thresholdValue) == "function" then
+                thresholdValue = thresholdValue()
+            end
+            if value <= thresholdValue then
                 if threshold.color then
                     gaugeColor = rfsuite.widgets.dashboard.utils.resolveColor(threshold.color)
                 end
@@ -83,6 +81,7 @@ function render.wakeup(box, telemetry)
         unit = unit,
         valueColor = valueColor,
         valueFontSize = valueFontSize,
+        fontList = fontList,
         gaugepadding = gaugepadding,
         gaugeSegments = gaugeSegments,
         gaugeframecolor = gaugeFrameColor,
@@ -102,17 +101,13 @@ local function drawBattery(x, y, w, h, percent, orientation, padding, segments, 
         bodyW, bodyH = w, h - capH
     end
 
-    -- Outer and inner rectangle to simulate border thickness
     lcd.color(c.gaugeframecolor or lcd.RGB(255, 255, 255))
     lcd.drawFilledRectangle(x, y, bodyW, bodyH)
-        -- Use cached background color
     lcd.color(c.gaugebgcolor)
     lcd.drawFilledRectangle(x + padding, y + padding, bodyW - 2 * padding, bodyH - 2 * padding)
 
-    -- Draw fill boxes
-        -- Use cached fill color
     lcd.color(c.gaugecolor)
-        local filled = math.floor(percent * segments + 0.5)
+    local filled = math.floor(percent * segments + 0.5)
     local spacing = 2
 
     if orientation == "horizontal" then
@@ -131,7 +126,6 @@ local function drawBattery(x, y, w, h, percent, orientation, padding, segments, 
         end
     end
 
-    -- Cap
     lcd.color(c.gaugeframecolor or lcd.RGB(200, 200, 200))
     if orientation == "horizontal" then
         lcd.drawFilledRectangle(x + bodyW, y + (h - capH) / 2, capW, capH)
@@ -151,7 +145,6 @@ function render.paint(x, y, w, h, box)
         titleH = th + c.titlepadding
     end
 
-    -- Adjust drawable area for title space
     local drawX, drawY, drawW, drawH = x, y, w, h
     if c.title and c.titlepos == "top" then
         drawY = y + titleH
@@ -163,7 +156,6 @@ function render.paint(x, y, w, h, box)
     local segments = c.gaugeSegments or 6
     drawBattery(drawX, drawY, drawW, drawH, c.percent or 0, c.orientation, c.gaugepadding, segments, c)
 
-    -- Draw value overlay
     if c.showValue and c.value ~= nil then
         local str = tostring(c.value)
         if c.valueFormat and type(c.value) == "number" then
@@ -177,21 +169,42 @@ function render.paint(x, y, w, h, box)
         lcd.color(color)
 
         local function drawTextFit()
+            local strForWidth = (c.unit == "°" or (c.unit and tostring(c.unit):find("°"))) and (tostring(c.value) .. "0") or str
+            local innerX = drawX + c.gaugepadding
+            local innerY = drawY + c.gaugepadding
+            local innerW = drawW - 2 * c.gaugepadding
+            local innerH = drawH - 2 * c.gaugepadding
+            if c.orientation == "vertical" then
+                innerH = innerH - 4
+            end
+
+            local bestFont, bestW, bestH = FONT_XXS, 0, 0
             for _, font in ipairs(fontList) do
                 lcd.font(font)
-                local tw, th = lcd.getTextSize(str)
-                if tw <= drawW and th <= drawH then
-                    lcd.drawText(drawX + (drawW - tw) / 2, drawY + (drawH - th) / 2, str)
-                    return
+                local tw, th = lcd.getTextSize(strForWidth)
+                if tw <= innerW and th <= innerH then
+                    bestFont, bestW, bestH = font, tw, th
+                else
+                    break
                 end
             end
+            lcd.font(bestFont)
+            lcd.drawText(innerX + (innerW - bestW) / 2, innerY + (innerH - bestH) / 2, str)
         end
+
 
         if c.valueFontSize and type(c.valueFontSize) == "number" then
             lcd.font(c.valueFontSize)
             local tw, th = lcd.getTextSize(str)
-            if tw <= drawW and th <= drawH then
-                lcd.drawText(drawX + (drawW - tw) / 2, drawY + (drawH - th) / 2, str)
+            local innerX = drawX + c.gaugepadding
+            local innerY = drawY + c.gaugepadding
+            local innerW = drawW - 2 * c.gaugepadding
+            local innerH = drawH - 2 * c.gaugepadding
+            if c.orientation == "vertical" then
+                innerH = innerH - 4
+            end
+            if tw <= innerW and th <= innerH then
+                lcd.drawText(innerX + (innerW - tw) / 2, innerY + (innerH - th) / 2, str)
             else
                 drawTextFit()
             end
@@ -200,7 +213,6 @@ function render.paint(x, y, w, h, box)
         end
     end
 
-    -- Title (outside of draw area)
     if c.title then
         lcd.font(FONT_XS)
         local tw, th = lcd.getTextSize(c.title)
