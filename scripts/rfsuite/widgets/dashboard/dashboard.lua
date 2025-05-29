@@ -50,6 +50,7 @@ local wakeupScheduler = 0
 local objectWakeupIndex = 1             -- current object index for wakeup
 local objectWakeupsPerCycle = nil       -- number of objects to wake per cycle (calculated later)
 local objectSchedulerPercentage = 0.2   -- fraction of total objects to wake each cycle (20%)
+local objectsThreadedWakeupCount = 0
 
 -- Flag to perform initialization logic only once on first wakeup
 local firstWakeup = true
@@ -221,77 +222,93 @@ local function getBoxPosition(box, w, h, boxWidth, boxHeight, PADDING, WIDGET_W,
     end
 end
 
---- Renders the dashboard layout by arranging and drawing widget boxes based on the provided configuration.
--- Handles box positioning, sizing, selection highlighting, and overlays.
--- @param widget The widget instance to render.
--- @param config Table containing layout and box configuration.
+-- at module scope, to track when we need to reload widget modules:
+local lastLoadedBoxCount = 0
+
 function dashboard.renderLayout(widget, config)
+    local utils     = dashboard.utils
+    local telemetry = rfsuite.tasks.telemetry
 
-
-    dashboard.boxRects = {} -- clear previous box rectangles
-
+    -- tiny resolver for function-or-value patterns
     local function resolve(val, ...)
-        if type(val) == "function" then
-            return val(...)
-        else
-            return val
-        end
+      if type(val) == "function" then return val(...) else return val end
     end
 
-    local telemetry = rfsuite.tasks.telemetry
-    local utils = dashboard.utils
-    local state = dashboard.flightmode or "preflight"
-    local module = loadedStateModules[state]
+    -- grab layout & boxes
+    local layout   = resolve(config.layout) or {}
+    local rawBoxes = config.boxes or layout.boxes or {}
+    local boxes    = (type(rawBoxes) == "function") and rawBoxes() or rawBoxes
 
-    local selectColor = (resolve(config.layout) and resolve(config.layout).selectcolor) or
-        dashboard.utils.resolveColor("yellow") or lcd.RGB(255, 255, 0)
-    local selectBorder = (resolve(config.layout) and resolve(config.layout).selectborder) or 2
+    -- only reload widget modules if your boxes definition changed
+    if #boxes ~= lastLoadedBoxCount then
+        dashboard.loadAllObjects(boxes)
+        lastLoadedBoxCount = #boxes
+    end
 
-    local WIDGET_W, WIDGET_H = lcd.getWindowSize()
-    local COLS, ROWS = resolve(config.layout).cols, resolve(config.layout).rows
-    local PADDING = resolve(config.layout).padding
+    -- overall size
+    local W, H = lcd.getWindowSize()
 
-    local contentWidth = WIDGET_W - ((COLS - 1) * PADDING)
-    local contentHeight = WIDGET_H - ((ROWS + 1) * PADDING)
+    ----------------------------------------------------------------
+    -- PHASE 1: ALWAYS MEASURE & BUILD dashboard.boxRects
+    ----------------------------------------------------------------
+    dashboard.boxRects = {}
+    local cols    = layout.cols    or 1
+    local rows    = layout.rows    or 1
+    local pad     = layout.padding or 0
 
-    local boxWidth = contentWidth / COLS
-    local boxHeight = contentHeight / ROWS
+    local contentW = W - ((cols - 1) * pad)
+    local contentH = H - ((rows + 1) * pad)
+    local boxW     = contentW / cols
+    local boxH     = contentH / rows
 
+    for i, box in ipairs(boxes) do
+        local w, h = getBoxSize(box, boxW, boxH, pad, W, H)
+        local x, y = getBoxPosition(box, w, h, boxW, boxH, pad, W, H)
+        dashboard.boxRects[#dashboard.boxRects+1] = { x=x, y=y, w=w, h=h, box=box }
+    end
+
+    -- recompute how many objects to wake per cycle if the count changed
+    if not objectWakeupsPerCycle or lastBoxRectsCount ~= #dashboard.boxRects then
+        objectWakeupsPerCycle = math.max(1, math.ceil(#dashboard.boxRects * objectSchedulerPercentage))
+        lastBoxRectsCount     = #dashboard.boxRects
+    end
+
+    ----------------------------------------------------------------
+    -- PHASE 2: HOURGLASS until first threaded‐wakeup pass completes
+    ----------------------------------------------------------------
+    if objectsThreadedWakeupCount < 1 then
+        utils.hourglass(0, 0, W, H)
+        lcd.invalidate()
+        return
+    end
+
+    ----------------------------------------------------------------
+    -- PHASE 3: REAL PAINT (only fill background once here)
+    ----------------------------------------------------------------
     utils.setBackgroundColourBasedOnTheme()
 
+    local selColor  = layout.selectcolor  or utils.resolveColor("yellow") or lcd.RGB(255,255,0)
+    local selBorder = layout.selectborder or 2
 
-    for i, box in ipairs(resolve(config.boxes) or {}) do
-        local w, h = getBoxSize(box, boxWidth, boxHeight, PADDING, WIDGET_W, WIDGET_H)
-        local x, y = getBoxPosition(box, w, h, boxWidth, boxHeight, PADDING, WIDGET_W, WIDGET_H)
-
-        dashboard.boxRects[#dashboard.boxRects + 1] = { x = x, y = y, w = w, h = h, box = box }
+    for i, rect in ipairs(dashboard.boxRects) do
+        local x, y, w, h, box = rect.x, rect.y, rect.w, rect.h, rect.box
         local obj = dashboard.objectsByType[box.type]
         if obj and obj.paint then
-            -- Overlay hourglass if data is not yet ready
-            if not box._cache or box._cache.value == nil then
-                dashboard.utils.hourglass(x, y, w, h)
-            else
-                obj.paint(x, y, w, h, box, telemetry)
-            end    
+            -- paint the widget’s content
+            obj.paint(x, y, w, h, box, telemetry)
         end
-
+        -- highlight if selected
         if dashboard.selectedBoxIndex == i and box.onpress then
-            lcd.color(selectColor)
-            lcd.drawRectangle(x, y, w, h, selectBorder)
+            lcd.color(selColor)
+            lcd.drawRectangle(x, y, w, h, selBorder)
         end
     end
 
-    -- Calculate objects per cycle for spread scheduling
-    if #dashboard.boxRects ~= lastBoxRectsCount or not objectWakeupsPerCycle then
-        objectWakeupsPerCycle = math.ceil(#dashboard.boxRects * objectSchedulerPercentage)
-        lastBoxRectsCount = #dashboard.boxRects
-        objectWakeupIndex = 1
-    end
-
-    if dashboard.overlayMessage then
-        dashboard.utils.screenErrorOverlay(dashboard.overlayMessage)
-    end
+    -- no second background fill here!
 end
+
+
+
 
 --- Loads a state-specific script for the dashboard widget, handling theme selection and fallbacks.
 -- 
@@ -753,6 +770,10 @@ function dashboard.wakeup(widget)
                 end
             end
             objectWakeupIndex = (objectWakeupIndex % #dashboard.boxRects) + 1
+        end
+        -- Increment objectsThreadedWakeupCount when all objects have been processed
+        if objectWakeupIndex == 1 then
+            objectsThreadedWakeupCount = objectsThreadedWakeupCount + 1
         end
     end
 
