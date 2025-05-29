@@ -275,7 +275,10 @@ function render.paint(x, y, w, h, box)
         local region_w = w - valuepaddingleft - valuepaddingright
         local region_h = h - valuepaddingtop - valuepaddingbottom
 
-        local sy = region_y + (region_h - bestH) / 2
+        -- Adjusted vertical alignment
+        local verticalOffset = math.floor(bestH * 0.07 + 0.5)
+        local sy = region_y + math.floor((region_h - bestH) / 2 + 0.5) - verticalOffset
+
         local align = valuealign:lower()
         local sx
         if align == "left" then
