@@ -1152,7 +1152,8 @@ return {
     },
     ["dashboard"] = {
       ["theme_load_error"] = "Your theme did not load correctly. Falling back to default theme.",
-      ["validate_sensors"] = "MISSING REQUIRED SENSORS"
+      ["validate_sensors"] = "MISSING REQUIRED SENSORS",
+      ["loading"] = "LOADING"
     },
     ["governor"] = {
       ["UNKNOWN"] = "UNBEKANNT",

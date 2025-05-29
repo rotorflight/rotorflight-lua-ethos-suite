@@ -132,20 +132,12 @@ function dashboard.hourglass(x, y, w, h)
   local thickness = math.max(6, radius * 0.15)
   local sweepDeg  = 90  -- how large the arc is
 
-  -- darken bg (optional)
-  --if dashboard.utils and dashboard.utils.setBackgroundColourBasedOnTheme then
-  --  dashboard.utils.setBackgroundColourBasedOnTheme()
-  --end
-
   -- draw the rotating arc
   drawArc(cx, cy, radius, thickness, st.angle, st.angle - sweepDeg, color)
   st.angle = (st.angle + 20) % 360  -- advance
 
   -- build our counter text
-  local total = dashboard.boxRects and #dashboard.boxRects or 0
-  local done  = math.min(objectsThreadedWakeupCount or 0, total)
-  local pct   = total>0 and math.floor(done/total * 100) or 0
-  local txt   = string.format("%d%%", pct)
+  txt = rfsuite.i18n.get("widgets.dashboard.loading") 
 
   -- get resolution-aware font list (see utils.box dynamic sizing) :contentReference[oaicite:0]{index=0}
   local fontLists = dashboard.utils.getFontListsForResolution()
