@@ -941,7 +941,14 @@ function dashboard.wakeup(widget)
     -- loadedThemeIntervals.paint_interval       = initTable.paint_interval or 0.5
 
     if visible then
-        local interval = loadedThemeIntervals.wakeup_interval or 0.25
+    local base_interval = loadedThemeIntervals.wakeup_interval or 0.25
+    local interval = base_interval
+
+        -- if the base interval is < 0.5s and there are >10 boxes
+        if base_interval < 0.5 and #dashboard.boxRects > 10 then
+            interval = base_interval * 2
+        end   
+
         if (now - lastWakeup) < interval then
             return
         end
