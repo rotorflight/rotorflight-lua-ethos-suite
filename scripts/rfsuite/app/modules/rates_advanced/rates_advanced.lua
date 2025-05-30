@@ -27,7 +27,7 @@ else
 end
 
    
-local mspapi = {
+local apidata = {
     api = {
         [1] = 'RC_TUNING',
     },
@@ -128,10 +128,10 @@ local function openPage(idx, title, script)
 
 
     rfsuite.utils.log("Merging form data from mspapi","debug")
-    rfsuite.app.Page.fields = rfsuite.app.Page.mspapi.formdata.fields
-    rfsuite.app.Page.labels = rfsuite.app.Page.mspapi.formdata.labels
-    rfsuite.app.Page.rows = rfsuite.app.Page.mspapi.formdata.rows
-    rfsuite.app.Page.cols = rfsuite.app.Page.mspapi.formdata.cols
+    rfsuite.app.Page.fields = rfsuite.app.Page.apidata.formdata.fields
+    rfsuite.app.Page.labels = rfsuite.app.Page.apidata.formdata.labels
+    rfsuite.app.Page.rows = rfsuite.app.Page.apidata.formdata.rows
+    rfsuite.app.Page.cols = rfsuite.app.Page.apidata.formdata.cols
 
     rfsuite.session.colWidth = w - paddingRight
 
@@ -205,7 +205,7 @@ end
 
 local function postLoad(self)
 
-    local v = mspapi.values[mspapi.api[1]].rates_type
+    local v = apidata.values[apidata.api[1]].rates_type
     
     rfsuite.utils.log("Active Rate Table: " .. rfsuite.session.activeRateTable,"info")
 
@@ -245,7 +245,7 @@ end
 
 
 return {
-    mspapi = mspapi,
+    apidata = apidata,
     title = rfsuite.i18n.get("app.modules.rates_advanced.name"),
     reboot = false,
     openPage = openPage,

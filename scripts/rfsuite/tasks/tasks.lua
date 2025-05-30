@@ -92,10 +92,15 @@ function tasks.findTasks()
                     }
 
                     local script = tasks_path .. v .. '/' .. tconfig.script
-                    local fs = io.open(script, "r")
-                    if fs then
-                        io.close(fs)
-                        tasks[v] = assert(rfsuite.compiler.loadfile(script))(config)
+                    -- try loading directly, no extra open()
+                    local fn, loadErr = rfsuite.compiler.loadfile(script)
+                    if fn then
+                        tasks[v] = fn(config)
+                    else
+                        rfsuite.utils.log(
+                            "Failed to load task script " .. script .. ": " .. loadErr,
+                            "warn"
+                        )
                     end
                 end
             end
@@ -132,7 +137,7 @@ function tasks.wakeup()
         local taskMetadata
 
         if io.open(cachePath, "r") then
-            local ok, cached = pcall(dofile, cachePath)
+            local ok, cached = pcall(rfsuite.compiler.dofile, cachePath)
             if ok and type(cached) == "table" then
                 taskMetadata = cached
                 rfsuite.utils.log("[cache] Loaded task metadata from cache","info")

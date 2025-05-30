@@ -5,13 +5,33 @@
     "needs_translation": "false"
   },
   "validate_sensors": {
-    "english": "MISSING REQUIRED SENSORS",
-    "translation": "MISSING REQUIRED SENSORS",
+    "english": "PLEASE CHECK SENSORS",
+    "translation": "PLEASE CHECK SENSORS",
     "needs_translation": "false"
   },
   "loading": {
     "english": "ROTORFLIGHT",
     "translation": "ROTORFLIGHT",
+    "needs_translation": "false"
+  },
+  "waiting_for_connection": {
+    "english": "CONNECTING",
+    "translation": "CONNECTING",
+    "needs_translation": "false"
+  },
+  "check_bg_task": {
+    "english": "BG TASK",
+    "translation": "BG TASK",
+    "needs_translation": "false"
+  },
+  "check_rf_module_on": {
+    "english": "RF MODULE",
+    "translation": "RF MODULE",
+    "needs_translation": "false"
+  },
+  "check_discovered_sensors": {
+    "english": "SENSORS",
+    "translation": "SENSORS",
     "needs_translation": "false"
   }
 }

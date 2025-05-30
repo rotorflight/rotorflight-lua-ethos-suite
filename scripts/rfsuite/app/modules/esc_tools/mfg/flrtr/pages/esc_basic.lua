@@ -6,7 +6,7 @@ local mspSignature = ESC.mspSignature
 local simulatorResponse = ESC.simulatorResponse
 
 
-local mspapi = {
+local apidata = {
     api = {
         [1] = "ESC_PARAMETERS_FLYROTOR",
     },
@@ -49,7 +49,7 @@ local foundEsc = false
 local foundEscDone = false
 
 return {
-    mspapi=mspapi,
+    apidata = apidata,
     eepromWrite = false,
     reboot = false,
     escinfo = escinfo,

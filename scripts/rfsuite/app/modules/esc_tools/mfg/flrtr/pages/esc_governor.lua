@@ -7,7 +7,7 @@ local simulatorResponse = ESC.simulatorResponse
 local foundEsc = false
 local foundEscDone = false
 
-local mspapi = {
+local apidata = {
     api = {
         [1] = "ESC_PARAMETERS_FLYROTOR",
     },
@@ -47,7 +47,7 @@ local function event(widget, category, value, x, y)
 end
 
 return {
-    mspapi=mspapi,
+    apidata = apidata,
     eepromWrite = true,
     reboot = false,
     escinfo = escinfo,

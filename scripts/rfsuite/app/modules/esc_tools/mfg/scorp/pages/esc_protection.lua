@@ -1,7 +1,7 @@
 
 local folder = "scorp"
 
-local mspapi = {
+local apidata = {
     api = {
         [1] = "ESC_PARAMETERS_SCORPION",
     },
@@ -47,7 +47,7 @@ local function event(widget, category, value, x, y)
 end
 
 return {
-    mspapi=mspapi,
+    apidata = apidata,
     eepromWrite = false,
     reboot = false,
     title = "Limits",

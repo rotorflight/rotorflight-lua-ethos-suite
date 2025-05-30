@@ -1,7 +1,7 @@
 
 local folder = "hw5"
 
-local mspapi = {
+local apidata = {
     api = {
         [1] = "ESC_PARAMETERS_HW5",
     },
@@ -44,7 +44,7 @@ local function event(widget, category, value, x, y)
 
 end
 return {
-    mspapi=mspapi, 
+    apidata = apidata, 
     eepromWrite = true,
     reboot = false,
     escinfo = escinfo,
