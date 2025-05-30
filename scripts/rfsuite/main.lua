@@ -227,7 +227,10 @@ rfsuite.session.timer.live = nil -- this is used to store the live timer value w
 rfsuite.session.timer.lifetime = nil -- this is used to store the total flight time of a model and store it in the user ini file
 rfsuite.session.timer.session = 0 -- this is used to track flight time for the session
 rfsuite.session.flightCounted = false
-
+rfsuite.session.onConnect = {} -- this is used to store the onConnect tasks that need to be run
+rfsuite.session.onConnect.high = false
+rfsuite.session.onConnect.low = false
+rfsuite.session.onConnect.medium = false
 
 --- Retrieves the version information of the rfsuite module.
 --- 

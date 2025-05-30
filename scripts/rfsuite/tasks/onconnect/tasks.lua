@@ -9,66 +9,71 @@
 local tasks = {}
 local tasksList = {}
 local tasksLoaded = false
-local completionNotified = false
 
 local TASK_TIMEOUT_SECONDS = 10
 
-function tasks.findTasks()
-    if tasksLoaded then
-        return
+-- Base path and priority levels
+local BASE_PATH = "tasks/onconnect/tasks/"
+local PRIORITY_LEVELS = {"high", "medium", "low"}
+
+-- Initialize or reset session flags
+local function resetSessionFlags()
+    rfsuite.session.onConnect = rfsuite.session.onConnect or {}
+    for _, level in ipairs(PRIORITY_LEVELS) do
+        rfsuite.session.onConnect[level] = false
     end
+    -- Ensure isConnected resets until high priority completes
+    rfsuite.session.isConnected = false
+end
 
-    local basePath = "tasks/onconnect/tasks/"
-    local taskMetadata = {}
+-- Discover task files in fixed priority order
+function tasks.findTasks()
+    if tasksLoaded then return end
 
-    for _, file in pairs(system.listFiles(basePath)) do
-        if file ~= ".." and file:match("%.lua$") then
-            local fullPath = basePath .. file
-            local taskName = file:gsub("%.lua$", "")
+    resetSessionFlags()
 
-            local chunk, err = rfsuite.compiler.loadfile(fullPath)
-            if not chunk then
-                rfsuite.utils.log("Error loading task file " .. file .. ": " .. err, "error")
-            else
-                local taskModule = assert(chunk())
-
-                if type(taskModule) == "table" and type(taskModule.wakeup) == "function" then
-                    tasksList[taskName] = {
-                        module = taskModule,
-                        initialized = false,
-                        complete = false,
-                        resetPending = false,
-                        startTime = nil
-                    }
-                    taskMetadata[taskName] = file
+    for _, level in ipairs(PRIORITY_LEVELS) do
+        local dirPath = BASE_PATH .. level .. "/"
+        local files = system.listFiles(dirPath) or {}
+        for _, file in ipairs(files) do
+            if file:match("%.lua$") then
+                local fullPath = dirPath .. file
+                local name = level .. "/" .. file:gsub("%.lua$", "")
+                local chunk, err = rfsuite.compiler.loadfile(fullPath)
+                if not chunk then
+                    rfsuite.utils.log("Error loading task " .. fullPath .. ": " .. err, "error")
                 else
-                    rfsuite.utils.log("Invalid task file: " .. file .. " (must return table with wakeup()).", "info")
+                    local module = assert(chunk())
+                    if type(module) == "table" and type(module.wakeup) == "function" then
+                        tasksList[name] = {
+                            module = module,
+                            priority = level,
+                            initialized = false,
+                            complete = false,
+                            startTime = nil
+                        }
+                    else
+                        rfsuite.utils.log("Invalid task file: " .. fullPath, "info")
+                    end
                 end
             end
         end
     end
 
     tasksLoaded = true
-    return taskMetadata
 end
 
 function tasks.resetAllTasks()
-    for name, task in pairs(tasksList) do
-        if type(task.module.reset) == "function" then
-            task.module.reset()
-        end
+    for _, task in pairs(tasksList) do
+        if type(task.module.reset) == "function" then task.module.reset() end
         task.initialized = false
         task.complete = false
-        task.resetPending = false
         task.startTime = nil
     end
 
-    -- reset all main tasks
+    resetSessionFlags()
     rfsuite.tasks.reset()
     rfsuite.session.resetMSPSensors = true
-    rfsuite.session.isConnected = false
-
-    completionNotified = false
 end
 
 function tasks.wakeup()
@@ -76,15 +81,10 @@ function tasks.wakeup()
 
     if rfsuite.session.telemetryTypeChanged then
         rfsuite.utils.logRotorFlightBanner()
-        rfsuite.utils.log("Telemetry type changed, resetting all tasks and reconnecting.", "info")
+        rfsuite.utils.log("Telemetry type changed, resetting tasks.", "info")
         rfsuite.session.telemetryTypeChanged = false
         tasks.resetAllTasks()
         tasksLoaded = false
-
-        -- mute sensor lost
-        local module = model.getModule(rfsuite.session.telemetrySensor:module())
-        if module and module.muteSensorLost then module:muteSensorLost(2.0) end
-        
         return
     end
 
@@ -95,99 +95,54 @@ function tasks.wakeup()
     end
 
     if not tasksLoaded then
-        local cacheFile = "onconnect.lua"
-        local cachePath = "cache/" .. cacheFile
-        local taskMetadata
-
-        -- try loading cache in one step (no extra io.open)
-        local loadf, loadErr = rfsuite.compiler.loadfile(cachePath)
-        if loadf then
-            local ok, cached = pcall(loadf)
-            if ok and type(cached) == "table" then
-                taskMetadata = cached
-                rfsuite.utils.log("[cache] Loaded onconnect task metadata from cache","info")
-            else
-                rfsuite.utils.log(
-                  "[cache] Bad onconnect cache: " .. tostring(cached or loadErr),
-                  "info"
-                )
-            end
-        end
-
-        if not taskMetadata then
-            taskMetadata = tasks.findTasks()
-            rfsuite.utils.createCacheFile(taskMetadata, cacheFile)
-            rfsuite.utils.log("[cache] Created onconnect cache file","info")
-        else
-            local basePath = "tasks/onconnect/tasks/"
-            for taskName, file in pairs(taskMetadata) do
-                local fullPath = basePath .. file
-                local chunk = assert(rfsuite.compiler.loadfile(fullPath))
-                local taskModule = assert(chunk())
-                tasksList[taskName] = {
-                    module = taskModule,
-                    initialized = false,
-                    complete = false,
-                    resetPending = false,
-                    startTime = nil
-                }
-            end
-            tasksLoaded = true
-        end
-
-        completionNotified = false
+        tasks.findTasks()
     end
 
     local now = os.clock()
 
+    -- Run each task
     for name, task in pairs(tasksList) do
-        if task.resetPending then
-            if type(task.module.reset) == "function" then
-                task.module.reset()
-            end
-            task.resetPending = false
-            task.initialized = false
-            task.complete = false
-            task.startTime = nil
-        end
-
         if not task.initialized then
             task.initialized = true
             task.startTime = now
         end
-
         if not task.complete then
-            rfsuite.utils.log("Waking up task: " .. name, "debug")
+            rfsuite.utils.log("Waking up " .. name, "debug")
             task.module.wakeup()
-
             if task.module.isComplete and task.module.isComplete() then
-                rfsuite.utils.log("Task '" .. name .. "' is complete.", "debug")
                 task.complete = true
                 task.startTime = nil
-            else
-                if not task.module.isComplete then
-                    rfsuite.utils.log("Task '" .. name .. "' does not implement isComplete(). This may block task completion detection.", "info")
-                elseif task.startTime and (now - task.startTime) > TASK_TIMEOUT_SECONDS then
-                    rfsuite.utils.log("Task '" .. name .. "' has not completed within " .. TASK_TIMEOUT_SECONDS .. " seconds.", "info")
-                    task.startTime = nil
-                end
+                rfsuite.utils.log("Completed " .. name, "debug")
+            elseif task.startTime and (now - task.startTime) > TASK_TIMEOUT_SECONDS then
+                rfsuite.utils.log("Task '" .. name .. "' timed out.", "info")
+                task.startTime = nil
             end
         end
     end
 
-    local allComplete = true
-    for name, task in pairs(tasksList) do
-        if not task.complete then
-            allComplete = false
-        end
-    end
+    -- Update session flags as soon as each priority level completes
+    for _, level in ipairs(PRIORITY_LEVELS) do
+        if not rfsuite.session.onConnect[level] then
+            local levelDone = true
+            for _, task in pairs(tasksList) do
+                if task.priority == level and not task.complete then
+                    levelDone = false
+                    break
+                end
+            end
+            if levelDone then
+                rfsuite.session.onConnect[level] = true
+                rfsuite.utils.log("All '" .. level .. "' tasks complete.", "info")
 
-    if allComplete and not completionNotified then
-        rfsuite.utils.log("All tasks complete.", "info")
-        completionNotified = true
-        rfsuite.utils.playFileCommon("beep.wav")
-        rfsuite.session.isConnected = true
-        collectgarbage()
+                -- Signal the session connected immediately when high priority finishes
+                if level == "high" then
+                    rfsuite.utils.playFileCommon("beep.wav")
+                    rfsuite.session.isConnected = true
+                    collectgarbage()
+                    return
+                end
+            end
+        end
     end
 end
 
