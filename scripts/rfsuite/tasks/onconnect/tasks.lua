@@ -94,6 +94,10 @@ function tasks.wakeup()
         return
     end
 
+    if rfsuite.session.onConnect.low then
+        return
+    end
+
     if not tasksLoaded then
         tasks.findTasks()
     end

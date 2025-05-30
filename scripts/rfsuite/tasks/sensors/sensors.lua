@@ -77,7 +77,11 @@ local function loadSensorModule()
 end
 
 function sensors.wakeup()
-    
+
+    if rfsuite.session.onConnect.low then
+        return
+    end
+
     if rfsuite.session.resetSensors and not delayPending then
         delayStartTime = os.clock()
         delayPending = true
