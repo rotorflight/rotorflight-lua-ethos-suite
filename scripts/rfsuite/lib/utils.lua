@@ -394,27 +394,22 @@ function utils.findModules()
         if v ~= ".." then
             local init_path = modules_path .. v .. '/init.lua'
 
-            local f = io.open(init_path, "r")
-            if f then
-                io.close(f)
-                local func, err = rfsuite.compiler.loadfile(init_path)
-                if err then
-                    rfsuite.utils.log("Error loading " .. init_path, "info")
-                    rfsuite.utils.log(err, "info")
-                end
-                if func then
-                    local mconfig = func()
-                    if type(mconfig) ~= "table" or not mconfig.script then
-                        rfsuite.utils.log("Invalid configuration in " .. init_path,"info")
-                    else
-                        rfsuite.utils.log("Loading module " .. v, "debug")
-                        mconfig['folder'] = v
-                        table.insert(modulesList, mconfig)
-                    end
+            local func, err = rfsuite.compiler.loadfile(init_path)
+            if not func then
+                rfsuite.utils.log("Failed to load module init " .. init_path .. ": " .. err, "info")
+            else
+                local ok, mconfig = pcall(func)
+                if not ok then
+                    rfsuite.utils.log("Error executing " .. init_path .. ": " .. mconfig, "info")
+                elseif type(mconfig) ~= "table" or not mconfig.script then
+                    rfsuite.utils.log("Invalid configuration in " .. init_path, "info")
                 else
-                    rfsuite.utils.log("Error loading " .. init_path, "info")    
-                end 
+                    rfsuite.utils.log("Loading module " .. v, "debug")
+                    mconfig.folder = v
+                    table.insert(modulesList, mconfig)
+                end
             end
+            
         end    
     end
 
@@ -441,22 +436,30 @@ function utils.findWidgets()
 
         if v ~= ".." then
             local init_path = widgets_path .. v .. '/init.lua'
-            local f = io.open(init_path, "r")
-            if f then
-                io.close(f)
-
-                local func, err = rfsuite.compiler.loadfile(init_path)
-
-                if func then
-                    local wconfig = func()
-                    if type(wconfig) ~= "table" or not wconfig.key then
-                        rfsuite.utils.log("Invalid configuration in " .. init_path,"debug")
-                    else
-                        wconfig['folder'] = v
-                        table.insert(widgetsList, wconfig)
-                    end
+            -- try loading directly
+            local func, err = rfsuite.compiler.loadfile(init_path)
+            if not func then
+                rfsuite.utils.log(
+                  "Failed to load widget init " .. init_path .. ": " .. err,
+                  "debug"
+                )
+            else
+                local ok, wconfig = pcall(func)
+                if not ok then
+                    rfsuite.utils.log(
+                      "Error executing widget init " .. init_path .. ": " .. wconfig,
+                      "debug"
+                    )
+                elseif type(wconfig) ~= "table" or not wconfig.key then
+                    rfsuite.utils.log(
+                      "Invalid configuration in " .. init_path,
+                      "debug"
+                    )
+                else
+                    wconfig.folder = v
+                    table.insert(widgetsList, wconfig)
                 end
-            end
+            end            
         end    
     end
 
