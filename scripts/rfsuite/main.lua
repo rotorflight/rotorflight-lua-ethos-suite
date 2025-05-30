@@ -338,14 +338,15 @@ local function init()
     local cachePath = "cache/" .. cacheFile
     local widgetList
     
-    -- Try to load from cache if it exists
-    if io.open(cachePath, "r") then
-        local ok, cached = pcall(dofile, cachePath)
+    -- Try loading cache if it exists
+    local loadf, loadErr = loadfile(cachePath)
+    if loadf then
+        local ok, cached = pcall(loadf)
         if ok and type(cached) == "table" then
             widgetList = cached
             rfsuite.utils.log("[cache] Loaded widget list from cache","info")
         else
-            rfsuite.utils.log("[cache] Failed to load cache, rebuilding...","info")
+            rfsuite.utils.log("[cache] Bad cache, rebuilding: "..tostring(cached),"info")
         end
     end
     
