@@ -159,53 +159,6 @@ function utils.screenError(msg)
     lcd.drawText(x, y, msg)
 end
 
-
---- Displays an error overlay message centered on the screen.
--- Dynamically scales the font size to fit the message within a styled box.
--- The overlay adapts its colors for dark or light mode.
--- @param msg string: The error message to display.
-function utils.screenErrorOverlay(msg)
-    local w, h = lcd.getWindowSize()
-    local isDarkMode = lcd.darkMode()
-    local boxW = w * 0.8
-
-    -- Dynamically scale font for text
-    local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL}
-    local bestFont, bestW, bestH = FONT_XXS, 0, 0
-    local maxW = boxW * 0.9
-
-    for _, font in ipairs(fonts) do
-        lcd.font(font)
-        local tW, tH = lcd.getTextSize(msg)
-        if tW <= maxW then
-            bestFont, bestW, bestH = font, tW, tH
-        else
-            break
-        end
-    end
-
-    local boxH = bestH * 2
-    local boxX = (w - boxW) / 2
-    local boxY = (h - boxH) / 2
-
-    -- Draw background box
-    lcd.color(isDarkMode and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
-    lcd.drawFilledRectangle(boxX, boxY, boxW, boxH)
-
-    -- Draw border
-    lcd.color(isDarkMode and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90))
-    lcd.drawRectangle(boxX, boxY, boxW, boxH)
-
-    -- Draw text
-    lcd.font(bestFont)
-    local textColor = isDarkMode and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90)
-    lcd.color(textColor)
-    local textX = (w - bestW) / 2
-    local textY = (h - bestH) / 2
-    lcd.drawText(textX, textY, msg)
-end
-
-
 --- Calculates the X coordinate for text alignment within a given width.
 -- @param text string: The text to be aligned.
 -- @param align string: The alignment type ("left", "center", or "right").
@@ -683,5 +636,8 @@ function utils.applyOffset(x, y, box)
     local oy = utils.getParam(box, "offsety") or 0
     return x + ox, y + oy
 end
+
+
+
 
 return utils

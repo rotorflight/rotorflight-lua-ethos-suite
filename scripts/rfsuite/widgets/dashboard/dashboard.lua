@@ -81,8 +81,18 @@ dashboard.objectsByType = {}
 local lastWakeup   = 0  -- for visible wakeup
 local lastWakeupBg = 0  -- for background wakeup
 
+-- * CONFIGURABLE SIZES *
+-- Fraction of min(width, height) to use for the spinner/overlay radius.
+-- Increase to ~0.36 for a 20% larger spinner (0.3 * 1.2)
+dashboard.hourglassScale    = 0.38
+dashboard.overlayScale      = 0.38
+
 -- initialize cache once
 dashboard._moduleCache = dashboard._moduleCache or {}
+
+-- how many paint‐cycles to keep showing the spinner (5 s ÷ paint_interval)
+ dashboard._hg_cycles_required = math.ceil(2.5 / (loadedThemeIntervals.paint_interval or 0.5))
+ dashboard._hg_cycles = 0
 
 -- Utility methods loaded from external utils.lua (drawing, color helpers, etc.)
 dashboard.utils = assert(
@@ -115,7 +125,7 @@ end
 -- at top of dashboard.lua, ensure you still have drawArc defined…
 
 -- spinning loader + dynamically-scaled counter
-function dashboard.hourglass(x, y, w, h)
+function dashboard.hourglass(x, y, w, h, txt)
 
   -- set color
   local color
@@ -130,9 +140,10 @@ function dashboard.hourglass(x, y, w, h)
   dashboard._loader = dashboard._loader or { angle = 0 }
   local st = dashboard._loader
 
-  -- center + sizing
-  local cx, cy    = x + w/2,       y + h/2
-  local radius    = math.min(w, h) * 0.3
+  -- center + sizing (scaleable)
+  local cx, cy    = x + w/2, y + h/2
+  -- use dashboard.hourglassScale if set, otherwise fall back to 0.3
+  local radius    = math.min(w, h) * (dashboard.hourglassScale or 0.3)
   local thickness = math.max(6, radius * 0.15)
   local sweepDeg  = 90  -- how large the arc is
 
@@ -141,14 +152,15 @@ function dashboard.hourglass(x, y, w, h)
   st.angle = (st.angle + 20) % 360  -- advance
 
   -- build our counter text
-  txt = rfsuite.i18n.get("widgets.dashboard.loading") 
-
+  if not txt then
+    txt = rfsuite.i18n.get("widgets.dashboard.loading") 
+  end
   -- get resolution-aware font list (see utils.box dynamic sizing) :contentReference[oaicite:0]{index=0}
   local fontLists = dashboard.utils.getFontListsForResolution()
   local fonts     = fontLists.value_default
 
   -- compute available space (60% of diameter)
-  local avail   = radius * 2 * 0.6
+  local avail   = radius * 2 * 0.8
   local bestF, bestW, bestH = fonts[1], 0, 0
 
   -- pick largest font that fits
@@ -167,7 +179,129 @@ function dashboard.hourglass(x, y, w, h)
   lcd.drawText(cx - bestW/2, cy - bestH/2, txt)
 end
 
+-- spinning ring loader with persistent central message until animation cycles complete
+function dashboard.overlaymessage(x, y, w, h, txt)
 
+  -- initialize cycle counter and message storage once
+  dashboard._overlay_cycles_required = dashboard._overlay_cycles_required or math.ceil(5 / (dashboard.paint_interval or 0.5))
+  dashboard._overlay_cycles = dashboard._overlay_cycles or 0
+  dashboard._overlay_text = dashboard._overlay_text or ""
+
+  -- when new text arrives, store it and reset cycles
+  if txt and txt ~= "" then
+    dashboard._overlay_text = txt
+    dashboard._overlay_cycles = dashboard._overlay_cycles_required
+  end
+
+  -- if no cycles remain, nothing to draw
+  if dashboard._overlay_cycles <= 0 then
+    return
+  end
+
+  -- determine colors (invert for contrast)
+  local fg, bg
+  if lcd.darkMode() then
+    fg = lcd.RGB(255,255,255)
+    bg = lcd.RGB(0,0,0,0.9) -- semi-transparent
+  else
+    fg = lcd.RGB(0,0,0)
+    bg = lcd.RGB(255,255,255,0.9) -- semi-transparent
+  end
+
+  -- decrement cycle count now that we're drawing
+  dashboard._overlay_cycles = dashboard._overlay_cycles - 1
+
+  -- compute center and sizing (bumped up for larger inner circle)
+  local cx, cy    = x + w/2, y + h/2
+  -- increase overlayScale from 0.3 → 0.35 (or whatever feels best)
+  local radius    = math.min(w, h) * (dashboard.overlayScale or 0.35)
+  -- keep the same ring thickness (or reduce it slightly if you want even more space)
+  local thickness = math.max(6, radius * 0.15)
+  -- shrink the gap to 1px (or remove it entirely) so inner circle is bigger
+  local innerR    = radius - (thickness/2) - 1  -- leave a 1px gap
+
+  -- draw the inner circle (message background)
+  lcd.color(bg)
+  if lcd.drawFilledCircle then
+    lcd.drawFilledCircle(cx, cy, innerR)
+  else
+    local sz = innerR * 2
+    lcd.drawFilledRectangle(cx - innerR, cy - innerR, sz, sz)
+  end
+
+  -- prepare message text (from stored overlay)
+  local message = dashboard._overlay_text or rfsuite.i18n.get("widgets.dashboard.loading")
+
+  -- font selection: largest fitting message
+  local fontLists = dashboard.utils.getFontListsForResolution()
+  local fonts     = fontLists.value_default
+  local chosenFont = fonts[1]
+  -- determine line height using a representative character
+  lcd.font(chosenFont)
+  local _, lineH = lcd.getTextSize("Ay")
+  -- find largest font where both full text width and line height fit
+  for i = #fonts, 1, -1 do
+    lcd.font(fonts[i])
+    local tw, th = lcd.getTextSize(message)
+    if tw <= innerR*2*0.8 and th <= innerR*2*0.8 then
+      chosenFont = fonts[i]
+      lcd.font(chosenFont)
+      _, lineH = lcd.getTextSize("Ay")
+      break
+    end
+  end
+
+  -- word-wrap into lines within width
+  lcd.font(chosenFont)
+  local maxWidth = innerR * 2 * 0.9
+  local lines = {}
+  local function wrapText(str)
+    local words = {}
+    for w in str:gmatch("%S+") do table.insert(words, w) end
+    local current = words[1] or ""
+    for i = 2, #words do
+      local test = current .. " " .. words[i]
+      if lcd.getTextSize(test) <= maxWidth then
+        current = test
+      else
+        table.insert(lines, current)
+        current = words[i]
+      end
+    end
+    table.insert(lines, current)
+  end
+  wrapText(message)
+
+  -- truncate extra lines with ellipsis
+  local maxLines = math.floor((innerR*2*0.8) / lineH)
+  if #lines > maxLines then
+    local truncated = { unpack(lines, 1, maxLines) }
+    local last = truncated[#truncated]
+    while lcd.getTextSize(last .. "…") > maxWidth and #last > 1 do
+      last = last:sub(1, -2)
+    end
+    truncated[#truncated] = last .. "…"
+    lines = truncated
+  end
+
+  -- draw the outer rotating ring
+  dashboard._loader = dashboard._loader or { angle = 0 }
+  local st = dashboard._loader
+  local sweepDeg = 90
+  lcd.color(fg)
+  drawArc(cx, cy, radius, thickness, st.angle, st.angle - sweepDeg, fg)
+  st.angle = (st.angle + 20) % 360
+
+  -- draw each line of text centered and spaced by lineH
+  lcd.color(fg)
+  lcd.font(chosenFont)
+  local totalH = #lines * lineH
+  for i, line in ipairs(lines) do
+    local tw, _ = lcd.getTextSize(line)
+    local offsetY = cy - totalH/2 + (i-1) * lineH
+    lcd.drawText(cx - tw/2, offsetY, line)
+  end
+end
 
 --- Loads and caches dashboard object modules based on the provided box configurations.
 -- Iterates through each box config, loading the corresponding object Lua file only once per type.
@@ -237,11 +371,13 @@ function dashboard.computeOverlayMessage()
             rfsuite.config.ethosVersion[3]
         )
     elseif not rfsuite.tasks.active() then
-        return rfsuite.i18n.get("app.check_bg_task")
+        return rfsuite.i18n.get("widgets.dashboard.check_bg_task")
     elseif moduleState == false then
-        return rfsuite.i18n.get("app.check_rf_module_on")
+        return rfsuite.i18n.get("widgets.dashboard.check_rf_module_on")
     elseif not (sportSensor or elrsSensor) then
-        return rfsuite.i18n.get("app.check_discovered_sensors")
+        return rfsuite.i18n.get("widgets.dashboard.check_discovered_sensors")
+    elseif not rfsuite.session.isConnected then
+        return rfsuite.i18n.get("widgets.dashboard.waiting_for_connection")    
     elseif rfsuite.session.telemetryState and rfsuite.tasks.telemetry and not rfsuite.tasks.telemetry.validateSensors() then
         return rfsuite.i18n.get("widgets.dashboard.validate_sensors")
     end
@@ -394,10 +530,19 @@ function dashboard.renderLayout(widget, config)
         end
     end
 
-    -- no second background fill here!
+    -- overlay spinner: reset or countdown our cycle counter
+    if dashboard.overlayMessage then
+      -- new overlay → restart full 5s worth of cycles
+      dashboard._hg_cycles = dashboard._hg_cycles_required
+    end
+    if dashboard._hg_cycles > 0 then
+      -- still have cycles left → keep drawing spinner
+      dashboard.overlaymessage(0, 0, W, H, dashboard.overlayMessage or "")
+      dashboard._hg_cycles = dashboard._hg_cycles - 1
+      lcd.invalidate()
+    end
+
 end
-
-
 
 
 --- Loads a state-specific script for the dashboard widget, handling theme selection and fallbacks.
