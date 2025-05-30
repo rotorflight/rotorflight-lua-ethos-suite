@@ -21,9 +21,20 @@
 ]] --
 local apiLoader = {}
 
+-- Cache table for file existence
+apiLoader._fileExistsCache = apiLoader._fileExistsCache or {}
+
 -- Define the API directory path based on the ethos version
 local apidir = "SCRIPTS:/".. rfsuite.config.baseDir  .. "/tasks/msp/api/"
 local api_path = apidir
+
+-- helper: check & cache file existence
+local function cached_file_exists(path)
+  if apiLoader._fileExistsCache[path] == nil then
+    apiLoader._fileExistsCache[path] = rfsuite.utils.file_exists(path)
+  end
+  return apiLoader._fileExistsCache[path]
+end
 
 -- New version using the global callback system
 function apiLoader.scheduleWakeup(func)
@@ -57,8 +68,8 @@ local function loadAPI(apiName)
 
     local apiFilePath = api_path .. apiName .. ".lua"
 
-    -- Check if file exists before trying to load it
-    if rfsuite.utils.file_exists(apiFilePath) then
+    -- Check if file exists before trying to load it (cached)
+    if cached_file_exists(apiFilePath) then
         local apiModule = dofile(apiFilePath) -- Load the Lua API file
 
         if type(apiModule) == "table" and (apiModule.read or apiModule.write) then
@@ -108,7 +119,10 @@ local function loadAPI(apiName)
     end
 end
 
-
+-- clear the file-exists cache (call after adding/removing API files)
+function apiLoader.clearFileExistsCache()
+  apiLoader._fileExistsCache = {}
+end
 
 --[[
     Loads the specified API by name.

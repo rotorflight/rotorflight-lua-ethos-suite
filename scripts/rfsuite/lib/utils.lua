@@ -394,27 +394,22 @@ function utils.findModules()
         if v ~= ".." then
             local init_path = modules_path .. v .. '/init.lua'
 
-            local f = io.open(init_path, "r")
-            if f then
-                io.close(f)
-                local func, err = rfsuite.compiler.loadfile(init_path)
-                if err then
-                    rfsuite.utils.log("Error loading " .. init_path, "info")
-                    rfsuite.utils.log(err, "info")
-                end
-                if func then
-                    local mconfig = func()
-                    if type(mconfig) ~= "table" or not mconfig.script then
-                        rfsuite.utils.log("Invalid configuration in " .. init_path,"info")
-                    else
-                        rfsuite.utils.log("Loading module " .. v, "debug")
-                        mconfig['folder'] = v
-                        table.insert(modulesList, mconfig)
-                    end
+            local func, err = rfsuite.compiler.loadfile(init_path)
+            if not func then
+                rfsuite.utils.log("Failed to load module init " .. init_path .. ": " .. err, "info")
+            else
+                local ok, mconfig = pcall(func)
+                if not ok then
+                    rfsuite.utils.log("Error executing " .. init_path .. ": " .. mconfig, "info")
+                elseif type(mconfig) ~= "table" or not mconfig.script then
+                    rfsuite.utils.log("Invalid configuration in " .. init_path, "info")
                 else
-                    rfsuite.utils.log("Error loading " .. init_path, "info")    
-                end 
+                    rfsuite.utils.log("Loading module " .. v, "debug")
+                    mconfig.folder = v
+                    table.insert(modulesList, mconfig)
+                end
             end
+            
         end    
     end
 
@@ -441,22 +436,30 @@ function utils.findWidgets()
 
         if v ~= ".." then
             local init_path = widgets_path .. v .. '/init.lua'
-            local f = io.open(init_path, "r")
-            if f then
-                io.close(f)
-
-                local func, err = rfsuite.compiler.loadfile(init_path)
-
-                if func then
-                    local wconfig = func()
-                    if type(wconfig) ~= "table" or not wconfig.key then
-                        rfsuite.utils.log("Invalid configuration in " .. init_path,"debug")
-                    else
-                        wconfig['folder'] = v
-                        table.insert(widgetsList, wconfig)
-                    end
+            -- try loading directly
+            local func, err = rfsuite.compiler.loadfile(init_path)
+            if not func then
+                rfsuite.utils.log(
+                  "Failed to load widget init " .. init_path .. ": " .. err,
+                  "debug"
+                )
+            else
+                local ok, wconfig = pcall(func)
+                if not ok then
+                    rfsuite.utils.log(
+                      "Error executing widget init " .. init_path .. ": " .. wconfig,
+                      "debug"
+                    )
+                elseif type(wconfig) ~= "table" or not wconfig.key then
+                    rfsuite.utils.log(
+                      "Invalid configuration in " .. init_path,
+                      "debug"
+                    )
+                else
+                    wconfig.folder = v
+                    table.insert(widgetsList, wconfig)
                 end
-            end
+            end            
         end    
     end
 
@@ -486,49 +489,57 @@ end
         resolve_image(image):
             Resolves the image path by checking its existence and attempting to switch between PNG and BMP formats if necessary.
 --]]
+-- caches for loadImage
+utils._imagePathCache   = {}
+utils._imageBitmapCache = {}
 function utils.loadImage(image1, image2, image3)
-    -- Helper function to check file in different locations
-    local function find_image_in_directories(img)
-        if rfsuite.utils.file_exists(img) then
-            return img
-        elseif rfsuite.utils.file_exists("BITMAPS:" .. img) then
-            return "BITMAPS:" .. img
-        elseif rfsuite.utils.file_exists("SYSTEM:" .. img) then
-            return "SYSTEM:" .. img
-        else
+    -- Resolve & cache bitmaps to avoid repeated fs checks
+    local function getCachedBitmap(key, tryPaths)
+        -- already loaded?
+        -- nothing to do if no key
+        if not key then
             return nil
         end
-    end
+        -- already loaded?
+        if utils._imageBitmapCache[key] then
+            return utils._imageBitmapCache[key]
+        end
 
-    -- Function to check and return a valid image path
-    local function resolve_image(image)
-        if type(image) == "string" then
-            local image_path = find_image_in_directories(image)
-            if not image_path then
-                if image:match("%.png$") then
-                    image_path = find_image_in_directories(image:gsub("%.png$", ".bmp"))
-                elseif image:match("%.bmp$") then
-                    image_path = find_image_in_directories(image:gsub("%.bmp$", ".png"))
+        -- find or reuse resolved path
+        local path = utils._imagePathCache[key]
+        if not path then
+            for _, p in ipairs(tryPaths) do
+                if rfsuite.utils.file_exists(p) then
+                    path = p
+                    break
                 end
             end
-            return image_path
+            utils._imagePathCache[key] = path
         end
-        return nil
+
+        if not path then return nil end
+        local bmp = lcd.loadBitmap(path)
+        utils._imageBitmapCache[key] = bmp
+        return bmp
     end
 
-    -- Resolve images in order of precedence
-    local image_path = resolve_image(image1) or resolve_image(image2) or resolve_image(image3)
+    -- build candidate paths for each image string
+    local function candidates(img)
+        if type(img) ~= "string" then return {} end
+        local out = { img, "BITMAPS:"..img, "SYSTEM:"..img }
+        if img:match("%.png$") then
+            -- direct array-style append instead of table.insert
+            out[#out+1] = img:gsub("%.png$",".bmp")
+        elseif img:match("%.bmp$") then
+            out[#out+1] = img:gsub("%.bmp$",".png")
+        end
+        return out
+    end
 
-    -- If an image path is found, load and return the bitmap
-    if image_path then return lcd.loadBitmap(image_path) end
-
-    -- If no valid image path was found, return the first existing Bitmap in order
-    if type(image1) == "Bitmap" then return image1 end
-    if type(image2) == "Bitmap" then return image2 end
-    if type(image3) == "Bitmap" then return image3 end
-
-    -- If nothing was found, return nil
-    return nil
+    -- try in order
+    return getCachedBitmap(image1, candidates(image1))
+        or getCachedBitmap(image2, candidates(image2))
+        or getCachedBitmap(image3, candidates(image3)) 
 end
 
 --[[
@@ -564,15 +575,15 @@ function utils.simSensors(id)
 
     local filepath
 
-    if rfsuite.utils.file_exists(localPath) then
-        filepath = localPath
-    elseif rfsuite.utils.file_exists(fallbackPath) then
-        filepath = fallbackPath
-    else
+    -- try primary, else fallback, else nothing
+    local chunk, err = loadfile(localPath)
+    if not chunk then
+        chunk, err = loadfile(fallbackPath)
+    end
+    if not chunk then
+        -- neither file exists or compiled
         return 0
     end
-
-    local chunk, err = loadfile(filepath)  -- intentionally not using rfsuite.compiler.loadfile here
     if not chunk then
         print("Error loading telemetry file: " .. err)
         return 0
