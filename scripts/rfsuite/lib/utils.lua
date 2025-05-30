@@ -489,49 +489,57 @@ end
         resolve_image(image):
             Resolves the image path by checking its existence and attempting to switch between PNG and BMP formats if necessary.
 --]]
+-- caches for loadImage
+utils._imagePathCache   = {}
+utils._imageBitmapCache = {}
 function utils.loadImage(image1, image2, image3)
-    -- Helper function to check file in different locations
-    local function find_image_in_directories(img)
-        if rfsuite.utils.file_exists(img) then
-            return img
-        elseif rfsuite.utils.file_exists("BITMAPS:" .. img) then
-            return "BITMAPS:" .. img
-        elseif rfsuite.utils.file_exists("SYSTEM:" .. img) then
-            return "SYSTEM:" .. img
-        else
+    -- Resolve & cache bitmaps to avoid repeated fs checks
+    local function getCachedBitmap(key, tryPaths)
+        -- already loaded?
+        -- nothing to do if no key
+        if not key then
             return nil
         end
-    end
+        -- already loaded?
+        if utils._imageBitmapCache[key] then
+            return utils._imageBitmapCache[key]
+        end
 
-    -- Function to check and return a valid image path
-    local function resolve_image(image)
-        if type(image) == "string" then
-            local image_path = find_image_in_directories(image)
-            if not image_path then
-                if image:match("%.png$") then
-                    image_path = find_image_in_directories(image:gsub("%.png$", ".bmp"))
-                elseif image:match("%.bmp$") then
-                    image_path = find_image_in_directories(image:gsub("%.bmp$", ".png"))
+        -- find or reuse resolved path
+        local path = utils._imagePathCache[key]
+        if not path then
+            for _, p in ipairs(tryPaths) do
+                if rfsuite.utils.file_exists(p) then
+                    path = p
+                    break
                 end
             end
-            return image_path
+            utils._imagePathCache[key] = path
         end
-        return nil
+
+        if not path then return nil end
+        local bmp = lcd.loadBitmap(path)
+        utils._imageBitmapCache[key] = bmp
+        return bmp
     end
 
-    -- Resolve images in order of precedence
-    local image_path = resolve_image(image1) or resolve_image(image2) or resolve_image(image3)
+    -- build candidate paths for each image string
+    local function candidates(img)
+        if type(img) ~= "string" then return {} end
+        local out = { img, "BITMAPS:"..img, "SYSTEM:"..img }
+        if img:match("%.png$") then
+            -- direct array-style append instead of table.insert
+            out[#out+1] = img:gsub("%.png$",".bmp")
+        elseif img:match("%.bmp$") then
+            out[#out+1] = img:gsub("%.bmp$",".png")
+        end
+        return out
+    end
 
-    -- If an image path is found, load and return the bitmap
-    if image_path then return lcd.loadBitmap(image_path) end
-
-    -- If no valid image path was found, return the first existing Bitmap in order
-    if type(image1) == "Bitmap" then return image1 end
-    if type(image2) == "Bitmap" then return image2 end
-    if type(image3) == "Bitmap" then return image3 end
-
-    -- If nothing was found, return nil
-    return nil
+    -- try in order
+    return getCachedBitmap(image1, candidates(image1))
+        or getCachedBitmap(image2, candidates(image2))
+        or getCachedBitmap(image3, candidates(image3)) 
 end
 
 --[[
