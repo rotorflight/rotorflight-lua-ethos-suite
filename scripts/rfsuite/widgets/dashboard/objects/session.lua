@@ -1,35 +1,54 @@
 local render = {}
 
 function render.wakeup(box)
-    local src = rfsuite.widgets.dashboard.utils.getParam(box, "source")
+    local utils = rfsuite.widgets.dashboard.utils
+    local getParam, resolveColor = utils.getParam, utils.resolveColor
+
+    local src = getParam(box, "source")
     local displayValue = rfsuite.session[src]
-    local unit = rfsuite.widgets.dashboard.utils.getParam(box, "unit")
+    local unit = getParam(box, "unit")
     if displayValue == nil then
-        displayValue = rfsuite.widgets.dashboard.utils.getParam(box, "novalue") or "-"
+        displayValue = getParam(box, "novalue") or "-"
         unit = nil
     end
 
     box._cache = {
-        displayValue = displayValue,
-        color = rfsuite.widgets.dashboard.utils.getParam(box, "color"),
-        unit = unit,
-        bgcolor = rfsuite.widgets.dashboard.utils.getParam(box, "bgcolor"),
-        -- add other frequently used params here if you wish
+        displayValue       = displayValue,
+        unit               = unit,
+        bgcolor            = resolveColor(getParam(box, "bgcolor")),
+        textcolor          = resolveColor(getParam(box, "textcolor")),
+        titlecolor         = resolveColor(getParam(box, "titlecolor")),
+        title              = getParam(box, "title"),
+        titlealign         = getParam(box, "titlealign"),
+        valuealign         = getParam(box, "valuealign"),
+        titlepos           = getParam(box, "titlepos"),
+        titlepadding       = getParam(box, "titlepadding"),
+        titlepaddingleft   = getParam(box, "titlepaddingleft"),
+        titlepaddingright  = getParam(box, "titlepaddingright"),
+        titlepaddingtop    = getParam(box, "titlepaddingtop"),
+        titlepaddingbottom = getParam(box, "titlepaddingbottom"),
+        valuepadding       = getParam(box, "valuepadding"),
+        valuepaddingleft   = getParam(box, "valuepaddingleft"),
+        valuepaddingright  = getParam(box, "valuepaddingright"),
+        valuepaddingtop    = getParam(box, "valuepaddingtop"),
+        valuepaddingbottom = getParam(box, "valuepaddingbottom"),
+        font               = getParam(box, "font"),
     }
 end
 
 function render.paint(x, y, w, h, box)
     x, y = rfsuite.widgets.dashboard.utils.applyOffset(x, y, box)
-    local cache = box._cache or {}
+    local c = box._cache or {}
 
     rfsuite.widgets.dashboard.utils.box(
         x, y, w, h,
-        cache.color, rfsuite.widgets.dashboard.utils.getParam(box, "title"), cache.displayValue, cache.unit, cache.bgcolor,
-        rfsuite.widgets.dashboard.utils.getParam(box, "titlealign"), rfsuite.widgets.dashboard.utils.getParam(box, "valuealign"), rfsuite.widgets.dashboard.utils.getParam(box, "titlecolor"), rfsuite.widgets.dashboard.utils.getParam(box, "titlepos"),
-        rfsuite.widgets.dashboard.utils.getParam(box, "titlepadding"), rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingleft"), rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingright"),
-        rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingtop"), rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingbottom"),
-        rfsuite.widgets.dashboard.utils.getParam(box, "valuepadding"), rfsuite.widgets.dashboard.utils.getParam(box, "valuepaddingleft"), rfsuite.widgets.dashboard.utils.getParam(box, "valuepaddingright"),
-        rfsuite.widgets.dashboard.utils.getParam(box, "valuepaddingtop"), rfsuite.widgets.dashboard.utils.getParam(box, "valuepaddingbottom")
+        c.title, c.displayValue, c.unit, c.bgcolor,
+        c.titlealign, c.valuealign, c.titlecolor, c.titlepos,
+        c.titlepadding, c.titlepaddingleft, c.titlepaddingright,
+        c.titlepaddingtop, c.titlepaddingbottom,
+        c.valuepadding, c.valuepaddingleft, c.valuepaddingright,
+        c.valuepaddingtop, c.valuepaddingbottom,
+        c.font, c.textcolor
     )
 end
 

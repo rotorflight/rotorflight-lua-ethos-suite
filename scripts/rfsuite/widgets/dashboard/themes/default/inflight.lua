@@ -38,13 +38,14 @@ local boxes = {
         arcThickness = 1,
         startAngle = 225,
         sweep = 270,
-        arcBgColor = "lightgrey",
+        fillbgcolor = "lightgrey",
         title = "VOLTAGE",
         titlepos = "bottom",
+        -- Optional: textcolor = "white", titlecolor = "white", bgcolor = ...
         thresholds = {
-            { value = 70,  color = "green" },
-            { value = 90,  color = "orange" },
-            { value = 140, color = "red" }
+            { value = 70,  fillcolor = "green" },    -- was color
+            { value = 90,  fillcolor = "orange" },
+            { value = 140, fillcolor = "red" }
         },
         min = function()
             local cfg = rfsuite.session.batteryConfig
@@ -62,9 +63,6 @@ local boxes = {
         end,   
         gaugemin = function()
             local cfg = rfsuite.session.batteryConfig
-
-            --print(rfsuite.session.batteryConfig.vbatmincellvoltage)
-
             local cells = (cfg and cfg.batteryCellCount) or 3
             local minV = (cfg and cfg.vbatmincellvoltage) or 3.0
             local value = math.max(0, cells * minV)
@@ -92,13 +90,13 @@ local boxes = {
         arcThickness = 1,
         startAngle = 225,
         sweep = 270,
-        arcBgColor = "lightgrey",
+        fillbgcolor = "lightgrey",
         title = "FUEL",
         titlepos = "bottom",
         thresholds = {
-            { value = 70,  color = "green" },
-            { value = 90,  color = "orange" },
-            { value = 140, color = "red" }
+            { value = 70,  fillcolor = "green" },
+            { value = 90,  fillcolor = "orange" },
+            { value = 140, fillcolor = "red" }
         },  
         gaugemin = 0,
         gaugemax = 100,     

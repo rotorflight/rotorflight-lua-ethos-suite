@@ -1,43 +1,46 @@
 local render = {}
 
 function render.wakeup(box, telemetry)
-    local value
+    local utils = rfsuite.widgets.dashboard.utils
+    local getParam = utils.getParam
+    local resolveColor = utils.resolveColor
+
+    local value = nil
     if telemetry and telemetry.getSensorSource then
         local sensor = telemetry.getSensorSource("governor")
         value = sensor and sensor:value()
     end
 
-    local displayValue = rfsuite.utils.getGovernorState(value)
-    local unit = rfsuite.widgets.dashboard.utils.getParam(box, "unit")
-
+    local displayValue = rfsuite.utils.getGovernorState and rfsuite.utils.getGovernorState(value) or nil
+    local unit = getParam(box, "unit")
     if displayValue == nil then
-        displayValue = rfsuite.widgets.dashboard.utils.getParam(box, "novalue") or "-"
+        displayValue = getParam(box, "novalue") or "-"
         unit = nil  -- Suppress unit if no valid governor state
     end
 
     box._cache = {
-        color             = rfsuite.widgets.dashboard.utils.getParam(box, "color"),
-        title             = rfsuite.widgets.dashboard.utils.getParam(box, "title"),
-        displayValue      = displayValue,
-        unit              = unit,
-        bgcolor           = rfsuite.widgets.dashboard.utils.getParam(box, "bgcolor"),
-        titlealign        = rfsuite.widgets.dashboard.utils.getParam(box, "titlealign"),
-        valuealign        = rfsuite.widgets.dashboard.utils.getParam(box, "valuealign"),
-        titlecolor        = rfsuite.widgets.dashboard.utils.getParam(box, "titlecolor"),
-        titlepos          = rfsuite.widgets.dashboard.utils.getParam(box, "titlepos"),
-        titlepadding      = rfsuite.widgets.dashboard.utils.getParam(box, "titlepadding"),
-        titlepaddingleft  = rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingleft"),
-        titlepaddingright = rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingright"),
-        titlepaddingtop   = rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingtop"),
-        titlepaddingbottom= rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingbottom"),
-        valuepadding      = rfsuite.widgets.dashboard.utils.getParam(box, "valuepadding"),
-        valuepaddingleft  = rfsuite.widgets.dashboard.utils.getParam(box, "valuepaddingleft"),
-        valuepaddingright = rfsuite.widgets.dashboard.utils.getParam(box, "valuepaddingright"),
-        valuepaddingtop   = rfsuite.widgets.dashboard.utils.getParam(box, "valuepaddingtop"),
-        valuepaddingbottom= rfsuite.widgets.dashboard.utils.getParam(box, "valuepaddingbottom"),
+        displayValue       = displayValue,
+        unit               = unit,
+        bgcolor            = resolveColor(getParam(box, "bgcolor")),
+        textcolor          = resolveColor(getParam(box, "textcolor")),
+        titlecolor         = resolveColor(getParam(box, "titlecolor")),
+        title              = getParam(box, "title"),
+        titlealign         = getParam(box, "titlealign"),
+        valuealign         = getParam(box, "valuealign"),
+        titlepos           = getParam(box, "titlepos"),
+        titlepadding       = getParam(box, "titlepadding"),
+        titlepaddingleft   = getParam(box, "titlepaddingleft"),
+        titlepaddingright  = getParam(box, "titlepaddingright"),
+        titlepaddingtop    = getParam(box, "titlepaddingtop"),
+        titlepaddingbottom = getParam(box, "titlepaddingbottom"),
+        valuepadding       = getParam(box, "valuepadding"),
+        valuepaddingleft   = getParam(box, "valuepaddingleft"),
+        valuepaddingright  = getParam(box, "valuepaddingright"),
+        valuepaddingtop    = getParam(box, "valuepaddingtop"),
+        valuepaddingbottom = getParam(box, "valuepaddingbottom"),
+        font               = getParam(box, "font"),
     }
 end
-
 
 function render.paint(x, y, w, h, box)
     x, y = rfsuite.widgets.dashboard.utils.applyOffset(x, y, box)
@@ -45,12 +48,13 @@ function render.paint(x, y, w, h, box)
 
     rfsuite.widgets.dashboard.utils.box(
         x, y, w, h,
-        c.color, c.title, c.displayValue, c.unit, c.bgcolor,
+        c.title, c.displayValue, c.unit, c.bgcolor,
         c.titlealign, c.valuealign, c.titlecolor, c.titlepos,
         c.titlepadding, c.titlepaddingleft, c.titlepaddingright,
         c.titlepaddingtop, c.titlepaddingbottom,
         c.valuepadding, c.valuepaddingleft, c.valuepaddingright,
-        c.valuepaddingtop, c.valuepaddingbottom
+        c.valuepaddingtop, c.valuepaddingbottom,
+        c.font, c.textcolor
     )
 end
 
