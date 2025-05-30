@@ -91,7 +91,7 @@ dashboard.overlayScale      = 0.38
 dashboard._moduleCache = dashboard._moduleCache or {}
 
 -- how many paint‐cycles to keep showing the spinner (5 s ÷ paint_interval)
- dashboard._hg_cycles_required = math.ceil(5 / (loadedThemeIntervals.paint_interval or 0.5))
+ dashboard._hg_cycles_required = math.ceil(2.5 / (loadedThemeIntervals.paint_interval or 0.5))
  dashboard._hg_cycles = 0
 
 -- Utility methods loaded from external utils.lua (drawing, color helpers, etc.)
