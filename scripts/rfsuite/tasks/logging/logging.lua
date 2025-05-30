@@ -121,6 +121,10 @@ end
 
 function logging.wakeup()
 
+    if rfsuite.session.onConnect.low then
+        return
+    end
+
     if not rfsuite.session.mcu_id then
         return
     end
