@@ -41,7 +41,7 @@ function flightmode.wakeup()
 
         -- Session: sum of all previous armed time + current segment so far
         local currentSegment = now - rfsuite.session.timer.start
-        rfsuite.session.timer.live = rfsuite.session.timer.session + currentSegment
+        rfsuite.session.timer.live = (rfsuite.session.timer.session or 0) + currentSegment
 
         hasBeenInFlight = true
 
@@ -68,7 +68,7 @@ function flightmode.wakeup()
             -- Accumulate this armed segment to session time
             if rfsuite.session.timer.start ~= nil then
                 local segment = now - rfsuite.session.timer.start
-                rfsuite.session.timer.session = rfsuite.session.timer.session + segment
+                rfsuite.session.timer.session = (rfsuite.session.timer.session or 0) + segment
                 rfsuite.session.timer.start = nil
             end
             -- Still stay in postflight mode until armed again or reset

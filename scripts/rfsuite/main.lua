@@ -225,7 +225,7 @@ rfsuite.session.timer = {}
 rfsuite.session.timer.start = nil -- this is used to store the start time of the timer
 rfsuite.session.timer.live = nil -- this is used to store the live timer value while inflight
 rfsuite.session.timer.lifetime = nil -- this is used to store the total flight time of a model and store it in the user ini file
-rfsuite.session.timer.session = nil -- this is used to track flight time for the session
+rfsuite.session.timer.session = 0 -- this is used to track flight time for the session
 rfsuite.session.flightCounted = false
 
 
