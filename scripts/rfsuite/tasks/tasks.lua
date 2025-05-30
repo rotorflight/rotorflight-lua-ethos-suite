@@ -137,7 +137,7 @@ function tasks.wakeup()
         local taskMetadata
 
         if io.open(cachePath, "r") then
-            local ok, cached = pcall(dofile, cachePath)
+            local ok, cached = pcall(rfsuite.compiler.dofile, cachePath)
             if ok and type(cached) == "table" then
                 taskMetadata = cached
                 rfsuite.utils.log("[cache] Loaded task metadata from cache","info")
