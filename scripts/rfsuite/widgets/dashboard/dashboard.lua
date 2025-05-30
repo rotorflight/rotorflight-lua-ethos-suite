@@ -55,6 +55,7 @@ local lastLoadedBoxCount = 0
 
 -- Flag to perform initialization logic only once on first wakeup
 local firstWakeup = true
+lcd.invalidate() -- force an initial redraw to show the hourglass
 
 -- Layout state for boxes (UI elements):
 dashboard.boxRects = {}              -- will hold {x, y, w, h, box} for each box
@@ -640,6 +641,14 @@ end
 -- Otherwise, it falls back to calling a generic state paint function.
 -- @param widget The widget object to be painted.
 function dashboard.paint(widget)
+
+    -- on the *first* paint, immediately draw the spinner and bail out
+    if firstWakeup then
+        local W, H = lcd.getWindowSize()
+        dashboard.hourglass(0, 0, W, H)
+        return
+    end
+
     local state = dashboard.flightmode or "preflight"
     local module = loadedStateModules[state]
 
