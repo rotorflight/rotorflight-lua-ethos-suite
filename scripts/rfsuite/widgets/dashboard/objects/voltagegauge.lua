@@ -49,7 +49,6 @@ local defaults = {
     }
 }
 
--- Draw a filled rounded rectangle
 local function drawFilledRoundedRectangle(x, y, w, h, r)
     x = math.floor(x + 0.5)
     y = math.floor(y + 0.5)
@@ -70,338 +69,207 @@ local function drawFilledRoundedRectangle(x, y, w, h, r)
 end
 
 function render.wakeup(box, telemetry)
-    -- Merge defaults and user box (user overrides)
-    local voltBox = {}
-    for k, v in pairs(defaults) do voltBox[k] = v end
-    for k, v in pairs(box or {}) do voltBox[k] = v end
+    -- Merge defaults and box parameters (box overrides defaults)
+    local params = {}
+    for k, v in pairs(defaults) do params[k] = v end
+    for k, v in pairs(box or {}) do params[k] = v end
 
     -- Evaluate gaugemin/gaugemax if functions
-    if type(voltBox.gaugemin) == "function" then
-        voltBox.gaugemin = voltBox.gaugemin()
+    if type(params.gaugemin) == "function" then
+        params.gaugemin = params.gaugemin()
     end
-    if type(voltBox.gaugemax) == "function" then
-        voltBox.gaugemax = voltBox.gaugemax()
+    if type(params.gaugemax) == "function" then
+        params.gaugemax = params.gaugemax()
     end
 
-    -- Evaluate thresholds' .value if function, so they're cached per-wakeup
-    if type(voltBox.thresholds) == "table" then
-        for i, t in ipairs(voltBox.thresholds) do
+    -- Evaluate thresholds values if function
+    if type(params.thresholds) == "table" then
+        for i, t in ipairs(params.thresholds) do
             if type(t.value) == "function" then
-                voltBox.thresholds[i] = {}
-                for k,v in pairs(t) do voltBox.thresholds[i][k] = v end
-                voltBox.thresholds[i].value = t.value()
+                params.thresholds[i] = {}
+                for key,v in pairs(t) do params.thresholds[i][key] = v end
+                params.thresholds[i].value = t.value()
             end
         end
     end
 
-    -- Get value from telemetry
+    -- Get the telemetry value
     local value = nil
-    local source = voltBox.source
-    if source then
-        if type(source) == "function" then
-            value = source(box, telemetry)
+    if params.source then
+        if type(params.source) == "function" then
+            value = params.source(box, telemetry)
         else
-            local sensor = telemetry and telemetry.getSensorSource(source)
+            local sensor = telemetry and telemetry.getSensorSource(params.source)
             value = sensor and sensor:value()
-            local transform = voltBox.transform
+            local transform = params.transform
             if type(transform) == "string" and math[transform] then
                 value = value and math[transform](value)
             elseif type(transform) == "function" then
                 value = value and transform(value)
             elseif type(transform) == "number" then
-                value = value and transform(value)
+                value = value and transform
             end
         end
     end
 
-    local displayUnit = voltBox.unit
+    local displayUnit = params.unit
     local displayValue = value
     if value == nil then
-        displayValue = voltBox.novalue or "-"
-        displayUnit = nil  -- suppress unit if no value
+        displayValue = params.novalue or "-"
+        displayUnit = nil
     end
 
-    -- Padding for gauge area
-    local gpad_left   = voltBox.gaugepaddingleft   or voltBox.gaugepadding or 0
-    local gpad_right  = voltBox.gaugepaddingright  or voltBox.gaugepadding or 0
-    local gpad_top    = voltBox.gaugepaddingtop    or voltBox.gaugepadding or 0
-    local gpad_bottom = voltBox.gaugepaddingbottom or voltBox.gaugepadding or 0
-
-    local roundradius = voltBox.roundradius or 0
-
-    -- Colors
-    local bgColor = rfsuite.widgets.dashboard.utils.resolveColor(voltBox.bgcolor) or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
-    local gaugeBgColor = rfsuite.widgets.dashboard.utils.resolveColor(voltBox.gaugebgcolor) or bgColor
-    local gaugeColor = rfsuite.widgets.dashboard.utils.resolveColor(voltBox.gaugecolor) or lcd.RGB(255, 204, 0)
-    local valueTextColor = rfsuite.widgets.dashboard.utils.resolveColor(voltBox.color) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
-
-    local thresholds = voltBox.thresholds
-    local matchingTextColor = nil
-    if thresholds and value ~= nil then
-        for _, t in ipairs(thresholds) do
-            local t_val = type(t.value) == "function" and t.value(box, value) or t.value
-            local t_color = type(t.color) == "function" and t.color(box, value) or t.color
-            local t_textcolor = type(t.textcolor) == "function" and t.textcolor(box, value) or t.textcolor
-            if value < t_val then
-                gaugeColor = rfsuite.widgets.dashboard.utils.resolveColor(t_color) or gaugeColor
-                if t_textcolor then matchingTextColor = rfsuite.widgets.dashboard.utils.resolveColor(t_textcolor) end
-                break
-            end
-        end
-    end
-
-    local gaugeMin = voltBox.gaugemin or 0
-    local gaugeMax = voltBox.gaugemax or 100
-    local gaugeOrientation = voltBox.gaugeorientation or "vertical"
+    -- Calculate gauge percent
     local percent = 0
-    if value ~= nil and gaugeMax ~= gaugeMin then
-        percent = (value - gaugeMin) / (gaugeMax - gaugeMin)
-        if percent < 0 then percent = 0 end
-        if percent > 1 then percent = 1 end
+    if value ~= nil and params.gaugemax ~= params.gaugemin then
+        percent = (value - params.gaugemin) / (params.gaugemax - params.gaugemin)
+        percent = math.max(0, math.min(1, percent))
     end
 
-    -- Value text formatting and padding
-    local valuepadding = voltBox.valuepadding or 0
-    local valuepaddingleft = voltBox.valuepaddingleft or valuepadding
-    local valuepaddingright = voltBox.valuepaddingright or valuepadding
-    local valuepaddingtop = voltBox.valuepaddingtop or valuepadding
-    local valuepaddingbottom = voltBox.valuepaddingbottom or valuepadding
-
-    -- Title parameters
-    local title = voltBox.title
-    local titlepadding = voltBox.titlepadding or 0
-    local titlepaddingleft = voltBox.titlepaddingleft or titlepadding
-    local titlepaddingright = voltBox.titlepaddingright or titlepadding
-    local titlepaddingtop = voltBox.titlepaddingtop or titlepadding
-    local titlepaddingbottom = voltBox.titlepaddingbottom or titlepadding
-    local titlealign = voltBox.titlealign or "center"
-    local titlepos = voltBox.titlepos or "top"
-    local titlecolor = rfsuite.widgets.dashboard.utils.resolveColor(voltBox.titlecolor) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
-
-    local valuealign = voltBox.valuealign or "center"
-
-    -- Gauge below title?
-    local gaugebelowtitle = voltBox.gaugebelowtitle
-
-    -- Title area height
-    local title_area_top = 0
-    local title_area_bottom = 0
-    if gaugebelowtitle and title then
-        lcd.font(FONT_XS)
-        local _, tsizeH = lcd.getTextSize(title)
-        if titlepos == "bottom" then
-            title_area_bottom = tsizeH + titlepaddingtop + titlepaddingbottom
-        else
-            title_area_top = tsizeH + titlepaddingtop + titlepaddingbottom
-        end
-    end
-
+    -- Cache for paint
     box._cache = {
         value = value,
         displayValue = displayValue,
         displayUnit = displayUnit,
-        gpad_left = gpad_left,
-        gpad_right = gpad_right,
-        gpad_top = gpad_top,
-        gpad_bottom = gpad_bottom,
-        roundradius = roundradius,
-        bgColor = bgColor,
-        gaugeBgColor = gaugeBgColor,
-        gaugeColor = gaugeColor,
-        valueTextColor = valueTextColor,
-        matchingTextColor = matchingTextColor,
-        thresholds = thresholds,
-        gaugeMin = gaugeMin,
-        gaugeMax = gaugeMax,
-        gaugeOrientation = gaugeOrientation,
+        gpad_left = params.gaugepaddingleft or params.gaugepadding or 0,
+        gpad_right = params.gaugepaddingright or params.gaugepadding or 0,
+        gpad_top = params.gaugepaddingtop or params.gaugepadding or 0,
+        gpad_bottom = params.gaugepaddingbottom or params.gaugepadding or 0,
+        roundradius = params.roundradius or 0,
+        bgColor = rfsuite.widgets.dashboard.utils.resolveColor(params.bgcolor) or (lcd.darkMode() and lcd.RGB(40,40,40) or lcd.RGB(240,240,240)),
+        gaugeBgColor = rfsuite.widgets.dashboard.utils.resolveColor(params.gaugebgcolor) or (lcd.darkMode() and lcd.RGB(20,20,20) or lcd.RGB(220,220,220)),
+        gaugeColor = rfsuite.widgets.dashboard.utils.resolveColor(params.gaugecolor) or lcd.RGB(255,204,0),
+        valueTextColor = rfsuite.widgets.dashboard.utils.resolveColor(params.color) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90)),
+        thresholds = params.thresholds,
+        gaugeMin = params.gaugemin,
+        gaugeMax = params.gaugemax,
+        gaugeOrientation = params.gaugeorientation or "vertical",
         percent = percent,
-        valuepadding = valuepadding,
-        valuepaddingleft = valuepaddingleft,
-        valuepaddingright = valuepaddingright,
-        valuepaddingtop = valuepaddingtop,
-        valuepaddingbottom = valuepaddingbottom,
-        title = title,
-        titlepadding = titlepadding,
-        titlepaddingleft = titlepaddingleft,
-        titlepaddingright = titlepaddingright,
-        titlepaddingtop = titlepaddingtop,
-        titlepaddingbottom = titlepaddingbottom,
-        titlealign = titlealign,
-        titlepos = titlepos,
-        titlecolor = titlecolor,
-        valuealign = valuealign,
-        gaugebelowtitle = gaugebelowtitle,
-        title_area_top = title_area_top,
-        title_area_bottom = title_area_bottom,
+        valuepadding = params.valuepadding or 0,
+        valuepaddingleft = params.valuepaddingleft or params.valuepadding or 0,
+        valuepaddingright = params.valuepaddingright or params.valuepadding or 0,
+        valuepaddingtop = params.valuepaddingtop or params.valuepadding or 0,
+        valuepaddingbottom = params.valuepaddingbottom or params.valuepadding or 0,
+        title = params.title,
+        titlepadding = params.titlepadding or 0,
+        titlepaddingleft = params.titlepaddingleft or params.titlepadding or 0,
+        titlepaddingright = params.titlepaddingright or params.titlepadding or 0,
+        titlepaddingtop = params.titlepaddingtop or params.titlepadding or 0,
+        titlepaddingbottom = params.titlepaddingbottom or params.titlepadding or 0,
+        titlealign = params.titlealign or "center",
+        titlepos = params.titlepos or "top",
+        titlecolor = rfsuite.widgets.dashboard.utils.resolveColor(params.titlecolor) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90)),
+        valuealign = params.valuealign or "center",
+        gaugebelowtitle = params.gaugebelowtitle,
+        title_area_top = 0,
+        title_area_bottom = 0,
+        font = params.font,
     }
+
+    -- Calculate title area height for layout
+    if box._cache.gaugebelowtitle and box._cache.title then
+        lcd.font(FONT_XS)
+        local _, th = lcd.getTextSize(box._cache.title)
+        if box._cache.titlepos == "bottom" then
+            box._cache.title_area_bottom = th + box._cache.titlepaddingtop + box._cache.titlepaddingbottom
+        else
+            box._cache.title_area_top = th + box._cache.titlepaddingtop + box._cache.titlepaddingbottom
+        end
+    end
 end
 
 function render.paint(x, y, w, h, box)
     x, y = rfsuite.widgets.dashboard.utils.applyOffset(x, y, box)
     local c = box._cache or {}
 
-    -- Safe values
-    local value = c.value
-    local displayValue = c.displayValue or "-"
-    local displayUnit = c.displayUnit
-    local gpad_left = c.gpad_left or 0
-    local gpad_right = c.gpad_right or 0
-    local gpad_top = c.gpad_top or 0
-    local gpad_bottom = c.gpad_bottom or 0
-    local roundradius = c.roundradius or 0
-    local bgColor = c.bgColor or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
-    local gaugeBgColor = c.gaugeBgColor or bgColor
-    local gaugeColor = c.gaugeColor or lcd.RGB(255, 204, 0)
-    local valueTextColor = c.valueTextColor or lcd.RGB(90,90,90)
-    local matchingTextColor = c.matchingTextColor
-    local gaugeMin = c.gaugeMin or 0
-    local gaugeMax = c.gaugeMax or 100
-    local gaugeOrientation = c.gaugeOrientation or "vertical"
-    local percent = c.percent or 0
-    local valuepaddingleft = c.valuepaddingleft or 0
-    local valuepaddingright = c.valuepaddingright or 0
-    local valuepaddingtop = c.valuepaddingtop or 0
-    local valuepaddingbottom = c.valuepaddingbottom or 0
-    local valuealign = c.valuealign or "center"
-    local title = c.title
-    local titlepadding = c.titlepadding or 0
-    local titlepaddingleft = c.titlepaddingleft or 0
-    local titlepaddingright = c.titlepaddingright or 0
-    local titlepaddingtop = c.titlepaddingtop or 0
-    local titlepaddingbottom = c.titlepaddingbottom or 0
-    local titlealign = c.titlealign or "center"
-    local titlepos = c.titlepos or "top"
-    local titlecolor = c.titlecolor or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
-    local gaugebelowtitle = c.gaugebelowtitle
-    local title_area_top = c.title_area_top or 0
-    local title_area_bottom = c.title_area_bottom or 0
-
-    -- Draw overall box background
-    lcd.color(bgColor)
+    -- Draw background
+    lcd.color(c.bgColor)
     lcd.drawFilledRectangle(x, y, w, h)
 
-    -- Gauge rectangle (with padding and title space)
-    local gauge_x = x + gpad_left
-    local gauge_y = y + gpad_top + title_area_top
-    local gauge_w = w - gpad_left - gpad_right
-    local gauge_h = h - gpad_top - gpad_bottom - title_area_top - title_area_bottom
+    -- Calculate gauge drawing area
+    local gauge_x = x + c.gpad_left
+    local gauge_y = y + c.gpad_top + c.title_area_top
+    local gauge_w = w - c.gpad_left - c.gpad_right
+    local gauge_h = h - c.gpad_top - c.gpad_bottom - c.title_area_top - c.title_area_bottom
 
-    -- Rounded background for the gauge
-    lcd.color(gaugeBgColor)
-    drawFilledRoundedRectangle(gauge_x, gauge_y, gauge_w, gauge_h, roundradius)
+    -- Draw gauge background with rounded corners
+    lcd.color(c.gaugeBgColor)
+    drawFilledRoundedRectangle(gauge_x, gauge_y, gauge_w, gauge_h, c.roundradius)
 
-    -- Gauge fill
-    if percent > 0 then
-        lcd.color(gaugeColor)
-        if gaugeOrientation == "vertical" then
-            local fillH = math.floor(gauge_h * percent)
+    -- Draw filled gauge portion based on percent
+    if c.percent > 0 then
+        lcd.color(c.gaugeColor)
+        if c.gaugeOrientation == "vertical" then
+            local fillH = math.floor(gauge_h * c.percent)
             local fillY = gauge_y + gauge_h - fillH
-            if fillH > 2*roundradius then
-                drawFilledRoundedRectangle(gauge_x, fillY, gauge_w, fillH, roundradius)
+            if fillH > 2 * c.roundradius then
+                drawFilledRoundedRectangle(gauge_x, fillY, gauge_w, fillH, c.roundradius)
             elseif fillH > 0 then
-                local cx = gauge_x + gauge_w/2
-                local cy = fillY + fillH/2
-                local r = fillH/2
+                local cx = gauge_x + gauge_w / 2
+                local cy = fillY + fillH / 2
+                local r = fillH / 2
                 lcd.drawFilledCircle(cx, cy, r)
             end
-        else
-            local fillW = math.floor(gauge_w * percent)
-            if fillW > 2*roundradius then
-                drawFilledRoundedRectangle(gauge_x, gauge_y, fillW, gauge_h, roundradius)
+        else -- horizontal
+            local fillW = math.floor(gauge_w * c.percent)
+            if fillW > 2 * c.roundradius then
+                drawFilledRoundedRectangle(gauge_x, gauge_y, fillW, gauge_h, c.roundradius)
             elseif fillW > 0 then
-                local cx = gauge_x + fillW/2
-                local cy = gauge_y + gauge_h/2
-                local r = fillW/2
+                local cx = gauge_x + fillW / 2
+                local cy = gauge_y + gauge_h / 2
+                local r = fillW / 2
                 lcd.drawFilledCircle(cx, cy, r)
             end
         end
     end
 
-    -- Overlay value text (with smart threshold text color based on gauge fill coverage)
-    if displayValue ~= nil then
-        local str = tostring(displayValue) .. (displayUnit or "")
-        local unitIsDegree = (displayUnit == "°" or (displayUnit and tostring(displayUnit):find("°")))
-        local strForWidth = unitIsDegree and (tostring(displayValue) .. "0") or str
+    -- Draw gauge border if framecolor defined
+    if c.framecolor then
+        lcd.color(c.framecolor)
+        lcd.drawRectangle(gauge_x, gauge_y, gauge_w, gauge_h)
+    end
 
-        local availH = h - valuepaddingtop - valuepaddingbottom
-        local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL, FONT_XXXXL}
+    -- Draw value text
+    if c.displayValue ~= nil then
+        local str = tostring(c.displayValue) .. (c.displayUnit or "")
+        local font = c.font and _G[c.font] or FONT_XL
+        lcd.font(font)
 
-        lcd.font(FONT_XL)
-        local _, xlFontHeight = lcd.getTextSize("8")
-        if xlFontHeight > availH * 0.5 then
-            fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L}
-        end
+        local tw, th = lcd.getTextSize(str)
+        local availW = w - (c.valuepaddingleft or 0) - (c.valuepaddingright or 0)
+        local availH = h - (c.valuepaddingtop or 0) - (c.valuepaddingbottom or 0)
 
-        local maxW, maxH = w - valuepaddingleft - valuepaddingright, availH
-        local bestFont, bestW, bestH = FONT_XXS, 0, 0
-        for _, font in ipairs(fonts) do
-            lcd.font(font)
-            local tW, tH = lcd.getTextSize(strForWidth)
-            if tW <= maxW and tH <= maxH then
-                bestFont, bestW, bestH = font, tW, tH
-            else
-                break
-            end
-        end
-        lcd.font(bestFont)
-        local region_x = x + valuepaddingleft
-        local region_y = y + valuepaddingtop
-        local region_w = w - valuepaddingleft - valuepaddingright
-        local region_h = h - valuepaddingtop - valuepaddingbottom
+        local region_x = x + (c.valuepaddingleft or 0)
+        local region_y = y + (c.valuepaddingtop or 0)
+        local region_w = availW
+        local region_h = availH
 
-        local sy = region_y + (region_h - bestH) / 2
-        local align = valuealign:lower()
+        local sy = region_y + (region_h - th) / 2
+        local align = (c.valuealign or "center"):lower()
         local sx
         if align == "left" then
             sx = region_x
         elseif align == "right" then
-            sx = region_x + region_w - bestW
+            sx = region_x + region_w - tw
         else
-            sx = region_x + (region_w - bestW) / 2
+            sx = region_x + (region_w - tw) / 2
         end
 
-        -- Smart threshold text color
-        local useThresholdTextColor = false
-        if matchingTextColor and percent > 0 then
-            local tW, tH = bestW, bestH
-            if gaugeOrientation == "vertical" then
-                local text_top = sy
-                local text_bottom = sy + tH
-                local fill_top = gauge_y + gauge_h * (1 - percent)
-                local fill_bottom = gauge_y + gauge_h
-                local overlap = math.min(text_bottom, fill_bottom) - math.max(text_top, fill_top)
-                if overlap > tH / 2 then
-                    useThresholdTextColor = true
-                end
-            else
-                local text_left = sx
-                local text_right = sx + tW
-                local fill_left = gauge_x
-                local fill_right = gauge_x + gauge_w * percent
-                local overlap = math.min(text_right, fill_right) - math.max(text_left, fill_left)
-                if overlap > tW / 2 then
-                    useThresholdTextColor = true
-                end
-            end
-        end
-        if useThresholdTextColor then
-            valueTextColor = matchingTextColor
-        end
-
+        local valueTextColor = c.matchingTextColor or c.valueTextColor or lcd.RGB(90,90,90)
         lcd.color(valueTextColor)
         lcd.drawText(sx, sy, str)
     end
 
-    -- Overlay title (top or bottom)
-    if title then
+    -- Draw title text (top or bottom)
+    if c.title then
         lcd.font(FONT_XS)
-        local tsizeW, tsizeH = lcd.getTextSize(title)
-        local region_x = x + titlepaddingleft
-        local region_w = w - titlepaddingleft - titlepaddingright
-        local sy = (titlepos == "bottom")
-            and (y + h - titlepaddingbottom - tsizeH)
-            or (y + titlepaddingtop)
-        local align = titlealign:lower()
+        local tsizeW, tsizeH = lcd.getTextSize(c.title)
+        local region_x = x + (c.titlepaddingleft or 0)
+        local region_w = w - (c.titlepaddingleft or 0) - (c.titlepaddingright or 0)
+
+        local sy = (c.titlepos == "bottom") and (y + h - (c.titlepaddingbottom or 0) - tsizeH) or (y + (c.titlepaddingtop or 0))
+        local align = (c.titlealign or "center"):lower()
+
         local sx
         if align == "left" then
             sx = region_x
@@ -410,8 +278,10 @@ function render.paint(x, y, w, h, box)
         else
             sx = region_x + (region_w - tsizeW) / 2
         end
-        lcd.color(titlecolor)
-        lcd.drawText(sx, sy, title)
+
+        local titleColor = c.titlecolor or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
+        lcd.color(titleColor)
+        lcd.drawText(sx, sy, c.title)
     end
 end
 

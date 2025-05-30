@@ -21,21 +21,24 @@ local function drawArc(cx, cy, radius, thickness, angleStart, angleEnd, color, c
     lcd.drawFilledCircle(x_end, y_end, rad_thick)
 end
 
--- Wakeup: all calculations and caching
+-- Cache all display and color params
 function render.wakeup(box, telemetry)
-    -- Fallbacks for all params
-    local bandLabels = rfsuite.widgets.dashboard.utils.getParam(box, "bandLabels") or {"Bad", "OK", "Good", "Excellent"}
-    local bandColors = rfsuite.widgets.dashboard.utils.getParam(box, "bandColors") or {
+    local utils = rfsuite.widgets.dashboard.utils
+    local getParam = utils.getParam
+    local resolveColor = utils.resolveColor
+
+    local bandLabels = getParam(box, "bandLabels") or {"Bad", "OK", "Good", "Excellent"}
+    local bandColors = getParam(box, "bandColors") or {
         lcd.RGB(180,50,50),
         lcd.RGB(220,150,40),
         lcd.RGB(90,180,90),
         lcd.RGB(170,180,120)
     }
-    local startAngle = rfsuite.widgets.dashboard.utils.getParam(box, "startAngle") or 180
-    local sweep = rfsuite.widgets.dashboard.utils.getParam(box, "sweep") or 180
-    local min = rfsuite.widgets.dashboard.utils.getParam(box, "min") or 0
-    local max = rfsuite.widgets.dashboard.utils.getParam(box, "max") or 100
-    local source = rfsuite.widgets.dashboard.utils.getParam(box, "source")
+    local startAngle = getParam(box, "startAngle") or 180
+    local sweep = getParam(box, "sweep") or 180
+    local min = getParam(box, "min") or 0
+    local max = getParam(box, "max") or 100
+    local source = getParam(box, "source")
     local value, percent = nil, 0
     if source and telemetry then
         local sensor = telemetry.getSensorSource and telemetry.getSensorSource(source)
@@ -46,31 +49,32 @@ function render.wakeup(box, telemetry)
         percent = math.max(0, math.min(1, percent))
     end
 
-    -- Cache all params for paint
+    -- All color keys are resolved here
     box._cache = {
-        bandLabels = bandLabels,
-        bandColors = bandColors,
-        startAngle = startAngle,
-        sweep = sweep,
-        min = min,
-        max = max,
-        value = value,
-        percent = percent,
-        unit = rfsuite.widgets.dashboard.utils.getParam(box, "unit") or "",
-        title = rfsuite.widgets.dashboard.utils.getParam(box, "title"),
-        needleColor = rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "needlecolor")) or lcd.RGB(0,0,0),
-        needleThickness = rfsuite.widgets.dashboard.utils.getParam(box, "needlethickness") or 5,
-        needlehubcolor = rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "needlehubcolor")) or lcd.RGB(0,0,0),
-        needlehubsize = rfsuite.widgets.dashboard.utils.getParam(box, "needlehubsize") or 7,
-        bgcolor = rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "bgcolor")) or (lcd.darkMode() and lcd.RGB(40,40,40) or lcd.RGB(240,240,240)),
-        novalue = rfsuite.widgets.dashboard.utils.getParam(box, "novalue") or "-",
+        bandLabels   = bandLabels,
+        bandColors   = bandColors,
+        startAngle   = startAngle,
+        sweep        = sweep,
+        min          = min,
+        max          = max,
+        value        = value,
+        percent      = percent,
+        unit         = getParam(box, "unit") or "",
+        title        = getParam(box, "title"),
+        textcolor    = resolveColor(getParam(box, "textcolor")),
+        bgcolor      = resolveColor(getParam(box, "bgcolor")),
+        accentcolor  = resolveColor(getParam(box, "accentcolor")),
+        titlecolor   = resolveColor(getParam(box, "titlecolor")),
+        needleThickness = getParam(box, "needlethickness") or 5,
+        needlehubsize   = getParam(box, "needlehubsize") or 7,
+        novalue     = getParam(box, "novalue") or "-",
     }
 end
 
--- Paint: robust fallbacks for all cached fields!
 function render.paint(x, y, w, h, box)
     local c = box._cache or {}
-    -- Robust band labels/colors
+
+    -- Fallbacks
     local bandLabels = (c.bandLabels and type(c.bandLabels) == "table") and c.bandLabels or {"Bad", "OK", "Good", "Excellent"}
     local bandColors = (c.bandColors and type(c.bandColors) == "table") and c.bandColors or {
         lcd.RGB(180,50,50),
@@ -87,12 +91,14 @@ function render.paint(x, y, w, h, box)
     local percent = c.percent or 0
     local unit = c.unit or ""
     local title = c.title
-    local needleColor = c.needleColor or lcd.RGB(0,0,0)
+    local needleColor = c.accentcolor or lcd.RGB(0,0,0)
     local needleThickness = c.needleThickness or 5
-    local needlehubcolor = c.needlehubcolor or lcd.RGB(0,0,0)
+    local needlehubcolor = c.accentcolor or lcd.RGB(0,0,0)
     local needlehubsize = c.needlehubsize or 7
     local bgcolor = c.bgcolor or (lcd.darkMode() and lcd.RGB(40,40,40) or lcd.RGB(240,240,240))
     local novalue = c.novalue or "-"
+    local textcolor = c.textcolor or lcd.RGB(255,255,255)
+    local titlecolor = c.titlecolor or lcd.RGB(255,255,255)
 
     -- Center & sizing
     local cx = x + w / 2
@@ -136,21 +142,16 @@ function render.paint(x, y, w, h, box)
 
     -- Value display
     lcd.font(FONT_STD)
-    local valStr = ""
-    if value ~= nil then
-        valStr = tostring(value) .. unit
-    else
-        valStr = novalue
-    end
+    local valStr = value ~= nil and (tostring(value) .. unit) or novalue
     local vw, vh = lcd.getTextSize(valStr)
-    lcd.color(lcd.RGB(255,255,255))
+    lcd.color(textcolor)
     lcd.drawText(cx - vw / 2, cy - thickness - 18, valStr)
 
     -- Title (below)
     if title then
         lcd.font(FONT_XS)
         local tw, th = lcd.getTextSize(title)
-        lcd.color(lcd.RGB(255,255,255))
+        lcd.color(titlecolor)
         lcd.drawText(cx-tw/2, y+h-14, title)
     end
 end
