@@ -339,7 +339,7 @@ local function init()
     local widgetList
     
     -- Try loading cache if it exists
-    local loadf, loadErr = loadfile(cachePath)
+    local loadf, loadErr = rfsuite.compiler.loadfile(cachePath)
     if loadf then
         local ok, cached = pcall(loadf)
         if ok and type(cached) == "table" then
