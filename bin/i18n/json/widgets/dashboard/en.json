@@ -13,5 +13,10 @@
     "english": "ROTORFLIGHT",
     "translation": "ROTORFLIGHT",
     "needs_translation": "false"
+  },
+  "waiting_for_connection": {
+    "english": "WAITING FOR CONNECTION",
+    "translation": "WAITING FOR CONNECTION",
+    "needs_translation": "false"
   }
 }

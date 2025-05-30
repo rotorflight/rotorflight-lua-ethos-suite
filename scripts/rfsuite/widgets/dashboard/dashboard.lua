@@ -84,6 +84,10 @@ local lastWakeupBg = 0  -- for background wakeup
 -- initialize cache once
 dashboard._moduleCache = dashboard._moduleCache or {}
 
+-- how many paint‐cycles to keep showing the spinner (5 s ÷ paint_interval)
+ dashboard._hg_cycles_required = math.ceil(5 / (loadedThemeIntervals.paint_interval or 0.5))
+ dashboard._hg_cycles = 0
+
 -- Utility methods loaded from external utils.lua (drawing, color helpers, etc.)
 dashboard.utils = assert(
     rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/lib/utils.lua")
@@ -115,7 +119,7 @@ end
 -- at top of dashboard.lua, ensure you still have drawArc defined…
 
 -- spinning loader + dynamically-scaled counter
-function dashboard.hourglass(x, y, w, h)
+function dashboard.hourglass(x, y, w, h, txt, bgcolor)
 
   -- set color
   local color
@@ -141,8 +145,9 @@ function dashboard.hourglass(x, y, w, h)
   st.angle = (st.angle + 20) % 360  -- advance
 
   -- build our counter text
-  txt = rfsuite.i18n.get("widgets.dashboard.loading") 
-
+  if not txt then
+    txt = rfsuite.i18n.get("widgets.dashboard.loading") 
+  end
   -- get resolution-aware font list (see utils.box dynamic sizing) :contentReference[oaicite:0]{index=0}
   local fontLists = dashboard.utils.getFontListsForResolution()
   local fonts     = fontLists.value_default
@@ -242,6 +247,8 @@ function dashboard.computeOverlayMessage()
         return rfsuite.i18n.get("app.check_rf_module_on")
     elseif not (sportSensor or elrsSensor) then
         return rfsuite.i18n.get("app.check_discovered_sensors")
+    elseif not rfsuite.session.isConnected then
+        return rfsuite.i18n.get("widgets.dashboard.waiting_for_connection")    
     elseif rfsuite.session.telemetryState and rfsuite.tasks.telemetry and not rfsuite.tasks.telemetry.validateSensors() then
         return rfsuite.i18n.get("widgets.dashboard.validate_sensors")
     end
@@ -394,7 +401,18 @@ function dashboard.renderLayout(widget, config)
         end
     end
 
-    -- no second background fill here!
+    -- overlay spinner: reset or countdown our cycle counter
+    if dashboard.overlayMessage then
+      -- new overlay → restart full 5s worth of cycles
+      dashboard._hg_cycles = dashboard._hg_cycles_required
+    end
+    if dashboard._hg_cycles > 0 then
+      -- still have cycles left → keep drawing spinner
+      dashboard.hourglass(0, 0, W, H, dashboard.overlayMessage or "", bgcolor=lcd.color(0,0,0))
+      dashboard._hg_cycles = dashboard._hg_cycles - 1
+      lcd.invalidate()
+    end
+
 end
 
 

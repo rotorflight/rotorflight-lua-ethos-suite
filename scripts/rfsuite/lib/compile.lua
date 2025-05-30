@@ -163,9 +163,7 @@ function compile.tick()
     end)
     compile._lastCompile = now
     if rfsuite and rfsuite.utils and rfsuite.utils.log then
-      if ok then
-        rfsuite.utils.log("Deferred-compiled (throttled): " .. entry.script, "debug")
-      else
+      if not ok then
         rfsuite.utils.log("Deferred-compile error: " .. tostring(err), "debug")
       end
     end
@@ -189,7 +187,7 @@ function compile.loadfile(script)
   -- 1. Try LRU in-memory cache
   loader = lru_cache:get(cache_key)
   if loader then
-    rfsuite.utils.log("Loaded from in-memory cache: " .. script, "info")
+    --rfsuite.utils.log("Loaded from in-memory cache: " .. script, "info")
     which = "in-memory"
   else
     -- 2. Fallback: disk compiled, or raw
