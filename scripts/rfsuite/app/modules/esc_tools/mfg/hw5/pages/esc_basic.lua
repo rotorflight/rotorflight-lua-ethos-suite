@@ -2,7 +2,7 @@
 local folder = "hw5"
 
 
-local mspapi = {
+local apidata = {
     api = {
         [1] = "ESC_PARAMETERS_HW5",
     },
@@ -31,7 +31,7 @@ function postLoad()
 
 
     -- inject new voltage lookup table
-    if rfsuite.app.Page.mspapi and rfsuite.app.Page.mspapi.other  and rfsuite.app.Page.mspapi.other['ESC_PARAMETERS_HW5'] then
+    if rfsuite.app.Page.apidata and rfsuite.app.Page.apidata.other  and rfsuite.app.Page.apidata.other['ESC_PARAMETERS_HW5'] then
         local version
         if rfsuite.session.escDetails and rfsuite.session.escDetails.version then
             version = rfsuite.session.escDetails.version
@@ -39,8 +39,8 @@ function postLoad()
             version = "default"
         end
 
-        if rfsuite.app.Page.mspapi.other['ESC_PARAMETERS_HW5'][version] then
-            local newVoltage = rfsuite.app.Page.mspapi.other['ESC_PARAMETERS_HW5'][version]
+        if rfsuite.app.Page.apidata.other['ESC_PARAMETERS_HW5'][version] then
+            local newVoltage = rfsuite.app.Page.apidata.other['ESC_PARAMETERS_HW5'][version]
 
             local voltageTable = rfsuite.app.utils.convertPageValueTable(newVoltage, -1)   
     
@@ -73,7 +73,7 @@ local function event(widget, category, value, x, y)
 end
 
 return {
-    mspapi=mspapi,
+    apidata = apidata,
     eepromWrite = true,
     reboot = false,
     escinfo = escinfo,

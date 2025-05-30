@@ -4,7 +4,7 @@ local fields = {}
 local calibrate = false
 local calibrateComplete = false
 
-local mspapi = {
+local apidata = {
     api = {
         [1] = 'ACC_TRIM',
     },
@@ -89,7 +89,7 @@ end
 
 
 return {
-    mspapi=mspapi,
+    apidata = apidata,
     eepromWrite = true,
     reboot = false,
     API = {},

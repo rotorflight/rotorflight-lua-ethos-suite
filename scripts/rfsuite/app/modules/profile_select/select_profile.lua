@@ -10,7 +10,7 @@ local saveCounter = 0
 local triggerSaveCounter = false
 local triggerMSPWrite = false
 
-local mspapi = {
+local apidata = {
     api = {
         [1] = "STATUS",
     },
@@ -123,7 +123,7 @@ local function wakeup()
 end
 
 return {
-    mspapi = mspapi,
+    apidata = apidata,
     reboot = false,
     eepromWrite = false,
     wakeup = wakeup,

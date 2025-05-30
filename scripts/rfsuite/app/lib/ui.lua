@@ -973,8 +973,8 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
     rfsuite.session.formLineCnt = 0
 
     rfsuite.utils.log("Merging form data from mspapi", "debug")
-    rfsuite.app.Page.fields = rfsuite.app.Page.mspapi.formdata.fields
-    rfsuite.app.Page.labels = rfsuite.app.Page.mspapi.formdata.labels
+    rfsuite.app.Page.fields = rfsuite.app.Page.apidata.formdata.fields
+    rfsuite.app.Page.labels = rfsuite.app.Page.apidata.formdata.labels
 
     if rfsuite.app.Page.fields then
         for i, field in ipairs(rfsuite.app.Page.fields) do

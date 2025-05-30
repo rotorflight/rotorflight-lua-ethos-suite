@@ -1,7 +1,7 @@
 
 local folder = "yge"
 
-local mspapi = {
+local apidata = {
     api = {
         [1] = "ESC_PARAMETERS_YGE",
     },
@@ -54,7 +54,7 @@ local foundEsc = false
 local foundEscDone = false
 
 return {
-    mspapi = mspapi,
+    apidata = apidata,
     eepromWrite = false,
     reboot = false,
     escinfo = escinfo,

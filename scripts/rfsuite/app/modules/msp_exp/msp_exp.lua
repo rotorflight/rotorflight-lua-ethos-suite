@@ -90,7 +90,7 @@ local function generateMSPAPI(numLabels)
         numLabels = 16
     end
         
-    local mspapi = {
+    local apidata = {
         api = {'EXPERIMENTAL'},
         formdata = {labels = {}, fields = {}}
     }
@@ -133,7 +133,7 @@ local function postLoad()
     enableWakeup = false
 
     -- Check if we have received any data
-    if rfsuite.app.Page.mspapi.receivedBytesCount['EXPERIMENTAL'] == 0 then
+    if rfsuite.app.Page.apidata.receivedBytesCount['EXPERIMENTAL'] == 0 then
         rfsuite.app.triggers.closeProgressLoader = true
         rfsuite.app.ui.disableAllFields()
         rfsuite.app.ui.disableAllNavigationFields()
@@ -141,9 +141,9 @@ local function postLoad()
         return
     end
 
-    if total_bytes ~= rfsuite.app.Page.mspapi.receivedBytesCount['EXPERIMENTAL'] then
+    if total_bytes ~= rfsuite.app.Page.apidata.receivedBytesCount['EXPERIMENTAL'] then
 
-        rfsuite.preferences.developer.mspexpbytes = rfsuite.app.Page.mspapi.receivedBytesCount['EXPERIMENTAL']
+        rfsuite.preferences.developer.mspexpbytes = rfsuite.app.Page.apidata.receivedBytesCount['EXPERIMENTAL']
         rfsuite.app.triggers.reloadFull = true
     end
 
@@ -171,7 +171,7 @@ end
 
 -- Return page definition
 return {
-    mspapi = mspapi,
+    apidata = apidata,
     title = "Experimental",
     navButtons = {menu = true, save = true, reload = true, help = true},
     eepromWrite = true,

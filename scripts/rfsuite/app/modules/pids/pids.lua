@@ -1,6 +1,6 @@
 local activateWakeup = false
 
-local mspapi = {
+local apidata = {
     api = {
         [1] = 'PID_TUNING',
     },
@@ -93,10 +93,10 @@ local function openPage(idx, title, script)
 
 
     rfsuite.utils.log("Merging form data from mspapi","debug")
-    rfsuite.app.Page.fields = rfsuite.app.Page.mspapi.formdata.fields
-    rfsuite.app.Page.labels = rfsuite.app.Page.mspapi.formdata.labels
-    rfsuite.app.Page.rows = rfsuite.app.Page.mspapi.formdata.rows
-    rfsuite.app.Page.cols = rfsuite.app.Page.mspapi.formdata.cols
+    rfsuite.app.Page.fields = rfsuite.app.Page.apidata.formdata.fields
+    rfsuite.app.Page.labels = rfsuite.app.Page.apidata.formdata.labels
+    rfsuite.app.Page.rows = rfsuite.app.Page.apidata.formdata.rows
+    rfsuite.app.Page.cols = rfsuite.app.Page.apidata.formdata.cols
 
     local c = 1
     while loc > 0 do
@@ -157,7 +157,7 @@ local function wakeup()
 end
 
 return {
-    mspapi = mspapi,
+    apidata = apidata,
     title = rfsuite.i18n.get("app.modules.pids.name"),
     reboot = false,
     eepromWrite = true,

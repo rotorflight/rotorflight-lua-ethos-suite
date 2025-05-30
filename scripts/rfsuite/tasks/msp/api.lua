@@ -569,9 +569,9 @@ function apiLoader.buildWritePayload(apiname, payload, api_structure, noDelta)
         return nil
     end
 
-    local positionmap = rfsuite.app.Page.mspapi and rfsuite.app.Page.mspapi.positionmap[apiname]
-    local receivedBytes = rfsuite.app.Page.mspapi and rfsuite.app.Page.mspapi.receivedBytes[apiname]
-    local receivedBytesCount = rfsuite.app.Page.mspapi and rfsuite.app.Page.mspapi.receivedBytesCount[apiname]
+    local positionmap = rfsuite.app.Page.apidata and rfsuite.app.Page.apidata.positionmap[apiname]
+    local receivedBytes = rfsuite.app.Page.apidata and rfsuite.app.Page.apidata.receivedBytes[apiname]
+    local receivedBytesCount = rfsuite.app.Page.apidata and rfsuite.app.Page.apidata.receivedBytesCount[apiname]
 
     local useDelta = positionmap and receivedBytes and receivedBytesCount
 
@@ -631,8 +631,8 @@ function apiLoader.buildDeltaPayload(apiname, payload, api_structure, positionma
 
     -- Extract parameters from actual.lua
     local actual_fields = {}
-    if rfsuite.app.Page and rfsuite.app.Page.mspapi then
-        for _, field in ipairs(rfsuite.app.Page.mspapi.formdata.fields) do
+    if rfsuite.app.Page and rfsuite.app.Page.apidata then
+        for _, field in ipairs(rfsuite.app.Page.apidata.formdata.fields) do
             if actual_fields[field.apikey] then -- we check this because its possible a field may not be there is mspgt or msplt is used on page.
                 actual_fields[field.apikey] = field
             end
@@ -726,8 +726,8 @@ function apiLoader.buildFullPayload(apiname, payload, api_structure)
 
     -- Extract parameters from actual.lua
     local actual_fields = {}
-    if rfsuite.app.Page and rfsuite.app.Page.mspapi then
-        for _, field in ipairs(rfsuite.app.Page.mspapi.formdata.fields) do
+    if rfsuite.app.Page and rfsuite.app.Page.apidata then
+        for _, field in ipairs(rfsuite.app.Page.apidata.formdata.fields) do
             actual_fields[field.apikey] = field
         end
     end

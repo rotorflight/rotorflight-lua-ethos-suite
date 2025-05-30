@@ -1,7 +1,7 @@
 local title = "Motor/ESC Features"
 local enableWakeup = false
 
-local mspapi = {
+local apidata = {
     api = {
         [1] = 'MOTOR_CONFIG',
         [2] = 'ESC_SENSOR_CONFIG',
@@ -39,7 +39,7 @@ local function wakeup()
 end
 
 return {
-    mspapi = mspapi,
+    apidata = apidata,
     reboot = false,
     eepromWrite = true,    
     title = title,

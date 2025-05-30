@@ -19,7 +19,7 @@ local x = w - 15
 local displayPos = {x = x - buttonW - buttonWs - 5 - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = 200, h = rfsuite.app.radio.navbuttonHeight}
 
 
-local mspapi = {
+local apidata = {
     api = {
         [1] = nil,
     },
@@ -206,7 +206,7 @@ local function onToolMenu(self)
 end
 
 return {
-    mspapi = mspapi,
+    apidata = apidata,
     reboot = false,
     eepromWrite = false,
     minBytes = 0,
