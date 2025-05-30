@@ -1154,7 +1154,10 @@ return {
       ["theme_load_error"] = "Your theme did not load correctly. Falling back to default theme.",
       ["validate_sensors"] = "MISSING REQUIRED SENSORS",
       ["loading"] = "ROTORFLIGHT",
-      ["waiting_for_connection"] = "WAITING FOR CONNECTION"
+      ["waiting_for_connection"] = "CONNECTING",
+      ["check_bg_task"] = "BG TASK",
+      ["check_rf_module_on"] = "RF MODULE",
+      ["check_discovered_sensors"] = "SENSORS"
     },
     ["governor"] = {
       ["UNKNOWN"] = "UNBEKANNT",
