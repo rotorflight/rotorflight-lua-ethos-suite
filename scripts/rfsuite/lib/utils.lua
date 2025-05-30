@@ -567,15 +567,15 @@ function utils.simSensors(id)
 
     local filepath
 
-    if rfsuite.utils.file_exists(localPath) then
-        filepath = localPath
-    elseif rfsuite.utils.file_exists(fallbackPath) then
-        filepath = fallbackPath
-    else
+    -- try primary, else fallback, else nothing
+    local chunk, err = loadfile(localPath)
+    if not chunk then
+        chunk, err = loadfile(fallbackPath)
+    end
+    if not chunk then
+        -- neither file exists or compiled
         return 0
     end
-
-    local chunk, err = loadfile(filepath)  -- intentionally not using rfsuite.compiler.loadfile here
     if not chunk then
         print("Error loading telemetry file: " .. err)
         return 0
