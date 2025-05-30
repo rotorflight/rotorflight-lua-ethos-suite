@@ -87,7 +87,7 @@ dashboard.utils = assert(
 
 -- small helper to draw a thick arc from angleStart down to angleEnd
 local function drawArc(cx, cy, radius, thickness, angleStart, angleEnd, color)
-  local stepDeg   = 4
+  local stepDeg   = 1
   local radThick  = thickness / 2
   angleStart = math.rad(angleStart)
   angleEnd   = math.rad(angleEnd)
