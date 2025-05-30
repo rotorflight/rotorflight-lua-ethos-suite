@@ -576,9 +576,9 @@ function utils.simSensors(id)
     local filepath
 
     -- try primary, else fallback, else nothing
-    local chunk, err = loadfile(localPath)
+    local chunk, err = rfsuite.compiler.loadfile(localPath)
     if not chunk then
-        chunk, err = loadfile(fallbackPath)
+        chunk, err = rfsuite.compiler.loadfile(fallbackPath)
     end
     if not chunk then
         -- neither file exists or compiled

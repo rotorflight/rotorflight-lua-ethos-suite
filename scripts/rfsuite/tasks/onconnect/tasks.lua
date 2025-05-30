@@ -99,13 +99,18 @@ function tasks.wakeup()
         local cachePath = "cache/" .. cacheFile
         local taskMetadata
 
-        if io.open(cachePath, "r") then
-            local ok, cached = pcall(dofile, cachePath)
+        -- try loading cache in one step (no extra io.open)
+        local loadf, loadErr = rfsuite.compiler.loadfile(cachePath)
+        if loadf then
+            local ok, cached = pcall(loadf)
             if ok and type(cached) == "table" then
                 taskMetadata = cached
                 rfsuite.utils.log("[cache] Loaded onconnect task metadata from cache","info")
             else
-                rfsuite.utils.log("[cache] Failed to load onconnect cache","info")
+                rfsuite.utils.log(
+                  "[cache] Bad onconnect cache: " .. tostring(cached or loadErr),
+                  "info"
+                )
             end
         end
 
