@@ -1026,6 +1026,7 @@ function app.wakeupUI()
         return
     end
 
+
     -- close progress loader.  this essentially just accelerates 
     -- the close of the progress bar once the data is loaded.
     -- so if not yet at 100%.. it says.. move there quickly
@@ -1203,7 +1204,7 @@ function app.wakeupUI()
                     app.triggers.invalidConnectionSetup = true
                 elseif rfsuite.session.apiVersion == nil and app.offlineMode == false then
                     message = rfsuite.i18n.get("app.check_msp_version")
-                    app.triggers.invalidConnectionSetup = true
+                    app.triggers.invalidConnectionSetup = true   
                 elseif not rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiVersionAsString) and app.offlineMode == false then
                     message = rfsuite.i18n.get("app.check_supported_version") .. " (" .. rfsuite.session.apiVersion .. ")."
                     app.triggers.invalidConnectionSetup = true
@@ -1571,11 +1572,6 @@ function app.create_logtool()
 
     app.uiState = app.uiStatus.init
 
-    -- override developermode if file exists.
-    if not rfsuite.preferences.developer.devtools and rfsuite.utils.file_exists("../developermode") then
-        rfsuite.preferences.developer.devtools = true
-    end
-
     rfsuite.preferences.menulastselected["mainmenu"] = pidx
     rfsuite.app.ui.progressDisplay()
 
@@ -1608,11 +1604,6 @@ function app.create()
     app.radio = assert(rfsuite.compiler.loadfile("app/radios.lua"))()
 
     app.uiState = app.uiStatus.init
-
-    -- override developermode if file exists.
-    if not rfsuite.preferences.developer.devtools and rfsuite.utils.file_exists("../developermode") then
-        rfsuite.preferences.developer.devtools = true
-    end
 
     app.ui.openMainMenu()
 
