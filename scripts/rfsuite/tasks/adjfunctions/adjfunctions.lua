@@ -278,10 +278,6 @@ local adjfuncAdjJustUp = false
 ]]
 function adjfunc.wakeup()
 
-    if rfsuite.session.onConnect.low then
-        return
-    end
-
     -- do not run the remaining code
     if rfsuite.preferences.events.adj_f == false and rfsuite.preferences.events.adj_v == false then return end
 
