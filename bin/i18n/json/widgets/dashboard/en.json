@@ -33,5 +33,10 @@
     "english": "SENSORS",
     "translation": "SENSORS",
     "needs_translation": "false"
+  },
+  "no_link": {
+    "english": "NO LINK",
+    "translation": "NO LINK",
+    "needs_translation": "NO LINK"
   }
 }

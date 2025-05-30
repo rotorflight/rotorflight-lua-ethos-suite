@@ -1157,7 +1157,8 @@ return {
       ["waiting_for_connection"] = "CONNECTING",
       ["check_bg_task"] = "BG TASK",
       ["check_rf_module_on"] = "RF MODULE",
-      ["check_discovered_sensors"] = "SENSORS"
+      ["check_discovered_sensors"] = "SENSORS",
+      ["no_link"] = "NO LINK"
     },
     ["governor"] = {
       ["UNKNOWN"] = "SCONOSCIUTO",
