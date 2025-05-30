@@ -55,6 +55,7 @@ local lastLoadedBoxCount = 0
 
 -- Flag to perform initialization logic only once on first wakeup
 local firstWakeup = true
+lcd.invalidate() -- force an initial redraw to show the hourglass
 
 -- Layout state for boxes (UI elements):
 dashboard.boxRects = {}              -- will hold {x, y, w, h, box} for each box
@@ -79,6 +80,9 @@ dashboard.objectsByType = {}
 -- Timestamps of the last wakeup calls to throttle based on intervals:
 local lastWakeup   = 0  -- for visible wakeup
 local lastWakeupBg = 0  -- for background wakeup
+
+-- initialize cache once
+dashboard._moduleCache = dashboard._moduleCache or {}
 
 -- Utility methods loaded from external utils.lua (drawing, color helpers, etc.)
 dashboard.utils = assert(
@@ -171,22 +175,30 @@ end
 -- Logs a message if an object fails to load.
 -- @param boxConfigs Table of box configuration tables, each containing a `type` field.
 function dashboard.loadAllObjects(boxConfigs)
-    dashboard.objectsByType = {}  -- clear old cache!
-    local loaded = {}
+    dashboard.objectsByType = {}  -- clear old cache of active objects
     for _, box in ipairs(boxConfigs or {}) do
         local typ = box.type
-        if typ and not loaded[typ] then
-            local baseDir = rfsuite.config.baseDir or "default"
-            local objPath = "SCRIPTS:/" .. baseDir .. "/widgets/dashboard/objects/" .. typ .. ".lua"
-            local ok, obj = pcall(function()
-                return assert(rfsuite.compiler.loadfile(objPath))()
-            end)
-            if ok and type(obj) == "table" then
-                dashboard.objectsByType[typ] = obj
-            else
-                rfsuite.utils.log("Failed to load object: " .. tostring(typ), "info")
+        if typ then
+            -- only load from disk the first time we see this type
+            if not dashboard._moduleCache[typ] then
+                local baseDir = rfsuite.config.baseDir or "default"
+                local objPath = "SCRIPTS:/" .. baseDir .. "/widgets/dashboard/objects/" .. typ .. ".lua"
+                local ok, obj = pcall(function()
+                    return assert(rfsuite.compiler.loadfile(objPath))()
+                end)
+                if ok and type(obj) == "table" then
+                    dashboard._moduleCache[typ] = obj
+                else
+                    rfsuite.utils.log("Failed to load object: " .. tostring(typ), "info")
+                    -- ensure we don’t retry a broken type endlessly
+                    dashboard._moduleCache[typ] = false
+                end
             end
-            loaded[typ] = true
+
+            -- if we have a valid cached module, assign it
+            if dashboard._moduleCache[typ] then
+                dashboard.objectsByType[typ] = dashboard._moduleCache[typ]
+            end
         end
     end
 end
@@ -629,6 +641,14 @@ end
 -- Otherwise, it falls back to calling a generic state paint function.
 -- @param widget The widget object to be painted.
 function dashboard.paint(widget)
+
+    -- on the *first* paint, immediately draw the spinner and bail out
+    if firstWakeup then
+        local W, H = lcd.getWindowSize()
+        dashboard.hourglass(0, 0, W, H)
+        return
+    end
+
     local state = dashboard.flightmode or "preflight"
     local module = loadedStateModules[state]
 

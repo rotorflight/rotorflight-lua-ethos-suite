@@ -883,6 +883,23 @@ function ui.openPageRefresh(idx, title, script, extra1, extra2, extra3, extra5, 
     rfsuite.app.triggers.isReady = false
 end
 
+-- Cache for help modules to avoid repeated file_exists and loadfile
+ui._helpCache = ui._helpCache or {}
+local function getHelpData(section)
+  if ui._helpCache[section] == nil then
+    local helpPath = "app/modules/" .. section .. "/help.lua"
+    if rfsuite.utils.file_exists(helpPath) then
+      local ok, helpData = pcall(function()
+        return assert(rfsuite.compiler.loadfile(helpPath))()
+      end)
+      ui._helpCache[section] = (ok and type(helpData)=="table") and helpData or false
+    else
+      ui._helpCache[section] = false
+    end
+  end
+  return ui._helpCache[section] or nil
+end
+
 
 --[[
     Function: ui.openPage
@@ -920,13 +937,8 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
     -- Load the help file if it exists
     local section = script:match("([^/]+)")
-    local helpPath = "app/modules/" .. section .. "/help.lua"
-    if rfsuite.utils.file_exists(helpPath) then
-        local helpData = assert(rfsuite.compiler.loadfile(helpPath))()
-        rfsuite.app.fieldHelpTxt = helpData.fields
-    else
-        rfsuite.app.fieldHelpTxt = nil
-    end
+    local helpData = getHelpData(section)
+    rfsuite.app.fieldHelpTxt = helpData and helpData.fields or nil
 
    -- rfsuite.app.Page = assert(rfsuite.compiler.loadfile(modulePath))(idx)
 
@@ -1243,15 +1255,11 @@ function ui.navigationButtons(x, y, w, h)
 
     -- HELP BUTTON
     if navButtons.help ~= nil and navButtons.help == true then
-        local section = rfsuite.app.lastScript:match("([^/]+)") -- return just the folder name
-        local script = string.match(rfsuite.app.lastScript, "/([^/]+)%.lua$")
-
-        -- Attempt to load the help.lua file
-        local helpPath = "app/modules/" .. section .. "/help.lua"
-
-        if rfsuite.utils.file_exists(helpPath) then
-
-            local help = assert(rfsuite.compiler.loadfile(helpPath))()
+        local section = rfsuite.app.lastScript:match("([^/]+)")
+        local script = rfsuite.app.lastScript:match("/([^/]+)%.lua$")
+        -- Load help module with caching
+        local help = getHelpData(section)
+        if help then
 
             -- Execution of the file succeeded
             rfsuite.app.formNavigationFields['help'] = form.addButton(line, {x = helpOffset, y = y, w = wS, h = h}, {
@@ -1275,16 +1283,10 @@ function ui.navigationButtons(x, y, w, h)
             })
 
         else
-            -- File loading failed
-            rfsuite.utils.log("Failed to load help.lua: " .. loadError,"debug")
+            -- No help available
             rfsuite.app.formNavigationFields['help'] = form.addButton(line, {x = helpOffset, y = y, w = wS, h = h}, {
                 text = rfsuite.i18n.get("app.navigation_help"),
-                icon = nil,
-                options = FONT_S,
-                paint = function()
-                end,
-                press = function()
-                end
+                icon = nil, options = FONT_S, paint = function() end, press = function() end
             })
             rfsuite.app.formNavigationFields['help']:enable(false)
         end
