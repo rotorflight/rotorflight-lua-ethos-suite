@@ -127,10 +127,6 @@ local eventTable = {
 function events.wakeup()
     local currentTime = os.clock()
 
-    if rfsuite.session.onConnect.low then
-        return
-    end
-
     if rfsuite.session.isConnected and rfsuite.session.telemetryState then
         if telemetryStartTime == nil then
             telemetryStartTime = currentTime

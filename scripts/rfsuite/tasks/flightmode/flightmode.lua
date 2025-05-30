@@ -28,10 +28,6 @@ function flightmode.wakeup()
         return
     end
 
-    if rfsuite.session.onConnect.low then
-        return
-    end   
-
     local mode
     local now = os.clock()
 
