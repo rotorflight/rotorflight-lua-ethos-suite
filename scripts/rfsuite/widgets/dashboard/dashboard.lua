@@ -84,7 +84,7 @@ local lastWakeupBg = 0  -- for background wakeup
 -- * CONFIGURABLE SIZES *
 -- Fraction of min(width, height) to use for the spinner/overlay radius.
 -- Increase to ~0.36 for a 20% larger spinner (0.3 * 1.2)
-dashboard.hourglassScale    = 0.38
+dashboard.loaderScale    = 0.38
 dashboard.overlayScale      = 0.38
 
 -- initialize cache once
@@ -124,60 +124,40 @@ end
 -- a spinning loader + counter in one
 -- at top of dashboard.lua, ensure you still have drawArc defined…
 
--- spinning loader + dynamically-scaled counter
-function dashboard.hourglass(x, y, w, h, txt)
+-- spinning loader + image in center
+-- spinning loader + fixed‐size image in center
+function dashboard.loader(x, y, w, h, imageName)
 
-  -- set color
-  local color
-  if lcd.darkMode() then
-    color = lcd.RGB(255,255,255)
-  else   
-    color = lcd.RGB(0,0,0)
-  end  
+  -- spinner arc color and state
+  local color = lcd.darkMode() and lcd.RGB(255,255,255) or lcd.RGB(0,0,0)
   lcd.color(color)
-
-  -- spin state
   dashboard._loader = dashboard._loader or { angle = 0 }
   local st = dashboard._loader
 
-  -- center + sizing (scaleable)
+  -- center + sizing for arc
   local cx, cy    = x + w/2, y + h/2
-  -- use dashboard.hourglassScale if set, otherwise fall back to 0.3
-  local radius    = math.min(w, h) * (dashboard.hourglassScale or 0.3)
+  local radius    = math.min(w, h) * (dashboard.loaderScale or 0.3)
   local thickness = math.max(6, radius * 0.15)
-  local sweepDeg  = 90  -- how large the arc is
+  local sweepDeg  = 90
 
-  -- draw the rotating arc
+  -- draw rotating arc
   drawArc(cx, cy, radius, thickness, st.angle, st.angle - sweepDeg, color)
-  st.angle = (st.angle + 20) % 360  -- advance
+  st.angle = (st.angle + 20) % 360
 
-  -- build our counter text
-  if not txt then
-    txt = rfsuite.i18n.get("widgets.dashboard.loading") 
-  end
-  -- get resolution-aware font list (see utils.box dynamic sizing) :contentReference[oaicite:0]{index=0}
-  local fontLists = dashboard.utils.getFontListsForResolution()
-  local fonts     = fontLists.value_default
-
-  -- compute available space (60% of diameter)
-  local avail   = radius * 2 * 0.8
-  local bestF, bestW, bestH = fonts[1], 0, 0
-
-  -- pick largest font that fits
-  for i = #fonts, 1, -1 do
-    local f = fonts[i]
-    lcd.font(f)
-    local tw, th = lcd.getTextSize(txt)
-    if tw <= avail and th <= avail then
-      bestF, bestW, bestH = f, tw, th
-      break
-    end
+  -- load & draw center image at fixed size
+  imageName =   "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/gfx/logo.png"
+  local bmp = rfsuite.utils.loadImage(imageName)
+  if bmp then
+    -- force image to a square that's half the spinner diameter
+    local imgSize = math.min(w, h) * 0.5
+    local bx = cx - (imgSize / 2)
+    local by = cy - (imgSize / 2)
+    lcd.drawBitmap(bx, by, bmp, imgSize, imgSize)
   end
 
-  -- draw centered text
-  lcd.font(bestF)
-  lcd.drawText(cx - bestW/2, cy - bestH/2, txt)
 end
+
+
 
 -- spinning ring loader with persistent central message until animation cycles complete
 function dashboard.overlaymessage(x, y, w, h, txt)
@@ -503,7 +483,7 @@ function dashboard.renderLayout(widget, config)
     -- PHASE 2: HOURGLASS until first threaded‐wakeup pass completes
     ----------------------------------------------------------------
     if objectsThreadedWakeupCount < 1 then
-        dashboard.hourglass    (0, 0, W, H)
+        dashboard.loader    (0, 0, W, H)
         lcd.invalidate()
         return
     end
@@ -790,7 +770,7 @@ function dashboard.paint(widget)
     -- on the *first* paint, immediately draw the spinner and bail out
     if firstWakeup then
         local W, H = lcd.getWindowSize()
-        dashboard.hourglass(0, 0, W, H)
+        dashboard.loader(0, 0, W, H)
         return
     end
 
