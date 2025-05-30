@@ -101,7 +101,7 @@ dashboard.utils = assert(
 
 -- small helper to draw a thick arc from angleStart down to angleEnd
 local function drawArc(cx, cy, radius, thickness, angleStart, angleEnd, color)
-  local stepDeg   = 1
+  local stepDeg   = 3
   local radThick  = thickness / 2
   angleStart = math.rad(angleStart)
   angleEnd   = math.rad(angleEnd)
@@ -358,6 +358,8 @@ function dashboard.computeOverlayMessage()
         return rfsuite.i18n.get("widgets.dashboard.check_discovered_sensors")
     elseif not rfsuite.session.isConnected then
         return rfsuite.i18n.get("widgets.dashboard.waiting_for_connection")    
+    elseif not rfsuite.session.telemetryState and state == "preflight" then
+        return rfsuite.i18n.get("widgets.dashboard.no_link")
     elseif rfsuite.session.telemetryState and rfsuite.tasks.telemetry and not rfsuite.tasks.telemetry.validateSensors() then
         return rfsuite.i18n.get("widgets.dashboard.validate_sensors")
     end
@@ -941,7 +943,14 @@ function dashboard.wakeup(widget)
     -- loadedThemeIntervals.paint_interval       = initTable.paint_interval or 0.5
 
     if visible then
-        local interval = loadedThemeIntervals.wakeup_interval or 0.25
+    local base_interval = loadedThemeIntervals.wakeup_interval or 0.25
+    local interval = base_interval
+
+        -- if the base interval is < 0.5s and there are >10 boxes
+        if base_interval < 0.5 and #dashboard.boxRects > 10 then
+            interval = base_interval * 2
+        end   
+
         if (now - lastWakeup) < interval then
             return
         end
