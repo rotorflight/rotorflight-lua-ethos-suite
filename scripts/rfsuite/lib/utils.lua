@@ -24,27 +24,9 @@ local arg = {...}
 local config = arg[1]
 
 function utils.inFlight()
-    local telemetry = rfsuite.tasks.telemetry
-
-    if not telemetry.active() then
-        return false
+    if rfsuite.session.flightMode == "inflight" then
+        return true
     end
-
-    if rfsuite.session.isArmed == true then
-        local governor = telemetry.getSensorSource("governor")
-        local rpm = telemetry.getSensorSource("rpm")
-        local throttle = telemetry.getSensorSource("throttle_percent")
-
-        if governor and governor:value() == 4 then
-            return true
-        elseif rpm and rpm:value() > 500 then
-            return true
-        elseif throttle and throttle:value() > 30 then
-            return true
-        end
-
-    end
-
     return false
 end
 
@@ -575,15 +557,17 @@ function utils.simSensors(id)
 
     local filepath
 
-    -- try primary, else fallback, else nothing
-    local chunk, err = rfsuite.compiler.loadfile(localPath)
-    if not chunk then
-        chunk, err = rfsuite.compiler.loadfile(fallbackPath)
-    end
-    if not chunk then
-        -- neither file exists or compiled
+    if rfsuite.utils.file_exists(localPath) then
+        filepath = localPath
+    elseif rfsuite.utils.file_exists(fallbackPath) then
+        filepath = fallbackPath
+    else
         return 0
     end
+
+    -- this should never be changed to use compiler.loadfile
+    -- as it caches - prventing re-calls with different results!
+    local chunk, err = loadfile(filepath)
     if not chunk then
         print("Error loading telemetry file: " .. err)
         return 0

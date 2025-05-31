@@ -91,7 +91,7 @@ local function onSaveMenu()
                     "SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini",
                     rfsuite.preferences
                 )
-                rfsuite.tasks.events.resetSwitchStates()
+                rfsuite.tasks.events.switches.resetSwitchStates()
                 rfsuite.app.triggers.closeSave = true
                 return true
             end,
