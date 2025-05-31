@@ -39,6 +39,8 @@ events.switches = assert(rfsuite.compiler.loadfile("tasks/events/tasks/switches.
 
 events.flightmode = assert(rfsuite.compiler.loadfile("tasks/events/tasks/flightmode.lua"))(rfsuite.config)
 
+events.maxmin = assert(rfsuite.compiler.loadfile("tasks/events/tasks/maxmin.lua"))(rfsuite.config)
+
 --- Handles periodic wakeup events for the events module.
 --  This function checks if the session is connected and telemetry is active.
 --  If telemetry has just become active, it waits for 2.5 seconds before proceeding.
@@ -60,6 +62,8 @@ function events.wakeup()
         events.telemetry.wakeup()
         events.switches.wakeup()
         events.flightmode.wakeup()
+        events.maxmin.wakeup()
+        
     else
         telemetryStartTime = nil
     end
