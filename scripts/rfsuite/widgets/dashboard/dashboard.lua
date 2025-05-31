@@ -104,11 +104,31 @@ dashboard.loaders = assert(
 )()
 
 function dashboard.loader(x, y, w, h)
-  dashboard.loaders.pulseLoader(dashboard, x, y, w, h)
+  -- 1 = pulse, 2 = rotate, 3 = blink, 4 = static
+    local style = tonumber(rfsuite.preferences.dashboard.loader_style) or 1
+    if style == 1 then
+        dashboard.loaders.pulseLoader(dashboard, x, y, w, h)
+    elseif style == 2 then
+        dashboard.loaders.arcLoader(dashboard, x, y, w, h)
+    elseif style == 3 then
+        dashboard.loaders.staticLoader(dashboard, x, y, w, h)
+    else
+        dashboard.loaders.pulseLoader(dashboard, x, y, w, h)
+    end
 end
 
 function dashboard.overlaymessage(x, y, w, h, txt)
-  dashboard.loaders.pulseOverlayMessage(dashboard, x, y, w, h, txt)
+    -- 1 = pulse, 2 = rotate, 3 = static
+    local style = tonumber(rfsuite.preferences.dashboard.loader_style) or 1
+    if style == 1 then
+        dashboard.loaders.pulseOverlayMessage(dashboard, x, y, w, h, txt)
+    elseif style == 2 then
+        dashboard.loaders.arcOverlayMessage(dashboard, x, y, w, h, txt)
+    elseif style == 3 then
+        dashboard.loaders.staticOverlayMessage(dashboard, x, y, w, h, txt)
+    else
+        dashboard.loaders.pulseOverlayMessage(dashboard, x, y, w, h, txt)
+    end
 end
 
 --- Loads and caches dashboard object modules based on the provided box configurations.

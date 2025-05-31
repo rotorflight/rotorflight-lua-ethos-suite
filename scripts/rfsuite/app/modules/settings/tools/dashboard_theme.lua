@@ -18,17 +18,18 @@ local function openPage(pageIdx, title, script)
 
     settings = rfsuite.preferences.dashboard
 
-    formFieldCount = formFieldCount + 1
-    rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = form.addLine(rfsuite.i18n.get("app.modules.settings.dashboard_theme_preflight"))
-
     -- get theme list
     local themeList = rfsuite.widgets.dashboard.listThemes() 
     local formattedThemes = {}
     for i, theme in ipairs(themeList) do
         table.insert(formattedThemes, { theme.name, theme.idx })
     end
-                                              
+
+    -- preflight theme selection
+    formFieldCount = formFieldCount + 1
+    rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.session.formLineCnt] = form.addLine(rfsuite.i18n.get("app.modules.settings.dashboard_theme_preflight"))
+            
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.session.formLineCnt], nil, 
                                                         formattedThemes, 
                                                         function()
@@ -51,17 +52,11 @@ local function openPage(pageIdx, title, script)
                                                             end
                                                         end)     
 
+    -- inflight theme selection                                                          
     formFieldCount = formFieldCount + 1
     rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
     rfsuite.app.formLines[rfsuite.session.formLineCnt] = form.addLine(rfsuite.i18n.get("app.modules.settings.dashboard_theme_inflight"))
-
-    -- get theme list
-    local themeList = rfsuite.widgets.dashboard.listThemes() 
-    local formattedThemes = {}
-    for i, theme in ipairs(themeList) do
-        table.insert(formattedThemes, { theme.name, theme.idx })
-    end
-                                              
+                              
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.session.formLineCnt], nil, 
                                                         formattedThemes, 
                                                         function()
@@ -83,18 +78,13 @@ local function openPage(pageIdx, title, script)
                                                                 end
                                                             end
                                                         end)                                                             
-    
+
+                                                        
+     -- postflight theme selection                                                            
     formFieldCount = formFieldCount + 1
     rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
     rfsuite.app.formLines[rfsuite.session.formLineCnt] = form.addLine(rfsuite.i18n.get("app.modules.settings.dashboard_theme_postflight"))
-
-    -- get theme list
-    local themeList = rfsuite.widgets.dashboard.listThemes() 
-    local formattedThemes = {}
-    for i, theme in ipairs(themeList) do
-        table.insert(formattedThemes, { theme.name, theme.idx })
-    end
-                                              
+                                    
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.session.formLineCnt], nil, 
                                                         formattedThemes, 
                                                         function()
@@ -116,6 +106,31 @@ local function openPage(pageIdx, title, script)
                                                                 end
                                                             end
                                                         end)      
+
+    formFieldCount = formFieldCount + 1
+    rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.session.formLineCnt] = form.addLine(rfsuite.i18n.get("app.modules.settings.dashboard_theme_loader"))
+
+    -- Loader Theme
+    loaderType = {
+            { rfsuite.i18n.get("app.modules.settings.dashboard_theme_loader_pulse"), 1 },
+            { rfsuite.i18n.get("app.modules.settings.dashboard_theme_loader_rotate"), 2 },
+            { rfsuite.i18n.get("app.modules.settings.dashboard_theme_loader_static"), 3 },
+    }
+
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.session.formLineCnt], nil, 
+                                                        loaderType , 
+                                                        function()
+                                                            if rfsuite.preferences and rfsuite.preferences.dashboard then
+                                                                return settings.loader_style
+                                                            end
+                                                            return nil
+                                                        end, 
+                                                        function(newValue) 
+                                                            if rfsuite.preferences and rfsuite.preferences.dashboard then
+                                                                settings.loader_style = newValue
+                                                            end
+                                                        end)                                                               
 
 end
 

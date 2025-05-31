@@ -420,6 +420,10 @@ return {
         ["dashboard_theme_preflight"] = "Preflight Theme",
         ["dashboard_theme_inflight"] = "Inflight Theme",
         ["dashboard_theme_postflight"] = "Postflight Theme",
+        ["dashboard_theme_loader"] = "Loader Theme",
+        ["dashboard_theme_loader_pulse"] = "PULSE",
+        ["dashboard_theme_loader_rotate"] = "ROTATE",
+        ["dashboard_theme_loader_static"] = "STATIC",
         ["txt_development"] = "Development"
       },
       ["validate_sensors"] = {

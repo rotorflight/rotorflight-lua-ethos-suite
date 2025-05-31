@@ -221,11 +221,6 @@
         "translation": "Settings",
         "needs_translation": "false"
       },
-      "dashboard_global": {
-        "english": "Global",
-        "translation": "Global",
-        "needs_translation": "false"
-      },
       "dashboard_theme_preflight": {
         "english": "Preflight Theme",
         "translation": "Preflight Theme",
@@ -239,6 +234,26 @@
       "dashboard_theme_postflight": {
         "english": "Postflight Theme",
         "translation": "Postflight Theme",
+        "needs_translation": "false"
+      },
+      "dashboard_theme_loader": {
+        "english": "Loader Theme",
+        "translation": "Loader Theme",
+        "needs_translation": "false"
+      },
+      "dashboard_theme_loader_pulse": {
+        "english": "PULSE",
+        "translation": "PULSE",
+        "needs_translation": "false"
+      },
+      "dashboard_theme_loader_rotate": {
+        "english": "ROTATE",
+        "translation": "ROTATE",
+        "needs_translation": "false"
+      },
+      "dashboard_theme_loader_static": {
+        "english": "STATIC",
+        "translation": "STATIC",
         "needs_translation": "false"
       },
       "txt_development": {
