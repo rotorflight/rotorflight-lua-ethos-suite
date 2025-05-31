@@ -472,64 +472,29 @@ local boxes = {
         },        
     },
 
-     {
-        col = 3,
-        row = 2,
-        rowspan = 2,
-        type = "battery",
-        source = "voltage",
-        gaugemin = function()
-            local cfg = rfsuite.session.batteryConfig
-
-            --print(rfsuite.session.batteryConfig.vbatmincellvoltage)
-
-            local cells = (cfg and cfg.batteryCellCount) or 3
-            local minV = (cfg and cfg.vbatmincellvoltage) or 3.0
-            local value = math.max(0, cells * minV)
-            return value
-        end,
-        gaugemax = function()
-            local cfg = rfsuite.session.batteryConfig
-            local cells = (cfg and cfg.batteryCellCount) or 3
-            local maxV = (cfg and cfg.vbatmaxcellvoltage) or 4.2
-            local value = math.max(0, cells * maxV)
-            return value
-        end,
-        gaugebgcolor = "gray",
-        gaugeorientation = "vertical",
-        gaugepadding = 8,
-        gaugebelowtitle = true,
-        showvalue = true,
-        title = "VOLTAGE",
-        unit = "V",
-        color = "black",
-        valuealign = "center",
-        titlealign = "center",
+ {
+        type = "arcmaxgauge",
+        col = 3, row = 2, rowspan = 2,
+        source = "temp_esc",
+        transform = "floor",
+        gaugemin = 0,
+        gaugemax = 140,
+        unit = "°",
+        font = "FONT_STD",
+        textoffsetx = 12,
+        arcOffsetY = 4,
+        arcThickness = 1,
+        startAngle = 225,
+        sweep = 270,
+        arcBgColor = "lightgrey",
+        title = "ESC Temp",
         titlepos = "bottom",
-        titlecolor = "white",
-        gaugecolor = "green",
-        gaugeframecolor = "white",
-         thresholds = {
-            {
-                value = function()
-                    local cfg = rfsuite.session.batteryConfig
-                    local cells = (cfg and cfg.batteryCellCount) or 3
-                    local minV = (cfg and cfg.vbatmincellvoltage) or 3.0
-                    return cells * minV * 1.2 -- 20% above minimum voltage
-                end,
-                color = "red", textcolor = "white"
-            },
-            {
-                value = function()
-                    local cfg = rfsuite.session.batteryConfig
-                    local cells = (cfg and cfg.batteryCellCount) or 3
-                    local warnV = (cfg and cfg.vbatwarningcellvoltage) or 3.5
-                    return cells * warnV * 1.2 -- 20% above minimum voltage
-                end,
-                color = "orange", textcolor = "black"
-            }
-        },       
-    },   
+        thresholds = {
+            { value = 70,  color = "green" },
+            { value = 90,  color = "orange" },
+            { value = 140, color = "red" }
+        }
+    }, 
 
 }
 
