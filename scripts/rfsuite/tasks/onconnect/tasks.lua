@@ -138,6 +138,8 @@ function tasks.wakeup()
                 if level == "high" then
                     rfsuite.utils.playFileCommon("beep.wav")
                     rfsuite.session.isConnected = true
+                    rfsuite.session.flightMode = "preflight"
+                    rfsuite.tasks.events.flightmode.reset()
                     collectgarbage()
                     return
                 end
