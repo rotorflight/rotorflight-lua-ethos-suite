@@ -28,9 +28,6 @@ local boxes = {
         type = "arcgauge",
         col = 1, row = 1,
         source = "voltage",
-        transform = "floor",
-        gaugemin = 0,
-        gaugemax = 140,
         unit = "V",
         font = "FONT_XXL",
         textoffsetx = 12,
@@ -42,9 +39,9 @@ local boxes = {
         title = "VOLTAGE",
         titlepos = "bottom",
         thresholds = {
-            { value = 70,  color = "green" },
-            { value = 90,  color = "orange" },
-            { value = 140, color = "red" }
+            { value = 30,  color = "red" },
+            { value = 50,  color = "orange" },
+            { value = 140, color = "green" }
         },
         min = function()
             local cfg = rfsuite.session.batteryConfig
@@ -62,9 +59,6 @@ local boxes = {
         end,   
         gaugemin = function()
             local cfg = rfsuite.session.batteryConfig
-
-            --print(rfsuite.session.batteryConfig.vbatmincellvoltage)
-
             local cells = (cfg and cfg.batteryCellCount) or 3
             local minV = (cfg and cfg.vbatmincellvoltage) or 3.0
             local value = math.max(0, cells * minV)
@@ -76,7 +70,32 @@ local boxes = {
             local maxV = (cfg and cfg.vbatmaxcellvoltage) or 4.2
             local value = math.max(0, cells * maxV)
             return value
-        end,     
+        end,
+        thresholds = {
+            {
+                value = function(box)
+                local gm = box._cache.gaugemin
+                local gM = box._cache.gaugemax
+                return gm + 0.30 * (gM - gm)
+                end,
+                color = "red"
+            },
+            {
+                value = function(box)
+                local gm = box._cache.gaugemin
+                local gM = box._cache.gaugemax
+                return gm + 0.50 * (gM - gm)
+                end,
+                color = "orange"
+            },
+            {
+                value = function(box)
+                local gM = box._cache.gaugemax
+                return gM
+                end,
+                color = "green"
+            }     
+        }    
     },
     {
         type = "arcgauge",
@@ -85,7 +104,7 @@ local boxes = {
         transform = "floor",
         gaugemin = 0,
         gaugemax = 140,
-        unit = "°",
+        unit = "%",
         font = "FONT_XXL",
         textoffsetx = 12,
         arcOffsetY = 4,
@@ -96,10 +115,10 @@ local boxes = {
         title = "FUEL",
         titlepos = "bottom",
         thresholds = {
-            { value = 70,  color = "green" },
-            { value = 90,  color = "orange" },
-            { value = 140, color = "red" }
-        },  
+            { value = 30,  color = "red" },
+            { value = 50,  color = "orange" },
+            { value = 140, color = "green" }
+        },
         gaugemin = 0,
         gaugemax = 100,     
     }
