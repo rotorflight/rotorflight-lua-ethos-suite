@@ -416,7 +416,6 @@ return {
         ["dashboard"] = "Dashboard",
         ["dashboard_theme"] = "Theme",
         ["dashboard_settings"] = "Settings",
-        ["dashboard_global"] = "Global",
         ["dashboard_theme_preflight"] = "Preflight Theme",
         ["dashboard_theme_inflight"] = "Inflight Theme",
         ["dashboard_theme_postflight"] = "Postflight Theme",
@@ -1163,7 +1162,10 @@ return {
       ["check_bg_task"] = "BG TASK",
       ["check_rf_module_on"] = "RF MODULE",
       ["check_discovered_sensors"] = "SENSORS",
-      ["no_link"] = "NO LINK"
+      ["no_link"] = "NO LINK",
+      ["reset_flight"] = "Reset flight",
+      ["reset_flight_ask_title"] = "Reset flight",
+      ["reset_flight_ask_text"] = "Are you sure you want to reset the flight?"
     },
     ["governor"] = {
       ["UNKNOWN"] = "UNBEKANNT",

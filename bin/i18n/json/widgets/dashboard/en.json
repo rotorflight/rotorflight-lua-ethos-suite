@@ -38,5 +38,20 @@
     "english": "NO LINK",
     "translation": "NO LINK",
     "needs_translation": "NO LINK"
+  },
+  "reset_flight": {
+    "english": "Reset flight",
+    "translation": "Reset flight",
+    "needs_translation": "false"
+  },
+  "reset_flight_ask_title": {
+    "english": "Reset flight",
+    "translation": "Reset flight",
+    "needs_translation": "false"
+  },
+  "reset_flight_ask_text": {
+    "english": "Are you sure you want to reset the flight?",
+    "translation": "Are you sure you want to reset the flight?",
+    "needs_translation": "false"
   }
 }
