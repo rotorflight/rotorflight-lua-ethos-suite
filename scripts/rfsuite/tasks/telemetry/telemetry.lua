@@ -24,7 +24,7 @@ local telemetry = {}
 local sensors = {}
 local protocol, telemetrySOURCE, crsfSOURCE
 local sensorRateLimit = os.clock()
-local SENSOR_RATE = 0.25 -- rate in seconds
+local SENSOR_RATE = 1 -- rate in seconds
 
 -- Store the last validated sensors and timestamp
 local lastValidationResult = nil
@@ -36,8 +36,10 @@ local CACHE_FLUSH_INTERVAL = 5 -- Flush cache every 5 seconds
 
 local telemetryState = false
 
-local sensorStats = {}
 local lastSensorValues = {}
+
+telemetry.sensorStats = {}
+
 
 -- Predefined sensor mappings
 --[[
@@ -74,7 +76,7 @@ local sensorTable = {
     rssi = {
         name = rfsuite.i18n.get("telemetry.sensors.rssi"),
         mandatory = true,
-        maxmin_trigger = nil,
+        maxmin_trigger = true,
         switch_alerts = true,
         unit = UNIT_DB,
         sensors = {
@@ -102,7 +104,7 @@ local sensorTable = {
     armflags = {
         name = rfsuite.i18n.get("telemetry.sensors.arming_flags"),
         mandatory = true,
-        maxmin_trigger = nil,
+        maxmin_trigger = false,
         set_telemetry_sensors = 90,
         sensors = {
             sim = {
@@ -132,7 +134,7 @@ local sensorTable = {
     voltage = {
         name = rfsuite.i18n.get("telemetry.sensors.voltage"),
         mandatory = true,
-        maxmin_trigger = nil,
+        maxmin_trigger = true,
         set_telemetry_sensors = 3,
         switch_alerts = true,
         unit = UNIT_VOLT,
@@ -265,7 +267,7 @@ local sensorTable = {
     fuel = {
         name = rfsuite.i18n.get("telemetry.sensors.fuel"),
         mandatory = false,
-        maxmin_trigger = nil,
+        maxmin_trigger = false,
         set_telemetry_sensors = 6,
         switch_alerts = true,
         unit = UNIT_PERCENT,
@@ -288,7 +290,7 @@ local sensorTable = {
     consumption = {
         name = rfsuite.i18n.get("telemetry.sensors.consumption"),
         mandatory = true,
-        maxmin_trigger = nil,
+        maxmin_trigger = false,
         set_telemetry_sensors = 5,
         switch_alerts = true,
         unit = UNIT_MILLIAMPERE_HOUR,
@@ -312,7 +314,7 @@ local sensorTable = {
     governor = {
         name = rfsuite.i18n.get("telemetry.sensors.governor"),
         mandatory = true,
-        maxmin_trigger = nil,
+        maxmin_trigger = false,
         set_telemetry_sensors = 93,
         sensors = {
             sim = {
@@ -335,7 +337,7 @@ local sensorTable = {
     adj_f = {
         name = rfsuite.i18n.get("telemetry.sensors.adj_func"),
         mandatory = true,
-        maxmin_trigger = nil,
+        maxmin_trigger = false,
         set_telemetry_sensors = 99,
         sensors = {
             sim = {
@@ -356,7 +358,7 @@ local sensorTable = {
     adj_v = {
         name = rfsuite.i18n.get("telemetry.sensors.adj_val"),
         mandatory = true,
-        maxmin_trigger = nil,
+        maxmin_trigger = false,
         -- grouped with adj_f, so no set_telemetry_sensors here
         sensors = {
             sim = {
@@ -378,7 +380,7 @@ local sensorTable = {
     pid_profile = {
         name = rfsuite.i18n.get("telemetry.sensors.pid_profile"),
         mandatory = true,
-        maxmin_trigger = nil,
+        maxmin_trigger = false,
         set_telemetry_sensors = 95,
         sensors = {
             sim = {
@@ -400,7 +402,7 @@ local sensorTable = {
     rate_profile = {
         name = rfsuite.i18n.get("telemetry.sensors.rate_profile"),
         mandatory = true,
-        maxmin_trigger = nil,
+        maxmin_trigger = false,
         set_telemetry_sensors = 96,
         sensors = {
             sim = {
@@ -447,7 +449,7 @@ local sensorTable = {
     armdisableflags = {
         name = rfsuite.i18n.get("telemetry.sensors.armdisableflags"),
         mandatory = true,
-        maxmin_trigger = nil,
+        maxmin_trigger = false,
         set_telemetry_sensors = 91,
         sensors = {
             sim = {
@@ -519,7 +521,7 @@ local sensorTable = {
     cell_count = {
         name = rfsuite.i18n.get("telemetry.sensors.cell_count"),
         mandatory = false,
-        maxmin_trigger = true,
+        maxmin_trigger = false,
         set_telemetry_sensors = nil,
         sensors = {
             sim = {
@@ -814,8 +816,7 @@ end
 function telemetry.reset()
     telemetrySOURCE, crsfSOURCE, protocol = nil, nil, nil
     sensors = {}
-    sensorStats = {} -- Clear min/max tracking
-    local lastSensorValues = {} -- clear last sensor values
+    telemetry.sensorStats = {}
 end
 
 --[[
@@ -839,56 +840,20 @@ function telemetry.wakeup()
     -- Prioritize MSP traffic
     if rfsuite.app.triggers.mspBusy then return end
 
-    -- Rate-limited telemetry checks
+    -- Rate-limited telemetry checks (0.25s)
     if (now - sensorRateLimit) >= SENSOR_RATE then
         sensorRateLimit = now
-    end
 
-    -- Track sensor max/min values
-    for sensorKey, sensorDef in pairs(sensorTable) do
-        local source = telemetry.getSensorSource(sensorKey)
-        if source and source:state() then
-            local val = source:value()
-            if val then
-                -- Check optional per-sensor trigger
-                local shouldTrack = false
-
-                --[[
-                    Determines whether telemetry tracking should be enabled based on various sensor conditions.
-
-                    The logic follows these rules:
-                    1. If `sensorDef.maxmin_trigger` is a function, its return value decides tracking.
-                    2. If the session is armed and the "governor" sensor exists with a value of 4, tracking is enabled.
-                    3. If the session is armed and the "rpm" sensor exists with a value greater than 500, tracking is enabled.
-                    4. If the session is armed and the "throttle_percent" sensor exists with a value greater than 30, tracking is enabled.
-                    5. If the session is armed (fallback), tracking is enabled.
-                    6. Otherwise, tracking is disabled.
-
-                    Variables:
-                    - sensorDef: Table containing sensor definitions, possibly with a custom trigger function.
-                    - shouldTrack: Boolean flag indicating whether telemetry tracking should occur.
-                    - rfsuite.session.isArmed: Boolean indicating if the session is currently armed.
-                    - telemetry.getSensorSource: Function to retrieve sensor data by name.
-                ]]
-                if type(sensorDef.maxmin_trigger) == "function" then
-                    shouldTrack = sensorDef.maxmin_trigger()
-                else
-                    shouldTrack = rfsuite.utils.inFlight()
-                end
-
-                -- onchange tracking
+        -- onchange events tracking (runs every 0.25s)
+        for sensorKey, sensorDef in pairs(sensorTable) do
+            local source = telemetry.getSensorSource(sensorKey)
+            if source and source:state() then
+                local val = source:value()
                 if lastSensorValues[sensorKey] ~= val then
                     if type(sensorDef.onchange) == "function" then
                         sensorDef.onchange(val)
                     end
                     lastSensorValues[sensorKey] = val
-                end
-
-                -- Record min/max if tracking is active
-                if shouldTrack then
-                    sensorStats[sensorKey] = sensorStats[sensorKey] or {min = math.huge, max = -math.huge}
-                    sensorStats[sensorKey].min = math.min(sensorStats[sensorKey].min, val)
-                    sensorStats[sensorKey].max = math.max(sensorStats[sensorKey].max, val)
                 end
             end
         end
@@ -904,7 +869,7 @@ function telemetry.wakeup()
         telemetry.reset()
     end
 
-    -- Reset if telemetry is inactive or RSSI sensor changed
+    -- Reset if telemetry is inactive or telemetry type changed
     if not rfsuite.session.telemetryState or rfsuite.session.telemetryTypeChanged then
         telemetry.reset()
     end
@@ -912,7 +877,10 @@ end
 
 -- retrieve min/max values for a sensor
 function telemetry.getSensorStats(sensorKey)
-    return sensorStats[sensorKey] or {min = nil, max = nil}
+    return telemetry.sensorStats[sensorKey] or {min = nil, max = nil}
 end
+
+-- allow sensor table to be accessed externally
+telemetry.sensorTable = sensorTable
 
 return telemetry

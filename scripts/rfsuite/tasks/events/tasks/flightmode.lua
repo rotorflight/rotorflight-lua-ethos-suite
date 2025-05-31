@@ -35,7 +35,6 @@ function flightmode.inFlight()
     if not telemetry.active() then
         return false
     end
-
     if rfsuite.session.isArmed then
         local governor = telemetry.getSensorSource("governor")
         local rpm      = telemetry.getSensorSource("rpm")

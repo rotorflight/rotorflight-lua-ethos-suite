@@ -19,31 +19,19 @@ local arg = { ... }
 local config = arg[1]
 local events = {}
 local telemetryStartTime = nil
+local wakeupStep = 0
+local wakeupHandlers = {}
 
---[[
-Loads and initializes event handler modules for telemetry, switches, and flight mode.
+-- List of task module names (must match the .lua filenames)
+local taskNames = { "telemetry", "switches", "flightmode", "maxmin" }
+local taskExecutionPercent = 50 -- 50% of tasks will run each cycle
 
-Each event handler is loaded using the custom compiler's `loadfile` method, which loads the corresponding Lua file
-from the "tasks/events/tasks/" directory. The loaded module is immediately invoked with the current configuration
-(`rfsuite.config`) and assigned to the respective field in the `events` table.
+-- Dynamically load task modules and populate wakeupHandlers
+for _, name in ipairs(taskNames) do
+    events[name] = assert(rfsuite.compiler.loadfile("tasks/events/tasks/" .. name .. ".lua"))(rfsuite.config)
+    table.insert(wakeupHandlers, function() events[name].wakeup() end)
+end
 
-- `events.telemetry`: Handles telemetry-related events.
-- `events.switches`: Handles switch-related events.
-- `events.flightmode`: Handles flight mode change events.
-
-If any module fails to load, an error is raised due to the use of `assert`.
-]]
-events.telemetry = assert(rfsuite.compiler.loadfile("tasks/events/tasks/telemetry.lua"))(rfsuite.config)
-
-events.switches = assert(rfsuite.compiler.loadfile("tasks/events/tasks/switches.lua"))(rfsuite.config)
-
-events.flightmode = assert(rfsuite.compiler.loadfile("tasks/events/tasks/flightmode.lua"))(rfsuite.config)
-
---- Handles periodic wakeup events for the events module.
---  This function checks if the session is connected and telemetry is active.
---  If telemetry has just become active, it waits for 2.5 seconds before proceeding.
---  After the delay, it triggers wakeup handlers for telemetry, switches, and flight mode events.
---  If telemetry is not active, it resets the telemetry start time.
 function events.wakeup()
     local currentTime = os.clock()
 
@@ -57,17 +45,23 @@ function events.wakeup()
             return
         end
 
-        events.telemetry.wakeup()
-        events.switches.wakeup()
-        events.flightmode.wakeup()
+        -- Determine how many tasks to run this cycle based on config
+        local percent = taskExecutionPercent or 25  -- Default to 25% if not set
+        local tasksPerWakeup = math.max(1, math.floor((percent / 100) * #wakeupHandlers))
+
+        for i = 1, tasksPerWakeup do
+            wakeupStep = (wakeupStep % #wakeupHandlers) + 1
+            wakeupHandlers[wakeupStep]()
+        end
     else
         telemetryStartTime = nil
+        wakeupStep = 0
     end
 end
 
---- Resets the telemetry start time.
 function events.reset()
     telemetryStartTime = nil
 end
 
 return events
+
