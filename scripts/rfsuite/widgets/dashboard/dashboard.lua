@@ -956,4 +956,46 @@ function dashboard.savePreference(key, value)
     end
 end
 
+-- Ask user for confirmation before erasing dataflash
+local function resetFlightModeAsk()
+
+    local buttons = {{
+        label = rfsuite.i18n.get("app.btn_ok"),
+        action = function()
+
+            -- we push this to the background task to do its job
+            rfsuite.session.flightMode = "preflight"
+            rfsuite.tasks.events.flightmode.reset()
+            dashboard.reload_themes()
+            return true
+        end
+    }, {
+        label = rfsuite.i18n.get("app.btn_cancel"),
+        action = function()
+            return true
+        end
+    }}
+
+    form.openDialog({
+        width = nil,
+        title =  rfsuite.i18n.get("widgets.dashboard.reset_flight_ask_title"),
+        message = rfsuite.i18n.get("widgets.dashboard.reset_flight_ask_text"),
+        buttons = buttons,
+        wakeup = function()
+        end,
+        paint = function()
+        end,
+        options = TEXT_LEFT
+    })
+
+end    
+
+function dashboard.menu(widget)
+
+    return {
+        {rfsuite.i18n.get("widgets.dashboard.reset_flight"), resetFlightModeAsk},
+    }
+end
+
+
 return dashboard
