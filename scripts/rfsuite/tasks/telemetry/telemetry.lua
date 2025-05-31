@@ -24,7 +24,7 @@ local telemetry = {}
 local sensors = {}
 local protocol, telemetrySOURCE, crsfSOURCE
 local sensorRateLimit = os.clock()
-local SENSOR_RATE = 0.25 -- rate in seconds
+local SENSOR_RATE = 1 -- rate in seconds
 
 -- Store the last validated sensors and timestamp
 local lastValidationResult = nil
@@ -840,24 +840,24 @@ function telemetry.wakeup()
     -- Prioritize MSP traffic
     if rfsuite.app.triggers.mspBusy then return end
 
-    -- Rate-limited telemetry checks
+    -- Rate-limited telemetry checks (0.25s)
     if (now - sensorRateLimit) >= SENSOR_RATE then
         sensorRateLimit = now
-    end
 
-    -- onchange events tracking
-    for sensorKey, sensorDef in pairs(sensorTable) do
-        local source = telemetry.getSensorSource(sensorKey)
-        if source and source:state() then
-            local val = source:value()
-            if lastSensorValues[sensorKey] ~= val then
-                if type(sensorDef.onchange) == "function" then
-                    sensorDef.onchange(val)
+        -- onchange events tracking (runs every 0.25s)
+        for sensorKey, sensorDef in pairs(sensorTable) do
+            local source = telemetry.getSensorSource(sensorKey)
+            if source and source:state() then
+                local val = source:value()
+                if lastSensorValues[sensorKey] ~= val then
+                    if type(sensorDef.onchange) == "function" then
+                        sensorDef.onchange(val)
+                    end
+                    lastSensorValues[sensorKey] = val
                 end
-                lastSensorValues[sensorKey] = val
             end
-        end    
-    end    
+        end
+    end
 
     -- Periodic cache flush every 5 seconds
     if ((now - lastCacheFlushTime) >= CACHE_FLUSH_INTERVAL) or rfsuite.session.resetTelemetry == true then
@@ -869,7 +869,7 @@ function telemetry.wakeup()
         telemetry.reset()
     end
 
-    -- Reset if telemetry is inactive or RSSI sensor changed
+    -- Reset if telemetry is inactive or telemetry type changed
     if not rfsuite.session.telemetryState or rfsuite.session.telemetryTypeChanged then
         telemetry.reset()
     end
