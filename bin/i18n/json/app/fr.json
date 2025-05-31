@@ -236,6 +236,26 @@
         "translation": "Postflight Theme",
         "needs_translation": "true"
       },
+      "dashboard_theme_loader": {
+        "english": "Loader Theme",
+        "translation": "Loader Theme",
+        "needs_translation": "true"
+      },
+      "dashboard_theme_loader_pulse": {
+        "english": "PULSE",
+        "translation": "PULSE",
+        "needs_translation": "true"
+      },
+      "dashboard_theme_loader_rotate": {
+        "english": "ROTATE",
+        "translation": "ROTATE",
+        "needs_translation": "true"
+      },
+      "dashboard_theme_loader_static": {
+        "english": "STATIC",
+        "translation": "STATIC",
+        "needs_translation": "true"
+      },
       "txt_development": {
         "english": "Development",
         "translation": "Development",

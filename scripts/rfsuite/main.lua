@@ -64,6 +64,7 @@ local userpref_defaults ={
         theme_preflight = "system/default",
         theme_inflight = "system/default",
         theme_postflight = "system/default",
+        loader_style = 1, -- 1 = pulse, 2 = rotate, 4 = static
     },
     events = {
         armflags = true,
