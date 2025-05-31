@@ -416,6 +416,7 @@ return {
         ["dashboard"] = "Dashboard",
         ["dashboard_theme"] = "Theme",
         ["dashboard_settings"] = "Settings",
+        ["dashboard_global"] = "Global",
         ["dashboard_theme_preflight"] = "Preflight Theme",
         ["dashboard_theme_inflight"] = "Inflight Theme",
         ["dashboard_theme_postflight"] = "Postflight Theme",

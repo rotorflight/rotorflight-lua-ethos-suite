@@ -221,6 +221,11 @@
         "translation": "Settings",
         "needs_translation": "true"
       },
+      "dashboard_global": {
+        "english": "Global",
+        "translation": "Global",
+        "needs_translation": "true"
+      },
       "dashboard_theme_preflight": {
         "english": "Preflight Theme",
         "translation": "Preflight Theme",
