@@ -49,7 +49,7 @@ local wakeupScheduler = 0
 -- Spread scheduling of object wakeups to avoid doing them all at once:
 local objectWakeupIndex = 1             -- current object index for wakeup
 local objectWakeupsPerCycle = nil       -- number of objects to wake per cycle (calculated later)
-local objectSchedulerPercentage = 0.2   -- fraction of total objects to wake each cycle (20%)
+local objectSchedulerPercentage = 0.5   -- fraction of total objects to wake each cycle (20%)
 local objectsThreadedWakeupCount = 0
 local lastLoadedBoxCount = 0
 
@@ -776,7 +776,7 @@ function dashboard.wakeup(widget)
 
         -- if the base interval is < 0.5s and there are >10 boxes
         if base_interval < 0.5 and #dashboard.boxRects > 10 then
-            interval = base_interval * 2
+            interval = 0.5
         end   
 
         if (now - lastWakeup) < interval then
