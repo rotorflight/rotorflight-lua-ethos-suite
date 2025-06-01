@@ -302,15 +302,17 @@ local function trimHeader(data)
     return out
 end
 
-local function getLogDir()
-
+local function getLogDir(dirname)
     -- make sure folder exists
     os.mkdir("LOGS:")
     os.mkdir("LOGS:/rfsuite")
     os.mkdir("LOGS:/rfsuite/telemetry")
-    os.mkdir("LOGS:/rfsuite/telemetry/" .. rfsuite.session.mcu_id)
+    if  not dirname  then
+        os.mkdir("LOGS:/rfsuite/telemetry/" .. rfsuite.session.mcu_id)
+        return "LOGS:/rfsuite/telemetry/" .. rfsuite.session.mcu_id .. "/"
+    end
 
-    return "LOGS:/rfsuite/telemetry/" .. rfsuite.session.mcu_id .. "/"
+    return "LOGS:/rfsuite/telemetry/" .. dirname .. "/" 
 
 end
 
@@ -582,7 +584,7 @@ function findAverage(numbers)
     return average
 end
 
-local function openPage(pidx, title, script, logfile, displaymode)
+local function openPage(pidx, title, script, logfile, displaymode,dirname)
     currentDisplayMode = displaymode
 
     rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
@@ -599,12 +601,16 @@ local function openPage(pidx, title, script, logfile, displaymode)
     rfsuite.app.ui.fieldHeader("Logs - " .. extractShortTimestamp(logfile))
     activeLogFile = logfile
 
-    local filePath = getLogDir() .. "/" .. logfile
-    logFileHandle, err = io.open(filePath, "rb")
-    if not logFileHandle then
-        system.messageBox("Failed to load log file: " .. err)
-        return
+    local filePath
+
+    if rfsuite.session.activeLogDir then
+        filePath = getLogDir(rfsuite.session.activeLogDir) .. "/" .. logfile
+    else
+        filePath = getLogDir() .. "/" .. logfile
     end
+    logFileHandle, err = io.open(filePath, "rb")
+
+
 
     -- slider
     local posField = {x = graphPos['x_start'], y = graphPos['slider_y'], w = graphPos['width'] - 10, h = 40}
