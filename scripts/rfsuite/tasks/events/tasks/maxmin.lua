@@ -21,22 +21,30 @@ local config = arg[1]
 local maxmin = {}
 
 local lastSensorValues = {}
-
 local sensorTable
 
-function maxmin.wakeup()
+-- Use os.clock() to throttle to once every 2 CPU‐seconds:
+local lastTrackTime = 0
 
-    if not rfsuite.session.flightMode == "inflight" then
+function maxmin.wakeup()
+    -- Get CPU time in seconds since the Lua interpreter started
+    local now = os.clock()
+
+    -- If it has not been at least 2 seconds of CPU time since last tracking, skip
+    if now - lastTrackTime < 2 then
         return
     end
 
-     -- Initialize sensor definitions if not already done
+    -- Update timestamp so next run must wait another 2 CPU‐seconds
+    lastTrackTime = now
+
+    -- Initialize sensor definitions if not already done
     if not sensorTable then
         sensorTable = rfsuite.tasks.telemetry.sensorTable
     end
 
     -- Ensure telemetry module is available
-    if not telemetry then  
+    if not telemetry then
         telemetry = rfsuite.tasks.telemetry
     end
 
@@ -46,49 +54,35 @@ function maxmin.wakeup()
         if source and source:state() then
             local val = source:value()
             if val then
-                -- Check optional per-sensor trigger
+                -- Determine whether to track this sensor
                 local shouldTrack = false
 
-                --[[
-                    Determines whether telemetry tracking should be enabled based on various sensor conditions.
-
-                    The logic follows these rules:
-                    1. If `sensorDef.maxmin_trigger` is a function, its return value decides tracking.
-                    2. If the session is armed and the "governor" sensor exists with a value of 4, tracking is enabled.
-                    3. If the session is armed and the "rpm" sensor exists with a value greater than 500, tracking is enabled.
-                    4. If the session is armed and the "throttle_percent" sensor exists with a value greater than 30, tracking is enabled.
-                    5. If the session is armed (fallback), tracking is enabled.
-                    6. Otherwise, tracking is disabled.
-
-                    Variables:
-                    - sensorDef: Table containing sensor definitions, possibly with a custom trigger function.
-                    - shouldTrack: Boolean flag indicating whether telemetry tracking should occur.
-                    - rfsuite.session.isArmed: Boolean indicating if the session is currently armed.
-                    - telemetry.getSensorSource: Function to retrieve sensor data by name.
-                ]]
                 if type(sensorDef.maxmin_trigger) == "function" then
                     shouldTrack = sensorDef.maxmin_trigger()
-                else    
+                else
                     shouldTrack = sensorDef.maxmin_trigger
                 end
 
-
                 -- Record min/max if tracking is active
                 if shouldTrack then
-                    rfsuite.tasks.telemetry.sensorStats[sensorKey] = rfsuite.tasks.telemetry.sensorStats[sensorKey] or {min = math.huge, max = -math.huge}
-                    rfsuite.tasks.telemetry.sensorStats[sensorKey].min = math.min(rfsuite.tasks.telemetry.sensorStats[sensorKey].min, val)
-                    rfsuite.tasks.telemetry.sensorStats[sensorKey].max = math.max(rfsuite.tasks.telemetry.sensorStats[sensorKey].max, val)
+                    rfsuite.tasks.telemetry.sensorStats[sensorKey] =
+                        rfsuite.tasks.telemetry.sensorStats[sensorKey] or {min = math.huge, max = -math.huge}
+
+                    rfsuite.tasks.telemetry.sensorStats[sensorKey].min =
+                        math.min(rfsuite.tasks.telemetry.sensorStats[sensorKey].min, val)
+                    rfsuite.tasks.telemetry.sensorStats[sensorKey].max =
+                        math.max(rfsuite.tasks.telemetry.sensorStats[sensorKey].max, val)
                 end
             end
         end
     end
-
-
 end
 
 function maxmin.reset()
     rfsuite.tasks.telemetry.sensorStats = {} -- Clear min/max tracking
-    lastSensorValues = {} -- clear last sensor values
+    lastSensorValues = {}                   -- Clear last sensor values
+    -- Reset throttle timestamp so next wakeup always runs
+    lastTrackTime = 0
 end
 
 return maxmin
