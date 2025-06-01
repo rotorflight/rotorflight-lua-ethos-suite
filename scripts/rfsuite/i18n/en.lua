@@ -419,6 +419,10 @@ return {
         ["dashboard_theme_preflight"] = "Preflight Theme",
         ["dashboard_theme_inflight"] = "Inflight Theme",
         ["dashboard_theme_postflight"] = "Postflight Theme",
+        ["dashboard_theme_loader"] = "Loader Theme",
+        ["dashboard_theme_loader_pulse"] = "PULSE",
+        ["dashboard_theme_loader_rotate"] = "ROTATE",
+        ["dashboard_theme_loader_static"] = "STATIC",
         ["txt_development"] = "Development"
       },
       ["validate_sensors"] = {
@@ -1157,7 +1161,11 @@ return {
       ["waiting_for_connection"] = "CONNECTING",
       ["check_bg_task"] = "BG TASK",
       ["check_rf_module_on"] = "RF MODULE",
-      ["check_discovered_sensors"] = "SENSORS"
+      ["check_discovered_sensors"] = "SENSORS",
+      ["no_link"] = "NO LINK",
+      ["reset_flight"] = "Reset flight",
+      ["reset_flight_ask_title"] = "Reset flight",
+      ["reset_flight_ask_text"] = "Are you sure you want to reset the flight?"
     },
     ["governor"] = {
       ["UNKNOWN"] = "UNKNOWN",

@@ -28,9 +28,6 @@ local boxes = {
         type = "arcgauge",
         col = 1, row = 1,
         source = "voltage",
-        transform = "floor",
-        gaugemin = 0,
-        gaugemax = 140,
         unit = "V",
         font = "FONT_XXL",
         textoffsetx = 12,
@@ -38,14 +35,13 @@ local boxes = {
         arcThickness = 1,
         startAngle = 225,
         sweep = 270,
-        fillbgcolor = "lightgrey",
+        arcBgColor = "lightgrey",
         title = "VOLTAGE",
         titlepos = "bottom",
-        -- Optional: textcolor = "white", titlecolor = "white", bgcolor = ...
         thresholds = {
-            { value = 70,  fillcolor = "green" },    -- was color
-            { value = 90,  fillcolor = "orange" },
-            { value = 140, fillcolor = "red" }
+            { value = 30,  color = "red" },
+            { value = 50,  color = "orange" },
+            { value = 140, color = "green" }
         },
         min = function()
             local cfg = rfsuite.session.batteryConfig
@@ -74,7 +70,32 @@ local boxes = {
             local maxV = (cfg and cfg.vbatmaxcellvoltage) or 4.2
             local value = math.max(0, cells * maxV)
             return value
-        end,     
+        end,
+        thresholds = {
+            {
+                value = function(box)
+                local gm = box._cache.gaugemin
+                local gM = box._cache.gaugemax
+                return gm + 0.30 * (gM - gm)
+                end,
+                color = "red"
+            },
+            {
+                value = function(box)
+                local gm = box._cache.gaugemin
+                local gM = box._cache.gaugemax
+                return gm + 0.50 * (gM - gm)
+                end,
+                color = "orange"
+            },
+            {
+                value = function(box)
+                local gM = box._cache.gaugemax
+                return gM
+                end,
+                color = "green"
+            }     
+        }    
     },
     {
         type = "arcgauge",
@@ -83,21 +104,21 @@ local boxes = {
         transform = "floor",
         gaugemin = 0,
         gaugemax = 140,
-        unit = "°",
+        unit = "%",
         font = "FONT_XXL",
         textoffsetx = 12,
         arcOffsetY = 4,
         arcThickness = 1,
         startAngle = 225,
         sweep = 270,
-        fillbgcolor = "lightgrey",
+        arcBgColor = "lightgrey",
         title = "FUEL",
         titlepos = "bottom",
         thresholds = {
-            { value = 70,  fillcolor = "green" },
-            { value = 90,  fillcolor = "orange" },
-            { value = 140, fillcolor = "red" }
-        },  
+            { value = 30,  color = "red" },
+            { value = 50,  color = "orange" },
+            { value = 140, color = "green" }
+        },
         gaugemin = 0,
         gaugemax = 100,     
     }

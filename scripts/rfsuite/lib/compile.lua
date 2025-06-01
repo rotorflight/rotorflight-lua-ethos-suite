@@ -3,12 +3,14 @@
  * Copyright (C) Rotorflight Project
  * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
  * compile.lua - Deferred/Throttled Lua Script Compilation and Caching with adaptive LRU in-memory cache
+ * Extended: Added wakeup function for periodic memory-based eviction and scheduled deferred compilation.
 
 * Usage:
 *   local compile = require("rfsuite.lib.compile")
 *   local chunk = compile.loadfile("myscript.lua")
 *   chunk() -- executes the loaded script
 *   -- Or use compile.dofile / compile.require as drop-in replacements
+*   -- Call compile.wakeup() periodically (e.g. in a timer) to evict low-memory entries every 2s and run deferred compiles every 10s.
 
 ]] --
 local compile = {}
@@ -57,11 +59,10 @@ local function strip_prefix(name)
 end
 
 --------------------------------------------------
--- Adaptive LRU Cache (in-memory loaders, interval-based eviction)
+-- Adaptive LRU Cache (in-memory loaders, eviction only on wakeup)
 --------------------------------------------------
 local LUA_RAM_THRESHOLD = 32 * 1024 -- 32 KB free (adjust as needed)
-local LRU_HARD_LIMIT = 200          -- absolute maximum (safety)
-local EVICT_INTERVAL = 5            -- seconds between eviction checks
+local LRU_HARD_LIMIT = 200          -- absolute maximum number of cached scripts (safety)
 
 local function LRUCache()
   local self = {
@@ -87,6 +88,7 @@ local function LRUCache()
   function self:evict_if_low_memory()
     self._last_evict = os.clock()
     local usage = system.getMemoryUsage and system.getMemoryUsage()
+    --print(usage.luaRamAvailable, LUA_RAM_THRESHOLD)
     while #self.order > 0 do
       if usage and usage.luaRamAvailable and usage.luaRamAvailable < LUA_RAM_THRESHOLD then
         local oldest = table.remove(self.order, 1)
@@ -120,12 +122,7 @@ local function LRUCache()
       table.insert(self.order, key)
     end
     self.cache[key] = value
-
-    -- Only check for eviction if at least EVICT_INTERVAL seconds since last check
-    local now = os.clock()
-    if now - self._last_evict > EVICT_INTERVAL then
-      self:evict_if_low_memory()
-    end
+    -- Eviction is now handled only in wakeup(), not on set
   end
 
   return self
@@ -171,26 +168,21 @@ function compile.tick()
 end
 
 function compile.loadfile(script)
-  compile.tick()
   local startTime
   if logTimings then
     startTime = os.clock()
   end
 
   local loader, which, cache_fname
-  -- Prepare cache filename
   local name_for_cache = strip_prefix(script)
   local sanitized      = name_for_cache:gsub("/", "_")
   cache_fname          = sanitized .. "c"
   local cache_key      = cache_fname
 
-  -- 1. Try LRU in-memory cache
   loader = lru_cache:get(cache_key)
   if loader then
-    --rfsuite.utils.log("Loaded from in-memory cache: " .. script, "info")
     which = "in-memory"
   else
-    -- 2. Fallback: disk compiled, or raw
     if not rfsuite.preferences.developer.compile then
       loader = loadfile(script)
       which = "raw"
@@ -205,7 +197,6 @@ function compile.loadfile(script)
         which = "raw (queued for deferred compile)"
       end
     end
-    -- If successfully loaded, store in LRU
     if loader then
       lru_cache:set(cache_key, loader)
     end
@@ -227,20 +218,35 @@ function compile.require(modname)
   if package.loaded[modname] then
     return package.loaded[modname]
   end
-
   local raw_path = modname:gsub("%%.", "/") .. ".lua"
   local path     = strip_prefix(raw_path)
   local chunk
-
   if not rfsuite.preferences.developer.compile then
     chunk = assert(loadfile(path))
   else
     chunk = compile.loadfile(path)
   end
-
   local result = chunk()
   package.loaded[modname] = (result == nil) and true or result
   return package.loaded[modname]
+end
+
+-- Scheduled wakeup: evict cache and run deferred compiles
+compile._last_wakeup = 0
+compile._wakeupInterval = 5 -- seconds between evictions
+compile._last_tick = 0
+compile._tickInterval = 20 -- seconds between deferred compile runs
+
+function compile.wakeup()
+  local now = os.clock()
+  if (now - compile._last_wakeup) >= compile._wakeupInterval then
+    compile._last_wakeup = now
+    lru_cache:evict_if_low_memory()
+  end
+  if (now - compile._last_tick) >= compile._tickInterval then
+    compile.tick()
+    compile._last_tick = now
+  end
 end
 
 return compile

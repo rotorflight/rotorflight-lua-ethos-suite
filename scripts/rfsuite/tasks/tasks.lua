@@ -187,6 +187,9 @@ function tasks.wakeup()
             rfsuite.session.telemetryTypeChanged = false
             rfsuite.session.telemetrySensor = nil
             rfsuite.session.timer = {}
+            rfsuite.session.onConnect.high = false
+            rfsuite.session.onConnect.low = false
+            rfsuite.session.onConnect.medium = false
             lastTelemetrySensorName = nil
             sportSensor = nil
             elrsSensor = nil 
@@ -262,6 +265,8 @@ function tasks.wakeup()
         end
     end
   
+    rfsuite.compiler.wakeup()
+
 end
 
 -- call a reset function on all tasks if it exists

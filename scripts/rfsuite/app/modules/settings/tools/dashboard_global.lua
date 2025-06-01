@@ -1,14 +1,5 @@
 local settings = {}
 
-
-local function sensorNameMap(sensorList)
-    local nameMap = {}
-    for _, sensor in ipairs(sensorList) do
-        nameMap[sensor.key] = sensor.name
-    end
-    return nameMap
-end
-
 local function openPage(pageIdx, title, script)
     enableWakeup = true
     rfsuite.app.triggers.closeProgressLoader = true
@@ -19,44 +10,27 @@ local function openPage(pageIdx, title, script)
     rfsuite.app.lastScript = script
 
     rfsuite.app.ui.fieldHeader(
-        rfsuite.i18n.get("app.modules.settings.name") .. " / " .. rfsuite.i18n.get("app.modules.settings.txt_telemetry_events")
+        rfsuite.i18n.get("app.modules.settings.name") .. " / " .. rfsuite.i18n.get("app.modules.settings.dashboard") .. " / " .. rfsuite.i18n.get("app.modules.settings.dashboard_global")
     )
     rfsuite.session.formLineCnt = 0
 
     local formFieldCount = 0
 
-    local eventList = rfsuite.tasks.events.telemetry.eventTable
-    local eventNames = sensorNameMap(rfsuite.tasks.telemetry.listSensors())
+    settings = rfsuite.preferences.dashboard
 
-    settings = rfsuite.preferences.events
 
-    for i, v in ipairs(eventList) do
-    formFieldCount = formFieldCount + 1
-    rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = form.addLine(eventNames[v.sensor] or "unknown")
-    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.session.formLineCnt], 
-                                                        nil, 
-                                                        function() 
-                                                            if rfsuite.preferences and rfsuite.preferences.events then
-                                                                return settings[v.sensor] 
-                                                            end
-                                                        end, 
-                                                        function(newValue) 
-                                                            if rfsuite.preferences and rfsuite.preferences.events then
-                                                                settings[v.sensor] = newValue 
-                                                            end    
-                                                        end)
-    end
-  
+
+
 end
 
 local function onNavMenu()
     rfsuite.app.ui.progressDisplay()
-    rfsuite.app.ui.openPage(
-        pageIdx,
-        rfsuite.i18n.get("app.modules.settings.name"),
-        "settings/settings.lua"
-    )
+        rfsuite.app.ui.openPage(
+            pageIdx,
+            rfsuite.i18n.get("app.modules.settings.dashboard"),
+            "settings/tools/dashboard.lua"
+        )
+        return true
 end
 
 local function onSaveMenu()
@@ -67,12 +41,15 @@ local function onSaveMenu()
                 local msg = rfsuite.i18n.get("app.modules.profile_select.save_prompt_local")
                 rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
                 for key, value in pairs(settings) do
-                    rfsuite.preferences.events[key] = value
+                    rfsuite.preferences.dashboard[key] = value
                 end
                 rfsuite.ini.save_ini_file(
                     "SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini",
                     rfsuite.preferences
                 )
+                -- update dashboard theme
+                rfsuite.widgets.dashboard.reload_themes()
+                -- close save progress
                 rfsuite.app.triggers.closeSave = true
                 return true
             end,
@@ -101,8 +78,8 @@ local function event(widget, category, value, x, y)
     if category == EVT_CLOSE and value == 0 or value == 35 then
         rfsuite.app.ui.openPage(
             pageIdx,
-            rfsuite.i18n.get("app.modules.settings.name"),
-            "settings/settings.lua"
+            rfsuite.i18n.get("app.modules.settings.dashboard"),
+            "settings/tools/dashboard.lua"
         )
         return true
     end
