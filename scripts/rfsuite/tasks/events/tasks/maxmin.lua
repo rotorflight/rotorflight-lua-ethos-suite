@@ -1,4 +1,4 @@
---[[
+--[[ 
  * Copyright (C) Rotorflight Project
  *
  * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
@@ -20,75 +20,91 @@ local config = arg[1]
 
 local maxmin = {}
 
-local lastSensorValues = {}
+-- Full sensorTable reference (rfsuite.tasks.telemetry.sensorTable)
+local fullSensorTable = nil
+-- After one pass, this holds only the sensors we’ll actually track
+-- Format: { [sensorKey] = sensorDef, ... }
+local filteredSensors = nil
 
-local sensorTable
+-- Throttle tracking to once every 2 CPU‐seconds:
+local lastTrackTime = 0
+
+-- Build filteredSensors exactly once:
+local function buildFilteredList()
+    filteredSensors = {}
+
+    for sensorKey, sensorDef in pairs(fullSensorTable) do
+        local mt = sensorDef.maxmin_trigger
+
+        -- Include if it's a literal true:
+        if mt == true then
+            filteredSensors[sensorKey] = sensorDef
+
+        -- Or if it's a function that returns true right now:
+        elseif type(mt) == "function" then
+            -- Call it once. If it says “true”, include:
+            local ok, result = pcall(mt)
+            if ok and result then
+                filteredSensors[sensorKey] = sensorDef
+            end
+        end
+        -- Anything else (false, nil, or function returning false) is skipped
+    end
+end
 
 function maxmin.wakeup()
-
-    if not rfsuite.session.flightMode == "inflight" then
+    -- Throttle: only run once every 2 CPU‐seconds
+    local now = os.clock()
+    if now - lastTrackTime < 2 then
         return
     end
+    lastTrackTime = now
 
-     -- Initialize sensor definitions if not already done
-    if not sensorTable then
-        sensorTable = rfsuite.tasks.telemetry.sensorTable
+    -- On the very first wakeup, grab the full sensorTable and build the filtered list
+    if not fullSensorTable then
+        fullSensorTable = rfsuite.tasks.telemetry.sensorTable
+        if not fullSensorTable then
+            -- Telemetry not ready yet
+            return
+        end
+
+        buildFilteredList()
     end
 
     -- Ensure telemetry module is available
-    if not telemetry then  
+    if not telemetry then
         telemetry = rfsuite.tasks.telemetry
     end
 
-    -- Track sensor max/min values
-    for sensorKey, sensorDef in pairs(sensorTable) do
+    -- Initialize sensorStats if it doesn't exist
+    if not rfsuite.tasks.telemetry.sensorStats then
+        rfsuite.tasks.telemetry.sensorStats = {}
+    end
+
+    local statsTable = rfsuite.tasks.telemetry.sensorStats
+
+    -- Now iterate only over filteredSensors—no more checks of maxmin_trigger
+    for sensorKey, sensorDef in pairs(filteredSensors) do
         local source = telemetry.getSensorSource(sensorKey)
         if source and source:state() then
             local val = source:value()
             if val then
-                -- Check optional per-sensor trigger
-                local shouldTrack = false
-
-                --[[
-                    Determines whether telemetry tracking should be enabled based on various sensor conditions.
-
-                    The logic follows these rules:
-                    1. If `sensorDef.maxmin_trigger` is a function, its return value decides tracking.
-                    2. If the session is armed and the "governor" sensor exists with a value of 4, tracking is enabled.
-                    3. If the session is armed and the "rpm" sensor exists with a value greater than 500, tracking is enabled.
-                    4. If the session is armed and the "throttle_percent" sensor exists with a value greater than 30, tracking is enabled.
-                    5. If the session is armed (fallback), tracking is enabled.
-                    6. Otherwise, tracking is disabled.
-
-                    Variables:
-                    - sensorDef: Table containing sensor definitions, possibly with a custom trigger function.
-                    - shouldTrack: Boolean flag indicating whether telemetry tracking should occur.
-                    - rfsuite.session.isArmed: Boolean indicating if the session is currently armed.
-                    - telemetry.getSensorSource: Function to retrieve sensor data by name.
-                ]]
-                if type(sensorDef.maxmin_trigger) == "function" then
-                    shouldTrack = sensorDef.maxmin_trigger()
-                else    
-                    shouldTrack = sensorDef.maxmin_trigger
-                end
-
-
-                -- Record min/max if tracking is active
-                if shouldTrack then
-                    rfsuite.tasks.telemetry.sensorStats[sensorKey] = rfsuite.tasks.telemetry.sensorStats[sensorKey] or {min = math.huge, max = -math.huge}
-                    rfsuite.tasks.telemetry.sensorStats[sensorKey].min = math.min(rfsuite.tasks.telemetry.sensorStats[sensorKey].min, val)
-                    rfsuite.tasks.telemetry.sensorStats[sensorKey].max = math.max(rfsuite.tasks.telemetry.sensorStats[sensorKey].max, val)
-                end
+                -- Update min/max unconditionally for this sensor
+                local stats = statsTable[sensorKey] or { min = math.huge, max = -math.huge }
+                stats.min = math.min(stats.min, val)
+                stats.max = math.max(stats.max, val)
+                statsTable[sensorKey] = stats
             end
         end
     end
-
-
 end
 
 function maxmin.reset()
-    rfsuite.tasks.telemetry.sensorStats = {} -- Clear min/max tracking
-    lastSensorValues = {} -- clear last sensor values
+    -- Clear all stored stats and force a full rebuild on next wakeup()
+    rfsuite.tasks.telemetry.sensorStats = {}
+    fullSensorTable  = nil
+    filteredSensors  = nil
+    lastTrackTime    = 0
 end
 
 return maxmin
