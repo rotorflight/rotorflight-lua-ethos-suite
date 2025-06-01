@@ -115,37 +115,7 @@ function loaders.arcLoader(dashboard, x, y, w, h)
   drawLogoImage(cx, cy, w, h)
 end
 
--- Arc overlay message
-function loaders.arcOverlayMessage(dashboard, x, y, w, h, txt)
-  dashboard._overlay_cycles_required = dashboard._overlay_cycles_required or math.ceil(5 / (dashboard.paint_interval or 0.5))
-  dashboard._overlay_cycles = dashboard._overlay_cycles or 0
-  if txt and txt ~= "" then
-    dashboard._overlay_text, dashboard._overlay_cycles = txt, dashboard._overlay_cycles_required
-  end
-  if dashboard._overlay_cycles <= 0 then return end
 
-  dashboard._overlay_cycles = dashboard._overlay_cycles - 1
-  -- fg stays the same; bg now uses alpha = 1.0
-  local fg = lcd.darkMode() and lcd.RGB(255,255,255) 
-  local bg = lcd.darkMode() and lcd.RGB(0,0,0,1.0) or lcd.RGB(255,255,255,1.0)
-
-  local cx, cy = x + w / 2, y + h / 2
-  local radius = math.min(w, h) * (dashboard.overlayScale or 0.35)
-
-  -- Make 'thickness' first, then compute 'innerR' using that value:
-  local thickness = math.max(6, radius * 0.15)
-  local innerR    = radius - (thickness / 2) - 1
-
-  -- draw a fully opaque background circle
-  drawOverlayBackground(cx, cy, innerR, bg)
-
-  dashboard._loader = dashboard._loader or { angle = 0 }
-  -- the rotating arc is identical (fg already opaque)
-  drawArc(cx, cy, radius, thickness, dashboard._loader.angle, dashboard._loader.angle - 90, fg)
-
-  dashboard._loader.angle = (dashboard._loader.angle + 20) % 360
-  renderOverlayText(dashboard, cx, cy, innerR, fg)
-end
 -- Pulse loader
 function loaders.pulseLoader(dashboard, x, y, w, h)
   dashboard._pulse = dashboard._pulse or { time = os.clock(), alpha = 1.0, dir = -1 }
@@ -214,101 +184,6 @@ function loaders.pulseOverlayMessage(dashboard, x, y, w, h, txt)
   end
 
   renderOverlayText(dashboard, cx, cy, innerR, fg)
-end
-
--- Static loader
-function loaders.staticLoader(dashboard, x, y, w, h)
-  local cx, cy = x + w / 2, y + h / 2
-  local radius = math.min(w, h) * (dashboard.loaderScale or 0.3)
-  local thickness = math.max(6, radius * 0.15)
-  local r, g, b = lcd.darkMode() and 255 or 0, lcd.darkMode() and 255 or 0, lcd.darkMode() and 255 or 0
-
-  lcd.color(lcd.RGB(r, g, b, 0.9))
-  if lcd.drawFilledCircle then
-    lcd.drawFilledCircle(cx, cy, radius)
-    lcd.color(lcd.darkMode() and lcd.RGB(0,0,0,1.0) or lcd.RGB(255,255,255,1.0))
-    lcd.drawFilledCircle(cx, cy, radius - thickness)
-  end
-
-  drawLogoImage(cx, cy, w, h)
-end
-
--- Static overlay message
-function loaders.staticOverlayMessage(dashboard, x, y, w, h, txt)
-  dashboard._overlay_cycles_required = dashboard._overlay_cycles_required or math.ceil(5 / (dashboard.paint_interval or 0.5))
-  dashboard._overlay_cycles = dashboard._overlay_cycles or 0
-  if txt and txt ~= "" then
-    dashboard._overlay_text, dashboard._overlay_cycles = txt, dashboard._overlay_cycles_required
-  end
-  if dashboard._overlay_cycles <= 0 then return end
-
-  dashboard._overlay_cycles = dashboard._overlay_cycles - 1
-  local fg = lcd.darkMode() and lcd.RGB(255,255,255)
-  local bg = lcd.darkMode() and lcd.RGB(0,0,0,1.0) or lcd.RGB(255,255,255,1.0)
-
-  local cx, cy = x + w / 2, y + h / 2
-  local radius = math.min(w, h) * (dashboard.overlayScale or 0.35)
-
-  local thickness = math.max(6, radius * 0.15)
-  local innerR    = radius - (thickness / 2) - 1
-
-  -- fully opaque background circle
-  drawOverlayBackground(cx, cy, innerR, bg)
-
-  -- outer circle at 0.9 alpha (identical to before)
-  lcd.color(fg)
-  if lcd.drawFilledCircle then
-    lcd.drawFilledCircle(cx, cy, radius)
-    -- inner cut‐out now fully opaque
-    lcd.color(lcd.darkMode() and lcd.RGB(0,0,0,1.0) or lcd.RGB(255,255,255,1.0))
-    lcd.drawFilledCircle(cx, cy, radius - thickness)
-  end
-
-  renderOverlayText(dashboard, cx, cy, innerR, fg)
-end
-
--- Toggle outer ring colour between dark‐theme (white) and light‐theme (black) every 0.5 s.
-function loaders.blinkLoader(dashboard, x, y, w, h)
-  -- Initialize/stash the blinking state
-  dashboard._blink = dashboard._blink or { time = os.clock(), high = true }
-
-  local now = os.clock()
-  local st = dashboard._blink
-  if now - st.time >= 0.5 then
-    st.high = not st.high
-    st.time = now
-  end
-
-  -- Compute centre and radii exactly as before
-  local cx, cy = x + w / 2, y + h / 2
-  local radius = math.min(w, h) * (dashboard.loaderScale or 0.3)
-  local thickness = math.max(6, radius * 0.15)
-  local innerRadius = radius - thickness
-
-  -- === NEW: pick colour based on st.high ===
-  -- If st.high is true → use “dark‐theme” colour (white: 255,255,255)
-  -- If st.high is false → use “light‐theme” colour (black: 0,0,0)
-  local r, g, b = st.high and 255 or 0, st.high and 255 or 0, st.high and 255 or 0
-  local a = 1.0  -- fully opaque
-  lcd.color(lcd.RGB(r, g, b, a))
-
-  -- Draw outer ring (filled)
-  if lcd.drawFilledCircle then
-    lcd.drawFilledCircle(cx, cy, radius)
-  end
-
-  -- Inner “cut‐out” stays exactly as before: fully opaque background (white or black)
-  if lcd.darkMode() then
-    lcd.color(lcd.RGB(0, 0, 0, 1.0))
-  else
-    lcd.color(lcd.RGB(255, 255, 255, 1.0))
-  end
-  if lcd.drawFilledCircle then
-    lcd.drawFilledCircle(cx, cy, innerRadius)
-  end
-
-  -- Finally, draw the logo/text in the middle exactly as before
-  drawLogoImage(cx, cy, w, h)
 end
 
 
