@@ -1,9 +1,10 @@
 local render = {}
 
-local function drawSolidRing(cx, cy, radius, thickness, fillColor, fillBgColor)
-    lcd.color(fillBgColor)
+-- Draw a solid ring by overlaying two filled circles
+local function drawSolidRing(cx, cy, radius, thickness, fillcolor, fillbgcolor)
+    lcd.color(fillcolor)
     lcd.drawFilledCircle(cx, cy, radius)
-    lcd.color(fillColor)
+    lcd.color(fillbgcolor)
     lcd.drawFilledCircle(cx, cy, radius - thickness)
 end
 
@@ -23,6 +24,7 @@ function render.wakeup(box, telemetry)
         end
     end
 
+    -- Transform (floor, ceil, round, or function)
     local transform = getParam(box, "transform")
     if value ~= nil and transform ~= nil then
         if type(transform) == "function" then
@@ -44,34 +46,35 @@ function render.wakeup(box, telemetry)
         value = math.max(min, math.min(max, value))
     end
 
-    local fillBgColor = resolveColor(getParam(box, "fillbgcolor")) or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
-    local fillColor = resolveColor(getParam(box, "fillcolor")) or lcd.RGB(0, 200, 0)
+    local fillbgcolor = resolveColor(getParam(box, "fillbgcolor")) or (lcd.darkMode() and lcd.RGB(40,40,40) or lcd.RGB(240,240,240))
+    local fillcolor = resolveColor(getParam(box, "fillcolor")) or lcd.RGB(0,200,0)
 
     local thresholds = getParam(box, "thresholds")
     if thresholds and value ~= nil then
+        -- Last threshold as default, then override on match
         local last = thresholds[#thresholds]
-        local lastColor = type(last.color) == "function" and last.color(box, value) or last.color
-        fillColor = resolveColor(lastColor) or fillColor
-
+        fillcolor = (last.fillcolor and resolveColor(last.fillcolor)) or fillcolor
         for _, t in ipairs(thresholds) do
             local t_val = type(t.value) == "function" and t.value(box, value) or t.value
-            local t_color = type(t.color) == "function" and t.color(box, value) or t.color
-            if value < t_val then
-                fillColor = resolveColor(t_color) or fillColor
+            local t_color = t.fillcolor and resolveColor(t.fillcolor)
+            if value < t_val and t_color then
+                fillcolor = t_color
                 break
             end
         end
     end
 
+    local textcolor = resolveColor(getParam(box, "textcolor")) or lcd.RGB(255,255,255)
+
     box._cache = {
         ringsize = ringsize,
         value = value,
-        fillcolor = fillColor,
-        fillbgcolor = fillBgColor,
+        fillcolor = fillcolor,
+        fillbgcolor = fillbgcolor,
         thresholds = thresholds,
         novalue = getParam(box, "novalue") or "-",
         unit = (value ~= nil) and getParam(box, "unit") or nil,
-        textcolor = resolveColor(getParam(box, "textColor")) or lcd.RGB(255,255,255),
+        textcolor = textcolor,
         textalign = getParam(box, "textalign") or "center",
         textoffset = getParam(box, "textoffset") or 0,
         title = getParam(box, "title"),
@@ -86,11 +89,11 @@ function render.paint(x, y, w, h, box)
     local c = box._cache or {}
     local ringsize = c.ringsize or 0.88
     local value = c.value
-    local fillColor = c.fillcolor or lcd.RGB(0,200,0)
-    local fillBgColor = c.fillbgcolor or (lcd.darkMode() and lcd.RGB(40,40,40) or lcd.RGB(240,240,240))
+    local fillcolor = c.fillcolor or lcd.RGB(0,200,0)
+    local fillbgcolor = c.fillbgcolor or (lcd.darkMode() and lcd.RGB(40,40,40) or lcd.RGB(240,240,240))
     local novalue = c.novalue or "-"
     local unit = c.unit or ""
-    local textColor = c.textcolor or lcd.RGB(255,255,255)
+    local textcolor = c.textcolor or lcd.RGB(255,255,255)
     local textalign = c.textalign or "center"
     local textoffset = c.textoffset or 0
     local title = c.title
@@ -106,7 +109,7 @@ function render.paint(x, y, w, h, box)
     lcd.color(c.bgcolor or (lcd.darkMode() and lcd.RGB(40,40,40) or lcd.RGB(240,240,240)))
     lcd.drawFilledRectangle(x, y, w, h)
 
-    drawSolidRing(cx, cy, radius, thickness, fillColor, fillBgColor)
+    drawSolidRing(cx, cy, radius, thickness, fillcolor, fillbgcolor)
 
     local displayValue = value or novalue
     local valStr = tostring(displayValue) .. (unit or "")
@@ -133,7 +136,7 @@ function render.paint(x, y, w, h, box)
     end
     lcd.font(bestFont)
 
-    lcd.color(textColor)
+    lcd.color(textcolor)
     local text_x
     if textalign == "left" then
         text_x = cx - radius + 8
@@ -168,7 +171,7 @@ function render.paint(x, y, w, h, box)
     end
 
     lcd.font(bestFont)
-    lcd.color(textColor)
+    lcd.color(textcolor)
     lcd.drawText(text_x, cy - vh / 2 + textoffset, valStr)
 end
 

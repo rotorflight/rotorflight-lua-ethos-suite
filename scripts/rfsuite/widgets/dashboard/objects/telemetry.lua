@@ -5,7 +5,7 @@ function render.wakeup(box, telemetry)
     local getParam, resolveColor = utils.getParam, utils.resolveColor
 
     -- Value extraction and transform
-    local value = rfsuite.widgets.dashboard.utils.getParam(box, "value")
+    local value = nil
     local source = getParam(box, "source")
     if source then
         local sensor = telemetry and telemetry.getSensorSource(source)
