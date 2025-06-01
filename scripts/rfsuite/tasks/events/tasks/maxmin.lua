@@ -1,4 +1,4 @@
---[[
+--[[ 
  * Copyright (C) Rotorflight Project
  *
  * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
@@ -20,27 +20,55 @@ local config = arg[1]
 
 local maxmin = {}
 
-local lastSensorValues = {}
-local sensorTable
+-- Full sensorTable reference (rfsuite.tasks.telemetry.sensorTable)
+local fullSensorTable = nil
+-- After one pass, this holds only the sensors we’ll actually track
+-- Format: { [sensorKey] = sensorDef, ... }
+local filteredSensors = nil
 
--- Use os.clock() to throttle to once every 2 CPU‐seconds:
+-- Throttle tracking to once every 2 CPU‐seconds:
 local lastTrackTime = 0
 
-function maxmin.wakeup()
-    -- Get CPU time in seconds since the Lua interpreter started
-    local now = os.clock()
+-- Build filteredSensors exactly once:
+local function buildFilteredList()
+    filteredSensors = {}
 
-    -- If it has not been at least 2 seconds of CPU time since last tracking, skip
+    for sensorKey, sensorDef in pairs(fullSensorTable) do
+        local mt = sensorDef.maxmin_trigger
+
+        -- Include if it's a literal true:
+        if mt == true then
+            filteredSensors[sensorKey] = sensorDef
+
+        -- Or if it's a function that returns true right now:
+        elseif type(mt) == "function" then
+            -- Call it once. If it says “true”, include:
+            local ok, result = pcall(mt)
+            if ok and result then
+                filteredSensors[sensorKey] = sensorDef
+            end
+        end
+        -- Anything else (false, nil, or function returning false) is skipped
+    end
+end
+
+function maxmin.wakeup()
+    -- Throttle: only run once every 2 CPU‐seconds
+    local now = os.clock()
     if now - lastTrackTime < 2 then
         return
     end
-
-    -- Update timestamp so next run must wait another 2 CPU‐seconds
     lastTrackTime = now
 
-    -- Initialize sensor definitions if not already done
-    if not sensorTable then
-        sensorTable = rfsuite.tasks.telemetry.sensorTable
+    -- On the very first wakeup, grab the full sensorTable and build the filtered list
+    if not fullSensorTable then
+        fullSensorTable = rfsuite.tasks.telemetry.sensorTable
+        if not fullSensorTable then
+            -- Telemetry not ready yet
+            return
+        end
+
+        buildFilteredList()
     end
 
     -- Ensure telemetry module is available
@@ -48,41 +76,35 @@ function maxmin.wakeup()
         telemetry = rfsuite.tasks.telemetry
     end
 
-    -- Track sensor max/min values
-    for sensorKey, sensorDef in pairs(sensorTable) do
+    -- Initialize sensorStats if it doesn't exist
+    if not rfsuite.tasks.telemetry.sensorStats then
+        rfsuite.tasks.telemetry.sensorStats = {}
+    end
+
+    local statsTable = rfsuite.tasks.telemetry.sensorStats
+
+    -- Now iterate only over filteredSensors—no more checks of maxmin_trigger
+    for sensorKey, sensorDef in pairs(filteredSensors) do
         local source = telemetry.getSensorSource(sensorKey)
         if source and source:state() then
             local val = source:value()
             if val then
-                -- Determine whether to track this sensor
-                local shouldTrack = false
-
-                if type(sensorDef.maxmin_trigger) == "function" then
-                    shouldTrack = sensorDef.maxmin_trigger()
-                else
-                    shouldTrack = sensorDef.maxmin_trigger
-                end
-
-                -- Record min/max if tracking is active
-                if shouldTrack then
-                    rfsuite.tasks.telemetry.sensorStats[sensorKey] =
-                        rfsuite.tasks.telemetry.sensorStats[sensorKey] or {min = math.huge, max = -math.huge}
-
-                    rfsuite.tasks.telemetry.sensorStats[sensorKey].min =
-                        math.min(rfsuite.tasks.telemetry.sensorStats[sensorKey].min, val)
-                    rfsuite.tasks.telemetry.sensorStats[sensorKey].max =
-                        math.max(rfsuite.tasks.telemetry.sensorStats[sensorKey].max, val)
-                end
+                -- Update min/max unconditionally for this sensor
+                local stats = statsTable[sensorKey] or { min = math.huge, max = -math.huge }
+                stats.min = math.min(stats.min, val)
+                stats.max = math.max(stats.max, val)
+                statsTable[sensorKey] = stats
             end
         end
     end
 end
 
 function maxmin.reset()
-    rfsuite.tasks.telemetry.sensorStats = {} -- Clear min/max tracking
-    lastSensorValues = {}                   -- Clear last sensor values
-    -- Reset throttle timestamp so next wakeup always runs
-    lastTrackTime = 0
+    -- Clear all stored stats and force a full rebuild on next wakeup()
+    rfsuite.tasks.telemetry.sensorStats = {}
+    fullSensorTable  = nil
+    filteredSensors  = nil
+    lastTrackTime    = 0
 end
 
 return maxmin
