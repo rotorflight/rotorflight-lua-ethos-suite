@@ -236,9 +236,44 @@
         "translation": "Postflight Theme",
         "needs_translation": "true"
       },
+      "dashboard_localizations": {
+        "english": "Localization",
+        "translation": "Localization",
+        "needs_translation": "true"
+      },
       "txt_development": {
         "english": "Development",
         "translation": "Development",
+        "needs_translation": "true"
+      },
+      "temperature_unit": {
+        "english": "Temperature Unit",
+        "translation": "Temperature Unit",
+        "needs_translation": "true"
+      },
+      "altitude_unit": {
+        "english": "Altitude Unit",
+        "translation": "Altitude Unit",
+        "needs_translation": "true"
+      },
+      "celcius": {
+        "english": "Celsius",
+        "translation": "Celsius",
+        "needs_translation": "true"
+      },
+      "fahrenheit": {
+        "english": "Fahrenheit",
+        "translation": "Fahrenheit",
+        "needs_translation": "true"
+      },
+      "meters": {
+        "english": "Meters",
+        "translation": "Meters",
+        "needs_translation": "true"
+      },
+      "feet": {
+        "english": "Feet",
+        "translation": "Feet",
         "needs_translation": "true"
       }
     },

@@ -242,6 +242,14 @@ local sensorTable = {
             },
             crsfLegacy = { "GPS Speed" },
         },
+        transform = function(value)
+            -- Convert raw value to degrees Celsius
+            if rfsuite.preferences.dashboard and rfsuite.preferences.dashboard.temperature_unit == 1 then
+                -- Convert to Fahrenheit if preference is set
+                return (value) * 1.8 + 32
+            end
+            return value 
+        end,
     },
 
     -- MCU Temperature Sensors
@@ -267,6 +275,14 @@ local sensorTable = {
             },
             crsfLegacy = { "GPS Sats" },
         },
+        transform = function(value)
+            -- Convert raw value to degrees Celsius
+            if rfsuite.preferences.dashboard and rfsuite.preferences.dashboard.temperature_unit == 1 then
+                -- Convert to Fahrenheit if preference is set
+                return (value) * 1.8 + 32
+            end
+            return value 
+        end,
     },
 
     -- Fuel and Capacity Sensors
@@ -495,6 +511,14 @@ local sensorTable = {
             },
             crsfLegacy = { nil },
         },
+        transform = function(value)
+            -- Convert raw value to degrees Celsius
+            if rfsuite.preferences.dashboard and rfsuite.preferences.dashboard.altitude_unit == 1 then
+                -- Convert to Feet if preference is set
+                return value * 3.28084  -- Convert meters to feet
+            end
+            return value 
+        end,
     },     
 
     -- Bec Voltage
