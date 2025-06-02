@@ -682,7 +682,7 @@ function dashboard.event(widget, category, value, x, y)
 
     if state == "postflight" and category == EVT_KEY and value == 131 then
         rfsuite.widgets.dashboard.flightmode = "preflight"
-        state = "preflight"
+        dashboard.resetFlightModeAsk()
     end
 
     if category == EVT_KEY and lcd.hasFocus() then
@@ -962,7 +962,7 @@ function dashboard.savePreference(key, value)
 end
 
 -- Ask user for confirmation before erasing dataflash
-local function resetFlightModeAsk()
+function dashboard.resetFlightModeAsk()
 
     local buttons = {{
         label = rfsuite.i18n.get("app.btn_ok"),
@@ -998,7 +998,7 @@ end
 function dashboard.menu(widget)
 
     return {
-        {rfsuite.i18n.get("widgets.dashboard.reset_flight"), resetFlightModeAsk},
+        {rfsuite.i18n.get("widgets.dashboard.reset_flight"), dashboard.resetFlightModeAsk},
     }
 end
 
