@@ -32,47 +32,28 @@ local config = arg[1]
 --- @param flags number The bitfield representing arming disable flags.
 --- @return string A comma-separated string of human-readable flag descriptions, or "OK" if no flags are set.
 function utils.armingDisableFlagsToString(flags)
-
     if flags == nil then
-        return rfsuite.i18n.get("app.modules.status.ok") 
+        return rfsuite.i18n.get("app.modules.status.ok"):upper()
     end
 
-    local t = ""
+    local names = {}
     for i = 0, 25 do
         if (flags & (1 << i)) ~= 0 then
-            if t ~= "" then t = t .. ", " end
-            if i == 0 then t = t .. rfsuite.i18n.get("app.modules.status.arming_disable_flag_0") end
-            if i == 1 then t = t .. rfsuite.i18n.get("app.modules.status.arming_disable_flag_1") end
-            if i == 2 then t = t .. rfsuite.i18n.get("app.modules.status.arming_disable_flag_2") end
-            if i == 3 then t = t .. rfsuite.i18n.get("app.modules.status.arming_disable_flag_3") end
-            if i == 4 then t = t .. rfsuite.i18n.get("app.modules.status.arming_disable_flag_4") end
-            if i == 5 then t = t .. rfsuite.i18n.get("app.modules.status.arming_disable_flag_5") end
-            -- if i == 6 then t = t .. rfsuite.i18n.get("app.modules.status.arming_disable_flag_6") end
-            if i == 7 then t = t .. rfsuite.i18n.get("app.modules.status.arming_disable_flag_7") end
-            if i == 8 then t = t .. rfsuite.i18n.get("app.modules.status.arming_disable_flag_8") end
-            if i == 9 then t = t .. rfsuite.i18n.get("app.modules.status.arming_disable_flag_9") end
-            if i == 10 then t = t .. rfsuite.i18n.get("app.modules.status.arming_disable_flag_10") end
-            if i == 11 then t = t .. rfsuite.i18n.get("app.modules.status.arming_disable_flag_11") end
-            if i == 12 then t = t .. rfsuite.i18n.get("app.modules.status.arming_disable_flag_12") end
-            if i == 13 then t = t .. rfsuite.i18n.get("app.modules.status.arming_disable_flag_13") end
-            if i == 14 then t = t .. rfsuite.i18n.get("app.modules.status.arming_disable_flag_14") end
-            if i == 15 then t = t .. rfsuite.i18n.get("app.modules.status.arming_disable_flag_15") end
-            if i == 16 then t = t .. rfsuite.i18n.get("app.modules.status.arming_disable_flag_16") end
-            if i == 17 then t = t .. rfsuite.i18n.get("app.modules.status.arming_disable_flag_17") end
-            if i == 18 then t = t .. rfsuite.i18n.get("app.modules.status.arming_disable_flag_18") end
-            if i == 19 then t = t .. rfsuite.i18n.get("app.modules.status.arming_disable_flag_19") end
-            if i == 20 then t = t .. rfsuite.i18n.get("app.modules.status.arming_disable_flag_20") end
-            if i == 21 then t = t .. rfsuite.i18n.get("app.modules.status.arming_disable_flag_21") end
-            if i == 22 then t = t .. rfsuite.i18n.get("app.modules.status.arming_disable_flag_22") end
-            if i == 23 then t = t .. rfsuite.i18n.get("app.modules.status.arming_disable_flag_23") end
-            if i == 24 then t = t .. rfsuite.i18n.get("app.modules.status.arming_disable_flag_24") end
-            if i == 25 then t = t .. rfsuite.i18n.get("app.modules.status.arming_disable_flag_25") end
+            local key = "app.modules.status.arming_disable_flag_" .. i
+            local name = rfsuite.i18n.get(key)
+            if name and name ~= "" then
+                table.insert(names, name)
+            end
         end
     end
 
-    if t == "" then t = rfsuite.i18n.get("app.modules.status.ok") end
-    return t:upper()
+    if #names == 0 then
+        return rfsuite.i18n.get("app.modules.status.ok"):upper()
+    end
+
+    return table.concat(names, ", "):upper()
 end
+
 
 
 --[[

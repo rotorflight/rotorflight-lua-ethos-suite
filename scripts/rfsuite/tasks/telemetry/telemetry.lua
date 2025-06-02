@@ -57,6 +57,7 @@ Each sensor configuration includes:
 - crsf: A table of sensor configurations for the crsf protocol.
 - crsfLegacy: A table of sensor configurations for the crsfLegacy protocol.
 - maxmin_trigger: A function to determine if min/max tracking should be active.
+- transform: A function to transform the sensor value.
 
 Sensors included:
 - RSSI Sensors (rssi)
@@ -321,9 +322,6 @@ local sensorTable = {
         mandatory = true,
         maxmin_trigger = false,
         set_telemetry_sensors = 93,
-        transform = function(value)
-            return value
-        end,
         sensors = {
             sim = {
                 { uid = 0x5009, unit = nil, dec = 0,
