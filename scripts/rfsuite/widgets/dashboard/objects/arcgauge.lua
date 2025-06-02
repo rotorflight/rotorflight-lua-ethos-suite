@@ -187,7 +187,9 @@ function render.paint(x, y, w, h, box)
     lcd.drawFilledRectangle(x, y, w, h)
 
     -- Draw background arc
-    drawArc(cx, cy, radius, thickness, c.startAngle, c.startAngle - c.sweep, c.fillbgcolor, stepRad)
+    if c and c.startAngle and c.sweep then
+        drawArc(cx, cy, radius, thickness, c.startAngle, c.startAngle - c.sweep, c.fillbgcolor, stepRad)
+    end
 
     -- Draw value arc with threshold color overrides
     local arcColor = c.fillcolor

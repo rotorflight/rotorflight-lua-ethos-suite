@@ -53,9 +53,9 @@ local function buildFilteredList()
 end
 
 function maxmin.wakeup()
-    -- Throttle: only run once every 2 CPU‐seconds
+    -- Throttle: only run once every 1 CPU‐seconds
     local now = os.clock()
-    if now - lastTrackTime < 2 then
+    if now - lastTrackTime < 1 then
         return
     end
     lastTrackTime = now

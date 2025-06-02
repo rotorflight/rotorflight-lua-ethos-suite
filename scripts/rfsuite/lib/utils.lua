@@ -48,6 +48,10 @@ function utils.getGovernorState(value)
 
     local returnvalue
 
+    if not rfsuite.tasks.telemetry then
+        return rfsuite.i18n.get("widgets.governor.UNKNOWN")
+    end
+
     --[[
     Checks if the provided value exists as a key in the 'map' table.
     If the key exists, assigns the corresponding value from 'map' to 'returnvalue'.

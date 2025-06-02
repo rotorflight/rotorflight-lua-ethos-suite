@@ -860,7 +860,7 @@ function telemetry.wakeup()
             rfsuite.session.resetTelemetry = false
         end
         lastCacheFlushTime = now
-        telemetry.reset()
+        sensors = {}
     end
 
     -- Reset if telemetry is inactive or telemetry type changed
