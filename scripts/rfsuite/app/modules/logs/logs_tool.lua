@@ -551,6 +551,18 @@ local function drawCurrentIndex(points, position, totalPoints, keyindex, keyunit
     end
 end
 
+local function resolveModelName(foldername)
+    if foldername == nil then return "Unknown" end
+
+    local iniName = "LOGS:rfsuite/telemetry/" .. foldername .. "/logs.ini"
+    local iniData = rfsuite.ini.load_ini_file(iniName) or {}
+
+    if iniData["model"] and iniData["model"].name then
+        return iniData["model"].name
+    end
+    return "Unknown"
+end
+
 
 function findMaxNumber(numbers)
     local max = numbers[1] -- Assume the first number is the largest initially
@@ -598,7 +610,8 @@ local function openPage(pidx, title, script, logfile, displaymode,dirname)
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-    rfsuite.app.ui.fieldHeader("Logs - " .. extractShortTimestamp(logfile))
+    local name = resolveModelName(rfsuite.session.mcu_id or rfsuite.session.activeLogDir)
+    rfsuite.app.ui.fieldHeader("Logs / ".. name .. " / " .. extractShortTimestamp(logfile))
     activeLogFile = logfile
 
     local filePath

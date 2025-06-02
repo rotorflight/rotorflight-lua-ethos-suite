@@ -313,7 +313,13 @@ local function openPageLogs(pidx, title, script, displaymode)
     local sc
     local panel
 
-    rfsuite.app.ui.fieldHeader("Logs")
+     local logDir = getLogPath()
+
+    local logs = getLogs(logDir)   
+
+
+    local name = resolveModelName(rfsuite.session.mcu_id or rfsuite.session.activeLogDir)
+    rfsuite.app.ui.fieldHeader("Logs / " .. name)
 
     local buttonW
     local buttonH
@@ -338,9 +344,6 @@ local function openPageLogs(pidx, title, script, displaymode)
     if rfsuite.app.gfx_buttons["logs"] == nil then rfsuite.app.gfx_buttons["logs"] = {} end
     if rfsuite.preferences.menulastselected["logs"] == nil then rfsuite.preferences.menulastselected["logs"] = 1 end
 
-    local logDir = getLogPath()
-
-    local logs = getLogs(logDir)
 
     if #logs == 0 then
 
