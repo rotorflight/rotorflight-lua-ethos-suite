@@ -419,7 +419,14 @@ return {
         ["dashboard_theme_preflight"] = "Preflight Theme",
         ["dashboard_theme_inflight"] = "Inflight Theme",
         ["dashboard_theme_postflight"] = "Postflight Theme",
-        ["txt_development"] = "Development"
+        ["dashboard_localizations"] = "Localization",
+        ["txt_development"] = "Development",
+        ["temperature_unit"] = "Temperature Unit",
+        ["altitude_unit"] = "Altitude Unit",
+        ["celcius"] = "Celsius",
+        ["fahrenheit"] = "Fahrenheit",
+        ["meters"] = "Meters",
+        ["feet"] = "Feet"
       },
       ["validate_sensors"] = {
         ["help_p1"] = "This tool attempts to list all the sensors that you are not receiving in a concise list.",
