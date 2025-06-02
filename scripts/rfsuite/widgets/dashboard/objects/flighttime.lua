@@ -87,4 +87,12 @@ function render.paint(x, y, w, h, box)
     )
 end
 
+
+-- set rate at which objects wakeup must be called
+-- using this value will short circut the spread scheduling in
+-- dashboard.lua to ensure object gets a heartbeat when required.
+-- its mostly only used for objects that need to be updated like the
+-- flight time objects
+render.scheduler = 0.5
+
 return render
