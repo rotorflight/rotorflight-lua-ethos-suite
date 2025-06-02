@@ -62,7 +62,7 @@ end
 -- Adaptive LRU Cache (in-memory loaders, interval-based eviction)
 --------------------------------------------------
 local LUA_RAM_THRESHOLD = 32 * 1024 -- 32 KB free (adjust as needed)
-local LRU_HARD_LIMIT = 200          -- absolute maximum (safety)
+local LRU_HARD_LIMIT = 100          -- absolute maximum (safety)
 local EVICT_INTERVAL = 5            -- seconds between eviction checks
 
 local function LRUCache()
