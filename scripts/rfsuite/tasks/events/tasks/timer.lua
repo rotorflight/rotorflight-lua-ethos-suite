@@ -19,57 +19,58 @@ local arg = { ... }
 local config = arg[1]
 
 local timer = {}
-
 local lastFlightMode = nil
 
 --------------------------------------------------------------------------------
--- Resets flight mode tracking and timers:
---   • Clears lastFlightMode flags
---   • Resets session timer fields (start, live, session)
---   • Loads persistent lifetime from ini (totalflighttime)
+-- Resets flight mode tracking and timers on each “inflight” transition:
+--   • Clears lastFlightMode
+--   • Loads baseLifetime (= previous totalflighttime from INI)
+--   • Initializes session (this flight’s time) to 0
+--   • Sets lifetime = baseLifetime (for display), but we do NOT re-add every tick
 --------------------------------------------------------------------------------
 function timer.reset()
-
     rfsuite.utils.log("Resetting flight timers", "info")
-
     lastFlightMode = nil
-
 
     rfsuite.session.timer = {}
     rfsuite.session.flightCounted = false
 
-    -- Load total persistent lifetime from model preferences (INI)
-    rfsuite.session.timer.lifetime = rfsuite.ini.getvalue(rfsuite.session.modelPreferences,
-        "general",
-        "totalflighttime"
+    -- Load “baseLifetime” from INI (this is everything accumulated so far)
+    rfsuite.session.timer.baseLifetime = tonumber(
+        rfsuite.ini.getvalue(rfsuite.session.modelPreferences, "general", "totalflighttime")
     ) or 0
 
-    -- Initialize session timer to zero for current power-on
+    -- This flight’s “session” starts at 0
     rfsuite.session.timer.session = 0
+
+    -- For on-screen display, lifetime = baseLifetime (but we will not keep adding per tick)
+    rfsuite.session.timer.lifetime = rfsuite.session.timer.baseLifetime
 end
 
 --------------------------------------------------------------------------------
--- Saves flight timers to INI on disconnect or shutdown:
---   • Updates totalflighttime = previous lifetime + this session's time
---   • Updates lastflighttime = this session's total time
+-- Saves the current flight session and updated total to INI:
+--   • Writes baseLifetime as “totalflighttime”
+--   • Writes session as “lastflighttime”
 --------------------------------------------------------------------------------
 function timer.save()
+    rfsuite.utils.log("Saving flight timers to INI: " .. rfsuite.session.modelPreferencesFile, "info")
 
-    rfsuite.utils.log("Saving flight timers to INI: " ..  rfsuite.session.modelPreferencesFile, "info")
-
-
+    -- Save only the baseLifetime as “totalflighttime”
     rfsuite.ini.setvalue(
         rfsuite.session.modelPreferences,
         "general",
         "totalflighttime",
-        rfsuite.session.timer.lifetime or 0
+        rfsuite.session.timer.baseLifetime or 0
     )
+
+    -- Save this flight’s duration as “lastflighttime”
     rfsuite.ini.setvalue(
         rfsuite.session.modelPreferences,
         "general",
         "lastflighttime",
         rfsuite.session.timer.session or 0
     )
+
     rfsuite.ini.save_ini_file(
         rfsuite.session.modelPreferencesFile,
         rfsuite.session.modelPreferences
@@ -77,39 +78,49 @@ function timer.save()
 end
 
 --------------------------------------------------------------------------------
--- Handles the wakeup logic for flight mode state transitions:
---   • Manages session timer: start time, live time, and accumulated session time
---   • Increments flight counter if live time ≥ 25 seconds and not already counted
---   • Logs mode transitions and updates model preferences as needed
+-- Wakeup handler (called periodically by the framework):
+--   • Detects “inflight” / “postflight” transitions
+--   • Computes live time for the current flight
+--   • Updates computedLifetime = baseLifetime + currentSegment
+--   • On landing, finalizes baseLifetime and writes to INI
 --------------------------------------------------------------------------------
 function timer.wakeup()
-    local now = os.clock()
+    local now = os.time()
 
-    -- Detect transition into 'inflight'
+    -- If we just entered “inflight” from any other mode, reset timers
     if rfsuite.session.flightMode == "inflight" and lastFlightMode ~= "inflight" then
         timer.reset()
     end
 
     lastFlightMode = rfsuite.session.flightMode
 
-
     if rfsuite.session.flightMode == "inflight" then
-        
+        -- First tick in this arm segment: record start time
         if not rfsuite.session.timer.start then
-            -- First arm segment since power-on
             rfsuite.session.timer.start = now
         end
 
-        -- Calculate live time: accumulated session + current segment
+        -- Compute how many seconds we’ve been flying in this segment
         local currentSegment = now - rfsuite.session.timer.start
 
+        -- “live” is session (previous flights in this power-cycle) + currentSegment
         rfsuite.session.timer.live = (rfsuite.session.timer.session or 0) + currentSegment
-        rfsuite.session.timer.lifetime = (rfsuite.session.timer.lifetime) or 0 + currentSegment
 
-        -- Increment flight counter when live time reaches 25s and not yet counted
+        -- computedLifetime = baseLifetime (all previous flights) + currentSegment
+        local computedLifetime = (rfsuite.session.timer.baseLifetime or 0) + currentSegment
+        rfsuite.session.timer.lifetime = computedLifetime
+
+        -- Update INI so that if the app crashes mid-flight, we still have a rough total
+        rfsuite.ini.setvalue(
+            rfsuite.session.modelPreferences,
+            "general",
+            "totalflighttime",
+            computedLifetime
+        )
+
+        -- Increment flight counter once when live >= 25s
         if rfsuite.session.timer.live >= 25 and not rfsuite.session.flightCounted then
             rfsuite.session.flightCounted = true
-
             if rfsuite.session.modelPreferences
                and rfsuite.ini.section_exists(rfsuite.session.modelPreferences, "general") then
 
@@ -118,11 +129,7 @@ function timer.wakeup()
                     "general",
                     "flightcount"
                 ) or 0
-
-                rfsuite.utils.log("Current flight count: " .. tostring(currentValue), "info")
-
                 local newValue = currentValue + 1
-                rfsuite.utils.log("Incrementing flight counter: " .. newValue, "info")
 
                 rfsuite.ini.setvalue(
                     rfsuite.session.modelPreferences,
@@ -130,29 +137,35 @@ function timer.wakeup()
                     "flightcount",
                     newValue
                 )
+                rfsuite.ini.save_ini_file(
+                    rfsuite.session.modelPreferencesFile,
+                    rfsuite.session.modelPreferences
+                )
             end
         end
+
     else
-        -- While not inflight, live time equals total session time
-        rfsuite.session.timer.live = rfsuite.session.timer.session or 0    
+        -- Not inflight: live time just equals whatever was in this session
+        rfsuite.session.timer.live = rfsuite.session.timer.session or 0
     end
 
-
+    -- Handle landing (“postflight”): finalize this segment once
     if rfsuite.session.flightMode == "postflight" then
-            -- Accumulate last armed segment into session time
-            if rfsuite.session.timer.start then
-                local segment = now - rfsuite.session.timer.start
-                rfsuite.session.timer.session = (rfsuite.session.timer.session or 0) + segment
-                rfsuite.session.timer.start = nil
+        if rfsuite.session.timer.start then
+            local segment = now - rfsuite.session.timer.start
+            rfsuite.session.timer.session = (rfsuite.session.timer.session or 0) + segment
+            rfsuite.session.timer.start = nil
 
+            -- Add this segment once to baseLifetime
+            rfsuite.session.timer.baseLifetime = 
+                (rfsuite.session.timer.baseLifetime or 0) + segment
 
-                timer.save()  -- Save session time to INI
+            -- Keep lifetime in sync (not strictly required; save() writes baseLifetime anyway)
+            rfsuite.session.timer.lifetime = rfsuite.session.timer.baseLifetime
 
-            end
+            timer.save()  -- Persist updated totals to INI
+        end
     end
-
 end
-
-
 
 return timer

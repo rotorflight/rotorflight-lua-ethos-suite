@@ -33,10 +33,8 @@ local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 
 function render.wakeup(box)
-    -- Show sum of persistent total + session time (not yet persisted)
     local lifetime = rfsuite.ini.getvalue(rfsuite.session.modelPreferences, "general", "totalflighttime") or 0
-    local session = rfsuite.session.timer and rfsuite.session.timer.session or 0
-    local displayValue = lifetime + session
+    local displayValue = lifetime
 
     -- Format to HH:MM:SS
     local hours = math.floor(displayValue / 3600)
