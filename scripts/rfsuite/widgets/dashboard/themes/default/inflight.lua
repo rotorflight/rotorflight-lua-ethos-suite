@@ -35,13 +35,13 @@ local boxes = {
         arcThickness = 1,
         startAngle = 225,
         sweep = 270,
-        arcBgColor = "lightgrey",
+        arcbgcolor = "lightgrey",
         title = "VOLTAGE",
         titlepos = "bottom",
         thresholds = {
-            { value = 30,  color = "red" },
-            { value = 50,  color = "orange" },
-            { value = 140, color = "green" }
+            { value = 30,  fillcolor = "red", textcolor = "white" },
+            { value = 50,  fillcolor = "orange", textcolor = "white" },
+            { value = 140, fillcolor = "green", textcolor = "white" }
         },
         min = function()
             local cfg = rfsuite.session.batteryConfig
@@ -111,13 +111,13 @@ local boxes = {
         arcThickness = 1,
         startAngle = 225,
         sweep = 270,
-        arcBgColor = "lightgrey",
+        arcbgcolor = "lightgrey",
         title = "FUEL",
         titlepos = "bottom",
         thresholds = {
-            { value = 30,  color = "red" },
-            { value = 50,  color = "orange" },
-            { value = 140, color = "green" }
+            { value = 30,  fillcolor = "red", textcolor = "white" },
+            { value = 50,  fillcolor = "orange", textcolor = "white" },
+            { value = 140, fillcolor = "green", textcolor = "white" }
         },
         gaugemin = 0,
         gaugemax = 100,     

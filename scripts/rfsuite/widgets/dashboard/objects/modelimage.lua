@@ -1,18 +1,40 @@
+--[[
+
+    Model Image Box Widget
+
+    Configurable Arguments (box table keys):
+    ----------------------------------------
+    title              : string   -- Title text
+    imagewidth         : number   -- Image width (pixels; default: auto)
+    imageheight        : number   -- Image height (pixels; default: auto)
+    imagealign         : string   -- Image alignment ("center", "left", "right", "top", "bottom")
+    bgcolor            : color    -- Widget background color (default: theme fallback)
+    titlealign         : string   -- Title alignment ("center", "left", "right")
+    titlecolor         : color    -- Title text color (default: theme/text fallback)
+    titlepos           : string   -- Title position ("top" or "bottom")
+    imagepadding       : number   -- Padding around the image (all sides unless overridden)
+    imagepaddingleft   : number   -- Left padding for image
+    imagepaddingright  : number   -- Right padding for image
+    imagepaddingtop    : number   -- Top padding for image
+    imagepaddingbottom : number   -- Bottom padding for image
+
+]]
+
 local render = {}
 
-function render.wakeup(box)
-    local utils = rfsuite.widgets.dashboard.utils
-    local getParam = utils.getParam
-    local resolveColor = utils.resolveColor
+local utils = rfsuite.widgets.dashboard.utils
+local getParam = utils.getParam
+local resolveThemeColor = utils.resolveThemeColor
 
+function render.wakeup(box)
     box._cache = {
         title             = getParam(box, "title"),
         imagewidth        = getParam(box, "imagewidth"),
         imageheight       = getParam(box, "imageheight"),
         imagealign        = getParam(box, "imagealign"),
-        bgcolor           = resolveColor(getParam(box, "bgcolor")),
+        bgcolor           = resolveThemeColor("bgcolor", getParam(box, "bgcolor")),
         titlealign        = getParam(box, "titlealign"),
-        titlecolor        = resolveColor(getParam(box, "titlecolor")),
+        titlecolor        = resolveThemeColor("titlecolor", getParam(box, "titlecolor")),
         titlepos          = getParam(box, "titlepos"),
         imagepadding      = getParam(box, "imagepadding"),
         imagepaddingleft  = getParam(box, "imagepaddingleft"),
@@ -24,8 +46,9 @@ end
 
 function render.paint(x, y, w, h, box)
     local c = box._cache or {}
-    x, y = rfsuite.widgets.dashboard.utils.applyOffset(x, y, box)
-    rfsuite.widgets.dashboard.utils.modelImageBox(
+    x, y = utils.applyOffset(x, y, box)
+
+    utils.modelImageBox(
         x, y, w, h,
         c.title,
         c.imagewidth, c.imageheight, c.imagealign,

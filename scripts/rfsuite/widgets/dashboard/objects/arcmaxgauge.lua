@@ -1,4 +1,56 @@
+--[[
+
+    Arc Max Gauge Widget
+
+    Configurable Arguments (box table keys):
+    ----------------------------------------
+    min               : number   -- Minimum possible value (default: 0)
+    max               : number   -- Maximum possible value (default: 100)
+    gaugemin          : number   -- Gauge minimum value (default: min)
+    gaugemax          : number   -- Gauge maximum value (default: max)
+    source            : string   -- Telemetry sensor source name (e.g., "current")
+    transform         : string/function/number -- Optional value transform (math function or custom function)
+    unit              : string   -- Unit label for value (e.g., "A")
+    decimals          : number   -- Number of decimal places for value display
+    valueFormat       : function -- Function to format value display (overrides decimals)
+    thresholds        : table    -- List of threshold tables: {value=..., fillcolor=..., textcolor=...}
+    novalue           : string   -- Text shown if telemetry value is missing (default: "-")
+
+    -- Appearance/Theming:
+    fillbgcolor       : color    -- Arc background color (default: theme fallback)
+    fillcolor         : color    -- Arc foreground color (default: theme fallback)
+    textcolor         : color    -- Value text color (default: theme/text fallback)
+    bgcolor           : color    -- Widget background color (default: theme fallback)
+    titlecolor        : color    -- Title text color (default: textcolor fallback)
+
+    -- Layout/Font:
+    font              : font     -- Font for value (default: FONT_XL)
+    textoffsetx       : number   -- X offset for centering value text (default: 0)
+
+    -- Arc geometry:
+    arcOffsetY        : number   -- Y offset for the arc center (default: 0)
+    startAngle        : number   -- Arc start angle in degrees (default: 135)
+    sweep             : number   -- Arc sweep angle in degrees (default: 270)
+
+    -- Title/Label:
+    title             : string   -- Gauge title text
+    titlepadding      : number   -- Padding for title (applies to all sides unless overridden)
+    titlepaddingleft  : number   -- Left padding for title (overrides titlepadding)
+    titlepaddingright : number   -- Right padding for title (overrides titlepadding)
+    titlepaddingtop   : number   -- Top padding for title (overrides titlepadding)
+    titlepaddingbottom: number   -- Bottom padding for title (overrides titlepadding)
+    titlepos          : string   -- "top" or "bottom" (default: top)
+    titlealign        : string   -- "center", "left", "right" (default: center)
+
+    -- Subtext:
+    subText           : string   -- Optional sub-label displayed below arc (e.g., "Max")
+]]
+
 local render = {}
+
+local utils = rfsuite.widgets.dashboard.utils
+local getParam = utils.getParam
+local resolveThemeColor = utils.resolveThemeColor
 
 -- Arc drawing helper
 local function drawArc(cx, cy, radius, thickness, angleStart, angleEnd, color, cachedStepRad)
@@ -22,10 +74,6 @@ local function drawArc(cx, cy, radius, thickness, angleStart, angleEnd, color, c
 end
 
 function render.wakeup(box, telemetry)
-    local utils = rfsuite.widgets.dashboard.utils
-    local getParam = utils.getParam
-    local resolveColor = utils.resolveColor
-
     local min = getParam(box, "min") or 0
     local max = getParam(box, "max") or 100
     local gaugemin = getParam(box, "gaugemin") or min
@@ -62,10 +110,10 @@ function render.wakeup(box, telemetry)
     local maxval = currentMax or prevMax
 
     -- Color resolution (normalized to arcgauge style)
-    local fillbgcolor = resolveColor(getParam(box, "fillbgcolor")) or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
-    local fillcolor   = resolveColor(getParam(box, "fillcolor")) or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
-    local textcolor   = resolveColor(getParam(box, "textcolor")) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
-    local titlecolor  = resolveColor(getParam(box, "titlecolor")) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
+    local fillbgcolor = resolveThemeColor("fillbgcolor", getParam(box, "fillbgcolor"))
+    local fillcolor   = resolveThemeColor("fillcolor", getParam(box, "fillcolor"))
+    local textcolor   = resolveThemeColor("textcolor", getParam(box, "textcolor"))
+    local titlecolor  = resolveThemeColor("titlecolor", getParam(box, "titlecolor"))
 
     local thresholds = getParam(box, "thresholds")
     if thresholds and value then
@@ -73,10 +121,10 @@ function render.wakeup(box, telemetry)
             local tval = (type(t.value) == "function" and t.value(box, value) or t.value)
             if value <= tval then
                 if t.fillcolor then
-                    fillcolor = resolveColor(t.fillcolor) or fillcolor
+                    fillcolor = resolveThemeColor("fillcolor", t.fillcolor) or fillcolor
                 end
                 if t.textcolor then
-                    textcolor = resolveColor(t.textcolor) or textcolor
+                    textcolor = resolveThemeColor("textcolor", t.textcolor) or textcolor
                 end
                 break
             end
@@ -114,7 +162,7 @@ function render.wakeup(box, telemetry)
         titlecolor = titlecolor,
         textoffsetx = getParam(box, "textoffsetx") or 0,
         novalue = getParam(box, "novalue") or "-",
-        bgcolor = resolveColor(getParam(box, "bgcolor")) or (lcd.darkMode() and lcd.RGB(40,40,40) or lcd.RGB(240,240,240)),
+        bgcolor = resolveThemeColor("fillbgcolor", getParam(box, "bgcolor")),
         subText = getParam(box, "subText"),
     }
 end
@@ -144,7 +192,7 @@ function render.paint(x, y, w, h, box)
     local cx, cy, radius, thickness, stepRad = layoutcache.cx, layoutcache.cy, layoutcache.radius, layoutcache.thickness, layoutcache.stepRad
 
     -- Paint background
-    local bgColor = c.bgcolor or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
+    local bgColor = c.bgcolor
     lcd.color(bgColor)
     lcd.drawFilledRectangle(x, y, w, h)
 
@@ -166,7 +214,7 @@ function render.paint(x, y, w, h, box)
                 local t_val = type(t.value) == "function" and t.value(box, c.maxval) or t.value
                 local t_color = type(t.fillcolor) == "function" and t.fillcolor(box, c.maxval) or t.fillcolor
                 if c.maxval <= t_val and t_color then
-                    maxColor = rfsuite.widgets.dashboard.utils.resolveColor(t_color) or maxColor
+                    maxColor = utils.resolveThemeColor("fillcolor", t_color) or maxColor
                     break
                 end
             end
@@ -183,7 +231,7 @@ function render.paint(x, y, w, h, box)
             local t_val = type(t.value) == "function" and t.value(box, c.value) or t.value
             local t_color = type(t.fillcolor) == "function" and t.fillcolor(box, c.value) or t.fillcolor
             if c.value <= t_val and t_color then
-                arcColor = rfsuite.widgets.dashboard.utils.resolveColor(t_color) or arcColor
+                arcColor = utils.resolveThemeColor("fillcolor", t_color) or arcColor
                 break
             end
         end

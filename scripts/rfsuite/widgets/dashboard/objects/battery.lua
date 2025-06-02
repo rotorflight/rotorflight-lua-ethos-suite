@@ -1,168 +1,282 @@
+--[[
+
+    Battery Bar Widget
+
+    Configurable Arguments (box table keys):
+    ----------------------------------------
+    source             : string   -- Telemetry sensor source name (e.g., "battery")
+    transform          : string/function/number -- Optional value transform (math function or custom function)
+    gaugemin           : number/function -- Minimum value for gauge (default: 0)
+    gaugemax           : number/function -- Maximum value for gauge (default: 100)
+    gaugeorientation   : string   -- "horizontal" or "vertical" (default: "horizontal")
+    gaugepadding       : number   -- Padding inside battery bar (default: 2)
+    gaugesegments      : number   -- Number of fill segments (default: 6)
+    showvalue          : bool     -- Show value text (default: false)
+    valueformat        : string   -- Lua format string for value display (e.g., "%.1f")
+    unit               : string   -- Unit to append to value (e.g., "V")
+    thresholds         : table    -- List of threshold tables: {value=..., fillcolor=..., textcolor=...}
+    novalue            : string   -- Text shown if telemetry value is missing (default: "-")
+
+    -- Appearance/Theming:
+    bgcolor            : color    -- Widget background color (default: theme fallback)
+    fillcolor          : color    -- Bar fill color (default: theme fallback)
+    fillbgcolor        : color    -- Bar background color (default: theme fallback)
+    textcolor          : color    -- Value text color (default: theme/text fallback)
+    titlecolor         : color    -- Title text color (default: theme/text fallback)
+
+    -- Title/Label:
+    title              : string   -- Title text
+    titlealign         : string   -- Title alignment ("center", "left", "right")
+    valuealign         : string   -- Value alignment ("center", "left", "right")
+    titlepos           : string   -- Title position ("top" or "bottom")
+    titlepadding       : number   -- Padding for title (all sides unless overridden)
+    titlepaddingleft   : number   -- Left padding for title
+    titlepaddingright  : number   -- Right padding for title
+    titlepaddingtop    : number   -- Top padding for title
+    titlepaddingbottom : number   -- Bottom padding for title
+    valuepadding       : number   -- Padding for value (all sides unless overridden)
+    valuepaddingleft   : number   -- Left padding for value
+    valuepaddingright  : number   -- Right padding for value
+    valuepaddingtop    : number   -- Top padding for value
+    valuepaddingbottom : number   -- Bottom padding for value
+    font               : font     -- Font for value (default: nil / widget default)
+
+]]
+
 local render = {}
 
-function render.wakeup(box, telemetry)
-    local utils = rfsuite.widgets.dashboard.utils
-    local getParam = utils.getParam
-    local resolveColor = utils.resolveColor
+local utils = rfsuite.widgets.dashboard.utils
+local getParam = utils.getParam
+local resolveThemeColor = utils.resolveThemeColor
 
-    -- Value extraction and transform
+local function drawFilledRoundedRectangle(x, y, w, h, r)
+    x = math.floor(x + 0.5)
+    y = math.floor(y + 0.5)
+    w = math.floor(w + 0.5)
+    h = math.floor(h + 0.5)
+    r = math.floor(r + 0.5)
+    if r > 0 then
+        lcd.drawFilledRectangle(x + r, y, w - 2*r, h)
+        lcd.drawFilledRectangle(x, y + r, r, h - 2*r)
+        lcd.drawFilledRectangle(x + w - r, y + r, r, h - 2*r)
+        lcd.drawFilledCircle(x + r, y + r, r)
+        lcd.drawFilledCircle(x + w - r - 1, y + r, r)
+        lcd.drawFilledCircle(x + r, y + h - r - 1, r)
+        lcd.drawFilledCircle(x + w - r - 1, y + h - r - 1, r)
+    else
+        lcd.drawFilledRectangle(x, y, w, h)
+    end
+end
+
+function render.wakeup(box, telemetry)
+    -- Value
     local value
     local source = getParam(box, "source")
     if source then
-        local sensor = telemetry and telemetry.getSensorSource(source)
-        value = sensor and sensor:value()
-        local transform = getParam(box, "transform")
-        if type(transform) == "string" and math[transform] then
-            value = value and math[transform](value)
-        elseif type(transform) == "function" then
-            value = value and transform(value)
-        elseif type(transform) == "number" then
-            value = value and transform(value)
-        end
-    end
-
-    -- Gauge logic
-    local min = getParam(box, "gaugemin") or 0
-    if type(min) == "function" then min = min() end
-    local max = getParam(box, "gaugemax") or 100
-    if type(max) == "function" then max = max() end
-    local percent = 0
-    if value and max ~= min then
-        percent = (value - min) / (max - min)
-        percent = math.max(0, math.min(1, percent))
-    end
-
-    -- Compose display value
-    local displayValue = "-"
-    if value ~= nil then
-        local valueFormat = getParam(box, "valueformat")
-        if valueFormat and type(value) == "number" then
-            displayValue = string.format(valueFormat, value)
+        if type(source) == "function" then
+            value = source(box, telemetry)
         else
-            displayValue = tostring(value)
+            local sensor = telemetry and telemetry.getSensorSource(source)
+            value = sensor and sensor:value()
+            local transform = getParam(box, "transform")
+            if type(transform) == "string" and math[transform] then
+                value = value and math[transform](value)
+            elseif type(transform) == "function" then
+                value = value and transform(value)
+            elseif type(transform) == "number" then
+                value = value and transform(value)
+            end
         end
-        local unit = getParam(box, "unit")
-        if unit then displayValue = displayValue .. unit end
-    else
-        displayValue = getParam(box, "novalue") or "-"
     end
 
-    -- Color resolution (may be overridden by thresholds)
-    local textcolor   = resolveColor(getParam(box, "textcolor")) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
-    local bgcolor     = resolveColor(getParam(box, "bgcolor")) or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
-    local fillcolor   = resolveColor(getParam(box, "fillcolor")) or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
-    local fillbgcolor = resolveColor(getParam(box, "fillbgcolor")) or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
-    local framecolor  = resolveColor(getParam(box, "framecolor")) or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
-    local titlecolor  = resolveColor(getParam(box, "titlecolor")) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
+    -- Display
+    local displayUnit = getParam(box, "unit")
+    local displayValue = value
+    if value == nil then
+        displayValue = getParam(box, "novalue") or "-"
+        displayUnit = nil
+    end
+
+    -- Gauge params
+    local gpad_left   = getParam(box, "gaugepaddingleft")   or getParam(box, "gaugepadding") or 0
+    local gpad_right  = getParam(box, "gaugepaddingright")  or getParam(box, "gaugepadding") or 0
+    local gpad_top    = getParam(box, "gaugepaddingtop")    or getParam(box, "gaugepadding") or 0
+    local gpad_bottom = getParam(box, "gaugepaddingbottom") or getParam(box, "gaugepadding") or 0
+    local roundradius = getParam(box, "roundradius") or 0
+
+    -- Color resolution (all done here)
+    local bgcolor     = resolveThemeColor("fillbgcolor", getParam(box, "bgcolor"))
+    local fillbgcolor = resolveThemeColor("fillbgcolor", getParam(box, "fillbgcolor"))
+    local fillcolor   = resolveThemeColor("fillcolor",   getParam(box, "fillcolor"))
+    local textcolor   = resolveThemeColor("textcolor",   getParam(box, "textcolor"))
+    local titlecolor  = resolveThemeColor("titlecolor",  getParam(box, "titlecolor"))
 
     -- Threshold logic: override colors if needed
     local thresholds = getParam(box, "thresholds")
-    if type(thresholds) == "table" and value then
+    local thresholdTextColor = nil
+    if thresholds and value ~= nil then
         for _, t in ipairs(thresholds) do
-            local tval = (type(t.value) == "function") and t.value() or t.value
-            if value <= tval then
-                if t.fillcolor then fillcolor = resolveColor(t.fillcolor) end
-                if t.textcolor  then textcolor = resolveColor(t.textcolor)  end
+            local t_val = type(t.value) == "function" and t.value(box, value) or t.value
+            if value < t_val then
+                if t.fillcolor then fillcolor = resolveThemeColor("fillcolor", t.fillcolor) end
+                if t.textcolor then thresholdTextColor = resolveThemeColor("textcolor", t.textcolor) end
                 break
             end
         end
     end
 
-    -- Store all box-relevant fields in cache
+    -- Gauge math
+    local gaugeMin = getParam(box, "gaugemin") or 0
+    local gaugeMax = getParam(box, "gaugemax") or 100
+    local gaugeOrientation = getParam(box, "gaugeorientation") or "vertical"
+    local percent = 0
+    if value ~= nil and gaugeMax ~= gaugeMin then
+        percent = (value - gaugeMin) / (gaugeMax - gaugeMin)
+        percent = math.max(0, math.min(1, percent))
+    end
+
+        -- Title and value formatting
+    local valuepadding = getParam(box, "valuepadding") or 0
+    local valuepaddingleft = getParam(box, "valuepaddingleft") or valuepadding
+    local valuepaddingright = getParam(box, "valuepaddingright") or valuepadding
+    local valuepaddingtop = getParam(box, "valuepaddingtop") or valuepadding
+    local valuepaddingbottom = getParam(box, "valuepaddingbottom") or valuepadding
+
+    local title = getParam(box, "title")
+    local titlepadding = getParam(box, "titlepadding") or 0
+    local titlepaddingleft = getParam(box, "titlepaddingleft") or titlepadding
+    local titlepaddingright = getParam(box, "titlepaddingright") or titlepadding
+    local titlepaddingtop = getParam(box, "titlepaddingtop") or titlepadding
+    local titlepaddingbottom = getParam(box, "titlepaddingbottom") or titlepadding
+    local titlealign = getParam(box, "titlealign") or "center"
+    local titlepos = getParam(box, "titlepos") or "top"
+    local valuealign = getParam(box, "valuealign") or "center"
+    local gaugebelowtitle = getParam(box, "gaugebelowtitle")
+
+    -- Title area height
+    local title_area_top = 0
+    local title_area_bottom = 0
+    if gaugebelowtitle and title then
+        lcd.font(FONT_XS)
+        local _, tsizeH = lcd.getTextSize(title)
+        if titlepos == "bottom" then
+            title_area_bottom = tsizeH + titlepaddingtop + titlepaddingbottom
+        else
+            title_area_top = tsizeH + titlepaddingtop + titlepaddingbottom
+        end
+    end
+
+    -- All fields cached for paint
     box._cache = {
-        displayValue       = displayValue,
-        bgcolor            = bgcolor,
-        textcolor          = textcolor,
-        fillcolor          = fillcolor,
-        fillbgcolor        = fillbgcolor,
-        framecolor         = framecolor,
-        titlecolor         = titlecolor,
-        title              = getParam(box, "title"),
-        titlealign         = getParam(box, "titlealign"),
-        valuealign         = getParam(box, "valuealign"),
-        titlepos           = getParam(box, "titlepos"),
-        titlepadding       = getParam(box, "titlepadding"),
-        titlepaddingleft   = getParam(box, "titlepaddingleft"),
-        titlepaddingright  = getParam(box, "titlepaddingright"),
-        titlepaddingtop    = getParam(box, "titlepaddingtop"),
-        titlepaddingbottom = getParam(box, "titlepaddingbottom"),
-        valuepadding       = getParam(box, "valuepadding"),
-        valuepaddingleft   = getParam(box, "valuepaddingleft"),
-        valuepaddingright  = getParam(box, "valuepaddingright"),
-        valuepaddingtop    = getParam(box, "valuepaddingtop"),
-        valuepaddingbottom = getParam(box, "valuepaddingbottom"),
-        font               = getParam(box, "font"),
-        percent            = percent,
-        orientation        = getParam(box, "gaugeorientation") or "horizontal",
-        gaugepadding       = tonumber(getParam(box, "gaugepadding")) or 2,
-        gaugeSegments      = tonumber(getParam(box, "gaugesegments")) or 6,
-        showValue          = getParam(box, "showvalue") == true or getParam(box, "showvalue") == "true",
+        value = value,
+        displayValue = displayValue,
+        displayUnit = displayUnit,
+        gpad_left = gpad_left,
+        gpad_right = gpad_right,
+        gpad_top = gpad_top,
+        gpad_bottom = gpad_bottom,
+        roundradius = roundradius,
+        bgcolor = bgcolor,
+        fillbgcolor = fillbgcolor,
+        fillcolor = fillcolor,
+        textcolor = textcolor,
+        thresholdTextColor = thresholdTextColor,
+        thresholds = thresholds,
+        gaugeMin = gaugeMin,
+        gaugeMax = gaugeMax,
+        gaugeOrientation = gaugeOrientation,
+        percent = percent,
+        valuepadding = valuepadding,
+        valuepaddingleft = valuepaddingleft,
+        valuepaddingright = valuepaddingright,
+        valuepaddingtop = valuepaddingtop,
+        valuepaddingbottom = valuepaddingbottom,
+        title = title,
+        titlepadding = titlepadding,
+        titlepaddingleft = titlepaddingleft,
+        titlepaddingright = titlepaddingright,
+        titlepaddingtop = titlepaddingtop,
+        titlepaddingbottom = titlepaddingbottom,
+        titlealign = titlealign,
+        titlepos = titlepos,
+        titlecolor = titlecolor,
+        valuealign = valuealign,
+        gaugebelowtitle = gaugebelowtitle,
+        title_area_top = title_area_top,
+        title_area_bottom = title_area_bottom,
     }
 end
 
-local function drawBatteryBar(x, y, w, h, percent, orientation, padding, segments, c)
-    percent = percent or 0
-    padding = padding or 2
-    local capW, capH = 4, h / 3
-    local bodyW, bodyH = w - capW, h
-    if orientation == "vertical" then
-        capW, capH = w / 3, 4
-        bodyW, bodyH = w, h - capH
-    end
-
-    lcd.color(c.framecolor)
-    lcd.drawFilledRectangle(x, y, bodyW, bodyH)
-    lcd.color(c.fillbgcolor)
-    lcd.drawFilledRectangle(x + padding, y + padding, bodyW - 2 * padding, bodyH - 2 * padding)
-
-    lcd.color(c.fillcolor)
-    local filled = math.floor(percent * segments + 0.5)
-    local spacing = 2
-
-    if orientation == "horizontal" then
-        local segW = math.floor((bodyW - 2 * padding - (segments - 1) * spacing) / segments)
-        local segH = bodyH - 2 * padding
-        for i = 1, filled do
-            local sx = x + padding + (i - 1) * (segW + spacing)
-            lcd.drawFilledRectangle(sx, y + padding, segW, segH)
-        end
-    else
-        local segH = math.floor((bodyH - 2 * padding - (segments - 1) * spacing) / segments)
-        local segW = bodyW - 2 * padding
-        for i = 1, filled do
-            local sy = y + bodyH - padding - i * (segH + spacing) + spacing
-            lcd.drawFilledRectangle(x + padding, sy, segW, segH)
-        end
-    end
-
-    lcd.color(c.framecolor)
-    if orientation == "horizontal" then
-        lcd.drawFilledRectangle(x + bodyW, y + (h - capH) / 2, capW, capH)
-    else
-        lcd.drawFilledRectangle(x + (w - capW) / 2, y - capH, capW, capH)
-    end
-end
-
 function render.paint(x, y, w, h, box)
-    x, y = rfsuite.widgets.dashboard.utils.applyOffset(x, y, box)
+    x, y = utils.applyOffset(x, y, box)
     local c = box._cache or {}
 
-    drawBatteryBar(
-        x, y, w, h,
-        c.percent or 0, c.orientation, c.gaugepadding, c.gaugeSegments, c
-    )
+    -- Draw overall box background
+    lcd.color(c.bgcolor)
+    lcd.drawFilledRectangle(x, y, w, h)
 
-    -- Text/title/value box
-    rfsuite.widgets.dashboard.utils.box(
-        x, y, w, h,
-        c.title, c.displayValue, nil, c.bgcolor,
-        c.titlealign, c.valuealign, c.titlecolor, c.titlepos,
-        c.titlepadding, c.titlepaddingleft, c.titlepaddingright,
-        c.titlepaddingtop, c.titlepaddingbottom,
-        c.valuepadding, c.valuepaddingleft, c.valuepaddingright,
-        c.valuepaddingtop, c.valuepaddingbottom,
-        c.font, c.textcolor
-    )
+    -- Gauge rectangle
+    local gauge_x = x + c.gpad_left
+    local gauge_y = y + c.gpad_top + c.title_area_top
+    local gauge_w = w - c.gpad_left - c.gpad_right
+    local gauge_h = h - c.gpad_top - c.gpad_bottom - c.title_area_top - c.title_area_bottom
+
+    -- Gauge background
+    lcd.color(c.fillbgcolor)
+    drawFilledRoundedRectangle(gauge_x, gauge_y, gauge_w, gauge_h, c.roundradius)
+
+    -- Gauge fill
+    if c.percent > 0 then
+        lcd.color(c.fillcolor)
+        if c.gaugeOrientation == "vertical" then
+            local fillH = math.floor(gauge_h * c.percent)
+            local fillY = gauge_y + gauge_h - fillH
+            drawFilledRoundedRectangle(gauge_x, fillY, gauge_w, fillH, c.roundradius)
+        else
+            local fillW = math.floor(gauge_w * c.percent)
+            drawFilledRoundedRectangle(gauge_x, gauge_y, fillW, gauge_h, c.roundradius)
+        end
+    end
+
+    -- Value text
+    if c.displayValue ~= nil then
+        local str = tostring(c.displayValue) .. (c.displayUnit or "")
+        local valueFont = box._cache.font or FONT_XL
+        lcd.font(valueFont)
+        local tw, th = lcd.getTextSize(str)
+        local availW = w - c.valuepaddingleft - c.valuepaddingright
+        local availH = h - c.valuepaddingtop - c.valuepaddingbottom
+        local sx = x + c.valuepaddingleft + (availW - tw) / 2
+        local sy = y + c.valuepaddingtop + (availH - th) / 2
+
+        -- Use threshold text color if it overlaps with fill (optional, basic version)
+        local useThresholdTextColor = c.thresholdTextColor and c.percent > 0
+        local valueTextColor = useThresholdTextColor and c.thresholdTextColor or c.textcolor
+        lcd.color(valueTextColor)
+        lcd.drawText(sx, sy, str)
+    end
+
+    -- Title
+    if c.title then
+        lcd.font(FONT_XS)
+        local tsizeW, tsizeH = lcd.getTextSize(c.title)
+        local region_x = x + c.titlepaddingleft
+        local region_w = w - c.titlepaddingleft - c.titlepaddingright
+        local sy = (c.titlepos == "bottom")
+            and (y + h - c.titlepaddingbottom - tsizeH)
+            or (y + c.titlepaddingtop)
+        local align = (c.titlealign or "center"):lower()
+        local sx
+        if align == "left" then
+            sx = region_x
+        elseif align == "right" then
+            sx = region_x + region_w - tsizeW
+        else
+            sx = region_x + (region_w - tsizeW) / 2
+        end
+        lcd.color(c.titlecolor)
+        lcd.drawText(sx, sy, c.title)
+    end
 end
 
 return render

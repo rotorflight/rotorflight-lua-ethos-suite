@@ -1,33 +1,52 @@
+--[[
+
+    Text Display Widget
+
+    Configurable Arguments (box table keys):
+    ----------------------------------------
+    value               : any      -- Value to display
+    thresholds          : table    -- List of threshold tables: {value=..., textcolor=...}
+    novalue             : string   -- Text shown if value is missing (default: "-")
+    unit                : string   -- Unit label to append to value
+    font                : font     -- Value font (e.g., FONT_L, FONT_XL)
+    bgcolor             : color    -- Widget background color (default: theme fallback)
+    textcolor           : color    -- Value text color (default: theme/text fallback)
+    titlecolor          : color    -- Title text color (default: theme/text fallback)
+    title               : string   -- Title text
+    titlealign          : string   -- Title alignment ("center", "left", "right")
+    valuealign          : string   -- Value alignment ("center", "left", "right")
+    titlepos            : string   -- Title position ("top" or "bottom")
+    titlepadding        : number   -- Padding for title (all sides unless overridden)
+    titlepaddingleft    : number   -- Left padding for title
+    titlepaddingright   : number   -- Right padding for title
+    titlepaddingtop     : number   -- Top padding for title
+    titlepaddingbottom  : number   -- Bottom padding for title
+    valuepadding        : number   -- Padding for value (all sides unless overridden)
+    valuepaddingleft    : number   -- Left padding for value
+    valuepaddingright   : number   -- Right padding for value
+    valuepaddingtop     : number   -- Top padding for value
+    valuepaddingbottom  : number   -- Bottom padding for value
+
+]]
+
 local render = {}
 
-function render.wakeup(box, telemetry)
-    local utils = rfsuite.widgets.dashboard.utils
-    local getParam, resolveColor = utils.getParam, utils.resolveColor
+local utils = rfsuite.widgets.dashboard.utils
+local getParam = utils.getParam
+local resolveThemeColor = utils.resolveThemeColor
 
-    -- Value extraction and transform
+function render.wakeup(box)
+    -- Value extraction (plain text only)
     local value = getParam(box, "value")
-    local source = getParam(box, "source")
-    if source then
-        local sensor = telemetry and telemetry.getSensorSource(source)
-        value = sensor and sensor:value()
-        local transform = getParam(box, "transform")
-        if type(transform) == "string" and math[transform] then
-            value = value and math[transform](value)
-        elseif type(transform) == "function" then
-            value = value and transform(value)
-        elseif type(transform) == "number" then
-            value = value and transform(value)
-        end
-    end
 
     -- Threshold logic for textcolor
-    local textcolor = resolveColor(getParam(box, "textcolor"))
+    local textcolor = resolveThemeColor(getParam(box, "textcolor"))
     local thresholds = getParam(box, "thresholds")
     if thresholds and value ~= nil then
         for _, t in ipairs(thresholds) do
             local t_val = type(t.value) == "function" and t.value(box, value) or t.value
             if value < t_val and t.textcolor then
-                textcolor = resolveColor(t.textcolor)
+                textcolor = resolveThemeColor(t.textcolor)
                 break
             end
         end
@@ -44,9 +63,9 @@ function render.wakeup(box, telemetry)
     box._cache = {
         displayValue       = displayValue,
         unit               = unit,
-        bgcolor            = resolveColor(getParam(box, "bgcolor")),
+        bgcolor            = resolveThemeColor("bgcolor", getParam(box, "bgcolor")),
         textcolor          = textcolor,
-        titlecolor         = resolveColor(getParam(box, "titlecolor")),
+        titlecolor         = resolveThemeColor("titlecolor", getParam(box, "titlecolor")),
         title              = getParam(box, "title"),
         titlealign         = getParam(box, "titlealign"),
         valuealign         = getParam(box, "valuealign"),
@@ -66,10 +85,10 @@ function render.wakeup(box, telemetry)
 end
 
 function render.paint(x, y, w, h, box)
-    x, y = rfsuite.widgets.dashboard.utils.applyOffset(x, y, box)
+    x, y = utils.applyOffset(x, y, box)
     local c = box._cache or {}
 
-    rfsuite.widgets.dashboard.utils.box(
+    utils.box(
         x, y, w, h,
         c.title, c.displayValue, c.unit, c.bgcolor,
         c.titlealign, c.valuealign, c.titlecolor, c.titlepos,

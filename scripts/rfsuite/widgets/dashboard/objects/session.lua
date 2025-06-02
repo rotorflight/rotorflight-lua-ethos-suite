@@ -1,9 +1,40 @@
+--[[
+
+    Session Value Widget
+
+    Configurable Arguments (box table keys):
+    ----------------------------------------
+    source              : string   -- rfsuite.session key to display (e.g., "totalflighttime")
+    title               : string   -- Title text
+    novalue             : string   -- Text shown if session value is missing (default: "-")
+    unit                : string   -- Unit label to append to value
+    font                : font     -- Value font (e.g., FONT_L, FONT_XL)
+    bgcolor             : color    -- Widget background color (default: theme fallback)
+    textcolor           : color    -- Value text color (default: theme/text fallback)
+    titlecolor          : color    -- Title text color (default: theme/text fallback)
+    titlealign          : string   -- Title alignment ("center", "left", "right")
+    valuealign          : string   -- Value alignment ("center", "left", "right")
+    titlepos            : string   -- Title position ("top" or "bottom")
+    titlepadding        : number   -- Padding for title (all sides unless overridden)
+    titlepaddingleft    : number   -- Left padding for title
+    titlepaddingright   : number   -- Right padding for title
+    titlepaddingtop     : number   -- Top padding for title
+    titlepaddingbottom  : number   -- Bottom padding for title
+    valuepadding        : number   -- Padding for value (all sides unless overridden)
+    valuepaddingleft    : number   -- Left padding for value
+    valuepaddingright   : number   -- Right padding for value
+    valuepaddingtop     : number   -- Top padding for value
+    valuepaddingbottom  : number   -- Bottom padding for value
+
+]]
+
 local render = {}
 
-function render.wakeup(box)
-    local utils = rfsuite.widgets.dashboard.utils
-    local getParam, resolveColor = utils.getParam, utils.resolveColor
+local utils = rfsuite.widgets.dashboard.utils
+local getParam = utils.getParam
+local resolveThemeColor = utils.resolveThemeColor
 
+function render.wakeup(box)
     local src = getParam(box, "source")
     local displayValue = rfsuite.session[src]
     local unit = getParam(box, "unit")
@@ -15,9 +46,9 @@ function render.wakeup(box)
     box._cache = {
         displayValue       = displayValue,
         unit               = unit,
-        bgcolor            = resolveColor(getParam(box, "bgcolor")),
-        textcolor          = resolveColor(getParam(box, "textcolor")),
-        titlecolor         = resolveColor(getParam(box, "titlecolor")),
+        bgcolor            = resolveThemeColor("bgcolor", getParam(box, "bgcolor")),
+        textcolor          = resolveThemeColor("textcolor", getParam(box, "textcolor")),
+        titlecolor         = resolveThemeColor("titlecolor", getParam(box, "titlecolor")),
         title              = getParam(box, "title"),
         titlealign         = getParam(box, "titlealign"),
         valuealign         = getParam(box, "valuealign"),
@@ -37,10 +68,10 @@ function render.wakeup(box)
 end
 
 function render.paint(x, y, w, h, box)
-    x, y = rfsuite.widgets.dashboard.utils.applyOffset(x, y, box)
+    x, y = utils.applyOffset(x, y, box)
     local c = box._cache or {}
 
-    rfsuite.widgets.dashboard.utils.box(
+    utils.box(
         x, y, w, h,
         c.title, c.displayValue, c.unit, c.bgcolor,
         c.titlealign, c.valuealign, c.titlecolor, c.titlepos,

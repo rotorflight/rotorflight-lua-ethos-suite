@@ -1,10 +1,38 @@
+--[[
+
+    API Version Widget
+
+    Configurable Arguments (box table keys):
+    ----------------------------------------
+    title              : string   -- Title text to display
+    unit               : string   -- Optional unit string to append
+    font               : font     -- Value font (e.g., FONT_L, FONT_XL)
+    bgcolor            : color    -- Widget background color (string or RGB, theme fallback if nil)
+    textcolor          : color    -- Value text color (string or RGB, theme fallback if nil)
+    titlecolor         : color    -- Title text color (string or RGB, theme fallback if nil)
+    titlealign         : string   -- Title alignment ("center", "left", "right")
+    valuealign         : string   -- Value alignment ("center", "left", "right")
+    titlepos           : string   -- Title position ("top" or "bottom")
+    titlepadding       : number   -- Padding for title (all sides unless overridden)
+    titlepaddingleft   : number   -- Left padding for title
+    titlepaddingright  : number   -- Right padding for title
+    titlepaddingtop    : number   -- Top padding for title
+    titlepaddingbottom : number   -- Bottom padding for title
+    valuepadding       : number   -- Padding for value (all sides unless overridden)
+    valuepaddingleft   : number   -- Left padding for value
+    valuepaddingright  : number   -- Right padding for value
+    valuepaddingtop    : number   -- Top padding for value
+    valuepaddingbottom : number   -- Bottom padding for value
+
+]]
+
 local render = {}
 
-function render.wakeup(box)
-    local utils = rfsuite.widgets.dashboard.utils
-    local getParam = utils.getParam
-    local resolveColor = utils.resolveColor
+local utils = rfsuite.widgets.dashboard.utils
+local getParam = utils.getParam
+local resolveThemeColor = utils.resolveThemeColor
 
+function render.wakeup(box)
     local displayValue = rfsuite.session.apiVersion
     if displayValue == nil then
         displayValue = getParam(box, "novalue") or "-"
@@ -14,9 +42,9 @@ function render.wakeup(box)
         displayValue       = displayValue,
         title              = getParam(box, "title"),
         unit               = nil,
-        bgcolor            = resolveColor(getParam(box, "bgcolor")),
-        textcolor          = resolveColor(getParam(box, "textcolor")),
-        titlecolor         = resolveColor(getParam(box, "titlecolor")),
+        bgcolor            = resolveThemeColor("bgcolor", getParam(box, "bgcolor")),
+        textcolor          = resolveThemeColor("textcolor", getParam(box, "textcolor")),
+        titlecolor         = resolveThemeColor("titlecolor", getParam(box, "titlecolor")),
         titlealign         = getParam(box, "titlealign"),
         valuealign         = getParam(box, "valuealign"),
         titlepos           = getParam(box, "titlepos"),
@@ -35,9 +63,9 @@ function render.wakeup(box)
 end
 
 function render.paint(x, y, w, h, box)
-    x, y = rfsuite.widgets.dashboard.utils.applyOffset(x, y, box)
+    x, y = utils.applyOffset(x, y, box)
     local c = box._cache or {}
-    rfsuite.widgets.dashboard.utils.box(
+    utils.box(
         x, y, w, h,
         c.title, c.displayValue, c.unit, c.bgcolor,
         c.titlealign, c.valuealign, c.titlecolor, c.titlepos,

@@ -1,4 +1,55 @@
+--[[
+
+    Generic Gauge Widget
+
+    Configurable Arguments (box table keys):
+    ----------------------------------------
+    source              : string/function -- Telemetry sensor source name or function
+    transform           : string/function/number -- Optional value transform (math function or custom function)
+    gaugemin            : number/function -- Minimum value for gauge (default: 0)
+    gaugemax            : number/function -- Maximum value for gauge (default: 100)
+    gaugeorientation    : string          -- "horizontal" or "vertical" (default: "vertical")
+    gaugepadding        : number          -- Base padding for gauge area (default: 0)
+    gaugepaddingleft    : number          -- Left padding for gauge
+    gaugepaddingright   : number          -- Right padding for gauge
+    gaugepaddingtop     : number          -- Top padding for gauge
+    gaugepaddingbottom  : number          -- Bottom padding for gauge
+    roundradius         : number          -- Corner radius for filled rect (default: 0)
+    fillcolor           : color           -- Bar fill color (default: theme fallback)
+    fillbgcolor         : color           -- Bar background color (default: theme fallback)
+    bgcolor             : color           -- Widget background color (default: theme fallback)
+    textcolor           : color           -- Value and info text color (default: theme/text fallback)
+    titlecolor          : color           -- Title text color (default: theme/text fallback)
+    thresholds          : table           -- List of threshold tables: {value=..., fillcolor=..., textcolor=...}
+    novalue             : string          -- Text shown if telemetry value is missing (default: "-")
+
+    -- Title/Label:
+    title               : string          -- Title text
+    titlealign          : string          -- Title alignment ("center", "left", "right")
+    valuealign          : string          -- Value alignment ("center", "left", "right")
+    titlepos            : string          -- Title position ("top" or "bottom", default: "top")
+    titlepadding        : number          -- Padding for title (all sides unless overridden)
+    titlepaddingleft    : number          -- Left padding for title
+    titlepaddingright   : number          -- Right padding for title
+    titlepaddingtop     : number          -- Top padding for title
+    titlepaddingbottom  : number          -- Bottom padding for title
+    valuepadding        : number          -- Padding for value (all sides unless overridden)
+    valuepaddingleft    : number          -- Left padding for value
+    valuepaddingright   : number          -- Right padding for value
+    valuepaddingtop     : number          -- Top padding for value
+    valuepaddingbottom  : number          -- Bottom padding for value
+    font                : font            -- Value font (default: FONT_XL)
+    gaugebelowtitle     : bool            -- If true, positions the gauge below the title
+
+    * This widget sets up defaults for typical fuel sensor usage but all options may be overridden.
+]]
+
+
 local render = {}
+
+local utils = rfsuite.widgets.dashboard.utils
+local getParam = utils.getParam
+local resolveThemeColor = utils.resolveThemeColor
 
 local defaults = {
     source = "fuel",
@@ -43,10 +94,6 @@ local function drawFilledRoundedRectangle(x, y, w, h, r)
 end
 
 function render.wakeup(box, telemetry)
-    local utils = rfsuite.widgets.dashboard.utils
-    local getParam = utils.getParam
-    local resolveColor = utils.resolveColor
-
     -- Merge defaults and box/user params
     local fuelBox = {}
     for k, v in pairs(defaults) do fuelBox[k] = v end
@@ -88,12 +135,11 @@ function render.wakeup(box, telemetry)
     local roundradius = fuelBox.roundradius or 0
 
     -- Color resolve (new names only)
-    local bgcolor     = resolveColor(fuelBox.bgcolor) or or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
-    local fillbgcolor = resolveColor(fuelBox.fillbgcolor) or or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
-    local fillcolor   = resolveColor(fuelBox.fillcolor) or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
-    local framecolor  = resolveColor(fuelBox.framecolor) or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
-    local textcolor   = resolveColor(fuelBox.textcolor) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
-    local titlecolor  = resolveColor(fuelBox.titlecolor) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
+    local bgcolor     = resolveThemeColor("fillbgcolor", getParam(box, "bgcolor"))
+    local fillbgcolor = resolveThemeColor("fillbgcolor", getParam(box, "fillbgcolor"))
+    local fillcolor   = resolveThemeColor("fillcolor",   getParam(box, "fillcolor"))
+    local textcolor   = resolveThemeColor("textcolor",   getParam(box, "textcolor"))
+    local titlecolor  = resolveThemeColor("titlecolor",  getParam(box, "titlecolor"))
 
     -- Threshold logic for fill/text color
     local thresholds = fuelBox.thresholds
@@ -102,8 +148,8 @@ function render.wakeup(box, telemetry)
         for _, t in ipairs(thresholds) do
             local t_val = type(t.value) == "function" and t.value(box, value) or t.value
             if value < t_val then
-                if t.fillcolor then thresholdFillColor = resolveColor(t.fillcolor) end
-                if t.textcolor then thresholdTextColor = resolveColor(t.textcolor) end
+                if t.fillcolor then thresholdFillColor = resolveThemeColor(t.fillcolor) end
+                if t.textcolor then thresholdTextColor = resolveThemeColor(t.textcolor) end
                 break
             end
         end
@@ -162,7 +208,6 @@ function render.wakeup(box, telemetry)
         bgcolor = bgcolor,
         fillbgcolor = fillbgcolor,
         fillcolor = thresholdFillColor or fillcolor,
-        framecolor = framecolor,
         textcolor = thresholdTextColor or textcolor,
         gaugeMin = gaugeMin,
         gaugeMax = gaugeMax,
@@ -191,7 +236,7 @@ function render.wakeup(box, telemetry)
 end
 
 function render.paint(x, y, w, h, box)
-    x, y = rfsuite.widgets.dashboard.utils.applyOffset(x, y, box)
+    x, y = utils.applyOffset(x, y, box)
     local c = box._cache or {}
 
     -- Draw overall box background
@@ -219,12 +264,6 @@ function render.paint(x, y, w, h, box)
             local fillW = math.floor(gauge_w * c.percent)
             drawFilledRoundedRectangle(gauge_x, gauge_y, fillW, gauge_h, c.roundradius)
         end
-    end
-
-    -- Gauge frame
-    if c.framecolor then
-        lcd.color(c.framecolor)
-        lcd.drawRectangle(gauge_x, gauge_y, gauge_w, gauge_h)
     end
 
     -- Value text (with dynamic/static font)

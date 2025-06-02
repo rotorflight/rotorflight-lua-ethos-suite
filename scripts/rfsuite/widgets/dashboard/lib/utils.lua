@@ -275,6 +275,44 @@ function utils.resolveColor(value, variantFactor)
     return nil
 end
 
+-- Single color resolve by context key (returns RGB number)
+function utils.resolveThemeColor(colorkey, value)
+    -- If already a number (e.g. lcd.RGB), just return
+    if type(value) == "number" then return value end
+    -- If string (like "red"), use resolveColor
+    if type(value) == "string" then
+        local resolved = utils.resolveColor(value)
+        if resolved then return resolved end
+    end
+    -- Provide context defaults
+    if colorkey == "fillcolor" then
+        return lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)
+    elseif colorkey == "fillbgcolor" then
+        return lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)
+    elseif colorkey == "framecolor" then
+        return lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)
+    elseif colorkey == "textcolor" then
+        return lcd.RGB(255,255,255)
+    elseif colorkey == "titlecolor" then
+        return lcd.RGB(255,255,255)
+    elseif colorkey == "accentcolor" then
+        return lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)
+    end
+    -- fallback
+    return lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)
+end
+
+-- For arrays like bandColors (returns a resolved RGB array)
+function utils.resolveThemeColorArray(colorkey, arr)
+    local resolved = {}
+    if type(arr) == "table" then
+        for i = 1, #arr do
+            resolved[i] = utils.resolveThemeColor(colorkey, arr[i])
+        end
+    end
+    return resolved
+end
+
 
 --[[----------------------------------------------------------------------------
     Draws a telemetry value box with colored background, value, title, unit, 
@@ -321,7 +359,7 @@ function utils.box(
     end
 
     -- Draw background
-    lcd.color(bgcolor or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)))
+    lcd.color(bgcolor)
     lcd.drawFilledRectangle(x, y, w, h)
 
     -- Padding resolution (default 0)
@@ -389,7 +427,7 @@ function utils.box(
             sx = region_x + (region_w - bestW) / 2
         end
 
-        lcd.color(textcolor or (lcd.darkMode() and lcd.RGB(255,255,255) or lcd.RGB(90,90,90)))
+        lcd.color(textcolor)
         lcd.drawText(sx, sy, str)
     end
 
@@ -411,7 +449,7 @@ function utils.box(
         else
             sx = region_x + (region_w - tsizeW) / 2
         end
-        lcd.color(titlecolor or (lcd.darkMode() and lcd.RGB(255,255,255) or lcd.RGB(90,90,90)))
+        lcd.color(titlecolor)
         lcd.drawText(sx, sy, title)
     end
 end

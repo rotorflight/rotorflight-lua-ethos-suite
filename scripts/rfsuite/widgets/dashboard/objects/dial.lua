@@ -1,4 +1,52 @@
+--[[
+
+    Dial Image Widget
+
+    Configurable Arguments (box table keys):
+    ----------------------------------------
+    source              : string   -- Telemetry sensor source name
+    transform           : string/function/number -- Optional value transform (math function or custom function)
+    min                 : number   -- Minimum value (default: 0)
+    max                 : number   -- Maximum value (default: 100)
+    novalue             : string   -- Text shown if telemetry value is missing (default: "-")
+    unit                : string   -- Unit to append to value (display only if value is present)
+    dial                : string/number/function -- Dial image selector (used for asset path)
+    aspect              : string   -- Image aspect handling ("fit", "fill", "original")
+    align               : string   -- Image alignment ("left", "center", "right", "top", "bottom")
+    needlecolor         : color    -- Needle color (default: red)
+    needlehubcolor      : color    -- Hub color (default: black)
+    accentcolor         : color    -- Accent color (optional, used for hub highlight)
+    needlethickness     : number   -- Needle width in pixels (default: 3)
+    needlehubsize       : number   -- Hub circle radius in pixels (default: needle thickness + 2)
+    needlestartangle    : number   -- Needle starting angle in degrees (default: 135)
+    needleendangle      : number   -- Needle ending angle in degrees (if set, determines sweep)
+    needlesweepangle    : number   -- Needle sweep angle in degrees (default: 270)
+    bgcolor             : color    -- Widget background color (default: theme fallback)
+    textcolor           : color    -- Value text color (default: theme/text fallback)
+    titlecolor          : color    -- Title text color (default: theme/text fallback)
+    title               : string   -- Title text
+    titlealign          : string   -- Title alignment ("center", "left", "right")
+    valuealign          : string   -- Value alignment ("center", "left", "right")
+    titlepos            : string   -- Title position ("top" or "bottom")
+    titlepadding        : number   -- Padding for title (all sides unless overridden)
+    titlepaddingleft    : number   -- Left padding for title
+    titlepaddingright   : number   -- Right padding for title
+    titlepaddingtop     : number   -- Top padding for title
+    titlepaddingbottom  : number   -- Bottom padding for title
+    valuepadding        : number   -- Padding for value (all sides unless overridden)
+    valuepaddingleft    : number   -- Left padding for value
+    valuepaddingright   : number   -- Right padding for value
+    valuepaddingtop     : number   -- Top padding for value
+    valuepaddingbottom  : number   -- Bottom padding for value
+    font                : font     -- Value font (default: FONT_STD)
+
+]]
+
 local render = {}
+
+local utils = rfsuite.widgets.dashboard.utils
+local getParam = utils.getParam
+local resolveThemeColor = utils.resolveThemeColor
 
 rfsuite.session.dialImageCache = rfsuite.session.dialImageCache or {}
 
@@ -61,10 +109,6 @@ local function computeDrawArea(img, x, y, w, h, aspect, align)
 end
 
 function render.wakeup(box, telemetry)
-    local utils = rfsuite.widgets.dashboard.utils
-    local getParam = utils.getParam
-    local resolveColor = utils.resolveColor
-
     -- Value/percent logic
     local value = nil
     local source = getParam(box, "source")
@@ -98,10 +142,10 @@ function render.wakeup(box, telemetry)
     local aspect   = getParam(box, "aspect")
     local align    = getParam(box, "align") or "center"
 
-    local needleColor = resolveColor(getParam(box, "needlecolor")) or lcd.RGB(255, 0, 0)
-    local hubColor    = resolveColor(getParam(box, "needlehubcolor")) or lcd.RGB(0, 0, 0)
-    local accentcolor = resolveColor(getParam(box, "accentcolor"))
-    local framecolor  = resolveColor(getParam(box, "framecolor"))
+    local needleColor = resolveThemeColor(getParam(box, "needlecolor"))
+    local hubColor    = resolveThemeColor(getParam(box, "needlehubcolor"))
+    local accentcolor = resolveThemeColor(getParam(box, "accentcolor"))
+    local framecolor  = resolveThemeColor(getParam(box, "framecolor"))
     local needleThickness = tonumber(getParam(box, "needlethickness")) or 3
     local hubRadius   = tonumber(getParam(box, "needlehubsize")) or (math.max(2, needleThickness + 2))
 
@@ -114,9 +158,11 @@ function render.wakeup(box, telemetry)
     end
 
     -- Standard color fields
-    local bgcolor    = resolveColor(getParam(box, "bgcolor"))
-    local textcolor  = resolveColor(getParam(box, "textcolor"))
-    local titlecolor = resolveColor(getParam(box, "titlecolor"))
+    local bgcolor    = resolveThemeColor("bgcolor", getParam(box, "bgcolor"))
+    local textcolor  = resolveThemeColor("textcolor", getParam(box, "textcolor"))
+    local titlecolor = resolveThemeColor("titlecolor", getParam(box, "titlecolor"))
+    local accentcolor = resolveThemeColor("accentcolor", getParam(box, "accentcolor"))
+    local framecolor = resolveThemeColor("framecolor", getParam(box, "framecolor"))
 
     -- All display geometry/padding/font values
     box._cache = {
@@ -160,11 +206,11 @@ function render.wakeup(box, telemetry)
 end
 
 function render.paint(x, y, w, h, box)
-    x, y = rfsuite.widgets.dashboard.utils.applyOffset(x, y, box)
+    x, y = utils.applyOffset(x, y, box)
     local c = box._cache or {}
 
     -- Draw background
-    lcd.color(c.bgcolor or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)))
+    lcd.color(c.bgcolor)
     lcd.drawFilledRectangle(x, y, w, h)
 
     -- Optional dial frame

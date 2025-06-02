@@ -1,10 +1,42 @@
+--[[
+
+    Arm Flags Widget
+
+    Configurable Arguments (box table keys):
+    ----------------------------------------
+    title              : string   -- Title text
+    novalue            : string   -- Text shown if telemetry value is missing (default: "-")
+    font               : font     -- Value font (e.g., FONT_L, FONT_XL)
+    textcolor          : color    -- Value text color (default: theme/text fallback)
+    bgcolor            : color    -- Background color (default: theme fallback)
+    titlecolor         : color    -- Title text color (default: theme/text fallback)
+    armedcolor         : color    -- Value text color when armed (overrides textcolor)
+    disarmedcolor      : color    -- Value text color when disarmed (overrides textcolor)
+    armedbgcolor       : color    -- Background color when armed (overrides bgcolor)
+    disarmedbgcolor    : color    -- Background color when disarmed (overrides bgcolor)
+    titlealign         : string   -- Title alignment ("center", "left", "right")
+    valuealign         : string   -- Value alignment ("center", "left", "right")
+    titlepos           : string   -- Title position ("top" or "bottom")
+    titlepadding       : number   -- Padding for title (all sides unless overridden)
+    titlepaddingleft   : number   -- Left padding for title
+    titlepaddingright  : number   -- Right padding for title
+    titlepaddingtop    : number   -- Top padding for title
+    titlepaddingbottom : number   -- Bottom padding for title
+    valuepadding       : number   -- Padding for value (all sides unless overridden)
+    valuepaddingleft   : number   -- Left padding for value
+    valuepaddingright  : number   -- Right padding for value
+    valuepaddingtop    : number   -- Top padding for value
+    valuepaddingbottom : number   -- Bottom padding for value
+
+]]
+
 local render = {}
 
-function render.wakeup(box, telemetry)
-    local utils = rfsuite.widgets.dashboard.utils
-    local getParam = utils.getParam
-    local resolveColor = utils.resolveColor
+local utils = rfsuite.widgets.dashboard.utils
+local getParam = utils.getParam
+local resolveThemeColor = utils.resolveThemeColor
 
+function render.wakeup(box, telemetry)
     local value = nil
     local sensor = telemetry and telemetry.getSensorSource("armflags")
     value = sensor and sensor:value()
@@ -20,22 +52,30 @@ function render.wakeup(box, telemetry)
         displayValue = getParam(box, "novalue") or "-"
     end
 
-    -- Remove dynamic background color, always static from config
-    local bgcolor = resolveColor(getParam(box, "bgcolor"))
+   -- Dynamic background color
+    local bgcolor
+    if value ~= nil and value >= 3 then
+        bgcolor = resolveThemeColor("fillbgcolor", getParam(box, "armedbgcolor"))
+    elseif value ~= nil then
+        bgcolor = resolveThemeColor("fillbgcolor", getParam(box, "disarmedbgcolor"))
+    end
+    if not bgcolor then
+        bgcolor = resolveThemeColor("fillbgcolor", getParam(box, "fillbgcolor")) or resolveThemeColor("bgcolor", getParam(box, "bgcolor"))
+    end
 
-    -- Dynamic text color depending on arm state
-    local armedColor    = getParam(box, "armedcolor")
-    local disarmedColor = getParam(box, "disarmedcolor")
+    -- Dynamic text color
     local textcolor
-    if value ~= nil then
-        textcolor = value >= 3 and resolveColor(armedColor) or resolveColor(disarmedColor)
+    if value ~= nil and value >= 3 then
+        textcolor = resolveThemeColor("textcolor", getParam(box, "armedcolor"))
+    elseif value ~= nil then
+        textcolor = resolveThemeColor("textcolor", getParam(box, "disarmedcolor"))
     end
     if not textcolor then
-        textcolor = resolveColor(getParam(box, "textcolor"))
+        textcolor = resolveThemeColor("textcolor", getParam(box, "textcolor"))
     end
 
-    -- Title color
-    local titlecolor = resolveColor(getParam(box, "titlecolor"))
+    -- Title color (will default to white via resolver if unset)
+    local titlecolor = resolveThemeColor("titlecolor", getParam(box, "titlecolor"))
 
     box._cache = {
         displayValue       = displayValue,
@@ -61,11 +101,10 @@ function render.wakeup(box, telemetry)
 end
 
 function render.paint(x, y, w, h, box)
-    x, y = rfsuite.widgets.dashboard.utils.applyOffset(x, y, box)
+    x, y = utils.applyOffset(x, y, box)
     local c = box._cache or {}
 
-    -- Use only pre-resolved color values
-    rfsuite.widgets.dashboard.utils.box(
+    utils.box(
         x, y, w, h,
         c.title, c.displayValue, nil, c.bgcolor,
         c.titlealign, c.valuealign, c.titlecolor, c.titlepos,

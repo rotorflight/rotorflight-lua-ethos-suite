@@ -1,4 +1,54 @@
+--[[
+
+    Generic Gauge Widget
+
+    Configurable Arguments (box table keys):
+    ----------------------------------------
+    source              : string/function -- Telemetry sensor source name or function
+    transform           : string/function/number -- Optional value transform (math function or custom function)
+    gaugemin            : number/function -- Minimum value for gauge (default: 0)
+    gaugemax            : number/function -- Maximum value for gauge (default: 100)
+    gaugeorientation    : string          -- "horizontal" or "vertical" (default: "vertical")
+    gaugepadding        : number          -- Base padding for gauge area (default: 0)
+    gaugepaddingleft    : number          -- Left padding for gauge
+    gaugepaddingright   : number          -- Right padding for gauge
+    gaugepaddingtop     : number          -- Top padding for gauge
+    gaugepaddingbottom  : number          -- Bottom padding for gauge
+    roundradius         : number          -- Corner radius for filled rect (default: 0)
+    fillcolor           : color           -- Bar fill color (default: theme fallback)
+    fillbgcolor         : color           -- Bar background color (default: theme fallback)
+    bgcolor             : color           -- Widget background color (default: theme fallback)
+    textcolor           : color           -- Value and info text color (default: theme/text fallback)
+    titlecolor          : color           -- Title text color (default: theme/text fallback)
+    thresholds          : table           -- List of threshold tables: {value=..., fillcolor=..., textcolor=...}
+    novalue             : string          -- Text shown if telemetry value is missing (default: "-")
+
+    -- Title/Label:
+    title               : string          -- Title text
+    titlealign          : string          -- Title alignment ("center", "left", "right")
+    valuealign          : string          -- Value alignment ("center", "left", "right")
+    titlepos            : string          -- Title position ("top" or "bottom", default: "top")
+    titlepadding        : number          -- Padding for title (all sides unless overridden)
+    titlepaddingleft    : number          -- Left padding for title
+    titlepaddingright   : number          -- Right padding for title
+    titlepaddingtop     : number          -- Top padding for title
+    titlepaddingbottom  : number          -- Bottom padding for title
+    valuepadding        : number          -- Padding for value (all sides unless overridden)
+    valuepaddingleft    : number          -- Left padding for value
+    valuepaddingright   : number          -- Right padding for value
+    valuepaddingtop     : number          -- Top padding for value
+    valuepaddingbottom  : number          -- Bottom padding for value
+    font                : font            -- Value font (default: FONT_XL)
+    gaugebelowtitle     : bool            -- If true, positions the gauge below the title
+
+    * This widget sets up defaults for typical voltage sensor usage but all options may be overridden.
+]]
+
 local render = {}
+
+local utils = rfsuite.widgets.dashboard.utils
+local getParam = utils.getParam
+local resolveThemeColor = utils.resolveThemeColor
 
 -- Default parameters for voltage gauge
 local defaults = {
@@ -69,43 +119,16 @@ local function drawFilledRoundedRectangle(x, y, w, h, r)
 end
 
 function render.wakeup(box, telemetry)
-    local utils = rfsuite.widgets.dashboard.utils
-    local getParam, resolveColor = utils.getParam, utils.resolveColor
-
-    -- Merge defaults and box (user values override defaults)
-    local voltBox = {}
-    for k, v in pairs(defaults) do voltBox[k] = v end
-    for k, v in pairs(box or {}) do voltBox[k] = v end
-
-    -- Evaluate gaugemin/gaugemax if functions
-    if type(voltBox.gaugemin) == "function" then
-        voltBox.gaugemin = voltBox.gaugemin()
-    end
-    if type(voltBox.gaugemax) == "function" then
-        voltBox.gaugemax = voltBox.gaugemax()
-    end
-
-    -- Evaluate thresholds .value if function, so they're up to date each wakeup
-    if type(voltBox.thresholds) == "table" then
-        for i, t in ipairs(voltBox.thresholds) do
-            if type(t.value) == "function" then
-                voltBox.thresholds[i] = {}
-                for k,v in pairs(t) do voltBox.thresholds[i][k] = v end
-                voltBox.thresholds[i].value = t.value()
-            end
-        end
-    end
-
-    -- Get value from telemetry
+    -- Get value
     local value = nil
-    local source = voltBox.source
+    local source = getParam(box, "source")
     if source then
         if type(source) == "function" then
             value = source(box, telemetry)
         else
             local sensor = telemetry and telemetry.getSensorSource(source)
             value = sensor and sensor:value()
-            local transform = voltBox.transform
+            local transform = getParam(box, "transform")
             if type(transform) == "string" and math[transform] then
                 value = value and math[transform](value)
             elseif type(transform) == "function" then
@@ -116,45 +139,45 @@ function render.wakeup(box, telemetry)
         end
     end
 
-    local displayUnit = voltBox.unit
+    local displayUnit = getParam(box, "unit")
     local displayValue = value
     if value == nil then
-        displayValue = voltBox.novalue or "-"
+        displayValue = getParam(box, "novalue") or "-"
         displayUnit = nil
     end
 
     -- Padding for gauge area
-    local gpad_left   = voltBox.gaugepaddingleft   or voltBox.gaugepadding or 0
-    local gpad_right  = voltBox.gaugepaddingright  or voltBox.gaugepadding or 0
-    local gpad_top    = voltBox.gaugepaddingtop    or voltBox.gaugepadding or 0
-    local gpad_bottom = voltBox.gaugepaddingbottom or voltBox.gaugepadding or 0
+    local gpad_left   = getParam(box, "gaugepaddingleft")   or getParam(box, "gaugepadding") or 0
+    local gpad_right  = getParam(box, "gaugepaddingright")  or getParam(box, "gaugepadding") or 0
+    local gpad_top    = getParam(box, "gaugepaddingtop")    or getParam(box, "gaugepadding") or 0
+    local gpad_bottom = getParam(box, "gaugepaddingbottom") or getParam(box, "gaugepadding") or 0
 
-    local roundradius = voltBox.roundradius or 0
+    local roundradius = getParam(box, "roundradius") or 0
 
     -- Standardized color keys (new style)
-    local bgcolor     = resolveColor(voltBox.bgcolor) or or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
-    local fillbgcolor = resolveColor(voltBox.fillbgcolor) or bgcolor or (lcd.darkMode() and lcd.RGB(40,40,40) or lcd.RGB(240,240,240))
-    local fillcolor   = resolveColor(voltBox.fillcolor) or lcd.RGB(0, 255, 0)
-    local framecolor  = resolveColor(voltBox.framecolor) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
-    local textcolor   = resolveColor(voltBox.color) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
-    local titlecolor  = resolveColor(voltBox.titlecolor) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
+    local bgcolor     = resolveThemeColor("fillbgcolor", getParam(box, "bgcolor"))
+    local fillbgcolor = resolveThemeColor("fillbgcolor", getParam(box, "fillbgcolor"))
+    local fillcolor   = resolveThemeColor("fillcolor",   getParam(box, "fillcolor"))
+    local textcolor   = resolveThemeColor("textcolor",   getParam(box, "textcolor"))
+    local titlecolor  = resolveThemeColor("titlecolor",  getParam(box, "titlecolor"))
 
-    local thresholds = voltBox.thresholds
+
+    local thresholds = getParam(box, "thresholds")
     local thresholdFillColor, thresholdTextColor
     if thresholds and value ~= nil then
         for _, t in ipairs(thresholds) do
             local t_val = type(t.value) == "function" and t.value(box, value) or t.value
             if value < t_val then
-                if t.color then thresholdFillColor = resolveColor(t.color) end
-                if t.textcolor then thresholdTextColor = resolveColor(t.textcolor) end
+                if t.fillcolor then thresholdFillColor = resolveThemeColor(t.fillcolor) end
+                if t.textcolor then thresholdTextColor = resolveThemeColor(t.textcolor) end
                 break
             end
         end
     end
 
-    local gaugeMin = voltBox.gaugemin or 0
-    local gaugeMax = voltBox.gaugemax or 100
-    local gaugeOrientation = voltBox.gaugeorientation or "vertical"
+    local gaugeMin = getParam(box, "gaugemin") or 0
+    local gaugeMax = getParam(box, "gaugemax") or 100
+    local gaugeOrientation = getParam(box, "gaugeorientation") or "vertical"
     local percent = 0
     if value ~= nil and gaugeMax ~= gaugeMin then
         percent = (value - gaugeMin) / (gaugeMax - gaugeMin)
@@ -162,27 +185,27 @@ function render.wakeup(box, telemetry)
     end
 
     -- Value text formatting and padding
-    local valuepadding = voltBox.valuepadding or 0
-    local valuepaddingleft = voltBox.valuepaddingleft or valuepadding
-    local valuepaddingright = voltBox.valuepaddingright or valuepadding
-    local valuepaddingtop = voltBox.valuepaddingtop or valuepadding
-    local valuepaddingbottom = voltBox.valuepaddingbottom or valuepadding
+    local valuepadding = getParam(box, "valuepadding") or 0
+    local valuepaddingleft = getParam(box, "valuepaddingleft") or valuepadding
+    local valuepaddingright = getParam(box, "valuepaddingright") or valuepadding
+    local valuepaddingtop = getParam(box, "valuepaddingtop") or valuepadding
+    local valuepaddingbottom = getParam(box, "valuepaddingbottom") or valuepadding
 
     -- Title parameters
-    local title = voltBox.title
-    local titlepadding = voltBox.titlepadding or 0
-    local titlepaddingleft = voltBox.titlepaddingleft or titlepadding
-    local titlepaddingright = voltBox.titlepaddingright or titlepadding
-    local titlepaddingtop = voltBox.titlepaddingtop or titlepadding
-    local titlepaddingbottom = voltBox.titlepaddingbottom or titlepadding
-    local titlealign = voltBox.titlealign or "center"
-    local titlepos = voltBox.titlepos or "top"
+    local title = getParam(box, "title")
+    local titlepadding = getParam(box, "titlepadding") or 0
+    local titlepaddingleft = getParam(box, "titlepaddingleft") or titlepadding
+    local titlepaddingright = getParam(box, "titlepaddingright") or titlepadding
+    local titlepaddingtop = getParam(box, "titlepaddingtop") or titlepadding
+    local titlepaddingbottom = getParam(box, "titlepaddingbottom") or titlepadding
+    local titlealign = getParam(box, "titlealign") or "center"
+    local titlepos = getParam(box, "titlepos") or "top"
 
-    local valuealign = voltBox.valuealign or "center"
-    local font = voltBox.font
+    local valuealign = getParam(box, "valuealign") or "center"
+    local font = getParam(box, "font")
 
     -- Gauge below title?
-    local gaugebelowtitle = voltBox.gaugebelowtitle
+    local gaugebelowtitle = getParam(box, "gaugebelowtitle")
 
     -- Title area height
     local title_area_top = 0
@@ -209,7 +232,6 @@ function render.wakeup(box, telemetry)
         bgcolor = bgcolor,
         fillbgcolor = fillbgcolor,
         fillcolor = thresholdFillColor or fillcolor,
-        framecolor = framecolor,
         textcolor = thresholdTextColor or textcolor,
         gaugeMin = gaugeMin,
         gaugeMax = gaugeMax,
@@ -237,22 +259,25 @@ function render.wakeup(box, telemetry)
     }
 end
 
--- Use the *exact same* paint function as in gauge.lua
 function render.paint(x, y, w, h, box)
-    x, y = rfsuite.widgets.dashboard.utils.applyOffset(x, y, box)
+    x, y = utils.applyOffset(x, y, box)
     local c = box._cache or {}
 
+    -- Draw overall box background
     lcd.color(c.bgcolor)
     lcd.drawFilledRectangle(x, y, w, h)
 
+    -- Gauge rectangle (with padding and title space)
     local gauge_x = x + c.gpad_left
     local gauge_y = y + c.gpad_top + c.title_area_top
     local gauge_w = w - c.gpad_left - c.gpad_right
     local gauge_h = h - c.gpad_top - c.gpad_bottom - c.title_area_top - c.title_area_bottom
 
+    -- Gauge background
     lcd.color(c.fillbgcolor)
     drawFilledRoundedRectangle(gauge_x, gauge_y, gauge_w, gauge_h, c.roundradius)
 
+    -- Gauge fill
     if c.percent > 0 then
         lcd.color(c.fillcolor)
         if c.gaugeOrientation == "vertical" then
@@ -265,11 +290,7 @@ function render.paint(x, y, w, h, box)
         end
     end
 
-    if c.framecolor then
-        lcd.color(c.framecolor)
-        lcd.drawRectangle(gauge_x, gauge_y, gauge_w, gauge_h)
-    end
-
+    -- Value text (with dynamic/static font)
     if c.displayValue ~= nil then
         local str = tostring(c.displayValue) .. (c.displayUnit or "")
         local font = c.font
@@ -300,6 +321,7 @@ function render.paint(x, y, w, h, box)
         lcd.drawText(sx, sy, str)
     end
 
+    -- Title (top or bottom)
     if c.title then
         lcd.font(FONT_XS)
         local tsizeW, tsizeH = lcd.getTextSize(c.title)
