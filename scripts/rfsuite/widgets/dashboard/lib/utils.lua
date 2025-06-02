@@ -313,36 +313,35 @@ function utils.resolveThemeColorArray(colorkey, arr)
     return resolved
 end
 
-
---[[----------------------------------------------------------------------------
-    Draws a telemetry value box with colored background, value, title, unit, 
-    and flexible padding/alignment. 
-    All color arguments (bgcolor, textcolor, titlecolor) must be resolved numbers
-    (not strings). Text sizing can be static (via 'font') or dynamic if omitted.
-
-    Args:
-      x, y, w, h         : Box geometry
-      title              : Title string (shown above or below the value)
-      value              : Main value (shown in large text)
-      unit               : Optional unit string (appended to value)
-      bgcolor            : Box background color (number, resolved)
-      titlealign         : Title alignment ("center", "left", "right")
-      valuealign         : Value alignment ("center", "left", "right")
-      titlecolor         : Title text color (number, resolved)
-      titlepos           : Title position ("top" or "bottom")
-      titlepadding       : Padding applied to all sides of title (overridden by next 4 if set)
-      titlepaddingleft   : Left padding for title
-      titlepaddingright  : Right padding for title
-      titlepaddingtop    : Top padding for title
-      titlepaddingbottom : Bottom padding for title
-      valuepadding       : Padding applied to all sides of value (overridden by next 4 if set)
-      valuepaddingleft   : Left padding for value
-      valuepaddingright  : Right padding for value
-      valuepaddingtop    : Top padding for value
-      valuepaddingbottom : Bottom padding for value
-      font               : Font to use for value (e.g., "FONT_XL") or nil for dynamic sizing
-      textcolor          : Value/main label text color (number, resolved)
-------------------------------------------------------------------------------]]
+--- Draws a telemetry value box with colored background, value, title, unit, and flexible padding/alignment.
+--
+-- All color arguments (bgcolor, textcolor, titlecolor) must be resolved numbers (not strings).
+-- Text sizing can be static (via 'font') or dynamic if omitted.
+--
+-- @param x                number          X-coordinate of the box.
+-- @param y                number          Y-coordinate of the box.
+-- @param w                number          Width of the box.
+-- @param h                number          Height of the box.
+-- @param title            string          Title string (shown above or below the value).
+-- @param value            string|number   Main value to display (usually pre-formatted for display).
+-- @param unit             string          (Optional) Unit string appended to value, if provided.
+-- @param bgcolor          number          Box background color (must be a resolved LCD color number).
+-- @param titlealign       string          (Optional) Title alignment: "center", "left", or "right".
+-- @param valuealign       string          (Optional) Value alignment: "center", "left", or "right".
+-- @param titlecolor       number          (Optional) Title text color (resolved LCD color number).
+-- @param titlepos         string          (Optional) Title position: "top" or "bottom". Defaults to "top".
+-- @param titlepadding     number          (Optional) Padding for all sides of the title (overridden by the next four if set).
+-- @param titlepaddingleft number          (Optional) Left padding for the title.
+-- @param titlepaddingright number         (Optional) Right padding for the title.
+-- @param titlepaddingtop  number          (Optional) Top padding for the title.
+-- @param titlepaddingbottom number        (Optional) Bottom padding for the title.
+-- @param valuepadding     number          (Optional) Padding for all sides of the value (overridden by the next four if set).
+-- @param valuepaddingleft number          (Optional) Left padding for the value.
+-- @param valuepaddingright number         (Optional) Right padding for the value.
+-- @param valuepaddingtop  number          (Optional) Top padding for the value.
+-- @param valuepaddingbottom number        (Optional) Bottom padding for the value.
+-- @param font             string|number   (Optional) Font to use for the value (e.g., "FONT_XL"). If nil, will use dynamic sizing.
+-- @param textcolor        number          (Optional) Value/main label text color (resolved LCD color number).
 
 function utils.box(
     x, y, w, h,
@@ -452,6 +451,46 @@ function utils.box(
         lcd.color(titlecolor)
         lcd.drawText(sx, sy, title)
     end
+end
+
+
+--- Transforms and formats a numeric value for display, applying any configured transform and decimals.
+--
+-- This function checks the given `box` for a `transform` property (either a string or a function).
+-- If provided, it applies the transformation to the input value:
+--   - "floor":   Rounds down to nearest integer.
+--   - "ceil":    Rounds up to nearest integer.
+--   - "round":   Rounds to nearest integer.
+--   - function:  Calls the function with the value and uses the result.
+-- Next, if a `decimals` property is present in the box, it formats the value to the specified number
+-- of decimal places as a string. If neither is set, the raw value is returned as a string.
+--
+-- @param value number         The raw numeric value to be transformed and formatted.
+-- @param box   table          The box configuration table, containing optional `transform` and `decimals`.
+-- @return      string         The transformed and formatted value, ready for display.
+
+function utils.transformValue(value, box)
+    local transform = utils.getParam(box, "transform")
+    -- Apply transformation if configured
+    if transform then
+        if type(transform) == "function" then
+            value = transform(value)
+        elseif transform == "floor" then
+            value = math.floor(value)
+        elseif transform == "ceil" then
+            value = math.ceil(value)
+        elseif transform == "round" then
+            value = math.floor(value + 0.5)
+        end
+    end
+    local decimals = utils.getParam(box, "decimals")
+    -- Apply decimal formatting if configured
+        if decimals and value ~= nil then
+        value = string.format("%."..decimals.."f", value)
+    elseif value ~= nil then
+        value = tostring(value)
+    end
+    return value
 end
 
 --    Draws an image box, using imageCache and flexible alignment/padding.
