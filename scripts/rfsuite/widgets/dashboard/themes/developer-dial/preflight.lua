@@ -224,16 +224,14 @@ local layout = {
     cols = 3,
     rows = 3,
     padding = 4,
-    selectcolor = lcd.RGB(255, 255, 255),
-    selectborder = 2
 }
 
 local boxes = {
 
+    -- DIAL
     {
         type = "dial",
-        col = 1, 
-        row = 1,
+        col = 1, row = 1,
         title = "Voltage",
         unit = "v",
         titlepos = "bottom",
@@ -245,22 +243,22 @@ local boxes = {
         needlehubcolor = "red",
         needlehubsize = 5,
         needlethickness = 4,
+        font = "FONT_S",
         min = function()
             local cfg = rfsuite.session.batteryConfig
             local cells = (cfg and cfg.batteryCellCount) or 3
             local minV = (cfg and cfg.vbatmincellvoltage) or 3.0
-            local value = math.max(0, cells * minV)
-            return value
+            return math.max(0, cells * minV)
         end,
         max = function()
             local cfg = rfsuite.session.batteryConfig
             local cells = (cfg and cfg.batteryCellCount) or 3
             local maxV = (cfg and cfg.vbatmaxcellvoltage) or 4.2
-            local value = math.max(0, cells * maxV)
-            return value
+            return math.max(0, cells * maxV)
         end,
     },
 
+    -- HEATRING
     {
         type = "heatring",
         col = 2, row = 1,
@@ -268,10 +266,10 @@ local boxes = {
         min = 0,
         max = 12000,
         thresholds = {
-            {value = 3000, color = lcd.RGB(0,200,0)},
-            {value = 6000, color = lcd.RGB(220,180,40)},
-            {value = 9000, color = lcd.RGB(255,100,0)},
-            {value = 12000, color = lcd.RGB(200,0,0)},
+            { value = 3000,  fillcolor = "green" },
+            { value = 6000,  fillcolor = "orange" },
+            { value = 9000,  fillcolor = "orange" },
+            { value = 12000, fillcolor = "red" },
         },
         ringsize = 0.8,
         textoffset = 0,
@@ -281,221 +279,165 @@ local boxes = {
         titlepos = "below",
         unit = "",
         transform = "floor",
-        ringColor = lcd.RGB(0,200,0),
-        textColor = lcd.RGB(255,255,255),
-        bgcolor = lcd.RGB(30,30,30),
+        textcolor = "white",
         source = "rpm",
     },
 
+    -- ARCGUAGE
     {
         type = "arcgauge",
         col = 1, row = 2,
-        source = "temp_esc",
-        transform = "floor",
-        gaugemin = 0,
-        gaugemax = 140,
-        unit = "°",
-        font = "FONT_STD",
-        textoffsetx = 12,
-        arcOffsetY = 4,
-        arcThickness = 1,
-        startAngle = 225,
-        sweep = 270,
-        arcBgColor = "lightgrey",
-        title = "ESC Temp",
+        source = "temp_esc", 
+        title = "ESC Temp", 
         titlepos = "bottom",
+        gaugemin = 0, 
+        gaugemax = 140, 
+        unit = "°", 
+        textcolor = "white", 
+        font = "FONT_STD", 
+        transform = "floor", 
+        textoffsetx = 12,
+        fillbgcolor = "lightgrey", 
+        arcOffsetY = 4, 
+        arcThickness = 1, 
+        startAngle = 225, 
+        sweep = 270,
         thresholds = {
-            { value = 70,  color = "green" },
-            { value = 90,  color = "orange" },
-            { value = 140, color = "red" }
+            { value = 70,  fillcolor = "green"  },
+            { value = 90,  fillcolor = "orange" },
+            { value = 140, fillcolor = "red"    }
         }
     },
 
+    -- ARCDIAL
     {
         type = "arcdial",
-        col = 2, 
-        row = 2,
+        col = 2, row = 2,
         title = "Fuel",
         titlepos = "bottom",
-        titlecolor = lcd.RGB(255,255,255),
+        titlecolor = "white",
         unit = "%",
         source = "fuel",
         min = function() return 0 end,
         max = function() return 100 end,
         bandLabels = {"Low", "OK", "High"},
-        bandColors = {lcd.RGB(200,40,40), lcd.RGB(252,186,3), lcd.RGB(80,220,80)},
-        startAngle = 180,
+        bandColors = {"red", "orange", "green"},
+        startangle = 180,
         sweep = 180,
-        needlecolor = lcd.RGB(30,30,30),
-        needlehubcolor = lcd.RGB(220,30,30),
+        needlecolor = "black",
+        needlehubcolor = "red",
         needlehubsize = 12,
         needlethickness = 6,
         aspect = "fit",
         align = "center",
-        bgcolor = lcd.RGB(30,30,30),
     },
+
+    -- FUEL GAUGE
     {
-        col =1,
-        row = 3,
+        col = 1, row = 3,
         type = "gauge",
         source = "fuel",
         gaugemin = 0,
         gaugemax = 100,
         roundradius = 9,
-        gaugebgcolor = "grey",
-        gaugeorientation = "horizontal",  -- or "horizontal"
-        gaugepadding = 8,
-        gaugebelowtitle = true,  -- <<--- do not draw under title area!
-        title = "FUEL",
-        unit = "%",
-        color = "white",
-        valuealign = "center",
-        titlealign = "center",
-        titlepos = "bottom",
-        titlecolor = "white",
-        thresholds = {
-            { value = 20,  color = "red",    textcolor = "white" },   -- value < 20: red
-            { value = 50,  color = "orange", textcolor = "black" },   -- 20 <= value < 40: orange
-        },
-        gaugecolor = "green",
-    },    
-    {
-        col = 2,
-        row = 3,
-        type = "gauge",
-        source = "voltage",
-        gaugemin = function()
-            local cfg = rfsuite.session.batteryConfig
-
-            --print(rfsuite.session.batteryConfig.vbatmincellvoltage)
-
-            local cells = (cfg and cfg.batteryCellCount) or 3
-            local minV = (cfg and cfg.vbatmincellvoltage) or 3.0
-            local value = math.max(0, cells * minV)
-            return value
-        end,
-        gaugemax = function()
-            local cfg = rfsuite.session.batteryConfig
-            local cells = (cfg and cfg.batteryCellCount) or 3
-            local maxV = (cfg and cfg.vbatmaxcellvoltage) or 4.2
-            local value = math.max(0, cells * maxV)
-            return value
-        end,
-        gaugebgcolor = "gray",
+        fillbgcolor = "grey",
         gaugeorientation = "horizontal",
         gaugepadding = 8,
         gaugebelowtitle = true,
-        title = "VOLTAGE",
-        unit = "V",
-        color = "black",
+        title = "FUEL",
+        unit = "%",
+        textcolor = "white",
         valuealign = "center",
         titlealign = "center",
         titlepos = "bottom",
         titlecolor = "white",
         thresholds = {
-            {
-                value = function()
-                    local cfg = rfsuite.session.batteryConfig
-                    local cells = (cfg and cfg.batteryCellCount) or 3
-                    local minV = (cfg and cfg.vbatmincellvoltage) or 3.0
-                    return cells * minV * 1.2 -- 20% above minimum voltage
-                end,
-                color = "red", textcolor = "white"
-            },
-            {
-                value = function()
-                    local cfg = rfsuite.session.batteryConfig
-                    local cells = (cfg and cfg.batteryCellCount) or 3
-                    local warnV = (cfg and cfg.vbatwarningcellvoltage) or 3.5
-                    return cells * warnV * 1.2 -- 20% above minimum voltage
-                end,
-                color = "orange", textcolor = "black"
-            }
+            { value = 20,  fillcolor = "red",    textcolor = "white" },
+            { value = 50,  fillcolor = "orange", textcolor = "black" },
         },
-        gaugecolor = "green",
+        fillcolor = "green",
     },
 
+    -- VOLTAGE GAUGE
+    {col = 2, row = 3, type = "voltagegauge", title = "Voltage"},
+
+    -- BATTERY
     {
-        col = 3,
-        row = 1,
+        col = 3, row = 1,
         type = "battery",
         source = "voltage",
         gaugemin = function()
             local cfg = rfsuite.session.batteryConfig
-
-            --print(rfsuite.session.batteryConfig.vbatmincellvoltage)
-
             local cells = (cfg and cfg.batteryCellCount) or 3
             local minV = (cfg and cfg.vbatmincellvoltage) or 3.0
-            local value = math.max(0, cells * minV)
-            return value
+            return math.max(0, cells * minV)
         end,
         gaugemax = function()
             local cfg = rfsuite.session.batteryConfig
             local cells = (cfg and cfg.batteryCellCount) or 3
             local maxV = (cfg and cfg.vbatmaxcellvoltage) or 4.2
-            local value = math.max(0, cells * maxV)
-            return value
+            return math.max(0, cells * maxV)
         end,
-        gaugebgcolor = "gray",
+        fillbgcolor = "gray",
         gaugeorientation = "horizontal",
         gaugepadding = 8,
         gaugebelowtitle = true,
         showvalue = true,
         title = "VOLTAGE",
         unit = "V",
-        color = "black",
+        textcolor = "black",
         valuealign = "center",
         titlealign = "center",
         titlepos = "bottom",
         titlecolor = "white",
-        gaugecolor = "green",
+        fillcolor = "green",
         thresholds = {
             {
                 value = function()
                     local cfg = rfsuite.session.batteryConfig
                     local cells = (cfg and cfg.batteryCellCount) or 3
                     local minV = (cfg and cfg.vbatmincellvoltage) or 3.0
-                    return cells * minV * 1.2 -- 20% above minimum voltage
+                    return cells * minV * 1.2
                 end,
-                color = "red", textcolor = "white"
+                fillcolor = "red", textcolor = "white"
             },
             {
                 value = function()
                     local cfg = rfsuite.session.batteryConfig
                     local cells = (cfg and cfg.batteryCellCount) or 3
                     local warnV = (cfg and cfg.vbatwarningcellvoltage) or 3.5
-                    return cells * warnV * 1.2 -- 20% above minimum voltage
+                    return cells * warnV * 1.2
                 end,
-                color = "orange", textcolor = "black"
+                fillcolor = "orange", textcolor = "black"
             }
         },        
     },
 
- {
+    -- ARC MAX GAUGE
+    {
         type = "arcmaxgauge",
         col = 3, row = 2, rowspan = 2,
-        source = "temp_esc",
-        transform = "floor",
-        gaugemin = 0,
-        gaugemax = 140,
-        unit = "°",
-        font = "FONT_STD",
-        textoffsetx = 12,
-        arcOffsetY = 4,
-        arcThickness = 1,
-        startAngle = 225,
-        sweep = 270,
-        arcBgColor = "lightgrey",
-        title = "ESC Temp",
+                source = "temp_esc", 
+        title = "ESC Temp", 
         titlepos = "bottom",
+        gaugemin = 0, 
+        gaugemax = 140, 
+        unit = "°", 
+        textcolor = "white", 
+        font = "FONT_STD", 
+        transform = "floor", 
+        textoffsetx = 12,
+        fillbgcolor = "lightgrey", 
+        arcOffsetY = 4, 
+        arcThickness = 1, 
+        startAngle = 225, 
+        sweep = 270,
         thresholds = {
-            { value = 70,  color = "green" },
-            { value = 90,  color = "orange" },
-            { value = 140, color = "red" }
+            { value = 70,  fillcolor = "green"  },
+            { value = 90,  fillcolor = "orange" },
+            { value = 140, fillcolor = "red"    }
         }
-    }, 
-
+    },
 }
 
 return {

@@ -1,4 +1,57 @@
+--[[
+
+    Arc Gauge Widget
+
+    Configurable Arguments (box table keys):
+    ----------------------------------------
+    min              : number   -- Minimum possible value (default: 0)
+    max              : number   -- Maximum possible value (default: 100)
+    gaugemin         : number   -- Gauge minimum value (default: min)
+    gaugemax         : number   -- Gauge maximum value (default: max)
+    source           : string   -- Telemetry sensor source name (e.g., "current")
+    transform        : string/function/number -- Optional value transform (math function or custom function)
+    unit             : string   -- Optional unit label for value (e.g., "V")
+    decimals         : number   -- Number of decimal places for value display (e.g., 1)
+    valueFormat      : function -- Function to format value display (overrides decimals)
+    thresholds       : table    -- List of threshold tables: {value=..., fillcolor=..., textcolor=...}
+    novalue          : string   -- Text shown if telemetry value is missing (default: "-")
+
+    -- Appearance/Theming:
+    fillbgcolor      : color    -- Arc background color (default: theme fallback)
+    fillcolor        : color    -- Arc foreground color (default: theme fallback)
+    textcolor        : color    -- Value text color (default: theme/text fallback)
+    bgcolor          : color    -- Widget background color (default: theme fallback)
+    titlecolor       : color    -- Title text color (default: theme/text fallback)
+
+    -- Layout/Font:
+    font             : font     -- Font for value (default: FONT_XL)
+    textoffsetx      : number   -- X offset for centering value text (default: 0)
+
+    -- Arc geometry:
+    arcOffsetY       : number   -- Y offset for the arc center (default: 0)
+    startAngle       : number   -- Arc start angle in degrees (default: 135)
+    sweep            : number   -- Arc sweep angle in degrees (default: 270)
+
+    -- Title/Label:
+    title            : string   -- Gauge title text
+    titlepadding     : number   -- Padding for title (applies to all sides unless overridden)
+    titlepaddingleft : number   -- Left padding for title (overrides titlepadding)
+    titlepaddingright: number   -- Right padding for title (overrides titlepadding)
+    titlepaddingtop  : number   -- Top padding for title (overrides titlepadding)
+    titlepaddingbottom: number  -- Bottom padding for title (overrides titlepadding)
+    titlepos         : string   -- "top" or "bottom" (default: top)
+    titlealign       : string   -- "center", "left", "right" (default: center)
+
+    -- Subtext:
+    subText          : string   -- Optional sub-label displayed below arc (e.g., "Max", etc)
+]]
+
+
 local render = {}
+
+local utils = rfsuite.widgets.dashboard.utils
+local getParam = utils.getParam
+local resolveThemeColor = utils.resolveThemeColor
 
 -- Arc drawing helper
 local function drawArc(cx, cy, radius, thickness, angleStart, angleEnd, color, cachedStepRad)
@@ -9,7 +62,7 @@ local function drawArc(cx, cy, radius, thickness, angleStart, angleEnd, color, c
     if angleEnd > angleStart then
         angleEnd = angleEnd - 2 * math.pi
     end
-    lcd.color(color or lcd.RGB(255,128,0))
+    lcd.color(color)
     local stepRad = cachedStepRad or math.rad(step)
     for a = angleStart, angleEnd, -stepRad do
         local x = cx + radius * math.cos(a)
@@ -21,19 +74,18 @@ local function drawArc(cx, cy, radius, thickness, angleStart, angleEnd, color, c
     lcd.drawFilledCircle(x_end, y_end, rad_thick)
 end
 
--- Caches value, param, and display settings
 function render.wakeup(box, telemetry)
-    local min = rfsuite.widgets.dashboard.utils.getParam(box, "min") or 0
-    local max = rfsuite.widgets.dashboard.utils.getParam(box, "max") or 100
-    local gaugemin = rfsuite.widgets.dashboard.utils.getParam(box, "gaugemin") or min
-    local gaugemax = rfsuite.widgets.dashboard.utils.getParam(box, "gaugemax") or max
+    local min = getParam(box, "min") or 0
+    local max = getParam(box, "max") or 100
+    local gaugemin = getParam(box, "gaugemin") or min
+    local gaugemax = getParam(box, "gaugemax") or max
 
-    local source = rfsuite.widgets.dashboard.utils.getParam(box, "source")
+    local source = getParam(box, "source")
     local value = nil
     if source then
         local sensor = telemetry and telemetry.getSensorSource(source)
         value = sensor and sensor:value()
-        local transform = rfsuite.widgets.dashboard.utils.getParam(box, "transform")
+        local transform = getParam(box, "transform")
         if type(transform) == "string" and math[transform] then
             value = value and math[transform](value)
         elseif type(transform) == "function" then
@@ -49,7 +101,29 @@ function render.wakeup(box, telemetry)
         percent = math.max(0, math.min(1, percent))
     end
 
-    -- Main config cache
+    -- Color resolution using fillcolor/fillbgcolor
+    local fillbgcolor = resolveThemeColor("fillbgcolor", getParam(box, "fillbgcolor"))
+    local fillcolor   = resolveThemeColor("fillcolor",   getParam(box, "fillcolor"))
+    local textcolor   = resolveThemeColor("textcolor",   getParam(box, "textcolor"))
+    local titlecolor  = resolveThemeColor("titlecolor",  getParam(box, "titlecolor"))
+
+    local thresholds = getParam(box, "thresholds")
+    if thresholds and value then
+        for _, t in ipairs(thresholds) do
+            local tval = (type(t.value) == "function" and t.value(box, value) or t.value)
+            if value <= tval then
+                if t.fillcolor then
+                    fillcolor = resolveThemeColor("fillcolor", t.fillcolor) or fillcolor
+                end
+                if t.textcolor then
+                    textcolor = resolveThemeColor("textcolor", t.textcolor) or textcolor
+                end
+                break
+            end
+        end
+    end
+
+    -- Cache all params (colors, fonts, paddings, layout params)
     box._cache = {
         min = min,
         max = max,
@@ -57,30 +131,29 @@ function render.wakeup(box, telemetry)
         gaugemax = gaugemax,
         value = value,
         percent = percent,
-        arcOffsetY = rfsuite.widgets.dashboard.utils.getParam(box, "arcOffsetY") or 0,
-        startAngle = rfsuite.widgets.dashboard.utils.getParam(box, "startAngle") or 135,
-        sweep = rfsuite.widgets.dashboard.utils.getParam(box, "sweep") or 270,
-        arcBgColor = rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "arcBgColor")) or lcd.RGB(55,55,55),
-        arcColor = rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "arcColor")) or lcd.RGB(255,128,0),
-        thresholds = rfsuite.widgets.dashboard.utils.getParam(box, "thresholds"),
-        font = rfsuite.widgets.dashboard.utils.getParam(box, "font"),
-        textColor = rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "textColor")) or lcd.RGB(255,255,255),
-        valueFormat = rfsuite.widgets.dashboard.utils.getParam(box, "valueFormat"),
-        unit = rfsuite.widgets.dashboard.utils.getParam(box, "unit") or "",
-        decimals = rfsuite.widgets.dashboard.utils.getParam(box, "decimals"),
-        title = rfsuite.widgets.dashboard.utils.getParam(box, "title"),
-        titlepadding = rfsuite.widgets.dashboard.utils.getParam(box, "titlepadding") or 0,
-        titlepaddingleft = rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingleft"),
-        titlepaddingright = rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingright"),
-        titlepaddingtop = rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingtop"),
-        titlepaddingbottom = rfsuite.widgets.dashboard.utils.getParam(box, "titlepaddingbottom"),
-        titlepos = rfsuite.widgets.dashboard.utils.getParam(box, "titlepos"),
-        titlealign = rfsuite.widgets.dashboard.utils.getParam(box, "titlealign"),
-        titlecolor = rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "titlecolor")) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90)),
-        subText = rfsuite.widgets.dashboard.utils.getParam(box, "subText"),
-        textoffsetx = rfsuite.widgets.dashboard.utils.getParam(box, "textoffsetx") or 0,
-        novalue = rfsuite.widgets.dashboard.utils.getParam(box, "novalue") or "-",
-        bgcolor = rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "bgcolor")) or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)),
+        arcOffsetY = getParam(box, "arcOffsetY") or 0,
+        startAngle = getParam(box, "startAngle") or 135,
+        sweep = getParam(box, "sweep") or 270,
+        fillbgcolor = fillbgcolor,
+        fillcolor = fillcolor,
+        thresholds = thresholds,
+        font = getParam(box, "font") or FONT_XL,
+        textcolor = textcolor,
+        valueFormat = getParam(box, "valueFormat"),
+        unit = getParam(box, "unit") or "",
+        decimals = getParam(box, "decimals"),
+        title = getParam(box, "title"),
+        titlepadding = getParam(box, "titlepadding") or 0,
+        titlepaddingleft = getParam(box, "titlepaddingleft"),
+        titlepaddingright = getParam(box, "titlepaddingright"),
+        titlepaddingtop = getParam(box, "titlepaddingtop"),
+        titlepaddingbottom = getParam(box, "titlepaddingbottom"),
+        titlepos = getParam(box, "titlepos"),
+        titlealign = getParam(box, "titlealign") or "center",
+        titlecolor = titlecolor,
+        textoffsetx = getParam(box, "textoffsetx") or 0,
+        novalue = getParam(box, "novalue") or "-",
+        bgcolor = resolveThemeColor("fillbgcolor", getParam(box, "bgcolor")),
     }
 end
 
@@ -108,70 +181,61 @@ function render.paint(x, y, w, h, box)
 
     local cx, cy, radius, thickness, stepRad = layoutcache.cx, layoutcache.cy, layoutcache.radius, layoutcache.thickness, layoutcache.stepRad
 
-    -- Paint everything else
-    local bgColor = c.bgcolor or (lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240))
+    -- Paint background
+    local bgColor = c.bgcolor
     lcd.color(bgColor)
     lcd.drawFilledRectangle(x, y, w, h)
 
-    local min = c.min or 0
-    local max = c.max or 100
-    local value = c.value
-    local percent = c.percent or 0
-    local startAngle = c.startAngle or 135
-    local sweep = c.sweep or 270
-    local endAngle = startAngle - sweep * percent
+    -- Draw background arc
+    drawArc(cx, cy, radius, thickness, c.startAngle, c.startAngle - c.sweep, c.fillbgcolor, stepRad)
 
-    -- Base arc
-    drawArc(cx, cy, radius, thickness, startAngle, startAngle - sweep, c.arcBgColor or lcd.RGB(55,55,55), stepRad)
-
-    -- Value arc with thresholds
-    local arcColor = c.arcColor or lcd.RGB(255,128,0)
+    -- Draw value arc with threshold color overrides
+    local arcColor = c.fillcolor
     local thresholds = c.thresholds
-    if thresholds and value ~= nil then
+    if thresholds and c.value ~= nil then
         for _, t in ipairs(thresholds) do
-            local t_val = type(t.value) == "function" and t.value(box, value) or t.value
-            local t_color = type(t.color) == "function" and t.color(box, value) or t.color
-            if value < t_val then
-                arcColor = rfsuite.widgets.dashboard.utils.resolveColor(t_color) or arcColor
+            local t_val = type(t.value) == "function" and t.value(box, c.value) or t.value
+            local t_color = type(t.fillcolor) == "function" and t.fillcolor(box, c.value) or t.fillcolor
+            if c.value <= t_val and t_color then
+                arcColor = utils.resolveThemeColor("fillcolor", t_color) or arcColor
                 break
             end
         end
     end
-    if percent > 0 then
-        drawArc(cx, cy, radius, thickness, startAngle, endAngle, arcColor, stepRad)
+    if c.percent > 0 then
+        drawArc(cx, cy, radius, thickness, c.startAngle, c.startAngle - c.sweep * c.percent, arcColor, stepRad)
     end
 
-    -- Value text (centered)
+    -- Draw value text centered
     lcd.font(c.font and _G[c.font] or FONT_XL)
-    lcd.color(c.textColor or lcd.RGB(255,255,255))
-
+    lcd.color(c.textcolor)
     local valStr
     if c.valueFormat then
-        valStr = c.valueFormat(value)
-    elseif type(value) == "number" then
+        valStr = c.valueFormat(c.value)
+    elseif type(c.value) == "number" then
         if c.decimals ~= nil then
             if c.decimals == 0 then
-                valStr = string.format("%d", value)
+                valStr = string.format("%d", c.value)
             else
-                valStr = string.format("%." .. c.decimals .. "f", value)
+                valStr = string.format("%." .. c.decimals .. "f", c.value)
             end
         else
-            if math.floor(value) == value then
-                valStr = string.format("%d", value)
+            if math.floor(c.value) == c.value then
+                valStr = string.format("%d", c.value)
             else
-                valStr = string.format("%.1f", value)
+                valStr = string.format("%.1f", c.value)
             end
         end
     else
         valStr = c.novalue or "-"
     end
-    if value ~= nil then
+    if c.value ~= nil then
         valStr = valStr .. (c.unit or "")
     end
     local tw, th = lcd.getTextSize(valStr)
-    lcd.drawText(cx - tw/2 + (c.textoffsetx or 0), cy - th/2, valStr)
+    lcd.drawText(cx - tw / 2 + (c.textoffsetx or 0), cy - th / 2, valStr)
 
-    -- Title above, subText below
+    -- Draw title
     local title = c.title
     if title then
         local titlepadding = c.titlepadding or 0
@@ -183,9 +247,7 @@ function render.paint(x, y, w, h, box)
         local tsizeW, tsizeH = lcd.getTextSize(title)
         local region_x = x + titlepaddingleft
         local region_w = w - titlepaddingleft - titlepaddingright
-        local sy = (c.titlepos == "bottom")
-            and (y + h - titlepaddingbottom - tsizeH)
-            or (y + titlepaddingtop)
+        local sy = (c.titlepos == "bottom") and (y + h - titlepaddingbottom - tsizeH) or (y + titlepaddingtop)
         local align = (c.titlealign or "center"):lower()
         local sx
         if align == "left" then
@@ -199,11 +261,12 @@ function render.paint(x, y, w, h, box)
         lcd.drawText(sx, sy, title)
     end
 
-    local subText = c.subText
-    if subText then
+    -- Draw subText if any
+    if c.subText then
         lcd.font(FONT_XS)
-        local tw, th = lcd.getTextSize(subText)
-        lcd.drawText(cx - tw/2, cy + radius * 0.55, subText)
+        local tw, _ = lcd.getTextSize(c.subText)
+        lcd.color(c.textcolor)
+        lcd.drawText(cx - tw / 2, cy + radius * 0.55, c.subText)
     end
 end
 

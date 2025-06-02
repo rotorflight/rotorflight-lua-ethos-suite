@@ -275,40 +275,109 @@ function utils.resolveColor(value, variantFactor)
     return nil
 end
 
+-- Single color resolve by context key (returns RGB number)
+function utils.resolveThemeColor(colorkey, value)
+    -- If already a number (e.g. lcd.RGB), just return
+    if type(value) == "number" then return value end
+    -- If string (like "red"), use resolveColor
+    if type(value) == "string" then
+        local resolved = utils.resolveColor(value)
+        if resolved then return resolved end
+    end
+    -- Provide context defaults
+    if colorkey == "fillcolor" then
+        return lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)
+    elseif colorkey == "fillbgcolor" then
+        return lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)
+    elseif colorkey == "framecolor" then
+        return lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)
+    elseif colorkey == "textcolor" then
+        return lcd.RGB(255,255,255)
+    elseif colorkey == "titlecolor" then
+        return lcd.RGB(255,255,255)
+    elseif colorkey == "accentcolor" then
+        return lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)
+    end
+    -- fallback
+    return lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)
+end
 
---    Draws a telemetry value box with colored background, value, title, unit, and flexible padding.
---    Handles alignment and font sizing for both title and value.
---    Args: x, y, w, h         - Box geometry
---          color, title, value, unit, bgcolor
---          titlealign, valuealign, titlecolor, titlepos
---          (plus many optional paddings)
+-- For arrays like bandColors (returns a resolved RGB array)
+function utils.resolveThemeColorArray(colorkey, arr)
+    local resolved = {}
+    if type(arr) == "table" then
+        for i = 1, #arr do
+            resolved[i] = utils.resolveThemeColor(colorkey, arr[i])
+        end
+    end
+    return resolved
+end
+
+
+--[[----------------------------------------------------------------------------
+    Draws a telemetry value box with colored background, value, title, unit, 
+    and flexible padding/alignment. 
+    All color arguments (bgcolor, textcolor, titlecolor) must be resolved numbers
+    (not strings). Text sizing can be static (via 'font') or dynamic if omitted.
+
+    Args:
+      x, y, w, h         : Box geometry
+      title              : Title string (shown above or below the value)
+      value              : Main value (shown in large text)
+      unit               : Optional unit string (appended to value)
+      bgcolor            : Box background color (number, resolved)
+      titlealign         : Title alignment ("center", "left", "right")
+      valuealign         : Value alignment ("center", "left", "right")
+      titlecolor         : Title text color (number, resolved)
+      titlepos           : Title position ("top" or "bottom")
+      titlepadding       : Padding applied to all sides of title (overridden by next 4 if set)
+      titlepaddingleft   : Left padding for title
+      titlepaddingright  : Right padding for title
+      titlepaddingtop    : Top padding for title
+      titlepaddingbottom : Bottom padding for title
+      valuepadding       : Padding applied to all sides of value (overridden by next 4 if set)
+      valuepaddingleft   : Left padding for value
+      valuepaddingright  : Right padding for value
+      valuepaddingtop    : Top padding for value
+      valuepaddingbottom : Bottom padding for value
+      font               : Font to use for value (e.g., "FONT_XL") or nil for dynamic sizing
+      textcolor          : Value/main label text color (number, resolved)
+------------------------------------------------------------------------------]]
+
 function utils.box(
-    x, y, w, h, color, title, value, unit, bgcolor,
+    x, y, w, h,
+    title, value, unit, bgcolor,
     titlealign, valuealign, titlecolor, titlepos,
     titlepadding, titlepaddingleft, titlepaddingright, titlepaddingtop, titlepaddingbottom,
-    valuepadding, valuepaddingleft, valuepaddingright, valuepaddingtop, valuepaddingbottom
+    valuepadding, valuepaddingleft, valuepaddingright, valuepaddingtop, valuepaddingbottom,
+    font, textcolor
 )
-    local isDARKMODE = lcd.darkMode()
-    local resolvedBg = utils.resolveColor(bgcolor)
-    lcd.color(resolvedBg or (isDARKMODE and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)))
+    
+    -- Coerce unit to string if not nil and not string
+    if unit ~= nil and type(unit) ~= "string" then
+        unit = tostring(unit)
+    end
+
+    -- Draw background
+    lcd.color(bgcolor)
     lcd.drawFilledRectangle(x, y, w, h)
 
     -- Padding resolution (default 0)
-    titlepaddingleft = titlepaddingleft or titlepadding or 0
-    titlepaddingright = titlepaddingright or titlepadding or 0
-    titlepaddingtop = titlepaddingtop or titlepadding or 0
-    titlepaddingbottom = titlepaddingbottom or titlepadding or 0
+    titlepaddingleft   = titlepaddingleft   or titlepadding   or 0
+    titlepaddingright  = titlepaddingright  or titlepadding   or 0
+    titlepaddingtop    = titlepaddingtop    or titlepadding   or 0
+    titlepaddingbottom = titlepaddingbottom or titlepadding   or 0
 
-    valuepaddingleft = valuepaddingleft or valuepadding or 0
-    valuepaddingright = valuepaddingright or valuepadding or 0
-    valuepaddingtop = valuepaddingtop or valuepadding or 0
-    valuepaddingbottom = valuepaddingbottom or valuepadding or 0
+    valuepaddingleft   = valuepaddingleft   or valuepadding   or 0
+    valuepaddingright  = valuepaddingright  or valuepadding   or 0
+    valuepaddingtop    = valuepaddingtop    or valuepadding   or 0
+    valuepaddingbottom = valuepaddingbottom or valuepadding   or 0
 
     if not fontCache then
         fontCache = utils.getFontListsForResolution()
     end
-   
-    -- Draw value
+
+    -- Draw value text (centered, uses textcolor)
     if value ~= nil then
         local str = tostring(value) .. (unit or "")
         local unitIsDegree = (unit == "°" or (unit and unit:find("°")))
@@ -317,28 +386,35 @@ function utils.box(
         local availH = h - valuepaddingtop - valuepaddingbottom
         local fonts = fontCache.value_default
 
-        lcd.font(FONT_XL)
-        local _, xlFontHeight = lcd.getTextSize("8")
-        if xlFontHeight > availH * 0.5 then
-            fonts = fontCache.value_reduced
-        end
-
-        local maxW, maxH = w - valuepaddingleft - valuepaddingright, availH
-        local bestFont, bestW, bestH = FONT_XXS, 0, 0
-        for _, font in ipairs(fonts) do
-            lcd.font(font)
-            local tW, tH = lcd.getTextSize(strForWidth)
-            if tW <= maxW and tH <= maxH then
-                bestFont, bestW, bestH = font, tW, tH
-            else
-                break
-            end
-        end
-        lcd.font(bestFont)
         local region_x = x + valuepaddingleft
         local region_y = y + valuepaddingtop
         local region_w = w - valuepaddingleft - valuepaddingright
         local region_h = h - valuepaddingtop - valuepaddingbottom
+
+        local bestFont, bestW, bestH
+
+        if font and _G[font] then
+            bestFont = _G[font]
+            lcd.font(bestFont)
+            bestW, bestH = lcd.getTextSize(strForWidth)
+        else
+            bestFont, bestW, bestH = FONT_XXS, 0, 0
+            lcd.font(FONT_XL)
+            local _, xlFontHeight = lcd.getTextSize("8")
+            if xlFontHeight > availH * 0.5 then
+                fonts = fontCache.value_reduced
+            end
+            for _, tryFont in ipairs(fonts) do
+                lcd.font(tryFont)
+                local tW, tH = lcd.getTextSize(strForWidth)
+                if tW <= region_w and tH <= region_h then
+                    bestFont, bestW, bestH = tryFont, tW, tH
+                else
+                    break
+                end
+            end
+            lcd.font(bestFont)
+        end
 
         local sy = region_y + (region_h - bestH) / 2
         local align = (valuealign or "center"):lower()
@@ -351,18 +427,11 @@ function utils.box(
             sx = region_x + (region_w - bestW) / 2
         end
 
-        local resolvedColor = utils.resolveColor(color)
-        if resolvedColor then
-            lcd.color(resolvedColor)
-        else
-            lcd.color(isDARKMODE and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
-        end
-        
+        lcd.color(textcolor)
         lcd.drawText(sx, sy, str)
-        
     end
 
-    -- Draw title (top or bottom)
+    -- Draw title (top or bottom, uses titlecolor)
     if title then
         lcd.font(fontCache.value_title)
         local tsizeW, tsizeH = lcd.getTextSize(title)
@@ -380,11 +449,10 @@ function utils.box(
         else
             sx = region_x + (region_w - tsizeW) / 2
         end
-        lcd.color(utils.resolveColor(titlecolor) or (isDARKMODE and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90)))
+        lcd.color(titlecolor)
         lcd.drawText(sx, sy, title)
     end
 end
-
 
 --    Draws an image box, using imageCache and flexible alignment/padding.
 --    Optionally overlays a title.
