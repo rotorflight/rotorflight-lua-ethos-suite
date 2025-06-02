@@ -33,10 +33,8 @@ local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 
 function render.wakeup(box)
-    -- Show sum of persistent total + session time (not yet persisted)
     local lifetime = rfsuite.ini.getvalue(rfsuite.session.modelPreferences, "general", "totalflighttime") or 0
-    local session = rfsuite.session.timer and rfsuite.session.timer.session or 0
-    local displayValue = lifetime + session
+    local displayValue = lifetime
 
     -- Format to HH:MM:SS
     local hours = math.floor(displayValue / 3600)
@@ -84,5 +82,12 @@ function render.paint(x, y, w, h, box)
         c.font, c.textcolor
     )
 end
+
+-- set rate at which objects wakeup must be called
+-- using this value will short circut the spread scheduling in
+-- dashboard.lua to ensure object gets a heartbeat when required.
+-- its mostly only used for objects that need to be updated like the
+-- flight time objects
+render.scheduler = 0.5
 
 return render

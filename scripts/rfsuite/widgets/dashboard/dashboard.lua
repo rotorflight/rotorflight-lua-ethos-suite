@@ -49,9 +49,13 @@ local wakeupScheduler = 0
 -- Spread scheduling of object wakeups to avoid doing them all at once:
 local objectWakeupIndex = 1             -- current object index for wakeup
 local objectWakeupsPerCycle = nil       -- number of objects to wake per cycle (calculated later)
-local objectSchedulerPercentage = 0.5   -- fraction of total objects to wake each cycle (20%)
+local objectSchedulerPercentage = 0.2   -- fraction of total objects to wake each cycle (20%)
 local objectsThreadedWakeupCount = 0
 local lastLoadedBoxCount = 0
+
+-- precompute indices of boxes whose object has its own `scheduler` field,
+-- so we can wake them every cycle without scanning all `boxRects`.
+local scheduledBoxIndices = {}
 
 -- Flag to perform initialization logic only once on first wakeup
 local firstWakeup = true
@@ -308,6 +312,14 @@ function dashboard.renderLayout(widget, config)
         objectWakeupsPerCycle = math.max(1, math.ceil(#dashboard.boxRects * objectSchedulerPercentage))
         lastBoxRectsCount     = #dashboard.boxRects
     end
+
+    scheduledBoxIndices = {}
+    for i, rect in ipairs(dashboard.boxRects) do
+        local obj = dashboard.objectsByType[rect.box.type]
+        if obj and obj.scheduler and obj.wakeup then
+            scheduledBoxIndices[#scheduledBoxIndices + 1] = i
+        end
+    end    
 
     ----------------------------------------------------------------
     -- PHASE 2: HOURGLASS until first threaded‐wakeup pass completes
@@ -825,18 +837,31 @@ function dashboard.wakeup(widget)
 
     -- Spread-scheduled wakeup for dashboard objects
     if #dashboard.boxRects > 0 and objectWakeupsPerCycle then
+        -- 1) Wake every “custom-scheduler” object (using precomputed indices)
+        for _, idx in ipairs(scheduledBoxIndices) do
+            local rect = dashboard.boxRects[idx]
+            local obj  = dashboard.objectsByType[rect.box.type]
+            -- We already know `obj.scheduler` is set, but double-check `wakeup`:
+            if obj and obj.wakeup then
+                obj.wakeup(rect.box, rfsuite.tasks.telemetry)
+            end
+        end
+
+        -- 2) Then wake a spread of the *remaining* objects (no `scheduler` field)
         for i = 1, objectWakeupsPerCycle do
-            local idx = objectWakeupIndex
+            local idx  = objectWakeupIndex
             local rect = dashboard.boxRects[idx]
             if rect then
                 local obj = dashboard.objectsByType[rect.box.type]
-                if obj and obj.wakeup then
+                -- Only wake if it does NOT have a custom scheduler
+                if obj and obj.wakeup and not obj.scheduler then
                     obj.wakeup(rect.box, rfsuite.tasks.telemetry)
                 end
             end
             objectWakeupIndex = (objectWakeupIndex % #dashboard.boxRects) + 1
         end
-        -- Increment objectsThreadedWakeupCount when all objects have been processed
+
+        -- Increment `objectsThreadedWakeupCount` when we've looped through all boxes
         if objectWakeupIndex == 1 then
             objectsThreadedWakeupCount = objectsThreadedWakeupCount + 1
         end
