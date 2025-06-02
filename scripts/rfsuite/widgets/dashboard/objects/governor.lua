@@ -33,11 +33,9 @@ local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 
 function render.wakeup(box, telemetry)
-    local value = nil
-    if telemetry and telemetry.getSensorSource then
-        local sensor = telemetry.getSensorSource("governor")
-        value = sensor and sensor:value()
-    end
+
+    -- Get value for sensor
+    value = telemetry.getSensorValue("governor")
 
     local displayValue = rfsuite.utils.getGovernorState and rfsuite.utils.getGovernorState(value) or nil
     local unit = getParam(box, "unit")
