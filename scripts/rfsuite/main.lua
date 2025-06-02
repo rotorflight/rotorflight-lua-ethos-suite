@@ -62,9 +62,9 @@ local userpref_defaults ={
         syncname = false,
     },
     dashboard = {
-        theme_preflight = "system/default",
-        theme_inflight = "system/default",
-        theme_postflight = "system/default",
+        theme_preflight = "system/rfstatus",
+        theme_inflight = "system/rfstatus",
+        theme_postflight = "system/rfstatus",
     },
     events = {
         armflags = true,
