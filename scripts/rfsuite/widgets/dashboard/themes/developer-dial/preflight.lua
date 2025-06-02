@@ -287,24 +287,25 @@ local boxes = {
     {
         type = "arcgauge",
         col = 1, row = 2,
-        source = "temp_esc",
-        transform = "floor",
-        gaugemin = 0,
-        gaugemax = 140,
-        unit = "°",
-        font = "FONT_STD",
-        textoffsetx = 12,
-        arcoffsety = 4,
-        arcthickness = 1,
-        startangle = 225,
-        sweep = 270,
-        fillbgcolor = "lightgrey",
-        title = "ESC Temp",
+        source = "temp_esc", 
+        title = "ESC Temp", 
         titlepos = "bottom",
+        gaugemin = 0, 
+        gaugemax = 140, 
+        unit = "°", 
+        textcolor = "white", 
+        font = "FONT_STD", 
+        transform = "floor", 
+        textoffsetx = 12,
+        fillbgcolor = "lightgrey", 
+        arcOffsetY = 4, 
+        arcThickness = 1, 
+        startAngle = 225, 
+        sweep = 270,
         thresholds = {
-            { value = 70,  fillcolor = "green" },
+            { value = 70,  fillcolor = "green"  },
             { value = 90,  fillcolor = "orange" },
-            { value = 140, fillcolor = "red" }
+            { value = 140, fillcolor = "red"    }
         }
     },
 
@@ -416,27 +417,27 @@ local boxes = {
     {
         type = "arcmaxgauge",
         col = 3, row = 2, rowspan = 2,
-        source = "temp_esc",
-        transform = "floor",
-        gaugemin = 0,
-        gaugemax = 140,
-        unit = "°",
-        font = "FONT_STD",
-        textoffsetx = 12,
-        arcoffsety = 4,
-        arcthickness = 1,
-        startangle = 225,
-        sweep = 270,
-        fillbgcolor = "lightgrey",
-        title = "ESC Temp",
+                source = "temp_esc", 
+        title = "ESC Temp", 
         titlepos = "bottom",
+        gaugemin = 0, 
+        gaugemax = 140, 
+        unit = "°", 
+        textcolor = "white", 
+        font = "FONT_STD", 
+        transform = "floor", 
+        textoffsetx = 12,
+        fillbgcolor = "lightgrey", 
+        arcOffsetY = 4, 
+        arcThickness = 1, 
+        startAngle = 225, 
+        sweep = 270,
         thresholds = {
-            { value = 70,  fillcolor = "green" },
+            { value = 70,  fillcolor = "green"  },
             { value = 90,  fillcolor = "orange" },
-            { value = 140, fillcolor = "red" }
+            { value = 140, fillcolor = "red"    }
         }
-    }, 
-
+    },
 }
 
 return {

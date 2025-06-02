@@ -217,7 +217,6 @@
 -- (add to box as needed)
     -- fillcolor,                -- Gauge/bar/arc active fill color
     -- fillbgcolor,              -- Gauge/bar/arc inactive/background fill
-    -- framecolor,               -- Gauge/bar/arc outline/border color
     -- accentcolor,              -- Pointer/needle or highlight color (e.g., dials)
     -- thresholds,               -- { {value, fillcolor, textcolor}, ... }
 ================================================================================

@@ -120,7 +120,7 @@ end
 
 function render.wakeup(box, telemetry)
     -- Get value
-    local value = nil
+    local value = 12.6
     local source = getParam(box, "source")
     if source then
         if type(source) == "function" then

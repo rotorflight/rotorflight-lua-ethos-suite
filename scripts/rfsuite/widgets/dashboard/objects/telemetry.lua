@@ -1,35 +1,3 @@
---[[
-
-    Telemetry Value Widget
-
-    Configurable Arguments (box table keys):
-    ----------------------------------------
-    source              : string   -- Telemetry sensor source name
-    transform           : string/function/number -- Optional value transform (math function or custom function)
-    thresholds          : table    -- List of threshold tables: {value=..., textcolor=...}
-    title               : string   -- Title text
-    novalue             : string   -- Text shown if sensor value is missing (default: "-")
-    unit                : string   -- Unit label to append to value
-    font                : font     -- Value font (e.g., FONT_L, FONT_XL)
-    bgcolor             : color    -- Widget background color (default: theme fallback)
-    textcolor           : color    -- Value text color (default: theme/text fallback)
-    titlecolor          : color    -- Title text color (default: theme/text fallback)
-    titlealign          : string   -- Title alignment ("center", "left", "right")
-    valuealign          : string   -- Value alignment ("center", "left", "right")
-    titlepos            : string   -- Title position ("top" or "bottom")
-    titlepadding        : number   -- Padding for title (all sides unless overridden)
-    titlepaddingleft    : number   -- Left padding for title
-    titlepaddingright   : number   -- Right padding for title
-    titlepaddingtop     : number   -- Top padding for title
-    titlepaddingbottom  : number   -- Bottom padding for title
-    valuepadding        : number   -- Padding for value (all sides unless overridden)
-    valuepaddingleft    : number   -- Left padding for value
-    valuepaddingright   : number   -- Right padding for value
-    valuepaddingtop     : number   -- Top padding for value
-    valuepaddingbottom  : number   -- Bottom padding for value
-
-]]
-
 local render = {}
 
 local utils = rfsuite.widgets.dashboard.utils
@@ -38,7 +6,7 @@ local resolveThemeColor = utils.resolveThemeColor
 
 function render.wakeup(box, telemetry)
     -- Value extraction and transform
-    local value = nil
+    local value
     local source = getParam(box, "source")
     if source then
         local sensor = telemetry and telemetry.getSensorSource(source)
