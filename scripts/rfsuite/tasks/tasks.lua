@@ -181,7 +181,7 @@ function tasks.wakeup()
 
         if not telemetryState then
 
-            rfsuite.utils.log("Telemetry not active.", "info")
+            --rfsuite.utils.log("Telemetry not active.", "info")
             rfsuite.session.telemetryState = false
             rfsuite.session.telemetryType = nil
             rfsuite.session.telemetryTypeChanged = false

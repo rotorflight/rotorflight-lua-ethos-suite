@@ -106,32 +106,7 @@ local function openPage(pageIdx, title, script)
                                                                 end
                                                             end
                                                         end)      
-
-    formFieldCount = formFieldCount + 1
-    rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = form.addLine(rfsuite.i18n.get("app.modules.settings.dashboard_theme_loader"))
-
-    -- Loader Theme
-    loaderType = {
-            { rfsuite.i18n.get("app.modules.settings.dashboard_theme_loader_pulse"), 1 },
-            { rfsuite.i18n.get("app.modules.settings.dashboard_theme_loader_rotate"), 2 },
-            { rfsuite.i18n.get("app.modules.settings.dashboard_theme_loader_static"), 3 },
-    }
-
-    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.session.formLineCnt], nil, 
-                                                        loaderType , 
-                                                        function()
-                                                            if rfsuite.preferences and rfsuite.preferences.dashboard then
-                                                                return settings.loader_style
-                                                            end
-                                                            return nil
-                                                        end, 
-                                                        function(newValue) 
-                                                            if rfsuite.preferences and rfsuite.preferences.dashboard then
-                                                                settings.loader_style = newValue
-                                                            end
-                                                        end)                                                               
-
+                                                  
 end
 
 local function onNavMenu()

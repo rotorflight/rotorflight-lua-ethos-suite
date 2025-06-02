@@ -923,6 +923,7 @@ end
     None
 ]]
 function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
+
     -- Initialize global UI state and clear form data
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
     rfsuite.app.triggers.isReady = false

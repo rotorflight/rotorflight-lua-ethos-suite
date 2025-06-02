@@ -147,6 +147,14 @@ function logging.wakeup()
         if not logFileName then
             logFileName = generateLogFilename()
             rfsuite.utils.log("Logging triggered by inFlight() - " .. logFileName, "info")
+
+            local iniName = "LOGS:rfsuite/telemetry/" .. rfsuite.session.mcu_id .. "/logs.ini"
+            local iniData = rfsuite.ini.load_ini_file(iniName) or {}
+            if not iniData.model then
+                iniData.model = {}
+            end
+            iniData.model.name = rfsuite.session.craftName or model.name() or "Unknown"
+            rfsuite.ini.save_ini_file(iniName, iniData)
         end
         if not logHeader then
             logHeader = logging.getLogHeader()
