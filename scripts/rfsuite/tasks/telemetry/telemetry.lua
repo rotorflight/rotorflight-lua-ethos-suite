@@ -321,6 +321,9 @@ local sensorTable = {
         mandatory = true,
         maxmin_trigger = false,
         set_telemetry_sensors = 93,
+        transform = function(value)
+            return value
+        end,
         sensors = {
             sim = {
                 { uid = 0x5009, unit = nil, dec = 0,
@@ -686,6 +689,30 @@ function telemetry.getSensorSource(name)
     end
 
     return nil
+end
+
+--- Retrieves the value of a telemetry sensor by its key.
+-- Looks up the sensor source using the provided sensorKey.
+-- If the sensor source is found, returns its raw value; otherwise, returns nil.
+-- @param sensorKey The key identifying the telemetry sensor.
+-- @return The raw value of the sensor if found, or nil if the sensor does not exist.
+function telemetry.getSensorValue(sensorKey)
+    local source = telemetry.getSensorSource(sensorKey)
+    if not source then
+        return nil
+    end
+
+    --- get the original value from the source
+    local value = source:value()
+
+    -- if the sensor has a transform function, apply it to the value:
+    if sensorTable[sensorKey] and sensorTable[sensorKey].transform and type(sensorTable[sensorKey].transform) == "function" then
+        value = sensorTable[sensorKey].transform(value)
+    end
+
+    -- Return the value
+    return value
+
 end
 
 --[[ 
