@@ -1,3 +1,10 @@
+# 2.2.0
+
+Release version for 2.2.0 Rotorflight
+
+- Fix missing i18n text
+- Improve Compiler Speed
+
 # 2.2.0-RC5
 
 Release candidate version for 2.2.0-RC5 Rotorflight
