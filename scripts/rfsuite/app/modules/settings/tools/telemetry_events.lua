@@ -25,7 +25,7 @@ local function openPage(pageIdx, title, script)
 
     local formFieldCount = 0
 
-    local eventList = rfsuite.tasks.events.eventTable.telemetry
+    local eventList = rfsuite.tasks.events.telemetry.eventTable
     local eventNames = sensorNameMap(rfsuite.tasks.telemetry.listSensors())
 
     settings = rfsuite.preferences.events

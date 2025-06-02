@@ -1152,7 +1152,16 @@ return {
     },
     ["dashboard"] = {
       ["theme_load_error"] = "Your theme did not load correctly. Falling back to default theme.",
-      ["validate_sensors"] = "MISSING REQUIRED SENSORS"
+      ["validate_sensors"] = "PLEASE CHECK SENSORS",
+      ["loading"] = "ROTORFLIGHT",
+      ["waiting_for_connection"] = "CONNECTING",
+      ["check_bg_task"] = "BG TASK",
+      ["check_rf_module_on"] = "RF MODULE",
+      ["check_discovered_sensors"] = "SENSORS",
+      ["no_link"] = "NO LINK",
+      ["reset_flight"] = "Reset flight",
+      ["reset_flight_ask_title"] = "Reset flight",
+      ["reset_flight_ask_text"] = "Are you sure you want to reset the flight?"
     },
     ["governor"] = {
       ["UNKNOWN"] = "UNKNOWN",

@@ -1,15 +1,51 @@
+--[[
+
+    Arc Dial Gauge Widget
+
+    Configurable Parameters (box table fields):
+    -------------------------------------------
+    bandLabels        : table           -- List of labels for each color band (e.g. {"Bad", "OK", "Good", "Excellent"})
+    bandColors        : table           -- List of fill colors for each band (e.g. {lcd.RGB(180,50,50), lcd.RGB(220,150,40), ...})
+    startAngle        : number          -- Arc start angle in degrees (default: 180)
+    sweep             : number          -- Total arc sweep in degrees (default: 180)
+    min               : number          -- Minimum input value (default: 0)
+    max               : number          -- Maximum input value (default: 100)
+    source            : string          -- Telemetry sensor source name (e.g. "rssi")
+    unit              : string          -- (Optional) Display unit string (e.g. "dB") appended to the value
+    transform         : string|function -- (Optional) Value transformation ("floor", "ceil", "round", or custom function)
+    decimals          : number          -- (Optional) Number of decimal places for numeric display
+    title             : string          -- (Optional) Gauge title text
+    novalue           : string          -- (Optional) Displayed if no telemetry value is available (default: "-")
+
+    -- Appearance/Theming:
+    textcolor         : color           -- (Optional) Main value text color (theme/text fallback if nil)
+    bgcolor           : color           -- (Optional) Gauge background color (theme/background fallback if nil)
+    accentcolor       : color           -- (Optional) Needle and needle hub color (default: black)
+    titlecolor        : color           -- (Optional) Title text color (textcolor fallback if nil)
+
+    -- Needle Styling:
+    needlethickness   : number          -- (Optional) Needle width in pixels (default: 5)
+    needlehubsize     : number          -- (Optional) Needle hub circle radius in pixels (default: 7)
+
+]]
+
 local render = {}
 
+local utils = rfsuite.widgets.dashboard.utils
+local getParam = utils.getParam
+local resolveThemeColor = utils.resolveThemeColor
+local resolveThemeColorArray = utils.resolveThemeColorArray
+
 -- Arc drawing helper
-local function drawArc(cx, cy, radius, thickness, angleStart, angleEnd, color, cachedStepRad)
-    local step = 4
+local function drawArc(cx, cy, radius, thickness, angleStart, angleEnd, fillcolor, cachedStepRad)
+    local step = 1
     local rad_thick = thickness / 2
     angleStart = math.rad(angleStart)
     angleEnd = math.rad(angleEnd)
     if angleEnd > angleStart then
-        angleEnd = angleEnd - 2 * math.pi
+        angleEnd = angleEnd2 - 2 * math.pi
     end
-    lcd.color(color or lcd.RGB(255,128,0))
+    lcd.color(fillcolor or lcd.RGB(255,128,0))
     local stepRad = cachedStepRad or math.rad(step)
     for a = angleStart, angleEnd, -stepRad do
         local x = cx + radius * math.cos(a)
@@ -21,78 +57,95 @@ local function drawArc(cx, cy, radius, thickness, angleStart, angleEnd, color, c
     lcd.drawFilledCircle(x_end, y_end, rad_thick)
 end
 
--- Wakeup: all calculations and caching
 function render.wakeup(box, telemetry)
-    -- Fallbacks for all params
-    local bandLabels = rfsuite.widgets.dashboard.utils.getParam(box, "bandLabels") or {"Bad", "OK", "Good", "Excellent"}
-    local bandColors = rfsuite.widgets.dashboard.utils.getParam(box, "bandColors") or {
-        lcd.RGB(180,50,50),
-        lcd.RGB(220,150,40),
-        lcd.RGB(90,180,90),
-        lcd.RGB(170,180,120)
-    }
-    local startAngle = rfsuite.widgets.dashboard.utils.getParam(box, "startAngle") or 180
-    local sweep = rfsuite.widgets.dashboard.utils.getParam(box, "sweep") or 180
-    local min = rfsuite.widgets.dashboard.utils.getParam(box, "min") or 0
-    local max = rfsuite.widgets.dashboard.utils.getParam(box, "max") or 100
-    local source = rfsuite.widgets.dashboard.utils.getParam(box, "source")
-    local value, percent = nil, 0
+     -- Resolve and format the display value (with transform, decimals, and unit if set)
+    local source = getParam(box, "source")
+    local value = nil
     if source and telemetry then
         local sensor = telemetry.getSensorSource and telemetry.getSensorSource(source)
         value = sensor and sensor:value()
     end
-    if value and max ~= min then
-        percent = (value - min) / (max - min)
-        percent = math.max(0, math.min(1, percent))
+
+    local displayValue
+    if value ~= nil then
+        displayValue = utils.transformValue(value, box)
+        local unit = getParam(box, "unit") or ""
+        if unit ~= "" then
+            displayValue = displayValue .. unit
+        end
+    else
+        displayValue = getParam(box, "novalue") or "-"
     end
 
-    -- Cache all params for paint
-    box._cache = {
-        bandLabels = bandLabels,
-        bandColors = bandColors,
-        startAngle = startAngle,
-        sweep = sweep,
-        min = min,
-        max = max,
-        value = value,
-        percent = percent,
-        unit = rfsuite.widgets.dashboard.utils.getParam(box, "unit") or "",
-        title = rfsuite.widgets.dashboard.utils.getParam(box, "title"),
-        needleColor = rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "needlecolor")) or lcd.RGB(0,0,0),
-        needleThickness = rfsuite.widgets.dashboard.utils.getParam(box, "needlethickness") or 5,
-        needlehubcolor = rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "needlehubcolor")) or lcd.RGB(0,0,0),
-        needlehubsize = rfsuite.widgets.dashboard.utils.getParam(box, "needlehubsize") or 7,
-        bgcolor = rfsuite.widgets.dashboard.utils.resolveColor(rfsuite.widgets.dashboard.utils.getParam(box, "bgcolor")) or (lcd.darkMode() and lcd.RGB(40,40,40) or lcd.RGB(240,240,240)),
-        novalue = rfsuite.widgets.dashboard.utils.getParam(box, "novalue") or "-",
-    }
-end
+    local displayValue
+    if value ~= nil then
+        displayValue = utils.transformValue(value, box)
+        local unit = getParam(box, "unit") or ""
+        if unit ~= "" then
+            displayValue = displayValue .. unit
+        end
+    else
+        displayValue = getParam(box, "novalue") or "-"
+    end
 
--- Paint: robust fallbacks for all cached fields!
-function render.paint(x, y, w, h, box)
-    local c = box._cache or {}
-    -- Robust band labels/colors
-    local bandLabels = (c.bandLabels and type(c.bandLabels) == "table") and c.bandLabels or {"Bad", "OK", "Good", "Excellent"}
-    local bandColors = (c.bandColors and type(c.bandColors) == "table") and c.bandColors or {
+    local bandLabels = getParam(box, "bandLabels") or {}
+    local bandColors = resolveThemeColorArray("fillcolor", getParam(box, "bandColors") or {
         lcd.RGB(180,50,50),
         lcd.RGB(220,150,40),
         lcd.RGB(90,180,90),
         lcd.RGB(170,180,120)
+    })
+
+    local startAngle = getParam(box, "startAngle") or 180
+    local sweep = getParam(box, "sweep") or 180
+    local min = getParam(box, "min") or 0
+    local max = getParam(box, "max") or 100
+
+    -- All color keys are resolved here
+    box._cache = {
+        displayValue = displayValue,
+        bandLabels   = bandLabels,
+        bandColors   = bandColors,
+        startAngle   = startAngle,
+        sweep        = sweep,
+        min          = min,
+        max          = max,
+        value        = value,
+        percent      = percent,
+        unit         = getParam(box, "unit") or "",
+        title        = getParam(box, "title"),
+        textcolor    = resolveThemeColor("textcolor", getParam(box, "textcolor")),
+        bgcolor      = resolveThemeColor("fillbgcolor", getParam(box, "bgcolor")),
+        accentcolor  = resolveThemeColor("accentcolor", getParam(box, "accentcolor")),
+        titlecolor   = resolveThemeColor("titlecolor", getParam(box, "titlecolor")),
+        needleThickness = getParam(box, "needlethickness") or 5,
+        needlehubsize   = getParam(box, "needlehubsize") or 7,
+        novalue     = getParam(box, "novalue") or "-",
     }
+end
+
+function render.paint(x, y, w, h, box)
+    local c = box._cache or {}
+
+    local bandLabels = c.bandLabels
+    local bandColors = c.bandColors
     local bandCount = #bandLabels
-    local startAngle = c.startAngle or 180
-    local sweep = c.sweep or 180
-    local min = c.min or 0
-    local max = c.max or 100
+    local startAngle = c.startAngle
+    local sweep = c.sweep
+    local min = c.min
+    local max = c.max
     local value = c.value
-    local percent = c.percent or 0
-    local unit = c.unit or ""
+    local percent = c.percent
+    local unit = c.unit
     local title = c.title
-    local needleColor = c.needleColor or lcd.RGB(0,0,0)
-    local needleThickness = c.needleThickness or 5
-    local needlehubcolor = c.needlehubcolor or lcd.RGB(0,0,0)
-    local needlehubsize = c.needlehubsize or 7
-    local bgcolor = c.bgcolor or (lcd.darkMode() and lcd.RGB(40,40,40) or lcd.RGB(240,240,240))
-    local novalue = c.novalue or "-"
+    local needleColor = c.accentcolor
+    local needleThickness = c.needleThickness
+    local needlehubcolor = c.accentcolor
+    local needlehubsize = c.needlehubsize
+    local bgcolor = c.bgcolor
+    local novalue = c.novalue
+    local textcolor = c.textcolor
+    local titlecolor = c.titlecolor
 
     -- Center & sizing
     local cx = x + w / 2
@@ -129,24 +182,23 @@ function render.paint(x, y, w, h, box)
         local text = bandLabels[i]
         if text then
             local tw, th = lcd.getTextSize(text)
-            lcd.color(lcd.RGB(255,255,255))
+            lcd.color(textcolor)
             lcd.drawText(tx-tw/2, ty-th/2, text)
         end
     end
 
     -- Value display
-    local displayValue = value or novalue
     lcd.font(FONT_STD)
-    local valStr = tostring(displayValue) .. unit
+    local valStr = value ~= nil and (tostring(value) .. unit) or novalue
     local vw, vh = lcd.getTextSize(valStr)
-    lcd.color(lcd.RGB(255,255,255))
-    lcd.drawText(cx-vw/2, cy-thickness-18, valStr)
+    lcd.color(textcolor)
+    lcd.drawText(cx - vw / 2, cy - thickness - 18, valStr)
 
     -- Title (below)
     if title then
         lcd.font(FONT_XS)
         local tw, th = lcd.getTextSize(title)
-        lcd.color(lcd.RGB(255,255,255))
+        lcd.color(titlecolor)
         lcd.drawText(cx-tw/2, y+h-14, title)
     end
 end

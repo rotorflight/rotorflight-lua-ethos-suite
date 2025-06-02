@@ -24,27 +24,9 @@ local arg = {...}
 local config = arg[1]
 
 function utils.inFlight()
-    local telemetry = rfsuite.tasks.telemetry
-
-    if not telemetry.active() then
-        return false
+    if rfsuite.session.flightMode == "inflight" then
+        return true
     end
-
-    if rfsuite.session.isArmed == true then
-        local governor = telemetry.getSensorSource("governor")
-        local rpm = telemetry.getSensorSource("rpm")
-        local throttle = telemetry.getSensorSource("throttle_percent")
-
-        if governor and governor:value() == 4 then
-            return true
-        elseif rpm and rpm:value() > 500 then
-            return true
-        elseif throttle and throttle:value() > 30 then
-            return true
-        end
-
-    end
-
     return false
 end
 
@@ -63,6 +45,14 @@ end
 
 -- get the governor text from the value
 function utils.getGovernorState(value)
+
+    local returnvalue
+
+    --[[
+    Checks if the provided value exists as a key in the 'map' table.
+    If the key exists, assigns the corresponding value from 'map' to 'returnvalue'.
+    If the key does not exist, assigns a localized "UNKNOWN" string to 'returnvalue' using 'rfsuite.i18n.get'.
+    ]]    
     local map = {     
         [0] =  rfsuite.i18n.get("widgets.governor.OFF"),
         [1] =  rfsuite.i18n.get("widgets.governor.IDLE"),
@@ -77,9 +67,37 @@ function utils.getGovernorState(value)
         [101] = rfsuite.i18n.get("widgets.governor.DISARMED")
     }
 
-    if map[value] then
-        return map[value]
+    if rfsuite.session and rfsuite.session.apiVersion and rfsuite.session.apiVersion > 12.07 then
+        local armflagsSOURCE = rfsuite.tasks.telemetry.getSensorSource("armflags")
+        if armflagsSOURCE and (armflagsSOURCE:value() == 0 or armflagsSOURCE:value() == 2 )then
+            value = 101
+        end
     end
+
+    if map[value] then
+        returnvalue = map[value]
+    else
+        returnvalue = rfsuite.i18n.get("widgets.governor.UNKNOWN")
+    end    
+
+    --[[
+        Checks the value of the "armdisableflags" telemetry sensor. If the sensor value is available,
+        it is floored to the nearest integer and converted to a human-readable string using
+        rfsuite.app.utils.armingDisableFlagsToString(). If the resulting string is not "OK",
+        the function sets 'returnvalue' to this string, indicating a reason why arming is disabled.
+    --]]
+    local armdisableflags = rfsuite.tasks.telemetry.getSensorValue("armdisableflags")
+    if armdisableflags ~= nil then
+        armdisableflags = math.floor(armdisableflags)
+        local armstring = rfsuite.app.utils.armingDisableFlagsToString(armdisableflags )
+        if armstring ~= "OK" then
+            returnvalue =  armstring
+        end   
+    end    
+
+    --- Returns the value stored in `returnvalue`.
+    -- @return The value of `returnvalue`.
+    return returnvalue
 end
 
 
@@ -394,27 +412,22 @@ function utils.findModules()
         if v ~= ".." then
             local init_path = modules_path .. v .. '/init.lua'
 
-            local f = io.open(init_path, "r")
-            if f then
-                io.close(f)
-                local func, err = rfsuite.compiler.loadfile(init_path)
-                if err then
-                    rfsuite.utils.log("Error loading " .. init_path, "info")
-                    rfsuite.utils.log(err, "info")
-                end
-                if func then
-                    local mconfig = func()
-                    if type(mconfig) ~= "table" or not mconfig.script then
-                        rfsuite.utils.log("Invalid configuration in " .. init_path,"info")
-                    else
-                        rfsuite.utils.log("Loading module " .. v, "debug")
-                        mconfig['folder'] = v
-                        table.insert(modulesList, mconfig)
-                    end
+            local func, err = rfsuite.compiler.loadfile(init_path)
+            if not func then
+                rfsuite.utils.log("Failed to load module init " .. init_path .. ": " .. err, "info")
+            else
+                local ok, mconfig = pcall(func)
+                if not ok then
+                    rfsuite.utils.log("Error executing " .. init_path .. ": " .. mconfig, "info")
+                elseif type(mconfig) ~= "table" or not mconfig.script then
+                    rfsuite.utils.log("Invalid configuration in " .. init_path, "info")
                 else
-                    rfsuite.utils.log("Error loading " .. init_path, "info")    
-                end 
+                    rfsuite.utils.log("Loading module " .. v, "debug")
+                    mconfig.folder = v
+                    table.insert(modulesList, mconfig)
+                end
             end
+            
         end    
     end
 
@@ -441,22 +454,30 @@ function utils.findWidgets()
 
         if v ~= ".." then
             local init_path = widgets_path .. v .. '/init.lua'
-            local f = io.open(init_path, "r")
-            if f then
-                io.close(f)
-
-                local func, err = rfsuite.compiler.loadfile(init_path)
-
-                if func then
-                    local wconfig = func()
-                    if type(wconfig) ~= "table" or not wconfig.key then
-                        rfsuite.utils.log("Invalid configuration in " .. init_path,"debug")
-                    else
-                        wconfig['folder'] = v
-                        table.insert(widgetsList, wconfig)
-                    end
+            -- try loading directly
+            local func, err = rfsuite.compiler.loadfile(init_path)
+            if not func then
+                rfsuite.utils.log(
+                  "Failed to load widget init " .. init_path .. ": " .. err,
+                  "debug"
+                )
+            else
+                local ok, wconfig = pcall(func)
+                if not ok then
+                    rfsuite.utils.log(
+                      "Error executing widget init " .. init_path .. ": " .. wconfig,
+                      "debug"
+                    )
+                elseif type(wconfig) ~= "table" or not wconfig.key then
+                    rfsuite.utils.log(
+                      "Invalid configuration in " .. init_path,
+                      "debug"
+                    )
+                else
+                    wconfig.folder = v
+                    table.insert(widgetsList, wconfig)
                 end
-            end
+            end            
         end    
     end
 
@@ -486,49 +507,57 @@ end
         resolve_image(image):
             Resolves the image path by checking its existence and attempting to switch between PNG and BMP formats if necessary.
 --]]
+-- caches for loadImage
+utils._imagePathCache   = {}
+utils._imageBitmapCache = {}
 function utils.loadImage(image1, image2, image3)
-    -- Helper function to check file in different locations
-    local function find_image_in_directories(img)
-        if rfsuite.utils.file_exists(img) then
-            return img
-        elseif rfsuite.utils.file_exists("BITMAPS:" .. img) then
-            return "BITMAPS:" .. img
-        elseif rfsuite.utils.file_exists("SYSTEM:" .. img) then
-            return "SYSTEM:" .. img
-        else
+    -- Resolve & cache bitmaps to avoid repeated fs checks
+    local function getCachedBitmap(key, tryPaths)
+        -- already loaded?
+        -- nothing to do if no key
+        if not key then
             return nil
         end
-    end
+        -- already loaded?
+        if utils._imageBitmapCache[key] then
+            return utils._imageBitmapCache[key]
+        end
 
-    -- Function to check and return a valid image path
-    local function resolve_image(image)
-        if type(image) == "string" then
-            local image_path = find_image_in_directories(image)
-            if not image_path then
-                if image:match("%.png$") then
-                    image_path = find_image_in_directories(image:gsub("%.png$", ".bmp"))
-                elseif image:match("%.bmp$") then
-                    image_path = find_image_in_directories(image:gsub("%.bmp$", ".png"))
+        -- find or reuse resolved path
+        local path = utils._imagePathCache[key]
+        if not path then
+            for _, p in ipairs(tryPaths) do
+                if rfsuite.utils.file_exists(p) then
+                    path = p
+                    break
                 end
             end
-            return image_path
+            utils._imagePathCache[key] = path
         end
-        return nil
+
+        if not path then return nil end
+        local bmp = lcd.loadBitmap(path)
+        utils._imageBitmapCache[key] = bmp
+        return bmp
     end
 
-    -- Resolve images in order of precedence
-    local image_path = resolve_image(image1) or resolve_image(image2) or resolve_image(image3)
+    -- build candidate paths for each image string
+    local function candidates(img)
+        if type(img) ~= "string" then return {} end
+        local out = { img, "BITMAPS:"..img, "SYSTEM:"..img }
+        if img:match("%.png$") then
+            -- direct array-style append instead of table.insert
+            out[#out+1] = img:gsub("%.png$",".bmp")
+        elseif img:match("%.bmp$") then
+            out[#out+1] = img:gsub("%.bmp$",".png")
+        end
+        return out
+    end
 
-    -- If an image path is found, load and return the bitmap
-    if image_path then return lcd.loadBitmap(image_path) end
-
-    -- If no valid image path was found, return the first existing Bitmap in order
-    if type(image1) == "Bitmap" then return image1 end
-    if type(image2) == "Bitmap" then return image2 end
-    if type(image3) == "Bitmap" then return image3 end
-
-    -- If nothing was found, return nil
-    return nil
+    -- try in order
+    return getCachedBitmap(image1, candidates(image1))
+        or getCachedBitmap(image2, candidates(image2))
+        or getCachedBitmap(image3, candidates(image3)) 
 end
 
 --[[
@@ -572,7 +601,9 @@ function utils.simSensors(id)
         return 0
     end
 
-    local chunk, err = loadfile(filepath)  -- intentionally not using rfsuite.compiler.loadfile here
+    -- this should never be changed to use compiler.loadfile
+    -- as it caches - prventing re-calls with different results!
+    local chunk, err = loadfile(filepath)
     if not chunk then
         print("Error loading telemetry file: " .. err)
         return 0

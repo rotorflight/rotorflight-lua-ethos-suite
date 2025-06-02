@@ -1,4 +1,4 @@
-local mspapi = {
+local apidata = {
     api = {
         [1] = 'RC_TUNING',
     },
@@ -38,5 +38,5 @@ local mspapi = {
 }
 
 
-return mspapi
+return apidata
 

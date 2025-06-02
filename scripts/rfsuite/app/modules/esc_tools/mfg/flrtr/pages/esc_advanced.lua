@@ -4,7 +4,7 @@ local mspHeaderBytes = ESC.mspHeaderBytes
 local mspSignature = ESC.mspSignature
 local simulatorResponse = ESC.simulatorResponse
 
-local mspapi = {
+local apidata = {
     api = {
         [1] = "ESC_PARAMETERS_FLYROTOR",
     },
@@ -50,7 +50,7 @@ local function event(widget, category, value, x, y)
 end
 
 return {
-    mspapi=mspapi,    
+    apidata = apidata,    
     eepromWrite = true,
     reboot = false,
     escinfo = escinfo,

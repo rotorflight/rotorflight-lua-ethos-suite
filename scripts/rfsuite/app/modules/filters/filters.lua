@@ -1,4 +1,4 @@
-local mspapi = {
+local apidata = {
     api = {
         [1] = 'FILTER_CONFIG',
     },
@@ -40,7 +40,7 @@ local mspapi = {
 
 
 return {
-    mspapi = mspapi,
+    apidata = apidata,
     eepromWrite = true,
     reboot = true,
     API = {},

@@ -5,8 +5,53 @@
     "needs_translation": "true"
   },
   "validate_sensors": {
-    "english": "MISSING REQUIRED SENSORS",
+    "english": "PLEASE CHECK SENSORS",
     "translation": "MISSING REQUIRED SENSORS",
+    "needs_translation": "true"
+  },
+  "loading": {
+    "english": "ROTORFLIGHT",
+    "translation": "ROTORFLIGHT",
+    "needs_translation": "false"
+  },
+  "waiting_for_connection": {
+    "english": "CONNECTING",
+    "translation": "CONNECTING",
+    "needs_translation": "true"
+  },
+  "check_bg_task": {
+    "english": "BG TASK",
+    "translation": "BG TASK",
+    "needs_translation": "true"
+  },
+  "check_rf_module_on": {
+    "english": "RF MODULE",
+    "translation": "RF MODULE",
+    "needs_translation": "true"
+  },
+  "check_discovered_sensors": {
+    "english": "SENSORS",
+    "translation": "SENSORS",
+    "needs_translation": "true"
+  },
+  "no_link": {
+    "english": "NO LINK",
+    "translation": "NO LINK",
+    "needs_translation": "true"
+  },
+  "reset_flight": {
+    "english": "Reset flight",
+    "translation": "Reset flight",
+    "needs_translation": "true"
+  },
+  "reset_flight_ask_title": {
+    "english": "Reset flight",
+    "translation": "Reset flight",
+    "needs_translation": "true"
+  },
+  "reset_flight_ask_text": {
+    "english": "Are you sure you want to reset the flight?",
+    "translation": "Are you sure you want to reset the flight?",
     "needs_translation": "true"
   }
 }

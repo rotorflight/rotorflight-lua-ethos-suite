@@ -16,11 +16,13 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 ]] --
+-- Theme initialization table
 local init = {
-    interval = 1, -- run every 1s
-    script = "flightmode.lua", -- run this script
-    msp = false, -- do not run if busy with msp 
-    no_link = true -- run this script always
+    name = "RF Status",                -- Theme name
+    preflight = "preflight.lua",     -- Script to run before takeoff
+    inflight = "inflight.lua",       -- Script to run during flight
+    postflight = "postflight.lua",   -- Script to run after landing
+    standalone = false,              -- If true, theme handles all rendering itself
 }
 
 return init

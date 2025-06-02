@@ -28,15 +28,15 @@
     -- colspan, rowspan,         -- Optional: grid span
     -- align,                    -- "center", "top-left", etc.
     -- aspect,                   -- "fit", "fill", "stretch", "original"
-    -- bgcolor,                  -- Background color
+    -- bgcolor,                  -- Widget background color
     -- selectcolor,              -- Selection color
     -- selectborder,             -- Border thickness on selection
     -- title,                    -- Label (optional)
     -- titlepos,                 -- "top" or "bottom"
-    -- titlecolor,               -- Label color
+    -- titlecolor,               -- Title label color
     -- titlealign,               -- "center", "left", "right"
     -- font,                     -- Label font
-    -- textColor,                -- Label text color
+    -- textcolor,                -- Label text color
 }
 
 ---------------------------  TELEMETRY BOX OPTIONS  ----------------------------
@@ -50,16 +50,16 @@
     -- transform,                -- "floor", "ceil", "round", function
     -- nosource,                 -- Placeholder if telemetry source missing
     -- decimals,                 -- Number of decimal places
-    -- thresholds,               -- { {value, color, textcolor}, ... }
+    -- thresholds,               -- { {value, fillcolor, textcolor}, ... }
     -- bgcolor,                  -- Widget background color
     -- selectcolor,              -- Highlight color
     -- selectborder,             -- Border width for selection
     -- title,                    -- Label text
     -- titlepos,                 -- "top" or "bottom"
-    -- titlecolor,               -- Label color
+    -- titlecolor,               -- Title label color
     -- titlealign,               -- "center", "left", "right"
     -- font,                     -- Value font
-    -- textColor,                -- Value color
+    -- textcolor,                -- Value/main label text color
     -- textoffsetx,              -- X offset for value
 }
 
@@ -69,7 +69,7 @@
     col, row,                    -- Required: grid position
     -- title,                    -- Label
     -- titlepos,                 -- "top" or "bottom"
-    -- titlecolor,               -- Label color
+    -- titlecolor,               -- Title label color
     -- titlealign,               -- Label alignment
     -- font,                     -- Font for label
     -- nosource,                 -- Placeholder if missing
@@ -81,7 +81,7 @@
     col, row,                    -- Required: grid position
     -- title,                    -- Label
     -- titlepos,                 -- "top" or "bottom"
-    -- titlecolor,               -- Label color
+    -- titlecolor,               -- Title label color
     -- titlealign,               -- Label alignment
     -- font,                     -- Font for label
     -- nosource,                 -- Placeholder if missing
@@ -93,7 +93,7 @@
     col, row,                    -- Required: grid position
     -- title,                    -- Label
     -- titlepos,                 -- "top" or "bottom"
-    -- titlecolor,               -- Label color
+    -- titlecolor,               -- Title label color
     -- titlealign,               -- Label alignment
     -- font,                     -- Font for label
     -- nosource,                 -- Placeholder if missing
@@ -106,7 +106,7 @@
     -- source,                   -- Session property, e.g., "isArmed"
     -- title,                    -- Label
     -- titlepos,                 -- "top" or "bottom"
-    -- titlecolor,               -- Label color
+    -- titlecolor,               -- Title label color
     -- titlealign,               -- Label alignment
     -- font,                     -- Font for label
     -- nosource,                 -- Placeholder if missing
@@ -119,7 +119,7 @@
     value,                       -- Required: custom render function
     -- title,                    -- Label
     -- titlepos,                 -- "top" or "bottom"
-    -- titlecolor,               -- Label color
+    -- titlecolor,               -- Title label color
     -- titlealign,               -- Label alignment
     -- font,                     -- Font for label
 }
@@ -130,7 +130,7 @@
     col, row,                    -- Required: grid position
     -- title,                    -- Label
     -- titlepos,                 -- "top" or "bottom"
-    -- titlecolor,               -- Label color
+    -- titlecolor,               -- Title label color
     -- titlealign,               -- Label alignment
     -- font,                     -- Font for label
     -- nosource,                 -- Placeholder if missing
@@ -144,7 +144,7 @@
     -- onpress,                  -- Function to call when pressed
     -- title,                    -- Label
     -- titlepos,                 -- "top" or "bottom"
-    -- titlecolor,               -- Label color
+    -- titlecolor,               -- Title label color
     -- titlealign,               -- Label alignment
     -- font,                     -- Font for label
     -- nosource,                 -- Placeholder if missing
@@ -156,7 +156,7 @@
     col, row,                    -- Required: grid position
     -- title,                    -- Label
     -- titlepos,                 -- "top" or "bottom"
-    -- titlecolor,               -- Label color
+    -- titlecolor,               -- Title label color
     -- titlealign,               -- Label alignment
     -- font,                     -- Font for label
     -- nosource,                 -- Placeholder if missing
@@ -168,10 +168,10 @@
     col, row,                    -- Required: grid position
     -- title,                    -- Label/title for the widget
     -- titlepos,                 -- "top" or "bottom"
-    -- titlecolor,               -- Title text color
+    -- titlecolor,               -- Title label color
     -- titlealign,               -- "center", "left", "right"
     -- unit,                     -- Unit to display (e.g., "min")
-    -- color,                    -- Value text color
+    -- textcolor,                -- Value/main label text color
     -- bgcolor,                  -- Background color
     -- valuealign,               -- "center", "left", "right"
     -- novalue,                  -- Placeholder if timer value missing
@@ -193,10 +193,10 @@
     col, row,                    -- Required: grid position
     -- title,                    -- Label/title for the widget
     -- titlepos,                 -- "top" or "bottom"
-    -- titlecolor,               -- Title text color
+    -- titlecolor,               -- Title label color
     -- titlealign,               -- "center", "left", "right"
     -- unit,                     -- Unit to display (e.g., "h")
-    -- color,                    -- Value text color
+    -- textcolor,                -- Value/main label text color
     -- bgcolor,                  -- Background color
     -- valuealign,               -- "center", "left", "right"
     -- novalue,                  -- Placeholder if value missing
@@ -212,7 +212,13 @@
     -- valuepaddingbottom,       -- Value text bottom padding
 }
 
-
+----------------------  UNIVERSAL GAUGE OPTIONS (GAUGES)  ----------------------
+-- For arcgauge, fuelgauge, gauge, battery, etc:
+-- (add to box as needed)
+    -- fillcolor,                -- Gauge/bar/arc active fill color
+    -- fillbgcolor,              -- Gauge/bar/arc inactive/background fill
+    -- accentcolor,              -- Pointer/needle or highlight color (e.g., dials)
+    -- thresholds,               -- { {value, fillcolor, textcolor}, ... }
 ================================================================================
                     END OF WIDGET OPTION REFERENCE
 ================================================================================
@@ -268,8 +274,8 @@ local boxes = {
 
     { col = 2, row = 1, type = "telemetry", source = "voltage", nosource = "-", title = "VOLTAGE", unit = "v", titlepos = "bottom",
         thresholds = {
-            { value = 20, color = "red", textcolor = "white" },
-            { value = 50, color = "orange", textcolor = "black" }
+            { value = 20, textcolor = "red" },
+            { value = 50, textcolor = "yellow" }
         }
     },
     { col = 2, row = 2, type = "telemetry", source = "current", nosource = "-", title = "CURRENT", unit = "A", titlepos = "bottom" },

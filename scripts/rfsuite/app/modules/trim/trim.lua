@@ -17,7 +17,7 @@ local currentIdleThrottleTrimLast
 local clear2send = true
 
 
-local mspapi = {
+local apidata = {
     api = {
         [1] = "MIXER_CONFIG",
     },
@@ -263,7 +263,7 @@ local function onNavMenu(self)
 end
 
 return {
-    mspapi = mspapi,
+    apidata = apidata,
     eepromWrite = true,
     reboot = false,
     mixerOff = mixerOff,

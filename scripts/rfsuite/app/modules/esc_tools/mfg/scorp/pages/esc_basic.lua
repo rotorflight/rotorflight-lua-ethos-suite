@@ -5,7 +5,7 @@ local folder = "scorp"
 
 local ESC = assert(rfsuite.compiler.loadfile("app/modules/esc_tools/mfg/" .. folder .. "/init.lua"))()
 
-local mspapi = {
+local apidata = {
     api = {
         [1] = "ESC_PARAMETERS_SCORPION",
     },
@@ -47,7 +47,7 @@ local function event(widget, category, value, x, y)
 end
 
 return {
-    mspapi=mspapi,
+    apidata = apidata,
     eepromWrite = false,
     reboot = false,
     title = "Basic Setup",

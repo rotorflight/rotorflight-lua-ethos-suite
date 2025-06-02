@@ -1,6 +1,6 @@
 local activateWakeup = false
 
-local mspapi = {
+local apidata = {
     api = {
         [1] = "PID_PROFILE",
     },
@@ -41,7 +41,7 @@ local function wakeup()
 end
 
 return {
-    mspapi = mspapi,
+    apidata = apidata,
     title = rfsuite.i18n.get("app.modules.profile_pidbandwidth.name"),
     refreshOnProfileChange = true,
     reboot = false,

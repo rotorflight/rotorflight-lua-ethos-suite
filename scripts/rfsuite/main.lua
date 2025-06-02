@@ -27,6 +27,7 @@ local config = {}
 -- Configuration settings for the Rotorflight Lua Ethos Suite
 config.toolName = "Rotorflight"                                                     -- name of the tool 
 config.icon = lcd.loadMask("app/gfx/icon.png")                                      -- icon
+config.icon_logtool = lcd.loadMask("app/gfx/icon_logtool.png")          -- icon
 config.icon_unsupported = lcd.loadMask("app/gfx/unsupported.png")                   -- icon
 config.version = {major = 2, minor = 2, revision = 0, suffix = "RC4"}               -- version of the script
 config.ethosVersion = {1, 6, 2}                                                      -- min version of ethos supported by this script                                                     
@@ -61,9 +62,9 @@ local userpref_defaults ={
         syncname = false,
     },
     dashboard = {
-        theme_preflight = "system/default",
-        theme_inflight = "system/default",
-        theme_postflight = "system/default",
+        theme_preflight = "system/rfstatus",
+        theme_inflight = "system/rfstatus",
+        theme_postflight = "system/rfstatus",
     },
     events = {
         armflags = true,
@@ -87,7 +88,8 @@ local userpref_defaults ={
         memstats = false,           -- perioid print memory usage 
         mspexpbytes = 8,
         apiversion = 2,             -- msp api version to use for simulator    
-    }
+    },
+    menulastselected = {}
 }
 
 os.mkdir("SCRIPTS:/" .. rfsuite.config.preferences)
@@ -224,9 +226,12 @@ rfsuite.session.timer = {}
 rfsuite.session.timer.start = nil -- this is used to store the start time of the timer
 rfsuite.session.timer.live = nil -- this is used to store the live timer value while inflight
 rfsuite.session.timer.lifetime = nil -- this is used to store the total flight time of a model and store it in the user ini file
-rfsuite.session.timer.session = nil -- this is used to track flight time for the session
+rfsuite.session.timer.session = 0 -- this is used to track flight time for the session
 rfsuite.session.flightCounted = false
-
+rfsuite.session.onConnect = {} -- this is used to store the onConnect tasks that need to be run
+rfsuite.session.onConnect.high = false
+rfsuite.session.onConnect.low = false
+rfsuite.session.onConnect.medium = false
 
 --- Retrieves the version information of the rfsuite module.
 --- 
@@ -323,6 +328,18 @@ local function init()
         close = rfsuite.app.close
     })
 
+    -- Registers the log tool with the specified configuration.
+    -- This tool handles events, creation, wakeup, painting, and closing.
+    system.registerSystemTool({
+        event = rfsuite.app.event,
+        name = config.toolName,
+        icon = config.icon_logtool,
+        create = rfsuite.app.create_logtool,
+        wakeup = rfsuite.app.wakeup,
+        paint = rfsuite.app.paint,
+        close = rfsuite.app.close
+    })
+
     -- Registers a background task with the specified configuration.
     -- This task handles wakeup and event processing.
     system.registerTask({
@@ -337,14 +354,15 @@ local function init()
     local cachePath = "cache/" .. cacheFile
     local widgetList
     
-    -- Try to load from cache if it exists
-    if io.open(cachePath, "r") then
-        local ok, cached = pcall(dofile, cachePath)
+    -- Try loading cache if it exists
+    local loadf, loadErr = rfsuite.compiler.loadfile(cachePath)
+    if loadf then
+        local ok, cached = pcall(loadf)
         if ok and type(cached) == "table" then
             widgetList = cached
             rfsuite.utils.log("[cache] Loaded widget list from cache","info")
         else
-            rfsuite.utils.log("[cache] Failed to load cache, rebuilding...","info")
+            rfsuite.utils.log("[cache] Bad cache, rebuilding: "..tostring(cached),"info")
         end
     end
     

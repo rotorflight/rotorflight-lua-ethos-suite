@@ -91,7 +91,7 @@ local function openPage(pidx, title, script)
 
 
     if rfsuite.app.gfx_buttons["settings_dashboard"] == nil then rfsuite.app.gfx_buttons["settings_dashboard"] = {} end
-    if rfsuite.app.menuLastSelected["settings_dashboard"] == nil then rfsuite.app.menuLastSelected["settings_dashboard"] = 1 end
+    if rfsuite.preferences.menulastselected["settings_dashboard"] == nil then rfsuite.preferences.menulastselected["settings_dashboard"] = 1 end
 
 
     local Menu = assert(rfsuite.compiler.loadfile("app/modules/" .. script))()
@@ -124,7 +124,7 @@ local function openPage(pidx, title, script)
             paint = function()
             end,
             press = function()
-                rfsuite.app.menuLastSelected["settings_dashboard"] = pidx
+                rfsuite.preferences.menulastselected["settings_dashboard"] = pidx
                 rfsuite.app.ui.progressDisplay()
                 rfsuite.app.ui.openPage(pidx, pvalue.folder, "settings/tools/" .. pvalue.script)
             end
@@ -132,7 +132,7 @@ local function openPage(pidx, title, script)
 
         if pvalue.disabled == true then rfsuite.app.formFields[pidx]:enable(false) end
 
-        if rfsuite.app.menuLastSelected["settings_dashboard"] == pidx then rfsuite.app.formFields[pidx]:focus() end
+        if rfsuite.preferences.menulastselected["settings_dashboard"] == pidx then rfsuite.app.formFields[pidx]:focus() end
 
         lc = lc + 1
 

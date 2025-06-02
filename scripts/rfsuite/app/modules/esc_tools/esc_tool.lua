@@ -190,7 +190,7 @@ local function openPage(pidx, title, script)
     local bx = 0
 
     if rfsuite.app.gfx_buttons["esctool"] == nil then rfsuite.app.gfx_buttons["esctool"] = {} end
-    if rfsuite.app.menuLastSelected["esctool"] == nil then rfsuite.app.menuLastSelected["esctool"] = 1 end
+    if rfsuite.preferences.menulastselected["esctool"] == nil then rfsuite.preferences.menulastselected["esctool"] = 1 end
 
     for pidx, pvalue in ipairs(ESC.pages) do 
 
@@ -224,7 +224,7 @@ local function openPage(pidx, title, script)
                 paint = function()
                 end,
                 press = function()
-                    rfsuite.app.menuLastSelected["esctool"] = pidx
+                    rfsuite.preferences.menulastselected["esctool"] = pidx
                     rfsuite.app.ui.progressDisplay()
 
                     rfsuite.app.ui.openPage(pidx, title, "esc_tools/mfg/" .. folder .. "/pages/" .. pvalue.script)
@@ -232,7 +232,7 @@ local function openPage(pidx, title, script)
                 end
             })
 
-            if rfsuite.app.menuLastSelected["esctool"] == pidx then rfsuite.app.formFields[pidx]:focus() end
+            if rfsuite.preferences.menulastselected["esctool"] == pidx then rfsuite.app.formFields[pidx]:focus() end
 
             if rfsuite.app.triggers.escToolEnableButtons == true then
                 rfsuite.app.formFields[pidx]:enable(true)

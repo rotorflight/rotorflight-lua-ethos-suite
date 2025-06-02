@@ -172,7 +172,6 @@ app.radio = {}
 app.sensor = {}
 app.init = nil
 app.guiIsRunning = false
-app.menuLastSelected = {}
 app.adjfunctions = nil
 app.profileCheckScheduler = os.clock()
 app.offlineMode = false
@@ -443,7 +442,7 @@ local function saveSettings()
     -- we handle saving 100% different for multi mspapi
     rfsuite.utils.log("Saving data", "debug")
 
-    local mspapi = rfsuite.app.Page.mspapi
+    local mspapi = rfsuite.app.Page.apidata
     local apiList = mspapi.api
     local values = mspapi.values
 
@@ -485,7 +484,7 @@ local function saveSettings()
         -- Create lookup table for fields by apikey
         local fieldMap = {}
         local fieldMapBitmap = {}
-        for fidx, f in ipairs(app.Page.mspapi.formdata.fields) do
+        for fidx, f in ipairs(app.Page.apidata.formdata.fields) do
             if not f.bitmap then
                 -- normal fields
                 if f.mspapi == apiID then
@@ -550,7 +549,7 @@ end
     @param structure - Table containing the structure of the MSP and API data.
 
     The function performs the following steps:
-    1. Ensures that `app.Page.mspapi.formdata`, `app.Page.mspapi.api`, and `rfsuite.app.Page.fields` exist.
+    1. Ensures that `app.Page.apidata.formdata`, `app.Page.apidata.api`, and `rfsuite.app.Page.fields` exist.
     2. Defines a helper function `combined_api_parts` to split and convert API keys.
     3. Creates a reversed API table for quick lookups if it doesn't already exist.
     4. Iterates over the form fields and updates them based on the provided values and structure.
@@ -558,8 +557,8 @@ end
 --]]
 function app.mspApiUpdateFormAttributes(values, structure)
     -- Ensure app.Page and its mspapi.formdata exist
-    if not (app.Page.mspapi.formdata and app.Page.mspapi.api and rfsuite.app.Page.fields) then
-        rfsuite.utils.log("app.Page.mspapi.formdata or its components are nil", "debug")
+    if not (app.Page.apidata.formdata and app.Page.apidata.api and rfsuite.app.Page.fields) then
+        rfsuite.utils.log("app.Page.apidata.formdata or its components are nil", "debug")
         return
     end
 
@@ -572,7 +571,7 @@ function app.mspApiUpdateFormAttributes(values, structure)
                 part1 = num  -- Convert string to number
             else
                 -- Fast lookup in precomputed table
-                part1 = app.Page.mspapi.api_reversed[part1] or nil
+                part1 = app.Page.apidata.api_reversed[part1] or nil
             end
     
             if part1 then
@@ -583,14 +582,14 @@ function app.mspApiUpdateFormAttributes(values, structure)
         return nil
     end
 
-    local fields = app.Page.mspapi.formdata.fields
-    local api = app.Page.mspapi.api
+    local fields = app.Page.apidata.formdata.fields
+    local api = app.Page.apidata.api
 
     -- Create a reversed API table for quick lookups
-    if not app.Page.mspapi.api_reversed then
-        app.Page.mspapi.api_reversed = {}
-        for index, value in pairs(app.Page.mspapi.api) do
-            app.Page.mspapi.api_reversed[value] = index
+    if not app.Page.apidata.api_reversed then
+        app.Page.apidata.api_reversed = {}
+        for index, value in pairs(app.Page.apidata.api) do
+            app.Page.apidata.api_reversed[value] = index
         end
     end
 
@@ -712,7 +711,7 @@ end
     execution if already running and handles both API success and error cases.
 
     The function performs the following steps:
-    1. Checks if app.Page.mspapi and its api/formdata exist.
+    1. Checks if app.Page.apidata and its api/formdata exist.
     2. Initializes the apiState if not already initialized.
     3. Prevents duplicate execution by checking the isProcessing flag.
     4. Initializes values and structure on the first run.
@@ -726,24 +725,24 @@ end
 ]]
 local function requestPage()
     -- Ensure app.Page and its mspapi.api exist
-    if not app.Page.mspapi then
+    if not app.Page.apidata then
         return
     end
 
-    if not app.Page.mspapi.api and not app.Page.mspapi.formdata then
-        rfsuite.utils.log("app.Page.mspapi.api did not pass consistancy checks", "debug")
+    if not app.Page.apidata.api and not app.Page.apidata.formdata then
+        rfsuite.utils.log("app.Page.apidata.api did not pass consistancy checks", "debug")
         return
     end
 
-    if not rfsuite.app.Page.mspapi.apiState then
-        rfsuite.app.Page.mspapi.apiState = {
+    if not rfsuite.app.Page.apidata.apiState then
+        rfsuite.app.Page.apidata.apiState = {
             currentIndex = 1,
             isProcessing = false
         }
     end    
 
-    local apiList = app.Page.mspapi.api
-    local state = rfsuite.app.Page.mspapi.apiState  -- Reference persistent state
+    local apiList = app.Page.apidata.api
+    local state = rfsuite.app.Page.apidata.apiState  -- Reference persistent state
 
     -- Prevent duplicate execution if already running
     if state.isProcessing then
@@ -752,14 +751,14 @@ local function requestPage()
     end
     state.isProcessing = true  -- Set processing flag
 
-    if not rfsuite.app.Page.mspapi.values then
+    if not rfsuite.app.Page.apidata.values then
         rfsuite.utils.log("requestPage Initialize values on first run", "debug")
-        rfsuite.app.Page.mspapi.values = {}  -- Initialize if first run
-        rfsuite.app.Page.mspapi.structure = {}  -- Initialize if first run
-        rfsuite.app.Page.mspapi.receivedBytesCount = {}  -- Initialize if first run
-        rfsuite.app.Page.mspapi.receivedBytes = {}  -- Initialize if first run
-        rfsuite.app.Page.mspapi.positionmap = {}  -- Initialize if first run
-        rfsuite.app.Page.mspapi.other = {} 
+        rfsuite.app.Page.apidata.values = {}  -- Initialize if first run
+        rfsuite.app.Page.apidata.structure = {}  -- Initialize if first run
+        rfsuite.app.Page.apidata.receivedBytesCount = {}  -- Initialize if first run
+        rfsuite.app.Page.apidata.receivedBytes = {}  -- Initialize if first run
+        rfsuite.app.Page.apidata.positionmap = {}  -- Initialize if first run
+        rfsuite.app.Page.apidata.other = {} 
     end
 
     -- Ensure state.currentIndex is initialized
@@ -769,10 +768,10 @@ local function requestPage()
 
 -- Function to check for unresolved timeouts and trigger an alert
 local function checkForUnresolvedTimeouts()
-    if not app or not app.Page or not app.Page.mspapi then return end
+    if not app or not app.Page or not app.Page.apidata then return end
 
     local hasUnresolvedTimeouts = false
-    for apiKey, retries in pairs(app.Page.mspapi.retryCount or {}) do
+    for apiKey, retries in pairs(app.Page.apidata.retryCount or {}) do
         if retries >= 3 then
             hasUnresolvedTimeouts = true
             rfsuite.utils.log("[ALERT] API " .. apiKey .. " failed after 3 timeouts.", "info")
@@ -791,7 +790,7 @@ end
 -- Recursive function to process API calls sequentially
 local function processNextAPI()
     -- **Exit gracefully if the app is closing**
-    if not app or not app.Page or not app.Page.mspapi then
+    if not app or not app.Page or not app.Page.apidata then
         rfsuite.utils.log("App is closing. Stopping processNextAPI.", "debug")
         return
     end
@@ -807,7 +806,7 @@ local function processNextAPI()
                 app.Page.postRead(app.Page) 
             end
 
-            app.mspApiUpdateFormAttributes(app.Page.mspapi.values, app.Page.mspapi.structure)
+            app.mspApiUpdateFormAttributes(app.Page.apidata.values, app.Page.apidata.structure)
 
             if app.Page.postLoad then 
                 app.Page.postLoad(app.Page) 
@@ -834,11 +833,11 @@ local function processNextAPI()
     local API = rfsuite.tasks.msp.api.load(v)
 
     -- **Ensure retryCount table exists**
-    if app and app.Page and app.Page.mspapi then
-        app.Page.mspapi.retryCount = app.Page.mspapi.retryCount or {}  
+    if app and app.Page and app.Page.apidata then
+        app.Page.apidata.retryCount = app.Page.apidata.retryCount or {}  
     end
 
-    local retryCount = app.Page.mspapi.retryCount[apiKey] or 0
+    local retryCount = app.Page.apidata.retryCount[apiKey] or 0
     local handled = false
 
     -- **Log API Start**
@@ -850,13 +849,13 @@ local function processNextAPI()
         handled = true  
 
         -- **Exit safely if app is closed**
-        if not app or not app.Page or not app.Page.mspapi then
+        if not app or not app.Page or not app.Page.apidata then
             rfsuite.utils.log("App is closing. Timeout handling skipped.", "debug")
             return
         end
 
         retryCount = retryCount + 1  
-        app.Page.mspapi.retryCount[apiKey] = retryCount  
+        app.Page.apidata.retryCount[apiKey] = retryCount  
 
         if retryCount < 3 then  
             rfsuite.utils.log("[TIMEOUT] API: " .. apiKey .. " (Retry " .. retryCount .. ")", "warning")
@@ -877,7 +876,7 @@ local function processNextAPI()
         handled = true  
 
         -- **Exit safely if app is closed**
-        if not app or not app.Page or not app.Page.mspapi then
+        if not app or not app.Page or not app.Page.apidata then
             rfsuite.utils.log("App is closing. Skipping API success handling.", "debug")
             return
         end
@@ -885,15 +884,15 @@ local function processNextAPI()
         -- **Log API Success**
         rfsuite.utils.log("[SUCCESS] API: " .. apiKey .. " completed successfully.", "debug")
 
-        app.Page.mspapi.values[apiKey] = API.data().parsed
-        app.Page.mspapi.structure[apiKey] = API.data().structure
-        app.Page.mspapi.receivedBytes[apiKey] = API.data().buffer
-        app.Page.mspapi.receivedBytesCount[apiKey] = API.data().receivedBytesCount
-        app.Page.mspapi.positionmap[apiKey] = API.data().positionmap
-        app.Page.mspapi.other[apiKey] = API.data().other or {}
+        app.Page.apidata.values[apiKey] = API.data().parsed
+        app.Page.apidata.structure[apiKey] = API.data().structure
+        app.Page.apidata.receivedBytes[apiKey] = API.data().buffer
+        app.Page.apidata.receivedBytesCount[apiKey] = API.data().receivedBytesCount
+        app.Page.apidata.positionmap[apiKey] = API.data().positionmap
+        app.Page.apidata.other[apiKey] = API.data().other or {}
 
         -- **Reset retry count on success**
-        app.Page.mspapi.retryCount[apiKey] = 0  
+        app.Page.apidata.retryCount[apiKey] = 0  
 
         state.currentIndex = state.currentIndex + 1
         rfsuite.tasks.callback.inSeconds(0.5, processNextAPI)  
@@ -905,13 +904,13 @@ local function processNextAPI()
         handled = true  
 
         -- **Exit safely if app is closed**
-        if not app or not app.Page or not app.Page.mspapi then
+        if not app or not app.Page or not app.Page.apidata then
             rfsuite.utils.log("App is closing. Skipping API error handling.", "debug")
             return
         end
 
         retryCount = retryCount + 1  
-        app.Page.mspapi.retryCount[apiKey] = retryCount  
+        app.Page.apidata.retryCount[apiKey] = retryCount  
 
         if retryCount < 3 then  
             rfsuite.utils.log("[ERROR] API: " .. apiKey .. " failed (Retry " .. retryCount .. "): " .. tostring(err), "warning")
@@ -1026,6 +1025,7 @@ function app.wakeupUI()
         rfsuite.utils.reportMemoryUsage("Exit App")
         return
     end
+
 
     -- close progress loader.  this essentially just accelerates 
     -- the close of the progress bar once the data is loaded.
@@ -1204,7 +1204,7 @@ function app.wakeupUI()
                     app.triggers.invalidConnectionSetup = true
                 elseif rfsuite.session.apiVersion == nil and app.offlineMode == false then
                     message = rfsuite.i18n.get("app.check_msp_version")
-                    app.triggers.invalidConnectionSetup = true
+                    app.triggers.invalidConnectionSetup = true   
                 elseif not rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiVersionAsString) and app.offlineMode == false then
                     message = rfsuite.i18n.get("app.check_supported_version") .. " (" .. rfsuite.session.apiVersion .. ")."
                     app.triggers.invalidConnectionSetup = true
@@ -1479,7 +1479,7 @@ function app.wakeupUI()
         end
 
         -- trigger a request page if we have a page waiting to be retrieved
-        if app.Page and app.Page.mspapi and app.pageState == app.pageStatus.display and app.triggers.isReady == false then 
+        if app.Page and app.Page.apidata and app.pageState == app.pageStatus.display and app.triggers.isReady == false then 
             requestPage() 
         end
 
@@ -1572,12 +1572,7 @@ function app.create_logtool()
 
     app.uiState = app.uiStatus.init
 
-    -- override developermode if file exists.
-    if not rfsuite.preferences.developer.devtools and rfsuite.utils.file_exists("../developermode") then
-        rfsuite.preferences.developer.devtools = true
-    end
-
-    rfsuite.app.menuLastSelected["mainmenu"] = pidx
+    rfsuite.preferences.menulastselected["mainmenu"] = pidx
     rfsuite.app.ui.progressDisplay()
 
     rfsuite.app.offlineMode = true
@@ -1609,11 +1604,6 @@ function app.create()
     app.radio = assert(rfsuite.compiler.loadfile("app/radios.lua"))()
 
     app.uiState = app.uiStatus.init
-
-    -- override developermode if file exists.
-    if not rfsuite.preferences.developer.devtools and rfsuite.utils.file_exists("../developermode") then
-        rfsuite.preferences.developer.devtools = true
-    end
 
     app.ui.openMainMenu()
 
@@ -1714,6 +1704,11 @@ Returns:
     true: Always returns true to indicate successful closure.
 ]]
 function app.close()
+
+    -- save user preferences
+    local userpref_file = "SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini"
+    rfsuite.ini.save_ini_file(userpref_file, rfsuite.preferences)
+
     app.guiIsRunning = false
     app.offlineMode = false
     app.uiState = app.uiStatus.init
