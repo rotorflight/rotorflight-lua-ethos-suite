@@ -43,7 +43,7 @@ function render.wakeup(box)
         local seconds = math.floor(rawValue % 60)
         displayValue = string.format("%02d:%02d", minutes, seconds)
     else
-        displayValue = getParam(box, "novalue") or "-"
+        displayValue = getParam(box, "novalue") or "00:00"
         unit = nil  -- suppress unit if no time to display
     end
 

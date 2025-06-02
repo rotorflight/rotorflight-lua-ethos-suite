@@ -16,7 +16,7 @@
 ]]--
 
 local layout = {
-    cols = 3,
+    cols = 8,
     rows = 4,
     padding = 4
 }
@@ -26,11 +26,13 @@ local boxes = {
     col = 1,
     row = 1,
     rowspan = 2,
+    colspan = 2,
     type = "modelimage"
   },
   {
     col = 1,
     row = 3,
+    colspan = 1,
     type = "telemetry",
     source = "rssi",
     nosource = "-",
@@ -40,17 +42,26 @@ local boxes = {
     transform = "floor"
   },
   {
+    col = 2,
+    row = 3,
+    type = "flighttime",
+    titlepos = "bottom",
+    title = "TIMER",
+  },  
+  {
     col = 1,
     row = 4,
+    colspan = 2,
     type = "governor",
     nosource = "-",
     title = "GOVERNOR",
     titlepos = "bottom"
   },
   {
-    col = 2,
+    col = 3,
     row = 1,
     rowspan = 2,
+    colspan = 3,
     type = "telemetry",
     source = "voltage",
     nosource = "-",
@@ -112,9 +123,10 @@ local boxes = {
     }
   },
   {
-    col = 2,
+    col = 3,
     row = 3,
     rowspan = 2,
+    colspan = 3,
     type = "telemetry",
     source = "current",
     nosource = "-",
@@ -123,9 +135,10 @@ local boxes = {
     titlepos = "bottom"
   },
   {
-    col = 3,
+    col = 6,
     row = 1,
     rowspan = 2,
+    colspan = 3,
     type = "telemetry",
     source = "fuel",
     nosource = "-",
@@ -166,8 +179,9 @@ local boxes = {
     }
   },
   {
-    col = 3,
+    col = 6,
     row = 3,
+    colspan = 3,
     rowspan = 2,
     type = "telemetry",
     source = "rpm",
