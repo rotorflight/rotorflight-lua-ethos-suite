@@ -161,7 +161,6 @@ local boxes = {
         valuealign = "center",
         titlealign = "center",
         titlepos = "bottom",
-        titlecolor = "white",
         thresholds = {
             { value = 20,  fillcolor = "red",    textcolor = "white" },
             { value = 50,  fillcolor = "orange", textcolor = "black" },
@@ -170,7 +169,56 @@ local boxes = {
     },
 
     -- VOLTAGE GAUGE
-    {col = 2, row = 3, type = "voltagegauge", source = "voltage", title = "Voltage"},
+    {
+        col = 2, row = 3,
+        type = "gauge",
+        source = "voltage",
+        gaugemin = function()
+            local cfg = rfsuite.session.batteryConfig
+            local cells = (cfg and cfg.batteryCellCount) or 3
+            local minV = (cfg and cfg.vbatmincellvoltage) or 3.0
+            return math.max(0, cells * minV)
+        end,
+        gaugemax = function()
+            local cfg = rfsuite.session.batteryConfig
+            local cells = (cfg and cfg.batteryCellCount) or 3
+            local maxV = (cfg and cfg.vbatmaxcellvoltage) or 4.2
+            return math.max(0, cells * maxV)
+        end,
+        gaugeorientation = "horizontal",
+        fillbgcolor = "grey",
+        gaugepadding = 4,
+        gaugebelowtitle = true,
+        title = "VOLTAGE",
+        unit = "V",
+        textcolor = "white",
+        valuealign = "center",
+        titlealign = "center",
+        titlepos = "bottom",
+        fillcolor = "green",
+        thresholds = {
+            {
+                value = function()
+                    local cfg = rfsuite.session.batteryConfig
+                    local cells = (cfg and cfg.batteryCellCount) or 3
+                    local minV = (cfg and cfg.vbatmincellvoltage) or 3.0
+                    return cells * minV * 1.2
+                end,
+                fillbgcolor = "red",
+                textcolor = "white"
+            },
+            {
+                value = function()
+                    local cfg = rfsuite.session.batteryConfig
+                    local cells = (cfg and cfg.batteryCellCount) or 3
+                    local warnV = (cfg and cfg.vbatwarningcellvoltage) or 3.5
+                    return cells * warnV * 1.2
+                end,
+                fillbgcolor = "orange",
+                textcolor = "white"
+            }
+        }
+    },
 
     -- BATTERY
     {
