@@ -45,6 +45,14 @@ end
 
 -- get the governor text from the value
 function utils.getGovernorState(value)
+
+    local returnvalue
+
+    --[[
+    Checks if the provided value exists as a key in the 'map' table.
+    If the key exists, assigns the corresponding value from 'map' to 'returnvalue'.
+    If the key does not exist, assigns a localized "UNKNOWN" string to 'returnvalue' using 'rfsuite.i18n.get'.
+    ]]    
     local map = {     
         [0] =  rfsuite.i18n.get("widgets.governor.OFF"),
         [1] =  rfsuite.i18n.get("widgets.governor.IDLE"),
@@ -59,9 +67,37 @@ function utils.getGovernorState(value)
         [101] = rfsuite.i18n.get("widgets.governor.DISARMED")
     }
 
-    if map[value] then
-        return map[value]
+    if rfsuite.session and rfsuite.session.apiVersion and rfsuite.session.apiVersion > 12.07 then
+        local armflagsSOURCE = rfsuite.tasks.telemetry.getSensorSource("armflags")
+        if armflagsSOURCE and (armflagsSOURCE:value() == 0 or armflagsSOURCE:value() == 2 )then
+            value = 101
+        end
     end
+
+    if map[value] then
+        returnvalue = map[value]
+    else
+        returnvalue = rfsuite.i18n.get("widgets.governor.UNKNOWN")
+    end    
+
+    --[[
+        Checks the value of the "armdisableflags" telemetry sensor. If the sensor value is available,
+        it is floored to the nearest integer and converted to a human-readable string using
+        rfsuite.app.utils.armingDisableFlagsToString(). If the resulting string is not "OK",
+        the function sets 'returnvalue' to this string, indicating a reason why arming is disabled.
+    --]]
+    local armdisableflags = rfsuite.tasks.telemetry.getSensorValue("armdisableflags")
+    if armdisableflags ~= nil then
+        armdisableflags = math.floor(armdisableflags)
+        local armstring = rfsuite.app.utils.armingDisableFlagsToString(armdisableflags )
+        if armstring ~= "OK" then
+            returnvalue =  armstring
+        end   
+    end    
+
+    --- Returns the value stored in `returnvalue`.
+    -- @return The value of `returnvalue`.
+    return returnvalue
 end
 
 
