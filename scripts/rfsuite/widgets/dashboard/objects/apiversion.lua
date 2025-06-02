@@ -1,30 +1,34 @@
 --[[
-
     API Version Widget
 
-    Configurable Arguments (box table keys):
-    ----------------------------------------
-    title              : string   -- Title text to display
-    unit               : string   -- Optional unit string to append
-    font               : font     -- Value font (e.g., FONT_L, FONT_XL)
-    bgcolor            : color    -- Widget background color (string or RGB, theme fallback if nil)
-    textcolor          : color    -- Value text color (string or RGB, theme fallback if nil)
-    titlecolor         : color    -- Title text color (string or RGB, theme fallback if nil)
-    titlealign         : string   -- Title alignment ("center", "left", "right")
-    valuealign         : string   -- Value alignment ("center", "left", "right")
-    titlepos           : string   -- Title position ("top" or "bottom")
-    titlepadding       : number   -- Padding for title (all sides unless overridden)
-    titlepaddingleft   : number   -- Left padding for title
-    titlepaddingright  : number   -- Right padding for title
-    titlepaddingtop    : number   -- Top padding for title
-    titlepaddingbottom : number   -- Bottom padding for title
-    valuepadding       : number   -- Padding for value (all sides unless overridden)
-    valuepaddingleft   : number   -- Left padding for value
-    valuepaddingright  : number   -- Right padding for value
-    valuepaddingtop    : number   -- Top padding for value
-    valuepaddingbottom : number   -- Bottom padding for value
+    Configurable Parameters (box table fields):
+    -------------------------------------------
+    value               : any            -- API version to display (can be number or string)
+    transform           : string|function -- (Optional) Value transformation ("floor", "ceil", "round", or custom function)
+    decimals            : number         -- (Optional) Number of decimal places for numeric display
+    novalue             : string         -- (Optional) Text shown if value is missing (default: "-")
+    unit                : string         -- (Optional) Unit label to append to value
+    font                : font           -- (Optional) Value font (e.g., FONT_L, FONT_XL)
+    bgcolor             : color          -- (Optional) Widget background color (theme fallback if nil)
+    textcolor           : color          -- (Optional) Value text color (theme/text fallback if nil)
+    titlecolor          : color          -- (Optional) Title text color (theme/text fallback if nil)
+    title               : string         -- (Optional) Title text
+    titlealign          : string         -- (Optional) Title alignment ("center", "left", "right")
+    valuealign          : string         -- (Optional) Value alignment ("center", "left", "right")
+    titlepos            : string         -- (Optional) Title position ("top" or "bottom")
+    titlepadding        : number         -- (Optional) Padding for title (all sides unless overridden)
+    titlepaddingleft    : number         -- (Optional) Left padding for title
+    titlepaddingright   : number         -- (Optional) Right padding for title
+    titlepaddingtop     : number         -- (Optional) Top padding for title
+    titlepaddingbottom  : number         -- (Optional) Bottom padding for title
+    valuepadding        : number         -- (Optional) Padding for value (all sides unless overridden)
+    valuepaddingleft    : number         -- (Optional) Left padding for value
+    valuepaddingright   : number         -- (Optional) Right padding for value
+    valuepaddingtop     : number         -- (Optional) Top padding for value
+    valuepaddingbottom  : number         -- (Optional) Bottom padding for value
 
 ]]
+
 
 local render = {}
 
@@ -33,8 +37,16 @@ local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 
 function render.wakeup(box)
-    local displayValue = rfsuite.session.apiVersion
-    if displayValue == nil then
+    -- Resolve and format the display value (with transform, decimals, and unit if set)
+    local value = rfsuite.session.apiVersion
+    local displayValue
+    if value ~= nil then
+        displayValue = utils.transformValue(value, box)
+        local unit = getParam(box, "unit") or ""
+        if unit ~= "" then
+            displayValue = displayValue .. unit
+        end
+    else
         displayValue = getParam(box, "novalue") or "-"
     end
 

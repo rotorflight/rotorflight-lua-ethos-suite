@@ -1,33 +1,35 @@
 --[[
-
     Text Display Widget
 
-    Configurable Arguments (box table keys):
-    ----------------------------------------
-    value               : any      -- Value to display
-    thresholds          : table    -- List of threshold tables: {value=..., textcolor=...}
-    novalue             : string   -- Text shown if value is missing (default: "-")
-    unit                : string   -- Unit label to append to value
-    font                : font     -- Value font (e.g., FONT_L, FONT_XL)
-    bgcolor             : color    -- Widget background color (default: theme fallback)
-    textcolor           : color    -- Value text color (default: theme/text fallback)
-    titlecolor          : color    -- Title text color (default: theme/text fallback)
-    title               : string   -- Title text
-    titlealign          : string   -- Title alignment ("center", "left", "right")
-    valuealign          : string   -- Value alignment ("center", "left", "right")
-    titlepos            : string   -- Title position ("top" or "bottom")
-    titlepadding        : number   -- Padding for title (all sides unless overridden)
-    titlepaddingleft    : number   -- Left padding for title
-    titlepaddingright   : number   -- Right padding for title
-    titlepaddingtop     : number   -- Top padding for title
-    titlepaddingbottom  : number   -- Bottom padding for title
-    valuepadding        : number   -- Padding for value (all sides unless overridden)
-    valuepaddingleft    : number   -- Left padding for value
-    valuepaddingright   : number   -- Right padding for value
-    valuepaddingtop     : number   -- Top padding for value
-    valuepaddingbottom  : number   -- Bottom padding for value
+    Configurable Parameters (box table fields):
+    -------------------------------------------
+    value               : any            -- Value to display (can be number or string)
+    transform           : string|function -- (Optional) Value transformation ("floor", "ceil", "round", or custom function)
+    decimals            : number         -- (Optional) Number of decimal places for numeric display
+    thresholds          : table          -- (Optional) List of threshold tables: {value=..., textcolor=...}
+    novalue             : string         -- (Optional) Text shown if value is missing (default: "-")
+    unit                : string         -- (Optional) Unit label to append to value
+    font                : font           -- (Optional) Value font (e.g., FONT_L, FONT_XL)
+    bgcolor             : color          -- (Optional) Widget background color (theme fallback if nil)
+    textcolor           : color          -- (Optional) Value text color (theme/text fallback if nil)
+    titlecolor          : color          -- (Optional) Title text color (theme/text fallback if nil)
+    title               : string         -- (Optional) Title text
+    titlealign          : string         -- (Optional) Title alignment ("center", "left", "right")
+    valuealign          : string         -- (Optional) Value alignment ("center", "left", "right")
+    titlepos            : string         -- (Optional) Title position ("top" or "bottom")
+    titlepadding        : number         -- (Optional) Padding for title (all sides unless overridden)
+    titlepaddingleft    : number         -- (Optional) Left padding for title
+    titlepaddingright   : number         -- (Optional) Right padding for title
+    titlepaddingtop     : number         -- (Optional) Top padding for title
+    titlepaddingbottom  : number         -- (Optional) Bottom padding for title
+    valuepadding        : number         -- (Optional) Padding for value (all sides unless overridden)
+    valuepaddingleft    : number         -- (Optional) Left padding for value
+    valuepaddingright   : number         -- (Optional) Right padding for value
+    valuepaddingtop     : number         -- (Optional) Top padding for value
+    valuepaddingbottom  : number         -- (Optional) Bottom padding for value
 
 ]]
+
 
 local render = {}
 
@@ -36,8 +38,20 @@ local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 
 function render.wakeup(box)
-    -- Value extraction (plain text only)
+    -- Extract value to display
     local value = getParam(box, "value")
+
+    -- Apply transform/decimals (gold template logic)
+    local displayValue
+    if value ~= nil then
+        displayValue = utils.transformValue(value, box)
+        local unit = getParam(box, "unit") or ""
+        if unit ~= "" then
+            displayValue = displayValue .. unit
+        end
+    else
+        displayValue = getParam(box, "novalue") or "-"
+    end
 
     -- Threshold logic for textcolor
     local textcolor = resolveThemeColor(getParam(box, "textcolor"))
@@ -52,21 +66,13 @@ function render.wakeup(box)
         end
     end
 
-    -- Other params
-    local unit = getParam(box, "unit")
-    local displayValue = value
-    if value == nil then
-        displayValue = getParam(box, "novalue") or "-"
-        unit = nil
-    end
-
     box._cache = {
         displayValue       = displayValue,
-        unit               = unit,
-        bgcolor            = resolveThemeColor("bgcolor", getParam(box, "bgcolor")),
-        textcolor          = textcolor,
-        titlecolor         = resolveThemeColor("titlecolor", getParam(box, "titlecolor")),
         title              = getParam(box, "title"),
+        unit               = nil,
+        bgcolor            = resolveThemeColor("bgcolor", getParam(box, "bgcolor")),
+        textcolor          = resolveThemeColor("textcolor", getParam(box, "textcolor")),
+        titlecolor         = resolveThemeColor("titlecolor", getParam(box, "titlecolor")),
         titlealign         = getParam(box, "titlealign"),
         valuealign         = getParam(box, "valuealign"),
         titlepos           = getParam(box, "titlepos"),
@@ -89,14 +95,14 @@ function render.paint(x, y, w, h, box)
     local c = box._cache or {}
 
     utils.box(
-        x, y, w, h,
-        c.title, c.displayValue, c.unit, c.bgcolor,
-        c.titlealign, c.valuealign, c.titlecolor, c.titlepos,
-        c.titlepadding, c.titlepaddingleft, c.titlepaddingright,
-        c.titlepaddingtop, c.titlepaddingbottom,
-        c.valuepadding, c.valuepaddingleft, c.valuepaddingright,
-        c.valuepaddingtop, c.valuepaddingbottom,
-        c.font, c.textcolor
+    x, y, w, h,
+    c.title, c.displayValue, nil, c.bgcolor,
+    c.titlealign, c.valuealign, c.titlecolor, c.titlepos,
+    c.titlepadding, c.titlepaddingleft, c.titlepaddingright,
+    c.titlepaddingtop, c.titlepaddingbottom,
+    c.valuepadding, c.valuepaddingleft, c.valuepaddingright,
+    c.valuepaddingtop, c.valuepaddingbottom,
+    c.font, c.textcolor
     )
 end
 

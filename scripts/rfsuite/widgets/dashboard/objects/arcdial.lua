@@ -1,30 +1,33 @@
 --[[
+
     Arc Dial Gauge Widget
 
-    Configurable Arguments (box table keys):
-    ----------------------------------------
-    bandLabels        : table    -- List of labels for each color band (e.g. {"Bad", "OK", "Good", "Excellent"})
-    bandColors        : table    -- List of fill colors for each band (e.g. {lcd.RGB(180,50,50), lcd.RGB(220,150,40), ...})
-    startAngle        : number   -- Arc start angle in degrees (default: 180)
-    sweep             : number   -- Total arc sweep in degrees (default: 180)
-    min               : number   -- Minimum input value (default: 0)
-    max               : number   -- Maximum input value (default: 100)
-    source            : string   -- Telemetry sensor source name (e.g. "rssi")
-    unit              : string   -- Optional display unit (e.g. "dB")
-    title             : string   -- Optional gauge title text
-    novalue           : string   -- Displayed if no telemetry value is available (default: "-")
+    Configurable Parameters (box table fields):
+    -------------------------------------------
+    bandLabels        : table           -- List of labels for each color band (e.g. {"Bad", "OK", "Good", "Excellent"})
+    bandColors        : table           -- List of fill colors for each band (e.g. {lcd.RGB(180,50,50), lcd.RGB(220,150,40), ...})
+    startAngle        : number          -- Arc start angle in degrees (default: 180)
+    sweep             : number          -- Total arc sweep in degrees (default: 180)
+    min               : number          -- Minimum input value (default: 0)
+    max               : number          -- Maximum input value (default: 100)
+    source            : string          -- Telemetry sensor source name (e.g. "rssi")
+    unit              : string          -- (Optional) Display unit string (e.g. "dB") appended to the value
+    transform         : string|function -- (Optional) Value transformation ("floor", "ceil", "round", or custom function)
+    decimals          : number          -- (Optional) Number of decimal places for numeric display
+    title             : string          -- (Optional) Gauge title text
+    novalue           : string          -- (Optional) Displayed if no telemetry value is available (default: "-")
 
     -- Appearance/Theming:
-    textcolor         : color    -- Main value text color (default: theme/text fallback)
-    bgcolor           : color    -- Background color of the gauge (default: theme/background fallback)
-    accentcolor       : color    -- Needle and needle hub color (default: black)
-    titlecolor        : color    -- Title text color (default: textcolor fallback)
+    textcolor         : color           -- (Optional) Main value text color (theme/text fallback if nil)
+    bgcolor           : color           -- (Optional) Gauge background color (theme/background fallback if nil)
+    accentcolor       : color           -- (Optional) Needle and needle hub color (default: black)
+    titlecolor        : color           -- (Optional) Title text color (textcolor fallback if nil)
 
     -- Needle Styling:
-    needlethickness   : number   -- Needle width in pixels (default: 5)
-    needlehubsize     : number   -- Needle hub circle radius in pixels (default: 7)
-]]
+    needlethickness   : number          -- (Optional) Needle width in pixels (default: 5)
+    needlehubsize     : number          -- (Optional) Needle hub circle radius in pixels (default: 7)
 
+]]
 
 local render = {}
 
@@ -54,8 +57,37 @@ local function drawArc(cx, cy, radius, thickness, angleStart, angleEnd, fillcolo
     lcd.drawFilledCircle(x_end, y_end, rad_thick)
 end
 
--- Cache all display and color params
 function render.wakeup(box, telemetry)
+     -- Resolve and format the display value (with transform, decimals, and unit if set)
+    local source = getParam(box, "source")
+    local value = nil
+    if source and telemetry then
+        local sensor = telemetry.getSensorSource and telemetry.getSensorSource(source)
+        value = sensor and sensor:value()
+    end
+
+    local displayValue
+    if value ~= nil then
+        displayValue = utils.transformValue(value, box)
+        local unit = getParam(box, "unit") or ""
+        if unit ~= "" then
+            displayValue = displayValue .. unit
+        end
+    else
+        displayValue = getParam(box, "novalue") or "-"
+    end
+
+    local displayValue
+    if value ~= nil then
+        displayValue = utils.transformValue(value, box)
+        local unit = getParam(box, "unit") or ""
+        if unit ~= "" then
+            displayValue = displayValue .. unit
+        end
+    else
+        displayValue = getParam(box, "novalue") or "-"
+    end
+
     local bandLabels = getParam(box, "bandLabels") or {}
     local bandColors = resolveThemeColorArray("fillcolor", getParam(box, "bandColors") or {
         lcd.RGB(180,50,50),
@@ -68,19 +100,10 @@ function render.wakeup(box, telemetry)
     local sweep = getParam(box, "sweep") or 180
     local min = getParam(box, "min") or 0
     local max = getParam(box, "max") or 100
-    local source = getParam(box, "source")
-    local value, percent = nil, 0
-    if source and telemetry then
-        local sensor = telemetry.getSensorSource and telemetry.getSensorSource(source)
-        value = sensor and sensor:value()
-    end
-    if value and max ~= min then
-        percent = (value - min) / (max - min)
-        percent = math.max(0, math.min(1, percent))
-    end
 
     -- All color keys are resolved here
     box._cache = {
+        displayValue = displayValue,
         bandLabels   = bandLabels,
         bandColors   = bandColors,
         startAngle   = startAngle,
