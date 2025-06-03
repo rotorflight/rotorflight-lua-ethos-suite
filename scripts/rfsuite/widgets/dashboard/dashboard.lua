@@ -598,7 +598,7 @@ end
 -- @param widget The widget instance to be created.
 -- @return The result of the "create" state function for the given widget.
 function dashboard.create(widget)
-    return callStateFunc("create", widget)
+    return {value=0}
 end
 
 
