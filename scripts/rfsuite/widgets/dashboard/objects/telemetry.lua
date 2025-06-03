@@ -9,7 +9,7 @@
     decimals            : number                    -- (Optional) Number of decimal places for numeric display
     thresholds          : table                     -- (Optional) List of threshold tables: {value=..., textcolor=...}
     novalue             : string                    -- (Optional) Text shown if value is missing (default: "-")
-    unit                : string                    -- (Optional) Unit label to append to value, If not specified or blank, the widget attempts to resolve a dynamic unit
+    unit                : string                    -- (Optional) Unit label to append to value, If not specified, the widget attempts to resolve a dynamic unit if black unit = "" omit the unit from the value display
     font                : font                      -- (Optional) Value font (e.g., FONT_L, FONT_XL)
     bgcolor             : color                     -- (Optional) Widget background color (theme fallback if nil)
     textcolor           : color                     -- (Optional) Value text color (theme/text fallback if nil)
