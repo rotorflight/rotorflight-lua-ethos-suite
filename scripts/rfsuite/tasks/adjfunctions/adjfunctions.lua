@@ -245,6 +245,7 @@ local adjfuncAdjTimer = os.clock()
 local adjfuncAdjfuncIdChanged = false
 local adjfuncAdjfuncValueChanged = false
 local adjfuncAdjJustUp = false
+local adjfuncAdjJustUpCounter
 
 --[[
     Function: adjfunc.wakeup
