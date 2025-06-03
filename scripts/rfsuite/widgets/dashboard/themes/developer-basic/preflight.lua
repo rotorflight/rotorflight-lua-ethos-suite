@@ -64,11 +64,10 @@ local layout = {
     cols = 4,
     rows = 4,
     padding = 4,
-    selectcolor = lcd.RGB(255, 255, 255),
-    selectborder = 2
 }
 
 local boxes = {
+    -- Column 1
     { col = 1, row = 1, type = "modelimage" },
     { col = 1, row = 2, type = "telemetry", source = "temp_esc", title = "ESC TEMP", titlepos = "bottom", transform = "floor", valuepaddingright = 12,
         thresholds = {
@@ -80,6 +79,7 @@ local boxes = {
     { col = 1, row = 3, type = "governor", title = "GOVERNOR", titlepos = "bottom" },
     { col = 1, row = 4, type = "apiversion", title = "API VERSION", titlepos = "bottom" },
 
+    -- Column 2
     { col = 2, row = 1, type = "telemetry", source = "voltage", title = "VOLTAGE", titlepos = "bottom",
         thresholds = {
             { value = 20, textcolor = "red" },
@@ -90,20 +90,17 @@ local boxes = {
     { col = 2, row = 3, type = "craftname", title = "CRAFT NAME", titlepos = "bottom" },
     { col = 2, row = 4, type = "session", source = "isArmed", title = "IS ARMED", titlepos = "bottom" },
 
+    -- Column 3
     { col = 3, row = 1, type = "telemetry", source = "fuel", title = "FUEL", titlepos = "bottom", transform = "floor" },
-    { col = 3, row = 2, type = "func", paint = customPaintFunction, wakeup = customWakeupFunction, title = "FUNCTION", titlepos = "bottom"},
+    { col = 3, row = 2, type = "func", paint = customPaintFunction, wakeup = customWakeupFunction, title = "FUNCTION", titlepos = "bottom" },
     { col = 3, row = 3, type = "blackbox", title = "BLACKBOX", titlepos = "bottom" },
+    { col = 3, row = 4, type = "armflags", title = "ARM FLAGS", titlepos = "bottom" },
 
+    -- Column 4
     { col = 4, row = 1, type = "text", value = "PRESS ME", title = "ON PRESS", titlepos = "bottom", textcolor = "orange", onpress = onpressFunctionSave },
     { col = 4, row = 2, type = "flightcount", title = "FLIGHT COUNT", titlepos = "bottom" },
-
-    {col = 2, row = 5, type = "telemetry", source = "rpm", title = "RPM", unit = "rpm", titlepos = "bottom", transform = "floor"},
-
-    {col = 3, row = 4, type = "armflags", title = "ARM FLAGS", titlepos = "bottom"},
-
-    {col = 4, row = 3, type = "flighttime", title = "FLIGHT TIME", titlepos = "bottom"},
-    {col = 4, row = 4, type = "totalflighttime", title = "TOTAL FLIGHT TIME", titlepos = "bottom"}
-
+    { col = 4, row = 3, type = "flighttime", title = "FLIGHT TIME", titlepos = "bottom"},
+    { col = 4, row = 4, type = "totalflighttime", title = "TOTAL FLIGHT TIME", titlepos = "bottom"}
 }
 
 local function wakeup()
