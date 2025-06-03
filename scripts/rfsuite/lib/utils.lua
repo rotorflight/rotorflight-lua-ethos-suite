@@ -90,7 +90,7 @@ function utils.getGovernorState(value)
         rfsuite.app.utils.armingDisableFlagsToString(). If the resulting string is not "OK",
         the function sets 'returnvalue' to this string, indicating a reason why arming is disabled.
     --]]
-    local armdisableflags = rfsuite.tasks.telemetry.getSensorValue("armdisableflags")
+    local armdisableflags = rfsuite.tasks.telemetry.getSensor("armdisableflags")
     if armdisableflags ~= nil then
         armdisableflags = math.floor(armdisableflags)
         local armstring = rfsuite.app.utils.armingDisableFlagsToString(armdisableflags )
