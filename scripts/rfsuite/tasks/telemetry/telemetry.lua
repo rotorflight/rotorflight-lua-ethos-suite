@@ -243,12 +243,12 @@ local sensorTable = {
             crsfLegacy = { "GPS Speed" },
         },
         transform = function(value)
-            -- Convert raw value to degrees Celsius
+            if value == nil then return nil end
+            -- Convert to Fahrenheit if preference is set
             if rfsuite.preferences.dashboard and rfsuite.preferences.dashboard.temperature_unit == 1 then
-                -- Convert to Fahrenheit if preference is set
-                return (value) * 1.8 + 32
+                return value * 1.8 + 32
             end
-            return value 
+            return value
         end,
     },
 
@@ -512,6 +512,7 @@ local sensorTable = {
             crsfLegacy = { nil },
         },
         transform = function(value)
+            if value == nil then return nil end
             -- Convert raw value to degrees Celsius
             if rfsuite.preferences.dashboard and rfsuite.preferences.dashboard.altitude_unit == 1 then
                 -- Convert to Feet if preference is set

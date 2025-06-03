@@ -159,6 +159,84 @@ function utils.screenError(msg)
     lcd.drawText(x, y, msg)
 end
 
+
+--- Converts a numeric unit code to a unit string.
+-- This function uses a lookup table of currently configured unit codes:
+--   2   : "V"     (Volts)
+--   4   : "A"     (Amperes)
+--   5   : "mAh"   (Milliampere-hours)
+--   10  : "m"     (Meters)
+--   23  : "%"     (Percent)
+--   29  : "dB"    (Decibels)
+--   34  : "°C"    (Degrees Celsius)
+--   39  : "rpm"   (Revolutions per minute)
+--
+-- This table can be extended with additional unit codes as needed.
+--
+-- @param code number      The numeric unit code from sensorTable or telemetry.
+-- @return     string      The human-readable unit string (e.g., "V"), or an empty string if unknown.
+
+local unitCodes = {
+    [2]  = "V",
+    [4]  = "A",
+    [5]  = "mAh",
+    [10] = "m",
+    [11] = "ft",
+    [23] = "%",
+    [29] = "dB",
+    [34] = "°C",
+    [35] = "°F",
+    [39] = "rpm",
+}
+
+function utils.getUnitString(code)
+    return unitCodes[code] or ""
+end
+
+--- Resolves the display unit for a telemetry sensor, considering localization preferences.
+-- If a unit is set in the box, it is always used.
+-- Otherwise, this function checks the sensor's unit code and applies localization (e.g. °C/°F, m/ft)
+-- based on user dashboard preferences for temperature and altitude.
+-- @param box table: The box configuration table (may include unit override)
+-- @param source string: The telemetry sensor key
+-- @param telemetry table: The current telemetry context (must include sensorTable)
+-- @return string: The resolved display unit, or empty string if none.
+
+function utils.resolveDisplayUnit(box, source, telemetry)
+    local unit = utils.getParam(box, "unit")
+    if unit ~= nil then
+        -- If unit is exactly the empty string, suppress unit entirely
+        if unit == "" then
+            return nil
+        end
+        -- Otherwise, use the explicitly configured value
+        return unit
+    end
+
+    local code = telemetry
+        and telemetry.sensorTable
+        and telemetry.sensorTable[source]
+        and telemetry.sensorTable[source].unit
+
+    -- Default: lookup by unit code
+    unit = utils.getUnitString and utils.getUnitString(code) or ""
+
+    -- Localization: check dashboard preferences if available
+    if (source == "temp_esc" or source == "temp_mcu") and rfsuite and rfsuite.preferences and rfsuite.preferences.dashboard then
+        local tempUnitPref = rfsuite.preferences.dashboard.temperature_unit
+        if tempUnitPref ~= nil then
+            unit = (tempUnitPref == 1) and "°F" or "°C"
+        end
+    elseif source == "altitude" and rfsuite and rfsuite.preferences and rfsuite.preferences.dashboard then
+        local altitudeUnitPref = rfsuite.preferences.dashboard.altitude_unit
+        if altitudeUnitPref ~= nil then
+            unit = (altitudeUnitPref == 1) and "ft" or "m"
+        end
+    end
+
+    return unit or ""
+end
+
 --- Calculates the X coordinate for text alignment within a given width.
 -- @param text string: The text to be aligned.
 -- @param align string: The alignment type ("left", "center", or "right").
@@ -453,6 +531,27 @@ function utils.box(
     end
 end
 
+--- Resolves the text color for a value with optional threshold logic.
+-- Checks the box table for a thresholds array. If present and value is less than a threshold's value,
+-- returns that threshold's textcolor (using theme fallback). Otherwise uses the box or theme default.
+-- @param value number     The value to test.
+-- @param box   table      The widget's config table (may contain thresholds, textcolor, etc.)
+-- @return number          The LCD color to use for text.
+
+function utils.resolveThresholdTextColor(value, box)
+    local color = utils.resolveThemeColor("textcolor", utils.getParam(box, "textcolor"))
+    local thresholds = utils.getParam(box, "thresholds")
+    if thresholds and value ~= nil then
+        for _, t in ipairs(thresholds) do
+            local t_val = type(t.value) == "function" and t.value(box, value) or t.value
+            if value < t_val and t.textcolor then
+                color = utils.resolveThemeColor("textcolor", t.textcolor)
+                break
+            end
+        end
+    end
+    return color
+end
 
 --- Transforms and formats a numeric value for display, applying any configured transform and decimals.
 --
@@ -485,8 +584,8 @@ function utils.transformValue(value, box)
     end
     local decimals = utils.getParam(box, "decimals")
     -- Apply decimal formatting if configured
-        if decimals and value ~= nil then
-        value = string.format("%."..decimals.."f", value)
+    if decimals ~= nil and value ~= nil then
+        value = string.format("%." .. decimals .. "f", value)
     elseif value ~= nil then
         value = tostring(value)
     end
