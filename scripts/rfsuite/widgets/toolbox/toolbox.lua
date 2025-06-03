@@ -21,6 +21,7 @@ local toolbox= {}
 local wakeupSchedulerUI = os.clock()
 local LCD_W, LCD_H
 
+
 local config = {
     object = nil,
 }
@@ -32,13 +33,14 @@ local state = {
 local objectList = {
     {"Telemetry", 1},
     {"ArcGauge",2},
+    {"ArcGauge2",3},
 }
 
 function toolbox.create()
-
+    return {value=0}
 end    
 
-function toolbox.paint()
+function toolbox.paint(config)
     if not LCD_W or not LCD_H then
         LCD_W, LCD_H = lcd.getWindowSize()
     end
@@ -73,7 +75,7 @@ function toolbox.paint()
 
 end
 
-function toolbox.wakeup(widget)
+function toolbox.wakeup(config)
     local schedulerUI = lcd.isVisible() and 0.5 or 5
     local now = os.clock()
 
@@ -83,17 +85,12 @@ function toolbox.wakeup(widget)
         if config.object then
             state.setup = true
         end
-
-        for i,v in pairs(_G) do
-            print(i, v)
-        end
-
-
+        lcd.invalidate()
     end
 
 end
 
-function toolbox.configure()
+function toolbox.configure(config)
 
     -- inflight theme selection                                                          
     local formFieldCount = (formFieldCount or 0) + 1
@@ -115,12 +112,14 @@ function toolbox.configure()
 
 end
 
-function toolbox.read()
+function toolbox.read(config)
+    print("toolbox.read()")
     config.object = (function(ok, result) return ok and result end)(pcall(storage.read, "object"))
 end
 
-function toolbox.write()
-        storage.write("object", config.object)
+function toolbox.write(config)
+    print("toolbox.write()")
+    storage.write("object", config.object)
 end 
 
 -- no titles used
