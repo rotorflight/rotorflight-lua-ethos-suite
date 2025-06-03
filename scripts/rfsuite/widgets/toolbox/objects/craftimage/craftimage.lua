@@ -21,7 +21,7 @@ local lastName
 local lastID
 local bitmapPtr
 local image
-local default_image = "widgets/craftimage/default_image.png"
+local default_image = "widgets/toolbox/objects/craftimage/default_image.png"
 local config = {}
 local LCD_W, LCD_H = lcd.getWindowSize()
 local LCD_MINH4IMAGE = 130
@@ -66,28 +66,6 @@ local function screenError(msg)
     lcd.drawText(x, y, msg)
 end
 
--- Wakeup UI function
-local function wakeupUI()
-
-    LCD_W, LCD_H = lcd.getWindowSize()
-
-    if lastName ~= rfsuite.session.craftName or lastID ~= rfsuite.session.modelID then
-        if rfsuite.session.craftName ~= nil then image1 = "/bitmaps/models/" .. rfsuite.session.craftName .. ".png" end
-        if rfsuite.session.modelID ~= nil then image2 = "/bitmaps/models/" .. rfsuite.session.modelID .. ".png" end
-
-        bitmapPtr = rfsuite.utils.loadImage(image1, image2, default_image)
-
-        lcd.invalidate()
-    end
-
-    lastName = rfsuite.session.craftName
-    lastID = rfsuite.session.modelID
-end
-
--- Create function
-function rf2craftimage.create(widget)
-    bitmapPtr = rfsuite.utils.loadImage(default_image)
-end
 
 -- Paint function
 function rf2craftimage.paint(widget)
@@ -126,15 +104,19 @@ end
 
 -- Main wakeup function
 function rf2craftimage.wakeup(widget)
-    local schedulerUI = lcd.isVisible() and 0.5 or 5
-    local now = os.clock()
+    LCD_W, LCD_H = lcd.getWindowSize()
 
-    if (now - wakeupSchedulerUI) >= schedulerUI then
-        wakeupSchedulerUI = now
-        wakeupUI()
+    if lastName ~= rfsuite.session.craftName or lastID ~= rfsuite.session.modelID then
+        if rfsuite.session.craftName ~= nil then image1 = "/bitmaps/models/" .. rfsuite.session.craftName .. ".png" end
+        if rfsuite.session.modelID ~= nil then image2 = "/bitmaps/models/" .. rfsuite.session.modelID .. ".png" end
+
+        bitmapPtr = rfsuite.utils.loadImage(image1, image2, default_image)
+
+        lcd.invalidate()
     end
 
-
+    lastName = rfsuite.session.craftName
+    lastID = rfsuite.session.modelID
 end
 
 return rf2craftimage

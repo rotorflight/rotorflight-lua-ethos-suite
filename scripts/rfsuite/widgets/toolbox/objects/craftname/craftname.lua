@@ -68,25 +68,6 @@ local function screenError(msg)
     lcd.drawText(x, y, msg)
 end
 
--- wakeup ui function
-local function wakeupUI()
-
-    LCD_W, LCD_H = lcd.getWindowSize()
-
-    if LCD_H < LCD_MINH4IMAGE then config.image = false end
-
-    if lastName ~= rfsuite.session.craftName or lastID ~= rfsuite.session.modelID then
-        if rfsuite.session.craftName ~= nil then image1 = "/bitmaps/models/" .. rfsuite.session.craftName .. ".png" end
-        if rfsuite.session.modelID ~= nil then image2 = "/bitmaps/models/" .. rfsuite.session.modelID .. ".png" end
-
-        bitmapPtr = rfsuite.utils.loadImage(image1, image2, default_image)
-
-        lcd.invalidate()
-    end
-
-    lastName = rfsuite.session.craftName
-    lastID = rfsuite.session.modelID
-end
 
 
 -- Create function
@@ -172,29 +153,24 @@ function rf2craftname.configure(widget)
     return widget
 end
 
--- Read function
-function rf2craftname.read(widget)
-    -- display or not display an image on the page
-    config.image = storage.read("mem1")
-    if config.image == nil then config.image = false end
-
-end
-
--- Write function
-function rf2craftname.write(widget)
-    storage.write("mem1", config.image)
-end
 
 -- Main wakeup function
 function rf2craftname.wakeup(widget)
-    local schedulerUI = lcd.isVisible() and 0.5 or 5
-    local now = os.clock()
+    LCD_W, LCD_H = lcd.getWindowSize()
 
-    if (now - wakeupSchedulerUI) >= schedulerUI then
-        wakeupSchedulerUI = now
-        wakeupUI()
+    if LCD_H < LCD_MINH4IMAGE then config.image = false end
+
+    if lastName ~= rfsuite.session.craftName or lastID ~= rfsuite.session.modelID then
+        if rfsuite.session.craftName ~= nil then image1 = "/bitmaps/models/" .. rfsuite.session.craftName .. ".png" end
+        if rfsuite.session.modelID ~= nil then image2 = "/bitmaps/models/" .. rfsuite.session.modelID .. ".png" end
+
+        bitmapPtr = rfsuite.utils.loadImage(image1, image2, default_image)
+
+        lcd.invalidate()
     end
 
+    lastName = rfsuite.session.craftName
+    lastID = rfsuite.session.modelID
 end
 
 

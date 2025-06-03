@@ -15,14 +15,15 @@
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]] --
 
-local disarmed = { 
+local armed = { 
     refresh = true, 
     environment = system.getVersion(), 
-    oldsensors = {armdisableflags = ""}, 
+    oldsensors = {armflags = ""}, 
     wakeupSchedulerUI = os.clock()
 }
 
 local sensors
+
 
 -- error function
 local function screenError(msg)
@@ -68,54 +69,40 @@ local function getSensors()
     if not rfsuite.tasks.active() then return end
 
 
-    local armdisableflagsSOURCE = rfsuite.tasks.telemetry.getSensorSource("armdisableflags")
+    local armflagsSOURCE = rfsuite.tasks.telemetry.getSensorSource("armflags")
 
     if not rfsuite.tasks.telemetry.active() then
-        armdisableflags = rfsuite.i18n.get("no_link"):upper()
-    elseif rfsuite.session.apiVersion and rfsuite.session.apiVersion < 12.08 then
-        armdisableflags = "RF < 2.2"
-    elseif armdisableflagsSOURCE then
-        local value = armdisableflagsSOURCE:value()
-        if value ~= nil then
-            value = math.floor(value)
+        armflags = rfsuite.i18n.get("no_link"):upper() 
+    elseif armflagsSOURCE then
+        local value = armflagsSOURCE:value()
+        if (value == 0 or value == 2 )then
+            armflags = rfsuite.i18n.get("DISARMED")
+        else
+            armflags = rfsuite.i18n.get("ARMED")
         end
-        armdisableflags = rfsuite.app.utils.armingDisableFlagsToString(value)
-
-    elseif armdisableflagsSOURCE  == nil then
-        armdisableflags = rfsuite.i18n.get("no_sensor"):upper()
-    else            
-        armdisableflags = rfsuite.i18n.get("no_link"):upper()
+    elseif armflagsSOURCE == nil then
+        armflags = rfsuite.i18n.get("no_sensor"):upper()    
+    else    
+        armflags = rfsuite.i18n.get("no_link"):upper()
     end
 
 
-    if disarmed.oldsensors.armdisableflags ~= armdisableflags then disarmed.refresh = true end
+    if armed.oldsensors.armflags ~= armflags then armed.refresh = true end
 
-    sensors = {armdisableflags = armdisableflags}
-    disarmed.oldsensors = sensors
+    sensors = {armflags = armflags}
+    armed.oldsensors = sensors
 
     return sensors
 end
 
-local function wakeupUI()
-
-    getSensors()
-
-    if disarmed.refresh then lcd.invalidate() end
-    disarmed.refresh = false
-end
-
 -- Helper function to convert a value to a valid number
-function disarmed.sensorMakeNumber(value)
+function armed.sensorMakeNumber(value)
     value = value or 0
     local num = tonumber(string.gsub(tostring(value), "%D+", ""))
     return num or 0
 end
 
-function disarmed.create(widget)
-    -- Placeholder for widget creation logic
-end
-
-function disarmed.paint(widget)
+function armed.paint(widget)
     if not rfsuite.utils.ethosVersionAtLeast() then
         screenError(string.format(string.upper(rfsuite.i18n.get("ethos")) .." < V%d.%d.%d", 
             rfsuite.config.ethosVersion[1], 
@@ -137,7 +124,7 @@ function disarmed.paint(widget)
     local bestW, bestH = 0, 0
 
     -- Determine the text to display
-    local str = rfsuite.tasks.active() and (sensors and sensors.armdisableflags or "") or string.upper(rfsuite.i18n.get("bg_task_disabled"))
+    local str = rfsuite.tasks.active() and (sensors and sensors.armflags or "") or string.upper(rfsuite.i18n.get("bg_task_disabled"))
 
     -- Loop through font sizes and find the largest one that fits
     for _, font in ipairs(fonts) do
@@ -164,20 +151,16 @@ function disarmed.paint(widget)
 end
 
 -- Main wakeup function
-function disarmed.wakeup(widget)
-    local schedulerUI = lcd.isVisible() and 0.5 or 5
-    local now = os.clock()
+function armed.wakeup(widget)
+    getSensors()
 
-    if (now - disarmed.wakeupSchedulerUI) >= schedulerUI then
-        disarmed.wakeupSchedulerUI = now
-        wakeupUI()
-    end
-
+    if armed.refresh then lcd.invalidate() end
+    armed.refresh = false
 end
 
 -- this is called if a langage swap event occurs
-function disarmed.i18n()
+function armed.i18n()
 
 end    
 
-return disarmed
+return armed
