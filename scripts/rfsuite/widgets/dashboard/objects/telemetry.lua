@@ -41,7 +41,7 @@ function render.wakeup(box, telemetry)
     local source = getParam(box, "source")
     local value
     if telemetry and source then
-        value = telemetry.getSensorValue(source)
+        value = telemetry.getSensor(source)
     end
 
     -- Transform and decimals
