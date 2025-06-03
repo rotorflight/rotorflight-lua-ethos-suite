@@ -53,8 +53,22 @@ function render.wakeup(box, telemetry)
     -- Threshold logic (if required)
     local textcolor = utils.resolveThresholdTextColor(value, box)
 
-    -- Dynamic unit logic
-    local unit = utils.resolveDisplayUnit(box, source, telemetry)
+    -- Dynamic unit logic (User can force a unit or omit unit using "" to hide)
+    local manualUnit = getParam(box, "unit")
+    local unit
+
+    if manualUnit ~= nil then
+        unit = manualUnit  -- use user value, even if ""
+    else
+        local displayValue, _, dynamicUnit = telemetry.getSensor(source)
+        if dynamicUnit ~= nil then
+            unit = dynamicUnit
+        elseif source and telemetry and telemetry.sensorTable[source] then
+            unit = telemetry.sensorTable[source].unit_string or ""
+        else
+            unit = ""
+        end
+    end
 
     -- Fallback if no value
     if value == nil then
