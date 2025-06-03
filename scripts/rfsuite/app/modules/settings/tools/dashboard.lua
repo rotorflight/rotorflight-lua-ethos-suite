@@ -3,7 +3,6 @@
 local S_PAGES = {
     {name = rfsuite.i18n.get("app.modules.settings.dashboard_theme"), script = "dashboard_theme.lua", image = "dashboard_theme.png"},
     {name = rfsuite.i18n.get("app.modules.settings.dashboard_settings"), script = "dashboard_settings.lua", image = "dashboard_settings.png"},
-    {name = rfsuite.i18n.get("app.modules.settings.dashboard_localizations"), script = "dashboard_localizations.lua", image = "dashboard_localizations.png"},
 }
 
 local function openPage(pidx, title, script)

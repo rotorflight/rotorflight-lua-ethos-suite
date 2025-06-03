@@ -419,7 +419,7 @@ return {
         ["dashboard_theme_preflight"] = "Preflight Theme",
         ["dashboard_theme_inflight"] = "Inflight Theme",
         ["dashboard_theme_postflight"] = "Postflight Theme",
-        ["dashboard_localizations"] = "Localization",
+        ["localizations"] = "Localization",
         ["txt_development"] = "Development",
         ["temperature_unit"] = "Temperature Unit",
         ["altitude_unit"] = "Altitude Unit",

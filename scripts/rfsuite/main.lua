@@ -61,12 +61,14 @@ local userpref_defaults ={
         iconsize = 2,
         syncname = false,
     },
+    localizations = {
+        temperature_unit = 0, -- 0 = Celsius, 1 = Fahrenheit
+        altitude_unit = 0, -- 0 = meters, 1 = feet
+    },
     dashboard = {
         theme_preflight = "system/rfstatus",
         theme_inflight = "system/rfstatus",
         theme_postflight = "system/rfstatus",
-        temperature_unit = 0, -- 0 = Celsius, 1 = Fahrenheit
-        altitude_unit = 0, -- 0 = meters, 1 = feet
     },
     events = {
         armflags = true,
