@@ -3,8 +3,12 @@
 
     Configurable Parameters (box table fields):
     -------------------------------------------
-    value               : any                       -- (Optional) Static value to display
+    value               : any                       -- (Optional) Static value to display if telemetry is not present
+    transform           : string|function|number    -- (Optional) Value transformation ("floor", "ceil", "round", multiplier, or custom function)
+    decimals            : number                    -- (Optional) Number of decimal places for numeric display
+    thresholds          : table                     -- (Optional) List of threshold tables: {value=..., textcolor=...}
     novalue             : string                    -- (Optional) Text shown if value is missing (default: "-")
+    unit                : string                    -- (Optional) Unit label to append to value or configure as "" to omit the unit from being displayed. If not specified, the widget attempts to resolve a dynamic unit
     font                : font                      -- (Optional) Value font (e.g., FONT_L, FONT_XL)
     bgcolor             : color                     -- (Optional) Widget background color (theme fallback if nil)
     textcolor           : color                     -- (Optional) Value text color (theme/text fallback if nil)
@@ -35,17 +39,28 @@ function render.wakeup(box)
     -- Value extraction
     local value = getParam(box, "value")
 
-    -- Fallback if no value
+    -- Transform and decimals
+    local displayValue
     if value ~= nil then
-        displayValue = value
-    else
+        displayValue = utils.transformValue(value, box)
+    end
+
+    -- Threshold logic (if required)
+    local textcolor = utils.resolveThresholdTextColor(value, box)
+
+    -- Dynamic unit logic
+    local unit = utils.resolveDisplayUnit(box, source, telemetry)
+
+    -- Fallback if no value
+    if value == nil then
         displayValue = getParam(box, "novalue") or "-"
+        unit = nil
     end
 
     box._cache = {
         displayValue       = displayValue,
         title              = getParam(box, "title"),
-        unit               = nil,
+        unit               = unit,
         bgcolor            = resolveThemeColor("bgcolor", getParam(box, "bgcolor")),
         textcolor          = resolveThemeColor("textcolor", getParam(box, "textcolor")),
         titlecolor         = resolveThemeColor("titlecolor", getParam(box, "titlecolor")),
