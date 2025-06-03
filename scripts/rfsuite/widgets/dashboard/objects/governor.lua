@@ -37,7 +37,7 @@ function render.wakeup(box, telemetry)
     -- Get value for sensor
     local value
     if telemetry then
-        value = telemetry.getSensorValue("governor")
+        value = telemetry.getSensor("governor")
     end    
 
     local displayValue = rfsuite.utils.getGovernorState and rfsuite.utils.getGovernorState(value) or nil
