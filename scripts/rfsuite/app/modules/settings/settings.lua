@@ -2,6 +2,7 @@ local S_PAGES = {
     {name = rfsuite.i18n.get("app.modules.settings.txt_general"), script = "general.lua", image = "general.png"},
     {name = rfsuite.i18n.get("app.modules.settings.dashboard"), script = "dashboard.lua", image = "dashboard.png"},
     {name = rfsuite.i18n.get("app.modules.settings.txt_telemetry_events"), script = "telemetry_events.lua", image = "telemetry_events.png"},
+    {name = rfsuite.i18n.get("app.modules.settings.localizations"), script = "localizations.lua", image = "localizations.png"},
     {name = rfsuite.i18n.get("app.modules.settings.txt_telemetry_switches"), script = "telemetry_switches.lua", image = "telemetry_switches.png"},
     {name = rfsuite.i18n.get("app.modules.settings.txt_development"), script = "development.lua", image = "development.png"},
 }

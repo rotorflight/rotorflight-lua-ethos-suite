@@ -236,7 +236,7 @@
         "translation": "Postflight Theme",
         "needs_translation": "false"
       },
-      "dashboard_localizations": {
+      "localizations": {
         "english": "Localization",
         "translation": "Localization",
         "needs_translation": "false"

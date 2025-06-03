@@ -10,13 +10,13 @@ local function openPage(pageIdx, title, script)
     rfsuite.app.lastScript = script
 
     rfsuite.app.ui.fieldHeader(
-        rfsuite.i18n.get("app.modules.settings.name") .. " / " .. rfsuite.i18n.get("app.modules.settings.dashboard") .. " / " .. rfsuite.i18n.get("app.modules.settings.dashboard_localizations")
+        rfsuite.i18n.get("app.modules.settings.name") .. " / " .. rfsuite.i18n.get("app.modules.settings.dashboard") .. " / " .. rfsuite.i18n.get("app.modules.settings.localizations")
     )
     rfsuite.session.formLineCnt = 0
 
     local formFieldCount = 0
 
-    settings = rfsuite.preferences.dashboard
+    settings = rfsuite.preferences.localizations
 
     formFieldCount = formFieldCount + 1
     rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
@@ -24,12 +24,12 @@ local function openPage(pageIdx, title, script)
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.session.formLineCnt], nil, 
                                                         {{rfsuite.i18n.get("app.modules.settings.celcius"), 0}, {rfsuite.i18n.get("app.modules.settings.fahrenheit"), 1}}, 
                                                         function() 
-                                                            if rfsuite.preferences and rfsuite.preferences.dashboard then
+                                                            if rfsuite.preferences and rfsuite.preferences.localizations then
                                                                 return settings.temperature_unit or 0
                                                             end
                                                         end, 
                                                         function(newValue) 
-                                                            if rfsuite.preferences and rfsuite.preferences.dashboard then
+                                                            if rfsuite.preferences and rfsuite.preferences.localizations then
                                                                 settings.temperature_unit = newValue
                                                             end    
                                                         end) 
@@ -40,12 +40,12 @@ local function openPage(pageIdx, title, script)
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.session.formLineCnt], nil, 
                                                         {{rfsuite.i18n.get("app.modules.settings.meters"), 0}, {rfsuite.i18n.get("app.modules.settings.feet"), 1}}, 
                                                         function() 
-                                                            if rfsuite.preferences and rfsuite.preferences.dashboard then
+                                                            if rfsuite.preferences and rfsuite.preferences.localizations then
                                                                 return settings.altitude_unit or 0
                                                             end
                                                         end, 
                                                         function(newValue) 
-                                                            if rfsuite.preferences and rfsuite.preferences.dashboard then
+                                                            if rfsuite.preferences and rfsuite.preferences.localizations then
                                                                 settings.altitude_unit = newValue
                                                             end    
                                                         end) 
@@ -57,8 +57,8 @@ local function onNavMenu()
     rfsuite.app.ui.progressDisplay()
         rfsuite.app.ui.openPage(
             pageIdx,
-            rfsuite.i18n.get("app.modules.settings.dashboard"),
-            "settings/tools/dashboard.lua"
+            rfsuite.i18n.get("app.modules.settings.name"),
+            "settings/settings.lua"
         )
         return true
 end
@@ -108,8 +108,8 @@ local function event(widget, category, value, x, y)
     if category == EVT_CLOSE and value == 0 or value == 35 then
         rfsuite.app.ui.openPage(
             pageIdx,
-            rfsuite.i18n.get("app.modules.settings.dashboard"),
-            "settings/tools/dashboard.lua"
+            rfsuite.i18n.get("app.modules.settings.name"),
+            "settings/settings.lua"
         )
         return true
     end
