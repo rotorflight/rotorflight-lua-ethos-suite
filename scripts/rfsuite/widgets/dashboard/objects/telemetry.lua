@@ -1,30 +1,33 @@
 --[[
     Telemetry Value Widget
-    Configurable Arguments (box table keys):
-    ----------------------------------------
-    source              : string   -- Telemetry sensor source name
-    transform           : string/function/number -- Optional value transform (math function or custom function)
-    thresholds          : table    -- List of threshold tables: {value=..., textcolor=...}
-    title               : string   -- Title text
-    novalue             : string   -- Text shown if sensor value is missing (default: "-")
-    unit                : string   -- Unit label to append to value
-    font                : font     -- Value font (e.g., FONT_L, FONT_XL)
-    bgcolor             : color    -- Widget background color (default: theme fallback)
-    textcolor           : color    -- Value text color (default: theme/text fallback)
-    titlecolor          : color    -- Title text color (default: theme/text fallback)
-    titlealign          : string   -- Title alignment ("center", "left", "right")
-    valuealign          : string   -- Value alignment ("center", "left", "right")
-    titlepos            : string   -- Title position ("top" or "bottom")
-    titlepadding        : number   -- Padding for title (all sides unless overridden)
-    titlepaddingleft    : number   -- Left padding for title
-    titlepaddingright   : number   -- Right padding for title
-    titlepaddingtop     : number   -- Top padding for title
-    titlepaddingbottom  : number   -- Bottom padding for title
-    valuepadding        : number   -- Padding for value (all sides unless overridden)
-    valuepaddingleft    : number   -- Left padding for value
-    valuepaddingright   : number   -- Right padding for value
-    valuepaddingtop     : number   -- Top padding for value
-    valuepaddingbottom  : number   -- Bottom padding for value
+
+    Configurable Parameters (box table fields):
+    -------------------------------------------
+    source              : string                    -- Telemetry sensor source name (e.g., "voltage", "current")
+    value               : any                       -- (Optional) Static value to display if telemetry is not present
+    transform           : string|function|number    -- (Optional) Value transformation ("floor", "ceil", "round", multiplier, or custom function)
+    decimals            : number                    -- (Optional) Number of decimal places for numeric display
+    thresholds          : table                     -- (Optional) List of threshold tables: {value=..., textcolor=...}
+    novalue             : string                    -- (Optional) Text shown if value is missing (default: "-")
+    unit                : string                    -- (Optional) Unit label to append to value or configure as "" to omit the unit from being displayed. If not specified, the widget attempts to resolve a dynamic unit
+    font                : font                      -- (Optional) Value font (e.g., FONT_L, FONT_XL)
+    bgcolor             : color                     -- (Optional) Widget background color (theme fallback if nil)
+    textcolor           : color                     -- (Optional) Value text color (theme/text fallback if nil)
+    titlecolor          : color                     -- (Optional) Title text color (theme/text fallback if nil)
+    title               : string                    -- (Optional) Title text
+    titlealign          : string                    -- (Optional) Title alignment ("center", "left", "right")
+    valuealign          : string                    -- (Optional) Value alignment ("center", "left", "right")
+    titlepos            : string                    -- (Optional) Title position ("top" or "bottom")
+    titlepadding        : number                    -- (Optional) Padding for title (all sides unless overridden)
+    titlepaddingleft    : number                    -- (Optional) Left padding for title
+    titlepaddingright   : number                    -- (Optional) Right padding for title
+    titlepaddingtop     : number                    -- (Optional) Top padding for title
+    titlepaddingbottom  : number                    -- (Optional) Bottom padding for title
+    valuepadding        : number                    -- (Optional) Padding for value (all sides unless overridden)
+    valuepaddingleft    : number                    -- (Optional) Left padding for value
+    valuepaddingright   : number                    -- (Optional) Right padding for value
+    valuepaddingtop     : number                    -- (Optional) Top padding for value
+    valuepaddingbottom  : number                    -- (Optional) Bottom padding for value
 ]]
 
 local render = {}
@@ -34,38 +37,40 @@ local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 
 function render.wakeup(box, telemetry)
-    -- Value extraction and transform
-    local value
+    -- Value extraction
     local source = getParam(box, "source")
-    if source then
-        local sensor = telemetry and telemetry.getSensorSource(source)
-        value = sensor and sensor:value()
-        local transform = getParam(box, "transform")
-        if type(transform) == "string" and math[transform] then
-            value = value and math[transform](value)
-        elseif type(transform) == "function" then
-            value = value and transform(value)
-        elseif type(transform) == "number" then
-            value = value and transform(value)
+    local value
+    if telemetry and source then
+        value = telemetry.getSensor(source)
+    end
+
+    -- Transform and decimals
+    local displayValue
+    if value ~= nil then
+        displayValue = utils.transformValue(value, box)
+    end
+
+    -- Threshold logic (if required)
+    local textcolor = utils.resolveThresholdTextColor(value, box)
+
+    -- Dynamic unit logic (User can force a unit or omit unit using "" to hide)
+    local manualUnit = getParam(box, "unit")
+    local unit
+
+    if manualUnit ~= nil then
+        unit = manualUnit  -- use user value, even if ""
+    else
+        local displayValue, _, dynamicUnit = telemetry.getSensor(source)
+        if dynamicUnit ~= nil then
+            unit = dynamicUnit
+        elseif source and telemetry and telemetry.sensorTable[source] then
+            unit = telemetry.sensorTable[source].unit_string or ""
+        else
+            unit = ""
         end
     end
 
-    -- Threshold logic for textcolor
-    local textcolor = resolveThemeColor("textcolor", getParam(box, "textcolor"))
-    local thresholds = getParam(box, "thresholds")
-    if thresholds and value ~= nil then
-        for _, t in ipairs(thresholds) do
-            local t_val = type(t.value) == "function" and t.value(box, value) or t.value
-            if value < t_val and t.textcolor then
-                textcolor = resolveThemeColor("textcolor", t.textcolor)
-                break
-            end
-        end
-    end
-
-    -- Other params
-    local unit = getParam(box, "unit")
-    local displayValue = value
+    -- Fallback if no value
     if value == nil then
         displayValue = getParam(box, "novalue") or "-"
         unit = nil
@@ -102,12 +107,9 @@ function render.paint(x, y, w, h, box)
     utils.box(
         x, y, w, h,
         c.title, c.displayValue, c.unit, c.bgcolor,
-        c.titlealign, c.valuealign, c.titlecolor, c.titlepos,
-        c.titlepadding, c.titlepaddingleft, c.titlepaddingright,
-        c.titlepaddingtop, c.titlepaddingbottom,
-        c.valuepadding, c.valuepaddingleft, c.valuepaddingright,
-        c.valuepaddingtop, c.valuepaddingbottom,
-        c.font, c.textcolor
+        c.titlealign, c.valuealign, c.titlecolor, c.titlepos, c.titlepadding, c.titlepaddingleft, c.titlepaddingright,
+        c.titlepaddingtop, c.titlepaddingbottom, c.valuepadding, c.valuepaddingleft, c.valuepaddingright,
+        c.valuepaddingtop, c.valuepaddingbottom, c.font, c.textcolor
     )
 end
 

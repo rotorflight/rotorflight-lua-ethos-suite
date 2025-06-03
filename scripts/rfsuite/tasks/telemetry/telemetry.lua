@@ -85,6 +85,7 @@ local sensorTable = {
         maxmin_trigger = true,
         switch_alerts = true,
         unit = UNIT_DB,
+        unit_string = "dB",
         sensors = {
             sim = {
                 { appId = 0xF101, subId = 0 },
@@ -144,6 +145,7 @@ local sensorTable = {
         set_telemetry_sensors = 3,
         switch_alerts = true,
         unit = UNIT_VOLT,
+        unit_string = "V",
         sensors = {
             sim = {
                 { uid = 0x5002, unit = UNIT_VOLT, dec = 2,
@@ -174,6 +176,7 @@ local sensorTable = {
         set_telemetry_sensors = 60,
         switch_alerts = true,
         unit = UNIT_RPM,
+        unit_string = "rpm",
         sensors = {
             sim = {
                 { uid = 0x5003, unit = UNIT_RPM, dec = nil,
@@ -198,6 +201,7 @@ local sensorTable = {
         set_telemetry_sensors = 18,
         switch_alerts = true,
         unit = UNIT_AMPERE,
+        unit_string = "A",
         sensors = {
             sim = {
                 { uid = 0x5004, unit = UNIT_AMPERE, dec = 0,
@@ -251,11 +255,11 @@ local sensorTable = {
 
             if isFahrenheit then
                 -- Convert from Celsius to Fahrenheit
-                return value * 1.8 + 32, major, "F"
+                return value * 1.8 + 32, major, "°F"
             end
 
             -- Default: return Celsius
-            return value, major, "C"
+            return value, major, "°C"
         end,
     },
 
@@ -291,11 +295,11 @@ local sensorTable = {
 
             if isFahrenheit then
                 -- Convert from Celsius to Fahrenheit
-                return value * 1.8 + 32, major, "F"
+                return value * 1.8 + 32, major, "°F"
             end
 
             -- Default: return Celsius
-            return value, major, "C"
+            return value, major, "°C"
         end,
     },
 
@@ -307,6 +311,7 @@ local sensorTable = {
         set_telemetry_sensors = 6,
         switch_alerts = true,
         unit = UNIT_PERCENT,
+        unit_string = "%",
         sensors = {
             sim = {
                 { uid = 0x5007, unit = UNIT_PERCENT, dec = 0,
@@ -330,6 +335,7 @@ local sensorTable = {
         set_telemetry_sensors = 5,
         switch_alerts = true,
         unit = UNIT_MILLIAMPERE_HOUR,
+        unit_string = "mAh",
         sensors = {
             sim = {
                 { uid = 0x5008, unit = UNIT_MILLIAMPERE_HOUR, dec = 0,
@@ -463,6 +469,8 @@ local sensorTable = {
         mandatory = true,
         maxmin_trigger = true,
         set_telemetry_sensors = 15,
+        unit = UNIT_PERCENT,
+        unit_string = "%",
         sensors = {
             sim = {
                 { uid = 0x5014, unit = nil, dec = 0,
@@ -550,6 +558,7 @@ local sensorTable = {
         set_telemetry_sensors = nil,
         switch_alerts = true,
         unit = UNIT_VOLT,
+        unit_string = "V",
         sensors = {
             sim = {
                 { uid = 0x5017, unit = UNIT_VOLT, dec = 2,
@@ -747,7 +756,7 @@ function telemetry.getSensor(sensorKey)
 
     -- get initial defaults
     local value = source:value()                        -- get the raw value from the source
-    local major = sensorTable[sensorKey].value or nil   -- use the default unit if defined
+    local major = sensorTable[sensorKey].unit or nil    -- use the default unit if defined
     local minor = nil                                   -- minor version is not possible without a localization function which we do not have yet
 
 

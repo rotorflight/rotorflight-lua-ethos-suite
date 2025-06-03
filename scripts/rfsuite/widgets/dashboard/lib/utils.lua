@@ -453,6 +453,27 @@ function utils.box(
     end
 end
 
+--- Resolves the text color for a value with optional threshold logic.
+-- Checks the box table for a thresholds array. If present and value is less than a threshold's value,
+-- returns that threshold's textcolor (using theme fallback). Otherwise uses the box or theme default.
+-- @param value number     The value to test.
+-- @param box   table      The widget's config table (may contain thresholds, textcolor, etc.)
+-- @return number          The LCD color to use for text.
+
+function utils.resolveThresholdTextColor(value, box)
+    local color = utils.resolveThemeColor("textcolor", utils.getParam(box, "textcolor"))
+    local thresholds = utils.getParam(box, "thresholds")
+    if thresholds and value ~= nil then
+        for _, t in ipairs(thresholds) do
+            local t_val = type(t.value) == "function" and t.value(box, value) or t.value
+            if value < t_val and t.textcolor then
+                color = utils.resolveThemeColor("textcolor", t.textcolor)
+                break
+            end
+        end
+    end
+    return color
+end
 
 --- Transforms and formats a numeric value for display, applying any configured transform and decimals.
 --
@@ -485,8 +506,8 @@ function utils.transformValue(value, box)
     end
     local decimals = utils.getParam(box, "decimals")
     -- Apply decimal formatting if configured
-        if decimals and value ~= nil then
-        value = string.format("%."..decimals.."f", value)
+    if decimals ~= nil and value ~= nil then
+        value = string.format("%." .. decimals .. "f", value)
     elseif value ~= nil then
         value = tostring(value)
     end

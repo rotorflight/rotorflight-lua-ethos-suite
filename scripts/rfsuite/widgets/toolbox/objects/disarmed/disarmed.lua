@@ -15,15 +15,14 @@
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]] --
 
-local armed = { 
+local disarmed = { 
     refresh = true, 
     environment = system.getVersion(), 
-    oldsensors = {armflags = ""}, 
+    oldsensors = {armdisableflags = ""}, 
     wakeupSchedulerUI = os.clock()
 }
 
 local sensors
-
 
 -- error function
 local function screenError(msg)
@@ -69,52 +68,46 @@ local function getSensors()
     if not rfsuite.tasks.active() then return end
 
 
-    local armflagsSOURCE = rfsuite.tasks.telemetry.getSensorSource("armflags")
+    local armdisableflagsSOURCE = rfsuite.tasks.telemetry.getSensorSource("armdisableflags")
 
     if not rfsuite.tasks.telemetry.active() then
-        armflags = rfsuite.i18n.get("no_link"):upper() 
-    elseif armflagsSOURCE then
-        local value = armflagsSOURCE:value()
-        if (value == 0 or value == 2 )then
-            armflags = rfsuite.i18n.get("DISARMED")
-        else
-            armflags = rfsuite.i18n.get("ARMED")
+        armdisableflags = rfsuite.i18n.get("no_link"):upper()
+    elseif rfsuite.session.apiVersion and rfsuite.session.apiVersion < 12.08 then
+        armdisableflags = "RF < 2.2"
+    elseif armdisableflagsSOURCE then
+        local value = armdisableflagsSOURCE:value()
+        if value ~= nil then
+            value = math.floor(value)
         end
-    elseif armflagsSOURCE == nil then
-        armflags = rfsuite.i18n.get("no_sensor"):upper()    
-    else    
-        armflags = rfsuite.i18n.get("no_link"):upper()
+        armdisableflags = rfsuite.app.utils.armingDisableFlagsToString(value)
+
+    elseif armdisableflagsSOURCE  == nil then
+        armdisableflags = rfsuite.i18n.get("no_sensor"):upper()
+    else            
+        armdisableflags = rfsuite.i18n.get("no_link"):upper()
     end
 
 
-    if armed.oldsensors.armflags ~= armflags then armed.refresh = true end
+    if disarmed.oldsensors.armdisableflags ~= armdisableflags then disarmed.refresh = true end
 
-    sensors = {armflags = armflags}
-    armed.oldsensors = sensors
+    sensors = {armdisableflags = armdisableflags}
+    disarmed.oldsensors = sensors
 
     return sensors
 end
 
-local function wakeupUI()
-
-    getSensors()
-
-    if armed.refresh then lcd.invalidate() end
-    armed.refresh = false
-end
-
 -- Helper function to convert a value to a valid number
-function armed.sensorMakeNumber(value)
+function disarmed.sensorMakeNumber(value)
     value = value or 0
     local num = tonumber(string.gsub(tostring(value), "%D+", ""))
     return num or 0
 end
 
-function armed.create(widget)
+function disarmed.create(widget)
     -- Placeholder for widget creation logic
 end
 
-function armed.paint(widget)
+function disarmed.paint(widget)
     if not rfsuite.utils.ethosVersionAtLeast() then
         screenError(string.format(string.upper(rfsuite.i18n.get("ethos")) .." < V%d.%d.%d", 
             rfsuite.config.ethosVersion[1], 
@@ -136,7 +129,7 @@ function armed.paint(widget)
     local bestW, bestH = 0, 0
 
     -- Determine the text to display
-    local str = rfsuite.tasks.active() and (sensors and sensors.armflags or "") or string.upper(rfsuite.i18n.get("bg_task_disabled"))
+    local str = rfsuite.tasks.active() and (sensors and sensors.armdisableflags or "") or string.upper(rfsuite.i18n.get("bg_task_disabled"))
 
     -- Loop through font sizes and find the largest one that fits
     for _, font in ipairs(fonts) do
@@ -163,21 +156,17 @@ function armed.paint(widget)
 end
 
 -- Main wakeup function
-function armed.wakeup(widget)
-    --local schedulerUI = lcd.isVisible() and 0.5 or 5
-    local schedulerUI = 1
-    local now = os.clock()
+function disarmed.wakeup(widget)
 
-    if (now - armed.wakeupSchedulerUI) >= schedulerUI then
-        armed.wakeupSchedulerUI = now
-        wakeupUI()
-    end
+    getSensors()
 
+    if disarmed.refresh then lcd.invalidate() end
+    disarmed.refresh = false
 end
 
 -- this is called if a langage swap event occurs
-function armed.i18n()
+function disarmed.i18n()
 
 end    
 
-return armed
+return disarmed

@@ -13,6 +13,7 @@
  * GNU General Public License for more details.
  *
  * Note: Some icons have been sourced from https://www.flaticon.com/
+
 ================================================================================
                          CONFIGURATION INSTRUCTIONS
 ================================================================================
@@ -20,11 +21,7 @@
 For a complete list of all available widget parameters and usage options,
 SEE THE TOP OF EACH WIDGET OBJECT FILE.
 
-(Scroll to the top of files like battery.lua, etc, for the full reference.)
-
-================================================================================
-                   END OF CONFIGURATION INSTRUCTIONS
-================================================================================
+(Scroll to the top of files like battery.lua, telemetry.lua etc, for the full reference.)
 
 --------------------------------------------------------------------------------
 -- ACTUAL DASHBOARD CONFIG BELOW (edit/add your widgets here!)
