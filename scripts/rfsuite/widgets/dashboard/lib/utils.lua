@@ -196,7 +196,7 @@ end
 --- Resolves the display unit for a telemetry sensor, considering localization preferences.
 -- If a unit is set in the box, it is always used.
 -- Otherwise, this function checks the sensor's unit code and applies localization (e.g. °C/°F, m/ft)
--- based on user dashboard preferences for temperature and altitude.
+-- based on localization preferences for temperature and altitude.
 -- @param box table: The box configuration table (may include unit override)
 -- @param source string: The telemetry sensor key
 -- @param telemetry table: The current telemetry context (must include sensorTable)
@@ -221,14 +221,14 @@ function utils.resolveDisplayUnit(box, source, telemetry)
     -- Default: lookup by unit code
     unit = utils.getUnitString and utils.getUnitString(code) or ""
 
-    -- Localization: check dashboard preferences if available
-    if (source == "temp_esc" or source == "temp_mcu") and rfsuite and rfsuite.preferences and rfsuite.preferences.dashboard then
-        local tempUnitPref = rfsuite.preferences.dashboard.temperature_unit
+    -- Localization:
+    if (source == "temp_esc" or source == "temp_mcu") and rfsuite and rfsuite.preferences and rfsuite.preferences.localizations then
+        local tempUnitPref = rfsuite.preferences.localizations.temperature_unit
         if tempUnitPref ~= nil then
             unit = (tempUnitPref == 1) and "°F" or "°C"
         end
-    elseif source == "altitude" and rfsuite and rfsuite.preferences and rfsuite.preferences.dashboard then
-        local altitudeUnitPref = rfsuite.preferences.dashboard.altitude_unit
+    elseif source == "altitude" and rfsuite and rfsuite.preferences and rfsuite.preferences.localizations then
+        local altitudeUnitPref = rfsuite.preferences.localizations.altitude_unit
         if altitudeUnitPref ~= nil then
             unit = (altitudeUnitPref == 1) and "ft" or "m"
         end
