@@ -30,7 +30,7 @@
     --     { value = "ACTIVE",   textcolor = "green" },
     --     ...
     -- }
-    ]]
+]]
 
 local render = {}
 

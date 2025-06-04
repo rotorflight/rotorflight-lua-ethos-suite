@@ -103,7 +103,12 @@ local boxes = {
     -- Column 3
     { col = 3, row = 1, type = "telemetry", source = "fuel", title = "FUEL", titlepos = "bottom", transform = "floor" },
     { col = 3, row = 2, type = "func", paint = customPaintFunction, wakeup = customWakeupFunction, title = "FUNCTION", titlepos = "bottom" },
-    { col = 3, row = 3, type = "blackbox", title = "BLACKBOX", titlepos = "bottom" },
+    { col = 3, row = 3, type = "blackbox", title = "BLACKBOX", titlepos = "bottom", transform = "ceil", decimals = 0,
+        thresholds = { 
+            { value = 90, textcolor = "white"}, 
+            { value = 200, textcolor = "red" },
+        }
+    },
     { col = 3, row = 4, type = "armflags", title = "ARM FLAGS", titlepos = "bottom", font = "FONT_STD",
             thresholds = {
             { value = "DISARMED", textcolor = "red" },
