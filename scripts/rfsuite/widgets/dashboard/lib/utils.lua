@@ -301,6 +301,10 @@ end
 function utils.resolveThemeColor(colorkey, value)
     -- If already a number (e.g. lcd.RGB), just return
     if type(value) == "number" then return value end
+    -- an oddbal of a string "transparent" should return nil
+    if type(value) == "string" and value == "transparent" then
+        return nil
+    end    
     -- If string (like "red"), use resolveColor
     if type(value) == "string" then
         local resolved = utils.resolveColor(value)
@@ -380,8 +384,10 @@ function utils.box(
     end
 
     -- Draw background
-    lcd.color(bgcolor)
-    lcd.drawFilledRectangle(x, y, w, h)
+    if bgcolor then
+        lcd.color(bgcolor)
+        lcd.drawFilledRectangle(x, y, w, h)
+    end    
 
     -- Padding resolution (default 0)
     titlepaddingleft   = titlepaddingleft   or titlepadding   or 0
@@ -572,8 +578,10 @@ function utils.imageBox(
     imagepaddingtop, imagepaddingbottom
 )
     -- Draw background (theme fallback)
-    lcd.color(bgcolor)
-    lcd.drawFilledRectangle(x, y, w, h)
+    if bgcolor then
+        lcd.color(bgcolor)
+        lcd.drawFilledRectangle(x, y, w, h)
+    end    
 
     -- Padding resolution (default 0)
     imagepaddingleft   = imagepaddingleft   or imagepadding or 0

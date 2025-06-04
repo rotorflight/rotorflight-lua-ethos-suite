@@ -23,6 +23,7 @@ local function default_box()
     titlepaddingtop = 5,
     titlecolor = "grey",
     textcolor  = "white",
+    bgcolor    = "transparent",
     valuepaddingtop = 20,
         -- …add any other defaults here…
     }
@@ -44,8 +45,6 @@ function object.wakeup(widget)
     box = default_box()
 
     if not widget.title then box.title = nil end
-
-    if lcd.hasFocus() then box.bgcolor = lcd.themeColor(2) end
 
     modelimage.wakeup(box, rfsuite.tasks.telemetry)
 end

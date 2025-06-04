@@ -24,6 +24,7 @@ local function default_box()
         titlepaddingtop  = 5,
         titlecolor       = "grey",
         textcolor        = "white",
+        bgcolor          = "transparent",
         valuepaddingtop  = 20,
         -- …add any other defaults here…
     }
