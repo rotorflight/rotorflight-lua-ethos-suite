@@ -34,9 +34,9 @@ local ENABLE_TASK = false
 
 local arg = {...}
 
-local apidebug = {}
+local developer = {}
 
-function apidebug.wakeup()
+function developer.wakeup()
 
     -- quick exit - this is the normal behaviour
     if ENABLE_TASK == false then
@@ -66,4 +66,4 @@ function apidebug.wakeup()
 
 end
 
-return apidebug
+return developer

@@ -17,8 +17,8 @@
  * 
 ]] --
 local init = {
-    interval = 2, -- run every 5s
-    script = "debug.lua", -- run this script
+    interval = 5, -- run every 5s
+    script = "developer.lua", -- run this script
     msp = false -- do not run if busy with msp
 }
 
