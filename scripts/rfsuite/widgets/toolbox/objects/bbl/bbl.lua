@@ -32,7 +32,7 @@ local lastSummaryTime = 0
 local config = {}
 
 -- Helper to display a centered message using the largest possible font
-local function drawCenteredMessage(msg)
+local function drawCenteredMessage(msg, valueOffset)
     local w, h = lcd.getWindowSize()
 
     local isDarkMode = lcd.darkMode()
@@ -54,7 +54,7 @@ local function drawCenteredMessage(msg)
 
     lcd.font(bestFont)
     lcd.color(isDarkMode and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90))
-    lcd.drawText((w - bestW) / 2, ((h - bestH ) / 2) + 5, msg)
+    lcd.drawText((w - bestW) / 2, ((h - bestH ) / 2) + 5 + valueOffset, msg)
 end
 
 -- Show critical version error
@@ -189,6 +189,22 @@ function rf2bbl.paint(widget)
         return
     end
 
+    local w, h = lcd.getWindowSize()
+
+    local TITLE_COLOR = lcd.darkMode() and lcd.RGB(154,154,154) or lcd.RGB(77, 73, 77)
+    local TEXT_COLOR = lcd.darkMode() and lcd.RGB(255, 255, 255) or lcd.RGB(77, 73, 77)
+    local valueOffset = 0
+    if widget.title then
+        lcd.font(FONT_S)
+        local titlemsg = "Blackbox"
+        local tsizeW, tsizeH = lcd.getTextSize(titlemsg)
+        valueOffset = (tsizeH/2) 
+        lcd.color(TITLE_COLOR)  -- Set text color
+        lcd.drawText((w - tsizeW) / 2, tsizeH/4, titlemsg)
+        lcd.color(TEXT_COLOR)  -- Reset text color for values
+    end
+
+
 
     if isErase then
         msg = rfsuite.i18n.get("widgets.bbl.erasing")
@@ -200,7 +216,7 @@ function rf2bbl.paint(widget)
         msg = "-"
     end    
 
-    drawCenteredMessage(msg)
+    drawCenteredMessage(msg,valueOffset)
 end
 
 function rf2bbl.configure(widget)

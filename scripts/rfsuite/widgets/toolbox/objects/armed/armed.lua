@@ -114,6 +114,20 @@ function armed.paint(widget)
 
     local w, h = lcd.getWindowSize()
 
+    local TITLE_COLOR = lcd.darkMode() and lcd.RGB(154,154,154) or lcd.RGB(77, 73, 77)
+    local TEXT_COLOR = lcd.darkMode() and lcd.RGB(255, 255, 255) or lcd.RGB(77, 73, 77)
+    local valueOffset = 0
+    if widget.title then
+        lcd.font(FONT_S)
+        local titlemsg = "Arm Status"
+        local tsizeW, tsizeH = lcd.getTextSize(titlemsg)
+        valueOffset = (tsizeH/2) 
+        lcd.color(TITLE_COLOR)  -- Set text color
+        lcd.drawText((w - tsizeW) / 2, tsizeH/4, titlemsg)
+        lcd.color(TEXT_COLOR)  -- Reset text color for values
+    end
+
+
 
     -- Available font sizes ordered from smallest to largest
     local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL}
@@ -144,7 +158,7 @@ function armed.paint(widget)
 
     -- Calculate centered position
     local posX = (w - bestW) / 2
-    local posY = (h - bestH) / 2 + 5
+    local posY = (h - bestH) / 2 + 5 + valueOffset 
 
     -- Draw the text
     lcd.drawText(posX, posY, str)
