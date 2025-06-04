@@ -1,5 +1,4 @@
 --[[
-
     Craft Name Widget
 
     Configurable Arguments (box table keys):
@@ -23,9 +22,7 @@
     valuepaddingright  : number   -- Right padding for value
     valuepaddingtop    : number   -- Top padding for value
     valuepaddingbottom : number   -- Bottom padding for value
-
 ]]
-
 
 local render = {}
 
@@ -34,16 +31,18 @@ local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 
 function render.wakeup(box)
-    local displayValue = rfsuite.session.craftName
-    local unit = getParam(box, "unit")
-    if displayValue == nil or (type(displayValue) == "string" and displayValue:match("^%s*$")) then
+    local value = rfsuite.session.craftName
+    local displayValue
+
+    if type(value) == "string" and value:match("^%s*$") == nil then
+        displayValue = value
+    else
         displayValue = getParam(box, "novalue") or "-"
-        unit = nil  -- suppress unit if fallback is shown
     end
 
     box._cache = {
         displayValue       = displayValue,
-        unit               = unit,
+        unit               = nil,
         bgcolor            = resolveThemeColor("bgcolor", getParam(box, "bgcolor")),
         textcolor          = resolveThemeColor("textcolor", getParam(box, "textcolor")),
         titlecolor         = resolveThemeColor("titlecolor", getParam(box, "titlecolor")),
