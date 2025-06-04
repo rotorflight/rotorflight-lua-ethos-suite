@@ -20,6 +20,28 @@ local utils = {}
 local imageCache = {}
 local fontCache 
 
+
+-- Returns true if (W, H) exactly matches one of the entries in supportedResolutions.
+--   W, H:               current window width and height (numbers)
+--   supportedResolutions: an array of {width, height} pairs, e.g.
+--         {
+--           { 784, 294 },
+--           { 784, 316 },
+--           { 472, 191 },
+--           { 472, 210 },
+--           { 630, 236 },
+--           { 630, 258 },
+--         }
+function utils.supportedResolution(W,H, supportedResolutions)
+
+    for _, res in ipairs(supportedResolutions) do
+        if W == res[1] and H == res[2] then
+            return true
+        end
+    end
+    return false
+end
+
 --- Draws a bar-style needle (such as for a gauge or meter) at a specified position, angle, and size.
 -- The needle is rendered as a thick, filled bar with a specified thickness and length, centered at (cx, cy),
 -- and rotated by angleDeg degrees. The needle is drawn with a slight overlap at both ends for visual effect.

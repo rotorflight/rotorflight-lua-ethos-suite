@@ -9,6 +9,11 @@
     "translation": "PLEASE CHECK SENSORS",
     "needs_translation": "false"
   },
+  "unsupported_resolution": {
+    "english": "TO SMALL",
+    "translation": "TO SMALL",
+    "needs_translation": "false"
+  },
   "loading": {
     "english": "ROTORFLIGHT",
     "translation": "ROTORFLIGHT",

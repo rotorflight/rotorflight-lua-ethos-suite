@@ -1160,6 +1160,7 @@ return {
     ["dashboard"] = {
       ["theme_load_error"] = "Your theme did not load correctly. Falling back to default theme.",
       ["validate_sensors"] = "MISSING REQUIRED SENSORS",
+      ["unsupported_resolution"] = "TO SMALL",
       ["loading"] = "ROTORFLIGHT",
       ["waiting_for_connection"] = "CONNECTING",
       ["check_bg_task"] = "BG TASK",
