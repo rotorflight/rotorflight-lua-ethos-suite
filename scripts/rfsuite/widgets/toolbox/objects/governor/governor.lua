@@ -127,13 +127,6 @@ local function getSensors()
     return sensors
 end
 
-local function wakeupUI()
-
-    getSensors()
-
-    if rf2gov.refresh then lcd.invalidate() end
-    rf2gov.refresh = false
-end
 
 -- Helper function to convert a value to a valid number
 function rf2gov.sensorMakeNumber(value)
@@ -195,14 +188,10 @@ end
 
 -- Main wakeup function
 function rf2gov.wakeup(widget)
-    local schedulerUI = lcd.isVisible() and 0.5 or 5
-    local now = os.clock()
+    getSensors()
 
-    if (now - rf2gov.wakeupSchedulerUI) >= schedulerUI then
-        rf2gov.wakeupSchedulerUI = now
-        wakeupUI()
-    end
-
+    if rf2gov.refresh then lcd.invalidate() end
+    rf2gov.refresh = false
 end
 
 -- this is called if a langage swap event occurs
