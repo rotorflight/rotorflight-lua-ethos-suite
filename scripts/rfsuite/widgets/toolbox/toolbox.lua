@@ -1,4 +1,4 @@
---[[
+--[[ 
  * Copyright (C) Rotorflight Project
  *
  * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
@@ -16,192 +16,294 @@
 ]] --
 
 local toolbox = {}
-local wakeupSchedulerUI = os.clock()
 local LCD_W, LCD_H
 
 -- List of available sub-widgets (folder names must match these entries)
 local toolBoxList = {
-    [1] = { folder = "armed",      name = "Armed"      },
-    [2] = { folder = "bbl",        name = "BBL"        },
-    [3] = { folder = "craftimage", name = "Craft Image"},
-    [4] = { folder = "craftname",  name = "Craft Name" },
-    [5] = { folder = "disarmed",   name = "Disarmed"   },
-    [6] = { folder = "governor",   name = "Governor"   },
+  [1] = { script = "armflags.lua",   name = "Arm Flags"   },
+  [2] = { script = "blackbox.lua",   name = "Blackbox"    },
+  [3] = { script = "modelimage.lua", name = "Model Image" },
+  [4] = { script = "craftname.lua",  name = "Craft Name"  },
+  [5] = { script = "governor.lua",   name = "Governor"    },
 }
 
--- Helper to build a list of “{ displayName, index }” for the form
+-----------------------------------------------------------------------------
+-- 1) Keep load_object so sub-widgets (armflags/governor/etc.) can call it
+-----------------------------------------------------------------------------
+-- Sub-widgets like governor.lua do “rfsuite.widgets.toolbox.load_object(box.type)”
+-- to pull in their dashboard/objects/<type>.lua. If load_object is missing, they
+-- will throw “chunk did not return a table” errors.
+function toolbox.load_object(object)
+  local path = "SCRIPTS:/" .. rfsuite.config.baseDir 
+             .. "/widgets/dashboard/objects/" .. object .. ".lua"
+  local chunk = rfsuite.compiler.loadfile(path)
+  if not chunk then
+    error("toolbox.load_object: failed to load “" .. object .. ".lua” from " .. path)
+  end
+  local ok, mod = pcall(chunk)
+  if not ok or type(mod) ~= "table" then
+    error("toolbox.load_object: chunk for “" .. object .. ".lua” did not return a table")
+  end
+  return mod
+end
+
+-----------------------------------------------------------------------------
+-- 2) Caches for compiled chunks & base module‐tables
+--    We compile each <object>.lua exactly once, store that function in
+--      baseCompiledCache[ script ] = <function> 
+--    We run it once to get a “baseMod” (table), store in
+--      baseModuleCache[ script ] = <table>
+--    Every time a new widget instance chooses that script, we shallow‐copy the
+--    base module‐table (so instance state doesn’t collide) and run init().
+-----------------------------------------------------------------------------
+local baseCompiledCache = {}   -- script‐filename → compiled chunk (function)
+local baseModuleCache   = {}   -- script‐filename → “base” module table
+
+-- Helper to do a shallow copy of any table
+local function shallowCopy(tbl)
+  local copy = {}
+  for k, v in pairs(tbl) do
+    copy[k] = v
+  end
+  return copy
+end
+
+-- Build a { {displayName, index}, … } list for the configure form
 local function generateWidgetList(tbl)
-    local widgets = {}
-    for i, tool in ipairs(tbl) do
-        table.insert(widgets, { tool.name, i })
-    end
-    return widgets
+  local widgets = {}
+  for i, tool in ipairs(tbl) do
+    table.insert(widgets, { tool.name, i })
+  end
+  return widgets
 end
 
--- Called once when the widget is created.
--- We attach per-instance state and loadedWidget fields to 'widget'.
+-----------------------------------------------------------------------------
+-- 3) create(): called once per widget instance. We attach per-instance state.
+--    - state.setup:           whether we’ve already loaded a sub-widget
+--    - loadedWidget:          the shallow‐copied module‐table
+--    - wakeupSchedulerUI:     timestamp if you still want to throttle (not used here)
+-----------------------------------------------------------------------------
 function toolbox.create()
-    return {
-        value = 0,
-        state = { setup = false },
-        loadedWidget = nil
-    }
+  return {
+    value             = 0,
+    state             = { setup = false },
+    loadedWidget      = nil,
+    wakeupSchedulerUI = 0,
+  }
 end
 
--- Internal function: attempt to load the chosen sub-widget into widget.loadedWidget
+-----------------------------------------------------------------------------
+-- 4) tryLoadSubWidget(): if widget.object is set but not yet loaded, do:
+--      (A) compile once via loadfile → store chunk in baseCompiledCache
+--      (B) run chunk() once → store “base” module in baseModuleCache
+--      (C) shallow‐copy baseModuleCache[script] → widget.loadedWidget
+--      (D) run loadedWidget.init(widget), set state.setup=true, lcd.invalidate()
+-----------------------------------------------------------------------------
 local function tryLoadSubWidget(widget)
-    if widget.loadedWidget or not widget.object then
-        return
-    end
+  if widget.loadedWidget or not widget.object then
+    return
+  end
 
-    local entry = toolBoxList[widget.object]
-    if not (entry and entry.folder) then
-        return
-    end
+  local entry = toolBoxList[ widget.object ]
+  if not entry or not entry.script then
+    return
+  end
 
-    -- Construct path to the sub-widget’s main Lua file
-    -- (expects: SCRIPTS:/<baseDir>/widgets/toolbox/widgets/<folder>/<folder>.lua)
-    local widgetPath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/toolbox/objects/" .. entry.folder .. "/" .. entry.folder .. ".lua"
+  -- Path to sub‐widget’s file in SCRIPTS:/…/widgets/toolbox/objects/
+  local widgetPath = "SCRIPTS:/" .. rfsuite.config.baseDir
+                   .. "/widgets/toolbox/objects/" .. entry.script
 
-
-    -- First, attempt to load the chunk (returns a function)
-    local okChunk, chunk = pcall(function()
-        return rfsuite.compiler.loadfile(widgetPath)
+  -- (A) Compile (once) if needed
+  local chunk = baseCompiledCache[ entry.script ]
+  if not chunk then
+    local okChunk, fnOrErr = pcall(function()
+      return rfsuite.compiler.loadfile(widgetPath)
     end)
-    if not okChunk or type(chunk) ~= "function" then
-        print("Error loading chunk from path")
-        return
+    if not okChunk or type(fnOrErr) ~= "function" then
+      print("Error compiling “" .. entry.script .. "” from path:", widgetPath)
+      return
     end
+    baseCompiledCache[ entry.script ] = fnOrErr
+    chunk = fnOrErr
+  end
 
-    -- Now execute the chunk to get the module table
-    local okModule, mod = pcall(chunk)
-    if not okModule or type(mod) ~= "table" then
-        print("Error: loaded chunk did not return a table")
-        return
+  -- (B) Run chunk() once to get the “base” module table if needed
+  local baseMod = baseModuleCache[ entry.script ]
+  if not baseMod then
+    local okModule, modTbl = pcall(chunk)
+    if not okModule or type(modTbl) ~= "table" then
+      print("Error loading module “" .. entry.script .. "”: chunk did not return a table")
+      return
     end
+    baseModuleCache[ entry.script ] = modTbl
+    baseMod = modTbl
+  end
 
-    widget.loadedWidget = mod
-    -- If the sub-widget has its own init(), call it now
-    if type(widget.loadedWidget.init) == "function" then
-        widget.loadedWidget.init(widget)
-    end
+  -- (C) Shallow‐copy that base table for *this* instance
+  local instanceMod = shallowCopy(baseMod)
+  widget.loadedWidget = instanceMod
 
-    -- Mark as set up so paint won’t show “NOT CONFIGURED”
-    widget.state.setup = true
-
-    -- Force a redraw so paint() can display the newly loaded widget
-    lcd.invalidate()
+  -- (D) Call init() if provided, mark setup=true, and request repaint
+  if type(instanceMod.init) == "function" then
+    instanceMod.init(widget)
+  end
+  widget.state.setup = true
+  lcd.invalidate()
 end
 
--- Delegate paint to the chosen sub-widget (once set up)
+-----------------------------------------------------------------------------
+-- 5) paint(widget): 
+--    - If not set up, do one last tryLoadSubWidget
+--    - If loadedWidget.paint exists, call it
+--    - Otherwise draw “NOT CONFIGURED”
+-----------------------------------------------------------------------------
 function toolbox.paint(widget)
-    -- Cache window size once
-    if not LCD_W or not LCD_H then
-        LCD_W, LCD_H = lcd.getWindowSize()
-    end
+  -- Cache window size once
+  if not LCD_W or not LCD_H then
+    LCD_W, LCD_H = lcd.getWindowSize()
+  end
 
-    -- If the user hasn’t selected a sub-widget yet, show “NOT CONFIGURED”
-    if not widget.state.setup then
-        -- Try loading now (in case wakeup hasn’t run yet)
-        tryLoadSubWidget(widget)
-    end
+  -- If the user has selected an object but we haven’t loaded it yet:
+  if not widget.state.setup then
+    tryLoadSubWidget(widget)
+  end
 
-    if widget.state.setup and widget.loadedWidget and type(widget.loadedWidget.paint) == "function" then
-        widget.loadedWidget.paint(widget)
+  if widget.state.setup 
+     and widget.loadedWidget 
+     and type(widget.loadedWidget.paint) == "function" then
+
+    widget.loadedWidget.paint(widget)
+  else
+    -- Draw “NOT CONFIGURED” centered
+    if lcd.darkMode() then
+      lcd.color(COLOR_WHITE)
     else
-        -- Fallback: show “NOT CONFIGURED”
-        if lcd.darkMode() then
-            lcd.color(COLOR_WHITE)
-        else
-            lcd.color(COLOR_BLACK)
-        end
-        local message = "NOT CONFIGURED"
-        local mw, mh = lcd.getTextSize(message)
-        lcd.drawText((LCD_W - mw) / 2, (LCD_H - mh) / 2, message)
+      lcd.color(COLOR_BLACK)
     end
+    local message = "NOT CONFIGURED"
+    local mw, mh = lcd.getTextSize(message)
+    lcd.drawText((LCD_W - mw) / 2, (LCD_H - mh) / 2, message)
+  end
 end
 
--- Delegate wakeup to the chosen sub-widget (once set up)
+-----------------------------------------------------------------------------
+-- 6) wakeup(widget):
+--    - If widget.object is set but we haven’t loaded it, do so
+--    - If loadedWidget.wakeup exists, call it unconditionally
+--    - Then lcd.invalidate() so it repaints (both instances will repaint)
+-----------------------------------------------------------------------------
 function toolbox.wakeup(widget)
-    local schedulerUI = lcd.isVisible() and 0.5 or 5
+  -- (1) If the user chose an index but we haven’t loaded it, do so now
+  if widget.object and not widget.state.setup then
+    tryLoadSubWidget(widget)
+  end
+
+  -- (2) If sub-widget has wakeup(), run it on a throttled interval
+  if widget.state.setup 
+     and widget.loadedWidget 
+     and type(widget.loadedWidget.wakeup) == "function" then
+
+    -- Run at 0.5 s intervals when visible, or 5 s when hidden
+    local interval = lcd.isVisible() and 0.5 or 5
     local now = os.clock()
-
-    if (now - wakeupSchedulerUI) >= schedulerUI then
-        wakeupSchedulerUI = now
-
-        -- Once there’s a selected index, mark setup = true and attempt load
-        if widget.object then
-            if not widget.state.setup then
-                tryLoadSubWidget(widget)
-            end
-        end
-
-        -- Always invalidate so the next paint() reflects any changes
-        lcd.invalidate()
+    if (now - (widget.wakeupSchedulerUI or 0)) >= interval then
+      widget.wakeupSchedulerUI = now
+      widget.loadedWidget.wakeup(widget)
+      lcd.invalidate()
     end
 
-    -- If setup is done and we have a loaded sub-widget, delegate wakeup()
-    if widget.state.setup and widget.loadedWidget and type(widget.loadedWidget.wakeup) == "function" then
-        widget.loadedWidget.wakeup(widget)
-    end
+  else
+    -- If no wakeup() to run, still redraw so the UI stays up-to-date
+    lcd.invalidate()
+  end
 end
 
 function toolbox.menu(widget)
-        if widget.state.setup and widget.loadedWidget and type(widget.loadedWidget.menu) == "function" then
-            return widget.loadedWidget.menu(widget)
-        end
-        return {}
+  if widget.state.setup 
+     and widget.loadedWidget 
+     and type(widget.loadedWidget.menu) == "function" then
+    return widget.loadedWidget.menu(widget)
+  end
+  return {}
 end       
 
 function toolbox.i18n(widget)
-        if widget.state.setup and widget.loadedWidget and type(widget.loadedWidget.i18n) == "function" then
-            return widget.loadedWidget.i18n(widget)
-        end
-        return {}
+  if widget.state.setup 
+     and widget.loadedWidget 
+     and type(widget.loadedWidget.i18n) == "function" then
+    return widget.loadedWidget.i18n(widget)
+  end
+  return {}
 end  
 
--- Build the “Configure” form so the user can pick which sub-widget to use
+-----------------------------------------------------------------------------
+-- 7) configure(widget):
+--    Build a single “ChoiceField” so the user picks which sub‐widget to load.
+--    If they pick a different one, we clear loadedWidget (so init() runs fresh)
+--    but leave the baseCompiledCache/baseModuleCache intact (no recompile).
+-----------------------------------------------------------------------------
 function toolbox.configure(widget)
-    local formLines = {}
-    local formFields = {}
-    local formLineCnt = 0
-    local formFieldCount = 0
+  local formLines  = {}
+  local formFields = {}
+  local formLineCnt   = 0
+  local formFieldCount = 0
 
-    formLineCnt = formLineCnt + 1
-    formLines[formLineCnt] = form.addLine("Widget type")
-    formFieldCount = formFieldCount + 1
-    formFields[formFieldCount] = form.addChoiceField(
-        formLines[formLineCnt],
-        nil,
-        generateWidgetList(toolBoxList),
-        function()
-            if not widget.object then
-                widget.object = 1
-            end
-            return widget.object
-        end,
-        function(newValue)
-            widget.object = newValue
-            -- Reset per-instance state so we reload the new sub-widget
-            widget.state.setup = false
-            widget.loadedWidget = nil
-        end
-    )
+  formLineCnt = formLineCnt + 1
+  formLines[formLineCnt] = form.addLine("Title")
+  formFieldCount = formFieldCount + 1
+  formFields[formFieldCount] = form.addBooleanField(formLines[formLineCnt], 
+        nil, 
+        function() 
+          return widget.title
+        end, 
+        function(newValue) 
+          if widget.title and widget.title ~= newValue then
+            widget.state.setup       = false
+            widget.loadedWidget      = nil
+            widget.wakeupSchedulerUI = 0
+          end
+          widget.title = newValue
+        end)  
+
+
+  formLineCnt = formLineCnt + 1
+  formLines[formLineCnt] = form.addLine("Widget type")
+  formFieldCount = formFieldCount + 1
+  formFields[formFieldCount] = form.addChoiceField(
+    formLines[formLineCnt],
+    nil,
+    generateWidgetList(toolBoxList),
+    function()
+      if not widget.object then
+        widget.object = 1
+      end
+      return widget.object
+    end,
+    function(newValue)
+      if widget.object and widget.object ~= newValue then
+        widget.state.setup       = false
+        widget.loadedWidget      = nil
+        widget.wakeupSchedulerUI = 0
+      end
+      widget.object = newValue
+    end
+  )
 end
 
--- Persist the user’s selection
+-----------------------------------------------------------------------------
+-- 8) read/write for persistence
+-----------------------------------------------------------------------------
 function toolbox.read(widget)
-    print("toolbox.read()")
-    widget.object = (function(ok, result) return ok and result end)(pcall(storage.read, "object"))
+  widget.title = (function(ok, result) return ok and result end)(pcall(storage.read, "title"))
+  widget.object = (function(ok, result) return ok and result end)(pcall(storage.read, "object"))
 end
 
--- Save the user’s selection
 function toolbox.write(widget)
-    print("toolbox.write()")
-    storage.write("object", widget.object)
+  storage.write("title", widget.object)
+  storage.write("object", widget.object)
 end
 
--- No titles are used by this wrapper
+-- We don’t use titles in this wrapper
 toolbox.title = false
 
 return toolbox
