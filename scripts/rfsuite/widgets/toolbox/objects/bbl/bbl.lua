@@ -67,7 +67,7 @@ local function getDataflashSummary()
 
     summary.totalSize = rfsuite.session.bblSize
     summary.usedSize = rfsuite.session.bblUsed
-    local flags = rfsuite.session.bblFlags
+    local flags = rfsuite.session.bblFlags or 0
     summary.ready = (flags & 1) ~= 0
     summary.supported = (flags & 2) ~= 0
 
@@ -192,7 +192,7 @@ function rf2bbl.paint(widget)
 
     if isErase then
         msg = rfsuite.i18n.get("widgets.bbl.erasing")
-    elseif not rfsuite.tasks.telemetry.active() then
+    elseif not not rfsuite.tasks and not not rfsuite.tasks.telemetry and not rfsuite.tasks.telemetry.active() then
         msg = rfsuite.i18n.get("no_link"):upper() 
     elseif summary.totalSize and summary.usedSize then
         msg = getFreeDataflashSpace()       
@@ -220,15 +220,6 @@ function rf2bbl.menu(widget)
     }
 end
 
-function rf2bbl.read(widget)
-    config.display = storage.read("mem1")
-    if config.display == nil then config.display = 0 end
-end
-
--- Write function
-function rf2bbl.write(widget)
-    storage.write("mem1", config.display)
-end
 
 function rf2bbl.wakeup(widget)
 
