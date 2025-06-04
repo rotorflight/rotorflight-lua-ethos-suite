@@ -453,20 +453,26 @@ function utils.box(
     end
 end
 
---- Resolves the text color for a value with optional threshold logic.
--- Checks the box table for a thresholds array. If present and value is less than a threshold's value,
--- returns that threshold's textcolor (using theme fallback). Otherwise uses the box or theme default.
--- @param value number     The value to test.
--- @param box   table      The widget's config table (may contain thresholds, textcolor, etc.)
--- @return number          The LCD color to use for text.
+--- Resolves the text color for a value using flexible threshold logic.
+-- If the box table includes a 'thresholds' array:
+--   - For string values, returns the textcolor for the threshold whose value exactly matches.
+--   - For numeric values, returns the textcolor for the first threshold whose value is greater than the given value (less-than logic).
+-- Falls back to the box or theme default textcolor if no threshold matches.
+-- @param value number|string   The value or state to evaluate.
+-- @param box   table           The widget's config table (may contain thresholds, textcolor, etc.)
+-- @return number               The LCD color to use for text.
 
 function utils.resolveThresholdTextColor(value, box)
     local color = utils.resolveThemeColor("textcolor", utils.getParam(box, "textcolor"))
     local thresholds = utils.getParam(box, "thresholds")
     if thresholds and value ~= nil then
         for _, t in ipairs(thresholds) do
-            local t_val = type(t.value) == "function" and t.value(box, value) or t.value
-            if value < t_val and t.textcolor then
+            if type(value) == "string" and t.value == value and t.textcolor then
+                -- String match
+                color = utils.resolveThemeColor("textcolor", t.textcolor)
+                break
+            elseif type(value) == "number" and type(t.value) == "number" and value < t.value and t.textcolor then
+                -- Numerical threshold
                 color = utils.resolveThemeColor("textcolor", t.textcolor)
                 break
             end

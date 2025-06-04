@@ -76,7 +76,17 @@ local boxes = {
             { value = 140, textcolor = "red"    }
         }
     },
-    { col = 1, row = 3, type = "governor", title = "GOVERNOR", titlepos = "bottom" },
+    { col = 1, row = 3, type = "governor", title = "GOVERNOR", titlepos = "bottom",
+        thresholds = {
+            { value = "DISARMED", textcolor = "red"    },
+            { value = "OFF",      textcolor = "red"    },
+            { value = "IDLE",     textcolor = "yellow" },
+            { value = "SPOOLUP",  textcolor = "blue"   },
+            { value = "RECOVERY", textcolor = "orange" },
+            { value = "ACTIVE",   textcolor = "green"  },
+            { value = "THR-OFF",  textcolor = "red"    },
+        }
+    },
     { col = 1, row = 4, type = "apiversion", title = "API VERSION", titlepos = "bottom" },
 
     -- Column 2
