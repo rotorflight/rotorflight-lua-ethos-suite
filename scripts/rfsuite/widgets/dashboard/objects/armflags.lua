@@ -62,7 +62,7 @@ function render.wakeup(box, telemetry)
     -- Fallback to ARMED/DISARMED state if no specific disable reason
     if not showReason then
         if value ~= nil then
-            if value >= 3 then
+            if value == 1 or value == 3 then
                 displayValue = rfsuite.i18n.get("ARMED")
             else
                 displayValue = rfsuite.i18n.get("DISARMED")

@@ -617,7 +617,7 @@ function utils.imageBox(
     -- Draw image
     if rfsuite and rfsuite.utils and rfsuite.utils.loadImage and lcd and lcd.drawBitmap then
         imageCache = imageCache or {}
-        local cacheKey = image
+        local cacheKey = image or "default_image"
         local bitmapPtr = imageCache[cacheKey]
         if not bitmapPtr then
             bitmapPtr = rfsuite.utils.loadImage(image, nil, "widgets/dashboard/default_image.png")
