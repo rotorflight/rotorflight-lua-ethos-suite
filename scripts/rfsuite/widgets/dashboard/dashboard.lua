@@ -18,6 +18,17 @@
 -- Dashboard module table
 local dashboard = {}  -- main namespace for all dashboard functionality
 
+-- Supported resolutions
+local supportedResolutions = {
+    { 784, 294 },   -- X20, X20RS etc
+    { 784, 316 },   -- X20, X20RS etc (no title)
+    { 472, 191 },   -- TWXLITE, X18, X18S
+    { 472, 210 },   -- TWXLITE, X18, X18S (no title)
+    { 630, 236 },   -- X14
+    { 630, 258 },   -- X14 (no title)
+}
+
+
 -- Track the previous flight mode so we can detect changes on wakeup
 local lastFlightMode = nil
 
@@ -52,6 +63,8 @@ local objectWakeupsPerCycle = nil       -- number of objects to wake per cycle (
 local objectSchedulerPercentage = 0.2   -- fraction of total objects to wake each cycle (20%)
 local objectsThreadedWakeupCount = 0
 local lastLoadedBoxCount = 0
+
+local unsupportedResolution = false  -- flag to track unsupported resolutions
 
 -- precompute indices of boxes whose object has its own `scheduler` field,
 -- so we can wake them every cycle without scanning all `boxRects`.
@@ -609,6 +622,14 @@ end
 -- @param widget The widget object to be painted.
 function dashboard.paint(widget)
 
+    if unsupportedResolution then
+        -- If the resolution is unsupported, show an error message and return
+        local W, H = lcd.getWindowSize()
+        dashboard.overlaymessage(0, 0, W, H , rfsuite.i18n.get("widgets.dashboard.unsupported_resolution"))
+        return
+    end
+
+
     -- on the *first* paint, immediately draw the spinner and bail out
     if firstWakeup then
         local W, H = lcd.getWindowSize()
@@ -765,6 +786,17 @@ end
 --
 -- @param widget The widget instance to update.
 function dashboard.wakeup(widget)
+
+    local W, H = lcd.getWindowSize()
+
+    -- Bail out if resolution is not supported:
+    if not dashboard.utils.supportedResolution(W,H, supportedResolutions) then
+        unsupportedResolution = true
+        lcd.invalidate(widget)
+        return
+    else
+        unsupportedResolution = false    
+    end
 
     -- load themes on first wakeup
     if firstWakeup then
