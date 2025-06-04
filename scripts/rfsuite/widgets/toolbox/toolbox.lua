@@ -216,6 +216,7 @@ function toolbox.wakeup(widget)
     -- If no wakeup() to run, still redraw so the UI stays up-to-date
     lcd.invalidate()
   end
+  return {}
 end
 
 function toolbox.menu(widget)

@@ -53,7 +53,7 @@ end
 --------------------------------------------------------------------------------
 function object.paint(widget)
     local W, H = lcd.getWindowSize()
-    blackbox.paint(0, 0, W, H, box)
+    blackbox.paint(1, 1, W-2, H-2, box)
 end
 
 return object

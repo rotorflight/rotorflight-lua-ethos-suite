@@ -45,6 +45,8 @@ function object.wakeup(widget)
 
     if not widget.title then box.title = nil end
 
+    if lcd.hasFocus() then box.bgcolor = lcd.themeColor(2) end
+
     modelimage.wakeup(box, rfsuite.tasks.telemetry)
 end
 
@@ -53,7 +55,7 @@ end
 --------------------------------------------------------------------------------
 function object.paint(widget)
     local W, H = lcd.getWindowSize()
-    modelimage.paint(0, 0, W, H, box)
+    modelimage.paint(1, 1, W-2, H-2, box)
 end
 
 return object
