@@ -76,7 +76,7 @@ local boxes = {
             { value = 140, textcolor = "red"    }
         }
     },
-    { col = 1, row = 3, type = "governor", title = "GOVERNOR", titlepos = "bottom",
+    { col = 1, row = 3, type = "governor", title = "GOVERNOR", titlepos = "bottom", font = "FONT_STD",
         thresholds = {
             { value = "DISARMED", textcolor = "red"    },
             { value = "OFF",      textcolor = "red"    },
@@ -104,8 +104,12 @@ local boxes = {
     { col = 3, row = 1, type = "telemetry", source = "fuel", title = "FUEL", titlepos = "bottom", transform = "floor" },
     { col = 3, row = 2, type = "func", paint = customPaintFunction, wakeup = customWakeupFunction, title = "FUNCTION", titlepos = "bottom" },
     { col = 3, row = 3, type = "blackbox", title = "BLACKBOX", titlepos = "bottom" },
-    { col = 3, row = 4, type = "armflags", title = "ARM FLAGS", titlepos = "bottom" },
-
+    { col = 3, row = 4, type = "armflags", title = "ARM FLAGS", titlepos = "bottom", font = "FONT_STD",
+            thresholds = {
+            { value = "DISARMED", textcolor = "red" },
+            { value = "ARMED", textcolor = "green" },
+        }
+    },
     -- Column 4
     { col = 4, row = 1, type = "text", value = "PRESS ME", title = "ON PRESS", titlepos = "bottom", textcolor = "orange", onpress = onpressFunctionSave },
     { col = 4, row = 2, type = "flightcount", title = "FLIGHT COUNT", titlepos = "bottom" },
