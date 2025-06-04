@@ -3,6 +3,7 @@
 
     Configurable Parameters (box table fields):
     -------------------------------------------
+    source              : string                    -- Session variable to display
     unit                : string                    -- (Optional) Unit label to append to value
     font                : font                      -- (Optional) Value font (e.g., FONT_L, FONT_XL)
     bgcolor             : color                     -- (Optional) Widget background color (theme fallback if nil)
@@ -31,11 +32,19 @@ local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 
 function render.wakeup(box)
-    local src = getParam(box, "source")
-    local displayValue = rfsuite.session[src]
-    local unit = getParam(box, "unit")
-    
-    if displayValue == nil then
+    -- Value extraction
+    local source = getParam(box, "source")
+    local value = rfsuite.session[source]
+
+    -- Set displayValue, Fallback if no value
+    local unit = getParam(box, "unit") or ""
+    local displayValue
+    if value ~= nil then
+        displayValue = tostring(value)
+        if unit ~= "" then
+            displayValue = displayValue .. unit
+        end
+    else
         displayValue = getParam(box, "novalue") or "-"
         unit = nil
     end
