@@ -24,6 +24,7 @@ local function default_box()
         titlepaddingtop  = 5,
         titlecolor       = "grey",
         textcolor        = "white",
+        bgcolor          = "transparent",
         valuepaddingtop  = 20,
         -- …add any other defaults here…
     }
@@ -53,7 +54,7 @@ end
 --------------------------------------------------------------------------------
 function object.paint(widget)
     local W, H = lcd.getWindowSize()
-    armflags.paint(0, 0, W, H, box)
+    return armflags.paint(1, 1, W-2, H-2, box)
 end
 
 return object

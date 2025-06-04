@@ -24,6 +24,7 @@ local function default_box()
     titlecolor = "grey",
     textcolor  = "white",
     valuepaddingtop = 20,
+    bgcolor          = "transparent",
         -- …add any other defaults here…
     }
 end
@@ -53,7 +54,7 @@ end
 --------------------------------------------------------------------------------
 function object.paint(widget)
     local W, H = lcd.getWindowSize()
-    craftname.paint(0, 0, W, H, box)
+    craftname.paint(1, 1, W-2, H-2, box)
 end
 
 return object
