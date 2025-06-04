@@ -167,6 +167,25 @@ function toolbox.configure(widget)
     local formLineCnt = 0
     local formFieldCount = 0
 
+  formLineCnt = formLineCnt + 1
+  formLines[formLineCnt] = form.addLine("Title")
+  formFieldCount = formFieldCount + 1
+  formFields[formFieldCount] = form.addBooleanField(formLines[formLineCnt], 
+        nil, 
+        function() 
+          return widget.title
+        end, 
+        function(newValue) 
+          if widget.title and widget.title ~= newValue then
+            widget.state.setup       = false
+            widget.loadedWidget      = nil
+            widget.wakeupSchedulerUI = 0
+          end
+          widget.title = newValue
+        end)  
+
+
+
     formLineCnt = formLineCnt + 1
     formLines[formLineCnt] = form.addLine("Widget type")
     formFieldCount = formFieldCount + 1
@@ -191,13 +210,13 @@ end
 
 -- Persist the user’s selection
 function toolbox.read(widget)
-    print("toolbox.read()")
+    widget.title = (function(ok, result) return ok and result end)(pcall(storage.read, "title"))
     widget.object = (function(ok, result) return ok and result end)(pcall(storage.read, "object"))
 end
 
 -- Save the user’s selection
 function toolbox.write(widget)
-    print("toolbox.write()")
+    storage.write("title", widget.title)
     storage.write("object", widget.object)
 end
 
