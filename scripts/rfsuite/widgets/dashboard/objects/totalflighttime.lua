@@ -1,29 +1,27 @@
 --[[
-
     Total Flight Time Widget
 
-    Configurable Arguments (box table keys):
-    ----------------------------------------
-    title              : string   -- Title text
-    unit               : string   -- Unit label (if any) to append to value
-    font               : font     -- Value font (e.g., FONT_L, FONT_XL)
-    bgcolor            : color    -- Widget background color (default: theme fallback)
-    textcolor          : color    -- Value text color (default: theme/text fallback)
-    titlecolor         : color    -- Title text color (default: theme/text fallback)
-    titlealign         : string   -- Title alignment ("center", "left", "right")
-    valuealign         : string   -- Value alignment ("center", "left", "right")
-    titlepos           : string   -- Title position ("top" or "bottom")
-    titlepadding       : number   -- Padding for title (all sides unless overridden)
-    titlepaddingleft   : number   -- Left padding for title
-    titlepaddingright  : number   -- Right padding for title
-    titlepaddingtop    : number   -- Top padding for title
-    titlepaddingbottom : number   -- Bottom padding for title
-    valuepadding       : number   -- Padding for value (all sides unless overridden)
-    valuepaddingleft   : number   -- Left padding for value
-    valuepaddingright  : number   -- Right padding for value
-    valuepaddingtop    : number   -- Top padding for value
-    valuepaddingbottom : number   -- Bottom padding for value
-
+    Configurable Parameters (box table fields):
+    -------------------------------------------
+    unit                : string                    -- (Optional) Unit label to append to value
+    font                : font                      -- (Optional) Value font (e.g., FONT_L, FONT_XL)
+    bgcolor             : color                     -- (Optional) Widget background color (theme fallback if nil)
+    textcolor           : color                     -- (Optional) Value text color (theme/text fallback if nil)
+    titlecolor          : color                     -- (Optional) Title text color (theme/text fallback if nil)
+    title               : string                    -- (Optional) Title text
+    titlealign          : string                    -- (Optional) Title alignment ("center", "left", "right")
+    valuealign          : string                    -- (Optional) Value alignment ("center", "left", "right")
+    titlepos            : string                    -- (Optional) Title position ("top" or "bottom")
+    titlepadding        : number                    -- (Optional) Padding for title (all sides unless overridden)
+    titlepaddingleft    : number                    -- (Optional) Left padding for title
+    titlepaddingright   : number                    -- (Optional) Right padding for title
+    titlepaddingtop     : number                    -- (Optional) Top padding for title
+    titlepaddingbottom  : number                    -- (Optional) Bottom padding for title
+    valuepadding        : number                    -- (Optional) Padding for value (all sides unless overridden)
+    valuepaddingleft    : number                    -- (Optional) Left padding for value
+    valuepaddingright   : number                    -- (Optional) Right padding for value
+    valuepaddingtop     : number                    -- (Optional) Top padding for value
+    valuepaddingbottom  : number                    -- (Optional) Bottom padding for value
 ]]
 
 local render = {}
@@ -33,16 +31,20 @@ local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 
 function render.wakeup(box)
-    local lifetime = rfsuite.ini.getvalue(rfsuite.session.modelPreferences, "general", "totalflighttime") or 0
-    local displayValue = lifetime
+    local value = rfsuite.ini.getvalue(rfsuite.session.modelPreferences, "general", "totalflighttime")
+    local unit = getParam(box, "unit")
+    local displayValue
 
     -- Format to HH:MM:SS
-    local hours = math.floor(displayValue / 3600)
-    local minutes = math.floor((displayValue % 3600) / 60)
-    local seconds = math.floor(displayValue % 60)
-    displayValue = string.format("%02d:%02d:%02d", hours, minutes, seconds)
-
-    local unit = getParam(box, "unit")
+    if type(value) == "number" and value > 0 then
+        local hours = math.floor(value / 3600)
+        local minutes = math.floor((value % 3600) / 60)
+        local seconds = math.floor(value % 60)
+        displayValue = string.format("%02d:%02d:%02d", hours, minutes, seconds)
+    else
+        displayValue = getParam(box, "novalue") or "00:00:00"
+        unit = nil
+    end
 
     box._cache = {
         displayValue       = displayValue,
@@ -71,15 +73,13 @@ end
 function render.paint(x, y, w, h, box)
     x, y = utils.applyOffset(x, y, box)
     local c = box._cache or {}
+
     utils.box(
         x, y, w, h,
         c.title, c.displayValue, c.unit, c.bgcolor,
-        c.titlealign, c.valuealign, c.titlecolor, c.titlepos,
-        c.titlepadding, c.titlepaddingleft, c.titlepaddingright,
-        c.titlepaddingtop, c.titlepaddingbottom,
-        c.valuepadding, c.valuepaddingleft, c.valuepaddingright,
-        c.valuepaddingtop, c.valuepaddingbottom,
-        c.font, c.textcolor
+        c.titlealign, c.valuealign, c.titlecolor, c.titlepos, c.titlepadding, c.titlepaddingleft, c.titlepaddingright,
+        c.titlepaddingtop, c.titlepaddingbottom, c.valuepadding, c.valuepaddingleft, c.valuepaddingright,
+        c.valuepaddingtop, c.valuepaddingbottom, c.font, c.textcolor
     )
 end
 

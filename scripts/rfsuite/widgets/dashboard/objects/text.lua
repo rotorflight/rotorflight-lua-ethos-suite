@@ -35,7 +35,7 @@ local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 
-function render.wakeup(box)
+function render.wakeup(box, telemetry)
     -- Value extraction
     local value = getParam(box, "value")
 

@@ -57,7 +57,7 @@ Each sensor configuration includes:
 - crsf: A table of sensor configurations for the crsf protocol.
 - crsfLegacy: A table of sensor configurations for the crsfLegacy protocol.
 - maxmin_trigger: A function to determine if min/max tracking should be active.
-- localization: A function to transform the sensor value.
+- localizations: A function to transform the sensor value.
 
 Sensors included:
 - RSSI Sensors (rssi)
@@ -246,11 +246,12 @@ local sensorTable = {
             },
             crsfLegacy = { "GPS Speed" },
         },
-        localization = function(value)
+        localizations = function(value)
             local major = UNIT_DEGREE
+            if value == nil then return nil, major, nil end
 
             -- Shortcut to the user’s temperature‐unit preference (may be nil)
-            local prefs = rfsuite.preferences.localization
+            local prefs = rfsuite.preferences.localizations
             local isFahrenheit = prefs and prefs.temperature_unit == 1
 
             if isFahrenheit then
@@ -286,11 +287,12 @@ local sensorTable = {
             },
             crsfLegacy = { "GPS Sats" },
         },
-        localization = function(value)
+        localizations = function(value)
             local major = UNIT_DEGREE
+            if value == nil then return nil, major, nil end
 
             -- Shortcut to the user’s temperature‐unit preference (may be nil)
-            local prefs = rfsuite.preferences.localization
+            local prefs = rfsuite.preferences.localizations
             local isFahrenheit = prefs and prefs.temperature_unit == 1
 
             if isFahrenheit then
@@ -533,11 +535,12 @@ local sensorTable = {
             },
             crsfLegacy = { nil },
         },
-        localization = function(value)
+        localizations = function(value)
             local major = UNIT_METER
-
+            if value == nil then return nil, major, nil end
+            
             -- Shortcut to the user’s altitude‐unit preference (may be nil)
-            local prefs = rfsuite.preferences.localization
+            local prefs = rfsuite.preferences.localizations
             local isFeet = prefs and prefs.altitude_unit == 1
 
             if isFeet then
@@ -757,12 +760,12 @@ function telemetry.getSensor(sensorKey)
     -- get initial defaults
     local value = source:value()                        -- get the raw value from the source
     local major = sensorTable[sensorKey].unit or nil    -- use the default unit if defined
-    local minor = nil                                   -- minor version is not possible without a localization function which we do not have yet
+    local minor = nil                                   -- minor version is not possible without a localizations function which we do not have yet
 
 
     -- if the sensor has a transform function, apply it to the value:
-    if sensorTable[sensorKey] and sensorTable[sensorKey].localization and type(sensorTable[sensorKey].localization) == "function" then
-        value, major, minor = sensorTable[sensorKey].localization(value)
+    if sensorTable[sensorKey] and sensorTable[sensorKey].localizations and type(sensorTable[sensorKey].localizations) == "function" then
+        value, major, minor = sensorTable[sensorKey].localizations(value)
     end
 
     -- Return the value

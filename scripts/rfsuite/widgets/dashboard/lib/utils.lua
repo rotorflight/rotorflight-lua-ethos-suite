@@ -453,20 +453,26 @@ function utils.box(
     end
 end
 
---- Resolves the text color for a value with optional threshold logic.
--- Checks the box table for a thresholds array. If present and value is less than a threshold's value,
--- returns that threshold's textcolor (using theme fallback). Otherwise uses the box or theme default.
--- @param value number     The value to test.
--- @param box   table      The widget's config table (may contain thresholds, textcolor, etc.)
--- @return number          The LCD color to use for text.
+--- Resolves the text color for a value using flexible threshold logic.
+-- If the box table includes a 'thresholds' array:
+--   - For string values, returns the textcolor for the threshold whose value exactly matches.
+--   - For numeric values, returns the textcolor for the first threshold whose value is greater than the given value (less-than logic).
+-- Falls back to the box or theme default textcolor if no threshold matches.
+-- @param value number|string   The value or state to evaluate.
+-- @param box   table           The widget's config table (may contain thresholds, textcolor, etc.)
+-- @return number               The LCD color to use for text.
 
 function utils.resolveThresholdTextColor(value, box)
     local color = utils.resolveThemeColor("textcolor", utils.getParam(box, "textcolor"))
     local thresholds = utils.getParam(box, "thresholds")
     if thresholds and value ~= nil then
         for _, t in ipairs(thresholds) do
-            local t_val = type(t.value) == "function" and t.value(box, value) or t.value
-            if value < t_val and t.textcolor then
+            if type(value) == "string" and t.value == value and t.textcolor then
+                -- String match
+                color = utils.resolveThemeColor("textcolor", t.textcolor)
+                break
+            elseif type(value) == "number" and type(t.value) == "number" and value < t.value and t.textcolor then
+                -- Numerical threshold
                 color = utils.resolveThemeColor("textcolor", t.textcolor)
                 break
             end
@@ -514,18 +520,15 @@ function utils.transformValue(value, box)
     return value
 end
 
---    Draws an image box, using imageCache and flexible alignment/padding.
---    Optionally overlays a title.
---    Args: x, y, w, h, ...   - see code above for full param list.
---- Draws an image box widget with optional title, background color, image alignment, and padding.
--- 
+--- Draws an image box widget with optional title, background color, flexible alignment, and padding.
+-- Uses imageCache for performance. Title is rendered above or below the image if provided.
+--
 -- @param x number: The x-coordinate of the box.
 -- @param y number: The y-coordinate of the box.
 -- @param w number: The width of the box.
 -- @param h number: The height of the box.
--- @param color number: (Unused) Color parameter, reserved for future use.
 -- @param title string: (Optional) Title text to display above or below the image.
--- @param imagePath string: Path to the image file to display.
+-- @param image string: Path to the image file to display.
 -- @param imagewidth number: (Optional) Width of the image. Defaults to available region width.
 -- @param imageheight number: (Optional) Height of the image. Defaults to available region height.
 -- @param imagealign string: (Optional) Alignment of the image ("left", "center", "right", "top", "bottom"). Defaults to "center".
@@ -538,19 +541,22 @@ end
 -- @param imagepaddingright number: (Optional) Padding on the right side of the image.
 -- @param imagepaddingtop number: (Optional) Padding on the top side of the image.
 -- @param imagepaddingbottom number: (Optional) Padding on the bottom side of the image.
+
 function utils.imageBox(
-    x, y, w, h, color, title, imagePath, imagewidth, imageheight, imagealign, bgcolor,
-    titlealign, titlecolor, titlepos,
-    imagepadding, imagepaddingleft, imagepaddingright, imagepaddingtop, imagepaddingbottom
+    x, y, w, h,
+    title, image, imagewidth, imageheight, imagealign,
+    bgcolor, titlealign, titlecolor, titlepos,
+    imagepadding, imagepaddingleft, imagepaddingright,
+    imagepaddingtop, imagepaddingbottom
 )
-    local isDARKMODE = lcd.darkMode()
-    local resolvedBg = utils.resolveColor(bgcolor)
-    lcd.color(resolvedBg or (isDARKMODE and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)))
+    -- Draw background (theme fallback)
+    lcd.color(bgcolor)
     lcd.drawFilledRectangle(x, y, w, h)
 
-    imagepaddingleft = imagepaddingleft or imagepadding or 0
-    imagepaddingright = imagepaddingright or imagepadding or 0
-    imagepaddingtop = imagepaddingtop or imagepadding or 0
+    -- Padding resolution (default 0)
+    imagepaddingleft   = imagepaddingleft   or imagepadding or 0
+    imagepaddingright  = imagepaddingright  or imagepadding or 0
+    imagepaddingtop    = imagepaddingtop    or imagepadding or 0
     imagepaddingbottom = imagepaddingbottom or imagepadding or 0
 
     local region_x = x + imagepaddingleft
@@ -558,11 +564,41 @@ function utils.imageBox(
     local region_w = w - imagepaddingleft - imagepaddingright
     local region_h = h - imagepaddingtop - imagepaddingbottom
 
+    -- Draw title (top or bottom, uses titlecolor, align, and font)
+    if title and title ~= "" then
+        if not fontCache then fontCache = utils.getFontListsForResolution() end
+        lcd.font(fontCache.value_title)
+        local tsizeW, tsizeH = lcd.getTextSize(title)
+        local region_xt = x + (imagepaddingleft or 0)
+        local region_wt = w - (imagepaddingleft or 0) - (imagepaddingright or 0)
+        local align = (titlealign or "center"):lower()
+        local sx
+        if align == "left" then
+            sx = region_xt
+        elseif align == "right" then
+            sx = region_xt + region_wt - tsizeW
+        else
+            sx = region_xt + (region_wt - tsizeW) / 2
+        end
+        lcd.color(titlecolor)
+        local sy
+        if titlepos == "bottom" then
+            sy = y + h - imagepaddingbottom - tsizeH
+        else
+            sy = y + imagepaddingtop
+            region_y = region_y + tsizeH + 2  -- Move image below title
+            region_h = region_h - tsizeH - 2
+        end
+        lcd.drawText(sx, sy, title)
+    end
+
+    -- Draw image
     if rfsuite and rfsuite.utils and rfsuite.utils.loadImage and lcd and lcd.drawBitmap then
-        local cacheKey = imagePath
+        imageCache = imageCache or {}
+        local cacheKey = image
         local bitmapPtr = imageCache[cacheKey]
         if not bitmapPtr then
-            bitmapPtr = rfsuite.utils.loadImage(imagePath, nil, "widgets/dashboard/default_image.png")
+            bitmapPtr = rfsuite.utils.loadImage(image, nil, "widgets/dashboard/default_image.png")
             imageCache[cacheKey] = bitmapPtr
         end
         if bitmapPtr then
@@ -588,27 +624,6 @@ function utils.imageBox(
                 img_y = region_y
             end
 
-            if title and title ~= "" then
-                lcd.font(FONT_S)
-                local tsize_w, tsize_h = lcd.getTextSize(title)
-                local sx
-                if titlealign == "left" then
-                    sx = x
-                elseif titlealign == "right" then
-                    sx = x + w - tsize_w
-                else
-                    sx = x + (w - tsize_w) / 2
-                end
-                local useColor = utils.resolveColor(titlecolor) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
-                lcd.color(useColor)
-                if titlepos == "bottom" then
-                    lcd.drawText(sx, y + h - tsize_h, title)
-                else
-                    lcd.drawText(sx, y, title)
-                    img_y = img_y + tsize_h + 2
-                end
-            end
-
             lcd.drawBitmap(img_x, img_y, bitmapPtr, img_w, img_h)
         end
     end
@@ -625,115 +640,6 @@ function utils.setBackgroundColourBasedOnTheme()
         lcd.color(lcd.RGB(209, 208, 208))
     end
     lcd.drawFilledRectangle(0, 0, w, h)
-end
-
---  Draws the model image (icon) box, trying craftName, modelID, or model.bitmap().
---  Uses padding and alignment. Shows error if no image found.
---  Args: x, y, w, h, ...   - see code above for full param list.
---- Draws a model image box widget with optional title and customizable layout.
--- 
--- This function renders a rectangular area containing a model image (with fallback options)
--- and an optional title, supporting various alignment, padding, and color options.
---
--- @param x number: X coordinate of the box.
--- @param y number: Y coordinate of the box.
--- @param w number: Width of the box.
--- @param h number: Height of the box.
--- @param color number: (Unused) Color parameter for future use or compatibility.
--- @param title string: Optional title text to display.
--- @param imagewidth number: Optional width of the image inside the box.
--- @param imageheight number: Optional height of the image inside the box.
--- @param imagealign string: Alignment of the image ("left", "center", "right"). Default is "center".
--- @param bgcolor number|string: Background color (resolved via utils.resolveColor).
--- @param titlealign string: Alignment of the title ("left", "center", "right"). Default is "center".
--- @param titlecolor number|string: Color of the title text.
--- @param titlepos string: Position of the title ("top" or "bottom"). Default is "top".
--- @param imagepadding number: General padding around the image (overridden by specific paddings if set).
--- @param imagepaddingleft number: Padding to the left of the image.
--- @param imagepaddingright number: Padding to the right of the image.
--- @param imagepaddingtop number: Padding above the image.
--- @param imagepaddingbottom number: Padding below the image.
-function utils.modelImageBox(
-    x, y, w, h,
-    color, title, imagewidth, imageheight, imagealign, bgcolor,
-    titlealign, titlecolor, titlepos,
-    imagepadding, imagepaddingleft, imagepaddingright, imagepaddingtop, imagepaddingbottom
-)
-    local isDARKMODE = lcd.darkMode()
-    local resolvedBg = utils.resolveColor(bgcolor)
-    lcd.color(resolvedBg or (isDARKMODE and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)))
-    lcd.drawFilledRectangle(x, y, w, h)
-
-    imagepaddingleft = imagepaddingleft or imagepadding or 0
-    imagepaddingright = imagepaddingright or imagepadding or 0
-    imagepaddingtop = imagepaddingtop or imagepadding or 0
-    imagepaddingbottom = imagepaddingbottom or imagepadding or 0
-
-    local region_x = x + imagepaddingleft
-    local region_y = y + imagepaddingtop
-    local region_w = w - imagepaddingleft - imagepaddingright
-    local region_h = h - imagepaddingtop - imagepaddingbottom
-
-    local craftName = rfsuite and rfsuite.session and rfsuite.session.craftName
-    local modelID = rfsuite and rfsuite.session and rfsuite.session.modelID
-    local image1 = craftName and ("/bitmaps/models/" .. craftName .. ".png") or nil
-    local image2 = modelID and ("/bitmaps/models/" .. modelID .. ".png") or nil
-    local default_image = model.bitmap() or "widgets/dashboard/default_image.png"
-
-    local cacheKey = image1 or image2 or default_image
-    local bitmapPtr = imageCache[cacheKey]
-    if not bitmapPtr and rfsuite and rfsuite.utils and rfsuite.utils.loadImage then
-        bitmapPtr = rfsuite.utils.loadImage(image1, image2, default_image)
-        imageCache[cacheKey] = bitmapPtr
-    end
-    if bitmapPtr then
-        local img_w = imagewidth or region_w
-        local img_h = imageheight or region_h
-        local align = imagealign or "center"
-        local img_x, img_y = region_x, region_y
-
-        if align == "center" then
-            img_x = region_x + (region_w - img_w) / 2
-        elseif align == "right" then
-            img_x = region_x + region_w - img_w
-        else
-            img_x = region_x
-        end
-        if align == "center" then
-            img_y = region_y + (region_h - img_h) / 2
-        elseif align == "bottom" then
-            img_y = region_y + region_h - img_h
-        else
-            img_y = region_y
-        end
-
-        if title and title ~= "" then
-            lcd.font(FONT_S)
-            local tsize_w, tsize_h = lcd.getTextSize(title)
-            local sx
-            if titlealign == "left" then
-                sx = x
-            elseif titlealign == "right" then
-                sx = x + w - tsize_w
-            else
-                sx = x + (w - tsize_w) / 2
-            end
-            local useColor = utils.resolveColor(titlecolor) or (lcd.darkMode() and lcd.RGB(255,255,255,1) or lcd.RGB(90,90,90))
-            lcd.color(useColor)
-            if titlepos == "bottom" then
-                lcd.drawText(sx, y + h - tsize_h, title)
-            else
-                lcd.drawText(sx, y, title)
-                img_y = img_y + tsize_h + 2
-            end
-        end
-
-        lcd.drawBitmap(img_x, img_y, bitmapPtr, img_w, img_h)
-    else
-        lcd.font(FONT_S)
-        lcd.color(lcd.RGB(200,50,50))
-        lcd.drawText(x + 10, y + 10, "No Model Image")
-    end
 end
 
 --- Retrieves a parameter from the given `box` table by `key`.

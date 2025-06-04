@@ -1,31 +1,28 @@
 --[[
-
     Session Value Widget
 
-    Configurable Arguments (box table keys):
-    ----------------------------------------
-    source              : string   -- rfsuite.session key to display (e.g., "totalflighttime")
-    title               : string   -- Title text
-    novalue             : string   -- Text shown if session value is missing (default: "-")
-    unit                : string   -- Unit label to append to value
-    font                : font     -- Value font (e.g., FONT_L, FONT_XL)
-    bgcolor             : color    -- Widget background color (default: theme fallback)
-    textcolor           : color    -- Value text color (default: theme/text fallback)
-    titlecolor          : color    -- Title text color (default: theme/text fallback)
-    titlealign          : string   -- Title alignment ("center", "left", "right")
-    valuealign          : string   -- Value alignment ("center", "left", "right")
-    titlepos            : string   -- Title position ("top" or "bottom")
-    titlepadding        : number   -- Padding for title (all sides unless overridden)
-    titlepaddingleft    : number   -- Left padding for title
-    titlepaddingright   : number   -- Right padding for title
-    titlepaddingtop     : number   -- Top padding for title
-    titlepaddingbottom  : number   -- Bottom padding for title
-    valuepadding        : number   -- Padding for value (all sides unless overridden)
-    valuepaddingleft    : number   -- Left padding for value
-    valuepaddingright   : number   -- Right padding for value
-    valuepaddingtop     : number   -- Top padding for value
-    valuepaddingbottom  : number   -- Bottom padding for value
-
+    Configurable Parameters (box table fields):
+    -------------------------------------------
+    source              : string                    -- Session variable to display
+    unit                : string                    -- (Optional) Unit label to append to value
+    font                : font                      -- (Optional) Value font (e.g., FONT_L, FONT_XL)
+    bgcolor             : color                     -- (Optional) Widget background color (theme fallback if nil)
+    textcolor           : color                     -- (Optional) Value text color (theme/text fallback if nil)
+    titlecolor          : color                     -- (Optional) Title text color (theme/text fallback if nil)
+    title               : string                    -- (Optional) Title text
+    titlealign          : string                    -- (Optional) Title alignment ("center", "left", "right")
+    valuealign          : string                    -- (Optional) Value alignment ("center", "left", "right")
+    titlepos            : string                    -- (Optional) Title position ("top" or "bottom")
+    titlepadding        : number                    -- (Optional) Padding for title (all sides unless overridden)
+    titlepaddingleft    : number                    -- (Optional) Left padding for title
+    titlepaddingright   : number                    -- (Optional) Right padding for title
+    titlepaddingtop     : number                    -- (Optional) Top padding for title
+    titlepaddingbottom  : number                    -- (Optional) Bottom padding for title
+    valuepadding        : number                    -- (Optional) Padding for value (all sides unless overridden)
+    valuepaddingleft    : number                    -- (Optional) Left padding for value
+    valuepaddingright   : number                    -- (Optional) Right padding for value
+    valuepaddingtop     : number                    -- (Optional) Top padding for value
+    valuepaddingbottom  : number                    -- (Optional) Bottom padding for value
 ]]
 
 local render = {}
@@ -35,10 +32,19 @@ local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 
 function render.wakeup(box)
-    local src = getParam(box, "source")
-    local displayValue = rfsuite.session[src]
-    local unit = getParam(box, "unit")
-    if displayValue == nil then
+    -- Value extraction
+    local source = getParam(box, "source")
+    local value = rfsuite.session[source]
+
+    -- Set displayValue, Fallback if no value
+    local unit = getParam(box, "unit") or ""
+    local displayValue
+    if value ~= nil then
+        displayValue = tostring(value)
+        if unit ~= "" then
+            displayValue = displayValue .. unit
+        end
+    else
         displayValue = getParam(box, "novalue") or "-"
         unit = nil
     end
@@ -74,12 +80,9 @@ function render.paint(x, y, w, h, box)
     utils.box(
         x, y, w, h,
         c.title, c.displayValue, c.unit, c.bgcolor,
-        c.titlealign, c.valuealign, c.titlecolor, c.titlepos,
-        c.titlepadding, c.titlepaddingleft, c.titlepaddingright,
-        c.titlepaddingtop, c.titlepaddingbottom,
-        c.valuepadding, c.valuepaddingleft, c.valuepaddingright,
-        c.valuepaddingtop, c.valuepaddingbottom,
-        c.font, c.textcolor
+        c.titlealign, c.valuealign, c.titlecolor, c.titlepos, c.titlepadding, c.titlepaddingleft, c.titlepaddingright,
+        c.titlepaddingtop, c.titlepaddingbottom, c.valuepadding, c.valuepaddingleft, c.valuepaddingright,
+        c.valuepaddingtop, c.valuepaddingbottom, c.font, c.textcolor
     )
 end
 

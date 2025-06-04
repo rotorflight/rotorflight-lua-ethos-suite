@@ -1,33 +1,36 @@
 --[[
-
     Arm Flags Widget
 
-    Configurable Arguments (box table keys):
+    Configurable Parameters (box table fields):
     ----------------------------------------
-    title              : string   -- Title text
-    novalue            : string   -- Text shown if telemetry value is missing (default: "-")
-    font               : font     -- Value font (e.g., FONT_L, FONT_XL)
-    textcolor          : color    -- Value text color (default: theme/text fallback)
-    bgcolor            : color    -- Background color (default: theme fallback)
-    titlecolor         : color    -- Title text color (default: theme/text fallback)
-    armedcolor         : color    -- Value text color when armed (overrides textcolor)
-    disarmedcolor      : color    -- Value text color when disarmed (overrides textcolor)
-    armedbgcolor       : color    -- Background color when armed (overrides bgcolor)
-    disarmedbgcolor    : color    -- Background color when disarmed (overrides bgcolor)
-    titlealign         : string   -- Title alignment ("center", "left", "right")
-    valuealign         : string   -- Value alignment ("center", "left", "right")
-    titlepos           : string   -- Title position ("top" or "bottom")
-    titlepadding       : number   -- Padding for title (all sides unless overridden)
-    titlepaddingleft   : number   -- Left padding for title
-    titlepaddingright  : number   -- Right padding for title
-    titlepaddingtop    : number   -- Top padding for title
-    titlepaddingbottom : number   -- Bottom padding for title
-    valuepadding       : number   -- Padding for value (all sides unless overridden)
-    valuepaddingleft   : number   -- Left padding for value
-    valuepaddingright  : number   -- Right padding for value
-    valuepaddingtop    : number   -- Top padding for value
-    valuepaddingbottom : number   -- Bottom padding for value
+    thresholds          : table                     -- (Optional) List of thresholds: {value=..., textcolor=...} for coloring ARMED/DISARMED states.
+    novalue             : string                    -- (Optional) Text shown if telemetry value is missing (default: "-")
+    font                : font                      -- (Optional) Value font (e.g., FONT_L, FONT_XL)
+    bgcolor             : color                     -- (Optional) Widget background color (theme fallback if nil)
+    textcolor           : color                     -- (Optional) Value text color (theme/text fallback if nil)
+    titlecolor          : color                     -- (Optional) Title text color (theme/text fallback if nil)
+    title               : string                    -- (Optional) Title text
+    titlealign          : string                    -- (Optional) Title alignment ("center", "left", "right")
+    valuealign          : string                    -- (Optional) Value alignment ("center", "left", "right")
+    titlepos            : string                    -- (Optional) Title position ("top" or "bottom")
+    titlepadding        : number                    -- (Optional) Padding for title (all sides unless overridden)
+    titlepaddingleft    : number                    -- (Optional) Left padding for title
+    titlepaddingright   : number                    -- (Optional) Right padding for title
+    titlepaddingtop     : number                    -- (Optional) Top padding for title
+    titlepaddingbottom  : number                    -- (Optional) Bottom padding for title
+    valuepadding        : number                    -- (Optional) Padding for value (all sides unless overridden)
+    valuepaddingleft    : number                    -- (Optional) Left padding for value
+    valuepaddingright   : number                    -- (Optional) Right padding for value
+    valuepaddingtop     : number                    -- (Optional) Top padding for value
+    valuepaddingbottom  : number                    -- (Optional) Bottom padding for value
 
+    -- Example thresholds:
+    -- thresholds = {
+    --     { value = "ARMED", textcolor = "green" },
+    --     { value = "DISARMED", textcolor = "red" },
+    --     { value = "Throttle high", textcolor = "orange" },
+    --     { value = "Failsafe", textcolor = "orange" },
+    -- }
 ]]
 
 local render = {}
@@ -35,53 +38,52 @@ local render = {}
 local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
+local armingDisableFlagsToString = rfsuite.app.utils.armingDisableFlagsToString
 
 function render.wakeup(box, telemetry)
-    local value = nil
-    local sensor = telemetry and telemetry.getSensorSource("armflags")
-    value = sensor and sensor:value()
+    -- Value extraction
+    local value = telemetry and telemetry.getSensor("armflags")
+    local disableflags = telemetry and telemetry.getSensor("armdisableflags")
 
-    local displayValue = "-"
-    if value ~= nil then
-        if value >= 3 then
-            displayValue = rfsuite.i18n.get("ARMED")
-        else
-            displayValue = rfsuite.i18n.get("DISARMED")
+    -- displayValue: rendered string (reason or ARMED/DISARMED); showReason: set true if using disable reason
+    local displayValue
+    local showReason = false
+
+    -- Try to use arm disable reason, if present and not "OK"
+    if disableflags ~= nil and armingDisableFlagsToString then
+        disableflags = math.floor(disableflags)
+        local reason = armingDisableFlagsToString(disableflags)
+        if reason and reason ~= "OK" then
+            displayValue = reason
+            showReason = true
         end
-    else
+    end
+
+    -- Fallback to ARMED/DISARMED state if no specific disable reason
+    if not showReason then
+        if value ~= nil then
+            if value >= 3 then
+                displayValue = rfsuite.i18n.get("ARMED")
+            else
+                displayValue = rfsuite.i18n.get("DISARMED")
+            end
+        end
+    end
+
+    -- Threshold logic (optional)
+    local textcolor = utils.resolveThresholdTextColor(displayValue, box)
+
+    -- If *neither* value nor disable reason is available, show novalue
+    if displayValue == nil then
         displayValue = getParam(box, "novalue") or "-"
     end
-
-   -- Dynamic background color
-    local bgcolor
-    if value ~= nil and value >= 3 then
-        bgcolor = resolveThemeColor("fillbgcolor", getParam(box, "armedbgcolor"))
-    elseif value ~= nil then
-        bgcolor = resolveThemeColor("fillbgcolor", getParam(box, "disarmedbgcolor"))
-    end
-    if not bgcolor then
-        bgcolor = resolveThemeColor("fillbgcolor", getParam(box, "fillbgcolor")) or resolveThemeColor("bgcolor", getParam(box, "bgcolor"))
-    end
-
-    -- Dynamic text color
-    local textcolor
-    if value ~= nil and value >= 3 then
-        textcolor = resolveThemeColor("textcolor", getParam(box, "armedcolor"))
-    elseif value ~= nil then
-        textcolor = resolveThemeColor("textcolor", getParam(box, "disarmedcolor"))
-    end
-    if not textcolor then
-        textcolor = resolveThemeColor("textcolor", getParam(box, "textcolor"))
-    end
-
-    -- Title color (will default to white via resolver if unset)
-    local titlecolor = resolveThemeColor("titlecolor", getParam(box, "titlecolor"))
-
+    
     box._cache = {
         displayValue       = displayValue,
-        bgcolor            = bgcolor,
+        unit               = nil,
+        bgcolor            = resolveThemeColor("bgcolor", getParam(box, "bgcolor")),
         textcolor          = textcolor,
-        titlecolor         = titlecolor,
+        titlecolor         = resolveThemeColor("titlecolor", getParam(box, "titlecolor")),
         title              = getParam(box, "title"),
         titlealign         = getParam(box, "titlealign"),
         valuealign         = getParam(box, "valuealign"),
@@ -106,13 +108,10 @@ function render.paint(x, y, w, h, box)
 
     utils.box(
         x, y, w, h,
-        c.title, c.displayValue, nil, c.bgcolor,
-        c.titlealign, c.valuealign, c.titlecolor, c.titlepos,
-        c.titlepadding, c.titlepaddingleft, c.titlepaddingright,
-        c.titlepaddingtop, c.titlepaddingbottom,
-        c.valuepadding, c.valuepaddingleft, c.valuepaddingright,
-        c.valuepaddingtop, c.valuepaddingbottom,
-        c.font, c.textcolor
+        c.title, c.displayValue, c.unit, c.bgcolor,
+        c.titlealign, c.valuealign, c.titlecolor, c.titlepos, c.titlepadding, c.titlepaddingleft, c.titlepaddingright,
+        c.titlepaddingtop, c.titlepaddingbottom, c.valuepadding, c.valuepaddingleft, c.valuepaddingright,
+        c.valuepaddingtop, c.valuepaddingbottom, c.font, c.textcolor
     )
 end
 
