@@ -9,6 +9,11 @@
     "translation": "MISSING REQUIRED SENSORS",
     "needs_translation": "true"
   },
+  "unsupported_resolution": {
+    "english": "TO SMALL",
+    "translation": "TO SMALL",
+    "needs_translation": "true"
+  },
   "loading": {
     "english": "ROTORFLIGHT",
     "translation": "ROTORFLIGHT",
