@@ -31,16 +31,20 @@ local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 
 function render.wakeup(box)
-    local lifetime = rfsuite.ini.getvalue(rfsuite.session.modelPreferences, "general", "totalflighttime") or 0
-    local displayValue = lifetime
+    local value = rfsuite.ini.getvalue(rfsuite.session.modelPreferences, "general", "totalflighttime")
+    local unit = getParam(box, "unit")
+    local displayValue
 
     -- Format to HH:MM:SS
-    local hours = math.floor(displayValue / 3600)
-    local minutes = math.floor((displayValue % 3600) / 60)
-    local seconds = math.floor(displayValue % 60)
-    displayValue = string.format("%02d:%02d:%02d", hours, minutes, seconds)
-
-    local unit = getParam(box, "unit")
+    if type(value) == "number" and value > 0 then
+        local hours = math.floor(value / 3600)
+        local minutes = math.floor((value % 3600) / 60)
+        local seconds = math.floor(value % 60)
+        displayValue = string.format("%02d:%02d:%02d", hours, minutes, seconds)
+    else
+        displayValue = getParam(box, "novalue") or "00:00:00"
+        unit = nil
+    end
 
     box._cache = {
         displayValue       = displayValue,
