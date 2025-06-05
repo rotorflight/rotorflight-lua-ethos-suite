@@ -399,7 +399,7 @@ function utils.box(
 
     titlespacing = titlespacing or DEFAULT_TITLE_SPACING
 
-    -- Draw background
+    -- Draw background if requested
     if bgcolor then
         lcd.color(bgcolor)
         lcd.drawFilledRectangle(x, y, w, h)
@@ -554,6 +554,7 @@ function utils.box(
         lcd.drawText(sx, sy, title)
     end
 end
+
 
 --- Resolves the text color for a value using flexible threshold logic.
 -- If the box table includes a 'thresholds' array:

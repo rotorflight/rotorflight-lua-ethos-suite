@@ -116,7 +116,7 @@ local boxes = {
         }
     },
     -- Column 4
-    { col = 4, row = 1, type = "text", value = "PRESS ME", title = "ON PRESS", titlepos = "bottom", textcolor = "orange", onpress = onpressFunctionSave },
+    { col = 4, row = 1, type = "text", value = "PRESS ME", title = "ON PRESS", titlepos = "bottom", titlecolor = "green", textcolor = "orange", onpress = onpressFunctionSave },
     { col = 4, row = 2, type = "flightcount", title = "FLIGHT COUNT", titlepos = "bottom" },
     { col = 4, row = 3, type = "flighttime", title = "FLIGHT TIME", titlepos = "bottom"},
     { col = 4, row = 4, type = "totalflighttime", title = "TOTAL FLIGHT TIME", titlepos = "bottom"}
