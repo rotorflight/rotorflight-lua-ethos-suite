@@ -379,15 +379,14 @@ function utils.box(
     displayValue, unit, font, valuealign, textcolor,
     valuepadding, valuepaddingleft, valuepaddingright,
     valuepaddingtop, valuepaddingbottom,
-    bgcolor
+    bgcolor,
+    image, imagewidth, imageheight, imagealign
 )
-    
-    -- Default fallbacks for all paddings/spacing
+    -- Padding defaults
     local DEFAULT_TITLE_PADDING = 0
     local DEFAULT_VALUE_PADDING = 6
     local DEFAULT_TITLE_SPACING = 6
 
-    -- Theme/widget param resolution
     titlepaddingleft   = titlepaddingleft   or titlepadding   or DEFAULT_TITLE_PADDING
     titlepaddingright  = titlepaddingright  or titlepadding   or DEFAULT_TITLE_PADDING
     titlepaddingtop    = titlepaddingtop    or titlepadding   or DEFAULT_TITLE_PADDING
@@ -400,9 +399,7 @@ function utils.box(
 
     titlespacing = titlespacing or DEFAULT_TITLE_SPACING
 
-    if unit ~= nil and type(unit) ~= "string" then unit = tostring(unit) end
-
-    -- Draw background if requested
+    -- Draw background
     if bgcolor then
         lcd.color(bgcolor)
         lcd.drawFilledRectangle(x, y, w, h)
@@ -416,14 +413,12 @@ function utils.box(
     -- Title font selection, auto-fit logic
     local actualTitleFont, tsizeW, tsizeH = nil, 0, 0
     if title then
-        -- Find min value font height for safety
         local minValueFontH = 9999
         for _, vf in ipairs(fontCache.value_default or {FONT_STD}) do
             lcd.font(vf)
             local _, vh = lcd.getTextSize("8")
             if vh < minValueFontH then minValueFontH = vh end
         end
-        -- Pick largest fitting title font
         if titlefont and _G[titlefont] then
             actualTitleFont = _G[titlefont]
             lcd.font(actualTitleFont)
@@ -446,7 +441,7 @@ function utils.box(
         end
     end
 
-    -- Value region calculation
+    -- Calculate region for value/image
     local region_vx, region_vy, region_vw, region_vh
     if title and (titlepos or "top") == "top" then
         region_vy = y + titlepaddingtop + tsizeH + titlepaddingbottom + titlespacing + valuepaddingtop
@@ -461,22 +456,50 @@ function utils.box(
     region_vx = x + valuepaddingleft
     region_vw = w - valuepaddingleft - valuepaddingright
 
-    -- Draw value text (dynamic sizing, centered, with optical fudge)
-    if displayValue ~= nil then
-        local value_str = tostring(displayValue) .. (unit or "")
-        local unitIsDegree = (unit == "°" or (unit and unit:find("°")))
-        local strForWidth = unitIsDegree and (tostring(value) .. "0") or value_str
+    -- Draw image if specified (fallback to displayValue)
+    if image and rfsuite.utils.loadImage then
+        imageCache = imageCache or {}
+        local cacheKey = image or "default_image"
+        local bitmapPtr = imageCache[cacheKey]
+        if not bitmapPtr then
+            bitmapPtr = rfsuite.utils.loadImage(image, nil, "widgets/dashboard/gfx/logo.png")
+            imageCache[cacheKey] = bitmapPtr
+        end
+        if bitmapPtr then
 
-        -- Select largest fitting value font
+            local default_img_w = region_vw
+            local default_img_h = region_vh
+            local img_w = imagewidth or default_img_w
+            local img_h = imageheight or default_img_h
+            local align = imagealign or "center"
+            local img_x, img_y = region_vx, region_vy
+            if align == "center" then
+                img_x = region_vx + (region_vw - img_w) / 2
+            elseif align == "right" then
+                img_x = region_vx + region_vw - img_w
+            else
+                img_x = region_vx
+            end
+            if align == "center" then
+                img_y = region_vy + (region_vh - img_h) / 2
+            elseif align == "bottom" then
+                img_y = region_vy + region_vh - img_h
+            else
+                img_y = region_vy
+            end
+            lcd.drawBitmap(img_x, img_y, bitmapPtr, img_w, img_h)
+        end
+    elseif displayValue ~= nil then
+        local value_str = tostring(displayValue) .. (unit or "")
         local valueFont, bestW, bestH = FONT_XXS, 0, 0
         if font and _G[font] then
             valueFont = _G[font]
             lcd.font(valueFont)
-            bestW, bestH = lcd.getTextSize(strForWidth)
+            bestW, bestH = lcd.getTextSize(value_str)
         else
             for _, tryFont in ipairs(fontCache.value_default) do
                 lcd.font(tryFont)
-                local tW, tH = lcd.getTextSize(strForWidth)
+                local tW, tH = lcd.getTextSize(value_str)
                 if tW <= region_vw and tH <= region_vh then
                     valueFont, bestW, bestH = tryFont, tW, tH
                 end
@@ -484,13 +507,20 @@ function utils.box(
             lcd.font(valueFont)
         end
 
-        local fudge = (title and (titlepos or "top") == "top")
+        -- Dynamic fudge factor for degree symbol or thin units
+        local fudge = 0
+        if unit and unit:find("°") then
+            fudge = math.floor(region_vw * 0.09)
+        end
+
+        -- Optional: vertical fudge for title placement
+        local fudgeTitle = (title and (titlepos or "top") == "top")
             and -math.floor(bestH * 0.15 + 0.5)
             or (title and titlepos == "bottom")
                 and math.floor(bestH * 0.15 + 0.5)
             or 0
 
-        local sy = region_vy + ((region_vh - bestH) / 2) + fudge
+        local sy = region_vy + ((region_vh - bestH) / 2) + fudgeTitle
         local align = (valuealign or "center"):lower()
         local sx
         if align == "left" then
@@ -498,7 +528,7 @@ function utils.box(
         elseif align == "right" then
             sx = region_vx + region_vw - bestW
         else
-            sx = region_vx + (region_vw - bestW) / 2
+            sx = region_vx + (region_vw - bestW) / 2 + fudge
         end
         lcd.color(textcolor)
         lcd.drawText(sx, sy, value_str)
@@ -591,117 +621,6 @@ function utils.transformValue(value, box)
         value = tostring(value)
     end
     return value
-end
-
---- Draws an image box widget with optional title, background color, flexible alignment, and padding.
--- Uses imageCache for performance. Title is rendered above or below the image if provided.
---
--- @param x number: The x-coordinate of the box.
--- @param y number: The y-coordinate of the box.
--- @param w number: The width of the box.
--- @param h number: The height of the box.
--- @param title string: (Optional) Title text to display above or below the image.
--- @param image string: Path to the image file to display.
--- @param imagewidth number: (Optional) Width of the image. Defaults to available region width.
--- @param imageheight number: (Optional) Height of the image. Defaults to available region height.
--- @param imagealign string: (Optional) Alignment of the image ("left", "center", "right", "top", "bottom"). Defaults to "center".
--- @param bgcolor number|string: (Optional) Background color of the box.
--- @param titlealign string: (Optional) Alignment of the title ("left", "center", "right"). Defaults to "center".
--- @param titlecolor number|string: (Optional) Color of the title text.
--- @param titlepos string: (Optional) Position of the title ("top", "bottom"). Defaults to "top".
--- @param imagepadding number: (Optional) Padding applied to all sides of the image.
--- @param imagepaddingleft number: (Optional) Padding on the left side of the image.
--- @param imagepaddingright number: (Optional) Padding on the right side of the image.
--- @param imagepaddingtop number: (Optional) Padding on the top side of the image.
--- @param imagepaddingbottom number: (Optional) Padding on the bottom side of the image.
-
-function utils.imageBox(
-    x, y, w, h,
-    title, image, imagewidth, imageheight, imagealign,
-    bgcolor, titlealign, titlecolor, titlepos,
-    imagepadding, imagepaddingleft, imagepaddingright,
-    imagepaddingtop, imagepaddingbottom
-)
-    -- Draw background (theme fallback)
-    if bgcolor then
-        lcd.color(bgcolor)
-        lcd.drawFilledRectangle(x, y, w, h)
-    end    
-
-    -- Padding resolution (default 0)
-    imagepaddingleft   = imagepaddingleft   or imagepadding or 0
-    imagepaddingright  = imagepaddingright  or imagepadding or 0
-    imagepaddingtop    = imagepaddingtop    or imagepadding or 0
-    imagepaddingbottom = imagepaddingbottom or imagepadding or 0
-
-    local region_x = x + imagepaddingleft
-    local region_y = y + imagepaddingtop
-    local region_w = w - imagepaddingleft - imagepaddingright
-    local region_h = h - imagepaddingtop - imagepaddingbottom
-
-    -- Draw title (top or bottom, uses titlecolor, align, and font)
-    if title and title ~= "" then
-        if not fontCache then fontCache = utils.getFontListsForResolution() end
-        lcd.font(fontCache.value_title)
-        local tsizeW, tsizeH = lcd.getTextSize(title)
-        local region_xt = x + (imagepaddingleft or 0)
-        local region_wt = w - (imagepaddingleft or 0) - (imagepaddingright or 0)
-        local align = (titlealign or "center"):lower()
-        local sx
-        if align == "left" then
-            sx = region_xt
-        elseif align == "right" then
-            sx = region_xt + region_wt - tsizeW
-        else
-            sx = region_xt + (region_wt - tsizeW) / 2
-        end
-        lcd.color(titlecolor)
-        local sy
-        if titlepos == "bottom" then
-            sy = y + h - imagepaddingbottom - tsizeH
-        else
-            sy = y + imagepaddingtop
-            region_y = region_y + tsizeH + 2  -- Move image below title
-            region_h = region_h - tsizeH - 2
-        end
-        lcd.drawText(sx, sy, title)
-    end
-
-    -- Draw image
-    if rfsuite and rfsuite.utils and rfsuite.utils.loadImage and lcd and lcd.drawBitmap then
-        imageCache = imageCache or {}
-        local cacheKey = image or "default_image"
-        local bitmapPtr = imageCache[cacheKey]
-        if not bitmapPtr then
-            bitmapPtr = rfsuite.utils.loadImage(image, nil, "widgets/dashboard/default_image.png")
-            imageCache[cacheKey] = bitmapPtr
-        end
-        if bitmapPtr then
-            local img_w = imagewidth or region_w
-            local img_h = imageheight or region_h
-            local align = imagealign or "center"
-            local img_x, img_y = region_x, region_y
-
-            -- Horizontal alignment
-            if align == "center" then
-                img_x = region_x + (region_w - img_w) / 2
-            elseif align == "right" then
-                img_x = region_x + region_w - img_w
-            else -- left
-                img_x = region_x
-            end
-            -- Vertical alignment
-            if align == "center" then
-                img_y = region_y + (region_h - img_h) / 2
-            elseif align == "bottom" then
-                img_y = region_y + region_h - img_h
-            else -- top
-                img_y = region_y
-            end
-
-            lcd.drawBitmap(img_x, img_y, bitmapPtr, img_w, img_h)
-        end
-    end
 end
 
 --- Sets the background color of the LCD based on the current theme (dark or light mode).
