@@ -1,21 +1,31 @@
 --[[
-    Model Image Box Widget
-
-    Configurable Parameters (box table keys):
-    ----------------------------------------
-    title              : string   -- (Optional) Title text
-    imagewidth         : number   -- (Optional) Image width (pixels; default: auto)
-    imageheight        : number   -- (Optional) Image height (pixels; default: auto)
-    imagealign         : string   -- (Optional) Image alignment ("center", "left", "right", "top", "bottom")
-    bgcolor            : color    -- (Optional) Widget background color (theme fallback if nil)
-    titlealign         : string   -- (Optional) Title alignment ("center", "left", "right")
-    titlecolor         : color    -- (Optional) Title text color (theme/text fallback if nil)
-    titlepos           : string   -- (Optional) Title position ("top" or "bottom")
-    imagepadding       : number   -- (Optional) Padding around the image (all sides unless overridden)
-    imagepaddingleft   : number   -- (Optional) Left padding for image
-    imagepaddingright  : number   -- (Optional) Right padding for image
-    imagepaddingtop    : number   -- (Optional) Top padding for image
-    imagepaddingbottom : number   -- (Optional) Bottom padding for image
+    Model Image Widget
+    Configurable Parameters (box table fields):
+    -------------------------------------------
+    title               : string                    -- (Optional) Title text
+    titlepos            : string                    -- (Optional) Title position ("top" or "bottom")
+    titlealign          : string                    -- (Optional) Title alignment ("center", "left", "right")
+    titlefont           : font                      -- (Optional) Title font (e.g., FONT_L, FONT_XL), dynamic by default
+    titlespacing        : number                    -- (Optional) Gap between title and image
+    titlecolor          : color                     -- (Optional) Title text color (theme/text fallback if nil)
+    titlepadding        : number                    -- (Optional) Padding for title (all sides unless overridden)
+    titlepaddingleft    : number                    -- (Optional) Left padding for title
+    titlepaddingright   : number                    -- (Optional) Right padding for title
+    titlepaddingtop     : number                    -- (Optional) Top padding for title
+    titlepaddingbottom  : number                    -- (Optional) Bottom padding for title
+    font                : font                      -- (Unused, for consistency)
+    valuealign          : string                    -- (Unused, for consistency)
+    textcolor           : color                     -- (Unused, for consistency)
+    valuepadding        : number                    -- (Optional) Padding for image (all sides unless overridden)
+    valuepaddingleft    : number                    -- (Optional) Left padding for image
+    valuepaddingright   : number                    -- (Optional) Right padding for image
+    valuepaddingtop     : number                    -- (Optional) Top padding for image
+    valuepaddingbottom  : number                    -- (Optional) Bottom padding for image
+    bgcolor             : color                     -- (Optional) Widget background color (theme fallback if nil)
+    image               : string                    -- (Auto) Image path, auto-resolved from model name or ID
+    imagewidth          : number                    -- (Optional) Image width (px)
+    imageheight         : number                    -- (Optional) Image height (px)
+    imagealign          : string                    -- (Optional) Image alignment ("center", "left", "right", "top", "bottom")
 ]]
 
 local render = {}
@@ -52,34 +62,50 @@ function render.wakeup(box)
         imagePath = "widgets/dashboard/gfx/logo.png"
     end
 
-    box._cache = {
-        title             = getParam(box, "title"),
-        image             = imagePath,
-        imagewidth        = getParam(box, "imagewidth"),
-        imageheight       = getParam(box, "imageheight"),
-        imagealign        = getParam(box, "imagealign"),
-        bgcolor           = resolveThemeColor("bgcolor", getParam(box, "bgcolor")),
-        titlealign        = getParam(box, "titlealign"),
-        titlecolor        = resolveThemeColor("titlecolor", getParam(box, "titlecolor")),
-        titlepos          = getParam(box, "titlepos"),
-        imagepadding      = getParam(box, "imagepadding"),
-        imagepaddingleft  = getParam(box, "imagepaddingleft"),
-        imagepaddingright = getParam(box, "imagepaddingright"),
-        imagepaddingtop   = getParam(box, "imagepaddingtop"),
-        imagepaddingbottom= getParam(box, "imagepaddingbottom"),
+     box._cache = {
+        title              = utils.getParam(box, "title"),
+        titlepos           = utils.getParam(box, "titlepos"),
+        titlealign         = utils.getParam(box, "titlealign"),
+        titlefont          = utils.getParam(box, "titlefont"),
+        titlespacing       = utils.getParam(box, "titlespacing"),
+        titlecolor         = utils.resolveThemeColor("titlecolor", utils.getParam(box, "titlecolor")),
+        titlepadding       = utils.getParam(box, "titlepadding"),
+        titlepaddingleft   = utils.getParam(box, "titlepaddingleft"),
+        titlepaddingright  = utils.getParam(box, "titlepaddingright"),
+        titlepaddingtop    = utils.getParam(box, "titlepaddingtop"),
+        titlepaddingbottom = utils.getParam(box, "titlepaddingbottom"),
+        displayValue       = nil,
+        unit               = nil,
+        font               = nil,
+        valuealign         = nil,
+        textcolor          = nil,
+        valuepadding       = utils.getParam(box, "valuepadding"),
+        valuepaddingleft   = utils.getParam(box, "valuepaddingleft"),
+        valuepaddingright  = utils.getParam(box, "valuepaddingright"),
+        valuepaddingtop    = utils.getParam(box, "valuepaddingtop"),
+        valuepaddingbottom = utils.getParam(box, "valuepaddingbottom"),
+        bgcolor            = utils.resolveThemeColor("bgcolor", utils.getParam(box, "bgcolor")),
+        image              = imagePath,
+        imagewidth         = utils.getParam(box, "imagewidth"),
+        imageheight        = utils.getParam(box, "imageheight"),
+        imagealign         = utils.getParam(box, "imagealign")
     }
 end
 
 function render.paint(x, y, w, h, box)
-    local c = box._cache or {}
     x, y = utils.applyOffset(x, y, box)
+    local c = box._cache or {}
 
-    utils.imageBox(
+    utils.box(
         x, y, w, h,
-        c.title,
-        c.image, c.imagewidth, c.imageheight, c.imagealign,
-        c.bgcolor, c.titlealign, c.titlecolor, c.titlepos,
-        c.imagepadding, c.imagepaddingleft, c.imagepaddingright, c.imagepaddingtop, c.imagepaddingbottom
+        c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing,
+        c.titlecolor, c.titlepadding, c.titlepaddingleft, c.titlepaddingright,
+        c.titlepaddingtop, c.titlepaddingbottom,
+        c.displayValue, c.unit, c.font, c.valuealign, c.textcolor,
+        c.valuepadding, c.valuepaddingleft, c.valuepaddingright,
+        c.valuepaddingtop, c.valuepaddingbottom,
+        c.bgcolor,
+        c.image, c.imagewidth, c.imageheight, c.imagealign
     )
 end
 
