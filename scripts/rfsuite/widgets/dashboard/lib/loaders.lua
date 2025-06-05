@@ -67,7 +67,7 @@ local function getWrappedTextLines(message, fonts, maxWidth, maxHeight)
   wrap(message)
   local maxLines = math.floor(maxHeight / lineH)
   if #lines > maxLines then
-    lines = { unpack(lines, 1, maxLines) }
+    lines = { table.unpack(lines, 1, maxLines) }
     local last = lines[#lines]
     while lcd.getTextSize(last .. "…") > maxWidth and #last > 1 do
       last = last:sub(1, -2)
