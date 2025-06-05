@@ -16,22 +16,18 @@
 ]] --
 
 local toolbox = {}
-local wakeupSchedulerUI = os.clock()
+local wakeupScheduler = os.clock()
 local LCD_W, LCD_H
 
 -- List of available sub-widgets (folder names must match these entries)
 local toolBoxList = {
-    [0] = { object = "example",   name = "Example"              },
     [1] = { object = "armflags",   name = "Arming Flags"        },
-    [2] = { object = "bbl",        name = "BBL"                 },
-    [3] = { object = "craftimage", name = "Craft Image"         },
-    [4] = { object = "craftname",  name = "Craft Name"          },
-    [5] = { object = "disarmed",   name = "Disarmed"            },
-    [6] = { object = "governor",   name = "Governor"            },
+    [2] = { object = "bbl",        name = "Black Box"           },
+    [3] = { object = "craftname",  name = "Craft Name"          },
+    [4] = { object = "governor",   name = "Governor"            },
+    [5] = { object = "craftimage", name = "Craft Image"         },
 }
 
-
-toolbox.utils = rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/toolbox/lib/utils.lua")()
 
 -- Helper to build a list of “{ displayName, index }” for the form
 local function generateWidgetList(tbl)
@@ -52,98 +48,139 @@ function toolbox.create()
     }
 end
 
--- Internal function: attempt to load the chosen sub-widget into widget.loadedWidget
-local function tryLoadSubWidget(widget)
-    if widget.loadedWidget or not widget.object then
-        return
-    end
-
-    local entry = toolBoxList[widget.object]
-    if not (entry and entry.object) then
-        return
-    end
-
-    -- Construct path to the sub-widget’s main Lua file
-    -- (expects: SCRIPTS:/<baseDir>/widgets/toolbox/widgets/<folder>/<folder>.lua)
-    local widgetPath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/toolbox/objects/" .. entry.object .. ".lua"
-
-
-    -- First, attempt to load the chunk (returns a function)
-    local okChunk, chunk = pcall(function()
-        return rfsuite.compiler.loadfile(widgetPath)
-    end)
-    if not okChunk or type(chunk) ~= "function" then
-        print("Error loading chunk from path")
-        return
-    end
-
-    -- Now execute the chunk to get the module table
-    local okModule, mod = pcall(chunk)
-    if not okModule or type(mod) ~= "table" then
-        print("Error: loaded chunk did not return a table")
-        return
-    end
-
-    widget.loadedWidget = mod
-    -- If the sub-widget has its own init(), call it now
-    if type(widget.loadedWidget.init) == "function" then
-        widget.loadedWidget.init(widget)
-    end
-
-    -- Mark as set up so paint won’t show “NOT CONFIGURED”
-    widget.state.setup = true
-
-    -- Force a redraw so paint() can display the newly loaded widget
-    lcd.invalidate()
-end
-
 -- Delegate paint to the chosen sub-widget (once set up)
 function toolbox.paint(widget)
-    -- If the user hasn’t selected a sub-widget yet, show “NOT CONFIGURED”
-    if not widget.state.setup then
-        -- Try loading now (in case wakeup hasn’t run yet)
-        tryLoadSubWidget(widget)
+ 
+    if not rfsuite.session.toolbox then
+        return
     end
 
     if not widget.object then
-        local message = "-"
-        local title = ""
-        toolbox.utils.box(title, message)
-        return    
+        return
     end
-    
-    local title = toolBoxList[widget.object].name or "Toolbox"
 
-    if widget.state.setup and widget.loadedWidget and type(widget.loadedWidget.render) == "function" then
-        message = widget.loadedWidget.render(widget)
+    local msg = rfsuite.session.toolbox[toolBoxList[widget.object].object] or "-"
+    local title = toolBoxList[widget.object].name 
 
-        if not widget.title then
-            title = nil
-        end 
+    local w, h = lcd.getWindowSize()
+    local isDarkMode = lcd.darkMode()
 
-        toolbox.utils.box(title, message)
-    else
-        local message = "NOT CONFIGURED"
-        toolbox.utils.box(title, message)
+    local offsetY = 0
+
+    local TITLE_COLOR = lcd.darkMode() and lcd.RGB(154,154,154) or lcd.RGB(77, 73, 77)
+    local TEXT_COLOR = lcd.darkMode() and lcd.RGB(255, 255, 255) or lcd.RGB(77, 73, 77)
+
+    ---------------------------------------------------------------------------
+    -- Step 1.  Display the title at top of the screen
+    ---------------------------------------------------------------------------
+    if widget.title then
+        local fonts = {FONT_XXS, FONT_XS, FONT_S}
+
+    -- Determine the maximum width and height with 10% padding
+        local maxW, maxH = w * 0.9 , h
+        local bestFont = FONT_XXS
+        local bestW, bestH = 0, 0
+
+        -- Loop through font sizes and find the largest one that fits
+        for _, font in ipairs(fonts) do
+            lcd.font(font)
+            local tsizeW, tsizeH = lcd.getTextSize(title)
+            
+            if tsizeW <= maxW and tsizeH <= maxH then
+                bestFont = font
+                bestW, bestH = tsizeW, tsizeH
+            else
+                break  -- Stop checking larger fonts once one exceeds limits
+            end
+        end
+
+        -- Set the optimal font
+        lcd.font(bestFont)
+
+        -- Set text color based on dark mode
+        local textColor = isDarkMode and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90)
+        lcd.color(textColor)
+
+        -- Center the text at top of the screen
+        local x = (w - bestW) / 2
+        local y = bestH/4
+        lcd.color(TITLE_COLOR)  -- Set title color
+        lcd.drawText(x, y, title)    
+
+        -- if we have a title, we need to bump the y position down for the display of the value message
+        offsetY = bestH - 3  -- Add some padding below the title
+
     end
+
+    ---------------------------------------------------------------------------
+    -- Step 2.  Display the value message in the center of the screen
+    ---------------------------------------------------------------------------
+    if type(msg) == "string" then
+            -- Available font sizes in order from smallest to largest
+            local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL}
+
+            -- Determine the maximum width and height with 10% padding
+            local maxW, maxH = w * 0.9 , h 
+            local bestFont = FONT_XXS
+            local bestW, bestH = 0, 0
+
+            -- Loop through font sizes and find the largest one that fits
+            for _, font in ipairs(fonts) do
+                lcd.font(font)
+                local tsizeW, tsizeH = lcd.getTextSize(msg)
+                
+                if tsizeW <= maxW and tsizeH <= maxH then
+                    bestFont = font
+                    bestW, bestH = tsizeW, tsizeH
+                else
+                    break  -- Stop checking larger fonts once one exceeds limits
+                end
+            end
+
+            -- Set the optimal font
+            lcd.font(bestFont)
+
+            -- Center the text on the screen
+            local x = (w - bestW) / 2
+            local y = (h - bestH) / 2 + offsetY  -- Adjust y position based on title height
+            lcd.color(TEXT_COLOR)  -- Reset text color for values
+            lcd.drawText(x, y, msg)
+        elseif type(msg) == "function" then
+            msg()
+        else 
+            -- we probably have an image!
+            local bitmapPtr = msg
+            local bitmapX = 0
+            local bitmapY = 0
+            local bitmapW = w
+            local bitmapH = h
+
+            lcd.drawBitmap(bitmapX, bitmapY + offsetY, bitmapPtr, bitmapW, bitmapH - offsetY)
+
+        end
 end
+
 
 -- Delegate wakeup to the chosen sub-widget (once set up)
 function toolbox.wakeup(widget)
+
+    -- initialise this - which then enables the bgtask
+    if not rfsuite.session.toolbox then
+        rfsuite.session.toolbox = {}
+        return
+    end
+
     local scheduler = lcd.isVisible() and 0.25 or 5
     local now = os.clock()
 
-    -- Once there’s a selected index, mark setup = true and attempt load
-    if widget.object then
-        if not widget.state.setup then
-            tryLoadSubWidget(widget)
-        end
+    --run lcd.invalidate on the schedule provided by scheduler
+    if now - (widget.wakeupScheduler or 0) > scheduler then
+        lcd.invalidate()
+        widget.wakeupScheduler = now
     end
+ 
 
-    -- If setup is done and we have a loaded sub-widget, delegate wakeup()
-    if widget.state.setup and widget.loadedWidget and type(widget.loadedWidget.wakeup) == "function" then
-        widget.loadedWidget.wakeup(widget)
-    end
+
 end
 
 function toolbox.menu(widget)
@@ -167,10 +204,10 @@ function toolbox.configure(widget)
     local formLineCnt = 0
     local formFieldCount = 0
 
-  formLineCnt = formLineCnt + 1
-  formLines[formLineCnt] = form.addLine("Title")
-  formFieldCount = formFieldCount + 1
-  formFields[formFieldCount] = form.addBooleanField(formLines[formLineCnt], 
+        formLineCnt = formLineCnt + 1
+        formLines[formLineCnt] = form.addLine("Title")
+        formFieldCount = formFieldCount + 1
+        formFields[formFieldCount] = form.addBooleanField(formLines[formLineCnt], 
         nil, 
         function() 
           return widget.title
@@ -218,6 +255,10 @@ end
 function toolbox.write(widget)
     storage.write("title", widget.title)
     storage.write("object", widget.object)
+end
+
+function toolbox.close()
+    rfsuite.session.toolbox = nil
 end
 
 -- No titles are used by this wrapper
