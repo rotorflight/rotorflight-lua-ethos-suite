@@ -510,7 +510,7 @@ function utils.box(
         -- Dynamic fudge factor for degree symbol or thin units
         local fudge = 0
         if unit and unit:find("°") then
-            fudge = math.floor(region_vw * 0.11)
+            fudge = math.floor(region_vw * 0.09)
         end
 
         -- Optional: vertical fudge for title placement
