@@ -14,16 +14,21 @@
  *
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]] --
-
 local object = {}
 
-function object.paint()
+-- This function is called by toolbox.lua
+-- it should return a string that will be used as the
+-- value for the displayed object.  all rendering is handled
+-- by toolbox.lua.  It is called once when lcd.invalidate() is called
+function object.render(widget)
+    return "0%"
+end
 
-
-end    
-
-function object.wakeup()
-
+-- This function is called in a loop by toolbox.lua
+-- it should process anything that is needed for determining
+-- what object.render does.  
+function object.wakeup(widget)
+    
 end
 
 

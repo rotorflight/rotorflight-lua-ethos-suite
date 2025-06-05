@@ -21,7 +21,7 @@ local LCD_W, LCD_H
 
 -- List of available sub-widgets (folder names must match these entries)
 local toolBoxList = {
-    [1] = { object = "armed",      name = "Armed"      },
+    [1] = { object = "example",      name = "Example"      },
     [2] = { object = "bbl",        name = "BBL"        },
     [3] = { object = "craftimage", name = "Craft Image"},
     [4] = { object = "craftname",  name = "Craft Name" },
@@ -30,7 +30,7 @@ local toolBoxList = {
 }
 
 
-toolbox.utils = rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/toolbox/lib/utils.lua")
+toolbox.utils = rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/toolbox/lib/utils.lua")()
 
 -- Helper to build a list of “{ displayName, index }” for the form
 local function generateWidgetList(tbl)
@@ -98,29 +98,32 @@ end
 
 -- Delegate paint to the chosen sub-widget (once set up)
 function toolbox.paint(widget)
-    -- Cache window size once
-    if not LCD_W or not LCD_H then
-        LCD_W, LCD_H = lcd.getWindowSize()
-    end
-
     -- If the user hasn’t selected a sub-widget yet, show “NOT CONFIGURED”
     if not widget.state.setup then
         -- Try loading now (in case wakeup hasn’t run yet)
         tryLoadSubWidget(widget)
     end
 
-    if widget.state.setup and widget.loadedWidget and type(widget.loadedWidget.paint) == "function" then
-        widget.loadedWidget.paint(widget)
+    if not widget.object then
+        local message = "-"
+        local title = ""
+        toolbox.utils.box(title, message)
+        return    
+    end
+    
+    local title = toolBoxList[widget.object].name or "Toolbox"
+
+    if widget.state.setup and widget.loadedWidget and type(widget.loadedWidget.render) == "function" then
+        message = widget.loadedWidget.render(widget)
+
+        if not widget.title then
+            title = nil
+        end 
+
+        toolbox.utils.box(title, message)
     else
-        -- Fallback: show “NOT CONFIGURED”
-        if lcd.darkMode() then
-            lcd.color(COLOR_WHITE)
-        else
-            lcd.color(COLOR_BLACK)
-        end
         local message = "NOT CONFIGURED"
-        local mw, mh = lcd.getTextSize(message)
-        lcd.drawText((LCD_W - mw) / 2, (LCD_H - mh) / 2, message)
+        toolbox.utils.box(title, message)
     end
 end
 
