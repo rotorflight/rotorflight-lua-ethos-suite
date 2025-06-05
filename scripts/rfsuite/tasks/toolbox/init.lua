@@ -17,10 +17,10 @@
  * 
 ]] --
 local init = {
+    interval = 0.25, -- run every 0.025s
     script = "toolbox.lua", -- run this script
-    varname = "rftlbx", -- variable name used in the suite. (if nil, we use the script var with .lua removed)
-    name = "Rotorflight Toolbox", -- name of the widget
-    key = "rftlbx" -- key id used for widget
+    msp = false, -- do not run if busy with msp 
+    no_link = true -- run this script always
 }
 
 return init

@@ -1,6 +1,5 @@
---[[
+--[[ 
  * Copyright (C) Rotorflight Project
- *
  *
  * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
  *
@@ -10,17 +9,22 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- 
- * Note.  Some icons have been sourced from https://www.flaticon.com/
- * 
-]] --
-local init = {
-    script = "toolbox.lua", -- run this script
-    varname = "rftlbx", -- variable name used in the suite. (if nil, we use the script var with .lua removed)
-    name = "Rotorflight Toolbox", -- name of the widget
-    key = "rftlbx" -- key id used for widget
-}
+ *
+ * Note: Some icons have been sourced from https://www.flaticon.com/
+]]--
 
-return init
+local arg = { ... }
+local config = arg[1]
+
+local craftname = {}
+
+function craftname.wakeup()
+
+    rfsuite.session.toolbox.craftname = rfsuite.session.craftName or model.name()
+
+end
+
+
+return craftname

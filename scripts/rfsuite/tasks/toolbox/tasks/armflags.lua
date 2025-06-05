@@ -1,4 +1,4 @@
---[[
+--[[ 
  * Copyright (C) Rotorflight Project
  *
  * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
@@ -13,25 +13,14 @@
  * GNU General Public License for more details.
  *
  * Note: Some icons have been sourced from https://www.flaticon.com/
-]] --
-local object = {}
+]]--
 
+local arg = { ... }
+local config = arg[1]
 
-local displayValue 
-local lastDisplayValue
+local armflags = {}
 
--- This function is called by toolbox.lua
--- it should return a string that will be used as the
--- value for the displayed object.  all rendering is handled
--- by toolbox.lua.  It is called once when lcd.invalidate() is called
-function object.render(widget)
-    return displayValue or "-"
-end
-
--- This function is called in a loop by toolbox.lua
--- it should process anything that is needed for determining
--- what object.render does.  
-function object.wakeup(widget)
+function armflags.wakeup()
 
     local value = rfsuite.tasks.telemetry and rfsuite.tasks.telemetry.getSensor("armflags")
     local disableflags = rfsuite.tasks.telemetry and rfsuite.tasks.telemetry.getSensor("armdisableflags")
@@ -60,12 +49,9 @@ function object.wakeup(widget)
         end
     end
 
-    if lastDisplayValue ~= displayValue then
-        lastDisplayValue = displayValue
-        lcd.invalidate()
-    end
+    rfsuite.session.toolbox.armflags = displayValue
+
 end
 
 
-
-return object
+return armflags

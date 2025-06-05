@@ -16,33 +16,19 @@
 ]] --
 local object = {}
 
-
-local displayValue 
-local lastDisplayValue
-
 -- This function is called by toolbox.lua
 -- it should return a string that will be used as the
 -- value for the displayed object.  all rendering is handled
 -- by toolbox.lua.  It is called once when lcd.invalidate() is called
 function object.render(widget)
-    return displayValue or "-"
+    return "0%"
 end
 
 -- This function is called in a loop by toolbox.lua
 -- it should process anything that is needed for determining
 -- what object.render does.  
 function object.wakeup(widget)
-
-    local value = rfsuite.tasks.telemetry and rfsuite.tasks.telemetry.getSensor("governor") or 0
-
-
-    displayValue = rfsuite.utils.getGovernorState(math.floor(value))
-
     
-    if lastDisplayValue ~= displayValue then
-        lastDisplayValue = displayValue
-        lcd.invalidate()
-    end
 end
 
 
