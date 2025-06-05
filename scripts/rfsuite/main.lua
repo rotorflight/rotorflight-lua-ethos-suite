@@ -66,9 +66,9 @@ local userpref_defaults ={
         altitude_unit = 0, -- 0 = meters, 1 = feet
     },
     dashboard = {
-        theme_preflight = "system/rfstatus",
-        theme_inflight = "system/rfstatus",
-        theme_postflight = "system/rfstatus",
+        theme_preflight = "system/default",
+        theme_inflight = "system/default",
+        theme_postflight = "system/default",
     },
     events = {
         armflags = true,

@@ -570,6 +570,10 @@ function utils.resolveThresholdTextColor(value, box)
     local thresholds = utils.getParam(box, "thresholds")
     if thresholds and value ~= nil then
         for _, t in ipairs(thresholds) do
+            -- evaluate threshold value if a function
+            if type(t.value) == "function" then
+                t.value = t.value()
+            end
             if type(value) == "string" and t.value == value and t.textcolor then
                 -- String match
                 color = utils.resolveThemeColor("textcolor", t.textcolor)

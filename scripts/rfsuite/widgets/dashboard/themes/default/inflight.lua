@@ -166,7 +166,16 @@ local boxes = {
         type = "governor",
         nosource = "-",
         title = "GOVERNOR",
-        titlepos = "bottom"
+        titlepos = "bottom",
+        thresholds = {
+            { value = "DISARMED", textcolor = "red"    },
+            { value = "OFF",      textcolor = "red"    },
+            { value = "IDLE",     textcolor = "yellow" },
+            { value = "SPOOLUP",  textcolor = "blue"   },
+            { value = "RECOVERY", textcolor = "orange" },
+            { value = "ACTIVE",   textcolor = "green"  },
+            { value = "THR-OFF",  textcolor = "red"    },
+        }
     },
     {
         col = 2,
