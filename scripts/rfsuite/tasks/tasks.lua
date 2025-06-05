@@ -190,6 +190,7 @@ function tasks.wakeup()
             rfsuite.session.onConnect.high = false
             rfsuite.session.onConnect.low = false
             rfsuite.session.onConnect.medium = false
+            rfsuite.session.toolbox = nil
             lastTelemetrySensorName = nil
             sportSensor = nil
             elrsSensor = nil 
