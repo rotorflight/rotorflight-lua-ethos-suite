@@ -33,33 +33,12 @@ end
 -- what object.render does.  
 function object.wakeup(widget)
 
-    local value = rfsuite.tasks.telemetry and rfsuite.tasks.telemetry.getSensor("armflags")
-    local disableflags = rfsuite.tasks.telemetry and rfsuite.tasks.telemetry.getSensor("armdisableflags")
+    local value = rfsuite.tasks.telemetry and rfsuite.tasks.telemetry.getSensor("governor") or 0
+
+
+    displayValue = rfsuite.utils.getGovernorState(math.floor(value))
 
     
-    local showReason = false
-    
-    -- Try to use arm disable reason, if present and not "OK"
-    if disableflags ~= nil then
-        disableflags = math.floor(disableflags)
-        local reason = rfsuite.app.utils.armingDisableFlagsToString(disableflags)
-        if reason and reason ~= "OK" then
-            displayValue = reason
-            showReason = true
-        end
-    end
-
-    -- Fallback to ARMED/DISARMED state if no specific disable reason
-    if not showReason then
-        if value ~= nil then
-            if value == 1 or value == 3 then
-                displayValue = rfsuite.i18n.get("ARMED")
-            else
-                displayValue = rfsuite.i18n.get("DISARMED")
-            end
-        end
-    end
-
     if lastDisplayValue ~= displayValue then
         lastDisplayValue = displayValue
         lcd.invalidate()

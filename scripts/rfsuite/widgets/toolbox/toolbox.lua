@@ -130,21 +130,14 @@ end
 
 -- Delegate wakeup to the chosen sub-widget (once set up)
 function toolbox.wakeup(widget)
-    local schedulerUI = lcd.isVisible() and 0.5 or 5
+    local scheduler = lcd.isVisible() and 0.25 or 5
     local now = os.clock()
 
-    if (now - wakeupSchedulerUI) >= schedulerUI then
-        wakeupSchedulerUI = now
-
-        -- Once there’s a selected index, mark setup = true and attempt load
-        if widget.object then
-            if not widget.state.setup then
-                tryLoadSubWidget(widget)
-            end
+    -- Once there’s a selected index, mark setup = true and attempt load
+    if widget.object then
+        if not widget.state.setup then
+            tryLoadSubWidget(widget)
         end
-
-        -- Always invalidate so the next paint() reflects any changes
-        lcd.invalidate()
     end
 
     -- If setup is done and we have a loaded sub-widget, delegate wakeup()
