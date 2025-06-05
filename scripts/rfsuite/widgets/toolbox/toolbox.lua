@@ -21,12 +21,13 @@ local LCD_W, LCD_H
 
 -- List of available sub-widgets (folder names must match these entries)
 local toolBoxList = {
-    [1] = { object = "example",      name = "Example"      },
-    [2] = { object = "bbl",        name = "BBL"        },
-    [3] = { object = "craftimage", name = "Craft Image"},
-    [4] = { object = "craftname",  name = "Craft Name" },
-    [5] = { object = "disarmed",   name = "Disarmed"   },
-    [6] = { object = "governor",   name = "Governor"   },
+    [0] = { object = "example",   name = "Example"              },
+    [1] = { object = "armflags",   name = "Arming Flags"        },
+    [2] = { object = "bbl",        name = "BBL"                 },
+    [3] = { object = "craftimage", name = "Craft Image"         },
+    [4] = { object = "craftname",  name = "Craft Name"          },
+    [5] = { object = "disarmed",   name = "Disarmed"            },
+    [6] = { object = "governor",   name = "Governor"            },
 }
 
 
