@@ -21,13 +21,16 @@ local LCD_W, LCD_H
 
 -- List of available sub-widgets (folder names must match these entries)
 local toolBoxList = {
-    [1] = { folder = "armed",      name = "Armed"      },
-    [2] = { folder = "bbl",        name = "BBL"        },
-    [3] = { folder = "craftimage", name = "Craft Image"},
-    [4] = { folder = "craftname",  name = "Craft Name" },
-    [5] = { folder = "disarmed",   name = "Disarmed"   },
-    [6] = { folder = "governor",   name = "Governor"   },
+    [1] = { object = "armed",      name = "Armed"      },
+    [2] = { object = "bbl",        name = "BBL"        },
+    [3] = { object = "craftimage", name = "Craft Image"},
+    [4] = { object = "craftname",  name = "Craft Name" },
+    [5] = { object = "disarmed",   name = "Disarmed"   },
+    [6] = { object = "governor",   name = "Governor"   },
 }
+
+
+toolbox.utils = rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/toolbox/lib/utils.lua")
 
 -- Helper to build a list of “{ displayName, index }” for the form
 local function generateWidgetList(tbl)
@@ -55,13 +58,13 @@ local function tryLoadSubWidget(widget)
     end
 
     local entry = toolBoxList[widget.object]
-    if not (entry and entry.folder) then
+    if not (entry and entry.object) then
         return
     end
 
     -- Construct path to the sub-widget’s main Lua file
     -- (expects: SCRIPTS:/<baseDir>/widgets/toolbox/widgets/<folder>/<folder>.lua)
-    local widgetPath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/toolbox/objects/" .. entry.folder .. "/" .. entry.folder .. ".lua"
+    local widgetPath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/toolbox/objects/" .. entry.object .. ".lua"
 
 
     -- First, attempt to load the chunk (returns a function)

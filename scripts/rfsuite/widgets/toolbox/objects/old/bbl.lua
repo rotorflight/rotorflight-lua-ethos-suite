@@ -57,11 +57,6 @@ local function drawCenteredMessage(msg, valueOffset)
     lcd.drawText((w - bestW) / 2, ((h - bestH ) / 2) + 5 + valueOffset, msg)
 end
 
--- Show critical version error
-local function screenError(msg)
-    drawCenteredMessage(msg)
-end
-
 -- Request summary from dataflash
 local function getDataflashSummary()
 
@@ -185,7 +180,7 @@ function rf2bbl.paint(widget)
             rfsuite.config.ethosVersion[2],
             rfsuite.config.ethosVersion[3]
         )
-        screenError(msg)
+        rfsuite.widgets.toolbox.utils.screenError(msg)
         return
     end
 
