@@ -399,7 +399,7 @@ function utils.box(
 
     titlespacing = titlespacing or DEFAULT_TITLE_SPACING
 
-    -- Draw background if requested
+    -- Draw background
     if bgcolor then
         lcd.color(bgcolor)
         lcd.drawFilledRectangle(x, y, w, h)
