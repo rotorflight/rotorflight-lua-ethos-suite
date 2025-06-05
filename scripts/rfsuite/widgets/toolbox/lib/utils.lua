@@ -50,7 +50,7 @@ function utils.box(title, msg)
         lcd.drawText(x, y, title)    
 
         -- if we have a title, we need to bump the y position down for the display of the value message
-        offsetY = bestH  -- Add some padding below the title
+        offsetY = bestH - 3  -- Add some padding below the title
 
     end
 
