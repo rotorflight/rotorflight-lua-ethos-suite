@@ -69,14 +69,14 @@ local layout = {
 local boxes = {
     -- Column 1
     { col = 1, row = 1, type = "modelimage" },
-    { col = 1, row = 2, type = "telemetry", source = "temp_esc", title = "ESC TEMP", titlepos = "bottom", transform = "floor", valuepaddingright = 12,
+    { col = 1, row = 2, type = "telemetry", source = "temp_esc", title = "ESC TEMP", transform = "floor", titlepos = "bottom", valuepaddingright = 12,
         thresholds = {
             { value = 70,  textcolor = "green"  },
             { value = 90,  textcolor = "orange" },
             { value = 140, textcolor = "red"    }
         }
     },
-    { col = 1, row = 3, type = "governor", title = "GOVERNOR", titlepos = "bottom", font = "FONT_STD",
+    { col = 1, row = 3, type = "governor", title = "GOVERNOR", titlepos = "bottom", titlepos = "bottom",
         thresholds = {
             { value = "DISARMED", textcolor = "red"    },
             { value = "OFF",      textcolor = "red"    },
@@ -96,7 +96,7 @@ local boxes = {
             { value = 50, textcolor = "yellow" }
         }
     },
-    { col = 2, row = 2, type = "telemetry", source = "altitude", title = "ALTITUDE", titlepos = "bottom", textcolor = "blue", transform = "floor" },
+    { col = 2, row = 2, type = "telemetry", source = "altitude", title = "ALTITUDE", textcolor = "blue", transform = "floor", titlepos = "bottom" },
     { col = 2, row = 3, type = "craftname", title = "CRAFT NAME", titlepos = "bottom" },
     { col = 2, row = 4, type = "session", source = "isArmed", title = "IS ARMED", titlepos = "bottom" },
 
@@ -109,14 +109,14 @@ local boxes = {
             { value = 200, textcolor = "red" },
         }
     },
-    { col = 3, row = 4, type = "armflags", title = "ARM FLAGS", titlepos = "bottom", font = "FONT_STD",
+    { col = 3, row = 4, type = "armflags", title = "ARM FLAGS", titlepos = "bottom",
             thresholds = {
             { value = "DISARMED", textcolor = "red" },
             { value = "ARMED", textcolor = "green" },
         }
     },
     -- Column 4
-    { col = 4, row = 1, type = "text", value = "PRESS ME", title = "ON PRESS", titlepos = "bottom", textcolor = "orange", onpress = onpressFunctionSave },
+    { col = 4, row = 1, type = "text", value = "PRESS ME", title = "ON PRESS", titlepos = "bottom", titlecolor = "green", textcolor = "orange", onpress = onpressFunctionSave },
     { col = 4, row = 2, type = "flightcount", title = "FLIGHT COUNT", titlepos = "bottom" },
     { col = 4, row = 3, type = "flighttime", title = "FLIGHT TIME", titlepos = "bottom"},
     { col = 4, row = 4, type = "totalflighttime", title = "TOTAL FLIGHT TIME", titlepos = "bottom"}

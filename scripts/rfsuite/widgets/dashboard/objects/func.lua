@@ -1,6 +1,5 @@
 --[[
     Custom Function Widget
-
     Configurable Arguments (box table keys):
     ----------------------------------------
     wakeup            : function   -- Custom wakeup function, called with (box, telemetry), should return a table to cache

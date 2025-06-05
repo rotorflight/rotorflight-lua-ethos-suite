@@ -21,11 +21,12 @@ local function default_box()
         type             = "armflags",
         title            = "Arming Flags",
         titlepos         = "top",
-        titlepaddingtop  = 5,
+        titlefont        = "FONT_S",
+        titlepaddingtop  = 3,
         titlecolor       = "grey",
         textcolor        = "white",
         bgcolor          = "transparent",
-        valuepaddingtop  = 20,
+        valuepaddingtop  = 26,
         -- …add any other defaults here…
     }
 end
