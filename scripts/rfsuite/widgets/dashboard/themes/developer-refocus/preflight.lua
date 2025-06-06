@@ -65,19 +65,19 @@ local layout1 = {
 }
 
 local boxes1 = {
-    {col=1, row=1, type="modelimage"},
-    {col=1, row=2, type="telemetry", source="rssi", nosource="-", title="LQ", unit="dB", titlepos="bottom", transform="floor"},
-    {col=1, row=3, type="governor", title="GOVERNOR", nosource="-", titlepos="bottom"},
-    {col=1, row=4, type="apiversion", title="API VERSION", nosource="-", titlepos="bottom"},
+    {col=1, row=1, type="image", subtype="model"},
+    {col=1, row=2, type="text", subtype="telemetry", source="rssi", nosource="-", title="LQ", unit="dB", titlepos="bottom", transform="floor"},
+    {col=1, row=3, type="text", subtype="governor", title="GOVERNOR", nosource="-", titlepos="bottom"},
+    {col=1, row=4, type="text", subtype="apiversion", title="API VERSION", nosource="-", titlepos="bottom"},
 
-    {col=2, row=1, type="telemetry", source="voltage", nosource="-", title="VOLTAGE", unit="v", titlepos="bottom"},
-    {col=2, row=2, type="telemetry", source="current", nosource="-", title="CURRENT", unit="A", titlepos="bottom"},
-    {col=2, row=3, type="craftname", title="CRAFT NAME", nosource="-", titlepos="bottom"},  
-    {col=2, row=4, type="session", source="isArmed", title="IS ARMED", nosource="-", titlepos="bottom"}, 
+    {col=2, row=1, type="text", subtype="telemetry", source="voltage", nosource="-", title="VOLTAGE", unit="v", titlepos="bottom"},
+    {col=2, row=2, type="text", subtype="telemetry", source="current", nosource="-", title="CURRENT", unit="A", titlepos="bottom"},
+    {col=2, row=3, type="text", subtype="craftname", title="CRAFT NAME", nosource="-", titlepos="bottom"},  
+    {col=2, row=4, type="text", subtype="session", source="isArmed", title="IS ARMED", nosource="-", titlepos="bottom"}, 
 
-    {col=3, row=1, type="telemetry", source="fuel", nosource="-", title="FUEL", unit="%", titlepos="bottom", transform="floor"},
+    {col=3, row=1, type="text", subtype="telemetry", source="fuel", nosource="-", title="FUEL", unit="%", titlepos="bottom", transform="floor"},
     {col=3, row=2, type = "func", value=customRenderFunction, title = "FUNCTION", titlepos = "bottom"},
-    {col=3, row=3, type="text", value = "PRESS ME", title="SWITCHER", nosource="-", titlepos="bottom", onpress=onpressFunction1},  
+    {col=3, row=3, type="text", subtype="text", value = "PRESS ME", title="SWITCHER", nosource="-", titlepos="bottom", onpress=onpressFunction1},  
 }
 
 local layout2 = {
@@ -90,19 +90,19 @@ local layout2 = {
 
 local boxes2 = {
 
-    {col=1, row=1, type="telemetry", source="voltage", nosource="-", title="VOLTAGE", unit="v", titlepos="bottom"},
-    {col=1, row=2, type="telemetry", source="current", nosource="-", title="CURRENT", unit="A", titlepos="bottom"},
-    {col=1, row=3, type="craftname", title="CRAFT NAME", nosource="-", titlepos="bottom"},  
-    {col=1, row=4, type="session", source="isArmed", title="IS ARMED", nosource="-", titlepos="bottom"}, 
+    {col=1, row=1, type="text", subtype="telemetry", source="voltage", nosource="-", title="VOLTAGE", unit="v", titlepos="bottom"},
+    {col=1, row=2, type="text", subtype="telemetry", source="current", nosource="-", title="CURRENT", unit="A", titlepos="bottom"},
+    {col=1, row=3, type="text", subtype="craftname", title="CRAFT NAME", nosource="-", titlepos="bottom"},  
+    {col=1, row=4, type="text", subtype="session", source="isArmed", title="IS ARMED", nosource="-", titlepos="bottom"}, 
 
-    {col=2, row=1, type="modelimage"},
-    {col=2, row=2, type="telemetry", source="rssi", nosource="-", title="LQ", unit="dB", titlepos="bottom", transform="floor"},
-    {col=2, row=3, type="governor", title="GOVERNOR", nosource="-", titlepos="bottom"},
-    {col=2, row=4, type="apiversion", title="API VERSION", nosource="-", titlepos="bottom"},
+    {col=2, row=1, type="image", subtype="model"},
+    {col=2, row=2, type="text", subtype="telemetry", source="rssi", nosource="-", title="LQ", unit="dB", titlepos="bottom", transform="floor"},
+    {col=2, row=3, type="text", subtype="governor", title="GOVERNOR", nosource="-", titlepos="bottom"},
+    {col=2, row=4, type="text", subtype="apiversion", title="API VERSION", nosource="-", titlepos="bottom"},
 
-    {col=3, row=1, type="telemetry", source="fuel", nosource="-", title="FUEL", unit="%", titlepos="bottom", transform="floor"},
+    {col=3, row=1, type="text", subtype="telemetry", source="fuel", nosource="-", title="FUEL", unit="%", titlepos="bottom", transform="floor"},
     {col=3, row=2, type = "func", value=customRenderFunction, title = "FUNCTION", titlepos = "bottom"},
-    {col=3, row=3, type="text", value = "PRESS ME", title="SWITCHER", nosource="-", titlepos="bottom", onpress=onpressFunction2},  
+    {col=3, row=3, type="text", subtype="text", value = "PRESS ME", title="SWITCHER", nosource="-", titlepos="bottom", onpress=onpressFunction2},  
 }
 
 
