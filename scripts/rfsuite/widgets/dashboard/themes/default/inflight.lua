@@ -19,8 +19,8 @@ local telemetry = rfsuite.tasks.telemetry
 local utils = rfsuite.widgets.dashboard.utils
 
 local layout = {
-    cols = 2,
-    rows = 8,
+    cols = 4,
+    rows = 14,
     padding = 4
 }
 
@@ -28,7 +28,8 @@ local boxes = {
     {
         type = "arcgauge",
         col = 1, row = 1,
-        rowspan = 6,
+        rowspan = 12,
+        colspan = 2,
         source = "voltage",
         unit = "V",
         font = "FONT_XXL",
@@ -133,8 +134,9 @@ local boxes = {
     },
     {
         type = "arcgauge",
-        col = 2, row = 1,
-        rowspan = 6,
+        col = 3, row = 1,
+        rowspan = 12,
+        colspan = 2,
         source = "fuel",
         transform = "floor",
         gaugemin = 0,
@@ -161,12 +163,10 @@ local boxes = {
     },
     {
         col = 1,
-        row = 7,
+        row = 13,
         rowspan = 2,
         type = "governor",
         nosource = "-",
-        title = "GOVERNOR",
-        titlepos = "bottom",
         thresholds = {
             { value = "DISARMED", textcolor = "red"    },
             { value = "OFF",      textcolor = "red"    },
@@ -178,13 +178,31 @@ local boxes = {
         }
     },
     {
-        col = 2,
-        row = 7,
+        col = 4,
+        row = 13,
         rowspan = 2,
         type = "flighttime",
-        titlepos = "bottom",
-        title = "TIMER",
     }, 
+    {
+        col = 3,
+        row = 13,
+        rowspan = 2,
+        type = "telemetry",
+        source = "rpm",
+        nosource = "-",
+        unit = "rpm",
+        transform = "floor"
+    },    
+    {
+        col = 2,
+        row = 13,
+        rowspan = 2,
+        type = "telemetry",
+        source = "rssi",
+        nosource = "-",
+        unit = "dB",
+        transform = "floor"
+    },    
 }
 
 

@@ -59,10 +59,11 @@ function render.wakeup(box)
         percentUsed = nil
     end
 
-    -- Use percent used with threshold color helper ()
-    local textcolor = utils.resolveThresholdTextColor and percentUsed
-        and utils.resolveThresholdTextColor(percentUsed, box)
-        or resolveThemeColor("textcolor", getParam(box, "textcolor"))
+    -- Threshold logic (if required)
+    local textcolor = percentUsed ~= nil
+    and utils.resolveThresholdColor(percentUsed, box, "textcolor", "textcolor")
+    or resolveThemeColor("textcolor", getParam(box, "textcolor"))
+
 
     box._cache = {
         title              = getParam(box, "title"),

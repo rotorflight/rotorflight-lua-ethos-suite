@@ -74,7 +74,7 @@ function render.wakeup(box, telemetry)
     end
 
     -- Threshold logic (optional)
-    local textcolor = utils.resolveThresholdTextColor(displayValue, box)
+    local textcolor = utils.resolveThresholdColor(displayValue, box, "textcolor", "textcolor")
 
     -- If *neither* value nor disable reason is available, show novalue
     if displayValue == nil then
