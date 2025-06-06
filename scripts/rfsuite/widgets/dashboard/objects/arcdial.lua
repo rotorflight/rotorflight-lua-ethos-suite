@@ -101,6 +101,13 @@ function render.wakeup(box, telemetry)
     local min = getParam(box, "min") or 0
     local max = getParam(box, "max") or 100
 
+    local percent = nil
+    if value ~= nil and max ~= min then
+        percent = (value - min) / (max - min)
+        if percent < 0 then percent = 0 end
+        if percent > 1 then percent = 1 end
+    end
+
     -- All color keys are resolved here
     box._cache = {
         displayValue = displayValue,
@@ -166,7 +173,7 @@ function render.paint(x, y, w, h, box)
 
     -- Draw needle
     if percent then
-        local needleLen = radius - 8
+        local needleLen = radius
         local needleAngle = startAngle + sweep * percent
         rfsuite.widgets.dashboard.utils.drawBarNeedle(cx, cy, needleLen, needleThickness, needleAngle, needleColor)
         lcd.color(needlehubcolor)
