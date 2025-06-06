@@ -52,7 +52,7 @@ function render.wakeup(box, telemetry)
     end
 
     -- Threshold logic (if required)
-    local textcolor = utils.resolveThresholdTextColor(value, box)
+    local textcolor = utils.resolveThresholdColor(value, box, "textcolor", "textcolor")
 
     -- Dynamic unit logic (User can force a unit or omit unit using "" to hide)
     local manualUnit = getParam(box, "unit")

@@ -521,32 +521,33 @@ function utils.box(
     end
 end
 
-
---- Resolves the text color for a value using flexible threshold logic.
+--- Resolves a color (typically textcolor or fillcolor) for a value using flexible threshold logic.
 -- If the box table includes a 'thresholds' array:
---   - For string values, returns the textcolor for the threshold whose value exactly matches.
---   - For numeric values, returns the textcolor for the first threshold whose value is greater than the given value (less-than logic).
--- Falls back to the box or theme default textcolor if no threshold matches.
--- @param value number|string   The value or state to evaluate.
--- @param box   table           The widget's config table (may contain thresholds, textcolor, etc.)
--- @return number               The LCD color to use for text.
+    -- For string values, returns the colorKey (e.g. textcolor/fillcolor) for the threshold whose value exactly matches.
+    -- For numeric values, returns the colorKey for the first threshold whose value is greater than or equal to the given value (less-than-or-equal logic).
+    -- For function-valued thresholds, calls the function with (box, value) to resolve the thresholdValue.
+    -- Falls back to the colorKey in box, or a theme default, if no threshold matches.
+-- @param value              number|string  -- The value to evaluate against thresholds.
+-- @param box                table          -- The widget's config table (may contain thresholds, textcolor, fillcolor, etc.)
+-- @param colorKey           string         -- The key to look up in thresholds and box (e.g. "textcolor" or "fillcolor").
+-- @param fallbackThemeKey   string         -- The theme key to use if no color is found (e.g. "textcolor", "fillcolor").
+-- @return                   number         -- The LCD color to use for rendering.
 
-function utils.resolveThresholdTextColor(value, box)
-    local color = utils.resolveThemeColor("textcolor", utils.getParam(box, "textcolor"))
+function utils.resolveThresholdColor(value, box, colorKey, fallbackThemeKey)
+    local color = utils.resolveThemeColor(fallbackThemeKey, utils.getParam(box, colorKey))
     local thresholds = utils.getParam(box, "thresholds")
     if thresholds and value ~= nil then
         for _, t in ipairs(thresholds) do
-            -- evaluate threshold value if a function
-            if type(t.value) == "function" then
-                t.value = t.value()
+            local thresholdValue = t.value
+            if type(thresholdValue) == "function" then
+                thresholdValue = thresholdValue(box, value)
             end
-            if type(value) == "string" and t.value == value and t.textcolor then
-                -- String match
-                color = utils.resolveThemeColor("textcolor", t.textcolor)
+
+            if type(value) == "string" and thresholdValue == value and t[colorKey] then
+                color = utils.resolveThemeColor(colorKey, t[colorKey])
                 break
-            elseif type(value) == "number" and type(t.value) == "number" and value < t.value and t.textcolor then
-                -- Numerical threshold
-                color = utils.resolveThemeColor("textcolor", t.textcolor)
+            elseif type(value) == "number" and type(thresholdValue) == "number" and value <= thresholdValue and t[colorKey] then
+                color = utils.resolveThemeColor(colorKey, t[colorKey])
                 break
             end
         end
