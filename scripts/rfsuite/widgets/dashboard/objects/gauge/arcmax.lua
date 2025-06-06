@@ -193,8 +193,10 @@ function render.paint(x, y, w, h, box)
 
     -- Paint background
     local bgColor = c.bgcolor
-    lcd.color(bgColor)
-    lcd.drawFilledRectangle(x, y, w, h)
+    if bgColor then
+        lcd.color(bgColor)
+        lcd.drawFilledRectangle(x, y, w, h)
+    end
 
     -- Draw background arc
     if c and c.startAngle and c.sweep then

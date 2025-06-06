@@ -217,8 +217,10 @@ function render.paint(x, y, w, h, box)
     local stepRad = math.rad(2)
 
     -- Widget background
-    lcd.color(c.bgcolor)
-    lcd.drawFilledRectangle(x, y, w, h)
+    if c.bgcolor then
+        lcd.color(c.bgcolor)
+        lcd.drawFilledRectangle(x, y, w, h)
+    end     
 
     -- Draw background arc
     if c.startangle and c.sweep then

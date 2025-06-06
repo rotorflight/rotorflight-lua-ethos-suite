@@ -214,9 +214,10 @@ function render.paint(x, y, w, h, box)
     local c = box._cache or {}
 
     -- Draw overall box background
-    lcd.color(c.bgcolor)
-    lcd.drawFilledRectangle(x, y, w, h)
-
+    if c.bgcolor then
+        lcd.color(c.bgcolor)
+        lcd.drawFilledRectangle(x, y, w, h)
+    end
     -- Gauge rectangle (with padding and title space)
     local gauge_x = x + c.gpad_left
     local gauge_y = y + c.gpad_top + c.title_area_top
