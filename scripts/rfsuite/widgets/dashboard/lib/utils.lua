@@ -456,11 +456,14 @@ function utils.box(
             lcd.drawBitmap(img_x, img_y, bitmapPtr, img_w, img_h)
         end
     elseif displayValue ~= nil then
+
         local value_str = tostring(displayValue) .. (unit or "")
 
         -- replace . and % symbols with 'W' for width calculation
         -- note.  gsub %% is escaping the % symbol as % is the lua pattern escape character
-        local value_str_calc = string.gsub(value_str, "[°%%]", "W")
+        --        multi subs are used because different characters need different replacements
+        local value_str_calc = string.gsub(value_str, "[%%]", "W")
+              value_str_calc = string.gsub(value_str, "[°]", ".")
 
         local valueFont, bestW, bestH = FONT_XXS, 0, 0
         if font and _G[font] then
