@@ -38,11 +38,12 @@
     fillcolor           : color     -- (Optional) Arc foreground color (theme fallback)
 
     -- Arc Geometry/Advanced
-    gaugemin            : number    -- (Optional) Minimum value of the arc (default: 0)
-    gaugemax            : number    -- (Optional) Maximum value of the arc (default: 100)
+    min                 : number    -- (Optional) Minimum value of the arc (default: 0)
+    max                 : number    -- (Optional) Maximum value of the arc (default: 100)
     arcoffsety          : number    -- (Optional) Y offset for arc center (default: 0)
     startangle          : number    -- (Optional) Arc start angle (deg, default: 225)
     sweep               : number    -- (Optional) Arc sweep angle (deg, default: 270)
+    thickness           : number    -- (Optional) Arc thickness in pixels
 
     -- Subtext
     subtext             : string    -- (Optional) Sub-label below arc (e.g., "Max")
@@ -55,23 +56,23 @@ local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 
 -- Arc drawing function
-local function drawArc(cx, cy, radius, thickness, anglestart, angleend, color, cachesteprad)
+local function drawArc(cx, cy, radius, thickness, angleStart, angleEnd, color, cacheStepRad)
     local step = 1
     local rad_thick = thickness / 2
-    anglestart = math.rad(anglestart)
-    angleend = math.rad(angleend)
-    if angleend > anglestart then
-        angleend = angleend - 2 * math.pi
+    angleStart = math.rad(angleStart)
+    angleEnd = math.rad(angleEnd)
+    if angleEnd > angleStart then
+        angleEnd = angleEnd - 2 * math.pi
     end
     lcd.color(color)
-    local stepRad = cachesteprad or math.rad(step)
-    for a = anglestart, angleend, -stepRad do
+    local stepRad = cacheStepRad or math.rad(step)
+    for a = angleStart, angleEnd, -stepRad do
         local x = cx + radius * math.cos(a)
         local y = cy - radius * math.sin(a)
         lcd.drawFilledCircle(x, y, rad_thick)
     end
-    local x_end = cx + radius * math.cos(angleend)
-    local y_end = cy - radius * math.sin(angleend)
+    local x_end = cx + radius * math.cos(angleEnd)
+    local y_end = cy - radius * math.sin(angleEnd)
     lcd.drawFilledCircle(x_end, y_end, rad_thick)
 end
 
@@ -90,11 +91,11 @@ function render.wakeup(box, telemetry)
     end
 
     -- Resolve arc min/max and calculate percent fill for the gauge (clamped 0-1)
-    local gaugemin = getParam(box, "gaugemin") or 0
-    local gaugemax = getParam(box, "gaugemax") or 100
+    local min = getParam(box, "min") or 0
+    local max = getParam(box, "max") or 100
     local percent = 0
-    if value and gaugemax ~= gaugemin then
-        percent = (value - gaugemin) / (gaugemax - gaugemin)
+    if value and max ~= min then
+        percent = (value - min) / (max - min)
         percent = math.max(0, math.min(1, percent))
     end
 
@@ -136,8 +137,9 @@ function render.wakeup(box, telemetry)
         arcoffsety         = getParam(box, "arcoffsety"),
         startangle         = getParam(box, "startangle") or 225,
         sweep              = getParam(box, "sweep") or 270,
-        gaugemin           = gaugemin,
-        gaugemax           = gaugemax,
+        min                = min,
+        max                = max,
+        thickness          = getParam(box, "thickness"),
         percent            = percent,
         fillcolor          = fillcolor,
         fillbgcolor        = resolveThemeColor("fillbgcolor", getParam(box, "fillbgcolor")),
@@ -164,48 +166,48 @@ function render.wakeup(box, telemetry)
         valuepaddingright  = getParam(box, "valuepaddingright"),
         valuepaddingtop    = getParam(box, "valuepaddingtop") or 18,
         valuepaddingbottom = getParam(box, "valuepaddingbottom"),
-        subText            = getParam(box, "subText"),
+        subtext            = getParam(box, "subtext"),
     }
 end
 
 function render.paint(x, y, w, h, box)
     x, y = utils.applyOffset(x, y, box)
     local c = box._cache or {}
-    local titlepos = c.titlepos
-    
+
     -- Title/Arc layout calculation
-    local titleheight = 0
+    local titleHeight = 0
     if c.title then
         lcd.font(_G[c.titlefont] or FONT_XS)
         local _, th = lcd.getTextSize(c.title)
-        titleheight = (th or 0) + (c.titlespacing or 0) + (c.titlepaddingtop or 0) + (c.titlepaddingbottom or 0)
+        titleHeight = (th or 0) + (c.titlespacing or 0) + (c.titlepaddingtop or 0) + (c.titlepaddingbottom or 0)
     end
-
+   
     -- Arc region: based on titlepos (default is top)
+    local titlepos = c.titlepos
     local arcRegionY, arcRegionH, cy, radius
     local arcMargin, thickness, maxRadius
 
     if c.titlepos == "top" then
-        arcRegionY   = y + titleheight
-        arcRegionH   = h - titleheight
+        arcRegionY   = y + titleHeight
+        arcRegionH   = h - titleHeight
         arcMargin    = 8
-        thickness    = math.max(6, math.min(w, arcRegionH) * 0.07)
+        thickness    = c.thickness or math.max(6, math.min(w, arcRegionH) * 0.07)
         maxRadius    = ((arcRegionH - arcMargin) / 2) - (thickness / 2)
         radius       = math.min(w * 0.50, maxRadius + 8)
         cy           = arcRegionY + arcRegionH * 0.5 + (c.arcoffsety or 0)
     elseif c.titlepos == "bottom" then
         arcRegionY   = y
-        arcRegionH   = h - titleheight
+        arcRegionH   = h - titleHeight
         arcMargin    = 8
-        thickness    = math.max(6, math.min(w, arcRegionH) * 0.07)
+        thickness    = c.thickness or math.max(6, math.min(w, arcRegionH) * 0.07)
         maxRadius    = ((arcRegionH - arcMargin) / 2) - (thickness / 2)
         radius       = math.min(w * 0.50, maxRadius + 8)
         cy           = arcRegionY + arcRegionH * 0.60 + (c.arcoffsety or 0)
     else
         arcRegionY   = y
         arcRegionH   = h
-        arcMargin    = 10
-        thickness    = math.max(6, math.min(w, arcRegionH) * 0.07)
+        arcMargin    = 8
+        thickness    = c.thickness or math.max(6, math.min(w, arcRegionH) * 0.07)
         maxRadius    = ((arcRegionH - arcMargin) / 2) - (thickness / 2)
         radius       = math.min(w * 0.50, maxRadius + 8)
         cy           = arcRegionY + arcRegionH * 0.55 + (c.arcoffsety or 0)
@@ -240,12 +242,12 @@ function render.paint(x, y, w, h, box)
         nil
     )
 
-    -- Draw subText if present
-    if c.subText then
+    -- Draw subtext if present
+    if c.subtext then
         lcd.font(FONT_XS)
-        local tw, _ = lcd.getTextSize(c.subText)
+        local tw, _ = lcd.getTextSize(c.subtext)
         lcd.color(c.textcolor)
-        lcd.drawText(cx - tw / 2, cy + radius * 0.55, c.subText)
+        lcd.drawText(cx - tw / 2, cy + radius * 0.55, c.subtext)
     end
 end
 
