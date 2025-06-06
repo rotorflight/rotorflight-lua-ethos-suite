@@ -457,26 +457,26 @@ function utils.box(
         end
     elseif displayValue ~= nil then
         local value_str = tostring(displayValue) .. (unit or "")
+
+        -- replace . and % symbols with 'W' for width calculation
+        -- note.  gsub %% is escaping the % symbol as % is the lua pattern escape character
+        local value_str_calc = string.gsub(value_str, "[°%%]", "W")
+
         local valueFont, bestW, bestH = FONT_XXS, 0, 0
         if font and _G[font] then
             valueFont = _G[font]
             lcd.font(valueFont)
-            bestW, bestH = lcd.getTextSize(value_str)
+
+            bestW, bestH = lcd.getTextSize(value_str_calc)
         else
             for _, tryFont in ipairs(fontCache.value_default) do
                 lcd.font(tryFont)
-                local tW, tH = lcd.getTextSize(value_str)
+                local tW, tH = lcd.getTextSize(value_str_calc)
                 if tW <= region_vw and tH <= region_vh then
                     valueFont, bestW, bestH = tryFont, tW, tH
                 end
             end
             lcd.font(valueFont)
-        end
-
-        -- Dynamic fudge factor for degree symbol or thin units
-        local fudge = 0
-        if unit and unit:find("°") then
-            fudge = math.floor(region_vw * 0.09)
         end
 
         -- Optional: vertical fudge for title placement
@@ -494,7 +494,7 @@ function utils.box(
         elseif align == "right" then
             sx = region_vx + region_vw - bestW
         else
-            sx = region_vx + (region_vw - bestW) / 2 + fudge
+            sx = region_vx + (region_vw - bestW) / 2 
         end
         lcd.color(textcolor)
         lcd.drawText(sx, sy, value_str)
