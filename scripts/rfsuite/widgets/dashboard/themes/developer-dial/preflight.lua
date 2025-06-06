@@ -68,7 +68,8 @@ local boxes = {
 
     -- HEATRING
     {
-        type = "heatring",
+        type = "gauge",
+        subtype = "ring",
         col = 2, row = 1,
         title = "RPM",
         min = 0,
@@ -93,7 +94,8 @@ local boxes = {
 
     -- ARCGUAGE
     {
-        type = "arcgauge",
+        type = "gauge",
+        subtype = "arc",
         col = 1, row = 2,
         source = "temp_esc",
         title = "ESC TEMP",
@@ -112,7 +114,8 @@ local boxes = {
 
     -- ARCDIAL
     {
-        type = "arcdial",
+        type = "dial",
+        subtype = "rainbow",
         col = 2, row = 2,
         title = "Fuel",
         titlepos = "bottom",
@@ -265,7 +268,8 @@ local boxes = {
 
     -- ARC MAX GAUGE
     {
-        type = "arcmaxgauge",
+        type = "gauge",
+        subtype = "arcmax",
         col = 3, row = 2, rowspan = 2,
                 source = "temp_esc", 
         title = "ESC Temp", 
