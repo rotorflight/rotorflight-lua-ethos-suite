@@ -52,7 +52,7 @@ function render.wakeup(box, telemetry)
     local displayValue = rfsuite.utils.getGovernorState(value)
 
     -- Threshold logic (optional)
-    local textcolor = utils.resolveThresholdColor(value, box, "textcolor", "textcolor")
+    local textcolor = utils.resolveThresholdColor(displayValue, box, "textcolor", "textcolor")
 
     -- Fallback if no value
     if value == nil then
