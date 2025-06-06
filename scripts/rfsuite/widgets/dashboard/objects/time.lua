@@ -1,17 +1,17 @@
 local wrapper = {}
 
 local renders = {}
-local folder = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/objects/func/"
+local folder = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/objects/time/"
 
 function wrapper.paint(x, y, w, h, box)
-    local subtype = box.subtype or "func"
+    local subtype = box.subtype or "flight"
     local render = renders[subtype]
     if not render then return end
     render.paint(x, y, w, h, box)
 end
 
 function wrapper.wakeup(box, telemetry)
-    local subtype = box.subtype or "func"
+    local subtype = box.subtype or "flight"
 
     if not renders[subtype] then
         local path = folder .. subtype .. ".lua"

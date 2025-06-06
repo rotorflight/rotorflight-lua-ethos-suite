@@ -26,7 +26,8 @@ local layout = {
 
 local boxes = {
     {
-        type = "arcgauge",
+        type = "gauge",
+        subtype = "arc",
         col = 1, row = 1,
         rowspan = 12,
         colspan = 2,
@@ -133,7 +134,8 @@ local boxes = {
         }
     },
     {
-        type = "arcgauge",
+        type = "gauge",
+        subtype = "arc",
         col = 3, row = 1,
         rowspan = 12,
         colspan = 2,
@@ -165,7 +167,8 @@ local boxes = {
         col = 1,
         row = 13,
         rowspan = 2,
-        type = "governor",
+        type = "text",
+        subtype = "governor",
         nosource = "-",
         thresholds = {
             { value = "DISARMED", textcolor = "red"    },
@@ -181,13 +184,15 @@ local boxes = {
         col = 4,
         row = 13,
         rowspan = 2,
-        type = "flighttime",
+        type = "time",
+        subtype = "flight",
     }, 
     {
         col = 3,
         row = 13,
         rowspan = 2,
-        type = "telemetry",
+        type = "text",
+        subtype = "telemetry",
         source = "rpm",
         nosource = "-",
         unit = "rpm",
@@ -197,7 +202,8 @@ local boxes = {
         col = 2,
         row = 13,
         rowspan = 2,
-        type = "telemetry",
+        type = "text",
+        subtype = "telemetry",
         source = "rssi",
         nosource = "-",
         unit = "dB",

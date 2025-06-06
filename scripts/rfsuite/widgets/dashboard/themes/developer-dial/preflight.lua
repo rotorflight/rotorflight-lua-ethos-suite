@@ -216,7 +216,8 @@ local boxes = {
     -- BATTERY
     {
         col = 3, row = 1,
-        type = "battery",
+        type = "gauge",
+        subtype = "battery",
         source = "voltage",
         gaugemin = function()
             local cfg = rfsuite.session.batteryConfig

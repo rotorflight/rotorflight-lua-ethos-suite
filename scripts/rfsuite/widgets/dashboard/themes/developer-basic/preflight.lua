@@ -68,15 +68,15 @@ local layout = {
 
 local boxes = {
     -- Column 1
-    { col = 1, row = 1, type = "modelimage" },
-    { col = 1, row = 2, type = "telemetry", source = "temp_esc", title = "ESC TEMP", transform = "floor", titlepos = "bottom",
+    { col = 1, row = 1, type = "image", subtype = "model" },
+    { col = 1, row = 2, type = "text", subtype = "telemetry", source = "temp_esc", title = "ESC TEMP", transform = "floor", titlepos = "bottom",
         thresholds = {
             { value = 70,  textcolor = "green"  },
             { value = 90,  textcolor = "orange" },
             { value = 140, textcolor = "red"    }
         }
     },
-    { col = 1, row = 3, type = "governor", title = "GOVERNOR", titlepos = "bottom", titlepos = "bottom",
+    { col = 1, row = 3, type = "text", subtype = "governor", title = "GOVERNOR", titlepos = "bottom", titlepos = "bottom",
         thresholds = {
             { value = "DISARMED", textcolor = "red"    },
             { value = "OFF",      textcolor = "red"    },
@@ -87,39 +87,39 @@ local boxes = {
             { value = "THR-OFF",  textcolor = "red"    },
         }
     },
-    { col = 1, row = 4, type = "apiversion", title = "API VERSION", titlepos = "bottom" },
+    { col = 1, row = 4, type="text", subtype = "apiversion", title = "API VERSION", titlepos = "bottom" },
 
     -- Column 2
-    { col = 2, row = 1, type = "telemetry", source = "voltage", title = "VOLTAGE", titlepos = "bottom",
+    { col = 2, row = 1, type="text", subtype = "telemetry", source = "voltage", title = "VOLTAGE", titlepos = "bottom",
         thresholds = {
             { value = 20, textcolor = "red" },
             { value = 50, textcolor = "yellow" }
         }
     },
-    { col = 2, row = 2, type = "telemetry", source = "altitude", title = "ALTITUDE", textcolor = "blue", transform = "floor", titlepos = "bottom" },
-    { col = 2, row = 3, type = "craftname", title = "CRAFT NAME", titlepos = "bottom" },
-    { col = 2, row = 4, type = "session", source = "isArmed", title = "IS ARMED", titlepos = "bottom" },
+    { col = 2, row = 2, type="text", subtype = "telemetry", source = "altitude", title = "ALTITUDE", textcolor = "blue", transform = "floor", titlepos = "bottom" },
+    { col = 2, row = 3, type="text", subtype = "craftname", title = "CRAFT NAME", titlepos = "bottom" },
+    { col = 2, row = 4, type="text", subtype = "session", source = "isArmed", title = "IS ARMED", titlepos = "bottom" },
 
     -- Column 3
-    { col = 3, row = 1, type = "telemetry", source = "fuel", title = "FUEL", titlepos = "bottom", transform = "floor" },
+    { col = 3, row = 1, type="text", subtype = "telemetry", source = "fuel", title = "FUEL", titlepos = "bottom", transform = "floor" },
     { col = 3, row = 2, type = "func", paint = customPaintFunction, wakeup = customWakeupFunction, title = "FUNCTION", titlepos = "bottom" },
-    { col = 3, row = 3, type = "blackbox", title = "BLACKBOX", titlepos = "bottom", transform = "ceil", decimals = 0,
+    { col = 3, row = 3, type="text", subtype = "blackbox", title = "BLACKBOX", titlepos = "bottom", transform = "ceil", decimals = 0,
         thresholds = { 
             { value = 90, textcolor = "white"}, 
             { value = 200, textcolor = "red" },
         }
     },
-    { col = 3, row = 4, type = "armflags", title = "ARM FLAGS", titlepos = "bottom",
+    { col = 3, row = 4, type="text", subtype = "armflags", title = "ARM FLAGS", titlepos = "bottom",
             thresholds = {
             { value = "DISARMED", textcolor = "red" },
             { value = "ARMED", textcolor = "green" },
         }
     },
     -- Column 4
-    { col = 4, row = 1, type = "text", value = "PRESS ME", title = "ON PRESS", titlepos = "bottom", textcolor = "orange", onpress = onpressFunctionSave },
-    { col = 4, row = 2, type = "flightcount", title = "FLIGHT COUNT", titlepos = "bottom" },
-    { col = 4, row = 3, type = "flighttime", title = "FLIGHT TIME", titlepos = "bottom"},
-    { col = 4, row = 4, type = "totalflighttime", title = "TOTAL FLIGHT TIME", titlepos = "bottom"}
+    { col = 4, row = 1, type = "text", subtype = "text", value = "PRESS ME", title = "ON PRESS", titlepos = "bottom", textcolor = "orange", onpress = onpressFunctionSave },
+    { col = 4, row = 2, type = "time", subtype = "count", title = "FLIGHT COUNT", titlepos = "bottom" },
+    { col = 4, row = 3, type = "time", subtype = "flight", title = "FLIGHT TIME", titlepos = "bottom"},
+    { col = 4, row = 4, type = "time", subtype = "total", title = "TOTAL FLIGHT TIME", titlepos = "bottom"}
 }
 
 local function wakeup()
