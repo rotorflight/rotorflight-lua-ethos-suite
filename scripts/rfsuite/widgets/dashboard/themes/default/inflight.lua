@@ -26,7 +26,8 @@ local layout = {
 
 local boxes = {
     {
-        type = "arcgauge",
+        type = "gauge",
+        subtype = "arc",
         col = 1, row = 1,
         rowspan = 12,
         colspan = 2,
@@ -133,7 +134,8 @@ local boxes = {
         }
     },
     {
-        type = "arcgauge",
+        type = "gauge",
+        subtype = "arc",
         col = 3, row = 1,
         rowspan = 12,
         colspan = 2,
