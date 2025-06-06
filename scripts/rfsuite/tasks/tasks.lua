@@ -92,10 +92,15 @@ function tasks.findTasks()
                     }
 
                     local script = tasks_path .. v .. '/' .. tconfig.script
-                    local fs = io.open(script, "r")
-                    if fs then
-                        io.close(fs)
-                        tasks[v] = assert(rfsuite.compiler.loadfile(script))(config)
+                    -- try loading directly, no extra open()
+                    local fn, loadErr = rfsuite.compiler.loadfile(script)
+                    if fn then
+                        tasks[v] = fn(config)
+                    else
+                        rfsuite.utils.log(
+                            "Failed to load task script " .. script .. ": " .. loadErr,
+                            "warn"
+                        )
                     end
                 end
             end
@@ -132,7 +137,7 @@ function tasks.wakeup()
         local taskMetadata
 
         if io.open(cachePath, "r") then
-            local ok, cached = pcall(dofile, cachePath)
+            local ok, cached = pcall(rfsuite.compiler.dofile, cachePath)
             if ok and type(cached) == "table" then
                 taskMetadata = cached
                 rfsuite.utils.log("[cache] Loaded task metadata from cache","info")
@@ -176,11 +181,16 @@ function tasks.wakeup()
 
         if not telemetryState then
 
-            rfsuite.utils.log("Telemetry not active.", "info")
+            --rfsuite.utils.log("Telemetry not active.", "info")
             rfsuite.session.telemetryState = false
             rfsuite.session.telemetryType = nil
             rfsuite.session.telemetryTypeChanged = false
             rfsuite.session.telemetrySensor = nil
+            rfsuite.session.timer = {}
+            rfsuite.session.onConnect.high = false
+            rfsuite.session.onConnect.low = false
+            rfsuite.session.onConnect.medium = false
+            rfsuite.session.toolbox = nil
             lastTelemetrySensorName = nil
             sportSensor = nil
             elrsSensor = nil 
@@ -256,6 +266,8 @@ function tasks.wakeup()
         end
     end
   
+    rfsuite.compiler.wakeup()
+
 end
 
 -- call a reset function on all tasks if it exists

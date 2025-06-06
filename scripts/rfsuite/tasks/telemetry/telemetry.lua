@@ -1,5 +1,4 @@
---[[
-
+--[[ 
  * Copyright (C) Rotorflight Project
  *
  *
@@ -23,20 +22,29 @@ local config = arg[1]
 local telemetry = {}
 local sensors = {}
 local protocol, telemetrySOURCE, crsfSOURCE
+
+-- Rate‐limiting for wakeup()
 local sensorRateLimit = os.clock()
-local SENSOR_RATE = 0.25 -- rate in seconds
+local SENSOR_RATE = 1          -- 1 second between onchange scans
 
 -- Store the last validated sensors and timestamp
 local lastValidationResult = nil
-local lastValidationTime = 0
-local VALIDATION_RATE_LIMIT = 2 -- Rate limit in seconds
+local lastValidationTime   = 0
+local VALIDATION_RATE_LIMIT = 2  -- seconds
 
-local lastCacheFlushTime = 0
-local CACHE_FLUSH_INTERVAL = 5 -- Flush cache every 5 seconds
+local lastCacheFlushTime   = 0
+local CACHE_FLUSH_INTERVAL = 5  -- seconds
 
 local telemetryState = false
 
-local sensorStats = {}
+-- Store last seen values for each sensor (by key)
+local lastSensorValues = {}
+
+telemetry.sensorStats = {}
+
+-- For “reduced table” of onchange‐capable sensors:
+local filteredOnchangeSensors = nil
+local onchangeInitialized     = false
 
 -- Predefined sensor mappings
 --[[
@@ -49,6 +57,7 @@ Each sensor configuration includes:
 - crsf: A table of sensor configurations for the crsf protocol.
 - crsfLegacy: A table of sensor configurations for the crsfLegacy protocol.
 - maxmin_trigger: A function to determine if min/max tracking should be active.
+- localizations: A function to transform the sensor value.
 
 Sensors included:
 - RSSI Sensors (rssi)
@@ -64,16 +73,19 @@ Sensors included:
 - PID and Rate Profiles (pid_profile, rate_profile)
 - Throttle Sensors (throttle_percent)
 
- Check this url for some usefull id numbers when associated these sensors to the correct telemetry sensors "set telemetry_sensors"
- https://github.com/rotorflight/rotorflight-firmware/blob/c7cad2c86fd833fe4bce76728f4914602614058d/src/main/telemetry/sensors.h#L34C15-L34C24
-]]
+Check this url for some useful ID numbers when associating these sensors to the correct telemetry sensors "set telemetry_sensors"
+https://github.com/rotorflight/rotorflight-firmware/blob/c7cad2c86fd833fe4bce76728f4914602614058d/src/main/telemetry/sensors.h#L34C15-L34C24
+]]--
 
 local sensorTable = {
     -- RSSI Sensors
     rssi = {
         name = rfsuite.i18n.get("telemetry.sensors.rssi"),
         mandatory = true,
-        maxmin_trigger = nil,
+        maxmin_trigger = true,
+        switch_alerts = true,
+        unit = UNIT_DB,
+        unit_string = "dB",
         sensors = {
             sim = {
                 { appId = 0xF101, subId = 0 },
@@ -99,7 +111,7 @@ local sensorTable = {
     armflags = {
         name = rfsuite.i18n.get("telemetry.sensors.arming_flags"),
         mandatory = true,
-        maxmin_trigger = nil,
+        maxmin_trigger = false,
         set_telemetry_sensors = 90,
         sensors = {
             sim = {
@@ -116,14 +128,24 @@ local sensorTable = {
             },
             crsfLegacy = { nil },
         },
+        onchange = function(value)
+                if value == 1 or value == 3 then
+                    rfsuite.session.isArmed = true
+                else
+                    rfsuite.session.isArmed = false    
+                end
+        end,
     },
 
     -- Voltage Sensors
     voltage = {
         name = rfsuite.i18n.get("telemetry.sensors.voltage"),
         mandatory = true,
-        maxmin_trigger = nil,
+        maxmin_trigger = true,
         set_telemetry_sensors = 3,
+        switch_alerts = true,
+        unit = UNIT_VOLT,
+        unit_string = "V",
         sensors = {
             sim = {
                 { uid = 0x5002, unit = UNIT_VOLT, dec = 2,
@@ -150,8 +172,11 @@ local sensorTable = {
     rpm = {
         name = rfsuite.i18n.get("telemetry.sensors.headspeed"),
         mandatory = true,
-        maxmin_trigger = nil,
+        maxmin_trigger = true,
         set_telemetry_sensors = 60,
+        switch_alerts = true,
+        unit = UNIT_RPM,
+        unit_string = "rpm",
         sensors = {
             sim = {
                 { uid = 0x5003, unit = UNIT_RPM, dec = nil,
@@ -172,8 +197,11 @@ local sensorTable = {
     current = {
         name = rfsuite.i18n.get("telemetry.sensors.current"),
         mandatory = false,
-        maxmin_trigger = nil,
+        maxmin_trigger = true,
         set_telemetry_sensors = 18,
+        switch_alerts = true,
+        unit = UNIT_AMPERE,
+        unit_string = "A",
         sensors = {
             sim = {
                 { uid = 0x5004, unit = UNIT_AMPERE, dec = 0,
@@ -198,8 +226,10 @@ local sensorTable = {
     temp_esc = {
         name = rfsuite.i18n.get("telemetry.sensors.esc_temp"),
         mandatory = false,
-        maxmin_trigger = nil,
+        maxmin_trigger = true,
         set_telemetry_sensors = 23,
+        switch_alerts = true,
+        unit = UNIT_DEGREE,
         sensors = {
             sim = {
                 { uid = 0x5005, unit = UNIT_DEGREE, dec = 0,
@@ -216,14 +246,32 @@ local sensorTable = {
             },
             crsfLegacy = { "GPS Speed" },
         },
+        localizations = function(value)
+            local major = UNIT_DEGREE
+            if value == nil then return nil, major, nil end
+
+            -- Shortcut to the user’s temperature‐unit preference (may be nil)
+            local prefs = rfsuite.preferences.localizations
+            local isFahrenheit = prefs and prefs.temperature_unit == 1
+
+            if isFahrenheit then
+                -- Convert from Celsius to Fahrenheit
+                return value * 1.8 + 32, major, "°F"
+            end
+
+            -- Default: return Celsius
+            return value, major, "°C"
+        end,
     },
 
     -- MCU Temperature Sensors
     temp_mcu = {
         name = rfsuite.i18n.get("telemetry.sensors.mcu_temp"),
         mandatory = false,
-        maxmin_trigger = nil,
+        maxmin_trigger = true,
         set_telemetry_sensors = 52,
+        switch_alerts = true,
+        unit = UNIT_DEGREE,
         sensors = {
             sim = {
                 { uid = 0x5006, unit = UNIT_DEGREE, dec = 0,
@@ -239,14 +287,33 @@ local sensorTable = {
             },
             crsfLegacy = { "GPS Sats" },
         },
+        localizations = function(value)
+            local major = UNIT_DEGREE
+            if value == nil then return nil, major, nil end
+
+            -- Shortcut to the user’s temperature‐unit preference (may be nil)
+            local prefs = rfsuite.preferences.localizations
+            local isFahrenheit = prefs and prefs.temperature_unit == 1
+
+            if isFahrenheit then
+                -- Convert from Celsius to Fahrenheit
+                return value * 1.8 + 32, major, "°F"
+            end
+
+            -- Default: return Celsius
+            return value, major, "°C"
+        end,
     },
 
     -- Fuel and Capacity Sensors
     fuel = {
         name = rfsuite.i18n.get("telemetry.sensors.fuel"),
         mandatory = false,
-        maxmin_trigger = nil,
+        maxmin_trigger = false,
         set_telemetry_sensors = 6,
+        switch_alerts = true,
+        unit = UNIT_PERCENT,
+        unit_string = "%",
         sensors = {
             sim = {
                 { uid = 0x5007, unit = UNIT_PERCENT, dec = 0,
@@ -266,8 +333,11 @@ local sensorTable = {
     consumption = {
         name = rfsuite.i18n.get("telemetry.sensors.consumption"),
         mandatory = true,
-        maxmin_trigger = nil,
+        maxmin_trigger = false,
         set_telemetry_sensors = 5,
+        switch_alerts = true,
+        unit = UNIT_MILLIAMPERE_HOUR,
+        unit_string = "mAh",
         sensors = {
             sim = {
                 { uid = 0x5008, unit = UNIT_MILLIAMPERE_HOUR, dec = 0,
@@ -288,7 +358,7 @@ local sensorTable = {
     governor = {
         name = rfsuite.i18n.get("telemetry.sensors.governor"),
         mandatory = true,
-        maxmin_trigger = nil,
+        maxmin_trigger = false,
         set_telemetry_sensors = 93,
         sensors = {
             sim = {
@@ -311,7 +381,7 @@ local sensorTable = {
     adj_f = {
         name = rfsuite.i18n.get("telemetry.sensors.adj_func"),
         mandatory = true,
-        maxmin_trigger = nil,
+        maxmin_trigger = false,
         set_telemetry_sensors = 99,
         sensors = {
             sim = {
@@ -332,7 +402,7 @@ local sensorTable = {
     adj_v = {
         name = rfsuite.i18n.get("telemetry.sensors.adj_val"),
         mandatory = true,
-        maxmin_trigger = nil,
+        maxmin_trigger = false,
         -- grouped with adj_f, so no set_telemetry_sensors here
         sensors = {
             sim = {
@@ -354,7 +424,7 @@ local sensorTable = {
     pid_profile = {
         name = rfsuite.i18n.get("telemetry.sensors.pid_profile"),
         mandatory = true,
-        maxmin_trigger = nil,
+        maxmin_trigger = false,
         set_telemetry_sensors = 95,
         sensors = {
             sim = {
@@ -376,7 +446,7 @@ local sensorTable = {
     rate_profile = {
         name = rfsuite.i18n.get("telemetry.sensors.rate_profile"),
         mandatory = true,
-        maxmin_trigger = nil,
+        maxmin_trigger = false,
         set_telemetry_sensors = 96,
         sensors = {
             sim = {
@@ -399,8 +469,10 @@ local sensorTable = {
     throttle_percent = {
         name = rfsuite.i18n.get("telemetry.sensors.throttle_pct"),
         mandatory = true,
-        maxmin_trigger = nil,
+        maxmin_trigger = true,
         set_telemetry_sensors = 15,
+        unit = UNIT_PERCENT,
+        unit_string = "%",
         sensors = {
             sim = {
                 { uid = 0x5014, unit = nil, dec = 0,
@@ -423,7 +495,7 @@ local sensorTable = {
     armdisableflags = {
         name = rfsuite.i18n.get("telemetry.sensors.armdisableflags"),
         mandatory = true,
-        maxmin_trigger = nil,
+        maxmin_trigger = false,
         set_telemetry_sensors = 91,
         sensors = {
             sim = {
@@ -440,10 +512,99 @@ local sensorTable = {
             crsfLegacy = { nil },
         },
     },
+
+    -- Altitude
+    altitude = {
+        name = rfsuite.i18n.get("telemetry.sensors.altitude"),
+        mandatory = false,
+        maxmin_trigger = true,
+        set_telemetry_sensors = nil,
+        switch_alerts = true,
+        unit = UNIT_METER,
+        sensors = {
+            sim = {
+                { uid = 0x5016, unit = UNIT_METER, dec = 0,
+                  value = function() return rfsuite.utils.simSensors('altitude') end,
+                  min = 0, max = 50000 },
+            },
+            sport = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0100 }
+            },
+            crsf = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10B2 },
+            },
+            crsfLegacy = { nil },
+        },
+        localizations = function(value)
+            local major = UNIT_METER
+            if value == nil then return nil, major, nil end
+            
+            -- Shortcut to the user’s altitude‐unit preference (may be nil)
+            local prefs = rfsuite.preferences.localizations
+            local isFeet = prefs and prefs.altitude_unit == 1
+
+            if isFeet then
+                -- Convert from meters to feet
+                return value * 3.28084, major, "ft"
+            end
+
+            -- Default: return meters
+            return value, major, "m"
+        end,
+    },     
+
+    -- Bec Voltage
+    bec_voltage = {
+        name = rfsuite.i18n.get("telemetry.sensors.bec_voltage"),
+        mandatory = false,
+        maxmin_trigger = true,
+        set_telemetry_sensors = nil,
+        switch_alerts = true,
+        unit = UNIT_VOLT,
+        unit_string = "V",
+        sensors = {
+            sim = {
+                { uid = 0x5017, unit = UNIT_VOLT, dec = 2,
+                  value = function() return rfsuite.utils.simSensors('bec_voltage') end,
+                  min = 0, max = 3000 },
+            },
+            sport = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0901 },
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0219 },
+            },
+            crsf = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1081 },
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1049 },
+            },
+            crsfLegacy = { nil },
+        },
+    },  
+
+    -- Cell Count
+    cell_count = {
+        name = rfsuite.i18n.get("telemetry.sensors.cell_count"),
+        mandatory = false,
+        maxmin_trigger = false,
+        set_telemetry_sensors = nil,
+        sensors = {
+            sim = {
+                { uid = 0x5018, unit = nil, dec = 0,
+                  value = function() return rfsuite.utils.simSensors('cell_count') end,
+                  min = 0, max = 50 },
+            },
+            sport = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5260 },
+            },
+            crsf = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1020 },
+            },
+            crsfLegacy = { nil },
+        },
+    },  
+
 }
 
-
---[[
+--[[ 
     Retrieves the current sensor protocol.
     @return protocol - The protocol used by the sensor.
 ]]
@@ -451,104 +612,107 @@ function telemetry.getSensorProtocol()
     return protocol
 end
 
---[[
+--[[ 
     Function: telemetry.listSensors
     Description: Generates a list of sensors from the sensorTable.
     Returns: A table containing sensor details (key, name, and mandatory status).
 ]]
 function telemetry.listSensors()
     local sensorList = {}
-
-    for key, sensor in pairs(sensorTable) do table.insert(sensorList, {key = key, name = sensor.name, mandatory = sensor.mandatory, set_telemetry_sensors = sensor.set_telemetry_sensors }) end
-
+    for key, sensor in pairs(sensorTable) do 
+        table.insert(sensorList, {
+            key = key,
+            name = sensor.name,
+            mandatory = sensor.mandatory,
+            set_telemetry_sensors = sensor.set_telemetry_sensors
+        })
+    end
     return sensorList
 end
 
+--[[ 
+    Function: telemetry.listSensorAudioUnits
+    Returns a mapping of sensorKey → unit type, if defined.
+]]
+function telemetry.listSensorAudioUnits()
+    local sensorMap = {}
+    for key, sensor in pairs(sensorTable) do 
+        if sensor.unit then
+            sensorMap[key] = sensor.unit
+        end    
+    end
+    return sensorMap
+end
 
---[[
-    Function: telemetry.getSensorSource
-    Retrieves the sensor source based on the provided sensor name.
+--[[ 
+    Function: telemetry.listSwitchSensors
+    Returns a list of sensors flagged for switch alerts.
+]]
+function telemetry.listSwitchSensors()
+    local sensorList = {}
+    for key, sensor in pairs(sensorTable) do 
+        if sensor.switch_alerts then
+            table.insert(sensorList, {
+                key = key,
+                name = sensor.name,
+                mandatory = sensor.mandatory,
+                set_telemetry_sensors = sensor.set_telemetry_sensors
+            })
+        end    
+    end
+    return sensorList
+end
 
-    Parameters:
-    - name (string): The name of the sensor to retrieve.
-
-    Returns:
-    - source (table or nil): The sensor source if found, otherwise nil.
-
-    Description:
-    This function attempts to retrieve a sensor source from a predefined sensor table. It first checks if the sensor is cached and returns the cached value if available. If not, it checks the sensor type (CRSF or SPORT) and retrieves the appropriate sensor source based on the conditions specified in the sensor table. If no valid sensor is found, it returns nil.
-
-    Helper Function:
-    - checkCondition(sensorEntry): Checks if the MSP version conditions are met for a given sensor entry.
-
-    Notes:
-    - The function uses a caching mechanism to store and retrieve sensor sources.
-    - It supports different sensor types (CRSF, CRSF Legacy, and SPORT).
-    - The function handles version conditions specified in the sensor table.
+--[[ 
+    Helper: Get the raw Source object for a given sensorKey, caching as we go.
 ]]
 function telemetry.getSensorSource(name)
     if not sensorTable[name] then return nil end
 
-    -- Use cached value if available
+    -- Return cached if available:
     if sensors[name] then return sensors[name] end
 
-    -- Helper function to check if MSP version conditions are met
     local function checkCondition(sensorEntry)
         if not (rfsuite.session and rfsuite.session.apiVersion) then
-            -- No session or apiVersion means no valid comparison can happen, so return true (default to valid)
             return true
         end
-    
         local roundedApiVersion = rfsuite.utils.round(rfsuite.session.apiVersion, 2)
-    
         if sensorEntry.mspgt then
-            -- Check if API version exists and meets "greater than" condition
             return roundedApiVersion >= rfsuite.utils.round(sensorEntry.mspgt, 2)
         elseif sensorEntry.msplt then
-            -- Check if API version exists and meets "less than" condition
             return roundedApiVersion <= rfsuite.utils.round(sensorEntry.msplt, 2)
         end
-    
-        -- No conditions = always valid
         return true
     end
     
     if system.getVersion().simulation == true then
         protocol = "sport"
         for _, sensor in ipairs(sensorTable[name].sensors.sim or {}) do
-            -- Skip entries with unfulfilled version conditions 
-
             if sensor and type(sensor) == "table" then
-                -- redefine sensor params
-                local sensorQ = {}
-                sensorQ.appId = sensor.uid
-                sensorQ.category = CATEGORY_TELEMETRY_SENSOR    
-
+                local sensorQ = { appId = sensor.uid, category = CATEGORY_TELEMETRY_SENSOR }
                 local source = system.getSource(sensorQ)
                 if source then
                     sensors[name] = source
                     return sensors[name]
                 end
             end
-
         end
-    elseif rfsuite.session.telemetryType == "crsf" then
-        if not crsfSOURCE then crsfSOURCE = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = 0xEE01}) end
 
+    elseif rfsuite.session.telemetryType == "crsf" then
+        if not crsfSOURCE then 
+            crsfSOURCE = system.getSource({ category = CATEGORY_TELEMETRY_SENSOR, appId = 0xEE01 }) 
+        end
         if crsfSOURCE then
             protocol = "crsf"
             for _, sensor in ipairs(sensorTable[name].sensors.crsf or {}) do
-                -- Skip entries with unfulfilled version conditions
-                if checkCondition(sensor) then
-                    if sensor and type(sensor) == "table" then
-                        sensor.mspgt = nil
-                        sensor.msplt = nil
-                        local source = system.getSource(sensor)
-                        if source then
-                            sensors[name] = source
-                            return sensors[name]
-                        end
-                    end    
+                if checkCondition(sensor) and type(sensor) == "table" then
+                    sensor.mspgt = nil
+                    sensor.msplt = nil
+                    local source = system.getSource(sensor)
+                    if source then
+                        sensors[name] = source
+                        return sensors[name]
+                    end
                 end
             end
         else
@@ -561,32 +725,55 @@ function telemetry.getSensorSource(name)
                 end
             end
         end
+
     elseif rfsuite.session.telemetryType == "sport" then
         protocol = "sport"
         for _, sensor in ipairs(sensorTable[name].sensors.sport or {}) do
-            -- Skip entries with unfulfilled version conditions 
-            if checkCondition(sensor) then
-                if sensor and type(sensor) == "table" then
-                    sensor.mspgt = nil
-                    sensor.msplt = nil
-                    local source = system.getSource(sensor)
-                    if source then
-                        sensors[name] = source
-                        return sensors[name]
-                    end
+            if checkCondition(sensor) and type(sensor) == "table" then
+                sensor.mspgt = nil
+                sensor.msplt = nil
+                local source = system.getSource(sensor)
+                if source then
+                    sensors[name] = source
+                    return sensors[name]
                 end
             end
         end
     else
-        protocol = "unknown"    
+        protocol = "unknown"
     end
 
-    return nil -- If no valid sensor is found
+    return nil
 end
 
+--- Retrieves the value of a telemetry sensor by its key.
+-- Looks up the sensor source using the provided sensorKey.
+-- If the sensor source is found, returns its raw value; otherwise, returns nil.
+-- @param sensorKey The key identifying the telemetry sensor.
+-- @return The raw value of the sensor if found, or nil if the sensor does not exist.
+function telemetry.getSensor(sensorKey)
+    local source = telemetry.getSensorSource(sensorKey)
+    if not source then
+        return nil
+    end
+
+    -- get initial defaults
+    local value = source:value()                        -- get the raw value from the source
+    local major = sensorTable[sensorKey].unit or nil    -- use the default unit if defined
+    local minor = nil                                   -- minor version is not possible without a localizations function which we do not have yet
 
 
---[[
+    -- if the sensor has a transform function, apply it to the value:
+    if sensorTable[sensorKey] and sensorTable[sensorKey].localizations and type(sensorTable[sensorKey].localizations) == "function" then
+        value, major, minor = sensorTable[sensorKey].localizations(value)
+    end
+
+    -- Return the value
+    return value, major, minor
+
+end
+
+--[[ 
     Function: telemetry.validateSensors
     Purpose: Validates the sensors and returns a list of either valid or invalid sensors based on the input parameter.
     Parameters:
@@ -600,32 +787,32 @@ end
 ]]
 function telemetry.validateSensors(returnValid)
     local now = os.clock()
-
-    -- Return cached result if within rate limit
-    if (now - lastValidationTime) < VALIDATION_RATE_LIMIT then return lastValidationResult end
-
-    -- Update last validation time
+    if (now - lastValidationTime) < VALIDATION_RATE_LIMIT then
+        return lastValidationResult
+    end
     lastValidationTime = now
 
     if not rfsuite.session.telemetryState then
         local allSensors = {}
-        for key, sensor in pairs(sensorTable) do table.insert(allSensors, {key = key, name = sensor.name}) end
+        for key, sensor in pairs(sensorTable) do
+            table.insert(allSensors, { key = key, name = sensor.name })
+        end
         lastValidationResult = allSensors
         return allSensors
     end
 
     local resultSensors = {}
-
     for key, sensor in pairs(sensorTable) do
         local sensorSource = telemetry.getSensorSource(key)
-        local isValid = sensorSource ~= nil and sensorSource:state() ~= false
-
+        local isValid = (sensorSource ~= nil and sensorSource:state() ~= false)
         if returnValid then
-            -- Include only valid sensors
-            if isValid then table.insert(resultSensors, {key = key, name = sensor.name}) end
+            if isValid then
+                table.insert(resultSensors, { key = key, name = sensor.name })
+            end
         else
-            -- Include only invalid sensors, but consider mandatory flag
-            if not isValid and sensor.mandatory ~= false then table.insert(resultSensors, {key = key, name = sensor.name}) end
+            if not isValid and sensor.mandatory ~= false then
+                table.insert(resultSensors, { key = key, name = sensor.name })
+            end
         end
     end
 
@@ -633,7 +820,7 @@ function telemetry.validateSensors(returnValid)
     return resultSensors
 end
 
---[[
+--[[ 
     Function: telemetry.simSensors
     Description: Simulates sensors by iterating over a sensor table and returning a list of valid sensors.
     Parameters:
@@ -641,27 +828,21 @@ end
     Returns:
         result (table) - A table containing the names and first sport sensors of valid sensors.
 
-    This function is used to build a list of sensors that are availiable in 'simulation mode'
+    This function is used to build a list of sensors that are available in 'simulation mode'
 ]]
 function telemetry.simSensors(returnValid)
     local result = {}
-
     for key, sensor in pairs(sensorTable) do
         local name = sensor.name
         local firstSportSensor = sensor.sensors.sim and sensor.sensors.sim[1]
-
         if firstSportSensor then
-            table.insert(result, {
-                name = name,
-                sensor = firstSportSensor
-            })
+            table.insert(result, { name = name, sensor = firstSportSensor })
         end
     end
-
     return result
 end
 
---[[
+--[[ 
     Function: telemetry.active
     Description: Checks if telemetry is active. Returns true if the system is in simulation mode, otherwise returns the state of telemetry.
     Returns: 
@@ -671,107 +852,78 @@ function telemetry.active()
     return rfsuite.session.telemetryState or false
 end
 
-
---- Resets the telemetry module by clearing all relevant variables and data.
----
---- This function performs the following actions:
---- - Sets `telemetrySOURCE`, `crsfSOURCE`, and `protocol` to `nil`.
---- - Clears the `sensors` table by reinitializing it as an empty table.
----
---- Use this function to reset the telemetry state to its initial condition.
+--- Clears all cached sources and state.
 function telemetry.reset()
     telemetrySOURCE, crsfSOURCE, protocol = nil, nil, nil
     sensors = {}
-        sensorStats = {} -- Clear min/max tracking
+    telemetry.sensorStats = {}
+    -- Also reset onchange tracking so we rebuild next time:
+    filteredOnchangeSensors = nil
+    lastSensorValues = {}
+    onchangeInitialized = false
 end
 
---[[
-    Function: telemetry.wakeup
-
-    Description:
-    This function is called periodically to handle telemetry updates and cache management. It prioritizes MSP traffic, performs rate-limited telemetry checks, flushes the cache periodically, and resets telemetry sources if necessary.
-
-    Usage:
-    This function should be called in a loop or scheduled task to ensure telemetry data is processed and managed correctly.
-
-    Notes:
-    - MSP traffic is prioritized by checking the rfsuite.app.triggers.mspBusy flag.
-    - Telemetry checks are rate-limited based on SENSOR_RATE.
-    - The cache is flushed every CACHE_FLUSH_INTERVAL seconds.
-    - Telemetry sources and cached sensors are reset if telemetry is inactive or the RSSI sensor has changed.
+--[[ 
+    Primary wakeup() loop:
+    - Prioritize MSP traffic
+    - Rate-limit onchange scanning (once per second)
+    - Periodic cache flush every 5s
+    - Reset telemetry if needed
 ]]
 function telemetry.wakeup()
     local now = os.clock()
 
     -- Prioritize MSP traffic
-    if rfsuite.app.triggers.mspBusy then return end
-
-    -- Rate-limited telemetry checks
-    if (now - sensorRateLimit) >= SENSOR_RATE then
-        sensorRateLimit = now
+    if rfsuite.app.triggers.mspBusy then
+        return
     end
 
-    -- Track sensor max/min values
-    for sensorKey, sensorDef in pairs(sensorTable) do
-        local source = telemetry.getSensorSource(sensorKey)
-        if source and source:state() then
-            local val = source:value()
-            if val then
-                -- Check optional per-sensor trigger
-                local shouldTrack = false
+    -- Rate‐limited “onchange” scanning (every SENSOR_RATE seconds)
+    if (now - sensorRateLimit) >= SENSOR_RATE then
+        sensorRateLimit = now
 
-                --[[
-                    Determines whether telemetry tracking should be enabled based on various sensor conditions.
-
-                    The logic follows these rules:
-                    1. If `sensorDef.maxmin_trigger` is a function, its return value decides tracking.
-                    2. If the session is armed and the "governor" sensor exists with a value of 4, tracking is enabled.
-                    3. If the session is armed and the "rpm" sensor exists with a value greater than 500, tracking is enabled.
-                    4. If the session is armed and the "throttle_percent" sensor exists with a value greater than 30, tracking is enabled.
-                    5. If the session is armed (fallback), tracking is enabled.
-                    6. Otherwise, tracking is disabled.
-
-                    Variables:
-                    - sensorDef: Table containing sensor definitions, possibly with a custom trigger function.
-                    - shouldTrack: Boolean flag indicating whether telemetry tracking should occur.
-                    - rfsuite.session.isArmed: Boolean indicating if the session is currently armed.
-                    - telemetry.getSensorSource: Function to retrieve sensor data by name.
-                ]]
-                if type(sensorDef.maxmin_trigger) == "function" then
-                    shouldTrack = sensorDef.maxmin_trigger()
-                elseif rfsuite.session.isArmed == true and telemetry.getSensorSource("governor") and telemetry.getSensorSource("governor"):value() == 4 then
-                    shouldTrack = true
-                elseif rfsuite.session.isArmed == true and telemetry.getSensorSource("rpm") and telemetry.getSensorSource("rpm"):value() > 500 then
-                    shouldTrack = true    
-                elseif rfsuite.session.isArmed == true and telemetry.getSensorSource("throttle_percent") and telemetry.getSensorSource("throttle_percent"):value() > 30 then               
-                    shouldTrack = true
-                elseif rfsuite.session.isArmed == true then
-                    shouldTrack = true
-                else
-                    shouldTrack = false
+        -- Build reduced table of onchange‐capable sensors exactly once:
+        if not filteredOnchangeSensors then
+            filteredOnchangeSensors = {}
+            for sensorKey, sensorDef in pairs(sensorTable) do
+                if type(sensorDef.onchange) == "function" then
+                    filteredOnchangeSensors[sensorKey] = sensorDef
                 end
+            end
+            -- Mark that we just built the reduced table; skip invoking onchange this pass
+            onchangeInitialized = true
+        end
 
-                -- Record min/max if tracking is active
-                if shouldTrack then
-                    sensorStats[sensorKey] = sensorStats[sensorKey] or {min = math.huge, max = -math.huge}
-                    sensorStats[sensorKey].min = math.min(sensorStats[sensorKey].min, val)
-                    sensorStats[sensorKey].max = math.max(sensorStats[sensorKey].max, val)
+        -- If we just built the table on this pass, skip detection; next time, run normally
+        if onchangeInitialized then
+            onchangeInitialized = false
+        else
+            -- Now iterate only over filteredOnchangeSensors
+            for sensorKey, sensorDef in pairs(filteredOnchangeSensors) do
+                local source = telemetry.getSensorSource(sensorKey)
+                if source and source:state() then
+                    local val = source:value()
+                    if lastSensorValues[sensorKey] ~= val then
+                        -- Invoke onchange with the new value
+                        sensorDef.onchange(val)
+                        lastSensorValues[sensorKey] = val
+                    end
                 end
             end
         end
     end
 
-    -- Periodic cache flush every 5 seconds
+    -- Periodic cache flush every CACHE_FLUSH_INTERVAL seconds
     if ((now - lastCacheFlushTime) >= CACHE_FLUSH_INTERVAL) or rfsuite.session.resetTelemetry == true then
         if rfsuite.session.resetTelemetry == true then
             rfsuite.utils.log("Telemetry cache reset", "info")
             rfsuite.session.resetTelemetry = false
         end
         lastCacheFlushTime = now
-        telemetry.reset()
+        sensors = {}
     end
 
-    -- Reset if telemetry is inactive or RSSI sensor changed
+    -- Reset if telemetry is inactive or telemetry type changed
     if not rfsuite.session.telemetryState or rfsuite.session.telemetryTypeChanged then
         telemetry.reset()
     end
@@ -779,7 +931,10 @@ end
 
 -- retrieve min/max values for a sensor
 function telemetry.getSensorStats(sensorKey)
-    return sensorStats[sensorKey] or {min = nil, max = nil}
+    return telemetry.sensorStats[sensorKey] or { min = nil, max = nil }
 end
+
+-- allow sensor table to be accessed externally
+telemetry.sensorTable = sensorTable
 
 return telemetry

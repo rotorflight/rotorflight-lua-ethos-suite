@@ -40,22 +40,19 @@ local logTable = {
 local log_queue = {}
 local logDirChecked = false
 local cachedSensors = {} -- cache for sensor sources
-local armSource = nil    -- separate cache for armflags sensor
-local govSource = nil    -- separate cache for governor sensor
+
 
 local function generateLogFilename()
-    local craftName = rfsuite.utils.sanitize_filename(rfsuite.session.craftName)
-    local modelName = (craftName and craftName ~= "") and craftName or model.name()
-    modelName = string.gsub(modelName, "%s+", "_"):gsub("%W", "_")
     local timestamp = os.date("%Y-%m-%d_%H-%M-%S")
     local uniquePart = math.floor(os.clock() * 1000)
-    return modelName .. "_" .. timestamp .. "_" .. uniquePart .. ".csv"
+    return  timestamp .. "_" .. uniquePart .. ".csv"
 end
 
 local function checkLogdirExists()
         os.mkdir("LOGS:")
         os.mkdir("LOGS:/rfsuite")
         os.mkdir("LOGS:/rfsuite/telemetry")
+        os.mkdir("LOGS:/rfsuite/telemetry/" .. rfsuite.session.mcu_id)
 end
 
 function logging.queueLog(msg)
@@ -66,7 +63,7 @@ function logging.writeLogs(forcewrite)
     local max_lines = forcewrite and #log_queue or 10
     if #log_queue > 0 and logFileName then
         rfsuite.utils.log("Write " .. #log_queue .. " lines to " .. logFileName,"info")
-        local filePath = "LOGS:rfsuite/telemetry/" .. logFileName
+        local filePath = "LOGS:rfsuite/telemetry/" .. rfsuite.session.mcu_id .. "/" .. logFileName
         local f = io.open(filePath, 'a')
         for i = 1, math.min(#log_queue, max_lines) do
             io.write(f, table.remove(log_queue, 1) .. "\n")
@@ -101,15 +98,11 @@ local function cacheSensorSources()
     for _, sensor in ipairs(logTable) do
         cachedSensors[sensor.name] = rfsuite.tasks.telemetry.getSensorSource(sensor.name)
     end
-    armSource = rfsuite.tasks.telemetry.getSensorSource("armflags")
-    govSource = rfsuite.tasks.telemetry.getSensorSource("governor")
 end
 
 -- Clear all cached sensors
 local function clearSensorCache()
     cachedSensors = {}
-    armSource = nil
-    govSource = nil
 end
 
 function logging.flushLogs()
@@ -128,12 +121,15 @@ end
 
 function logging.wakeup()
 
+    if not rfsuite.session.mcu_id then
+        return
+    end
+
     if not logDirChecked then
         checkLogdirExists()
         logDirChecked = true
     end
 
-    --if not rfsuite.session.telemetryState then
     if not rfsuite.tasks.telemetry.active() then
         logging.flushLogs()
         clearSensorCache()
@@ -142,76 +138,40 @@ function logging.wakeup()
     end
 
     -- Cache sensors once when telemetry activates
-    if not armSource then
+    if not next(cachedSensors) then
         cacheSensorSources()
     end
 
-    if armSource then
+    -- SIMPLIFIED logging trigger:
+    if rfsuite.utils.inFlight() then
+        if not logFileName then
+            logFileName = generateLogFilename()
+            rfsuite.utils.log("Logging triggered by inFlight() - " .. logFileName, "info")
 
-        if armSource and not govSource then
-
-            local isArmed = armSource:value()
-
-            if isArmed == 1 or isArmed == 3 then
-                if not logFileName then 
-                    logFileName = generateLogFilename() 
-                    rfsuite.utils.log("Logging triggered by arm state - " .. logFileName,"info")
-                    rfsuite.utils.log("Armed value - " .. isArmed  ,"info")
-                end
-                if not logHeader then
-                    logHeader = logging.getLogHeader()
-                    logging.queueLog(logHeader)
-                end
-
-                if os.clock() - logRateLimit >= logInterval then
-                    logRateLimit = os.clock()
-                    logging.queueLog(logging.getLogLine())
-                
-                    -- only write if queue has built up a bit
-                    if #log_queue >= 5 then
-                        logging.writeLogs()
-                    end
-                end
-
-            else
-                logging.flushLogs()    
+            local iniName = "LOGS:rfsuite/telemetry/" .. rfsuite.session.mcu_id .. "/logs.ini"
+            local iniData = rfsuite.ini.load_ini_file(iniName) or {}
+            if not iniData.model then
+                iniData.model = {}
             end
-        elseif armSource and govSource then
+            iniData.model.name = rfsuite.session.craftName or model.name() or "Unknown"
+            rfsuite.ini.save_ini_file(iniName, iniData)
+        end
+        if not logHeader then
+            logHeader = logging.getLogHeader()
+            logging.queueLog(logHeader)
+        end
 
-            local isArmed = armSource:value()
-            local governor = govSource:value()
-
-            if isArmed == nil or governor == nil then
-                logging.flushLogs()
-            elseif isArmed == 1 or isArmed == 3 and governor > 0 and governor < 100 then
-                if not logFileName then 
-                    logFileName = generateLogFilename() 
-                    rfsuite.utils.log("Logging triggered by governor state - " .. logFileName ,"info")
-                    rfsuite.utils.log("Governor value - " .. governor ,"info")
-                    rfsuite.utils.log("Armed value - " .. isArmed  ,"info")
-                end
-                if not logHeader then
-                    logHeader = logging.getLogHeader()
-                    logging.queueLog(logHeader)
-                end
-
-                if os.clock() - logRateLimit >= logInterval then
-                    logRateLimit = os.clock()
-                    logging.queueLog(logging.getLogLine())
-                
-                    -- only write if queue has built up a bit
-                    if #log_queue >= 5 then
-                        logging.writeLogs()
-                    end
-                end
-            else    
-                logging.flushLogs()
+        if os.clock() - logRateLimit >= logInterval then
+            logRateLimit = os.clock()
+            logging.queueLog(logging.getLogLine())
+            if #log_queue >= 5 then
+                logging.writeLogs()
             end
-        end   
-
-        
-
+        end
+    else
+        logging.flushLogs()
     end
 end
+
 
 return logging

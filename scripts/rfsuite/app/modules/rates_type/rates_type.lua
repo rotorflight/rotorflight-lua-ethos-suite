@@ -8,7 +8,7 @@ if rfsuite.session.activeRateTable == nil then
     rfsuite.session.activeRateTable = rfsuite.config.defaultRateProfile 
 end
 
-local mspapi = {
+local apidata = {
     api = {
         [1] = 'RC_TUNING',
     },
@@ -87,7 +87,7 @@ end
 
 local function postLoad(self)
 
-    local v = mspapi.values[mspapi.api[1]].rates_type
+    local v = apidata.values[apidata.api[1]].rates_type
     
     rfsuite.utils.log("Active Rate Table: " .. rfsuite.session.activeRateTable,"info")
 
@@ -144,7 +144,7 @@ local function postEepromWrite(self)
 end
 
 return {
-    mspapi = mspapi,
+    apidata = apidata,
     title = rfsuite.i18n.get("app.modules.rates_advanced.rates_type"),
     reboot = false,
     eepromWrite = true,

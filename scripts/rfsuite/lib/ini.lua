@@ -1,14 +1,5 @@
 ini = {}
 
-function ini.file_exists(name)
-    local f = io.open(name, "r")
-    if f then
-        io.close(f)
-        return true
-    end
-    return false
-end
-
 -- Reads a file's full contents into a string, compatible with limited Lua
 function ini.load_file_as_string(path)
     local f = io.open(path, "rb")
@@ -31,10 +22,6 @@ end
 
 function ini.load_ini_file(fileName)
     assert(type(fileName) == 'string', 'Parameter "fileName" must be a string.')
-
-    if not ini.file_exists(fileName) then
-        return nil
-    end
 
     local content, err = ini.load_file_as_string(fileName)
     if not content then
@@ -150,6 +137,26 @@ function ini.ini_tables_equal(a, b)
         end
     end
     return true
+end
+
+function ini.getvalue(data, section, key)
+    if data and section and key then
+        if data[section] and data[section][key] ~= nil then
+            return data[section][key]
+        end
+    end
+    return nil
+end
+
+function ini.section_exists(data, section)
+    return data and data[section] ~= nil
+end
+
+function ini.setvalue(data, section, key, value)
+    if not data[section] then
+        data[section] = {}
+    end
+    data[section][key] = value
 end
 
 return ini

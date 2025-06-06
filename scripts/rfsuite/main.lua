@@ -27,14 +27,13 @@ local config = {}
 -- Configuration settings for the Rotorflight Lua Ethos Suite
 config.toolName = "Rotorflight"                                                     -- name of the tool 
 config.icon = lcd.loadMask("app/gfx/icon.png")                                      -- icon
-config.icon_logtool = lcd.loadMask("app/gfx/icon_logtool.png")                      -- icon
+config.icon_logtool = lcd.loadMask("app/gfx/icon_logtool.png")          -- icon
 config.icon_unsupported = lcd.loadMask("app/gfx/unsupported.png")                   -- icon
 config.version = {major = 2, minor = 2, revision = 0, suffix = "RC4"}               -- version of the script
 config.ethosVersion = {1, 6, 2}                                                      -- min version of ethos supported by this script                                                     
-config.supportedMspApiVersion = {"12.06", "12.07","12.08"}                          -- supported msp versions
-config.simulatorApiVersionResponse = {0, 12, 8}                                     -- version of api return by simulator
+config.supportedMspApiVersion = {"12.07","12.08"}                          -- supported msp versions
 config.baseDir = "rfsuite"                                                          -- base directory for the suite. This is only used by msp api to ensure correct path
-config.preferences = "SCRIPTS:/rfsuite.ini"                                         -- user preferences file
+config.preferences = config.baseDir .. ".user"                                      -- user preferences folder location
 config.defaultRateProfile = 4 -- ACTUAL                                             -- default rate table [default = 4]
 config.watchdogParam = 10                                                           -- watchdog timeout for progress boxes [default = 10]
 
@@ -62,7 +61,16 @@ local userpref_defaults ={
         iconsize = 2,
         syncname = false,
     },
-    announcements = {
+    localizations = {
+        temperature_unit = 0, -- 0 = Celsius, 1 = Fahrenheit
+        altitude_unit = 0, -- 0 = meters, 1 = feet
+    },
+    dashboard = {
+        theme_preflight = "system/default",
+        theme_inflight = "system/default",
+        theme_postflight = "system/default",
+    },
+    events = {
         armflags = true,
         voltage = true,
         fuel = true,
@@ -71,6 +79,8 @@ local userpref_defaults ={
         rate_profile = true,
         adj_v = true,
         adj_f = false,
+    },
+    switches = {
     },
     developer = {
         compile = true,             -- compile the script
@@ -81,16 +91,15 @@ local userpref_defaults ={
         logmspQueue = false,        -- periodic print the msp queue size
         memstats = false,           -- perioid print memory usage 
         mspexpbytes = 8,
-    }
+        apiversion = 2,             -- msp api version to use for simulator    
+    },
+    menulastselected = {}
 }
 
-local userpref_file = rfsuite.config.preferences
+os.mkdir("SCRIPTS:/" .. rfsuite.config.preferences)
+local userpref_file = "SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini"
 local slave_ini = userpref_defaults
-local master_ini = {}
-
-if rfsuite.ini.file_exists(userpref_file) then
-    master_ini = rfsuite.ini.load_ini_file(userpref_file) or {}
-end
+local master_ini = rfsuite.ini.load_ini_file(userpref_file) or {}
 
 local updated_ini = rfsuite.ini.merge_ini_tables(master_ini, slave_ini)
 rfsuite.preferences = updated_ini
@@ -158,6 +167,7 @@ The parameters include:
 - repairSensors: makes the background task repair sensors
 - lastMemoryUsage.  Used to track memory usage for debugging
 - isArmed.  Used to track if the craft is armed
+- flightMode.  Used to track the flight mode [preflight, inflight, postflight]
 
 -- Every attempt should be made if using session vars to record them here with a nil
 -- to prevent conflicts with other scripts that may use the same session vars.
@@ -200,6 +210,32 @@ rfsuite.session.lastMemoryUsage = nil
 rfsuite.session.mcu_id = nil
 rfsuite.session.isConnected = false
 rfsuite.session.isArmed = false
+rfsuite.session.flightMode = nil
+rfsuite.session.bblSize = nil
+rfsuite.session.bblUsed = nil
+rfsuite.session.batteryConfig = nil
+-- keep rfsuite.session.batteryConfig nil as it is used to determine if the battery config has been loaded
+-- rfsuite.session.batteryConfig  will end up containing the following:
+    -- batteryCapacity = nil
+    -- batteryCellCount = nil
+    -- vbatwarningcellvoltage = nil
+    -- vbatmincellvoltage = nil
+    -- vbatmaxcellvoltage = nil
+    -- lvcPercentage = nil
+    -- consumptionWarningPercentage = nil
+rfsuite.session.modelPreferences = nil -- this is used to store the model preferences
+rfsuite.session.modelPreferencesFile = nil -- this is used to store the model preferences file path
+rfsuite.session.dashboardEditingTheme = nil -- this is used to store the dashboard theme being edited in settings
+rfsuite.session.timer = {}
+rfsuite.session.timer.start = nil -- this is used to store the start time of the timer
+rfsuite.session.timer.live = nil -- this is used to store the live timer value while inflight
+rfsuite.session.timer.lifetime = nil -- this is used to store the total flight time of a model and store it in the user ini file
+rfsuite.session.timer.session = 0 -- this is used to track flight time for the session
+rfsuite.session.flightCounted = false
+rfsuite.session.onConnect = {} -- this is used to store the onConnect tasks that need to be run
+rfsuite.session.onConnect.high = false
+rfsuite.session.onConnect.low = false
+rfsuite.session.onConnect.medium = false
 
 --- Retrieves the version information of the rfsuite module.
 --- 
@@ -300,8 +336,8 @@ local function init()
     -- This tool handles events, creation, wakeup, painting, and closing.
     system.registerSystemTool({
         event = rfsuite.app.event,
-        name = rfsuite.config.toolName,
-        icon = rfsuite.config.icon_logtool,
+        name = config.toolName,
+        icon = config.icon_logtool,
         create = rfsuite.app.create_logtool,
         wakeup = rfsuite.app.wakeup,
         paint = rfsuite.app.paint,
@@ -322,14 +358,15 @@ local function init()
     local cachePath = "cache/" .. cacheFile
     local widgetList
     
-    -- Try to load from cache if it exists
-    if io.open(cachePath, "r") then
-        local ok, cached = pcall(dofile, cachePath)
+    -- Try loading cache if it exists
+    local loadf, loadErr = rfsuite.compiler.loadfile(cachePath)
+    if loadf then
+        local ok, cached = pcall(loadf)
         if ok and type(cached) == "table" then
             widgetList = cached
             rfsuite.utils.log("[cache] Loaded widget list from cache","info")
         else
-            rfsuite.utils.log("[cache] Failed to load cache, rebuilding...","info")
+            rfsuite.utils.log("[cache] Bad cache, rebuilding: "..tostring(cached),"info")
         end
     end
     
@@ -394,6 +431,7 @@ local function init()
                     create = scriptModule.create,
                     paint = scriptModule.paint,
                     wakeup = scriptModule.wakeup,
+                    build = scriptModule.build,
                     close = scriptModule.close,
                     configure = scriptModule.configure,
                     read = scriptModule.read,

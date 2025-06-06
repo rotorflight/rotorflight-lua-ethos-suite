@@ -96,9 +96,14 @@
         "translation": "Settings",
         "needs_translation": "false"
       },
-      "txt_telemetry_announcements": {
-        "english": "Telemetry Announcements",
-        "translation": "Telemetrie-Ansagen",
+      "txt_telemetry_events": {
+        "english": "Events",
+        "translation": "Events",
+        "needs_translation": "false"
+      },
+      "txt_telemetry_switches": {
+        "english": "Switches",
+        "translation": "Switches",
         "needs_translation": "false"
       },
       "txt_iconsize": {
@@ -134,6 +139,16 @@
       "txt_devtools": {
         "english": "Developer Tools",
         "translation": "Developer Tools",
+        "needs_translation": "false"
+      },
+      "txt_apiversion": {
+        "english": "API Version",
+        "translation": "API Version",
+        "needs_translation": "false"
+      },
+      "txt_logging": {
+        "english": "Logging",
+        "translation": "Logging",
         "needs_translation": "false"
       },
       "txt_compilation": {
@@ -189,6 +204,76 @@
       "txt_memusage": {
         "english": "Log memory usage",
         "translation": "Log memory usage",
+        "needs_translation": "false"
+      },
+      "dashboard": {
+        "english": "Dashboard",
+        "translation": "Dashboard",
+        "needs_translation": "false"
+      },
+      "dashboard_theme": {
+        "english": "Theme",
+        "translation": "Theme",
+        "needs_translation": "false"
+      },
+      "dashboard_settings": {
+        "english": "Settings",
+        "translation": "Settings",
+        "needs_translation": "false"
+      },
+      "dashboard_theme_preflight": {
+        "english": "Preflight Theme",
+        "translation": "Preflight Theme",
+        "needs_translation": "false"
+      },
+      "dashboard_theme_inflight": {
+        "english": "Inflight Theme",
+        "translation": "Inflight Theme",
+        "needs_translation": "false"
+      },
+      "dashboard_theme_postflight": {
+        "english": "Postflight Theme",
+        "translation": "Postflight Theme",
+        "needs_translation": "false"
+      },
+      "localizations": {
+        "english": "Localization",
+        "translation": "Localization",
+        "needs_translation": "false"
+      },
+      "txt_development": {
+        "english": "Development",
+        "translation": "Development",
+        "needs_translation": "false"
+      },
+      "temperature_unit": {
+        "english": "Temperature Unit",
+        "translation": "Temperature Unit",
+        "needs_translation": "false"
+      },
+      "altitude_unit": {
+        "english": "Altitude Unit",
+        "translation": "Altitude Unit",
+        "needs_translation": "false"
+      },
+      "celcius": {
+        "english": "Celsius",
+        "translation": "Celsius",
+        "needs_translation": "false"
+      },
+      "fahrenheit": {
+        "english": "Fahrenheit",
+        "translation": "Fahrenheit",
+        "needs_translation": "false"
+      },
+      "meters": {
+        "english": "Meters",
+        "translation": "Meters",
+        "needs_translation": "false"
+      },
+      "feet": {
+        "english": "Feet",
+        "translation": "Feet",
         "needs_translation": "false"
       }
     },
@@ -1279,6 +1364,11 @@
       "save_prompt": {
         "english": "Save current page to flight controller?",
         "translation": "Save current page to flight controller?",
+        "needs_translation": "false"
+      },
+      "save_prompt_local": {
+        "english": "Save current page to radio?",
+        "translation": "Save current page to radio?",
         "needs_translation": "false"
       },
       "cancel": {

@@ -75,7 +75,7 @@ local function openPage(pidx, title, script)
     local bx = 0
 
     if rfsuite.app.gfx_buttons["sbuschannel"] == nil then rfsuite.app.gfx_buttons["sbuschannel"] = {} end
-    if rfsuite.app.menuLastSelected["sbuschannel"] == nil then rfsuite.app.menuLastSelected["sbuschannel"] = 0 end
+    if rfsuite.preferences.menulastselected["sbuschannel"] == nil then rfsuite.preferences.menulastselected["sbuschannel"] = 0 end
     if rfsuite.currentSbusServoIndex == nil then rfsuite.currentSbusServoIndex = 0 end
 
     for pidx = 0, 15 do
@@ -101,7 +101,7 @@ local function openPage(pidx, title, script)
             paint = function()
             end,
             press = function()
-                rfsuite.app.menuLastSelected["sbuschannel"] = pidx
+                rfsuite.preferences.menulastselected["sbuschannel"] = pidx
                 rfsuite.currentSbusServoIndex = pidx
                 rfsuite.app.ui.progressDisplay()
                 rfsuite.app.ui.openPage(pidx, rfsuite.i18n.get("app.modules.sbusout.channel_page") .. "" .. tostring(rfsuite.currentSbusServoIndex + 1), "sbusout/sbusout_tool.lua")
@@ -167,7 +167,7 @@ local function wakeup()
     elseif enableWakeup == true and validSerialConfig == true then
         for pidx = 0, 15 do
             rfsuite.app.formFields[pidx]:enable(true)
-            if rfsuite.app.menuLastSelected["sbuschannel"] == rfsuite.currentSbusServoIndex then rfsuite.app.formFields[rfsuite.currentSbusServoIndex]:focus() end
+            if rfsuite.preferences.menulastselected["sbuschannel"] == rfsuite.currentSbusServoIndex then rfsuite.app.formFields[rfsuite.currentSbusServoIndex]:focus() end
         end
     end
 

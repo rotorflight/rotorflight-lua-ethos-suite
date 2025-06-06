@@ -6,7 +6,7 @@ local folder = "yge"
 local foundEsc = false
 local foundEscDone = false
 
-local mspapi = {
+local apidata = {
     api = {
         [1] = "ESC_PARAMETERS_YGE",
     },
@@ -48,7 +48,7 @@ local function event(widget, category, value, x, y)
 end
 
 return {
-    mspapi = mspapi,
+    apidata = apidata,
     eepromWrite = true,
     reboot = false,
     escinfo = escinfo,

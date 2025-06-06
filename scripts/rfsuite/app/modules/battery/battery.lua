@@ -1,4 +1,4 @@
-local mspapi = {
+local apidata = {
     api = {
         [1] = 'BATTERY_CONFIG',
     },
@@ -20,7 +20,7 @@ local mspapi = {
 
 
 return {
-    mspapi = mspapi,
+    apidata = apidata,
     eepromWrite = true,
     reboot = false,
     API = {},
