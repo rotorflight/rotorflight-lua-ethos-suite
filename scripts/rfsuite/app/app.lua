@@ -950,7 +950,14 @@ function app.updateTelemetryState()
             app.triggers.telemetryState = app.telemetryStatus.ok
         end
     else
-        app.triggers.telemetryState = app.telemetryStatus.ok
+        if rfsuite.tasks and rfsuite.tasks.telemetry  then
+            local con =  math.floor(rfsuite.tasks.telemetry.getSensor("isconnected"))
+            if con == 0 then 
+                app.triggers.telemetryState = app.telemetryStatus.ok
+            else    
+                app.triggers.telemetryState = app.telemetryStatus.noTelemetry
+            end
+        end
     end
 
 
@@ -1083,7 +1090,7 @@ function app.wakeupUI()
     -- enable/disable icons on main menu
     if rfsuite.app.uiState == rfsuite.app.uiStatus.mainMenu then
         local apiVersionAsString = tostring(rfsuite.session.apiVersion)
-        if app.getRSSI() == 0 then
+        if app.triggers.telemetryState == app.telemetryStatus.ok then
             for i,v in pairs(rfsuite.app.formFields) do
                 if not app.MainMenu.pages[i].offline then
                     rfsuite.app.formFields[i]:enable(false)

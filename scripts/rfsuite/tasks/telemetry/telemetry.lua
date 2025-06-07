@@ -78,6 +78,8 @@ https://github.com/rotorflight/rotorflight-firmware/blob/c7cad2c86fd833fe4bce767
 ]]--
 
 local sensorTable = {
+
+
     -- RSSI Sensors
     rssi = {
         name = rfsuite.i18n.get("telemetry.sensors.rssi"),
@@ -601,6 +603,24 @@ local sensorTable = {
             crsfLegacy = { nil },
         },
     },  
+
+    -- isConnected
+    isconnected = {
+        name = rfsuite.i18n.get("simConnected"),
+        mandatory = false,
+        maxmin_trigger = false,
+        sensors = {
+            sim = {
+                { uid = 0x5019, unit = nil, dec = nil,
+                  value = function() return rfsuite.utils.simSensors('isconnected') end,
+                  min = 0, max = 2 },
+            },
+            sport = { nil
+            },
+            crsfLegacy = { nil },
+        },
+    },
+    
 
 }
 
