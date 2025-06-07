@@ -1096,21 +1096,21 @@ app._uiTasks = {
     if app.uiState ~= app.uiStatus.mainMenu and app.uiState ~= app.uiStatus.pages then return end
     if app.uiState == app.uiStatus.mainMenu then
       local apiV = tostring(rfsuite.session.apiVersion)
-      if app.getRSSI() == 0 then
+
+      if not rfsuite.session.isConnected then
         for i in pairs(rfsuite.app.formFields) do
           if not app.MainMenu.pages[i].offline then
             rfsuite.app.formFields[i]:enable(false)
           end
         end
-      elseif rfsuite.session.apiVersion and
-             rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiV) then
+      elseif rfsuite.session.apiVersion and rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiV) then
         app.offlineMode = false
         for i in pairs(rfsuite.app.formFields) do
           rfsuite.app.formFields[i]:enable(true)
         end
       end
     elseif not rfsuite.app.isOfflinePage then
-      if app.getRSSI() == 0 then app.ui.openMainMenu() end
+      if not rfsuite.session.isConnected then app.ui.openMainMenu() end
     end
   end,
 
