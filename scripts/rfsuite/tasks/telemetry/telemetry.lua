@@ -78,6 +78,8 @@ https://github.com/rotorflight/rotorflight-firmware/blob/c7cad2c86fd833fe4bce767
 ]]--
 
 local sensorTable = {
+
+
     -- RSSI Sensors
     rssi = {
         name = rfsuite.i18n.get("telemetry.sensors.rssi"),
@@ -601,6 +603,7 @@ local sensorTable = {
             crsfLegacy = { nil },
         },
     },  
+
 
 }
 
