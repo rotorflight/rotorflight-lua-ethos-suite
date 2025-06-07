@@ -625,7 +625,11 @@ function dashboard.paint(widget)
     if unsupportedResolution then
         -- If the resolution is unsupported, show an error message and return
         local W, H = lcd.getWindowSize()
-        dashboard.overlaymessage(0, 0, W, H , rfsuite.i18n.get("widgets.dashboard.unsupported_resolution"))
+        if H < (system.getVersion().lcdHeight/5) or W < (system.getVersion().lcdWidth/10) then
+           dashboard.utils.screenError(rfsuite.i18n.get("widgets.dashboard.unsupported_resolution"), true, 0.4)
+        else
+            dashboard.overlaymessage(0, 0, W, H , rfsuite.i18n.get("widgets.dashboard.unsupported_resolution"))
+        end     
         return
     end
 
