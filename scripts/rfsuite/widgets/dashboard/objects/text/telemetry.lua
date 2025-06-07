@@ -61,7 +61,7 @@ function render.wakeup(box, telemetry)
     if manualUnit ~= nil then
         unit = manualUnit  -- use user value, even if ""
     else
-        local displayValue, _, dynamicUnit = telemetry.getSensor(source)
+        local displayValue, _, dynamicUnit = telemetry and telemetry.getSensor(source)
         if dynamicUnit ~= nil then
             unit = dynamicUnit
         elseif source and telemetry and telemetry.sensorTable[source] then
