@@ -85,14 +85,13 @@ local function getLogsDir(logDir)
 end
 
 
-local function extractShortTimestamp(filename)
-    -- Match the date and time components in the filename, ignoring the prefix
-    local date, time = filename:match(".-(%d%d%d%d%-%d%d%-%d%d)_(%d%d%-%d%d%-%d%d)")
-    if date and time then
-        -- Replace dashes with slashes or colons for a compact format
-        return date:gsub("%-", "/") .. " " .. time:gsub("%-", ":")
+local function extractHourMinute(filename)
+    -- Capture hour and minute from the time-portion (HH-MM-SS) after the underscore
+    local hour, minute = filename:match(".-%d%d%d%d%-%d%d%-%d%d_(%d%d)%-(%d%d)%-%d%d")
+    if hour and minute then
+        return hour .. ":" .. minute
     end
-    return nil -- Return nil if the pattern doesn't match
+    return nil
 end
 
 local function resolveModelName(foldername)
@@ -178,11 +177,28 @@ local function openPage(pidx, title, script, displaymode)
     local padding
     local numPerRow
 
-    numPerRow = 3 -- = rfsuite.app.radio.buttonsPerRow - 1
-    padding = rfsuite.app.radio.buttonPaddingSmall
-    -- buttonW = (rfsuite.session.lcdWidth - padding) / (rfsuite.app.radio.logGraphButtonsPerRow - 1) - padding
-    buttonW = (rfsuite.session.lcdWidth - (numPerRow + 1) * padding) / numPerRow
-    buttonH = rfsuite.app.radio.navbuttonHeight
+   if rfsuite.preferences.general.iconsize == 0 then
+        padding = rfsuite.app.radio.buttonPaddingSmall
+        buttonW = (rfsuite.session.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
+        buttonH = rfsuite.app.radio.navbuttonHeight
+        numPerRow = rfsuite.app.radio.buttonsPerRow
+    end
+    -- SMALL ICONS
+    if rfsuite.preferences.general.iconsize == 1 then
+
+        padding = rfsuite.app.radio.buttonPaddingSmall
+        buttonW = rfsuite.app.radio.buttonWidthSmall
+        buttonH = rfsuite.app.radio.buttonHeightSmall
+        numPerRow = rfsuite.app.radio.buttonsPerRowSmall
+    end
+    -- LARGE ICONS
+    if rfsuite.preferences.general.iconsize == 2 then
+
+        padding = rfsuite.app.radio.buttonPadding
+        buttonW = rfsuite.app.radio.buttonWidth
+        buttonH = rfsuite.app.radio.buttonHeight
+        numPerRow = rfsuite.app.radio.buttonsPerRow
+    end
 
 
     local x = windowWidth - buttonW + 10
@@ -190,14 +206,29 @@ local function openPage(pidx, title, script, displaymode)
     local lc = 0
     local bx = 0
 
-    if rfsuite.app.gfx_buttons["logs"] == nil then rfsuite.app.gfx_buttons["logs"] = {} end
-    if rfsuite.preferences.menulastselected["logs"] == nil then rfsuite.preferences.menulastselected["logs"] = 1 end
+    if rfsuite.app.gfx_buttons["logs_logs"] == nil then rfsuite.app.gfx_buttons["logs_logs"] = {} end
+    if rfsuite.preferences.menulastselected["logs"] == nil then rfsuite.preferences.menulastselected["logs_logs"] = 1 end
 
     if rfsuite.app.gfx_buttons["logs"] == nil then rfsuite.app.gfx_buttons["logs"] = {} end
-    if rfsuite.preferences.menulastselected["logs"] == nil then rfsuite.preferences.menulastselected["logs"] = 1 end
+    if rfsuite.preferences.menulastselected["logs_logs"] == nil then rfsuite.preferences.menulastselected["logs_logs"] = 1 end
+
+    -- Group logs by date
+    local groupedLogs = {}
+    for _, filename in ipairs(logs) do
+        local datePart = filename:match("(%d%d%d%d%-%d%d%-%d%d)_")
+        if datePart then
+            groupedLogs[datePart] = groupedLogs[datePart] or {}
+            table.insert(groupedLogs[datePart], filename)
+        end
+    end
+
+    -- Sort dates descending
+    local dates = {}
+    for date,_ in pairs(groupedLogs) do table.insert(dates, date) end
+    table.sort(dates, function(a,b) return a > b end)
 
 
-    if #logs == 0 then
+    if #dates == 0 then
 
         LCD_W, LCD_H = rfsuite.utils.getWindowSize()
         local str = rfsuite.i18n.get("app.modules.logs.msg_no_logs_found")
@@ -213,34 +244,50 @@ local function openPage(pidx, title, script, displaymode)
         form.addStaticText(line, posErr, str)
 
     else
+        rfsuite.app.gfx_buttons["logs_logs"] = rfsuite.app.gfx_buttons["logs_logs"] or {}
+        rfsuite.preferences.menulastselected["logs_logs"] = rfsuite.preferences.menulastselected["logs_logs"] or 1
 
-        for pidx, name in ipairs(logs) do
+        for idx, section in ipairs(dates) do
 
-            if lc == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
+                form.addLine(section)
+                local lc, y = 0, 0
 
-            if lc >= 0 then bx = (buttonW + padding) * lc end
+                for pidx, page in ipairs(groupedLogs[section]) do
 
-            rfsuite.app.formFields[pidx] = form.addButton(nil, {x = bx, y = y, w = buttonW, h = buttonH}, {
-                text = extractShortTimestamp(name),
-                options = FONT_S,
-                paint = function()
-                end,
-                press = function()
-                    rfsuite.preferences.menulastselected["logs"] = pidx
-                    rfsuite.app.ui.progressDisplay()
-                    rfsuite.app.ui.openPage(pidx, "Logs", "logs/logs_view.lua", name)
+                            if lc == 0 then
+                                y = form.height() + (rfsuite.preferences.general.iconsize == 2 and rfsuite.app.radio.buttonPadding or rfsuite.app.radio.buttonPaddingSmall)
+                            end
+
+                            local x = (buttonW + padding) * lc
+                            if rfsuite.preferences.general.iconsize ~= 0 then
+                                if rfsuite.app.gfx_buttons["logs_logs"][pidx] == nil then rfsuite.app.gfx_buttons["logs_logs"][pidx] = lcd.loadMask("app/modules/logs/logs.png") end
+                            else
+                                rfsuite.app.gfx_buttons["logs_logs"][pidx] = nil
+                            end
+
+                            rfsuite.app.formFields[pidx] = form.addButton(line, {x = x, y = y, w = buttonW, h = buttonH}, {
+                                text = extractHourMinute(page),
+                                icon = rfsuite.app.gfx_buttons["logs_logs"][pidx],
+                                options = FONT_S,
+                                paint = function() end,
+                                press = function()
+                                    rfsuite.preferences.menulastselected["logs_logs"] = tostring(idx) .. "_" .. tostring(pidx)
+                                    rfsuite.app.ui.progressDisplay()
+                                    rfsuite.app.ui.openPage(pidx, "Logs", "logs/logs_view.lua", page)                       
+                                end
+                            })
+
+                            if rfsuite.preferences.menulastselected["logs_logs"] == tostring(idx) .. "_" .. tostring(pidx) then
+                                rfsuite.app.formFields[pidx]:focus()
+                            end
+
+                            lc = (lc + 1) % numPerRow
+
                 end
-            })
 
-            rfsuite.app.formFields[pidx]:enable(true)
+        end   
 
-            if rfsuite.preferences.menulastselected["logs"] == pidx then rfsuite.app.formFields[pidx]:focus() end
-
-            lc = lc + 1
-
-            if lc == numPerRow then lc = 0 end
-
-        end
+            
     end
 
     if rfsuite.tasks.msp then

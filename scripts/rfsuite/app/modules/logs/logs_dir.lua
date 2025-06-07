@@ -142,11 +142,28 @@ local function openPage(pidx, title, script)
     local padding
     local numPerRow
 
-    numPerRow = 3 -- = rfsuite.app.radio.buttonsPerRow - 1
-    padding = rfsuite.app.radio.buttonPaddingSmall
-    -- buttonW = (rfsuite.session.lcdWidth - padding) / (rfsuite.app.radio.logGraphButtonsPerRow - 1) - padding
-    buttonW = (rfsuite.session.lcdWidth - (numPerRow + 1) * padding) / numPerRow
-    buttonH = rfsuite.app.radio.navbuttonHeight
+   if rfsuite.preferences.general.iconsize == 0 then
+        padding = rfsuite.app.radio.buttonPaddingSmall
+        buttonW = (rfsuite.session.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
+        buttonH = rfsuite.app.radio.navbuttonHeight
+        numPerRow = rfsuite.app.radio.buttonsPerRow
+    end
+    -- SMALL ICONS
+    if rfsuite.preferences.general.iconsize == 1 then
+
+        padding = rfsuite.app.radio.buttonPaddingSmall
+        buttonW = rfsuite.app.radio.buttonWidthSmall
+        buttonH = rfsuite.app.radio.buttonHeightSmall
+        numPerRow = rfsuite.app.radio.buttonsPerRowSmall
+    end
+    -- LARGE ICONS
+    if rfsuite.preferences.general.iconsize == 2 then
+
+        padding = rfsuite.app.radio.buttonPadding
+        buttonW = rfsuite.app.radio.buttonWidth
+        buttonH = rfsuite.app.radio.buttonHeight
+        numPerRow = rfsuite.app.radio.buttonsPerRow
+    end
 
 
     local x = windowWidth - buttonW + 10
@@ -183,19 +200,31 @@ local function openPage(pidx, title, script)
 
         for pidx, item in ipairs(logs) do
 
-            if lc == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
+        if lc == 0 then
+            if rfsuite.preferences.general.iconsize == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
+            if rfsuite.preferences.general.iconsize == 1 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
+            if rfsuite.preferences.general.iconsize == 2 then y = form.height() + rfsuite.app.radio.buttonPadding end
+        end
 
-            if lc >= 0 then bx = (buttonW + padding) * lc end
+        if lc >= 0 then bx = (buttonW + padding) * lc end
 
             local name = resolveModelName(item.foldername)
+
+            if rfsuite.preferences.general.iconsize ~= 0 then
+                if rfsuite.app.gfx_buttons["logs"][pidx] == nil then rfsuite.app.gfx_buttons["logs"][pidx] = lcd.loadMask("app/modules/logs/folder.png") end
+            else
+                rfsuite.app.gfx_buttons["logs"][pidx] = nil
+            end
+
 
             rfsuite.app.formFields[pidx] = form.addButton(nil, {x = bx, y = y, w = buttonW, h = buttonH}, {
                 text = name,
                 options = FONT_S,
+                icon = rfsuite.app.gfx_buttons["logs"][pidx],
                 paint = function()
                 end,
                 press = function()
-                    rfsuite.preferences.menulastselected["logs_folder"] = pidx
+                    rfsuite.preferences.menulastselected["logs"] = pidx
                     rfsuite.app.ui.progressDisplay()
                     rfsuite.session.activeLogDir = item.foldername
                     rfsuite.utils.log("Opening logs for: " .. item.foldername,"info")
