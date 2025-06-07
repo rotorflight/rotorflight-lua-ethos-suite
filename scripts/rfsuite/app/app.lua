@@ -970,16 +970,11 @@ end
 -- calls the `app.wakeupUI` and `app.wakeupForm` functions
 -- to initialize the user interface and form respectively.
 -- @param widget The widget that triggered the wakeup.
-local wakeupToggle = false
+
 function app.wakeup(widget)
     app.guiIsRunning = true
-
-    wakeupToggle = not wakeupToggle
-    if wakeupToggle then
-        app.wakeupUI()
-    else
-        app.wakeupForm()
-    end
+    app.wakeupUI()
+    app.wakeupForm()
 end
 
 --[[
