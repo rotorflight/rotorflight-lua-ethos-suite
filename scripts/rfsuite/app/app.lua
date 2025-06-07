@@ -970,11 +970,16 @@ end
 -- calls the `app.wakeupUI` and `app.wakeupForm` functions
 -- to initialize the user interface and form respectively.
 -- @param widget The widget that triggered the wakeup.
+local wakeupToggle = false
 function app.wakeup(widget)
     app.guiIsRunning = true
 
-    app.wakeupUI()
-    app.wakeupForm()
+    wakeupToggle = not wakeupToggle
+    if wakeupToggle then
+        app.wakeupUI()
+    else
+        app.wakeupForm()
+    end
 end
 
 --[[
@@ -1174,16 +1179,18 @@ function app.wakeupUI()
     -- Only proceed when telemetry isn't locked and RSSI timeout isn't disabled
     if app.triggers.telemetryState ~= 1 and not app.triggers.disableRssiTimeout then
 
-    -- Close any open progress or save dialogs
-    if rfsuite.app.dialogs.progressDisplay then
-        app.ui.progressDisplayClose()
-    end
-    if rfsuite.app.dialogs.saveDisplay then
-        app.ui.progressDisplaySaveClose()
-    end
 
     -- Show the "no link" dialog if not already shown
     if not app.dialogs.nolinkDisplay and not app.triggers.wasConnected then
+
+            -- Close any open progress or save dialogs
+            if rfsuite.app.dialogs.progressDisplay then
+                app.ui.progressDisplayClose()
+            end
+            if rfsuite.app.dialogs.saveDisplay then
+                app.ui.progressDisplaySaveClose()
+            end
+
             app.ui.progressNolinkDisplay()
             app.dialogs.nolinkDisplay = true
         end
@@ -1200,6 +1207,7 @@ function app.wakeupUI()
         local sensorElrs        = system.getSource({crsfId = 0x14, subIdStart = 0, subIdEnd = 1})
         local currentRssi       = app.getRSSI()
         local invalidSetup      = false
+        local invalidSetupAbort = false
         local message           = rfsuite.i18n.get("app.msg_connecting_to_fbl")
 
         -- Determine the correct warning message and invalid flag
@@ -1213,6 +1221,7 @@ function app.wakeupUI()
         elseif not rfsuite.tasks.active() then
             message = rfsuite.i18n.get("app.check_bg_task")
             invalidSetup = true
+            invalidSetupAbort = true
         elseif not moduleEnabled and not app.offlineMode then
             message = rfsuite.i18n.get("app.check_rf_module_on")
             invalidSetup = true
@@ -1248,6 +1257,9 @@ function app.wakeupUI()
             app.dialogs.nolinkDisplay = false
             app.triggers.wasConnected = true
             app.ui.progressNolinkDisplayClose()
+            if invalidSetupAbort == true then
+                app.close()
+            end
         end
     end
 
