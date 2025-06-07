@@ -20,7 +20,7 @@
 local init = {
     title = rfsuite.i18n.get("app.modules.logs.name"), -- title of the page
     section = "tools", -- do not run if busy with msp
-    script = "logs.lua", -- run this script
+    script = "logs_dir.lua", -- run this script
     image = "logs.png", -- image for the page
     order = 15, -- order in the section
     offline = true, -- run this script offline
