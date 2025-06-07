@@ -195,6 +195,7 @@ function tasks.wakeup()
             sportSensor = nil
             elrsSensor = nil 
             telemetryCheckScheduler = now    
+            rfsuite.session.isConnected = false
             rfsuite.tasks.msp.reset()
 
 
