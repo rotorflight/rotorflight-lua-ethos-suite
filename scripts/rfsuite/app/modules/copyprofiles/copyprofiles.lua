@@ -122,6 +122,7 @@ end
 
 local function wakeup()
     if doSave == true then
+        rfsuite.app.ui.progressDisplaySave()
         rfsuite.app.triggers.isSavingFake = true
 
         local payload = {}

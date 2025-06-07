@@ -1109,7 +1109,7 @@ app._uiTasks = {
           rfsuite.app.formFields[i]:enable(true)
         end
       end
-    elseif app.uiState == app.uiStatus.pages then
+    elseif not rfsuite.app.isOfflinePage then
       if app.getRSSI() == 0 then app.ui.openMainMenu() end
     end
   end,
