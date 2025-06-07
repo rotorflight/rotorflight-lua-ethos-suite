@@ -604,23 +604,6 @@ local sensorTable = {
         },
     },  
 
-    -- isConnected
-    isconnected = {
-        name = rfsuite.i18n.get("simConnected"),
-        mandatory = false,
-        maxmin_trigger = false,
-        sensors = {
-            sim = {
-                { uid = 0x5019, unit = nil, dec = nil,
-                  value = function() return rfsuite.utils.simSensors('isconnected') end,
-                  min = 0, max = 2 },
-            },
-            sport = { nil
-            },
-            crsfLegacy = { nil },
-        },
-    },
-    
 
 }
 

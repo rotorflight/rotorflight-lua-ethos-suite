@@ -950,14 +950,7 @@ function app.updateTelemetryState()
             app.triggers.telemetryState = app.telemetryStatus.ok
         end
     else
-        if rfsuite.tasks and rfsuite.tasks.telemetry  then
-            local con =  math.floor(rfsuite.tasks.telemetry.getSensor("isconnected"))
-            if con == 0 then 
-                app.triggers.telemetryState = app.telemetryStatus.ok
-            else    
-                app.triggers.telemetryState = app.telemetryStatus.noTelemetry
-            end
-        end
+        app.triggers.telemetryState = app.telemetryStatus.noTelemetry
     end
 
 
@@ -1087,23 +1080,6 @@ function app.wakeupUI()
         end
     end
 
-    -- enable/disable icons on main menu
-    if rfsuite.app.uiState == rfsuite.app.uiStatus.mainMenu then
-        local apiVersionAsString = tostring(rfsuite.session.apiVersion)
-        if app.triggers.telemetryState == app.telemetryStatus.ok then
-            for i,v in pairs(rfsuite.app.formFields) do
-                if not app.MainMenu.pages[i].offline then
-                    rfsuite.app.formFields[i]:enable(false)
-                end
-            end 
-        elseif rfsuite.session.apiVersion and rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiVersionAsString) then
-            app.offlineMode = false
-            for i,v in pairs(rfsuite.app.formFields) do
-                rfsuite.app.formFields[i]:enable(true)
-            end            
-        end
-    end
-
     -- close progress loader when in sim.  
     -- the simulator cannot save - so we fake the whole process
     if app.triggers.closeSaveFake == true then
@@ -1173,99 +1149,106 @@ function app.wakeupUI()
 
     end
 
-    if app.triggers.telemetryState ~= 1 and app.triggers.disableRssiTimeout == false then
-
-        if rfsuite.app.dialogs.progressDisplay == true then app.ui.progressDisplayClose() end
-        if rfsuite.app.dialogs.saveDisplay == true then app.ui.progressDisplaySaveClose() end
-
-        ---if app.dialogs.nolinkDisplay == false and app.dialogs.nolinkDisplayErrorDialog ~= true and app.offlineMode ~= true then 
-        --    app.ui.progressNolinkDisplay() 
-        --end
+    -- enable/disable icons on main menu
+    if rfsuite.app.uiState == rfsuite.app.uiStatus.mainMenu then
+        local apiVersionAsString = tostring(rfsuite.session.apiVersion)
+        if app.getRSSI() == 0 then
+            for i,v in pairs(rfsuite.app.formFields) do
+                if not app.MainMenu.pages[i].offline then
+                    rfsuite.app.formFields[i]:enable(false)
+                end
+            end 
+        elseif rfsuite.session.apiVersion and rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiVersionAsString) then
+            app.offlineMode = false
+            for i,v in pairs(rfsuite.app.formFields) do
+                rfsuite.app.formFields[i]:enable(true)
+            end            
+        end
+    elseif rfsuite.app.uiState == rfsuite.app.uiStatus.pages then
+        if app.getRSSI() == 0 then
+            app.ui.openMainMenu()
+        end    
     end
 
-    if (app.dialogs.nolinkDisplay == true) and app.triggers.disableRssiTimeout == false then
 
-        app.dialogs.nolinkValueCounter = app.dialogs.nolinkValueCounter + 10
+    -- Only proceed when telemetry isn't locked and RSSI timeout isn't disabled
+    if app.triggers.telemetryState ~= 1 and not app.triggers.disableRssiTimeout then
 
-       -- if app.dialogs.nolinkValueCounter >= 101 then
+    -- Close any open progress or save dialogs
+    if rfsuite.app.dialogs.progressDisplay then
+        app.ui.progressDisplayClose()
+    end
+    if rfsuite.app.dialogs.saveDisplay then
+        app.ui.progressDisplaySaveClose()
+    end
 
-          --  app.ui.progressNolinkDisplayClose()
+    -- Show the "no link" dialog if not already shown
+    if not app.dialogs.nolinkDisplay and not app.triggers.wasConnected then
+            app.ui.progressNolinkDisplay()
+            app.dialogs.nolinkDisplay = true
+        end
+    end
 
-            if app.guiIsRunning == true and app.triggers.invalidConnectionSetup ~= true and app.triggers.wasConnected == false then
+    -- Update "no link" dialog if it's visible and still no connection
+    if app.dialogs.nolinkDisplay and not app.triggers.wasConnected then
 
-                local buttons = {{
-                    label = rfsuite.i18n.get("app.btn_ok"),
-                    action = function()
+        -- Gather state for validation checks
+        local apiVersion       = rfsuite.session.apiVersion
+        local apiStr           = tostring(apiVersion)
+        local moduleEnabled     = model.getModule(0):enable() or model.getModule(1):enable()
+        local sensorSport       = system.getSource({appId = 0xF101})
+        local sensorElrs        = system.getSource({crsfId = 0x14, subIdStart = 0, subIdEnd = 1})
+        local currentRssi       = app.getRSSI()
+        local invalidSetup      = false
+        local message           = rfsuite.i18n.get("app.msg_connecting_to_fbl")
 
-                        app.triggers.exitAPP = true
-                        app.dialogs.nolinkDisplayErrorDialog = false
-                        return true
-                    end
-                }}
+        -- Determine the correct warning message and invalid flag
+        if not rfsuite.utils.ethosVersionAtLeast() then
+            message = string.format(
+                "%s < V%d.%d.%d", string.upper(rfsuite.i18n.get("ethos")),
+                rfsuite.config.ethosVersion[1],
+                rfsuite.config.ethosVersion[2],
+                rfsuite.config.ethosVersion[3]
+            )
+        elseif not rfsuite.tasks.active() then
+            message = rfsuite.i18n.get("app.check_bg_task")
+            invalidSetup = true
+        elseif not moduleEnabled and not app.offlineMode then
+            message = rfsuite.i18n.get("app.check_rf_module_on")
+            invalidSetup = true
+        elseif not (sensorSport or sensorElrs) and not app.offlineMode then
+            message = rfsuite.i18n.get("app.check_discovered_sensors")
+            invalidSetup = true
+        elseif currentRssi == 0 and not app.offlineMode then
+            message = rfsuite.i18n.get("app.check_heli_on")
+            invalidSetup = true
+        elseif apiVersion == nil and not app.offlineMode then
+            message = rfsuite.i18n.get("app.check_msp_version")
+        elseif not rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiStr) and not app.offlineMode then
+            message = rfsuite.i18n.get("app.check_supported_version") .. " (" .. apiStr .. ")"
+        end
 
-                local message
-                local apiVersionAsString = tostring(rfsuite.session.apiVersion)
-                local moduleState = (model.getModule(0):enable()  or model.getModule(1):enable()) or false
-                local sportSensor = system.getSource({appId = 0xF101})
-                local elrsSensor = system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1})
+        -- Update trigger state
+        app.triggers.invalidConnectionSetup = invalidSetup
 
-                if not rfsuite.utils.ethosVersionAtLeast() then
-                    message = string.format(string.upper(rfsuite.i18n.get("ethos")).. " < V%d.%d.%d", 
-                    rfsuite.config.ethosVersion[1], 
-                    rfsuite.config.ethosVersion[2], 
-                    rfsuite.config.ethosVersion[3])
-                    app.triggers.invalidConnectionSetup = true
-                elseif not rfsuite.tasks.active() then
-                    message = rfsuite.i18n.get("app.check_bg_task") 
-                    app.triggers.invalidConnectionSetup = true
-                elseif  moduleState == false and app.offlineMode == false then
-                    message = rfsuite.i18n.get("app.check_rf_module_on") 
-                    app.triggers.invalidConnectionSetup = true 
-                elseif not (sportSensor or elrsSensor)  and app.offlineMode == false then
-                    message = rfsuite.i18n.get("app.check_discovered_sensors")
-                    app.triggers.invalidConnectionSetup = true                                            
-                elseif app.getRSSI() == 0 and app.offlineMode == false then
-                    message =  rfsuite.i18n.get("app.check_heli_on")
-                    app.triggers.invalidConnectionSetup = true
-                    app.offlineMode = true
-                elseif rfsuite.session.apiVersion == nil and app.offlineMode == false then
-                    message = rfsuite.i18n.get("app.check_msp_version")
-                    app.triggers.invalidConnectionSetup = true   
-                    app.offlineMode = true
-                elseif not rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiVersionAsString) and app.offlineMode == false then
-                    message = rfsuite.i18n.get("app.check_supported_version") .. " (" .. rfsuite.session.apiVersion .. ")."
-                    app.triggers.invalidConnectionSetup = true
-                    app.offlineMode = true
-                end
+        -- Increment progress bar: slow down if invalid setup
+        local step = invalidSetup and 1 or 5
+        app.dialogs.nolinkValueCounter = app.dialogs.nolinkValueCounter + step
 
-                -- display message and abort if error occured
-                if app.triggers.invalidConnectionSetup == true and app.triggers.wasConnected == false and not app.offlineMode then
+        -- Refresh the dialog with new progress and text
+        app.ui.progressDisplayNoLinkValue(app.dialogs.nolinkValueCounter, message)
 
-                    form.openDialog({
-                        width = nil,
-                        title = rfsuite.i18n.get("error"):gsub("^%l", string.upper),
-                        message = message,
-                        buttons = buttons,
-                        wakeup = function()
-                        end,
-                        paint = function()
-                        end,
-                        options = TEXT_LEFT
-                    })
+        -- Play warning once at threshold
+        if invalidSetup and app.dialogs.nolinkValueCounter == 10 then
+            app.audio.playBufferWarn = true
+        end
 
-                    app.dialogs.nolinkDisplayErrorDialog = true
-
-                end
-
-                app.dialogs.nolinkValueCounter = 0
-                app.dialogs.nolinkDisplay = false
-
-            else
-                app.triggers.wasConnected = true
-            end
-
-       -- end
-        app.ui.progressDisplayNoLinkValue(app.dialogs.nolinkValueCounter)
+        -- Auto-close when complete
+        if app.dialogs.nolinkValueCounter >= 100 then
+            app.dialogs.nolinkDisplay = false
+            app.triggers.wasConnected = true
+            app.ui.progressNolinkDisplayClose()
+        end
     end
 
     -- display a warning if we trigger one of these events
