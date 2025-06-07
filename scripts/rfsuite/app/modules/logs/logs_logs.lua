@@ -106,6 +106,14 @@ local function resolveModelName(foldername)
     return "Unknown"
 end
 
+local function format_date(iso_date)
+  local y, m, d = iso_date:match("^(%d+)%-(%d+)%-(%d+)$")
+  return os.date("%d %B %Y", os.time{
+    year  = tonumber(y),
+    month = tonumber(m),
+    day   = tonumber(d),
+  })
+end
 
 local function openPage(pidx, title, script, displaymode)
 
@@ -249,7 +257,7 @@ local function openPage(pidx, title, script, displaymode)
 
         for idx, section in ipairs(dates) do
 
-                form.addLine(section)
+                form.addLine(format_date(section))
                 local lc, y = 0, 0
 
                 for pidx, page in ipairs(groupedLogs[section]) do
