@@ -314,6 +314,7 @@ function ui.openMainMenu()
     rfsuite.app.formFields = {}
     rfsuite.app.formLines = {}
     rfsuite.session.lastLabel = nil
+    rfsuite.app.isOfflinePage = false
 
     -- clear old icons
     for i in pairs(rfsuite.app.gfx_buttons) do
@@ -408,6 +409,7 @@ function ui.openMainMenu()
                             press = function()
                                 rfsuite.preferences.menulastselected["mainmenu"] = pidx
                                 rfsuite.app.ui.progressDisplay()
+                                rfsuite.app.isOfflinePage = offline
                                 rfsuite.app.ui.openPage(pidx, page.title, page.folder .. "/" .. page.script)                          
                             end
                         })
