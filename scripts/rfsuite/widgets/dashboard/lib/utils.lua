@@ -122,13 +122,30 @@ end
 --- Displays an error message centered on the screen, automatically selecting the largest font size
 --- that fits within 90% of the screen's width and height. The text color adapts to the current
 --- dark mode setting.
--- @param msg string: The error message to display.
-function utils.screenError(msg)
+-- @param msg string:  The error message to display.
+-- @param bool      :  The draw border around the text (default true).
+-- @param pct number:  The percentage of the screen size to use for text fitting (default 0.5).
+-- @param padX number: Horizontal padding around the text (default 8).
+-- @param padY number: Vertical padding around the text (default 4).
+function utils.screenError(msg, border, pct, padX, padY)
+    -- Default values
+    if not pct then pct = 0.5 end
+    if border == nil then border = true end
+    if not padX then padX = 8 end      -- default horizontal padding
+    if not padY then padY = 4 end      -- default vertical padding
+
+    -- Get display size and mode
     local w, h = lcd.getWindowSize()
     local isDarkMode = lcd.darkMode()
+
+    -- Available fonts to try
     local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL, FONT_XXXXL}
-    local maxW, maxH = w * 0.9, h * 0.9
+    
+    -- Compute maximum allowed dimensions for text
+    local maxW, maxH = w * pct, h * pct
     local bestFont, bestW, bestH = FONT_XXS, 0, 0
+
+    -- Choose the largest font that fits within maxW x maxH
     for _, font in ipairs(fonts) do
         lcd.font(font)
         local tsizeW, tsizeH = lcd.getTextSize(msg)
@@ -139,13 +156,28 @@ function utils.screenError(msg)
             break
         end
     end
+
+    -- Set chosen font
     lcd.font(bestFont)
+
+    -- Determine text and border color
     local textColor = isDarkMode and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90)
     lcd.color(textColor)
+
+    -- Calculate centered text position
     local x = (w - bestW) / 2
     local y = (h - bestH) / 2
+
+    -- Draw border rectangle if requested
+    if border then
+        lcd.drawRectangle(x - padX, y - padY, bestW + padX * 2, bestH + padY * 2)
+    end
+
+    -- Draw the text centered
     lcd.drawText(x, y, msg)
 end
+
+
 
 --- Calculates the X coordinate for text alignment within a given width.
 -- @param text string: The text to be aligned.
