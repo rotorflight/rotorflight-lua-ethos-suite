@@ -31,10 +31,7 @@ local function getLogPath()
     os.mkdir("LOGS:")
     os.mkdir("LOGS:/rfsuite")
     os.mkdir("LOGS:/rfsuite/telemetry")
-    if (rfsuite.session and rfsuite.session.mcu_id) or rfsuite.session.telemetryState then
-        os.mkdir("LOGS:/rfsuite/telemetry/" .. rfsuite.session.mcu_id)
-        return "LOGS:/rfsuite/telemetry/" .. rfsuite.session.mcu_id .. "/"
-    elseif rfsuite.session.activeLogDir  then 
+    if rfsuite.session.activeLogDir  then 
          return "LOGS:/rfsuite/telemetry/" .. rfsuite.session.activeLogDir .. "/"
     end
     return "LOGS:/rfsuite/telemetry/" 
@@ -110,153 +107,8 @@ local function resolveModelName(foldername)
     return "Unknown"
 end
 
-local function openPageDir(pidx, title, script, displaymode)
-    rfsuite.session.activeLogDir = nil
-    -- hard exit on error
-    if not rfsuite.utils.ethosVersionAtLeast() then
-        return
-    end
 
-    if not rfsuite.tasks.active() then
-
-        local buttons = {{
-            label = rfsuite.i18n.get("app.btn_ok"),
-            action = function()
-
-                rfsuite.app.triggers.exitAPP = true
-                rfsuite.app.dialogs.nolinkDisplayErrorDialog = false
-                return true
-            end
-        }}
-
-        form.openDialog({
-            width = nil,
-            title = rfsuite.i18n.get("error"):gsub("^%l", string.upper),
-            message = rfsuite.i18n.get("app.check_bg_task") ,
-            buttons = buttons,
-            wakeup = function()
-            end,
-            paint = function()
-            end,
-            options = TEXT_LEFT
-        })
-
-    end
-
-
-    currentDisplayMode = displaymode
-
-    if rfsuite.tasks.msp then
-        rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
-    end
-
-    rfsuite.app.triggers.isReady = false
-    rfsuite.app.uiState = rfsuite.app.uiStatus.pages
-
-    form.clear()
-
-    rfsuite.app.lastIdx = idx
-    rfsuite.app.lastTitle = title
-    rfsuite.app.lastScript = script
-
-    local w, h = rfsuite.utils.getWindowSize()
-    local windowWidth = w
-    local windowHeight = h
-    local padding = rfsuite.app.radio.buttonPadding
-
-    local sc
-    local panel
-
-    rfsuite.app.ui.fieldHeader("Logs")
-
-    local buttonW
-    local buttonH
-    local padding
-    local numPerRow
-
-    numPerRow = 3 -- = rfsuite.app.radio.buttonsPerRow - 1
-    padding = rfsuite.app.radio.buttonPaddingSmall
-    -- buttonW = (rfsuite.session.lcdWidth - padding) / (rfsuite.app.radio.logGraphButtonsPerRow - 1) - padding
-    buttonW = (rfsuite.session.lcdWidth - (numPerRow + 1) * padding) / numPerRow
-    buttonH = rfsuite.app.radio.navbuttonHeight
-
-
-    local x = windowWidth - buttonW + 10
-
-    local lc = 0
-    local bx = 0
-
-    if rfsuite.app.gfx_buttons["logs"] == nil then rfsuite.app.gfx_buttons["logs"] = {} end
-    if rfsuite.preferences.menulastselected["logs"] == nil then rfsuite.preferences.menulastselected["logs"] = 1 end
-
-    if rfsuite.app.gfx_buttons["logs"] == nil then rfsuite.app.gfx_buttons["logs"] = {} end
-    if rfsuite.preferences.menulastselected["logs"] == nil then rfsuite.preferences.menulastselected["logs"] = 1 end
-
-    local logDir = getLogPath()
-
-    local logs = getLogsDir(logDir)
-
-    if #logs == 0 then
-
-        LCD_W, LCD_H = rfsuite.utils.getWindowSize()
-        local str = rfsuite.i18n.get("app.modules.logs.msg_no_logs_found")
-        local ew = LCD_W
-        local eh = LCD_H
-        local etsizeW, etsizeH = lcd.getTextSize(str)
-        local eposX = ew / 2 - etsizeW / 2
-        local eposY = eh / 2 - etsizeH / 2
-
-        local posErr = {w = etsizeW, h = rfsuite.app.radio.navbuttonHeight, x = eposX, y = ePosY}
-
-        line = form.addLine("", nil, false)
-        form.addStaticText(line, posErr, str)
-
-    else
-
-        for pidx, item in ipairs(logs) do
-
-            if lc == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
-
-            if lc >= 0 then bx = (buttonW + padding) * lc end
-
-            local name = resolveModelName(item.foldername)
-
-            rfsuite.app.formFields[pidx] = form.addButton(nil, {x = bx, y = y, w = buttonW, h = buttonH}, {
-                text = name,
-                options = FONT_S,
-                paint = function()
-                end,
-                press = function()
-                    rfsuite.preferences.menulastselected["logs_folder"] = pidx
-                    rfsuite.app.ui.progressDisplay()
-                    rfsuite.session.activeLogDir = item.foldername
-                    rfsuite.utils.log("Opening logs for: " .. item.foldername,"info")
-                    rfsuite.app.ui.openPage(pidx, "Logs", "logs/logs.lua", name, currentDisplayMode)
-                    
-                end
-            })
-
-            rfsuite.app.formFields[pidx]:enable(true)
-
-            if rfsuite.preferences.menulastselected["logs_folder"] == pidx then rfsuite.app.formFields[pidx]:focus() end
-
-            lc = lc + 1
-
-            if lc == numPerRow then lc = 0 end
-
-        end
-    end
-
-    if rfsuite.tasks.msp then
-        rfsuite.app.triggers.closeProgressLoader = true
-    end
-    enableWakeup = true
-
-    return
-end
-
-
-local function openPageLogs(pidx, title, script, displaymode)
+local function openPage(pidx, title, script, displaymode)
 
     -- hard exit on error
     if not rfsuite.utils.ethosVersionAtLeast() then
@@ -376,7 +228,7 @@ local function openPageLogs(pidx, title, script, displaymode)
                 press = function()
                     rfsuite.preferences.menulastselected["logs"] = pidx
                     rfsuite.app.ui.progressDisplay()
-                    rfsuite.app.ui.openPage(pidx, "Logs", "logs/logs_tool.lua", name, currentDisplayMode)
+                    rfsuite.app.ui.openPage(pidx, "Logs", "logs/logs_view.lua", name)
                 end
             })
 
@@ -399,20 +251,11 @@ local function openPageLogs(pidx, title, script, displaymode)
     return
 end
 
-local function openPageChooser(pidx, title, script, displaymode)
-    if rfsuite.session.activeLogDir then
-        openPageLogs(pidx, title, script, displaymode)   
-    elseif not rfsuite.session.telemetryState or not rfsuite.session.mcu_id then
-        openPageDir(pidx, title, script, displaymode)
-    else
-        openPageLogs(pidx, title, script, displaymode)    
-    end
-    return
-end    
-
 local function event(widget, category, value, x, y)
-
-
+    if  value == 35 then
+        rfsuite.app.ui.openPage(rfsuite.app.lastIdx, rfsuite.app.lastTitle, "logs/logs_dir.lua")
+        return true
+    end
     return false
 end
 
@@ -426,18 +269,14 @@ end
 
 local function onNavMenu()
 
-    if currentDisplayMode == 1 or rfsuite.session.activeLogDir then
-        rfsuite.session.activeLogDir = nil
-        system.exit()
-    else
-        rfsuite.app.ui.openMainMenu()
-    end
+      rfsuite.app.ui.openPage(rfsuite.app.lastIdx, rfsuite.app.lastTitle, "logs/logs_dir.lua")
+
 
 end
 
 return {
     event = event,
-    openPage = openPageChooser,
+    openPage = openPage,
     wakeup = wakeup,
     onNavMenu = onNavMenu,
     navButtons = {

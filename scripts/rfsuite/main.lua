@@ -334,15 +334,16 @@ local function init()
 
     -- Registers the log tool with the specified configuration.
     -- This tool handles events, creation, wakeup, painting, and closing.
-    system.registerSystemTool({
-        event = rfsuite.app.event,
-        name = config.toolName,
-        icon = config.icon_logtool,
-        create = rfsuite.app.create_logtool,
-        wakeup = rfsuite.app.wakeup,
-        paint = rfsuite.app.paint,
-        close = rfsuite.app.close
-    })
+ -- disabled for now as can be reached via main tool - tbd
+ --   system.registerSystemTool({
+ --       event = rfsuite.app.event,
+ --       name = config.toolName,
+ --       icon = config.icon_logtool,
+ --       create = rfsuite.app.create_logtool,
+ --       wakeup = rfsuite.app.wakeup,
+ --       paint = rfsuite.app.paint,
+ --       close = rfsuite.app.close
+ --   })
 
     -- Registers a background task with the specified configuration.
     -- This task handles wakeup and event processing.

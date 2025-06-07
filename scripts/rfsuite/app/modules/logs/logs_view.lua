@@ -693,9 +693,8 @@ end
 
 
 local function event(event, category, value, x, y)
-
-    if category == 5 or value == 35 then
-        rfsuite.app.Page.onNavMenu(self)
+    if  value == 35 then
+        rfsuite.app.ui.openPage(rfsuite.app.lastIdx, rfsuite.app.lastTitle, "logs/logs_logs.lua")
         return true
     end
     return false
@@ -872,11 +871,8 @@ local function onNavMenu(self)
 
     rfsuite.app.ui.progressDisplay()
 
-    if currentDisplayMode == 1 then
-        rfsuite.app.ui.openPage(1, rfsuite.app.lastTitle, "logs/logs.lua", 1)
-    else
-        rfsuite.app.ui.openPage(rfsuite.app.lastIdx, rfsuite.app.lastTitle, "logs/logs.lua")
-    end
+    rfsuite.app.ui.openPage(rfsuite.app.lastIdx, rfsuite.app.lastTitle, "logs/logs_logs.lua")
+
 
 end
 
