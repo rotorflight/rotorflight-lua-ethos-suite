@@ -1009,7 +1009,7 @@ app._uiTasks = {
   function()
     if not app.triggers.closeProgressLoader then return end
     local p, q = app.dialogs.progressCounter, rfsuite.tasks.msp.mspQueue
-    if p >= 90 then p = p + 0.5 else p = p + 2 end
+    if p >= 90 then p = p + 5 else p = p + 10 end
     app.dialogs.progressCounter = p
     if app.dialogs.progress then
       app.ui.progressDisplayValue(p)
@@ -1029,9 +1029,9 @@ app._uiTasks = {
     local p, q = app.dialogs.saveProgressCounter, rfsuite.tasks.msp.mspQueue
     app.triggers.isSaving = false
     if q:isProcessed() then
-      if     p > 90 then p = p + 1
-      elseif p > 40 then p = p + 1.5
-      else                p = p + 2 end
+      if     p > 90 then p = p + 5
+      elseif p > 40 then p = p + 10
+      else                p = p + 5 end
     end
     app.dialogs.saveProgressCounter = p
     if app.dialogs.save then
@@ -1149,7 +1149,7 @@ app._uiTasks = {
       msg = rfsuite.i18n.get("app.check_supported_version") .. " (" .. apiStr .. ")"
     end
     app.triggers.invalidConnectionSetup = invalid
-    local step = invalid and 1 or 5
+    local step = invalid and 5 or 10
     app.dialogs.nolinkValueCounter = app.dialogs.nolinkValueCounter + step
     app.ui.progressDisplayNoLinkValue(app.dialogs.nolinkValueCounter, msg)
     if invalid and app.dialogs.nolinkValueCounter == 10 then app.audio.playBufferWarn = true end
@@ -1164,7 +1164,7 @@ app._uiTasks = {
   -- 9. Save Timeout Watchdog
   function()
     if not app.dialogs.saveDisplay or not app.dialogs.saveWatchDog then return end
-    local timeout = tonumber(app.protocol.saveTimeout + 5)
+    local timeout = tonumber(rfsuite.tasks.msp.protocol.saveTimeout + 5)
     if (os.clock() - app.dialogs.saveWatchDog) > timeout
        or (app.dialogs.saveProgressCounter > 120 and rfsuite.tasks.msp.mspQueue:isProcessed()) then
       app.audio.playTimeout = true
@@ -1376,7 +1376,7 @@ function app.wakeup()
     app._nextUiTask = (idx % total) + 1
     app._taskAccumulator = app._taskAccumulator - 1
   end
-  
+
 end
 
 
