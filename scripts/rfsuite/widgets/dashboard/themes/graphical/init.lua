@@ -19,9 +19,9 @@
 -- Theme initialization table
 local init = {
     name = "Graphical",                -- Theme name
-    preflight = "graphical.lua",     -- Script to run before takeoff
-    inflight = "graphical.lua",       -- Script to run during flight
-    postflight = "graphical.lua",   -- Script to run after landing
+    preflight = "preflight.lua",     -- Script to run before takeoff
+    inflight = "inflight.lua",       -- Script to run during flight
+    postflight = "postflight.lua",   -- Script to run after landing
     standalone = false,              -- If true, theme handles all rendering itself
 }
 
