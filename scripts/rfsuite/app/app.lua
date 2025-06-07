@@ -176,6 +176,7 @@ app.adjfunctions = nil
 app.profileCheckScheduler = os.clock()
 app.offlineMode = false
 
+
 --[[
 app.audio: Table containing boolean flags for various audio states.
     - playTimeout: Flag to indicate if timeout audio should be played.
@@ -1079,6 +1080,23 @@ function app.wakeupUI()
         end
     end
 
+    -- enable/disable icons on main menu
+    if rfsuite.app.uiState == rfsuite.app.uiStatus.mainMenu then
+        local apiVersionAsString = tostring(rfsuite.session.apiVersion)
+        if app.getRSSI() == 0 then
+            for i,v in pairs(rfsuite.app.formFields) do
+                if not app.MainMenu.pages[i].offline then
+                    rfsuite.app.formFields[i]:enable(false)
+                end
+            end 
+        elseif rfsuite.session.apiVersion and rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiVersionAsString) then
+            app.offlineMode = false
+            for i,v in pairs(rfsuite.app.formFields) do
+                rfsuite.app.formFields[i]:enable(true)
+            end            
+        end
+    end
+
     -- close progress loader when in sim.  
     -- the simulator cannot save - so we fake the whole process
     if app.triggers.closeSaveFake == true then
@@ -1153,18 +1171,18 @@ function app.wakeupUI()
         if rfsuite.app.dialogs.progressDisplay == true then app.ui.progressDisplayClose() end
         if rfsuite.app.dialogs.saveDisplay == true then app.ui.progressDisplaySaveClose() end
 
-        if app.dialogs.nolinkDisplay == false and app.dialogs.nolinkDisplayErrorDialog ~= true and app.offlineMode ~= true then 
-            app.ui.progressNolinkDisplay() 
-        end
+        ---if app.dialogs.nolinkDisplay == false and app.dialogs.nolinkDisplayErrorDialog ~= true and app.offlineMode ~= true then 
+        --    app.ui.progressNolinkDisplay() 
+        --end
     end
 
     if (app.dialogs.nolinkDisplay == true) and app.triggers.disableRssiTimeout == false then
 
         app.dialogs.nolinkValueCounter = app.dialogs.nolinkValueCounter + 10
 
-        if app.dialogs.nolinkValueCounter >= 101 then
+       -- if app.dialogs.nolinkValueCounter >= 101 then
 
-            app.ui.progressNolinkDisplayClose()
+          --  app.ui.progressNolinkDisplayClose()
 
             if app.guiIsRunning == true and app.triggers.invalidConnectionSetup ~= true and app.triggers.wasConnected == false then
 
@@ -1202,16 +1220,19 @@ function app.wakeupUI()
                 elseif app.getRSSI() == 0 and app.offlineMode == false then
                     message =  rfsuite.i18n.get("app.check_heli_on")
                     app.triggers.invalidConnectionSetup = true
+                    app.offlineMode = true
                 elseif rfsuite.session.apiVersion == nil and app.offlineMode == false then
                     message = rfsuite.i18n.get("app.check_msp_version")
                     app.triggers.invalidConnectionSetup = true   
+                    app.offlineMode = true
                 elseif not rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiVersionAsString) and app.offlineMode == false then
                     message = rfsuite.i18n.get("app.check_supported_version") .. " (" .. rfsuite.session.apiVersion .. ")."
                     app.triggers.invalidConnectionSetup = true
+                    app.offlineMode = true
                 end
 
                 -- display message and abort if error occured
-                if app.triggers.invalidConnectionSetup == true and app.triggers.wasConnected == false then
+                if app.triggers.invalidConnectionSetup == true and app.triggers.wasConnected == false and not app.offlineMode then
 
                     form.openDialog({
                         width = nil,
@@ -1236,7 +1257,7 @@ function app.wakeupUI()
                 app.triggers.wasConnected = true
             end
 
-        end
+       -- end
         app.ui.progressDisplayNoLinkValue(app.dialogs.nolinkValueCounter)
     end
 
@@ -1605,6 +1626,7 @@ function app.create()
 
     app.uiState = app.uiStatus.init
 
+    app.MainMenu  = assert(rfsuite.compiler.loadfile("app/modules/init.lua"))()
     app.ui.openMainMenu()
 
 end

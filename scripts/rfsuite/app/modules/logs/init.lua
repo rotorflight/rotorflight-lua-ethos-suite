@@ -23,6 +23,7 @@ local init = {
     script = "logs.lua", -- run this script
     image = "logs.png", -- image for the page
     order = 15, -- order in the section
+    offline = true, -- run this script offline
     ethosversion = {1, 6, 2} -- disable button if ethos version is less than this,
 }
 
