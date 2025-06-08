@@ -13,17 +13,13 @@ graphPos['key_width'] = LCD_W - graphPos['width']
 graphPos['height'] = LCD_H - graphPos['menu_offset'] - graphPos['menu_offset'] - 40 + graphPos['height_offset']
 graphPos['slider_y'] = LCD_H - (graphPos['menu_offset'] + 30) + graphPos['height_offset']
 
-local triggerOverRide = false
-local triggerOverRideAll = false
 
 local zoomLevel = 1
 local zoomCount = 5
 local enableWakeup = false
-local wakeupScheduler = os.clock()
 local activeLogFile
 local logPadding = 5
-local armTime
-local currentDisplayMode
+
 
 local logFileHandle = nil
 local logDataRaw = {}
@@ -136,34 +132,7 @@ local function calculateZoomSteps(logLineCount)
     return maxZoomLevel
 end
 
-local function calculate_time_coverage(dates)
-    if #dates == 0 then
-        return "00:00" -- If the table is empty, return 00:00
-    end
 
-    local timestamps = {}
-
-    -- Convert each date string to a timestamp
-    for _, date in ipairs(dates) do
-        local year, month, day, hour, min, sec = date:match("(%d+)-(%d+)-(%d+)_(%d+):(%d+):(%d+)")
-        local timestamp = os.time({year = tonumber(year), month = tonumber(month), day = tonumber(day), hour = tonumber(hour), min = tonumber(min), sec = tonumber(sec)})
-        table.insert(timestamps, timestamp)
-    end
-
-    -- Find the minimum and maximum timestamps
-    local min_time = math.min(table.unpack(timestamps))
-    local max_time = math.max(table.unpack(timestamps))
-
-    -- Calculate the time difference in seconds
-    local time_diff = max_time - min_time
-
-    -- Convert seconds to minutes and seconds
-    local minutes = math.floor(time_diff / 60)
-    local seconds = time_diff % 60
-
-    -- Format as mm:ss
-    return string.format("%02d:%02d", minutes, seconds)
-end
 
 function calculateSeconds(totalSeconds, sliderValue)
     -- Ensure sliderValue is within the range 1-100
@@ -208,67 +177,11 @@ function padTable(tbl, padCount)
     return paddedTable
 end
 
-function unpadTable(paddedTable, padCount)
-    -- Ensure the paddedTable has enough elements to unpad
-    if #paddedTable < 2 * padCount then
-        error("Padded table is too small to unpad with the given padCount")
-    end
-
-    -- Extract the original table elements
-    local unpaddedTable = {}
-    for i = padCount + 1, #paddedTable - padCount do
-        table.insert(unpaddedTable, paddedTable[i])
-    end
-
-    return unpaddedTable
-end
-
-function rfsuite.compiler.loadfileToMemory(filename)
-    local file, err = io.open(filename, "rb")
-    if not file then return nil, "Error opening file: " .. err end
-
-    local content = {}
-    local chunk
-    repeat
-        chunk = file:read(1024) -- Read 1KB at a time
-        if chunk then table.insert(content, chunk) end
-    until not chunk
-
-    file:close()
-    return table.concat(content) -- Join all chunks into a single string
-end
 
 function map(x, in_min, in_max, out_min, out_max)
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
 end
 
-function calculate_optimal_records_per_page(total_records, range_min, range_max)
-    -- Define the target range for records per page
-    local min_records_per_page = range_min or 50
-    local max_records_per_page = range_max or 100
-
-    -- Initialize variables to track the best option
-    local best_records_per_page
-    local best_page_count_difference = math.huge -- Start with a large number
-
-    -- Loop through the possible number of records per page within the range
-    for records_per_page = min_records_per_page, max_records_per_page do
-        -- Calculate the total pages needed for this number of records per page
-        local total_pages = math.ceil(total_records / records_per_page)
-
-        -- Calculate the difference in the number of pages compared to the mid-point
-        local page_count_difference = math.abs(total_pages - (total_records / records_per_page))
-
-        -- If this option is better (i.e., fewer steps or more balanced), update the best option
-        if page_count_difference < best_page_count_difference then
-            best_records_per_page = records_per_page
-            best_page_count_difference = page_count_difference
-            optimal_steps = total_pages -- Store the number of steps (pages)
-        end
-    end
-
-    return best_records_per_page, optimal_steps
-end
 
 -- Efficient function to get a specific column from CSV
 function getColumn(csvData, colIndex)
@@ -321,15 +234,6 @@ local function cleanColumn(data)
     return out
 end
 
-local function trimHeader(data)
-    local out = {}
-    for i, v in ipairs(data) do
-        if i ~= 1 then -- skip the header
-            out[i - 1] = v
-        end
-    end
-    return out
-end
 
 local function getLogDir(dirname)
     -- make sure folder exists
@@ -605,13 +509,6 @@ function findMaxNumber(numbers)
     return max
 end
 
-function addMaxMinToTable(tbl, value_start, value_end)
-    -- Insert the value at the beginning
-    table.insert(tbl, 1, value_start)
-    -- Insert the value at the end
-    table.insert(tbl, value_end)
-end
-
 function findMinNumber(numbers)
     local min = numbers[1] -- Assume the first number is the smallest initially
     for i = 2, #numbers do -- Iterate through the table starting from the second element
@@ -630,7 +527,7 @@ function findAverage(numbers)
 end
 
 local function openPage(pidx, title, script, logfile, displaymode,dirname)
-    currentDisplayMode = displaymode
+  
 
     rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
 
