@@ -1551,6 +1551,9 @@ function app.close()
     if app.dialogs.save then app.ui.progressDisplaySaveClose() end
     if app.dialogs.noLink then app.ui.progressNolinkDisplayClose() end
 
+    -- clear image cache
+    rfsuite.app.gfx_buttons = {}
+
     invalidatePages()
     app.resetState()
     system.exit()
