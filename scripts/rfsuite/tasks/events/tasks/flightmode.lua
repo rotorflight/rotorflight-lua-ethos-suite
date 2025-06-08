@@ -113,6 +113,12 @@ function flightmode.wakeup()
         end
     end
 
+    -- catch a hard power-off senario
+    if rfsuite.session.flightMode == "inflight" and not rfsuite.session.isConnected  then
+        mode = "postflight"
+        hasBeenInFlight = false
+    end
+
     -- Log and update flight mode on transition
     if lastFlightMode ~= mode then
         rfsuite.utils.log("Flight mode: " .. mode, "info")
