@@ -58,8 +58,8 @@ local paintCache = {
 
 -- number of samples to skip for each zoom level
 local zoomLevelToDecimation = {
-    [1] = 4,   -- Fully zoomed out: 
-    [2] = 3,
+    [1] = 5,   -- Fully zoomed out: 
+    [2] = 4,
     [3] = 2,
     [4] = 1,
     [5] = 1,    -- Fully zoomed in:
@@ -118,17 +118,22 @@ function format_time(seconds)
 end
 
 local function calculateZoomSteps(logLineCount)
-    if logLineCount < 50 then
-        return 1
-    elseif logLineCount < 100 then
-        return 2
-    elseif logLineCount < 300 then
-        return 3
-    elseif logLineCount < 600 then
-        return 4
-    else
-        return 5
+    -- Calculate total log duration in seconds (assuming 1 sample/second)
+    local logDurationSec = logLineCount / SAMPLE_RATE
+    
+    -- Determine which zoom levels are feasible
+    local maxZoomLevel = 1
+    for level = 5, 1, -1 do
+        local desiredTime = zoomLevelToTime[level]
+        -- Require at least 1.5x the desired time window to enable a zoom level
+        -- (so you have some room to pan around)
+        if logDurationSec >= desiredTime * 1.5 then
+            maxZoomLevel = level
+            break
+        end
     end
+    
+    return maxZoomLevel
 end
 
 local function calculate_time_coverage(dates)
