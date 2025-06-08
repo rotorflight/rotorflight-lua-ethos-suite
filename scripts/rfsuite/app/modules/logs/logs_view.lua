@@ -45,16 +45,6 @@ local processedLogData = false
 local currentDataIndex = 1
 
 
-
--- Range of samples to display for each zoom level
-local zoomLevelToRange = {
-    [1] = {min = 500, max = 600}, -- Fully zoomed out
-    [2] = {min = 400, max = 500},
-    [3] = {min = 200, max = 300},
-    [4] = {min = 100, max = 200},
-    [5] = {min = 10, max = 100}      -- Fully zoomed in
-}
-
 -- number of samples to skip for each zoom level
 local zoomLevelToDecimation = {
     [1] = 5,   -- Fully zoomed out: every 20th sample
@@ -65,11 +55,11 @@ local zoomLevelToDecimation = {
 }
 
 local zoomLevelToTime = {
-  [1] = 120,
-  [2] = 90,
-  [3] = 60,
-  [4] = 30,
-  [5] = 20,
+  [1] = 300, -- 5 minutes
+  [2] = 180, -- 3 minutes
+  [3] = 120, -- 2 minutes
+  [4] = 60,  -- 1 minute
+  [5] = 30,  -- 30 seconds
 }
 
 local SAMPLE_RATE = 1
@@ -113,6 +103,20 @@ function format_time(seconds)
 
     -- Format the time string
     return string.format("%02d:%02d", minutes, seconds_remainder)
+end
+
+local function calculateZoomSteps(logLineCount)
+    if logLineCount < 50 then
+        return 1
+    elseif logLineCount < 100 then
+        return 2
+    elseif logLineCount < 300 then
+        return 3
+    elseif logLineCount < 600 then
+        return 4
+    else
+        return 5
+    end
 end
 
 local function calculate_time_coverage(dates)
@@ -517,8 +521,10 @@ local function drawCurrentIndex(points, position, totalPoints, keyindex, keyunit
    local current_s = calculateSeconds(totalPoints, position)
    local time_str  = format_time(math.floor(current_s))
 
-   -- 2) look up our zoom-window span
-   local windowSec = zoomLevelToTime[zoomLevel] or zoomLevelToTime[1]
+   -- 2) look up our zoom‐window span, capped to real log duration
+   local logDurSec     = math.floor(logLineCount / SAMPLE_RATE)
+   local desiredWinSec = zoomLevelToTime[zoomLevel] or zoomLevelToTime[1]
+   local windowSec     = math.min(desiredWinSec, logDurSec)
    local win_label
    if windowSec < 60 then
      win_label = string.format("%ds", windowSec)
@@ -802,8 +808,21 @@ local function wakeup()
 
         if currentDataIndex >= #logColumns then
 
-
             logLineCount = #logData[currentDataIndex]['data']
+
+            -- recompute how many zoom‐levels really make sense for this file
+            zoomCount = calculateZoomSteps(logLineCount)
+            if zoomLevel > zoomCount then zoomLevel = zoomCount end
+
+            -- update zoom‐button states
+            local btnMinus = rfsuite.app.formFields[2]
+            local btnPlus  = rfsuite.app.formFields[3]
+            if zoomCount <= 1 then
+                btnMinus:enable(false); btnPlus:enable(false)
+            else
+                btnMinus:enable(zoomLevel > 1)
+                btnPlus :enable(zoomLevel < zoomCount)
+            end
 
             progressLoader:close()
             processedLogData = true
@@ -815,21 +834,6 @@ local function wakeup()
         return
     end
 end
-
-local function calculateZoomSteps(logLineCount)
-    if logLineCount < 50 then
-        return 1
-    elseif logLineCount < 100 then
-        return 2
-    elseif logLineCount < 300 then
-        return 3
-    elseif logLineCount < 600 then
-        return 4
-    else
-        return 5
-    end
-end
-
 
 
 local function paint()
@@ -844,10 +848,11 @@ local function paint()
 
         if logData then
             
-           -- 1) pick window size by time
-            local winSec   = zoomLevelToTime[zoomLevel] or zoomLevelToTime[1]
-            local step_size = secondsToSamples(winSec)
-            if step_size > logLineCount then step_size = logLineCount end
+           -- 1) pick window size by time, but cap it to actual log length
+           local logDurSec     = math.floor(logLineCount / SAMPLE_RATE)
+           local desiredWinSec = zoomLevelToTime[zoomLevel] or zoomLevelToTime[1]
+           local winSec        = math.min(desiredWinSec, logDurSec)
+           local step_size     = secondsToSamples(winSec)
 
             -- 2) slide that window via slider
             local maxPosition = math.max(1, logLineCount - step_size + 1)
