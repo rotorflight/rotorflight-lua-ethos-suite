@@ -44,6 +44,8 @@ local sliderPositionOld = 1
 local processedLogData = false
 local currentDataIndex = 1
 
+
+
 -- Range of samples to display for each zoom level
 local zoomLevelToRange = {
     [1] = {min = 500, max = 600}, -- Fully zoomed out
@@ -55,13 +57,25 @@ local zoomLevelToRange = {
 
 -- number of samples to skip for each zoom level
 local zoomLevelToDecimation = {
-    [1] = 20,   -- Fully zoomed out: every 20th sample
-    [2] = 15,
-    [3] = 10,
-    [4] = 5,
+    [1] = 5,   -- Fully zoomed out: every 20th sample
+    [2] = 4,
+    [3] = 3,
+    [4] = 2,
     [5] = 1,    -- Fully zoomed in: every sample
 }
 
+local zoomLevelToTime = {
+  [1] = 120,
+  [2] = 90,
+  [3] = 60,
+  [4] = 30,
+  [5] = 20,
+}
+
+local SAMPLE_RATE = 1
+local function secondsToSamples(sec)
+  return math.floor(sec * SAMPLE_RATE)
+end
 
 function readNextChunk()
     if logDataRawReadComplete then
@@ -499,14 +513,27 @@ local function drawCurrentIndex(points, position, totalPoints, keyindex, keyunit
     lcd.drawText(idxPos, textY, value, textAlign)
 
     if laneNumber == 1 then
-        local current_s = calculateSeconds(totalPoints, position)
-        local time_str = format_time(math.floor(current_s))
+   -- 1) compute “now” under the marker
+   local current_s = calculateSeconds(totalPoints, position)
+   local time_str  = format_time(math.floor(current_s))
+
+   -- 2) look up our zoom-window span
+   local windowSec = zoomLevelToTime[zoomLevel] or zoomLevelToTime[1]
+   local win_label
+   if windowSec < 60 then
+     win_label = string.format("%ds", windowSec)
+   else
+     win_label = string.format("%d:%02d", math.floor(windowSec/60), windowSec % 60)
+   end
+
+   -- 3) combine into “HH:MM [+SSs]” or “HH:MM [+M:SS]”
+   local full_label = string.format("%s [+%s]", time_str, win_label)
 
         lcd.font(rfsuite.app.radio.logKeyFont)
         local ty = graphPos['height'] + graphPos['menu_offset'] - 10
 
         lcd.color(COLOR_WHITE)
-        lcd.drawText(idxPos, ty, time_str, textAlign)
+        lcd.drawText(idxPos, ty, full_label, textAlign)
 
         if lcd.darkMode() then
             lcd.color(COLOR_WHITE)
@@ -816,16 +843,18 @@ local function paint()
     if enableWakeup and processedLogData then
 
         if logData then
-            local zoomRange = zoomLevelToRange[zoomLevel]
-            zoomCount = calculateZoomSteps(logLineCount)
-            local optimal_records_per_page, _ = calculate_optimal_records_per_page(logLineCount, zoomRange.min, zoomRange.max)
+            
+           -- 1) pick window size by time
+            local winSec   = zoomLevelToTime[zoomLevel] or zoomLevelToTime[1]
+            local step_size = secondsToSamples(winSec)
+            if step_size > logLineCount then step_size = logLineCount end
 
-            local step_size = optimal_records_per_page
-            local maxPosition = math.max(1, logLineCount - step_size)
+            -- 2) slide that window via slider
+            local maxPosition = math.max(1, logLineCount - step_size + 1)
             local position = math.floor(map(sliderPosition, 1, 100, 1, maxPosition))
-            if step_size > logLineCount then
-                step_size = logLineCount
-            end
+            if position < 1 then position = 1 end
+
+
             if position < 1 then position = 1 end
 
             local graphCount = 0
