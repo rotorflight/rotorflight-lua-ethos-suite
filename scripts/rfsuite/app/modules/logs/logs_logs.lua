@@ -1,3 +1,5 @@
+local utils = assert(rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/app/modules/logs/lib/utils.lua"))()
+
 local triggerOverRide = false
 local triggerOverRideAll = false
 local lastServoCountTime = os.clock()
@@ -12,78 +14,6 @@ local function getCleanModelName()
     return logdir
 end
 
--- Helper function to check if directory exists
-local function dir_exists(base, name)
-    base = base or "./"
-    for _, v in pairs(system.listFiles(base)) do if v == name then return true end end
-    return false
-end
-
-local function getModelName()
-    local logdir
-    logdir = string.gsub(model.name(), "%s+", "_")
-    logdir = string.gsub(logdir, "%W", "_")
-    return logdir
-end
-
-local function getLogPath()
-    -- make sure folder exists
-    os.mkdir("LOGS:")
-    os.mkdir("LOGS:/rfsuite")
-    os.mkdir("LOGS:/rfsuite/telemetry")
-    if rfsuite.session.activeLogDir  then 
-         return "LOGS:/rfsuite/telemetry/" .. rfsuite.session.activeLogDir .. "/"
-    end
-    return "LOGS:/rfsuite/telemetry/" 
-end
-
-local function getLogs(logDir)
-
-    local files = system.listFiles(logDir)
-    local csvFiles = {}
-
-    -- Extract CSV files and parse date-time from filenames
-    for i = 1, #files do
-        if files[i] ~= ".." and files[i]:sub(-4) == ".csv" then
-            local datePart, timePart = files[i]:match("(%d%d%d%d%-%d%d%-%d%d)_(%d%d%-%d%d%-%d%d)_")
-            if datePart and timePart then
-                local sortableDateTime = datePart .. "T" .. timePart -- Concatenating for sorting
-                table.insert(csvFiles, {filename = files[i], datetime = sortableDateTime})
-            end
-        end
-    end
-
-    -- Sort files by extracted date-time string
-    table.sort(csvFiles, function(a, b)
-        return a.datetime > b.datetime -- Sort in descending order (latest first)
-    end)
-
-    -- Limit to a maximum of 50 entries
-    local maxEntries = 50
-    local result = {}
-    for i = 1, math.min(#csvFiles, maxEntries) do table.insert(result, csvFiles[i].filename) end
-
-    -- Delete the remaining files outside the truncated list
-    for i = maxEntries + 1, #csvFiles do os.remove(logDir .. "/" .. csvFiles[i].filename) end
-
-    return result
-end
-
-local function getLogsDir(logDir)
-
-    local files = system.listFiles(logDir)
-    local folders = {}
-
-    -- Extract CSV files and parse date-time from filenames
-    for i = 1, #files do
-        if files[i]:sub(1,1) ~= "." then
-            table.insert(folders, {foldername = files[i]})
-        end
-    end
-
-    return folders
-end
-
 
 local function extractHourMinute(filename)
     -- Capture hour and minute from the time-portion (HH-MM-SS) after the underscore
@@ -92,18 +22,6 @@ local function extractHourMinute(filename)
         return hour .. ":" .. minute
     end
     return nil
-end
-
-local function resolveModelName(foldername)
-    if foldername == nil then return "Unknown" end
-
-    local iniName = "LOGS:rfsuite/telemetry/" .. foldername .. "/logs.ini"
-    local iniData = rfsuite.ini.load_ini_file(iniName) or {}
-
-    if iniData["model"] and iniData["model"].name then
-        return iniData["model"].name
-    end
-    return "Unknown"
 end
 
 local function format_date(iso_date)
@@ -172,12 +90,12 @@ local function openPage(pidx, title, script, displaymode)
     local sc
     local panel
 
-     local logDir = getLogPath()
+     local logDir = utils.getLogPath()
 
-    local logs = getLogs(logDir)   
+    local logs = utils.getLogs(logDir)   
 
 
-    local name = resolveModelName(rfsuite.session.mcu_id or rfsuite.session.activeLogDir)
+    local name = utils.resolveModelName(rfsuite.session.mcu_id or rfsuite.session.activeLogDir)
     rfsuite.app.ui.fieldHeader("Logs / " .. name)
 
     local buttonW
@@ -268,7 +186,7 @@ local function openPage(pidx, title, script, displaymode)
 
                             local x = (buttonW + padding) * lc
                             if rfsuite.preferences.general.iconsize ~= 0 then
-                                if rfsuite.app.gfx_buttons["logs_logs"][pidx] == nil then rfsuite.app.gfx_buttons["logs_logs"][pidx] = lcd.loadMask("app/modules/logs/logs.png") end
+                                if rfsuite.app.gfx_buttons["logs_logs"][pidx] == nil then rfsuite.app.gfx_buttons["logs_logs"][pidx] = lcd.loadMask("app/modules/logs/gfx/logs.png") end
                             else
                                 rfsuite.app.gfx_buttons["logs_logs"][pidx] = nil
                             end

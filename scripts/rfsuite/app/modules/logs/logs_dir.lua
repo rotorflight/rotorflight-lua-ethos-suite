@@ -1,83 +1,29 @@
+-- Load utility functions
+local utils = assert(rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/app/modules/logs/lib/utils.lua"))()
+
+-- Wakeup control flag
 local enableWakeup = false
 
--- Returns a filesystem-safe model name
-local function getModelName()
-    local name = model.name()
-    name = name:gsub("%s+", "_"):gsub("%W", "_")
-    return name
-end
-
--- Ensures the log directory exists and returns its path
-local function getLogPath()
-    os.mkdir("LOGS:")
-    os.mkdir("LOGS:/rfsuite")
-    os.mkdir("LOGS:/rfsuite/telemetry")
-    if rfsuite.session.activeLogDir then
-        return string.format("LOGS:/rfsuite/telemetry/%s/", rfsuite.session.activeLogDir)
-    end
-    return "LOGS:/rfsuite/telemetry/"
-end
-
--- Retrieves up to `maxEntries` most recent CSV log files and cleans up older ones
-local function getLogs(logDir)
-    local files = system.listFiles(logDir)
-    local entries = {}
-    for _, fname in ipairs(files) do
-        if fname:match("%.csv$") then
-            local date, time = fname:match("(%d%d%d%d%-%d%d%-%d%d)_(%d%d%-%d%d%-%d%d)_")
-            if date and time then
-                table.insert(entries, {name = fname, ts = date .. 'T' .. time})
-            end
-        end
-    end
-
-    table.sort(entries, function(a, b) return a.ts > b.ts end)
-    local maxEntries = 50
-    for i = maxEntries + 1, #entries do
-        os.remove(logDir .. "/" .. entries[i].name)
-    end
-    local result = {}
-    for i = 1, math.min(#entries, maxEntries) do
-        result[#result+1] = entries[i].name
-    end
-    return result
-end
-
--- Lists subdirectories in a log directory
-local function getLogsDir(logDir)
-    local files = system.listFiles(logDir)
-    local dirs = {}
-    for _, name in ipairs(files) do
-        if not name:match('^%.') then
-            dirs[#dirs+1] = {foldername = name}
-        end
-    end
-    return dirs
-end
-
--- Loads the model name from logs.ini or returns 'Unknown'
-local function resolveModelName(folder)
-    if not folder then return "Unknown" end
-    local iniPath = string.format("LOGS:rfsuite/telemetry/%s/logs.ini", folder)
-    local ini = rfsuite.ini.load_ini_file(iniPath) or {}
-    return (ini.model and ini.model.name) or "Unknown"
-end
-
--- Builds and displays the Logs page
+-- Build and display the Logs directory selection page
 local function openPage(idx, title, script)
     rfsuite.session.activeLogDir = nil
     if not rfsuite.utils.ethosVersionAtLeast() then return end
 
+    -- Reset any running MSP task overrides
     if rfsuite.tasks.msp then
         rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
     end
 
+    -- Initialize page state
     rfsuite.app.triggers.isReady = false
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
     form.clear()
 
-    rfsuite.app.lastIdx, rfsuite.app.lastTitle, rfsuite.app.lastScript = idx, title, script
+    rfsuite.app.lastIdx = idx
+    rfsuite.app.lastTitle = title
+    rfsuite.app.lastScript = script
 
+    -- UI layout settings
     local w, h = rfsuite.utils.getWindowSize()
     local prefs = rfsuite.preferences.general
     local radio = rfsuite.app.radio
@@ -101,17 +47,19 @@ local function openPage(idx, title, script)
 
     rfsuite.app.ui.fieldHeader("Logs")
 
-    local logDir = getLogPath()
-    local folders = getLogsDir(logDir)
+    local logDir = utils.getLogPath()
+    local folders = utils.getLogsDir(logDir)
 
+    -- Show message if no logs exist
     if #folders == 0 then
         local msg = rfsuite.i18n.get("app.modules.logs.msg_no_logs_found")
         local tw, th = lcd.getTextSize(msg)
-        local x = w/2 - tw/2
-        local y = h/2 - th/2
+        local x = w / 2 - tw / 2
+        local y = h / 2 - th / 2
         form.addLine()
-        form.addStaticText(nil, {x=x,y=y,w=tw,h=btnH}, msg)
+        form.addStaticText(nil, { x = x, y = y, w = tw, h = btnH }, msg)
     else
+        -- Display buttons for each log directory
         local x, y, col = 0, form.height() + padding, 0
         rfsuite.app.gfx_buttons.logs = rfsuite.app.gfx_buttons.logs or {}
 
@@ -119,19 +67,22 @@ local function openPage(idx, title, script)
             if col >= perRow then
                 col, y = 0, y + btnH + padding
             end
-            local modelName = resolveModelName(item.foldername)
+
+            local modelName = utils.resolveModelName(item.foldername)
+
             if icons ~= 0 then
-                rfsuite.app.gfx_buttons.logs[i] = rfsuite.app.gfx_buttons.logs[i]
-                  or lcd.loadMask("app/modules/logs/folder.png")
+                rfsuite.app.gfx_buttons.logs[i] = rfsuite.app.gfx_buttons.logs[i] or lcd.loadMask("app/modules/logs/gfx/folder.png")
             else
                 rfsuite.app.gfx_buttons.logs[i] = nil
             end
 
-            local btn = form.addButton(nil, {x=col*(btnW+padding), y=y, w=btnW, h=btnH}, {
+            local btn = form.addButton(nil, {
+                x = col * (btnW + padding), y = y, w = btnW, h = btnH
+            }, {
                 text = modelName,
                 options = FONT_S,
-                icon    = rfsuite.app.gfx_buttons.logs[i],
-                press   = function()
+                icon = rfsuite.app.gfx_buttons.logs[i],
+                press = function()
                     rfsuite.preferences.menulastselected.logs = i
                     rfsuite.app.ui.progressDisplay()
                     rfsuite.session.activeLogDir = item.foldername
@@ -139,10 +90,13 @@ local function openPage(idx, title, script)
                     rfsuite.app.ui.openPage(i, "Logs", "logs/logs_logs.lua")
                 end
             })
+
             btn:enable(true)
+
             if rfsuite.preferences.menulastselected.logs_folder == i then
                 btn:focus()
             end
+
             col = col + 1
         end
     end
@@ -150,10 +104,11 @@ local function openPage(idx, title, script)
     if rfsuite.tasks.msp then
         rfsuite.app.triggers.closeProgressLoader = true
     end
+
     enableWakeup = true
 end
 
--- Handles form events
+-- Handle form navigation or keypress events
 local function event(widget, category, value)
     if value == 35 then
         rfsuite.app.ui.openMainMenu()
@@ -162,23 +117,30 @@ local function event(widget, category, value)
     return false
 end
 
--- Called periodically to handle wakeup logic
+-- Background wakeup handler (placeholder for future logic)
 local function wakeup()
     if enableWakeup then
-        -- wakeup handler logic
+        -- Future periodic update logic
     end
 end
 
--- Opens the main navigation menu
+-- Navigation menu handler
 local function onNavMenu()
     rfsuite.app.ui.openMainMenu()
 end
 
+-- Module export
 return {
-    event      = event,
-    openPage   = openPage,
-    wakeup     = wakeup,
-    onNavMenu  = onNavMenu,
-    navButtons = { menu=true, save=false, reload=false, tool=false, help=true },
-    API        = {}
+    event = event,
+    openPage = openPage,
+    wakeup = wakeup,
+    onNavMenu = onNavMenu,
+    navButtons = {
+        menu = true,
+        save = false,
+        reload = false,
+        tool = false,
+        help = true
+    },
+    API = {}
 }
