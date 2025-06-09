@@ -1,67 +1,7 @@
+local utils = assert(rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/app/modules/logs/lib/utils.lua"))()
+
+
 local enableWakeup = false
-
--- Returns a filesystem-safe model name
-local function getModelName()
-    local name = model.name()
-    name = name:gsub("%s+", "_"):gsub("%W", "_")
-    return name
-end
-
--- Ensures the log directory exists and returns its path
-local function getLogPath()
-    os.mkdir("LOGS:")
-    os.mkdir("LOGS:/rfsuite")
-    os.mkdir("LOGS:/rfsuite/telemetry")
-    if rfsuite.session.activeLogDir then
-        return string.format("LOGS:/rfsuite/telemetry/%s/", rfsuite.session.activeLogDir)
-    end
-    return "LOGS:/rfsuite/telemetry/"
-end
-
--- Retrieves up to `maxEntries` most recent CSV log files and cleans up older ones
-local function getLogs(logDir)
-    local files = system.listFiles(logDir)
-    local entries = {}
-    for _, fname in ipairs(files) do
-        if fname:match("%.csv$") then
-            local date, time = fname:match("(%d%d%d%d%-%d%d%-%d%d)_(%d%d%-%d%d%-%d%d)_")
-            if date and time then
-                table.insert(entries, {name = fname, ts = date .. 'T' .. time})
-            end
-        end
-    end
-
-    table.sort(entries, function(a, b) return a.ts > b.ts end)
-    local maxEntries = 50
-    for i = maxEntries + 1, #entries do
-        os.remove(logDir .. "/" .. entries[i].name)
-    end
-    local result = {}
-    for i = 1, math.min(#entries, maxEntries) do
-        result[#result+1] = entries[i].name
-    end
-    return result
-end
-
--- Lists subdirectories in a log directory
-local function getLogsDir(logDir)
-    local files = system.listFiles(logDir)
-    local dirs = {}
-    for _, name in ipairs(files) do
-        if not name:match('^%.') then
-            dirs[#dirs+1] = {foldername = name}
-        end
-    end
-    return dirs
-end
-
--- Loads the model name from logs.ini or returns 'Unknown'
-local function resolveModelName(folder)
-    if not folder then return "Unknown" end
-    local iniPath = string.format("LOGS:rfsuite/telemetry/%s/logs.ini", folder)
-    local ini = rfsuite.ini.load_ini_file(iniPath) or {}
-    return (ini.model and ini.model.name) or "Unknown"
-end
 
 -- Builds and displays the Logs page
 local function openPage(idx, title, script)
@@ -101,8 +41,8 @@ local function openPage(idx, title, script)
 
     rfsuite.app.ui.fieldHeader("Logs")
 
-    local logDir = getLogPath()
-    local folders = getLogsDir(logDir)
+    local logDir = utils.getLogPath()
+    local folders = utils.getLogsDir(logDir)
 
     if #folders == 0 then
         local msg = rfsuite.i18n.get("app.modules.logs.msg_no_logs_found")
@@ -119,10 +59,10 @@ local function openPage(idx, title, script)
             if col >= perRow then
                 col, y = 0, y + btnH + padding
             end
-            local modelName = resolveModelName(item.foldername)
+            local modelName = utils.resolveModelName(item.foldername)
             if icons ~= 0 then
                 rfsuite.app.gfx_buttons.logs[i] = rfsuite.app.gfx_buttons.logs[i]
-                  or lcd.loadMask("app/modules/logs/folder.png")
+                  or lcd.loadMask("app/modules/logs/gfx/folder.png")
             else
                 rfsuite.app.gfx_buttons.logs[i] = nil
             end

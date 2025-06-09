@@ -1,4 +1,5 @@
 -- display vars
+local utils = assert(rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/app/modules/logs/lib/utils.lua"))()
 local res = system.getVersion()
 local LCD_W = res.lcdWidth
 local LCD_H = res.lcdHeight
@@ -232,20 +233,6 @@ local function cleanColumn(data)
         end
     end
     return out
-end
-
-
-local function getLogDir(dirname)
-    -- make sure folder exists
-    os.mkdir("LOGS:")
-    os.mkdir("LOGS:/rfsuite")
-    os.mkdir("LOGS:/rfsuite/telemetry")
-    if  not dirname  then
-        os.mkdir("LOGS:/rfsuite/telemetry/" .. rfsuite.session.mcu_id)
-        return "LOGS:/rfsuite/telemetry/" .. rfsuite.session.mcu_id .. "/"
-    end
-
-    return "LOGS:/rfsuite/telemetry/" .. dirname .. "/" 
 end
 
 function getValueAtPercentage(array, percentage)
@@ -489,18 +476,6 @@ local function drawCurrentIndex(points, position, totalPoints, keyindex, keyunit
     end
 end
 
-local function resolveModelName(foldername)
-    if foldername == nil then return "Unknown" end
-
-    local iniName = "LOGS:rfsuite/telemetry/" .. foldername .. "/logs.ini"
-    local iniData = rfsuite.ini.load_ini_file(iniName) or {}
-
-    if iniData["model"] and iniData["model"].name then
-        return iniData["model"].name
-    end
-    return "Unknown"
-end
-
 function findMaxNumber(numbers)
     local max = numbers[1] -- Assume the first number is the largest initially
     for i = 2, #numbers do -- Iterate through the table starting from the second element
@@ -540,16 +515,16 @@ local function openPage(pidx, title, script, logfile, displaymode,dirname)
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-    local name = resolveModelName(rfsuite.session.mcu_id or rfsuite.session.activeLogDir)
+    local name = utils.resolveModelName(rfsuite.session.mcu_id or rfsuite.session.activeLogDir)
     rfsuite.app.ui.fieldHeader("Logs / ".. name .. " / " .. extractShortTimestamp(logfile))
     activeLogFile = logfile
 
     local filePath
 
     if rfsuite.session.activeLogDir then
-        filePath = getLogDir(rfsuite.session.activeLogDir) .. "/" .. logfile
+        filePath = utils.getLogDir(rfsuite.session.activeLogDir) .. "/" .. logfile
     else
-        filePath = getLogDir() .. "/" .. logfile
+        filePath = utils.getLogDir() .. "/" .. logfile
     end
     logFileHandle, err = io.open(filePath, "rb")
 
