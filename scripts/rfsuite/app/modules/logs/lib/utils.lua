@@ -102,14 +102,14 @@ end
 function utils.getLogsDir(logDir)
     local files = system.listFiles(logDir)
     local dirs = {}
-    
     for _, name in ipairs(files) do
-        -- Skip hidden files/directories (Unix-style hidden files)
-        if not name:match('^%.') then
-            table.insert(dirs, { foldername = name })
+        -- Exclude ".", "..", names like ".log", and names ending in ".xyz"
+        if not (name == "." or name == ".." or 
+                name:match("^%.%w%w%w$") or 
+                name:match("%.%w%w%w$")) then
+            dirs[#dirs + 1] = {foldername = name}
         end
     end
-    
     return dirs
 end
 
