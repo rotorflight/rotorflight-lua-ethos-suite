@@ -208,7 +208,7 @@ local sensorTable = {
             sim = {
                 { uid = 0x5004, unit = UNIT_AMPERE, dec = 0,
                   value = function() return rfsuite.utils.simSensors('current') end,
-                  min = 0, max = 25 },
+                  min = 0, max = 300 },
             },
             sport = {
                 { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0208 },
