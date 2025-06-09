@@ -10,7 +10,7 @@ if errorlevel 1 (
 )
 
 echo [2/5] Compiling sensors.py to standalone EXE...
-pyinstaller --onefile sensors.py --name sensors --windowed || goto :error
+python -m PyInstaller --onefile sensors.py --name sensors --windowed --icon=sensors.ico || goto :error
 
 echo [3/5] Moving sensors.exe into parent folder...
 if exist ..\sensors.exe (
