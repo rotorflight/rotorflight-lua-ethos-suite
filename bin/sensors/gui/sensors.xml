@@ -56,7 +56,14 @@
     <Group name="Adjustment Functions">
         <Sensor name="adj_f" round="true" label="Adjust Function" type="number" default="0" min="0" max="200" />
         <Sensor name="adj_v" round="true" label="Adjust Value" type="number" default="0" min="0" max="2000"/>
-    </Group>   
+    </Group>  
+
+    <Group name="System Events">
+        <Sensor name="simevent_telemetry_state" label="Telemetry State"  type="select" round="true"  default="0"  multiplier="1" unit="">
+            <Option value="0" label="Enabled" />
+            <Option value="1" label="Disabled" />
+        </Sensor>    
+     </Group>    
 
 
 </Sensors>

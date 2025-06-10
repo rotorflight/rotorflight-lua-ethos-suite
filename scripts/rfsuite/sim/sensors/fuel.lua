@@ -1,1 +1,1 @@
-return 85
+return math.random(84, 85)

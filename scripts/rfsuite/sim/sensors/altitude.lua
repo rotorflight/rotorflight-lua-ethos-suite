@@ -1,1 +1,1 @@
-return math.random(500, 550) 
+return math.random(23, 26)
