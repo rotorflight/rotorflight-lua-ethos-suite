@@ -72,6 +72,7 @@ local scheduledBoxIndices = {}
 
 -- Flag to perform initialization logic only once on first wakeup
 local firstWakeup = true
+local firstWakeupCustomTheme = true
 lcd.invalidate() -- force an initial redraw to show the hourglass
 
 -- Layout state for boxes (UI elements):
@@ -531,9 +532,9 @@ function dashboard.reload_themes()
 
     -- Load each theme state (preflight, inflight, postflight)
     loadedStateModules = {
-        preflight  = load_state_script(rfsuite.preferences.dashboard.theme_preflight  or dashboard.DEFAULT_THEME, "preflight"),
-        inflight   = load_state_script(rfsuite.preferences.dashboard.theme_inflight   or dashboard.DEFAULT_THEME, "inflight"),
-        postflight = load_state_script(rfsuite.preferences.dashboard.theme_postflight or dashboard.DEFAULT_THEME, "postflight"),
+        preflight  = load_state_script((rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.dashboard.theme_preflight) or rfsuite.preferences.dashboard.theme_preflight  or dashboard.DEFAULT_THEME, "preflight"),
+        inflight   = load_state_script((rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.dashboard.theme_inflight) or rfsuite.preferences.dashboard.theme_inflight   or dashboard.DEFAULT_THEME, "inflight"),
+        postflight = load_state_script((rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.dashboard.theme_postflight) or rfsuite.preferences.dashboard.theme_postflight or dashboard.DEFAULT_THEME, "postflight"),
     }
 
     -- Try to pick up any custom scheduler intervals defined by the theme
@@ -806,6 +807,26 @@ function dashboard.wakeup(widget)
     if firstWakeup then
         firstWakeup = false
         dashboard.reload_themes()
+    end
+
+    -- catch scenario where mcu_id is found and we have to reload to model theme
+    if firstWakeupCustomTheme and 
+        rfsuite.session.mcu_id and 
+        rfsuite.session.modelPreferences and 
+        rfsuite.session.modelPreferences.dashboard then
+            
+        local modelPrefs = rfsuite.session.modelPreferences.dashboard
+        local currentPrefs = rfsuite.preferences.dashboard
+        
+        -- The value of nil being in quotes is correct. This is a string comparison as it is sourced from the ini file.
+        if (modelPrefs.theme_preflight   and modelPrefs.theme_preflight ~= "nil" and modelPrefs.theme_preflight  ~= currentPrefs.theme_preflight) or
+            (modelPrefs.theme_inflight   and modelPrefs.theme_preflight ~= "nil" and  modelPrefs.theme_inflight   ~= currentPrefs.theme_inflight) or
+            (modelPrefs.theme_postflight and modelPrefs.theme_preflight ~= "nil" and  modelPrefs.theme_postflight ~= currentPrefs.theme_postflight) then
+
+            dashboard.reload_themes()
+            firstWakeupCustomTheme = false
+        end
+
     end
 
 

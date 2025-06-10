@@ -153,6 +153,8 @@ local function openPage(pageIdx, title, script)
                                                                 local theme = themeList[newValue]
                                                                 if theme then
                                                                     settings_model.theme_preflight = theme.source .. "/" .. theme.folder
+                                                                else
+                                                                    settings_model.theme_preflight = "nil"    
                                                                 end
                                                             end
                                                         end) 
@@ -181,6 +183,8 @@ local function openPage(pageIdx, title, script)
                                                                 local theme = themeList[newValue]
                                                                 if theme then
                                                                     settings_model.theme_inflight = theme.source .. "/" .. theme.folder
+                                                                else
+                                                                    settings_model.theme_inflight = "nil"    
                                                                 end
                                                             end
                                                         end)                                                             
@@ -209,6 +213,8 @@ local function openPage(pageIdx, title, script)
                                                                 local theme = themeList[newValue]
                                                                 if theme then
                                                                     settings_model.theme_postflight = theme.source .. "/" .. theme.folder
+                                                                else
+                                                                    settings_model.theme_postflight = "nil"    
                                                                 end
                                                             end
                                                         end)      
