@@ -96,12 +96,12 @@
         "translation": "Paramètres",
         "needs_translation": "false"
       },
-      "txt_telemetry_events": {
+      "txt_audio_events": {
         "english": "Events",
-        "translation": "Événements",
-        "needs_translation": "false"
+        "translation": "Events",
+        "needs_translation": "true"
       },
-      "txt_telemetry_switches": {
+      "txt_audio_switches": {
         "english": "Switches",
         "translation": "Switches",
         "needs_translation": "true"
@@ -249,6 +249,11 @@
       "dashboard_theme_postflight": {
         "english": "Postflight Theme",
         "translation": "Postflight Theme",
+        "needs_translation": "true"
+      },
+      "audio": {
+        "english": "Audio",
+        "translation": "Audio",
         "needs_translation": "true"
       },
       "localizations": {

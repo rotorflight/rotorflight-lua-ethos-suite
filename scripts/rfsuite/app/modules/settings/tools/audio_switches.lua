@@ -19,7 +19,7 @@ local function openPage(pageIdx, title, script)
     rfsuite.app.lastScript = script
 
     rfsuite.app.ui.fieldHeader(
-        rfsuite.i18n.get("app.modules.settings.name") .. " / " .. rfsuite.i18n.get("app.modules.settings.txt_telemetry_switches")
+        rfsuite.i18n.get("app.modules.settings.name") .. " / " .. rfsuite.i18n.get("app.modules.settings.audio") .. " / " .. rfsuite.i18n.get("app.modules.settings.txt_audio_switches")
     )
     rfsuite.session.formLineCnt = 0
 
