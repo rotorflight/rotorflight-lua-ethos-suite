@@ -259,6 +259,12 @@ local function extractShortTimestamp(filename)
 end
 
 local function drawGraph(points, color, pen, x_start, y_start, width, height, min_val, max_val)
+
+   -- Create a little buffer to prevent graphs coliding with each other
+   local padding = math.max(5, math.floor(height * 0.1)) -- 5% of height, at least 2 pixel
+   y_start = y_start + (padding/2)
+   height = height - padding
+
     -- Sanity check: Ensure all points are numbers
     for i, v in ipairs(points) do if type(v) ~= "number" then error("Point at index " .. i .. " is not a number") end end
 
