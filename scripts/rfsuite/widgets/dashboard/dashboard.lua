@@ -532,9 +532,9 @@ function dashboard.reload_themes()
 
     -- Load each theme state (preflight, inflight, postflight)
     loadedStateModules = {
-        preflight  = load_state_script((rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.dashboard.theme_preflight) or rfsuite.preferences.dashboard.theme_preflight  or dashboard.DEFAULT_THEME, "preflight"),
-        inflight   = load_state_script((rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.dashboard.theme_inflight) or rfsuite.preferences.dashboard.theme_inflight   or dashboard.DEFAULT_THEME, "inflight"),
-        postflight = load_state_script((rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.dashboard.theme_postflight) or rfsuite.preferences.dashboard.theme_postflight or dashboard.DEFAULT_THEME, "postflight"),
+        preflight  = load_state_script(((rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.dashboard.theme_preflight ~= "nil") and rfsuite.session.modelPreferences.dashboard.theme_preflight) or rfsuite.preferences.dashboard.theme_preflight  or dashboard.DEFAULT_THEME, "preflight"),
+        inflight   = load_state_script(((rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.dashboard.theme_inflight ~= "nil") and rfsuite.session.modelPreferences.dashboard.theme_inflight) or rfsuite.preferences.dashboard.theme_inflight   or dashboard.DEFAULT_THEME, "inflight"),
+        postflight = load_state_script(((rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.dashboard.theme_postflight ~= "nil") and rfsuite.session.modelPreferences.dashboard.theme_postflight) or rfsuite.preferences.dashboard.theme_postflight or dashboard.DEFAULT_THEME, "postflight"),
     }
 
     -- Try to pick up any custom scheduler intervals defined by the theme
