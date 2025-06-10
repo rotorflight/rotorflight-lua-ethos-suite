@@ -391,8 +391,8 @@ return {
     ["modules"] = {
       ["settings"] = {
         ["name"] = "Instellingen",
-        ["txt_telemetry_events"] = "Gebeurtenissen",
-        ["txt_telemetry_switches"] = "Switches",
+        ["txt_audio_events"] = "Events",
+        ["txt_audio_switches"] = "Switches",
         ["txt_iconsize"] = "Icon Size",
         ["txt_general"] = "General",
         ["txt_text"] = "TEXT",
@@ -422,6 +422,7 @@ return {
         ["dashboard_theme_preflight"] = "Preflight Theme",
         ["dashboard_theme_inflight"] = "Inflight Theme",
         ["dashboard_theme_postflight"] = "Postflight Theme",
+        ["audio"] = "Audio",
         ["localizations"] = "Localization",
         ["txt_development"] = "Development",
         ["temperature_unit"] = "Temperature Unit",

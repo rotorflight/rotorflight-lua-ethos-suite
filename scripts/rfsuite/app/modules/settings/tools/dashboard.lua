@@ -37,27 +37,14 @@ local function openPage(pidx, title, script)
     local sc
     local panel
 
-    form.addLine(rfsuite.i18n.get("app.modules.settings.name") .. " / " .. rfsuite.i18n.get("app.modules.settings.dashboard"))
 
     buttonW = 100
     local x = windowWidth - buttonW - 10
 
-    rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {x = x, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}, {
-        text = "MENU",
-        icon = nil,
-        options = FONT_S,
-        paint = function()
-        end,
-        press = function()
-            rfsuite.app.lastIdx = nil
-            rfsuite.session.lastPage = nil
+    rfsuite.app.ui.fieldHeader(
+        rfsuite.i18n.get(rfsuite.i18n.get("app.modules.settings.name") .. " / " .. rfsuite.i18n.get("app.modules.settings.dashboard"))
+    )
 
-            if rfsuite.app.Page and rfsuite.app.Page.onNavMenu then rfsuite.app.Page.onNavMenu(rfsuite.app.Page) end
-
-            rfsuite.app.ui.openMainMenu()
-        end
-    })
-    rfsuite.app.formNavigationFields['menu']:focus()
 
     local buttonW
     local buttonH
@@ -145,10 +132,42 @@ local function openPage(pidx, title, script)
     return
 end
 
+local function event(widget, category, value, x, y)
+    -- if close event detected go to section home page
+    if category == EVT_CLOSE and value == 0 or value == 35 then
+        rfsuite.app.ui.openPage(
+            pageIdx,
+            rfsuite.i18n.get("app.modules.settings.name"),
+            "settings/settings.lua"
+        )
+        return true
+    end
+end
+
+
+local function onNavMenu()
+    rfsuite.app.ui.progressDisplay()
+        rfsuite.app.ui.openPage(
+            pageIdx,
+            rfsuite.i18n.get("app.modules.settings.name"),
+            "settings/settings.lua"
+        )
+        return true
+end
+
 rfsuite.app.uiState = rfsuite.app.uiStatus.pages
 
 return {
     pages = pages, 
     openPage = openPage,
+    onNavMenu = onNavMenu,
+    event = event,
     API = {},
+        navButtons = {
+        menu   = true,
+        save   = false,
+        reload = false,
+        tool   = false,
+        help   = false,
+    },    
 }
