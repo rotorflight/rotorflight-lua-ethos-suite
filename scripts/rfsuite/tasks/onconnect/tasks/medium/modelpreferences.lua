@@ -20,6 +20,11 @@
 local modelpreferences = {}
 
 local modelpref_defaults ={
+    dashboard = {
+        theme_preflight = "nil",
+        theme_inflight = "nil",
+        theme_postflight = "nil",
+    },
     general ={
         flightcount = 0,
         totalflighttime = 0,

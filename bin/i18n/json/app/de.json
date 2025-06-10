@@ -216,6 +216,21 @@
         "translation": "Theme",
         "needs_translation": "true"
       },
+      "dashboard_theme_panel_global": {
+        "english": "Default theme for all models",
+        "translation": "Global",
+        "needs_translation": "true"
+      },
+      "dashboard_theme_panel_model": {
+        "english": "Optional theme for this model",
+        "translation": "Model",
+        "needs_translation": "true"
+      },
+      "dashboard_theme_panel_model_disabled": {
+        "english": "Disabled",
+        "translation": "Disabled",
+        "needs_translation": "true"
+      },
       "dashboard_settings": {
         "english": "Settings",
         "translation": "Settings",
