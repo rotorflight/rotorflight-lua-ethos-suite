@@ -104,7 +104,6 @@ local boxes = {
         max = 140,
         transform = "floor", 
         fillbgcolor = "lightgrey",
-        valuepaddingright = 18,
         thresholds = {
             { value = 70,  fillcolor = "green"  },
             { value = 90,  fillcolor = "orange" },
@@ -270,27 +269,26 @@ local boxes = {
     -- ARC MAX GAUGE
     {
         type = "gauge",
-        subtype = "arcmax",
+        subtype = "arc",
+        arcmax = true,
         col = 3, row = 2, rowspan = 2,
-                source = "temp_esc", 
-        title = "ESC Temp", 
+        source = "temp_esc", 
+        title = "ESC TEMP", 
         titlepos = "bottom",
-        gaugemin = 0, 
-        gaugemax = 140, 
-        unit = "°", 
+        min = 0, 
+        max = 140, 
         textcolor = "white", 
         font = "FONT_STD", 
         transform = "floor", 
-        textoffsetx = 12,
-        fillbgcolor = "lightgrey", 
-        arcOffsetY = 4, 
-        arcThickness = 1, 
-        startAngle = 225, 
-        sweep = 270,
+        fillbgcolor = "lightgrey",
+        valuepaddingleft = 10,
+        maxprefix = "Max: ",
+        maxpaddingleft = 10,
+        thickness = 16,
         thresholds = {
-            { value = 70,  fillcolor = "green"  },
-            { value = 90,  fillcolor = "orange" },
-            { value = 140, fillcolor = "red"    }
+            { value = 70,  fillcolor = "green", maxtextcolor = "green"},
+            { value = 90,  fillcolor = "orange", maxtextcolor = "orange"},
+            { value = 140, fillcolor = "red", maxtextcolor = "red"}
         }
     },
 }

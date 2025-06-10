@@ -568,9 +568,9 @@ end
 -- @param fallbackThemeKey   string         -- The theme key to use if no color is found (e.g. "textcolor", "fillcolor").
 -- @return                   number         -- The LCD color to use for rendering.
 
-function utils.resolveThresholdColor(value, box, colorKey, fallbackThemeKey)
+function utils.resolveThresholdColor(value, box, colorKey, fallbackThemeKey, thresholdsOverride)
     local color = utils.resolveThemeColor(fallbackThemeKey, utils.getParam(box, colorKey))
-    local thresholds = utils.getParam(box, "thresholds")
+    local thresholds = thresholdsOverride or utils.getParam(box, "thresholds")
     if thresholds and value ~= nil then
         for _, t in ipairs(thresholds) do
             local thresholdValue = t.value
