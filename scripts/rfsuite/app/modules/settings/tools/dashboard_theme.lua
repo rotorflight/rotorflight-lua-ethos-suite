@@ -1,6 +1,40 @@
 local settings = {}
+local settings_model = {}
+
+local themeList = rfsuite.widgets.dashboard.listThemes() 
+local formattedThemes = {}
+local formattedThemesModel = {}
 
 local enableWakeup = false
+local prevConnectedState = nil
+
+--- Generates formatted lists of available themes and their models.
+-- Iterates over the global `themeList` and populates two tables:
+-- `formattedThemes` with theme names and indices, and
+-- `formattedThemesModel` with a disabled option followed by theme names and indices.
+-- Assumes `themeList`, `formattedThemes`, `formattedThemesModel`, and `rfsuite.i18n` are defined in the surrounding scope.
+local function generateThemeList()
+
+    -- setup environment
+    settings = rfsuite.preferences.dashboard
+
+    if rfsuite.session.modelPreferences then
+        settings_model = rfsuite.session.modelPreferences.dashboard
+    else
+        settings_model = {}
+    end
+
+    -- build global table
+    for i, theme in ipairs(themeList) do
+        table.insert(formattedThemes, { theme.name, theme.idx })
+    end
+
+    -- build model table
+    table.insert(formattedThemesModel, { rfsuite.i18n.get("app.modules.settings.dashboard_theme_panel_model_disabled"), 0 })
+    for i, theme in ipairs(themeList) do
+        table.insert(formattedThemesModel, { theme.name, theme.idx })
+    end   
+end
 
 local function openPage(pageIdx, title, script)
     enableWakeup = true
@@ -18,22 +52,8 @@ local function openPage(pageIdx, title, script)
 
     local formFieldCount = 0
 
-    settings = rfsuite.preferences.dashboard
-    settings_model = rfsuite.session.modelPreferences.dashboard
-
-    -- get theme list
-    local themeList = rfsuite.widgets.dashboard.listThemes() 
-    local formattedThemes = {}
-    for i, theme in ipairs(themeList) do
-        table.insert(formattedThemes, { theme.name, theme.idx })
-    end
-
-    local formattedThemesModel = {}
-    table.insert(formattedThemesModel, { rfsuite.i18n.get("app.modules.settings.dashboard_theme_panel_model_disabled"), 0 })
-    for i, theme in ipairs(themeList) do
-        table.insert(formattedThemesModel, { theme.name, theme.idx })
-    end   
-
+    -- generate the initial list
+    generateThemeList()
 
     -- ===========================================================================
     -- create global theme selection panel
@@ -300,16 +320,31 @@ local function event(widget, category, value, x, y)
 end
 
 local function wakeup()
-    if enableWakeup then
-        if rfsuite.session.isConnected and rfsuite.session.mcu_id then
-            rfsuite.app.formFields[4]:enable(true)
-            rfsuite.app.formFields[5]:enable(true)
-            rfsuite.app.formFields[6]:enable(true)
-        else    
-            rfsuite.app.formFields[4]:enable(false)
-            rfsuite.app.formFields[5]:enable(false)
-            rfsuite.app.formFields[6]:enable(false)            
+    if not enableWakeup then
+        return
+    end
+
+    -- current combined state: true only if both are truthy
+    local currState = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false
+
+    -- only update if state has changed
+    if currState ~= prevConnectedState then
+
+        -- if we're now connected, you can do any repopulation here
+        if currState then
+                generateThemeList()
+                for i = 4, 6 do
+                    rfsuite.app.formFields[i]:values(formattedThemesModel)
+                end               
         end
+
+        -- toggle all three fields together
+        for i = 4, 6 do
+            rfsuite.app.formFields[i]:enable(currState)
+        end
+
+        -- remember for next time
+        prevConnectedState = currState
     end
 end
 

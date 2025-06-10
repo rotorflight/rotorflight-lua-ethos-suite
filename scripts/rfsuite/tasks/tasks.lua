@@ -191,6 +191,8 @@ function tasks.wakeup()
             rfsuite.session.onConnect.low = false
             rfsuite.session.onConnect.medium = false
             rfsuite.session.toolbox = nil
+            rfsuite.session.modelPreferences = nil
+            rfsuite.session.modelPreferencesFile = nil
             lastTelemetrySensorName = nil
             sportSensor = nil
             elrsSensor = nil 
