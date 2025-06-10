@@ -286,6 +286,11 @@ app.dialogs.badversionDisplay = false
         number - The RSSI value (100 or 0).
 ]]
 function app.getRSSI()
+
+    if rfsuite.simevent.rflink == 1 then
+        return 0
+    end
+
     if app.offlineMode == true then return 100 end
 
 

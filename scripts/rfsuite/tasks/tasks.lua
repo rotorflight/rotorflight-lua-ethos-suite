@@ -122,6 +122,27 @@ function tasks.active()
     return false
 end
 
+local function setOffline()
+    --rfsuite.utils.log("Telemetry not active.", "info")
+    rfsuite.session.telemetryState = false
+    rfsuite.session.telemetryType = nil
+    rfsuite.session.telemetryTypeChanged = false
+    rfsuite.session.telemetrySensor = nil
+    rfsuite.session.timer = {}
+    rfsuite.session.onConnect.high = false
+    rfsuite.session.onConnect.low = false
+    rfsuite.session.onConnect.medium = false
+    rfsuite.session.toolbox = nil
+    rfsuite.session.modelPreferences = nil
+    rfsuite.session.modelPreferencesFile = nil
+    lastTelemetrySensorName = nil
+    sportSensor = nil
+    elrsSensor = nil 
+    telemetryCheckScheduler = now    
+    rfsuite.session.isConnected = false
+    rfsuite.tasks.msp.reset()
+end
+
 function tasks.wakeup()
     if ethosVersionGood == nil then
         ethosVersionGood = rfsuite.utils.ethosVersionAtLeast()
@@ -177,28 +198,15 @@ function tasks.wakeup()
     local now = os.clock()
     if now - (telemetryCheckScheduler or 0) >= 0.5 then
 
-        telemetryState = tlm and tlm:state() or false
+        telemetryState = tlm and tlm:state() or false    
 
-        if not telemetryState then
+        if (rfsuite.simevent.telemetry_state == false and system.getVersion().simulation) then
+            telemetryState = false 
+        end
 
-            --rfsuite.utils.log("Telemetry not active.", "info")
-            rfsuite.session.telemetryState = false
-            rfsuite.session.telemetryType = nil
-            rfsuite.session.telemetryTypeChanged = false
-            rfsuite.session.telemetrySensor = nil
-            rfsuite.session.timer = {}
-            rfsuite.session.onConnect.high = false
-            rfsuite.session.onConnect.low = false
-            rfsuite.session.onConnect.medium = false
-            rfsuite.session.toolbox = nil
-            rfsuite.session.modelPreferences = nil
-            rfsuite.session.modelPreferencesFile = nil
-            lastTelemetrySensorName = nil
-            sportSensor = nil
-            elrsSensor = nil 
-            telemetryCheckScheduler = now    
-            rfsuite.session.isConnected = false
-            rfsuite.tasks.msp.reset()
+        if not telemetryState  then
+
+            setOffline()
 
 
         else
@@ -212,14 +220,7 @@ function tasks.wakeup()
             rfsuite.session.telemetrySensor = currentTelemetrySensor
 
             if currentTelemetrySensor == nil  then
-                rfsuite.session.telemetryState = false
-                rfsuite.session.telemetryType = nil
-                rfsuite.session.telemetryTypeChanged = false
-                rfsuite.session.telemetrySensor = nil
-                lastTelemetrySensorName = nil
-                sportSensor = nil
-                elrsSensor = nil 
-                telemetryCheckScheduler = now
+                setOffline()
             else
                 rfsuite.session.telemetryState = true
                 rfsuite.session.telemetryType = sportSensor and "sport" or elrsSensor and "crsf" or nil

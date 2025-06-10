@@ -237,6 +237,11 @@ rfsuite.session.onConnect.high = false
 rfsuite.session.onConnect.low = false
 rfsuite.session.onConnect.medium = false
 
+-- when running in sim mode we can trigger events in tasks/simevent/simevent.lua
+-- this is used to trigger events in the simulator that are hard to do without a physical radio
+rfsuite.simevent = {}
+rfsuite.simevent.telemetry_state = true
+
 --- Retrieves the version information of the rfsuite module.
 --- 
 --- This function constructs a version string and returns a table containing
