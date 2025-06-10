@@ -32,21 +32,23 @@
     valuepaddingtop     : number    -- (Optional) Top padding for value
     valuepaddingbottom  : number    -- (Optional) Bottom padding for value
 
+    -- Maxval parameters
+    maxfont             : font      -- (Optional) Font for max value label (e.g., FONT_XS, FONT_S, FONT_M, default: FONT_S)
+    maxtextcolor        : color     -- (Optional) Max text color (theme/text fallback)
+    maxpadding          : number    -- (Optional) Padding (Y-offset) below arc center for max value label (default: 0)
+    maxpaddingleft      : number    -- (Optional) Additional X-offset for max label (default: 0)
+    maxpaddingtop       : number    -- (Optional) Additional Y-offset for max label (default: 0)
+
     -- Appearance/Theming
     bgcolor             : color     -- (Optional) Widget background color (theme fallback)
     fillbgcolor         : color     -- (Optional) Arc background color (theme fallback)
     fillcolor           : color     -- (Optional) Arc foreground color (theme fallback)
+    maxprefix           : string    -- (Optional) Prefix for max value label (default: "+")
 
     -- Arc Geometry/Advanced
     min                 : number    -- (Optional) Minimum value of the arc (default: 0)
     max                 : number    -- (Optional) Maximum value of the arc (default: 100)
-    arcoffsety          : number    -- (Optional) Y offset for arc center (default: 0)
-    startangle          : number    -- (Optional) Arc start angle (deg, default: 225)
-    sweep               : number    -- (Optional) Arc sweep angle (deg, default: 270)
     thickness           : number    -- (Optional) Arc thickness in pixels
-
-    -- Subtext
-    subtext             : string    -- (Optional) Sub-label below arc (e.g., "Max")
 ]]
 
 local render = {}
@@ -54,6 +56,7 @@ local render = {}
 local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
+local resolveThresholdColor = utils.resolveThresholdColor
 
 -- Arc drawing function
 local function drawArc(cx, cy, radius, thickness, angleStart, angleEnd, color, cacheStepRad)
@@ -84,24 +87,15 @@ function render.wakeup(box, telemetry)
         value = telemetry.getSensor(source)
     end
 
-    -- Transform and decimals (if required)
-    local displayValue
-    if value ~= nil then
-        displayValue = utils.transformValue(value, box)
+    -- Optionally cache and calculate max value for max arc
+    local arcmax = getParam(box, "arcmax") == true
+    local maxval = nil
+    if arcmax and source then
+        local stats = rfsuite.tasks.telemetry.getSensorStats(source)
+        local currentMax = stats and stats.max or nil
+        local prevMax = box._cache and box._cache.maxval or nil
+        maxval = currentMax or prevMax
     end
-
-    -- Resolve arc min/max and calculate percent fill for the gauge (clamped 0-1)
-    local min = getParam(box, "min") or 0
-    local max = getParam(box, "max") or 100
-    local percent = 0
-    if value and max ~= min then
-        percent = (value - min) / (max - min)
-        percent = math.max(0, math.min(1, percent))
-    end
-
-    -- Threshold logic (if required)
-    local textcolor = utils.resolveThresholdColor(value, box, "textcolor", "textcolor")
-    local fillcolor = utils.resolveThresholdColor(value, box, "fillcolor", "fillcolor")
 
     -- Dynamic unit logic (User can force a unit or omit unit using "" to hide)
     local manualUnit = getParam(box, "unit")
@@ -120,11 +114,70 @@ function render.wakeup(box, telemetry)
         end
     end
 
-    -- Title logic to determine if a title is set
-    local hasTitle = getParam(box, "title")
-    local titlepos = getParam(box, "titlepos")
-    if hasTitle then
-        titlepos = titlepos or "top"
+    -- Resolve arc min/max
+    local min = getParam(box, "min") or 0
+    local max = getParam(box, "max") or 100
+
+    -- Only convert to Fahrenheit or Ft if localization is changed
+    local isFahrenheit = unit and unit:match("F$") ~= nil
+    local isFeet = unit and unit:lower():match("ft$") ~= nil
+
+    if isFahrenheit then
+        min = min * 9 / 5 + 32
+        max = max * 9 / 5 + 32
+        if arcmax and maxval then
+            maxval = maxval * 9 / 5 + 32
+        end
+    elseif isFeet then
+        min = min * 3.28084
+        max = max * 3.28084
+        if arcmax and maxval then
+            maxval = maxval * 3.28084
+        end
+    end
+    
+    -- Clone and convert threshold values to match display units if using Fahrenheit or feet
+    local thresholds = getParam(box, "thresholds")
+    local adjustedThresholds = thresholds
+
+    if thresholds and (isFahrenheit or isFeet) then
+        adjustedThresholds = {}
+        for i, t in ipairs(thresholds) do
+            local newT = {}
+            for k, v in pairs(t) do newT[k] = v end
+            if type(newT.value) == "number" then
+                if isFahrenheit then
+                    newT.value = newT.value * 9 / 5 + 32
+                elseif isFeet then
+                    newT.value = newT.value * 3.28084
+                end
+            end
+            table.insert(adjustedThresholds, newT)
+        end
+    end
+
+    -- Calculate percent fill for the gauge (clamped 0-1)
+    local percent = 0
+    if value and max ~= min then
+        percent = (value - min) / (max - min)
+        percent = math.max(0, math.min(1, percent))
+    end
+    local maxPercent = 0
+    if arcmax and maxval and max ~= min then
+        maxPercent = (maxval - min) / (max - min)
+        maxPercent = math.max(0, math.min(1, maxPercent))
+    end
+
+    -- Transform and decimals (if required)
+    local displayValue
+    if value ~= nil then
+        displayValue = utils.transformValue(value, box)
+    end
+
+    -- Transform and decimals (if required - for arcmax)
+    local displayMaxValue = nil
+    if arcmax and maxval ~= nil then
+        displayMaxValue = utils.transformValue(maxval, box)
     end
 
     -- Fallback if no value
@@ -134,39 +187,47 @@ function render.wakeup(box, telemetry)
     end
 
     box._cache = {
-        arcoffsety         = getParam(box, "arcoffsety"),
-        startangle         = getParam(box, "startangle") or 225,
-        sweep              = getParam(box, "sweep") or 270,
+        value              = value,
+        maxval             = maxval,
+        displayValue       = displayValue,
+        displayMaxValue    = displayMaxValue,
+        arcmax             = arcmax,
         min                = min,
         max                = max,
-        thickness          = getParam(box, "thickness"),
         percent            = percent,
-        fillcolor          = fillcolor,
+        maxPercent         = maxPercent,
+        unit               = unit,
+        textcolor          = resolveThresholdColor(value,   box, "textcolor",   "textcolor",   adjustedThresholds),
+        maxtextcolor       = resolveThresholdColor(maxval,  box, "maxtextcolor","textcolor",   adjustedThresholds),
+        fillcolor          = resolveThresholdColor(value,   box, "fillcolor",   "fillcolor",   adjustedThresholds),
+        maxfillcolor       = resolveThresholdColor(maxval,  box, "fillcolor",   "fillcolor",   adjustedThresholds),
         fillbgcolor        = resolveThemeColor("fillbgcolor", getParam(box, "fillbgcolor")),
         bgcolor            = resolveThemeColor("bgcolor", getParam(box, "bgcolor")),
-        value              = value,
-        displayValue       = displayValue,
-        unit               = unit,
+        titlecolor         = resolveThemeColor("titlecolor", getParam(box, "titlecolor")),
         title              = getParam(box, "title"),
-        titlepos           = titlepos,
+        titlepos           = getParam(box, "titlepos") or (getParam(box, "title") and "top"),
         titlealign         = getParam(box, "titlealign"),
         titlefont          = getParam(box, "titlefont"),
         titlespacing       = getParam(box, "titlespacing") or 0,
-        titlecolor         = resolveThemeColor("titlecolor", getParam(box, "titlecolor")),
         titlepadding       = getParam(box, "titlepadding"),
         titlepaddingleft   = getParam(box, "titlepaddingleft"),
         titlepaddingright  = getParam(box, "titlepaddingright"),
         titlepaddingtop    = getParam(box, "titlepaddingtop"),
         titlepaddingbottom = getParam(box, "titlepaddingbottom"),
         font               = getParam(box, "font") or "FONT_STD",
+        maxfont            = getParam(box, "maxfont") or "FONT_S",
+        decimals           = getParam(box, "decimals"),
         valuealign         = getParam(box, "valuealign"),
-        textcolor          = textcolor,
         valuepadding       = getParam(box, "valuepadding"),
         valuepaddingleft   = getParam(box, "valuepaddingleft"),
         valuepaddingright  = getParam(box, "valuepaddingright"),
         valuepaddingtop    = getParam(box, "valuepaddingtop") or 18,
         valuepaddingbottom = getParam(box, "valuepaddingbottom"),
-        subtext            = getParam(box, "subtext"),
+        thickness          = getParam(box, "thickness"),
+        maxprefix          = getParam(box, "maxprefix") or "+",
+        maxpadding         = getParam(box, "maxpadding") or 0,
+        maxpaddingleft     = getParam(box, "maxpaddingleft") or 0,
+        maxpaddingtop      = getParam(box, "maxpaddingtop") or 0,
     }
 end
 
@@ -186,6 +247,9 @@ function render.paint(x, y, w, h, box)
     local titlepos = c.titlepos
     local arcRegionY, arcRegionH, cy, radius
     local arcMargin, thickness, maxRadius
+    local arcoffsety = 0
+    local startangle = 225
+    local sweep = 270
 
     if c.titlepos == "top" then
         arcRegionY   = y + titleHeight
@@ -194,7 +258,7 @@ function render.paint(x, y, w, h, box)
         thickness    = c.thickness or math.max(6, math.min(w, arcRegionH) * 0.07)
         maxRadius    = ((arcRegionH - arcMargin) / 2) - (thickness / 2)
         radius       = math.min(w * 0.50, maxRadius + 8)
-        cy           = arcRegionY + arcRegionH * 0.5 + (c.arcoffsety or 0)
+        cy           = arcRegionY + arcRegionH * 0.5 + (arcoffsety or 0)
     elseif c.titlepos == "bottom" then
         arcRegionY   = y
         arcRegionH   = h - titleHeight
@@ -202,7 +266,7 @@ function render.paint(x, y, w, h, box)
         thickness    = c.thickness or math.max(6, math.min(w, arcRegionH) * 0.07)
         maxRadius    = ((arcRegionH - arcMargin) / 2) - (thickness / 2)
         radius       = math.min(w * 0.50, maxRadius + 8)
-        cy           = arcRegionY + arcRegionH * 0.60 + (c.arcoffsety or 0)
+        cy           = arcRegionY + arcRegionH * 0.60 + (arcoffsety or 0)
     else
         arcRegionY   = y
         arcRegionH   = h
@@ -210,11 +274,8 @@ function render.paint(x, y, w, h, box)
         thickness    = c.thickness or math.max(6, math.min(w, arcRegionH) * 0.07)
         maxRadius    = ((arcRegionH - arcMargin) / 2) - (thickness / 2)
         radius       = math.min(w * 0.50, maxRadius + 8)
-        cy           = arcRegionY + arcRegionH * 0.55 + (c.arcoffsety or 0)
+        cy           = arcRegionY + arcRegionH * 0.55 + (arcoffsety or 0)
     end
-
-    local cx = x + w / 2
-    local stepRad = math.rad(2)
 
     -- Widget background
     if c.bgcolor then
@@ -223,13 +284,21 @@ function render.paint(x, y, w, h, box)
     end     
 
     -- Draw background arc
-    if c.startangle and c.sweep then
-        drawArc(cx, cy, radius, thickness, c.startangle, c.startangle - c.sweep, c.fillbgcolor, stepRad)
-    end
+    local cx = x + w / 2
+    local stepRad = math.rad(2)
+    drawArc(cx, cy, radius, thickness, startangle, startangle - sweep, c.fillbgcolor, stepRad)
 
     -- Draw value arc
     if c.percent > 0 then
-        drawArc(cx, cy, radius, thickness, c.startangle, c.startangle - c.sweep * c.percent, c.fillcolor, stepRad)
+        drawArc(cx, cy, radius, thickness, startangle, startangle - sweep * c.percent, c.fillcolor, stepRad)
+    end
+
+    -- Draw extra max value arc if enabled
+    if c.arcmax and c.maxval and c.max ~= c.min then
+        local innerRadius = radius * 0.75
+        local innerThickness = thickness * 0.8
+        local maxSweep = sweep * c.maxPercent
+        drawArc(cx, cy, innerRadius, innerThickness, startangle, startangle - maxSweep, c.maxfillcolor, stepRad)
     end
 
     -- Draw title and value
@@ -244,12 +313,18 @@ function render.paint(x, y, w, h, box)
         nil
     )
 
-    -- Draw subtext if present
-    if c.subtext then
-        lcd.font(FONT_XS)
-        local tw, _ = lcd.getTextSize(c.subtext)
-        lcd.color(c.textcolor)
-        lcd.drawText(cx - tw / 2, cy + radius * 0.55, c.subtext)
+    -- Draw max value label if enabled
+    if c.arcmax and c.maxval then
+        local maxStr = tostring(c.maxprefix or "") .. (c.displayMaxValue or c.maxval) .. (c.unit or "")
+        local maxTextColor = c.maxtextcolor or c.textcolor
+        lcd.color(maxTextColor)
+        lcd.font(_G[c.maxfont] or FONT_S)
+        local tw2, th2 = lcd.getTextSize(maxStr)
+        lcd.drawText(
+            cx - tw2 / 2 + (c.maxpaddingleft or 0),
+            cy + radius * 0.25 + (c.maxpadding or 0) + (c.maxpaddingtop or 0),
+            maxStr
+        )
     end
 end
 
