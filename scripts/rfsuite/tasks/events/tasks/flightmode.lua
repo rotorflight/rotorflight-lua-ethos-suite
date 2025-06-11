@@ -33,6 +33,7 @@ local hasBeenInFlight = false
 --         • Governor sensor is present and its value is 4, 5, 6, 7, or 8.
 --         • Governor sensor is present but not valid, and throttle percent > 30.
 --         • Governor sensor is not present, and either RPM > 500 or throttle percent > 30.
+--         • Rudder control input is active (rudder channel value outside -300 to 300).
 --
 -- Notes:
 --   - If a valid governor value is detected, it takes precedence and the model is considered in flight.
@@ -43,52 +44,49 @@ local hasBeenInFlight = false
 function flightmode.inFlight()
     local telemetry = rfsuite.tasks.telemetry
 
+    -- Basic checks
     if not telemetry.active() or not rfsuite.session.isArmed then
         return false
     end
 
+    -- Priority 1: Governor
     local governor = telemetry.getSensorSource("governor")
-    local rpm = telemetry.getSensorSource("rpm")
-    local throttle = telemetry.getSensorSource("throttle_percent")
-
-    local hasGovernor = false
-    local validGovernor = false
-
     if governor then
-        hasGovernor = true
         local g = governor:value()
-        if g == 4 or g == 5 or g == 6 or g == 7 or g == 8 then
-            validGovernor = true
+        if g ~= nil then
+            return g == 4 or g == 5 or g == 6 or g == 7 or g == 8
         end
     end
 
-    -- Governor is valid => trust it completely
-    if validGovernor then
-        return true
-    end
-
-    -- Governor is present but not valid => don't trust RPM
-    if hasGovernor then
-        -- fall through to throttle only
-        if throttle and throttle:value() > 30 then
-            return true
-        end
-    else
-        -- No governor, we can trust RPM
-        if rpm and rpm:value() > 500 then
-            return true
-        end
-        if throttle and throttle:value() > 30 then
-            return true
+    -- Priority 2: RPM
+    local rpm = telemetry.getSensorSource("rpm")
+    if rpm then
+        local r = rpm:value()
+        if r ~= nil then
+            return r > 500
         end
     end
 
-    -- we will enject yaw control check here
+    -- Priority 3: Throttle
+    local throttle = telemetry.getSensorSource("throttle_percent")
+    if throttle then
+        local t = throttle:value()
+        if t ~= nil then
+            return t > 30
+        end
+    end
 
-    -- Return false if no conditions are met
+    -- Priority 4: Rudder channel
+    if rfsuite.session.rxmap and rfsuite.session.rxmap.rudder then
+        local channel = rfsuite.utils.getChannelValue(rfsuite.session.rxmap.rudder + 1)
+        if channel ~= nil then
+            return channel < -300 or channel > 300
+        end
+    end
+
+    -- If no source reported valid data, return false
     return false
 end
-
 
 
 --------------------------------------------------------------------------------

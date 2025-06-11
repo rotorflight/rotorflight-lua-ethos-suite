@@ -135,6 +135,7 @@ local function setOffline()
     rfsuite.session.toolbox = nil
     rfsuite.session.modelPreferences = nil
     rfsuite.session.modelPreferencesFile = nil
+    rfsuite.session.rxmap = {}
     lastTelemetrySensorName = nil
     sportSensor = nil
     elrsSensor = nil 

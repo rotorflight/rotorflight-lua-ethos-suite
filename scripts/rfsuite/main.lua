@@ -236,6 +236,7 @@ rfsuite.session.onConnect = {} -- this is used to store the onConnect tasks that
 rfsuite.session.onConnect.high = false
 rfsuite.session.onConnect.low = false
 rfsuite.session.onConnect.medium = false
+rfsuite.session.rxmap = {}
 
 -- when running in sim mode we can trigger events in tasks/simevent/simevent.lua
 -- this is used to trigger events in the simulator that are hard to do without a physical radio
