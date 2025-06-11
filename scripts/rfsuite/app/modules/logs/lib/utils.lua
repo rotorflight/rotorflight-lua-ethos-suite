@@ -17,6 +17,21 @@ function utils.resolveModelName(foldername)
     return "Unknown"
 end
 
+
+function utils.hasModelName(foldername)
+    if foldername == nil then 
+        return false
+    end
+
+    local iniName = "LOGS:rfsuite/telemetry/" .. foldername .. "/logs.ini"
+    local iniData = rfsuite.ini.load_ini_file(iniName) or {}
+
+    if iniData["model"] and iniData["model"].name then
+        return true
+    end
+    return false
+end
+
 --- Retrieves and manages CSV log files in a directory
 -- 1. Lists all CSV files in directory
 -- 2. Extracts timestamps from filenames (YYYY-MM-DD_HH-MM-SS_ format)
@@ -107,7 +122,10 @@ function utils.getLogsDir(logDir)
         if not (name == "." or name == ".." or 
                 name:match("^%.%w%w%w$") or 
                 name:match("%.%w%w%w$")) then
-            dirs[#dirs + 1] = {foldername = name}
+
+                if utils.hasModelName(name) then
+                    dirs[#dirs + 1] = {foldername = name}
+                end    
         end
     end
     return dirs
