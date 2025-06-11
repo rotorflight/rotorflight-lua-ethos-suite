@@ -116,29 +116,20 @@ local boxes = {
       colspan = 6,
       thickness = 30,
       source = "current",
-      transform = "floor",
-      gaugemin = 0,
-      gaugemax = 140,
       unit = "%",
-      font = "FONT_XXL",
-      textoffsetx = 12,
-      arcOffsetY = 4,
-      arcThickness = 1,
-      startAngle = 225,
-      sweep = 270,
+      transform = "floor",
+      min = 0,
+      max = 140,
+      font = "FONT_XL",
       arcbgcolor = "lightgrey",
       title = "Current",
       titlepos = "bottom",
       bgcolor = "transparent",
-
       thresholds = {
           { value = 30,  fillcolor = "red",    textcolor = "white" },
           { value = 50,  fillcolor = "orange", textcolor = "white" },
           { value = 140, fillcolor = "green",  textcolor = "white" }
       },
-
-      gaugemin = 0,
-      gaugemax = 100
   },  
   {
       col = 15, 
@@ -148,35 +139,24 @@ local boxes = {
       type = "gauge",
       subtype = "arc",
       source = "voltage",
-      thickness = 30,
-      gaugemin = function()
+      min = function()
           local cfg = rfsuite.session.batteryConfig
           local cells = (cfg and cfg.batteryCellCount) or 3
           local minV = (cfg and cfg.vbatmincellvoltage) or 3.0
           return math.max(0, cells * minV)
       end,
-      gaugemax = function()
+      max = function()
           local cfg = rfsuite.session.batteryConfig
           local cells = (cfg and cfg.batteryCellCount) or 3
           local maxV = (cfg and cfg.vbatmaxcellvoltage) or 4.2
           return math.max(0, cells * maxV)
       end,
-      gaugeorientation = "horizontal",
       fillbgcolor = "grey",
-      gaugepadding = 4,
-      gaugebelowtitle = true,
       title = "Voltage",
-      unit = "V",
-      textcolor = "white",
-      valuealign = "center",
-      titlealign = "center",
+      font = "FONT_XL",
+      thickness = 30,
       titlepos = "bottom",
       fillcolor = "green",
-       textoffsetx = 12,
-      arcOffsetY = 4,
-      arcThickness = 1,
-      startAngle = 225,
-      sweep = 270,     
       bgcolor = "transparent",
       thresholds = {
           {
@@ -207,24 +187,17 @@ local boxes = {
       rowspan = 2,
       colspan = 12,
       type = "gauge",
-      subtype = "battery",
       source = "fuel",
-      gaugemin = 0,
-      gaugemax = 100,
-      fillbgcolor = "gray",
+      fillbgcolor = "grey",
       gaugeorientation = "horizontal",
-      gaugebelowtitle = true,
-      showvalue = true,
-      unit = "%",
       textcolor = "black",
-      valuealign = "center",
-      titlealign = "center",
       titlepos = "bottom",
       titlecolor = "white",
       fillcolor = "green",
+      battery = true,
       batteryframe = true,
-      batteryframethickness = 4,
       bgcolor = "transparent",
+      transform = "floor",
       thresholds = {
           {
               value = function()

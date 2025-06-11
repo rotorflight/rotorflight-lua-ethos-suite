@@ -140,24 +140,17 @@ local boxes = {
         col = 1, row = 3,
         type = "gauge",
         source = "fuel",
-        gaugemin = 0,
-        gaugemax = 100,
-        roundradius = 9,
-        fillbgcolor = "grey",
-        gaugeorientation = "horizontal",
-        gaugepadding = 8,
-        gaugebelowtitle = true,
+        batteryframe = true,
         title = "FUEL",
-        unit = "%",
-        textcolor = "white",
-        valuealign = "center",
-        titlealign = "center",
         titlepos = "bottom",
+        textcolor = "white",
+        valuepaddingbottom = 20,
+        transform = "floor",
         thresholds = {
-            { value = 20,  fillcolor = "red",    textcolor = "white" },
-            { value = 50,  fillcolor = "orange", textcolor = "black" },
+            { value = 20,  fillcolor = "red"},
+            { value = 50,  fillcolor = "orange"},
+            { value = 100,  fillcolor = "green"},
         },
-        fillcolor = "green",
     },
 
     -- VOLTAGE GAUGE
@@ -165,29 +158,24 @@ local boxes = {
         col = 2, row = 3,
         type = "gauge",
         source = "voltage",
-        gaugemin = function()
+        min = function()
             local cfg = rfsuite.session.batteryConfig
             local cells = (cfg and cfg.batteryCellCount) or 3
             local minV = (cfg and cfg.vbatmincellvoltage) or 3.0
             return math.max(0, cells * minV)
         end,
-        gaugemax = function()
+        max = function()
             local cfg = rfsuite.session.batteryConfig
             local cells = (cfg and cfg.batteryCellCount) or 3
             local maxV = (cfg and cfg.vbatmaxcellvoltage) or 4.2
             return math.max(0, cells * maxV)
         end,
-        gaugeorientation = "horizontal",
-        fillbgcolor = "grey",
-        gaugepadding = 4,
-        gaugebelowtitle = true,
         title = "VOLTAGE",
-        unit = "V",
         textcolor = "white",
-        valuealign = "center",
-        titlealign = "center",
         titlepos = "bottom",
         fillcolor = "green",
+        roundradius = 8,
+        valuepaddingbottom = 20,
         thresholds = {
             {
                 value = function()
@@ -197,7 +185,6 @@ local boxes = {
                     return cells * minV * 1.2
                 end,
                 fillbgcolor = "red",
-                textcolor = "white"
             },
             {
                 value = function()
@@ -207,7 +194,6 @@ local boxes = {
                     return cells * warnV * 1.2
                 end,
                 fillbgcolor = "orange",
-                textcolor = "white"
             }
         }
     },
@@ -216,34 +202,26 @@ local boxes = {
     {
         col = 3, row = 1,
         type = "gauge",
-        subtype = "battery",
+        battery = true,
+        batteryframe = true,
         source = "voltage",
-        gaugemin = function()
+        min = function()
             local cfg = rfsuite.session.batteryConfig
             local cells = (cfg and cfg.batteryCellCount) or 3
             local minV = (cfg and cfg.vbatmincellvoltage) or 3.0
             return math.max(0, cells * minV)
         end,
-        gaugemax = function()
+        max = function()
             local cfg = rfsuite.session.batteryConfig
             local cells = (cfg and cfg.batteryCellCount) or 3
             local maxV = (cfg and cfg.vbatmaxcellvoltage) or 4.2
             return math.max(0, cells * maxV)
         end,
-        fillbgcolor = "gray",
-        gaugeorientation = "horizontal",
-        gaugebelowtitle = true,
-        showvalue = true,
         title = "VOLTAGE",
-        unit = "V",
-        textcolor = "black",
-        valuealign = "center",
-        titlealign = "center",
         titlepos = "bottom",
-        titlecolor = "white",
         fillcolor = "green",
-        batteryframe = true,
-        batteryframethickness = 4,
+        textcolor = "white",
+        valuepaddingbottom = 20,
         thresholds = {
             {
                 value = function()
@@ -252,7 +230,7 @@ local boxes = {
                     local minV = (cfg and cfg.vbatmincellvoltage) or 3.0
                     return cells * minV * 1.2
                 end,
-                fillcolor = "red", textcolor = "white"
+                fillcolor = "red"
             },
             {
                 value = function()
@@ -261,7 +239,7 @@ local boxes = {
                     local warnV = (cfg and cfg.vbatwarningcellvoltage) or 3.5
                     return cells * warnV * 1.2
                 end,
-                fillcolor = "orange", textcolor = "black"
+                fillcolor = "orange"
             }
         },        
     },
