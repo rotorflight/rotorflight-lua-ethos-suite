@@ -320,7 +320,7 @@ function utils.resolveThemeColor(colorkey, value)
     elseif colorkey == "titlecolor" then
         return lcd.RGB(255,255,255)
     elseif colorkey == "accentcolor" then
-        return lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)
+        return lcd.RGB(255, 255, 255)
     end
     -- fallback
     return lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)

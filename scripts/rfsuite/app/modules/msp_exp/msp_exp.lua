@@ -96,26 +96,26 @@ local function generateMSPAPI(numLabels)
     }
 
     for i = 1, numLabels do
-        table.insert(mspapi.formdata.labels, {t = tostring(i), inline_size = 17, label = i})
+        table.insert(apidata.formdata.labels, {t = tostring(i), inline_size = 17, label = i})
 
-        table.insert(mspapi.formdata.fields, {
+        table.insert(apidata.formdata.fields, {
             t = "UINT8", isUINT8 = true, label = i, inline = 2, mspapi = 1, apikey = "exp_uint" .. i,
             min = 0, max = 255,
             onChange = function() uint8_dirty = true end
         })
 
-        table.insert(mspapi.formdata.fields, {
+        table.insert(apidata.formdata.fields, {
             t = "INT8", isINT8 = true, label = i, inline = 1, mspapi = 1, apikey = "exp_int" .. i,
             min = -128, max = 127,
             onChange = function() int8_dirty = true end
         })
     end
 
-    return mspapi
+    return apidata
 end
 
 -- Init API
-local mspapi = generateMSPAPI(rfsuite.preferences.developer.mspexpbytes)
+local apidata = generateMSPAPI(rfsuite.preferences.developer.mspexpbytes)
 
 -- Periodic updater (called each wakeup)
 local function periodicSync()
