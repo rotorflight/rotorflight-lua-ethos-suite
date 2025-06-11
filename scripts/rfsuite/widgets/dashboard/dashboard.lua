@@ -44,6 +44,9 @@ dashboard.DEFAULT_THEME = "system/default"
 local themesBasePath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/themes/"
 local themesUserPath = "SCRIPTS:/" .. rfsuite.config.preferences .. "/dashboard/"
 
+-- Create the user theme directory if it doesn't exist
+os.mkdir(themesUserPath)
+
 -- Cache for loaded state modules (preflight, inflight, postflight)
 local loadedStateModules = {}
 
