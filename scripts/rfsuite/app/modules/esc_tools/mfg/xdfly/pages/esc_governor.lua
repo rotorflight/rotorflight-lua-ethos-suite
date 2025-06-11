@@ -30,11 +30,11 @@ local apidata = {
 
 -- This code will disable the field if the ESC does not support it
 -- It now uses the activeFieldsPos element to associate to the activeFields table
-for i = #mspapi.formdata.fields, 1, -1 do 
-    local f = mspapi.formdata.fields[i]
+for i = #apidata.formdata.fields, 1, -1 do 
+    local f = apidata.formdata.fields[i]
     local fieldIndex = f.activeFieldPos  -- Use activeFieldPos for association
     if activeFields[fieldIndex] == 0 then
-        table.remove(mspapi.formdata.fields, i)  -- Remove the field from the table
+        table.remove(apidata.formdata.fields, i)  -- Remove the field from the table
     end
 end
 
