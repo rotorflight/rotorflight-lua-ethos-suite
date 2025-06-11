@@ -56,7 +56,6 @@ local function openPage(idx, title, script)
         local tw, th = lcd.getTextSize(msg)
         local x = w / 2 - tw / 2
         local y = h / 2 - th / 2
-        form.addLine()
         form.addStaticText(nil, { x = x, y = y, w = tw, h = btnH }, msg)
     else
         -- Display buttons for each log directory
