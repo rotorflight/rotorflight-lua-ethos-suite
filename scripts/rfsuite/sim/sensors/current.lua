@@ -1,1 +1,1 @@
-return math.random(20, 22)
+return math.random(0, 0)
