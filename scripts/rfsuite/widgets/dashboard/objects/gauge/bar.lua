@@ -56,8 +56,16 @@
     accentcolor             : color     -- (Optional) Color for the battery frame and cap (theme fallback)
 
     -- Battery Advanced Info (Optional overlay for battery/fuel bar)
-    batteryadvanced         : bool      -- (Optional) If true, shows advanced battery/fuel telemetry info lines (voltage, per-cell voltage, consumption, cell count)
-    batteryadvancedfont     : font      -- (Optional) Font for advanced info lines (e.g., "FONT_XS", "FONT_STD"). Defaults to FONT_XS if unset
+    battadv         : bool      -- (Optional) If true, shows advanced battery/fuel telemetry info lines (voltage, per-cell voltage, consumption, cell count)
+    battadvfont             : font      -- Font for advanced info lines (e.g., "FONT_XS", "FONT_STD"). Defaults to FONT_XS if unset
+    battadvblockalign       : string    -- Horizontal alignment of the entire info block: "left", "center", or "right" (default: "right")
+    battadvvaluealign       : string    -- Text alignment within each info line: "left", "center", or "right" (default: "left")
+    battadvpadding          : number    -- Padding (pixels) applied to all sides unless overridden by individual paddings (default: 4)
+    battadvpaddingleft      : number    -- Padding (pixels) on the left side of the info block (overrides battadvpadding)
+    battadvpaddingright     : number    -- Padding (pixels) on the right side of the info block (overrides battadvpadding)
+    battadvpaddingtop       : number    -- Padding (pixels) above the first info line (overrides battadvpadding)
+    battadvpaddingbottom    : number    -- Padding (pixels) below the last info line (overrides battadvpadding)
+    battadvgap              : number    -- Vertical gap (pixels) between info lines (default: 5)
 ]]
 
 local render = {}
@@ -88,50 +96,51 @@ end
 
 local function drawBatteryBox(x, y, w, h, percent, gaugeorientation, batterysegments, batteryspacing, fillbgcolor, fillcolor, batteryframe, batteryframethickness, accentcolor, battery)
     local frameThickness = batteryframethickness or 4
-    local segments = batterysegments or 6
+    local segments = batterysegments or 5
     local spacing = batteryspacing or 2
 
     if gaugeorientation == "vertical" then
-    local maxCapH = math.floor(h * 0.5)
-    local capH = math.min(math.max(8, math.floor(h * 0.10)), maxCapH)
-    local bodyY = y + capH
-    local bodyH = h - capH
+        local maxCapH = math.floor(h * 0.5)
+        local capH = math.min(math.max(8, math.floor(h * 0.10)), maxCapH)
+        local bodyY = y + capH
+        local bodyH = h - capH
 
-    -- Draw cap at top inside widget
-    if batteryframe then
-        lcd.color(accentcolor)
-        local capW = math.min(math.max(4, math.floor(w * 0.40)), w)
-        for i = 0, frameThickness - 1 do
-            lcd.drawFilledRectangle(x + (w - capW) / 2 - i, y - i, capW + 2 * i, capH)
+        -- Draw cap at top inside widget
+        if batteryframe then
+            lcd.color(accentcolor)
+            local capW = math.min(math.max(4, math.floor(w * 0.40)), w)
+            for i = 0, frameThickness - 1 do
+                lcd.drawFilledRectangle(x + (w - capW) / 2 - i, y - i, capW + 2 * i, capH)
+            end
         end
-    end
 
-    -- Draw body/frame
-    if battery then
-        local segCount = math.max(1, segments)
-        local fillSegs = math.floor(segCount * percent + 0.5)
-        local segH = (bodyH - (segCount - 1) * spacing) / segCount
-        for i = 1, segCount do
-            local segY = bodyY + bodyH - i * (segH + spacing) + spacing
-            lcd.color(i <= fillSegs and fillcolor or fillbgcolor)
-            lcd.drawFilledRectangle(x, segY, w, segH)
+        -- Draw body/frame
+        if battery then
+            local segCount = math.max(1, segments)
+            local fillSegs = math.floor(segCount * percent + 0.5)
+            local totalSpacing = (segCount - 1) * spacing
+            local segH = (bodyH - totalSpacing) / segCount
+            for i = 1, segCount do
+                local segY = bodyY + bodyH - (segH + spacing) * i + spacing
+                lcd.color(i <= fillSegs and fillcolor or fillbgcolor)
+                lcd.drawFilledRectangle(x, segY, w, segH)
+            end
+        else
+            lcd.color(fillbgcolor)
+            lcd.drawFilledRectangle(x, bodyY, w, bodyH)
+            if percent > 0 then
+                lcd.color(fillcolor)
+                local fillH = math.floor(bodyH * percent)
+                local fillY = bodyY + bodyH - fillH
+                lcd.drawFilledRectangle(x, fillY, w, fillH)
+            end
         end
-    else
-        lcd.color(fillbgcolor)
-        lcd.drawFilledRectangle(x, bodyY, w, bodyH)
-        if percent > 0 then
-            lcd.color(fillcolor)
-            local fillH = math.floor(bodyH * percent)
-            local fillY = bodyY + bodyH - fillH
-            lcd.drawFilledRectangle(x, fillY, w, fillH)
-        end
-    end
 
-    -- Draw frame around body
-    if batteryframe then
-        lcd.color(accentcolor)
-        lcd.drawRectangle(x, bodyY, w, bodyH, frameThickness)
-    end
+        -- Draw frame around body
+        if batteryframe then
+            lcd.color(accentcolor)
+            lcd.drawRectangle(x, bodyY, w, bodyH, frameThickness)
+        end
 
     else
         -- --- Horizontal battery ---
@@ -143,7 +152,8 @@ local function drawBatteryBox(x, y, w, h, percent, gaugeorientation, batterysegm
         if battery then
             local segCount = math.max(1, segments)
             local fillSegs = math.floor(segCount * percent + 0.5)
-            local segW = (bodyW - (segCount - 1) * spacing) / segCount
+            local totalSpacing = (segCount - 1) * spacing
+            local segW = (bodyW - totalSpacing) / segCount
             for i = 1, segCount do
                 local segX = x + (i - 1) * (segW + spacing)
                 lcd.color(i <= fillSegs and fillcolor or fillbgcolor)
@@ -247,67 +257,75 @@ function render.wakeup(box, telemetry)
         end
     end
 
-    -- If batteryadvanced is enabled, cache extra telemetry info for detailed battery display
-    local batteryadvanced = getParam(box, "batteryadvanced")
+    -- If battadv is enabled, cache extra telemetry info for detailed battery display
+    local battadv = getParam(box, "battadv")
 
-    if batteryadvanced then
+    if battadv then
         box._batteryLines = {
             line1 = string.format("V: %.1f / C: %.2f", voltage, perCellVoltage),
-            line2 = string.format("Used: %d mAh (%dS)", consumed, cellCount)
+            line2 = string.format("U: %d mAh (%dS)", consumed, cellCount)
         }
     else
         box._batteryLines = nil
     end
 
     box._cache = {
-        value                   = value,
-        displayValue            = displayValue,
-        unit                    = unit,
-        min                     = min,
-        max                     = max,
-        percent                 = percent,
-        title                   = title,
-        titlepos                = titlepos,
-        titlefont               = titlefont,
-        titlespacing            = titlespacing,
-        title_area_top          = title_area_top,
-        title_area_bottom       = title_area_bottom,
-        voltage                 = voltage,
-        cellCount               = cellCount,
-        consumed                = consumed,
-        perCellVoltage          = perCellVoltage,
-        batteryadvanced         = batteryadvanced,
-        textcolor               = resolveThresholdColor(value, box, "textcolor",   "textcolor"),
-        fillcolor               = resolveThresholdColor(value,   box, "fillcolor",   "fillcolor"),
-        fillbgcolor             = resolveThemeColor("fillbgcolor", getParam(box, "fillbgcolor")),
-        bgcolor                 = resolveThemeColor("bgcolor", getParam(box, "bgcolor")),
-        titlecolor              = resolveThemeColor("titlecolor", getParam(box, "titlecolor")),
-        accentcolor             = resolveThemeColor("accentcolor", getParam(box, "accentcolor")),
-        font                    = getParam(box, "font") or "FONT_XL",
-        titlealign              = getParam(box, "titlealign"),
-        titlepadding            = getParam(box, "titlepadding"),
-        titlepaddingleft        = getParam(box, "titlepaddingleft"),
-        titlepaddingright       = getParam(box, "titlepaddingright"),
-        titlepaddingtop         = getParam(box, "titlepaddingtop"),
-        titlepaddingbottom      = getParam(box, "titlepaddingbottom"),
-        valuealign              = getParam(box, "valuealign"),
-        valuepadding            = getParam(box, "valuepadding"),
-        valuepaddingleft        = getParam(box, "valuepaddingleft"),
-        valuepaddingright       = getParam(box, "valuepaddingright"),
-        valuepaddingtop         = getParam(box, "valuepaddingtop"),
-        valuepaddingbottom      = getParam(box, "valuepaddingbottom"),
-        gaugeorientation        = getParam(box, "gaugeorientation") or "horizontal",
-        gpad_left               = getParam(box, "gaugepaddingleft"),
-        gpad_right              = getParam(box, "gaugepaddingright"),
-        gpad_top                = getParam(box, "gaugepaddingtop"),
-        gpad_bottom             = getParam(box, "gaugepaddingbottom"),
-        roundradius             = getParam(box, "roundradius"),
-        battery                 = getParam(box, "battery"),
-        batteryframe            = getParam(box, "batteryframe"),
-        batteryframethickness   = getParam(box, "batteryframethickness"),
-        batterysegments         = getParam(box, "batterysegments"),
-        batteryspacing          = getParam(box, "batteryspacing"),
-        batteryadvancedfont     = getParam(box, "batteryadvancedfont") or "FONT_XS",
+        value                    = value,
+        displayValue             = displayValue,
+        unit                     = unit,
+        min                      = min,
+        max                      = max,
+        percent                  = percent,
+        title                    = title,
+        titlepos                 = titlepos,
+        titlefont                = titlefont,
+        titlespacing             = titlespacing,
+        title_area_top           = title_area_top,
+        title_area_bottom        = title_area_bottom,
+        voltage                  = voltage,
+        cellCount                = cellCount,
+        consumed                 = consumed,
+        perCellVoltage           = perCellVoltage,
+        battadv                  = battadv,
+        textcolor                = resolveThresholdColor(value, box, "textcolor",   "textcolor"),
+        fillcolor                = resolveThresholdColor(value,   box, "fillcolor",   "fillcolor"),
+        fillbgcolor              = resolveThemeColor("fillbgcolor", getParam(box, "fillbgcolor")),
+        bgcolor                  = resolveThemeColor("bgcolor", getParam(box, "bgcolor")),
+        titlecolor               = resolveThemeColor("titlecolor", getParam(box, "titlecolor")),
+        accentcolor              = resolveThemeColor("accentcolor", getParam(box, "accentcolor")),
+        font                     = getParam(box, "font") or "FONT_XL",
+        titlealign               = getParam(box, "titlealign"),
+        titlepadding             = getParam(box, "titlepadding"),
+        titlepaddingleft         = getParam(box, "titlepaddingleft"),
+        titlepaddingright        = getParam(box, "titlepaddingright"),
+        titlepaddingtop          = getParam(box, "titlepaddingtop"),
+        titlepaddingbottom       = getParam(box, "titlepaddingbottom"),
+        valuealign               = getParam(box, "valuealign"),
+        valuepadding             = getParam(box, "valuepadding"),
+        valuepaddingleft         = getParam(box, "valuepaddingleft"),
+        valuepaddingright        = getParam(box, "valuepaddingright"),
+        valuepaddingtop          = getParam(box, "valuepaddingtop"),
+        valuepaddingbottom       = getParam(box, "valuepaddingbottom"),
+        gaugeorientation         = getParam(box, "gaugeorientation") or "horizontal",
+        gpad_left                = getParam(box, "gaugepaddingleft"),
+        gpad_right               = getParam(box, "gaugepaddingright"),
+        gpad_top                 = getParam(box, "gaugepaddingtop"),
+        gpad_bottom              = getParam(box, "gaugepaddingbottom"),
+        roundradius              = getParam(box, "roundradius"),
+        battery                  = getParam(box, "battery"),
+        batteryframe             = getParam(box, "batteryframe"),
+        batteryframethickness    = getParam(box, "batteryframethickness"),
+        batterysegments          = getParam(box, "batterysegments"),
+        batteryspacing           = getParam(box, "batteryspacing"),
+        battadvfont              = getParam(box, "battadvfont") or "FONT_S",
+        battadvblockalign        = getParam(box, "battadvblockalign") or "right",
+        battadvvaluealign        = getParam(box, "battadvvaluealign") or "left",
+        battadvpadding           = getParam(box, "battadvpadding") or 4,
+        battadvpaddingleft       = getParam(box, "battadvpaddingleft") or 0,
+        battadvpaddingright      = getParam(box, "battadvpaddingright") or 0,
+        battadvpaddingtop        = getParam(box, "battadvpaddingtop") or 0,
+        battadvpaddingbottom     = getParam(box, "battadvpaddingbottom") or 0,
+        battadvgap               = getParam(box, "battadvgap") or 5,
     }
 end
 
@@ -345,6 +363,7 @@ function render.paint(x, y, w, h, box)
         -- Standard bar background
         lcd.color(c.fillbgcolor)
         drawFilledRoundedRectangle(gauge_x, gauge_y, gauge_w, gauge_h, c.roundradius)
+
         -- Bar fill
         if c.percent > 0 then
             lcd.color(c.fillcolor)
@@ -371,28 +390,51 @@ function render.paint(x, y, w, h, box)
         nil
     )
 
-    -- BatteryAdvanced info lines
-    if c.batteryadvanced and box._batteryLines then
-        local infoW = math.floor(w * 0.33)
-        local infoX = x + w - infoW
-        local availH = math.floor(h / 2)
+    -- battadv info lines
+    if c.battadv and box._batteryLines then
+        local textColor = c.textcolor
         local line1 = box._batteryLines.line1 or ""
         local line2 = box._batteryLines.line2 or ""
 
-        -- Choose font
-        local font = _G[c.batteryadvancedfont or "FONT_XS"] or FONT_XS
-        lcd.font(font)
-        lcd.color(c.textcolor or lcd.WHITE)
+        lcd.font(_G[c.battadvfont] or FONT_S)
+        local w1, h1 = lcd.getTextSize(line1)
+        local w2, h2 = lcd.getTextSize(line2)
+        local blockW = math.max(w1, w2) + c.battadvpaddingleft + c.battadvpaddingright
+        local blockH = h1 + h2 + c.battadvpaddingtop + c.battadvpaddingbottom + c.battadvgap
 
-        -- Draw first line
-        local tW1, tH1 = lcd.getTextSize(line1)
-        local y1 = y + math.floor(h * 0.32)
-        lcd.drawText(infoX, y1, line1)
+        -- Block alignment
+        local startY = y + math.max(0, math.floor((h - blockH) / 2 + 0.5))
+        local startX
+        if c.battadvblockalign == "left" then
+            startX = x
+        elseif c.battadvblockalign == "center" then
+            startX = x + math.floor((w - blockW) / 2 + 0.5)
+        else
+            startX = x + w - blockW
+        end
 
-        -- Draw second line
-        local tW2, tH2 = lcd.getTextSize(line2)
-        local y2 = y + math.floor(h * 0.62)
-        lcd.drawText(infoX, y2, line2)
+        -- Draw line 1
+        utils.box(
+            startX + c.battadvpaddingleft, startY + c.battadvpaddingtop,
+            blockW - c.battadvpaddingleft - c.battadvpaddingright, h1,
+            nil, nil, c.battadvvaluealign, c.battadvfont, 0,
+            textColor,
+            0, 0, 0, 0, 0,
+            line1, nil, c.battadvfont, c.battadvvaluealign, textColor,
+            0, 0, 0, 0, 0,
+            nil
+        )
+        -- Draw line 2
+        utils.box(
+            startX + c.battadvpaddingleft, startY + c.battadvpaddingtop + h1 + c.battadvgap,
+            blockW - c.battadvpaddingleft - c.battadvpaddingright, h2,
+            nil, nil, c.battadvvaluealign, c.battadvfont, 0,
+            textColor,
+            0, 0, 0, 0, 0,
+            line2, nil, c.battadvfont, c.battadvvaluealign, textColor,
+            0, 0, 0, 0, 0,
+            nil
+        )
     end
 end
 
