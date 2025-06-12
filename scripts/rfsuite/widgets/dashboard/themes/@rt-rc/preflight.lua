@@ -22,7 +22,8 @@ local layout = {
     cols = 20,
     rows = 8,
     padding = 1,
-    bgcolor = "black"
+    bgcolor = "black",
+    --showgrid = lcd.RGB(100, 100, 100)  -- or any color you prefer
 }
 
 local boxes = {

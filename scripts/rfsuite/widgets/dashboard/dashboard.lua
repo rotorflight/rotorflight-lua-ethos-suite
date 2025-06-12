@@ -439,6 +439,25 @@ function dashboard.renderLayout(widget, config)
         end
     end
 
+
+     -- draw dotted grid over the layout if enabled
+    if layout.showgrid then
+        lcd.color(layout.showgrid)
+        lcd.pen(1)
+
+        for i = 1, cols - 1 do
+            local x = math.floor(i * (boxW + pad)) + xOffset - math.floor(pad / 2)
+            lcd.drawLine(x, 0, x, H_raw)
+        end
+
+        for i = 1, rows - 1 do
+            local y = math.floor(i * (boxH + pad)) + pad
+            lcd.drawLine(0, y, W_raw, y)
+        end
+
+        lcd.pen(SOLID) -- reset to default after drawing
+    end   
+
     -- overlay spinner: reset or countdown our cycle counter
     if dashboard.overlayMessage then
       -- new overlay → restart full 5s worth of cycles
