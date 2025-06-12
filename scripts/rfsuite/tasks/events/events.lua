@@ -23,7 +23,7 @@ local wakeupStep = 0
 local wakeupHandlers = {}
 
 -- List of task module names (must match the .lua filenames)
-local taskNames = { "telemetry", "switches", "flightmode", "maxmin", "timer" }
+local taskNames = { "telemetry", "switches", "flightmode", "maxmin", "timer", "rxmap" }
 local taskExecutionPercent = 50 -- 50% of tasks will run each cycle
 
 -- Dynamically load task modules and populate wakeupHandlers

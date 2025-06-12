@@ -135,7 +135,8 @@ local function setOffline()
     rfsuite.session.toolbox = nil
     rfsuite.session.modelPreferences = nil
     rfsuite.session.modelPreferencesFile = nil
-    rfsuite.session.rxmap = {}
+    rfsuite.session.rx.map = {}
+    rfsuite.session.rx.values = {}   
     lastTelemetrySensorName = nil
     sportSensor = nil
     elrsSensor = nil 
@@ -152,7 +153,7 @@ function tasks.wakeup()
     if not ethosVersionGood then
         return
     end
-
+    
     if tasks.init == false then
         local cacheFile = "tasks.lua"
         local cachePath = "cache/" .. cacheFile

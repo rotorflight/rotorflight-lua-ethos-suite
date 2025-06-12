@@ -24,36 +24,36 @@ function rxmap.wakeup()
     -- quick exit if no apiVersion
     if rfsuite.session.apiVersion == nil then return end    
 
-    if (rfsuite.session.rxmap and not rfsuite.session.rxmap.collective) then
+    if not rfsuite.utils.rxmapReady() then
         local API = rfsuite.tasks.msp.api.load("RX_MAP")
         API.setCompleteHandler(function(self, buf)
+
             local aileron = API.readValue("aileron")
             local elevator = API.readValue("elevator")
-            local collective = API.readValue("collective")
             local rudder = API.readValue("rudder")
-            local aux1 = API.readValue("aux1")
+            local collective = API.readValue("collective")
             local throttle = API.readValue("throttle")
+            local aux1 = API.readValue("aux1")
             local aux2 = API.readValue("aux2")
             local aux3 = API.readValue("aux3")
 
-            rfsuite.session.rxmap = {
-                aileron = aileron,
-                elevator = elevator,
-                collective = collective,
-                rudder = rudder,
-                aux1 = aux1,
-                throttle = throttle,
-                aux2 = aux2,
-                aux3 = aux3
-            }
+            
+            rfsuite.session.rx.map.aileron = aileron
+            rfsuite.session.rx.map.elevator = elevator
+            rfsuite.session.rx.map.rudder = rudder
+            rfsuite.session.rx.map.collective = collective
+            rfsuite.session.rx.map.throttle = throttle
+            rfsuite.session.rx.map.aux1 = aux1
+            rfsuite.session.rx.map.aux2 = aux2
+            rfsuite.session.rx.map.aux3 = aux3
 
             rfsuite.utils.log(
                 "RX Map: Aileron: " .. aileron ..
                 ", Elevator: " .. elevator ..
-                ", Collective: " .. collective ..
                 ", Rudder: " .. rudder ..
-                ", Aux1: " .. aux1 ..
+                ", Collective: " .. collective ..
                 ", Throttle: " .. throttle ..
+                ", Aux1: " .. aux1 ..
                 ", Aux2: " .. aux2 ..
                 ", Aux3: " .. aux3,
                 "info"
@@ -67,13 +67,12 @@ function rxmap.wakeup()
 end
 
 function rxmap.reset()
-    rfsuite.session.rxmap = nil
+    rfsuite.session.rxmap = {}
+    rfsuite.session.rxvalues = {}    
 end
 
 function rxmap.isComplete()
-    if rfsuite.session.rxmap and rfsuite.session.rxmap.collective then
-        return true
-    end
+    return rfsuite.utils.rxmapReady()
 end
 
 return rxmap

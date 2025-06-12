@@ -24,12 +24,12 @@ local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write
 local MSP_API_STRUCTURE_READ_DATA = {
     {field = "aileron",     type = "U8", apiVersion = 12.06, simResponse = {0}, min = 0, max = 15, default = 0},
     {field = "elevator",    type = "U8", apiVersion = 12.06, simResponse = {1}, min = 0, max = 15, default = 1},
-    {field = "collective", type = "U8", apiVersion = 12.06, simResponse = {2}, min = 0, max = 15, default = 2},
-    {field = "rudder",      type = "U8", apiVersion = 12.06, simResponse = {3}, min = 0, max = 15, default = 3},
-    {field = "aux1",     type = "U8", apiVersion = 12.06, simResponse = {4}, min = 0, max = 15, default = 4},
-    {field = "throttle",     type = "U8", apiVersion = 12.06, simResponse = {5}, min = 0, max = 15, default = 5},
-    {field = "aux2",     type = "U8", apiVersion = 12.06, simResponse = {6}, min = 0, max = 15, default = 6},
-    {field = "aux3",     type = "U8", apiVersion = 12.06, simResponse = {7}, min = 0, max = 15, default = 7}
+    {field = "rudder",      type = "U8", apiVersion = 12.06, simResponse = {2}, min = 0, max = 15, default = 2},
+    {field = "collective",  type = "U8", apiVersion = 12.06, simResponse = {3}, min = 0, max = 15, default = 3},
+    {field = "throttle",    type = "U8", apiVersion = 12.06, simResponse = {4}, min = 0, max = 15, default = 4},
+    {field = "aux1",        type = "U8", apiVersion = 12.06, simResponse = {5}, min = 0, max = 15, default = 5},
+    {field = "aux2",        type = "U8", apiVersion = 12.06, simResponse = {6}, min = 0, max = 15, default = 6},
+    {field = "aux3",        type = "U8", apiVersion = 12.06, simResponse = {7}, min = 0, max = 15, default = 7}
 }
 
 -- Process structure in one pass

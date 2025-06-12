@@ -77,12 +77,12 @@ function flightmode.inFlight()
     end
 
     -- Priority 4: Rudder channel
-    if rfsuite.session.rxmap and rfsuite.session.rxmap.rudder then
-        local channel = rfsuite.utils.getChannelValue(rfsuite.session.rxmap.rudder + 1)
-        if channel ~= nil then
-            return channel < -300 or channel > 300
-        end
-    end
+    --if rfsuite.session.rxmap and rfsuite.session.rxmap.rudder then
+    --    local channel = rfsuite.utils.getChannelValue(rfsuite.session.rxmap.rudder + 1)
+    --    if channel ~= nil then
+    --        return channel < -300 or channel > 300
+    --    end
+    --end
 
     -- If no source reported valid data, return false
     return false
