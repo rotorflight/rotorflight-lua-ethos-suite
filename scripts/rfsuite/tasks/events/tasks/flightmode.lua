@@ -22,30 +22,24 @@ local flightmode = {}
 local lastFlightMode = nil
 local hasBeenInFlight = false
 
---------------------------------------------------------------------------------
--- Determines if the model is currently in flight.
+local throttleStartTime = nil -- Time when throttle first exceeded 0
+local throttleDelaySeconds = 10 -- Delay before trusting throttle > 0
+
+
+--- Determines if the aircraft is considered "in flight" based on telemetry and session data.
+-- 
+-- The function checks the following conditions in order of priority:
+-- 1. If telemetry is inactive or the session is not armed, returns false.
+-- 2. If a "governor" sensor is available and its value is between 4 and 8 (inclusive), returns true.
+-- 3. If the throttle value is greater than 0 for a specified delay period (`throttleDelaySeconds`), returns true.
+-- 4. Otherwise, returns false.
 --
--- Returns:
---   true if all the following conditions are met:
---     - Telemetry is active.
---     - The model is armed.
---     - One of the following is true:
---         • Governor sensor is present and its value is 4, 5, 6, 7, or 8.
---         • Governor sensor is present but not valid, and throttle percent > 30.
---         • Governor sensor is not present, and either RPM > 500 or throttle percent > 30.
---         • Rudder control input is active (rudder channel value outside -300 to 300).
---
--- Notes:
---   - If a valid governor value is detected, it takes precedence and the model is considered in flight.
---   - If the governor is present but not valid, RPM is ignored and only throttle percent is considered.
---   - If no governor is present, both RPM and throttle percent are considered.
---   - If all checks fail, the function returns the armed status as a fallback.
---------------------------------------------------------------------------------
+-- @return boolean True if the aircraft is considered in flight, false otherwise.
 function flightmode.inFlight()
     local telemetry = rfsuite.tasks.telemetry
 
-    -- Basic checks
     if not telemetry.active() or not rfsuite.session.isArmed then
+        throttleStartTime = nil
         return false
     end
 
@@ -58,33 +52,20 @@ function flightmode.inFlight()
         end
     end
 
-    -- Priority 2: RPM
-    local rpm = telemetry.getSensorSource("rpm")
-    if rpm then
-        local r = rpm:value()
-        if r ~= nil then
-            return r > 500
+    -- Priority 2: Throttle fallback with delay
+    local now = os.clock()
+    local throttle = rfsuite.session.rx and rfsuite.session.rx.values and rfsuite.session.rx.values.throttle
+
+    if throttle and throttle > 0 then
+        if not throttleStartTime then
+            throttleStartTime = now -- start timer
+        elseif (now - throttleStartTime) >= throttleDelaySeconds then
+            return true -- throttle has been above 0 long enough
         end
+    else
+        throttleStartTime = nil -- reset timer if throttle drops
     end
 
-    -- Priority 3: Throttle
-    local throttle = telemetry.getSensorSource("throttle_percent")
-    if throttle then
-        local t = throttle:value()
-        if t ~= nil then
-            return t > 30
-        end
-    end
-
-    -- Priority 4: Rudder channel
-    --if rfsuite.session.rxmap and rfsuite.session.rxmap.rudder then
-    --    local channel = rfsuite.utils.getChannelValue(rfsuite.session.rxmap.rudder + 1)
-    --    if channel ~= nil then
-    --        return channel < -300 or channel > 300
-    --    end
-    --end
-
-    -- If no source reported valid data, return false
     return false
 end
 
@@ -96,6 +77,7 @@ end
 function flightmode.reset()
     lastFlightMode = nil
     hasBeenInFlight = false
+    throttleStartTime = nil
 end
 
 --------------------------------------------------------------------------------
