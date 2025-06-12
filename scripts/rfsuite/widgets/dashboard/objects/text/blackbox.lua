@@ -78,7 +78,6 @@ local function eraseDataflash()
         command = 72,
         processReply = function()
             isErase = false
-            getDataflashSummary()
         end
     }
     rfsuite.tasks.msp.mspQueue:add(message)
