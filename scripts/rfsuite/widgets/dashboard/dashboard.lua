@@ -274,7 +274,7 @@ local function getBoxPosition(box, w, h, boxWidth, boxHeight, PADDING, WIDGET_W,
     elseif box.col and box.row then
         local col = box.col or 1
         local row = box.row or 1
-        local x = math.floor((col - 1) * (boxWidth + PADDING))
+        local x = math.floor((col - 1) * (boxWidth + PADDING)) + (box.xOffset or 0)
         local y = math.floor(PADDING + (row - 1) * (boxHeight + PADDING))
         return x, y
     else
@@ -303,7 +303,29 @@ function dashboard.renderLayout(widget, config)
     end
 
     -- overall size
-    local W, H = lcd.getWindowSize()
+    local W_raw, H_raw = lcd.getWindowSize()
+    local cols    = layout.cols    or 1
+    local rows    = layout.rows    or 1
+    local pad     = layout.padding or 0
+
+    -- Find the largest W/H values that divide cleanly into grid cells
+    local function adjustDimension(dim, cells, padCount)
+        local target = dim
+        while ((target - (padCount * pad)) % cells) ~= 0 do
+            target = target - 1
+        end
+        return target
+    end
+
+    local W = adjustDimension(W_raw, cols, cols - 1)
+    local H = adjustDimension(H_raw, rows, rows + 1)  -- +1 to account for extra vertical padding in Ethos
+    local xOffset = math.floor((W_raw - W) / 2)
+
+    -- Now we proceed with perfect divisions:
+    local contentW = W - ((cols - 1) * pad)
+    local contentH = H - ((rows + 1) * pad)
+    local boxW     = contentW / cols
+    local boxH     = contentH / rows
 
     ----------------------------------------------------------------
     -- PHASE 1: ALWAYS MEASURE & BUILD dashboard.boxRects
@@ -320,6 +342,7 @@ function dashboard.renderLayout(widget, config)
 
     for i, box in ipairs(boxes) do
         local w, h = getBoxSize(box, boxW, boxH, pad, W, H)
+        box.xOffset = xOffset
         local x, y = getBoxPosition(box, w, h, boxW, boxH, pad, W, H)
         dashboard.boxRects[#dashboard.boxRects+1] = { x=x, y=y, w=w, h=h, box=box }
     end
