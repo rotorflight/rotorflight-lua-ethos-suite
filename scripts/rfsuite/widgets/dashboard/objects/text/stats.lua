@@ -52,52 +52,38 @@ local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 
 function render.wakeup(box, telemetry)
-    print("stats.lua: loaded")
     -- Value extraction
     local source = getParam(box, "source")
     local statType = getParam(box, "stattype") or "max"
     local value, unit
 
-    print("[stats] wakeup called for box source:", source, "statType:", statType)
-
     if source and telemetry and telemetry.getSensorStats then
         local stats = telemetry.getSensorStats(source)
-        print("[stats] telemetry.getSensorStats result for", source, ":", stats)
         if stats and stats[statType] then
             value = stats[statType]
-            print("[stats] Found value:", value)
-        else
-            print("[stats] No stat found for statType:", statType)
         end
 
         -- Check localization
         local sensorDef = telemetry.sensorTable and telemetry.sensorTable[source]
         local localize = sensorDef and sensorDef.localizations
-        print("[stats] sensorDef:", sensorDef, "localizations:", localize)
 
         if localize and type(localize) == "function" and value ~= nil then
             local localizedValue, _, localizedUnit = localize(value)
-            print("[stats] localizedValue:", localizedValue, "localizedUnit:", localizedUnit)
             if localizedValue ~= nil then value = localizedValue end
             if localizedUnit ~= nil then unit = localizedUnit end
         elseif sensorDef and sensorDef.unit_string then
             unit = sensorDef.unit_string
-            print("[stats] Used sensorDef.unit_string:", unit)
         end
-    else
-        print("[stats] telemetry or source or getSensorStats missing")
     end
 
     -- User-specified unit *always* overrides
     local overrideUnit = getParam(box, "unit")
     if overrideUnit ~= nil then
         unit = overrideUnit
-        print("[stats] User override unit:", unit)
     end
 
     -- Transform if needed (after localization)
     local displayValue = (value ~= nil) and utils.transformValue(value, box) or (getParam(box, "novalue") or "-")
-    print("[stats] Final displayValue:", displayValue, "Final unit:", unit)
 
     -- Resolve colors
     local textcolor = utils.resolveThresholdColor(value, box, "textcolor", "textcolor")
