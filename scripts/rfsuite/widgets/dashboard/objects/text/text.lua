@@ -1,35 +1,35 @@
 --[[
-    Text Display Widget
+    Text Display Widget (Static/Label)
+
     Configurable Parameters (box table fields):
     -------------------------------------------
-    title               : string                    -- (Optional) Title text
-    titlepos            : string                    -- (Optional) Title position ("top" or "bottom")
-    titlealign          : string                    -- (Optional) Title alignment ("center", "left", "right")
-    titlefont           : font                      -- (Optional) Title font (e.g., FONT_L, FONT_XL), dynamic by default
-    titlespacing        : number                    -- (Optional) Controls the vertical gap between title text and the value text, regardless of their paddings.
-    titlecolor          : color                     -- (Optional) Title text color (theme/text fallback if nil)
-    titlepadding        : number                    -- (Optional) Padding for title (all sides unless overridden)
-    titlepaddingleft    : number                    -- (Optional) Left padding for title
-    titlepaddingright   : number                    -- (Optional) Right padding for title
-    titlepaddingtop     : number                    -- (Optional) Top padding for title
-    titlepaddingbottom  : number                    -- (Optional) Bottom padding for title
-    value               : any                       -- (Optional) Static value to display if telemetry is not present
-    unit                : string                    -- (Optional) Unit label to append to value or configure as "" to omit the unit from being displayed. If not specified, the widget attempts to resolve a dynamic unit
-    font                : font                      -- (Optional) Value font (e.g., FONT_L, FONT_XL), dynamic by default
-    valuealign          : string                    -- (Optional) Value alignment ("center", "left", "right")
-    textcolor           : color                     -- (Optional) Value text color (theme/text fallback if nil)
-    valuepadding        : number                    -- (Optional) Padding for value (all sides unless overridden)
-    valuepaddingleft    : number                    -- (Optional) Left padding for value
-    valuepaddingright   : number                    -- (Optional) Right padding for value
-    valuepaddingtop     : number                    -- (Optional) Top padding for value
-    valuepaddingbottom  : number                    -- (Optional) Bottom padding for value
-    bgcolor             : color                     -- (Optional) Widget background color (theme fallback if nil)
-    transform           : string|function|number    -- (Optional) Value transformation ("floor", "ceil", "round", multiplier, or custom function)
-    decimals            : number                    -- (Optional) Number of decimal places for numeric display
-    thresholds          : table                     -- (Optional) List of threshold tables: {value=..., textcolor=...}
-    novalue             : string                    -- (Optional) Text shown if value is missing (default: "-")
-]]
+    title               : string    -- (Optional) Title text displayed above or below the value
+    titlepos            : string    -- (Optional) Title position: "top" or "bottom"
+    titlealign          : string    -- (Optional) Title alignment: "center", "left", or "right"
+    titlefont           : font      -- (Optional) Font for title (e.g., FONT_L, FONT_XL). Uses theme or default if unset.
+    titlespacing        : number    -- (Optional) Vertical gap between title and value (pixels)
+    titlecolor          : color     -- (Optional) Title text color (theme fallback if nil)
+    titlepadding        : number    -- (Optional) Padding for title (all sides unless overridden)
+    titlepaddingleft    : number    -- (Optional) Left padding for title
+    titlepaddingright   : number    -- (Optional) Right padding for title
+    titlepaddingtop     : number    -- (Optional) Top padding for title
+    titlepaddingbottom  : number    -- (Optional) Bottom padding for title
+    value               : string|number   -- (Optional) **Static** value to display (required for this widget)
+    font                : font            -- (Optional) Font for value (e.g., FONT_L, FONT_XL). Uses theme or default if unset.
+    valuealign          : string          -- (Optional) Value alignment: "center", "left", or "right"
+    textcolor           : color           -- (Optional) Value text color (theme fallback if nil)
+    valuepadding        : number          -- (Optional) Padding for value (all sides unless overridden)
+    valuepaddingleft    : number          -- (Optional) Left padding for value
+    valuepaddingright   : number          -- (Optional) Right padding for value
+    valuepaddingtop     : number          -- (Optional) Top padding for value
+    valuepaddingbottom  : number          -- (Optional) Bottom padding for value
+    bgcolor             : color           -- (Optional) Widget background color (theme fallback if nil)
+    novalue             : string          -- (Optional) Text to show if value is nil (default: "-")
 
+    -- Note:
+    -- This widget is for **static or label text only**. It does not support live telemetry or stats.
+    -- If you need dynamic stats or telemetry (min/max/live), use `stats.lua` or other appropriate widgets.
+]]
 
 local render = {}
 
@@ -40,40 +40,14 @@ local resolveThemeColor = utils.resolveThemeColor
 function render.wakeup(box, telemetry)
     -- Value extraction
     local value = getParam(box, "value")
-
-    -- Transform and decimals
-    local displayValue
-    if value ~= nil then
-        displayValue = utils.transformValue(value, box)
-    end
-
-    -- Threshold logic (if required)
-    local textcolor = utils.resolveThresholdColor(value, box, "textcolor", "textcolor")
-
-    -- Dynamic unit logic (User can force a unit or omit unit using "" to hide)
-    local manualUnit = getParam(box, "unit")
-    local unit
-
-    if manualUnit ~= nil then
-        unit = manualUnit  -- use user value, even if ""
-    else
-        local displayValue, _, dynamicUnit = telemetry.getSensor(source)
-        if dynamicUnit ~= nil then
-            unit = dynamicUnit
-        elseif source and telemetry and telemetry.sensorTable[source] then
-            unit = telemetry.sensorTable[source].unit_string or ""
-        else
-            unit = ""
-        end
-    end
-
-    -- Fallback if no value
+    local displayValue = value
     if value == nil then
         displayValue = getParam(box, "novalue") or "-"
-        unit = nil
     end
 
     box._cache = {
+        displayValue       = displayValue,
+        unit               = nil,
         title              = getParam(box, "title"),
         titlepos           = getParam(box, "titlepos"),
         titlealign         = getParam(box, "titlealign"),
@@ -85,8 +59,6 @@ function render.wakeup(box, telemetry)
         titlepaddingright  = getParam(box, "titlepaddingright"),
         titlepaddingtop    = getParam(box, "titlepaddingtop"),
         titlepaddingbottom = getParam(box, "titlepaddingbottom"),
-        displayValue       = displayValue,
-        unit               = unit,
         font               = getParam(box, "font"),
         valuealign         = getParam(box, "valuealign"),
         textcolor          = resolveThemeColor("textcolor", getParam(box, "textcolor")),
