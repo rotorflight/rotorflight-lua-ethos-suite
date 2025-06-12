@@ -40,9 +40,9 @@ local resolveThemeColor = utils.resolveThemeColor
 function render.wakeup(box, telemetry)
     -- Value extraction
     local source = getParam(box, "source")
-    local value
+    local value, _, dynamicUnit
     if telemetry and source then
-        value = telemetry.getSensor(source)
+        value, _, dynamicUnit = telemetry.getSensor(source)
     end
 
     -- Transform and decimals
@@ -60,15 +60,12 @@ function render.wakeup(box, telemetry)
 
     if manualUnit ~= nil then
         unit = manualUnit  -- use user value, even if ""
+    elseif dynamicUnit ~= nil then
+        unit = dynamicUnit
+    elseif source and telemetry and telemetry.sensorTable[source] then
+        unit = telemetry.sensorTable[source].unit_string or ""
     else
-        local displayValue, _, dynamicUnit = telemetry and telemetry.getSensor(source)
-        if dynamicUnit ~= nil then
-            unit = dynamicUnit
-        elseif source and telemetry and telemetry.sensorTable[source] then
-            unit = telemetry.sensorTable[source].unit_string or ""
-        else
-            unit = ""
-        end
+        unit = ""
     end
 
     -- Fallback if no value
