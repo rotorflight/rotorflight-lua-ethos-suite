@@ -20,9 +20,24 @@
 ]] --
 local utils = {}
 
+
 local arg = {...}
 local config = arg[1]
 
+--- Checks if the RX map is ready by verifying the presence of required channel mappings.
+-- The function returns true if the `rfsuite.session.rxmap` table exists and at least one of the following fields is present:
+-- `collective`, `elevator`, `throttle`, or `rudder`.
+-- @return boolean True if the RX map is ready, false otherwise.
+function utils.rxmapReady()
+    -- Check if the RX map is ready
+    if rfsuite.session.rx and rfsuite.session.rx.map  and (rfsuite.session.rx.map.collective or rfsuite.session.rx.map.elevator or rfsuite.session.rx.map.throttle or rfsuite.session.rx.map.rudder) then
+        return true
+    end
+    return false
+end
+
+--- Checks if the current flight mode is "inflight".
+-- @return boolean Returns true if the flight mode is "inflight", false otherwise.
 function utils.inFlight()
     if rfsuite.session.flightMode == "inflight" then
         return true

@@ -29,7 +29,7 @@ config.toolName = "Rotorflight"                                                 
 config.icon = lcd.loadMask("app/gfx/icon.png")                                      -- icon
 config.icon_logtool = lcd.loadMask("app/gfx/icon_logtool.png")          -- icon
 config.icon_unsupported = lcd.loadMask("app/gfx/unsupported.png")                   -- icon
-config.version = {major = 2, minor = 2, revision = 0, suffix = "RC4"}               -- version of the script
+config.version = {major = 2, minor = 3, revision = 0, suffix = "DEV"}               -- version of the script
 config.ethosVersion = {1, 6, 2}                                                      -- min version of ethos supported by this script                                                     
 config.supportedMspApiVersion = {"12.07","12.08"}                          -- supported msp versions
 config.baseDir = "rfsuite"                                                          -- base directory for the suite. This is only used by msp api to ensure correct path
@@ -236,6 +236,9 @@ rfsuite.session.onConnect = {} -- this is used to store the onConnect tasks that
 rfsuite.session.onConnect.high = false
 rfsuite.session.onConnect.low = false
 rfsuite.session.onConnect.medium = false
+rfsuite.session.rx = {}
+rfsuite.session.rx.map = {}
+rfsuite.session.rx.values = {} -- this is used to store the rx values for the rxmap task
 
 -- when running in sim mode we can trigger events in tasks/simevent/simevent.lua
 -- this is used to trigger events in the simulator that are hard to do without a physical radio
