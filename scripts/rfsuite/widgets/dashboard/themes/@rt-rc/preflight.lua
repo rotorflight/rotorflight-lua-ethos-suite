@@ -21,7 +21,8 @@ local utils = rfsuite.widgets.dashboard.utils
 local layout = {
     cols = 20,
     rows = 8,
-    padding = 4
+    padding = 1,
+    bgcolor = "black"
 }
 
 local boxes = {
@@ -32,7 +33,7 @@ local boxes = {
     rowspan = 3,
     type = "image",
     subtype = "model",
-    bgcolor = "transparent",
+    bgcolor = "black",
   },   
   {
     col = 1,
@@ -42,9 +43,9 @@ local boxes = {
     type = "text",
     subtype = "governor",
     nosource = "-",
-    title = "Governor",
+    title = "GOVERNOR",
     titlepos = "bottom",
-    bgcolor = "transparent",  
+    bgcolor = "black",  
     thresholds = {
         { value = "DISARMED", textcolor = "red"    },
         { value = "OFF",      textcolor = "red"    },
@@ -66,9 +67,9 @@ local boxes = {
     nosource = "-",
     unit = "",
     transform = "floor",
-    title = "Headspeed",
+    title = "HEADSPEED",
     titlepos = "bottom",
-    bgcolor = "transparent",
+    bgcolor = "black",
   },  
   {
     col = 1,
@@ -78,8 +79,8 @@ local boxes = {
     type = "text",
     subtype = "telemetry",
     source = "pid_profile",    
-    bgcolor = "transparent",
-    title = "Profile",
+    bgcolor = "black",
+    title = "PROFILE",
     titlepos = "bottom",
     transform = "floor"
   },   
@@ -91,22 +92,59 @@ local boxes = {
     type = "text",
     subtype = "telemetry",
     source = "rate_profile",    
-    bgcolor = "transparent",
-    title = "Rate",
+    bgcolor = "black",
+    title = "RATES",
     titlepos = "bottom",
     transform = "floor"
-  },  
+  },       
   {
-    col = 6,
+      col = 5, 
+      row = 7,
+      rowspan = 2,
+      colspan = 2,
+      type = "time", 
+      subtype = "count",
+      title = "FLIGHTS",
+      titlepos = "bottom",
+      bgcolor = "black",
+  }, 
+  {
+      col = 7, 
+      row = 7,
+      rowspan = 2,
+      colspan = 2,
+      type = "text",
+      subtype = "telemetry",
+      source = "rssi",
+      nosource = "-",
+      title = "LQ",
+      unit = "dB",
+      titlepos = "bottom",
+      transform = "floor",
+      bgcolor = "black",
+  },   
+  {
+    col = 9,
     row = 7,
-    colspan = 2,
+    colspan = 6,
     rowspan = 2,
     type = "time",
     subtype = "flight",  
-    bgcolor = "transparent",
-    title = "Timer",
+    bgcolor = "black",
+    title = "TIME",
     titlepos = "bottom",
   },    
+  {
+      col = 15, 
+      row = 7,
+      rowspan = 2,
+      colspan = 6,
+      type = "text", 
+      subtype = "blackbox",
+      title = "BLACKBOX",
+      titlepos = "bottom",
+      bgcolor = "black",
+  },   
   {
       type = "gauge",
       subtype = "arc",
@@ -115,16 +153,16 @@ local boxes = {
       rowspan = 6,
       colspan = 6,
       thickness = 30,
-      source = "current",
+      source = "fuel",
       unit = "%",
       transform = "floor",
       min = 0,
-      max = 140,
+      max = 100,
       font = "FONT_XL",
       arcbgcolor = "lightgrey",
-      title = "Current",
+      title = "FUEL",
       titlepos = "bottom",
-      bgcolor = "transparent",
+      bgcolor = "black",
       thresholds = {
           { value = 30,  fillcolor = "red",    textcolor = "white" },
           { value = 50,  fillcolor = "orange", textcolor = "white" },
@@ -152,12 +190,12 @@ local boxes = {
           return math.max(0, cells * maxV)
       end,
       fillbgcolor = "grey",
-      title = "Voltage",
+      title = "VOLTAGE",
       font = "FONT_XL",
       thickness = 30,
       titlepos = "bottom",
       fillcolor = "green",
-      bgcolor = "transparent",
+      bgcolor = "black",
       thresholds = {
           {
               value = function()
@@ -180,44 +218,6 @@ local boxes = {
               textcolor = "white"
           }
       }
-  },
-  {
-      col = 9, 
-      row = 7,
-      rowspan = 2,
-      colspan = 12,
-      type = "gauge",
-      source = "fuel",
-      fillbgcolor = "grey",
-      gaugeorientation = "horizontal",
-      textcolor = "black",
-      titlepos = "bottom",
-      titlecolor = "white",
-      fillcolor = "green",
-      battery = true,
-      batteryframe = true,
-      bgcolor = "transparent",
-      transform = "floor",
-      thresholds = {
-          {
-              value = function()
-                  local cfg = rfsuite.session.batteryConfig
-                  local cells = (cfg and cfg.batteryCellCount) or 3
-                  local minV = (cfg and cfg.vbatmincellvoltage) or 3.0
-                  return cells * minV * 1.2
-              end,
-              fillcolor = "red", textcolor = "white"
-          },
-          {
-              value = function()
-                  local cfg = rfsuite.session.batteryConfig
-                  local cells = (cfg and cfg.batteryCellCount) or 3
-                  local warnV = (cfg and cfg.vbatwarningcellvoltage) or 3.5
-                  return cells * warnV * 1.2
-              end,
-              fillcolor = "orange", textcolor = "black"
-          }
-      },        
   }, 
 }
 
@@ -228,6 +228,6 @@ return {
     scheduler = {
         wakeup_interval = 0.25,          -- Interval (seconds) to run wakeup script when display is visible
         wakeup_interval_bg = 5,         -- (optional: run wakeup this often when not visible; set nil/empty to skip)
-        paint_interval = 0.5,            -- Interval (seconds) to run paint script when display is visible 
+        paint_interval = 0.25,            -- Interval (seconds) to run paint script when display is visible 
     }    
 }

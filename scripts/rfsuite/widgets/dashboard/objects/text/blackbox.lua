@@ -35,6 +35,54 @@ local render = {}
 local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
+local eraseDataflashGo = false
+
+local function eraseBlackboxAsk()
+    local buttons = {{
+        label = rfsuite.i18n.get("app.btn_ok"),
+        action = function()
+
+            -- we push this to the background task to do its job
+            eraseDataflashGo = true
+            return true
+        end
+    }, {
+        label = rfsuite.i18n.get("app.btn_cancel"),
+        action = function()
+            return true
+        end
+    }}
+
+    form.openDialog({
+        width = nil,
+        title =  rfsuite.i18n.get("widgets.bbl.erase_dataflash"),
+        message = rfsuite.i18n.get("widgets.bbl.erase_dataflash") .. "?",
+        buttons = buttons,
+        wakeup = function()
+        end,
+        paint = function()
+        end,
+        options = TEXT_LEFT
+    })
+end
+
+-- Trigger erase command
+local function eraseDataflash()
+    isErase = true
+    progress = form.openProgressDialog(rfsuite.i18n.get("app.msg_saving"), rfsuite.i18n.get("app.msg_saving_to_fbl"))
+    progress:value(0)
+    progress:closeAllowed(false)
+    progressCounter = 0
+
+    local message = {
+        command = 72,
+        processReply = function()
+            isErase = false
+            getDataflashSummary()
+        end
+    }
+    rfsuite.tasks.msp.mspQueue:add(message)
+end
 
 function render.wakeup(box)
     -- Value extraction
@@ -64,6 +112,27 @@ function render.wakeup(box)
     and utils.resolveThresholdColor(percentUsed, box, "textcolor", "textcolor")
     or resolveThemeColor("textcolor", getParam(box, "textcolor"))
 
+    -- inject default bbl erase system ; but allow to override it
+    if not box.onpress then
+        box.onpress = eraseBlackboxAsk
+    end
+
+    -- run the erase process if requested
+    if eraseDataflashGo then
+        eraseDataflashGo = false
+        eraseDataflash()
+    end
+
+    -- handle progress dialog if its visible
+     -- draw progress bar if needed
+    if progress then
+        progressCounter = progressCounter + 20
+        progress:value(progressCounter)
+        if progressCounter >= 100 then
+            progress:close()
+            progress = nil
+        end
+    end   
 
     box._cache = {
         title              = getParam(box, "title"),

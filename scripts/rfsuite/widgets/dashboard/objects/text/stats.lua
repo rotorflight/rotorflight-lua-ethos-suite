@@ -82,7 +82,7 @@ function render.wakeup(box, telemetry)
         unit = overrideUnit
     end
 
-    -- Transform if needed (after localization)
+
     local displayValue = (value ~= nil) and utils.transformValue(value, box) or (getParam(box, "novalue") or "-")
 
     -- Resolve colors

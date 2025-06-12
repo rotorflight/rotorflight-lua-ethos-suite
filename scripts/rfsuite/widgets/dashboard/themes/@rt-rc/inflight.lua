@@ -21,7 +21,8 @@ local utils = rfsuite.widgets.dashboard.utils
 local layout = {
     cols = 4,
     rows = 14,
-    padding = 4
+    padding = 1,
+    bgcolor = "black"
 }
 
 local boxes = {
@@ -37,7 +38,7 @@ local boxes = {
         arcbgcolor = "lightgrey",
         title = "VOLTAGE",
         titlepos = "bottom",
-        bgcolor = "transparent",
+        bgcolor = "black",
         -- (a) The “static” thresholds (fixed numeric cutoffs, unchanged)
         thresholds = {
             { value = 30,  fillcolor = "red",    textcolor = "white" },
@@ -143,7 +144,7 @@ local boxes = {
         arcbgcolor = "lightgrey",
         title = "FUEL",
         titlepos = "bottom",
-        bgcolor = "transparent",
+        bgcolor = "black",
 
         thresholds = {
             { value = 30,  fillcolor = "red",    textcolor = "white" },
@@ -166,7 +167,8 @@ local boxes = {
             { value = "RECOVERY", textcolor = "orange" },
             { value = "ACTIVE",   textcolor = "green"  },
             { value = "THR-OFF",  textcolor = "red"    },
-        }
+        },
+        bgcolor = "black",
     },
     {
         col = 4,
@@ -174,6 +176,7 @@ local boxes = {
         rowspan = 2,
         type = "time",
         subtype = "flight",
+        bgcolor = "black",
     }, 
     {
         col = 3,
@@ -184,7 +187,8 @@ local boxes = {
         source = "rpm",
         nosource = "-",
         unit = "rpm",
-        transform = "floor"
+        transform = "floor",
+        bgcolor = "black",
     },    
     {
         col = 2,
@@ -195,7 +199,8 @@ local boxes = {
         source = "rssi",
         nosource = "-",
         unit = "dB",
-        transform = "floor"
+        transform = "floor",
+        bgcolor = "black",
     },    
 }
 

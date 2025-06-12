@@ -606,7 +606,9 @@ end
 -- @return      string         The transformed and formatted value, ready for display.
 
 function utils.transformValue(value, box)
+
     local transform = utils.getParam(box, "transform")
+
     -- Apply transformation if configured
     if transform then
         if type(transform) == "function" then
@@ -650,8 +652,15 @@ end
 -- @param ... any: Additional arguments to pass if the value is a function.
 -- @return any: The value associated with `key`, or the result of calling the function if the value is a function.
 function utils.getParam(box, key, ...)
+    local SKIP_CALL_KEYS = {
+        transform = true,
+        thresholds = true,
+        value = true,
+        -- add more keys here if needed
+    }
+
     local v = box[key]
-    if type(v) == "function" then
+    if type(v) == "function" and not SKIP_CALL_KEYS[key] then
         return v(box, key, ...)
     else
         return v
