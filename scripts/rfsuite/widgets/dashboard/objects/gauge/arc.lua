@@ -289,7 +289,7 @@ function render.paint(x, y, w, h, box)
     drawArc(cx, cy, radius, thickness, startangle, startangle - sweep, c.fillbgcolor, stepRad)
 
     -- Draw value arc
-    if c.percent > 0 then
+    if c.percent and c.percent > 0 then
         drawArc(cx, cy, radius, thickness, startangle, startangle - sweep * c.percent, c.fillcolor, stepRad)
     end
 

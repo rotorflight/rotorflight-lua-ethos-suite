@@ -1004,27 +1004,23 @@ function dashboard.wakeup(widget)
         for _, idx in ipairs(scheduledBoxIndices) do
             local rect = dashboard.boxRects[idx]
             local obj  = dashboard.objectsByType[rect.box.type]
-            -- We already know `obj.scheduler` is set, but double-check `wakeup`:
             if obj and obj.wakeup then
                 obj.wakeup(rect.box, rfsuite.tasks.telemetry)
             end
         end
 
-        -- 2) Then wake a spread of the *remaining* objects (no `scheduler` field)
         for i = 1, objectWakeupsPerCycle do
-            local idx  = objectWakeupIndex
+            local idx = objectWakeupIndex
             local rect = dashboard.boxRects[idx]
             if rect then
                 local obj = dashboard.objectsByType[rect.box.type]
-                -- Only wake if it does NOT have a custom scheduler
                 if obj and obj.wakeup and not obj.scheduler then
                     obj.wakeup(rect.box, rfsuite.tasks.telemetry)
                 end
             end
-            objectWakeupIndex = (objectWakeupIndex % #dashboard.boxRects) + 1
+            objectWakeupIndex = (#dashboard.boxRects > 0) and ((objectWakeupIndex % #dashboard.boxRects) + 1) or 1
         end
 
-        -- Increment `objectsThreadedWakeupCount` when we've looped through all boxes
         if objectWakeupIndex == 1 then
             objectsThreadedWakeupCount = objectsThreadedWakeupCount + 1
         end
