@@ -53,6 +53,12 @@ end
 --   • Writes session as “lastflighttime”
 --------------------------------------------------------------------------------
 function timer.save()
+
+    if not rfsuite.session.modelPreferencesFile then
+        rfsuite.utils.log("No model preferences file set, cannot save flight timers", "info")
+        return 
+    end
+
     rfsuite.utils.log("Saving flight timers to INI: " .. rfsuite.session.modelPreferencesFile, "info")
 
     -- Save only the baseLifetime as “totalflighttime”

@@ -45,6 +45,9 @@ function modelpreferences.wakeup()
 
     if (rfsuite.session.modelPreferences == nil)  then
              -- populate the model preferences variable
+
+        if rfsuite.config.preferences and rfsuite.session.mcu_id then
+
             local modelpref_file = "SCRIPTS:/" .. rfsuite.config.preferences .. "/models/" .. rfsuite.session.mcu_id ..".ini"
             rfsuite.utils.log("Preferences file: " .. modelpref_file, "info")
 
@@ -62,8 +65,9 @@ function modelpreferences.wakeup()
 
             if not rfsuite.ini.ini_tables_equal(master_ini, slave_ini) then
                 rfsuite.ini.save_ini_file(modelpref_file, updated_ini)
-            end             
-
+            end      
+                   
+        end
     end
 
 end
