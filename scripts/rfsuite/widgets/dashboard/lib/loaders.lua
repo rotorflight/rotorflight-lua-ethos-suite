@@ -1,27 +1,6 @@
 -- loaders.lua
 local loaders = {}
 
-local function drawArc(cx, cy, radius, thickness, angleStart, angleEnd, color)
-  local stepDeg   = 3
-  local radThick  = thickness / 2
-  angleStart = math.rad(angleStart)
-  angleEnd   = math.rad(angleEnd)
-  if angleEnd > angleStart then
-    angleEnd = angleEnd - 2 * math.pi
-  end
-  lcd.color(color or lcd.RGB(255,255,255))
-  local stepRad = math.rad(stepDeg)
-  for a = angleStart, angleEnd, -stepRad do
-    local x = cx + radius * math.cos(a)
-    local y = cy - radius * math.sin(a)
-    lcd.drawFilledCircle(x, y, radThick)
-  end
-  -- end‐cap dot
-  local xe = cx + radius * math.cos(angleEnd)
-  local ye = cy - radius * math.sin(angleEnd)
-  lcd.drawFilledCircle(xe, ye, radThick)
-end
-
 -- Helper to draw logo image centered
 local function drawLogoImage(cx, cy, w, h)
   local imageName = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/gfx/logo.png"
@@ -102,19 +81,6 @@ local function renderOverlayText(dashboard, cx, cy, innerR, fg)
   end
 end
 
--- Arc loader
-function loaders.arcLoader(dashboard, x, y, w, h)
-  local color = lcd.darkMode() and lcd.RGB(255, 255, 255) or lcd.RGB(0, 0, 0)
-  dashboard._loader = dashboard._loader or { angle = 0 }
-  local st, cx, cy = dashboard._loader, x + w/2, y + h/2
-  local radius = math.min(w, h) * (dashboard.loaderScale or 0.3)
-  local thickness = math.max(6, radius * 0.15)
-
-  drawArc(cx, cy, radius, thickness, st.angle, st.angle - 90, color)
-  st.angle = (st.angle + 20) % 360
-  drawLogoImage(cx, cy, w, h)
-end
-
 
 -- Pulse loader
 function loaders.pulseLoader(dashboard, x, y, w, h)
@@ -133,7 +99,7 @@ function loaders.pulseLoader(dashboard, x, y, w, h)
 
   if lcd.drawFilledCircle then
     lcd.drawFilledCircle(cx, cy, radius)
-    lcd.color(lcd.darkMode() and lcd.RGB(0,0,0,1.0) or lcd.RGB(255,255,255,1.0))
+    lcd.color(lcd.darkMode() and lcd.RGB(0,0,0,1.0) or lcd.RGB(0,0,0,1.0))
     lcd.drawFilledCircle(cx, cy, radius - thickness)
   end
 
@@ -179,7 +145,7 @@ function loaders.pulseOverlayMessage(dashboard, x, y, w, h, txt)
   if lcd.drawFilledCircle then
     lcd.drawFilledCircle(cx, cy, radius)
     -- inner cut‐out is now fully opaque (alpha = 1.0)
-    lcd.color(lcd.darkMode() and lcd.RGB(0,0,0,1.0) or lcd.RGB(255,255,255,1.0))
+    lcd.color(lcd.darkMode() and lcd.RGB(0,0,0,1.0) or lcd.RGB(0,0,0,1.0))
     lcd.drawFilledCircle(cx, cy, radius - thickness)
   end
 
