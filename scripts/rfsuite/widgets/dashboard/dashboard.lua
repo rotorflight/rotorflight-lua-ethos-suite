@@ -67,6 +67,10 @@ local objectSchedulerPercentage = 0.2   -- fraction of total objects to wake eac
 local objectsThreadedWakeupCount = 0
 local lastLoadedBoxCount = 0
 
+-- Track background loading of remaining flight mode modules
+local statePreloadQueue = {"inflight", "postflight"}
+local statePreloadIndex = 1
+
 local unsupportedResolution = false  -- flag to track unsupported resolutions
 
 -- precompute indices of boxes whose object has its own `scheduler` field,
@@ -406,6 +410,14 @@ function dashboard.renderLayout(widget, config)
 
 end
 
+-- Utility to resolve a theme for a given flight mode
+local function getThemeForState(state)
+    local prefs = rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.dashboard
+    local fallback = rfsuite.preferences.dashboard
+    local val = prefs and prefs["theme_" .. state]
+    return (val and val ~= "nil" and val) or fallback["theme_" .. state] or dashboard.DEFAULT_THEME
+end
+
 
 --- Loads a state-specific script for the dashboard widget, handling theme selection and fallbacks.
 -- 
@@ -544,6 +556,32 @@ local function load_state_script(theme_folder, state)
     end
 end
 
+-- Utility to get the correct theme for a given state
+local function getThemeForState(state)
+    local modelPrefs = rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.dashboard
+    local userPrefs = rfsuite.preferences.dashboard
+    local val = nil
+    if modelPrefs then
+        val = modelPrefs["theme_" .. state]
+        if val == "nil" then val = nil end
+    end
+    return val or userPrefs["theme_" .. state] or dashboard.DEFAULT_THEME
+end
+
+-- Reload just the active state script
+local function reload_state_only(state)
+    dashboard.utils.resetImageCache()
+    loadedStateModules[state] = load_state_script(getThemeForState(state), state)
+    lastLoadedBoxCount = 0
+    lastBoxRectsCount = 0
+    objectWakeupIndex = 1
+    objectsThreadedWakeupCount = 0
+    objectWakeupsPerCycle = nil
+    dashboard.boxRects = {}
+    lcd.invalidate()
+end
+
+
 --- Reloads dashboard themes and updates related state modules and intervals.
 -- This function performs the following steps:
 -- 1. Resets the dashboard image cache.
@@ -552,16 +590,28 @@ end
 --    from the `scheduler` table or function in any loaded state module.
 -- 4. Collects all box objects from all loaded state modules and loads them into the dashboard.
 -- 5. Resets the wakeup scheduler and clears the dashboard's box rectangles.
-function dashboard.reload_themes()
+function dashboard.reload_themes(force)
     -- Clear any cached images
     dashboard.utils.resetImageCache()
 
-    -- Load each theme state (preflight, inflight, postflight)
-    loadedStateModules = {
-        preflight  = load_state_script(((rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.dashboard.theme_preflight ~= "nil") and rfsuite.session.modelPreferences.dashboard.theme_preflight) or rfsuite.preferences.dashboard.theme_preflight  or dashboard.DEFAULT_THEME, "preflight"),
-        inflight   = load_state_script(((rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.dashboard.theme_inflight ~= "nil") and rfsuite.session.modelPreferences.dashboard.theme_inflight) or rfsuite.preferences.dashboard.theme_inflight   or dashboard.DEFAULT_THEME, "inflight"),
-        postflight = load_state_script(((rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.dashboard.theme_postflight ~= "nil") and rfsuite.session.modelPreferences.dashboard.theme_postflight) or rfsuite.preferences.dashboard.theme_postflight or dashboard.DEFAULT_THEME, "postflight"),
-    }
+    local theme_preflight = getThemeForState("preflight")
+    local theme_inflight = getThemeForState("inflight")
+    local theme_postflight = getThemeForState("postflight")
+
+    if force then
+        rfsuite.utils.log("Full theme reload requested", "info")
+        loadedStateModules.preflight  = load_state_script(theme_preflight, "preflight")
+    else
+        if not loadedStateModules.preflight then
+            loadedStateModules.preflight = load_state_script(theme_preflight, "preflight")
+            rfsuite.utils.log("Reloading preflight module (was not yet loaded)", "info")
+        else
+            rfsuite.utils.log("Skipped reloading preflight (already loaded)", "info")
+        end
+    end
+
+    loadedStateModules.inflight   = load_state_script(theme_inflight, "inflight")
+    loadedStateModules.postflight = load_state_script(theme_postflight, "postflight")
 
     -- Try to pick up any custom scheduler intervals defined by the theme
     local function tryLoadIntervals()
@@ -829,10 +879,23 @@ function dashboard.wakeup(widget)
         unsupportedResolution = false    
     end
 
-    -- load themes on first wakeup
+    -- load only preflight theme on first wakeup for speed
     if firstWakeup then
         firstWakeup = false
-        dashboard.reload_themes()
+        local theme = getThemeForState("preflight")
+        rfsuite.utils.log("Initial loading of preflight theme: " .. theme, "info")
+        loadedStateModules.preflight = load_state_script(theme, "preflight")
+    end
+
+    -- Background load inflight/postflight modules one at a time
+    if statePreloadIndex <= #statePreloadQueue then
+        local state = statePreloadQueue[statePreloadIndex]
+        if not loadedStateModules[state] then
+            local theme = getThemeForState(state)
+            rfsuite.utils.log("Preloading dashboard state: " .. state .. " with theme: " .. theme, "info")
+            loadedStateModules[state] = load_state_script(theme, state)
+        end
+        statePreloadIndex = statePreloadIndex + 1
     end
 
     -- catch scenario where mcu_id is found and we have to reload to model theme
@@ -895,7 +958,7 @@ function dashboard.wakeup(widget)
     local currentFlightMode = rfsuite.session.flightMode or "preflight"
     if lastFlightMode ~= currentFlightMode then
         dashboard.flightmode = currentFlightMode
-        dashboard.reload_themes()
+        reload_state_only(currentFlightMode)
         lastFlightMode = currentFlightMode
     end
 
@@ -1055,6 +1118,7 @@ function dashboard.resetFlightModeAsk()
             rfsuite.session.flightMode = "preflight"
             rfsuite.tasks.events.flightmode.reset()
             dashboard.reload_themes()
+            reload_state_only("preflight")
             return true
         end
     }, {

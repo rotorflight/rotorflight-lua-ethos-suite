@@ -282,7 +282,7 @@ local function onSaveMenu()
                
 
                 -- update dashboard theme
-                rfsuite.widgets.dashboard.reload_themes()
+                rfsuite.widgets.dashboard.reload_themes(true) -- send true to force full reload
                 -- close save progress
                 rfsuite.app.triggers.closeSave = true
                 return true
