@@ -16,6 +16,18 @@
 ]]--
 
 
+local function maxVoltageToCellVoltage(value)
+    local cfg = rfsuite.session.batteryConfig
+    local cells = (cfg and cfg.batteryCellCount) or 3
+
+    if cfg and cells and value then
+        value = math.max(0, value / cells)
+        value = math.floor(value * 100 + 0.5) / 100  -- round to 2 decimal places
+    end
+
+    return value
+end
+
 local layout = {
     cols = 3,
     rows = 4,
@@ -38,7 +50,7 @@ local boxes = {
     -- Flight max/min stats 2
     {col = 3, row = 1, type = "text", subtype = "stats", stattype = "max", source = "consumption", title = "Consumed mAh", titlepos = "top", bgcolor = "black", textcolor = "orange", transform = "floor"},
     {col = 3, row = 2, type = "text", subtype = "stats", stattype = "min", source = "fuel", title = "Fuel Remaining", titlepos = "top", bgcolor = "black", textcolor = "orange", transform = "floor"},
-    -- {col = 3, row = 3, type = "text", subtype = "stats", title = "Volts per cell", titlepos = "top", bgcolor = "black", textcolor = "orange", unit = "V", transform = "floor"}
+    {col = 3, row = 3, type = "text", subtype = "stats", stattype = "min", source = "voltage", title = "Min Volts per cell", titlepos = "top", bgcolor = "black", textcolor = "orange", unit = "V", transform = function(v) return maxVoltageToCellVoltage(v) end},
     {col = 3, row = 4, type = "text", subtype = "stats", stattype = "min", source = "rssi", title = "Link Min", titlepos = "top", bgcolor = "black", textcolor = "orange", transform = "floor"},
 }
 
