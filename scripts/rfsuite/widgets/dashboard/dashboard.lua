@@ -63,7 +63,6 @@ local wakeupScheduler = 0
 -- Spread scheduling of object wakeups to avoid doing them all at once:
 local objectWakeupIndex = 1             -- current object index for wakeup
 local objectWakeupsPerCycle = nil       -- number of objects to wake per cycle (calculated later)
-local objectSchedulerPercentage = 0.2   -- fraction of total objects to wake each cycle (20%)
 local objectsThreadedWakeupCount = 0
 local lastLoadedBoxCount = 0
 
@@ -134,6 +133,20 @@ end
 
 function dashboard.overlaymessage(x, y, w, h, txt)
     dashboard.loaders.pulseOverlayMessage(dashboard, x, y, w, h, txt)
+end
+
+--- Calculates the scheduler percentage based on the number of objects.
+-- This function determines what fraction of objects should be processed per cycle,
+-- depending on the total count. Fewer objects result in a higher percentage processed
+-- per cycle, while more objects reduce the percentage to avoid overloading.
+-- @param count number The total number of objects to schedule.
+-- @return number The percentage (as a decimal) of objects to process per cycle.
+local function computeObjectSchedulerPercentage(count)
+    if count <= 10 then return 0.5      -- fewer objects → more per cycle
+    elseif count <= 15 then return 0.4
+    elseif count <= 25 then return 0.3
+    elseif count <= 40 then return 0.2
+    else return 0.15 end                -- many objects → fewer per cycle
 end
 
 --- Loads and caches dashboard object modules based on the provided box configurations.
@@ -353,8 +366,12 @@ function dashboard.renderLayout(widget, config)
 
     -- recompute how many objects to wake per cycle if the count changed
     if not objectWakeupsPerCycle or lastBoxRectsCount ~= #dashboard.boxRects then
-        objectWakeupsPerCycle = math.max(1, math.ceil(#dashboard.boxRects * objectSchedulerPercentage))
-        lastBoxRectsCount     = #dashboard.boxRects
+        local count = #dashboard.boxRects
+        local percentage = computeObjectSchedulerPercentage(count)
+        objectWakeupsPerCycle = math.max(1, math.ceil(count * percentage))
+        lastBoxRectsCount     = count
+        rfsuite.utils.log("Object scheduler set to " .. tostring(objectWakeupsPerCycle) ..
+                        " out of " .. tostring(count) .. " boxes", "info")
     end
 
     scheduledBoxIndices = {}
@@ -987,27 +1004,23 @@ function dashboard.wakeup(widget)
         for _, idx in ipairs(scheduledBoxIndices) do
             local rect = dashboard.boxRects[idx]
             local obj  = dashboard.objectsByType[rect.box.type]
-            -- We already know `obj.scheduler` is set, but double-check `wakeup`:
             if obj and obj.wakeup then
                 obj.wakeup(rect.box, rfsuite.tasks.telemetry)
             end
         end
 
-        -- 2) Then wake a spread of the *remaining* objects (no `scheduler` field)
         for i = 1, objectWakeupsPerCycle do
-            local idx  = objectWakeupIndex
+            local idx = objectWakeupIndex
             local rect = dashboard.boxRects[idx]
             if rect then
                 local obj = dashboard.objectsByType[rect.box.type]
-                -- Only wake if it does NOT have a custom scheduler
                 if obj and obj.wakeup and not obj.scheduler then
                     obj.wakeup(rect.box, rfsuite.tasks.telemetry)
                 end
             end
-            objectWakeupIndex = (objectWakeupIndex % #dashboard.boxRects) + 1
+            objectWakeupIndex = (#dashboard.boxRects > 0) and ((objectWakeupIndex % #dashboard.boxRects) + 1) or 1
         end
 
-        -- Increment `objectsThreadedWakeupCount` when we've looped through all boxes
         if objectWakeupIndex == 1 then
             objectsThreadedWakeupCount = objectsThreadedWakeupCount + 1
         end
