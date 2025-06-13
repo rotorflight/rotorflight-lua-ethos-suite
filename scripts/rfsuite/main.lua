@@ -60,6 +60,7 @@ local userpref_defaults ={
     general ={
         iconsize = 2,
         syncname = false,
+        gimbalsupression = 0.85
     },
     localizations = {
         temperature_unit = 0, -- 0 = Celsius, 1 = Fahrenheit
