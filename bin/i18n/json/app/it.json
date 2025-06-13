@@ -96,6 +96,11 @@
         "translation": "Impostazioni",
         "needs_translation": "false"
       },
+      "no_themes_available_to_configure": {
+        "english": "No configurable themes installed on this device",
+        "translation": "No themes available to configure",
+        "needs_translation": "true"
+      },
       "txt_audio_events": {
         "english": "Events",
         "translation": "Events",

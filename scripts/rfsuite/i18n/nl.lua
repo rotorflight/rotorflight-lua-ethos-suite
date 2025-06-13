@@ -391,6 +391,7 @@ return {
     ["modules"] = {
       ["settings"] = {
         ["name"] = "Instellingen",
+        ["no_themes_available_to_configure"] = "No themes available to configure",
         ["txt_audio_events"] = "Events",
         ["txt_audio_switches"] = "Switches",
         ["txt_iconsize"] = "Icon Size",
