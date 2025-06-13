@@ -239,7 +239,7 @@ local sensorTable = {
                   min = 0, max = 100 },
             },
             sport = {
-                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401 mspgt = 12.08},
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401, mspgt = 12.08},
                 { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0418 },
             },
             crsf = {
