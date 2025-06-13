@@ -1094,7 +1094,7 @@ function dashboard.listThemes()
         local folders = system.listFiles(basePath)
         if not folders then return end
         for _, folder in ipairs(folders) do
-            if folder ~= ".." and folder ~= "." then
+            if folder ~= ".." and folder ~= "." and not folder:match("%.%a+$") then    
                 local themeDir = basePath .. folder .. "/"
                 local initPath = themeDir .. "init.lua"
                 if rfsuite.utils.dir_exists(basePath, folder) then

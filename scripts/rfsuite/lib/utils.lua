@@ -428,7 +428,7 @@ function utils.findModules()
 
     for _, v in pairs(system.listFiles(modules_path)) do
 
-        if v ~= ".." then
+        if v ~= ".." and v ~= "." and not v:match("%.%a+$") then
             local init_path = modules_path .. v .. '/init.lua'
 
             local func, err = rfsuite.compiler.loadfile(init_path)
@@ -471,7 +471,7 @@ function utils.findWidgets()
 
     for _, v in pairs(system.listFiles(widgets_path)) do
 
-        if v ~= ".." then
+        if v ~= ".." and v ~= "." and not v:match("%.%a+$") then
             local init_path = widgets_path .. v .. '/init.lua'
             -- try loading directly
             local func, err = rfsuite.compiler.loadfile(init_path)
