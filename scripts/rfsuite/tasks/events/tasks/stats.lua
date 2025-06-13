@@ -53,9 +53,15 @@ local function buildFilteredList()
 end
 
 function stats.wakeup()
-    -- Throttle: only run once every 1 CPU‐seconds
+
+    -- we should only build stats when 'inflight'
+    if rfsuite.session.flightMode ~= "inflight" then
+        return
+    end
+
+    -- Throttle: only run once every 0.25 CPU‐seconds
     local now = os.clock()
-    if now - lastTrackTime < 1 then
+    if now - lastTrackTime < 0.25 then
         return
     end
     lastTrackTime = now
