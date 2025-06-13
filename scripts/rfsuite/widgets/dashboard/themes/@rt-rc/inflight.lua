@@ -18,11 +18,35 @@
 local telemetry = rfsuite.tasks.telemetry
 local utils = rfsuite.widgets.dashboard.utils
 
+
+local darkMode = {
+    textcolor   = "white",
+    titlecolor  = "white",
+    bgcolor= "black",
+    fillcolor   = "green",
+    fillbgcolor = "grey",
+    arcbgcolor  = "lightgrey",
+}
+
+local lightMode = {
+    textcolor   = "black",
+    titlecolor  = "black",
+    bgcolor= "white",
+    fillcolor   = "green",
+    fillbgcolor = "lightgrey",
+    arcbgcolor  = "darkgrey",
+}
+
+-- alias current mode
+local colorMode = lcd.darkMode() and darkMode or lightMode
+local lastState = lcd.darkMode() 
+
+
 local layout = {
     cols = 4,
     rows = 14,
     padding = 1,
-    bgcolor = "black"
+    bgcolor = colorMode.bgcolor
 }
 
 local boxes = {
@@ -35,15 +59,15 @@ local boxes = {
         source = "voltage",
         thickness = 30,
         font = "FONT_XXL",
-        arcbgcolor = "lightgrey",
+        arcbgcolor = colorMode.arcbgcolor,
         title = "VOLTAGE",
         titlepos = "bottom",
-        bgcolor = "black",
+        bgcolor = colorMode.bgcolor,
         -- (a) The “static” thresholds (fixed numeric cutoffs, unchanged)
         thresholds = {
-            { value = 30,  fillcolor = "red",    textcolor = "white" },
-            { value = 50,  fillcolor = "orange", textcolor = "white" },
-            { value = 140, fillcolor = "green",  textcolor = "white" }
+            { value = 30,  fillcolor = "red",    textcolor = colorMode.textcolor },
+            { value = 50,  fillcolor = "orange", textcolor = colorMode.textcolor },
+            { value = 140, fillcolor = colorMode.fillcolor,  textcolor = colorMode.textcolor }
         },
 
         min = function()
@@ -94,7 +118,7 @@ local boxes = {
                     return raw_gm + 0.30 * (raw_gM - raw_gm)
                 end,
                 fillcolor = "red",
-                textcolor = "white"
+                textcolor = colorMode.textcolor
             },
             {
                 value = function(box)
@@ -112,7 +136,7 @@ local boxes = {
                     return raw_gm + 0.50 * (raw_gM - raw_gm)
                 end,
                 fillcolor = "orange",
-                textcolor = "white"
+                textcolor = colorMode.textcolor
             },
             {
                 value = function(box)
@@ -124,8 +148,8 @@ local boxes = {
                     -- Top‐end threshold = gaugemax
                     return raw_gM
                 end,
-                fillcolor = "green",
-                textcolor = "white"
+                fillcolor = colorMode.fillcolor,
+                textcolor = colorMode.textcolor
             }
         }
     },
@@ -141,15 +165,17 @@ local boxes = {
         min = 0,
         max = 140,
         font = "FONT_XXL",
-        arcbgcolor = "lightgrey",
+        arcbgcolor = colorMode.arcbgcolor,
         title = "FUEL",
         titlepos = "bottom",
-        bgcolor = "black",
+        bgcolor = colorMode.bgcolor,
+        titlecolor = colorMode.titlecolor,
+        textcolor = colorMode.titlecolor,
 
         thresholds = {
-            { value = 30,  fillcolor = "red",    textcolor = "white" },
-            { value = 50,  fillcolor = "orange", textcolor = "white" },
-            { value = 140, fillcolor = "green",  textcolor = "white" }
+            { value = 30,  fillcolor = "red",    textcolor = colorMode.textcolor },
+            { value = 50,  fillcolor = "orange", textcolor = colorMode.textcolor },
+            { value = 140, fillcolor = colorMode.fillcolor,  textcolor = colorMode.textcolor }
         },
     },
     {
@@ -168,7 +194,9 @@ local boxes = {
             { value = "ACTIVE",   textcolor = "green"  },
             { value = "THR-OFF",  textcolor = "red"    },
         },
-        bgcolor = "black",
+        bgcolor = colorMode.bgcolor,
+        titlecolor = colorMode.titlecolor,
+        textcolor = colorMode.titlecolor,
     },
     {
         col = 4,
@@ -176,7 +204,9 @@ local boxes = {
         rowspan = 2,
         type = "time",
         subtype = "flight",
-        bgcolor = "black",
+        bgcolor = colorMode.bgcolor,
+        titlecolor = colorMode.titlecolor,
+        textcolor = colorMode.titlecolor,
     }, 
     {
         col = 3,
@@ -188,7 +218,9 @@ local boxes = {
         nosource = "-",
         unit = "rpm",
         transform = "floor",
-        bgcolor = "black",
+        bgcolor = colorMode.bgcolor,
+        titlecolor = colorMode.titlecolor,
+        textcolor = colorMode.titlecolor,
     },    
     {
         col = 2,
@@ -200,10 +232,18 @@ local boxes = {
         nosource = "-",
         unit = "dB",
         transform = "floor",
-        bgcolor = "black",
+        bgcolor = colorMode.bgcolor,
+        titlecolor = colorMode.titlecolor,
+        textcolor = colorMode.titlecolor,
     },    
 }
 
+local wakeup = function()
+  if lcd.darkMode() ~= lastState then
+    lastState = lcd.darkMode()
+    rfsuite.widgets.dashboard.reload_themes(true)
+  end
+end
 
 return {
     layout = layout,

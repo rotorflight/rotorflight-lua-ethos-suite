@@ -120,7 +120,7 @@ function loaders.pulseOverlayMessage(dashboard, x, y, w, h, txt)
   dashboard._overlay_cycles = dashboard._overlay_cycles - 1
 
   -- fg unchanged; bg now fully opaque
-  local fg = lcd.darkMode() and lcd.RGB(255,255,255)
+  local fg = lcd.darkMode() and lcd.RGB(255,255,255) or lcd.RGB(255,255,255)
   local bg = lcd.darkMode() and lcd.RGB(0,0,0,1.0) or lcd.RGB(255,255,255,1.0)
 
   local cx, cy = x + w / 2, y + h / 2
