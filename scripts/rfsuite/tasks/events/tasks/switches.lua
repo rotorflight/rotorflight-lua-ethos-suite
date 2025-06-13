@@ -104,13 +104,15 @@ function switches.wakeup()
 
                 if shouldPlay then
                     local sensorSrc = rfsuite.tasks.telemetry.getSensorSource(key)
-                    local value     = sensorSrc:value()
-                    if value and type(value) == "number" then
-                        local unit     = switchTable.units[key]
-                        local decimals = tonumber(sensorSrc:decimals())
-                        system.playNumber(value, unit, decimals)
-                        lastPlayTime[key] = now
-                    end
+                    if sensorSrc then
+                        local value     = sensorSrc:value()
+                        if value and type(value) == "number" then
+                            local unit     = switchTable.units[key]
+                            local decimals = tonumber(sensorSrc:decimals())
+                            system.playNumber(value, unit, decimals)
+                            lastPlayTime[key] = now
+                        end
+                    end    
                 end
             end
 
