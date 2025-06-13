@@ -88,6 +88,7 @@ end
 return {
     layout = layout,
     boxes = boxes,
+    wakeup = wakeup,
     scheduler = {
         wakeup_interval = 0.1,          -- Interval (seconds) to run wakeup script when display is visible
         wakeup_interval_bg = 5,         -- (optional: run wakeup this often when not visible; set nil/empty to skip)

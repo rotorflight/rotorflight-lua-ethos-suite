@@ -18,6 +18,19 @@
 
 local telemetry = rfsuite.tasks.telemetry
 
+local darkMode = {
+    textcolor   = "white",
+}
+
+local lightMode = {
+    textcolor   = "black",
+}
+
+-- alias current mode
+local colorMode = lcd.darkMode() and darkMode or lightMode
+local lastState = lcd.darkMode() 
+
+
 local layout = {
     cols = 2,
     rows = 3,
@@ -25,16 +38,24 @@ local layout = {
 }
 
 local boxes = {
-    {col=1, row=1, type="text", subtype="stats", source="voltage", stattype="min", title="MIN VOLTAGE", titlepos="bottom"},
-    {col=2, row=1, type="text", subtype="stats", source="voltage", stattype="max", title="MAX VOLTAGE", titlepos="bottom"},
-    {col=1, row=2, type="text", subtype="stats", source="current", stattype="min", title="MIN CURRENT", titlepos="bottom", transform="floor"},
-    {col=2, row=2, type="text", subtype="stats", source="current", stattype="max", title="MAX CURRENT", titlepos="bottom", transform="floor"},
-    {col=1, row=3, type="text", subtype="stats", source="temp_mcu", stattype="max", title="MAX T.MCU", titlepos="bottom", transform="floor"},
-    {col=2, row=3, type="text", subtype="stats", source="temp_esc", stattype="max", title="MAX E.MCU", titlepos="bottom", transform="floor"}
+    {col=1, row=1, type="text", subtype="stats", source="voltage", stattype="min", title="MIN VOLTAGE", titlepos="bottom", textcolor=colorMode.textcolor, titlecolor=colorMode.textcolor},
+    {col=2, row=1, type="text", subtype="stats", source="voltage", stattype="max", title="MAX VOLTAGE", titlepos="bottom", textcolor=colorMode.textcolor, titlecolor=colorMode.textcolor},
+    {col=1, row=2, type="text", subtype="stats", source="current", stattype="min", title="MIN CURRENT", titlepos="bottom", transform="floor", textcolor=colorMode.textcolor, titlecolor=colorMode.textcolor},
+    {col=2, row=2, type="text", subtype="stats", source="current", stattype="max", title="MAX CURRENT", titlepos="bottom", transform="floor", textcolor=colorMode.textcolor, titlecolor=colorMode.textcolor},
+    {col=1, row=3, type="text", subtype="stats", source="temp_mcu", stattype="max", title="MAX T.MCU", titlepos="bottom", transform="floor", textcolor=colorMode.textcolor, titlecolor=colorMode.textcolor},
+    {col=2, row=3, type="text", subtype="stats", source="temp_esc", stattype="max", title="MAX E.MCU", titlepos="bottom", transform="floor", textcolor=colorMode.textcolor, titlecolor=colorMode.textcolor}
 }
+
+local wakeup = function()
+  if lcd.darkMode() ~= lastState then
+    lastState = lcd.darkMode()
+    rfsuite.widgets.dashboard.reload_themes(true)
+  end
+end
 
 return {
     layout = layout,
+    wakeup = wakeup,
     boxes = boxes,
     scheduler = {
         wakeup_interval = 0.1,          -- Interval (seconds) to run wakeup script when display is visible
