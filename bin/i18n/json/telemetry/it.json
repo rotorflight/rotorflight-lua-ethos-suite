@@ -1,5 +1,35 @@
 {
   "sensors": {
+    "attpitch": {
+      "english": "P.angle",
+      "translation": "P.angle",
+      "needs_translation": "true"
+    },
+    "attroll": {
+      "english": "R.angle",
+      "translation": "R.angle",
+      "needs_translation": "true"
+    },
+    "attyaw": {
+      "english": "Y.angle",
+      "translation": "Y.angle",
+      "needs_translation": "true"
+    },
+    "accx": {
+      "english": "Accel X",
+      "translation": "Accel X",
+      "needs_translation": "true"
+    },
+    "accy": {
+      "english": "Accel Y",
+      "translation": "Accel Z",
+      "needs_translation": "true"
+    },
+    "accz": {
+      "english": "Accel Z",
+      "translation": "Accel Z",
+      "needs_translation": "true"
+    },
     "esc_temp": {
       "english": "ESC Temperature",
       "translation": "Temperatura ESC",

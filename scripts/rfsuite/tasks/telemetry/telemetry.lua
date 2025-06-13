@@ -239,7 +239,7 @@ local sensorTable = {
                   min = 0, max = 100 },
             },
             sport = {
-                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0B70 },
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401 mspgt = 12.08},
                 { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0418 },
             },
             crsf = {
@@ -281,8 +281,8 @@ local sensorTable = {
                   min = 0, max = 100 },
             },
             sport = {
-                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0400},
-                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401},
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0400, mspgt = 12.08 },
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401, msplt = 12.07 },
             },
             crsf = {
                 { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A3 },
@@ -604,6 +604,138 @@ local sensorTable = {
         },
     },  
 
+    -- Accellerometer X
+    accx = {
+        name = rfsuite.i18n.get("telemetry.sensors.accx"),
+        mandatory = false,
+        stats = false,
+        set_telemetry_sensors = nil,
+        sensors = {
+            sim = {
+                { uid = 0x5019, unit = UNIT_G, dec = 3,
+                  value = function() return rfsuite.utils.simSensors('accx') end,
+                  min = -4000, max = 4000 },
+            },
+            sport = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0700 },
+            },
+            crsf = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1111 },
+            },
+            crsfLegacy = { nil },
+        },
+    },  
+
+    -- Accellerometer y
+    accy = {
+        name = rfsuite.i18n.get("telemetry.sensors.accy"),
+        mandatory = false,
+        stats = false,
+        set_telemetry_sensors = nil,
+        sensors = {
+            sim = {
+                { uid = 0x5020, unit = UNIT_G, dec = 3,
+                  value = function() return rfsuite.utils.simSensors('accz') end,
+                  min = -4000, max = 4000 },
+            },
+            sport = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0710 },
+            },
+            crsf = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1112 },
+            },
+            crsfLegacy = { nil },
+        },
+    },     
+
+    -- Accellerometer z
+    accz = {
+        name = rfsuite.i18n.get("telemetry.sensors.accz"),
+        mandatory = false,
+        stats = false,
+        set_telemetry_sensors = nil,
+        sensors = {
+            sim = {
+                { uid = 0x5021, unit = UNIT_G, dec = 3,
+                  value = function() return rfsuite.utils.simSensors('accz') end,
+                  min = -4000, max = 4000 },
+            },
+            sport = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0720 },
+            },
+            crsf = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1113},
+            },
+            crsfLegacy = { nil },
+        },
+    },  
+
+    -- Attitude Yaw
+    attyaw = {
+        name = rfsuite.i18n.get("telemetry.sensors.attyaw"),
+        mandatory = false,
+        stats = false,
+        set_telemetry_sensors = nil,
+        sensors = {
+            sim = {
+                { uid = 0x5022, unit = UNIT_DEGREE, dec = 1,
+                  value = function() return rfsuite.utils.simSensors('attyaw') end,
+                  min = -1800, max = 3600 },
+            },
+            sport = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5210 },
+            },
+            crsf = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1103},
+            },
+            crsfLegacy = { nil },
+        },
+    },  
+
+    -- Attitude Yaw
+    attroll = {
+        name = rfsuite.i18n.get("telemetry.sensors.attroll"),
+        mandatory = false,
+        stats = false,
+        set_telemetry_sensors = nil,
+        sensors = {
+            sim = {
+                { uid = 0x5023, unit = UNIT_DEGREE, dec = 1,
+                  value = function() return rfsuite.utils.simSensors('attroll') end,
+                  min = -1800, max = 3600 },
+            },
+            sport = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0730 , subId = 0},
+            },
+            crsf = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1102},
+            },
+            crsfLegacy = { nil },
+        },
+    },     
+
+
+    -- Attitude Pitch
+    attpitch = {
+        name = rfsuite.i18n.get("telemetry.sensors.attpitch"),
+        mandatory = false,
+        stats = false,
+        set_telemetry_sensors = nil,
+        sensors = {
+            sim = {
+                { uid = 0x5023, unit = UNIT_DEGREE, dec = 1,
+                  value = function() return rfsuite.utils.simSensors('attpitch') end,
+                  min = -1800, max = 3600 },
+            },
+            sport = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0730, subId = 1 },
+            },
+            crsf = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1101},
+            },
+            crsfLegacy = { nil },
+        },
+    },   
 
 }
 

@@ -97,7 +97,7 @@ local boxes = {
             { value = 50, textcolor = "yellow" }
         }
     },
-    { col = 2, row = 2, type="text", subtype = "telemetry", source = "altitude", title = "ALTITUDE", textcolor = "blue", transform = "floor", titlepos = "bottom" },
+    { col = 2, row = 2, type="text", subtype = "telemetry", source = "attroll", title = "ROLL", textcolor = "blue", transform = "floor", titlepos = "bottom" },
     { col = 2, row = 3, type="text", subtype = "craftname", title = "CRAFT NAME", titlepos = "bottom" },
     { col = 2, row = 4, type="text", subtype = "session", source = "isArmed", title = "IS ARMED", titlepos = "bottom" },
 

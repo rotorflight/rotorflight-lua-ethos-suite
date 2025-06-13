@@ -1123,6 +1123,12 @@ return {
   },
   ["telemetry"] = {
     ["sensors"] = {
+      ["attpitch"] = "P.angle",
+      ["attroll"] = "R.angle",
+      ["attyaw"] = "Y.angle",
+      ["accx"] = "Accel X",
+      ["accy"] = "Accel Z",
+      ["accz"] = "Accel Z",
       ["esc_temp"] = "ESC Temperatuur",
       ["rate_profile"] = "Rate Profiel",
       ["headspeed"] = "Rotortoerental",

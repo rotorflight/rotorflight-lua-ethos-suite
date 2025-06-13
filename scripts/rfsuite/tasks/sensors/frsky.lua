@@ -162,6 +162,8 @@ renameSensorList[0x0400] = {name = "MCU Temp", onlyifname = "Temp1"}
 renameSensorList[0x0401] = {name = "ESC Temp", onlyifname = "Temp1"}
 renameSensorList[0x0402] = {name = "BEC Temp", onlyifname = "Temp1"}
 
+renameSensorList[0x5210] = {name = "Y.angle", onlyifname = "Heading"}
+
 frsky.createSensorCache = {}
 frsky.dropSensorCache = {}
 frsky.renameSensorCache = {}
