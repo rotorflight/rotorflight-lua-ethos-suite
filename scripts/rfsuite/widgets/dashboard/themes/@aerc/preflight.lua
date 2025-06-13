@@ -26,7 +26,7 @@ local boxes = {
     {col = 1, row = 1, colspan = 3, rowspan = 8, 
      type = "image", 
      subtype = "model", 
-     bgcolor = "black"
+     bgcolor = "transparent"
     },
 
     -- Rate Profile
@@ -37,7 +37,7 @@ local boxes = {
      title = "RATES",
      titlepos = "bottom",
      transform = "floor",
-     bgcolor = "black",
+     bgcolor = "transparent",
         thresholds = {
             { value = 1.5, textcolor = "yellow" },
             { value = 2.5, textcolor = "orange" },
@@ -54,7 +54,7 @@ local boxes = {
      title = "PROFILE",
      titlepos = "bottom",
      transform = "floor",
-     bgcolor = "black",
+     bgcolor = "transparent",
         thresholds = {
             { value = 1.5, textcolor = "yellow" },
             { value = 2.5, textcolor = "orange" },
@@ -68,7 +68,7 @@ local boxes = {
      subtype = "count", 
      title = "FLIGHTS", 
      titlepos = "bottom", 
-     bgcolor = "black"
+     bgcolor = "transparent"
     },
 
     -- Battery Gauge
@@ -78,7 +78,7 @@ local boxes = {
      batteryframe = true, 
      battadv = true,
      fillcolor = "green",
-     bgcolor = "black",
+     bgcolor = "transparent",
      valuealign = "left",
      valuepaddingleft = 75,
      battadvfont = "FONT_STD",
@@ -97,7 +97,7 @@ local boxes = {
      source = "bec_voltage", 
      title = "BEC VOLTAGE", 
      titlepos = "bottom", 
-     bgcolor = "black",
+     bgcolor = "transparent",
      min = 3, 
      max = 13, 
      decimals = 1, 
@@ -115,7 +115,7 @@ local boxes = {
      subtype = "blackbox", 
      title = "BLACKBOX", 
      titlepos = "bottom", 
-     bgcolor = "black", 
+     bgcolor = "transparent", 
      decimals = 0, 
      textcolor = "blue", 
      transform = "floor"
@@ -128,7 +128,7 @@ local boxes = {
      source = "temp_esc", 
      title = "ESC TEMP", 
      titlepos = "bottom", 
-     bgcolor = "black",
+     bgcolor = "transparent",
      min = 0, 
      max = 140, 
      thickness = 15,
@@ -148,7 +148,7 @@ local boxes = {
      subtype = "governor", 
      title = "GOVERNOR", 
      titlepos = "bottom", 
-     bgcolor = "black",
+     bgcolor = "transparent",
         thresholds = {
             { value = "DISARMED", textcolor = "red"    },
             { value = "OFF",      textcolor = "red"    },
