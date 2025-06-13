@@ -215,7 +215,7 @@ app.dialogs.progressDisplay = false
 app.dialogs.progressWatchDog = nil
 app.dialogs.progressCounter = 0
 app.dialogs.progressRateLimit = os.clock()
-app.dialogs.progressRate = 0.2 
+app.dialogs.progressRate = 0.1 
 
 --[[
     This section of the code initializes several variables related to the progress of ESC (Electronic Speed Controller) operations in the app.
@@ -251,7 +251,7 @@ app.dialogs.saveDisplay = false
 app.dialogs.saveWatchDog = nil
 app.dialogs.saveProgressCounter = 0
 app.dialogs.saveRateLimit = os.clock()
-app.dialogs.saveRate = 0.2
+app.dialogs.saveRate = 0.1
 
 --[[
     Initializes the 'nolink' dialog properties within the 'app' namespace.
@@ -267,7 +267,7 @@ app.dialogs.nolink = false
 app.dialogs.nolinkDisplay = false
 app.dialogs.nolinkValueCounter = 0
 app.dialogs.nolinkRateLimit = os.clock()
-app.dialogs.nolinkRate = 0.2 
+app.dialogs.nolinkRate = 0.1 
 
 --[[
     This code snippet initializes two boolean flags within the `app.dialogs` table:
@@ -1014,7 +1014,7 @@ app._uiTasks = {
   function()
     if not app.triggers.closeProgressLoader then return end
     local p, q = app.dialogs.progressCounter, rfsuite.tasks.msp.mspQueue
-    if p >= 90 then p = p + 5 else p = p + 10 end
+    if p >= 90 then p = p + 10 else p = p + 25 end
     app.dialogs.progressCounter = p
     if app.dialogs.progress then
       app.ui.progressDisplayValue(p)
@@ -1035,7 +1035,7 @@ app._uiTasks = {
     app.triggers.isSaving = false
     if q:isProcessed() then
       if     p > 90 then p = p + 5
-      elseif p > 40 then p = p + 10
+      elseif p > 40 then p = p + 15
       else                p = p + 5 end
     end
     app.dialogs.saveProgressCounter = p
