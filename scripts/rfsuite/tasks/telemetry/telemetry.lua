@@ -558,9 +558,9 @@ local sensorTable = {
     -- Bec Voltage
     bec_voltage = {
         name = rfsuite.i18n.get("telemetry.sensors.bec_voltage"),
-        mandatory = false,
+        mandatory = true,
         stats = true,
-        set_telemetry_sensors = nil,
+        set_telemetry_sensors = 43,
         switch_alerts = true,
         unit = UNIT_VOLT,
         unit_string = "V",
