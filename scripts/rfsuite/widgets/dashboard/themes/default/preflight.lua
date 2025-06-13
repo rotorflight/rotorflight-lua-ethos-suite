@@ -15,6 +15,19 @@
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]]--
 
+local darkMode = {
+    textcolor   = "white",
+}
+
+local lightMode = {
+    textcolor   = "black",
+}
+
+-- alias current mode
+local colorMode = lcd.darkMode() and darkMode or lightMode
+local lastState = lcd.darkMode() 
+
+
 local layout = {
     cols = 8,
     rows = 4,
@@ -41,7 +54,9 @@ local boxes = {
     title = "LQ",
     unit = "dB",
     titlepos = "bottom",
-    transform = "floor"
+    transform = "floor",
+    titlecolor = colorMode.textcolor,
+    textcolor = colorMode.textcolor,
   },
   {
     col = 2,
@@ -50,6 +65,8 @@ local boxes = {
     subtype = "flight",
     titlepos = "bottom",
     title = "TIMER",
+    titlecolor = colorMode.textcolor,
+    textcolor = colorMode.textcolor,   
   },  
   {
     col = 1,
@@ -60,6 +77,8 @@ local boxes = {
     nosource = "-",
     title = "GOVERNOR",
     titlepos = "bottom",
+    titlecolor = colorMode.textcolor,
+    textcolor = colorMode.textcolor,    
     thresholds = {
         { value = "DISARMED", textcolor = "red"    },
         { value = "OFF",      textcolor = "red"    },
@@ -82,7 +101,8 @@ local boxes = {
     title = "VOLTAGE",
     unit = "v",
     titlepos = "bottom",
-
+    titlecolor = colorMode.textcolor,
+    textcolor = colorMode.textcolor,
     -- (same as before: these live here if you ever need .min/.max)
     min = function()
       local cfg   = rfsuite.session.batteryConfig
@@ -147,7 +167,9 @@ local boxes = {
     nosource = "-",
     title = "CURRENT",
     unit = "A",
-    titlepos = "bottom"
+    titlepos = "bottom",
+    titlecolor = colorMode.textcolor,
+    textcolor = colorMode.textcolor,    
   },
   {
     col = 6,
@@ -166,7 +188,9 @@ local boxes = {
       { value = 30, textcolor = "red" },
       { value = 60, textcolor = "orange" },
       { value = 100, textcolor = "green" }
-    }
+    },
+    titlecolor = colorMode.textcolor,
+    textcolor = colorMode.textcolor,    
   },
   {
     col = 6,
@@ -180,14 +204,22 @@ local boxes = {
     title = "RPM",
     unit = "rpm",
     titlepos = "bottom",
-    transform = "floor"
+    transform = "floor",
+    titlecolor = colorMode.textcolor,
+    textcolor = colorMode.textcolor,    
   },
 }
 
-
+local wakeup = function()
+  if lcd.darkMode() ~= lastState then
+    lastState = lcd.darkMode()
+    rfsuite.widgets.dashboard.reload_themes(true)
+  end
+end
 
 return {
     layout = layout,
+    wakeup = wakeup,
     boxes = boxes,
     scheduler = {
         wakeup_interval = 0.25,          -- Interval (seconds) to run wakeup script when display is visible
