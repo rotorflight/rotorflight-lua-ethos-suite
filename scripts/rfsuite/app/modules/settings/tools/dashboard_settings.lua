@@ -48,61 +48,76 @@ local function openPage(pidx, title, script)
     end
 
     local lc, bx, y = 0, 0, 0
+    
     for idx, theme in ipairs(themeList) do
-        if lc == 0 then
-            if rfsuite.preferences.general.iconsize == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
-            if rfsuite.preferences.general.iconsize == 1 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
-            if rfsuite.preferences.general.iconsize == 2 then y = form.height() + rfsuite.app.radio.buttonPadding end
-        end
-        if lc >= 0 then bx = (buttonW + padding) * lc end
 
-        -- Only load image once per theme index
-        if rfsuite.app.gfx_buttons["settings_dashboard_themes"][idx] == nil then
+        if theme.configure then
 
-            local icon  
-            if theme.source == "system" then
-                icon = themesBasePath .. theme.folder .. "/icon.png"
-            else 
-                icon = themesUserPath .. theme.folder .. "/icon.png"
-            end    
-            rfsuite.app.gfx_buttons["settings_dashboard_themes"][idx] = lcd.loadMask(icon)
-        end
-
-        rfsuite.app.formFields[idx] = form.addButton(nil, {x = bx, y = y, w = buttonW, h = buttonH}, {
-            text = theme.name,
-            icon = rfsuite.app.gfx_buttons["settings_dashboard_themes"][idx],
-            options = FONT_S,
-            paint = function() end,
-            press = function()
-                -- Optional: your action when pressing a theme
-                -- Example: rfsuite.app.ui.loadTheme(theme.folder)
-                rfsuite.preferences.menulastselected["settings_dashboard_themes"] = idx
-               rfsuite.app.ui.progressDisplay()
-                local configure = theme.configure
-                local source = theme.source
-                local folder = theme.folder
-
-                local themeScript
-                if theme.source == "system" then
-                    themeScript = themesBasePath .. folder .. "/" .. configure 
-                else 
-                    themeScript = themesUserPath .. folder .. "/" .. configure 
-                end    
-
-                rfsuite.app.ui.openPageDashboard(idx, theme.name,themeScript, source, folder)               
+            if lc == 0 then
+                if rfsuite.preferences.general.iconsize == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
+                if rfsuite.preferences.general.iconsize == 1 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
+                if rfsuite.preferences.general.iconsize == 2 then y = form.height() + rfsuite.app.radio.buttonPadding end
             end
-        })
+            if lc >= 0 then bx = (buttonW + padding) * lc end
 
-        if not theme.configure then
-            rfsuite.app.formFields[idx]:enable(false)
-        end
+            -- Only load image once per theme index
+            if rfsuite.app.gfx_buttons["settings_dashboard_themes"][idx] == nil then
 
-        if rfsuite.preferences.menulastselected["settings_dashboard_themes"] == idx then
-            rfsuite.app.formFields[idx]:focus()
-        end
+                local icon  
+                if theme.source == "system" then
+                    icon = themesBasePath .. theme.folder .. "/icon.png"
+                else 
+                    icon = themesUserPath .. theme.folder .. "/icon.png"
+                end    
+                rfsuite.app.gfx_buttons["settings_dashboard_themes"][idx] = lcd.loadMask(icon)
+            end
 
-        lc = lc + 1
-        if lc == numPerRow then lc = 0 end
+            rfsuite.app.formFields[idx] = form.addButton(nil, {x = bx, y = y, w = buttonW, h = buttonH}, {
+                text = theme.name,
+                icon = rfsuite.app.gfx_buttons["settings_dashboard_themes"][idx],
+                options = FONT_S,
+                paint = function() end,
+                press = function()
+                    -- Optional: your action when pressing a theme
+                    -- Example: rfsuite.app.ui.loadTheme(theme.folder)
+                    rfsuite.preferences.menulastselected["settings_dashboard_themes"] = idx
+                rfsuite.app.ui.progressDisplay()
+                    local configure = theme.configure
+                    local source = theme.source
+                    local folder = theme.folder
+
+                    local themeScript
+                    if theme.source == "system" then
+                        themeScript = themesBasePath .. folder .. "/" .. configure 
+                    else 
+                        themeScript = themesUserPath .. folder .. "/" .. configure 
+                    end    
+
+                    rfsuite.app.ui.openPageDashboard(idx, theme.name,themeScript, source, folder)               
+                end
+            })
+
+            if not theme.configure then
+                rfsuite.app.formFields[idx]:enable(false)
+            end
+
+            if rfsuite.preferences.menulastselected["settings_dashboard_themes"] == idx then
+                rfsuite.app.formFields[idx]:focus()
+            end
+
+            lc = lc + 1
+            if lc == numPerRow then lc = 0 end
+        end   
+    end
+
+    if lc == 0 then
+        local w, h = rfsuite.utils.getWindowSize()
+        local msg = rfsuite.i18n.get("app.modules.settings.no_themes_available_to_configure")
+        local tw, th = lcd.getTextSize(msg)
+        local x = w / 2 - tw / 2
+        local y = h / 2 - th / 2
+        local btnH = rfsuite.app.radio.navbuttonHeight
+        form.addStaticText(nil, { x = x, y = y, w = tw, h = btnH }, msg)
     end
 
     rfsuite.app.triggers.closeProgressLoader = true
