@@ -18,7 +18,7 @@
 local arg = { ... }
 local config = arg[1]
 
-local maxmin = {}
+local stats = {}
 
 -- Full sensorTable reference (rfsuite.tasks.telemetry.sensorTable)
 local fullSensorTable = nil
@@ -34,7 +34,7 @@ local function buildFilteredList()
     filteredSensors = {}
 
     for sensorKey, sensorDef in pairs(fullSensorTable) do
-        local mt = sensorDef.maxmin_trigger
+        local mt = sensorDef.stats
 
         -- Include if it's a literal true:
         if mt == true then
@@ -52,7 +52,7 @@ local function buildFilteredList()
     end
 end
 
-function maxmin.wakeup()
+function stats.wakeup()
     -- Throttle: only run once every 1 CPU‐seconds
     local now = os.clock()
     if now - lastTrackTime < 1 then
@@ -83,23 +83,25 @@ function maxmin.wakeup()
 
     local statsTable = rfsuite.tasks.telemetry.sensorStats
 
-    -- Now iterate only over filteredSensors—no more checks of maxmin_trigger
+    -- Now iterate only over filteredSensors—no more checks of stats
     for sensorKey, sensorDef in pairs(filteredSensors) do
         local source = telemetry.getSensorSource(sensorKey)
         if source and source:state() then
             local val = source:value()
             if val then
-                -- Update min/max unconditionally for this sensor
-                local stats = statsTable[sensorKey] or { min = math.huge, max = -math.huge }
+                local stats = statsTable[sensorKey] or { min = math.huge, max = -math.huge, sum = 0, count = 0, avg = 0 }
                 stats.min = math.min(stats.min, val)
                 stats.max = math.max(stats.max, val)
+                stats.sum = stats.sum + val
+                stats.count = stats.count + 1
+                stats.avg = stats.sum / stats.count
                 statsTable[sensorKey] = stats
             end
         end
     end
 end
 
-function maxmin.reset()
+function stats.reset()
     -- Clear all stored stats and force a full rebuild on next wakeup()
     rfsuite.tasks.telemetry.sensorStats = {}
     fullSensorTable  = nil
@@ -107,4 +109,4 @@ function maxmin.reset()
     lastTrackTime    = 0
 end
 
-return maxmin
+return stats
