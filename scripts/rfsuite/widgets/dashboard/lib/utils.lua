@@ -161,7 +161,7 @@ function utils.screenError(msg, border, pct, padX, padY)
     lcd.font(bestFont)
 
     -- Determine text and border color
-    local textColor = isDarkMode and lcd.RGB(255, 255, 255, 1) or lcd.RGB(90, 90, 90)
+    local textColor = utils.defaultColor("text")
     lcd.color(textColor)
 
     -- Calculate centered text position
@@ -170,7 +170,9 @@ function utils.screenError(msg, border, pct, padX, padY)
 
     -- Draw border rectangle if requested
     if border then
+        lcd.color(utils.defaultColor("frame"))
         lcd.drawRectangle(x - padX, y - padY, bestW + padX * 2, bestH + padY * 2)
+        lcd.color(textColor)
     end
 
     -- Draw the text centered
@@ -194,6 +196,52 @@ function utils.getAlignedX(text, align, x, w)
     else -- center
         return x + (w - tsize) / 2
     end
+end
+
+--- Default ETHOS color palette for widgets and UI roles.
+-- Provides theme-aware fallback colors for common roles in light and dark mode.
+-- Keys: "light" and "dark", each mapping roles to lcd.RGB values.
+-- Roles: "text", "title", "bg", "background", "fill", "fillbg", "frame", "border",
+--        "accent", "highlight", "error", "warning", "success".
+-- Used by utils.defaultColor(role) and as a fallback in utils.resolveThemeColor.
+local DEFAULT_COLORS = {
+    light = {
+        text      = lcd.RGB(0,0,0),
+        title     = lcd.RGB(0,0,0),
+        bg        = lcd.RGB(240,240,240),
+        background= lcd.RGB(240,240,240),
+        fill      = lcd.RGB(240,240,240),
+        fillbg    = lcd.RGB(240,240,240),
+        frame     = lcd.RGB(200,200,200),
+        border    = lcd.RGB(200,200,200),
+        accent    = lcd.RGB(255,180,60),
+        highlight = lcd.RGB(255,220,120),
+        error     = lcd.RGB(255,60,60),
+        warning   = lcd.RGB(255,200,40),
+        success   = lcd.RGB(80,255,80),
+    },
+    dark = {
+        text      = lcd.RGB(255,255,255),
+        title     = lcd.RGB(255,255,255),
+        bg        = lcd.RGB(24,24,24),
+        background= lcd.RGB(24,24,24),
+        fill      = lcd.RGB(24,24,24),
+        fillbg    = lcd.RGB(24,24,24),
+        frame     = lcd.RGB(90,90,90),
+        border    = lcd.RGB(90,90,90),
+        accent    = lcd.RGB(80,180,255),
+        highlight = lcd.RGB(120,210,255),
+        error     = lcd.RGB(255,60,60),
+        warning   = lcd.RGB(255,200,40),
+        success   = lcd.RGB(80,255,80),
+    }
+}
+
+--- Returns the default color for a given role, using ETHOS mode-aware color table.
+function utils.defaultColor(role)
+    local mode = lcd.darkMode() and "dark" or "light"
+    role = tostring(role):lower()
+    return DEFAULT_COLORS[mode][role] or (mode == "dark" and lcd.RGB(140,140,140) or lcd.RGB(100,100,100))
 end
 
 --- Resolve a named, bright/light, dark, or raw-RGB color.
@@ -297,33 +345,32 @@ end
 
 -- Single color resolve by context key (returns RGB number)
 function utils.resolveThemeColor(colorkey, value)
-    -- If already a number (e.g. lcd.RGB), just return
+    -- User/theme override takes priority
     if type(value) == "number" then return value end
-    -- an oddbal of a string "transparent" should return nil
-    if type(value) == "string" and value == "transparent" then
-        return nil
-    end    
-    -- If string (like "red"), use resolveColor
+    if type(value) == "string" and value == "transparent" then return nil end
     if type(value) == "string" then
         local resolved = utils.resolveColor(value)
         if resolved then return resolved end
     end
-    -- Provide context defaults
-    if colorkey == "fillcolor" then
-        return lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)
-    elseif colorkey == "fillbgcolor" then
-        return lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)
-    elseif colorkey == "framecolor" then
-        return lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)
-    elseif colorkey == "textcolor" then
-        return lcd.RGB(255,255,255)
-    elseif colorkey == "titlecolor" then
-        return lcd.RGB(255,255,255)
-    elseif colorkey == "accentcolor" then
-        return lcd.RGB(255, 255, 255)
+    if type(value) == "table" and #value >= 3 then
+        return lcd.RGB(value[1], value[2], value[3], 1)
     end
-    -- fallback
-    return lcd.darkMode() and lcd.RGB(40, 40, 40) or lcd.RGB(240, 240, 240)
+
+    -- Fallback: use DEFAULT_COLORS by color key
+    if colorkey then
+        -- Map colorkey to our default roles
+        local role = tostring(colorkey):gsub("color$", ""):gsub("_", ""):lower()
+        if role == "bg" or role == "background" then role = "bg"
+        elseif role == "frame" or role == "border" then role = "frame"
+        elseif role == "fillbg" or role == "fill" then role = "fill"
+        elseif role == "accent" then role = "accent"
+        elseif role == "highlight" then role = "highlight"
+        elseif role == "text" or role == "title" then role = "text"
+        end
+        return utils.defaultColor(role)
+    end
+    -- fallback: generic background
+    return utils.defaultColor("bg")
 end
 
 -- For arrays like bandColors (returns a resolved RGB array)
@@ -636,11 +683,7 @@ end
 -- dark mode is enabled, and fills the entire window with the selected color.
 function utils.setBackgroundColourBasedOnTheme()
     local w, h = lcd.getWindowSize()
-    if lcd.darkMode() then
-        lcd.color(lcd.RGB(16, 16, 16))
-    else
-        lcd.color(lcd.RGB(209, 208, 208))
-    end
+    lcd.color(utils.defaultColor("bg"))
     lcd.drawFilledRectangle(0, 0, w, h)
 end
 
