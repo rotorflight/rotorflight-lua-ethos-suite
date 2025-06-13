@@ -1,4 +1,4 @@
-# rfsuite Widget Hooks README
+# 3rd Party widget hooks provided by rfsuite
 
 This document explains the various hooks and APIs provided by **rfsuite** for developing widgets and extensions for Rotorflight. It covers the lifecycle functions you can implement, how to register your widget, and how to leverage the rfsuite session, tasks, telemetry, MSP, and utility APIs.
 
