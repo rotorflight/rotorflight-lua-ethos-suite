@@ -1,266 +1,273 @@
-# Rotorflight Dashboard Theme System — 2024 Feature Update
+# Dashboard Themes Developer Guide — Comprehensive Reference
 
-This section describes all supported **box types**, new **selection/navigation** features, advanced theme customization options, and now flexible box positioning and sizing options available in the latest Rotorflight dashboard.
+This document provides a complete technical reference for creating, customizing, and extending dashboard themes in Rotorflight. It covers theme structure, lifecycle hooks, box definitions, object types and subtypes (from the `objects` library), common properties, positioning/sizing, styling, interactivity, and examples.
 
 ---
 
-## 📦 Box Type Reference
+## 1. Directory & File Structure
 
-You can use the following `type` values for each box in your theme’s `boxes` array. Each type has its own display logic and available options:
+Rotorflight dashboard themes and objects are organized under:
 
-| `type`         | Description                                                                         | Box Options Used                               |
-| -------------- | ----------------------------------------------------------------------------------- | ---------------------------------------------- |
-| `telemetry`    | Telemetry sensor value (numeric or text, with units/transform)                      | `source`, `title`, `unit`, `transform`, etc.   |
-| `text`         | Arbitrary text value, can use source or be static                                   | `source`, `title`, `unit`, etc.                |
-| `image`        | Display an image from a path or value                                               | `source` or `value` (path), `imagewidth`, etc. |
-| `modelimage`   | Automatically show the current model’s image                                        | (auto-detects model)                           |
-| `governor`     | Show Governor state from telemetry                                                  | (auto)                                         |
-| `craftname`    | Show current model/craft name                                                       | (auto)                                         |
-| `apiversion`   | Show the API version of Rotorflight                                                 | (auto)                                         |
-| `session`      | Display a value from the session (use `source` for key)                             | `source` (e.g., `"rx_rssi"`), etc.             |
-| `blackbox`     | Show Blackbox storage used/total                                                    | (auto, shows MB)                               |
-| `function`     | Call a custom drawing function (`value` is your function)                           | `value = function(x, y, w, h) ... end`         |
-| `gauge`        | Draw a gauge (bar, horizontal or vertical), fully customizable                      | See **Manual Gauge** below                     |
-| `fuelgauge`    | **Simple:** Draw a ready-to-use fuel gauge with built-in thresholds and defaults    | See **Simple Gauge** below                     |
-| `voltagegauge` | **Simple:** Draw a ready-to-use voltage gauge with built-in thresholds and defaults | See **Simple Gauge** below                     |
-| `arcgauge`     | Draw a circular/semi-circular arc gauge with min, max, thresholds, and rich styling | See **Arc Gauge** below                        |
-
-**Example usage:**
-
-```lua
-{ type = "telemetry", source = "voltage", title = "VOLTAGE", unit = "V" }
-{ type = "arcgauge", source = "voltage", arcColor = "red", startAngle = 225, arcThickness = 12, ... }
+```
+<SCRIPTS>/rfsuite/widgets/dashboard/
+├── objects/           # Reusable widget implementations (dial, gauge, image, etc.)
+│   ├── dial/
+│   │   ├── image.lua
+│   │   └── rainbow.lua
+│   ├── func/func.lua
+│   ├── gauge/arc.lua
+│   ├── gauge/bar.lua
+│   ├── gauge/ring.lua
+│   ├── image/image.lua
+│   ├── image/model.lua
+│   ├── text/apiversion.lua
+│   ├── text/armflags.lua
+│   ├── text/blackbox.lua
+│   ├── text/craftname.lua
+│   ├── text/governor.lua
+│   ├── text/session.lua
+│   ├── text/stats.lua
+│   ├── text/telemetry.lua
+│   │── text.lua
+│   └── time/clock.lua
+│       time.lua
+└── themes/            # Installed themes
+    ├── default/
+    │   ├── icon.png
+    │   ├── init.lua       # Returns theme table (layout, boxes)
+    │   ├── preflight.lua  # Runs before flight initialization
+    │   ├── inflight.lua   # Runs at flight start
+    │   └── postflight.lua # Runs after flight termination
+    ├── @aerc/             # Example user theme
+    ├── developer-basic/   # Includes configure.lua for setup UI
+    └── ...
 ```
 
-> All box types can also use: `col`, `row`, `x_pct`, `y_pct`, `w_pct`, `h_pct`, `x`, `y`, `w`, `h`, `offsetx`, `offsety`, `colspan`, `rowspan`, `padding`, `color`, `bgcolor`, `title`, `unit`, `onpress`, and more.
+**System vs User Themes**
+
+* **System**: `SCRIPTS:rfsuite/widgets/dashboard/themes/<themename>/`
+* **User**:   `SCRIPTS:rfsuite.user/dashboard/<themename>/`
+
+User themes override system themes of the same name and are safe from package updates.
 
 ---
 
-## 🆕 **Box Positioning and Sizing (2024 Update)**
+## 2. Theme Lifecycle Hooks
 
-Every box now supports **three placement modes**, in priority order:
+Each theme may implement the following Lua modules:
 
-1. **Percent-based**: Use `x_pct` and `y_pct` (optionally `w_pct`/`h_pct` for width/height) to place and size by percentage of the widget area.
-2. **Pixel-based**: Use `x` and `y` (optionally `w`/`h`) to place and size in fixed pixels.
-3. **Grid-based**: Use `col` and `row` (with optional `colspan`/`rowspan`) to use the classic grid.
+* **`init.lua`** (required): returns a table with at minimum:
 
-The box rendering system will **auto-detect which style you use**—whichever of these is set (in the above order) takes precedence.
+  * `layout` (table): global settings (colors, fonts, selection style).
+  * `boxes` (array): list of box definitions (see Section 4).
+* **`preflight.lua`** (optional): called once before flight setup.
+* **`inflight.lua`** (optional): called once at the start of flight.
+* **`postflight.lua`** (optional): called once after flight ends.
+* **`configure.lua`** (optional): for themes with configurable parameters.
 
-**If you use percent or pixel positioning, specifying `w`/`h` (or `w_pct`/`h_pct`) is recommended** so you control the box size. If not specified, it defaults to a standard grid box size.
-
-### **Examples:**
-
-* **Percent-based (recommended for responsive UIs):**
-
-  ```lua
-  { type = "gauge", x_pct = 0.5, y_pct = 0.15, w_pct = 0.3, h_pct = 0.12, ... }
-  -- 50% from left, 15% from top, 30% wide, 12% tall (all relative to dashboard area)
-  ```
-* **Pixel-based (absolute, not responsive):**
-
-  ```lua
-  { type = "image", x = 120, y = 40, w = 80, h = 60, ... }
-  ```
-* **Grid-based (classic style):**
-
-  ```lua
-  { type = "text", col = 2, row = 1, colspan = 2, rowspan = 1, ... }
-  ```
-
-**Tip:**
-
-* If both percent and pixel or grid positions are present, the priority is: `x_pct`/`y_pct` > `x`/`y` > `col`/`row`.
-* Use `w_pct`/`h_pct` with percent placement for fully responsive layouts.
-* All sizing values default to the grid box size if not explicitly set.
-
----
-
-## 🆕 Box Selection, Keyboard & Touch Navigation
-
-**Any box with an `onpress` handler is focusable/selectable.**
-You can highlight and activate these boxes using a rotary/keyboard or by touch.
-
-**Navigation:**
-
-* **Rotary left/right**: Move selection between all boxes that define `onpress`.
-* **Enter (OK/press)**: Activates the selected box’s `onpress`.
-* **Exit**: Removes selection highlight.
-
-**Touch:**
-
-* Tapping a box with `onpress` will highlight it and fire its event, keeping selection in sync with rotary navigation.
-
-#### Custom Highlight Style
-
-Add the following to your theme’s `layout` table to customize highlight color/border:
+Example **`init.lua`**:
 
 ```lua
-layout = {
-    ...,
-    selectcolor = lcd.RGB(0, 200, 255),  -- Custom color (any lcd.RGB or named color)
-    selectborder = 2                     -- Border thickness (pixels)
-}
-```
-
-*If not set, defaults to yellow (255,255,0) and 4px thickness.*
-
----
-
-## 🖲️ Example Box with `onpress`
-
-```lua
-{
-    col = 2, row = 2, type = "telemetry", title = "ALT",
-    onpress = function(widget, box, x, y, cat, val)
-        -- Custom behavior when box is selected or tapped
-    end
-}
-```
-
-> **Tip:** Touching a box moves the selection focus to that box, so rotary/enter continues from there. On non-touch radios, navigation still works with rotary/keypad.
-
----
-
-## 🛠️ Gauges: Manual, Simple, and Arc
-
-There are now **three ways** to add gauges to your dashboard:
-
-### 1. **Full Manual Gauge (`type = "gauge"`)**
-
-* **Use for**: Full control and customization.
-* **Must specify**: All relevant properties, thresholds, and styling.
-* **Best for**: Advanced layouts, special threshold colors, or custom sources.
-
-**Example:**
-
-```lua
-{
-    type = "gauge",
-    col = 1, row = 1,
-    source = "fuel",
-    gaugemin = 0,
-    gaugemax = 100,
-    gaugeorientation = "vertical",
-    thresholds = {
-        { value = 20,  color = "red",    textcolor = "white" },
-        { value = 50,  color = "orange", textcolor = "black" }
+return {
+  layout = {
+    selectcolor  = lcd.RGB(255,128,0),
+    selectborder = 3,
+    defaultbg    = "black",
+  },
+  boxes = {
+    { col = 1, row = 1, type = "text", subtype = "telemetry", source = "alt", title = "ALT", unit = "m" },
+    { x_pct = 0.5, y_pct = 0.1, w_pct = 0.4, h_pct = 0.2,
+      type = "gauge", subtype = "bar", source = "fuel", gaugemin = 0, gaugemax = 100,
+      title = "Fuel", unit = "%"
     },
-    gaugecolor = "green",
-    title = "FUEL",
-    unit = "%",
-}
-```
-
-### 2. **Simple/Auto Gauge (`type = "fuelgauge"` or `type = "voltagegauge"`)**
-
-* **Use for**: Quick setup with good defaults.
-* **Automatically**: Applies common thresholds and styling (can still override).
-* **Best for**: End users or quick layouts.
-
-**Example:**
-
-```lua
-{ col = 1, row = 2, type = "fuelgauge", title = "Fuel", unit = "%", titlepos = "bottom", gaugeorientation = "vertical" }
-{ col = 2, row = 2, type = "voltagegauge", title = "Voltage", unit = "V", titlepos = "bottom", gaugeorientation = "horizontal" }
-```
-
-You can override any parameter from the manual approach, but usually only `title`, `unit`, and `orientation` are needed.
-
-### 3. **Arc Gauge (`type = "arcgauge"`)**
-
-* **Use for**: Circular/semi-circular value gauge (like analog dials).
-* **Parameters:**
-
-  * `source`        : Telemetry field or function for value
-  * `gaugemin`      : Minimum value (number or function)
-  * `gaugemax`      : Maximum value (number or function)
-  * `unit`          : Display unit (e.g., "V", "A")
-  * `arcColor`      : Main color of arc (named string, lcd.RGB, or function)
-  * `arcBgColor`    : Background arc color (named string, lcd.RGB, or function)
-  * `arcThickness`  : Thickness of the arc in pixels (default: auto)
-  * `startAngle`    : Starting angle in degrees (0=right, 90=up, 180=left, 270=down; default: 135)
-  * `sweep`         : Degrees covered by the arc (default: 270)
-  * `thresholds`    : Table of `{ value, color }` to change color by value
-  * `title`         : Gauge label
-  * `titlepos`      : "top" or "bottom" (default: "top")
-  * `titlealign`    : "left", "center", or "right" (default: "center")
-  * `titlecolor`    : Title color
-  * `textColor`     : Color of the value text
-  * All standard position/sizing params supported (see above)
-
-**Example:**
-
-```lua
-{
-    type = "arcgauge",
-    col = 2, row = 2, rowspan = 2,
-    source = "voltage",
-    arcColor = "red",
-    arcBgColor = "gray",
-    arcThickness = 14,
-    gaugemin = 9.0,
-    gaugemax = 12.6,
-    startAngle = 225, -- Open at bottom
-    sweep = 270,
-    title = "VOLTAGE",
-    unit = "V",
-    titlepos = "bottom",
-    titlealign = "center"
+    -- ...
+  }
 }
 ```
 
 ---
 
-## 📚 Box and Layout Options (Common Across Types)
+## 3. Box Definition: Common Fields
 
-* **Position & Size:**
+Each entry in the `boxes` array is a table with the following core fields:
 
-  * `x_pct`, `y_pct`, `w_pct`, `h_pct`: Position and size as a percent of the dashboard area (0–1 or 0–100).
-  * `x`, `y`, `w`, `h`: Position and size in pixels (absolute, not responsive).
-  * `col`, `row`, `colspan`, `rowspan`: Grid position (classic method).
-* **title, unit**: Label and unit display.
-* **color, titlecolor, bgcolor**: Value/text/background color.
-* **gaugemin, gaugemax**: Min/max value for bar fill (can be number or function).
-* **gaugecolor, gaugebgcolor**: Main and background color of the gauge bar.
-* **gaugeorientation**: "vertical" or "horizontal" (fill direction).
-* **thresholds**: List of value breakpoints for dynamic color changes (see above).
-* **padding, titlealign, valuealign**: Fine-tune spacing and alignment.
-* **onpress**: Add a function to make any box selectable/clickable.
+| Field                             | Type                   | Description                                                               |
+| --------------------------------- | ---------------------- | ------------------------------------------------------------------------- |
+| `type`                            | string                 | Object type (see Section 4).                                              |
+| `subtype`                         | string                 | Variant of the object (defaults vary per type).                           |
+| **Positioning**                   |                        | *One of:*                                                                 |
+| ├ `x_pct`,`y_pct`,`w_pct`,`h_pct` | number (0–1 or 0–100)  | Percentage of dashboard area (responsive).                                |
+| ├ `x`,`y`,`w`,`h`                 | integer                | Pixels from top-left (absolute).                                          |
+| └ `col`,`row`,`colspan`,`rowspan` | integer                | Grid cell coordinates (classic).                                          |
+| **Styling**                       |                        |                                                                           |
+| `color`,`bgcolor`,`titlecolor`    | color                  | Value, background, and title colors (fallback to theme defaults).         |
+| `font`,`titlefont`                | font                   | Fonts for value and title.                                                |
+| `padding`,`titlepadding`          | number                 | Padding around content.                                                   |
+| **Labeling**                      |                        |                                                                           |
+| `title`                           | string                 | Label text (if omitted, some subtypes auto-generate).                     |
+| `unit`                            | string                 | Unit text appended to values.                                             |
+| **Data**                          |                        |                                                                           |
+| `source`                          | string                 | Telemetry field name or other data key.                                   |
+| `value`                           | any                    | Static value (overrides `source`).                                        |
+| `transform`                       | string/function/number | Built-in math transform or custom function for value adjustments.         |
+| `novalue`                         | string                 | Text to display when data is missing (default "-").                       |
+| **Interactivity**                 |                        |                                                                           |
+| `onpress`                         | function               | Callback `(widget, box, x, y, cat, val)` when the box is pressed/focused. |
 
----
-
-## 🎨 Theme Locations: System Themes vs User Themes
-
-Rotorflight supports two distinct locations for dashboard themes:
-
-### **System Themes**
-
-* **Path:**
-  `/scripts/rfsuite/widgets/dashboard/themes/<themename>`
-* **Description:**
-  System themes come pre-installed with Rotorflight. These serve as the built-in or default options, and provide a great starting point or reference for customizations.
-
-### **User Themes**
-
-* **Path:**
-  `/scripts/rfsuite.user/dashboard/<themename>`
-* **Description:**
-  User themes are your personal, editable copies. To add a custom theme, simply place your theme folder here. User themes can be modified freely and will not be overwritten by updates.
-
-> **Tip:** If a user theme and a system theme have the same name, both will appear in the theme selector—user themes are clearly marked and can be prioritized as needed.
-
-**How the theme selector works:**
-
-* The dashboard will display both user and system themes when you choose a theme.
-* Your selection is saved using a key like `user/themename` or `system/themename`, so the dashboard knows exactly where to look.
-* You can safely test or modify themes in the user location without affecting system files.
+> **Priority:** Percent-based > Pixel-based > Grid-based. Whichever mode is detected first is used.
 
 ---
 
-For more information, examples, and advanced customization, see the rest of this documentation or the default themes in the `themes/` folder.
+## 4. Object Types & Subtypes
+
+The `type` field selects an object wrapper under `objects/`. Use `subtype` to choose specific implementations.
+
+### 4.1 Text (`type = "text")`
+
+Outputs static or telemetry-based text. Subtypes located in `objects/text/`:
+
+| `subtype`    | Description                            | Default source    |
+| ------------ | -------------------------------------- | ----------------- |
+| `text`       | Static text string defined in `value`. | –                 |
+| `telemetry`  | Telemetry value (`source` required).   | –                 |
+| `apiversion` | Shows Rotorflight API version (auto).  | –                 |
+| `craftname`  | Shows current model name (auto).       | –                 |
+| `blackbox`   | Used/total Blackbox storage (auto).    | –                 |
+| `governor`   | Governor state (auto).                 | –                 |
+| `armflags`   | Armed status flags (auto).             | –                 |
+| `session`    | Any session key (`source` required).   | e.g., `"rx_rssi"` |
+| `stats`      | Session summary stats (auto).          | –                 |
+
+**Common Parameters:**
+
+* `value` (for `text` subtype)
+* `source`, `decimals`, `unit`, `font`, `textcolor`, `title`, `titlefont`, `titlecolor`, `align`, `padding`, `novalue`, `transform`.
+
+**Example:**
+
+```lua
+{ type = "text", subtype = "telemetry", source = "volt", title = "VOLTAGE", unit = "V" }
+```
+
+### 4.2 Gauge (`type = "gauge")`
+
+Bar, ring, and arc gauges under `objects/gauge/`:
+
+| `subtype` | Widget     | Key Parameters                                                                         |
+| --------- | ---------- | -------------------------------------------------------------------------------------- |
+| `bar`     | Bar gauge  | `gaugemin`, `gaugemax`, `gaugeorientation`, `thresholds`, `battery`, `batterysegments` |
+| `ring`    | Ring gauge | Circular ring with fill `%`                                                            |
+| `arc`     | Arc gauge  | `startAngle`, `sweep`, `arcThickness`, `arcColor`, `arcBgColor`, `thresholds`          |
+
+**Shared Gauge Parameters:**
+
+* `source` / `value`, `unit`, `transform`, `decimals`, `font`.
+* `bgcolor`, `fillcolor`, `gaugecolor`, `gaugebgcolor`.
+* `title`, `titlepos`, `titlealign`, `titlecolor`, `padding`.
+* `thresholds`: array of `{ value, fillcolor, textcolor }`.
+
+**Simple Shortcuts:**
+
+* `type = "fuelgauge"` ⇒ preconfigured fuel bar.
+* `type = "voltagegauge"` ⇒ preconfigured voltage bar.
+* `type = "arcgauge"` ⇒ alias for `{ type = "gauge", subtype = "arc" }`.
+
+**Example:**
+
+```lua
+{ type = "gauge", subtype = "arc", source = "volt",
+  gaugemin = 9, gaugemax = 12.6,
+  arcThickness = 14, startAngle = 225, sweep = 270,
+  title = "VOLTAGE", unit = "V", titlepos = "bottom" }
+```
+
+### 4.3 Image (`type = "image")`
+
+Displays images or model icons (`objects/image/`):
+
+| `subtype` | Description                       | Key Params                                                     |
+| --------- | --------------------------------- | -------------------------------------------------------------- |
+| `image`   | Custom image from `value`/`path`. | `value` (path), `aspect`, `align`, `imagewidth`, `imageheight` |
+| `model`   | Shows current model’s icon.       | `imagewidth`, `imageheight`                                    |
+
+**Example:**
+
+```lua
+{ type = "image", subtype = "image", value = "icons/altitude.png", x=10, y=10, w=32, h=32 }
+```
+
+### 4.4 Dial (`type = "dial")`
+
+Analog dial widgets (`objects/dial/`):
+
+| `subtype` | Description                    | Key Params                                                                  |
+| --------- | ------------------------------ | --------------------------------------------------------------------------- |
+| `image`   | Dial with custom image assets. | `dial`, `min`, `max`, `needlecolor`, `needlestartangle`, `needlesweepangle` |
+| `rainbow` | Color-gradient dial.           | `min`, `max`, `rainbow` color stops, etc.                                   |
+
+**Example:**
+
+```lua
+{ type = "dial", subtype = "image", source = "rpm", dial = "assets/dial1",
+  min = 0, max = 8000, needlecolor = "red" }
+```
+
+### 4.5 Time (`type = "time")`
+
+Displays flight timer or clock (`objects/time/`):
+
+| `subtype` | Description                       | Key Params                          |
+| --------- | --------------------------------- | ----------------------------------- |
+| `flight`  | Elapsed flight time (hh\:mm\:ss). | `format`, `font`, `title`           |
+| `clock`   | Real-time clock display.          | `format` (Lua date fmt), `timezone` |
+
+**Example:**
+
+```lua
+{ type = "time", subtype = "flight", x_pct=0.8, y_pct=0.05,
+  format = "%H:%M:%S", title = "TIMER" }
+```
+
+### 4.6 Function (`type = "func")`
+
+Custom drawing logic (`objects/func/func.lua`):
+
+* **`box.wakeup(box, telemetry)`**: return a cache table.
+* **`box.paint(x, y, w, h, box, cache, telemetry)`**: full custom rendering.
+
+**Example:**
+
+```lua
+{ type = "func", paint = function(x,y,w,h,box,cache,t)
+    lcd.drawText(x,y, string.format("%.1fV", t["volt"]))
+end }
+```
 
 ---
 
-*Rotorflight Dashboard System — Theme Developer Guide (2024 Edition)*
+## 5. Interactivity & Navigation
+
+* **Selectable Boxes:** any box with `onpress` becomes focusable.
+* **Navigation Controls:**
+
+  * Rotary/keyboard: left/right to move focus; Enter to activate.
+  * Touch: tap to focus and activate.
+* **Custom Highlight:** in `layout`:
+
+  ```lua
+  layout.selectcolor  = lcd.RGB(0,200,255)
+  layout.selectborder = 2
+  ```
 
 ---
+
+## 6. Tips & Best Practices
+
+* **Responsive Layout:** prefer percent-based (`*_pct`) for cross-resolution.
+* **Performance:** minimize heavy custom `func` paint logic.
+* **Modularity:** reuse objects in `objects/`; contribute new subtypes by adding `.lua` in the appropriate folder.
+* **Defaults:** omit fields to pick theme or object defaults.
+
+---
+
+*This guide reflects the latest objects library (2024–2025) and should serve as the definitive reference for dashboard theme development.*
