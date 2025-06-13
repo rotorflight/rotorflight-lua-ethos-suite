@@ -59,6 +59,11 @@ local eventTable = {
             local warnVoltage  = session.batteryConfig.vbatwarningcellvoltage
             local minVoltage   = session.batteryConfig.vbatmincellvoltage
 
+            local collective = session.rx.values['collective'] or 0
+            local aileron = session.rx.values['aileron'] or 0
+            local elevator = session.rx.values['elevator'] or 0
+            local rudder = session.rx.values['rudder'] or 0
+
             if not (cellCount and warnVoltage and minVoltage) then
                 return
             end
@@ -68,6 +73,19 @@ local eventTable = {
 
             -- Suppress if below suppression threshold but not zero
             if cellVoltage >= 0 and cellVoltage < suppressThreshold then
+                return
+            end
+
+            -- Define suppression percentage threshold (e.g., 0.8 for 80%)
+            local suppressionPercent = rfsuite.preferences.general.gimbalsupression or 0.85
+            local maxStickValue = 1024
+            local suppressionLimit = suppressionPercent * maxStickValue
+
+            -- Suppress if any stick input exceeds the suppression limit
+            if math.abs(collective) > suppressionLimit or
+            math.abs(aileron) > suppressionLimit or
+            math.abs(elevator) > suppressionLimit or
+            math.abs(rudder) > suppressionLimit then
                 return
             end
 
