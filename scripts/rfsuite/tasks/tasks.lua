@@ -59,7 +59,7 @@ function tasks.findTasks()
     local taskMetadata = {}
 
     for _, v in pairs(system.listFiles(tasks_path)) do
-        if v ~= ".." and v ~= "tasks.lua" then
+        if v ~= ".." and v ~= "." and not v:match("%.%a+$") then
             local init_path = tasks_path .. v .. '/init.lua'
             local func, err = rfsuite.compiler.loadfile(init_path)
 
