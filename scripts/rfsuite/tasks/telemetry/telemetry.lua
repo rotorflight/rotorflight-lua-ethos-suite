@@ -25,7 +25,7 @@ local protocol, telemetrySOURCE, crsfSOURCE
 
 -- Rate‐limiting for wakeup()
 local sensorRateLimit = os.clock()
-local SENSOR_RATE = 1          -- 1 second between onchange scans
+local SENSOR_RATE = 0.25        -- 1 second between onchange scans
 
 -- Store the last validated sensors and timestamp
 local lastValidationResult = nil
