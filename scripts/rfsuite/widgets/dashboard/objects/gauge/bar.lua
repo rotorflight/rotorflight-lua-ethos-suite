@@ -74,6 +74,23 @@ local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 local resolveThresholdColor = utils.resolveThresholdColor
+local lastDisplayValue = nil
+
+function render.dirty(box)
+    -- Always dirty on first run
+    if box._lastDisplayValue == nil then
+        box._lastDisplayValue = box._currentDisplayValue
+        return true
+    end
+
+    if box._lastDisplayValue ~= box._currentDisplayValue then
+        box._lastDisplayValue = box._currentDisplayValue
+        return true
+    end
+
+    return false
+end
+
 
 local function drawFilledRoundedRectangle(x, y, w, h, r)
     x = math.floor(x + 0.5)
@@ -269,8 +286,8 @@ function render.wakeup(box, telemetry)
         box._batteryLines = nil
     end
 
-    -- Set box.value so dashboard can track change for redraws
-    box.value = displayValue
+    -- Set box.value so dashboard/dirty can track change for redraws
+    box._currentDisplayValue = value
 
     box._cache = {
         value                    = value,

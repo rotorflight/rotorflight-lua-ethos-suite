@@ -31,6 +31,16 @@ local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 local loadImage = rfsuite.utils.loadImage
+local lastImagePath = nil
+
+function render.dirty(box)
+    if box._lastImagePath ~= box.imagePath then
+        box._lastImagePath = box._imagePath
+        return true
+    end
+    return false
+end
+
 
 function render.wakeup(box)
     local imageParam = getParam(box, "image")
@@ -52,8 +62,8 @@ function render.wakeup(box)
         imagePath = "widgets/dashboard/gfx/logo.png"
     end
 
-    -- Set box.value so dashboard can track change for redraws
-    box.value = imagePath
+    -- Set box.value so dashboard/dirty can track change for redraws
+    box._currentDisplayValue = imagePath   
 
     box._cache = {
         title              = getParam(box, "title"),

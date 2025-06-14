@@ -73,7 +73,7 @@ local statePreloadIndex = 1
 local unsupportedResolution = false  -- flag to track unsupported resolutions
 
 -- Track last known telemetry values for targeted invalidation
-dashboard._lastValues = {}
+dashboard._objectDirty = {}
 
 -- precompute indices of boxes whose object has its own `scheduler` field,
 -- so we can wake them every cycle without scanning all `boxRects`.
@@ -135,6 +135,15 @@ dashboard.loaders = assert(
 
 function dashboard.loader(x, y, w, h)
     dashboard.loaders.pulseLoader(dashboard, x, y, w, h)
+end
+
+local function forceInvalidateAllObjects()
+    for i, rect in ipairs(dashboard.boxRects) do
+        local obj = dashboard.objectsByType[rect.box.type]
+        if obj and obj.dirty and obj.dirty(rect.box) then
+            lcd.invalidate(rect.x, rect.y, rect.w, rect.h)
+        end
+    end
 end
 
 function dashboard.overlaymessage(x, y, w, h, txt)
@@ -352,7 +361,7 @@ function dashboard.renderLayout(widget, config)
     end
 
     -- Reset value cache for paint invalidation
-    dashboard._lastValues = {}
+    dashboard._objectDirty = {}
 
     -- overall size
     local W_raw, H_raw = lcd.getWindowSize()
@@ -399,7 +408,7 @@ function dashboard.renderLayout(widget, config)
         dashboard.boxRects[#dashboard.boxRects+1] = { x=x, y=y, w=w, h=h, box=box }
         
         -- Set up last value cache for this box index
-        dashboard._lastValues[#dashboard.boxRects] = nil       
+        dashboard._objectDirty[#dashboard.boxRects] = nil       
     end
 
     -- recompute how many objects to wake per cycle if the count changed
@@ -480,7 +489,10 @@ function dashboard.renderLayout(widget, config)
       dashboard.overlaymessage(0, 0, W, H, dashboard.overlayMessage or "")
       dashboard._hg_cycles = dashboard._hg_cycles - 1
       lcd.invalidate()
+      return
     end
+
+    dashboard._forceFullRepaint = true
 
 end
 
@@ -1076,22 +1088,22 @@ function dashboard.wakeup(widget)
                 end
 
                 -- Invalidate only if value changed
-                local val = rect.box.value
-                if val ~= dashboard._lastValues[idx] then
-                    dashboard._lastValues[idx] = val
+                local dirtyFn = dashboard.objectsByType[rect.box.type] and dashboard.objectsByType[rect.box.type].dirty
+                if dashboard._forceFullRepaint then
                     lcd.invalidate(rect.x, rect.y, rect.w, rect.h)
-                end            
+                elseif dirtyFn then
+                    local isDirty = dirtyFn(rect.box)
+                 rfsuite.utils.log("Box #" .. tostring(idx) .. " dirty = " .. tostring(isDirty), "debug")
+                  if isDirty then
+                      lcd.invalidate(rect.x, rect.y, rect.w, rect.h)
+                  end
+                end
             end
             objectWakeupIndex = (#dashboard.boxRects > 0) and ((objectWakeupIndex % #dashboard.boxRects) + 1) or 1
         end
 
         if objectWakeupIndex == 1 then
             objectsThreadedWakeupCount = objectsThreadedWakeupCount + 1
-        end
-
-        -- Force full repaint if overlay (e.g. loading spinner) is visible or spinner is active
-        if dashboard.overlayMessage ~= nil or dashboard._hg_cycles > 0 then
-            lcd.invalidate(widget)
         end
 
     end

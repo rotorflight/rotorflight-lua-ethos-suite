@@ -27,4 +27,10 @@ function wrapper.wakeup(box, telemetry)
     render.wakeup(box, telemetry)
 end
 
+function wrapper.dirty(box)
+    local subtype = box.subtype or "flight"
+    local render = renders[subtype]
+    return render and render.dirty and render.dirty(box) or false
+end
+
 return wrapper

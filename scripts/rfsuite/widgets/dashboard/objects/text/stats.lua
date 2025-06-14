@@ -50,6 +50,23 @@ local render = {}
 local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
+local lastDisplayValue = nil
+
+function render.dirty(box)
+    -- Always dirty on first run
+    if box._lastDisplayValue == nil then
+        box._lastDisplayValue = box._currentDisplayValue
+        return true
+    end
+
+    if box._lastDisplayValue ~= box._currentDisplayValue then
+        box._lastDisplayValue = box._currentDisplayValue
+        return true
+    end
+
+    return false
+end
+
 
 function render.wakeup(box, telemetry)
     -- Value extraction
@@ -85,8 +102,8 @@ function render.wakeup(box, telemetry)
 
     local displayValue = (value ~= nil) and utils.transformValue(value, box) or (getParam(box, "novalue") or "-")
 
-    -- Set box.value so dashboard can track change for redraws
-    box.value = displayValue
+    -- Set box.value so dashboard/dirty can track change for redraws
+    box._currentDisplayValue = displayValue
 
     -- Resolve colors
     local textcolor = utils.resolveThresholdColor(value, box, "textcolor", "textcolor")
