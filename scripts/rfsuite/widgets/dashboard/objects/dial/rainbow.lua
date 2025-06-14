@@ -108,6 +108,9 @@ function render.wakeup(box, telemetry)
         if percent > 1 then percent = 1 end
     end
 
+    -- Set box.value so dashboard can track change for redraws
+    box.value = displayValue
+
     -- All color keys are resolved here
     box._cache = {
         displayValue = displayValue,

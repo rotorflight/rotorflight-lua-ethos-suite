@@ -106,6 +106,10 @@ function render.wakeup(box)
         percentUsed = nil
     end
 
+    -- Set box.value so dashboard can track change for redraws
+    box.value = displayValue
+
+    
     -- Threshold logic (if required)
     local textcolor = percentUsed ~= nil
     and utils.resolveThresholdColor(percentUsed, box, "textcolor", "textcolor")

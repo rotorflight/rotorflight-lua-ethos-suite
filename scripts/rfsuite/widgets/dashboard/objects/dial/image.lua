@@ -164,6 +164,9 @@ function render.wakeup(box, telemetry)
     local accentcolor = resolveThemeColor("accentcolor", getParam(box, "accentcolor"))
     local framecolor = resolveThemeColor("framecolor", getParam(box, "framecolor"))
 
+    -- Set box.value so dashboard can track change for redraws
+    box.value = value
+
     -- All display geometry/padding/font values
     box._cache = {
         value           = value,
