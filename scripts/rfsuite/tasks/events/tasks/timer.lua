@@ -61,26 +61,29 @@ function timer.save()
 
     rfsuite.utils.log("Saving flight timers to INI: " .. rfsuite.session.modelPreferencesFile, "info")
 
-    -- Save only the baseLifetime as “totalflighttime”
-    rfsuite.ini.setvalue(
-        rfsuite.session.modelPreferences,
-        "general",
-        "totalflighttime",
-        rfsuite.session.timer.baseLifetime or 0
-    )
+    if rfsuite.session.modelPreferences and rfsuite.session.modelPreferencesFile then
 
-    -- Save this flight’s duration as “lastflighttime”
-    rfsuite.ini.setvalue(
-        rfsuite.session.modelPreferences,
-        "general",
-        "lastflighttime",
-        rfsuite.session.timer.session or 0
-    )
+        -- Save only the baseLifetime as “totalflighttime”
+        rfsuite.ini.setvalue(
+            rfsuite.session.modelPreferences,
+            "general",
+            "totalflighttime",
+            rfsuite.session.timer.baseLifetime or 0
+        )
 
-    rfsuite.ini.save_ini_file(
-        rfsuite.session.modelPreferencesFile,
-        rfsuite.session.modelPreferences
-    )
+        -- Save this flight’s duration as “lastflighttime”
+        rfsuite.ini.setvalue(
+            rfsuite.session.modelPreferences,
+            "general",
+            "lastflighttime",
+            rfsuite.session.timer.session or 0
+        )
+
+        rfsuite.ini.save_ini_file(
+            rfsuite.session.modelPreferencesFile,
+            rfsuite.session.modelPreferences
+        )
+    end    
 end
 
 --------------------------------------------------------------------------------
@@ -117,12 +120,14 @@ function timer.wakeup()
         rfsuite.session.timer.lifetime = computedLifetime
 
         -- Update INI so that if the app crashes mid-flight, we still have a rough total
-        rfsuite.ini.setvalue(
-            rfsuite.session.modelPreferences,
-            "general",
-            "totalflighttime",
-            computedLifetime
-        )
+        if rfsuite.session.modelPreferences then
+            rfsuite.ini.setvalue(
+                rfsuite.session.modelPreferences,
+                "general",
+                "totalflighttime",
+                computedLifetime
+            )
+        end    
 
         -- Increment flight counter once when live >= 25s
         if rfsuite.session.timer.live >= 25 and not rfsuite.session.flightCounted then

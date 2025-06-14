@@ -153,6 +153,9 @@ function ini.section_exists(data, section)
 end
 
 function ini.setvalue(data, section, key, value)
+    if not data then
+        return
+    end
     if not data[section] then
         data[section] = {}
     end
