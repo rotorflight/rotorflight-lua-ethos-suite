@@ -111,6 +111,9 @@ local lastWakeupBg = 0  -- for background wakeup
 dashboard.loaderScale    = 0.38
 dashboard.overlayScale      = 0.38
 
+-- dark mode state
+local darkModeState = lcd.darkMode()
+
 -- initialize cache once
 dashboard._moduleCache = dashboard._moduleCache or {}
 
@@ -928,6 +931,12 @@ function dashboard.wakeup(widget)
         unsupportedResolution = false    
     end
 
+    -- Reload if dark mode changed
+    if lcd.darkMode() ~= darkModeState then
+        darkModeState = lcd.darkMode()
+        rfsuite.widgets.dashboard.reload_themes(true)
+    end
+
     -- load only preflight theme on first wakeup for speed
     if firstWakeup then
         firstWakeup = false
@@ -1172,7 +1181,6 @@ function dashboard.resetFlightModeAsk()
             -- we push this to the background task to do its job
             rfsuite.session.flightMode = "preflight"
             rfsuite.tasks.events.flightmode.reset()
-            dashboard.reload_themes()
             reload_state_only("preflight")
             return true
         end
