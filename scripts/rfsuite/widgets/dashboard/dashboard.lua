@@ -157,11 +157,11 @@ end
 -- @param count number The total number of objects to schedule.
 -- @return number The percentage (as a decimal) of objects to process per cycle.
 local function computeObjectSchedulerPercentage(count)
-    if count <= 10 then return 0.6      -- fewer objects → more per cycle
-    elseif count <= 15 then return 0.5
-    elseif count <= 25 then return 0.4
-    elseif count <= 40 then return 0.3
-    else return 0.2 end                -- many objects → fewer per cycle
+    if count <= 10 then return 0.8      -- fewer objects → more per cycle
+    elseif count <= 15 then return 0.7
+    elseif count <= 25 then return 0.6
+    elseif count <= 40 then return 0.5
+    else return 0.4 end                -- many objects → fewer per cycle
 end
 
 --- Loads a single dashboard object type (box) if not already loaded.
@@ -1089,13 +1089,12 @@ function dashboard.wakeup(widget)
 
                 -- Invalidate only if value changed
                 local dirtyFn = dashboard.objectsByType[rect.box.type] and dashboard.objectsByType[rect.box.type].dirty
-                if dashboard._forceFullRepaint then
-                    lcd.invalidate(rect.x, rect.y, rect.w, rect.h)
+                if dashboard._forceFullRepaint or dashboard.overlayMessage or objectsThreadedWakeupCount < 1 then
+                    lcd.invalidate()
                 elseif dirtyFn then
-                    local isDirty = dirtyFn(rect.box)
-                 rfsuite.utils.log("Box #" .. tostring(idx) .. " dirty = " .. tostring(isDirty), "debug")
+                  local isDirty = dirtyFn(rect.box)
                   if isDirty then
-                      lcd.invalidate(rect.x, rect.y, rect.w, rect.h)
+                      lcd.invalidate(rect.x - 1, rect.y -1 , rect.w + 2, rect.h + 2)
                   end
                 end
             end
@@ -1210,9 +1209,11 @@ function dashboard.resetFlightModeAsk()
         action = function()
 
             -- we push this to the background task to do its job
+            dashboard.flightmode = "preflight"
             rfsuite.session.flightMode = "preflight"
             rfsuite.tasks.events.flightmode.reset()
-            reload_state_only("preflight")
+            dashboard._forceFullRepaint = true
+            lcd.invalidate()
             return true
         end
     }, {
