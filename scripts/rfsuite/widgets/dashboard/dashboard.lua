@@ -135,6 +135,7 @@ dashboard.loaders = assert(
 
 function dashboard.loader(x, y, w, h)
         dashboard.loaders.staticLoader(dashboard, x, y, w, h)
+        lcd.invalidate()
 end
 
 local function forceInvalidateAllObjects()
@@ -263,7 +264,7 @@ function dashboard.computeOverlayMessage()
         return rfsuite.i18n.get("widgets.dashboard.check_rf_module_on")
     elseif not (sportSensor or elrsSensor) then
         return rfsuite.i18n.get("widgets.dashboard.check_discovered_sensors")
-    elseif not rfsuite.session.isConnected and  state ~= "postflight" then
+    elseif not rfsuite.session.apiVersion and  state ~= "postflight" then
         return rfsuite.i18n.get("widgets.dashboard.waiting_for_connection")    
     elseif not rfsuite.session.telemetryState and state == "preflight" then
         return rfsuite.i18n.get("widgets.dashboard.no_link")
@@ -341,8 +342,6 @@ local function getBoxPosition(box, w, h, boxWidth, boxHeight, PADDING, WIDGET_W,
 end
 
 function dashboard.renderLayout(widget, config)
-
-    rfsuite.utils.log("Starting renderLayout at " .. tostring(os.clock()), "info")
 
     local utils     = dashboard.utils
     local telemetry = rfsuite.tasks.telemetry
@@ -690,6 +689,9 @@ function dashboard.reload_active_theme_only(force)
     else
         rfsuite.utils.log("Skipped reloading active theme: already loaded", "info")
     end
+    
+    firstWakeup = true
+    lcd.invalidate()  -- Triggers paint, which shows the loader
 
     -- Reset scheduler & layout state so the hourglass & wakeup cycle restart cleanly
     wakeupScheduler             = 0
@@ -796,6 +798,7 @@ function dashboard.paint(widget)
     if firstWakeup then
         local W, H = lcd.getWindowSize()
         dashboard.loader(0, 0, W, H)
+        lcd.invalidate()  -- Ensures repaint while theme loads
         return
     end
 
@@ -1065,7 +1068,8 @@ function dashboard.wakeup(widget)
     local newMessage = dashboard.computeOverlayMessage()
     if dashboard.overlayMessage ~= newMessage then
         dashboard.overlayMessage = newMessage
-        lcd.invalidate(widget) -- Redraw only if message changed
+        dashboard._hg_cycles = newMessage and dashboard._hg_cycles_required or 0
+        lcd.invalidate(widget)
     end
 
     local state = dashboard.flightmode or "preflight"
@@ -1122,14 +1126,6 @@ function dashboard.wakeup(widget)
         dashboard.selectedBoxIndex = nil
         lcd.invalidate(widget)
     end
-
-if dashboard._actualWakePasses == 1 then
-  rfsuite.utils.log("Initial wakeup pass started at " .. tostring(os.clock()), "info")
-end
-
-if dashboard._actualWakePasses == dashboard._expectedWakePasses then
-  rfsuite.utils.log("Final wakeup pass completed at " .. tostring(os.clock()), "info")
-end
 
 end
 

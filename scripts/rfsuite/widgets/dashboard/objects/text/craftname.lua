@@ -35,7 +35,8 @@ local resolveThemeColor = utils.resolveThemeColor
 local lastDisplayValue = nil
 
 function render.dirty(box)
-    -- Always dirty on first run
+    if not rfsuite.session.telemetryState then return false end
+
     if box._lastDisplayValue == nil then
         box._lastDisplayValue = box._currentDisplayValue
         return true
