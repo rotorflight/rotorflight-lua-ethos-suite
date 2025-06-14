@@ -11,6 +11,12 @@ function wrapper.paint(x, y, w, h, box)
 end
 
 function wrapper.wakeup(box, telemetry)
+
+    -- Ensure telemetry is available
+    if not telemetry then
+        return
+    end
+
     local subtype = box.subtype or "flight"
 
     if not renders[subtype] then
