@@ -50,10 +50,17 @@ local resolveThemeColor = utils.resolveThemeColor
 local lastDisplayValue = nil
 
 function render.dirty(box)
+    -- Always dirty on first run
+    if box._lastDisplayValue == nil then
+        box._lastDisplayValue = box._currentDisplayValue
+        return true
+    end
+
     if box._lastDisplayValue ~= box._currentDisplayValue then
         box._lastDisplayValue = box._currentDisplayValue
         return true
     end
+
     return false
 end
 
@@ -173,6 +180,9 @@ function render.wakeup(box, telemetry)
     local titlecolor = resolveThemeColor("titlecolor", getParam(box, "titlecolor"))
     local accentcolor = resolveThemeColor("accentcolor", getParam(box, "accentcolor"))
     local framecolor = resolveThemeColor("framecolor", getParam(box, "framecolor"))
+
+    -- Set box.value so dashboard/dirty can track change for redraws
+    box._currentDisplayValue = value
 
     -- All display geometry/padding/font values
     box._cache = {

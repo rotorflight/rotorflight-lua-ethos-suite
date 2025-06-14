@@ -137,6 +137,15 @@ function dashboard.loader(x, y, w, h)
     dashboard.loaders.pulseLoader(dashboard, x, y, w, h)
 end
 
+local function forceInvalidateAllObjects()
+    for i, rect in ipairs(dashboard.boxRects) do
+        local obj = dashboard.objectsByType[rect.box.type]
+        if obj and obj.dirty and obj.dirty(rect.box) then
+            lcd.invalidate(rect.x, rect.y, rect.w, rect.h)
+        end
+    end
+end
+
 function dashboard.overlaymessage(x, y, w, h, txt)
     dashboard.loaders.pulseOverlayMessage(dashboard, x, y, w, h, txt)
 end
@@ -480,7 +489,10 @@ function dashboard.renderLayout(widget, config)
       dashboard.overlaymessage(0, 0, W, H, dashboard.overlayMessage or "")
       dashboard._hg_cycles = dashboard._hg_cycles - 1
       lcd.invalidate()
+      return
     end
+
+    dashboard._forceFullRepaint = true
 
 end
 
@@ -1074,15 +1086,17 @@ function dashboard.wakeup(widget)
                 if obj and obj.wakeup and not obj.scheduler then
                     obj.wakeup(rect.box, rfsuite.tasks.telemetry)
                 end
-                
+
                 -- Invalidate only if value changed
                 local dirtyFn = dashboard.objectsByType[rect.box.type] and dashboard.objectsByType[rect.box.type].dirty
-                if dirtyFn then
+                if dashboard._forceFullRepaint then
+                    lcd.invalidate(rect.x, rect.y, rect.w, rect.h)
+                elseif dirtyFn then
                     local isDirty = dirtyFn(rect.box)
-                    rfsuite.utils.log("Box #" .. tostring(idx) .. " dirty = " .. tostring(isDirty), "debug")
-                    if isDirty then
-                        lcd.invalidate(rect.x, rect.y, rect.w, rect.h)
-                    end
+                 rfsuite.utils.log("Box #" .. tostring(idx) .. " dirty = " .. tostring(isDirty), "debug")
+                  if isDirty then
+                      lcd.invalidate(rect.x, rect.y, rect.w, rect.h)
+                  end
                 end
             end
             objectWakeupIndex = (#dashboard.boxRects > 0) and ((objectWakeupIndex % #dashboard.boxRects) + 1) or 1

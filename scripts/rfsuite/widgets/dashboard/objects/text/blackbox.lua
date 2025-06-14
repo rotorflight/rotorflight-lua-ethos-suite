@@ -39,10 +39,17 @@ local eraseDataflashGo = false
 local lastDisplayValue = nil
 
 function render.dirty(box)
+    -- Always dirty on first run
+    if box._lastDisplayValue == nil then
+        box._lastDisplayValue = box._currentDisplayValue
+        return true
+    end
+
     if box._lastDisplayValue ~= box._currentDisplayValue then
         box._lastDisplayValue = box._currentDisplayValue
         return true
     end
+
     return false
 end
 
@@ -116,8 +123,8 @@ function render.wakeup(box)
         percentUsed = nil
     end
 
-
-
+    -- Set box.value so dashboard/dirty can track change for redraws
+    box._currentDisplayValue = displayValue
     
     -- Threshold logic (if required)
     local textcolor = percentUsed ~= nil

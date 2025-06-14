@@ -71,6 +71,9 @@ function render.wakeup(box)
         imagePath = "widgets/dashboard/gfx/logo.png"
     end
 
+    -- Set box.value so dashboard/dirty can track change for redraws
+    box._currentDisplayValue = imagePath   
+
      box._cache = {
         title              = utils.getParam(box, "title"),
         titlepos           = utils.getParam(box, "titlepos"),
