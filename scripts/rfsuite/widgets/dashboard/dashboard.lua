@@ -121,7 +121,7 @@ local darkModeState = lcd.darkMode()
 dashboard._moduleCache = dashboard._moduleCache or {}
 
 -- how many paint‐cycles to keep showing the spinner (5 s ÷ paint_interval)
- dashboard._hg_cycles_required = math.ceil(2.5 / (loadedThemeIntervals.paint_interval or 0.5))
+ dashboard._hg_cycles_required = math.ceil(0.5 / (loadedThemeIntervals.paint_interval or 0.5))
  dashboard._hg_cycles = 0
 
 -- Utility methods loaded from external utils.lua (drawing, color helpers, etc.)
@@ -134,7 +134,7 @@ dashboard.loaders = assert(
 )()
 
 function dashboard.loader(x, y, w, h)
-    dashboard.loaders.pulseLoader(dashboard, x, y, w, h)
+        dashboard.loaders.staticLoader(dashboard, x, y, w, h)
 end
 
 local function forceInvalidateAllObjects()
@@ -147,7 +147,7 @@ local function forceInvalidateAllObjects()
 end
 
 function dashboard.overlaymessage(x, y, w, h, txt)
-    dashboard.loaders.pulseOverlayMessage(dashboard, x, y, w, h, txt)
+    dashboard.loaders.staticOverlayMessage(dashboard, x, y, w, h, txt)
 end
 
 --- Calculates the scheduler percentage based on the number of objects.
