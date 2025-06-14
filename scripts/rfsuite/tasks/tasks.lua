@@ -185,7 +185,7 @@ function tasks.wakeup()
                     name = name,
                     interval = meta.interval,
                     script = meta.script,
-                    priority = tconfig.priority or 1,
+                    priority = meta.priority or 1,
                     msp = meta.msp,
                     no_link = meta.no_link,
                     always_run = meta.always_run,
