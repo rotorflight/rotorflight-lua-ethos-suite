@@ -47,7 +47,7 @@ local lightMode = {
 
 -- alias current mode
 local colorMode = lcd.darkMode() and darkMode or lightMode
-local lastState = lcd.darkMode() 
+
 
 
 local layout = {
@@ -76,12 +76,7 @@ local boxes = {
     {col = 3, row = 4, type = "text", subtype = "stats", stattype = "min", source = "rssi", title = "Link Min", titlepos = "bottom", bgcolor = colorMode.bgcolor, transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
 }
 
-local wakeup = function()
-  if lcd.darkMode() ~= lastState then
-    lastState = lcd.darkMode()
-    rfsuite.widgets.dashboard.reload_themes(true)
-  end
-end
+
 
 
 

@@ -39,7 +39,6 @@ local lightMode = {
 
 -- alias current mode
 local colorMode = lcd.darkMode() and darkMode or lightMode
-local lastState = lcd.darkMode() 
 
 
 local layout = {
@@ -238,17 +237,9 @@ local boxes = {
     },    
 }
 
-local wakeup = function()
-  if lcd.darkMode() ~= lastState then
-    lastState = lcd.darkMode()
-    rfsuite.widgets.dashboard.reload_themes(true)
-  end
-end
-
 return {
     layout = layout,
     boxes = boxes,
-    wakeup = wakeup,
     scheduler = {
         wakeup_interval = 0.1,          -- Interval (seconds) to run wakeup script when display is visible
         wakeup_interval_bg = 5,         -- (optional: run wakeup this often when not visible; set nil/empty to skip)
