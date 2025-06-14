@@ -13,6 +13,10 @@ local render = {}
 local utils = rfsuite.widgets.dashboard.utils
 
 function render.wakeup(box, telemetry)
+
+    -- Set box.value so dashboard can track change for redraws
+    box.value = math.random(1, 50)
+
     if type(box.wakeup) == "function" then
         box._cache = box.wakeup(box, telemetry)
     else

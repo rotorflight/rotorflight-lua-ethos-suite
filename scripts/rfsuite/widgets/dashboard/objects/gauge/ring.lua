@@ -86,6 +86,9 @@ function render.wakeup(box, telemetry)
         end
     end
 
+    -- Set box.value so dashboard can track change for redraws
+    box.value = displayValue
+
     -- Cache only essentials
     box._cache = {
         value        = value,

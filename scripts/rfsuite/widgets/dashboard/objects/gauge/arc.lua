@@ -186,6 +186,9 @@ function render.wakeup(box, telemetry)
         unit = nil
     end
 
+    -- Set box.value so dashboard can track change for redraws
+    box.value = displayValue
+
     box._cache = {
         value              = value,
         maxval             = maxval,

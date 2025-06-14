@@ -48,6 +48,9 @@ function render.wakeup(box)
         unit = nil
     end
 
+    -- Set box.value so dashboard can track change for redraws
+    box.value = displayValue
+
     box._cache = {
         title              = getParam(box, "title"),
         titlepos           = getParam(box, "titlepos"),
