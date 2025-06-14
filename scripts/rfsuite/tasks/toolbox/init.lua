@@ -17,7 +17,8 @@
  * 
 ]] --
 local init = {
-    interval = 0.25, -- run every 0.025s
+    interval = 0.5, -- run at least every 0.1s
+    priority = 1, -- medium priority.  1 = low , 2 = medium, 3 = high, etc
     script = "toolbox.lua", -- run this script
     msp = false, -- do not run if busy with msp 
     no_link = true -- run this script always

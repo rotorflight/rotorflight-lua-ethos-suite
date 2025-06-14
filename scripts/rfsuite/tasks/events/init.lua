@@ -17,7 +17,8 @@
  * 
 ]] --
 local init = {
-    interval = 0.025, -- run every 0.025s
+    interval = 0.1, -- run at least every 0.1s
+    priority = 2, -- medium priority.  1 = low , 2 = medium, 3 = high, etc
     script = "events.lua", -- run this script
     msp = false, -- do not run if busy with msp 
     no_link = true -- run this script always

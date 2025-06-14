@@ -17,7 +17,8 @@
  * 
 ]] --
 local init = {
-    interval = 0.005, -- run every 0.005s
+    interval = 0.005, -- run at least every 0.1s
+    priority = 3, -- medium priority.  1 = low , 2 = medium, 3 = high, etc
     script = "sensors.lua", -- run this script
     msp = false, -- do not run if busy with msp 
     no_link = false -- run this script always

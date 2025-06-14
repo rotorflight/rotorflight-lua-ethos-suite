@@ -75,6 +75,7 @@ function tasks.findTasks()
                     local task = {
                         name = v,
                         interval = tconfig.interval,
+                        priority = tconfig.priority or 1,
                         script = tconfig.script,
                         msp = tconfig.msp,
                         no_link = tconfig.no_link or false,
@@ -86,6 +87,7 @@ function tasks.findTasks()
                     taskMetadata[v] = {
                         interval = tconfig.interval,
                         script = tconfig.script,
+                        priority = tconfig.priority or 1,
                         msp = tconfig.msp,
                         always_run = tconfig.always_run or false,
                         no_link = tconfig.no_link or false
@@ -183,6 +185,7 @@ function tasks.wakeup()
                     name = name,
                     interval = meta.interval,
                     script = meta.script,
+                    priority = tconfig.priority or 1,
                     msp = meta.msp,
                     no_link = meta.no_link,
                     always_run = meta.always_run,
@@ -242,7 +245,7 @@ function tasks.wakeup()
             end
         end
         tasksPerCycle = math.ceil(count * taskSchedulerPercentage)
-        rfsuite.utils.log("Tasks per cycle (excluding always_run): " .. tasksPerCycle, "debug")
+        --rfsuite.utils.log("Tasks per cycle (excluding always_run): " .. tasksPerCycle, "debug")
     end
 
     -- Helper function to determine if a task can run
@@ -258,20 +261,57 @@ function tasks.wakeup()
         end
     end
 
-    -- Run scheduled tasks
-    for i = 1, tasksPerCycle do
-        local task = tasksList[taskIndex]
-        if task then
-            if not task.always_run and now - task.last_run >= task.interval then
-                if tasks[task.name].wakeup and canRunTask(task) then
-                    tasks[task.name].wakeup()
-                    task.last_run = now
+    -- Separate overdue tasks (must run) and eligible ones (can run)
+    local overdueTasks = {}
+    local eligibleWeighted = {}
+
+    for _, task in ipairs(tasksList) do
+        if not task.always_run and canRunTask(task) then
+            local elapsed = now - task.last_run
+            if elapsed >= task.interval then
+                table.insert(overdueTasks, task)  -- must run
+                --rfsuite.utils.log("Warning: Task " .. task.name .. " overdue by " .. elapsed .. "s", "info")
+            else
+                local weight = task.priority or 1
+                for _ = 1, weight do
+                    table.insert(eligibleWeighted, task)
                 end
             end
-            taskIndex = (taskIndex % #tasksList) + 1
         end
     end
-  
+
+    -- Run overdue tasks first
+    for _, task in ipairs(overdueTasks) do
+        if tasks[task.name].wakeup then
+            tasks[task.name].wakeup()
+            task.last_run = now
+            --rfsuite.utils.log("Running overdue task: " .. task.name, "info")
+        end
+    end
+
+    -- Then fill remaining cycles with priority-weighted tasks (optional)
+    local remainingSlots = tasksPerCycle - #overdueTasks
+    for i = 1, math.max(0, remainingSlots) do
+        if #eligibleWeighted == 0 then break end
+        local index = math.random(1, #eligibleWeighted)
+        local task = eligibleWeighted[index]
+
+        if tasks[task.name].wakeup then
+            tasks[task.name].wakeup()
+            task.last_run = now
+            --rfsuite.utils.log("Running weighted task: " .. task.name, "info")
+        end
+
+        -- Prevent duplicates
+        for j = #eligibleWeighted, 1, -1 do
+            if eligibleWeighted[j].name == task.name then
+                table.remove(eligibleWeighted, j)
+            end
+        end
+    end
+
+
+
     rfsuite.compiler.wakeup()
 
 end
