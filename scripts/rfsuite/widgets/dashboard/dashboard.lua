@@ -341,6 +341,9 @@ local function getBoxPosition(box, w, h, boxWidth, boxHeight, PADDING, WIDGET_W,
 end
 
 function dashboard.renderLayout(widget, config)
+
+    rfsuite.utils.log("Starting renderLayout at " .. tostring(os.clock()), "info")
+
     local utils     = dashboard.utils
     local telemetry = rfsuite.tasks.telemetry
 
@@ -415,6 +418,13 @@ function dashboard.renderLayout(widget, config)
     if not objectWakeupsPerCycle or lastBoxRectsCount ~= #dashboard.boxRects then
         local count = #dashboard.boxRects
         local percentage = computeObjectSchedulerPercentage(count)
+
+        -- 🚀 Boost wakeup speed during initial pass
+        if objectsThreadedWakeupCount < 1 then
+            percentage = 1.0
+            rfsuite.utils.log("Accelerating first wakeup pass with 100% objects per cycle", "info")
+        end
+
         objectWakeupsPerCycle = math.max(1, math.ceil(count * percentage))
         lastBoxRectsCount     = count
         rfsuite.utils.log("Object scheduler set to " .. tostring(objectWakeupsPerCycle) ..
@@ -1112,6 +1122,15 @@ function dashboard.wakeup(widget)
         dashboard.selectedBoxIndex = nil
         lcd.invalidate(widget)
     end
+
+if dashboard._actualWakePasses == 1 then
+  rfsuite.utils.log("Initial wakeup pass started at " .. tostring(os.clock()), "info")
+end
+
+if dashboard._actualWakePasses == dashboard._expectedWakePasses then
+  rfsuite.utils.log("Final wakeup pass completed at " .. tostring(os.clock()), "info")
+end
+
 end
 
 --- Lists available dashboard themes by scanning system and user theme directories.
