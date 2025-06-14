@@ -186,8 +186,7 @@ function render.wakeup(box, telemetry)
         unit = nil
     end
 
-    -- Set box.value so dashboard can track change for redraws
-    box.dirty = displayValue
+
 
     box._cache = {
         value              = value,

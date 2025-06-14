@@ -106,8 +106,7 @@ function render.wakeup(box)
         percentUsed = nil
     end
 
-    -- Set box.value so dashboard can track change for redraws
-    box.dirty = displayValue
+
 
     
     -- Threshold logic (if required)

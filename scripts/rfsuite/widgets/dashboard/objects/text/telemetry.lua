@@ -51,8 +51,7 @@ function render.wakeup(box, telemetry)
         displayValue = utils.transformValue(value, box)
     end
 
-    -- Set box.value so dashboard can track change for redraws
-    box.dirty = displayValue
+
 
     -- Threshold logic (if required)
     local textcolor = utils.resolveThresholdColor(value, box, "textcolor", "textcolor")
