@@ -17,7 +17,7 @@ local compile = {}
 local arg = {...}
 
 compile._startTime = os.clock()
-compile._startupDelay = 5 -- seconds before starting any compiles
+compile._startupDelay = 20 -- seconds before starting any compiles
 
 -- Configuration: expects rfsuite.config to be globally available
 local logTimings = true
