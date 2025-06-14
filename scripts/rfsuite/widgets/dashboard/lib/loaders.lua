@@ -82,32 +82,50 @@ local function renderOverlayText(dashboard, cx, cy, innerR, fg)
 end
 
 
--- Pulse loader
-function loaders.pulseLoader(dashboard, x, y, w, h)
-  dashboard._pulse = dashboard._pulse or { time = os.clock(), alpha = 1.0, dir = -1 }
-  local now, st = os.clock(), dashboard._pulse
-  local elapsed = now - st.time
-  st.time = now
-  st.alpha = st.alpha + (elapsed / 2) * st.dir
-  if st.alpha <= 0.5 then st.alpha, st.dir = 0.5, 1 elseif st.alpha >= 1.0 then st.alpha, st.dir = 1.0, -1 end
+-- Static loader (no pulse)
+function loaders.staticLoader(dashboard, x, y, w, h)
 
   local cx, cy = x + w / 2, y + h / 2
   local radius = math.min(w, h) * (dashboard.loaderScale or 0.3)
   local thickness = math.max(6, radius * 0.15)
+
   local r, g, b = lcd.darkMode() and 255 or 0, lcd.darkMode() and 255 or 0, lcd.darkMode() and 255 or 0
-  lcd.color(lcd.RGB(r, g, b, st.alpha))
+  lcd.color(lcd.RGB(r, g, b, 1.0))  -- Solid color with full opacity
 
   if lcd.drawFilledCircle then
     lcd.drawFilledCircle(cx, cy, radius)
-    lcd.color(lcd.darkMode() and lcd.RGB(0,0,0,1.0) or lcd.RGB(0,0,0,1.0))
+    lcd.color(lcd.darkMode() and lcd.RGB(0, 0, 0, 1.0) or lcd.RGB(0, 0, 0, 1.0))
     lcd.drawFilledCircle(cx, cy, radius - thickness)
   end
 
   drawLogoImage(cx, cy, w, h)
+
+-- Animated dots below the logo
+  dashboard._dots_index = dashboard._dots_index or 1
+  dashboard._dots_time = dashboard._dots_time or os.clock()
+  if os.clock() - dashboard._dots_time > 0.5 then
+    dashboard._dots_time = os.clock()
+    dashboard._dots_index = (dashboard._dots_index % 3) + 1
+  end
+
+  local dotRadius = 4
+  local spacing = 3 * dotRadius
+  local startX = cx - spacing
+  local yPos = cy + (radius - thickness / 2) / 2  -- Midway between center and outer edge
+
+  for i = 1, 3 do
+    if i == dashboard._dots_index then
+      lcd.color(lcd.darkMode() and lcd.RGB(255,255,255) or lcd.RGB(0,0,0))
+    else
+      lcd.color(lcd.darkMode() and lcd.RGB(80,80,80) or lcd.RGB(180,180,180))
+    end
+    lcd.drawFilledCircle(startX + (i - 1) * spacing, yPos, dotRadius)
+  end
+
 end
 
--- Pulse overlay message (fully opaque inner background + inner cut‐out)
-function loaders.pulseOverlayMessage(dashboard, x, y, w, h, txt)
+-- Static overlay message (no pulse animation)
+function loaders.staticOverlayMessage(dashboard, x, y, w, h, txt)
   dashboard._overlay_cycles_required = dashboard._overlay_cycles_required or math.ceil(5 / (dashboard.paint_interval or 0.5))
   dashboard._overlay_cycles = dashboard._overlay_cycles or 0
 
@@ -119,7 +137,6 @@ function loaders.pulseOverlayMessage(dashboard, x, y, w, h, txt)
   if dashboard._overlay_cycles <= 0 then return end
   dashboard._overlay_cycles = dashboard._overlay_cycles - 1
 
-  -- fg unchanged; bg now fully opaque
   local fg = lcd.darkMode() and lcd.RGB(255,255,255) or lcd.RGB(255,255,255)
   local bg = lcd.darkMode() and lcd.RGB(0,0,0,1.0) or lcd.RGB(255,255,255,1.0)
 
@@ -128,23 +145,14 @@ function loaders.pulseOverlayMessage(dashboard, x, y, w, h, txt)
   local thickness = math.max(6, radius * 0.15)
   local innerR = radius - (thickness / 2) - 1
 
-  -- draw fully opaque background circle
+  -- draw solid background circle
   drawOverlayBackground(cx, cy, innerR, bg)
 
-  -- recreate the pulse α‐oscillation exactly as before
-  dashboard._pulse = dashboard._pulse or { time = os.clock(), alpha = 1.0, dir = -1 }
-  local now, st = os.clock(), dashboard._pulse
-  local elapsed = now - st.time
-  st.time = now
-  st.alpha = st.alpha + (elapsed / 2) * st.dir
-  if st.alpha <= 0.5 then st.alpha, st.dir = 0.5, 1 elseif st.alpha >= 1.0 then st.alpha, st.dir = 1.0, -1 end
-
-  -- outer pulsating circle (alpha varies for the ring itself)
+  -- outer circle with full opacity
   local r, g, b = lcd.darkMode() and 255 or 0, lcd.darkMode() and 255 or 0, lcd.darkMode() and 255 or 0
-  lcd.color(lcd.RGB(r, g, b, st.alpha))
+  lcd.color(lcd.RGB(r, g, b, 1.0))
   if lcd.drawFilledCircle then
     lcd.drawFilledCircle(cx, cy, radius)
-    -- inner cut‐out is now fully opaque (alpha = 1.0)
     lcd.color(lcd.darkMode() and lcd.RGB(0,0,0,1.0) or lcd.RGB(0,0,0,1.0))
     lcd.drawFilledCircle(cx, cy, radius - thickness)
   end
