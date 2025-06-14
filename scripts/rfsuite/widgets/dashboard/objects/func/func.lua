@@ -12,6 +12,11 @@ local render = {}
 
 local utils = rfsuite.widgets.dashboard.utils
 
+function render.dirty(box)
+    return true -- Always dirty, since the user-defined functions can change at any time
+end
+
+
 function render.wakeup(box, telemetry)
 
     if type(box.wakeup) == "function" then

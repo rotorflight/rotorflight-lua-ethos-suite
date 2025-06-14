@@ -42,6 +42,15 @@ local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 local armingDisableFlagsToString = rfsuite.app.utils.armingDisableFlagsToString
+local lastDisplayValue = nil
+
+function render.dirty(box)
+    if box._lastDisplayValue ~= box._currentDisplayValue then
+        box._lastDisplayValue = box._currentDisplayValue
+        return true
+    end
+    return false
+end
 
 function render.wakeup(box, telemetry)
     -- Value extraction
@@ -81,7 +90,8 @@ function render.wakeup(box, telemetry)
         displayValue = getParam(box, "novalue") or "-"
     end
 
-
+    -- Set box.value so dashboard can track change for redraws
+    box.dirty = displayValue
 
     box._cache = {
         title              = getParam(box, "title"),

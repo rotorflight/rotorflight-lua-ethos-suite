@@ -1074,12 +1074,15 @@ function dashboard.wakeup(widget)
                 if obj and obj.wakeup and not obj.scheduler then
                     obj.wakeup(rect.box, rfsuite.tasks.telemetry)
                 end
-
+                
                 -- Invalidate only if value changed
-                local isDirty = type(rect.box.dirty) == "function" and rect.box.dirty() or false
-
-                if isDirty then
-                    lcd.invalidate(rect.x, rect.y, rect.w, rect.h)
+                local dirtyFn = dashboard.objectsByType[rect.box.type] and dashboard.objectsByType[rect.box.type].dirty
+                if dirtyFn then
+                    local isDirty = dirtyFn(rect.box)
+                    rfsuite.utils.log("Box #" .. tostring(idx) .. " dirty = " .. tostring(isDirty), "debug")
+                    if isDirty then
+                        lcd.invalidate(rect.x, rect.y, rect.w, rect.h)
+                    end
                 end
             end
             objectWakeupIndex = (#dashboard.boxRects > 0) and ((objectWakeupIndex % #dashboard.boxRects) + 1) or 1
@@ -1088,7 +1091,6 @@ function dashboard.wakeup(widget)
         if objectWakeupIndex == 1 then
             objectsThreadedWakeupCount = objectsThreadedWakeupCount + 1
         end
-
 
     end
 

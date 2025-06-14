@@ -36,6 +36,16 @@ local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 local eraseDataflashGo = false
+local lastDisplayValue = nil
+
+function render.dirty(box)
+    if box._lastDisplayValue ~= box._currentDisplayValue then
+        box._lastDisplayValue = box._currentDisplayValue
+        return true
+    end
+    return false
+end
+
 
 local function eraseBlackboxAsk()
     local buttons = {{
