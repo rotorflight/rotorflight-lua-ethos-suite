@@ -17,7 +17,8 @@
  * 
 ]] --
 local init = {
-    interval = 0.0025, -- run every 0.005s
+    interval = 0.1, -- run at least
+    priority = 2,
     script = "callback.lua", -- run this script
     msp = true, -- do not run if busy with msp 
     no_link = true, -- do not run if no link

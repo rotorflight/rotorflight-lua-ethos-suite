@@ -17,7 +17,8 @@
  * 
 ]] --
 local init = {
-    interval = 0.5, -- run every 0.5s
+    interval = 1, -- run at least every 1s
+    priority = 1, -- low priority.  1 = low , 2 = medium, 3 = high, etc
     script = "adjfunctions.lua", -- run this script
     msp = false -- do not run if busy with msp
 }

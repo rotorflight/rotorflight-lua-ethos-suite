@@ -17,7 +17,8 @@
  * 
 ]] --
 local init = {
-    interval = 2, -- run every 5s
+    interval = 2, -- run at least every 0.1s
+    priority = 1, -- medium priority.  1 = low , 2 = medium, 3 = high, etc
     script = "i18n.lua", -- run this script
     msp = false -- do not run if busy with msp
 }
