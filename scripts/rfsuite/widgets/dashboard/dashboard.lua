@@ -155,6 +155,14 @@ local function computeObjectSchedulerPercentage(count)
     else return 0.2 end                -- many objects → fewer per cycle
 end
 
+--- Determines whether a partial invalidate operation should be performed on the dashboard widget.
+-- Returns true if there is no overlay message and the `_hg_cycles` counter is zero, indicating
+-- that a partial redraw is appropriate.
+-- @return boolean True if partial invalidate should occur, false otherwise.
+function dashboard.shouldDoPartialInvalidate()
+    return dashboard.overlayMessage == nil and dashboard._hg_cycles == 0
+end
+
 --- Loads a single dashboard object type (box) if not already loaded.
 -- Used during wakeup preload to load one box at a time.
 -- @param box A box configuration table with a `type` field.
@@ -1076,11 +1084,13 @@ function dashboard.wakeup(widget)
                 end
 
                 -- Invalidate only if value changed
-                local val = rect.box.value
-                if val ~= dashboard._lastValues[idx] then
-                    dashboard._lastValues[idx] = val
-                    lcd.invalidate(rect.x, rect.y, rect.w, rect.h)
-                end            
+                if dashboard.shouldDoPartialInvalidate() then
+                    local val = rect.box.value
+                    if val ~= dashboard._lastValues[idx] then
+                        dashboard._lastValues[idx] = val
+                        lcd.invalidate(rect.x, rect.y, rect.w, rect.h)
+                    end        
+                end   
             end
             objectWakeupIndex = (#dashboard.boxRects > 0) and ((objectWakeupIndex % #dashboard.boxRects) + 1) or 1
         end
@@ -1090,7 +1100,7 @@ function dashboard.wakeup(widget)
         end
 
         -- Force full repaint if overlay (e.g. loading spinner) is visible or spinner is active
-        if dashboard.overlayMessage ~= nil or dashboard._hg_cycles > 0 then
+        if not dashboard.shouldDoPartialInvalidate() then
             lcd.invalidate(widget)
         end
 
