@@ -107,7 +107,7 @@ function render.wakeup(box)
     end
 
     -- Set box.value so dashboard can track change for redraws
-    box.value = displayValue
+    box.dirty = displayValue
 
     
     -- Threshold logic (if required)
