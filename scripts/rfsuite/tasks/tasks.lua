@@ -311,9 +311,6 @@ function tasks.wakeup()
     end
 
 
-
-    rfsuite.compiler.wakeup()
-
 end
 
 -- call a reset function on all tasks if it exists
