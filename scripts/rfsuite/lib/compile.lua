@@ -61,8 +61,8 @@ end
 --------------------------------------------------
 -- Adaptive LRU Cache (in-memory loaders, eviction only on wakeup)
 --------------------------------------------------
-local LUA_RAM_THRESHOLD = 32 * 1024 -- 32 KB free (adjust as needed)
-local LRU_HARD_LIMIT = 200          -- absolute maximum number of cached scripts (safety)
+local LUA_RAM_THRESHOLD = 48 * 1024 -- 48 KB free (adjust as needed)
+local LRU_HARD_LIMIT = 100          -- absolute maximum number of cached scripts (safety)
 
 local function LRUCache()
   local self = {
