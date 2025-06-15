@@ -4,6 +4,7 @@
 
     Configurable Arguments (box table keys):
     ----------------------------------------
+    wakeupinterval      : number   -- Optional wakeup interval in seconds (set in wrapper)
     source              : string   -- Telemetry sensor source name
     transform           : string/function/number -- Optional value transform (math function or custom function)
     min                 : number   -- Minimum value (default: 0)

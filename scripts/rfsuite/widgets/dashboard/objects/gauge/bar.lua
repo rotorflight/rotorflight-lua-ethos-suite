@@ -2,6 +2,7 @@
     Bar Gauge Widget
     Configurable Parameters (box table fields):
     -------------------------------------------
+    wakeupinterval      : number   -- Optional wakeup interval in seconds (set in wrapper)
     -- Title/label
     title                   : string    -- (Optional) Title text
     titlepos                : string    -- (Optional) "top" or "bottom"

@@ -2,6 +2,7 @@
     Custom Function Widget
     Configurable Arguments (box table keys):
     ----------------------------------------
+    wakeupinterval    : number   -- Optional wakeup interval in seconds (set in wrapper)
     wakeup            : function   -- Custom wakeup function, called with (box, telemetry), should return a table to cache
     paint             : function   -- Custom paint function, called with (x, y, w, h, box, cache, telemetry)
 

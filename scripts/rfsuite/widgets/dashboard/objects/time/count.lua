@@ -2,6 +2,7 @@
     Flight Count Widget
     Configurable Parameters (box table fields):
     -------------------------------------------
+    wakeupinterval      : number                    -- Optional wakeup interval in seconds (set in wrapper)
     title               : string                    -- (Optional) Title text
     titlepos            : string                    -- (Optional) Title position ("top" or "bottom")
     titlealign          : string                    -- (Optional) Title alignment ("center", "left", "right")
