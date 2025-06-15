@@ -18,6 +18,10 @@
 local telemetry = rfsuite.tasks.telemetry
 local utils = rfsuite.widgets.dashboard.utils
 
+local W, H = lcd.getWindowSize()
+local gaugeThickness = 30
+if W < 500 then gaugeThickness = 15 end
+
 
 local darkMode = {
     textcolor   = "white",
@@ -56,19 +60,12 @@ local boxes = {
         rowspan = 12,
         colspan = 2,
         source = "voltage",
-        thickness = 30,
+        thickness = gaugeThickness,
         font = "FONT_XXL",
         arcbgcolor = colorMode.arcbgcolor,
         title = "VOLTAGE",
         titlepos = "bottom",
         bgcolor = colorMode.bgcolor,
-        -- (a) The “static” thresholds (fixed numeric cutoffs, unchanged)
-        thresholds = {
-            { value = 30,  fillcolor = "red",    textcolor = colorMode.textcolor },
-            { value = 50,  fillcolor = "orange", textcolor = colorMode.textcolor },
-            { value = 140, fillcolor = colorMode.fillcolor,  textcolor = colorMode.textcolor }
-        },
-
         min = function()
             local cfg = rfsuite.session.batteryConfig
             local cells = (cfg and cfg.batteryCellCount) or 3
@@ -157,7 +154,7 @@ local boxes = {
         subtype = "arc",
         col = 3, row = 1,
         rowspan = 12,
-        thickness = 30,
+        thickness = gaugeThickness,
         colspan = 2,
         source = "fuel",
         transform = "floor",
