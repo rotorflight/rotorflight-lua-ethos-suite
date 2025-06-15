@@ -368,10 +368,7 @@ function dashboard.renderLayout(widget, config)
     local pad          = layout.padding or 0
 
     local function adjustDimension(dim, cells, padCount)
-        while ((dim - (padCount * pad)) % cells) ~= 0 do
-            dim = dim - 1
-        end
-        return dim
+    return dim - ((dim - padCount*pad) % cells)
     end
 
     local W = adjustDimension(W_raw, cols, cols - 1)
