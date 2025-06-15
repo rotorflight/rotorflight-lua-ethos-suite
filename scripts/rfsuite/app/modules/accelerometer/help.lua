@@ -19,10 +19,12 @@
 ]] --
 local data = {}
 
+local i18n = rfsuite.i18n.get
+
 data['help'] = {}
 
 data['help']['default'] = {
-    rfsuite.i18n.get("app.modules.accelerometer.help_p1")
+    i18n("app.modules.accelerometer.help_p1")
 }
 
 data['fields'] = {}

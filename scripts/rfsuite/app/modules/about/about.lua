@@ -4,6 +4,8 @@ local ethosVersion = rfsuite.config.environment.major .. "." .. rfsuite.config.e
 local apiVersion = rfsuite.session.apiVersion
 local closeProgressLoader = true
 
+local i18n = rfsuite.i18n.get
+
 local supportedMspVersion = ""
 for i, v in ipairs(rfsuite.config.supportedMspApiVersion) do
     if i == 1 then
@@ -38,12 +40,12 @@ local apidata = {
         labels = {
         },
         fields = {
-            {t = rfsuite.i18n.get("app.modules.about.version"), value = version, type = displayType, disable = disableType, position = displayPos},
-            {t = rfsuite.i18n.get("app.modules.about.ethos_version"), value = ethosVersion, type = displayType, disable = disableType, position = displayPos},
-            {t = rfsuite.i18n.get("app.modules.about.msp_version"), value = apiVersion, type = displayType, disable = disableType, position = displayPos},
-            {t = rfsuite.i18n.get("app.modules.about.msp_transport"), value = string.upper(rfsuite.tasks.msp.protocol.mspProtocol), type = displayType, disable = disableType, position = displayPos},
-            {t = rfsuite.i18n.get("app.modules.about.supported_versions"), value = supportedMspVersion, type = displayType, disable = disableType, position = displayPos},
-            {t = rfsuite.i18n.get("app.modules.about.simulation"), value = simulation, type = displayType, disable = disableType, position = displayPos}
+            {t = i18n("app.modules.about.version"), value = version, type = displayType, disable = disableType, position = displayPos},
+            {t = i18n("app.modules.about.ethos_version"), value = ethosVersion, type = displayType, disable = disableType, position = displayPos},
+            {t = i18n("app.modules.about.msp_version"), value = apiVersion, type = displayType, disable = disableType, position = displayPos},
+            {t = i18n("app.modules.about.msp_transport"), value = string.upper(rfsuite.tasks.msp.protocol.mspProtocol), type = displayType, disable = disableType, position = displayPos},
+            {t = i18n("app.modules.about.supported_versions"), value = supportedMspVersion, type = displayType, disable = disableType, position = displayPos},
+            {t = i18n("app.modules.about.simulation"), value = simulation, type = displayType, disable = disableType, position = displayPos}
         }
     }
 }
@@ -51,14 +53,14 @@ local apidata = {
 
 function onToolMenu()
 
-    local opener = rfsuite.i18n.get("app.modules.about.opener")
-    local credits = rfsuite.i18n.get("app.modules.about.credits")
-    local license = rfsuite.i18n.get("app.modules.about.license")
+    local opener = i18n("app.modules.about.opener")
+    local credits = i18n("app.modules.about.credits")
+    local license = i18n("app.modules.about.license")
 
     local message = opener .. "\r\n\r\n" .. credits .. "\r\n\r\n" .. license .. "\r\n\r\n"
 
     local buttons = {{
-        label = rfsuite.i18n.get("app.btn_close"),
+        label = i18n("app.btn_close"),
         action = function()
             return true
         end
@@ -66,7 +68,7 @@ function onToolMenu()
 
     form.openDialog({
         width = rfsuite.session.lcdWidth,
-        title = rfsuite.i18n.get("app.modules.about.msgbox_credits"),
+        title = i18n("app.modules.about.msgbox_credits"),
         message = message,
         buttons = buttons,
         wakeup = function()

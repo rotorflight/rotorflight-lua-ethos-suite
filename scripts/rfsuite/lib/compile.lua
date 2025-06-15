@@ -61,8 +61,8 @@ end
 --------------------------------------------------
 -- Adaptive LRU Cache (in-memory loaders, eviction only on wakeup)
 --------------------------------------------------
-local LUA_RAM_THRESHOLD = 32 * 1024 -- 32 KB free (adjust as needed)
-local LRU_HARD_LIMIT = 200          -- absolute maximum number of cached scripts (safety)
+local LUA_RAM_THRESHOLD = 48 * 1024 -- 48 KB free (adjust as needed)
+local LRU_HARD_LIMIT = 100          -- absolute maximum number of cached scripts (safety)
 
 local function LRUCache()
   local self = {
@@ -93,16 +93,16 @@ local function LRUCache()
       if usage and usage.luaRamAvailable and usage.luaRamAvailable < LUA_RAM_THRESHOLD then
         local oldest = table.remove(self.order, 1)
         self.cache[oldest] = nil
-        if rfsuite and rfsuite.utils and rfsuite.utils.log then
-          rfsuite.utils.log("Evicted script from cache due to low Lua RAM: " .. tostring(oldest), "info")
-        end
+        --if rfsuite and rfsuite.utils and rfsuite.utils.log then
+        --  rfsuite.utils.log("Evicted script from cache due to low Lua RAM: " .. tostring(oldest), "info")
+        --end
         usage = system.getMemoryUsage()
       elseif #self.order > LRU_HARD_LIMIT then
         local oldest = table.remove(self.order, 1)
         self.cache[oldest] = nil
-        if rfsuite and rfsuite.utils and rfsuite.utils.log then
-          rfsuite.utils.log("Evicted script from cache due to hitting hard limit: " .. tostring(oldest), "info")
-        end
+        --if rfsuite and rfsuite.utils and rfsuite.utils.log then
+        --  rfsuite.utils.log("Evicted script from cache due to hitting hard limit: " .. tostring(oldest), "info")
+        --end
       else
         break
       end

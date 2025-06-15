@@ -18,10 +18,10 @@
 
 ]] --
 local data = {}
-
+local i18n = rfsuite.i18n.get
 data['help'] = {}
 
-data['help']['default'] = {rfsuite.i18n.get("app.modules.trim.help_p1"),rfsuite.i18n.get("app.modules.trim.help_p2")}
+data['help']['default'] = {i18n("app.modules.trim.help_p1"),i18n("app.modules.trim.help_p2")}
 
 data['fields'] = {}
 

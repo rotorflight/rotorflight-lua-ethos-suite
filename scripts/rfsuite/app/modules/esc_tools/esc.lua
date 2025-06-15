@@ -1,3 +1,5 @@
+local i18n = rfsuite.i18n.get
+
 local function findMFG()
     local mfgsList = {}
 
@@ -67,7 +69,7 @@ local function openPage(pidx, title, script)
     local x = windowWidth - buttonW - 10
 
     rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {x = x, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}, {
-        text = rfsuite.i18n.get("app.navigation_menu"),
+        text = i18n("app.navigation_menu"),
         icon = nil,
         options = FONT_S,
         paint = function()

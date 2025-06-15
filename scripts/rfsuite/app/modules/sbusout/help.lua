@@ -18,21 +18,21 @@
 
 ]] --
 local data = {}
-
+local i18n = rfsuite.i18n.get
 data['help'] = {}
 
 data['help']['default'] = {
-    rfsuite.i18n.get("app.modules.sbusout.help_default_p1"),
-    rfsuite.i18n.get("app.modules.sbusout.help_default_p2"),
-    rfsuite.i18n.get("app.modules.sbusout.help_default_p3"),
-    rfsuite.i18n.get("app.modules.sbusout.help_default_p4"),
-    rfsuite.i18n.get("app.modules.sbusout.help_default_p5"),
+    i18n("app.modules.sbusout.help_default_p1"),
+    i18n("app.modules.sbusout.help_default_p2"),
+    i18n("app.modules.sbusout.help_default_p3"),
+    i18n("app.modules.sbusout.help_default_p4"),
+    i18n("app.modules.sbusout.help_default_p5"),
 }
 
 data['fields'] = {
-    sbusOutSource = {t = rfsuite.i18n.get("app.modules.sbusout.help_fields_source")},
-    sbusOutMin    = {t = rfsuite.i18n.get("app.modules.sbusout.help_fields_min")},
-    sbusOutMax    = {t = rfsuite.i18n.get("app.modules.sbusout.help_fields_max")}
+    sbusOutSource = {t = i18n("app.modules.sbusout.help_fields_source")},
+    sbusOutMin    = {t = i18n("app.modules.sbusout.help_fields_min")},
+    sbusOutMax    = {t = i18n("app.modules.sbusout.help_fields_max")}
 }
 
 return data

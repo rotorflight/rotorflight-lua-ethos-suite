@@ -19,6 +19,10 @@
 
 ]] --
 local app = {}
+local i18n = rfsuite.i18n.get
+local utils = rfsuite.utils
+local log = utils.log
+local compile = rfsuite.compiler.loadfile
 
 local arg = {...}
 
@@ -95,12 +99,12 @@ app.triggers = triggers
     Initializes the app.ui table and loads the UI library.
 
     The app.ui table is first initialized as an empty table.
-    Then, the UI library is loaded from "app/lib/ui.lua" using the rfsuite.compiler.loadfile function,
+    Then, the UI library is loaded from "app/lib/ui.lua" using the compile function,
     and the result is assigned to app.ui. The config parameter is passed to the loaded file.
 
 ]]
 app.ui = {}
-app.ui = assert(rfsuite.compiler.loadfile("app/lib/ui.lua"))(config)
+app.ui = assert(compile("app/lib/ui.lua"))(config)
 
 
 --[[
@@ -109,7 +113,7 @@ app.ui = assert(rfsuite.compiler.loadfile("app/lib/ui.lua"))(config)
     If the file cannot be loaded, an error will be thrown.
 ]]
 app.utils = {}
-app.utils = assert(rfsuite.compiler.loadfile("app/lib/utils.lua"))(config)
+app.utils = assert(compile("app/lib/utils.lua"))(config)
 
 
 --[[
@@ -365,7 +369,7 @@ local function rebootFc()
         command = 68, -- MSP_REBOOT
         processReply = function(self, buf)
             invalidatePages()
-            rfsuite.utils.onReboot()
+            utils.onReboot()
         end,
         simulatorResponse = {}
     })
@@ -429,7 +433,7 @@ function app.settingsSaved()
         app.triggers.closeSave = true
     end
     collectgarbage()
-    rfsuite.utils.reportMemoryUsage("app.settingsSaved")
+    utils.reportMemoryUsage("app.settingsSaved")
 end
 
 --[[
@@ -446,7 +450,7 @@ local function saveSettings()
     app.saveTS = os.clock()
 
     -- we handle saving 100% different for multi mspapi
-    rfsuite.utils.log("Saving data", "debug")
+    log("Saving data", "debug")
 
     local mspapi = rfsuite.app.Page.apidata
     local apiList = mspapi.api
@@ -459,7 +463,7 @@ local function saveSettings()
     if app.Page.preSave then app.Page.preSave(app.Page) end
 
     for apiID, apiNAME in ipairs(apiList) do
-        rfsuite.utils.log("Saving data for API: " .. apiNAME, "debug")
+        log("Saving data for API: " .. apiNAME, "debug")
 
         local payloadData = values[apiNAME]
         local payloadStructure = mspapi.structure[apiNAME]
@@ -472,11 +476,11 @@ local function saveSettings()
         )
         API.setCompleteHandler(function(self, buf)
             completedRequests = completedRequests + 1
-            rfsuite.utils.log("API " .. apiNAME .. " write complete", "debug")
+            log("API " .. apiNAME .. " write complete", "debug")
 
             -- Check if this is the last completed request
             if completedRequests == totalRequests then
-                rfsuite.utils.log("All API requests have been completed!", "debug")
+                log("All API requests have been completed!", "debug")
                 
                 -- Run the postSave function if it exists
                 if app.Page.postSave then app.Page.postSave(app.Page) end
@@ -536,7 +540,7 @@ local function saveSettings()
 
         -- Send the payload
         for i, v in pairs(payloadData) do
-            rfsuite.utils.log("Set value for " .. i .. " to " .. v, "debug")
+            log("Set value for " .. i .. " to " .. v, "debug")
             API.setValue(i, v)
         end
         
@@ -564,7 +568,7 @@ end
 function app.mspApiUpdateFormAttributes(values, structure)
     -- Ensure app.Page and its mspapi.formdata exist
     if not (app.Page.apidata.formdata and app.Page.apidata.api and rfsuite.app.Page.fields) then
-        rfsuite.utils.log("app.Page.apidata.formdata or its components are nil", "debug")
+        log("app.Page.apidata.formdata or its components are nil", "debug")
         return
     end
 
@@ -610,7 +614,7 @@ function app.mspApiUpdateFormAttributes(values, structure)
             -- populated the mspapi and api fierds in the formdata.fields
             -- meaning they are already in the correct format
             if f.api then
-                rfsuite.utils.log("API field found: " .. f.api, "debug")
+                log("API field found: " .. f.api, "debug")
                 local parts = combined_api_parts(f.api)
                 if parts then
                 f.mspapi = parts[1]
@@ -624,7 +628,7 @@ function app.mspApiUpdateFormAttributes(values, structure)
             local targetStructure = structure[mspapiNAME]
 
             if mspapiID  == nil or mspapiID  == nil then 
-                rfsuite.utils.log("API field missing mspapi or apikey", "debug")
+                log("API field missing mspapi or apikey", "debug")
             else        
                 for _, v in ipairs(targetStructure) do
 
@@ -634,7 +638,7 @@ function app.mspApiUpdateFormAttributes(values, structure)
 
                             -- insert help string
                             local help_target = "api." .. mspapiNAME .. "." .. apikey
-                            local help_return = rfsuite.i18n.get(help_target)
+                            local help_return = i18n(help_target)
                             if help_target ~=  help_return then
                                 v.help = help_return
                             else
@@ -649,7 +653,7 @@ function app.mspApiUpdateFormAttributes(values, structure)
                             end
 
                             if values[mspapiNAME][apikey] == nil then
-                                rfsuite.utils.log("API field value is nil: " .. mspapiNAME .. " " .. apikey, "info")
+                                log("API field value is nil: " .. mspapiNAME .. " " .. apikey, "info")
                                 formField:enable(false)
                             end
 
@@ -665,7 +669,7 @@ function app.mspApiUpdateFormAttributes(values, structure)
                                     -- the values into the form field
                                     -- insert help string
                                     local help_target = "api." .. mspapiNAME .. "." .. apikey
-                                    local help_return = rfsuite.i18n.get(help_target)
+                                    local help_return = i18n(help_target)
                                     if help_target ~=  help_return then
                                         v.help = help_return
                                     else
@@ -684,7 +688,7 @@ function app.mspApiUpdateFormAttributes(values, structure)
                                     end
         
                                     if values[mspapiNAME][v.field] == nil then
-                                        rfsuite.utils.log("API field value is nil: " .. mspapiNAME .. " " .. apikey, "info")
+                                        log("API field value is nil: " .. mspapiNAME .. " " .. apikey, "info")
                                         formField:enable(false)
                                     end
 
@@ -698,11 +702,11 @@ function app.mspApiUpdateFormAttributes(values, structure)
                 end
             end
         else
-            rfsuite.utils.log("Form field skipped; not valid for this api version?", "debug")    
+            log("Form field skipped; not valid for this api version?", "debug")    
         end    
     end
     collectgarbage()
-    rfsuite.utils.reportMemoryUsage("app.mspApiUpdateFormAttributes")
+    utils.reportMemoryUsage("app.mspApiUpdateFormAttributes")
 
     -- set focus back to menu
     rfsuite.app.formNavigationFields['menu']:focus(true)
@@ -726,7 +730,7 @@ end
     7. Handles API errors by logging the error and moving to the next API.
     8. Resets the state and triggers postRead and postLoad functions if they exist.
 
-    Note: The function uses rfsuite.utils.log for logging and rfsuite.tasks.msp.api.load
+    Note: The function uses log for logging and rfsuite.tasks.msp.api.load
     for loading the API. It also updates form attributes and manages progress loader triggers.
 ]]
 local function requestPage()
@@ -736,7 +740,7 @@ local function requestPage()
     end
 
     if not app.Page.apidata.api and not app.Page.apidata.formdata then
-        rfsuite.utils.log("app.Page.apidata.api did not pass consistancy checks", "debug")
+        log("app.Page.apidata.api did not pass consistancy checks", "debug")
         return
     end
 
@@ -752,13 +756,13 @@ local function requestPage()
 
     -- Prevent duplicate execution if already running
     if state.isProcessing then
-        rfsuite.utils.log("requestPage is already running, skipping duplicate call.", "debug")
+        log("requestPage is already running, skipping duplicate call.", "debug")
         return
     end
     state.isProcessing = true  -- Set processing flag
 
     if not rfsuite.app.Page.apidata.values then
-        rfsuite.utils.log("requestPage Initialize values on first run", "debug")
+        log("requestPage Initialize values on first run", "debug")
         rfsuite.app.Page.apidata.values = {}  -- Initialize if first run
         rfsuite.app.Page.apidata.structure = {}  -- Initialize if first run
         rfsuite.app.Page.apidata.receivedBytesCount = {}  -- Initialize if first run
@@ -780,7 +784,7 @@ local function checkForUnresolvedTimeouts()
     for apiKey, retries in pairs(app.Page.apidata.retryCount or {}) do
         if retries >= 3 then
             hasUnresolvedTimeouts = true
-            rfsuite.utils.log("[ALERT] API " .. apiKey .. " failed after 3 timeouts.", "info")
+            log("[ALERT] API " .. apiKey .. " failed after 3 timeouts.", "info")
         end
     end
 
@@ -797,7 +801,7 @@ end
 local function processNextAPI()
     -- **Exit gracefully if the app is closing**
     if not app or not app.Page or not app.Page.apidata then
-        rfsuite.utils.log("App is closing. Stopping processNextAPI.", "debug")
+        log("App is closing. Stopping processNextAPI.", "debug")
         return
     end
 
@@ -830,7 +834,7 @@ local function processNextAPI()
     local apiKey = type(v) == "string" and v or v.name 
 
     if not apiKey then
-        rfsuite.utils.log("API key is missing for index " .. tostring(state.currentIndex), "warning")
+        log("API key is missing for index " .. tostring(state.currentIndex), "warning")
         state.currentIndex = state.currentIndex + 1
         rfsuite.tasks.callback.inSeconds(0.5, processNextAPI)
         return
@@ -847,7 +851,7 @@ local function processNextAPI()
     local handled = false
 
     -- **Log API Start**
-    rfsuite.utils.log("[PROCESS] API: " .. apiKey .. " (Attempt " .. (retryCount + 1) .. ")", "debug")
+    log("[PROCESS] API: " .. apiKey .. " (Attempt " .. (retryCount + 1) .. ")", "debug")
 
     -- **Timeout handler function**
     local function handleTimeout()
@@ -856,7 +860,7 @@ local function processNextAPI()
 
         -- **Exit safely if app is closed**
         if not app or not app.Page or not app.Page.apidata then
-            rfsuite.utils.log("App is closing. Timeout handling skipped.", "debug")
+            log("App is closing. Timeout handling skipped.", "debug")
             return
         end
 
@@ -864,10 +868,10 @@ local function processNextAPI()
         app.Page.apidata.retryCount[apiKey] = retryCount  
 
         if retryCount < 3 then  
-            rfsuite.utils.log("[TIMEOUT] API: " .. apiKey .. " (Retry " .. retryCount .. ")", "warning")
+            log("[TIMEOUT] API: " .. apiKey .. " (Retry " .. retryCount .. ")", "warning")
             rfsuite.tasks.callback.inSeconds(0.5, processNextAPI)  
         else
-            rfsuite.utils.log("[TIMEOUT FAIL] API: " .. apiKey .. " failed after 3 attempts. Skipping.", "error")
+            log("[TIMEOUT FAIL] API: " .. apiKey .. " failed after 3 attempts. Skipping.", "error")
             state.currentIndex = state.currentIndex + 1
             rfsuite.tasks.callback.inSeconds(0.5, processNextAPI)  
         end
@@ -883,12 +887,12 @@ local function processNextAPI()
 
         -- **Exit safely if app is closed**
         if not app or not app.Page or not app.Page.apidata then
-            rfsuite.utils.log("App is closing. Skipping API success handling.", "debug")
+            log("App is closing. Skipping API success handling.", "debug")
             return
         end
 
         -- **Log API Success**
-        rfsuite.utils.log("[SUCCESS] API: " .. apiKey .. " completed successfully.", "debug")
+        log("[SUCCESS] API: " .. apiKey .. " completed successfully.", "debug")
 
         app.Page.apidata.values[apiKey] = API.data().parsed
         app.Page.apidata.structure[apiKey] = API.data().structure
@@ -911,7 +915,7 @@ local function processNextAPI()
 
         -- **Exit safely if app is closed**
         if not app or not app.Page or not app.Page.apidata then
-            rfsuite.utils.log("App is closing. Skipping API error handling.", "debug")
+            log("App is closing. Skipping API error handling.", "debug")
             return
         end
 
@@ -919,10 +923,10 @@ local function processNextAPI()
         app.Page.apidata.retryCount[apiKey] = retryCount  
 
         if retryCount < 3 then  
-            rfsuite.utils.log("[ERROR] API: " .. apiKey .. " failed (Retry " .. retryCount .. "): " .. tostring(err), "warning")
+            log("[ERROR] API: " .. apiKey .. " failed (Retry " .. retryCount .. "): " .. tostring(err), "warning")
             rfsuite.tasks.callback.inSeconds(0.5, processNextAPI)  
         else
-            rfsuite.utils.log("[ERROR FAIL] API: " .. apiKey .. " failed after 3 attempts. Skipping.", "error")
+            log("[ERROR FAIL] API: " .. apiKey .. " failed after 3 attempts. Skipping.", "error")
             state.currentIndex = state.currentIndex + 1
             rfsuite.tasks.callback.inSeconds(0.5, processNextAPI)  
         end
@@ -1006,7 +1010,7 @@ app._uiTasks = {
       app.triggers.exitAPP = false
       form.invalidate()
       system.exit()
-      rfsuite.utils.reportMemoryUsage("Exit App")
+      utils.reportMemoryUsage("Exit App")
     end
   end,
 
@@ -1079,7 +1083,7 @@ app._uiTasks = {
                      and 0.1 or 1.5
     if (now - (app.profileCheckScheduler or 0)) >= interval then
       app.profileCheckScheduler = now
-      rfsuite.utils.getCurrentProfile()
+      utils.getCurrentProfile()
       -- compare and trigger reloads
       if rfsuite.session.activeProfileLast and app.Page.refreshOnProfileChange and
          rfsuite.session.activeProfile ~= rfsuite.session.activeProfileLast then
@@ -1108,7 +1112,7 @@ app._uiTasks = {
             rfsuite.app.formFields[i]:enable(false)
           end
         end
-      elseif rfsuite.session.apiVersion and rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiV) then
+      elseif rfsuite.session.apiVersion and utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiV) then
         app.offlineMode = false
         for i in pairs(rfsuite.app.formFields) do
           rfsuite.app.formFields[i]:enable(true)
@@ -1139,19 +1143,19 @@ app._uiTasks = {
     local sensorElrs  = system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1})
     local curRssi    = app.getRSSI()
     local invalid, abort = false, false
-    local msg = rfsuite.i18n.get("app.msg_connecting_to_fbl")
-    if not rfsuite.utils.ethosVersionAtLeast() then
-      msg = string.format("%s < V%d.%d.%d", string.upper(rfsuite.i18n.get("ethos")), table.unpack(rfsuite.config.ethosVersion))
+    local msg = i18n("app.msg_connecting_to_fbl")
+    if not utils.ethosVersionAtLeast() then
+      msg = string.format("%s < V%d.%d.%d", string.upper(i18n("ethos")), table.unpack(rfsuite.config.ethosVersion))
     elseif not rfsuite.tasks.active() then
-      msg, invalid, abort = rfsuite.i18n.get("app.check_bg_task"), true, true
+      msg, invalid, abort = i18n("app.check_bg_task"), true, true
     elseif not moduleEnabled and not app.offlineMode then
-      msg, invalid = rfsuite.i18n.get("app.check_rf_module_on"), true
+      msg, invalid = i18n("app.check_rf_module_on"), true
     elseif not (sensorSport or sensorElrs) and not app.offlineMode then
-      msg, invalid = rfsuite.i18n.get("app.check_discovered_sensors"), true
+      msg, invalid = i18n("app.check_discovered_sensors"), true
     elseif curRssi == 0 and not app.offlineMode then
-      msg, invalid = rfsuite.i18n.get("app.check_heli_on"), true
-    elseif not rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiStr) and not app.offlineMode then
-      msg = rfsuite.i18n.get("app.check_supported_version") .. " (" .. apiStr .. ")"
+      msg, invalid = i18n("app.check_heli_on"), true
+    elseif not utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiStr) and not app.offlineMode then
+      msg = i18n("app.check_supported_version") .. " (" .. apiStr .. ")"
     end
     app.triggers.invalidConnectionSetup = invalid
     local step = invalid and 5 or 10
@@ -1173,7 +1177,7 @@ app._uiTasks = {
     if (os.clock() - app.dialogs.saveWatchDog) > timeout
        or (app.dialogs.saveProgressCounter > 120 and rfsuite.tasks.msp.mspQueue:isProcessed()) then
       app.audio.playTimeout = true
-      app.ui.progressDisplaySaveMessage(rfsuite.i18n.get("app.error_timed_out"))
+      app.ui.progressDisplaySaveMessage(i18n("app.error_timed_out"))
       app.ui.progressDisplaySaveCloseAllowed(true)
       app.dialogs.save:value(100)
       app.dialogs.saveProgressCounter = 0
@@ -1191,7 +1195,7 @@ app._uiTasks = {
     app.ui.progressDisplayValue(app.dialogs.progressCounter)
     if (os.clock() - app.dialogs.progressWatchDog) > tonumber(rfsuite.tasks.msp.protocol.pageReqTimeout) then
       app.audio.playTimeout = true
-      app.ui.progressDisplayMessage(rfsuite.i18n.get("app.error_timed_out"))
+      app.ui.progressDisplayMessage(i18n("app.error_timed_out"))
       app.ui.progressDisplayCloseAllowed(true)
       app.Page = app.PageTmp
       app.PageTmp = nil
@@ -1206,17 +1210,17 @@ app._uiTasks = {
       app.triggers.triggerSave = false
       form.openDialog({
         width   = nil,
-        title   = rfsuite.i18n.get("app.msg_save_settings"),
+        title   = i18n("app.msg_save_settings"),
         message = (app.Page.extraMsgOnSave and
-                   rfsuite.i18n.get("app.msg_save_current_page").."\n\n"..app.Page.extraMsgOnSave or
-                   rfsuite.i18n.get("app.msg_save_current_page")),
-        buttons = {{ label=rfsuite.i18n.get("app.btn_ok"), action=function()
+                   i18n("app.msg_save_current_page").."\n\n"..app.Page.extraMsgOnSave or
+                   i18n("app.msg_save_current_page")),
+        buttons = {{ label=i18n("app.btn_ok"), action=function()
           app.PageTmp = app.Page
 
           app.triggers.isSaving = true
           saveSettings()
           return true
-        end },{ label=rfsuite.i18n.get("app.btn_cancel"),action=function() return true end }},
+        end },{ label=i18n("app.btn_cancel"),action=function() return true end }},
         wakeup = function() end,
         paint  = function() end,
         options= TEXT_LEFT
@@ -1238,19 +1242,19 @@ app._uiTasks = {
     if app.triggers.triggerReload then
       app.triggers.triggerReload = false
       form.openDialog({
-        title   = rfsuite.i18n.get("reload"):gsub("^%l", string.upper),
-        message = rfsuite.i18n.get("app.msg_reload_settings"),
-        buttons = {{ label=rfsuite.i18n.get("app.btn_ok"), action=function() app.triggers.reload = true; return true end },
-                   { label=rfsuite.i18n.get("app.btn_cancel"), action=function() return true end }},
+        title   = i18n("reload"):gsub("^%l", string.upper),
+        message = i18n("app.msg_reload_settings"),
+        buttons = {{ label=i18n("app.btn_ok"), action=function() app.triggers.reload = true; return true end },
+                   { label=i18n("app.btn_cancel"), action=function() return true end }},
         options = TEXT_LEFT
       })
     elseif app.triggers.triggerReloadFull then
       app.triggers.triggerReloadFull = false
       form.openDialog({
-        title   = rfsuite.i18n.get("reload"):gsub("^%l", string.upper),
-        message = rfsuite.i18n.get("app.msg_reload_settings"),
-        buttons = {{ label=rfsuite.i18n.get("app.btn_ok"), action=function() app.triggers.reloadFull = true; return true end },
-                   { label=rfsuite.i18n.get("app.btn_cancel"), action=function() return true end }},
+        title   = i18n("reload"):gsub("^%l", string.upper),
+        message = i18n("app.msg_reload_settings"),
+        buttons = {{ label=i18n("app.btn_ok"), action=function() app.triggers.reloadFull = true; return true end },
+                   { label=i18n("app.btn_cancel"), action=function() return true end }},
         options = TEXT_LEFT
       })
     end
@@ -1270,7 +1274,7 @@ app._uiTasks = {
         local msg = ({[app.pageStatus.saving] = "app.msg_saving_settings",
                      [app.pageStatus.eepromWrite] = "app.msg_saving_settings",
                      [app.pageStatus.rebooting]   = "app.msg_rebooting"})[app.pageState]
-        app.ui.progressDisplaySaveValue(app.dialogs.saveProgressCounter, rfsuite.i18n.get(msg))
+        app.ui.progressDisplaySaveValue(app.dialogs.saveProgressCounter, i18n(msg))
       else
         app.triggers.isSaving      = false
         app.dialogs.saveDisplay    = false
@@ -1289,8 +1293,8 @@ app._uiTasks = {
       app.dialogs.progressCounter = 0
       local key = (rfsuite.session.apiVersion >= 12.08 and "app.msg_please_disarm_to_save_warning" or "app.msg_please_disarm_to_save")
       app.ui.progressDisplay(
-        rfsuite.i18n.get("app.msg_save_not_commited"),
-        rfsuite.i18n.get(key)
+        i18n("app.msg_save_not_commited"),
+        i18n(key)
       )
     end
     if app.dialogs.progressCounter >= 100 then
@@ -1339,15 +1343,15 @@ app._uiTasks = {
   -- 18. Play Pending Audio Alerts
   function()
     local a = app.audio
-    if a.playEraseFlash         then rfsuite.utils.playFile("app","eraseflash.wav");            a.playEraseFlash = false end
-    if a.playTimeout            then rfsuite.utils.playFile("app","timeout.wav");               a.playTimeout = false end
-    if a.playEscPowerCycle      then rfsuite.utils.playFile("app","powercycleesc.wav");        a.playEscPowerCycle = false end
-    if a.playServoOverideEnable then rfsuite.utils.playFile("app","soverideen.wav");           a.playServoOverideEnable = false end
-    if a.playServoOverideDisable then rfsuite.utils.playFile("app","soveridedis.wav");        a.playServoOverideDisable = false end
-    if a.playMixerOverideEnable then rfsuite.utils.playFile("app","moverideen.wav");           a.playMixerOverideEnable = false end
-    if a.playMixerOverideDisable then rfsuite.utils.playFile("app","moveridedis.wav");        a.playMixerOverideDisable = false end
-    if a.playSaveArmed          then rfsuite.utils.playFileCommon("warn.wav");                  a.playSaveArmed = false end
-    if a.playBufferWarn         then rfsuite.utils.playFileCommon("warn.wav");                  a.playBufferWarn = false end
+    if a.playEraseFlash         then utils.playFile("app","eraseflash.wav");            a.playEraseFlash = false end
+    if a.playTimeout            then utils.playFile("app","timeout.wav");               a.playTimeout = false end
+    if a.playEscPowerCycle      then utils.playFile("app","powercycleesc.wav");        a.playEscPowerCycle = false end
+    if a.playServoOverideEnable then utils.playFile("app","soverideen.wav");           a.playServoOverideEnable = false end
+    if a.playServoOverideDisable then utils.playFile("app","soveridedis.wav");        a.playServoOverideDisable = false end
+    if a.playMixerOverideEnable then utils.playFile("app","moverideen.wav");           a.playMixerOverideEnable = false end
+    if a.playMixerOverideDisable then utils.playFile("app","moveridedis.wav");        a.playMixerOverideDisable = false end
+    if a.playSaveArmed          then utils.playFileCommon("warn.wav");                  a.playSaveArmed = false end
+    if a.playBufferWarn         then utils.playFileCommon("warn.wav");                  a.playBufferWarn = false end
   end,
 
   -- 19. Wakeup UI Tasks
@@ -1401,8 +1405,8 @@ function app.create_logtool()
     config.environment = system.getVersion()
     config.ethosRunningVersion = {config.environment.major, config.environment.minor, config.environment.revision}
 
-    rfsuite.session.lcdWidth, rfsuite.session.lcdHeight = rfsuite.utils.getWindowSize()
-    app.radio = assert(rfsuite.compiler.loadfile("app/radios.lua"))()
+    rfsuite.session.lcdWidth, rfsuite.session.lcdHeight = utils.getWindowSize()
+    app.radio = assert(compile("app/radios.lua"))()
 
     app.uiState = app.uiStatus.init
 
@@ -1434,12 +1438,12 @@ function app.create()
     config.environment = system.getVersion()
     config.ethosRunningVersion = {config.environment.major, config.environment.minor, config.environment.revision}
 
-    rfsuite.session.lcdWidth, rfsuite.session.lcdHeight = rfsuite.utils.getWindowSize()
-    app.radio = assert(rfsuite.compiler.loadfile("app/radios.lua"))()
+    rfsuite.session.lcdWidth, rfsuite.session.lcdHeight = utils.getWindowSize()
+    app.radio = assert(compile("app/radios.lua"))()
 
     app.uiState = app.uiStatus.init
 
-    app.MainMenu  = assert(rfsuite.compiler.loadfile("app/modules/init.lua"))()
+    app.MainMenu  = assert(compile("app/modules/init.lua"))()
     app.ui.openMainMenu()
 
 end
@@ -1464,7 +1468,7 @@ function app.event(widget, category, value, x, y)
 
     -- long press on return at any point will force an rapid exit
     if value == KEY_RTN_LONG then
-        rfsuite.utils.log("KEY_RTN_LONG", "info")
+        log("KEY_RTN_LONG", "info")
         invalidatePages()
         system.exit()
         return 0
@@ -1473,7 +1477,7 @@ function app.event(widget, category, value, x, y)
     -- the page has its own event system.  we should use it.
     if app.Page and (app.uiState == app.uiStatus.pages or app.uiState == app.uiStatus.mainMenu) then
         if app.Page.event then
-            rfsuite.utils.log("USING PAGES EVENTS", "debug")
+            log("USING PAGES EVENTS", "debug")
             local ret = app.Page.event(widget, category, value, x, y)
             if ret ~= nil then
                 return ret
@@ -1486,7 +1490,7 @@ function app.event(widget, category, value, x, y)
 
         -- close button (top menu) should go back to main menu
         if category == EVT_CLOSE and value == 0 or value == 35 then
-            rfsuite.utils.log("EVT_CLOSE", "info")
+            log("EVT_CLOSE", "info")
             if app.dialogs.progressDisplay then app.ui.progressDisplayClose() end
             if app.dialogs.saveDisplay then app.ui.progressDisplaySaveClose() end
             if app.Page.onNavMenu then app.Page.onNavMenu(app.Page) end
@@ -1499,7 +1503,7 @@ function app.event(widget, category, value, x, y)
             if rfsuite.app.Page.navButtons and rfsuite.app.Page.navButtons.save == false then
                 return true
             end
-            rfsuite.utils.log("EVT_ENTER_LONG (PAGES)", "info")
+            log("EVT_ENTER_LONG (PAGES)", "info")
             if app.dialogs.progressDisplay then app.ui.progressDisplayClose() end
             if app.dialogs.saveDisplay then app.ui.progressDisplaySaveClose() end
             if rfsuite.app.Page and rfsuite.app.Page.onSaveMenu then
@@ -1514,7 +1518,7 @@ function app.event(widget, category, value, x, y)
 
     -- catch all to stop lock press on main menu doing anything
     if app.uiState == app.uiStatus.mainMenu and value == KEY_ENTER_LONG then
-         rfsuite.utils.log("EVT_ENTER_LONG (MAIN MENU)", "info")
+         log("EVT_ENTER_LONG (MAIN MENU)", "info")
          if app.dialogs.progressDisplay then app.ui.progressDisplayClose() end
          if app.dialogs.saveDisplay then app.ui.progressDisplaySaveClose() end
          system.killEvents(KEY_ENTER_BREAK)

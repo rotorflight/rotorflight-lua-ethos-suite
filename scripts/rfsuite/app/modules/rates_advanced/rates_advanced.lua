@@ -3,6 +3,7 @@ local activateWakeup = false
 local extraMsgOnSave = nil
 local resetRates = false
 local doFullReload = false
+local i18n = rfsuite.i18n.get
 
 if rfsuite.session.activeRateTable == nil then 
     rfsuite.session.activeRateTable = rfsuite.config.defaultRateProfile 
@@ -11,18 +12,18 @@ end
 local rows
 if rfsuite.session.apiVersion >= 12.08 then
     rows = {
-        rfsuite.i18n.get("app.modules.rates_advanced.response_time"),
-        rfsuite.i18n.get("app.modules.rates_advanced.acc_limit"),
-        rfsuite.i18n.get("app.modules.rates_advanced.setpoint_boost_gain"),
-        rfsuite.i18n.get("app.modules.rates_advanced.setpoint_boost_cutoff"),
-        rfsuite.i18n.get("app.modules.rates_advanced.dyn_ceiling_gain"),
-        rfsuite.i18n.get("app.modules.rates_advanced.dyn_deadband_gain"),
-        rfsuite.i18n.get("app.modules.rates_advanced.dyn_deadband_filter"),
+        i18n("app.modules.rates_advanced.response_time"),
+        i18n("app.modules.rates_advanced.acc_limit"),
+        i18n("app.modules.rates_advanced.setpoint_boost_gain"),
+        i18n("app.modules.rates_advanced.setpoint_boost_cutoff"),
+        i18n("app.modules.rates_advanced.dyn_ceiling_gain"),
+        i18n("app.modules.rates_advanced.dyn_deadband_gain"),
+        i18n("app.modules.rates_advanced.dyn_deadband_filter"),
     }
 else
     rows = {
-        rfsuite.i18n.get("app.modules.rates_advanced.response_time"),
-        rfsuite.i18n.get("app.modules.rates_advanced.acc_limit"),
+        i18n("app.modules.rates_advanced.response_time"),
+        i18n("app.modules.rates_advanced.acc_limit"),
     }
 end
 
@@ -32,15 +33,15 @@ local apidata = {
         [1] = 'RC_TUNING',
     },
     formdata = {
-        name = rfsuite.i18n.get("app.modules.rates_advanced.dynamics"),
+        name = i18n("app.modules.rates_advanced.dynamics"),
         labels = {
         },
         rows = rows,
         cols = {
-            rfsuite.i18n.get("app.modules.rates_advanced.roll"),
-            rfsuite.i18n.get("app.modules.rates_advanced.pitch"),
-            rfsuite.i18n.get("app.modules.rates_advanced.yaw"),
-            rfsuite.i18n.get("app.modules.rates_advanced.col")
+            i18n("app.modules.rates_advanced.roll"),
+            i18n("app.modules.rates_advanced.pitch"),
+            i18n("app.modules.rates_advanced.yaw"),
+            i18n("app.modules.rates_advanced.col")
         },
         fields = {
             -- response time
@@ -246,7 +247,7 @@ end
 
 return {
     apidata = apidata,
-    title = rfsuite.i18n.get("app.modules.rates_advanced.name"),
+    title = i18n("app.modules.rates_advanced.name"),
     reboot = false,
     openPage = openPage,
     eepromWrite = true,

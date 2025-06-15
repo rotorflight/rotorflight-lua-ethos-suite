@@ -19,6 +19,7 @@
 
 ]] --
 local utils = {}
+local i18n = rfsuite.i18n.get
 
 local arg = {...}
 local config = arg[1]
@@ -33,14 +34,14 @@ local config = arg[1]
 --- @return string A comma-separated string of human-readable flag descriptions, or "OK" if no flags are set.
 function utils.armingDisableFlagsToString(flags)
     if flags == nil then
-        return rfsuite.i18n.get("app.modules.status.ok"):upper()
+        return i18n("app.modules.status.ok"):upper()
     end
 
     local names = {}
     for i = 0, 25 do
         if (flags & (1 << i)) ~= 0 then
             local key = "app.modules.status.arming_disable_flag_" .. i
-            local name = rfsuite.i18n.get(key)
+            local name = i18n(key)
             if name and name ~= "" then
                 table.insert(names, name)
             end
@@ -48,7 +49,7 @@ function utils.armingDisableFlagsToString(flags)
     end
 
     if #names == 0 then
-        return rfsuite.i18n.get("app.modules.status.ok"):upper()
+        return i18n("app.modules.status.ok"):upper()
     end
 
     return table.concat(names, ", "):upper()

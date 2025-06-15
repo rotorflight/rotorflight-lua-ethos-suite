@@ -1,8 +1,9 @@
 
 
+local i18n = rfsuite.i18n.get
 local S_PAGES = {
-    {name = rfsuite.i18n.get("app.modules.settings.dashboard_theme"), script = "dashboard_theme.lua", image = "dashboard_theme.png"},
-    {name = rfsuite.i18n.get("app.modules.settings.dashboard_settings"), script = "dashboard_settings.lua", image = "dashboard_settings.png"},
+    {name = i18n("app.modules.settings.dashboard_theme"), script = "dashboard_theme.lua", image = "dashboard_theme.png"},
+    {name = i18n("app.modules.settings.dashboard_settings"), script = "dashboard_settings.lua", image = "dashboard_settings.png"},
 }
 
 local function openPage(pidx, title, script)
@@ -42,7 +43,7 @@ local function openPage(pidx, title, script)
     local x = windowWidth - buttonW - 10
 
     rfsuite.app.ui.fieldHeader(
-        rfsuite.i18n.get(rfsuite.i18n.get("app.modules.settings.name") .. " / " .. rfsuite.i18n.get("app.modules.settings.dashboard"))
+        i18n(i18n("app.modules.settings.name") .. " / " .. i18n("app.modules.settings.dashboard"))
     )
 
 
@@ -137,7 +138,7 @@ local function event(widget, category, value, x, y)
     if category == EVT_CLOSE and value == 0 or value == 35 then
         rfsuite.app.ui.openPage(
             pageIdx,
-            rfsuite.i18n.get("app.modules.settings.name"),
+            i18n("app.modules.settings.name"),
             "settings/settings.lua"
         )
         return true
@@ -149,7 +150,7 @@ local function onNavMenu()
     rfsuite.app.ui.progressDisplay()
         rfsuite.app.ui.openPage(
             pageIdx,
-            rfsuite.i18n.get("app.modules.settings.name"),
+            i18n("app.modules.settings.name"),
             "settings/settings.lua"
         )
         return true

@@ -15,6 +15,8 @@ local powercycleLoaderCounter = 0
 local powercycleLoaderRateLimit = 2
 local showPowerCycleLoaderFinished = false
 
+local i18n = rfsuite.i18n.get
+
 local modelField
 local versionField
 local firmwareField
@@ -111,26 +113,26 @@ local function openPage(pidx, title, script)
 
     form.clear()
 
-    line = form.addLine(rfsuite.i18n.get("app.modules.esc_tools.name") .. ' / ' .. ESC.toolName)
+    line = form.addLine(i18n("app.modules.esc_tools.name") .. ' / ' .. ESC.toolName)
 
     buttonW = 100
     local x = windowWidth - buttonW
 
     rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {x = x - buttonW - 5, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}, {
-        text = rfsuite.i18n.get("app.navigation_menu"),
+        text = i18n("app.navigation_menu"),
         icon = nil,
         options = FONT_S,
         paint = function()
         end,
         press = function()
-            rfsuite.app.ui.openPage(pidx, rfsuite.i18n.get("app.modules.esc_tools.name"), "esc_tools/esc.lua")
+            rfsuite.app.ui.openPage(pidx, i18n("app.modules.esc_tools.name"), "esc_tools/esc.lua")
 
         end
     })
     rfsuite.app.formNavigationFields['menu']:focus()
 
     rfsuite.app.formNavigationFields['refresh'] = form.addButton(line, {x = x, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}, {
-        text = rfsuite.i18n.get("app.navigation_reload"),
+        text = i18n("app.navigation_reload"),
         icon = nil,
         options = FONT_S,
         paint = function()
@@ -286,7 +288,7 @@ local function wakeup()
         rfsuite.app.dialogs.progressDisplay = false
         rfsuite.app.triggers.isReady = true
 
-        if ESC and ESC.powerCycle ~= true then modelText = form.addStaticText(modelLine, modelTextPos, rfsuite.i18n.get("app.modules.esc_tools.unknown")) end
+        if ESC and ESC.powerCycle ~= true then modelText = form.addStaticText(modelLine, modelTextPos, i18n("app.modules.esc_tools.unknown")) end
 
         if ESC and ESC.powerCycle == true then showPowerCycleLoader = true end
 
@@ -305,7 +307,7 @@ local function wakeup()
 
             if powercycleLoaderCounter >= 100 then
                 powercycleLoader:close()
-                modelText = form.addStaticText(modelLine, modelTextPos, rfsuite.i18n.get("app.modules.esc_tools.unknown"))
+                modelText = form.addStaticText(modelLine, modelTextPos, i18n("app.modules.esc_tools.unknown"))
                 showPowerCycleLoaderInProgress = false
                 rfsuite.app.triggers.disableRssiTimeout = false
                 showPowerCycleLoader = false
@@ -323,7 +325,7 @@ local function wakeup()
             showPowerCycleLoaderInProgress = true
             rfsuite.app.audio.playEscPowerCycle = true
             rfsuite.app.triggers.disableRssiTimeout = true
-            powercycleLoader = form.openProgressDialog(rfsuite.i18n.get("app.modules.esc_tools.searching"), rfsuite.i18n.get("app.modules.esc_tools.please_powercycle"))
+            powercycleLoader = form.openProgressDialog(i18n("app.modules.esc_tools.searching"), i18n("app.modules.esc_tools.please_powercycle"))
             powercycleLoader:value(0)
             powercycleLoader:closeAllowed(false)
         end
@@ -336,7 +338,7 @@ local function event(widget, category, value, x, y)
     -- if close event detected go to section home page
     if category == EVT_CLOSE and value == 0 or value == 35 then
         if powercycleLoader then powercycleLoader:close() end
-        rfsuite.app.ui.openPage(pidx, rfsuite.i18n.get("app.modules.esc_tools.name"), "esc_tools/esc.lua")
+        rfsuite.app.ui.openPage(pidx, i18n("app.modules.esc_tools.name"), "esc_tools/esc.lua")
         return true
     end
 

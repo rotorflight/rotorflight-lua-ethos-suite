@@ -1,5 +1,5 @@
 local settings = {}
-
+local i18n = rfsuite.i18n.get
 local function openPage(pageIdx, title, script)
     enableWakeup = true
     rfsuite.app.triggers.closeProgressLoader = true
@@ -10,7 +10,7 @@ local function openPage(pageIdx, title, script)
     rfsuite.app.lastScript = script
 
     rfsuite.app.ui.fieldHeader(
-        rfsuite.i18n.get("app.modules.settings.name") .. " / " .. rfsuite.i18n.get("app.modules.settings.txt_general")
+        i18n("app.modules.settings.name") .. " / " .. i18n("app.modules.settings.txt_general")
     )
     rfsuite.session.formLineCnt = 0
 
@@ -22,15 +22,15 @@ local function openPage(pageIdx, title, script)
     formFieldCount = formFieldCount + 1
     rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
     rfsuite.app.formLines[rfsuite.session.formLineCnt] = form.addLine(
-        rfsuite.i18n.get("app.modules.settings.txt_iconsize")
+        i18n("app.modules.settings.txt_iconsize")
     )
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(
         rfsuite.app.formLines[rfsuite.session.formLineCnt],
         nil,
         {
-            { rfsuite.i18n.get("app.modules.settings.txt_text"),  0 },
-            { rfsuite.i18n.get("app.modules.settings.txt_small"), 1 },
-            { rfsuite.i18n.get("app.modules.settings.txt_large"), 2 },
+            { i18n("app.modules.settings.txt_text"),  0 },
+            { i18n("app.modules.settings.txt_small"), 1 },
+            { i18n("app.modules.settings.txt_large"), 2 },
         },
         function()
             if rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.iconsize then
@@ -50,7 +50,7 @@ local function openPage(pageIdx, title, script)
     formFieldCount = formFieldCount + 1
     rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
     rfsuite.app.formLines[rfsuite.session.formLineCnt] = form.addLine(
-        rfsuite.i18n.get("app.modules.settings.txt_syncname")
+        i18n("app.modules.settings.txt_syncname")
     )
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(
         rfsuite.app.formLines[rfsuite.session.formLineCnt],
@@ -72,7 +72,7 @@ local function onNavMenu()
     rfsuite.app.ui.progressDisplay()
     rfsuite.app.ui.openPage(
         pageIdx,
-        rfsuite.i18n.get("app.modules.settings.name"),
+        i18n("app.modules.settings.name"),
         "settings/settings.lua"
     )
 end
@@ -80,9 +80,9 @@ end
 local function onSaveMenu()
     local buttons = {
         {
-            label  = rfsuite.i18n.get("app.btn_ok_long"),
+            label  = i18n("app.btn_ok_long"),
             action = function()
-                local msg = rfsuite.i18n.get("app.modules.profile_select.save_prompt_local")
+                local msg = i18n("app.modules.profile_select.save_prompt_local")
                 rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
                 for key, value in pairs(settings) do
                     rfsuite.preferences.general[key] = value
@@ -96,7 +96,7 @@ local function onSaveMenu()
             end,
         },
         {
-            label  = rfsuite.i18n.get("app.modules.profile_select.cancel"),
+            label  = i18n("app.modules.profile_select.cancel"),
             action = function()
                 return true
             end,
@@ -105,8 +105,8 @@ local function onSaveMenu()
 
     form.openDialog({
         width   = nil,
-        title   = rfsuite.i18n.get("app.modules.profile_select.save_settings"),
-        message = rfsuite.i18n.get("app.modules.profile_select.save_prompt_local"),
+        title   = i18n("app.modules.profile_select.save_settings"),
+        message = i18n("app.modules.profile_select.save_prompt_local"),
         buttons = buttons,
         wakeup  = function() end,
         paint   = function() end,
@@ -119,7 +119,7 @@ local function event(widget, category, value, x, y)
     if category == EVT_CLOSE and value == 0 or value == 35 then
         rfsuite.app.ui.openPage(
             pageIdx,
-            rfsuite.i18n.get("app.modules.settings.name"),
+            i18n("app.modules.settings.name"),
             "settings/settings.lua"
         )
         return true

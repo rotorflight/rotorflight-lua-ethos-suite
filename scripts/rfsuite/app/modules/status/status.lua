@@ -7,7 +7,7 @@ local status = {}
 local summary = {}
 local triggerEraseDataFlash = false
 local enableWakeup = false
-
+local i18n = rfsuite.i18n.get
 local displayType = 0
 local disableType = false
 
@@ -27,10 +27,10 @@ local apidata = {
         labels = {
         },
         fields = {
-            {t = rfsuite.i18n.get("app.modules.status.arming_flags"), value = "-", type = displayType, disable = disableType, position = displayPos},
-            {t = rfsuite.i18n.get("app.modules.status.dataflash_free_space"), value = "-", type = displayType, disable = disableType, position = displayPos},
-            {t = rfsuite.i18n.get("app.modules.status.real_time_load"), value = "-", type = displayType, disable = disableType, position = displayPos},
-            {t = rfsuite.i18n.get("app.modules.status.cpu_load"), value = "-", type = displayType, disable = disableType, position = displayPos}
+            {t = i18n("app.modules.status.arming_flags"), value = "-", type = displayType, disable = disableType, position = displayPos},
+            {t = i18n("app.modules.status.dataflash_free_space"), value = "-", type = displayType, disable = disableType, position = displayPos},
+            {t = i18n("app.modules.status.real_time_load"), value = "-", type = displayType, disable = disableType, position = displayPos},
+            {t = i18n("app.modules.status.cpu_load"), value = "-", type = displayType, disable = disableType, position = displayPos}
         }
     }                 
 }
@@ -109,9 +109,9 @@ local function postRead(self)
 end
 
 local function getFreeDataflashSpace()
-    if not summary.supported then return rfsuite.i18n.get("app.modules.status.unsupported") end
+    if not summary.supported then return i18n("app.modules.status.unsupported") end
     local freeSpace = summary.totalSize - summary.usedSize
-    return string.format("%.1f " .. rfsuite.i18n.get("app.modules.status.megabyte"), freeSpace / (1024 * 1024))
+    return string.format("%.1f " .. i18n("app.modules.status.megabyte"), freeSpace / (1024 * 1024))
 end
 
 local function wakeup()
@@ -123,7 +123,7 @@ local function wakeup()
         rfsuite.app.audio.playEraseFlash = true
         triggerEraseDataFlash = false
 
-        rfsuite.app.ui.progressDisplay(rfsuite.i18n.get("app.modules.status.erasing"), rfsuite.i18n.get("app.modules.status.erasing_dataflash"))
+        rfsuite.app.ui.progressDisplay(i18n("app.modules.status.erasing"), i18n("app.modules.status.erasing_dataflash"))
         rfsuite.app.Page.eraseDataflash()
         rfsuite.app.triggers.isReady = true
     end
@@ -171,7 +171,7 @@ end
 local function onToolMenu(self)
 
     local buttons = {{
-        label = rfsuite.i18n.get("app.btn_ok_long"),
+        label = i18n("app.btn_ok_long"),
         action = function()
 
             -- we cant launch the loader here to se rely on the modules
@@ -180,7 +180,7 @@ local function onToolMenu(self)
             return true
         end
     }, {
-        label = rfsuite.i18n.get("app.btn_cancel"),
+        label = i18n("app.btn_cancel"),
         action = function()
             return true
         end
@@ -188,8 +188,8 @@ local function onToolMenu(self)
     local message
     local title
 
-    title = rfsuite.i18n.get("app.modules.status.erase")
-    message = rfsuite.i18n.get("app.modules.status.erase_prompt")
+    title = i18n("app.modules.status.erase")
+    message = i18n("app.modules.status.erase_prompt")
 
     form.openDialog({
         width = nil,

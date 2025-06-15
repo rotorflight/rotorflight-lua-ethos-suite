@@ -1,15 +1,17 @@
 local labels = {}
 local fields = {}
 
-fields[#fields + 1] = {t = rfsuite.i18n.get("app.modules.copyprofiles.profile_type"), value = 0, min = 0, max = 1, table = {[0] = rfsuite.i18n.get("app.modules.copyprofiles.profile_type_pid"), rfsuite.i18n.get("app.modules.copyprofiles.profile_type_rate")}}
-fields[#fields + 1] = {t = rfsuite.i18n.get("app.modules.copyprofiles.source_profile"), value = 0, min = 0, max = 5, tableIdxInc = -1, table = {"1", "2", "3", "4", "5", "6"}}
-fields[#fields + 1] = {t = rfsuite.i18n.get("app.modules.copyprofiles.dest_profile"), value = 0, min = 0, max = 5, tableIdxInc = -1, table = {"1", "2", "3", "4", "5", "6"}}
+local i18n = rfsuite.i18n.get
+
+fields[#fields + 1] = {t = i18n("app.modules.copyprofiles.profile_type"), value = 0, min = 0, max = 1, table = {[0] = i18n("app.modules.copyprofiles.profile_type_pid"), i18n("app.modules.copyprofiles.profile_type_rate")}}
+fields[#fields + 1] = {t = i18n("app.modules.copyprofiles.source_profile"), value = 0, min = 0, max = 5, tableIdxInc = -1, table = {"1", "2", "3", "4", "5", "6"}}
+fields[#fields + 1] = {t = i18n("app.modules.copyprofiles.dest_profile"), value = 0, min = 0, max = 5, tableIdxInc = -1, table = {"1", "2", "3", "4", "5", "6"}}
 
 local doSave = false
 
 local function onSaveMenu()
     local buttons = {{
-        label = rfsuite.i18n.get("app.btn_ok"),
+        label = i18n("app.btn_ok"),
         action = function()
 
             --- trigger a write here
@@ -18,17 +20,17 @@ local function onSaveMenu()
             return true
         end
     }, {
-        label = rfsuite.i18n.get("app.btn_cancel"),
+        label = i18n("app.btn_cancel"),
         action = function()
             return true
         end
     }}
-    local theTitle = rfsuite.i18n.get("app.modules.copyprofiles.msgbox_save")
+    local theTitle = i18n("app.modules.copyprofiles.msgbox_save")
     local theMsg
     if rfsuite.app.Page.extraMsgOnSave then
-        theMsg = rfsuite.i18n.get("app.modules.copyprofiles.msgbox_msg") .. "\n\n" .. rfsuite.app.Page.extraMsgOnSave
+        theMsg = i18n("app.modules.copyprofiles.msgbox_msg") .. "\n\n" .. rfsuite.app.Page.extraMsgOnSave
     else    
-        theMsg = rfsuite.i18n.get("app.modules.copyprofiles.msgbox_msg")
+        theMsg = i18n("app.modules.copyprofiles.msgbox_msg")
     end
 
 
