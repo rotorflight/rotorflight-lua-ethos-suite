@@ -20,8 +20,42 @@ local arg = {...}
 local config = arg[1]
 
 local telemetry = {}
-local sensors = {}
 local protocol, telemetrySOURCE, crsfSOURCE
+
+
+-- sensor cache: weak values so GC can drop cold sources
+local sensors   = {}
+
+-- debug counters
+local cache_hits, cache_misses = 0, 0
+
+-- LRU for hot sources
+local HOT_SIZE  = 25
+local hot_list, hot_index = {}, {}
+
+local function mark_hot(key)
+  local idx = hot_index[key]
+  if idx then
+    table.remove(hot_list, idx)
+  elseif #hot_list >= HOT_SIZE then
+    local old = table.remove(hot_list, 1)
+    hot_index[old] = nil
+    -- evict the old sensor so cache size ≤ HOT_SIZE
+    sensors[old] = nil    
+  end
+  table.insert(hot_list, key)
+  hot_index[key] = #hot_list
+end
+
+function telemetry._debugStats()
+  local hot_count = #hot_list
+  return {
+    hits        = cache_hits,
+    misses      = cache_misses,
+    hot_size    = hot_count,
+    hot_list    = hot_list,
+  }
+end
 
 -- Rate‐limiting for wakeup()
 local sensorRateLimit = os.clock()
@@ -804,8 +838,12 @@ end
 function telemetry.getSensorSource(name)
     if not sensorTable[name] then return nil end
 
-    -- Return cached if available:
-    if sensors[name] then return sensors[name] end
+    -- Return cached if available, bump it as hot:
+    if sensors[name] then
+        cache_hits = cache_hits + 1           -- debug: we hit the cache :contentReference[oaicite:0]{index=0}
+        mark_hot(name)
+        return sensors[name]
+    end
 
     local function checkCondition(sensorEntry)
         if not (rfsuite.session and rfsuite.session.apiVersion) then
@@ -827,8 +865,10 @@ function telemetry.getSensorSource(name)
                 local sensorQ = { appId = sensor.uid, category = CATEGORY_TELEMETRY_SENSOR }
                 local source = system.getSource(sensorQ)
                 if source then
+                    cache_misses = cache_misses + 1       -- debug: loaded from system.getSource :contentReference[oaicite:1]{index=1}
                     sensors[name] = source
-                    return sensors[name]
+                    mark_hot(name)
+                    return source
                 end
             end
         end
@@ -845,8 +885,10 @@ function telemetry.getSensorSource(name)
                     sensor.msplt = nil
                     local source = system.getSource(sensor)
                     if source then
+                        cache_misses = cache_misses + 1       -- debug: loaded from system.getSource :contentReference[oaicite:1]{index=1}
                         sensors[name] = source
-                        return sensors[name]
+                        mark_hot(name)
+                        return source
                     end
                 end
             end
@@ -855,8 +897,10 @@ function telemetry.getSensorSource(name)
             for _, sensor in ipairs(sensorTable[name].sensors.crsfLegacy or {}) do
                 local source = system.getSource(sensor)
                 if source then
+                    cache_misses = cache_misses + 1       -- debug: loaded from system.getSource :contentReference[oaicite:1]{index=1}
                     sensors[name] = source
-                    return sensors[name]
+                    mark_hot(name)
+                    return source
                 end
             end
         end
@@ -869,8 +913,10 @@ function telemetry.getSensorSource(name)
                 sensor.msplt = nil
                 local source = system.getSource(sensor)
                 if source then
+                    cache_misses = cache_misses + 1       -- debug: loaded from system.getSource :contentReference[oaicite:1]{index=1}
                     sensors[name] = source
-                    return sensors[name]
+                    mark_hot(name)
+                    return source
                 end
             end
         end
@@ -991,6 +1037,7 @@ end
 function telemetry.reset()
     telemetrySOURCE, crsfSOURCE, protocol = nil, nil, nil
     sensors = {}
+    hot_list, hot_index = {}, {}
     telemetry.sensorStats = {}
     -- Also reset onchange tracking so we rebuild next time:
     filteredOnchangeSensors = nil
@@ -1048,15 +1095,6 @@ function telemetry.wakeup()
         end
     end
 
-    -- Periodic cache flush every CACHE_FLUSH_INTERVAL seconds
-    if ((now - lastCacheFlushTime) >= CACHE_FLUSH_INTERVAL) or rfsuite.session.resetTelemetry == true then
-        if rfsuite.session.resetTelemetry == true then
-            rfsuite.utils.log("Telemetry cache reset", "info")
-            rfsuite.session.resetTelemetry = false
-        end
-        lastCacheFlushTime = now
-        sensors = {}
-    end
 
     -- Reset if telemetry is inactive or telemetry type changed
     if not rfsuite.session.telemetryState or rfsuite.session.telemetryTypeChanged then
