@@ -1,6 +1,6 @@
 local fields = {}
 local labels = {}
-
+local i18n = rfsuite.i18n.get
 local enableWakeup = false
 
 local w, h = rfsuite.utils.getWindowSize()

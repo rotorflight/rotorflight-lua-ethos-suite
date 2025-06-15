@@ -21,9 +21,11 @@ local data = {}
 
 data['help'] = {}
 
+local i18n = rfsuite.i18n.get
+
 data['help']['default'] = {
-    rfsuite.i18n.get("app.modules.copyprofiles.help_p1"), 
-    rfsuite.i18n.get("app.modules.copyprofiles.help_p2"), 
+    i18n("app.modules.copyprofiles.help_p1"), 
+    i18n("app.modules.copyprofiles.help_p2"), 
 }
 
 data['fields'] = {}

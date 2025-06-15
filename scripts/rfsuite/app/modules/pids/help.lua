@@ -18,15 +18,15 @@
 
 ]] --
 local data = {}
-
+local i18n = rfsuite.i18n.get
 data['help'] = {}
 
 data['help']['default'] = {
-    rfsuite.i18n.get("app.modules.pids.help_p1"),
-    rfsuite.i18n.get("app.modules.pids.help_p2"),
-    rfsuite.i18n.get("app.modules.pids.help_p3"),
-    rfsuite.i18n.get("app.modules.pids.help_p4"),
-    rfsuite.i18n.get("app.modules.pids.help_p5")
+    i18n("app.modules.pids.help_p1"),
+    i18n("app.modules.pids.help_p2"),
+    i18n("app.modules.pids.help_p3"),
+    i18n("app.modules.pids.help_p4"),
+    i18n("app.modules.pids.help_p5")
 }
 
 data['fields'] = {}

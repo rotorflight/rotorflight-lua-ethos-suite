@@ -119,15 +119,19 @@ rfsuite.config.bgTaskKey = "rf2bg"                                          -- k
 -- rfsuite.session: Session table for the suite.
 -- rfsuite.app: Application module loaded from "app/app.lua" with the provided configuration.
 rfsuite.compiler = assert(loadfile("lib/compile.lua"))(rfsuite.config) 
-rfsuite.app = assert(rfsuite.compiler.loadfile("app/app.lua"))(rfsuite.config)
-
-
--- library with utility functions used throughou the suite
-rfsuite.utils = assert(rfsuite.compiler.loadfile("lib/utils.lua"))(rfsuite.config)
 
 -- Load the i18n system
 rfsuite.i18n  = assert(rfsuite.compiler.loadfile("lib/i18n.lua"))(rfsuite.config)
 rfsuite.i18n.load()     
+
+-- library with utility functions used throughou the suite
+rfsuite.utils = assert(rfsuite.compiler.loadfile("lib/utils.lua"))(rfsuite.config)
+
+rfsuite.app = assert(rfsuite.compiler.loadfile("app/app.lua"))(rfsuite.config)
+
+
+
+
 
 -- 
 -- This script initializes the `rfsuite` tasks and background task.

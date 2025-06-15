@@ -18,7 +18,7 @@
 ]] --
 local arg = {...}
 local config = arg[1]
-
+local i18n = rfsuite.i18n.get
 local telemetry = {}
 local protocol, telemetrySOURCE, crsfSOURCE
 
@@ -116,7 +116,7 @@ local sensorTable = {
 
     -- RSSI Sensors
     rssi = {
-        name = rfsuite.i18n.get("telemetry.sensors.rssi"),
+        name = i18n("telemetry.sensors.rssi"),
         mandatory = true,
         stats = true,
         switch_alerts = true,
@@ -145,7 +145,7 @@ local sensorTable = {
 
     -- Arm Flags
     armflags = {
-        name = rfsuite.i18n.get("telemetry.sensors.arming_flags"),
+        name = i18n("telemetry.sensors.arming_flags"),
         mandatory = true,
         stats = false,
         set_telemetry_sensors = 90,
@@ -175,7 +175,7 @@ local sensorTable = {
 
     -- Voltage Sensors
     voltage = {
-        name = rfsuite.i18n.get("telemetry.sensors.voltage"),
+        name = i18n("telemetry.sensors.voltage"),
         mandatory = true,
         stats = true,
         set_telemetry_sensors = 3,
@@ -206,7 +206,7 @@ local sensorTable = {
 
     -- RPM Sensors
     rpm = {
-        name = rfsuite.i18n.get("telemetry.sensors.headspeed"),
+        name = i18n("telemetry.sensors.headspeed"),
         mandatory = true,
         stats = true,
         set_telemetry_sensors = 60,
@@ -231,7 +231,7 @@ local sensorTable = {
 
     -- Current Sensors
     current = {
-        name = rfsuite.i18n.get("telemetry.sensors.current"),
+        name = i18n("telemetry.sensors.current"),
         mandatory = false,
         stats = true,
         set_telemetry_sensors = 18,
@@ -260,7 +260,7 @@ local sensorTable = {
 
     -- ESC Temperature Sensors
     temp_esc = {
-        name = rfsuite.i18n.get("telemetry.sensors.esc_temp"),
+        name = i18n("telemetry.sensors.esc_temp"),
         mandatory = false,
         stats = true,
         set_telemetry_sensors = 23,
@@ -302,7 +302,7 @@ local sensorTable = {
 
     -- MCU Temperature Sensors
     temp_mcu = {
-        name = rfsuite.i18n.get("telemetry.sensors.mcu_temp"),
+        name = i18n("telemetry.sensors.mcu_temp"),
         mandatory = false,
         stats = true,
         set_telemetry_sensors = 52,
@@ -343,7 +343,7 @@ local sensorTable = {
 
     -- Fuel and Capacity Sensors
     fuel = {
-        name = rfsuite.i18n.get("telemetry.sensors.fuel"),
+        name = i18n("telemetry.sensors.fuel"),
         mandatory = false,
         stats = true,
         set_telemetry_sensors = 6,
@@ -367,7 +367,7 @@ local sensorTable = {
     },
 
     consumption = {
-        name = rfsuite.i18n.get("telemetry.sensors.consumption"),
+        name = i18n("telemetry.sensors.consumption"),
         mandatory = true,
         stats = true,
         set_telemetry_sensors = 5,
@@ -392,7 +392,7 @@ local sensorTable = {
 
     -- Flight Mode (Governor)
     governor = {
-        name = rfsuite.i18n.get("telemetry.sensors.governor"),
+        name = i18n("telemetry.sensors.governor"),
         mandatory = true,
         stats = false,
         set_telemetry_sensors = 93,
@@ -415,7 +415,7 @@ local sensorTable = {
 
     -- Adjustment Sensors
     adj_f = {
-        name = rfsuite.i18n.get("telemetry.sensors.adj_func"),
+        name = i18n("telemetry.sensors.adj_func"),
         mandatory = true,
         stats = false,
         set_telemetry_sensors = 99,
@@ -436,7 +436,7 @@ local sensorTable = {
     },
 
     adj_v = {
-        name = rfsuite.i18n.get("telemetry.sensors.adj_val"),
+        name = i18n("telemetry.sensors.adj_val"),
         mandatory = true,
         stats = false,
         -- grouped with adj_f, so no set_telemetry_sensors here
@@ -458,7 +458,7 @@ local sensorTable = {
 
     -- PID and Rate Profiles
     pid_profile = {
-        name = rfsuite.i18n.get("telemetry.sensors.pid_profile"),
+        name = i18n("telemetry.sensors.pid_profile"),
         mandatory = true,
         stats = false,
         set_telemetry_sensors = 95,
@@ -480,7 +480,7 @@ local sensorTable = {
     },
 
     rate_profile = {
-        name = rfsuite.i18n.get("telemetry.sensors.rate_profile"),
+        name = i18n("telemetry.sensors.rate_profile"),
         mandatory = true,
         stats = false,
         set_telemetry_sensors = 96,
@@ -503,7 +503,7 @@ local sensorTable = {
 
     -- Throttle Sensors
     throttle_percent = {
-        name = rfsuite.i18n.get("telemetry.sensors.throttle_pct"),
+        name = i18n("telemetry.sensors.throttle_pct"),
         mandatory = true,
         stats = true,
         set_telemetry_sensors = 15,
@@ -529,7 +529,7 @@ local sensorTable = {
 
     -- Arm Disable Flags
     armdisableflags = {
-        name = rfsuite.i18n.get("telemetry.sensors.armdisableflags"),
+        name = i18n("telemetry.sensors.armdisableflags"),
         mandatory = true,
         stats = false,
         set_telemetry_sensors = 91,
@@ -551,7 +551,7 @@ local sensorTable = {
 
     -- Altitude
     altitude = {
-        name = rfsuite.i18n.get("telemetry.sensors.altitude"),
+        name = i18n("telemetry.sensors.altitude"),
         mandatory = false,
         stats = true,
         set_telemetry_sensors = nil,
@@ -591,7 +591,7 @@ local sensorTable = {
 
     -- Bec Voltage
     bec_voltage = {
-        name = rfsuite.i18n.get("telemetry.sensors.bec_voltage"),
+        name = i18n("telemetry.sensors.bec_voltage"),
         mandatory = true,
         stats = true,
         set_telemetry_sensors = 43,
@@ -618,7 +618,7 @@ local sensorTable = {
 
     -- Cell Count
     cell_count = {
-        name = rfsuite.i18n.get("telemetry.sensors.cell_count"),
+        name = i18n("telemetry.sensors.cell_count"),
         mandatory = false,
         stats = false,
         set_telemetry_sensors = nil,
@@ -640,7 +640,7 @@ local sensorTable = {
 
     -- Accellerometer X
     accx = {
-        name = rfsuite.i18n.get("telemetry.sensors.accx"),
+        name = i18n("telemetry.sensors.accx"),
         mandatory = false,
         stats = false,
         set_telemetry_sensors = nil,
@@ -662,7 +662,7 @@ local sensorTable = {
 
     -- Accellerometer y
     accy = {
-        name = rfsuite.i18n.get("telemetry.sensors.accy"),
+        name = i18n("telemetry.sensors.accy"),
         mandatory = false,
         stats = false,
         set_telemetry_sensors = nil,
@@ -684,7 +684,7 @@ local sensorTable = {
 
     -- Accellerometer z
     accz = {
-        name = rfsuite.i18n.get("telemetry.sensors.accz"),
+        name = i18n("telemetry.sensors.accz"),
         mandatory = false,
         stats = false,
         set_telemetry_sensors = nil,
@@ -706,7 +706,7 @@ local sensorTable = {
 
     -- Attitude Yaw
     attyaw = {
-        name = rfsuite.i18n.get("telemetry.sensors.attyaw"),
+        name = i18n("telemetry.sensors.attyaw"),
         mandatory = false,
         stats = false,
         set_telemetry_sensors = nil,
@@ -728,7 +728,7 @@ local sensorTable = {
 
     -- Attitude Yaw
     attroll = {
-        name = rfsuite.i18n.get("telemetry.sensors.attroll"),
+        name = i18n("telemetry.sensors.attroll"),
         mandatory = false,
         stats = false,
         set_telemetry_sensors = nil,
@@ -751,7 +751,7 @@ local sensorTable = {
 
     -- Attitude Pitch
     attpitch = {
-        name = rfsuite.i18n.get("telemetry.sensors.attpitch"),
+        name = i18n("telemetry.sensors.attpitch"),
         mandatory = false,
         stats = false,
         set_telemetry_sensors = nil,

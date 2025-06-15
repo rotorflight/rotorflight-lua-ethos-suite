@@ -1,21 +1,23 @@
+local i18n = rfsuite.i18n.get
+
 local apidata = {
     api = {
         [1] = 'RC_TUNING',
     },
     formdata = {
-        name = rfsuite.i18n.get("app.modules.rates.quick"),
+        name = i18n("app.modules.rates.quick"),
         labels = {
         },
         rows = {
-            rfsuite.i18n.get("app.modules.rates.roll"),
-            rfsuite.i18n.get("app.modules.rates.pitch"),
-            rfsuite.i18n.get("app.modules.rates.yaw"),
-            rfsuite.i18n.get("app.modules.rates.collective")
+            i18n("app.modules.rates.roll"),
+            i18n("app.modules.rates.pitch"),
+            i18n("app.modules.rates.yaw"),
+            i18n("app.modules.rates.collective")
         },
         cols = {
-            rfsuite.i18n.get("app.modules.rates.rc_rate"),
-            rfsuite.i18n.get("app.modules.rates.max_rate"),
-            rfsuite.i18n.get("app.modules.rates.expo")
+            i18n("app.modules.rates.rc_rate"),
+            i18n("app.modules.rates.max_rate"),
+            i18n("app.modules.rates.expo")
         },
         fields = {
             {row = 1, col = 1, min = 0, max = 2550, default = 120, decimals = 2, scale = 100, mspapi = 1, apikey = "rcRates_1"},

@@ -19,6 +19,7 @@
 
 ]] --
 local utils = {}
+local i18n = rfsuite.i18n.get
 
 
 local arg = {...}
@@ -64,26 +65,26 @@ function utils.getGovernorState(value)
     local returnvalue
 
     if not rfsuite.tasks.telemetry then
-        return rfsuite.i18n.get("widgets.governor.UNKNOWN")
+        return i18n("widgets.governor.UNKNOWN")
     end
 
     --[[
     Checks if the provided value exists as a key in the 'map' table.
     If the key exists, assigns the corresponding value from 'map' to 'returnvalue'.
-    If the key does not exist, assigns a localized "UNKNOWN" string to 'returnvalue' using 'rfsuite.i18n.get'.
+    If the key does not exist, assigns a localized "UNKNOWN" string to 'returnvalue' using 'i18n'.
     ]]    
     local map = {     
-        [0] =  rfsuite.i18n.get("widgets.governor.OFF"),
-        [1] =  rfsuite.i18n.get("widgets.governor.IDLE"),
-        [2] =  rfsuite.i18n.get("widgets.governor.SPOOLUP"),
-        [3] =  rfsuite.i18n.get("widgets.governor.RECOVERY"),
-        [4] =  rfsuite.i18n.get("widgets.governor.ACTIVE"),
-        [5] =  rfsuite.i18n.get("widgets.governor.THROFF"),
-        [6] =  rfsuite.i18n.get("widgets.governor.LOSTHS"),
-        [7] =  rfsuite.i18n.get("widgets.governor.AUTOROT"),
-        [8] =  rfsuite.i18n.get("widgets.governor.BAILOUT"),
-        [100] = rfsuite.i18n.get("widgets.governor.DISABLED"),
-        [101] = rfsuite.i18n.get("widgets.governor.DISARMED")
+        [0] =  i18n("widgets.governor.OFF"),
+        [1] =  i18n("widgets.governor.IDLE"),
+        [2] =  i18n("widgets.governor.SPOOLUP"),
+        [3] =  i18n("widgets.governor.RECOVERY"),
+        [4] =  i18n("widgets.governor.ACTIVE"),
+        [5] =  i18n("widgets.governor.THROFF"),
+        [6] =  i18n("widgets.governor.LOSTHS"),
+        [7] =  i18n("widgets.governor.AUTOROT"),
+        [8] =  i18n("widgets.governor.BAILOUT"),
+        [100] = i18n("widgets.governor.DISABLED"),
+        [101] = i18n("widgets.governor.DISARMED")
     }
 
     if rfsuite.session and rfsuite.session.apiVersion and rfsuite.session.apiVersion > 12.07 then
@@ -96,7 +97,7 @@ function utils.getGovernorState(value)
     if map[value] then
         returnvalue = map[value]
     else
-        returnvalue = rfsuite.i18n.get("widgets.governor.UNKNOWN")
+        returnvalue = i18n("widgets.governor.UNKNOWN")
     end    
 
     --[[

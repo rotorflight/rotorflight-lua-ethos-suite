@@ -22,6 +22,7 @@ local ui = {}
 
 local arg = {...}
 local config = arg[1]
+local i18n = rfsuite.i18n.get
 
 -- Displays a progress dialog with a title and message.
 -- @param title The title of the progress dialog (optional, default is "Loading").
@@ -29,8 +30,8 @@ local config = arg[1]
 function ui.progressDisplay(title, message)
     if rfsuite.app.dialogs.progressDisplay then return end
 
-    title = title or rfsuite.i18n.get("app.msg_loading")
-    message = message or rfsuite.i18n.get("app.msg_loading_from_fbl")
+    title = title or i18n("app.msg_loading")
+    message = message or i18n("app.msg_loading_from_fbl")
 
     rfsuite.app.dialogs.progressDisplay = true
     rfsuite.app.dialogs.progressWatchDog = os.clock()
@@ -52,7 +53,7 @@ end
 ]]
 function ui.progressNolinkDisplay()
     rfsuite.app.dialogs.nolinkDisplay = true
-    rfsuite.app.dialogs.noLink = form.openProgressDialog(rfsuite.i18n.get("app.msg_connecting"), rfsuite.i18n.get("app.msg_connecting_to_fbl"))
+    rfsuite.app.dialogs.noLink = form.openProgressDialog(i18n("app.msg_connecting"), i18n("app.msg_connecting_to_fbl"))
     rfsuite.app.dialogs.noLink:closeAllowed(false)
     rfsuite.app.dialogs.noLink:value(0)
 end
@@ -67,9 +68,9 @@ function ui.progressDisplaySave(msg)
     rfsuite.app.dialogs.saveDisplay = true
     rfsuite.app.dialogs.saveWatchDog = os.clock()
     if msg then
-                 rfsuite.app.dialogs.save = form.openProgressDialog(rfsuite.i18n.get("app.msg_saving"),msg)   
+                 rfsuite.app.dialogs.save = form.openProgressDialog(i18n("app.msg_saving"),msg)   
     else
-         rfsuite.app.dialogs.save = form.openProgressDialog(rfsuite.i18n.get("app.msg_saving"), rfsuite.i18n.get("app.msg_saving_to_fbl"))       
+         rfsuite.app.dialogs.save = form.openProgressDialog(i18n("app.msg_saving"), i18n("app.msg_saving_to_fbl"))       
     end
     rfsuite.app.dialogs.save:value(0)
     rfsuite.app.dialogs.save:closeAllowed(false)
@@ -1045,13 +1046,13 @@ function ui.openPageDashboard(idx, title, script, source, folder)
 
     form.clear()
 
-    --form.addLine("../ " .. rfsuite.i18n.get("app.modules.settings.dashboard") .. " / " .. rfsuite.i18n.get("app.modules.settings.name") .. " / " .. title)
-    form.addLine( rfsuite.i18n.get("app.modules.settings.name") .. " / " .. title)
+    --form.addLine("../ " .. i18n("app.modules.settings.dashboard") .. " / " .. i18n("app.modules.settings.name") .. " / " .. title)
+    form.addLine( i18n("app.modules.settings.name") .. " / " .. title)
     buttonW = 100
     local x = windowWidth - (buttonW * 2) - 15
 
     rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {x = x, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}, {
-        text = rfsuite.i18n.get("app.navigation_menu"),
+        text = i18n("app.navigation_menu"),
         icon = nil,
         options = FONT_S,
         paint = function()
@@ -1065,7 +1066,7 @@ function ui.openPageDashboard(idx, title, script, source, folder)
 
             rfsuite.app.ui.openPage(
                 pageIdx,
-                rfsuite.i18n.get("app.modules.settings.dashboard"),
+                i18n("app.modules.settings.dashboard"),
                 "settings/tools/dashboard_settings.lua"
             )
         end
@@ -1084,9 +1085,9 @@ function ui.openPageDashboard(idx, title, script, source, folder)
 
                 local buttons = {
                     {
-                        label  = rfsuite.i18n.get("app.btn_ok_long"),
+                        label  = i18n("app.btn_ok_long"),
                         action = function()
-                            local msg = rfsuite.i18n.get("app.modules.profile_select.save_prompt_local")
+                            local msg = i18n("app.modules.profile_select.save_prompt_local")
                             rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
                             if rfsuite.app.Page.write then
                                 rfsuite.app.Page.write()
@@ -1098,7 +1099,7 @@ function ui.openPageDashboard(idx, title, script, source, folder)
                         end,
                     },
                     {
-                        label  = rfsuite.i18n.get("app.modules.profile_select.cancel"),
+                        label  = i18n("app.modules.profile_select.cancel"),
                         action = function()
                             return true
                         end,
@@ -1107,8 +1108,8 @@ function ui.openPageDashboard(idx, title, script, source, folder)
 
                 form.openDialog({
                     width   = nil,
-                    title   = rfsuite.i18n.get("app.modules.profile_select.save_settings"),
-                    message = rfsuite.i18n.get("app.modules.profile_select.save_prompt_local"),
+                    title   = i18n("app.modules.profile_select.save_settings"),
+                    message = i18n("app.modules.profile_select.save_prompt_local"),
                     buttons = buttons,
                     wakeup  = function() end,
                     paint   = function() end,
@@ -1192,7 +1193,7 @@ function ui.navigationButtons(x, y, w, h)
     if navButtons.menu ~= nil and navButtons.menu == true then
 
         rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {x = menuOffset, y = y, w = w, h = h}, {
-            text = rfsuite.i18n.get("app.navigation_menu"),
+            text = i18n("app.navigation_menu"),
             icon = nil,
             options = FONT_S,
             paint = function()
@@ -1212,7 +1213,7 @@ function ui.navigationButtons(x, y, w, h)
     if navButtons.save ~= nil and navButtons.save == true then
 
         rfsuite.app.formNavigationFields['save'] = form.addButton(line, {x = saveOffset, y = y, w = w, h = h}, {
-            text = rfsuite.i18n.get("app.navigation_save"),
+            text = i18n("app.navigation_save"),
             icon = nil,
             options = FONT_S,
             paint = function()
@@ -1231,7 +1232,7 @@ function ui.navigationButtons(x, y, w, h)
     if navButtons.reload ~= nil and navButtons.reload == true then
 
         rfsuite.app.formNavigationFields['reload'] = form.addButton(line, {x = reloadOffset, y = y, w = w, h = h}, {
-            text = rfsuite.i18n.get("app.navigation_reload"),
+            text = i18n("app.navigation_reload"),
             icon = nil,
             options = FONT_S,
             paint = function()
@@ -1251,7 +1252,7 @@ function ui.navigationButtons(x, y, w, h)
     -- TOOL BUTTON
     if navButtons.tool ~= nil and navButtons.tool == true then
         rfsuite.app.formNavigationFields['tool'] = form.addButton(line, {x = toolOffset, y = y, w = wS, h = h}, {
-            text = rfsuite.i18n.get("app.navigation_tools"),
+            text = i18n("app.navigation_tools"),
             icon = nil,
             options = FONT_S,
             paint = function()
@@ -1272,7 +1273,7 @@ function ui.navigationButtons(x, y, w, h)
 
             -- Execution of the file succeeded
             rfsuite.app.formNavigationFields['help'] = form.addButton(line, {x = helpOffset, y = y, w = wS, h = h}, {
-                text = rfsuite.i18n.get("app.navigation_help"),
+                text = i18n("app.navigation_help"),
                 icon = nil,
                 options = FONT_S,
                 paint = function()
@@ -1294,7 +1295,7 @@ function ui.navigationButtons(x, y, w, h)
         else
             -- No help available
             rfsuite.app.formNavigationFields['help'] = form.addButton(line, {x = helpOffset, y = y, w = wS, h = h}, {
-                text = rfsuite.i18n.get("app.navigation_help"),
+                text = i18n("app.navigation_help"),
                 icon = nil, options = FONT_S, paint = function() end, press = function() end
             })
             rfsuite.app.formNavigationFields['help']:enable(false)
@@ -1319,7 +1320,7 @@ function ui.openPageHelp(txtData, section)
         title = "Help - " .. rfsuite.app.lastTitle,
         message = message,
         buttons = {{
-            label = rfsuite.i18n.get("app.btn_close"),
+            label = i18n("app.btn_close"),
             action = function() return true end
         }},
         options = TEXT_LEFT

@@ -17,12 +17,13 @@
  * 
 
 ]] --
+ local i18n = rfsuite.i18n.get
 local data = {}
 
 data['help'] = {}
 
 data['help']['default'] = {
-    rfsuite.i18n.get("app.modules.mixer.help_p1")
+    i18n("app.modules.mixer.help_p1")
 }
 
 data['fields'] = {}

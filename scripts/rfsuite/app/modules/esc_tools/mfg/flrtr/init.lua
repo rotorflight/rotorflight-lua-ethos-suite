@@ -1,5 +1,7 @@
 local MSP_API = "ESC_PARAMETERS_FLYROTOR"
-local toolName = rfsuite.i18n.get("app.modules.esc_tools.mfg.flrtr.name")
+local i18n = rfsuite.i18n.get
+
+local toolName = i18n("app.modules.esc_tools.mfg.flrtr.name")
 moduleName = "FLRTR"
 
 function getUInt(page, vals)

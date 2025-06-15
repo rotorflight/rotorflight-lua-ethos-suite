@@ -2,7 +2,7 @@ local labels = {}
 local tables = {}
 
 local activateWakeup = false
-
+local i18n = rfsuite.i18n.get
 
 tables[0] = "app/modules/rates/ratetables/none.lua"
 tables[1] = "app/modules/rates/ratetables/betaflight.lua"
@@ -211,7 +211,7 @@ end
 
 return {
     apidata = apidata,
-    title = rfsuite.i18n.get("app.modules.rates.name"),
+    title = i18n("app.modules.rates.name"),
     reboot = false,
     eepromWrite = true,
     refreshOnRateChange = true,
