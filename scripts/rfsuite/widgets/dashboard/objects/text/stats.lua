@@ -2,6 +2,7 @@
     Stats Display Widget
     Configurable Parameters (box table fields):
     -------------------------------------------
+    wakeupinterval      : number                    -- Optional wakeup interval in seconds (set in wrapper)
 
     -- Title & Layout
     title               : string                    -- (Optional) Title text

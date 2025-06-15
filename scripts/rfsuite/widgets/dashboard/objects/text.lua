@@ -17,6 +17,15 @@ function wrapper.wakeup(box, telemetry)
         return
     end
 
+    -- Wakeup interval control using optional parameter (wakeupinterval)
+    local now = os.clock()
+    box._wakeupInterval = box._wakeupInterval or (box.wakeupinterval or 0.25)
+    box._lastWakeup = box._lastWakeup or 0
+
+    if now - box._lastWakeup < box._wakeupInterval then
+        return -- Throttle wakeup
+    end  
+
     local subtype = box.subtype or "telemetry"
 
     if not renders[subtype] then

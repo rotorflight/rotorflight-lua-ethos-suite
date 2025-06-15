@@ -4,6 +4,7 @@
 
     Configurable Parameters (box table fields):
     -------------------------------------------
+    wakeupinterval    : number   -- Optional wakeup interval in seconds (set in wrapper)
     bandLabels        : table           -- List of labels for each color band (e.g. {"Bad", "OK", "Good", "Excellent"})
     bandColors        : table           -- List of fill colors for each band (e.g. {lcd.RGB(180,50,50), lcd.RGB(220,150,40), ...})
     startAngle        : number          -- Arc start angle in degrees (default: 180)

@@ -2,6 +2,7 @@
     Arc Gauge Widget
     Configurable Parameters (box table fields):
     -------------------------------------------
+    wakeupinterval      : number   -- Optional wakeup interval in seconds (set in wrapper)
     -- Title parameters
     title               : string    -- (Optional) Title text
     titlepos            : string    -- (Optional) If `title` is present but `titlepos` is not set, title is placed at the top by default.

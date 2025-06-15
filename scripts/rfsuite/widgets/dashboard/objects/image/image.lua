@@ -2,6 +2,7 @@
     Image Box Widget
     Configurable Parameters (box table fields):
     -------------------------------------------
+    wakeupinterval      : number   -- Optional wakeup interval in seconds (set in wrapper)
     image               : string   -- (Optional) Path to image file (no extension needed; .png is tried first, then .bmp)
     title               : string   -- (Optional) Title text
     titlepos            : string   -- (Optional) Title position ("top" or "bottom")

@@ -3,17 +3,18 @@
 
     Configurable Parameters (box table fields):
     -------------------------------------------
-    title               : string    -- (Optional) Title text displayed above or below the value
-    titlepos            : string    -- (Optional) Title position: "top" or "bottom"
-    titlealign          : string    -- (Optional) Title alignment: "center", "left", or "right"
-    titlefont           : font      -- (Optional) Font for title (e.g., FONT_L, FONT_XL). Uses theme or default if unset.
-    titlespacing        : number    -- (Optional) Vertical gap between title and value (pixels)
-    titlecolor          : color     -- (Optional) Title text color (theme fallback if nil)
-    titlepadding        : number    -- (Optional) Padding for title (all sides unless overridden)
-    titlepaddingleft    : number    -- (Optional) Left padding for title
-    titlepaddingright   : number    -- (Optional) Right padding for title
-    titlepaddingtop     : number    -- (Optional) Top padding for title
-    titlepaddingbottom  : number    -- (Optional) Bottom padding for title
+    wakeupinterval      : number          -- Optional wakeup interval in seconds (set in wrapper)
+    title               : string          -- (Optional) Title text displayed above or below the value
+    titlepos            : string          -- (Optional) Title position: "top" or "bottom"
+    titlealign          : string          -- (Optional) Title alignment: "center", "left", or "right"
+    titlefont           : font            -- (Optional) Font for title (e.g., FONT_L, FONT_XL). Uses theme or default if unset.
+    titlespacing        : number          -- (Optional) Vertical gap between title and value (pixels)
+    titlecolor          : color           -- (Optional) Title text color (theme fallback if nil)
+    titlepadding        : number          -- (Optional) Padding for title (all sides unless overridden)
+    titlepaddingleft    : number          -- (Optional) Left padding for title
+    titlepaddingright   : number          -- (Optional) Right padding for title
+    titlepaddingtop     : number          -- (Optional) Top padding for title
+    titlepaddingbottom  : number          -- (Optional) Bottom padding for title
     value               : string|number   -- (Optional) **Static** value to display (required for this widget)
     font                : font            -- (Optional) Font for value (e.g., FONT_L, FONT_XL). Uses theme or default if unset.
     valuealign          : string          -- (Optional) Value alignment: "center", "left", or "right"
