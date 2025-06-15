@@ -191,6 +191,7 @@ function toolbox.menu(widget)
 end       
 
 function toolbox.i18n(widget)
+    if not widget then return {} end
         if widget.state.setup and widget.loadedWidget and type(widget.loadedWidget.i18n) == "function" then
             return widget.loadedWidget.i18n(widget)
         end
