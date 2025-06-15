@@ -347,6 +347,11 @@ function dashboard.renderLayout(widget, config)
     local utils     = dashboard.utils
     local telemetry = rfsuite.tasks.telemetry
 
+    -- create once    
+    dashboard.boxRects = dashboard.boxRects or {}
+    scheduledBoxIndices = scheduledBoxIndices or {}
+    dashboard._objectDirty = dashboard._objectDirty or {} 
+
     local function resolve(val, ...) return type(val) == "function" and val(...) or val end
 
     -- Load layout and box definitions
@@ -359,7 +364,7 @@ function dashboard.renderLayout(widget, config)
         lastLoadedBoxCount = #boxes
     end
 
-    dashboard._objectDirty = {}
+    for k in pairs(dashboard._objectDirty) do dashboard._objectDirty[k] = nil end   
 
     -- Grid and screen setup
     local W_raw, H_raw = lcd.getWindowSize()
@@ -383,8 +388,8 @@ function dashboard.renderLayout(widget, config)
     ----------------------------------------------------------------
     -- PHASE 1: Build Box Rects and Collect Scheduled Indices
     ----------------------------------------------------------------
-    dashboard.boxRects = {}
-    scheduledBoxIndices = {}
+    for i=#dashboard.boxRects,1,-1 do dashboard.boxRects[i] = nil end
+    for i=#scheduledBoxIndices,1,-1 do scheduledBoxIndices[i] = nil end
 
     for _, box in ipairs(boxes) do
         local w, h = getBoxSize(box, boxW, boxH, pad, W, H)
