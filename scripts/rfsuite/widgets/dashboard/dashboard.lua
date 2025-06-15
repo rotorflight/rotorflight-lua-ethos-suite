@@ -1124,6 +1124,15 @@ function dashboard.wakeup(widget)
         lcd.invalidate(widget)
     end
 
+    -- Report memory usage every 5 seconds
+    if lcd.isVisible() then
+        dashboard._lastMemReport = dashboard._lastMemReport or 0
+        if os.clock() - dashboard._lastMemReport > 5 then
+            rfsuite.utils.reportMemoryUsage("Dashboard")
+            dashboard._lastMemReport = os.clock()
+        end
+    end    
+
 end
 
 --- Lists available dashboard themes by scanning system and user theme directories.
