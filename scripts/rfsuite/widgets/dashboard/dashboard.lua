@@ -962,7 +962,7 @@ function dashboard.wakeup(widget)
     -- Reload if dark mode changed
     if lcd.darkMode() ~= darkModeState then
         darkModeState = lcd.darkMode()
-        rfsuite.widgets.dashboard.reload_themes(true)
+        dashboard.reload_themes(true)
     end
 
     -- load only preflight theme on first wakeup for speed
@@ -1024,12 +1024,15 @@ function dashboard.wakeup(widget)
     -- loadedThemeIntervals.paint_interval       = initTable.paint_interval or 0.5
 
     if visible then
-    local base_interval = loadedThemeIntervals.wakeup_interval or 0.25
-    local interval = base_interval
+        local base_interval = loadedThemeIntervals.wakeup_interval or 0.25
+        local interval = base_interval
 
-        -- if the base interval is < 0.5s and there are >10 boxes
-        if base_interval < 0.5 and #dashboard.boxRects > 10 then
-            interval = 0.5
+        -- keep it in focus
+        lcd.resetFocusTimeout()	
+
+        -- if the base interval is < 0.25s and there are >15 boxes
+        if base_interval <= 0.25 and #dashboard.boxRects > 15 then
+            interval = 0.25
         end   
 
         if (now - lastWakeup) < interval then
