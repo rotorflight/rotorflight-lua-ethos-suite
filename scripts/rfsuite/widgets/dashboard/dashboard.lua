@@ -933,6 +933,10 @@ end
 -- @param widget The widget instance to update.
 function dashboard.wakeup(widget)
 
+    if not lcd.isVisible() and not loadedThemeIntervals.wakeup_interval_bg then
+        return
+    end
+
     local telemetry = rfsuite.tasks.telemetry
 
     local W, H = lcd.getWindowSize()
