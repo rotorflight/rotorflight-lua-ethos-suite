@@ -21,6 +21,27 @@ local layout = {
     padding = 1
 }
 
+local darkMode = {
+    textcolor   = "white",
+    titlecolor  = "white",
+    bgcolor     = "black",
+    fillcolor   = "green",
+    fillbgcolor = "grey",
+    arcbgcolor  = "lightgrey",
+}
+
+local lightMode = {
+    textcolor   = "black",
+    titlecolor  = "black",
+    bgcolor     = "white",
+    fillcolor   = "green",
+    fillbgcolor = "lightgrey",
+    arcbgcolor  = "darkgrey",
+}
+
+-- alias current mode
+local colorMode = lcd.darkMode() and darkMode or lightMode
+
 local boxes = {
 
     -- Battery Bar
@@ -29,12 +50,14 @@ local boxes = {
      source = "fuel",
      battadv = true,
      fillcolor = "green",
-     bgcolor = "black",
      valuealign = "center",
      battadvfont = "FONT_STD",
      font = "FONT_XXL",
      battadvpaddingright = 18,
      transform = "floor",
+     bgcolor = colorMode.bgcolor,
+     titlecolor = colorMode.titlecolor,
+     textcolor = colorMode.textcolor,
         thresholds = {
             { value = 10,  fillcolor = "red"    },
             { value = 30,  fillcolor = "orange" }
@@ -49,15 +72,17 @@ local boxes = {
     arcmax = true,
     title = "RPM", 
     titlepos = "bottom", 
-    bgcolor = "black",
     min = 0, 
     max = 3000,
     thickness = 15,
     unit = "",
     maxprefix = "Max: ",
     maxpaddingtop = 27,
-    maxtextcolor = "orange",
     font = "FONT_L",
+    bgcolor = colorMode.bgcolor,
+    titlecolor = colorMode.titlecolor,
+    textcolor = colorMode.textcolor,
+    maxtextcolor = "orange",
     transform = "floor",
         thresholds = {
             { value = 100,  fillcolor = "red"    },
@@ -73,11 +98,13 @@ local boxes = {
      title = "GOVERNOR", 
      titlepos = "bottom",
      font = "FONT_XL",
-     bgcolor = "black",
+     bgcolor = colorMode.bgcolor,
+     titlecolor = colorMode.titlecolor,
+     textcolor = colorMode.textcolor,
         thresholds = {
             { value = "DISARMED", textcolor = "red"    },
             { value = "OFF",      textcolor = "red"    },
-            { value = "IDLE",     textcolor = "yellow" },
+            { value = "IDLE",     textcolor = "blue"   },
             { value = "SPOOLUP",  textcolor = "blue"   },
             { value = "RECOVERY", textcolor = "orange" },
             { value = "ACTIVE",   textcolor = "green"  },
@@ -86,7 +113,16 @@ local boxes = {
     },
 
     -- Timer
-    {col = 3, row = 4, rowspan = 2, type = "time", subtype = "flight", title = "TIMER", titlepos = "bottom", font = "FONT_XL", bgcolor = "black"},
+    {col = 3, row = 4, rowspan = 2, 
+    type = "time", 
+    subtype = "flight", 
+    title = "TIMER", 
+    titlepos = "bottom", 
+    font = "FONT_XL",
+    bgcolor = colorMode.bgcolor,
+    titlecolor = colorMode.titlecolor,
+    textcolor = colorMode.textcolor,
+    },
 
     -- Throttle
     {col = 3, row = 6, rowspan = 2,
@@ -95,13 +131,15 @@ local boxes = {
      source = "throttle_percent",
      title = "THROTTLE %", 
      titlepos = "bottom", 
-     bgcolor = "black",
      transform = "floor",
      font = "FONT_XL",
+     bgcolor = colorMode.bgcolor,
+     titlecolor = colorMode.titlecolor,
+     textcolor = colorMode.textcolor,
         thresholds = {
-            { value = 89,  textcolor = "white" },
-            { value = 90,  textcolor = "yellow" },
-            { value = 100, textcolor = "red"    }
+            { value = 89,  textcolor = colorMode.textcolor },
+            { value = 90,  textcolor = "yellow"            },
+            { value = 100, textcolor = "red"               }
         }
     },
 
@@ -112,13 +150,13 @@ local boxes = {
      source = "current",
      title = "CURRENT", 
      titlepos = "bottom", 
-     bgcolor = "black",
      transform = "floor",
      font = "FONT_XL",
+     bgcolor = colorMode.bgcolor,
+     titlecolor = colorMode.titlecolor,
         thresholds = {
-            { value = 199, textcolor = "white" },
-            { value = 200, textcolor = "yellow" },
-            { value = 300, textcolor = "red"    }
+            { value = 200, textcolor = colorMode.textcolor },
+            { value = 300, textcolor = "red"               }
         }
     },
 
@@ -129,13 +167,15 @@ local boxes = {
      source = "bec_voltage", 
      title = "BEC VOLTAGE", 
      titlepos = "bottom", 
-     bgcolor = "black",
+     bgcolor = colorMode.bgcolor,
+     titlecolor = colorMode.titlecolor,
+     textcolor = colorMode.textcolor,
      font = "FONT_XL",
      min = 3, 
      max = 13, 
         thresholds = {
             { value = 5.5, textcolor = "red"   },
-            { value = 13,  textcolor = "white" }
+            { value = 13,  colorMode.textcolor }
         }
     },
 
@@ -147,7 +187,6 @@ local boxes = {
      source = "temp_esc", 
      title = "ESC TEMP", 
      titlepos = "bottom", 
-     bgcolor = "black",
      min = 0, 
      max = 140, 
      thickness = 15,
@@ -155,6 +194,9 @@ local boxes = {
      maxpaddingleft = 10,
      maxprefix = "Max: ",
      maxpaddingtop = 27,
+     bgcolor = colorMode.bgcolor,
+     titlecolor = colorMode.titlecolor,
+     textcolor = colorMode.textcolor,
      maxtextcolor = "orange",
      font = "FONT_L",
      transform = "floor", 
@@ -174,9 +216,11 @@ local boxes = {
      titlepos = "bottom",
      transform = "floor",
      font = "FONT_XL",
-     bgcolor = "black",
+     bgcolor = colorMode.bgcolor,
+     titlecolor = colorMode.titlecolor,
+     textcolor = colorMode.textcolor,
         thresholds = {
-            { value = 1.5, textcolor = "yellow" },
+            { value = 1.5, textcolor = "blue" },
             { value = 2.5, textcolor = "orange" },
             { value = 6,   textcolor = "green"  }
         }
@@ -191,9 +235,11 @@ local boxes = {
      titlepos = "bottom",
      transform = "floor",
      font = "FONT_XL",
-     bgcolor = "black",
+     bgcolor = colorMode.bgcolor,
+     titlecolor = colorMode.titlecolor,
+     textcolor = colorMode.textcolor,
         thresholds = {
-            { value = 1.5, textcolor = "yellow" },
+            { value = 1.5, textcolor = "blue" },
             { value = 2.5, textcolor = "orange" },
             { value = 6,   textcolor = "green"  }
         }
