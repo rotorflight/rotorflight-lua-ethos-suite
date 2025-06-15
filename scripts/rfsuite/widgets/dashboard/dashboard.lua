@@ -247,6 +247,8 @@ function dashboard.computeOverlayMessage()
     local moduleState = (model.getModule(0):enable() or model.getModule(1):enable()) or false
     local sportSensor = system.getSource({appId = 0xF101})
     local elrsSensor = system.getSource({crsfId = 0x14, subIdStart = 0, subIdEnd = 1})
+    local telemetry = rfsuite.tasks.telemetry
+    
 
     if dashboard.themeFallbackUsed and dashboard.themeFallbackUsed[state] and
        (os.clock() - (dashboard.themeFallbackTime and dashboard.themeFallbackTime[state] or 0)) < 10 then
@@ -268,7 +270,7 @@ function dashboard.computeOverlayMessage()
         return rfsuite.i18n.get("widgets.dashboard.waiting_for_connection")    
     elseif not rfsuite.session.telemetryState and state == "preflight" then
         return rfsuite.i18n.get("widgets.dashboard.no_link")
-    elseif rfsuite.session.telemetryState and rfsuite.tasks.telemetry and not rfsuite.tasks.telemetry.validateSensors() then
+    elseif rfsuite.session.telemetryState and telemetry and not telemetry.validateSensors() then
         return rfsuite.i18n.get("widgets.dashboard.validate_sensors")
     end
 
@@ -342,83 +344,75 @@ local function getBoxPosition(box, w, h, boxWidth, boxHeight, PADDING, WIDGET_W,
 end
 
 function dashboard.renderLayout(widget, config)
-
     local utils     = dashboard.utils
     local telemetry = rfsuite.tasks.telemetry
 
-    -- tiny resolver for function-or-value patterns
-    local function resolve(val, ...)
-      if type(val) == "function" then return val(...) else return val end
-    end
+    -- create once    
+    dashboard.boxRects = dashboard.boxRects or {}
+    scheduledBoxIndices = scheduledBoxIndices or {}
+    dashboard._objectDirty = dashboard._objectDirty or {} 
 
-    -- grab layout & boxes
-    local layout   = resolve(config.layout) or {}
-    local rawBoxes = config.boxes or layout.boxes or {}
-    local boxes    = (type(rawBoxes) == "function") and rawBoxes() or rawBoxes
+    local function resolve(val, ...) return type(val) == "function" and val(...) or val end
 
-    -- only reload widget modules if your boxes definition changed
+    -- Load layout and box definitions
+    local layout    = resolve(config.layout) or {}
+    local boxes     = resolve(config.boxes or layout.boxes or {})
+
+    -- Reload widgets if layout changed
     if #boxes ~= lastLoadedBoxCount then
         dashboard.loadAllObjects(boxes)
         lastLoadedBoxCount = #boxes
     end
 
-    -- Reset value cache for paint invalidation
-    dashboard._objectDirty = {}
+    for k in pairs(dashboard._objectDirty) do dashboard._objectDirty[k] = nil end   
 
-    -- overall size
+    -- Grid and screen setup
     local W_raw, H_raw = lcd.getWindowSize()
-    local cols    = layout.cols    or 1
-    local rows    = layout.rows    or 1
-    local pad     = layout.padding or 0
+    local cols         = layout.cols or 1
+    local rows         = layout.rows or 1
+    local pad          = layout.padding or 0
 
-    -- Find the largest W/H values that divide cleanly into grid cells
     local function adjustDimension(dim, cells, padCount)
-        local target = dim
-        while ((target - (padCount * pad)) % cells) ~= 0 do
-            target = target - 1
-        end
-        return target
+    return dim - ((dim - padCount*pad) % cells)
     end
 
     local W = adjustDimension(W_raw, cols, cols - 1)
-    local H = adjustDimension(H_raw, rows, rows + 1)  -- +1 to account for extra vertical padding in Ethos
+    local H = adjustDimension(H_raw, rows, rows + 1) -- +1 for vertical pad
     local xOffset = math.floor((W_raw - W) / 2)
 
-    -- Now we proceed with perfect divisions:
     local contentW = W - ((cols - 1) * pad)
     local contentH = H - ((rows + 1) * pad)
     local boxW     = contentW / cols
     local boxH     = contentH / rows
 
     ----------------------------------------------------------------
-    -- PHASE 1: ALWAYS MEASURE & BUILD dashboard.boxRects
+    -- PHASE 1: Build Box Rects and Collect Scheduled Indices
     ----------------------------------------------------------------
-    dashboard.boxRects = {}
-    local cols    = layout.cols    or 1
-    local rows    = layout.rows    or 1
-    local pad     = layout.padding or 0
+    for i=#dashboard.boxRects,1,-1 do dashboard.boxRects[i] = nil end
+    for i=#scheduledBoxIndices,1,-1 do scheduledBoxIndices[i] = nil end
 
-    local contentW = W - ((cols - 1) * pad)
-    local contentH = H - ((rows + 1) * pad)
-    local boxW     = contentW / cols
-    local boxH     = contentH / rows
-
-    for i, box in ipairs(boxes) do
+    for _, box in ipairs(boxes) do
         local w, h = getBoxSize(box, boxW, boxH, pad, W, H)
         box.xOffset = xOffset
         local x, y = getBoxPosition(box, w, h, boxW, boxH, pad, W, H)
-        dashboard.boxRects[#dashboard.boxRects+1] = { x=x, y=y, w=w, h=h, box=box }
-        
-        -- Set up last value cache for this box index
-        dashboard._objectDirty[#dashboard.boxRects] = nil       
+
+        local rect = { x = x, y = y, w = w, h = h, box = box }
+        table.insert(dashboard.boxRects, rect)
+
+        local rectIndex = #dashboard.boxRects
+        dashboard._objectDirty[rectIndex] = nil
+
+        local obj = dashboard.objectsByType[box.type]
+        if obj and obj.scheduler and obj.wakeup then
+            table.insert(scheduledBoxIndices, rectIndex)
+        end
     end
 
-    -- recompute how many objects to wake per cycle if the count changed
-    if not objectWakeupsPerCycle or lastBoxRectsCount ~= #dashboard.boxRects then
+    -- Scheduler setup
+    if not objectWakeupsPerCycle or #dashboard.boxRects ~= lastBoxRectsCount then
         local count = #dashboard.boxRects
         local percentage = computeObjectSchedulerPercentage(count)
 
-        -- 🚀 Boost wakeup speed during initial pass
         if objectsThreadedWakeupCount < 1 then
             percentage = 1.0
             rfsuite.utils.log("Accelerating first wakeup pass with 100% objects per cycle", "info")
@@ -426,84 +420,69 @@ function dashboard.renderLayout(widget, config)
 
         objectWakeupsPerCycle = math.max(1, math.ceil(count * percentage))
         lastBoxRectsCount     = count
-        rfsuite.utils.log("Object scheduler set to " .. tostring(objectWakeupsPerCycle) ..
-                        " out of " .. tostring(count) .. " boxes", "info")
+
+        rfsuite.utils.log("Object scheduler set to " .. objectWakeupsPerCycle ..
+                          " out of " .. count .. " boxes", "info")
     end
 
-    scheduledBoxIndices = {}
-    for i, rect in ipairs(dashboard.boxRects) do
-        local obj = dashboard.objectsByType[rect.box.type]
-        if obj and obj.scheduler and obj.wakeup then
-            scheduledBoxIndices[#scheduledBoxIndices + 1] = i
-        end
-    end    
-
     ----------------------------------------------------------------
-    -- PHASE 2: HOURGLASS until first threaded‐wakeup pass completes
+    -- PHASE 2: Spinner Until First Wakeup Pass Completes
     ----------------------------------------------------------------
     if objectsThreadedWakeupCount < 1 then
-        dashboard.loader    (0, 0, W, H)
+        dashboard.loader(0, 0, W, H)
         lcd.invalidate()
         return
     end
 
     ----------------------------------------------------------------
-    -- PHASE 3: REAL PAINT (only fill background once here)
+    -- PHASE 3: Paint Actual Widgets
     ----------------------------------------------------------------
     utils.setBackgroundColourBasedOnTheme()
-
     local selColor  = layout.selectcolor  or utils.resolveColor("yellow") or lcd.RGB(255,255,0)
     local selBorder = layout.selectborder or 2
 
     for i, rect in ipairs(dashboard.boxRects) do
-        local x, y, w, h, box = rect.x, rect.y, rect.w, rect.h, rect.box
+        local box = rect.box
         local obj = dashboard.objectsByType[box.type]
         if obj and obj.paint then
-            -- paint the widget’s content
-            obj.paint(x, y, w, h, box, telemetry)
+            obj.paint(rect.x, rect.y, rect.w, rect.h, box, telemetry)
         end
-        -- highlight if selected
+
         if dashboard.selectedBoxIndex == i and box.onpress then
             lcd.color(selColor)
-            lcd.drawRectangle(x, y, w, h, selBorder)
+            lcd.drawRectangle(rect.x, rect.y, rect.w, rect.h, selBorder)
         end
     end
 
-
-     -- draw dotted grid over the layout if enabled
+    -- Draw optional grid overlay
     if layout.showgrid then
         lcd.color(layout.showgrid)
         lcd.pen(1)
-
         for i = 1, cols - 1 do
             local x = math.floor(i * (boxW + pad)) + xOffset - math.floor(pad / 2)
             lcd.drawLine(x, 0, x, H_raw)
         end
-
         for i = 1, rows - 1 do
             local y = math.floor(i * (boxH + pad)) + pad
             lcd.drawLine(0, y, W_raw, y)
         end
+        lcd.pen(SOLID)
+    end
 
-        lcd.pen(SOLID) -- reset to default after drawing
-    end   
-
-    -- overlay spinner: reset or countdown our cycle counter
+    -- Handle overlay messages
     if dashboard.overlayMessage then
-      -- new overlay → restart full 5s worth of cycles
-      dashboard._hg_cycles = dashboard._hg_cycles_required
+        dashboard._hg_cycles = dashboard._hg_cycles_required
     end
     if dashboard._hg_cycles > 0 then
-      -- still have cycles left → keep drawing spinner
-      dashboard.overlaymessage(0, 0, W, H, dashboard.overlayMessage or "")
-      dashboard._hg_cycles = dashboard._hg_cycles - 1
-      lcd.invalidate()
-      return
+        dashboard.overlaymessage(0, 0, W, H, dashboard.overlayMessage)
+        dashboard._hg_cycles = dashboard._hg_cycles - 1
+        lcd.invalidate()
+        return
     end
 
     dashboard._forceFullRepaint = true
-
 end
+
 
 -- Utility to resolve a theme for a given flight mode
 local function getThemeForState(state)
@@ -954,6 +933,12 @@ end
 -- @param widget The widget instance to update.
 function dashboard.wakeup(widget)
 
+    if not lcd.isVisible() and not loadedThemeIntervals.wakeup_interval_bg then
+        return
+    end
+
+    local telemetry = rfsuite.tasks.telemetry
+
     local W, H = lcd.getWindowSize()
 
     -- Bail out if resolution is not supported:
@@ -1088,7 +1073,7 @@ function dashboard.wakeup(widget)
             local rect = dashboard.boxRects[idx]
             local obj  = dashboard.objectsByType[rect.box.type]
             if obj and obj.wakeup then
-                obj.wakeup(rect.box, rfsuite.tasks.telemetry)
+                obj.wakeup(rect.box, telemetry)
             end
         end
 
@@ -1098,7 +1083,7 @@ function dashboard.wakeup(widget)
             if rect then
                 local obj = dashboard.objectsByType[rect.box.type]
                 if obj and obj.wakeup and not obj.scheduler then
-                    obj.wakeup(rect.box, rfsuite.tasks.telemetry)
+                    obj.wakeup(rect.box, telemetry)
                 end
 
                 -- Invalidate only if value changed
