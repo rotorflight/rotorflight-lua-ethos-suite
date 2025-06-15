@@ -247,6 +247,8 @@ function dashboard.computeOverlayMessage()
     local moduleState = (model.getModule(0):enable() or model.getModule(1):enable()) or false
     local sportSensor = system.getSource({appId = 0xF101})
     local elrsSensor = system.getSource({crsfId = 0x14, subIdStart = 0, subIdEnd = 1})
+    local telemetry = rfsuite.tasks.telemetry
+    
 
     if dashboard.themeFallbackUsed and dashboard.themeFallbackUsed[state] and
        (os.clock() - (dashboard.themeFallbackTime and dashboard.themeFallbackTime[state] or 0)) < 10 then
@@ -268,7 +270,7 @@ function dashboard.computeOverlayMessage()
         return rfsuite.i18n.get("widgets.dashboard.waiting_for_connection")    
     elseif not rfsuite.session.telemetryState and state == "preflight" then
         return rfsuite.i18n.get("widgets.dashboard.no_link")
-    elseif rfsuite.session.telemetryState and rfsuite.tasks.telemetry and not rfsuite.tasks.telemetry.validateSensors() then
+    elseif rfsuite.session.telemetryState and telemetry and not telemetry.validateSensors() then
         return rfsuite.i18n.get("widgets.dashboard.validate_sensors")
     end
 
@@ -929,6 +931,8 @@ end
 -- @param widget The widget instance to update.
 function dashboard.wakeup(widget)
 
+    local telemetry = rfsuite.tasks.telemetry
+
     local W, H = lcd.getWindowSize()
 
     -- Bail out if resolution is not supported:
@@ -1063,7 +1067,7 @@ function dashboard.wakeup(widget)
             local rect = dashboard.boxRects[idx]
             local obj  = dashboard.objectsByType[rect.box.type]
             if obj and obj.wakeup then
-                obj.wakeup(rect.box, rfsuite.tasks.telemetry)
+                obj.wakeup(rect.box, telemetry)
             end
         end
 
@@ -1073,7 +1077,7 @@ function dashboard.wakeup(widget)
             if rect then
                 local obj = dashboard.objectsByType[rect.box.type]
                 if obj and obj.wakeup and not obj.scheduler then
-                    obj.wakeup(rect.box, rfsuite.tasks.telemetry)
+                    obj.wakeup(rect.box, telemetry)
                 end
 
                 -- Invalidate only if value changed
