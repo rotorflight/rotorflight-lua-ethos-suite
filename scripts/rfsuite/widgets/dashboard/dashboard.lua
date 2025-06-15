@@ -18,6 +18,15 @@
 -- Dashboard module table
 local dashboard = {}  -- main namespace for all dashboard functionality
 
+-- cache some functions and variables for performance
+local compile = rfsuite.compiler.loadfile
+local i18n = rfsuite.i18n.get
+local baseDir = rfsuite.config.baseDir
+local preferences = rfsuite.config.preferences
+local utils = rfsuite.utils
+local log = utils.log
+local tasks = rfsuite.tasks
+
 -- Supported resolutions
 local supportedResolutions = {
     { 784, 294 },   -- X20, X20RS etc
@@ -41,8 +50,8 @@ dashboard.DEFAULT_THEME = "system/default"
 -- Base paths for loading themes:
 --   themesBasePath: where system themes are stored
 --   themesUserPath: where user-defined themes are stored (preferences)
-local themesBasePath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/themes/"
-local themesUserPath = "SCRIPTS:/" .. rfsuite.config.preferences .. "/dashboard/"
+local themesBasePath = "SCRIPTS:/" .. baseDir .. "/widgets/dashboard/themes/"
+local themesUserPath = "SCRIPTS:/" .. preferences .. "/dashboard/"
 
 -- Create the user theme directory if it doesn't exist
 os.mkdir(themesUserPath)
@@ -121,16 +130,16 @@ local darkModeState = lcd.darkMode()
 dashboard._moduleCache = dashboard._moduleCache or {}
 
 -- how many paint‐cycles to keep showing the spinner (5 s ÷ paint_interval)
- dashboard._hg_cycles_required = math.ceil(0.5 / (loadedThemeIntervals.paint_interval or 0.5))
- dashboard._hg_cycles = 0
+dashboard._hg_cycles_required = math.ceil(0.5 / (loadedThemeIntervals.paint_interval or 0.5))
+dashboard._hg_cycles = 0
 
 -- Utility methods loaded from external utils.lua (drawing, color helpers, etc.)
 dashboard.utils = assert(
-    rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/lib/utils.lua")
+    compile("SCRIPTS:/" .. baseDir .. "/widgets/dashboard/lib/utils.lua")
 )()
 
 dashboard.loaders = assert(
-    rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/lib/loaders.lua")
+    compile("SCRIPTS:/" .. baseDir .. "/widgets/dashboard/lib/loaders.lua")
 )()
 
 function dashboard.loader(x, y, w, h)
@@ -173,15 +182,15 @@ function dashboard.loadObjectType(box)
     if not typ then return end
 
     if not dashboard._moduleCache[typ] then
-        local baseDir = rfsuite.config.baseDir or "default"
+        local baseDir = baseDir or "default"
         local objPath = "SCRIPTS:/" .. baseDir .. "/widgets/dashboard/objects/" .. typ .. ".lua"
         local ok, obj = pcall(function()
-            return assert(rfsuite.compiler.loadfile(objPath))()
+            return assert(compile(objPath))()
         end)
         if ok and type(obj) == "table" then
             dashboard._moduleCache[typ] = obj
         else
-            rfsuite.utils.log("Failed to load object: " .. tostring(typ), "info")
+            log("Failed to load object: " .. tostring(typ), "info")
             dashboard._moduleCache[typ] = false
         end
     end
@@ -203,15 +212,15 @@ function dashboard.loadAllObjects(boxConfigs)
         if typ then
             -- only load from disk the first time we see this type
             if not dashboard._moduleCache[typ] then
-                local baseDir = rfsuite.config.baseDir or "default"
+                local baseDir = baseDir or "default"
                 local objPath = "SCRIPTS:/" .. baseDir .. "/widgets/dashboard/objects/" .. typ .. ".lua"
                 local ok, obj = pcall(function()
-                    return assert(rfsuite.compiler.loadfile(objPath))()
+                    return assert(compile(objPath))()
                 end)
                 if ok and type(obj) == "table" then
                     dashboard._moduleCache[typ] = obj
                 else
-                    rfsuite.utils.log("Failed to load object: " .. tostring(typ), "info")
+                    log("Failed to load object: " .. tostring(typ), "info")
                     -- ensure we don’t retry a broken type endlessly
                     dashboard._moduleCache[typ] = false
                 end
@@ -247,31 +256,31 @@ function dashboard.computeOverlayMessage()
     local moduleState = (model.getModule(0):enable() or model.getModule(1):enable()) or false
     local sportSensor = system.getSource({appId = 0xF101})
     local elrsSensor = system.getSource({crsfId = 0x14, subIdStart = 0, subIdEnd = 1})
-    local telemetry = rfsuite.tasks.telemetry
+    local telemetry = tasks.telemetry
     
 
     if dashboard.themeFallbackUsed and dashboard.themeFallbackUsed[state] and
        (os.clock() - (dashboard.themeFallbackTime and dashboard.themeFallbackTime[state] or 0)) < 10 then
-        return rfsuite.i18n.get("widgets.dashboard.theme_load_error")
-    elseif not rfsuite.utils.ethosVersionAtLeast() then
+        return i18n("widgets.dashboard.theme_load_error")
+    elseif not utils.ethosVersionAtLeast() then
         return string.format(
-            string.upper(rfsuite.i18n.get("ethos")) .. " < V%d.%d.%d",
+            string.upper(i18n("ethos")) .. " < V%d.%d.%d",
             rfsuite.config.ethosVersion[1],
             rfsuite.config.ethosVersion[2],
             rfsuite.config.ethosVersion[3]
         )
-    elseif not rfsuite.tasks.active() then
-        return rfsuite.i18n.get("widgets.dashboard.check_bg_task")
+    elseif not tasks.active() then
+        return i18n("widgets.dashboard.check_bg_task")
     elseif moduleState == false then
-        return rfsuite.i18n.get("widgets.dashboard.check_rf_module_on")
+        return i18n("widgets.dashboard.check_rf_module_on")
     elseif not (sportSensor or elrsSensor) then
-        return rfsuite.i18n.get("widgets.dashboard.check_discovered_sensors")
+        return i18n("widgets.dashboard.check_discovered_sensors")
     elseif not rfsuite.session.apiVersion and  state ~= "postflight" then
-        return rfsuite.i18n.get("widgets.dashboard.waiting_for_connection")    
+        return i18n("widgets.dashboard.waiting_for_connection")    
     elseif not rfsuite.session.telemetryState and state == "preflight" then
-        return rfsuite.i18n.get("widgets.dashboard.no_link")
+        return i18n("widgets.dashboard.no_link")
     elseif rfsuite.session.telemetryState and telemetry and not telemetry.validateSensors() then
-        return rfsuite.i18n.get("widgets.dashboard.validate_sensors")
+        return i18n("widgets.dashboard.validate_sensors")
     end
 
     return nil
@@ -345,7 +354,7 @@ end
 
 function dashboard.renderLayout(widget, config)
     local utils     = dashboard.utils
-    local telemetry = rfsuite.tasks.telemetry
+    local telemetry = tasks.telemetry
 
     -- create once    
     dashboard.boxRects = dashboard.boxRects or {}
@@ -415,13 +424,13 @@ function dashboard.renderLayout(widget, config)
 
         if objectsThreadedWakeupCount < 1 then
             percentage = 1.0
-            rfsuite.utils.log("Accelerating first wakeup pass with 100% objects per cycle", "info")
+            log("Accelerating first wakeup pass with 100% objects per cycle", "info")
         end
 
         objectWakeupsPerCycle = math.max(1, math.ceil(count * percentage))
         lastBoxRectsCount     = count
 
-        rfsuite.utils.log("Object scheduler set to " .. objectWakeupsPerCycle ..
+        log("Object scheduler set to " .. objectWakeupsPerCycle ..
                           " out of " .. count .. " boxes", "info")
     end
 
@@ -528,7 +537,7 @@ local function load_state_script(theme_folder, state)
 
     -- Try to load init.lua
     local initPath = themeBasePath .. folder .. "/init.lua"
-    local initChunk, initErr = rfsuite.compiler.loadfile(initPath)
+    local initChunk, initErr = compile(initPath)
 
     if not initChunk then
         usedFallback = true
@@ -536,12 +545,12 @@ local function load_state_script(theme_folder, state)
         local fallbackBasePath = (fallbackSource == "user") and themesUserPath or themesBasePath
         local fallbackInitPath = fallbackBasePath .. fallbackFolder .. "/init.lua"
 
-        rfsuite.utils.log("dashboard: Could not load init.lua for " .. tostring(folder) ..
+        log("dashboard: Could not load init.lua for " .. tostring(folder) ..
                           ". Falling back to default. Error: " .. tostring(initErr), "info")
 
-        initChunk, initErr = rfsuite.compiler.loadfile(fallbackInitPath)
+        initChunk, initErr = compile(fallbackInitPath)
         if not initChunk then
-            rfsuite.utils.log("dashboard: Could not load default theme's init.lua. Error: " .. tostring(initErr), "error")
+            log("dashboard: Could not load default theme's init.lua. Error: " .. tostring(initErr), "error")
             dashboard.themeFallbackUsed[state] = true
             dashboard.themeFallbackTime[state] = os.clock()
             return nil
@@ -553,7 +562,7 @@ local function load_state_script(theme_folder, state)
 
     local ok, initTable = pcall(initChunk)
     if not ok or type(initTable) ~= "table" then
-        rfsuite.utils.log("dashboard: Error running init.lua for " .. tostring(folder) .. ": " ..
+        log("dashboard: Error running init.lua for " .. tostring(folder) .. ": " ..
                           tostring(initTable) .. ". Falling back to default.", "error")
 
         if theme_folder ~= dashboard.DEFAULT_THEME then
@@ -561,7 +570,7 @@ local function load_state_script(theme_folder, state)
             local fallbackSource, fallbackFolder = dashboard.DEFAULT_THEME:match("([^/]+)/(.+)")
             local fallbackBasePath = (fallbackSource == "user") and themesUserPath or themesBasePath
             local fallbackInitPath = fallbackBasePath .. fallbackFolder .. "/init.lua"
-            local fallbackChunk, fallbackErr = rfsuite.compiler.loadfile(fallbackInitPath)
+            local fallbackChunk, fallbackErr = compile(fallbackInitPath)
 
             if fallbackChunk then
                 ok, initTable = pcall(fallbackChunk)
@@ -591,14 +600,14 @@ local function load_state_script(theme_folder, state)
     end
 
     local script_path = themeBasePath .. folder .. "/" .. scriptName
-    local chunk, err = rfsuite.compiler.loadfile(script_path)
+    local chunk, err = compile(script_path)
 
     if not chunk then
         usedFallback = true
         local fallbackPath = themesBasePath .. dashboard.DEFAULT_THEME:match("[^/]+/(.+)") .. "/" .. scriptName
-        chunk, err = rfsuite.compiler.loadfile(fallbackPath)
+        chunk, err = compile(fallbackPath)
         if not chunk then
-            rfsuite.utils.log("dashboard: Could not load " .. scriptName .. " for " .. tostring(folder) ..
+            log("dashboard: Could not load " .. scriptName .. " for " .. tostring(folder) ..
                               " or default. Error: " .. tostring(err), "info")
             dashboard.themeFallbackUsed[state] = true
             dashboard.themeFallbackTime[state] = os.clock()
@@ -621,7 +630,7 @@ local function load_state_script(theme_folder, state)
     else
         local ok2, module = pcall(chunk)
         if not ok2 then
-            rfsuite.utils.log("dashboard: Error running " .. scriptName .. ": " .. tostring(module), "error")
+            log("dashboard: Error running " .. scriptName .. ": " .. tostring(module), "error")
             dashboard.themeFallbackUsed[state] = true
             dashboard.themeFallbackTime[state] = os.clock()
             return nil
@@ -663,10 +672,10 @@ function dashboard.reload_active_theme_only(force)
     local theme = getThemeForState(state)
 
     if force or not loadedStateModules[state] then
-        rfsuite.utils.log("Reloading active theme: " .. theme, "info")
+        log("Reloading active theme: " .. theme, "info")
         loadedStateModules[state] = load_state_script(theme, state)
     else
-        rfsuite.utils.log("Skipped reloading active theme: already loaded", "info")
+        log("Skipped reloading active theme: already loaded", "info")
     end
     
     firstWakeup = true
@@ -728,7 +737,7 @@ local function callStateFunc(funcName, widget, paintFallback)
     local state = dashboard.flightmode or "preflight"
     local module = loadedStateModules[state]
 
-    if not rfsuite.tasks.active() then
+    if not tasks.active() then
         return nil
     end
 
@@ -765,9 +774,9 @@ function dashboard.paint(widget)
         -- If the resolution is unsupported, show an error message and return
         local W, H = lcd.getWindowSize()
         if H < (system.getVersion().lcdHeight/5) or W < (system.getVersion().lcdWidth/10) then
-           dashboard.utils.screenError(rfsuite.i18n.get("widgets.dashboard.unsupported_resolution"), true, 0.4)
+           dashboard.utils.screenError(i18n("widgets.dashboard.unsupported_resolution"), true, 0.4)
         else
-            dashboard.overlaymessage(0, 0, W, H , rfsuite.i18n.get("widgets.dashboard.unsupported_resolution"))
+            dashboard.overlaymessage(0, 0, W, H , i18n("widgets.dashboard.unsupported_resolution"))
         end     
         return
     end
@@ -937,7 +946,7 @@ function dashboard.wakeup(widget)
         return
     end
 
-    local telemetry = rfsuite.tasks.telemetry
+    local telemetry = tasks.telemetry
 
     local W, H = lcd.getWindowSize()
 
@@ -960,7 +969,7 @@ function dashboard.wakeup(widget)
     if firstWakeup then
         firstWakeup = false
         local theme = getThemeForState("preflight")
-        rfsuite.utils.log("Initial loading of preflight theme: " .. theme, "info")
+        log("Initial loading of preflight theme: " .. theme, "info")
         loadedStateModules.preflight = load_state_script(theme, "preflight")
     end
 
@@ -969,7 +978,7 @@ function dashboard.wakeup(widget)
         local state = statePreloadQueue[statePreloadIndex]
         if not loadedStateModules[state] then
             local theme = getThemeForState(state)
-            rfsuite.utils.log("Preloading theme: " .. theme .. " for " .. state, "info")
+            log("Preloading theme: " .. theme .. " for " .. state, "info")
             loadedStateModules[state] = load_state_script(theme, state)
 
             -- Add boxes from newly loaded module
@@ -1107,7 +1116,7 @@ function dashboard.wakeup(widget)
     end
 
     if not lcd.hasFocus(widget) and dashboard.selectedBoxIndex ~= nil then
-        rfsuite.utils.log("Removing focus from box " .. tostring(dashboard.selectedBoxIndex), "info")
+        log("Removing focus from box " .. tostring(dashboard.selectedBoxIndex), "info")
         dashboard.selectedBoxIndex = nil
         lcd.invalidate(widget)
     end
@@ -1136,8 +1145,8 @@ function dashboard.listThemes()
             if folder ~= ".." and folder ~= "." and not folder:match("%.%a+$") then    
                 local themeDir = basePath .. folder .. "/"
                 local initPath = themeDir .. "init.lua"
-                if rfsuite.utils.dir_exists(basePath, folder) then
-                    local chunk, err = rfsuite.compiler.loadfile(initPath)
+                if utils.dir_exists(basePath, folder) then
+                    local chunk, err = compile(initPath)
                     if chunk then
                         local ok, initTable = pcall(chunk)
                         if ok and initTable and type(initTable.name) == "string" then
@@ -1159,8 +1168,8 @@ function dashboard.listThemes()
     end
 
     scanThemes(themesBasePath, "system")
-    local basePath = "SCRIPTS:/" .. rfsuite.config.preferences
-    if rfsuite.utils.dir_exists(basePath, 'dashboard') then
+    local basePath = "SCRIPTS:/" .. preferences
+    if utils.dir_exists(basePath, 'dashboard') then
         scanThemes(themesUserPath, "user")
     end
 
@@ -1205,19 +1214,19 @@ end
 function dashboard.resetFlightModeAsk()
 
     local buttons = {{
-        label = rfsuite.i18n.get("app.btn_ok"),
+        label = i18n("app.btn_ok"),
         action = function()
 
             -- we push this to the background task to do its job
             dashboard.flightmode = "preflight"
             rfsuite.session.flightMode = "preflight"
-            rfsuite.tasks.events.flightmode.reset()
+            tasks.events.flightmode.reset()
             dashboard._forceFullRepaint = true
             lcd.invalidate()
             return true
         end
     }, {
-        label = rfsuite.i18n.get("app.btn_cancel"),
+        label = i18n("app.btn_cancel"),
         action = function()
             return true
         end
@@ -1225,8 +1234,8 @@ function dashboard.resetFlightModeAsk()
 
     form.openDialog({
         width = nil,
-        title =  rfsuite.i18n.get("widgets.dashboard.reset_flight_ask_title"),
-        message = rfsuite.i18n.get("widgets.dashboard.reset_flight_ask_text"),
+        title =  i18n("widgets.dashboard.reset_flight_ask_title"),
+        message = i18n("widgets.dashboard.reset_flight_ask_text"),
         buttons = buttons,
         wakeup = function()
         end,
@@ -1240,7 +1249,7 @@ end
 function dashboard.menu(widget)
 
     return {
-        {rfsuite.i18n.get("widgets.dashboard.reset_flight"), dashboard.resetFlightModeAsk},
+        {i18n("widgets.dashboard.reset_flight"), dashboard.resetFlightModeAsk},
     }
 end
 
