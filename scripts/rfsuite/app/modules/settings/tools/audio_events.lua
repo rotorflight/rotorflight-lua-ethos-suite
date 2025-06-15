@@ -55,7 +55,7 @@ local function onNavMenu()
     rfsuite.app.ui.openPage(
         pageIdx,
         rfsuite.i18n.get("app.modules.settings.name"),
-        "settings/settings.lua"
+        "settings/tools/audio.lua"
     )
 end
 
@@ -101,8 +101,8 @@ local function event(widget, category, value, x, y)
     if category == EVT_CLOSE and value == 0 or value == 35 then
         rfsuite.app.ui.openPage(
             pageIdx,
-            rfsuite.i18n.get("app.modules.settings.name"),
-            "settings/settings.lua"
+        rfsuite.i18n.get("app.modules.settings.name"),
+        "settings/tools/audio.lua"
         )
         return true
     end
