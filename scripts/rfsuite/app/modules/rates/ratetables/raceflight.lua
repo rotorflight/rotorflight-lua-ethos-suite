@@ -1,6 +1,6 @@
 local i18n = rfsuite.i18n.get
 
-ocal apidata = {
+local apidata = {
     api = {
         [1] = 'RC_TUNING',
     },

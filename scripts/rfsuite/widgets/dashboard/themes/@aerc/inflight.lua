@@ -187,7 +187,6 @@ local boxes = {
      type = "text",
      subtype = "telemetry",
      source = "pid_profile",    
-     bgcolor = "transparent",
      title = "PROFILE",
      titlepos = "bottom",
      transform = "floor",
