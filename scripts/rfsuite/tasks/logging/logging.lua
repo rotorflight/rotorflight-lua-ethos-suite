@@ -11,7 +11,7 @@ local config = arg[1]
 local logging = {}
 local logInterval = 1 -- changing this will skew the log analysis - so dont change it
 local logFileName
-local logRateLimit = os.clock()
+local logRateLimit = rfsuite.clock
 
 local colorTable = {}
 
@@ -44,7 +44,7 @@ local cachedSensors = {} -- cache for sensor sources
 
 local function generateLogFilename()
     local timestamp = os.date("%Y-%m-%d_%H-%M-%S")
-    local uniquePart = math.floor(os.clock() * 1000)
+    local uniquePart = math.floor(rfsuite.clock * 1000)
     return  timestamp .. "_" .. uniquePart .. ".csv"
 end
 
@@ -161,8 +161,8 @@ function logging.wakeup()
             logging.queueLog(logHeader)
         end
 
-        if os.clock() - logRateLimit >= logInterval then
-            logRateLimit = os.clock()
+        if rfsuite.clock - logRateLimit >= logInterval then
+            logRateLimit = rfsuite.clock
             logging.queueLog(logging.getLogLine())
             if #log_queue >= 5 then
                 logging.writeLogs()

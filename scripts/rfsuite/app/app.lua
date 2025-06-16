@@ -103,7 +103,7 @@ app.triggers = triggers
     and the result is assigned to app.ui. The config parameter is passed to the loaded file.
 
 ]]
-app.ui = {}
+app.ui = nil
 app.ui = assert(compile("app/lib/ui.lua"))(config)
 
 
@@ -112,8 +112,8 @@ app.ui = assert(compile("app/lib/ui.lua"))(config)
     The utility functions are loaded from "app/lib/utils.lua" and are passed the 'config' parameter.
     If the file cannot be loaded, an error will be thrown.
 ]]
-app.utils = {}
-app.utils = assert(compile("app/lib/utils.lua"))(config)
+app.utils = nil
+
 
 
 --[[
@@ -138,15 +138,13 @@ app.lastLabel: Stores the last accessed label.
 app.NewRateTable: Table to store new rate data.
 app.RateTable: Table to store rate data.
 app.fieldHelpTxt: Stores help text for fields.
-app.protocol: Table to store protocol data.
-app.protocolTransports: Table to store protocol transport data.
 app.radio: Table to store radio data.
 app.sensor: Table to store sensor data.
 app.init: Initialization function.
 app.guiIsRunning: Boolean indicating if the GUI is running.
 app.menuLastSelected: Table to store the last selected menu item.
 app.adjfunctions: Table to store adjustment functions.
-app.profileCheckScheduler: Scheduler for profile checks using os.clock().
+app.profileCheckScheduler: Scheduler for profile checks using rfsuite.clock.
 app.offLineMode : Boolean indicating if the app is in offline mode.
 ]]
 app.sensors = {}
@@ -170,14 +168,12 @@ app.lastLabel = nil
 app.NewRateTable = nil
 app.RateTable = nil
 app.fieldHelpTxt = nil
-app.protocol = {}
-app.protocolTransports = {}
 app.radio = {}
 app.sensor = {}
 app.init = nil
 app.guiIsRunning = false
 app.adjfunctions = nil
-app.profileCheckScheduler = os.clock()
+app.profileCheckScheduler = rfsuite.clock
 app.offlineMode = false
 
 
@@ -218,7 +214,7 @@ app.dialogs.progress = false
 app.dialogs.progressDisplay = false
 app.dialogs.progressWatchDog = nil
 app.dialogs.progressCounter = 0
-app.dialogs.progressRateLimit = os.clock()
+app.dialogs.progressRateLimit = rfsuite.clock
 app.dialogs.progressRate = 0.1 
 
 --[[
@@ -236,7 +232,7 @@ app.dialogs.progressESC = false
 app.dialogs.progressDisplayEsc = false
 app.dialogs.progressWatchDogESC = nil
 app.dialogs.progressCounterESC = 0
-app.dialogs.progressESCRateLimit = os.clock()
+app.dialogs.progressESCRateLimit = rfsuite.clock
 app.dialogs.progressESCRate = 2.5 
 
 --[[
@@ -254,7 +250,7 @@ app.dialogs.save = false
 app.dialogs.saveDisplay = false
 app.dialogs.saveWatchDog = nil
 app.dialogs.saveProgressCounter = 0
-app.dialogs.saveRateLimit = os.clock()
+app.dialogs.saveRateLimit = rfsuite.clock
 app.dialogs.saveRate = 0.1
 
 --[[
@@ -270,7 +266,7 @@ app.dialogs.saveRate = 0.1
 app.dialogs.nolink = false
 app.dialogs.nolinkDisplay = false
 app.dialogs.nolinkValueCounter = 0
-app.dialogs.nolinkRateLimit = os.clock()
+app.dialogs.nolinkRateLimit = rfsuite.clock
 app.dialogs.nolinkRate = 0.1 
 
 --[[
@@ -281,72 +277,6 @@ app.dialogs.nolinkRate = 0.1
 app.dialogs.badversion = false
 app.dialogs.badversionDisplay = false
 
---[[
-    Function: app.getRSSI
-    Description: Retrieves the RSSI (Received Signal Strength Indicator) value.
-    Returns 100 if the system is in simulation mode, the RSSI sensor check is skipped, or the app is in offline mode.
-    Otherwise, returns 100 if telemetry is active, and 0 if it is not.
-    Returns:
-        number - The RSSI value (100 or 0).
-]]
-function app.getRSSI()
-
-    if rfsuite.simevent.rflink == 1 then
-        return 0
-    end
-
-    if app.offlineMode == true then return 100 end
-
-
-    if rfsuite.session.telemetryState then
-        return 100
-    else
-        return 0
-    end
-end
-
-
---[[
-    Function: app.resetState
-    Description: Resets the application state by initializing various configuration settings, triggers, dialogs, and session variables to their default values. Also, it forces garbage collection to free up memory.
-    Parameters: None
-    Returns: None
-]]
-function app.resetState()
-
-    config.useCompiler = true
-    rfsuite.config.useCompiler = true
-    pageLoaded = 100
-    pageTitle = nil
-    pageFile = nil
-    app.triggers.exitAPP = false
-    app.triggers.noRFMsg = false
-    app.dialogs.nolinkDisplay = false
-    app.dialogs.nolinkValueCounter = 0
-    app.triggers.telemetryState = nil
-    app.dialogs.progressDisplayEsc = false
-    ELRS_PAUSE_TELEMETRY = false
-    CRSF_PAUSE_TELEMETRY = false
-    app.audio = {}
-    app.triggers.wasConnected = false
-    app.triggers.invalidConnectionSetup = false
-    rfsuite.app.triggers.profileswitchLast = nil
-    rfsuite.session.activeProfileLast = nil
-    rfsuite.session.activeProfile = nil
-    rfsuite.session.activeRateProfile = nil
-    rfsuite.session.activeRateProfileLast = nil
-    rfsuite.session.activeProfile = nil
-    rfsuite.session.activeRateTable = nil
-    rfsuite.app.triggers.disableRssiTimeout = false
-    collectgarbage()
-end
-
-
--- Retrieves the current window size from the LCD.
--- @return The window size as provided by lcd.getWindowSize().
-function app.getWindowSize()
-    return lcd.getWindowSize()
-end
 
 -- Function to invalidate the pages variable.
 -- Typically called after writing MSP data.
@@ -447,7 +377,7 @@ local function saveSettings()
     if app.pageState == app.pageStatus.saving then return end
 
     app.pageState = app.pageStatus.saving
-    app.saveTS = os.clock()
+    app.saveTS = rfsuite.clock
 
     -- we handle saving 100% different for multi mspapi
     log("Saving data", "debug")
@@ -953,7 +883,7 @@ function app.updateTelemetryState()
     if system:getVersion().simulation ~= true then
         if not rfsuite.session.telemetrySensor then
             app.triggers.telemetryState = app.telemetryStatus.noSensor
-        elseif app.getRSSI() == 0 then
+        elseif app.utils.getRSSI() == 0 then
             app.triggers.telemetryState = app.telemetryStatus.noTelemetry
         else
             app.triggers.telemetryState = app.telemetryStatus.ok
@@ -1078,7 +1008,7 @@ app._uiTasks = {
            and app.uiState == app.uiStatus.pages and not app.triggers.isSaving
            and not app.dialogs.saveDisplay and not app.dialogs.progressDisplay
            and rfsuite.tasks.msp.mspQueue:isProcessed()) then return end
-    local now = os.clock();
+    local now = rfsuite.clock;
     local interval = (rfsuite.tasks.telemetry.getSensorSource("pid_profile") and rfsuite.tasks.telemetry.getSensorSource("rate_profile"))
                      and 0.1 or 1.5
     if (now - (app.profileCheckScheduler or 0)) >= interval then
@@ -1141,7 +1071,7 @@ app._uiTasks = {
     local moduleEnabled = model.getModule(0):enable() or model.getModule(1):enable()
     local sensorSport = system.getSource({appId=0xF101})
     local sensorElrs  = system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1})
-    local curRssi    = app.getRSSI()
+    local curRssi    = app.utils.getRSSI()
     local invalid, abort = false, false
     local msg = i18n("app.msg_connecting_to_fbl")
     if not utils.ethosVersionAtLeast() then
@@ -1174,7 +1104,7 @@ app._uiTasks = {
   function()
     if not app.dialogs.saveDisplay or not app.dialogs.saveWatchDog then return end
     local timeout = tonumber(rfsuite.tasks.msp.protocol.saveTimeout + 5)
-    if (os.clock() - app.dialogs.saveWatchDog) > timeout
+    if (rfsuite.clock - app.dialogs.saveWatchDog) > timeout
        or (app.dialogs.saveProgressCounter > 120 and rfsuite.tasks.msp.mspQueue:isProcessed()) then
       app.audio.playTimeout = true
       app.ui.progressDisplaySaveMessage(i18n("app.error_timed_out"))
@@ -1193,7 +1123,7 @@ app._uiTasks = {
     if not app.dialogs.progressDisplay or not app.dialogs.progressWatchDog then return end
     app.dialogs.progressCounter = app.dialogs.progressCounter + (app.Page and app.Page.progressCounter or 1.5)
     app.ui.progressDisplayValue(app.dialogs.progressCounter)
-    if (os.clock() - app.dialogs.progressWatchDog) > tonumber(rfsuite.tasks.msp.protocol.pageReqTimeout) then
+    if (rfsuite.clock - app.dialogs.progressWatchDog) > tonumber(rfsuite.tasks.msp.protocol.pageReqTimeout) then
       app.audio.playTimeout = true
       app.ui.progressDisplayMessage(i18n("app.error_timed_out"))
       app.ui.progressDisplayCloseAllowed(true)
@@ -1374,6 +1304,11 @@ app._taskAccumulator    = 0   -- desired throughput percentage of total tasks pe
 app._uiTaskPercent      = 50  -- e.g., 50% of tasks each tick
 function app.wakeup()
 
+  -- ensure we have a clock if background tasks are not active
+  if not rfsuite.tasks.active() then
+    rfsuite.clock = os.clock()  
+  end
+
   local total = #app._uiTasks
   local tasksThisTick = math.max(1, (total * app._uiTaskPercent) / 100)
 
@@ -1443,7 +1378,18 @@ function app.create()
 
     app.uiState = app.uiStatus.init
 
-    app.MainMenu  = assert(compile("app/modules/init.lua"))()
+    if not app.MainMenu then
+        app.MainMenu  = assert(compile("app/modules/init.lua"))()
+    end
+
+    if not app.ui then
+        app.ui = assert(compile("app/lib/ui.lua"))(config)
+    end
+
+    if not app.utils then
+        app.utils = assert(compile("app/lib/utils.lua"))(config)
+    end    
+
     app.ui.openMainMenu()
 
 end
@@ -1544,6 +1490,8 @@ Returns:
 ]]
 function app.close()
 
+    rfsuite.utils.reportMemoryUsage("closing application: start")
+
     -- save user preferences
     local userpref_file = "SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini"
     rfsuite.ini.save_ini_file(userpref_file, rfsuite.preferences)
@@ -1560,11 +1508,67 @@ function app.close()
     if app.dialogs.save then app.ui.progressDisplaySaveClose() end
     if app.dialogs.noLink then app.ui.progressNolinkDisplayClose() end
 
-    -- clear image cache
-    rfsuite.app.gfx_buttons = {}
 
+    -- Reset configuration and compiler flags
+    config.useCompiler = true
+    rfsuite.config.useCompiler = true
+
+    -- Reset page and navigation state
+    pageLoaded = 100
+    pageTitle = nil
+    pageFile = nil
+    app.Page = {}
+    app.formFields = {}
+    app.formNavigationFields = {}
+    app.gfx_buttons = {}
+    app.formLines = nil
+    app.MainMenu = nil
+    app.formNavigationFields = {}
+    app.PageTmp = nil
+    app.moduleList = nil
+    app.utils = nil
+    app.ui = nil
+
+    -- Reset triggers
+    app.triggers.exitAPP = false
+    app.triggers.noRFMsg = false
+    app.triggers.telemetryState = nil
+    app.triggers.wasConnected = false
+    app.triggers.invalidConnectionSetup = false
+    app.triggers.disableRssiTimeout = false
+
+    -- Reset dialogs
+    app.dialogs.nolinkDisplay = false
+    app.dialogs.nolinkValueCounter = 0
+    app.dialogs.progressDisplayEsc = false
+
+    -- Reset audio
+    app.audio = {}
+
+    -- Reset telemetry and protocol state
+    ELRS_PAUSE_TELEMETRY = false
+    CRSF_PAUSE_TELEMETRY = false
+
+    -- Reset profile/rate state
+    rfsuite.app.triggers.profileswitchLast = nil
+    rfsuite.session.activeProfileLast = nil
+    rfsuite.session.activeProfile = nil
+    rfsuite.session.activeRateProfile = nil
+    rfsuite.session.activeRateProfileLast = nil
+    rfsuite.session.activeRateTable = nil
+
+    -- Cleanup
+    collectgarbage()
     invalidatePages()
-    app.resetState()
+
+    -- print out whats left
+    --log("Application closed. Remaining tables:", "info")
+    --for i,v in pairs(rfsuite.app) do
+    --        log("   ->" .. tostring(i) .. " = " .. tostring(v), "info")
+    --end
+
+    rfsuite.utils.reportMemoryUsage("closing application: end")    
+
     system.exit()
     return true
 end

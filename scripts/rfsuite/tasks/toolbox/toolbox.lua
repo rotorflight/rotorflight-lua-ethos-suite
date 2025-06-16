@@ -37,7 +37,7 @@ function toolbox.wakeup()
     if rfsuite.session.toolbox == nil then
         return
     end
-    local currentTime = os.clock()
+    local currentTime = rfsuite.clock
 
     if rfsuite.session.isConnected and rfsuite.session.telemetryState then
         if telemetryStartTime == nil then

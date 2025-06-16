@@ -28,7 +28,7 @@ local loadedSensorModule = nil
 callback._queue = {}
 
 local function get_time()
-    return os.clock()
+    return rfsuite.clock
 end
 
 function callback.now(callbackParam)

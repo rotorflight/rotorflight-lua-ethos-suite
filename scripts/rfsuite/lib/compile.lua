@@ -16,7 +16,7 @@
 local compile = {}
 local arg = {...}
 
-compile._startTime = os.clock()
+compile._startTime = rfsuite.clock
 compile._startupDelay = 20 -- seconds before starting any compiles
 
 -- Configuration: expects rfsuite.config to be globally available
@@ -86,7 +86,7 @@ local function LRUCache()
   end
 
   function self:evict_if_low_memory()
-    self._last_evict = os.clock()
+    self._last_evict = rfsuite.clock
     local usage = system.getMemoryUsage and system.getMemoryUsage()
     --print(usage.luaRamAvailable, LUA_RAM_THRESHOLD)
     while #self.order > 0 do
@@ -146,7 +146,7 @@ function compile._enqueue(script, cache_path, cache_fname)
 end
 
 function compile.tick()
-  local now = os.clock()
+  local now = rfsuite.clock
   if (now - compile._startTime) < compile._startupDelay then
     return
   end
@@ -189,7 +189,7 @@ function compile.loadfile(script)
   -- Optional timing log start
   local startTime
   if logTimings then
-    startTime = os.clock()
+    startTime = rfsuite.clock
   end
 
   -- Prepare cache keys
@@ -209,7 +209,7 @@ function compile.loadfile(script)
       loader = loadfile(script)
       which = "raw"
     else
-      local now = os.clock()
+      local now = rfsuite.clock
 
       if (now - compile._startTime) >= compile._startupDelay then
         -- === Post-startup: instant on-access ===
@@ -267,7 +267,7 @@ function compile.loadfile(script)
 
   -- Optional timing log end
   if logTimings and startTime then
-    local elapsed = os.clock() - startTime
+    local elapsed = rfsuite.clock - startTime
     if rfsuite and rfsuite.utils and rfsuite.utils.log then
       rfsuite.utils.log(
         ("Loaded '%s' [%s] in %.3f sec"):format(script, which, elapsed),
@@ -310,7 +310,7 @@ compile._last_tick = 0
 compile._tickInterval = 20 -- seconds between deferred compile runs
 
 function compile.wakeup()
-  local now = os.clock()
+  local now = rfsuite.clock
   if (now - compile._last_wakeup) >= compile._wakeupInterval then
     compile._last_wakeup = now
     lru_cache:evict_if_low_memory()

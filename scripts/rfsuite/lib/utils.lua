@@ -59,6 +59,37 @@ function utils.msp_version_array_to_indexed()
     return arr
 end
 
+--- Converts arming disable flags into a human-readable string representation.
+---
+--- This function iterates through the bits of the provided `flags` integer and checks
+--- which flags are set. For each set flag, it appends the corresponding localized
+--- string to the result. If no flags are set, it returns a localized "OK" message.
+---
+--- @param flags number The bitfield representing arming disable flags.
+--- @return string A comma-separated string of human-readable flag descriptions, or "OK" if no flags are set.
+function utils.armingDisableFlagsToString(flags)
+    if flags == nil then
+        return i18n("app.modules.status.ok"):upper()
+    end
+
+    local names = {}
+    for i = 0, 25 do
+        if (flags & (1 << i)) ~= 0 then
+            local key = "app.modules.status.arming_disable_flag_" .. i
+            local name = i18n(key)
+            if name and name ~= "" then
+                table.insert(names, name)
+            end
+        end
+    end
+
+    if #names == 0 then
+        return i18n("app.modules.status.ok"):upper()
+    end
+
+    return table.concat(names, ", "):upper()
+end
+
 -- get the governor text from the value
 function utils.getGovernorState(value)
 
@@ -103,13 +134,13 @@ function utils.getGovernorState(value)
     --[[
         Checks the value of the "armdisableflags" telemetry sensor. If the sensor value is available,
         it is floored to the nearest integer and converted to a human-readable string using
-        rfsuite.app.utils.armingDisableFlagsToString(). If the resulting string is not "OK",
+        utils.armingDisableFlagsToString(). If the resulting string is not "OK",
         the function sets 'returnvalue' to this string, indicating a reason why arming is disabled.
     --]]
     local armdisableflags = rfsuite.tasks.telemetry.getSensor("armdisableflags")
     if armdisableflags ~= nil then
         armdisableflags = math.floor(armdisableflags)
-        local armstring = rfsuite.app.utils.armingDisableFlagsToString(armdisableflags )
+        local armstring = utils.armingDisableFlagsToString(armdisableflags )
         if armstring ~= "OK" then
             returnvalue =  armstring
         end   

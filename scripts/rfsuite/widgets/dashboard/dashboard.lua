@@ -42,7 +42,7 @@ local supportedResolutions = {
 local lastFlightMode = nil
 
 -- Capture the script start time for uptime or performance measurements
-local initTime = os.clock()
+local initTime = rfsuite.clock
 
 -- Default theme to fall back on if user or system theme fails to load
 dashboard.DEFAULT_THEME = "system/default"
@@ -260,7 +260,7 @@ function dashboard.computeOverlayMessage()
     
 
     if dashboard.themeFallbackUsed and dashboard.themeFallbackUsed[state] and
-       (os.clock() - (dashboard.themeFallbackTime and dashboard.themeFallbackTime[state] or 0)) < 10 then
+       (rfsuite.clock - (dashboard.themeFallbackTime and dashboard.themeFallbackTime[state] or 0)) < 10 then
         return i18n("widgets.dashboard.theme_load_error")
     elseif not utils.ethosVersionAtLeast() then
         return string.format(
@@ -552,7 +552,7 @@ local function load_state_script(theme_folder, state)
         if not initChunk then
             log("dashboard: Could not load default theme's init.lua. Error: " .. tostring(initErr), "error")
             dashboard.themeFallbackUsed[state] = true
-            dashboard.themeFallbackTime[state] = os.clock()
+            dashboard.themeFallbackTime[state] = rfsuite.clock
             return nil
         end
 
@@ -579,17 +579,17 @@ local function load_state_script(theme_folder, state)
                     themeBasePath = fallbackBasePath
                 else
                     dashboard.themeFallbackUsed[state] = true
-                    dashboard.themeFallbackTime[state] = os.clock()
+                    dashboard.themeFallbackTime[state] = rfsuite.clock
                     return nil
                 end
             else
                 dashboard.themeFallbackUsed[state] = true
-                dashboard.themeFallbackTime[state] = os.clock()
+                dashboard.themeFallbackTime[state] = rfsuite.clock
                 return nil
             end
         else
             dashboard.themeFallbackUsed[state] = true
-            dashboard.themeFallbackTime[state] = os.clock()
+            dashboard.themeFallbackTime[state] = rfsuite.clock
             return nil
         end
     end
@@ -610,14 +610,14 @@ local function load_state_script(theme_folder, state)
             log("dashboard: Could not load " .. scriptName .. " for " .. tostring(folder) ..
                               " or default. Error: " .. tostring(err), "info")
             dashboard.themeFallbackUsed[state] = true
-            dashboard.themeFallbackTime[state] = os.clock()
+            dashboard.themeFallbackTime[state] = rfsuite.clock
             return nil
         end
     end
 
     if usedFallback then
         dashboard.themeFallbackUsed[state] = true
-        dashboard.themeFallbackTime[state] = os.clock()
+        dashboard.themeFallbackTime[state] = rfsuite.clock
     else
         dashboard.themeFallbackUsed[state] = false
         dashboard.themeFallbackTime[state] = 0
@@ -632,7 +632,7 @@ local function load_state_script(theme_folder, state)
         if not ok2 then
             log("dashboard: Error running " .. scriptName .. ": " .. tostring(module), "error")
             dashboard.themeFallbackUsed[state] = true
-            dashboard.themeFallbackTime[state] = os.clock()
+            dashboard.themeFallbackTime[state] = rfsuite.clock
             return nil
         end
         return module
@@ -942,6 +942,11 @@ end
 -- @param widget The widget instance to update.
 function dashboard.wakeup(widget)
 
+    -- ensure we have a clock if background tasks are not active
+    if not rfsuite.tasks.active() then
+        rfsuite.clock = os.clock()  
+    end    
+
     if not lcd.isVisible() and not loadedThemeIntervals.wakeup_interval_bg then
         return
     end
@@ -1014,7 +1019,7 @@ function dashboard.wakeup(widget)
     end
 
 
-    local now = os.clock()
+    local now = rfsuite.clock
     local visible = lcd.isVisible() 
 
     -- These values must be assigned from your config/init table after loading!
@@ -1127,9 +1132,9 @@ function dashboard.wakeup(widget)
     -- Report memory usage every 5 seconds
     if lcd.isVisible() then
         dashboard._lastMemReport = dashboard._lastMemReport or 0
-        if os.clock() - dashboard._lastMemReport > 5 then
+        if rfsuite.clock - dashboard._lastMemReport > 5 then
             rfsuite.utils.reportMemoryUsage("Dashboard")
-            dashboard._lastMemReport = os.clock()
+            dashboard._lastMemReport = rfsuite.clock
         end
     end    
 

@@ -58,7 +58,7 @@ local switchStartTime = nil
 --   • lastPlayTime           – last playback timestamp per switch key
 --------------------------------------------------------------------------------
 function switches.wakeup()
-    local currentTime = os.clock()
+    local currentTime = rfsuite.clock
 
     -- Populate switchTable if empty and preferences exist
     if next(switchTable.switches) == nil and rfsuite.preferences.switches then
@@ -89,7 +89,7 @@ function switches.wakeup()
         for key, sensor in pairs(switchTable.switches) do
             local currentState = sensor:state()        -- true if switch is ON
             local prevState    = lastSwitchState[key] or false
-            local now          = os.clock()
+            local now          = rfsuite.clock
             local lastTime     = lastPlayTime[key] or 0
             local shouldPlay   = false
 

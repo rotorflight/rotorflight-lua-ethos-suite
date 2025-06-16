@@ -3,7 +3,7 @@ local fields = {}
 local i18n = rfsuite.i18n.get
 local triggerOverRide = false
 local inOverRide = false
-local lastChangeTime = os.clock()
+local lastChangeTime = rfsuite.clock
 local currentRollTrim
 local currentRollTrimLast
 local currentPitchTrim
@@ -118,7 +118,7 @@ local function wakeup(self)
     if inOverRide == true then
 
         currentRollTrim = rfsuite.app.Page.fields[1].value
-        local now = os.clock()
+        local now = rfsuite.clock
         local settleTime = 0.85
         if ((now - lastChangeTime) >= settleTime) and rfsuite.tasks.msp.mspQueue:isProcessed() and clear2send == true then
             if currentRollTrim ~= currentRollTrimLast then
@@ -130,7 +130,7 @@ local function wakeup(self)
         end
 
         currentPitchTrim = rfsuite.app.Page.fields[2].value
-        local now = os.clock()
+        local now = rfsuite.clock
         local settleTime = 0.85
         if ((now - lastChangeTime) >= settleTime) and rfsuite.tasks.msp.mspQueue:isProcessed() and clear2send == true then
             if currentPitchTrim ~= currentPitchTrimLast then
@@ -141,7 +141,7 @@ local function wakeup(self)
         end
 
         currentCollectiveTrim = rfsuite.app.Page.fields[3].value
-        local now = os.clock()
+        local now = rfsuite.clock
         local settleTime = 0.85
         if ((now - lastChangeTime) >= settleTime) and rfsuite.tasks.msp.mspQueue:isProcessed() and clear2send == true then
             if currentCollectiveTrim ~= currentCollectiveTrimLast then
@@ -153,7 +153,7 @@ local function wakeup(self)
 
         if rfsuite.session.tailMode == 1 or rfsuite.session.tailMode == 2 then
             currentIdleThrottleTrim = rfsuite.app.Page.fields[4].value
-            local now = os.clock()
+            local now = rfsuite.clock
             local settleTime = 0.85
             if ((now - lastChangeTime) >= settleTime) and rfsuite.tasks.msp.mspQueue:isProcessed() and clear2send == true then
                 if currentIdleThrottleTrim ~= currentIdleThrottleTrimLast then
@@ -166,7 +166,7 @@ local function wakeup(self)
 
         if rfsuite.session.tailMode == 0 then
             currentYawTrim = rfsuite.app.Page.fields[4].value
-            local now = os.clock()
+            local now = rfsuite.clock
             local settleTime = 0.85
             if ((now - lastChangeTime) >= settleTime) and rfsuite.tasks.msp.mspQueue:isProcessed() then
                 if currentYawTrim ~= currentYawTrimLast then

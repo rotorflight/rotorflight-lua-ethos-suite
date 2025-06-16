@@ -60,7 +60,7 @@ function stats.wakeup()
     end
 
     -- Throttle: only run once every 0.25 CPU‐seconds
-    local now = os.clock()
+    local now = rfsuite.clock
     if now - lastTrackTime < 0.25 then
         return
     end

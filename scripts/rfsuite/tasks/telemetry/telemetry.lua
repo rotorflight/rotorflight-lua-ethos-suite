@@ -58,7 +58,7 @@ function telemetry._debugStats()
 end
 
 -- Rate‐limiting for wakeup()
-local sensorRateLimit = os.clock()
+local sensorRateLimit = rfsuite.clock
 local SENSOR_RATE = 0.25        -- 1 second between onchange scans
 
 -- Store the last validated sensors and timestamp
@@ -967,7 +967,7 @@ end
         - The function considers the mandatory flag for invalid sensors.
 ]]
 function telemetry.validateSensors(returnValid)
-    local now = os.clock()
+    local now = rfsuite.clock
     if (now - lastValidationTime) < VALIDATION_RATE_LIMIT then
         return lastValidationResult
     end
@@ -1053,7 +1053,7 @@ end
     - Reset telemetry if needed
 ]]
 function telemetry.wakeup()
-    local now = os.clock()
+    local now = rfsuite.clock
 
     -- Prioritize MSP traffic
     if rfsuite.app.triggers.mspBusy then

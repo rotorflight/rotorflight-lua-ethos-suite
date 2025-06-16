@@ -5,7 +5,7 @@ servoTable['sections'] = {}
 
 local triggerOverRide = false
 local triggerOverRideAll = false
-local lastServoCountTime = os.clock()
+local lastServoCountTime = rfsuite.clock
 local i18n = rfsuite.i18n.get
 local function buildServoTable()
 
@@ -371,7 +371,7 @@ local function wakeup()
         end
     end
 
-    local now = os.clock()
+    local now = rfsuite.clock
     if ((now - lastServoCountTime) >= 2) and rfsuite.tasks.msp.mspQueue:isProcessed() then
         lastServoCountTime = now
 

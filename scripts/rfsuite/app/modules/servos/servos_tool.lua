@@ -7,7 +7,7 @@ local triggerOverRideAll = false
 local triggerCenterChange = false
 local currentServoCenter
 local lastSetServoCenter
-local lastServoChangeTime = os.clock()
+local lastServoChangeTime = rfsuite.clock
 local servoIndex = rfsuite.currentServoIndex - 1
 local isSaving = false
 local enableWakeup = false
@@ -174,7 +174,7 @@ local function wakeup(self)
 
             currentServoCenter = configs[servoIndex]['mid']
 
-            local now = os.clock()
+            local now = rfsuite.clock
             local settleTime = 0.85
             if ((now - lastServoChangeTime) >= settleTime) and rfsuite.tasks.msp.mspQueue:isProcessed() then
                 if currentServoCenter ~= lastSetServoCenter then

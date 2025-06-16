@@ -53,7 +53,7 @@ function flightmode.inFlight()
     end
 
     -- Priority 2: Throttle fallback with delay
-    local now = os.clock()
+    local now = rfsuite.clock
     local throttle = rfsuite.session.rx and rfsuite.session.rx.values and rfsuite.session.rx.values.throttle
 
     if throttle and throttle > 0 then

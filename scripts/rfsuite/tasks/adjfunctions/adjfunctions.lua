@@ -25,7 +25,7 @@ local config = arg[1]
 local adjfunc = {}
 local firstRun = true
 
-local initTime = os.clock()
+local initTime = rfsuite.clock
 
 --[[
 adjFunctionsTable - A table containing adjustable functions for various parameters.
@@ -241,7 +241,7 @@ local adjfuncAdjValue = nil
 local adjfuncAdjFunction = nil
 local adjfuncAdjValueOld = nil
 local adjfuncAdjFunctionOld = nil
-local adjfuncAdjTimer = os.clock()
+local adjfuncAdjTimer = rfsuite.clock
 local adjfuncAdjfuncIdChanged = false
 local adjfuncAdjfuncValueChanged = false
 local adjfuncAdjJustUp = false
@@ -282,7 +282,7 @@ function adjfunc.wakeup()
     -- do not run the remaining code
     if rfsuite.preferences.events.adj_f == false and rfsuite.preferences.events.adj_v == false then return end
 
-    if (os.clock() - initTime) < 5  then return end
+    if (rfsuite.clock - initTime) < 5  then return end
 
     -- getSensor source has a cache built in - win
     adjfuncAdjFunctionSrc = rfsuite.tasks.telemetry.getSensorSource("adj_f")
@@ -309,7 +309,7 @@ function adjfunc.wakeup()
         else
             if adjfuncAdjFunction ~= 0 then
                 adjfuncAdjJustUpCounter = 0
-                if (os.clock() - adjfuncAdjTimer >= 2) then
+                if (rfsuite.clock - adjfuncAdjTimer >= 2) then
 
                     if adjfuncAdjfuncIdChanged == true then
 
@@ -333,7 +333,7 @@ function adjfunc.wakeup()
 
                         firstRun = false
                     end
-                    adjfuncAdjTimer = os.clock()
+                    adjfuncAdjTimer = rfsuite.clock
                 end
             end
         end

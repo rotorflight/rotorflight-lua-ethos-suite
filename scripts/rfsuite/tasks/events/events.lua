@@ -33,7 +33,7 @@ for _, name in ipairs(taskNames) do
 end
 
 function events.wakeup()
-    local currentTime = os.clock()
+    local currentTime = rfsuite.clock
 
     if rfsuite.session.isConnected and rfsuite.session.telemetryState then
         if telemetryStartTime == nil then
