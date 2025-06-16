@@ -62,10 +62,12 @@ local boxes = {
     source = "fuel",
     battadv = true,
     fillcolor = "green",
-    valuealign = "center",
+    valuealign = "left",
+    valuepaddingleft = 170,
     battadvfont = "FONT_STD",
     font = "FONT_XXL",
-    battadvpaddingright = 18,
+    battadvpaddingright = 5,
+    battadvvaluealign = "right",
     transform = "floor",
     bgcolor = colorMode.bgcolor,
     titlecolor = colorMode.titlecolor,
@@ -97,9 +99,9 @@ local boxes = {
     maxtextcolor = "orange",
     transform = "floor",
         thresholds = {
-            { value = 100,  fillcolor = "red"    },
-            { value = 1600, fillcolor = "yellow" },
-            { value = 3000, fillcolor = "green"  }
+            { value = 100,  fillcolor = "lightyellow"   },
+            { value = 1600, fillcolor = "yellow"        },
+            { value = 3000, fillcolor = "darkyellow"    }
         }
     },
 
@@ -142,33 +144,8 @@ local boxes = {
     textcolor = colorMode.textcolor,
     maxtextcolor = "orange",
         thresholds = {
-            { value = 89,  fillcolor = "green"  },
-            { value = 90,  fillcolor = "yellow" },
+            { value = 89,  fillcolor = "orange" },
             { value = 100, fillcolor = "red"    }
-        }
-    },
-
-    -- Current
-    {col = 4, row = 3, rowspan = 4,
-    type = "gauge",
-    subtype = "arc",
-    source = "current",
-    arcmax = true,
-    title = "CURRENT", 
-    titlepos = "bottom", 
-    transform = "floor",
-    thickness = 12,
-    font = "FONT_L",
-    maxprefix = "Max: ",
-    maxpaddingtop = 22,
-    min = 0,
-    max = 300,
-    bgcolor = colorMode.bgcolor,
-    titlecolor = colorMode.titlecolor,
-    maxtextcolor = "orange",
-        thresholds = {
-            { value = 200, fillcolor = "purple" },
-            { value = 300, fillcolor = "red"    }
         }
     },
 
@@ -186,12 +163,56 @@ local boxes = {
      max = 13, 
         thresholds = {
             { value = 5.5, textcolor = "red"   },
-            { value = 13,  textcolor = colorMode.textcolor }
+            { value = 13,  textcolor = "green" }
+        }
+    },
+
+        -- Current
+    {col = 3, row = 3, rowspan = 4,
+    type = "gauge",
+    subtype = "arc",
+    source = "current",
+    arcmax = true,
+    title = "CURRENT", 
+    titlepos = "bottom", 
+    transform = "floor",
+    thickness = 12,
+    font = "FONT_L",
+    maxprefix = "Max: ",
+    maxpaddingtop = 22,
+    min = 0,
+    max = 300,
+    bgcolor = colorMode.bgcolor,
+    titlecolor = colorMode.titlecolor,
+    textcolor = colorMode.textcolor,
+    maxtextcolor = "orange",
+        thresholds = {
+            { value = 200, fillcolor = "lightred"   },
+            { value = 300, fillcolor = "red"        }
+        }
+    },
+  
+    -- Rate Profile
+    {col = 3, row = 7, rowspan = 2,
+    type = "text",
+    subtype = "telemetry",
+    source = "rate_profile",    
+    title = "RATES",
+    titlepos = "bottom",
+    transform = "floor",
+    font = "FONT_XL",
+    bgcolor = colorMode.bgcolor,
+    titlecolor = colorMode.titlecolor,
+    textcolor = colorMode.textcolor,
+        thresholds = {
+            { value = 1.5, textcolor = "blue" },
+            { value = 2.5, textcolor = "orange" },
+            { value = 6,   textcolor = "green"  }
         }
     },
 
     -- ESC Temp
-    {col = 3, row = 3, rowspan = 4,
+    {col = 4, row = 3, rowspan = 4,
     type = "gauge", 
     subtype = "arc",
     arcmax = true,
@@ -215,25 +236,6 @@ local boxes = {
             { value = 70,  fillcolor = "green"  },
             { value = 90,  fillcolor = "orange" },
             { value = 140, fillcolor = "red"    }
-        }
-    },
-    
-    -- Rate Profile
-    {col = 3, row = 7, rowspan = 2,
-    type = "text",
-    subtype = "telemetry",
-    source = "rate_profile",    
-    title = "RATES",
-    titlepos = "bottom",
-    transform = "floor",
-    font = "FONT_XL",
-    bgcolor = colorMode.bgcolor,
-    titlecolor = colorMode.titlecolor,
-    textcolor = colorMode.textcolor,
-        thresholds = {
-            { value = 1.5, textcolor = "blue" },
-            { value = 2.5, textcolor = "orange" },
-            { value = 6,   textcolor = "green"  }
         }
     },
 

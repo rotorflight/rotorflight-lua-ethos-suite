@@ -280,8 +280,8 @@ function render.wakeup(box, telemetry)
 
     if battadv then
         box._batteryLines = {
-            line1 = string.format("V: %.1f / C: %.2f", voltage, perCellVoltage),
-            line2 = string.format("U: %d mAh (%dS)", consumed, cellCount)
+        line1 = string.format("%.1fv / %.2fv (%dS)", voltage, perCellVoltage, cellCount),
+        line2 = string.format("%d mah", consumed)
         }
     else
         box._batteryLines = nil
@@ -347,6 +347,7 @@ function render.wakeup(box, telemetry)
         battadvpaddingtop        = getParam(box, "battadvpaddingtop") or 0,
         battadvpaddingbottom     = getParam(box, "battadvpaddingbottom") or 0,
         battadvgap               = getParam(box, "battadvgap") or 5,
+        battstats                = getParam(box, "battstats") or false,
     }
 end
 
@@ -386,7 +387,7 @@ function render.paint(x, y, w, h, box)
         drawFilledRoundedRectangle(gauge_x, gauge_y, gauge_w, gauge_h, c.roundradius)
 
         -- Bar fill
-        if c.percent > 0 then
+        if not c.battstats and c.percent > 0 then
             lcd.color(c.fillcolor)
             if c.gaugeorientation == "vertical" then
                 local fillH = math.floor(gauge_h * c.percent)

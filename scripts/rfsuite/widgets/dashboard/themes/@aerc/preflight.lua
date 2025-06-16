@@ -108,6 +108,7 @@ local boxes = {
      valuepaddingleft = 75,
      battadvfont = "FONT_STD",
      battadvpaddingright = 18,
+     battadvvaluealign = "right",
      bgcolor = colorMode.bgcolor,
      titlecolor = colorMode.titlecolor,
      textcolor = colorMode.textcolor,

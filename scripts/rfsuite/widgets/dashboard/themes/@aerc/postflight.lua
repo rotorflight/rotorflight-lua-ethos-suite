@@ -56,23 +56,43 @@ local layout = {
 }
 
 local boxes = {
+    -- Batt Bar Summary
+    {col = 1, row = 1, colspan = 3,
+    type = "gauge",
+    source = "fuel",
+    battadv = true,
+    battstats = true,
+    title = "BATTERY INFORMATION",
+    titlealign = "center",
+    valuealign = "center",
+    unit = "%  Remaining",
+    valuepaddingtop = 20,
+    battadvfont = "FONT_STD",
+    font = "FONT_L",
+    battadvpaddingtop = 15,
+    battadvpaddingright = 30,
+    battadvvaluealign = "center",
+    transform = "floor",
+    bgcolor = colorMode.bgcolor,
+    fillbgcolor = colorMode.bgcolor,
+    titlecolor = colorMode.titlecolor,
+    textcolor = "orange",
+    },
+
     -- Flight info and RPM info
-    {col = 1, row = 1, type = "time", subtype = "flight", title = "Flight Duration", titlepos = "top", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange"},
-    {col = 1, row = 2, type = "time", subtype = "total", title = "Total Model Flight Duration", titlepos = "top", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange"},
-    {col = 1, row = 3, type = "text", subtype = "stats", stattype = "min", source = "rpm", title = "RPM Min", unit = " rpm", titlepos = "top", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = "floor"},
-    {col = 1, row = 4, type = "text", subtype = "stats", source = "rpm", title = "RPM Max", unit = " rpm", titlepos = "top", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = "floor"},
+    {col = 1, row = 2, type = "time", subtype = "flight", title = "FLIGHT DURATION", titlepos = "top", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange"},
+    {col = 1, row = 3, type = "time", subtype = "total", title = "TOTAL MODEL FLIGHT DURATION", titlepos = "top", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange"},
+    {col = 1, row = 4, type = "text", subtype = "stats", stattype = "min", source = "rssi", title = "LINK MIN", titlepos = "top", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = "floor"},
 
     -- Flight max/min stats 1
-    {col = 2, row = 1, type = "text", subtype = "stats", source = "throttle_percent", title = "Throttle Max", titlepos = "top", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = "floor"},
-    {col = 2, row = 2, type = "text", subtype = "stats", source = "current", title = "Current Max", titlepos = "top", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = "floor"},
-    {col = 2, row = 3, type = "text", subtype = "stats", source = "temp_esc", title = "ESC Temp Max", titlepos = "top", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = "floor"},
-    {col = 2, row = 4, type = "text", subtype = "stats", source = "altitude", title = "Altitude Max", titlepos = "top", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = "floor"},
+    {col = 2, row = 2, type = "text", subtype = "stats", stattype = "min", source = "rpm", title = "RPM MIN", unit = " rpm", titlepos = "top", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = "floor"},
+    {col = 2, row = 3, type = "text", subtype = "stats", source = "rpm", title = "RPM MAX", unit = " rpm", titlepos = "top", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = "floor"},
+    {col = 2, row = 4, type = "text", subtype = "stats", source = "throttle_percent", title = "THROTTLE MAX", titlepos = "top", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = "floor"},
 
     -- Flight max/min stats 2
-    {col = 3, row = 1, type = "text", subtype = "stats", stattype = "max", source = "consumption", title = "Consumed mAh", titlepos = "top", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = "floor"},
-    {col = 3, row = 2, type = "text", subtype = "stats", stattype = "min", source = "fuel", title = "Fuel Remaining", titlepos = "top", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = "floor"},
-    {col = 3, row = 3, type = "text", subtype = "stats", stattype = "min", source = "voltage", title = "Min Volts per cell", titlepos = "top", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", unit = "V", transform = function(v) return maxVoltageToCellVoltage(v) end},
-    {col = 3, row = 4, type = "text", subtype = "stats", stattype = "min", source = "rssi", title = "Link Min", titlepos = "top", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = "floor"},
+    {col = 3, row = 2, type = "text", subtype = "stats", source = "current", title = "CURRENT MAX", titlepos = "top", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = "floor"},
+    {col = 3, row = 3, type = "text", subtype = "stats", source = "temp_esc", title = "ESC TEMP MAX", titlepos = "top", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = "floor"},
+    {col = 3, row = 4, type = "text", subtype = "stats", source = "altitude", title = "ALTITUDE MAX", titlepos = "top", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = "floor"}, 
 }
 
 return {
