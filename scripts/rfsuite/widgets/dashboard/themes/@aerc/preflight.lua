@@ -21,12 +21,35 @@ local layout = {
     padding = 1,
 }
 
+local darkMode = {
+    textcolor   = "white",
+    titlecolor  = "white",
+    bgcolor     = "black",
+    fillcolor   = "green",
+    fillbgcolor = "grey",
+    accentcolor  = "white",
+    arcbgcolor  = "lightgrey",
+}
+
+local lightMode = {
+    textcolor   = "black",
+    titlecolor  = "black",
+    bgcolor     = "white",
+    fillcolor   = "green",
+    fillbgcolor = "lightgrey",
+    accentcolor  = "lightgrey",
+    arcbgcolor  = "darkgrey",
+}
+
+-- alias current mode
+local colorMode = lcd.darkMode() and darkMode or lightMode
+
 local boxes = {
     -- Model Image
     {col = 1, row = 1, colspan = 3, rowspan = 8, 
      type = "image", 
      subtype = "model", 
-     bgcolor = "black"
+     bgcolor = colorMode.bgcolor,
     },
 
     -- Rate Profile
@@ -37,9 +60,10 @@ local boxes = {
      title = "RATES",
      titlepos = "bottom",
      transform = "floor",
-     bgcolor = "black",
+     bgcolor = colorMode.bgcolor,
+     titlecolor = colorMode.titlecolor,
         thresholds = {
-            { value = 1.5, textcolor = "yellow" },
+            { value = 1.5, textcolor = "blue" },
             { value = 2.5, textcolor = "orange" },
             { value = 6,   textcolor = "green"  }
         }
@@ -53,9 +77,10 @@ local boxes = {
      title = "PROFILE",
      titlepos = "bottom",
      transform = "floor",
-     bgcolor = "black",
+     bgcolor = colorMode.bgcolor,
+     titlecolor = colorMode.titlecolor,
         thresholds = {
-            { value = 1.5, textcolor = "yellow" },
+            { value = 1.5, textcolor = "blue" },
             { value = 2.5, textcolor = "orange" },
             { value = 6,   textcolor = "green"  }
         }
@@ -67,7 +92,9 @@ local boxes = {
      subtype = "count", 
      title = "FLIGHTS", 
      titlepos = "bottom", 
-     bgcolor = "black"
+     bgcolor = colorMode.bgcolor,
+     titlecolor = colorMode.titlecolor,
+     textcolor = colorMode.textcolor,
     },
 
     -- Battery Gauge
@@ -77,11 +104,14 @@ local boxes = {
      batteryframe = true, 
      battadv = true,
      fillcolor = "green",
-     bgcolor = "black",
      valuealign = "left",
      valuepaddingleft = 75,
      battadvfont = "FONT_STD",
      battadvpaddingright = 18,
+     bgcolor = colorMode.bgcolor,
+     titlecolor = colorMode.titlecolor,
+     textcolor = colorMode.textcolor,
+     accentcolor = colorMode.accentcolor,
      transform = "floor",
         thresholds = {
             { value = 10,  fillcolor = "red"    },
@@ -96,11 +126,13 @@ local boxes = {
      source = "bec_voltage", 
      title = "BEC VOLTAGE", 
      titlepos = "bottom", 
-     bgcolor = "black",
      min = 3, 
      max = 13, 
      decimals = 1, 
-     thickness = 15,
+     thickness = 13,
+     bgcolor = colorMode.bgcolor,
+     titlecolor = colorMode.titlecolor,
+     textcolor = colorMode.textcolor,
      font = "FONT_XL", 
         thresholds = {
             { value = 5.5, fillcolor = "red"   },
@@ -114,9 +146,10 @@ local boxes = {
      subtype = "blackbox", 
      title = "BLACKBOX", 
      titlepos = "bottom", 
-     bgcolor = "black", 
      decimals = 0, 
-     textcolor = "blue", 
+     textcolor = "blue",
+     bgcolor = colorMode.bgcolor,
+     titlecolor = colorMode.titlecolor,
      transform = "floor"
     },
 
@@ -127,12 +160,14 @@ local boxes = {
      source = "temp_esc", 
      title = "ESC TEMP", 
      titlepos = "bottom", 
-     bgcolor = "black",
      min = 0, 
      max = 140, 
-     thickness = 15,
+     thickness = 12,
      valuepaddingleft = 10,
      font = "FONT_XL", 
+     bgcolor = colorMode.bgcolor,
+     titlecolor = colorMode.titlecolor,
+     textcolor = colorMode.textcolor,
      transform = "floor", 
         thresholds = {
             { value = 70,  fillcolor = "green"  },
@@ -147,11 +182,12 @@ local boxes = {
      subtype = "governor", 
      title = "GOVERNOR", 
      titlepos = "bottom", 
-     bgcolor = "black",
-        thresholds = {
+     bgcolor = colorMode.bgcolor,
+     titlecolor = colorMode.titlecolor,
+          thresholds = {
             { value = "DISARMED", textcolor = "red"    },
             { value = "OFF",      textcolor = "red"    },
-            { value = "IDLE",     textcolor = "yellow" },
+            { value = "IDLE",     textcolor = "blue" },
             { value = "SPOOLUP",  textcolor = "blue"   },
             { value = "RECOVERY", textcolor = "orange" },
             { value = "ACTIVE",   textcolor = "green"  },

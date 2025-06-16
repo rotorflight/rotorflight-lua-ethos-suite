@@ -16,25 +16,60 @@
 ]]--
 
 local layout = {
-    cols = 5,
-    rows = 11,
+    cols = 4,
+    rows = 8,
     padding = 1
 }
 
+local darkMode = {
+    textcolor   = "white",
+    titlecolor  = "white",
+    bgcolor     = "black",
+    fillcolor   = "green",
+    fillbgcolor = "grey",
+    arcbgcolor  = "lightgrey",
+}
+
+local lightMode = {
+    textcolor   = "black",
+    titlecolor  = "black",
+    bgcolor     = "white",
+    fillcolor   = "green",
+    fillbgcolor = "lightgrey",
+    arcbgcolor  = "darkgrey",
+}
+
+-- alias current mode
+local colorMode = lcd.darkMode() and darkMode or lightMode
+
 local boxes = {
 
+    -- Timer
+    {col = 1, row = 1, rowspan = 2, 
+    type = "time", 
+    subtype = "flight", 
+    title = "TIMER", 
+    titlepos = "bottom", 
+    font = "FONT_XL",
+    bgcolor = colorMode.bgcolor,
+    titlecolor = colorMode.titlecolor,
+    textcolor = colorMode.textcolor,
+    },
+
     -- Battery Bar
-    {col = 1, row = 1, colspan = 5, rowspan = 3,
-     type = "gauge",
-     source = "fuel",
-     battadv = true,
-     fillcolor = "green",
-     bgcolor = "black",
-     valuealign = "center",
-     battadvfont = "FONT_STD",
-     font = "FONT_XXL",
-     battadvpaddingright = 18,
-     transform = "floor",
+    {col = 2, row = 1, colspan = 3, rowspan = 2,
+    type = "gauge",
+    source = "fuel",
+    battadv = true,
+    fillcolor = "green",
+    valuealign = "center",
+    battadvfont = "FONT_STD",
+    font = "FONT_XXL",
+    battadvpaddingright = 18,
+    transform = "floor",
+    bgcolor = colorMode.bgcolor,
+    titlecolor = colorMode.titlecolor,
+    textcolor = colorMode.textcolor,
         thresholds = {
             { value = 10,  fillcolor = "red"    },
             { value = 30,  fillcolor = "orange" }
@@ -42,22 +77,24 @@ local boxes = {
     },
 
     -- RPM
-    {col = 1, row = 4, colspan = 2, rowspan = 6,
+    {col = 1, row = 3, rowspan = 4,
     type = "gauge",
     subtype = "arc",
     source = "rpm",
     arcmax = true,
     title = "RPM", 
     titlepos = "bottom", 
-    bgcolor = "black",
     min = 0, 
     max = 3000,
-    thickness = 15,
+    thickness = 12,
     unit = "",
     maxprefix = "Max: ",
-    maxpaddingtop = 27,
-    maxtextcolor = "orange",
+    maxpaddingtop = 22,
     font = "FONT_L",
+    bgcolor = colorMode.bgcolor,
+    titlecolor = colorMode.titlecolor,
+    textcolor = colorMode.textcolor,
+    maxtextcolor = "orange",
     transform = "floor",
         thresholds = {
             { value = 100,  fillcolor = "red"    },
@@ -67,17 +104,19 @@ local boxes = {
     },
 
     -- Governor
-    {col = 1, row = 10, colspan = 2, rowspan = 2, 
-     type = "text", 
-     subtype = "governor", 
-     title = "GOVERNOR", 
-     titlepos = "bottom",
-     font = "FONT_XL",
-     bgcolor = "black",
+    {col = 1, row = 7, rowspan = 2, 
+    type = "text", 
+    subtype = "governor", 
+    title = "GOVERNOR", 
+    titlepos = "bottom",
+    font = "FONT_XL",
+    bgcolor = colorMode.bgcolor,
+    titlecolor = colorMode.titlecolor,
+    textcolor = colorMode.textcolor,
         thresholds = {
             { value = "DISARMED", textcolor = "red"    },
             { value = "OFF",      textcolor = "red"    },
-            { value = "IDLE",     textcolor = "yellow" },
+            { value = "IDLE",     textcolor = "blue"   },
             { value = "SPOOLUP",  textcolor = "blue"   },
             { value = "RECOVERY", textcolor = "orange" },
             { value = "ACTIVE",   textcolor = "green"  },
@@ -85,79 +124,93 @@ local boxes = {
         }
     },
 
-    -- Timer
-    {col = 3, row = 4, rowspan = 2, type = "time", subtype = "flight", title = "TIMER", titlepos = "bottom", font = "FONT_XL", bgcolor = "black"},
-
     -- Throttle
-    {col = 3, row = 6, rowspan = 2,
-     type = "text",
-     subtype = "telemetry",
-     source = "throttle_percent",
-     title = "THROTTLE %", 
-     titlepos = "bottom", 
-     bgcolor = "black",
-     transform = "floor",
-     font = "FONT_XL",
+    {col = 2, row = 3, rowspan = 4,
+    type = "gauge",
+    subtype = "arc",
+    source = "throttle_percent",
+    arcmax = true,
+    title = "THROTTLE %", 
+    titlepos = "bottom", 
+    transform = "floor",
+    thickness = 12,
+    font = "FONT_L",
+    maxprefix = "Max: ",
+    maxpaddingtop = 22,
+    bgcolor = colorMode.bgcolor,
+    titlecolor = colorMode.titlecolor,
+    textcolor = colorMode.textcolor,
+    maxtextcolor = "orange",
         thresholds = {
-            { value = 89,  textcolor = "white" },
-            { value = 90,  textcolor = "yellow" },
-            { value = 100, textcolor = "red"    }
+            { value = 89,  fillcolor = "green"  },
+            { value = 90,  fillcolor = "yellow" },
+            { value = 100, fillcolor = "red"    }
         }
     },
 
     -- Current
-    {col = 3, row = 8, rowspan = 2,
-     type = "text",
-     subtype = "telemetry",
-     source = "current",
-     title = "CURRENT", 
-     titlepos = "bottom", 
-     bgcolor = "black",
-     transform = "floor",
-     font = "FONT_XL",
+    {col = 4, row = 3, rowspan = 4,
+    type = "gauge",
+    subtype = "arc",
+    source = "current",
+    arcmax = true,
+    title = "CURRENT", 
+    titlepos = "bottom", 
+    transform = "floor",
+    thickness = 12,
+    font = "FONT_L",
+    maxprefix = "Max: ",
+    maxpaddingtop = 22,
+    min = 0,
+    max = 300,
+    bgcolor = colorMode.bgcolor,
+    titlecolor = colorMode.titlecolor,
+    maxtextcolor = "orange",
         thresholds = {
-            { value = 199, textcolor = "white" },
-            { value = 200, textcolor = "yellow" },
-            { value = 300, textcolor = "red"    }
+            { value = 200, fillcolor = "purple" },
+            { value = 300, fillcolor = "red"    }
         }
     },
 
     -- BEC Voltage
-    {col = 3, row = 10, rowspan = 2,
+    {col = 2, row = 7, rowspan = 2,
      type = "text",
      subtype = "telemetry",
      source = "bec_voltage", 
      title = "BEC VOLTAGE", 
      titlepos = "bottom", 
-     bgcolor = "black",
+     bgcolor = colorMode.bgcolor,
+     titlecolor = colorMode.titlecolor,
      font = "FONT_XL",
      min = 3, 
      max = 13, 
         thresholds = {
             { value = 5.5, textcolor = "red"   },
-            { value = 13,  textcolor = "white" }
+            { value = 13,  textcolor = colorMode.textcolor }
         }
     },
 
     -- ESC Temp
-    {col = 4, colspan = 2, row = 4, rowspan = 6,
-     type = "gauge", 
-     subtype = "arc",
-     arcmax = true,
-     source = "temp_esc", 
-     title = "ESC TEMP", 
-     titlepos = "bottom", 
-     bgcolor = "black",
-     min = 0, 
-     max = 140, 
-     thickness = 15,
-     valuepaddingleft = 10,
-     maxpaddingleft = 10,
-     maxprefix = "Max: ",
-     maxpaddingtop = 27,
-     maxtextcolor = "orange",
-     font = "FONT_L",
-     transform = "floor", 
+    {col = 3, row = 3, rowspan = 4,
+    type = "gauge", 
+    subtype = "arc",
+    arcmax = true,
+    source = "temp_esc", 
+    title = "ESC TEMP", 
+    titlepos = "bottom", 
+    min = 0, 
+    max = 140, 
+    thickness = 12,
+    valuepaddingleft = 10,
+    maxpaddingleft = 10,
+    maxprefix = "Max: ",
+    maxpaddingtop = 22,
+    bgcolor = colorMode.bgcolor,
+    titlecolor = colorMode.titlecolor,
+    textcolor = colorMode.textcolor,
+    maxtextcolor = "orange",
+    font = "FONT_L",
+    transform = "floor", 
         thresholds = {
             { value = 70,  fillcolor = "green"  },
             { value = 90,  fillcolor = "orange" },
@@ -166,34 +219,38 @@ local boxes = {
     },
     
     -- Rate Profile
-    {col = 4, row = 10, rowspan = 2,
-     type = "text",
-     subtype = "telemetry",
-     source = "rate_profile",    
-     title = "RATES",
-     titlepos = "bottom",
-     transform = "floor",
-     font = "FONT_XL",
-     bgcolor = "black",
+    {col = 3, row = 7, rowspan = 2,
+    type = "text",
+    subtype = "telemetry",
+    source = "rate_profile",    
+    title = "RATES",
+    titlepos = "bottom",
+    transform = "floor",
+    font = "FONT_XL",
+    bgcolor = colorMode.bgcolor,
+    titlecolor = colorMode.titlecolor,
+    textcolor = colorMode.textcolor,
         thresholds = {
-            { value = 1.5, textcolor = "yellow" },
+            { value = 1.5, textcolor = "blue" },
             { value = 2.5, textcolor = "orange" },
             { value = 6,   textcolor = "green"  }
         }
     },
 
     -- PID Profile
-    {col = 5, row = 10, rowspan = 2,
-     type = "text",
-     subtype = "telemetry",
-     source = "pid_profile",    
-     title = "PROFILE",
-     titlepos = "bottom",
-     transform = "floor",
-     font = "FONT_XL",
-     bgcolor = "black",
+    {col = 4, row = 7, rowspan = 2,
+    type = "text",
+    subtype = "telemetry",
+    source = "pid_profile",    
+    title = "PROFILE",
+    titlepos = "bottom",
+    transform = "floor",
+    font = "FONT_XL",
+    bgcolor = colorMode.bgcolor,
+    titlecolor = colorMode.titlecolor,
+    textcolor = colorMode.textcolor,
         thresholds = {
-            { value = 1.5, textcolor = "yellow" },
+            { value = 1.5, textcolor = "blue" },
             { value = 2.5, textcolor = "orange" },
             { value = 6,   textcolor = "green"  }
         }
