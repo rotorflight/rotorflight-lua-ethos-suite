@@ -19,7 +19,10 @@
 
 ]] --
 
-if not rfsuite.utils.ethosVersionAtLeast() then
+local utils = rfsuite.utils
+local compiler = rfsuite.compiler.loadfile
+
+if not utils.ethosVersionAtLeast() then
     return
 end
 
@@ -50,7 +53,7 @@ local elrsSensor
 
 local tlm = system.getSource({category = CATEGORY_SYSTEM_EVENT, member = TELEMETRY_ACTIVE})
 
-if rfsuite.app.moduleList == nil then rfsuite.app.moduleList = rfsuite.utils.findModules() end
+if rfsuite.app.moduleList == nil then rfsuite.app.moduleList = utils.findModules() end
 
 -- Modified findTasks to return metadata for caching
 function tasks.findTasks()
@@ -61,16 +64,16 @@ function tasks.findTasks()
     for _, v in pairs(system.listFiles(tasks_path)) do
         if v ~= ".." and v ~= "." and not v:match("%.%a+$") then
             local init_path = tasks_path .. v .. '/init.lua'
-            local func, err = rfsuite.compiler.loadfile(init_path)
+            local func, err = compiler(init_path)
 
             if err then
-                rfsuite.utils.log("Error loading " .. init_path .. ": " .. err, "info")
+                utils.log("Error loading " .. init_path .. ": " .. err, "info")
             end
 
             if func then
                 local tconfig = func()
                 if type(tconfig) ~= "table" or not tconfig.interval or not tconfig.script then
-                    rfsuite.utils.log("Invalid configuration in " .. init_path, "debug")
+                    utils.log("Invalid configuration in " .. init_path, "debug")
                 else
                     local task = {
                         name = v,
@@ -95,11 +98,11 @@ function tasks.findTasks()
 
                     local script = tasks_path .. v .. '/' .. tconfig.script
                     -- try loading directly, no extra open()
-                    local fn, loadErr = rfsuite.compiler.loadfile(script)
+                    local fn, loadErr = compiler(script)
                     if fn then
                         tasks[v] = fn(config)
                     else
-                        rfsuite.utils.log(
+                        utils.log(
                             "Failed to load task script " .. script .. ": " .. loadErr,
                             "warn"
                         )
@@ -125,7 +128,7 @@ function tasks.active()
 end
 
 local function setOffline()
-    --rfsuite.utils.log("Telemetry not active.", "info")
+    --utils.log("Telemetry not active.", "info")
     rfsuite.session.telemetryState = false
     rfsuite.session.telemetryType = nil
     rfsuite.session.telemetryTypeChanged = false
@@ -152,7 +155,7 @@ function tasks.wakeup()
     rfsuite.clock = os.clock()  -- Ensure rfsuite.clock is updated
 
     if ethosVersionGood == nil then
-        ethosVersionGood = rfsuite.utils.ethosVersionAtLeast()
+        ethosVersionGood = utils.ethosVersionAtLeast()
     end
 
     if not ethosVersionGood then
@@ -168,20 +171,20 @@ function tasks.wakeup()
             local ok, cached = pcall(rfsuite.compiler.dofile, cachePath)
             if ok and type(cached) == "table" then
                 taskMetadata = cached
-                rfsuite.utils.log("[cache] Loaded task metadata from cache","info")
+                utils.log("[cache] Loaded task metadata from cache","info")
             else
-                rfsuite.utils.log("[cache] Failed to load tasks cache","info")
+                utils.log("[cache] Failed to load tasks cache","info")
             end
         end
 
         if not taskMetadata then
             taskMetadata = tasks.findTasks()
-            rfsuite.utils.createCacheFile(taskMetadata, cacheFile)
-            rfsuite.utils.log("[cache] Created new tasks cache file","info")
+            utils.createCacheFile(taskMetadata, cacheFile)
+            utils.log("[cache] Created new tasks cache file","info")
         else
             for name, meta in pairs(taskMetadata) do
                 local script = "tasks/" .. name .. "/" .. meta.script
-                local module = assert(rfsuite.compiler.loadfile(script))(config)
+                local module = assert(compiler(script))(config)
 
                 tasks[name] = module
                 table.insert(tasksList, {
@@ -248,7 +251,7 @@ function tasks.wakeup()
             end
         end
         tasksPerCycle = math.ceil(count * taskSchedulerPercentage)
-        --rfsuite.utils.log("Tasks per cycle (excluding always_run): " .. tasksPerCycle, "debug")
+        --utils.log("Tasks per cycle (excluding always_run): " .. tasksPerCycle, "debug")
     end
 
     -- Helper function to determine if a task can run
@@ -273,7 +276,7 @@ function tasks.wakeup()
             local elapsed = now - task.last_run
             if elapsed >= task.interval then
                 table.insert(overdueTasks, task)  -- must run
-                --rfsuite.utils.log("Warning: Task " .. task.name .. " overdue by " .. elapsed .. "s", "info")
+                --utils.log("Warning: Task " .. task.name .. " overdue by " .. elapsed .. "s", "info")
             else
                 local weight = task.priority or 1
                 for _ = 1, weight do
@@ -288,7 +291,7 @@ function tasks.wakeup()
         if tasks[task.name].wakeup then
             tasks[task.name].wakeup()
             task.last_run = now
-            --rfsuite.utils.log("Running overdue task: " .. task.name, "info")
+            --utils.log("Running overdue task: " .. task.name, "info")
         end
     end
 
@@ -302,7 +305,7 @@ function tasks.wakeup()
         if tasks[task.name].wakeup then
             tasks[task.name].wakeup()
             task.last_run = now
-            --rfsuite.utils.log("Running weighted task: " .. task.name, "info")
+            --utils.log("Running weighted task: " .. task.name, "info")
         end
 
         -- Prevent duplicates
@@ -318,7 +321,7 @@ end
 
 -- call a reset function on all tasks if it exists
 function tasks.reset()
-    rfsuite.utils.log("Reset all tasks", "info")
+    utils.log("Reset all tasks", "info")
     for _, task in ipairs(tasksList) do
         if tasks[task.name].reset then
             tasks[task.name].reset()
