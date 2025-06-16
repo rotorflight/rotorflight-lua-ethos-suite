@@ -68,6 +68,12 @@
 
 local msp = {}
 
+-- container vars
+local log
+local tasks 
+
+local firstWakeup = true
+
 local msp_sensors = {
     DATAFLASH_SUMMARY = {
         interval_armed = -1,
@@ -141,8 +147,15 @@ end
 local lastWakeupTime = 0
 function msp.wakeup()
 
+    if firstWakeup then
+        log = rfsuite.utils.log
+        tasks = rfsuite.tasks
+        firstWakeup = false
+    end
+
+
     if rfsuite.session.apiVersion == nil then
-        rfsuite.utils.log("MSP API version not set; skipping MSP sensors", "debug")
+        log("MSP API version not set; skipping MSP sensors", "debug")
         rfsuite.session.resetMSPSensors = true  -- Reset on next wakeup
         return
     end
@@ -156,12 +169,12 @@ function msp.wakeup()
     if (now - lastWakeupTime) < 2 then return end
     lastWakeupTime = now
 
-    if not rfsuite.tasks.msp.mspQueue:isProcessed() then
-        rfsuite.utils.log("MSP queue busy.. skipping dynamic msp sensors", "info")
+    if not tasks.msp.mspQueue:isProcessed() then
+        log("MSP queue busy.. skipping dynamic msp sensors", "info")
         return
     end
 
-    local armSource = rfsuite.tasks.telemetry.getSensorSource("armflags")
+    local armSource = tasks.telemetry.getSensorSource("armflags")
     if not armSource then return end
     local isArmed = armSource:value()
     local isAdmin = rfsuite.app.guiIsRunning
@@ -193,9 +206,9 @@ function msp.wakeup()
         if interval > 0 and (now - api_meta.last_time) >= interval then
             api_meta.last_time = now
 
-            rfsuite.utils.log("MSP API: " .. api_name .. " interval: " .. interval, "debug")
+            log("MSP API: " .. api_name .. " interval: " .. interval, "debug")
 
-            local API = rfsuite.tasks.msp.api.load(api_name)
+            local API = tasks.msp.api.load(api_name)
             API.setCompleteHandler(function(self, buf)
                 for field_key, meta in pairs(fields) do
                     local value = API.readValue(field_key)
