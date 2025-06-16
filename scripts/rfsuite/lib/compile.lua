@@ -136,7 +136,7 @@ local lru_cache = LRUCache()
 compile._queue = {}
 compile._queued_map = {}
 compile._lastCompile = 0
-compile._compileInterval = 5 -- seconds
+compile._compileInterval = 2 -- seconds
 
 function compile._enqueue(script, cache_path, cache_fname)
   if not compile._queued_map[cache_fname] then
@@ -167,36 +167,95 @@ function compile.tick()
   end
 end
 
+-- helper: compile exactly one queued item, if any
+local function process_one_queued()
+  local entry = table.remove(compile._queue, 1)
+  if not entry then return end
+  local script, cache_path, cache_fname = table.unpack(entry)
+  local ok, err = pcall(system.compile, script)
+  if ok then
+    local tmp = script .. "c"
+    if os.rename(tmp, cache_path) then
+      disk_cache[cache_fname] = true
+    else
+      -- rename failed; leave tmp for next tick
+    end
+  else
+    -- compile error; you can log err here if desired
+  end
+end
+
 function compile.loadfile(script)
+  -- Optional timing log start
   local startTime
   if logTimings then
     startTime = os.clock()
   end
 
-  local loader, which, cache_fname
+  -- Prepare cache keys
   local name_for_cache = strip_prefix(script)
   local sanitized      = name_for_cache:gsub("/", "_")
-  cache_fname          = sanitized .. "c"
+  local cache_fname    = sanitized .. "c"
   local cache_key      = cache_fname
+  local cache_path     = compiledDir .. cache_fname
 
-  loader = lru_cache:get(cache_key)
+  -- Check in-memory LRU cache first
+  local loader = lru_cache:get(cache_key)
   if loader then
     which = "in-memory"
   else
     if not rfsuite.preferences.developer.compile then
+      -- No compile caching requested
       loader = loadfile(script)
       which = "raw"
     else
-      local cache_path = compiledDir .. cache_fname
-      if disk_cache[cache_fname] then
-        loader = loadfile(cache_path)
-        which = "compiled"
+      local now = os.clock()
+
+      if (now - compile._startTime) >= compile._startupDelay then
+        -- === Post-startup: instant on-access ===
+        if disk_cache[cache_fname] then
+          -- Compiled file already exists: just load it
+          loader = loadfile(cache_path)
+          which = "compiled (cached)"
+        else
+          -- No compiled cache yet: compile once, then load
+          local ok, compile_err = pcall(system.compile, script)
+          if ok then
+            local tmp_path = script .. "c"
+            local renamed, rename_err = os.rename(tmp_path, cache_path)
+            if renamed then
+              disk_cache[cache_fname] = true
+              loader = loadfile(cache_path)
+              which = "compiled (instant)"
+            else
+              -- rename failed: fall back to raw script, keep any existing cache untouched
+              loader = loadfile(script)
+              which  = ("raw (rename failed: %s)"):format(tostring(rename_err))
+            end
+          else
+            -- compile error: fallback to raw, leave cache untouched
+            loader = loadfile(script)
+            which  = ("raw (compile error: %s)"):format(tostring(compile_err))
+          end
+
+          process_one_queued()
+
+        end
+
       else
-        compile._enqueue(script, cache_path, cache_fname)
-        loader = loadfile(script)
-        which = "raw (queued for deferred compile)"
+        -- === During startupDelay: defer compilation ===
+        if disk_cache[cache_fname] then
+          loader = loadfile(cache_path)
+          which = "compiled"
+        else
+          compile._enqueue(script, cache_path, cache_fname)
+          loader = loadfile(script)
+          which = "raw (queued for deferred compile)"
+        end
       end
     end
+
+    -- Cache the loader in LRU for next time
     if loader then
       lru_cache:set(cache_key, loader)
     end
@@ -206,8 +265,21 @@ function compile.loadfile(script)
     return nil, ("Failed to load script '%s' (%s)"):format(script, which or "unknown")
   end
 
+  -- Optional timing log end
+  if logTimings and startTime then
+    local elapsed = os.clock() - startTime
+    if rfsuite and rfsuite.utils and rfsuite.utils.log then
+      rfsuite.utils.log(
+        ("Loaded '%s' [%s] in %.3f sec"):format(script, which, elapsed),
+        "debug"
+      )
+    end
+  end
+
   return loader
 end
+
+
 
 function compile.dofile(script, ...)
   local chunk = compile.loadfile(script)
