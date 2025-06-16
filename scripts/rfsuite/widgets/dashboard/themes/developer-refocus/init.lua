@@ -20,8 +20,8 @@
 local init = {
     name = "Developer Refocus Examples",                -- Theme name
     preflight = "preflight.lua",     -- Script to run before takeoff
-    inflight = "preflight.lua",       -- Script to run during flight
-    postflight = "preflight.lua",   -- Script to run after landing
+    inflight = "inflight.lua",       -- Script to run during flight
+    postflight = "postflight.lua",   -- Script to run after landing
     standalone = false,              -- If true, theme handles all rendering itself
     developer = true,                -- If true, theme is in only visible in developer mode
 }
