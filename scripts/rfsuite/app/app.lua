@@ -215,7 +215,7 @@ app.dialogs.progressDisplay = false
 app.dialogs.progressWatchDog = nil
 app.dialogs.progressCounter = 0
 app.dialogs.progressRateLimit = rfsuite.clock
-app.dialogs.progressRate = 0.1 
+app.dialogs.progressRate = 0.25 
 
 --[[
     This section of the code initializes several variables related to the progress of ESC (Electronic Speed Controller) operations in the app.
@@ -251,7 +251,7 @@ app.dialogs.saveDisplay = false
 app.dialogs.saveWatchDog = nil
 app.dialogs.saveProgressCounter = 0
 app.dialogs.saveRateLimit = rfsuite.clock
-app.dialogs.saveRate = 0.1
+app.dialogs.saveRate = 0.25
 
 --[[
     Initializes the 'nolink' dialog properties within the 'app' namespace.
@@ -267,7 +267,7 @@ app.dialogs.nolink = false
 app.dialogs.nolinkDisplay = false
 app.dialogs.nolinkValueCounter = 0
 app.dialogs.nolinkRateLimit = rfsuite.clock
-app.dialogs.nolinkRate = 0.1 
+app.dialogs.nolinkRate = 0.25
 
 --[[
     This code snippet initializes two boolean flags within the `app.dialogs` table:

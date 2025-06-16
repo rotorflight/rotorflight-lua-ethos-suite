@@ -89,7 +89,7 @@ local function postLoad(self)
 
     local v = apidata.values[apidata.api[1]].rates_type
     
-    rfsuite.utils.log("Active Rate Table: " .. rfsuite.session.activeRateTable,"info")
+    rfsuite.utils.log("Active Rate Table: " .. rfsuite.session.activeRateTable,"debug")
 
     if v ~= rfsuite.session.activeRateTable then
         rfsuite.utils.log("Switching Rate Table: " .. v,"info")
