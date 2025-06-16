@@ -104,6 +104,7 @@ local boxes = {
         max = 140,
         transform = "floor", 
         fillbgcolor = "lightgrey",
+        thickness = 10,
         thresholds = {
             { value = 70,  fillcolor = "green"  },
             { value = 90,  fillcolor = "orange" },
@@ -116,9 +117,8 @@ local boxes = {
         type = "dial",
         subtype = "rainbow",
         col = 2, row = 2,
-        title = "Fuel",
+        title = "FUEL",
         showvalue = false,
-        valuepaddingtop = 16,
         transform = "floor",
         titlepos = "bottom",
         source = "fuel",
@@ -232,45 +232,14 @@ local boxes = {
             }
         },        
     },
-
-    -- ARC MAX GAUGE
-    {
-        type = "gauge",
-        subtype = "arc",
-        arcmax = true,
-        col = 3, row = 2, rowspan = 2,
-        source = "temp_esc", 
-        title = "ESC TEMP", 
-        titlepos = "bottom",
-        min = 0, 
-        max = 140, 
-        textcolor = "white", 
-        font = "FONT_STD", 
-        transform = "floor", 
-        fillbgcolor = "lightgrey",
-        valuepaddingleft = 10,
-        maxprefix = "Max: ",
-        maxpaddingleft = 10,
-        thickness = 16,
-        thresholds = {
-            { value = 70,  fillcolor = "green", maxtextcolor = "green"},
-            { value = 90,  fillcolor = "orange", maxtextcolor = "orange"},
-            { value = 140, fillcolor = "red", maxtextcolor = "red"}
-        }
-    },
 }
 
 return {
     layout = layout,
     boxes = boxes,
-    wakeup = wakeup,
-    event = event,
-    paint = paint,
-    overlayMessage = nil,
-    customRenderFunction = customRenderFunction,
     scheduler = {
         wakeup_interval = 0.1,          -- Interval (seconds) to run wakeup script when display is visible
         wakeup_interval_bg = 5,         -- (optional: run wakeup this often when not visible; set nil/empty to skip)
         paint_interval = 0.1,            -- Interval (seconds) to run paint script when display is visible 
-    }    
+    }  
 }
