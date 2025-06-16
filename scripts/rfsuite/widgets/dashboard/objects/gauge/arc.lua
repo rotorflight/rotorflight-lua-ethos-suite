@@ -34,6 +34,7 @@
     valuepaddingbottom  : number    -- (Optional) Bottom padding for value
 
     -- Maxval parameters
+    arcmax              : bool      -- (Optional) Draw arcmac gauge within the outer arc (false by default)
     maxfont             : font      -- (Optional) Font for max value label (e.g., FONT_XS, FONT_S, FONT_M, default: FONT_S)
     maxtextcolor        : color     -- (Optional) Max text color (theme/text fallback)
     maxpadding          : number    -- (Optional) Padding (Y-offset) below arc center for max value label (default: 0)
