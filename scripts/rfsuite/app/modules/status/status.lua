@@ -139,7 +139,7 @@ local function wakeup()
                 getDataflashSummary()
 
                 if status.armingDisableFlags ~= nil then
-                    local value = rfsuite.app.utils.armingDisableFlagsToString(status.armingDisableFlags)
+                    local value = rfsuite.utils.armingDisableFlagsToString(status.armingDisableFlags)
                     rfsuite.app.formFields[1]:value(value)
                 end
 

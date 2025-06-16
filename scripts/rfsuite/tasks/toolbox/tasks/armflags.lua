@@ -31,7 +31,7 @@ function armflags.wakeup()
     -- Try to use arm disable reason, if present and not "OK"
     if disableflags ~= nil then
         disableflags = math.floor(disableflags)
-        local reason = rfsuite.app.utils.armingDisableFlagsToString(disableflags)
+        local reason = rfsuite.utils.armingDisableFlagsToString(disableflags)
         if reason and reason ~= "OK" then
             displayValue = reason
             showReason = true

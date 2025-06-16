@@ -103,7 +103,7 @@ app.triggers = triggers
     and the result is assigned to app.ui. The config parameter is passed to the loaded file.
 
 ]]
-app.ui = {}
+app.ui = nil
 app.ui = assert(compile("app/lib/ui.lua"))(config)
 
 
@@ -112,8 +112,8 @@ app.ui = assert(compile("app/lib/ui.lua"))(config)
     The utility functions are loaded from "app/lib/utils.lua" and are passed the 'config' parameter.
     If the file cannot be loaded, an error will be thrown.
 ]]
-app.utils = {}
-app.utils = assert(compile("app/lib/utils.lua"))(config)
+app.utils = nil
+
 
 
 --[[
@@ -138,8 +138,6 @@ app.lastLabel: Stores the last accessed label.
 app.NewRateTable: Table to store new rate data.
 app.RateTable: Table to store rate data.
 app.fieldHelpTxt: Stores help text for fields.
-app.protocol: Table to store protocol data.
-app.protocolTransports: Table to store protocol transport data.
 app.radio: Table to store radio data.
 app.sensor: Table to store sensor data.
 app.init: Initialization function.
@@ -170,8 +168,6 @@ app.lastLabel = nil
 app.NewRateTable = nil
 app.RateTable = nil
 app.fieldHelpTxt = nil
-app.protocol = {}
-app.protocolTransports = {}
 app.radio = {}
 app.sensor = {}
 app.init = nil
@@ -281,72 +277,6 @@ app.dialogs.nolinkRate = 0.1
 app.dialogs.badversion = false
 app.dialogs.badversionDisplay = false
 
---[[
-    Function: app.getRSSI
-    Description: Retrieves the RSSI (Received Signal Strength Indicator) value.
-    Returns 100 if the system is in simulation mode, the RSSI sensor check is skipped, or the app is in offline mode.
-    Otherwise, returns 100 if telemetry is active, and 0 if it is not.
-    Returns:
-        number - The RSSI value (100 or 0).
-]]
-function app.getRSSI()
-
-    if rfsuite.simevent.rflink == 1 then
-        return 0
-    end
-
-    if app.offlineMode == true then return 100 end
-
-
-    if rfsuite.session.telemetryState then
-        return 100
-    else
-        return 0
-    end
-end
-
-
---[[
-    Function: app.resetState
-    Description: Resets the application state by initializing various configuration settings, triggers, dialogs, and session variables to their default values. Also, it forces garbage collection to free up memory.
-    Parameters: None
-    Returns: None
-]]
-function app.resetState()
-
-    config.useCompiler = true
-    rfsuite.config.useCompiler = true
-    pageLoaded = 100
-    pageTitle = nil
-    pageFile = nil
-    app.triggers.exitAPP = false
-    app.triggers.noRFMsg = false
-    app.dialogs.nolinkDisplay = false
-    app.dialogs.nolinkValueCounter = 0
-    app.triggers.telemetryState = nil
-    app.dialogs.progressDisplayEsc = false
-    ELRS_PAUSE_TELEMETRY = false
-    CRSF_PAUSE_TELEMETRY = false
-    app.audio = {}
-    app.triggers.wasConnected = false
-    app.triggers.invalidConnectionSetup = false
-    rfsuite.app.triggers.profileswitchLast = nil
-    rfsuite.session.activeProfileLast = nil
-    rfsuite.session.activeProfile = nil
-    rfsuite.session.activeRateProfile = nil
-    rfsuite.session.activeRateProfileLast = nil
-    rfsuite.session.activeProfile = nil
-    rfsuite.session.activeRateTable = nil
-    rfsuite.app.triggers.disableRssiTimeout = false
-    collectgarbage()
-end
-
-
--- Retrieves the current window size from the LCD.
--- @return The window size as provided by lcd.getWindowSize().
-function app.getWindowSize()
-    return lcd.getWindowSize()
-end
 
 -- Function to invalidate the pages variable.
 -- Typically called after writing MSP data.
@@ -953,7 +883,7 @@ function app.updateTelemetryState()
     if system:getVersion().simulation ~= true then
         if not rfsuite.session.telemetrySensor then
             app.triggers.telemetryState = app.telemetryStatus.noSensor
-        elseif app.getRSSI() == 0 then
+        elseif app.utils.getRSSI() == 0 then
             app.triggers.telemetryState = app.telemetryStatus.noTelemetry
         else
             app.triggers.telemetryState = app.telemetryStatus.ok
@@ -1141,7 +1071,7 @@ app._uiTasks = {
     local moduleEnabled = model.getModule(0):enable() or model.getModule(1):enable()
     local sensorSport = system.getSource({appId=0xF101})
     local sensorElrs  = system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1})
-    local curRssi    = app.getRSSI()
+    local curRssi    = app.utils.getRSSI()
     local invalid, abort = false, false
     local msg = i18n("app.msg_connecting_to_fbl")
     if not utils.ethosVersionAtLeast() then
@@ -1448,7 +1378,18 @@ function app.create()
 
     app.uiState = app.uiStatus.init
 
-    app.MainMenu  = assert(compile("app/modules/init.lua"))()
+    if not app.MainMenu then
+        app.MainMenu  = assert(compile("app/modules/init.lua"))()
+    end
+
+    if not app.ui then
+        app.ui = assert(compile("app/lib/ui.lua"))(config)
+    end
+
+    if not app.utils then
+        app.utils = assert(compile("app/lib/utils.lua"))(config)
+    end    
+
     app.ui.openMainMenu()
 
 end
@@ -1549,6 +1490,8 @@ Returns:
 ]]
 function app.close()
 
+    rfsuite.utils.reportMemoryUsage("closing application: start")
+
     -- save user preferences
     local userpref_file = "SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini"
     rfsuite.ini.save_ini_file(userpref_file, rfsuite.preferences)
@@ -1565,11 +1508,67 @@ function app.close()
     if app.dialogs.save then app.ui.progressDisplaySaveClose() end
     if app.dialogs.noLink then app.ui.progressNolinkDisplayClose() end
 
-    -- clear image cache
-    rfsuite.app.gfx_buttons = {}
 
+    -- Reset configuration and compiler flags
+    config.useCompiler = true
+    rfsuite.config.useCompiler = true
+
+    -- Reset page and navigation state
+    pageLoaded = 100
+    pageTitle = nil
+    pageFile = nil
+    app.Page = {}
+    app.formFields = {}
+    app.formNavigationFields = {}
+    app.gfx_buttons = {}
+    app.formLines = nil
+    app.MainMenu = nil
+    app.formNavigationFields = {}
+    app.PageTmp = nil
+    app.moduleList = nil
+    app.utils = nil
+    app.ui = nil
+
+    -- Reset triggers
+    app.triggers.exitAPP = false
+    app.triggers.noRFMsg = false
+    app.triggers.telemetryState = nil
+    app.triggers.wasConnected = false
+    app.triggers.invalidConnectionSetup = false
+    app.triggers.disableRssiTimeout = false
+
+    -- Reset dialogs
+    app.dialogs.nolinkDisplay = false
+    app.dialogs.nolinkValueCounter = 0
+    app.dialogs.progressDisplayEsc = false
+
+    -- Reset audio
+    app.audio = {}
+
+    -- Reset telemetry and protocol state
+    ELRS_PAUSE_TELEMETRY = false
+    CRSF_PAUSE_TELEMETRY = false
+
+    -- Reset profile/rate state
+    rfsuite.app.triggers.profileswitchLast = nil
+    rfsuite.session.activeProfileLast = nil
+    rfsuite.session.activeProfile = nil
+    rfsuite.session.activeRateProfile = nil
+    rfsuite.session.activeRateProfileLast = nil
+    rfsuite.session.activeRateTable = nil
+
+    -- Cleanup
+    collectgarbage()
     invalidatePages()
-    app.resetState()
+
+    -- print out whats left
+    --log("Application closed. Remaining tables:", "info")
+    --for i,v in pairs(rfsuite.app) do
+    --        log("   ->" .. tostring(i) .. " = " .. tostring(v), "info")
+    --end
+
+    rfsuite.utils.reportMemoryUsage("closing application: end")    
+
     system.exit()
     return true
 end

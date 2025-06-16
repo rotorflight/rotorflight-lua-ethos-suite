@@ -24,38 +24,36 @@ local i18n = rfsuite.i18n.get
 local arg = {...}
 local config = arg[1]
 
---- Converts arming disable flags into a human-readable string representation.
----
---- This function iterates through the bits of the provided `flags` integer and checks
---- which flags are set. For each set flag, it appends the corresponding localized
---- string to the result. If no flags are set, it returns a localized "OK" message.
----
---- @param flags number The bitfield representing arming disable flags.
---- @return string A comma-separated string of human-readable flag descriptions, or "OK" if no flags are set.
-function utils.armingDisableFlagsToString(flags)
-    if flags == nil then
-        return i18n("app.modules.status.ok"):upper()
+
+--[[
+    Function: app.utils.getRSSI
+    Description: Retrieves the RSSI (Received Signal Strength Indicator) value.
+    Returns 100 if the system is in simulation mode, the RSSI sensor check is skipped, or the app is in offline mode.
+    Otherwise, returns 100 if telemetry is active, and 0 if it is not.
+    Returns:
+        number - The RSSI value (100 or 0).
+]]
+function utils.getRSSI()
+
+    if rfsuite.simevent.rflink == 1 then
+        return 0
     end
 
-    local names = {}
-    for i = 0, 25 do
-        if (flags & (1 << i)) ~= 0 then
-            local key = "app.modules.status.arming_disable_flag_" .. i
-            local name = i18n(key)
-            if name and name ~= "" then
-                table.insert(names, name)
-            end
-        end
-    end
+    if rfsuite.app.offlineMode == true then return 100 end
 
-    if #names == 0 then
-        return i18n("app.modules.status.ok"):upper()
-    end
 
-    return table.concat(names, ", "):upper()
+    if rfsuite.session.telemetryState then
+        return 100
+    else
+        return 0
+    end
 end
 
-
+-- Retrieves the current window size from the LCD.
+-- @return The window size as provided by lcd.getWindowSize().
+function utils.getWindowSize()
+    return lcd.getWindowSize()
+end
 
 --[[
     Converts a table of values into a table of tables, where each inner table contains the original value and an incremented index.

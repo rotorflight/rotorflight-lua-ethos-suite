@@ -42,7 +42,7 @@ local render = {}
 local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
-local armingDisableFlagsToString = rfsuite.app.utils.armingDisableFlagsToString
+local armingDisableFlagsToString = rfsuite.utils.armingDisableFlagsToString
 local lastDisplayValue = nil
 
 function render.dirty(box)
