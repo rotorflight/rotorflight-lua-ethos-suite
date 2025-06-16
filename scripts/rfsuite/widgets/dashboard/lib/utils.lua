@@ -231,15 +231,15 @@ function utils.resolveColor(value, variantFactor)
         coral           = {255, 127, 80},
         salmon          = {250, 128, 114},
         mint            = {62, 180, 137},
-        lightgreen      = {144, 238, 144},  -- light pastel green
-        darkgreen       = {0, 100, 0},      -- deep forest green
-        lightred        = {255, 102, 102},  -- light salmon red
-        darkred         = {139, 0, 0},      -- dark brick red
-        lightblue       = {173, 216, 230},  -- light sky blue
-        darkblue        = {0, 0, 139},      -- deep navy blue
-        lightpurple     = {216, 191, 216},  -- thistle / lavender purple
-        darkpurple      = {48, 25, 52},     -- very dark plum purple
-        lightyellow     = {255, 255, 224}, -- light cream yellow (like lemon chiffon)
+        lightgreen      = {144, 238, 144},
+        darkgreen       = {0, 100, 0},
+        lightred        = {255, 102, 102},
+        darkred         = {139, 0, 0},
+        lightblue       = {173, 216, 230},
+        darkblue        = {0, 0, 139},
+        lightpurple     = {216, 191, 216},
+        darkpurple      = {48, 25, 52},
+        lightyellow     = {255, 255, 224},
         darkyellow      = {204, 204, 0},
     }
 
