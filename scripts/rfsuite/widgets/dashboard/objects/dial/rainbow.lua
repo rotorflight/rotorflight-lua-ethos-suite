@@ -8,7 +8,6 @@
 
     -- title parameters
     title                   : string    -- (Optional) Title text
-    titlepos                : string    -- (Optional) "top" or "bottom" (defaults to "top" if omitted)
     titlealign              : string    -- (Optional) "center", "left", "right"
     titlefont               : font      -- (Optional) Title font (e.g., font_l, font_xl)
     titlespacing            : number    -- (Optional) Gap below title
@@ -79,33 +78,38 @@ function render.dirty(box)
     return false
 end
 
--- Arc drawing helper
-local function drawArc(cx, cy, radius, thickness, angleStart, angleEnd, fillcolor, cachedStepRad)
-    local step = 1
-    local rad_thick = thickness / 2
-    local aStart = math.rad(angleStart)
-    local aEnd = math.rad(angleEnd)
-    if aEnd > aStart then
-        aEnd = aEnd - 2 * math.pi
+-- Draw a rainbow arc using drawAnnulusSector for each colored band
+local function drawRainbowArc(cx, cy, radius, thickness, startAngle, endAngle, colors)
+    local inner = math.max(1, radius - thickness)
+    local outer = radius
+    local segmentCount = #colors
+    if segmentCount == 0 then return end
+
+    -- Normalize and unwrap angles
+    startAngle = startAngle % 360
+    endAngle = endAngle % 360
+    if endAngle <= startAngle then
+        endAngle = endAngle + 360
     end
-    lcd.color(fillcolor or lcd.RGB(255,128,0))
-    local stepRad = cachedStepRad or math.rad(step)
-    for a = aStart, aEnd, -stepRad do
-        local x = cx + radius * math.cos(a)
-        local y = cy - radius * math.sin(a)
-        lcd.drawFilledCircle(x, y, rad_thick)
+
+    local angleSweep = endAngle - startAngle
+    local anglePerSegment = angleSweep / segmentCount
+
+    for i, color in ipairs(colors) do
+        local segStart = startAngle + (i - 1) * anglePerSegment
+        local segEnd   = startAngle + i * anglePerSegment
+
+        lcd.color(color)
+        lcd.drawAnnulusSector(cx, cy, inner, outer, segStart, segEnd)
     end
-    local x_end = cx + radius * math.cos(aEnd)
-    local y_end = cy - radius * math.sin(aEnd)
-    lcd.drawFilledCircle(x_end, y_end, rad_thick)
 end
 
 function render.wakeup(box, telemetry)
     -- Value extraction
     local source = getParam(box, "source")
-    local value = nil
+    local value, _, dynamicUnit
     if telemetry and source then
-        value = telemetry.getSensor(source)
+        value, _, dynamicUnit = telemetry.getSensor(source)
     end
 
     -- Dynamic unit logic (User can force a unit or omit unit using "" to hide)
@@ -113,16 +117,13 @@ function render.wakeup(box, telemetry)
     local unit
 
     if manualUnit ~= nil then
-        unit = manualUnit
+        unit = manualUnit  -- use user value, even if ""
+    elseif dynamicUnit ~= nil then
+        unit = dynamicUnit
+    elseif source and telemetry and telemetry.sensorTable[source] then
+        unit = telemetry.sensorTable[source].unit_string or ""
     else
-        local displayValue, _, dynamicUnit = telemetry.getSensor(source)
-        if dynamicUnit ~= nil then
-            unit = dynamicUnit
-        elseif source and telemetry and telemetry.sensorTable[source] then
-            unit = telemetry.sensorTable[source].unit_string or ""
-        else
-            unit = ""
-        end
+        unit = ""
     end
 
     -- Calculate percent fill for the gauge (clamped 0-1)
@@ -161,12 +162,12 @@ function render.wakeup(box, telemetry)
         min                 = min,
         max                 = max,
         showvalue           = showvalue,
+        titlepos            = "bottom",
         font                = getParam(box, "font") or "FONT_STD",
         textcolor           = resolveThemeColor("textcolor", getParam(box, "textcolor")),
         fillbgcolor         = resolveThemeColor("fillbgcolor", getParam(box, "fillbgcolor")),
         bgcolor             = resolveThemeColor("bgcolor", getParam(box, "bgcolor")),
         title               = getParam(box, "title"),
-        titlepos            = getParam(box, "titlepos") or (getParam(box, "title") and "top"),
         titlefont           = getParam(box, "titlefont"),
         titlealign          = getParam(box, "titlealign"),
         titlespacing        = getParam(box, "titlespacing") or 0,
@@ -182,9 +183,9 @@ function render.wakeup(box, telemetry)
         valuepaddingright   = getParam(box, "valuepaddingright"),
         valuepaddingtop     = getParam(box, "valuepaddingtop"),
         valuepaddingbottom  = getParam(box, "valuepaddingbottom"),
-        bandlabeloffset     = getParam(box, "bandlabeloffset") or 18,
+        bandlabeloffset     = getParam(box, "bandlabeloffset") or 14,
         bandlabeloffsettop  = getParam(box, "bandlabeloffsettop") or 8,
-        bandlabelfont         = getParam(box, "bandlabelfont") or "FONT_XS",
+        bandlabelfont        = getParam(box, "bandlabelfont") or "FONT_XS",
         bandlabels          = getParam(box, "bandlabels") or { "Low", "Med", "High" },
         bandcolors          = resolveThemeColorArray("fillcolor", getParam(box, "bandcolors") or {"red", "orange", "green"}),
         needlethickness     = getParam(box, "needlethickness") or 5,
@@ -197,9 +198,9 @@ function render.paint(x, y, w, h, box)
     x, y = utils.applyOffset(x, y, box)
     local c = box._cache or {}
 
-    -- Calculate space above for band label subtext (single line, e.g. "Low/OK/High")
+    -- Calculate space above for band label subtext (single line, e.g. "Low/Med/High")
     lcd.font(_G[c.bandlabelfont] or FONT_XS)
-    local subtextHeight = select(2, lcd.getTextSize("OK")) + 2
+    local subtextHeight = select(2, lcd.getTextSize("Med")) + 2
 
     -- Calculate title height and allocate vertical regions for title, subtext, and arc
     local titleHeight = 0
@@ -209,27 +210,17 @@ function render.paint(x, y, w, h, box)
         titleHeight = (th or 0) + (c.titlespacing or 0) + (c.titlepaddingtop or 0) + (c.titlepaddingbottom or 0)
     end
 
-    local arcRegionY, arcRegionH
-    if c.titlepos == "bottom" then
-        arcRegionY = y + subtextHeight
-        arcRegionH = h - subtextHeight - titleHeight
-    elseif c.titlepos == "top" then
-        arcRegionY = y + titleHeight + subtextHeight
-        arcRegionH = h - titleHeight - subtextHeight
-    else
-        arcRegionY = y + subtextHeight
-        arcRegionH = h - subtextHeight
-    end
-
     -- Calculate available arc geometry to maximize arc size within widget region
+    local arcRegionY = y + subtextHeight
+    local arcRegionH = h - subtextHeight - titleHeight
     local arcMargin = 2
     local usableW = w - arcMargin * 2
     local usableH = arcRegionH - arcMargin
-    local thickness = c.thickness or math.max(6, math.min(usableW, usableH) * 0.20)
+    local thickness = c.thickness or math.max(6, math.min(usableW, usableH) * 0.25)
     local radius = math.min(usableW / 2, usableH) - (thickness / 2)
     if radius < 8 then radius = 8 end
     local cx = x + w / 2
-    local cy = arcRegionY + usableH + arcMargin / 2
+    local cy = arcRegionY + arcRegionH / 2 + 15
 
     -- Draw widget background
     if c.bgcolor then
@@ -239,20 +230,19 @@ function render.paint(x, y, w, h, box)
 
     -- Draw colored arc bands
     local bandCount = #c.bandlabels
-    local startAngle = 180
-    local sweep = 180
-    for i = 1, bandCount do
-        local segStart = startAngle - (i - 1) * (sweep / bandCount)
-        local segEnd   = startAngle - i * (sweep / bandCount)
-        drawArc(cx, cy, radius, thickness, segStart, segEnd, c.bandcolors[i])
+    local startAngle = 240
+    local endAngle = 120
+    if bandCount > 0 and c.bandcolors then
+        drawRainbowArc(cx, cy, radius, thickness, startAngle, endAngle, c.bandcolors)
     end
 
     -- Needle hub vertical offset
-    local needleHubYOffset = -6
+    local needleHubYOffset = 6
 
     -- Draw needle
     if c.percent then
-        local angleDeg = startAngle - sweep * c.percent
+        local angleSweep = (endAngle - startAngle + 360) % 360
+        local angleDeg = (startAngle + angleSweep * c.percent) % 360
         local step = 1
         local rad_thick = c.needlethickness / 2
         local needleLen = radius
@@ -268,23 +258,27 @@ function render.paint(x, y, w, h, box)
     end
 
     -- Draw band labels at the top of the arc
-    local bandlabeloffsettop = c.bandlabeloffsettop or 8
-    local bandlabeloffset    = c.bandlabeloffset or 18
+    local sweep = (endAngle - startAngle + 360) % 360
     lcd.font(_G[c.bandlabelfont] or FONT_XS)
 
+    -- Clockwise label shift in degrees
+    local angleOffset = -30
+
     for i = 1, bandCount do
-        local midAngle = startAngle - (i - 0.5) * (sweep / bandCount)
+        local midAngle = startAngle - (i - 0.5) * (sweep / bandCount) + angleOffset
         local degNorm = (midAngle + 360) % 360
+
         local labelRadius
-        
-        if degNorm > (90 - 10) and degNorm < (90 + 10) then
-            labelRadius = radius + thickness/2 + bandlabeloffsettop
+        if degNorm > 80 and degNorm < 100 then
+            labelRadius = radius + thickness / 2 + c.bandlabeloffsettop
         else
-            labelRadius = radius + thickness/2 + bandlabeloffset
+            labelRadius = radius + thickness / 2 + c.bandlabeloffset
         end
 
         local tx = cx + labelRadius * math.cos(math.rad(midAngle))
         local ty = cy - labelRadius * math.sin(math.rad(midAngle))
+        ty = ty + 12
+
         local label = c.bandlabels[i]
         if label then
             local tw, th = lcd.getTextSize(label)
