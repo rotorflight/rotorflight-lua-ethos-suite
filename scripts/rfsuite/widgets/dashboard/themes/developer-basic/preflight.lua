@@ -77,7 +77,7 @@ local boxes = {
             { value = 140, textcolor = "red"    }
         }
     },
-    { col = 1, row = 3, type = "text", subtype = "governor", title = "GOVERNOR", titlepos = "bottom", titlepos = "bottom",
+    { col = 1, row = 3, type = "text", subtype = "governor", title = "GOVERNOR", titlepos = "bottom", 
         thresholds = {
             { value = "DISARMED", textcolor = "red"    },
             { value = "OFF",      textcolor = "red"    },

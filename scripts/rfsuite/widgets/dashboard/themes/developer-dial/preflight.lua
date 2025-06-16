@@ -111,28 +111,17 @@ local boxes = {
         }
     },
 
-    -- ARCDIAL
+    -- RAINBOW
     {
         type = "dial",
         subtype = "rainbow",
         col = 2, row = 2,
         title = "Fuel",
+        showvalue = false,
+        valuepaddingtop = 16,
+        transform = "floor",
         titlepos = "bottom",
-        titlecolor = "white",
-        unit = "%",
         source = "fuel",
-        min = function() return 0 end,
-        max = function() return 100 end,
-        bandLabels = {"Low", "OK", "High"},
-        bandColors = {"red", "orange", "green"},
-        startangle = 180,
-        sweep = 180,
-        needlecolor = "black",
-        needlehubcolor = "red",
-        needlehubsize = 12,
-        needlethickness = 6,
-        aspect = "fit",
-        align = "center",
     },
 
     -- FUEL GAUGE

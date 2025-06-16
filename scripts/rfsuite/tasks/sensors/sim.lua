@@ -46,8 +46,7 @@ local dropList = {
     ["0x0B60"] = true, ["0x0D50"] = true, ["0x0D10"] = true,
     ["0x0D20"] = true, ["0x0D40"] = true, ["0x0D00"] = true,
     ["0x0D30"] = true, ["0x0D60"] = true, ["0x0D70"] = true,
-    ["0x0E60"] = true, ["0xF108"] = true, ["0x0730"] = true,
-    ["0x0B20"] = true, ["0x7360"] = true, ["0x0B60"] = true
+    ["0x0E60"] = true, ["0x7360"] = true,
 }
 
 local sensors = {
