@@ -518,119 +518,82 @@ end
 --
 -- Logging:
 --   - Logs info and error messages if loading or execution fails.
-local function load_state_script(theme_folder, state)
-    local usedFallback = false
-    local source, folder = theme_folder:match("([^/]+)/(.+)")
-    local themeBasePath = (source == "user") and themesUserPath or themesBasePath
+local function load_state_script(theme_folder, state, isFallback)
+    isFallback = isFallback or false
 
-    -- fallback if parsing failed
-    if not source or not folder then
-        theme_folder = dashboard.DEFAULT_THEME
-        source, folder = theme_folder:match("([^/]+)/(.+)")
-        themeBasePath = (source == "user") and themesUserPath or themesBasePath
-        usedFallback = true
-    end
+    local src, folder = theme_folder:match("([^/]+)/(.+)")
+    local base = (src == "user") and themesUserPath or themesBasePath
 
-    local function setCurrentWidgetPath()
-        dashboard.currentWidgetPath = source .. "/" .. folder
-    end
-
-    -- Try to load init.lua
-    local initPath = themeBasePath .. folder .. "/init.lua"
-    local initChunk, initErr = compile(initPath)
-
-    if not initChunk then
-        usedFallback = true
-        local fallbackSource, fallbackFolder = dashboard.DEFAULT_THEME:match("([^/]+)/(.+)")
-        local fallbackBasePath = (fallbackSource == "user") and themesUserPath or themesBasePath
-        local fallbackInitPath = fallbackBasePath .. fallbackFolder .. "/init.lua"
-
-        log("dashboard: Could not load init.lua for " .. tostring(folder) ..
-                          ". Falling back to default. Error: " .. tostring(initErr), "info")
-
-        initChunk, initErr = compile(fallbackInitPath)
-        if not initChunk then
-            log("dashboard: Could not load default theme's init.lua. Error: " .. tostring(initErr), "error")
-            dashboard.themeFallbackUsed[state] = true
-            dashboard.themeFallbackTime[state] = rfsuite.clock
-            return nil
+    -- if parsing failed, try default
+    if not src or not folder then
+        if not isFallback then
+            return load_state_script(dashboard.DEFAULT_THEME, state, true)
         end
-
-        source, folder = fallbackSource, fallbackFolder
-        themeBasePath = fallbackBasePath
-    end
-
-    local ok, initTable = pcall(initChunk)
-    if not ok or type(initTable) ~= "table" then
-        log("dashboard: Error running init.lua for " .. tostring(folder) .. ": " ..
-                          tostring(initTable) .. ". Falling back to default.", "error")
-
-        if theme_folder ~= dashboard.DEFAULT_THEME then
-            usedFallback = true
-            local fallbackSource, fallbackFolder = dashboard.DEFAULT_THEME:match("([^/]+)/(.+)")
-            local fallbackBasePath = (fallbackSource == "user") and themesUserPath or themesBasePath
-            local fallbackInitPath = fallbackBasePath .. fallbackFolder .. "/init.lua"
-            local fallbackChunk, fallbackErr = compile(fallbackInitPath)
-
-            if fallbackChunk then
-                ok, initTable = pcall(fallbackChunk)
-                if ok and type(initTable) == "table" then
-                    source, folder = fallbackSource, fallbackFolder
-                    themeBasePath = fallbackBasePath
-                else
-                    dashboard.themeFallbackUsed[state] = true
-                    dashboard.themeFallbackTime[state] = rfsuite.clock
-                    return nil
-                end
-            else
-                dashboard.themeFallbackUsed[state] = true
-                dashboard.themeFallbackTime[state] = rfsuite.clock
-                return nil
-            end
-        else
-            dashboard.themeFallbackUsed[state] = true
-            dashboard.themeFallbackTime[state] = rfsuite.clock
-            return nil
-        end
-    end
-
-    local scriptName = initTable[state]
-    if type(scriptName) ~= "string" or scriptName == "" then
-        scriptName = state .. ".lua"
-    end
-
-    local script_path = themeBasePath .. folder .. "/" .. scriptName
-    local chunk, err = compile(script_path)
-
-    if not chunk then
-        usedFallback = true
-        local fallbackPath = themesBasePath .. dashboard.DEFAULT_THEME:match("[^/]+/(.+)") .. "/" .. scriptName
-        chunk, err = compile(fallbackPath)
-        if not chunk then
-            log("dashboard: Could not load " .. scriptName .. " for " .. tostring(folder) ..
-                              " or default. Error: " .. tostring(err), "info")
-            dashboard.themeFallbackUsed[state] = true
-            dashboard.themeFallbackTime[state] = rfsuite.clock
-            return nil
-        end
-    end
-
-    if usedFallback then
+        -- default is broken too
         dashboard.themeFallbackUsed[state] = true
         dashboard.themeFallbackTime[state] = rfsuite.clock
-    else
-        dashboard.themeFallbackUsed[state] = false
-        dashboard.themeFallbackTime[state] = 0
+        return nil
     end
 
-    setCurrentWidgetPath()  -- <<< IMPORTANT: Set the correct widget path
+    -- helper to set the current widget path
+    local function setPath() dashboard.currentWidgetPath = src.."/"..folder end
 
+    -- 1) load init.lua
+    local initPath = base..folder.."/init.lua"
+    local initChunk, initErr = compile(initPath)
+    if not initChunk then
+        if not isFallback then
+            return load_state_script(dashboard.DEFAULT_THEME, state, true)
+        end
+        dashboard.themeFallbackUsed[state] = true
+        dashboard.themeFallbackTime[state] = rfsuite.clock
+        return nil
+    end
+
+    -- run init.lua
+    local ok, initTable = pcall(initChunk)
+    if not ok or type(initTable) ~= "table" then
+        if not isFallback then
+            return load_state_script(dashboard.DEFAULT_THEME, state, true)
+        end
+        dashboard.themeFallbackUsed[state] = true
+        dashboard.themeFallbackTime[state] = rfsuite.clock
+        return nil
+    end
+
+    -- decide which state file to load
+    local scriptName = (type(initTable[state])=="string" and initTable[state]~="") 
+                       and initTable[state] 
+                       or (state..".lua")
+    local scriptPath = base..folder.."/"..scriptName
+
+    -- 2) load the actual state script (or fallback to default)
+    local chunk, chunkErr = compile(scriptPath)
+    if not chunk then
+        if not isFallback then
+            return load_state_script(dashboard.DEFAULT_THEME, state, true)
+        end
+        -- even default missing? give up
+        log("dashboard: Could not load "..scriptName.." for "..folder.." or default: "..tostring(chunkErr), "info")
+        dashboard.themeFallbackUsed[state] = true
+        dashboard.themeFallbackTime[state] = rfsuite.clock
+        return nil
+    end
+
+    -- at this point, we successfully have a chunk; mark no fallback
+    dashboard.themeFallbackUsed[state] = (isFallback == true)
+    dashboard.themeFallbackTime[state] = isFallback and rfsuite.clock or 0
+    setPath()
+
+    -- if standalone, return the chunk itself; otherwise run it and return module
     if initTable.standalone then
         return chunk
     else
         local ok2, module = pcall(chunk)
         if not ok2 then
-            log("dashboard: Error running " .. scriptName .. ": " .. tostring(module), "error")
+            if not isFallback then
+                return load_state_script(dashboard.DEFAULT_THEME, state, true)
+            end
             dashboard.themeFallbackUsed[state] = true
             dashboard.themeFallbackTime[state] = rfsuite.clock
             return nil
@@ -1077,7 +1040,7 @@ function dashboard.wakeup(widget)
     local state = dashboard.flightmode or "preflight"
     local module = loadedStateModules[state]
 
-    if type(module.wakeup) == "function" then
+    if module and type(module.wakeup) == "function" then
             module.wakeup(widget)
     else
         callStateFunc("wakeup", widget)
