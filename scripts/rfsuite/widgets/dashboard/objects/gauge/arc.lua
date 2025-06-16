@@ -307,7 +307,7 @@ function render.paint(x, y, w, h, box)
     end
 
     -- Max value arc if enabled
-    if c.arcmax and c.maxval and c.max ~= c.min and c.maxPercent then
+    if c.arcmax and c.maxval and c.max ~= c.min and c.maxPercent > 0 then
         local innerRadius = radius * 0.74
         local innerThickness = thickness * 0.8
         local maxEndAngle = (startAngle + 270 * c.maxPercent) % 360
