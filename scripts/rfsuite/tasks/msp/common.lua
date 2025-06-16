@@ -188,8 +188,8 @@ end
         nil, nil, nil - If no valid reply is received within the time frame.
 ]]
 local function mspPollReply()
-    local startTime = os.clock()
-    while os.clock() - startTime < 0.05 do
+    local startTime = rfsuite.clock
+    while rfsuite.clock - startTime < 0.05 do
         local mspData = rfsuite.tasks.msp.protocol.mspPoll()
         if mspData and mspReceivedReply(mspData) then
             mspLastReq = 0

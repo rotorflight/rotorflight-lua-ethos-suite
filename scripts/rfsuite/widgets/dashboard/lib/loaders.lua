@@ -102,9 +102,9 @@ function loaders.staticLoader(dashboard, x, y, w, h)
 
 -- Animated dots below the logo
   dashboard._dots_index = dashboard._dots_index or 1
-  dashboard._dots_time = dashboard._dots_time or os.clock()
-  if os.clock() - dashboard._dots_time > 0.5 then
-    dashboard._dots_time = os.clock()
+  dashboard._dots_time = dashboard._dots_time or rfsuite.clock
+  if rfsuite.clock - dashboard._dots_time > 0.5 then
+    dashboard._dots_time = rfsuite.clock
     dashboard._dots_index = (dashboard._dots_index % 3) + 1
   end
 

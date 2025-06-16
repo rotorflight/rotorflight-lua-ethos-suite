@@ -2,9 +2,9 @@
 local SBUS_FUNCTIONMASK = 262144
 local triggerOverRide = false
 local triggerOverRideAll = false
-local lastServoCountTime = os.clock()
+local lastServoCountTime = rfsuite.clock
 local enableWakeup = false
-local wakeupScheduler = os.clock()
+local wakeupScheduler = rfsuite.clock
 local validSerialConfig = false
 local i18n = rfsuite.i18n.get
 local function openPage(pidx, title, script)
@@ -157,7 +157,7 @@ local function wakeup()
 
     if enableWakeup == true and validSerialConfig == false then
 
-        local now = os.clock()
+        local now = rfsuite.clock
         if (now - wakeupScheduler) >= 0.5 then
             wakeupScheduler = now
 

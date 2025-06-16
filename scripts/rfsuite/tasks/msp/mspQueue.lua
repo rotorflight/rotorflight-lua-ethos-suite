@@ -100,7 +100,7 @@ function MspQueueController:processQueue()
     end
 
     if not self.currentMessage then
-        self.currentMessageStartTime = os.clock()
+        self.currentMessageStartTime = rfsuite.clock
         self.currentMessage = popFirstElement(self.messageQueue)
         self.retryCount = 0
     end
@@ -110,10 +110,10 @@ function MspQueueController:processQueue()
 
     if not system:getVersion().simulation then
         -- we process on the actual radio
-        if not self.lastTimeCommandSent or self.lastTimeCommandSent + lastTimeInterval < os.clock() then
+        if not self.lastTimeCommandSent or self.lastTimeCommandSent + lastTimeInterval < rfsuite.clock then
             rfsuite.tasks.msp.protocol.mspWrite(self.currentMessage.command, self.currentMessage.payload or {})
-            self.lastTimeCommandSent = os.clock()
-            self.currentMessageStartTime = os.clock()
+            self.lastTimeCommandSent = rfsuite.clock
+            self.currentMessageStartTime = rfsuite.clock
             self.retryCount = self.retryCount + 1
 
             if rfsuite.app.Page and rfsuite.app.Page.mspRetry then rfsuite.app.Page.mspRetry(self) end
@@ -147,7 +147,7 @@ function MspQueueController:processQueue()
         end    
     end
 
-    if self.currentMessage and os.clock() - self.currentMessageStartTime > (self.currentMessage.timeout or self.timeout) then
+    if self.currentMessage and rfsuite.clock - self.currentMessageStartTime > (self.currentMessage.timeout or self.timeout) then
         if self.currentMessage.errorHandler then self.currentMessage:errorHandler() end
         rfsuite.utils.log("Message timeout exceeded. Flushing queue.","debug")
         self:clear()

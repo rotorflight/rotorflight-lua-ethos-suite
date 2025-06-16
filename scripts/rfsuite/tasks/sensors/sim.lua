@@ -22,7 +22,7 @@ local arg = {...}
 local config = arg[1]
 
 local cacheExpireTime = 30  -- Future-proofed, in case cache flush is implemented
-local lastCacheFlushTime = os.clock()
+local lastCacheFlushTime = rfsuite.clock
 
 local lastWakeupTime = 0
 local wakeupInterval = 1
@@ -157,10 +157,10 @@ end
     Returns: None
 ]]
 local function flushCacheIfNeeded()
-    if os.clock() - lastCacheFlushTime >= cacheExpireTime then
+    if rfsuite.clock - lastCacheFlushTime >= cacheExpireTime then
         sensors.uid = {}
         sensors.lastvalue = {}
-        lastCacheFlushTime = os.clock()
+        lastCacheFlushTime = rfsuite.clock
     end
 end
 
@@ -208,13 +208,13 @@ end
     The `wakeup` function is responsible for periodically handling sensor updates and cache management.
     
     It performs the following tasks:
-    1. Checks the current time using `os.clock()`.
+    1. Checks the current time using `rfsuite.clock`.
     2. If the elapsed time since the last wakeup is greater than or equal to `wakeupInterval`, it calls `handleSensors()` to process sensor data and updates `lastWakeupTime`.
     3. If it is the first run or the elapsed time since the last drop is greater than or equal to `wakeupIntervalDrop`, it calls `dropAutoDiscoveredSensors()` to remove automatically discovered sensors, updates `lastWakeupTimeDrop`, and sets `firstRun` to false.
     4. Calls `flushCacheIfNeeded()` to manage the cache if necessary.
 --]]
 local function wakeup()
-    local now = os.clock()
+    local now = rfsuite.clock
 
     if now - lastWakeupTime >= wakeupInterval then
         handleSensors()

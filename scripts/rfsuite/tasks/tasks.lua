@@ -41,7 +41,7 @@ local tasksPerCycle = nil
 rfsuite.session.telemetryTypeChanged = true
 
 local ethosVersionGood = nil  
-local telemetryCheckScheduler = os.clock()
+local telemetryCheckScheduler = rfsuite.clock
 local lastTelemetrySensorName = nil
 
 local sportSensor 
@@ -80,7 +80,7 @@ function tasks.findTasks()
                         msp = tconfig.msp,
                         no_link = tconfig.no_link or false,
                         always_run = tconfig.always_run or false,
-                        last_run = os.clock()
+                        last_run = rfsuite.clock
                     }
                     table.insert(tasksList, task)
 
@@ -114,13 +114,13 @@ end
 
 function tasks.active()
     if tasks.heartbeat == nil then return false end
-    if (os.clock() - tasks.heartbeat) >= 2 then
+    if (rfsuite.clock - tasks.heartbeat) >= 2 then
         tasks.wasOn = true
     else
         tasks.wasOn = false
     end
     if rfsuite.app.triggers.mspBusy == true then return true end
-    if (os.clock() - tasks.heartbeat) <= 2 then return true end
+    if (rfsuite.clock - tasks.heartbeat) <= 2 then return true end
     return false
 end
 
@@ -148,6 +148,9 @@ local function setOffline()
 end
 
 function tasks.wakeup()
+
+    rfsuite.clock = os.clock()  -- Ensure rfsuite.clock is updated
+
     if ethosVersionGood == nil then
         ethosVersionGood = rfsuite.utils.ethosVersionAtLeast()
     end
@@ -189,7 +192,7 @@ function tasks.wakeup()
                     msp = meta.msp,
                     no_link = meta.no_link,
                     always_run = meta.always_run,
-                    last_run = os.clock()
+                    last_run = rfsuite.clock
                 })
             end
         end
@@ -198,9 +201,9 @@ function tasks.wakeup()
         return
     end
 
-    tasks.heartbeat = os.clock()
+    tasks.heartbeat = rfsuite.clock
 
-    local now = os.clock()
+    local now = rfsuite.clock
     if now - (telemetryCheckScheduler or 0) >= 0.5 then
 
         telemetryState = tlm and tlm:state() or false    

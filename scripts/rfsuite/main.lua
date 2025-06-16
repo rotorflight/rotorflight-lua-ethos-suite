@@ -21,6 +21,10 @@
 rfsuite = {}
 rfsuite.session = {}
 
+-- initialise global clock
+rfsuite.clock = os.clock()
+
+
 -- RotorFlight + ETHOS LUA configuration
 local config = {}
 

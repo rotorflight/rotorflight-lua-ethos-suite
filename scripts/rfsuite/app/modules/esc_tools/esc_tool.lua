@@ -21,7 +21,7 @@ local modelField
 local versionField
 local firmwareField
 
-local findTimeoutClock = os.clock()
+local findTimeoutClock = rfsuite.clock
 local findTimeout = math.floor(rfsuite.tasks.msp.protocol.pageReqTimeout * 0.5)
 
 local modelLine
@@ -283,7 +283,7 @@ local function wakeup()
 
     end
 
-    if showPowerCycleLoaderFinished == false and foundESCupdateTag == false and showPowerCycleLoader == false and ((findTimeoutClock <= os.clock() - findTimeout) or rfsuite.app.dialogs.progressCounter >= 101) then
+    if showPowerCycleLoaderFinished == false and foundESCupdateTag == false and showPowerCycleLoader == false and ((findTimeoutClock <= rfsuite.clock - findTimeout) or rfsuite.app.dialogs.progressCounter >= 101) then
         rfsuite.app.ui.progressDisplayClose()
         rfsuite.app.dialogs.progressDisplay = false
         rfsuite.app.triggers.isReady = true
@@ -296,7 +296,7 @@ local function wakeup()
 
     if showPowerCycleLoaderInProgress == true then
 
-        local now = os.clock()
+        local now = rfsuite.clock
         if (now - powercycleLoaderRateLimit) >= 2 then
 
             getESCDetails()

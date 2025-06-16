@@ -187,7 +187,7 @@ local eventTable = {
 --   • If conditions are met, triggers the event callback and updates timing/value.
 --------------------------------------------------------------------------------
 function telemetry.wakeup()
-    local currentTime = os.clock()
+    local currentTime = rfsuite.clock
 
     for _, item in ipairs(eventTable) do
         local key      = item.sensor

@@ -84,7 +84,7 @@ function msp.wakeup()
     end
 
     if rfsuite.session.resetMSP and not delayPending then
-        delayStartTime = os.clock()
+        delayStartTime = rfsuite.clock
         delayPending = true
         rfsuite.session.resetMSP = false  -- Reset immediately
         rfsuite.utils.log("Delaying msp wakeup for " .. delayDuration .. " seconds","info")
@@ -92,7 +92,7 @@ function msp.wakeup()
     end
 
     if delayPending then
-        if os.clock() - delayStartTime >= delayDuration then
+        if rfsuite.clock - delayStartTime >= delayDuration then
             rfsuite.utils.log("Delay complete; resuming msp wakeup","info")
             delayPending = false
         else

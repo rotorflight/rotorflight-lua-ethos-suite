@@ -2,7 +2,7 @@ local fields = {}
 local labels = {}
 local fcStatus = {}
 local dataflashSummary = {}
-local wakeupScheduler = os.clock()
+local wakeupScheduler = rfsuite.clock
 local status = {}
 local summary = {}
 local triggerEraseDataFlash = false
@@ -129,7 +129,7 @@ local function wakeup()
     end
 
     if triggerEraseDataFlash == false then
-        local now = os.clock()
+        local now = rfsuite.clock
         if (now - wakeupScheduler) >= 2 then
             wakeupScheduler = now
             firstRun = false

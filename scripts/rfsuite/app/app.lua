@@ -146,7 +146,7 @@ app.init: Initialization function.
 app.guiIsRunning: Boolean indicating if the GUI is running.
 app.menuLastSelected: Table to store the last selected menu item.
 app.adjfunctions: Table to store adjustment functions.
-app.profileCheckScheduler: Scheduler for profile checks using os.clock().
+app.profileCheckScheduler: Scheduler for profile checks using rfsuite.clock.
 app.offLineMode : Boolean indicating if the app is in offline mode.
 ]]
 app.sensors = {}
@@ -177,7 +177,7 @@ app.sensor = {}
 app.init = nil
 app.guiIsRunning = false
 app.adjfunctions = nil
-app.profileCheckScheduler = os.clock()
+app.profileCheckScheduler = rfsuite.clock
 app.offlineMode = false
 
 
@@ -218,7 +218,7 @@ app.dialogs.progress = false
 app.dialogs.progressDisplay = false
 app.dialogs.progressWatchDog = nil
 app.dialogs.progressCounter = 0
-app.dialogs.progressRateLimit = os.clock()
+app.dialogs.progressRateLimit = rfsuite.clock
 app.dialogs.progressRate = 0.1 
 
 --[[
@@ -236,7 +236,7 @@ app.dialogs.progressESC = false
 app.dialogs.progressDisplayEsc = false
 app.dialogs.progressWatchDogESC = nil
 app.dialogs.progressCounterESC = 0
-app.dialogs.progressESCRateLimit = os.clock()
+app.dialogs.progressESCRateLimit = rfsuite.clock
 app.dialogs.progressESCRate = 2.5 
 
 --[[
@@ -254,7 +254,7 @@ app.dialogs.save = false
 app.dialogs.saveDisplay = false
 app.dialogs.saveWatchDog = nil
 app.dialogs.saveProgressCounter = 0
-app.dialogs.saveRateLimit = os.clock()
+app.dialogs.saveRateLimit = rfsuite.clock
 app.dialogs.saveRate = 0.1
 
 --[[
@@ -270,7 +270,7 @@ app.dialogs.saveRate = 0.1
 app.dialogs.nolink = false
 app.dialogs.nolinkDisplay = false
 app.dialogs.nolinkValueCounter = 0
-app.dialogs.nolinkRateLimit = os.clock()
+app.dialogs.nolinkRateLimit = rfsuite.clock
 app.dialogs.nolinkRate = 0.1 
 
 --[[
@@ -447,7 +447,7 @@ local function saveSettings()
     if app.pageState == app.pageStatus.saving then return end
 
     app.pageState = app.pageStatus.saving
-    app.saveTS = os.clock()
+    app.saveTS = rfsuite.clock
 
     -- we handle saving 100% different for multi mspapi
     log("Saving data", "debug")
@@ -1078,7 +1078,7 @@ app._uiTasks = {
            and app.uiState == app.uiStatus.pages and not app.triggers.isSaving
            and not app.dialogs.saveDisplay and not app.dialogs.progressDisplay
            and rfsuite.tasks.msp.mspQueue:isProcessed()) then return end
-    local now = os.clock();
+    local now = rfsuite.clock;
     local interval = (rfsuite.tasks.telemetry.getSensorSource("pid_profile") and rfsuite.tasks.telemetry.getSensorSource("rate_profile"))
                      and 0.1 or 1.5
     if (now - (app.profileCheckScheduler or 0)) >= interval then
@@ -1174,7 +1174,7 @@ app._uiTasks = {
   function()
     if not app.dialogs.saveDisplay or not app.dialogs.saveWatchDog then return end
     local timeout = tonumber(rfsuite.tasks.msp.protocol.saveTimeout + 5)
-    if (os.clock() - app.dialogs.saveWatchDog) > timeout
+    if (rfsuite.clock - app.dialogs.saveWatchDog) > timeout
        or (app.dialogs.saveProgressCounter > 120 and rfsuite.tasks.msp.mspQueue:isProcessed()) then
       app.audio.playTimeout = true
       app.ui.progressDisplaySaveMessage(i18n("app.error_timed_out"))
@@ -1193,7 +1193,7 @@ app._uiTasks = {
     if not app.dialogs.progressDisplay or not app.dialogs.progressWatchDog then return end
     app.dialogs.progressCounter = app.dialogs.progressCounter + (app.Page and app.Page.progressCounter or 1.5)
     app.ui.progressDisplayValue(app.dialogs.progressCounter)
-    if (os.clock() - app.dialogs.progressWatchDog) > tonumber(rfsuite.tasks.msp.protocol.pageReqTimeout) then
+    if (rfsuite.clock - app.dialogs.progressWatchDog) > tonumber(rfsuite.tasks.msp.protocol.pageReqTimeout) then
       app.audio.playTimeout = true
       app.ui.progressDisplayMessage(i18n("app.error_timed_out"))
       app.ui.progressDisplayCloseAllowed(true)
@@ -1373,6 +1373,11 @@ app._nextUiTask         = 1   -- accumulator for fractional tasks per tick
 app._taskAccumulator    = 0   -- desired throughput percentage of total tasks per tick (0-100)
 app._uiTaskPercent      = 50  -- e.g., 50% of tasks each tick
 function app.wakeup()
+
+  -- ensure we have a clock if background tasks are not active
+  if not rfsuite.tasks.active() then
+    rfsuite.clock = os.clock()  
+  end
 
   local total = #app._uiTasks
   local tasksThisTick = math.max(1, (total * app._uiTaskPercent) / 100)

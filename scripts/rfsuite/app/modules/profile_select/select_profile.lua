@@ -1,6 +1,6 @@
 local fcStatus = {}
 local dataflashSummary = {}
-local wakeupScheduler = os.clock()
+local wakeupScheduler = rfsuite.clock
 local status = {}
 local summary = {}
 local triggerEraseDataFlash = false
