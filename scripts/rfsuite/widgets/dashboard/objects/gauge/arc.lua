@@ -77,32 +77,34 @@ end
 
 
 -- Arc drawing function
-local function drawArc(cx, cy, radius, thickness, angleStart, angleEnd, color, cacheStepRad)
-    local step = 1
-    local rad_thick = thickness / 2
-    angleStart = math.rad(angleStart)
-    angleEnd = math.rad(angleEnd)
-    if angleEnd > angleStart then
-        angleEnd = angleEnd - 2 * math.pi
-    end
+local function drawArc(cx, cy, radius, thickness, startAngle, endAngle, color)
     lcd.color(color)
-    local stepRad = cacheStepRad or math.rad(step)
-    for a = angleStart, angleEnd, -stepRad do
-        local x = cx + radius * math.cos(a)
-        local y = cy - radius * math.sin(a)
-        lcd.drawFilledCircle(x, y, rad_thick)
+    local outer = radius
+    local inner = math.max(1, radius - (thickness or 6))
+
+    -- Normalize angles
+    startAngle = startAngle % 360
+    endAngle = endAngle % 360
+    if endAngle <= startAngle then
+        endAngle = endAngle + 360
     end
-    local x_end = cx + radius * math.cos(angleEnd)
-    local y_end = cy - radius * math.sin(angleEnd)
-    lcd.drawFilledCircle(x_end, y_end, rad_thick)
+
+    local sweep = endAngle - startAngle
+    if sweep <= 180 then
+        lcd.drawAnnulusSector(cx, cy, inner, outer, startAngle, endAngle)
+    else
+        local mid = startAngle + sweep / 2
+        lcd.drawAnnulusSector(cx, cy, inner, outer, startAngle, mid)
+        lcd.drawAnnulusSector(cx, cy, inner, outer, mid, endAngle)
+    end
 end
 
 function render.wakeup(box, telemetry)
     -- Value extraction
     local source = getParam(box, "source")
-    local value
+    local value, _, dynamicUnit
     if telemetry and source then
-        value = telemetry.getSensor(source)
+        value, _, dynamicUnit = telemetry.getSensor(source)
     end
 
     -- Optionally cache and calculate max value for max arc
@@ -120,16 +122,13 @@ function render.wakeup(box, telemetry)
     local unit
 
     if manualUnit ~= nil then
-        unit = manualUnit
+        unit = manualUnit  -- use user value, even if ""
+    elseif dynamicUnit ~= nil then
+        unit = dynamicUnit
+    elseif source and telemetry and telemetry.sensorTable[source] then
+        unit = telemetry.sensorTable[source].unit_string or ""
     else
-        local displayValue, _, dynamicUnit = telemetry.getSensor(source)
-        if dynamicUnit ~= nil then
-            unit = dynamicUnit
-        elseif source and telemetry and telemetry.sensorTable[source] then
-            unit = telemetry.sensorTable[source].unit_string or ""
-        else
-            unit = ""
-        end
+        unit = ""
     end
 
     -- Resolve arc min/max
@@ -264,39 +263,28 @@ function render.paint(x, y, w, h, box)
         titleHeight = (th or 0) + (c.titlespacing or 0) + (c.titlepaddingtop or 0) + (c.titlepaddingbottom or 0)
     end
    
-    -- Arc region: based on titlepos (default is top)
-    local titlepos = c.titlepos
+    -- Arc region: based on title position
     local arcRegionY, arcRegionH, cy, radius
-    local arcMargin, thickness, maxRadius
-    local arcoffsety = 0
-    local startangle = 225
-    local sweep = 270
+    local thickness, maxRadius
 
     if c.titlepos == "top" then
-        arcRegionY   = y + titleHeight
-        arcRegionH   = h - titleHeight
-        arcMargin    = 8
-        thickness    = c.thickness or math.max(6, math.min(w, arcRegionH) * 0.07)
-        maxRadius    = ((arcRegionH - arcMargin) / 2) - (thickness / 2)
-        radius       = math.min(w * 0.50, maxRadius + 8)
-        cy           = arcRegionY + arcRegionH * 0.5 + (arcoffsety or 0)
+        arcRegionY = y + titleHeight
+        arcRegionH = h - titleHeight
+        cy = arcRegionY + arcRegionH * 0.5
     elseif c.titlepos == "bottom" then
-        arcRegionY   = y
-        arcRegionH   = h - titleHeight
-        arcMargin    = 8
-        thickness    = c.thickness or math.max(6, math.min(w, arcRegionH) * 0.07)
-        maxRadius    = ((arcRegionH - arcMargin) / 2) - (thickness / 2)
-        radius       = math.min(w * 0.50, maxRadius + 8)
-        cy           = arcRegionY + arcRegionH * 0.60 + (arcoffsety or 0)
+        arcRegionY = y
+        arcRegionH = h - titleHeight
+        cy = arcRegionY + arcRegionH * 0.6
     else
-        arcRegionY   = y
-        arcRegionH   = h
-        arcMargin    = 8
-        thickness    = c.thickness or math.max(6, math.min(w, arcRegionH) * 0.07)
-        maxRadius    = ((arcRegionH - arcMargin) / 2) - (thickness / 2)
-        radius       = math.min(w * 0.50, maxRadius + 8)
-        cy           = arcRegionY + arcRegionH * 0.55 + (arcoffsety or 0)
+        arcRegionY = y
+        arcRegionH = h
+        cy = arcRegionY + arcRegionH * 0.55
     end
+
+    thickness = c.thickness or math.max(6, math.min(w, arcRegionH) * 0.07)
+    maxRadius = (arcRegionH / 2) - (thickness / 2)
+    radius = math.min(w * 0.50, maxRadius + 8)
+
 
     -- Widget background
     if c.bgcolor then
@@ -304,22 +292,26 @@ function render.paint(x, y, w, h, box)
         lcd.drawFilledRectangle(x, y, w, h)
     end     
 
-    -- Draw background arc
+    -- Arc layout
     local cx = x + w / 2
-    local stepRad = math.rad(2)
-    drawArc(cx, cy, radius, thickness, startangle, startangle - sweep, c.fillbgcolor, stepRad)
+    local startAngle = 225
+    local endAngle = (startAngle + 270) % 360
 
-    -- Draw value arc
+    -- Draw background arc (full 270° from 225 to 135)
+    drawArc(cx, cy, radius, thickness, startAngle, endAngle, c.fillbgcolor)
+
+    -- Foreground arc based on percent fill
     if c.percent and c.percent > 0 then
-        drawArc(cx, cy, radius, thickness, startangle, startangle - sweep * c.percent, c.fillcolor, stepRad)
+        local valueEndAngle = (startAngle + 270 * c.percent) % 360
+        drawArc(cx, cy, radius, thickness, startAngle, valueEndAngle, c.fillcolor)
     end
 
-    -- Draw extra max value arc if enabled
-    if c.arcmax and c.maxval and c.max ~= c.min then
-        local innerRadius = radius * 0.75
+    -- Max value arc if enabled
+    if c.arcmax and c.maxval and c.max ~= c.min and c.maxPercent then
+        local innerRadius = radius * 0.74
         local innerThickness = thickness * 0.8
-        local maxSweep = sweep * c.maxPercent
-        drawArc(cx, cy, innerRadius, innerThickness, startangle, startangle - maxSweep, c.maxfillcolor, stepRad)
+        local maxEndAngle = (startAngle + 270 * c.maxPercent) % 360
+        drawArc(cx, cy, innerRadius, innerThickness, startAngle, maxEndAngle, c.maxfillcolor)
     end
 
     -- Draw title and value

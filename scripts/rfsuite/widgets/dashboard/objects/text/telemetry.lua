@@ -69,8 +69,6 @@ function render.wakeup(box, telemetry)
         displayValue = utils.transformValue(value, box)
     end
 
-
-
     -- Threshold logic (if required)
     local textcolor = utils.resolveThresholdColor(value, box, "textcolor", "textcolor")
 
