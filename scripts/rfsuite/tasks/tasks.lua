@@ -65,9 +65,8 @@ function tasks.findTasks()
                         intmin = tconfig.intmin or 0,
                         priority = tconfig.priority or 1,
                         script = tconfig.script,
-                        msp = tconfig.msp or false,
-                        no_link = tconfig.no_link or false,
-                        always_run = tconfig.always_run or false,
+                        nolink = tconfig.nolink or false,
+                        isolate  = tconfig.isolate or {},
                         last_run = rfsuite.clock
                     }
                     table.insert(tasksList, task)
@@ -77,9 +76,8 @@ function tasks.findTasks()
                         intmin = tconfig.intmin or 0,
                         script = tconfig.script,
                         priority = tconfig.priority or 1,
-                        msp = tconfig.msp or false,
-                        always_run = tconfig.always_run or false,
-                        no_link = tconfig.no_link or false
+                        isolate  = tconfig.isolate or {},
+                        nolink = tconfig.nolink or false
                     }
 
                     local script = tasks_path .. v .. '/' .. tconfig.script
@@ -168,9 +166,8 @@ function tasks.wakeup()
                     intmin = meta.intmin or 0,
                     script = meta.script,
                     priority = meta.priority or 1,
-                    msp = meta.msp or false,
-                    no_link = meta.no_link or false,
-                    always_run = meta.always_run,
+                    nolink = meta.nolink or false,
+                    isolate  = meta.isolate or {},
                     last_run = rfsuite.clock
                 })
             end
@@ -211,27 +208,20 @@ function tasks.wakeup()
     if not tasksPerCycle then
         local count = 0
         for _, task in ipairs(tasksList) do
-            if not task.always_run then count = count + 1 end
+            count = count + 1 
         end
         tasksPerCycle = math.ceil(count * taskSchedulerPercentage)
     end
 
     local function canRunTask(task)
-        return (task.no_link or telemetryState) and (task.msp == true or not rfsuite.app.triggers.mspBusy)
-    end
-
-    for _, task in ipairs(tasksList) do
-        if task.always_run and tasks[task.name].wakeup and canRunTask(task) then
-            tasks[task.name].wakeup()
-            task.last_run = now
-        end
+    return (task.nolink or telemetryState)
     end
 
     local overdueTasks = {}
     local eligibleWeighted = {}
 
     for _, task in ipairs(tasksList) do
-        if not task.always_run and canRunTask(task) then
+        if canRunTask(task) then
             local elapsed = now - task.last_run
             if elapsed >= (task.intmax or 1e9) then
                 table.insert(overdueTasks, task)
@@ -243,24 +233,67 @@ function tasks.wakeup()
         end
     end
 
+    -- we'll remember which tasks to skip if any wakeup() returns an isolation table
+    local skipTasks = {}
+    local runCount  = 0
+
+    -- run overdue tasks, capturing any isolation
     for _, task in ipairs(overdueTasks) do
-        if tasks[task.name].wakeup then
-            tasks[task.name].wakeup()
+        if not skipTasks[task.name] and tasks[task.name].wakeup then
+            local result = tasks[task.name].wakeup()
             task.last_run = now
+            runCount = runCount + 1
+
+            -- static isolation from init.lua
+            for peer, _ in pairs(task.isolate or {}) do
+                skipTasks[peer] = true
+            end            
+
+            -- if the task asked to isolate, add those names to skipTasks
+            if type(result) == "table" and result.isolation then
+                for name, _ in pairs(result.isolation) do
+                    skipTasks[name] = true
+                end
+            end
         end
     end
 
-    local remainingSlots = tasksPerCycle - #overdueTasks
-    for i = 1, math.max(0, remainingSlots) do
-        if #eligibleWeighted == 0 then break end
-        local index = math.random(1, #eligibleWeighted)
-        local task = eligibleWeighted[index]
-        if tasks[task.name].wakeup then
-            tasks[task.name].wakeup()
-            task.last_run = now
+    -- now pick up to (tasksPerCycle - actually run so far) from the weighted list,
+    -- skipping any that have been isolated.
+    local slotsLeft = tasksPerCycle - runCount
+    for _ = 1, math.max(0, slotsLeft) do
+        -- filter-out any skipped tasks
+        local pool = {}
+        for _, task in ipairs(eligibleWeighted) do
+            if not skipTasks[task.name] then
+                pool[#pool+1] = task
+            end
         end
+        if #pool == 0 then break end
+
+        -- pick one at random
+        local pick = pool[math.random(1, #pool)]
+
+        -- run it
+        local result = tasks[pick.name].wakeup and tasks[pick.name].wakeup()
+        pick.last_run = now
+        runCount = runCount + 1
+
+        -- static isolation
+        for peer, _ in pairs(pick.isolate or {}) do
+            skipTasks[peer] = true
+        end
+
+        -- record any isolation
+        if type(result) == "table" and result.isolation then
+            for name, _ in pairs(result.isolation) do
+                skipTasks[name] = true
+            end
+        end
+
+        -- remove *all* entries of this task from eligibleWeighted
         for j = #eligibleWeighted, 1, -1 do
-            if eligibleWeighted[j].name == task.name then
+            if eligibleWeighted[j].name == pick.name then
                 table.remove(eligibleWeighted, j)
             end
         end
@@ -277,7 +310,7 @@ function tasks.reset()
 end
 
 function tasks.event(widget, category, value)
-    print("Event: " .. widget .. " " .. category .. " " .. value)
+    utils.log("Event: " .. widget .. " " .. category .. " " .. value)
 end
 
 return tasks
