@@ -19,7 +19,7 @@ function render.dirty(box)
 end
 
 function render.wakeup(box, telemetry)
-    box._wakeupInterval = box._wakeupInterval or 0.25
+    box._wakeupInterval = box._wakeupInterval or 0.2
     box._lastWakeup = box._lastWakeup or 0
     local now = rfsuite.clock
     if now - box._lastWakeup < box._wakeupInterval then return end
@@ -58,7 +58,7 @@ function render.paint(x, y, w, h, box)
 
     -- Dynamic scaling based on max(abs(pitch), abs(roll))
     local maxAngle = math.max(math.abs(pitch), math.abs(roll))
-    local dynamicScaleFactor = 1.05 + (maxAngle / 90) * 0.25  -- ranges from 1.05 to 1.30
+    local dynamicScaleFactor = 1.05 + (maxAngle / 90) * 0.9  -- ranges from 1.05 to 1.30
 
     local scale = (paddedDiag / imageDiag) * dynamicScaleFactor
     local drawW = iw * scale
