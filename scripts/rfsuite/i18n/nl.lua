@@ -328,7 +328,7 @@ return {
       ["tbl_fmfw"] = "Fixed Wing",
       ["tbl_ccw"] = "CCW",
       ["tbl_medium"] = "Medium",
-      ["tbl_yellow"] = "YELOW",
+      ["tbl_yellow"] = "YELLOW",
       ["tbl_reverse"] = "Omgekeerd",
       ["tbl_red"] = "Red",
       ["tbl_high"] = "High",

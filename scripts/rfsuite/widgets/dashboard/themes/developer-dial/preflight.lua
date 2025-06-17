@@ -38,58 +38,40 @@ local boxes = {
 
     -- DIAL
     {
-        type = "dial",
         col = 1, row = 1,
-        title = "Voltage",
-        unit = "v",
+        type = "dial",
+        title = "VOLTAGE",
         titlepos = "bottom",
+        titlefont = "FONT_XXS",
         source = "voltage",
-        aspect = "fit",
-        align = "center",
+        decimals = 1,
+        needlecolor = "white",
+        needlehubcolor = "white",
+        valuepaddingtop = 70,
         dial = 1,
-        needlecolor = "red",
-        needlehubcolor = "red",
-        needlehubsize = 5,
-        needlethickness = 4,
         font = "FONT_S",
-        min = function()
-            local cfg = rfsuite.session.batteryConfig
-            local cells = (cfg and cfg.batteryCellCount) or 3
-            local minV = (cfg and cfg.vbatmincellvoltage) or 3.0
-            return math.max(0, cells * minV)
-        end,
-        max = function()
-            local cfg = rfsuite.session.batteryConfig
-            local cells = (cfg and cfg.batteryCellCount) or 3
-            local maxV = (cfg and cfg.vbatmaxcellvoltage) or 4.2
-            return math.max(0, cells * maxV)
-        end,
+        min = 0,
+        max = 100,
+        transform = "floor",
     },
 
     -- HEATRING
     {
+        col = 2, row = 1,
         type = "gauge",
         subtype = "ring",
-        col = 2, row = 1,
+        source = "rpm",
         title = "RPM",
         min = 0,
-        max = 12000,
+        max = 2000,
         thresholds = {
-            { value = 3000,  fillcolor = "green" },
-            { value = 6000,  fillcolor = "orange" },
-            { value = 9000,  fillcolor = "orange" },
-            { value = 12000, fillcolor = "red" },
+            { value = 1000,  fillcolor = "green" },
+            { value = 1500,  fillcolor = "orange" },
+            { value = 2000,  fillcolor = "red" },
         },
-        ringsize = 0.8,
-        textoffset = 0,
-        titleoffset = 0,
-        textalign = "center",
-        titlealign = "center",
-        titlepos = "below",
+        titlepos = "bottom",
         unit = "",
         transform = "floor",
-        textcolor = "white",
-        source = "rpm",
     },
 
     -- ARCGUAGE
@@ -231,6 +213,25 @@ local boxes = {
                 fillcolor = "orange"
             }
         },        
+    },
+
+        -- HEATRING
+    {
+        col = 3, row = 2, rowspan = 2,
+        type = "gauge",
+        subtype = "ring",
+        source = "rpm",
+        title = "RPM",
+        font = "FONT_L",
+        min = 0,
+        max = 2000,
+        thresholds = {
+            { value = 1000,  fillcolor = "green" },
+            { value = 1500,  fillcolor = "orange" },
+            { value = 2000,  fillcolor = "red" },
+        },
+        titlepos = "bottom",
+        transform = "floor",
     },
 }
 
