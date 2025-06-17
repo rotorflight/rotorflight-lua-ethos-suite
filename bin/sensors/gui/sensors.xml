@@ -59,9 +59,9 @@
     </Group>  
 
     <Group name="Attitude">
-        <Sensor name="attpitch" round="true" label="Pitch" type="number" default="0" min="-360" max="360" />
-        <Sensor name="attroll" round="true" label="Roll" type="number" default="0" min="-360" max="360" />
-        <Sensor name="attyaw" round="true" label="Yaw" type="number" default="0" min="-360" max="360" />
+        <Sensor name="attpitch" round="true" label="Pitch" type="number" default="0" min="-360" max="360" multiplier="10"/>
+        <Sensor name="attroll" round="true" label="Roll" type="number" default="0" min="-360" max="360" multiplier="10"/>
+        <Sensor name="attyaw" round="true" label="Yaw" type="number" default="0" min="-360" max="360" multiplier="10"/>
      </Group>       
 
     <Group name="System Events">
