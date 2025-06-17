@@ -420,7 +420,7 @@ function dashboard.renderLayout(widget, config)
     -- Scheduler setup
     if not objectWakeupsPerCycle or #dashboard.boxRects ~= lastBoxRectsCount then
         local count = #dashboard.boxRects
-        local percentage = computeObjectSchedulerPercentage(count)
+        local percentage = dashboard._spreadRatioOverride or computeObjectSchedulerPercentage(count)
 
         if objectsThreadedWakeupCount < 1 then
             percentage = 1.0
@@ -675,7 +675,20 @@ function dashboard.reload_themes(force)
             loadedThemeIntervals.wakeup_interval    = initTable.wakeup_interval or 0.25
             loadedThemeIntervals.wakeup_interval_bg = initTable.wakeup_interval_bg
             loadedThemeIntervals.paint_interval     = initTable.paint_interval or 0.5
+
+            dashboard._useSpreadScheduling = (initTable.spread_scheduling ~= false)
+
+            -- NEW: optionally override spread ratio
+            dashboard._spreadRatioOverride = (type(initTable.spread_ratio) == "number" and initTable.spread_ratio > 0 and initTable.spread_ratio <= 1)
+                and initTable.spread_ratio
+                or nil
+        else
+            dashboard._useSpreadScheduling = true
+            dashboard._spreadRatioOverride = nil
         end
+    else
+        dashboard._useSpreadScheduling = true
+        dashboard._spreadRatioOverride = nil
     end
 
     -- Step 4: Load object types for active module only
@@ -905,35 +918,30 @@ end
 -- @param widget The widget instance to update.
 function dashboard.wakeup(widget)
 
-    -- ensure we have a clock if background tasks are not active
     if not rfsuite.tasks.active() then
-        rfsuite.clock = os.clock()  
-    end    
+        rfsuite.clock = os.clock()
+    end
 
     if not lcd.isVisible() and not loadedThemeIntervals.wakeup_interval_bg then
         return
     end
 
     local telemetry = tasks.telemetry
-
     local W, H = lcd.getWindowSize()
 
-    -- Bail out if resolution is not supported:
-    if not dashboard.utils.supportedResolution(W,H, supportedResolutions) then
+    if not dashboard.utils.supportedResolution(W, H, supportedResolutions) then
         unsupportedResolution = true
         lcd.invalidate(widget)
         return
     else
-        unsupportedResolution = false    
+        unsupportedResolution = false
     end
 
-    -- Reload if dark mode changed
     if lcd.darkMode() ~= darkModeState then
         darkModeState = lcd.darkMode()
         dashboard.reload_themes(true)
     end
 
-    -- load only preflight theme on first wakeup for speed
     if firstWakeup then
         firstWakeup = false
         local theme = getThemeForState("preflight")
@@ -941,7 +949,6 @@ function dashboard.wakeup(widget)
         loadedStateModules.preflight = load_state_script(theme, "preflight")
     end
 
-    -- Background load inflight/postflight modules one at a time
     if statePreloadIndex <= #statePreloadQueue then
         local state = statePreloadQueue[statePreloadIndex]
         if not loadedStateModules[state] then
@@ -949,7 +956,6 @@ function dashboard.wakeup(widget)
             log("Preloading theme: " .. theme .. " for " .. state, "info")
             loadedStateModules[state] = load_state_script(theme, state)
 
-            -- Add boxes from newly loaded module
             local mod = loadedStateModules[state]
             if mod and mod.boxes then
                 local boxes = type(mod.boxes) == "function" and mod.boxes() or mod.boxes
@@ -961,75 +967,52 @@ function dashboard.wakeup(widget)
         statePreloadIndex = statePreloadIndex + 1
     end
 
-    -- catch scenario where mcu_id is found and we have to reload to model theme
-    if firstWakeupCustomTheme and 
-        rfsuite.session.mcu_id and 
-        rfsuite.session.modelPreferences and 
+    if firstWakeupCustomTheme and
+        rfsuite.session.mcu_id and
+        rfsuite.session.modelPreferences and
         rfsuite.session.modelPreferences.dashboard then
-            
+
         local modelPrefs = rfsuite.session.modelPreferences.dashboard
         local currentPrefs = rfsuite.preferences.dashboard
-        
-        -- The value of nil being in quotes is correct. This is a string comparison as it is sourced from the ini file.
-        if (modelPrefs.theme_preflight   and modelPrefs.theme_preflight ~= "nil" and modelPrefs.theme_preflight  ~= currentPrefs.theme_preflight) or
-            (modelPrefs.theme_inflight   and modelPrefs.theme_preflight ~= "nil" and  modelPrefs.theme_inflight   ~= currentPrefs.theme_inflight) or
-            (modelPrefs.theme_postflight and modelPrefs.theme_preflight ~= "nil" and  modelPrefs.theme_postflight ~= currentPrefs.theme_postflight) then
 
+        if (modelPrefs.theme_preflight and modelPrefs.theme_preflight ~= "nil" and modelPrefs.theme_preflight ~= currentPrefs.theme_preflight) or
+           (modelPrefs.theme_inflight and modelPrefs.theme_inflight ~= "nil" and modelPrefs.theme_inflight ~= currentPrefs.theme_inflight) or
+           (modelPrefs.theme_postflight and modelPrefs.theme_postflight ~= "nil" and modelPrefs.theme_postflight ~= currentPrefs.theme_postflight) then
             dashboard.reload_themes()
             firstWakeupCustomTheme = false
         end
-
     end
 
-
     local now = rfsuite.clock
-    local visible = lcd.isVisible() 
-
-    -- These values must be assigned from your config/init table after loading!
-    -- Example:
-    -- loadedThemeIntervals.wakeup_interval      = initTable.wakeup_interval or 0.25
-    -- loadedThemeIntervals.wakeup_interval_bg   = initTable.wakeup_interval_bg -- may be nil
-    -- loadedThemeIntervals.paint_interval       = initTable.paint_interval or 0.5
+    local visible = lcd.isVisible()
 
     if visible then
         local base_interval = loadedThemeIntervals.wakeup_interval or 0.25
         local interval = base_interval
 
-        -- keep it in focus
-        lcd.resetFocusTimeout()	
+        lcd.resetFocusTimeout()
 
-        -- if the base interval is < 0.25s and there are >15 boxes
         if base_interval <= 0.25 and #dashboard.boxRects > 15 then
             interval = 0.25
-        end   
-
-        if (now - lastWakeup) < interval then
-            return
         end
+
+        if (now - lastWakeup) < interval then return end
         lastWakeup = now
     else
         local interval_bg = loadedThemeIntervals.wakeup_interval_bg
-        if interval_bg == nil then
-            -- Not visible, and no background interval set: skip entirely
-            return
-        end
-        if (now - lastWakeupBg) < interval_bg then
-            return
-        end
+        if interval_bg == nil then return end
+        if (now - lastWakeupBg) < interval_bg then return end
         lastWakeupBg = now
     end
-
-    -- ==== Main wakeup logic starts here ====
 
     local currentFlightMode = rfsuite.session.flightMode or "preflight"
     if lastFlightMode ~= currentFlightMode then
         dashboard.flightmode = currentFlightMode
         reload_state_only(currentFlightMode)
         lastFlightMode = currentFlightMode
-        lcd.invalidate(widget)  -- <<< force re-render immediately
+        lcd.invalidate(widget)
     end
 
-    -- Periodically check for overlay message changes
     local newMessage = dashboard.computeOverlayMessage()
     if dashboard.overlayMessage ~= newMessage then
         dashboard.overlayMessage = newMessage
@@ -1041,49 +1024,58 @@ function dashboard.wakeup(widget)
     local module = loadedStateModules[state]
 
     if module and type(module.wakeup) == "function" then
-            module.wakeup(widget)
+        module.wakeup(widget)
     else
         callStateFunc("wakeup", widget)
     end
 
-    -- Spread-scheduled wakeup for dashboard objects
     if #dashboard.boxRects > 0 and objectWakeupsPerCycle then
-        -- 1) Wake every “custom-scheduler” object (using precomputed indices)
         for _, idx in ipairs(scheduledBoxIndices) do
             local rect = dashboard.boxRects[idx]
-            local obj  = dashboard.objectsByType[rect.box.type]
+            local obj = dashboard.objectsByType[rect.box.type]
             if obj and obj.wakeup then
                 obj.wakeup(rect.box, telemetry)
             end
         end
 
-        for i = 1, objectWakeupsPerCycle do
-            local idx = objectWakeupIndex
-            local rect = dashboard.boxRects[idx]
-            if rect then
-                local obj = dashboard.objectsByType[rect.box.type]
-                if obj and obj.wakeup and not obj.scheduler then
-                    obj.wakeup(rect.box, telemetry)
-                end
+        local needsFullInvalidate = dashboard._forceFullRepaint or dashboard.overlayMessage or objectsThreadedWakeupCount < 1
+        local dirtyRects = {}
 
-                -- Invalidate only if value changed
-                local dirtyFn = dashboard.objectsByType[rect.box.type] and dashboard.objectsByType[rect.box.type].dirty
-                if dashboard._forceFullRepaint or dashboard.overlayMessage or objectsThreadedWakeupCount < 1 then
-                    lcd.invalidate()
-                elseif dirtyFn then
-                  local isDirty = dirtyFn(rect.box)
-                  if isDirty then
-                      lcd.invalidate(rect.x - 1, rect.y -1 , rect.w + 2, rect.h + 2)
-                  end
+        if dashboard._useSpreadScheduling ~= false then
+            for i = 1, objectWakeupsPerCycle do
+                local idx = objectWakeupIndex
+                local rect = dashboard.boxRects[idx]
+                if rect then
+                    local obj = dashboard.objectsByType[rect.box.type]
+                    if obj and obj.wakeup and not obj.scheduler then
+                        obj.wakeup(rect.box, telemetry)
+                    end
+
+                    if not needsFullInvalidate then
+                        local dirtyFn = obj and obj.dirty
+                        if dirtyFn and dirtyFn(rect.box) then
+                            table.insert(dirtyRects, {
+                                x = rect.x - 1, y = rect.y - 1,
+                                w = rect.w + 2, h = rect.h + 2
+                            })
+                        end
+                    end
                 end
+                objectWakeupIndex = (#dashboard.boxRects > 0) and ((objectWakeupIndex % #dashboard.boxRects) + 1) or 1
             end
-            objectWakeupIndex = (#dashboard.boxRects > 0) and ((objectWakeupIndex % #dashboard.boxRects) + 1) or 1
+
+            if objectWakeupIndex == 1 then
+                objectsThreadedWakeupCount = objectsThreadedWakeupCount + 1
+            end
         end
 
-        if objectWakeupIndex == 1 then
-            objectsThreadedWakeupCount = objectsThreadedWakeupCount + 1
+        if needsFullInvalidate then
+            lcd.invalidate()
+        else
+            for _, r in ipairs(dirtyRects) do
+                lcd.invalidate(r.x, r.y, r.w, r.h)
+            end
         end
-
     end
 
     if not lcd.hasFocus(widget) and dashboard.selectedBoxIndex ~= nil then
@@ -1092,16 +1084,15 @@ function dashboard.wakeup(widget)
         lcd.invalidate(widget)
     end
 
-    -- Report memory usage every 5 seconds
     if lcd.isVisible() then
         dashboard._lastMemReport = dashboard._lastMemReport or 0
         if rfsuite.clock - dashboard._lastMemReport > 5 then
             rfsuite.utils.reportMemoryUsage("Dashboard")
             dashboard._lastMemReport = rfsuite.clock
         end
-    end    
-
+    end
 end
+
 
 --- Lists available dashboard themes by scanning system and user theme directories.
 -- 
