@@ -96,10 +96,6 @@ end
 function timer.wakeup()
     local now = os.time()
 
-    -- If we just entered “inflight” from any other mode, reset timers
-    if rfsuite.session.flightMode == "inflight" and lastFlightMode ~= "inflight" then
-        timer.reset()
-    end
 
     lastFlightMode = rfsuite.session.flightMode
 
