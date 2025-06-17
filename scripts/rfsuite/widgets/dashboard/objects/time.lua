@@ -19,7 +19,7 @@ function wrapper.wakeup(box, telemetry)
 
     -- Wakeup interval control using optional parameter (wakeupinterval)
     local now = rfsuite.clock
-    box._wakeupInterval = box._wakeupInterval or (box.wakeupinterval or 0.1)
+    box._wakeupInterval = box._wakeupInterval or (box.wakeupinterval or 0.05)
     box._lastWakeup = box._lastWakeup or 0
 
     if now - box._lastWakeup < box._wakeupInterval then
