@@ -327,5 +327,7 @@ return {
     wakeup_interval    = 0.1,
     wakeup_interval_bg = 5,
     paint_interval     = 0.1,
+    spread_scheduling = true,      -- (optional: spread scheduling over the interval to avoid spikes in CPU usage)  
+    spread_ratio = 1.0              -- optional: manually override default ratio logic (applies if spread_scheduling is true)
   }
 }
