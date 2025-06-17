@@ -215,23 +215,26 @@ local boxes = {
         },        
     },
 
-        -- HEATRING
+    -- HEATRING
     {
         col = 3, row = 2, rowspan = 2,
         type = "gauge",
         subtype = "ring",
-        source = "rpm",
-        title = "RPM",
-        font = "FONT_L",
-        min = 0,
-        max = 2000,
-        thresholds = {
-            { value = 1000,  fillcolor = "green" },
-            { value = 1500,  fillcolor = "orange" },
-            { value = 2000,  fillcolor = "red" },
-        },
+        source = "fuel",
+        title = "FUEL",
+        font = "FONT_XL",
+        thickness = 25,
+        ringbatt = true,
+        valuepaddingbottom = 20,
+        ringbattsubpaddingbottom = 10,
+        fillbgcolor = "lightgrey",
         titlepos = "bottom",
         transform = "floor",
+        thresholds = {
+            { value = 20,  fillcolor = "red"},
+            { value = 50,  fillcolor = "orange"},
+            { value = 100,  fillcolor = "green"},
+        },
     },
 }
 

@@ -44,6 +44,18 @@
     -- Geometry
     thickness           : number    -- (Optional) Ring thickness in pixels (default is proportional to radius)
 
+    -- Battery Ring Mode (Optional fuel-based battery style)
+    ringbatt                 : bool      -- If true, draws 360° fill ring based on fuel (%) and shows mAh consumption
+    ringbattsubfont          : font      -- (Optional) Font for subtext in ringbatt mode (e.g., FONT_XS, FONT_S, FONT_STD; default: FONT_XS)
+    innerringcolor           : color     -- Color of the inner decorative ring in ringbatt mode (default: white)
+    ringbattsubtext          : string|bool -- (Optional) Overrides subtext below value in ringbatt mode (set "" or false to hide)
+    innerringthickness       : number    -- (Optional) Thickness of inner decorative ring in ringbatt mode (default: 8)
+    ringbattsubalign         : string    -- (Optional) "left", "center", or "right" alignment of subtext (default: center under value)
+    ringbattsubpadding       : number    -- (Optional) General padding (px) for subtext (applies if per-side not set)
+    ringbattsubpaddingleft   : number    -- (Optional) Left padding override for subtext
+    ringbattsubpaddingright  : number    -- (Optional) Right padding override for subtext
+    ringbattsubpaddingtop    : number    -- (Optional) Top padding override for subtext
+    ringbattsubpaddingbottom : number    -- (Optional) Bottom padding override for subtext
 ]]
 
 
@@ -52,6 +64,7 @@ local render = {}
 local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
+local resolveThresholdColor = utils.resolveThresholdColor
 local lastDisplayValue = nil
 
 function render.dirty(box)
@@ -99,7 +112,29 @@ function render.wakeup(box, telemetry)
         value, _, dynamicUnit = telemetry.getSensor(source)
     end
 
-    -- Dynamic unit logic (User can force a unit or omit unit using "" to hide)
+    -- Ringbatt value extraction
+    local ringbatt = getParam(box, "ringbatt")
+    local percent = 0
+    local mahUnit = ""
+    local fuel = 0
+    local consumption = 0
+
+    if ringbatt and telemetry and telemetry.getSensor then
+        fuel = telemetry.getSensor("fuel") or 0
+        consumption = telemetry.getSensor("consumption") or 0
+        percent = math.max(0, math.min(1, fuel / 100))
+        mahUnit = string.format("%dmah", math.floor(consumption + 0.5))
+
+        -- Apply optional override or suppression of subtext
+        local override = getParam(box, "ringbattsubtext")
+        if override == "" or override == false then
+            mahUnit = nil
+        elseif override then
+            mahUnit = override
+        end
+    end
+    
+        -- Dynamic unit logic (User can force a unit or omit unit using "" to hide)
     local manualUnit = getParam(box, "unit")
     local unit
 
@@ -129,35 +164,47 @@ function render.wakeup(box, telemetry)
     box._currentDisplayValue = value
 
     box._cache = {
-        value              = value,
-        displayValue       = displayValue,
-        unit               = unit,
-        novalue            = getParam(box, "novalue") or "-",
-        fillcolor          = utils.resolveThresholdColor(value, box, "fillcolor", "fillcolor", thresholds),
-        textcolor          = utils.resolveThresholdColor(value, box, "textcolor", "textcolor", thresholds),
-        fillbgcolor        = resolveThemeColor("fillbgcolor", getParam(box, "fillbgcolor")),
-        bgcolor            = resolveThemeColor("bgcolor", getParam(box, "bgcolor")),
-        titlecolor         = resolveThemeColor("titlecolor", getParam(box, "titlecolor")),
-        thresholds         = getParam(box, "thresholds"),
-        title              = getParam(box, "title"),
-        titlepos           = getParam(box, "titlepos") or (getParam(box, "title") and "top"),
-        titlealign         = getParam(box, "titlealign"),
-        titlefont          = getParam(box, "titlefont"),
-        titlespacing       = getParam(box, "titlespacing"),
-        titlepadding       = getParam(box, "titlepadding"),
-        titlepaddingleft   = getParam(box, "titlepaddingleft"),
-        titlepaddingright  = getParam(box, "titlepaddingright"),
-        titlepaddingtop    = getParam(box, "titlepaddingtop"),
-        titlepaddingbottom = getParam(box, "titlepaddingbottom"),
-        font               = getParam(box, "font") or "FONT_STD",
-        decimals           = getParam(box, "decimals"),
-        valuealign         = getParam(box, "valuealign"),
-        valuepadding       = getParam(box, "valuepadding"),
-        valuepaddingleft   = getParam(box, "valuepaddingleft"),
-        valuepaddingright  = getParam(box, "valuepaddingright"),
-        valuepaddingtop    = getParam(box, "valuepaddingtop"),
-        valuepaddingbottom = getParam(box, "valuepaddingbottom"),
-        thickness          = getParam(box, "thickness"),
+        value                    = value,
+        displayValue             = displayValue,
+        unit                     = unit,
+        ringbatt                 = ringbatt,
+        percent                  = percent,
+        mahUnit                  = mahUnit,
+        novalue                  = getParam(box, "novalue") or "-",
+        fillcolor                = resolveThresholdColor(value, box, "fillcolor", "fillcolor", getParam(box, "thresholds")),
+        textcolor                = resolveThresholdColor(value, box, "textcolor", "textcolor", thresholds),
+        fillbgcolor              = resolveThemeColor("fillbgcolor", getParam(box, "fillbgcolor")),
+        bgcolor                  = resolveThemeColor("bgcolor", getParam(box, "bgcolor")),
+        titlecolor               = resolveThemeColor("titlecolor", getParam(box, "titlecolor")),
+        thresholds               = getParam(box, "thresholds"),
+        title                    = getParam(box, "title"),
+        titlepos                 = getParam(box, "titlepos") or (getParam(box, "title") and "top"),
+        titlealign               = getParam(box, "titlealign"),
+        titlefont                = getParam(box, "titlefont"),
+        titlespacing             = getParam(box, "titlespacing"),
+        titlepadding             = getParam(box, "titlepadding"),
+        titlepaddingleft         = getParam(box, "titlepaddingleft"),
+        titlepaddingright        = getParam(box, "titlepaddingright"),
+        titlepaddingtop          = getParam(box, "titlepaddingtop"),
+        titlepaddingbottom       = getParam(box, "titlepaddingbottom"),
+        font                     = getParam(box, "font") or "FONT_STD",
+        decimals                 = getParam(box, "decimals"),
+        valuealign               = getParam(box, "valuealign"),
+        valuepadding             = getParam(box, "valuepadding"),
+        valuepaddingleft         = getParam(box, "valuepaddingleft"),
+        valuepaddingright        = getParam(box, "valuepaddingright"),
+        valuepaddingtop          = getParam(box, "valuepaddingtop"),
+        valuepaddingbottom       = getParam(box, "valuepaddingbottom"),
+        thickness                = getParam(box, "thickness"),
+        innerringcolor           = resolveThemeColor("innerringcolor", getParam(box, "innerringcolor") or "white"),
+        innerringthickness       = getParam(box, "innerringthickness") or 8,
+        ringbattsubalign         = getParam(box, "ringbattsubalign"),
+        ringbattsubpadding       = getParam(box, "ringbattsubpadding") or 2,
+        ringbattsubpaddingleft   = getParam(box, "ringbattsubpaddingleft"),
+        ringbattsubpaddingright  = getParam(box, "ringbattsubpaddingright"),
+        ringbattsubpaddingtop    = getParam(box, "ringbattsubpaddingtop"),
+        ringbattsubpaddingbottom = getParam(box, "ringbattsubpaddingbottom"),
+        ringbattsubfont          = getParam(box, "ringbattsubfont") or "FONT_XS",
     }
 
 end
@@ -200,9 +247,56 @@ function render.paint(x, y, w, h, box)
     local radius    = baseSize * 0.5 * ringSize
     local thickness = c.thickness or math.max(8, radius * 0.18)
 
-    -- Full ring: draw background first, then filled foreground
-    drawArc(cx, cy, radius, thickness, 0, 360, c.fillbgcolor)
-    drawArc(cx, cy, radius, thickness, 0, 360, c.fillcolor)
+    -- Ring draw
+    if c.ringbatt then
+        -- Outer ring fill background
+        drawArc(cx, cy, radius, thickness, 0, 360, c.fillbgcolor)
+
+        -- Fill ring (based on fuel %)
+        local startAngle = 360 - (c.percent * 360)
+        drawArc(cx, cy, radius, thickness, startAngle, 360, c.fillcolor)
+
+        -- Inner decorative ring (configurable thickness, flush against inner edge)
+        drawArc(cx, cy, radius - thickness, c.innerringthickness, 0, 360, c.innerringcolor)
+    else
+        -- Default full ring behavior
+        drawArc(cx, cy, radius, thickness, 0, 360, c.fillbgcolor)
+        drawArc(cx, cy, radius, thickness, 0, 360, c.fillcolor)
+    end
+
+    -- Draw subtext (mah or override) below main value
+    if c.ringbatt and c.mahUnit then
+        -- Resolve subtext font and size
+        lcd.font(_G[c.ringbattsubfont] or FONT_XS)
+        local tw, th = lcd.getTextSize(c.mahUnit)
+
+        -- Padding resolution (global fallback or per-side)
+        local padL = c.ringbattsubpaddingleft   or c.ringbattsubpadding or 0
+        local padR = c.ringbattsubpaddingright  or c.ringbattsubpadding or 0
+        local padT = c.ringbattsubpaddingtop    or c.ringbattsubpadding or 0
+        local padB = c.ringbattsubpaddingbottom or c.ringbattsubpadding or 0
+
+        -- Horizontal alignment (default = center)
+        local textX
+        if c.ringbattsubalign == "left" then
+            textX = x + padL
+        elseif c.ringbattsubalign == "right" then
+            textX = x + w - tw - padR
+        else
+            textX = x + (w - tw) / 2 + (padL - padR)
+        end
+
+        -- Vertical alignment (default = below value center)
+        lcd.font(_G[c.font] or FONT_STD)
+        local _, mainH = lcd.getTextSize("0")
+        local centerY = y + h / 2
+        local textY = centerY + mainH / 2 + padT - padB
+
+        -- Final render
+        lcd.font(_G[c.ringbattsubfont] or FONT_XS)
+        lcd.color(c.textcolor)
+        lcd.drawText(textX, textY, c.mahUnit)
+    end
 
     -- Draw title and value
     utils.box(
