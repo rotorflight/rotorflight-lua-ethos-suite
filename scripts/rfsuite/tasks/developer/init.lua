@@ -17,7 +17,8 @@
  * 
 ]] --
 local init = {
-    interval = 5, -- run every 5s
+    intmin = 5, -- run at least every 0.1s
+    intmax = 5, -- run at least
     priority = 1, -- low priority.  1 = low , 2 = medium, 3 = high, etc
     script = "developer.lua", -- run this script
     msp = false -- do not run if busy with msp
