@@ -44,9 +44,9 @@ function flightmode.inFlight()
     end
 
     -- Priority 1: Governor
-    local governor = telemetry.getSensorSource("governor")
+    local governor = telemetry.getSensor("governor")
     if governor then
-        local g = governor:value()
+        local g = governor
         if g ~= nil then
             return g == 4 or g == 5 or g == 6 or g == 7 or g == 8
         end
