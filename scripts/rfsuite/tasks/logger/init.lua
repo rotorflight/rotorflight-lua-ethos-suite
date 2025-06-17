@@ -17,7 +17,8 @@
  * 
 ]] --
 local init = {
-    interval = 0.5, -- run at least every 0.1s
+    intmin = 0.25, -- run at least every 0.1s
+    intmax = 1, -- run at least
     priority = 1, -- medium priority.  1 = low , 2 = medium, 3 = high, etc
     script = "logger.lua", -- run this script
     msp = true, -- do not run if busy with msp 
