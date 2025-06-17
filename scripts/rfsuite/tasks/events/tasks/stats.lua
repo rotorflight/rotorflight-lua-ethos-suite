@@ -91,9 +91,9 @@ function stats.wakeup()
 
     -- Now iterate only over filteredSensors—no more checks of stats
     for sensorKey, sensorDef in pairs(filteredSensors) do
-        local source = telemetry.getSensorSource(sensorKey)
-        if source and source:state() then
-            local val = source:value()
+        local source = telemetry.getSensor(sensorKey)
+        if source then
+            local val = source
             if val then
                 local stats = statsTable[sensorKey] or { min = math.huge, max = -math.huge, sum = 0, count = 0, avg = 0 }
                 stats.min = math.min(stats.min, val)

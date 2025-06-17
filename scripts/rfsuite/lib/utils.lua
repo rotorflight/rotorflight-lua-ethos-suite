@@ -119,8 +119,8 @@ function utils.getGovernorState(value)
     }
 
     if rfsuite.session and rfsuite.session.apiVersion and rfsuite.session.apiVersion > 12.07 then
-        local armflagsSOURCE = rfsuite.tasks.telemetry.getSensorSource("armflags")
-        if armflagsSOURCE and (armflagsSOURCE:value() == 0 or armflagsSOURCE:value() == 2 )then
+        local armflags = rfsuite.tasks.telemetry.getSensor("armflags")
+        if armflags == 0 or armflags == 2 then
             value = 101
         end
     end
@@ -279,10 +279,14 @@ end
 -- you MUST set it to nil after you get it!
 function utils.getCurrentProfile()
 
-    if (rfsuite.tasks.telemetry.getSensorSource("pid_profile") ~= nil and rfsuite.tasks.telemetry.getSensorSource("rate_profile") ~= nil) then
+
+    local pidProfile = rfsuite.tasks.telemetry.getSensor("pid_profile")
+    local rateProfile = rfsuite.tasks.telemetry.getSensor("rate_profile")
+
+    if (pidProfile ~= nil and rateProfile ~= nil) then
 
         rfsuite.session.activeProfileLast = rfsuite.session.activeProfile
-        local p = rfsuite.tasks.telemetry.getSensorSource("pid_profile"):value()
+        local p = pidProfile
         if p ~= nil then
             rfsuite.session.activeProfile = math.floor(p)
         else
@@ -290,7 +294,7 @@ function utils.getCurrentProfile()
         end
 
         rfsuite.session.activeRateProfileLast = rfsuite.session.activeRateProfile
-        local r = rfsuite.tasks.telemetry.getSensorSource("rate_profile"):value()
+        local r = rateProfile
         if r ~= nil then
             rfsuite.session.activeRateProfile = math.floor(r)
         else

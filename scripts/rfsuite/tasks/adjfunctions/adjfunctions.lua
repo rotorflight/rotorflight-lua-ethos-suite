@@ -285,13 +285,10 @@ function adjfunc.wakeup()
     if (rfsuite.clock - initTime) < 5  then return end
 
     -- getSensor source has a cache built in - win
-    adjfuncAdjFunctionSrc = rfsuite.tasks.telemetry.getSensorSource("adj_f")
-    adjfuncAdjValueSrc = rfsuite.tasks.telemetry.getSensorSource("adj_v")
+    adjfuncAdjValue = rfsuite.tasks.telemetry.getSensor("adj_v")
+    adjfuncAdjFunction = rfsuite.tasks.telemetry.getSensor("adj_f")
 
-    if adjfuncAdjValueSrc ~= nil and adjfuncAdjFunctionSrc ~= nil then
-
-        adjfuncAdjValue = adjfuncAdjValueSrc:value()
-        adjfuncAdjFunction = adjfuncAdjFunctionSrc:value()
+    if adjfuncAdjValue ~= nil and adjfuncAdjFunction ~= nil then
 
         if adjfuncAdjValue ~= nil then if type(adjfuncAdjValue) == "number" then adjfuncAdjValue = math.floor(adjfuncAdjValue) end end
         if adjfuncAdjFunction ~= nil then if type(adjfuncAdjFunction) == "number" then adjfuncAdjFunction = math.floor(adjfuncAdjFunction) end end
