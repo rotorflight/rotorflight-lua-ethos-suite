@@ -1,46 +1,48 @@
 --[[
-
     Dial Image Widget
+    Configurable Parameters (box table fields):
+    -------------------------------------------
+    wakeupinterval          : number   -- Optional wakeup interval in seconds (set in wrapper)
 
-    Configurable Arguments (box table keys):
-    ----------------------------------------
-    wakeupinterval      : number   -- Optional wakeup interval in seconds (set in wrapper)
-    source              : string   -- Telemetry sensor source name
-    transform           : string/function/number -- Optional value transform (math function or custom function)
-    min                 : number   -- Minimum value (default: 0)
-    max                 : number   -- Maximum value (default: 100)
-    novalue             : string   -- Text shown if telemetry value is missing (default: "-")
-    unit                : string   -- Unit to append to value (display only if value is present)
-    dial                : string/number/function -- Dial image selector (used for asset path)
-    aspect              : string   -- Image aspect handling ("fit", "fill", "original")
-    align               : string   -- Image alignment ("left", "center", "right", "top", "bottom")
-    needlecolor         : color    -- Needle color (default: red)
-    needlehubcolor      : color    -- Hub color (default: black)
-    accentcolor         : color    -- Accent color (optional, used for hub highlight)
-    needlethickness     : number   -- Needle width in pixels (default: 3)
-    needlehubsize       : number   -- Hub circle radius in pixels (default: needle thickness + 2)
-    needlestartangle    : number   -- Needle starting angle in degrees (default: 135)
-    needleendangle      : number   -- Needle ending angle in degrees (if set, determines sweep)
-    needlesweepangle    : number   -- Needle sweep angle in degrees (default: 270)
-    bgcolor             : color    -- Widget background color (default: theme fallback)
-    textcolor           : color    -- Value text color (default: theme/text fallback)
-    titlecolor          : color    -- Title text color (default: theme/text fallback)
-    title               : string   -- Title text
-    titlealign          : string   -- Title alignment ("center", "left", "right")
-    valuealign          : string   -- Value alignment ("center", "left", "right")
-    titlepos            : string   -- Title position ("top" or "bottom")
-    titlepadding        : number   -- Padding for title (all sides unless overridden)
-    titlepaddingleft    : number   -- Left padding for title
-    titlepaddingright   : number   -- Right padding for title
-    titlepaddingtop     : number   -- Top padding for title
-    titlepaddingbottom  : number   -- Bottom padding for title
-    valuepadding        : number   -- Padding for value (all sides unless overridden)
-    valuepaddingleft    : number   -- Left padding for value
-    valuepaddingright   : number   -- Right padding for value
-    valuepaddingtop     : number   -- Top padding for value
-    valuepaddingbottom  : number   -- Bottom padding for value
-    font                : font     -- Value font (default: FONT_STD)
+    -- title parameters
+    title                   : string    -- (Optional) Title text
+    titlealign              : string    -- (Optional) "center", "left", "right"
+    titlefont               : font      -- (Optional) Title font (e.g., font_l, font_xl)
+    titlespacing            : number    -- (Optional) Gap below title
+    titlecolor              : color     -- (Optional) Title text color
+    titlepadding            : number    -- (Optional) Padding for title (all sides unless overridden)
+    titlepaddingleft        : number    -- (Optional)
+    titlepaddingright       : number    -- (Optional)
+    titlepaddingtop         : number    -- (Optional)
+    titlepaddingbottom      : number    -- (Optional)
 
+    -- value / source parameters
+    value                   : any       -- (Optional) Static value to display if telemetry is not present
+    source                  : string    -- Telemetry sensor name
+    transform               : string|function|number -- (Optional) Value transformation ("floor", "ceil", "round", etc.)
+    decimals                : number    -- (Optional) Decimal precision
+    novalue                 : string    -- (Optional) Text if telemetry is missing (default: "-")
+    unit                    : string    -- (Optional) Unit label ("" hides unit)
+    font                    : font      -- (Optional) Value font (e.g. font_l)
+    valuealign              : string    -- (Optional) "center", "left", "right"
+    textcolor               : color     -- (Optional) Text color
+    valuepadding            : number    -- (Optional) Padding for value (all sides unless overridden)
+    valuepaddingleft        : number    -- (Optional)
+    valuepaddingright       : number    -- (Optional)
+    valuepaddingtop         : number    -- (Optional)
+    valuepaddingbottom      : number    -- (Optional)
+
+    -- dial image & needle styling
+    dial                    : string|number|function -- Dial image selector (used for asset path)
+    scalefactor             : number   -- (Optional) Image scale multiplier (default: 0.4)
+    needlecolor             : color    -- (Optional) Needle color (default: theme)
+    needlehubcolor          : color    -- (Optional) Hub color (default: theme)
+    needlethickness         : number   -- (Optional) Needle width in pixels (default: 3)
+    needlehubsize           : number   -- (Optional) Hub circle radius in pixels (default: needle thickness + 2)
+    needlestartangle        : number   -- (Optional) Needle starting angle in degrees (default: 135)
+    needlesweepangle        : number   -- (Optional) Needle sweep angle in degrees (default: 270)
+
+    bgcolor                 : color    -- Widget background color (default: theme fallback)
 ]]
 
 local render = {}
@@ -48,7 +50,6 @@ local render = {}
 local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
-local lastDisplayValue = nil
 
 function render.dirty(box)
     -- Always dirty on first run
@@ -65,10 +66,6 @@ function render.dirty(box)
     return false
 end
 
-
-rfsuite.session.dialImageCache = rfsuite.session.dialImageCache or {}
-
--- Resolves dial or pointer value to an image path
 local function resolveDialAsset(value, basePath)
     if type(value) == "function" then value = value() end
     if type(value) == "number" then
@@ -83,6 +80,7 @@ local function resolveDialAsset(value, basePath)
     return nil
 end
 
+rfsuite.session.dialImageCache = rfsuite.session.dialImageCache or {}
 local function loadDialPanelCached(dialId)
     local key = tostring(dialId or "panel1")
     if not rfsuite.session.dialImageCache[key] then
@@ -96,199 +94,169 @@ local function calDialAngle(percent, startAngle, sweepAngle)
     return (startAngle or 315) + (sweepAngle or 270) * (percent or 0) / 100
 end
 
-local function computeDrawArea(img, x, y, w, h, aspect, align)
+local function computeDrawArea(img, x, y, w, h, scalefactor)
+    if not img then return x, y, w, h end
+    
     local iw, ih = img:width(), img:height()
-    local drawW, drawH = w, h
-    if aspect == "fit" then
-        local scale = math.min(w / iw, h / ih)
-        drawW = iw * scale
-        drawH = ih * scale
-    elseif aspect == "fill" then
-        local scale = math.max(w / iw, h / ih)
-        drawW = iw * scale
-        drawH = ih * scale
-    elseif not aspect or aspect == "original" then
-        drawW = iw
-        drawH = ih
-    end
-    local drawX, drawY = x, y
-    align = align or "center"
-    if align:find("right") then
-        drawX = x + w - drawW
-    elseif align:find("center") or not align:find("left") then
-        drawX = x + (w - drawW) / 2
-    end
-    if align:find("bottom") then
-        drawY = y + h - drawH
-    elseif align:find("center") or not align:find("top") then
-        drawY = y + (h - drawH) / 2
-    end
+    local scale = math.max(w / iw, h / ih) * (scalefactor or 1.0)
+    local drawW = iw * scale
+    local drawH = ih * scale
+    local drawX = x + (w - drawW) / 2
+    local drawY = y + (h - drawH) / 2
     return drawX, drawY, drawW, drawH
 end
 
 function render.wakeup(box, telemetry)
-    -- Value/percent logic
-    local value = nil
+    -- Value extraction
     local source = getParam(box, "source")
-    if source then
-        local sensor = telemetry and telemetry.getSensorSource(source)
-        value = sensor and sensor:value()
-        local transform = getParam(box, "transform")
-        if type(transform) == "string" and math[transform] then
-            value = value and math[transform](value)
-        elseif type(transform) == "function" then
-            value = value and transform(value)
-        elseif type(transform) == "number" then
-            value = value and transform(value)
-        end
+    local value, _, dynamicUnit
+    if telemetry and source then
+        value, _, dynamicUnit = telemetry.getSensor(source)
     end
 
+    -- Dynamic unit logic (User can force a unit or omit unit using "" to hide)
+    local manualUnit = getParam(box, "unit")
+    local unit
+
+    if manualUnit ~= nil then
+        unit = manualUnit  -- use user value, even if ""
+    elseif dynamicUnit ~= nil then
+        unit = dynamicUnit
+    elseif source and telemetry and telemetry.sensorTable[source] then
+        unit = telemetry.sensorTable[source].unit_string or ""
+    else
+        unit = ""
+    end
+
+    -- Min/Max boundaries
     local min = getParam(box, "min") or 0
     local max = getParam(box, "max") or 100
+
+    -- Percent calculation
     local percent = 0
     if value and max ~= min then
-        percent = ((value - min) / (max - min)) * 100
-        percent = math.max(0, math.min(100, percent))
+        percent = math.max(0, math.min(1, (value - min) / (max - min)))
     end
 
-    local displayValue = value ~= nil and value or (getParam(box, "novalue") or "-")
-    local unit = value ~= nil and getParam(box, "unit") or nil
-
-    -- Image/needle/hub
-    local dialId   = getParam(box, "dial")
-    local panelImg = loadDialPanelCached(dialId)
-    local aspect   = getParam(box, "aspect")
-    local align    = getParam(box, "align") or "center"
-
-    local needleColor = resolveThemeColor(getParam(box, "needlecolor"))
-    local hubColor    = resolveThemeColor(getParam(box, "needlehubcolor"))
-    local accentcolor = resolveThemeColor(getParam(box, "accentcolor"))
-    local framecolor  = resolveThemeColor(getParam(box, "framecolor"))
-    local needleThickness = tonumber(getParam(box, "needlethickness")) or 3
-    local hubRadius   = tonumber(getParam(box, "needlehubsize")) or (math.max(2, needleThickness + 2))
-
-    local needleStartAngle = tonumber(getParam(box, "needlestartangle")) or 135
-    local needleEndAngle   = getParam(box, "needleendangle")
-    if needleEndAngle then needleEndAngle = tonumber(needleEndAngle) end
-    local sweep = needleEndAngle and (needleEndAngle - needleStartAngle) or (tonumber(getParam(box, "needlesweepangle")) or 270)
-    if needleEndAngle and math.abs(sweep) > 180 then
-        if sweep > 0 then sweep = sweep - 360 else sweep = sweep + 360 end
+    -- Transform and decimals (if required)
+    local displayValue
+    if value ~= nil then
+        displayValue = utils.transformValue(value, box)
     end
 
-    -- Standard color fields
-    local bgcolor    = resolveThemeColor("bgcolor", getParam(box, "bgcolor"))
-    local textcolor  = resolveThemeColor("textcolor", getParam(box, "textcolor"))
-    local titlecolor = resolveThemeColor("titlecolor", getParam(box, "titlecolor"))
-    local accentcolor = resolveThemeColor("accentcolor", getParam(box, "accentcolor"))
-    local framecolor = resolveThemeColor("framecolor", getParam(box, "framecolor"))
+    -- Fallback if no value
+    if value == nil then
+        displayValue = getParam(box, "novalue") or "-"
+        unit = nil
+    end
 
     -- Set box.value so dashboard/dirty can track change for redraws
     box._currentDisplayValue = value
 
-    -- All display geometry/padding/font values
     box._cache = {
-        value           = value,
-        displayValue    = displayValue,
-        unit            = unit,
-        percent         = percent,
-        min             = min,
-        max             = max,
-        dialId          = dialId,
-        panelImg        = panelImg,
-        aspect          = aspect,
-        align           = align,
-        needleColor     = needleColor,
-        hubColor        = hubColor,
-        accentcolor     = accentcolor,
-        framecolor      = framecolor,
-        needleThickness = needleThickness,
-        hubRadius       = hubRadius,
-        needleStartAngle= needleStartAngle,
-        sweep           = sweep,
-        bgcolor         = bgcolor,
-        textcolor       = textcolor,
-        titlecolor      = titlecolor,
-        title           = getParam(box, "title"),
-        titlealign      = getParam(box, "titlealign"),
-        valuealign      = getParam(box, "valuealign"),
-        titlepos        = getParam(box, "titlepos"),
-        titlepadding       = getParam(box, "titlepadding"),
-        titlepaddingleft   = getParam(box, "titlepaddingleft"),
-        titlepaddingright  = getParam(box, "titlepaddingright"),
-        titlepaddingtop    = getParam(box, "titlepaddingtop"),
-        titlepaddingbottom = getParam(box, "titlepaddingbottom"),
-        valuepadding       = getParam(box, "valuepadding"),
-        valuepaddingleft   = getParam(box, "valuepaddingleft"),
-        valuepaddingright  = getParam(box, "valuepaddingright"),
-        valuepaddingtop    = getParam(box, "valuepaddingtop"),
-        valuepaddingbottom = getParam(box, "valuepaddingbottom"),
-        font            = getParam(box, "font"),
+        value               = value,
+        displayvalue        = displayValue,
+        percent             = percent * 100,
+        unit                = unit,
+        min                 = min,
+        max                 = max,
+        title               = getParam(box, "title"),
+        titlepos            = getParam(box, "titlepos"),
+        titlefont           = getParam(box, "titlefont"),
+        titlealign          = getParam(box, "titlealign"),
+        titlespacing        = getParam(box, "titlespacing") or 0,
+        titlecolor          = resolveThemeColor("titlecolor", getParam(box, "titlecolor")),
+        titlepadding        = getParam(box, "titlepadding"),
+        titlepaddingleft    = getParam(box, "titlepaddingleft"),
+        titlepaddingright   = getParam(box, "titlepaddingright"),
+        titlepaddingtop     = getParam(box, "titlepaddingtop"),
+        titlepaddingbottom  = getParam(box, "titlepaddingbottom"),
+        font                = getParam(box, "font") or "FONT_STD",
+        textcolor           = resolveThemeColor("textcolor", getParam(box, "textcolor")),
+        valuealign          = getParam(box, "valuealign"),
+        valuepadding        = getParam(box, "valuepadding"),
+        valuepaddingleft    = getParam(box, "valuepaddingleft"),
+        valuepaddingright   = getParam(box, "valuepaddingright"),
+        valuepaddingtop     = getParam(box, "valuepaddingtop"),
+        valuepaddingbottom  = getParam(box, "valuepaddingbottom"),
+        dialid              = getParam(box, "dial"),
+        panelimg            = loadDialPanelCached(getParam(box, "dial")),
+        scalefactor         = tonumber(getParam(box, "scalefactor")) or 0.4,
+        needlecolor         = resolveThemeColor("needlecolor", getParam(box, "needlecolor")),
+        hubcolor            = resolveThemeColor("needlehubcolor", getParam(box, "needlehubcolor")),
+        needlethickness     = getParam(box, "needlethickness") or 3,
+        hubradius           = getParam(box, "needlehubsize") or 5,
+        needlestartangle    = getParam(box, "needlestartangle") or 135,
+        sweep               = getParam(box, "needlesweepangle") or 270,
+        bgcolor             = resolveThemeColor("bgcolor", getParam(box, "bgcolor")),
     }
 end
+
 
 function render.paint(x, y, w, h, box)
     x, y = utils.applyOffset(x, y, box)
     local c = box._cache or {}
 
-    -- Draw background
-    lcd.color(c.bgcolor)
-    lcd.drawFilledRectangle(x, y, w, h)
-
-    -- Optional dial frame
-    if c.framecolor then
-        lcd.color(c.framecolor)
-        lcd.drawRectangle(x, y, w, h)
+    -- Title layout height calculation
+    local titleHeight = 0
+    if c.title then
+        lcd.font(_G[c.titlefont] or FONT_XS)
+        local _, th = lcd.getTextSize(c.title)
+        titleHeight = (th or 0) + (c.titlespacing or 0) + (c.titlepaddingtop or 0) + (c.titlepaddingbottom or 0)
     end
 
-    -- Draw dial panel image
+    -- Dial image region: based on title position
+    local imgRegionY, imgRegionH
+    if c.titlepos == "top" then
+        imgRegionY = y + titleHeight
+        imgRegionH = h - titleHeight
+    elseif c.titlepos == "bottom" then
+        imgRegionY = y
+        imgRegionH = h - titleHeight
+    else
+        imgRegionY = y
+        imgRegionH = h
+    end
+
+    -- Widget background
+    if c.bgcolor then
+        lcd.color(c.bgcolor)
+        lcd.drawFilledRectangle(x, y, w, h)
+    end
+
+    -- Draw panel image (dial)
     local drawX, drawY, drawW, drawH = x, y, w, h
-    if c.panelImg then
-        drawX, drawY, drawW, drawH = computeDrawArea(c.panelImg, x, y, w, h, c.aspect, c.align)
-        lcd.drawBitmap(drawX, drawY, c.panelImg, drawW, drawH)
+    if c.panelimg then
+        drawX, drawY, drawW, drawH = computeDrawArea(c.panelimg, x, imgRegionY, w, imgRegionH, c.scalefactor)
+        lcd.drawBitmap(drawX, drawY, c.panelimg, drawW, drawH)
     end
 
-    -- Draw needle/hub/accent
+    -- Draw needle and hub if value exists
     if c.value ~= nil then
-        local angle = calDialAngle(c.percent, c.needleStartAngle, c.sweep)
+        local angle = calDialAngle(c.percent, c.needlestartangle, c.sweep)
         local cx = drawX + drawW / 2
         local cy = drawY + drawH / 2
         local radius = math.min(drawW, drawH) * 0.40
         local needleLength = radius - 6
-
         if c.percent and type(c.percent) == "number" and not (c.percent ~= c.percent) then
-            rfsuite.widgets.dashboard.utils.drawBarNeedle(cx, cy, needleLength, c.needleThickness, angle, c.needleColor)
+            utils.drawBarNeedle(cx, cy, needleLength, c.needlethickness, angle, c.needlecolor)
         end
-
-        lcd.color(c.accentcolor or c.hubColor)
-        lcd.drawFilledCircle(cx, cy, c.hubRadius)
+        lcd.color(c.hubcolor)
+        lcd.drawFilledCircle(cx, cy, c.hubradius)
     end
 
-    -- Title
-    if c.title then
-        lcd.font(FONT_XS)
-        local tW, tH = lcd.getTextSize(c.title)
-        tW = tW or 0
-        tH = tH or 0
-        lcd.color(c.titlecolor or lcd.RGB(255, 255, 255))
-        lcd.drawText(x + (w - tW) / 2, y + h - tH, c.title)
-    end
-
-    -- Value display (with dynamic/static text sizing)
-    if c.displayValue ~= nil then
-        local str = tostring(c.displayValue or "") .. (c.unit or "")
-        if str == "" then str = "-" end
-        local font = c.font -- may be nil for dynamic
-        if font and _G[font] then
-            lcd.font(_G[font])
-        else
-            lcd.font(FONT_STD)
-        end
-        local vW, vH = lcd.getTextSize(str)
-        vW = vW or 0
-        vH = vH or 0
-        lcd.color(c.textcolor or lcd.RGB(255, 255, 255))
-        lcd.drawText(x + (w - vW) / 2, y + h - vH - 16, str)
-    end
+    -- Draw title and value text
+    utils.box(
+        x, y, w, h,
+        c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing,
+        c.titlecolor, c.titlepadding, c.titlepaddingleft, c.titlepaddingright,
+        c.titlepaddingtop, c.titlepaddingbottom,
+        c.displayvalue, c.unit,
+        c.font, c.valuealign, c.textcolor,
+        c.valuepadding, c.valuepaddingleft, c.valuepaddingright,
+        c.valuepaddingtop, c.valuepaddingbottom,
+        nil
+    )
 end
 
 return render

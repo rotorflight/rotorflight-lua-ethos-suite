@@ -38,32 +38,21 @@ local boxes = {
 
     -- DIAL
     {
-        type = "dial",
         col = 1, row = 1,
-        title = "Voltage",
-        unit = "v",
+        type = "dial",
+        title = "VOLTAGE",
         titlepos = "bottom",
+        titlefont = "FONT_XXS",
         source = "voltage",
-        aspect = "fit",
-        align = "center",
+        decimals = 1,
+        needlecolor = "white",
+        needlehubcolor = "white",
+        valuepaddingtop = 70,
         dial = 1,
-        needlecolor = "red",
-        needlehubcolor = "red",
-        needlehubsize = 5,
-        needlethickness = 4,
         font = "FONT_S",
-        min = function()
-            local cfg = rfsuite.session.batteryConfig
-            local cells = (cfg and cfg.batteryCellCount) or 3
-            local minV = (cfg and cfg.vbatmincellvoltage) or 3.0
-            return math.max(0, cells * minV)
-        end,
-        max = function()
-            local cfg = rfsuite.session.batteryConfig
-            local cells = (cfg and cfg.batteryCellCount) or 3
-            local maxV = (cfg and cfg.vbatmaxcellvoltage) or 4.2
-            return math.max(0, cells * maxV)
-        end,
+        min = 0,
+        max = 100,
+        transform = "floor",
     },
 
     -- HEATRING
