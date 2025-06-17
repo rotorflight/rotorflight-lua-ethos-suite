@@ -177,25 +177,6 @@ function utils.screenError(msg, border, pct, padX, padY)
     lcd.drawText(x, y, msg)
 end
 
-
-
---- Calculates the X coordinate for text alignment within a given width.
--- @param text string: The text to be aligned.
--- @param align string: The alignment type ("left", "center", or "right").
--- @param x number: The starting X coordinate of the area.
--- @param w number: The width of the area to align within.
--- @return number: The calculated X coordinate for the aligned text.
-function utils.getAlignedX(text, align, x, w)
-    local tsize = lcd.getTextSize(text)
-    if align == "right" then
-        return x + w - tsize
-    elseif align == "left" then
-        return x
-    else -- center
-        return x + (w - tsize) / 2
-    end
-end
-
 --- Resolve a named, bright/light, dark, or raw-RGB color.
 -- @param value     string (e.g. "red", "brightBlue", "darkGreen") or {r,g,b,...}
 -- @param variantFactor number? how strongly to lighten/darken (0–1). Defaults to 0.3.
