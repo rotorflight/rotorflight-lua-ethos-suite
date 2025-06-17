@@ -760,7 +760,7 @@ local sensorTable = {
         set_telemetry_sensors = nil,
         sensors = {
             sim = {
-                { uid = 0x5023, unit = UNIT_DEGREE, dec = 1,
+                { uid = 0x5024, unit = UNIT_DEGREE, dec = 1,
                   value = function() return rfsuite.utils.simSensors('attpitch') end,
                   min = -1800, max = 3600 },
             },
