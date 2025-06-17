@@ -54,7 +54,7 @@ function render.dirty(box)
     return false
 end
 
-function render.wakeup(box, telemetry)
+function render.wakeup(box)
     -- Value extraction
     local value = getParam(box, "value")
     local displayValue = value
