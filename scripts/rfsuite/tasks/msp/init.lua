@@ -17,7 +17,8 @@
  * 
 ]] --
 local init = {
-    interval = 0.1, -- run at least every 0.1s
+    intmin = 0.1, -- run at least every 0.25s
+    intmax = 0.25, -- run at least every 0.5s
     priority = 4, -- medium priority.  1 = low , 2 = medium, 3 = high, etc
     script = "msp.lua", -- run this script
     msp = true, -- do not run if busy with msp [as this is msp we set to true as must run]
