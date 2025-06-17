@@ -38,7 +38,7 @@ local layout = {
 
 local boxes = {
     -- Column 1
-    { col = 1, row = 1, colspan = 1, rowspan = 1, bgcolor="transparent", type = "navigation", subtype = "ah" },
+    { col = 1, row = 1, colspan = 2, rowspan = 2, bgcolor="transparent", type = "navigation", subtype = "ah" },
 
 }
 
