@@ -17,11 +17,12 @@
  * 
 ]] --
 local init = {
-    intmin = 2, -- run at least every 0.1s
-    intmax = 5, -- run at least
-    priority = 0, -- medium priority.  1 = low , 2 = medium, 3 = high, etc
-    script = "compiler.lua", -- run this script
-    msp = false, -- do not run if busy with msp 
+    intmin    = 2,                      -- minimum number of seconds to wait between runs (i.e. don’t run more often than every 0.25s)
+    intmax    = 5,                      -- maximum number of seconds to wait between runs (i.e. ensure it runs at least once every 0.5s)
+    priority  = 1,                      -- scheduling priority (1 = low, 2 = medium, 3 = high, etc.)
+    script    = "compiler.lua",         -- the task’s entry-point script
+    isolate   = { msp = true },         -- table of peer tasks not to run in the same cycle
+    nolink    = true,                  -- if true, runs even when the telemetry link is down
 }
 
 return init
