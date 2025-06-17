@@ -81,7 +81,7 @@ local boxes = {
     {col = 3, row = 2, type = "text", subtype = "stats", stattype = "min", source = "fuel", title = "Fuel Remaining", titlepos = "top", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = "floor"},
     {col = 3, row = 3, type = "text", subtype = "stats", stattype = "min", source = "voltage", title = "Min Volts per cell", titlepos = "top", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = function(v) return maxVoltageToCellVoltage(v) end},
     {col = 3, row = 4, type = "text", subtype = "stats", stattype = "min", source = "rssi", title = "Link Min", titlepos = "top", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = "floor"},
-}
+
 
 return {
     layout = layout,
@@ -90,5 +90,7 @@ return {
         wakeup_interval = 0.1,          -- Interval (seconds) to run wakeup script when display is visible
         wakeup_interval_bg = 5,         -- (optional: run wakeup this often when not visible; set nil/empty to skip)
         paint_interval = 0.1,            -- Interval (seconds) to run paint script when display is visible 
+        spread_scheduling = true,      -- (optional: spread scheduling over the interval to avoid spikes in CPU usage)  
+        spread_ratio = 1.0              -- optional: manually override default ratio logic (applies if spread_scheduling is true)        
     } 
 }
