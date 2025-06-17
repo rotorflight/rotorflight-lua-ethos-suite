@@ -104,6 +104,10 @@ local function drawRainbowArc(cx, cy, radius, thickness, startAngle, endAngle, c
     end
 end
 
+local function calDialAngle(percent, startAngle, sweepAngle)
+    return (startAngle or 135) + (sweepAngle or 270) * (percent or 0)
+end
+
 function render.wakeup(box, telemetry)
     -- Value extraction
     local source = getParam(box, "source")
@@ -190,6 +194,8 @@ function render.wakeup(box, telemetry)
         bandcolors          = resolveThemeColorArray("fillcolor", getParam(box, "bandcolors") or {"red", "orange", "green"}),
         needlethickness     = getParam(box, "needlethickness") or 5,
         needlehubsize       = getParam(box, "needlehubsize") or 7,
+        needlestartangle    = getParam(box, "needlestartangle") or 150,
+        needlesweepangle    = getParam(box, "needlesweepangle") or 240,
         accentcolor         = resolveThemeColor("accentcolor", getParam(box, "accentcolor")),
     }
 end
@@ -231,7 +237,7 @@ function render.paint(x, y, w, h, box)
     -- Draw colored arc bands
     local bandCount = #c.bandlabels
     local startAngle = 240
-    local endAngle = 120
+    local endAngle   = 120
     if bandCount > 0 and c.bandcolors then
         drawRainbowArc(cx, cy, radius, thickness, startAngle, endAngle, c.bandcolors)
     end
@@ -239,21 +245,13 @@ function render.paint(x, y, w, h, box)
     -- Needle hub vertical offset
     local needleHubYOffset = 6
 
-    -- Draw needle
+    -- Draw needle with its own sweep
     if c.percent then
-        local angleSweep = (endAngle - startAngle + 360) % 360
-        local angleDeg = (startAngle + angleSweep * c.percent) % 360
-        local step = 1
-        local rad_thick = c.needlethickness / 2
+        local angleDeg = calDialAngle(c.percent, c.needlestartangle or 150, c.needlesweepangle or 240)
         local needleLen = radius
-        local cy_needle = cy + needleHubYOffset
-
+        local cy_needle = cy
+        utils.drawBarNeedle(cx, cy_needle, needleLen, c.needlethickness, angleDeg, c.accentcolor)
         lcd.color(c.accentcolor)
-        for i = 0, needleLen, step do
-            local px = cx + i * math.cos(math.rad(angleDeg))
-            local py = cy_needle - i * math.sin(math.rad(angleDeg))
-            lcd.drawFilledCircle(px, py, rad_thick)
-        end
         lcd.drawFilledCircle(cx, cy_needle, c.needlehubsize)
     end
 
