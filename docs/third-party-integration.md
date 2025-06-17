@@ -33,6 +33,11 @@ local name = rfsuite.session.craftName or "-"
 * **Get sensor**: `rfsuite.tasks.telemetry.getSensorSource(id)` returns a sensor object.
 * **Read value**: `:value()` to fetch the latest reading.
 
+or a faster and more efficient:
+
+* **Get sensor**: `rfsuite.tasks.telemetry.getSensor(id)` returns a value of the sensor
+
+
 ```lua
 local rpmSensor = rfsuite.tasks.telemetry.getSensorSource("rpm")
 local rpm = rpmSensor:value()
