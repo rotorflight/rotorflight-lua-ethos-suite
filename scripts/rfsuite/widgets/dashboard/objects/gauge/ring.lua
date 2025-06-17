@@ -1,30 +1,51 @@
 --[[
+    Rainbow Gauge Widget
+    Configurable Parameters (box table fields):
+    -------------------------------------------
 
-    Heat Ring Widget
-
-    Configurable Arguments (box table keys):
-    ----------------------------------------
+    -- Timing
     wakeupinterval      : number   -- Optional wakeup interval in seconds (set in wrapper)
-    source              : string/function -- Telemetry sensor source name or function
-    transform           : string/function/number -- Optional value transform (math function or custom function)
-    min                 : number/function -- Minimum value for gauge (default: 0)
-    max                 : number/function -- Maximum value for gauge (default: 100)
-    ringsize            : number          -- Size of ring as fraction of widget (default: 0.88)
-    fillcolor           : color           -- Ring fill color (default: theme fallback)
-    fillbgcolor         : color           -- Ring background color (default: theme fallback)
-    thresholds          : table           -- List of threshold tables: {value=..., fillcolor=...}
-    novalue             : string          -- Text shown if telemetry value is missing (default: "-")
-    unit                : string          -- Unit label for value
-    textcolor           : color           -- Value text color (default: theme/text fallback)
-    textalign           : string          -- Value text alignment ("center", "left", "right")
-    textoffset          : number          -- Offset for value text position (default: 0)
-    title               : string          -- Title text
-    titlealign          : string          -- Title alignment ("center", "left", "right")
-    titlepos            : string          -- Title position ("above" or "below")
-    titleoffset         : number          -- Offset for title position (default: 0)
-    bgcolor             : color           -- Widget background color (default: theme fallback)
+
+    -- Title parameters
+    title               : string    -- (Optional) Title text
+    titlepos            : string    -- (Optional) If `title` is present but `titlepos` is not set, title is placed at the top by default
+    titlealign          : string    -- (Optional) Title alignment ("center", "left", "right")
+    titlefont           : font      -- (Optional) Title font (e.g., FONT_L, FONT_XL)
+    titlespacing        : number    -- (Optional) Vertical gap between title and value
+    titlecolor          : color     -- (Optional) Title text color (theme/text fallback)
+    titlepadding        : number    -- (Optional) Padding for title (all sides unless overridden)
+    titlepaddingleft    : number    -- (Optional) Left padding for title
+    titlepaddingright   : number    -- (Optional) Right padding for title
+    titlepaddingtop     : number    -- (Optional) Top padding for title
+    titlepaddingbottom  : number    -- (Optional) Bottom padding for title
+
+    -- Value/Source parameters
+    value               : any       -- (Optional) Static value to display if telemetry is not present
+    source              : string    -- Telemetry sensor source name (e.g., "temp_esc")
+    transform           : string|function|number -- (Optional) Value transformation ("floor", "ceil", "round", multiplier, or custom function)
+    decimals            : number    -- (Optional) Number of decimal places for numeric display
+    thresholds          : table     -- (Optional) List of threshold tables: {value=..., fillcolor=..., textcolor=...}
+    novalue             : string    -- (Optional) Text shown if value is missing (default: "-")
+    unit                : string    -- (Optional) Unit label to append to value ("" hides, default resolves dynamically)
+    font                : font      -- (Optional) Value font (e.g., FONT_L, FONT_XL)
+    valuealign          : string    -- (Optional) Value alignment ("center", "left", "right")
+    textcolor           : color     -- (Optional) Value text color (theme/text fallback)
+    valuepadding        : number    -- (Optional) Padding for value (all sides unless overridden)
+    valuepaddingleft    : number    -- (Optional) Left padding for value
+    valuepaddingright   : number    -- (Optional) Right padding for value
+    valuepaddingtop     : number    -- (Optional) Top padding for value
+    valuepaddingbottom  : number    -- (Optional) Bottom padding for value
+
+    -- Appearance/Theming
+    bgcolor             : color     -- (Optional) Widget background color (theme fallback)
+    fillbgcolor         : color     -- (Optional) Ring background color (theme fallback)
+    fillcolor           : color     -- (Optional) Ring foreground color (theme fallback)
+
+    -- Geometry
+    thickness           : number    -- (Optional) Ring thickness in pixels (default is proportional to radius)
 
 ]]
+
 
 local render = {}
 
@@ -48,87 +69,101 @@ function render.dirty(box)
     return false
 end
 
+local function drawArc(cx, cy, radius, thickness, startAngle, endAngle, color)
+    lcd.color(color)
+    local outer = radius
+    local inner = math.max(1, radius - (thickness or 6))
 
-local function drawSolidRing(cx, cy, radius, thickness, fillcolor, fillbgcolor)
-    lcd.color(fillbgcolor)
-    lcd.drawFilledCircle(cx, cy, radius)
-    lcd.color(fillcolor)
-    lcd.drawFilledCircle(cx, cy, radius - thickness)
+    -- Normalize angles
+    startAngle = startAngle % 360
+    endAngle = endAngle % 360
+    if endAngle <= startAngle then
+        endAngle = endAngle + 360
+    end
+
+    local sweep = endAngle - startAngle
+    if sweep <= 180 then
+        lcd.drawAnnulusSector(cx, cy, inner, outer, startAngle, endAngle)
+    else
+        local mid = startAngle + sweep / 2
+        lcd.drawAnnulusSector(cx, cy, inner, outer, startAngle, mid)
+        lcd.drawAnnulusSector(cx, cy, inner, outer, mid, endAngle)
+    end
 end
 
 function render.wakeup(box, telemetry)
-    -- Calculate the value from telemetry, transform, min/max, etc
-    local value, source = nil, getParam(box, "source")
-    if source and telemetry and telemetry.getSensorSource then
-        local sensor = telemetry.getSensorSource(source)
-        value = sensor and sensor.value and sensor:value()
+    -- Value extraction
+    local source = getParam(box, "source")
+    local value, _, dynamicUnit
+    if telemetry and source then
+        value, _, dynamicUnit = telemetry.getSensor(source)
     end
 
-    -- Apply transform
-    local transform = getParam(box, "transform")
-    if value ~= nil and transform ~= nil then
-        if type(transform) == "function" then value = transform(value)
-        elseif transform == "floor" then value = math.floor(value)
-        elseif transform == "ceil" then value = math.ceil(value)
-        elseif transform == "round" then value = math.floor(value + 0.5)
-        end
+    -- Dynamic unit logic (User can force a unit or omit unit using "" to hide)
+    local manualUnit = getParam(box, "unit")
+    local unit
+
+    if manualUnit ~= nil then
+        unit = manualUnit  -- use user value, even if ""
+    elseif dynamicUnit ~= nil then
+        unit = dynamicUnit
+    elseif source and telemetry and telemetry.sensorTable[source] then
+        unit = telemetry.sensorTable[source].unit_string or ""
+    else
+        unit = ""
     end
 
-    -- Clamp
-    local min = getParam(box, "min")
-    local max = getParam(box, "max")
-    if type(min) == "function" then min = min() end
-    if type(max) == "function" then max = max() end
-    if min ~= nil and max ~= nil and value ~= nil then
-        value = math.max(min, math.min(max, value))
+    -- Transform and decimals (if required)
+    local displayValue
+    if value ~= nil then
+        displayValue = utils.transformValue(value, box)
     end
 
-    -- Prepare display string
-    local novalue = getParam(box, "novalue") or "-"
-    local displayValue = value or novalue
-    local unit = (value ~= nil) and getParam(box, "unit") or nil
-
-    -- Resolve fillcolor and textcolor with theme and thresholds
-    local fillbgcolor = resolveThemeColor("fillbgcolor", getParam(box, "fillbgcolor"))
-    local fillcolor   = resolveThemeColor("fillcolor", getParam(box, "fillcolor"))
-    local textcolor   = resolveThemeColor("textcolor", getParam(box, "textcolor"))
-    local thresholds  = getParam(box, "thresholds")
-    if thresholds and value ~= nil then
-        for _, t in ipairs(thresholds) do
-            local t_val = type(t.value) == "function" and t.value(box, value) or t.value
-            if value < t_val then
-                if t.fillcolor then fillcolor = resolveThemeColor("fillcolor", t.fillcolor) end
-                if t.textcolor then textcolor = resolveThemeColor("textcolor", t.textcolor) end
-                break
-            end
-        end
+    -- Fallback if no value
+    if value == nil then
+        displayValue = getParam(box, "novalue") or "-"
+        unit = nil
     end
 
     -- Set box.value so dashboard/dirty can track change for redraws
     box._currentDisplayValue = value
 
-    -- Cache only essentials
     box._cache = {
-        value        = value,
-        displayValue = displayValue,
-        unit         = unit,
-        novalue      = novalue,
-        fillcolor    = fillcolor,
-        fillbgcolor  = fillbgcolor,
-        textcolor    = textcolor,
-        title        = getParam(box, "title"),
-        titlecolor   = resolveThemeColor("titlecolor", getParam(box, "titlecolor")),
-        bgcolor      = resolveThemeColor("bgcolor", getParam(box, "bgcolor")),
-        ringsize     = getParam(box, "ringsize") or 0.88,
-        textalign    = getParam(box, "textalign") or "center",
-        titlealign   = getParam(box, "titlealign") or "center",
-        titlepos     = getParam(box, "titlepos") or "above",
-        textoffset   = getParam(box, "textoffset") or 0,
-        titleoffset  = getParam(box, "titleoffset") or 0,
+        value              = value,
+        displayValue       = displayValue,
+        unit               = unit,
+        novalue            = getParam(box, "novalue") or "-",
+        fillcolor          = utils.resolveThresholdColor(value, box, "fillcolor", "fillcolor", thresholds),
+        textcolor          = utils.resolveThresholdColor(value, box, "textcolor", "textcolor", thresholds),
+        fillbgcolor        = resolveThemeColor("fillbgcolor", getParam(box, "fillbgcolor")),
+        bgcolor            = resolveThemeColor("bgcolor", getParam(box, "bgcolor")),
+        titlecolor         = resolveThemeColor("titlecolor", getParam(box, "titlecolor")),
+        thresholds         = getParam(box, "thresholds"),
+        title              = getParam(box, "title"),
+        titlepos           = getParam(box, "titlepos") or (getParam(box, "title") and "top"),
+        titlealign         = getParam(box, "titlealign"),
+        titlefont          = getParam(box, "titlefont"),
+        titlespacing       = getParam(box, "titlespacing"),
+        titlepadding       = getParam(box, "titlepadding"),
+        titlepaddingleft   = getParam(box, "titlepaddingleft"),
+        titlepaddingright  = getParam(box, "titlepaddingright"),
+        titlepaddingtop    = getParam(box, "titlepaddingtop"),
+        titlepaddingbottom = getParam(box, "titlepaddingbottom"),
+        font               = getParam(box, "font") or "FONT_STD",
+        decimals           = getParam(box, "decimals"),
+        valuealign         = getParam(box, "valuealign"),
+        valuepadding       = getParam(box, "valuepadding"),
+        valuepaddingleft   = getParam(box, "valuepaddingleft"),
+        valuepaddingright  = getParam(box, "valuepaddingright"),
+        valuepaddingtop    = getParam(box, "valuepaddingtop"),
+        valuepaddingbottom = getParam(box, "valuepaddingbottom"),
+        thickness          = getParam(box, "thickness"),
     }
+
 end
 
 function render.paint(x, y, w, h, box)
+    x, y = utils.applyOffset(x, y, box)
     local c = box._cache or {}
 
     -- Widget background
@@ -136,68 +171,50 @@ function render.paint(x, y, w, h, box)
         lcd.color(c.bgcolor)
         lcd.drawFilledRectangle(x, y, w, h)
     end
-    -- Ring geometry
-    local ringsize  = math.max(0.1, math.min(c.ringsize or 0.88, 1.0))
-    local cx, cy    = x + w / 2, y + h / 2
-    local radius    = math.min(w, h) * 0.5 * ringsize
-    local thickness = math.max(8, radius * 0.18)
 
-    -- Draw ring
-    drawSolidRing(cx, cy, radius, thickness, c.fillbgcolor, c.fillcolor)
+    -- Arc layout
+    local cx = x + w / 2
 
-    -- Prepare display text
-    local valStr = tostring(c.displayValue) .. (c.unit or "")
-    -- Auto font sizing
-    local fontSizes = {"FONT_XXL", "FONT_XL", "FONT_L", "FONT_M", "FONT_S"}
-    local maxWidth, maxHeight = radius * 1.6, radius * 0.7
-    local bestFont, vw, vh
-    for _, fname in ipairs(fontSizes) do
-        lcd.font(_G[fname])
-        local tw, th = lcd.getTextSize(valStr)
-        if tw <= maxWidth and th <= maxHeight then
-            bestFont = _G[fname]; vw, vh = tw, th; break
-        end
-    end
-    if not vw then
-        lcd.font(_G[fontSizes[#fontSizes]])
-        vw, vh = lcd.getTextSize(valStr)
-        bestFont = _G[fontSizes[#fontSizes]]
-    end
-
-    -- Value alignment
-    lcd.font(bestFont)
-    lcd.color(c.textcolor)
-    local text_x
-    if c.textalign == "left" then
-        text_x = cx - radius + 8
-    elseif c.textalign == "right" then
-        text_x = cx + radius - vw - 8
-    else
-        text_x = cx - vw / 2
-    end
-    lcd.drawText(text_x, cy - vh / 2 + (c.textoffset or 0), valStr)
-
-    -- Title
+    -- Calculate total height used by the title (if present)
+    local titleHeight = 0
     if c.title then
-        lcd.font(FONT_XS)
-        lcd.color(c.titlecolor)
-        local tw, th = lcd.getTextSize(c.title)
-        local title_x
-        if c.titlealign == "left" then
-            title_x = cx - radius + 4
-        elseif c.titlealign == "right" then
-            title_x = cx + radius - tw - 4
-        else
-            title_x = cx - tw / 2
-        end
-        local title_y
-        if c.titlepos == "below" then
-            title_y = cy + vh / 2 + 2 + (c.titleoffset or 0)
-        else
-            title_y = cy - vh / 2 - th - 2 + (c.titleoffset or 0)
-        end
-        lcd.drawText(title_x, title_y, c.title)
+        lcd.font(_G[c.titlefont] or FONT_XS)
+        local _, th = lcd.getTextSize(c.title)
+        titleHeight = (th or 0) + (c.titlespacing or 0) + (c.titlepaddingtop or 0) + (c.titlepaddingbottom or 0)
     end
+
+    -- Compute vertical center of the arc based on title position
+    local cy
+    if c.titlepos == "top" then
+        cy = y + titleHeight + (h - titleHeight) * 0.45
+    elseif c.titlepos == "bottom" then
+        cy = y + (h - titleHeight) * 0.5
+    else
+        cy = y + h * 0.5
+    end
+
+    -- Compute radius and thickness, slightly enlarging the ring when no title is present
+    local ringPadding = 2
+    local baseSize = math.min(w, h - (c.title and ringPadding * 2 or 0))
+    local ringSize = math.min(0.88 * (c.title and 1 or 1.05), 1.0)
+    local radius    = baseSize * 0.5 * ringSize
+    local thickness = c.thickness or math.max(8, radius * 0.18)
+
+    -- Full ring: draw background first, then filled foreground
+    drawArc(cx, cy, radius, thickness, 0, 360, c.fillbgcolor)
+    drawArc(cx, cy, radius, thickness, 0, 360, c.fillcolor)
+
+    -- Draw title and value
+    utils.box(
+        x, y, w, h,
+        c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing,
+        c.titlecolor, c.titlepadding, c.titlepaddingleft, c.titlepaddingright,
+        c.titlepaddingtop, c.titlepaddingbottom,
+        c.displayValue, c.unit, c.font, c.valuealign, c.textcolor,
+        c.valuepadding, c.valuepaddingleft, c.valuepaddingright,
+        c.valuepaddingtop, c.valuepaddingbottom,
+        nil
+    )
 end
 
 return render

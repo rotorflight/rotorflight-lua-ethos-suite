@@ -68,28 +68,21 @@ local boxes = {
 
     -- HEATRING
     {
+        col = 2, row = 1,
         type = "gauge",
         subtype = "ring",
-        col = 2, row = 1,
+        source = "rpm",
         title = "RPM",
         min = 0,
-        max = 12000,
+        max = 2000,
         thresholds = {
-            { value = 3000,  fillcolor = "green" },
-            { value = 6000,  fillcolor = "orange" },
-            { value = 9000,  fillcolor = "orange" },
-            { value = 12000, fillcolor = "red" },
+            { value = 1000,  fillcolor = "green" },
+            { value = 1500,  fillcolor = "orange" },
+            { value = 2000,  fillcolor = "red" },
         },
-        ringsize = 0.8,
-        textoffset = 0,
-        titleoffset = 0,
-        textalign = "center",
-        titlealign = "center",
-        titlepos = "below",
+        titlepos = "bottom",
         unit = "",
         transform = "floor",
-        textcolor = "white",
-        source = "rpm",
     },
 
     -- ARCGUAGE
@@ -231,6 +224,25 @@ local boxes = {
                 fillcolor = "orange"
             }
         },        
+    },
+
+        -- HEATRING
+    {
+        col = 3, row = 2, rowspan = 2,
+        type = "gauge",
+        subtype = "ring",
+        source = "rpm",
+        title = "RPM",
+        font = "FONT_L",
+        min = 0,
+        max = 2000,
+        thresholds = {
+            { value = 1000,  fillcolor = "green" },
+            { value = 1500,  fillcolor = "orange" },
+            { value = 2000,  fillcolor = "red" },
+        },
+        titlepos = "bottom",
+        transform = "floor",
     },
 }
 
