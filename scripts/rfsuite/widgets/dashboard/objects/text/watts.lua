@@ -36,26 +36,17 @@ local sumWatts = 0
 local countWatts = 0
 
 function render.wakeup(box, telemetry)
-    -- Cache sources once
-    if not vSrc then vSrc = telemetry.getSensorSource("voltage") end
-    if not iSrc then iSrc = telemetry.getSensorSource("current") end
 
     local watts
-    if vSrc and iSrc and vSrc:state() and iSrc:state() then
-        local v = vSrc:value()
-        local i = iSrc:value()
-        if v and i then
-            watts = v * i
-        end
-    end
 
-    -- update stats
-    if watts then
-        minWatts   = math.min(minWatts, watts)
-        maxWatts   = math.max(maxWatts, watts)
-        sumWatts   = sumWatts + watts
-        countWatts = countWatts + 1
-    end
+    local v = rfsuite.tasks.telemetry.sensorStats["voltage"]
+    local i = rfsuite.tasks.telemetry.sensorStats["current"]
+
+    minWatts = v.min * i.min
+    maxWatts = v.max * i.max
+    avgWatts = v.avg * i.avg
+    sumWatts = v.sum * i.sum
+    countWatts = v.count * i.count
 
     -- Resolve display value
     local source = getParam(box, "source") or "current"
@@ -67,7 +58,14 @@ function render.wakeup(box, telemetry)
     elseif source == "avg" and countWatts > 0 then
         displayValue = tostring(math.floor(sumWatts / countWatts))
     elseif source == "current" and watts then
-        displayValue = tostring(math.floor(watts))
+        local vc = telemetry.getSensor("voltage")
+        local ic = telemetry.getSensor("current")   
+        if vc and ic then
+            watts = vc * ic
+            displayValue = tostring(math.floor(watts))
+        else
+            displayValue = getParam(box, "novalue") or "-"
+        end    
     else
         displayValue = getParam(box, "novalue") or "-"
     end
