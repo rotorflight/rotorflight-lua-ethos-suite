@@ -203,9 +203,9 @@ end
 function render.wakeup(box, telemetry)
     -- Value extraction
     local source = getParam(box, "source")
-    local value
+    local value, _, dynamicUnit
     if telemetry and source then
-        value = telemetry.getSensor(source)
+        value, _, dynamicUnit = telemetry.getSensor(source)
     end
 
     -- Battery Advanced value extraction
@@ -220,16 +220,13 @@ function render.wakeup(box, telemetry)
     local unit
 
     if manualUnit ~= nil then
-        unit = manualUnit
+        unit = manualUnit  -- use user value, even if ""
+    elseif dynamicUnit ~= nil then
+        unit = dynamicUnit
+    elseif source and telemetry and telemetry.sensorTable[source] then
+        unit = telemetry.sensorTable[source].unit_string or ""
     else
-        local displayValue, _, dynamicUnit = telemetry.getSensor(source)
-        if dynamicUnit ~= nil then
-            unit = dynamicUnit
-        elseif source and telemetry and telemetry.sensorTable[source] then
-            unit = telemetry.sensorTable[source].unit_string or ""
-        else
-            unit = ""
-        end
+        unit = ""
     end
 
     -- Transform and decimals (if required)
