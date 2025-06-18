@@ -13,7 +13,7 @@ local render    = {}
 local utils     = rfsuite.widgets.dashboard.utils
 local getParam  = utils.getParam
 local loadImage = rfsuite.utils.loadImage
-local lastPitch, lastRoll, lastYaw = 0, 0, 0
+local prev =  {}
 
 -- Rotate helper: rotates point (px,py) around center (cx,cy) by angle (radians)
 local function rotate(px, py, cx, cy, angle)
@@ -59,7 +59,6 @@ function render.wakeup(box, telemetry)
     local roll  = getSensor("attroll")  or 0
     local yaw   = getSensor("attyaw")   or 0
 
-    local prev = box._last or {}
     if prev.pitch ~= pitch or prev.roll ~= roll or prev.yaw ~= yaw then
         box._dirty = true
     else
@@ -95,6 +94,7 @@ function render.paint(x, y, w, h, box)
     local drawX      = cx - drawW / 2
     local drawY      = cy - drawH / 2 + pitch * ppd
 
+    
     lcd.drawBitmap(drawX, drawY, img:rotate(roll), drawW, drawH)
 
     lcd.color(lcd.RGB(255,255,255))
