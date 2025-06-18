@@ -33,7 +33,7 @@ Fields:
 logs.config = {
     enabled = true,
     log_to_file = true,
-    print_interval = 0.25,
+    print_interval = 0.5,
     disk_write_interval = 5.0, 
     max_line_length = 100,
     min_print_level = "info", 
@@ -115,9 +115,14 @@ function logs.add(message, level)
     if not logs.config.enabled or logs.config.min_print_level == "off" then return end
 
     level = level or "info"
-
     if logs.levels[level] == nil then return end
     if logs.levels[level] < logs.levels[logs.config.min_print_level] then return end
+
+    -- Truncate extremely long messages (configurable cap)
+    local max_message_length = logs.config.max_line_length * 10
+    if #message > max_message_length then
+        message = message:sub(1, max_message_length) .. " [truncated]"
+    end
 
     local prefix = logs.config.prefix .. " [" .. level .. "] "
     local log_entry = prefix .. message
@@ -129,16 +134,15 @@ function logs.add(message, level)
         lines = split_message(log_entry, logs.config.max_line_length, string.rep(" ", #prefix))
     end
 
-    -- Add to console queue
     for _, line in ipairs(lines) do
         table.insert(logs.queue, line)
     end
 
-    -- Add to disk queue only if logging to a file is enabled
     if logs.config.log_to_file then
         table.insert(logs.disk_queue, log_entry)
     end
 end
+
 
 
 --[[
@@ -155,11 +159,14 @@ local function process_console_queue()
     if not logs.config.enabled or logs.config.min_print_level == "off" then return end
 
     local now = rfsuite.clock
-
     if now - logs.last_print_time >= logs.config.print_interval and #logs.queue > 0 then
         logs.last_print_time = now
-        local message = table.remove(logs.queue, 1)
-        print(message)
+
+        local MAX_CONSOLE_MESSAGES = 5
+        for i = 1, math.min(MAX_CONSOLE_MESSAGES, #logs.queue) do
+            local message = table.remove(logs.queue, 1)
+            print(message)
+        end
     end
 end
 
@@ -185,21 +192,23 @@ end
 ]]
 local function process_disk_queue()
     if not logs.config.enabled or logs.config.min_print_level == "off" or not logs.config.log_to_file then return end
-    
-    local now = rfsuite.clock
 
+    local now = rfsuite.clock
     if now - logs.last_disk_write_time >= logs.config.disk_write_interval and #logs.disk_queue > 0 then
         logs.last_disk_write_time = now
+
+        local MAX_DISK_MESSAGES = 20
         local file = io.open(logs.config.log_file, "a")
         if file then
-            for _, message in ipairs(logs.disk_queue) do
+            for i = 1, math.min(MAX_DISK_MESSAGES, #logs.disk_queue) do
+                local message = table.remove(logs.disk_queue, 1)
                 file:write(message .. "\n")
             end
             file:close()
-            logs.disk_queue = {} -- Clear queue after writing
         end
     end
 end
+
 
 --[[
     Function: logs.process
