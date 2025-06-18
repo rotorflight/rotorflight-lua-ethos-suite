@@ -1130,6 +1130,7 @@ return {
       ["accx"] = "Accel X",
       ["accy"] = "Accel Z",
       ["accz"] = "Accel Z",
+      ["groundspeed"] = "Ground Speed",
       ["esc_temp"] = "ESC Temperatur",
       ["rate_profile"] = "Rate-Profil",
       ["headspeed"] = "Drehzahl",

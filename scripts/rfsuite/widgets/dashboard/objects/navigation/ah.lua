@@ -10,10 +10,18 @@
     showarc             : bool     -- Show arc markers (default: true)
     showladder          : bool     -- Show pitch ladder (default: true)
     showcompass         : bool     -- Show compass ribbon (default: true)
+    showaltitude        : bool     -- Show altitude bar on right (default: false)
+    showgroundspeed           : bool     -- Show groundspeed bar on left (default: false)
     arccolor            : color    -- Color for arc markings (default: white)
     laddercolor         : color    -- Color for pitch ladder (default: white)
     compasscolor        : color    -- Color for compass (default: white)
     crosshaircolor      : color    -- Color for central cross marker (default: white)
+    altitudecolor       : color    -- Color for altitude bar (default: white)
+    groundspeedcolor          : color    -- Color for groundspeed bar (default: white)
+    altitudemin         : number   -- Minimum displayed altitude (default: 0)
+    altitudemax         : number   -- Maximum displayed altitude (default: 200)
+    groundspeedmin            : number   -- Minimum displayed groundspeed (default: 0)
+    groundspeedmax            : number   -- Maximum displayed groundspeed (default: 100)
 ]]
 
 local render    = {}
@@ -60,6 +68,8 @@ function render.wakeup(box, telemetry)
     local pitch = getSensor("attpitch") or 0
     local roll  = getSensor("attroll")  or 0
     local yaw   = getSensor("attyaw")   or 0
+    local altitude = getSensor("altitude") or 20
+    local groundspeed = getSensor("groundspeed") or 20
 
     if prev.pitch ~= pitch or prev.roll ~= roll or prev.yaw ~= yaw then
         box._dirty = true
@@ -71,16 +81,26 @@ function render.wakeup(box, telemetry)
         pitch = pitch,
         roll = roll,
         yaw = yaw,
+        altitude = altitude,
+        groundspeed = groundspeed,
         ppd = getParam(box, "pixelsperdeg") or 2.0,
         dMin = getParam(box, "dynamicscalemin") or 1.05,
         dMax = getParam(box, "dynamicscalemax") or ((getParam(box, "dynamicscalemin") or 1.05) + 0.9),
         showarc = getParam(box, "showarc") ~= false,
         showladder = getParam(box, "showladder") ~= false,
         showcompass = getParam(box, "showcompass") ~= false,
+        showaltitude = getParam(box, "showaltitude") ~= false,
+        showgroundspeed = getParam(box, "showgroundspeed") ~= false,
         arccolor = resolveThemeColor("arccolor", getParam(box, "arccolor") or lcd.RGB(255,255,255)),
         laddercolor = resolveThemeColor("laddercolor", getParam(box, "laddercolor") or lcd.RGB(255,255,255)),
         compasscolor = resolveThemeColor("compasscolor", getParam(box, "compasscolor") or lcd.RGB(255,255,255)),
-        crosshaircolor = resolveThemeColor("crosshaircolor", getParam(box, "crosshaircolor") or lcd.RGB(255,255,255))
+        crosshaircolor = resolveThemeColor("crosshaircolor", getParam(box, "crosshaircolor") or lcd.RGB(255,255,255)),
+        altitudecolor = resolveThemeColor("altitudecolor", getParam(box, "altitudecolor") or lcd.RGB(255,255,255)),
+        groundspeedcolor = resolveThemeColor("groundspeedcolor", getParam(box, "groundspeedcolor") or lcd.RGB(255,255,255)),
+        altitudemin = getParam(box, "altitudemin") or 0,
+        altitudemax = getParam(box, "altitudemax") or 200,
+        groundspeedmin = getParam(box, "groundspeedmin") or 0,
+        groundspeedmax = getParam(box, "groundspeedmax") or 100
     }
 
     box._last = { pitch = pitch, roll = roll, yaw = yaw }
@@ -177,6 +197,35 @@ function render.paint(x, y, w, h, box)
             lcd.drawText(cx, by+1, string.format("%03d° %s", heading, labels[heading - (heading % 45)] or (heading.."°")), CENTERED+FONT_XS)
         end
     end
+
+
+    if c.showaltitude then
+        lcd.color(c.altitudecolor)
+        local barX = x + w - 10
+        local barY = y + 5
+        local barH = h - 10
+        local fillH = math.floor((c.altitude - c.altitudemin) / (c.altitudemax - c.altitudemin) * barH)
+        fillH = math.max(0, math.min(barH, fillH))
+        lcd.drawRectangle(barX, barY, 6, barH)
+        lcd.drawFilledRectangle(barX, barY + barH - fillH, 6, fillH)
+        lcd.font(FONT_XS)
+        local label = string.format("%d m", math.floor(c.altitude))
+        lcd.drawText(barX - 4, barY + barH - fillH - 6, label, RIGHT)
+    end
+
+    if c.showgroundspeed then
+        lcd.color(c.groundspeedcolor)
+        local barX = x + 4
+        local barY = y + 5
+        local barH = h - 10
+        local fillH = math.floor((c.groundspeed - c.groundspeedmin) / (c.groundspeedmax - c.groundspeedmin) * barH)
+        fillH = math.max(0, math.min(barH, fillH))
+        lcd.drawRectangle(barX, barY, 6, barH)
+        lcd.drawFilledRectangle(barX, barY + barH - fillH, 6, fillH)
+        lcd.font(FONT_XS)
+        local label = string.format("%d knots", math.floor(c.groundspeed))
+        lcd.drawText(barX + 10, barY + barH - fillH - 6, label, LEFT)
+    end   
 
     lcd.setClipping(0,0, lcd.getWindowSize())
     box._dirty = false

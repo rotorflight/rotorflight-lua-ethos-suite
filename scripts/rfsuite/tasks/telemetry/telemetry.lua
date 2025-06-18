@@ -774,6 +774,28 @@ local sensorTable = {
         },
     },   
 
+    -- Attitude Pitch
+    groundspeed = {
+        name = i18n("telemetry.sensors.groundspeed"),
+        mandatory = false,
+        stats = false,
+        set_telemetry_sensors = nil,
+        sensors = {
+            sim = {
+                { uid = 0x5025, unit = UNIT_KNOT, dec = 1,
+                  value = function() return rfsuite.utils.simSensors('groundspeed') end,
+                  min = -1800, max = 3600 },
+            },
+            sport = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0830, subId = 1 },
+            },
+            crsf = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1128},
+            },
+            crsfLegacy = { nil },
+        },
+    },       
+
 }
 
 --- Updates the `telemetry.liveValues` table with the latest sensor readings.
