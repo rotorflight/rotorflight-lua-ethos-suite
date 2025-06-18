@@ -10,7 +10,7 @@ if not utils.ethosVersionAtLeast() then return end
 
 local currentTelemetrySensor
 local tasksPerCycle = 1              -- Represents the actual number of tasks to run per cycle, computed using: tasksPerCycle = math.ceil(count * taskSchedulerPercentage)
-local taskSchedulerPercentage = 0.15 -- Determines how many tasks should be run per wakeup cycle, based on the total number of eligible (non-always-run) tasks.
+local taskSchedulerPercentage = 0.1  -- Determines how many tasks should be run per wakeup cycle, based on the total number of eligible (non-always-run) tasks.
 
 local tasks, tasksList = {}, {}
 tasks.heartbeat, tasks.init, tasks.wasOn = nil, true, false

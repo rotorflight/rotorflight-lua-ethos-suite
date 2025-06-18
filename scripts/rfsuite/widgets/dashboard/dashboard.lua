@@ -61,8 +61,8 @@ local loadedStateModules = {}
 
 -- Intervals (in seconds) for various scheduler and paint operations:
 local loadedThemeIntervals = {
-    wakeup_interval     = 0.25,  -- how often to wake the widget when visible
-    wakeup_interval_bg  = nil,   -- how often to wake when not visible (nil = skip)
+    wakeup_interval     = 0.025,  -- how often to wake the widget when visible
+    wakeup_interval_bg  = 5,      -- how often to wake when not visible (nil = skip)
     paint_interval      = 0.5,   -- how often to force a repaint
 }
 
@@ -672,9 +672,9 @@ function dashboard.reload_themes(force)
     if mod and mod.scheduler then
         local initTable = (type(mod.scheduler) == "function") and mod.scheduler() or mod.scheduler
         if type(initTable) == "table" then
-            loadedThemeIntervals.wakeup_interval    = initTable.wakeup_interval or 0.25
+            loadedThemeIntervals.wakeup_interval    = initTable.wakeup_interval or 0.025
             loadedThemeIntervals.wakeup_interval_bg = initTable.wakeup_interval_bg
-            loadedThemeIntervals.paint_interval     = initTable.paint_interval or 0.5
+            loadedThemeIntervals.paint_interval     = initTable.paint_interval or 0.025
 
             dashboard._useSpreadScheduling = (initTable.spread_scheduling ~= false)
 
@@ -987,13 +987,14 @@ function dashboard.wakeup(widget)
     local visible = lcd.isVisible()
 
     if visible then
-        local base_interval = loadedThemeIntervals.wakeup_interval or 0.25
+
+        local base_interval = loadedThemeIntervals.wakeup_interval or 0.025
         local interval = base_interval
 
         lcd.resetFocusTimeout()
 
-        if base_interval <= 0.25 and #dashboard.boxRects > 15 then
-            interval = 0.25
+        if base_interval <= 0.025 and #dashboard.boxRects > 15 then
+            interval = 0.025
         end
 
         if (now - lastWakeup) < interval then return end
