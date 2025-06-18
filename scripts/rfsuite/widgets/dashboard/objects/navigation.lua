@@ -4,7 +4,7 @@ local renders = {}
 local folder = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/objects/navigation/"
 
 function wrapper.paint(x, y, w, h, box)
-    local subtype = box.subtype or "image"
+    local subtype = box.subtype or "ah"
     local render = renders[subtype]
     if not render then return end
     render.paint(x, y, w, h, box)
@@ -19,14 +19,14 @@ function wrapper.wakeup(box, telemetry)
 
     -- Wakeup interval control using optional parameter (wakeupinterval)
     local now = rfsuite.clock
-    box._wakeupInterval = box._wakeupInterval or (box.wakeupinterval or 0.05)
+    box._wakeupInterval = box._wakeupInterval or (box.wakeupinterval or 0.1)
     box._lastWakeup = box._lastWakeup or 0
 
     if now - box._lastWakeup < box._wakeupInterval then
         return -- Throttle wakeup
     end  
 
-    local subtype = box.subtype or "image"
+    local subtype = box.subtype or "ah"
 
     if not renders[subtype] then
         local path = folder .. subtype .. ".lua"
@@ -43,7 +43,7 @@ function wrapper.wakeup(box, telemetry)
 end
 
 function wrapper.dirty(box)
-    local subtype = box.subtype or "ah"
+    local subtype = box.subtype or "flight"
     local render = renders[subtype]
     return render and render.dirty and render.dirty(box) or false
 end
