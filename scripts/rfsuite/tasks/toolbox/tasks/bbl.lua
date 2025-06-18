@@ -24,7 +24,7 @@ local bbl = {}
 
 function bbl.wakeup()
 
-        local totalSize = rfsuite.session.bblSize
+    local totalSize = rfsuite.session.bblSize
     local usedSize  = rfsuite.session.bblUsed
 
     -- Set displayValue, Fallback if no value

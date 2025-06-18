@@ -324,9 +324,9 @@ return {
   layout    = layout,
   boxes     = boxes,
   scheduler = {
-    wakeup_interval    = 0.1,
+    wakeup_interval    = 0.025,
     wakeup_interval_bg = 5,
-    paint_interval     = 0.1,
+    paint_interval     = 0.025,
     spread_scheduling = true,      -- (optional: spread scheduling over the interval to avoid spikes in CPU usage)  
     spread_ratio = 0.8              -- optional: manually override default ratio logic (applies if spread_scheduling is true)
   }

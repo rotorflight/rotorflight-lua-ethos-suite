@@ -62,7 +62,7 @@ end
 
 -- Rate‐limiting for wakeup()
 local sensorRateLimit = rfsuite.clock
-local SENSOR_RATE = 0.25        -- 1 second between onchange scans
+local SENSOR_RATE = 0.025        -- 1 second between onchange scans
 
 -- Store the last validated sensors and timestamp
 local lastValidationResult = nil

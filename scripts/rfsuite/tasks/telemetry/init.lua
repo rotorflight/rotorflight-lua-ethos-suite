@@ -17,8 +17,8 @@
  * 
 ]] --
 local init = {
-    intmin = 0.025, -- run at least every 0.1s
-    intmax = 0.1, -- run at least every 0.1s
+    intmin = 0.001, -- run at least every 0.1s
+    intmax = 0.025, -- run at least every 0.1s
     priority = 2, -- medium priority.  1 = low , 2 = medium, 3 = high, etc
     script = "telemetry.lua", -- run this script
     msp = false, -- do not run if busy with msp 
