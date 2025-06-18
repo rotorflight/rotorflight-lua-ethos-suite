@@ -30,6 +30,11 @@
       "translation": "Accel Z",
       "needs_translation": "false"
     },
+    "groundspeed": {
+      "english": "Ground Speed",
+      "translation": "Ground Speed",
+      "needs_translation": "false"
+    },
     "esc_temp": {
       "english": "ESC Temperature",
       "translation": "ESC Temperature",
