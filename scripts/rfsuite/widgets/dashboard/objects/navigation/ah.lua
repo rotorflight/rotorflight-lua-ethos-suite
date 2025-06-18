@@ -44,11 +44,6 @@ function render.dirty(box)
 end
 
 function render.wakeup(box, telemetry)
-    local interval = getParam(box, "wakeupinterval") or 0.2
-    box._lastWakeup = box._lastWakeup or 0
-    local now = rfsuite.clock
-    if now - box._lastWakeup < interval then return end
-    box._lastWakeup = now
 
     local getSensor = telemetry.getSensor
     local pitch = getSensor("attpitch") or 0
