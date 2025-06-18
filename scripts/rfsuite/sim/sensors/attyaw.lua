@@ -1,1 +1,1 @@
-return 0
+return math.random(160, 240)

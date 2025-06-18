@@ -77,7 +77,8 @@ local boxes1 = {
 
     {col=3, row=1, type="text", subtype="telemetry", source="fuel", nosource="-", title="FUEL", unit="%", titlepos="bottom", transform="floor"},
     {col=3, row=2, type = "func", value=customRenderFunction, title = "FUNCTION", titlepos = "bottom"},
-    {col=3, row=3, type="text", subtype="text", value = "PRESS ME", title="SWITCHER", nosource="-", titlepos="bottom", onpress=onpressFunction1},  
+    {col=4, row=1, type="text", subtype="text", value = "PRESS ME", title="SWITCHER", nosource="-", titlepos="bottom", onpress=onpressFunction1}, 
+    { col = 3, row = 2, colspan = 2, rowspan = 3, type = "navigation", subtype = "ah" } 
 }
 
 local layout2 = {

@@ -1,1 +1,1 @@
-return math.random(23, 26)
+return math.random(31, 34)

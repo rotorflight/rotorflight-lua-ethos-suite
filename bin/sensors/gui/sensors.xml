@@ -59,11 +59,11 @@
     </Group>  
 
     <Group name="Flight Dynamics">
-        <Sensor name="attpitch" round="true" label="Pitch" type="number" default="0" min="-360" max="360" multiplier="10"/>
-        <Sensor name="attroll" round="true" label="Roll" type="number" default="0" min="-360" max="360" multiplier="10"/>
-        <Sensor name="attyaw" round="true" label="Yaw" type="number" default="0" min="-360" max="360" multiplier="10"/>
-        <Sensor name="altitude" round="true" label="Altitude" type="number" default="0" min="-1000" max="1000" />
-        <Sensor name="groundspeed" round="true" label="Ground Speed" type="number" default="0" min="-1000" max="1000" />        
+        <Sensor name="attpitch" round="true" rand="20" label="Pitch" type="number" default="0" min="-360" max="360" multiplier="10"/>
+        <Sensor name="attroll" round="true" rand="20" label="Roll" type="number" default="0" min="-360" max="360" multiplier="10"/>
+        <Sensor name="attyaw" round="true" rand="20" label="Yaw" type="number" default="0" min="-360" max="360" multiplier="10"/>
+        <Sensor name="altitude" round="true" rand="5" label="Altitude" type="number" default="0" min="-1000" max="1000" />
+        <Sensor name="groundspeed" round="true" rand="5"  label="Ground Speed" type="number" default="0" min="-1000" max="1000" />        
      </Group>       
 
     <Group name="System Events">
