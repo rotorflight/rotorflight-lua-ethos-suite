@@ -17,8 +17,10 @@
  * 
 ]] --
 local init = {
-    interval = 0.25,
-    script = "telemetry.lua", -- run this script
-    linkrequired = false, -- run this script only if link is established        
+    interval        = 0.5,              -- run every 0.5 seconds
+    script          = "telemetry.lua",  -- run this script
+    linkrequired    = false,            -- run only if link is established
+    spreadschedule  = true,             -- run on every loop
+    simulatoronly   = false,            -- run in simulation mode
 }
 return init

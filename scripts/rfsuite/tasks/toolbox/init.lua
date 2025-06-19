@@ -17,9 +17,11 @@
  * 
 ]] --
 local init = {
-    interval = 0.5, -- run every 0.5 seconds
-    script = "toolbox.lua", -- run this script
-    linkrequired = true, -- run this script only if link is established        
+    interval        = 0.5,              -- run every 0.5 seconds
+    script          = "toolbox.lua",    -- run this script
+    linkrequired    = true,             -- run this script only if link is established
+    spreadschedule  = true,             -- run on every loop    
+    simulatoronly   = false,            -- run this script in simulation mode              
 }
 
 return init

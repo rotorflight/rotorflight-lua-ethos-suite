@@ -15,6 +15,8 @@ local ethosVersionGood = nil
 local telemetryCheckScheduler = rfsuite.clock
 local lastTelemetrySensorName, sportSensor, elrsSensor = nil, nil, nil
 
+local usingSimulator = system.getVersion().simulation
+
 local tlm = system.getSource({ category = CATEGORY_SYSTEM_EVENT, member = TELEMETRY_ACTIVE })
 
 function tasks.initialize()
@@ -44,8 +46,9 @@ function tasks.initialize()
                 name = name,
                 interval = meta.interval or 1,
                 script = meta.script,
-                alwaysrun = meta.alwaysrun,
+                spreadschedule = meta.spreadschedule,
                 linkrequired = meta.linkrequired or false,
+                simulatoronly = meta.simulatoronly or false,
                 last_run = rfsuite.clock,
                 duration = 0
             })
@@ -80,7 +83,8 @@ function tasks.findTasks()
                         interval = tconfig.interval or 1,
                         script = tconfig.script,
                         linkrequired = tconfig.linkrequired or false,
-                        alwaysrun = tconfig.alwaysrun or false,
+                        spreadschedule = tconfig.spreadschedule or false,
+                        simulatoronly = tconfig.simulatoronly or false,                        
                         last_run = rfsuite.clock,
                         duration = 0
                     }
@@ -90,7 +94,8 @@ function tasks.findTasks()
                         interval = task.interval,
                         script = task.script,
                         linkrequired = task.linkrequired,
-                        alwaysrun = task.alwaysrun
+                        simulatoronly = tconfig.simulatoronly or false,  
+                        spreadschedule = task.spreadschedule
                     }
                 end
             end
@@ -118,9 +123,8 @@ function tasks.telemetryCheckScheduler()
         }
         lastTelemetrySensorName, sportSensor, elrsSensor = nil, nil, nil
         telemetryCheckScheduler = now
-        if rfsuite.tasks.msp and rfsuite.tasks.msp.reset then
-            rfsuite.tasks.msp.reset()
-        end
+        rfsuite.tasks.msp.reset()
+
     end
 
     if now - (telemetryCheckScheduler or 0) >= 0.5 then
@@ -180,21 +184,25 @@ function tasks.wakeup()
 
     local function canRunTask(task)
         return (not task.linkrequired or rfsuite.session.telemetryState) and
-               (task.name == "msp" or not rfsuite.app.triggers.mspBusy)
+            (task.name == "msp" or not rfsuite.app.triggers.mspBusy) and
+            (not task.simulatoronly or usingSimulator)
     end
 
     -- Run always-run tasks
     for _, task in ipairs(tasksList) do
-        if task.alwaysrun and tasks[task.name].wakeup and canRunTask(task) then
-            tasks[task.name].wakeup()
-            task.last_run = now
+        if not task.spreadschedule and tasks[task.name].wakeup and canRunTask(task) then
+            local elapsed = now - task.last_run
+            if elapsed >= task.interval then
+                tasks[task.name].wakeup()
+                task.last_run = now
+            end
         end
     end
 
     -- Collect eligible tasks
     local eligibleTasks = {}
     for _, task in ipairs(tasksList) do
-        if not task.alwaysrun and canRunTask(task) then
+        if task.spreadschedule and canRunTask(task) then
             local elapsed = now - task.last_run
             if elapsed >= task.interval then
                 table.insert(eligibleTasks, task)
@@ -205,7 +213,7 @@ function tasks.wakeup()
     -- Determine how many tasks to run
     local count = 0
     for _, task in ipairs(tasksList) do
-        if not task.alwaysrun then count = count + 1 end
+        if not task.spreadschedule then count = count + 1 end
     end
     tasksPerCycle = math.ceil(count * taskSchedulerPercentage)
 

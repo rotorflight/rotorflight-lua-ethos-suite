@@ -17,9 +17,11 @@
  * 
 ]] --
 local init = {
-    interval = 1, -- run every second
-    script = "simevent.lua", -- run this script
-    linkrequired = false, -- run this script only if link is established        
+    interval       = 1,                 -- run every second
+    script         = "simevent.lua",    -- run this script
+    linkrequired   = false,             -- run this script only if link is established
+    spreadschedule  = true,             -- run on every loop 
+    simulatoronly  = true,              -- run this script in simulation mode
 }
 
 return init
