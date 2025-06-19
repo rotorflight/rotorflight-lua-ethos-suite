@@ -18,6 +18,7 @@
 
     -- Value/source
     value                   : any       -- (Optional) Static value to display if no telemetry
+    hidevalue               : bool      -- (Optional) If true, do not display the value text (default: false; value is shown)
     source                  : string    -- (Optional) Telemetry sensor source name
     transform               : string|function|number -- (Optional) Value transformation
     decimals                : number    -- (Optional) Number of decimal places for display
@@ -118,8 +119,12 @@ local function drawBatteryBox(x, y, w, h, percent, gaugeorientation, batterysegm
     local spacing = batteryspacing or 2
 
     if gaugeorientation == "vertical" then
-        local maxCapH = math.floor(h * 0.5)
-        local capH = math.min(math.max(8, math.floor(h * 0.10)), maxCapH)
+        local capH = 0
+        if batteryframe then
+            local maxCapH = math.floor(h * 0.5)
+            capH = math.min(math.max(8, math.floor(h * 0.10)), maxCapH)
+            -- draw cap
+        end
         local bodyY = y + capH
         local bodyH = h - capH
 
@@ -235,6 +240,11 @@ function render.wakeup(box, telemetry)
         displayValue = utils.transformValue(value, box)
     end
 
+    -- Force suppress value if hidevalue is true
+    if getParam(box, "hidevalue") == true then
+        displayValue = nil
+    end
+
     -- Resolve bar min/max
     local min = getParam(box, "min") or 0
     local max = getParam(box, "max") or 100
@@ -260,7 +270,7 @@ function render.wakeup(box, telemetry)
     local title_area_top = 0
     local title_area_bottom = 0
 
-    if title then
+    if title and title ~= "" then
         lcd.font(_G[titlefont] or FONT_XS)
         local _, tsizeH = lcd.getTextSize(title)
         if titlepos == "bottom" then
@@ -270,6 +280,9 @@ function render.wakeup(box, telemetry)
             title_area_top = (tsizeH or 0) + (getParam(box, "titlepaddingtop") or 0)
                 + (getParam(box, "titlepaddingbottom") or 0) + titlespacing
         end
+    else
+        title_area_top = 0
+        title_area_bottom = 0
     end
 
     -- If battadv is enabled, cache extra telemetry info for detailed battery display
@@ -305,6 +318,7 @@ function render.wakeup(box, telemetry)
         consumed                 = consumed,
         perCellVoltage           = perCellVoltage,
         battadv                  = battadv,
+        hidevalue                = getParam(box, "hidevalue"),
         textcolor                = resolveThresholdColor(value, box, "textcolor",   "textcolor"),
         fillcolor                = resolveThresholdColor(value,   box, "fillcolor",   "fillcolor"),
         fillbgcolor              = resolveThemeColor("fillbgcolor", getParam(box, "fillbgcolor")),

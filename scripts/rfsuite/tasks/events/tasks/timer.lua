@@ -163,9 +163,15 @@ function timer.wakeup()
             rfsuite.session.timer.session = (rfsuite.session.timer.session or 0) + segment
             rfsuite.session.timer.start = nil
 
+            -- Ensure baseLifetime is loaded even if reset() was missed
+            if rfsuite.session.timer.baseLifetime == nil then
+                rfsuite.session.timer.baseLifetime = tonumber(
+                    rfsuite.ini.getvalue(rfsuite.session.modelPreferences, "general", "totalflighttime")
+                ) or 0
+            end
+
             -- Add this segment once to baseLifetime
-            rfsuite.session.timer.baseLifetime = 
-                (rfsuite.session.timer.baseLifetime or 0) + segment
+            rfsuite.session.timer.baseLifetime = rfsuite.session.timer.baseLifetime + segment
 
             -- Keep lifetime in sync (not strictly required; save() writes baseLifetime anyway)
             rfsuite.session.timer.lifetime = rfsuite.session.timer.baseLifetime

@@ -15,25 +15,16 @@
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]]--
 
-local postFlightDelay = 10
-local themeStartTime = rfsuite.clock
-local cachedVpc = nil
-
 local function maxVoltageToCellVoltage(value)
-    if cachedVpc then return cachedVpc end
-
-    local now = rfsuite.clock
-    local elapsed = now - themeStartTime
-    if elapsed < postFlightDelay then return nil end
-
     local cfg = rfsuite.session.batteryConfig
     local cells = (cfg and cfg.batteryCellCount) or 3
-    if not cells or not value then return nil end
 
-    local vpc = math.max(0, value / cells)
-    vpc = math.floor(vpc * 100 + 0.5) / 100
-    cachedVpc = vpc
-    return vpc
+    if cfg and cells and value then
+        value = math.max(0, value / cells)
+        value = math.floor(value * 100 + 0.5) / 100  -- round to 2 decimal places
+    end
+
+    return value
 end
 
 local darkMode = {
@@ -81,7 +72,7 @@ local boxes = {
     -- Flight max/min stats 2
     {col = 3, row = 1, type = "text", subtype = "stats", stattype = "max", source = "consumption", title = "Consumed mAh", titlepos = "bottom", bgcolor = colorMode.bgcolor, transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
     {col = 3, row = 2, type = "text", subtype = "stats", stattype = "min", source = "fuel", title = "Fuel Remaining", titlepos = "bottom", bgcolor = colorMode.bgcolor, transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
-    {col = 3, row = 3, type = "text", subtype = "stats", stattype = "min", source = "voltage", title = "Min Volts per cell", titlepos = "bottom", bgcolor = colorMode.bgcolor, transform = function(v) return maxVoltageToCellVoltage(v) end, textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
+    {col = 3, row = 3, type = "text", subtype = "stats", stattype = "min", source = "voltage", title = "Min Volts per cell", titlepos = "bottom", bgcolor = colorMode.bgcolor, unit = "V", transform = function(v) return maxVoltageToCellVoltage(v) end, textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
     {col = 3, row = 4, type = "text", subtype = "stats", stattype = "min", source = "rssi", title = "Link Min", titlepos = "bottom", bgcolor = colorMode.bgcolor, transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
 }
 
@@ -97,7 +88,5 @@ return {
         wakeup_interval = 0.1,          -- Interval (seconds) to run wakeup script when display is visible
         wakeup_interval_bg = 5,         -- (optional: run wakeup this often when not visible; set nil/empty to skip)
         paint_interval = 1,            -- Interval (seconds) to run paint script when display is visible 
-        spread_scheduling = true,      -- (optional: spread scheduling over the interval to avoid spikes in CPU usage)  
-        spread_ratio = 0.8              -- optional: manually override default ratio logic (applies if spread_scheduling is true)
     } 
 }
