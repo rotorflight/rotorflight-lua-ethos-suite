@@ -275,7 +275,7 @@ function dashboard.computeOverlayMessage()
         return i18n("widgets.dashboard.check_rf_module_on")
     elseif not (sportSensor or elrsSensor) then
         return i18n("widgets.dashboard.check_discovered_sensors")
-    elseif not rfsuite.session.apiVersion and  state ~= "postflight" then
+    elseif not rfsuite.session.isConnected  and  state ~= "postflight" then
         return i18n("widgets.dashboard.waiting_for_connection")    
     elseif not rfsuite.session.telemetryState and state == "preflight" then
         return i18n("widgets.dashboard.no_link")

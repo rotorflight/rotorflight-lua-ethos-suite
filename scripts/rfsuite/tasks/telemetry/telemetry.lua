@@ -74,6 +74,7 @@ local telemetryState = false
 -- Store last seen values for each sensor (by key)
 local lastSensorValues = {}
 
+
 telemetry.sensorStats = {}
 
 -- For “reduced table” of onchange‐capable sensors:
@@ -1060,7 +1061,7 @@ function telemetry.reset()
     telemetrySOURCE, crsfSOURCE, protocol = nil, nil, nil
     sensors = {}
     hot_list, hot_index = {}, {}
-    telemetry.sensorStats = {}
+    --telemetry.sensorStats = {} -- we defer this to onconnect
     -- Also reset onchange tracking so we rebuild next time:
     filteredOnchangeSensors = nil
     lastSensorValues = {}
