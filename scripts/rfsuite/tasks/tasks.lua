@@ -108,19 +108,20 @@ function tasks.telemetryCheckScheduler()
     local now = rfsuite.clock
 
     local function setOffline()
-        rfsuite.session = {
-            telemetryState = false,
-            telemetryType = nil,
-            telemetryTypeChanged = false,
-            telemetrySensor = nil,
-            timer = {},
-            onConnect = { high = false, medium = false, low = false },
-            toolbox = nil,
-            modelPreferences = nil,
-            modelPreferencesFile = nil,
-            rx = { map = {}, values = {} },
-            isConnected = false
-        }
+
+        rfsuite.session.telemetryState = false
+        rfsuite.session.telemetryType = nil
+        rfsuite.session.telemetryTypeChanged = false
+        rfsuite.session.telemetrySensor = nil
+        rfsuite.session.apiVersion = nil
+        rfsuite.session.timer = {}
+        rfsuite.session.onConnect = { high = false, medium = false, low = false }
+        rfsuite.session.toolbox = nil
+        rfsuite.session.modelPreferences = nil
+        rfsuite.session.modelPreferencesFile = nil
+        rfsuite.session.rx = { map = {}, values = {} }
+        rfsuite.session.isConnected = false
+
         lastTelemetrySensorName, sportSensor, elrsSensor = nil, nil, nil
         telemetryCheckScheduler = now
         rfsuite.tasks.msp.reset()
