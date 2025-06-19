@@ -63,9 +63,9 @@ function render.wakeup(box)
         unit = nil
     end
 
-    -- We need to hold the value because the session has been disconnected
-    if lastDisplayValue and rfsuite.session.flightMode == "postflight" then
-        displayValue = lastDisplayValue
+    -- use the last display value if the current one is nil
+    if displayValue == nil and box._lastDisplayValue ~= nil then
+        displayValue = box._lastDisplayValue
     end
 
     -- Set box.value so dashboard/dirty can track change for redraws

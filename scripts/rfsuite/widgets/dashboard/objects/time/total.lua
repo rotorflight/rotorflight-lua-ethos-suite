@@ -61,18 +61,24 @@ function render.wakeup(box)
         local minutes = math.floor((value % 3600) / 60)
         local seconds = math.floor(value % 60)
         displayValue = string.format("%02d:%02d:%02d", hours, minutes, seconds)
+
+        box._lastDisplayValue = displayValue
+
     else
         displayValue = getParam(box, "novalue") or "00:00:00"
         unit = nil
     end
 
-    -- We need to hold the value because the session has been disconnected
-    if lastDisplayValue and rfsuite.session.flightMode == "postflight" then
-        displayValue = lastDisplayValue
-    end
+     -- use the last display value if the current one is nil
+    if displayValue == "00:00:00" and box._lastDisplayValue ~= nil then
+        displayValue = box._lastDisplayValue
+    end   
+    
 
     -- Set box.value so dashboard/dirty can track change for redraws
     box._currentDisplayValue = displayValue
+
+
 
     box._cache = {
         title              = getParam(box, "title"),
