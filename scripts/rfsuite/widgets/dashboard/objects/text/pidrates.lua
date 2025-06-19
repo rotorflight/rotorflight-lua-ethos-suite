@@ -18,7 +18,8 @@
 
     -- Value Styling and Alignment
     font                    : font                      -- (Optional) Font for profile number text
-    textcolor               : color                     -- (Optional) Text color for active profile index
+    textcolor               : color                     -- (Optional) Text color for inactive profile / rates
+    fillcolor               : color                     -- (Optional) Text color for active profile / rates
     valuealign              : string                    -- (Optional) Ignored; profile numbers are always centered
     valuepadding            : number                    -- (Optional) General padding around value area (overridden by sides)
     valuepaddingleft        : number
@@ -115,6 +116,7 @@ function render.wakeup(box, telemetry)
         activeIndex         = index,
         font                = getParam(box, "font") or FONT_L,
         textcolor           = textcolor or resolveThemeColor("textcolor", getParam(box, "textcolor")),
+        fillcolor           = utils.resolveThemeColor("fillcolor", getParam(box, "fillcolor")),
         bgcolor             = resolveThemeColor("bgcolor", getParam(box, "bgcolor")),
         title               = getParam(box, "title"),
         titlepos            = getParam(box, "titlepos"),
@@ -219,7 +221,12 @@ function render.paint(x, y, w, h, box)
         local tw, th = lcd.getTextSize(text)
         local yOffset = (isActive and c.highlightlarger and largerFont ~= baseFont) and (baseHeight - th) / 2 or 0
 
-        lcd.color(isActive and (c.textcolor or WHITE) or WHITE)
+        if isActive then
+            lcd.color(c.fillcolor or c.textcolor or WHITE)
+        else
+            lcd.color(c.textcolor or WHITE)
+        end
+
         lcd.drawText(cx + (spacing - tw) / 2, rowY + yOffset, text)
     end
 end
