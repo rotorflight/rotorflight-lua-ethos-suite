@@ -1,16 +1,11 @@
---[[
- * Copyright (C) Rotorflight Project
- * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
-]]--
+-- Simplified Task Scheduler with single `interval`
 
 local utils = rfsuite.utils
 local compiler = rfsuite.compiler.loadfile
 
-if not utils.ethosVersionAtLeast() then return end
-
 local currentTelemetrySensor
-local tasksPerCycle = 1              -- Represents the actual number of tasks to run per cycle, computed using: tasksPerCycle = math.ceil(count * taskSchedulerPercentage)
-local taskSchedulerPercentage = 0.1  -- Determines how many tasks should be run per wakeup cycle, based on the total number of eligible (non-always-run) tasks.
+local tasksPerCycle = 1
+local taskSchedulerPercentage = 0.2
 
 local tasks, tasksList = {}, {}
 tasks.heartbeat, tasks.init, tasks.wasOn = nil, true, false
@@ -20,10 +15,9 @@ local ethosVersionGood = nil
 local telemetryCheckScheduler = rfsuite.clock
 local lastTelemetrySensorName, sportSensor, elrsSensor = nil, nil, nil
 
+local usingSimulator = system.getVersion().simulation
+
 local tlm = system.getSource({ category = CATEGORY_SYSTEM_EVENT, member = TELEMETRY_ACTIVE })
-if not rfsuite.app.moduleList then
-    rfsuite.app.moduleList = utils.findModules()
-end
 
 function tasks.initialize()
     local cacheFile, cachePath = "tasks.lua", "cache/tasks.lua"
@@ -50,13 +44,11 @@ function tasks.initialize()
             tasks[name] = module
             table.insert(tasksList, {
                 name = name,
-                intmax = meta.intmax or 1,
-                intmin = meta.intmin or 0,
+                interval = meta.interval or 1,
                 script = meta.script,
-                priority = meta.priority or 1,
-                msp = meta.msp or false,
-                no_link = meta.no_link or false,
-                always_run = meta.always_run,
+                spreadschedule = meta.spreadschedule,
+                linkrequired = meta.linkrequired or false,
+                simulatoronly = meta.simulatoronly or false,
                 last_run = rfsuite.clock,
                 duration = 0
             })
@@ -71,12 +63,11 @@ function tasks.findTasks()
         if not dir:match("%.%a+$") then
             local initPath = taskPath .. dir .. "/init.lua"
             local func, err = compiler(initPath)
-
             if err then
                 utils.log("Error loading " .. initPath .. ": " .. err, "info")
             elseif func then
                 local tconfig = func()
-                if type(tconfig) ~= "table" or not tconfig.intmax or not tconfig.script then
+                if type(tconfig) ~= "table" or not tconfig.interval or not tconfig.script then
                     utils.log("Invalid configuration in " .. initPath, "debug")
                 else
                     local scriptPath = taskPath .. dir .. "/" .. tconfig.script
@@ -89,44 +80,28 @@ function tasks.findTasks()
 
                     local task = {
                         name = dir,
-                        intmax = tconfig.intmax or 1,
-                        intmin = tconfig.intmin or 0,
-                        priority = tconfig.priority or 1,
+                        interval = tconfig.interval or 1,
                         script = tconfig.script,
-                        msp = tconfig.msp or false,
-                        no_link = tconfig.no_link or false,
-                        always_run = tconfig.always_run or false,
+                        linkrequired = tconfig.linkrequired or false,
+                        spreadschedule = tconfig.spreadschedule or false,
+                        simulatoronly = tconfig.simulatoronly or false,                        
                         last_run = rfsuite.clock,
                         duration = 0
                     }
-
                     table.insert(tasksList, task)
 
                     taskMetadata[dir] = {
-                        intmax = task.intmax,
-                        intmin = task.intmin,
+                        interval = task.interval,
                         script = task.script,
-                        priority = task.priority,
-                        msp = task.msp,
-                        no_link = task.no_link,
-                        always_run = task.always_run
+                        linkrequired = task.linkrequired,
+                        simulatoronly = tconfig.simulatoronly or false,  
+                        spreadschedule = task.spreadschedule
                     }
                 end
             end
         end
     end
-
     return taskMetadata
-end
-
-function tasks.active()
-    if not tasks.heartbeat then return false end
-
-    local age = rfsuite.clock - tasks.heartbeat
-    tasks.wasOn = age >= 2
-    if rfsuite.app.triggers.mspBusy or age <= 2 then return true end
-
-    return false
 end
 
 function tasks.telemetryCheckScheduler()
@@ -149,6 +124,7 @@ function tasks.telemetryCheckScheduler()
         lastTelemetrySensorName, sportSensor, elrsSensor = nil, nil, nil
         telemetryCheckScheduler = now
         rfsuite.tasks.msp.reset()
+
     end
 
     if now - (telemetryCheckScheduler or 0) >= 0.5 then
@@ -178,15 +154,24 @@ function tasks.telemetryCheckScheduler()
     end
 end
 
+function tasks.active()
+    if not tasks.heartbeat then return false end
+
+    local age = rfsuite.clock - tasks.heartbeat
+    tasks.wasOn = age >= 2
+    if rfsuite.app.triggers.mspBusy or age <= 2 then return true end
+
+    return false
+end
+
 function tasks.wakeup()
     rfsuite.clock = os.clock()
+    tasks.heartbeat = rfsuite.clock
+
     if ethosVersionGood == nil then
         ethosVersionGood = utils.ethosVersionAtLeast()
     end
     if not ethosVersionGood then return end
-
-    local now = rfsuite.clock
-    tasks.heartbeat = now
 
     if tasks.init then
         tasks.init = false
@@ -195,67 +180,53 @@ function tasks.wakeup()
 
     tasks.telemetryCheckScheduler()
 
-    if not tasksPerCycle then
-        local count = 0
-        for _, task in ipairs(tasksList) do
-            if not task.always_run then count = count + 1 end
-        end
-        tasksPerCycle = math.ceil(count * taskSchedulerPercentage)
-    end
+    local now = rfsuite.clock
 
     local function canRunTask(task)
-        return (task.no_link or rfsuite.session.telemetryState) and
-               (task.msp or not rfsuite.app.triggers.mspBusy)
+        return (not task.linkrequired or rfsuite.session.telemetryState) and
+            (task.name == "msp" or not rfsuite.app.triggers.mspBusy) and
+            (not task.simulatoronly or usingSimulator)
     end
 
+    -- Run always-run tasks
     for _, task in ipairs(tasksList) do
-        if task.always_run and tasks[task.name].wakeup and canRunTask(task) then
-            tasks[task.name].wakeup()
-            task.last_run = now
-        end
-    end
-
-    local overdueTasks, eligibleWeighted = {}, {}
-
-    for _, task in ipairs(tasksList) do
-        if not task.always_run and canRunTask(task) then
+        if not task.spreadschedule and tasks[task.name].wakeup and canRunTask(task) then
             local elapsed = now - task.last_run
-            if elapsed >= task.intmax then
-                table.insert(overdueTasks, task)
-            elseif elapsed >= task.intmin then
-                for _ = 1, task.priority do
-                    table.insert(eligibleWeighted, task)
-                end
+            if elapsed >= task.interval then
+                tasks[task.name].wakeup()
+                task.last_run = now
             end
         end
     end
 
-    for _, task in ipairs(overdueTasks) do
-        if tasks[task.name].wakeup then
-            tasks[task.name].wakeup()
-            task.last_run = now
-        end
-    end
-
-    local remaining = tasksPerCycle - #overdueTasks
-    for _ = 1, math.max(0, remaining) do
-        if #eligibleWeighted == 0 then break end
-        local index = math.random(1, #eligibleWeighted)
-        local task = eligibleWeighted[index]
-
-        if tasks[task.name].wakeup then
-            tasks[task.name].wakeup()
-            task.last_run = now
-        end
-
-        for i = #eligibleWeighted, 1, -1 do
-            if eligibleWeighted[i].name == task.name then
-                table.remove(eligibleWeighted, i)
+    -- Collect eligible tasks
+    local eligibleTasks = {}
+    for _, task in ipairs(tasksList) do
+        if task.spreadschedule and canRunTask(task) then
+            local elapsed = now - task.last_run
+            if elapsed >= task.interval then
+                table.insert(eligibleTasks, task)
             end
         end
     end
 
+    -- Determine how many tasks to run
+    local count = 0
+    for _, task in ipairs(tasksList) do
+        if not task.spreadschedule then count = count + 1 end
+    end
+    tasksPerCycle = math.ceil(count * taskSchedulerPercentage)
 
+    -- Run a random selection of eligible tasks
+    for i = 1, math.min(tasksPerCycle, #eligibleTasks) do
+        local index = math.random(1, #eligibleTasks)
+        local task = eligibleTasks[index]
+        if tasks[task.name].wakeup then
+            tasks[task.name].wakeup()
+            task.last_run = now
+        end
+        table.remove(eligibleTasks, index)
+    end
 end
 
 function tasks.reset()
@@ -265,9 +236,6 @@ function tasks.reset()
             tasks[task.name].reset()
         end
     end
-end
-
-function tasks.event(widget, category, value)
 end
 
 return tasks

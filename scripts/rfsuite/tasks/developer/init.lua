@@ -17,11 +17,11 @@
  * 
 ]] --
 local init = {
-    intmin = 5, -- run at least every 0.1s
-    intmax = 5, -- run at least
-    priority = 1, -- low priority.  1 = low , 2 = medium, 3 = high, etc
-    script = "developer.lua", -- run this script
-    msp = false -- do not run if busy with msp
+    interval        = 5,                -- run every 5 seconds
+    script          = "developer.lua",  -- run this script
+    linkrequired    = false,            -- run this script only if link is established
+    spreadschedule  = true,             -- run on every loop
+    simulatoronly   = true,             -- run this script in simulation mode
 }
 
 return init

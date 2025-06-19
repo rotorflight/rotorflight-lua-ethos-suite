@@ -17,10 +17,10 @@
  * 
 ]] --
 local init = {
-    intmin = 0.1, -- run at least every 0.1s
-    intmax = 0.25, -- run at least
-    priority = 2, -- medium priority.  1 = low , 2 = medium, 3 = high, etc
-    script = "tasks.lua", -- run this script
-    msp = false -- do not run if busy with msp [as this is msp we set to true as must run]
+    interval        = 0.25,         -- run every 0.25 seconds
+    script          = "tasks.lua",  -- run this script
+    linkrequired    = true,         -- run this script only if link is established 
+    spreadschedule  = true,         -- run on every loop 
+    simulatoronly   = false,        -- run this script in simulation mode                        
 }
 return init

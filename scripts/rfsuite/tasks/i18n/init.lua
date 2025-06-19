@@ -17,11 +17,11 @@
  * 
 ]] --
 local init = {
-    intmin = 2, -- run at least every 0.1s
-    intmax = 5, -- run at least
-    priority = 1, -- medium priority.  1 = low , 2 = medium, 3 = high, etc
-    script = "i18n.lua", -- run this script
-    msp = false -- do not run if busy with msp
+    interval        = 10,           -- run every 2 seconds
+    script          = "i18n.lua",   -- run this script
+    linkrequired    = false,        -- run this script only if link is established
+    spreadschedule  = true,         -- run on every loop
+    simulatoronly   = false,        -- run this script in simulation mode
 }
 
 return init
