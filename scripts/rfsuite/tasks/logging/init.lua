@@ -17,12 +17,9 @@
  * 
 ]] --
 local init = {
-    intmin = 0.5, -- run at least every 0.1s
-    intmax = 2, -- run at least
-    priority = 2, -- medium priority.  1 = low , 2 = medium, 3 = high, etc
+    interval = 5,
     script = "logging.lua", -- run this script
-    msp = false, -- do not run if busy with msp 
-    no_link = false -- run this script always
+    linkrequired = true, -- run this script only if link is established        
 }
 
 return init

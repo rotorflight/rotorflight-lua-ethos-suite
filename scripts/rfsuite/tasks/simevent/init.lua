@@ -17,12 +17,9 @@
  * 
 ]] --
 local init = {
-    intmin = 0.25, -- run at least every 0.1s
-    intmax = 0.5, -- run at least
-    priority = 1, -- medium priority.  1 = low , 2 = medium, 3 = high, etc
+    interval = 1, -- run every second
     script = "simevent.lua", -- run this script
-    msp = false, -- do not run if busy with msp
-    no_link = true, -- always run this task
+    linkrequired = false, -- run this script only if link is established        
 }
 
 return init
