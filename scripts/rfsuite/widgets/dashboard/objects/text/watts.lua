@@ -42,6 +42,8 @@ function render.wakeup(box, telemetry)
     local v = rfsuite.tasks.telemetry.sensorStats["voltage"]
     local i = rfsuite.tasks.telemetry.sensorStats["current"]
 
+    if v == nil or i == nil then return end
+
     minWatts = v.min * i.min
     maxWatts = v.max * i.max
     avgWatts = v.avg * i.avg
