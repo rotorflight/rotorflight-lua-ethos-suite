@@ -31,34 +31,43 @@ local channelNames = {
     "aux3"
 }
 
-local channelSources = {} 
+local channelSources = {}
+local initialized = false
 
-function rxmap.wakeup()
-
-    if rfsuite.utils.rxmapReady() then
-
-        -- Only populate channelSources once
-        if next(channelSources) == nil then
-            for i,v in ipairs(channelNames) do
-                local src = system.getSource({category = CATEGORY_CHANNEL, member = (rfsuite.session.rx.map[v]), options = 0})
-                if src then
-                    channelSources[v] = src
-                end
-            end
-        end
-
-        for v, src in pairs(channelSources) do
-            local channelValue = src:value()
-            if channelValue ~= nil then
-                rfsuite.session.rx.values[v] = channelValue
+local function initChannelSources()
+    local rxMap = rfsuite.session.rx.map
+    for _, name in ipairs(channelNames) do
+        local member = rxMap[name]
+        if member then
+            local src = system.getSource({ category = CATEGORY_CHANNEL, member = member, options = 0 })
+            if src then
+                channelSources[name] = src
             end
         end
     end
+    initialized = true
+end
 
+function rxmap.wakeup()
+    if not rfsuite.utils.rxmapReady() then return end
+
+    if not initialized then
+        initChannelSources()
+    end
+
+    for name, src in pairs(channelSources) do
+        if src then
+            local val = src:value()
+            if val ~= nil then
+                rfsuite.session.rx.values[name] = val
+            end
+        end
+    end
 end
 
 function rxmap.reset()
-    -- Clear all stored stats and force a full rebuild on next wakeup()
+    channelSources = {}
+    initialized = false
 end
 
 return rxmap
