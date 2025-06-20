@@ -20,7 +20,6 @@ local config = arg[1]
 
 local switches = {}
 
--- Tables to track switch configurations and timing
 local switchTable = {
     switches = {},
     units = {},
@@ -30,101 +29,115 @@ local lastPlayTime    = {}
 local lastSwitchState = {}
 local switchStartTime = nil
 
---------------------------------------------------------------------------------
--- Handles the wakeup event for switch-based telemetry audio playback.
+--- Initializes the switchTable with switch sources and sensor audio units based on user preferences.
+-- 
+-- This function retrieves the user's switch preferences from `rfsuite.preferences.switches`.
+-- For each valid preference entry, it parses the category and member values, converts them to numbers,
+-- and uses `system.getSource` to obtain the corresponding switch source, which is then stored in `switchTable.switches`.
+-- Finally, it populates `switchTable.units` with the list of sensor audio units from telemetry.
 --
--- Behavior:
---   • Populates `switchTable.switches` from user preferences if empty.
---   • Waits 5 seconds after telemetry becomes active before processing.
---   • For each configured switch:
---       - If toggled ON, plays telemetry value immediately.
---       - If held ON, throttles playback to once every 10 seconds.
---       - Retrieves sensor source, unit, and decimal precision.
---       - Calls `system.playNumber` to play the value.
---       - Updates `lastPlayTime` and `lastSwitchState`.
+-- @function initializeSwitches
+-- @usage
+--   initializeSwitches()
+-- @see rfsuite.preferences.switches
+-- @see system.getSource
+-- @see rfsuite.tasks.telemetry.listSensorAudioUnits
+local function initializeSwitches()
+    local prefs = rfsuite.preferences.switches
+    if not prefs then return end
+
+    for key, v in pairs(prefs) do
+        if v then
+            local scategory, smember = v:match("([^,]+),([^,]+)")
+            scategory = tonumber(scategory)
+            smember  = tonumber(smember)
+            if scategory and smember then
+                switchTable.switches[key] = system.getSource({
+                    category = scategory,
+                    member   = smember
+                })
+            end
+        end
+    end
+
+    switchTable.units = rfsuite.tasks.telemetry.listSensorAudioUnits()
+end
+
+--- Handles the periodic wakeup logic for monitoring and announcing switch states.
+-- 
+-- This function checks the state of switches defined in `switchTable.switches`.
+-- It initializes the switches if they are not already set up, and ensures that
+-- at least 5 seconds have passed since the function was first called before processing.
+--
+-- For each switch:
+--   - If the switch is active and either was previously inactive or at least 10 seconds
+--     have passed since the last announcement, it plays the current sensor value using
+--     `system.playNumber`.
+--   - The function tracks the last state and last play time for each switch to avoid
+--     repeated announcements.
 --
 -- Dependencies:
---   • rfsuite.preferences.switches           – user-configured switch mapping
---   • system.getSource                        – retrieve switch source by (category, member)
---   • rfsuite.tasks.telemetry.listSensorAudioUnits
---   • rfsuite.tasks.telemetry.getSensorSource
---   • system.playNumber
+--   - `rfsuite.clock`: Current time reference.
+--   - `switchTable.switches`: Table of switch sensor objects.
+--   - `rfsuite.tasks.telemetry.getSensorSource(key)`: Retrieves the sensor source for a switch.
+--   - `system.playNumber(value, unit, decimals)`: Announces the sensor value.
 --
--- Globals:
---   • switchTable.switches   – table storing switch source objects
---   • switchTable.units      – table mapping keys to audio units
---   • switchStartTime        – timestamp when switch processing began
---   • lastSwitchState        – previous ON/OFF state per switch key
---   • lastPlayTime           – last playback timestamp per switch key
---------------------------------------------------------------------------------
+-- Globals used:
+--   - `switchStartTime`: Timestamp of the first wakeup call.
+--   - `lastSwitchState`: Table storing the last known state of each switch.
+--   - `lastPlayTime`: Table storing the last announcement time for each switch.
+--
+-- No return value.
 function switches.wakeup()
-    local currentTime = rfsuite.clock
+    local now = rfsuite.clock
 
-    -- Populate switchTable if empty and preferences exist
-    if next(switchTable.switches) == nil and rfsuite.preferences.switches then
-        for key, v in pairs(rfsuite.preferences.switches) do
-            if v then
-                local scategory, smember = v:match("([^,]+),([^,]+)")
-                scategory = tonumber(scategory)
-                smember  = tonumber(smember)
-                if scategory and smember then
-                    switchTable.switches[key] = system.getSource({
-                        category = scategory,
-                        member   = smember
-                    })
-                end
-            end
-        end
-
-        switchTable.units = rfsuite.tasks.telemetry.listSensorAudioUnits()
+    if next(switchTable.switches) == nil then
+        initializeSwitches()
     end
 
-    -- Initialize switchStartTime on first wakeup
     if not switchStartTime then
-        switchStartTime = currentTime
+        switchStartTime = now
     end
 
-    -- Delay processing until 5 seconds after telemetry activation
-    if (currentTime - switchStartTime) > 5 then
-        for key, sensor in pairs(switchTable.switches) do
-            local currentState = sensor:state()        -- true if switch is ON
-            local prevState    = lastSwitchState[key] or false
-            local now          = rfsuite.clock
-            local lastTime     = lastPlayTime[key] or 0
-            local shouldPlay   = false
+    if (now - switchStartTime) <= 5 then return end
 
-            if currentState then
-                -- Just toggled ON → play immediately
-                if not prevState then
-                    shouldPlay = true
-                -- Held ON → throttle to once every 10 seconds
-                elseif (now - lastTime) >= 10 then
-                    shouldPlay = true
-                end
+    for key, sensor in pairs(switchTable.switches) do
+        local currentState = sensor:state()
+        if currentState == nil then goto continue end
 
-                if shouldPlay then
-                    local sensorSrc = rfsuite.tasks.telemetry.getSensorSource(key)
-                    if sensorSrc then
-                        local value     = sensorSrc:value()
-                        if value and type(value) == "number" then
-                            local unit     = switchTable.units[key]
-                            local decimals = tonumber(sensorSrc:decimals())
-                            system.playNumber(value, unit, decimals)
-                            lastPlayTime[key] = now
-                        end
-                    end    
+        local prevState  = lastSwitchState[key] or false
+        local lastTime   = lastPlayTime[key] or 0
+        local playNow    = false
+
+        if not currentState then
+            goto skip_play
+        elseif not prevState or (now - lastTime) >= 10 then
+            playNow = true
+        end
+
+        if playNow then
+            local sensorSrc = rfsuite.tasks.telemetry.getSensorSource(key)
+            if sensorSrc then
+                local value = sensorSrc:value()
+                if value and type(value) == "number" then
+                    local unit     = switchTable.units[key]
+                    local decimals = tonumber(sensorSrc:decimals())
+                    system.playNumber(value, unit, decimals)
+                    lastPlayTime[key] = now
                 end
             end
-
-            -- Update previous state for next cycle
-            lastSwitchState[key] = currentState
         end
+
+        ::skip_play::
+        lastSwitchState[key] = currentState
+        ::continue::
     end
 end
 
---------------------------------------------------------------------------------
--- Resets switch state tables, allowing reconfiguration at runtime.
---------------------------------------------------------------------------------
+--- Resets the state of all switches and related tracking variables.
+-- This function clears the `switchTable.switches` table, resets the `lastPlayTime`
+-- and `lastSwitchState` tables, and sets `switchStartTime` to nil.
+-- It is typically used to reinitialize switch states, for example when starting a new task or event.
 function switches.resetSwitchStates()
     switchTable.switches   = {}
     lastPlayTime           = {}
@@ -132,7 +145,9 @@ function switches.resetSwitchStates()
     switchStartTime        = nil
 end
 
--- Expose switchTable for other modules
+--- Assigns the provided `switchTable` to the `switches.switchTable` property.
+-- This allows access to the table of switch configurations or states via the `switches` module.
+-- @field switchTable table: A table containing switch definitions or states.
 switches.switchTable = switchTable
 
 return switches
