@@ -133,6 +133,10 @@ dashboard._moduleCache = dashboard._moduleCache or {}
 dashboard._hg_cycles_required = math.ceil(0.5 / (loadedThemeIntervals.paint_interval or 0.5))
 dashboard._hg_cycles = 0
 
+-- how long the loader must stay visible (in seconds)
+dashboard._loader_min_duration = 1.5
+dashboard._loader_start_time = nil
+
 -- Utility methods loaded from external utils.lua (drawing, color helpers, etc.)
 dashboard.utils = assert(
     compile("SCRIPTS:/" .. baseDir .. "/widgets/dashboard/lib/utils.lua")
@@ -437,7 +441,9 @@ function dashboard.renderLayout(widget, config)
     ----------------------------------------------------------------
     -- PHASE 2: Spinner Until First Wakeup Pass Completes
     ----------------------------------------------------------------
-    if objectsThreadedWakeupCount < 1 then
+    dashboard._loader_start_time = dashboard._loader_start_time or rfsuite.clock
+    local loaderElapsed = rfsuite.clock - dashboard._loader_start_time
+    if objectsThreadedWakeupCount < 1 or loaderElapsed < dashboard._loader_min_duration then
         dashboard.loader(0, 0, W, H)
         lcd.invalidate()
         return
