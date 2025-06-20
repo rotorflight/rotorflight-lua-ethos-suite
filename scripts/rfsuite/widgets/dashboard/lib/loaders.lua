@@ -102,9 +102,9 @@ function loaders.staticLoader(dashboard, x, y, w, h)
 
 -- Animated dots below the logo
   dashboard._dots_index = dashboard._dots_index or 1
-  dashboard._dots_time = dashboard._dots_time or rfsuite.clock
-  if rfsuite.clock - dashboard._dots_time > 0.5 then
-    dashboard._dots_time = rfsuite.clock
+  dashboard._dots_time = dashboard._dots_time or os.clock()
+  if os.clock() - dashboard._dots_time > 0.5 then
+    dashboard._dots_time = os.clock()
     dashboard._dots_index = (dashboard._dots_index % 3) + 1
   end
 
@@ -155,6 +155,28 @@ function loaders.staticOverlayMessage(dashboard, x, y, w, h, txt)
     lcd.drawFilledCircle(cx, cy, radius)
     lcd.color(lcd.darkMode() and lcd.RGB(0,0,0,1.0) or lcd.RGB(0,0,0,1.0))
     lcd.drawFilledCircle(cx, cy, radius - thickness)
+  end
+
+-- Animated dots below the logo
+  dashboard._dots_index = dashboard._dots_index or 1
+  dashboard._dots_time = dashboard._dots_time or os.clock()
+  if os.clock() - dashboard._dots_time > 0.5 then
+    dashboard._dots_time = os.clock()
+    dashboard._dots_index = (dashboard._dots_index % 3) + 1
+  end
+
+  local dotRadius = 4
+  local spacing = 3 * dotRadius
+  local startX = cx - spacing
+  local yPos = cy + (radius - thickness / 2) / 2  -- Midway between center and outer edge
+
+  for i = 1, 3 do
+    if i == dashboard._dots_index then
+      lcd.color(lcd.darkMode() and lcd.RGB(255,255,255) or lcd.RGB(0,0,0))
+    else
+      lcd.color(lcd.darkMode() and lcd.RGB(80,80,80) or lcd.RGB(180,180,180))
+    end
+    lcd.drawFilledCircle(startX + (i - 1) * spacing, yPos, dotRadius)
   end
 
   renderOverlayText(dashboard, cx, cy, innerR, fg)
