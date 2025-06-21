@@ -17,7 +17,7 @@
  * 
 ]] --
 local init = {
-    intervale       = 5,                -- run every 5 seconds
+    interval        = 5,                -- run every 5 seconds
     script          = "compiler.lua",   -- run this script
     linkrequired    = false,            -- run this script only if link is established    
     spreadschedule  = true,             -- run on every loop
