@@ -82,9 +82,9 @@ local eventTable = {
     {
         sensor = "fuel",
         event = function(value)
-            local config = rfsuite.session.batteryConfig
-            local warningPct = config and config.consumptionWarningPercentage
-            if warningPct and value < warningPct then
+            print("Fuel event value:", value)
+            -- Play the alert every interval if fuel is 10% or below
+            if value and value <= 10 then
                 rfsuite.utils.playFile("events", "alerts/lowfuel.wav")
             end
         end,

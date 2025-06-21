@@ -230,6 +230,7 @@ rfsuite.session.batteryConfig = nil
     -- vbatwarningcellvoltage = nil
     -- vbatmincellvoltage = nil
     -- vbatmaxcellvoltage = nil
+    -- vbatfullcellvoltage = nil
     -- lvcPercentage = nil
     -- consumptionWarningPercentage = nil
 rfsuite.session.modelPreferences = nil -- this is used to store the model preferences
