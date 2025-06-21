@@ -22,7 +22,7 @@
         <Sensor name="voltage" label="Main Voltage" type="range" min="0" max="25.2" rand="5" multiplier="100" unit="V" default="24.2" />
         <Sensor name="bec_voltage" label="BEC Voltage" type="range" rand="5" min="4.0" max="8.0" multiplier="100" unit="V" default="8.0" />
         <Sensor name="current" label="Current" type="range" rand="5" min="0" max="200" multiplier="1" unit="A" />
-        <Sensor name="fuel" label="Fuel" round="true" type="range" default="85" min="0" max="100" rand="1" multiplier="1" unit="%" />
+        <Sensor name="consumption" label="Consumption" round="true" type="range" default="0" min="0" max="5000" rand="0" multiplier="1" unit="mAh" />
     </Group>
 
     <Group name="Flight Profiles">
