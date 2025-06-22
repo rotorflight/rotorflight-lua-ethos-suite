@@ -45,7 +45,7 @@ jobs:
         grep 'config.log' scripts/rfsuite/main.lua
 
     - name: Make release package
-      run: zip -q -r -9 "rotorflight-lua-ethos-suite-${{ env.GIT_VER }}.zip" scripts
+      run: zip -q -r -9 "rotorflight-lua-ethos-suite-${{ env.GIT_VER }}.zip" scripts/rfsuite
 
     - name: Create Release
       run: |
