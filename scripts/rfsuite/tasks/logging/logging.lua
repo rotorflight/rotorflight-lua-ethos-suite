@@ -13,6 +13,8 @@ local logInterval = 1 -- changing this will skew the log analysis - so dont chan
 local logFileName
 local logRateLimit = rfsuite.clock
 
+local telemetry
+
 local colorTable = {}
 
 if lcd.darkMode() then
@@ -94,9 +96,11 @@ end
 
 -- Sensor cache setup — runs once when telemetry becomes active
 local function cacheSensorSources()
+    if not telemetry then return end
+    
     cachedSensors = {}
     for _, sensor in ipairs(logTable) do
-        cachedSensors[sensor.name] = rfsuite.tasks.telemetry.getSensorSource(sensor.name)
+        cachedSensors[sensor.name] = telemetry.getSensorSource(sensor.name)
     end
 end
 
@@ -125,12 +129,17 @@ function logging.wakeup()
         return
     end
 
+    if not telemetry then
+        telemetry = rfsuite.tasks.telemetry
+        return
+    end
+
     if not logDirChecked then
         checkLogdirExists()
         logDirChecked = true
     end
 
-    if not rfsuite.tasks.telemetry.active() then
+    if not telemetry.active() then
         logging.flushLogs()
         clearSensorCache()
         cacheSensorSources()
