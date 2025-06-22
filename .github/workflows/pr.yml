@@ -36,30 +36,27 @@ jobs:
         path: rotorflight-lua-ethos-suite-${{ env.GIT_VER }}.zip
         if-no-files-found: error
 
-    - name: Package soundpacks
+    - name: Package combined soundpack
       run: |
+        # Where your per-locale packs live
         SOUND_DIR="bin/sound-generator/soundpack"
-        OUTPUT_DIR="${GITHUB_WORKSPACE}/tmp"    # ← absolute
-        mkdir -p "${OUTPUT_DIR}"
 
-        for locale_dir in "${SOUND_DIR}"/*; do
-          [ -d "${locale_dir}" ] || continue
-          locale="$(basename "${locale_dir}")"
-          for pack_dir in "${locale_dir}"/*; do
-            [ -d "${pack_dir}" ] || continue
-            pack="$(basename "${pack_dir}")"
-            zip_name="rotorflight-lua-ethos-suite-${{ env.GIT_VER }}-soundpack-${locale}-${pack}.zip"
+        # Where to drop the ZIP
+        OUTPUT_DIR="${GITHUB_WORKSPACE}/tmp"
+        mkdir -p "$OUTPUT_DIR"
 
-            # cd into the pack, zip **.** into the absolute OUTPUT_DIR
-            (cd "${pack_dir}" && zip -r "${OUTPUT_DIR}/${zip_name}" .)
+        # Name it with your GIT_VER (e.g. PR-936 or 1.2.3)
+        ZIP_NAME="rotorflight-lua-ethos-suite-soundpack-${{ env.GIT_VER }}.zip"
 
-            echo "Created ${OUTPUT_DIR}/${zip_name}"
-          done
-        done
+        # Zip up everything under SOUND_DIR, preserving locale/pack/... structure
+        (cd "$SOUND_DIR" && zip -r "$OUTPUT_DIR/$ZIP_NAME" .)
 
-    - name: Upload soundpack artifacts
+        echo "✅ Created $OUTPUT_DIR/$ZIP_NAME"
+
+    - name: Upload soundpack artifact
       uses: actions/upload-artifact@v4
       with:
-        name: soundpacks
+        name: rotorflight-lua-ethos-suite-soundpack-${{ env.GIT_VER }}
         path: tmp/*.zip
+
      
