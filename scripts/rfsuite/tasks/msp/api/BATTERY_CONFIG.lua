@@ -31,7 +31,7 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "vbatfullcellvoltage",          type = "U16", apiVersion = 12.06, simResponse = {154, 1}, min = 0,   decimals = 2, scale = 100, max = 500, unit = "V",   default = 4.1},
     {field = "vbatwarningcellvoltage",       type = "U16", apiVersion = 12.06, simResponse = {94, 1},  min = 0,   decimals = 2, scale = 100, max = 500, unit = "V",   default = 3.5},
     {field = "lvcPercentage",                type = "U8",  apiVersion = 12.06, simResponse = {100}},
-    {field = "consumptionWarningPercentage", type = "U8",  apiVersion = 12.06, simResponse = {30}, min = 0, max = 50, default = 30, unit = "%"},
+    {field = "consumptionWarningPercentage", type = "U8",  apiVersion = 12.06, simResponse = {30}, min = 0, max = 50, default = 35, unit = "%"},
 }
 
 -- Process structure in one pass
