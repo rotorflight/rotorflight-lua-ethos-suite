@@ -36,28 +36,30 @@ jobs:
         path: rotorflight-lua-ethos-suite-${{ env.GIT_VER }}.zip
         if-no-files-found: error
 
-    # Package each soundpack into its own ZIP
     - name: Package soundpacks
       run: |
         SOUND_DIR="bin/sound-generator/soundpack"
-        OUTPUT_DIR="tmp"
+        OUTPUT_DIR="${GITHUB_WORKSPACE}/tmp"    # ← absolute
         mkdir -p "${OUTPUT_DIR}"
+
         for locale_dir in "${SOUND_DIR}"/*; do
           [ -d "${locale_dir}" ] || continue
-          locale=$(basename "${locale_dir}")
+          locale="$(basename "${locale_dir}")"
           for pack_dir in "${locale_dir}"/*; do
             [ -d "${pack_dir}" ] || continue
-            pack=$(basename "${pack_dir}")
+            pack="$(basename "${pack_dir}")"
             zip_name="rotorflight-lua-ethos-suite-${{ env.GIT_VER }}-soundpack-${locale}-${pack}.zip"
+
+            # cd into the pack, zip **.** into the absolute OUTPUT_DIR
             (cd "${pack_dir}" && zip -r "${OUTPUT_DIR}/${zip_name}" .)
+
             echo "Created ${OUTPUT_DIR}/${zip_name}"
           done
         done
-      shell: bash
 
-    # Upload all generated soundpack ZIPs
     - name: Upload soundpack artifacts
       uses: actions/upload-artifact@v4
       with:
         name: soundpacks
-        path: soundpacks/*.zip        
+        path: tmp/*.zip
+     
