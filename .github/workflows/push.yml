@@ -59,7 +59,7 @@ jobs:
 
     # Upload all generated soundpack ZIPs
     - name: Upload soundpack artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: soundpacks
         path: soundpacks/*.zip
