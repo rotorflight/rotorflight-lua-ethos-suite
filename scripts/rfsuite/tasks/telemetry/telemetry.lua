@@ -29,6 +29,84 @@ local sensors   = setmetatable({}, { __mode = "v" })
 -- debug counters
 local cache_hits, cache_misses = 0, 0
 
+-- variables for 2 step fuel calculation with delays to allow voltage to stabilise for 10 seconds
+local fuelReadyTime = nil
+local fuelStartingPercent = nil
+local fuelStartingConsumption = nil
+
+-- 2 step fuel calculation logic with mah consumption (shared function for sim and sensor)
+local function smartFuelCalc()
+    local bc = rfsuite and rfsuite.session and rfsuite.session.batteryConfig
+    local consumption = telemetry and telemetry.getSensor and telemetry.getSensor("consumption") or nil
+    local voltage = telemetry and telemetry.getSensor and telemetry.getSensor("voltage") or nil
+    local cellCount = bc and bc.batteryCellCount or 0
+    local packCapacity = bc and bc.batteryCapacity or 0
+    local reserve = bc and bc.consumptionWarningPercentage or 0
+    local maxCellV = bc and bc.vbatmaxcellvoltage or 4.2
+    local minCellV = bc and bc.vbatmincellvoltage or 3.3
+    local fullCellV = bc and bc.vbatfullcellvoltage or 4.1
+
+    -- Clamp reserve to sane values
+    if reserve > 80 or reserve < 0 then reserve = 20 end
+
+    -- Early exit if config is missing or invalid
+    if not packCapacity or packCapacity < 10 or not cellCount or cellCount < 2 then
+        fuelReadyTime = nil
+        fuelStartingPercent = nil
+        fuelStartingConsumption = nil
+        return nil
+    end
+
+    -- Set up the grace period on first call
+    local now = rfsuite.clock
+    if not fuelReadyTime then
+        fuelReadyTime = now + 10
+        fuelStartingPercent = nil
+        fuelStartingConsumption = nil
+        return nil
+    end
+
+    -- Wait until the grace period has elapsed
+    if now < fuelReadyTime then
+        return nil
+    end
+
+    -- Step 1: After delay, determine initial fuel % from voltage
+    if not fuelStartingPercent then
+        local perCell = (voltage and cellCount > 0) and (voltage / cellCount) or 0
+        if perCell >= fullCellV then
+            fuelStartingPercent = 100
+        elseif perCell <= minCellV then
+            fuelStartingPercent = 0
+        else
+            local usableRange = maxCellV - minCellV
+            local pct = ((perCell - minCellV) / usableRange) * 100
+            -- Apply reserve as "zero" point
+            if reserve > 0 and pct <= reserve then
+                fuelStartingPercent = 0
+            else
+                fuelStartingPercent = math.floor(math.max(0, math.min(100, pct)))
+            end
+        end
+        local usableCapacity = packCapacity * (1 - reserve / 100)
+        local estimatedUsed = usableCapacity * (1 - fuelStartingPercent / 100)
+        fuelStartingConsumption = (consumption or 0) - estimatedUsed
+    end
+
+    -- Step 2: Use mAh consumption to track % drop after initial value
+    if consumption and fuelStartingConsumption and packCapacity > 0 then
+        local used = consumption - fuelStartingConsumption
+        local usableCapacity = packCapacity * (1 - reserve / 100)
+        if usableCapacity < 10 then usableCapacity = packCapacity end
+        local percentUsed = used / usableCapacity * 100
+        local remaining = math.max(0, fuelStartingPercent - percentUsed)
+        return math.floor(math.min(100, remaining) + 0.5)
+    else
+        -- If consumption isn't available, just show initial percent
+        return fuelStartingPercent
+    end
+end
+
 -- LRU for hot sources
 local HOT_SIZE  = 25
 local hot_list, hot_index = {}, {}
@@ -353,9 +431,11 @@ local sensorTable = {
         unit_string = "%",
         sensors = {
             sim = {
-                { uid = 0x5007, unit = UNIT_PERCENT, dec = 0,
-                  value = function() return rfsuite.utils.simSensors('fuel') end,
-                  min = 0, max = 100 },
+                { 
+                    uid = 0x5007, unit = UNIT_PERCENT, dec = 0,
+                    value = smartFuelCalc,                    
+                    min = 0, max = 100
+                },
             },
             sport = {
                 { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0600 },
@@ -365,6 +445,11 @@ local sensorTable = {
             },
             crsfLegacy = { "Rx Batt%" },
         },
+        source = function()
+            return {
+                value = smartFuelCalc,                    
+            }
+        end,
     },
 
     consumption = {
@@ -951,30 +1036,51 @@ function telemetry.getSensorSource(name)
 end
 
 --- Retrieves the value of a telemetry sensor by its key.
--- Looks up the sensor source using the provided sensorKey.
--- If the sensor source is found, returns its raw value; otherwise, returns nil.
+-- This function now supports both physical sensors (linked to telemetry sources)
+-- and virtual/computed sensors (which define a `.source` function in sensorTable).
+--
+-- 1. If the sensorTable entry includes a `source` function (virtual/computed sensor),
+--    this function is called and its `.value()` result is returned.
+-- 2. Otherwise, attempts to resolve the sensor as a physical/real telemetry source.
+--    If found, returns its value; otherwise, returns nil.
+-- 3. If a `localizations` function is defined for the sensor, it is applied to
+--    transform the raw value and resolve units as needed.
+--
 -- @param sensorKey The key identifying the telemetry sensor.
--- @return The raw value of the sensor if found, or nil if the sensor does not exist.
+-- @return The sensor value (possibly transformed), primary unit (major), and secondary unit (minor) if available.
 function telemetry.getSensor(sensorKey)
+    local entry = sensorTable[sensorKey]
+
+    if entry and type(entry.source) == "function" then
+        local src = entry.source()
+        if src and type(src.value) == "function" then
+            local value, major, minor = src.value()
+            major = major or entry.unit
+            -- Optionally apply localization, if needed:
+            if entry.localizations and type(entry.localizations) == "function" then
+                value, major, minor = entry.localizations(value)
+            end
+            return value, major, minor
+        end
+    end
+
+    -- Physical/real telemetry source
     local source = telemetry.getSensorSource(sensorKey)
     if not source then
         return nil
     end
 
     -- get initial defaults
-    local value = source:value()                        -- get the raw value from the source
-    local major = sensorTable[sensorKey].unit or nil    -- use the default unit if defined
-    local minor = nil                                   -- minor version is not possible without a localizations function which we do not have yet
-
+    local value = source:value()
+    local major = entry and entry.unit or nil
+    local minor = nil
 
     -- if the sensor has a transform function, apply it to the value:
-    if sensorTable[sensorKey] and sensorTable[sensorKey].localizations and type(sensorTable[sensorKey].localizations) == "function" then
-        value, major, minor = sensorTable[sensorKey].localizations(value)
+    if entry and entry.localizations and type(entry.localizations) == "function" then
+        value, major, minor = entry.localizations(value)
     end
 
-    -- Return the value
     return value, major, minor
-
 end
 
 --[[ 
