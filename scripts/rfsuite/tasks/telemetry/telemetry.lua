@@ -29,6 +29,84 @@ local sensors   = setmetatable({}, { __mode = "v" })
 -- debug counters
 local cache_hits, cache_misses = 0, 0
 
+-- variables for 2 step fuel calculation with delays to allow voltage to stabilise for 10 seconds
+local fuelReadyTime = nil
+local fuelStartingPercent = nil
+local fuelStartingConsumption = nil
+
+-- 2 step fuel calculation logic with mah consumption (shared function for sim and sensor)
+local function smartFuelCalc()
+    local bc = rfsuite and rfsuite.session and rfsuite.session.batteryConfig
+    local consumption = telemetry and telemetry.getSensor and telemetry.getSensor("consumption") or nil
+    local voltage = telemetry and telemetry.getSensor and telemetry.getSensor("voltage") or nil
+    local cellCount = bc and bc.batteryCellCount or 0
+    local packCapacity = bc and bc.batteryCapacity or 0
+    local reserve = bc and bc.consumptionWarningPercentage or 0
+    local maxCellV = bc and bc.vbatmaxcellvoltage or 4.2
+    local minCellV = bc and bc.vbatmincellvoltage or 3.3
+    local fullCellV = bc and bc.vbatfullcellvoltage or 4.1
+
+    -- Clamp reserve to sane values
+    if reserve > 80 or reserve < 0 then reserve = 20 end
+
+    -- Early exit if config is missing or invalid
+    if not packCapacity or packCapacity < 10 or not cellCount or cellCount < 2 then
+        fuelReadyTime = nil
+        fuelStartingPercent = nil
+        fuelStartingConsumption = nil
+        return nil
+    end
+
+    -- Set up the grace period on first call
+    local now = rfsuite.clock
+    if not fuelReadyTime then
+        fuelReadyTime = now + 10
+        fuelStartingPercent = nil
+        fuelStartingConsumption = nil
+        return nil
+    end
+
+    -- Wait until the grace period has elapsed
+    if now < fuelReadyTime then
+        return nil
+    end
+
+    -- Step 1: After delay, determine initial fuel % from voltage
+    if not fuelStartingPercent then
+        local perCell = (voltage and cellCount > 0) and (voltage / cellCount) or 0
+        if perCell >= fullCellV then
+            fuelStartingPercent = 100
+        elseif perCell <= minCellV then
+            fuelStartingPercent = 0
+        else
+            local usableRange = maxCellV - minCellV
+            local pct = ((perCell - minCellV) / usableRange) * 100
+            -- Apply reserve as "zero" point
+            if reserve > 0 and pct <= reserve then
+                fuelStartingPercent = 0
+            else
+                fuelStartingPercent = math.floor(math.max(0, math.min(100, pct)))
+            end
+        end
+        local usableCapacity = packCapacity * (1 - reserve / 100)
+        local estimatedUsed = usableCapacity * (1 - fuelStartingPercent / 100)
+        fuelStartingConsumption = (consumption or 0) - estimatedUsed
+    end
+
+    -- Step 2: Use mAh consumption to track % drop after initial value
+    if consumption and fuelStartingConsumption and packCapacity > 0 then
+        local used = consumption - fuelStartingConsumption
+        local usableCapacity = packCapacity * (1 - reserve / 100)
+        if usableCapacity < 10 then usableCapacity = packCapacity end
+        local percentUsed = used / usableCapacity * 100
+        local remaining = math.max(0, fuelStartingPercent - percentUsed)
+        return math.floor(math.min(100, remaining) + 0.5)
+    else
+        -- If consumption isn't available, just show initial percent
+        return fuelStartingPercent
+    end
+end
+
 -- LRU for hot sources
 local HOT_SIZE  = 25
 local hot_list, hot_index = {}, {}
@@ -355,30 +433,7 @@ local sensorTable = {
             sim = {
                 { 
                     uid = 0x5007, unit = UNIT_PERCENT, dec = 0,
-                    value = function()
-                        -- Use the same logic as the virtual source (copy-paste for sim)
-                        local bc = rfsuite and rfsuite.session and rfsuite.session.batteryConfig
-                        local consumption = telemetry and telemetry.getSensor and telemetry.getSensor("consumption") or nil
-                        local packCapacity = bc and bc.batteryCapacity or 0
-                        local reserve = bc and bc.consumptionWarningPercentage or 0
-                        if reserve > 80 or reserve < 0 then reserve = 20 end
-
-                        if not consumption or not packCapacity or packCapacity < 10 then
-                            return nil
-                        end
-
-                        if not fuelStartingPercent then
-                            fuelStartingPercent = 100
-                            fuelStartingConsumption = consumption or 0
-                        end
-
-                        local used = consumption - fuelStartingConsumption
-                        local usableCapacity = packCapacity * (1 - reserve / 100)
-                        if usableCapacity < 10 then usableCapacity = packCapacity end
-                        local percentUsed = used / usableCapacity * 100
-                        local remaining = math.max(0, fuelStartingPercent - percentUsed)
-                        return math.floor(math.min(100, remaining) + 0.5)
-                    end,
+                    value = smartFuelCalc,                    
                     min = 0, max = 100
                 },
             },
@@ -392,30 +447,7 @@ local sensorTable = {
         },
         source = function()
             return {
-                value = function()
-                    local bc = rfsuite and rfsuite.session and rfsuite.session.batteryConfig
-                    local consumption = telemetry and telemetry.getSensor and telemetry.getSensor("consumption") or nil
-                    local packCapacity = bc and bc.batteryCapacity or 0
-                    local reserve = bc and bc.consumptionWarningPercentage or 0
-                    if reserve > 80 or reserve < 0 then reserve = 20 end
-
-                    if not consumption or not packCapacity or packCapacity < 10 then
-                        return nil
-                    end
-
-                    -- Always start at 100%
-                    if not fuelStartingPercent then
-                        fuelStartingPercent = 100
-                        fuelStartingConsumption = consumption or 0
-                    end
-
-                    local used = consumption - fuelStartingConsumption
-                    local usableCapacity = packCapacity * (1 - reserve / 100)
-                    if usableCapacity < 10 then usableCapacity = packCapacity end
-                    local percentUsed = used / usableCapacity * 100
-                    local remaining = math.max(0, fuelStartingPercent - percentUsed)
-                    return math.floor(math.min(100, remaining) + 0.5)
-                end
+                value = smartFuelCalc,                    
             }
         end,
     },

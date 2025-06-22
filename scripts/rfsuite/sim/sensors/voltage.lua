@@ -1,1 +1,1 @@
-return math.random(2299, 2541)
+return math.random(2520, 2520)
