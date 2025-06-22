@@ -252,18 +252,10 @@ function utils.file_exists(name)
 end
 
 function utils.playFile(pkg, file)
-    -- Get and clean audio voice path
-    local av = system.getAudioVoice():gsub("SD:", ""):gsub("RADIO:", ""):gsub("AUDIO:", ""):gsub("VOICE[1-4]:", ""):gsub("audio/", "")
-    
-    
-    -- Ensure av does not start with a slash
-    if av:sub(1, 1) == "/" then
-        av = av:sub(2)
-    end
 
     -- Construct file paths
-    local wavLocale = "audio/" .. av .. "/" .. pkg .. "/" .. file
-    local wavDefault = "audio/en/default/" .. pkg .. "/" .. file
+    local wavLocale = "../rfsuite.user/audio/"  .. pkg .. "/" .. file
+    local wavDefault = "audio/" .. pkg .. "/" .. file
 
     -- Check if locale file exists, else use the default
     system.playFile(rfsuite.utils.file_exists(wavLocale) and wavLocale or wavDefault)
