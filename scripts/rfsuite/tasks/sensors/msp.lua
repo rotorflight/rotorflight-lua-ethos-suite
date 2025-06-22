@@ -265,12 +265,11 @@ function msp.wakeup()
                         meta.last_sent_value = value
                         meta.last_update_time = now
 
-                        updateSessionField(meta, value)
-
                         if meta.sensorname and meta.appId then
                             if meta.transform and type(meta.transform) == "function" then
                                 value = meta.transform(value)
                             end
+                            updateSessionField(meta, value)
                             createOrUpdateSensor(meta.appId, meta, value)
                         end
                     end
