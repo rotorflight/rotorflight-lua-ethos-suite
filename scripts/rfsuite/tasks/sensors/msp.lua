@@ -24,7 +24,7 @@
  *         unit: <constant>             -- Telemetry unit (e.g., UNIT_RAW, UNIT_VOLT, etc.)
  *         minimum: <number>            -- Optional minimum value (default: -1e9)
  *         maximum: <number>            -- Optional maximum value (default: 1e9)
- *         process: <function>          -- Optional value processing function before display
+ *         transform: <function>        -- Optional value processing function before display
  *       },
  *       ...
  *     }
@@ -82,22 +82,57 @@ local msp_sensors = {
         fields = {
             flags = {
                 sensorname = "BBL Flags",
-                sessionname = "bblFlags",
+                sessionname = {"bblFlags"},
                 appId = 0x5FFF,
                 unit = UNIT_RAW,
             },
             total = {
                 sensorname = "BBL Size",
-                sessionname = "bblSize",
+                sessionname = {"bblSize"},
                 appId = 0x5FFE,
                 unit = UNIT_RAW,
             },
             used = {
                 sensorname = "BBL Used",
-                sessionname = "bblUsed",
+                sessionname = {"bblUsed"},
                 appId = 0x5FFD,
                 unit = UNIT_RAW,
             },
+            BATTERY_CONFIG = {
+                interval_armed = -1,
+                interval_disarmed = 5,
+                interval_admin = 15,
+                fields = {
+                    batteryCapacity = {
+                        sessionname = { "batteryConfig", "batteryCapacity" },
+                    },
+                    batteryCellCount = {
+                        sessionname = { "batteryConfig", "batteryCellCount" },
+                    },
+                    vbatwarningcellvoltage = {
+                        sessionname = { "batteryConfig", "vbatwarningcellvoltage" },
+                        transform     = function(v) return v / 100 end,
+                    },
+                    vbatmincellvoltage = {
+                        sessionname = { "batteryConfig", "vbatmincellvoltage" },
+                        transform     = function(v) return v / 100 end,
+                    },
+                    vbatmaxcellvoltage = {
+                        sessionname = { "batteryConfig", "vbatmaxcellvoltage" },
+                        transform     = function(v) return v / 100 end,
+                    },
+                    vbatfullcellvoltage = {
+                        sessionname = { "batteryConfig", "vbatfullcellvoltage" },
+                        transform     = function(v) return v / 100 end,
+                    },
+                    lvcPercentage = {
+                        sessionname = { "batteryConfig", "lvcPercentage" },
+                    },
+                    consumptionWarningPercentage = {
+                        sessionname = { "batteryConfig", "consumptionWarningPercentage" },
+                    },
+                }        
+            }            
         }
     },
 }
@@ -139,10 +174,24 @@ local function createOrUpdateSensor(appId, fieldMeta, value)
 end
 
 local function updateSessionField(meta, value)
-    if meta.sessionname and rfsuite.session then
-        rfsuite.session[meta.sessionname] = value
+  if not meta.sessionname or type(rfsuite.session) ~= "table" then
+    return
+  end
+
+  local t = rfsuite.session
+  -- walk all but the last key
+  for i = 1, #meta.sessionname - 1 do
+    local k = meta.sessionname[i]
+    if type(t[k]) ~= "table" then
+      t[k] = {}
     end
+    t = t[k]
+  end
+
+  -- set the leaf
+  t[meta.sessionname[#meta.sessionname]] = value
 end
+
 
 local lastWakeupTime = 0
 function msp.wakeup()
@@ -219,8 +268,8 @@ function msp.wakeup()
                         updateSessionField(meta, value)
 
                         if meta.sensorname and meta.appId then
-                            if meta.process and type(meta.process) == "function" then
-                                value = meta.process(value)
+                            if meta.transform and type(meta.transform) == "function" then
+                                value = meta.transform(value)
                             end
                             createOrUpdateSensor(meta.appId, meta, value)
                         end
