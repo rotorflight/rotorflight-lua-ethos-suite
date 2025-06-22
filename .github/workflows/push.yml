@@ -29,7 +29,7 @@ jobs:
 
     - name: Create rotorflight-lua-ethos-suite-commit-<short_sha>.zip (entire scripts folder)
       run: |
-        zip -q -r -9 "rotorflight-lua-ethos-suite-${{ env.GIT_VER }}.zip" scripts/rfsuite
+        zip -q -r -9 "rotorflight-lua-ethos-suite-${{ env.GIT_VER }}.zip" scripts
 
     - name: Upload rotorflight-lua-ethos-suite-commit-<short_sha>.zip as Artifact
       uses: actions/upload-artifact@v4
@@ -38,28 +38,25 @@ jobs:
         path: rotorflight-lua-ethos-suite-${{ env.GIT_VER }}.zip
         if-no-files-found: error
         
-    # Package each soundpack into its own ZIP
-    - name: Package soundpacks
+    - name: Package combined soundpack
       run: |
+        # Where your per-locale packs live
         SOUND_DIR="bin/sound-generator/soundpack"
-        OUTPUT_DIR="soundpacks"
-        mkdir -p "${OUTPUT_DIR}"
-        for locale_dir in "${SOUND_DIR}"/*; do
-          [ -d "${locale_dir}" ] || continue
-          locale=$(basename "${locale_dir}")
-          for pack_dir in "${locale_dir}"/*; do
-            [ -d "${pack_dir}" ] || continue
-            pack=$(basename "${pack_dir}")
-            zip_name="rotorflight-lua-ethos-suite-${{ env.GIT_VER }}-soundpack-${locale}-${pack}.zip"
-            (cd "${pack_dir}" && zip -r "../../${OUTPUT_DIR}/${zip_name}" .)
-            echo "Created ${OUTPUT_DIR}/${zip_name}"
-          done
-        done
-      shell: bash
 
-    # Upload all generated soundpack ZIPs
-    - name: Upload soundpack artifacts
+        # Where to drop the ZIP
+        OUTPUT_DIR="${GITHUB_WORKSPACE}/tmp"
+        mkdir -p "$OUTPUT_DIR"
+
+        # Name it with your GIT_VER (e.g. PR-936 or 1.2.3)
+        ZIP_NAME="rotorflight-lua-ethos-suite-soundpack-${{ env.GIT_VER }}.zip"
+
+        # Zip up everything under SOUND_DIR, preserving locale/pack/... structure
+        (cd "$SOUND_DIR" && zip -r "$OUTPUT_DIR/$ZIP_NAME" .)
+
+        echo "✅ Created $OUTPUT_DIR/$ZIP_NAME"
+
+    - name: Upload soundpack artifact
       uses: actions/upload-artifact@v4
       with:
-        name: soundpacks
-        path: soundpacks/*.zip
+        name: rotorflight-lua-ethos-suite-soundpack-${{ env.GIT_VER }}
+        path: tmp/*.zip
