@@ -40,7 +40,7 @@ jobs:
     - name: Package soundpacks
       run: |
         SOUND_DIR="bin/sound-generator/soundpack"
-        OUTPUT_DIR="soundpacks"
+        OUTPUT_DIR="tmp"
         mkdir -p "${OUTPUT_DIR}"
         for locale_dir in "${SOUND_DIR}"/*; do
           [ -d "${locale_dir}" ] || continue
@@ -49,7 +49,7 @@ jobs:
             [ -d "${pack_dir}" ] || continue
             pack=$(basename "${pack_dir}")
             zip_name="rotorflight-lua-ethos-suite-${{ env.GIT_VER }}-soundpack-${locale}-${pack}.zip"
-            (cd "${pack_dir}" && zip -r "../../${OUTPUT_DIR}/${zip_name}" .)
+            (cd "${pack_dir}" && zip -r "${OUTPUT_DIR}/${zip_name}" .)
             echo "Created ${OUTPUT_DIR}/${zip_name}"
           done
         done
