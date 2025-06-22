@@ -25,7 +25,7 @@ jobs:
         # Show updated file (for verification)
         grep 'config\.' scripts/rfsuite/main.lua
 
-    - name: Create rotorflight-lua-ethos-suite-PR-<number>.zip (entire scripts folder)
+    - name: Create rotorflight-lua-ethos-suite-PR-<number>.zip 
       run: |
         zip -q -r -9 "rotorflight-lua-ethos-suite-${{ env.GIT_VER }}.zip" scripts
 
@@ -35,3 +35,28 @@ jobs:
         name: rotorflight-lua-ethos-suite-${{ env.GIT_VER }}
         path: rotorflight-lua-ethos-suite-${{ env.GIT_VER }}.zip
         if-no-files-found: error
+
+    - name: Package combined soundpack
+      run: |
+        # Where your per-locale packs live
+        SOUND_DIR="bin/sound-generator/soundpack"
+
+        # Where to drop the ZIP
+        OUTPUT_DIR="${GITHUB_WORKSPACE}/tmp"
+        mkdir -p "$OUTPUT_DIR"
+
+        # Name it with your GIT_VER (e.g. PR-936 or 1.2.3)
+        ZIP_NAME="rotorflight-lua-ethos-suite-soundpack-${{ env.GIT_VER }}.zip"
+
+        # Zip up everything under SOUND_DIR, preserving locale/pack/... structure
+        (cd "$SOUND_DIR" && zip -r "$OUTPUT_DIR/$ZIP_NAME" .)
+
+        echo "✅ Created $OUTPUT_DIR/$ZIP_NAME"
+
+    - name: Upload soundpack artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: rotorflight-lua-ethos-suite-soundpack-${{ env.GIT_VER }}
+        path: tmp/*.zip
+
+     

@@ -29,7 +29,7 @@ def extract_csv(path, base_dir, variant):
         for row in reader:
             if len(row) == 4:
                 rel_path, text, options_text, description = row
-                path = os.path.join("..", "..", "scripts", "rfsuite", "audio", base_dir, variant, rel_path)
+                path = os.path.join("..", "..", "bin", "sound-generator", "soundpack", base_dir, variant, rel_path)
                 options = {}
                 for part in options_text.split(";"):
                     if part:
