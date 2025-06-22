@@ -244,21 +244,7 @@ local boxes = {
     max = function()
         local cfg = rfsuite.session.batteryConfig
         local cells = (cfg and cfg.batteryCellCount) or 3
-        local maxV  = (cfg and cfg.vbatmaxcellvoltage) or 4.2
-        return math.max(0, cells * maxV)
-    end,
-
-    gaugemin = function()
-        local cfg = rfsuite.session.batteryConfig
-        local cells = (cfg and cfg.batteryCellCount) or 3
-        local minV  = (cfg and cfg.vbatmincellvoltage) or 3.0
-        return math.max(0, cells * minV)
-    end,
-
-    gaugemax = function()
-        local cfg = rfsuite.session.batteryConfig
-        local cells = (cfg and cfg.batteryCellCount) or 3
-        local maxV  = (cfg and cfg.vbatmaxcellvoltage) or 4.2
+        local maxV  = (cfg and cfg.vbatfullcellvoltage) or 4.2
         return math.max(0, cells * maxV)
     end,
 
@@ -267,13 +253,13 @@ local boxes = {
         {
             value = function(box)
                 -- Fetch the raw gaugemin parameter (could itself be a function)
-                local raw_gm = utils.getParam(box, "gaugemin")
+                local raw_gm = utils.getParam(box, "min")
                 if type(raw_gm) == "function" then
                     raw_gm = raw_gm(box)
                 end
 
                 -- Fetch the raw gaugemax parameter (could itself be a function)
-                local raw_gM = utils.getParam(box, "gaugemax")
+                local raw_gM = utils.getParam(box, "max")
                 if type(raw_gM) == "function" then
                     raw_gM = raw_gM(box)
                 end
@@ -286,12 +272,12 @@ local boxes = {
         },
         {
             value = function(box)
-                local raw_gm = utils.getParam(box, "gaugemin")
+                local raw_gm = utils.getParam(box, "min")
                 if type(raw_gm) == "function" then
                     raw_gm = raw_gm(box)
                 end
 
-                local raw_gM = utils.getParam(box, "gaugemax")
+                local raw_gM = utils.getParam(box, "max")
                 if type(raw_gM) == "function" then
                     raw_gM = raw_gM(box)
                 end
@@ -304,7 +290,7 @@ local boxes = {
         },
         {
             value = function(box)
-                local raw_gM = utils.getParam(box, "gaugemax")
+                local raw_gM = utils.getParam(box, "max")
                 if type(raw_gM) == "function" then
                     raw_gM = raw_gM(box)
                 end
