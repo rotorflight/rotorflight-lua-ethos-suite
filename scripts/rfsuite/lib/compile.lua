@@ -13,6 +13,18 @@
  *   -- Or use compile.dofile / compile.require as drop-in replacements
 
 ]] --
+--[[
+ * Copyright (C) Rotorflight Project
+ * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
+ * compile.lua - Deferred/Throttled Lua Script Compilation and Caching for Rotorflight Suite (Ethos)
+
+ * Usage:
+ *   local compile = require("rfsuite.lib.compile")
+ *   local chunk = compile.loadfile("myscript.lua")
+ *   chunk() -- executes the loaded script
+ *   -- Or use compile.dofile / compile.require as drop-in replacements
+]]
+
 local compile = {}
 local arg = {...}
 
@@ -51,10 +63,13 @@ do
   end
 end
 
-local function strip_prefix(name)
+-- Unified cache-safe name generator
+local function cachename(name)
   if name:sub(1, #SCRIPT_PREFIX) == SCRIPT_PREFIX then
-    return name:sub(#SCRIPT_PREFIX + 1)
+    name = name:sub(#SCRIPT_PREFIX + 1)
   end
+  name = name:gsub("/", "_")
+  name = name:gsub("^_", "", 1)
   return name
 end
 
@@ -93,16 +108,10 @@ local function LRUCache()
       if usage and usage.luaRamAvailable and usage.luaRamAvailable < LUA_RAM_THRESHOLD then
         local oldest = table.remove(self.order, 1)
         self.cache[oldest] = nil
-        --if rfsuite and rfsuite.utils and log then
-        --  rfsuite.utils.log("Evicted script from cache due to low Lua RAM: " .. tostring(oldest), "info")
-        --end
         usage = system.getMemoryUsage()
       elseif #self.order > LRU_HARD_LIMIT then
         local oldest = table.remove(self.order, 1)
         self.cache[oldest] = nil
-        --if rfsuite and rfsuite.utils and log then
-        --  rfsuite.utils.log("Evicted script from cache due to hitting hard limit: " .. tostring(oldest), "info")
-        --end
       else
         break
       end
@@ -123,7 +132,6 @@ local function LRUCache()
     end
     self.cache[key] = value
 
-    -- Only check for eviction if at least EVICT_INTERVAL seconds since last check
     local now = rfsuite.clock
     if now - self._last_evict > EVICT_INTERVAL then
       self:evict_if_low_memory()
@@ -173,25 +181,19 @@ function compile.wakeup()
 end
 
 function compile.loadfile(script)
-
   local startTime
   if logTimings then
     startTime = rfsuite.clock
   end
 
-  local loader, which, cache_fname
-  -- Prepare cache filename
-  local name_for_cache = strip_prefix(script)
-  local sanitized      = name_for_cache:gsub("/", "_")
-  cache_fname          = sanitized .. "c"
-  local cache_key      = cache_fname
+  local loader, which
+  local cache_fname = cachename(script) .. "c"
+  local cache_key   = cache_fname
 
-  -- 1. Try LRU in-memory cache
   loader = lru_cache:get(cache_key)
   if loader then
     which = "in-memory"
   else
-    -- 2. Fallback: disk compiled, or raw
     if not rfsuite.preferences.developer.compile then
       loader = loadfile(script)
       which = "raw"
@@ -206,7 +208,6 @@ function compile.loadfile(script)
         which = "raw (queued for deferred compile)"
       end
     end
-    -- If successfully loaded, store in LRU
     if loader then
       lru_cache:set(cache_key, loader)
     end
@@ -230,7 +231,7 @@ function compile.require(modname)
   end
 
   local raw_path = modname:gsub("%%.", "/") .. ".lua"
-  local path     = strip_prefix(raw_path)
+  local path     = cachename(raw_path)
   local chunk
 
   if not rfsuite.preferences.developer.compile then
