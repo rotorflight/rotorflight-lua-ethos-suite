@@ -154,9 +154,17 @@ function render.wakeup(box, telemetry)
         displayValue = utils.transformValue(value, box)
     end
 
-    -- Fallback if no value
+    -- ... style loading indicator
     if value == nil then
-        displayValue = getParam(box, "novalue") or "-"
+        local maxDots = 3
+        if box._dotCount == nil then
+            box._dotCount = 0
+        end
+        box._dotCount = (box._dotCount + 1) % (maxDots + 1)
+        displayValue = string.rep(".", box._dotCount)
+        if displayValue == "" then
+            displayValue = "."
+        end
         unit = nil
     end
 
