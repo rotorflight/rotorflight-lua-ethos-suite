@@ -56,10 +56,22 @@ function render.wakeup(box)
     local value = rfsuite.session.craftName
     local displayValue
 
-    if type(value) == "string" and value:match("^%s*$") == nil then
+    -- Fallback text if no craftname configured or set in RF
+    local fallbackText = getParam(box, "novalue") or "Craftname not set"
+
+    if value == nil then
+        -- Show loading dots if telemetry not received yet
+        local maxDots = 3
+        if box._dotCount == nil then box._dotCount = 0 end
+        box._dotCount = (box._dotCount + 1) % (maxDots + 1)
+        displayValue = string.rep(".", box._dotCount)
+        if displayValue == "" then displayValue = "." end
+    elseif type(value) == "string" and value:match("^%s*$") == nil then
+        -- Non-blank craft name string
         displayValue = value
     else
-        displayValue = getParam(box, "novalue") or "-"
+        -- Received empty string (not configured or blank) or other invalid value
+        displayValue = fallbackText
     end
 
     -- Set box.value so dashboard/dirty can track change for redraws
