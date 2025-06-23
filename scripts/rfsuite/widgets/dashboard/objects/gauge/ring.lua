@@ -46,7 +46,7 @@
 
     -- Battery Ring Mode (Optional fuel-based battery style)
     ringbatt                 : bool      -- If true, draws 360° fill ring based on fuel (%) and shows mAh consumption
-    ringbattsubfont          : font      -- (Optional) Font for subtext in ringbatt mode (e.g., FONT_XS, FONT_S, FONT_STD; default: FONT_XS)
+    ringbattsubfont          : font      -- (Optional) Font for subtext in ringbatt mode (e.g., FONT_XS, FONT_S, FONT_M; default: FONT_XS)
     innerringcolor           : color     -- Color of the inner decorative ring in ringbatt mode (default: white)
     ringbattsubtext          : string|bool -- (Optional) Overrides subtext below value in ringbatt mode (set "" or false to hide)
     innerringthickness       : number    -- (Optional) Thickness of inner decorative ring in ringbatt mode (default: 8)
@@ -195,7 +195,7 @@ function render.wakeup(box, telemetry)
         titlepaddingright        = getParam(box, "titlepaddingright"),
         titlepaddingtop          = getParam(box, "titlepaddingtop"),
         titlepaddingbottom       = getParam(box, "titlepaddingbottom"),
-        font                     = getParam(box, "font") or "FONT_STD",
+        font                     = getParam(box, "font") or "FONT_M",
         decimals                 = getParam(box, "decimals"),
         valuealign               = getParam(box, "valuealign"),
         valuepadding             = getParam(box, "valuepadding"),
@@ -295,7 +295,7 @@ function render.paint(x, y, w, h, box)
         end
 
         -- Vertical alignment (default = below value center)
-        lcd.font(_G[c.font] or FONT_STD)
+        lcd.font(_G[c.font] or FONT_M)
         local _, mainH = lcd.getTextSize("0")
         local centerY = y + h / 2
         local textY = centerY + mainH / 2 + padT - padB

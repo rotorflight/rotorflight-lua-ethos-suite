@@ -143,7 +143,7 @@ local function openPage(idx, title, script)
         positions[loc] = posX - w
         positions_r[c] = posX - w
 
-        lcd.font(FONT_STD)
+        lcd.font(FONT_M)
         --local tsizeW, tsizeH = lcd.getTextSize(colLabel)
         colLabel = rightAlignText(rfsuite.session.colWidth, colLabel)
 

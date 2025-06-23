@@ -58,7 +58,7 @@ function utils.box(title, msg)
     -- Step 2.  Display the value message in the center of the screen
     ---------------------------------------------------------------------------
     -- Available font sizes in order from smallest to largest
-    local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL}
+    local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_M, FONT_L, FONT_XL, FONT_XXL}
 
     -- Determine the maximum width and height with 10% padding
     local maxW, maxH = w , h 

@@ -167,7 +167,7 @@ function render.wakeup(box, telemetry)
         max                 = max,
         showvalue           = showvalue,
         titlepos            = "bottom",
-        font                = getParam(box, "font") or "FONT_STD",
+        font                = getParam(box, "font") or "FONT_M",
         textcolor           = resolveThemeColor("textcolor", getParam(box, "textcolor")),
         fillbgcolor         = resolveThemeColor("fillbgcolor", getParam(box, "fillbgcolor")),
         bgcolor             = resolveThemeColor("bgcolor", getParam(box, "bgcolor")),
