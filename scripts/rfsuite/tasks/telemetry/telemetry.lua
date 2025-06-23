@@ -22,19 +22,23 @@ local i18n = rfsuite.i18n.get
 local telemetry = {}
 local protocol, telemetrySOURCE, crsfSOURCE
 
-
 -- sensor cache: weak values so GC can drop cold sources
 local sensors   = setmetatable({}, { __mode = "v" })
 
 -- debug counters
 local cache_hits, cache_misses = 0, 0
 
--- variables for 2 step fuel calculation with delays to allow voltage to stabilise for 10 seconds
-local fuelReadyTime = nil
+-- Fuel variables
 local fuelStartingPercent = nil
 local fuelStartingConsumption = nil
 
--- 2 step fuel calculation logic with mah consumption (shared function for sim and sensor)
+-- Fuel reset - triggers a recalc of fuel% if battery config changes
+function telemetry.fuelReset()
+    fuelStartingPercent = nil
+    fuelStartingConsumption = nil
+end
+
+-- 2-step fuel calculation logic
 local function smartFuelCalc()
     local bc = rfsuite and rfsuite.session and rfsuite.session.batteryConfig
     local consumption = telemetry and telemetry.getSensor and telemetry.getSensor("consumption") or nil
@@ -46,32 +50,26 @@ local function smartFuelCalc()
     local minCellV = bc and bc.vbatmincellvoltage or 3.3
     local fullCellV = bc and bc.vbatfullcellvoltage or 4.1
 
-    -- Clamp reserve to sane values
-    if reserve > 80 or reserve < 0 then reserve = 20 end
+    -- Protect against bad consumption warning % values
+    if reserve > 80 or reserve < 0 then reserve = 30 end
 
-    -- Early exit if config is missing or invalid
-    if not packCapacity or packCapacity < 10 or not cellCount or cellCount < 2 then
-        fuelReadyTime = nil
+    -- Battery connected check (is a battery connected or is the FBL getting power from another source)
+    local batteryConnected = false
+    if voltage and cellCount then
+        local minTotalV = minCellV * cellCount
+        local maxTotalV = maxCellV * cellCount + 4
+        if voltage > (minTotalV - 0.5) and voltage <= maxTotalV then
+            batteryConnected = true
+        end
+    end
+    if not batteryConnected or not packCapacity or packCapacity < 10 then
+        -- Battery not detected or config invalid, reset fuel calculation state
         fuelStartingPercent = nil
         fuelStartingConsumption = nil
         return nil
     end
 
-    -- Set up the grace period on first call
-    local now = rfsuite.clock
-    if not fuelReadyTime then
-        fuelReadyTime = now + 10
-        fuelStartingPercent = nil
-        fuelStartingConsumption = nil
-        return nil
-    end
-
-    -- Wait until the grace period has elapsed
-    if now < fuelReadyTime then
-        return nil
-    end
-
-    -- Step 1: After delay, determine initial fuel % from voltage
+    -- Step 1: As soon as values are valid, determine initial fuel % from voltage
     if not fuelStartingPercent then
         local perCell = (voltage and cellCount > 0) and (voltage / cellCount) or 0
         if perCell >= fullCellV then
@@ -81,7 +79,6 @@ local function smartFuelCalc()
         else
             local usableRange = maxCellV - minCellV
             local pct = ((perCell - minCellV) / usableRange) * 100
-            -- Apply reserve as "zero" point
             if reserve > 0 and pct <= reserve then
                 fuelStartingPercent = 0
             else

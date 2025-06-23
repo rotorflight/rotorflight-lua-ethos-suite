@@ -22,7 +22,7 @@ local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "batteryCapacity",              type = "U16", apiVersion = 12.06, simResponse = {138, 2}, min = 0,   max = 20000, step = 50, unit = "mAh", default = 0},
+    {field = "batteryCapacity",              type = "U16", apiVersion = 12.06, simResponse = {136, 19}, min = 0,   max = 20000, step = 50, unit = "mAh", default = 0},
     {field = "batteryCellCount",             type = "U8",  apiVersion = 12.06, simResponse = {6},      min = 0,   max = 24,    unit = nil,   default = 6},
     {field = "voltageMeterSource",           type = "U8",  apiVersion = 12.06, simResponse = {1}},
     {field = "currentMeterSource",           type = "U8",  apiVersion = 12.06, simResponse = {1}},
