@@ -67,6 +67,14 @@ function render.wakeup(box, telemetry)
     local displayValue
     if value ~= nil then
         displayValue = utils.transformValue(value, box)
+    else
+        -- Animated loading dots if no telemetry value
+        local maxDots = 3
+        if box._dotCount == nil then box._dotCount = 0 end
+        box._dotCount = (box._dotCount + 1) % (maxDots + 1)
+        displayValue = string.rep(".", box._dotCount)
+        if displayValue == "" then displayValue = "." end
+        unit = nil
     end
 
     -- Threshold logic (if required)
@@ -84,12 +92,6 @@ function render.wakeup(box, telemetry)
         unit = telemetry.sensorTable[source].unit_string or ""
     else
         unit = ""
-    end
-
-    -- Fallback if no value
-    if value == nil then
-        displayValue = getParam(box, "novalue") or "-"
-        unit = nil
     end
 
     -- Set box.value so dashboard/dirty can track change for redraws
