@@ -171,7 +171,7 @@ function render.wakeup(box, telemetry)
         titlepaddingright   = getParam(box, "titlepaddingright"),
         titlepaddingtop     = getParam(box, "titlepaddingtop"),
         titlepaddingbottom  = getParam(box, "titlepaddingbottom"),
-        font                = getParam(box, "font") or "FONT_STD",
+        font                = getParam(box, "font") or "FONT_M",
         textcolor           = resolveThemeColor("textcolor", getParam(box, "textcolor")),
         valuealign          = getParam(box, "valuealign"),
         valuepadding        = getParam(box, "valuepadding"),

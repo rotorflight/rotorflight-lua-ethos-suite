@@ -204,7 +204,7 @@ function utils.getInlinePositions(f, lPage)
 
     -- Set default text and compute its dimensions.
     f.t = f.t or ""
-    lcd.font(FONT_STD)
+    lcd.font(FONT_M)
     local tsizeW, tsizeH = lcd.getTextSize(f.t)
 
     -- Map inline values to multipliers.
