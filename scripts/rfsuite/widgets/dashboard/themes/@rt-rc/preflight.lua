@@ -19,8 +19,10 @@ local telemetry = rfsuite.tasks.telemetry
 local utils = rfsuite.widgets.dashboard.utils
 
 local W, H = lcd.getWindowSize()
+local VERSION = system.getVersion().board
+
 local gaugeThickness = 30
-if W < 500 then gaugeThickness = 15 end
+if VERSION == "X18" or VERSION == "X18S" or VERSION == "X14" or VERSION == "X14S" then gaugeThickness = 15 end
 
 local darkMode = {
     textcolor   = "white",
