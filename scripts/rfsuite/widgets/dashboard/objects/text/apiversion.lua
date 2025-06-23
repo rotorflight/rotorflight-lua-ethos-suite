@@ -55,12 +55,18 @@ function render.wakeup(box, telemetry)
     -- Value extraction
     local value = rfsuite.session.apiVersion
 
-    -- Set displayValue, Fallback if no value
+    -- Dots loading indicator if value is nil
     local displayValue
-    if value ~= nil then
-        displayValue = tostring(value)
+    if value == nil then
+        local maxDots = 3
+        if box._dotCount == nil then
+            box._dotCount = 0
+        end
+        box._dotCount = (box._dotCount + 1) % (maxDots + 1)
+        displayValue = string.rep(".", box._dotCount)
+        if displayValue == "" then displayValue = "." end
     else
-        displayValue = getParam(box, "novalue") or "-"
+        displayValue = tostring(value)
     end
 
     -- Set box.value so dashboard/dirty can track change for redraws

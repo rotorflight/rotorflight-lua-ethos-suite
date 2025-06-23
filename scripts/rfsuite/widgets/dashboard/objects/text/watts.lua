@@ -38,11 +38,17 @@ local countWatts = 0
 function render.wakeup(box, telemetry)
 
     local watts
-
     local v = rfsuite.tasks.telemetry.sensorStats["voltage"]
     local i = rfsuite.tasks.telemetry.sensorStats["current"]
 
-    if v == nil or i == nil then return end
+    local loadingDots
+    if v == nil or i == nil then
+        local maxDots = 3
+        if box._dotCount == nil then box._dotCount = 0 end
+        box._dotCount = (box._dotCount + 1) % (maxDots + 1)
+        loadingDots = string.rep(".", box._dotCount)
+        if loadingDots == "" then loadingDots = "." end
+    end
 
     minWatts = v.min * i.min
     maxWatts = v.max * i.max
@@ -53,23 +59,35 @@ function render.wakeup(box, telemetry)
     -- Resolve display value
     local source = getParam(box, "source") or "current"
     local displayValue
-    if source == "min" and countWatts > 0 then
+    if loadingDots then
+        displayValue = loadingDots
+    elseif source == "min" and countWatts > 0 then
         displayValue = tostring(math.floor(minWatts))
     elseif source == "max" and countWatts > 0 then
         displayValue = tostring(math.floor(maxWatts))
     elseif source == "avg" and countWatts > 0 then
         displayValue = tostring(math.floor(sumWatts / countWatts))
-    elseif source == "current" and watts then
+    elseif source == "current" then
         local vc = telemetry.getSensor("voltage")
         local ic = telemetry.getSensor("current")   
         if vc and ic then
             watts = vc * ic
             displayValue = tostring(math.floor(watts))
         else
-            displayValue = getParam(box, "novalue") or "-"
+            -- still show loading dots if sensors missing
+            if loadingDots then
+                displayValue = loadingDots
+            else
+                displayValue = getParam(box, "novalue") or "-"
+            end
         end    
     else
         displayValue = getParam(box, "novalue") or "-"
+    end
+
+    -- Suppress unit if we're displaying loading dots
+    if type(displayValue) == "string" and displayValue:match("^%.+$") then
+        unit = nil
     end
 
     box._cache = {

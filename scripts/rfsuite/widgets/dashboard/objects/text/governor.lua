@@ -72,8 +72,17 @@ function render.wakeup(box, telemetry)
     -- Threshold logic (optional)
     local textcolor = utils.resolveThresholdColor(displayValue, box, "textcolor", "textcolor")
 
-    -- Fallback if no value
+    -- Animated loading dots if no telemetry data yet
     if value == nil then
+        local maxDots = 3
+        if box._dotCount == nil then box._dotCount = 0 end
+        box._dotCount = (box._dotCount + 1) % (maxDots + 1)
+        displayValue = string.rep(".", box._dotCount)
+        if displayValue == "" then displayValue = "." end
+    end
+
+    -- Fallback if telemetry received but translation failed (bad/blank state)
+    if displayValue == nil or displayValue == "" then
         displayValue = getParam(box, "novalue") or "-"
     end
 
