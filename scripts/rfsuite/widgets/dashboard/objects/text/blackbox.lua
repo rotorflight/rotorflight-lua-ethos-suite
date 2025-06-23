@@ -135,6 +135,11 @@ function render.wakeup(box)
         percentUsed = nil
     end
 
+    -- Suppress unit if we're displaying loading dots
+    if type(displayValue) == "string" and displayValue:match("^%.+$") then
+        unit = nil
+    end
+    
     -- Set box.value so dashboard/dirty can track change for redraws
     box._currentDisplayValue = displayValue
     

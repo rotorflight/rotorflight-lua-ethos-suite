@@ -163,6 +163,11 @@ function render.wakeup(box, telemetry)
     local showvalue = getParam(box, "showvalue")
     if showvalue == nil then showvalue = true end
 
+    -- Suppress unit if we're displaying loading dots
+    if type(displayValue) == "string" and displayValue:match("^%.+$") then
+        unit = nil
+    end
+    
     -- Caching values
     box._currentDisplayValue = value
 

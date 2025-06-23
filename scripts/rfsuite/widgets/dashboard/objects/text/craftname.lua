@@ -74,7 +74,6 @@ function render.wakeup(box)
         displayValue = fallbackText
     end
 
-
     -- Set box.value so dashboard/dirty can track change for redraws
     box._currentDisplayValue = displayValue
 
