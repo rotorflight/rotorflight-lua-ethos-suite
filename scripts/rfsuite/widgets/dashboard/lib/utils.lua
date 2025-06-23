@@ -78,26 +78,26 @@ function utils.getFontListsForResolution()
     local radios = {
         -- TANDEM X20, TANDEM XE (800x480)
         ["800x480"] = {
-            value_default = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL, FONT_XXXXL},
-            value_reduced = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L},
-            value_title   = {FONT_XXS, FONT_XS, FONT_S, FONT_STD}
+            value_default = {FONT_XXS, FONT_XS, FONT_S, FONT_M, FONT_L, FONT_XL, FONT_XXL, FONT_XXXXL},
+            value_reduced = {FONT_XXS, FONT_XS, FONT_S, FONT_M, FONT_L},
+            value_title   = {FONT_XXS, FONT_XS, FONT_S, FONT_M}
         },
         -- TANDEM X18, TWIN X Lite (480x320)
         ["480x320"] = {
-            value_default = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL},
-            value_reduced = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L},
+            value_default = {FONT_XXS, FONT_XS, FONT_S, FONT_M, FONT_L, FONT_XL},
+            value_reduced = {FONT_XXS, FONT_XS, FONT_S, FONT_M, FONT_L},
             value_title   = {FONT_XXS, FONT_XS, FONT_S}
         },
         -- Horus X10, Horus X12 (480x272)
         ["480x272"] = {
-            value_default = {FONT_XXS, FONT_XS, FONT_S, FONT_STD},
+            value_default = {FONT_XXS, FONT_XS, FONT_S, FONT_M},
             value_reduced = {FONT_XXS, FONT_XS, FONT_S},
             value_title   = {FONT_XXS, FONT_XS, FONT_S}
         },
         -- Twin X14 (632x314)
         ["640x360"] = {
-            value_default = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL},
-            value_reduced = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L},
+            value_default = {FONT_XXS, FONT_XS, FONT_S, FONT_M, FONT_L, FONT_XL},
+            value_reduced = {FONT_XXS, FONT_XS, FONT_S, FONT_M, FONT_L},
             value_title   = {FONT_XXS, FONT_XS, FONT_S}
         }
     }
@@ -139,7 +139,7 @@ function utils.screenError(msg, border, pct, padX, padY)
     local isDarkMode = lcd.darkMode()
 
     -- Available fonts to try
-    local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL, FONT_XXXXL}
+    local fonts = {FONT_XXS, FONT_XS, FONT_S, FONT_M, FONT_L, FONT_XL, FONT_XXL, FONT_XXXXL}
     
     -- Compute maximum allowed dimensions for text
     local maxW, maxH = w * pct, h * pct
@@ -403,7 +403,7 @@ function utils.box(
     local actualTitleFont, tsizeW, tsizeH = nil, 0, 0
     if title then
         local minValueFontH = 9999
-        for _, vf in ipairs(fontCache.value_default or {FONT_STD}) do
+        for _, vf in ipairs(fontCache.value_default or {FONT_M}) do
             lcd.font(vf)
             local _, vh = lcd.getTextSize("8")
             if vh < minValueFontH then minValueFontH = vh end

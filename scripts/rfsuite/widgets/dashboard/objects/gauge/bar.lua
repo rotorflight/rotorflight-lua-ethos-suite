@@ -59,7 +59,7 @@
 
     -- Battery Advanced Info (Optional overlay for battery/fuel bar)
     battadv         : bool      -- (Optional) If true, shows advanced battery/fuel telemetry info lines (voltage, per-cell voltage, consumption, cell count)
-    battadvfont             : font      -- Font for advanced info lines (e.g., "FONT_XS", "FONT_STD"). Defaults to FONT_XS if unset
+    battadvfont             : font      -- Font for advanced info lines (e.g., "FONT_XS", "FONT_M"). Defaults to FONT_XS if unset
     battadvblockalign       : string    -- Horizontal alignment of the entire info block: "left", "center", or "right" (default: "right")
     battadvvaluealign       : string    -- Text alignment within each info line: "left", "center", or "right" (default: "left")
     battadvpadding          : number    -- Padding (pixels) applied to all sides unless overridden by individual paddings (default: 4)

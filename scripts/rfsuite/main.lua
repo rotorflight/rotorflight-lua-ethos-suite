@@ -24,6 +24,9 @@ rfsuite.session = {}
 -- initialise global clock
 rfsuite.clock = os.clock()
 
+-- initialise legacy font if not already set (ethos 1.6 vs 1.7)
+if not FONT_M then FONT_M = FONT_STD end
+
 
 -- RotorFlight + ETHOS LUA configuration
 local config = {}
@@ -132,9 +135,6 @@ rfsuite.i18n.load()
 rfsuite.utils = assert(rfsuite.compiler.loadfile("lib/utils.lua"))(rfsuite.config)
 
 rfsuite.app = assert(rfsuite.compiler.loadfile("app/app.lua"))(rfsuite.config)
-
-
-
 
 
 -- 
@@ -325,7 +325,7 @@ local function init()
                         local w, h = lcd.getWindowSize()
                         local textColor = lcd.RGB(255, 255, 255, 1) 
                         lcd.color(textColor)
-                        lcd.font(FONT_STD)
+                        lcd.font(FONT_M)
                         local badVersionMsg = string.format("ETHOS < V%d.%d.%d", table.unpack(config.ethosVersion))
                         local textWidth, textHeight = lcd.getTextSize(badVersionMsg)
                         local x = (w - textWidth) / 2
