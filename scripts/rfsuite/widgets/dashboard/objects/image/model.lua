@@ -53,23 +53,17 @@ function render.wakeup(box)
     if craftName then
         local pngPath = "/bitmaps/models/" .. craftName .. ".png"
         local bmpPath = "/bitmaps/models/" .. craftName .. ".bmp"
-        if loadImage and loadImage(pngPath) then
-            imagePath = pngPath
-        elseif loadImage and loadImage(bmpPath) then
-            imagePath = bmpPath
-        end
+        local logoPath = "widgets/dashboard/gfx/logo.png"
+        imagePath = loadImage(pngPath,bmpPath,logoPath)
     end
     if not imagePath and modelID then
         local pngPath = "/bitmaps/models/" .. modelID .. ".png"
         local bmpPath = "/bitmaps/models/" .. modelID .. ".bmp"
-        if loadImage and loadImage(pngPath) then
-            imagePath = pngPath
-        elseif loadImage and loadImage(bmpPath) then
-            imagePath = bmpPath
-        end
+        local logoPath = "widgets/dashboard/gfx/logo.png"
+        imagePath = loadImage(pngPath,bmpPath,logoPath)
     end
     if not imagePath then
-        imagePath = "widgets/dashboard/gfx/logo.png"
+        imagePath = loadImage("widgets/dashboard/gfx/logo.png")
     end
 
     -- Set box.value so dashboard/dirty can track change for redraws
