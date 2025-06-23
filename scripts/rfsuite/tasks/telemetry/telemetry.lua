@@ -32,17 +32,54 @@ local cache_hits, cache_misses = 0, 0
 local fuelStartingPercent = nil
 local fuelStartingConsumption = nil
 
--- Fuel reset - triggers a recalc of fuel% if battery config changes
+-- Voltage stabilisation parameters
+local voltageStableValue = 0.5
+local voltageStableTime = 2
+local voltageSamples = {}
+local voltageStableSince = nil
+
+-- Fuel reset function
 function telemetry.fuelReset()
     fuelStartingPercent = nil
     fuelStartingConsumption = nil
+    voltageSamples = {}
+    voltageStableSince = nil
 end
 
--- 2-step fuel calculation logic
+-- Voltage stabilisation check
+local function isVoltageStable(voltage)
+    local now = rfsuite.clock
+    if not voltage then
+        voltageSamples = {}
+        voltageStableSince = nil
+        return false
+    end
+    voltageSamples[#voltageSamples + 1] = { v = voltage, t = now }
+    while #voltageSamples > 0 and now - voltageSamples[1].t > voltageStableTime do
+        table.remove(voltageSamples, 1)
+    end
+    local minV, maxV = voltage, voltage
+    for i = 1, #voltageSamples do
+        minV = math.min(minV, voltageSamples[i].v)
+        maxV = math.max(maxV, voltageSamples[i].v)
+    end
+    if (maxV - minV) <= voltageStableValue then
+        if not voltageStableSince then voltageStableSince = now end
+        if (now - voltageStableSince) >= voltageStableTime then
+            return true
+        end
+    else
+        voltageStableSince = nil
+    end
+    return false
+end
+
+-- Smart fuel calculation
 local function smartFuelCalc()
-    local bc = rfsuite and rfsuite.session and rfsuite.session.batteryConfig
     local consumption = telemetry and telemetry.getSensor and telemetry.getSensor("consumption") or nil
     local voltage = telemetry and telemetry.getSensor and telemetry.getSensor("voltage") or nil
+
+    local bc = rfsuite and rfsuite.session and rfsuite.session.batteryConfig
     local cellCount = bc and bc.batteryCellCount or 0
     local packCapacity = bc and bc.batteryCapacity or 0
     local reserve = bc and bc.consumptionWarningPercentage or 0
@@ -50,27 +87,27 @@ local function smartFuelCalc()
     local minCellV = bc and bc.vbatmincellvoltage or 3.3
     local fullCellV = bc and bc.vbatfullcellvoltage or 4.1
 
-    -- Protect against bad consumption warning % values
     if reserve > 80 or reserve < 0 then reserve = 30 end
 
-    -- Battery connected check (is a battery connected or is the FBL getting power from another source)
     local batteryConnected = false
-    if voltage and cellCount then
+    if voltage and cellCount > 0 then
         local minTotalV = minCellV * cellCount
         local maxTotalV = maxCellV * cellCount + 4
         if voltage > (minTotalV - 0.5) and voltage <= maxTotalV then
             batteryConnected = true
         end
     end
-    if not batteryConnected or not packCapacity or packCapacity < 10 then
-        -- Battery not detected or config invalid, reset fuel calculation state
-        fuelStartingPercent = nil
-        fuelStartingConsumption = nil
-        return nil
-    end
 
-    -- Step 1: As soon as values are valid, determine initial fuel % from voltage
+    -- Do not recalculate unless fuelStartingPercent is nil and battery config is valid
     if not fuelStartingPercent then
+        if not batteryConnected or not packCapacity or packCapacity < 10 then
+            return nil
+        end
+        if not isVoltageStable(voltage) then
+            return nil
+        end
+
+        -- Initialize fuel from voltage estimate
         local perCell = (voltage and cellCount > 0) and (voltage / cellCount) or 0
         if perCell >= fullCellV then
             fuelStartingPercent = 100
@@ -85,12 +122,13 @@ local function smartFuelCalc()
                 fuelStartingPercent = math.floor(math.max(0, math.min(100, pct)))
             end
         end
+
         local usableCapacity = packCapacity * (1 - reserve / 100)
         local estimatedUsed = usableCapacity * (1 - fuelStartingPercent / 100)
         fuelStartingConsumption = (consumption or 0) - estimatedUsed
     end
 
-    -- Step 2: Use mAh consumption to track % drop after initial value
+    -- Track percent drop using consumption
     if consumption and fuelStartingConsumption and packCapacity > 0 then
         local used = consumption - fuelStartingConsumption
         local usableCapacity = packCapacity * (1 - reserve / 100)
@@ -99,7 +137,6 @@ local function smartFuelCalc()
         local remaining = math.max(0, fuelStartingPercent - percentUsed)
         return math.floor(math.min(100, remaining) + 0.5)
     else
-        -- If consumption isn't available, just show initial percent
         return fuelStartingPercent
     end
 end

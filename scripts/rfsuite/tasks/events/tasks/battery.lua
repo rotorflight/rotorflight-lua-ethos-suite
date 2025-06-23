@@ -19,15 +19,26 @@ local batteryevents = {}
 
 local lastConfig = nil
 
+-- Deep equality check for tables
 local function deepEqual(a, b)
     if type(a) ~= "table" or type(b) ~= "table" then return a == b end
-    for k,v in pairs(a) do
+    for k, v in pairs(a) do
         if not deepEqual(v, b[k]) then return false end
     end
-    for k,v in pairs(b) do
+    for k, v in pairs(b) do
         if not deepEqual(v, a[k]) then return false end
     end
     return true
+end
+
+-- Deep copy function for tables
+local function deepCopy(t)
+    if type(t) ~= "table" then return t end
+    local c = {}
+    for k, v in pairs(t) do
+        c[k] = deepCopy(v)
+    end
+    return c
 end
 
 function batteryevents.wakeup()
@@ -43,13 +54,10 @@ function batteryevents.wakeup()
         if rfsuite.tasks.telemetry and rfsuite.tasks.telemetry.fuelReset then
             rfsuite.tasks.telemetry.fuelReset()
         end
-        -- Update the cached config
-        lastConfig = {}
-        for k,v in pairs(config) do
-            lastConfig[k] = v
-        end
-        rfsuite.utils.log("[INFO] Battery config changed: fuel telemetry reset","info")
+        -- Update the cached config using deep copy
+        lastConfig = deepCopy(config)
     end
 end
 
 return batteryevents
+
