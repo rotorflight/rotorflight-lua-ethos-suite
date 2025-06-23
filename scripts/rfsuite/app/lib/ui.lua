@@ -419,10 +419,6 @@ function ui.openMainMenu()
                             rfsuite.app.formFields[pidx]:focus()
                         end
 
-                        if not offline then
-                            rfsuite.app.formFields[pidx]:enable(false)
-                        end
-
                         lc = (lc + 1) % numPerRow
                     end
                 end
