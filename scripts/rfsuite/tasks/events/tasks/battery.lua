@@ -48,7 +48,7 @@ function batteryevents.wakeup()
         for k,v in pairs(config) do
             lastConfig[k] = v
         end
-        rfsuite.utils.log("Battery config changed: fuel telemetry reset","info")
+        rfsuite.utils.log("[INFO] Battery config changed: fuel telemetry reset","info")
     end
 end
 
