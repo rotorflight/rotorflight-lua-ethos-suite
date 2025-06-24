@@ -100,7 +100,7 @@ local boxes = {
     -- Battery Gauge
     {col = 4, row = 1, colspan = 4, rowspan = 3,
      type = "gauge",
-     source = "fuel",
+     source = "smartfuel",
      batteryframe = true, 
      battadv = true,
      fillcolor = "green",

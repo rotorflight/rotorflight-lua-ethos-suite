@@ -1147,6 +1147,7 @@ return {
       ["current"] = "Stroom",
       ["throttle_pct"] = "Throttle %",
       ["consumption"] = "Verbruik",
+      ["smartfuel"] = "Smart Fuel",
       ["pid_profile"] = "PID Profiel",
       ["mcu_temp"] = "MCU Temperatuur",
       ["armdisableflags"] = "Arming Disable"
