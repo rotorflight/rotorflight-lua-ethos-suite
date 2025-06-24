@@ -1,4 +1,4 @@
-local settings = {}
+local settings_model = {}
 local i18n = rfsuite.i18n.get
 
 local function sensorNameMap(sensorList)
@@ -34,7 +34,7 @@ local function openPage(pageIdx, title, script)
 
     local sensorList = sortSensorListByName(rfsuite.tasks.telemetry.listAssignableSensors())
 
-    settings = rfsuite.preferences.switches
+    settings_model = rfsuite.session.modelPreferences
 
     for i, v in ipairs(sensorList) do
     formFieldCount = formFieldCount + 1
@@ -42,11 +42,11 @@ local function openPage(pageIdx, title, script)
     rfsuite.app.formLines[rfsuite.session.formLineCnt] = form.addLine(v.name or "unknown")
 
 
-    rfsuite.app.formFields[formFieldCount] = form.addSwitchField(rfsuite.app.formLines[rfsuite.session.formLineCnt], 
+   rfsuite.app.formFields[formFieldCount] = form.addSourceField(rfsuite.app.formLines[rfsuite.session.formLineCnt], 
                                                         nil, 
                                                         function() 
-                                                            if rfsuite.preferences and rfsuite.preferences.switches then
-                                                                local value = settings[v.key]
+                                                            if rfsuite.session and rfsuite.session.modelPreferences then
+                                                                local value = settings_model.sensormap[v.key]
                                                                 if value then
                                                                     local scategory, smember = value:match("([^,]+),([^,]+)")
                                                                     if scategory and smember then
@@ -58,11 +58,12 @@ local function openPage(pageIdx, title, script)
                                                             end
                                                         end, 
                                                         function(newValue) 
-                                                            if rfsuite.preferences and rfsuite.preferences.switches then
+                                                            if rfsuite.session and rfsuite.session.modelPreferences then
                                                                 local cat_member = newValue:category() .. "," .. newValue:member()
-                                                                settings[v.key] = cat_member or nil
+                                                                settings_model.sensormap[v.key] = cat_member or nil
                                                             end    
                                                         end)
+
 
     end
   
@@ -73,7 +74,7 @@ local function onNavMenu()
     rfsuite.app.ui.openPage(
         pageIdx,
         i18n("app.modules.settings.name"),
-        "settings/tools/audio.lua"
+        "settings/settings.lua"
     )
 end
 
@@ -84,14 +85,22 @@ local function onSaveMenu()
             action = function()
                 local msg = i18n("app.modules.profile_select.save_prompt_local")
                 rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
-                for key, value in pairs(settings) do
-                    rfsuite.preferences.switches[key] = value
+                for key, value in pairs(settings_model) do
+                    rfsuite.session.modelPreferences[key] = value
                 end
-                rfsuite.ini.save_ini_file(
-                    "SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini",
-                    rfsuite.preferences
-                )
-                rfsuite.tasks.events.switches.resetSwitchStates()
+                -- save model dashboard settings
+                if rfsuite.session.isConnected and rfsuite.session.mcu_id and rfsuite.session.modelPreferencesFile then
+                    for key, value in pairs(settings_model) do
+                        print("Saving key: " .. key .. " with value: " .. tostring(value))
+                        rfsuite.session.modelPreferences.sensormap[key] = value
+                    end
+                    rfsuite.ini.save_ini_file(
+                        rfsuite.session.modelPreferencesFile,
+                        rfsuite.session.modelPreferences
+                    )
+                    rfsuite.tasks.telemetry.reset()
+                end    
+
                 rfsuite.app.triggers.closeSave = true
                 return true
             end,
@@ -121,7 +130,7 @@ local function event(widget, category, value, x, y)
         rfsuite.app.ui.openPage(
             pageIdx,
             i18n("app.modules.settings.name"),
-            "settings/tools/audio.lua"
+            "settings/settings.lua"
         )
         return true
     end

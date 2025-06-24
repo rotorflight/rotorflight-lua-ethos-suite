@@ -122,6 +122,7 @@ local sensorTable = {
         switch_alerts = true,
         unit = UNIT_DB,
         unit_string = "dB",
+        assignable = false,
         sensors = {
             sim = {
                 { appId = 0xF101, subId = 0 },
@@ -149,6 +150,7 @@ local sensorTable = {
         mandatory = true,
         stats = false,
         set_telemetry_sensors = 90,
+        assignable = false,        
         sensors = {
             sim = {
                 { uid = 0x5001, unit = nil, dec = nil,
@@ -182,6 +184,7 @@ local sensorTable = {
         switch_alerts = true,
         unit = UNIT_VOLT,
         unit_string = "V",
+        assignable = true,        
         sensors = {
             sim = {
                 { uid = 0x5002, unit = UNIT_VOLT, dec = 2,
@@ -213,6 +216,7 @@ local sensorTable = {
         switch_alerts = true,
         unit = UNIT_RPM,
         unit_string = "rpm",
+        assignable = true,  
         sensors = {
             sim = {
                 { uid = 0x5003, unit = UNIT_RPM, dec = nil,
@@ -238,6 +242,7 @@ local sensorTable = {
         switch_alerts = true,
         unit = UNIT_AMPERE,
         unit_string = "A",
+        assignable = true,  
         sensors = {
             sim = {
                 { uid = 0x5004, unit = UNIT_AMPERE, dec = 0,
@@ -266,6 +271,7 @@ local sensorTable = {
         set_telemetry_sensors = 23,
         switch_alerts = true,
         unit = UNIT_DEGREE,
+        assignable = true,  
         sensors = {
             sim = {
                 { uid = 0x5005, unit = UNIT_DEGREE, dec = 0,
@@ -308,6 +314,7 @@ local sensorTable = {
         set_telemetry_sensors = 52,
         switch_alerts = true,
         unit = UNIT_DEGREE,
+        assignable = true,  
         sensors = {
             sim = {
                 { uid = 0x5006, unit = UNIT_DEGREE, dec = 0,
@@ -350,6 +357,7 @@ local sensorTable = {
         switch_alerts = true,
         unit = UNIT_PERCENT,
         unit_string = "%",
+        assignable = false,  
         sensors = {
             sim = {
                 { 
@@ -377,6 +385,7 @@ local sensorTable = {
         switch_alerts = true,
         unit = UNIT_PERCENT,
         unit_string = "%",
+        assignable = false,
         sensors = {
             sim = {
                 { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE1 },
@@ -399,6 +408,7 @@ local sensorTable = {
         switch_alerts = true,
         unit = UNIT_MILLIAMPERE_HOUR,
         unit_string = "mAh",
+        assignable = false, 
         sensors = {
             sim = {
                 { uid = 0x5008, unit = UNIT_MILLIAMPERE_HOUR, dec = 0,
@@ -421,6 +431,7 @@ local sensorTable = {
         mandatory = true,
         stats = false,
         set_telemetry_sensors = 93,
+        assignable = false,  
         sensors = {
             sim = {
                 { uid = 0x5009, unit = nil, dec = 0,
@@ -444,6 +455,7 @@ local sensorTable = {
         mandatory = true,
         stats = false,
         set_telemetry_sensors = 99,
+        assignable = false,  
         sensors = {
             sim = {
                 { uid = 0x5010, unit = nil, dec = 0,
@@ -464,6 +476,7 @@ local sensorTable = {
         name = i18n("telemetry.sensors.adj_val"),
         mandatory = true,
         stats = false,
+        assignable = false,  
         -- grouped with adj_f, so no set_telemetry_sensors here
         sensors = {
             sim = {
@@ -487,6 +500,7 @@ local sensorTable = {
         mandatory = true,
         stats = false,
         set_telemetry_sensors = 95,
+        assignable = false,  
         sensors = {
             sim = {
                 { uid = 0x5012, unit = nil, dec = 0,
@@ -509,6 +523,7 @@ local sensorTable = {
         mandatory = true,
         stats = false,
         set_telemetry_sensors = 96,
+        assignable = false,  
         sensors = {
             sim = {
                 { uid = 0x5013, unit = nil, dec = 0,
@@ -534,6 +549,7 @@ local sensorTable = {
         set_telemetry_sensors = 15,
         unit = UNIT_PERCENT,
         unit_string = "%",
+        assignable = false,  
         sensors = {
             sim = {
                 { uid = 0x5014, unit = nil, dec = 0,
@@ -558,6 +574,7 @@ local sensorTable = {
         mandatory = true,
         stats = false,
         set_telemetry_sensors = 91,
+        assignable = false,  
         sensors = {
             sim = {
                 { uid = 0x5015, unit = nil, dec = nil,
@@ -582,6 +599,7 @@ local sensorTable = {
         set_telemetry_sensors = nil,
         switch_alerts = true,
         unit = UNIT_METER,
+        assignable = true,  
         sensors = {
             sim = {
                 { uid = 0x5016, unit = UNIT_METER, dec = 0,
@@ -623,6 +641,7 @@ local sensorTable = {
         switch_alerts = true,
         unit = UNIT_VOLT,
         unit_string = "V",
+        assignable = true,  
         sensors = {
             sim = {
                 { uid = 0x5017, unit = UNIT_VOLT, dec = 2,
@@ -647,6 +666,7 @@ local sensorTable = {
         mandatory = false,
         stats = false,
         set_telemetry_sensors = nil,
+        assignable = true,  
         sensors = {
             sim = {
                 { uid = 0x5018, unit = nil, dec = 0,
@@ -669,6 +689,7 @@ local sensorTable = {
         mandatory = false,
         stats = false,
         set_telemetry_sensors = nil,
+        assignable = false, 
         sensors = {
             sim = {
                 { uid = 0x5019, unit = UNIT_G, dec = 3,
@@ -691,6 +712,7 @@ local sensorTable = {
         mandatory = false,
         stats = false,
         set_telemetry_sensors = nil,
+        assignable = false, 
         sensors = {
             sim = {
                 { uid = 0x5020, unit = UNIT_G, dec = 3,
@@ -713,6 +735,7 @@ local sensorTable = {
         mandatory = false,
         stats = false,
         set_telemetry_sensors = nil,
+        assignable = false,  
         sensors = {
             sim = {
                 { uid = 0x5021, unit = UNIT_G, dec = 3,
@@ -735,6 +758,7 @@ local sensorTable = {
         mandatory = false,
         stats = false,
         set_telemetry_sensors = nil,
+        assignable = false, 
         sensors = {
             sim = {
                 { uid = 0x5022, unit = UNIT_DEGREE, dec = 1,
@@ -757,6 +781,7 @@ local sensorTable = {
         mandatory = false,
         stats = false,
         set_telemetry_sensors = nil,
+        assignable = false, 
         sensors = {
             sim = {
                 { uid = 0x5023, unit = UNIT_DEGREE, dec = 1,
@@ -780,6 +805,7 @@ local sensorTable = {
         mandatory = false,
         stats = false,
         set_telemetry_sensors = nil,
+        assignable = false,  
         sensors = {
             sim = {
                 { uid = 0x5024, unit = UNIT_DEGREE, dec = 1,
@@ -802,6 +828,7 @@ local sensorTable = {
         mandatory = false,
         stats = false,
         set_telemetry_sensors = nil,
+        assignable = false, 
         sensors = {
             sim = {
                 { uid = 0x5025, unit = UNIT_KNOT, dec = 1,
@@ -880,6 +907,25 @@ function telemetry.listSwitchSensors()
 end
 
 --[[ 
+    Function: telemetry.listSwitchSensors
+    Returns a list of sensors flagged for switch alerts.
+]]
+function telemetry.listAssignableSensors()
+    local sensorList = {}
+    for key, sensor in pairs(sensorTable) do 
+        if sensor.assignable then
+            table.insert(sensorList, {
+                key = key,
+                name = sensor.name,
+                mandatory = sensor.mandatory,
+                set_telemetry_sensors = sensor.set_telemetry_sensors
+            })
+        end    
+    end
+    return sensorList
+end
+
+--[[ 
     Helper: Get the raw Source object for a given sensorKey, caching as we go.
 ]]
 function telemetry.getSensorSource(name)
@@ -904,8 +950,21 @@ function telemetry.getSensorSource(name)
         end
         return true
     end
+
+    if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.sensormap and rfsuite.session.modelPreferences.sensormap[name] and rfsuite.session.modelPreferences.sensormap[name] ~= "0,0" then  
+        -- If the sensor is mapped to a specific source, use that mapping:
+        local savedsrc = rfsuite.session.modelPreferences.sensormap[name]
+        local s1, s2 = savedsrc:match("([^,]+),([^,]+)")
+
+        local source = system.getSource({ category = s1, member = s2 })
+        if source then
+            cache_misses = cache_misses + 1       -- debug: loaded from system.getSource :contentReference[oaicite:1]{index=1}
+            sensors[name] = source
+            mark_hot(name)
+            return source
+        end    
     
-    if system.getVersion().simulation == true then
+    elseif system.getVersion().simulation == true then
         protocol = "sport"
         for _, sensor in ipairs(sensorTable[name].sensors.sim or {}) do
             -- handle sensors in regular formt
@@ -935,7 +994,7 @@ function telemetry.getSensorSource(name)
                 end                
             end    
         end
-
+     
     elseif rfsuite.session.telemetryType == "crsf" then
         if not crsfSOURCE then 
             crsfSOURCE = system.getSource({ category = CATEGORY_TELEMETRY_SENSOR, appId = 0xEE01 }) 

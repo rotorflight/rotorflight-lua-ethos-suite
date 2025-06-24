@@ -68,21 +68,26 @@ function ini.load_ini_file(fileName)
 end
 
 function ini.save_ini_file(fileName, data)
-    assert(type(fileName) == 'string', 'Parameter "fileName" must be a string.')
-    assert(type(data) == 'table', 'Parameter "data" must be a table.')
+    assert(type(fileName) == "string", 'Parameter "fileName" must be a string.')
+    assert(type(data)     == "table",  'Parameter "data" must be a table.')
 
-    local file, err = io.open(fileName, 'w')
+    local file, err = io.open(fileName, "w")
     if not file then
-        return false
+        return false, err
     end
 
     for section, params in pairs(data) do
-        file:write(("[" .. tostring(section) .. "]\n"))  -- Removed extra spaces
+        file:write(string.format("[%s]\n", section))
         for key, value in pairs(params) do
-            if type(value) == "boolean" then
-                value = value and "true" or "false"
+            local t = type(value)
+            if t == "table" then
+                -- skip nested tables entirely
+            else
+                if t == "boolean" then
+                    value = value and "true" or "false"
+                end
+                file:write(string.format("%s=%s\n", tostring(key), tostring(value)))
             end
-            file:write(("%s=%s\n"):format(tostring(key), tostring(value)))
         end
         file:write("\n")
     end
@@ -90,6 +95,8 @@ function ini.save_ini_file(fileName, data)
     file:close()
     return true
 end
+
+
 
 -- Merges two INI-like tables, with values from the master table overwriting those in the slave table
 function ini.merge_ini_tables(master, slave)
