@@ -81,8 +81,8 @@
       "needs_translation": "false"
     },
     "fuel": {
-      "english": "Charge Level",
-      "translation": "Charge Level",
+      "english": "Fuel",
+      "translation": "Fuel",
       "needs_translation": "false"
     },
     "rssi": {

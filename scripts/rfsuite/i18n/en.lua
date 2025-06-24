@@ -1140,7 +1140,7 @@ return {
       ["cell_count"] = "Cell count",
       ["governor"] = "Governor State",
       ["adj_func"] = "Adj (Function)",
-      ["fuel"] = "Charge Level",
+      ["fuel"] = "Fuel",
       ["rssi"] = "RSSI",
       ["adj_val"] = "Adj (Value)",
       ["arming_flags"] = "Arming Flags",

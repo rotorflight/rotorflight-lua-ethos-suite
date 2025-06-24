@@ -80,7 +80,7 @@ local eventTable = {
         interval = 10
     },
     {
-        sensor = "fuel",
+        sensor = "smartfuel",
         event = function(value)
             -- Play the alert every interval if fuel is 10% or below
             if value and value <= 10 then
@@ -89,6 +89,16 @@ local eventTable = {
         end,
         interval = 10
     },
+    {
+        sensor = "fuel",
+        event = function(value)
+            -- Play the alert every interval if fuel is 10% or below
+            if value and value <= 10 then
+                rfsuite.utils.playFile("events", "alerts/lowfuel.wav")
+            end
+        end,
+        interval = 10
+    },    
     {
         sensor = "governor",
         event = function(value)
