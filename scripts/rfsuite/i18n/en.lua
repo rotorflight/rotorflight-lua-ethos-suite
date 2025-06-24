@@ -1146,7 +1146,8 @@ return {
       ["arming_flags"] = "Arming Flags",
       ["current"] = "Current",
       ["throttle_pct"] = "Throttle %",
-      ["consumption"] = "Consumption",
+      ["consumption"] = "Fuel",
+      ["smartfuel"] = "Smart Fuel",
       ["pid_profile"] = "PID Profile",
       ["mcu_temp"] = "MCU Temperature",
       ["armdisableflags"] = "Arming Disable"

@@ -111,8 +111,13 @@
       "needs_translation": "false"
     },
     "consumption": {
-      "english": "Consumption",
+      "english": "Fuel",
       "translation": "Consumption",
+      "needs_translation": "false"
+    },
+    "smartfuel": {
+      "english": "Smart Fuel",
+      "translation": "Smart Fuel",
       "needs_translation": "false"
     },
     "pid_profile": {
