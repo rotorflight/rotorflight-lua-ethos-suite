@@ -22,8 +22,6 @@ local i18n = rfsuite.i18n.get
 local telemetry = {}
 local protocol, telemetrySOURCE, crsfSOURCE
 
-local smartfuel = assert(rfsuite.compiler.loadfile("tasks/telemetry/lib/smartfuel.lua")())
-
 -- sensor cache: weak values so GC can drop cold sources
 local sensors   = setmetatable({}, { __mode = "v" })
 
@@ -356,7 +354,7 @@ local sensorTable = {
             sim = {
                 { 
                     uid = 0x5007, unit = UNIT_PERCENT, dec = 0,
-                    value = smartfuel.calculate,                    
+                    value = function() return rfsuite.utils.simSensors('fuel') end,                   
                     min = 0, max = 100
                 },
             },
@@ -368,11 +366,29 @@ local sensorTable = {
             },
             crsfLegacy = { "Rx Batt%" },
         },
-        source = function()
-            return {
-                value = smartfuel.calculate,                    
-            }
-        end,
+    },
+
+    -- Fuel and Capacity Sensors
+    smartfuel = {
+        name = i18n("telemetry.sensors.smartfuel"),
+        mandatory = false,
+        stats = true,
+        set_telemetry_sensors = nil,
+        switch_alerts = true,
+        unit = UNIT_PERCENT,
+        unit_string = "%",
+        sensors = {
+            sim = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE1 },
+            },
+            sport = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE1 },
+            },
+            crsf = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE1 },
+            },
+            crsfLegacy = nil,
+        },
     },
 
     consumption = {
@@ -892,16 +908,32 @@ function telemetry.getSensorSource(name)
     if system.getVersion().simulation == true then
         protocol = "sport"
         for _, sensor in ipairs(sensorTable[name].sensors.sim or {}) do
-            if sensor and type(sensor) == "table" then
-                local sensorQ = { appId = sensor.uid, category = CATEGORY_TELEMETRY_SENSOR }
-                local source = system.getSource(sensorQ)
-                if source then
-                    cache_misses = cache_misses + 1       -- debug: loaded from system.getSource :contentReference[oaicite:1]{index=1}
-                    sensors[name] = source
-                    mark_hot(name)
-                    return source
+            -- handle sensors in regular formt
+            if sensor.uid then
+                if sensor and type(sensor) == "table" then
+                    local sensorQ = { appId = sensor.uid, category = CATEGORY_TELEMETRY_SENSOR }
+                    local source = system.getSource(sensorQ)
+                    if source then
+                        cache_misses = cache_misses + 1       -- debug: loaded from system.getSource :contentReference[oaicite:1]{index=1}
+                        sensors[name] = source
+                        mark_hot(name)
+                        return source
+                    end
                 end
-            end
+            else
+                -- handle smart sensors / regular lookups    
+                if checkCondition(sensor) and type(sensor) == "table" then
+                    sensor.mspgt = nil
+                    sensor.msplt = nil
+                    local source = system.getSource(sensor)
+                    if source then
+                        cache_misses = cache_misses + 1       -- debug: loaded from system.getSource :contentReference[oaicite:1]{index=1}
+                        sensors[name] = source
+                        mark_hot(name)
+                        return source
+                    end
+                end                
+            end    
         end
 
     elseif rfsuite.session.telemetryType == "crsf" then

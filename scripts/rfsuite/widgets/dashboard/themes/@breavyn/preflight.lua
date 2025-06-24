@@ -54,7 +54,7 @@ local boxes = {
     -- Battery Bar
     {col = 1, row = 1, rowspan = 12,
     type = "gauge",
-    source = "fuel",
+    source = "smartfuel",
     gaugeorientation = "vertical",
     battery = true,
     hidevalue = true,
@@ -185,7 +185,7 @@ local boxes = {
     -- Battery Bar
     {col = 12, row = 1, rowspan = 12,
     type = "gauge",
-    source = "fuel",
+    source = "smartfuel",
     gaugeorientation = "vertical",
     battery = true,
     hidevalue = true,
