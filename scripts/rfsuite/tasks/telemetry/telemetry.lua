@@ -29,7 +29,7 @@ local sensors   = setmetatable({}, { __mode = "v" })
 -- debug counters
 local cache_hits, cache_misses = 0, 0
 
--- Define battery config defaults (single place!)
+-- Define battery config defaults
 local batteryConfigDefaults = {
     batteryCellCount = 0,
     batteryCapacity = 0,
@@ -44,7 +44,7 @@ local batteryConfigCache = nil
 local fuelStartingPercent = nil
 local fuelStartingConsumption = nil
 
--- Voltage stabilization state
+-- Voltage stabilisation state
 local lastVoltages = {}
 local voltageStableTime = nil
 local voltageStabilised = false
@@ -52,6 +52,12 @@ local stabilizeNotBefore = nil
 local voltageWindow = 1.5      -- seconds required for stable voltage
 local voltageThreshold = 0.15  -- max allowed variation in window
 local preStabiliseDelay = 1.5 -- minimum seconds to wait after config/telemetry
+
+local function resetVoltageTracking()
+    lastVoltages = {}
+    voltageStableTime = nil
+    voltageStabilised = false
+end
 
 local function getBatteryConfig()
     local bc_raw = rfsuite and rfsuite.session and rfsuite.session.batteryConfig or {}
@@ -91,11 +97,8 @@ local function smartFuelCalc()
         batteryConfigCache = configSig
         fuelStartingPercent = nil
         fuelStartingConsumption = nil
-        lastVoltages = {}
-        voltageStableTime = nil
-        voltageStabilised = false
+        resetVoltageTracking()
         stabilizeNotBefore = rfsuite.clock + preStabiliseDelay -- start pre-stabilisation delay on config change
-        -- No return! Allow logic to continue and start collecting voltages for stabilization
     end
 
     -- Read current voltage
@@ -103,9 +106,7 @@ local function smartFuelCalc()
 
     -- Only track/accept valid voltages (e.g., battery plugged in)
     if not voltage or voltage < 2 then
-        lastVoltages = {}
-        voltageStableTime = nil
-        voltageStabilised = false
+        resetVoltageTracking()
         stabilizeNotBefore = nil
         return nil
     end
@@ -114,9 +115,7 @@ local function smartFuelCalc()
 
     -- Wait for pre-stabilisation delay after config/telemetry is available
     if stabilizeNotBefore and now < stabilizeNotBefore then
-        lastVoltages = {}
-        voltageStableTime = nil
-        voltageStabilised = false
+        resetVoltageTracking()
         return nil
     end
 
@@ -140,12 +139,9 @@ local function smartFuelCalc()
     end
 
     -- After voltage is stable, proceed as normal
-    local cellCount   = bc.batteryCellCount
-    local packCapacity = bc.batteryCapacity
-    local reserve      = bc.consumptionWarningPercentage
-    local maxCellV     = bc.vbatmaxcellvoltage
-    local minCellV     = bc.vbatmincellvoltage
-    local fullCellV    = bc.vbatfullcellvoltage
+    local cellCount, packCapacity, reserve, maxCellV, minCellV, fullCellV =
+        bc.batteryCellCount, bc.batteryCapacity, bc.consumptionWarningPercentage,
+        bc.vbatmaxcellvoltage, bc.vbatmincellvoltage, bc.vbatfullcellvoltage
 
     if reserve > 80 or reserve < 0 then reserve = 20 end
 
@@ -154,6 +150,10 @@ local function smartFuelCalc()
         fuelStartingConsumption = nil
         return nil
     end
+
+    -- Clamp usableCapacity once for both steps
+    local usableCapacity = packCapacity * (1 - reserve / 100)
+    if usableCapacity < 10 then usableCapacity = packCapacity end
 
     local consumption = telemetry and telemetry.getSensor and telemetry.getSensor("consumption") or nil
 
@@ -173,7 +173,6 @@ local function smartFuelCalc()
                 fuelStartingPercent = math.floor(math.max(0, math.min(100, pct)))
             end
         end
-        local usableCapacity = packCapacity * (1 - reserve / 100)
         local estimatedUsed = usableCapacity * (1 - fuelStartingPercent / 100)
         fuelStartingConsumption = (consumption or 0) - estimatedUsed
     end
@@ -181,8 +180,6 @@ local function smartFuelCalc()
     -- Step 2: Use mAh consumption to track % drop after initial value
     if consumption and fuelStartingConsumption and packCapacity > 0 then
         local used = consumption - fuelStartingConsumption
-        local usableCapacity = packCapacity * (1 - reserve / 100)
-        if usableCapacity < 10 then usableCapacity = packCapacity end
         local percentUsed = used / usableCapacity * 100
         local remaining = math.max(0, fuelStartingPercent - percentUsed)
         return math.floor(math.min(100, remaining) + 0.5)
