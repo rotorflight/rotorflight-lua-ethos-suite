@@ -29,49 +29,135 @@ local sensors   = setmetatable({}, { __mode = "v" })
 -- debug counters
 local cache_hits, cache_misses = 0, 0
 
--- variables for 2 step fuel calculation with delays to allow voltage to stabilise for 10 seconds
-local fuelReadyTime = nil
+-- Define battery config defaults (single place!)
+local batteryConfigDefaults = {
+    batteryCellCount = 0,
+    batteryCapacity = 0,
+    consumptionWarningPercentage = 35,
+    vbatmaxcellvoltage = 4.2,
+    vbatmincellvoltage = 3.3,
+    vbatfullcellvoltage = 4.1
+}
+
+-- Persistent vars for the smart fuel logic
+local batteryConfigCache = nil
 local fuelStartingPercent = nil
 local fuelStartingConsumption = nil
 
--- 2 step fuel calculation logic with mah consumption (shared function for sim and sensor)
-local function smartFuelCalc()
-    local bc = rfsuite and rfsuite.session and rfsuite.session.batteryConfig
-    local consumption = telemetry and telemetry.getSensor and telemetry.getSensor("consumption") or nil
-    local voltage = telemetry and telemetry.getSensor and telemetry.getSensor("voltage") or nil
-    local cellCount = bc and bc.batteryCellCount or 0
-    local packCapacity = bc and bc.batteryCapacity or 0
-    local reserve = bc and bc.consumptionWarningPercentage or 0
-    local maxCellV = bc and bc.vbatmaxcellvoltage or 4.2
-    local minCellV = bc and bc.vbatmincellvoltage or 3.3
-    local fullCellV = bc and bc.vbatfullcellvoltage or 4.1
+-- Voltage stabilization state
+local lastVoltages = {}
+local voltageStableTime = nil
+local voltageStabilised = false
+local stabilizeNotBefore = nil
+local voltageWindow = 1.5      -- seconds required for stable voltage
+local voltageThreshold = 0.15  -- max allowed variation in window
+local preStabiliseDelay = 1.5 -- minimum seconds to wait after config/telemetry
 
-    -- Clamp reserve to sane values
+local function getBatteryConfig()
+    local bc_raw = rfsuite and rfsuite.session and rfsuite.session.batteryConfig or {}
+    local bc = {}
+    for k, v in pairs(batteryConfigDefaults) do
+        bc[k] = bc_raw[k] or v
+    end
+    return bc
+end
+
+local function isVoltageStable(now)
+    while #lastVoltages > 0 and (now - lastVoltages[1].t) > voltageWindow do
+        table.remove(lastVoltages, 1)
+    end
+    if #lastVoltages < 2 then return false end
+    local vmin, vmax = lastVoltages[1].v, lastVoltages[1].v
+    for _, entry in ipairs(lastVoltages) do
+        if entry.v < vmin then vmin = entry.v end
+        if entry.v > vmax then vmax = entry.v end
+    end
+    return (vmax - vmin) <= voltageThreshold
+end
+
+local function smartFuelCalc()
+    local bc = getBatteryConfig()
+    local configSig = table.concat({
+        bc.batteryCellCount,
+        bc.batteryCapacity,
+        bc.consumptionWarningPercentage,
+        bc.vbatmaxcellvoltage,
+        bc.vbatmincellvoltage,
+        bc.vbatfullcellvoltage
+    }, ":")
+
+    -- If config changed, reset voltage stabilization and fuel state
+    if configSig ~= batteryConfigCache then
+        batteryConfigCache = configSig
+        fuelStartingPercent = nil
+        fuelStartingConsumption = nil
+        lastVoltages = {}
+        voltageStableTime = nil
+        voltageStabilised = false
+        stabilizeNotBefore = rfsuite.clock + preStabiliseDelay -- start pre-stabilisation delay on config change
+        -- No return! Allow logic to continue and start collecting voltages for stabilization
+    end
+
+    -- Read current voltage
+    local voltage = telemetry and telemetry.getSensor and telemetry.getSensor("voltage") or nil
+
+    -- Only track/accept valid voltages (e.g., battery plugged in)
+    if not voltage or voltage < 2 then
+        lastVoltages = {}
+        voltageStableTime = nil
+        voltageStabilised = false
+        stabilizeNotBefore = nil
+        return nil
+    end
+
+    local now = rfsuite.clock
+
+    -- Wait for pre-stabilisation delay after config/telemetry is available
+    if stabilizeNotBefore and now < stabilizeNotBefore then
+        lastVoltages = {}
+        voltageStableTime = nil
+        voltageStabilised = false
+        return nil
+    end
+
+    table.insert(lastVoltages, {v = voltage, t = now})
+
+    -- Wait for voltage to stabilize before doing any calculation
+    if not voltageStabilised then
+        if isVoltageStable(now) then
+            if not voltageStableTime then
+                voltageStableTime = now
+            end
+            if now - voltageStableTime >= voltageWindow then
+                voltageStabilised = true
+            end
+        else
+            voltageStableTime = nil
+        end
+        if not voltageStabilised then
+            return nil -- Wait for stabilization after config change or initial power-up
+        end
+    end
+
+    -- After voltage is stable, proceed as normal
+    local cellCount   = bc.batteryCellCount
+    local packCapacity = bc.batteryCapacity
+    local reserve      = bc.consumptionWarningPercentage
+    local maxCellV     = bc.vbatmaxcellvoltage
+    local minCellV     = bc.vbatmincellvoltage
+    local fullCellV    = bc.vbatfullcellvoltage
+
     if reserve > 80 or reserve < 0 then reserve = 20 end
 
-    -- Early exit if config is missing or invalid
-    if not packCapacity or packCapacity < 10 or not cellCount or cellCount < 2 then
-        fuelReadyTime = nil
+    if packCapacity < 10 or cellCount == 0 or maxCellV <= minCellV or fullCellV <= 0 then
         fuelStartingPercent = nil
         fuelStartingConsumption = nil
         return nil
     end
 
-    -- Set up the grace period on first call
-    local now = rfsuite.clock
-    if not fuelReadyTime then
-        fuelReadyTime = now + 10
-        fuelStartingPercent = nil
-        fuelStartingConsumption = nil
-        return nil
-    end
+    local consumption = telemetry and telemetry.getSensor and telemetry.getSensor("consumption") or nil
 
-    -- Wait until the grace period has elapsed
-    if now < fuelReadyTime then
-        return nil
-    end
-
-    -- Step 1: After delay, determine initial fuel % from voltage
+    -- Step 1: Determine initial fuel % from voltage
     if not fuelStartingPercent then
         local perCell = (voltage and cellCount > 0) and (voltage / cellCount) or 0
         if perCell >= fullCellV then
@@ -81,7 +167,6 @@ local function smartFuelCalc()
         else
             local usableRange = maxCellV - minCellV
             local pct = ((perCell - minCellV) / usableRange) * 100
-            -- Apply reserve as "zero" point
             if reserve > 0 and pct <= reserve then
                 fuelStartingPercent = 0
             else
