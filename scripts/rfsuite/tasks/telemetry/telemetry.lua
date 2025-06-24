@@ -22,158 +22,13 @@ local i18n = rfsuite.i18n.get
 local telemetry = {}
 local protocol, telemetrySOURCE, crsfSOURCE
 
+local smartfuel = assert(rfsuite.compiler.loadfile("tasks/telemetry/lib/smartfuel.lua")())
 
 -- sensor cache: weak values so GC can drop cold sources
 local sensors   = setmetatable({}, { __mode = "v" })
 
 -- debug counters
 local cache_hits, cache_misses = 0, 0
-
--- Persistent vars for the smart fuel logic
-local batteryConfigCache = nil
-local fuelStartingPercent = nil
-local fuelStartingConsumption = nil
-
--- Voltage stabilisation state
-local lastVoltages = {}
-local maxVoltageSamples = 5    -- keep the last N readings for stability 
-local voltageStableTime = nil
-local voltageStabilised = false
-local stabilizeNotBefore = nil
-local voltageThreshold = 0.15  -- max allowed variation in window
-local preStabiliseDelay = 1.5 -- minimum seconds to wait after config/telemetry
-
-local function resetVoltageTracking()
-    lastVoltages = {}
-    voltageStableTime = nil
-    voltageStabilised = false
-end
-
-local function isVoltageStable()
-    if #lastVoltages < maxVoltageSamples then
-        return false
-    end
-    local vmin, vmax = lastVoltages[1], lastVoltages[1]
-    for _, v in ipairs(lastVoltages) do
-        if v < vmin then vmin = v end
-        if v > vmax then vmax = v end
-    end
-    return (vmax - vmin) <= voltageThreshold
-end
-
-local function smartFuelCalc()
-
-    -- quick exit and cleanup
-    if not rfsuite.session.isConnected or not rfsuite.session.batteryConfig then 
-        resetVoltageTracking()
-        return nil 
-    end
-
-    local bc = rfsuite.session.batteryConfig
-
-    local configSig = table.concat({
-        bc.batteryCellCount,
-        bc.batteryCapacity,
-        bc.consumptionWarningPercentage,
-        bc.vbatmaxcellvoltage,
-        bc.vbatmincellvoltage,
-        bc.vbatfullcellvoltage
-    }, ":")
-
-    -- If config changed, reset voltage stabilization and fuel state
-    if configSig ~= batteryConfigCache then
-        batteryConfigCache = configSig
-        fuelStartingPercent = nil
-        fuelStartingConsumption = nil
-        resetVoltageTracking()
-        stabilizeNotBefore = rfsuite.clock + preStabiliseDelay -- start pre-stabilisation delay on config change
-    end
-
-    -- Read current voltage
-    local voltage = telemetry and telemetry.getSensor and telemetry.getSensor("voltage") or nil
-
-    -- Only track/accept valid voltages (e.g., battery plugged in)
-    if not voltage or voltage < 2 then
-        resetVoltageTracking()
-        stabilizeNotBefore = nil
-        return nil
-    end
-
-    local now = rfsuite.clock
-
-    -- Wait for pre-stabilisation delay after config/telemetry is available
-   if stabilizeNotBefore and now < stabilizeNotBefore then
-       -- still in pre-stabilization, but don’t toss our samples
-       return nil
-   end
-
-    -- ring buffer of last N voltage readings
-    table.insert(lastVoltages, voltage)
-    if #lastVoltages > maxVoltageSamples then
-        table.remove(lastVoltages, 1)
-    end
-
-    -- wait until we have N consistent readings within threshold
-    if not voltageStabilised then
-        if isVoltageStable() then
-            rfsuite.utils.log("Voltage stabilized at: " .. voltage,"info")
-            voltageStabilised = true
-        else
-            rfsuite.utils.log("Waiting for voltage to stabilize...","info")
-            return nil
-        end
-    end
-
-    -- After voltage is stable, proceed as normal
-    local cellCount, packCapacity, reserve, maxCellV, minCellV, fullCellV =
-        bc.batteryCellCount, bc.batteryCapacity, bc.consumptionWarningPercentage,
-        bc.vbatmaxcellvoltage, bc.vbatmincellvoltage, bc.vbatfullcellvoltage
-
-    if reserve > 80 or reserve < 0 then reserve = 20 end
-
-    if packCapacity < 10 or cellCount == 0 or maxCellV <= minCellV or fullCellV <= 0 then
-        fuelStartingPercent = nil
-        fuelStartingConsumption = nil
-        return nil
-    end
-
-    -- Clamp usableCapacity once for both steps
-    local usableCapacity = packCapacity * (1 - reserve / 100)
-    if usableCapacity < 10 then usableCapacity = packCapacity end
-
-    local consumption = telemetry and telemetry.getSensor and telemetry.getSensor("consumption") or nil
-
-    -- Step 1: Determine initial fuel % from voltage
-    if not fuelStartingPercent then
-        local perCell = (voltage and cellCount > 0) and (voltage / cellCount) or 0
-        if perCell >= fullCellV then
-            fuelStartingPercent = 100
-        elseif perCell <= minCellV then
-            fuelStartingPercent = 0
-        else
-            local usableRange = maxCellV - minCellV
-            local pct = ((perCell - minCellV) / usableRange) * 100
-            if reserve > 0 and pct <= reserve then
-                fuelStartingPercent = 0
-            else
-                fuelStartingPercent = math.floor(math.max(0, math.min(100, pct)))
-            end
-        end
-        local estimatedUsed = usableCapacity * (1 - fuelStartingPercent / 100)
-        fuelStartingConsumption = (consumption or 0) - estimatedUsed
-    end
-
-    -- Step 2: Use mAh consumption to track % drop after initial value
-    if consumption and fuelStartingConsumption and packCapacity > 0 then
-        local used = consumption - fuelStartingConsumption
-        local percentUsed = used / usableCapacity * 100
-        local remaining = math.max(0, fuelStartingPercent - percentUsed)
-        return math.floor(math.min(100, remaining) + 0.5)
-    else
-        -- If consumption isn't available, just show initial percent
-        return fuelStartingPercent
-    end
-end
 
 -- LRU for hot sources
 local HOT_SIZE  = 25
@@ -501,7 +356,7 @@ local sensorTable = {
             sim = {
                 { 
                     uid = 0x5007, unit = UNIT_PERCENT, dec = 0,
-                    value = smartFuelCalc,                    
+                    value = smartfuel.calculate,                    
                     min = 0, max = 100
                 },
             },
@@ -515,7 +370,7 @@ local sensorTable = {
         },
         source = function()
             return {
-                value = smartFuelCalc,                    
+                value = smartfuel.calculate,                    
             }
         end,
     },
