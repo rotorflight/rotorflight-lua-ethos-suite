@@ -45,9 +45,9 @@ function ui.progressDisplay(title, message)
                                         local app = rfsuite.app
                                         app.dialogs.progress:value(app.dialogs.progressCounter)
                                         if not app.triggers.closeProgressLoader then
-                                            app.dialogs.progressCounter = app.dialogs.progressCounter + 2
+                                            app.dialogs.progressCounter = app.dialogs.progressCounter + 5
                                         elseif rfsuite.tasks.msp.mspQueue:isProcessed() then
-                                            app.dialogs.progressCounter = app.dialogs.progressCounter + 10
+                                            app.dialogs.progressCounter = app.dialogs.progressCounter + 15
                                             if app.dialogs.progressCounter >= 100 then
                                                 app.dialogs.progress:close()
                                                 app.dialogs.progressDisplay = false
@@ -109,7 +109,7 @@ function ui.progressNolinkDisplay()
                                     msg = i18n("app.check_supported_version") .. " (" .. apiStr .. ")"
                                     end
                                     app.triggers.invalidConnectionSetup = invalid
-                                    local step = invalid and 2 or 5
+                                    local step = invalid and 5 or 10
                                     app.dialogs.nolinkValueCounter = app.dialogs.nolinkValueCounter + step
                                     rfsuite.app.dialogs.noLink:value(app.dialogs.nolinkValueCounter)
                                     rfsuite.app.dialogs.noLink:message(msg)
@@ -162,9 +162,9 @@ function ui.progressDisplaySave(message)
                                         local app = rfsuite.app
                                         app.dialogs.save:value(app.dialogs.saveProgressCounter)
                                         if not app.dialogs.saveProgressCounter then                  
-                                            app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 1
-                                        elseif rfsuite.tasks.msp.mspQueue:isProcessed() then
                                             app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 5
+                                        elseif rfsuite.tasks.msp.mspQueue:isProcessed() then
+                                            app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 15
                                             if app.dialogs.saveProgressCounter >= 100 then
                                                 app.dialogs.save:close()
                                                 app.dialogs.saveDisplay = false
