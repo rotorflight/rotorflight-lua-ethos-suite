@@ -97,44 +97,44 @@ local msp_sensors = {
                 sessionname = {"bblUsed"},
                 appId = 0x5FFD,
                 unit = UNIT_RAW,
-            },
-            BATTERY_CONFIG = {
-                interval_armed = -1,
-                interval_disarmed = 5,
-                interval_admin = 15,
-                fields = {
-                    batteryCapacity = {
-                        sessionname = { "batteryConfig", "batteryCapacity" },
-                    },
-                    batteryCellCount = {
-                        sessionname = { "batteryConfig", "batteryCellCount" },
-                    },
-                    vbatwarningcellvoltage = {
-                        sessionname = { "batteryConfig", "vbatwarningcellvoltage" },
-                        transform     = function(v) return v / 100 end,
-                    },
-                    vbatmincellvoltage = {
-                        sessionname = { "batteryConfig", "vbatmincellvoltage" },
-                        transform     = function(v) return v / 100 end,
-                    },
-                    vbatmaxcellvoltage = {
-                        sessionname = { "batteryConfig", "vbatmaxcellvoltage" },
-                        transform     = function(v) return v / 100 end,
-                    },
-                    vbatfullcellvoltage = {
-                        sessionname = { "batteryConfig", "vbatfullcellvoltage" },
-                        transform     = function(v) return v / 100 end,
-                    },
-                    lvcPercentage = {
-                        sessionname = { "batteryConfig", "lvcPercentage" },
-                    },
-                    consumptionWarningPercentage = {
-                        sessionname = { "batteryConfig", "consumptionWarningPercentage" },
-                    },
-                }        
-            }            
+            },         
         }
     },
+    BATTERY_CONFIG = {
+        interval_armed = -1,
+        interval_disarmed = 5,
+        interval_admin = 10,
+        fields = {
+            batteryCapacity = {
+                sessionname = { "batteryConfig", "batteryCapacity" },
+            },
+            batteryCellCount = {
+                sessionname = { "batteryConfig", "batteryCellCount" },
+            },
+            vbatwarningcellvoltage = {
+                sessionname = { "batteryConfig", "vbatwarningcellvoltage" },
+                transform     = function(v) return v / 100 end,
+            },
+            vbatmincellvoltage = {
+                sessionname = { "batteryConfig", "vbatmincellvoltage" },
+                transform     = function(v) return v / 100 end,
+            },
+            vbatmaxcellvoltage = {
+                sessionname = { "batteryConfig", "vbatmaxcellvoltage" },
+                transform     = function(v) return v / 100 end,
+            },
+            vbatfullcellvoltage = {
+                sessionname = { "batteryConfig", "vbatfullcellvoltage" },
+                transform     = function(v) return v / 100 end,
+            },
+            lvcPercentage = {
+                sessionname = { "batteryConfig", "lvcPercentage" },
+            },
+            consumptionWarningPercentage = {
+                sessionname = { "batteryConfig", "consumptionWarningPercentage" },
+            },
+        }        
+    }       
 }
 
 msp.sensors = msp_sensors
@@ -246,7 +246,7 @@ function msp.wakeup()
             meta.last_sent_value = meta.last_sent_value or nil
 
             -- Refresh the telemetry sensor every 5s with cached value
-            if meta.last_sent_value ~= nil and (now - meta.last_update_time) >= 5 then
+            if meta.appId and meta.last_sent_value ~= nil and (now - meta.last_update_time) >= 5 then
                 createOrUpdateSensor(meta.appId, meta, meta.last_sent_value)
                 meta.last_update_time = now
             end
@@ -255,7 +255,7 @@ function msp.wakeup()
         if interval > 0 and (now - api_meta.last_time) >= interval then
             api_meta.last_time = now
 
-            log("MSP API: " .. api_name .. " interval: " .. interval, "debug")
+            --log("MSP API: " .. api_name .. " interval: " .. interval, "info")
 
             local API = tasks.msp.api.load(api_name)
             API.setCompleteHandler(function(self, buf)
@@ -265,13 +265,22 @@ function msp.wakeup()
                         meta.last_sent_value = value
                         meta.last_update_time = now
 
+                        -- apply transformation if defined
+                        if meta.transform and type(meta.transform) == "function" then
+                            value = meta.transform(value)
+                        end
+
+                        -- update sensor
                         if meta.sensorname and meta.appId then
-                            if meta.transform and type(meta.transform) == "function" then
-                                value = meta.transform(value)
-                            end
                             updateSessionField(meta, value)
                             createOrUpdateSensor(meta.appId, meta, value)
                         end
+
+                        -- update session variable
+                        if meta.sessionname  then
+                            updateSessionField(meta, value)
+                        end
+
                     end
                 end
             end)
