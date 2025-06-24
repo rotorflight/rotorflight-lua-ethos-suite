@@ -266,6 +266,11 @@
         "translation": "Localization",
         "needs_translation": "true"
       },
+      "sensors": {
+        "english": "Sensors",
+        "translation": "Sensors",
+        "needs_translation": "true"
+      },
       "txt_development": {
         "english": "Development",
         "translation": "Development",

@@ -425,6 +425,7 @@ return {
         ["dashboard_theme_postflight"] = "Postflight Theme",
         ["audio"] = "Audio",
         ["localizations"] = "Localization",
+        ["sensors"] = "Sensors",
         ["txt_development"] = "Development",
         ["temperature_unit"] = "Temperature Unit",
         ["altitude_unit"] = "Altitude Unit",

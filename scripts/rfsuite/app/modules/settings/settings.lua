@@ -5,6 +5,7 @@ local S_PAGES = {
     {name = i18n("app.modules.settings.dashboard"), script = "dashboard.lua", image = "dashboard.png"},
     {name = i18n("app.modules.settings.localizations"), script = "localizations.lua", image = "localizations.png"},
     {name = i18n("app.modules.settings.audio"), script = "audio.lua", image = "audio.png"},
+    {name = i18n("app.modules.settings.sensors"), script = "sensors.lua", image = "sensors.png"},
     {name = i18n("app.modules.settings.txt_development"), script = "development.lua", image = "development.png"},
 }
 
