@@ -119,6 +119,8 @@ function tasks.telemetryCheckScheduler()
         rfsuite.session.toolbox = nil
         rfsuite.session.modelPreferences = nil
         rfsuite.session.modelPreferencesFile = nil
+        rfsuite.session.bblSize = nil
+        rfsuite.session.bblUsed = nil        
         rfsuite.session.rx = { map = {}, values = {} }
         rfsuite.session.isConnected = false
 
