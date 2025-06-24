@@ -100,7 +100,6 @@ local function write(suppliedPayload)
             local completeHandler = handlers.getCompleteHandler()
             if completeHandler then completeHandler(self, buf) end
             mspWriteComplete = true
-            rfsuite.session.batteryConfigNeedsRefresh = true
         end,
         errorHandler = function(self, buf)
             local errorHandler = handlers.getErrorHandler()

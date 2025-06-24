@@ -29,16 +29,6 @@ local sensors   = setmetatable({}, { __mode = "v" })
 -- debug counters
 local cache_hits, cache_misses = 0, 0
 
--- Define battery config defaults
-local batteryConfigDefaults = {
-    batteryCellCount = 0,
-    batteryCapacity = 0,
-    consumptionWarningPercentage = 35,
-    vbatmaxcellvoltage = 4.2,
-    vbatmincellvoltage = 3.3,
-    vbatfullcellvoltage = 4.1
-}
-
 -- Persistent vars for the smart fuel logic
 local batteryConfigCache = nil
 local fuelStartingPercent = nil
@@ -46,10 +36,10 @@ local fuelStartingConsumption = nil
 
 -- Voltage stabilisation state
 local lastVoltages = {}
+local maxVoltageSamples = 5    -- keep the last N readings for stability 
 local voltageStableTime = nil
 local voltageStabilised = false
 local stabilizeNotBefore = nil
-local voltageWindow = 1.5      -- seconds required for stable voltage
 local voltageThreshold = 0.15  -- max allowed variation in window
 local preStabiliseDelay = 1.5 -- minimum seconds to wait after config/telemetry
 
@@ -59,30 +49,28 @@ local function resetVoltageTracking()
     voltageStabilised = false
 end
 
-local function getBatteryConfig()
-    local bc_raw = rfsuite and rfsuite.session and rfsuite.session.batteryConfig or {}
-    local bc = {}
-    for k, v in pairs(batteryConfigDefaults) do
-        bc[k] = bc_raw[k] or v
+local function isVoltageStable()
+    if #lastVoltages < maxVoltageSamples then
+        return false
     end
-    return bc
-end
-
-local function isVoltageStable(now)
-    while #lastVoltages > 0 and (now - lastVoltages[1].t) > voltageWindow do
-        table.remove(lastVoltages, 1)
-    end
-    if #lastVoltages < 2 then return false end
-    local vmin, vmax = lastVoltages[1].v, lastVoltages[1].v
-    for _, entry in ipairs(lastVoltages) do
-        if entry.v < vmin then vmin = entry.v end
-        if entry.v > vmax then vmax = entry.v end
+    local vmin, vmax = lastVoltages[1], lastVoltages[1]
+    for _, v in ipairs(lastVoltages) do
+        if v < vmin then vmin = v end
+        if v > vmax then vmax = v end
     end
     return (vmax - vmin) <= voltageThreshold
 end
 
 local function smartFuelCalc()
-    local bc = getBatteryConfig()
+
+    -- quick exit and cleanup
+    if not rfsuite.session.isConnected or not rfsuite.session.batteryConfig then 
+        resetVoltageTracking()
+        return nil 
+    end
+
+    local bc = rfsuite.session.batteryConfig
+
     local configSig = table.concat({
         bc.batteryCellCount,
         bc.batteryCapacity,
@@ -114,27 +102,25 @@ local function smartFuelCalc()
     local now = rfsuite.clock
 
     -- Wait for pre-stabilisation delay after config/telemetry is available
-    if stabilizeNotBefore and now < stabilizeNotBefore then
-        resetVoltageTracking()
-        return nil
+   if stabilizeNotBefore and now < stabilizeNotBefore then
+       -- still in pre-stabilization, but don’t toss our samples
+       return nil
+   end
+
+    -- ring buffer of last N voltage readings
+    table.insert(lastVoltages, voltage)
+    if #lastVoltages > maxVoltageSamples then
+        table.remove(lastVoltages, 1)
     end
 
-    table.insert(lastVoltages, {v = voltage, t = now})
-
-    -- Wait for voltage to stabilize before doing any calculation
+    -- wait until we have N consistent readings within threshold
     if not voltageStabilised then
-        if isVoltageStable(now) then
-            if not voltageStableTime then
-                voltageStableTime = now
-            end
-            if now - voltageStableTime >= voltageWindow then
-                voltageStabilised = true
-            end
+        if isVoltageStable() then
+            rfsuite.utils.log("Voltage stabilized at: " .. voltage,"info")
+            voltageStabilised = true
         else
-            voltageStableTime = nil
-        end
-        if not voltageStabilised then
-            return nil -- Wait for stabilization after config change or initial power-up
+            rfsuite.utils.log("Waiting for voltage to stabilize...","info")
+            return nil
         end
     end
 
