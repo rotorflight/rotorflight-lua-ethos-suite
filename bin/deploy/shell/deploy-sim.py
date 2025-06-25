@@ -41,10 +41,11 @@ def main():
 
         if args.ext == '.lua':
             print(f'Removing all .lua files from {target}...')
-            for root, dirs, files in os.walk(target):
-                for file in files:
-                    if file.lower().endswith('.lua'):
-                        os.remove(os.path.join(root, file))
+            if os.path.isdir(target):
+                for root, dirs, files in os.walk(target):
+                    for file in files:
+                        if file.lower().endswith('.lua'):
+                            os.remove(os.path.join(root, file))
 
             print(f'Syncing only .lua files to {target}...')
             src = os.path.join(srcfolder, 'scripts', tgt_dir)
@@ -60,9 +61,6 @@ def main():
             print(f'Removing entire target folder: {target}...')
             if os.path.exists(target):
                 shutil.rmtree(target, onerror=on_rm_error)
-
-            print(f'Recreating target folder: {target}...')
-            os.makedirs(target, exist_ok=True)
 
             print(f'Copying all files to {target}...')
             src = os.path.join(srcfolder, 'scripts', tgt_dir)
