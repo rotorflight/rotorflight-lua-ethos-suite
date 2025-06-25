@@ -186,7 +186,7 @@ Configure the following system variables:
 ```bash
 FRSKY_SIM_BIN = C:\Program Files (x86)\FrSky\Ethos\X18S\simulator.exe
 FRSKY_SIM_SRC = C:\Program Files (x86)\FrSky\Ethos\X18S\scripts
-FRSKY_REMOTE_SRC = F:\scripts
+FRSKY_ETHOS_SUITE_BIN = C:\Program Files\Ethos Suite\Ethos Suite.exe
 ```
 
 You may use a comma-separated list in `FRSKY_SIM_SRC` to deploy to multiple simulators simultaneously.
