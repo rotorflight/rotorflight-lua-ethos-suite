@@ -122,10 +122,24 @@ function render.wakeup(box)
         displayValue = string.format("%." .. decimals .. "f/%." .. decimals .. "f %s",
             transformedUsed, transformedTotal, rfsuite.i18n.get("app.modules.status.megabyte"))
     else
-        displayValue = getParam(box, "novalue") or "-"
+        -- Show loading dots while no telemetry data is present
+        if totalSize == nil and usedSize == nil then
+            local maxDots = 3
+            if box._dotCount == nil then box._dotCount = 0 end
+            box._dotCount = (box._dotCount + 1) % (maxDots + 1)
+            displayValue = string.rep(".", box._dotCount)
+            if displayValue == "" then displayValue = "." end
+        else
+            displayValue = getParam(box, "novalue") or "-"
+        end
         percentUsed = nil
     end
 
+    -- Suppress unit if we're displaying loading dots
+    if type(displayValue) == "string" and displayValue:match("^%.+$") then
+        unit = nil
+    end
+    
     -- Set box.value so dashboard/dirty can track change for redraws
     box._currentDisplayValue = displayValue
     

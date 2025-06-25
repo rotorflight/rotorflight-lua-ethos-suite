@@ -272,7 +272,6 @@ function msp.wakeup()
 
                         -- update sensor
                         if meta.sensorname and meta.appId then
-                            updateSessionField(meta, value)
                             createOrUpdateSensor(meta.appId, meta, value)
                         end
 

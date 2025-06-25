@@ -1147,6 +1147,7 @@ return {
       ["current"] = "Corrente",
       ["throttle_pct"] = "Acceleratore %",
       ["consumption"] = "Consumo",
+      ["smartfuel"] = "Smart Fuel",
       ["pid_profile"] = "Profilo PID",
       ["mcu_temp"] = "Temperatura MCU",
       ["armdisableflags"] = "Disattivazione Armo"

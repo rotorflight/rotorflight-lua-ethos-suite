@@ -102,7 +102,7 @@ local boxes = {
     { col = 2, row = 4, type="text", subtype = "session", source = "isArmed", title = "IS ARMED", titlepos = "bottom" },
 
     -- Column 3
-    { col = 3, row = 1, type="text", subtype = "telemetry", source = "fuel", title = "FUEL", titlepos = "bottom", transform = "floor" },
+    { col = 3, row = 1, type="text", subtype = "telemetry", source = "smartfuel", title = "FUEL", titlepos = "bottom", transform = "floor" },
     { col = 3, row = 2, type = "func", paint = customPaintFunction, wakeup = customWakeupFunction, title = "FUNCTION", titlepos = "bottom" },
     { col = 3, row = 3, type="text", subtype = "blackbox", title = "BLACKBOX", titlepos = "bottom", transform = "ceil", decimals = 0,
         thresholds = { 
