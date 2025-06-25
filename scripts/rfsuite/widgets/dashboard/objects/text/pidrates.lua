@@ -92,17 +92,29 @@ function render.wakeup(box, telemetry)
     end
 
     -- Transform and fallback display
+    local fallbackText = getParam(box, "novalue") or "-"
     local displayValue
-    if value ~= nil then
-        displayValue = utils.transformValue(value, box)
+
+    if value == nil then
+        -- Show animated dots if no value (telemetry/data not ready)
+        local maxDots = 3
+        if box._dotCount == nil then box._dotCount = 0 end
+        box._dotCount = (box._dotCount + 1) % (maxDots + 1)
+        displayValue = string.rep(".", box._dotCount)
+        if displayValue == "" then displayValue = "." end
     else
-        displayValue = getParam(box, "novalue") or "-"
+        displayValue = utils.transformValue(value, box)
     end
 
     local index = tonumber(displayValue)
     if index == nil or index < 1 or index > 6 then
         index = nil
+        -- Only use fallback if the value is NOT loading dots
+        if value ~= nil then
+            displayValue = fallbackText
+        end
     end
+
 
     -- Text color and fontlist caching
     local textcolor = utils.resolveThresholdColor(value, box, "textcolor", "textcolor")

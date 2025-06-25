@@ -57,17 +57,32 @@ function render.wakeup(box)
 
     -- Set displayValue, Fallback if no value
     local unit = getParam(box, "unit") or ""
+    local fallbackText = getParam(box, "novalue") or "-"
     local displayValue
-    if value ~= nil then
+
+    if value == nil then
+        -- Animated loading dots if not yet available
+        local maxDots = 3
+        if box._dotCount == nil then box._dotCount = 0 end
+        box._dotCount = (box._dotCount + 1) % (maxDots + 1)
+        displayValue = string.rep(".", box._dotCount)
+        if displayValue == "" then displayValue = "." end
+        unit = nil
+    elseif tostring(value) == "" then
+        displayValue = fallbackText
+        unit = nil
+    else
         displayValue = tostring(value)
         if unit ~= "" then
             displayValue = displayValue .. unit
         end
-    else
-        displayValue = getParam(box, "novalue") or "-"
-        unit = nil
     end
 
+    -- Suppress unit if we're displaying loading dots
+    if type(displayValue) == "string" and displayValue:match("^%.+$") then
+        unit = nil
+    end
+    
     -- Set box.value so dashboard/dirty can track change for redraws
     box._currentDisplayValue = displayValue
     
@@ -96,6 +111,7 @@ function render.wakeup(box)
         bgcolor            = resolveThemeColor("bgcolor", getParam(box, "bgcolor")),
     }
 end
+
 
 function render.paint(x, y, w, h, box)
     x, y = utils.applyOffset(x, y, box)

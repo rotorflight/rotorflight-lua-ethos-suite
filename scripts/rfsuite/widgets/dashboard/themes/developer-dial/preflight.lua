@@ -103,14 +103,14 @@ local boxes = {
         showvalue = false,
         transform = "floor",
         titlepos = "bottom",
-        source = "fuel",
+        source = "smartfuel",
     },
 
     -- FUEL GAUGE
     {
         col = 1, row = 3,
         type = "gauge",
-        source = "fuel",
+        source = "smartfuel",
         batteryframe = true,
         title = "FUEL",
         titlepos = "bottom",
@@ -220,7 +220,7 @@ local boxes = {
         col = 3, row = 2, rowspan = 2,
         type = "gauge",
         subtype = "ring",
-        source = "fuel",
+        source = "smartfuel",
         title = "FUEL",
         font = "FONT_XL",
         thickness = 25,

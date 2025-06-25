@@ -59,7 +59,7 @@ local boxes = {
     -- Battery Bar
     {col = 2, row = 1, colspan = 3, rowspan = 2,
     type = "gauge",
-    source = "fuel",
+    source = "smartfuel",
     battadv = true,
     fillcolor = "green",
     valuealign = "left",

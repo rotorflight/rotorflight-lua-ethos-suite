@@ -30,6 +30,7 @@ local delayStartTime = nil
 local delayPending = false
 
 local msp = assert(rfsuite.compiler.loadfile("tasks/sensors/msp.lua"))(config)
+local smart = assert(rfsuite.compiler.loadfile("tasks/sensors/smart.lua"))(config)
 local log = rfsuite.utils.log
 local tasks = rfsuite.tasks
 
@@ -107,6 +108,11 @@ function sensors.wakeup()
         if msp and msp.wakeup then
             msp.wakeup()
         end
+
+        -- run smart sensors
+        if smart and smart.wakeup then
+            smart.wakeup()
+        end        
 
     end
 
