@@ -34,6 +34,7 @@ local minWatts = math.huge
 local maxWatts = -math.huge
 local sumWatts = 0
 local countWatts = 0
+local avgWatts = 0
 
 function render.wakeup(box, telemetry)
 
@@ -48,14 +49,14 @@ function render.wakeup(box, telemetry)
         box._dotCount = (box._dotCount + 1) % (maxDots + 1)
         loadingDots = string.rep(".", box._dotCount)
         if loadingDots == "" then loadingDots = "." end
+    else
+        minWatts = v.min * i.min
+        maxWatts = v.max * i.max
+        avgWatts = v.avg * i.avg
+        sumWatts = v.sum * i.sum
+        countWatts = v.count * i.count     
     end
-
-    minWatts = v.min * i.min
-    maxWatts = v.max * i.max
-    avgWatts = v.avg * i.avg
-    sumWatts = v.sum * i.sum
-    countWatts = v.count * i.count
-
+    
     -- Resolve display value
     local source = getParam(box, "source") or "current"
     local displayValue

@@ -54,7 +54,7 @@ function stats.wakeup()
         return
     end
 
-    if rfsuite.session.flightMode ~= "inflight" then return end
+    if rfsuite.flightmode.current ~= "inflight" then return end
 
     local now = rfsuite.clock
     if now - lastTrackTime < 0.25 then return end

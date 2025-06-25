@@ -102,7 +102,7 @@ dashboard.themeFallbackUsed = { preflight = false, inflight = false, postflight 
 dashboard.themeFallbackTime = { preflight = 0,     inflight = 0,        postflight = 0 }
 
 -- Current flightmode driving which state module to use (preflight/inflight/postflight)
-dashboard.flightmode = rfsuite.session.flightMode or "preflight"
+dashboard.flightmode = rfsuite.flightmode.current or "preflight"
 
 -- Path to the current widget/theme in use (set during theme loading)
 dashboard.currentWidgetPath = nil
@@ -1012,7 +1012,7 @@ function dashboard.wakeup(widget)
         lastWakeupBg = now
     end
 
-    local currentFlightMode = rfsuite.session.flightMode or "preflight"
+    local currentFlightMode = rfsuite.flightmode.current or "preflight"
     if lastFlightMode ~= currentFlightMode then
         dashboard.flightmode = currentFlightMode
         reload_state_only(currentFlightMode)
@@ -1197,7 +1197,7 @@ function dashboard.resetFlightModeAsk()
 
             -- we push this to the background task to do its job
             dashboard.flightmode = "preflight"
-            rfsuite.session.flightMode = "preflight"
+            rfsuite.flightmode.current = "preflight"
             tasks.events.flightmode.reset()
             dashboard._forceFullRepaint = true
             lcd.invalidate()

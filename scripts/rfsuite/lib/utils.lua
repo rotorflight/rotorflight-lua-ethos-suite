@@ -25,6 +25,80 @@ local i18n = rfsuite.i18n.get
 local arg = {...}
 local config = arg[1]
 
+
+-- sets up the initial session var state.
+-- function is called on startup of the script  and
+-- whenever the tasks.lua detects the heli has been disconnected
+function utils.session()
+    rfsuite.session.tailMode = nil
+    rfsuite.session.swashMode = nil
+    rfsuite.session.activeProfile = nil
+    rfsuite.session.activeRateProfile = nil
+    rfsuite.session.activeProfileLast = nil
+    rfsuite.session.activeRateLast = nil
+    rfsuite.session.servoCount = nil
+    rfsuite.session.servoOverride = nil
+    rfsuite.session.clockSet = nil
+    rfsuite.session.apiVersion = nil
+    rfsuite.session.activeProfile = nil
+    rfsuite.session.activeRateProfile = nil
+    rfsuite.session.activeProfileLast = nil
+    rfsuite.session.activeRateLast = nil
+    rfsuite.session.servoCount = nil
+    rfsuite.session.servoOverride = nil
+    rfsuite.session.clockSet = nil
+    rfsuite.session.lastLabel = nil
+    rfsuite.session.tailMode = nil
+    rfsuite.session.swashMode = nil
+    rfsuite.session.formLineCnt = nil
+    rfsuite.session.rateProfile = nil
+    rfsuite.session.governorMode = nil
+    rfsuite.session.servoOverride = nil
+    rfsuite.session.ethosRunningVersion = nil
+    rfsuite.session.lcdWidth = nil
+    rfsuite.session.lcdHeight = nil
+    rfsuite.session.mspSignature = nil
+    rfsuite.session.telemetryState = nil
+    rfsuite.session.telemetryType = nil
+    rfsuite.session.telemetryTypeChanged = nil
+    rfsuite.session.telemetrySensor = nil
+    rfsuite.session.repairSensors = false
+    rfsuite.session.locale = system.getLocale()
+    rfsuite.session.lastMemoryUsage = nil
+    rfsuite.session.mcu_id = nil
+    rfsuite.session.isConnected = false
+    rfsuite.session.isArmed = false
+    rfsuite.session.bblSize = nil
+    rfsuite.session.bblUsed = nil
+    rfsuite.session.batteryConfig = nil
+    -- keep rfsuite.session.batteryConfig nil as it is used to determine if the battery config has been loaded
+    -- rfsuite.session.batteryConfig  will end up containing the following:
+        -- batteryCapacity = nil
+        -- batteryCellCount = nil
+        -- vbatwarningcellvoltage = nil
+        -- vbatmincellvoltage = nil
+        -- vbatmaxcellvoltage = nil
+        -- vbatfullcellvoltage = nil
+        -- lvcPercentage = nil
+        -- consumptionWarningPercentage = nil
+    rfsuite.session.modelPreferences = nil -- this is used to store the model preferences
+    rfsuite.session.modelPreferencesFile = nil -- this is used to store the model preferences file path
+    rfsuite.session.dashboardEditingTheme = nil -- this is used to store the dashboard theme being edited in settings
+    rfsuite.session.timer = {}
+    rfsuite.session.timer.start = nil -- this is used to store the start time of the timer
+    rfsuite.session.timer.live = nil -- this is used to store the live timer value while inflight
+    rfsuite.session.timer.lifetime = nil -- this is used to store the total flight time of a model and store it in the user ini file
+    rfsuite.session.timer.session = 0 -- this is used to track flight time for the session
+    rfsuite.session.flightCounted = false
+    rfsuite.session.onConnect = {} -- this is used to store the onConnect tasks that need to be run
+    rfsuite.session.onConnect.high = false
+    rfsuite.session.onConnect.low = false
+    rfsuite.session.onConnect.medium = false
+    rfsuite.session.rx = {}
+    rfsuite.session.rx.map = {}
+    rfsuite.session.rx.values = {} -- this is used to store the rx values for the rxmap task
+end
+
 --- Checks if the RX map is ready by verifying the presence of required channel mappings.
 -- The function returns true if the `rfsuite.session.rxmap` table exists and at least one of the following fields is present:
 -- `collective`, `elevator`, `throttle`, or `rudder`.
@@ -40,7 +114,7 @@ end
 --- Checks if the current flight mode is "inflight".
 -- @return boolean Returns true if the flight mode is "inflight", false otherwise.
 function utils.inFlight()
-    if rfsuite.session.flightMode == "inflight" then
+    if rfsuite.flightmode.current == "inflight" then
         return true
     end
     return false
