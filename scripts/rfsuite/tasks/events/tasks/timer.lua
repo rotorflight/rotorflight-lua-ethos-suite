@@ -116,7 +116,7 @@ function timer.wakeup()
     local now = os.time()
     local timerSession = rfsuite.session.timer
     local prefs = rfsuite.session.modelPreferences
-    local flightMode = rfsuite.session.flightMode
+    local flightMode = rfsuite.flightmode.current
 
     lastFlightMode = flightMode
 

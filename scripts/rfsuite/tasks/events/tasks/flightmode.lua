@@ -85,7 +85,7 @@ end
 -- It also manages the `hasBeenInFlight` flag to track if the system has ever been in flight.
 -- @return string The determined flight mode: "preflight", "inflight", or "postflight".
 local function determineMode()
-    if rfsuite.session.flightMode == "inflight" and not rfsuite.session.isConnected then
+    if rfsuite.flightmode.current == "inflight" and not rfsuite.session.isConnected then
         hasBeenInFlight = false
         return "postflight"
     end
@@ -106,7 +106,7 @@ function flightmode.wakeup()
 
     if lastFlightMode ~= mode then
         rfsuite.utils.log("Flight mode: " .. mode, "info")
-        rfsuite.session.flightMode = mode
+        rfsuite.flightmode.current = mode
         lastFlightMode = mode
     end
 end

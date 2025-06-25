@@ -107,29 +107,6 @@ end
 function tasks.telemetryCheckScheduler()
     local now = rfsuite.clock
 
-    local function setOffline()
-
-        rfsuite.session.telemetryState = false
-        rfsuite.session.telemetryType = nil
-        rfsuite.session.telemetryTypeChanged = false
-        rfsuite.session.telemetrySensor = nil
-        rfsuite.session.apiVersion = nil
-        rfsuite.session.timer = {}
-        rfsuite.session.onConnect = { high = false, medium = false, low = false }
-        rfsuite.session.toolbox = nil
-        rfsuite.session.modelPreferences = nil
-        rfsuite.session.modelPreferencesFile = nil
-        rfsuite.session.bblSize = nil
-        rfsuite.session.bblUsed = nil        
-        rfsuite.session.rx = { map = {}, values = {} }
-        rfsuite.session.isConnected = false
-
-        lastTelemetrySensorName, sportSensor, elrsSensor = nil, nil, nil
-        telemetryCheckScheduler = now
-        rfsuite.tasks.msp.reset()
-
-    end
-
     if now - (telemetryCheckScheduler or 0) >= 0.5 then
         local telemetryState = tlm and tlm:state() or false
         if rfsuite.simevent.telemetry_state == false and system.getVersion().simulation then
@@ -137,14 +114,14 @@ function tasks.telemetryCheckScheduler()
         end
 
         if not telemetryState then
-            setOffline()
+            utils.session()
         else
             sportSensor = system.getSource({ appId = 0xF101 })
             elrsSensor = system.getSource({ crsfId = 0x14, subIdStart = 0, subIdEnd = 1 })
             currentTelemetrySensor = sportSensor or elrsSensor
 
             if not currentTelemetrySensor then
-                setOffline()
+                utils.session()
             else
                 rfsuite.session.telemetryState = true
                 rfsuite.session.telemetrySensor = currentTelemetrySensor
