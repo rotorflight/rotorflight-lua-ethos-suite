@@ -134,7 +134,17 @@ local msp_sensors = {
                 sessionname = { "batteryConfig", "consumptionWarningPercentage" },
             },
         }        
-    }       
+    },
+    PILOT_CONFIG = {
+        interval_armed = -1,
+        interval_disarmed = 5,
+        interval_admin = 10,
+        fields = {
+            model_flight_time = {
+                sessionname = {"modelFlightTime" },
+            },
+        }        
+    }             
 }
 
 msp.sensors = msp_sensors
