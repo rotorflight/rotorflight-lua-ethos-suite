@@ -163,8 +163,9 @@ function tasks.wakeup()
     local now = rfsuite.clock
 
     local function canRunTask(task)
+        local overdue = rfsuite.clock - task.last_run >= (task.interval * 2)
         return (not task.linkrequired or rfsuite.session.telemetryState) and
-            (task.name == "msp" or not rfsuite.app.triggers.mspBusy) and
+            (task.name == "msp" or overdue or not rfsuite.app.triggers.mspBusy) and
             (not task.simulatoronly or usingSimulator)
     end
 
