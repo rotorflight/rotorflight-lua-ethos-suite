@@ -58,17 +58,6 @@ local delayDuration = 2  -- seconds
 local delayStartTime = nil
 local delayPending = false
 
-function msp.resetState()
-    rfsuite.session.servoOverride = nil
-    rfsuite.session.servoCount = nil
-    rfsuite.session.tailMode = nil
-    rfsuite.session.apiVersion = nil
-    rfsuite.session.clockSet = nil
-    rfsuite.session.clockSetAlart = nil
-    rfsuite.session.craftName = nil
-    rfsuite.session.modelID = nil
-end
-
 function msp.wakeup()
 
     if rfsuite.session.telemetrySensor == nil then return end
@@ -118,12 +107,12 @@ function msp.wakeup()
         msp.protocol.mspWrite = transport.mspWrite
         msp.protocol.mspPoll = transport.mspPoll
 
-        msp.resetState()
+        rfsuite.utils.session()
         msp.onConnectChecksInit = true
     end
 
     if rfsuite.session.telemetrySensor ~= nil and rfsuite.session.telemetryState == false then
-        msp.resetState()
+        rfsuite.utils.session()
         msp.onConnectChecksInit = true
     end
 
@@ -156,7 +145,7 @@ function msp.reset()
     msp.sensor = nil
     msp.activeProtocol = nil
     msp.onConnectChecksInit = true
-    msp.resetState()
+    rfsuite.utils.session()
 end
 
 return msp
