@@ -1800,6 +1800,11 @@
         "english": "Consumption Warning %",
         "translation": "Consumption Warning %",
         "needs_translation": "false"
+      },
+      "timer": {
+        "english": "Flight Time Alarm",
+        "translation": "Flight Time Alarm",
+        "needs_translation": "false"
       }
     },
     "profile_mainrotor": {
