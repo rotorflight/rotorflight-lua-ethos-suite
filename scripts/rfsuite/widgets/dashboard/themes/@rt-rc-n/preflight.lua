@@ -211,7 +211,6 @@ local boxes = {
     titlecolor = colorMode.titlecolor,
     textcolor = colorMode.titlecolor,
     bgcolor = colorMode.bgcolor,
-    wakeupinterval = 0.001,
     thresholds = {
         { value = 30,  fillcolor = "red",    textcolor = colorMode.textcolor },
         { value = 50,  fillcolor = "orange", textcolor = colorMode.textcolor },
@@ -235,7 +234,6 @@ local boxes = {
     titlecolor = colorMode.titlecolor,
     textcolor = colorMode.titlecolor,
     bgcolor = colorMode.bgcolor,
-    wakeupinterval = 0.001,
     min = 6.4,
     max = 8.4,
     thresholds = {
@@ -264,11 +262,8 @@ return {
   wakeup    = wakeup,
   layout    = layout,
   boxes     = boxes,
-  scheduler = {
-    wakeup_interval    = 0.025,
-    wakeup_interval_bg = 5,
-    paint_interval     = 0.025,
-    spread_scheduling = true,      -- (optional: spread scheduling over the interval to avoid spikes in CPU usage)  
-    spread_ratio = 1               -- optional: manually override default ratio logic (applies if spread_scheduling is true)
-  }
+    scheduler = {
+        spread_scheduling = true,      -- (optional: spread scheduling over the interval to avoid spikes in CPU usage)  
+        spread_ratio = 0.8              -- optional: manually override default ratio logic (applies if spread_scheduling is true)
+    }    
 }

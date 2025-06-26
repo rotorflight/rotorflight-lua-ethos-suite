@@ -224,10 +224,7 @@ return {
     layout = layout,
     boxes = boxes,
     scheduler = {
-        wakeup_interval = 0.025,          -- Interval (seconds) to run wakeup script when display is visible
-        wakeup_interval_bg = 5,         -- (optional: run wakeup this often when not visible; set nil/empty to skip)
-        paint_interval = 0.025,           -- Interval (seconds) to run paint script when display is visible 
         spread_scheduling = true,      -- (optional: spread scheduling over the interval to avoid spikes in CPU usage)  
         spread_ratio = 0.8              -- optional: manually override default ratio logic (applies if spread_scheduling is true)
-    }    
+    }     
 }

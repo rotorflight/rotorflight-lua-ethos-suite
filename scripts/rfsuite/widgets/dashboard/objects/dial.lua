@@ -18,13 +18,21 @@ function wrapper.wakeup(box, telemetry)
     end
 
     -- Wakeup interval control using optional parameter (wakeupinterval)
-    local now = rfsuite.clock
-    box._wakeupInterval = box._wakeupInterval or (box.wakeupinterval or 0.025)
-    box._lastWakeup = box._lastWakeup or 0
+    if box.wakeupinterval ~= nil then
+        local now      = rfsuite.clock
 
-    if now - box._lastWakeup < box._wakeupInterval then
-        return -- Throttle wakeup
-    end  
+        -- initialize on first use
+        box._wakeupInterval = box._wakeupInterval or interval
+        box._lastWakeup     = box._lastWakeup     or 0
+
+        -- if not enough time has passed, bail out
+        if now - box._lastWakeup < box._wakeupInterval then
+            return
+        end
+
+        -- record this wakeup
+        box._lastWakeup = now
+    end
 
     local subtype = box.subtype or "image"
 
