@@ -136,6 +136,19 @@ local function smartFuelCalc()
         end
     end
 
+    -- Detect voltage increase after stabilization if not yet flying
+    if #lastVoltages >= 1 and rfsuite.flightmode.current == "preflight" then
+        local prev = lastVoltages[#lastVoltages - 1]
+        if voltage > prev + voltageThreshold then
+            rfsuite.utils.log("Voltage increased after stabilization – resetting...", "info")
+            fuelStartingPercent = nil
+            fuelStartingConsumption = nil
+            resetVoltageTracking()
+            stabilizeNotBefore = rfsuite.clock + preStabiliseDelay
+            return nil  -- Ensure upstream caller knows we are resetting
+        end
+    end    
+
     -- After voltage is stable, proceed as normal
     local cellCount, packCapacity, reserve, maxCellV, minCellV, fullCellV =
         bc.batteryCellCount, bc.batteryCapacity, bc.consumptionWarningPercentage,
@@ -182,7 +195,11 @@ local function smartFuelCalc()
         local remaining = math.max(0, fuelStartingPercent - percentUsed)
         return math.floor(math.min(100, remaining) + 0.5)
     else
-        -- If consumption isn't available, just show initial percent
+        -- If we're resetting or recalculating, don't return a stale value
+        if not voltageStabilised or (stabilizeNotBefore and rfsuite.clock < stabilizeNotBefore) then
+            print("Voltage not stabilised or pre-stabilisation delay active, returning nil")
+            return nil
+        end
         return fuelStartingPercent
     end
 end
