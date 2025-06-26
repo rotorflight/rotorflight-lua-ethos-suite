@@ -446,14 +446,22 @@ function utils.box(
     region_vw = w - valuepaddingleft - valuepaddingright
 
     -- Draw image if specified (fallback to displayValue)
-    if image and rfsuite.utils.loadImage then
-        imageCache = imageCache or {}
-        local cacheKey = image or "default_image"
-        local bitmapPtr = imageCache[cacheKey]
-        if not bitmapPtr then
-            bitmapPtr = rfsuite.utils.loadImage(image, nil, "widgets/dashboard/gfx/logo.png")
-            imageCache[cacheKey] = bitmapPtr
+    if image then
+        local bitmapPtr = nil
+        -- If image is a string (path), load it and cache it
+        if type(image) == "string" and rfsuite and rfsuite.utils and rfsuite.utils.loadImage then
+            imageCache = imageCache or {}
+            local cacheKey = image or "default_image"
+            bitmapPtr = imageCache[cacheKey]
+            if not bitmapPtr then
+                bitmapPtr = rfsuite.utils.loadImage(image, nil, "widgets/dashboard/gfx/logo.png")
+                imageCache[cacheKey] = bitmapPtr
+            end
+        elseif type(image) == "userdata" then
+            -- Already a Bitmap object
+            bitmapPtr = image
         end
+
         if bitmapPtr then
 
             local default_img_w = region_vw
