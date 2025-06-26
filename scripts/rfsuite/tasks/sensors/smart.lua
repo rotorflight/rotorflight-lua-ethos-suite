@@ -91,7 +91,7 @@ local function createOrUpdateSensor(appId, fieldMeta, value)
         if existingSensor then
             sensorCache[appId] = existingSensor
         else
-            local sensor = model.createSensor()
+            local sensor = model.createSensor({type=SENSOR_TYPE_DIY})
             sensor:name(fieldMeta.name)
             sensor:appId(appId)
             sensor:physId(0)
@@ -108,8 +108,10 @@ local function createOrUpdateSensor(appId, fieldMeta, value)
         end
     end
 
-    if sensorCache[appId] then
+    if value then
         sensorCache[appId]:value(value)
+    else
+        sensorCache[appId]:reset()    
     end
 end
 
