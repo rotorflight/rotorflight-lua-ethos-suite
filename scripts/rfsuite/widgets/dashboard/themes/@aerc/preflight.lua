@@ -150,8 +150,12 @@ local boxes = {
      decimals = 0, 
      bgcolor = colorMode.bgcolor,
      titlecolor = colorMode.titlecolor,
-     textcolor = colorMode.textcolor,
-     transform = "floor"
+     transform = "floor",
+        thresholds = {
+            { value = 80, textcolor = colorMode.textcolor },
+            { value = 90, textcolor = "orange" },
+            { value = 100, textcolor = "red" }
+        }
     },
 
     -- ESC Temp
