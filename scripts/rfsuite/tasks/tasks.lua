@@ -60,7 +60,7 @@ function tasks.findTasks()
     local taskPath, taskMetadata = "tasks/", {}
 
     for _, dir in pairs(system.listFiles(taskPath)) do
-        if not dir:match("%.%a+$") then
+        if dir ~= "." and dir ~= ".." and not dir:match("%.%a+$") then
             local initPath = taskPath .. dir .. "/init.lua"
             local func, err = compiler(initPath)
             if err then
