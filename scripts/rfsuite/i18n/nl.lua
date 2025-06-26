@@ -763,7 +763,8 @@ return {
         ["battery_capacity"] = "Batterij Capaciteit",
         ["warn_cell_voltage"] = "Waarschuwing Cel Spanning",
         ["cell_count"] = "Aantal cellen",
-        ["consumption_warning_percentage"] = "Verbruik Waarschuwing %"
+        ["consumption_warning_percentage"] = "Verbruik Waarschuwing %",
+        ["timer"] = "Flight Time"
       },
       ["profile_mainrotor"] = {
         ["gain"] = "Gain",

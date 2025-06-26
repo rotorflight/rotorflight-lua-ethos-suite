@@ -27,9 +27,12 @@ function modelid.wakeup()
         local API = rfsuite.tasks.msp.api.load("PILOT_CONFIG")
         API.setCompleteHandler(function(self, buf)
             local model_id = API.readValue("model_id")
+            local model_flight_time = API.readValue("model_flight_time")
             if model_id ~= nil then
                 rfsuite.utils.log("Model id: " .. model_id, "info")
+                rfsuite.utils.log("Model Flight Time: " .. model_flight_time, "info")
                 rfsuite.session.modelID = model_id
+                rfsuite.session.modelFlightTime = model_flight_time or 0
             end    
         end)
         API.setUUID("587d2865-df85-48e5-844b-e01c9f1aa247")

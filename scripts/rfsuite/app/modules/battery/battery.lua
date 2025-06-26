@@ -1,6 +1,7 @@
 local apidata = {
     api = {
         [1] = 'BATTERY_CONFIG',
+        [2] = 'PILOT_CONFIG',        
     },
     formdata = {
         labels = {
@@ -12,7 +13,8 @@ local apidata = {
             {t = rfsuite.i18n.get("app.modules.battery.min_cell_voltage"), mspapi = 1,  apikey="vbatmincellvoltage"},
             {t = rfsuite.i18n.get("app.modules.battery.battery_capacity"), mspapi = 1,  apikey="batteryCapacity"},
             {t = rfsuite.i18n.get("app.modules.battery.cell_count"), mspapi = 1,  apikey="batteryCellCount"},
-            {t = rfsuite.i18n.get("app.modules.battery.consumption_warning_percentage"), mspapi = 1,  apikey="consumptionWarningPercentage"}
+            {t = rfsuite.i18n.get("app.modules.battery.consumption_warning_percentage"), mspapi = 1,  apikey="consumptionWarningPercentage"},
+            {t = rfsuite.i18n.get("app.modules.battery.timer"), mspapi = 2,  apikey="model_flight_time"},
             
         }
     }                 

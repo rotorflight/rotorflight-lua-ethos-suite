@@ -763,7 +763,8 @@ return {
         ["battery_capacity"] = "Capacita' Batteria",
         ["warn_cell_voltage"] = "Avviso tensione cella",
         ["cell_count"] = "Conto Celle",
-        ["consumption_warning_percentage"] = "Avviso Consumo %"
+        ["consumption_warning_percentage"] = "Avviso Consumo %",
+        ["timer"] = "Flight Time"
       },
       ["profile_mainrotor"] = {
         ["gain"] = "Guadagno",
