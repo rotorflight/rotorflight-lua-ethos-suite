@@ -30,6 +30,7 @@ local config = arg[1]
 -- function is called on startup of the script  and
 -- whenever the tasks.lua detects the heli has been disconnected
 function utils.session()
+    rfsuite.session = {}
     rfsuite.session.tailMode = nil
     rfsuite.session.swashMode = nil
     rfsuite.session.activeProfile = nil
