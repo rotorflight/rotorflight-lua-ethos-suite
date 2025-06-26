@@ -17,7 +17,7 @@
 
 local layout = {
     cols = 6,
-    rows = 8,
+    rows = 12,
     padding = 1
 }
 
@@ -44,63 +44,8 @@ local colorMode = lcd.darkMode() and darkMode or lightMode
 
 local boxes = {
 
-    -- Timer
-    {col = 1, colspan = 2, row = 1, rowspan = 2, 
-    type = "time", 
-    subtype = "flight", 
-    font = "FONT_XL",
-    bgcolor = colorMode.bgcolor,
-    titlecolor = colorMode.titlecolor,
-    textcolor = colorMode.textcolor,
-    },
-
-    -- Battery Bar
-    {col = 3, row = 1, colspan = 4, rowspan = 2,
-    type = "gauge",
-    source = "smartfuel",
-    battadv = true,
-    fillcolor = "green",
-    valuealign = "left",
-    valuepaddingleft = 85,
-    battadvfont = "FONT_M",
-    font = "FONT_XL",
-    battadvpaddingright = 5,
-    battadvvaluealign = "right",
-    transform = "floor",
-    bgcolor = colorMode.bgcolor,
-    titlecolor = colorMode.titlecolor,
-    textcolor = colorMode.textcolor,
-        thresholds = {
-            { value = 10,  fillcolor = "red"    },
-            { value = 30,  fillcolor = "orange" }
-        }
-    },
-
-    -- Throttle
-    {col = 1, colspan = 2, row = 3, rowspan = 6,
-    type = "gauge",
-    subtype = "arc",
-    source = "throttle_percent",
-    arcmax = true,
-    title = "THROTTLE %", 
-    titlepos = "bottom", 
-    transform = "floor",
-    thickness = 20,
-    font = "FONT_XL",
-    maxprefix = "Max: ",
-    maxpaddingtop = 22,
-    bgcolor = colorMode.bgcolor,
-    titlecolor = colorMode.titlecolor,
-    textcolor = colorMode.textcolor,
-    maxtextcolor = "orange",
-        thresholds = {
-            { value = 89,  fillcolor = "orange" },
-            { value = 100, fillcolor = "red"    }
-        }
-    },
-
     -- Headspeed
-    {col = 3, colspan = 2, row = 3, rowspan = 6,
+    {col = 1, colspan = 2, row = 1, rowspan = 12,
     type = "gauge",
     subtype = "arc",
     source = "rpm",
@@ -109,7 +54,8 @@ local boxes = {
     titlepos = "bottom", 
     min = 0, 
     max = 3000,
-    thickness = 20,
+    valuepaddingtop = 30,
+    thickness = 25,
     unit = "",
     maxprefix = "Max: ",
     maxpaddingtop = 22,
@@ -126,31 +72,72 @@ local boxes = {
         }
     },
 
-    -- ESC Temp
-    {col = 5, colspan = 2, row = 3, rowspan = 6,
-    type = "gauge", 
+    -- Timer
+    {col = 3, colspan = 2, row = 1, rowspan = 2,
+    type = "time", 
+    subtype = "flight", 
+    font = "FONT_XL",
+    wakeupinterval = 0.001,
+    bgcolor = colorMode.bgcolor,
+    titlecolor = colorMode.titlecolor,
+    textcolor = colorMode.textcolor,
+    },
+
+    -- RX Voltage
+    {col = 3, colspan = 2, row = 3, rowspan = 10,
+     type = "gauge", 
+     source = "bec_voltage", 
+     title = "RX VOLTAGE", 
+     titlepos = "bottom", 
+     gaugeorientation = "vertical",
+     gaugepaddingright = 40,
+     gaugepaddingleft = 40,
+     decimals = 1,
+     battery = true,
+     batteryspacing = 3,
+     valuepaddingbottom = 17,
+     bgcolor = colorMode.bgcolor,
+     titlecolor = colorMode.titlecolor,
+     textcolor = colorMode.textcolor,
+     min = 7.0,
+     max = 8.4,
+     thresholds = {
+            {
+                value = 7.4,
+                fillcolor = "red",
+            },
+            {
+                value = 7.7,
+                fillcolor = "orange",
+            },
+            {
+                value = 10,
+                fillcolor = "green",
+            }
+        }
+    },
+
+    -- Throttle
+    {col = 5, colspan = 2, row = 1, rowspan = 12,
+    type = "gauge",
     subtype = "arc",
+    source = "throttle_percent",
     arcmax = true,
-    source = "temp_esc", 
-    title = "ESC TEMP", 
+    title = "THROTTLE %", 
     titlepos = "bottom", 
-    min = 0, 
-    max = 140, 
-    thickness = 20,
-    valuepaddingleft = 10,
-    maxpaddingleft = 10,
+    transform = "floor",
+    thickness = 25,
+    valuepaddingtop = 30,
+    font = "FONT_XL",
     maxprefix = "Max: ",
     maxpaddingtop = 22,
     bgcolor = colorMode.bgcolor,
     titlecolor = colorMode.titlecolor,
     textcolor = colorMode.textcolor,
     maxtextcolor = "orange",
-    font = "FONT_XL",
-    transform = "floor", 
         thresholds = {
-            { value = 70,  fillcolor = "green"  },
-            { value = 90,  fillcolor = "orange" },
-            { value = 140, fillcolor = "red"    }
+            { value = 89,  fillcolor = "orange" },
+            { value = 100, fillcolor = "red"    }
         }
     },
 }

@@ -17,7 +17,7 @@
 
 local layout = {
     cols = 7,
-    rows = 11,
+    rows = 12,
     padding = 1,
 }
 
@@ -45,15 +45,80 @@ local lightMode = {
 local colorMode = lcd.darkMode() and darkMode or lightMode
 
 local boxes = {
+
+   -- Throttle
+    {col = 1, colspan = 2, row = 1, rowspan = 3,
+    type = "text",
+    subtype = "telemetry",
+    source = "throttle_percent",
+    title = "THROTTLE %", 
+    titlepos = "bottom", 
+    transform = "floor",
+    bgcolor = colorMode.bgcolor,
+    titlecolor = colorMode.titlecolor,
+    textcolor = colorMode.textcolor,
+    },
+
+    -- Headspeed
+    {col = 1, colspan = 2, row = 4, rowspan = 3,
+    type = "text",
+    subtype = "telemetry",
+    source = "rpm",
+    title = "HEADSPEED", 
+    titlepos = "bottom",
+    unit = " rpm", 
+    transform = "floor",
+    bgcolor = colorMode.bgcolor,
+    titlecolor = colorMode.titlecolor,
+    textcolor = colorMode.textcolor,
+    },
+
+    -- Blackbox
+    {col = 1, colspan = 2, row = 7, rowspan = 3, 
+     type = "text", 
+     subtype = "blackbox", 
+     title = "BLACKBOX", 
+     titlepos = "bottom", 
+     decimals = 0, 
+     bgcolor = colorMode.bgcolor,
+     titlecolor = colorMode.titlecolor,
+     textcolor = colorMode.textcolor,
+     transform = "floor",
+        thresholds = {
+            { value = 80, textcolor = colorMode.textcolor },
+            { value = 90, textcolor = "orange" },
+            { value = 100, textcolor = "red" }
+        }
+    },
+
+    -- Governor
+    {col = 1, colspan = 2, row = 10, rowspan = 3,
+     type = "text", 
+     subtype = "governor", 
+     title = "GOVERNOR", 
+     titlepos = "bottom", 
+     bgcolor = colorMode.bgcolor,
+     titlecolor = colorMode.titlecolor,
+          thresholds = {
+            { value = "DISARMED", textcolor = "red"    },
+            { value = "OFF",      textcolor = "red"    },
+            { value = "IDLE",     textcolor = "blue" },
+            { value = "SPOOLUP",  textcolor = "blue"   },
+            { value = "RECOVERY", textcolor = "orange" },
+            { value = "ACTIVE",   textcolor = "green"  },
+            { value = "THR-OFF",  textcolor = "red"    },
+        }
+    },
+
     -- Model Image
-    {col = 1, row = 1, colspan = 3, rowspan = 8, 
+    {col = 3, row = 1, colspan = 3, rowspan = 9, 
      type = "image", 
      subtype = "model", 
      bgcolor = colorMode.bgcolor,
     },
 
     -- Rate Profile
-    {col = 1, row = 9, rowspan = 3,
+    {col = 3, row = 10, rowspan = 3,
      type = "text",
      subtype = "telemetry",
      source = "rate_profile",    
@@ -70,7 +135,7 @@ local boxes = {
     },
 
     -- PID Profile
-    {col = 2, row = 9, rowspan = 3,
+    {col = 4, row = 10, rowspan = 3,
      type = "text",
      subtype = "telemetry",
      source = "pid_profile",    
@@ -87,7 +152,7 @@ local boxes = {
     },
 
     -- Flight Count
-    {col = 3, row = 9, rowspan = 3, 
+    {col = 5, row = 10, rowspan = 3, 
      type = "time", 
      subtype = "count", 
      title = "FLIGHTS", 
@@ -97,106 +162,37 @@ local boxes = {
      textcolor = colorMode.textcolor,
     },
 
-    -- Battery Gauge
-    {col = 4, row = 1, colspan = 4, rowspan = 3,
-     type = "gauge",
-     source = "smartfuel",
-     batteryframe = true, 
-     battadv = true,
-     fillcolor = "green",
-     valuealign = "left",
-     valuepaddingleft = 75,
-     battadvfont = "FONT_M",
-     battadvpaddingright = 18,
-     battadvvaluealign = "right",
-     bgcolor = colorMode.bgcolor,
-     titlecolor = colorMode.titlecolor,
-     textcolor = colorMode.textcolor,
-     accentcolor = colorMode.accentcolor,
-     transform = "floor",
-        thresholds = {
-            { value = 10,  fillcolor = "red"    },
-            { value = 30,  fillcolor = "orange" }
-        }
-    },
-
-    -- BEC Voltage
-    {col = 4, colspan = 2, row = 4, rowspan = 5,
+     -- RX Voltage
+    {col = 6, colspan = 2, row = 1, rowspan = 12,
      type = "gauge", 
-     subtype = "arc",
      source = "bec_voltage", 
-     title = "BEC VOLTAGE", 
+     title = "RX VOLTAGE", 
      titlepos = "bottom", 
-     min = 3, 
-     max = 13, 
-     decimals = 1, 
-     thickness = 13,
+     gaugeorientation = "vertical",
+     gaugepaddingright = 40,
+     gaugepaddingleft = 40,
+     decimals = 1,
+     battery = true,
+     batteryspacing = 1,
+     valuepaddingbottom = 17,
      bgcolor = colorMode.bgcolor,
      titlecolor = colorMode.titlecolor,
      textcolor = colorMode.textcolor,
-     font = "FONT_XL", 
-        thresholds = {
-            { value = 5.5, fillcolor = "red"   },
-            { value = 13,  fillcolor = "green" }
-        }
-    },
-
-    -- Blackbox
-    {col = 4, row = 9, colspan = 2, rowspan = 3, 
-     type = "text", 
-     subtype = "blackbox", 
-     title = "BLACKBOX", 
-     titlepos = "bottom", 
-     decimals = 0, 
-     bgcolor = colorMode.bgcolor,
-     titlecolor = colorMode.titlecolor,
-     transform = "floor",
-        thresholds = {
-            { value = 80, textcolor = colorMode.textcolor },
-            { value = 90, textcolor = "orange" },
-            { value = 100, textcolor = "red" }
-        }
-    },
-
-    -- ESC Temp
-    {col = 6, colspan = 2, row = 4, rowspan = 5,
-     type = "gauge", 
-     subtype = "arc",
-     source = "temp_esc", 
-     title = "ESC TEMP", 
-     titlepos = "bottom", 
-     min = 0, 
-     max = 140, 
-     thickness = 12,
-     valuepaddingleft = 10,
-     font = "FONT_XL", 
-     bgcolor = colorMode.bgcolor,
-     titlecolor = colorMode.titlecolor,
-     textcolor = colorMode.textcolor,
-     transform = "floor", 
-        thresholds = {
-            { value = 70,  fillcolor = "green"  },
-            { value = 90,  fillcolor = "orange" },
-            { value = 140, fillcolor = "red"    }
-        }
-    },
-
-    -- Governor
-    {col = 6, row = 9, colspan = 2, rowspan = 3, 
-     type = "text", 
-     subtype = "governor", 
-     title = "GOVERNOR", 
-     titlepos = "bottom", 
-     bgcolor = colorMode.bgcolor,
-     titlecolor = colorMode.titlecolor,
-          thresholds = {
-            { value = "DISARMED", textcolor = "red"    },
-            { value = "OFF",      textcolor = "red"    },
-            { value = "IDLE",     textcolor = "blue" },
-            { value = "SPOOLUP",  textcolor = "blue"   },
-            { value = "RECOVERY", textcolor = "orange" },
-            { value = "ACTIVE",   textcolor = "green"  },
-            { value = "THR-OFF",  textcolor = "red"    },
+     min = 7.0,
+     max = 8.4,
+     thresholds = {
+            {
+                value = 7.4,
+                fillcolor = "red",
+            },
+            {
+                value = 7.7,
+                fillcolor = "orange",
+            },
+            {
+                value = 10,
+                fillcolor = "green",
+            }
         }
     },
 }
