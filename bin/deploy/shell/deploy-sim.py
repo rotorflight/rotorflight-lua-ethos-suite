@@ -54,7 +54,7 @@ def main():
                 dest_dir = os.path.join(target, rel)
                 os.makedirs(dest_dir, exist_ok=True)
                 for file in files:
-                    if file.lower().endswith('.lua'):
+                    if file.lower().endswith(('.lua', '.luac')):
                         shutil.copy2(os.path.join(root, file), dest_dir)
 
         else:

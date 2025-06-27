@@ -25,7 +25,7 @@ def remove_lua_files(target_path, tgt_dir):
     full_target = os.path.join(target_path, tgt_dir)
     for root, dirs, files in os.walk(full_target):
         for file in files:
-            if file.lower().endswith('.lua'):
+            if file.lower().endswith(('.lua', '.luac')):
                 os.remove(os.path.join(root, file))
 
 def copy_lua_files(src_base, tgt_dir, target_path):
