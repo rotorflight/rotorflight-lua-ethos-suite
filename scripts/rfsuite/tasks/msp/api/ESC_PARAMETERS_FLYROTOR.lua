@@ -75,7 +75,7 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "low_voltage_protection",  type = "U8",  apiVersion = 12.07, simResponse = {30},          min = 28, max = 38, scale = 10, default = 30, decimals = 1, unit = "V"},
     {field = "temperature_protection",  type = "U8",  apiVersion = 12.07, simResponse = {125},         min = 50, max = 135, default = 125, unit = "°"},
     {field = "bec_voltage",             type = "U8",  apiVersion = 12.07, simResponse = {1},           table = {rfsuite.i18n.get("api.ESC_PARAMETERS_FLYROTOR.tbl_disabled"), "7.5V", "8.0V", "8.5V", "12.0V"}, tableIdxInc = -1},
-    {field = "timing_angle",            type = "U8",  apiVersion = 12.07, simResponse = {10},          min = 1, max = 10, default = 5, unit = "°"},
+    {field = "timing_angle",            type = "U8",  apiVersion = 12.07, simResponse = {0},           table = {rfsuite.i18n.get("api.ESC_PARAMETERS_FLYROTOR.tbl_auto"),"1°","2°","3°","4°","5°","6°","7°","8°","9°","10°"}, tableIdxInc = -1},
     {field = "motor_direction",         type = "U8",  apiVersion = 12.07, simResponse = {0},           table = {rfsuite.i18n.get("api.ESC_PARAMETERS_FLYROTOR.tbl_cw"), rfsuite.i18n.get("api.ESC_PARAMETERS_FLYROTOR.tbl_ccw")}, tableIdxInc = -1},
     {field = "starting_torque",         type = "U8",  apiVersion = 12.07, simResponse = {3},           min = 1, max = 15, default = 3},
     {field = "response_speed",          type = "U8",  apiVersion = 12.07, simResponse = {5},           min = 1, max = 15, default = 5},

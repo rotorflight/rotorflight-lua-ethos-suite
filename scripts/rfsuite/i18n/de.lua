@@ -93,6 +93,7 @@ return {
       ["tbl_alwayson"] = "Immer an",
       ["throttle_min"] = "Minimaler Gaswert",
       ["tbl_disabled"] = "Deaktiviert",
+      ["tbl_auto"] = "Auto",
       ["starting_torque"] = "Anlaufmoment fuer den Motor",
       ["cell_count"] = "Anzahl der Zellen in der Batterie",
       ["motor_erpm_max"] = "Maximale RPM",

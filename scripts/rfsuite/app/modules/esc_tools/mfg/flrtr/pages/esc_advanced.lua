@@ -16,7 +16,7 @@ local apidata = {
         fields = {
             {t = i18n("app.modules.esc_tools.mfg.flrtr.low_voltage_protection"),    mspapi = 1, apikey = "low_voltage_protection"},
             {t = i18n("app.modules.esc_tools.mfg.flrtr.temperature_protection"),    mspapi = 1, apikey = "temperature_protection"},
-            {t = i18n("app.modules.esc_tools.mfg.flrtr.timing_angle"),              mspapi = 1, apikey = "timing_angle"},
+            {t = i18n("app.modules.esc_tools.mfg.flrtr.timing_angle"),              mspapi = 1, apikey = "timing_angle", type=1},
             {t = i18n("app.modules.esc_tools.mfg.flrtr.starting_torque"),           mspapi = 1, apikey = "starting_torque"},
             {t = i18n("app.modules.esc_tools.mfg.flrtr.response_speed"),            mspapi = 1, apikey = "response_speed"},
             {t = i18n("app.modules.esc_tools.mfg.flrtr.buzzer_volume"),             mspapi = 1, apikey = "buzzer_volume"},

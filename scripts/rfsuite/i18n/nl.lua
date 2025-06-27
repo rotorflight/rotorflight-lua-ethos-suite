@@ -93,6 +93,7 @@ return {
       ["tbl_alwayson"] = "Altijd Aan",
       ["throttle_min"] = "Minimale throttle waarde",
       ["tbl_disabled"] = "Uit",
+      ["tbl_auto"] = "Auto",
       ["starting_torque"] = "Start koppel voor de motor",
       ["cell_count"] = "Aantal cellen in de batterij",
       ["motor_erpm_max"] = "Maximale RPM",

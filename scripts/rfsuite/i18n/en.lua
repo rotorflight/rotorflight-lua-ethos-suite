@@ -93,6 +93,7 @@ return {
       ["tbl_alwayson"] = "Always On",
       ["throttle_min"] = "Minimum throttle value",
       ["tbl_disabled"] = "Disabled",
+      ["tbl_auto"] = "Auto",
       ["starting_torque"] = "Starting torque for the motor",
       ["cell_count"] = "Number of cells in the battery",
       ["motor_erpm_max"] = "Maximum RPM",
