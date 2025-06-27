@@ -256,6 +256,11 @@
       "translation": "Disabled",
       "needs_translation": "false"
     },
+    "tbl_auto": {
+      "english": "Auto",
+      "translation": "Auto",
+      "needs_translation": "false"
+    },
     "starting_torque": {
       "english": "Starting torque for the motor",
       "translation": "Starting torque for the motor",

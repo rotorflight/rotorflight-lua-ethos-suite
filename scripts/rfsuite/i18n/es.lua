@@ -93,6 +93,7 @@ return {
       ["tbl_alwayson"] = "Siempre Encendido",
       ["throttle_min"] = "Valor minimo del acelerador",
       ["tbl_disabled"] = "Deshabilitado",
+      ["tbl_auto"] = "Auto",
       ["starting_torque"] = "Torque de inicio para el motor",
       ["cell_count"] = "Numero de celdas en la bateria",
       ["motor_erpm_max"] = "RPM maxima",

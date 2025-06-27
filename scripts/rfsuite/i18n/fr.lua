@@ -93,6 +93,7 @@ return {
       ["tbl_alwayson"] = "Toujours Allume",
       ["throttle_min"] = "Valeur minimale des gaz",
       ["tbl_disabled"] = "Desactive",
+      ["tbl_auto"] = "Auto",
       ["starting_torque"] = "Couple de demarrage pour le moteur",
       ["cell_count"] = "Nombre de cellules dans la batterie",
       ["motor_erpm_max"] = "RPM maximum",
