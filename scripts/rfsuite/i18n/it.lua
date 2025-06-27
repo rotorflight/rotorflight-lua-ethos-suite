@@ -245,6 +245,9 @@ return {
       ["tbl_enabled"] = "Abilita",
       ["tbl_reverse"] = "Inverti"
     },
+    ["PILOT_CONFIG"] = {
+      ["model_flight_time"] = "Set this to the expected flight time in seconds.  The transmitter will beep when the flight time is reached."
+    },
     ["BATTERY_CONFIG"] = {
       ["vbatmincellvoltage"] = "La tensione minima per cella prima che scatti l'allarme di bassa tensione.",
       ["vbatmaxcellvoltage"] = "La tensione massima per cella prima che scatti l'allarme di alta tensione.",

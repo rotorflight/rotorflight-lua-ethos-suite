@@ -245,6 +245,9 @@ return {
       ["tbl_enabled"] = "Aan",
       ["tbl_reverse"] = "Omgekeerd"
     },
+    ["PILOT_CONFIG"] = {
+      ["model_flight_time"] = "Set this to the expected flight time in seconds.  The transmitter will beep when the flight time is reached."
+    },
     ["BATTERY_CONFIG"] = {
       ["vbatmincellvoltage"] = "Het minimale voltage wanneer laag voltage alarm wordt getriggerd.",
       ["vbatmaxcellvoltage"] = "Het maximale voltage per cel wanneer hoog voltage alarm wordt getriggerd.",

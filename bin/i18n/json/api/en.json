@@ -964,6 +964,13 @@
       "needs_translation": "false"
     }
   },
+  "PILOT_CONFIG": {
+    "model_flight_time": {
+      "english": "Set this to the expected flight time in seconds.  The transmitter will beep when the flight time is reached.",
+      "translation": "Set this to the expected flight time in seconds.  The transmitter will beep when the flight time is reached.",
+      "needs_translation": "false"
+    }
+  },
   "BATTERY_CONFIG": {
     "vbatmincellvoltage": {
       "english": "The minimum voltage per cell before the low voltage alarm is triggered.",
