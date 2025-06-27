@@ -66,7 +66,7 @@ local sensors = {
     @param max (number) - Maximum value the sensor can report (optional, default is 2147483647).
 ]]
 local function createSensor(uid, name, unit, dec, value, min, max)
-    local sensor = model.createSensor()
+    local sensor = model.createSensor({type=SENSOR_TYPE_DIY})
     sensor:name(name)
     sensor:appId(uid)
     sensor:module(rfsuite.session.telemetrySensor:module())

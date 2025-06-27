@@ -76,7 +76,7 @@ local function createTelemetrySensor(uid, name, unit, dec, value, min, max)
 
     if rfsuite.session.telemetryState == false then return end
 
-    sensors['uid'][uid] = model.createSensor()
+    sensors['uid'][uid] = model.createSensor({type=SENSOR_TYPE_DIY})
     sensors['uid'][uid]:name(name)
     sensors['uid'][uid]:appId(uid)
     sensors['uid'][uid]:module(1)
