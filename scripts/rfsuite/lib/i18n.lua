@@ -29,10 +29,12 @@ function i18n.load(locale)
   -- load primary locale
   translations = loadLangFile(folder .. "/" .. locale .. ".lua")
   if not translations then
-    rfsuite.utils.log(
-      "i18n: Locale '"..locale.."' not found, falling back to '"..defaultLocale.."'", 
-      "info"
-    )
+    if rfsuite.utils then -- cant log if utils is not available on startup
+        rfsuite.utils.log(
+          "i18n: Locale '"..locale.."' not found, falling back to '"..defaultLocale.."'", 
+          "info"
+        )
+    end  
     translations = loadLangFile(folder .. "/" .. defaultLocale .. ".lua")
             or {}
   end
