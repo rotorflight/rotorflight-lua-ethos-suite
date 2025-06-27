@@ -57,7 +57,7 @@ def copy_files(src, fileext=None, launch=False, destfolders=None):
             print(f"Removing all .lua files from target in {dest}...")
             for root, _, files in os.walk(tgt_folder):
                 for file in files:
-                    if file.endswith('.lua'):
+                    if file.endswith(('.lua', '.luac')):
                         os.remove(os.path.join(root, file))
 
             print(f"Syncing only .lua files to target in {dest}...")

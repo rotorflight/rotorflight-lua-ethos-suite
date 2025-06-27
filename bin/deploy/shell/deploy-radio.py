@@ -6,9 +6,9 @@ import shutil
 import re
 import argparse
 import stat
+from tqdm import tqdm
 
 def on_rm_error(func, path, exc_info):
-    # Change file to writable and retry
     os.chmod(path, stat.S_IWRITE)
     func(path)
 
@@ -21,30 +21,14 @@ def get_dstfolder(ethos_bin):
     print('Error: could not determine SCRIPTS folder.', file=sys.stderr)
     sys.exit(1)
 
-def remove_lua_files(target_path, tgt_dir):
-    full_target = os.path.join(target_path, tgt_dir)
-    for root, dirs, files in os.walk(full_target):
-        for file in files:
-            if file.lower().endswith('.lua'):
-                os.remove(os.path.join(root, file))
-
-def copy_lua_files(src_base, tgt_dir, target_path):
-    src = os.path.join(src_base, 'scripts', tgt_dir)
-    dest_base = os.path.join(target_path, tgt_dir)
+def collect_all_files(src, filter_ext=None):
+    all_files = []
     for root, dirs, files in os.walk(src):
         rel = os.path.relpath(root, src)
-        dest_dir = os.path.join(dest_base, rel)
-        os.makedirs(dest_dir, exist_ok=True)
         for file in files:
-            if file.lower().endswith('.lua'):
-                shutil.copy2(os.path.join(root, file), dest_dir)
-
-def copy_all_files(src_base, tgt_dir, target_path):
-    src = os.path.join(src_base, 'scripts', tgt_dir)
-    dest = os.path.join(target_path, tgt_dir)
-    if os.path.exists(dest):
-        shutil.rmtree(dest, onerror=on_rm_error)
-    shutil.copytree(src, dest)
+            if not filter_ext or file.lower().endswith(filter_ext):
+                all_files.append((os.path.join(root, file), os.path.join(rel, file)))
+    return all_files
 
 def main():
     parser = argparse.ArgumentParser(description='Deploy scripts via Ethos Suite')
@@ -61,21 +45,33 @@ def main():
 
     dstfolder = get_dstfolder(ethos_bin)
     print(f'SCRIPTS folder is: {dstfolder}')
+    src = os.path.join(srcfolder, 'scripts', tgt_dir)
+
+    file_filter = ('.lua', '.luac') if args.ext == '.lua' else None
+    all_files = collect_all_files(src, file_filter)
+
+    target_path = os.path.join(dstfolder, tgt_dir)
 
     if args.ext == '.lua':
         print('Removing all .lua files from target...')
-        remove_lua_files(dstfolder, tgt_dir)
-        print('Syncing only .lua files to target...')
-        copy_lua_files(srcfolder, tgt_dir, dstfolder)
+        for root, dirs, files in os.walk(target_path):
+            for file in files:
+                if file.lower().endswith(('.lua', '.luac')):
+                    os.remove(os.path.join(root, file))
     else:
         print('Removing entire target folder...')
-        full_target = os.path.join(dstfolder, tgt_dir)
-        if os.path.exists(full_target):
-            shutil.rmtree(full_target, onerror=on_rm_error)
+        if os.path.exists(target_path):
+            shutil.rmtree(target_path, onerror=on_rm_error)
         print('Recreating target folder...')
-        os.makedirs(full_target, exist_ok=True)
-        print('Copying all files to the destination folder...')
-        copy_all_files(srcfolder, tgt_dir, dstfolder)
+        os.makedirs(target_path, exist_ok=True)
+
+    print('Copying files to the destination folder...')
+    with tqdm(total=len(all_files), desc='Copying files') as pbar:
+        for src_path, rel_path in all_files:
+            dest_path = os.path.join(target_path, rel_path)
+            os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+            shutil.copy2(src_path, dest_path)
+            pbar.update(1)
 
     print('Script execution completed.')
 
