@@ -24,24 +24,32 @@ local default_image = "widgets/toolbox/gfx/default_image.png"
 local bitmapPtr
 
 function craftimage.wakeup()
-
     if rfsuite.session.toolbox.craftimage ~= nil then
-        -- prevetn multiple image loads
+        -- prevent multiple image loads
         return
     end
 
-    if lastName ~= rfsuite.session.craftName or lastID ~= rfsuite.session.modelID then
-        if rfsuite.session.craftName ~= nil then image1 = "/bitmaps/models/" .. rfsuite.session.craftName .. ".png" end
-        if rfsuite.session.modelID ~= nil then image2 = "/bitmaps/models/" .. rfsuite.session.modelID .. ".png" end
+    local craftName = rfsuite.session.craftName
+    local modelID = rfsuite.session.modelID
 
-        bitmapPtr = rfsuite.utils.loadImage(image1, image2, default_image)
-
+    local image1, image2, image3, image4
+    if craftName then
+        image1 = "/bitmaps/models/" .. craftName .. ".png"
+        image2 = "/bitmaps/models/" .. craftName .. ".bmp"
+    end
+    if modelID then
+        image3 = "/bitmaps/models/" .. modelID .. ".png"
+        image4 = "/bitmaps/models/" .. modelID .. ".bmp"
     end
 
+    local default_image = "widgets/toolbox/gfx/default_image.png"
+
+    -- Try png then bmp for craftName, then png then bmp for modelID, then fallback
+    bitmapPtr = rfsuite.utils.loadImage(image1, image2, image3, image4, default_image)
 
     rfsuite.session.toolbox.craftimage = bitmapPtr
-
 end
+
 
 
 return craftimage
