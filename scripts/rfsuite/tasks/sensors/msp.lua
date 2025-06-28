@@ -140,7 +140,7 @@ local msp_sensors = {
         interval_disarmed = 5,
         interval_admin = 10,
         fields = {
-            model_flight_time = {
+            model_param1_value = {
                 sessionname = {"modelFlightTime" },
             },
         }        

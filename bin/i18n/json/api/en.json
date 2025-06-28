@@ -970,7 +970,7 @@
     }
   },
   "PILOT_CONFIG": {
-    "model_flight_time": {
+    "model_param1_value": {
       "english": "Set this to the expected flight time in seconds.  The transmitter will beep when the flight time is reached.",
       "translation": "Set this to the expected flight time in seconds.  The transmitter will beep when the flight time is reached.",
       "needs_translation": "false"
