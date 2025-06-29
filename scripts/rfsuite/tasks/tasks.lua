@@ -164,8 +164,9 @@ function tasks.wakeup()
 
     local function canRunTask(task)
         local overdue = rfsuite.clock - task.last_run >= (task.interval * 20)
+        local priorityTask = task.name == "msp" or task.name == "callback"
         return (not task.linkrequired or rfsuite.session.telemetryState) and
-            (task.name == "msp" or overdue or not rfsuite.app.triggers.mspBusy) and
+            (priorityTask or overdue or not rfsuite.app.triggers.mspBusy) and
             (not task.simulatoronly or usingSimulator)
     end
 
