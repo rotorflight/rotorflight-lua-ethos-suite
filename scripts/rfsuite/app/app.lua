@@ -393,7 +393,7 @@ local function saveSettings()
     if app.Page.preSave then app.Page.preSave(app.Page) end
 
     for apiID, apiNAME in ipairs(apiList) do
-        log("Saving data for API: " .. apiNAME, "debug")
+        log("Saving data for API: " .. apiNAME, "info")
 
         local payloadData = values[apiNAME]
         local payloadStructure = mspapi.structure[apiNAME]
@@ -406,7 +406,7 @@ local function saveSettings()
         )
         API.setCompleteHandler(function(self, buf)
             completedRequests = completedRequests + 1
-            log("API " .. apiNAME .. " write complete", "debug")
+            log("API " .. apiNAME .. " write complete", "info")
 
             -- Check if this is the last completed request
             if completedRequests == totalRequests then
@@ -1214,6 +1214,9 @@ function app.wakeup()
   if not rfsuite.tasks.active() then
     rfsuite.clock = os.clock()  
   end
+
+  -- mark gui as active
+  app.guiIsRunning = true
 
   local total = #app._uiTasks
   local tasksThisTick = math.max(1, (total * app._uiTaskPercent) / 100)

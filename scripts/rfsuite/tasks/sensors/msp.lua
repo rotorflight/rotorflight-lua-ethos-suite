@@ -14,7 +14,6 @@
  *   API_NAME = {
  *     interval_armed: <number>         -- Interval (in seconds) to poll this API when the model is armed (-1 for no polling)
  *     interval_disarmed: <number>      -- Interval (in seconds) when disarmed (-1 for no polling)
- *     interval_admin: <number>         -- Interval (in seconds) when admin module loaded (-1 for no polling)
  *
  *     fields = {
  *       field_key = {
@@ -78,7 +77,6 @@ local msp_sensors = {
     DATAFLASH_SUMMARY = {
         interval_armed = -1,
         interval_disarmed = 5,
-        interval_admin = 15,
         fields = {
             flags = {
                 sensorname = "BBL Flags",
@@ -103,7 +101,6 @@ local msp_sensors = {
     BATTERY_CONFIG = {
         interval_armed = -1,
         interval_disarmed = 5,
-        interval_admin = 10,
         fields = {
             batteryCapacity = {
                 sessionname = { "batteryConfig", "batteryCapacity" },
@@ -138,7 +135,6 @@ local msp_sensors = {
     PILOT_CONFIG = {
         interval_armed = -1,
         interval_disarmed = 5,
-        interval_admin = 10,
         fields = {
             model_param1_value = {
                 sessionname = {"modelFlightTime" },
@@ -242,8 +238,8 @@ function msp.wakeup()
         api_meta.last_time = api_meta.last_time or 0
 
         local interval
-        if isAdmin and api_meta.interval_admin then
-            interval = api_meta.interval_admin
+        if isAdmin then
+            interval = -1  -- Admin module loaded, no polling
         elseif isArmed == 1 or isArmed == 3 then
             interval = api_meta.interval_armed or 2
         else
