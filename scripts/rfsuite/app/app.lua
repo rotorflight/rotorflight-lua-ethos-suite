@@ -944,7 +944,65 @@ app._uiTasks = {
     end
   end,
 
-  -- 2. Profile / Rate Change Detection
+  -- 2. Close Progress Loader
+  function()
+    if not app.triggers.closeProgressLoader then return end
+    local p, q = app.dialogs.progressCounter, rfsuite.tasks.msp.mspQueue
+    if p >= 90 then p = p + 10 else p = p + 25 end
+    app.dialogs.progressCounter = p
+    if app.dialogs.progress then
+      app.ui.progressDisplayValue(p)
+    end
+    if p >= 101 and q:isProcessed() then
+      app.dialogs.progressWatchDog = nil
+      app.dialogs.progressDisplay  = false
+      app.ui.progressDisplayClose()
+      app.dialogs.progressCounter   = 0
+      app.triggers.closeProgressLoader = false
+    end
+  end,
+
+  -- 3. Close Save Loader
+  function()
+    if not app.triggers.closeSave then return end
+    local p, q = app.dialogs.saveProgressCounter, rfsuite.tasks.msp.mspQueue
+    app.triggers.isSaving = false
+    if q:isProcessed() then
+      if     p > 90 then p = p + 5
+      elseif p > 40 then p = p + 15
+      else                p = p + 5 end
+    end
+    app.dialogs.saveProgressCounter = p
+    if app.dialogs.save then
+      app.ui.progressDisplaySaveValue(p)
+    end
+    if p >= 100 and q:isProcessed() then
+      app.triggers.closeSave           = false
+      app.dialogs.saveProgressCounter  = 0
+      app.dialogs.saveDisplay          = false
+      app.dialogs.saveWatchDog         = nil
+      app.ui.progressDisplaySaveClose()
+    end
+  end,
+
+  -- 4. Close Save (Fake) in Simulator
+  function()
+    if not app.triggers.closeSaveFake then return end
+    app.triggers.isSaving = false
+    app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 5
+    if app.dialogs.save then
+      app.ui.progressDisplaySaveValue(app.dialogs.saveProgressCounter)
+    end
+    if app.dialogs.saveProgressCounter >= 100 then
+      app.triggers.closeSaveFake          = false
+      app.dialogs.saveProgressCounter     = 0
+      app.dialogs.saveDisplay             = false
+      app.dialogs.saveWatchDog            = nil
+      app.ui.progressDisplaySaveClose()
+    end
+  end,
+
+  -- 5. Profile / Rate Change Detection
   function()
     if not (app.Page and (app.Page.refreshOnProfileChange or app.Page.refreshOnRateChange or app.Page.refreshFullOnProfileChange or app.Page.refreshFullOnRateChange)
            and app.uiState == app.uiStatus.pages and not app.triggers.isSaving
@@ -972,7 +1030,7 @@ app._uiTasks = {
     end
   end,
 
-  -- 3. Main Menu Icon Enable/Disable
+  -- 6. Main Menu Icon Enable/Disable
   function()
     if app.uiState ~= app.uiStatus.mainMenu and app.uiState ~= app.uiStatus.pages then return end
     if app.uiState == app.uiStatus.mainMenu then
@@ -995,18 +1053,54 @@ app._uiTasks = {
     end
   end,
 
-  -- 4. No-Link Initial Trigger
+  -- 7. No-Link Initial Trigger
   function()
     if app.triggers.telemetryState == 1 or app.triggers.disableRssiTimeout then return end
     if not app.dialogs.nolinkDisplay and not app.triggers.wasConnected then
       if app.dialogs.progressDisplay then app.ui.progressDisplayClose() end
       if app.dialogs.saveDisplay then app.ui.progressDisplaySaveClose() end
-      if app.ui then app.ui.progressNolinkDisplay() end
+      app.ui.progressNolinkDisplay()
       app.dialogs.nolinkDisplay = true
     end
   end,
 
-  -- 5. Save Timeout Watchdog
+  -- 8. No-Link Progress & Message Update
+  function()
+    if not (app.dialogs.nolinkDisplay and not app.triggers.wasConnected) then return end
+    local apiStr = tostring(rfsuite.session.apiVersion)
+    local moduleEnabled = model.getModule(0):enable() or model.getModule(1):enable()
+    local sensorSport = system.getSource({appId=0xF101})
+    local sensorElrs  = system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1})
+    local curRssi    = app.utils.getRSSI()
+    local invalid, abort = false, false
+    local msg = i18n("app.msg_connecting_to_fbl")
+    if not utils.ethosVersionAtLeast() then
+      msg = string.format("%s < V%d.%d.%d", string.upper(i18n("ethos")), table.unpack(rfsuite.config.ethosVersion))
+    elseif not rfsuite.tasks.active() then
+      msg, invalid, abort = i18n("app.check_bg_task"), true, true
+    elseif not moduleEnabled and not app.offlineMode then
+      msg, invalid = i18n("app.check_rf_module_on"), true
+    elseif not (sensorSport or sensorElrs) and not app.offlineMode then
+      msg, invalid = i18n("app.check_discovered_sensors"), true
+    elseif curRssi == 0 and not app.offlineMode then
+      msg, invalid = i18n("app.check_heli_on"), true
+    elseif not utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiStr) and not app.offlineMode then
+      msg = i18n("app.check_supported_version") .. " (" .. apiStr .. ")"
+    end
+    app.triggers.invalidConnectionSetup = invalid
+    local step = invalid and 5 or 10
+    app.dialogs.nolinkValueCounter = app.dialogs.nolinkValueCounter + step
+    app.ui.progressDisplayNoLinkValue(app.dialogs.nolinkValueCounter, msg)
+    if invalid and app.dialogs.nolinkValueCounter == 10 then app.audio.playBufferWarn = true end
+    if app.dialogs.nolinkValueCounter >= 100 then
+      app.dialogs.nolinkDisplay = false
+      app.triggers.wasConnected    = true
+      app.ui.progressNolinkDisplayClose()
+      if abort then app.close() end
+    end
+  end,
+
+  -- 9. Save Timeout Watchdog
   function()
     if not app.dialogs.saveDisplay or not app.dialogs.saveWatchDog then return end
     local timeout = tonumber(rfsuite.tasks.msp.protocol.saveTimeout + 5)
@@ -1024,7 +1118,7 @@ app._uiTasks = {
     end
   end,
 
-  -- 6. Progress Timeout Watchdog
+  -- 10. Progress Timeout Watchdog
   function()
     if not app.dialogs.progressDisplay or not app.dialogs.progressWatchDog then return end
     app.dialogs.progressCounter = app.dialogs.progressCounter + (app.Page and app.Page.progressCounter or 1.5)
@@ -1040,7 +1134,7 @@ app._uiTasks = {
     end
   end,
 
-  -- 7. Trigger Save Dialogs
+  -- 11. Trigger Save Dialogs
   function()
     if app.triggers.triggerSave then
       app.triggers.triggerSave = false
@@ -1068,7 +1162,7 @@ app._uiTasks = {
     end
   end,
 
-  -- 8. Trigger Reload Dialogs
+  -- 12. Trigger Reload Dialogs
   function()
     if app.triggers.triggerReloadNoPrompt then
       app.triggers.triggerReloadNoPrompt = false
@@ -1096,7 +1190,7 @@ app._uiTasks = {
     end
   end,
 
-  -- 9. Saving Progress Display
+  -- 13. Saving Progress Display
   function()
     if app.triggers.isSaving then
       app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 5
@@ -1122,7 +1216,7 @@ app._uiTasks = {
     end
   end,
 
-  -- 10. Armed-Save Warning
+  -- 14. Armed-Save Warning
   function()
     if not app.triggers.showSaveArmedWarning or app.triggers.closeSave then return end
     if not app.dialogs.progressDisplay then
@@ -1139,7 +1233,7 @@ app._uiTasks = {
     end
   end,
 
-  -- 11. Telemetry & Page State Updates
+  -- 15. Telemetry & Page State Updates
   function()
     app.updateTelemetryState()
     if app.uiState == app.uiStatus.mainMenu then
@@ -1151,7 +1245,7 @@ app._uiTasks = {
     end
   end,
 
-  -- 12. Page Retrieval Trigger
+  -- 16. Page Retrieval Trigger
   function()
     if app.uiState == app.uiStatus.pages then
       if not app.Page and app.PageTmp then app.Page = app.PageTmp end
@@ -1162,7 +1256,7 @@ app._uiTasks = {
     end
   end,
 
-  -- 13. Perform Reload Actions
+  -- 17. Perform Reload Actions
   function()
     if app.triggers.reload then
       app.triggers.reload = false
@@ -1176,7 +1270,7 @@ app._uiTasks = {
     end
   end,
 
-  -- 14. Play Pending Audio Alerts
+  -- 18. Play Pending Audio Alerts
   function()
     local a = app.audio
     if a.playEraseFlash         then utils.playFile("app","eraseflash.wav");            a.playEraseFlash = false end
@@ -1190,7 +1284,7 @@ app._uiTasks = {
     if a.playBufferWarn         then utils.playFileCommon("warn.wav");                  a.playBufferWarn = false end
   end,
 
-  -- 15. Wakeup UI Tasks
+  -- 19. Wakeup UI Tasks
   function()
         if app.Page and app.uiState == app.uiStatus.pages and app.Page.wakeup then
             -- run the pages wakeup function if it exists

@@ -35,30 +35,7 @@ function ui.progressDisplay(title, message)
 
     rfsuite.app.dialogs.progressDisplay = true
     rfsuite.app.dialogs.progressWatchDog = rfsuite.clock
-    rfsuite.app.dialogs.progress = form.openProgressDialog(
-                                {
-                                title = title, 
-                                message = message,
-                                close = function()
-                                end,
-                                wakeup = function()
-                                        local app = rfsuite.app
-                                        app.dialogs.progress:value(app.dialogs.progressCounter)
-                                        if not app.triggers.closeProgressLoader then
-                                            app.dialogs.progressCounter = app.dialogs.progressCounter + 5
-                                        elseif rfsuite.tasks.msp.mspQueue:isProcessed() then
-                                            app.dialogs.progressCounter = app.dialogs.progressCounter + 15
-                                            if app.dialogs.progressCounter >= 100 then
-                                                app.dialogs.progress:close()
-                                                app.dialogs.progressDisplay = false
-                                                app.dialogs.progressCounter = 0
-                                                app.triggers.closeProgressLoader = false
-                                            end
-                                        end
-                                end     
-                                }
-                                )
-
+    rfsuite.app.dialogs.progress = form.openProgressDialog(title, message)
     rfsuite.app.dialogs.progressCounter = 0
 
     local progress = rfsuite.app.dialogs.progress
@@ -76,66 +53,9 @@ end
 ]]
 function ui.progressNolinkDisplay()
     rfsuite.app.dialogs.nolinkDisplay = true
-    --rfsuite.app.dialogs.noLink = form.openProgressDialog(, )
-
-    rfsuite.app.dialogs.noLink = form.openProgressDialog(
-                                {
-                                title = i18n("app.msg_connecting"), 
-                                message = i18n("app.msg_connecting_to_fbl"),
-                                close = function()
-                                end,
-                                wakeup = function()
-                                    local app = rfsuite.app
-                                    local utils = rfsuite.utils
-
-                                    local apiStr = tostring(rfsuite.session.apiVersion)
-                                    local moduleEnabled = model.getModule(0):enable() or model.getModule(1):enable()
-                                    local sensorSport = system.getSource({appId=0xF101})
-                                    local sensorElrs  = system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1})
-                                    local curRssi    = app.utils.getRSSI()
-                                    local invalid, abort = false, false
-                                    local msg = i18n("app.msg_connecting_to_fbl")
-                                    if not utils.ethosVersionAtLeast() then
-                                    msg = string.format("%s < V%d.%d.%d", string.upper(i18n("ethos")), table.unpack(rfsuite.config.ethosVersion))
-                                    elseif not rfsuite.tasks.active() then
-                                    msg, invalid, abort = i18n("app.check_bg_task"), true, true
-                                    elseif not moduleEnabled and not app.offlineMode then
-                                    msg, invalid = i18n("app.check_rf_module_on"), true
-                                    elseif not (sensorSport or sensorElrs) and not app.offlineMode then
-                                    msg, invalid = i18n("app.check_discovered_sensors"), true
-                                    elseif curRssi == 0 and not app.offlineMode then
-                                    msg, invalid = i18n("app.check_heli_on"), true
-                                    elseif not utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiStr) and not app.offlineMode then
-                                    msg = i18n("app.check_supported_version") .. " (" .. apiStr .. ")"
-                                    end
-                                    app.triggers.invalidConnectionSetup = invalid
-                                    local step = invalid and 5 or 10
-                                    app.dialogs.nolinkValueCounter = app.dialogs.nolinkValueCounter + step
-                                    rfsuite.app.dialogs.noLink:value(app.dialogs.nolinkValueCounter)
-                                    rfsuite.app.dialogs.noLink:message(msg)
-                                    if invalid and app.dialogs.nolinkValueCounter == 10 then app.audio.playBufferWarn = true end
-                                    if app.dialogs.nolinkValueCounter >= 100 then
-                                      app.dialogs.nolinkDisplay = false
-                                      app.triggers.wasConnected    = true
-                                     rfsuite.app.dialogs.noLink:close()
-                                      if abort then app.close() end
-                                    end
-                                end     
-                                }
-                                )
-
-
+    rfsuite.app.dialogs.noLink = form.openProgressDialog(i18n("app.msg_connecting"), i18n("app.msg_connecting_to_fbl"))
     rfsuite.app.dialogs.noLink:closeAllowed(false)
     rfsuite.app.dialogs.noLink:value(0)
-end
-
-
---- Closes the "No Link" progress dialog if it is currently open.
--- This function checks if the `noLink` dialog exists in `rfsuite.app.dialogs`.
--- If it does, it calls the `close` method on the dialog to close it.
-function ui.progressNolinkDisplayClose()
-    if not rfsuite.app.dialogs.noLink then return end
-    rfsuite.app.dialogs.noLink:close()
 end
 
 --[[
@@ -144,39 +64,14 @@ end
                  Sets the save display flag, initializes the save watchdog timer, 
                  and configures the progress dialog with initial values.
 ]]
-function ui.progressDisplaySave(message)
+function ui.progressDisplaySave(msg)
     rfsuite.app.dialogs.saveDisplay = true
     rfsuite.app.dialogs.saveWatchDog = rfsuite.clock
-    local title = i18n("app.msg_saving")
-    if not message then
-        message = i18n("app.msg_saving_to_fbl")
-    end   
-
-    rfsuite.app.dialogs.save = form.openProgressDialog(
-                                {
-                                title = title, 
-                                message = message,
-                                close = function()
-                                end,
-                                wakeup = function()
-                                        local app = rfsuite.app
-                                        app.dialogs.save:value(app.dialogs.saveProgressCounter)
-                                        if not app.dialogs.saveProgressCounter then                  
-                                            app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 5
-                                        elseif rfsuite.tasks.msp.mspQueue:isProcessed() then
-                                            app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 15
-                                            if app.dialogs.saveProgressCounter >= 100 then
-                                                app.dialogs.save:close()
-                                                app.dialogs.saveDisplay = false
-                                                app.dialogs.saveProgressCounter = 0
-                                                app.triggers.closeSave = false
-                                                app.triggers.isSaving = false
-                                            end
-                                        end
-                                end     
-                                }
-                                )
-
+    if msg then
+                 rfsuite.app.dialogs.save = form.openProgressDialog(i18n("app.msg_saving"),msg)   
+    else
+         rfsuite.app.dialogs.save = form.openProgressDialog(i18n("app.msg_saving"), i18n("app.msg_saving_to_fbl"))       
+    end
     rfsuite.app.dialogs.save:value(0)
     rfsuite.app.dialogs.save:closeAllowed(false)
 end
@@ -292,6 +187,41 @@ end
 function ui.progressDisplaySaveCloseAllowed(status)
     local saveDialog = rfsuite.app.dialogs.save
     if saveDialog then saveDialog:closeAllowed(status) end
+end
+
+-- Closes the "no link" dialog in the rfsuite application.
+-- This function is used to close the dialog that indicates there is no link.
+function ui.progressNolinkDisplayClose()
+    rfsuite.app.dialogs.noLink:close()
+end
+
+--[[
+    Function: ui.progressDisplayNoLinkValue
+
+    Updates the progress display for a "no link" scenario.
+
+    Parameters:
+    - value (number): The progress value to display. If the value is 100 or more, the display is updated immediately.
+    - message (string, optional): An optional message to display along with the progress value.
+
+    Behavior:
+    - If the value is 100 or more, the progress display is updated immediately with the provided value and message.
+    - If the value is less than 100, the progress display is updated only if a certain rate limit has been exceeded.
+    - The rate limit is controlled by `rfsuite.app.dialogs.nolinkRate` and `rfsuite.app.dialogs.nolinkRateLimit`.
+]]
+function ui.progressDisplayNoLinkValue(value, message)
+    if value >= 100 then
+        rfsuite.app.dialogs.noLink:value(value)
+        if message then rfsuite.app.dialogs.noLink:message(message) end
+        return
+    end
+
+    local now = rfsuite.clock
+    if (now - rfsuite.app.dialogs.nolinkRateLimit) >= rfsuite.app.dialogs.nolinkRate then
+        rfsuite.app.dialogs.nolinkRateLimit = now
+        rfsuite.app.dialogs.noLink:value(value)
+        if message then rfsuite.app.dialogs.noLink:message(message) end
+    end
 end
 
 -- Disables all form fields in the rfsuite application.

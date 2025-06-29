@@ -101,7 +101,6 @@ function MspQueueController:processQueue()
     if self.mspBusyStart and (rfsuite.clock - self.mspBusyStart) > mspBusyTimeout then
         rfsuite.utils.log("MSP busy timeout exceeded. Forcing clear.", "warn")
         rfsuite.app.triggers.mspBusy = false
-        self:clear()
         self.mspBusyStart = nil
         return
     end
