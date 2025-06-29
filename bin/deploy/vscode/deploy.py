@@ -171,14 +171,14 @@ def main():
             if re.match(r'^[A-Za-z]:[\\/]', line):
                 return line.strip()
         print("Error: could not determine SCRIPTS folder.", file=sys.stderr)
-        sys.exit(1)
+        sys.exit("Error: could not determine SCRIPTS folder.")
 
     # 1) radioDebugOnly: only debug, no deploy
     if args.radioDebugOnly:
         ethos_bin = args.ethos_bin or os.environ.get('FRSKY_ETHOS_SUITE_BIN')
         if not ethos_bin:
             print("Error: must set --ethos-bin or FRSKY_ETHOS_SUITE_BIN", file=sys.stderr)
-            sys.exit(1)
+            sys.exit("Error: must set --ethos-bin or FRSKY_ETHOS_SUITE_BIN")
 
         print("Debug-only: entering serial debug …")
         try:
@@ -194,14 +194,14 @@ def main():
                     break
         except subprocess.CalledProcessError as e:
             print(f"Radio not connected: {e}")
-        sys.exit(0)
+        sys.exit("Radio not connected: exiting.")
 
     # 2) Normal or radio-driven deploy
     if args.radio:
         ethos_bin = args.ethos_bin or os.environ.get('FRSKY_ETHOS_SUITE_BIN')
         if not ethos_bin:
             print("Error: must set --ethos-bin or FRSKY_ETHOS_SUITE_BIN", file=sys.stderr)
-            sys.exit(1)
+            sys.exit("Error: must set --ethos-bin or FRSKY_ETHOS_SUITE_BIN")
         args.destfolders = get_scripts_folder(ethos_bin)
 
     # 3) Perform file copy/deploy
