@@ -5,7 +5,7 @@
 
  * MSP Sensor Table Structure
  *
- * msp_sensors: A table defining APIs to be polled via MSP and how to map their values to telemetry sensors.
+ * smart_sensors: A table defining APIs to be polled via MSP and how to map their values to telemetry sensors.
  * Each top-level key is the MSP API name (e.g., "DATAFLASH_SUMMARY").
  * Each entry must include polling intervals and a 'fields' table containing telemetry sensor configs.
  *
@@ -14,7 +14,6 @@
  *   API_NAME = {
  *     interval_armed: <number>         -- Interval (in seconds) to poll this API when the model is armed (-1 for no polling)
  *     interval_disarmed: <number>      -- Interval (in seconds) when disarmed (-1 for no polling)
- *     interval_admin: <number>         -- Interval (in seconds) when admin module loaded (-1 for no polling)
  *
  *     fields = {
  *       field_key = {
@@ -81,7 +80,7 @@ local smart_sensors = {
     },
 }
 
-smart.sensors = msp_sensors
+smart.sensors = smart_sensors
 local sensorCache = {}
 
 local function createOrUpdateSensor(appId, fieldMeta, value)
