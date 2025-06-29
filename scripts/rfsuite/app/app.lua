@@ -1001,7 +1001,7 @@ app._uiTasks = {
     if not app.dialogs.nolinkDisplay and not app.triggers.wasConnected then
       if app.dialogs.progressDisplay then app.ui.progressDisplayClose() end
       if app.dialogs.saveDisplay then app.ui.progressDisplaySaveClose() end
-      app.ui.progressNolinkDisplay()
+      if app.ui then app.ui.progressNolinkDisplay() end
       app.dialogs.nolinkDisplay = true
     end
   end,
