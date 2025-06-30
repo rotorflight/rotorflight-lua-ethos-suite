@@ -35,12 +35,12 @@ local function openPage(pageIdx, title, script)
     -- Audio Alerting On/Off
     formFieldCount = formFieldCount + 1
     rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = form.addLine("Audio Alerting")
+    rfsuite.app.formLines[rfsuite.session.formLineCnt] = form.addLine("Timer Alerting")
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(
         rfsuite.app.formLines[rfsuite.session.formLineCnt], nil,
-        function() return settings.audioon or false end,
+        function() return settings.timeraudioenable or false end,
         function(newValue)
-            settings.audioon = newValue
+            settings.timeraudioenable = newValue
             rfsuite.app.formFields[idxChoice]:enable(newValue)
             rfsuite.app.formFields[idxPre]:enable(newValue)
             rfsuite.app.formFields[idxPrePeriod]:enable(newValue and (settings.prealerton or false))
@@ -60,7 +60,7 @@ local function openPage(pageIdx, title, script)
         rfsuite.app.formLines[rfsuite.session.formLineCnt], nil,
         {
             { "Beep", 0 },
-            { "Extended Beep", 1 },
+            { "Multi Beep", 1 },
             { "Timer Elapsed", 2 },
             { "Timer Seconds", 3 },
         },
@@ -81,8 +81,8 @@ local function openPage(pageIdx, title, script)
         function() return settings.prealerton or false end,
         function(newValue)
             settings.prealerton = newValue
-            rfsuite.app.formFields[idxPrePeriod]:enable(newValue and (settings.audioon or false))
-            rfsuite.app.formFields[idxPreInterval]:enable(newValue and (settings.audioon or false))
+            rfsuite.app.formFields[idxPrePeriod]:enable(newValue and (settings.timeraudioenable or false))
+            rfsuite.app.formFields[idxPreInterval]:enable(newValue and (settings.timeraudioenable or false))
         end
     )
 
@@ -95,7 +95,7 @@ local function openPage(pageIdx, title, script)
         function() return settings.prealertperiod or 30 end,
         function(newValue) settings.prealertperiod = newValue end
     )
-    rfsuite.app.formFields[formFieldCount]:enable((settings.audioon or false) and (settings.prealerton or false))
+    rfsuite.app.formFields[formFieldCount]:enable((settings.timeraudioenable or false) and (settings.prealerton or false))
 
     -- Pre-timer Alert Interval (Choice)
     formFieldCount = formFieldCount + 1
@@ -106,7 +106,7 @@ local function openPage(pageIdx, title, script)
         function() return settings.prealertinterval or 10 end,
         function(newValue) settings.prealertinterval = newValue end
     )
-    rfsuite.app.formFields[formFieldCount]:enable((settings.audioon or false) and (settings.prealerton or false))
+    rfsuite.app.formFields[formFieldCount]:enable((settings.timeraudioenable or false) and (settings.prealerton or false))
 
     -- Post-timer Alert Options Panel
     local postPanel = form.addExpansionPanel("Post-timer Alert Options")
@@ -120,8 +120,8 @@ local function openPage(pageIdx, title, script)
         function() return settings.postalerton or false end,
         function(newValue)
             settings.postalerton = newValue
-            rfsuite.app.formFields[idxPostPeriod]:enable(newValue and (settings.audioon or false))
-            rfsuite.app.formFields[idxPostInterval]:enable(newValue and (settings.audioon or false))
+            rfsuite.app.formFields[idxPostPeriod]:enable(newValue and (settings.timeraudioenable or false))
+            rfsuite.app.formFields[idxPostInterval]:enable(newValue and (settings.timeraudioenable or false))
         end
     )
 
@@ -134,7 +134,7 @@ local function openPage(pageIdx, title, script)
         function() return settings.postalertperiod or 60 end,
         function(newValue) settings.postalertperiod = newValue end
     )
-    rfsuite.app.formFields[formFieldCount]:enable((settings.audioon or false) and (settings.postalerton or false))
+    rfsuite.app.formFields[formFieldCount]:enable((settings.timeraudioenable or false) and (settings.postalerton or false))
 
     -- Post-timer Alert Interval (Choice)
     formFieldCount = formFieldCount + 1
@@ -145,16 +145,16 @@ local function openPage(pageIdx, title, script)
         function() return settings.postalertinterval or 10 end,
         function(newValue) settings.postalertinterval = newValue end
     )
-    rfsuite.app.formFields[formFieldCount]:enable((settings.audioon or false) and (settings.postalerton or false))
+    rfsuite.app.formFields[formFieldCount]:enable((settings.timeraudioenable or false) and (settings.postalerton or false))
 
     -- --- Initial enable/disable state for base options
-    rfsuite.app.formFields[idxChoice]:enable(settings.audioon or false)
-    rfsuite.app.formFields[idxPre]:enable(settings.audioon or false)
-    rfsuite.app.formFields[idxPrePeriod]:enable((settings.audioon or false) and (settings.prealerton or false))
-    rfsuite.app.formFields[idxPreInterval]:enable((settings.audioon or false) and (settings.prealerton or false))
-    rfsuite.app.formFields[idxPost]:enable(settings.audioon or false)
-    rfsuite.app.formFields[idxPostPeriod]:enable((settings.audioon or false) and (settings.postalerton or false))
-    rfsuite.app.formFields[idxPostInterval]:enable((settings.audioon or false) and (settings.postalerton or false))
+    rfsuite.app.formFields[idxChoice]:enable(settings.timeraudioenable or false)
+    rfsuite.app.formFields[idxPre]:enable(settings.timeraudioenable or false)
+    rfsuite.app.formFields[idxPrePeriod]:enable((settings.timeraudioenable or false) and (settings.prealerton or false))
+    rfsuite.app.formFields[idxPreInterval]:enable((settings.timeraudioenable or false) and (settings.prealerton or false))
+    rfsuite.app.formFields[idxPost]:enable(settings.timeraudioenable or false)
+    rfsuite.app.formFields[idxPostPeriod]:enable((settings.timeraudioenable or false) and (settings.postalerton or false))
+    rfsuite.app.formFields[idxPostInterval]:enable((settings.timeraudioenable or false) and (settings.postalerton or false))
 end
 
 local function onSaveMenu()

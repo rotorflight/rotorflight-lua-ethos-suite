@@ -34,7 +34,7 @@ function timer.wakeup()
     local batteryConfig = session and session.batteryConfig
     local targetSeconds = batteryConfig and batteryConfig.modelFlightTime or 0
 
-    if not prefs.audioon then
+    if not prefs.timeraudioenable then
         triggered = false
         lastBeepTime = nil
         preLastBeepTime = nil
@@ -91,13 +91,12 @@ function timer.wakeup()
             if elapsedMode == 0 then
                 rfsuite.utils.playFileCommon("beep.wav")
             elseif elapsedMode == 1 then
-                rfsuite.utils.playFile("events", "alerts/longbeep.wav") -- needs associated audio
+                rfsuite.utils.playFileCommon("multibeep.wav")
             elseif elapsedMode == 2 then
-                rfsuite.utils.playFile("events", "alerts/timer_elapsed.wav") -- needs associated audio
+                rfsuite.utils.playFile("events", "alerts/timerelapsed.wav")
             elseif elapsedMode == 3 then
-                rfsuite.utils.playFile("events", "alerts/timer.wav") -- needs testing to ensure 300ms delay is acceptable and 1 plays the unit seconds
-                system.sleep(300)
-                system.playNumber(targetSeconds, 1)
+                rfsuite.utils.playFile("status", "alerts/timer.wav")
+                system.playNumber(targetSeconds, UNIT_SECONDS)
             end
             triggered = true
             lastBeepTime = now

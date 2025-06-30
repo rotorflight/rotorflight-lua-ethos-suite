@@ -1,83 +1,77 @@
 #app,#text to play
-app/timeout.wav,Timed out,,
-app/powercycleesc.wav, Herstart de motor besturing,,
-app/soverideen.wav,Servo handmatig - aan,,
-app/soveridedis.wav,Servo handmatig - uit,,
-app/eraseflash.wav, Data flash leeg maken,,
-app/moverideen.wav,Mixer handmatig - aan,,
-app/moveridedis.wav,Mixer handmatig - uit,,
-
-#events,#text to play
-events/alerts/lowvoltage.wav,Laag Voltage,,
-events/alerts/lowfuel.wav,Laag brandstof,,
-events/alerts/armed.wav,Armed,,
-events/alerts/disarmed.wav,Disarmed,,
-events/alerts/profile.wav,Profiel,,
-events/alerts/rates.wav,Rates,,
-events/gov/off.wav,Governor - Uit,,
-events/gov/idle.wav,Governor - Idle,,
-events/gov/spoolup.wav,Governor - Opstarten,,
-events/gov/recovery.wav,Governor - Herstellen,,
-events/gov/active.wav,Governor - Actief,,
-events/gov/thr-off.wav,Governor - Throttle uit,,
-events/gov/lost-hs.wav,Governor - Rotortoerental verloren,,
-events/gov/autorot.wav,Governor - Auto roteren,,
-events/gov/bailout.wav,Governor - Bailout,,
-events/gov/disabled.wav,Governor - Uit,,
-events/gov/disarmed.wav,Governor - Disarmed,,
-events/gov/unknown.wav,Governor - Onbekend,,
-
-
-#adjfunc,#text to play
-adjfunctions/pitch.wav,Pitch,,
-adjfunctions/roll.wav,Roll,,
-adjfunctions/yaw.wav,Yaw,,
-adjfunctions/rc.wav,RC,,
-adjfunctions/rate.wav,Rate,,
-adjfunctions/p.wav,P,,
-adjfunctions/i.wav,I,,
-adjfunctions/d.wav,D,,
-adjfunctions/f.wav,F,,
-adjfunctions/o.wav,O,,
-adjfunctions/gain.wav,Gain,,
-adjfunctions/cw.wav,CW,,
-adjfunctions/ccw.wav,CCW,,
-adjfunctions/cyclic.wav,Cyclic,,
-adjfunctions/ff.wav,Feed Forward,,
-adjfunctions/collective.wav,Collective,,
-adjfunctions/dyn.wav,Dynamic,,
-adjfunctions/decay.wav,Decay,,
-adjfunctions/gyro.wav,Gyro,,
-adjfunctions/cutoff.wav,Cut Off,,
-adjfunctions/dterm.wav,d term,,
-adjfunctions/rescue.wav,Rescue,,
-adjfunctions/climb.wav,Klim,,
-adjfunctions/hover.wav,Hover,,
-adjfunctions/alt.wav,Hoogte,,
-adjfunctions/angle.wav,Angle,,
-adjfunctions/level.wav,Level,,
-adjfunctions/horizon.wav,horizon,,
-adjfunctions/acro.wav,Acro,,
-adjfunctions/gov.wav,Governor,,
-adjfunctions/crossc.wav,Cross Coupling,,
-adjfunctions/acc.wav,Accelerometer,,
-adjfunctions/trim.wav,Trim,,
-adjfunctions/setpoint.wav,Setpoint,,
-adjfunctions/precomp.wav,Precomp,,
-adjfunctions/inertia.wav,Inertia,,
-adjfunctions/boost.wav,Boost,,
-adjfunctions/filter.wav,Filter,,
-adjfunctions/deadband.wav,Deadband,,
-
-#status,#text to play
-status/alerts/current.wav,Stroom,,
-status/alerts/esc.wav,Esc Temperatuur,,
-status/alerts/mcu.wav,MCU Temperatuur,,
-status/alerts/fuel.wav,Brandstof,,
-status/alerts/headspeed.wav,Rotortoerental,,
-status/alerts/lowfuel.wav,Laag brandstof,,
-status/alerts/lowvoltage.wav,Laag Voltage,,
-status/alerts/lq.wav,Link kwaliteit,,
-status/alerts/remaining.wav, Over,,
-status/alerts/timer.wav,timer,,
-status/alerts/voltage.wav,voltage,,
+app/timeout.wav,Timed out
+app/powercycleesc.wav, Herstart de motor besturing
+app/soverideen.wav,Servo handmatig - aan
+app/soveridedis.wav,Servo handmatig - uit
+app/eraseflash.wav, Data flash leeg maken
+app/moverideen.wav,Mixer handmatig - aan
+app/moveridedis.wav,Mixer handmatig - uit
+events/alerts/lowvoltage.wav,Laag Voltage
+events/alerts/lowfuel.wav,Laag brandstof
+events/alerts/armed.wav,Armed
+events/alerts/disarmed.wav,Disarmed
+events/alerts/profile.wav,Profiel
+events/alerts/rates.wav,Rates
+events/alerts/timerelapsed.wav,Timer Elapsed
+events/gov/off.wav,Governor - Uit
+events/gov/idle.wav,Governor - Idle
+events/gov/spoolup.wav,Governor - Opstarten
+events/gov/recovery.wav,Governor - Herstellen
+events/gov/active.wav,Governor - Actief
+events/gov/thr-off.wav,Governor - Throttle uit
+events/gov/lost-hs.wav,Governor - Rotortoerental verloren
+events/gov/autorot.wav,Governor - Auto roteren
+events/gov/bailout.wav,Governor - Bailout
+events/gov/disabled.wav,Governor - Uit
+events/gov/disarmed.wav,Governor - Disarmed
+events/gov/unknown.wav,Governor - Onbekend
+adjfunctions/pitch.wav,Pitch
+adjfunctions/roll.wav,Roll
+adjfunctions/yaw.wav,Yaw
+adjfunctions/rc.wav,RC
+adjfunctions/rate.wav,Rate
+adjfunctions/p.wav,P
+adjfunctions/i.wav,I
+adjfunctions/d.wav,D
+adjfunctions/f.wav,F
+adjfunctions/o.wav,O
+adjfunctions/gain.wav,Gain
+adjfunctions/cw.wav,CW
+adjfunctions/ccw.wav,CCW
+adjfunctions/cyclic.wav,Cyclic
+adjfunctions/ff.wav,Feed Forward
+adjfunctions/collective.wav,Collective
+adjfunctions/dyn.wav,Dynamic
+adjfunctions/decay.wav,Decay
+adjfunctions/gyro.wav,Gyro
+adjfunctions/cutoff.wav,Cut Off
+adjfunctions/dterm.wav,d term
+adjfunctions/rescue.wav,Rescue
+adjfunctions/climb.wav,Klim
+adjfunctions/hover.wav,Hover
+adjfunctions/alt.wav,Hoogte
+adjfunctions/angle.wav,Angle
+adjfunctions/level.wav,Level
+adjfunctions/horizon.wav,horizon
+adjfunctions/acro.wav,Acro
+adjfunctions/gov.wav,Governor
+adjfunctions/crossc.wav,Cross Coupling
+adjfunctions/acc.wav,Accelerometer
+adjfunctions/trim.wav,Trim
+adjfunctions/setpoint.wav,Setpoint
+adjfunctions/precomp.wav,Precomp
+adjfunctions/inertia.wav,Inertia
+adjfunctions/boost.wav,Boost
+adjfunctions/filter.wav,Filter
+adjfunctions/deadband.wav,Deadband
+status/alerts/current.wav,Stroom
+status/alerts/esc.wav,Esc Temperatuur
+status/alerts/mcu.wav,MCU Temperatuur
+status/alerts/fuel.wav,Brandstof
+status/alerts/headspeed.wav,Rotortoerental
+status/alerts/lowfuel.wav,Laag brandstof
+status/alerts/lowvoltage.wav,Laag Voltage
+status/alerts/lq.wav,Link kwaliteit
+status/alerts/remaining.wav, Over
+status/alerts/timer.wav,timer
+status/alerts/voltage.wav,voltage

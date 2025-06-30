@@ -1,82 +1,77 @@
 #app,#text to play
-app/timeout.wav,Délai dépassé,,
-app/powercycleesc.wav,Veuillez redemarrée le controleur de vitesse,,
-app/soverideen.wav,Commande servo - activé,,
-app/soveridedis.wav,Commande servo - désactivé,,
-app/eraseflash.wav,Effacement de la mémoire flash,,
-app/moverideen.wav,Commande mixeur - activé,,
-app/moveridedis.wav,Commande mixeur - désactivé,,
-
-#events,#text to play
-events/alerts/lowvoltage.wav,Tension faible,,
-events/alerts/lowfuel.wav,Carburant faible,,
-events/alerts/armed.wav,Armé,,
-events/alerts/disarmed.wav,Désarmé,,
-events/alerts/profile.wav,Profil,,
-events/alerts/rates.wav,Taux,,
-events/gov/off.wav,Gouverneur - Arrêté,,
-events/gov/idle.wav,Gouverneur - Ralenti,,
-events/gov/spoolup.wav,Gouverneur - Accélération,,
-events/gov/recovery.wav,Gouverneur - Récupération,,
-events/gov/active.wav,Gouverneur - Actif,,
-events/gov/thr-off.wav,Gouverneur - Accélération coupé,,
-events/gov/lost-hs.wav,Gouverneur - Vitesse rotor perdue,,
-events/gov/autorot.wav,Gouverneur - Autorotation,,
-events/gov/bailout.wav,Gouverneur - Sauvetage,,
-events/gov/disabled.wav,Gouverneur - Désactivé,,
-events/gov/disarmed.wav,Gouverneur - Désarmé,,
-events/gov/unknown.wav,Gouverneur - Inconnu,,
-
-#adjfunc,#text to play
-adjfunctions/pitch.wav,Tangage,,
-adjfunctions/roll.wav,Roulis,,
-adjfunctions/yaw.wav,Lacet,,
-adjfunctions/rc.wav,Radiocommande,,
-adjfunctions/rate.wav,Taux,,
-adjfunctions/p.wav,P,,
-adjfunctions/i.wav,I,,
-adjfunctions/d.wav,D,,
-adjfunctions/f.wav,F,,
-adjfunctions/o.wav,O,,
-adjfunctions/gain.wav,Gain,,
-adjfunctions/cw.wav,Sens horaire,,
-adjfunctions/ccw.wav,Sens antihoraire,,
-adjfunctions/cyclic.wav,Cyclique,,
-adjfunctions/ff.wav,Avance anticipatrice,,
-adjfunctions/collective.wav,Pas collectif,,
-adjfunctions/dyn.wav,Dynamique,,
-adjfunctions/decay.wav,Atténuation,,
-adjfunctions/gyro.wav,Gyroscope,,
-adjfunctions/cutoff.wav,Seuil,,
-adjfunctions/dterm.wav,Terme D,,
-adjfunctions/rescue.wav,Sauvetage,,
-adjfunctions/climb.wav,Monté,,
-adjfunctions/hover.wav,Vol stationnaire,,
-adjfunctions/alt.wav,Altitude,,
-adjfunctions/angle.wav,Angle,,
-adjfunctions/level.wav,Niveau,,
-adjfunctions/horizon.wav,Horizon,,
-adjfunctions/acro.wav,Acro,,
-adjfunctions/gov.wav,Gouverneur,,
-adjfunctions/crossc.wav,Couplage croisé,,
-adjfunctions/acc.wav,Accélèromètre,,
-adjfunctions/trim.wav,Trim,,
-adjfunctions/setpoint.wav,Consigne,,
-adjfunctions/precomp.wav,Précompensation,,
-adjfunctions/inertia.wav,Inertie,,
-adjfunctions/boost.wav,Amplification,,
-adjfunctions/filter.wav,Filtre,,
-adjfunctions/deadband.wav,Zone morte,,
-
-#status,#text to play
-status/alerts/current.wav,Courant,,
-status/alerts/esc.wav,Temperature ESC,,
-status/alerts/mcu.wav,Temperature Processeur,,
-status/alerts/fuel.wav,Carburant,,
-status/alerts/headspeed.wav,Vitesse rotor,,
-status/alerts/lowfuel.wav,Carburant faible,,
-status/alerts/lowvoltage.wav,Tension faible,,
-status/alerts/lq.wav,Qualité du Signal,,
-status/alerts/remaining.wav,Restant,,
-status/alerts/timer.wav,Minuteur,,
-status/alerts/voltage.wav,Tension,,
+app/timeout.wav,Délai dépassé
+app/powercycleesc.wav,Veuillez redemarrée le controleur de vitesse
+app/soverideen.wav,Commande servo - activé
+app/soveridedis.wav,Commande servo - désactivé
+app/eraseflash.wav,Effacement de la mémoire flash
+app/moverideen.wav,Commande mixeur - activé
+app/moveridedis.wav,Commande mixeur - désactivé
+events/alerts/lowvoltage.wav,Tension faible
+events/alerts/lowfuel.wav,Carburant faible
+events/alerts/armed.wav,Armé
+events/alerts/disarmed.wav,Désarmé
+events/alerts/profile.wav,Profil
+events/alerts/rates.wav,Taux
+events/alerts/timerelapsed.wav,Timer Elapsed
+events/gov/off.wav,Gouverneur - Arrêté
+events/gov/idle.wav,Gouverneur - Ralenti
+events/gov/spoolup.wav,Gouverneur - Accélération
+events/gov/recovery.wav,Gouverneur - Récupération
+events/gov/active.wav,Gouverneur - Actif
+events/gov/thr-off.wav,Gouverneur - Accélération coupé
+events/gov/lost-hs.wav,Gouverneur - Vitesse rotor perdue
+events/gov/autorot.wav,Gouverneur - Autorotation
+events/gov/bailout.wav,Gouverneur - Sauvetage
+events/gov/disabled.wav,Gouverneur - Désactivé
+events/gov/disarmed.wav,Gouverneur - Désarmé
+events/gov/unknown.wav,Gouverneur - Inconnu
+adjfunctions/pitch.wav,Tangage
+adjfunctions/roll.wav,Roulis
+adjfunctions/yaw.wav,Lacet
+adjfunctions/rc.wav,Radiocommande
+adjfunctions/rate.wav,Taux
+adjfunctions/p.wav,P
+adjfunctions/i.wav,I
+adjfunctions/d.wav,D
+adjfunctions/f.wav,F
+adjfunctions/o.wav,O
+adjfunctions/gain.wav,Gain
+adjfunctions/cw.wav,Sens horaire
+adjfunctions/ccw.wav,Sens antihoraire
+adjfunctions/cyclic.wav,Cyclique
+adjfunctions/ff.wav,Avance anticipatrice
+adjfunctions/collective.wav,Pas collectif
+adjfunctions/dyn.wav,Dynamique
+adjfunctions/decay.wav,Atténuation
+adjfunctions/gyro.wav,Gyroscope
+adjfunctions/cutoff.wav,Seuil
+adjfunctions/dterm.wav,Terme D
+adjfunctions/rescue.wav,Sauvetage
+adjfunctions/climb.wav,Monté
+adjfunctions/hover.wav,Vol stationnaire
+adjfunctions/alt.wav,Altitude
+adjfunctions/angle.wav,Angle
+adjfunctions/level.wav,Niveau
+adjfunctions/horizon.wav,Horizon
+adjfunctions/acro.wav,Acro
+adjfunctions/gov.wav,Gouverneur
+adjfunctions/crossc.wav,Couplage croisé
+adjfunctions/acc.wav,Accélèromètre
+adjfunctions/trim.wav,Trim
+adjfunctions/setpoint.wav,Consigne
+adjfunctions/precomp.wav,Précompensation
+adjfunctions/inertia.wav,Inertie
+adjfunctions/boost.wav,Amplification
+adjfunctions/filter.wav,Filtre
+adjfunctions/deadband.wav,Zone morte
+status/alerts/current.wav,Courant
+status/alerts/esc.wav,Temperature ESC
+status/alerts/mcu.wav,Temperature Processeur
+status/alerts/fuel.wav,Carburant
+status/alerts/headspeed.wav,Vitesse rotor
+status/alerts/lowfuel.wav,Carburant faible
+status/alerts/lowvoltage.wav,Tension faible
+status/alerts/lq.wav,Qualité du Signal
+status/alerts/remaining.wav,Restant
+status/alerts/timer.wav,Minuteur
+status/alerts/voltage.wav,Tension
