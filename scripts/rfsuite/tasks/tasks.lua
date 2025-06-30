@@ -163,12 +163,28 @@ function tasks.wakeup()
     local now = rfsuite.clock
 
     local function canRunTask(task)
-        local overdue = rfsuite.clock - task.last_run >= (task.interval * 20)
+        local intervalTicks = task.interval * 20
+        local isHighFrequency = intervalTicks < 20  -- Less than 1 second
+
+        local clockDelta = rfsuite.clock - task.last_run
+        local graceFactor = 0.25  -- 25% of the interval as grace for low-frequency tasks
+
+        local overdue
+        if isHighFrequency then
+            overdue = clockDelta >= intervalTicks
+        else
+            local graceTicks = intervalTicks * graceFactor
+            overdue = clockDelta >= (intervalTicks + graceTicks)
+        end
+
         local priorityTask = task.name == "msp" or task.name == "callback"
+
         return (not task.linkrequired or rfsuite.session.telemetryState) and
             (priorityTask or overdue or not rfsuite.app.triggers.mspBusy) and
             (not task.simulatoronly or usingSimulator)
     end
+
+
 
     -- Run always-run tasks
     for _, task in ipairs(tasksList) do
