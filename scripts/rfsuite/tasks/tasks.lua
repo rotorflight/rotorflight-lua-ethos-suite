@@ -7,6 +7,14 @@ local currentTelemetrySensor
 local tasksPerCycle = 1
 local taskSchedulerPercentage = 0.2
 
+local useHybridSpread = true  -- Set to false for pure hash-only offset
+                              -- Set useHybridSpread = false for repeatable profiling.
+                              -- Set useHybridSpread = true for better real-world spread and smoother CPU load.
+
+if useHybridSpread then
+    math.randomseed(os.clock() * 100000)
+end
+
 local tasks, tasksList = {}, {}
 tasks.heartbeat, tasks.init, tasks.wasOn = nil, true, false
 rfsuite.session.telemetryTypeChanged = true
@@ -18,6 +26,21 @@ local lastTelemetrySensorName, sportSensor, elrsSensor = nil, nil, nil
 local usingSimulator = system.getVersion().simulation
 
 local tlm = system.getSource({ category = CATEGORY_SYSTEM_EVENT, member = TELEMETRY_ACTIVE })
+
+local function taskOffset(name, interval)
+    local hash = 0
+    for i = 1, #name do
+        hash = (hash * 31 + name:byte(i)) % 100000
+    end
+    local base = (hash % (interval * 1000)) / 1000  -- base hash offset
+
+    if useHybridSpread then
+        local jitter = math.random() * interval
+        return (base + jitter) % interval
+    else
+        return base
+    end
+end
 
 function tasks.initialize()
     local cacheFile, cachePath = "tasks.lua", "cache/tasks.lua"
@@ -42,19 +65,23 @@ function tasks.initialize()
             local script = "tasks/" .. name .. "/" .. meta.script
             local module = assert(compiler(script))(config)
             tasks[name] = module
+            local interval = meta.interval or 1
+            local offset = taskOffset(name, interval)
+
             table.insert(tasksList, {
                 name = name,
-                interval = meta.interval or 1,
+                interval = interval,
                 script = meta.script,
                 spreadschedule = meta.spreadschedule,
                 linkrequired = meta.linkrequired or false,
                 simulatoronly = meta.simulatoronly or false,
-                last_run = rfsuite.clock,
+                last_run = rfsuite.clock - offset,
                 duration = 0
             })
         end
     end
 end
+
 
 function tasks.findTasks()
     local taskPath, taskMetadata = "tasks/", {}
@@ -78,14 +105,17 @@ function tasks.findTasks()
                         utils.log("Failed to load task script " .. scriptPath .. ": " .. loadErr, "warn")
                     end
 
+                    local interval = tconfig.interval or 1
+                    local offset = taskOffset(dir, interval)
+
                     local task = {
                         name = dir,
-                        interval = tconfig.interval or 1,
+                        interval = interval,
                         script = tconfig.script,
                         linkrequired = tconfig.linkrequired or false,
                         spreadschedule = tconfig.spreadschedule or false,
-                        simulatoronly = tconfig.simulatoronly or false,                        
-                        last_run = rfsuite.clock,
+                        simulatoronly = tconfig.simulatoronly or false,
+                        last_run = rfsuite.clock - offset,
                         duration = 0
                     }
                     table.insert(tasksList, task)
@@ -94,7 +124,7 @@ function tasks.findTasks()
                         interval = task.interval,
                         script = task.script,
                         linkrequired = task.linkrequired,
-                        simulatoronly = tconfig.simulatoronly or false,  
+                        simulatoronly = task.simulatoronly,
                         spreadschedule = task.spreadschedule
                     }
                 end
