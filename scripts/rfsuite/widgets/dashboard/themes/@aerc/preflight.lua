@@ -44,6 +44,27 @@ local lightMode = {
 -- alias current mode
 local colorMode = lcd.darkMode() and darkMode or lightMode
 
+-- Theme based configuration settings
+local theme_section = "theme/@aerc"
+
+local THEME_DEFAULTS = {
+    rpm_min      = 0,
+    rpm_max      = 3000,
+    bec_min      = 3.0,
+    bec_max      = 13.0,
+    esctemp_warn = 90,
+    esctemp_max  = 140,
+}
+
+local function getThemeValue(key)
+    if rfsuite and rfsuite.session and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences[theme_section] then
+        local val = rfsuite.session.modelPreferences[theme_section][key]
+        val = tonumber(val)
+        if val ~= nil then return val end
+    end
+    return THEME_DEFAULTS[key]
+end
+
 local boxes = {
     -- Model Image
     {col = 1, row = 1, colspan = 3, rowspan = 8, 
@@ -127,17 +148,17 @@ local boxes = {
      source = "bec_voltage", 
      title = "BEC VOLTAGE", 
      titlepos = "bottom", 
-     min = 3, 
-     max = 13, 
+     min = getThemeValue("bec_min"),
+     max = getThemeValue("bec_max"), 
      decimals = 1, 
      thickness = 13,
      bgcolor = colorMode.bgcolor,
      titlecolor = colorMode.titlecolor,
      textcolor = colorMode.textcolor,
      font = "FONT_XL", 
-        thresholds = {
-            { value = 5.5, fillcolor = "red"   },
-            { value = 13,  fillcolor = "green" }
+     thresholds = {
+         { value = getThemeValue("bec_min"), fillcolor = "red"   },
+         { value = getThemeValue("bec_max"),  fillcolor = "green" }
         }
     },
 
@@ -165,8 +186,8 @@ local boxes = {
      source = "temp_esc", 
      title = "ESC TEMP", 
      titlepos = "bottom", 
-     min = 0, 
-     max = 140, 
+     min = 0,
+     max = getThemeValue("esctemp_max"),
      thickness = 12,
      valuepaddingleft = 10,
      font = "FONT_XL", 
@@ -175,9 +196,9 @@ local boxes = {
      textcolor = colorMode.textcolor,
      transform = "floor", 
         thresholds = {
-            { value = 70,  fillcolor = "green"  },
-            { value = 90,  fillcolor = "orange" },
-            { value = 140, fillcolor = "red"    }
+            { value = getThemeValue("esctemp_warn"), fillcolor = "green"  },
+            { value = getThemeValue("esctemp_max"),  fillcolor = "orange" }, -- will trigger the fill to go red when its above this value
+            { value = 200,                           fillcolor = "red"    }
         }
     },
 
