@@ -96,7 +96,7 @@ function timer.wakeup()
                 rfsuite.utils.playFile("events", "alerts/timerelapsed.wav")
             elseif elapsedMode == 3 then
                 rfsuite.utils.playFile("status", "alerts/timer.wav")
-                system.playNumber(targetSeconds, UNIT_SECONDS)
+                system.playNumber(targetSeconds, UNIT_SECOND)
             end
             triggered = true
             lastBeepTime = now
