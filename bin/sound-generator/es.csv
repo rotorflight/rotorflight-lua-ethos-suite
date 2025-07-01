@@ -1,83 +1,77 @@
 #app,#text to play
-app/timeout.wav,Tiempo agotado,,
-app/powercycleesc.wav,Apague y encienda el variador de velocidad,,
-app/soverideen.wav,Toma de servo - activada,,
-app/soveridedis.wav,Toma de servo - desactivada,,
-app/eraseflash.wav,Borrando memoria flash,,
-app/moverideen.wav,Toma de mezclador - activada,,
-app/moveridedis.wav,Toma de mezclador - desactivada,,
-
-#alerts,#text to play
-events/alerts/lowvoltage.wav,Bajo Voltaje,,
-events/alerts/lowfuel.wav,Combustible Bajo,,
-events/alerts/armed.wav,Armado,,
-events/alerts/disarmed.wav,Desarmado,,
-events/alerts/profile.wav,Perfil,,
-events/alerts/rates.wav,Tasas,,
-events/gov/off.wav,Govérno - Apagado,,
-events/gov/idle.wav,Govérno - Ralentí,,
-events/gov/spoolup.wav,Govérno - Acelerando,,
-events/gov/recovery.wav,Govérno - Recuperación,,
-events/gov/active.wav,Govérno - Activo,,
-events/gov/thr-off.wav,Govérno - Acelerador Apagado,,
-events/gov/lost-hs.wav,Govérno - Pérdida de Velocidad del Rotor,,
-events/gov/autorot.wav,Govérno - Auto Rotación,,
-events/gov/bailout.wav,Govérno - Rescate,,
-events/gov/disabled.wav,Govérno - Deshabilitado,,
-events/gov/disarmed.wav,Govérno - Desarmado,,
-events/gov/unknown.wav,Govérno - Desconocido,,
-
-
-#adjfunc,#text to play
-adjfunctions/pitch.wav,Cabeceo,,
-adjfunctions/roll.wav,Rolido,,
-adjfunctions/yaw.wav,Rotación,,
-adjfunctions/rc.wav,RC,,
-adjfunctions/rate.wav,Tasa,,
-adjfunctions/p.wav,P,,
-adjfunctions/i.wav,I,,
-adjfunctions/d.wav,D,,
-adjfunctions/f.wav,F,,
-adjfunctions/o.wav,O,,
-adjfunctions/gain.wav,Ganancia,,
-adjfunctions/cw.wav,Sentido Horario,,
-adjfunctions/ccw.wav,Sentido Antihorario,,
-adjfunctions/cyclic.wav,Cíclico,,
-adjfunctions/ff.wav,Pasaje Adelante,,
-adjfunctions/collective.wav,Colectivo,,
-adjfunctions/dyn.wav,Dinámico,,
-adjfunctions/decay.wav,Decadencia,,
-adjfunctions/gyro.wav,Giro,,
-adjfunctions/cutoff.wav,Corte,,
-adjfunctions/dterm.wav,Término d,,
-adjfunctions/rescue.wav,Rescate,,
-adjfunctions/climb.wav,Trepada,,
-adjfunctions/hover.wav,Sobrevuelo,,
-adjfunctions/alt.wav,Altitud,,
-adjfunctions/angle.wav,ángulo,,
-adjfunctions/level.wav,Nivel,,
-adjfunctions/horizon.wav,horizonte,,
-adjfunctions/acro.wav,Acro,,
-adjfunctions/gov.wav,Govérno,,
-adjfunctions/crossc.wav,Acoplamiento Cruzado,,
-adjfunctions/acc.wav,Acelerómetro,,
-adjfunctions/trim.wav,Recorte,,
-adjfunctions/setpoint.wav,Punto de ajuste,,
-adjfunctions/precomp.wav,Precompensación,,
-adjfunctions/inertia.wav,Inercia,,
-adjfunctions/boost.wav,Impulso,,
-adjfunctions/filter.wav,Filtro,,
-adjfunctions/deadband.wav,Zona muerta,,
-
-#status,#text to play
-status/alerts/current.wav,Corriente,,
-status/alerts/esc.wav,Temperatura del variador,,
-status/alerts/mcu.wav,Temperatura del procesador,,
-status/alerts/fuel.wav,Combustible,,
-status/alerts/headspeed.wav,Velocidad del Rotor,,
-status/alerts/lowfuel.wav,Combustible Bajo,,
-status/alerts/lowvoltage.wav,Bajo Voltaje,,
-status/alerts/lq.wav,Calidad de la Conexión,,
-status/alerts/remaining.wav,restante,,
-status/alerts/timer.wav,timer,,
-status/alerts/voltage.wav,voltaje,,
+app/timeout.wav,Tiempo agotado
+app/powercycleesc.wav,Apague y encienda el variador de velocidad
+app/soverideen.wav,Toma de servo - activada
+app/soveridedis.wav,Toma de servo - desactivada
+app/eraseflash.wav,Borrando memoria flash
+app/moverideen.wav,Toma de mezclador - activada
+app/moveridedis.wav,Toma de mezclador - desactivada
+events/alerts/lowvoltage.wav,Bajo Voltaje
+events/alerts/lowfuel.wav,Combustible Bajo
+events/alerts/armed.wav,Armado
+events/alerts/disarmed.wav,Desarmado
+events/alerts/profile.wav,Perfil
+events/alerts/rates.wav,Tasas
+events/alerts/timerelapsed.wav,Timer Elapsed
+events/gov/off.wav,Govérno - Apagado
+events/gov/idle.wav,Govérno - Ralentí
+events/gov/spoolup.wav,Govérno - Acelerando
+events/gov/recovery.wav,Govérno - Recuperación
+events/gov/active.wav,Govérno - Activo
+events/gov/thr-off.wav,Govérno - Acelerador Apagado
+events/gov/lost-hs.wav,Govérno - Pérdida de Velocidad del Rotor
+events/gov/autorot.wav,Govérno - Auto Rotación
+events/gov/bailout.wav,Govérno - Rescate
+events/gov/disabled.wav,Govérno - Deshabilitado
+events/gov/disarmed.wav,Govérno - Desarmado
+events/gov/unknown.wav,Govérno - Desconocido
+adjfunctions/pitch.wav,Cabeceo
+adjfunctions/roll.wav,Rolido
+adjfunctions/yaw.wav,Rotación
+adjfunctions/rc.wav,RC
+adjfunctions/rate.wav,Tasa
+adjfunctions/p.wav,P
+adjfunctions/i.wav,I
+adjfunctions/d.wav,D
+adjfunctions/f.wav,F
+adjfunctions/o.wav,O
+adjfunctions/gain.wav,Ganancia
+adjfunctions/cw.wav,Sentido Horario
+adjfunctions/ccw.wav,Sentido Antihorario
+adjfunctions/cyclic.wav,Cíclico
+adjfunctions/ff.wav,Pasaje Adelante
+adjfunctions/collective.wav,Colectivo
+adjfunctions/dyn.wav,Dinámico
+adjfunctions/decay.wav,Decadencia
+adjfunctions/gyro.wav,Giro
+adjfunctions/cutoff.wav,Corte
+adjfunctions/dterm.wav,Término d
+adjfunctions/rescue.wav,Rescate
+adjfunctions/climb.wav,Trepada
+adjfunctions/hover.wav,Sobrevuelo
+adjfunctions/alt.wav,Altitud
+adjfunctions/angle.wav,ángulo
+adjfunctions/level.wav,Nivel
+adjfunctions/horizon.wav,horizonte
+adjfunctions/acro.wav,Acro
+adjfunctions/gov.wav,Govérno
+adjfunctions/crossc.wav,Acoplamiento Cruzado
+adjfunctions/acc.wav,Acelerómetro
+adjfunctions/trim.wav,Recorte
+adjfunctions/setpoint.wav,Punto de ajuste
+adjfunctions/precomp.wav,Precompensación
+adjfunctions/inertia.wav,Inercia
+adjfunctions/boost.wav,Impulso
+adjfunctions/filter.wav,Filtro
+adjfunctions/deadband.wav,Zona muerta
+status/alerts/current.wav,Corriente
+status/alerts/esc.wav,Temperatura del variador
+status/alerts/mcu.wav,Temperatura del procesador
+status/alerts/fuel.wav,Combustible
+status/alerts/headspeed.wav,Velocidad del Rotor
+status/alerts/lowfuel.wav,Combustible Bajo
+status/alerts/lowvoltage.wav,Bajo Voltaje
+status/alerts/lq.wav,Calidad de la Conexión
+status/alerts/remaining.wav,restante
+status/alerts/timer.wav,timer
+status/alerts/voltage.wav,voltaje
