@@ -54,22 +54,32 @@ function render.wakeup(box)
         local pngPath = "/bitmaps/models/" .. craftName .. ".png"
         local bmpPath = "/bitmaps/models/" .. craftName .. ".bmp"
         local logoPath = "widgets/dashboard/gfx/logo.png"
-        imagePath = loadImage(pngPath,bmpPath,logoPath)
+        imagePath = loadImage(pngPath, bmpPath, logoPath)
     end
     if not imagePath and modelID then
         local pngPath = "/bitmaps/models/" .. modelID .. ".png"
         local bmpPath = "/bitmaps/models/" .. modelID .. ".bmp"
         local logoPath = "widgets/dashboard/gfx/logo.png"
-        imagePath = loadImage(pngPath,bmpPath,logoPath)
+        imagePath = loadImage(pngPath, bmpPath, logoPath)
     end
+
+    -- ETHOS Model image fallback (if previous failed)
+    if not imagePath and model and model.bitmap then
+        local bitmapPtr = model.bitmap()
+        if bitmapPtr then
+            imagePath = bitmapPtr
+        end
+    end
+
+    -- Last fallback: dashboard logo
     if not imagePath then
         imagePath = loadImage("widgets/dashboard/gfx/logo.png")
     end
 
     -- Set box.value so dashboard/dirty can track change for redraws
-    box._currentDisplayValue = imagePath   
+    box._currentDisplayValue = imagePath
 
-     box._cache = {
+    box._cache = {
         title              = utils.getParam(box, "title"),
         titlepos           = utils.getParam(box, "titlepos"),
         titlealign         = utils.getParam(box, "titlealign"),
@@ -98,6 +108,7 @@ function render.wakeup(box)
         imagealign         = utils.getParam(box, "imagealign")
     }
 end
+
 
 function render.paint(x, y, w, h, box)
     x, y = utils.applyOffset(x, y, box)
