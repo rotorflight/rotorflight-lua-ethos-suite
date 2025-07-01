@@ -42,18 +42,6 @@ local lightMode = {
 -- alias current mode
 local colorMode = lcd.darkMode() and darkMode or lightMode
 
--- Theme based configuration settings
-local theme_section = "theme/@aerc"  -- Change to your actual theme name if needed
-
-local function getThemeValue(key, default)
-    if rfsuite and rfsuite.session and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences[theme_section] then
-        local val = rfsuite.session.modelPreferences[theme_section][key]
-        val = tonumber(val)
-        if val and val > 0 then return val end
-    end
-    return default
-end
-
 local boxes = {
 
     -- Timer
@@ -119,8 +107,8 @@ local boxes = {
     arcmax = true,
     title = "HEADSPEED", 
     titlepos = "bottom", 
-    min = getThemeValue("rpm_min", 0),
-    max = getThemeValue("rpm_max", 3000),
+    min = 0, 
+    max = 3000,
     thickness = 20,
     unit = "",
     maxprefix = "Max: ",
@@ -131,10 +119,11 @@ local boxes = {
     textcolor = colorMode.textcolor,
     maxtextcolor = "orange",
     transform = "floor",
-    thresholds = {
-        { value = getThemeValue("rpm_max", 3000) - 200, fillcolor = "lightyellow" },
-        { value = getThemeValue("rpm_max", 3000), fillcolor = "darkyellow"  }
-    }
+        thresholds = {
+            { value = 100,  fillcolor = "lightyellow"   },
+            { value = 1600, fillcolor = "yellow"        },
+            { value = 3000, fillcolor = "darkyellow"    }
+        }
     },
 
     -- ESC Temp
@@ -145,8 +134,8 @@ local boxes = {
     source = "temp_esc", 
     title = "ESC TEMP", 
     titlepos = "bottom", 
-    min = 0,
-    max = getThemeValue("esctemp_max", 140),
+    min = 0, 
+    max = 140, 
     thickness = 20,
     valuepaddingleft = 10,
     maxpaddingleft = 10,
@@ -159,9 +148,9 @@ local boxes = {
     font = "FONT_XL",
     transform = "floor", 
         thresholds = {
-            { value = getThemeValue("esctemp_warn", 90),  fillcolor = "green"  },
-            { value = getThemeValue("esctemp_max", 140),  fillcolor = "orange" },
-            { value = 200,                                fillcolor = "red"    }
+            { value = 70,  fillcolor = "green"  },
+            { value = 90,  fillcolor = "orange" },
+            { value = 140, fillcolor = "red"    }
         }
     },
 }
