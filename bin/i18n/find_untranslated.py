@@ -50,7 +50,11 @@ WHITELIST_VALUES = {
     "configure","theme_","table","transform","bandlabelfont","system","default",
     "info","accz","accy","accx","frsky","elrs","frsky_legacy","temp_mcu","adj_v","adj_f","uid",
     "vbatfullcellvoltage","vbatmaxcellvoltage","vbatwarningcellvoltage","parsed","buffer",
-    "aileron","elevator","rudder","throttle","aux1","aux2","aux3","true","false"
+    "aileron","elevator","rudder","throttle","aux1","aux2","aux3","true","false",
+    "events","adjfunctions","collective","id","msp","callback","big","small",
+    "debug","readU","readS","@breavyn","@AERC Nitro","@RT-RC","@AERC","rftlbx",
+     "uuid-","rf2sdh","little","writeU","writeS","lastflighttime","unknown",
+     "crsfLegacy","@AERC","lastvalue","Ay","high"
 }
 
 def scan_for_untranslated(lua_dir):
@@ -78,7 +82,7 @@ def scan_for_untranslated(lua_dir):
             re.fullmatch(r"[a-zA-Z0-9_-]{16,}", text) or
             re.fullmatch(r"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}", text) or
             re.fullmatch(r"\.[a-zA-Z0-9]{2,4}", text) or
-            re.fullmatch(r"[a-z0-9_]+", text) and "_" in text
+            (re.fullmatch(r"[a-z0-9_]+", text) and "_" in text)
         )
 
     for root, _, files in os.walk(lua_dir):
@@ -89,7 +93,19 @@ def scan_for_untranslated(lua_dir):
                 full_path = os.path.join(root, file)
                 try:
                     with open(full_path, "r", encoding="utf-8", errors="ignore") as f:
+                        in_block_comment = False
                         for lineno, line in enumerate(f, start=1):
+                            stripped = line.strip()
+
+                            # block and line comments
+                            if "--[[" in stripped:
+                                in_block_comment = True
+                            if "]]" in stripped and in_block_comment:
+                                in_block_comment = False
+                                continue
+                            if in_block_comment or stripped.startswith("--"):
+                                continue
+
                             if debug_line_pattern.search(line) or type_check_pattern.search(line):
                                 continue
 
@@ -104,7 +120,6 @@ def scan_for_untranslated(lua_dir):
                                 text = match[1].strip()
                                 if (re.search(r'[a-zA-Z]{2,}', text) and
                                     not i18n_pattern.search(line) and
-                                    "--" not in line and
                                     not should_ignore(text)):
                                     untranslated.append((full_path, lineno, text))
                 except Exception as e:
