@@ -14,54 +14,119 @@
  *
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]]--
+--[[ 
+ * Copyright (C) Rotorflight Project
+ * Timer event logic using configurable alerting.
+ * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
+]]--
 
-local arg = { ... }
-local config = arg[1]
 local timer = {}
 
 local triggered = false
 local lastBeepTime = nil
+local preLastBeepTime = nil
+local postStartedAt = nil
 
 function timer.wakeup()
+    local prefs = rfsuite.preferences.timer or {}
     local session = rfsuite.session
     local modelFlightTime = session and session.modelFlightTime
     local batteryConfig = session and session.batteryConfig
     local targetSeconds = batteryConfig and batteryConfig.modelFlightTime or 0
 
-    -- Only trigger if the feature is configured and flight time is available
+    if not prefs.timeraudioenable then
+        triggered = false
+        lastBeepTime = nil
+        preLastBeepTime = nil
+        postStartedAt = nil
+        return
+    end
+
     if not targetSeconds or targetSeconds == 0 or not modelFlightTime or modelFlightTime == 0 then
         triggered = false
         lastBeepTime = nil
+        preLastBeepTime = nil
+        postStartedAt = nil
         return
     end
 
-    -- Only trigger if we are armed / inflight
     if rfsuite.flightmode.current ~= "inflight" then
         triggered = false
         lastBeepTime = nil
+        preLastBeepTime = nil
+        postStartedAt = nil
         return
     end
 
-    -- If flight time exceeds or equals the target, handle beeping
+    local now = rfsuite.clock
+    local elapsedMode = prefs.elapsedalertmode or 0
+
+    -- PRE-TIMER ALERT LOGIC
+    if prefs.prealerton then
+        local prePeriod = prefs.prealertperiod or 30
+        local preInterval = prefs.prealertinterval or 10
+        local preAlertStart = targetSeconds - prePeriod
+        if modelFlightTime >= preAlertStart and modelFlightTime < targetSeconds then
+            local sincePreAlert = modelFlightTime - preAlertStart
+            if (sincePreAlert % preInterval) < 0.5 then
+                if not preLastBeepTime or (now - preLastBeepTime) >= preInterval - 1 then
+                    rfsuite.utils.playFileCommon("beep.wav")
+                    preLastBeepTime = now
+                end
+            end
+            triggered = false
+            lastBeepTime = nil
+            postStartedAt = nil
+            return
+        else
+            preLastBeepTime = nil
+        end
+    else
+        preLastBeepTime = nil
+    end
+
+    -- TIMER ELAPSED LOGIC
     if modelFlightTime >= targetSeconds then
-        local now = rfsuite.clock
         if not triggered then
-            rfsuite.utils.playFileCommon("beep.wav")
+            if elapsedMode == 0 then
+                rfsuite.utils.playFileCommon("beep.wav")
+            elseif elapsedMode == 1 then
+                rfsuite.utils.playFileCommon("multibeep.wav")
+            elseif elapsedMode == 2 then
+                rfsuite.utils.playFile("events", "alerts/timerelapsed.wav")
+            elseif elapsedMode == 3 then
+                rfsuite.utils.playFile("status", "alerts/timer.wav")
+                system.playNumber(targetSeconds, UNIT_SECOND)
+            end
             triggered = true
             lastBeepTime = now
-        elseif lastBeepTime and (now - lastBeepTime) >= 10 then
-            rfsuite.utils.playFileCommon("beep.wav")
-            lastBeepTime = now
+            postStartedAt = now
+        end
+
+        -- POST-TIMER ALERT LOGIC
+        if prefs.postalerton then
+            local postPeriod = prefs.postalertperiod or 60
+            local postInterval = prefs.postalertinterval or 10
+            local sincePostStart = (now - (postStartedAt or now))
+            if sincePostStart < postPeriod then
+                if not lastBeepTime or (now - lastBeepTime) >= postInterval then
+                    rfsuite.utils.playFileCommon("beep.wav")
+                    lastBeepTime = now
+                end
+            end
         end
     else
         triggered = false
         lastBeepTime = nil
+        postStartedAt = nil
     end
 end
 
 function timer.reset()
     triggered = false
     lastBeepTime = nil
+    preLastBeepTime = nil
+    postStartedAt = nil
 end
 
 return timer
