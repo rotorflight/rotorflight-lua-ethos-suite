@@ -39,113 +39,138 @@ local lightMode = {
     arcbgcolor  = "darkgrey",
 }
 
--- alias current mode
 local colorMode = lcd.darkMode() and darkMode or lightMode
 
-local boxes = {
+-- Theme config support
+local theme_section = "system/@aerc-n"
 
-    -- Headspeed
-    {col = 1, colspan = 2, row = 1, rowspan = 12,
-    type = "gauge",
-    subtype = "arc",
-    source = "rpm",
-    arcmax = true,
-    title = "HEADSPEED", 
-    titlepos = "bottom", 
-    min = 0, 
-    max = 3000,
-    valuepaddingtop = 30,
-    thickness = 25,
-    unit = "",
-    maxprefix = "Max: ",
-    maxpaddingtop = 22,
-    font = "FONT_XL",
-    bgcolor = colorMode.bgcolor,
-    titlecolor = colorMode.titlecolor,
-    textcolor = colorMode.textcolor,
-    maxtextcolor = "orange",
-    transform = "floor",
-        thresholds = {
-            { value = 100,  fillcolor = "lightyellow"   },
-            { value = 1600, fillcolor = "yellow"        },
-            { value = 3000, fillcolor = "darkyellow"    }
-        }
-    },
-
-    -- Timer
-    {col = 3, colspan = 2, row = 1, rowspan = 2,
-    type = "time", 
-    subtype = "flight", 
-    font = "FONT_XL",
-    bgcolor = colorMode.bgcolor,
-    titlecolor = colorMode.titlecolor,
-    textcolor = colorMode.textcolor,
-    },
-
-    -- RX Voltage
-    {col = 3, colspan = 2, row = 3, rowspan = 10,
-     type = "gauge", 
-     source = "bec_voltage", 
-     title = "RX VOLTAGE", 
-     titlepos = "bottom", 
-     gaugeorientation = "vertical",
-     gaugepaddingright = 40,
-     gaugepaddingleft = 40,
-     decimals = 1,
-     battery = true,
-     batteryspacing = 3,
-     valuepaddingbottom = 17,
-     bgcolor = colorMode.bgcolor,
-     titlecolor = colorMode.titlecolor,
-     textcolor = colorMode.textcolor,
-     min = 7.0,
-     max = 8.4,
-     thresholds = {
-            {
-                value = 7.4,
-                fillcolor = "red",
-            },
-            {
-                value = 7.7,
-                fillcolor = "orange",
-            },
-            {
-                value = 10,
-                fillcolor = "green",
-            }
-        }
-    },
-
-    -- Throttle
-    {col = 5, colspan = 2, row = 1, rowspan = 12,
-    type = "gauge",
-    subtype = "arc",
-    source = "throttle_percent",
-    arcmax = true,
-    title = "THROTTLE %", 
-    titlepos = "bottom", 
-    transform = "floor",
-    thickness = 25,
-    valuepaddingtop = 30,
-    font = "FONT_XL",
-    maxprefix = "Max: ",
-    maxpaddingtop = 22,
-    bgcolor = colorMode.bgcolor,
-    titlecolor = colorMode.titlecolor,
-    textcolor = colorMode.textcolor,
-    maxtextcolor = "orange",
-        thresholds = {
-            { value = 89,  fillcolor = "orange" },
-            { value = 100, fillcolor = "red"    }
-        }
-    },
+local THEME_DEFAULTS = {
+    v_min   = 7.0,
+    v_max   = 8.4,
+    rpm_min = 0,
+    rpm_max = 3000,
 }
+
+local function getThemeValue(key)
+    if rfsuite and rfsuite.session and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences[theme_section] then
+        local val = rfsuite.session.modelPreferences[theme_section][key]
+        val = tonumber(val)
+        if val ~= nil then return val end
+    end
+    return THEME_DEFAULTS[key]
+end
+
+local boxes_cache = nil
+local themeconfig = nil
+
+local function buildBoxes()
+    local vmin = getThemeValue("v_min")
+    local vmax = getThemeValue("v_max")
+    return {
+
+        -- Headspeed
+        {col = 1, colspan = 2, row = 1, rowspan = 12,
+        type = "gauge",
+        subtype = "arc",
+        source = "rpm",
+        arcmax = true,
+        title = "HEADSPEED", 
+        titlepos = "bottom", 
+        min = getThemeValue("rpm_min"),
+        max = getThemeValue("rpm_max"),
+        valuepaddingtop = 30,
+        thickness = 25,
+        unit = "",
+        maxprefix = "Max: ",
+        maxpaddingtop = 22,
+        font = "FONT_XL",
+        bgcolor = colorMode.bgcolor,
+        titlecolor = colorMode.titlecolor,
+        textcolor = colorMode.textcolor,
+        maxtextcolor = "orange",
+        transform = "floor",
+            thresholds = {
+                { value = getThemeValue("rpm_max"),   fillcolor = "yellow"        },
+                { value = 10000,                      fillcolor = "darkyellow"    }
+            }
+        },
+
+        -- Timer
+        {col = 3, colspan = 2, row = 1, rowspan = 2,
+        type = "time", 
+        subtype = "flight", 
+        font = "FONT_XL",
+        bgcolor = colorMode.bgcolor,
+        titlecolor = colorMode.titlecolor,
+        textcolor = colorMode.textcolor,
+        },
+
+        -- Voltage
+        {col = 3, colspan = 2, row = 3, rowspan = 10,
+         type = "gauge", 
+         source = "bec_voltage", 
+         title = "VOLTAGE", 
+         titlepos = "bottom", 
+         gaugeorientation = "vertical",
+         gaugepaddingright = 40,
+         gaugepaddingleft = 40,
+         decimals = 1,
+         battery = true,
+         batteryspacing = 3,
+         valuepaddingbottom = 17,
+         bgcolor = colorMode.bgcolor,
+         titlecolor = colorMode.titlecolor,
+         textcolor = colorMode.textcolor,
+         min = vmin,
+         max = vmax,
+         thresholds = {
+            { value = vmin + 0.2 * (vmax - vmin), fillcolor = "red"    },
+            { value = vmin + 0.4 * (vmax - vmin), fillcolor = "orange" },
+            { value = vmax,                       fillcolor = "green"  }
+            }
+        },
+
+        -- Throttle
+        {col = 5, colspan = 2, row = 1, rowspan = 12,
+        type = "gauge",
+        subtype = "arc",
+        source = "throttle_percent",
+        arcmax = true,
+        title = "THROTTLE %", 
+        titlepos = "bottom", 
+        transform = "floor",
+        thickness = 25,
+        valuepaddingtop = 30,
+        font = "FONT_XL",
+        maxprefix = "Max: ",
+        maxpaddingtop = 22,
+        bgcolor = colorMode.bgcolor,
+        titlecolor = colorMode.titlecolor,
+        textcolor = colorMode.textcolor,
+        maxtextcolor = "orange",
+            thresholds = {
+                { value = 89,  fillcolor = "orange" },
+                { value = 100, fillcolor = "red"    }
+            }
+        },
+    }
+end
+
+local function boxes()
+    local config =
+        rfsuite and rfsuite.session and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences[theme_section]
+    if boxes_cache == nil or themeconfig ~= config then
+        boxes_cache = buildBoxes()
+        themeconfig = config
+    end
+    return boxes_cache
+end
 
 return {
     layout = layout,
     boxes = boxes,
     scheduler = {
-        spread_scheduling = true,      -- (optional: spread scheduling over the interval to avoid spikes in CPU usage)  
-        spread_ratio = 0.8              -- optional: manually override default ratio logic (applies if spread_scheduling is true)
+        spread_scheduling = true,
+        spread_ratio = 0.8
     }    
 }
