@@ -392,6 +392,8 @@ function dashboard.renderLayout(widget, config)
     ----------------------------------------------------------------
     -- PHASE 1: Build Box Rects and Collect Scheduled Indices
     ----------------------------------------------------------------
+    utils.setBackgroundColourBasedOnTheme()
+
     for i=#dashboard.boxRects,1,-1 do dashboard.boxRects[i] = nil end
     for i=#scheduledBoxIndices,1,-1 do scheduledBoxIndices[i] = nil end
 
@@ -443,7 +445,6 @@ function dashboard.renderLayout(widget, config)
     ----------------------------------------------------------------
     -- PHASE 3: Paint Actual Widgets
     ----------------------------------------------------------------
-    utils.setBackgroundColourBasedOnTheme()
     local selColor  = layout.selectcolor  or utils.resolveColor("yellow") or lcd.RGB(255,255,0)
     local selBorder = layout.selectborder or 2
 
