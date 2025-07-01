@@ -1,4 +1,4 @@
-#app,#text to play
+#app,#text to play,#options_text,#description
 app/timeout.wav,Timed out,,
 app/powercycleesc.wav,Please power cycle the speed controller,,
 app/soverideen.wav,Servo overide - enabled,,
@@ -6,14 +6,13 @@ app/soveridedis.wav,Servo overide - disabled,,
 app/eraseflash.wav,Erasing Data Flash,,
 app/moverideen.wav,Mixer overide - enabled,,
 app/moveridedis.wav,Mixer overide - disabled,,
-
-#events,#text to play
 events/alerts/lowvoltage.wav,Low Voltage,,
 events/alerts/lowfuel.wav,Low Fuel,,
 events/alerts/armed.wav,Armed,,
 events/alerts/disarmed.wav,Disarmed,,
 events/alerts/profile.wav,Profile,,
 events/alerts/rates.wav,Rates,,
+events/alerts/timerelapsed.wav,Timer Elapsed,,
 events/gov/off.wav,Governor - Off,,
 events/gov/idle.wav,Governor - Idle,,
 events/gov/spoolup.wav,Governor - Spoolup,,
@@ -26,9 +25,6 @@ events/gov/bailout.wav,Governor - Bailout,,
 events/gov/disabled.wav,Governor - Disabled,,
 events/gov/disarmed.wav,Governor - Disarmed,,
 events/gov/unknown.wav,Governor - Unknown,,
-
-
-#adjfunc,#text to play
 adjfunctions/pitch.wav,Pitch,,
 adjfunctions/roll.wav,Roll,,
 adjfunctions/yaw.wav,Yaw,,
@@ -68,8 +64,6 @@ adjfunctions/inertia.wav,Inertia,,
 adjfunctions/boost.wav,Boost,,
 adjfunctions/filter.wav,Filter,,
 adjfunctions/deadband.wav,Deadband,,
-
-#status,#text to play
 status/alerts/current.wav,Current,,
 status/alerts/esc.wav,Esc Temperature,,
 status/alerts/mcu.wav,MCU Temperature,,

@@ -102,6 +102,16 @@ local userpref_defaults ={
         mspexpbytes = 8,
         apiversion = 2,             -- msp api version to use for simulator    
     },
+    timer = {
+        timeraudioenable=false,
+        elapsedalertmode=0,
+        prealerton=false,
+        postalerton=false,
+        prealertinterval=10,
+        prealertperiod=30,
+        postalertinterval=10,
+        postalertperiod=30,
+    },
     menulastselected = {}
 }
 
