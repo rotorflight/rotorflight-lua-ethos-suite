@@ -44,13 +44,13 @@ function craftimage.wakeup()
 
     local default_image = "widgets/toolbox/gfx/default_image.png"
 
-    -- Try png then bmp for craftName, then png then bmp for modelID, then fallback
+    -- Try png then bmp for craftName, then png then bmp for modelID, no fallback in loadImage
     bitmapPtr = rfsuite.utils.loadImage(image1, image2, image3, image4)
 
-    -- ETHOS model image fallback if everything above failed
+    -- ETHOS model image fallback if everything above failed and it's not the ETHOS default
     if not bitmapPtr and model and model.bitmap then
         local ethosBitmap = model.bitmap()
-        if ethosBitmap then
+        if ethosBitmap and type(ethosBitmap) == "string" and not string.find(ethosBitmap, "default_") then
             bitmapPtr = ethosBitmap
         end
     end
