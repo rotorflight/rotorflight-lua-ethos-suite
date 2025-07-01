@@ -1,9 +1,17 @@
 local settings = {}
 local i18n = rfsuite.i18n.get
+local enableWakeup = false
+local prevConnectedState = nil
 
 local function openPage(pageIdx, title, script)
     enableWakeup = true
+    if not rfsuite.app.navButtons then rfsuite.app.navButtons = {} end
+
+    -- Determine connection state FIRST
+    local connected = rfsuite.session.isConnected and rfsuite.session.mcu_id and rfsuite.preferences
+    rfsuite.app.navButtons.save = connected and true or false
     rfsuite.app.triggers.closeProgressLoader = true
+
     form.clear()
 
     rfsuite.app.lastIdx    = pageIdx
@@ -13,6 +21,7 @@ local function openPage(pageIdx, title, script)
     rfsuite.app.ui.fieldHeader(
         i18n("app.modules.settings.name") .. " / " .. i18n("app.modules.settings.audio") .. " / " .. i18n("app.modules.settings.txt_audio_timer")
     )
+
     rfsuite.session.formLineCnt = 0
     local formFieldCount = 0
 
@@ -43,9 +52,9 @@ local function openPage(pageIdx, title, script)
             settings.timeraudioenable = newValue
             rfsuite.app.formFields[idxChoice]:enable(newValue)
             rfsuite.app.formFields[idxPre]:enable(newValue)
+            rfsuite.app.formFields[idxPost]:enable(newValue)
             rfsuite.app.formFields[idxPrePeriod]:enable(newValue and (settings.prealerton or false))
             rfsuite.app.formFields[idxPreInterval]:enable(newValue and (settings.prealerton or false))
-            rfsuite.app.formFields[idxPost]:enable(newValue)
             rfsuite.app.formFields[idxPostPeriod]:enable(newValue and (settings.postalerton or false))
             rfsuite.app.formFields[idxPostInterval]:enable(newValue and (settings.postalerton or false))
         end
@@ -81,8 +90,9 @@ local function openPage(pageIdx, title, script)
         function() return settings.prealerton or false end,
         function(newValue)
             settings.prealerton = newValue
-            rfsuite.app.formFields[idxPrePeriod]:enable(newValue and (settings.timeraudioenable or false))
-            rfsuite.app.formFields[idxPreInterval]:enable(newValue and (settings.timeraudioenable or false))
+            local audioEnabled = settings.timeraudioenable or false
+            rfsuite.app.formFields[idxPrePeriod]:enable(audioEnabled and newValue)
+            rfsuite.app.formFields[idxPreInterval]:enable(audioEnabled and newValue)
         end
     )
 
@@ -120,8 +130,9 @@ local function openPage(pageIdx, title, script)
         function() return settings.postalerton or false end,
         function(newValue)
             settings.postalerton = newValue
-            rfsuite.app.formFields[idxPostPeriod]:enable(newValue and (settings.timeraudioenable or false))
-            rfsuite.app.formFields[idxPostInterval]:enable(newValue and (settings.timeraudioenable or false))
+            local audioEnabled = settings.timeraudioenable or false
+            rfsuite.app.formFields[idxPostPeriod]:enable(audioEnabled and newValue)
+            rfsuite.app.formFields[idxPostInterval]:enable(audioEnabled and newValue)
         end
     )
 
@@ -147,14 +158,22 @@ local function openPage(pageIdx, title, script)
     )
     rfsuite.app.formFields[formFieldCount]:enable((settings.timeraudioenable or false) and (settings.postalerton or false))
 
-    -- --- Initial enable/disable state for base options
-    rfsuite.app.formFields[idxChoice]:enable(settings.timeraudioenable or false)
-    rfsuite.app.formFields[idxPre]:enable(settings.timeraudioenable or false)
-    rfsuite.app.formFields[idxPrePeriod]:enable((settings.timeraudioenable or false) and (settings.prealerton or false))
-    rfsuite.app.formFields[idxPreInterval]:enable((settings.timeraudioenable or false) and (settings.prealerton or false))
-    rfsuite.app.formFields[idxPost]:enable(settings.timeraudioenable or false)
-    rfsuite.app.formFields[idxPostPeriod]:enable((settings.timeraudioenable or false) and (settings.postalerton or false))
-    rfsuite.app.formFields[idxPostInterval]:enable((settings.timeraudioenable or false) and (settings.postalerton or false))
+    -- Grey out everything if not connected, and reliably hide Save
+    if not connected then
+        for i, field in ipairs(rfsuite.app.formFields) do
+            if field and field.enable then field:enable(false) end
+        end
+        rfsuite.app.navButtons.save = false
+    else
+        rfsuite.app.formFields[idxChoice]:enable(settings.timeraudioenable or false)
+        rfsuite.app.formFields[idxPre]:enable(settings.timeraudioenable or false)
+        rfsuite.app.formFields[idxPrePeriod]:enable((settings.timeraudioenable or false) and (settings.prealerton or false))
+        rfsuite.app.formFields[idxPreInterval]:enable((settings.timeraudioenable or false) and (settings.prealerton or false))
+        rfsuite.app.formFields[idxPost]:enable(settings.timeraudioenable or false)
+        rfsuite.app.formFields[idxPostPeriod]:enable((settings.timeraudioenable or false) and (settings.postalerton or false))
+        rfsuite.app.formFields[idxPostInterval]:enable((settings.timeraudioenable or false) and (settings.postalerton or false))
+        rfsuite.app.navButtons.save = true
+    end
 end
 
 local function onSaveMenu()
@@ -202,6 +221,20 @@ local function event(widget, category, value, x, y)
             "settings/tools/audio.lua"
         )
         return true
+    end
+end
+
+local function wakeup()
+    if not enableWakeup then return end
+
+    local connected = rfsuite.session.isConnected and rfsuite.session.mcu_id and rfsuite.preferences
+    if connected ~= prevConnectedState then
+        -- Set enable/disable for all fields
+        for i, field in ipairs(rfsuite.app.formFields) do
+            if field and field.enable then field:enable(connected) end
+        end
+        rfsuite.app.navButtons.save = connected and true or false
+        prevConnectedState = connected
     end
 end
 
