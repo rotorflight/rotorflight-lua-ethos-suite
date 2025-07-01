@@ -351,6 +351,13 @@ function dashboard.renderLayout(widget, config)
     local utils     = dashboard.utils
     local telemetry = tasks.telemetry
 
+    -- Early exit if modelPreferences is not ready
+    if not (rfsuite and rfsuite.session and rfsuite.session.modelPreferences) then
+        local W, H = lcd.getWindowSize()
+        dashboard.loader(0, 0, W, H)
+        return
+    end
+    
     -- create once    
     dashboard.boxRects = dashboard.boxRects or {}
     scheduledBoxIndices = scheduledBoxIndices or {}

@@ -37,7 +37,7 @@ local lightMode = {
     bgcolor     = "white",
     fillcolor   = "green",
     fillbgcolor = "lightgrey",
-    accentcolor  = "lightgrey",
+    accentcolor = "lightgrey",
     arcbgcolor  = "darkgrey",
 }
 
@@ -45,7 +45,7 @@ local lightMode = {
 local colorMode = lcd.darkMode() and darkMode or lightMode
 
 -- Theme based configuration settings
-local theme_section = "theme/@aerc"
+local theme_section = "system/@aerc"
 
 local THEME_DEFAULTS = {
     rpm_min      = 0,
@@ -65,152 +65,157 @@ local function getThemeValue(key)
     return THEME_DEFAULTS[key]
 end
 
-local boxes = {
-    -- Model Image
-    {col = 1, row = 1, colspan = 3, rowspan = 8, 
-     type = "image", 
-     subtype = "model", 
-     bgcolor = colorMode.bgcolor,
-    },
+-- Caching pattern
+local boxes_cache = nil
+local themeconfig = nil
 
-    -- Rate Profile
-    {col = 1, row = 9, rowspan = 3,
-     type = "text",
-     subtype = "telemetry",
-     source = "rate_profile",    
-     title = "RATES",
-     titlepos = "bottom",
-     transform = "floor",
-     bgcolor = colorMode.bgcolor,
-     titlecolor = colorMode.titlecolor,
-        thresholds = {
+local function buildBoxes()
+    return {
+        -- Model Image
+        {col = 1, row = 1, colspan = 3, rowspan = 8, 
+         type = "image", 
+         subtype = "model", 
+         bgcolor = colorMode.bgcolor,
+        },
+
+        -- Rate Profile
+        {col = 1, row = 9, rowspan = 3,
+         type = "text",
+         subtype = "telemetry",
+         source = "rate_profile",    
+         title = "RATES",
+         titlepos = "bottom",
+         transform = "floor",
+         bgcolor = colorMode.bgcolor,
+         titlecolor = colorMode.titlecolor,
+         thresholds = {
             { value = 1.5, textcolor = "blue" },
             { value = 2.5, textcolor = "orange" },
             { value = 6,   textcolor = "green"  }
-        }
-    },
+         }
+        },
 
-    -- PID Profile
-    {col = 2, row = 9, rowspan = 3,
-     type = "text",
-     subtype = "telemetry",
-     source = "pid_profile",    
-     title = "PROFILE",
-     titlepos = "bottom",
-     transform = "floor",
-     bgcolor = colorMode.bgcolor,
-     titlecolor = colorMode.titlecolor,
-        thresholds = {
+        -- PID Profile
+        {col = 2, row = 9, rowspan = 3,
+         type = "text",
+         subtype = "telemetry",
+         source = "pid_profile",    
+         title = "PROFILE",
+         titlepos = "bottom",
+         transform = "floor",
+         bgcolor = colorMode.bgcolor,
+         titlecolor = colorMode.titlecolor,
+         thresholds = {
             { value = 1.5, textcolor = "blue" },
             { value = 2.5, textcolor = "orange" },
             { value = 6,   textcolor = "green"  }
-        }
-    },
+         }
+        },
 
-    -- Flight Count
-    {col = 3, row = 9, rowspan = 3, 
-     type = "time", 
-     subtype = "count", 
-     title = "FLIGHTS", 
-     titlepos = "bottom", 
-     bgcolor = colorMode.bgcolor,
-     titlecolor = colorMode.titlecolor,
-     textcolor = colorMode.textcolor,
-    },
+        -- Flight Count
+        {col = 3, row = 9, rowspan = 3, 
+         type = "time", 
+         subtype = "count", 
+         title = "FLIGHTS", 
+         titlepos = "bottom", 
+         bgcolor = colorMode.bgcolor,
+         titlecolor = colorMode.titlecolor,
+         textcolor = colorMode.textcolor,
+        },
 
-    -- Battery Gauge
-    {col = 4, row = 1, colspan = 4, rowspan = 3,
-     type = "gauge",
-     source = "smartfuel",
-     batteryframe = true, 
-     battadv = true,
-     fillcolor = "green",
-     valuealign = "left",
-     valuepaddingleft = 75,
-     battadvfont = "FONT_M",
-     battadvpaddingright = 18,
-     battadvvaluealign = "right",
-     bgcolor = colorMode.bgcolor,
-     titlecolor = colorMode.titlecolor,
-     textcolor = colorMode.textcolor,
-     accentcolor = colorMode.accentcolor,
-     transform = "floor",
-        thresholds = {
+        -- Battery Gauge
+        {col = 4, row = 1, colspan = 4, rowspan = 3,
+         type = "gauge",
+         source = "smartfuel",
+         batteryframe = true, 
+         battadv = true,
+         fillcolor = "green",
+         valuealign = "left",
+         valuepaddingleft = 75,
+         battadvfont = "FONT_M",
+         battadvpaddingright = 18,
+         battadvvaluealign = "right",
+         bgcolor = colorMode.bgcolor,
+         titlecolor = colorMode.titlecolor,
+         textcolor = colorMode.textcolor,
+         accentcolor = colorMode.accentcolor,
+         transform = "floor",
+         thresholds = {
             { value = 10,  fillcolor = "red"    },
             { value = 30,  fillcolor = "orange" }
-        }
-    },
+         }
+        },
 
-    -- BEC Voltage
-    {col = 4, colspan = 2, row = 4, rowspan = 5,
-     type = "gauge", 
-     subtype = "arc",
-     source = "bec_voltage", 
-     title = "BEC VOLTAGE", 
-     titlepos = "bottom", 
-     min = getThemeValue("bec_min"),
-     max = getThemeValue("bec_max"), 
-     decimals = 1, 
-     thickness = 13,
-     bgcolor = colorMode.bgcolor,
-     titlecolor = colorMode.titlecolor,
-     textcolor = colorMode.textcolor,
-     font = "FONT_XL", 
-     thresholds = {
-         { value = getThemeValue("bec_min"), fillcolor = "red"   },
-         { value = getThemeValue("bec_max"),  fillcolor = "green" }
-        }
-    },
+        -- BEC Voltage
+        {col = 4, colspan = 2, row = 4, rowspan = 5,
+         type = "gauge", 
+         subtype = "arc",
+         source = "bec_voltage", 
+         title = "BEC VOLTAGE", 
+         titlepos = "bottom", 
+         min = getThemeValue("bec_min"),
+         max = getThemeValue("bec_max"), 
+         decimals = 1, 
+         thickness = 13,
+         bgcolor = colorMode.bgcolor,
+         titlecolor = colorMode.titlecolor,
+         textcolor = colorMode.textcolor,
+         font = "FONT_XL", 
+         thresholds = {
+             { value = getThemeValue("bec_min"), fillcolor = "red"   },
+             { value = getThemeValue("bec_max"), fillcolor = "green" }
+         }
+        },
 
-    -- Blackbox
-    {col = 4, row = 9, colspan = 2, rowspan = 3, 
-     type = "text", 
-     subtype = "blackbox", 
-     title = "BLACKBOX", 
-     titlepos = "bottom", 
-     decimals = 0, 
-     bgcolor = colorMode.bgcolor,
-     titlecolor = colorMode.titlecolor,
-     transform = "floor",
-        thresholds = {
+        -- Blackbox
+        {col = 4, row = 9, colspan = 2, rowspan = 3, 
+         type = "text", 
+         subtype = "blackbox", 
+         title = "BLACKBOX", 
+         titlepos = "bottom", 
+         decimals = 0, 
+         bgcolor = colorMode.bgcolor,
+         titlecolor = colorMode.titlecolor,
+         transform = "floor",
+         thresholds = {
             { value = 80, textcolor = colorMode.textcolor },
             { value = 90, textcolor = "orange" },
             { value = 100, textcolor = "red" }
-        }
-    },
+         }
+        },
 
-    -- ESC Temp
-    {col = 6, colspan = 2, row = 4, rowspan = 5,
-     type = "gauge", 
-     subtype = "arc",
-     source = "temp_esc", 
-     title = "ESC TEMP", 
-     titlepos = "bottom", 
-     min = 0,
-     max = getThemeValue("esctemp_max"),
-     thickness = 12,
-     valuepaddingleft = 10,
-     font = "FONT_XL", 
-     bgcolor = colorMode.bgcolor,
-     titlecolor = colorMode.titlecolor,
-     textcolor = colorMode.textcolor,
-     transform = "floor", 
-        thresholds = {
-            { value = getThemeValue("esctemp_warn"), fillcolor = "green"  },
-            { value = getThemeValue("esctemp_max"),  fillcolor = "orange" }, -- will trigger the fill to go red when its above this value
-            { value = 200,                           fillcolor = "red"    }
-        }
-    },
+        -- ESC Temp
+        {col = 6, colspan = 2, row = 4, rowspan = 5,
+         type = "gauge", 
+         subtype = "arc",
+         source = "temp_esc", 
+         title = "ESC TEMP", 
+         titlepos = "bottom", 
+         min = 0,
+         max = getThemeValue("esctemp_max"),
+         thickness = 12,
+         valuepaddingleft = 10,
+         font = "FONT_XL", 
+         bgcolor = colorMode.bgcolor,
+         titlecolor = colorMode.titlecolor,
+         textcolor = colorMode.textcolor,
+         transform = "floor", 
+         thresholds = {
+             { value = getThemeValue("esctemp_warn"), fillcolor = "green"  },
+             { value = getThemeValue("esctemp_max"),  fillcolor = "orange" },
+             { value = 200,                           fillcolor = "red"    }
+         }
+        },
 
-    -- Governor
-    {col = 6, row = 9, colspan = 2, rowspan = 3, 
-     type = "text", 
-     subtype = "governor", 
-     title = "GOVERNOR", 
-     titlepos = "bottom", 
-     bgcolor = colorMode.bgcolor,
-     titlecolor = colorMode.titlecolor,
-          thresholds = {
+        -- Governor
+        {col = 6, row = 9, colspan = 2, rowspan = 3, 
+         type = "text", 
+         subtype = "governor", 
+         title = "GOVERNOR", 
+         titlepos = "bottom", 
+         bgcolor = colorMode.bgcolor,
+         titlecolor = colorMode.titlecolor,
+         thresholds = {
             { value = "DISARMED", textcolor = "red"    },
             { value = "OFF",      textcolor = "red"    },
             { value = "IDLE",     textcolor = "blue" },
@@ -218,9 +223,21 @@ local boxes = {
             { value = "RECOVERY", textcolor = "orange" },
             { value = "ACTIVE",   textcolor = "green"  },
             { value = "THR-OFF",  textcolor = "red"    },
-        }
-    },
-}
+         }
+        },
+    }
+end
+
+local function boxes()
+    local config =
+        rfsuite and rfsuite.session and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences[theme_section]
+    -- Only rebuild if values change
+    if boxes_cache == nil or themeconfig ~= config then
+        boxes_cache = buildBoxes()
+        themeconfig = config
+    end
+    return boxes_cache
+end
 
 return {
     layout = layout,
