@@ -11,9 +11,6 @@ local useHybridSpread = true  -- Set to false for pure hash-only offset
                               -- Set useHybridSpread = false for repeatable profiling.
                               -- Set useHybridSpread = true for better real-world spread and smoother CPU load.
 
-if useHybridSpread then
-    math.randomseed(os.clock() * 100000)
-end
 
 local tasks, tasksList = {}, {}
 tasks.heartbeat, tasks.init, tasks.wasOn = nil, true, false

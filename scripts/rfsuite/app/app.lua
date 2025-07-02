@@ -1343,7 +1343,7 @@ function app.create_logtool()
     config.environment = system.getVersion()
     config.ethosRunningVersion = {config.environment.major, config.environment.minor, config.environment.revision}
 
-    rfsuite.session.lcdWidth, rfsuite.session.lcdHeight = utils.getWindowSize()
+    rfsuite.app.lcdWidth, rfsuite.app.lcdHeight = utils.getWindowSize()
     app.radio = assert(compile("app/radios.lua"))()
 
     app.uiState = app.uiStatus.init
@@ -1376,7 +1376,7 @@ function app.create()
     config.environment = system.getVersion()
     config.ethosRunningVersion = {config.environment.major, config.environment.minor, config.environment.revision}
 
-    rfsuite.session.lcdWidth, rfsuite.session.lcdHeight = utils.getWindowSize()
+    rfsuite.app.lcdWidth, rfsuite.app.lcdHeight = utils.getWindowSize()
     app.radio = assert(compile("app/radios.lua"))()
 
     app.uiState = app.uiStatus.init
