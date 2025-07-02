@@ -12,16 +12,16 @@ local function openPage(pageIdx, title, script)
     rfsuite.app.ui.fieldHeader(
         i18n("app.modules.settings.name") .. " / " .. i18n("app.modules.settings.dashboard") .. " / " .. i18n("app.modules.settings.localizations")
     )
-    rfsuite.session.formLineCnt = 0
+    rfsuite.app.formLineCnt = 0
 
     local formFieldCount = 0
 
     settings = rfsuite.preferences.localizations
 
     formFieldCount = formFieldCount + 1
-    rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = form.addLine(i18n("app.modules.settings.temperature_unit"))
-    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.session.formLineCnt], nil, 
+    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine(i18n("app.modules.settings.temperature_unit"))
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, 
                                                         {{i18n("app.modules.settings.celcius"), 0}, {i18n("app.modules.settings.fahrenheit"), 1}}, 
                                                         function() 
                                                             if rfsuite.preferences and rfsuite.preferences.localizations then
@@ -35,9 +35,9 @@ local function openPage(pageIdx, title, script)
                                                         end) 
             
     formFieldCount = formFieldCount + 1
-    rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = form.addLine(i18n("app.modules.settings.altitude_unit"))
-    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.session.formLineCnt], nil, 
+    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine(i18n("app.modules.settings.altitude_unit"))
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, 
                                                         {{i18n("app.modules.settings.meters"), 0}, {i18n("app.modules.settings.feet"), 1}}, 
                                                         function() 
                                                             if rfsuite.preferences and rfsuite.preferences.localizations then

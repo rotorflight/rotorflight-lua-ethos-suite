@@ -2,9 +2,12 @@
 
 local i18n = rfsuite.i18n.get
 local S_PAGES = {
-    {name = i18n("app.modules.settings.dashboard_theme"), script = "dashboard_theme.lua", image = "dashboard_theme.png"},
-    {name = i18n("app.modules.settings.dashboard_settings"), script = "dashboard_settings.lua", image = "dashboard_settings.png"},
+    [1] = {name = i18n("app.modules.settings.dashboard_theme"), script = "dashboard_theme.lua", image = "dashboard_theme.png"},
+    [2] = {name = i18n("app.modules.settings.dashboard_settings"), script = "dashboard_settings.lua", image = "dashboard_settings.png"},
 }
+
+local enableWakeup = false
+local prevConnectedState = nil
 
 local function openPage(pidx, title, script)
 
@@ -56,7 +59,7 @@ local function openPage(pidx, title, script)
     -- TEXT ICONS
     if rfsuite.preferences.general.iconsize == 0 then
         padding = rfsuite.app.radio.buttonPaddingSmall
-        buttonW = (rfsuite.session.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
+        buttonW = (rfsuite.app.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
         buttonH = rfsuite.app.radio.navbuttonHeight
         numPerRow = rfsuite.app.radio.buttonsPerRow
     end
@@ -120,6 +123,8 @@ local function openPage(pidx, title, script)
 
         if pvalue.disabled == true then rfsuite.app.formFields[pidx]:enable(false) end
 
+        local currState = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false
+            
         if rfsuite.preferences.menulastselected["settings_dashboard"] == pidx then rfsuite.app.formFields[pidx]:focus() end
 
         lc = lc + 1
@@ -130,6 +135,7 @@ local function openPage(pidx, title, script)
 
     rfsuite.app.triggers.closeProgressLoader = true
     collectgarbage()
+    enableWakeup = true
     return
 end
 
@@ -156,6 +162,26 @@ local function onNavMenu()
         return true
 end
 
+
+local function wakeup()
+    if not enableWakeup then
+        return
+    end
+
+    -- current combined state: true only if both are truthy
+    local currState = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false
+
+    -- only update if state has changed
+    if currState ~= prevConnectedState then
+        -- toggle all three fields together
+        rfsuite.app.formFields[2]:enable(currState)
+
+        -- remember for next time
+        prevConnectedState = currState
+    end
+end
+
+
 rfsuite.app.uiState = rfsuite.app.uiStatus.pages
 
 return {
@@ -163,6 +189,7 @@ return {
     openPage = openPage,
     onNavMenu = onNavMenu,
     event = event,
+    wakeup = wakeup,
     API = {},
         navButtons = {
         menu   = true,

@@ -26,7 +26,7 @@ local findTimeout = math.floor(rfsuite.tasks.msp.protocol.pageReqTimeout * 0.5)
 
 local modelLine
 local modelText
-local modelTextPos = {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.session.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}
+local modelTextPos = {x = 0, y = rfsuite.app.radio.linePaddingTop, w = rfsuite.app.lcdWidth, h = rfsuite.app.radio.navbuttonHeight}
 
 local function getESCDetails()
 
@@ -106,8 +106,8 @@ local function openPage(pidx, title, script)
     rfsuite.app.formLines = {}
 
 
-    local windowWidth = rfsuite.session.lcdWidth
-    local windowHeight = rfsuite.session.lcdHeight
+    local windowWidth = rfsuite.app.lcdWidth
+    local windowHeight = rfsuite.app.lcdHeight
 
     local y = rfsuite.app.radio.linePaddingTop
 
@@ -167,7 +167,7 @@ local function openPage(pidx, title, script)
     -- TEXT ICONS
     if rfsuite.preferences.general.iconsize == 0 then
         padding = rfsuite.app.radio.buttonPaddingSmall
-        buttonW = (rfsuite.session.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
+        buttonW = (rfsuite.app.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
         buttonH = rfsuite.app.radio.navbuttonHeight
         numPerRow = rfsuite.app.radio.buttonsPerRow
     end
