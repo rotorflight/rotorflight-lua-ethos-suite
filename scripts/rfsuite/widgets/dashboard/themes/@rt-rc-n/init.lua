@@ -22,6 +22,7 @@ local init = {
     preflight = "preflight.lua",     -- Script to run before takeoff
     inflight = "inflight.lua",       -- Script to run during flight
     postflight = "postflight.lua",   -- Script to run after landing
+    configure   = "configure.lua",   -- Script to run for settings
     standalone = false,              -- If true, theme handles all rendering itself
 }
 

@@ -44,6 +44,18 @@ local lightMode = {
 -- alias current mode
 local colorMode = lcd.darkMode() and darkMode or lightMode
 
+-- User voltage min/max override support
+local function getUserVoltageOverride(which)
+  local prefs = rfsuite.session and rfsuite.session.modelPreferences
+  if prefs and prefs["system/@rt-rc"] then
+    local v = tonumber(prefs["system/@rt-rc"][which])
+    -- Only use override if it is present and different from the default 6S values
+    -- (Defaults: min=18.0, max=25.2)
+    if which == "v_min" and v and math.abs(v - 18.0) > 0.05 then return v end
+    if which == "v_max" and v and math.abs(v - 25.2) > 0.05 then return v end
+  end
+  return nil
+end
 
 local layout = {
     cols = 4,
@@ -67,6 +79,8 @@ local boxes = {
         titlepos = "bottom",
         bgcolor = colorMode.bgcolor,
         min = function()
+            local override = getUserVoltageOverride("v_min")
+            if override then return override end
             local cfg = rfsuite.session.batteryConfig
             local cells = (cfg and cfg.batteryCellCount) or 3
             local minV  = (cfg and cfg.vbatmincellvoltage) or 3.0
@@ -74,6 +88,8 @@ local boxes = {
         end,
 
         max = function()
+            local override = getUserVoltageOverride("v_max")
+            if override then return override end
             local cfg = rfsuite.session.batteryConfig
             local cells = (cfg and cfg.batteryCellCount) or 3
             local maxV  = (cfg and cfg.vbatfullcellvoltage) or 4.2
@@ -166,7 +182,6 @@ local boxes = {
         rowspan = 2,
         type = "text",
         subtype = "governor",
-        nosource = "-",
         thresholds = {
             { value = "DISARMED", textcolor = "red"    },
             { value = "OFF",      textcolor = "red"    },
@@ -197,7 +212,6 @@ local boxes = {
         type = "text",
         subtype = "telemetry",
         source = "rpm",
-        nosource = "-",
         unit = "rpm",
         transform = "floor",
         bgcolor = colorMode.bgcolor,
@@ -211,7 +225,6 @@ local boxes = {
         type = "text",
         subtype = "telemetry",
         source = "rssi",
-        nosource = "-",
         unit = "dB",
         transform = "floor",
         bgcolor = colorMode.bgcolor,
