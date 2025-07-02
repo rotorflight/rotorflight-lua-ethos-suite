@@ -18,213 +18,161 @@
 local telemetry = rfsuite.tasks.telemetry
 local utils = rfsuite.widgets.dashboard.utils
 
+local W, H = lcd.getWindowSize()
+local VERSION = system.getVersion() and system.getVersion().board
+local gaugeThickness = 30
+if VERSION == "X18" or VERSION == "X18S" or VERSION == "X14" or VERSION == "X14S" then gaugeThickness = 15 end
+
 local darkMode = {
     textcolor   = "white",
+    titlecolor  = "white",
+    bgcolor     = "black",
     fillcolor   = "green",
+    fillbgcolor = "grey",
+    arcbgcolor  = "lightgrey",
 }
 
 local lightMode = {
     textcolor   = "black",
+    titlecolor  = "black",
+    bgcolor     = "white",
     fillcolor   = "green",
+    fillbgcolor = "lightgrey",
+    arcbgcolor  = "darkgrey",
 }
 
--- alias current mode
 local colorMode = lcd.darkMode() and darkMode or lightMode
 
-
+-- User voltage min/max override support
+local function getUserVoltageOverride(which)
+  local prefs = rfsuite.session and rfsuite.session.modelPreferences
+  if prefs and prefs["system/@rt-rc"] then
+    local v = tonumber(prefs["system/@rt-rc"][which])
+    if which == "v_min" and v and math.abs(v - 18.0) > 0.05 then return v end
+    if which == "v_max" and v and math.abs(v - 25.2) > 0.05 then return v end
+  end
+  return nil
+end
 
 local layout = {
-    cols = 4,
-    rows = 14,
-    padding = 4
+    cols = 2,
+    rows = 2,
+    padding = 1,
+    bgcolor = colorMode.bgcolor
 }
 
-local boxes = {
-     {
-        type = "gauge",
-        subtype = "arc",
-        col = 1, row = 1,
-        rowspan = 12,
-        colspan = 2,
-        source = "voltage",
-        thickness = 25,
-        font = "FONT_XXL",
-        arcbgcolor = colorMode.arcbgcolor,
-        title = "VOLTAGE",
-        titlepos = "bottom",
-        bgcolor = colorMode.bgcolor,
-        min = function()
-            local cfg = rfsuite.session.batteryConfig
-            local cells = (cfg and cfg.batteryCellCount) or 3
-            local minV  = (cfg and cfg.vbatmincellvoltage) or 3.0
-            return math.max(0, cells * minV)
-        end,
+-- BOXES CACHE
+local boxes_cache = nil
+local themeconfig = nil
 
-        max = function()
-            local cfg = rfsuite.session.batteryConfig
-            local cells = (cfg and cfg.batteryCellCount) or 3
-            local maxV  = (cfg and cfg.vbatmaxcellvoltage) or 4.2
-            return math.max(0, cells * maxV)
-        end,
-
-        gaugemin = function()
-            local cfg = rfsuite.session.batteryConfig
-            local cells = (cfg and cfg.batteryCellCount) or 3
-            local minV  = (cfg and cfg.vbatmincellvoltage) or 3.0
-            return math.max(0, cells * minV)
-        end,
-
-        gaugemax = function()
-            local cfg = rfsuite.session.batteryConfig
-            local cells = (cfg and cfg.batteryCellCount) or 3
-            local maxV  = (cfg and cfg.vbatmaxcellvoltage) or 4.2
-            return math.max(0, cells * maxV)
-        end,
-
-        -- (b) The “dynamic” thresholds (using functions that no longer reference box._cache)
-        thresholds = {
-            {
-                value = function(box)
-                    -- Fetch the raw gaugemin parameter (could itself be a function)
-                    local raw_gm = utils.getParam(box, "gaugemin")
-                    if type(raw_gm) == "function" then
-                        raw_gm = raw_gm(box)
-                    end
-
-                    -- Fetch the raw gaugemax parameter (could itself be a function)
-                    local raw_gM = utils.getParam(box, "gaugemax")
-                    if type(raw_gM) == "function" then
-                        raw_gM = raw_gM(box)
-                    end
-
-                    -- Return 30% above gaugemin
-                    return raw_gm + 0.30 * (raw_gM - raw_gm)
-                end,
-                fillcolor = "red",
-                textcolor = colorMode.textcolor
-            },
-            {
-                value = function(box)
-                    local raw_gm = utils.getParam(box, "gaugemin")
-                    if type(raw_gm) == "function" then
-                        raw_gm = raw_gm(box)
-                    end
-
-                    local raw_gM = utils.getParam(box, "gaugemax")
-                    if type(raw_gM) == "function" then
-                        raw_gM = raw_gM(box)
-                    end
-
-                    -- Return 50% above gaugemin
-                    return raw_gm + 0.50 * (raw_gM - raw_gm)
-                end,
-                fillcolor = "orange",
-                textcolor = colorMode.textcolor
-            },
-            {
-                value = function(box)
-                    local raw_gM = utils.getParam(box, "gaugemax")
-                    if type(raw_gM) == "function" then
-                        raw_gM = raw_gM(box)
-                    end
-
-                    -- Top‐end threshold = gaugemax
-                    return raw_gM
-                end,
-                fillcolor = colorMode.fillcolor,
-                textcolor = colorMode.textcolor
-            }
-        }
-    },
-    {
-        type = "gauge",
-        subtype = "arc",
-        col = 3, row = 1,
-        rowspan = 12,
-        thickness = 25,
-        colspan = 2,
-        source = "smartfuel",
+local function buildBoxes()
+    return {
+        {
+            col = 1,
+            row = 1,
+            type = "time",
+            subtype = "flight",
+            title = "FLIGHT TIME",
+            titlepos = "bottom",
+            font = "FONT_XXL",
+            bgcolor = colorMode.bgcolor,
+            titlecolor = colorMode.titlecolor,
+            textcolor = colorMode.titlecolor,
+        },  
+      {
+        col     = 1,
+        row     = 2,
+        type    = "text",
+        subtype = "telemetry",
+        source  = "rssi",
+        unit    = "dB",
+        title   = "LQ",
+        titlepos= "bottom",
         transform = "floor",
-        min = 0,
-        max = 140,
-        font = "FONT_XXL",
-        arcbgcolor = colorMode.arcbgcolor,
-        title = "FUEL",
-        titlepos = "bottom",
-        bgcolor = colorMode.bgcolor,
         titlecolor = colorMode.titlecolor,
         textcolor = colorMode.titlecolor,
-
-        thresholds = {
-            { value = 30,  fillcolor = "red",    textcolor = colorMode.textcolor },
-            { value = 50,  fillcolor = "orange", textcolor = colorMode.textcolor },
-            { value = 140, fillcolor = colorMode.fillcolor,  textcolor = colorMode.textcolor }
+        bgcolor = colorMode.bgcolor,
+      },               
+        {
+            type = "gauge",
+            subtype = "arc",
+            col = 2, 
+            row = 1,
+            rowspan = 2,
+            source = "voltage",
+            thickness = gaugeThickness,
+            font = "FONT_XXL",
+            arcbgcolor = colorMode.arcbgcolor,
+            title = "VOLTAGE",
+            titlepos = "bottom",
+            bgcolor = colorMode.bgcolor,
+            min = function()
+                local override = getUserVoltageOverride("v_min")
+                if override then return override end
+                local cfg = rfsuite.session.batteryConfig
+                local cells = (cfg and cfg.batteryCellCount) or 3
+                local minV  = (cfg and cfg.vbatmincellvoltage) or 3.0
+                return math.max(0, cells * minV)
+            end,
+            max = function()
+                local override = getUserVoltageOverride("v_max")
+                if override then return override end
+                local cfg = rfsuite.session.batteryConfig
+                local cells = (cfg and cfg.batteryCellCount) or 3
+                local maxV  = (cfg and cfg.vbatfullcellvoltage) or 4.2
+                return math.max(0, cells * maxV)
+            end,
+            thresholds = {
+                {
+                    value = function(box)
+                        local raw_gm = utils.getParam(box, "min")
+                        if type(raw_gm) == "function" then raw_gm = raw_gm(box) end
+                        local raw_gM = utils.getParam(box, "max")
+                        if type(raw_gM) == "function" then raw_gM = raw_gM(box) end
+                        return raw_gm + 0.30 * (raw_gM - raw_gm)
+                    end,
+                    fillcolor = "red",
+                    textcolor = colorMode.textcolor
+                },
+                {
+                    value = function(box)
+                        local raw_gm = utils.getParam(box, "min")
+                        if type(raw_gm) == "function" then raw_gm = raw_gm(box) end
+                        local raw_gM = utils.getParam(box, "max")
+                        if type(raw_gM) == "function" then raw_gM = raw_gM(box) end
+                        return raw_gm + 0.50 * (raw_gM - raw_gm)
+                    end,
+                    fillcolor = "orange",
+                    textcolor = colorMode.textcolor
+                },
+                {
+                    value = function(box)
+                        local raw_gM = utils.getParam(box, "max")
+                        if type(raw_gM) == "function" then raw_gM = raw_gM(box) end
+                        return raw_gM
+                    end,
+                    fillcolor = colorMode.fillcolor,
+                    textcolor = colorMode.textcolor
+                }
+            }
         },
-    },
-    {
-        col = 1,
-        row = 13,
-        rowspan = 2,
-        type = "text",
-        subtype = "governor",
-        nosource = "-",
-        titlecolor = colorMode.textcolor,
-        textcolor = colorMode.textcolor,  
-        thresholds = {
-            { value = "DISARMED", textcolor = "red"    },
-            { value = "OFF",      textcolor = "red"    },
-            { value = "IDLE",     textcolor = "yellow" },
-            { value = "SPOOLUP",  textcolor = "blue"   },
-            { value = "RECOVERY", textcolor = "orange" },
-            { value = "ACTIVE",   textcolor = "green"  },
-            { value = "THR-OFF",  textcolor = "red"    },
-        }
-    },
-    {
-        col = 4,
-        row = 13,
-        rowspan = 2,
-        type = "time",
-        subtype = "flight",
-        titlecolor = colorMode.textcolor,
-        textcolor = colorMode.textcolor,          
-    }, 
-    {
-        col = 3,
-        row = 13,
-        rowspan = 2,
-        type = "text",
-        subtype = "telemetry",
-        source = "rpm",
-        nosource = "-",
-        unit = "rpm",
-        transform = "floor",
-        titlecolor = colorMode.textcolor,
-        textcolor = colorMode.textcolor,          
-    },    
-    {
-        col = 2,
-        row = 13,
-        rowspan = 2,
-        type = "text",
-        subtype = "telemetry",
-        source = "rssi",
-        nosource = "-",
-        unit = "dB",
-        transform = "floor",
-        titlecolor = colorMode.textcolor,
-        textcolor = colorMode.textcolor,          
-    },    
-}
+    }
+end
 
-
+local function boxes()
+    local config = rfsuite and rfsuite.session and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences["system/@rt-rc"]
+    if boxes_cache == nil or themeconfig ~= config then
+        boxes_cache = buildBoxes()
+        themeconfig = config
+    end
+    return boxes_cache
+end
 
 return {
     layout = layout,
-    wakeup = wakeup,
     boxes = boxes,
     scheduler = {
         spread_scheduling = true,      -- (optional: spread scheduling over the interval to avoid spikes in CPU usage)  
         spread_ratio = 0.8              -- optional: manually override default ratio logic (applies if spread_scheduling is true)
-    }      
+    }     
 }
