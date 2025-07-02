@@ -13,8 +13,8 @@
 
 local config = {}
 local THEME_DEFAULTS = {
-    v_min          = 18.0,      -- default: 6s x 3.0V
-    v_max          = 25.2,      -- default: 6s x 4.2V
+    v_min        = 7.0,      -- 2S x 3.5V, safe default for nitro receiver packs
+    v_max        = 8.4,      -- 2S x 4.2V, max charge for 2S Li-Ion/LiPo RX
 }
 
 local function clamp(val, min, max)
@@ -44,12 +44,11 @@ local function configure()
         config[k] = val or v
     end
 
-    -- VOLTAGE PANEL (override min/max V)
+    -- VOLTAGE PANEL (Receiver battery for Nitro)
     local voltage_panel = form.addExpansionPanel("Voltage")
     voltage_panel:open(false)
-
     local voltage_min_line = voltage_panel:addLine("Min")
-    formFields[#formFields + 1] = form.addNumberField(voltage_min_line, nil, 50, 650,
+    formFields[#formFields + 1] = form.addNumberField(voltage_min_line, nil, 50, 140,
         function()
             local v = config.v_min or THEME_DEFAULTS.v_min
             return math.floor((v * 10) + 0.5)
@@ -63,14 +62,14 @@ local function configure()
     formFields[#formFields]:suffix("V")
 
     local voltage_max_line = voltage_panel:addLine("Max")
-    formFields[#formFields + 1] = form.addNumberField(voltage_max_line, nil, 50, 650,
+    formFields[#formFields + 1] = form.addNumberField(voltage_max_line, nil, 50, 140,
         function()
             local v = config.v_max or THEME_DEFAULTS.v_max
             return math.floor((v * 10) + 0.5)
         end,
         function(val)
             local max_val = val / 10
-            config.v_max = clamp(max_val, config.v_min + 0.1, 65)
+            config.v_max = clamp(max_val, config.v_min + 0.1, 14)
             setPref("v_max", config.v_max)
         end)
     formFields[#formFields]:decimals(1)
