@@ -67,7 +67,7 @@ function onToolMenu()
     }}
 
     form.openDialog({
-        width = rfsuite.session.lcdWidth,
+        width = rfsuite.app.lcdWidth,
         title = i18n("app.modules.about.msgbox_credits"),
         message = message,
         buttons = buttons,

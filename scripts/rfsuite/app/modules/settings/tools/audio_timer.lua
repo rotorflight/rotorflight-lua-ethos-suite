@@ -22,7 +22,7 @@ local function openPage(pageIdx, title, script)
         i18n("app.modules.settings.name") .. " / " .. i18n("app.modules.settings.audio") .. " / " .. i18n("app.modules.settings.txt_audio_timer")
     )
 
-    rfsuite.session.formLineCnt = 0
+    rfsuite.app.formLineCnt = 0
     local formFieldCount = 0
 
     if not rfsuite.preferences.timer then rfsuite.preferences.timer = {} end
@@ -43,10 +43,10 @@ local function openPage(pageIdx, title, script)
 
     -- Audio Alerting On/Off
     formFieldCount = formFieldCount + 1
-    rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = form.addLine("Timer Alerting")
+    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("Timer Alerting")
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(
-        rfsuite.app.formLines[rfsuite.session.formLineCnt], nil,
+        rfsuite.app.formLines[rfsuite.app.formLineCnt], nil,
         function() return settings.timeraudioenable or false end,
         function(newValue)
             settings.timeraudioenable = newValue
@@ -63,10 +63,10 @@ local function openPage(pageIdx, title, script)
 
     -- Timer Elapsed Alert Mode (Choice)
     formFieldCount = formFieldCount + 1
-    rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = form.addLine("Timer Elapsed Alert")
+    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("Timer Elapsed Alert")
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(
-        rfsuite.app.formLines[rfsuite.session.formLineCnt], nil,
+        rfsuite.app.formLines[rfsuite.app.formLineCnt], nil,
         {
             { "Beep", 0 },
             { "Multi Beep", 1 },

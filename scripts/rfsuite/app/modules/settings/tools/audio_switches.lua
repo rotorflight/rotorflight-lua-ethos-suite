@@ -21,7 +21,7 @@ local function openPage(pageIdx, title, script)
     rfsuite.app.ui.fieldHeader(
         i18n("app.modules.settings.name") .. " / " .. i18n("app.modules.settings.audio") .. " / " .. i18n("app.modules.settings.txt_audio_switches")
     )
-    rfsuite.session.formLineCnt = 0
+    rfsuite.app.formLineCnt = 0
 
     local formFieldCount = 0
 
@@ -38,11 +38,11 @@ local function openPage(pageIdx, title, script)
 
     for i, v in ipairs(sensorList) do
     formFieldCount = formFieldCount + 1
-    rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = form.addLine(v.name or "unknown")
+    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine(v.name or "unknown")
 
 
-    rfsuite.app.formFields[formFieldCount] = form.addSwitchField(rfsuite.app.formLines[rfsuite.session.formLineCnt], 
+    rfsuite.app.formFields[formFieldCount] = form.addSwitchField(rfsuite.app.formLines[rfsuite.app.formLineCnt], 
                                                         nil, 
                                                         function() 
                                                             if rfsuite.preferences and rfsuite.preferences.switches then

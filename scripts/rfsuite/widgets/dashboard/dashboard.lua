@@ -1136,7 +1136,7 @@ function dashboard.getPreference(key)
     if not rfsuite.app.guiIsRunning then
         return rfsuite.ini.getvalue(rfsuite.session.modelPreferences, dashboard.currentWidgetPath, key)
     else
-        return rfsuite.ini.getvalue(rfsuite.session.modelPreferences, rfsuite.session.dashboardEditingTheme, key)
+        return rfsuite.ini.getvalue(rfsuite.session.modelPreferences, rfsuite.app.dashboardEditingTheme, key)
     end
 end
 
@@ -1154,7 +1154,7 @@ function dashboard.savePreference(key, value)
         rfsuite.ini.setvalue(rfsuite.session.modelPreferences, dashboard.currentWidgetPath, key, value)
         return rfsuite.ini.save_ini_file(rfsuite.session.modelPreferencesFile, rfsuite.session.modelPreferences)
     else
-        rfsuite.ini.setvalue(rfsuite.session.modelPreferences, rfsuite.session.dashboardEditingTheme, key, value)
+        rfsuite.ini.setvalue(rfsuite.session.modelPreferences, rfsuite.app.dashboardEditingTheme, key, value)
         return rfsuite.ini.save_ini_file(rfsuite.session.modelPreferencesFile, rfsuite.session.modelPreferences)
     end
 end

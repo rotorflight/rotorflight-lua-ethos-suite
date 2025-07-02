@@ -12,7 +12,7 @@ local function openPage(pageIdx, title, script)
     rfsuite.app.ui.fieldHeader(
         i18n("app.modules.settings.name") .. " / " .. i18n("app.modules.settings.txt_general")
     )
-    rfsuite.session.formLineCnt = 0
+    rfsuite.app.formLineCnt = 0
 
     local formFieldCount = 0
 
@@ -20,12 +20,12 @@ local function openPage(pageIdx, title, script)
 
     -- Icon size choice field
     formFieldCount = formFieldCount + 1
-    rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = form.addLine(
+    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine(
         i18n("app.modules.settings.txt_iconsize")
     )
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(
-        rfsuite.app.formLines[rfsuite.session.formLineCnt],
+        rfsuite.app.formLines[rfsuite.app.formLineCnt],
         nil,
         {
             { i18n("app.modules.settings.txt_text"),  0 },
@@ -48,12 +48,12 @@ local function openPage(pageIdx, title, script)
 
     -- Sync-name toggle field
     formFieldCount = formFieldCount + 1
-    rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = form.addLine(
+    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine(
         i18n("app.modules.settings.txt_syncname")
     )
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(
-        rfsuite.app.formLines[rfsuite.session.formLineCnt],
+        rfsuite.app.formLines[rfsuite.app.formLineCnt],
         nil,
         function()
             if rfsuite.preferences and rfsuite.preferences.general then

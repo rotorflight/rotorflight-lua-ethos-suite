@@ -3,11 +3,14 @@ local i18n = rfsuite.i18n.get
 local themesBasePath = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/themes/"
 local themesUserPath = "SCRIPTS:/" .. rfsuite.config.preferences .. "/dashboard/"
 
+local enableWakeup = false
+local prevConnectedState = nil
+
 local function openPage(pidx, title, script)
     -- Get the installed themes
     local themeList = rfsuite.widgets.dashboard.listThemes()
 
-    rfsuite.session.dashboardEditingTheme = nil
+    rfsuite.app.dashboardEditingTheme = nil
     enableWakeup = true
     rfsuite.app.triggers.closeProgressLoader = true
     form.clear()
@@ -25,7 +28,7 @@ local function openPage(pidx, title, script)
     local buttonW, buttonH, padding, numPerRow
     if rfsuite.preferences.general.iconsize == 0 then
         padding = rfsuite.app.radio.buttonPaddingSmall
-        buttonW = (rfsuite.session.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
+        buttonW = (rfsuite.app.lcdWidth - padding) / rfsuite.app.radio.buttonsPerRow - padding
         buttonH = rfsuite.app.radio.navbuttonHeight
         numPerRow = rfsuite.app.radio.buttonsPerRow
     elseif rfsuite.preferences.general.iconsize == 1 then
@@ -123,6 +126,7 @@ local function openPage(pidx, title, script)
 
     rfsuite.app.triggers.closeProgressLoader = true
     collectgarbage()
+    enableWakeup = true
     return
 end
 
@@ -151,6 +155,25 @@ local function onNavMenu()
         return true
 end
 
+local function wakeup()
+    if not enableWakeup then
+        return
+    end
+
+    -- current combined state: true only if both are truthy
+    local currState = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false
+
+    -- only update if state has changed
+    if currState ~= prevConnectedState then
+        -- we cant be here anymore... jump to previous page
+        if currState == false then
+            onNavMenu()
+        end
+        -- remember for next time
+        prevConnectedState = currState
+    end
+end
+
 return {
     pages = pages, 
     openPage = openPage,
@@ -164,4 +187,5 @@ return {
     }, 
     event = event,
     onNavMenu = onNavMenu,
+    wakeup = wakeup,
 }

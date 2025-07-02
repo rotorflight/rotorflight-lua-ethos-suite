@@ -48,7 +48,7 @@ local function openPage(pageIdx, title, script)
     rfsuite.app.ui.fieldHeader(
         i18n("app.modules.settings.name") .. " / " .. i18n("app.modules.settings.dashboard") .. " / " .. i18n("app.modules.settings.dashboard_theme")
     )
-    rfsuite.session.formLineCnt = 0
+    rfsuite.app.formLineCnt = 0
 
     local formFieldCount = 0
 
@@ -63,10 +63,10 @@ local function openPage(pageIdx, title, script)
 
     -- preflight theme selection
     formFieldCount = formFieldCount + 1
-    rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = global_panel:addLine(i18n("app.modules.settings.dashboard_theme_preflight"))
+    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = global_panel:addLine(i18n("app.modules.settings.dashboard_theme_preflight"))
             
-    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.session.formLineCnt], nil, 
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, 
                                                         formattedThemes, 
                                                         function()
                                                             if rfsuite.preferences and rfsuite.preferences.dashboard then
@@ -90,10 +90,10 @@ local function openPage(pageIdx, title, script)
 
     -- inflight theme selection                                                          
     formFieldCount = formFieldCount + 1
-    rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = global_panel:addLine(i18n("app.modules.settings.dashboard_theme_inflight"))
+    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = global_panel:addLine(i18n("app.modules.settings.dashboard_theme_inflight"))
                               
-    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.session.formLineCnt], nil, 
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, 
                                                         formattedThemes, 
                                                         function()
                                                             if rfsuite.preferences and rfsuite.preferences.dashboard then
@@ -118,10 +118,10 @@ local function openPage(pageIdx, title, script)
                                                         
      -- postflight theme selection                                                            
     formFieldCount = formFieldCount + 1
-    rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = global_panel:addLine(i18n("app.modules.settings.dashboard_theme_postflight"))
+    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = global_panel:addLine(i18n("app.modules.settings.dashboard_theme_postflight"))
                                     
-    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.session.formLineCnt], nil, 
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, 
                                                         formattedThemes, 
                                                         function()
                                                             if rfsuite.preferences and rfsuite.preferences.dashboard then
@@ -152,10 +152,10 @@ local function openPage(pageIdx, title, script)
 
     -- preflight theme selection
     formFieldCount = formFieldCount + 1
-    rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = model_panel:addLine(i18n("app.modules.settings.dashboard_theme_preflight"))
+    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = model_panel:addLine(i18n("app.modules.settings.dashboard_theme_preflight"))
             
-    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.session.formLineCnt], nil, 
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, 
                                                         formattedThemesModel, 
                                                         function()
                                                             if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences then
@@ -182,10 +182,10 @@ local function openPage(pageIdx, title, script)
 
     -- inflight theme selection                                                          
     formFieldCount = formFieldCount + 1
-    rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = model_panel:addLine(i18n("app.modules.settings.dashboard_theme_inflight"))
+    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = model_panel:addLine(i18n("app.modules.settings.dashboard_theme_inflight"))
                               
-    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.session.formLineCnt], nil, 
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, 
                                                         formattedThemesModel, 
                                                         function()
                                                             if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences then
@@ -212,10 +212,10 @@ local function openPage(pageIdx, title, script)
                                                         
      -- postflight theme selection                                                            
     formFieldCount = formFieldCount + 1
-    rfsuite.session.formLineCnt = rfsuite.session.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.session.formLineCnt] = model_panel:addLine(i18n("app.modules.settings.dashboard_theme_postflight"))
+    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = model_panel:addLine(i18n("app.modules.settings.dashboard_theme_postflight"))
                                     
-    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.session.formLineCnt], nil, 
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, 
                                                         formattedThemesModel, 
                                                         function()
                                                             if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences then
