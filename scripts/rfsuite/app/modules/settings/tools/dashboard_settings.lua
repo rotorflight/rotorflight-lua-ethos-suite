@@ -97,7 +97,9 @@ local function openPage(pidx, title, script)
                         themeScript = themesUserPath .. folder .. "/" .. configure 
                     end    
 
-                    rfsuite.app.ui.openPageDashboard(idx, theme.name,themeScript, source, folder)               
+                    local wrapperScript = "settings/tools/dashboard_settings_theme.lua"
+
+                    rfsuite.app.ui.openPage(idx, theme.name, wrapperScript, source, folder,themeScript)               
                 end
             })
 
