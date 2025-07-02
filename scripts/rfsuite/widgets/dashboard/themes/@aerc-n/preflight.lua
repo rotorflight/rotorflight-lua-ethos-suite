@@ -207,7 +207,7 @@ local function buildBoxes()
          textcolor = colorMode.textcolor,
         },
 
-        -- Voltage (BEC)
+        -- Voltage
         {col = 6, colspan = 2, row = 1, rowspan = 12,
          type = "gauge", 
          source = "bec_voltage", 

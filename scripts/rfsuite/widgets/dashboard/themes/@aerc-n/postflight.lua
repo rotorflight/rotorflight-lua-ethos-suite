@@ -66,7 +66,7 @@ local boxes = {
     {col = 2, row = 1, type = "text", subtype = "stats", source = "rpm", title = "Headspeed Max", unit = " rpm", titlepos = "top", bgcolor = colorMode.bgcolor, transform = "floor", textcolor = "orange", titlecolor = colorMode.titlecolor},
     {col = 2, row = 3, type = "text", subtype = "stats", source = "throttle_percent", title = "Throttle Max", titlepos = "top", bgcolor = colorMode.bgcolor, transform = "floor", textcolor = "orange", titlecolor = colorMode.titlecolor},
     
-    {col = 3, row = 1, type = "text", subtype = "telemetry", source = "bec_voltage", title = "RX Voltage", titlepos = "top", bgcolor = colorMode.bgcolor, unit = "V", textcolor = "orange", titlecolor = colorMode.titlecolor},
+    {col = 3, row = 1, type = "text", subtype = "telemetry", source = "bec_voltage", title = "Voltage", titlepos = "top", bgcolor = colorMode.bgcolor, unit = "V", textcolor = "orange", titlecolor = colorMode.titlecolor},
     {col = 3, row = 2, type = "text", subtype = "stats", stattype = "min", source = "bec_voltage", title = "RX Min Volts", titlepos = "top", bgcolor = colorMode.bgcolor, unit = "V", transform = function(v) return maxVoltageToCellVoltage(v) end, textcolor = "orange", titlecolor = colorMode.titlecolor},
     {col = 3, row = 3, type = "text", subtype = "stats", source = "altitude", title = "Altitude Max", titlepos = "top", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = "floor"},
 
