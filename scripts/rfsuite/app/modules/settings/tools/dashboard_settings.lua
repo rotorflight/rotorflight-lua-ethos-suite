@@ -107,6 +107,8 @@ local function openPage(pidx, title, script)
                 rfsuite.app.formFields[idx]:enable(false)
             end
 
+
+            --local currState = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false 
             if rfsuite.preferences.menulastselected["settings_dashboard_themes"] == idx then
                 rfsuite.app.formFields[idx]:focus()
             end

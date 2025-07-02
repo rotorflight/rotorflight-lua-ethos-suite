@@ -3,7 +3,7 @@ local i18n = rfsuite.i18n.get
 
 local enableWakeup = false
 local prevConnectedState = nil
-
+local page
 
 local function openPage(idx, title, script, source, folder,themeScript)
     -- Initialize global UI state and clear form data
@@ -18,7 +18,7 @@ local function openPage(idx, title, script, source, folder,themeScript)
     -- Load the module
     local modulePath =  themeScript
 
-    rfsuite.app.Page = assert(rfsuite.compiler.loadfile(modulePath))(idx)
+    page = assert(rfsuite.compiler.loadfile(modulePath))(idx)
 
     -- load up the menu
     local w, h = rfsuite.utils.getWindowSize()
@@ -74,8 +74,8 @@ local function openPage(idx, title, script, source, folder,themeScript)
                         action = function()
                             local msg = i18n("app.modules.profile_select.save_prompt_local")
                             rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
-                            if rfsuite.app.Page.write then
-                                rfsuite.app.Page.write()
+                            if page.write then
+                                page.write()
                             end    
                             -- update dashboard theme
                             rfsuite.widgets.dashboard.reload_themes()
@@ -105,22 +105,20 @@ local function openPage(idx, title, script, source, folder,themeScript)
     })
     rfsuite.app.formNavigationFields['menu']:focus()
 
+    
+    rfsuite.app.uiState = rfsuite.app.uiStatus.pages
+    enableWakeup = true
 
     
     -- If the Page has its own openPage function, use it and return early
-    if rfsuite.app.Page.configure then
-        rfsuite.app.Page.configure(idx, title, script, extra1, extra2, extra3, extra5, extra6)
+    if page.configure then
+        page.configure(idx, title, script, extra1, extra2, extra3, extra5, extra6)
         rfsuite.utils.reportMemoryUsage(title)
         rfsuite.app.triggers.closeProgressLoader = true
         return
     end
 
 end
-
-
-
-
-rfsuite.app.uiState = rfsuite.app.uiStatus.pages
 
 local function event(widget, category, value, x, y)
     -- if close event detected go to section home page
@@ -132,10 +130,15 @@ local function event(widget, category, value, x, y)
         )
         return true
     end
+
+    if page.event then
+        page.event()
+    end
+
 end
 
 local function onNavMenu()
-    rfsuite.app.ui.progressDisplay()
+    --rfsuite.app.ui.progressDisplay()
         rfsuite.app.ui.openPage(
             pageIdx,
             i18n("app.modules.settings.dashboard"),
@@ -145,6 +148,7 @@ local function onNavMenu()
 end
 
 local function wakeup()
+
     if not enableWakeup then
         return
     end
@@ -161,6 +165,11 @@ local function wakeup()
         -- remember for next time
         prevConnectedState = currState
     end
+
+    if page.wakeup then
+        page.wakeup()
+    end
+
 end
 
 return {

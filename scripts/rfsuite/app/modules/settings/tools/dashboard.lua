@@ -123,6 +123,8 @@ local function openPage(pidx, title, script)
 
         if pvalue.disabled == true then rfsuite.app.formFields[pidx]:enable(false) end
 
+        local currState = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false
+            
         if rfsuite.preferences.menulastselected["settings_dashboard"] == pidx then rfsuite.app.formFields[pidx]:focus() end
 
         lc = lc + 1
