@@ -45,6 +45,25 @@ local lightMode = {
 -- alias current mode
 local colorMode = lcd.darkMode() and darkMode or lightMode
 
+-- Theme config support
+local theme_section = "system/@rt-rc-n"
+
+local THEME_DEFAULTS = {
+    v_min   = 7.0,
+    v_max   = 8.4,
+}
+
+local function getThemeValue(key)
+    if rfsuite and rfsuite.session and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences[theme_section] then
+        local val = rfsuite.session.modelPreferences[theme_section][key]
+        val = tonumber(val)
+        if val ~= nil then return val end
+    end
+    return THEME_DEFAULTS[key]
+end
+
+local boxes_cache = nil
+local themeconfig = nil
 
 local layout = {
     cols    = 20,
@@ -54,212 +73,208 @@ local layout = {
     -- showgrid = lcd.RGB(100, 100, 100)
 }
 
--- define boxes, pulling colors from colorMode
-local boxes = {
-  {
-    col     = 1,
-    row     = 1,
-    colspan = 8,
-    rowspan = 3,
-    type    = "image",
-    subtype = "model",
-    bgcolor = colorMode.bgcolor,
-  },
-  {
-    col     = 1,
-    row     = 4,
-    colspan = 4,
-    rowspan = 3,
-    type    = "text",
-    subtype = "governor",
-    nosource= "-",
-    title   = "GOVERNOR",
-    titlepos= "bottom",
-    bgcolor = colorMode.bgcolor,
-    titlecolor = colorMode.titlecolor,
-    textcolor = colorMode.titlecolor,
-    thresholds = {
-      { value = "DISARMED", textcolor = colorMode.fillcolor },
-      { value = "OFF",      textcolor = colorMode.fillcolor },
-      { value = "IDLE",     textcolor = colorMode.accent    },
-      { value = "SPOOLUP",  textcolor = colorMode.primary   },
-      { value = "RECOVERY", textcolor = colorMode.secondary },
-      { value = "ACTIVE",   textcolor = colorMode.fillcolor },
-      { value = "THR-OFF",  textcolor = colorMode.fillcolor },
-    }
-  },
-  {
-    col     = 5,
-    row     = 4,
-    colspan = 4,
-    rowspan = 3,
-    type    = "text",
-    subtype = "telemetry",
-    source  = "rpm",
-    nosource= "-",
-    unit    = "",
-    transform = "floor",
-    title   = "HEADSPEED",
-    titlepos= "bottom",
-    titlecolor = colorMode.titlecolor,
-    textcolor = colorMode.titlecolor,
-    bgcolor = colorMode.bgcolor,
-  },
-  {
-    col     = 1,
-    row     = 7,
-    colspan = 2,
-    rowspan = 2,
-    type    = "text",
-    subtype = "telemetry",
-    source  = "pid_profile",
-    title   = "PROFILE",
-    titlepos= "bottom",
-    transform = "floor",
-    titlecolor = colorMode.titlecolor,
-    textcolor = colorMode.titlecolor,
-    bgcolor = colorMode.bgcolor,
-  },
-  {
-    col     = 3,
-    row     = 7,
-    colspan = 2,
-    rowspan = 2,
-    type    = "text",
-    subtype = "telemetry",
-    source  = "rate_profile",
-    title   = "RATES",
-    titlepos= "bottom",
-    transform = "floor",
-    titlecolor = colorMode.titlecolor,
-    textcolor = colorMode.titlecolor,
-    bgcolor = colorMode.bgcolor,
-  },
-  {
-    col     = 5,
-    row     = 7,
-    colspan = 2,
-    rowspan = 2,
-    type    = "time",
-    subtype = "count",
-    title   = "FLIGHTS",
-    titlepos= "bottom",
-    titlecolor = colorMode.titlecolor,
-    textcolor = colorMode.titlecolor,
-    bgcolor = colorMode.bgcolor,
-  },
-  {
-    col     = 7,
-    row     = 7,
-    colspan = 2,
-    rowspan = 2,
-    type    = "text",
-    subtype = "telemetry",
-    source  = "rssi",
-    nosource= "-",
-    unit    = "dB",
-    title   = "LQ",
-    titlepos= "bottom",
-    transform = "floor",
-    titlecolor = colorMode.titlecolor,
-    textcolor = colorMode.titlecolor,
-    bgcolor = colorMode.bgcolor,
-  },
-  {
-    col     = 9,
-    row     = 7,
-    colspan = 6,
-    rowspan = 2,
-    type    = "time",
-    subtype = "flight",
-    title   = "TIME",
-    titlepos= "bottom",
-    titlecolor = colorMode.titlecolor,
-    textcolor = colorMode.titlecolor,
-    bgcolor = colorMode.bgcolor,
-  },
-  {
-    col     = 15,
-    row     = 7,
-    colspan = 6,
-    rowspan = 2,
-    type    = "text",
-    subtype = "blackbox",
-    title   = "BLACKBOX",
-    titlepos= "bottom",
-    titlecolor = colorMode.titlecolor,
-    textcolor = colorMode.titlecolor,
-    bgcolor = colorMode.bgcolor,
-  },
-  {
-    type    = "gauge",
-    subtype = "arc",
-    col     = 9,
-    row     = 1,
-    colspan = 6,
-    rowspan = 6,
-    thickness= gaugeThickness,
-    source  = "throttle_percent",
-    unit    = "%",
-    transform = "floor",
-    min     = 0,
-    max     = 100,
-    font    = "FONT_XL",
-    arcbgcolor = colorMode.arcbgcolor,
-    title   = "THROTTLE",
-    titlepos= "bottom",
-    titlecolor = colorMode.titlecolor,
-    textcolor = colorMode.titlecolor,
-    bgcolor = colorMode.bgcolor,
-    thresholds = {
-        { value = 30,  fillcolor = "red",    textcolor = colorMode.textcolor },
-        { value = 50,  fillcolor = "orange", textcolor = colorMode.textcolor },
-        { value = 140, fillcolor = colorMode.fillcolor,  textcolor = colorMode.textcolor }
-    },
-  },
-  {
-    col     = 15,
-    row     = 1,
-    colspan = 6,
-    rowspan = 6,
-    type    = "gauge",
-    subtype = "arc",
-    source  = "bec_voltage",
-    fillbgcolor = colorMode.fillbgcolor,
-    title    = "VOLTAGE",
-    font     = "FONT_XL",
-    thickness= gaugeThickness,
-    titlepos = "bottom",
-    fillcolor= colorMode.fillcolor,
-    titlecolor = colorMode.titlecolor,
-    textcolor = colorMode.titlecolor,
-    bgcolor = colorMode.bgcolor,
-    min = 6.4,
-    max = 8.4,
-    thresholds = {
-        {
-            value = 7.0, -- Bottom‐end threshold = 7.0V
-            fillcolor = "red",
-            textcolor = colorMode.textcolor
-        },
-        {
-            value = 7.5,
-            fillcolor = "orange",
-            textcolor = colorMode.textcolor
-        },
-        {
-            value = 8.0,
-            fillcolor = colorMode.fillcolor,
-            textcolor = colorMode.textcolor
+local function buildBoxes()
+    local vmin = getThemeValue("v_min")
+    local vmax = getThemeValue("v_max")
+    return {
+    
+      {
+        col     = 1,
+        row     = 1,
+        colspan = 8,
+        rowspan = 3,
+        type    = "image",
+        subtype = "model",
+        bgcolor = colorMode.bgcolor,
+      },
+      {
+        col     = 1,
+        row     = 4,
+        colspan = 4,
+        rowspan = 3,
+        type    = "text",
+        subtype = "governor",
+        title   = "GOVERNOR",
+        titlepos= "bottom",
+        bgcolor = colorMode.bgcolor,
+        titlecolor = colorMode.titlecolor,
+        textcolor = colorMode.titlecolor,
+        thresholds = {
+          { value = "DISARMED", textcolor = colorMode.fillcolor },
+          { value = "OFF",      textcolor = colorMode.fillcolor },
+          { value = "IDLE",     textcolor = colorMode.accent    },
+          { value = "SPOOLUP",  textcolor = colorMode.primary   },
+          { value = "RECOVERY", textcolor = colorMode.secondary },
+          { value = "ACTIVE",   textcolor = colorMode.fillcolor },
+          { value = "THR-OFF",  textcolor = colorMode.fillcolor },
         }
+      },
+      {
+        col     = 5,
+        row     = 4,
+        colspan = 4,
+        rowspan = 3,
+        type    = "text",
+        subtype = "telemetry",
+        source  = "rpm",
+        unit    = "",
+        transform = "floor",
+        title   = "HEADSPEED",
+        titlepos= "bottom",
+        titlecolor = colorMode.titlecolor,
+        textcolor = colorMode.titlecolor,
+        bgcolor = colorMode.bgcolor,
+      },
+      {
+        col     = 1,
+        row     = 7,
+        colspan = 2,
+        rowspan = 2,
+        type    = "text",
+        subtype = "telemetry",
+        source  = "pid_profile",
+        title   = "PROFILE",
+        titlepos= "bottom",
+        transform = "floor",
+        titlecolor = colorMode.titlecolor,
+        textcolor = colorMode.titlecolor,
+        bgcolor = colorMode.bgcolor,
+      },
+      {
+        col     = 3,
+        row     = 7,
+        colspan = 2,
+        rowspan = 2,
+        type    = "text",
+        subtype = "telemetry",
+        source  = "rate_profile",
+        title   = "RATES",
+        titlepos= "bottom",
+        transform = "floor",
+        titlecolor = colorMode.titlecolor,
+        textcolor = colorMode.titlecolor,
+        bgcolor = colorMode.bgcolor,
+      },
+      {
+        col     = 5,
+        row     = 7,
+        colspan = 2,
+        rowspan = 2,
+        type    = "time",
+        subtype = "count",
+        title   = "FLIGHTS",
+        titlepos= "bottom",
+        titlecolor = colorMode.titlecolor,
+        textcolor = colorMode.titlecolor,
+        bgcolor = colorMode.bgcolor,
+      },
+      {
+        col     = 7,
+        row     = 7,
+        colspan = 2,
+        rowspan = 2,
+        type    = "text",
+        subtype = "telemetry",
+        source  = "rssi",
+        unit    = "dB",
+        title   = "LQ",
+        titlepos= "bottom",
+        transform = "floor",
+        titlecolor = colorMode.titlecolor,
+        textcolor = colorMode.titlecolor,
+        bgcolor = colorMode.bgcolor,
+      },
+      {
+        col     = 9,
+        row     = 7,
+        colspan = 6,
+        rowspan = 2,
+        type    = "time",
+        subtype = "flight",
+        title   = "TIME",
+        titlepos= "bottom",
+        titlecolor = colorMode.titlecolor,
+        textcolor = colorMode.titlecolor,
+        bgcolor = colorMode.bgcolor,
+      },
+      {
+        col     = 15,
+        row     = 7,
+        colspan = 6,
+        rowspan = 2,
+        type    = "text",
+        subtype = "blackbox",
+        title   = "BLACKBOX",
+        titlepos= "bottom",
+        titlecolor = colorMode.titlecolor,
+        textcolor = colorMode.titlecolor,
+        bgcolor = colorMode.bgcolor,
+      },
+      {
+        type    = "gauge",
+        subtype = "arc",
+        col     = 9,
+        row     = 1,
+        colspan = 6,
+        rowspan = 6,
+        thickness= gaugeThickness,
+        source  = "throttle_percent",
+        unit    = "%",
+        transform = "floor",
+        min     = 0,
+        max     = 100,
+        font    = "FONT_XL",
+        arcbgcolor = colorMode.arcbgcolor,
+        title   = "THROTTLE",
+        titlepos= "bottom",
+        titlecolor = colorMode.titlecolor,
+        textcolor = colorMode.titlecolor,
+        bgcolor = colorMode.bgcolor,
+        thresholds = {
+            { value = 30,  fillcolor = "red",    textcolor = colorMode.textcolor },
+            { value = 50,  fillcolor = "orange", textcolor = colorMode.textcolor },
+            { value = 140, fillcolor = colorMode.fillcolor,  textcolor = colorMode.textcolor }
+        },
+      },
+      {
+        col     = 15,
+        row     = 1,
+        colspan = 6,
+        rowspan = 6,
+        type    = "gauge",
+        subtype = "arc",
+        source  = "bec_voltage",
+        fillbgcolor = colorMode.fillbgcolor,
+        title    = "VOLTAGE",
+        font     = "FONT_XL",
+        thickness= gaugeThickness,
+        titlepos = "bottom",
+        fillcolor= colorMode.fillcolor,
+        titlecolor = colorMode.titlecolor,
+        textcolor = colorMode.titlecolor,
+        bgcolor = colorMode.bgcolor,
+        min = vmin,
+        max = vmax,
+        thresholds = {
+            { value = vmin + 0.2 * (vmax - vmin), fillcolor = "red"    },
+            { value = vmin + 0.4 * (vmax - vmin), fillcolor = "orange" },
+            { value = vmax,                       fillcolor = "green"  }
+            }
+      },
     }
-  },
-}
+end
 
-
+local function boxes()
+    local config =
+        rfsuite and rfsuite.session and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences[theme_section]
+    if boxes_cache == nil or themeconfig ~= config then
+        boxes_cache = buildBoxes()
+        themeconfig = config
+    end
+    return boxes_cache
+end
 
 return {
-  wakeup    = wakeup,
   layout    = layout,
   boxes     = boxes,
     scheduler = {
