@@ -77,13 +77,11 @@ end
 
 function readNextChunk()
     if logDataRawReadComplete then
-        rfsuite.tasks.callback.clear(readNextChunk)
         return
     end
 
     if not logFileHandle then
         system.messageBox("Log file handle lost.")
-        rfsuite.tasks.callback.clear(readNextChunk)
         return
     end
 
@@ -101,7 +99,6 @@ function readNextChunk()
         logDataRaw = table.concat(logDataRaw)
 
         rfsuite.utils.log("Read complete, total size: " .. #logDataRaw .. " bytes","debug")
-        rfsuite.tasks.callback.clear(readNextChunk)
     end
 end
 
@@ -521,14 +518,14 @@ local function openPage(pidx, title, script, logfile, displaymode,dirname)
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-    local name = utils.resolveModelName(rfsuite.session.mcu_id or rfsuite.session.activeLogDir)
+    local name = utils.resolveModelName(rfsuite.session.mcu_id or rfsuite.app.activeLogDir)
     rfsuite.app.ui.fieldHeader("Logs / ".. name .. " / " .. extractShortTimestamp(logfile))
     activeLogFile = logfile
 
     local filePath
 
-    if rfsuite.session.activeLogDir then
-        filePath = utils.getLogDir(rfsuite.session.activeLogDir) .. "/" .. logfile
+    if rfsuite.app.activeLogDir then
+        filePath = utils.getLogDir(rfsuite.app.activeLogDir) .. "/" .. logfile
     else
         filePath = utils.getLogDir() .. "/" .. logfile
     end
@@ -593,7 +590,6 @@ local function openPage(pidx, title, script, logfile, displaymode,dirname)
     logFileReadOffset = 0
     logDataRawReadComplete = false
 
-    rfsuite.tasks.callback.every(0.05, readNextChunk)
     rfsuite.app.triggers.closeProgressLoader = true
     lcd.invalidate()
     enableWakeup = true
@@ -674,6 +670,11 @@ local function wakeup()
         updatePaintCache()
         lcd.invalidate()
         sliderPositionOld = sliderPosition
+    end
+
+    if logFileHandle and not logDataRawReadComplete then
+        readNextChunk()
+        return   -- exit early so we don’t start processing until we've got more data
     end
 
     if not progressLoader then

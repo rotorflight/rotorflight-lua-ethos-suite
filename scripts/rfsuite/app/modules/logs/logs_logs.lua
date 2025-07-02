@@ -95,7 +95,7 @@ local function openPage(pidx, title, script, displaymode)
     local logs = utils.getLogs(logDir)   
 
 
-    local name = utils.resolveModelName(rfsuite.session.mcu_id or rfsuite.session.activeLogDir)
+    local name = utils.resolveModelName(rfsuite.session.mcu_id or rfsuite.app.activeLogDir)
     rfsuite.app.ui.fieldHeader("Logs / " .. name)
 
     local buttonW

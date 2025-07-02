@@ -85,8 +85,8 @@ function utils.getLogPath()
     os.mkdir("LOGS:/rfsuite/telemetry")
     
     -- Return active directory if available
-    if rfsuite.session.activeLogDir then
-        return string.format("LOGS:/rfsuite/telemetry/%s/", rfsuite.session.activeLogDir)
+    if rfsuite.app.activeLogDir then
+        return string.format("LOGS:/rfsuite/telemetry/%s/", rfsuite.app.activeLogDir)
     end
     return "LOGS:/rfsuite/telemetry/"
 end
