@@ -9,215 +9,250 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * Note: Some icons have been sourced from https://www.flaticon.com/
-]]--
+]] --
+
+local telemetry = rfsuite.tasks.telemetry
+local utils = rfsuite.widgets.dashboard.utils
+
+local W, H = lcd.getWindowSize()
+local VERSION = system.getVersion().board
+
+local gaugeThickness = 30
+if VERSION == "X18" or VERSION == "X18S" or VERSION == "X14" or VERSION == "X14S" then gaugeThickness = 15 end
 
 local darkMode = {
     textcolor   = "white",
+    titlecolor  = "white",
+    bgcolor= "black",
+    fillcolor   = "green",
+    fillbgcolor = "grey",
+    arcbgcolor  = "lightgrey",
 }
 
 local lightMode = {
     textcolor   = "black",
+    titlecolor  = "black",
+    bgcolor= "white",
+    fillcolor   = "green",
+    fillbgcolor = "lightgrey",
+    arcbgcolor  = "darkgrey",
 }
 
 -- alias current mode
 local colorMode = lcd.darkMode() and darkMode or lightMode
 
-
+-- User voltage min/max override support
+local function getUserVoltageOverride(which)
+  local prefs = rfsuite.session and rfsuite.session.modelPreferences
+  if prefs and prefs["system/@rt-rc"] then
+    local v = tonumber(prefs["system/@rt-rc"][which])
+    -- Only use override if it is present and different from the default 6S values
+    -- (Defaults: min=18.0, max=25.2)
+    if which == "v_min" and v and math.abs(v - 18.0) > 0.05 then return v end
+    if which == "v_max" and v and math.abs(v - 25.2) > 0.05 then return v end
+  end
+  return nil
+end
 
 local layout = {
-    cols = 8,
-    rows = 4,
-    padding = 4
+    cols    = 20,
+    rows    = 8,
+    padding = 1,
+    bgcolor = colorMode.bgcolor,
+    -- showgrid = lcd.RGB(100, 100, 100)
 }
 
-local boxes = {
-  {
-    col = 1,
-    row = 1,
-    rowspan = 2,
-    colspan = 2,
-    type = "image",
-    subtype = "model"
-  },
-  {
-    col = 1,
-    row = 3,
-    colspan = 1,
-    type = "text",
-    subtype = "telemetry",
-    source = "rssi",
-    nosource = "-",
-    title = "LQ",
-    unit = "dB",
-    titlepos = "bottom",
-    transform = "floor",
-    titlecolor = colorMode.textcolor,
-    textcolor = colorMode.textcolor,
-  },
-  {
-    col = 2,
-    row = 3,
-    type = "time",
-    subtype = "flight",
-    titlepos = "bottom",
-    title = "TIMER",
-    titlecolor = colorMode.textcolor,
-    textcolor = colorMode.textcolor,   
-  },  
-  {
-    col = 1,
-    row = 4,
-    colspan = 2,
-    type = "text",
-    subtype = "governor",
-    nosource = "-",
-    title = "GOVERNOR",
-    titlepos = "bottom",
-    titlecolor = colorMode.textcolor,
-    textcolor = colorMode.textcolor,    
-    thresholds = {
-        { value = "DISARMED", textcolor = "red"    },
-        { value = "OFF",      textcolor = "red"    },
-        { value = "IDLE",     textcolor = "yellow" },
-        { value = "SPOOLUP",  textcolor = "blue"   },
-        { value = "RECOVERY", textcolor = "orange" },
-        { value = "ACTIVE",   textcolor = "green"  },
-        { value = "THR-OFF",  textcolor = "red"    },
-      }
-  },
-  {
-    col = 3,
-    row = 1,
-    rowspan = 2,
-    colspan = 3,
-    type = "text",
-    subtype = "telemetry",
-    source = "voltage",
-    nosource = "-",
-    title = "VOLTAGE",
-    unit = "v",
-    titlepos = "bottom",
-    titlecolor = colorMode.textcolor,
-    textcolor = colorMode.textcolor,
-    -- (same as before: these live here if you ever need .min/.max)
-    min = function()
-      local cfg   = rfsuite.session.batteryConfig
-      local cells = (cfg and cfg.batteryCellCount) or 3
-      local minV  = (cfg and cfg.vbatmincellvoltage) or 3.0
-      return math.max(0, cells * minV)
-    end,
-    max = function()
-      local cfg   = rfsuite.session.batteryConfig
-      local cells = (cfg and cfg.batteryCellCount) or 3
-      local maxV  = (cfg and cfg.vbatmaxcellvoltage) or 4.2
-      return math.max(0, cells * maxV)
-    end,
+-- BOXES CACHE
+local boxes_cache = nil
+local themeconfig = nil
 
-    thresholds = {
+local function buildBoxes()
+    return {
       {
-        -- 30% of (gmin→gmax) → red
-        value = function(box, currentValue)
-          local cfg   = rfsuite.session.batteryConfig
-          local cells = (cfg and cfg.batteryCellCount) or 3
-          local minV  = (cfg and cfg.vbatmincellvoltage) or 3.0
-          local maxV  = (cfg and cfg.vbatmaxcellvoltage) or 4.2
-          local gmin  = math.max(0, cells * minV)
-          local gmax  = math.max(0, cells * maxV)
-          return gmin + 0.30 * (gmax - gmin)
-        end,
-        textcolor = "red"
+        col     = 1,
+        row     = 1,
+        colspan = 8,
+        rowspan = 4,
+        type    = "image",
+        subtype = "model",
+        bgcolor = colorMode.bgcolor,
       },
       {
-        -- 50% of (gmin→gmax) → orange
-        value = function(box, currentValue)
-          local cfg   = rfsuite.session.batteryConfig
-          local cells = (cfg and cfg.batteryCellCount) or 3
-          local minV  = (cfg and cfg.vbatmincellvoltage) or 3.0
-          local maxV  = (cfg and cfg.vbatmaxcellvoltage) or 4.2
-          local gmin  = math.max(0, cells * minV)
-          local gmax  = math.max(0, cells * maxV)
-          return gmin + 0.50 * (gmax - gmin)
-        end,
-        textcolor = "orange"
+        col     = 1,
+        row     = 5,
+        colspan = 4,
+        rowspan = 2,
+        type    = "time",
+        subtype = "flight",
+        title   = "TIME",
+        titlepos= "bottom",
+        titlecolor = colorMode.titlecolor,
+        textcolor = colorMode.titlecolor,
+        bgcolor = colorMode.bgcolor,
       },
       {
-        -- 100% of (gmin→gmax) → green
-        value = function(box, currentValue)
-          local cfg   = rfsuite.session.batteryConfig
-          local cells = (cfg and cfg.batteryCellCount) or 3
-          local maxV  = (cfg and cfg.vbatmaxcellvoltage) or 4.2
-          return math.max(0, cells * maxV)
+        col     = 5,
+        row     = 5,
+        colspan = 4,
+        rowspan = 2,
+        type    = "text",
+        subtype = "blackbox",
+        title   = "BLACKBOX",
+        titlepos= "bottom",
+        titlecolor = colorMode.titlecolor,
+        textcolor = colorMode.titlecolor,
+        bgcolor = colorMode.bgcolor,
+      },
+      {
+        col     = 5,
+        row     = 7,
+        colspan = 2,
+        rowspan = 2,
+        type    = "time",
+        subtype = "count",
+        title   = "FLIGHTS",
+        titlepos= "bottom",
+        titlecolor = colorMode.titlecolor,
+        textcolor = colorMode.titlecolor,
+        bgcolor = colorMode.bgcolor,
+      },      
+      {
+        col     = 1,
+        row     = 7,
+        colspan = 2,
+        rowspan = 2,
+        type    = "text",
+        subtype = "telemetry",
+        source  = "pid_profile",
+        title   = "PROFILE",
+        titlepos= "bottom",
+        transform = "floor",
+        titlecolor = colorMode.titlecolor,
+        textcolor = colorMode.titlecolor,
+        bgcolor = colorMode.bgcolor,
+      },
+      {
+        col     = 3,
+        row     = 7,
+        colspan = 2,
+        rowspan = 2,
+        type    = "text",
+        subtype = "telemetry",
+        source  = "rate_profile",
+        title   = "RATES",
+        titlepos= "bottom",
+        transform = "floor",
+        titlecolor = colorMode.titlecolor,
+        textcolor = colorMode.titlecolor,
+        bgcolor = colorMode.bgcolor,
+      },
+
+      {
+        col     = 7,
+        row     = 7,
+        colspan = 2,
+        rowspan = 2,
+        type    = "text",
+        subtype = "telemetry",
+        source  = "rssi",
+        unit    = "dB",
+        title   = "LQ",
+        titlepos= "bottom",
+        transform = "floor",
+        titlecolor = colorMode.titlecolor,
+        textcolor = colorMode.titlecolor,
+        bgcolor = colorMode.bgcolor,
+      },
+      {
+        col     = 9,
+        row     = 1,
+        colspan = 12,
+        rowspan = 8,
+        type    = "gauge",
+        subtype = "arc",
+        source  = "voltage",
+        fillbgcolor = colorMode.fillbgcolor,
+        title    = "VOLTAGE",
+        font     = "FONT_XL",
+        thickness= gaugeThickness,
+        titlepos = "bottom",
+        fillcolor= colorMode.fillcolor,
+        titlecolor = colorMode.titlecolor,
+        textcolor = colorMode.titlecolor,
+        bgcolor = colorMode.bgcolor,
+        min = function()
+            local override = getUserVoltageOverride("v_min")
+            if override then return override end
+            local cfg = rfsuite.session.batteryConfig
+            local cells = (cfg and cfg.batteryCellCount) or 3
+            local minV  = (cfg and cfg.vbatmincellvoltage) or 3.0
+            return math.max(0, cells * minV)
         end,
-        textcolor = "green"
-      }
+
+        max = function()
+            local override = getUserVoltageOverride("v_max")
+            if override then return override end
+            local cfg = rfsuite.session.batteryConfig
+            local cells = (cfg and cfg.batteryCellCount) or 3
+            local maxV  = (cfg and cfg.vbatfullcellvoltage) or 4.2
+            return math.max(0, cells * maxV)
+        end,
+
+        thresholds = {
+            {
+                value = function(box)
+                    local raw_gm = utils.getParam(box, "min")
+                    if type(raw_gm) == "function" then raw_gm = raw_gm(box) end
+                    local raw_gM = utils.getParam(box, "max")
+                    if type(raw_gM) == "function" then raw_gM = raw_gM(box) end
+                    return raw_gm + 0.30 * (raw_gM - raw_gm)
+                end,
+                fillcolor = "red",
+                textcolor = colorMode.textcolor
+            },
+            {
+                value = function(box)
+                    local raw_gm = utils.getParam(box, "min")
+                    if type(raw_gm) == "function" then raw_gm = raw_gm(box) end
+                    local raw_gM = utils.getParam(box, "max")
+                    if type(raw_gM) == "function" then raw_gM = raw_gM(box) end
+                    return raw_gm + 0.50 * (raw_gM - raw_gm)
+                end,
+                fillcolor = "orange",
+                textcolor = colorMode.textcolor
+            },
+            {
+                value = function(box)
+                    local raw_gM = utils.getParam(box, "max")
+                    if type(raw_gM) == "function" then raw_gM = raw_gM(box) end
+                    return raw_gM
+                end,
+                fillcolor = colorMode.fillcolor,
+                textcolor = colorMode.textcolor
+            }
+        }
+      },
     }
-  },
-  {
-    col = 3,
-    row = 3,
-    rowspan = 2,
-    colspan = 3,
-    type = "text",
-    subtype = "telemetry",
-    source = "current",
-    nosource = "-",
-    title = "CURRENT",
-    unit = "A",
-    titlepos = "bottom",
-    titlecolor = colorMode.textcolor,
-    textcolor = colorMode.textcolor,    
-  },
-  {
-    col = 6,
-    row = 1,
-    rowspan = 2,
-    colspan = 3,
-    type = "text",
-    subtype = "telemetry",
-    source = "smartfuel",
-    nosource = "-",
-    title = "FUEL",
-    unit = "%",
-    titlepos = "bottom",
-    transform = "floor",
-    thresholds = {
-      { value = 30, textcolor = "red" },
-      { value = 60, textcolor = "orange" },
-      { value = 100, textcolor = "green" }
-    },
-    titlecolor = colorMode.textcolor,
-    textcolor = colorMode.textcolor,    
-  },
-  {
-    col = 6,
-    row = 3,
-    colspan = 3,
-    rowspan = 2,
-    type = "text",
-    subtype = "telemetry",
-    source = "rpm",
-    nosource = "-",
-    title = "RPM",
-    unit = "rpm",
-    titlepos = "bottom",
-    transform = "floor",
-    titlecolor = colorMode.textcolor,
-    textcolor = colorMode.textcolor,    
-  },
-}
+end
 
-
+local function boxes()
+    local config = rfsuite and rfsuite.session and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences["system/@rt-rc"]
+    if boxes_cache == nil or themeconfig ~= config then
+        boxes_cache = buildBoxes()
+        themeconfig = config
+    end
+    return boxes_cache
+end
 
 return {
-    layout = layout,
-    wakeup = wakeup,
-    boxes = boxes,
-    scheduler = {
-        spread_scheduling = true,      -- (optional: spread scheduling over the interval to avoid spikes in CPU usage)  
-        spread_ratio = 0.8              -- optional: manually override default ratio logic (applies if spread_scheduling is true)
-    }      
+  layout    = layout,
+  boxes     = boxes,
+  scheduler = {
+      spread_scheduling = true,      -- (optional: spread scheduling over the interval to avoid spikes in CPU usage)  
+      spread_ratio = 0.8              -- optional: manually override default ratio logic (applies if spread_scheduling is true)
+  }    
 }

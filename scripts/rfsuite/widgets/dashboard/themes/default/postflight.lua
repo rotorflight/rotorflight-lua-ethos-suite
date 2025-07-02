@@ -15,15 +15,34 @@
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]]--
 
+local function maxVoltageToCellVoltage(value)
+    local cfg = rfsuite.session.batteryConfig
+    local cells = (cfg and cfg.batteryCellCount) or 3
 
-local telemetry = rfsuite.tasks.telemetry
+    if cfg and cells and value then
+        value = math.max(0, value / cells)
+        value = math.floor(value * 100 + 0.5) / 100  -- round to 2 decimal places
+    end
+
+    return value
+end
 
 local darkMode = {
     textcolor   = "white",
+    titlecolor  = "white",
+    bgcolor = "black",
+    fillcolor   = "green",
+    fillbgcolor = "grey",
+    arcbgcolor  = "lightgrey",
 }
 
 local lightMode = {
     textcolor   = "black",
+    titlecolor  = "black",
+    bgcolor     = "white",
+    fillcolor   = "green",
+    fillbgcolor = "lightgrey",
+    arcbgcolor  = "darkgrey",
 }
 
 -- alias current mode
@@ -33,27 +52,30 @@ local colorMode = lcd.darkMode() and darkMode or lightMode
 
 local layout = {
     cols = 2,
-    rows = 3,
-    padding = 4
+    rows = 2,
+    padding = 1
 }
 
 local boxes = {
-    {col=1, row=1, type="text", subtype="stats", source="voltage", stattype="min", title="MIN VOLTAGE", titlepos="bottom", textcolor=colorMode.textcolor, titlecolor=colorMode.textcolor},
-    {col=2, row=1, type="text", subtype="stats", source="voltage", stattype="max", title="MAX VOLTAGE", titlepos="bottom", textcolor=colorMode.textcolor, titlecolor=colorMode.textcolor},
-    {col=1, row=2, type="text", subtype="stats", source="current", stattype="min", title="MIN CURRENT", titlepos="bottom", transform="floor", textcolor=colorMode.textcolor, titlecolor=colorMode.textcolor},
-    {col=2, row=2, type="text", subtype="stats", source="current", stattype="max", title="MAX CURRENT", titlepos="bottom", transform="floor", textcolor=colorMode.textcolor, titlecolor=colorMode.textcolor},
-    {col=1, row=3, type="text", subtype="stats", source="temp_mcu", stattype="max", title="MAX T.MCU", titlepos="bottom", transform="floor", textcolor=colorMode.textcolor, titlecolor=colorMode.textcolor},
-    {col=2, row=3, type="text", subtype="stats", source="temp_esc", stattype="max", title="MAX E.MCU", titlepos="bottom", transform="floor", textcolor=colorMode.textcolor, titlecolor=colorMode.textcolor}
+    -- Flight info and RPM info
+    {col = 1, row = 1, type = "time", subtype = "flight", title = "Flight Duration", titlepos = "bottom", bgcolor = colorMode.bgcolor, textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
+    {col = 1, row = 2, type = "time", subtype = "total", title = "Total Model Flight Duration", titlepos = "bottom", bgcolor = colorMode.bgcolor, textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
+
+    -- Flight max/min stats 2
+    {col = 2, row = 1, type = "text", subtype = "stats", stattype = "min", source = "voltage", title = "Min Volts per cell", titlepos = "bottom", bgcolor = colorMode.bgcolor, unit = "V", transform = function(v) return maxVoltageToCellVoltage(v) end, textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
+    {col = 2, row = 2, type = "text", subtype = "stats", stattype = "min", source = "rssi", title = "RSSI Min", titlepos = "bottom", bgcolor = colorMode.bgcolor, transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
 }
+
+
 
 
 
 return {
     layout = layout,
-    wakeup = wakeup,
     boxes = boxes,
+    wakeup = wakeup,
     scheduler = {
         spread_scheduling = true,      -- (optional: spread scheduling over the interval to avoid spikes in CPU usage)  
         spread_ratio = 0.8              -- optional: manually override default ratio logic (applies if spread_scheduling is true)
-    }       
+    }    
 }
