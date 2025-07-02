@@ -48,16 +48,12 @@ function utils.session()
     rfsuite.session.servoCount = nil
     rfsuite.session.servoOverride = nil
     rfsuite.session.clockSet = nil
-    rfsuite.session.lastLabel = nil
     rfsuite.session.tailMode = nil
     rfsuite.session.swashMode = nil
-    rfsuite.session.formLineCnt = nil
     rfsuite.session.rateProfile = nil
     rfsuite.session.governorMode = nil
     rfsuite.session.servoOverride = nil
     rfsuite.session.ethosRunningVersion = nil
-    rfsuite.session.lcdWidth = nil
-    rfsuite.session.lcdHeight = nil
     rfsuite.session.mspSignature = nil
     rfsuite.session.telemetryState = nil
     rfsuite.session.telemetryType = nil
@@ -84,7 +80,6 @@ function utils.session()
         -- consumptionWarningPercentage = nil
     rfsuite.session.modelPreferences = nil -- this is used to store the model preferences
     rfsuite.session.modelPreferencesFile = nil -- this is used to store the model preferences file path
-    rfsuite.session.dashboardEditingTheme = nil -- this is used to store the dashboard theme being edited in settings
     rfsuite.session.timer = {}
     rfsuite.session.timer.start = nil -- this is used to store the start time of the timer
     rfsuite.session.timer.live = nil -- this is used to store the live timer value while inflight

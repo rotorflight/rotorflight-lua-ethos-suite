@@ -82,12 +82,12 @@ local function openPage(idx, title, script, extra1, extra2, extra3, extra5, extr
         form.addStaticText(headerLine, {
             x = 0,
             y = rfsuite.app.radio.linePaddingTop,
-            w = session.lcdWidth,
+            w = app.lcdWidth,
             h = rfsuite.app.radio.navbuttonHeight
         }, rfsuite.app.Page.headerLine)
     end
 
-    rfsuite.session.formLineCnt = 0
+    rfsuite.app.formLineCnt = 0
 
     if fields then
         for i, field in ipairs(fields) do

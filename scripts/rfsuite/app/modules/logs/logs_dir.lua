@@ -32,7 +32,7 @@ local function openPage(idx, title, script)
 
     if icons == 0 then
         padding = radio.buttonPaddingSmall
-        btnW = (rfsuite.session.lcdWidth - padding) / radio.buttonsPerRow - padding
+        btnW = (rfsuite.app.lcdWidth - padding) / radio.buttonsPerRow - padding
         btnH = radio.navbuttonHeight
         perRow = radio.buttonsPerRow
     elseif icons == 1 then
