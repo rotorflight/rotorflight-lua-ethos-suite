@@ -52,6 +52,8 @@ local function openPage(pidx, title, script)
     end
 
     local lc, bx, y = 0, 0, 0
+
+    local n  = 0
     
     for idx, theme in ipairs(themeList) do
 
@@ -114,11 +116,12 @@ local function openPage(pidx, title, script)
             end
 
             lc = lc + 1
+            n = lc + 1
             if lc == numPerRow then lc = 0 end
         end   
     end
 
-    if lc == 0 then
+    if n == 0 then
         local w, h = rfsuite.utils.getWindowSize()
         local msg = i18n("app.modules.settings.no_themes_available_to_configure")
         local tw, th = lcd.getTextSize(msg)
