@@ -80,7 +80,11 @@ local function openPage(pidx, title, script)
 
             if rfsuite.app.Page and rfsuite.app.Page.onNavMenu then rfsuite.app.Page.onNavMenu(rfsuite.app.Page) end
 
-            rfsuite.app.ui.openMainMenu()
+            if  rfsuite.app.lastMenu == nil then
+                rfsuite.app.ui.openMainMenu()
+            else
+                rfsuite.app.ui.openMainMenuSub(rfsuite.app.lastMenu)
+            end
         end
     })
     rfsuite.app.formNavigationFields['menu']:focus()

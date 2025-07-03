@@ -1434,6 +1434,12 @@ function app.event(widget, category, value, x, y)
         end
     end
 
+    -- catch exit from sub menu
+    if app.uiState == app.uiStatus.mainMenu and rfsuite.app.lastMenu ~= nil and value == 35 then
+        rfsuite.app.ui.openMainMenu()
+        return true
+    end
+
     -- generic events handler for most pages
     if app.uiState == app.uiStatus.pages then
 
@@ -1443,7 +1449,11 @@ function app.event(widget, category, value, x, y)
             if app.dialogs.progressDisplay then app.ui.progressDisplayClose() end
             if app.dialogs.saveDisplay then app.ui.progressDisplaySaveClose() end
             if app.Page.onNavMenu then app.Page.onNavMenu(app.Page) end
-            app.ui.openMainMenu()
+            if  rfsuite.app.lastMenu == nil then
+                rfsuite.app.ui.openMainMenu()
+            else
+                rfsuite.app.ui.openMainMenuSub(rfsuite.app.lastMenu)
+            end
             return true
         end
 
@@ -1474,6 +1484,9 @@ function app.event(widget, category, value, x, y)
          return true
     end
 
+
+
+    
     return false
 end
 

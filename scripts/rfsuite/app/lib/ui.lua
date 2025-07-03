@@ -301,6 +301,8 @@ function ui.openMainMenu()
     rfsuite.app.lastLabel = nil
     rfsuite.app.isOfflinePage = false
     rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
+    rfsuite.app.gfx_buttons["mainmenu"] = {}
+    rfsuite.app.lastMenu = nil
 
 
     rfsuite.app.triggers.isReady = false
@@ -468,6 +470,8 @@ function ui.openMainMenuSub(activesection)
     rfsuite.app.formLines = {}
     rfsuite.app.lastLabel = nil
     rfsuite.app.isOfflinePage = false
+    rfsuite.app.gfx_buttons["mainmenu"] = {}
+    rfsuite.app.lastMenu = activesection 
 
     -- clear old icons
     for i in pairs(rfsuite.app.gfx_buttons) do
@@ -552,7 +556,6 @@ function ui.openMainMenuSub(activesection)
                     rfsuite.session.lastPage = nil
 
                     if rfsuite.app.Page and rfsuite.app.Page.onNavMenu then rfsuite.app.Page.onNavMenu(rfsuite.app.Page) end
-
                     rfsuite.app.ui.openMainMenu()
                 end
             })
@@ -1270,6 +1273,8 @@ function ui.navigationButtons(x, y, w, h)
             press = function()
                 if rfsuite.app.Page and rfsuite.app.Page.onNavMenu then
                     rfsuite.app.Page.onNavMenu(rfsuite.app.Page)
+                elseif rfsuite.app.lastMenu ~= nil then
+                   rfsuite.app.ui.openMainMenuSub(rfsuite.app.lastMenu)
                 else
                     rfsuite.app.ui.openMainMenu()
                 end
