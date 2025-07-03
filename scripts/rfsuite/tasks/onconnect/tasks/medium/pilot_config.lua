@@ -28,7 +28,7 @@ function modelid.wakeup()
         API.setCompleteHandler(function(self, buf)
             local model_id = API.readValue("model_id")
             local model_param1_value = API.readValue("model_param1_value")
-            if model_id ~= nil then
+            if model_id ~= nil or model_param1_value ~= nil then
                 rfsuite.utils.log("Model id: " .. model_id, "info")
                 rfsuite.utils.log("Model Flight Time: " .. model_param1_value, "info")
                 rfsuite.session.modelID = model_id
