@@ -31,8 +31,7 @@ local inflightStartTime = nil
 function timer.wakeup()
     local prefs = rfsuite.preferences.timer or {}
     local session = rfsuite.session
-    local batteryConfig = session and session.batteryConfig
-    local targetSeconds = batteryConfig and batteryConfig.modelFlightTime or 0
+    local targetSeconds = session and session.modelFlightTime or 0
     local now = rfsuite.clock
 
     -- Only set inflightStartTime if it has never been set and we enter inflight
@@ -42,7 +41,7 @@ function timer.wakeup()
 
     if not prefs.timeraudioenable
         or not targetSeconds or targetSeconds == 0
-        or not session or not session.batteryConfig then
+        or not session then
         triggered = false
         lastBeepTime = nil
         preLastBeepTime = nil
@@ -117,14 +116,6 @@ function timer.wakeup()
         lastBeepTime = nil
         postStartedAt = nil
     end
-end
-
-function timer.reset()
-    triggered = false
-    lastBeepTime = nil
-    preLastBeepTime = nil
-    postStartedAt = nil
-    inflightStartTime = nil
 end
 
 return timer
