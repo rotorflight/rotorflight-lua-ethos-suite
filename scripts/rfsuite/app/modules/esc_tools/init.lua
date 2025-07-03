@@ -19,7 +19,7 @@
 ]] --
 local init = {
     title = rfsuite.i18n.get("app.modules.esc_tools.name"), -- title of the page
-    section = "tools", -- do not run if busy with msp
+    section = "hardware", -- do not run if busy with msp
     script = "esc.lua", -- run this script
     image = "esc.png", -- image for the page
     order = 12, -- order in the section

@@ -81,7 +81,7 @@ function tasks.wakeup()
 
     if rfsuite.session.telemetryTypeChanged then
         rfsuite.utils.logRotorFlightBanner()
-        rfsuite.utils.log("Telemetry type changed, resetting tasks.", "info")
+        --rfsuite.utils.log("Telemetry type changed, resetting tasks.", "info")
         rfsuite.session.telemetryTypeChanged = false
         tasks.resetAllTasks()
         tasksLoaded = false

@@ -26,7 +26,7 @@ local lastFlightMode = nil
 -- Sets the base lifetime from model preferences, resets session and lifetime counters,
 -- and marks the flight as not counted.
 function timer.reset()
-    rfsuite.utils.log("Resetting flight timers", "info")
+    --rfsuite.utils.log("Resetting flight timers", "info")
     lastFlightMode = nil
 
     local timerSession = {}
