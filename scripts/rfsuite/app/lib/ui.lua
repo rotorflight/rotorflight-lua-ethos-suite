@@ -379,60 +379,63 @@ function ui.openMainMenu()
 
     for pidx, pvalue in ipairs(Menu) do
 
-        if pvalue.offline then
-            rfsuite.app.formFieldsOffline[pidx] = true
-        else
-            rfsuite.app.formFieldsOffline[pidx] = false    
-        end
+        if not pvalue.developer then
 
-        if pvalue.newline == true then 
-            lc = 0
-            local ns = form.addLine("System")
-        end    
 
-        if lc == 0 then
-            if rfsuite.preferences.general.iconsize == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
-            if rfsuite.preferences.general.iconsize == 1 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
-            if rfsuite.preferences.general.iconsize == 2 then y = form.height() + rfsuite.app.radio.buttonPadding end
-        end
-
-        if lc >= 0 then bx = (buttonW + padding) * lc end
-
-        if rfsuite.preferences.general.iconsize ~= 0 then
-            if rfsuite.app.gfx_buttons["mainmenu"][pidx] == nil then rfsuite.app.gfx_buttons["mainmenu"][pidx] = lcd.loadMask(pvalue.image) end
-        else
-            rfsuite.app.gfx_buttons["mainmenu"][pidx] = nil
-        end
-
-        rfsuite.app.formFields[pidx] = form.addButton(line, {x = bx, y = y, w = buttonW, h = buttonH}, {
-            text = pvalue.title,
-            icon = rfsuite.app.gfx_buttons["mainmenu"][pidx],
-            options = FONT_S,
-            paint = function()
-            end,
-            press = function()
-                rfsuite.preferences.menulastselected["mainmenu"] = pidx
-                rfsuite.app.ui.progressDisplay()
-                if pvalue.module then
-                    -- load the module
-                    rfsuite.app.isOfflinePage = true
-                    print(pidx, pvalue.title, pvalue.module .. "/" .. pvalue.script)
-                    rfsuite.app.ui.openPage(pidx, pvalue.title, pvalue.module .. "/" .. pvalue.script)  
-                else
-                    -- load sub menu
-                    rfsuite.app.ui.openMainMenuSub(pvalue.id)
-                end    
+            if pvalue.offline then
+                rfsuite.app.formFieldsOffline[pidx] = true
+            else
+                rfsuite.app.formFieldsOffline[pidx] = false    
             end
-        })
 
-        if pvalue.disabled == true then rfsuite.app.formFields[pidx]:enable(false) end
+            if pvalue.newline == true then 
+                lc = 0
+                local ns = form.addLine("System")
+            end    
 
-        if rfsuite.preferences.menulastselected["mainmenu"] == pidx then rfsuite.app.formFields[pidx]:focus() end
+            if lc == 0 then
+                if rfsuite.preferences.general.iconsize == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
+                if rfsuite.preferences.general.iconsize == 1 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
+                if rfsuite.preferences.general.iconsize == 2 then y = form.height() + rfsuite.app.radio.buttonPadding end
+            end
 
-        lc = lc + 1
+            if lc >= 0 then bx = (buttonW + padding) * lc end
 
-        if lc == numPerRow then lc = 0 end
+            if rfsuite.preferences.general.iconsize ~= 0 then
+                if rfsuite.app.gfx_buttons["mainmenu"][pidx] == nil then rfsuite.app.gfx_buttons["mainmenu"][pidx] = lcd.loadMask(pvalue.image) end
+            else
+                rfsuite.app.gfx_buttons["mainmenu"][pidx] = nil
+            end
 
+            rfsuite.app.formFields[pidx] = form.addButton(line, {x = bx, y = y, w = buttonW, h = buttonH}, {
+                text = pvalue.title,
+                icon = rfsuite.app.gfx_buttons["mainmenu"][pidx],
+                options = FONT_S,
+                paint = function()
+                end,
+                press = function()
+                    rfsuite.preferences.menulastselected["mainmenu"] = pidx
+                    rfsuite.app.ui.progressDisplay()
+                    if pvalue.module then
+                        -- load the module
+                        rfsuite.app.isOfflinePage = true
+                        print(pidx, pvalue.title, pvalue.module .. "/" .. pvalue.script)
+                        rfsuite.app.ui.openPage(pidx, pvalue.title, pvalue.module .. "/" .. pvalue.script)  
+                    else
+                        -- load sub menu
+                        rfsuite.app.ui.openMainMenuSub(pvalue.id)
+                    end    
+                end
+            })
+
+            if pvalue.disabled == true then rfsuite.app.formFields[pidx]:enable(false) end
+
+            if rfsuite.preferences.menulastselected["mainmenu"] == pidx then rfsuite.app.formFields[pidx]:focus() end
+
+            lc = lc + 1
+
+            if lc == numPerRow then lc = 0 end
+        end
     end
 
 

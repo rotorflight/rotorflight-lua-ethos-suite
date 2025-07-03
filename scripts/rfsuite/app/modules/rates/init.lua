@@ -19,7 +19,7 @@
 ]] --
 local init = {
     title = rfsuite.i18n.get("app.modules.rates.name"), -- title of the page
-    section = "flight_tuning", -- do not run if busy with msp
+    section = "main", -- do not run if busy with msp
     script = "rates.lua", -- run this script
     image = "rates.png", -- image for the page
     order = 2, -- order in the section
