@@ -1037,14 +1037,14 @@ app._uiTasks = {
       local apiV = tostring(rfsuite.session.apiVersion)
 
       if not rfsuite.session.isConnected then
-        for i in pairs(rfsuite.app.formFields) do
-          if not app.MainMenu.pages[i].offline then
+        for i,v in pairs(rfsuite.app.formFieldsOffline) do
+          if v == false then
             rfsuite.app.formFields[i]:enable(false)
           end
         end
       elseif rfsuite.session.apiVersion and utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiV) then
         app.offlineMode = false
-        for i in pairs(rfsuite.app.formFields) do
+        for i in pairs(rfsuite.app.formFieldsOffline) do
           rfsuite.app.formFields[i]:enable(true)
         end
       end

@@ -296,6 +296,7 @@ end
 function ui.openMainMenu()
 
     rfsuite.app.formFields = {}
+    rfsuite.app.formFieldsOffline = {}
     rfsuite.app.formLines = {}
     rfsuite.app.lastLabel = nil
     rfsuite.app.isOfflinePage = false
@@ -328,22 +329,21 @@ function ui.openMainMenu()
     local sc
     local panel
 
-    local header = form.addLine(rfsuite.config.toolName .. " " .. "Configurator" .. " ")
+    local header = form.addLine("Configuration")
 
     buttonW = 100
     local x = windowWidth - buttonW - 10
 
     --version text
-    local versiontext = rfsuite.version().version
-    local versiontextposition = {x = x, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}
-    form.addStaticText(header, versiontextposition, versiontext)
+    --local versiontext = rfsuite.version().version
+    --local versiontextposition = {x = x, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}
+    --form.addStaticText(header, versiontextposition, versiontext)
 
     local buttonW
     local buttonH
     local padding
     local numPerRow
 
-    -- TEXT ICONS
     -- TEXT ICONS
     if rfsuite.preferences.general.iconsize == 0 then
         padding = rfsuite.app.radio.buttonPaddingSmall
@@ -379,6 +379,17 @@ function ui.openMainMenu()
 
     for pidx, pvalue in ipairs(Menu) do
 
+        if pvalue.offline then
+            rfsuite.app.formFieldsOffline[pidx] = true
+        else
+            rfsuite.app.formFieldsOffline[pidx] = false    
+        end
+
+        if pvalue.newline == true then 
+            lc = 0
+            local ns = form.addLine("System")
+        end    
+
         if lc == 0 then
             if rfsuite.preferences.general.iconsize == 0 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
             if rfsuite.preferences.general.iconsize == 1 then y = form.height() + rfsuite.app.radio.buttonPaddingSmall end
@@ -388,7 +399,7 @@ function ui.openMainMenu()
         if lc >= 0 then bx = (buttonW + padding) * lc end
 
         if rfsuite.preferences.general.iconsize ~= 0 then
-            if rfsuite.app.gfx_buttons["mainmenu"][pidx] == nil then rfsuite.app.gfx_buttons["mainmenu"][pidx] = lcd.loadMask("app/gfx/" .. pvalue.image) end
+            if rfsuite.app.gfx_buttons["mainmenu"][pidx] == nil then rfsuite.app.gfx_buttons["mainmenu"][pidx] = lcd.loadMask(pvalue.image) end
         else
             rfsuite.app.gfx_buttons["mainmenu"][pidx] = nil
         end
@@ -402,7 +413,13 @@ function ui.openMainMenu()
             press = function()
                 rfsuite.preferences.menulastselected["mainmenu"] = pidx
                 rfsuite.app.ui.progressDisplay()
-                rfsuite.app.ui.openMainMenuSub(pvalue.id)
+                if pvalue.module then
+                    -- load the module
+                    rfsuite.app.ui.openPage(pidx, pvalue.title, pvalue.module .. "/" .. pvalue.script)  
+                else
+                    -- load sub menu
+                    rfsuite.app.ui.openMainMenuSub(pvalue.id)
+                end    
             end
         })
 
@@ -415,6 +432,8 @@ function ui.openMainMenu()
         if lc == numPerRow then lc = 0 end
 
     end
+
+
 
     rfsuite.app.triggers.closeProgressLoader = true
     collectgarbage()
@@ -439,6 +458,7 @@ end
 function ui.openMainMenuSub(activesection)
 
     rfsuite.app.formFields = {}
+    rfsuite.app.formFieldsOffline = {}
     rfsuite.app.formLines = {}
     rfsuite.app.lastLabel = nil
     rfsuite.app.isOfflinePage = false
@@ -542,6 +562,12 @@ function ui.openMainMenuSub(activesection)
                                       (page.developer and not rfsuite.preferences.developer.devtools)
 
                     local offline = page.offline
+
+                    if page.offline then
+                        rfsuite.app.formFieldsOffline[pidx] = true
+                    else
+                        rfsuite.app.formFieldsOffline[pidx] = false    
+                    end
 
                     if not hideEntry then
                         if lc == 0 then
