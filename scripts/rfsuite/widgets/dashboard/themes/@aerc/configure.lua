@@ -108,7 +108,7 @@ local function configure()
     formFields[#formFields]:suffix("V")
 
     -- ESC TEMP PANEL
-    local esc_panel = form.addExpansionPanel("ESC Temp (°C)")
+    local esc_panel = form.addExpansionPanel("ESC Temp (°)")
     esc_panel:open(false)
     local esc_warn_line = esc_panel:addLine("Warning")
     formFields[#formFields + 1] = form.addNumberField(esc_warn_line, nil, 0, 200,
@@ -119,7 +119,7 @@ local function configure()
             config.esctemp_warn = clamp(tonumber(val) or THEME_DEFAULTS.esctemp_warn, 0, config.esctemp_max - 1)
         end,
         1)
-    formFields[#formFields]:suffix("°C")
+    formFields[#formFields]:suffix("°")
 
     local esc_max_line = esc_panel:addLine("Max")
     formFields[#formFields + 1] = form.addNumberField(esc_max_line, nil, 1, 200,
@@ -128,7 +128,7 @@ local function configure()
             config.esctemp_max = clamp(tonumber(val) or THEME_DEFAULTS.esctemp_max, config.esctemp_warn + 1, 200)
         end,
         1)
-    formFields[#formFields]:suffix("°C")
+    formFields[#formFields]:suffix("°")
 
 
 end
