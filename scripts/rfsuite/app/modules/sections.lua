@@ -21,11 +21,11 @@
 local sections = {}
 local i18n = rfsuite.i18n.get
 
-sections[#sections + 1] = {title = i18n("app.menu_section_flight_tuning"), id = "flight_tuning"}
-sections[#sections + 1] = {title = i18n("app.menu_section_advanced"), id = "advanced"}
-sections[#sections + 1] = {title = i18n("app.menu_section_hardware"), id = "hardware"}
-sections[#sections + 1] = {title = i18n("app.menu_section_tools"), id = "tools"}
-sections[#sections + 1] = {title = i18n("app.menu_section_developer"), id = "developer", developer = true}
-sections[#sections + 1] = {title = i18n("app.menu_section_about"), id = "about"}
+sections[#sections + 1] = {title = i18n("app.menu_section_flight_tuning"), id = "flight_tuning", image = "flight_tuning.png"}
+sections[#sections + 1] = {title = i18n("app.menu_section_advanced"), id = "advanced", image = "advanced.png"}
+sections[#sections + 1] = {title = i18n("app.menu_section_hardware"), id = "hardware", image = "hardware.png"}
+sections[#sections + 1] = {title = i18n("app.menu_section_tools"), id = "tools", image = "tools.png"}
+sections[#sections + 1] = {title = i18n("app.menu_section_developer"), id = "developer", developer = true, image = "developer.png"}
+sections[#sections + 1] = {title = i18n("app.menu_section_about"), id = "about", image = "about.png"}
 
 return sections
