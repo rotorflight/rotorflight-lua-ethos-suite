@@ -158,10 +158,14 @@ local function openPage(pageIdx, title, script)
     )
     rfsuite.app.formFields[formFieldCount]:enable((config.timeraudioenable or false) and (config.postalerton or false))
 
-    -- Always enable all form fields and Save button, regardless of telemetry state
-    for i, field in ipairs(rfsuite.app.formFields) do
-        if field and field.enable then field:enable(true) end
-    end
+    -- Set initial enabled state based on current config
+    rfsuite.app.formFields[idxChoice]:enable(config.timeraudioenable or false)
+    rfsuite.app.formFields[idxPre]:enable(config.timeraudioenable or false)
+    rfsuite.app.formFields[idxPrePeriod]:enable((config.timeraudioenable or false) and (config.prealerton or false))
+    rfsuite.app.formFields[idxPreInterval]:enable((config.timeraudioenable or false) and (config.prealerton or false))
+    rfsuite.app.formFields[idxPost]:enable(config.timeraudioenable or false)
+    rfsuite.app.formFields[idxPostPeriod]:enable((config.timeraudioenable or false) and (config.postalerton or false))
+    rfsuite.app.formFields[idxPostInterval]:enable((config.timeraudioenable or false) and (config.postalerton or false))
     rfsuite.app.navButtons.save = true
 end
 
