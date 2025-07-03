@@ -19,13 +19,19 @@
 
 ]] --
 local sections = {}
+local tools = {}
 local i18n = rfsuite.i18n.get
 
-sections[#sections + 1] = {title = i18n("app.menu_section_flight_tuning"), id = "flight_tuning"}
-sections[#sections + 1] = {title = i18n("app.menu_section_advanced"), id = "advanced"}
-sections[#sections + 1] = {title = i18n("app.menu_section_hardware"), id = "hardware"}
-sections[#sections + 1] = {title = i18n("app.menu_section_tools"), id = "tools"}
-sections[#sections + 1] = {title = i18n("app.menu_section_developer"), id = "developer", developer = true}
-sections[#sections + 1] = {title = i18n("app.menu_section_about"), id = "about"}
+-- main menu sections
+
+sections[#sections + 1] = {title = rfsuite.i18n.get("app.modules.pids.name"), module = "pids", script = "pids.lua", image = "app/modules/pids/pids.png"}
+sections[#sections + 1] = {title = rfsuite.i18n.get("app.modules.rates.name"), module = "rates", script = "rates.lua", image = "app/modules/rates/rates.png"}
+sections[#sections + 1] = {title = rfsuite.i18n.get("app.modules.profile_governor.name"), module = "profile_governor", script = "profile_governor.lua", image = "app/modules/profile_governor/governor.png"}
+sections[#sections + 1] = {title = i18n("app.menu_section_advanced"), id = "advanced", image = "app/gfx/advanced.png"}
+sections[#sections + 1] = {title = i18n("app.menu_section_hardware"), id = "hardware", image = "app/gfx/hardware.png"}
+sections[#sections + 1] = {title = i18n("app.menu_section_tools"), id = "tools", image = "app/gfx/tools.png"}
+sections[#sections + 1] = {title = rfsuite.i18n.get("app.modules.logs.name"), offline = true, module = "logs", script = "logs_dir.lua", image = "app/modules/logs/gfx/logs.png", newline = true}
+sections[#sections + 1] = {title = rfsuite.i18n.get("app.modules.settings.name"), offline = true,  module = "settings", script = "settings.lua", image = "app/modules/settings/settings.png"}
+sections[#sections + 1] = {title = rfsuite.i18n.get("app.modules.about.name"),  module = "about", script = "about.lua", image = "app/modules/about/about.png"}
 
 return sections

@@ -19,7 +19,7 @@
 ]] --
 local init = {
     title = rfsuite.i18n.get("app.modules.profile_governor.name"), -- title of the page
-    section = "flight_tuning", -- do not run if busy with msp
+    section = "main", -- do not run if busy with msp
     script = "profile_governor.lua", -- run this script
     image = "governor.png", -- image for the page
     order = 5, -- order in the section

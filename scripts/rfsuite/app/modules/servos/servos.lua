@@ -424,7 +424,11 @@ local function onNavMenu(self)
         rfsuite.app.triggers.closeProgressLoader = true
     end
     -- rfsuite.app.ui.progressDisplay()
-    rfsuite.app.ui.openMainMenu()
+    if  rfsuite.app.lastMenu == nil then
+        rfsuite.app.ui.openMainMenu()
+    else
+        rfsuite.app.ui.openMainMenuSub(rfsuite.app.lastMenu)
+    end
 
 end
 

@@ -19,7 +19,7 @@
 ]] --
 local init = {
     title = rfsuite.i18n.get("app.modules.profile_tailrotor.name"), -- title of the page
-    section = "flight_tuning", -- do not run if busy with msp
+    section = "advanced", -- do not run if busy with msp
     script = "tailrotor.lua", -- run this script
     image = "tailrotor.png", -- image for the page
     order = 4, -- order in the section
