@@ -255,7 +255,7 @@ function tasks.wakeup()
 end
 
 function tasks.reset()
-    utils.log("Reset all tasks", "info")
+    --utils.log("Reset all tasks", "info")
     for _, task in ipairs(tasksList) do
         if tasks[task.name].reset then
             tasks[task.name].reset()

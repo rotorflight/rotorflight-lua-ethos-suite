@@ -415,6 +415,8 @@ function ui.openMainMenu()
                 rfsuite.app.ui.progressDisplay()
                 if pvalue.module then
                     -- load the module
+                    rfsuite.app.isOfflinePage = true
+                    print(pidx, pvalue.title, pvalue.module .. "/" .. pvalue.script)
                     rfsuite.app.ui.openPage(pidx, pvalue.title, pvalue.module .. "/" .. pvalue.script)  
                 else
                     -- load sub menu
@@ -437,6 +439,7 @@ function ui.openMainMenu()
 
     rfsuite.app.triggers.closeProgressLoader = true
     collectgarbage()
+    rfsuite.utils.reportMemoryUsage("MainMenuSub")
     return
 end
 
@@ -606,7 +609,7 @@ function ui.openMainMenuSub(activesection)
     end
     rfsuite.app.triggers.closeProgressLoader = true
     collectgarbage()
-    rfsuite.utils.reportMemoryUsage("MainMenu")
+    rfsuite.utils.reportMemoryUsage("MainMenuSub")
 end
 
 

@@ -23,7 +23,7 @@ local apidata = {
 
 local function preSave(self)
     if resetRates == true then
-        rfsuite.utils.log("Resetting rates to defaults","info")
+        --rfsuite.utils.log("Resetting rates to defaults","info")
 
         -- selected id
         local table_id = rfsuite.app.Page.fields[1].value
