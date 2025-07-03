@@ -14,11 +14,6 @@
  *
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]]--
---[[ 
- * Copyright (C) Rotorflight Project
- * Timer event logic using configurable alerting.
- * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
-]]--
 
 local timer = {}
 
