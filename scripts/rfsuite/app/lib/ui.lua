@@ -527,7 +527,7 @@ function ui.openMainMenuSub(activesection)
     form.clear()
 
     rfsuite.app.gfx_buttons["mainmenu"] = rfsuite.app.gfx_buttons["mainmenu"] or {}
-    rfsuite.preferences.menulastselected["mainmenu"] = rfsuite.preferences.menulastselected["mainmenu"] or 1
+    rfsuite.preferences.menulastselected[activesection] = rfsuite.preferences.menulastselected[activesection] or 1
 
     for idx, section in ipairs(MainMenu.sections) do
 
@@ -596,14 +596,14 @@ function ui.openMainMenuSub(activesection)
                             options = FONT_S,
                             paint = function() end,
                             press = function()
-                                rfsuite.preferences.menulastselected["mainmenu"] = pidx
+                                rfsuite.preferences.menulastselected[activesection] = pidx
                                 rfsuite.app.ui.progressDisplay()
                                 rfsuite.app.isOfflinePage = offline
                                 rfsuite.app.ui.openPage(pidx, page.title, page.folder .. "/" .. page.script)                          
                             end
                         })
 
-                        if rfsuite.preferences.menulastselected["mainmenu"] == pidx then
+                        if rfsuite.preferences.menulastselected[activesection] == pidx then
                             rfsuite.app.formFields[pidx]:focus()
                         end
 
