@@ -1,4 +1,4 @@
---[[
+--[[ 
  * Copyright (C) Rotorflight Project
  *
  * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
@@ -63,12 +63,9 @@ function timer.wakeup()
         local preInterval = prefs.prealertinterval or 10
         local preAlertStart = targetSeconds - prePeriod
         if elapsed >= preAlertStart and elapsed < targetSeconds then
-            local sincePreAlert = elapsed - preAlertStart
-            if (sincePreAlert % preInterval) < 0.5 then
-                if not preLastBeepTime or (now - preLastBeepTime) >= preInterval - 1 then
-                    rfsuite.utils.playFileCommon("beep.wav")
-                    preLastBeepTime = now
-                end
+            if not preLastBeepTime or (now - preLastBeepTime) >= preInterval then
+                rfsuite.utils.playFileCommon("beep.wav")
+                preLastBeepTime = now
             end
             triggered = false
             lastBeepTime = nil
