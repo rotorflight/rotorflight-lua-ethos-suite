@@ -1,5 +1,7 @@
-local settings = {}
 local i18n = rfsuite.i18n.get
+
+-- Local config table for in-memory edits
+local config = {}
 
 local function sensorNameMap(sensorList)
     local nameMap = {}
@@ -11,6 +13,7 @@ end
 
 local function openPage(pageIdx, title, script)
     enableWakeup = true
+    if not rfsuite.app.navButtons then rfsuite.app.navButtons = {} end
     rfsuite.app.triggers.closeProgressLoader = true
     form.clear()
 
@@ -34,38 +37,47 @@ local function openPage(pageIdx, title, script)
 
     local sensorList = sortSensorListByName(rfsuite.tasks.telemetry.listSwitchSensors())
 
-    settings = rfsuite.preferences.switches
+    -- Prepare working config as a shallow copy of switches preferences
+    local saved = rfsuite.preferences.switches or {}
+    for k, v in pairs(saved) do
+        config[k] = v
+    end
 
     for i, v in ipairs(sensorList) do
-    formFieldCount = formFieldCount + 1
-    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine(v.name or "unknown")
+        formFieldCount = formFieldCount + 1
+        rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+        rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine(v.name or "unknown")
 
-
-    rfsuite.app.formFields[formFieldCount] = form.addSwitchField(rfsuite.app.formLines[rfsuite.app.formLineCnt], 
-                                                        nil, 
-                                                        function() 
-                                                            if rfsuite.preferences and rfsuite.preferences.switches then
-                                                                local value = settings[v.key]
-                                                                if value then
-                                                                    local scategory, smember = value:match("([^,]+),([^,]+)")
-                                                                    if scategory and smember then
-                                                                        local source = system.getSource({ category = tonumber(scategory), member = tonumber(smember) }) 
-                                                                        return source
-                                                                    end    
-                                                                end
-                                                                return nil
-                                                            end
-                                                        end, 
-                                                        function(newValue) 
-                                                            if rfsuite.preferences and rfsuite.preferences.switches then
-                                                                local cat_member = newValue:category() .. "," .. newValue:member()
-                                                                settings[v.key] = cat_member or nil
-                                                            end    
-                                                        end)
-
+        rfsuite.app.formFields[formFieldCount] = form.addSwitchField(
+            rfsuite.app.formLines[rfsuite.app.formLineCnt],
+            nil,
+            function()
+                local value = config[v.key]
+                if value then
+                    local scategory, smember = value:match("([^,]+),([^,]+)")
+                    if scategory and smember then
+                        local source = system.getSource({ category = tonumber(scategory), member = tonumber(smember) })
+                        return source
+                    end
+                end
+                return nil
+            end,
+            function(newValue)
+                if newValue then
+                    local cat_member = newValue:category() .. "," .. newValue:member()
+                    config[v.key] = cat_member
+                else
+                    config[v.key] = nil
+                end
+            end
+        )
     end
-  
+
+    -- Always enable all fields and Save
+    for i, field in ipairs(rfsuite.app.formFields) do
+        if field and field.enable then field:enable(true) end
+    end
+    rfsuite.app.navButtons.save = true
 end
 
 local function onNavMenu()
@@ -84,7 +96,7 @@ local function onSaveMenu()
             action = function()
                 local msg = i18n("app.modules.profile_select.save_prompt_local")
                 rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
-                for key, value in pairs(settings) do
+                for key, value in pairs(config) do
                     rfsuite.preferences.switches[key] = value
                 end
                 rfsuite.ini.save_ini_file(
@@ -130,7 +142,6 @@ end
 return {
     event      = event,
     openPage   = openPage,
-    wakeup     = wakeup,
     onNavMenu  = onNavMenu,
     onSaveMenu = onSaveMenu,
     navButtons = {

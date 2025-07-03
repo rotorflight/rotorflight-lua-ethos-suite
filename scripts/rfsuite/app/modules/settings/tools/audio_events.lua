@@ -1,5 +1,7 @@
-local settings = {}
 local i18n = rfsuite.i18n.get
+
+-- Local config table for in-memory edits
+local config = {}
 
 local function sensorNameMap(sensorList)
     local nameMap = {}
@@ -11,6 +13,7 @@ end
 
 local function openPage(pageIdx, title, script)
     enableWakeup = true
+    if not rfsuite.app.navButtons then rfsuite.app.navButtons = {} end
     rfsuite.app.triggers.closeProgressLoader = true
     form.clear()
 
@@ -28,26 +31,33 @@ local function openPage(pageIdx, title, script)
     local eventList = rfsuite.tasks.events.telemetry.eventTable
     local eventNames = sensorNameMap(rfsuite.tasks.telemetry.listSensors())
 
-    settings = rfsuite.preferences.events
+    -- Prepare working config as a shallow copy of events preferences
+    local saved = rfsuite.preferences.events or {}
+    for k, v in pairs(saved) do
+        config[k] = v
+    end
 
     for i, v in ipairs(eventList) do
-    formFieldCount = formFieldCount + 1
-    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine(eventNames[v.sensor] or "unknown")
-    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.app.formLineCnt], 
-                                                        nil, 
-                                                        function() 
-                                                            if rfsuite.preferences and rfsuite.preferences.events then
-                                                                return settings[v.sensor] 
-                                                            end
-                                                        end, 
-                                                        function(newValue) 
-                                                            if rfsuite.preferences and rfsuite.preferences.events then
-                                                                settings[v.sensor] = newValue 
-                                                            end    
-                                                        end)
+        formFieldCount = formFieldCount + 1
+        rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+        rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine(eventNames[v.sensor] or "unknown")
+        rfsuite.app.formFields[formFieldCount] = form.addBooleanField(
+            rfsuite.app.formLines[rfsuite.app.formLineCnt],
+            nil,
+            function()
+                return config[v.sensor]
+            end,
+            function(newValue)
+                config[v.sensor] = newValue
+            end
+        )
     end
-  
+
+    -- Always enable all fields and Save
+    for i, field in ipairs(rfsuite.app.formFields) do
+        if field and field.enable then field:enable(true) end
+    end
+    rfsuite.app.navButtons.save = true
 end
 
 local function onNavMenu()
@@ -66,7 +76,7 @@ local function onSaveMenu()
             action = function()
                 local msg = i18n("app.modules.profile_select.save_prompt_local")
                 rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
-                for key, value in pairs(settings) do
+                for key, value in pairs(config) do
                     rfsuite.preferences.events[key] = value
                 end
                 rfsuite.ini.save_ini_file(
@@ -101,8 +111,8 @@ local function event(widget, category, value, x, y)
     if category == EVT_CLOSE and value == 0 or value == 35 then
         rfsuite.app.ui.openPage(
             pageIdx,
-        i18n("app.modules.settings.name"),
-        "settings/tools/audio.lua"
+            i18n("app.modules.settings.name"),
+            "settings/tools/audio.lua"
         )
         return true
     end
@@ -111,7 +121,6 @@ end
 return {
     event      = event,
     openPage   = openPage,
-    wakeup     = wakeup,
     onNavMenu  = onNavMenu,
     onSaveMenu = onSaveMenu,
     navButtons = {
