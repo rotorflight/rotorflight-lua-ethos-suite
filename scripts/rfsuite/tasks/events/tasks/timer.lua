@@ -26,39 +26,36 @@ local triggered = false
 local lastBeepTime = nil
 local preLastBeepTime = nil
 local postStartedAt = nil
+local inflightStartTime = nil
 
 function timer.wakeup()
     local prefs = rfsuite.preferences.timer or {}
     local session = rfsuite.session
-    local modelFlightTime = session and session.modelFlightTime
     local batteryConfig = session and session.batteryConfig
     local targetSeconds = batteryConfig and batteryConfig.modelFlightTime or 0
-
-    if not prefs.timeraudioenable then
-        triggered = false
-        lastBeepTime = nil
-        preLastBeepTime = nil
-        postStartedAt = nil
-        return
-    end
-
-    if not targetSeconds or targetSeconds == 0 or not modelFlightTime or modelFlightTime == 0 then
-        triggered = false
-        lastBeepTime = nil
-        preLastBeepTime = nil
-        postStartedAt = nil
-        return
-    end
-
-    if rfsuite.flightmode.current ~= "inflight" then
-        triggered = false
-        lastBeepTime = nil
-        preLastBeepTime = nil
-        postStartedAt = nil
-        return
-    end
-
     local now = rfsuite.clock
+
+    -- Only set inflightStartTime if it has never been set and we enter inflight
+    if rfsuite.flightmode.current == "inflight" and not inflightStartTime then
+        inflightStartTime = now
+    end
+
+    if not prefs.timeraudioenable
+        or not targetSeconds or targetSeconds == 0
+        or not session or not session.batteryConfig then
+        triggered = false
+        lastBeepTime = nil
+        preLastBeepTime = nil
+        postStartedAt = nil
+        inflightStartTime = nil
+        return
+    end
+
+    if not inflightStartTime then
+        return
+    end
+
+    local elapsed = now - inflightStartTime
     local elapsedMode = prefs.elapsedalertmode or 0
 
     -- PRE-TIMER ALERT LOGIC
@@ -66,8 +63,8 @@ function timer.wakeup()
         local prePeriod = prefs.prealertperiod or 30
         local preInterval = prefs.prealertinterval or 10
         local preAlertStart = targetSeconds - prePeriod
-        if modelFlightTime >= preAlertStart and modelFlightTime < targetSeconds then
-            local sincePreAlert = modelFlightTime - preAlertStart
+        if elapsed >= preAlertStart and elapsed < targetSeconds then
+            local sincePreAlert = elapsed - preAlertStart
             if (sincePreAlert % preInterval) < 0.5 then
                 if not preLastBeepTime or (now - preLastBeepTime) >= preInterval - 1 then
                     rfsuite.utils.playFileCommon("beep.wav")
@@ -86,7 +83,7 @@ function timer.wakeup()
     end
 
     -- TIMER ELAPSED LOGIC
-    if modelFlightTime >= targetSeconds then
+    if elapsed >= targetSeconds then
         if not triggered then
             if elapsedMode == 0 then
                 rfsuite.utils.playFileCommon("beep.wav")
@@ -127,6 +124,7 @@ function timer.reset()
     lastBeepTime = nil
     preLastBeepTime = nil
     postStartedAt = nil
+    inflightStartTime = nil
 end
 
 return timer
