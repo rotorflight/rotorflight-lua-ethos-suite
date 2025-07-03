@@ -115,4 +115,12 @@ function timer.wakeup()
     end
 end
 
+function timer.reset()
+    triggered = false
+    lastBeepTime = nil
+    preLastBeepTime = nil
+    postStartedAt = nil
+    inflightStartTime = nil
+end
+
 return timer
