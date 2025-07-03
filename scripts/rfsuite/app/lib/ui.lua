@@ -500,12 +500,8 @@ function ui.openMainMenuSub(activesection)
     rfsuite.preferences.menulastselected["mainmenu"] = rfsuite.preferences.menulastselected["mainmenu"] or 1
 
     for idx, section in ipairs(MainMenu.sections) do
-        local hideSection = (section.ethosversion and rfsuite.session.ethosRunningVersion < section.ethosversion) or
-                            (section.mspversion and (rfsuite.session.apiVersion or 1) < section.mspversion) or
-                            (section.developer and not rfsuite.preferences.developer.devtools) or
-                            section.id ~= activesection
 
-        if not hideSection then
+        if section.id == activesection then
 
         local w, h = rfsuite.utils.getWindowSize()
             local windowWidth = w
