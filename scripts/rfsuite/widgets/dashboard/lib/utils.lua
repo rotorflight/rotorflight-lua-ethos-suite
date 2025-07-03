@@ -20,6 +20,24 @@ local utils = {}
 local imageCache = {}
 local fontCache 
 
+--- Checks if the model preferences are ready.
+-- This function returns true if the `rfsuite` table, its `session` field,
+-- and the `modelPreferences` field within `session` are all non-nil.
+-- @return boolean True if model preferences are ready, false otherwise.
+function utils.isModelPrefsReady()
+    return rfsuite and rfsuite.session and rfsuite.session.modelPreferences
+end
+
+--- Resets the cache of a given box object by clearing all entries in its `_cache` table.
+-- If the box has a `_cache` table, all its keys are set to nil, effectively emptying the cache.
+-- @param box table The box object whose cache should be reset.
+function utils.resetBoxCache(box)
+    if box._cache then
+        for k in pairs(box._cache) do
+            box._cache[k] = nil
+        end
+    end
+end
 
 -- Returns true if (W, H) exactly matches one of the entries in supportedResolutions.
 --   W, H:               current window width and height (numbers)
