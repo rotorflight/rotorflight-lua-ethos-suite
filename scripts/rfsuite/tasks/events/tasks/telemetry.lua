@@ -287,10 +287,6 @@ function telemetry.wakeup()
     end
 end
 
-
-
-
-
 telemetry.eventTable = eventTable
 
 return telemetry

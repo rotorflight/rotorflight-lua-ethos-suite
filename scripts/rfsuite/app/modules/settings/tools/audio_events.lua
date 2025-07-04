@@ -40,7 +40,6 @@ local function openPage(pageIdx, title, script)
     local savedEvents = rfsuite.preferences.events or {}
     for k, v in pairs(savedEvents) do config[k] = v end
 
-    -- Helper to track field indices for later enabling/disabling
     local escFields, becFields, fuelFields = {}, {}, {}
 
     -- Arming Flags Panel
@@ -103,7 +102,7 @@ local function openPage(pageIdx, title, script)
         function(val) config.rate_profile = val end
     )
 
-    -- ESC Temp Alert Panel (now uses temp_esc)
+    -- ESC Temp Alert Panel
     local escEnabled = config.temp_esc == true
     local escPanel = form.addExpansionPanel(i18n("ESC Temperature"))
     escPanel:open(escEnabled)
@@ -132,7 +131,7 @@ local function openPage(pageIdx, title, script)
     rfsuite.app.formFields[formFieldCount]:suffix("°")
     setFieldEnabled(rfsuite.app.formFields[escFields.thresh], escEnabled)
 
-    -- BEC Voltage Alert Panel (now uses bec_voltage)
+    -- BEC Voltage Alert Panel
     local becEnabled = config.bec_voltage == true
     local becPanel = form.addExpansionPanel(i18n("BEC Voltage"))
     becPanel:open(becEnabled)
