@@ -5,7 +5,7 @@ local compiler = rfsuite.compiler.loadfile
 
 local currentTelemetrySensor
 local tasksPerCycle = 1
-local taskSchedulerPercentage = 0.2
+local taskSchedulerPercentage = 0.4
 
 local useHybridSpread = true  -- Set to false for pure hash-only offset
                               -- Set useHybridSpread = false for repeatable profiling.
@@ -155,7 +155,7 @@ end
 function tasks.telemetryCheckScheduler()
     local now = rfsuite.clock
 
-    if now - (telemetryCheckScheduler or 0) >= 0.5 then
+    if now - (telemetryCheckScheduler or 0) >= 0.25 then
         local telemetryState = tlm and tlm:state() or false
         if rfsuite.simevent.telemetry_state == false and system.getVersion().simulation then
             telemetryState = false
