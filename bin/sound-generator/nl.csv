@@ -13,6 +13,8 @@ events/alerts/disarmed.wav,Disarmed
 events/alerts/profile.wav,Profiel
 events/alerts/rates.wav,Rates
 events/alerts/timerelapsed.wav,Timer Elapsed
+events/alerts/becvolt.wav,BEC Voltage Warning
+events/alerts/esctemp.wav,ESC Temperature Warning
 events/gov/off.wav,Governor - Uit
 events/gov/idle.wav,Governor - Idle
 events/gov/spoolup.wav,Governor - Opstarten

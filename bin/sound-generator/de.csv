@@ -13,6 +13,8 @@ events/alerts/disarmed.wav,Ausgeschaltet
 events/alerts/profile.wav,Profil
 events/alerts/rates.wav,Raten
 events/alerts/timerelapsed.wav,Timer Elapsed
+events/alerts/becvolt.wav,BEC Voltage Warning
+events/alerts/esctemp.wav,ESC Temperature Warning
 events/gov/off.wav,Drehzahlregler - Aus
 events/gov/idle.wav,Drehzahlregler - Leerlauf
 events/gov/spoolup.wav,Drehzahlregler - Hochlauf
