@@ -17,7 +17,7 @@
  * 
 ]] --
 local init = {
-    interval        = 0.05,         -- run every 0.1 seconds
+    interval        = 0.05,         -- run every 0.05 seconds
     script          = "events.lua", -- run this script
     linkrequired    = true,         -- run this script only if link is established
     spreadschedule  = true,         -- run on every loop
