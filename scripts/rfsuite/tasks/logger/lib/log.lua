@@ -1,7 +1,6 @@
 --[[
  * Copyright (C) Rotorflight Project
  *
- *
  * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
  *
  * This program is free software; you can redistribute it and/or modify
@@ -12,10 +11,10 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- 
+ *
  * Note.  Some icons have been sourced from https://www.flaticon.com/
- * 
-]] --
+ *
+]]
 
 local function CircularBuffer(capacity)
     local buffer = {
@@ -66,7 +65,7 @@ logs.config = {
     log_to_file = true,
     print_interval = 0.5,
     disk_write_interval = 5.0,
-    max_line_length = 100,
+    max_line_length = 200,
     min_print_level = "info",
     log_file = "log.txt",
     prefix = ""
@@ -87,6 +86,7 @@ logs.levels = {
     off = 2
 }
 
+-- Splits a message into multiple lines based on max_length, preserving prefixes
 local function split_message(message, max_length, prefix)
     local lines = {}
     while #message > max_length do
@@ -99,37 +99,29 @@ local function split_message(message, max_length, prefix)
     return lines
 end
 
+-- Adds a log entry to the queues (deferred splitting at output time)
 function logs.add(message, level)
-    if not logs.config.enabled or logs.config.min_print_level == "off" then return end
-
+    if not logs.config.enabled or logs.config.min_print_level == "off" then
+        return
+    end
     level = level or "info"
     if logs.levels[level] == nil then return end
     if logs.levels[level] < logs.levels[logs.config.min_print_level] then return end
 
+    -- Truncate overly long messages
     local max_message_length = logs.config.max_line_length * 10
     if #message > max_message_length then
         message = message:sub(1, max_message_length) .. " [truncated]"
     end
 
-    local prefix = logs.config.prefix .. " [" .. level .. "] "
-    local log_entry = prefix .. message
-    local lines = {}
-
-    if system:getVersion().simulation then
-        table.insert(lines, log_entry)
-    else
-        lines = split_message(log_entry, logs.config.max_line_length, string.rep(" ", #prefix))
-    end
-
-    for _, line in ipairs(lines) do
-        logs.queue:push(line)
-    end
-
+    -- Enqueue raw entry (lightweight)
+    logs.queue:push({ msg = message, lvl = level })
     if logs.config.log_to_file then
-        logs.disk_queue:push(log_entry)
+        logs.disk_queue:push({ msg = message, lvl = level })
     end
 end
 
+-- Processes and prints pending console log entries
 local function process_console_queue()
     if not logs.config.enabled or logs.config.min_print_level == "off" then return end
 
@@ -139,13 +131,21 @@ local function process_console_queue()
 
         local MAX_CONSOLE_MESSAGES = 5
         for _ = 1, MAX_CONSOLE_MESSAGES do
-            local message = logs.queue:pop()
-            if not message then break end
-            print(message)
+            local entry = logs.queue:pop()
+            if not entry then break end
+
+            -- Deferred heavy work: split and print lines
+            local prefix = logs.config.prefix .. " [" .. entry.lvl .. "] "
+            local log_entry = prefix .. entry.msg
+            local pad = string.rep(" ", #prefix)
+            for _, line in ipairs(split_message(log_entry, logs.config.max_line_length, pad)) do
+                print(line)
+            end
         end
     end
 end
 
+-- Processes and writes pending disk log entries
 local function process_disk_queue()
     if not logs.config.enabled or logs.config.min_print_level == "off" or not logs.config.log_to_file then return end
 
@@ -157,15 +157,21 @@ local function process_disk_queue()
         local file = io.open(logs.config.log_file, "a")
         if file then
             for _ = 1, MAX_DISK_MESSAGES do
-                local message = logs.disk_queue:pop()
-                if not message then break end
-                file:write(message .. "\n")
+                local entry = logs.disk_queue:pop()
+                if not entry then break end
+
+                -- Deferred heavy work: concatenate and write
+                local line = logs.config.prefix
+                            .. " [" .. entry.lvl .. "] "
+                            .. entry.msg
+                file:write(line .. "\n")
             end
             file:close()
         end
     end
 end
 
+-- Main processing function to be called each tick
 function logs.process()
     process_console_queue()
     process_disk_queue()

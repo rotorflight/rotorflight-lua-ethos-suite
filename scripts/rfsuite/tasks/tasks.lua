@@ -39,6 +39,25 @@ local function taskOffset(name, interval)
     end
 end
 
+-- Print a human-readable schedule of all tasks
+function tasks.dumpSchedule()
+  local now = rfsuite.clock
+  utils.log("====== Task Schedule Dump ======", "info")
+  for _, t in ipairs(tasksList) do
+    local next_run = t.last_run + t.interval
+    local in_secs  = next_run - now
+    -- string.format: TaskName | interval | offset = last_run offset | next in
+    utils.log(
+      string.format(
+        "%-15s | interval: %4.1fs | last_run: %8.2f | next in: %6.2fs",
+        t.name, t.interval, t.last_run, in_secs
+      ),
+      "info"
+    )
+  end
+  utils.log("================================", "info")
+end
+
 function tasks.initialize()
     local cacheFile, cachePath = "tasks.lua", "cache/tasks.lua"
     local taskMetadata
@@ -77,6 +96,8 @@ function tasks.initialize()
             })
         end
     end
+
+    tasks.dumpSchedule()
 end
 
 
@@ -183,6 +204,7 @@ function tasks.wakeup()
     if tasks.init then
         tasks.init = false
         tasks.initialize()
+        return
     end
 
     tasks.telemetryCheckScheduler()
