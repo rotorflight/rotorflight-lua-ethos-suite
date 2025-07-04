@@ -80,7 +80,7 @@ local userpref_defaults ={
     },
     events = {
         armflags            = true,
-        voltage             = false,
+        voltage             = true,
         governor            = true,
         pid_profile         = true,
         rate_profile        = true,
