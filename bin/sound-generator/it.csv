@@ -13,6 +13,8 @@ events/alerts/disarmed.wav,Disarmato
 events/alerts/profile.wav,Profilo
 events/alerts/rates.wav,Escursioni
 events/alerts/timerelapsed.wav,Timer Elapsed
+events/alerts/becvolt.wav,BEC Voltage Warning
+events/alerts/esctemp.wav,ESC Temperature Warning
 events/gov/off.wav,Governor - Spento
 events/gov/idle.wav,Governor - Minimo
 events/gov/spoolup.wav,Governor - Avviamento
