@@ -36,8 +36,10 @@ local sumWatts = 0
 local countWatts = 0
 local avgWatts = 0
 
-function render.wakeup(box, telemetry)
+function render.wakeup(box)
 
+    local telemetry = rfsuite.tasks.telemetry
+    
     local watts
     local v = rfsuite.tasks.telemetry.sensorStats["voltage"]
     local i = rfsuite.tasks.telemetry.sensorStats["current"]

@@ -106,7 +106,10 @@ local function computeDrawArea(img, x, y, w, h, scalefactor)
     return drawX, drawY, drawW, drawH
 end
 
-function render.wakeup(box, telemetry)
+function render.wakeup(box)
+
+    local telemetry = rfsuite.tasks.telemetry
+
     -- Value extraction
     local source = getParam(box, "source")
     local value, _, dynamicUnit

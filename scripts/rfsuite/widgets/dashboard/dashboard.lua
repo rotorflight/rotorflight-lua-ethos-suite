@@ -1011,8 +1011,8 @@ function dashboard.wakeup(widget)
         for _, idx in ipairs(scheduledBoxIndices) do
             local rect = dashboard.boxRects[idx]
             local obj = dashboard.objectsByType[rect.box.type]
-            if obj and obj.wakeup and telemetry then
-                obj.wakeup(rect.box, telemetry)
+            if obj and obj.wakeup then
+                obj.wakeup(rect.box)
             end
         end
 
