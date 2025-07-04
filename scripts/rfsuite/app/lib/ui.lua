@@ -24,6 +24,41 @@ local arg = {...}
 local config = arg[1]
 local i18n = rfsuite.i18n.get
 
+function ui.loaderImageDots(LCD_W, LCD_H)
+    local function drawLogoImage(cx, cy, w, h)
+        local imageName = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/app/gfx/logo.png"
+        local bmp = rfsuite.utils.loadImage(imageName)
+        if bmp then
+            local imgSize = math.min(w, h)
+            lcd.drawBitmap(cx - imgSize / 2, cy - imgSize / 2, bmp, imgSize, imgSize)
+        end
+    end
+
+    local function drawAnimatedDots(cx, cy, spacing, radius, frame)
+        for i = 1, 3 do
+            local offset = (i - 2) * spacing
+            local isActive = (frame % 3) + 1 == i
+            if isActive then
+                lcd.drawFilledCircle(cx + offset, cy, radius + 1)
+            else
+                lcd.drawFilledCircle(cx + offset, cy, radius)
+            end
+        end
+    end
+
+    local w = LCD_W * 0.5
+    local h = LCD_H * 0.5
+    local cx = w / 2
+    local cy = h / 2 - (h/5)
+
+    drawLogoImage(cx, cy, w, h)
+
+    local frame = math.floor(os.clock() * 50)  -- one frame every 100ms
+
+    local dotY =  h / 2 + (h/8)
+    drawAnimatedDots(cx, dotY, 30, 10, frame)
+end
+
 -- Displays a progress dialog with a title and message.
 -- @param title The title of the progress dialog (optional, default is "Loading").
 -- @param message The message of the progress dialog (optional, default is "Loading data from flight controller...").
@@ -35,13 +70,34 @@ function ui.progressDisplay(title, message)
 
     rfsuite.app.dialogs.progressDisplay = true
     rfsuite.app.dialogs.progressWatchDog = rfsuite.clock
-    rfsuite.app.dialogs.progress = form.openProgressDialog(title, message)
-    rfsuite.app.dialogs.progressCounter = 0
 
-    local progress = rfsuite.app.dialogs.progress
-    if progress then
-        progress:value(0)
-        progress:closeAllowed(false)
+    if rfsuite.preferences.progressloaderType == 1 then
+        rfsuite.app.dialogs.progress = form.openProgressDialog(title, message)
+        rfsuite.app.dialogs.progressCounter = 0
+
+        local progress = rfsuite.app.dialogs.progress
+        if progress then
+            progress:value(0)
+            progress:closeAllowed(false)
+        end
+    else
+        local LCD_W, LCD_H = rfsuite.utils.getWindowSize()
+        rfsuite.app.dialogs.message = message
+
+        rfsuite.app.dialogs.progress = form.openDialog({
+            title = title,
+            message = "\n\n\n\n",
+            width = LCD_W * 0.5,
+            buttons=buttons,
+            options=TEXT_LEFT,
+            wakeup=function()
+                lcd.invalidate()
+            end,
+            paint = function()
+                ui.loaderImageDots(LCD_W, LCD_H)
+            end
+
+        })
     end
 end
 
@@ -53,9 +109,30 @@ end
 ]]
 function ui.progressNolinkDisplay()
     rfsuite.app.dialogs.nolinkDisplay = true
-    rfsuite.app.dialogs.noLink = form.openProgressDialog(i18n("app.msg_connecting"), i18n("app.msg_connecting_to_fbl"))
-    rfsuite.app.dialogs.noLink:closeAllowed(false)
-    rfsuite.app.dialogs.noLink:value(0)
+
+    if rfsuite.preferences.progressloaderType == 1 then
+        rfsuite.app.dialogs.noLink = form.openProgressDialog(i18n("app.msg_connecting"), i18n("app.msg_connecting_to_fbl"))
+        rfsuite.app.dialogs.noLink:closeAllowed(false)
+        rfsuite.app.dialogs.noLink:value(0)
+    else
+         local LCD_W, LCD_H = rfsuite.utils.getWindowSize()
+        rfsuite.app.dialogs.message = message
+
+        rfsuite.app.dialogs.progress = form.openDialog({
+            title = title,
+            message = "\n\n\n\n",
+            width = LCD_W * 0.5,
+            buttons=buttons,
+            options=TEXT_LEFT,
+            wakeup=function()
+                lcd.invalidate()
+            end,
+            paint = function()
+                ui.loaderImageDots(LCD_W, LCD_H)
+            end
+
+        })       
+    end
 end
 
 --[[
@@ -65,15 +142,39 @@ end
                  and configures the progress dialog with initial values.
 ]]
 function ui.progressDisplaySave(msg)
-    rfsuite.app.dialogs.saveDisplay = true
-    rfsuite.app.dialogs.saveWatchDog = rfsuite.clock
-    if msg then
-                 rfsuite.app.dialogs.save = form.openProgressDialog(i18n("app.msg_saving"),msg)   
+
+ if rfsuite.app.dialogs.save then return end
+
+    if rfsuite.preferences.progressloaderType == 1 then
+        rfsuite.app.dialogs.saveDisplay = true
+        rfsuite.app.dialogs.saveWatchDog = rfsuite.clock
+        if msg then
+                    rfsuite.app.dialogs.save = form.openProgressDialog(i18n("app.msg_saving"),msg)   
+        else
+            rfsuite.app.dialogs.save = form.openProgressDialog(i18n("app.msg_saving"), i18n("app.msg_saving_to_fbl"))       
+        end
+        rfsuite.app.dialogs.save:value(0)
+        rfsuite.app.dialogs.save:closeAllowed(false)
     else
-         rfsuite.app.dialogs.save = form.openProgressDialog(i18n("app.msg_saving"), i18n("app.msg_saving_to_fbl"))       
+
+        local LCD_W, LCD_H = rfsuite.utils.getWindowSize()
+        rfsuite.app.dialogs.message = message
+
+        rfsuite.app.dialogs.save= form.openDialog({
+            title = title,
+            message = "\n\n\n\n",
+            width = LCD_W * 0.5,
+            buttons=buttons,
+            options=TEXT_LEFT,
+            wakeup=function()
+                lcd.invalidate()
+            end,
+            paint = function()
+                ui.loaderImageDots(LCD_W, LCD_H)
+            end
+
+        })        
     end
-    rfsuite.app.dialogs.save:value(0)
-    rfsuite.app.dialogs.save:closeAllowed(false)
 end
 
 
@@ -86,17 +187,21 @@ end
     The function ensures that the progress display is updated at a rate limited by `rfsuite.app.dialogs.progressRate`.
 ]]
 function ui.progressDisplayValue(value, message)
-    if value >= 100 then
-        rfsuite.app.dialogs.progress:value(value)
-        if message then rfsuite.app.dialogs.progress:message(message) end
-        return
-    end
+    if rfsuite.preferences.progressloaderType == 1 then
+        if value >= 100 then
+            rfsuite.app.dialogs.progress:value(value)
+            if message then rfsuite.app.dialogs.progress:message(message) end
+            return
+        end
 
-    local now = rfsuite.clock
-    if (now - rfsuite.app.dialogs.progressRateLimit) >= rfsuite.app.dialogs.progressRate then
-        rfsuite.app.dialogs.progressRateLimit = now
-        rfsuite.app.dialogs.progress:value(value)
-        if message then rfsuite.app.dialogs.progress:message(message) end
+        local now = rfsuite.clock
+        if (now - rfsuite.app.dialogs.progressRateLimit) >= rfsuite.app.dialogs.progressRate then
+            rfsuite.app.dialogs.progressRateLimit = now
+            rfsuite.app.dialogs.progress:value(value)
+            if message then rfsuite.app.dialogs.progress:message(message) end
+        end
+    else
+        -- set a message in a var that will be picked up by the wakeup loop inside the alert box
     end
 end
 
@@ -108,22 +213,27 @@ end
     @param message string (optional): An optional message to display along with the progress value.
 ]]
 function ui.progressDisplaySaveValue(value, message)
-    if value >= 100 then
-        if rfsuite.app.dialogs.save then
-            rfsuite.app.dialogs.save:value(value)
-        end    
-        if message then rfsuite.app.dialogs.save:message(message) end
-        return
-    end
+    if rfsuite.preferences.progressloaderType == 1 then
+        if value >= 100 then
+            if rfsuite.app.dialogs.save then
+                rfsuite.app.dialogs.save:value(value)
+            end    
+            if message then rfsuite.app.dialogs.save:message(message) end
+            return
+        end
 
-    local now = rfsuite.clock
-    if (now - rfsuite.app.dialogs.saveRateLimit) >= rfsuite.app.dialogs.saveRate then
-        rfsuite.app.dialogs.saveRateLimit = now
-        if rfsuite.app.dialogs.save then
-            rfsuite.app.dialogs.save:value(value)
-        end    
-        if message then rfsuite.app.dialogs.save:message(message) end
-    end
+        local now = rfsuite.clock
+        if (now - rfsuite.app.dialogs.saveRateLimit) >= rfsuite.app.dialogs.saveRate then
+            rfsuite.app.dialogs.saveRateLimit = now
+            if rfsuite.app.dialogs.save then
+                rfsuite.app.dialogs.save:value(value)
+            end    
+            if message then rfsuite.app.dialogs.save:message(message) end
+        end
+    else
+        -- set a message in a var that will be picked up by the wakeup loop inside the alert box
+        rfsuite.app.dialogs.message = message or ""
+    end    
 end
 
 -- Closes the progress display dialog if it is currently open.
@@ -159,9 +269,19 @@ end
 -- This function checks if the save dialog exists, closes it if it does,
 -- and then sets the save display status to false.
 function ui.progressDisplaySaveClose()
-    local saveDialog = rfsuite.app.dialogs.save
-    if saveDialog then saveDialog:close() end
-    rfsuite.app.dialogs.saveDisplay = false
+    if rfsuite.preferences.progressloaderType == 1 then
+        local saveDialog = rfsuite.app.dialogs.save
+        if saveDialog then saveDialog:close() end
+        rfsuite.app.dialogs.saveDisplay = false
+    else
+        if rfsuite.app.dialogs.save then
+            print("ui.progressDisplaySaveClose()")
+            rfsuite.app.dialogs.saveDisplay = false
+            rfsuite.app.dialogs.message = nil
+            rfsuite.app.dialogs.save:close()
+            rfsuite.app.dialogs.save = false
+        end
+    end    
 end
 
 --- Displays a save message in the progress dialog.
@@ -192,7 +312,12 @@ end
 -- Closes the "no link" dialog in the rfsuite application.
 -- This function is used to close the dialog that indicates there is no link.
 function ui.progressNolinkDisplayClose()
-    rfsuite.app.dialogs.noLink:close()
+    if rfsuite.preferences.progressloaderType == 1 then
+        rfsuite.app.dialogs.noLink:close()
+    else
+        rfsuite.app.dialogs.nolinkDisplay = false
+        rfsuite.app.dialogs.message = nil
+    end
 end
 
 --[[
@@ -210,18 +335,23 @@ end
     - The rate limit is controlled by `rfsuite.app.dialogs.nolinkRate` and `rfsuite.app.dialogs.nolinkRateLimit`.
 ]]
 function ui.progressDisplayNoLinkValue(value, message)
-    if value >= 100 then
-        rfsuite.app.dialogs.noLink:value(value)
-        if message then rfsuite.app.dialogs.noLink:message(message) end
-        return
-    end
+    if rfsuite.preferences.progressloaderType == 1 then
+        if value >= 100 then
+            rfsuite.app.dialogs.noLink:value(value)
+            if message then rfsuite.app.dialogs.noLink:message(message) end
+            return
+        end
 
-    local now = rfsuite.clock
-    if (now - rfsuite.app.dialogs.nolinkRateLimit) >= rfsuite.app.dialogs.nolinkRate then
-        rfsuite.app.dialogs.nolinkRateLimit = now
-        rfsuite.app.dialogs.noLink:value(value)
-        if message then rfsuite.app.dialogs.noLink:message(message) end
-    end
+        local now = rfsuite.clock
+        if (now - rfsuite.app.dialogs.nolinkRateLimit) >= rfsuite.app.dialogs.nolinkRate then
+            rfsuite.app.dialogs.nolinkRateLimit = now
+            rfsuite.app.dialogs.noLink:value(value)
+            if message then rfsuite.app.dialogs.noLink:message(message) end
+        end
+    else
+        -- set a message in a var that will be picked up by the wakeup loop inside the alert box
+        rfsuite.app.dialogs.message = message or ""    
+    end    
 end
 
 -- Disables all form fields in the rfsuite application.

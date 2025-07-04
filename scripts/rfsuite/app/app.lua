@@ -965,22 +965,31 @@ app._uiTasks = {
   -- 3. Close Save Loader
   function()
     if not app.triggers.closeSave then return end
-    local p, q = app.dialogs.saveProgressCounter, rfsuite.tasks.msp.mspQueue
-    app.triggers.isSaving = false
-    if q:isProcessed() then
-      if     p > 90 then p = p + 5
-      elseif p > 40 then p = p + 15
-      else                p = p + 5 end
-    end
-    app.dialogs.saveProgressCounter = p
-    if app.dialogs.save then
-      app.ui.progressDisplaySaveValue(p)
-    end
-    if p >= 100 and q:isProcessed() then
-      app.triggers.closeSave           = false
-      app.dialogs.saveProgressCounter  = 0
-      app.dialogs.saveDisplay          = false
-      app.dialogs.saveWatchDog         = nil
+    if rfsuite.preferences.progressloaderType == 1 then
+      local p, q = app.dialogs.saveProgressCounter, rfsuite.tasks.msp.mspQueue
+      app.triggers.isSaving = false
+      if q:isProcessed() then
+        if     p > 90 then p = p + 5
+        elseif p > 40 then p = p + 15
+        else                p = p + 5 end
+      end
+      app.dialogs.saveProgressCounter = p
+      if app.dialogs.save then
+        app.ui.progressDisplaySaveValue(p)
+      end
+      if p >= 100 and q:isProcessed() then
+        app.triggers.closeSave           = false
+        app.dialogs.saveProgressCounter  = 0
+        app.dialogs.saveDisplay          = false
+        app.dialogs.saveWatchDog         = nil
+        app.ui.progressDisplaySaveClose()
+      end
+    else
+        app.triggers.isSaving = false      
+        app.triggers.closeSave           = false
+        app.dialogs.saveProgressCounter  = 0
+        app.dialogs.saveDisplay          = false
+        app.dialogs.saveWatchDog         = nil      
       app.ui.progressDisplaySaveClose()
     end
   end,
@@ -988,16 +997,25 @@ app._uiTasks = {
   -- 4. Close Save (Fake) in Simulator
   function()
     if not app.triggers.closeSaveFake then return end
-    app.triggers.isSaving = false
-    app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 5
-    if app.dialogs.save then
-      app.ui.progressDisplaySaveValue(app.dialogs.saveProgressCounter)
-    end
-    if app.dialogs.saveProgressCounter >= 100 then
-      app.triggers.closeSaveFake          = false
-      app.dialogs.saveProgressCounter     = 0
-      app.dialogs.saveDisplay             = false
-      app.dialogs.saveWatchDog            = nil
+    if rfsuite.preferences.progressloaderType == 1 then
+      app.triggers.isSaving = false
+      app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 5
+      if app.dialogs.save then
+        app.ui.progressDisplaySaveValue(app.dialogs.saveProgressCounter)
+      end
+      if app.dialogs.saveProgressCounter >= 100 then
+        app.triggers.closeSaveFake          = false
+        app.dialogs.saveProgressCounter     = 0
+        app.dialogs.saveDisplay             = false
+        app.dialogs.saveWatchDog            = nil
+        app.ui.progressDisplaySaveClose()
+      end
+    else
+      app.triggers.isSaving = false
+      app.triggers.closeSave           = false
+      app.dialogs.saveProgressCounter  = 0
+      app.dialogs.saveDisplay          = false
+      app.dialogs.saveWatchDog         = nil     
       app.ui.progressDisplaySaveClose()
     end
   end,
