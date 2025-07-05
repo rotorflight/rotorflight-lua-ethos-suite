@@ -1,6 +1,6 @@
 local wrapper = {}
 
-local renders = {}
+local renders = rfsuite.widgets.dashboard.renders
 local folder = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/objects/navigation/"
 local utils = rfsuite.widgets.dashboard.utils
 
