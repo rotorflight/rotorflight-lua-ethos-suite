@@ -163,7 +163,8 @@ function MspQueueController:processQueue()
     if self.currentMessage and rfsuite.clock - self.currentMessageStartTime > (self.currentMessage.timeout or self.timeout) then
         if self.currentMessage.errorHandler then self.currentMessage:errorHandler() end
         rfsuite.utils.log("Message timeout exceeded. Flushing queue.","debug")
-        self:clear()
+        self.currentMessage = nil
+        self.uuid = nil
         return
     end
 

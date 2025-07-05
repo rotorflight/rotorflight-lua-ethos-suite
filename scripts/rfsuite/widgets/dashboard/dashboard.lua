@@ -452,7 +452,7 @@ function dashboard.renderLayout(widget, config)
         local box = rect.box
         local obj = dashboard.objectsByType[box.type]
         if obj and obj.paint then
-            obj.paint(rect.x, rect.y, rect.w, rect.h, box, telemetry)
+            obj.paint(rect.x, rect.y, rect.w, rect.h, box)
         end
 
         if dashboard.selectedBoxIndex == i and box.onpress then
@@ -1026,7 +1026,7 @@ function dashboard.wakeup(widget)
                 if rect then
                     local obj = dashboard.objectsByType[rect.box.type]
                     if obj and obj.wakeup and not obj.scheduler then
-                        obj.wakeup(rect.box, telemetry)
+                        obj.wakeup(rect.box)
                     end
 
                     if not needsFullInvalidate then
