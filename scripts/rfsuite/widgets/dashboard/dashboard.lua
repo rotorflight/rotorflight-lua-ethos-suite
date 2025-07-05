@@ -27,6 +27,7 @@ local utils = rfsuite.utils
 local log = utils.log
 local tasks = rfsuite.tasks
 
+
 -- Supported resolutions
 local supportedResolutions = {
     { 784, 294 },   -- X20, X20RS etc
@@ -658,6 +659,10 @@ end
 
 
 function dashboard.reload_themes(force)
+
+    -- Clear cached subtype renderers (e.g. time/flight/telemetry modules)
+    dashboard.renders = {}
+
     -- Step 1: Load just the active theme and reset core state
     dashboard.reload_active_theme_only(force)
 
@@ -1202,5 +1207,7 @@ function dashboard.menu(widget)
     }
 end
 
+-- table to stall object cache
+dashboard.renders = dashboard.renders or {}
 
 return dashboard

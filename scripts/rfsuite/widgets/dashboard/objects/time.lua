@@ -1,8 +1,9 @@
 local wrapper = {}
 
-local renders = {}
+local renders = rfsuite.widgets.dashboard.renders
 local folder = "SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/objects/time/"
 local utils = rfsuite.widgets.dashboard.utils
+
 
 function wrapper.paint(x, y, w, h, box)
     local subtype = box.subtype or "flight"
