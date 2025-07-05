@@ -24,6 +24,25 @@ local usingSimulator = system.getVersion().simulation
 
 local tlm = system.getSource({ category = CATEGORY_SYSTEM_EVENT, member = TELEMETRY_ACTIVE })
 
+-- Returns true if the task is active (based on recent run time or triggers)
+function tasks.isTaskActive(name)
+    for _, t in ipairs(tasksList) do
+        if t.name == name then
+            local age = rfsuite.clock - t.last_run
+            if name == "msp" then
+                return rfsuite.app.triggers.mspBusy
+            elseif name == "callback" then
+                return age <= 2
+            else
+                return age <= t.interval
+            end
+        end
+    end
+    return false
+end
+
+
+
 local function taskOffset(name, interval)
     local hash = 0
     for i = 1, #name do
@@ -97,7 +116,7 @@ function tasks.initialize()
         end
     end
 
-    tasks.dumpSchedule()
+    --tasks.dumpSchedule()
 end
 
 
@@ -246,15 +265,19 @@ function tasks.wakeup()
         end
     end
 
-    -- Collect eligible tasks
+    -- Collect eligible spread tasks
     local eligibleTasks = {}
-    for _, task in ipairs(tasksList) do
-        if task.spreadschedule and canRunTask(task) then
-            local elapsed = now - task.last_run
-            if elapsed >= task.interval then
-                table.insert(eligibleTasks, task)
+    if not skipSpread then
+        for _, task in ipairs(tasksList) do
+            if task.spreadschedule and canRunTask(task) then
+                local elapsed = now - task.last_run
+                if elapsed >= task.interval then
+                    table.insert(eligibleTasks, task)
+                end
             end
         end
+    else
+        utils.log("Spread-scheduled tasks skipped due to active MSP or callback", "info")
     end
 
     -- Determine how many tasks to run
