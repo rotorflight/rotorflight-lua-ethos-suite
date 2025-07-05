@@ -18,7 +18,9 @@ function render.dirty(box)
 end
 
 
-function render.wakeup(box, telemetry)
+function render.wakeup(box)
+
+    local telemetry = rfsuite.tasks.telemetry
 
     if type(box.wakeup) == "function" then
         box._cache = box.wakeup(box, telemetry)

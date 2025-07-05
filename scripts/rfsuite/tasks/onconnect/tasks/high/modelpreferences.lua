@@ -35,10 +35,14 @@ local modelpref_defaults ={
 function modelpreferences.wakeup()
 
     -- quick exit if no apiVersion
-    if rfsuite.session.apiVersion == nil then return end    
+    if rfsuite.session.apiVersion == nil then
+        rfsuite.session.modelPreferences = nil 
+        return 
+    end    
 
     --- check if we have a mcu_id
     if not rfsuite.session.mcu_id then
+        rfsuite.session.modelPreferences = nil
         return
     end
   
