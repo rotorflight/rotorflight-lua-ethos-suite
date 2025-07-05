@@ -1,28 +1,28 @@
 --[[
-
- * Copyright (C) Rotorflight Project
+ * Rotorflight Project - Enhanced Script Compilation and Caching
  *
- * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
- *
- * compile.lua - Deferred/Throttled Lua Script Compilation and Caching for Rotorflight Suite (Ethos)
-
- * Usage:
- *   local compile = require("rfsuite.lib.compile")
- *   local chunk = compile.loadfile("myscript.lua")
- *   chunk() -- executes the loaded script
- *   -- Or use compile.dofile / compile.require as drop-in replacements
-
-]] --
---[[
  * Copyright (C) Rotorflight Project
- * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
- * compile.lua - Deferred/Throttled Lua Script Compilation and Caching for Rotorflight Suite (Ethos)
-
- * Usage:
+ * License: GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ * Features:
+ *   - Deferred & throttled compilation of Lua scripts
+ *   - Disk and in-memory LRU caching
+ *   - Memory-aware eviction with pinning support
+ *
+ * Basic Usage:
  *   local compile = require("rfsuite.lib.compile")
- *   local chunk = compile.loadfile("myscript.lua")
- *   chunk() -- executes the loaded script
- *   -- Or use compile.dofile / compile.require as drop-in replacements
+ *   local chunk = compile.loadfile("myscript.lua") -- Load & cache script
+ *   chunk() -- Executes the script
+ *
+ *   -- To pin script in memory (won't be evicted automatically):
+ *   local chunk = compile.loadfile("myscript.lua", true)
+ *
+ *   -- To unpin later (allow eviction):
+ *   compile.unpin("myscript.lua")
+ *
+ *   -- Drop-in replacements:
+ *   compile.dofile("myscript.lua")
+ *   compile.require("modulename")
 ]]
 
 local compile = {}
@@ -43,7 +43,6 @@ local baseDir     = "./"
 local compiledDir = baseDir .. "cache/"
 local SCRIPT_PREFIX = "SCRIPTS:"
 
--- Ensure cache directory exists
 local function ensure_dir(dir)
   if os.mkdir then
     local found = false
@@ -55,7 +54,6 @@ local function ensure_dir(dir)
 end
 ensure_dir(compiledDir)
 
--- On-disk compiled files index
 local disk_cache = {}
 do
   for _, fname in ipairs(system.listFiles(compiledDir)) do
@@ -63,7 +61,6 @@ do
   end
 end
 
--- Unified cache-safe name generator
 local function cachename(name)
   if name:sub(1, #SCRIPT_PREFIX) == SCRIPT_PREFIX then
     name = name:sub(#SCRIPT_PREFIX + 1)
@@ -73,17 +70,16 @@ local function cachename(name)
   return name
 end
 
---------------------------------------------------
--- Adaptive LRU Cache (in-memory loaders, interval-based eviction)
---------------------------------------------------
-local LUA_RAM_THRESHOLD = 32 * 1024 -- 32 KB free (adjust as needed)
-local LRU_HARD_LIMIT = 50           -- absolute maximum (safety)
-local EVICT_INTERVAL = 5            -- seconds between eviction checks
+-- Adaptive LRU Cache with Pinning Support
+local LUA_RAM_THRESHOLD = 32 * 1024
+local LRU_HARD_LIMIT = 50
+local EVICT_INTERVAL = 5
 
 local function LRUCache()
   local self = {
     cache = {},
     order = {},
+    pinned = {},
     _last_evict = 0,
   }
 
@@ -104,16 +100,18 @@ local function LRUCache()
   function self:evict_if_low_memory()
     self._last_evict = rfsuite.clock
     local usage = system.getMemoryUsage and system.getMemoryUsage()
-    while #self.order > 0 do
-      if usage and usage.luaRamAvailable and usage.luaRamAvailable < LUA_RAM_THRESHOLD then
-        local oldest = table.remove(self.order, 1)
-        self.cache[oldest] = nil
-        usage = system.getMemoryUsage()
-      elseif #self.order > LRU_HARD_LIMIT then
-        local oldest = table.remove(self.order, 1)
-        self.cache[oldest] = nil
+    local i = 1
+    while i <= #self.order do
+      local key = self.order[i]
+      if not self.pinned[key] and (
+          (usage and usage.luaRamAvailable and usage.luaRamAvailable < LUA_RAM_THRESHOLD) or
+          #self.order > LRU_HARD_LIMIT
+        ) then
+        table.remove(self.order, i)
+        self.cache[key] = nil
+        usage = system.getMemoryUsage and system.getMemoryUsage() or usage
       else
-        break
+        i = i + 1
       end
     end
   end
@@ -138,14 +136,20 @@ local function LRUCache()
     end
   end
 
+  function self:pin(key)
+    self.pinned[key] = true
+  end
+
+  function self:unpin(key)
+    self.pinned[key] = nil
+  end
+
   return self
 end
 
 local lru_cache = LRUCache()
 
---------------------------------------------------
--- Throttled Compile Queue System
---------------------------------------------------
+-- Compile Queue System
 compile._queue = {}
 compile._queued_map = {}
 
@@ -158,9 +162,7 @@ end
 
 function compile.wakeup()
   local now = rfsuite.clock
-  if (now - compile._startTime) < compile._startupDelay then
-    return
-  end
+  if (now - compile._startTime) < compile._startupDelay then return end
   if #compile._queue > 0 then
     local entry = table.remove(compile._queue, 1)
     compile._queued_map[entry.cache_fname] = nil
@@ -180,17 +182,24 @@ function compile.wakeup()
   end
 end
 
-function compile.loadfile(script)
+-- Enhanced loadfile: supports pin = true or {pin=true}
+function compile.loadfile(script, opts)
   local startTime
-  if logTimings then
-    startTime = rfsuite.clock
+  if logTimings then startTime = rfsuite.clock end
+
+  -- Normalize options
+  if type(opts) == "boolean" then
+    opts = { pin = opts }
+  else
+    opts = opts or {}
   end
 
-  local loader, which
   local cache_fname = cachename(script) .. "c"
-  local cache_key   = cache_fname
+  local cache_key = cache_fname
 
-  loader = lru_cache:get(cache_key)
+  local loader = lru_cache:get(cache_key)
+  local which
+
   if loader then
     which = "in-memory"
   else
@@ -210,6 +219,9 @@ function compile.loadfile(script)
     end
     if loader then
       lru_cache:set(cache_key, loader)
+      if opts.pin then
+        lru_cache:pin(cache_key)
+      end
     end
   end
 
@@ -231,7 +243,7 @@ function compile.require(modname)
   end
 
   local raw_path = modname:gsub("%%.", "/") .. ".lua"
-  local path     = cachename(raw_path)
+  local path = cachename(raw_path)
   local chunk
 
   if not rfsuite.preferences.developer.compile then
@@ -243,6 +255,33 @@ function compile.require(modname)
   local result = chunk()
   package.loaded[modname] = (result == nil) and true or result
   return package.loaded[modname]
+end
+
+-- Helper to unpin script from memory cache
+function compile.unpin(script)
+  local cache_key = cachename(script) .. "c"
+  lru_cache:unpin(cache_key)
+end
+
+-- list all currently pinned cache keys
+function compile.listPinned()
+  local pinnedScripts = {}
+  for key in pairs(lru_cache.pinned) do
+    local fname = key:gsub("%.luac?$", ""):gsub("_", "/")
+    table.insert(pinnedScripts, fname)
+  end
+  return pinnedScripts
+end
+
+-- force clear all in-memory cache, including pinned
+function compile.clearAll()
+  local total = #lru_cache.order
+  lru_cache.cache = {}
+  lru_cache.order = {}
+  lru_cache.pinned = {}
+  if rfsuite and rfsuite.utils then
+    rfsuite.utils.log("Cleared all cached scripts (" .. total .. " evicted)", "info")
+  end
 end
 
 return compile
