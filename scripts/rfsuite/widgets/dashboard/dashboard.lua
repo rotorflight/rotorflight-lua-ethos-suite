@@ -700,6 +700,30 @@ function dashboard.reload_themes(force)
         end
     end
     dashboard.loadAllObjects(boxes)
+
+
+    -- Force full redraw from top
+    firstWakeup = true
+    dashboard._loader_start_time = nil
+    dashboard._hg_cycles = dashboard._hg_cycles_required
+
+    -- Reset rendering state explicitly
+    dashboard._forceFullRepaint = true
+    dashboard.boxRects = {}
+    lastBoxRectsCount = 0
+    lastLoadedBoxCount = 0
+    objectWakeupIndex = 1
+    objectWakeupsPerCycle = nil
+    objectsThreadedWakeupCount = 0
+
+    -- force module.layout to be rendered
+    local mod = loadedStateModules[dashboard.flightmode or "preflight"]
+    if type(mod) == "table" and mod.layout and mod.boxes then
+        log("Manually triggering renderLayout after theme reload", "info")
+        dashboard.renderLayout(nil, mod)
+    end
+
+
 end
 
 
@@ -1074,6 +1098,7 @@ function dashboard.wakeup(widget)
             dashboard._lastMemReport = rfsuite.clock
         end
     end
+
 end
 
 
