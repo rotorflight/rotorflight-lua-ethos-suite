@@ -205,10 +205,7 @@ local function drawBatteryBox(x, y, w, h, percent, gaugeorientation, batterysegm
     end
 end
 
-function render.wakeup(box)
-
-    local telemetry = rfsuite.tasks.telemetry
-    
+function render.wakeup(box, telemetry)
     -- Value extraction
     local source = getParam(box, "source")
     local value, _, dynamicUnit

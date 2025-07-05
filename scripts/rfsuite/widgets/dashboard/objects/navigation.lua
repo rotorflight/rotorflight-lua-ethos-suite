@@ -11,12 +11,15 @@ function wrapper.paint(x, y, w, h, box)
     render.paint(x, y, w, h, box)
 end
 
-function wrapper.wakeup(box)
+function wrapper.wakeup(box, telemetry)
 
     -- Ensure model preferences and telemetry are available
     if not utils.isModelPrefsReady() then
         utils.resetBoxCache(box)
     end
+
+    -- Ensure telemetry is available
+    if not telemetry then return end
 
     -- Wakeup interval control using optional parameter (wakeupinterval)
     if box.wakeupinterval ~= nil then
@@ -48,7 +51,7 @@ function wrapper.wakeup(box)
     end
 
     local render = renders[subtype]
-    render.wakeup(box)
+    render.wakeup(box, telemetry)
 end
 
 function wrapper.dirty(box)

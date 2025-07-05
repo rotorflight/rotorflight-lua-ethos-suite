@@ -70,10 +70,7 @@ function render.dirty(box)
     return false
 end
 
-function render.wakeup(box)
-
-    local telemetry = rfsuite.tasks.telemetry
-    
+function render.wakeup(box, telemetry)
     -- Value extraction
     local object = (getParam(box, "object"))
     local source

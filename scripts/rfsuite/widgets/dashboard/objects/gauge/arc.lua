@@ -100,10 +100,7 @@ local function drawArc(cx, cy, radius, thickness, startAngle, endAngle, color)
     end
 end
 
-function render.wakeup(box)
-
-    local telemetry = rfsuite.tasks.telemetry
-    
+function render.wakeup(box, telemetry)
     -- Value extraction
     local source = getParam(box, "source")
     local value, _, dynamicUnit
