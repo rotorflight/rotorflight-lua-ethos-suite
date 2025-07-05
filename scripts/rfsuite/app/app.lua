@@ -327,9 +327,11 @@ local mspEepromWrite = {
         end
     end,
     errorHandler = function(self)
-        app.triggers.closeSave = true
-        app.audio.playSaveArmed = true
-        app.triggers.showSaveArmedWarning = true
+        if rfsuite.session.isArmed then
+          app.triggers.closeSave = true
+          app.audio.playSaveArmed = true
+          app.triggers.showSaveArmedWarning = true
+        end  
     end,
     simulatorResponse = {}
 }
@@ -355,6 +357,7 @@ function app.settingsSaved()
         -- don't write again if we're already responding to earlier page.write()s
         if app.pageState ~= app.pageStatus.eepromWrite then
             app.pageState = app.pageStatus.eepromWrite
+            app.triggers.closeSave = true
             rfsuite.tasks.msp.mspQueue:add(mspEepromWrite)
         end
     elseif app.pageState ~= app.pageStatus.eepromWrite then
@@ -1104,8 +1107,7 @@ app._uiTasks = {
   function()
     if not app.dialogs.saveDisplay or not app.dialogs.saveWatchDog then return end
     local timeout = tonumber(rfsuite.tasks.msp.protocol.saveTimeout + 5)
-    if (rfsuite.clock - app.dialogs.saveWatchDog) > timeout
-       or (app.dialogs.saveProgressCounter > 120 and rfsuite.tasks.msp.mspQueue:isProcessed()) then
+    if (rfsuite.clock - app.dialogs.saveWatchDog) > timeout or (app.dialogs.saveProgressCounter > 120 and rfsuite.tasks.msp.mspQueue:isProcessed()) then
       app.audio.playTimeout = true
       app.ui.progressDisplaySaveMessage(i18n("app.error_timed_out"))
       app.ui.progressDisplaySaveCloseAllowed(true)
