@@ -46,6 +46,7 @@ function utils.session()
     rfsuite.session.activeProfileLast = nil
     rfsuite.session.activeRateLast = nil
     rfsuite.session.servoCount = nil
+    rfsuite.session.resetMSP = nil
     rfsuite.session.servoOverride = nil
     rfsuite.session.clockSet = nil
     rfsuite.session.tailMode = nil
@@ -855,5 +856,12 @@ function utils.splitVersionStringToNumbers(versionString)
     return parts
 end
 
+function utils.keys(tbl)
+    local keys = {}
+    for k in pairs(tbl) do
+        table.insert(keys, k)
+    end
+    return keys
+end
 
 return utils
