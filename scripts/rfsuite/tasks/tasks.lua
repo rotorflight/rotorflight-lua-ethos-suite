@@ -16,6 +16,12 @@ local tasks, tasksList = {}, {}
 tasks.heartbeat, tasks.init, tasks.wasOn = nil, true, false
 rfsuite.session.telemetryTypeChanged = true
 
+tasks._justInitialized = false
+tasks._initState = "start"
+tasks._initMetadata = nil
+tasks._initKeys = nil
+tasks._initIndex = 1
+
 local ethosVersionGood = nil
 local telemetryCheckScheduler = rfsuite.clock
 local lastTelemetrySensorName, sportSensor, elrsSensor = nil, nil, nil
@@ -79,46 +85,45 @@ end
 
 function tasks.initialize()
     local cacheFile, cachePath = "tasks.lua", "cache/tasks.lua"
-    local taskMetadata
-
     if io.open(cachePath, "r") then
         local ok, cached = pcall(rfsuite.compiler.dofile, cachePath)
         if ok and type(cached) == "table" then
-            taskMetadata = cached
+            tasks._initMetadata = cached
             utils.log("[cache] Loaded task metadata from cache", "info")
         else
             utils.log("[cache] Failed to load tasks cache", "info")
         end
     end
-
-    if not taskMetadata then
-        taskMetadata = tasks.findTasks()
+    if not tasks._initMetadata then
+        local taskPath, taskMetadata = "tasks/", {}
+        for _, dir in pairs(system.listFiles(taskPath)) do
+            if dir ~= "." and dir ~= ".." and not dir:match("%.%a+$") then
+                local initPath = taskPath .. dir .. "/init.lua"
+                local func, err = compiler(initPath)
+                if err then
+                    utils.log("Error loading " .. initPath .. ": " .. err, "info")
+                elseif func then
+                    local tconfig = func()
+                    if type(tconfig) == "table" and tconfig.interval and tconfig.script then
+                        taskMetadata[dir] = {
+                            interval = tconfig.interval,
+                            script = tconfig.script,
+                            linkrequired = tconfig.linkrequired or false,
+                            simulatoronly = tconfig.simulatoronly or false,
+                            spreadschedule = tconfig.spreadschedule or false,
+                            init = initPath
+                        }
+                    end
+                end
+            end
+        end
+        tasks._initMetadata = taskMetadata
         utils.createCacheFile(taskMetadata, cacheFile)
         utils.log("[cache] Created new tasks cache file", "info")
-    else
-        for name, meta in pairs(taskMetadata) do
-            local script = "tasks/" .. name .. "/" .. meta.script
-            local module = assert(compiler(script))(config)
-            tasks[name] = module
-            local interval = meta.interval or 1
-            local offset = taskOffset(name, interval)
-
-            table.insert(tasksList, {
-                name = name,
-                interval = interval,
-                script = meta.script,
-                spreadschedule = meta.spreadschedule,
-                linkrequired = meta.linkrequired or false,
-                simulatoronly = meta.simulatoronly or false,
-                last_run = rfsuite.clock - offset,
-                duration = 0
-            })
-        end
     end
-
-    --tasks.dumpSchedule()
+    tasks._initKeys = utils.keys(tasks._initMetadata)
+    tasks._initState = "loadNextTask"
 end
-
 
 function tasks.findTasks()
     local taskPath, taskMetadata = "tasks/", {}
@@ -222,8 +227,62 @@ function tasks.wakeup()
 
     if tasks.init then
         tasks.init = false
+        tasks._justInitialized = true
         tasks.initialize()
         return
+    end
+
+    if tasks._justInitialized then
+        tasks._justInitialized = false
+        return
+    end
+
+    if tasks._initState == "loadNextTask" then
+        local key = tasks._initKeys[tasks._initIndex]
+        if key then
+            local meta = tasks._initMetadata[key]
+
+            if meta.init then
+                local initFn, err = compiler(meta.init)
+                if initFn then
+                    pcall(initFn)  -- run task's init.lua
+                else
+                    utils.log("[init] Failed to load init for " .. key .. ": " .. (err or "unknown error"), "warn")
+                end
+            end
+
+            local script = "tasks/" .. key .. "/" .. meta.script
+            local module = assert(compiler(script))(config)
+            tasks[key] = module
+
+            local interval = meta.interval or 1
+            local offset = 0
+            if useHybridSpread then
+                local jitter = math.random() * interval
+                offset = jitter % interval
+            end
+
+            table.insert(tasksList, {
+                name = key,
+                interval = interval,
+                script = meta.script,
+                spreadschedule = meta.spreadschedule,
+                linkrequired = meta.linkrequired or false,
+                simulatoronly = meta.simulatoronly or false,
+                last_run = rfsuite.clock - offset,
+                duration = 0
+            })
+
+            tasks._initIndex = tasks._initIndex + 1
+            return  -- only one task initialized per frame
+        else
+            tasks._initState = nil
+            tasks._initMetadata = nil
+            tasks._initKeys = nil
+            tasks._initIndex = 1
+            utils.log("[init] All tasks initialized.", "info")
+            return
+        end
     end
 
     tasks.telemetryCheckScheduler()
