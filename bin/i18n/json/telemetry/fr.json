@@ -85,6 +85,11 @@
       "translation": "Niveau de Carburant",
       "needs_translation": "false"
     },
+    "smartfuel": {
+      "english": "Smart Fuel",
+      "translation": "Smart Fuel",
+      "needs_translation": "true"
+    },
     "rssi": {
       "english": "RSSI",
       "translation": "Signal du Recepteur",

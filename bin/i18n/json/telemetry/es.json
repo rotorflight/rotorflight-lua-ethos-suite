@@ -85,6 +85,11 @@
       "translation": "Nivel de Carga",
       "needs_translation": "false"
     },
+    "smartfuel": {
+      "english": "Smart Fuel",
+      "translation": "Smart Fuel",
+      "needs_translation": "true"
+    },
     "rssi": {
       "english": "RSSI",
       "translation": "RSSI",

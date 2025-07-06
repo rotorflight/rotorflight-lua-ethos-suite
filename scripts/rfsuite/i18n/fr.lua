@@ -396,6 +396,7 @@ return {
       ["settings"] = {
         ["name"] = "Paramètres",
         ["no_themes_available_to_configure"] = "No themes available to configure",
+        ["txt_audio_timer"] = "Timer",
         ["txt_audio_events"] = "Events",
         ["txt_audio_switches"] = "Switches",
         ["txt_iconsize"] = "Icon Size",
@@ -1146,13 +1147,13 @@ return {
       ["governor"] = "Status du Gouverneur",
       ["adj_func"] = "Ajustements Fonctions",
       ["fuel"] = "Niveau de Carburant",
+      ["smartfuel"] = "Smart Fuel",
       ["rssi"] = "Signal du Recepteur",
       ["adj_val"] = "Ajustements Valeurs",
       ["arming_flags"] = "Drapeaux Armements",
       ["current"] = "Courant",
       ["throttle_pct"] = "Pourcentage de Gaz",
       ["consumption"] = "Consommation",
-      ["smartfuel"] = "Smart Fuel",
       ["pid_profile"] = "Profile de PID",
       ["mcu_temp"] = "Temperature Micro Processeur",
       ["armdisableflags"] = "Désactivation Armement"

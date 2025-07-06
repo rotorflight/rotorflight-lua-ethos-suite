@@ -101,6 +101,11 @@
         "translation": "No configurable themes installed on this device",
         "needs_translation": "true"
       },
+      "txt_audio_timer": {
+        "english": "Timer",
+        "translation": "Timer",
+        "needs_translation": "false"
+      },
       "txt_audio_events": {
         "english": "Events",
         "translation": "Events",

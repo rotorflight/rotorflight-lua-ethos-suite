@@ -85,6 +85,11 @@
       "translation": "Charge Level",
       "needs_translation": "false"
     },
+    "smartfuel": {
+      "english": "Smart Fuel",
+      "translation": "Smart Fuel",
+      "needs_translation": "false"
+    },
     "rssi": {
       "english": "RSSI",
       "translation": "RSSI",
