@@ -39,12 +39,22 @@ local function smartfuelCallout(value)
     local smartfuelcallout = tonumber(eventPrefs.smartfuelcallout) or 0
     local thresholds = {}
 
-    if smartfuelcallout == 10 then for i = 100, 10, -10 do table.insert(thresholds, i) end
-    elseif smartfuelcallout == 25 then for i = 100, 25, -25 do table.insert(thresholds, i) end
-    elseif smartfuelcallout == 50 then for _, i in ipairs({100, 50}) do table.insert(thresholds, i) end
-    elseif smartfuelcallout == 20 then for _, i in ipairs({100, 75, 50, 25, 20}) do table.insert(thresholds, i) end
-    else table.insert(thresholds, smartfuelcallout) end
+    -- Unify thresholds logic, including 0 as a special 'default' pattern: 100%, 10%
+    if smartfuelcallout == 0 then
+        for _, i in ipairs({100, 10}) do table.insert(thresholds, i) end
+    elseif smartfuelcallout == 10 then
+        for i = 100, 10, -10 do table.insert(thresholds, i) end
+    elseif smartfuelcallout == 25 then
+        for i = 100, 25, -25 do table.insert(thresholds, i) end
+    elseif smartfuelcallout == 50 then
+        for _, i in ipairs({100, 50}) do table.insert(thresholds, i) end
+    elseif smartfuelcallout == 20 then
+        for _, i in ipairs({100, 75, 50, 25, 20}) do table.insert(thresholds, i) end
+    else
+        table.insert(thresholds, smartfuelcallout)
+    end
 
+    -- 0% logic (repeats, haptic)
     if value <= 0 then
         local now = rfsuite.clock or os.clock()
         local repeats = tonumber(eventPrefs.smartfuelrepeats) or 1
@@ -69,19 +79,18 @@ local function smartfuelCallout(value)
         lastLowFuelRepeatCount = 0
     end
 
-    if smartfuelcallout == 0 then
-        if value <= 10 and not lastSmartfuelAnnounced then
-            rfsuite.utils.playFile("status", "alerts/lowfuel.wav")
-            lastSmartfuelAnnounced = true
-        elseif value > 10 then
-            lastSmartfuelAnnounced = false
-        end
+    -- On first connect, announce the actual % value
+    if lastSmartfuelAnnounced == nil then
+        rfsuite.utils.playFile("status", "alerts/fuel.wav")
+        system.playNumber(math.floor(value + 0.5), UNIT_PERCENT)
+        lastSmartfuelAnnounced = math.floor(value + 0.5)
         return
     end
 
     local calloutValue = nil
+    -- Find the largest threshold less than or equal to value and not previously called out
     for _, t in ipairs(thresholds) do
-        if value <= t and (not lastSmartfuelAnnounced or lastSmartfuelAnnounced > t) then
+        if value <= t and lastSmartfuelAnnounced > t then
             calloutValue = t
             break
         end
@@ -92,11 +101,8 @@ local function smartfuelCallout(value)
         system.playNumber(calloutValue, UNIT_PERCENT)
         lastSmartfuelAnnounced = calloutValue
     end
-
-    if value > (thresholds[1] or 100) then
-        lastSmartfuelAnnounced = nil
-    end
 end
+
 
 local function shouldAlert(key, interval)
     local now = rfsuite.clock or os.clock()
