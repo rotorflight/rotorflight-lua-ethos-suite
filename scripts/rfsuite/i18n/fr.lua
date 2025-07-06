@@ -1152,7 +1152,6 @@ return {
       ["current"] = "Courant",
       ["throttle_pct"] = "Pourcentage de Gaz",
       ["consumption"] = "Consommation",
-      ["smartfuel"] = "Smart Fuel",
       ["pid_profile"] = "Profile de PID",
       ["mcu_temp"] = "Temperature Micro Processeur",
       ["armdisableflags"] = "Désactivation Armement"
