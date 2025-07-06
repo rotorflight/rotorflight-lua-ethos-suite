@@ -46,6 +46,7 @@ function utils.session()
     rfsuite.session.activeProfileLast = nil
     rfsuite.session.activeRateLast = nil
     rfsuite.session.servoCount = nil
+    rfsuite.session.resetMSP = true
     rfsuite.session.servoOverride = nil
     rfsuite.session.clockSet = nil
     rfsuite.session.tailMode = nil
