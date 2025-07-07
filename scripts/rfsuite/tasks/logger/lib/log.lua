@@ -75,8 +75,8 @@ if system:getVersion().simulation == true then
     logs.config.print_interval = 0.025
 end
 
-logs.queue = CircularBuffer(100)      -- Console log queue
-logs.disk_queue = CircularBuffer(200) -- Disk write queue
+logs.queue = CircularBuffer(50)      -- Console log queue
+logs.disk_queue = CircularBuffer(100) -- Disk write queue
 logs.last_print_time = rfsuite.clock
 logs.last_disk_write_time = rfsuite.clock
 
@@ -135,7 +135,7 @@ local function process_console_queue()
             if not entry then break end
 
             -- Deferred heavy work: split and print lines
-            local prefix = logs.config.prefix .. " [" .. entry.lvl .. "] "
+            local prefix = logs.config.prefix 
             local log_entry = prefix .. entry.msg
             local pad = string.rep(" ", #prefix)
             for _, line in ipairs(split_message(log_entry, logs.config.max_line_length, pad)) do
@@ -162,7 +162,6 @@ local function process_disk_queue()
 
                 -- Deferred heavy work: concatenate and write
                 local line = logs.config.prefix
-                            .. " [" .. entry.lvl .. "] "
                             .. entry.msg
                 file:write(line .. "\n")
             end
