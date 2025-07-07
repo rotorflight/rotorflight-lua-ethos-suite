@@ -44,7 +44,7 @@ local function openPage(pageIdx, title, script)
     -- Audio Alerting On/Off
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("Timer Alerting")
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine(i18n("app.modules.settings.timer_alerting"))
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(
         rfsuite.app.formLines[rfsuite.app.formLineCnt], nil,
         function() return config.timeraudioenable or false end,
@@ -64,7 +64,7 @@ local function openPage(pageIdx, title, script)
     -- Timer Elapsed Alert Mode (Choice)
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("Timer Elapsed Alert")
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine(i18n("app.modules.settings.timer_elapsed_alert_mode"))
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(
         rfsuite.app.formLines[rfsuite.app.formLineCnt], nil,
         {
@@ -79,14 +79,14 @@ local function openPage(pageIdx, title, script)
     idxChoice = formFieldCount
 
     -- Pre-timer Alert Options Panel
-    local prePanel = form.addExpansionPanel("Pre-timer Alert Options")
+    local prePanel = form.addExpansionPanel(i18n("app.modules.settings.timer_prealert_options"))
     prePanel:open(config.prealerton or false)
 
     -- Pre-timer Alert On/Off
     formFieldCount = formFieldCount + 1
     idxPre = formFieldCount
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(
-        prePanel:addLine("Pre-timer Alert"), nil,
+        prePanel:addLine(i18n("app.modules.settings.timer_prealert")), nil,
         function() return config.prealerton or false end,
         function(newValue)
             config.prealerton = newValue
@@ -100,7 +100,7 @@ local function openPage(pageIdx, title, script)
     formFieldCount = formFieldCount + 1
     idxPrePeriod = formFieldCount
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(
-        prePanel:addLine("Alert Period"), nil,
+        prePanel:addLine(i18n("app.modules.settings.timer_alert_period")), nil,
         periodChoices,
         function() return config.prealertperiod or 30 end,
         function(newValue) config.prealertperiod = newValue end
@@ -119,14 +119,14 @@ local function openPage(pageIdx, title, script)
     rfsuite.app.formFields[formFieldCount]:enable((config.timeraudioenable or false) and (config.prealerton or false))
 
     -- Post-timer Alert Options Panel
-    local postPanel = form.addExpansionPanel("Post-timer Alert Options")
+    local postPanel = form.addExpansionPanel(i18n("app.modules.settings.timer_postalert_options"))
     postPanel:open(config.postalerton or false)
 
     -- Post-timer Alert On/Off
     formFieldCount = formFieldCount + 1
     idxPost = formFieldCount
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(
-        postPanel:addLine("Post-timer Alert"), nil,
+        postPanel:addLine(i18n("app.modules.settings.timer_postalert")), nil,
         function() return config.postalerton or false end,
         function(newValue)
             config.postalerton = newValue
@@ -140,7 +140,7 @@ local function openPage(pageIdx, title, script)
     formFieldCount = formFieldCount + 1
     idxPostPeriod = formFieldCount
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(
-        postPanel:addLine("Alert Period"), nil,
+        postPanel:addLine(i18n("app.modules.settings.timer_alert_period")), nil,
         periodChoices,
         function() return config.postalertperiod or 60 end,
         function(newValue) config.postalertperiod = newValue end
@@ -151,7 +151,7 @@ local function openPage(pageIdx, title, script)
     formFieldCount = formFieldCount + 1
     idxPostInterval = formFieldCount
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(
-        postPanel:addLine("Alert Interval"), nil,
+        postPanel:addLine(i18n("app.modules.settings.timer_postalert_interval")), nil,
         intervalChoices,
         function() return config.postalertinterval or 10 end,
         function(newValue) config.postalertinterval = newValue end

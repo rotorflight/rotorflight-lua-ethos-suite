@@ -88,10 +88,5 @@
     "english": "ESC Temp",
     "translation": "ESC Temp",
     "needs_translation": "true"
-  },
-  "warning": {
-    "english": "Warning",
-    "translation": "Warning",
-    "needs_translation": "true"
   }
 }
