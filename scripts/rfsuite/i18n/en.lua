@@ -1188,7 +1188,14 @@ return {
       ["no_link"] = "NO LINK",
       ["reset_flight"] = "Reset flight",
       ["reset_flight_ask_title"] = "Reset flight",
-      ["reset_flight_ask_text"] = "Are you sure you want to reset the flight?"
+      ["reset_flight_ask_text"] = "Are you sure you want to reset the flight?",
+      ["voltage"] = "Voltage",
+      ["headspeed"] = "Headspeed",
+      ["max"] = "Max",
+      ["min"] = "Min",
+      ["bec_voltage"] = "BEC Voltage",
+      ["esc_temp"] = "ESC Temp",
+      ["warning"] = "Warning"
     },
     ["governor"] = {
       ["UNKNOWN"] = "UNKNOWN",
