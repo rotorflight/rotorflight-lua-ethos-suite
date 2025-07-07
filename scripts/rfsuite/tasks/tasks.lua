@@ -5,12 +5,7 @@ local compiler = rfsuite.compiler.loadfile
 
 local currentTelemetrySensor
 local tasksPerCycle = 1
-local taskSchedulerPercentage = 0.4
-
-local useHybridSpread = true  -- Set to false for pure hash-only offset
-                              -- Set useHybridSpread = false for repeatable profiling.
-                              -- Set useHybridSpread = true for better real-world spread and smoother CPU load.
-
+local taskSchedulerPercentage = 0.2
 
 local tasks, tasksList = {}, {}
 tasks.heartbeat, tasks.init, tasks.wasOn = nil, true, false
@@ -56,12 +51,9 @@ local function taskOffset(name, interval)
     end
     local base = (hash % (interval * 1000)) / 1000  -- base hash offset
 
-    if useHybridSpread then
-        local jitter = math.random() * interval
-        return (base + jitter) % interval
-    else
-        return base
-    end
+
+    local jitter = math.random() * interval
+    return (base + jitter) % interval
 end
 
 -- Print a human-readable schedule of all tasks
@@ -147,7 +139,9 @@ function tasks.findTasks()
                         utils.log("Failed to load task script " .. scriptPath .. ": " .. loadErr, "warn")
                     end
 
-                    local interval = tconfig.interval or 1
+                    -- add a small drift to de-synchronize fixed intervals
+                    local baseInterval = tconfig.interval or 1
+                    local interval     = baseInterval + (math.random() * 0.1)                    
                     local offset = taskOffset(dir, interval)
 
                     local task = {
@@ -247,7 +241,7 @@ function tasks.wakeup()
                 if initFn then
                     pcall(initFn)  -- run task's init.lua
                 else
-                    utils.log("[init] Failed to load init for " .. key .. ": " .. (err or "unknown error"), "warn")
+                    utils.log("Failed to load init for " .. key .. ": " .. (err or "unknown error"), "info")
                 end
             end
 
@@ -255,12 +249,14 @@ function tasks.wakeup()
             local module = assert(compiler(script))(config)
             tasks[key] = module
 
-            local interval = meta.interval or 1
+            -- add a small drift to de-synchronize fixed intervals
+            local baseInterval = meta.interval or 1
+            local interval     = baseInterval + (math.random() * 0.1)
             local offset = 0
-            if useHybridSpread then
-                local jitter = math.random() * interval
-                offset = jitter % interval
-            end
+ 
+            local jitter = math.random() * interval
+            offset = jitter % interval
+
 
             table.insert(tasksList, {
                 name = key,
@@ -280,7 +276,7 @@ function tasks.wakeup()
             tasks._initMetadata = nil
             tasks._initKeys = nil
             tasks._initIndex = 1
-            utils.log("[init] All tasks initialized.", "info")
+            utils.log("All tasks initialized.", "info")
             return
         end
     end
@@ -318,7 +314,13 @@ function tasks.wakeup()
         if not task.spreadschedule and tasks[task.name].wakeup and canRunTask(task) then
             local elapsed = now - task.last_run
             if elapsed >= task.interval then
-                tasks[task.name].wakeup()
+                local fn = tasks[task.name].wakeup
+                if fn then
+                local ok, err = pcall(fn, tasks[task.name])
+                    if not ok then
+                        print(("Error in task %q wakeup: %s"):format(task.name, err))
+                    end
+                end              
                 task.last_run = now
             end
         end
@@ -351,8 +353,19 @@ function tasks.wakeup()
         local index = math.random(1, #eligibleTasks)
         local task = eligibleTasks[index]
         if tasks[task.name].wakeup then
-            tasks[task.name].wakeup()
-            task.last_run = now
+            local fn = tasks[task.name].wakeup
+            if fn then
+            local ok, err = pcall(fn, tasks[task.name])
+                if not ok then
+                    print(("Error in task %q wakeup: %s"):format(task.name, err))
+                end
+            end
+            -- schedule next run with per-run jitter on spread-scheduled tasks
+            local jitterScale = 0.2
+            -- ±20% of the interval
+            local jitter = (math.random() * 2 - 1) * task.interval * jitterScale
+            task.last_run = now + jitter
+
         end
         table.remove(eligibleTasks, index)
     end
