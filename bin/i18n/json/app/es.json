@@ -305,6 +305,151 @@
         "english": "Feet",
         "translation": "Feet",
         "needs_translation": "true"
+      },
+      "warning": {
+        "english": "Warning",
+        "translation": "Warning",
+        "needs_translation": "true"
+      },
+      "governor_state": {
+        "english": "Governor State",
+        "translation": "Governor State",
+        "needs_translation": "true"
+      },
+      "arming_flags": {
+        "english": "Arming Flags",
+        "translation": "Arming Flags",
+        "needs_translation": "true"
+      },
+      "voltage": {
+        "english": "Voltage",
+        "translation": "Voltage",
+        "needs_translation": "true"
+      },
+      "pid_rates_profile": {
+        "english": "PID/Rates Profile",
+        "translation": "PID/Rates Profile",
+        "needs_translation": "true"
+      },
+      "pid_profile": {
+        "english": "PID Profile",
+        "translation": "PID Profile",
+        "needs_translation": "true"
+      },
+      "rate_profile": {
+        "english": "Rate Profile",
+        "translation": "Rate Profile",
+        "needs_translation": "true"
+      },
+      "esc_temperature": {
+        "english": "ESC Temperature",
+        "translation": "ESC Temperature",
+        "needs_translation": "true"
+      },
+      "esc_threshold": {
+        "english": "Threshold (°)",
+        "translation": "Threshold (°)",
+        "needs_translation": "true"
+      },
+      "bec_voltage": {
+        "english": "BEC Voltage",
+        "translation": "BEC Voltage",
+        "needs_translation": "true"
+      },
+      "bec_threshold": {
+        "english": "Threshold (V)",
+        "translation": "Threshold (V)",
+        "needs_translation": "true"
+      },
+      "fuel": {
+        "english": "Fuel",
+        "translation": "Fuel",
+        "needs_translation": "true"
+      },
+      "fuel_callout_default": {
+        "english": "Default (Only at 10%)",
+        "translation": "Default (Only at 10%)",
+        "needs_translation": "true"
+      },
+      "fuel_callout_10": {
+        "english": "Every 10%",
+        "translation": "Every 10%",
+        "needs_translation": "true"
+      },
+      "fuel_callout_20": {
+        "english": "Every 20%",
+        "translation": "Every 20%",
+        "needs_translation": "true"
+      },
+      "fuel_callout_25": {
+        "english": "Every 25%",
+        "translation": "Every 25%",
+        "needs_translation": "true"
+      },
+      "fuel_callout_50": {
+        "english": "Every 50%",
+        "translation": "Every 50%",
+        "needs_translation": "true"
+      },
+      "fuel_callout_percent": {
+        "english": "Callout %",
+        "translation": "Callout %",
+        "needs_translation": "true"
+      },
+      "fuel_repeats_below": {
+        "english": "Repeats below 0%",
+        "translation": "Repeats below 0%",
+        "needs_translation": "true"
+      },
+      "fuel_haptic_below": {
+        "english": "Haptic below 0%",
+        "translation": "Haptic below 0%",
+        "needs_translation": "true"
+      },
+      "timer_alerting": {
+        "english": "Timer Alerting",
+        "translation": "Timer Alerting",
+        "needs_translation": "true"
+      },
+      "timer_elapsed_alert_mode": {
+        "english": "Timer Elapsed Alert",
+        "translation": "Timer Elapsed Alert",
+        "needs_translation": "true"
+      },
+      "timer_prealert_options": {
+        "english": "Pre-timer Alert Options",
+        "translation": "Pre-timer Alert Options",
+        "needs_translation": "true"
+      },
+      "timer_prealert": {
+        "english": "Pre-timer Alert",
+        "translation": "Pre-timer Alert",
+        "needs_translation": "true"
+      },
+      "timer_alert_period": {
+        "english": "Alert Period",
+        "translation": "Alert Period",
+        "needs_translation": "true"
+      },
+      "timer_postalert_options": {
+        "english": "Post-timer Alert Options",
+        "translation": "Post-timer Alert Options",
+        "needs_translation": "true"
+      },
+      "timer_postalert": {
+        "english": "Post-timer Alert",
+        "translation": "Post-timer Alert",
+        "needs_translation": "true"
+      },
+      "timer_postalert_period": {
+        "english": "Alert Period",
+        "translation": "Alert Period",
+        "needs_translation": "true"
+      },
+      "timer_postalert_interval": {
+        "english": "Alert Interval",
+        "translation": "Alert Interval",
+        "needs_translation": "true"
       }
     },
     "validate_sensors": {

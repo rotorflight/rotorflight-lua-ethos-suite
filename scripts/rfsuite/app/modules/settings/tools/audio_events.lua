@@ -44,9 +44,9 @@ local function openPage(pageIdx, title, script)
 
     -- Arming Flags Panel
     local armEnabled = config.armflags == true
-    local armPanel = form.addExpansionPanel(i18n("Arming Flags"))
+    local armPanel = form.addExpansionPanel(i18n("app.modules.settings.arming_flags"))
     armPanel:open(armEnabled)
-    local armLine = armPanel:addLine(i18n("Arming Flags"))
+    local armLine = armPanel:addLine(i18n("app.modules.settings.arming_flags"))
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(
@@ -57,9 +57,9 @@ local function openPage(pageIdx, title, script)
 
     -- Governor Panel
     local govEnabled = config.governor == true
-    local govPanel = form.addExpansionPanel(i18n("Governor State"))
+    local govPanel = form.addExpansionPanel(i18n("app.modules.settings.governor_state"))
     govPanel:open(govEnabled)
-    local govLine = govPanel:addLine(i18n("Governor State"))
+    local govLine = govPanel:addLine(i18n("app.modules.settings.governor_state"))
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(
@@ -70,9 +70,9 @@ local function openPage(pageIdx, title, script)
 
     -- Voltage Low Alert Panel
     local voltEnabled = config.voltage == true
-    local voltPanel = form.addExpansionPanel(i18n("Voltage"))
+    local voltPanel = form.addExpansionPanel(i18n("app.modules.settings.voltage"))
     voltPanel:open(voltEnabled)
-    local voltLine = voltPanel:addLine(i18n("Voltage"))
+    local voltLine = voltPanel:addLine(i18n("app.modules.settings.voltage"))
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(
@@ -83,9 +83,9 @@ local function openPage(pageIdx, title, script)
 
     -- Rates/PID Profile Panel
     local ratesEnabled = (config.pid_profile == true) or (config.rate_profile == true)
-    local ratesPanel = form.addExpansionPanel(i18n("PID/Rates Profile"))
+    local ratesPanel = form.addExpansionPanel(i18n("app.modules.settings.pid_rates_profile"))
     ratesPanel:open(ratesEnabled)
-    local pidLine = ratesPanel:addLine(i18n("PID Profile"))
+    local pidLine = ratesPanel:addLine(i18n("app.modules.settings.pid_profile"))
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(
@@ -93,7 +93,7 @@ local function openPage(pageIdx, title, script)
         function() return config.pid_profile end,
         function(val) config.pid_profile = val end
     )
-    local rateLine = ratesPanel:addLine(i18n("Rates Profile"))
+    local rateLine = ratesPanel:addLine(i18n("app.modules.settings.rate_profile"))
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(
@@ -104,9 +104,9 @@ local function openPage(pageIdx, title, script)
 
     -- ESC Temp Alert Panel
     local escEnabled = config.temp_esc == true
-    local escPanel = form.addExpansionPanel(i18n("ESC Temperature"))
+    local escPanel = form.addExpansionPanel(i18n("app.modules.settings.esc_temperature"))
     escPanel:open(escEnabled)
-    local escEnable = escPanel:addLine(i18n("ESC Temperature"))
+    local escEnable = escPanel:addLine(i18n("app.modules.settings.esc_temperature"))
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     escFields.enable = formFieldCount
@@ -118,7 +118,7 @@ local function openPage(pageIdx, title, script)
             setFieldEnabled(rfsuite.app.formFields[escFields.thresh], val)
         end
     )
-    local escThresh = escPanel:addLine(i18n("Threshold (°)"))
+    local escThresh = escPanel:addLine(i18n("app.modules.settings.esc_threshold"))
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     escFields.thresh = formFieldCount
@@ -133,9 +133,9 @@ local function openPage(pageIdx, title, script)
 
     -- BEC Voltage Alert Panel
     local becEnabled = config.bec_voltage == true
-    local becPanel = form.addExpansionPanel(i18n("BEC Voltage"))
+    local becPanel = form.addExpansionPanel(i18n("app.modules.settings.bec_voltage"))
     becPanel:open(becEnabled)
-    local becEnable = becPanel:addLine(i18n("BEC Voltage"))
+    local becEnable = becPanel:addLine(i18n("app.modules.settings.bec_voltage"))
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     becFields.enable = formFieldCount
@@ -147,7 +147,7 @@ local function openPage(pageIdx, title, script)
             setFieldEnabled(rfsuite.app.formFields[becFields.thresh], val)
         end
     )
-    local becThresh = becPanel:addLine(i18n("Threshold (V)"))
+    local becThresh = becPanel:addLine(i18n("app.modules.settings.bec_threshold"))
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     becFields.thresh = formFieldCount
@@ -169,9 +169,9 @@ local function openPage(pageIdx, title, script)
 
     -- Smart Fuel Alert Panel
     local fuelEnabled = config.smartfuel == true
-    local fuelPanel = form.addExpansionPanel(i18n("Fuel"))
+    local fuelPanel = form.addExpansionPanel(i18n("app.modules.settings.fuel"))
     fuelPanel:open(fuelEnabled)
-    local fuelEnable = fuelPanel:addLine(i18n("Fuel"))
+    local fuelEnable = fuelPanel:addLine(i18n("app.modules.settings.fuel"))
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     fuelFields.enable = formFieldCount
@@ -186,13 +186,13 @@ local function openPage(pageIdx, title, script)
         end
     )
     local calloutChoices = {
-        {"Default (Only at 10%)", 0},
-        {"Every 10%", 10},
-        {"Every 20%", 20},
-        {"Every 25%", 25},
-        {"Every 50%", 50},
+        {i18n("app.modules.settings.fuel_callout_default"), 0},
+        {i18n("app.modules.settings.fuel_callout_10"), 10},
+        {i18n("app.modules.settings.fuel_callout_20"), 20},
+        {i18n("app.modules.settings.fuel_callout_25"), 25},
+        {i18n("app.modules.settings.fuel_callout_50"), 50},
     }
-    local fuelThresh = fuelPanel:addLine(i18n("Callout %"))
+    local fuelThresh = fuelPanel:addLine(i18n("app.modules.settings.fuel_callout_percent"))
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     fuelFields.callout = formFieldCount
@@ -208,7 +208,7 @@ local function openPage(pageIdx, title, script)
     )
     setFieldEnabled(rfsuite.app.formFields[fuelFields.callout], fuelEnabled)
 
-    local fuelRepeats = fuelPanel:addLine(i18n("Repeats below 0%"))
+    local fuelRepeats = fuelPanel:addLine(i18n("app.modules.settings.fuel_repeats_below"))
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     fuelFields.repeats = formFieldCount
@@ -218,10 +218,10 @@ local function openPage(pageIdx, title, script)
         function(val) config.smartfuelrepeats = val end,
         1
     )
-    rfsuite.app.formFields[formFieldCount]:suffix("x")
+    rfsuite.app.formFields[formFieldCount]:suffix("%")
     setFieldEnabled(rfsuite.app.formFields[fuelFields.repeats], fuelEnabled)
 
-    local fuelHaptic = fuelPanel:addLine(i18n("Haptic below 0%"))
+    local fuelHaptic = fuelPanel:addLine(i18n("app.modules.settings.fuel_haptic_below"))
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     fuelFields.haptic = formFieldCount

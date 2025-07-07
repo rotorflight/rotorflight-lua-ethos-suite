@@ -58,5 +58,35 @@
     "english": "Are you sure you want to reset the flight?",
     "translation": "Are you sure you want to reset the flight?",
     "needs_translation": "false"
+  },
+  "voltage": {
+    "english": "Voltage",
+    "translation": "Voltage",
+    "needs_translation": "false"
+  },
+  "headspeed": {
+    "english": "Headspeed",
+    "translation": "Headspeed",
+    "needs_translation": "false"
+  },
+  "max": {
+    "english": "Max",
+    "translation": "Max",
+    "needs_translation": "false"
+  },
+  "min": {
+    "english": "Min",
+    "translation": "Min",
+    "needs_translation": "false"
+  },
+  "bec_voltage": {
+    "english": "BEC Voltage",
+    "translation": "BEC Voltage",
+    "needs_translation": "false"
+  },
+  "esc_temp": {
+    "english": "ESC Temp",
+    "translation": "ESC Temp",
+    "needs_translation": "false"
   }
 }
