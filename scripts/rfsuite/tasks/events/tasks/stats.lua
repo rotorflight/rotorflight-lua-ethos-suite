@@ -15,8 +15,6 @@
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]]--
 
--- Optimized stats.lua
-
 local arg = { ... }
 local config = arg[1]
 
@@ -27,6 +25,11 @@ local filteredSensors = nil
 local lastTrackTime = 0
 
 local telemetry
+
+-- Added for rpm stat reset-after-delay logic
+local inflightStartTime = nil
+local rpmStatDelay = 15
+local rpmReset = false
 
 local function buildFilteredList()
     filteredSensors = {}
@@ -54,7 +57,11 @@ function stats.wakeup()
         return
     end
 
-    if rfsuite.flightmode.current ~= "inflight" then return end
+    if rfsuite.flightmode.current ~= "inflight" then
+        inflightStartTime = nil
+        rpmReset = false
+        return
+    end
 
     local now = rfsuite.clock
     if now - lastTrackTime < 0.25 then return end
@@ -70,10 +77,25 @@ function stats.wakeup()
         telemetry.sensorStats = {}
     end
 
+    -- Track inflight start and reset rpm stats if required
+    if not inflightStartTime then
+        inflightStartTime = now
+        rpmReset = false
+    end
+
     local statsTable = telemetry.sensorStats
 
     for sensorKey, _ in pairs(filteredSensors) do
         local val = telemetry.getSensor(sensorKey)
+
+        -- Only apply the reset-after-delay to rpm sensor
+        if sensorKey == "rpm" then
+            if not rpmReset and now - inflightStartTime >= rpmStatDelay then
+                statsTable[sensorKey] = nil -- Reset only rpm stats
+                rpmReset = true
+            end
+        end
+
         if val and type(val) == "number" then
             if not statsTable[sensorKey] then
                 statsTable[sensorKey] = {
@@ -100,7 +122,8 @@ function stats.reset()
     fullSensorTable  = nil
     filteredSensors  = nil
     lastTrackTime    = 0
+    inflightStartTime = nil
+    rpmReset = false
 end
 
 return stats
-
