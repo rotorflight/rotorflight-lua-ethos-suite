@@ -396,6 +396,7 @@ return {
       ["settings"] = {
         ["name"] = "Instellingen",
         ["no_themes_available_to_configure"] = "No themes available to configure",
+        ["txt_audio_timer"] = "Timer",
         ["txt_audio_events"] = "Events",
         ["txt_audio_switches"] = "Switches",
         ["txt_iconsize"] = "Icon Size",
@@ -1146,13 +1147,13 @@ return {
       ["governor"] = "Governor Status",
       ["adj_func"] = "Adj (Functies)",
       ["fuel"] = "Laad niveau",
+      ["smartfuel"] = "Smart Fuel",
       ["rssi"] = "RSSI",
       ["adj_val"] = "Adj (Waarde)",
       ["arming_flags"] = "Arming Flags",
       ["current"] = "Stroom",
       ["throttle_pct"] = "Throttle %",
       ["consumption"] = "Verbruik",
-      ["smartfuel"] = "Smart Fuel",
       ["pid_profile"] = "PID Profiel",
       ["mcu_temp"] = "MCU Temperatuur",
       ["armdisableflags"] = "Arming Disable"

@@ -396,6 +396,7 @@ return {
       ["settings"] = {
         ["name"] = "Impostazioni",
         ["no_themes_available_to_configure"] = "No themes available to configure",
+        ["txt_audio_timer"] = "Timer",
         ["txt_audio_events"] = "Events",
         ["txt_audio_switches"] = "Switches",
         ["txt_iconsize"] = "Icon Size",
@@ -1146,13 +1147,13 @@ return {
       ["governor"] = "Stato Governor",
       ["adj_func"] = "Adj (Funzione)",
       ["fuel"] = "Carica Livello",
+      ["smartfuel"] = "Smart Fuel",
       ["rssi"] = "RSSI",
       ["adj_val"] = "Adj (Valore)",
       ["arming_flags"] = "Flags Armo",
       ["current"] = "Corrente",
       ["throttle_pct"] = "Acceleratore %",
       ["consumption"] = "Consumo",
-      ["smartfuel"] = "Smart Fuel",
       ["pid_profile"] = "Profilo PID",
       ["mcu_temp"] = "Temperatura MCU",
       ["armdisableflags"] = "Disattivazione Armo"

@@ -88,12 +88,14 @@ function render.wakeup(box)
         local sensorDef = telemetry.sensorTable and telemetry.sensorTable[source]
         local localize = sensorDef and sensorDef.localizations
 
-        if localize and type(localize) == "function" and value ~= nil then
-            local localizedValue, _, localizedUnit = localize(value)
-            if localizedValue ~= nil then value = localizedValue end
-            if localizedUnit ~= nil then unit = localizedUnit end
-        elseif sensorDef and sensorDef.unit_string then
+        if sensorDef and sensorDef.unit_string then
             unit = sensorDef.unit_string
+        end
+
+        -- Only localize the unit string for display, never the value itself
+        if localize and type(localize) == "function" and value ~= nil then
+            local _, _, localizedUnit = localize(value)
+            if localizedUnit ~= nil then unit = localizedUnit end
         end
     end
 

@@ -185,7 +185,13 @@ local function openPage(pageIdx, title, script)
             setFieldEnabled(rfsuite.app.formFields[fuelFields.haptic], val)
         end
     )
-    local calloutChoices = {{"Off",0},{"10%",10},{"20%",20},{"25%",25},{"50%",50}}
+    local calloutChoices = {
+        {"Default (Only at 10%)", 0},
+        {"Every 10%", 10},
+        {"Every 20%", 20},
+        {"Every 25%", 25},
+        {"Every 50%", 50},
+    }
     local fuelThresh = fuelPanel:addLine(i18n("Callout %"))
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
