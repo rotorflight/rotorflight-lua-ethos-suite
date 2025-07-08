@@ -17,6 +17,7 @@
 
 local telemetry = rfsuite.tasks.telemetry
 local utils = rfsuite.widgets.dashboard.utils
+local i18n = rfsuite.i18n.get
 
 local W, H = lcd.getWindowSize()
 local VERSION = system.getVersion() and system.getVersion().board
@@ -77,7 +78,7 @@ local function buildBoxes()
             thickness = gaugeThickness,
             font = "FONT_XXL",
             arcbgcolor = colorMode.arcbgcolor,
-            title = "VOLTAGE",
+            title = i18n("widgets.dashboard.voltage"):upper(),
             titlepos = "bottom",
             bgcolor = colorMode.bgcolor,
             min = function()
@@ -143,7 +144,7 @@ local function buildBoxes()
             max = 140,
             font = "FONT_XXL",
             arcbgcolor = colorMode.arcbgcolor,
-            title = "FUEL",
+            title = i18n("widgets.dashboard.fuel"):upper(),
             titlepos = "bottom",
             bgcolor = colorMode.bgcolor,
             titlecolor = colorMode.titlecolor,
