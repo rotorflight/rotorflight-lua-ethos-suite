@@ -17,6 +17,7 @@
 
 local telemetry = rfsuite.tasks.telemetry
 local utils = rfsuite.widgets.dashboard.utils
+local i18n = rfsuite.i18n.get
 
 local W, H = lcd.getWindowSize()
 local VERSION = system.getVersion() and system.getVersion().board
@@ -86,7 +87,7 @@ local function buildBoxes()
             thickness = gaugeThickness,
             font = "FONT_XXL",
             arcbgcolor = colorMode.arcbgcolor,
-            title = "VOLTAGE",
+            title = i18n("widgets.dashboard.voltage"):upper(),
             titlepos = "bottom",
             bgcolor = colorMode.bgcolor,
             min = vmin,
@@ -110,7 +111,7 @@ local function buildBoxes()
             max = 140,
             font = "FONT_XXL",
             arcbgcolor = colorMode.arcbgcolor,
-            title = "THROTTLE",
+            title = i18n("widgets.dashboard.throttle"):upper(),
             titlepos = "bottom",
             bgcolor = colorMode.bgcolor,
             titlecolor = colorMode.titlecolor,
@@ -128,13 +129,13 @@ local function buildBoxes()
             type = "text",
             subtype = "governor",
             thresholds = {
-                { value = "DISARMED", textcolor = "red"    },
-                { value = "OFF",      textcolor = "red"    },
-                { value = "IDLE",     textcolor = "yellow" },
-                { value = "SPOOLUP",  textcolor = "blue"   },
-                { value = "RECOVERY", textcolor = "orange" },
-                { value = "ACTIVE",   textcolor = "green"  },
-                { value = "THR-OFF",  textcolor = "red"    },
+                { value = i18n("widgets.governor.DISARMED"), textcolor = "red"    },
+                { value = i18n("widgets.governor.OFF"),      textcolor = "red"    },
+                { value = i18n("widgets.governor.IDLE"),     textcolor = "yellow" },
+                { value = i18n("widgets.governor.SPOOLUP"),  textcolor = "blue"   },
+                { value = i18n("widgets.governor.RECOVERY"), textcolor = "orange" },
+                { value = i18n("widgets.governor.ACTIVE"),   textcolor = "green"  },
+                { value = i18n("widgets.governor.THR-OFF"),  textcolor = "red"    },
             },
             bgcolor = colorMode.bgcolor,
             titlecolor = colorMode.titlecolor,

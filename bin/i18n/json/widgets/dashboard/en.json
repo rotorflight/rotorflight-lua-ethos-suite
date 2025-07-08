@@ -188,5 +188,10 @@
     "english": "Blackbox",
     "translation": "Blackbox",
     "needs_translation": "false"
+  },
+  "throttle": {
+    "english": "Throttle",
+    "translation": "Throttle",
+    "needs_translation": "false"
   }
 }

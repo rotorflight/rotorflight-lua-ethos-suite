@@ -1243,7 +1243,8 @@ return {
       ["flights"] = "Flights",
       ["lq"] = "LQ",
       ["time"] = "Time",
-      ["blackbox"] = "Blackbox"
+      ["blackbox"] = "Blackbox",
+      ["throttle"] = "Throttle"
     },
     ["governor"] = {
       ["UNKNOWN"] = "UNBEKANNT",
