@@ -95,13 +95,13 @@ local function buildBoxes()
         titlecolor = colorMode.titlecolor,
         textcolor = colorMode.titlecolor,
         thresholds = {
-          { value = "DISARMED", textcolor = colorMode.fillcolor },
-          { value = "OFF",      textcolor = colorMode.fillcolor },
-          { value = "IDLE",     textcolor = colorMode.accent    },
-          { value = "SPOOLUP",  textcolor = colorMode.primary   },
-          { value = "RECOVERY", textcolor = colorMode.secondary },
-          { value = "ACTIVE",   textcolor = colorMode.fillcolor },
-          { value = "THR-OFF",  textcolor = colorMode.fillcolor },
+            { value = i18n("widgets.governor.DISARMED"), textcolor = "red"    },
+            { value = i18n("widgets.governor.OFF"),      textcolor = "red"    },
+            { value = i18n("widgets.governor.IDLE"),     textcolor = "yellow" },
+            { value = i18n("widgets.governor.SPOOLUP"),  textcolor = "blue"   },
+            { value = i18n("widgets.governor.RECOVERY"), textcolor = "orange" },
+            { value = i18n("widgets.governor.ACTIVE"),   textcolor = "green"  },
+            { value = i18n("widgets.governor.THR-OFF"),  textcolor = "red"    },
         }
       },
       {

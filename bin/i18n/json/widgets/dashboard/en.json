@@ -203,5 +203,50 @@
     "english": "RSSI Min",
     "translation": "RSSI Min",
     "needs_translation": "false"
+  },
+  "current": {
+    "english": "Current",
+    "translation": "Current",
+    "needs_translation": "false"
+  },
+  "timer": {
+    "english": "Timer",
+    "translation": "Timer",
+    "needs_translation": "false"
+  },
+  "rpm": {
+    "english": "RPM",
+    "translation": "RPM",
+    "needs_translation": "false"
+  },
+  "min_voltage": {
+    "english": "Min Voltage",
+    "translation": "Min Voltage",
+    "needs_translation": "false"
+  },
+  "max_voltage": {
+    "english": "Max Voltage",
+    "translation": "Max Voltage",
+    "needs_translation": "false"
+  },
+  "min_current": {
+    "english": "Min Current",
+    "translation": "Min Current",
+    "needs_translation": "false"
+  },
+  "max_current": {
+    "english": "Max Current",
+    "translation": "Max Current",
+    "needs_translation": "false"
+  },
+  "max_tmcu": {
+    "english": "Max T.MCU",
+    "translation": "Max T.MCU",
+    "needs_translation": "false"
+  },
+  "max_emcu": {
+    "english": "Max E.MCU",
+    "translation": "Max E.MCU",
+    "needs_translation": "false"
   }
 }

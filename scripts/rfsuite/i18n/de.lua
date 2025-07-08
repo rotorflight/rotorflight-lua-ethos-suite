@@ -1246,7 +1246,16 @@ return {
       ["blackbox"] = "Blackbox",
       ["throttle"] = "Throttle",
       ["flight_time"] = "Flight Time",
-      ["rssi_min"] = "RSSI Min"
+      ["rssi_min"] = "RSSI Min",
+      ["current"] = "Current",
+      ["timer"] = "Timer",
+      ["rpm"] = "RPM",
+      ["min_voltage"] = "Min Voltage",
+      ["max_voltage"] = "Max Voltage",
+      ["min_current"] = "Min Current",
+      ["max_current"] = "Max Current",
+      ["max_tmcu"] = "Max T.MCU",
+      ["max_emcu"] = "Max E.MCU"
     },
     ["governor"] = {
       ["UNKNOWN"] = "UNBEKANNT",
