@@ -439,6 +439,13 @@ function render.paint(x, y, w, h, box)
         nil
     )
 
+    -- Ensure paddings are numeric and defaulted
+    c.battadvpaddingleft    = tonumber(c.battadvpaddingleft)    or 0
+    c.battadvpaddingright   = tonumber(c.battadvpaddingright)   or 0
+    c.battadvpaddingtop     = tonumber(c.battadvpaddingtop)     or 0
+    c.battadvpaddingbottom  = tonumber(c.battadvpaddingbottom)  or 0
+    c.battadvgap            = tonumber(c.battadvgap)            or 5
+
     -- battadv info lines
     if c.battadv and box._batteryLines then
         local textColor = c.textcolor
