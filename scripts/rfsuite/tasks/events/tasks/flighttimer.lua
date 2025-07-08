@@ -21,7 +21,6 @@ local triggered = false
 local lastBeepTime = nil
 local preLastBeepTime = nil
 local postStartedAt = nil
-local inflightStartTime = nil
 
 function timer.wakeup()
     local prefs = rfsuite.preferences.timer or {}
@@ -29,10 +28,10 @@ function timer.wakeup()
     local targetSeconds = session and session.modelFlightTime or 0
     local now = rfsuite.clock
 
-    -- Only set inflightStartTime if it has never been set and we enter inflight
-    if rfsuite.flightmode.current == "inflight" and not inflightStartTime then
-        inflightStartTime = now
-    end
+    -- Use time from timer session
+    local timerSession = session and session.timer
+    local elapsed = (timerSession and timerSession.live) or 0
+    local elapsedMode = prefs.elapsedalertmode or 0
 
     if not prefs.timeraudioenable
         or not targetSeconds or targetSeconds == 0
@@ -41,16 +40,16 @@ function timer.wakeup()
         lastBeepTime = nil
         preLastBeepTime = nil
         postStartedAt = nil
-        inflightStartTime = nil
         return
     end
 
-    if not inflightStartTime then
+    -- Only allow pre/post alerting while actually inflight
+    if rfsuite.flightmode.current ~= "inflight" then
+        preLastBeepTime = nil
+        lastBeepTime = nil
+        postStartedAt = nil
         return
     end
-
-    local elapsed = now - inflightStartTime
-    local elapsedMode = prefs.elapsedalertmode or 0
 
     -- PRE-TIMER ALERT LOGIC
     if prefs.prealerton then
@@ -81,7 +80,7 @@ function timer.wakeup()
             elseif elapsedMode == 1 then
                 rfsuite.utils.playFileCommon("multibeep.wav")
             elseif elapsedMode == 2 then
-                rfsuite.utils.playFile("events", "alerts/timerelapsed.wav")
+                rfsuite.utils.playFile("events", "alerts/elapsed.wav")
             elseif elapsedMode == 3 then
                 rfsuite.utils.playFile("status", "alerts/timer.wav")
                 system.playNumber(targetSeconds, UNIT_SECOND)
@@ -115,7 +114,6 @@ function timer.reset()
     lastBeepTime = nil
     preLastBeepTime = nil
     postStartedAt = nil
-    inflightStartTime = nil
 end
 
 return timer

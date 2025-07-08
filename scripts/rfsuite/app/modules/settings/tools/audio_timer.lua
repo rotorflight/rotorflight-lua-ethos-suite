@@ -30,7 +30,7 @@ local function openPage(pageIdx, title, script)
 
     local intervalChoices = {
         { "10s", 10 },
-        { "20s", 20 },
+        { "15s", 15 },
         { "30s", 30 }
     }
     local periodChoices = {
