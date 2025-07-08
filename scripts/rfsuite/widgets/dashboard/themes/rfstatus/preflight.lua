@@ -14,6 +14,7 @@
  *
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]]--
+local i18n = rfsuite.i18n.get
 
 local darkMode = {
     textcolor   = "white",
@@ -51,7 +52,7 @@ local boxes = {
     subtype = "telemetry",
     source = "rssi",
     nosource = "-",
-    title = "LQ",
+    title = i18n("widgets.dashboard.lq"):upper(),
     unit = "dB",
     titlepos = "bottom",
     transform = "floor",
@@ -64,7 +65,7 @@ local boxes = {
     type = "time",
     subtype = "flight",
     titlepos = "bottom",
-    title = "TIMER",
+    title = i18n("widgets.dashboard.timer"):upper(),
     titlecolor = colorMode.textcolor,
     textcolor = colorMode.textcolor,   
   },  
@@ -75,18 +76,18 @@ local boxes = {
     type = "text",
     subtype = "governor",
     nosource = "-",
-    title = "GOVERNOR",
+    title = i18n("widgets.dashboard.governor"):upper(),
     titlepos = "bottom",
     titlecolor = colorMode.textcolor,
     textcolor = colorMode.textcolor,    
     thresholds = {
-        { value = "DISARMED", textcolor = "red"    },
-        { value = "OFF",      textcolor = "red"    },
-        { value = "IDLE",     textcolor = "yellow" },
-        { value = "SPOOLUP",  textcolor = "blue"   },
-        { value = "RECOVERY", textcolor = "orange" },
-        { value = "ACTIVE",   textcolor = "green"  },
-        { value = "THR-OFF",  textcolor = "red"    },
+          { value = i18n("widgets.governor.DISARMED"), textcolor = "red"    },
+          { value = i18n("widgets.governor.OFF"),      textcolor = "red"    },
+          { value = i18n("widgets.governor.IDLE"),     textcolor = "yellow" },
+          { value = i18n("widgets.governor.SPOOLUP"),  textcolor = "blue"   },
+          { value = i18n("widgets.governor.RECOVERY"), textcolor = "orange" },
+          { value = i18n("widgets.governor.ACTIVE"),   textcolor = "green"  },
+          { value = i18n("widgets.governor.THR-OFF"),  textcolor = "red"    },
       }
   },
   {
@@ -98,7 +99,7 @@ local boxes = {
     subtype = "telemetry",
     source = "voltage",
     nosource = "-",
-    title = "VOLTAGE",
+    title = i18n("widgets.dashboard.voltage"):upper(),
     unit = "v",
     titlepos = "bottom",
     titlecolor = colorMode.textcolor,
@@ -165,7 +166,7 @@ local boxes = {
     subtype = "telemetry",
     source = "current",
     nosource = "-",
-    title = "CURRENT",
+    title = i18n("widgets.dashboard.current"):upper(),
     unit = "A",
     titlepos = "bottom",
     titlecolor = colorMode.textcolor,
@@ -180,7 +181,7 @@ local boxes = {
     subtype = "telemetry",
     source = "smartfuel",
     nosource = "-",
-    title = "FUEL",
+    title = i18n("widgets.dashboard.fuel"):upper(),
     unit = "%",
     titlepos = "bottom",
     transform = "floor",
@@ -201,7 +202,7 @@ local boxes = {
     subtype = "telemetry",
     source = "rpm",
     nosource = "-",
-    title = "RPM",
+    title = i18n("widgets.dashboard.rpm"):upper(),
     unit = "rpm",
     titlepos = "bottom",
     transform = "floor",

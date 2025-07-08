@@ -17,6 +17,7 @@
 
 local telemetry = rfsuite.tasks.telemetry
 local utils = rfsuite.widgets.dashboard.utils
+local i18n = rfsuite.i18n.get
 
 local darkMode = {
     textcolor   = "white",
@@ -50,7 +51,7 @@ local boxes = {
         thickness = 25,
         font = "FONT_XXL",
         arcbgcolor = colorMode.arcbgcolor,
-        title = "VOLTAGE",
+        title = i18n("widgets.dashboard.voltage"):upper(),
         titlepos = "bottom",
         bgcolor = colorMode.bgcolor,
         min = function()
@@ -149,7 +150,7 @@ local boxes = {
         max = 140,
         font = "FONT_XXL",
         arcbgcolor = colorMode.arcbgcolor,
-        title = "FUEL",
+        title = i18n("widgets.dashboard.fuel"):upper(),
         titlepos = "bottom",
         bgcolor = colorMode.bgcolor,
         titlecolor = colorMode.titlecolor,
@@ -171,13 +172,13 @@ local boxes = {
         titlecolor = colorMode.textcolor,
         textcolor = colorMode.textcolor,  
         thresholds = {
-            { value = "DISARMED", textcolor = "red"    },
-            { value = "OFF",      textcolor = "red"    },
-            { value = "IDLE",     textcolor = "yellow" },
-            { value = "SPOOLUP",  textcolor = "blue"   },
-            { value = "RECOVERY", textcolor = "orange" },
-            { value = "ACTIVE",   textcolor = "green"  },
-            { value = "THR-OFF",  textcolor = "red"    },
+          { value = i18n("widgets.governor.DISARMED"), textcolor = "red"    },
+          { value = i18n("widgets.governor.OFF"),      textcolor = "red"    },
+          { value = i18n("widgets.governor.IDLE"),     textcolor = "yellow" },
+          { value = i18n("widgets.governor.SPOOLUP"),  textcolor = "blue"   },
+          { value = i18n("widgets.governor.RECOVERY"), textcolor = "orange" },
+          { value = i18n("widgets.governor.ACTIVE"),   textcolor = "green"  },
+          { value = i18n("widgets.governor.THR-OFF"),  textcolor = "red"    },
         }
     },
     {

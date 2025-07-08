@@ -14,7 +14,7 @@
  *
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]]--
-
+local i18n = rfsuite.i18n.get
 
 local telemetry = rfsuite.tasks.telemetry
 
@@ -38,12 +38,12 @@ local layout = {
 }
 
 local boxes = {
-    {col=1, row=1, type="text", subtype="stats", source="voltage", stattype="min", title="MIN VOLTAGE", titlepos="bottom", textcolor=colorMode.textcolor, titlecolor=colorMode.textcolor},
-    {col=2, row=1, type="text", subtype="stats", source="voltage", stattype="max", title="MAX VOLTAGE", titlepos="bottom", textcolor=colorMode.textcolor, titlecolor=colorMode.textcolor},
-    {col=1, row=2, type="text", subtype="stats", source="current", stattype="min", title="MIN CURRENT", titlepos="bottom", transform="floor", textcolor=colorMode.textcolor, titlecolor=colorMode.textcolor},
-    {col=2, row=2, type="text", subtype="stats", source="current", stattype="max", title="MAX CURRENT", titlepos="bottom", transform="floor", textcolor=colorMode.textcolor, titlecolor=colorMode.textcolor},
-    {col=1, row=3, type="text", subtype="stats", source="temp_mcu", stattype="max", title="MAX T.MCU", titlepos="bottom", transform="floor", textcolor=colorMode.textcolor, titlecolor=colorMode.textcolor},
-    {col=2, row=3, type="text", subtype="stats", source="temp_esc", stattype="max", title="MAX E.MCU", titlepos="bottom", transform="floor", textcolor=colorMode.textcolor, titlecolor=colorMode.textcolor}
+    {col=1, row=1, type="text", subtype="stats", source="voltage", stattype="min", title=i18n("widgets.dashboard.min_voltage"):upper(), titlepos="bottom", textcolor=colorMode.textcolor, titlecolor=colorMode.textcolor},
+    {col=2, row=1, type="text", subtype="stats", source="voltage", stattype="max", title=i18n("widgets.dashboard.max_voltage"):upper(), titlepos="bottom", textcolor=colorMode.textcolor, titlecolor=colorMode.textcolor},
+    {col=1, row=2, type="text", subtype="stats", source="current", stattype="min", title=i18n("widgets.dashboard.min_current"):upper(), titlepos="bottom", transform="floor", textcolor=colorMode.textcolor, titlecolor=colorMode.textcolor},
+    {col=2, row=2, type="text", subtype="stats", source="current", stattype="max", title=i18n("widgets.dashboard.max_current"):upper(), titlepos="bottom", transform="floor", textcolor=colorMode.textcolor, titlecolor=colorMode.textcolor},
+    {col=1, row=3, type="text", subtype="stats", source="temp_mcu", stattype="max", title=i18n("widgets.dashboard.max_tmcu"):upper(), titlepos="bottom", transform="floor", textcolor=colorMode.textcolor, titlecolor=colorMode.textcolor},
+    {col=2, row=3, type="text", subtype="stats", source="temp_esc", stattype="max", title=i18n("widgets.dashboard.max_emcu"):upper(), titlepos="bottom", transform="floor", textcolor=colorMode.textcolor, titlecolor=colorMode.textcolor}
 }
 
 
