@@ -24,7 +24,7 @@
 local arg = {...}
 local config = arg[1]
 local cacheExpireTime = 10 -- Time in seconds to expire the caches
-local lastCacheFlushTime = rfsuite.clock -- Store the initial time
+local lastCacheFlushTime = os.clock() -- Store the initial time
 
 local frsky_legacy = {}
 
@@ -260,9 +260,9 @@ function frsky_legacy.wakeup()
     end
 
     -- Check if it's time to expire the caches
-    if rfsuite.clock - lastCacheFlushTime >= cacheExpireTime then
+    if os.clock() - lastCacheFlushTime >= cacheExpireTime then
         clearCaches()
-        lastCacheFlushTime = rfsuite.clock -- Reset the timer
+        lastCacheFlushTime = os.clock() -- Reset the timer
     end
 
     -- Flush sensor list if we kill the sensors

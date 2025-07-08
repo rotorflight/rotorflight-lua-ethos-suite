@@ -98,7 +98,7 @@ function tasks.wakeup()
         tasks.findTasks()
     end
 
-    local now = rfsuite.clock
+    local now = os.clock()
 
     -- Run each task
     for name, task in pairs(tasksList) do

@@ -2,7 +2,7 @@ local line = {}
 local fields = {}
 local i18n = rfsuite.i18n.get
 local formLoaded = false
-local startTestTime = rfsuite.clock
+local startTestTime = os.clock()
 local startTestLength = 0
 
 local testLoader = nil
@@ -26,7 +26,7 @@ end
 
 resetStats()
 
-local RateLimit = rfsuite.clock
+local RateLimit = os.clock()
 local Rate = 0.25 -- how many times per second we can call msp 
 
 local function getMSPPidBandwidth()
@@ -109,7 +109,7 @@ end
 
 local function startTest(duration)
     startTestLength = duration
-    startTestTime = rfsuite.clock
+    startTestTime = os.clock()
 
     testLoader = form.openProgressDialog({
         title = i18n("app.modules.msp_speed.testing"),
@@ -119,7 +119,7 @@ local function startTest(duration)
             testLoader = nil
         end,
         wakeup = function()
-            local now = rfsuite.clock
+            local now = os.clock()
 
             -- kill if we loose link - but not in sim mode
             if rfsuite.session.telemetryState == false and startTest == true and system:getVersion().simulation ~= true then
@@ -147,7 +147,7 @@ local function startTest(duration)
             if rfsuite.tasks.msp.mspQueue:isProcessed() and ((now - RateLimit) >= Rate) then
                 RateLimit = now
                 mspSpeedTestStats['total'] = mspSpeedTestStats['total'] + 1
-                mspQueryStartTime = rfsuite.clock
+                mspQueryStartTime = os.clock()
 
                 if doNextMsp == true then
                     doNextMsp = false
@@ -285,10 +285,10 @@ end
 
 function mspSuccess(self)
     if testLoader then
-        mspQueryTimeCount = mspQueryTimeCount + rfsuite.clock - mspQueryStartTime
+        mspQueryTimeCount = mspQueryTimeCount + os.clock() - mspQueryStartTime
         mspSpeedTestStats['success'] = mspSpeedTestStats['success'] + 1
 
-        local queryTime = rfsuite.clock - mspQueryStartTime
+        local queryTime = os.clock() - mspQueryStartTime
 
         if queryTime ~= 0 then
             if queryTime > maxQueryTime then maxQueryTime = queryTime end

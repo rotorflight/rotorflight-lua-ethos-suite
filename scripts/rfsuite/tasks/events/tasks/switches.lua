@@ -77,7 +77,7 @@ end
 --     repeated announcements.
 --
 -- Dependencies:
---   - `rfsuite.clock`: Current time reference.
+--   - `os.clock()`: Current time reference.
 --   - `switchTable.switches`: Table of switch sensor objects.
 --   - `rfsuite.tasks.telemetry.getSensorSource(key)`: Retrieves the sensor source for a switch.
 --   - `system.playNumber(value, unit, decimals)`: Announces the sensor value.
@@ -89,7 +89,7 @@ end
 --
 -- No return value.
 function switches.wakeup()
-    local now = rfsuite.clock
+    local now = os.clock()
 
     if next(switchTable.switches) == nil then
         initializeSwitches()

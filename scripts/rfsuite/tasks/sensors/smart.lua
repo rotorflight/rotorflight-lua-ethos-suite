@@ -65,7 +65,7 @@ local log
 local tasks 
 
 local interval = 1 
-local lastWake = rfsuite.clock
+local lastWake = os.clock()
 
 local firstWakeup = true
 
@@ -128,7 +128,7 @@ function smart.wakeup()
     if (os.clock() - lastWake) < interval then
         return
     end
-    lastWake = rfsuite.clock
+    lastWake = os.clock()
 
     for name, meta in pairs(smart_sensors) do
         local value

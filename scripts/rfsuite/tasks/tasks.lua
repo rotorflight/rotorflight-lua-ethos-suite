@@ -18,7 +18,7 @@ tasks._initKeys = nil
 tasks._initIndex = 1
 
 local ethosVersionGood = nil
-local telemetryCheckScheduler = rfsuite.clock
+local telemetryCheckScheduler = os.clock()
 local lastTelemetrySensorName, sportSensor, elrsSensor = nil, nil, nil
 
 local usingSimulator = system.getVersion().simulation
@@ -29,7 +29,7 @@ local tlm = system.getSource({ category = CATEGORY_SYSTEM_EVENT, member = TELEME
 function tasks.isTaskActive(name)
     for _, t in ipairs(tasksList) do
         if t.name == name then
-            local age = rfsuite.clock - t.last_run
+            local age = os.clock() - t.last_run
             if name == "msp" then
                 return rfsuite.app.triggers.mspBusy
             elseif name == "callback" then
@@ -58,7 +58,7 @@ end
 
 -- Print a human-readable schedule of all tasks
 function tasks.dumpSchedule()
-  local now = rfsuite.clock
+  local now = os.clock()
   utils.log("====== Task Schedule Dump ======", "info")
   for _, t in ipairs(tasksList) do
     local next_run = t.last_run + t.interval
@@ -151,7 +151,7 @@ function tasks.findTasks()
                         linkrequired = tconfig.linkrequired or false,
                         spreadschedule = tconfig.spreadschedule or false,
                         simulatoronly = tconfig.simulatoronly or false,
-                        last_run = rfsuite.clock - offset,
+                        last_run = os.clock() - offset,
                         duration = 0
                     }
                     table.insert(tasksList, task)
@@ -171,7 +171,7 @@ function tasks.findTasks()
 end
 
 function tasks.telemetryCheckScheduler()
-    local now = rfsuite.clock
+    local now = os.clock()
 
     if now - (telemetryCheckScheduler or 0) >= 0.25 then
         local telemetryState = tlm and tlm:state() or false
@@ -203,7 +203,7 @@ end
 function tasks.active()
     if not tasks.heartbeat then return false end
 
-    local age = rfsuite.clock - tasks.heartbeat
+    local age = os.clock() - tasks.heartbeat
     tasks.wasOn = age >= 2
     if rfsuite.app.triggers.mspBusy or age <= 2 then return true end
 
@@ -211,8 +211,8 @@ function tasks.active()
 end
 
 function tasks.wakeup()
-    rfsuite.clock = os.clock()
-    tasks.heartbeat = rfsuite.clock
+
+    tasks.heartbeat = os.clock()
 
     if ethosVersionGood == nil then
         ethosVersionGood = utils.ethosVersionAtLeast()
@@ -265,7 +265,7 @@ function tasks.wakeup()
                 spreadschedule = meta.spreadschedule,
                 linkrequired = meta.linkrequired or false,
                 simulatoronly = meta.simulatoronly or false,
-                last_run = rfsuite.clock - offset,
+                last_run = os.clock() - offset,
                 duration = 0
             })
 
@@ -283,13 +283,13 @@ function tasks.wakeup()
 
     tasks.telemetryCheckScheduler()
 
-    local now = rfsuite.clock
+    local now = os.clock()
 
     local function canRunTask(task)
         local intervalTicks = task.interval * 20
         local isHighFrequency = intervalTicks < 20  -- Less than 1 second
 
-        local clockDelta = rfsuite.clock - task.last_run
+        local clockDelta = os.clock() - task.last_run
         local graceFactor = 0.25  -- 25% of the interval as grace for low-frequency tasks
 
         local overdue

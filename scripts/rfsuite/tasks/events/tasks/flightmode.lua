@@ -51,7 +51,7 @@ function flightmode.inFlight()
     end
 
     -- Priority 2: Throttle above 0 for sustained time
-    local now = rfsuite.clock
+    local now = os.clock()
     local rx = rfsuite.session.rx
     local throttle = rx and rx.values and rx.values.throttle
 

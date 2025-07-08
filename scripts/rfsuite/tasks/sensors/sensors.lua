@@ -82,7 +82,7 @@ end
 function sensors.wakeup()
 
     if rfsuite.session.resetSensors and not delayPending then
-        delayStartTime = rfsuite.clock
+        delayStartTime = os.clock()
         delayPending = true
         rfsuite.session.resetSensors = false  -- Reset immediately
         log("Delaying sensor wakeup for " .. delayDuration .. " seconds","info")
@@ -90,7 +90,7 @@ function sensors.wakeup()
     end
 
     if delayPending then
-        if rfsuite.clock - delayStartTime >= delayDuration then
+        if os.clock() - delayStartTime >= delayDuration then
             log("Delay complete; resuming sensor wakeup","info")
             delayPending = false
         else

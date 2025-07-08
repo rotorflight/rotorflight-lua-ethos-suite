@@ -34,7 +34,7 @@ function ui.progressDisplay(title, message)
     message = message or i18n("app.msg_loading_from_fbl")
 
     rfsuite.app.dialogs.progressDisplay = true
-    rfsuite.app.dialogs.progressWatchDog = rfsuite.clock
+    rfsuite.app.dialogs.progressWatchDog = os.clock()
     rfsuite.app.dialogs.progress = form.openProgressDialog(title, message)
     rfsuite.app.dialogs.progressCounter = 0
 
@@ -66,7 +66,7 @@ end
 ]]
 function ui.progressDisplaySave(msg)
     rfsuite.app.dialogs.saveDisplay = true
-    rfsuite.app.dialogs.saveWatchDog = rfsuite.clock
+    rfsuite.app.dialogs.saveWatchDog = os.clock()
     if msg then
                  rfsuite.app.dialogs.save = form.openProgressDialog(i18n("app.msg_saving"),msg)   
     else
@@ -92,7 +92,7 @@ function ui.progressDisplayValue(value, message)
         return
     end
 
-    local now = rfsuite.clock
+    local now = os.clock()
     if (now - rfsuite.app.dialogs.progressRateLimit) >= rfsuite.app.dialogs.progressRate then
         rfsuite.app.dialogs.progressRateLimit = now
         rfsuite.app.dialogs.progress:value(value)
@@ -116,7 +116,7 @@ function ui.progressDisplaySaveValue(value, message)
         return
     end
 
-    local now = rfsuite.clock
+    local now = os.clock()
     if (now - rfsuite.app.dialogs.saveRateLimit) >= rfsuite.app.dialogs.saveRate then
         rfsuite.app.dialogs.saveRateLimit = now
         if rfsuite.app.dialogs.save then
@@ -216,7 +216,7 @@ function ui.progressDisplayNoLinkValue(value, message)
         return
     end
 
-    local now = rfsuite.clock
+    local now = os.clock()
     if (now - rfsuite.app.dialogs.nolinkRateLimit) >= rfsuite.app.dialogs.nolinkRate then
         rfsuite.app.dialogs.nolinkRateLimit = now
         rfsuite.app.dialogs.noLink:value(value)

@@ -56,7 +56,7 @@ local function smartfuelCallout(value)
 
     -- 0% logic (repeats, haptic)
     if value <= 0 then
-        local now = rfsuite.clock or os.clock()
+        local now = os.clock() or os.clock()
         local repeats = tonumber(eventPrefs.smartfuelrepeats) or 1
         local haptic = eventPrefs.smartfuelhaptic and true or false
 
@@ -105,12 +105,12 @@ end
 
 
 local function shouldAlert(key, interval)
-    local now = rfsuite.clock or os.clock()
+    local now = os.clock() or os.clock()
     return (not lastAlertState[key]) or (now - (lastEventTimes[key] or 0)) >= interval
 end
 
 local function registerAlert(key, interval)
-    lastEventTimes[key] = rfsuite.clock or os.clock()
+    lastEventTimes[key] = os.clock() or os.clock()
     lastAlertState[key] = true
 end
 
