@@ -951,7 +951,7 @@ app._uiTasks = {
   function()
     if not app.triggers.closeProgressLoader then return end
     local p, q = app.dialogs.progressCounter, rfsuite.tasks.msp.mspQueue
-    if p >= 90 then p = p + 10 else p = p + 25 end
+    if p >= 90 then p = p + 10 else p = p + 15 end
     app.dialogs.progressCounter = p
     if app.dialogs.progress then
       app.ui.progressDisplayValue(p)
