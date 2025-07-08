@@ -17,6 +17,7 @@
 
 local telemetry = rfsuite.tasks.telemetry
 local utils = rfsuite.widgets.dashboard.utils
+local i18n = rfsuite.i18n.get
 
 local W, H = lcd.getWindowSize()
 local VERSION = system.getVersion() and system.getVersion().board
@@ -72,7 +73,7 @@ local function buildBoxes()
             row = 1,
             type = "time",
             subtype = "flight",
-            title = "FLIGHT TIME",
+            title = i18n("widgets.dashboard.flight_time"):upper(),
             titlepos = "bottom",
             font = "FONT_XXL",
             bgcolor = colorMode.bgcolor,
@@ -86,7 +87,7 @@ local function buildBoxes()
         subtype = "telemetry",
         source  = "rssi",
         unit    = "dB",
-        title   = "LQ",
+        title   = i18n("widgets.dashboard.lq"):upper(),
         titlepos= "bottom",
         transform = "floor",
         titlecolor = colorMode.titlecolor,
@@ -103,7 +104,7 @@ local function buildBoxes()
             thickness = gaugeThickness,
             font = "FONT_XXL",
             arcbgcolor = colorMode.arcbgcolor,
-            title = "VOLTAGE",
+            title = i18n("widgets.dashboard.voltage"):upper(),
             titlepos = "bottom",
             bgcolor = colorMode.bgcolor,
             min = function()

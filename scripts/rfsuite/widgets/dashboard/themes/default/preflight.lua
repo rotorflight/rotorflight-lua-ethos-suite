@@ -17,6 +17,7 @@
 
 local telemetry = rfsuite.tasks.telemetry
 local utils = rfsuite.widgets.dashboard.utils
+local i18n = rfsuite.i18n.get
 
 local W, H = lcd.getWindowSize()
 local VERSION = system.getVersion().board
@@ -88,7 +89,7 @@ local function buildBoxes()
         rowspan = 2,
         type    = "time",
         subtype = "flight",
-        title   = "TIME",
+        title   = i18n("widgets.dashboard.time"):upper(),
         titlepos= "bottom",
         titlecolor = colorMode.titlecolor,
         textcolor = colorMode.titlecolor,
@@ -101,7 +102,7 @@ local function buildBoxes()
         rowspan = 2,
         type    = "text",
         subtype = "blackbox",
-        title   = "BLACKBOX",
+        title   = i18n("widgets.dashboard.blackbox"):upper(),
         titlepos= "bottom",
         titlecolor = colorMode.titlecolor,
         textcolor = colorMode.titlecolor,
@@ -114,7 +115,7 @@ local function buildBoxes()
         rowspan = 2,
         type    = "time",
         subtype = "count",
-        title   = "FLIGHTS",
+        title   = i18n("widgets.dashboard.flights"):upper(),
         titlepos= "bottom",
         titlecolor = colorMode.titlecolor,
         textcolor = colorMode.titlecolor,
@@ -128,7 +129,7 @@ local function buildBoxes()
         type    = "text",
         subtype = "telemetry",
         source  = "pid_profile",
-        title   = "PROFILE",
+        title   = i18n("widgets.dashboard.profile"):upper(),
         titlepos= "bottom",
         transform = "floor",
         titlecolor = colorMode.titlecolor,
@@ -143,7 +144,7 @@ local function buildBoxes()
         type    = "text",
         subtype = "telemetry",
         source  = "rate_profile",
-        title   = "RATES",
+        title   = i18n("widgets.dashboard.rates"):upper(),
         titlepos= "bottom",
         transform = "floor",
         titlecolor = colorMode.titlecolor,
@@ -160,7 +161,7 @@ local function buildBoxes()
         subtype = "telemetry",
         source  = "rssi",
         unit    = "dB",
-        title   = "LQ",
+        title   = i18n("widgets.dashboard.lq"):upper(),
         titlepos= "bottom",
         transform = "floor",
         titlecolor = colorMode.titlecolor,
@@ -176,7 +177,7 @@ local function buildBoxes()
         subtype = "arc",
         source  = "voltage",
         fillbgcolor = colorMode.fillbgcolor,
-        title    = "VOLTAGE",
+        title    = i18n("widgets.dashboard.voltage"):upper(),
         font     = "FONT_XL",
         thickness= gaugeThickness,
         titlepos = "bottom",
