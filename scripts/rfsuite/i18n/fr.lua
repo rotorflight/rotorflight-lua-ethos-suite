@@ -1255,7 +1255,12 @@ return {
       ["min_current"] = "Min Current",
       ["max_current"] = "Max Current",
       ["max_tmcu"] = "Max T.MCU",
-      ["max_emcu"] = "Max E.MCU"
+      ["max_emcu"] = "Max E.MCU",
+      ["altitude"] = "Altitude",
+      ["altitude_max"] = "Altitude Max",
+      ["power"] = "Power",
+      ["cell_voltage"] = "Cell Voltage",
+      ["volts_per_cell"] = "Volts per cell"
     },
     ["governor"] = {
       ["UNKNOWN"] = "INCONNU",

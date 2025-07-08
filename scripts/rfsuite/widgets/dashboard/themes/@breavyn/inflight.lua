@@ -15,6 +15,8 @@
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]]--
 
+local i18n = rfsuite.i18n.get
+
 local layout = {
     cols = 12,
     rows = 12,
@@ -74,7 +76,7 @@ local boxes = {
     -- Voltage
     {col = 2, row = 1, colspan = 3, rowspan = 3, 
      type = "text", subtype = "telemetry", source = "voltage",
-     title = "Voltage", titlepos = "top", titlealign = "left", titlefont = "FONT_S", titlepaddingleft = 4,
+     i18n("widgets.dashboard.voltage"), titlepos = "top", titlealign = "left", titlefont = "FONT_S", titlepaddingleft = 4,
      font = "FONT_XL", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.textcolor,
      valuealign = "left", decimals = 1, transform = "floor",
     },
@@ -82,7 +84,7 @@ local boxes = {
     -- BEC Voltage
     {col = 2, row = 4, colspan = 3, rowspan = 3,
      type = "text", subtype = "telemetry", source = "bec_voltage",
-     title = "BEC Voltage", titlepos = "top", titlealign = "left", titlefont = "FONT_S", titlepaddingleft = 4,
+     title = i18n("widgets.dashboard.bec_voltage"), titlepos = "top", titlealign = "left", titlefont = "FONT_S", titlepaddingleft = 4,
      font = "FONT_XL", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.textcolor,
      valuealign = "left", decimals = 1, transform = "floor",
     },
@@ -90,7 +92,7 @@ local boxes = {
     -- ESC Temperature
     {col = 2, row = 7, colspan = 3, rowspan = 3,
      type = "text", subtype = "telemetry", source = "temp_esc",
-     title = "ESC Temperature", titlepos = "top", titlealign = "left", titlefont = "FONT_S", titlepaddingleft = 4,
+     title = i18n("widgets.dashboard.esc_temp"), titlepos = "top", titlealign = "left", titlefont = "FONT_S", titlepaddingleft = 4,
      font = "FONT_XL", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.textcolor,
      valuealign = "left", transform = "floor",
     },
@@ -98,7 +100,7 @@ local boxes = {
     -- Cell Voltage
     {col = 2, row = 10, colspan = 3, rowspan = 3,
      type = "text", subtype = "telemetry", source = "voltage",
-     title = "Cell Voltage", titlepos = "top", titlealign = "left", titlefont = "FONT_S", titlepaddingleft = 4,
+     title = i18n("widgets.dashboard.cell_voltage"), titlepos = "top", titlealign = "left", titlefont = "FONT_S", titlepaddingleft = 4,
      font = "FONT_XL", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.textcolor,
      valuealign = "left",
      transform = liveVoltageToCellVoltage,
@@ -107,7 +109,7 @@ local boxes = {
     -- Power
     {col = 9, row = 1, colspan = 3, rowspan = 3, 
      type = "text", subtype = "telemetry", source = "power", unit = "W",
-     title = "Power", titlepos = "top", titlealign = "right", titlefont = "FONT_S", titlepaddingright = 4, 
+     title = i18n("widgets.dashboard.power"), titlepos = "top", titlealign = "right", titlefont = "FONT_S", titlepaddingright = 4, 
      font = "FONT_XL", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.textcolor,
      valuealign = "right",
     },
@@ -115,7 +117,7 @@ local boxes = {
     -- Current
     {col = 9, row = 4, colspan = 3, rowspan = 3,
      type = "text", "watts", source = "current",
-     title = "Current", titlepos = "top", titlealign = "right", titlefont = "FONT_S", titlepaddingright = 4, 
+     title = i18n("widgets.dashboard.current"), titlepos = "top", titlealign = "right", titlefont = "FONT_S", titlepaddingright = 4, 
      font = "FONT_XL", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.textcolor,
      valuealign = "right",
     },
@@ -123,7 +125,7 @@ local boxes = {
     -- Altitude
     {col = 9, row = 7, colspan = 3, rowspan = 3, 
      type = "text", subtype = "telemetry", source = "altitude",
-     title = "Altitude", titlepos = "top", titlealign = "right", titlefont = "FONT_S", titlepaddingright = 4, 
+     title = i18n("widgets.dashboard.altitude"), titlepos = "top", titlealign = "right", titlefont = "FONT_S", titlepaddingright = 4, 
      font = "FONT_XL", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.textcolor,
      decimals = 1, valuealign = "right", transform = "floor",
     },
@@ -131,7 +133,7 @@ local boxes = {
     -- Throttle
     {col = 9, row = 10, colspan = 3, rowspan = 3,
      type = "text", subtype = "telemetry", source = "throttle_percent",
-     title = "Throttle", titlepos = "top", titlealign = "right", titlefont = "FONT_S", titlepaddingright = 4, 
+     title = i18n("widgets.dashboard.throttle"), titlepos = "top", titlealign = "right", titlefont = "FONT_S", titlepaddingright = 4, 
      font = "FONT_XL", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.textcolor,
      valuealign = "right", transform = "floor",
     },
@@ -172,13 +174,13 @@ local boxes = {
      bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.textcolor,
      valuealign = "top", valuepaddingbottom = 20,
         thresholds = {
-            { value = "DISARMED", textcolor = "red"    },
-            { value = "OFF",      textcolor = "red"    },
-            { value = "IDLE",     textcolor = "blue"   },
-            { value = "SPOOLUP",  textcolor = "blue"   },
-            { value = "RECOVERY", textcolor = "orange" },
-            { value = "ACTIVE",   textcolor = "green"  },
-            { value = "THR-OFF",  textcolor = "red"    },
+            { value = i18n("widgets.governor.DISARMED"), textcolor = "red"    },
+            { value = i18n("widgets.governor.OFF"),      textcolor = "red"    },
+            { value = i18n("widgets.governor.IDLE"),     textcolor = "blue"   },
+            { value = i18n("widgets.governor.SPOOLUP"),  textcolor = "blue"   },
+            { value = i18n("widgets.governor.RECOVERY"), textcolor = "orange" },
+            { value = i18n("widgets.governor.ACTIVE"),   textcolor = "green"  },
+            { value = i18n("widgets.governor.THR-OFF"),  textcolor = "red"    },
         }
     },
 

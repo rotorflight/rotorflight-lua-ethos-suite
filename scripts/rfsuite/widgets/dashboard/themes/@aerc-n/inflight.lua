@@ -15,6 +15,8 @@
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]]--
 
+local i18n = rfsuite.i18n.get
+
 local layout = {
     cols = 6,
     rows = 12,
@@ -74,7 +76,7 @@ local function buildBoxes()
         subtype = "arc",
         source = "rpm",
         arcmax = true,
-        title = "HEADSPEED", 
+        title = i18n("widgets.dashboard.headspeed"):upper(), 
         titlepos = "bottom", 
         min = getThemeValue("rpm_min"),
         max = getThemeValue("rpm_max"),
@@ -109,7 +111,7 @@ local function buildBoxes()
         {col = 3, colspan = 2, row = 3, rowspan = 10,
          type = "gauge", 
          source = "bec_voltage", 
-         title = "VOLTAGE", 
+         title = i18n("widgets.dashboard.voltage"):upper(), 
          titlepos = "bottom", 
          gaugeorientation = "vertical",
          gaugepaddingright = 40,
@@ -136,7 +138,7 @@ local function buildBoxes()
         subtype = "arc",
         source = "throttle_percent",
         arcmax = true,
-        title = "THROTTLE %", 
+        title = i18n("widgets.dashboard.throttle"):upper(), 
         titlepos = "bottom", 
         transform = "floor",
         thickness = 25,

@@ -248,5 +248,30 @@
     "english": "Max E.MCU",
     "translation": "Max E.MCU",
     "needs_translation": "true"
+  },
+  "altitude": {
+    "english": "Altitude",
+    "translation": "Altitude",
+    "needs_translation": "true"
+  },
+  "altitude_max": {
+    "english": "Altitude Max",
+    "translation": "Altitude Max",
+    "needs_translation": "true"
+  },
+  "power": {
+    "english": "Power",
+    "translation": "Power",
+    "needs_translation": "true"
+  },
+  "cell_voltage": {
+    "english": "Cell Voltage",
+    "translation": "Cell Voltage",
+    "needs_translation": "true"
+  },
+  "volts_per_cell": {
+    "english": "Volts per cell",
+    "translation": "Volts per cell",
+    "needs_translation": "true"
   }
 }
