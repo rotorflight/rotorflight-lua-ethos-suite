@@ -1,10 +1,9 @@
-
 import os
 import re
+import argparse
 
 LUA_SOURCE_DIR = "../../scripts/rfsuite/"
 EXCLUDE_DIR = os.path.join(LUA_SOURCE_DIR, "i18n")
-
 ALLOWED_FIELDS = {"title", "value", "label", "text"}
 WHITELIST_VALUES = {
     "bottom", "floor", "white", "green", "red", "orange",
@@ -57,7 +56,12 @@ WHITELIST_VALUES = {
      "crsfLegacy","@AERC","lastvalue","Ay","high"
 }
 
-def scan_for_untranslated(lua_dir):
+def scan_for_untranslated(lua_dir, path_filter=None):
+    """
+    Scan the given directory for untranslated Lua strings.
+    If path_filter is provided, only results from file paths containing the filter are returned.
+    Returns a list of tuples: (file_path, line_number, text).
+    """
     untranslated = []
 
     string_pattern = re.compile(r"(?<!\\)(['\"])(.*?)(?<!\\)\1")
@@ -89,46 +93,65 @@ def scan_for_untranslated(lua_dir):
         if root.startswith(EXCLUDE_DIR):
             continue
         for file in files:
-            if file.endswith(".lua"):
-                full_path = os.path.join(root, file)
-                try:
-                    with open(full_path, "r", encoding="utf-8", errors="ignore") as f:
-                        in_block_comment = False
-                        for lineno, line in enumerate(f, start=1):
-                            stripped = line.strip()
+            if not file.endswith(".lua"):
+                continue
+            full_path = os.path.join(root, file)
+            try:
+                with open(full_path, "r", encoding="utf-8", errors="ignore") as f:
+                    in_block_comment = False
+                    for lineno, line in enumerate(f, start=1):
+                        stripped = line.strip()
 
-                            # block and line comments
-                            if "--[[" in stripped:
-                                in_block_comment = True
-                            if "]]" in stripped and in_block_comment:
-                                in_block_comment = False
-                                continue
-                            if in_block_comment or stripped.startswith("--"):
-                                continue
+                        if "--[[" in stripped:
+                            in_block_comment = True
+                        if "]]" in stripped and in_block_comment:
+                            in_block_comment = False
+                            continue
+                        if in_block_comment or stripped.startswith("--"):
+                            continue
 
-                            if debug_line_pattern.search(line) or type_check_pattern.search(line):
-                                continue
+                        if debug_line_pattern.search(line) or type_check_pattern.search(line):
+                            continue
 
-                            if "{" in line and "}" in line:
-                                for key, text in field_pattern.findall(line):
-                                    text = text.strip()
-                                    if (key in ALLOWED_FIELDS and re.search(r'[a-zA-Z]{2,}', text) and not should_ignore(text)):
-                                        untranslated.append((full_path, lineno, text))
-                                continue
+                        if "{" in line and "}" in line:
+                            for key, text in field_pattern.findall(line):
+                                text = text.strip()
+                                if (key in ALLOWED_FIELDS and re.search(r'[a-zA-Z]{2,}', text)
+                                        and not should_ignore(text)):
+                                    untranslated.append((full_path, lineno, text))
+                            continue
 
-                            for match in string_pattern.findall(line):
-                                text = match[1].strip()
-                                if (re.search(r'[a-zA-Z]{2,}', text) and
+                        for match in string_pattern.findall(line):
+                            text = match[1].strip()
+                            if (re.search(r'[a-zA-Z]{2,}', text) and
                                     not i18n_pattern.search(line) and
                                     not should_ignore(text)):
-                                    untranslated.append((full_path, lineno, text))
-                except Exception as e:
-                    print(f"[ERROR] Failed to read {full_path}: {e}")
+                                untranslated.append((full_path, lineno, text))
+            except Exception as e:
+                print(f"[ERROR] Failed to read {full_path}: {e}")
+
+    # Apply path filter if provided
+    if path_filter:
+        untranslated = [item for item in untranslated if path_filter in item[0]]
 
     return untranslated
 
+
+def main():
+    parser = argparse.ArgumentParser(description="Scan for untranslated Lua strings.")
+    parser.add_argument('-d', '--dir', default=LUA_SOURCE_DIR,
+                        help='Lua source directory to scan')
+    parser.add_argument('-f', '--filter', dest='path_filter',
+                        help='Only include results from file paths containing this string')
+    args = parser.parse_args()
+
+    results = scan_for_untranslated(args.dir, args.path_filter)
+    if args.path_filter:
+        print(f"🔍 Found {len(results)} potentially untranslated strings matching filter '{args.path_filter}':\n")
+    else:
+        print(f"🔍 Found {len(results)} potentially untranslated strings:\n")
+    for file_path, line, text in results:
+        print(f"{file_path}:{line} -> \"{text}\"")
+
 if __name__ == "__main__":
-    results = scan_for_untranslated(LUA_SOURCE_DIR)
-    print(f"🔍 Found {len(results)} potentially untranslated strings:\n")
-    for file, line, text in results:
-        print(f"{file}:{line} -> \"{text}\"")
+    main()
