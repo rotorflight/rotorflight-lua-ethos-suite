@@ -193,5 +193,15 @@
     "english": "Throttle",
     "translation": "Throttle",
     "needs_translation": "false"
+  },
+  "flight_time": {
+    "english": "Flight Time",
+    "translation": "Flight Time",
+    "needs_translation": "false"
+  },
+  "rssi_min": {
+    "english": "RSSI Min",
+    "translation": "RSSI Min",
+    "needs_translation": "false"
   }
 }

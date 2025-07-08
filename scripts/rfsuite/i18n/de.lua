@@ -1244,7 +1244,9 @@ return {
       ["lq"] = "LQ",
       ["time"] = "Time",
       ["blackbox"] = "Blackbox",
-      ["throttle"] = "Throttle"
+      ["throttle"] = "Throttle",
+      ["flight_time"] = "Flight Time",
+      ["rssi_min"] = "RSSI Min"
     },
     ["governor"] = {
       ["UNKNOWN"] = "UNBEKANNT",
