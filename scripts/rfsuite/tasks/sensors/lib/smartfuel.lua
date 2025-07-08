@@ -98,7 +98,7 @@ local function smartFuelCalc()
         fuelStartingPercent = nil
         fuelStartingConsumption = nil
         resetVoltageTracking()
-        stabilizeNotBefore = rfsuite.clock + preStabiliseDelay -- start pre-stabilisation delay on config change
+        stabilizeNotBefore = os.clock() + preStabiliseDelay -- start pre-stabilisation delay on config change
     end
 
     -- Read current voltage
@@ -111,7 +111,7 @@ local function smartFuelCalc()
         return nil
     end
 
-    local now = rfsuite.clock
+    local now = os.clock()
 
     -- Wait for pre-stabilisation delay after config/telemetry is available
    if stabilizeNotBefore and now < stabilizeNotBefore then
@@ -144,7 +144,7 @@ local function smartFuelCalc()
             fuelStartingPercent = nil
             fuelStartingConsumption = nil
             resetVoltageTracking()
-            stabilizeNotBefore = rfsuite.clock + preStabiliseDelay
+            stabilizeNotBefore = os.clock() + preStabiliseDelay
             return nil  -- Ensure upstream caller knows we are resetting
         end
     end    
@@ -196,7 +196,7 @@ local function smartFuelCalc()
         return math.floor(math.min(100, remaining) + 0.5)
     else
         -- If we're resetting or recalculating, don't return a stale value
-        if not voltageStabilised or (stabilizeNotBefore and rfsuite.clock < stabilizeNotBefore) then
+        if not voltageStabilised or (stabilizeNotBefore and os.clock() < stabilizeNotBefore) then
             print("Voltage not stabilised or pre-stabilisation delay active, returning nil")
             return nil
         end

@@ -188,7 +188,7 @@ end
         nil, nil, nil - If no valid reply is received within the time frame.
 ]]
 local function mspPollReply()
-    local startTime = rfsuite.clock
+    local startTime = os.clock()
     -- while loops dont play nice with global clock, so we use os.clock() for timing
     while os.clock() - startTime < 0.05 do
         local mspData = rfsuite.tasks.msp.protocol.mspPoll()

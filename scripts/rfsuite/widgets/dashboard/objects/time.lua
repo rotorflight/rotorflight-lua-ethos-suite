@@ -21,7 +21,7 @@ function wrapper.wakeup(box)
 
     -- Wakeup interval control using optional parameter (wakeupinterval)
     if box.wakeupinterval ~= nil then
-        local now      = rfsuite.clock
+        local now      = os.clock()
 
         -- initialize on first use
         box._wakeupInterval = box._wakeupInterval or interval

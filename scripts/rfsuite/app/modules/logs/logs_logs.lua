@@ -2,9 +2,9 @@ local utils = assert(rfsuite.compiler.loadfile("SCRIPTS:/" .. rfsuite.config.bas
 local i18n = rfsuite.i18n.get
 local triggerOverRide = false
 local triggerOverRideAll = false
-local lastServoCountTime = rfsuite.clock
+local lastServoCountTime = os.clock()
 local enableWakeup = false
-local wakeupScheduler = rfsuite.clock
+local wakeupScheduler = os.clock()
 local currentDisplayMode
 
 local function getCleanModelName()

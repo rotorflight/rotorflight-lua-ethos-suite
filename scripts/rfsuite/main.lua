@@ -21,9 +21,6 @@
 rfsuite = {}
 rfsuite.session = {}
 
--- initialise global clock
-rfsuite.clock = os.clock()
-
 -- initialise legacy font if not already set (ethos 1.6 vs 1.7)
 if not FONT_M then FONT_M = FONT_STD end
 

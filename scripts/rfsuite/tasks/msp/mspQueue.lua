@@ -81,7 +81,7 @@ end
 function MspQueueController:processQueue()
 
     local mspBusyTimeout = 2.0
-    self.mspBusyStart = self.mspBusyStart or rfsuite.clock
+    self.mspBusyStart = self.mspBusyStart or os.clock()
 
     if rfsuite.preferences.developer.logmspQueue then
         local count = #self.messageQueue
@@ -98,7 +98,7 @@ function MspQueueController:processQueue()
     end
 
     -- Timeout watchdog
-    if self.mspBusyStart and (rfsuite.clock - self.mspBusyStart) > mspBusyTimeout then
+    if self.mspBusyStart and (os.clock() - self.mspBusyStart) > mspBusyTimeout then
         rfsuite.utils.log("MSP busy timeout exceeded. Forcing clear.", "warn")
         rfsuite.app.triggers.mspBusy = false
         self.mspBusyStart = nil
@@ -113,7 +113,7 @@ function MspQueueController:processQueue()
     end
 
     if not self.currentMessage then
-        self.currentMessageStartTime = rfsuite.clock
+        self.currentMessageStartTime = os.clock()
         self.currentMessage = popFirstElement(self.messageQueue)
         self.retryCount = 0
     end
@@ -123,10 +123,10 @@ function MspQueueController:processQueue()
 
     if not system:getVersion().simulation then
         -- we process on the actual radio
-        if not self.lastTimeCommandSent or self.lastTimeCommandSent + lastTimeInterval < rfsuite.clock then
+        if not self.lastTimeCommandSent or self.lastTimeCommandSent + lastTimeInterval < os.clock() then
             rfsuite.tasks.msp.protocol.mspWrite(self.currentMessage.command, self.currentMessage.payload or {})
-            self.lastTimeCommandSent = rfsuite.clock
-            self.currentMessageStartTime = rfsuite.clock
+            self.lastTimeCommandSent = os.clock()
+            self.currentMessageStartTime = os.clock()
             self.retryCount = self.retryCount + 1
 
             if rfsuite.app.Page and rfsuite.app.Page.mspRetry then rfsuite.app.Page.mspRetry(self) end
@@ -160,7 +160,7 @@ function MspQueueController:processQueue()
         end    
     end
 
-    if self.currentMessage and rfsuite.clock - self.currentMessageStartTime > (self.currentMessage.timeout or self.timeout) then
+    if self.currentMessage and os.clock() - self.currentMessageStartTime > (self.currentMessage.timeout or self.timeout) then
         if self.currentMessage.errorHandler then self.currentMessage:errorHandler() end
         rfsuite.utils.log("Message timeout exceeded. Flushing queue.","debug")
         self.currentMessage = nil

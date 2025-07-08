@@ -16,7 +16,7 @@
 ]] --
 
 local toolbox = {}
-local wakeupScheduler = rfsuite.clock
+local wakeupScheduler = os.clock()
 local LCD_W, LCD_H
 
 -- List of available sub-widgets (folder names must match these entries)
@@ -164,11 +164,6 @@ end
 -- Delegate wakeup to the chosen sub-widget (once set up)
 function toolbox.wakeup(widget)
 
-    -- ensure we have a clock if background tasks are not active
-    if not rfsuite.tasks.active() then
-        rfsuite.clock = os.clock()  
-    end
-
     -- initialise this - which then enables the bgtask
     if not rfsuite.session.toolbox then
         rfsuite.session.toolbox = {}
@@ -176,7 +171,7 @@ function toolbox.wakeup(widget)
     end
 
     local scheduler = lcd.isVisible() and 0.25 or 5
-    local now = rfsuite.clock
+    local now = os.clock()
 
     --run lcd.invalidate on the schedule provided by scheduler
     if now - (widget.wakeupScheduler or 0) > scheduler then

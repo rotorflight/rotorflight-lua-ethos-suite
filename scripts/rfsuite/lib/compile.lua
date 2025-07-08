@@ -28,7 +28,7 @@
 local compile = {}
 local arg = {...}
 
-compile._startTime = rfsuite.clock
+compile._startTime = os.clock()
 compile._startupDelay = 15 -- seconds before starting any compiles
 
 -- Configuration: expects rfsuite.config to be globally available
@@ -98,7 +98,7 @@ local function LRUCache()
   end
 
   function self:evict_if_low_memory()
-    self._last_evict = rfsuite.clock
+    self._last_evict = os.clock()
     local usage = system.getMemoryUsage and system.getMemoryUsage()
     local i = 1
     while i <= #self.order do
@@ -130,7 +130,7 @@ local function LRUCache()
     end
     self.cache[key] = value
 
-    local now = rfsuite.clock
+    local now = os.clock()
     if now - self._last_evict > EVICT_INTERVAL then
       self:evict_if_low_memory()
     end
@@ -161,7 +161,7 @@ function compile._enqueue(script, cache_path, cache_fname)
 end
 
 function compile.wakeup()
-  local now = rfsuite.clock
+  local now = os.clock()
   if (now - compile._startTime) < compile._startupDelay then return end
   if #compile._queue > 0 then
     local entry = table.remove(compile._queue, 1)
@@ -185,7 +185,7 @@ end
 -- Enhanced loadfile: supports pin = true or {pin=true}
 function compile.loadfile(script, opts)
   local startTime
-  if logTimings then startTime = rfsuite.clock end
+  if logTimings then startTime = os.clock() end
 
   -- Normalize options
   if type(opts) == "boolean" then

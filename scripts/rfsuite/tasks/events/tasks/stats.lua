@@ -63,7 +63,7 @@ function stats.wakeup()
         return
     end
 
-    local now = rfsuite.clock
+    local now = os.clock()
     if now - lastTrackTime < 0.25 then return end
     lastTrackTime = now
 
