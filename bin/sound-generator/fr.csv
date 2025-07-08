@@ -12,7 +12,7 @@ events/alerts/armed.wav,Armé
 events/alerts/disarmed.wav,Désarmé
 events/alerts/profile.wav,Profil
 events/alerts/rates.wav,Taux
-events/alerts/timerelapsed.wav,Timer Elapsed
+events/alerts/elapsed.wav,Timer Elapsed
 events/alerts/becvolt.wav,BEC Voltage Warning
 events/alerts/esctemp.wav,ESC Temperature Warning
 events/gov/off.wav,Gouverneur - Arrêté
