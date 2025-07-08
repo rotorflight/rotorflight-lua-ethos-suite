@@ -120,7 +120,7 @@ end
 
 local function event(widget, category, value, x, y)
     -- if close event detected go to section home page
-    if category == EVT_CLOSE and (value == 0 or value == 35) then
+    if category == EVT_CLOSE and value == 0 or value == 35 then
         rfsuite.app.ui.openPage(
             pageIdx,
             i18n("app.modules.settings.name"),

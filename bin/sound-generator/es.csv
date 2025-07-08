@@ -12,7 +12,7 @@ events/alerts/armed.wav,Armado
 events/alerts/disarmed.wav,Desarmado
 events/alerts/profile.wav,Perfil
 events/alerts/rates.wav,Tasas
-events/alerts/timerelapsed.wav,Timer Elapsed
+events/alerts/elapsed.wav,Timer Elapsed
 events/alerts/becvolt.wav,BEC Voltage Warning
 events/alerts/esctemp.wav,ESC Temperature Warning
 events/gov/off.wav,Govérno - Apagado

@@ -218,7 +218,7 @@ local function openPage(pageIdx, title, script)
         function(val) config.smartfuelrepeats = val end,
         1
     )
-    rfsuite.app.formFields[formFieldCount]:suffix("%")
+    rfsuite.app.formFields[formFieldCount]:suffix("x")
     setFieldEnabled(rfsuite.app.formFields[fuelFields.repeats], fuelEnabled)
 
     local fuelHaptic = fuelPanel:addLine(i18n("app.modules.settings.fuel_haptic_below"))
