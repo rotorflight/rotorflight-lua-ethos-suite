@@ -273,5 +273,10 @@
     "english": "Volts per cell",
     "translation": "Volts per cell",
     "needs_translation": "false"
+  },
+  "warning": {
+    "english": "Warning",
+    "translation": "Warning",
+    "needs_translation": "false"
   }
 }

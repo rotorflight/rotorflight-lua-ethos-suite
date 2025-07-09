@@ -1260,7 +1260,8 @@ return {
       ["altitude_max"] = "Altitude Max",
       ["power"] = "Power",
       ["cell_voltage"] = "Cell Voltage",
-      ["volts_per_cell"] = "Volts per cell"
+      ["volts_per_cell"] = "Volts per cell",
+      ["warning"] = "Warning"
     },
     ["governor"] = {
       ["UNKNOWN"] = "DESCONOCIDO",
