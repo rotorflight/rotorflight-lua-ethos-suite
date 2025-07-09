@@ -15,6 +15,8 @@
  * Note: Some icons have been sourced from https://www.flaticon.com/
 ]]--
 
+local i18n = rfsuite.i18n.get
+
 local layout = {
     cols = 7,
     rows = 11,
@@ -82,8 +84,8 @@ local function buildBoxes()
         {col = 1, row = 9, rowspan = 3,
          type = "text",
          subtype = "telemetry",
-         source = "rate_profile",    
-         title = "RATES",
+         source =  "rate_profile",
+         title = i18n("widgets.dashboard.rates"):upper(),
          titlepos = "bottom",
          transform = "floor",
          bgcolor = colorMode.bgcolor,
@@ -100,7 +102,7 @@ local function buildBoxes()
          type = "text",
          subtype = "telemetry",
          source = "pid_profile",    
-         title = "PROFILE",
+         title = i18n("widgets.dashboard.profile"):upper(),
          titlepos = "bottom",
          transform = "floor",
          bgcolor = colorMode.bgcolor,
@@ -116,7 +118,7 @@ local function buildBoxes()
         {col = 3, row = 9, rowspan = 3, 
          type = "time", 
          subtype = "count", 
-         title = "FLIGHTS", 
+         title = i18n("widgets.dashboard.flights"):upper(), 
          titlepos = "bottom", 
          bgcolor = colorMode.bgcolor,
          titlecolor = colorMode.titlecolor,
@@ -151,7 +153,7 @@ local function buildBoxes()
          type = "gauge", 
          subtype = "arc",
          source = "bec_voltage", 
-         title = "BEC VOLTAGE", 
+         title = i18n("widgets.dashboard.bec_voltage"):upper(), 
          titlepos = "bottom", 
          min = getThemeValue("bec_min"),
          max = getThemeValue("bec_max"), 
@@ -171,7 +173,7 @@ local function buildBoxes()
         {col = 4, row = 9, colspan = 2, rowspan = 3, 
          type = "text", 
          subtype = "blackbox", 
-         title = "BLACKBOX", 
+         title = i18n("widgets.dashboard.blackbox"):upper(), 
          titlepos = "bottom", 
          decimals = 0, 
          bgcolor = colorMode.bgcolor,
@@ -189,7 +191,7 @@ local function buildBoxes()
          type = "gauge", 
          subtype = "arc",
          source = "temp_esc", 
-         title = "ESC TEMP", 
+         title = i18n("widgets.dashboard.esc_temp"):upper(), 
          titlepos = "bottom", 
          min = 0,
          max = getThemeValue("esctemp_max"),
@@ -211,18 +213,18 @@ local function buildBoxes()
         {col = 6, row = 9, colspan = 2, rowspan = 3, 
          type = "text", 
          subtype = "governor", 
-         title = "GOVERNOR", 
+         title   = i18n("widgets.dashboard.governor"):upper(),
          titlepos = "bottom", 
          bgcolor = colorMode.bgcolor,
          titlecolor = colorMode.titlecolor,
          thresholds = {
-            { value = "DISARMED", textcolor = "red"    },
-            { value = "OFF",      textcolor = "red"    },
-            { value = "IDLE",     textcolor = "blue" },
-            { value = "SPOOLUP",  textcolor = "blue"   },
-            { value = "RECOVERY", textcolor = "orange" },
-            { value = "ACTIVE",   textcolor = "green"  },
-            { value = "THR-OFF",  textcolor = "red"    },
+            { value = i18n("widgets.governor.DISARMED"), textcolor = "red"    },
+            { value = i18n("widgets.governor.OFF"),      textcolor = "red"    },
+            { value = i18n("widgets.governor.IDLE"),     textcolor = "blue"   },
+            { value = i18n("widgets.governor.SPOOLUP"),  textcolor = "blue"   },
+            { value = i18n("widgets.governor.RECOVERY"), textcolor = "orange" },
+            { value = i18n("widgets.governor.ACTIVE"),   textcolor = "green"  },
+            { value = i18n("widgets.governor.THR-OFF"),  textcolor = "red"    },
          }
         },
     }
@@ -231,7 +233,6 @@ end
 local function boxes()
     local config =
         rfsuite and rfsuite.session and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences[theme_section]
-    -- Only rebuild if values change
     if boxes_cache == nil or themeconfig ~= config then
         boxes_cache = buildBoxes()
         themeconfig = config
