@@ -81,19 +81,19 @@
     "file": "events/alerts/elapsed.wav",
     "english": "Timer Elapsed",
     "translation": "Timer Elapsed",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "events/alerts/becvolt.wav",
     "english": "BEC Voltage Warning",
     "translation": "BEC Voltage Warning",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "events/alerts/esctemp.wav",
     "english": "ESC Temperature Warning",
     "translation": "ESC Temperature Warning",
-    "needs_translation": false
+    "needs_translation": true
   },
   {
     "file": "events/gov/off.wav",
