@@ -80,91 +80,91 @@
   {
     "file": "events/alerts/elapsed.wav",
     "english": "Timer Elapsed",
-    "translation": "Timer Elapsed",
-    "needs_translation": true
+    "translation": "Transcurrido Timer",
+    "needs_translation": false
   },
   {
     "file": "events/alerts/becvolt.wav",
     "english": "BEC Voltage Warning",
-    "translation": "BEC Voltage Warning",
-    "needs_translation": true
+    "translation": "Advertencia Voltaje BEC",
+    "needs_translation": false
   },
   {
     "file": "events/alerts/esctemp.wav",
     "english": "ESC Temperature Warning",
-    "translation": "ESC Temperature Warning",
-    "needs_translation": true
+    "translation": "Advertencia Temperatura ESC",
+    "needs_translation": false
   },
   {
     "file": "events/gov/off.wav",
     "english": "Governor - Off",
-    "translation": "Govérno - Apagado",
+    "translation": "Govérnor - Apagado",
     "needs_translation": false
   },
   {
     "file": "events/gov/idle.wav",
     "english": "Governor - Idle",
-    "translation": "Govérno - Ralentí",
+    "translation": "Govérnor - Ralentí",
     "needs_translation": false
   },
   {
     "file": "events/gov/spoolup.wav",
     "english": "Governor - Spoolup",
-    "translation": "Govérno - Acelerando",
+    "translation": "Govérnor - Acelerando",
     "needs_translation": false
   },
   {
     "file": "events/gov/recovery.wav",
     "english": "Governor - Recovery",
-    "translation": "Govérno - Recuperación",
+    "translation": "Govérnor - Recuperación",
     "needs_translation": false
   },
   {
     "file": "events/gov/active.wav",
     "english": "Governor - Active",
-    "translation": "Govérno - Activo",
+    "translation": "Govérnor - Activo",
     "needs_translation": false
   },
   {
     "file": "events/gov/thr-off.wav",
     "english": "Governor - Throttle Off",
-    "translation": "Govérno - Acelerador Apagado",
+    "translation": "Govérnor - Acelerador Apagado",
     "needs_translation": false
   },
   {
     "file": "events/gov/lost-hs.wav",
     "english": "Governor - Lost Headspeed",
-    "translation": "Govérno - Pérdida de Velocidad del Rotor",
+    "translation": "Govérnor - Pérdida de Velocidad del Rotor",
     "needs_translation": false
   },
   {
     "file": "events/gov/autorot.wav",
     "english": "Governor - Auto Rotation",
-    "translation": "Govérno - Auto Rotación",
+    "translation": "Govérnor - Auto Rotación",
     "needs_translation": false
   },
   {
     "file": "events/gov/bailout.wav",
     "english": "Governor - Bailout",
-    "translation": "Govérno - Rescate",
+    "translation": "Govérnor - Rescate",
     "needs_translation": false
   },
   {
     "file": "events/gov/disabled.wav",
     "english": "Governor - Disabled",
-    "translation": "Govérno - Deshabilitado",
+    "translation": "Govérnor - Deshabilitado",
     "needs_translation": false
   },
   {
     "file": "events/gov/disarmed.wav",
     "english": "Governor - Disarmed",
-    "translation": "Govérno - Desarmado",
+    "translation": "Govérnor - Desarmado",
     "needs_translation": false
   },
   {
     "file": "events/gov/unknown.wav",
     "english": "Governor - Unknown",
-    "translation": "Govérno - Desconocido",
+    "translation": "Govérnor - Desconocido",
     "needs_translation": false
   },
   {
@@ -344,7 +344,7 @@
   {
     "file": "adjfunctions/gov.wav",
     "english": "Governor",
-    "translation": "Govérno",
+    "translation": "Govérnor",
     "needs_translation": false
   },
   {
