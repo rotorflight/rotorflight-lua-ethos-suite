@@ -2,48 +2,65 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-import csv
-import codecs
 import hashlib
+import json
 import os
 import shutil
 import sys
 import tempfile
+
 try:
     import sox
-except:
+except ImportError:
     print("You need sox for python: python -m pip install sox")
     sys.exit(1)
+
 try:
     from google.cloud import texttospeech
-except:
-    print("You need google text to speech for python: python -m pip install google-cloud-texttospeech")
+except ImportError:
+    print("You need google cloud text-to-speech for python: python -m pip install google-cloud-texttospeech")
     sys.exit(1)
 
 
-def extract_csv(path, base_dir, variant):
-    result = []
-    with codecs.open(path, "r", "utf-8") as f:
-        reader = csv.reader(f)
-        next(reader)
-        for row in reader:
-            if len(row) == 4:
-                rel_path, text, options_text, description = row
-                path = os.path.join("..", "..", "bin", "sound-generator", "soundpack", base_dir, variant, rel_path)
-                options = {}
-                for part in options_text.split(";"):
-                    if part:
-                        key, value = part.split("=")
-                        options[key] = value
-                result.append((path, text, options, description))
-            else:
-                print("Invalid row: %s" % row)
-    return result
+def extract_entries(json_path, base_dir, variant):
+    """
+    Load entries from a JSON file (array of {file, english, translation, needs_translation}).
+    Returns list of tuples: (full_path, text_to_generate, options_dict, None).
+    Logs a warning if translation is missing and uses English text.
+    """
+    with open(json_path, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+
+    entries = []
+    for entry in data:
+        rel_path = entry.get('file')
+        if rel_path is None:
+            print(f"⚠️  Entry missing 'file' field in {json_path}", file=sys.stderr)
+            continue
+
+        # Determine text to generate
+        if entry.get('translation') is None:
+            print(f"⚠️ Missing translation for '{rel_path}' in {os.path.basename(json_path)}; using English.", file=sys.stderr)
+            text = entry.get('english', '')
+        else:
+            text = entry['translation']
+
+        # Build destination file path
+        dest = os.path.join(
+            '..', '..', 'bin', 'sound-generator', 'soundpack',
+            base_dir, variant, rel_path
+        )
+
+        options = {}  # No extra options in JSON format
+        entries.append((dest, text, options, None))
+
+    return entries
 
 
 class NullCache:
     def get(self, *args, **kwargs):
         return False
+
     def push(self, *args, **kwargs):
         pass
 
@@ -59,10 +76,10 @@ class PromptsCache:
         return os.path.join(self.directory, text_hash)
 
     def get(self, filename, text, options):
-        cache = self.path(text, options)
-        if not os.path.exists(cache):
+        cache_path = self.path(text, options)
+        if not os.path.exists(cache_path):
             return False
-        shutil.copy(cache, filename)
+        shutil.copy(cache_path, filename)
         return True
 
     def push(self, filename, text, options):
@@ -71,7 +88,7 @@ class PromptsCache:
 
 class BaseGenerator:
     @staticmethod
-    def sox(input, output, tempo=None, norm=False, silence=False):
+    def sox(input_path, output_path, tempo=None, norm=False, silence=False):
         tfm = sox.Transformer()
         tfm.set_output_format(channels=1, rate=16000, encoding="a-law")
         extra_args = []
@@ -81,7 +98,7 @@ class BaseGenerator:
             extra_args.append("norm")
         if silence:
             extra_args.extend(["reverse", "silence", "1", "0.1", "0.1%", "reverse"])
-        tfm.build(input, output, extra_args=extra_args)
+        tfm.build(input_path, output_path, extra_args=extra_args)
 
 
 class GoogleCloudTextToSpeechGenerator(BaseGenerator):
@@ -95,78 +112,88 @@ class GoogleCloudTextToSpeechGenerator(BaseGenerator):
         )
 
     def cache_prefix(self):
-        return "google-%s" % self.voice_code
+        return f"google-{self.voice_code}"
 
     def build(self, path, text, options):
-        print(path, repr(text), options)
+        print(f"Generating: {path} -> {repr(text)}")
         response = self.client.synthesize_speech(
             input=texttospeech.SynthesisInput(text=text),
             voice=self.voice,
             audio_config=texttospeech.AudioConfig(
                 audio_encoding=texttospeech.AudioEncoding.LINEAR16,
                 sample_rate_hertz=16000,
-                speaking_rate=self.speed * float(options.get("speed", 1.0))
+                speaking_rate=self.speed * float(options.get('speed', 1.0))
             )
         )
-        temp_path = tempfile.mkdtemp()
-        tts_output = os.path.join(temp_path, "output.wav")
-        with open(tts_output, "wb") as out:
-            out.write(response.audio_content)
+        # Write to temp and then process
+        temp_dir = tempfile.mkdtemp()
+        tts_output = os.path.join(temp_dir, "output.wav")
+        with open(tts_output, "wb") as out_f:
+            out_f.write(response.audio_content)
 
         os.makedirs(os.path.dirname(path), exist_ok=True)
         self.sox(tts_output, path, silence=True)
-        shutil.rmtree(temp_path)
+        shutil.rmtree(temp_dir)
 
 
-def build(engine, voice, speed, csv, cache, base_dir, variant, only_missing=False, recreate_cache=False):
-    required_audio_path = os.path.join("..", "..", "scripts", "rfsuite", "audio")
+def build(engine, voice, speed, json_file, cache_dir, base_dir, variant,
+          only_missing=False, recreate_cache=False):
+    # verify required audio path
+    required_audio_path = os.path.join('..', '..', 'scripts', 'rfsuite', 'audio')
     if not os.path.exists(required_audio_path):
         print(f"Error: Required audio path not found: {required_audio_path}")
         return 1
 
-    if engine == "google":
-        generator = GoogleCloudTextToSpeechGenerator(voice, speed)
-    else:
-        print("Unknown engine %s" % engine)
+    if engine != 'google':
+        print(f"Unknown engine '{engine}' (only 'google' supported)")
         return 1
 
-    prompts = extract_csv(csv, base_dir, variant)
-    cache = PromptsCache(os.path.join(cache, generator.cache_prefix())) if cache else NullCache()
+    generator = GoogleCloudTextToSpeechGenerator(voice, speed)
+    cache = PromptsCache(os.path.join(cache_dir, generator.cache_prefix())) if cache_dir else NullCache()
+
+    prompts = extract_entries(json_file, base_dir, variant)
 
     for path, text, options, _ in prompts:
         if only_missing and os.path.exists(path):
             continue
-        elif cache and not recreate_cache and cache.get(path, text, options):
+        if cache and not recreate_cache and cache.get(path, text, options):
             continue
-        else:
-            generator.build(path, text, options)
+        generator.build(path, text, options)
+        if cache:
             cache.push(path, text, options)
 
     return 0
 
 
 def main():
-    if sys.version_info < (3, 0, 0):
-        print("%s requires Python 3. Terminating." % __file__)
+    if sys.version_info < (3, 0):
+        print(f"{__file__} requires Python 3.")
         return 1
 
-    parser = argparse.ArgumentParser(description="Builder for Ethos audio files")
-    parser.add_argument('--csv', action="store", help="CSV input file", required=True)
-    parser.add_argument('--engine', action="store", help="TTS engine", default="gtts")
-    parser.add_argument('--voice', action="store", help="TTS language", required=True)
-    parser.add_argument('--cache', action="store", help="TTS files cache")
-    parser.add_argument('--recreate-cache', action="store_true", help="Recreate files cache")
-    parser.add_argument('--only-missing', action="store_true", help="Generate only missing files")
-    parser.add_argument('--speed', type=float, help="Voice speed", default=1.0)
-    parser.add_argument('--base-dir', action="store", required=True, help="i18n folder name (e.g., en, es)")
-    parser.add_argument('--variant', action="store", required=True, help="i18n variant (e.g., male, female)")
+    parser = argparse.ArgumentParser(description="Builder for Ethos audio files via JSON")
+    parser.add_argument('--json', required=True, help="JSON input file")
+    parser.add_argument('--engine', default="google", help="TTS engine")
+    parser.add_argument('--voice', required=True, help="TTS voice name (e.g., en-US-Wavenet-D)")
+    parser.add_argument('--cache', help="TTS files cache directory")
+    parser.add_argument('--recreate-cache', action="store_true",
+                        help="Recreate files cache")
+    parser.add_argument('--only-missing', action="store_true",
+                        help="Generate only missing files")
+    parser.add_argument('--speed', type=float, default=1.0,
+                        help="Base speaking speed multiplier")
+    parser.add_argument('--base-dir', required=True,
+                        help="Language folder name (e.g., en, fr)")
+    parser.add_argument('--variant', required=True,
+                        help="i18n variant (e.g., male, female)")
     args = parser.parse_args()
 
     return build(
-        args.engine, args.voice, args.speed, args.csv, args.cache,
-        args.base_dir, args.variant, args.only_missing, args.recreate_cache
+        args.engine, args.voice, args.speed,
+        args.json, args.cache,
+        args.base_dir, args.variant,
+        args.only_missing, args.recreate_cache
     )
 
 
 if __name__ == "__main__":
-    exit(main())
+    sys.exit(main())

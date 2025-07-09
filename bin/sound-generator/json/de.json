@@ -1,0 +1,470 @@
+[
+  {
+    "file": "app/timeout.wav",
+    "english": "Timed out",
+    "translation": "Zeitüberschreitung",
+    "needs_translation": false
+  },
+  {
+    "file": "app/powercycleesc.wav",
+    "english": "Please power cycle the speed controller",
+    "translation": "Bitte den Motorregler aus- und wieder einschalten",
+    "needs_translation": false
+  },
+  {
+    "file": "app/soverideen.wav",
+    "english": "Servo overide - enabled",
+    "translation": "Servo-Übersteuerung - aktiviert",
+    "needs_translation": false
+  },
+  {
+    "file": "app/soveridedis.wav",
+    "english": "Servo overide - disabled",
+    "translation": "Servo-Übersteuerung - deaktiviert",
+    "needs_translation": false
+  },
+  {
+    "file": "app/eraseflash.wav",
+    "english": "Erasing Data Flash",
+    "translation": "Datenspeicher wird gelöscht",
+    "needs_translation": false
+  },
+  {
+    "file": "app/moverideen.wav",
+    "english": "Mixer overide - enabled",
+    "translation": "Mischer-Übersteuerung - aktiviert",
+    "needs_translation": false
+  },
+  {
+    "file": "app/moveridedis.wav",
+    "english": "Mixer overide - disabled",
+    "translation": "Mischer-Übersteuerung - deaktiviert",
+    "needs_translation": false
+  },
+  {
+    "file": "events/alerts/lowvoltage.wav",
+    "english": "Low Voltage",
+    "translation": "Niedrige Spannung",
+    "needs_translation": false
+  },
+  {
+    "file": "events/alerts/lowfuel.wav",
+    "english": "Low Fuel",
+    "translation": "Wenig Treibstoff",
+    "needs_translation": false
+  },
+  {
+    "file": "events/alerts/armed.wav",
+    "english": "Armed",
+    "translation": "Scharfgeschaltet",
+    "needs_translation": false
+  },
+  {
+    "file": "events/alerts/disarmed.wav",
+    "english": "Disarmed",
+    "translation": "Ausgeschaltet",
+    "needs_translation": false
+  },
+  {
+    "file": "events/alerts/profile.wav",
+    "english": "Profile",
+    "translation": "Profil",
+    "needs_translation": false
+  },
+  {
+    "file": "events/alerts/rates.wav",
+    "english": "Rates",
+    "translation": "Raten",
+    "needs_translation": false
+  },
+  {
+    "file": "events/alerts/elapsed.wav",
+    "english": "Timer Elapsed",
+    "translation": "Timer Elapsed",
+    "needs_translation": true
+  },
+  {
+    "file": "events/alerts/becvolt.wav",
+    "english": "BEC Voltage Warning",
+    "translation": "BEC Voltage Warning",
+    "needs_translation": true
+  },
+  {
+    "file": "events/alerts/esctemp.wav",
+    "english": "ESC Temperature Warning",
+    "translation": "ESC Temperature Warning",
+    "needs_translation": true
+  },
+  {
+    "file": "events/gov/off.wav",
+    "english": "Governor - Off",
+    "translation": "Drehzahlregler - Aus",
+    "needs_translation": false
+  },
+  {
+    "file": "events/gov/idle.wav",
+    "english": "Governor - Idle",
+    "translation": "Drehzahlregler - Leerlauf",
+    "needs_translation": false
+  },
+  {
+    "file": "events/gov/spoolup.wav",
+    "english": "Governor - Spoolup",
+    "translation": "Drehzahlregler - Hochlauf",
+    "needs_translation": false
+  },
+  {
+    "file": "events/gov/recovery.wav",
+    "english": "Governor - Recovery",
+    "translation": "Drehzahlregler - Wiederherstellung",
+    "needs_translation": false
+  },
+  {
+    "file": "events/gov/active.wav",
+    "english": "Governor - Active",
+    "translation": "Drehzahlregler - Aktiv",
+    "needs_translation": false
+  },
+  {
+    "file": "events/gov/thr-off.wav",
+    "english": "Governor - Throttle Off",
+    "translation": "Drehzahlregler - Gas aus",
+    "needs_translation": false
+  },
+  {
+    "file": "events/gov/lost-hs.wav",
+    "english": "Governor - Lost Headspeed",
+    "translation": "Drehzahlregler - Kopfgeschwindigkeit nicht verfügbar",
+    "needs_translation": false
+  },
+  {
+    "file": "events/gov/autorot.wav",
+    "english": "Governor - Auto Rotation",
+    "translation": "Drehzahlregler - Autorotation",
+    "needs_translation": false
+  },
+  {
+    "file": "events/gov/bailout.wav",
+    "english": "Governor - Bailout",
+    "translation": "Drehzahlregler - Rettung",
+    "needs_translation": false
+  },
+  {
+    "file": "events/gov/disabled.wav",
+    "english": "Governor - Disabled",
+    "translation": "Drehzahlregler - Deaktiviert",
+    "needs_translation": false
+  },
+  {
+    "file": "events/gov/disarmed.wav",
+    "english": "Governor - Disarmed",
+    "translation": "Drehzahlregler - Ausgeschaltet",
+    "needs_translation": false
+  },
+  {
+    "file": "events/gov/unknown.wav",
+    "english": "Governor - Unknown",
+    "translation": "Drehzahlregler - Unbekannt",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/pitch.wav",
+    "english": "Pitch",
+    "translation": "Nick",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/roll.wav",
+    "english": "Roll",
+    "translation": "Rollen",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/yaw.wav",
+    "english": "Yaw",
+    "translation": "Gieren",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/rc.wav",
+    "english": "RC",
+    "translation": "RC",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/rate.wav",
+    "english": "Rate",
+    "translation": "Rate",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/p.wav",
+    "english": "P",
+    "translation": "P",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/i.wav",
+    "english": "I",
+    "translation": "I",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/d.wav",
+    "english": "D",
+    "translation": "D",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/f.wav",
+    "english": "F",
+    "translation": "F",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/o.wav",
+    "english": "O",
+    "translation": "O",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/gain.wav",
+    "english": "Gain",
+    "translation": "Verstärkung",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/cw.wav",
+    "english": "CW",
+    "translation": "CW",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/ccw.wav",
+    "english": "CCW",
+    "translation": "CCW",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/cyclic.wav",
+    "english": "Cyclic",
+    "translation": "Zyklisch",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/ff.wav",
+    "english": "Feed Forward",
+    "translation": "Voraussteuerung",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/collective.wav",
+    "english": "Collective",
+    "translation": "Kollektiv",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/dyn.wav",
+    "english": "Dynamic",
+    "translation": "Dynamisch",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/decay.wav",
+    "english": "Decay",
+    "translation": "Abklingen",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/gyro.wav",
+    "english": "Gyro",
+    "translation": "Kreisel",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/cutoff.wav",
+    "english": "Cut Off",
+    "translation": "Abschaltung",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/dterm.wav",
+    "english": "d term",
+    "translation": "D-Term",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/rescue.wav",
+    "english": "Rescue",
+    "translation": "Rettung",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/climb.wav",
+    "english": "Climb",
+    "translation": "Steigen",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/hover.wav",
+    "english": "Hover",
+    "translation": "Schweben",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/alt.wav",
+    "english": "Altitude",
+    "translation": "Höhe",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/angle.wav",
+    "english": "Angle",
+    "translation": "Winkel",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/level.wav",
+    "english": "Level",
+    "translation": "Level",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/horizon.wav",
+    "english": "horizon",
+    "translation": "Horizont",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/acro.wav",
+    "english": "Acro",
+    "translation": "Akro",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/gov.wav",
+    "english": "Governor",
+    "translation": "Regler",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/crossc.wav",
+    "english": "Cross Coupling",
+    "translation": "Kreuzkopplung",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/acc.wav",
+    "english": "Accelerometer",
+    "translation": "Beschleunigungssensor",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/trim.wav",
+    "english": "Trim",
+    "translation": "Trimmen",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/setpoint.wav",
+    "english": "Setpoint",
+    "translation": "Sollwert",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/precomp.wav",
+    "english": "Precomp",
+    "translation": "Vorkompensation",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/inertia.wav",
+    "english": "Inertia",
+    "translation": "Trägheit",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/boost.wav",
+    "english": "Boost",
+    "translation": "Verstärkung",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/filter.wav",
+    "english": "Filter",
+    "translation": "Filter",
+    "needs_translation": false
+  },
+  {
+    "file": "adjfunctions/deadband.wav",
+    "english": "Deadband",
+    "translation": "Totzone",
+    "needs_translation": false
+  },
+  {
+    "file": "status/alerts/current.wav",
+    "english": "Current",
+    "translation": "Stroom",
+    "needs_translation": false
+  },
+  {
+    "file": "status/alerts/esc.wav",
+    "english": "Esc Temperature",
+    "translation": "Esc Temperatuur",
+    "needs_translation": false
+  },
+  {
+    "file": "status/alerts/mcu.wav",
+    "english": "MCU Temperature",
+    "translation": "MCU Temperatuur",
+    "needs_translation": false
+  },
+  {
+    "file": "status/alerts/fuel.wav",
+    "english": "Fuel",
+    "translation": "Brandstof",
+    "needs_translation": false
+  },
+  {
+    "file": "status/alerts/headspeed.wav",
+    "english": "Head Speed",
+    "translation": "Rotortoerental",
+    "needs_translation": false
+  },
+  {
+    "file": "status/alerts/lowfuel.wav",
+    "english": "Low Fuel",
+    "translation": "Laag brandstof",
+    "needs_translation": false
+  },
+  {
+    "file": "status/alerts/lowvoltage.wav",
+    "english": "Low Voltage",
+    "translation": "Laag Voltage",
+    "needs_translation": false
+  },
+  {
+    "file": "status/alerts/lq.wav",
+    "english": "Link Quality",
+    "translation": "Link kwaliteit",
+    "needs_translation": false
+  },
+  {
+    "file": "status/alerts/remaining.wav",
+    "english": "remaining",
+    "translation": "Over",
+    "needs_translation": false
+  },
+  {
+    "file": "status/alerts/timer.wav",
+    "english": "timer",
+    "translation": "timer",
+    "needs_translation": false
+  },
+  {
+    "file": "status/alerts/voltage.wav",
+    "english": "voltage",
+    "translation": "voltage",
+    "needs_translation": false
+  }
+]
