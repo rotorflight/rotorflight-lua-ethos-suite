@@ -154,7 +154,12 @@ local function smartFuelCalc()
         bc.batteryCellCount, bc.batteryCapacity, bc.consumptionWarningPercentage,
         bc.vbatmaxcellvoltage, bc.vbatmincellvoltage, bc.vbatfullcellvoltage
 
-    if reserve > 80 or reserve < 0 then reserve = 20 end
+    -- Clamp reserve to allowed range for safety
+    if reserve > 60 then
+        reserve = 35
+    elseif reserve < 15 then
+        reserve = 35
+    end
 
     if packCapacity < 10 or cellCount == 0 or maxCellV <= minCellV or fullCellV <= 0 then
         fuelStartingPercent = nil
