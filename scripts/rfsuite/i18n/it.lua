@@ -93,7 +93,7 @@ return {
       ["tbl_alwayson"] = "Attivo",
       ["throttle_min"] = "Valore Minimo gas",
       ["tbl_disabled"] = "Disabilitato",
-      ["tbl_auto"] = "Auto",
+      ["tbl_auto"] = "Automatique",
       ["starting_torque"] = "Coppia iniziale per il motore",
       ["cell_count"] = "Numero di celle nella batteria",
       ["motor_erpm_max"] = "RPM Massimi",
@@ -247,7 +247,7 @@ return {
       ["tbl_reverse"] = "Inverti"
     },
     ["PILOT_CONFIG"] = {
-      ["model_param1_value"] = "Set this to the expected flight time in seconds.  The transmitter will beep when the flight time is reached."
+      ["model_param1_value"] = "Reglez cette valeur sur la duree de vol prevue, en secondes. La radiocommande emettra un bip lorsque cette duree sera atteinte."
     },
     ["BATTERY_CONFIG"] = {
       ["vbatmincellvoltage"] = "La tensione minima per cella prima che scatti l'allarme di bassa tensione.",

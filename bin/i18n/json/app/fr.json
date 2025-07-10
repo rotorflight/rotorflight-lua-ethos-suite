@@ -382,12 +382,12 @@
         "needs_translation": "false"
       },
       "fuel_callout_25": {
-        "english": "Chaque 25%",
+        "english": "Every 25%",
         "translation": "Every 25%",
         "needs_translation": "false"
       },
       "fuel_callout_50": {
-        "english": "Chaque 50%",
+        "english": "Every 50%",
         "translation": "Every 50%",
         "needs_translation": "false"
       },
