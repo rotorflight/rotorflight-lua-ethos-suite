@@ -79,7 +79,7 @@ return {
     boxes = boxes,
     wakeup = wakeup,
     scheduler = {
-        spread_scheduling = true,      -- (optional: spread scheduling over the interval to avoid spikes in CPU usage)  
+        spread_scheduling = false,      -- (optional: spread scheduling over the interval to avoid spikes in CPU usage)  
         spread_ratio = 0.8              -- optional: manually override default ratio logic (applies if spread_scheduling is true)
     }    
 }
