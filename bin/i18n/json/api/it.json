@@ -258,8 +258,8 @@
     },
     "tbl_auto": {
       "english": "Auto",
-      "translation": "Auto",
-      "needs_translation": "true"
+      "translation": "Automatique",
+      "needs_translation": "false"
     },
     "starting_torque": {
       "english": "Starting torque for the motor",
@@ -972,8 +972,8 @@
   "PILOT_CONFIG": {
     "model_param1_value": {
       "english": "Set this to the expected flight time in seconds.  The transmitter will beep when the flight time is reached.",
-      "translation": "Set this to the expected flight time in seconds.  The transmitter will beep when the flight time is reached.",
-      "needs_translation": "true"
+      "translation": "Reglez cette valeur sur la duree de vol prevue, en secondes. La radiocommande emettra un bip lorsque cette duree sera atteinte.",
+      "needs_translation": "false"
     }
   },
   "BATTERY_CONFIG": {

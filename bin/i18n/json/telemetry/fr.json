@@ -2,38 +2,38 @@
   "sensors": {
     "attpitch": {
       "english": "P.angle",
-      "translation": "P.angle",
-      "needs_translation": "true"
+      "translation": "Angle Prof.",
+      "needs_translation": "false"
     },
     "attroll": {
       "english": "R.angle",
-      "translation": "R.angle",
-      "needs_translation": "true"
+      "translation": "Angle Roll",
+      "needs_translation": "false"
     },
     "attyaw": {
       "english": "Y.angle",
-      "translation": "Y.angle",
-      "needs_translation": "true"
+      "translation": "Angle Lacet",
+      "needs_translation": "false"
     },
     "accx": {
       "english": "Accel X",
       "translation": "Accel X",
-      "needs_translation": "true"
+      "needs_translation": "false"
     },
     "accy": {
       "english": "Accel Y",
       "translation": "Accel Z",
-      "needs_translation": "true"
+      "needs_translation": "false"
     },
     "accz": {
       "english": "Accel Z",
       "translation": "Accel Z",
-      "needs_translation": "true"
+      "needs_translation": "false"
     },
     "groundspeed": {
       "english": "Ground Speed",
-      "translation": "Ground Speed",
-      "needs_translation": "true"
+      "translation": "Vitesse Sol",
+      "needs_translation": "false"
     },
     "esc_temp": {
       "english": "ESC Temperature",
@@ -53,7 +53,7 @@
     "altitude": {
       "english": "Altitude",
       "translation": "Altitude",
-      "needs_translation": "true"
+      "needs_translation": "false"
     },
     "voltage": {
       "english": "Voltage",
@@ -62,13 +62,13 @@
     },
     "bec_voltage": {
       "english": "Bec voltage",
-      "translation": "Bec voltage",
-      "needs_translation": "true"
+      "translation": "Tension BEC",
+      "needs_translation": "false"
     },
     "cell_count": {
       "english": "Cell count",
-      "translation": "Cell Count",
-      "needs_translation": "true"
+      "translation": "Nombre de cellules",
+      "needs_translation": "false"
     },
     "governor": {
       "english": "Governor State",
@@ -87,8 +87,8 @@
     },
     "smartfuel": {
       "english": "Smart Fuel",
-      "translation": "Smart Fuel",
-      "needs_translation": "true"
+      "translation": "Carburant intelligent",
+      "needs_translation": "false"
     },
     "rssi": {
       "english": "RSSI",
@@ -102,7 +102,7 @@
     },
     "arming_flags": {
       "english": "Arming Flags",
-      "translation": "Drapeaux Armements",
+      "translation": "Drapeaux Armement",
       "needs_translation": "false"
     },
     "current": {
@@ -132,7 +132,7 @@
     },
     "armdisableflags": {
       "english": "Arming Disable",
-      "translation": "Désactivation Armement",
+      "translation": "Desactivation Armement",
       "needs_translation": "false"
     }
   }
