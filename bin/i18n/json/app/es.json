@@ -98,358 +98,358 @@
       },
       "no_themes_available_to_configure": {
         "english": "No configurable themes installed on this device",
-        "translation": "No themes available to configure",
-        "needs_translation": "true"
+        "translation": "No hay temas configurables instalados en este dispositivo",
+        "needs_translation": "false"
       },
       "txt_audio_timer": {
         "english": "Timer",
         "translation": "Timer",
-        "needs_translation": "true"
+        "needs_translation": "false"
       },
       "txt_audio_events": {
         "english": "Events",
-        "translation": "Events",
-        "needs_translation": "true"
+        "translation": "Eventos",
+        "needs_translation": "false"
       },
       "txt_audio_switches": {
         "english": "Switches",
-        "translation": "Switches",
-        "needs_translation": "true"
+        "translation": "Botones",
+        "needs_translation": "false"
       },
       "txt_iconsize": {
         "english": "Icon Size",
-        "translation": "Icon Size",
-        "needs_translation": "true"
+        "translation": "Tamaño Icon",
+        "needs_translation": "false"
       },
       "txt_general": {
         "english": "General",
         "translation": "General",
-        "needs_translation": "true"
+        "needs_translation": "false"
       },
       "txt_text": {
         "english": "TEXT",
-        "translation": "TEXT",
-        "needs_translation": "true"
+        "translation": "TEXTO",
+        "needs_translation": "false"
       },
       "txt_small": {
         "english": "SMALL",
-        "translation": "SMALL",
-        "needs_translation": "true"
+        "translation": "PEQUEÑO",
+        "needs_translation": "false"
       },
       "txt_large": {
         "english": "LARGE",
-        "translation": "LARGE",
-        "needs_translation": "true"
+        "translation": "GRANDE",
+        "needs_translation": "false"
       },
       "txt_syncname": {
         "english": "Sync model name",
-        "translation": "Sync model name",
-        "needs_translation": "true"
+        "translation": "Sinc nombre modelo",
+        "needs_translation": "false"
       },
       "txt_devtools": {
         "english": "Developer Tools",
-        "translation": "Developer Tools",
-        "needs_translation": "true"
+        "translation": "Herramientas Desarrollo",
+        "needs_translation": "false"
       },
       "txt_apiversion": {
         "english": "API Version",
-        "translation": "API Version",
-        "needs_translation": "true"
+        "translation": "Versión API",
+        "needs_translation": "false"
       },
       "txt_logging": {
         "english": "Logging",
-        "translation": "Logging",
-        "needs_translation": "true"
+        "translation": "Loggeo",
+        "needs_translation": "false"
       },
       "txt_compilation": {
         "english": "Compilation",
-        "translation": "Compilation",
-        "needs_translation": "true"
+        "translation": "Compilación",
+        "needs_translation": "false"
       },
       "txt_loglocation": {
         "english": "Log location",
-        "translation": "Log location",
-        "needs_translation": "true"
+        "translation": "Posición Log",
+        "needs_translation": "false"
       },
       "txt_console": {
         "english": "CONSOLE",
-        "translation": "CONSOLE",
-        "needs_translation": "true"
+        "translation": "CONSOLA",
+        "needs_translation": "false"
       },
       "txt_consolefile": {
         "english": "CONSOLE & FILE",
-        "translation": "CONSOLE & FILE",
-        "needs_translation": "true"
+        "translation": "CONSOLA y ARCHIVO",
+        "needs_translation": "false"
       },
       "txt_loglevel": {
         "english": "Log level",
-        "translation": "Log level",
-        "needs_translation": "true"
+        "translation": "Nivel Log",
+        "needs_translation": "false"
       },
       "txt_off": {
         "english": "OFF",
-        "translation": "OFF",
-        "needs_translation": "true"
+        "translation": "APAGADO",
+        "needs_translation": "false"
       },
       "txt_info": {
         "english": "INFO",
         "translation": "INFO",
-        "needs_translation": "true"
+        "needs_translation": "false"
       },
       "txt_debug": {
         "english": "DEBUG",
         "translation": "DEBUG",
-        "needs_translation": "true"
+        "needs_translation": "false"
       },
       "txt_mspdata": {
         "english": "Log msp data",
-        "translation": "Log msp data",
-        "needs_translation": "true"
+        "translation": "Log datos msp",
+        "needs_translation": "false"
       },
       "txt_queuesize": {
         "english": "Log MSP queue size",
-        "translation": "Log MSP queue size",
-        "needs_translation": "true"
+        "translation": "Tamaño cola Log MSP",
+        "needs_translation": "false"
       },
       "txt_memusage": {
         "english": "Log memory usage",
-        "translation": "Log memory usage",
-        "needs_translation": "true"
+        "translation": "Uso de memoria Log",
+        "needs_translation": "false"
       },
       "dashboard": {
         "english": "Dashboard",
-        "translation": "Dashboard",
-        "needs_translation": "true"
+        "translation": "Panel",
+        "needs_translation": "false"
       },
       "dashboard_theme": {
         "english": "Theme",
-        "translation": "Theme",
-        "needs_translation": "true"
+        "translation": "Tema",
+        "needs_translation": "false"
       },
       "dashboard_theme_panel_global": {
         "english": "Default theme for all models",
-        "translation": "Global",
-        "needs_translation": "true"
+        "translation": "Tema por defecto Global",
+        "needs_translation": "false"
       },
       "dashboard_theme_panel_model": {
         "english": "Optional theme for this model",
-        "translation": "Model",
-        "needs_translation": "true"
+        "translation": "Tema opcional para este modelo",
+        "needs_translation": "false"
       },
       "dashboard_theme_panel_model_disabled": {
         "english": "Disabled",
-        "translation": "Disabled",
-        "needs_translation": "true"
+        "translation": "Deshabilitado",
+        "needs_translation": "false"
       },
       "dashboard_settings": {
         "english": "Settings",
-        "translation": "Settings",
-        "needs_translation": "true"
+        "translation": "Ajustes",
+        "needs_translation": "false"
       },
       "dashboard_theme_preflight": {
         "english": "Preflight Theme",
-        "translation": "Preflight Theme",
-        "needs_translation": "true"
+        "translation": "Tema Prevuelo",
+        "needs_translation": "false"
       },
       "dashboard_theme_inflight": {
         "english": "Inflight Theme",
-        "translation": "Inflight Theme",
-        "needs_translation": "true"
+        "translation": "Tema En-Vuelo",
+        "needs_translation": "false"
       },
       "dashboard_theme_postflight": {
         "english": "Postflight Theme",
-        "translation": "Postflight Theme",
-        "needs_translation": "true"
+        "translation": "Tema Postvuelo",
+        "needs_translation": "false"
       },
       "audio": {
         "english": "Audio",
         "translation": "Audio",
-        "needs_translation": "true"
+        "needs_translation": "false"
       },
       "localizations": {
         "english": "Localization",
-        "translation": "Localization",
-        "needs_translation": "true"
+        "translation": "Localización",
+        "needs_translation": "false"
       },
       "txt_development": {
         "english": "Development",
-        "translation": "Development",
-        "needs_translation": "true"
+        "translation": "Desarrollo",
+        "needs_translation": "false"
       },
       "temperature_unit": {
         "english": "Temperature Unit",
-        "translation": "Temperature Unit",
-        "needs_translation": "true"
+        "translation": "Unidad de Temperatura",
+        "needs_translation": "false"
       },
       "altitude_unit": {
         "english": "Altitude Unit",
-        "translation": "Altitude Unit",
-        "needs_translation": "true"
+        "translation": "Unidad de Altitud",
+        "needs_translation": "false"
       },
       "celcius": {
         "english": "Celsius",
         "translation": "Celsius",
-        "needs_translation": "true"
+        "needs_translation": "false"
       },
       "fahrenheit": {
         "english": "Fahrenheit",
         "translation": "Fahrenheit",
-        "needs_translation": "true"
+        "needs_translation": "false"
       },
       "meters": {
         "english": "Meters",
-        "translation": "Meters",
-        "needs_translation": "true"
+        "translation": "Metros",
+        "needs_translation": "false"
       },
       "feet": {
         "english": "Feet",
-        "translation": "Feet",
-        "needs_translation": "true"
+        "translation": "Pies",
+        "needs_translation": "false"
       },
       "warning": {
         "english": "Warning",
-        "translation": "Warning",
-        "needs_translation": "true"
+        "translation": "Advertencia",
+        "needs_translation": "false"
       },
       "governor_state": {
         "english": "Governor State",
-        "translation": "Governor State",
-        "needs_translation": "true"
+        "translation": "Estado del Governor",
+        "needs_translation": "false"
       },
       "arming_flags": {
         "english": "Arming Flags",
-        "translation": "Arming Flags",
-        "needs_translation": "true"
+        "translation": "Banderas de Armado",
+        "needs_translation": "false"
       },
       "voltage": {
         "english": "Voltage",
-        "translation": "Voltage",
-        "needs_translation": "true"
+        "translation": "Voltaje",
+        "needs_translation": "false"
       },
       "pid_rates_profile": {
         "english": "PID/Rates Profile",
-        "translation": "PID/Rates Profile",
-        "needs_translation": "true"
+        "translation": "Perfil PID/Tasas",
+        "needs_translation": "false"
       },
       "pid_profile": {
         "english": "PID Profile",
-        "translation": "PID Profile",
-        "needs_translation": "true"
+        "translation": "Perfil PID",
+        "needs_translation": "false"
       },
       "rate_profile": {
         "english": "Rate Profile",
-        "translation": "Rate Profile",
-        "needs_translation": "true"
+        "translation": "Perfil Tasas",
+        "needs_translation": "false"
       },
       "esc_temperature": {
         "english": "ESC Temperature",
-        "translation": "ESC Temperature",
-        "needs_translation": "true"
+        "translation": "Temperatura del ESC",
+        "needs_translation": "false"
       },
       "esc_threshold": {
         "english": "Threshold (°)",
-        "translation": "Threshold (°)",
-        "needs_translation": "true"
+        "translation": "Umbral (°)",
+        "needs_translation": "false"
       },
       "bec_voltage": {
         "english": "BEC Voltage",
-        "translation": "BEC Voltage",
-        "needs_translation": "true"
+        "translation": "Voltaje BEC",
+        "needs_translation": "false"
       },
       "bec_threshold": {
         "english": "Threshold (V)",
-        "translation": "Threshold (V)",
-        "needs_translation": "true"
+        "translation": "Umbral (V)",
+        "needs_translation": "false"
       },
       "fuel": {
         "english": "Fuel",
-        "translation": "Fuel",
-        "needs_translation": "true"
+        "translation": "Combustible",
+        "needs_translation": "false"
       },
       "fuel_callout_default": {
         "english": "Default (Only at 10%)",
-        "translation": "Default (Only at 10%)",
-        "needs_translation": "true"
+        "translation": "Por defecto (solo al 10%)",
+        "needs_translation": "false"
       },
       "fuel_callout_10": {
         "english": "Every 10%",
-        "translation": "Every 10%",
-        "needs_translation": "true"
+        "translation": "Cada 10%",
+        "needs_translation": "false"
       },
       "fuel_callout_20": {
         "english": "Every 20%",
-        "translation": "Every 20%",
-        "needs_translation": "true"
+        "translation": "Cada 20%",
+        "needs_translation": "false"
       },
       "fuel_callout_25": {
         "english": "Every 25%",
-        "translation": "Every 25%",
-        "needs_translation": "true"
+        "translation": "Cada 25%",
+        "needs_translation": "false"
       },
       "fuel_callout_50": {
         "english": "Every 50%",
-        "translation": "Every 50%",
-        "needs_translation": "true"
+        "translation": "Cada 50%",
+        "needs_translation": "false"
       },
       "fuel_callout_percent": {
         "english": "Callout %",
-        "translation": "Callout %",
-        "needs_translation": "true"
+        "translation": "Anuncio %",
+        "needs_translation": "false"
       },
       "fuel_repeats_below": {
         "english": "Repeats below 0%",
-        "translation": "Repeats below 0%",
-        "needs_translation": "true"
+        "translation": "Repite debajo de 0%",
+        "needs_translation": "false"
       },
       "fuel_haptic_below": {
         "english": "Haptic below 0%",
-        "translation": "Haptic below 0%",
-        "needs_translation": "true"
+        "translation": "Vibrar debajo de 0%",
+        "needs_translation": "false"
       },
       "timer_alerting": {
         "english": "Timer Alerting",
-        "translation": "Timer Alerting",
-        "needs_translation": "true"
+        "translation": "Alerta Timer",
+        "needs_translation": "false"
       },
       "timer_elapsed_alert_mode": {
         "english": "Timer Elapsed Alert",
-        "translation": "Timer Elapsed Alert",
-        "needs_translation": "true"
+        "translation": "Transcurrido Alerta Timer",
+        "needs_translation": "false"
       },
       "timer_prealert_options": {
         "english": "Pre-timer Alert Options",
-        "translation": "Pre-timer Alert Options",
-        "needs_translation": "true"
+        "translation": "Opciones de Alerta Pre-timer",
+        "needs_translation": "false"
       },
       "timer_prealert": {
         "english": "Pre-timer Alert",
-        "translation": "Pre-timer Alert",
-        "needs_translation": "true"
+        "translation": "Alerta Pre-timer",
+        "needs_translation": "false"
       },
       "timer_alert_period": {
         "english": "Alert Period",
-        "translation": "Alert Period",
-        "needs_translation": "true"
+        "translation": "Período de Alerta",
+        "needs_translation": "false"
       },
       "timer_postalert_options": {
         "english": "Post-timer Alert Options",
-        "translation": "Post-timer Alert Options",
-        "needs_translation": "true"
+        "translation": "Opciones Alerta Post-timer",
+        "needs_translation": "false"
       },
       "timer_postalert": {
         "english": "Post-timer Alert",
-        "translation": "Post-timer Alert",
-        "needs_translation": "true"
+        "translation": "Alerta Post-timer",
+        "needs_translation": "false"
       },
       "timer_postalert_period": {
         "english": "Alert Period",
-        "translation": "Alert Period",
-        "needs_translation": "true"
+        "translation": "Período Alerta",
+        "needs_translation": "false"
       },
       "timer_postalert_interval": {
         "english": "Alert Interval",
-        "translation": "Alert Interval",
-        "needs_translation": "true"
+        "translation": "Intervalo Alerta",
+        "needs_translation": "false"
       }
     },
     "validate_sensors": {
@@ -1543,8 +1543,8 @@
       },
       "save_prompt_local": {
         "english": "Save current page to radio?",
-        "translation": "Save current settings?",
-        "needs_translation": "true"
+        "translation": "Guardar página actual?",
+        "needs_translation": "false"
       },
       "cancel": {
         "english": "CANCEL",
@@ -1953,8 +1953,8 @@
       },
       "timer": {
         "english": "Flight Time Alarm",
-        "translation": "Flight Time",
-        "needs_translation": "true"
+        "translation": "Alarma Tiempo Vuelo",
+        "needs_translation": "false"
       }
     },
     "profile_mainrotor": {
