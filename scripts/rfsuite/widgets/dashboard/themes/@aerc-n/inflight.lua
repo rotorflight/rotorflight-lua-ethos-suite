@@ -172,7 +172,7 @@ return {
     layout = layout,
     boxes = boxes,
     scheduler = {
-        spread_scheduling = true,
+        spread_scheduling = false,
         spread_ratio = 0.8
     }    
 }
