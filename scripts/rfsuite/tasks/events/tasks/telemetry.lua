@@ -301,4 +301,16 @@ function telemetry.wakeup()
 end
 
 telemetry.eventTable = eventTable
+
+function telemetry.reset()
+    lastSmartfuelAnnounced = nil
+    lastLowFuelAnnounced = false
+    lastLowFuelRepeat = 0
+    lastLowFuelRepeatCount = 0
+    lastEventTimes = {}
+    lastValues     = {}
+    lastAlertState = {}
+    rollingSamples = {}
+end
+
 return telemetry
