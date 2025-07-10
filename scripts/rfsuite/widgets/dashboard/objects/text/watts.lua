@@ -62,6 +62,27 @@ function render.wakeup(box)
         minWatts, maxWatts, avgWatts, sumWatts, countWatts = nil, nil, nil, nil, nil
     end
 
+    -- Detect telemetry state
+    local telemetryActive = rfsuite.session and rfsuite.session.isConnected and rfsuite.session.telemetryState
+    -- Cache the last valid display value/unit if it's a number and telemetry is active
+    if (source == "min" or source == "max" or source == "avg") and countWatts and countWatts > 0 and telemetryActive then
+        if source == "min" then
+            box._lastValidValue = tostring(math.floor(minWatts))
+        elseif source == "max" then
+            box._lastValidValue = tostring(math.floor(maxWatts))
+        elseif source == "avg" then
+            box._lastValidValue = tostring(math.floor(sumWatts / countWatts))
+        end
+        box._lastValidUnit = "W"
+    elseif source == "current" and telemetry and telemetry.getSensor then
+        local vc = telemetry.getSensor("voltage")
+        local ic = telemetry.getSensor("current")
+        if vc and ic and telemetryActive then
+            box._lastValidValue = tostring(math.floor(vc * ic))
+            box._lastValidUnit = "W"
+        end
+    end
+
     -- If missing sensors or stats, show animated loading dots
     if not v or not i then
         local maxDots = 3
@@ -100,6 +121,12 @@ function render.wakeup(box)
         end
     end
 
+    -- If telemetry is lost and we have a cached value, show it
+    if (not telemetryActive or displayValue == nil or displayValue == "" or (displayValue and displayValue:match("^%.+$"))) and box._lastValidValue then
+        displayValue = box._lastValidValue
+        unit = box._lastValidUnit
+    end
+
     -- Fallback for empty/null
     if displayValue == nil or displayValue == "" then
         displayValue = getParam(box, "novalue") or "-"
@@ -109,7 +136,7 @@ function render.wakeup(box)
     if type(displayValue) == "string" and displayValue:match("^%.+$") then
         unit = nil -- suppress unit if dots
     else
-        unit = "W"
+        unit = unit or "W"
     end
 
     -- Set box.value so dashboard/dirty can track change for redraws
