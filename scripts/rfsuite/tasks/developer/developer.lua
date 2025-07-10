@@ -58,12 +58,38 @@ function developer.wakeup()
     API.read()
     ]]--
 
+    --[[
     rfsuite.utils.log("API Debug Task: TELEMETRY_CONFIG", "info")
     local API = rfsuite.tasks.msp.api.load("TELEMETRY_CONFIG")
     API.setCompleteHandler(function(self, buf)
     end)
     API.setUUID("123e4567-e89b-12d3-a456-426614174000")
     API.read()
+    ]]
+
+    -- Example of reading a value from an INI file using the API
+    if rfsuite.session.mcu_id and rfsuite.config.preferences then
+        local iniName = "SCRIPTS:/" .. rfsuite.config.preferences .. "/models/" .. rfsuite.session.mcu_id ..".ini"
+        local api = rfsuite.tasks.ini.api.load("api_template")
+        api.setIniFile(iniName)
+        local pitch = api.readValue("pitch")
+
+        print(pitch)
+    end
+
+
+    -- Example of reading a value from an INI file using the API
+    if rfsuite.session.mcu_id and rfsuite.config.preferences then
+        local iniName = "SCRIPTS:/" .. rfsuite.config.preferences .. "/models/" .. rfsuite.session.mcu_id ..".ini"
+        local api = rfsuite.tasks.ini.api.load("api_template")
+        api.setIniFile(iniName)
+
+        -- stage value for later write
+        api.setValue("pitch", math.random(-300, 300))
+
+        local ok, err = api.write()
+        if not ok then error("Failed to save INI: " .. err) end
+    end
 
 
 end
