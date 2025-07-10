@@ -80,20 +80,20 @@
   {
     "file": "events/alerts/elapsed.wav",
     "english": "Timer Elapsed",
-    "translation": "Timer Elapsed",
-    "needs_translation": true
+    "translation": "Minuteur ecoule",
+    "needs_translation": false
   },
   {
     "file": "events/alerts/becvolt.wav",
     "english": "BEC Voltage Warning",
-    "translation": "BEC Voltage Warning",
-    "needs_translation": true
+    "translation": "Avertissement tension BEC",
+    "needs_translation": false
   },
   {
     "file": "events/alerts/esctemp.wav",
     "english": "ESC Temperature Warning",
-    "translation": "ESC Temperature Warning",
-    "needs_translation": true
+    "translation": "Avertissement temperature ESC",
+    "needs_translation": false
   },
   {
     "file": "events/gov/off.wav",
