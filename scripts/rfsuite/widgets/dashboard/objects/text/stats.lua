@@ -68,15 +68,17 @@ function render.dirty(box)
     return false
 end
 
-
 function render.wakeup(box)
 
     local telemetry = rfsuite.tasks.telemetry
-    
+
     -- Value extraction
     local source = getParam(box, "source")
     local statType = getParam(box, "stattype") or "max"
     local value, unit
+
+    -- Determine if telemetry is active
+    local telemetryActive = rfsuite.session and rfsuite.session.isConnected
 
     if source and telemetry and telemetry.getSensorStats then
         local stats = telemetry.getSensorStats(source)
@@ -105,6 +107,16 @@ function render.wakeup(box)
         unit = overrideUnit
     end
 
+    -- Cache the last valid value/unit if telemetry is active and value is present
+    if value ~= nil and telemetryActive then
+        box._lastValidValue = value
+        box._lastValidUnit = unit
+    elseif box._lastValidValue ~= nil then
+        -- Use cached value/unit if telemetry is lost
+        value = box._lastValidValue
+        unit = box._lastValidUnit
+    end
+
     local fallbackText = getParam(box, "novalue") or "-"
     local displayValue
 
@@ -123,7 +135,7 @@ function render.wakeup(box)
     if type(displayValue) == "string" and displayValue:match("^%.+$") then
         unit = nil
     end
-    
+
     -- Set box.value so dashboard/dirty can track change for redraws
     box._currentDisplayValue = displayValue
 

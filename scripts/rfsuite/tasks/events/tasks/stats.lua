@@ -118,7 +118,9 @@ function stats.wakeup()
 end
 
 function stats.reset()
-    telemetry.sensorStats = {}
+    if telemetry then
+        telemetry.sensorStats = {}
+    end
     fullSensorTable  = nil
     filteredSensors  = nil
     lastTrackTime    = 0

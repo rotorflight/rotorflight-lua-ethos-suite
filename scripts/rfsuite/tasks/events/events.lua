@@ -61,6 +61,12 @@ end
 
 function events.reset()
     telemetryStartTime = nil
+    for _, name in ipairs(taskNames) do
+        local subtask = events[name]
+        if subtask and type(subtask.reset) == "function" then
+            subtask.reset()
+        end
+    end
 end
 
 return events
