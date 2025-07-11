@@ -93,28 +93,28 @@
     "stats": {
       "name": {
         "english": "Stats",
-        "translation": "Stats",
-        "needs_translation": "true"
+        "translation": "Estadísticas",
+        "needs_translation": "false"
       },
       "totalflighttime": {
         "english": "Total Flight Time",
-        "translation": "Total Flight Time",
-        "needs_translation": "true"
+        "translation": "Tiempo Total de Vuelo",
+        "needs_translation": "false"
       },
       "flightcount": {
         "english": "Flight Count",
-        "translation": "Flight Count",
-        "needs_translation": "true"
+        "translation": "Nro de Vuelos",
+        "needs_translation": "false"
       },
       "lastflighttime": {
         "english": "Last Flight Time",
-        "translation": "Last Flight Time",
-        "needs_translation": "true"
+        "translation": "Tiempo Ultimo Vuelo",
+        "needs_translation": "false"
       },
       "help_p1": {
         "english": "Use this module to update the recorded flight statistics on the flight controller.",
-        "translation": "Use this module to update the recorded flight statistics on the flight controller.",
-        "needs_translation": "true"
+        "translation": "Utilice este módulo para actualizar las estadísticas guardadas en el controlador de vuelo.",
+        "needs_translation": "false"
       }
     },
     "settings": {
