@@ -3,37 +3,37 @@
     "attpitch": {
       "english": "P.angle",
       "translation": "P.angle",
-      "needs_translation": "true"
+      "needs_translation": "false"
     },
     "attroll": {
       "english": "R.angle",
       "translation": "R.angle",
-      "needs_translation": "true"
+      "needs_translation": "false"
     },
     "attyaw": {
       "english": "Y.angle",
       "translation": "Y.angle",
-      "needs_translation": "true"
+      "needs_translation": "false"
     },
     "accx": {
       "english": "Accel X",
       "translation": "Accel X",
-      "needs_translation": "true"
+      "needs_translation": "false"
     },
     "accy": {
       "english": "Accel Y",
       "translation": "Accel Z",
-      "needs_translation": "true"
+      "needs_translation": "false"
     },
     "accz": {
       "english": "Accel Z",
       "translation": "Accel Z",
-      "needs_translation": "true"
+      "needs_translation": "false"
     },
     "groundspeed": {
       "english": "Ground Speed",
-      "translation": "Ground Speed",
-      "needs_translation": "true"
+      "translation": "Velocità Suolo",
+      "needs_translation": "false"
     },
     "esc_temp": {
       "english": "ESC Temperature",
@@ -52,8 +52,8 @@
     },
     "altitude": {
       "english": "Altitude",
-      "translation": "Altitude",
-      "needs_translation": "true"
+      "translation": "Altitudine",
+      "needs_translation": "false"
     },
     "voltage": {
       "english": "Voltage",
@@ -62,13 +62,13 @@
     },
     "bec_voltage": {
       "english": "Bec voltage",
-      "translation": "Bec voltage",
-      "needs_translation": "true"
+      "translation": "Voltaggio Bec",
+      "needs_translation": "false"
     },
     "cell_count": {
       "english": "Cell count",
-      "translation": "Cell Count",
-      "needs_translation": "true"
+      "translation": "Numero Celle",
+      "needs_translation": "false"
     },
     "governor": {
       "english": "Governor State",
@@ -88,7 +88,7 @@
     "smartfuel": {
       "english": "Smart Fuel",
       "translation": "Smart Fuel",
-      "needs_translation": "true"
+      "needs_translation": "false"
     },
     "rssi": {
       "english": "RSSI",
@@ -133,7 +133,7 @@
     "armdisableflags": {
       "english": "Arming Disable",
       "translation": "Disattivazione Armo",
-      "needs_translation": "true"
+      "needs_translation": "false"
     }
   }
 }
