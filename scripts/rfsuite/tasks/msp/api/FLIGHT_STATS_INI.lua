@@ -77,7 +77,13 @@ local function write()
     local tbl = ini.load_ini_file(INI_FILE) or {}
     tbl.general = tbl.general or {}
     for k, v in pairs(payloadData) do
+        v = math.floor(v)  -- Ensure integer values
         ini.setvalue(tbl, INI_SECTION, k, v)
+
+        -- update session data
+        if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences[INI_SECTION] then
+            rfsuite.session.modelPreferences[INI_SECTION][k] = v
+        end
     end
     local ok, err = ini.save_ini_file(INI_FILE, tbl)
     if not ok then
