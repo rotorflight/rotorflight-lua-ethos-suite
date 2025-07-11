@@ -393,6 +393,12 @@ return {
     ["msg_connecting_to_fbl"] = "Connecting to flight controller...",
     ["navigation_help"] = "?",
     ["modules"] = {
+      ["stats"] = {
+        ["name"] = "Stats",
+        ["totalflighttime"] = "Total Flight Time",
+        ["flightcount"] = "Flight Count",
+        ["lastflighttime"] = "Last Flight Time"
+      },
       ["settings"] = {
         ["name"] = "Settings",
         ["no_themes_available_to_configure"] = "No configurable themes installed on this device",

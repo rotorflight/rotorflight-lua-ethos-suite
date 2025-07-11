@@ -393,6 +393,12 @@ return {
     ["msg_connecting_to_fbl"] = "Verbinden met vliegcontroller...",
     ["navigation_help"] = "?",
     ["modules"] = {
+      ["stats"] = {
+        ["name"] = "Stats",
+        ["totalflighttime"] = "Total Flight Time",
+        ["flightcount"] = "Flight Count",
+        ["lastflighttime"] = "Last Flight Time"
+      },
       ["settings"] = {
         ["name"] = "Instellingen",
         ["no_themes_available_to_configure"] = "No themes available to configure",

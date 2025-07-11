@@ -499,6 +499,8 @@ end
     5. Logs debug information and handles cases where fields or values are missing.
 --]]
 function app.mspApiUpdateFormAttributes(values, structure)
+
+    print(rfsuite.utils.print_r(values))
     -- Ensure app.Page and its mspapi.formdata exist
     if not (app.Page.apidata.formdata and app.Page.apidata.api and rfsuite.app.Page.fields) then
         log("app.Page.apidata.formdata or its components are nil", "debug")
