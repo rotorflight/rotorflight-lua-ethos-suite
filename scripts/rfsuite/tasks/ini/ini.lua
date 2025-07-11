@@ -31,6 +31,7 @@ ini.api = assert(rfsuite.compiler.loadfile("tasks/ini/api.lua"))()
 
 function ini.wakeup()
     -- currently no processing required
+    -- will never fire as interval is set to -1
 end
 
 function ini.reset()

@@ -249,25 +249,29 @@ function tasks.wakeup()
             local module = assert(compiler(script))(config)
             tasks[key] = module
 
-            -- add a small drift to de-synchronize fixed intervals
-            local baseInterval = meta.interval or 1
-            local interval     = baseInterval + (math.random() * 0.1)
-            local offset = 0
- 
-            local jitter = math.random() * interval
-            offset = jitter % interval
+            -- we dont insert any tasks that have a interval less than 0
+            if meta.interval >= 0 then
+
+                -- add a small drift to de-synchronize fixed intervals
+                local baseInterval = meta.interval or 1
+                local interval     = baseInterval + (math.random() * 0.1)
+                local offset = 0
+    
+                local jitter = math.random() * interval
+                offset = jitter % interval
 
 
-            table.insert(tasksList, {
-                name = key,
-                interval = interval,
-                script = meta.script,
-                spreadschedule = meta.spreadschedule,
-                linkrequired = meta.linkrequired or false,
-                simulatoronly = meta.simulatoronly or false,
-                last_run = os.clock() - offset,
-                duration = 0
-            })
+                table.insert(tasksList, {
+                    name = key,
+                    interval = interval,
+                    script = meta.script,
+                    spreadschedule = meta.spreadschedule,
+                    linkrequired = meta.linkrequired or false,
+                    simulatoronly = meta.simulatoronly or false,
+                    last_run = os.clock() - offset,
+                    duration = 0
+                })
+            end
 
             tasks._initIndex = tasks._initIndex + 1
             return  -- only one task initialized per frame

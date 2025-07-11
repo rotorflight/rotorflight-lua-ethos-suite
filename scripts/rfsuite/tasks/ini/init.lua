@@ -17,7 +17,7 @@
  * 
 ]] --
 local init = {
-    interval        = 10,      -- low run loop time as currently does not run wakup
+    interval        = -1,      -- disable the wakeup as we dont use it
     script          = "ini.lua", -- run this script
     linkrequired    = true,     -- run this script only if link is established  
     spreadschedule  = true,     -- run on every loop  
