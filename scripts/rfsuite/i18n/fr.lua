@@ -1183,7 +1183,7 @@ return {
       ["governor"] = "Status du Gouverneur",
       ["adj_func"] = "Ajustements Fonctions",
       ["fuel"] = "Niveau de Carburant",
-      ["smartfuel"] = "Carburant intelligent",
+      ["smartfuel"] = "Smart Fuel",
       ["rssi"] = "Signal du Recepteur",
       ["adj_val"] = "Ajustements Valeurs",
       ["arming_flags"] = "Drapeaux Armement",
