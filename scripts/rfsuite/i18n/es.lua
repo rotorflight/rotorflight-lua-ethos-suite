@@ -394,11 +394,11 @@ return {
     ["navigation_help"] = "?",
     ["modules"] = {
       ["stats"] = {
-        ["name"] = "Stats",
-        ["totalflighttime"] = "Total Flight Time",
-        ["flightcount"] = "Flight Count",
-        ["lastflighttime"] = "Last Flight Time",
-        ["help_p1"] = "Use this module to update the recorded flight statistics on the flight controller."
+        ["name"] = "Estadísticas",
+        ["totalflighttime"] = "Tiempo Total de Vuelo",
+        ["flightcount"] = "Nro de Vuelos",
+        ["lastflighttime"] = "Tiempo Ultimo Vuelo",
+        ["help_p1"] = "Utilice este módulo para actualizar las estadísticas guardadas en el controlador de vuelo."
       },
       ["settings"] = {
         ["name"] = "Configuración",
@@ -1183,7 +1183,7 @@ return {
       ["governor"] = "Estado Governor",
       ["adj_func"] = "Ajus.(Función)",
       ["fuel"] = "Nivel de Carga",
-      ["smartfuel"] = "Smart Fuel",
+      ["smartfuel"] = "Combustible Inteligente",
       ["rssi"] = "RSSI",
       ["adj_val"] = "Ajus.(Valor)",
       ["arming_flags"] = "Banderas Armado",
