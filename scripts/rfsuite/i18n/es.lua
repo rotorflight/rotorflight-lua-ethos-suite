@@ -1176,7 +1176,7 @@ return {
       ["governor"] = "Estado Governor",
       ["adj_func"] = "Ajus.(Función)",
       ["fuel"] = "Nivel de Carga",
-      ["smartfuel"] = "Smart Fuel",
+      ["smartfuel"] = "Combustible Inteligente",
       ["rssi"] = "RSSI",
       ["adj_val"] = "Ajus.(Valor)",
       ["arming_flags"] = "Banderas Armado",
