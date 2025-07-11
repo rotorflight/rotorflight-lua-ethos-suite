@@ -110,6 +110,11 @@
         "english": "Last Flight Time",
         "translation": "Last Flight Time",
         "needs_translation": "false"
+      },
+      "help_p1": {
+        "english": "Use this module to update the recorded flight statistics on the flight controller.",
+        "translation": "Use this module to update the recorded flight statistics on the flight controller.",
+        "needs_translation": "false"
       }
     },
     "settings": {

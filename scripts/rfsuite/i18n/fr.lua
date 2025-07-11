@@ -397,7 +397,8 @@ return {
         ["name"] = "Stats",
         ["totalflighttime"] = "Total Flight Time",
         ["flightcount"] = "Flight Count",
-        ["lastflighttime"] = "Last Flight Time"
+        ["lastflighttime"] = "Last Flight Time",
+        ["help_p1"] = "Use this module to update the recorded flight statistics on the flight controller."
       },
       ["settings"] = {
         ["name"] = "Paramètres",
