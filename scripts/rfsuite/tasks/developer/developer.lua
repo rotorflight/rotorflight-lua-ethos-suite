@@ -29,9 +29,6 @@
  * flag in main.lua. This will print out the msp request and response.
 
 ]] --
-
-local ENABLE_TASK = false
-
 local arg = {...}
 
 local developer = {}
@@ -39,11 +36,6 @@ local developer = {}
 
 
 function developer.wakeup()
-
-    -- quick exit - this is the normal behaviour
-    if ENABLE_TASK == false then
-        return
-    end
 
     --[[
     -- This is an example of how to use the api library to query the governor mode
