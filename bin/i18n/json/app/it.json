@@ -94,27 +94,27 @@
       "name": {
         "english": "Stats",
         "translation": "Stats",
-        "needs_translation": "true"
+        "needs_translation": "false"
       },
       "totalflighttime": {
         "english": "Total Flight Time",
-        "translation": "Total Flight Time",
-        "needs_translation": "true"
+        "translation": "Totale Tempo Volo",
+        "needs_translation": "false"
       },
       "flightcount": {
         "english": "Flight Count",
-        "translation": "Flight Count",
-        "needs_translation": "true"
+        "translation": "Conteggio Voli",
+        "needs_translation": "false"
       },
       "lastflighttime": {
         "english": "Last Flight Time",
-        "translation": "Last Flight Time",
-        "needs_translation": "true"
+        "translation": "Tempo ultimo Volo",
+        "needs_translation": "false"
       },
       "help_p1": {
         "english": "Use this module to update the recorded flight statistics on the flight controller.",
-        "translation": "Use this module to update the recorded flight statistics on the flight controller.",
-        "needs_translation": "true"
+        "translation": "Usa questo modulo per aggiornare le statistiche di volo sulla radio.",
+        "needs_translation": "false"
       }
     },
     "settings": {
@@ -1570,8 +1570,8 @@
       },
       "save_prompt_local": {
         "english": "Save current page to radio?",
-        "translation": "Save current settings?",
-        "needs_translation": "true"
+        "translation": "Salva i settaggi correnti?",
+        "needs_translation": "false"
       },
       "cancel": {
         "english": "CANCEL",
@@ -1980,8 +1980,8 @@
       },
       "timer": {
         "english": "Flight Time Alarm",
-        "translation": "Flight Time",
-        "needs_translation": "true"
+        "translation": "Tempo Volo",
+        "needs_translation": "false"
       }
     },
     "profile_mainrotor": {
