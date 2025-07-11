@@ -396,7 +396,7 @@ local function saveSettings()
     if app.Page.preSave then app.Page.preSave(app.Page) end
 
     for apiID, apiNAME in ipairs(apiList) do
-        log("Saving data for API: " .. apiNAME, "info")
+        log("Saving data for API: " .. apiNAME, "debug")
 
         local payloadData = values[apiNAME]
         local payloadStructure = mspapi.structure[apiNAME]
@@ -409,7 +409,7 @@ local function saveSettings()
         )
         API.setCompleteHandler(function(self, buf)
             completedRequests = completedRequests + 1
-            log("API " .. apiNAME .. " write complete", "info")
+            log("API " .. apiNAME .. " write complete", "debug")
 
             -- Check if this is the last completed request
             if completedRequests == totalRequests then
@@ -499,6 +499,7 @@ end
     5. Logs debug information and handles cases where fields or values are missing.
 --]]
 function app.mspApiUpdateFormAttributes(values, structure)
+
     -- Ensure app.Page and its mspapi.formdata exist
     if not (app.Page.apidata.formdata and app.Page.apidata.api and rfsuite.app.Page.fields) then
         log("app.Page.apidata.formdata or its components are nil", "debug")
