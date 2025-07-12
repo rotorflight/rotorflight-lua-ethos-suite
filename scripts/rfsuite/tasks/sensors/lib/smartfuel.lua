@@ -31,6 +31,7 @@ local voltageThreshold    = 0.15      -- Maximum allowed voltage variation withi
 local preStabiliseDelay   = 1.5       -- Minimum seconds to wait after configuration or telemetry update before checking for stabilisation.
 
 local telemetry                       -- Reference to the telemetry task, used to access sensor data.
+local lastMode = rfsuite.flightmode.current
 
 -- Resets the voltage tracking state by clearing the last recorded voltages,
 -- resetting the voltage stable time, and marking the voltage as not stabilised.
@@ -112,6 +113,25 @@ local function smartFuelCalc()
     end
 
     local now = os.clock()
+
+    --**Preemptive reset**: bail out _before_ any recalculation
+    if currentMode ~= lastMode then
+        rfsuite.utils.log("Flight mode changed – resetting voltage & fuel state", "info")
+        -- clear starting references
+        fuelStartingPercent     = nil
+        fuelStartingConsumption = nil
+        -- clear any stored voltages
+        resetVoltageTracking()
+        -- defer next real calc until after your stabilization delay
+        stabilizeNotBefore = now + preStabiliseDelay
+
+        -- update for next time and exit
+        lastMode = currentMode
+        return nil
+    end
+    -- keep track for next invocation
+    lastMode = currentMode
+
 
     -- Wait for pre-stabilisation delay after config/telemetry is available
    if stabilizeNotBefore and now < stabilizeNotBefore then
