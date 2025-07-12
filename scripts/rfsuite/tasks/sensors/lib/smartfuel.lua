@@ -211,4 +211,7 @@ end
 
 --- Returns a table containing the `calculate` function for smart fuel calculations.
 -- @field calculate Function to perform smart fuel calculations.
-return {calculate = smartFuelCalc}
+return {
+        calculate = smartFuelCalc,
+        reset = resetVoltageTracking
+    }
