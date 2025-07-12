@@ -816,11 +816,11 @@ function utils.reportMemoryUsage(location)
         lastMemoryUsage = lastMemoryUsage / 1024  -- Convert last recorded memory to KB
         local difference = currentMemoryUsage - lastMemoryUsage
         if difference > 0 then
-            logMessage = string.format("[%s] Memory usage decreased by %.2f KB (Current: %.2f KB)", location, difference, currentMemoryUsage)
+            logMessage = string.format("[%s] Memory usage decreased by %.2f KB (Available: %.2f KB)", location, difference, currentMemoryUsage)
         elseif difference < 0 then
-            logMessage = string.format("[%s] Memory usage increased by %.2f KB (Current: %.2f KB)", location, -difference, currentMemoryUsage)
+            logMessage = string.format("[%s] Memory usage increased by %.2f KB (Available: %.2f KB)", location, -difference, currentMemoryUsage)
         else
-            logMessage = string.format("[%s] Memory usage unchanged (Current: %.2f KB)", location, currentMemoryUsage)
+            logMessage = string.format("[%s] Memory usage unchanged (Available: %.2f KB)", location, currentMemoryUsage)
         end
     else
         logMessage = string.format("[%s] Initial memory usage: %.2f KB", location, currentMemoryUsage)
