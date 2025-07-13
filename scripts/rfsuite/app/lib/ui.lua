@@ -327,6 +327,13 @@ function ui.openMainMenu()
     rfsuite.app.gfx_buttons["mainmenu"] = {}
     rfsuite.app.lastMenu = nil
 
+    -- Clear old icons
+    for i in pairs(rfsuite.app.gfx_buttons) do
+        if i ~= "mainmenu" then
+            rfsuite.app.gfx_buttons[i] = nil
+        end
+    end
+
     rfsuite.app.triggers.isReady = false
     rfsuite.app.uiState = rfsuite.app.uiStatus.mainMenu
 
@@ -415,7 +422,6 @@ function ui.openMainMenu()
                     rfsuite.app.ui.progressDisplay()
                     if pvalue.module then
                         rfsuite.app.isOfflinePage = true
-                        print(pidx, pvalue.title, pvalue.module .. "/" .. pvalue.script)
                         rfsuite.app.ui.openPage(pidx, pvalue.title, pvalue.module .. "/" .. pvalue.script)
                     else
                         rfsuite.app.ui.openMainMenuSub(pvalue.id)
@@ -456,12 +462,12 @@ function ui.openMainMenuSub(activesection)
     rfsuite.app.formLines = {}
     rfsuite.app.lastLabel = nil
     rfsuite.app.isOfflinePage = false
-    rfsuite.app.gfx_buttons["mainmenu"] = {}
+    rfsuite.app.gfx_buttons[activesection] = {}
     rfsuite.app.lastMenu = activesection
 
     -- Clear old icons
     for i in pairs(rfsuite.app.gfx_buttons) do
-        if i ~= "mainmenu" then
+        if i ~= activesection then
             rfsuite.app.gfx_buttons[i] = nil
         end
     end
@@ -507,7 +513,7 @@ function ui.openMainMenuSub(activesection)
 
     form.clear()
 
-    rfsuite.app.gfx_buttons["mainmenu"] = rfsuite.app.gfx_buttons["mainmenu"] or {}
+    rfsuite.app.gfx_buttons[activesection] = rfsuite.app.gfx_buttons[activesection] or {}
     rfsuite.preferences.menulastselected[activesection] = rfsuite.preferences.menulastselected[activesection] or 1
 
     for idx, section in ipairs(MainMenu.sections) do
@@ -559,10 +565,10 @@ function ui.openMainMenuSub(activesection)
                         local x = (buttonW + padding) * lc
 
                         if rfsuite.preferences.general.iconsize ~= 0 then
-                            rfsuite.app.gfx_buttons["mainmenu"][pidx] = rfsuite.app.gfx_buttons["mainmenu"][pidx]
+                            rfsuite.app.gfx_buttons[activesection][pidx] = rfsuite.app.gfx_buttons[activesection][pidx]
                                 or lcd.loadMask("app/modules/" .. page.folder .. "/" .. page.image)
                         else
-                            rfsuite.app.gfx_buttons["mainmenu"][pidx] = nil
+                            rfsuite.app.gfx_buttons[activesection][pidx] = nil
                         end
 
                         rfsuite.app.formFields[pidx] = form.addButton(line, {
@@ -572,7 +578,7 @@ function ui.openMainMenuSub(activesection)
                             h = buttonH
                         }, {
                             text = page.title,
-                            icon = rfsuite.app.gfx_buttons["mainmenu"][pidx],
+                            icon = rfsuite.app.gfx_buttons[activesection][pidx],
                             options = FONT_S,
                             paint = function() end,
                             press = function()

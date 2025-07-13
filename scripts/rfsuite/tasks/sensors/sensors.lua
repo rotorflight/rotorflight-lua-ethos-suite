@@ -124,6 +124,10 @@ function sensors.reset()
         loadedSensorModule.module.reset()
     end
 
+    if smart and smart.reset then
+        smart.reset()
+    end
+
     loadedSensorModule = nil  -- Clear loaded sensor module
     msp.reset()
 end
