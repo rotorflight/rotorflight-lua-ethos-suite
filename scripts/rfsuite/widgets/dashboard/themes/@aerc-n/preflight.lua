@@ -20,7 +20,6 @@ local i18n = rfsuite.i18n.get
 local layout = {
     cols = 7,
     rows = 12,
-    padding = 1,
 }
 
 local darkMode = {
@@ -30,7 +29,6 @@ local darkMode = {
     fillcolor   = "green",
     fillbgcolor = "grey",
     accentcolor  = "white",
-    arcbgcolor  = "lightgrey",
 }
 
 local lightMode = {
@@ -38,11 +36,11 @@ local lightMode = {
     titlecolor  = "black",
     bgcolor     = "white",
     fillcolor   = "green",
-    fillbgcolor = "lightgrey",
-    accentcolor = "lightgrey",
-    arcbgcolor  = "darkgrey",
+    fillbgcolor = "grey",
+    accentcolor = "black",
 }
 
+-- alias current mode
 local colorMode = lcd.darkMode() and darkMode or lightMode
 
 -- Theme config section for Nitro
@@ -64,6 +62,7 @@ local function getThemeValue(key)
     return THEME_DEFAULTS[key]
 end
 
+-- Caching for boxes
 local boxes_cache = nil
 local themeconfig = nil
 
@@ -234,7 +233,7 @@ return {
     layout = layout,
     boxes = boxes,
     scheduler = {
-        spread_scheduling = false,      -- (optional: spread scheduling over the interval to avoid spikes in CPU usage)  
+        spread_scheduling = true,       -- (optional: spread scheduling over the interval to avoid spikes in CPU usage)  
         spread_ratio = 0.8              -- optional: manually override default ratio logic (applies if spread_scheduling is true)
     }     
 }

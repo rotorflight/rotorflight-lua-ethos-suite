@@ -20,7 +20,6 @@ local i18n = rfsuite.i18n.get
 local layout = {
     cols = 6,
     rows = 8,
-    padding = 1
 }
 
 local darkMode = {
@@ -29,7 +28,7 @@ local darkMode = {
     bgcolor     = "black",
     fillcolor   = "green",
     fillbgcolor = "grey",
-    arcbgcolor  = "lightgrey",
+    accentcolor = "white",
 }
 
 local lightMode = {
@@ -37,8 +36,8 @@ local lightMode = {
     titlecolor  = "black",
     bgcolor     = "white",
     fillcolor   = "green",
-    fillbgcolor = "lightgrey",
-    arcbgcolor  = "darkgrey",
+    fillbgcolor = "grey",
+    accentcolor = "black",
 }
 
 local colorMode = lcd.darkMode() and darkMode or lightMode
@@ -76,6 +75,8 @@ local function buildBoxes()
         type = "time", 
         subtype = "flight", 
         font = "FONT_XL",
+        title = i18n("widgets.dashboard.flight_time"):upper(),
+        titlepos = "bottom",
         bgcolor = colorMode.bgcolor,
         titlecolor = colorMode.titlecolor,
         textcolor = colorMode.textcolor,
@@ -89,6 +90,7 @@ local function buildBoxes()
         fillcolor = "green",
         valuealign = "left",
         valuepaddingleft = 85,
+        valuepaddingbottom = 10,
         battadvfont = "FONT_M",
         font = "FONT_XL",
         battadvpaddingright = 5,
@@ -121,8 +123,8 @@ local function buildBoxes()
         textcolor = colorMode.textcolor,
         maxtextcolor = "orange",
         thresholds = {
-            { value = 89,  fillcolor = "orange" },
-            { value = 100, fillcolor = "red"    }
+            { value = 89,  fillcolor = "blue"       },
+            { value = 100, fillcolor = "darkblue"   }
         }
         },
 
@@ -134,7 +136,7 @@ local function buildBoxes()
         arcmax = true,
         title = i18n("widgets.dashboard.headspeed"):upper(),  
         titlepos = "bottom", 
-        min = getThemeValue("rpm_min"),
+        min = 0,
         max = getThemeValue("rpm_max"),
         thickness = 20,
         unit = "",
@@ -147,8 +149,9 @@ local function buildBoxes()
         maxtextcolor = "orange",
         transform = "floor",
         thresholds = {
-            { value = getThemeValue("rpm_max"),   fillcolor = "yellow"        },
-            { value = 10000,                      fillcolor = "darkyellow"    }
+            { value = getThemeValue("rpm_min"),   fillcolor = "lightpurple"   },
+            { value = getThemeValue("rpm_max"),   fillcolor = "purple"        },
+            { value = 10000,                      fillcolor = "darkpurple"    }
         }
         },
 
@@ -196,7 +199,7 @@ return {
     layout = layout,
     boxes = boxes,
     scheduler = {
-    spread_scheduling = false,      -- (optional: spread scheduling over the interval to avoid spikes in CPU usage)  
+    spread_scheduling = true,       -- (optional: spread scheduling over the interval to avoid spikes in CPU usage)  
     spread_ratio = 0.8              -- optional: manually override default ratio logic (applies if spread_scheduling is true)   
     }
 }

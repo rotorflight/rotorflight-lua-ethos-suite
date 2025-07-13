@@ -20,7 +20,6 @@ local i18n = rfsuite.i18n.get
 local layout = {
     cols = 6,
     rows = 12,
-    padding = 1
 }
 
 local darkMode = {
@@ -29,7 +28,7 @@ local darkMode = {
     bgcolor     = "black",
     fillcolor   = "green",
     fillbgcolor = "grey",
-    arcbgcolor  = "lightgrey",
+    accentcolor = "white",
 }
 
 local lightMode = {
@@ -37,8 +36,8 @@ local lightMode = {
     titlecolor  = "black",
     bgcolor     = "white",
     fillcolor   = "green",
-    fillbgcolor = "lightgrey",
-    arcbgcolor  = "darkgrey",
+    fillbgcolor = "grey",
+    accentcolor = "black",
 }
 
 local colorMode = lcd.darkMode() and darkMode or lightMode
@@ -62,6 +61,7 @@ local function getThemeValue(key)
     return THEME_DEFAULTS[key]
 end
 
+-- Caching for boxes
 local boxes_cache = nil
 local themeconfig = nil
 
@@ -78,7 +78,7 @@ local function buildBoxes()
         arcmax = true,
         title = i18n("widgets.dashboard.headspeed"):upper(), 
         titlepos = "bottom", 
-        min = getThemeValue("rpm_min"),
+        min = 0,
         max = getThemeValue("rpm_max"),
         valuepaddingtop = 30,
         thickness = 25,
@@ -89,12 +89,14 @@ local function buildBoxes()
         bgcolor = colorMode.bgcolor,
         titlecolor = colorMode.titlecolor,
         textcolor = colorMode.textcolor,
+        fillbgcolor = colorMode.fillbgcolor,
         maxtextcolor = "orange",
         transform = "floor",
-            thresholds = {
-                { value = getThemeValue("rpm_max"),   fillcolor = "yellow"        },
-                { value = 10000,                      fillcolor = "darkyellow"    }
-            }
+        thresholds = {
+            { value = getThemeValue("rpm_min"),   fillcolor = "lightpurple"   },
+            { value = getThemeValue("rpm_max"),   fillcolor = "purple"        },
+            { value = 10000,                      fillcolor = "darkpurple"    }
+        }
         },
 
         -- Timer
@@ -149,11 +151,12 @@ local function buildBoxes()
         bgcolor = colorMode.bgcolor,
         titlecolor = colorMode.titlecolor,
         textcolor = colorMode.textcolor,
+        fillbgcolor = colorMode.fillbgcolor,
         maxtextcolor = "orange",
-            thresholds = {
-                { value = 89,  fillcolor = "orange" },
-                { value = 100, fillcolor = "red"    }
-            }
+        thresholds = {
+            { value = 89,  fillcolor = "blue"       },
+            { value = 100, fillcolor = "darkblue"   }
+        }
         },
     }
 end
@@ -172,7 +175,7 @@ return {
     layout = layout,
     boxes = boxes,
     scheduler = {
-        spread_scheduling = false,
+        spread_scheduling = true,
         spread_ratio = 0.8
     }    
 }

@@ -18,7 +18,6 @@
 local i18n = rfsuite.i18n.get
 
 local function maxVoltageToCellVoltage(value)
-
     local cells = 2
 
     if cells and value then
@@ -32,10 +31,10 @@ end
 local darkMode = {
     textcolor   = "white",
     titlecolor  = "white",
-    bgcolor = "black",
+    bgcolor     = "black",
     fillcolor   = "green",
     fillbgcolor = "grey",
-    arcbgcolor  = "lightgrey",
+    accentcolor = "white",
 }
 
 local lightMode = {
@@ -43,14 +42,12 @@ local lightMode = {
     titlecolor  = "black",
     bgcolor     = "white",
     fillcolor   = "green",
-    fillbgcolor = "lightgrey",
-    arcbgcolor  = "darkgrey",
+    fillbgcolor = "grey",
+    accentcolor = "black",
 }
 
 -- alias current mode
 local colorMode = lcd.darkMode() and darkMode or lightMode
-
-
 
 local layout = {
     cols = 3,
@@ -62,7 +59,7 @@ local boxes = {
     -- Flight info and RPM info
     {col = 1, row = 1, type = "time", subtype = "flight", title = i18n("widgets.dashboard.flight_duration"), titlepos = "top", bgcolor = colorMode.bgcolor, textcolor = "orange", titlecolor = colorMode.titlecolor},
     {col = 1, row = 2, type = "time", subtype = "total", title = i18n("widgets.dashboard.total_flight_duration"), titlepos = "top", bgcolor = colorMode.bgcolor, textcolor = "orange", titlecolor = colorMode.titlecolor},
-    {col = 1, row = 3, type = "text", subtype = "stats", stattype = "min", source = "rssi", title = i18n("widgets.dashboard.link_min"), titlepos = "top", bgcolor = colorMode.bgcolor, transform = "floor", textcolor = "orange", titlecolor = colorMode.titlecolor},
+    {col = 1, row = 3, type = "time", subtype = "count", title = i18n("widgets.dashboard.flights"), titlepos = "top", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "green", transform = "floor"},
 
     {col = 2, row = 1, type = "text", subtype = "stats", stattype = "min", source = "rpm", title = i18n("widgets.dashboard.rpm_min"), unit = " rpm", titlepos = "top", bgcolor = colorMode.bgcolor, transform = "floor", textcolor = "orange", titlecolor = colorMode.titlecolor},
     {col = 2, row = 2, type = "text", subtype = "stats", source = "rpm", title = i18n("widgets.dashboard.rpm_max"), unit = " rpm", titlepos = "top", bgcolor = colorMode.bgcolor, transform = "floor", textcolor = "orange", titlecolor = colorMode.titlecolor},
@@ -77,9 +74,8 @@ local boxes = {
 return {
     layout = layout,
     boxes = boxes,
-    wakeup = wakeup,
     scheduler = {
-        spread_scheduling = false,      -- (optional: spread scheduling over the interval to avoid spikes in CPU usage)  
+        spread_scheduling = true,       -- (optional: spread scheduling over the interval to avoid spikes in CPU usage)  
         spread_ratio = 0.8              -- optional: manually override default ratio logic (applies if spread_scheduling is true)
     }    
 }
