@@ -104,6 +104,8 @@ local function buildBoxes()
         type = "time", 
         subtype = "flight", 
         font = "FONT_XL",
+        title = i18n("widgets.dashboard.flight_time"):upper(),
+        titlepos = "bottom",
         bgcolor = colorMode.bgcolor,
         titlecolor = colorMode.titlecolor,
         textcolor = colorMode.textcolor,
