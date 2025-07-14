@@ -20,7 +20,6 @@ local i18n = rfsuite.i18n.get
 local layout = {
     cols = 7,
     rows = 11,
-    padding = 1,
 }
 
 local darkMode = {
@@ -29,8 +28,7 @@ local darkMode = {
     bgcolor     = "black",
     fillcolor   = "green",
     fillbgcolor = "grey",
-    accentcolor  = "white",
-    arcbgcolor  = "lightgrey",
+    accentcolor = "white",
 }
 
 local lightMode = {
@@ -38,9 +36,8 @@ local lightMode = {
     titlecolor  = "black",
     bgcolor     = "white",
     fillcolor   = "green",
-    fillbgcolor = "lightgrey",
-    accentcolor = "lightgrey",
-    arcbgcolor  = "darkgrey",
+    fillbgcolor = "grey",
+    accentcolor = "black",
 }
 
 -- alias current mode
@@ -67,7 +64,7 @@ local function getThemeValue(key)
     return THEME_DEFAULTS[key]
 end
 
--- Caching pattern
+-- Caching for boxes
 local boxes_cache = nil
 local themeconfig = nil
 
@@ -162,6 +159,7 @@ local function buildBoxes()
          bgcolor = colorMode.bgcolor,
          titlecolor = colorMode.titlecolor,
          textcolor = colorMode.textcolor,
+         fillbgcolor = colorMode.fillbgcolor,
          font = "FONT_L", 
          thresholds = {
              { value = getThemeValue("bec_min"), fillcolor = "red"   },
@@ -201,6 +199,7 @@ local function buildBoxes()
          bgcolor = colorMode.bgcolor,
          titlecolor = colorMode.titlecolor,
          textcolor = colorMode.textcolor,
+         fillbgcolor = colorMode.fillbgcolor,
          transform = "floor", 
          thresholds = {
              { value = getThemeValue("esctemp_warn"), fillcolor = "green"  },
@@ -244,7 +243,8 @@ return {
     layout = layout,
     boxes = boxes,
     scheduler = {
-        spread_scheduling = false,      -- (optional: spread scheduling over the interval to avoid spikes in CPU usage)  
-        spread_ratio = 0.8              -- optional: manually override default ratio logic (applies if spread_scheduling is true)        
+        spread_scheduling = true,         -- (optional: spread scheduling over the interval to avoid spikes in CPU usage) 
+        spread_scheduling_paint = false,  -- optional: spread scheduling for paint (if true, paint will be spread over the interval) 
+        spread_ratio = 0.5                -- optional: manually override default ratio logic (applies if spread_scheduling is true)      
     }    
 }
