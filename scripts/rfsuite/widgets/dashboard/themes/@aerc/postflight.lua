@@ -80,7 +80,8 @@ return {
     layout = layout,
     boxes = boxes,
     scheduler = {
-        spread_scheduling = false,      -- (optional: spread scheduling over the interval to avoid spikes in CPU usage)  
-        spread_ratio = 0.8              -- optional: manually override default ratio logic (applies if spread_scheduling is true)        
+        spread_scheduling = true,         -- (optional: spread scheduling over the interval to avoid spikes in CPU usage) 
+        spread_scheduling_paint = false,  -- optional: spread scheduling for paint (if true, paint will be spread over the interval) 
+        spread_ratio = 0.5                -- optional: manually override default ratio logic (applies if spread_scheduling is true)     
     } 
 }
