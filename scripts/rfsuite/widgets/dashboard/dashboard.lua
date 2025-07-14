@@ -32,10 +32,16 @@ local tasks = rfsuite.tasks
 local supportedResolutions = {
     { 784, 294 },   -- X20, X20RS etc
     { 784, 316 },   -- X20, X20RS etc (no title)
+    { 800, 458 },   -- X20, X20RS etc (full screen)
+    { 800, 480 },   -- X20, X20RS etc (full screen / no title)
     { 472, 191 },   -- TWXLITE, X18, X18S
     { 472, 210 },   -- TWXLITE, X18, X18S (no title)
+    { 480, 301 },   -- TWXLITE, X18, X18S (full screen)
+    { 480, 320 },   -- TWXLITE, X18, X18S (full screen / no title)
     { 630, 236 },   -- X14
     { 630, 258 },   -- X14 (no title)
+    { 640, 301 },   -- X14 (full screen)
+    { 640, 360 },   -- X14 (full screen / no title)
 }
 
 
