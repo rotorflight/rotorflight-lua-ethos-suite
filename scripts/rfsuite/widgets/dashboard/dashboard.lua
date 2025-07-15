@@ -32,10 +32,16 @@ local tasks = rfsuite.tasks
 local supportedResolutions = {
     { 784, 294 },   -- X20, X20RS etc
     { 784, 316 },   -- X20, X20RS etc (no title)
+    { 800, 458 },   -- X20, X20RS etc (full screen)
+    { 800, 480 },   -- X20, X20RS etc (full screen / no title)
     { 472, 191 },   -- TWXLITE, X18, X18S
     { 472, 210 },   -- TWXLITE, X18, X18S (no title)
+    { 480, 301 },   -- TWXLITE, X18, X18S (full screen)
+    { 480, 320 },   -- TWXLITE, X18, X18S (full screen / no title)
     { 630, 236 },   -- X14
     { 630, 258 },   -- X14 (no title)
+    { 640, 301 },   -- X14 (full screen)
+    { 640, 360 },   -- X14 (full screen / no title)
 }
 
 
@@ -656,7 +662,33 @@ function dashboard.reload_active_theme_only(force)
     lcd.invalidate()
 end
 
+function dashboard.applySchedulerSettings()
 
+    local active = dashboard.flightmode or "preflight"
+    local mod = loadedStateModules[active]
+    if mod and mod.scheduler then
+        local initTable = (type(mod.scheduler) == "function") and mod.scheduler() or mod.scheduler
+        if type(initTable) == "table" then
+
+            dashboard._useSpreadScheduling = (initTable.spread_scheduling ~= false)
+            dashboard._useSpreadSchedulingPaint = (initTable.spread_scheduling_paint ~= false)
+
+            -- NEW: optionally override spread ratio
+            dashboard._spreadRatioOverride = (type(initTable.spread_ratio) == "number" and initTable.spread_ratio > 0 and initTable.spread_ratio <= 1)
+                and initTable.spread_ratio
+                or nil
+        else
+            dashboard._useSpreadScheduling = true
+            dashboard._useSpreadSchedulingPaint = true
+            dashboard._spreadRatioOverride = nil
+        end
+    else
+        dashboard._useSpreadScheduling = true
+        dashboard._useSpreadSchedulingPaint = true
+        dashboard._spreadRatioOverride = nil
+    end
+
+end
 
 function dashboard.reload_themes(force)
 
@@ -669,27 +701,8 @@ function dashboard.reload_themes(force)
     -- Step 2: Reset state preload index (wake-up loop will handle it)
     statePreloadIndex = 1  -- start loading immediately
 
-    -- Step 3: Load scheduler intervals from active module only
-    local active = dashboard.flightmode or "preflight"
-    local mod = loadedStateModules[active]
-    if mod and mod.scheduler then
-        local initTable = (type(mod.scheduler) == "function") and mod.scheduler() or mod.scheduler
-        if type(initTable) == "table" then
-
-            dashboard._useSpreadScheduling = (initTable.spread_scheduling ~= false)
-
-            -- NEW: optionally override spread ratio
-            dashboard._spreadRatioOverride = (type(initTable.spread_ratio) == "number" and initTable.spread_ratio > 0 and initTable.spread_ratio <= 1)
-                and initTable.spread_ratio
-                or nil
-        else
-            dashboard._useSpreadScheduling = true
-            dashboard._spreadRatioOverride = nil
-        end
-    else
-        dashboard._useSpreadScheduling = true
-        dashboard._spreadRatioOverride = nil
-    end
+    -- Step 3: Apply scheduler settings
+    dashboard.applySchedulerSettings()
 
     -- Step 4: Load object types for active module only
     local boxes = {}
@@ -963,6 +976,7 @@ function dashboard.wakeup(widget)
         local theme = getThemeForState("preflight")
         log("Initial loading of preflight theme: " .. theme, "info")
         loadedStateModules.preflight = load_state_script(theme, "preflight")
+        dashboard.applySchedulerSettings()
     end
 
     if statePreloadIndex <= #statePreloadQueue then
@@ -1013,14 +1027,18 @@ function dashboard.wakeup(widget)
         dashboard.flightmode = currentFlightMode
         reload_state_only(currentFlightMode)
         lastFlightMode = currentFlightMode
-        lcd.invalidate(widget)
+        if dashboard._useSpreadSchedulingPaint then
+            lcd.invalidate(widget)
+        end    
     end
 
     local newMessage = dashboard.computeOverlayMessage()
     if dashboard.overlayMessage ~= newMessage then
         dashboard.overlayMessage = newMessage
         dashboard._hg_cycles = newMessage and dashboard._hg_cycles_required or 0
-        lcd.invalidate(widget)
+        if dashboard._useSpreadSchedulingPaint then
+            lcd.invalidate(widget)
+        end
     end
 
     local state = dashboard.flightmode or "preflight"
@@ -1072,20 +1090,27 @@ function dashboard.wakeup(widget)
             end
         end
 
-        if needsFullInvalidate then
-            lcd.invalidate()
-        else
-            for _, r in ipairs(dirtyRects) do
-                lcd.invalidate(r.x, r.y, r.w, r.h)
+        if dashboard._useSpreadSchedulingPaint then
+            if needsFullInvalidate then
+                lcd.invalidate()
+            else
+                for _, r in ipairs(dirtyRects) do
+                    lcd.invalidate(r.x, r.y, r.w, r.h)
+                end
             end
-        end
+        end    
     end
 
     if not lcd.hasFocus(widget) and dashboard.selectedBoxIndex ~= nil then
         log("Removing focus from box " .. tostring(dashboard.selectedBoxIndex), "info")
         dashboard.selectedBoxIndex = nil
-        lcd.invalidate(widget)
+        if dashboard._useSpreadSchedulingPaint then
+            lcd.invalidate(widget)
+        end    
     end
+
+
+
 
     if lcd.isVisible() then
         dashboard._lastMemReport = dashboard._lastMemReport or 0
@@ -1095,6 +1120,9 @@ function dashboard.wakeup(widget)
         end
     end
 
+    if not dashboard._useSpreadSchedulingPaint then
+        lcd.invalidate()
+    end
 end
 
 
