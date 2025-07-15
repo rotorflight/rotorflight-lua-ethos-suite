@@ -394,11 +394,11 @@ return {
     ["navigation_help"] = "?",
     ["modules"] = {
       ["stats"] = {
-        ["name"] = "Stats",
-        ["totalflighttime"] = "Total Flight Time",
-        ["flightcount"] = "Flight Count",
-        ["lastflighttime"] = "Last Flight Time",
-        ["help_p1"] = "Use this module to update the recorded flight statistics on the flight controller."
+        ["name"] = "Statistiques",
+        ["totalflighttime"] = "Temps de vol total",
+        ["flightcount"] = "Nombre de vols",
+        ["lastflighttime"] = "Dernier temps de vol",
+        ["help_p1"] = "Utilisez ce module pour mettre à jour les statistiques de vol enregistrées sur le contrôleur de vol."
       },
       ["settings"] = {
         ["name"] = "Paramètres",
