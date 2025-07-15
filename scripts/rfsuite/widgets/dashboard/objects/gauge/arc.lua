@@ -51,6 +51,8 @@
     min                 : number    -- (Optional) Minimum value of the arc (default: 0)
     max                 : number    -- (Optional) Maximum value of the arc (default: 100)
     thickness           : number    -- (Optional) Arc thickness in pixels
+    gaugepadding        : number    -- (Optional) Horizontal-only padding applied to arc radius (shrinks arc from left/right only)
+    gaugepaddingbottom  : number    -- (Optional) Extra space added below arc region, pushing arc upward (vertical only)
 ]]
 
 local render = {}
@@ -75,7 +77,6 @@ function render.dirty(box)
 
     return false
 end
-
 
 -- Arc drawing function
 local function drawArc(cx, cy, radius, thickness, startAngle, endAngle, color)
@@ -103,7 +104,7 @@ end
 function render.wakeup(box)
 
     local telemetry = rfsuite.tasks.telemetry
-    
+
     -- Value extraction
     local source = getParam(box, "source")
     local value, _, dynamicUnit
@@ -156,7 +157,7 @@ function render.wakeup(box)
             maxval = maxval * 3.28084
         end
     end
-    
+
     -- Clone and convert threshold values to match display units if using Fahrenheit or feet
     local thresholds = getParam(box, "thresholds")
     local adjustedThresholds = thresholds
@@ -265,6 +266,8 @@ function render.wakeup(box)
         maxpadding         = getParam(box, "maxpadding") or 0,
         maxpaddingleft     = getParam(box, "maxpaddingleft") or 0,
         maxpaddingtop      = getParam(box, "maxpaddingtop") or 0,
+        gaugepadding       = getParam(box, "gaugepadding") or 0,
+        gaugepaddingbottom = getParam(box, "gaugepaddingbottom") or 0,
     }
 end
 
@@ -279,35 +282,35 @@ function render.paint(x, y, w, h, box)
         local _, th = lcd.getTextSize(c.title)
         titleHeight = (th or 0) + (c.titlespacing or 0) + (c.titlepaddingtop or 0) + (c.titlepaddingbottom or 0)
     end
-   
+
     -- Arc region: based on title position
     local arcRegionY, arcRegionH, cy, radius
     local thickness, maxRadius
 
     if c.titlepos == "top" then
         arcRegionY = y + titleHeight
-        arcRegionH = h - titleHeight
+        arcRegionH = h - titleHeight - (c.gaugepaddingbottom or 0)
         cy = arcRegionY + arcRegionH * 0.5
     elseif c.titlepos == "bottom" then
         arcRegionY = y
-        arcRegionH = h - titleHeight
+        arcRegionH = h - titleHeight - (c.gaugepaddingbottom or 0)
         cy = arcRegionY + arcRegionH * 0.6
     else
         arcRegionY = y
-        arcRegionH = h
+        arcRegionH = h - (c.gaugepaddingbottom or 0)
         cy = arcRegionY + arcRegionH * 0.55
     end
 
     thickness = c.thickness or math.max(6, math.min(w, arcRegionH) * 0.07)
+    local gaugepadding = c.gaugepadding or 0
     maxRadius = (arcRegionH / 2) - (thickness / 2)
-    radius = math.min(w * 0.50, maxRadius + 8)
-
+    radius = math.min((w / 2) - gaugepadding, maxRadius + 8)
 
     -- Widget background
     if c.bgcolor then
         lcd.color(c.bgcolor)
         lcd.drawFilledRectangle(x, y, w, h)
-    end     
+    end
 
     -- Arc layout
     local cx = x + w / 2
