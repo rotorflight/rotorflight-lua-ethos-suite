@@ -200,6 +200,8 @@ end
     Also clears the MSP transmission buffer.
 ]]
 function MspQueueController:clear()
+    rfsuite.app.triggers.mspBusy = false
+    self.mspBusyStart = nil    
     self.messageQueue = {}
     self.currentMessage = nil
     self.uuid = nil -- Ensure UUID is cleared when queue is cleared
