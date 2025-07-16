@@ -1218,6 +1218,7 @@ return {
       ["unsupported_resolution"] = "TROP PETIT",
       ["loading"] = "ROTORFLIGHT",
       ["waiting_for_connection"] = "CONNECTION",
+      ["identifying_fbl"] = "IDENTIFIER",
       ["check_bg_task"] = "TACHE ARRIERE-PLAN",
       ["check_rf_module_on"] = "MODULE RF",
       ["check_discovered_sensors"] = "CAPTEURS",

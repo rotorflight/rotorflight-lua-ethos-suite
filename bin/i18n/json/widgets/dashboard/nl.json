@@ -6,12 +6,12 @@
   },
   "validate_sensors": {
     "english": "PLEASE CHECK SENSORS",
-    "translation": "Controleer sensors",
+    "translation": "CONTROLEER SENSORS",
     "needs_translation": "false"
   },
   "unsupported_resolution": {
     "english": "TO SMALL",
-    "translation": "Te klein",
+    "translation": "TE KLEIN",
     "needs_translation": "false"
   },
   "loading": {
@@ -21,8 +21,13 @@
   },
   "waiting_for_connection": {
     "english": "CONNECTING",
-    "translation": "Verbinden",
+    "translation": "VERBINDEN",
     "needs_translation": "false"
+  },
+  "identifying_fbl": {
+    "english": "IDENTIFYING",
+    "translation": "IDENTIFICEREN",
+    "needs_translation": "true"
   },
   "check_bg_task": {
     "english": "BG TASK",

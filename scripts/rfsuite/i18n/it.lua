@@ -1218,6 +1218,7 @@ return {
       ["unsupported_resolution"] = "TROPPO PICCOLO",
       ["loading"] = "ROTORFLIGHT",
       ["waiting_for_connection"] = "CONNECTING",
+      ["identifying_fbl"] = "IDENTIFICARE",
       ["check_bg_task"] = "BG TASK",
       ["check_rf_module_on"] = "MODULO RF",
       ["check_discovered_sensors"] = "SENSORI",
