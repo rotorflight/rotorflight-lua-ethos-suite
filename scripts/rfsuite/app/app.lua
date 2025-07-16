@@ -951,13 +951,14 @@ app._uiTasks = {
   -- 2. Close Progress Loader
   function()
     if not app.triggers.closeProgressLoader then return end
-    local p, q = app.dialogs.progressCounter, rfsuite.tasks.msp.mspQueue
+    local p = app.dialogs.progressCounter
+    local q = rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue
     if p >= 90 then p = p + 10 else p = p + 15 end
     app.dialogs.progressCounter = p
     if app.dialogs.progress then
       app.ui.progressDisplayValue(p)
     end
-    if p >= 101 and q:isProcessed() then
+    if p >= 101 and q and q:isProcessed() then
       app.dialogs.progressWatchDog = nil
       app.dialogs.progressDisplay  = false
       app.ui.progressDisplayClose()
@@ -1518,9 +1519,9 @@ function app.close()
         app.Page.close()
     end
 
-    if app.dialogs.progress then app.ui.progressDisplayClose() end
-    if app.dialogs.save then app.ui.progressDisplaySaveClose() end
-    if app.dialogs.noLink then app.ui.progressNolinkDisplayClose() end
+    if app.dialogs.progress and app.ui then app.ui.progressDisplayClose() end
+    if app.dialogs.save and app.ui then app.ui.progressDisplaySaveClose() end
+    if app.dialogs.noLink and app.ui then app.ui.progressNolinkDisplayClose() end
 
 
     -- Reset configuration and compiler flags
