@@ -245,13 +245,13 @@ local sensorTable = {
                   min = 0, max = 300 },
             },
             sport = {
-                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0208 },
-                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0201 },
                 { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0200 },
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0208 },
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0201 },               
             },
             crsf = {
-                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1042 },
                 { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1012 },
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1042 },                
                 { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x104A },
             },
             crsfLegacy = { "Rx Curr" },
