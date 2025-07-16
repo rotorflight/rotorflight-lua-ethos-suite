@@ -65,6 +65,9 @@ function utils.session()
     rfsuite.session.lastMemoryUsage = nil
     rfsuite.session.mcu_id = nil
     rfsuite.session.isConnected = false
+    rfsuite.session.isConnectedHigh = false
+    rfsuite.session.isConnectedMedium = false
+    rfsuite.session.isConnectedLow = false
     rfsuite.session.isArmed = false
     rfsuite.session.bblSize = nil
     rfsuite.session.bblUsed = nil
