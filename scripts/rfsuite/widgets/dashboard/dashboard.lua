@@ -369,24 +369,36 @@ function dashboard.renderLayout(widget, config)
 
     -- Load layout and box definitions
     local layout    = resolve(config.layout) or {}
+    local headerLayout = resolve(config.header_layout) or {}
     local boxes     = resolve(config.boxes or layout.boxes or {})
+    local headerBoxes = resolve(config.header_boxes or {})
 
     -- Reload widgets if layout changed
-    if #boxes ~= lastLoadedBoxCount then
-        dashboard.loadAllObjects(boxes)
-        lastLoadedBoxCount = #boxes
+    if (#boxes + #headerBoxes) ~= lastLoadedBoxCount then
+        local allBoxes = {}
+        for _, b in ipairs(boxes) do table.insert(allBoxes, b) end
+        for _, b in ipairs(headerBoxes) do table.insert(allBoxes, b) end
+        dashboard.loadAllObjects(allBoxes)
+        lastLoadedBoxCount = #boxes + #headerBoxes
     end
+
 
     for k in pairs(dashboard._objectDirty) do dashboard._objectDirty[k] = nil end   
 
     -- Grid and screen setup
     local W_raw, H_raw = lcd.getWindowSize()
+    local isFullScreen = utils.isFullScreen(W_raw, H_raw)
     local cols         = layout.cols or 1
     local rows         = layout.rows or 1
     local pad          = layout.padding or 0
 
     local function adjustDimension(dim, cells, padCount)
     return dim - ((dim - padCount*pad) % cells)
+    end
+
+    -- Adjust height for header if specified
+    if isFullScreen and headerLayout and headerLayout.height and type(headerLayout.height) == "number" then
+        H_raw = H_raw - headerLayout.height
     end
 
     local W = adjustDimension(W_raw, cols, cols - 1)
@@ -410,6 +422,9 @@ function dashboard.renderLayout(widget, config)
         local w, h = getBoxSize(box, boxW, boxH, pad, W, H)
         box.xOffset = xOffset
         local x, y = getBoxPosition(box, w, h, boxW, boxH, pad, W, H)
+        if isFullScreen and headerLayout and headerLayout.height and type(headerLayout.height) == "number"  then
+            y = y + headerLayout.height  -- Adjust y position for header
+        end
 
         local rect = { x = x, y = y, w = w, h = h, box = box }
         table.insert(dashboard.boxRects, rect)
@@ -420,6 +435,25 @@ function dashboard.renderLayout(widget, config)
         local obj = dashboard.objectsByType[box.type]
         if obj and obj.scheduler and obj.wakeup then
             table.insert(scheduledBoxIndices, rectIndex)
+        end
+    end
+
+    -- now do the same for headerBoxes so they get scheduled and invalidated just like normal boxes
+    if isFullScreen then
+        for _, box in ipairs(headerBoxes) do
+        local w, h = getBoxSize(box, boxW, boxH, pad, W_raw, headerLayout.height)
+        local x, y = getBoxPosition(box, w, h, boxW, boxH, pad, W_raw, headerLayout.height)
+        y = y  -- header y‑offset is already correct
+
+        local rect = { x=x, y=y, w=w, h=h, box=box }
+        table.insert(dashboard.boxRects, rect)
+        local idx = #dashboard.boxRects
+        dashboard._objectDirty[idx] = nil
+
+        local obj = dashboard.objectsByType[box.type]
+        if obj and obj.scheduler and obj.wakeup then
+            table.insert(scheduledBoxIndices, idx)
+        end
         end
     end
 
@@ -446,7 +480,8 @@ function dashboard.renderLayout(widget, config)
     dashboard._loader_start_time = dashboard._loader_start_time or os.clock()
     local loaderElapsed = os.clock() - dashboard._loader_start_time
     if objectsThreadedWakeupCount < 1 or loaderElapsed < dashboard._loader_min_duration then
-        dashboard.loader(0, 0, W, H)
+        local loaderY = (isFullScreen and headerLayout.height) or 0
+        dashboard.loader(0, loaderY, W, H - loaderY)
         lcd.invalidate()
         return
     end
@@ -470,6 +505,36 @@ function dashboard.renderLayout(widget, config)
         end
     end
 
+
+    ------------------------------------------------------------------------
+    -- PHASE 4: Draw Header - if applicable
+    ------------------------------------------------------------------------
+    if isFullScreen and config.header_layout and #headerBoxes > 0 then
+        local header = config.header_layout
+        local h_cols = header.cols or 1
+        local h_rows = header.rows or 1
+        local h_pad  = header.padding or 0
+
+        local headerW = W_raw
+        local headerH = header.height or 0
+
+        local contentW = headerW - ((h_cols - 1) * h_pad)
+        local contentH = headerH - ((h_rows - 1) * h_pad)
+        local h_boxW   = contentW / h_cols
+        local h_boxH   = contentH / h_rows
+
+        for _, box in ipairs(headerBoxes) do
+            local w, h = getBoxSize(box, h_boxW, h_boxH, h_pad, headerW, headerH)
+            local x, y = getBoxPosition(box, w, h, h_boxW, h_boxH, h_pad, headerW, headerH)
+
+            local obj = dashboard.objectsByType[box.type]
+            if obj and obj.paint then
+                obj.paint(x, y, w, h, box)
+            end
+        end
+    end
+
+
     -- Draw optional grid overlay
     if layout.showgrid then
         lcd.color(layout.showgrid)
@@ -490,7 +555,8 @@ function dashboard.renderLayout(widget, config)
         dashboard._hg_cycles = dashboard._hg_cycles_required
     end
     if dashboard._hg_cycles > 0 then
-        dashboard.overlaymessage(0, 0, W, H, dashboard.overlayMessage)
+        local loaderY = (isFullScreen and headerLayout.height) or 0
+        dashboard.overlaymessage(0, loaderY, W, H - loaderY, dashboard.overlayMessage)
         dashboard._hg_cycles = dashboard._hg_cycles - 1
         lcd.invalidate()
         return
@@ -800,7 +866,8 @@ function dashboard.paint(widget)
     -- on the *first* paint, immediately draw the spinner and bail out
     if firstWakeup then
         local W, H = lcd.getWindowSize()
-        dashboard.loader(0, 0, W, H)
+        local loaderY = (isFullScreen and headerLayout.height) or 0
+        dashboard.loader(0, loaderY, W, H - loaderY)
         lcd.invalidate()  -- Ensures repaint while theme loads
         return
     end
