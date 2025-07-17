@@ -211,7 +211,6 @@ function tasks.active()
 end
 
 function tasks.wakeup()
-
     tasks.heartbeat = os.clock()
 
     if ethosVersionGood == nil then
@@ -239,7 +238,7 @@ function tasks.wakeup()
             if meta.init then
                 local initFn, err = compiler(meta.init)
                 if initFn then
-                    pcall(initFn)  -- run task's init.lua
+                    pcall(initFn) -- run task's init.lua
                 else
                     utils.log("Failed to load init for " .. key .. ": " .. (err or "unknown error"), "info")
                 end
@@ -249,17 +248,10 @@ function tasks.wakeup()
             local module = assert(compiler(script))(config)
             tasks[key] = module
 
-            -- we dont insert any tasks that have a interval less than 0
             if meta.interval >= 0 then
-
-                -- add a small drift to de-synchronize fixed intervals
                 local baseInterval = meta.interval or 1
-                local interval     = baseInterval + (math.random() * 0.1)
-                local offset = 0
-    
-                local jitter = math.random() * interval
-                offset = jitter % interval
-
+                local interval = baseInterval + (math.random() * 0.1)
+                local offset = math.random() * interval
 
                 table.insert(tasksList, {
                     name = key,
@@ -274,7 +266,7 @@ function tasks.wakeup()
             end
 
             tasks._initIndex = tasks._initIndex + 1
-            return  -- only one task initialized per frame
+            return
         else
             tasks._initState = nil
             tasks._initMetadata = nil
@@ -291,89 +283,93 @@ function tasks.wakeup()
 
     local function canRunTask(task)
         local intervalTicks = task.interval * 20
-        local isHighFrequency = intervalTicks < 20  -- Less than 1 second
-
-        local clockDelta = os.clock() - task.last_run
-        local graceFactor = 0.25  -- 25% of the interval as grace for low-frequency tasks
+        local isHighFrequency = intervalTicks < 20
+        local clockDelta = now - task.last_run
+        local graceFactor = 0.25
 
         local overdue
         if isHighFrequency then
             overdue = clockDelta >= intervalTicks
         else
-            local graceTicks = intervalTicks * graceFactor
-            overdue = clockDelta >= (intervalTicks + graceTicks)
+            overdue = clockDelta >= (intervalTicks + intervalTicks * graceFactor)
         end
 
         local priorityTask = task.name == "msp" or task.name == "callback"
 
-        return (not task.linkrequired or rfsuite.session.telemetryState) and
-            (priorityTask or overdue or not rfsuite.app.triggers.mspBusy) and
-            (not task.simulatoronly or usingSimulator)
+        return (not task.linkrequired or rfsuite.session.telemetryState)
+            and (priorityTask or overdue or not rfsuite.app.triggers.mspBusy)
+            and (not task.simulatoronly or usingSimulator)
     end
 
-
-
-    -- Run always-run tasks
+    -- Run always-run tasks immediately if eligible
     for _, task in ipairs(tasksList) do
         if not task.spreadschedule and tasks[task.name].wakeup and canRunTask(task) then
             local elapsed = now - task.last_run
             if elapsed >= task.interval then
                 local fn = tasks[task.name].wakeup
                 if fn then
-                local ok, err = pcall(fn, tasks[task.name])
+                    local ok, err = pcall(fn, tasks[task.name])
                     if not ok then
                         print(("Error in task %q wakeup: %s"):format(task.name, err))
                     end
-                end              
+                end
                 task.last_run = now
             end
         end
     end
 
-    -- Collect eligible spread tasks
-    local eligibleTasks = {}
-    if not skipSpread then
-        for _, task in ipairs(tasksList) do
-            if task.spreadschedule and canRunTask(task) then
-                local elapsed = now - task.last_run
-                if elapsed >= task.interval then
-                    table.insert(eligibleTasks, task)
-                end
-            end
-        end
-    else
-        utils.log("Spread-scheduled tasks skipped due to active MSP or callback", "info")
-    end
+    -- Collect and sort spread-scheduled tasks
+    local normalEligibleTasks, mustRunTasks = {}, {}
 
-    -- Determine how many tasks to run
-    local count = 0
     for _, task in ipairs(tasksList) do
-        if not task.spreadschedule then count = count + 1 end
-    end
-    tasksPerCycle = math.ceil(count * taskSchedulerPercentage)
-
-    -- Run a random selection of eligible tasks
-    for i = 1, math.min(tasksPerCycle, #eligibleTasks) do
-        local index = math.random(1, #eligibleTasks)
-        local task = eligibleTasks[index]
-        if tasks[task.name].wakeup then
-            local fn = tasks[task.name].wakeup
-            if fn then
-            local ok, err = pcall(fn, tasks[task.name])
-                if not ok then
-                    print(("Error in task %q wakeup: %s"):format(task.name, err))
-                end
+        if task.spreadschedule and canRunTask(task) then
+            local elapsed = now - task.last_run
+            if elapsed >= 2 * task.interval then
+                table.insert(mustRunTasks, task)
+            elseif elapsed >= task.interval then
+                table.insert(normalEligibleTasks, task)
             end
-            -- schedule next run with per-run jitter on spread-scheduled tasks
-            local jitterScale = 0.2
-            -- ±20% of the interval
-            local jitter = (math.random() * 2 - 1) * task.interval * jitterScale
-            task.last_run = now + jitter
-
         end
-        table.remove(eligibleTasks, index)
+    end
+
+    table.sort(mustRunTasks, function(a, b) return a.last_run < b.last_run end)
+    table.sort(normalEligibleTasks, function(a, b) return a.last_run < b.last_run end)
+
+    local nonSpreadCount = 0
+    for _, task in ipairs(tasksList) do
+        if not task.spreadschedule then
+            nonSpreadCount = nonSpreadCount + 1
+        end
+    end
+
+    tasksPerCycle = math.ceil(nonSpreadCount * taskSchedulerPercentage)
+
+    -- Run all must-run tasks regardless of budget
+    for _, task in ipairs(mustRunTasks) do
+        local fn = tasks[task.name].wakeup
+        if fn then
+            local ok, err = pcall(fn, tasks[task.name])
+            if not ok then
+                print(("Error in task %q wakeup (must-run): %s"):format(task.name, err))
+            end
+        end
+        task.last_run = now
+    end
+
+    -- Run a limited number of normally-eligible spread tasks
+    for i = 1, math.min(tasksPerCycle, #normalEligibleTasks) do
+        local task = normalEligibleTasks[i]
+        local fn = tasks[task.name].wakeup
+        if fn then
+            local ok, err = pcall(fn, tasks[task.name])
+            if not ok then
+                print(("Error in task %q wakeup: %s"):format(task.name, err))
+            end
+        end
+        task.last_run = now
     end
 end
+
 
 function tasks.reset()
     --utils.log("Reset all tasks", "info")
