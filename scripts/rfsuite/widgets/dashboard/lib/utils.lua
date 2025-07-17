@@ -20,6 +20,25 @@ local utils = {}
 local imageCache = {}
 local fontCache 
 
+
+-- Determine layout and screensize in use
+function utils.isFullScreen(w, h)
+
+    -- Large screens - (X20 / X20RS / X18RS etc) Full/Standard
+    if (w == 800 and (h == 458 or h == 480)) then return true end
+    if (w == 784 and (h == 294 or h == 316)) then return false end
+
+    -- Medium screens (X18 / X18S / TWXLITE) - Full/Standard
+    if (w == 480 and (h == 301 or h == 320)) then return true end
+    if (w == 472 and (h == 191 or h == 210)) then return false end
+
+    -- Small screens - (X14 / X14S) Full/Standard
+    if (w == 640 and (h == 338 or h == 360)) then return true end
+    if (w == 630 and (h == 236 or h == 258)) then return false end
+
+    return nil -- Unknown resolution, assume not fullscreen
+end
+
 --- Checks if the model preferences are ready.
 -- This function returns true if the `rfsuite` table, its `session` field,
 -- and the `modelPreferences` field within `session` are all non-nil.

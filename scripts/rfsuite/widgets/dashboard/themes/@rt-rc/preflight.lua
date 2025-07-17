@@ -32,6 +32,8 @@ local darkMode = {
     fillcolor   = "green",
     fillbgcolor = "grey",
     arcbgcolor  = "lightgrey",
+    rssifillcolor = "darkwhite",
+    txaccentcolor = "grey",
 }
 
 local lightMode = {
@@ -41,6 +43,8 @@ local lightMode = {
     fillcolor   = "green",
     fillbgcolor = "lightgrey",
     arcbgcolor  = "darkgrey",
+    rssifillcolor = "darkwhite",
+    txaccentcolor = "grey",
 }
 
 -- alias current mode
@@ -312,9 +316,39 @@ local function boxes()
     return boxes_cache
 end
 
+
+local header_boxes = {
+        -- Craftname
+        { col = 1, row = 1, colspan = 2, type = "text", subtype = "craftname", font = "FONT_L", valuepaddingleft = 100, bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.textcolor},
+        
+        -- RF Logo
+        {col = 3, row = 1, colspan = 3, type = "image", subtype = "image", bgcolor = colorMode.bgcolor},
+
+
+
+        -- RSSI
+        {col = 7, row = 1,
+        type = "gauge", subtype = "step", source = "rssi",            
+        font = "FONT_XS", stepgap = 3, stepcount = 5, decimals = 0,
+        bgcolor = colorMode.bgcolor, textcolor = colorMode.textcolor, fillcolor = colorMode.rssifillcolor, 
+        }
+}
+
+local header_layout = {
+    height  = 60,  --optional header used in fullscreen mode
+    cols    = 8,
+    rows    = 1,
+    padding = 1,
+    bgcolor = colorMode.bgcolor,
+    -- showgrid = lcd.RGB(100, 100, 100)
+}
+
+
 return {
   layout    = layout,
   boxes     = boxes,
+  header_boxes = header_boxes,
+  header_layout = header_layout,
   scheduler = {
         spread_scheduling = true,         -- (optional: spread scheduling over the interval to avoid spikes in CPU usage) 
         spread_scheduling_paint = false,  -- optional: spread scheduling for paint (if true, paint will be spread over the interval) 
