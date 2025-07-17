@@ -26,9 +26,9 @@ local handlers  = mspModule.createHandlers()
 
 -- Define MSP fields
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "flightcount",     type = "U8", simResponse = {0} , min = 0, max = 1000000000},
-    { field = "lastflighttime",  type = "U8", simResponse = {0} , min = 0, max = 1000000000, unit = "s"},
-    { field = "totalflighttime", type = "U8", simResponse = {0} , min = 0, max = 1000000000, unit = "s"},
+    { field = "flightcount",     type = "U32", simResponse = {0} , min = 0, max = 1000000000},
+    { field = "lastflighttime",  type = "U32", simResponse = {0} , min = 0, max = 1000000000, unit = "s"},
+    { field = "totalflighttime", type = "U32", simResponse = {0} , min = 0, max = 1000000000, unit = "s"},
 }
 local READ_STRUCT, MIN_BYTES, SIM_RESP =
     mspModule.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
