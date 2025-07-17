@@ -137,9 +137,16 @@ function tasks.wakeup()
                 -- Signal the session connected immediately when high priority finishes
                 if level == "high" then
                     rfsuite.utils.playFileCommon("beep.wav")
-                    rfsuite.session.isConnected = true
                     rfsuite.flightmode.current = "preflight"
                     rfsuite.tasks.events.flightmode.reset()
+                    rfsuite.session.isConnectedHigh = true
+                    return
+                elseif level == "medium" then
+                    rfsuite.session.isConnectedMedium = true
+                    return
+                elseif level == "low" then 
+                    rfsuite.session.isConnectedLow = true    
+                    rfsuite.session.isConnected = true  
                     collectgarbage()
                     return
                 end

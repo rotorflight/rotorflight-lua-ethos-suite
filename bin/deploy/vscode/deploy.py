@@ -14,7 +14,6 @@ def copy_verbose(src, dst):
     pbar.update(1)
     shutil.copy(src, dst)
 
-
 def count_files_in_tree(directory, extension=None):
     file_count = 0
     for root, dirs, files in os.walk(directory):
@@ -22,7 +21,6 @@ def count_files_in_tree(directory, extension=None):
             files = [f for f in files if f.endswith(extension)]
         file_count += len(files)
     return file_count
-
 
 def copy_files(src, fileext=None, launch=False, destfolders=None):
     global pbar
@@ -47,7 +45,6 @@ def copy_files(src, fileext=None, launch=False, destfolders=None):
         tgt_folder = os.path.join(dest, tgt)
         logs_folder = os.path.join(tgt_folder, 'logs')
 
-        # Preserve the logs folder by moving it temporarily
         if os.path.exists(logs_folder) and fileext != "fast":
             print(f"Backing up logs ...")
             os.makedirs(logs_temp, exist_ok=True)
@@ -78,11 +75,7 @@ def copy_files(src, fileext=None, launch=False, destfolders=None):
                     src_file = os.path.join(root, file)
                     rel_path = os.path.relpath(src_file, lua_src)
                     tgt_file = os.path.join(tgt_folder, rel_path)
-
-                    # Ensure the target directory exists
                     os.makedirs(os.path.dirname(tgt_file), exist_ok=True)
-
-                    # If target file exists, compare and copy only if source is newer
                     if os.path.exists(tgt_file):
                         if os.stat(src_file).st_mtime > os.stat(tgt_file).st_mtime:
                             shutil.copy(src_file, tgt_file)
@@ -92,7 +85,6 @@ def copy_files(src, fileext=None, launch=False, destfolders=None):
                         print(f"Copying {file} to {tgt_file}")
 
         else:
-            # No specific file extension, remove and copy all files
             if os.path.exists(tgt_folder):
                 try:
                     print(f"Deleting existing folder: {tgt_folder}")
@@ -107,7 +99,6 @@ def copy_files(src, fileext=None, launch=False, destfolders=None):
                 except OSError:
                     print("Failed to delete entire folder, replacing single files instead")
 
-            # Copy all files to the destination folder
             print(f"Copying all files to target in {dest}...")
             all_src = os.path.join(srcfolder, 'scripts', tgt)
             num_files = count_files_in_tree(all_src)
@@ -120,7 +111,6 @@ def copy_files(src, fileext=None, launch=False, destfolders=None):
             )
             pbar.close()
 
-        # Restore logs if not handled already
         if os.path.exists(logs_temp):
             print(f"Restoring logs from backup ...")
             os.makedirs(logs_folder, exist_ok=True)
@@ -130,38 +120,51 @@ def copy_files(src, fileext=None, launch=False, destfolders=None):
         print(f"Copy completed for: {dest}")
 
     if launch:
-        cmd = launch
-        ret = subprocess_conout.subprocess_conout(cmd, nrows=9999, encode=True)
+        print(f"Launching simulator: {launch}")
+        ret = subprocess_conout.subprocess_conout(launch, nrows=9999, encode=True)
         print(ret)
 
     print("Script execution completed.")
 
-
 def main():
     parser = argparse.ArgumentParser(description='Deploy simulation files.')
     parser.add_argument('--src', type=str, help='Source folder')
-    parser.add_argument('--sim', type=str, help='Launch path for the sim after deployment')
+    parser.add_argument('--sim', type=str, help='Simulator index, "choose", or full path to launch')
     parser.add_argument('--fileext', type=str, help='File extension to filter by')
-    parser.add_argument(
-    '--destfolders',
-    type=str,
-    nargs='?',
-    const=None,
-    default=None,
-    help='Folders for deployment'
-    )
-    parser.add_argument('--radio', action='store_true', default=False,
-                        help='Deploy to connected FrSky radio')
-    parser.add_argument('--ethos-bin', type=str, default=None,
-                        help='Path to Ethos Suite CLI (overrides FRSKY_ETHOS_SUITE_BIN)')
-    parser.add_argument('--radioDebug', action='store_true', default=False,
-                        help='After deploying, switch radio into debug mode')
-    parser.add_argument('--radioDebugOnly', action='store_true', default=False,
-                        help='Skip deploy; only switch radio into debug mode')
+    parser.add_argument('--destfolders', type=str, nargs='?', const=None, default=None, help='Folders for deployment')
+    parser.add_argument('--radio', action='store_true', default=False, help='Deploy to connected FrSky radio')
+    parser.add_argument('--ethos-bin', type=str, default=None, help='Path to Ethos Suite CLI (overrides FRSKY_ETHOS_SUITE_BIN)')
+    parser.add_argument('--radioDebug', action='store_true', default=False, help='After deploying, switch radio into debug mode')
+    parser.add_argument('--radioDebugOnly', action='store_true', default=False, help='Skip deploy; only switch radio into debug mode')
 
     args = parser.parse_args()
 
-    # Inline helper from deploy-radio.py
+    def get_sim_from_csv(csv_string, index=0):
+        sims = [s.strip() for s in csv_string.split(',') if s.strip()]
+        if index < 0 or index >= len(sims):
+            raise IndexError(f"Simulator index {index} out of range.")
+        return sims[index]
+
+    def prompt_sim_choice(csv_string):
+        sims = [s.strip() for s in csv_string.split(',') if s.strip()]
+        if not sims:
+            raise ValueError("FRSKY_SIM_BIN is empty or malformed.")
+
+        print("Choose a simulator:")
+        for idx, sim in enumerate(sims):
+            label = os.path.basename(os.path.dirname(sim))
+            print(f"  [{idx}] {label} — {sim}")
+
+        while True:
+            try:
+                choice = int(input("Enter simulator number: "))
+                if 0 <= choice < len(sims):
+                    return sims[choice]
+                else:
+                    print("Invalid index. Try again.")
+            except ValueError:
+                print("Invalid input. Please enter a number.")
+
     def get_scripts_folder(ethos_bin):
         result = subprocess.run(
             [ethos_bin, '--get-path', 'SCRIPTS'],
@@ -173,7 +176,17 @@ def main():
         print("Error: could not determine SCRIPTS folder.", file=sys.stderr)
         sys.exit("Error: could not determine SCRIPTS folder.")
 
-    # 1) radioDebugOnly: only debug, no deploy
+    if args.sim:
+        sim_csv = os.environ.get('FRSKY_SIM_BIN', '')
+        try:
+            if args.sim.lower() == "choose":
+                args.sim = prompt_sim_choice(sim_csv)
+            elif args.sim.isdigit():
+                args.sim = get_sim_from_csv(sim_csv, int(args.sim))
+        except Exception as e:
+            print(f"Error selecting simulator: {e}")
+            sys.exit(1)
+
     if args.radioDebugOnly:
         ethos_bin = args.ethos_bin or os.environ.get('FRSKY_ETHOS_SUITE_BIN')
         if not ethos_bin:
@@ -182,9 +195,7 @@ def main():
 
         print("Debug-only: entering serial debug …")
         try:
-            port = subprocess.check_output(
-                [ethos_bin, '--serial', 'start'], text=True
-            ).strip()
+            port = subprocess.check_output([ethos_bin, '--serial', 'start'], text=True).strip()
             print(f"Radio in debug mode on {port}")
             ser = serial.Serial(port=port)
             while True:
@@ -196,7 +207,6 @@ def main():
             print(f"Radio not connected: {e}")
         sys.exit("Radio not connected: exiting.")
 
-    # 2) Normal or radio-driven deploy
     if args.radio:
         ethos_bin = args.ethos_bin or os.environ.get('FRSKY_ETHOS_SUITE_BIN')
         if not ethos_bin:
@@ -204,7 +214,6 @@ def main():
             sys.exit("Error: must set --ethos-bin or FRSKY_ETHOS_SUITE_BIN")
         args.destfolders = get_scripts_folder(ethos_bin)
 
-    # 3) Perform file copy/deploy
     copy_files(
         src=args.src,
         fileext=args.fileext,
@@ -212,14 +221,11 @@ def main():
         destfolders=args.destfolders
     )
 
-    # 4) Post-deploy debug, if requested
     if args.radio and args.radioDebug:
         ethos_bin = args.ethos_bin or os.environ.get('FRSKY_ETHOS_SUITE_BIN')
         print("Entering post-deploy debug mode …")
         try:
-            port = subprocess.check_output(
-                [ethos_bin, '--serial', 'start'], text=True
-            ).strip()
+            port = subprocess.check_output([ethos_bin, '--serial', 'start'], text=True).strip()
             print(f"Radio connected in debug mode on {port}")
             ser = serial.Serial(port=port)
             while True:
@@ -229,7 +235,6 @@ def main():
                     break
         except subprocess.CalledProcessError as e:
             print(f"Radio not connected: {e}")
-
 
 if __name__ == "__main__":
     main()

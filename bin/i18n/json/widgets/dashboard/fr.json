@@ -24,6 +24,11 @@
     "translation": "CONNECTION",
     "needs_translation": "false"
   },
+  "identifying_fbl": {
+    "english": "IDENTIFYING",
+    "translation": "IDENTIFIER",
+    "needs_translation": "true"
+  },
   "check_bg_task": {
     "english": "BG TASK",
     "translation": "TACHE ARRIERE-PLAN",
@@ -278,5 +283,10 @@
     "english": "Warning",
     "translation": "Avertissement",
     "needs_translation": "false"
+  },
+  "tx_batt": {
+    "english": "TX Battery",
+    "translation": "TX Battery",
+    "needs_translation": "true"
   }
 }

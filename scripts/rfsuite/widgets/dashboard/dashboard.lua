@@ -40,7 +40,7 @@ local supportedResolutions = {
     { 480, 320 },   -- TWXLITE, X18, X18S (full screen / no title)
     { 630, 236 },   -- X14
     { 630, 258 },   -- X14 (no title)
-    { 640, 301 },   -- X14 (full screen)
+    { 640, 338 },   -- X14 (full screen)
     { 640, 360 },   -- X14 (full screen / no title)
 }
 
@@ -277,8 +277,10 @@ function dashboard.computeOverlayMessage()
         return i18n("widgets.dashboard.check_rf_module_on")
     elseif not (sportSensor or elrsSensor) then
         return i18n("widgets.dashboard.check_discovered_sensors")
-    elseif not rfsuite.session.isConnected  and  state ~= "postflight" then
+    elseif not rfsuite.session.isConnectedHigh and  state ~= "postflight" then
         return i18n("widgets.dashboard.waiting_for_connection")    
+    elseif rfsuite.session.isConnectedHigh and not rfsuite.session.isConnectedLow and  state ~= "postflight" then
+        return i18n("widgets.dashboard.identifying_fbl")            
     elseif not rfsuite.session.telemetryState and state == "preflight" then
         return i18n("widgets.dashboard.no_link")
     elseif rfsuite.session.telemetryState and telemetry and not telemetry.validateSensors() then

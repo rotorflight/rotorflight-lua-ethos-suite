@@ -17,9 +17,8 @@
  * 
 ]] --
 local init = {
-    interval       = 0.05,              -- run every 0.025 seconds
+    interval       = 0.06,              -- run every 0.06 seconds (deliberate offset from msp)
     script         = "callback.lua",    -- run this script
-    msp            = true,              -- do not run if busy with msp 
     spreadschedule = false,             -- run on every loop
     simulatoronly  = false,             -- run this script in simulation mode     
 }

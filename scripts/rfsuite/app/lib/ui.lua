@@ -323,7 +323,9 @@ function ui.openMainMenu()
     rfsuite.app.formLines = {}
     rfsuite.app.lastLabel = nil
     rfsuite.app.isOfflinePage = false
-    rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
+    if rfsuite.tasks.msp then
+        rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
+    end
     rfsuite.app.gfx_buttons["mainmenu"] = {}
     rfsuite.app.lastMenu = nil
 

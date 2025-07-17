@@ -1183,7 +1183,7 @@ return {
       ["governor"] = "Estado Governor",
       ["adj_func"] = "Ajus.(Función)",
       ["fuel"] = "Nivel de Carga",
-      ["smartfuel"] = "Combustible Inteligente",
+      ["smartfuel"] = "Smart Fuel",
       ["rssi"] = "RSSI",
       ["adj_val"] = "Ajus.(Valor)",
       ["arming_flags"] = "Banderas Armado",
@@ -1218,6 +1218,7 @@ return {
       ["unsupported_resolution"] = "DEMASIADO BAJA",
       ["loading"] = "ROTORFLIGHT",
       ["waiting_for_connection"] = "CONECTANDO",
+      ["identifying_fbl"] = "IDENTIFICAR",
       ["check_bg_task"] = "TAREA SP",
       ["check_rf_module_on"] = "MODULO RF",
       ["check_discovered_sensors"] = "SENSORES",
@@ -1268,7 +1269,8 @@ return {
       ["power"] = "Potencia",
       ["cell_voltage"] = "Voltaje Celda",
       ["volts_per_cell"] = "Volts por celda",
-      ["warning"] = "Advertencia"
+      ["warning"] = "Advertencia",
+      ["tx_batt"] = "TX Battery"
     },
     ["governor"] = {
       ["UNKNOWN"] = "DESCONOCIDO",

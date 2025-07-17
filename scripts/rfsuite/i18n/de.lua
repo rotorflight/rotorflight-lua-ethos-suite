@@ -1183,7 +1183,7 @@ return {
       ["governor"] = "Governor Status",
       ["adj_func"] = "Adj (Funktion)",
       ["fuel"] = "Kraftstoffstand",
-      ["smartfuel"] = "Intelligenter Kraftstoff",
+      ["smartfuel"] = "Smart Fuel",
       ["rssi"] = "RSSI",
       ["adj_val"] = "Adj (Wert)",
       ["arming_flags"] = "Arming-Flags",
@@ -1218,6 +1218,7 @@ return {
       ["unsupported_resolution"] = "ZU KLEIN",
       ["loading"] = "ROTORFLIGHT",
       ["waiting_for_connection"] = "VERBINDEN",
+      ["identifying_fbl"] = "IDENTIFIZIEREN",
       ["check_bg_task"] = "HINTERGRUNDTASK",
       ["check_rf_module_on"] = "HF MODUL",
       ["check_discovered_sensors"] = "SENSOREN",
@@ -1268,7 +1269,8 @@ return {
       ["power"] = "Power",
       ["cell_voltage"] = "Zellenspannung",
       ["volts_per_cell"] = "Volt pro Zelle",
-      ["warning"] = "Warnung"
+      ["warning"] = "Warnung",
+      ["tx_batt"] = "TX Battery"
     },
     ["governor"] = {
       ["UNKNOWN"] = "UNBEKANNT",

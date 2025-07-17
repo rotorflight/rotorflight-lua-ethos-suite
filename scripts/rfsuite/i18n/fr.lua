@@ -1218,6 +1218,7 @@ return {
       ["unsupported_resolution"] = "TROP PETIT",
       ["loading"] = "ROTORFLIGHT",
       ["waiting_for_connection"] = "CONNECTION",
+      ["identifying_fbl"] = "IDENTIFIER",
       ["check_bg_task"] = "TACHE ARRIERE-PLAN",
       ["check_rf_module_on"] = "MODULE RF",
       ["check_discovered_sensors"] = "CAPTEURS",
@@ -1268,7 +1269,8 @@ return {
       ["power"] = "Puissance",
       ["cell_voltage"] = "Tension Cellule",
       ["volts_per_cell"] = "VVolts par cellule",
-      ["warning"] = "Avertissement"
+      ["warning"] = "Avertissement",
+      ["tx_batt"] = "TX Battery"
     },
     ["governor"] = {
       ["UNKNOWN"] = "INCONNU",
