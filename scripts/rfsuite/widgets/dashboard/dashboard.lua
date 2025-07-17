@@ -40,7 +40,7 @@ local supportedResolutions = {
     { 480, 320 },   -- TWXLITE, X18, X18S (full screen / no title)
     { 630, 236 },   -- X14
     { 630, 258 },   -- X14 (no title)
-    { 640, 301 },   -- X14 (full screen)
+    { 640, 338 },   -- X14 (full screen)
     { 640, 360 },   -- X14 (full screen / no title)
 }
 
