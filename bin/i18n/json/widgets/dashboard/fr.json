@@ -283,5 +283,10 @@
     "english": "Warning",
     "translation": "Avertissement",
     "needs_translation": "false"
+  },
+  "tx_batt": {
+    "english": "TX Battery",
+    "translation": "TX Battery",
+    "needs_translation": "true"
   }
 }

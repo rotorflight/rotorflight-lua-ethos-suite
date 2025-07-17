@@ -1269,7 +1269,8 @@ return {
       ["power"] = "Vermogen",
       ["cell_voltage"] = "Cel voltage",
       ["volts_per_cell"] = "Voltage per cel",
-      ["warning"] = "Waarschuwing"
+      ["warning"] = "Waarschuwing",
+      ["tx_batt"] = "TX Battery"
     },
     ["governor"] = {
       ["UNKNOWN"] = "ONBEKEND",
