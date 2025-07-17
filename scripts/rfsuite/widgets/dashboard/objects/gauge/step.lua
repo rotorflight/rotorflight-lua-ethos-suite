@@ -37,6 +37,7 @@
 
     -- Step bar parameters
     stepcount           : number    -- (Optional) Number of steps/bars to draw (default: 4)
+    stepgap             : number    -- (Optional) Pixel gap between each step/bar (default: 1)
     fillcolor           : color     -- (Optional) Color for active steps (theme fallback, or resolved by thresholds)
     fillbgcolor         : color     -- (Optional) Color for inactive steps (theme fallback)
     bgcolor             : color     -- (Optional) Widget background color (theme fallback if nil)
@@ -176,6 +177,7 @@ function render.wakeup(box)
         textcolor                = textcolor,
         hidevalue                = getParam(box, "hidevalue"),
         thresholds               = thresholds,
+        stepgap                  = getParam(box, "stepgap") or 1,
     }
 end
 
@@ -209,7 +211,7 @@ function render.paint(x, y, w, h, box)
     end
 
     -- Step Bar Geometry, title-aware, with bar padding
-    local stepGap = 1
+    local stepGap = c.stepgap or 1
     local minStepW = 4
     local minStepH = 6
 

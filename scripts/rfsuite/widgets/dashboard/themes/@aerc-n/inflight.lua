@@ -17,11 +17,6 @@
 
 local i18n = rfsuite.i18n.get
 
-local layout = {
-    cols = 6,
-    rows = 12,
-}
-
 local darkMode = {
     textcolor   = "white",
     titlecolor  = "white",
@@ -29,6 +24,8 @@ local darkMode = {
     fillcolor   = "green",
     fillbgcolor = "grey",
     accentcolor = "white",
+    rssifillcolor = "darkwhite",
+    txaccentcolor = "grey",
 }
 
 local lightMode = {
@@ -38,9 +35,33 @@ local lightMode = {
     fillcolor   = "green",
     fillbgcolor = "grey",
     accentcolor = "black",
+    rssifillcolor = "darkwhite",
+    txaccentcolor = "grey",
 }
 
+-- alias current mode
 local colorMode = lcd.darkMode() and darkMode or lightMode
+
+-- Determine layout and screensize in use
+local function getScreenSize(w, h)
+
+    -- Large screens - (X20 / X20RS / X18RS etc) Full/Standard
+    if (w == 800 and (h == 458 or h == 480)) then return "ls_full" end
+    if (w == 784 and (h == 294 or h == 316)) then return "ls_std" end
+
+    -- Medium screens (X18 / X18S / TWXLITE) - Full/Standard
+    if (w == 480 and (h == 301 or h == 320)) then return "ms_full" end
+    if (w == 472 and (h == 191 or h == 210)) then return "ms_std" end
+
+    -- Small screens - (X14 / X14S) Full/Standard
+    if (w == 640 and (h == 338 or h == 360)) then return "ss_full" end
+    if (w == 630 and (h == 236 or h == 258)) then return "ss_std" end
+
+    return "unknown"
+end
+
+local W, H = lcd.getWindowSize()
+local screenGroup = getScreenSize(W, H)
 
 -- Theme config support
 local theme_section = "system/@aerc-n"
@@ -50,6 +71,44 @@ local THEME_DEFAULTS = {
     v_max   = 8.4,
     rpm_min = 0,
     rpm_max = 3000,
+    tx_min  = 7.2,
+    tx_warn = 7.4,
+    tx_max  = 8.4
+}
+
+-- Theme Options based on screen size
+local themeOptions = {
+
+    -- Large screens - (X20 / X20RS / X18RS etc) Full/Standard
+    ls_full = { cols = 6, rows = 12, font = "FONT_XXL", advfont = "FONT_L", thickness = 28, gaugepadding = 10, gaugepaddingbottom = 40, 
+                maxpaddingtop = 60, maxpaddingleft = 20, valuepaddingbottom = 25, maxfont = "FONT_L", batteryspacing = 3, 
+                txgaugepaddingtop = 5, txgaugepaddingbottom = 5, txgaugepaddingleft = 36, txgaugepaddingright = 34, 
+                rssivaluepaddingleft = 22, barpadding = 5, barpaddingleft = 25, barpaddingright = 25},
+
+    ls_std  = { cols = 6, rows = 11, font = "FONT_XXL", advfont = "FONT_M", thickness = 25, gaugepadding = 0, gaugepaddingbottom = 0, 
+                maxpaddingtop = 30, maxpaddingleft = 10, valuepaddingbottom = 0, maxfont = "FONT_M", batteryspacing = 1},
+
+    -- Medium screens (X18 / X18S / TWXLITE) - Full/Standard
+    ms_full = { cols = 6, rows = 12, font = "FONT_XL", advfont = "FONT_M", thickness = 17, gaugepadding = 5, gaugepaddingbottom = 20, 
+                maxpaddingtop = 30, maxpaddingleft = 10, valuepaddingbottom = 15, maxfont = "FONT_S", batteryspacing = 1, 
+                txgaugepaddingtop = 2, txgaugepaddingbottom = 2, txgaugepaddingleft = 18, txgaugepaddingright = 17, 
+                rssivaluepaddingleft = 10, barpadding = 2, barpaddingleft = 5, barpaddingright = 5},
+
+    ms_std  = { cols = 6, rows = 11, font = "FONT_XL", advfont = "FONT_M", thickness = 14, gaugepadding = 0, gaugepaddingbottom = 0, 
+                maxpaddingtop = 20, maxpaddingleft = 10, valuepaddingbottom = 0, maxfont = "FONT_S", batteryspacing = 1},
+
+    -- Small screens - (X14 / X14S) Full/Standard
+    ss_full = { cols = 6, rows = 12, font = "FONT_XXL", advfont = "FONT_M", thickness = 19, gaugepadding = 5, gaugepaddingbottom = 20, 
+                maxpaddingtop = 30, maxpaddingleft = 10, valuepaddingbottom = 15, maxfont = "FONT_S", batteryspacing = 1, 
+                txgaugepaddingtop = 2, txgaugepaddingbottom = 2, txgaugepaddingleft = 24, txgaugepaddingright = 23, 
+                rssivaluepaddingleft = 9, barpadding = 2, barpaddingleft = 13, barpaddingright = 13},
+
+    ss_std  = { cols = 6, rows = 11, font = "FONT_XL", advfont = "FONT_M", thickness = 17, gaugepadding = 5, gaugepaddingbottom = 0, 
+                maxpaddingtop = 20, maxpaddingleft = 10, valuepaddingbottom = 0, maxfont = "FONT_S", batteryspacing = 1},
+
+    -- Fallbacks
+    unknown = { cols = 6, rows = 11, font = "FONT_XXL", advfont = "FONT_M", thickness = 25, gaugepadding = 0, gaugepaddingbottom = 0, 
+                maxpaddingtop = 30, maxpaddingleft = 10, valuepaddingbottom = 0, maxfont = "FONT_M", batteryspacing = 1},
 }
 
 local function getThemeValue(key)
@@ -64,14 +123,54 @@ end
 -- Caching for boxes
 local boxes_cache = nil
 local themeconfig = nil
+local lastWindowWidth = nil
+local lastWindowHeight = nil
+
+-- Theme Layout
+local function getLayout()
+    local opts = themeOptions[screenGroup] or themeOptions.unknown
+    return { cols = opts.cols, rows = opts.rows }
+end
 
 local function buildBoxes()
     local vmin = getThemeValue("v_min")
     local vmax = getThemeValue("v_max")
-    return {
+    local opts = themeOptions[screenGroup] or themeOptions.unknown
+
+    local boxes = {
+        
+        -- Craftname
+        {col = 1, row = 1, colspan = 2, type = "text", subtype = "craftname", font = "FONT_L", valuepaddingleft = 10, bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.textcolor},
+
+        -- RF Logo
+        {col = 3, row = 1, colspan = 2, type = "image", subtype = "image", bgcolor = colorMode.bgcolor},
+
+        -- TX Battery
+        {col = 5, row = 1,
+        type = "gauge", subtype = "bar", source = "txbatt",
+        font = "FONT_S", battery = true, batteryframe = true, hidevalue = true,
+        batteryframethickness = 2, decimals = 1, unit = "v", valuepaddingleft = 35, valuepaddingbottom = 10, valuealign = "left",
+        gaugepaddingtop = opts.txgaugepaddingtop, gaugepaddingbottom = opts.txgaugepaddingbottom, gaugepaddingleft = opts.txgaugepaddingleft, gaugepaddingright = opts.txgaugepaddingright,
+        batterysegments = 4, batterysegmentpaddingtop = 4, batterysegmentpaddingbottom = 4, batterysegmentpaddingleft = 4, batterysegmentpaddingright = 3, batteryspacing = 1,
+        fillcolor = colorMode.fillcolor, bgcolor = colorMode.bgcolor, accentcolor = colorMode.txaccentcolor, textcolor = colorMode.textcolor,
+        min = getThemeValue("tx_min"), max = getThemeValue("tx_max"), 
+        thresholds = {
+            { value = getThemeValue("tx_warn"), fillcolor = "orange"   },
+            { value = getThemeValue("tx_max"), fillcolor = "darkwhite"  }
+            }                        
+        },
+
+        -- RSSI
+        {col = 6, row = 1,
+        type = "gauge", subtype = "step", source = "rssi",            
+        font = "FONT_XS", barpadding = opts.barpadding, stepgap = 3, stepcount = 5, decimals = 0,
+        valuealign = "left", valuepaddingbottom = 20, valuepaddingleft = opts.rssivaluepaddingleft,
+        barpaddingleft = opts.barpaddingleft, barpaddingright = opts.barpaddingright,
+        bgcolor = colorMode.bgcolor, textcolor = colorMode.textcolor, fillcolor = colorMode.rssifillcolor,
+        },
 
         -- Headspeed
-        {col = 1, colspan = 2, row = 1, rowspan = 12,
+        {col = 1, colspan = 2, row = 1, rowspan = 11,
         type = "gauge",
         subtype = "arc",
         source = "rpm",
@@ -80,17 +179,20 @@ local function buildBoxes()
         titlepos = "bottom", 
         min = 0,
         max = getThemeValue("rpm_max"),
-        valuepaddingtop = 30,
-        thickness = 25,
+        valuepaddingtop = opts.valuepaddingtop,
+        gaugepadding = opts.gaugepadding,
+        gaugepaddingbottom = opts.gaugepaddingbottom,
+        thickness = opts.thickness,
         unit = "",
         maxprefix = "Max: ",
-        maxpaddingtop = 22,
-        font = "FONT_XL",
+        font = opts.font,
         bgcolor = colorMode.bgcolor,
         titlecolor = colorMode.titlecolor,
         textcolor = colorMode.textcolor,
         fillbgcolor = colorMode.fillbgcolor,
         maxtextcolor = "orange",
+        maxfont = opts.maxfont,
+        maxpaddingtop = opts.maxpaddingtop,
         transform = "floor",
         thresholds = {
             { value = getThemeValue("rpm_min"),   fillcolor = "lightpurple"   },
@@ -103,33 +205,33 @@ local function buildBoxes()
         {col = 3, colspan = 2, row = 1, rowspan = 2,
         type = "time", 
         subtype = "flight", 
-        font = "FONT_XL",
-        title = i18n("widgets.dashboard.flight_time"):upper(),
-        titlepos = "bottom",
+        font = opts.font,
         bgcolor = colorMode.bgcolor,
         titlecolor = colorMode.titlecolor,
         textcolor = colorMode.textcolor,
         },
 
         -- Voltage
-        {col = 3, colspan = 2, row = 3, rowspan = 10,
-         type = "gauge", 
-         source = "bec_voltage", 
-         title = i18n("widgets.dashboard.voltage"):upper(), 
-         titlepos = "bottom", 
-         gaugeorientation = "vertical",
-         gaugepaddingright = 40,
-         gaugepaddingleft = 40,
-         decimals = 1,
-         battery = true,
-         batteryspacing = 3,
-         valuepaddingbottom = 17,
-         bgcolor = colorMode.bgcolor,
-         titlecolor = colorMode.titlecolor,
-         textcolor = colorMode.textcolor,
-         min = vmin,
-         max = vmax,
-         thresholds = {
+        {col = 3, colspan = 2, row = 3, rowspan = 9,
+        type = "gauge", 
+        source = "bec_voltage", 
+        title = i18n("widgets.dashboard.voltage"):upper(), 
+        titlepos = "bottom",
+        font = "FONT_XL", 
+        gaugeorientation = "vertical",
+        gaugepaddingright = 40,
+        gaugepaddingleft = 40,
+        decimals = 1,
+        unit = "v",
+        battery = true,
+        batteryspacing = opts.batteryspacing,
+        valuepaddingbottom = 17,
+        bgcolor = colorMode.bgcolor,
+        titlecolor = colorMode.titlecolor,
+        textcolor = colorMode.textcolor,
+        min = vmin,
+        max = vmax,
+        thresholds = {
             { value = vmin + 0.2 * (vmax - vmin), fillcolor = "red"    },
             { value = vmin + 0.4 * (vmax - vmin), fillcolor = "orange" },
             { value = vmax,                       fillcolor = "green"  }
@@ -137,7 +239,7 @@ local function buildBoxes()
         },
 
         -- Throttle
-        {col = 5, colspan = 2, row = 1, rowspan = 12,
+        {col = 5, colspan = 2, row = 1, rowspan = 11,
         type = "gauge",
         subtype = "arc",
         source = "throttle_percent",
@@ -145,36 +247,64 @@ local function buildBoxes()
         title = i18n("widgets.dashboard.throttle"):upper(), 
         titlepos = "bottom", 
         transform = "floor",
-        thickness = 25,
-        valuepaddingtop = 30,
-        font = "FONT_XL",
+        thickness = opts.thickness,
+        gaugepadding = opts.gaugepadding,
+        gaugepaddingbottom = opts.gaugepaddingbottom,
+        valuepaddingtop = opts.valuepaddingtop,
+        font = opts.font,
         maxprefix = "Max: ",
-        maxpaddingtop = 22,
+        maxpaddingtop = opts.maxpaddingtop,
         bgcolor = colorMode.bgcolor,
         titlecolor = colorMode.titlecolor,
         textcolor = colorMode.textcolor,
         fillbgcolor = colorMode.fillbgcolor,
         maxtextcolor = "orange",
+        maxfont = opts.maxfont,
         thresholds = {
             { value = 89,  fillcolor = "blue"       },
             { value = 100, fillcolor = "darkblue"   }
         }
         },
     }
+
+    if screenGroup and screenGroup:find("_full") then
+        for _, box in ipairs(boxes) do
+            -- Do not shift these four specific boxes
+            local isTopRow =
+                (box.type == "text"  and box.subtype == "craftname") or
+                (box.type == "image" and box.subtype == "image") or
+                (box.type == "gauge" and box.subtype == "bar" and box.source == "txbatt") or
+                (box.type == "gauge" and box.subtype == "step" and box.source == "rssi")
+            if not isTopRow then
+                box.row = (box.row or 1) + 1
+            end
+        end
+    end
+    
+    return boxes
 end
 
 local function boxes()
     local config =
         rfsuite and rfsuite.session and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences[theme_section]
-    if boxes_cache == nil or themeconfig ~= config then
+    local W, H = lcd.getWindowSize()
+    -- Detect layout size change
+    if boxes_cache == nil
+        or themeconfig ~= config
+        or lastWindowWidth ~= W
+        or lastWindowHeight ~= H then
+        -- Re-evaluate screen group and options
+        screenGroup = getScreenSize(W, H)
         boxes_cache = buildBoxes()
         themeconfig = config
+        lastWindowWidth = W
+        lastWindowHeight = H
     end
     return boxes_cache
 end
 
 return {
-    layout = layout,
+    layout = getLayout,
     boxes = boxes,
     scheduler = {
         spread_scheduling = true,         -- (optional: spread scheduling over the interval to avoid spikes in CPU usage) 
