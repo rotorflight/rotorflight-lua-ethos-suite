@@ -1,31 +1,31 @@
 {
     "version": "0.2.0",
     "configurations": [
-    
         {
-            "name": "SIM: Deploy",
+            "name": "SIM: Deploy (Default)",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/bin/deploy/vscode/deploy.py",
             "args": [
                 "--src", "${workspaceFolder}",
-                "--destfolders","${env:FRSKY_SIM_SRC}"
+                "--sim", "0",
+                "--destfolders", "${env:FRSKY_SIM_SRC}"
             ],
             "console": "integratedTerminal",
-            "justMyCode": true,
+            "justMyCode": true
         },
         {
-            "name": "SIM: Deploy & Launch",
+            "name": "SIM: Deploy & Choose Sim",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/bin/deploy/vscode/deploy.py",
             "args": [
                 "--src", "${workspaceFolder}",
-                "--sim", "${env:FRSKY_SIM_BIN}",
-                "--destfolders","${env:FRSKY_SIM_SRC}"
+                "--sim", "choose",
+                "--destfolders", "${env:FRSKY_SIM_SRC}"
             ],
             "console": "integratedTerminal",
-            "justMyCode": true,
+            "justMyCode": true
         },
         {
             "name": "Radio: Deploy",
@@ -37,8 +37,7 @@
                 "--radio"
             ],
             "console": "integratedTerminal",
-            "justMyCode": true,
+            "justMyCode": true
         }
     ]
-  }
-  
+}
