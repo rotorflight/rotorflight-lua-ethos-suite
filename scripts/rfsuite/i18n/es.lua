@@ -1269,7 +1269,8 @@ return {
       ["power"] = "Potencia",
       ["cell_voltage"] = "Voltaje Celda",
       ["volts_per_cell"] = "Volts por celda",
-      ["warning"] = "Advertencia"
+      ["warning"] = "Advertencia",
+      ["tx_batt"] = "TX Battery"
     },
     ["governor"] = {
       ["UNKNOWN"] = "DESCONOCIDO",
