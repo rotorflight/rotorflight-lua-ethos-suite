@@ -19,51 +19,32 @@ local telemetry = rfsuite.tasks.telemetry
 local utils = rfsuite.widgets.dashboard.utils
 local i18n = rfsuite.i18n.get
 
+local W, H = lcd.getWindowSize()
+local VERSION = system.getVersion().board
+
+local gaugeThickness = 30
+if VERSION == "X18" or VERSION == "X18S" or VERSION == "X14" or VERSION == "X14S" then gaugeThickness = 15 end
+
 local darkMode = {
     textcolor   = "white",
     titlecolor  = "white",
-    bgcolor     = "black",
+    bgcolor= "black",
     fillcolor   = "green",
     fillbgcolor = "grey",
-    accentcolor = "white",
-    rssifillcolor = "darkwhite",
-    txaccentcolor = "grey",
+    arcbgcolor  = "lightgrey",
 }
 
 local lightMode = {
     textcolor   = "black",
     titlecolor  = "black",
-    bgcolor     = "white",
+    bgcolor= "white",
     fillcolor   = "green",
-    fillbgcolor = "grey",
-    accentcolor = "black",
-    rssifillcolor = "darkwhite",
-    txaccentcolor = "grey",
+    fillbgcolor = "lightgrey",
+    arcbgcolor  = "darkgrey",
 }
 
 -- alias current mode
 local colorMode = lcd.darkMode() and darkMode or lightMode
-
--- Determine layout and screensize in use
-local function getScreenSize(w, h)
-
-    -- Large screens - (X20 / X20RS / X18RS etc) Full/Standard
-    if (w == 800 and (h == 458 or h == 480)) then return "ls_full" end
-    if (w == 784 and (h == 294 or h == 316)) then return "ls_std" end
-
-    -- Medium screens (X18 / X18S / TWXLITE) - Full/Standard
-    if (w == 480 and (h == 301 or h == 320)) then return "ms_full" end
-    if (w == 472 and (h == 191 or h == 210)) then return "ms_std" end
-
-    -- Small screens - (X14 / X14S) Full/Standard
-    if (w == 640 and (h == 338 or h == 360)) then return "ss_full" end
-    if (w == 630 and (h == 236 or h == 258)) then return "ss_std" end
-
-    return "unknown"
-end
-
-local W, H = lcd.getWindowSize()
-local screenGroup = getScreenSize(W, H)
 
 -- User voltage min/max override support
 local function getUserVoltageOverride(which)
@@ -78,123 +59,20 @@ local function getUserVoltageOverride(which)
   return nil
 end
 
--- Theme Options based on screen size
-local themeOptions = {
-
-    -- Large screens - (X20 / X20RS / X18RS etc) Full/Standard
-    ls_full = { cols = 20, rows = 9, font = "FONT_XXL", titlefont = "FONT_S", txgaugepaddingtop = 5, txgaugepaddingbottom = 15, txgaugepaddingleft = 40, txgaugepaddingright = 5, 
-                rssivaluepaddingleft = 40, barpadding = 5, barpaddingbottom = 15, barpaddingleft = 40, barpaddingright = 40, gaugepadding = 10, thickness = 30, valuepaddingtop = 40},
-
-    ls_std  = { cols = 20, rows = 8, font = "FONT_XL", titlefont = "FONT_XS", thickness = 30},
-
-    -- Medium screens (X18 / X18S / TWXLITE) - Full/Standard
-    ms_full = { cols = 20, rows = 9, font = "FONT_XL", titlefont = "FONT_XS", txgaugepaddingtop = 5, txgaugepaddingbottom = 5, txgaugepaddingleft = 5, txgaugepaddingright = 10, 
-                rssivaluepaddingleft = 10, barpadding = 2, barpaddingbottom = 5, barpaddingleft = 20, barpaddingright = 20, gaugepadding = 10, thickness = 15, valuepaddingtop = 30},
-
-    ms_std  = { cols = 20, rows = 8, font = "FONT_XL", titlefont = "FONT_XXS", thickness = 15},
-
-    -- Small screens - (X14 / X14S) Full/Standard
-    ss_full = { cols = 20, rows = 9, font = "FONT_XL", titlefont = "FONT_XS", txgaugepaddingtop = 2, txgaugepaddingbottom = 10, txgaugepaddingleft = 30, txgaugepaddingright = 5, 
-                rssivaluepaddingleft = 30, barpadding = 5, barpaddingbottom = 10, barpaddingleft = 40, barpaddingright = 40, gaugepadding = 10, thickness = 30, valuepaddingtop = 40},
-                
-    ss_std  = { cols = 20, rows = 8, font = "FONT_XL", titlefont = "FONT_XXS", thickness = 20},
-
-    -- Fallbacks
-    unknown = { cols = 20, rows = 8, font = "FONT_XL", titlefont = "FONT_XS"},
+local layout = {
+    cols    = 20,
+    rows    = 8,
+    padding = 1,
+    bgcolor = colorMode.bgcolor,
+    -- showgrid = lcd.RGB(100, 100, 100)
 }
-
--- Theme Layout
-local function getLayout()
-    local opts = themeOptions[screenGroup] or themeOptions.unknown
-    return { cols = opts.cols, rows = opts.rows }
-end
 
 -- BOXES CACHE
 local boxes_cache = nil
 local themeconfig = nil
-local lastWindowWidth = nil
-local lastWindowHeight = nil
 
 local function buildBoxes()
-    local opts = themeOptions[screenGroup] or themeOptions.unknown
-
-    local boxes = {  
-
-      { 
-        col = 1, 
-        row = 1, 
-        colspan = 8, 
-        type = "text", 
-        subtype = "craftname", 
-        font = "FONT_L", 
-        valuepaddingleft = 10, 
-        bgcolor = colorMode.bgcolor, 
-        titlecolor = colorMode.titlecolor, 
-        textcolor = colorMode.textcolor
-      },
-      {
-        col = 9, 
-        row = 1, 
-        colspan = 5, 
-        type = "image", 
-        subtype = "image", 
-        bgcolor = colorMode.bgcolor
-      },
-      {
-        col = 14, 
-        row = 1,
-        colspan = 3, 
-        type = "gauge", 
-        subtype = "bar", 
-        source = "txbatt",
-        font = "FONT_S", 
-        battery = true, 
-        batteryframe = true, 
-        hidevalue = true,
-        batteryframethickness = 2,
-        gaugepaddingtop = opts.txgaugepaddingtop, 
-        gaugepaddingbottom = opts.txgaugepaddingbottom, 
-        gaugepaddingleft = opts.txgaugepaddingleft, 
-        gaugepaddingright = opts.txgaugepaddingright,
-        batterysegments = 4, 
-        batterysegmentpaddingtop = 4, 
-        batterysegmentpaddingbottom = 4, 
-        batterysegmentpaddingleft = 4, 
-        batterysegmentpaddingright = 3, 
-        batteryspacing = 1,
-        fillcolor = colorMode.fillcolor, 
-        bgcolor = colorMode.bgcolor, 
-        accentcolor = colorMode.txaccentcolor, 
-        textcolor = colorMode.textcolor,
-        min = 7.2, 
-        max = 8.4, 
-        thresholds = {
-          { value = 7.4, fillcolor = "orange"   },
-          { value = 8.4, fillcolor = "darkwhite"  }
-          }                        
-      },
-      {
-        col = 17, 
-        row = 1,
-        colspan = 4,
-        type = "gauge", 
-        subtype = "step", 
-        source = "rssi",            
-        font = "FONT_XS", 
-        barpadding = opts.barpadding, 
-        stepgap = 3, 
-        stepcount = 5, 
-        decimals = 0,
-        valuealign = "left", 
-        valuepaddingbottom = 30, 
-        valuepaddingleft = opts.rssivaluepaddingleft,
-        barpaddingbottom = opts.barpaddingbottom,
-        barpaddingleft = opts.barpaddingleft, 
-        barpaddingright = opts.barpaddingright,
-        bgcolor = colorMode.bgcolor, 
-        textcolor = colorMode.textcolor, 
-        fillcolor = colorMode.rssifillcolor, 
-      },
+    return {
       {
         col     = 1,
         row     = 1,
@@ -334,15 +212,13 @@ local function buildBoxes()
         row     = 1,
         colspan = 6,
         rowspan = 6,
-        thickness= opts.thickness,
+        thickness= gaugeThickness,
         source  = "smartfuel",
         unit    = "%",
         transform = "floor",
         min     = 0,
         max     = 100,
-        font    = opts.font,
-        gaugepadding = opts.gaugepadding,
-        valuepaddingtop = opts.valuepaddingtop,
+        font    = "FONT_XL",
         arcbgcolor = colorMode.arcbgcolor,
         title   = i18n("widgets.dashboard.fuel"):upper(),
         titlepos= "bottom",
@@ -365,15 +241,13 @@ local function buildBoxes()
         source  = "voltage",
         fillbgcolor = colorMode.fillbgcolor,
         title    = i18n("widgets.dashboard.voltage"):upper(),
-        font     = opts.font,
-        thickness= opts.thickness,
+        font     = "FONT_XL",
+        thickness= gaugeThickness,
         titlepos = "bottom",
         fillcolor= colorMode.fillcolor,
         titlecolor = colorMode.titlecolor,
         textcolor = colorMode.titlecolor,
         bgcolor = colorMode.bgcolor,
-        gaugepadding = opts.gaugepadding,
-        valuepaddingtop = opts.valuepaddingtop,
         min = function()
             local override = getUserVoltageOverride("v_min")
             if override then return override end
@@ -427,44 +301,19 @@ local function buildBoxes()
         }
       },
     }
-    if screenGroup and screenGroup:find("_full") then
-        for _, box in ipairs(boxes) do
-            -- Do not shift these four specific boxes
-            local isTopRow =
-                (box.type == "text"  and box.subtype == "craftname") or
-                (box.type == "image" and box.subtype == "image") or
-                (box.type == "gauge" and box.subtype == "bar" and box.source == "txbatt") or
-                (box.type == "gauge" and box.subtype == "step" and box.source == "rssi")
-            if not isTopRow then
-                box.row = (box.row or 1) + 1
-            end
-        end
-    end
-    
-    return boxes
 end
 
 local function boxes()
-    local config =
-        rfsuite and rfsuite.session and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences[theme_section]
-    local W, H = lcd.getWindowSize()
-    -- Detect layout size change
-    if boxes_cache == nil
-        or themeconfig ~= config
-        or lastWindowWidth ~= W
-        or lastWindowHeight ~= H then
-        -- Re-evaluate screen group and options
-        screenGroup = getScreenSize(W, H)
+    local config = rfsuite and rfsuite.session and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences["system/@rt-rc"]
+    if boxes_cache == nil or themeconfig ~= config then
         boxes_cache = buildBoxes()
         themeconfig = config
-        lastWindowWidth = W
-        lastWindowHeight = H
     end
     return boxes_cache
 end
 
 return {
-  layout    = getLayout,
+  layout    = layout,
   boxes     = boxes,
   scheduler = {
         spread_scheduling = true,         -- (optional: spread scheduling over the interval to avoid spikes in CPU usage) 
