@@ -208,7 +208,7 @@ function utils.resolveColor(value, variantFactor)
         white           = {255, 255, 255},
         black           = {0, 0, 0},
         gray            = {90, 90, 90},
-        grey            = {185, 185, 185},
+        grey            = {90, 90, 90},
         orange          = {255, 165, 0},
         yellow          = {255, 255, 0},
         cyan            = {0, 255, 255},
@@ -240,6 +240,11 @@ function utils.resolveColor(value, variantFactor)
         darkpurple      = {48, 25, 52},
         lightyellow     = {255, 255, 224},
         darkyellow      = {204, 204, 0},
+        lightgrey       = {211, 211, 211},
+        lightgray       = {211, 211, 211},
+        darkgrey        = {90, 90, 90},
+        darkgray        = {90, 90, 90},
+        darkwhite       = {245, 245, 245},
     }
 
     -- fallback to default 30% if not provided or out of range
