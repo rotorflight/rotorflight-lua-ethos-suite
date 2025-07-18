@@ -426,7 +426,7 @@ function dashboard.renderLayout(widget, config)
             y = y + headerLayout.height  -- Adjust y position for header
         end
 
-        local rect = { x = x, y = y, w = w, h = h, box = box }
+        local rect = { x = x, y = y, w = w, h = h, box = box, isHeader = false }
         table.insert(dashboard.boxRects, rect)
 
         local rectIndex = #dashboard.boxRects
@@ -445,7 +445,7 @@ function dashboard.renderLayout(widget, config)
         local x, y = getBoxPosition(box, w, h, boxW, boxH, pad, W_raw, headerLayout.height)
         y = y  -- header y‑offset is already correct
 
-        local rect = { x=x, y=y, w=w, h=h, box=box }
+        local rect = { x = x, y = y, w = w, h = h, box = box, isHeader = true }
         table.insert(dashboard.boxRects, rect)
         local idx = #dashboard.boxRects
         dashboard._objectDirty[idx] = nil
@@ -493,17 +493,20 @@ function dashboard.renderLayout(widget, config)
     local selBorder = layout.selectborder or 2
 
     for i, rect in ipairs(dashboard.boxRects) do
-        local box = rect.box
-        local obj = dashboard.objectsByType[box.type]
-        if obj and obj.paint then
-            obj.paint(rect.x, rect.y, rect.w, rect.h, box)
-        end
+        if not rect.isHeader then
+            local box = rect.box
+            local obj = dashboard.objectsByType[box.type]
+            if obj and obj.paint then
+                obj.paint(rect.x, rect.y, rect.w, rect.h, box)
+            end
 
-        if dashboard.selectedBoxIndex == i and box.onpress then
-            lcd.color(selColor)
-            lcd.drawRectangle(rect.x, rect.y, rect.w, rect.h, selBorder)
+            if dashboard.selectedBoxIndex == i and box.onpress then
+                lcd.color(selColor)
+                lcd.drawRectangle(rect.x, rect.y, rect.w, rect.h, selBorder)
+            end
         end
     end
+
 
 
     ------------------------------------------------------------------------
