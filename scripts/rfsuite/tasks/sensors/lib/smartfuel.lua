@@ -32,6 +32,7 @@ local preStabiliseDelay   = 1.5       -- Minimum seconds to wait after configura
 
 local telemetry                       -- Reference to the telemetry task, used to access sensor data.
 local lastMode = rfsuite.flightmode.current
+local currentMode = lastMode
 
 -- Resets the voltage tracking state by clearing the last recorded voltages,
 -- resetting the voltage stable time, and marking the voltage as not stabilised.
@@ -155,11 +156,17 @@ local function smartFuelCalc()
             return nil
         end
     end
+    -- After voltage is stable, proceed as normal
+    local cellCount, packCapacity, reserve, maxCellV, minCellV, fullCellV =
+        bc.batteryCellCount, bc.batteryCapacity, bc.consumptionWarningPercentage,
+        bc.vbatmaxcellvoltage, bc.vbatmincellvoltage, bc.vbatfullcellvoltage
 
     -- Detect voltage increase after stabilization if not yet flying
     if #lastVoltages >= 1 and rfsuite.flightmode.current == "preflight" then
-        local prev = lastVoltages[#lastVoltages - 1]
-        if voltage > prev + voltageThreshold then
+        local prevPack = lastVoltages[#lastVoltages - 1]
+        local prevCell = prevPack / cellCount
+        local currCell = voltage / cellCount
+        if currCell > prevCell + voltageThreshold then
             rfsuite.utils.log("Voltage increased after stabilization – resetting...", "info")
             fuelStartingPercent = nil
             fuelStartingConsumption = nil
@@ -167,12 +174,7 @@ local function smartFuelCalc()
             stabilizeNotBefore = os.clock() + preStabiliseDelay
             return nil  -- Ensure upstream caller knows we are resetting
         end
-    end    
-
-    -- After voltage is stable, proceed as normal
-    local cellCount, packCapacity, reserve, maxCellV, minCellV, fullCellV =
-        bc.batteryCellCount, bc.batteryCapacity, bc.consumptionWarningPercentage,
-        bc.vbatmaxcellvoltage, bc.vbatmincellvoltage, bc.vbatfullcellvoltage
+    end   
 
     -- Clamp reserve to allowed range for safety
     if reserve > 60 then
