@@ -64,8 +64,8 @@ local lightMode = {
 -- User voltage min/max override support
 local function getUserVoltageOverride(which)
   local prefs = rfsuite.session and rfsuite.session.modelPreferences
-  if prefs and prefs["system/@rt-rc"] then
-    local v = tonumber(prefs["system/@rt-rc"][which])
+  if prefs and prefs["system/@rt-rc-n"] then
+    local v = tonumber(prefs["system/@rt-rc-n"][which])
     -- Only use override if it is present and different from the default 6S values
     -- (Defaults: min=18.0, max=25.2)
     if which == "v_min" and v and math.abs(v - 18.0) > 0.05 then return v end
@@ -78,7 +78,7 @@ end
 local colorMode = lcd.darkMode() and darkMode or lightMode
 
 -- Theme based configuration settings
-local theme_section = "system/@rt-rc"
+local theme_section = "system/@rt-rc-n"
 
 local THEME_DEFAULTS = {
     rpm_min      = 0,
