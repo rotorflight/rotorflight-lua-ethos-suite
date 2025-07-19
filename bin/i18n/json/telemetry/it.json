@@ -95,6 +95,11 @@
       "translation": "RSSI",
       "needs_translation": "false"
     },
+    "link": {
+      "english": "Link Quality",
+      "translation": "Qualità Collegamento",
+      "needs_translation": "false"
+    },
     "adj_val": {
       "english": "Adj (Value)",
       "translation": "Adj (Valore)",

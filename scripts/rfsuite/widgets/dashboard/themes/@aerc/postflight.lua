@@ -201,7 +201,7 @@ local function buildBoxes(W)
         {col = 3, row = 5, rowspan = 2, type = "text", subtype = "telemetry", source = "voltage", title = i18n("widgets.dashboard.volts_per_cell"), titlepos = "top", titlepaddingtop = opts.titlepaddingtop, 
         font = opts.font, titlefont = opts.titlefont, bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", unit = "V", transform = function(v) return maxVoltageToCellVoltage(v) end},
 
-        {col = 3, row = 7, rowspan = 2, type = "text", subtype = "stats", stattype = "min", source = "rssi", title = i18n("widgets.dashboard.link_min"), titlepos = "top", titlepaddingtop = opts.titlepaddingtop,
+        {col = 3, row = 7, rowspan = 2, type = "text", subtype = "stats", stattype = "min", source = "link", title = i18n("widgets.dashboard.link_min"), titlepos = "top", titlepaddingtop = opts.titlepaddingtop,
         font = opts.font, titlefont = opts.titlefont, bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = "floor"},
     }
 end

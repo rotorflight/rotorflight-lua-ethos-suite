@@ -1185,6 +1185,7 @@ return {
       ["fuel"] = "Kraftstoffstand",
       ["smartfuel"] = "Smart Fuel",
       ["rssi"] = "RSSI",
+      ["link"] = "Verbindungsqualitaet",
       ["adj_val"] = "Adj (Wert)",
       ["arming_flags"] = "Arming-Flags",
       ["current"] = "Strom",

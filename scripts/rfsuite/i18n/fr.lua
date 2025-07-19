@@ -1185,6 +1185,7 @@ return {
       ["fuel"] = "Niveau de Carburant",
       ["smartfuel"] = "Smart Fuel",
       ["rssi"] = "Signal du Recepteur",
+      ["link"] = "Qualité du Lien",
       ["adj_val"] = "Ajustements Valeurs",
       ["arming_flags"] = "Drapeaux Armement",
       ["current"] = "Courant",
