@@ -93,14 +93,12 @@ local themeOptions = {
     ls_full = {
         font = "FONT_XXL", 
         titlefont = "FONT_S", 
-        valuepaddingbottom = 20, 
         titlepaddingtop = 15
     },
 
     ls_std  = {
         font = "FONT_XL", 
         titlefont = "FONT_XS", 
-        valuepaddingbottom = 25, 
         titlepaddingtop = 0
     },
 
@@ -108,14 +106,12 @@ local themeOptions = {
     ms_full = {
         font = "FONT_XL", 
         titlefont = "FONT_XXS", 
-        valuepaddingbottom = 15, 
         titlepaddingtop = 5
     },
 
     ms_std  = {
         font = "FONT_XL", 
         titlefont = "FONT_XXS", 
-        valuepaddingbottom = 0, 
         titlepaddingtop = 0
     },
 
@@ -123,14 +119,12 @@ local themeOptions = {
     ss_full = {
         font = "FONT_XL", 
         titlefont = "FONT_XS", 
-        valuepaddingbottom = 15, 
         titlepaddingtop = 5
     },
 
     ss_std  = {
         font = "FONT_XL", 
         titlefont = "FONT_XXS", 
-        valuepaddingbottom = 0, 
         titlepaddingtop = 0
     },
 }
@@ -147,7 +141,6 @@ end
 -- Caching for boxes
 local lastScreenW = nil
 local boxes_cache = nil
-local themeconfig = nil
 local headeropts = utils.getHeaderOptions()
 
 -- Theme Layout

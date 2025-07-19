@@ -18,7 +18,6 @@
 local i18n = rfsuite.i18n.get
 local utils = rfsuite.widgets.dashboard.utils
 local boxes_cache = nil
-local themeconfig = nil
 local lastScreenW = nil
 
 local function maxVoltageToCellVoltage(value)
@@ -77,122 +76,6 @@ end
 -- alias current mode
 local colorMode = lcd.darkMode() and darkMode or lightMode
 
--- Theme based configuration settings
-local theme_section = "system/@rt-rc"
-
-local THEME_DEFAULTS = {
-    rpm_min      = 0,
-    rpm_max      = 3000,
-    bec_min      = 3.0,
-    bec_max      = 13.0,
-    esctemp_warn = 90,
-    esctemp_max  = 140,
-    tx_min       = 7.2,
-    tx_warn      = 7.4,
-    tx_max       = 8.4
-}
-
--- Theme Options based on screen width
-local function getThemeOptionKey(W)
-    if     W == 800 then return "ls_full"
-    elseif W == 784 then return "ls_std"
-    elseif W == 640 then return "ss_full"
-    elseif W == 630 then return "ss_std"
-    elseif W == 480 then return "ms_full"
-    elseif W == 472 then return "ms_std"
-    end
-end
-
--- Theme Options based on screen width
-local themeOptions = {
-    -- Large screens - (X20 / X20RS / X18RS etc) Full/Standard
-    ls_full = { 
-        font = "FONT_XXL", 
-        advfont = "FONT_M", 
-        thickness = 25, 
-        batteryframethickness = 4, 
-        titlepaddingbottom = 15, 
-        valuepaddingleft = 25, 
-        valuepaddingtop = 20, 
-        valuepaddingbottom = 25, 
-        gaugepaddingtop = 20, 
-        battadvpaddingtop = 20, 
-        brvaluepaddingtop = 25
-    },
-
-    ls_std  = { 
-        font = "FONT_XL", 
-        advfont = "FONT_M", 
-        thickness = 15, 
-        batteryframethickness = 4, 
-        titlepaddingbottom = 0, 
-        valuepaddingleft = 75, 
-        valuepaddingtop = 5, 
-        valuepaddingbottom = 25, 
-        gaugepaddingtop = 5, 
-        battadvpaddingtop = 5, 
-        brvaluepaddingtop = 10
-    },
-
-    -- Medium screens (X18 / X18S / TWXLITE) - Full/Standard
-    ms_full = { 
-        font = "FONT_XXL", 
-        advfont = "FONT_M", 
-        thickness = 17, 
-        batteryframethickness = 4, 
-        titlepaddingbottom = 0, 
-        valuepaddingleft = 20, 
-        valuepaddingtop = 5, 
-        valuepaddingbottom = 15, 
-        gaugepaddingtop = 5, 
-        battadvpaddingtop = 5, 
-        brvaluepaddingtop = 20
-    },
-
-    ms_std  = { 
-        font = "FONT_XL", 
-        advfont = "FONT_S", 
-        thickness = 10, 
-        batteryframethickness = 2, 
-        titlepaddingbottom = 0, 
-        valuepaddingleft = 20, 
-        valuepaddingtop = 10, 
-        valuepaddingbottom = 25, 
-        gaugepaddingtop = 5, 
-        battadvpaddingtop = 0, 
-        brvaluepaddingtop = 10
-    },
-
-    -- Small screens - (X14 / X14S) Full/Standard
-    ss_full = { 
-        font = "FONT_XL", 
-        advfont = "FONT_M", 
-        thickness = 20,  
-        batteryframethickness = 4, 
-        titlepaddingbottom = 0, 
-        valuepaddingleft = 20, 
-        valuepaddingtop = 5, 
-        valuepaddingbottom = 15, 
-        gaugepaddingtop = 5, 
-        battadvpaddingtop = 5, 
-        brvaluepaddingtop = 10
-    },
-
-    ss_std  = { 
-        font = "FONT_XL", 
-        advfont = "FONT_S", 
-        thickness = 12,  
-        batteryframethickness = 2, 
-        titlepaddingbottom = 0, 
-        valuepaddingleft = 20, 
-        valuepaddingtop = 10, 
-        valuepaddingbottom = 25, 
-        gaugepaddingtop = 5, 
-        battadvpaddingtop = 0, 
-        brvaluepaddingtop = 10
-    },
-}
-
 local function getThemeValue(key)
     if rfsuite and rfsuite.session and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences[theme_section] then
         local val = rfsuite.session.modelPreferences[theme_section][key]
@@ -205,7 +88,6 @@ end
 -- Caching for boxes
 local lastScreenW = nil
 local boxes_cache = nil
-local themeconfig = nil
 local headeropts = utils.getHeaderOptions()
 
 -- Theme Layout
@@ -226,10 +108,6 @@ local header_layout = {
 
 -- Boxes
 local function buildBoxes(W)
-    
-    -- Object based options determined by screensize
-    local opts = themeOptions[getThemeOptionKey(W)] or themeOptions.unknown
-
     return {
         -- Flight info and RPM info
         {col = 1, row = 1, type = "time", subtype = "flight", title = i18n("widgets.dashboard.flight_duration"), titlepos = "bottom", bgcolor = colorMode.bgcolor, textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
@@ -329,11 +207,9 @@ local header_boxes = {
 }
 
 local function boxes()
-    local config = rfsuite and rfsuite.session and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences[theme_section]
     local W = lcd.getWindowSize()
-    if boxes_cache == nil or themeconfig ~= config or lastScreenW ~= W then
+    if boxes_cache == nil or lastScreenW ~= W then
         boxes_cache = buildBoxes(W)
-        themeconfig = config
         lastScreenW = W
     end
     return boxes_cache

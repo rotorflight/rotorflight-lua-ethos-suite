@@ -18,7 +18,6 @@
 local i18n = rfsuite.i18n.get
 local utils = rfsuite.widgets.dashboard.utils
 local boxes_cache = nil
-local themeconfig = nil
 local lastScreenW = nil
 
 local function maxVoltageToCellVoltage(value)
@@ -103,93 +102,46 @@ local function getThemeOptionKey(W)
     end
 end
 
--- Theme Options based on screen width
+-- Theme Options based on screen size
 local themeOptions = {
+
     -- Large screens - (X20 / X20RS / X18RS etc) Full/Standard
-    ls_full = { 
+    ls_full = {
         font = "FONT_XXL", 
-        advfont = "FONT_M", 
-        thickness = 25, 
-        batteryframethickness = 4, 
-        titlepaddingbottom = 15, 
-        valuepaddingleft = 25, 
-        valuepaddingtop = 20, 
-        valuepaddingbottom = 25, 
-        gaugepaddingtop = 20, 
-        battadvpaddingtop = 20, 
-        brvaluepaddingtop = 25
+        titlefont = "FONT_S", 
+        titlepaddingtop = 15
     },
 
-    ls_std  = { 
+    ls_std  = {
         font = "FONT_XL", 
-        advfont = "FONT_M", 
-        thickness = 15, 
-        batteryframethickness = 4, 
-        titlepaddingbottom = 0, 
-        valuepaddingleft = 75, 
-        valuepaddingtop = 5, 
-        valuepaddingbottom = 25, 
-        gaugepaddingtop = 5, 
-        battadvpaddingtop = 5, 
-        brvaluepaddingtop = 10
+        titlefont = "FONT_XS", 
+        titlepaddingtop = 0
     },
 
     -- Medium screens (X18 / X18S / TWXLITE) - Full/Standard
-    ms_full = { 
-        font = "FONT_XXL", 
-        advfont = "FONT_M", 
-        thickness = 17, 
-        batteryframethickness = 4, 
-        titlepaddingbottom = 0, 
-        valuepaddingleft = 20, 
-        valuepaddingtop = 5, 
-        valuepaddingbottom = 15, 
-        gaugepaddingtop = 5, 
-        battadvpaddingtop = 5, 
-        brvaluepaddingtop = 20
+    ms_full = {
+        font = "FONT_XL", 
+        titlefont = "FONT_XXS", 
+        titlepaddingtop = 5
     },
 
-    ms_std  = { 
+    ms_std  = {
         font = "FONT_XL", 
-        advfont = "FONT_S", 
-        thickness = 10, 
-        batteryframethickness = 2, 
-        titlepaddingbottom = 0, 
-        valuepaddingleft = 20, 
-        valuepaddingtop = 10, 
-        valuepaddingbottom = 25, 
-        gaugepaddingtop = 5, 
-        battadvpaddingtop = 0, 
-        brvaluepaddingtop = 10
+        titlefont = "FONT_XXS", 
+        titlepaddingtop = 0
     },
 
     -- Small screens - (X14 / X14S) Full/Standard
-    ss_full = { 
+    ss_full = {
         font = "FONT_XL", 
-        advfont = "FONT_M", 
-        thickness = 20,  
-        batteryframethickness = 4, 
-        titlepaddingbottom = 0, 
-        valuepaddingleft = 20, 
-        valuepaddingtop = 5, 
-        valuepaddingbottom = 15, 
-        gaugepaddingtop = 5, 
-        battadvpaddingtop = 5, 
-        brvaluepaddingtop = 10
+        titlefont = "FONT_XS", 
+        titlepaddingtop = 5
     },
 
-    ss_std  = { 
+    ss_std  = {
         font = "FONT_XL", 
-        advfont = "FONT_S", 
-        thickness = 12,  
-        batteryframethickness = 2, 
-        titlepaddingbottom = 0, 
-        valuepaddingleft = 20, 
-        valuepaddingtop = 10, 
-        valuepaddingbottom = 25, 
-        gaugepaddingtop = 5, 
-        battadvpaddingtop = 0, 
-        brvaluepaddingtop = 10
+        titlefont = "FONT_XXS", 
+        titlepaddingtop = 0
     },
 }
 
@@ -205,7 +157,6 @@ end
 -- Caching for boxes
 local lastScreenW = nil
 local boxes_cache = nil
-local themeconfig = nil
 local headeropts = utils.getHeaderOptions()
 
 -- Theme Layout
@@ -334,11 +285,9 @@ local header_boxes = {
 }
 
 local function boxes()
-    local config = rfsuite and rfsuite.session and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences[theme_section]
     local W = lcd.getWindowSize()
-    if boxes_cache == nil or themeconfig ~= config or lastScreenW ~= W then
+    if boxes_cache == nil or lastScreenW ~= W then
         boxes_cache = buildBoxes(W)
-        themeconfig = config
         lastScreenW = W
     end
     return boxes_cache
