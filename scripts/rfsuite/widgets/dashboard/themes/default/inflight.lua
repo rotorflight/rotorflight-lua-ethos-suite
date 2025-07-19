@@ -97,7 +97,7 @@ local themeOptions = {
     ls_full = { 
         font = "FONT_XXL", 
         advfont = "FONT_M", 
-        thickness = 25, 
+        thickness = 35, 
         batteryframethickness = 4, 
         titlepaddingbottom = 15, 
         valuepaddingleft = 25, 
@@ -105,13 +105,14 @@ local themeOptions = {
         valuepaddingbottom = 25, 
         gaugepaddingtop = 20, 
         battadvpaddingtop = 20, 
-        brvaluepaddingtop = 25
+        brvaluepaddingtop = 25,
+        gaugepadding = 20,
     },
 
     ls_std  = { 
         font = "FONT_XL", 
         advfont = "FONT_M", 
-        thickness = 15, 
+        thickness = 25, 
         batteryframethickness = 4, 
         titlepaddingbottom = 0, 
         valuepaddingleft = 75, 
@@ -119,14 +120,15 @@ local themeOptions = {
         valuepaddingbottom = 25, 
         gaugepaddingtop = 5, 
         battadvpaddingtop = 5, 
-        brvaluepaddingtop = 10
+        brvaluepaddingtop = 10,
+        gaugepadding = 10,
     },
 
     -- Medium screens (X18 / X18S / TWXLITE) - Full/Standard
     ms_full = { 
         font = "FONT_XXL", 
         advfont = "FONT_M", 
-        thickness = 17, 
+        thickness = 27, 
         batteryframethickness = 4, 
         titlepaddingbottom = 0, 
         valuepaddingleft = 20, 
@@ -134,13 +136,14 @@ local themeOptions = {
         valuepaddingbottom = 15, 
         gaugepaddingtop = 5, 
         battadvpaddingtop = 5, 
-        brvaluepaddingtop = 20
+        brvaluepaddingtop = 20,
+        gaugepadding = 15,
     },
 
     ms_std  = { 
         font = "FONT_XL", 
         advfont = "FONT_S", 
-        thickness = 10, 
+        thickness = 20, 
         batteryframethickness = 2, 
         titlepaddingbottom = 0, 
         valuepaddingleft = 20, 
@@ -148,7 +151,8 @@ local themeOptions = {
         valuepaddingbottom = 25, 
         gaugepaddingtop = 5, 
         battadvpaddingtop = 0, 
-        brvaluepaddingtop = 10
+        brvaluepaddingtop = 10,
+        gaugepadding = 10,
     },
 
     -- Small screens - (X14 / X14S) Full/Standard
@@ -163,7 +167,8 @@ local themeOptions = {
         valuepaddingbottom = 15, 
         gaugepaddingtop = 5, 
         battadvpaddingtop = 5, 
-        brvaluepaddingtop = 10
+        brvaluepaddingtop = 10,
+        gaugepadding = 15,
     },
 
     ss_std  = { 
@@ -177,7 +182,8 @@ local themeOptions = {
         valuepaddingbottom = 25, 
         gaugepaddingtop = 5, 
         battadvpaddingtop = 0, 
-        brvaluepaddingtop = 10
+        brvaluepaddingtop = 10,
+        gaugepadding = 10,
     },
 }
 
@@ -252,7 +258,8 @@ local function buildBoxes(W)
             row = 1,
             rowspan = 2,
             source = "voltage",
-            thickness = gaugeThickness,
+            thickness = opts.thickness,
+            gaugepadding = opts.gaugepadding,
             font = "FONT_XXL",
             arcbgcolor = colorMode.arcbgcolor,
             title = i18n("widgets.dashboard.voltage"):upper(),

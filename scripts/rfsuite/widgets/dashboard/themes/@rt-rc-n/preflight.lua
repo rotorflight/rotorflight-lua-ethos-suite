@@ -105,7 +105,8 @@ local themeOptions = {
         valuepaddingbottom = 25, 
         gaugepaddingtop = 20, 
         battadvpaddingtop = 20, 
-        brvaluepaddingtop = 25
+        brvaluepaddingtop = 25,
+        gaugepadding = 20
     },
 
     ls_std  = { 
@@ -119,7 +120,8 @@ local themeOptions = {
         valuepaddingbottom = 25, 
         gaugepaddingtop = 5, 
         battadvpaddingtop = 5, 
-        brvaluepaddingtop = 10
+        brvaluepaddingtop = 10,
+        gaugepadding = 10        
     },
 
     -- Medium screens (X18 / X18S / TWXLITE) - Full/Standard
@@ -134,7 +136,8 @@ local themeOptions = {
         valuepaddingbottom = 15, 
         gaugepaddingtop = 5, 
         battadvpaddingtop = 5, 
-        brvaluepaddingtop = 20
+        brvaluepaddingtop = 20,
+        gaugepadding = 15
     },
 
     ms_std  = { 
@@ -148,7 +151,8 @@ local themeOptions = {
         valuepaddingbottom = 25, 
         gaugepaddingtop = 5, 
         battadvpaddingtop = 0, 
-        brvaluepaddingtop = 10
+        brvaluepaddingtop = 10,
+        gaugepadding = 15
     },
 
     -- Small screens - (X14 / X14S) Full/Standard
@@ -200,7 +204,7 @@ local headeropts = utils.getHeaderOptions()
 local layout = {
     cols    = 20,
     rows    = 8,
-    padding = 1,
+    padding = 2,
     --showgrid = lcd.RGB(100, 100, 100)  -- or any color you prefer
 }
 
@@ -360,7 +364,8 @@ local function buildBoxes(W)
         row     = 1,
         colspan = 6,
         rowspan = 6,
-        thickness= gaugeThickness,
+        gaugepadding = opts.gaugepadding,
+        thickness= opts.thickness,
         source  = "throttle_percent",
         unit    = "%",
         transform = "floor",
@@ -390,7 +395,8 @@ local function buildBoxes(W)
         fillbgcolor = colorMode.fillbgcolor,
         title    = i18n("widgets.dashboard.voltage"):upper(),
         font     = "FONT_XL",
-        thickness= gaugeThickness,
+        gaugepadding = opts.gaugepadding,
+        thickness= opts.thickness,
         titlepos = "bottom",
         fillcolor= colorMode.fillcolor,
         titlecolor = colorMode.titlecolor,

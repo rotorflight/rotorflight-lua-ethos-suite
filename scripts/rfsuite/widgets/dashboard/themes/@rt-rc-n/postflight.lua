@@ -163,7 +163,7 @@ local headeropts = utils.getHeaderOptions()
 local layout = {
     cols    = 3,
     rows    = 3,
-    padding = 1,
+    padding = 2,
     --showgrid = lcd.RGB(100, 100, 100)  -- or any color you prefer
 }
 
