@@ -805,7 +805,8 @@ return {
         ["warn_cell_voltage"] = "Advertencia Voltaje de Celda",
         ["cell_count"] = "Número de Celdas",
         ["consumption_warning_percentage"] = "Advertencia Consumo %",
-        ["timer"] = "Alarma Tiempo Vuelo"
+        ["timer"] = "Alarma Tiempo Vuelo",
+        ["voltage_multiplier"] = "Voltage Multiplier"
       },
       ["profile_mainrotor"] = {
         ["gain"] = "Ganancia",

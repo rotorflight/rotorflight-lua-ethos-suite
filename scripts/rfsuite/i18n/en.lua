@@ -805,7 +805,8 @@ return {
         ["warn_cell_voltage"] = "Warn Cell Voltage",
         ["cell_count"] = "Cell Count",
         ["consumption_warning_percentage"] = "Consumption Warning %",
-        ["timer"] = "Flight Time Alarm"
+        ["timer"] = "Flight Time Alarm",
+        ["voltage_multiplier"] = "Voltage Multiplier"
       },
       ["profile_mainrotor"] = {
         ["gain"] = "Gain",
