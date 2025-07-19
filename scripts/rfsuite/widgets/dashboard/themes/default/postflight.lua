@@ -76,21 +76,6 @@ end
 -- alias current mode
 local colorMode = lcd.darkMode() and darkMode or lightMode
 
--- Theme based configuration settings
-local theme_section = "system/@rt-rc"
-
-local THEME_DEFAULTS = {
-    rpm_min      = 0,
-    rpm_max      = 3000,
-    bec_min      = 3.0,
-    bec_max      = 13.0,
-    esctemp_warn = 90,
-    esctemp_max  = 140,
-    tx_min       = 7.2,
-    tx_warn      = 7.4,
-    tx_max       = 8.4
-}
-
 local function getThemeValue(key)
     if rfsuite and rfsuite.session and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences[theme_section] then
         local val = rfsuite.session.modelPreferences[theme_section][key]
@@ -103,7 +88,6 @@ end
 -- Caching for boxes
 local lastScreenW = nil
 local boxes_cache = nil
-local themeconfig = nil
 local headeropts = utils.getHeaderOptions()
 
 -- Theme Layout
