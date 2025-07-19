@@ -17,6 +17,7 @@ local apidata = {
             {t = i18n("app.modules.battery.cell_count"), mspapi = 1, apikey = "batteryCellCount"},
             {t = i18n("app.modules.battery.consumption_warning_percentage"), min = 15, max = 60, mspapi = 1, apikey = "consumptionWarningPercentage"},
             {t = i18n("app.modules.battery.timer"), mspapi = 2, apikey = "model_param1_value"},
+            {t = i18n("app.modules.battery.voltage_multiplier"), mspapi = 2, apikey = "model_param1_type"},
         }
     }                 
 }

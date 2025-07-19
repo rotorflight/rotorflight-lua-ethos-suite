@@ -805,7 +805,8 @@ return {
         ["warn_cell_voltage"] = "Warnung Zellenspannung",
         ["cell_count"] = "Zellenanzahl",
         ["consumption_warning_percentage"] = "Verbrauchswarnung %",
-        ["timer"] = "Flugzeitalarm"
+        ["timer"] = "Flugzeitalarm",
+        ["voltage_multiplier"] = "Voltage Multiplier"
       },
       ["profile_mainrotor"] = {
         ["gain"] = "Verstaerkung",

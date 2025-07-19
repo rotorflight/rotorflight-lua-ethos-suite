@@ -805,7 +805,8 @@ return {
         ["warn_cell_voltage"] = "Avviso tensione cella",
         ["cell_count"] = "Conto Celle",
         ["consumption_warning_percentage"] = "Avviso Consumo %",
-        ["timer"] = "Tempo Volo"
+        ["timer"] = "Tempo Volo",
+        ["voltage_multiplier"] = "Voltage Multiplier"
       },
       ["profile_mainrotor"] = {
         ["gain"] = "Guadagno",

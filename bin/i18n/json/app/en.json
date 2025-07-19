@@ -1982,6 +1982,11 @@
         "english": "Flight Time Alarm",
         "translation": "Flight Time Alarm",
         "needs_translation": "false"
+      },
+      "voltage_multiplier": {
+        "english": "Voltage Multiplier",
+        "translation": "Voltage Multiplier",
+        "needs_translation": "false"
       }
     },
     "profile_mainrotor": {

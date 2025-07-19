@@ -805,7 +805,8 @@ return {
         ["warn_cell_voltage"] = "Waarschuwing Cel Spanning",
         ["cell_count"] = "Aantal cellen",
         ["consumption_warning_percentage"] = "Verbruik Waarschuwing %",
-        ["timer"] = "Flight Tijd"
+        ["timer"] = "Flight Tijd",
+        ["voltage_multiplier"] = "Voltage Multiplier"
       },
       ["profile_mainrotor"] = {
         ["gain"] = "Gain",
