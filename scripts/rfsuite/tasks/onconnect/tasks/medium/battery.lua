@@ -45,6 +45,7 @@ function battery.wakeup()
             rfsuite.session.batteryConfig.vbatfullcellvoltage = vbatfullcellvoltage
             rfsuite.session.batteryConfig.lvcPercentage = lvcPercentage
             rfsuite.session.batteryConfig.consumptionWarningPercentage = consumptionWarningPercentage
+            -- we also get a volage scale factor stored in this table - but its in pilot config
 
             rfsuite.utils.log("Capacity: " .. batteryCapacity .. "mAh","info")
             rfsuite.utils.log("Cell Count: " .. batteryCellCount,"info")
