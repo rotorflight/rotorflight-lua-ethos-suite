@@ -56,21 +56,26 @@ function render.wakeup(box)
     local unit = getParam(box, "unit")
     local displayValue
 
+    -- Detect telemetry state (true if session exists and is connected)
+    local telemetryActive = rfsuite.session and rfsuite.session.isConnected
+
+    -- Only cache when we receive a valid number *and* telemetry is active
+    if type(value) == "number" and telemetryActive then
+        box._lastValidFlightCount = value
+    end
+
     if type(value) == "number" then
         displayValue = tostring(value)
+    elseif box._lastValidFlightCount ~= nil then
+        displayValue = tostring(box._lastValidFlightCount)
     else
-        -- Animated "..." indicator when no flight count is available
+        -- Animated "..." indicator when no flight count is available ever
         local maxDots = 3
         if box._dotCount == nil then box._dotCount = 0 end
         box._dotCount = (box._dotCount + 1) % (maxDots + 1)
         displayValue = string.rep(".", box._dotCount)
         if displayValue == "" then displayValue = "." end
         unit = nil
-    end
-
-    -- use the last display value if the current one is nil
-    if displayValue == nil and box._lastDisplayValue ~= nil then
-        displayValue = box._lastDisplayValue
     end
 
     -- Set box.value so dashboard/dirty can track change for redraws
