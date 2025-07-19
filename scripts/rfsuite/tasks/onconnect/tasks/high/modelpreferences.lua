@@ -29,6 +29,7 @@ local modelpref_defaults ={
         flightcount = 0,
         totalflighttime = 0,
         lastflighttime = 0,
+        batterylocalcalculation = 1,
     }
 }
 
