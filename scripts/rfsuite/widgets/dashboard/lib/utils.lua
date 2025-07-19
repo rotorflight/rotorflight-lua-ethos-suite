@@ -146,6 +146,78 @@ function utils.getFontListsForResolution()
 
 end
 
+--- Returns a table of recommended header layout options for the current radio’s screen resolution.
+-- This function detects the radio’s LCD width, then returns a set of standard header options
+-- (such as height and padding values) appropriate for known device resolutions.
+-- These values ensure consistent header spacing, sizing, and alignment for the three supported full-screen
+-- layouts (X20, X18, X14).
+--
+-- The returned table can be used directly as a `header_layout` for dashboard themes, or individual fields
+
+function utils.getHeaderOptions()
+    local W, H = lcd.getWindowSize()
+
+    -- X20/X20RS: 800x480 or 784x294
+    if W == 800 or W == 784 then
+        return {
+            height = 36,
+            font = "FONT_L",
+            batterysegmentpaddingtop = 4,
+            batterysegmentpaddingbottom = 4,
+            batterysegmentpaddingleft = 4,
+            batterysegmentpaddingright = 4,
+            gaugepaddingleft = 25,
+            gaugepaddingright = 26,
+            gaugepaddingbottom = 2,
+            gaugepaddingtop = 2,
+            barpaddingleft = 25,
+            barpaddingright = 26,
+            barpaddingbottom = 2,
+            barpaddingtop = 4,
+            valuepaddingleft = 20,
+            valuepaddingbottom = 20,
+        }
+
+    -- X18/TWXLITE: 480x320 or 472x191
+    elseif W == 480 or W == 472 then
+        return {
+            height = 30,
+            font = "FONT_L",
+            batterysegmentpaddingtop = 4,
+            batterysegmentpaddingbottom = 4,
+            batterysegmentpaddingleft = 4,
+            batterysegmentpaddingright = 4,
+            gaugepaddingleft = 8,
+            gaugepaddingright = 9,
+            gaugepaddingbottom = 2,
+            gaugepaddingtop = 2,
+            barpaddingleft = 15,
+            barpaddingright = 16,
+            barpaddingbottom = 2,
+            barpaddingtop = 2,
+            valuepaddingbottom = 20,
+        }
+    -- X14/X14S: 640x360 or 630x236
+    elseif W == 640 or W == 630 then
+        return {
+            height = 30,
+            font = "FONT_L",
+            batterysegmentpaddingtop = 4,
+            batterysegmentpaddingbottom = 4,
+            batterysegmentpaddingleft = 4,
+            batterysegmentpaddingright = 4,
+            gaugepaddingleft = 20,
+            gaugepaddingright = 20,
+            gaugepaddingbottom = 2,
+            gaugepaddingtop = 2,
+            barpaddingleft = 19,
+            barpaddingright = 19,
+            barpaddingbottom = 2,
+            barpaddingtop = 2,
+            valuepaddingbottom = 20,
+        }
+    end
+end
 
 --- Resets the image cache by removing all entries from the `imageCache` table.
 -- This function iterates over all keys in the `imageCache` table and sets their values to nil,
