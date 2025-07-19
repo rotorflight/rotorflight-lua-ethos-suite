@@ -115,7 +115,7 @@ local function buildBoxes(W)
 
         -- Flight max/min stats 2
         {col = 2, row = 1, type = "text", subtype = "stats", stattype = "min", source = "voltage", title = i18n("widgets.dashboard.min_volts_cell"), titlepos = "bottom", bgcolor = colorMode.bgcolor, unit = "V", transform = function(v) return maxVoltageToCellVoltage(v) end, textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
-        {col = 2, row = 2, type = "text", subtype = "stats", stattype = "min", source = "rssi", title = i18n("widgets.dashboard.rssi_min"), titlepos = "bottom", bgcolor = colorMode.bgcolor, transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
+        {col = 2, row = 2, type = "text", subtype = "stats", stattype = "min", source = "link", title = i18n("widgets.dashboard.rssi_min"), titlepos = "bottom", bgcolor = colorMode.bgcolor, transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
     }
  
 end

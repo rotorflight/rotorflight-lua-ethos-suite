@@ -1185,6 +1185,7 @@ return {
       ["fuel"] = "Carica Livello",
       ["smartfuel"] = "Smart Fuel",
       ["rssi"] = "RSSI",
+      ["link"] = "Qualità Collegamento",
       ["adj_val"] = "Adj (Valore)",
       ["arming_flags"] = "Flags Armo",
       ["current"] = "Corrente",

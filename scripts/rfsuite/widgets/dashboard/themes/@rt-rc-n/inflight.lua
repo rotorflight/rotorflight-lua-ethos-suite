@@ -313,7 +313,7 @@ local function buildBoxes(W)
             rowspan = 2,
             type = "text",
             subtype = "telemetry",
-            source = "rssi",
+            source = "link",
             unit = "dB",
             transform = "floor",
             bgcolor = colorMode.bgcolor,

@@ -318,7 +318,7 @@ local function buildBoxes(W)
         rowspan = 2,
         type    = "text",
         subtype = "telemetry",
-        source  = "rssi",
+        source  = "link",
         unit    = "dB",
         title   = i18n("widgets.dashboard.lq"):upper(),
         titlepos= "bottom",
