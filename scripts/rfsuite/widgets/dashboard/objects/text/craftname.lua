@@ -59,19 +59,25 @@ function render.wakeup(box)
     -- Fallback text if no craftname configured or set in RF
     local fallbackText = getParam(box, "novalue") or "Craftname not set"
 
-    if value == nil then
-        -- Show loading dots if telemetry not received yet
+    -- Detect telemetry state (active if value is non-nil)
+    local telemetryActive = rfsuite.session and rfsuite.session.isConnected
+
+    -- Cache last valid value when telemetry is active and value is valid
+    if value and type(value) == "string" and value:match("^%s*$") == nil and telemetryActive then
+        box._lastValidCraftName = value
+    end
+
+    if value and type(value) == "string" and value:match("^%s*$") == nil then
+        displayValue = value
+    elseif box._lastValidCraftName then
+        displayValue = box._lastValidCraftName
+    else
+        -- Loading dots animation if value has never been seen
         local maxDots = 3
         if box._dotCount == nil then box._dotCount = 0 end
         box._dotCount = (box._dotCount + 1) % (maxDots + 1)
         displayValue = string.rep(".", box._dotCount)
         if displayValue == "" then displayValue = "." end
-    elseif type(value) == "string" and value:match("^%s*$") == nil then
-        -- Non-blank craft name string
-        displayValue = value
-    else
-        -- Received empty string (not configured or blank) or other invalid value
-        displayValue = fallbackText
     end
 
     -- Set box.value so dashboard/dirty can track change for redraws
@@ -102,6 +108,7 @@ function render.wakeup(box)
         bgcolor            = resolveThemeColor("bgcolor", getParam(box, "bgcolor")),
     }
 end
+
 
 function render.paint(x, y, w, h, box)
     x, y = utils.applyOffset(x, y, box)

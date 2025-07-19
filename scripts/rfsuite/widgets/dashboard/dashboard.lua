@@ -426,7 +426,7 @@ function dashboard.renderLayout(widget, config)
             y = y + headerLayout.height  -- Adjust y position for header
         end
 
-        local rect = { x = x, y = y, w = w, h = h, box = box }
+        local rect = { x = x, y = y, w = w, h = h, box = box, isHeader = false }
         table.insert(dashboard.boxRects, rect)
 
         local rectIndex = #dashboard.boxRects
@@ -445,7 +445,7 @@ function dashboard.renderLayout(widget, config)
         local x, y = getBoxPosition(box, w, h, boxW, boxH, pad, W_raw, headerLayout.height)
         y = y  -- header y‑offset is already correct
 
-        local rect = { x=x, y=y, w=w, h=h, box=box }
+        local rect = { x = x, y = y, w = w, h = h, box = box, isHeader = true }
         table.insert(dashboard.boxRects, rect)
         local idx = #dashboard.boxRects
         dashboard._objectDirty[idx] = nil
@@ -493,17 +493,20 @@ function dashboard.renderLayout(widget, config)
     local selBorder = layout.selectborder or 2
 
     for i, rect in ipairs(dashboard.boxRects) do
-        local box = rect.box
-        local obj = dashboard.objectsByType[box.type]
-        if obj and obj.paint then
-            obj.paint(rect.x, rect.y, rect.w, rect.h, box)
-        end
+        if not rect.isHeader then
+            local box = rect.box
+            local obj = dashboard.objectsByType[box.type]
+            if obj and obj.paint then
+                obj.paint(rect.x, rect.y, rect.w, rect.h, box)
+            end
 
-        if dashboard.selectedBoxIndex == i and box.onpress then
-            lcd.color(selColor)
-            lcd.drawRectangle(rect.x, rect.y, rect.w, rect.h, selBorder)
+            if dashboard.selectedBoxIndex == i and box.onpress then
+                lcd.color(selColor)
+                lcd.drawRectangle(rect.x, rect.y, rect.w, rect.h, selBorder)
+            end
         end
     end
+
 
 
     ------------------------------------------------------------------------
@@ -518,20 +521,48 @@ function dashboard.renderLayout(widget, config)
         local headerW = W_raw
         local headerH = header.height or 0
 
-        local contentW = headerW - ((h_cols - 1) * h_pad)
-        local contentH = headerH - ((h_rows - 1) * h_pad)
+        local function adjustHeaderDimension(dim, cells, padCount)
+            return dim - ((dim - padCount * h_pad) % cells)
+        end
+
+        local adjustedW = adjustHeaderDimension(headerW, h_cols, h_cols - 1)
+        local adjustedH = adjustHeaderDimension(headerH, h_rows, h_rows - 1)
+
+        local contentW = adjustedW - ((h_cols - 1) * h_pad)
+        local contentH = adjustedH - ((h_rows - 1) * h_pad)
         local h_boxW   = contentW / h_cols
         local h_boxH   = contentH / h_rows
 
         for _, box in ipairs(headerBoxes) do
-            local w, h = getBoxSize(box, h_boxW, h_boxH, h_pad, headerW, headerH)
-            local x, y = getBoxPosition(box, w, h, h_boxW, h_boxH, h_pad, headerW, headerH)
+            local w, h = getBoxSize(box, h_boxW, h_boxH, h_pad, adjustedW, adjustedH)
+            local x, y = getBoxPosition(box, w, h, h_boxW, h_boxH, h_pad, adjustedW, adjustedH)
 
             local obj = dashboard.objectsByType[box.type]
             if obj and obj.paint then
                 obj.paint(x, y, w, h, box)
             end
         end
+
+
+        -- Optional: Draw header grid if header_layout.showgrid is set
+        if isFullScreen and headerLayout and headerLayout.showgrid then
+            lcd.color(headerLayout.showgrid)
+            lcd.pen(1)
+
+            for i = 1, h_cols - 1 do
+                local x = math.floor(i * (h_boxW + h_pad)) - math.floor(h_pad / 2)
+                lcd.drawLine(x, 0, x, headerLayout.height)
+            end
+
+            for i = 1, h_rows - 1 do
+                local y = math.floor(i * (h_boxH + h_pad)) - math.floor(h_pad / 2)
+                lcd.drawLine(0, y, W_raw, y)
+            end
+
+            lcd.pen(SOLID)
+        end
+
+
     end
 
 
@@ -539,16 +570,26 @@ function dashboard.renderLayout(widget, config)
     if layout.showgrid then
         lcd.color(layout.showgrid)
         lcd.pen(1)
+
+        local headerOffset = (isFullScreen and headerLayout and headerLayout.height) or 0
+
+        -- Vertical lines
         for i = 1, cols - 1 do
             local x = math.floor(i * (boxW + pad)) + xOffset - math.floor(pad / 2)
-            lcd.drawLine(x, 0, x, H_raw)
+            lcd.drawLine(x, headerOffset, x, H_raw + headerOffset)
         end
+
+        -- Horizontal lines
         for i = 1, rows - 1 do
-            local y = math.floor(i * (boxH + pad)) + pad
+            local y = math.floor(i * (boxH + pad)) + pad + headerOffset
             lcd.drawLine(0, y, W_raw, y)
         end
+
         lcd.pen(SOLID)
     end
+
+
+
 
     -- Handle overlay messages
     if dashboard.overlayMessage then

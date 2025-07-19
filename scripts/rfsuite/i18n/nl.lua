@@ -1185,6 +1185,7 @@ return {
       ["fuel"] = "Laad niveau",
       ["smartfuel"] = "Smart Fuel",
       ["rssi"] = "RSSI",
+      ["link"] = "Linkkwaliteit",
       ["adj_val"] = "Adj (Waarde)",
       ["arming_flags"] = "Arming Flags",
       ["current"] = "Stroom",

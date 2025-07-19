@@ -95,6 +95,11 @@
       "translation": "Signal du Recepteur",
       "needs_translation": "false"
     },
+    "link": {
+      "english": "Link Quality",
+      "translation": "Qualité du Lien",
+      "needs_translation": "false"
+    },
     "adj_val": {
       "english": "Adj (Value)",
       "translation": "Ajustements Valeurs",
