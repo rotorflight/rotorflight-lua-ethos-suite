@@ -97,13 +97,14 @@ local themeOptions = {
     ls_full = { 
         font = "FONT_XXL", 
         advfont = "FONT_M", 
-        thickness = 25, 
+        thickness = 35, 
         batteryframethickness = 4, 
         titlepaddingbottom = 15, 
         valuepaddingleft = 25, 
         valuepaddingtop = 20, 
         valuepaddingbottom = 25, 
         gaugepaddingtop = 20, 
+        gaugepadding = 20,
         battadvpaddingtop = 20, 
         brvaluepaddingtop = 25
     },
@@ -118,6 +119,7 @@ local themeOptions = {
         valuepaddingtop = 5, 
         valuepaddingbottom = 25, 
         gaugepaddingtop = 5, 
+        gaugepadding = 5,
         battadvpaddingtop = 5, 
         brvaluepaddingtop = 10
     },
@@ -200,7 +202,7 @@ local headeropts = utils.getHeaderOptions()
 local layout = {
     cols    = 8,
     rows    = 14,
-    padding = 1,
+    padding = 2,
     --showgrid = lcd.RGB(100, 100, 100)  -- or any color you prefer
 }
 
@@ -226,6 +228,7 @@ local function buildBoxes(W)
             rowspan = 12,
             colspan = 4,
             source = "voltage",
+            gaugepadding = opts.gaugepadding,
             thickness = opts.thickness,
             valuepaddingtop = opts.valuepaddingtop,
             font = "FONT_XXL",
@@ -289,6 +292,7 @@ local function buildBoxes(W)
             col = 5, row = 1,
             colspan = 4,
             rowspan = 12,
+            gaugepadding = opts.gaugepadding,
             thickness = opts.thickness,
             valuepaddingtop = opts.valuepaddingtop,
             source = "smartfuel",

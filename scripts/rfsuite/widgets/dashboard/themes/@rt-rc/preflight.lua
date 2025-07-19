@@ -105,7 +105,8 @@ local themeOptions = {
         valuepaddingbottom = 25, 
         gaugepaddingtop = 20, 
         battadvpaddingtop = 20, 
-        brvaluepaddingtop = 25
+        brvaluepaddingtop = 25,
+        gaugepadding = 20
     },
 
     ls_std  = { 
@@ -118,6 +119,7 @@ local themeOptions = {
         valuepaddingtop = 5, 
         valuepaddingbottom = 25, 
         gaugepaddingtop = 5, 
+        gaugepadding = 5,
         battadvpaddingtop = 5, 
         brvaluepaddingtop = 10
     },
@@ -200,7 +202,7 @@ local headeropts = utils.getHeaderOptions()
 local layout = {
     cols    = 20,
     rows    = 8,
-    padding = 1,
+    padding = 2,
     --showgrid = lcd.RGB(100, 100, 100)  -- or any color you prefer
 }
 

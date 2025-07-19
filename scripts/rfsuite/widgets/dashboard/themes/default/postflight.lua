@@ -63,8 +63,8 @@ local lightMode = {
 -- User voltage min/max override support
 local function getUserVoltageOverride(which)
   local prefs = rfsuite.session and rfsuite.session.modelPreferences
-  if prefs and prefs["system/@rt-rc"] then
-    local v = tonumber(prefs["system/@rt-rc"][which])
+  if prefs and prefs["system/default"] then
+    local v = tonumber(prefs["system/default"][which])
     -- Only use override if it is present and different from the default 6S values
     -- (Defaults: min=18.0, max=25.2)
     if which == "v_min" and v and math.abs(v - 18.0) > 0.05 then return v end
@@ -75,6 +75,75 @@ end
 
 -- alias current mode
 local colorMode = lcd.darkMode() and darkMode or lightMode
+
+-- Theme based configuration settings
+local theme_section = "system/default"
+
+local THEME_DEFAULTS = {
+    rpm_min      = 0,
+    rpm_max      = 3000,
+    bec_min      = 3.0,
+    bec_max      = 13.0,
+    esctemp_warn = 90,
+    esctemp_max  = 140,
+    tx_min       = 7.2,
+    tx_warn      = 7.4,
+    tx_max       = 8.4
+}
+
+-- Theme Options based on screen width
+local function getThemeOptionKey(W)
+    if     W == 800 then return "ls_full"
+    elseif W == 784 then return "ls_std"
+    elseif W == 640 then return "ss_full"
+    elseif W == 630 then return "ss_std"
+    elseif W == 480 then return "ms_full"
+    elseif W == 472 then return "ms_std"
+    end
+end
+
+-- Theme Options based on screen size
+local themeOptions = {
+
+    -- Large screens - (X20 / X20RS / X18RS etc) Full/Standard
+    ls_full = {
+        font = "FONT_XXL", 
+        titlefont = "FONT_S", 
+        titlepaddingtop = 15
+    },
+
+    ls_std  = {
+        font = "FONT_XL", 
+        titlefont = "FONT_XS", 
+        titlepaddingtop = 0
+    },
+
+    -- Medium screens (X18 / X18S / TWXLITE) - Full/Standard
+    ms_full = {
+        font = "FONT_XL", 
+        titlefont = "FONT_XXS", 
+        titlepaddingtop = 5
+    },
+
+    ms_std  = {
+        font = "FONT_XL", 
+        titlefont = "FONT_XXS", 
+        titlepaddingtop = 0
+    },
+
+    -- Small screens - (X14 / X14S) Full/Standard
+    ss_full = {
+        font = "FONT_XL", 
+        titlefont = "FONT_XS", 
+        titlepaddingtop = 5
+    },
+
+    ss_std  = {
+        font = "FONT_XL", 
+        titlefont = "FONT_XXS", 
+        titlepaddingtop = 0
+    },
+}
 
 local function getThemeValue(key)
     if rfsuite and rfsuite.session and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences[theme_section] then
@@ -94,7 +163,7 @@ local headeropts = utils.getHeaderOptions()
 local layout = {
     cols    = 2,
     rows    = 2,
-    padding = 1,
+    padding = 2,
     --showgrid = lcd.RGB(100, 100, 100)  -- or any color you prefer
 }
 
@@ -108,6 +177,10 @@ local header_layout = {
 
 -- Boxes
 local function buildBoxes(W)
+    
+    -- Object based options determined by screensize
+    local opts = themeOptions[getThemeOptionKey(W)] or themeOptions.unknown
+
     return {
         -- Flight info and RPM info
         {col = 1, row = 1, type = "time", subtype = "flight", title = i18n("widgets.dashboard.flight_duration"), titlepos = "bottom", bgcolor = colorMode.bgcolor, textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
@@ -117,7 +190,7 @@ local function buildBoxes(W)
         {col = 2, row = 1, type = "text", subtype = "stats", stattype = "min", source = "voltage", title = i18n("widgets.dashboard.min_volts_cell"), titlepos = "bottom", bgcolor = colorMode.bgcolor, unit = "V", transform = function(v) return maxVoltageToCellVoltage(v) end, textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
         {col = 2, row = 2, type = "text", subtype = "stats", stattype = "min", source = "link", title = i18n("widgets.dashboard.rssi_min"), titlepos = "bottom", bgcolor = colorMode.bgcolor, transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor},
     }
- 
+
 end
 
 local header_boxes = {
