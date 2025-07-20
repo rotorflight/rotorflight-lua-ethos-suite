@@ -32,7 +32,8 @@ local darkMode = {
     rssifillbgcolor = "darkgrey",
     txaccentcolor   = "grey",
     txfillcolor     = "green",
-    txbgfillcolor   = "darkgrey"
+    txbgfillcolor   = "darkgrey",
+    bgcolortop =    lcd.RGB(10, 10, 10),
 }
 
 local lightMode = {
@@ -46,7 +47,8 @@ local lightMode = {
     rssifillbgcolor = "grey",
     txaccentcolor   = "darkgrey",
     txfillcolor     = "green",
-    txbgfillcolor   = "grey"
+    txbgfillcolor   = "grey",
+    bgcolortop      = "grey"
 }
 
 -- User voltage min/max override support
@@ -319,7 +321,7 @@ local header_boxes = {
         font = headeropts.font, 
         valuealign = "left", 
         valuepaddingleft = 5,
-        bgcolor = colorMode.bgcolor, 
+        bgcolor = colorMode.bgcolortop, 
         titlecolor = colorMode.titlecolor, 
         textcolor = colorMode.textcolor 
     },
@@ -331,7 +333,7 @@ local header_boxes = {
         colspan = 3, 
         type = "image", 
         subtype = "image",
-        bgcolor = colorMode.bgcolor 
+        bgcolor = colorMode.bgcolortop 
     },
 
     -- TX Battery
@@ -358,7 +360,7 @@ local header_boxes = {
         gaugepaddingbottom = headeropts.gaugepaddingbottom,
         gaugepaddingtop = headeropts.gaugepaddingtop,
         fillbgcolor = colorMode.txbgfillcolor, 
-        bgcolor = colorMode.bgcolor,
+        bgcolor = colorMode.bgcolortop,
         accentcolor = colorMode.txaccentcolor, 
         textcolor = colorMode.textcolor,
         min = getThemeValue("tx_min"), 
@@ -387,7 +389,7 @@ local header_boxes = {
         barpaddingtop = headeropts.barpaddingtop,
         valuepaddingleft = headeropts.valuepaddingleft,
         valuepaddingbottom = headeropts.valuepaddingbottom,
-        bgcolor = colorMode.bgcolor, 
+        bgcolor = colorMode.bgcolortop, 
         textcolor = colorMode.textcolor, 
         fillcolor = colorMode.rssifillcolor,
         fillbgcolor = colorMode.rssifillbgcolor,
