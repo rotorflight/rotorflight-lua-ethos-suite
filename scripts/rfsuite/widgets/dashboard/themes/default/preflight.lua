@@ -97,32 +97,29 @@ local themeOptions = {
     ls_full = { 
         font = "FONT_XXL", 
         advfont = "FONT_M", 
-        thickness = 35, 
+        thickness = 25, 
         batteryframethickness = 4, 
         titlepaddingbottom = 15, 
         valuepaddingleft = 25, 
         valuepaddingtop = 20, 
         valuepaddingbottom = 25, 
         gaugepaddingtop = 20, 
-        battadvpaddingtop = 20, 
-        brvaluepaddingtop = 25,
-        gaugepadding = 20,
+        gaugepadding = 20
     },
 
     ls_std  = { 
         font = "FONT_XL", 
         advfont = "FONT_M", 
-        thickness = 25, 
+        thickness = 35, 
         batteryframethickness = 4, 
         titlepaddingbottom = 0, 
         valuepaddingleft = 75, 
         valuepaddingtop = 5, 
         valuepaddingbottom = 25, 
         gaugepaddingtop = 5, 
-        battadvpaddingtop = 5, 
-        brvaluepaddingtop = 10,
         gaugepadding = 10,
     },
+
 
     -- Medium screens (X18 / X18S / TWXLITE) - Full/Standard
     ms_full = { 
@@ -135,8 +132,6 @@ local themeOptions = {
         valuepaddingtop = 5, 
         valuepaddingbottom = 15, 
         gaugepaddingtop = 5, 
-        battadvpaddingtop = 5, 
-        brvaluepaddingtop = 20,
         gaugepadding = 10,
     },
 
@@ -150,9 +145,7 @@ local themeOptions = {
         valuepaddingtop = 10, 
         valuepaddingbottom = 25, 
         gaugepaddingtop = 5, 
-        battadvpaddingtop = 0, 
-        brvaluepaddingtop = 10,
-        gaugepadding = 10,
+        gaugepadding = 5,
     },
 
     -- Small screens - (X14 / X14S) Full/Standard
@@ -166,8 +159,6 @@ local themeOptions = {
         valuepaddingtop = 5, 
         valuepaddingbottom = 15, 
         gaugepaddingtop = 5, 
-        battadvpaddingtop = 5, 
-        brvaluepaddingtop = 10,
         gaugepadding = 10,
     },
 
@@ -181,8 +172,6 @@ local themeOptions = {
         valuepaddingtop = 10, 
         valuepaddingbottom = 25, 
         gaugepaddingtop = 5, 
-        battadvpaddingtop = 0, 
-        brvaluepaddingtop = 10,
         gaugepadding = 10,
     },
 }

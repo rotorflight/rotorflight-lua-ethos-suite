@@ -104,24 +104,20 @@ local themeOptions = {
         valuepaddingtop = 20, 
         valuepaddingbottom = 25, 
         gaugepaddingtop = 20, 
-        battadvpaddingtop = 20, 
-        brvaluepaddingtop = 25,
         gaugepadding = 20
     },
 
     ls_std  = { 
         font = "FONT_XL", 
         advfont = "FONT_M", 
-        thickness = 15, 
+        thickness = 25, 
         batteryframethickness = 4, 
         titlepaddingbottom = 0, 
         valuepaddingleft = 75, 
         valuepaddingtop = 5, 
         valuepaddingbottom = 25, 
         gaugepaddingtop = 5, 
-        battadvpaddingtop = 5, 
-        brvaluepaddingtop = 10,
-        gaugepadding = 10        
+        gaugepadding = 10,
     },
 
     -- Medium screens (X18 / X18S / TWXLITE) - Full/Standard
@@ -137,7 +133,7 @@ local themeOptions = {
         gaugepaddingtop = 5, 
         battadvpaddingtop = 5, 
         brvaluepaddingtop = 20,
-        gaugepadding = 15
+        gaugepadding = 5
     },
 
     ms_std  = { 
