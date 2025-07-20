@@ -122,13 +122,13 @@ local themeOptions = {
 
     -- Medium screens (X18 / X18S / TWXLITE) - Full/Standard
     ms_full = { 
-        font = "FONT_XXL", 
+        font = "FONT_XL", 
         advfont = "FONT_M", 
         thickness = 17, 
         batteryframethickness = 4, 
         titlepaddingbottom = 0, 
         valuepaddingleft = 20, 
-        valuepaddingtop = 5, 
+        valuepaddingtop = 25, 
         valuepaddingbottom = 15, 
         gaugepaddingtop = 5, 
     },
@@ -136,7 +136,7 @@ local themeOptions = {
     ms_std  = { 
         font = "FONT_XL", 
         advfont = "FONT_S", 
-        thickness = 10, 
+        thickness = 17, 
         batteryframethickness = 2, 
         titlepaddingbottom = 0, 
         valuepaddingleft = 20, 

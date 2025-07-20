@@ -131,24 +131,20 @@ local themeOptions = {
         valuepaddingtop = 5, 
         valuepaddingbottom = 15, 
         gaugepaddingtop = 5, 
-        battadvpaddingtop = 5, 
-        brvaluepaddingtop = 20,
         gaugepadding = 5
     },
 
     ms_std  = { 
         font = "FONT_XL", 
         advfont = "FONT_S", 
-        thickness = 10, 
+        thickness = 15, 
         batteryframethickness = 2, 
         titlepaddingbottom = 0, 
         valuepaddingleft = 20, 
         valuepaddingtop = 10, 
         valuepaddingbottom = 25, 
         gaugepaddingtop = 5, 
-        battadvpaddingtop = 0, 
-        brvaluepaddingtop = 10,
-        gaugepadding = 15
+        gaugepadding = 5
     },
 
     -- Small screens - (X14 / X14S) Full/Standard
@@ -162,8 +158,6 @@ local themeOptions = {
         valuepaddingtop = 5, 
         valuepaddingbottom = 15, 
         gaugepaddingtop = 5, 
-        battadvpaddingtop = 5, 
-        brvaluepaddingtop = 10
     },
 
     ss_std  = { 
@@ -176,8 +170,6 @@ local themeOptions = {
         valuepaddingtop = 10, 
         valuepaddingbottom = 25, 
         gaugepaddingtop = 5, 
-        battadvpaddingtop = 0, 
-        brvaluepaddingtop = 10
     },
 }
 
