@@ -19,10 +19,11 @@
     </Group>
 
     <Group name="Power System">
-        <Sensor name="voltage" label="Main Voltage" type="range" min="0" max="25.2" xrand="0.001" multiplier="100" unit="V" default="24.2" />
+        <Sensor name="voltage" label="Main Voltage" type="range" min="0" max="25.2" rand="0" multiplier="100" unit="V" default="24.2" />
         <Sensor name="bec_voltage" label="BEC Voltage" type="range" rand="5" min="4.0" max="8.0" multiplier="100" unit="V" default="8.0" />
         <Sensor name="current" label="Current" type="range" rand="5" min="0" max="200" multiplier="1" unit="A" />
         <Sensor name="consumption" label="Consumption" round="true" type="range" default="0" min="0" max="5000" rand="0" multiplier="1" unit="mAh" />
+        <Sensor name="fuel" label="Fuel" round="true" type="range" default="0" min="0" max="100" rand="0" multiplier="1" unit="%" />
     </Group>
 
     <Group name="Flight Profiles">

@@ -77,7 +77,7 @@ return {
   boxes = {
     { col = 1, row = 1, type = "text", subtype = "telemetry", source = "alt", title = "ALT", unit = "m" },
     { x_pct = 0.5, y_pct = 0.1, w_pct = 0.4, h_pct = 0.2,
-      type = "gauge", subtype = "bar", source = "fuel", gaugemin = 0, gaugemax = 100,
+      type = "gauge", subtype = "bar", source = "smartfuel", gaugemin = 0, gaugemax = 100,
       title = "Fuel", unit = "%"
     },
     -- ...
