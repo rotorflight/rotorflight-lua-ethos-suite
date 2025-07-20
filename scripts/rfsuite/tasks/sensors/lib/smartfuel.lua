@@ -31,7 +31,10 @@ local voltageThreshold    = 0.15      -- Maximum allowed voltage variation withi
 local preStabiliseDelay   = 1.5       -- Minimum seconds to wait after configuration or telemetry update before checking for stabilisation.
 
 local telemetry                       -- Reference to the telemetry task, used to access sensor data.
-local lastMode = rfsuite.flightmode.current
+local currentMode = rfsuite.flightmode.current
+local lastMode = currentMode;
+local dischargeCurveTable = rfsuite.utils.getDischargeCurveTable()
+
 
 -- Resets the voltage tracking state by clearing the last recorded voltages,
 -- resetting the voltage stable time, and marking the voltage as not stabilised.
@@ -59,6 +62,26 @@ local function isVoltageStable()
     return (vmax - vmin) <= voltageThreshold
 end
 
+local function indexOf(t, value)
+    for i = 1, #t do
+        if t[i] == value then
+            return i
+        end
+    end
+    return nil
+end
+
+local function fuelPercentageCalcByVoltage(voltage, cellCount)
+    local batteryPercent = rfsuite.utils.batteryPercentCalc(voltage, cellCount)
+    local dischargeThreshold = indexOf(dischargeCurveTable, rfsuite.session.batteryConfig.consumptionWarningPercentage)
+    local dischargeCurveIndex = indexOf(dischargeCurveTable, batteryPercent)
+    local percentageStep = 100 / (#dischargeCurveTable - dischargeThreshold)
+    if (dischargeCurveIndex < dischargeThreshold) then 
+        return 0
+    end
+    return (dischargeCurveIndex - dischargeThreshold) * percentageStep
+end
+
 -- Calculates the estimated remaining battery "fuel" percentage based on voltage and consumption telemetry.
 -- 
 -- This function performs a two-step estimation:
@@ -71,6 +94,9 @@ end
 -- @return number|nil The estimated remaining fuel percentage (0-100), or nil if unavailable or not stabilized.
 local function smartFuelCalc()
 
+    local prefs = rfsuite.session.modelPreferences
+    local batterylocalcalculation = rfsuite.ini.getvalue(prefs, "general", "batterylocalcalculation")
+    
     -- Assign this here as it may not be available in the global scope at intialisation
     if not telemetry then
         telemetry = rfsuite.tasks.telemetry
@@ -211,6 +237,13 @@ local function smartFuelCalc()
         end
         local estimatedUsed = usableCapacity * (1 - fuelStartingPercent / 100)
         fuelStartingConsumption = (consumption or 0) - estimatedUsed
+    end
+    
+    rfsuite.utils.log("Battery local calculation: "..batterylocalcalculation)
+    if batterylocalcalculation == 1 then
+        local percent = fuelPercentageCalcByVoltage(voltage, cellCount)
+        rfsuite.utils.log("Battery fuel percent: "..percent)
+        return percent
     end
 
     -- Step 2: Use mAh consumption to track % drop after initial value
