@@ -118,40 +118,45 @@ class SensorApp:
         self.controls[name] = (value_var, multiplier, lua_path, sensor_type, None)
 
     def save_all(self):
-        for name, (var, mult, path, sensor_type, val_map) in self.controls.items():
+        for name, (var, mult, _, sensor_type, val_map) in self.controls.items():
             value = var.get()
             try:
                 if sensor_type == "select" and val_map:
                     value = val_map.get(value, "0")
                 numeric = float(value) * mult
-                print(f"[DEBUG] Saving {name} to {path} with value {numeric}")
-                with open(path, "w") as f:
-                    config_path = Path(self.rf_src) / "bin" / "sensors" / "gui" / "sensors.xml"
-                    sensor_elem = None
-                    tree = ET.parse(config_path)
-                    for group in tree.getroot().findall("Group"):
-                        for sensor in group.findall("Sensor"):
-                            if sensor.get("name") == name:
-                                sensor_elem = sensor
-                                break
-                        if sensor_elem:
-                            break
 
-                    rand_attr = sensor_elem.get("rand") if sensor_elem is not None else None
-                    if rand_attr:
-                        try:
-                            percent = float(rand_attr)
-                            delta = numeric * percent / 100.0
-                            low = int(numeric - delta)
-                            high = int(numeric + delta)
-                            f.write(f"return math.random({low}, {high})")
-                        except Exception as e:
-                            print(f"[DEBUG] Invalid rand for {name}: {rand_attr} -> {e}")
+                config_path = Path(self.rf_src) / "bin" / "sensors" / "gui" / "sensors.xml"
+                tree = ET.parse(config_path)
+                sensor_elem = None
+                for group in tree.getroot().findall("Group"):
+                    for sensor in group.findall("Sensor"):
+                        if sensor.get("name") == name:
+                            sensor_elem = sensor
+                            break
+                    if sensor_elem:
+                        break
+
+                rand_attr = sensor_elem.get("rand") if sensor_elem is not None else None
+
+                for sim_path in self.sim_paths:
+                    path = sim_path / "rfsuite" / "sim" / "sensors" / (name + SENSOR_FILE_EXT)
+                    print(f"[DEBUG] Saving {name} to {path} with value {numeric}")
+                    with open(path, "w") as f:
+                        if rand_attr:
+                            try:
+                                percent = float(rand_attr)
+                                delta = numeric * percent / 100.0
+                                low = int(numeric - delta)
+                                high = int(numeric + delta)
+                                f.write(f"return math.random({low}, {high})")
+                            except Exception as e:
+                                print(f"[DEBUG] Invalid rand for {name}: {rand_attr} -> {e}")
+                                f.write(f"return {numeric}")
+                        else:
                             f.write(f"return {numeric}")
-                    else:
-                        f.write(f"return {numeric}")
             except Exception as e:
                 print(f"Error saving {name}: {e}")
+
 
 if __name__ == "__main__":
     root = tk.Tk()
