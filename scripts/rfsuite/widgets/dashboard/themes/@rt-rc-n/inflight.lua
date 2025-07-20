@@ -132,7 +132,7 @@ local themeOptions = {
         valuepaddingtop = 5, 
         valuepaddingbottom = 15, 
         gaugepaddingtop = 5, 
-        gaugepadding = 15
+        gaugepadding = 5
     },
 
     ms_std  = { 

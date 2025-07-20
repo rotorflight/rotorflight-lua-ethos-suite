@@ -133,7 +133,7 @@ local themeOptions = {
         gaugepaddingtop = 5, 
         battadvpaddingtop = 5, 
         brvaluepaddingtop = 20,
-        gaugepadding = 15
+        gaugepadding = 5
     },
 
     ms_std  = { 

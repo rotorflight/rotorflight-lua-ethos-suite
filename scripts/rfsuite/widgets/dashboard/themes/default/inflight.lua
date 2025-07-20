@@ -145,7 +145,7 @@ local themeOptions = {
         valuepaddingtop = 10, 
         valuepaddingbottom = 25, 
         gaugepaddingtop = 5, 
-        gaugepadding = 10,
+        gaugepadding = 5,
     },
 
     -- Small screens - (X14 / X14S) Full/Standard
