@@ -101,6 +101,7 @@ function tasks.initialize()
                             interval = tconfig.interval,
                             script = tconfig.script,
                             linkrequired = tconfig.linkrequired or false,
+                            connected = tconfig.connected or false,
                             simulatoronly = tconfig.simulatoronly or false,
                             spreadschedule = tconfig.spreadschedule or false,
                             init = initPath
@@ -149,6 +150,7 @@ function tasks.findTasks()
                         interval = interval,
                         script = tconfig.script,
                         linkrequired = tconfig.linkrequired or false,
+                        connected = tconfig.connected or false,
                         spreadschedule = tconfig.spreadschedule or false,
                         simulatoronly = tconfig.simulatoronly or false,
                         last_run = os.clock() - offset,
@@ -160,6 +162,7 @@ function tasks.findTasks()
                         interval = task.interval,
                         script = task.script,
                         linkrequired = task.linkrequired,
+                        connected = task.connected,
                         simulatoronly = task.simulatoronly,
                         spreadschedule = task.spreadschedule
                     }
@@ -259,6 +262,7 @@ function tasks.wakeup()
                     script = meta.script,
                     spreadschedule = meta.spreadschedule,
                     linkrequired = meta.linkrequired or false,
+                    connected = meta.connected or false,
                     simulatoronly = meta.simulatoronly or false,
                     last_run = os.clock() - offset,
                     duration = 0
@@ -296,7 +300,12 @@ function tasks.wakeup()
 
         local priorityTask = task.name == "msp" or task.name == "callback"
 
-        return (not task.linkrequired or rfsuite.session.telemetryState)
+        -- New: only allow tasks with `connected = true` to run if the RF link is up
+        local linkOK = not task.linkrequired or rfsuite.session.telemetryState
+        local connOK = not task.connected    or rfsuite.session.isConnected
+
+        return linkOK
+            and connOK
             and (priorityTask or overdue or not rfsuite.app.triggers.mspBusy)
             and (not task.simulatoronly or usingSimulator)
     end

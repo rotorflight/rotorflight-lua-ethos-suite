@@ -20,6 +20,7 @@ local init = {
     interval        = 0.05,         -- run every 0.05 seconds
     script          = "events.lua", -- run this script
     linkrequired    = true,         -- run this script only if link is established
+    connected       = false,         -- run this script only if msp is connected
     spreadschedule  = true,         -- run on every loop
     simulatoronly   = false,        -- run this script in simulation mode
 }
