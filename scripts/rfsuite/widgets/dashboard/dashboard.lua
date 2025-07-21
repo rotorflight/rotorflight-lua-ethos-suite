@@ -440,7 +440,6 @@ function dashboard.renderLayout(widget, config)
 
     -- now do the same for headerBoxes so they get scheduled and invalidated just like normal boxes
     if isFullScreen then
-        -- First, build geometry info for all header boxes
         local headerGeoms = {}
         local rightmost_idx, rightmost_x = 1, 0
         for idx, box in ipairs(headerBoxes) do
