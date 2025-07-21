@@ -440,20 +440,34 @@ function dashboard.renderLayout(widget, config)
 
     -- now do the same for headerBoxes so they get scheduled and invalidated just like normal boxes
     if isFullScreen then
-        for _, box in ipairs(headerBoxes) do
-        local w, h = getBoxSize(box, boxW, boxH, pad, W_raw, headerLayout.height)
-        local x, y = getBoxPosition(box, w, h, boxW, boxH, pad, W_raw, headerLayout.height)
-        y = y  -- header y‑offset is already correct
-
-        local rect = { x = x, y = y, w = w, h = h, box = box, isHeader = true }
-        table.insert(dashboard.boxRects, rect)
-        local idx = #dashboard.boxRects
-        dashboard._objectDirty[idx] = nil
-
-        local obj = dashboard.objectsByType[box.type]
-        if obj and obj.scheduler and obj.wakeup then
-            table.insert(scheduledBoxIndices, idx)
+        local headerGeoms = {}
+        local rightmost_idx, rightmost_x = 1, 0
+        for idx, box in ipairs(headerBoxes) do
+            local w, h = getBoxSize(box, boxW, boxH, pad, W_raw, headerLayout.height)
+            local x, y = getBoxPosition(box, w, h, boxW, boxH, pad, W_raw, headerLayout.height)
+            headerGeoms[idx] = {x = x, y = y, w = w, h = h, box = box}
+            if x > rightmost_x then
+                rightmost_idx = idx
+                rightmost_x = x
+            end
         end
+
+        -- Now insert header rects, stretching the rightmost box
+        for idx, geom in ipairs(headerGeoms) do
+            local w = geom.w
+            if idx == rightmost_idx then
+                w = W_raw - geom.x
+            end
+
+            local rect = { x = geom.x, y = geom.y, w = w, h = geom.h, box = geom.box, isHeader = true }
+            table.insert(dashboard.boxRects, rect)
+            local idx_rect = #dashboard.boxRects
+            dashboard._objectDirty[idx_rect] = nil
+
+            local obj = dashboard.objectsByType[geom.box.type]
+            if obj and obj.scheduler and obj.wakeup then
+                table.insert(scheduledBoxIndices, idx_rect)
+            end
         end
     end
 
@@ -533,13 +547,28 @@ function dashboard.renderLayout(widget, config)
         local h_boxW   = contentW / h_cols
         local h_boxH   = contentH / h_rows
 
-        for _, box in ipairs(headerBoxes) do
+        -- Build box geoms and find rightmost
+        local rightmost_idx, rightmost_x = 1, 0
+        local headerGeoms = {}
+        for idx, box in ipairs(headerBoxes) do
             local w, h = getBoxSize(box, h_boxW, h_boxH, h_pad, adjustedW, adjustedH)
             local x, y = getBoxPosition(box, w, h, h_boxW, h_boxH, h_pad, adjustedW, adjustedH)
+            headerGeoms[idx] = {x = x, y = y, w = w, h = h, box = box}
+            if x > rightmost_x then
+                rightmost_idx = idx
+                rightmost_x = x
+            end
+        end
 
-            local obj = dashboard.objectsByType[box.type]
+        -- Paint all boxes, stretch rightmost to edge
+        for idx, geom in ipairs(headerGeoms) do
+            local w = geom.w
+            if idx == rightmost_idx then
+                w = W_raw - geom.x
+            end
+            local obj = dashboard.objectsByType[geom.box.type]
             if obj and obj.paint then
-                obj.paint(x, y, w, h, box)
+                obj.paint(geom.x, geom.y, w, geom.h, geom.box)
             end
         end
 
