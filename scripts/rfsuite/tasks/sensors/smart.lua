@@ -73,7 +73,6 @@ local function calculateFuel()
     -- work out what type of sensor we are running and use 
     -- the appropriate calculation method
     if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery and rfsuite.session.modelPreferences.battery.calc_local then
-        print(rfsuite.session.modelPreferences.battery.calc_local)
          if rfsuite.session.modelPreferences.battery.calc_local == 1 then
             return smartfuelvoltage.calculate()
          else
