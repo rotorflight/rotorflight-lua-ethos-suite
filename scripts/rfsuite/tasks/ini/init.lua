@@ -20,6 +20,7 @@ local init = {
     interval        = -1,      -- disable the wakeup as we dont use it
     script          = "ini.lua", -- run this script
     linkrequired    = true,     -- run this script only if link is established  
+    connected       = true,         -- run this script only if msp is connected
     spreadschedule  = true,     -- run on every loop  
     simulatoronly   = false,     -- run this script in simulation mode                  
 }

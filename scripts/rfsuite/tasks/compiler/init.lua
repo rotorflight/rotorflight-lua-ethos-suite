@@ -19,7 +19,8 @@
 local init = {
     interval        = 5,                -- run every 5 seconds
     script          = "compiler.lua",   -- run this script
-    linkrequired    = false,            -- run this script only if link is established    
+    linkrequired    = false,            -- run this script only if link is established
+    connected       = false,            -- run this script only if msp is connected    
     spreadschedule  = true,             -- run on every loop
     simulatoronly   = false,            -- run this script in simulation mode     
 }

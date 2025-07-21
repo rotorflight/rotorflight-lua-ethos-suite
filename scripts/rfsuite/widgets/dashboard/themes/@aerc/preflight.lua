@@ -26,27 +26,37 @@ local darkMode = {
     titlecolor      = "white",
     bgcolor         = "black",
     fillcolor       = "green",
-    fillbgcolor     = "darkgrey",
+    fillwarncolor   = "orange",
+    fillcritcolor   = "red",
+    fillbgcolor     = "grey",
     accentcolor     = "white",
     rssifillcolor   = "green",
     rssifillbgcolor = "darkgrey",
     txaccentcolor   = "grey",
     txfillcolor     = "green",
-    txbgfillcolor   = "darkgrey"
+    txbgfillcolor   = "darkgrey",
+    bgcolortop      = "black",
+    cntextcolor     = "white",
+    rssitextcolor   = "white"
 }
 
 local lightMode = {
-    textcolor       = "black",
-    titlecolor      = "black",
+    textcolor       = "lmgrey",
+    titlecolor      = "lmgrey",
     bgcolor         = "white",
-    fillcolor       = "green",
+    fillcolor       = "lightgreen",
+    fillwarncolor   = "lightorange",
+    fillcritcolor   = "lightred",
     fillbgcolor     = "lightgrey",
     accentcolor     = "darkgrey",
-    rssifillcolor   = "green",
+    rssifillcolor   = "lightgreen",
     rssifillbgcolor = "grey",
-    txaccentcolor   = "darkgrey",
-    txfillcolor     = "green",
-    txbgfillcolor   = "grey"
+    txaccentcolor   = "white",
+    txfillcolor     = "lightgreen",
+    txbgfillcolor   = "grey",
+    bgcolortop      = "darkgrey",
+    cntextcolor     = "white",
+    rssitextcolor   = "white"
 }
 
 -- alias current mode
@@ -59,6 +69,7 @@ local THEME_DEFAULTS = {
     rpm_min      = 0,
     rpm_max      = 3000,
     bec_min      = 3.0,
+    bec_warn     = 6.0,
     bec_max      = 13.0,
     esctemp_warn = 90,
     esctemp_max  = 140,
@@ -230,8 +241,8 @@ local function buildBoxes(W)
             transform = "floor",
             thresholds = {
                 { value = 1.5, textcolor = "blue" },
-                { value = 2.5, textcolor = "orange" },
-                { value = 6,   textcolor = "green" }
+                { value = 2.5, textcolor = colorMode.fillwarncolor },
+                { value = 6,   textcolor = colorMode.fillcolor }
             }
         },
 
@@ -252,8 +263,8 @@ local function buildBoxes(W)
             transform = "floor",
             thresholds = {
                 { value = 1.5, textcolor = "blue" },
-                { value = 2.5, textcolor = "orange" },
-                { value = 6,   textcolor = "green" }
+                { value = 2.5, colorMode.fillwarncolor },
+                { value = 6,   colorMode.fillcolor }
             }
         },
         
@@ -296,15 +307,15 @@ local function buildBoxes(W)
             gaugepaddingtop = opts.gaugepaddingtop, 
             battadvfont = opts.advfont, 
             battadvpaddingtop = opts.battadvpaddingtop, 
-            fillcolor = "green",
-            bgcolor = colorMode.bgcolor, 
+            fillcolor = colorMode.fillcolor,
+            bgcolor = colorMode.bgcolor,
             titlecolor = colorMode.titlecolor, 
             textcolor = colorMode.textcolor, 
             accentcolor = colorMode.accentcolor,
             transform = "floor",
             thresholds = {
-                { value = 10, fillcolor = "red" },
-                { value = 30, fillcolor = "orange" }
+                { value = 10, fillcolor = colorMode.fillcritcolor },
+                { value = 30, fillcolor = colorMode.fillwarncolor }
             }
         },
 
@@ -330,8 +341,8 @@ local function buildBoxes(W)
             titlecolor = colorMode.titlecolor, 
             textcolor = colorMode.textcolor, 
             thresholds = {
-                { value = getThemeValue("bec_min"), fillcolor = "red" },
-                { value = getThemeValue("bec_max"), fillcolor = "green" }
+                { value = getThemeValue("bec_warn"), fillcolor = colorMode.fillwarncolor },
+                { value = getThemeValue("bec_max"), fillcolor = colorMode.fillcolor }
             }
         },
 
@@ -353,8 +364,8 @@ local function buildBoxes(W)
             transform = "floor", 
             thresholds = {
                 { value = 80, textcolor = colorMode.textcolor },
-                { value = 90, textcolor = "orange" },
-                { value = 100, textcolor = "red" }
+                { value = 90, textcolor = colorMode.fillwarncolor },
+                { value = 100, textcolor = colorMode.fillcritcolor }
             }
         },
 
@@ -381,9 +392,9 @@ local function buildBoxes(W)
             titlepaddingbottom = opts.titlepaddingbottom,
             transform = "floor",
             thresholds = {
-                { value = getThemeValue("esctemp_warn"), fillcolor = "green" },
-                { value = getThemeValue("esctemp_max"), fillcolor = "orange" },
-                { value = 200, fillcolor = "red" }
+                { value = getThemeValue("esctemp_warn"), fillcolor = colorMode.fillcolor },
+                { value = getThemeValue("esctemp_max"), fillcolor = colorMode.fillwarncolor },
+                { value = 200, fillcolor = colorMode.fillcritcolor }
             }
         },
 
@@ -402,13 +413,13 @@ local function buildBoxes(W)
             bgcolor = colorMode.bgcolor, 
             titlecolor = colorMode.titlecolor,
             thresholds = {
-                { value = i18n("widgets.governor.DISARMED"), textcolor = "red" },
-                { value = i18n("widgets.governor.OFF"), textcolor = "red" },
+                { value = i18n("widgets.governor.DISARMED"), textcolor = colorMode.fillcritcolor },
+                { value = i18n("widgets.governor.OFF"), textcolor = colorMode.fillcritcolor },
                 { value = i18n("widgets.governor.IDLE"), textcolor = "blue" },
                 { value = i18n("widgets.governor.SPOOLUP"), textcolor = "blue" },
-                { value = i18n("widgets.governor.RECOVERY"), textcolor = "orange" },
-                { value = i18n("widgets.governor.ACTIVE"), textcolor = "green" },
-                { value = i18n("widgets.governor.THR-OFF"), textcolor = "red" }
+                { value = i18n("widgets.governor.RECOVERY"), textcolor = colorMode.fillwarncolor },
+                { value = i18n("widgets.governor.ACTIVE"), textcolor = colorMode.fillcolor },
+                { value = i18n("widgets.governor.THR-OFF"), textcolor = colorMode.fillcritcolor }
             }
         }
     }
@@ -425,9 +436,9 @@ local header_boxes = {
         font = headeropts.font, 
         valuealign = "left", 
         valuepaddingleft = 5,
-        bgcolor = colorMode.bgcolor, 
+        bgcolor = colorMode.bgcolortop,
         titlecolor = colorMode.titlecolor, 
-        textcolor = colorMode.textcolor 
+        textcolor = colorMode.cntextcolor 
     },
 
     -- RF Logo
@@ -437,7 +448,7 @@ local header_boxes = {
         colspan = 3, 
         type = "image", 
         subtype = "image",
-        bgcolor = colorMode.bgcolor 
+        bgcolor = colorMode.bgcolortop,
     },
 
     -- TX Battery
@@ -464,13 +475,13 @@ local header_boxes = {
         gaugepaddingbottom = headeropts.gaugepaddingbottom,
         gaugepaddingtop = headeropts.gaugepaddingtop,
         fillbgcolor = colorMode.txbgfillcolor, 
-        bgcolor = colorMode.bgcolor,
+        bgcolor = colorMode.bgcolortop,
         accentcolor = colorMode.txaccentcolor, 
         textcolor = colorMode.textcolor,
         min = getThemeValue("tx_min"), 
         max = getThemeValue("tx_max"), 
         thresholds = {
-            { value = getThemeValue("tx_warn"), fillcolor = "orange" },
+            { value = getThemeValue("tx_warn"), fillcolor = colorMode.fillwarncolor },
             { value = getThemeValue("tx_max"), fillcolor = colorMode.txfillcolor }
         }
     },
@@ -493,8 +504,8 @@ local header_boxes = {
         barpaddingtop = headeropts.barpaddingtop,
         valuepaddingleft = headeropts.valuepaddingleft,
         valuepaddingbottom = headeropts.valuepaddingbottom,
-        bgcolor = colorMode.bgcolor, 
-        textcolor = colorMode.textcolor, 
+        bgcolor = colorMode.bgcolortop,
+        textcolor = colorMode.rssitextcolor, 
         fillcolor = colorMode.rssifillcolor,
         fillbgcolor = colorMode.rssifillbgcolor,
     },

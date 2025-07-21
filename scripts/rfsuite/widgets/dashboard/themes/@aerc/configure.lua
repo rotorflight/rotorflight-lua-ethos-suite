@@ -17,6 +17,7 @@ local THEME_DEFAULTS = {
     rpm_min      = 0,
     rpm_max      = 3000,
     bec_min      = 3.0,
+    bec_warn     = 6.0,
     bec_max      = 13.0,
     esctemp_warn = 90,
     esctemp_max  = 140,
@@ -95,6 +96,20 @@ local function configure()
             local min_val = val / 10
             config.bec_min = clamp(min_val, 2, config.bec_max - 0.1)
         end)
+    formFields[#formFields]:decimals(1)
+    formFields[#formFields]:suffix("V")
+
+    local bec_warn_line = bec_panel:addLine(rfsuite.i18n.get("widgets.dashboard.warning"))
+    formFields[#formFields + 1] = form.addNumberField(bec_warn_line, nil, 20, 150,
+        function()
+            local v = config.bec_warn or THEME_DEFAULTS.bec_warn
+            return math.floor((v * 10) + 0.5)
+        end,
+        function(val)
+            local warn_val = val / 10
+            config.bec_warn = clamp(warn_val, config.bec_min + 0.1, config.bec_max - 0.1)
+        end
+    )
     formFields[#formFields]:decimals(1)
     formFields[#formFields]:suffix("V")
 
