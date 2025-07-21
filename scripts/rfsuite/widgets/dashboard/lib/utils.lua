@@ -147,12 +147,10 @@ function utils.getFontListsForResolution()
 end
 
 --- Returns a table of recommended header layout options for the current radio’s screen resolution.
--- This function detects the radio’s LCD width, then returns a set of standard header options
--- (such as height and padding values) appropriate for known device resolutions.
--- These values ensure consistent header spacing, sizing, and alignment for the three supported full-screen
--- layouts (X20, X18, X14).
---
--- The returned table can be used directly as a `header_layout` for dashboard themes, or individual fields
+-- The function detects the radio’s LCD width and height using lcd.getWindowSize(), then selects a set of header padding,
+-- font, and dimension values suitable for the device. These values are used for aligning and sizing dashboard header widgets,
+-- such as logo, telemetry bars, and craft name display. If the screen size is not recognized, returns nil.
+-- @return table A table containing header layout parameters (height, font, padding values, etc.).
 
 function utils.getHeaderOptions()
     local W, H = lcd.getWindowSize()
@@ -170,6 +168,7 @@ function utils.getHeaderOptions()
             gaugepaddingright = 26,
             gaugepaddingbottom = 2,
             gaugepaddingtop = 2,
+            cappaddingright = 3,
             barpaddingleft = 25,
             barpaddingright = 28,
             barpaddingbottom = 2,
@@ -191,6 +190,7 @@ function utils.getHeaderOptions()
             gaugepaddingright = 9,
             gaugepaddingbottom = 2,
             gaugepaddingtop = 2,
+            cappaddingright = 4,
             barpaddingleft = 15,
             barpaddingright = 18,
             barpaddingbottom = 2,
@@ -210,6 +210,7 @@ function utils.getHeaderOptions()
             gaugepaddingright = 23,
             gaugepaddingbottom = 2,
             gaugepaddingtop = 2,
+            cappaddingright = 4,
             barpaddingleft = 19,
             barpaddingright = 21,
             barpaddingbottom = 2,
@@ -217,6 +218,168 @@ function utils.getHeaderOptions()
             valuepaddingbottom = 20,
         }
     end
+end
+
+--- Returns a table containing color values for the current display theme (dark or light mode).
+-- This function checks the LCD dark mode state and returns a table of named color values for use throughout the dashboard UI,
+-- including text color, fill colors, accent colors, and background colors for both dark and light themes.
+-- The returned table provides keys like textcolor, titlecolor, bgcolor, fillcolor, and others for consistent theming.
+-- @return table A table of color values for the current theme.
+
+function utils.themeColors()
+    local colorMode = {
+        dark = {
+            textcolor       = "white",
+            titlecolor      = "white",
+            bgcolor         = "black",
+            fillcolor       = "green",
+            fillwarncolor   = "orange",
+            fillcritcolor   = "red",
+            fillbgcolor     = "grey",
+            accentcolor     = "white",
+            rssifillcolor   = "green",
+            rssifillbgcolor = "darkgrey",
+            txaccentcolor   = "grey",
+            txfillcolor     = "green",
+            txbgfillcolor   = "darkgrey",
+            bgcolortop      = "black",
+            cntextcolor     = "white",
+            rssitextcolor   = "white"
+        },
+        light = {
+            textcolor       = "lmgrey",
+            titlecolor      = "lmgrey",
+            bgcolor         = "white",
+            fillcolor       = "lightgreen",
+            fillwarncolor   = "lightorange",
+            fillcritcolor   = "lightred",
+            fillbgcolor     = "lightgrey",
+            accentcolor     = "darkgrey",
+            rssifillcolor   = "lightgreen",
+            rssifillbgcolor = "grey",
+            txaccentcolor   = "white",
+            txfillcolor     = "lightgreen",
+            txbgfillcolor   = "grey",
+            bgcolortop      = "darkgrey",
+            cntextcolor     = "white",
+            rssitextcolor   = "white"
+        }
+    }
+    return lcd.darkMode() and colorMode.dark or colorMode.light
+end
+
+--- Returns a standard header layout table for the dashboard, based on header options.
+-- This function takes a headeropts table (from utils.getHeaderOptions) and constructs a
+-- standard layout definition for the header, specifying the height, column count, and row count.
+-- The returned table can be used as the header_layout in a theme file for consistent structure.
+-- @param headeropts table Table of header options (height, font, etc.).
+-- @return table A table with header layout fields (height, cols, rows).
+
+function utils.standardHeaderLayout(headeropts)
+    return {
+        height = headeropts.height,
+        cols   = 7,
+        rows   = 1
+    }
+end
+
+--- Returns an array of header box definitions for the dashboard header.
+-- This function generates the configuration tables for each header box (craft name, logo, TX battery, RSSI)
+-- based on provided i18n, colorMode, headeropts, and theme value functions. Each box defines its
+-- position, appearance, and type, using the supplied theme and screen-size-aware options.
+-- @param i18n function    Function for retrieving localized strings.
+-- @param colorMode table  Color table for the current theme.
+-- @param headeropts table Header option values (dimensions, font, padding).
+-- @param getThemeValue function Function for resolving theme config values (e.g., voltage limits).
+-- @return table Array of box definition tables for header display.
+
+function utils.standardHeaderBoxes(i18n, colorMode, headeropts, getThemeValue)
+    return {
+        -- Craftname
+        { 
+            col = 1, 
+            row = 1, 
+            colspan = 2, 
+            type = "text", 
+            subtype = "craftname",
+            font = headeropts.font, 
+            valuealign = "left", 
+            valuepaddingleft = 5,
+            bgcolor = colorMode.bgcolortop,
+            titlecolor = colorMode.titlecolor, 
+            textcolor = colorMode.cntextcolor 
+        },
+
+        -- RF Logo
+        { 
+            col = 3, 
+            row = 1, 
+            colspan = 3, 
+            type = "image", 
+            subtype = "image",
+            bgcolor = colorMode.bgcolortop,
+        },
+
+        -- TX Battery
+        { 
+            col = 6, 
+            row = 1,
+            type = "gauge", 
+            subtype = "bar", 
+            source = "txbatt",
+            font = headeropts.font,
+            battery = true, 
+            batteryframe = true, 
+            hidevalue = true,
+            valuealign = "left", 
+            batterysegments = 4, 
+            batteryspacing = 1, 
+            batteryframethickness  = 2,
+            batterysegmentpaddingtop = headeropts.batterysegmentpaddingtop,
+            batterysegmentpaddingbottom = headeropts.batterysegmentpaddingbottom,
+            batterysegmentpaddingleft = headeropts.batterysegmentpaddingleft,
+            batterysegmentpaddingright = headeropts.batterysegmentpaddingright,
+            gaugepaddingright = headeropts.gaugepaddingright,
+            gaugepaddingleft = headeropts.gaugepaddingleft,
+            gaugepaddingbottom = headeropts.gaugepaddingbottom,
+            gaugepaddingtop = headeropts.gaugepaddingtop,
+            cappaddingright = headeropts.cappaddingright,
+            fillbgcolor = colorMode.txbgfillcolor, 
+            bgcolor = colorMode.bgcolortop,
+            accentcolor = colorMode.txaccentcolor, 
+            textcolor = colorMode.textcolor,
+            min = getThemeValue("tx_min"), 
+            max = getThemeValue("tx_max"), 
+            thresholds = {
+                { value = getThemeValue("tx_warn"), fillcolor = colorMode.fillwarncolor },
+                { value = getThemeValue("tx_max"), fillcolor = colorMode.txfillcolor }
+            }
+        },
+
+        -- RSSI
+        { 
+            col = 7, 
+            row = 1,
+            type = "gauge", 
+            subtype = "step", 
+            source = "rssi",
+            font = "FONT_XS", 
+            stepgap = 2, 
+            stepcount = 5, 
+            decimals = 0,
+            valuealign = "left",
+            barpaddingleft = headeropts.barpaddingleft,
+            barpaddingright = headeropts.barpaddingright,
+            barpaddingbottom = headeropts.barpaddingbottom,
+            barpaddingtop = headeropts.barpaddingtop,
+            valuepaddingleft = headeropts.valuepaddingleft,
+            valuepaddingbottom = headeropts.valuepaddingbottom,
+            bgcolor = colorMode.bgcolortop,
+            textcolor = colorMode.rssitextcolor, 
+            fillcolor = colorMode.rssifillcolor,
+            fillbgcolor = colorMode.rssifillbgcolor,
+        }
+    }
 end
 
 --- Resets the image cache by removing all entries from the `imageCache` table.
