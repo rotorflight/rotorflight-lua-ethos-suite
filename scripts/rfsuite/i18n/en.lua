@@ -249,6 +249,11 @@ return {
     ["PILOT_CONFIG"] = {
       ["model_param1_value"] = "Set this to the expected flight time in seconds.  The transmitter will beep when the flight time is reached."
     },
+    ["BATTERY_FUELCALC_INI"] = {
+      ["calcfuel_local"] = "Calculate fuel using",
+      ["tbl_off"] = "Current sensor",
+      ["tbl_on"] = "Voltage sensor"
+    },
     ["BATTERY_CONFIG"] = {
       ["vbatmincellvoltage"] = "The minimum voltage per cell before the low voltage alarm is triggered.",
       ["vbatmaxcellvoltage"] = "The maximum voltage per cell before the high voltage alarm is triggered.",
@@ -796,6 +801,7 @@ return {
         ["help_logs_p3"] = "- arm status, voltage, headspeed, current, esc temperature"
       },
       ["battery"] = {
+        ["calcfuel_local"] = "Calculate fuel using",
         ["max_cell_voltage"] = "Max Cell Voltage",
         ["full_cell_voltage"] = "Full Cell Voltage",
         ["name"] = "Battery",
@@ -1183,7 +1189,7 @@ return {
       ["cell_count"] = "Cell count",
       ["governor"] = "Governor State",
       ["adj_func"] = "Adj (Function)",
-      ["fuel"] = "Charge Level",
+      ["fuel"] = "Fuel",
       ["smartfuel"] = "Smart Fuel",
       ["rssi"] = "RSSI",
       ["link"] = "Link Quality",
@@ -1191,7 +1197,7 @@ return {
       ["arming_flags"] = "Arming Flags",
       ["current"] = "Current",
       ["throttle_pct"] = "Throttle %",
-      ["consumption"] = "Consumption",
+      ["consumption"] = "Fuel",
       ["pid_profile"] = "PID Profile",
       ["mcu_temp"] = "MCU Temperature",
       ["armdisableflags"] = "Arming Disable"

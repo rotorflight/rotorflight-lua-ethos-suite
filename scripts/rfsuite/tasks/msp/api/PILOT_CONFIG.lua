@@ -23,7 +23,7 @@ local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
     {field = "model_id",            type = "U8",  apiVersion = 12.07, simResponse = {3}},
-    {field = "model_param1_type",   type = "U8",  apiVersion = 12.07, simResponse = {5}, scale = 10, decimals = 1, min = 0, max = 10, default = 0.5},  -- voltage curve multiplier
+    {field = "model_param1_type",   type = "U8",  apiVersion = 12.07, simResponse = {0}},  
     {field = "model_param1_value",  type = "U16", apiVersion = 12.07, simResponse = {1, 44}, unit = "s", min =0, max = 3600}, -- timer
     {field = "model_param2_type",   type = "U8",  apiVersion = 12.07, simResponse = {0}},
     {field = "model_param2_value",  type = "U16", apiVersion = 12.07, simResponse = {20, 0}},

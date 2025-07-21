@@ -139,10 +139,6 @@ local msp_sensors = {
             model_param1_value = {
                 sessionname = {"modelFlightTime" },
             },
-            model_param1_type = {
-                sessionname = {"batteryConfig", "voltageMultiplier" },
-                transform     = function(v) return v / 10 end, -- convert to float
-            },
         }        
     }             
 }

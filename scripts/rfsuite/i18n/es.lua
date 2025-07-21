@@ -249,6 +249,11 @@ return {
     ["PILOT_CONFIG"] = {
       ["model_param1_value"] = "Establezca el tiempo esperado de vuelo en segundos. El transmisor emitirá beeps cuando el tiempo establecido se haya alcanzado."
     },
+    ["BATTERY_FUELCALC_INI"] = {
+      ["calcfuel_local"] = "Calculate fuel using",
+      ["tbl_off"] = "Current sensor",
+      ["tbl_on"] = "Voltage sensor"
+    },
     ["BATTERY_CONFIG"] = {
       ["vbatmincellvoltage"] = "El voltaje minimo por celda al cual se dispara la alarma de bajo voltaje.",
       ["vbatmaxcellvoltage"] = "El voltaje maximo por celda al cual se dispara la alarma de voltaje alto.",
@@ -796,6 +801,7 @@ return {
         ["help_logs_p3"] = "- estado de armado, voltaje, velocidad del rotor, corriente, temperatura del ESC"
       },
       ["battery"] = {
+        ["calcfuel_local"] = "Calculate fuel using",
         ["max_cell_voltage"] = "Voltaje Máx Celda",
         ["full_cell_voltage"] = "Voltaje de Celda llena",
         ["name"] = "Batería",

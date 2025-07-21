@@ -1933,6 +1933,11 @@
       }
     },
     "battery": {
+      "calcfuel_local": {
+        "english": "Calculate fuel using",
+        "translation": "Calculate fuel using",
+        "needs_translation": "false"
+      },
       "max_cell_voltage": {
         "english": "Max Cell Voltage",
         "translation": "Max Cell Voltage",

@@ -23,8 +23,7 @@ function modelid.wakeup()
     -- quick exit if no apiVersion
     if rfsuite.session.apiVersion == nil then return end    
 
-    -- we check and wait for battery config as use a pilot config value for one param.
-    if (rfsuite.session.modelID == nil and rfsuite.session.batteryConfig ~= nil) then 
+    if (rfsuite.session.modelID == nil) then 
         local API = rfsuite.tasks.msp.api.load("PILOT_CONFIG")
         API.setCompleteHandler(function(self, buf)
             local model_id = API.readValue("model_id")
@@ -33,10 +32,8 @@ function modelid.wakeup()
             if model_id ~= nil or model_param1_value ~= nil then
                 rfsuite.utils.log("Model id: " .. model_id, "info")
                 rfsuite.utils.log("Model Flight Time: " .. model_param1_value, "info")
-                rfsuite.utils.log("Voltage Multiplier: " .. model_param1_type, "info")
                 rfsuite.session.modelID = model_id
                 rfsuite.session.modelFlightTime = model_param1_value or 0
-                rfsuite.session.batteryConfig.voltageMultiplier = model_param1_type or 0.5 -- default to 0.5 if not set
             end    
         end)
         API.setUUID("587d2865-df85-48e5-844b-e01c9f1aa247")

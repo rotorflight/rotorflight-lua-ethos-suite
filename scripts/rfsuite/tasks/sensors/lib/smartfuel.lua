@@ -33,6 +33,7 @@ local preStabiliseDelay   = 1.5       -- Minimum seconds to wait after configura
 local telemetry                       -- Reference to the telemetry task, used to access sensor data.
 local lastMode = rfsuite.flightmode.current
 local currentMode = rfsuite.flightmode.current
+local lastSensorMode
 
 -- Resets the voltage tracking state by clearing the last recorded voltages,
 -- resetting the voltage stable time, and marking the voltage as not stabilised.
@@ -101,6 +102,14 @@ local function smartFuelCalc()
         fuelStartingConsumption = nil
         resetVoltageTracking()
         stabilizeNotBefore = os.clock() + preStabiliseDelay -- start pre-stabilisation delay on config change
+    end
+
+    -- make sure we reset the method if the sensor mode changes
+    if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery and rfsuite.session.modelPreferences.battery.calc_local then
+        if lastSensorMode ~= rfsuite.session.modelPreferences.battery.calc_local then
+            resetVoltageTracking()
+            lastSensorMode = rfsuite.session.modelPreferences.battery.calc_local
+        end
     end
 
     -- Read current voltage

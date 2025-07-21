@@ -976,6 +976,23 @@
       "needs_translation": "false"
     }
   },
+  "BATTERY_FUELCALC_INI": {
+    "calcfuel_local": {
+      "english": "Calculate fuel using",
+      "translation": "Calculate fuel using",
+      "needs_translation": "false"
+    },
+    "tbl_off": {
+      "english": "Current sensor",
+      "translation": "Current sensor",
+      "needs_translation": "false"
+    },
+    "tbl_on": {
+      "english": "Voltage sensor",
+      "translation": "Voltage sensor",
+      "needs_translation": "false"
+    }
+  },
   "BATTERY_CONFIG": {
     "vbatmincellvoltage": {
       "english": "The minimum voltage per cell before the low voltage alarm is triggered.",

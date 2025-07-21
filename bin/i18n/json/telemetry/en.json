@@ -125,11 +125,6 @@
       "translation": "Consumption",
       "needs_translation": "false"
     },
-    "smartfuel": {
-      "english": "Smart Fuel",
-      "translation": "Smart Fuel",
-      "needs_translation": "false"
-    },
     "pid_profile": {
       "english": "PID Profile",
       "translation": "PID Profile",

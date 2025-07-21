@@ -27,6 +27,7 @@ local preStabiliseDelay       = 1.5
 local telemetry
 local currentMode = rfsuite.flightmode.current
 local lastMode = currentMode
+local lastSensorMode
 
 -- Discharge curve with 0.01V per cell resolution from 3.00V to 4.20V (121 points)
 -- This curve uses a sigmoid approximation to mimic real LiPo discharge behavior
@@ -100,6 +101,14 @@ local function smartFuelCalc()
     if not rfsuite.session.isConnected or not rfsuite.session.batteryConfig then
         resetVoltageTracking()
         return nil
+    end
+
+    -- make sure we reset the method if the sensor mode changes
+    if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery and rfsuite.session.modelPreferences.battery.calc_local then
+        if lastSensorMode ~= rfsuite.session.modelPreferences.battery.calc_local then
+            resetVoltageTracking()
+            lastSensorMode = rfsuite.session.modelPreferences.battery.calc_local
+        end
     end
 
     local bc = rfsuite.session.batteryConfig

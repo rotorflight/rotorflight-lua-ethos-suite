@@ -3,7 +3,8 @@ local i18n = rfsuite.i18n.get
 local apidata = {
     api = {
         [1] = 'BATTERY_CONFIG',
-        [2] = 'PILOT_CONFIG',        
+        [2] = 'PILOT_CONFIG',   
+        [3] = 'BATTERY_FUELCALC_INI'     
     },
     formdata = {
         labels = {
@@ -17,7 +18,8 @@ local apidata = {
             {t = i18n("app.modules.battery.cell_count"), mspapi = 1, apikey = "batteryCellCount"},
             {t = i18n("app.modules.battery.consumption_warning_percentage"), min = 15, max = 60, mspapi = 1, apikey = "consumptionWarningPercentage"},
             {t = i18n("app.modules.battery.timer"), mspapi = 2, apikey = "model_param1_value"},
-            {t = i18n("app.modules.battery.voltage_multiplier"), mspapi = 2, apikey = "model_param1_type"},
+            {t = i18n("app.modules.battery.voltage_multiplier"), mspapi = 3, apikey = "sag_multiplier"},
+            {t = i18n("app.modules.battery.calcfuel_local"), mspapi = 3, apikey = "calc_local", type = 1},
         }
     }                 
 }
