@@ -20,6 +20,7 @@ local init = {
     interval        = 0.025,        -- run every 0.025 seconds
     script          = "timer.lua", -- run this script
     linkrequired    = true,         -- run this script only if link is established
+    connected       = true,            -- run this script only if msp is connected
     spreadschedule  = false,         -- run on every loop
     simulatoronly   = false,        -- run this script in simulation mode
 }
