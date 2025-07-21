@@ -105,7 +105,6 @@ end
 local function smartFuelCalc()
 
     local prefs = rfsuite.session.modelPreferences
-    local batterylocalcalculation = rfsuite.ini.getvalue(prefs, "general", "batterylocalcalculation")
     
     -- Assign this here as it may not be available in the global scope at intialisation
     if not telemetry then
@@ -249,7 +248,7 @@ local function smartFuelCalc()
         fuelStartingConsumption = (consumption or 0) - estimatedUsed
     end
     
-    if batterylocalcalculation == 1 then
+    if packCapacity == 0 then
         return fuelPercentageCalcByVoltage(voltage, cellCount)
     end
 
