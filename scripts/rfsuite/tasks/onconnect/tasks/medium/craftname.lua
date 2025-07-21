@@ -34,6 +34,8 @@ function craftname.wakeup()
             end
             if rfsuite.session.craftName and rfsuite.session.craftName ~= "" then
                 rfsuite.utils.log("Craft name: " .. rfsuite.session.craftName, "info")
+            else
+                rfsuite.session.craftName = model.name()    
             end
         end)
         API.setUUID("37163617-1486-4886-8b81-6a1dd6d7edd1")
