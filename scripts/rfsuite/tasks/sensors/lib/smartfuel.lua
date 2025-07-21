@@ -34,7 +34,7 @@ local telemetry                       -- Reference to the telemetry task, used t
 local currentMode = rfsuite.flightmode.current
 local lastMode = currentMode;
 local dischargeCurveTable = rfsuite.utils.getDischargeCurveTable()
-
+ 
 
 -- Resets the voltage tracking state by clearing the last recorded voltages,
 -- resetting the voltage stable time, and marking the voltage as not stabilised.
@@ -62,21 +62,31 @@ local function isVoltageStable()
     return (vmax - vmin) <= voltageThreshold
 end
 
-local function indexOf(t, value)
+--Search for the corresponding index that matches informed value or its next 
+--grater value, to prevent nil returns 
+local function nextIndexOf(t, value)
     for i = 1, #t do
-        if t[i] == value then
+        if  value <= t[i] then
             return i
         end
     end
     return nil
 end
 
+--Estimates fuel percentage by voltage read, considering the lipo discharge curve and 
+--configured warning percentage.
+--
+--Voltage multiplier was added to automatically reduce the warning percentage, so can 
+--addapt to voltage sag effect during the flight  
 local function fuelPercentageCalcByVoltage(voltage, cellCount)
+    local voltageMultiplier = rfsuite.session.batteryConfig.voltageMultiplier
+    local consumptionWarningPercentage = rfsuite.session.batteryConfig.consumptionWarningPercentage
+    local multipliedWarningPercentage = math.floor(consumptionWarningPercentage * voltageMultiplier)
     local batteryPercent = rfsuite.utils.batteryPercentCalc(voltage, cellCount)
-    local dischargeThreshold = indexOf(dischargeCurveTable, rfsuite.session.batteryConfig.consumptionWarningPercentage)
-    local dischargeCurveIndex = indexOf(dischargeCurveTable, batteryPercent)
+    local dischargeThreshold = nextIndexOf(dischargeCurveTable, multipliedWarningPercentage)
+    local dischargeCurveIndex = nextIndexOf(dischargeCurveTable, batteryPercent)
     local percentageStep = 100 / (#dischargeCurveTable - dischargeThreshold)
-    if (dischargeCurveIndex < dischargeThreshold) then 
+    if (dischargeCurveIndex < dischargeThreshold) then
         return 0
     end
     return (dischargeCurveIndex - dischargeThreshold) * percentageStep
@@ -239,11 +249,8 @@ local function smartFuelCalc()
         fuelStartingConsumption = (consumption or 0) - estimatedUsed
     end
     
-    rfsuite.utils.log("Battery local calculation: "..batterylocalcalculation)
     if batterylocalcalculation == 1 then
-        local percent = fuelPercentageCalcByVoltage(voltage, cellCount)
-        rfsuite.utils.log("Battery fuel percent: "..percent)
-        return percent
+        return fuelPercentageCalcByVoltage(voltage, cellCount)
     end
 
     -- Step 2: Use mAh consumption to track % drop after initial value
