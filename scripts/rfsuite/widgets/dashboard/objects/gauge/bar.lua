@@ -58,6 +58,11 @@
     batterysegmentpaddingtop    : number   -- (Optional) Padding (pixels) from the top of each horizontal segment (default: 0)
     batterysegmentpaddingbottom : number   -- (Optional) Padding (pixels) from the bottom of each horizontal segment (default: 0)
     accentcolor             : color     -- (Optional) Color for the battery frame and cap (theme fallback)
+    cappaddingleft        : number   -- (Optional) Padding from the left edge of the cap (default: 0)
+    cappaddingright       : number   -- (Optional) Padding from the right edge of the cap (default: 0)
+    cappaddingtop         : number   -- (Optional) Padding from the top edge of the cap (default: 0)
+    cappaddingbottom      : number   -- (Optional) Padding from the bottom edge of the cap (default: 0)
+
 
     -- Battery Advanced Info (Optional overlay for battery/fuel bar)
     battadv         : bool      -- (Optional) If true, shows advanced battery/fuel telemetry info lines (voltage, per-cell voltage, consumption, cell count)
@@ -132,7 +137,8 @@ local function drawBatteryBox(
     fillbgcolor, fillcolor,
     batteryframe, batteryframethickness, accentcolor, battery,
     batterysegmentpaddingtop, batterysegmentpaddingbottom,
-    batterysegmentpaddingleft, batterysegmentpaddingright
+    batterysegmentpaddingleft, batterysegmentpaddingright,
+    cappaddingleft, cappaddingright, cappaddingtop, cappaddingbottom
 )
 
     local frameThickness = batteryframethickness or 4
@@ -144,19 +150,19 @@ local function drawBatteryBox(
         if batteryframe then
             local maxCapH = math.floor(h * 0.5)
             capH = math.min(math.max(8, math.floor(h * 0.10)), maxCapH)
-            -- draw cap
+            -- Draw cap at top
+            lcd.color(accentcolor)
+            local capW = math.min(math.max(4, math.floor(w * 0.40)), w)
+            local capX = x + math.floor((w - capW) / 2 + 0.5) + (cappaddingleft or 0)
+            local capY = y + (cappaddingtop or 0)
+            local capWFinal = capW - (cappaddingleft or 0) - (cappaddingright or 0)
+            local capHFinal = capH - (cappaddingtop or 0) - (cappaddingbottom or 0)
+            for i = 0, frameThickness - 1 do
+                lcd.drawFilledRectangle(capX - i, capY + i, capWFinal + 2 * i, capHFinal - i)
+            end
         end
         local bodyY = y + capH
         local bodyH = h - capH
-
-        -- Draw cap at top inside widget
-        if batteryframe then
-            lcd.color(accentcolor)
-            local capW = math.min(math.max(4, math.floor(w * 0.40)), w)
-            for i = 0, frameThickness - 1 do
-                lcd.drawFilledRectangle(x + (w - capW) / 2 - i, y + i, capW + 2 * i, capH - i)
-            end
-        end
 
         -- Draw body/frame
         if battery then
@@ -227,8 +233,13 @@ local function drawBatteryBox(
             lcd.drawRectangle(x, y, bodyW, h, frameThickness)
             local capW = capOffset
             local capH = math.min(math.max(4, math.floor(h * 0.33)), h)
+            -- Cap is vertically centered, right of bar
+            local capX = x + bodyW + (cappaddingleft or 0)
+            local capY = y + math.floor((h - capH) / 2 + 0.5) + (cappaddingtop or 0)
+            local capWFinal = capW - (cappaddingleft or 0) - (cappaddingright or 0)
+            local capHFinal = capH - (cappaddingtop or 0) - (cappaddingbottom or 0)
             for i = 0, frameThickness - 1 do
-                lcd.drawFilledRectangle(x + bodyW + i, y + (h - capH) / 2 + i, capW, capH - 2 * i)
+                lcd.drawFilledRectangle(capX + i, capY + i, capWFinal, capHFinal - 2 * i)
             end
         end
     end
@@ -428,6 +439,10 @@ function render.wakeup(box)
         subtextpaddingright      = getParam(box, "subtextpaddingright") or 0,
         subtextpaddingtop        = getParam(box, "subtextpaddingtop") or 0,
         subtextpaddingbottom     = getParam(box, "subtextpaddingbottom") or 0,
+        cappaddingleft           = getParam(box, "cappaddingleft") or 0,
+        cappaddingright          = getParam(box, "cappaddingright") or 0,
+        cappaddingtop            = getParam(box, "cappaddingtop") or 0,
+        cappaddingbottom         = getParam(box, "cappaddingbottom") or 0,
     }
 end
 
@@ -456,7 +471,8 @@ function render.paint(x, y, w, h, box)
             c.fillbgcolor, c.fillcolor,
             c.batteryframe, c.batteryframethickness, c.accentcolor, c.battery,
             c.batterysegmentpaddingtop, c.batterysegmentpaddingbottom,
-            c.batterysegmentpaddingleft, c.batterysegmentpaddingright
+            c.batterysegmentpaddingleft, c.batterysegmentpaddingright,
+            c.cappaddingleft, c.cappaddingright, c.cappaddingtop, c.cappaddingbottom
         )
     else
         -- Standard bar background
