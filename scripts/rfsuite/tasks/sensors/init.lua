@@ -22,6 +22,7 @@ local init = {
     linkrequired    = true,            -- run this script only if link is established
     spreadschedule  = false,            -- run on every loop
     simulatoronly   = false,           -- run this script in simulation mode
+    connected       = true,            -- run this script only if msp is connected
 }
 
 return init
