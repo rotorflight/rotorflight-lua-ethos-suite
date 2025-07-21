@@ -80,18 +80,27 @@ local function applySagCompensation(voltage)
 end
 
 local function fuelPercentageCalcByVoltage(voltage, cellCount)
-    local voltagePerCell = voltage / cellCount
-    local tableIndex = math.floor((voltagePerCell - 3.00) / 0.01) + 1
-    if tableIndex > #dischargeCurveTable then tableIndex = #dischargeCurveTable end
-    if tableIndex < 1 then tableIndex = 1 end
-    local batteryPercent = dischargeCurveTable[tableIndex]
+    local bc = rfsuite.session.batteryConfig
+    local minV = bc.vbatmincellvoltage or 3.30
+    local fullV = bc.vbatfullcellvoltage or 4.10
 
-    local threshold = indexOf(dischargeCurveTable, rfsuite.session.batteryConfig.consumptionWarningPercentage)
-    local currentIndex = indexOf(dischargeCurveTable, batteryPercent)
-    local percentageStep = 100 / (#dischargeCurveTable - threshold)
-    if currentIndex < threshold then return 0 end
-    return (currentIndex - threshold) * percentageStep
+    local voltagePerCell = voltage / cellCount
+
+    -- Clamp voltage to configured range
+    voltagePerCell = math.max(minV, math.min(fullV, voltagePerCell))
+
+    -- Remap [minV, fullV] → [3.00, 4.20] for sigmoid lookup
+    local sigmoidMin = 3.00
+    local sigmoidMax = 4.20
+    local scaledV = sigmoidMin + (voltagePerCell - minV) / (fullV - minV) * (sigmoidMax - sigmoidMin)
+
+    -- Use the sigmoid-based lookup
+    local tableIndex = math.floor((scaledV - sigmoidMin) / 0.01) + 1
+    tableIndex = math.max(1, math.min(#dischargeCurveTable, tableIndex))
+
+    return dischargeCurveTable[tableIndex]
 end
+
 
 local function smartFuelCalc()
     if not telemetry then
