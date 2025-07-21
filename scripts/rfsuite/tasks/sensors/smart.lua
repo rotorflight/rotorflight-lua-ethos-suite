@@ -58,7 +58,7 @@
 local smart = {}
 
 local smartfuel = assert(rfsuite.compiler.loadfile("tasks/sensors/lib/smartfuel.lua"))()
-
+local smartfuelvoltage = assert(rfsuite.compiler.loadfile("tasks/sensors/lib/smartfuelvoltage.lua"))()
 
 -- container vars
 local log
@@ -66,8 +66,21 @@ local tasks
 
 local interval = 1 
 local lastWake = os.clock()
-
+local telemetry
 local firstWakeup = true
+
+local function calculateFuel()
+    -- work out what type of sensor we are running and use 
+    -- the appropriate calculation method
+    return smartfuelvoltage.calculate()
+end
+
+local function resetFuel()
+    smartfuel.reset()
+    smartfuelvoltage.reset()
+end
+
+
 
 local smart_sensors = {
     smartfuel = {
@@ -76,7 +89,7 @@ local smart_sensors = {
         unit = UNIT_PERCENT, -- Telemetry unit
         minimum = 0,
         maximum = 100,
-        value = smartfuel.calculate,
+        value = calculateFuel,
     },
 }
 
@@ -144,6 +157,9 @@ end
 
 function smart.reset()
     sensorCache = {}
+
+    resetFuel()
+
 end
 
 return smart

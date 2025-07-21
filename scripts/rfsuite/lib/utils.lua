@@ -25,15 +25,6 @@ local i18n = rfsuite.i18n.get
 local arg = {...}
 local config = arg[1]
 
-local dischargeCurveTable =
-    { 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-        4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6,
-        7, 7, 7, 7, 8, 8, 9, 9, 10, 12, 13, 14, 17, 19, 20, 22, 23, 26, 28, 30,
-        33, 36, 39, 42, 45, 48, 51, 54, 57, 58, 60, 62, 64, 66, 67, 69, 70, 72, 74, 75,
-        77, 78, 80, 81, 82, 84, 85, 86, 86, 87, 88, 89, 91, 92, 94, 95, 96, 97, 97, 99, 100 }
-
-
 -- sets up the initial session var state.
 -- function is called on startup of the script  and
 -- whenever the tasks.lua detects the heli has been disconnected
@@ -873,25 +864,6 @@ function utils.keys(tbl)
         table.insert(keys, k)
     end
     return keys
-end
-
--- Calculate the battery percentage based on the lipo discharge curve
--- It works with a predefined array where their cellVoltage is used as index and its corresponding percentage value
-function utils.batteryPercentCalc(voltage, cellCount)
-    local batteryPercent = 0
-    local tableIndex     = 1
-    local voltagePerCell = voltage / cellCount
-
-    voltagePerCell = voltagePerCell * 100
-    tableIndex = math.floor(voltagePerCell - 299 )
-    if tableIndex > 120 then tableIndex = 120 end
-    if tableIndex < 1 then tableIndex = 1 end
-
-    return dischargeCurveTable[tableIndex]
-end
-
-function utils.getDischargeCurveTable()
-    return dischargeCurveTable
 end
 
 return utils
