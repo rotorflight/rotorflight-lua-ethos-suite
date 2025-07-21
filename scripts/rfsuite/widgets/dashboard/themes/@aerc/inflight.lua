@@ -26,29 +26,38 @@ local darkMode = {
     titlecolor      = "white",
     bgcolor         = "black",
     fillcolor       = "green",
-    fillbgcolor     = "darkgrey",
+    fillwarncolor   = "orange",
+    fillcritcolor   = "red",
+    fillbgcolor     = "grey",
     accentcolor     = "white",
     rssifillcolor   = "green",
     rssifillbgcolor = "darkgrey",
     txaccentcolor   = "grey",
     txfillcolor     = "green",
-    txbgfillcolor   = "darkgrey"
+    txbgfillcolor   = "darkgrey",
+    bgcolortop      = "black",
+    cntextcolor     = "white",
+    rssitextcolor   = "white"
 }
 
 local lightMode = {
-    textcolor       = "black",
-    titlecolor      = "black",
+    textcolor       = "lmgrey",
+    titlecolor      = "lmgrey",
     bgcolor         = "white",
-    fillcolor       = "green",
+    fillcolor       = "lightgreen",
+    fillwarncolor   = "lightorange",
+    fillcritcolor   = "lightred",
     fillbgcolor     = "lightgrey",
     accentcolor     = "darkgrey",
-    rssifillcolor   = "green",
+    rssifillcolor   = "lightgreen",
     rssifillbgcolor = "grey",
-    txaccentcolor   = "darkgrey",
-    txfillcolor     = "green",
-    txbgfillcolor   = "grey"
+    txaccentcolor   = "white",
+    txfillcolor     = "lightgreen",
+    txbgfillcolor   = "grey",
+    bgcolortop      = "darkgrey",
+    cntextcolor     = "white",
+    rssitextcolor   = "white"
 }
-
 -- alias current mode
 local colorMode = lcd.darkMode() and darkMode or lightMode
 
@@ -59,6 +68,7 @@ local THEME_DEFAULTS = {
     rpm_min      = 0,
     rpm_max      = 3000,
     bec_min      = 3.0,
+    bec_warn     = 6.0,
     bec_max      = 13.0,
     esctemp_warn = 90,
     esctemp_max  = 140,
@@ -215,7 +225,6 @@ local function buildBoxes(W)
             type = "gauge", 
             source = "smartfuel", 
             battadv = true,
-            fillcolor = "green",
             valuealign = "left", 
             valuepaddingleft = 85, 
             valuepaddingbottom = 10,
@@ -224,11 +233,13 @@ local function buildBoxes(W)
             battadvpaddingright = 5, 
             battadvvaluealign = "right",
             transform = "floor",
+            fillcolor = colorMode.fillcolor,
+            bgcolor = colorMode.bgcolor,
             titlecolor = colorMode.titlecolor, 
             textcolor = colorMode.textcolor,
             thresholds = {
-                { value = 10,  fillcolor = "red"    },
-                { value = 30,  fillcolor = "orange" }
+                { value = 10, fillcolor = colorMode.fillcritcolor },
+                { value = 30, fillcolor = colorMode.fillwarncolor }
             }
         },
 
@@ -327,9 +338,9 @@ local function buildBoxes(W)
             maxtextcolor = "orange",
             transform = "floor", 
             thresholds = {
-                { value = getThemeValue("esctemp_warn"), fillcolor = "green"  },
-                { value = getThemeValue("esctemp_max"),  fillcolor = "orange" },
-                { value = 200,                           fillcolor = "red"    }
+                { value = getThemeValue("esctemp_warn"), fillcolor = colorMode.fillcolor },
+                { value = getThemeValue("esctemp_max"), fillcolor = colorMode.fillwarncolor },
+                { value = 200, fillcolor = colorMode.fillcritcolor }
             }
         },
     }
@@ -346,9 +357,9 @@ local header_boxes = {
         font = headeropts.font, 
         valuealign = "left", 
         valuepaddingleft = 5,
-        bgcolor = colorMode.bgcolor, 
+        bgcolor = colorMode.bgcolortop,
         titlecolor = colorMode.titlecolor, 
-        textcolor = colorMode.textcolor 
+        textcolor = colorMode.cntextcolor 
     },
 
     -- RF Logo
@@ -358,7 +369,7 @@ local header_boxes = {
         colspan = 3, 
         type = "image", 
         subtype = "image",
-        bgcolor = colorMode.bgcolor 
+        bgcolor = colorMode.bgcolortop,
     },
 
     -- TX Battery
@@ -385,13 +396,13 @@ local header_boxes = {
         gaugepaddingbottom = headeropts.gaugepaddingbottom,
         gaugepaddingtop = headeropts.gaugepaddingtop,
         fillbgcolor = colorMode.txbgfillcolor, 
-        bgcolor = colorMode.bgcolor,
+        bgcolor = colorMode.bgcolortop,
         accentcolor = colorMode.txaccentcolor, 
         textcolor = colorMode.textcolor,
         min = getThemeValue("tx_min"), 
         max = getThemeValue("tx_max"), 
         thresholds = {
-            { value = getThemeValue("tx_warn"), fillcolor = "orange" },
+            { value = getThemeValue("tx_warn"), fillcolor = colorMode.fillwarncolor },
             { value = getThemeValue("tx_max"), fillcolor = colorMode.txfillcolor }
         }
     },
@@ -414,8 +425,8 @@ local header_boxes = {
         barpaddingtop = headeropts.barpaddingtop,
         valuepaddingleft = headeropts.valuepaddingleft,
         valuepaddingbottom = headeropts.valuepaddingbottom,
-        bgcolor = colorMode.bgcolor, 
-        textcolor = colorMode.textcolor, 
+        bgcolor = colorMode.bgcolortop,
+        textcolor = colorMode.rssitextcolor, 
         fillcolor = colorMode.rssifillcolor,
         fillbgcolor = colorMode.rssifillbgcolor,
     },

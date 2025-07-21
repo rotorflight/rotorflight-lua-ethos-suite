@@ -25,27 +25,37 @@ local darkMode = {
     titlecolor      = "white",
     bgcolor         = "black",
     fillcolor       = "green",
-    fillbgcolor     = "darkgrey",
+    fillwarncolor   = "orange",
+    fillcritcolor   = "red",
+    fillbgcolor     = "grey",
     accentcolor     = "white",
     rssifillcolor   = "green",
     rssifillbgcolor = "darkgrey",
     txaccentcolor   = "grey",
     txfillcolor     = "green",
-    txbgfillcolor   = "darkgrey"
+    txbgfillcolor   = "darkgrey",
+    bgcolortop      = "black",
+    cntextcolor     = "white",
+    rssitextcolor   = "white"
 }
 
 local lightMode = {
-    textcolor       = "black",
-    titlecolor      = "black",
+    textcolor       = "lmgrey",
+    titlecolor      = "lmgrey",
     bgcolor         = "white",
-    fillcolor       = "green",
+    fillcolor       = "lightgreen",
+    fillwarncolor   = "lightorange",
+    fillcritcolor   = "lightred",
     fillbgcolor     = "lightgrey",
     accentcolor     = "darkgrey",
-    rssifillcolor   = "green",
+    rssifillcolor   = "lightgreen",
     rssifillbgcolor = "grey",
-    txaccentcolor   = "darkgrey",
-    txfillcolor     = "green",
-    txbgfillcolor   = "grey"
+    txaccentcolor   = "white",
+    txfillcolor     = "lightgreen",
+    txbgfillcolor   = "grey",
+    bgcolortop      = "darkgrey",
+    cntextcolor     = "white",
+    rssitextcolor   = "white"
 }
 
 local function maxVoltageToCellVoltage(value)
@@ -203,9 +213,9 @@ local header_boxes = {
         font = headeropts.font, 
         valuealign = "left", 
         valuepaddingleft = 5,
-        bgcolor = colorMode.bgcolor, 
+        bgcolor = colorMode.bgcolortop,
         titlecolor = colorMode.titlecolor, 
-        textcolor = colorMode.textcolor 
+        textcolor = colorMode.cntextcolor 
     },
 
     -- RF Logo
@@ -215,7 +225,7 @@ local header_boxes = {
         colspan = 3, 
         type = "image", 
         subtype = "image",
-        bgcolor = colorMode.bgcolor 
+        bgcolor = colorMode.bgcolortop,
     },
 
     -- TX Battery
@@ -242,13 +252,13 @@ local header_boxes = {
         gaugepaddingbottom = headeropts.gaugepaddingbottom,
         gaugepaddingtop = headeropts.gaugepaddingtop,
         fillbgcolor = colorMode.txbgfillcolor, 
-        bgcolor = colorMode.bgcolor,
+        bgcolor = colorMode.bgcolortop,
         accentcolor = colorMode.txaccentcolor, 
         textcolor = colorMode.textcolor,
         min = getThemeValue("tx_min"), 
         max = getThemeValue("tx_max"), 
         thresholds = {
-            { value = getThemeValue("tx_warn"), fillcolor = "orange" },
+            { value = getThemeValue("tx_warn"), fillcolor = colorMode.fillwarncolor },
             { value = getThemeValue("tx_max"), fillcolor = colorMode.txfillcolor }
         }
     },
@@ -271,8 +281,8 @@ local header_boxes = {
         barpaddingtop = headeropts.barpaddingtop,
         valuepaddingleft = headeropts.valuepaddingleft,
         valuepaddingbottom = headeropts.valuepaddingbottom,
-        bgcolor = colorMode.bgcolor, 
-        textcolor = colorMode.textcolor, 
+        bgcolor = colorMode.bgcolortop,
+        textcolor = colorMode.rssitextcolor, 
         fillcolor = colorMode.rssifillcolor,
         fillbgcolor = colorMode.rssifillbgcolor,
     },

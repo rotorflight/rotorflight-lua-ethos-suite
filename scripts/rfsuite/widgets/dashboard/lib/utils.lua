@@ -325,6 +325,7 @@ function utils.resolveColor(value, variantFactor)
         darkgreen       = {0, 100, 0},
         lightred        = {255, 102, 102},
         darkred         = {139, 0, 0},
+        lightorange     = {255, 200, 100},
         lightblue       = {173, 216, 230},
         darkblue        = {0, 0, 139},
         lightpurple     = {216, 191, 216},
@@ -335,6 +336,7 @@ function utils.resolveColor(value, variantFactor)
         lightgray       = {211, 211, 211},
         darkgrey        = {90, 90, 90},
         darkgray        = {90, 90, 90},
+        lmgrey          = {80, 80, 80},
         darkwhite       = {245, 245, 245},
     }
 

@@ -26,27 +26,37 @@ local darkMode = {
     titlecolor      = "white",
     bgcolor         = "black",
     fillcolor       = "green",
-    fillbgcolor     = "darkgrey",
+    fillwarncolor   = "orange",
+    fillcritcolor   = "red",
+    fillbgcolor     = "grey",
     accentcolor     = "white",
     rssifillcolor   = "green",
     rssifillbgcolor = "darkgrey",
     txaccentcolor   = "grey",
     txfillcolor     = "green",
-    txbgfillcolor   = "darkgrey"
+    txbgfillcolor   = "darkgrey",
+    bgcolortop      = "black",
+    cntextcolor     = "white",
+    rssitextcolor   = "white"
 }
 
 local lightMode = {
-    textcolor       = "black",
-    titlecolor      = "black",
+    textcolor       = "lmgrey",
+    titlecolor      = "lmgrey",
     bgcolor         = "white",
-    fillcolor       = "green",
+    fillcolor       = "lightgreen",
+    fillwarncolor   = "lightorange",
+    fillcritcolor   = "lightred",
     fillbgcolor     = "lightgrey",
     accentcolor     = "darkgrey",
-    rssifillcolor   = "green",
+    rssifillcolor   = "lightgreen",
     rssifillbgcolor = "grey",
-    txaccentcolor   = "darkgrey",
-    txfillcolor     = "green",
-    txbgfillcolor   = "grey"
+    txaccentcolor   = "white",
+    txfillcolor     = "lightgreen",
+    txbgfillcolor   = "grey",
+    bgcolortop      = "darkgrey",
+    cntextcolor     = "white",
+    rssitextcolor   = "white"
 }
 
 -- alias current mode
@@ -185,8 +195,8 @@ local function buildBoxes(W)
             textcolor = colorMode.textcolor,
             thresholds = {
                 { value = 20,  textcolor = colorMode.textcolor },
-                { value = 80,  textcolor = "orange" },
-                { value = 100, textcolor = "red" }
+                { value = 80,  textcolor = colorMode.fillwarncolor },
+                { value = 100, textcolor = colorMode.fillcritcolor }
                 }
             },
 
@@ -225,11 +235,11 @@ local function buildBoxes(W)
             titlecolor = colorMode.titlecolor,
             textcolor = colorMode.textcolor,
             transform = "floor",
-                thresholds = {
-                    { value = 80, textcolor = colorMode.textcolor },
-                    { value = 90, textcolor = "orange" },
-                    { value = 100, textcolor = "red" }
-                }
+            thresholds = {
+                { value = 80, textcolor = colorMode.textcolor },
+                { value = 90, textcolor = colorMode.fillwarncolor },
+                { value = 100, textcolor = colorMode.fillcritcolor }
+            }
             },
 
         -- Governor
@@ -246,14 +256,14 @@ local function buildBoxes(W)
             bgcolor = colorMode.bgcolor,
             titlecolor = colorMode.titlecolor,
             thresholds = {
-                    { value = "DISARMED", textcolor = "red"    },
-                    { value = "OFF",      textcolor = "red"    },
-                    { value = "IDLE",     textcolor = "blue" },
-                    { value = "SPOOLUP",  textcolor = "blue"   },
-                    { value = "RECOVERY", textcolor = "orange" },
-                    { value = "ACTIVE",   textcolor = "green"  },
-                    { value = "THR-OFF",  textcolor = "red"    },
-                }
+                { value = i18n("widgets.governor.DISARMED"), textcolor = colorMode.fillcritcolor },
+                { value = i18n("widgets.governor.OFF"), textcolor = colorMode.fillcritcolor },
+                { value = i18n("widgets.governor.IDLE"), textcolor = "blue" },
+                { value = i18n("widgets.governor.SPOOLUP"), textcolor = "blue" },
+                { value = i18n("widgets.governor.RECOVERY"), textcolor = colorMode.fillwarncolor },
+                { value = i18n("widgets.governor.ACTIVE"), textcolor = colorMode.fillcolor },
+                { value = i18n("widgets.governor.THR-OFF"), textcolor = colorMode.fillcritcolor }
+            }
         },
 
         -- Model Image
@@ -281,11 +291,11 @@ local function buildBoxes(W)
             transform = "floor",
             bgcolor = colorMode.bgcolor,
             titlecolor = colorMode.titlecolor,
-                thresholds = {
-                    { value = 1.5, textcolor = "blue" },
-                    { value = 2.5, textcolor = "orange" },
-                    { value = 6,   textcolor = "green"  }
-                }
+            thresholds = {
+                { value = 1.5, textcolor = "blue" },
+                { value = 2.5, textcolor = colorMode.fillwarncolor },
+                { value = 6,   textcolor = colorMode.fillcolor }
+            }
         },
 
         -- PID Profile
@@ -302,11 +312,11 @@ local function buildBoxes(W)
             transform = "floor",
             bgcolor = colorMode.bgcolor,
             titlecolor = colorMode.titlecolor,
-                thresholds = {
-                    { value = 1.5, textcolor = "blue" },
-                    { value = 2.5, textcolor = "orange" },
-                    { value = 6,   textcolor = "green"  }
-                }
+            thresholds = {
+                { value = 1.5, textcolor = "blue" },
+                { value = 2.5, colorMode.fillwarncolor },
+                { value = 6,   colorMode.fillcolor }
+            }
         },
 
         -- Flight Count
@@ -351,9 +361,9 @@ local function buildBoxes(W)
             min = getThemeValue("v_min"),
             max = getThemeValue("v_max"),
             thresholds = {
-                { value = vmin + 0.2 * (vmax - vmin), fillcolor = "red"    },
-                { value = vmin + 0.4 * (vmax - vmin), fillcolor = "orange" },
-                { value = vmax,                       fillcolor = "green"  }
+                { value = vmin + 0.2 * (vmax - vmin), fillcolor = colorMode.fillcritcolor },
+                { value = vmin + 0.4 * (vmax - vmin), fillcolor = colorMode.fillwarncolor },
+                { value = vmax,                       fillcolor = colorMode.fillcolor     }
                 }
         },
     }
@@ -370,9 +380,9 @@ local header_boxes = {
         font = headeropts.font, 
         valuealign = "left", 
         valuepaddingleft = 5,
-        bgcolor = colorMode.bgcolor, 
+        bgcolor = colorMode.bgcolortop,
         titlecolor = colorMode.titlecolor, 
-        textcolor = colorMode.textcolor 
+        textcolor = colorMode.cntextcolor 
     },
 
     -- RF Logo
@@ -382,7 +392,7 @@ local header_boxes = {
         colspan = 3, 
         type = "image", 
         subtype = "image",
-        bgcolor = colorMode.bgcolor 
+        bgcolor = colorMode.bgcolortop,
     },
 
     -- TX Battery
@@ -409,13 +419,13 @@ local header_boxes = {
         gaugepaddingbottom = headeropts.gaugepaddingbottom,
         gaugepaddingtop = headeropts.gaugepaddingtop,
         fillbgcolor = colorMode.txbgfillcolor, 
-        bgcolor = colorMode.bgcolor,
+        bgcolor = colorMode.bgcolortop,
         accentcolor = colorMode.txaccentcolor, 
         textcolor = colorMode.textcolor,
         min = getThemeValue("tx_min"), 
         max = getThemeValue("tx_max"), 
         thresholds = {
-            { value = getThemeValue("tx_warn"), fillcolor = "orange" },
+            { value = getThemeValue("tx_warn"), fillcolor = colorMode.fillwarncolor },
             { value = getThemeValue("tx_max"), fillcolor = colorMode.txfillcolor }
         }
     },
@@ -438,8 +448,8 @@ local header_boxes = {
         barpaddingtop = headeropts.barpaddingtop,
         valuepaddingleft = headeropts.valuepaddingleft,
         valuepaddingbottom = headeropts.valuepaddingbottom,
-        bgcolor = colorMode.bgcolor, 
-        textcolor = colorMode.textcolor, 
+        bgcolor = colorMode.bgcolortop,
+        textcolor = colorMode.rssitextcolor, 
         fillcolor = colorMode.rssifillcolor,
         fillbgcolor = colorMode.rssifillbgcolor,
     },
