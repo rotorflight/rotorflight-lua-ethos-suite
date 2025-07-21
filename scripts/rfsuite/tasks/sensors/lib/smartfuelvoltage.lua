@@ -73,7 +73,7 @@ local function applySagCompensation(voltage)
     if rfsuite.flightmode.current ~= "inflight" then
         return voltage -- no sag compensation unless we're flying
     end
-    local multiplier = rfsuite.session.batteryConfig.voltageMultiplier or 0.5
+    local multiplier = rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery and rfsuite.session.modelPreferences.battery.sag_multiplier or 0.5
     local sagFactor = getStickLoadFactor()
     local compensatedVoltage = voltage + ((1.0 - multiplier) * sagFactor * 0.3)
     return compensatedVoltage
