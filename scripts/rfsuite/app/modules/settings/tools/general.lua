@@ -4,6 +4,13 @@ local enableWakeup = false
 -- Local config table for in-memory edits
 local config = {}
 
+
+local function clamp(val, min, max)
+    if val < min then return min end
+    if val > max then return max end
+    return val
+end
+
 local function openPage(pageIdx, title, script)
     enableWakeup = true
     if not rfsuite.app.navButtons then rfsuite.app.navButtons = {} end
@@ -64,6 +71,54 @@ local function openPage(pageIdx, title, script)
             config.syncname = newValue
         end
     )
+
+    -- --- TX Battery Panel ---
+    formFieldCount = formFieldCount + 1
+    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+    local txPanel = form.addExpansionPanel(i18n("widgets.dashboard.tx_batt"))
+    txPanel:open(true)
+
+    -- TX Min field
+    local txMinLine = txPanel:addLine(i18n("widgets.dashboard.min"))
+    formFieldCount = formFieldCount + 1
+    rfsuite.app.formFields[formFieldCount] = form.addNumberField(
+        txMinLine, nil, 60, 95,
+        function() return math.floor((config.tx_min or GENERAL_DEFAULTS.tx_min) * 10 + 0.5) end,
+        function(val)
+            local min_val = val / 10
+            config.tx_min = clamp(min_val, 6.0, (config.tx_max or GENERAL_DEFAULTS.tx_max) - 0.1)
+        end
+    )
+    rfsuite.app.formFields[formFieldCount]:decimals(1)
+    rfsuite.app.formFields[formFieldCount]:suffix("V")
+
+    -- TX Warn field
+    local txWarnLine = txPanel:addLine(i18n("widgets.dashboard.warning"))
+    formFieldCount = formFieldCount + 1
+    rfsuite.app.formFields[formFieldCount] = form.addNumberField(
+        txWarnLine, nil, 60, 95,
+        function() return math.floor((config.tx_warn or GENERAL_DEFAULTS.tx_warn) * 10 + 0.5) end,
+        function(val)
+            local warn_val = val / 10
+            config.tx_warn = clamp(warn_val, (config.tx_min or GENERAL_DEFAULTS.tx_min) + 0.1, (config.tx_max or GENERAL_DEFAULTS.tx_max) - 0.1)
+        end
+    )
+    rfsuite.app.formFields[formFieldCount]:decimals(1)
+    rfsuite.app.formFields[formFieldCount]:suffix("V")
+
+    -- TX Max field
+    local txMaxLine = txPanel:addLine(i18n("widgets.dashboard.max"))
+    formFieldCount = formFieldCount + 1
+    rfsuite.app.formFields[formFieldCount] = form.addNumberField(
+        txMaxLine, nil, 70, 99,
+        function() return math.floor((config.tx_max or GENERAL_DEFAULTS.tx_max) * 10 + 0.5) end,
+        function(val)
+            local max_val = val / 10
+            config.tx_max = clamp(max_val, (config.tx_warn or GENERAL_DEFAULTS.tx_warn) + 0.1, 9.9)
+        end
+    )
+    rfsuite.app.formFields[formFieldCount]:decimals(1)
+    rfsuite.app.formFields[formFieldCount]:suffix("V")
 
     -- Always enable all fields and Save
     for i, field in ipairs(rfsuite.app.formFields) do
