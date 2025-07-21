@@ -62,7 +62,11 @@ function render.wakeup(box)
     -- Value extraction
     local source = getParam(box, "source")
     local value, _, dynamicUnit
-    if telemetry and source then
+    if source == "txbatt" then
+        local src = system.getSource({ category = CATEGORY_SYSTEM, member = MAIN_VOLTAGE })
+        value = src and src.value and src:value() or nil
+        dynamicUnit = "V"
+    elseif telemetry and source then
         value, _, dynamicUnit = telemetry.getSensor(source)
     end
 
