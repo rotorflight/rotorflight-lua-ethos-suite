@@ -1190,7 +1190,8 @@ function dashboard.wakeup(widget)
         callStateFunc("wakeup", widget)
     end
 
-    if #dashboard.boxRects > 0 and objectWakeupsPerCycle then
+    if #dashboard.boxRects > 0 then
+        -- Always wake explicitly scheduled objects
         for _, idx in ipairs(scheduledBoxIndices) do
             local rect = dashboard.boxRects[idx]
             local obj = dashboard.objectsByType[rect.box.type]
@@ -1202,7 +1203,26 @@ function dashboard.wakeup(widget)
         local needsFullInvalidate = dashboard._forceFullRepaint or dashboard.overlayMessage or objectsThreadedWakeupCount < 1
         local dirtyRects = {}
 
-        if dashboard._useSpreadScheduling ~= false then
+        if dashboard._useSpreadScheduling == false then
+            -- Wake up all boxes regardless of scheduler flag
+            for i, rect in ipairs(dashboard.boxRects) do
+                local obj = dashboard.objectsByType[rect.box.type]
+                if obj and obj.wakeup then
+                    obj.wakeup(rect.box)
+                end
+                if not needsFullInvalidate then
+                    local dirtyFn = obj and obj.dirty
+                    if dirtyFn and dirtyFn(rect.box) then
+                        table.insert(dirtyRects, {
+                            x = rect.x - 1, y = rect.y - 1,
+                            w = rect.w + 2, h = rect.h + 2
+                        })
+                    end
+                end
+            end
+            objectsThreadedWakeupCount = objectsThreadedWakeupCount + 1
+        else
+            -- Spread mode: stagger wakeups
             for i = 1, objectWakeupsPerCycle do
                 local idx = objectWakeupIndex
                 local rect = dashboard.boxRects[idx]
@@ -1211,7 +1231,6 @@ function dashboard.wakeup(widget)
                     if obj and obj.wakeup and not obj.scheduler then
                         obj.wakeup(rect.box)
                     end
-
                     if not needsFullInvalidate then
                         local dirtyFn = obj and obj.dirty
                         if dirtyFn and dirtyFn(rect.box) then
@@ -1230,6 +1249,7 @@ function dashboard.wakeup(widget)
             end
         end
 
+        -- Force repaint
         if dashboard._useSpreadSchedulingPaint then
             if needsFullInvalidate then
                 lcd.invalidate()
@@ -1238,8 +1258,11 @@ function dashboard.wakeup(widget)
                     lcd.invalidate(r.x, r.y, r.w, r.h)
                 end
             end
-        end    
+        else
+            lcd.invalidate()
+        end
     end
+
 
     if not lcd.hasFocus(widget) and dashboard.selectedBoxIndex ~= nil then
         log("Removing focus from box " .. tostring(dashboard.selectedBoxIndex), "info")
