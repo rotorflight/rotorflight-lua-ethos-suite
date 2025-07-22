@@ -1278,7 +1278,8 @@ return {
       ["cell_voltage"] = "Cell Voltage",
       ["volts_per_cell"] = "Volts per cell",
       ["warning"] = "Warning",
-      ["tx_batt"] = "TX Battery"
+      ["tx_batt"] = "TX Battery",
+      ["link_max"] = "Link Max"
     },
     ["governor"] = {
       ["UNKNOWN"] = "UNKNOWN",

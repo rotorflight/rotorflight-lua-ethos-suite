@@ -21,9 +21,6 @@ local THEME_DEFAULTS = {
     bec_max      = 13.0,
     esctemp_warn = 90,
     esctemp_max  = 140,
-    tx_min       = 7.2,
-    tx_warn      = 7.4,
-    tx_max       = 8.4
 }
 
 local function clamp(val, min, max)
@@ -148,56 +145,6 @@ local function configure()
         end,
         1)
     formFields[#formFields]:suffix("°")
-
-    -- TX BATTERY PANEL
-    local tx_panel = form.addExpansionPanel(rfsuite.i18n.get("widgets.dashboard.tx_batt"))
-    tx_panel:open(false)
-
-    -- TX Min
-    local tx_min_line = tx_panel:addLine(rfsuite.i18n.get("widgets.dashboard.min"))
-    formFields[#formFields + 1] = form.addNumberField(tx_min_line, nil, 60, 90,
-        function()
-            local v = config.tx_min or THEME_DEFAULTS.tx_min
-            return math.floor((v * 10) + 0.5)
-        end,
-        function(val)
-            local min_val = val / 10
-            config.tx_min = clamp(min_val, 6.0, config.tx_max - 0.1)
-        end
-    )
-    formFields[#formFields]:decimals(1)
-    formFields[#formFields]:suffix("V")
-
-    -- TX Warn
-    local tx_warn_line = tx_panel:addLine(rfsuite.i18n.get("widgets.dashboard.warning"))
-    formFields[#formFields + 1] = form.addNumberField(tx_warn_line, nil, 60, 90,
-        function()
-            local v = config.tx_warn or THEME_DEFAULTS.tx_warn
-            return math.floor((v * 10) + 0.5)
-        end,
-        function(val)
-            local warn_val = val / 10
-            config.tx_warn = clamp(warn_val, config.tx_min + 0.1, config.tx_max - 0.1)
-        end
-    )
-    formFields[#formFields]:decimals(1)
-    formFields[#formFields]:suffix("V")
-
-    -- TX Max
-    local tx_max_line = tx_panel:addLine(rfsuite.i18n.get("widgets.dashboard.max"))
-    formFields[#formFields + 1] = form.addNumberField(tx_max_line, nil, 70, 95,
-        function()
-            local v = config.tx_max or THEME_DEFAULTS.tx_max
-            return math.floor((v * 10) + 0.5)
-        end,
-        function(val)
-            local max_val = val / 10
-            config.tx_max = clamp(max_val, config.tx_warn + 0.1, 9.5)
-        end
-    )
-    formFields[#formFields]:decimals(1)
-    formFields[#formFields]:suffix("V")
-
 end
 
 local function write()

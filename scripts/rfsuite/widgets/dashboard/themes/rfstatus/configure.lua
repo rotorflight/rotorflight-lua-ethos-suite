@@ -1,6 +1,6 @@
 --[[
  * Copyright (C) Rotorflight Project
- * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
+ * License GPLv3: https://www.gnu.org/licenses/gpl-3.0/en.html
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
  * published by the Free Software Foundation.
@@ -12,12 +12,9 @@
 ]]--
 
 local config = {}
-
 local THEME_DEFAULTS = {
-    rpm_min      = 0,
-    rpm_max      = 3000,
-    v_min        = 7.0,
-    v_max        = 8.4,
+    v_min          = 18.0,      -- default: 6s x 3.0V
+    v_max          = 25.2,      -- default: 6s x 4.2V
 }
 
 local function clamp(val, min, max)
@@ -47,55 +44,36 @@ local function configure()
         config[k] = val or v
     end
 
-    -- RPM PANEL
-    local rpm_panel = form.addExpansionPanel(rfsuite.i18n.get("widgets.dashboard.headspeed"))
-    rpm_panel:open(false)
-    local rpm_min_line = rpm_panel:addLine(rfsuite.i18n.get("widgets.dashboard.max"))
-    formFields[#formFields + 1] = form.addNumberField(rpm_min_line, nil, 0, 20000,
-        function() return config.rpm_min end,
-        function(val)
-            config.rpm_min = clamp(tonumber(val) or THEME_DEFAULTS.rpm_min, 0, config.rpm_max-1)
-        end,
-        1)
-    formFields[#formFields]:suffix("rpm")
-
-    local rpm_max_line = rpm_panel:addLine(rfsuite.i18n.get("widgets.dashboard.max"))
-    formFields[#formFields + 1] = form.addNumberField(rpm_max_line, nil, 1, 20000,
-        function() return config.rpm_max end,
-        function(val)
-            config.rpm_max = clamp(tonumber(val) or THEME_DEFAULTS.rpm_max, config.rpm_min+1, 20000)
-        end,
-        1)
-    formFields[#formFields]:suffix("rpm")
-
-    -- VOLTAGE PANEL
+    -- VOLTAGE PANEL (override min/max V)
     local voltage_panel = form.addExpansionPanel(rfsuite.i18n.get("widgets.dashboard.voltage"))
-    voltage_panel:open(false)
+    voltage_panel:open(true)
+
     local voltage_min_line = voltage_panel:addLine(rfsuite.i18n.get("widgets.dashboard.min"))
-    formFields[#formFields + 1] = form.addNumberField(voltage_min_line, nil, 60, 140,
+    formFields[#formFields + 1] = form.addNumberField(voltage_min_line, nil, 50, 650,
         function()
             local v = config.v_min or THEME_DEFAULTS.v_min
             return math.floor((v * 10) + 0.5)
         end,
         function(val)
             local min_val = val / 10
-            config.v_min = clamp(min_val, 6, config.v_max - 0.1)
+            config.v_min = clamp(min_val, 5, config.v_max - 0.1)
         end)
     formFields[#formFields]:decimals(1)
     formFields[#formFields]:suffix("V")
 
     local voltage_max_line = voltage_panel:addLine(rfsuite.i18n.get("widgets.dashboard.max"))
-    formFields[#formFields + 1] = form.addNumberField(voltage_max_line, nil, 60, 140,
+    formFields[#formFields + 1] = form.addNumberField(voltage_max_line, nil, 50, 650,
         function()
             local v = config.v_max or THEME_DEFAULTS.v_max
             return math.floor((v * 10) + 0.5)
         end,
         function(val)
             local max_val = val / 10
-            config.v_max = clamp(max_val, config.v_min + 0.1, 14)
+            config.v_max = clamp(max_val, config.v_min + 0.1, 65)
         end)
     formFields[#formFields]:decimals(1)
     formFields[#formFields]:suffix("V")
+
 end
 
 local function write()
@@ -103,6 +81,7 @@ local function write()
         setPref(k, v)
     end
 end
+
 
 return {
     configure = configure,

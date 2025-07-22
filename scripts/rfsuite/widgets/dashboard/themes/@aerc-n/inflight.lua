@@ -17,50 +17,9 @@
 
 local i18n = rfsuite.i18n.get
 local utils = rfsuite.widgets.dashboard.utils
-local boxes_cache = nil
-local themeconfig = nil
-local lastScreenW = nil
 
-local darkMode = {
-    textcolor       = "white",
-    titlecolor      = "white",
-    bgcolor         = "black",
-    fillcolor       = "green",
-    fillwarncolor   = "orange",
-    fillcritcolor   = "red",
-    fillbgcolor     = "grey",
-    accentcolor     = "white",
-    rssifillcolor   = "green",
-    rssifillbgcolor = "darkgrey",
-    txaccentcolor   = "grey",
-    txfillcolor     = "green",
-    txbgfillcolor   = "darkgrey",
-    bgcolortop      = "black",
-    cntextcolor     = "white",
-    rssitextcolor   = "white"
-}
-
-local lightMode = {
-    textcolor       = "lmgrey",
-    titlecolor      = "lmgrey",
-    bgcolor         = "white",
-    fillcolor       = "lightgreen",
-    fillwarncolor   = "lightorange",
-    fillcritcolor   = "lightred",
-    fillbgcolor     = "lightgrey",
-    accentcolor     = "darkgrey",
-    rssifillcolor   = "lightgreen",
-    rssifillbgcolor = "grey",
-    txaccentcolor   = "white",
-    txfillcolor     = "lightgreen",
-    txbgfillcolor   = "grey",
-    bgcolortop      = "darkgrey",
-    cntextcolor     = "white",
-    rssitextcolor   = "white"
-}
-
--- alias current mode
-local colorMode = lcd.darkMode() and darkMode or lightMode
+local headeropts = utils.getHeaderOptions()
+local colorMode = utils.themeColors()
 
 -- Theme config support
 local theme_section = "system/@aerc-n"
@@ -70,10 +29,24 @@ local THEME_DEFAULTS = {
     v_max   = 8.4,
     rpm_min = 0,
     rpm_max = 3000,
-    tx_min  = 7.2,
-    tx_warn = 7.4,
-    tx_max  = 8.4
 }
+
+local function getThemeValue(key)
+    -- Use General preferences for TX values
+    if key == "tx_min" or key == "tx_warn" or key == "tx_max" then
+        if rfsuite and rfsuite.preferences and rfsuite.preferences.general then
+            local val = rfsuite.preferences.general[key]
+            if val ~= nil then return tonumber(val) end
+        end
+    end
+    -- Theme defaults for other values
+    if rfsuite and rfsuite.session and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences[theme_section] then
+        local val = rfsuite.session.modelPreferences[theme_section][key]
+        val = tonumber(val)
+        if val ~= nil then return val end
+    end
+    return THEME_DEFAULTS[key]
+end
 
 -- Theme Options based on screen width
 local function getThemeOptionKey(W)
@@ -125,7 +98,7 @@ local themeOptions = {
         maxpaddingtop = 30, 
         maxpaddingleft = 10, 
         valuepaddingbottom = 15,
-        vgaugepaddingbottom = 3,
+        vgaugepaddingbottom = 6,
         maxfont = "FONT_M", 
         batteryspacing = 1
     },
@@ -152,7 +125,7 @@ local themeOptions = {
         maxpaddingtop = 30, 
         maxpaddingleft = 10, 
         valuepaddingbottom = 15,
-        vgaugepaddingbottom = 2,
+        vgaugepaddingbottom = 4,
         maxfont = "FONT_S", 
         batteryspacing = 1
     },
@@ -171,20 +144,11 @@ local themeOptions = {
     },
 }
 
-local function getThemeValue(key)
-    if rfsuite and rfsuite.session and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences[theme_section] then
-        local val = rfsuite.session.modelPreferences[theme_section][key]
-        val = tonumber(val)
-        if val ~= nil then return val end
-    end
-    return THEME_DEFAULTS[key]
-end
-
 -- Caching for boxes
 local lastScreenW = nil
 local boxes_cache = nil
+local header_boxes_cache = nil
 local themeconfig = nil
-local headeropts = utils.getHeaderOptions()
 
 -- Theme Layout
 local layout = {
@@ -192,19 +156,35 @@ local layout = {
     rows    = 12,
 }
 
-local header_layout = {
-    height  = headeropts.height,
-    cols    = 7,
-    rows    = 1,
-}
+-- Header Layout
+local header_layout = utils.standardHeaderLayout(headeropts)
+
+-- Header Boxes
+local last_header_pref = {}
+
+local function header_boxes()
+    -- Header Cache: compare relevant general prefs
+    local gp = rfsuite and rfsuite.preferences and rfsuite.preferences.general or {}
+    local tx_min = tonumber(gp.tx_min)
+    local tx_warn = tonumber(gp.tx_warn)
+    local tx_max = tonumber(gp.tx_max)
+    -- Only re-build if any have changed
+    if not header_boxes_cache or last_header_pref.tx_min ~= tx_min or last_header_pref.tx_warn ~= tx_warn or last_header_pref.tx_max ~= tx_max then
+        header_boxes_cache = utils.standardHeaderBoxes(i18n, colorMode, headeropts, getThemeValue)
+        last_header_pref.tx_min = tx_min
+        last_header_pref.tx_warn = tx_warn
+        last_header_pref.tx_max = tx_max
+    end
+    return header_boxes_cache
+end
 
 -- Boxes
 local function buildBoxes(W)
     
     -- Object based options determined by screensize
     local opts = themeOptions[getThemeOptionKey(W)] or themeOptions.unknown
-    local vmin = getThemeValue("v_min")
-    local vmax = getThemeValue("v_max")
+    local vmin = getThemeValue("v_min") or 7.0
+    local vmax = getThemeValue("v_max") or 8.4
     
     return {
         -- Headspeed
@@ -323,92 +303,6 @@ local function buildBoxes(W)
         },
     }
 end
-
-local header_boxes = {
--- Craftname
-    { 
-        col = 1, 
-        row = 1, 
-        colspan = 2, 
-        type = "text", 
-        subtype = "craftname",
-        font = headeropts.font, 
-        valuealign = "left", 
-        valuepaddingleft = 5,
-        bgcolor = colorMode.bgcolortop,
-        titlecolor = colorMode.titlecolor, 
-        textcolor = colorMode.cntextcolor 
-    },
-
-    -- RF Logo
-    { 
-        col = 3, 
-        row = 1, 
-        colspan = 3, 
-        type = "image", 
-        subtype = "image",
-        bgcolor = colorMode.bgcolortop,
-    },
-
-    -- TX Battery
-    { 
-        col = 6, 
-        row = 1,
-        type = "gauge", 
-        subtype = "bar", 
-        source = "txbatt",
-        font = headeropts.font,
-        battery = true, 
-        batteryframe = true, 
-        hidevalue = true,
-        valuealign = "left", 
-        batterysegments = 4, 
-        batteryspacing = 1, 
-        batteryframethickness  = 2,
-        batterysegmentpaddingtop = headeropts.batterysegmentpaddingtop,
-        batterysegmentpaddingbottom = headeropts.batterysegmentpaddingbottom,
-        batterysegmentpaddingleft = headeropts.batterysegmentpaddingleft,
-        batterysegmentpaddingright = headeropts.batterysegmentpaddingright,
-        gaugepaddingright = headeropts.gaugepaddingright,
-        gaugepaddingleft = headeropts.gaugepaddingleft,
-        gaugepaddingbottom = headeropts.gaugepaddingbottom,
-        gaugepaddingtop = headeropts.gaugepaddingtop,
-        fillbgcolor = colorMode.txbgfillcolor, 
-        bgcolor = colorMode.bgcolortop,
-        accentcolor = colorMode.txaccentcolor, 
-        textcolor = colorMode.textcolor,
-        min = getThemeValue("tx_min"), 
-        max = getThemeValue("tx_max"), 
-        thresholds = {
-            { value = getThemeValue("tx_warn"), fillcolor = colorMode.fillwarncolor },
-            { value = getThemeValue("tx_max"), fillcolor = colorMode.txfillcolor }
-        }
-    },
-
-    -- RSSI
-    { 
-        col = 7, 
-        row = 1,
-        type = "gauge", 
-        subtype = "step", 
-        source = "rssi",
-        font = "FONT_XS", 
-        stepgap = 2, 
-        stepcount = 5, 
-        decimals = 0,
-        valuealign = "left",
-        barpaddingleft = headeropts.barpaddingleft,
-        barpaddingright = headeropts.barpaddingright,
-        barpaddingbottom = headeropts.barpaddingbottom,
-        barpaddingtop = headeropts.barpaddingtop,
-        valuepaddingleft = headeropts.valuepaddingleft,
-        valuepaddingbottom = headeropts.valuepaddingbottom,
-        bgcolor = colorMode.bgcolortop,
-        textcolor = colorMode.rssitextcolor, 
-        fillcolor = colorMode.rssifillcolor,
-        fillbgcolor = colorMode.rssifillbgcolor,
-    },
-}
 
 local function boxes()
     local config = rfsuite and rfsuite.session and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences[theme_section]
