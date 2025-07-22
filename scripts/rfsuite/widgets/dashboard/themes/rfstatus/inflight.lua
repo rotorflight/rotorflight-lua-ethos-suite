@@ -126,18 +126,9 @@ local layout = {
 local header_layout = utils.standardHeaderLayout(headeropts)
 
 -- Header Boxes
-local last_header_pref = {}
-
 local function header_boxes()
-    local txbatt_min, txbatt_max = utils.getTxBatteryVoltageRange()
-
-    if not header_boxes_cache
-       or last_txbatt_min ~= txbatt_min
-       or last_txbatt_max ~= txbatt_max
-    then
+    if not header_boxes_cache then
         header_boxes_cache = utils.standardHeaderBoxes(i18n, colorMode, headeropts)
-        last_txbatt_min = txbatt_min
-        last_txbatt_max = txbatt_max
     end
     return header_boxes_cache
 end
