@@ -17,7 +17,7 @@
  * 
 ]] --
 local init = {
-    interval       = 0.06,              -- run every 0.06 seconds (deliberate offset from msp)
+    interval       = 0.05,              -- run every 0.05 seconds (deliberate offset from msp)
     script         = "callback.lua",    -- run this script
     spreadschedule = false,             -- run on every loop
     connected       = false,            -- run this script only if msp is connected
