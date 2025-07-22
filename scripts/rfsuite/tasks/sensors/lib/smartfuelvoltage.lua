@@ -83,18 +83,20 @@ local function fuelPercentageCalcByVoltage(voltage, cellCount)
     local bc = rfsuite.session.batteryConfig
     local minV = bc.vbatmincellvoltage or 3.30
     local fullV = bc.vbatfullcellvoltage or 4.10
+    local reserve = bc.consumptionWarningPercentage or 0
+
+    local usableRange = fullV - minV
+    local adjustedMinV = minV + (usableRange * (reserve / 100))
 
     local voltagePerCell = voltage / cellCount
 
-    -- Clamp voltage to configured range
-    voltagePerCell = math.max(minV, math.min(fullV, voltagePerCell))
+    -- Clamp voltage to adjusted usable range
+    voltagePerCell = math.max(adjustedMinV, math.min(fullV, voltagePerCell))
 
-    -- Remap [minV, fullV] → [3.00, 4.20] for sigmoid lookup
-    local sigmoidMin = 3.00
-    local sigmoidMax = 4.20
-    local scaledV = sigmoidMin + (voltagePerCell - minV) / (fullV - minV) * (sigmoidMax - sigmoidMin)
+    -- Remap [adjustedMinV, fullV] → [3.00, 4.20]
+    local sigmoidMin, sigmoidMax = 3.00, 4.20
+    local scaledV = sigmoidMin + (voltagePerCell - adjustedMinV) / (fullV - adjustedMinV) * (sigmoidMax - sigmoidMin)
 
-    -- Use the sigmoid-based lookup
     local tableIndex = math.floor((scaledV - sigmoidMin) / 0.01) + 1
     tableIndex = math.max(1, math.min(#dischargeCurveTable, tableIndex))
 
