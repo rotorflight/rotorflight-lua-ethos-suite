@@ -23,7 +23,7 @@ function wrapper.wakeup(box)
         local now      = os.clock()
 
         -- initialize on first use
-        box._wakeupInterval = box._wakeupInterval or interval
+        box._wakeupInterval = box._wakeupInterval
         box._lastWakeup     = box._lastWakeup     or 0
 
         -- if not enough time has passed, bail out
