@@ -24,11 +24,6 @@
     "translation": "CONNECTING",
     "needs_translation": "false"
   },
-  "identifying_fbl": {
-    "english": "IDENTIFYING",
-    "translation": "IDENTIFICARE",
-    "needs_translation": "true"
-  },
   "check_bg_task": {
     "english": "BG TASK",
     "translation": "BG TASK",

@@ -280,7 +280,8 @@ function dashboard.computeOverlayMessage()
     elseif not rfsuite.session.isConnectedHigh and  state ~= "postflight" then
         return i18n("widgets.dashboard.waiting_for_connection")    
     elseif rfsuite.session.isConnectedHigh and not rfsuite.session.isConnectedLow and  state ~= "postflight" then
-        return i18n("widgets.dashboard.identifying_fbl")            
+        local pad = "      "
+        return pad .. "RF" .. rfsuite.session.fcVersion .. pad
     elseif not rfsuite.session.telemetryState and state == "preflight" then
         return i18n("widgets.dashboard.no_link")
     elseif rfsuite.session.telemetryState and telemetry and not telemetry.validateSensors() then

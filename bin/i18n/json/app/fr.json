@@ -2711,6 +2711,11 @@
         "translation": "Version Ethos",
         "needs_translation": "false"
       },
+      "fc_version": {
+        "english": "Rotorflight Version",
+        "translation": "Version Rotorflight",
+        "needs_translation": "false"
+      },
       "name": {
         "english": "About",
         "translation": "A propos",

@@ -24,11 +24,6 @@
     "translation": "CONECTANDO",
     "needs_translation": "false"
   },
-  "identifying_fbl": {
-    "english": "IDENTIFYING",
-    "translation": "IDENTIFICAR",
-    "needs_translation": "true"
-  },
   "check_bg_task": {
     "english": "BG TASK",
     "translation": "TAREA SP",

@@ -40,6 +40,7 @@ function utils.session()
     rfsuite.session.servoOverride = nil
     rfsuite.session.clockSet = nil
     rfsuite.session.apiVersion = nil
+    rfsuite.session.fcVersion = nil
     rfsuite.session.activeProfile = nil
     rfsuite.session.activeRateProfile = nil
     rfsuite.session.activeProfileLast = nil
