@@ -112,6 +112,7 @@ local lastScreenW = nil
 local boxes_cache = nil
 local header_boxes_cache = nil
 local themeconfig = nil
+local last_txbatt_min, last_txbatt_max
 
 -- Theme Layout
 local layout = {
@@ -128,17 +129,15 @@ local header_layout = utils.standardHeaderLayout(headeropts)
 local last_header_pref = {}
 
 local function header_boxes()
-    -- Header Cache: compare relevant general prefs
-    local gp = rfsuite and rfsuite.preferences and rfsuite.preferences.general or {}
-    local tx_min = tonumber(gp.tx_min)
-    local tx_warn = tonumber(gp.tx_warn)
-    local tx_max = tonumber(gp.tx_max)
-    -- Only re-build if any have changed
-    if not header_boxes_cache or last_header_pref.tx_min ~= tx_min or last_header_pref.tx_warn ~= tx_warn or last_header_pref.tx_max ~= tx_max then
-        header_boxes_cache = utils.standardHeaderBoxes(i18n, colorMode, headeropts, getThemeValue)
-        last_header_pref.tx_min = tx_min
-        last_header_pref.tx_warn = tx_warn
-        last_header_pref.tx_max = tx_max
+    local txbatt_min, txbatt_max = utils.getTxBatteryVoltageRange()
+
+    if not header_boxes_cache
+       or last_txbatt_min ~= txbatt_min
+       or last_txbatt_max ~= txbatt_max
+    then
+        header_boxes_cache = utils.standardHeaderBoxes(i18n, colorMode, headeropts)
+        last_txbatt_min = txbatt_min
+        last_txbatt_max = txbatt_max
     end
     return header_boxes_cache
 end

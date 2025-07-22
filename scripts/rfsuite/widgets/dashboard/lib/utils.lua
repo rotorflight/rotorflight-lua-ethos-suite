@@ -283,6 +283,19 @@ function utils.standardHeaderLayout(headeropts)
     }
 end
 
+--- Returns {min, max} voltage for the TX battery as provided by Ethos .
+-- If not available, fallback to defaults (7.2, 8.4).
+function utils.getTxBatteryVoltageRange()
+    if system and system.voltageRange then
+        local ok, vmin, vmax = pcall(system.voltageRange)
+        if ok and vmin and vmax and vmin < vmax then
+            return vmin, vmax
+        end
+    end
+    -- Fallback to typical 2S Li-Ion values
+    return 7.2, 8.4
+end
+
 --- Returns an array of header box definitions for the dashboard header.
 -- This function generates the configuration tables for each header box (craft name, logo, TX battery, RSSI)
 -- based on provided i18n, colorMode, headeropts, and theme value functions. Each box defines its
@@ -293,7 +306,10 @@ end
 -- @param getThemeValue function Function for resolving theme config values (e.g., voltage limits).
 -- @return table Array of box definition tables for header display.
 
-function utils.standardHeaderBoxes(i18n, colorMode, headeropts, getThemeValue)
+function utils.standardHeaderBoxes(i18n, colorMode, headeropts)
+    local txbatt_min, txbatt_max = utils.getTxBatteryVoltageRange()
+    local txbatt_warn = txbatt_min + 0.2
+
     return {
         -- Craftname
         { 
@@ -348,11 +364,11 @@ function utils.standardHeaderBoxes(i18n, colorMode, headeropts, getThemeValue)
             bgcolor = colorMode.bgcolortop,
             accentcolor = colorMode.txaccentcolor, 
             textcolor = colorMode.textcolor,
-            min = getThemeValue("tx_min"), 
-            max = getThemeValue("tx_max"), 
+            min = txbatt_min,
+            max = txbatt_max,
             thresholds = {
-                { value = getThemeValue("tx_warn"), fillcolor = colorMode.fillwarncolor },
-                { value = getThemeValue("tx_max"), fillcolor = colorMode.txfillcolor }
+                { value = txbatt_warn, fillcolor = colorMode.fillwarncolor },
+                { value = txbatt_max, fillcolor = colorMode.txfillcolor }
             }
         },
 
