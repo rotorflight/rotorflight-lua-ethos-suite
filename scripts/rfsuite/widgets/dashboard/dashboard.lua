@@ -76,6 +76,7 @@ local objectWakeupIndex = 1             -- current object index for wakeup
 local objectWakeupsPerCycle = nil       -- number of objects to wake per cycle (calculated later)
 local objectsThreadedWakeupCount = 0
 local lastLoadedBoxCount = 0
+local lastBoxRectsCount = 0
 
 -- Track background loading of remaining flight mode modules
 local statePreloadQueue = {"inflight", "postflight"}
@@ -1220,7 +1221,7 @@ function dashboard.wakeup(widget)
                     end
                 end
             end
-            objectsThreadedWakeupCount = objectsThreadedWakeupCount + 1
+
         else
             -- Spread mode: stagger wakeups
             for i = 1, objectWakeupsPerCycle do
@@ -1244,10 +1245,9 @@ function dashboard.wakeup(widget)
                 objectWakeupIndex = (#dashboard.boxRects > 0) and ((objectWakeupIndex % #dashboard.boxRects) + 1) or 1
             end
 
-            if objectWakeupIndex == 1 then
-                objectsThreadedWakeupCount = objectsThreadedWakeupCount + 1
-            end
         end
+
+        objectsThreadedWakeupCount = objectsThreadedWakeupCount + 1
 
         -- Force repaint
         if dashboard._useSpreadSchedulingPaint then
