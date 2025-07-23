@@ -41,6 +41,7 @@ function utils.session()
     rfsuite.session.clockSet = nil
     rfsuite.session.apiVersion = nil
     rfsuite.session.fcVersion = nil
+    rfsuite.session.rfVersion = nil
     rfsuite.session.activeProfile = nil
     rfsuite.session.activeRateProfile = nil
     rfsuite.session.activeProfileLast = nil

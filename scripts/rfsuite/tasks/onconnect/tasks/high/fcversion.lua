@@ -23,7 +23,8 @@ function fcversion.wakeup()
     if rfsuite.session.fcVersion== nil then
         local API = rfsuite.tasks.msp.api.load("FC_VERSION")
         API.setCompleteHandler(function(self, buf)
-            rfsuite.session.fcVersion= API.readVersion()
+            rfsuite.session.fcVersion = API.readVersion()
+            rfsuite.session.rfVersion = API.readRfVersion()
             if rfsuite.session.fcVersion then
                 rfsuite.utils.log("FC version: " .. rfsuite.session.fcVersion, "info")
             end

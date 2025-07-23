@@ -2731,9 +2731,14 @@
         "translation": "Ethos-Version",
         "needs_translation": "false"
       },
-      "fc_version": {
+      "rf_version": {
         "english": "Rotorflight Version",
         "translation": "Rotorflight-Version",
+        "needs_translation": "false"
+      },
+      "fc_version": {
+        "english": "FC Version",
+        "translation": "FC-Version",
         "needs_translation": "false"
       },
       "name": {

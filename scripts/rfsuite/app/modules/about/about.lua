@@ -3,6 +3,7 @@ local version = rfsuite.version().version
 local ethosVersion = rfsuite.config.environment.major .. "." .. rfsuite.config.environment.minor .. "." .. rfsuite.config.environment.revision
 local apiVersion = rfsuite.session.apiVersion
 local fcVersion = rfsuite.session.fcVersion 
+local rfVersion = rfsuite.session.rfVersion
 local closeProgressLoader = true
 
 local i18n = rfsuite.i18n.get
@@ -43,6 +44,7 @@ local apidata = {
         fields = {
             {t = i18n("app.modules.about.version"), value = version, type = displayType, disable = disableType, position = displayPos},
             {t = i18n("app.modules.about.ethos_version"), value = ethosVersion, type = displayType, disable = disableType, position = displayPos},
+            {t = i18n("app.modules.about.rf_version"), value = rfVersion, type = displayType, disable = disableType, position = displayPos},
             {t = i18n("app.modules.about.fc_version"), value = fcVersion, type = displayType, disable = disableType, position = displayPos},
             {t = i18n("app.modules.about.msp_version"), value = apiVersion, type = displayType, disable = disableType, position = displayPos},
             {t = i18n("app.modules.about.msp_transport"), value = string.upper(rfsuite.tasks.msp.protocol.mspProtocol), type = displayType, disable = disableType, position = displayPos},

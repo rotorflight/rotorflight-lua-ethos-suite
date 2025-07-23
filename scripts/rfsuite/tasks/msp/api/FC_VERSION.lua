@@ -93,6 +93,30 @@ local function readVersion()
     return nil
 end
 
+
+local function readRfVersion()
+
+  local MAJOR_OFFSET = 2
+  local MINOR_OFFSET = 3
+
+
+  local raw = readVersion()
+  if not raw then return nil end
+
+  -- split into numbers
+  local maj, min, patch = raw:match("(%d+)%.(%d+)%.(%d+)")
+  maj = tonumber(maj) - MAJOR_OFFSET
+  min = tonumber(min) - MINOR_OFFSET
+  patch = tonumber(patch)
+
+  -- guard against negatives or parse errors
+  if maj < 0 or min < 0 then
+    return raw
+  end
+
+  return string.format("%d.%d.%d", maj, min, patch)
+end
+
 -- Function to get the value of a specific field from MSP data
 local function readValue(fieldName)
     if mspData and mspData['parsed'][fieldName] ~= nil then return mspData['parsed'][fieldName] end
@@ -115,6 +139,7 @@ return {
     read = read,
     readComplete = readComplete,
     readVersion = readVersion,
+    readRfVersion = readRfVersion,
     readValue = readValue,
     setCompleteHandler = handlers.setCompleteHandler,
     setErrorHandler = handlers.setErrorHandler,
