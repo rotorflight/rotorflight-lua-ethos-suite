@@ -24,6 +24,7 @@ local hasBeenInFlight = false
 
 local throttleStartTime = nil
 local throttleDelaySeconds = 10
+local throttleHighThreshold = 50 -- Throttle (%) required for instant inflight from postflight
 
 --- Determines if the aircraft is considered "in flight" based on telemetry and session data.
 local function isGovernorActive(value)
@@ -50,12 +51,20 @@ function flightmode.inFlight()
         return true
     end
 
-    -- Priority 2: Throttle above 0 for sustained time
+    -- Priority 2: Throttle logic above 0 for sustained time or above 50% if coming from postflight
     local now = os.clock()
     local rx = rfsuite.session.rx
     local throttle = rx and rx.values and rx.values.throttle
 
+    -- Detect if we're coming from postflight state
+    local isInPostflight = (lastFlightMode == "postflight")
+    local highThrottle = throttle and throttle > throttleHighThreshold 
+
     if throttle and throttle > 0 then
+        if isInPostflight and highThrottle then
+            throttleStartTime = now
+            return true
+        end
         if not throttleStartTime then
             throttleStartTime = now
         elseif (now - throttleStartTime) >= throttleDelaySeconds then
