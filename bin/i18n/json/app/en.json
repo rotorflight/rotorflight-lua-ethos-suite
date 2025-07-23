@@ -2009,8 +2009,8 @@
         "needs_translation": "false"
       },
       "voltage_multiplier": {
-        "english": "Voltage Multiplier",
-        "translation": "Voltage Multiplier",
+        "english": "Sag compensation",
+        "translation": "Sag compensation",
         "needs_translation": "false"
       }
     },

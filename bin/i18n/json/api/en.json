@@ -991,6 +991,11 @@
       "english": "Voltage sensor",
       "translation": "Voltage sensor",
       "needs_translation": "false"
+    },
+    "sag_multiplier": {
+      "english": "Raise or lower to adjust for the amount of voltage sag you see in flight.",
+      "translation": "Raise or lower to adjust for the amount of voltage sag you see in flight.",
+      "needs_translation": "false"
     }
   },
   "BATTERY_CONFIG": {

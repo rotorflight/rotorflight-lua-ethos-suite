@@ -252,7 +252,8 @@ return {
     ["BATTERY_FUELCALC_INI"] = {
       ["calcfuel_local"] = "Calculate fuel using",
       ["tbl_off"] = "Current sensor",
-      ["tbl_on"] = "Voltage sensor"
+      ["tbl_on"] = "Voltage sensor",
+      ["sag_multiplier"] = "Raise or lower to adjust for the amount of voltage sag you see in flight."
     },
     ["BATTERY_CONFIG"] = {
       ["vbatmincellvoltage"] = "Het minimale voltage wanneer laag voltage alarm wordt getriggerd.",
@@ -816,7 +817,7 @@ return {
         ["cell_count"] = "Aantal cellen",
         ["consumption_warning_percentage"] = "Verbruik Waarschuwing %",
         ["timer"] = "Flight Tijd",
-        ["voltage_multiplier"] = "Voltage Multiplier"
+        ["voltage_multiplier"] = "Sag compensatie"
       },
       ["profile_mainrotor"] = {
         ["gain"] = "Gain",

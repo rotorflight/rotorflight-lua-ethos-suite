@@ -252,7 +252,8 @@ return {
     ["BATTERY_FUELCALC_INI"] = {
       ["calcfuel_local"] = "Calculate fuel using",
       ["tbl_off"] = "Current sensor",
-      ["tbl_on"] = "Voltage sensor"
+      ["tbl_on"] = "Voltage sensor",
+      ["sag_multiplier"] = "Raise or lower to adjust for the amount of voltage sag you see in flight."
     },
     ["BATTERY_CONFIG"] = {
       ["vbatmincellvoltage"] = "La tensione minima per cella prima che scatti l'allarme di bassa tensione.",
@@ -816,7 +817,7 @@ return {
         ["cell_count"] = "Conto Celle",
         ["consumption_warning_percentage"] = "Avviso Consumo %",
         ["timer"] = "Tempo Volo",
-        ["voltage_multiplier"] = "Voltage Multiplier"
+        ["voltage_multiplier"] = "Compensazione di caduta"
       },
       ["profile_mainrotor"] = {
         ["gain"] = "Guadagno",

@@ -75,8 +75,9 @@ local function applySagCompensation(voltage)
     end
     local multiplier = rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery and rfsuite.session.modelPreferences.battery.sag_multiplier or 0.5
     local sagFactor = getStickLoadFactor()
-    local compensationScale = math.pow(1.0 - multiplier, 1.5) -- nonlinear curve
-    local compensatedVoltage = voltage + (compensationScale * sagFactor * 0.3)    
+    -- nonlinear curve that *increases* with multiplier:
+    local compensationScale = math.pow(multiplier, 1.5)
+    local compensatedVoltage = voltage + (compensationScale * sagFactor * 0.4)    
     return compensatedVoltage
 end
 

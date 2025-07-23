@@ -2009,9 +2009,9 @@
         "needs_translation": "false"
       },
       "voltage_multiplier": {
-        "english": "Voltage Multiplier",
-        "translation": "Voltage Multiplier",
-        "needs_translation": "true"
+        "english": "Sag compensation",
+        "translation": "Compensazione di caduta",
+        "needs_translation": "false"
       }
     },
     "profile_mainrotor": {

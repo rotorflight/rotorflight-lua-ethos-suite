@@ -252,7 +252,8 @@ return {
     ["BATTERY_FUELCALC_INI"] = {
       ["calcfuel_local"] = "Calculate fuel using",
       ["tbl_off"] = "Current sensor",
-      ["tbl_on"] = "Voltage sensor"
+      ["tbl_on"] = "Voltage sensor",
+      ["sag_multiplier"] = "Raise or lower to adjust for the amount of voltage sag you see in flight."
     },
     ["BATTERY_CONFIG"] = {
       ["vbatmincellvoltage"] = "The minimum voltage per cell before the low voltage alarm is triggered.",
@@ -816,7 +817,7 @@ return {
         ["cell_count"] = "Cell Count",
         ["consumption_warning_percentage"] = "Consumption Warning %",
         ["timer"] = "Flight Time Alarm",
-        ["voltage_multiplier"] = "Voltage Multiplier"
+        ["voltage_multiplier"] = "Sag compensation"
       },
       ["profile_mainrotor"] = {
         ["gain"] = "Gain",

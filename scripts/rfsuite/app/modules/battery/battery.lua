@@ -1,4 +1,6 @@
 local i18n = rfsuite.i18n.get
+local enableWakeup = false
+local disableMultiplier 
 
 local apidata = {
     api = {
@@ -18,8 +20,8 @@ local apidata = {
             {t = i18n("app.modules.battery.cell_count"), mspapi = 1, apikey = "batteryCellCount"},
             {t = i18n("app.modules.battery.consumption_warning_percentage"), min = 15, max = 60, mspapi = 1, apikey = "consumptionWarningPercentage"},
             {t = i18n("app.modules.battery.timer"), mspapi = 2, apikey = "model_param1_value"},
-            {t = i18n("app.modules.battery.voltage_multiplier"), mspapi = 3, apikey = "sag_multiplier"},
             {t = i18n("app.modules.battery.calcfuel_local"), mspapi = 3, apikey = "calc_local", type = 1},
+            {t = i18n("app.modules.battery.voltage_multiplier"), mspapi = 3, apikey = "sag_multiplier"},            
         }
     }                 
 }
@@ -38,9 +40,45 @@ local function postLoad(self)
         end
     end
     rfsuite.app.triggers.closeProgressLoader = true
+    enableWakeup = true
+end
+
+local function wakeup(self)
+        if enableWakeup == false then
+            return
+        end 
+
+
+    for _, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do
+        if f.apikey == "calc_local" then
+            local v = tonumber(f.value)
+            if v == 1 then
+                disableMultiplier = true
+            else
+                disableMultiplier = false   
+            end
+        end
+    end
+
+    if disableMultiplier == true then
+        for i, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do
+            if f.apikey == "sag_multiplier" then
+                rfsuite.app.formFields[i]:enable(true)
+            end
+        end
+    else
+        for i, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do
+            if f.apikey == "sag_multiplier" then
+                rfsuite.app.formFields[i]:enable(false)
+            end
+        end
+    end    
+
+
 end
 
 return {
+    wakeup = wakeup,
     apidata = apidata,
     eepromWrite = true,
     reboot = false,
