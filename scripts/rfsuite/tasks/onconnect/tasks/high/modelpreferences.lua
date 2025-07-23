@@ -30,6 +30,10 @@ local modelpref_defaults ={
         totalflighttime = 0,
         lastflighttime = 0,
         batterylocalcalculation = 1,
+    },
+    battery = {
+        sag_multiplier = 0.5,
+        calc_local = 0,
     }
 }
 
