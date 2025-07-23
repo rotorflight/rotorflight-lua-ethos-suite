@@ -22,8 +22,6 @@ local flightmode = {}
 local lastFlightMode = nil
 local hasBeenInFlight = false
 
-local throttleStartTime = nil
-local throttleDelaySeconds = 10
 local throttleThreshold = 50 -- Throttle (%) required for flight mode transition
 
 --- Determines if the aircraft is considered "in flight" based on telemetry and session data.
@@ -69,7 +67,6 @@ end
 function flightmode.reset()
     lastFlightMode = nil
     hasBeenInFlight = false
-    throttleStartTime = nil
 end
 
 --- Determines the current flight mode based on session state and flight status.
