@@ -24,7 +24,7 @@ local hasBeenInFlight = false
 
 local throttleStartTime = nil
 local throttleDelaySeconds = 10
-local throttleHighThreshold = 50 -- Throttle (%) required for instant inflight from postflight
+local throttleThreshold = 50 -- Throttle (%) required for flight mode transition
 
 --- Determines if the aircraft is considered "in flight" based on telemetry and session data.
 local function isGovernorActive(value)
@@ -33,6 +33,7 @@ end
 
 --- Determines if the flight mode is considered "in flight".
 -- This function checks two main conditions to decide if the model is in flight:
+-- If the model is armed, proceed to the below
 -- 1. If the governor sensor is active (highest priority).
 -- 2. If the throttle has been above zero for a sustained period.
 -- The function also ensures telemetry is active and the session is armed before proceeding.
@@ -41,7 +42,6 @@ function flightmode.inFlight()
     local telemetry = rfsuite.tasks.telemetry
 
     if not telemetry.active() or not rfsuite.session.isArmed then
-        throttleStartTime = nil
         return false
     end
 
@@ -51,27 +51,12 @@ function flightmode.inFlight()
         return true
     end
 
-    -- Priority 2: Throttle logic above 0 for sustained time or above 50% if coming from postflight
-    local now = os.clock()
+    -- Priority 2: Throttle logic
     local rx = rfsuite.session.rx
     local throttle = rx and rx.values and rx.values.throttle
 
-    -- Detect if we're coming from postflight state
-    local isInPostflight = (lastFlightMode == "postflight")
-    local highThrottle = throttle and throttle > throttleHighThreshold 
-
-    if throttle and throttle > 0 then
-        if isInPostflight and highThrottle then
-            throttleStartTime = now
-            return true
-        end
-        if not throttleStartTime then
-            throttleStartTime = now
-        elseif (now - throttleStartTime) >= throttleDelaySeconds then
-            return true
-        end
-    else
-        throttleStartTime = nil
+    if throttle and throttle > throttleThreshold then
+        return true
     end
 
     return false
