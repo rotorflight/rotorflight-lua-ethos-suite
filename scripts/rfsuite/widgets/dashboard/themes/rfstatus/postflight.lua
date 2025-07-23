@@ -65,7 +65,7 @@ local themeOptions = {
     },
 
     ls_std  = { 
-        font = "FONT_XL", 
+        font = "FONT_XXL", 
     },
 
 
@@ -75,16 +75,16 @@ local themeOptions = {
     },
 
     ms_std  = { 
-        font = "FONT_XL", 
+        font = "FONT_XXL", 
     },
 
     -- Small screens - (X14 / X14S) Full/Standard
     ss_full = { 
-        font = "FONT_XL", 
+        font = "FONT_XXL", 
     },
 
     ss_std  = { 
-        font = "FONT_XL", 
+        font = "FONT_XXL", 
     },
 }
 

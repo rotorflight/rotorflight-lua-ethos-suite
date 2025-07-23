@@ -88,16 +88,16 @@ local themeOptions = {
     },
 
     ms_std  = { 
-        font = "FONT_XL", 
+        font = "FONT_XXL", 
     },
 
     -- Small screens - (X14 / X14S) Full/Standard
     ss_full = { 
-        font = "FONT_XL", 
+        font = "FONT_XXL", 
     },
 
     ss_std  = { 
-        font = "FONT_XL", 
+        font = "FONT_XXL", 
     },
 }
 
@@ -273,6 +273,7 @@ return {
     title = i18n("widgets.dashboard.current"):upper(),
     unit = "A",
     titlepos = "bottom",
+    font = opts.font,
     titlecolor = colorMode.textcolor,
     textcolor = colorMode.textcolor,    
   },
@@ -288,6 +289,7 @@ return {
     title = i18n("widgets.dashboard.fuel"):upper(),
     unit = "%",
     titlepos = "bottom",
+    font = opts.font,
     transform = "floor",
     thresholds = {
       { value = 30, textcolor = colorMode.fillcritcolor },
@@ -309,6 +311,7 @@ return {
     title = i18n("widgets.dashboard.rpm"):upper(),
     unit = "rpm",
     titlepos = "bottom",
+    font = opts.font,
     transform = "floor",
     titlecolor = colorMode.textcolor,
     textcolor = colorMode.textcolor,    

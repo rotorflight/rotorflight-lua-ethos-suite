@@ -75,13 +75,15 @@ local themeOptions = {
     -- Large screens - (X20 / X20RS / X18RS etc) Full/Standard
     ls_full = { 
         font = "FONT_XXL", 
-        thickness = 35, 
-        gaugepadding = 20
+        thickness = 60,
+        valuepaddingtop = 45, 
+        gaugepadding = 10
     },
 
     ls_std  = {
-        font = "FONT_XL", 
-        thickness = 35, 
+        font = "FONT_XXL", 
+        thickness = 40,
+        valuepaddingtop = 35, 
         gaugepadding = 10,
     },
 
@@ -89,27 +91,31 @@ local themeOptions = {
     -- Medium screens (X18 / X18S / TWXLITE) - Full/Standard
     ms_full = { 
         font = "FONT_XXL",
-        thickness = 27, 
+        thickness = 40,
+        valuepaddingtop = 35,
         gaugepadding = 10,
     },
 
     ms_std  = {
-        font = "FONT_XL", 
-        thickness = 20, 
-        gaugepadding = 5,
+        font = "FONT_XXL", 
+        thickness = 30,
+        valuepaddingtop = 30, 
+        gaugepadding = 0,
     },
 
     -- Small screens - (X14 / X14S) Full/Standard
     ss_full = {
         font = "FONT_XL", 
-        thickness = 25,  
-        gaugepadding = 10,
+        thickness = 50,
+        valuepaddingtop = 40,  
+        gaugepadding = 5,
     },
 
     ss_std  = {
         font = "FONT_XL", 
-        thickness = 22,  
-        gaugepadding = 10,
+        thickness = 40,
+        valuepaddingtop = 35,  
+        gaugepadding = 5,
     },
 }
 
@@ -127,6 +133,9 @@ local layout = {
     padding = 1,
     --showgrid = lcd.RGB(100, 100, 100)  -- or any color you prefer
 }
+
+-- Header Layout
+local header_layout = utils.standardHeaderLayout(headeropts)
 
 -- Header Boxes
 local function header_boxes()
@@ -181,6 +190,7 @@ return {
         subtype = "blackbox",
         title   = i18n("widgets.dashboard.blackbox"):upper(),
         titlepos= "bottom",
+        decimals = 0,
         titlecolor = colorMode.titlecolor,
         textcolor = colorMode.titlecolor,
         bgcolor = colorMode.bgcolor,
@@ -258,6 +268,7 @@ return {
         font     = opts.font,
         thickness= opts.thickness,
         gaugepadding = opts.gaugepadding,
+        valuepaddingtop = opts.valuepaddingtop,
         titlepos = "bottom",
         fillcolor= colorMode.fillcolor,
         titlecolor = colorMode.titlecolor,

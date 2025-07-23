@@ -74,7 +74,8 @@ local themeOptions = {
         gaugepaddingbottom = 40, 
         maxpaddingtop = 60, 
         maxpaddingleft = 20, 
-        valuepaddingbottom = 25, 
+        valuepaddingbottom = 25,
+        fuelpaddingbottom = 10,
         maxfont = "FONT_L"
     },
 
@@ -85,33 +86,36 @@ local themeOptions = {
         gaugepadding = 0, 
         gaugepaddingbottom = 0, 
         maxpaddingtop = 30, 
-        maxpaddingleft = 10, 
-        valuepaddingbottom = 0, 
-        maxfont = "FONT_S"
+        maxpaddingleft = 15, 
+        valuepaddingbottom = 0,
+        fuelpaddingbottom = 10, 
+        maxfont = "FONT_M"
     },
 
     -- Medium screens (X18 / X18S / TWXLITE) - Full/Standard
     ms_full = { 
-        font = "FONT_XL", 
+        font = "FONT_XXL", 
         advfont = "FONT_M", 
-        thickness = 17, 
+        thickness = 13, 
         gaugepadding = 5, 
         gaugepaddingbottom = 20, 
         maxpaddingtop = 30, 
         maxpaddingleft = 10, 
-        valuepaddingbottom = 15, 
+        valuepaddingbottom = 15,
+        fuelpaddingbottom = 5, 
         maxfont = "FONT_S"
     },
 
     ms_std  = {
-        font = "FONT_XL", 
+        font = "FONT_XXL", 
         advfont = "FONT_M", 
-        thickness = 14, 
+        thickness = 13, 
         gaugepadding = 0, 
         gaugepaddingbottom = 0, 
-        maxpaddingtop = 20, 
+        maxpaddingtop = 30, 
         maxpaddingleft = 10, 
-        valuepaddingbottom = 0, 
+        valuepaddingbottom = 0,
+        fuelpaddingbottom = 10,
         maxfont = "FONT_S"
     },
 
@@ -124,19 +128,21 @@ local themeOptions = {
         gaugepaddingbottom = 20, 
         maxpaddingtop = 30, 
         maxpaddingleft = 10, 
-        valuepaddingbottom = 15, 
+        valuepaddingbottom = 10,
+        fuelpaddingbottom = 5, 
         maxfont = "FONT_S"
     },
 
     ss_std  = {
         font = "FONT_XL", 
         advfont = "FONT_M", 
-        thickness = 14, 
+        thickness = 17, 
         gaugepadding = 0, 
         gaugepaddingbottom = 0, 
-        maxpaddingtop = 20, 
+        maxpaddingtop = 25, 
         maxpaddingleft = 10, 
-        valuepaddingbottom = 0, 
+        valuepaddingbottom = 0,
+        fuelpaddingbottom = 0, 
         maxfont = "FONT_S"
     },
 }
@@ -205,7 +211,7 @@ local function buildBoxes(W)
             battadv = true,
             valuealign = "left", 
             valuepaddingleft = 85, 
-            valuepaddingbottom = 10,
+            valuepaddingbottom = opts.fuelpaddingbottom,
             battadvfont = "FONT_M", 
             font = opts.font,
             battadvpaddingright = 5, 

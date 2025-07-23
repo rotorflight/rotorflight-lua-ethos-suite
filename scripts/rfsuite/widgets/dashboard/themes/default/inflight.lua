@@ -74,36 +74,42 @@ end
 local themeOptions = {
     -- Large screens - (X20 / X20RS / X18RS etc) Full/Standard
     ls_full = { 
-        thickness = 35, 
+        thickness = 60,
+        valuepaddingtop = 45, 
         gaugepadding = 20,
     },
 
     ls_std  = { 
-        thickness = 35, 
+        thickness = 40,
+        valuepaddingtop = 35,
         gaugepadding = 10,
     },
 
 
     -- Medium screens (X18 / X18S / TWXLITE) - Full/Standard
     ms_full = { 
-        thickness = 27, 
+        thickness = 40,
+        valuepaddingtop = 35, 
         gaugepadding = 15,
     },
 
     ms_std  = { 
-        thickness = 20, 
+        thickness = 30,
+        valuepaddingtop = 30, 
         gaugepadding = 5,
     },
 
     -- Small screens - (X14 / X14S) Full/Standard
     ss_full = { 
-        thickness = 20,  
-        gaugepadding = 15,
+        thickness = 50,
+        valuepaddingtop = 40,  
+        gaugepadding = 5,
     },
 
     ss_std  = { 
-        thickness = 12,  
-        gaugepadding = 10,
+        thickness = 30,
+        valuepaddingtop = 30,  
+        gaugepadding = 5,
     },
 }
 
@@ -182,6 +188,7 @@ local function buildBoxes(W)
             source = "voltage",
             thickness = opts.thickness,
             gaugepadding = opts.gaugepadding,
+            valuepaddingtop = opts.valuepaddingtop,
             font = "FONT_XXL",
             fillbgcolor = colorMode.fillbgcolor,
             title = i18n("widgets.dashboard.voltage"):upper(),

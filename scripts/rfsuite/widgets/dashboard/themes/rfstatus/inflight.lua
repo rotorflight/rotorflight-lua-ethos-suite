@@ -74,36 +74,42 @@ end
 local themeOptions = {
     -- Large screens - (X20 / X20RS / X18RS etc) Full/Standard
     ls_full = { 
-        font = "FONT_XXL", 
+        font = "FONT_XXL",
+        valuepaddingtop = 35, 
         thickness = 50, 
     },
 
     ls_std  = { 
-        font = "FONT_XL", 
-        thickness = 25, 
+        font = "FONT_XXL",
+        valuepaddingtop = 20,  
+        thickness = 28, 
     },
 
 
     -- Medium screens (X18 / X18S / TWXLITE) - Full/Standard
     ms_full = { 
-        font = "FONT_XXL", 
-        thickness = 25, 
+        font = "FONT_XXL",
+        valuepaddingtop = 30,
+        thickness = 35, 
     },
 
     ms_std  = { 
-        font = "FONT_XL", 
-        thickness = 25, 
+        font = "FONT_XXL",
+        valuepaddingtop = 20, 
+        thickness = 20, 
     },
 
     -- Small screens - (X14 / X14S) Full/Standard
     ss_full = { 
-        font = "FONT_XL", 
-        thickness = 25,  
+        font = "FONT_XXL",
+        valuepaddingtop = 25, 
+        thickness = 40,  
     },
 
     ss_std  = { 
-        font = "FONT_XL", 
-        thickness = 22,  
+        font = "FONT_XXL",
+        valuepaddingtop = 25, 
+        thickness = 24,  
     },
 }
 
@@ -157,6 +163,7 @@ return {
         thickness = opts.thickness,
         font = "FONT_XXL",
         fillbgcolor = colorMode.fillbgcolor,
+        valuepaddingtop = opts.valuepaddingtop,
         title = i18n("widgets.dashboard.voltage"):upper(),
         titlepos = "bottom",
         min = function()
@@ -216,6 +223,7 @@ return {
         col = 3, row = 1,
         rowspan = 12,
         thickness = opts.thickness,
+        valuepaddingtop = opts.valuepaddingtop,
         colspan = 2,
         source = "smartfuel",
         transform = "floor",

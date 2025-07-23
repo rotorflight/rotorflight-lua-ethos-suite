@@ -71,9 +71,9 @@ local themeOptions = {
         maxpaddingtop = 60, 
         maxpaddingleft = 20, 
         valuepaddingbottom = 25,
-        vgaugepaddingbottom = 3, 
+        vgaugepaddingbottom = 10, 
         maxfont = "FONT_L", 
-        batteryspacing = 3
+        batteryspacing = 2
     },
 
     ls_std  = {
@@ -81,10 +81,10 @@ local themeOptions = {
         thickness = 25, 
         gaugepadding = 0, 
         gaugepaddingbottom = 0, 
-        maxpaddingtop = 30, 
+        maxpaddingtop = 40, 
         maxpaddingleft = 10, 
         valuepaddingbottom = 0,
-        vgaugepaddingbottom = 2, 
+        vgaugepaddingbottom = 4, 
         maxfont = "FONT_M", 
         batteryspacing = 1
     },
@@ -132,10 +132,10 @@ local themeOptions = {
 
     ss_std  = {
         font = "FONT_XL", 
-        thickness = 17, 
+        thickness = 18, 
         gaugepadding = 5, 
         gaugepaddingbottom = 0, 
-        maxpaddingtop = 20, 
+        maxpaddingtop = 30, 
         maxpaddingleft = 10, 
         valuepaddingbottom = 0,
         vgaugepaddingbottom = 3, 

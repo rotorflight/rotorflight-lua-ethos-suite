@@ -75,45 +75,45 @@ local themeOptions = {
     -- Large screens - (X20 / X20RS / X18RS etc) Full/Standard
     ls_full = { 
         font = "FONT_XXL", 
-        thickness = 25, 
+        thickness = 30, 
         valuepaddingtop = 40, 
-        gaugepadding = 20
+        gaugepadding = 10
     },
 
     ls_std  = { 
-        font = "FONT_XL", 
+        font = "FONT_XXL", 
         thickness = 25, 
-        valuepaddingtop = 5, 
+        valuepaddingtop = 25, 
         gaugepadding = 10
     },
 
     -- Medium screens (X18 / X18S / TWXLITE) - Full/Standard
     ms_full = { 
         font = "FONT_XL", 
-        thickness = 17, 
-        valuepaddingtop = 25, 
-        gaugepaddingtop = 5 
+        thickness = 22, 
+        valuepaddingtop = 35, 
+        gaugepadding = 5 
     },
 
     ms_std  = { 
         font = "FONT_XL", 
-        thickness = 17, 
-        valuepaddingtop = 10, 
-        gaugepaddingtop = 5 
+        thickness = 20, 
+        valuepaddingtop = 25, 
+        gaugepadding = 5 
     },
 
     -- Small screens - (X14 / X14S) Full/Standard
     ss_full = { 
         font = "FONT_XL", 
-        thickness = 20,  
-        valuepaddingtop = 5, 
+        thickness = 28,  
+        valuepaddingtop = 30, 
         gaugepadding = 5
     },
 
     ss_std  = { 
         font = "FONT_XL", 
-        thickness = 12,  
-        valuepaddingtop = 5, 
+        thickness = 23,  
+        valuepaddingtop = 20, 
         gaugepadding = 5 
     },
 }
@@ -287,6 +287,7 @@ local function buildBoxes(W)
         subtype = "blackbox",
         title   = i18n("widgets.dashboard.blackbox"):upper(),
         titlepos= "bottom",
+        decimals = 0,
         titlecolor = colorMode.titlecolor,
         textcolor = colorMode.titlecolor,
         bgcolor = colorMode.bgcolor,

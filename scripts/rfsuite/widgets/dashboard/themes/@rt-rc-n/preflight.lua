@@ -60,42 +60,48 @@ end
 -- Theme Options based on screen width
 local themeOptions = {
     -- Large screens - (X20 / X20RS / X18RS etc) Full/Standard
-    ls_full = { 
-        thickness = 25, 
-        gaugepadding = 20,
+    ls_full = {
+        font = "FONT_XXL", 
+        thickness = 35, 
+        gaugepadding = 5,
         valuepaddingtop = 40
     },
 
     ls_std  = { 
+        font = "FONT_XXL", 
         thickness = 25, 
-        gaugepadding = 10,
-        valuepaddingtop = 20
+        gaugepadding = 5,
+        valuepaddingtop = 25
     },
 
     -- Medium screens (X18 / X18S / TWXLITE) - Full/Standard
     ms_full = { 
-        thickness = 17, 
+        font = "FONT_XL", 
+        thickness = 25, 
         gaugepadding = 5,
-        valuepaddingtop = 5
+        valuepaddingtop = 35
     },
 
     ms_std  = { 
-        thickness = 15, 
-        gaugepadding = 0,
-        valuepaddingtop = 10
+        font = "FONT_XL", 
+        thickness = 20, 
+        gaugepadding = 5,
+        valuepaddingtop = 25
     },
 
     -- Small screens - (X14 / X14S) Full/Standard
     ss_full = { 
-        thickness = 20,  
+        font = "FONT_XXL", 
+        thickness = 25,  
         gaugepadding = 5,
-        valuepaddingtop = 5
+        valuepaddingtop = 35
     },
 
-    ss_std  = { 
-        thickness = 12,  
-        gaugepadding = 0,
-        valuepaddingtop = 10
+    ss_std  = {
+        font = "FONT_XXL", 
+        thickness = 18,  
+        gaugepadding = 5,
+        valuepaddingtop = 25
     },
 }
 
@@ -270,6 +276,7 @@ local function buildBoxes(W)
         subtype = "blackbox",
         title   = i18n("widgets.dashboard.blackbox"):upper(),
         titlepos= "bottom",
+        decimals= 0,
         titlecolor = colorMode.titlecolor,
         textcolor = colorMode.titlecolor,
         bgcolor = colorMode.bgcolor,
@@ -289,7 +296,7 @@ local function buildBoxes(W)
         transform = "floor",
         min     = 0,
         max     = 100,
-        font    = "FONT_XL",
+        font    = opts.font,
         fillbgcolor = colorMode.fillbgcolor,
         title   = i18n("widgets.dashboard.throttle"):upper(),
         titlepos= "bottom",
@@ -312,7 +319,7 @@ local function buildBoxes(W)
         source  = "bec_voltage",
         fillbgcolor = colorMode.fillbgcolor,
         title    = i18n("widgets.dashboard.voltage"):upper(),
-        font     = "FONT_XL",
+        font     = opts.font,
         gaugepadding = opts.gaugepadding,
         valuepaddingtop = opts.valuepaddingtop,
         thickness= opts.thickness,

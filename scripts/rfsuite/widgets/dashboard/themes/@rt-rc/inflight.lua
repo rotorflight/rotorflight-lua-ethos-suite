@@ -74,40 +74,40 @@ end
 local themeOptions = {
     -- Large screens - (X20 / X20RS / X18RS etc) Full/Standard
     ls_full = { 
-        thickness = 35, 
-        valuepaddingtop = 20, 
+        thickness = 50, 
+        valuepaddingtop = 35, 
         gaugepadding = 20
     },
 
     ls_std  = { 
-        thickness = 25, 
-        valuepaddingtop = 5, 
+        thickness = 30, 
+        valuepaddingtop = 25, 
         gaugepadding = 10
     },
 
     -- Medium screens (X18 / X18S / TWXLITE) - Full/Standard
     ms_full = { 
-        thickness = 17, 
-        valuepaddingtop = 5, 
+        thickness = 35, 
+        valuepaddingtop = 25, 
         gaugepadding = 5
     },
 
     ms_std  = { 
-        thickness = 10, 
-        valuepaddingtop = 10, 
+        thickness = 20, 
+        valuepaddingtop = 20, 
         gaugepadding = 5 
     },
 
     -- Small screens - (X14 / X14S) Full/Standard
     ss_full = { 
-        thickness = 20,  
-        valuepaddingtop = 5, 
+        thickness = 35,  
+        valuepaddingtop = 30, 
         gaugepadding = 5 
     },
 
     ss_std  = { 
-        thickness = 12,  
-        valuepaddingtop = 10, 
+        thickness = 25,  
+        valuepaddingtop = 20, 
         gaugepadding = 5
     },
 }
@@ -164,12 +164,12 @@ local function buildBoxes(W)
             thickness = opts.thickness,
             valuepaddingtop = opts.valuepaddingtop,
             font = "FONT_XXL",
-            arcbgcolor = colorMode.arcbgcolor,
             title = i18n("widgets.dashboard.voltage"):upper(),
             titlepos = "bottom",
             fillbgcolor = colorMode.fillbgcolor,
             textcolor = colorMode.textcolor,
             bgcolor = colorMode.bgcolor,
+            titlecolor = colorMode.titlecolor,
             min = function()
                 local override = getUserVoltageOverride("v_min")
                 if override then return override end
