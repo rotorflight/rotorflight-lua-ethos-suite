@@ -263,7 +263,7 @@ function utils.themeColors()
             txaccentcolor   = "grey",
             txfillcolor     = "green",
             txbgfillcolor   = "darkgrey",
-            tbbgcolor       = "black",
+            tbbgcolor       = "headergrey",
             cntextcolor     = "white",
             tbtextcolor     = "white"
         },
@@ -580,6 +580,7 @@ function utils.resolveColor(value, variantFactor)
         darkgray        = {90, 90, 90},
         lmgrey          = {80, 80, 80},
         darkwhite       = {245, 245, 245},
+        headergrey      = {35, 35, 35},
     }
 
     -- fallback to default 30% if not provided or out of range
