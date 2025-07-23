@@ -1422,4 +1422,7 @@ end
 -- table to stall object cache
 dashboard.renders = dashboard.renders or {}
 
+-- disabled use of title
+dashboard.title = false
+
 return dashboard
