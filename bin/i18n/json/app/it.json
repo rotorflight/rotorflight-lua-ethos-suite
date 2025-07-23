@@ -243,6 +243,26 @@
         "translation": "Uso Memoria Log",
         "needs_translation": "false"
       },
+      "txt_batttype": {
+        "english": "Tx Battery Options",
+        "translation": "Tx Battery Options",
+        "needs_translation": "true"
+      },
+      "txt_battdef": {
+        "english": "Default",
+        "translation": "Default",
+        "needs_translation": "true"
+      },
+      "txt_batttext": {
+        "english": "Text",
+        "translation": "Text",
+        "needs_translation": "true"
+      },
+      "txt_battdig": {
+        "english": "Digital",
+        "translation": "Digital",
+        "needs_translation": "true"
+      },
       "dashboard": {
         "english": "Dashboard",
         "translation": "Dashboard",

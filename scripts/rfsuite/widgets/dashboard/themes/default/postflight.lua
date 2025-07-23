@@ -104,7 +104,7 @@ local themeOptions = {
 local lastScreenW = nil
 local boxes_cache = nil
 local header_boxes_cache = nil
-local last_txbatt_min, last_txbatt_max
+local last_txbatt_type = nil
 
 -- Theme Layout
 local layout = {
@@ -119,8 +119,15 @@ local header_layout = utils.standardHeaderLayout(headeropts)
 
 -- Header Boxes
 local function header_boxes()
-    if not header_boxes_cache then
-        header_boxes_cache = utils.standardHeaderBoxes(i18n, colorMode, headeropts)
+    local txbatt_type = 0
+    if rfsuite and rfsuite.preferences and rfsuite.preferences.general then
+        txbatt_type = rfsuite.preferences.general.txbatt_type or 0
+    end
+
+    -- Rebuild cache if type changed
+    if header_boxes_cache == nil or last_txbatt_type ~= txbatt_type then
+        header_boxes_cache = utils.standardHeaderBoxes(i18n, colorMode, headeropts, txbatt_type)
+        last_txbatt_type = txbatt_type
     end
     return header_boxes_cache
 end

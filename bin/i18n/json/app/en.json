@@ -243,6 +243,26 @@
         "translation": "Log memory usage",
         "needs_translation": "false"
       },
+      "txt_batttype": {
+        "english": "Tx Battery Options",
+        "translation": "Tx Battery Options",
+        "needs_translation": "false"
+      },
+      "txt_battdef": {
+        "english": "Default",
+        "translation": "Default",
+        "needs_translation": "false"
+      },
+      "txt_batttext": {
+        "english": "Text",
+        "translation": "Text",
+        "needs_translation": "false"
+      },
+      "txt_battdig": {
+        "english": "Digital",
+        "translation": "Digital",
+        "needs_translation": "false"
+      },
       "dashboard": {
         "english": "Dashboard",
         "translation": "Dashboard",

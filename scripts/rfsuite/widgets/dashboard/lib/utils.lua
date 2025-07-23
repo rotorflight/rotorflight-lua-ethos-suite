@@ -160,12 +160,16 @@ function utils.getHeaderOptions()
         return {
             height = 36,
             font = "FONT_L",
+            txbattfont = "FONT_M",
+            txdbattfont = "FONT_S",
             batterysegmentpaddingtop = 4,
             batterysegmentpaddingbottom = 4,
             batterysegmentpaddingleft = 4,
             batterysegmentpaddingright = 4,
             gaugepaddingleft = 25,
+            txdgaugepaddingleft = 20,
             gaugepaddingright = 26,
+            txdgaugepaddingright = 20,
             gaugepaddingbottom = 2,
             gaugepaddingtop = 2,
             cappaddingright = 3,
@@ -174,7 +178,10 @@ function utils.getHeaderOptions()
             barpaddingbottom = 2,
             barpaddingtop = 4,
             valuepaddingleft = 20,
+            txdvaluepaddingleft = 10,
             valuepaddingbottom = 20,
+            txdvaluepaddingtop = 8,
+            roundradius = 15
         }
 
     -- X18/TWXLITE: 480x320 or 472x191
@@ -182,40 +189,54 @@ function utils.getHeaderOptions()
         return {
             height = 30,
             font = "FONT_L",
+            txbattfont = "FONT_M",
+            txdbattfont = "FONT_S",
             batterysegmentpaddingtop = 4,
             batterysegmentpaddingbottom = 4,
             batterysegmentpaddingleft = 4,
             batterysegmentpaddingright = 4,
             gaugepaddingleft = 8,
+            txdgaugepaddingleft = 10,
             gaugepaddingright = 9,
+            txdgaugepaddingright = 10,
             gaugepaddingbottom = 2,
             gaugepaddingtop = 2,
             cappaddingright = 4,
             barpaddingleft = 15,
             barpaddingright = 18,
             barpaddingbottom = 2,
+            txdvaluepaddingleft = 8,
             barpaddingtop = 2,
             valuepaddingbottom = 20,
+            txdvaluepaddingtop = 8,
+            roundradius = 10
         }
     -- X14/X14S: 640x360 or 630x236
     elseif W == 640 or W == 630 then
         return {
             height = 30,
             font = "FONT_L",
+            txbattfont = "FONT_S",
+            txdbattfont = "FONT_S",
             batterysegmentpaddingtop = 4,
             batterysegmentpaddingbottom = 4,
             batterysegmentpaddingleft = 4,
             batterysegmentpaddingright = 4,
             gaugepaddingleft = 21,
+            txdgaugepaddingleft = 15,
             gaugepaddingright = 23,
+            txdgaugepaddingright = 15,
             gaugepaddingbottom = 2,
             gaugepaddingtop = 2,
             cappaddingright = 4,
             barpaddingleft = 19,
             barpaddingright = 21,
             barpaddingbottom = 2,
+            txdvaluepaddingleft = 8,
             barpaddingtop = 2,
             valuepaddingbottom = 20,
+            txdvaluepaddingtop = 8,
+            roundradius = 10
         }
     end
 end
@@ -242,9 +263,9 @@ function utils.themeColors()
             txaccentcolor   = "grey",
             txfillcolor     = "green",
             txbgfillcolor   = "darkgrey",
-            bgcolortop      = "black",
+            tbbgcolor       = "black",
             cntextcolor     = "white",
-            rssitextcolor   = "white"
+            tbtextcolor     = "white"
         },
         light = {
             textcolor       = "lmgrey",
@@ -260,9 +281,9 @@ function utils.themeColors()
             txaccentcolor   = "white",
             txfillcolor     = "lightgreen",
             txbgfillcolor   = "grey",
-            bgcolortop      = "darkgrey",
+            tbbgcolor       = "darkgrey",
             cntextcolor     = "white",
-            rssitextcolor   = "white"
+            tbtextcolor     = "white"
         }
     }
     return lcd.darkMode() and colorMode.dark or colorMode.light
@@ -292,8 +313,97 @@ function utils.getTxBatteryVoltageRange()
             return vmin, vmax
         end
     end
-    -- Fallback to typical 2S Li-Ion values
+
     return 7.2, 8.4
+end
+
+-- Returns a table defining the classic bar gauge style TX battery header box.
+-- Uses theme colors and header layout options for proper sizing and alignment.
+-- Displays a segmented battery bar with warning and max voltage color thresholds.
+-- Used as the default transmitter battery style in the dashboard header.
+function utils.getTxBox(colorMode, headeropts, txbatt_min, txbatt_max, txbatt_warn)
+    return {
+        col = 6, row = 1,
+        type = "gauge", 
+        subtype = "bar", 
+        source = "txbatt",
+        battery = true, 
+        batteryframe = true, 
+        hidevalue = true,
+        valuealign = "left", 
+        batterysegments = 4, 
+        batteryspacing = 1, 
+        batteryframethickness  = 2,
+        batterysegmentpaddingtop = headeropts.batterysegmentpaddingtop,
+        batterysegmentpaddingbottom = headeropts.batterysegmentpaddingbottom,
+        batterysegmentpaddingleft = headeropts.batterysegmentpaddingleft,
+        batterysegmentpaddingright = headeropts.batterysegmentpaddingright,
+        gaugepaddingright = headeropts.gaugepaddingright,
+        gaugepaddingleft = headeropts.gaugepaddingleft,
+        gaugepaddingbottom = headeropts.gaugepaddingbottom,
+        gaugepaddingtop = headeropts.gaugepaddingtop,
+        cappaddingright = headeropts.cappaddingright,
+        fillbgcolor = colorMode.txbgfillcolor, 
+        bgcolor = colorMode.tbbgcolor,
+        accentcolor = colorMode.txaccentcolor, 
+        min = txbatt_min,
+        max = txbatt_max,
+        thresholds = {
+            { value = txbatt_warn, fillcolor = colorMode.fillwarncolor },
+            { value = txbatt_max, fillcolor = colorMode.txfillcolor }
+        }
+    }
+end
+
+local function txTextBox(colorMode, headeropts)
+    return {
+        col = 6, row = 1,
+        type = "text",
+        subtype = "telemetry",
+        source = "txbatt",
+        title = "Tx Batt",
+        titlepos = "bottom",
+        titlefont = "FONT_XXS",
+        valuealign = "center",
+        unit = "v",
+        valuepaddingtop = 8,
+        valuepaddingleft = 8,
+        font = headeropts.txbattfont,
+        decimals = 1,
+        bgcolor = colorMode.tbbgcolor,
+        textcolor = colorMode.tbtextcolor
+    }
+end
+
+local function txDigitalBox(colorMode, headeropts, txbatt_min, txbatt_max, txbatt_warn)
+    return {
+        col = 6, 
+        row = 1,
+        type = "gauge", 
+        subtype = "bar", 
+        source = "txbatt",
+        font = headeropts.txdbattfont,
+        battery = false, 
+        roundradius = headeropts.roundradius,
+        decimals = 1, 
+        unit = "v", 
+        gaugepaddingright = headeropts.txdgaugepaddingright,
+        gaugepaddingleft = headeropts.txdgaugepaddingleft,
+        gaugepaddingbottom = headeropts.gaugepaddingbottom,
+        gaugepaddingtop = headeropts.gaugepaddingtop,
+        valuepaddingleft = headeropts.txdvaluepaddingleft,
+        valuepaddingtop = headeropts.txdvaluepaddingtop,
+        fillbgcolor = colorMode.txbgfillcolor, 
+        bgcolor = colorMode.tbbgcolor,
+        accentcolor = colorMode.txaccentcolor, 
+        textcolor = colorMode.tbtextcolor,
+        min = txbatt_min,
+        max = txbatt_max,
+        thresholds = {
+            { value = txbatt_warn, fillcolor = colorMode.fillwarncolor },
+            { value = txbatt_max, fillcolor = colorMode.txfillcolor }
+        }                     
+    }
 end
 
 --- Returns an array of header box definitions for the dashboard header.
@@ -306,94 +416,47 @@ end
 -- @param getThemeValue function Function for resolving theme config values (e.g., voltage limits).
 -- @return table Array of box definition tables for header display.
 
-function utils.standardHeaderBoxes(i18n, colorMode, headeropts)
+function utils.standardHeaderBoxes(i18n, colorMode, headeropts, txbatt_type)
     local txbatt_min, txbatt_max = utils.getTxBatteryVoltageRange()
     local txbatt_warn = txbatt_min + 0.2
+    txbatt_type = tonumber(txbatt_type) or 0
+
+    local txBox
+    if txbatt_type == 2 then
+        txBox = txDigitalBox(colorMode, headeropts, txbatt_min, txbatt_max, txbatt_warn)
+    elseif txbatt_type == 1 then
+        txBox = txTextBox(colorMode, headeropts, txbatt_min, txbatt_max, txbatt_warn)
+    else
+        txBox = utils.getTxBox(colorMode, headeropts, txbatt_min, txbatt_max, txbatt_warn)
+    end
 
     return {
         -- Craftname
         { 
-            col = 1, 
-            row = 1, 
-            colspan = 2, 
-            type = "text", 
-            subtype = "craftname",
-            font = headeropts.font, 
-            valuealign = "left", 
-            valuepaddingleft = 5,
-            bgcolor = colorMode.bgcolortop,
-            titlecolor = colorMode.titlecolor, 
-            textcolor = colorMode.cntextcolor 
+            col = 1, row = 1, colspan = 2, type = "text", subtype = "craftname",
+            font = headeropts.font, valuealign = "left", valuepaddingleft = 5,
+            bgcolor = colorMode.tbbgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.cntextcolor 
         },
 
         -- RF Logo
         { 
-            col = 3, 
-            row = 1, 
-            colspan = 3, 
-            type = "image", 
-            subtype = "image",
-            bgcolor = colorMode.bgcolortop,
+            col = 3, row = 1, colspan = 3, type = "image", subtype = "image",
+            bgcolor = colorMode.tbbgcolor,
         },
 
-        -- TX Battery
-        { 
-            col = 6, 
-            row = 1,
-            type = "gauge", 
-            subtype = "bar", 
-            source = "txbatt",
-            font = headeropts.font,
-            battery = true, 
-            batteryframe = true, 
-            hidevalue = true,
-            valuealign = "left", 
-            batterysegments = 4, 
-            batteryspacing = 1, 
-            batteryframethickness  = 2,
-            batterysegmentpaddingtop = headeropts.batterysegmentpaddingtop,
-            batterysegmentpaddingbottom = headeropts.batterysegmentpaddingbottom,
-            batterysegmentpaddingleft = headeropts.batterysegmentpaddingleft,
-            batterysegmentpaddingright = headeropts.batterysegmentpaddingright,
-            gaugepaddingright = headeropts.gaugepaddingright,
-            gaugepaddingleft = headeropts.gaugepaddingleft,
-            gaugepaddingbottom = headeropts.gaugepaddingbottom,
-            gaugepaddingtop = headeropts.gaugepaddingtop,
-            cappaddingright = headeropts.cappaddingright,
-            fillbgcolor = colorMode.txbgfillcolor, 
-            bgcolor = colorMode.bgcolortop,
-            accentcolor = colorMode.txaccentcolor, 
-            textcolor = colorMode.textcolor,
-            min = txbatt_min,
-            max = txbatt_max,
-            thresholds = {
-                { value = txbatt_warn, fillcolor = colorMode.fillwarncolor },
-                { value = txbatt_max, fillcolor = colorMode.txfillcolor }
-            }
-        },
+        -- TX Battery (DYNAMIC)
+        txBox,
 
         -- RSSI
         { 
-            col = 7, 
-            row = 1,
-            type = "gauge", 
-            subtype = "step", 
-            source = "rssi",
-            font = "FONT_XS", 
-            stepgap = 2, 
-            stepcount = 5, 
-            decimals = 0,
-            valuealign = "left",
-            barpaddingleft = headeropts.barpaddingleft,
-            barpaddingright = headeropts.barpaddingright,
-            barpaddingbottom = headeropts.barpaddingbottom,
-            barpaddingtop = headeropts.barpaddingtop,
-            valuepaddingleft = headeropts.valuepaddingleft,
-            valuepaddingbottom = headeropts.valuepaddingbottom,
-            bgcolor = colorMode.bgcolortop,
-            textcolor = colorMode.rssitextcolor, 
-            fillcolor = colorMode.rssifillcolor,
-            fillbgcolor = colorMode.rssifillbgcolor,
+            col = 7, row = 1,
+            type = "gauge", subtype = "step", source = "rssi",
+            font = "FONT_XS", stepgap = 2, stepcount = 5, decimals = 0, valuealign = "left",
+            barpaddingleft = headeropts.barpaddingleft, barpaddingright = headeropts.barpaddingright,
+            barpaddingbottom = headeropts.barpaddingbottom, barpaddingtop = headeropts.barpaddingtop,
+            valuepaddingleft = headeropts.valuepaddingleft, valuepaddingbottom = headeropts.valuepaddingbottom,
+            bgcolor = colorMode.tbbgcolor, textcolor = colorMode.rssitextcolor, 
+            fillcolor = colorMode.rssifillcolor, fillbgcolor = colorMode.rssifillbgcolor,
         }
     }
 end

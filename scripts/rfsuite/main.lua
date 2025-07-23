@@ -65,9 +65,7 @@ local userpref_defaults ={
         iconsize = 2,
         syncname = false,
         gimbalsupression = 0.85,
-        tx_min = 7.2,
-        tx_warn = 7.4,
-        tx_max = 8.4,
+        txbatt_type = 0,
     },
     localizations = {
         temperature_unit = 0, -- 0 = Celsius, 1 = Fahrenheit
