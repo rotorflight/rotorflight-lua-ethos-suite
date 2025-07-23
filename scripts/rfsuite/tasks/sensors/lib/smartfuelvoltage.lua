@@ -29,6 +29,58 @@ local currentMode = rfsuite.flightmode.current
 local lastMode = currentMode
 local lastSensorMode
 
+local lastFuelPercent = nil
+local lastFuelTimestamp = nil
+
+
+-- Very stable, slow decline	    1–5
+-- Moderate responsiveness	        6–10
+-- Fast decay (minimal clamping)	12+
+local maxFuelDropPerSecond = 1      -- percent per second 
+
+
+-- Kalman filter state
+
+-- kalmanQ: Increase if your system is very dynamic (e.g. lots of load jumps).
+-- kalmanR: Increase if sensor noise is high (to reduce twitchiness).
+
+-- Adjust these parameters based on your system's behavior:
+-- 
+-- Behavior	                    What to Adjust	                        How
+-- Reacts too slowly	        Decrease kalmanR or increase kalmanQ	Trusts sensor more or expects more movement
+-- Reacts too fast/noisy	    Increase kalmanR or decrease kalmanQ	Trusts sensor less, smooths changes
+-- Doesn’t track slow changes	Increase kalmanQ	                    Allows long-term drift
+
+-- The settings of  kalmanQ = 0.005 and kalmanR = 0.25 are initial values.
+
+-- TL;DR
+-- Update Rate	    Suggested Q	    Suggested R	    Notes
+-- 0.5 sec	        0.02	        0.15	        Baseline tuning
+-- 0.25 sec	        0.015–0.025	    0.15–0.2	    Smoother, still responsive
+
+
+local kalmanVoltage = nil
+local kalmanP = 1.0
+local kalmanQ = 0.002   -- Very slow to drift
+local kalmanR = 0.3     -- Strong distrust in sudden sensor drops
+
+local function kalmanFilterVoltage(measured)
+    if not kalmanVoltage then
+        kalmanVoltage = measured
+        return measured
+    end
+
+    -- Prediction update
+    kalmanP = kalmanP + kalmanQ
+
+    -- Measurement update
+    local K = kalmanP / (kalmanP + kalmanR)
+    kalmanVoltage = kalmanVoltage + K * (measured - kalmanVoltage)
+    kalmanP = (1 - K) * kalmanP
+
+    return kalmanVoltage
+end
+
 -- Discharge curve with 0.01V per cell resolution from 3.00V to 4.20V (121 points)
 -- This curve uses a sigmoid approximation to mimic real LiPo discharge behavior
 local dischargeCurveTable = {}
@@ -43,6 +95,8 @@ local function resetVoltageTracking()
     lastVoltages = {}
     voltageStableTime = nil
     voltageStabilised = false
+    kalmanVoltage = nil
+    kalmanP = 1.0
 end
 
 local function isVoltageStable()
@@ -76,7 +130,7 @@ local function applySagCompensation(voltage)
     local multiplier = rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery and rfsuite.session.modelPreferences.battery.sag_multiplier or 0.5
     local sagFactor = getStickLoadFactor()
     -- nonlinear curve that *increases* with multiplier:
-    local compensationScale = math.pow(multiplier, 1.5)
+    local compensationScale = multiplier ^ 1.5
     local compensatedVoltage = voltage + (compensationScale * sagFactor * 0.4)    
     return compensatedVoltage
 end
@@ -93,7 +147,7 @@ local function fuelPercentageCalcByVoltage(voltage, cellCount)
     local voltagePerCell = voltage / cellCount
 
     -- Clamp voltage to adjusted usable range
-    voltagePerCell = math.max(adjustedMinV, math.min(fullV, voltagePerCell))
+    voltagePerCell = math.max(3.00, math.min(fullV, voltagePerCell))
 
     -- Remap [adjustedMinV, fullV] → [3.00, 4.20]
     local sigmoidMin, sigmoidMax = 3.00, 4.20
@@ -183,10 +237,26 @@ local function smartFuelCalc()
         end
     end
 
-    local compensatedVoltage = applySagCompensation(voltage)
+    local filteredVoltage = kalmanFilterVoltage(voltage)
+    local compensatedVoltage = applySagCompensation(filteredVoltage)
     local percent = fuelPercentageCalcByVoltage(compensatedVoltage, bc.batteryCellCount)
-    rfsuite.utils.log("Battery fuel percent (compensated): " .. percent)
+
+    local now = os.clock()
+    if lastFuelPercent and lastFuelTimestamp then
+        local dt = now - lastFuelTimestamp
+        local maxDrop = dt * maxFuelDropPerSecond
+        if percent < lastFuelPercent then
+            percent = math.max(percent, lastFuelPercent - maxDrop)
+        elseif percent > lastFuelPercent then
+            -- Optional: clamp upward movement too (if voltage jumps)
+            percent = math.min(percent, lastFuelPercent + maxDrop)
+        end
+    end
+    lastFuelPercent = percent
+    lastFuelTimestamp = now
+
     return percent
+
 end
 
 return {
