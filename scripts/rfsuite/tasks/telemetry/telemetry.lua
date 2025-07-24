@@ -436,6 +436,23 @@ local sensorTable = {
             },
             crsfLegacy = { "Rx Cons" },
         },
+        transform = function(value)
+            -- If local calculation is enabled, calculate mAh used based on capacity
+            if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery and rfsuite.session.modelPreferences.battery.calc_local then
+                if rfsuite.session.modelPreferences.battery.calc_local == 1 then
+                    local capacity = rfsuite.session.modelPreferences.battery.capacity or 1000 -- Default to 1000mAh if not set
+                    local smartfuel = rfsuite.tasks.telemetry.getSensor("smartfuel")
+                    if smartfuel then
+                        local usedPercent = 100 - smartfuel -- how much has been used
+                        local mahUsed = (usedPercent / 100) * capacity
+                        return mahUsed
+                    end
+                end
+            end
+
+            return nil
+        end
+  
     },
 
     -- Flight Mode (Governor)
@@ -1053,7 +1070,12 @@ function telemetry.getSensor(sensorKey)
     local major = entry and entry.unit or nil
     local minor = nil
 
-    -- if the sensor has a transform function, apply it to the value:
+    -- if we have a transform function, apply it to the value:
+    if entry and entry.transform and type(entry.transform) == "function" then
+        value = entry.transform(value)
+    end   
+
+    -- if the sensor has a localization function, apply it to the value:
     if entry and entry.localizations and type(entry.localizations) == "function" then
         value, major, minor = entry.localizations(value)
     end
