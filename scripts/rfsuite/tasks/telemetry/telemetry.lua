@@ -440,12 +440,13 @@ local sensorTable = {
             -- If local calculation is enabled, calculate mAh used based on capacity
             if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery and rfsuite.session.modelPreferences.battery.calc_local then
                 if rfsuite.session.modelPreferences.battery.calc_local == 1 then
-                    local capacity = rfsuite.session.modelPreferences.battery.capacity or 1000 -- Default to 1000mAh if not set
+                    local capacity = rfsuite.session.batteryConfig.batteryCapacity or 1000 -- Default to 1000mAh if not set
                     local smartfuel = rfsuite.tasks.telemetry.getSensor("smartfuel")
+                    local warningPercentage = rfsuite.session.batteryConfig.consumptionWarningPercentage or 30
                     if smartfuel then
+                        local usableCapacity = capacity * (1 - warningPercentage / 100)
                         local usedPercent = 100 - smartfuel -- how much has been used
-                        local mahUsed = (usedPercent / 100) * capacity
-                        return mahUsed
+                        return (usedPercent / 100) * usableCapacity
                     end
                 end
             end
