@@ -89,12 +89,16 @@ for i = 0, 120 do
     dischargeCurveTable[i + 1] = math.floor(math.min(100, math.max(0, percent)) + 0.5)
 end
 
+local function resetKalmanFilter()
+    kalmanVoltage = nil
+    kalmanP = 1.0
+end
+
 local function resetVoltageTracking()
     lastVoltages = {}
     voltageStableTime = nil
     voltageStabilised = false
-    kalmanVoltage = nil
-    kalmanP = 1.0
+    resetKalmanFilter()
 end
 
 local function isVoltageStable()
@@ -243,9 +247,19 @@ local function smartFuelCalc()
         end
     end
 
-    local filteredVoltage = kalmanFilterVoltage(voltage)
+    -- Only apply Kalman while actually flying; otherwise reset it and use raw voltage
+    local filteredVoltage
+    if rfsuite.flightmode.current == "inflight" then
+        filteredVoltage = kalmanFilterVoltage(voltage)
+    else
+        -- mode isn’t inflight: wipe out any past filter state
+        resetKalmanFilter()
+        filteredVoltage = voltage
+    end
+
     local compensatedVoltage = applySagCompensation(filteredVoltage)
     local percent = fuelPercentageCalcByVoltage(compensatedVoltage, bc.batteryCellCount)
+
 
     local now = os.clock()
     if lastFuelPercent and lastFuelTimestamp then
