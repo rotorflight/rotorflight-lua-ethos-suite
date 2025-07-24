@@ -188,7 +188,7 @@ local function buildBoxes(W)
         bgcolor = colorMode.bgcolor, unit = "V", transform = function(v) return maxVoltageToCellVoltage(v) end, textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor, valuepaddingtop = opts.valuepaddingtop, font = opts.font, titlefont = opts.titlefont},
 
         {col = 5, row = 10, colspan = 2, rowspan = 3, type = "text", subtype = "telemetry", source = "voltage", title = i18n("widgets.dashboard.volts_per_cell"), titlepos = "bottom", 
-        bgcolor = colorMode.bgcolor, transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor, valuepaddingtop = opts.valuepaddingtop, unit = "V", font = opts.font, titlefont = opts.titlefont, transform = function(v) return maxVoltageToCellVoltage(v) end},       
+        bgcolor = colorMode.bgcolor, textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor, valuepaddingtop = opts.valuepaddingtop, unit = "V", font = opts.font, titlefont = opts.titlefont, transform = function(v) return maxVoltageToCellVoltage(v) end},       
     }
 end
 
