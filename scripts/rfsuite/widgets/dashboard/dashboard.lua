@@ -1382,12 +1382,7 @@ function dashboard.resetFlightModeAsk()
     local buttons = {{
         label = i18n("app.btn_ok"),
         action = function()
-
-            -- we push this to the background task to do its job
-            dashboard.flightmode = "preflight"
-            rfsuite.flightmode.current = "preflight"
             tasks.events.flightmode.reset()
-            dashboard._forceFullRepaint = true
             lcd.invalidate()
             return true
         end
