@@ -180,20 +180,23 @@ local function buildBoxes(W)
             bgcolor = colorMode.bgcolor,
         },               
         {
-            type = "gauge",
-            subtype = "arc",
-            col = 2, 
-            row = 1,
+            col     = 2,
+            row     = 1,
             rowspan = 2,
-            source = "voltage",
-            thickness = opts.thickness,
+            type    = "gauge",
+            subtype = "arc",
+            source  = "voltage",
+            fillbgcolor = colorMode.fillbgcolor,
+            title    = i18n("widgets.dashboard.voltage"):upper(),
+            font     = "FONT_XXL",
+            thickness= opts.thickness,
+            titlepos = "bottom",
+            fillcolor= colorMode.fillcolor,
+            titlecolor = colorMode.titlecolor,
+            textcolor = colorMode.titlecolor,
+            bgcolor = colorMode.bgcolor,
             gaugepadding = opts.gaugepadding,
             valuepaddingtop = opts.valuepaddingtop,
-            font = "FONT_XXL",
-            fillbgcolor = colorMode.fillbgcolor,
-            title = i18n("widgets.dashboard.voltage"):upper(),
-            titlepos = "bottom",
-            bgcolor = colorMode.bgcolor,
             min = function()
                 local override = getUserVoltageOverride("v_min")
                 if override then return override end
@@ -202,6 +205,7 @@ local function buildBoxes(W)
                 local minV  = (cfg and cfg.vbatmincellvoltage) or 3.0
                 return math.max(0, cells * minV)
             end,
+
             max = function()
                 local override = getUserVoltageOverride("v_max")
                 if override then return override end
@@ -210,6 +214,7 @@ local function buildBoxes(W)
                 local maxV  = (cfg and cfg.vbatfullcellvoltage) or 4.2
                 return math.max(0, cells * maxV)
             end,
+
             thresholds = {
                 {
                     value = function(box)

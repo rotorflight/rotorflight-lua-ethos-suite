@@ -154,22 +154,24 @@ local function buildBoxes(W)
 
     return{
         {
-            type = "gauge",
-            subtype = "arc",
-            col = 1, row = 1,
-            rowspan = 12,
+            col     = 1,
+            row     = 1,
             colspan = 4,
-            source = "voltage",
-            gaugepadding = opts.gaugepadding,
-            thickness = opts.thickness,
-            valuepaddingtop = opts.valuepaddingtop,
-            font = "FONT_XXL",
-            title = i18n("widgets.dashboard.voltage"):upper(),
-            titlepos = "bottom",
+            rowspan = 12,
+            type    = "gauge",
+            subtype = "arc",
+            source  = "voltage",
             fillbgcolor = colorMode.fillbgcolor,
-            textcolor = colorMode.textcolor,
-            bgcolor = colorMode.bgcolor,
+            title    = i18n("widgets.dashboard.voltage"):upper(),
+            font     = "FONT_XXL",
+            thickness= opts.thickness,
+            titlepos = "bottom",
+            fillcolor= colorMode.fillcolor,
             titlecolor = colorMode.titlecolor,
+            textcolor = colorMode.titlecolor,
+            bgcolor = colorMode.bgcolor,
+            gaugepadding = opts.gaugepadding,
+            valuepaddingtop = opts.valuepaddingtop,
             min = function()
                 local override = getUserVoltageOverride("v_min")
                 if override then return override end
