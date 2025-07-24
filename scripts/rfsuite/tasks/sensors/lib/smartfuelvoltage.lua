@@ -262,7 +262,8 @@ local function smartFuelCalc()
 
 
     local now = os.clock()
-    if lastFuelPercent and lastFuelTimestamp then
+    -- only apply the per‑second drop limit while actually flying
+    if rfsuite.flightmode.current == "inflight" and lastFuelPercent and lastFuelTimestamp then
         local dt = now - lastFuelTimestamp
         local maxDrop = dt * maxFuelDropPerSecond
         if percent < lastFuelPercent then
@@ -272,8 +273,11 @@ local function smartFuelCalc()
             percent = math.min(percent, lastFuelPercent + maxDrop)
         end
     end
-    lastFuelPercent = percent
-    lastFuelTimestamp = now
+
+    -- always update the last‑seen values so that when you enter flight mode
+    -- the timer resets correctly
+    lastFuelPercent    = percent
+    lastFuelTimestamp  = now
 
     return percent
 
