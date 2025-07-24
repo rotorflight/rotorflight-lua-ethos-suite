@@ -2012,6 +2012,11 @@
         "english": "Sag compensation",
         "translation": "Compensación de caída",
         "needs_translation": "false"
+      },
+      "kalman_multiplier": {
+        "english": "Filter compensation",
+        "translation": "Filter compensation",
+        "needs_translation": "true"
       }
     },
     "profile_mainrotor": {

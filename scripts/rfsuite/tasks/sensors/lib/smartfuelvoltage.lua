@@ -39,30 +39,28 @@ local lastFuelTimestamp = nil
 local maxFuelDropPerSecond = 1      -- percent per second 
 
 
--- Kalman filter state
-
--- kalmanQ: Increase if your system is very dynamic (e.g. lots of load jumps).
--- kalmanR: Increase if sensor noise is high (to reduce twitchiness).
-
--- Adjust these parameters based on your system's behavior:
--- 
--- Behavior	                    What to Adjust	                        How
--- Reacts too slowly	        Decrease kalmanR or increase kalmanQ	Trusts sensor more or expects more movement
--- Reacts too fast/noisy	    Increase kalmanR or decrease kalmanQ	Trusts sensor less, smooths changes
--- Doesn’t track slow changes	Increase kalmanQ	                    Allows long-term drift
-
--- The settings of  kalmanQ = 0.005 and kalmanR = 0.25 are initial values.
-
--- TL;DR
--- Update Rate	    Suggested Q	    Suggested R	    Notes
--- 0.5 sec	        0.02	        0.15	        Baseline tuning
--- 0.25 sec	        0.015–0.025	    0.15–0.2	    Smoother, still responsive
-
+--
+local minQ, maxQ   = 0.002, 0.02
+local minR, maxR   = 0.5,   0.1
+local defaultFactor= 0.5    -- mid‑point
+local lastFactor   = nil
 
 local kalmanVoltage = nil
-local kalmanP = 1.0
-local kalmanQ = 0.002   -- Very slow to drift
-local kalmanR = 0.3     -- Strong distrust in sudden sensor drops
+local kalmanP       = 1.0
+local kalmanQ       = minQ
+local kalmanR       = maxR
+
+
+local function updateKalmanParams(f)
+    -- clamp 0–1
+    f = math.max(0, math.min(1, f))
+
+    -- Q: high→low as f goes 0→1  (more smoothing at high f)
+    kalmanQ = maxQ - (maxQ - minQ) * f
+
+    -- R: low→high as f goes 0→1  (more trusting of measurement noise at high f)
+    kalmanR = minR + (maxR - minR) * f
+end
 
 local function kalmanFilterVoltage(measured)
     if not kalmanVoltage then
@@ -176,6 +174,14 @@ local function smartFuelCalc()
             resetVoltageTracking()
             lastSensorMode = rfsuite.session.modelPreferences.battery.calc_local
         end
+    end
+
+    -- if it changed, recompute Q/R and wipe the old state
+    local f = rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery and rfsuite.session.modelPreferences.battery.kalman_multiplier or defaultFactor
+    if f ~= lastFactor then
+        lastFactor = f
+        updateKalmanParams(f)
+        resetVoltageTracking()
     end
 
     local bc = rfsuite.session.batteryConfig

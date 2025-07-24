@@ -31,6 +31,8 @@ local offOn = {rfsuite.i18n.get("api.BATTERY_FUELCALC_INI.tbl_off"), rfsuite.i18
 local MSP_API_STRUCTURE_READ_DATA = {
     { field = "calc_local",     type = "U8", simResponse = {0} , tableIdxInc = -1, table = offOn},
     { field = "sag_multiplier", type = "U8", simResponse = {0} , decimals = 1, default = 0.5, min=0, max=10},
+    { field = "kalman_multiplier",      type = "U8", simResponse = {0}, decimals = 1, min = 0, max = 10 , default = 0.5},
+
 }
 local READ_STRUCT, MIN_BYTES, SIM_RESP =
     mspModule.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
@@ -79,7 +81,7 @@ local function write()
     local tbl = ini.load_ini_file(INI_FILE) or {}
     tbl.general = tbl.general or {}
     for k, v in pairs(payloadData) do
-        if k ~=  "sag_multiplier" then
+        if k == "calc_local" then
             v = math.floor(v)  -- Ensure integer values
         end
  

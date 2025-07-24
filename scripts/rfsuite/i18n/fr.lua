@@ -253,7 +253,8 @@ return {
       ["calcfuel_local"] = "Calculate fuel using",
       ["tbl_off"] = "Current sensor",
       ["tbl_on"] = "Voltage sensor",
-      ["sag_multiplier"] = "Raise or lower to adjust for the amount of voltage sag you see in flight."
+      ["sag_multiplier"] = "Raise or lower to adjust for the amount of voltage sag you see in flight.",
+      ["kalman_multiplier"] = "Stabilise the input voltage sensor reading to prevent the fuel sensor bouncing due to sudden voltage dips. Raise or lower to adjust."
     },
     ["BATTERY_CONFIG"] = {
       ["vbatmincellvoltage"] = "Tension minimale par cellule avant le declenchement de l'alarme de basse tension.",
@@ -817,7 +818,8 @@ return {
         ["cell_count"] = "Nombre de cellules",
         ["consumption_warning_percentage"] = "Avert. conso %",
         ["timer"] = "Temps de vol",
-        ["voltage_multiplier"] = "Compensation de chute"
+        ["voltage_multiplier"] = "Compensation de chute",
+        ["kalman_multiplier"] = "Filter compensation"
       },
       ["profile_mainrotor"] = {
         ["gain"] = "Gain",

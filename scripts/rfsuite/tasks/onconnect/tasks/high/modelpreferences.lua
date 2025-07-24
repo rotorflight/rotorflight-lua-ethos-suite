@@ -33,7 +33,8 @@ local modelpref_defaults ={
     },
     battery = {
         sag_multiplier = 0.5,
-        calc_local = 0,
+        kalman_multiplier = 0.5,
+        calc_local = 0
     }
 }
 
