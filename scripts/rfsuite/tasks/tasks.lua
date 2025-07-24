@@ -282,6 +282,7 @@ function tasks.wakeup()
     end
 
     tasks.telemetryCheckScheduler()
+    rfsuite.i18n.wakeup()
 
     local now = os.clock()
 
