@@ -478,24 +478,39 @@ local function decAdjFunc(data, pos)
     return nil, pos
 end
 
+--- Decodes RPM values from a data buffer and updates telemetry values.
+-- This function reads up to 19 sets of 3 bytes from the data buffer, starting at the given position (after skipping the source ID),
+-- decodes each set as a 24-bit RPM value, and sets the corresponding telemetry value for each motor.
+-- @param data table The buffer containing the data bytes.
+-- @param pos number The starting position in the data buffer (source ID will be skipped).
+-- @return nil Always returns nil as the first return value.
+-- @return number The updated position in the data buffer after processing.
 local function decRPM(data, pos)
-    local i = 0
-    while pos + 2 <= #data and i < 19 do
+    pos = pos + 1 -- skip source ID
+    for i = 0, 18 do
+        if pos + 2 > #data then break end
         local rpm = (data[pos] << 16) | (data[pos + 1] << 8) | data[pos + 2]
-        pos = pos + 3
         setTelemetryValue(0x1300 + i, 0, 0, rpm, UNIT_RPM, 0, "Motor " .. (i + 1) .. " RPM", 0, 1000000)
-        i = i + 1
+        pos = pos + 3
     end
     return nil, pos
 end
 
+--- Decodes a sequence of temperature sensor values from a data buffer and updates telemetry.
+-- @param data table Array of bytes containing the sensor data.
+-- @param pos number Current position in the data array (1-based index).
+-- @return nil, number Returns nil and the updated position after processing.
+--
+-- The function skips the source ID at the current position, then reads up to 20 temperature values.
+-- Each temperature is a 16-bit value (big-endian) and is sent to telemetry using setTelemetryValue.
+-- The function stops early if there is not enough data left in the buffer.
 local function decTemps(data, pos)
-    local i = 0
-    while pos + 1 <= #data and i < 20 do
+    pos = pos + 1 -- skip source ID
+    for i = 0, 19 do
+        if pos + 1 > #data then break end
         local temp = (data[pos] << 8) | data[pos + 1]
-        pos = pos + 2
         setTelemetryValue(0x1320 + i, 0, 0, temp, UNIT_CELSIUS, 0, "Temp " .. (i + 1), 0, 1000)
-        i = i + 1
+        pos = pos + 2
     end
     return nil, pos
 end
