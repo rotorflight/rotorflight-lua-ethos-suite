@@ -1954,7 +1954,7 @@
     },
     "battery": {
       "calcfuel_local": {
-        "english": "Calculate fuel using",
+        "english": "Calculate Fuel Using",
         "translation": "Calculate fuel using",
         "needs_translation": "true"
       },
@@ -2009,13 +2009,28 @@
         "needs_translation": "false"
       },
       "voltage_multiplier": {
-        "english": "Sag compensation",
+        "english": "Sag Compensation",
         "translation": "Compensation de chute",
         "needs_translation": "false"
       },
       "kalman_multiplier": {
-        "english": "Filter compensation",
+        "english": "Filter Compensation",
         "translation": "Filter compensation",
+        "needs_translation": "true"
+      },
+      "alert_type": {
+        "english": "Rx Voltage Alert",
+        "translation": "BEC or Rx Batt Voltage Alert",
+        "needs_translation": "true"
+      },
+      "bec_voltage_alert": {
+        "english": "BEC Alert Value",
+        "translation": "BEC Alert Value",
+        "needs_translation": "true"
+      },
+      "rx_voltage_alert": {
+        "english": "RxBatt Alert Value",
+        "translation": "RX Batt Alert Value",
         "needs_translation": "true"
       }
     },

@@ -249,12 +249,15 @@ return {
     ["PILOT_CONFIG"] = {
       ["model_param1_value"] = "Setzen Sie die erwartete Flugzeit in Sekunden. Die Fernsteuerung biept sobald die Flugzeit erreicht wurde."
     },
-    ["BATTERY_FUELCALC_INI"] = {
-      ["calcfuel_local"] = "Calculate fuel using",
-      ["tbl_off"] = "Current sensor",
-      ["tbl_on"] = "Voltage sensor",
+    ["BATTERY_INI"] = {
+      ["calcfuel_local"] = "Calculate Fuel Using",
+      ["tbl_off"] = "Current Sensor",
+      ["tbl_on"] = "Voltage Sensor",
       ["sag_multiplier"] = "Raise or lower to adjust for the amount of voltage sag you see in flight.",
-      ["kalman_multiplier"] = "Stabilise the input voltage sensor reading to prevent the fuel sensor bouncing due to sudden voltage dips. Raise or lower to adjust."
+      ["kalman_multiplier"] = "Stabilise the input voltage sensor reading to prevent the fuel sensor bouncing due to sudden voltage dips. Raise or lower to adjust.",
+      ["alert_off"] = "Off",
+      ["alert_bec"] = "BEC",
+      ["alert_rxbatt"] = "Rx Batt"
     },
     ["BATTERY_CONFIG"] = {
       ["vbatmincellvoltage"] = "Die minimale Spannung pro Zelle, bevor der Niederspannungsalarm ausgeloest wird.",
@@ -819,7 +822,10 @@ return {
         ["consumption_warning_percentage"] = "Verbrauchswarnung %",
         ["timer"] = "Flugzeitalarm",
         ["voltage_multiplier"] = "Spannungsausgleich",
-        ["kalman_multiplier"] = "Filter compensation"
+        ["kalman_multiplier"] = "Filter compensation",
+        ["alert_type"] = "BEC or Rx Batt Voltage Alert",
+        ["bec_voltage_alert"] = "BEC Alert Value",
+        ["rx_voltage_alert"] = "RX Batt Alert Value"
       },
       ["profile_mainrotor"] = {
         ["gain"] = "Verstaerkung",

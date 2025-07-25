@@ -96,6 +96,12 @@
     "needs_translation": false
   },
   {
+    "file": "events/alerts/rxvolt.wav",
+    "english": "RX Batt Voltage Warning",
+    "translation": null,
+    "needs_translation": true
+  },
+  {
     "file": "events/gov/off.wav",
     "english": "Governor - Off",
     "translation": "Governor - Spento",

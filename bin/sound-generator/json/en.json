@@ -96,6 +96,12 @@
     "needs_translation": false
   },
   {
+    "file": "events/alerts/rxvolt.wav",
+    "english": "RX Batt Voltage Warning",
+    "translation": "RX Batt Voltage Warning",
+    "needs_translation": false
+  },
+  {
     "file": "events/gov/off.wav",
     "english": "Governor - Off",
     "translation": "Governor - Off",

@@ -976,20 +976,20 @@
       "needs_translation": "false"
     }
   },
-  "BATTERY_FUELCALC_INI": {
+  "BATTERY_INI": {
     "calcfuel_local": {
-      "english": "Calculate fuel using",
-      "translation": "Calculate fuel using",
+      "english": "Calculate Fuel Using",
+      "translation": "Calculate Fuel Using",
       "needs_translation": "false"
     },
     "tbl_off": {
-      "english": "Current sensor",
-      "translation": "Current sensor",
+      "english": "Current Sensor",
+      "translation": "Current Sensor",
       "needs_translation": "false"
     },
     "tbl_on": {
-      "english": "Voltage sensor",
-      "translation": "Voltage sensor",
+      "english": "Voltage Sensor",
+      "translation": "Voltage Sensor",
       "needs_translation": "false"
     },
     "sag_multiplier": {
@@ -1000,6 +1000,21 @@
     "kalman_multiplier": {
       "english": "Stabilise the input voltage sensor reading to prevent the fuel sensor bouncing due to sudden voltage dips. Raise or lower to adjust.",
       "translation": "Stabilise the input voltage sensor reading to prevent the fuel sensor bouncing due to sudden voltage dips. Raise or lower to adjust.",
+      "needs_translation": "false"
+    },
+    "alert_off": {
+      "english": "Off",
+      "translation": "Off",
+      "needs_translation": "false"
+    },
+    "alert_bec": {
+      "english": "BEC",
+      "translation": "BEC",
+      "needs_translation": "false"
+    },
+    "alert_rxbatt": {
+      "english": "RxBatt",
+      "translation": "RXBatt",
       "needs_translation": "false"
     }
   },

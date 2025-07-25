@@ -249,12 +249,15 @@ return {
     ["PILOT_CONFIG"] = {
       ["model_param1_value"] = "Set this to the expected flight time in seconds.  The transmitter will beep when the flight time is reached."
     },
-    ["BATTERY_FUELCALC_INI"] = {
-      ["calcfuel_local"] = "Calculate fuel using",
-      ["tbl_off"] = "Current sensor",
-      ["tbl_on"] = "Voltage sensor",
+    ["BATTERY_INI"] = {
+      ["calcfuel_local"] = "Calculate Fuel Using",
+      ["tbl_off"] = "Current Sensor",
+      ["tbl_on"] = "Voltage Sensor",
       ["sag_multiplier"] = "Raise or lower to adjust for the amount of voltage sag you see in flight.",
-      ["kalman_multiplier"] = "Stabilise the input voltage sensor reading to prevent the fuel sensor bouncing due to sudden voltage dips. Raise or lower to adjust."
+      ["kalman_multiplier"] = "Stabilise the input voltage sensor reading to prevent the fuel sensor bouncing due to sudden voltage dips. Raise or lower to adjust.",
+      ["alert_off"] = "Off",
+      ["alert_bec"] = "BEC",
+      ["alert_rxbatt"] = "RxBatt"
     },
     ["BATTERY_CONFIG"] = {
       ["vbatmincellvoltage"] = "The minimum voltage per cell before the low voltage alarm is triggered.",
@@ -807,7 +810,7 @@ return {
         ["help_logs_p3"] = "- arm status, voltage, headspeed, current, esc temperature"
       },
       ["battery"] = {
-        ["calcfuel_local"] = "Calculate fuel using",
+        ["calcfuel_local"] = "Calculate Fuel Using",
         ["max_cell_voltage"] = "Max Cell Voltage",
         ["full_cell_voltage"] = "Full Cell Voltage",
         ["name"] = "Battery",
@@ -818,8 +821,11 @@ return {
         ["cell_count"] = "Cell Count",
         ["consumption_warning_percentage"] = "Consumption Warning %",
         ["timer"] = "Flight Time Alarm",
-        ["voltage_multiplier"] = "Sag compensation",
-        ["kalman_multiplier"] = "Filter compensation"
+        ["voltage_multiplier"] = "Sag Compensation",
+        ["kalman_multiplier"] = "Filter Compensation",
+        ["alert_type"] = "Rx Voltage Alert",
+        ["bec_voltage_alert"] = "BEC Alert Value",
+        ["rx_voltage_alert"] = "RxBatt Alert Value"
       },
       ["profile_mainrotor"] = {
         ["gain"] = "Gain",

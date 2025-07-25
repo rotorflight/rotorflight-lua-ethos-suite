@@ -214,19 +214,35 @@ local eventTable = {
         interval = 10,
         window = 5,
         event = function(value, interval, window)
-            if not eventPrefs.bec_voltage then return end
             if rfsuite.flightmode.current ~= "inflight" then
                 lastAlertState["bec_voltage"] = false
                 return
             end
-            local becalertvalue = tonumber(eventPrefs.becalertvalue) or 6.5
-            local avgBEC = updateRollingAverage("bec_voltage", value, window)
-            local key = "bec_voltage"
-            if avgBEC < becalertvalue and shouldAlert(key, interval) then
-                rfsuite.utils.playFile("events", "alerts/becvolt.wav")
-                system.playHaptic(". . . .")
-                registerAlert(key, interval)
-            elseif avgBEC >= becalertvalue then
+
+            local batprefs = (rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery) or {}
+            local alert_type     = tonumber(batprefs.alert_type or 0)
+            local becalertvalue  = tonumber(batprefs.becalertvalue or 6.5)
+            local rxalertvalue   = tonumber(batprefs.rxalertvalue or 7.4)
+            local avgBEC         = updateRollingAverage("bec_voltage", value, window)
+            local key            = "bec_voltage"
+
+            if alert_type == 1 then
+                if avgBEC < becalertvalue and shouldAlert(key, interval) then
+                    rfsuite.utils.playFile("events", "alerts/becvolt.wav")
+                    system.playHaptic(". . . .")
+                    registerAlert(key, interval)
+                elseif avgBEC >= becalertvalue then
+                    lastAlertState[key] = false
+                end
+            elseif alert_type == 2 then
+                if avgBEC < rxalertvalue and shouldAlert(key, interval) then
+                    rfsuite.utils.playFile("events", "alerts/rxvolt.wav")
+                    system.playHaptic(". . . .")
+                    registerAlert(key, interval)
+                elseif avgBEC >= rxalertvalue then
+                    lastAlertState[key] = false
+                end
+            else
                 lastAlertState[key] = false
             end
         end
@@ -278,8 +294,9 @@ function telemetry.wakeup()
     local now = os.clock()
     for _, item in ipairs(eventTable) do
         local key = item.sensor
+        local interval = item.interval or 0
         local debounce = item.debounce or 0
-        local lastTime = lastEventTimes[key] or (now - debounce)
+        local lastTime = lastEventTimes[key] or (now - interval)
         local lastVal = lastValues[key]
 
         if not eventPrefs[key] then goto continue end
@@ -290,8 +307,10 @@ function telemetry.wakeup()
         local value = source:value()
         if value == nil then goto continue end
 
-        if (not lastVal or value ~= lastVal) or debounce == 0 or (now - lastTime) >= debounce then
-            item.event(value, item.interval or 0, item.window or 1)
+        if interval > 0 then
+            item.event(value, interval, item.window or 1)
+        elseif (not lastVal or value ~= lastVal) or debounce == 0 or (now - lastTime) >= debounce then
+            item.event(value, interval, item.window or 1)
             lastEventTimes[key] = now
         end
 

@@ -131,42 +131,6 @@ local function openPage(pageIdx, title, script)
     rfsuite.app.formFields[formFieldCount]:suffix("°")
     setFieldEnabled(rfsuite.app.formFields[escFields.thresh], escEnabled)
 
-    -- BEC Voltage Alert Panel
-    local becEnabled = config.bec_voltage == true
-    local becPanel = form.addExpansionPanel(i18n("app.modules.settings.bec_voltage"))
-    becPanel:open(becEnabled)
-    local becEnable = becPanel:addLine(i18n("app.modules.settings.bec_voltage"))
-    formFieldCount = formFieldCount + 1
-    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    becFields.enable = formFieldCount
-    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(
-        becEnable, nil,
-        function() return config.bec_voltage end,
-        function(val)
-            config.bec_voltage = val
-            setFieldEnabled(rfsuite.app.formFields[becFields.thresh], val)
-        end
-    )
-    local becThresh = becPanel:addLine(i18n("app.modules.settings.bec_threshold"))
-    formFieldCount = formFieldCount + 1
-    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    becFields.thresh = formFieldCount
-    rfsuite.app.formFields[formFieldCount] = form.addNumberField(
-        becThresh, nil, 30, 130,
-        function()
-            local v = config.becalertvalue or 6.5
-            return math.floor((v * 10) + 0.5)
-        end,
-        function(val)
-            local new_val = val / 10
-            config.becalertvalue = math.max(3.0, math.min(new_val, 13.0))
-        end,
-        1
-    )
-    rfsuite.app.formFields[formFieldCount]:decimals(1)
-    rfsuite.app.formFields[formFieldCount]:suffix("V")
-    setFieldEnabled(rfsuite.app.formFields[becFields.thresh], becEnabled)
-
     -- Smart Fuel Alert Panel
     local fuelEnabled = config.smartfuel == true
     local fuelPanel = form.addExpansionPanel(i18n("app.modules.settings.fuel"))

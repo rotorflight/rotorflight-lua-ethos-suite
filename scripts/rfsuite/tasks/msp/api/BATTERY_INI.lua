@@ -15,7 +15,7 @@
  * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
 
-local API_NAME = "BATTERY_FUELCALC_INI"
+local API_NAME = "BATTERY_INI"
 local INI_FILE = "SCRIPTS:/" .. rfsuite.config.preferences .. "/models/" .. rfsuite.session.mcu_id .. ".ini"
 local INI_SECTION = "battery"
 
@@ -26,13 +26,16 @@ local handlers  = mspModule.createHandlers()
 
 -- Define MSP fields
 
-local offOn = {rfsuite.i18n.get("api.BATTERY_FUELCALC_INI.tbl_off"), rfsuite.i18n.get("api.BATTERY_FUELCALC_INI.tbl_on")}
+local offOn = {i18n("api.BATTERY_INI.tbl_off"), i18n("api.BATTERY_INI.tbl_on")}
+local alertTypes = {i18n("api.BATTERY_INI.alert_off"), i18n("api.BATTERY_INI.alert_bec"), i18n("api.BATTERY_INI.alert_rxbatt")}
 
 local MSP_API_STRUCTURE_READ_DATA = {
-    { field = "calc_local",     type = "U8", simResponse = {0} , tableIdxInc = -1, table = offOn},
+    { field = "calc_local", type = "U8", simResponse = {0} , tableIdxInc = -1, table = offOn},
     { field = "sag_multiplier", type = "U8", simResponse = {0} , decimals = 1, default = 0.5, min=0, max=10},
-    { field = "kalman_multiplier",      type = "U8", simResponse = {0}, decimals = 1, min = 0, max = 10 , default = 0.5},
-
+    { field = "kalman_multiplier", type = "U8", simResponse = {0}, decimals = 1, min = 0, max = 10 , default = 0.5},
+    { field = "alert_type", type = "U8", simResponse = {0}, tableIdxInc = -1, table = alertTypes, default = 0, min = 0, max = 2},
+    { field = "becalertvalue", type = "U8", simResponse = {6.5}, min = 30, decimals = 1, scale = 10, max = 140,  unit = "V", default = 6.5 },
+    { field = "rxalertvalue",  type = "U8", simResponse = {7.5}, min = 30, decimals = 1, scale = 10, max = 140,  unit = "V", default = 7.5 },
 }
 local READ_STRUCT, MIN_BYTES, SIM_RESP =
     mspModule.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)
@@ -44,12 +47,19 @@ local payloadData  = {}
 
 -- Utility: assemble parsed table from INI
 local function loadParsedFromINI()
-    local tbl    = ini.load_ini_file(INI_FILE) or {}
+    local tbl = ini.load_ini_file(INI_FILE) or {}
     local parsed = {}
     for _, entry in ipairs(MSP_API_STRUCTURE_READ_DATA) do
-        parsed[entry.field] = ini.getvalue(tbl, INI_SECTION, entry.field)
-                                or entry.simResponse[1]
-                                or 0
+        local raw = ini.getvalue(tbl, INI_SECTION, entry.field)
+        if raw ~= nil then
+            if entry.field == "becalertvalue" or entry.field == "rxalertvalue" then
+                parsed[entry.field] = tonumber(raw) * 10
+            else
+                parsed[entry.field] = tonumber(raw)
+            end
+        else
+            parsed[entry.field] = entry.default and ((entry.field == "becalertvalue" or entry.field == "rxalertvalue") and (entry.default * 10) or entry.default)
+        end
     end
     return parsed
 end
@@ -74,15 +84,14 @@ end
 
 -- Write operation: merge payloadData into INI, save, then re-read
 local function write()
-
     local msg = i18n("app.modules.profile_select.save_prompt_local")
     rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
 
     local tbl = ini.load_ini_file(INI_FILE) or {}
-    tbl.general = tbl.general or {}
+
     for k, v in pairs(payloadData) do
         if k == "calc_local" then
-            v = math.floor(v)  -- Ensure integer values
+            v = math.floor(v)
         end
  
         ini.setvalue(tbl, INI_SECTION, k, v)
@@ -92,14 +101,15 @@ local function write()
             rfsuite.session.modelPreferences[INI_SECTION][k] = v
         end
     end
+
     local ok, err = ini.save_ini_file(INI_FILE, tbl)
     if not ok then
         local cbErr = handlers.getErrorHandler()
         if cbErr then cbErr(err or "Failed to save INI: " .. INI_FILE) end
         return
     end
+
     mspWriteDone = true
-    -- after write, reload parsed values
     local parsed = loadParsedFromINI()
     mspData = {
         parsed             = parsed,
@@ -110,7 +120,6 @@ local function write()
         receivedBytesCount = #MSP_API_STRUCTURE_READ_DATA,
     }
 
-    -- fire completion: pass plain parsed table
     local cb = handlers.getCompleteHandler()
     if cb then cb(nil, parsed) end
     payloadData = {}

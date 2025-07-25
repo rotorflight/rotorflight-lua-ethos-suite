@@ -1,12 +1,14 @@
 local i18n = rfsuite.i18n.get
 local enableWakeup = false
-local disableMultiplier 
+local disableMultiplier
+local becAlert
+local rxBattAlert
 
 local apidata = {
     api = {
         [1] = 'BATTERY_CONFIG',
         [2] = 'PILOT_CONFIG',   
-        [3] = 'BATTERY_FUELCALC_INI'     
+        [3] = 'BATTERY_INI',
     },
     formdata = {
         labels = {
@@ -22,7 +24,10 @@ local apidata = {
             {t = i18n("app.modules.battery.timer"), mspapi = 2, apikey = "model_param1_value"},
             {t = i18n("app.modules.battery.calcfuel_local"), mspapi = 3, apikey = "calc_local", type = 1},
             {t = i18n("app.modules.battery.kalman_multiplier"), mspapi = 3, apikey = "kalman_multiplier"},   
-            {t = i18n("app.modules.battery.voltage_multiplier"), mspapi = 3, apikey = "sag_multiplier"},            
+            {t = i18n("app.modules.battery.voltage_multiplier"), mspapi = 3, apikey = "sag_multiplier"},
+            {t = i18n("app.modules.battery.alert_type"), mspapi = 3, apikey = "alert_type", type = 1},
+            {t = i18n("app.modules.battery.bec_voltage_alert"), mspapi = 3, apikey = "becalertvalue"},
+            {t = i18n("app.modules.battery.rx_voltage_alert"),  mspapi = 3, apikey = "rxalertvalue"},            
         }
     }                 
 }
@@ -75,7 +80,29 @@ local function wakeup(self)
         end
     end    
 
+    for _, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do
+        if f.apikey == "alert_type" then
+            local b = tonumber(f.value)
+            if b == 1 then
+                becAlert = true
+                rxBattAlert = false
+            elseif b == 2 then
+                becAlert = false
+                rxBattAlert = true
+            else
+                becAlert = false
+                rxBattAlert = false
+            end
+        end
+    end
 
+    for i, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do
+        if f.apikey == "becalertvalue" then
+            rfsuite.app.formFields[i]:enable(becAlert)
+        elseif f.apikey == "rxalertvalue" then
+            rfsuite.app.formFields[i]:enable(rxBattAlert)
+        end
+    end
 end
 
 return {
