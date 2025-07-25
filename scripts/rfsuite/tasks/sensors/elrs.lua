@@ -478,6 +478,29 @@ local function decAdjFunc(data, pos)
     return nil, pos
 end
 
+-- Decode up to 4 motor RPMs (each is 2 bytes, big endian)
+local function decRPM(data, pos)
+    for i = 1, 4 do
+        if pos + 1 >= #data then break end
+        local rpm = (data[pos] << 8) | data[pos + 1]
+        pos = pos + 2
+        setTelemetryValue(0x10C0 + (i - 1), 0, 0, rpm, UNIT_RPM, 0, "Motor " .. i .. " RPM", 0, 65535)
+    end
+    return nil, pos
+end
+
+-- Decode up to 4 temperatures (each is 1 byte)
+local function decTemps(data, pos)
+    for i = 1, 4 do
+        if pos > #data then break end
+        local temp = data[pos]
+        pos = pos + 1
+        setTelemetryValue(0x10D0 + (i - 1), 0, 0, temp, UNIT_CELSIUS, 0, "Motor " .. i .. " Temp", 0, 255)
+    end
+    return nil, pos
+end
+
+
 --[[
     elrs.RFSensors is a table that maps sensor IDs to their respective sensor configurations.
     Each sensor configuration includes:
@@ -668,6 +691,18 @@ elrs.RFSensors = {
     -- Adjustment function
     [0x1220] = {name = "ADJ", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decAdjFunc},
 
+    -- Motor RPMs
+    [0x10E0] = {original = "MR1", name = "Motor 1 RPM", unit = UNIT_RPM, prec = 0, min = 0, max = 65535, dec = decU16},
+    [0x10E1] = {original = "MR2", name = "Motor 2 RPM", unit = UNIT_RPM, prec = 0, min = 0, max = 65535, dec = decU16},
+    [0x10E2] = {original = "MR3", name = "Motor 3 RPM", unit = UNIT_RPM, prec = 0, min = 0, max = 65535, dec = decU16},
+    [0x10E3] = {original = "MR4", name = "Motor 4 RPM", unit = UNIT_RPM, prec = 0, min = 0, max = 65535, dec = decU16},
+
+    -- Motor Temps
+    [0x10E4] = {original = "MT1", name = "Motor 1 Temp", unit = UNIT_CELSIUS, prec = 0, min = 0, max = 255, dec = decU8},
+    [0x10E5] = {original = "MT2", name = "Motor 2 Temp", unit = UNIT_CELSIUS, prec = 0, min = 0, max = 255, dec = decU8},
+    [0x10E6] = {original = "MT3", name = "Motor 3 Temp", unit = UNIT_CELSIUS, prec = 0, min = 0, max = 255, dec = decU8},
+    [0x10E7] = {original = "MT4", name = "Motor 4 Temp", unit = UNIT_CELSIUS, prec = 0, min = 0, max = 255, dec = decU8},
+
     -- Debug
     [0xDB00] = {original = "DBG0", name = "Debug 0", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decS32},
     [0xDB01] = {original = "DBG1", name = "Debug 1", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decS32},
@@ -709,6 +744,15 @@ function elrs.crossfirePop()
 
         local command, data = elrs.popFrame()
         if command and data then
+
+            -- Handle new RPM and TEMP frame types
+            if command == 0x0C then
+                decRPM(data, 1)
+                return true
+            elseif command == 0x0D then
+                decTemps(data, 1)
+                return true
+            end            
 
             if command == CRSF_FRAME_CUSTOM_TELEM then
                 local fid, sid, val
