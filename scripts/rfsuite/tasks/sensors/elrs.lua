@@ -478,28 +478,27 @@ local function decAdjFunc(data, pos)
     return nil, pos
 end
 
--- Decode up to 4 motor RPMs (each is 2 bytes, big endian)
 local function decRPM(data, pos)
-    for i = 1, 4 do
-        if pos + 1 >= #data then break end
-        local rpm = (data[pos] << 8) | data[pos + 1]
-        pos = pos + 2
-        setTelemetryValue(0x10C0 + (i - 1), 0, 0, rpm, UNIT_RPM, 0, "Motor " .. i .. " RPM", 0, 65535)
+    local i = 0
+    while pos + 2 <= #data and i < 19 do
+        local rpm = (data[pos] << 16) | (data[pos + 1] << 8) | data[pos + 2]
+        pos = pos + 3
+        setTelemetryValue(0x1300 + i, 0, 0, rpm, UNIT_RPM, 0, "Motor " .. (i + 1) .. " RPM", 0, 1000000)
+        i = i + 1
     end
     return nil, pos
 end
 
--- Decode up to 4 temperatures (each is 1 byte)
 local function decTemps(data, pos)
-    for i = 1, 4 do
-        if pos > #data then break end
-        local temp = data[pos]
-        pos = pos + 1
-        setTelemetryValue(0x10D0 + (i - 1), 0, 0, temp, UNIT_CELSIUS, 0, "Motor " .. i .. " Temp", 0, 255)
+    local i = 0
+    while pos + 1 <= #data and i < 20 do
+        local temp = (data[pos] << 8) | data[pos + 1]
+        pos = pos + 2
+        setTelemetryValue(0x1320 + i, 0, 0, temp, UNIT_CELSIUS, 0, "Temp " .. (i + 1), 0, 1000)
+        i = i + 1
     end
     return nil, pos
 end
-
 
 --[[
     elrs.RFSensors is a table that maps sensor IDs to their respective sensor configurations.
@@ -692,26 +691,48 @@ elrs.RFSensors = {
     [0x1220] = {name = "ADJ", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decAdjFunc},
 
     -- Motor RPMs
-    [0x10E0] = {original = "MR1", name = "Motor 1 RPM", unit = UNIT_RPM, prec = 0, min = 0, max = 65535, dec = decU16},
-    [0x10E1] = {original = "MR2", name = "Motor 2 RPM", unit = UNIT_RPM, prec = 0, min = 0, max = 65535, dec = decU16},
-    [0x10E2] = {original = "MR3", name = "Motor 3 RPM", unit = UNIT_RPM, prec = 0, min = 0, max = 65535, dec = decU16},
-    [0x10E3] = {original = "MR4", name = "Motor 4 RPM", unit = UNIT_RPM, prec = 0, min = 0, max = 65535, dec = decU16},
+    [0x1300] = {original = "MR1",  name = "Motor 1 RPM",  unit = UNIT_RPM, prec = 0, min = 0, max = 1000000, dec = decU24},
+    [0x1301] = {original = "MR2",  name = "Motor 2 RPM",  unit = UNIT_RPM, prec = 0, min = 0, max = 1000000, dec = decU24},
+    [0x1302] = {original = "MR3",  name = "Motor 3 RPM",  unit = UNIT_RPM, prec = 0, min = 0, max = 1000000, dec = decU24},
+    [0x1303] = {original = "MR4",  name = "Motor 4 RPM",  unit = UNIT_RPM, prec = 0, min = 0, max = 1000000, dec = decU24},
+    [0x1304] = {original = "MR5",  name = "Motor 5 RPM",  unit = UNIT_RPM, prec = 0, min = 0, max = 1000000, dec = decU24},
+    [0x1305] = {original = "MR6",  name = "Motor 6 RPM",  unit = UNIT_RPM, prec = 0, min = 0, max = 1000000, dec = decU24},
+    [0x1306] = {original = "MR7",  name = "Motor 7 RPM",  unit = UNIT_RPM, prec = 0, min = 0, max = 1000000, dec = decU24},
+    [0x1307] = {original = "MR8",  name = "Motor 8 RPM",  unit = UNIT_RPM, prec = 0, min = 0, max = 1000000, dec = decU24},
+    [0x1308] = {original = "MR9",  name = "Motor 9 RPM",  unit = UNIT_RPM, prec = 0, min = 0, max = 1000000, dec = decU24},
+    [0x1309] = {original = "MR10", name = "Motor 10 RPM", unit = UNIT_RPM, prec = 0, min = 0, max = 1000000, dec = decU24},
+    [0x130A] = {original = "MR11", name = "Motor 11 RPM", unit = UNIT_RPM, prec = 0, min = 0, max = 1000000, dec = decU24},
+    [0x130B] = {original = "MR12", name = "Motor 12 RPM", unit = UNIT_RPM, prec = 0, min = 0, max = 1000000, dec = decU24},
+    [0x130C] = {original = "MR13", name = "Motor 13 RPM", unit = UNIT_RPM, prec = 0, min = 0, max = 1000000, dec = decU24},
+    [0x130D] = {original = "MR14", name = "Motor 14 RPM", unit = UNIT_RPM, prec = 0, min = 0, max = 1000000, dec = decU24},
+    [0x130E] = {original = "MR15", name = "Motor 15 RPM", unit = UNIT_RPM, prec = 0, min = 0, max = 1000000, dec = decU24},
+    [0x130F] = {original = "MR16", name = "Motor 16 RPM", unit = UNIT_RPM, prec = 0, min = 0, max = 1000000, dec = decU24},
+    [0x1310] = {original = "MR17", name = "Motor 17 RPM", unit = UNIT_RPM, prec = 0, min = 0, max = 1000000, dec = decU24},
+    [0x1311] = {original = "MR18", name = "Motor 18 RPM", unit = UNIT_RPM, prec = 0, min = 0, max = 1000000, dec = decU24},
+    [0x1312] = {original = "MR19", name = "Motor 19 RPM", unit = UNIT_RPM, prec = 0, min = 0, max = 1000000, dec = decU24},
 
-    -- Motor Temps
-    [0x10E4] = {original = "MT1", name = "Motor 1 Temp", unit = UNIT_CELSIUS, prec = 0, min = 0, max = 255, dec = decU8},
-    [0x10E5] = {original = "MT2", name = "Motor 2 Temp", unit = UNIT_CELSIUS, prec = 0, min = 0, max = 255, dec = decU8},
-    [0x10E6] = {original = "MT3", name = "Motor 3 Temp", unit = UNIT_CELSIUS, prec = 0, min = 0, max = 255, dec = decU8},
-    [0x10E7] = {original = "MT4", name = "Motor 4 Temp", unit = UNIT_CELSIUS, prec = 0, min = 0, max = 255, dec = decU8},
+    -- Motor Temperature
+    [0x1320] = {original = "TMP1",  name = "Temp 1",  unit = UNIT_DEGREE, prec = 0, min = 0, max = 1000, dec = decU16},
+    [0x1321] = {original = "TMP2",  name = "Temp 2",  unit = UNIT_DEGREE, prec = 0, min = 0, max = 1000, dec = decU16},
+    [0x1322] = {original = "TMP3",  name = "Temp 3",  unit = UNIT_DEGREE, prec = 0, min = 0, max = 1000, dec = decU16},
+    [0x1323] = {original = "TMP4",  name = "Temp 4",  unit = UNIT_DEGREE, prec = 0, min = 0, max = 1000, dec = decU16},
+    [0x1324] = {original = "TMP5",  name = "Temp 5",  unit = UNIT_DEGREE, prec = 0, min = 0, max = 1000, dec = decU16},
+    [0x1325] = {original = "TMP6",  name = "Temp 6",  unit = UNIT_DEGREE, prec = 0, min = 0, max = 1000, dec = decU16},
+    [0x1326] = {original = "TMP7",  name = "Temp 7",  unit = UNIT_DEGREE, prec = 0, min = 0, max = 1000, dec = decU16},
+    [0x1327] = {original = "TMP8",  name = "Temp 8",  unit = UNIT_DEGREE, prec = 0, min = 0, max = 1000, dec = decU16},
+    [0x1328] = {original = "TMP9",  name = "Temp 9",  unit = UNIT_DEGREE, prec = 0, min = 0, max = 1000, dec = decU16},
+    [0x1329] = {original = "TMP10", name = "Temp 10", unit = UNIT_DEGREE, prec = 0, min = 0, max = 1000, dec = decU16},
+    [0x132A] = {original = "TMP11", name = "Temp 11", unit = UNIT_DEGREE, prec = 0, min = 0, max = 1000, dec = decU16},
+    [0x132B] = {original = "TMP12", name = "Temp 12", unit = UNIT_DEGREE, prec = 0, min = 0, max = 1000, dec = decU16},
+    [0x132C] = {original = "TMP13", name = "Temp 13", unit = UNIT_DEGREE, prec = 0, min = 0, max = 1000, dec = decU16},
+    [0x132D] = {original = "TMP14", name = "Temp 14", unit = UNIT_DEGREE, prec = 0, min = 0, max = 1000, dec = decU16},
+    [0x132E] = {original = "TMP15", name = "Temp 15", unit = UNIT_DEGREE, prec = 0, min = 0, max = 1000, dec = decU16},
+    [0x132F] = {original = "TMP16", name = "Temp 16", unit = UNIT_DEGREE, prec = 0, min = 0, max = 1000, dec = decU16},
+    [0x1330] = {original = "TMP17", name = "Temp 17", unit = UNIT_DEGREE, prec = 0, min = 0, max = 1000, dec = decU16},
+    [0x1331] = {original = "TMP18", name = "Temp 18", unit = UNIT_DEGREE, prec = 0, min = 0, max = 1000, dec = decU16},
+    [0x1332] = {original = "TMP19", name = "Temp 19", unit = UNIT_DEGREE, prec = 0, min = 0, max = 1000, dec = decU16},
+    [0x1333] = {original = "TMP20", name = "Temp 20", unit = UNIT_DEGREE, prec = 0, min = 0, max = 1000, dec = decU16},
 
-    -- Debug
-    [0xDB00] = {original = "DBG0", name = "Debug 0", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decS32},
-    [0xDB01] = {original = "DBG1", name = "Debug 1", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decS32},
-    [0xDB02] = {original = "DBG2", name = "Debug 2", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decS32},
-    [0xDB03] = {original = "DBG3", name = "Debug 3", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decS32},
-    [0xDB04] = {original = "DBG4", name = "Debug 4", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decS32},
-    [0xDB05] = {original = "DBG5", name = "Debug 5", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decS32},
-    [0xDB06] = {original = "DBG6", name = "Debug 6", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decS32},
-    [0xDB07] = {original = "DBG7", name = "Debug 7", unit = UNIT_RAW, prec = 0, min = nil, max = nil, dec = decS32}
 }
 
 elrs.telemetryFrameId = 0
