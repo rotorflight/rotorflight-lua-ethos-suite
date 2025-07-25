@@ -1213,6 +1213,7 @@ return {
       ["current"] = "Courant",
       ["throttle_pct"] = "Pourcentage de Gaz",
       ["consumption"] = "Consommation",
+      ["smartconsumption"] = "Consommation Intelligente",
       ["pid_profile"] = "Profile de PID",
       ["mcu_temp"] = "Temperature Micro Processeur",
       ["armdisableflags"] = "Desactivation Armement"

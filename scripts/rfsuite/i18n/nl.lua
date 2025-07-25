@@ -1213,6 +1213,7 @@ return {
       ["current"] = "Stroom",
       ["throttle_pct"] = "Throttle %",
       ["consumption"] = "Verbruik",
+      ["smartconsumption"] = "Slim verbruik",
       ["pid_profile"] = "PID Profiel",
       ["mcu_temp"] = "MCU Temperatuur",
       ["armdisableflags"] = "Arming Disable"

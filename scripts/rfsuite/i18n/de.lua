@@ -1213,6 +1213,7 @@ return {
       ["current"] = "Strom",
       ["throttle_pct"] = "Gas %",
       ["consumption"] = "Verbrauch",
+      ["smartconsumption"] = "Intelligenter Verbrauch",
       ["pid_profile"] = "PID-Profil",
       ["mcu_temp"] = "MCU Temperatur",
       ["armdisableflags"] = "Arming-Disable"

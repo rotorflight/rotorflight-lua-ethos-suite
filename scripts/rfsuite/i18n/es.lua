@@ -1213,6 +1213,7 @@ return {
       ["current"] = "Corriente",
       ["throttle_pct"] = "% Acelerador",
       ["consumption"] = "Consumo",
+      ["smartconsumption"] = "Consumo Inteligente",
       ["pid_profile"] = "Perfil PID",
       ["mcu_temp"] = "Temperatura MCU",
       ["armdisableflags"] = "Desactivar Armado"

@@ -414,6 +414,30 @@ local sensorTable = {
         },
     },
 
+    -- Fuel and Capacity Sensors
+    smartconsumption = {
+        name = i18n("telemetry.sensors.smartconsumption"),
+        mandatory = false,
+        stats = true,
+        set_telemetry_sensors = nil,
+        switch_alerts = true,
+        unit = UNIT_MILLIAMPERE_HOUR,
+        unit_string = "mAh",
+        sensors = {
+            sim = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE0 },
+            },
+            sport = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE0 },
+            },
+            crsf = {
+                { category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE0 },
+            },
+            crsfLegacy = nil,
+        },
+    },
+
+
     consumption = {
         name = i18n("telemetry.sensors.consumption"),
         mandatory = true,
@@ -436,24 +460,6 @@ local sensorTable = {
             },
             crsfLegacy = { "Rx Cons" },
         },
-        transform = function(value)
-            -- If local calculation is enabled, calculate mAh used based on capacity
-            if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery and rfsuite.session.modelPreferences.battery.calc_local then
-                if rfsuite.session.modelPreferences.battery.calc_local == 1 then
-                    local capacity = rfsuite.session.batteryConfig.batteryCapacity or 1000 -- Default to 1000mAh if not set
-                    local smartfuel = rfsuite.tasks.telemetry.getSensor("smartfuel")
-                    local warningPercentage = rfsuite.session.batteryConfig.consumptionWarningPercentage or 30
-                    if smartfuel then
-                        local usableCapacity = capacity * (1 - warningPercentage / 100)
-                        local usedPercent = 100 - smartfuel -- how much has been used
-                        return (usedPercent / 100) * usableCapacity
-                    end
-                end
-            end
-
-            return nil
-        end
-  
     },
 
     -- Flight Mode (Governor)

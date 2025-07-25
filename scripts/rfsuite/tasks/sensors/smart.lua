@@ -33,7 +33,7 @@
 
  * Possible sensor ids we can use are.
  * 0x5FE1   - smartfuel
- * 0x5FE0
+ * 0x5FE0   - smartconsumption
  * 0x5FDF
  * 0x5FDE
  * 0x5FDD
@@ -82,14 +82,36 @@ local function calculateFuel()
             return smartfuel.calculate()
     end
 
-    
 end
+
+function calculateConsumption()
+            -- If local calculation is enabled, calculate mAh used based on capacity
+            if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery and rfsuite.session.modelPreferences.battery.calc_local then
+                if rfsuite.session.modelPreferences.battery.calc_local == 1 then
+                    local capacity = rfsuite.session.batteryConfig.batteryCapacity or 1000 -- Default to 1000mAh if not set
+                    local smartfuel = rfsuite.tasks.telemetry.getSensor("smartfuel")
+                    local warningPercentage = rfsuite.session.batteryConfig.consumptionWarningPercentage or 30
+                    if smartfuel then
+                        local usableCapacity = capacity * (1 - warningPercentage / 100)
+                        local usedPercent = 100 - smartfuel -- how much has been used
+                        return (usedPercent / 100) * usableCapacity
+                    end
+                else
+                    return nil    
+                end
+            else
+                    return rfsuite.tasks.telemetry.getSensor("consumption") or 0
+            end
+end    
 
 local function resetFuel()
     smartfuel.reset()
     smartfuelvoltage.reset()
 end
 
+local function resetConsumption()
+    --- just a stub atm
+end
 
 
 local smart_sensors = {
@@ -101,6 +123,14 @@ local smart_sensors = {
         maximum = 100,
         value = calculateFuel,
     },
+    smartconsumption = {
+        name = "Smart Consumption",
+        appId = 0x5FE0, -- Unique sensor ID
+        unit = UNIT_MILLIAMPERE_HOUR, -- Telemetry unit
+        minimum = 0,
+        maximum = 1000000000,
+        value = calculateConsumption,
+    },    
 }
 
 smart.sensors = smart_sensors
@@ -169,6 +199,7 @@ function smart.reset()
     sensorCache = {}
 
     resetFuel()
+    resetConsumption()
 
 end
 

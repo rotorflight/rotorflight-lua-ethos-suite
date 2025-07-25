@@ -181,7 +181,7 @@ local function buildBoxes(W)
         font = opts.font, titlefont = opts.titlefont, bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = "floor"},
 
         -- Flight max/min stats 2
-        {col = 3, row = 1, rowspan = 2, type = "text", subtype = "stats", stattype = "max", source = "consumption", title = i18n("widgets.dashboard.consumed_mah"), titlepos = "top", titlepaddingtop = opts.titlepaddingtop, 
+        {col = 3, row = 1, rowspan = 2, type = "text", subtype = "stats", stattype = "max", source = "smartconsumption", title = i18n("widgets.dashboard.consumed_mah"), titlepos = "top", titlepaddingtop = opts.titlepaddingtop, 
         font = opts.font, titlefont = opts.titlefont, bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = "floor"},
 
         {col = 3, row = 3, rowspan = 2, type = "text", subtype = "stats", stattype = "min", source = "smartfuel", title = i18n("widgets.dashboard.fuel_remaining"), titlepos = "top", titlepaddingtop = opts.titlepaddingtop,

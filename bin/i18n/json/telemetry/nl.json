@@ -121,8 +121,13 @@
       "needs_translation": "false"
     },
     "consumption": {
-      "english": "Fuel",
+      "english": "Consumption",
       "translation": "Verbruik",
+      "needs_translation": "false"
+    },
+    "smartconsumption": {
+      "english": "Smart Consumption",
+      "translation": "Slim verbruik",
       "needs_translation": "false"
     },
     "pid_profile": {
