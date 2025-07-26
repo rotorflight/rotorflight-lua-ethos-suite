@@ -23,6 +23,7 @@ local voltageStabilised       = false
 local stabilizeNotBefore      = nil
 local voltageThreshold        = 0.15
 local preStabiliseDelay       = 1.5
+local flightStartTime = nil
 
 local telemetry
 local currentMode = rfsuite.flightmode.current
@@ -221,6 +222,11 @@ local function smartFuelCalc()
         resetVoltageTracking()
         stabilizeNotBefore = now + preStabiliseDelay
         lastMode = currentMode
+
+        if rfsuite.flightmode.current ~= "inflight" then
+            flightStartTime = nil
+        end     
+
         return nil
     end
     lastMode = currentMode
@@ -265,6 +271,28 @@ local function smartFuelCalc()
 
 
     local now = os.clock()
+
+    -- Blend with time-based estimate if modelFlightTime is provided
+    local expectedFlightTime = rfsuite.session.modelFlightTime
+    local blendedPercent = percent  -- default: use voltage-based only
+
+    if expectedFlightTime and expectedFlightTime > 0 then
+        -- Track start of inflight if not already set
+        if not flightStartTime and rfsuite.flightmode.current == "inflight" then
+            flightStartTime = now
+        end
+
+        local elapsedTime = now - (flightStartTime or now)
+        local timeBasedPercent = math.max(0, 100 * (1 - elapsedTime / expectedFlightTime))
+
+        -- Dynamic blend: ramp from time-based to voltage-based over first 5 seconds
+        local rampTime = 5
+        local rampFactor = math.min(1.0, elapsedTime / rampTime)
+
+        blendedPercent = (percent * rampFactor) + (timeBasedPercent * (1 - rampFactor))
+    end
+
+
     if (rfsuite.flightmode.current == "inflight" or rfsuite.flightmode.current == "postflight") 
     and lastFuelPercent and lastFuelTimestamp then
 
@@ -272,19 +300,17 @@ local function smartFuelCalc()
         local maxDrop = dt * maxFuelDropPerSecond
         local maxRise = dt * maxFuelRisePerSecond
 
-        if percent < lastFuelPercent then
-            percent = math.max(percent, lastFuelPercent - maxDrop)
-        elseif percent > lastFuelPercent then
-            percent = math.min(percent, lastFuelPercent + maxRise)
+        if blendedPercent < lastFuelPercent then
+            blendedPercent = math.max(blendedPercent, lastFuelPercent - maxDrop)
+        elseif blendedPercent > lastFuelPercent then
+            blendedPercent = math.min(blendedPercent, lastFuelPercent + maxRise)
         end
     end
 
-    -- always update the last‑seen values so that when you enter flight mode
-    -- the timer resets correctly
-    lastFuelPercent   = percent
+    lastFuelPercent   = blendedPercent
     lastFuelTimestamp = now
 
-    return percent
+    return blendedPercent
 
 end
 
