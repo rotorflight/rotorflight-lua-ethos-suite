@@ -810,6 +810,7 @@ return {
         ["help_logs_p3"] = "- Arm-Status, Spannung, Drehzahl, Strom, ESC-Temperatur"
       },
       ["battery"] = {
+        ["vfueltime"] = "Fuel Time",
         ["calcfuel_local"] = "Calculate fuel using",
         ["max_cell_voltage"] = "Maximale Zellenspannung",
         ["full_cell_voltage"] = "Volle Zellenspannung",
