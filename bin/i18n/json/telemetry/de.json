@@ -125,14 +125,11 @@
       "translation": "Verbrauch",
       "needs_translation": "false"
     },
-<<<<<<< Updated upstream
     "smartconsumption": {
       "english": "Smart Consumption",
       "translation": "Intelligenter Verbrauch",
       "needs_translation": "false"
     },
-=======
->>>>>>> Stashed changes
     "pid_profile": {
       "english": "PID Profile",
       "translation": "PID-Profil",

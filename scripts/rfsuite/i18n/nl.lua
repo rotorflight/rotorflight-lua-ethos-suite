@@ -810,7 +810,6 @@ return {
         ["help_logs_p3"] = "- arm status, voltage, headspeed, current, esc temperature"
       },
       ["battery"] = {
-        ["vfueltime"] = "Fuel Time",
         ["calcfuel_local"] = "Calculate fuel using",
         ["max_cell_voltage"] = "Max Cel Spanning",
         ["full_cell_voltage"] = "Volle Cell Spanning",

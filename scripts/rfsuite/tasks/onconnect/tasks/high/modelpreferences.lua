@@ -37,8 +37,7 @@ local modelpref_defaults ={
         calc_local = 0,
         alert_type = 0,
         becalertvalue = 6.5,
-        rxalertvalue = 7.5,
-        vfueltime = 300,
+        rxalertvalue = 7.5
     }
 }
 

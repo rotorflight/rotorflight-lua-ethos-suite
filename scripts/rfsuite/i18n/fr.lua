@@ -810,7 +810,6 @@ return {
         ["help_logs_p3"] = "- Status Actuel d'Armement, Tension Actuelle, Tours Moteurs, Courant Amp, Temperature ESC"
       },
       ["battery"] = {
-        ["vfueltime"] = "Fuel Time",
         ["calcfuel_local"] = "Calculate fuel using",
         ["max_cell_voltage"] = "Tension max par cellule",
         ["full_cell_voltage"] = "Tension pleine de cellule",

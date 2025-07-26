@@ -810,7 +810,6 @@ return {
         ["help_logs_p3"] = "- stato armo, voltaggio, Vel.Rotore, corrente, esc temperatura"
       },
       ["battery"] = {
-        ["vfueltime"] = "Fuel Time",
         ["calcfuel_local"] = "Calculate fuel using",
         ["max_cell_voltage"] = "Voltaggio Max Cella",
         ["full_cell_voltage"] = "Voltaggio Cella pieno",

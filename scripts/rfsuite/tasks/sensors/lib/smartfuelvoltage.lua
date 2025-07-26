@@ -273,7 +273,7 @@ local function smartFuelCalc()
     local now = os.clock()
 
     -- Blend with time-based estimate if modelFlightTime is provided
-    local expectedFlightTime = rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery and rfsuite.session.modelPreferences.battery.vfueltime or 300
+    local expectedFlightTime = rfsuite.session.modelFlightTime
     local blendedPercent = percent  -- default: use voltage-based only
 
     if expectedFlightTime and expectedFlightTime > 0 then

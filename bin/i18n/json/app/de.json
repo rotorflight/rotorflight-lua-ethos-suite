@@ -1953,11 +1953,6 @@
       }
     },
     "battery": {
-      "vfueltime": {
-        "english": "Flight time",
-        "translation": "Flight time",
-        "needs_translation": "true"
-      },
       "calcfuel_local": {
         "english": "Calculate Fuel Using",
         "translation": "Calculate fuel using",
