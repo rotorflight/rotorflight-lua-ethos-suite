@@ -38,6 +38,9 @@ local lastFuelTimestamp = nil
 -- Fast decay (minimal clamping)	12+
 local maxFuelDropPerSecond = 1      -- percent per second 
 
+-- Very slow rise per second to avoid false positives (fuel technically can only go down )
+local maxFuelRisePerSecond = 0.2   -- maximum rise in percent per second
+
 
 --
 local minQ, maxQ   = 0.002, 0.02
@@ -262,22 +265,24 @@ local function smartFuelCalc()
 
 
     local now = os.clock()
-    -- only apply the per‑second drop limit while actually flying or in postflight
-    if (rfsuite.flightmode.current == "inflight" or rfsuite.flightmode.current == "postflight") and lastFuelPercent and lastFuelTimestamp then
+    if (rfsuite.flightmode.current == "inflight" or rfsuite.flightmode.current == "postflight") 
+    and lastFuelPercent and lastFuelTimestamp then
+
         local dt = now - lastFuelTimestamp
         local maxDrop = dt * maxFuelDropPerSecond
+        local maxRise = dt * maxFuelRisePerSecond
+
         if percent < lastFuelPercent then
             percent = math.max(percent, lastFuelPercent - maxDrop)
         elseif percent > lastFuelPercent then
-            -- Optional: clamp upward movement too (if voltage jumps)
-            percent = math.min(percent, lastFuelPercent + maxDrop)
+            percent = math.min(percent, lastFuelPercent + maxRise)
         end
     end
 
     -- always update the last‑seen values so that when you enter flight mode
     -- the timer resets correctly
-    lastFuelPercent    = percent
-    lastFuelTimestamp  = now
+    lastFuelPercent   = percent
+    lastFuelTimestamp = now
 
     return percent
 
