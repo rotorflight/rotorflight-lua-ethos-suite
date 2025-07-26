@@ -25,6 +25,7 @@ local apidata = {
             {t = i18n("app.modules.battery.calcfuel_local"), mspapi = 3, apikey = "calc_local", type = 1},
             {t = i18n("app.modules.battery.kalman_multiplier"), mspapi = 3, apikey = "kalman_multiplier"},   
             {t = i18n("app.modules.battery.voltage_multiplier"), mspapi = 3, apikey = "sag_multiplier"},
+            {t = i18n("app.modules.battery.vfueltime"), mspapi = 3, apikey = "vfueltime"},  
             {t = i18n("app.modules.battery.alert_type"), mspapi = 3, apikey = "alert_type", type = 1},
             {t = i18n("app.modules.battery.bec_voltage_alert"), mspapi = 3, apikey = "becalertvalue"},
             {t = i18n("app.modules.battery.rx_voltage_alert"),  mspapi = 3, apikey = "rxalertvalue"},            
@@ -68,13 +69,13 @@ local function wakeup(self)
 
     if disableMultiplier == true then
         for i, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do
-            if f.apikey == "sag_multiplier" or f.apikey == "kalman_multiplier" then
+            if f.apikey == "sag_multiplier" or f.apikey == "kalman_multiplier" or f.apikey == "vfueltime" then
                 rfsuite.app.formFields[i]:enable(true)
             end
         end
     else
         for i, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do
-            if f.apikey == "sag_multiplier" or f.apikey == "kalman_multiplier" then
+            if f.apikey == "sag_multiplier" or f.apikey == "kalman_multiplier" or f.apikey == "vfueltime" then
                 rfsuite.app.formFields[i]:enable(false)
             end
         end
