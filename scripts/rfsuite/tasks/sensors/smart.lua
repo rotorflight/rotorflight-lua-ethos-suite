@@ -1,35 +1,34 @@
 --[[
+ * Smart sensor aggregator for Rotorflight
+ *
+ * This module registers two custom telemetry sensors with the transmitter:
+ *
+ *  • **Smart Fuel** (`appId` 0x5FE1, unit = `UNIT_PERCENT`):
+ *      - Provides an estimate of the remaining pack capacity as a percentage.
+ *      - If `modelPreferences.battery.calc_local == 1` it calls into
+ *        `smartfuelvoltage.lua` to derive the percentage from battery voltage.
+ *        Otherwise it delegates to `smartfuel.lua`, which reads the flight
+ *        controller’s mAh–based fuel estimator.
+ *
+ *  • **Smart Consumption** (`appId` 0x5FE0, unit = `UNIT_MILLIAMPERE_HOUR`):
+ *      - Reports the estimated capacity consumed in milliamp‑hours.
+ *      - When `calc_local == 1` it computes consumption from the Smart Fuel
+ *        percentage: it multiplies the used percentage by the configured
+ *        `batteryCapacity` and accounts for the `consumptionWarningPercentage`
+ *        reserve.  If `calc_local` is not set, it simply exposes the flight
+ *        controller’s “consumption” telemetry sensor.
+ *
+ * The script wakes once per `interval` (default = 1 s) in `smart.wakeup()` to
+ * recompute sensor values and update or reset each FrSky DIY sensor.  Sensor
+ * definitions are held in the `smart_sensors` table; the helper
+ * `createOrUpdateSensor()` creates sensors on first use and caches them in
+ * `sensorCache`.  The `resetFuel()` function clears state in the imported fuel
+ * modules when a new pack is installed.
+ *
+ * See the entries in `smart_sensors` for names, `appId`s and units.  Only the
+ * two sensors above are currently defined, but additional sensors could be
+ * added in the same fashion.
 
- * Copyright (C) Rotorflight Project
- * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
-
- * MSP Sensor Table Structure
- *
- * smart_sensors: A table defining APIs to be polled via MSP and how to map their values to telemetry sensors.
- * Each top-level key is the MSP API name (e.g., "DATAFLASH_SUMMARY").
- * Each entry must include polling intervals and a 'fields' table containing telemetry sensor configs.
- *
- * Structure:
- * {
- *   API_NAME = {
- *     interval_armed: <number>         -- Interval (in seconds) to poll this API when the model is armed (-1 for no polling)
- *     interval_disarmed: <number>      -- Interval (in seconds) when disarmed (-1 for no polling)
- *
- *     fields = {
- *       field_key = {
- *         sensorname: <string>         -- Label shown in radio telemetry menu
- *         sessionname: <string>        -- Optional session variable name to update
- *         appId: <number>              -- Unique sensor ID (must be unique across all sensors)
- *         unit: <constant>             -- Telemetry unit (e.g., UNIT_RAW, UNIT_VOLT, etc.)
- *         minimum: <number>            -- Optional minimum value (default: -1e9)
- *         maximum: <number>            -- Optional maximum value (default: 1e9)
- *         transform: <function>        -- Optional value processing function before display
- *       },
- *       ...
- *     }
- *   },
- *   ...
- * }
 
  * Possible sensor ids we can use are.
  * 0x5FE1   - smartfuel
@@ -89,11 +88,11 @@ function calculateConsumption()
             if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery and rfsuite.session.modelPreferences.battery.calc_local then
                 if rfsuite.session.modelPreferences.battery.calc_local == 1 then
                     local capacity = rfsuite.session.batteryConfig.batteryCapacity or 1000 -- Default to 1000mAh if not set
-                    local smartfuel = rfsuite.tasks.telemetry.getSensor("smartfuel")
+                    local smartfuelPct = rfsuite.tasks.telemetry.getSensor("smartfuel")
                     local warningPercentage = rfsuite.session.batteryConfig.consumptionWarningPercentage or 30
-                    if smartfuel then
+                    if smartfuelPct then
                         local usableCapacity = capacity * (1 - warningPercentage / 100)
-                        local usedPercent = 100 - smartfuel -- how much has been used
+                        local usedPercent = 100 - smartfuelPct -- how much has been used
                         return (usedPercent / 100) * usableCapacity
                     end
                 else
