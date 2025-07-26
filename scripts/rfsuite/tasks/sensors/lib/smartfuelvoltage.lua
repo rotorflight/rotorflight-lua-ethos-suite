@@ -249,7 +249,7 @@ local function smartFuelCalc()
 
     -- Only apply Kalman while actually flying; otherwise reset it and use raw voltage
     local filteredVoltage
-    if rfsuite.flightmode.current == "inflight" then
+    if rfsuite.flightmode.current == "inflight" or rfsuite.flightmode.current == "postflight"  then
         filteredVoltage = kalmanFilterVoltage(voltage)
     else
         -- mode isn’t inflight: wipe out any past filter state
@@ -262,8 +262,8 @@ local function smartFuelCalc()
 
 
     local now = os.clock()
-    -- only apply the per‑second drop limit while actually flying
-    if rfsuite.flightmode.current == "inflight" and lastFuelPercent and lastFuelTimestamp then
+    -- only apply the per‑second drop limit while actually flying or in postflight
+    if (rfsuite.flightmode.current == "inflight" or rfsuite.flightmode.current == "postflight") and lastFuelPercent and lastFuelTimestamp then
         local dt = now - lastFuelTimestamp
         local maxDrop = dt * maxFuelDropPerSecond
         if percent < lastFuelPercent then
