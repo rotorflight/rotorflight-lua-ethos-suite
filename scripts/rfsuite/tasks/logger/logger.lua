@@ -46,7 +46,8 @@ os.mkdir("LOGS:/rfsuite/logs")
 logger.queue = assert(rfsuite.compiler.loadfile("tasks/logger/lib/log.lua"))(config)
 logger.queue.config.log_file = "LOGS:/rfsuite/logs/rfsuite_" .. os.date("%Y-%m-%d_%H-%M-%S") .. ".log"
 logger.queue.config.min_print_level  = rfsuite.preferences.developer.loglevel
-logger.queue.config.log_to_file = tostring(rfsuite.preferences.developer.logtofile)
+local logtofile = rfsuite.preferences.developer.logtofile
+logger.queue.config.log_to_file = (logtofile == true or logtofile == "true")
 
 
 function logger.wakeup()
@@ -59,7 +60,11 @@ end
 
 function logger.add(message, level)
     logger.queue.config.min_print_level  = rfsuite.preferences.developer.loglevel
-    logger.queue.config.log_to_file  = tostring(rfsuite.preferences.developer.logtofile)
+    local logtofile = rfsuite.preferences.developer.logtofile
+    logger.queue.config.log_to_file = (logtofile == true or logtofile == "true")
+    logger.queue.config.prefix = function()
+        return string.format("[%.2f] ", os.clock())
+    end    
     logger.queue.add(message,level)
 end
 
