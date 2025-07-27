@@ -96,6 +96,7 @@ function tasks.wakeup()
 
     if not tasksLoaded then
         tasks.findTasks()
+        return
     end
 
     local now = os.clock()
