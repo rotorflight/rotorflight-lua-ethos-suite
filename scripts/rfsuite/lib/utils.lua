@@ -803,29 +803,39 @@ function utils.reportMemoryUsage(location)
         return
     end
 
+    local TOTAL_LUA_MEMORY_KB = 1024
+
+    -- Get current Lua memory usage (invert available)
     local memInfo = system.getMemoryUsage()
     local currentAvailableKB = math.max(0, memInfo.luaRamAvailable / 1024)
-    local lastAvailableKB = rfsuite.session.lastMemoryUsage and (rfsuite.session.lastMemoryUsage / 1024)
+    local currentUsedKB = TOTAL_LUA_MEMORY_KB - currentAvailableKB
+
+    -- Retrieve last recorded used memory
+    local lastUsedKB
+    if rfsuite.session.lastMemoryUsage then
+        local lastAvailableKB = rfsuite.session.lastMemoryUsage / 1024
+        lastUsedKB = TOTAL_LUA_MEMORY_KB - lastAvailableKB
+    end
 
     location = location or "Unknown"
-
     local logMessage
-    if lastAvailableKB then
-        local diff = currentAvailableKB - lastAvailableKB
+
+    if lastUsedKB then
+        local diff = currentUsedKB - lastUsedKB
         if diff > 0 then
-            logMessage = string.format("[%s] Memory usage decreased by %.2f KB (Available: %.2f KB)", location, diff, currentAvailableKB)
+            logMessage = string.format("[%s] Memory usage increased by %.2f KB (Now using: %.2f KB / %d KB)", location, diff, currentUsedKB, TOTAL_LUA_MEMORY_KB)
         elseif diff < 0 then
-            logMessage = string.format("[%s] Memory usage increased by %.2f KB (Available: %.2f KB)", location, -diff, currentAvailableKB)
+            logMessage = string.format("[%s] Memory usage decreased by %.2f KB (Now using: %.2f KB / %d KB)", location, -diff, currentUsedKB, TOTAL_LUA_MEMORY_KB)
         else
-            logMessage = string.format("[%s] Memory usage unchanged (Available: %.2f KB)", location, currentAvailableKB)
+            logMessage = string.format("[%s] Memory usage unchanged (Still using: %.2f KB / %d KB)", location, currentUsedKB, TOTAL_LUA_MEMORY_KB)
         end
     else
-        logMessage = string.format("[%s] Initial memory usage (Available: %.2f KB)", location, currentAvailableKB)
+        logMessage = string.format("[%s] Initial memory usage: %.2f KB / %d KB", location, currentUsedKB, TOTAL_LUA_MEMORY_KB)
     end
 
     rfsuite.utils.log(logMessage, "info")
 
-    -- Save raw bytes for accuracy on next check
+    -- Store current available memory in bytes
     rfsuite.session.lastMemoryUsage = memInfo.luaRamAvailable
 end
 
