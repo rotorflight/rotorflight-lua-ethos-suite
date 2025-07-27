@@ -124,7 +124,6 @@ end
 -- Processes and prints pending console log entries
 local function process_console_queue()
     if not logs.config.enabled or logs.config.min_print_level == "off" then return end
-
     local now = os.clock()
     if now - logs.last_print_time >= logs.config.print_interval and not logs.queue:is_empty() then
         logs.last_print_time = now
@@ -135,7 +134,8 @@ local function process_console_queue()
             if not entry then break end
 
             -- Deferred heavy work: split and print lines
-            local prefix = logs.config.prefix 
+            local raw_prefix = logs.config.prefix
+            local prefix = type(raw_prefix) == "function" and raw_prefix() or raw_prefix
             local log_entry = prefix .. entry.msg
             local pad = string.rep(" ", #prefix)
             for _, line in ipairs(split_message(log_entry, logs.config.max_line_length, pad)) do
@@ -161,8 +161,9 @@ local function process_disk_queue()
                 if not entry then break end
 
                 -- Deferred heavy work: concatenate and write
-                local line = logs.config.prefix
-                            .. entry.msg
+                local raw_prefix = logs.config.prefix
+                local prefix = type(raw_prefix) == "function" and raw_prefix() or raw_prefix
+                local line = prefix .. entry.msg
                 file:write(line .. "\n")
             end
             file:close()
