@@ -321,6 +321,7 @@ function tasks.wakeup()
                     local ok, err = pcall(fn, tasks[task.name])
                     if not ok then
                         print(("Error in task %q wakeup: %s"):format(task.name, err))
+                        collectgarbage("collect")  -- force GC pass
                     end
                 end
                 task.last_run = now
@@ -361,6 +362,7 @@ function tasks.wakeup()
             local ok, err = pcall(fn, tasks[task.name])
             if not ok then
                 print(("Error in task %q wakeup (must-run): %s"):format(task.name, err))
+                collectgarbage("collect")  -- force GC pass
             end
         end
         task.last_run = now
@@ -374,6 +376,7 @@ function tasks.wakeup()
             local ok, err = pcall(fn, tasks[task.name])
             if not ok then
                 print(("Error in task %q wakeup: %s"):format(task.name, err))
+                collectgarbage("collect")  -- force GC pass
             end
         end
         task.last_run = now
