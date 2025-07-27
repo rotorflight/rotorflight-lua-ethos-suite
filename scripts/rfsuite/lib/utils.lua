@@ -803,7 +803,7 @@ function utils.reportMemoryUsage(location)
         return
     end
 
-    local TOTAL_LUA_MEMORY_KB = 1024
+    local TOTAL_LUA_MEMORY_KB = 1622 -- Total Lua memory in KB (1.6 MB)
 
     -- Get current memory
     local memInfo = system.getMemoryUsage()
