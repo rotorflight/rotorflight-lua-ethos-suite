@@ -30,17 +30,17 @@ function craftimage.wakeup()
     end
 
     local craftName = rfsuite.session.craftName
-    local modelID = rfsuite.session.modelID
+    --local modelID = rfsuite.session.modelID
 
     local image1, image2, image3, image4
     if craftName then
         image1 = "/bitmaps/models/" .. craftName .. ".png"
         image2 = "/bitmaps/models/" .. craftName .. ".bmp"
     end
-    if modelID then
-        image3 = "/bitmaps/models/" .. modelID .. ".png"
-        image4 = "/bitmaps/models/" .. modelID .. ".bmp"
-    end
+    --if modelID then
+    --    image3 = "/bitmaps/models/" .. modelID .. ".png"
+    --    image4 = "/bitmaps/models/" .. modelID .. ".bmp"
+    --end
 
     local default_image = "widgets/toolbox/gfx/default_image.png"
 

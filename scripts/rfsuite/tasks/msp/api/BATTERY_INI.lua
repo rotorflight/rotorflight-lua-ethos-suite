@@ -34,8 +34,9 @@ local MSP_API_STRUCTURE_READ_DATA = {
     { field = "sag_multiplier", type = "U8", simResponse = {0} , decimals = 1, default = 0.5, min=0, max=10},
     { field = "kalman_multiplier", type = "U8", simResponse = {0}, decimals = 1, min = 0, max = 10 , default = 0.5},
     { field = "alert_type", type = "U8", simResponse = {0}, tableIdxInc = -1, table = alertTypes, default = 0, min = 0, max = 2},
-    { field = "becalertvalue", type = "U8", simResponse = {6.5}, min = 30, decimals = 1, scale = 10, max = 140,  unit = "V", default = 6.5 },
-    { field = "rxalertvalue",  type = "U8", simResponse = {7.5}, min = 30, decimals = 1, scale = 10, max = 140,  unit = "V", default = 7.5 },
+    { field = "becalertvalue", type = "U8", simResponse = {0}, min = 30, decimals = 1, scale = 10, max = 140,  unit = "V", default = 6.5 },
+    { field = "rxalertvalue",  type = "U8", simResponse = {0}, min = 30, decimals = 1, scale = 10, max = 140,  unit = "V", default = 7.5 },
+    { field = "flighttime",  type = "U8", simResponse = {0}, min = 0, max = 3600,  unit = "s", default = 300 },
 }
 local READ_STRUCT, MIN_BYTES, SIM_RESP =
     mspModule.prepareStructureData(MSP_API_STRUCTURE_READ_DATA)

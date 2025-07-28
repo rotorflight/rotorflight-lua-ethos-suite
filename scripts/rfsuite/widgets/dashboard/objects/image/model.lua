@@ -47,7 +47,7 @@ end
 
 function render.wakeup(box)
     local craftName = rfsuite and rfsuite.session and rfsuite.session.craftName
-    local modelID   = rfsuite and rfsuite.session and rfsuite.session.modelID
+    --local modelID   = rfsuite and rfsuite.session and rfsuite.session.modelID
     local imagePath
 
     if craftName then
@@ -56,11 +56,11 @@ function render.wakeup(box)
         imagePath = loadImage(pngPath, bmpPath)
     end
 
-    if not imagePath and modelID then
-        local pngPath = "/bitmaps/models/" .. modelID .. ".png"
-        local bmpPath = "/bitmaps/models/" .. modelID .. ".bmp"
-        imagePath = loadImage(pngPath, bmpPath)
-    end
+    --if not imagePath and modelID then
+    --    local pngPath = "/bitmaps/models/" .. modelID .. ".png"
+    --    local bmpPath = "/bitmaps/models/" .. modelID .. ".bmp"
+    --    imagePath = loadImage(pngPath, bmpPath)
+    --end
 
     if not imagePath and model and model.bitmap then
         local bm = model.bitmap()

@@ -7,8 +7,7 @@ local rxBattAlert
 local apidata = {
     api = {
         [1] = 'BATTERY_CONFIG',
-        [2] = 'PILOT_CONFIG',   
-        [3] = 'BATTERY_INI',
+        [2] = 'BATTERY_INI',
     },
     formdata = {
         labels = {
@@ -21,13 +20,13 @@ local apidata = {
             {t = i18n("app.modules.battery.battery_capacity"), mspapi = 1, apikey = "batteryCapacity"},
             {t = i18n("app.modules.battery.cell_count"), mspapi = 1, apikey = "batteryCellCount"},
             {t = i18n("app.modules.battery.consumption_warning_percentage"), min = 15, max = 60, mspapi = 1, apikey = "consumptionWarningPercentage"},
-            {t = i18n("app.modules.battery.timer"), mspapi = 2, apikey = "model_param1_value"},
-            {t = i18n("app.modules.battery.calcfuel_local"), mspapi = 3, apikey = "calc_local", type = 1},
-            {t = i18n("app.modules.battery.kalman_multiplier"), mspapi = 3, apikey = "kalman_multiplier"},   
-            {t = i18n("app.modules.battery.voltage_multiplier"), mspapi = 3, apikey = "sag_multiplier"},
-            {t = i18n("app.modules.battery.alert_type"), mspapi = 3, apikey = "alert_type", type = 1},
-            {t = i18n("app.modules.battery.bec_voltage_alert"), mspapi = 3, apikey = "becalertvalue"},
-            {t = i18n("app.modules.battery.rx_voltage_alert"),  mspapi = 3, apikey = "rxalertvalue"},            
+            {t = i18n("app.modules.battery.timer"), mspapi = 2, apikey = "flighttime"},
+            {t = i18n("app.modules.battery.calcfuel_local"), mspapi = 2, apikey = "calc_local", type = 1},
+            {t = i18n("app.modules.battery.kalman_multiplier"), mspapi = 2, apikey = "kalman_multiplier"},   
+            {t = i18n("app.modules.battery.voltage_multiplier"), mspapi = 2, apikey = "sag_multiplier"},
+            {t = i18n("app.modules.battery.alert_type"), mspapi = 2, apikey = "alert_type", type = 1},
+            {t = i18n("app.modules.battery.bec_voltage_alert"), mspapi = 2, apikey = "becalertvalue"},
+            {t = i18n("app.modules.battery.rx_voltage_alert"),  mspapi = 2, apikey = "rxalertvalue"},            
         }
     }                 
 }

@@ -116,7 +116,6 @@ local function wakeup(widget)
         if rfsuite and rfsuite.tasks.active() then
             -- Log Rotorflight session information
             rfsuite.utils.log("Craft Name: " .. (rfsuite.session.craftName or "-"), "info")
-            rfsuite.utils.log("Model Id: " .. (rfsuite.session.modelID or "-"), "info")
             rfsuite.utils.log("API Version: " .. (rfsuite.session.apiVersion or "-"), "info")
             rfsuite.utils.log("Tail Mode: " .. (rfsuite.session.tailMode or "-"), "info")
             rfsuite.utils.log("Swash Mode: " .. (rfsuite.session.swashMode or "-"), "info")

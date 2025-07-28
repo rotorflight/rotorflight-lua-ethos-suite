@@ -25,7 +25,7 @@ local postStartedAt = nil
 function timer.wakeup()
     local prefs = rfsuite.preferences.timer or {}
     local session = rfsuite.session
-    local targetSeconds = session and session.modelFlightTime or 0
+    local targetSeconds = session and session.modelPreferences and session.modelPreferences.battery.flighttime or 0
 
     -- Use time from timer session
     local timerSession = session and session.timer
