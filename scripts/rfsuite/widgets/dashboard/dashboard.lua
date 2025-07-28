@@ -1208,7 +1208,7 @@ function dashboard.wakeup(widget)
             -- Wake up all boxes regardless of scheduler flag
             for i, rect in ipairs(dashboard.boxRects) do
                 local obj = dashboard.objectsByType[rect.box.type]
-                if obj and obj.wakeup then
+                if obj and obj.wakeup and not obj.scheduler then
                     obj.wakeup(rect.box)
                 end
                 if not needsFullInvalidate then
