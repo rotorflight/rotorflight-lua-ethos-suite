@@ -104,15 +104,18 @@ function sensors.wakeup()
     if loadedSensorModule and loadedSensorModule.module.wakeup then
         loadedSensorModule.module.wakeup()
 
-        -- run msp sensors
-        if msp and msp.wakeup then
-            msp.wakeup()
-        end
+        if rfsuite.session and rfsuite.session.isConnected then
+            -- run msp sensors
+            if msp and msp.wakeup then
+                msp.wakeup()
+            end
 
-        -- run smart sensors
-        if smart and smart.wakeup then
-            smart.wakeup()
-        end        
+            -- run smart sensors
+            if smart and smart.wakeup then
+                smart.wakeup()
+            end        
+
+        end
 
     end
 
