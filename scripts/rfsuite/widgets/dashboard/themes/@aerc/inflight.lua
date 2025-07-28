@@ -223,7 +223,7 @@ local function buildBoxes(W)
             textcolor = colorMode.textcolor,
             thresholds = {
                 { value = 10, fillcolor = colorMode.fillcritcolor },
-                { value = 30, fillcolor = colorMode.fillwarncolor }
+                { value = 45, fillcolor = colorMode.fillwarncolor }
             }
         },
 

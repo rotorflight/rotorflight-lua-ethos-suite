@@ -314,7 +314,7 @@ local function buildBoxes(W)
             transform = "floor",
             thresholds = {
                 { value = 10, fillcolor = colorMode.fillcritcolor },
-                { value = 30, fillcolor = colorMode.fillwarncolor }
+                { value = 45, fillcolor = colorMode.fillwarncolor }
             }
         },
 
