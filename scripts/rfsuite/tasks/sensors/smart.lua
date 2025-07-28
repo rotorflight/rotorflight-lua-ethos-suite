@@ -84,7 +84,7 @@ local function calculateFuel()
 end
 
 function calculateConsumption()
-            -- If local calculation is enabled, calculate mAh used based on capacity
+            -- If smartvoltage is enabled, calculate mAh used based on capacity
             if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery and rfsuite.session.modelPreferences.battery.calc_local then
                 if rfsuite.session.modelPreferences.battery.calc_local == 1 then
                     local capacity = rfsuite.session.batteryConfig.batteryCapacity or 1000 -- Default to 1000mAh if not set
@@ -96,10 +96,12 @@ function calculateConsumption()
                         return (usedPercent / 100) * usableCapacity
                     end
                 else
-                    return nil    
+                    -- fallback to FC "consumption"
+                    return rfsuite.tasks.telemetry.getSensor("consumption") or 0
                 end
             else
-                    return rfsuite.tasks.telemetry.getSensor("consumption") or 0
+                -- No battery prefs — fallback to FC "consumption"
+                return rfsuite.tasks.telemetry.getSensor("consumption") or 0
             end
 end    
 
