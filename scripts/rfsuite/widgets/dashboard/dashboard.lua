@@ -1157,10 +1157,11 @@ function dashboard.wakeup(widget)
     local now = os.clock()
     local visible = lcd.isVisible()
 
-    -- slow down if not visible to give priority to other tasks
-    if not visible then
+    -- Throttle CPU usage based on connection and visibility
+    if not rfsuite.session.isConnected then
+        if (now - lastWakeup) < 0.5 then return end
+    elseif not visible then
         if (now - lastWakeup) < 2 then return end
-        lastWakeup = now  
     end
 
     local currentFlightMode = rfsuite.flightmode.current or "preflight"
