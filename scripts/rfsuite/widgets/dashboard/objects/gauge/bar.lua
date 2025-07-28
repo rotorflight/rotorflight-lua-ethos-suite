@@ -267,7 +267,7 @@ function render.wakeup(box)
     local getSensor = telemetry and telemetry.getSensor
     local voltage   = getSensor and getSensor("voltage") or 0
     local cellCount = getSensor and getSensor("cell_count") or 0
-    local consumed  = getSensor and getSensor("consumption") or 0
+    local consumed  = getSensor and getSensor("smartconsumption") or 0
     local perCellVoltage = (cellCount > 0) and (voltage / cellCount) or 0
 
     -- Dynamic unit logic (User can force a unit or omit unit using "" to hide)
