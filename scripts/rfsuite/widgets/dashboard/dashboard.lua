@@ -1096,6 +1096,9 @@ end
 -- @param widget The widget instance to update.
 function dashboard.wakeup(widget)
 
+    -- Check if MSP is allow msp to be prioritized
+    if rfsuite.app.triggers.mspBusy then return end     
+
     local telemetry = tasks.telemetry
     local W, H = lcd.getWindowSize()
 
