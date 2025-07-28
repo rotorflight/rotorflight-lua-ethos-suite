@@ -5,7 +5,7 @@ local compiler = rfsuite.compiler.loadfile
 
 local currentTelemetrySensor
 local tasksPerCycle = 1
-local taskSchedulerPercentage = 0.2
+local taskSchedulerPercentage = 0.5
 
 local schedulerTick = 0
 
