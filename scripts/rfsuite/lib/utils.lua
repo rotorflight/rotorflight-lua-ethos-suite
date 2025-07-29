@@ -709,25 +709,6 @@ function utils.logMsp(cmd, rwState, buf, err)
     end
 end
 
-
-function utils.truncateText(str, maxWidth)
-    lcd.font(bestFont)
-    local tsizeW, _ = lcd.getTextSize(str)
-
-    if tsizeW <= maxWidth then
-        return str  -- Fits, no need to truncate
-    end
-
-    -- Start truncating
-    local ellipsis = "..."
-    local truncatedStr = str
-    while tsizeW > maxWidth and #truncatedStr > 1 do
-        truncatedStr = string.sub(truncatedStr, 1, #truncatedStr - 1)
-        tsizeW, _ = lcd.getTextSize(truncatedStr .. ellipsis)
-    end
-    return truncatedStr .. ellipsis
-end
-
 function utils.reportMemoryUsage(location)
     if not rfsuite.preferences.developer.memstats then
         return

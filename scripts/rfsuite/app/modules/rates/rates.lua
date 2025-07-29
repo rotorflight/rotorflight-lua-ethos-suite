@@ -82,7 +82,7 @@ local function openPage(idx, title, script)
     end
 
     -- we dont use the global due to scrollers
-    local screenWidth, screenHeight = rfsuite.app.lcd.getWindowSize()
+    local screenWidth, screenHeight = lcd.getWindowSize()
 
     local padding = 10
     local paddingTop = rfsuite.app.radio.linePaddingTop
