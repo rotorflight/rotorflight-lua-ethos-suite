@@ -840,13 +840,6 @@ function utils.reportMemoryUsage(location)
         logMessage = string.format("[%s] Initial memory usage: %.2f KB / %d KB", location, currentUsedKB, TOTAL_LUA_MEMORY_KB)
     end
 
-    -- Add warning if memory is full or close to full
-    if currentUsedKB >= TOTAL_LUA_MEMORY_KB then
-        logMessage = logMessage .. " - Lua memory FULL!"
-    elseif currentUsedKB >= WARN_THRESHOLD_KB then
-        logMessage = logMessage .. " - High memory usage"
-    end
-
     rfsuite.utils.log(logMessage, "info")
 
     -- Save current for next diff

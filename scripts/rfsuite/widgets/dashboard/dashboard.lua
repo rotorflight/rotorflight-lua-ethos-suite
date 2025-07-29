@@ -1276,17 +1276,6 @@ function dashboard.wakeup(widget)
         end    
     end
 
-
-
-
-    if lcd.isVisible() then
-        dashboard._lastMemReport = dashboard._lastMemReport or 0
-        if os.clock() - dashboard._lastMemReport > 5 then
-            rfsuite.utils.reportMemoryUsage("Dashboard")
-            dashboard._lastMemReport = os.clock()
-        end
-    end
-
     if not dashboard._useSpreadSchedulingPaint then
         lcd.invalidate()
     end
