@@ -397,6 +397,7 @@ function tasks.reset()
             tasks[task.name].reset()
         end
     end
+  rfsuite.utils.session()
 end
 
 return tasks

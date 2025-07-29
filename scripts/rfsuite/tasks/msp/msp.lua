@@ -145,7 +145,9 @@ function msp.reset()
     msp.sensor = nil
     msp.activeProtocol = nil
     msp.onConnectChecksInit = true
-    rfsuite.utils.session()
+    delayStartTime = nil
+    msp.sensorTlm = nil
+    delayPending = false    
 end
 
 return msp
