@@ -355,7 +355,7 @@ function ui.openMainMenu()
     end
 
     -- Determine dimensions
-    local w, h = rfsuite.utils.getWindowSize()
+    local w, h = lcd.getWindowSize()
     local windowWidth = w
     local windowHeight = h
 
@@ -520,7 +520,7 @@ function ui.openMainMenuSub(activesection)
 
     for idx, section in ipairs(MainMenu.sections) do
         if section.id == activesection then
-            local w, h = rfsuite.utils.getWindowSize()
+            local w, h = lcd.getWindowSize()
             local windowWidth, windowHeight = w, h
             local padding = rfsuite.app.radio.buttonPadding
 
@@ -1036,7 +1036,7 @@ function ui.fieldHeader(title)
     local formFields = app.formFields
     local lcdWidth   = rfsuite.app.lcdWidth
 
-    local w, h = utils.getWindowSize()
+    local w, h = lcd.getWindowSize()
     local padding = 5
     local colStart = math.floor(w * 59.4 / 100)
     if radio.navButtonOffset then 

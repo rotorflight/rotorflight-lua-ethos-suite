@@ -122,7 +122,7 @@ local function openPage(pidx, title, script)
     end
 
     if n == 0 then
-        local w, h = rfsuite.utils.getWindowSize()
+        local w, h = lcd.getWindowSize()
         local msg = i18n("app.modules.settings.no_themes_available_to_configure")
         local tw, th = lcd.getTextSize(msg)
         local x = w / 2 - tw / 2

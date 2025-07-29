@@ -21,7 +21,7 @@ local function openPage(idx, title, script, source, folder,themeScript)
     page = assert(rfsuite.compiler.loadfile(modulePath))(idx)
 
     -- load up the menu
-    local w, h = rfsuite.utils.getWindowSize()
+    local w, h = lcd.getWindowSize()
     local windowWidth = w
     local windowHeight = h
     local padding = rfsuite.app.radio.buttonPadding

@@ -1,4 +1,4 @@
-local LCD_W, LCD_H = rfsuite.utils.getWindowSize()
+local LCD_W, LCD_H = lcd.getWindowSize()
 local resolution = LCD_W .. "x" .. LCD_H
 
 --[[

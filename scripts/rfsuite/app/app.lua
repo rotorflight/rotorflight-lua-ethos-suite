@@ -1018,7 +1018,7 @@ app._uiTasks = {
                      and 0.1 or 1.5
     if (now - (app.profileCheckScheduler or 0)) >= interval then
       app.profileCheckScheduler = now
-      utils.getCurrentProfile()
+      app.utils.getCurrentProfile()
       -- compare and trigger reloads
       if rfsuite.session.activeProfileLast and app.Page.refreshOnProfileChange and
          rfsuite.session.activeProfile ~= rfsuite.session.activeProfileLast then
@@ -1047,7 +1047,7 @@ app._uiTasks = {
             rfsuite.app.formFields[i]:enable(false)
           end
         end
-      elseif rfsuite.session.apiVersion and utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiV) then
+      elseif rfsuite.session.apiVersion and rfsuite.app.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiV) then
         app.offlineMode = false
         for i in pairs(rfsuite.app.formFieldsOffline) do
           rfsuite.app.formFields[i]:enable(true)
@@ -1089,7 +1089,7 @@ app._uiTasks = {
       msg, invalid = i18n("app.check_discovered_sensors"), true
     elseif curRssi == 0 and not app.offlineMode then
       msg, invalid = i18n("app.check_heli_on"), true
-    elseif not utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiStr) and not app.offlineMode then
+    elseif not rfsuite.app.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiStr) and not app.offlineMode then
       msg = i18n("app.check_supported_version") .. " (" .. apiStr .. ")"
     end
     app.triggers.invalidConnectionSetup = invalid
@@ -1342,7 +1342,7 @@ function app.create_logtool()
     config.environment = system.getVersion()
     config.ethosRunningVersion = {config.environment.major, config.environment.minor, config.environment.revision}
 
-    rfsuite.app.lcdWidth, rfsuite.app.lcdHeight = utils.getWindowSize()
+    rfsuite.app.lcdWidth, rfsuite.app.lcdHeight = lcd.getWindowSize()
     app.radio = assert(compile("app/radios.lua"))()
 
     app.uiState = app.uiStatus.init
@@ -1375,7 +1375,7 @@ function app.create()
     config.environment = system.getVersion()
     config.ethosRunningVersion = {config.environment.major, config.environment.minor, config.environment.revision}
 
-    rfsuite.app.lcdWidth, rfsuite.app.lcdHeight = utils.getWindowSize()
+    rfsuite.app.lcdWidth, rfsuite.app.lcdHeight = lcd.getWindowSize()
     app.radio = assert(compile("app/radios.lua"))()
 
     app.uiState = app.uiStatus.init

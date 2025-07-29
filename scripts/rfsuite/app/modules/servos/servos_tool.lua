@@ -317,9 +317,9 @@ local function openPage(idx, title, script, extra1)
     form.clear()
 
     if rfsuite.app.Page.pageTitle ~= nil then
-        rfsuite.app.ui.fieldHeader(rfsuite.app.Page.pageTitle .. " / " .. rfsuite.utils.titleCase(configs[servoIndex]['name']))
+        rfsuite.app.ui.fieldHeader(rfsuite.app.Page.pageTitle .. " / " .. rfsuite.app.utils.titleCase(configs[servoIndex]['name']))
     else
-        rfsuite.app.ui.fieldHeader(title .. " / " .. rfsuite.utils.titleCase(configs[servoIndex]['name']))
+        rfsuite.app.ui.fieldHeader(title .. " / " .. rfsuite.app.utils.titleCase(configs[servoIndex]['name']))
     end
 
     if rfsuite.app.Page.headerLine ~= nil then

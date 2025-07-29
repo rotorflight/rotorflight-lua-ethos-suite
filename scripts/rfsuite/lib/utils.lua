@@ -300,10 +300,6 @@ function utils.logRotorFlightBanner()
     end
 end
 
-function utils.sanitize_filename(str)
-    if not str then return nil end
-    return str:match("^%s*(.-)%s*$"):gsub('[\\/:"*?<>|]', '')
-end
 
 function utils.dir_exists(base, name)
     base = base or "./"
@@ -359,37 +355,6 @@ function utils.playFileCommon(file)
 end
 
 
--- this is used in multiple places - just gives easy way
--- to grab activeProfile or activeRateProfile in tmp var
--- you MUST set it to nil after you get it!
-function utils.getCurrentProfile()
-
-
-    local pidProfile = rfsuite.tasks.telemetry.getSensor("pid_profile")
-    local rateProfile = rfsuite.tasks.telemetry.getSensor("rate_profile")
-
-    if (pidProfile ~= nil and rateProfile ~= nil) then
-
-        rfsuite.session.activeProfileLast = rfsuite.session.activeProfile
-        local p = pidProfile
-        if p ~= nil then
-            rfsuite.session.activeProfile = math.floor(p)
-        else
-            rfsuite.session.activeProfile = nil
-        end
-
-        rfsuite.session.activeRateProfileLast = rfsuite.session.activeRateProfile
-        local r = rateProfile
-        if r ~= nil then
-            rfsuite.session.activeRateProfile = math.floor(r)
-        else
-            rfsuite.session.activeRateProfile = nil
-        end
-
-    end
-end
-
--- Function to compare the current system version with a target version
 -- Function to compare the current system version with a target version
 function utils.ethosVersionAtLeast(targetVersion)
     local env = system.getVersion()
@@ -425,16 +390,6 @@ function utils.ethosVersionAtLeast(targetVersion)
     return true  -- Versions are equal (>= condition met)
 end
 
-function utils.titleCase(str)
-    return str:gsub("(%a)([%w_']*)", function(first, rest)
-        return first:upper() .. rest:lower()
-    end)
-end
-
-function utils.stringInArray(array, s)
-    for i, value in ipairs(array) do if value == s then return true end end
-    return false
-end
 
 function utils.round(num, places)
     if num == nil then 
@@ -450,15 +405,6 @@ function utils.round(num, places)
     end
 end
 
-
-function utils.roughlyEqual(a, b, tolerance)
-    return math.abs(a - b) < (tolerance or 0.0001)  -- Allows a tiny margin of error
-end
-
--- return current window size
-function utils.getWindowSize()
-    return lcd.getWindowSize()
-end
 
 function utils.joinTableItems(tbl, delimiter)
     if not tbl or #tbl == 0 then return "" end
@@ -740,22 +686,6 @@ function utils.simSensors(id)
     if not success then
         print("Error executing telemetry file: " .. result)
         return 0
-    end
-
-    return result
-end
-
-
--- Splits a given string into a table of substrings based on a specified separator.
--- @param input The string to be split.
--- @param sep The separator used to split the string.
--- @return A table containing the substrings.
-function utils.splitString(input, sep)
-    local result = {}
-
-    -- Lua's gmatch needs plain `sep`, so if you want to handle "%s*" or patterns, use this
-    for item in input:gmatch("([^" .. sep .. "]+)") do
-        table.insert(result, item)
     end
 
     return result

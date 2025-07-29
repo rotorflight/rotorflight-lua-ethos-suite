@@ -82,7 +82,7 @@ local function openPage(pidx, title, script, displaymode)
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-    local w, h = rfsuite.utils.getWindowSize()
+    local w, h = lcd.getWindowSize()
     local windowWidth = w
     local windowHeight = h
     local padding = rfsuite.app.radio.buttonPadding
@@ -156,7 +156,7 @@ local function openPage(pidx, title, script, displaymode)
 
     if #dates == 0 then
 
-        LCD_W, LCD_H = rfsuite.utils.getWindowSize()
+        LCD_W, LCD_H = lcd.getWindowSize()
         local str = i18n("app.modules.logs.msg_no_logs_found")
         local ew = LCD_W
         local eh = LCD_H

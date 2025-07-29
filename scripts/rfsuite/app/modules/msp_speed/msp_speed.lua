@@ -199,7 +199,7 @@ local function openPage(pidx, title, script)
     rfsuite.app.lastScript = script
     rfsuite.app.triggers.closeProgressLoader = true
 
-    local w, h = rfsuite.utils.getWindowSize()
+    local w, h = lcd.getWindowSize()
 
     local y = rfsuite.app.radio.linePaddingTop
 

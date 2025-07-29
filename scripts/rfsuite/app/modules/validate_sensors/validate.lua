@@ -3,7 +3,7 @@ local labels = {}
 local i18n = rfsuite.i18n.get
 local enableWakeup = false
 
-local w, h = rfsuite.utils.getWindowSize()
+local w, h = lcd.getWindowSize()
 local buttonW = 100
 local buttonWs = buttonW - (buttonW * 20) / 100
 local x = w - 15

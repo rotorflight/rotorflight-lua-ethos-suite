@@ -49,11 +49,6 @@ function utils.getRSSI()
     end
 end
 
--- Retrieves the current window size from the LCD.
--- @return The window size as provided by lcd.getWindowSize().
-function utils.getWindowSize()
-    return lcd.getWindowSize()
-end
 
 --[[
     Converts a table of values into a table of tables, where each inner table contains the original value and an incremented index.
@@ -194,7 +189,7 @@ function utils.getInlinePositions(f, lPage)
     local inline_size = utils.getInlineSize(f.label, lPage) * rfsuite.app.radio.inlinesize_mult
 
     -- Get LCD dimensions.
-    local w, h = rfsuite.utils.getWindowSize()
+    local w, h = lcd.getWindowSize()
 
     local padding = 5
     local fieldW = (w * inline_size) / 100
@@ -243,5 +238,46 @@ function utils.getInlineSize(id, lPage)
     return 13.6  -- Use default if label is missing
 end
 
+-- to grab activeProfile or activeRateProfile in tmp var
+-- you MUST set it to nil after you get it!
+function utils.getCurrentProfile()
+
+
+    local pidProfile = rfsuite.tasks.telemetry.getSensor("pid_profile")
+    local rateProfile = rfsuite.tasks.telemetry.getSensor("rate_profile")
+
+    if (pidProfile ~= nil and rateProfile ~= nil) then
+
+        rfsuite.session.activeProfileLast = rfsuite.session.activeProfile
+        local p = pidProfile
+        if p ~= nil then
+            rfsuite.session.activeProfile = math.floor(p)
+        else
+            rfsuite.session.activeProfile = nil
+        end
+
+        rfsuite.session.activeRateProfileLast = rfsuite.session.activeRateProfile
+        local r = rateProfile
+        if r ~= nil then
+            rfsuite.session.activeRateProfile = math.floor(r)
+        else
+            rfsuite.session.activeRateProfile = nil
+        end
+
+    end
+end
+
+function utils.titleCase(str)
+    return str:gsub("(%a)([%w_']*)", function(first, rest)
+        return first:upper() .. rest:lower()
+    end)
+end
+
+function utils.stringInArray(array, s)
+    for i, value in ipairs(array) do if value == s then return true end end
+    return false
+end
+
 return utils
+
 

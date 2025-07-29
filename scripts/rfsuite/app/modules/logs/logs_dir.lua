@@ -24,7 +24,7 @@ local function openPage(idx, title, script)
     rfsuite.app.lastScript = script
 
     -- UI layout settings
-    local w, h = rfsuite.utils.getWindowSize()
+    local w, h = lcd.getWindowSize()
     local prefs = rfsuite.preferences.general
     local radio = rfsuite.app.radio
     local icons = prefs.iconsize
