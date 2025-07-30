@@ -1174,11 +1174,15 @@ function telemetry.reset()
     telemetrySOURCE, crsfSOURCE, protocol = nil, nil, nil
     sensors = {}
     hot_list, hot_index = {}, {}
-    --telemetry.sensorStats = {} -- we defer this to onconnect
-    -- Also reset onchange tracking so we rebuild next time:
     filteredOnchangeSensors = nil
     lastSensorValues = {}
     onchangeInitialized = false
+    sensorRateLimit = os.clock()
+    lastValidationResult = nil
+    lastValidationTime = 0
+    lastCacheFlushTime = os.clock()
+    cache_hits, cache_misses = 0, 0
+    --telemetry.sensorStats = {} -- we defer this to onconnect
 end
 
 --[[ 

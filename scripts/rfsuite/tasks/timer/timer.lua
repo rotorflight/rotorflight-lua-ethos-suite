@@ -39,6 +39,8 @@ function timer.reset()
 
     timerSession.session = 0
     timerSession.lifetime = timerSession.baseLifetime
+    timerSession.live = 0
+    timerSession.start = nil   
 end
 
 --- Saves the current flight timer values to the model preferences INI file.

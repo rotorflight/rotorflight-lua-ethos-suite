@@ -35,7 +35,8 @@ function fcversion.wakeup()
 end
 
 function fcversion.reset()
-    rfsuite.session.fcVersion= nil
+    rfsuite.session.fcVersion = nil
+    rfsuite.session.rfVersion = nil
 end
 
 function fcversion.isComplete()
