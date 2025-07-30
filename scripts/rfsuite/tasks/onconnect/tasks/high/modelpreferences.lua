@@ -88,6 +88,7 @@ end
 
 function modelpreferences.reset()
     rfsuite.session.modelPreferences = nil
+    rfsuite.session.modelPreferencesFile = nil
 end
 
 function modelpreferences.isComplete()

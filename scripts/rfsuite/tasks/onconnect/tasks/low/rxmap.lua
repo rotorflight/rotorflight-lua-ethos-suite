@@ -67,6 +67,14 @@ function rxmap.wakeup()
 end
 
 function rxmap.reset()
+    if rfsuite.session.rx and rfsuite.session.rx.map then
+        for _, key in ipairs({
+            "aileron", "elevator", "rudder", "collective", "throttle",
+            "aux1", "aux2", "aux3"
+        }) do
+            rfsuite.session.rx.map[key] = nil
+        end
+    end
     rfsuite.session.rxmap = {}
     rfsuite.session.rxvalues = {}    
 end
