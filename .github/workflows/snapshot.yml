@@ -12,6 +12,7 @@ jobs:
       # use the tag name (e.g. "snapshot/1.2.3") as GIT_VER
       GIT_VER: ${{ github.ref_name }}
       GIT_TAG: ${{ github.ref_name }}
+      SAFE_GIT_VER: ${{ github.ref_name }}
 
     steps:
       - name: Check out repository
@@ -19,13 +20,23 @@ jobs:
 
       - name: Set build variables
         run: |
+          SAFE_GIT_VER="${GIT_VER//\//-}"
           echo "GIT_VER=${GIT_VER}" >> $GITHUB_ENV
+          echo "GIT_TAG=${GIT_TAG}" >> $GITHUB_ENV
+          echo "SAFE_GIT_VER=${SAFE_GIT_VER}" >> $GITHUB_ENV
+          cat $GITHUB_ENV
           echo "GIT_TAG=${GIT_TAG}" >> $GITHUB_ENV
           cat $GITHUB_ENV
 
       - name: Make snapshot package
         run: |
-          zip -q -r -9 "rotorflight-lua-ethos-suite-${{ env.GIT_VER }}.zip" scripts/rfsuite
+          zip -q -r -9 "rotorflight-lua-ethos-suite-${{ env.SAFE_GIT_VER }}.zip" scripts/rfsuite
+
+      - name: Upload Lua suite artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rotorflight-lua-ethos-suite-${{ env.SAFE_GIT_VER }}
+          path: rotorflight-lua-ethos-suite-${{ env.SAFE_GIT_VER }}.zip
 
       - name: Package combined soundpack
         run: |
@@ -33,14 +44,14 @@ jobs:
           OUTPUT_DIR="${GITHUB_WORKSPACE}/tmp"
           mkdir -p "$OUTPUT_DIR"
 
-          ZIP_NAME="rotorflight-lua-ethos-suite-soundpack-${{ env.GIT_VER }}.zip"
+          ZIP_NAME="rotorflight-lua-ethos-suite-soundpack-${{ env.SAFE_GIT_VER }}.zip"
           (cd "$SOUND_DIR" && zip -r "$OUTPUT_DIR/$ZIP_NAME" .)
           echo "✅ Created $OUTPUT_DIR/$ZIP_NAME"
 
       - name: Upload soundpack artifact
         uses: actions/upload-artifact@v4
         with:
-          name: rotorflight-lua-ethos-suite-soundpack-${{ env.GIT_VER }}
+          name: rotorflight-lua-ethos-suite-soundpack-${{ env.SAFE_GIT_VER }}
           path: tmp/*.zip
 
       - name: Create Snapshot Release
@@ -52,5 +63,5 @@ jobs:
             --prerelease \
             --notes-file Notes.md \
             --title "Rotorflight Lua Suite for Ethos - Snapshot ${{ env.GIT_VER }}" \
-            rotorflight-lua-ethos-suite-${{ env.GIT_VER }}.zip \
-            tmp/rotorflight-lua-ethos-suite-soundpack-${{ env.GIT_VER }}.zip
+            rotorflight-lua-ethos-suite-${{ env.SAFE_GIT_VER }}.zip \
+            tmp/rotorflight-lua-ethos-suite-soundpack-${{ env.SAFE_GIT_VER }}.zip
