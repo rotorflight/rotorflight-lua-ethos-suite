@@ -1,3 +1,24 @@
+
+# 2.3.0-DEV
+
+- Reorganised main menu for clarity and ease of use
+- Added new settings section to allow configuration of suite
+- Replaced RFSTATUS with DASHBOARD themes
+- Moved all alerts into an events system via background task
+- Introduced a smart fuel sensor
+- General speed/ram usage improvements.
+
+# 2.2.1
+
+- No changes
+
+# 2.2.0
+
+Release version for 2.2.0 Rotorflight
+
+- Fix missing i18n text
+- Improve Compiler Speed
+
 # 2.2.0-RC5
 
 Release candidate version for 2.2.0-RC5 Rotorflight
@@ -64,11 +85,13 @@ Release candidate version for 2.2.0-RC1 Rotorflight
         - Governor
         - Craftname
         - Craftimage
+        - BBL Status
     - i18n support
         - English
         - German
         - Dutch
         - Spanish
+        - Italian
     - Additional Radio support
         - Kavan V20
         - X18RS
