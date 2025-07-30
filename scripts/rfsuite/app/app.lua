@@ -385,7 +385,7 @@ local function saveSettings()
     -- we handle saving 100% different for multi mspapi
     log("Saving data", "debug")
 
-    local mspapi = rfsuite.app.Page.apidata
+    local mspapi = app.Page.apidata
     local apiList = mspapi.api
     local values = mspapi.values
 
@@ -492,7 +492,7 @@ end
     @param structure - Table containing the structure of the MSP and API data.
 
     The function performs the following steps:
-    1. Ensures that `app.Page.apidata.formdata`, `app.Page.apidata.api`, and `rfsuite.app.Page.fields` exist.
+    1. Ensures that `app.Page.apidata.formdata`, `app.Page.apidata.api`, and `app.Page.fields` exist.
     2. Defines a helper function `combined_api_parts` to split and convert API keys.
     3. Creates a reversed API table for quick lookups if it doesn't already exist.
     4. Iterates over the form fields and updates them based on the provided values and structure.
@@ -501,7 +501,7 @@ end
 function app.mspApiUpdateFormAttributes(values, structure)
 
     -- Ensure app.Page and its mspapi.formdata exist
-    if not (app.Page.apidata.formdata and app.Page.apidata.api and rfsuite.app.Page.fields) then
+    if not (app.Page.apidata.formdata and app.Page.apidata.api and app.Page.fields) then
         log("app.Page.apidata.formdata or its components are nil", "debug")
         return
     end
@@ -539,7 +539,7 @@ function app.mspApiUpdateFormAttributes(values, structure)
 
     for i, f in ipairs(fields) do
         -- Define some key details
-        local formField = rfsuite.app.formFields[i]
+        local formField = app.formFields[i]
 
         if type(formField) == 'userdata' then
 
@@ -579,11 +579,11 @@ function app.mspApiUpdateFormAttributes(values, structure)
                                 v.help = nil    
                             end
 
-                            rfsuite.app.ui.injectApiAttributes(formField, f, v)
+                            app.ui.injectApiAttributes(formField, f, v)
 
                             local scale = f.scale or 1
                             if values and values[mspapiNAME] and values[mspapiNAME][apikey] then
-                                rfsuite.app.Page.fields[i].value = values[mspapiNAME][apikey] / scale
+                                app.Page.fields[i].value = values[mspapiNAME][apikey] / scale
                             end
 
                             if values[mspapiNAME][apikey] == nil then
@@ -610,7 +610,7 @@ function app.mspApiUpdateFormAttributes(values, structure)
                                         v.help = nil    
                                     end
 
-                                    rfsuite.app.ui.injectApiAttributes(formField, f, b)
+                                    app.ui.injectApiAttributes(formField, f, b)
 
                                     local scale = f.scale or 1
 
@@ -618,7 +618,7 @@ function app.mspApiUpdateFormAttributes(values, structure)
                                     if values and values[mspapiNAME] and values[mspapiNAME][v.field] then
                                         local raw_value = values[mspapiNAME][v.field]
                                         local bit_value = (raw_value >> bidx - 1) & 1  
-                                        rfsuite.app.Page.fields[i].value = bit_value / scale
+                                        app.Page.fields[i].value = bit_value / scale
                                     end
         
                                     if values[mspapiNAME][v.field] == nil then
@@ -627,7 +627,7 @@ function app.mspApiUpdateFormAttributes(values, structure)
                                     end
 
                                     -- insert bit location for later reference
-                                    rfsuite.app.Page.fields[i].bitmap = bidx - 1
+                                    app.Page.fields[i].bitmap = bidx - 1
 
 
                             end    
@@ -643,7 +643,7 @@ function app.mspApiUpdateFormAttributes(values, structure)
     utils.reportMemoryUsage("app.mspApiUpdateFormAttributes")
 
     -- set focus back to menu
-    rfsuite.app.formNavigationFields['menu']:focus(true)
+    app.formNavigationFields['menu']:focus(true)
 end
 
 
@@ -678,15 +678,15 @@ local function requestPage()
         return
     end
 
-    if not rfsuite.app.Page.apidata.apiState then
-        rfsuite.app.Page.apidata.apiState = {
+    if not app.Page.apidata.apiState then
+        app.Page.apidata.apiState = {
             currentIndex = 1,
             isProcessing = false
         }
     end    
 
     local apiList = app.Page.apidata.api
-    local state = rfsuite.app.Page.apidata.apiState  -- Reference persistent state
+    local state = app.Page.apidata.apiState  -- Reference persistent state
 
     -- Prevent duplicate execution if already running
     if state.isProcessing then
@@ -695,14 +695,14 @@ local function requestPage()
     end
     state.isProcessing = true  -- Set processing flag
 
-    if not rfsuite.app.Page.apidata.values then
+    if not app.Page.apidata.values then
         log("requestPage Initialize values on first run", "debug")
-        rfsuite.app.Page.apidata.values = {}  -- Initialize if first run
-        rfsuite.app.Page.apidata.structure = {}  -- Initialize if first run
-        rfsuite.app.Page.apidata.receivedBytesCount = {}  -- Initialize if first run
-        rfsuite.app.Page.apidata.receivedBytes = {}  -- Initialize if first run
-        rfsuite.app.Page.apidata.positionmap = {}  -- Initialize if first run
-        rfsuite.app.Page.apidata.other = {} 
+        app.Page.apidata.values = {}  -- Initialize if first run
+        app.Page.apidata.structure = {}  -- Initialize if first run
+        app.Page.apidata.receivedBytesCount = {}  -- Initialize if first run
+        app.Page.apidata.receivedBytes = {}  -- Initialize if first run
+        app.Page.apidata.positionmap = {}  -- Initialize if first run
+        app.Page.apidata.other = {} 
     end
 
     -- Ensure state.currentIndex is initialized
@@ -724,10 +724,10 @@ local function checkForUnresolvedTimeouts()
 
     if hasUnresolvedTimeouts then
         -- disable all fields leaving only menu enabled
-        rfsuite.app.ui.disableAllFields()
-        rfsuite.app.ui.disableAllNavigationFields()
-        rfsuite.app.ui.enableNavigationField('menu')
-        rfsuite.app.triggers.closeProgressLoader = true
+        app.ui.disableAllFields()
+        app.ui.disableAllNavigationFields()
+        app.ui.enableNavigationField('menu')
+        app.triggers.closeProgressLoader = true
     end
 end
 
@@ -755,7 +755,7 @@ local function processNextAPI()
             if app.Page.postLoad then 
                 app.Page.postLoad(app.Page) 
             else
-                rfsuite.app.triggers.closeProgressLoader = true    
+                app.triggers.closeProgressLoader = true    
             end
 
             -- **Check for unresolved timeouts AFTER all APIs have been processed**
@@ -1042,18 +1042,18 @@ app._uiTasks = {
       local apiV = tostring(rfsuite.session.apiVersion)
 
       if not rfsuite.session.isConnected then
-        for i,v in pairs(rfsuite.app.formFieldsOffline) do
+        for i,v in pairs(app.formFieldsOffline) do
           if v == false then
-            rfsuite.app.formFields[i]:enable(false)
+            app.formFields[i]:enable(false)
           end
         end
-      elseif rfsuite.session.apiVersion and rfsuite.app.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiV) then
+      elseif rfsuite.session.apiVersion and app.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiV) then
         app.offlineMode = false
-        for i in pairs(rfsuite.app.formFieldsOffline) do
-          rfsuite.app.formFields[i]:enable(true)
+        for i in pairs(app.formFieldsOffline) do
+          app.formFields[i]:enable(true)
         end
       end
-    elseif not rfsuite.app.isOfflinePage then
+    elseif not app.isOfflinePage then
       if not rfsuite.session.isConnected then app.ui.openMainMenu() end
     end
   end,
@@ -1089,7 +1089,7 @@ app._uiTasks = {
       msg, invalid = i18n("app.check_discovered_sensors"), true
     elseif curRssi == 0 and not app.offlineMode then
       msg, invalid = i18n("app.check_heli_on"), true
-    elseif not rfsuite.app.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiStr) and not app.offlineMode then
+    elseif not app.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiStr) and not app.offlineMode then
       msg = i18n("app.check_supported_version") .. " (" .. apiStr .. ")"
     end
     app.triggers.invalidConnectionSetup = invalid
@@ -1342,16 +1342,16 @@ function app.create_logtool()
     config.environment = system.getVersion()
     config.ethosRunningVersion = {config.environment.major, config.environment.minor, config.environment.revision}
 
-    rfsuite.app.lcdWidth, rfsuite.app.lcdHeight = lcd.getWindowSize()
+    app.lcdWidth, app.lcdHeight = lcd.getWindowSize()
     app.radio = assert(compile("app/radios.lua"))()
 
     app.uiState = app.uiStatus.init
 
     rfsuite.preferences.menulastselected["mainmenu"] = pidx
-    rfsuite.app.ui.progressDisplay()
+    app.ui.progressDisplay()
 
-    rfsuite.app.offlineMode = true
-    rfsuite.app.ui.openPage(1, "Logs", "logs/logs.lua", 1) -- final param says to load in standalone mode
+    app.offlineMode = true
+    app.ui.openPage(1, "Logs", "logs/logs.lua", 1) -- final param says to load in standalone mode
 end
 
 --[[
@@ -1375,7 +1375,7 @@ function app.create()
     config.environment = system.getVersion()
     config.ethosRunningVersion = {config.environment.major, config.environment.minor, config.environment.revision}
 
-    rfsuite.app.lcdWidth, rfsuite.app.lcdHeight = lcd.getWindowSize()
+    app.lcdWidth, app.lcdHeight = lcd.getWindowSize()
     app.radio = assert(compile("app/radios.lua"))()
 
     app.uiState = app.uiStatus.init
@@ -1434,8 +1434,8 @@ function app.event(widget, category, value, x, y)
     end
 
     -- catch exit from sub menu
-    if app.uiState == app.uiStatus.mainMenu and rfsuite.app.lastMenu ~= nil and value == 35 then
-        rfsuite.app.ui.openMainMenu()
+    if app.uiState == app.uiStatus.mainMenu and app.lastMenu ~= nil and value == 35 then
+        app.ui.openMainMenu()
         return true
     end
 
@@ -1448,26 +1448,26 @@ function app.event(widget, category, value, x, y)
             if app.dialogs.progressDisplay then app.ui.progressDisplayClose() end
             if app.dialogs.saveDisplay then app.ui.progressDisplaySaveClose() end
             if app.Page.onNavMenu then app.Page.onNavMenu(app.Page) end
-            if  rfsuite.app.lastMenu == nil then
-                rfsuite.app.ui.openMainMenu()
+            if  app.lastMenu == nil then
+                app.ui.openMainMenu()
             else
-                rfsuite.app.ui.openMainMenuSub(rfsuite.app.lastMenu)
+                app.ui.openMainMenuSub(app.lastMenu)
             end
             return true
         end
 
         -- long press on enter should result in a save dialog box
         if value == KEY_ENTER_LONG then
-            if rfsuite.app.Page.navButtons and rfsuite.app.Page.navButtons.save == false then
+            if app.Page.navButtons and app.Page.navButtons.save == false then
                 return true
             end
             log("EVT_ENTER_LONG (PAGES)", "info")
             if app.dialogs.progressDisplay then app.ui.progressDisplayClose() end
             if app.dialogs.saveDisplay then app.ui.progressDisplaySaveClose() end
-            if rfsuite.app.Page and rfsuite.app.Page.onSaveMenu then
-                rfsuite.app.Page.onSaveMenu(rfsuite.app.Page)
+            if app.Page and app.Page.onSaveMenu then
+                app.Page.onSaveMenu(app.Page)
             else
-                rfsuite.app.triggers.triggerSave = true
+                app.triggers.triggerSave = true
             end
             system.killEvents(KEY_ENTER_BREAK)
             return true
@@ -1565,7 +1565,7 @@ function app.close()
     CRSF_PAUSE_TELEMETRY = false
 
     -- Reset profile/rate state
-    rfsuite.app.triggers.profileswitchLast = nil
+    app.triggers.profileswitchLast = nil
     rfsuite.session.activeProfileLast = nil
     rfsuite.session.activeProfile = nil
     rfsuite.session.activeRateProfile = nil
