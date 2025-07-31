@@ -1,7 +1,7 @@
 
-# 2.2.1-Dashboard-RC1
+# 2.3.0-20250801
 
-RC1 Release candidate for end users to try out a stable version of the new Ethos Dashboard System.
+Snapshot for end users to try out a stable version of the new Ethos Dashboard System.
 
 - Reorganised main menu for clarity and ease of use
 - Added new settings section to allow configuration of suite
