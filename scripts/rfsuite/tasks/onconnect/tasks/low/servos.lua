@@ -20,10 +20,15 @@
 local servos = {}
 
 function servos.wakeup()
-    -- quick exit if no apiVersion
-    if rfsuite.session.apiVersion == nil then return end    
 
     if (rfsuite.session.servoCount == nil)  then
+
+        -- we defer to FBL_CONFIG api to retrieve this
+        local apiVersion = tonumber(rfsuite.session.apiVersion)
+        if apiVersion == nil or apiVersion >= 12.09 then
+            return
+        end
+
         local API = rfsuite.tasks.msp.api.load("STATUS")
         API.setCompleteHandler(function(self, buf)
             rfsuite.session.servoCount = API.readValue("servo_count")
@@ -52,11 +57,13 @@ function servos.wakeup()
 end
 
 function servos.reset()
+    
     rfsuite.session.servoCount = nil
     rfsuite.session.servoOverride = nil
 end
 
 function servos.isComplete()
+
     if rfsuite.session.servoCount ~= nil and rfsuite.session.servoOverride ~= nil then
         return true
     end

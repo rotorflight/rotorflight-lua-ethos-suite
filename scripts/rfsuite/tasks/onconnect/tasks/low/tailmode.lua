@@ -20,8 +20,12 @@
 local tailmode = {}
 
 function tailmode.wakeup()
-    -- quick exit if no apiVersion
-    if rfsuite.session.apiVersion == nil then return end    
+    
+    -- we defer to FBL_CONFIG api to retrieve this
+    local apiVersion = tonumber(rfsuite.session.apiVersion)
+    if apiVersion == nil or apiVersion >= 12.09 then
+        return
+    end
 
     if (rfsuite.session.tailMode == nil or rfsuite.session.swashMode == nil)  then
         local API = rfsuite.tasks.msp.api.load("MIXER_CONFIG")
@@ -40,11 +44,30 @@ function tailmode.wakeup()
 end
 
 function tailmode.reset()
+
+    -- we defer to FBL_CONFIG api to retrieve this
+    local apiVersion = tonumber(rfsuite.session.apiVersion)
+    if apiVersion == nil or apiVersion >= 12.09 then
+        return
+    end
+
     rfsuite.session.tailMode = nil
     rfsuite.session.swashMode = nil
 end
 
 function tailmode.isComplete()
+
+    -- we defer to FBL_CONFIG api to retrieve this
+    local apiVersion = tonumber(rfsuite.session.apiVersion)
+    if apiVersion == nil then
+        return
+    end
+
+    -- return true if apiVersion >= 12.09 as we do this in FBL_CONFIG
+    if apiVersion >= 12.09 then
+        return true
+    end
+
     if rfsuite.session.tailMode ~= nil and rfsuite.session.swashMode ~= nil then
         return true
     end

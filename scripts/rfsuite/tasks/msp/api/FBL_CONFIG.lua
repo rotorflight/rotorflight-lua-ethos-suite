@@ -21,25 +21,24 @@ local MSP_API_CMD_READ = 16 -- Command identifier for MSP Mixer Config Read
 
 -- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "version_major",     type = "U8"},                                         -- Major version
-    {field = "version_minor",     type = "U8"},                                         -- Minor version
-    {field = "version_patch",     type = "U8"},                                         -- Patch version
+    {field = "version_major",     type = "U8", simResponse = {4}},                                         -- Major version
+    {field = "version_minor",     type = "U8", simResponse = {5}},                                         -- Minor version
+    {field = "version_patch",     type = "U8", simResponse = {1}},                                         -- Patch version
     {field = "U_ID_0",            type = "U32",   simResponse = {43, 0, 34, 0}},        -- Unique ID 0
     {field = "U_ID_1",            type = "U32",   simResponse = {9, 81, 51, 52}},       -- Unique ID 1
     {field = "U_ID_2",            type = "U32",   simResponse = {52, 56, 53, 49}},      -- Unique ID 2
-    {field = "name",              type = "U128"},                                       -- Name
     {field = "gov_mode",          type = "U8",    simResponse = {3}},
-    {field = "aileron",           type = "U8",    simResponse = {0}, min = 0, max = 15, default = 0},
-    {field = "elevator",          type = "U8",    simResponse = {1}, min = 0, max = 15, default = 1},
-    {field = "rudder",            type = "U8",    simResponse = {2}, min = 0, max = 15, default = 2},
-    {field = "collective",        type = "U8",    simResponse = {3}, min = 0, max = 15, default = 3},
-    {field = "throttle",          type = "U8",    simResponse = {4}, min = 0, max = 15, default = 4},
-    {field = "aux1",              type = "U8",    simResponse = {5}, min = 0, max = 15, default = 5},
-    {field = "aux2",              type = "U8",    simResponse = {6}, min = 0, max = 15, default = 6},
-    {field = "aux3",              type = "U8",    simResponse = {7}, min = 0, max = 15, default = 7},
+    {field = "aileron",           type = "U8",    simResponse = {0}},
+    {field = "elevator",          type = "U8",    simResponse = {1}},
+    {field = "rudder",            type = "U8",    simResponse = {2}},
+    {field = "collective",        type = "U8",    simResponse = {3}},
+    {field = "throttle",          type = "U8",    simResponse = {4}},
+    {field = "aux1",              type = "U8",    simResponse = {5}},
+    {field = "aux2",              type = "U8",    simResponse = {6}},
+    {field = "aux3",              type = "U8",    simResponse = {7}},
     {field = "servo_count",       type = "U8",    simResponse = {4}},
-    {field = "tail_rotor_mode",   type = "U8",    apiVersion = 12.06, simResponse = {0}},
-    {field = "swash_type",        type = "U8",    apiVersion = 12.06, simResponse = {0}},
+    {field = "tail_rotor_mode",   type = "U8",    simResponse = {0}},
+    {field = "swash_type",        type = "U8",    simResponse = {0}},
 }
 
 -- Process structure in one pass
@@ -167,6 +166,13 @@ local function readRfVersion()
   return string.format("%d.%d.%d", maj, min, patch)
 end
 
+
+-- Function to get the value of a specific field from MSP data
+local function readModelName(fieldName)
+    if mspData and mspData['parsed'][fieldName] ~= nil then return mspData['parsed'][fieldName] end
+    return nil
+end
+
 -- Return the module's API functions
 return {
     read = read,
@@ -182,5 +188,6 @@ return {
     setUUID = setUUID,
     setTimeout = setTimeout,
     readVersion = readVersion,
-    readRfVersion = readRfVersion
+    readRfVersion = readRfVersion,
+    readModelName = readModelName
 }
