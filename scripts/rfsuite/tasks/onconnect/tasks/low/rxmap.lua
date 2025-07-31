@@ -21,8 +21,11 @@ local rxmap = {}
 
 function rxmap.wakeup()
     
-    -- quick exit if no apiVersion
-    if rfsuite.session.apiVersion == nil then return end    
+    -- we defer to FBL_CONFIG api to retrieve this
+    local apiVersion = tonumber(rfsuite.session.apiVersion)
+    if apiVersion == nil or apiVersion >= 12.09 then
+        return
+    end
 
     if not rfsuite.utils.rxmapReady() then
         local API = rfsuite.tasks.msp.api.load("RX_MAP")
@@ -67,6 +70,13 @@ function rxmap.wakeup()
 end
 
 function rxmap.reset()
+
+    -- we defer to FBL_CONFIG api to retrieve this
+    local apiVersion = tonumber(rfsuite.session.apiVersion)
+    if apiVersion == nil or apiVersion >= 12.09 then
+        return
+    end
+
     if rfsuite.session.rx and rfsuite.session.rx.map then
         for _, key in ipairs({
             "aileron", "elevator", "rudder", "collective", "throttle",
@@ -80,6 +90,18 @@ function rxmap.reset()
 end
 
 function rxmap.isComplete()
+
+    -- we defer to FBL_CONFIG api to retrieve this
+    local apiVersion = tonumber(rfsuite.session.apiVersion)
+    if apiVersion == nil then
+        return
+    end
+
+    -- return true if apiVersion >= 12.09 as we do this in FBL_CONFIG
+    if apiVersion >= 12.09 then
+        return true
+    end
+
     return rfsuite.utils.rxmapReady()
 end
 
