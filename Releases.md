@@ -1,12 +1,15 @@
 
-# 2.2.1-DashTest1
+# 2.2.1-Dashboard-RC1
+
+RC1 Release candidate for end users to try out a stable version of the new Ethos Dashboard System.
 
 - Reorganised main menu for clarity and ease of use
 - Added new settings section to allow configuration of suite
 - Replaced RFSTATUS with DASHBOARD themes
 - Moved all alerts into an events system via background task
 - Introduced a smart fuel sensor
-- General speed/ram usage improvements.
+- General speed/ram usage improvements
+- Many other misc bug fixes
 
 # 2.2.1
 
