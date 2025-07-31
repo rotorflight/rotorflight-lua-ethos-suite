@@ -7,9 +7,7 @@ This release is a technology preview release intended to provide end users with 
 
 We have worked hard to fix any bugs - and would now like end users/testers to use this stable base for all feedback reporting.  
 
-Please note.  The official latest release that aligns with the 2.2.1 firmware does not include dashboard.  This snapshot is to the
-best of our knowledge stable - however bugs may still occur.  If you are not happy to use a snapshot version - please use the official 
-2.2.0 release of rfsuite.
+Please note.  The official latest release that aligns with the 2.2.1 firmware does not include dashboard.  This snapshot is to the best of our knowledge stable - however bugs may still occur.  If you are not happy to use a snapshot version - please use the official 2.2.x release of rfsuite.
 
 Updates in this snapshot include:
 
