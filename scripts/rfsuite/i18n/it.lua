@@ -929,6 +929,20 @@ return {
         ["msg_calibrate"] = "Calibra accelerometro?",
         ["roll"] = "Roll"
       },
+      ["gyro_alignment"] = {
+        ["name"] = "Allineamento Giroscopio",
+        ["board_alignment"] = "Allineamento Scheda",
+        ["swashplate_config"] = "Configurazione Piatto Oscillante",
+        ["roll"] = "Roll",
+        ["pitch"] = "Pitch",
+        ["yaw"] = "Yaw",
+        ["swash_type"] = "Tipo Piatto",
+        ["msg_calibrate"] = "Calibrare l'allineamento del giroscopio? Questo resetta l'accelerometro e applica le impostazioni di allineamento correnti della scheda.",
+        ["help_p1"] = "Lo strumento di allineamento del giroscopio consente di configurare gli angoli di allineamento della scheda per compensare l'orientamento di montaggio del controller di volo.",
+        ["help_p2"] = "Allineamento Scheda: Regola gli angoli di roll, pitch e yaw (in gradi) per corrispondere all'orientamento fisico del tuo controller di volo rispetto al telaio dell'elicottero.",
+        ["help_p3"] = "Configurazione Piatto Oscillante: Mostra il tipo di piatto oscillante corrente dalla configurazione del mixer. Questo e' di sola lettura e deve essere modificato nelle impostazioni del Mixer.",
+        ["help_p4"] = "Usa il pulsante Strumento per calibrare l'accelerometro dopo aver apportato modifiche all'allineamento. Salva le impostazioni nell'EEPROM quando completato."
+      },
       ["rates"] = {
         ["help_table_5_p2"] = "Velocita' massima: velocita' di rotazione massima alla massima escursione dello stick in gradi al secondo.",
         ["actual"] = "ATTUALE",

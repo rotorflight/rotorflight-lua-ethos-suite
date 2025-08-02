@@ -929,6 +929,20 @@ return {
         ["msg_calibrate"] = "Calibrar el acelerómetro?",
         ["roll"] = "Alabeo"
       },
+      ["gyro_alignment"] = {
+        ["name"] = "Alineación del Giroscopio",
+        ["board_alignment"] = "Alineación de la Placa",
+        ["swashplate_config"] = "Configuración del Plato Cíclico",
+        ["roll"] = "Alabeo",
+        ["pitch"] = "Cabeceo",
+        ["yaw"] = "Guiñada",
+        ["swash_type"] = "Tipo de Plato",
+        ["msg_calibrate"] = "¿Calibrar la alineación del giroscopio? Esto reiniciará el acelerómetro y aplicará la configuración actual de alineación de la placa.",
+        ["help_p1"] = "La herramienta de alineación del giroscopio permite configurar los ángulos de alineación de la placa para compensar la orientación de montaje del controlador de vuelo.",
+        ["help_p2"] = "Alineación de la Placa: Ajuste los ángulos de alabeo, cabeceo y guiñada (en grados) para que coincidan con la orientación física de su controlador de vuelo en relación con el marco del helicóptero.",
+        ["help_p3"] = "Configuración del Plato Cíclico: Muestra el tipo de plato cíclico actual de la configuración del mezclador. Esto es de solo lectura y debe cambiarse en la configuración del Mezclador.",
+        ["help_p4"] = "Use el botón Herramienta para calibrar el acelerómetro después de realizar cambios de alineación. Guarde la configuración en EEPROM cuando termine."
+      },
       ["rates"] = {
         ["help_table_5_p2"] = "Tasa Máx.: Tasa de rotación máxima durante el desplazamiento máximo del joystick en grados por segundo.",
         ["actual"] = "ACTUAL",
