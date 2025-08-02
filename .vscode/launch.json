@@ -1,43 +1,29 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "SIM: Deploy (Default)",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/bin/deploy/vscode/deploy.py",
-            "args": [
-                "--src", "${workspaceFolder}",
-                "--sim", "0",
-                "--destfolders", "${env:FRSKY_SIM_SRC}"
-            ],
-            "console": "integratedTerminal",
-            "justMyCode": true
-        },
-        {
-            "name": "SIM: Deploy & Choose Sim",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/bin/deploy/vscode/deploy.py",
-            "args": [
-                "--src", "${workspaceFolder}",
-                "--sim", "choose",
-                "--destfolders", "${env:FRSKY_SIM_SRC}"
-            ],
-            "console": "integratedTerminal",
-            "justMyCode": true
-        },
-        {
-            "name": "Radio: Deploy",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/bin/deploy/vscode/deploy.py",
-            "args": [
-                "--src", "${workspaceFolder}",
-                "--radio"
-            ],
-            "console": "integratedTerminal",
-            "justMyCode": true
-        }
-    ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Deploy & Launch",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/bin/deploy/deploy.py",
+      "args": ["--launch"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Deploy & Choose",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/bin/deploy/deploy.py",
+      "args": ["--choose", "--launch"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Deploy Radio",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/bin/deploy/deploy.py",
+      "args": ["--radio", "--radio-debug"],
+      "console": "integratedTerminal"
+    }
+  ]
 }

@@ -33,7 +33,7 @@ config.toolName = "Rotorflight"                                                 
 config.icon = lcd.loadMask("app/gfx/icon.png")                                      -- icon
 config.icon_logtool = lcd.loadMask("app/gfx/icon_logtool.png")                      -- icon
 config.icon_unsupported = lcd.loadMask("app/gfx/unsupported.png")                   -- icon
-config.version = {major = 2, minor = 2, revision = 1, suffix = "DashTest1"}         -- version of the script
+config.version = {major = 2, minor = 3, revision = 0, suffix = "20250731"}          -- version of the script
 config.ethosVersion = {1, 6, 2}                                                     -- min version of ethos supported by this script                                                     
 config.supportedMspApiVersion = {"12.07","12.08","12.09"}                           -- supported msp versions
 config.baseDir = "rfsuite"                                                          -- base directory for the suite. This is only used by msp api to ensure correct path
