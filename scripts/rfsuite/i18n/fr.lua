@@ -929,6 +929,20 @@ return {
         ["msg_calibrate"] = "Calibrer l'accelerometre ?",
         ["roll"] = "Roulis"
       },
+      ["gyro_alignment"] = {
+        ["name"] = "Alignement Gyro",
+        ["board_alignment"] = "Alignement de la Carte",
+        ["swashplate_config"] = "Configuration du Plateau Cyclique",
+        ["roll"] = "Roulis",
+        ["pitch"] = "Tangage",
+        ["yaw"] = "Lacet",
+        ["swash_type"] = "Type de Plateau",
+        ["msg_calibrate"] = "Calibrer l'alignement gyro ? Cela reinitialise l'accelerometre et applique les parametres d'alignement actuels de la carte.",
+        ["help_p1"] = "L'outil d'alignement gyro permet de configurer les angles d'alignement de la carte pour compenser l'orientation de montage du controleur de vol.",
+        ["help_p2"] = "Alignement de la Carte : Ajustez les angles de roulis, tangage et lacet (en degres) pour correspondre a l'orientation physique de votre controleur de vol par rapport au chassis de l'helicoptere.",
+        ["help_p3"] = "Configuration du Plateau Cyclique : Affiche le type de plateau cyclique actuel de la configuration du mixeur. Ceci est en lecture seule et doit etre modifie dans les parametres du Mixeur.",
+        ["help_p4"] = "Utilisez le bouton Outil pour calibrer l'accelerometre apres avoir effectue des modifications d'alignement. Sauvegardez les parametres dans l'EEPROM une fois termine."
+      },
       ["rates"] = {
         ["help_table_5_p2"] = "Taux Max : Taux de rotation maximal a pleine deviation du manche en degres par seconde.",
         ["actual"] = "ACTUEL",

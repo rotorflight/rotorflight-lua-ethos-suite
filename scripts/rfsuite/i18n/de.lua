@@ -929,6 +929,20 @@ return {
         ["msg_calibrate"] = "Beschleunigungssensor kalibrieren?",
         ["roll"] = "Roll"
       },
+      ["gyro_alignment"] = {
+        ["name"] = "Gyro-Ausrichtung",
+        ["board_alignment"] = "Board-Ausrichtung",
+        ["swashplate_config"] = "Taumelscheiben-Konfiguration",
+        ["roll"] = "Roll",
+        ["pitch"] = "Nick",
+        ["yaw"] = "Gier",
+        ["swash_type"] = "Taumelscheiben-Typ",
+        ["msg_calibrate"] = "Gyro-Ausrichtung kalibrieren? Dies setzt den Beschleunigungssensor zurueck und wendet die aktuellen Board-Ausrichtungseinstellungen an.",
+        ["help_p1"] = "Das Gyro-Ausrichtungstool ermoeglicht es, die Board-Ausrichtungswinkel zu konfigurieren, um die Montageausrichtung des Flugcontrollers zu kompensieren.",
+        ["help_p2"] = "Board-Ausrichtung: Passen Sie Roll-, Nick- und Gierwinkel (in Grad) an die physische Ausrichtung Ihres Flugcontrollers relativ zum Helikopterrahmen an.",
+        ["help_p3"] = "Taumelscheiben-Konfiguration: Zeigt den aktuellen Taumelscheiben-Typ aus der Mixer-Konfiguration an. Dies ist schreibgeschuetzt und muss in den Mixer-Einstellungen geaendert werden.",
+        ["help_p4"] = "Verwenden Sie die Tool-Schaltflaeche, um den Beschleunigungssensor nach Ausrichtungsaenderungen zu kalibrieren. Speichern Sie die Einstellungen im EEPROM, wenn Sie fertig sind."
+      },
       ["rates"] = {
         ["help_table_5_p2"] = "Maximalrate: Maximale Rotationsgeschwindigkeit bei vollem Knueppelausschlag in Grad pro Sekunde.",
         ["actual"] = "ACTUAL",
