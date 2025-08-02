@@ -36,71 +36,38 @@ local lastFuelTimestamp = nil
 -- Very stable, slow decline	    1–5
 -- Moderate responsiveness	        6–10
 -- Fast decay (minimal clamping)	12+
-local   maxFuelDropPerSecond  = 0.65   -- percent per second 
+local   maxFuelDropPerSecond  = 1   -- percent per second 
 
 -- Very slow rise per second to avoid false positives (fuel technically can only go down )
-local maxFuelRisePerSecond = 0.2   -- maximum rise in percent per second
+local maxFuelRisePerSecond = 0.2  -- maximum rise in percent per second
 
---
-local minQ, maxQ   = 0.002, 0.02
-local minR, maxR   = 0.5,   0.1
-local defaultFactor= 0.5    -- mid‑point
-local lastFactor   = nil
+local MAX_FALL_PER_SEC = 0.05
+local lastFilteredVoltage = nil
 
-local kalmanVoltage = nil
-local kalmanP       = 1.0
-local kalmanQ       = minQ
-local kalmanR       = maxR
-
-
-local function updateKalmanParams(f)
-    -- clamp 0–1
-    f = math.max(0, math.min(1, f))
-
-    -- Q: high→low as f goes 0→1  (more smoothing at high f)
-    kalmanQ = maxQ - (maxQ - minQ) * f
-
-    -- R: low→high as f goes 0→1  (more trusting of measurement noise at high f)
-    kalmanR = minR + (maxR - minR) * f
-end
-
-local function kalmanFilterVoltage(measured)
-    if not kalmanVoltage then
-        kalmanVoltage = measured
-        return measured
+local function fallingLimitedFilter(current_v, prev_v, dt)
+    if not prev_v then return current_v end
+    local max_drop = dt * MAX_FALL_PER_SEC
+    if current_v >= prev_v then
+        return current_v
+    else
+        return math.max(current_v, prev_v - max_drop)
     end
-
-    -- Prediction update
-    kalmanP = kalmanP + kalmanQ
-
-    -- Measurement update
-    local K = kalmanP / (kalmanP + kalmanR)
-    kalmanVoltage = kalmanVoltage + K * (measured - kalmanVoltage)
-    kalmanP = (1 - K) * kalmanP
-
-    return kalmanVoltage
 end
 
 -- Discharge curve with 0.01V per cell resolution from 3.00V to 4.20V (121 points)
 -- This curve uses a sigmoid approximation to mimic real LiPo discharge behavior
 local dischargeCurveTable = {}
 for i = 0, 120 do
-    local v = 3.00 + i * 0.01
-    local a, b, c = 12, 3.7, 100
-    local percent = 100 / (1 + math.exp(-a * (v - b)))
+    local v = 3.30 + i * 0.01
+    local percent = (v - 3.30) / (4.20 - 3.30) * 100
     dischargeCurveTable[i + 1] = math.floor(math.min(100, math.max(0, percent)) + 0.5)
 end
 
-local function resetKalmanFilter()
-    kalmanVoltage = nil
-    kalmanP = 1.0
-end
 
 local function resetVoltageTracking()
     lastVoltages = {}
     voltageStableTime = nil
     voltageStabilised = false
-    resetKalmanFilter()
 end
 
 local function isVoltageStable()
@@ -116,8 +83,10 @@ end
 local function getStickLoadFactor()
     local rx = rfsuite.session.rx.values
     if not rx then return 0 end
-    local sumAbs = math.abs(rx.aileron or 0) + math.abs(rx.elevator or 0) + math.abs(rx.collective or 0) + math.abs(rx.rudder or 0)
-    return math.min(1.0, sumAbs / 4000) -- scale from 0.0 to 1.0
+    local sum = 1.0 * math.abs(rx.aileron or 0)
+              + 1.0 * math.abs(rx.elevator or 0)
+              + 1.2 * math.abs(rx.collective or 0)
+    return math.min(1.0, sum / 3000)
 end
 
 local lastRpm = nil
@@ -139,7 +108,7 @@ local function applySagCompensation(voltage)
     local sagFactor = math.max(getStickLoadFactor(), getRpmDropFactor())
     -- nonlinear curve that *increases* with multiplier:
     local compensationScale = multiplier ^ 1.5
-    local compensatedVoltage = voltage + (compensationScale * sagFactor * 0.6)
+    local compensatedVoltage = voltage + (compensationScale * sagFactor * 0.3)
     return compensatedVoltage
 end
 
@@ -183,14 +152,6 @@ local function smartFuelCalc()
             resetVoltageTracking()
             lastSensorMode = rfsuite.session.modelPreferences.battery.calc_local
         end
-    end
-
-    -- if it changed, recompute Q/R and wipe the old state
-    local f = rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery and rfsuite.session.modelPreferences.battery.kalman_multiplier or defaultFactor
-    if f ~= lastFactor then
-        lastFactor = f
-        updateKalmanParams(f)
-        resetVoltageTracking()
     end
 
     local bc = rfsuite.session.batteryConfig
@@ -252,16 +213,7 @@ local function smartFuelCalc()
         end
     end
 
-    -- Only apply Kalman while actually flying; otherwise reset it and use raw voltage
-    local filteredVoltage
-    if rfsuite.flightmode.current == "inflight" or rfsuite.flightmode.current == "postflight"  then
-        filteredVoltage = kalmanFilterVoltage(voltage)
-    else
-        -- mode isn’t inflight: wipe out any past filter state
-        resetKalmanFilter()
-        filteredVoltage = voltage
-    end
-
+    local filteredVoltage = fallingLimitedFilter(voltage, lastFilteredVoltage, os.clock() - (lastFuelTimestamp or os.clock()))
     local compensatedVoltage = applySagCompensation(filteredVoltage)
     local percent = fuelPercentageCalcByVoltage(compensatedVoltage, bc.batteryCellCount)
 
