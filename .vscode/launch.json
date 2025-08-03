@@ -8,15 +8,7 @@
       "program": "${workspaceFolder}/bin/deploy/deploy.py",
       "args": ["--launch"],
       "console": "integratedTerminal"
-    },
-    {
-      "name": "Deploy & Launch [minify]",
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${workspaceFolder}/bin/deploy/deploy.py",
-      "args": ["--launch", "--minify"],
-      "console": "integratedTerminal"
-    },    
+    },   
     {
       "name": "Deploy & Choose",
       "type": "debugpy",
@@ -24,15 +16,7 @@
       "program": "${workspaceFolder}/bin/deploy/deploy.py",
       "args": ["--choose", "--launch"],
       "console": "integratedTerminal"
-    },
-    {
-      "name": "Deploy & Choose [minify]",
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${workspaceFolder}/bin/deploy/deploy.py",
-      "args": ["--choose", "--launch", "--minify"],
-      "console": "integratedTerminal"
-    },    
+    },   
     {
       "name": "Deploy Radio",
       "type": "debugpy",
@@ -40,14 +24,6 @@
       "program": "${workspaceFolder}/bin/deploy/deploy.py",
       "args": ["--radio", "--radio-debug"],
       "console": "integratedTerminal"
-    },
-    {
-      "name": "Deploy Radio [minify]",
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${workspaceFolder}/bin/deploy/deploy.py",
-      "args": ["--radio", "--radio-debug", "--minify"],
-      "console": "integratedTerminal"
-    } 
+    }
   ]
 }
