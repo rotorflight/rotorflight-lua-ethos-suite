@@ -30,27 +30,15 @@ jobs:
       with:
         node-version: 18
 
-    - name: Install luamin
+    - name: Minify Lua scripts via npx
       run: |
-        npm install -g luamin
-        # add the global npm bin to PATH for subsequent steps
-        echo "$(npm bin -g)" >> $GITHUB_PATH
-
-    - name: List workspace
-      run: |
-        echo "Working dir: $(pwd)"
-        ls -R .
-
-    - name: Check luamin on PATH
-      run: |
-        which luamin || echo "luamin not found"
-        luamin --version || echo "cannot run luamin"
-
-    - name: Minify Lua scripts
-      run: |
+        echo "→ Minifying with npx luamin…"
         find scripts/ -type f -name '*.lua' -print0 \
-          | xargs -0 -I{} luamin -f {} -o {}        
-
+          | while IFS= read -r -d '' file; do
+              echo "[CI] Minifying $file"
+              npx --yes luamin -f "$file" -o "$file"
+            done
+     
     - name: Create rotorflight-lua-ethos-suite-PR-<number>.zip 
       run: |
         zip -q -r -9 "rotorflight-lua-ethos-suite-${{ env.GIT_VER }}.zip" scripts
