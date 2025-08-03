@@ -37,8 +37,8 @@ jobs:
     - name: Minify Lua scripts
       run: |
         chmod +x .github/scripts/minify.py
-        .github/scripts/minify.py "$PWD/scripts"
-    
+        python3 .github/scripts/minify.py "$PWD/scripts"
+
     - name: Create rotorflight-lua-ethos-suite-PR-<number>.zip
       run: |
         zip -q -r -9 "rotorflight-lua-ethos-suite-${{ env.GIT_VER }}.zip" scripts
