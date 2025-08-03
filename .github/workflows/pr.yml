@@ -52,18 +52,25 @@ jobs:
         echo "👉 /usr/bin/luamin now points at:"
         ls -l /usr/bin/luamin
 
-    - name: Test luamin manually
-      run: |
-        echo "print('hello world')" > test.lua
-        cat test.lua
-        luamin -f test.lua
 
-
-    - name: Minify Lua scripts
+    - name: Minify Lua files using luamin
       run: |
-        chmod +x .github/scripts/minify.py
-        # Run the minifier; it will exit non-zero on any failure
-        python3 .github/scripts/minify.py scripts
+        echo "Minifying Lua files with $LUAMIN..."
+        find scripts -name '*.lua' | while read file; do
+          echo "Minifying: $file"
+          TMPFILE=$(mktemp)
+          if "$LUAMIN" -f "$file" > "$TMPFILE"; then
+            mv "$TMPFILE" "$file"
+          else
+            echo "[ERROR] Failed to minify $file"
+            cat "$TMPFILE"
+            rm "$TMPFILE"
+            exit 1
+          fi
+        done
+      env:
+        LUAMIN: ${{ steps.luamin_path.outputs.LUAMIN }}
+
 
     - name: Create rotorflight-lua-ethos-suite-PR-<number>.zip
       run: |
