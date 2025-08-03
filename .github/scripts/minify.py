@@ -3,8 +3,8 @@ import os
 import subprocess
 import sys
 
-# Path to the locally-installed luamin binary
-LUAMIN_CMD = os.path.join(os.getcwd(), 'node_modules', '.bin', 'luamin')
+# Absolute path to the luamin binary as found on CI runner
+LUAMIN_CMD = '/usr/local/lib/node_modules/luamin/bin/luamin'
 
 
 def minify_lua_file(filepath):
@@ -15,7 +15,7 @@ def minify_lua_file(filepath):
         print(f"[MINIFY ERROR] luamin not found at {LUAMIN_CMD}", file=sys.stderr)
         return False
 
-    # Run luamin, capturing stdout and stderr
+    # Run luamin, capture stdout and stderr
     result = subprocess.run(
         [LUAMIN_CMD, '-f', filepath],
         stdout=subprocess.PIPE,
