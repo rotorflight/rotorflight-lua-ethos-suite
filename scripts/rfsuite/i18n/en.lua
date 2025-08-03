@@ -930,17 +930,15 @@ return {
         ["roll"] = "Roll"
       },
       ["gyro_alignment"] = {
-        ["name"] = "Gyro Alignment",
+        ["name"] = "Board Alignment",
         ["board_alignment"] = "Board Alignment",
-        ["swashplate_config"] = "Swashplate Configuration",
         ["roll"] = "Roll",
         ["pitch"] = "Pitch",
         ["yaw"] = "Yaw",
-        ["swash_type"] = "Swash Type",
-        ["msg_calibrate"] = "Calibrate gyro alignment? This will reset the accelerometer and apply current board alignment settings.",
-        ["help_p1"] = "The gyro alignment tool allows you to configure the board alignment angles to compensate for flight controller mounting orientation.",
+        ["msg_calibrate"] = "Calibrate accelerometer? This will reset the accelerometer and apply current board alignment settings.",
+        ["help_p1"] = "The board alignment tool allows you to configure the board alignment angles to compensate for flight controller mounting orientation.",
         ["help_p2"] = "Board Alignment: Adjust roll, pitch, and yaw angles (in degrees) to match your flight controller's physical orientation relative to the helicopter frame.",
-        ["help_p3"] = "Swashplate Configuration: Displays the current swashplate type from the mixer configuration. This is read-only and must be changed in the Mixer settings.",
+        ["help_p3"] = "These settings compensate for cases where the flight controller is not mounted perfectly aligned with the helicopter's frame axes.",
         ["help_p4"] = "Use the Tool button to calibrate the accelerometer after making alignment changes. Save settings to EEPROM when complete."
       },
       ["rates"] = {
