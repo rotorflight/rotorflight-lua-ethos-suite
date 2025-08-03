@@ -30,25 +30,18 @@ jobs:
         echo "GH_TYPE=${GH_TYPE}" >> ${GITHUB_ENV}
         cat ${GITHUB_ENV}
 
-    - name: Download luamin CLI
-      run: |
-        mkdir -p tools
-        curl -fsSL -o tools/luamin \
-          https://github.com/trixnz/luamin/releases/download/v0.2.1/luamin_linux_amd64
-        chmod +x tools/luamin
-        # expose it on PATH for subsequent steps
-        echo "${{ github.workspace }}/tools" >> $GITHUB_PATH
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        cache: npm
 
-    - name: Minify Lua scripts with standalone luamin
+    - name: Install luamin
+      run: npm install -g luamin
+
+    - name: Minify Lua scripts
       run: |
-        echo "→ Using standalone luamin at $(which luamin)"
-        find scripts/ -type f -name '*.lua' -print \
-          | while read -r file; do
-              echo "[CI] Minifying $file"
-              # luamin -f <infile> writes minified to stdout
-              luamin -f "$file" > "${file}.tmp"
-              mv "${file}.tmp" "$file"
-            done
+        find scripts/ -type f -name '*.lua' -print0 \
+          | xargs -0 -I{} luamin -f {} -o {}
 
     - name: Make release package
       run: zip -q -r -9 "rotorflight-lua-ethos-suite-${{ env.GIT_VER }}.zip" scripts

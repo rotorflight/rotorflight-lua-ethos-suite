@@ -25,25 +25,18 @@ jobs:
         # Show updated file (for verification)
         grep 'config\.' scripts/rfsuite/main.lua
 
-    - name: Download luamin CLI
-      run: |
-        mkdir -p tools
-        curl -fsSL -o tools/luamin \
-          https://github.com/trixnz/luamin/releases/download/v0.2.1/luamin_linux_amd64
-        chmod +x tools/luamin
-        # expose it on PATH for subsequent steps
-        echo "${{ github.workspace }}/tools" >> $GITHUB_PATH
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        cache: npm
 
-    - name: Minify Lua scripts with standalone luamin
+    - name: Install luamin
+      run: npm install -g luamin
+
+    - name: Minify Lua scripts
       run: |
-        echo "→ Using standalone luamin at $(which luamin)"
-        find scripts/ -type f -name '*.lua' -print \
-          | while read -r file; do
-              echo "[CI] Minifying $file"
-              # luamin -f <infile> writes minified to stdout
-              luamin -f "$file" > "${file}.tmp"
-              mv "${file}.tmp" "$file"
-            done
+        find scripts/ -type f -name '*.lua' -print0 \
+          | xargs -0 -I{} luamin -f {} -o {}
 
 
     - name: Create rotorflight-lua-ethos-suite-PR-<number>.zip

@@ -1,0 +1,8 @@
+{
+  "name": "rotorflight-lua-ethos-suite",
+  "version": "1.0.0",
+  "private": true,
+  "devDependencies": {
+    "luamin": "^0.2.1"
+  }
+}
