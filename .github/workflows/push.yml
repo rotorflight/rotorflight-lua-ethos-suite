@@ -33,7 +33,10 @@ jobs:
         node-version: 18
 
     - name: Install luamin
-      run: npm install -g luamin
+      run: |
+        npm install -g luamin
+        # add the global npm bin to PATH for subsequent steps
+        echo "$(npm bin -g)" >> $GITHUB_PATH
 
     - name: Minify Lua scripts
       run: |
