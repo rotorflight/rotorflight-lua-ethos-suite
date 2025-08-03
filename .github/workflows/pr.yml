@@ -55,7 +55,8 @@ jobs:
     - name: Minify Lua scripts
       run: |
         chmod +x .github/scripts/minify.py
-        python3 .github/scripts/minify.py
+        # Run the minifier; it will exit non-zero on any failure
+        python3 .github/scripts/minify.py scripts
 
     - name: Create rotorflight-lua-ethos-suite-PR-<number>.zip
       run: |

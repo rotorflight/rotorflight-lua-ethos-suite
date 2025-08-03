@@ -5,17 +5,16 @@ import shutil
 import subprocess
 import sys
 
-# Locate luamin binary: try PATH then node_modules/.bin
-LUAMIN_CMD = shutil.which('luamin') or os.path.join(os.path.dirname(__file__), '..', '..', 'node_modules', '.bin', 'luamin')
-
+# We assume `luamin` is on PATH (your playbook has created the symlink for us)
+LUAMIN_CMD = 'luamin'
 
 def minify_lua_file(filepath):
     print(f"[MINIFY] Processing: {filepath}")
     print(f"[MINIFY] Using luamin: {LUAMIN_CMD}")
 
-    # Verify binary
-    if not os.path.isfile(LUAMIN_CMD) or not os.access(LUAMIN_CMD, os.X_OK):
-        print(f"[MINIFY ERROR] luamin not found or not executable at {LUAMIN_CMD}", file=sys.stderr)
+    # Verify binary is on PATH
+    if shutil.which(LUAMIN_CMD) is None:
+        print(f"[MINIFY ERROR] `{LUAMIN_CMD}` not found on PATH", file=sys.stderr)
         return False
 
     # Show version for debugging
@@ -27,7 +26,7 @@ def minify_lua_file(filepath):
 
     # Run luamin
     proc = subprocess.run(
-        [LUAMIN_CMD, '-f', filepath],
+        [LUAMIN_CMD, '--', filepath],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True
@@ -67,11 +66,22 @@ def main(root='scripts'):
     else:
         print("[MINIFY] All files minified successfully.")
 
+if __name__ == "__main__":
+    import argparse
 
-def main(root='scripts'):
-    if os.path.isabs(root):
-        target_dir = root
-    else:
-        repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-        target_dir = os.path.join(repo_root, root)
-    print(f"[MINIFY] Target directory: {target_dir}")
+    parser = argparse.ArgumentParser(
+        description="Recursively minify all .lua files under a directory."
+    )
+    parser.add_argument(
+        "root",
+        nargs="?",
+        default="scripts",
+        help="Relative or absolute path to the scripts directory (default: scripts/)"
+    )
+    args = parser.parse_args()
+
+    try:
+        main(args.root)
+    except Exception as e:
+        print(f"[MINIFY ERROR] {e}", file=sys.stderr)
+        sys.exit(1)
