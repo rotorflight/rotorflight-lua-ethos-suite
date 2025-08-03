@@ -41,7 +41,7 @@ jobs:
         echo "Working dir: $(pwd)"
         ls -R .
 
-    - name: Debug: luamin on PATH
+    - name: Check luamin on PATH
       run: |
         which luamin || echo "luamin not found"
         luamin --version || echo "cannot run luamin"
