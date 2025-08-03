@@ -57,7 +57,7 @@ end
 -- Discharge curve with 0.01V per cell resolution from 3.00V to 4.20V (121 points)
 -- This curve uses a sigmoid approximation to mimic real LiPo discharge behavior
 local dischargeCurveTable = {}
-for i = 0, 120 do
+for i = 0, 100 do
     local v = 3.30 + i * 0.01
     local percent = (v - 3.30) / (4.20 - 3.30) * 100
     dischargeCurveTable[i + 1] = math.floor(math.min(100, math.max(0, percent)) + 0.5)
@@ -104,30 +104,29 @@ local function applySagCompensation(voltage)
     if rfsuite.flightmode.current ~= "inflight" then
         return voltage -- no sag compensation unless we're flying
     end
-    local multiplier = rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery and rfsuite.session.modelPreferences.battery.sag_multiplier or 0.5
+    local multiplier = rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery and rfsuite.session.modelPreferences.battery.sag_multiplier or 0.7
     local sagFactor = math.max(getStickLoadFactor(), getRpmDropFactor())
     -- nonlinear curve that *increases* with multiplier:
-    local compensationScale = multiplier ^ 1.5
-    local compensatedVoltage = voltage + (compensationScale * sagFactor * 0.3)
-    return compensatedVoltage
+    local compensationScale = multiplier ^ 1.5 -- adjust exponent for sensitivity
+    return voltage + (compensationScale * sagFactor * 0.5)
 end
 
 local function fuelPercentageCalcByVoltage(voltage, cellCount)
     local bc = rfsuite.session.batteryConfig
     local minV = bc.vbatmincellvoltage or 3.30
     local fullV = bc.vbatfullcellvoltage or 4.10
-    local reserve = bc.consumptionWarningPercentage or 0
+    local reserve = bc.consumptionWarningPercentage or 30
 
     local usableRange = fullV - minV
-    local adjustedMinV = minV + (usableRange * (reserve / 100))
-
+    local adjustedMinV = minV + (usableRange * (reserve / 100)) * 1.4 -- 1.4 is a factor to adjust the min voltage for better accuracy
+          
     local voltagePerCell = voltage / cellCount
 
     -- Clamp voltage to adjusted usable range
-    voltagePerCell = math.max(3.00, math.min(fullV, voltagePerCell))
+    voltagePerCell = math.max(3.30, math.min(fullV, voltagePerCell))
 
     -- Remap [adjustedMinV, fullV] → [3.00, 4.20]
-    local sigmoidMin, sigmoidMax = 3.00, 4.20
+    local sigmoidMin, sigmoidMax = 3.30, 4.20
     local scaledV = sigmoidMin + (voltagePerCell - adjustedMinV) / (fullV - adjustedMinV) * (sigmoidMax - sigmoidMin)
 
     local tableIndex = math.floor((scaledV - sigmoidMin) / 0.01) + 1
@@ -214,9 +213,8 @@ local function smartFuelCalc()
     end
 
     local filteredVoltage = fallingLimitedFilter(voltage, lastFilteredVoltage, os.clock() - (lastFuelTimestamp or os.clock()))
-    local compensatedVoltage = applySagCompensation(filteredVoltage)
+    local compensatedVoltage = applySagCompensation(filteredVoltage / bc.batteryCellCount) * bc.batteryCellCount
     local percent = fuelPercentageCalcByVoltage(compensatedVoltage, bc.batteryCellCount)
-
     local now = os.clock()
     if (rfsuite.flightmode.current == "inflight" or rfsuite.flightmode.current == "postflight")
     and lastFuelPercent and lastFuelTimestamp then
