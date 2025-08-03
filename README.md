@@ -178,6 +178,14 @@ To build and deploy RFSuite locally:
     pip install serial
     ```
 
+-- Install luamin
+
+   ```bash
+   npm install luamin
+   ```
+
+If you do not have npm command, you will need to install NodeJS   
+
 ### Config file
 
 Edit the file bin/config.json to suite your local environment and similator setup. This file is blocked from re-upload in .gitignore
