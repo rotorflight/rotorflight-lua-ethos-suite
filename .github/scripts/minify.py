@@ -1,21 +1,37 @@
+```python
 #!/usr/bin/env python3
 import os
 import shutil
 import subprocess
 import sys
 
-def minify_lua_file(filepath):
+# Default path to the locally-installed luamin
+LOCAL_LUAMIN = os.path.join(os.getcwd(), 'node_modules', '.bin', 'luamin')
+
+
+def minify_lua_file(filepath, luamin_cmd=None):
     print(f"[MINIFY] Processing: {filepath}")
 
-    # Locate luamin executable
-    luamin_cmd = shutil.which("luamin")
+    # Determine luamin executable (override via LUAMIN_CMD env)
     if not luamin_cmd:
-        # Fallback for Windows NPM global installs
-        luamin_cmd = os.path.expandvars(r"%APPDATA%\\npm\\luamin.cmd")
-        if not os.path.exists(luamin_cmd):
-            print("[MINIFY ERROR] 'luamin' not found in PATH or %APPDATA%\\npm.", file=sys.stderr)
-            print("Please run: npm install -g luamin", file=sys.stderr)
-            return False
+        # 1) Use explicit env override if given
+        luamin_cmd = os.environ.get('LUAMIN_CMD')
+        # 2) Use local node_modules/.bin
+        if not luamin_cmd and os.path.isfile(LOCAL_LUAMIN) and os.access(LOCAL_LUAMIN, os.X_OK):
+            luamin_cmd = LOCAL_LUAMIN
+        # 3) Fallback to global PATH
+        if not luamin_cmd:
+            luamin_cmd = shutil.which('luamin')
+        # 4) Windows global npm fallback
+        if not luamin_cmd:
+            win_bin = os.path.expandvars(r"%APPDATA%\\npm\\luamin.cmd")
+            if os.path.isfile(win_bin) and os.access(win_bin, os.X_OK):
+                luamin_cmd = win_bin
+
+    if not luamin_cmd:
+        print("[MINIFY ERROR] 'luamin' not found. Tried env LUAMIN_CMD, local node_modules/.bin, PATH, and %APPDATA%\\npm.", file=sys.stderr)
+        print("Please install luamin (e.g. npm ci or npm install -g luamin)", file=sys.stderr)
+        return False
 
     try:
         # Run luamin and capture output
@@ -24,8 +40,8 @@ def minify_lua_file(filepath):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
-            encoding='utf-8',  # force proper decoding
-            errors='replace'   # replace invalid chars
+            encoding='utf-8',
+            errors='replace'
         )
 
         if result.returncode != 0:
@@ -43,7 +59,6 @@ def minify_lua_file(filepath):
 
 
 def main(root='scripts'):
-    # Walk and minify all .lua under the given root
     failures = 0
     for dirpath, _, files in os.walk(root):
         for fn in files:
@@ -52,11 +67,10 @@ def main(root='scripts'):
                 if not minify_lua_file(path):
                     failures += 1
 
-    # Exit with failure code if any files failed
     if failures:
         sys.exit(1)
 
 if __name__ == '__main__':
-    # Optionally accept a custom root directory as an argument
     root_dir = sys.argv[1] if len(sys.argv) > 1 else 'scripts'
     main(root_dir)
+```
