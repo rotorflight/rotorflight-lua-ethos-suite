@@ -33,25 +33,17 @@ jobs:
     - name: Install luamin
       run: npm install -g luamin
 
-    - name: Add local node_modules to PATH
-      run: echo "${{ github.workspace }}/node_modules/.bin" >> $GITHUB_PATH
-
-    - name: locate any luamin binary on disk
-      shell: bash
+    - name: Add luamin to PATH
       run: |
-        echo "→ Searching for luamin across entire filesystem (this will take a bit)…"
-        sudo find / \
-          -type f \( -iname 'luamin' -o -iname '*luamin*' \) \
-          -executable -print 2>/dev/null || true
+        echo "/usr/local/lib/node_modules/luamin/bin" >> $GITHUB_PATH
 
     - name: Minify Lua scripts
       run: |
-        echo "→ Minifying with luamin…"
+        echo "→ Using luamin at $(command -v luamin)"
         find scripts/ -type f -name '*.lua' -print \
           | while read -r file; do
               echo "[CI] Minifying $file"
-              luamin -f "$file" > "${file}.tmp"
-              mv "${file}.tmp" "$file"
+              luamin -f "$file" > "${file}.tmp" && mv "${file}.tmp" "$file"
             done
 
     - name: Create rotorflight-lua-ethos-suite-PR-<number>.zip
