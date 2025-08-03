@@ -37,7 +37,7 @@ jobs:
       id: locate-luamin
       run: |
         echo "🔍 Searching for luamin binary on the filesystem…"
-        LUAMIN_PATH=$(find / -type f -name luamin -executable -path "*/luamin/bin/luamin" 2>/dev/null | head -n1)
+        LUAMIN_PATH=$(find /opt/hostedtoolcache/node/ -type f -name luamin -executable -path "*/luamin/bin/luamin" 2>/dev/null | head -n1)
         if [ -z "$LUAMIN_PATH" ]; then
           echo "::error::Could not find luamin binary on the filesystem"
           exit 1
@@ -45,13 +45,12 @@ jobs:
         echo "✅ Found luamin at $LUAMIN_PATH"
         echo "luamin_path=$LUAMIN_PATH" >> $GITHUB_OUTPUT
 
-
-    - name: Verify luamin binary exists
+    - name: Symlink luamin into PATH
       run: |
-        if [ ! -x "/usr/local/lib/node_modules/luamin/bin/luamin" ]; then
-          echo "::error::luamin binary not found at /usr/local/lib/node_modules/luamin/bin/luamin"
-          exit 1
-        fi
+        echo "🔗 Creating symlink from found luamin to /usr/bin/luamin…"
+        sudo ln -sf "${{ steps.locate-luamin.outputs.luamin_path }}" /usr/bin/luamin
+        echo "👉 /usr/bin/luamin now points at:"
+        ls -l /usr/bin/luamin
 
     - name: Minify Lua scripts
       run: |
