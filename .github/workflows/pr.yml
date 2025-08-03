@@ -45,13 +45,13 @@ jobs:
         echo "✅ Found luamin at $LUAMIN_PATH"
         echo "luamin_path=$LUAMIN_PATH" >> $GITHUB_OUTPUT
 
-    - name: Symlink luamin into PATH
+    - name: Set LUAMIN path
+      id: luamin_path
       run: |
-        echo "🔗 Creating symlink from found luamin to /usr/bin/luamin…"
-        sudo ln -sf "${{ steps.locate-luamin.outputs.luamin_path }}" /usr/bin/luamin
-        echo "👉 /usr/bin/luamin now points at:"
-        ls -l /usr/bin/luamin
+        echo "LUAMIN=$(which luamin)" >> "$GITHUB_OUTPUT"
 
+    - name: Confirm luamin path
+      run: echo "LUAMIN path = ${{ steps.luamin_path.outputs.LUAMIN }}"
 
     - name: Minify Lua files using luamin
       run: |
