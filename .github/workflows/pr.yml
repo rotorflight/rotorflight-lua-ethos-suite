@@ -53,25 +53,32 @@ jobs:
     - name: Confirm luamin path
       run: echo "LUAMIN path = ${{ steps.luamin_path.outputs.LUAMIN }}"
 
-    - name: Minify Lua files with luamin
+    - name: Minify Lua files with working directory fix
       run: |
         echo "Using LUAMIN = $LUAMIN"
-        find scripts -type f -name '*.lua' -print0 | while IFS= read -r -d '' file; do
+        find "$(pwd)/scripts" -type f -name '*.lua' -print0 | while IFS= read -r -d '' file; do
           echo "Minifying: $file"
+          DIR=$(dirname "$file")
+          BASENAME=$(basename "$file")
           TMPFILE=$(mktemp)
-          if "$LUAMIN" -f "$file" > "$TMPFILE" 2>err.txt; then
-            mv "$TMPFILE" "$file"
-          else
-            echo "[ERROR] Failed to minify $file"
-            echo "--- stderr ---"
-            cat err.txt
-            echo "---"
-            rm -f "$TMPFILE" err.txt
-            exit 1
-          fi
+
+          (
+            cd "$DIR" || exit 1
+            if "$LUAMIN" -f "$BASENAME" > "$TMPFILE" 2>err.txt; then
+              mv "$TMPFILE" "$BASENAME"
+            else
+              echo "[ERROR] Failed to minify $file"
+              echo "--- stderr ---"
+              cat err.txt
+              echo "---"
+              rm -f "$TMPFILE" err.txt
+              exit 1
+            fi
+          )
         done
       env:
         LUAMIN: ${{ steps.luamin_path.outputs.LUAMIN }}
+
 
     - name: Create rotorflight-lua-ethos-suite-PR-<number>.zip
       run: |
