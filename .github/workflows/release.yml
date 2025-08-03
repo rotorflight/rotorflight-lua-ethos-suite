@@ -35,6 +35,9 @@ jobs:
       with:
         cache: npm
 
+    - name: Add local node_modules to PATH
+      run: echo "${{ github.workspace }}/node_modules/.bin" >> $GITHUB_PATH
+
     - name: Install luamin
       run: npm install -g luamin
 

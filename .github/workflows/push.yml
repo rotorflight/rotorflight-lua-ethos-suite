@@ -35,6 +35,9 @@ jobs:
     - name: Install luamin
       run: npm install -g luamin
 
+    - name: Add local node_modules to PATH
+      run: echo "${{ github.workspace }}/node_modules/.bin" >> $GITHUB_PATH
+
     - name: Minify Lua scripts
       run: |
         find scripts/ -type f -name '*.lua' -print0 \
