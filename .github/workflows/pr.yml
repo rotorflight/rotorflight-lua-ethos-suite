@@ -25,37 +25,33 @@ jobs:
         # Show updated file (for verification)
         grep 'config\.' scripts/rfsuite/main.lua
 
-    - name: Setup Node.js
+    - name: Setup Node.js & cache deps
       uses: actions/setup-node@v3
       with:
+        node-version: 18
         cache: npm
 
-    - name: Install luamin
-      run: npm install -g luamin
+    - name: Install dependencies
+      run: npm ci
 
-    - name: Add luamin to PATH
-      run: |
-        echo "/usr/local/lib/node_modules/luamin/bin" >> $GITHUB_PATH
+    - name: Add local node_modules/.bin to PATH
+      run: echo "${{ github.workspace }}/node_modules/.bin" >> $GITHUB_PATH
 
-    - name: Minify Lua scripts (fail-safe)
-      shell: bash
+    - name: Verify luamin
       run: |
-        echo "→ Using luamin at $(command -v luamin)"
+        echo "→ PATH = $PATH"
+        command -v luamin || { echo "ERROR: luamin not found"; exit 1; }
+        luamin --version
+
+    - name: Minify Lua scripts
+      run: |
+        echo "→ Minifying Lua files…"
         find scripts/ -type f -name '*.lua' -print \
           | while read -r file; do
               echo "[CI] Minifying $file"
-              
-              # run luamin, capture stdout->.tmp, stderr->.err
-              if luamin -f "$file" > "${file}.tmp" 2> "${file}.err"; then
-                mv "${file}.tmp" "$file"
-                rm -f "${file}.err"
-              else
-                echo "[CI][ERROR] luamin failed on $file:"
-                sed 's/^/    /' "${file}.err"
-                rm -f "${file}.tmp"
-              fi
-            done
-
+              luamin -f "$file" > "${file}.tmp"
+              mv "${file}.tmp" "$file"
+            done        
 
     - name: Create rotorflight-lua-ethos-suite-PR-<number>.zip
       run: |
