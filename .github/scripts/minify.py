@@ -12,6 +12,10 @@ def minify_lua_file(filepath):
     print(f"[MINIFY] Processing: {filepath}")
     print(f"[MINIFY] Using luamin: {LUAMIN_CMD}")
 
+    if not os.path.exists(filepath):
+        print(f"[MINIFY ERROR] File does not exist: {filepath}", file=sys.stderr)
+        return False
+
     # Verify binary is on PATH
     if shutil.which(LUAMIN_CMD) is None:
         print(f"[MINIFY ERROR] `{LUAMIN_CMD}` not found on PATH", file=sys.stderr)
