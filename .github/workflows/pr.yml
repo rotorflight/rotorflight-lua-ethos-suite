@@ -30,16 +30,13 @@ jobs:
       with:
         node-version: 18
 
-    - name: Minify Lua scripts via npx
+    - name: Minify Lua scripts via npx (find -exec)
       run: |
         echo "→ Minifying with npx luamin…"
-        find scripts/ -type f -name '*.lua' -print0 \
-          | while IFS= read -r -d '' file; do
-              echo "[CI] Minifying $file"
-              npx --yes luamin -f "$file" -o "$file"
-            done
-     
-    - name: Create rotorflight-lua-ethos-suite-PR-<number>.zip 
+        find scripts/ -type f -name '*.lua' -exec bash -lc \
+          'echo "[CI] Minifying {}" && npx --yes luamin -f "{}" -o "{}"' \;
+
+    - name: Create rotorflight-lua-ethos-suite-PR-<number>.zip
       run: |
         zip -q -r -9 "rotorflight-lua-ethos-suite-${{ env.GIT_VER }}.zip" scripts
 
