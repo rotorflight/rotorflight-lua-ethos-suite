@@ -27,6 +27,19 @@ jobs:
         # Show updated file (for verification)
         grep 'config\.' scripts/rfsuite/main.lua
 
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        cache: npm
+
+    - name: Install luamin
+      run: npm install -g luamin
+
+    - name: Minify Lua scripts
+      run: |
+        find scripts/ -type f -name '*.lua' -print0 \
+          | xargs -0 -I{} luamin -f {} -o {}
+
     - name: Create rotorflight-lua-ethos-suite-commit-<short_sha>.zip (entire scripts folder)
       run: |
         zip -q -r -9 "rotorflight-lua-ethos-suite-${{ env.GIT_VER }}.zip" scripts
