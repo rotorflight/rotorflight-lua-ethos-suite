@@ -37,16 +37,30 @@ jobs:
     - name: Minify Lua scripts
       shell: bash
       run: |
-        echo "→ Minifying Lua files…"
-        # Ensure local bin is first in PATH
+        # 1) make sure we call your npm‐installed luamin
         export PATH="$PWD/node_modules/.bin:$PATH"
 
-        # Find and minify in-place
+        echo "→ Minifying Lua files…"
+
+        # 2) disable “exit on error” so we can recover per-file
+        set +e
+
+        # 3) find & minify, one file per line
         find scripts/ -type f -name '*.lua' -print \
           | while read -r file; do
               echo "[CI] Minifying $file"
-              luamin -f "$file" > "${file}.tmp" && mv "${file}.tmp" "$file"
+              if luamin -f "$file" > "${file}.tmp" 2> "${file}.err"; then
+                mv "${file}.tmp" "$file"
+              else
+                echo "[CI][WARN] parse error in $file:"
+                sed 's/^/    /' "${file}.err"
+              fi
+              rm -f "${file}.err"
             done
+
+        # 4) restore “exit on error” for the rest of the job
+        set -e
+
     
     - name: Create rotorflight-lua-ethos-suite-PR-<number>.zip
       run: |
