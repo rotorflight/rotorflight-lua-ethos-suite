@@ -36,6 +36,16 @@ jobs:
         # add the global npm bin to PATH for subsequent steps
         echo "$(npm bin -g)" >> $GITHUB_PATH
 
+    - name: Debug: list workspace
+      run: |
+        echo "Working dir: $(pwd)"
+        ls -R .
+
+    - name: Debug: luamin on PATH
+      run: |
+        which luamin || echo "luamin not found"
+        luamin --version || echo "cannot run luamin"
+
     - name: Minify Lua scripts
       run: |
         find scripts/ -type f -name '*.lua' -print0 \
