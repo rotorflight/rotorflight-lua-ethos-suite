@@ -30,13 +30,20 @@ jobs:
       with:
         node-version: 18
 
-    - name: Install dependencies
-      run: npm ci
+    - name: Install luamin
+      run: npm install -g luamin
+
+    - name: Verify luamin binary exists
+      run: |
+        if [ ! -x "/usr/local/lib/node_modules/luamin/bin/luamin" ]; then
+          echo "::error::luamin binary not found at /usr/local/lib/node_modules/luamin/bin/luamin"
+          exit 1
+        fi
 
     - name: Minify Lua scripts
       run: |
         chmod +x .github/scripts/minify.py
-        python3 .github/scripts/minify.py "$PWD/scripts"
+        python3 .github/scripts/minify.py
 
     - name: Create rotorflight-lua-ethos-suite-PR-<number>.zip
       run: |
