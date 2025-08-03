@@ -25,59 +25,29 @@ jobs:
         # Show updated file (for verification)
         grep 'config\.' scripts/rfsuite/main.lua
 
-    - name: Setup Node.js & cache deps
-      uses: actions/setup-node@v3
-      with:
-        node-version: 18
-
-    - name: Install luamin
-      run: npm install -g luamin
-
-    - name: Locate luamin binary
-      id: locate-luamin
+    - name: Install Lua and LuaSrcDiet
       run: |
-        echo "🔍 Searching for luamin binary on the filesystem…"
-        LUAMIN_PATH=$(find /opt/hostedtoolcache/node/ -type f -name luamin -executable -path "*/luamin/bin/luamin" 2>/dev/null | head -n1)
-        if [ -z "$LUAMIN_PATH" ]; then
-          echo "::error::Could not find luamin binary on the filesystem"
-          exit 1
-        fi
-        echo "✅ Found luamin at $LUAMIN_PATH"
-        echo "luamin_path=$LUAMIN_PATH" >> $GITHUB_OUTPUT
+        sudo apt-get update
+        sudo apt-get install -y lua5.3 luarocks
+        sudo luarocks install LuaSrcDiet
 
-    - name: Set LUAMIN path
-      id: luamin_path
+    - name: Minify Lua files using LuaSrcDiet
       run: |
-        echo "LUAMIN=$(which luamin)" >> "$GITHUB_OUTPUT"
-
-    - name: Confirm luamin path
-      run: echo "LUAMIN path = ${{ steps.luamin_path.outputs.LUAMIN }}"
-
-    - name: Minify Lua files with working directory fix
-      run: |
-        echo "Using LUAMIN = $LUAMIN"
         find "$(pwd)/scripts" -type f -name '*.lua' -print0 | while IFS= read -r -d '' file; do
           echo "Minifying: $file"
-          DIR=$(dirname "$file")
-          BASENAME=$(basename "$file")
           TMPFILE=$(mktemp)
 
-          (
-            cd "$DIR" || exit 1
-            if "$LUAMIN" -f "$BASENAME" > "$TMPFILE" 2>err.txt; then
-              mv "$TMPFILE" "$BASENAME"
-            else
-              echo "[ERROR] Failed to minify $file"
-              echo "--- stderr ---"
-              cat err.txt
-              echo "---"
-              rm -f "$TMPFILE" err.txt
-              exit 1
-            fi
-          )
+          if luasrcdiet "$file" --outfile "$TMPFILE" 2>err.txt; then
+            mv "$TMPFILE" "$file"
+          else
+            echo "[ERROR] Failed to minify $file"
+            echo "--- stderr ---"
+            cat err.txt
+            echo "---"
+            rm -f "$TMPFILE" err.txt
+            exit 1
+          fi
         done
-      env:
-        LUAMIN: ${{ steps.luamin_path.outputs.LUAMIN }}
 
 
     - name: Create rotorflight-lua-ethos-suite-PR-<number>.zip
