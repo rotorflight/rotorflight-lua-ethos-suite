@@ -52,6 +52,13 @@ jobs:
         echo "👉 /usr/bin/luamin now points at:"
         ls -l /usr/bin/luamin
 
+    - name: Test luamin manually
+      run: |
+        echo "print('hello world')" > test.lua
+        cat test.lua
+        luamin -f test.lua
+
+
     - name: Minify Lua scripts
       run: |
         chmod +x .github/scripts/minify.py
