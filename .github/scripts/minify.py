@@ -11,51 +11,6 @@ LUAMIN_CMD = shutil.which('luamin') or os.path.join(os.path.dirname(__file__), '
 def minify_lua_file(filepath):
     print(f"[MINIFY] Processing: {filepath}")
     print(f"[MINIFY] Using luamin: {LUAMIN_CMD}")
-    print(f"[MINIFY] Current working dir: {os.getcwd()}")
-
-    # Verify the target file exists
-    if not os.path.isfile(filepath):
-        print(f"[MINIFY ERROR] File not found: {filepath}", file=sys.stderr)
-        return False
-
-    # Verify binary
-    if not os.path.isfile(LUAMIN_CMD) or not os.access(LUAMIN_CMD, os.X_OK):
-        print(f"[MINIFY ERROR] luamin not found or not executable at {LUAMIN_CMD}", file=sys.stderr)
-        return False
-
-    # Show version for debugging
-    try:
-        version = subprocess.check_output([LUAMIN_CMD, '--version'], cwd=os.getcwd(), text=True).strip()
-        print(f"[MINIFY] luamin version: {version}")
-    except Exception as e:
-        print(f"[MINIFY WARNING] could not get luamin version: {e}")
-
-    # Prepare command args
-    cmd_args = [LUAMIN_CMD, '-f', filepath]
-    print(f"[MINIFY] Running command: {cmd_args}")
-
-    # Run luamin
-    proc = subprocess.run(
-        cmd_args,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True
-    )
-
-    if proc.returncode != 0:
-        print(f"[MINIFY ERROR] Failed to minify {filepath}: returncode={proc.returncode}", file=sys.stderr)
-        print("--- stderr ---", file=sys.stderr)
-        print(proc.stderr, file=sys.stderr)
-        print("--- stdout ---", file=sys.stderr)
-        print(proc.stdout, file=sys.stderr)
-        return False
-
-    # Overwrite original
-    with open(filepath, 'w', encoding='utf-8') as f:
-        f.write(proc.stdout)
-    return True(filepath):
-    print(f"[MINIFY] Processing: {filepath}")
-    print(f"[MINIFY] Using luamin: {LUAMIN_CMD}")
 
     # Verify binary
     if not os.path.isfile(LUAMIN_CMD) or not os.access(LUAMIN_CMD, os.X_OK):
