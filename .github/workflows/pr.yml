@@ -37,29 +37,33 @@ jobs:
     - name: Add local node_modules/.bin to PATH
       run: echo "${{ github.workspace }}/node_modules/.bin" >> $GITHUB_PATH
 
-    - name: Verify luamin
-      run: |
-        echo "→ PATH = $PATH"
-        command -v luamin || { echo "ERROR: luamin not found"; exit 1; }
-        luamin --version
-
-    - name: Minify Lua scripts (disable errexit)
+    - name: Minify Lua scripts (explicit PATH + debug)
       shell: bash
       run: |
-        echo "→ Using luamin at $(command -v luamin)"
-        
-        # turn off “exit on error”
-        set +e
-        
+        echo "→ Before export, PATH=$PATH"
+        echo "→ Checking local binary exists:"
+        ls -l "$PWD/node_modules/.bin/luamin" || { echo "‼️ node_modules/.bin/luamin missing"; exit 1; }
+        echo "→ Exporting local .bin to PATH"
+        export PATH="$PWD/node_modules/.bin:$PATH"
+        echo "→ After export, PATH=$PATH"
+        echo "→ command -v luamin => $(command -v luamin)"
+        echo "→ luamin --version => $(luamin --version 2>&1)"
+
+        echo "→ Starting minification…"
         find scripts/ -type f -name '*.lua' -print \
           | while read -r file; do
               echo "[CI] Minifying $file"
-              luamin -f "$file" > "${file}.tmp" 2> /dev/null
-              mv "${file}.tmp" "$file" 2> /dev/null || true
+              luamin -f "$file" > "${file}.tmp" 2> "${file}.err"
+              if [ -s "${file}.err" ]; then
+                echo "[CI][WARN] parse error in $file:"
+                sed 's/^/    /' "${file}.err"
+                rm -f "${file}.tmp"
+              else
+                mv "${file}.tmp" "$file"
+              fi
+              rm -f "${file}.err"
             done
-
-        # restore “exit on error”
-        set -e      
+    
 
     - name: Create rotorflight-lua-ethos-suite-PR-<number>.zip
       run: |
