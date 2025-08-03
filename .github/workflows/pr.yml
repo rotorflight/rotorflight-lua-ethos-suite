@@ -34,7 +34,10 @@ jobs:
       run: |
         echo "→ Minifying with npx luamin…"
         find scripts/ -type f -name '*.lua' -exec bash -lc \
-          'echo "[CI] Minifying {}" && npx --yes luamin -f "{}" -o "{}"' \;
+          'echo "[CI] Minifying {}" && \
+          npx --yes luamin -f "{}" > "{}.tmp" && \
+          mv "{}.tmp" "{}"' \;
+
 
     - name: Create rotorflight-lua-ethos-suite-PR-<number>.zip
       run: |
