@@ -3,7 +3,7 @@ import os
 import subprocess
 import sys
 
-# Hard-coded path to the locally-installed luamin binary
+# Path to the locally-installed luamin binary
 LUAMIN_CMD = os.path.join(os.getcwd(), 'node_modules', '.bin', 'luamin')
 
 
@@ -35,8 +35,15 @@ def minify_lua_file(filepath):
 
 
 def main(root='scripts'):
+    # Resolve root relative to repo root, not script location
+    # Assuming script is located at .github/scripts/minify.py
+    repo_root = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), '..', '..')
+    )
+    target_dir = os.path.join(repo_root, root)
+
     failures = 0
-    for dirpath, _, files in os.walk(root):
+    for dirpath, _, files in os.walk(target_dir):
         for fn in files:
             if fn.endswith('.lua'):
                 path = os.path.join(dirpath, fn)
@@ -48,5 +55,5 @@ def main(root='scripts'):
 
 
 if __name__ == '__main__':
-    root_dir = sys.argv[1] if len(sys.argv) > 1 else 'scripts'
-    main(root_dir)
+    root_arg = sys.argv[1] if len(sys.argv) > 1 else 'scripts'
+    main(root_arg)
