@@ -33,6 +33,19 @@ jobs:
     - name: Install luamin
       run: npm install -g luamin
 
+    - name: Locate luamin binary
+      id: locate-luamin
+      run: |
+        echo "🔍 Searching for luamin binary on the filesystem…"
+        LUAMIN_PATH=$(find / -type f -name luamin -executable -path "*/luamin/bin/luamin" 2>/dev/null | head -n1)
+        if [ -z "$LUAMIN_PATH" ]; then
+          echo "::error::Could not find luamin binary on the filesystem"
+          exit 1
+        fi
+        echo "✅ Found luamin at $LUAMIN_PATH"
+        echo "luamin_path=$LUAMIN_PATH" >> $GITHUB_OUTPUT
+
+
     - name: Verify luamin binary exists
       run: |
         if [ ! -x "/usr/local/lib/node_modules/luamin/bin/luamin" ]; then
