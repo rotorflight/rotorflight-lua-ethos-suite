@@ -26,7 +26,7 @@ def minify_lua_file(filepath):
 
     # Run luamin
     proc = subprocess.run(
-        [LUAMIN_CMD, '--', filepath],
+        [LUAMIN_CMD, filepath],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True
