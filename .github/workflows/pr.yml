@@ -36,7 +36,7 @@ jobs:
         # add the global npm bin to PATH for subsequent steps
         echo "$(npm bin -g)" >> $GITHUB_PATH
 
-    - name: Debug: list workspace
+    - name: List workspace
       run: |
         echo "Working dir: $(pwd)"
         ls -R .
