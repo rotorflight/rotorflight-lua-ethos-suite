@@ -27,21 +27,25 @@ jobs:
         # Show updated file (for verification)
         grep 'config\.' scripts/rfsuite/main.lua
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: 18
-
-    - name: Install luamin
+    - name: Download luamin CLI
       run: |
-        npm install -g luamin
-        # add the global npm bin to PATH for subsequent steps
-        echo "$(npm bin -g)" >> $GITHUB_PATH
+        mkdir -p tools
+        curl -fsSL -o tools/luamin \
+          https://github.com/trixnz/luamin/releases/download/v0.2.1/luamin_linux_amd64
+        chmod +x tools/luamin
+        # expose it on PATH for subsequent steps
+        echo "${{ github.workspace }}/tools" >> $GITHUB_PATH
 
-    - name: Minify Lua scripts
+    - name: Minify Lua scripts with standalone luamin
       run: |
-        find scripts/ -type f -name '*.lua' -print0 \
-          | xargs -0 -I{} luamin -f {} -o {}
+        echo "→ Using standalone luamin at $(which luamin)"
+        find scripts/ -type f -name '*.lua' -print \
+          | while read -r file; do
+              echo "[CI] Minifying $file"
+              # luamin -f <infile> writes minified to stdout
+              luamin -f "$file" > "${file}.tmp"
+              mv "${file}.tmp" "$file"
+            done
 
     - name: Create rotorflight-lua-ethos-suite-commit-<short_sha>.zip (entire scripts folder)
       run: |
