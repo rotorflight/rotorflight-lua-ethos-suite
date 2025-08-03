@@ -2013,11 +2013,6 @@
         "translation": "Compensation de chute",
         "needs_translation": "false"
       },
-      "kalman_multiplier": {
-        "english": "Filter Compensation",
-        "translation": "Filter compensation",
-        "needs_translation": "true"
-      },
       "alert_type": {
         "english": "Rx Voltage Alert",
         "translation": "BEC or Rx Batt Voltage Alert",

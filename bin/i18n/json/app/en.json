@@ -2013,11 +2013,6 @@
         "translation": "Sag Compensation",
         "needs_translation": "false"
       },
-      "kalman_multiplier": {
-        "english": "Filter Compensation",
-        "translation": "Filter Compensation",
-        "needs_translation": "false"
-      },
       "alert_type": {
         "english": "Rx Voltage Alert",
         "translation": "Rx Voltage Alert",

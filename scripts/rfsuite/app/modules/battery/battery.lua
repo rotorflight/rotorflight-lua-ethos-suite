@@ -21,8 +21,7 @@ local apidata = {
             {t = i18n("app.modules.battery.cell_count"), mspapi = 1, apikey = "batteryCellCount"},
             {t = i18n("app.modules.battery.consumption_warning_percentage"), min = 15, max = 60, mspapi = 1, apikey = "consumptionWarningPercentage"},
             {t = i18n("app.modules.battery.timer"), mspapi = 2, apikey = "flighttime"},
-            {t = i18n("app.modules.battery.calcfuel_local"), mspapi = 2, apikey = "calc_local", type = 1},
-            {t = i18n("app.modules.battery.kalman_multiplier"), mspapi = 2, apikey = "kalman_multiplier"},   
+            {t = i18n("app.modules.battery.calcfuel_local"), mspapi = 2, apikey = "calc_local", type = 1},   
             {t = i18n("app.modules.battery.voltage_multiplier"), mspapi = 2, apikey = "sag_multiplier"},
             {t = i18n("app.modules.battery.alert_type"), mspapi = 2, apikey = "alert_type", type = 1},
             {t = i18n("app.modules.battery.bec_voltage_alert"), mspapi = 2, apikey = "becalertvalue"},
@@ -67,13 +66,13 @@ local function wakeup(self)
 
     if disableMultiplier == true then
         for i, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do
-            if f.apikey == "sag_multiplier" or f.apikey == "kalman_multiplier" then
+            if f.apikey == "sag_multiplier" then
                 rfsuite.app.formFields[i]:enable(true)
             end
         end
     else
         for i, f in ipairs(self.fields or (self.apidata and self.apidata.formdata.fields) or {}) do
-            if f.apikey == "sag_multiplier" or f.apikey == "kalman_multiplier" then
+            if f.apikey == "sag_multiplier" then
                 rfsuite.app.formFields[i]:enable(false)
             end
         end

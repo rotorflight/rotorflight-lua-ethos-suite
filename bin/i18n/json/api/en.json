@@ -997,11 +997,6 @@
       "translation": "Raise or lower to adjust for the amount of voltage sag you see in flight.",
       "needs_translation": "false"
     },
-    "kalman_multiplier": {
-      "english": "Stabilise the input voltage sensor reading to prevent the fuel sensor bouncing due to sudden voltage dips. Raise or lower to adjust.",
-      "translation": "Stabilise the input voltage sensor reading to prevent the fuel sensor bouncing due to sudden voltage dips. Raise or lower to adjust.",
-      "needs_translation": "false"
-    },
     "alert_off": {
       "english": "Off",
       "translation": "Off",
