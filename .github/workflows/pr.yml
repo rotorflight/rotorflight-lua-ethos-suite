@@ -37,14 +37,25 @@ jobs:
       run: |
         echo "/usr/local/lib/node_modules/luamin/bin" >> $GITHUB_PATH
 
-    - name: Minify Lua scripts
+    - name: Minify Lua scripts (fail-safe)
+      shell: bash
       run: |
         echo "→ Using luamin at $(command -v luamin)"
         find scripts/ -type f -name '*.lua' -print \
           | while read -r file; do
               echo "[CI] Minifying $file"
-              luamin -f "$file" > "${file}.tmp" && mv "${file}.tmp" "$file"
+              
+              # run luamin, capture stdout->.tmp, stderr->.err
+              if luamin -f "$file" > "${file}.tmp" 2> "${file}.err"; then
+                mv "${file}.tmp" "$file"
+                rm -f "${file}.err"
+              else
+                echo "[CI][ERROR] luamin failed on $file:"
+                sed 's/^/    /' "${file}.err"
+                rm -f "${file}.tmp"
+              fi
             done
+
 
     - name: Create rotorflight-lua-ethos-suite-PR-<number>.zip
       run: |
