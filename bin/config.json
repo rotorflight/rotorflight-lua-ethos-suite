@@ -1,0 +1,25 @@
+{
+  "git_src": "C:\\GitHub\\rotorflight-lua-ethos-suite",
+  "tgt_name": "rfsuite",
+  "ethos_bin": "c:\\Program Files (x86)\\FrSky\\Ethos\\suite",
+  "deploy_targets": [
+    {
+      "name": "X20S",
+      "dest": "c:\\Program Files (x86)\\FrSky\\Ethos\\X20s\\scripts",
+      "simulator": "c:\\Program Files (x86)\\FrSky\\Ethos\\x20s\\simulator.exe",
+      "default": true
+    },
+    {
+      "name": "X18S",
+      "dest": "c:\\Program Files (x86)\\FrSky\\Ethos\\X18S\\scripts",
+      "simulator": "c:\\Program Files (x86)\\FrSky\\Ethos\\x18s\\simulator.exe",
+      "default": false
+    },
+    {
+      "name": "TWXLITES",
+      "dest": "c:\\Program Files (x86)\\FrSky\\Ethos\\TWXLITES\\scripts",
+      "simulator": "c:\\Program Files (x86)\\FrSky\\Ethos\\TWXLITES\\simulator.exe",
+      "default": false
+    }
+  ]
+}
