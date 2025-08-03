@@ -3,14 +3,16 @@ import os
 import subprocess
 import sys
 
-# Absolute path to the luamin binary as found on CI runner
-LUAMIN_CMD = '/usr/local/lib/node_modules/luamin/bin/luamin'
+# Allow override via environment, default to known global binary path
+LUAMIN_CMD = os.environ.get(
+    'LUAMIN_CMD',
+    '/usr/local/lib/node_modules/luamin/bin/luamin'
+)
 
 
 def minify_lua_file(filepath):
     print(f"[MINIFY] Processing: {filepath}")
 
-    # Verify the luamin binary exists and is executable
     if not os.path.isfile(LUAMIN_CMD) or not os.access(LUAMIN_CMD, os.X_OK):
         print(f"[MINIFY ERROR] luamin not found at {LUAMIN_CMD}", file=sys.stderr)
         return False
@@ -50,3 +52,4 @@ def main(root='scripts'):
 if __name__ == '__main__':
     root_dir = sys.argv[1] if len(sys.argv) > 1 else 'scripts'
     main(root_dir)
+
