@@ -177,27 +177,25 @@ To build and deploy RFSuite locally:
     pip install tqdm
     pip install serial
     ```
-    
 
-### Environment Variables
+### Config file
 
-Configure the following system variables:
+Edit the file bin/config.json to suite your local environment and similator setup. This file is blocked from re-upload in .gitignore
 
-```bash
-FRSKY_SIM_BIN = C:\Program Files (x86)\FrSky\Ethos\X18S\simulator.exe
-FRSKY_SIM_SRC = C:\Program Files (x86)\FrSky\Ethos\X18S\scripts
-FRSKY_ETHOS_SUITE_BIN = C:\Program Files\Ethos Suite\Ethos Suite.exe
-```
-
-You may use a comma-separated list in `FRSKY_SIM_SRC` to deploy to multiple simulators simultaneously.
 
 ### VS Code Tasks
 
--   **SIM: Deploy** – Pushes scripts to the simulator
+-   **Deploy & Launch** – Pushes scripts to the default simulator
+
+-   **Deploy & Launch [minify]** – Pushes scripts to the default simulator and minifies the files using luamin
+
+-   **Deploy & Choose** – Pushes scripts to the selected simulator 
+
+-   **Deploy & Choose [minify]** – Pushes scripts to the selected simulator and minifies the files using luamin
     
--   **SIM: Deploy & Launch** – Deploys and starts simulator with debug output
-    
--   **Remote: Deploy** – Installs scripts to a connected transmitter via USB
+-   **Deploy Radio** – Pushes scripts to the radio
+
+-   **Deploy Radio [minify]** – Pushes scripts to the radio and minifies the files using luamin
     
 
 ----------
