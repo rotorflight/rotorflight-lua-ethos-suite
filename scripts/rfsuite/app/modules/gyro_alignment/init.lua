@@ -19,7 +19,7 @@
 ]] --
 local init = {
     title = rfsuite.i18n.get("app.modules.gyro_alignment.name"), -- title of the page
-    section = "tools", -- section where this module appears
+    section = "hardware", -- section where this module appears
     script = "gyro_alignment.lua", -- run this script
     image = "gyro.png", -- image for the page
     order = 6, -- order in the section

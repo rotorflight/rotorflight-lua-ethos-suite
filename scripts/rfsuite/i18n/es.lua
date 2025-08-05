@@ -930,17 +930,15 @@ return {
         ["roll"] = "Alabeo"
       },
       ["gyro_alignment"] = {
-        ["name"] = "Alineación del Giroscopio",
+        ["name"] = "Alineación de la Placa",
         ["board_alignment"] = "Alineación de la Placa",
-        ["swashplate_config"] = "Configuración del Plato Cíclico",
         ["roll"] = "Alabeo",
         ["pitch"] = "Cabeceo",
         ["yaw"] = "Guiñada",
-        ["swash_type"] = "Tipo de Plato",
-        ["msg_calibrate"] = "¿Calibrar la alineación del giroscopio? Esto reiniciará el acelerómetro y aplicará la configuración actual de alineación de la placa.",
-        ["help_p1"] = "La herramienta de alineación del giroscopio permite configurar los ángulos de alineación de la placa para compensar la orientación de montaje del controlador de vuelo.",
+        ["msg_calibrate"] = "¿Calibrar el acelerómetro? Esto reiniciará el acelerómetro y aplicará la configuración actual de alineación de la placa.",
+        ["help_p1"] = "La herramienta de alineación de la placa permite configurar los ángulos de alineación de la placa para compensar la orientación de montaje del controlador de vuelo.",
         ["help_p2"] = "Alineación de la Placa: Ajuste los ángulos de alabeo, cabeceo y guiñada (en grados) para que coincidan con la orientación física de su controlador de vuelo en relación con el marco del helicóptero.",
-        ["help_p3"] = "Configuración del Plato Cíclico: Muestra el tipo de plato cíclico actual de la configuración del mezclador. Esto es de solo lectura y debe cambiarse en la configuración del Mezclador.",
+        ["help_p3"] = "Estas configuraciones compensan los casos donde el controlador de vuelo no está montado perfectamente alineado con los ejes del marco del helicóptero.",
         ["help_p4"] = "Use el botón Herramienta para calibrar el acelerómetro después de realizar cambios de alineación. Guarde la configuración en EEPROM cuando termine."
       },
       ["rates"] = {
