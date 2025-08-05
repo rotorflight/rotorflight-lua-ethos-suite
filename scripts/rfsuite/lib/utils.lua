@@ -303,6 +303,7 @@ end
 
 function utils.dir_exists(base, name)
     base = base or "./"
+    rfsuite.utils.log("Checking if directory exists: " .. base .. name, "debug")
     local list = system.listFiles(base)
     if list == nil then return false end
     for i = 1, #list do
@@ -314,6 +315,7 @@ function utils.dir_exists(base, name)
 end
 
 function utils.file_exists(name)
+    rfsuite.utils.log("Checking if file exists: " .. name, "debug")
     local f = io.open(name, "r")
     if f then
         io.close(f)

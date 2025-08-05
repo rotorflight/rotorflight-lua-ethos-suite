@@ -131,7 +131,16 @@ local msp_sensors = {
                 sessionname = { "batteryConfig", "consumptionWarningPercentage" },
             },
         }        
-    },          
+    }, 
+    NAME = {
+        interval_armed = -1,
+        interval_disarmed = 30,
+        fields = {
+            name = {
+                sessionname = {"craftName"},
+            },        
+        }
+    },             
 }
 
 msp.sensors = msp_sensors
