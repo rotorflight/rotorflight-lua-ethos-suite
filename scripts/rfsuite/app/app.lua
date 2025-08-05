@@ -1439,6 +1439,12 @@ function app.event(widget, category, value, x, y)
         return true
     end
 
+    -- catch exit from sub menu
+    if rfsuite.app.lastMenu ~= nil and category == 3 and value == 0 then
+        app.ui.openMainMenu()
+        return true
+    end    
+
     -- generic events handler for most pages
     if app.uiState == app.uiStatus.pages then
 

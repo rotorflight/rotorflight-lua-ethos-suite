@@ -54,20 +54,22 @@ function render.dirty(box)
     return false
 end
 
-
 function render.wakeup(box)
-
     local telemetry = rfsuite.tasks.telemetry
-    
+
     -- Value extraction
     local source = getParam(box, "source")
-    local value, _, dynamicUnit
+    local thresholdsCfg = getParam(box, "thresholds")
+    local value, _, dynamicUnit, _, _, localizedThresholds
+
     if source == "txbatt" then
         local src = system.getSource({ category = CATEGORY_SYSTEM, member = MAIN_VOLTAGE })
         value = src and src.value and src:value() or nil
         dynamicUnit = "V"
+        localizedThresholds = thresholdsCfg
     elseif telemetry and source then
-        value, _, dynamicUnit = telemetry.getSensor(source)
+        value, _, dynamicUnit, _, _, localizedThresholds =
+            telemetry.getSensor(source, nil, nil, thresholdsCfg)
     end
 
     -- Transform and decimals
@@ -81,16 +83,14 @@ function render.wakeup(box)
         box._dotCount = (box._dotCount + 1) % (maxDots + 1)
         displayValue = string.rep(".", box._dotCount)
         if displayValue == "" then displayValue = "." end
-        unit = nil
     end
 
-    -- Threshold logic (if required)
-    local textcolor = utils.resolveThresholdColor(value, box, "textcolor", "textcolor")
+    -- Threshold logic (use localized thresholds)
+    local textcolor = utils.resolveThresholdColor(value, box, "textcolor", "textcolor", localizedThresholds)
 
     -- Dynamic unit logic (User can force a unit or omit unit using "" to hide)
     local manualUnit = getParam(box, "unit")
     local unit
-
     if manualUnit ~= nil then
         unit = manualUnit  -- use user value, even if ""
     elseif dynamicUnit ~= nil then
@@ -105,7 +105,7 @@ function render.wakeup(box)
     if type(displayValue) == "string" and displayValue:match("^%.+$") then
         unit = nil
     end
-    
+
     -- Set box.value so dashboard/dirty can track change for redraws
     box._currentDisplayValue = displayValue
 
