@@ -8,6 +8,44 @@ import sys
 import stat
 from tqdm import tqdm
 
+def minify_lua_file(filepath):
+    print(f"[MINIFY] (luamin) Processing: {filepath}")
+
+    # Try to resolve luamin executable
+    luamin_cmd = shutil.which("luamin")
+
+    if not luamin_cmd:
+        # Fallback for Windows NPM global installs
+        luamin_cmd = os.path.expandvars(r"%APPDATA%\\npm\\luamin.cmd")
+
+        if not os.path.exists(luamin_cmd):
+            print("[MINIFY ERROR] 'luamin' not found in PATH or %APPDATA%\\npm.")
+            print("Please run: npm install -g luamin")
+            return
+
+    try:
+        result = subprocess.run(
+            [luamin_cmd, '-f', filepath],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            encoding='utf-8',  # ✅ force proper decoding
+            errors='replace'   # ✅ optional: replace invalid chars to avoid crash
+        )
+
+        if result.returncode != 0:
+            print(f"[MINIFY ERROR] Failed to minify {filepath}:\n{result.stderr}")
+            return
+
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(result.stdout)
+
+        #print(f"[MINIFY] (luamin) Done: {filepath}")
+
+    except Exception as e:
+        print(f"[MINIFY ERROR] Exception during luamin run: {e}")
+
+
 # Permission handler for Windows rm errors
 def on_rm_error(func, path, exc_info):
     os.chmod(path, stat.S_IWRITE)
@@ -129,6 +167,7 @@ def main():
     p.add_argument('--launch', action='store_true')
     p.add_argument('--radio', action='store_true')
     p.add_argument('--radio-debug', action='store_true')
+    p.add_argument('--minify',    action='store_true')
     args = p.parse_args()
 
     # load override config
@@ -154,6 +193,16 @@ def main():
         sys.exit(1)
 
     copy_files(args.src, args.fileext, targets)
+
+    if args.minify:
+        print("→ Minifying Lua files…")
+        for t in targets:
+            out_root = os.path.join(t['dest'], config['tgt_name'])
+            for dirpath, _, files in os.walk(out_root):
+                for fn in files:
+                    if fn.endswith('.lua'):
+                        minify_lua_file(os.path.join(dirpath, fn))
+        print("✓ Minification complete.\n")
 
     if args.launch and not args.radio:
         launch_sims(targets)

@@ -109,7 +109,7 @@ end
 
 -- Handle form navigation or keypress events
 local function event(widget, category, value)
-    if value == 35 then
+    if value == 35 or category == 3 then
         rfsuite.app.ui.openMainMenu()
         return true
     end

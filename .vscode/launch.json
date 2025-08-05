@@ -8,7 +8,7 @@
       "program": "${workspaceFolder}/bin/deploy/deploy.py",
       "args": ["--launch"],
       "console": "integratedTerminal"
-    },
+    },   
     {
       "name": "Deploy & Choose",
       "type": "debugpy",
@@ -16,7 +16,7 @@
       "program": "${workspaceFolder}/bin/deploy/deploy.py",
       "args": ["--choose", "--launch"],
       "console": "integratedTerminal"
-    },
+    },   
     {
       "name": "Deploy Radio",
       "type": "debugpy",
