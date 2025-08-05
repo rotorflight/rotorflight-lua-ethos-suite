@@ -305,21 +305,36 @@ local sensorTable = {
             },
             crsfLegacy = { "GPS Speed" },
         },
-        localizations = function(value)
-            local major = UNIT_DEGREE
-            if value == nil then return nil, major, nil end
+        localizations = function(value, paramMin, paramMax, paramThresholds)
+            if value == nil then return nil, UNIT_DEGREE, nil, paramMin, paramMax, paramThresholds end
 
-            -- Shortcut to the user’s temperature‐unit preference (may be nil)
+            local min = paramMin or 0
+            local max = paramMax or 100
+            local thresholds = paramThresholds
+
             local prefs = rfsuite.preferences.localizations
             local isFahrenheit = prefs and prefs.temperature_unit == 1
 
-            if isFahrenheit then
-                -- Convert from Celsius to Fahrenheit
-                return value * 1.8 + 32, major, "°F"
+            local function convertThresholds(thresholds, convFunc)
+                if not thresholds then return nil end
+                local result = {}
+                for i, t in ipairs(thresholds) do
+                    local copy = {}
+                    for k, v in pairs(t) do copy[k] = v end
+                    if type(copy.value) == "number" then
+                        copy.value = convFunc(copy.value)
+                    end
+                    table.insert(result, copy)
+                end
+                return result
             end
 
-            -- Default: return Celsius
-            return value, major, "°C"
+            if isFahrenheit then
+                return value * 1.8 + 32, UNIT_DEGREE, "°F",
+                    min * 1.8 + 32, max * 1.8 + 32,
+                    convertThresholds(thresholds, function(v) return v * 1.8 + 32 end)
+            end
+            return value, UNIT_DEGREE, "°C", min, max, thresholds
         end,
     },
 
@@ -346,21 +361,36 @@ local sensorTable = {
             },
             crsfLegacy = { "GPS Sats" },
         },
-        localizations = function(value)
-            local major = UNIT_DEGREE
-            if value == nil then return nil, major, nil end
+        localizations = function(value, paramMin, paramMax, paramThresholds)
+            if value == nil then return nil, UNIT_DEGREE, nil, paramMin, paramMax, paramThresholds end
+            
+            local min = paramMin or 0
+            local max = paramMax or 100
+            local thresholds = paramThresholds
 
-            -- Shortcut to the user’s temperature‐unit preference (may be nil)
             local prefs = rfsuite.preferences.localizations
             local isFahrenheit = prefs and prefs.temperature_unit == 1
 
-            if isFahrenheit then
-                -- Convert from Celsius to Fahrenheit
-                return value * 1.8 + 32, major, "°F"
+            local function convertThresholds(thresholds, convFunc)
+                if not thresholds then return nil end
+                local result = {}
+                for i, t in ipairs(thresholds) do
+                    local copy = {}
+                    for k, v in pairs(t) do copy[k] = v end
+                    if type(copy.value) == "number" then
+                        copy.value = convFunc(copy.value)
+                    end
+                    table.insert(result, copy)
+                end
+                return result
             end
 
-            -- Default: return Celsius
-            return value, major, "°C"
+            if isFahrenheit then
+                return value * 1.8 + 32, UNIT_DEGREE, "°F",
+                    min * 1.8 + 32, max * 1.8 + 32,
+                    convertThresholds(thresholds, function(v) return v * 1.8 + 32 end)
+            end
+            return value, UNIT_DEGREE, "°C", min, max, thresholds
         end,
     },
 
@@ -1037,20 +1067,32 @@ function telemetry.getSensorSource(name)
     return nil
 end
 
---- Retrieves the value of a telemetry sensor by its key.
--- This function now supports both physical sensors (linked to telemetry sources)
--- and virtual/computed sensors (which define a `.source` function in sensorTable).
+--- Retrieves the (possibly localized) value of a telemetry sensor by its key.
 --
--- 1. If the sensorTable entry includes a `source` function (virtual/computed sensor),
---    this function is called and its `.value()` result is returned.
--- 2. Otherwise, attempts to resolve the sensor as a physical/real telemetry source.
---    If found, returns its value; otherwise, returns nil.
--- 3. If a `localizations` function is defined for the sensor, it is applied to
---    transform the raw value and resolve units as needed.
+-- This function supports both physical (hardware) sensors and virtual/computed sensors.
 --
--- @param sensorKey The key identifying the telemetry sensor.
--- @return The sensor value (possibly transformed), primary unit (major), and secondary unit (minor) if available.
-function telemetry.getSensor(sensorKey)
+-- 1. If the sensorTable entry defines a `source` function (virtual/computed sensor),
+--    this function is called, and its `.value()` result is returned.
+-- 2. Otherwise, attempts to resolve the sensor as a physical telemetry source.
+--    If found, its value is used; otherwise, returns nil.
+-- 3. If a `localizations` function is defined for the sensor:
+--      - It is applied to the raw value, and
+--      - Optionally, min/max/thresholds (as passed by the caller) are also localized for the user’s preferred units.
+-- 4. If no localization is needed, the raw value and any provided min/max/thresholds are returned as-is.
+--
+-- @param sensorKey      (string)  The key identifying the telemetry sensor.
+-- @param paramMin       (number)  [Optional] Minimum value in native units (e.g., °C, m), to localize if needed.
+-- @param paramMax       (number)  [Optional] Maximum value in native units, to localize if needed.
+-- @param paramThresholds (table)  [Optional] Threshold table, values in native units, to localize if needed.
+--
+-- @return value         (number)  The (possibly localized) sensor value.
+-- @return major         (unit)    The sensor’s primary unit (enum or code, e.g., UNIT_DEGREE).
+-- @return minor         (string)  The display unit string (e.g., "°F", "m"), if available.
+-- @return min           (number)  [Optional] Localized min value for display.
+-- @return max           (number)  [Optional] Localized max value for display.
+-- @return thresholds    (table)   [Optional] Localized threshold table for display.
+
+function telemetry.getSensor(sensorKey, paramMin, paramMax, paramThresholds)
     local entry = sensorTable[sensorKey]
 
     if entry and type(entry.source) == "function" then
@@ -1082,12 +1124,13 @@ function telemetry.getSensor(sensorKey)
         value = entry.transform(value)
     end   
 
-    -- if the sensor has a localization function, apply it to the value:
+    -- Handle transforms, then localization
     if entry and entry.localizations and type(entry.localizations) == "function" then
-        value, major, minor = entry.localizations(value)
+        return entry.localizations(value, paramMin, paramMax, paramThresholds)
     end
 
-    return value, major, minor
+    -- Default (no localization): just return what you got, plus min/max/thresholds
+    return value, major, minor, paramMin, paramMax, paramThresholds
 end
 
 --[[ 

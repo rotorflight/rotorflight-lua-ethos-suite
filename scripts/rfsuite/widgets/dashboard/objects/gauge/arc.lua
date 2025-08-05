@@ -102,21 +102,25 @@ local function drawArc(cx, cy, radius, thickness, startAngle, endAngle, color)
 end
 
 function render.wakeup(box)
-
     local telemetry = rfsuite.tasks.telemetry
 
     -- Value extraction
     local source = getParam(box, "source")
-    local value, _, dynamicUnit
+    local minCfg = getParam(box, "min")
+    local maxCfg = getParam(box, "max")
+    local thresholdsCfg = getParam(box, "thresholds")
+
+    local value, _, dynamicUnit, sensorMin, sensorMax, sensorThresholds
     if telemetry and source then
-        value, _, dynamicUnit = telemetry.getSensor(source)
+        value, _, dynamicUnit, sensorMin, sensorMax, sensorThresholds =
+            telemetry.getSensor(source, minCfg, maxCfg, thresholdsCfg)
     end
 
     -- Optionally cache and calculate max value for max arc
     local arcmax = getParam(box, "arcmax") == true
     local maxval = nil
     if arcmax and source then
-        local stats = rfsuite.tasks.telemetry.getSensorStats(source)
+        local stats = telemetry.getSensorStats(source)
         local currentMax = stats and stats.max or nil
         local prevMax = box._cache and box._cache.maxval or nil
         maxval = currentMax or prevMax
@@ -125,7 +129,6 @@ function render.wakeup(box)
     -- Dynamic unit logic (User can force a unit or omit unit using "" to hide)
     local manualUnit = getParam(box, "unit")
     local unit
-
     if manualUnit ~= nil then
         unit = manualUnit  -- use user value, even if ""
     elseif dynamicUnit ~= nil then
@@ -136,47 +139,10 @@ function render.wakeup(box)
         unit = ""
     end
 
-    -- Resolve arc min/max
-    local min = getParam(box, "min") or 0
-    local max = getParam(box, "max") or 100
-
-    -- Only convert to Fahrenheit or Ft if localization is changed
-    local isFahrenheit = unit and unit:match("F$") ~= nil
-    local isFeet = unit and unit:lower():match("ft$") ~= nil
-
-    if isFahrenheit then
-        min = min * 9 / 5 + 32
-        max = max * 9 / 5 + 32
-        if arcmax and maxval then
-            maxval = maxval * 9 / 5 + 32
-        end
-    elseif isFeet then
-        min = min * 3.28084
-        max = max * 3.28084
-        if arcmax and maxval then
-            maxval = maxval * 3.28084
-        end
-    end
-
-    -- Clone and convert threshold values to match display units if using Fahrenheit or feet
-    local thresholds = getParam(box, "thresholds")
-    local adjustedThresholds = thresholds
-
-    if thresholds and (isFahrenheit or isFeet) then
-        adjustedThresholds = {}
-        for i, t in ipairs(thresholds) do
-            local newT = {}
-            for k, v in pairs(t) do newT[k] = v end
-            if type(newT.value) == "number" then
-                if isFahrenheit then
-                    newT.value = newT.value * 9 / 5 + 32
-                elseif isFeet then
-                    newT.value = newT.value * 3.28084
-                end
-            end
-            table.insert(adjustedThresholds, newT)
-        end
-    end
+    -- Use localized min/max/thresholds if provided, fallback to config native units if not
+    local min = sensorMin or minCfg or 0
+    local max = sensorMax or maxCfg or 100
+    local thresholds = sensorThresholds or thresholdsCfg
 
     -- Calculate percent fill for the gauge (clamped 0-1)
     local percent = 0
@@ -235,10 +201,10 @@ function render.wakeup(box)
         percent            = percent,
         maxPercent         = maxPercent,
         unit               = unit,
-        textcolor          = resolveThresholdColor(value,   box, "textcolor",   "textcolor",   adjustedThresholds),
-        maxtextcolor       = resolveThresholdColor(maxval,  box, "maxtextcolor","textcolor",   adjustedThresholds),
-        fillcolor          = resolveThresholdColor(value,   box, "fillcolor",   "fillcolor",   adjustedThresholds),
-        maxfillcolor       = resolveThresholdColor(maxval,  box, "fillcolor",   "fillcolor",   adjustedThresholds),
+        textcolor          = resolveThresholdColor(value,   box, "textcolor",   "textcolor",   thresholds),
+        maxtextcolor       = resolveThresholdColor(maxval,  box, "maxtextcolor","textcolor",   thresholds),
+        fillcolor          = resolveThresholdColor(value,   box, "fillcolor",   "fillcolor",   thresholds),
+        maxfillcolor       = resolveThresholdColor(maxval,  box, "fillcolor",   "fillcolor",   thresholds),
         fillbgcolor        = resolveThemeColor("fillbgcolor", getParam(box, "fillbgcolor")),
         bgcolor            = resolveThemeColor("bgcolor", getParam(box, "bgcolor")),
         titlecolor         = resolveThemeColor("titlecolor", getParam(box, "titlecolor")),
