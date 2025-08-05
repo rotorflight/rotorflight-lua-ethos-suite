@@ -35,6 +35,46 @@ local lastMode = rfsuite.flightmode.current
 local currentMode = rfsuite.flightmode.current
 local lastSensorMode
 
+-- Discharge curve with 0.01V per cell resolution from 3.00V to 4.20V (121 points)
+-- This curve uses a sigmoid approximation to mimic real LiPo discharge behavior
+-- Same curve as used in smartfuelvoltage.lua for consistency
+local dischargeCurveTable = {}
+for i = 0, 120 do
+    local v = 3.00 + i * 0.01
+    local a, b, c = 12, 3.7, 100
+    local percent = 100 / (1 + math.exp(-a * (v - b)))
+    dischargeCurveTable[i + 1] = math.floor(math.min(100, math.max(0, percent)) + 0.5)
+end
+
+-- Calculate fuel percentage using sigmoid discharge curve for accurate LiPo behavior
+-- This provides much better accuracy than linear voltage mapping
+local function fuelPercentageFromVoltage(voltage, cellCount, bc)
+    local minV = bc.vbatmincellvoltage or 3.30
+    local fullV = bc.vbatfullcellvoltage or 4.10
+
+    local voltagePerCell = voltage / cellCount
+
+    -- Handle edge cases
+    if voltagePerCell >= fullV then
+        return 100
+    elseif voltagePerCell <= minV then
+        return 0
+    end
+
+    -- Map voltage range [minV, fullV] to discharge curve range [3.00, 4.20]
+    local sigmoidMin, sigmoidMax = 3.00, 4.20
+    local scaledV = sigmoidMin + (voltagePerCell - minV) / (fullV - minV) * (sigmoidMax - sigmoidMin)
+
+    -- Clamp to discharge curve range
+    scaledV = math.max(sigmoidMin, math.min(sigmoidMax, scaledV))
+
+    -- Look up percentage from discharge curve table
+    local index = math.floor((scaledV - sigmoidMin) / 0.01) + 1
+    index = math.max(1, math.min(#dischargeCurveTable, index))
+
+    return dischargeCurveTable[index]
+end
+
 -- Resets the voltage tracking state by clearing the last recorded voltages,
 -- resetting the voltage stable time, and marking the voltage as not stabilised.
 -- This function is typically used to reinitialize voltage monitoring logic.
@@ -203,21 +243,13 @@ local function smartFuelCalc()
 
     local consumption = telemetry and telemetry.getSensor and telemetry.getSensor("consumption") or nil
 
-    -- Step 1: Determine initial fuel % from voltage
+    -- Step 1: Determine initial fuel % from voltage using accurate discharge curve
     if not fuelStartingPercent then
-        local perCell = (voltage and cellCount > 0) and (voltage / cellCount) or 0
-        if perCell >= fullCellV then
-            fuelStartingPercent = 100
-        elseif perCell <= minCellV then
-            fuelStartingPercent = 0
+        if voltage and cellCount > 0 then
+            -- Use sigmoid discharge curve for accurate LiPo percentage calculation
+            fuelStartingPercent = fuelPercentageFromVoltage(voltage, cellCount, bc)
         else
-            local usableRange = maxCellV - minCellV
-            local pct = ((perCell - minCellV) / usableRange) * 100
-            if reserve > 0 and pct <= reserve then
-                fuelStartingPercent = 0
-            else
-                fuelStartingPercent = math.floor(math.max(0, math.min(100, pct)))
-            end
+            fuelStartingPercent = 0
         end
         local estimatedUsed = usableCapacity * (1 - fuelStartingPercent / 100)
         fuelStartingConsumption = (consumption or 0) - estimatedUsed
