@@ -15,6 +15,13 @@ local function openPage(pidx, title, script)
     rfsuite.app.triggers.closeProgressLoader = true
     form.clear()
 
+    -- Clear old icons
+    for i in pairs(rfsuite.app.gfx_buttons) do
+        if i ~= "settings_dashboard_themes" then
+            rfsuite.app.gfx_buttons[i] = nil
+        end
+    end   
+
 
     rfsuite.app.lastIdx    = pageIdx
     rfsuite.app.lastTitle  = title

@@ -23,6 +23,13 @@ local function openPage(pidx, title, script)
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
+    -- Clear old icons
+    for i in pairs(rfsuite.app.gfx_buttons) do
+        if i ~= "settings" then
+            rfsuite.app.gfx_buttons[i] = nil
+        end
+    end
+
     ESC = {}
 
     -- size of buttons

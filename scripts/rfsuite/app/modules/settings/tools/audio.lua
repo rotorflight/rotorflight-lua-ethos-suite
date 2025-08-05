@@ -23,6 +23,15 @@ local function openPage(pidx, title, script)
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
+    -- Clear old icons
+    for i in pairs(rfsuite.app.gfx_buttons) do
+        if i ~= "settings_dashboard_audio" then
+            print("Clearing icon: " .. i)
+            rfsuite.app.gfx_buttons[i] = nil
+        end
+    end
+
+
     ESC = {}
 
     -- size of buttons
@@ -80,8 +89,8 @@ local function openPage(pidx, title, script)
     end
 
 
-    if rfsuite.app.gfx_buttons["settings_dashboard"] == nil then rfsuite.app.gfx_buttons["settings_dashboard"] = {} end
-    if rfsuite.preferences.menulastselected["settings_dashboard"] == nil then rfsuite.preferences.menulastselected["settings_dashboard"] = 1 end
+    if rfsuite.app.gfx_buttons["settings_dashboard_audio"] == nil then rfsuite.app.gfx_buttons["settings_dashboard_audio"] = {} end
+    if rfsuite.preferences.menulastselected["settings_dashboard_audio"] == nil then rfsuite.preferences.menulastselected["settings_dashboard_audio"] = 1 end
 
 
     local Menu = assert(rfsuite.compiler.loadfile("app/modules/" .. script))()
@@ -102,19 +111,19 @@ local function openPage(pidx, title, script)
         if lc >= 0 then bx = (buttonW + padding) * lc end
 
         if rfsuite.preferences.general.iconsize ~= 0 then
-            if rfsuite.app.gfx_buttons["settings_dashboard"][pidx] == nil then rfsuite.app.gfx_buttons["settings_dashboard"][pidx] = lcd.loadMask("app/modules/settings/gfx/" .. pvalue.image) end
+            if rfsuite.app.gfx_buttons["settings_dashboard_audio"][pidx] == nil then rfsuite.app.gfx_buttons["settings_dashboard_audio"][pidx] = lcd.loadMask("app/modules/settings/gfx/" .. pvalue.image) end
         else
-            rfsuite.app.gfx_buttons["settings_dashboard"][pidx] = nil
+            rfsuite.app.gfx_buttons["settings_dashboard_audio"][pidx] = nil
         end
 
         rfsuite.app.formFields[pidx] = form.addButton(line, {x = bx, y = y, w = buttonW, h = buttonH}, {
             text = pvalue.name,
-            icon = rfsuite.app.gfx_buttons["settings_dashboard"][pidx],
+            icon = rfsuite.app.gfx_buttons["settings_dashboard_audio"][pidx],
             options = FONT_S,
             paint = function()
             end,
             press = function()
-                rfsuite.preferences.menulastselected["settings_dashboard"] = pidx
+                rfsuite.preferences.menulastselected["settings_dashboard_audio"] = pidx
                 rfsuite.app.ui.progressDisplay()
                 rfsuite.app.ui.openPage(pidx, pvalue.folder, "settings/tools/" .. pvalue.script)
             end
@@ -122,7 +131,7 @@ local function openPage(pidx, title, script)
 
         if pvalue.disabled == true then rfsuite.app.formFields[pidx]:enable(false) end
 
-        if rfsuite.preferences.menulastselected["settings_dashboard"] == pidx then rfsuite.app.formFields[pidx]:focus() end
+        if rfsuite.preferences.menulastselected["settings_dashboard_audio"] == pidx then rfsuite.app.formFields[pidx]:focus() end
 
         lc = lc + 1
 
