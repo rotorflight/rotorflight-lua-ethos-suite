@@ -5,7 +5,7 @@
   "deploy_targets": [
     {
       "name": "X20S",
-      "dest": "c:\\Program Files (x86)\\FrSky\\Ethos\\X20s\\scripts",
+      "dest": "C:\\Users\\rob\\.ethos\\X20S\\scripts",
       "simulator": "c:\\Program Files (x86)\\FrSky\\Ethos\\x20s\\simulator.exe",
       "default": true
     },
