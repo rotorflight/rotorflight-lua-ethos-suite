@@ -51,15 +51,24 @@ def on_rm_error(func, path, exc_info):
     os.chmod(path, stat.S_IWRITE)
     func(path)
 
-# Load config one level up
-topdir = os.path.dirname(__file__)
-CONFIG_PATH = os.path.abspath(os.path.join(topdir, '..', 'config.json'))
+# Load config from environment variable only
+CONFIG_PATH = os.environ.get('RFSUITE_CONFIG')
+
+if not CONFIG_PATH:
+    print("[CONFIG ERROR] Environment variable RFSUITE_CONFIG is not set.")
+    sys.exit(1)
+
+if not os.path.exists(CONFIG_PATH):
+    print(f"[CONFIG ERROR] Config file not found at path: {CONFIG_PATH}")
+    sys.exit(1)
+
 try:
     with open(CONFIG_PATH) as f:
         config = json.load(f)
-except FileNotFoundError:
-    print(f"Config not found: {CONFIG_PATH}")
+except json.JSONDecodeError as e:
+    print(f"[CONFIG ERROR] Failed to parse JSON config file: {e}")
     sys.exit(1)
+
 
 pbar = None
 
