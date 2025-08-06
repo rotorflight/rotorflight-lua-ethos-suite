@@ -4,18 +4,23 @@ import xml.etree.ElementTree as ET
 import tkinter as tk
 from tkinter import ttk
 from pathlib import Path
+import os
 
 SENSOR_FILE_EXT = ".lua"
 
-# Determine config path based on execution context
-# Config.json resides at <repo_root>/bin/config.json
-if getattr(sys, 'frozen', False):
-    # Running as bundled executable: repo_root is two levels up from the exe
-    base_dir = Path(sys.executable).resolve().parents[2]
-else:
-    # Running as script: repo_root is three levels up from this file
-    base_dir = Path(__file__).resolve().parents[3]
-CONFIG_PATH = base_dir / 'bin' / 'config.json'
+# Require config path from RFSUITE_CONFIG env var
+CONFIG_PATH = os.environ.get('RFSUITE_CONFIG')
+
+if not CONFIG_PATH:
+    print("[CONFIG ERROR] Environment variable RFSUITE_CONFIG is not set.")
+    sys.exit(1)
+
+CONFIG_PATH = Path(CONFIG_PATH)
+
+if not CONFIG_PATH.exists():
+    print(f"[CONFIG ERROR] Config file not found at path: {CONFIG_PATH}")
+    sys.exit(1)
+
 
 class SensorApp:
     def __init__(self, root, config_path=CONFIG_PATH):
@@ -35,18 +40,19 @@ class SensorApp:
             raise KeyError("'tgt_name' must be defined in config.json")
         self.tgt_name = tgt_name  # store for path resolution
 
-        # Compute repository scripts path
-        config_dir = Path(config_path).parent
-        project_root = config_dir.parent
-        candidate_roots = [project_root, project_root.parent]
-        self.rf_src = None
-        for root in candidate_roots:
-            candidate = root / 'scripts' / tgt_name
-            if candidate.exists():
-                self.rf_src = candidate
-                break
-        if self.rf_src is None:
-            raise FileNotFoundError(f"Could not locate scripts/{tgt_name} in expected locations: {candidate_roots}")
+        git_src = config.get('git_src')
+        tgt_name = config.get('tgt_name')
+
+        if not git_src or not tgt_name:
+            raise KeyError("'git_src' and 'tgt_name' must be defined in config.json")
+
+        scripts_path = Path(git_src) / 'scripts' / tgt_name
+
+        if not scripts_path.exists():
+            raise FileNotFoundError(f"Scripts path does not exist: {scripts_path}")
+
+        self.rf_src = scripts_path
+
 
         # Determine deployment target paths
         deploy_targets = config.get('deploy_targets', [])
