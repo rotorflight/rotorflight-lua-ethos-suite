@@ -592,7 +592,7 @@ return {
             ["gov"] = "Gouverneur",
             ["brake_force"] = "Force de freinage",
             ["sr_function"] = "Synchronisation Rectificative",
-            ["name"] = "OMP",
+            ["name"] = "OMPHOBBY",
             ["lv_bec_voltage"] = "Tension LV BEC",
             ["auto_restart_time"] = "Temps redemarrage auto",
             ["acceleration"] = "Acceleration",
