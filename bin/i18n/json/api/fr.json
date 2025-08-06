@@ -1482,6 +1482,148 @@
       "needs_translation": "false"
     }
   },
+  "ESC_PARAMETERS_OMP": {
+    "tbl_jadegreen": {
+      "english": "JADE GREEN",
+      "translation": "Vert Jade",
+      "needs_translation": "false"
+    },
+    "tbl_off": {
+      "english": "Off",
+      "translation": "Desactive",
+      "needs_translation": "false"
+    },
+    "tbl_low": {
+      "english": "Low",
+      "translation": "Bas",
+      "needs_translation": "false"
+    },
+    "tbl_orange": {
+      "english": "ORANGE",
+      "translation": "Orange",
+      "needs_translation": "false"
+    },
+    "tbl_fmfw": {
+      "english": "Fixed Wing",
+      "translation": "Aile Fixe",
+      "needs_translation": "false"
+    },
+    "tbl_ccw": {
+      "english": "CCW",
+      "translation": " Sens AntiHoraire",
+      "needs_translation": "false"
+    },
+    "tbl_medium": {
+      "english": "Medium",
+      "translation": "Moyen",
+      "needs_translation": "false"
+    },
+    "tbl_yellow": {
+      "english": "YELLOW",
+      "translation": "Jaune",
+      "needs_translation": "false"
+    },
+    "tbl_reverse": {
+      "english": "Reverse",
+      "translation": "Inverse",
+      "needs_translation": "false"
+    },
+    "tbl_red": {
+      "english": "Red",
+      "translation": "Rouge",
+      "needs_translation": "false"
+    },
+    "tbl_high": {
+      "english": "High",
+      "translation": "Haut",
+      "needs_translation": "false"
+    },
+    "tbl_auto": {
+      "english": "Auto",
+      "translation": "Auto",
+      "needs_translation": "false"
+    },
+    "tbl_cw": {
+      "english": "CW",
+      "translation": "Sens Horaire",
+      "needs_translation": "false"
+    },
+    "tbl_fmheli": {
+      "english": "Helicopter",
+      "translation": "Helicoptere",
+      "needs_translation": "false"
+    },
+    "tbl_purple": {
+      "english": "PURPLE",
+      "translation": "Violet",
+      "needs_translation": "false"
+    },
+    "tbl_green": {
+      "english": "GREEN",
+      "translation": "Vert",
+      "needs_translation": "false"
+    },
+    "tbl_blue": {
+      "english": "BLUE",
+      "translation": "Bleu",
+      "needs_translation": "false"
+    },
+    "tbl_slow": {
+      "english": "Slow",
+      "translation": "Lent",
+      "needs_translation": "false"
+    },
+    "tbl_normal": {
+      "english": "Normal",
+      "translation": "Normal",
+      "needs_translation": "false"
+    },
+    "tbl_fast": {
+      "english": "Fast",
+      "translation": "Rapide",
+      "needs_translation": "false"
+    },
+    "tbl_escgov": {
+      "english": "ESC Governor",
+      "translation": "Gouverneur ESC",
+      "needs_translation": "false"
+    },
+    "tbl_white": {
+      "english": "WHITE",
+      "translation": "Blanc",
+      "needs_translation": "false"
+    },
+    "tbl_cyan": {
+      "english": "CYAN",
+      "translation": "Cyan",
+      "needs_translation": "false"
+    },
+    "tbl_vslow": {
+      "english": "Very Slow",
+      "translation": "Tres Lent",
+      "needs_translation": "false"
+    },
+    "tbl_extgov": {
+      "english": "External Governor",
+      "translation": "Gouverneur Externe",
+      "needs_translation": "false"
+    },
+    "tbl_pink": {
+      "english": "PINK",
+      "translation": "Rose",
+      "needs_translation": "false"
+    },
+    "tbl_fwgov": {
+      "english": "Fixed Wing",
+      "translation": "Gouverneur Aile Fixe",
+      "needs_translation": "false"
+    },
+    "tbl_on": {
+      "english": "On",
+      "translation": "Active",
+      "needs_translation": "false"
+    }
+  },
   "ESC_PARAMETERS_SCORPION": {
     "tbl_airplane": {
       "english": "Airplane mode",

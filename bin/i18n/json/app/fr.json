@@ -809,6 +809,113 @@
             "needs_translation": "false"
           }
         },
+        "omp": {
+          "hv_bec_voltage": {
+            "english": "HV BEC Voltage",
+            "translation": "Tension HV BEC",
+            "needs_translation": "false"
+          },
+          "gov": {
+            "english": "Governor",
+            "translation": "Gouverneur",
+            "needs_translation": "false"
+          },
+          "brake_force": {
+            "english": "Brake Force",
+            "translation": "Force de freinage",
+            "needs_translation": "false"
+          },
+          "sr_function": {
+            "english": "SR Function",
+            "translation": "Synchronisation Rectificative",
+            "needs_translation": "false"
+          },
+          "name": {
+            "english": "OMP",
+            "translation": "OMP",
+            "needs_translation": "false"
+          },
+          "lv_bec_voltage": {
+            "english": "LV BEC Voltage",
+            "translation": "Tension LV BEC",
+            "needs_translation": "false"
+          },
+          "auto_restart_time": {
+            "english": "Auto Restart Time",
+            "translation": "Temps redemarrage auto",
+            "needs_translation": "false"
+          },
+          "acceleration": {
+            "english": "Acceleration",
+            "translation": "Acceleration",
+            "needs_translation": "false"
+          },
+          "motor_direction": {
+            "english": "Motor Direction",
+            "translation": "Sens moteur",
+            "needs_translation": "false"
+          },
+          "smart_fan": {
+            "english": "Smart Fan",
+            "translation": "Ventilateur intelligent",
+            "needs_translation": "false"
+          },
+          "governor": {
+            "english": "Governor",
+            "translation": "Gouverneur",
+            "needs_translation": "false"
+          },
+          "advanced": {
+            "english": "Advanced",
+            "translation": "Avance",
+            "needs_translation": "false"
+          },
+          "gov_i": {
+            "english": "Gov-I",
+            "translation": "Gov-I",
+            "needs_translation": "false"
+          },
+          "cell_cutoff": {
+            "english": "Cell Cutoff",
+            "translation": "Coupure cellule",
+            "needs_translation": "false"
+          },
+          "led_color": {
+            "english": "LED Color",
+            "translation": "Couleur LED",
+            "needs_translation": "false"
+          },
+          "basic": {
+            "english": "Basic",
+            "translation": "Basique",
+            "needs_translation": "false"
+          },
+          "startup_power": {
+            "english": "Startup Power",
+            "translation": "Puissance demarrage",
+            "needs_translation": "false"
+          },
+          "motor_poles": {
+            "english": "Motor Poles",
+            "translation": "Poles moteur",
+            "needs_translation": "false"
+          },
+          "capacity_correction": {
+            "english": "Capacity Correction",
+            "translation": "Correction capacite",
+            "needs_translation": "false"
+          },
+          "timing": {
+            "english": "Timing",
+            "translation": "Timing",
+            "needs_translation": "false"
+          },
+          "gov_p": {
+            "english": "Gov-P",
+            "translation": "Gov-P",
+            "needs_translation": "false"
+          }
+        },
         "flrtr": {
           "gov": {
             "english": "Governor",

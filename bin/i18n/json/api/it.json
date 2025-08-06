@@ -1482,6 +1482,148 @@
       "needs_translation": "false"
     }
   },
+  "ESC_PARAMETERS_OMP": {
+    "tbl_jadegreen": {
+      "english": "JADE GREEN",
+      "translation": "VERDE GIADA",
+      "needs_translation": "false"
+    },
+    "tbl_off": {
+      "english": "Off",
+      "translation": "Off",
+      "needs_translation": "false"
+    },
+    "tbl_low": {
+      "english": "Low",
+      "translation": "basso",
+      "needs_translation": "false"
+    },
+    "tbl_orange": {
+      "english": "ORANGE",
+      "translation": "ARANCIO",
+      "needs_translation": "false"
+    },
+    "tbl_fmfw": {
+      "english": "Fixed Wing",
+      "translation": "Ala Fissa",
+      "needs_translation": "false"
+    },
+    "tbl_ccw": {
+      "english": "CCW",
+      "translation": "CCW",
+      "needs_translation": "false"
+    },
+    "tbl_medium": {
+      "english": "Medium",
+      "translation": "Medio",
+      "needs_translation": "false"
+    },
+    "tbl_yellow": {
+      "english": "YELLOW",
+      "translation": "GIALLO",
+      "needs_translation": "false"
+    },
+    "tbl_reverse": {
+      "english": "Reverse",
+      "translation": "Inverti",
+      "needs_translation": "false"
+    },
+    "tbl_red": {
+      "english": "Red",
+      "translation": "Rosso",
+      "needs_translation": "false"
+    },
+    "tbl_high": {
+      "english": "High",
+      "translation": "Alto",
+      "needs_translation": "false"
+    },
+    "tbl_auto": {
+      "english": "Auto",
+      "translation": "Auto",
+      "needs_translation": "false"
+    },
+    "tbl_cw": {
+      "english": "CW",
+      "translation": "CW",
+      "needs_translation": "false"
+    },
+    "tbl_fmheli": {
+      "english": "Helicopter",
+      "translation": "Elicottero",
+      "needs_translation": "false"
+    },
+    "tbl_purple": {
+      "english": "PURPLE",
+      "translation": "VIOLA",
+      "needs_translation": "false"
+    },
+    "tbl_green": {
+      "english": "GREEN",
+      "translation": "VERDE",
+      "needs_translation": "false"
+    },
+    "tbl_blue": {
+      "english": "BLUE",
+      "translation": "BLU",
+      "needs_translation": "false"
+    },
+    "tbl_slow": {
+      "english": "Slow",
+      "translation": "Lento",
+      "needs_translation": "false"
+    },
+    "tbl_normal": {
+      "english": "Normal",
+      "translation": "Normale",
+      "needs_translation": "false"
+    },
+    "tbl_fast": {
+      "english": "Fast",
+      "translation": "Veloce",
+      "needs_translation": "false"
+    },
+    "tbl_escgov": {
+      "english": "ESC Governor",
+      "translation": "ESC Governor",
+      "needs_translation": "false"
+    },
+    "tbl_white": {
+      "english": "WHITE",
+      "translation": "BIANCO",
+      "needs_translation": "false"
+    },
+    "tbl_cyan": {
+      "english": "CYAN",
+      "translation": "CYANO",
+      "needs_translation": "false"
+    },
+    "tbl_vslow": {
+      "english": "Very Slow",
+      "translation": "Molto Lento",
+      "needs_translation": "false"
+    },
+    "tbl_extgov": {
+      "english": "External Governor",
+      "translation": "Governor Esterno",
+      "needs_translation": "false"
+    },
+    "tbl_pink": {
+      "english": "PINK",
+      "translation": "ROSA",
+      "needs_translation": "false"
+    },
+    "tbl_fwgov": {
+      "english": "Fixed Wing",
+      "translation": "Ala Fissa",
+      "needs_translation": "false"
+    },
+    "tbl_on": {
+      "english": "On",
+      "translation": "On",
+      "needs_translation": "false"
+    }
+  },
   "ESC_PARAMETERS_SCORPION": {
     "tbl_airplane": {
       "english": "Airplane mode",
