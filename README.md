@@ -188,7 +188,13 @@ If you do not have npm command, you will need to install NodeJS
 
 ### Config file
 
-Edit the file bin/config.json to suite your local environment and similator setup. This file is blocked from re-upload in .gitignore
+Copy the file bin/config-example.json to a folder outside of github and name to suite your preference.
+
+Setup en env var of RFSUITE_CONFIG=C:\GitHub\rotorflight-lua-ethos-suite.json  (the path to the file)
+
+Suggested:
+Repo:  C:\GitHub\rotorflight-lua-ethos-suite\<files>
+Config: C:\GitHub\rotorflight-lua-ethos-suite.json
 
 
 ### VS Code Tasks
