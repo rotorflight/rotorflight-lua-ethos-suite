@@ -9,5 +9,3 @@ bin/deploy/vscode/__pycache__/*.pyo
 /bin/deploy/vscode/__pycache__
 bin/deploy/vscode/__pycache__/subprocess_conout.cpython-312.pyc
 /bin/sound-generator/soundpack/user/*.wav
-bin/config.json
-/bin/config.json
