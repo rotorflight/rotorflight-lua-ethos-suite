@@ -35,8 +35,8 @@ local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 local loadImage = rfsuite.utils.loadImage
-local lastImagePath = nil
 local lastCraftName = nil
+local imagePath
 
 function render.dirty(box)
     if box._lastImagePath ~= box.imagePath then
@@ -49,8 +49,6 @@ end
 function render.wakeup(box)
     local craftName = rfsuite and rfsuite.session and rfsuite.session.craftName
     --local modelID   = rfsuite and rfsuite.session and rfsuite.session.modelID
-    local imagePath
-
     if craftName and craftName ~= lastCraftName then
         local pngPath = "/bitmaps/models/" .. craftName .. ".png"
         local bmpPath = "/bitmaps/models/" .. craftName .. ".bmp"
