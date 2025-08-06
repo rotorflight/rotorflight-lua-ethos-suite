@@ -56,6 +56,8 @@ function render.wakeup(box)
         local bmpPath = "/bitmaps/models/" .. craftName .. ".bmp"
         imagePath = loadImage(pngPath, bmpPath)
         lastCraftName = craftName
+    else
+        imagePath = lastImagePath    
     end
 
     --if not imagePath and modelID then
