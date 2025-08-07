@@ -23,8 +23,28 @@ local arg = {...}
 local config = arg[1]
 
 local frsky = {}
-local cacheExpireTime = 10 -- Time in seconds to expire the caches
-local lastCacheFlushTime = os.clock() -- Store the initial time
+-- cache expiration
+local cacheExpireTime = 10
+local lastCacheFlushTime = os.clock()
+
+-- locally cache globals and modules for speed
+local systemGetSource   = system.getSource
+local modelCreateSensor = model.createSensor
+local log               = rfsuite.utils.log
+local session           = rfsuite.session
+local appTriggers       = rfsuite.app.triggers
+local tasks             = rfsuite.tasks
+local osClock           = os.clock
+
+-- local references to the sensor-lists
+local createSensorList  = createSensorList
+local dropSensorList    = dropSensorList
+local renameSensorList  = renameSensorList
+
+-- local caches
+local createCache = frsky.createSensorCache
+local dropCache   = frsky.dropSensorCache
+local renameCache = frsky.renameSensorCache
 
 frsky.name = "frsky"
 
@@ -188,17 +208,14 @@ local function createSensor(physId, primId, appId, frameValue)
     if rfsuite.session.apiVersion == nil then return end
 
     -- check for custom sensors and create them if they dont exist
-    if createSensorList[appId] ~= nil then
+    local v = createSensorList[appId]
+    if not v then return end
 
-        local v = createSensorList[appId]
-
-        if frsky.createSensorCache[appId] == nil then
-
-            frsky.createSensorCache[appId] = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
-
-            if frsky.createSensorCache[appId] == nil then
-
-                log("Creating sensor: " .. v.name, "info")
+    if not createCache[appId] then
+        createCache[appId] = systemGetSource({ category=CATEGORY_TELEMETRY_SENSOR, appId=appId })
+        if not createCache[appId] then
+            log("Creating sensor: " .. v.name, "info")
+            createCache[appId] = modelCreateSensor()
 
                 frsky.createSensorCache[appId] = model.createSensor()
                 frsky.createSensorCache[appId]:name(v.name)
@@ -249,17 +266,14 @@ local function dropSensor(physId, primId, appId, frameValue)
     if rfsuite.session.apiVersion >= 12.08 then return end
 
     -- check for custom sensors and create them if they dont exist
-    if dropSensorList[appId] ~= nil then
-        local v = dropSensorList[appId]
+    local v = dropSensorList[appId]
+    if not v then return end
 
-        if frsky.dropSensorCache[appId] == nil then
-            frsky.dropSensorCache[appId] = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
-
-            if frsky.dropSensorCache[appId] ~= nil then
-                log("Drop sensor: " .. v.name, "info")
-                frsky.dropSensorCache[appId]:drop()
-            end
-
+    if not dropCache[appId] then
+        dropCache[appId] = systemGetSource({ category=CATEGORY_TELEMETRY_SENSOR, appId=appId })
+        if dropCache[appId] then
+            log("Drop sensor: " .. v.name, "info")
+            dropCache[appId]:drop()
         end
 
     end
@@ -285,19 +299,14 @@ local function renameSensor(physId, primId, appId, frameValue)
     if rfsuite.session.apiVersion == nil then return end
 
     -- check for custom sensors and create them if they dont exist
-    if renameSensorList[appId] ~= nil then
-        local v = renameSensorList[appId]
+    local v = renameSensorList[appId]
+    if not v then return end
 
-        if frsky.renameSensorCache[appId] == nil then
-            frsky.renameSensorCache[appId] = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
-
-            if frsky.renameSensorCache[appId] ~= nil then
-                if frsky.renameSensorCache[appId]:name() == v.onlyifname then
-                    log("Rename sensor: " .. v.name, "info")
-                    frsky.renameSensorCache[appId]:name(v.name)
-                end
-            end
-
+    if not renameCache[appId] then
+        renameCache[appId] = systemGetSource({ category=CATEGORY_TELEMETRY_SENSOR, appId=appId })
+        if renameCache[appId] and renameCache[appId]:name() == v.onlyifname then
+            log("Rename sensor: " .. v.name, "info")
+            renameCache[appId]:name(v.name)
         end
 
     end
@@ -318,14 +327,18 @@ end
           physical ID, primary ID, application ID, and value.
 --]]
 local function telemetryPop()
-    local frame = rfsuite.tasks.msp.sensorTlm:popFrame()
+    -- fast local references
+    local pop = tasks.msp.sensorTlm.popFrame
+    local frame = pop()
     if frame == nil then return false end
 
     if not frame.physId or not frame.primId then return end
 
-    createSensor(frame:physId(), frame:primId(), frame:appId(), frame:value())
-    dropSensor(frame:physId(), frame:primId(), frame:appId(), frame:value())
-    renameSensor(frame:physId(), frame:primId(), frame:appId(), frame:value())
+    -- single lookup values
+    local p, r, a, v = frame:physId(), frame:primId(), frame:appId(), frame:value()
+    createSensor(p, r, a, v)
+    dropSensor(p, r, a, v)
+    renameSensor(p, r, a, v)
     return true
 end
 
