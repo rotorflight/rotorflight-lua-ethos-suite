@@ -770,7 +770,7 @@ local function processNextAPI()
     if not apiKey then
         log("API key is missing for index " .. tostring(state.currentIndex), "warning")
         state.currentIndex = state.currentIndex + 1
-        rfsuite.tasks.callback.inSeconds(0.5, processNextAPI)
+        rfsuite.tasks.callback.inSeconds(0.25, processNextAPI)
         return
     end
 
@@ -803,11 +803,11 @@ local function processNextAPI()
 
         if retryCount < 3 then  
             log("[TIMEOUT] API: " .. apiKey .. " (Retry " .. retryCount .. ")", "warning")
-            rfsuite.tasks.callback.inSeconds(0.5, processNextAPI)  
+            rfsuite.tasks.callback.inSeconds(0.25, processNextAPI)  
         else
             log("[TIMEOUT FAIL] API: " .. apiKey .. " failed after 3 attempts. Skipping.", "error")
             state.currentIndex = state.currentIndex + 1
-            rfsuite.tasks.callback.inSeconds(0.5, processNextAPI)  
+            rfsuite.tasks.callback.inSeconds(0.25, processNextAPI)  
         end
     end
 
@@ -1044,13 +1044,21 @@ app._uiTasks = {
       if not rfsuite.session.isConnected then
         for i,v in pairs(app.formFieldsOffline) do
           if v == false then
-            app.formFields[i]:enable(false)
+            if app.formFields[i] then
+              app.formFields[i]:enable(false)
+            else
+              log("Main Menu Icon " .. i .. " not found in formFields", "info")  
+            end
           end
         end
       elseif rfsuite.session.apiVersion and app.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiV) then
         app.offlineMode = false
         for i in pairs(app.formFieldsOffline) do
-          app.formFields[i]:enable(true)
+          if app.formFields[i] then
+            app.formFields[i]:enable(true)
+            else
+              log("Main Menu Icon " .. i .. " not found in formFields", "info")  
+            end
         end
       end
     elseif not app.isOfflinePage then
