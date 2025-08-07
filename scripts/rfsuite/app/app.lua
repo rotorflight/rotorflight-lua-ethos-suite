@@ -770,7 +770,7 @@ local function processNextAPI()
     if not apiKey then
         log("API key is missing for index " .. tostring(state.currentIndex), "warning")
         state.currentIndex = state.currentIndex + 1
-        rfsuite.tasks.callback.inSeconds(0.5, processNextAPI)
+        rfsuite.tasks.callback.inSeconds(0.25, processNextAPI)
         return
     end
 
@@ -803,11 +803,11 @@ local function processNextAPI()
 
         if retryCount < 3 then  
             log("[TIMEOUT] API: " .. apiKey .. " (Retry " .. retryCount .. ")", "warning")
-            rfsuite.tasks.callback.inSeconds(0.5, processNextAPI)  
+            rfsuite.tasks.callback.inSeconds(0.25, processNextAPI)  
         else
             log("[TIMEOUT FAIL] API: " .. apiKey .. " failed after 3 attempts. Skipping.", "error")
             state.currentIndex = state.currentIndex + 1
-            rfsuite.tasks.callback.inSeconds(0.5, processNextAPI)  
+            rfsuite.tasks.callback.inSeconds(0.25, processNextAPI)  
         end
     end
 
