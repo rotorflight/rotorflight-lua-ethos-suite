@@ -1044,13 +1044,21 @@ app._uiTasks = {
       if not rfsuite.session.isConnected then
         for i,v in pairs(app.formFieldsOffline) do
           if v == false then
-            app.formFields[i]:enable(false)
+            if app.formFields[i] then
+              app.formFields[i]:enable(false)
+            else
+              log("Main Menu Icon " .. i .. " not found in formFields", "info")  
+            end
           end
         end
       elseif rfsuite.session.apiVersion and app.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiV) then
         app.offlineMode = false
         for i in pairs(app.formFieldsOffline) do
-          app.formFields[i]:enable(true)
+          if app.formFields[i] then
+            app.formFields[i]:enable(true)
+            else
+              log("Main Menu Icon " .. i .. " not found in formFields", "info")  
+            end
         end
       end
     elseif not app.isOfflinePage then
