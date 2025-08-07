@@ -958,7 +958,7 @@ app._uiTasks = {
     if app.dialogs.progress then
       app.ui.progressDisplayValue(p)
     end
-    if p >= 101 and q and q:isProcessed() then
+    if p >= 101  then  
       app.dialogs.progressWatchDog = nil
       app.dialogs.progressDisplay  = false
       app.ui.progressDisplayClose()
@@ -972,16 +972,16 @@ app._uiTasks = {
     if not app.triggers.closeSave then return end
     local p, q = app.dialogs.saveProgressCounter, rfsuite.tasks.msp.mspQueue
     app.triggers.isSaving = false
-    if q:isProcessed() then
-      if     p > 90 then p = p + 5
-      elseif p > 40 then p = p + 15
-      else                p = p + 5 end
-    end
+
+    if     p > 90 then p = p + 5
+    elseif p > 40 then p = p + 15
+    else                p = p + 5 end
+    
     app.dialogs.saveProgressCounter = p
     if app.dialogs.save then
       app.ui.progressDisplaySaveValue(p)
     end
-    if p >= 100 and q:isProcessed() then
+    if p >= 100 then
       app.triggers.closeSave           = false
       app.dialogs.saveProgressCounter  = 0
       app.dialogs.saveDisplay          = false
