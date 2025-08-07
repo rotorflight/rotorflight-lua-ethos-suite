@@ -263,10 +263,13 @@ function render.wakeup(box)
         value = getParam(box, "value")
     end
 
+    -- Battery config
+    local bc = rfsuite and rfsuite.session and rfsuite.session.batteryConfig
+
     -- Battery Advanced value extraction
     local getSensor = telemetry and telemetry.getSensor
     local voltage   = getSensor and getSensor("voltage") or 0
-    local cellCount = getSensor and getSensor("cell_count") or 0
+    local cellCount = bc and bc.batteryCellCount or 0
     local consumed  = getSensor and getSensor("smartconsumption") or 0
     local perCellVoltage = (cellCount > 0) and (voltage / cellCount) or 0
 
