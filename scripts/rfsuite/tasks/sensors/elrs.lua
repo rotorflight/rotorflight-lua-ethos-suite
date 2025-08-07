@@ -57,6 +57,21 @@ local sensors = {}
 sensors['uid'] = {}
 sensors['lastvalue'] = {}
 
+-- cache tables and functions for performance
+local sensorsUid     = sensors['uid']
+local sensorsLast    = sensors['lastvalue']
+local createSensor   = model.createSensor
+local getSource      = system.getSource
+local logDebug       = rfsuite.utils.log
+local rfSession      = rfsuite.session
+local rfTriggers     = rfsuite.app.triggers
+local function telemetryState() return rfSession.telemetryState end
+local function mspBusy()        return rfTriggers.mspBusy      end
+local pauseTel       = CRSF_PAUSE_TELEMETRY
+local RFSensors      = elrs.RFSensors
+local popFrame       = elrs.popFrame
+local pushFrame      = elrs.pushFrame
+
 local rssiSensor = nil
 
 local CRSF_FRAME_CUSTOM_TELEM = 0x88
@@ -111,27 +126,22 @@ end
     If the sensor exists, it updates the value if it has changed. It also checks if the sensor
     has been deleted or is missing and handles it accordingly.
 ]]
-local function setTelemetryValue(uid, subid, instance, value, unit, dec, name, min, max)
+local function setTelemetryValue(uid, value, name, unit, prec, mn, mx)
+    if not telemetryState() then return end
 
-    if rfsuite.session.telemetryState == false then return end
-
-    if sensors['uid'][uid] == nil then
-        sensors['uid'][uid] = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = uid})
-        if sensors['uid'][uid] == nil then
-            rfsuite.utils.log("Create sensor: " .. uid, "debug")
-            createTelemetrySensor(uid, name, unit, dec, value, min, max)
+    local s = sensorsUid[uid]
+    if not s then
+        s = getSource({ category=CATEGORY_TELEMETRY_SENSOR, appId=uid })
+        if not s then
+            logDebug("Create sensor: " .. uid, "debug")
+            createTelemetrySensor(uid, name, unit, prec, value, mn, mx)
+            s = sensorsUid[uid]
         end
-    else
-        if sensors['uid'][uid] then
-            if sensors['lastvalue'][uid] == nil or sensors['lastvalue'][uid] ~= value then sensors['uid'][uid]:value(value) end
+    end
 
-            -- detect if sensor has been deleted or is missing after initial creation
-            if sensors['uid'][uid]:state() == false then
-                sensors['uid'][uid] = nil
-                sensors['lastvalue'][uid] = nil
-            end
-
-        end
+    if s and sensorsLast[uid] ~= value then
+        sensorsLast[uid] = value
+        s:value(value)
     end
 end
 
@@ -694,7 +704,7 @@ elrs.telemetryFrameCount = 0
 ]]
 function elrs.crossfirePop()
 
-    if (CRSF_PAUSE_TELEMETRY == true or rfsuite.app.triggers.mspBusy == true or rfsuite.session.telemetryState == false) then
+    if pauseTel or mspBusy() or not telemetryState() then    
         local module = model.getModule(rfsuite.session.telemetrySensor:module())
         if module ~= nil and module.muteSensorLost ~= nil then module:muteSensorLost(5.0) end
 
@@ -706,7 +716,7 @@ function elrs.crossfirePop()
         return false
     else
 
-        local command, data = elrs.popFrame()
+        local command, data = popFrame()
         if command and data then
 
             if command == CRSF_FRAME_CUSTOM_TELEM then
@@ -718,14 +728,23 @@ function elrs.crossfirePop()
                 elrs.telemetryFrameId = fid
                 elrs.telemetryFrameCount = elrs.telemetryFrameCount + 1
                 while ptr < #data do
+                    -- read 16-bit sensor ID
+                    local sid = (data:byte(ptr) << 8) | data:byte(ptr+1)
+                    ptr = ptr + 2
+                    local sensor = RFSensors[sid]
+                    if not sensor then break end
 
-                    sid, ptr = decU16(data, ptr)
-                    local sensor = elrs.RFSensors[sid]
-                    if sensor then
-                        val, ptr = sensor.dec(data, ptr)
-                        if val then setTelemetryValue(sid, 0, 0, val, sensor.unit, sensor.prec, sensor.name, sensor.min, sensor.max) end
-                    else
-                        break
+                    local val
+                    val, ptr = sensor.dec(data, ptr)
+                    if val then
+                        setTelemetryValue(
+                            sid, val,
+                            sensor.name,
+                            sensor.unit,
+                            sensor.prec,
+                            sensor.min,
+                            sensor.max
+                        )
                     end
                 end
                 setTelemetryValue(0xEE01, 0, 0, elrs.telemetryFrameCount, UNIT_RAW, 0, "Frame Count", 0, 2147483647) -- *Cnt
