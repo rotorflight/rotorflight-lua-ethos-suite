@@ -682,6 +682,10 @@ elrs.telemetryFrameId = 0
 elrs.telemetryFrameSkip = 0
 elrs.telemetryFrameCount = 0
 
+-- incremental frame parsing state (non-blocking)
+-- when a CRSF custom telemetry frame is popped, we parse it across multiple wakeups
+elrs._cur = nil  -- { data=table, ptr=number, len=number, fid=number, counted=bool }
+
 --[[
     Function: elrs.crossfirePop
     Description: Handles the processing of Crossfire telemetry frames for ELRS (ExpressLRS).
@@ -692,52 +696,82 @@ elrs.telemetryFrameCount = 0
         - true: if a telemetry frame was successfully processed.
         - false: if no telemetry frame was processed or if telemetry is paused/MSP is busy.
 ]]
+-- Process at most one sensor item per call. Never blocks the UI.
 function elrs.crossfirePop()
-
+    -- paused / busy / telemetry off?
     if (CRSF_PAUSE_TELEMETRY == true or rfsuite.app.triggers.mspBusy == true or rfsuite.session.telemetryState == false) then
-        local module = model.getModule(rfsuite.session.telemetrySensor:module())
+        local modIdx = rfsuite.session.telemetrySensor and rfsuite.session.telemetrySensor:module() or 1
+        local module = model.getModule(modIdx)
         if module ~= nil and module.muteSensorLost ~= nil then module:muteSensorLost(5.0) end
-
         if rfsuite.session.telemetryState == false then
             sensors['uid'] = {}
             sensors['lastvalue'] = {}
         end
-
+        elrs._cur = nil
         return false
-    else
+    end
 
+    -- If no current frame, try to pop one
+    if not elrs._cur then
         local command, data = elrs.popFrame()
-        if command and data then
-
-            if command == CRSF_FRAME_CUSTOM_TELEM then
-                local fid, sid, val
-                local ptr = 3
-                fid, ptr = decU8(data, ptr)
-                local delta = (fid - elrs.telemetryFrameId) & 0xFF
-                if delta > 1 then elrs.telemetryFrameSkip = elrs.telemetryFrameSkip + 1 end
-                elrs.telemetryFrameId = fid
-                elrs.telemetryFrameCount = elrs.telemetryFrameCount + 1
-                while ptr < #data do
-
-                    sid, ptr = decU16(data, ptr)
-                    local sensor = elrs.RFSensors[sid]
-                    if sensor then
-                        val, ptr = sensor.dec(data, ptr)
-                        if val then setTelemetryValue(sid, 0, 0, val, sensor.unit, sensor.prec, sensor.name, sensor.min, sensor.max) end
-                    else
-                        break
-                    end
-                end
-                setTelemetryValue(0xEE01, 0, 0, elrs.telemetryFrameCount, UNIT_RAW, 0, "Frame Count", 0, 2147483647) -- *Cnt
-                setTelemetryValue(0xEE02, 0, 0, elrs.telemetryFrameSkip, UNIT_RAW, 0, "Frame Skip", 0, 2147483647) -- *Skp
-                -- setTelemetryValue(0xEE03, 0, 0, elrs.telemetryFrameId, UNIT_RAW, 0, "*Frm", 0, 255)
-            end
-
+        if not (command and data) then return false end
+        if command ~= CRSF_FRAME_CUSTOM_TELEM then
+            -- we did work (popped a frame) but it's not ours
             return true
         end
 
-        return false
+        -- Begin a new custom telemetry frame
+        local ptr = 3
+        local fid
+        fid, ptr = decU8(data, ptr)
+        local delta = (fid - elrs.telemetryFrameId) & 0xFF
+        if delta > 1 then elrs.telemetryFrameSkip = elrs.telemetryFrameSkip + 1 end
+        elrs.telemetryFrameId = fid
+
+        elrs._cur = { data = data, ptr = ptr, len = #data, fid = fid, counted = false }
     end
+
+    -- Parse exactly one sensor item from the current frame
+    local st = elrs._cur
+
+    -- Count frame once
+    if not st.counted then
+        elrs.telemetryFrameCount = elrs.telemetryFrameCount + 1
+        st.counted = true
+    end
+
+    if st.ptr >= st.len then
+        -- Frame finished: publish counters and clear
+        setTelemetryValue(0xEE01, 0, 0, elrs.telemetryFrameCount, UNIT_RAW, 0, "Frame Count", 0, 2147483647) -- *Cnt
+        setTelemetryValue(0xEE02, 0, 0, elrs.telemetryFrameSkip, UNIT_RAW, 0, "Frame Skip", 0, 2147483647) -- *Skp
+        elrs._cur = nil
+        return true
+    end
+
+    -- Decode one sensor ID + value
+    local sid
+    sid, st.ptr = decU16(st.data, st.ptr)
+    local sensor = elrs.RFSensors[sid]
+    if not sensor then
+        -- Unknown sensor id: abandon this frame safely
+        elrs._cur = nil
+        return true
+    end
+
+    local val
+    val, st.ptr = sensor.dec(st.data, st.ptr)
+    if val then
+        setTelemetryValue(sid, 0, 0, val, sensor.unit, sensor.prec, sensor.name, sensor.min, sensor.max)
+    end
+
+    -- If we've reached end of frame, finalize counters now
+    if st.ptr >= st.len then
+        setTelemetryValue(0xEE01, 0, 0, elrs.telemetryFrameCount, UNIT_RAW, 0, "Frame Count", 0, 2147483647) -- *Cnt
+        setTelemetryValue(0xEE02, 0, 0, elrs.telemetryFrameSkip, UNIT_RAW, 0, "Frame Skip", 0, 2147483647) -- *Skp
+        elrs._cur = nil
+    end
+
+    return true
 end
 
 --[[
@@ -746,16 +780,23 @@ end
     Usage: Call this function to manage the wakeup event for the ELRS module.
 ]]
 function elrs.wakeup()
-
     if rfsuite.session.telemetryState and rfsuite.session.telemetrySensor then
-        while elrs.crossfirePop() do
-            if CRSF_PAUSE_TELEMETRY == true or rfsuite.app.triggers.mspBusy == true  then
-                break
+        if CRSF_PAUSE_TELEMETRY ~= true and rfsuite.app.triggers.mspBusy ~= true then
+            -- non-blocking: process a tiny amount of work per wakeup
+            -- bump this small fixed budget if you want faster catch-up (still no while)
+            local BUDGET = 1
+            for _ = 1, BUDGET do
+                if not elrs.crossfirePop() then break end
             end
+        else
+            sensors['uid'] = {}
+            sensors['lastvalue'] = {}
+            elrs._cur = nil
         end
     else
         sensors['uid'] = {}
-        sensors['lastvalue'] = {}          
+        sensors['lastvalue'] = {}
+        elrs._cur = nil
     end
 end
 
