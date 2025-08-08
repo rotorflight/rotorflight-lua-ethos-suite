@@ -31,6 +31,9 @@ local frsky_legacy = {}
 -- used by sensors.lua to know if module has changed
 frsky_legacy.name = "frsky_legacy"
 
+-- track whether last wakeup left frames pending
+frsky_legacy._pending = false
+
 --[[
 createSensorList: A table mapping sensor IDs to their respective sensor details.
     - 0x5450: Governor Flags (UNIT_RAW)
@@ -268,8 +271,31 @@ function frsky_legacy.wakeup()
     -- Flush sensor list if we kill the sensors
     if not rfsuite.session.telemetryState or not rfsuite.session.telemetrySensor then clearCaches() end
 
-    -- If GUI or queue is busy.. do not do this!
-    if rfsuite.tasks and rfsuite.tasks.telemetry and rfsuite.session.telemetryState and rfsuite.session.telemetrySensor then if rfsuite.app.guiIsRunning == false and rfsuite.tasks.msp.mspQueue:isProcessed() then while telemetryPop() do end end end
+    -- If GUI and MSP queue are idle, do a little work each tick instead of blocking
+    if rfsuite.tasks
+    and rfsuite.tasks.telemetry
+    and rfsuite.session.telemetryState
+    and rfsuite.session.telemetrySensor
+    and not rfsuite.app.guiIsRunning
+    and rfsuite.tasks.msp.mspQueue:isProcessed()
+    then
+        -- base budget of frames per wakeup
+        local budget = 2
+        -- if we didn’t drain last time, give a bit more
+        if frsky_legacy._pending then
+            budget = budget + 2
+        end
+        if budget > 8 then budget = 8 end
+
+        -- process up to `budget` frames
+        for i = 1, budget do
+            if not telemetryPop() then
+                frsky_legacy._pending = false
+                break
+            end
+            frsky_legacy._pending = true
+        end
+    end
 
 end
 
