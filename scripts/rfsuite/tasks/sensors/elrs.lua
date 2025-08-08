@@ -121,9 +121,14 @@ local function setTelemetryValue(uid, subid, instance, value, unit, dec, name, m
             rfsuite.utils.log("Create sensor: " .. uid, "debug")
             createTelemetrySensor(uid, name, unit, dec, value, min, max)
         end
+        -- first time we ever see this sensor, record its initial value
+        sensors['lastvalue'][uid] = value        
     else
         if sensors['uid'][uid] then
-            if sensors['lastvalue'][uid] == nil or sensors['lastvalue'][uid] ~= value then sensors['uid'][uid]:value(value) end
+            if sensors['lastvalue'][uid] == nil or sensors['lastvalue'][uid] ~= value then
+                sensors['uid'][uid]:value(value)
+                sensors['lastvalue'][uid] = value
+            end
 
             -- detect if sensor has been deleted or is missing after initial creation
             if sensors['uid'][uid]:state() == false then
@@ -729,7 +734,15 @@ function elrs.crossfirePop()
         if delta > 1 then elrs.telemetryFrameSkip = elrs.telemetryFrameSkip + 1 end
         elrs.telemetryFrameId = fid
 
-        elrs._cur = { data = data, ptr = ptr, len = #data, fid = fid, counted = false }
+        -- start a new frame, and track which UIDs we see
+        elrs._cur = {
+          data    = data,
+          ptr     = ptr,
+          len     = #data,
+          fid     = fid,
+          counted = false,
+          seen    = {}     -- will be a set of UIDs decoded in this frame
+        }
     end
 
     -- Parse exactly one sensor item from the current frame
@@ -752,6 +765,8 @@ function elrs.crossfirePop()
     -- Decode one sensor ID + value
     local sid
     sid, st.ptr = decU16(st.data, st.ptr)
+    -- remember that we’ve seen this sensor in the frame
+    st.seen[sid] = true    
     local sensor = elrs.RFSensors[sid]
     if not sensor then
         -- Unknown sensor id: abandon this frame safely
@@ -765,8 +780,19 @@ function elrs.crossfirePop()
         setTelemetryValue(sid, 0, 0, val, sensor.unit, sensor.prec, sensor.name, sensor.min, sensor.max)
     end
 
-    -- If we've reached end of frame, finalize counters now
+    -- If we've reached end of frame, first re-issue any missing sensors,
+    -- then publish the *Cnt/*Skp counters and clear.
     if st.ptr >= st.len then
+
+        -- for every sensor we know about, if it wasn't in this frame, resend its last value
+        for uid, last in pairs(sensors['lastvalue']) do
+          if not st.seen[uid] and last ~= nil then
+            -- bypass the “only-on-change” in setTelemetryValue so we don’t
+            -- have to special-case it — just write it straight back:
+            sensors['uid'][uid]:value(last)
+          end
+        end
+
         setTelemetryValue(0xEE01, 0, 0, elrs.telemetryFrameCount, UNIT_RAW, 0, "Frame Count", 0, 2147483647) -- *Cnt
         setTelemetryValue(0xEE02, 0, 0, elrs.telemetryFrameSkip, UNIT_RAW, 0, "Frame Skip", 0, 2147483647) -- *Skp
         elrs._cur = nil
