@@ -782,12 +782,19 @@ end
 function elrs.wakeup()
     if rfsuite.session.telemetryState and rfsuite.session.telemetrySensor then
         if CRSF_PAUSE_TELEMETRY ~= true and rfsuite.app.triggers.mspBusy ~= true then
-            -- non-blocking: process a tiny amount of work per wakeup
-            -- bump this small fixed budget if you want faster catch-up (still no while)
-            local BUDGET = 1
-            for _ = 1, BUDGET do
-                if not elrs.crossfirePop() then break end
+            -- Adaptive, but always bounded
+            local budget = 2                   -- base work per tick (safe default)
+            if elrs._cur then budget = budget + 2 end            -- mid-frame? push a bit harder
+            if elrs.telemetryFrameSkip > (elrs._lastSkip or 0) then
+                budget = budget + 2                                -- just observed a skip? catch up a tad
             end
+            if budget > 8 then budget = 8 end                      -- hard ceiling to avoid UI stalls
+
+            for _ = 1, budget do
+                if not elrs.crossfirePopS() then break end
+            end
+
+            elrs._lastSkip = elrs.telemetryFrameSkip
         else
             sensors['uid'] = {}
             sensors['lastvalue'] = {}
