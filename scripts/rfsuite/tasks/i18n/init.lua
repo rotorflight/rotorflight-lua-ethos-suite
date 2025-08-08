@@ -17,7 +17,7 @@
  * 
 ]] --
 local init = {
-    interval        = 10,           -- run every 2 seconds
+    interval        = 2,            -- run every 2 seconds
     script          = "i18n.lua",   -- run this script
     linkrequired    = false,        -- run this script only if link is established
     connected       = false,         -- run this script only if msp is connected
