@@ -681,6 +681,7 @@ elrs.RFSensors = {
 elrs.telemetryFrameId = 0
 elrs.telemetryFrameSkip = 0
 elrs.telemetryFrameCount = 0
+elrs._lastSkip = 0
 
 -- incremental frame parsing state (non-blocking)
 -- when a CRSF custom telemetry frame is popped, we parse it across multiple wakeups
