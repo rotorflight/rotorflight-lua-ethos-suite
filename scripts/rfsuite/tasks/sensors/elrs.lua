@@ -792,7 +792,7 @@ function elrs.wakeup()
             if budget > 8 then budget = 8 end                      -- hard ceiling to avoid UI stalls
 
             for _ = 1, budget do
-                if not elrs.crossfirePopS() then break end
+                if not elrs.crossfirePop() then break end
             end
 
             elrs._lastSkip = elrs.telemetryFrameSkip
