@@ -282,7 +282,7 @@ function tasks.wakeup()
     end
 
     tasks.telemetryCheckScheduler()
-    rfsuite.i18n.wakeup()
+
 
     local now = os.clock()
     local cycleFlip = schedulerTick % 2  -- alternate every tick

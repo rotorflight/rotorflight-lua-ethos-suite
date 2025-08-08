@@ -46,6 +46,8 @@ function i18n.wakeup()
 
     end
 
+   rfsuite.i18n.wakeup()
+
 end
 
 return i18n
