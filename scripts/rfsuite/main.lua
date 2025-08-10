@@ -88,6 +88,8 @@ local userpref_defaults ={
         smartfuelcallout    = 0,
         smartfuelrepeats    = 1,
         smartfuelhaptic     = false,
+        adj_v               = false,
+        adj_f               = false,
     },
     switches = {
     },
