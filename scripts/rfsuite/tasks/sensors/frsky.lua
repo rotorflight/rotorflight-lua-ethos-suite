@@ -26,9 +26,6 @@ local frsky = {}
 local cacheExpireTime = 10 -- Time in seconds to expire the caches
 local lastCacheFlushTime = os.clock() -- Store the initial time
 
--- track whether last wakeup left frames pending
-frsky._pending = false
-
 frsky.name = "frsky"
 
 --[[
@@ -361,25 +358,8 @@ function frsky.wakeup()
     -- Flush sensor list if we kill the sensors
     if not rfsuite.session.telemetryState or not rfsuite.session.telemetrySensor then clearCaches() end
 
-    -- If telemetry is active and GUI/queue are idle, do a small amount of work each tick
-    if rfsuite.tasks and rfsuite.tasks.telemetry and rfsuite.session.telemetryState and rfsuite.session.telemetrySensor then
-        if rfsuite.app.guiIsRunning == false and rfsuite.tasks.msp.mspQueue:isProcessed() then
-            -- choose a “budget” of frames to decode this tick (safe default 2, cap 8)
-            local budget = 2
-            -- if last cycle left frames pending, bump budget a bit
-            if frsky._pending then budget = budget + 2 end
-            if budget > 8 then budget = 8 end
-
-            -- process up to `budget` frames
-            for _ = 1, budget do
-                if not telemetryPop() then
-                    frsky._pending = false
-                    break
-                end
-                frsky._pending = true
-            end
-        end
-    end
+    -- If GUI or queue is busy.. do not do this!
+    if rfsuite.tasks and rfsuite.tasks.telemetry and rfsuite.session.telemetryState and rfsuite.session.telemetrySensor then if rfsuite.app.guiIsRunning == false and rfsuite.tasks.msp.mspQueue:isProcessed() then while telemetryPop() do end end end
 
 end
 
