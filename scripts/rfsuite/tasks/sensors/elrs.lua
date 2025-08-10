@@ -25,7 +25,11 @@
 local arg = {...}
 local config = arg[1]
 
+local module
+
 local elrs = {}
+
+local stats = { last_t = 0, last_cnt = 0, last_skp = 0 }
 
 -- used by sensors.lua to know if module has changed
 elrs.name = "elrs"
@@ -56,10 +60,35 @@ end
 local sensors = {}
 sensors['uid'] = {}
 sensors['lastvalue'] = {}
+sensors['lasttime'] = {} 
 
 local rssiSensor = nil
 
 local CRSF_FRAME_CUSTOM_TELEM = 0x88
+
+
+-- helper: publish counters at most 2 Hz, plus FPS and Skip%
+local function publishCounters(now, force)
+  local dt = now - (stats.last_t or 0)
+  if not force and dt < 0.5 then return end     -- 2 Hz
+
+  local dcnt = elrs.telemetryFrameCount - (stats.last_cnt or 0)
+  local dskp = elrs.telemetryFrameSkip - (stats.last_skp or 0)
+  local fps  = (dt > 0 and dcnt / dt) or 0
+  local skpp = (dcnt > 0 and (dskp / dcnt) * 100) or 0
+
+  -- existing counters (throttled)
+  setTelemetryValue(0xEE01, 0, 0, elrs.telemetryFrameCount, UNIT_RAW,     0, "Frame Count", 0, nil) -- *Cnt
+  setTelemetryValue(0xEE02, 0, 0, elrs.telemetryFrameSkip,  UNIT_RAW,     0, "Frame Skip",  0, nil) -- *Skp
+  -- new: frames per second (1 decimal) and skip percentage
+  setTelemetryValue(0xEE10, 0, 0, math.floor(fps * 10 + 0.5) / 10, UNIT_RAW,    1, "Frames/s",   0, nil) -- *FPS
+  setTelemetryValue(0xEE11, 0, 0, math.floor(skpp * 10 + 0.5) / 10, UNIT_PERCENT,1, "Skip %",     0, 100) -- *Sk%
+
+  stats.last_t   = now
+  stats.last_cnt = elrs.telemetryFrameCount
+  stats.last_skp = elrs.telemetryFrameSkip
+end
+
 
 --[[
     Creates a telemetry sensor with the specified parameters and adds it to the sensors table.
@@ -90,7 +119,10 @@ local function createTelemetrySensor(uid, name, unit, dec, value, min, max)
         sensors['uid'][uid]:unit(unit)
         sensors['uid'][uid]:protocolUnit(unit)
     end
-    if value then sensors['uid'][uid]:value(value) end
+    if value then 
+        sensors['uid'][uid]:value(value) 
+        sensors['lasttime'][uid] = os.clock()
+    end
 end
 
 --[[
@@ -123,17 +155,20 @@ local function setTelemetryValue(uid, subid, instance, value, unit, dec, name, m
         end
         -- first time we ever see this sensor, record its initial value
         sensors['lastvalue'][uid] = value        
+        sensors['lasttime'][uid] = os.clock()
     else
         if sensors['uid'][uid] then
             if sensors['lastvalue'][uid] == nil or sensors['lastvalue'][uid] ~= value then
                 sensors['uid'][uid]:value(value)
                 sensors['lastvalue'][uid] = value
+                sensors['lasttime'][uid] = os.clock()
             end
 
             -- detect if sensor has been deleted or is missing after initial creation
             if sensors['uid'][uid]:state() == false then
                 sensors['uid'][uid] = nil
                 sensors['lastvalue'][uid] = nil
+                sensors['lasttime'][uid] = nil
             end
 
         end
@@ -706,12 +741,18 @@ elrs._cur = nil  -- { data=table, ptr=number, len=number, fid=number, counted=bo
 function elrs.crossfirePop()
     -- paused / busy / telemetry off?
     if (CRSF_PAUSE_TELEMETRY == true or rfsuite.app.triggers.mspBusy == true or rfsuite.session.telemetryState == false) then
-        local modIdx = rfsuite.session.telemetrySensor and rfsuite.session.telemetrySensor:module() or 1
-        local module = model.getModule(modIdx)
+
+        if not module then
+            local modIdx = rfsuite.session.telemetrySensor and rfsuite.session.telemetrySensor:module() or 1
+            module = model.getModule(modIdx)
+        end
+
         if module ~= nil and module.muteSensorLost ~= nil then module:muteSensorLost(5.0) end
+
         if rfsuite.session.telemetryState == false then
             sensors['uid'] = {}
             sensors['lastvalue'] = {}
+            sensors['lasttime'] = {}
         end
         elrs._cur = nil
         return false
@@ -756,8 +797,7 @@ function elrs.crossfirePop()
 
     if st.ptr >= st.len then
         -- Frame finished: publish counters and clear
-        setTelemetryValue(0xEE01, 0, 0, elrs.telemetryFrameCount, UNIT_RAW, 0, "Frame Count", 0, 2147483647) -- *Cnt
-        setTelemetryValue(0xEE02, 0, 0, elrs.telemetryFrameSkip, UNIT_RAW, 0, "Frame Skip", 0, 2147483647) -- *Skp
+        publishCounters(os.clock(), true)  -- force immediate update once per finished frame
         elrs._cur = nil
         return true
     end
@@ -785,16 +825,22 @@ function elrs.crossfirePop()
     if st.ptr >= st.len then
 
         -- for every sensor we know about, if it wasn't in this frame, resend its last value
+        local now = os.clock()
         for uid, last in pairs(sensors['lastvalue']) do
-          if not st.seen[uid] and last ~= nil then
-            -- bypass the “only-on-change” in setTelemetryValue so we don’t
-            -- have to special-case it — just write it straight back:
-            sensors['uid'][uid]:value(last)
-          end
+        if not st.seen[uid] and last ~= nil then
+            local lastt = sensors['lasttime'][uid] or 0
+            -- Only refresh if we haven't written this sensor in > 0.5s 
+            if (now - lastt) > 0.5 then
+            -- bypass the “only-on-change” in setTelemetryValue — write straight back:
+            if sensors['uid'][uid] then
+                sensors['uid'][uid]:value(last)
+                sensors['lasttime'][uid] = now  -- prevent spamming until another 0.5s passes
+            end
+            end
+        end
         end
 
-        setTelemetryValue(0xEE01, 0, 0, elrs.telemetryFrameCount, UNIT_RAW, 0, "Frame Count", 0, 2147483647) -- *Cnt
-        setTelemetryValue(0xEE02, 0, 0, elrs.telemetryFrameSkip, UNIT_RAW, 0, "Frame Skip", 0, 2147483647) -- *Skp
+        publishCounters(os.clock(), false) -- throttled to 2 Hz
         elrs._cur = nil
     end
 
@@ -825,11 +871,13 @@ function elrs.wakeup()
         else
             sensors['uid'] = {}
             sensors['lastvalue'] = {}
+            sensors['lasttime'] = {}
             elrs._cur = nil
         end
     else
         sensors['uid'] = {}
         sensors['lastvalue'] = {}
+        sensors['lasttime'] = {}
         elrs._cur = nil
     end
 end
@@ -838,6 +886,8 @@ end
 function elrs.reset()
     sensors.uid = {}
     sensors.lastvalue = {}
+    sensors.lasttime = {}
+    module = nil
 end
 
 return elrs
