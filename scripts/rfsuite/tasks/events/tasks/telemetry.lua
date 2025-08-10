@@ -39,20 +39,36 @@ local function smartfuelCallout(value)
     local smartfuelcallout = tonumber(eventPrefs.smartfuelcallout) or 0
     local thresholds = {}
 
-    -- Unify thresholds logic, including 0 as a special 'default' pattern: 100%, 10%
     if smartfuelcallout == 0 then
         for _, i in ipairs({100, 10}) do table.insert(thresholds, i) end
     elseif smartfuelcallout == 10 then
         for i = 100, 10, -10 do table.insert(thresholds, i) end
+    elseif smartfuelcallout == 20 then
+        for i = 100, 20, -20 do table.insert(thresholds, i) end
     elseif smartfuelcallout == 25 then
         for i = 100, 25, -25 do table.insert(thresholds, i) end
     elseif smartfuelcallout == 50 then
         for _, i in ipairs({100, 50}) do table.insert(thresholds, i) end
-    elseif smartfuelcallout == 20 then
-        for _, i in ipairs({100, 75, 50, 25, 20}) do table.insert(thresholds, i) end
     else
         table.insert(thresholds, smartfuelcallout)
     end
+
+    -- Force 10% and 0% into the list
+    table.insert(thresholds, 10)
+    table.insert(thresholds, 0)
+
+    -- Remove duplicates
+    local seen = {}
+    local unique = {}
+    for _, v in ipairs(thresholds) do
+        if not seen[v] then
+            seen[v] = true
+            table.insert(unique, v)
+        end
+    end
+
+    -- Replace with deduped list
+    thresholds = unique
 
     -- 0% logic (repeats, haptic)
     if value <= 0 then
