@@ -291,8 +291,8 @@ local function buildBoxes(W)
             titlecolor = colorMode.titlecolor,
             thresholds = {
                 { value = 1.5, textcolor = "blue" },
-                { value = 2.5, colorMode.fillwarncolor },
-                { value = 6,   colorMode.fillcolor }
+                { value = 2.5, textcolor = colorMode.fillwarncolor },
+                { value = 6,   textcolor = colorMode.fillcolor }
             }
         },
 
