@@ -515,7 +515,10 @@ return {
         ["timer_postalert_options"] = "Na-timer Waarschuwing opties",
         ["timer_postalert"] = "Na-timer waarschuwing",
         ["timer_postalert_period"] = "Waarschuwing periode",
-        ["timer_postalert_interval"] = "Waarschuwing interval"
+        ["timer_postalert_interval"] = "Waarschuwing interval",
+        ["adj_callouts"] = "Adjustment Callouts",
+        ["adj_function"] = "Adjustment Function",
+        ["adj_value"] = "Adjustment Value"
       },
       ["validate_sensors"] = {
         ["help_p1"] = "Deze tool probeert een beknopt overzicht te geven van alle sensoren die u niet ontvangt.",

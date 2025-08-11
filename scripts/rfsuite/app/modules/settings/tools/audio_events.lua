@@ -131,6 +131,31 @@ local function openPage(pageIdx, title, script)
     rfsuite.app.formFields[formFieldCount]:suffix("°")
     setFieldEnabled(rfsuite.app.formFields[escFields.thresh], escEnabled)
 
+    -- Adjustments Panel
+    local adjEnabled = (config.adj_f == true) or (config.adj_v == true)
+    local adjPanel = form.addExpansionPanel(i18n("app.modules.settings.adj_callouts"))
+    adjPanel:open(adjEnabled)
+
+    -- Speak the adjust *function name* (e.g., "pitch", "rate", etc.)
+    local adjFuncLine = adjPanel:addLine(i18n("app.modules.settings.adj_function"))
+    formFieldCount = formFieldCount + 1
+    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(
+    adjFuncLine, nil,
+    function() return config.adj_f == true end,   -- default OFF
+    function(val) config.adj_f = val end
+    )
+
+    -- Speak the adjust *value* (e.g., the number after you change it)
+    local adjValueLine = adjPanel:addLine(i18n("app.modules.settings.adj_value"))
+    formFieldCount = formFieldCount + 1
+    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(
+    adjValueLine, nil,
+    function() return config.adj_v == true end,   -- default OFF
+    function(val) config.adj_v = val end
+    )
+
     -- Smart Fuel Alert Panel
     local fuelEnabled = config.smartfuel == true
     local fuelPanel = form.addExpansionPanel(i18n("app.modules.settings.fuel"))

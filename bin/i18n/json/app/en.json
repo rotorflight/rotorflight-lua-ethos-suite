@@ -497,6 +497,21 @@
         "english": "Alert Interval",
         "translation": "Alert Interval",
         "needs_translation": "false"
+      },
+      "adj_callouts": {
+        "english": "Adjustment Callouts",
+        "translation": "Adjustment Callouts",
+        "needs_translation": "false"
+      },
+      "adj_function": {
+        "english": "Adjustment Function",
+        "translation": "Adjustment Function",
+        "needs_translation": "false"
+      },
+      "adj_value": {
+        "english": "Adjustment Value",
+        "translation": "Adjustment Value",
+        "needs_translation": "false"
       }
     },
     "validate_sensors": {

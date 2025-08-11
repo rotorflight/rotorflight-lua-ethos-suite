@@ -515,7 +515,10 @@ return {
         ["timer_postalert_options"] = "Opzioni Avvisi Post-timer",
         ["timer_postalert"] = "Avviso Post-timer",
         ["timer_postalert_period"] = "Periodo Avviso",
-        ["timer_postalert_interval"] = "Intervallo Avviso"
+        ["timer_postalert_interval"] = "Intervallo Avviso",
+        ["adj_callouts"] = "Adjustment Callouts",
+        ["adj_function"] = "Adjustment Function",
+        ["adj_value"] = "Adjustment Value"
       },
       ["validate_sensors"] = {
         ["help_p1"] = "Questo strumento prova a elencare tutti i sensori che non ricevi in una lista concisa.",

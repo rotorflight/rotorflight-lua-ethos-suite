@@ -515,7 +515,10 @@ return {
         ["timer_postalert_options"] = "Nach-timer Alarmierungs Optionen",
         ["timer_postalert"] = "Nach-timer Alarmierung",
         ["timer_postalert_period"] = "Alarmierungs Periode",
-        ["timer_postalert_interval"] = "Alarmierungs Interval"
+        ["timer_postalert_interval"] = "Alarmierungs Interval",
+        ["adj_callouts"] = "Adjustment Callouts",
+        ["adj_function"] = "Adjustment Function",
+        ["adj_value"] = "Adjustment Value"
       },
       ["validate_sensors"] = {
         ["help_p1"] = "Dieses Tool versucht, eine kurze Liste aller Sensoren zu erstellen, die nicht empfangen werden.",

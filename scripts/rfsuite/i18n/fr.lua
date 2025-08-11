@@ -515,7 +515,10 @@ return {
         ["timer_postalert_options"] = "Options d'alerte apres minuteur",
         ["timer_postalert"] = "Alerte apres minuteur",
         ["timer_postalert_period"] = "Periode alerte",
-        ["timer_postalert_interval"] = "Intervalle alerte"
+        ["timer_postalert_interval"] = "Intervalle alerte",
+        ["adj_callouts"] = "Adjustment Callouts",
+        ["adj_function"] = "Adjustment Function",
+        ["adj_value"] = "Adjustment Value"
       },
       ["validate_sensors"] = {
         ["help_p1"] = "Cet outil tente de lister tous les capteurs que vous ne recevez pas dans une liste concise.",
