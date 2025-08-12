@@ -56,6 +56,7 @@ end
 local sensors = {}
 sensors['uid'] = {}
 sensors['lastvalue'] = {}
+sensors['lastcheck'] = {}
 
 local rssiSensor = nil
 
@@ -123,14 +124,23 @@ local function setTelemetryValue(uid, subid, instance, value, unit, dec, name, m
         end
     else
         if sensors['uid'][uid] then
-            if sensors['lastvalue'][uid] == nil or sensors['lastvalue'][uid] ~= value then sensors['uid'][uid]:value(value) end
-
-            -- detect if sensor has been deleted or is missing after initial creation
-            if sensors['uid'][uid]:state() == false then
-                sensors['uid'][uid] = nil
-                sensors['lastvalue'][uid] = nil
+            -- update value if changed
+            if sensors['lastvalue'][uid] == nil or sensors['lastvalue'][uid] ~= value then
+                sensors['uid'][uid]:value(value)
+                sensors['lastvalue'][uid] = value
             end
 
+            -- check :state() only if >5s since last check
+            local now = os.clock()
+            local last = sensors['lastcheck'][uid] or 0
+            if now - last >= 5 then
+                sensors['lastcheck'][uid] = now
+                if sensors['uid'][uid]:state() == false then
+                    sensors['uid'][uid] = nil
+                    sensors['lastvalue'][uid] = nil
+                    sensors['lastcheck'][uid] = nil
+                end
+            end
         end
     end
 end
