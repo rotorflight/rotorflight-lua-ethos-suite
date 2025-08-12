@@ -56,6 +56,7 @@ end
 local sensors = {}
 sensors['uid'] = {}
 sensors['lastvalue'] = {}
+sensors['lastcheck'] = {}
 
 -- === Batched telemetry write support (ring buffer) ===
 local RB_SIZE = 256
@@ -179,10 +180,16 @@ local function _writeTelemetryValue(uid, subid, instance, value, unit, dec, name
         if sensors['uid'][uid] then
             if sensors['lastvalue'][uid] == nil or sensors['lastvalue'][uid] ~= value then sensors['uid'][uid]:value(value) end
 
-            -- detect if sensor has been deleted or is missing after initial creation
-            if sensors['uid'][uid]:state() == false then
-                sensors['uid'][uid] = nil
-                sensors['lastvalue'][uid] = nil
+            -- check :state() only if >5s since last check
+            local now = os.clock()
+            local last = sensors['lastcheck'][uid] or 0
+            if now - last >= 5 then
+                sensors['lastcheck'][uid] = now
+                if sensors['uid'][uid]:state() == false then
+                    sensors['uid'][uid] = nil
+                    sensors['lastvalue'][uid] = nil
+                    sensors['lastcheck'][uid] = nil
+                end
             end
 
         end
