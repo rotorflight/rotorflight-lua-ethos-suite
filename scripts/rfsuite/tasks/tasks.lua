@@ -178,7 +178,7 @@ end
 function tasks.telemetryCheckScheduler()
     local now = os.clock()
 
-    if now - (telemetryCheckScheduler or 0) >= 0.25 then
+    if now - (telemetryCheckScheduler or 0) >= 2 then
         local telemetryState = tlm and tlm:state() or false
         if rfsuite.simevent.telemetry_state == false and system.getVersion().simulation then
             telemetryState = false
