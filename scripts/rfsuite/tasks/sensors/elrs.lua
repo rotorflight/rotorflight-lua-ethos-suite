@@ -180,10 +180,10 @@ local function _writeTelemetryValue(uid, subid, instance, value, unit, dec, name
         if sensors['uid'][uid] then
             if sensors['lastvalue'][uid] == nil or sensors['lastvalue'][uid] ~= value then sensors['uid'][uid]:value(value) end
 
-            -- check :state() only if >5s since last check
+            -- check :state() only if >10s since last check
             local now = os.clock()
             local last = sensors['lastcheck'][uid] or 0
-            if now - last >= 5 then
+            if now - last >= 10 then
                 sensors['lastcheck'][uid] = now
                 if sensors['uid'][uid]:state() == false then
                     sensors['uid'][uid] = nil
