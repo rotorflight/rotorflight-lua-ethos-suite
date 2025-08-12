@@ -57,6 +57,60 @@ local sensors = {}
 sensors['uid'] = {}
 sensors['lastvalue'] = {}
 
+-- === Batched telemetry write support (ring buffer) ===
+local RB_SIZE = 256
+local rb_uid, rb_subid, rb_instance, rb_value, rb_unit, rb_dec, rb_name, rb_min, rb_max = {}, {}, {}, {}, {}, {}, {}, {}, {}
+local rb_head, rb_tail = 1, 1
+local function rb_next(i) return (i % RB_SIZE) + 1 end
+local function rb_empty() return rb_head == rb_tail end
+local function rb_full() return rb_next(rb_head) == rb_tail end
+local function rb_has_data() return rb_head ~= rb_tail end
+local rb_overflowed = false
+local batching = false
+
+local function rb_push(uid, subid, instance, value, unit, dec, name, min, max)
+    if rb_full() then
+    rb_tail = rb_next(rb_tail) -- drop oldest
+    rb_overflowed = true
+    end
+    rb_uid[rb_head], rb_subid[rb_head], rb_instance[rb_head] = uid, subid, instance
+    rb_value[rb_head], rb_unit[rb_head], rb_dec[rb_head] = value, unit, dec
+    rb_name[rb_head], rb_min[rb_head], rb_max[rb_head] = name, min, max
+    rb_head = rb_next(rb_head)
+end
+
+local function flushTelemetryBatch()
+    if rb_empty() then return end
+    local lastIndex = {}
+    local i = rb_tail
+    while i ~= rb_head do
+        local key = tostring(rb_uid[i]) .. '|' .. tostring(rb_subid[i]) .. '|' .. tostring(rb_instance[i])
+        lastIndex[key] = i
+        i = rb_next(i)
+    end
+    i = rb_tail
+    while i ~= rb_head do
+        local key = tostring(rb_uid[i]) .. '|' .. tostring(rb_subid[i]) .. '|' .. tostring(rb_instance[i])
+        if lastIndex[key] == i then
+            _writeTelemetryValue(rb_uid[i], rb_subid[i], rb_instance[i], rb_value[i], rb_unit[i], rb_dec[i], rb_name[i], rb_min[i], rb_max[i])
+        end
+        i = rb_next(i)
+    end
+    rb_head, rb_tail = 1, 1
+end
+
+-- Wrapper: enqueue when batching, otherwise write-through
+local function setTelemetryValue(uid, subid, instance, value, unit, dec, name, min, max)
+    if batching then
+        rb_push(uid, subid, instance, value, unit, dec, name, min, max)
+    else
+        _writeTelemetryValue(uid, subid, instance, value, unit, dec, name, min, max)
+    end
+end
+-- === End batched telemetry support ===
+
+
+
 local rssiSensor = nil
 
 local CRSF_FRAME_CUSTOM_TELEM = 0x88
@@ -111,7 +165,7 @@ end
     If the sensor exists, it updates the value if it has changed. It also checks if the sensor
     has been deleted or is missing and handles it accordingly.
 ]]
-local function setTelemetryValue(uid, subid, instance, value, unit, dec, name, min, max)
+local function _writeTelemetryValue(uid, subid, instance, value, unit, dec, name, min, max)
 
     if rfsuite.session.telemetryState == false then return end
 
@@ -746,18 +800,34 @@ end
     Usage: Call this function to manage the wakeup event for the ELRS module.
 ]]
 function elrs.wakeup()
-
-    if rfsuite.session.telemetryState and rfsuite.session.telemetrySensor then
-        while elrs.crossfirePop() do
-            if CRSF_PAUSE_TELEMETRY == true or rfsuite.app.triggers.mspBusy == true  then
-                break
-            end
-        end
-    else
-        sensors['uid'] = {}
-        sensors['lastvalue'] = {}          
+  if rfsuite.session.telemetryState and rfsuite.session.telemetrySensor then
+    local popped_any = false
+    batching = true
+    while elrs.crossfirePop() do
+      popped_any = true
+      if CRSF_PAUSE_TELEMETRY == true or rfsuite.app.triggers.mspBusy == true then
+        break
+      end
     end
+    batching = false
+
+    -- Flush policy:
+    -- 1) idle tick (no frames popped) -> flush
+    -- 2) telemetry paused/MSP busy -> flush what we decoded so far
+    -- 3) ring buffer overflowed -> flush to minimize loss
+    if (not popped_any) or (CRSF_PAUSE_TELEMETRY == true) or (rfsuite.app.triggers.mspBusy == true) or rb_overflowed then
+      flushTelemetryBatch()
+      rb_overflowed = false
+    end
+  else
+    sensors['uid'] = {}
+    sensors['lastvalue'] = {}
+    -- discard any queued writes when telemetry is off:
+    rb_head, rb_tail = 1, 1
+    rb_overflowed = false
+  end
 end
+
 
 -- reset
 function elrs.reset()
