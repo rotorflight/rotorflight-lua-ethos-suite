@@ -839,7 +839,7 @@ local function processNextAPI()
         app.Page.apidata.retryCount[apiKey] = 0  
 
         state.currentIndex = state.currentIndex + 1
-        rfsuite.tasks.callback.inSeconds(0.25, processNextAPI)  
+        rfsuite.tasks.callback.inSeconds(0.5, processNextAPI)  
     end)
 
     -- **API error handler**
@@ -858,11 +858,11 @@ local function processNextAPI()
 
         if retryCount < 3 then  
             log("[ERROR] API: " .. apiKey .. " failed (Retry " .. retryCount .. "): " .. tostring(err), "warning")
-            rfsuite.tasks.callback.inSeconds(0.25, processNextAPI)  
+            rfsuite.tasks.callback.inSeconds(0.5, processNextAPI)  
         else
             log("[ERROR FAIL] API: " .. apiKey .. " failed after 3 attempts. Skipping.", "error")
             state.currentIndex = state.currentIndex + 1
-            rfsuite.tasks.callback.inSeconds(0.25, processNextAPI)  
+            rfsuite.tasks.callback.inSeconds(0.5, processNextAPI)  
         end
     end)
 
