@@ -22,7 +22,7 @@
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/bin/deploy/deploy.py",
-      "args": ["--radio", "--radio-debug"],
+      "args": ["--radio"],
       "console": "integratedTerminal"
     }
   ]
