@@ -124,13 +124,6 @@ local function setTelemetryValue(uid, subid, instance, value, unit, dec, name, m
     else
         if sensors['uid'][uid] then
             if sensors['lastvalue'][uid] == nil or sensors['lastvalue'][uid] ~= value then sensors['uid'][uid]:value(value) end
-
-            -- detect if sensor has been deleted or is missing after initial creation
-            if sensors['uid'][uid]:state() == false then
-                sensors['uid'][uid] = nil
-                sensors['lastvalue'][uid] = nil
-            end
-
         end
     end
 end
@@ -717,7 +710,8 @@ function elrs.crossfirePop()
                 if delta > 1 then elrs.telemetryFrameSkip = elrs.telemetryFrameSkip + 1 end
                 elrs.telemetryFrameId = fid
                 elrs.telemetryFrameCount = elrs.telemetryFrameCount + 1
-                while ptr < #data do
+                local len = #data
+                while ptr < len do
 
                     sid, ptr = decU16(data, ptr)
                     local sensor = elrs.RFSensors[sid]
