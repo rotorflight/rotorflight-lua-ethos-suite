@@ -32,7 +32,7 @@ msp.onConnectChecksInit = true
 local protocol = assert(rfsuite.compiler.loadfile("tasks/msp/protocols.lua"))()
 
 
-msp.mspQueue = mspQueue
+msp.mspQueue = nil
 
 -- set active protocol to use
 msp.protocol = protocol.getProtocol()
@@ -50,6 +50,10 @@ msp.protocol.mspPoll = transport.mspPoll
 
 msp.mspQueue = assert(rfsuite.compiler.loadfile("tasks/msp/mspQueue.lua"))()
 msp.mspQueue.maxRetries = msp.protocol.maxRetries
+msp.mspQueue.loopInterval = 0.01   -- process every 10ms (throttles CPU)
+msp.mspQueue.copyOnAdd    = false  -- keep RAM/GC low (set true for strict immutability)
+msp.mspQueue.timeout      = 2.0    -- per-message timeout (override if you want)
+
 msp.mspHelper = assert(rfsuite.compiler.loadfile("tasks/msp/mspHelper.lua"))()
 msp.api = assert(rfsuite.compiler.loadfile("tasks/msp/api.lua"))()
 msp.common = assert(rfsuite.compiler.loadfile("tasks/msp/common.lua"))()
