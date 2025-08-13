@@ -29,6 +29,10 @@ local lastPlayTime    = {}
 local lastSwitchState = {}
 local switchStartTime = nil
 
+local validCache          = {}
+local lastValidityCheck   = {}
+local VALIDITY_RECHECK_SEC = 5
+
 --- Initializes the switchTable with switch sources and sensor audio units based on user preferences.
 -- 
 -- This function retrieves the user's switch preferences from `rfsuite.preferences.switches`.
@@ -101,17 +105,32 @@ function switches.wakeup()
 
     if (now - switchStartTime) <= 5 then return end
 
+    -- only revalidate in preflight
+    local mode = (rfsuite and rfsuite.flightmode and rfsuite.flightmode.current) or nil
+    local allowRecheck = (mode == "preflight")
+
     for key, sensor in pairs(switchTable.switches) do
-        local currentState = sensor:state()
-        if currentState == nil then goto continue end
+        -- use cached validity unless we need to refresh
+        local isValid   = validCache[key]
+        local lastChk   = lastValidityCheck[key] or 0
+        local needCheck = (isValid == nil) or (allowRecheck and (now - lastChk) >= VALIDITY_RECHECK_SEC)
 
-        local prevState  = lastSwitchState[key] or false
-        local lastTime   = lastPlayTime[key] or 0
-        local playNow    = false
+        if needCheck then
+            -- heavy call, but only when needed (first time, or every 5s in preflight)
+            local s = sensor:state()
+            validCache[key]        = (s == true)
+            lastValidityCheck[key] = now
+        end
 
-        if not currentState then
-            goto skip_play
-        elseif not prevState or (now - lastTime) >= 10 then
+        local currentState = validCache[key] == true
+        if not currentState then goto continue end
+
+        -- existing announce timing
+        local prevState = lastSwitchState[key] or false
+        local lastTime  = lastPlayTime[key] or 0
+        local playNow   = false
+
+        if not prevState or (now - lastTime) >= 10 then
             playNow = true
         end
 
@@ -128,7 +147,6 @@ function switches.wakeup()
             end
         end
 
-        ::skip_play::
         lastSwitchState[key] = currentState
         ::continue::
     end
@@ -143,6 +161,8 @@ function switches.resetSwitchStates()
     lastPlayTime           = {}
     lastSwitchState        = {}
     switchStartTime        = nil
+    validCache             = {}
+    lastValidityCheck      = {}
 end
 
 --- Assigns the provided `switchTable` to the `switches.switchTable` property.
