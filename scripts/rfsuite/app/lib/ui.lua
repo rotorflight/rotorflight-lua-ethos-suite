@@ -24,6 +24,31 @@ local arg = {...}
 local config = arg[1]
 local i18n = rfsuite.i18n.get
 
+-- Global icon mask cache
+ui._iconCache = ui._iconCache or {}
+
+-- Cached lcd.loadMask (no bitmap fallback)
+local function cachedLoadMask(path)
+    if not path or path == "" then return nil end
+    local v = ui._iconCache[path]
+    if v ~= nil then return v or nil end
+    local ok, mask = pcall(lcd.loadMask, path)
+    ui._iconCache[path] = ok and mask or false
+    return ok and mask or nil
+end
+
+-- Cache compiled Lua chunks so we don't recompile on every menu/page open
+ui._chunkCache = ui._chunkCache or {}
+
+local function cachedLoadChunk(path)
+    local f = ui._chunkCache[path]
+    if not f then
+        f = assert(rfsuite.compiler.loadfile(path))
+        ui._chunkCache[path] = f
+    end
+    return f
+end
+
 -- Displays a progress dialog with a title and message.
 -- @param title The title of the progress dialog (optional, default is "Loading").
 -- @param message The message of the progress dialog (optional, default is "Loading data from flight controller...").
@@ -381,7 +406,8 @@ function ui.openMainMenu()
     rfsuite.app.gfx_buttons["mainmenu"] = rfsuite.app.gfx_buttons["mainmenu"] or {}
     rfsuite.preferences.menulastselected["mainmenu"] = rfsuite.preferences.menulastselected["mainmenu"] or 1
 
-    local Menu = assert(rfsuite.compiler.loadfile("app/modules/sections.lua"))()
+    local Menu = cachedLoadChunk("app/modules/sections.lua")()
+
     local lc, bx, y = 0, 0, 0
 
     local header = form.addLine("Configuration")
@@ -404,7 +430,7 @@ function ui.openMainMenu()
 
             if rfsuite.preferences.general.iconsize ~= 0 then
                 rfsuite.app.gfx_buttons["mainmenu"][pidx] = rfsuite.app.gfx_buttons["mainmenu"][pidx]
-                    or lcd.loadMask(pvalue.image)
+                    or cachedLoadMask(pvalue.image)
             else
                 rfsuite.app.gfx_buttons["mainmenu"][pidx] = nil
             end
@@ -568,7 +594,7 @@ function ui.openMainMenuSub(activesection)
 
                         if rfsuite.preferences.general.iconsize ~= 0 then
                             rfsuite.app.gfx_buttons[activesection][pidx] = rfsuite.app.gfx_buttons[activesection][pidx]
-                                or lcd.loadMask("app/modules/" .. page.folder .. "/" .. page.image)
+                                or cachedLoadMask("app/modules/" .. page.folder .. "/" .. page.image)
                         else
                             rfsuite.app.gfx_buttons[activesection][pidx] = nil
                         end
@@ -1116,8 +1142,9 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
 
     -- Load the module
     local modulePath = "app/modules/" .. script
-
-    rfsuite.app.Page = assert(rfsuite.compiler.loadfile(modulePath))(idx)
+    local chunk = cachedLoadChunk(modulePath)
+    assert(type(chunk) == "function", "Module chunk is not a function: "..tostring(modulePath))
+    rfsuite.app.Page = chunk(idx)
 
     -- Load the help file if it exists
     local section = script:match("([^/]+)")
@@ -1327,43 +1354,31 @@ function ui.navigationButtons(x, y, w, h)
         })
     end
 
-    -- HELP BUTTON
+    -- HELP BUTTON (only create if help exists)
     if navButtons.help ~= nil and navButtons.help == true then
         local section = rfsuite.app.lastScript:match("([^/]+)")
-        local script = rfsuite.app.lastScript:match("/([^/]+)%.lua$")
-        -- Load help module with caching
-        local help = getHelpData(section)
-        if help then
+        local script  = rfsuite.app.lastScript:match("/([^/]+)%.lua$")
+        local help    = getHelpData(section)
 
-            -- Execution of the file succeeded
+        if help then
             rfsuite.app.formNavigationFields['help'] = form.addButton(line, {x = helpOffset, y = y, w = wS, h = h}, {
                 text = i18n("app.navigation_help"),
                 icon = nil,
                 options = FONT_S,
-                paint = function()
-                end,
+                paint = function() end,
                 press = function()
                     if rfsuite.app.Page and rfsuite.app.Page.onHelpMenu then
                         rfsuite.app.Page.onHelpMenu(rfsuite.app.Page)
                     else
-                        -- choose default or custom
-                        if help.help[script] then
-                            rfsuite.app.ui.openPageHelp(help.help[script], section)
-                        else
-                            rfsuite.app.ui.openPageHelp(help.help['default'], section)
+                        local pageHelp = help.help[script] or help.help['default']
+                        if pageHelp then
+                            rfsuite.app.ui.openPageHelp(pageHelp, section)
                         end
                     end
                 end
             })
-
-        else
-            -- No help available
-            rfsuite.app.formNavigationFields['help'] = form.addButton(line, {x = helpOffset, y = y, w = wS, h = h}, {
-                text = i18n("app.navigation_help"),
-                icon = nil, options = FONT_S, paint = function() end, press = function() end
-            })
-            rfsuite.app.formNavigationFields['help']:enable(false)
         end
+        -- If no help, we deliberately do nothing (no disabled button).
     end
 
 end
