@@ -7,6 +7,8 @@ import subprocess_conout
 import sys
 import stat
 from tqdm import tqdm
+import re
+import shlex
 
 def minify_lua_file(filepath):
     print(f"[MINIFY] (luamin) Processing: {filepath}")
@@ -44,6 +46,26 @@ def minify_lua_file(filepath):
 
     except Exception as e:
         print(f"[MINIFY ERROR] Exception during luamin run: {e}")
+
+
+def get_ethos_scripts_dir(ethos_bin):
+    out = subprocess.check_output(
+        [ethos_bin, "--get-path", "SCRIPTS"],
+        text=True,
+        stderr=subprocess.STDOUT
+    )
+
+    lines = [l.strip() for l in out.splitlines() if l.strip()]
+    if not lines:
+        raise RuntimeError("No output from Ethos Suite.")
+
+    # If the last line starts with 'exit code', grab the previous one
+    if lines[-1].lower().startswith("exit code") and len(lines) >= 2:
+        path_line = lines[-2]
+    else:
+        path_line = lines[-1]
+
+    return os.path.normpath(path_line)
 
 
 # Permission handler for Windows rm errors
@@ -186,8 +208,8 @@ def main():
 
     # select targets
     if args.radio:
-        rd = subprocess.check_output([config['ethos_bin'],'--scripts-dir'], text=True).strip()
-        targets=[{'name':'Radio','dest':rd,'simulator':None}]
+        rd = get_ethos_scripts_dir(config['ethos_bin'])
+        targets = [{'name': 'Radio', 'dest': rd, 'simulator': None}]
     else:
         tlist=config['deploy_targets']
         if args.choose:
