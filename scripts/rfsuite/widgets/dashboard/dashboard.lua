@@ -136,6 +136,9 @@ dashboard._hg_cycles = 0
 dashboard._loader_min_duration = 1.5
 dashboard._loader_start_time = nil
 
+-- show only background + spinner until telemetry is ready
+dashboard.blockBoxesUntilTelemetry = true
+
 -- Utility methods loaded from external utils.lua (drawing, color helpers, etc.)
 dashboard.utils = assert(
     compile("SCRIPTS:/" .. baseDir .. "/widgets/dashboard/lib/utils.lua")
@@ -147,7 +150,6 @@ dashboard.loaders = assert(
 
 function dashboard.loader(x, y, w, h)
         dashboard.loaders.staticLoader(dashboard, x, y, w, h)
-        lcd.invalidate()
 end
 
 local function forceInvalidateAllObjects()
@@ -491,12 +493,34 @@ function dashboard.renderLayout(widget, config)
     end
 
     ----------------------------------------------------------------
-    -- PHASE 2: Spinner Until First Wakeup Pass Completes
+    -- PHASE 2: Spinner / Background until ready
     ----------------------------------------------------------------
     dashboard._loader_start_time = dashboard._loader_start_time or os.clock()
     local loaderElapsed = os.clock() - dashboard._loader_start_time
-    if objectsThreadedWakeupCount < 1 or loaderElapsed < dashboard._loader_min_duration then
+
+    -- Wait for: 1) first wakeup pass, 2) min loader time, OR 3) telemetry ready (optional)
+    local waitingForTelemetry = dashboard.blockBoxesUntilTelemetry
+        and (dashboard.flightmode ~= "postflight")
+        and not rfsuite.session.telemetryState
+
+    if (objectsThreadedWakeupCount < 1)
+        or (loaderElapsed < dashboard._loader_min_duration)
+        or waitingForTelemetry
+    then
         local loaderY = (isFullScreen and headerLayout.height) or 0
+
+        -- Draw only the background (no boxes) + the spinner
+        dashboard.utils.setBackgroundColourBasedOnTheme()
+        -- Clear the content area to the theme background (prevents stale visuals)
+        -- If your utils exposes a background color, use it; otherwise this no-op is fine.
+        if dashboard.utils.resolveColor then
+            local bg = dashboard.utils.resolveColor("background")
+            if bg then
+                lcd.color(bg)
+                lcd.drawFilledRectangle(0, loaderY, W, H - loaderY)
+            end
+        end
+
         dashboard.loader(0, loaderY, W, H - loaderY)
         lcd.invalidate()
         return
@@ -1167,6 +1191,10 @@ function dashboard.wakeup(widget)
         if (now - lastWakeup) < 2 then return end
     end
 
+    local waitingForTelemetry = dashboard.blockBoxesUntilTelemetry
+        and (dashboard.flightmode ~= "postflight")
+        and not rfsuite.session.telemetryState
+
     local currentFlightMode = rfsuite.flightmode.current or "preflight"
     if lastFlightMode ~= currentFlightMode then
         dashboard.flightmode = currentFlightMode
@@ -1195,7 +1223,7 @@ function dashboard.wakeup(widget)
         callStateFunc("wakeup", widget)
     end
 
-    if #dashboard.boxRects > 0 then
+   if (not waitingForTelemetry) and (#dashboard.boxRects > 0) then
         -- Always wake explicitly scheduled objects
         for _, idx in ipairs(scheduledBoxIndices) do
             local rect = dashboard.boxRects[idx]
@@ -1257,6 +1285,7 @@ function dashboard.wakeup(widget)
         if dashboard._useSpreadSchedulingPaint then
             if needsFullInvalidate then
                 lcd.invalidate()
+                dashboard._forceFullRepaint = false
             else
                 for _, r in ipairs(dirtyRects) do
                     lcd.invalidate(r.x, r.y, r.w, r.h)
@@ -1264,6 +1293,7 @@ function dashboard.wakeup(widget)
             end
         else
             lcd.invalidate()
+            dashboard._forceFullRepaint = false
         end
     end
 
@@ -1278,7 +1308,10 @@ function dashboard.wakeup(widget)
 
     if not dashboard._useSpreadSchedulingPaint then
         lcd.invalidate()
+        dashboard._forceFullRepaint = false
     end
+
+    lastWakeup = now
 end
 
 
