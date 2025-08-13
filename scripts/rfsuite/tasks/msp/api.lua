@@ -23,6 +23,13 @@ local compiler = rfsuite.compiler
 
 local apiLoader = {}
 
+local TYPE_SIZES = {
+  U8=1,S8=1, U16=2,S16=2, U24=3,S24=3, U32=4,S32=4, U40=5,S40=5, U48=6,S48=6,
+  U56=7,S56=7, U64=8,S64=8, U72=9,S72=9, U80=10,S80=10, U88=11,S88=11,
+  U96=12,S96=12, U104=13,S104=13, U112=14,S112=14, U120=15,S120=15,
+  U128=16,S128=16
+}
+
 -- Cache table for file existence
 apiLoader._fileExistsCache = apiLoader._fileExistsCache or {}
 
@@ -170,31 +177,9 @@ end
     Returns:
         number - The size in bytes of the given data type. Defaults to 1 if the data type is unknown.
 ]]
-local function get_type_size(data_type)
-    local type_sizes = {
-        U8 = 1,   S8 = 1,
-        U16 = 2,  S16 = 2,
-        U24 = 3,  S24 = 3,
-        U32 = 4,  S32 = 4,
-        U40 = 5,  S40 = 5,
-        U48 = 6,  S48 = 6,
-        U56 = 7,  S56 = 7,
-        U64 = 8,  S64 = 8,
-        U72 = 9,  S72 = 9,
-        U80 = 10, S80 = 10,
-        U88 = 11, S88 = 11,
-        U96 = 12, S96 = 12,
-        U104 = 13, S104 = 13,
-        U112 = 14, S112 = 14,
-        U120 = 15, S120 = 15,
-        U128 = 16, S128 = 16
-    }
-
-    if data_type then
-        return type_sizes[data_type] or 1 -- Default to U8 if unknown
-    else
-        return type_sizes  -- Return the whole table if no type provided
-    end
+local function get_type_size(t)
+  if not t then return TYPE_SIZES end
+  return TYPE_SIZES[t] or 1
 end
 
 
