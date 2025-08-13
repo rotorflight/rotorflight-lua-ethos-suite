@@ -29,27 +29,31 @@ end
 local sensorList = sortSensorListByName(rfsuite.tasks.telemetry.listSensors())
 
 local function openPage(pidx, title, script)
-    enableWakeup = true
+    enableWakeup = false
     rfsuite.app.triggers.closeProgressLoader = true
 
     form.clear()
 
-    rfsuite.app.lastIdx = idx
+    -- track page
+    rfsuite.app.lastIdx   = pidx   -- was idx
     rfsuite.app.lastTitle = title
-    rfsuite.app.lastScript = script
+    rfsuite.app.lastScript= script
 
     rfsuite.app.ui.fieldHeader(rfsuite.i18n.get("app.modules.validate_sensors.name"))
 
+    -- fresh tables so lookups are never stale/nil
     rfsuite.app.formLineCnt = 0
-    local posText = {x = x - 5 - buttonW - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = 200, h = rfsuite.app.radio.navbuttonHeight}
-    for i, v in ipairs(sensorList) do
+    rfsuite.app.formFields  = {}
+    rfsuite.app.formLines   = {}
 
+    local posText = { x = x - 5 - buttonW - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = 200, h = rfsuite.app.radio.navbuttonHeight }
+    for i, v in ipairs(sensorList or {}) do
         rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
         rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine(v.name)
         rfsuite.app.formFields[v.key] = form.addStaticText(rfsuite.app.formLines[rfsuite.app.formLineCnt], posText, "-")
-
     end
 
+    enableWakeup = true
 end
 
 function sensorKeyExists(searchKey, sensorTable)
@@ -197,17 +201,21 @@ local function wakeup()
     invalidSensors = rfsuite.tasks.telemetry.validateSensors()
 
     for i, v in ipairs(sensorList) do
-        if sensorKeyExists(v.key, invalidSensors) then
-            if v.mandatory == true then
-                rfsuite.app.formFields[v.key]:value(rfsuite.i18n.get("app.modules.validate_sensors.invalid"))
-                rfsuite.app.formFields[v.key]:color(ORANGE)
+        -- Guard: field may not exist during the first few wakeups
+        local field = rfsuite.app.formFields and rfsuite.app.formFields[v.key]
+        if field then
+            if sensorKeyExists(v.key, invalidSensors) then
+                if v.mandatory == true then
+                    field:value(rfsuite.i18n.get("app.modules.validate_sensors.invalid"))
+                    field:color(ORANGE)
+                else
+                    field:value(rfsuite.i18n.get("app.modules.validate_sensors.invalid"))
+                    field:color(RED)
+                end
             else
-                rfsuite.app.formFields[v.key]:value(rfsuite.i18n.get("app.modules.validate_sensors.invalid"))
-                rfsuite.app.formFields[v.key]:color(RED)
+                field:value(rfsuite.i18n.get("app.modules.validate_sensors.ok"))
+                field:color(GREEN)
             end
-        else
-            rfsuite.app.formFields[v.key]:value(rfsuite.i18n.get("app.modules.validate_sensors.ok"))
-            rfsuite.app.formFields[v.key]:color(GREEN)
         end
     end
 
