@@ -948,9 +948,7 @@ app._uiTasks = {
     end
   end,
 
-
-
-  -- 5. Profile / Rate Change Detection
+  -- 2. Profile / Rate Change Detection
   function()
     if not (app.Page and (app.Page.refreshOnProfileChange or app.Page.refreshOnRateChange or app.Page.refreshFullOnProfileChange or app.Page.refreshFullOnRateChange)
            and app.uiState == app.uiStatus.pages and not app.triggers.isSaving
@@ -978,7 +976,7 @@ app._uiTasks = {
     end
   end,
 
-  -- 6. Main Menu Icon Enable/Disable
+  -- 3. Main Menu Icon Enable/Disable
   function()
     if app.uiState ~= app.uiStatus.mainMenu and app.uiState ~= app.uiStatus.pages then return end
     if app.uiState == app.uiStatus.mainMenu then
@@ -1009,71 +1007,57 @@ app._uiTasks = {
     end
   end,
 
-  -- 7. No-Link Initial Trigger
+  -- 4. No-Link Progress & Message Update
   function()
-    if app.triggers.telemetryState == 1 or app.triggers.disableRssiTimeout then return end
-    if not app.dialogs.nolinkDisplay and not app.triggers.wasConnected then
-      if app.dialogs.progressDisplay then app.ui.progressDisplayClose() end
-      if app.dialogs.saveDisplay then app.ui.progressDisplaySaveClose() end
-      app.ui.progressNolinkDisplay()
-      app.dialogs.nolinkDisplay = true
+
+    if app.triggers.telemetryState ~= 1 or not app.triggers.disableRssiTimeout then 
+      if not app.dialogs.nolinkDisplay and not app.triggers.wasConnected then
+        if app.dialogs.progressDisplay and app.dialogs.progress then app.dialogs.progress:close() end
+        if app.dialogs.saveDisplay and app.dialogs.save then app.dialogs.save:close() end
+        app.ui.progressNolinkDisplay()
+        app.dialogs.nolinkDisplay = true
+      end
+    end
+
+    if (app.dialogs.nolinkDisplay and not app.triggers.wasConnected) then
+      local apiStr = tostring(rfsuite.session.apiVersion)
+      local moduleEnabled = model.getModule(0):enable() or model.getModule(1):enable()
+      local sensorSport = system.getSource({appId=0xF101})
+      local sensorElrs  = system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1})
+      local curRssi    = app.utils.getRSSI()
+      local invalid, abort = false, false
+      local msg = i18n("app.msg_connecting_to_fbl")
+      if not utils.ethosVersionAtLeast() then
+        msg = string.format("%s < V%d.%d.%d", string.upper(i18n("ethos")), table.unpack(rfsuite.config.ethosVersion))
+      elseif not rfsuite.tasks.active() then
+        msg, invalid, abort = i18n("app.check_bg_task"), true, true
+      elseif not moduleEnabled and not app.offlineMode then
+        msg, invalid = i18n("app.check_rf_module_on"), true
+      elseif not (sensorSport or sensorElrs) and not app.offlineMode then
+        msg, invalid = i18n("app.check_discovered_sensors"), true
+      elseif curRssi == 0 and not app.offlineMode then
+        msg, invalid = i18n("app.check_heli_on"), true
+      elseif not app.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiStr) and not app.offlineMode then
+        msg = i18n("app.check_supported_version") .. " (" .. apiStr .. ")"
+      end
+      app.triggers.invalidConnectionSetup = invalid
+      local step = invalid and 5 or 10
+      app.dialogs.nolinkValueCounter = app.dialogs.nolinkValueCounter + step
+      if rfsuite.app.dialogs.noLink then
+        rfsuite.app.dialogs.noLink:value(app.dialogs.nolinkValueCounter)
+        rfsuite.app.dialogs.noLink:message(msg)
+      end
+      if invalid and app.dialogs.nolinkValueCounter == 10 then app.audio.playBufferWarn = true end
+      if app.dialogs.nolinkValueCounter >= 100 then
+        app.dialogs.nolinkDisplay = false
+        app.triggers.wasConnected    = true
+        if rfsuite.app.dialogs.noLink then rfsuite.app.dialogs.noLink:close() end
+        if abort then app.close() end
+      end
     end
   end,
 
-  -- 8. No-Link Progress & Message Update
-  function()
-    if not (app.dialogs.nolinkDisplay and not app.triggers.wasConnected) then return end
-    local apiStr = tostring(rfsuite.session.apiVersion)
-    local moduleEnabled = model.getModule(0):enable() or model.getModule(1):enable()
-    local sensorSport = system.getSource({appId=0xF101})
-    local sensorElrs  = system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1})
-    local curRssi    = app.utils.getRSSI()
-    local invalid, abort = false, false
-    local msg = i18n("app.msg_connecting_to_fbl")
-    if not utils.ethosVersionAtLeast() then
-      msg = string.format("%s < V%d.%d.%d", string.upper(i18n("ethos")), table.unpack(rfsuite.config.ethosVersion))
-    elseif not rfsuite.tasks.active() then
-      msg, invalid, abort = i18n("app.check_bg_task"), true, true
-    elseif not moduleEnabled and not app.offlineMode then
-      msg, invalid = i18n("app.check_rf_module_on"), true
-    elseif not (sensorSport or sensorElrs) and not app.offlineMode then
-      msg, invalid = i18n("app.check_discovered_sensors"), true
-    elseif curRssi == 0 and not app.offlineMode then
-      msg, invalid = i18n("app.check_heli_on"), true
-    elseif not app.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiStr) and not app.offlineMode then
-      msg = i18n("app.check_supported_version") .. " (" .. apiStr .. ")"
-    end
-    app.triggers.invalidConnectionSetup = invalid
-    local step = invalid and 5 or 10
-    app.dialogs.nolinkValueCounter = app.dialogs.nolinkValueCounter + step
-    app.ui.progressDisplayNoLinkValue(app.dialogs.nolinkValueCounter, msg)
-    if invalid and app.dialogs.nolinkValueCounter == 10 then app.audio.playBufferWarn = true end
-    if app.dialogs.nolinkValueCounter >= 100 then
-      app.dialogs.nolinkDisplay = false
-      app.triggers.wasConnected    = true
-      app.ui.progressNolinkDisplayClose()
-      if abort then app.close() end
-    end
-  end,
-
-  -- 9. Save Timeout Watchdog
-  function()
-    if not app.dialogs.saveDisplay or not app.dialogs.saveWatchDog then return end
-    local timeout = tonumber(rfsuite.tasks.msp.protocol.saveTimeout + 5)
-    if (os.clock() - app.dialogs.saveWatchDog) > timeout or (app.dialogs.saveProgressCounter > 120 and rfsuite.tasks.msp.mspQueue:isProcessed()) then
-      app.audio.playTimeout = true
-      app.ui.progressDisplaySaveMessage(i18n("app.error_timed_out"))
-      app.ui.progressDisplaySaveCloseAllowed(true)
-      app.dialogs.save:value(100)
-      app.dialogs.saveProgressCounter = 0
-      app.dialogs.saveDisplay = false
-      app.triggers.isSaving = false
-      app.Page = app.PageTmp
-      app.PageTmp = nil
-    end
-  end,
-
-  -- 11. Trigger Save Dialogs (choose if you want to save)
+  -- 5. Trigger Save Dialogs (choose if you want to save)
   function()
 
     -- Check if we need to trigger the save dialog
@@ -1113,7 +1097,7 @@ app._uiTasks = {
     end  
   end,
 
-  -- 14. Armed-Save Warning
+  -- 6. Armed-Save Warning
   function()
     if not app.triggers.showSaveArmedWarning or app.triggers.closeSave then return end
     if not app.dialogs.progressDisplay then
@@ -1130,7 +1114,7 @@ app._uiTasks = {
     end
   end,
 
-  -- 12. Trigger Reload Dialogs
+  -- 7. Trigger Reload Dialogs
   function()
     if app.triggers.triggerReloadNoPrompt then
       app.triggers.triggerReloadNoPrompt = false
@@ -1158,7 +1142,7 @@ app._uiTasks = {
     end
   end,
 
-  -- 15. Telemetry & Page State Updates
+  -- 8. Telemetry & Page State Updates
   function()
     app.updateTelemetryState()
     if app.uiState == app.uiStatus.mainMenu then
@@ -1170,18 +1154,7 @@ app._uiTasks = {
     end
   end,
 
-  -- 16. Page Retrieval Trigger
-  function()
-    if app.uiState == app.uiStatus.pages then
-      if not app.Page and app.PageTmp then app.Page = app.PageTmp end
-      if app.Page and app.Page.apidata and app.pageState == app.pageStatus.display
-         and not app.triggers.isReady then
-        requestPage()
-      end
-    end
-  end,
-
-  -- 17. Perform Reload Actions
+  -- 9. Perform Reload Actions
   function()
     if app.triggers.reload then
       app.triggers.reload = false
@@ -1195,7 +1168,7 @@ app._uiTasks = {
     end
   end,
 
-  -- 18. Play Pending Audio Alerts
+  -- 10. Play Pending Audio Alerts
   function()
     local a = app.audio
     if a.playEraseFlash         then utils.playFile("app","eraseflash.wav");            a.playEraseFlash = false end
@@ -1209,7 +1182,7 @@ app._uiTasks = {
     if a.playBufferWarn         then utils.playFileCommon("warn.wav");                  a.playBufferWarn = false end
   end,
 
-  -- 19. Wakeup UI Tasks
+  -- 11. Wakeup UI Tasks
   function()
         if app.Page and app.uiState == app.uiStatus.pages and app.Page.wakeup then
             -- run the pages wakeup function if it exists
@@ -1242,6 +1215,15 @@ function app.wakeup()
     app._uiTasks[idx]()
     app._nextUiTask = (idx % total) + 1
     app._taskAccumulator = app._taskAccumulator - 1
+  end
+
+  -- get msp data on every wakeup
+  if app.uiState == app.uiStatus.pages then
+    if not app.Page and app.PageTmp then app.Page = app.PageTmp end
+    if app.Page and app.Page.apidata and app.pageState == app.pageStatus.display
+        and not app.triggers.isReady then
+      requestPage()
+    end
   end
 
 end
@@ -1372,8 +1354,8 @@ function app.event(widget, category, value, x, y)
         -- close button (top menu) should go back to main menu
         if category == EVT_CLOSE and value == 0 or value == 35 then
             log("EVT_CLOSE", "info")
-            if app.dialogs.progressDisplay then app.ui.progressDisplayClose() end
-            if app.dialogs.saveDisplay then app.ui.progressDisplaySaveClose() end
+            if app.dialogs.progressDisplay and app.dialogs.progress then app.dialogs.progress:close() end
+            if app.dialogs.saveDisplay and app.dialogs.save then app.dialogs.save:close() end
             if app.Page.onNavMenu then app.Page.onNavMenu(app.Page) end
             if  app.lastMenu == nil then
                 app.ui.openMainMenu()
@@ -1389,8 +1371,8 @@ function app.event(widget, category, value, x, y)
                 return true
             end
             log("EVT_ENTER_LONG (PAGES)", "info")
-            if app.dialogs.progressDisplay then app.ui.progressDisplayClose() end
-            if app.dialogs.saveDisplay then app.ui.progressDisplaySaveClose() end
+            if app.dialogs.progressDisplay and app.dialogs.progress then app.dialogs.progress:close() end
+            if app.dialogs.saveDisplay and app.dialogs.save then app.dialogs.save:close() end
             if app.Page and app.Page.onSaveMenu then
                 app.Page.onSaveMenu(app.Page)
             else
@@ -1404,8 +1386,8 @@ function app.event(widget, category, value, x, y)
     -- catch all to stop lock press on main menu doing anything
     if app.uiState == app.uiStatus.mainMenu and value == KEY_ENTER_LONG then
          log("EVT_ENTER_LONG (MAIN MENU)", "info")
-         if app.dialogs.progressDisplay then app.ui.progressDisplayClose() end
-         if app.dialogs.saveDisplay then app.ui.progressDisplaySaveClose() end
+         if app.dialogs.progressDisplay and app.dialogs.progress then app.dialogs.progress:close() end
+         if app.dialogs.saveDisplay and app.dialogs.save then app.dialogs.save:close() end
          system.killEvents(KEY_ENTER_BREAK)
          return true
     end
@@ -1446,9 +1428,9 @@ function app.close()
         app.Page.close()
     end
 
-    if app.dialogs.progress and app.ui then app.ui.progressDisplayClose() end
-    if app.dialogs.save and app.ui then app.ui.progressDisplaySaveClose() end
-    if app.dialogs.noLink and app.ui then app.ui.progressNolinkDisplayClose() end
+    if app.dialogs.progress then app.dialogs.progress:close() end
+    if app.dialogs.save then app.dialogs.save:close() end
+    if app.dialogs.noLink then app.dialogs.noLink:close() end
 
 
     -- Reset configuration and compiler flags

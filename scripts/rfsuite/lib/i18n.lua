@@ -29,6 +29,7 @@ end
 
 -- Helper: deep-key resolver
 local function resolve(t, key)
+  if not key then return nil end
   for part in key:gmatch("[^%.]+") do
     if type(t)~="table" then return nil end
     t = t[part]
@@ -86,9 +87,12 @@ function i18n.get(key)
   end
   if not translations then load_translations() end
   local resolved = resolve(translations, key) or key
-  keyCache[key] = resolved
-  mark_hot(key)
-  return resolved
+  if key then
+    keyCache[key] = resolved
+    mark_hot(key)
+    return resolved
+  end
+  return nil
 end
 
 -- API: seconds since load, or nil

@@ -48,7 +48,7 @@ function ui.progressDisplay(title, message)
                                         if not app.triggers.closeProgressLoader then
                                             app.dialogs.progressCounter = app.dialogs.progressCounter + 2
                                         elseif app.triggers.closeProgressLoader and rfsuite.tasks.msp.mspQueue:isProcessed() then
-                                            app.dialogs.progressCounter = app.dialogs.progressCounter + 10
+                                            app.dialogs.progressCounter = app.dialogs.progressCounter + 15
                                             if app.dialogs.progressCounter >= 100 then
                                                 app.dialogs.progress:close()
                                                 app.dialogs.progressDisplay = false
@@ -132,10 +132,10 @@ function ui.progressDisplaySave(message)
                                             app.dialogs.saveProgressCounter     = 0
                                             app.dialogs.saveDisplay             = false
                                             app.dialogs.saveWatchDog            = nil
-                                            app.ui.progressDisplaySaveClose()
+                                            app.dialogs.save:close()
                                             end                                            
                                         elseif rfsuite.tasks.msp.mspQueue:isProcessed() then
-                                            app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 5
+                                            app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 15
                                             if app.dialogs.saveProgressCounter >= 100 then
                                                 app.dialogs.save:close()
                                                 app.dialogs.saveDisplay = false
@@ -143,92 +143,29 @@ function ui.progressDisplaySave(message)
                                                 app.triggers.closeSave = false
                                                 app.triggers.isSaving = false
                                             end
+                                        else
+                                            app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 2    
                                         end
+
+                                        local timeout = tonumber(rfsuite.tasks.msp.protocol.saveTimeout + 5)
+                                        if app.dialogs.saveWatchDog and (os.clock() - app.dialogs.saveWatchDog) > timeout or (app.dialogs.saveProgressCounter > 120 and rfsuite.tasks.msp.mspQueue:isProcessed()) then
+                                            app.audio.playTimeout = true
+                                            app.dialogs.save:message(i18n("app.error_timed_out"))
+                                            app.dialogs.save:closeAllowed(true)
+                                            app.dialogs.save:value(100)
+                                            app.dialogs.saveProgressCounter = 0
+                                            app.dialogs.saveDisplay = false
+                                            app.triggers.isSaving = false
+                                            app.Page = app.PageTmp
+                                            app.PageTmp = nil
+                                        end
+
                                 end     
                                 }
                                 )
 
     rfsuite.app.dialogs.save:value(0)
     rfsuite.app.dialogs.save:closeAllowed(false)
-end
-
-
--- Displays a progress message in the UI.
--- @param message The message to be displayed in the progress dialog.
-function ui.progressDisplayMessage(message)
-    local progress = rfsuite.app.dialogs.progress
-    if progress then
-        progress:message(message)
-    end
-end
-
--- Closes the save dialog if it is open and updates the save display status.
--- This function checks if the save dialog exists, closes it if it does,
--- and then sets the save display status to false.
-function ui.progressDisplaySaveClose()
-    local saveDialog = rfsuite.app.dialogs.save
-    if saveDialog then saveDialog:close() end
-    rfsuite.app.dialogs.saveDisplay = false
-end
-
---- Displays a save message in the progress dialog.
--- @param message The message to be displayed in the save dialog.
-function ui.progressDisplaySaveMessage(message)
-    local saveDialog = rfsuite.app.dialogs.save
-    if saveDialog then saveDialog:message(message) end
-end
-
---[[
-    Function: ui.progressDisplaySaveCloseAllowed
-
-    Description:
-    This function updates the closeAllowed status of the save dialog in the rfsuite application.
-
-    Parameters:
-    status (boolean) - The status to set for allowing the save dialog to close.
-
-    Usage:
-    ui.progressDisplaySaveCloseAllowed(true) -- Allows the save dialog to close.
-    ui.progressDisplaySaveCloseAllowed(false) -- Prevents the save dialog from closing.
-]]
-function ui.progressDisplaySaveCloseAllowed(status)
-    local saveDialog = rfsuite.app.dialogs.save
-    if saveDialog then saveDialog:closeAllowed(status) end
-end
-
--- Closes the "no link" dialog in the rfsuite application.
--- This function is used to close the dialog that indicates there is no link.
-function ui.progressNolinkDisplayClose()
-    rfsuite.app.dialogs.noLink:close()
-end
-
---[[
-    Function: ui.progressDisplayNoLinkValue
-
-    Updates the progress display for a "no link" scenario.
-
-    Parameters:
-    - value (number): The progress value to display. If the value is 100 or more, the display is updated immediately.
-    - message (string, optional): An optional message to display along with the progress value.
-
-    Behavior:
-    - If the value is 100 or more, the progress display is updated immediately with the provided value and message.
-    - If the value is less than 100, the progress display is updated only if a certain rate limit has been exceeded.
-    - The rate limit is controlled by `rfsuite.app.dialogs.nolinkRate` and `rfsuite.app.dialogs.nolinkRateLimit`.
-]]
-function ui.progressDisplayNoLinkValue(value, message)
-    if value >= 100 then
-        rfsuite.app.dialogs.noLink:value(value)
-        if message then rfsuite.app.dialogs.noLink:message(message) end
-        return
-    end
-
-    local now = os.clock()
-    if (now - rfsuite.app.dialogs.nolinkRateLimit) >= rfsuite.app.dialogs.nolinkRate then
-        rfsuite.app.dialogs.nolinkRateLimit = now
-        rfsuite.app.dialogs.noLink:value(value)
-        if message then rfsuite.app.dialogs.noLink:message(message) end
-    end
 end
 
 -- Disables all form fields in the rfsuite application.

@@ -1121,7 +1121,7 @@ end
 function dashboard.wakeup(widget)
 
     -- Check if MSP is allow msp to be prioritized
-    if rfsuite.app.triggers.mspBusy and not (rfsuite.session and rfsuite.session.isConnected) then return end
+    if rfsuite.app and rfsuite.app.triggers.mspBusy and not (rfsuite.session and rfsuite.session.isConnected) then return end
 
     local telemetry = tasks.telemetry
     local W, H = lcd.getWindowSize()
