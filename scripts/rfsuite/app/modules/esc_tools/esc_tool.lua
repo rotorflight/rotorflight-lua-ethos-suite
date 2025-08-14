@@ -284,7 +284,7 @@ local function wakeup()
     end
 
     if showPowerCycleLoaderFinished == false and foundESCupdateTag == false and showPowerCycleLoader == false and ((findTimeoutClock <= os.clock() - findTimeout) or rfsuite.app.dialogs.progressCounter >= 101) then
-        rfsuite.app.ui.progressDisplayClose()
+        rfsuite.app.dialogs.progress:close()
         rfsuite.app.dialogs.progressDisplay = false
         rfsuite.app.triggers.isReady = true
 
