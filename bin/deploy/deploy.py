@@ -9,6 +9,7 @@ import stat
 from tqdm import tqdm
 import re
 import shlex
+import time
 
 def minify_lua_file(filepath):
     print(f"[MINIFY] (luamin) Processing: {filepath}")
@@ -73,6 +74,56 @@ def on_rm_error(func, path, exc_info):
     os.chmod(path, stat.S_IWRITE)
     func(path)
 
+
+def flush_fs():
+    """Attempt to flush filesystem buffers (best-effort)."""
+    try:
+        if hasattr(os, "sync"):
+            os.sync()
+    except Exception as e:
+        print(f"[WARN] os.sync failed: {e}")
+
+def safe_full_copy(srcall, out_dir):
+    """Safer full-copy for slow FAT32 targets:
+    - If current target exists, rotate it to '<target>.old'
+    - Delete the '<target>.old' folder
+    - Copy new files freshly into '<target>'
+    Includes small delays + best-effort flushes to give the device time to settle.
+    """
+    global pbar
+    if os.path.isdir(out_dir):
+        old_dir = out_dir + ".old"
+
+        # If a previous backup exists, remove it first
+        if os.path.isdir(old_dir):
+            print("Deleting previous backup…")
+            shutil.rmtree(old_dir, onerror=on_rm_error)
+            flush_fs()
+            time.sleep(1)
+
+        # Rotate current folder to .old
+        try:
+            print(f"Renaming existing to {os.path.basename(old_dir)}…")
+            os.replace(out_dir, old_dir)  # Atomic on same volume
+        except Exception as e:
+            print(f"[WARN] Rename failed ({e}). Falling back to direct delete.")
+            print("Deleting files…")
+            shutil.rmtree(out_dir, onerror=on_rm_error)
+        flush_fs()
+        time.sleep(1)
+
+        # Delete the rotated .old folder
+        if os.path.isdir(old_dir):
+            print("Deleting files…")
+            shutil.rmtree(old_dir, onerror=on_rm_error)
+            flush_fs()
+            time.sleep(2)
+
+    print("Copying files…")
+    total = count_files(srcall)
+    pbar = tqdm(total=total)
+    shutil.copytree(srcall, out_dir, dirs_exist_ok=True, copy_function=copy_verbose)
+    pbar.close()
 # Load config from environment variable only
 CONFIG_PATH = os.environ.get('RFSUITE_CONFIG')
 
@@ -166,17 +217,14 @@ def copy_files(src_override, fileext, targets):
                         shutil.copy(srcf, dstf)
                         print(f"Copy {f}")
 
+        
         # full
         else:
-            if os.path.isdir(out_dir):
-                shutil.rmtree(out_dir, onerror=on_rm_error)
             srcall = os.path.join(git_src, 'scripts', tgt)
-            total = count_files(srcall)
-            pbar = tqdm(total=total)
-            shutil.copytree(srcall, out_dir, dirs_exist_ok=True, copy_function=copy_verbose)
-            pbar.close()
+            safe_full_copy(srcall, out_dir)
 
-        print(f"Done: {t['name']}\n")
+
+            print(f"Done: {t['name']}\n")
 
 # Launch sims
 def launch_sims(targets):

@@ -7,7 +7,9 @@
       "request": "launch",
       "program": "${workspaceFolder}/bin/deploy/deploy.py",
       "args": ["--launch"],
-      "console": "integratedTerminal"
+      "console": "integratedTerminal",
+      "subProcess": false,          // <- prevents auto-attach to child procs
+      "justMyCode": true     
     },   
     {
       "name": "Deploy & Choose",
@@ -15,7 +17,9 @@
       "request": "launch",
       "program": "${workspaceFolder}/bin/deploy/deploy.py",
       "args": ["--choose", "--launch"],
-      "console": "integratedTerminal"
+      "console": "integratedTerminal",
+      "subProcess": false,          // <- prevents auto-attach to child procs
+      "justMyCode": true     
     },   
     {
       "name": "Deploy Radio",
@@ -23,7 +27,9 @@
       "request": "launch",
       "program": "${workspaceFolder}/bin/deploy/deploy.py",
       "args": ["--radio"],
-      "console": "integratedTerminal"
+      "console": "integratedTerminal",
+      "subProcess": false,          // <- prevents auto-attach to child procs
+      "justMyCode": true      
     }
   ]
 }
