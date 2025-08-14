@@ -11,6 +11,8 @@ import re
 import shlex
 import time
 
+DEPLOY_TO_RADIO = False  # flag to control radio-only behavior
+
 def minify_lua_file(filepath):
     print(f"[MINIFY] (luamin) Processing: {filepath}")
 
@@ -149,7 +151,7 @@ pbar = None
 
 def copy_verbose(src, dst):
     pbar.update(1)
-    if os.path.getsize(src) > 5 * 1024:
+    if DEPLOY_TO_RADIO and os.path.getsize(src) > 5 * 1024:
         flush_fs()
         time.sleep(0.1)
     shutil.copy(src, dst)
@@ -253,6 +255,8 @@ def main():
     p.add_argument('--radio-debug', action='store_true')
     p.add_argument('--minify',    action='store_true')
     args = p.parse_args()
+
+    DEPLOY_TO_RADIO = args.radio 
 
     # load override config
     if args.config != CONFIG_PATH:
