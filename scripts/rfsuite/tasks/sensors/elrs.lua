@@ -59,7 +59,7 @@ elrs.telemetryFrameSkip  = 0
 elrs.telemetryFrameCount = 0
 
 -- refresh stale sensors older than this many milliseconds
-local REFRESH_INTERVAL_MS = 500 -- 0.5s
+local REFRESH_INTERVAL_MS = 250 -- 0.25s
 
 ---------------------------------------------------------------------
 -- Utilities
@@ -119,12 +119,14 @@ local function setTelemetryValue(uid, subid, instance, value, unit, dec, name, m
     local s = getOrCreateSensor(uid, name, unit, dec, value, min, max)
     if s then
         local last = sensors.lastvalue[uid]
+        -- Only write and bump lasttime when the value actually changes
         if last == nil or last ~= value then
             s:value(value)
             sensors.lastvalue[uid] = value
+            sensors.lasttime[uid] = nowMs()
         end
-        -- record/update last update time even if value didn't change
-        sensors.lasttime[uid] = nowMs()
+        -- If the value didn't change, don't bump lasttime.
+        -- This allows refreshStaleSensors() to re-apply the value periodically.
     end
 end
 
@@ -437,7 +439,7 @@ function elrs.wakeup()
         local frameCount = 0
         while elrs.crossfirePop() do
             frameCount = frameCount + 1
-            if frameCount >= 40 then break end
+            if frameCount >= 100 then break end
             if CRSF_PAUSE_TELEMETRY == true or rfsuite.app.triggers.mspBusy == true then break end
         end
         refreshStaleSensors()
