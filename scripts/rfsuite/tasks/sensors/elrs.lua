@@ -59,7 +59,7 @@ elrs.telemetryFrameSkip  = 0
 elrs.telemetryFrameCount = 0
 
 -- refresh stale sensors older than this many milliseconds
-local REFRESH_INTERVAL_MS = 250 -- 0.25s
+local REFRESH_INTERVAL_MS = 500 -- 0.5s
 
 ---------------------------------------------------------------------
 -- Utilities
