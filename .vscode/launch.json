@@ -9,7 +9,8 @@
       "args": ["--launch"],
       "console": "integratedTerminal",
       "subProcess": false,          // <- prevents auto-attach to child procs
-      "justMyCode": true     
+      "justMyCode": true,
+      "stopOnEntry": false     
     },   
     {
       "name": "Deploy & Choose",
@@ -19,7 +20,8 @@
       "args": ["--choose", "--launch"],
       "console": "integratedTerminal",
       "subProcess": false,          // <- prevents auto-attach to child procs
-      "justMyCode": true     
+      "justMyCode": true,
+      "stopOnEntry": false     
     },   
     {
       "name": "Deploy Radio",
@@ -29,7 +31,8 @@
       "args": ["--radio"],
       "console": "integratedTerminal",
       "subProcess": false,          // <- prevents auto-attach to child procs
-      "justMyCode": true      
+      "justMyCode": true,
+      "stopOnEntry": false      
     }
   ]
 }

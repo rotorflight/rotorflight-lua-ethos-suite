@@ -51,26 +51,48 @@ def minify_lua_file(filepath):
         print(f"[MINIFY ERROR] Exception during luamin run: {e}")
 
 
-def get_ethos_scripts_dir(ethos_bin):
-    out = subprocess.check_output(
-        [ethos_bin, "--get-path", "SCRIPTS"],
-        text=True,
-        stderr=subprocess.STDOUT
-    )
 
-    lines = [l.strip() for l in out.splitlines() if l.strip()]
-    if not lines:
-        raise RuntimeError("No output from Ethos Suite.")
+def get_ethos_scripts_dir(ethos_bin, retries=1, delay=5):
+    """
+    Ask Ethos Suite for the SCRIPTS path. Retries after `delay` seconds
+    if the tool returns no path or fails. Raises on final failure.
+    """
+    cmd = [ethos_bin, "--get-path", "SCRIPTS"]
+    last_err = None
 
-    # If the last line starts with 'exit code', grab the previous one
-    if lines[-1].lower().startswith("exit code") and len(lines) >= 2:
-        path_line = lines[-2]
-    else:
-        path_line = lines[-1]
+    for attempt in range(retries + 1):
+        try:
+            result = subprocess.run(
+                cmd,
+                text=True,
+                capture_output=True,
+                timeout=15
+            )
 
-    return os.path.normpath(path_line)
+            if result.returncode != 0:
+                raise subprocess.CalledProcessError(
+                    result.returncode, cmd, output=result.stdout, stderr=result.stderr
+                )
 
+            lines = [l.strip() for l in (result.stdout or "").splitlines() if l.strip()]
+            if not lines:
+                raise RuntimeError("No output from Ethos Suite.")
 
+            # If the last line starts with 'exit code', grab the previous one
+            if lines[-1].lower().startswith("exit code") and len(lines) >= 2:
+                path_line = lines[-2]
+            else:
+                path_line = lines[-1]
+
+            return os.path.normpath(path_line)
+
+        except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired, RuntimeError) as e:
+            last_err = e
+            if attempt < retries:
+                print(f"[ETHOS] Could not get SCRIPTS path (attempt {attempt+1}/{retries+1}). Retrying in {delay}s…")
+                time.sleep(delay)
+            else:
+                raise last_err
 # Permission handler for Windows rm errors
 def on_rm_error(func, path, exc_info):
     os.chmod(path, stat.S_IWRITE)
@@ -264,8 +286,20 @@ def main():
             config.update(json.load(f))
 
     # select targets
+    
     if args.radio:
-        rd = get_ethos_scripts_dir(config['ethos_bin'])
+        try:
+            rd = get_ethos_scripts_dir(config['ethos_bin'], retries=1, delay=5)
+        except Exception as e:
+            print("[ERROR] Failed to obtain Ethos SCRIPTS path.")
+            print(f"        Reason: {e}")
+            # Beep in VS Code terminal (if enabled) or Windows
+            try:
+                import winsound
+                winsound.MessageBeep()
+            except Exception:
+                print("", end="", flush=True)
+            return 1
         targets = [{'name': 'Radio', 'dest': rd, 'simulator': None}]
     else:
         tlist=config['deploy_targets']
@@ -302,4 +336,9 @@ def main():
         )
 
 if __name__=='__main__':
-    main()
+    rc = main()
+    try:
+        import sys
+        sys.exit(rc if isinstance(rc, int) else 0)
+    except SystemExit:
+        pass
