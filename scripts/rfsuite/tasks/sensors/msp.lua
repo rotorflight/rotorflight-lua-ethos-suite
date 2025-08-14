@@ -152,7 +152,7 @@ local lastValue = {}          -- appId -> last value pushed
 local lastPush = {}           -- appId -> last os.clock() push time
 local lastModule = nil        -- detect telemetry module changes
 local VALUE_EPSILON = 0.0     -- push on any change (use >0 to throttle)
-local FORCE_REFRESH_INTERVAL = 0.25  -- seconds; heartbeat pushes to avoid TX warnings
+local FORCE_REFRESH_INTERVAL = 5  -- seconds; heartbeat pushes to avoid TX warnings
 
 local function getCurrentTime()
     return os.time()

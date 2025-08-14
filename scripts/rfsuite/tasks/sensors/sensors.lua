@@ -102,19 +102,16 @@ function sensors.wakeup()
 
     loadSensorModule()
     if loadedSensorModule and loadedSensorModule.module.wakeup then
+        
         loadedSensorModule.module.wakeup()
 
         if rfsuite.session and rfsuite.session.isConnected then
             -- run msp sensors
-            if msp and msp.wakeup then
-                msp.wakeup()
-            end
+            if msp and msp.wakeup then msp.wakeup() end
 
             -- run smart sensors
-            if smart and smart.wakeup then
-                smart.wakeup()
-            end        
-
+            if smart and smart.wakeup then smart.wakeup() end
+ 
         end
 
     end
@@ -123,16 +120,11 @@ end
 
 function sensors.reset()
 
-    if loadedSensorModule and loadedSensorModule.module and loadedSensorModule.module.reset then
-        loadedSensorModule.module.reset()
-    end
-
-    if smart and smart.reset then
-        smart.reset()
-    end
-
+    if loadedSensorModule and loadedSensorModule.module and loadedSensorModule.module.reset then loadedSensorModule.module.reset() end
+    if smart and smart.reset then smart.reset() end
+    if msp and msp.reset then msp.reset() end
     loadedSensorModule = nil  -- Clear loaded sensor module
-    msp.reset()
+
 end
 
 return sensors
