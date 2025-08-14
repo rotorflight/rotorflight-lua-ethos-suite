@@ -17,7 +17,7 @@
  * 
 ]] --
 local init = {
-    interval        = 0.15,            -- run every 0.15 seconds
+    interval        = 0.25,            -- run every 0.25 seconds
     script          = "sensors.lua",   -- run this script
     linkrequired    = true,            -- run this script only if link is established
     spreadschedule  = false,            -- run on every loop

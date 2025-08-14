@@ -21,6 +21,7 @@
 -- Focus: less repetition, clearer structure, tiny perf wins
 -- + Enhancement: refresh stale sensors every 0.5s to avoid invalidation
 --
+
 local arg = {...}
 local config = arg[1]
 
@@ -388,17 +389,40 @@ function elrs.crossfirePop()
         elrs.telemetryFrameId = fid
         elrs.telemetryFrameCount = elrs.telemetryFrameCount + 1
 
+        local MAX_TLVS_PER_FRAME = 40  -- sensible cap per frame
+
         local len = #data
+        local tlvCount = 0
+
         while ptr < len do
+            -- Need at least 2 bytes to read sid (U16)
+            if (len - ptr) < 2 then break end
+
             local sid
             sid, ptr = decU16(data, ptr)
+
             local sensor = elrs.RFSensors[sid]
             if not sensor then break end
-            local val
-            val, ptr = sensor.dec(data, ptr)
+
+            local prev = ptr
+
+            -- Decode safely; bail if decoder errors
+            local ok, val, newptr = pcall(sensor.dec, data, ptr)
+            if not ok then
+                -- optional: rfsuite.utils.log("Decoder error for SID 0x" .. string.format("%04X", sid), "debug")
+                break
+            end
+
+            -- Ensure the decoder actually advanced the pointer
+            ptr = newptr or prev
+            if ptr <= prev then break end
+
             if val ~= nil then
                 setTelemetryValue(sid, 0, 0, val, sensor.unit, sensor.prec, sensor.name, sensor.min, sensor.max)
             end
+
+            tlvCount = tlvCount + 1
+            if tlvCount >= MAX_TLVS_PER_FRAME then break end
         end
 
         setTelemetryValue(constants.FRAME_COUNT_ID, 0, 0, elrs.telemetryFrameCount, UNIT_RAW, 0, "Frame Count", 0, 2147483647)
@@ -410,10 +434,12 @@ end
 
 function elrs.wakeup()
     if telemetryActive() and rfsuite.session.telemetrySensor then
+        local frameCount = 0
         while elrs.crossfirePop() do
+            frameCount = frameCount + 1
+            if frameCount >= 40 then break end
             if CRSF_PAUSE_TELEMETRY == true or rfsuite.app.triggers.mspBusy == true then break end
         end
-        -- ensure all known sensors get refreshed even if their value hasn't changed
         refreshStaleSensors()
     else
         resetSensors()
