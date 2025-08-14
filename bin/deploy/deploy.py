@@ -99,7 +99,7 @@ def safe_full_copy(srcall, out_dir):
             print("Deleting previous backup…")
             shutil.rmtree(old_dir, onerror=on_rm_error)
             flush_fs()
-            time.sleep(1)
+            time.sleep(2)
 
         # Rotate current folder to .old
         try:
@@ -110,7 +110,7 @@ def safe_full_copy(srcall, out_dir):
             print("Deleting files…")
             shutil.rmtree(out_dir, onerror=on_rm_error)
         flush_fs()
-        time.sleep(1)
+        time.sleep(2)
 
         # Delete the rotated .old folder
         if os.path.isdir(old_dir):
@@ -149,7 +149,11 @@ pbar = None
 
 def copy_verbose(src, dst):
     pbar.update(1)
+    if os.path.getsize(src) > 5 * 1024:
+        flush_fs()
+        time.sleep(0.1)
     shutil.copy(src, dst)
+
 
 def count_files(dirpath, ext=None):
     total = 0
@@ -222,7 +226,8 @@ def copy_files(src_override, fileext, targets):
         else:
             srcall = os.path.join(git_src, 'scripts', tgt)
             safe_full_copy(srcall, out_dir)
-
+            flush_fs()
+            time.sleep(2)
 
             print(f"Done: {t['name']}\n")
 
