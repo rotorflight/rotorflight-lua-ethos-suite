@@ -46,63 +46,101 @@ function render.dirty(box)
     return false
 end
 
+-- Cache to reduce loadImage calls
+local _imgCache = {}
+
 function render.wakeup(box)
-    local craftName = rfsuite and rfsuite.session and rfsuite.session.craftName
-    --local modelID   = rfsuite and rfsuite.session and rfsuite.session.modelID
-    if craftName and craftName ~= lastCraftName then
-        local pngPath = "/bitmaps/models/" .. craftName .. ".png"
-        local bmpPath = "/bitmaps/models/" .. craftName .. ".bmp"
-        imagePath = loadImage(pngPath, bmpPath)
-        lastCraftName = craftName
+    -- Reuse cache table
+    local c = box._cache or {}
+    box._cache = c
+
+   -- Build static config once
+    local cfg = box._cfg
+    if not cfg then
+        cfg = {}
+        cfg.title              = getParam(box, "title")
+        cfg.titlepos           = getParam(box, "titlepos")
+        cfg.titlealign         = getParam(box, "titlealign")
+        cfg.titlefont          = getParam(box, "titlefont")
+        cfg.titlespacing       = getParam(box, "titlespacing")
+        cfg.titlepadding       = getParam(box, "titlepadding")
+        cfg.titlepaddingleft   = getParam(box, "titlepaddingleft")
+        cfg.titlepaddingright  = getParam(box, "titlepaddingright")
+        cfg.titlepaddingtop    = getParam(box, "titlepaddingtop")
+        cfg.titlepaddingbottom = getParam(box, "titlepaddingbottom")
+        cfg.titlecolor         = resolveThemeColor("titlecolor", getParam(box, "titlecolor"))
+        cfg.valuepadding       = getParam(box, "valuepadding")
+        cfg.valuepaddingleft   = getParam(box, "valuepaddingleft")
+        cfg.valuepaddingright  = getParam(box, "valuepaddingright")
+        cfg.valuepaddingtop    = getParam(box, "valuepaddingtop")
+        cfg.valuepaddingbottom = getParam(box, "valuepaddingbottom")
+        cfg.bgcolor            = resolveThemeColor("bgcolor", getParam(box, "bgcolor"))
+        cfg.imagewidth         = getParam(box, "imagewidth")
+        cfg.imageheight        = getParam(box, "imageheight")
+        cfg.imagealign         = getParam(box, "imagealign")
+        cfg._lastCraftName     = nil
+
+        box._cfg = cfg
     end
 
-    --if not imagePath and modelID then
-    --    local pngPath = "/bitmaps/models/" .. modelID .. ".png"
-    --    local bmpPath = "/bitmaps/models/" .. modelID .. ".bmp"
-    --    imagePath = loadImage(pngPath, bmpPath)
-    --end
+    -- Resolve image path (prefer craftName, then model bitmap, then default)
+    local craftName = rfsuite and rfsuite.session and rfsuite.session.craftName
+    local path = c.image
 
-    if not imagePath and model and model.bitmap then
+    if craftName and craftName ~= cfg._lastCraftName then
+        local cached = _imgCache[craftName]
+        if cached == nil then
+            local pngPath = "/bitmaps/models/" .. craftName .. ".png"
+            local bmpPath = "/bitmaps/models/" .. craftName .. ".bmp"
+            cached = loadImage(pngPath, bmpPath)
+            _imgCache[craftName] = cached
+        end
+        path = cached
+        cfg._lastCraftName = craftName
+    end
+
+    if not path and model and model.bitmap then
         local bm = model.bitmap()
         if bm and type(bm) == "string" and not string.find(bm, "default_") then
-            imagePath = bm
+            path = bm
         end
     end
 
-    if not imagePath then
-        imagePath = loadImage("widgets/dashboard/gfx/logo.png")
+    if not path then
+        path = loadImage("widgets/dashboard/gfx/logo.png")
     end
 
-    box._currentDisplayValue = imagePath
+    c.image = path
 
-    box._cache = {
-        title              = utils.getParam(box, "title"),
-        titlepos           = utils.getParam(box, "titlepos"),
-        titlealign         = utils.getParam(box, "titlealign"),
-        titlefont          = utils.getParam(box, "titlefont"),
-        titlespacing       = utils.getParam(box, "titlespacing"),
-        titlecolor         = utils.resolveThemeColor("titlecolor", utils.getParam(box, "titlecolor")),
-        titlepadding       = utils.getParam(box, "titlepadding"),
-        titlepaddingleft   = utils.getParam(box, "titlepaddingleft"),
-        titlepaddingright  = utils.getParam(box, "titlepaddingright"),
-        titlepaddingtop    = utils.getParam(box, "titlepaddingtop"),
-        titlepaddingbottom = utils.getParam(box, "titlepaddingbottom"),
-        displayValue       = nil,
-        unit               = nil,
-        font               = nil,
-        valuealign         = nil,
-        textcolor          = nil,
-        valuepadding       = utils.getParam(box, "valuepadding"),
-        valuepaddingleft   = utils.getParam(box, "valuepaddingleft"),
-        valuepaddingright  = utils.getParam(box, "valuepaddingright"),
-        valuepaddingtop    = utils.getParam(box, "valuepaddingtop"),
-        valuepaddingbottom = utils.getParam(box, "valuepaddingbottom"),
-        bgcolor            = utils.resolveThemeColor("bgcolor", utils.getParam(box, "bgcolor")),
-        image              = imagePath,
-        imagewidth         = utils.getParam(box, "imagewidth"),
-        imageheight        = utils.getParam(box, "imageheight"),
-        imagealign         = utils.getParam(box, "imagealign")
-    }
+    -- Set box.value so dashboard/dirty can track change for redraws
+    box._currentDisplayValue = path
+
+    -- Mutate cache
+    c.title              = cfg.title
+    c.titlepos           = cfg.titlepos
+    c.titlealign         = cfg.titlealign
+    c.titlefont          = cfg.titlefont
+    c.titlespacing       = cfg.titlespacing
+    c.titlepadding       = cfg.titlepadding
+    c.titlepaddingleft   = cfg.titlepaddingleft
+    c.titlepaddingright  = cfg.titlepaddingright
+    c.titlepaddingtop    = cfg.titlepaddingtop
+    c.titlepaddingbottom = cfg.titlepaddingbottom
+    c.titlecolor         = cfg.titlecolor
+    c.valuepadding       = cfg.valuepadding
+    c.valuepaddingleft   = cfg.valuepaddingleft
+    c.valuepaddingright  = cfg.valuepaddingright
+    c.valuepaddingtop    = cfg.valuepaddingtop
+    c.valuepaddingbottom = cfg.valuepaddingbottom
+    c.bgcolor            = cfg.bgcolor
+    c.imagewidth         = cfg.imagewidth
+    c.imageheight        = cfg.imageheight
+    c.imagealign         = cfg.imagealign
+    c.displayValue       = nil
+    c.unit               = nil
+    c.font               = nil
+    c.valuealign         = nil
+    c.textcolor          = nil
 end
 
 function render.paint(x, y, w, h, box)
