@@ -34,15 +34,49 @@ function ui.progressDisplay(title, message)
     message = message or i18n("app.msg_loading_from_fbl")
 
     rfsuite.app.dialogs.progressDisplay = true
-    rfsuite.app.dialogs.progressWatchDog = os.clock()
-    rfsuite.app.dialogs.progress = form.openProgressDialog(title, message)
-    rfsuite.app.dialogs.progressCounter = 0
+    rfsuite.app.dialogs.progressWatchDog = rfsuite.clock
+    rfsuite.app.dialogs.progress = form.openProgressDialog(
+                                {
+                                title = title, 
+                                message = message,
+                                close = function()
+                                end,
+                                wakeup = function()
+                                        local app = rfsuite.app
 
-    local progress = rfsuite.app.dialogs.progress
-    if progress then
-        progress:value(0)
-        progress:closeAllowed(false)
-    end
+                                        app.dialogs.progress:value(app.dialogs.progressCounter)
+                                        if not app.triggers.closeProgressLoader then
+                                            app.dialogs.progressCounter = app.dialogs.progressCounter + 2
+                                        elseif app.triggers.closeProgressLoader and rfsuite.tasks.msp.mspQueue:isProcessed() then
+                                            app.dialogs.progressCounter = app.dialogs.progressCounter + 10
+                                            if app.dialogs.progressCounter >= 100 then
+                                                app.dialogs.progress:close()
+                                                app.dialogs.progressDisplay = false
+                                                app.dialogs.progressCounter = 0
+                                                app.triggers.closeProgressLoader = false
+                                            end
+                                        end
+
+                                        -- Check for timeout
+                                        if app.dialogs.progressWatchDog and (os.clock() - app.dialogs.progressWatchDog) > tonumber(rfsuite.tasks.msp.protocol.pageReqTimeout) then
+                                            app.audio.playTimeout = true
+                                            app.ui.progressDisplayMessage(i18n("app.error_timed_out"))
+                                            app.dialogs.progress:closeAllowed(true)
+                                            app.Page = app.PageTmp
+                                            app.PageTmp = nil
+                                            app.dialogs.progressCounter = 0
+                                            app.dialogs.progressDisplay = false
+                                        end
+
+
+                                end     
+                                }
+                                )
+
+    rfsuite.app.dialogs.progressCounter = 0
+    rfsuite.app.dialogs.progress:value(0)
+    rfsuite.app.dialogs.progress:closeAllowed(false)
+
 end
 
 --[[
@@ -64,87 +98,60 @@ end
                  Sets the save display flag, initializes the save watchdog timer, 
                  and configures the progress dialog with initial values.
 ]]
-function ui.progressDisplaySave(msg)
+function ui.progressDisplaySave(message)
+    local app = rfsuite.app
+
     rfsuite.app.dialogs.saveDisplay = true
-    rfsuite.app.dialogs.saveWatchDog = os.clock()
-    if msg then
-                 rfsuite.app.dialogs.save = form.openProgressDialog(i18n("app.msg_saving"),msg)   
-    else
-         rfsuite.app.dialogs.save = form.openProgressDialog(i18n("app.msg_saving"), i18n("app.msg_saving_to_fbl"))       
-    end
+    rfsuite.app.dialogs.saveWatchDog = rfsuite.clock
+
+    local msg = ({[app.pageStatus.saving] = "app.msg_saving_settings",
+                    [app.pageStatus.eepromWrite] = "app.msg_saving_settings",
+                    [app.pageStatus.rebooting]   = "app.msg_rebooting"})[app.pageState]
+    if not message then                
+        message = i18n(msg)
+    end    
+
+    local title = i18n("app.msg_saving")
+
+
+    rfsuite.app.dialogs.save = form.openProgressDialog(
+                                {
+                                title = title, 
+                                message = message,
+                                close = function()
+                                end,
+                                wakeup = function()
+                                        local app = rfsuite.app
+                                        app.dialogs.save:value(app.dialogs.saveProgressCounter)
+                                        if not app.dialogs.saveProgressCounter then                  
+                                            app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 1
+                                        elseif app.triggers.closeSaveFake then
+                                            app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 5
+                                            if app.dialogs.saveProgressCounter >= 100 then
+                                            app.triggers.closeSaveFake          = false
+                                            app.dialogs.saveProgressCounter     = 0
+                                            app.dialogs.saveDisplay             = false
+                                            app.dialogs.saveWatchDog            = nil
+                                            app.ui.progressDisplaySaveClose()
+                                            end                                            
+                                        elseif rfsuite.tasks.msp.mspQueue:isProcessed() then
+                                            app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 5
+                                            if app.dialogs.saveProgressCounter >= 100 then
+                                                app.dialogs.save:close()
+                                                app.dialogs.saveDisplay = false
+                                                app.dialogs.saveProgressCounter = 0
+                                                app.triggers.closeSave = false
+                                                app.triggers.isSaving = false
+                                            end
+                                        end
+                                end     
+                                }
+                                )
+
     rfsuite.app.dialogs.save:value(0)
     rfsuite.app.dialogs.save:closeAllowed(false)
 end
 
-
---[[
-    Updates the progress display with the given value and optional message.
-    
-    @param value (number) - The progress value to display. If the value is 100 or more, the progress is updated immediately.
-    @param message (string, optional) - An optional message to display along with the progress value.
-    
-    The function ensures that the progress display is updated at a rate limited by `rfsuite.app.dialogs.progressRate`.
-]]
-function ui.progressDisplayValue(value, message)
-    if value >= 100 then
-        rfsuite.app.dialogs.progress:value(value)
-        if message then rfsuite.app.dialogs.progress:message(message) end
-        return
-    end
-
-    local now = os.clock()
-    if (now - rfsuite.app.dialogs.progressRateLimit) >= rfsuite.app.dialogs.progressRate then
-        rfsuite.app.dialogs.progressRateLimit = now
-        rfsuite.app.dialogs.progress:value(value)
-        if message then rfsuite.app.dialogs.progress:message(message) end
-    end
-end
-
-
---[[
-    Updates the progress display with a given value and optional message.
-    
-    @param value number: The progress value to display. If the value is 100 or more, the display is updated immediately.
-    @param message string (optional): An optional message to display along with the progress value.
-]]
-function ui.progressDisplaySaveValue(value, message)
-    if value >= 100 then
-        if rfsuite.app.dialogs.save then
-            rfsuite.app.dialogs.save:value(value)
-        end    
-        if message then rfsuite.app.dialogs.save:message(message) end
-        return
-    end
-
-    local now = os.clock()
-    if (now - rfsuite.app.dialogs.saveRateLimit) >= rfsuite.app.dialogs.saveRate then
-        rfsuite.app.dialogs.saveRateLimit = now
-        if rfsuite.app.dialogs.save then
-            rfsuite.app.dialogs.save:value(value)
-        end    
-        if message then rfsuite.app.dialogs.save:message(message) end
-    end
-end
-
--- Closes the progress display dialog if it is currently open.
--- This function checks if the progress dialog exists, closes it, 
--- and updates the progress display status to false.
-function ui.progressDisplayClose()
-    local progress = rfsuite.app.dialogs.progress
-    if progress then
-        progress:close()
-        rfsuite.app.dialogs.progressDisplay = false
-    end
-end
-
--- Closes the progress display if allowed by the given status.
--- @param status A boolean indicating whether closing the progress display is allowed.
-function ui.progressDisplayCloseAllowed(status)
-    local progress = rfsuite.app.dialogs.progress
-    if progress then
-        progress:closeAllowed(status)
-    end
-end
 
 -- Displays a progress message in the UI.
 -- @param message The message to be displayed in the progress dialog.

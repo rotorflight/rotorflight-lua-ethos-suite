@@ -948,64 +948,7 @@ app._uiTasks = {
     end
   end,
 
-  -- 2. Close Progress Loader
-  function()
-    if not app.triggers.closeProgressLoader then return end
-    local p = app.dialogs.progressCounter
-    local q = rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue
-    if p >= 90 then p = p + 10 else p = p + 15 end
-    app.dialogs.progressCounter = p
-    if app.dialogs.progress then
-      app.ui.progressDisplayValue(p)
-    end
-    if p >= 101 and q and q:isProcessed() then
-      app.dialogs.progressWatchDog = nil
-      app.dialogs.progressDisplay  = false
-      app.ui.progressDisplayClose()
-      app.dialogs.progressCounter   = 0
-      app.triggers.closeProgressLoader = false
-    end
-  end,
 
-  -- 3. Close Save Loader
-  function()
-    if not app.triggers.closeSave then return end
-    local p, q = app.dialogs.saveProgressCounter, rfsuite.tasks.msp.mspQueue
-    app.triggers.isSaving = false
-    if q:isProcessed() then
-      if     p > 90 then p = p + 5
-      elseif p > 40 then p = p + 15
-      else                p = p + 5 end
-    end
-    app.dialogs.saveProgressCounter = p
-    if app.dialogs.save then
-      app.ui.progressDisplaySaveValue(p)
-    end
-    if p >= 100 and q:isProcessed() then
-      app.triggers.closeSave           = false
-      app.dialogs.saveProgressCounter  = 0
-      app.dialogs.saveDisplay          = false
-      app.dialogs.saveWatchDog         = nil
-      app.ui.progressDisplaySaveClose()
-    end
-  end,
-
-  -- 4. Close Save (Fake) in Simulator
-  function()
-    if not app.triggers.closeSaveFake then return end
-    app.triggers.isSaving = false
-    app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 5
-    if app.dialogs.save then
-      app.ui.progressDisplaySaveValue(app.dialogs.saveProgressCounter)
-    end
-    if app.dialogs.saveProgressCounter >= 100 then
-      app.triggers.closeSaveFake          = false
-      app.dialogs.saveProgressCounter     = 0
-      app.dialogs.saveDisplay             = false
-      app.dialogs.saveWatchDog            = nil
-      app.ui.progressDisplaySaveClose()
-    end
-  end,
 
   -- 5. Profile / Rate Change Detection
   function()
@@ -1130,24 +1073,10 @@ app._uiTasks = {
     end
   end,
 
-  -- 10. Progress Timeout Watchdog
+  -- 11. Trigger Save Dialogs (choose if you want to save)
   function()
-    if not app.dialogs.progressDisplay or not app.dialogs.progressWatchDog then return end
-    app.dialogs.progressCounter = app.dialogs.progressCounter + (app.Page and app.Page.progressCounter or 1.5)
-    app.ui.progressDisplayValue(app.dialogs.progressCounter)
-    if (os.clock() - app.dialogs.progressWatchDog) > tonumber(rfsuite.tasks.msp.protocol.pageReqTimeout) then
-      app.audio.playTimeout = true
-      app.ui.progressDisplayMessage(i18n("app.error_timed_out"))
-      app.ui.progressDisplayCloseAllowed(true)
-      app.Page = app.PageTmp
-      app.PageTmp = nil
-      app.dialogs.progressCounter = 0
-      app.dialogs.progressDisplay = false
-    end
-  end,
 
-  -- 11. Trigger Save Dialogs
-  function()
+    -- Check if we need to trigger the save dialog
     if app.triggers.triggerSave then
       app.triggers.triggerSave = false
       form.openDialog({
@@ -1171,6 +1100,33 @@ app._uiTasks = {
       app.triggers.triggerSaveNoProgress = false
       app.PageTmp = app.Page
       saveSettings()
+    end
+
+    -- if we are saving we need to show the save progress dialog
+    if app.triggers.isSaving then
+      if app.pageState >= app.pageStatus.saving and not app.dialogs.saveDisplay then
+          app.triggers.saveFailed          = false
+          app.dialogs.saveProgressCounter  = 0
+          app.ui.progressDisplaySave()
+          rfsuite.tasks.msp.mspQueue.retryCount = 0
+      end
+    end  
+  end,
+
+  -- 14. Armed-Save Warning
+  function()
+    if not app.triggers.showSaveArmedWarning or app.triggers.closeSave then return end
+    if not app.dialogs.progressDisplay then
+      app.dialogs.progressCounter = 0
+      local key = (rfsuite.session.apiVersion >= 12.08 and "app.msg_please_disarm_to_save_warning" or "app.msg_please_disarm_to_save")
+      app.ui.progressDisplay(
+        i18n("app.msg_save_not_commited"),
+        i18n(key)
+      )
+    end
+    if app.dialogs.progressCounter >= 100 then
+      app.triggers.showSaveArmedWarning = false
+      app.dialogs.progress:close()
     end
   end,
 
@@ -1199,49 +1155,6 @@ app._uiTasks = {
                    { label=i18n("app.btn_cancel"), action=function() return true end }},
         options = TEXT_LEFT
       })
-    end
-  end,
-
-  -- 13. Saving Progress Display
-  function()
-    if app.triggers.isSaving then
-      app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 5
-      if app.pageState >= app.pageStatus.saving then
-        if not app.dialogs.saveDisplay then
-          app.triggers.saveFailed          = false
-          app.dialogs.saveProgressCounter  = 0
-          app.ui.progressDisplaySave()
-          rfsuite.tasks.msp.mspQueue.retryCount = 0
-        end
-        local msg = ({[app.pageStatus.saving] = "app.msg_saving_settings",
-                     [app.pageStatus.eepromWrite] = "app.msg_saving_settings",
-                     [app.pageStatus.rebooting]   = "app.msg_rebooting"})[app.pageState]
-        app.ui.progressDisplaySaveValue(app.dialogs.saveProgressCounter, i18n(msg))
-      else
-        app.triggers.isSaving      = false
-        app.dialogs.saveDisplay    = false
-        app.dialogs.saveWatchDog   = nil
-      end
-    elseif app.triggers.isSavingFake then
-      app.triggers.isSavingFake = false
-      app.triggers.closeSaveFake = true
-    end
-  end,
-
-  -- 14. Armed-Save Warning
-  function()
-    if not app.triggers.showSaveArmedWarning or app.triggers.closeSave then return end
-    if not app.dialogs.progressDisplay then
-      app.dialogs.progressCounter = 0
-      local key = (rfsuite.session.apiVersion >= 12.08 and "app.msg_please_disarm_to_save_warning" or "app.msg_please_disarm_to_save")
-      app.ui.progressDisplay(
-        i18n("app.msg_save_not_commited"),
-        i18n(key)
-      )
-    end
-    if app.dialogs.progressCounter >= 100 then
-      app.triggers.showSaveArmedWarning = false
-      app.ui.progressDisplayClose()
     end
   end,
 
