@@ -68,13 +68,73 @@ function render.dirty(box)
     return false
 end
 
+-- Precompile the value transform
+local function compileTransform(t, decimals)
+    local pow = decimals and (10 ^ decimals) or nil
+    local function round(v)
+        return pow and (math.floor(v * pow + 0.5) / pow) or v
+    end
+
+    if type(t) == "number" then
+        local mul = t
+        return function(v) return round(v * mul) end
+    elseif t == "floor" then
+        return function(v) return math.floor(v) end
+    elseif t == "ceil" then
+        return function(v) return math.ceil(v) end
+    elseif t == "round" or t == nil then
+        return function(v) return round(v) end
+    elseif type(t) == "function" then
+        return t
+    else
+        return function(v) return v end
+    end
+end
+
 function render.wakeup(box)
 
     local telemetry = rfsuite.tasks.telemetry
 
+    -- Reuse cache table
+    local c = box._cache or {}
+    box._cache = c
+
+   -- Build static config once
+    local cfg = box._cfg
+    if not cfg then
+        cfg = {}
+        cfg.title              = getParam(box, "title")
+        cfg.titlepos           = getParam(box, "titlepos")
+        cfg.titlealign         = getParam(box, "titlealign")
+        cfg.titlefont          = getParam(box, "titlefont")
+        cfg.titlespacing       = getParam(box, "titlespacing")
+        cfg.titlepadding       = getParam(box, "titlepadding")
+        cfg.titlepaddingleft   = getParam(box, "titlepaddingleft")
+        cfg.titlepaddingright  = getParam(box, "titlepaddingright")
+        cfg.titlepaddingtop    = getParam(box, "titlepaddingtop")
+        cfg.titlepaddingbottom = getParam(box, "titlepaddingbottom")
+        cfg.titlecolor         = resolveThemeColor("titlecolor", getParam(box, "titlecolor"))
+        cfg.font               = getParam(box, "font")
+        cfg.valuealign         = getParam(box, "valuealign")
+        cfg.valuepadding       = getParam(box, "valuepadding")
+        cfg.valuepaddingleft   = getParam(box, "valuepaddingleft")
+        cfg.valuepaddingright  = getParam(box, "valuepaddingright")
+        cfg.valuepaddingtop    = getParam(box, "valuepaddingtop")
+        cfg.valuepaddingbottom = getParam(box, "valuepaddingbottom")
+        cfg.bgcolor            = resolveThemeColor("bgcolor", getParam(box, "bgcolor"))
+        cfg.source             = getParam(box, "source")
+        cfg.stattype           = getParam(box, "stattype") or "max"
+        cfg.manualUnit         = getParam(box, "unit")
+        cfg.decimals           = getParam(box, "decimals")
+        cfg.transform          = getParam(box, "transform")
+        cfg.transformFn        = compileTransform(cfg.transform, cfg.decimals)
+
+        box._cfg = cfg
+    end
+
     -- Value extraction
-    local source = getParam(box, "source")
-    local statType = getParam(box, "stattype") or "max"
+    local source = cfg.source
+    local statType = cfg.stattype
     local value, unit
 
     -- Determine if telemetry is active
@@ -102,7 +162,7 @@ function render.wakeup(box)
     end
 
     -- User-specified unit *always* overrides
-    local overrideUnit = getParam(box, "unit")
+    local overrideUnit = cfg.manualUnit
     if overrideUnit ~= nil then
         unit = overrideUnit
     end
@@ -128,7 +188,7 @@ function render.wakeup(box)
         displayValue = string.rep(".", box._dotCount)
         if displayValue == "" then displayValue = "." end
     else
-        displayValue = utils.transformValue(value, box)
+        displayValue = cfg.transformFn(value)
     end
 
     -- Suppress unit if we're displaying loading dots
@@ -142,30 +202,29 @@ function render.wakeup(box)
     -- Resolve colors
     local textcolor = utils.resolveThresholdColor(value, box, "textcolor", "textcolor")
 
-    box._cache = {
-        displayValue       = displayValue,
-        unit               = unit,
-        textcolor          = textcolor,
-        title              = getParam(box, "title"),
-        titlepos           = getParam(box, "titlepos"),
-        titlealign         = getParam(box, "titlealign"),
-        titlefont          = getParam(box, "titlefont"),
-        titlespacing       = getParam(box, "titlespacing"),
-        titlecolor         = resolveThemeColor("titlecolor", getParam(box, "titlecolor")),
-        titlepadding       = getParam(box, "titlepadding"),
-        titlepaddingleft   = getParam(box, "titlepaddingleft"),
-        titlepaddingright  = getParam(box, "titlepaddingright"),
-        titlepaddingtop    = getParam(box, "titlepaddingtop"),
-        titlepaddingbottom = getParam(box, "titlepaddingbottom"),
-        font               = getParam(box, "font"),
-        valuealign         = getParam(box, "valuealign"),
-        valuepadding       = getParam(box, "valuepadding"),
-        valuepaddingleft   = getParam(box, "valuepaddingleft"),
-        valuepaddingright  = getParam(box, "valuepaddingright"),
-        valuepaddingtop    = getParam(box, "valuepaddingtop"),
-        valuepaddingbottom = getParam(box, "valuepaddingbottom"),
-        bgcolor            = resolveThemeColor("bgcolor", getParam(box, "bgcolor")),
-    }
+    -- Mutate cache
+    c.displayValue       = displayValue
+    c.unit               = unit
+    c.textcolor          = textcolor
+    c.title              = cfg.title
+    c.titlepos           = cfg.titlepos
+    c.titlealign         = cfg.titlealign
+    c.titlefont          = cfg.titlefont
+    c.titlespacing       = cfg.titlespacing
+    c.titlepadding       = cfg.titlepadding
+    c.titlepaddingleft   = cfg.titlepaddingleft
+    c.titlepaddingright  = cfg.titlepaddingright
+    c.titlepaddingtop    = cfg.titlepaddingtop
+    c.titlepaddingbottom = cfg.titlepaddingbottom
+    c.titlecolor         = cfg.titlecolor
+    c.font               = cfg.font
+    c.valuealign         = cfg.valuealign
+    c.valuepadding       = cfg.valuepadding
+    c.valuepaddingleft   = cfg.valuepaddingleft
+    c.valuepaddingright  = cfg.valuepaddingright
+    c.valuepaddingtop    = cfg.valuepaddingtop
+    c.valuepaddingbottom = cfg.valuepaddingbottom
+    c.bgcolor            = cfg.bgcolor
 end
 
 function render.paint(x, y, w, h, box)
