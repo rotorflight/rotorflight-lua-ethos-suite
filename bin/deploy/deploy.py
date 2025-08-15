@@ -490,26 +490,51 @@ def copy_files(src_override, fileext, targets):
 
 def patch_logger_init(out_root):
     """
-    Ensure rfsuite/tasks/logger/init.lua has simulatoronly=false after copy.
-    Handles flexible spacing and casing.
+    Set simulatoronly=false in tasks/logger/init.lua, robustly:
+    - ignores inline comments (-- ...)
+    - preserves spacing and trailing comma
+    - matches bare or bracketed keys: simulatoronly or ["simulatoronly"]
     """
+    import os, re
     target_file = os.path.join(out_root, 'tasks', 'logger', 'init.lua')
     try:
         if not os.path.exists(target_file):
             print(f"[PATCH] logger init.lua not found: {target_file}")
             return
+
         with open(target_file, 'r', encoding='utf-8', errors='replace') as f:
-            content = f.read()
-        # Replace simulatoronly = true -> false (allow any spaces/tabs, case-insensitive)
-        new_content, n = re.subn(r'(\\bsimulatoronly\\s*=\\s*)(true|TRUE|True)\\b', r'\\1false', content)
-        if n > 0:
+            lines = f.readlines()
+
+        changed = 0
+        key_re = re.compile(
+            r'(?i)^(?P<indent>\s*)'
+            r'(?P<key>(?:\[\s*["\']simulatoronly["\']\s*\]|simulatoronly))'
+            r'(?P<between>\s*=\s*)'
+            r'(?P<val>true)'
+            r'(?P<after>\s*,?)'
+        )
+
+        for i, line in enumerate(lines):
+            code, sep, comment = line.partition('--')   # only touch code part
+            m = key_re.search(code)
+            if m:
+                code = (
+                    code[:m.start()] +
+                    f"{m.group('indent')}{m.group('key')}{m.group('between')}false{m.group('after')}" +
+                    code[m.end():]
+                )
+                lines[i] = code + (sep + comment if sep else '')
+                changed += 1
+
+        if changed:
             with open(target_file, 'w', encoding='utf-8', newline='') as f:
-                f.write(new_content)
-            print(f"[PATCH] Set simulatoronly=false in {target_file} ({n} change{'s' if n!=1 else ''}).")
+                f.writelines(lines)
+            print(f"[PATCH] Set simulatoronly=false in {target_file} ({changed} change{'s' if changed!=1 else ''}).")
         else:
             print(f"[PATCH] No changes needed for {target_file} (already false or key missing).")
     except Exception as e:
         print(f"[PATCH] Failed to edit {target_file}: {e}")
+
 
 # Launch sims
 def launch_sims(targets):
