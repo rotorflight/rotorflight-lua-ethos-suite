@@ -265,10 +265,10 @@ def delete_tree(path):
     if DEPLOY_TO_RADIO:
         throttled_rmtree(path)
     else:
-        delete_tree(path)
         shutil.rmtree(path, onerror=on_rm_error)
         flush_fs()
         time.sleep(DELETE_PAUSE_S)
+
 
 
 def safe_full_copy(srcall, out_dir):
