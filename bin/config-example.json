@@ -1,7 +1,13 @@
 {
   "git_src": "C:\\GitHub\\rotorflight-lua-ethos-suite",
   "tgt_name": "rfsuite",
-  "ethos_bin": "C:\\Program Files\\Ethos Suite\\Ethos Suite.exe",
+  "ethossuite_bin": "C:\\Program Files\\Ethos Suite\\Ethos Suite.exe",
+  "serial_vid": "0483",
+  "serial_pid": "5750",
+  "serial_baud": 115200,
+  "serial_retries": 10,
+  "serial_retry_delay": 1.0,
+  "serial_name_hint": "FrSky",
   "deploy_targets": [
     {
       "name": "X20S",

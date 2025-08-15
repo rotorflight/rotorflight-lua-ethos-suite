@@ -52,12 +52,12 @@ def minify_lua_file(filepath):
 
 
 
-def get_ethos_scripts_dir(ethos_bin, retries=1, delay=5):
+def get_ethos_scripts_dir(ethossuite_bin, retries=1, delay=5):
     """
     Ask Ethos Suite for the SCRIPTS path. Retries after `delay` seconds
     if the tool returns no path or fails. Raises on final failure.
     """
-    cmd = [ethos_bin, "--get-path", "SCRIPTS"]
+    cmd = [ethossuite_bin, "--get-path", "SCRIPTS"]
     last_err = None
 
     for attempt in range(retries + 1):
@@ -169,6 +169,195 @@ except json.JSONDecodeError as e:
 
 pbar = None
 
+
+# === Ethos Serial + Serial Tail helpers =======================================
+
+DEFAULT_SERIAL_VID = "0483"  # STM32 VCP / HID used by FrSky radios in Ethos logs
+DEFAULT_SERIAL_PID = "5750"
+DEFAULT_SERIAL_BAUD = 115200
+DEFAULT_SERIAL_RETRIES = 10
+DEFAULT_SERIAL_DELAY = 1.0    # seconds between attempts
+
+def ethos_serial(ethossuite_bin, action, radio=None):
+    """
+    Start/stop Ethos serial debug mode.
+    action: 'start' or 'stop'
+    Returns (rc, stdout, stderr) and prints tool output.
+    """
+    cmd = [ethossuite_bin, "--serial", action]
+    if radio:
+        cmd += ["--radio", radio]
+    try:
+        res = subprocess.run(cmd, text=True, capture_output=True, timeout=20)
+        out = (res.stdout or "").strip()
+        err = (res.stderr or "").strip()
+        if out:
+            print(out)
+        if err:
+            print(err)
+        return res.returncode, out, err
+    except Exception as e:
+        print(f"[ETHOS] --serial {action} failed: {e}")
+        return 1, "", str(e)
+
+
+def wait_for_scripts_mount(ethossuite_bin, attempts=5, delay=2):
+    """
+    Poll Ethos for the SCRIPTS path until it responds, to confirm the
+    radio's storage is mounted and ready for copy.
+    """
+    last_err = None
+    for i in range(attempts):
+        try:
+            path = get_ethos_scripts_dir(ethossuite_bin, retries=0)
+            return path
+        except Exception as e:
+            last_err = e
+            print(f"[ETHOS] Waiting for radio drive ({i+1}/{attempts})…")
+            time.sleep(delay)
+    raise RuntimeError(f"Radio drive did not mount: {last_err}")
+
+
+def _find_com_port_by_vid_pid(vid_hex, pid_hex):
+    try:
+        from serial.tools import list_ports
+    except Exception as e:
+        print("[SERIAL] pyserial not installed. Install with: pip install pyserial")
+        return None
+
+
+def _find_com_port(vid_hex=None, pid_hex=None, name_hint=None):
+    try:
+        from serial.tools import list_ports
+    except Exception:
+        print("[SERIAL] pyserial not installed. Install with: pip install pyserial")
+        return None
+
+    ports = list(list_ports.comports())
+    if not ports:
+        print("[SERIAL] No serial ports detected.")
+        return None
+
+    # Debug dump so you can see what's actually present
+    print("[SERIAL] Detected ports:")
+    for p in ports:
+        desc = p.description or ''
+        iface = getattr(p, 'interface', None) or ''
+        print(f"  - device={p.device} vid={p.vid} pid={p.pid} desc='{desc}' iface='{iface}' hwid='{p.hwid}'")
+
+    # 1) Strict VID/PID match if provided
+    if vid_hex and pid_hex:
+        try:
+            vid = int(vid_hex, 16)
+            pid = int(pid_hex, 16)
+        except Exception:
+            vid = pid = None
+        if vid is not None and pid is not None:
+            for p in ports:
+                try:
+                    if p.vid == vid and p.pid == pid:
+                        return p.device
+                except Exception:
+                    pass
+
+    # 2) Fallback: fuzzy name/description match (e.g. contains 'Serial' or 'FrSky')
+    hints = [h.lower() for h in [name_hint, "frsky", "serial", "stm", "vcp", "x20", "x18", "x14"] if h]
+    for p in ports:
+        desc = f"{p.description or ''} {getattr(p,'interface','') or ''}".lower()
+        if any(h in desc for h in hints):
+            return p.device
+
+    return None
+
+    vid = int(vid_hex, 16)
+    pid = int(pid_hex, 16)
+    for p in list_ports.comports():
+        try:
+            if p.vid == vid and p.pid == pid:
+                return p.device  # e.g. 'COM7'
+        except Exception:
+            continue
+    return None
+
+
+def tail_serial_debug(vid=DEFAULT_SERIAL_VID, pid=DEFAULT_SERIAL_PID,
+                      baud=DEFAULT_SERIAL_BAUD, retries=DEFAULT_SERIAL_RETRIES,
+                      delay=DEFAULT_SERIAL_DELAY, newline=b'\n', name_hint="Serial"):
+    "Try to attach to the radio serial log N times; print lines until Ctrl+C."
+    try:
+        import serial
+    except Exception:
+        print("[SERIAL] pyserial not installed. Install with: pip install pyserial")
+        return 2
+
+    # Give Windows a moment to enumerate after enabling serial
+    time.sleep(1.5)
+
+    port = None
+    for i in range(retries):
+        # Prefer strict VID/PID match, then fallback to name hint
+        port = _find_com_port(vid_hex=vid, pid_hex=pid, name_hint=name_hint)
+        if port:
+            break
+        print(f"[SERIAL] Waiting for COM port ({i+1}/{retries})…")
+        time.sleep(delay)
+
+    if not port:
+        print("[SERIAL] No suitable COM port found. See the detected ports above.")
+        return 3
+
+    print(f"[SERIAL] Connecting to {port} @ {baud} …")
+    # Some Windows setups expose the COM device and then rebind the driver briefly.
+    # Try multiple times to open the port before giving up; if it disappears, rescan.
+    open_attempts = 8
+    for attempt in range(1, open_attempts+1):
+        try:
+            s = serial.Serial(port=port, baudrate=baud, timeout=0.5)
+            break
+        except FileNotFoundError as e:
+            print(f"[SERIAL] Open attempt {attempt}/{open_attempts} -> device vanished; rescanning…")
+            # Rescan for a replacement port that matches
+            port = _find_com_port(vid_hex=vid, pid_hex=pid, name_hint=name_hint)
+            if not port:
+                import time as _t; _t.sleep(delay)
+            continue
+        except Exception as e:
+            # e.g. PermissionError / SerialException("Access is denied"), or still binding
+            print(f"[SERIAL] Open attempt {attempt}/{open_attempts} failed: {e}")
+            import time as _t; _t.sleep(delay)
+            continue
+    else:
+        print("[SERIAL] Could not open any matching COM port after multiple attempts.")
+        return 4
+
+    try:
+        with s:
+            print("— Serial connected. Press Ctrl+C to stop —")
+            buf = b""
+            while True:
+                try:
+                    data = s.read(1024)
+                    if data:
+                        buf += data
+                        while True:
+                            if newline in buf:
+                                line, buf = buf.split(newline, 1)
+                                try:
+                                    print(line.decode('utf-8', errors='replace'))
+                                except Exception:
+                                    print(line)
+                            else:
+                                break
+                except KeyboardInterrupt:
+                    print("[SERIAL] Stopped by user.")
+                    return 0
+    except KeyboardInterrupt:
+        print("[SERIAL] Stopped by user.")
+        return 0
+    except Exception as e:
+        print(f"[SERIAL] Error: {e}")
+        return 4
+
 # Copy with progress
 
 def copy_verbose(src, dst):
@@ -266,6 +455,7 @@ def launch_sims(targets):
 
 # Main
 def main():
+    global DEPLOY_TO_RADIO
     p = argparse.ArgumentParser(description='Deploy & launch')
     p.add_argument('--config', default=CONFIG_PATH)
     p.add_argument('--src')
@@ -288,12 +478,15 @@ def main():
     # select targets
     
     if args.radio:
+        # Make sure the radio storage is available (serial OFF => mass storage ON)
+        print("[ETHOS] Disabling serial debug before copy to protect filesystem…")
+        ethos_serial(config['ethossuite_bin'], 'stop')
+        # Wait for the radio drive to mount and obtain the SCRIPTS path
         try:
-            rd = get_ethos_scripts_dir(config['ethos_bin'], retries=1, delay=5)
+            rd = wait_for_scripts_mount(config['ethossuite_bin'], attempts=10, delay=2)
         except Exception as e:
-            print("[ERROR] Failed to obtain Ethos SCRIPTS path.")
+            print("[ERROR] Failed to obtain Ethos SCRIPTS path after disabling serial.")
             print(f"        Reason: {e}")
-            # Beep in VS Code terminal (if enabled) or Windows
             try:
                 import winsound
                 winsound.MessageBeep()
@@ -324,16 +517,33 @@ def main():
                 for fn in files:
                     if fn.endswith('.lua'):
                         minify_lua_file(os.path.join(dirpath, fn))
-        print("✓ Minification complete.\n")
+        print("✓ Minification complete.")
 
     if args.launch and not args.radio:
         launch_sims(targets)
 
+
+    
+    # If deploying to radio without debug, still re-enable serial
+    if args.radio and not args.radio_debug:
+        ethos_serial(config['ethossuite_bin'], 'start')
+
+    # If deploying to radio WITH debug, (re)enable serial and attach with retries
     if args.radio and args.radio_debug:
-        port=subprocess.check_output([config['ethos_bin'],'--serial','start'],text=True).strip()
-        subprocess.run([sys.executable,'-c',
-            f"import serial; s=serial.Serial('{port}'); print(s.readline().decode())"]
-        )
+        rc, _, _ = ethos_serial(config['ethossuite_bin'], 'start')
+        if rc != 0:
+            print("[ETHOS] First --serial start failed; retrying once…")
+            ethos_serial(config['ethossuite_bin'], 'start')
+
+        v = str(config.get('serial_vid', DEFAULT_SERIAL_VID))
+        p = str(config.get('serial_pid', DEFAULT_SERIAL_PID))
+        b = int(config.get('serial_baud', DEFAULT_SERIAL_BAUD))
+        r = int(config.get('serial_retries', DEFAULT_SERIAL_RETRIES))
+        d = float(config.get('serial_retry_delay', DEFAULT_SERIAL_DELAY))
+        nh = str(config.get('serial_name_hint', "Serial"))
+
+        tail_serial_debug(vid=v, pid=p, baud=b, retries=r, delay=d, name_hint=nh)
+    
 
 if __name__=='__main__':
     rc = main()
