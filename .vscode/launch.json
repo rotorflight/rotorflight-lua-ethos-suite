@@ -10,8 +10,7 @@
       "console": "integratedTerminal",
       "subProcess": false,          // <- prevents auto-attach to child procs
       "justMyCode": true,
-      "stopOnEntry": false,
-      "restart": true     
+      "stopOnEntry": false
     },   
     {
       "name": "Deploy & Choose",
@@ -22,8 +21,7 @@
       "console": "integratedTerminal",
       "subProcess": false,          // <- prevents auto-attach to child procs
       "justMyCode": true,
-      "stopOnEntry": false,
-      "restart": true
+      "stopOnEntry": false
     },   
     {
       "name": "Deploy Radio",
@@ -34,8 +32,7 @@
       "console": "integratedTerminal",
       "subProcess": false,          // <- prevents auto-attach to child procs
       "justMyCode": true,
-      "stopOnEntry": false,
-      "restart": true        
+      "stopOnEntry": false 
     },
     {
       "name": "Deploy Radio + Serial Debug",
@@ -49,8 +46,7 @@
       "console": "integratedTerminal",
       "subProcess": false,
       "justMyCode": true,
-      "stopOnEntry": false,
-      "restart": true  
+      "stopOnEntry": false
     }
   ]
 }
