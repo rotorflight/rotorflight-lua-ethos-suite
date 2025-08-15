@@ -643,49 +643,22 @@ end
 
 function utils.reportMemoryUsage(location)
     if not rfsuite.preferences.developer.memstats then return end
-
-    local TOTAL_LUA_MEMORY_KB = 5120 -- Total Lua memory in KB (5 MB)
-
-    -- Get current memory
-    local memInfo            = system.getMemoryUsage()
-    local currentAvailableKB = math.max(0, memInfo.luaRamAvailable / 1024)
-    local currentUsedKB      = TOTAL_LUA_MEMORY_KB - currentAvailableKB
-
-    -- Clamp usage to max
-    if currentUsedKB > TOTAL_LUA_MEMORY_KB then
-        currentUsedKB = TOTAL_LUA_MEMORY_KB
-    end
-
-    -- Retrieve last used value
-    local lastUsedKB
-    if rfsuite.session.lastMemoryUsage then
-        local lastAvailableKB = rfsuite.session.lastMemoryUsage / 1024
-        lastUsedKB            = TOTAL_LUA_MEMORY_KB - lastAvailableKB
-    end
-
     location = location or "Unknown"
-    local logMessage         = ""
-    local WARN_THRESHOLD_KB  = 950
 
-    -- Delta message
-    if lastUsedKB then
-        local diff = currentUsedKB - lastUsedKB
-        if math.abs(diff) < 0.01 then
-            logMessage = string.format("[%s] Memory usage unchanged (Still using: %.2f KB / %d KB)", location, currentUsedKB, TOTAL_LUA_MEMORY_KB)
-        elseif diff > 0 then
-            logMessage = string.format("[%s] Memory usage increased by %.2f KB (Now using: %.2f KB / %d KB)", location, diff, currentUsedKB, TOTAL_LUA_MEMORY_KB)
-        else
-            logMessage = string.format("[%s] Memory usage decreased by %.2f KB (Now using: %.2f KB / %d KB)", location, -diff, currentUsedKB, TOTAL_LUA_MEMORY_KB)
-        end
-    else
-        logMessage = string.format("[%s] Initial memory usage: %.2f KB / %d KB", location, currentUsedKB, TOTAL_LUA_MEMORY_KB)
-    end
+    local memInfo = system.getMemoryUsage() or {}
+    local mainStackKB     = (memInfo.mainStackAvailable or 0) / 1024
+    local ramKB           = (memInfo.ramAvailable or 0) / 1024
+    local luaRamKB        = (memInfo.luaRamAvailable or 0) / 1024
+    local luaBitmapsRamKB = (memInfo.luaBitmapsRamAvailable or 0) / 1024
 
-    rfsuite.utils.log(logMessage, "info")
-
-    -- Save current for next diff
-    rfsuite.session.lastMemoryUsage = memInfo.luaRamAvailable
+    rfsuite.utils.log(string.format("[%s] Main stack available: %.2f KB", location, mainStackKB), "info")
+    rfsuite.utils.log(string.format("[%s] System RAM available: %.2f KB", location, ramKB), "info")
+    rfsuite.utils.log(string.format("[%s] Lua RAM available: %.2f KB", location, luaRamKB), "info")
+    rfsuite.utils.log(string.format("[%s] Lua Bitmap RAM available: %.2f KB", location, luaBitmapsRamKB), "info")
 end
+
+
+
 
 function utils.onReboot()
     rfsuite.session.resetSensors    = true
