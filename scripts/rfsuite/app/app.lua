@@ -490,7 +490,10 @@ local function requestPage()
     if not apiKey then
       log("API key is missing for index " .. tostring(state.currentIndex), "warning")
       state.currentIndex = state.currentIndex + 1
-      rfsuite.tasks.callback.inSeconds(0.25, processNextAPI)
+      local base = 0.25
+      local backoff = math.min(2.0, base * (2 ^ retryCount))
+      local jitter = math.random() * 0.2
+      rfsuite.tasks.callback.inSeconds(backoff + jitter, processNextAPI)
       return
     end
 
