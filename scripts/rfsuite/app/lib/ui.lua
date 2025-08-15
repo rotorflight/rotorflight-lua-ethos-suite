@@ -180,13 +180,13 @@ end
 
 function ui.disableAllNavigationFields()
     for _, v in pairs(rfsuite.app.formNavigationFields) do
-        if x ~= v then v:enable(false) end
+        v:enable(false)
     end
 end
 
 function ui.enableAllNavigationFields()
     for _, v in pairs(rfsuite.app.formNavigationFields) do
-        if x ~= v then v:enable(true) end
+        v:enable(true)
     end
 end
 
