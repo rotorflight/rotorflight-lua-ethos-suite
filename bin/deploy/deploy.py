@@ -444,6 +444,31 @@ def copy_files(src_override, fileext, targets):
 
             print(f"Done: {t['name']}\n")
 
+
+
+def patch_logger_init(out_root):
+    """
+    Ensure rfsuite/tasks/logger/init.ini has simulatoronly=false after copy.
+    Handles flexible spacing and casing.
+    """
+    target_file = os.path.join(out_root, 'rfsuite', 'tasks', 'logger', 'init.ini')
+    try:
+        if not os.path.exists(target_file):
+            print(f"[PATCH] logger init.ini not found: {target_file}")
+            return
+        with open(target_file, 'r', encoding='utf-8', errors='replace') as f:
+            content = f.read()
+        # Replace simulatoronly = true -> false (allow any spaces/tabs, case-insensitive)
+        new_content, n = re.subn(r'(\\bsimulatoronly\\s*=\\s*)(true|TRUE|True)\\b', r'\\1false', content)
+        if n > 0:
+            with open(target_file, 'w', encoding='utf-8', newline='') as f:
+                f.write(new_content)
+            print(f"[PATCH] Set simulatoronly=false in {target_file} ({n} change{'s' if n!=1 else ''}).")
+        else:
+            print(f"[PATCH] No changes needed for {target_file} (already false or key missing).")
+    except Exception as e:
+        print(f"[PATCH] Failed to edit {target_file}: {e}")
+
 # Launch sims
 def launch_sims(targets):
     for t in targets:
@@ -508,6 +533,12 @@ def main():
         sys.exit(1)
 
     copy_files(args.src, args.fileext, targets)
+
+    # After copying to radio, ensure logger runs on real hardware (not only simulator)
+    if args.radio:
+        for t in targets:
+            out_root = os.path.join(t['dest'], config['tgt_name'])
+            patch_logger_init(out_root)
 
     if args.minify:
         print("→ Minifying Lua files…")
