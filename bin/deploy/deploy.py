@@ -12,6 +12,47 @@ import shlex
 import time
 
 DEPLOY_TO_RADIO = False  # flag to control radio-only behavior
+THROTTLE_EXTS = None  # unused when throttling all copies
+THROTTLE_MIN_BYTES = 0  # unused when throttling all copies
+THROTTLE_CHUNK = 32 * 1024          # 32 KiB
+THROTTLE_PAUSE_EVERY = 512 * 1024  # pause+fsync every 512 KiB written
+THROTTLE_PAUSE_S = 0.1             # 100 ms
+
+
+def throttled_copyfile(src, dst):
+    os.makedirs(os.path.dirname(dst), exist_ok=True)
+    written_since_pause = 0
+    # raw (unbuffered) file handles so we control write cadence precisely
+    with open(src, 'rb', buffering=0) as fsrc, open(dst, 'wb', buffering=0) as fdst:
+        while True:
+            chunk = fsrc.read(THROTTLE_CHUNK)
+            if not chunk:
+                break
+            fdst.write(chunk)
+            written_since_pause += len(chunk)
+            if written_since_pause >= THROTTLE_PAUSE_EVERY:
+                fdst.flush()
+                try:
+                    os.fsync(fdst.fileno())
+                except OSError:
+                    pass
+                time.sleep(THROTTLE_PAUSE_S)
+                written_since_pause = 0
+
+        # final drain
+        fdst.flush()
+        try:
+            os.fsync(fdst.fileno())
+        except OSError:
+            pass
+
+    # Match shutil.copy's behavior of preserving basic permission bits
+    try:
+        shutil.copymode(src, dst)
+    except Exception:
+        pass
+
+
 
 def minify_lua_file(filepath):
     print(f"[MINIFY] (luamin) Processing: {filepath}")
@@ -57,7 +98,7 @@ def get_ethos_scripts_dir(ethossuite_bin, retries=1, delay=5):
     Ask Ethos Suite for the SCRIPTS path. Retries after `delay` seconds
     if the tool returns no path or fails. Raises on final failure.
     """
-    cmd = [ethossuite_bin, "--get-path", "SCRIPTS"]
+    cmd = [ethossuite_bin, "--get-path", "SCRIPTS", "--radio", "auto"]
     last_err = None
 
     for attempt in range(retries + 1):
@@ -184,7 +225,7 @@ def ethos_serial(ethossuite_bin, action, radio=None):
     action: 'start' or 'stop'
     Returns (rc, stdout, stderr) and prints tool output.
     """
-    cmd = [ethossuite_bin, "--serial", action]
+    cmd = [ethossuite_bin, "--serial", action, "--radio", "auto"]
     if radio:
         cmd += ["--radio", radio]
     try:
@@ -359,13 +400,14 @@ def tail_serial_debug(vid=DEFAULT_SERIAL_VID, pid=DEFAULT_SERIAL_PID,
         return 4
 
 # Copy with progress
-
 def copy_verbose(src, dst):
     pbar.update(1)
-    if DEPLOY_TO_RADIO and os.path.getsize(src) > 5 * 1024:
-        flush_fs()
-        time.sleep(0.1)
-    shutil.copy(src, dst)
+    if DEPLOY_TO_RADIO:
+        throttled_copyfile(src, dst)   # paced writes for the radio
+        flush_fs(); 
+        time.sleep(0.05)        
+    else:
+        shutil.copy(src, dst)          # normal fast copy for everything else
 
 
 def count_files(dirpath, ext=None):
@@ -448,13 +490,13 @@ def copy_files(src_override, fileext, targets):
 
 def patch_logger_init(out_root):
     """
-    Ensure rfsuite/tasks/logger/init.ini has simulatoronly=false after copy.
+    Ensure rfsuite/tasks/logger/init.lua has simulatoronly=false after copy.
     Handles flexible spacing and casing.
     """
-    target_file = os.path.join(out_root, 'rfsuite', 'tasks', 'logger', 'init.ini')
+    target_file = os.path.join(out_root, 'tasks', 'logger', 'init.lua')
     try:
         if not os.path.exists(target_file):
-            print(f"[PATCH] logger init.ini not found: {target_file}")
+            print(f"[PATCH] logger init.lua not found: {target_file}")
             return
         with open(target_file, 'r', encoding='utf-8', errors='replace') as f:
             content = f.read()
