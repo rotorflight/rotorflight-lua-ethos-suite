@@ -3,5 +3,4 @@
 *.orig.png
 scripts/rfsuite.zip
 /bin/sound-generator/soundpack/user/*.wav
-bin/deploy/vscode/__pycache__/
-bin/deploy/vscode/__pycache__/*.pyc
+*subprocess_conout.cpython-312.*
