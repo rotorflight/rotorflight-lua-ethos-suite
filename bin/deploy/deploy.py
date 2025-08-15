@@ -166,8 +166,30 @@ def get_ethos_scripts_dir(ethossuite_bin, retries=1, delay=5):
                 raise last_err
 # Permission handler for Windows rm errors
 def on_rm_error(func, path, exc_info):
-    os.chmod(path, stat.S_IWRITE)
-    func(path)
+    """Resilient rm error handler:
+    - ignore if the path vanished
+    - chmod + retry with small backoff for common transient Windows errors
+    """
+    e = exc_info[1]
+    if isinstance(e, FileNotFoundError):
+        return
+    try:
+        os.chmod(path, stat.S_IWRITE)
+    except FileNotFoundError:
+        return
+
+    for i in range(5):
+        try:
+            func(path)
+            return
+        except FileNotFoundError:
+            return
+        except OSError as oe:
+            # 5=Access denied, 32=Sharing violation, 483=Fatal device hw error
+            if getattr(oe, "winerror", 0) in (5, 32, 483):
+                time.sleep(0.2 * (i + 1))
+                continue
+            raise
 
 
 def flush_fs():
@@ -177,6 +199,74 @@ def flush_fs():
             os.sync()
     except Exception as e:
         print(f"[WARN] os.sync failed: {e}")
+
+
+# Throttled, progress-bar deletion to play nice with slow devices
+DELETE_BATCH = 1
+DELETE_PAUSE_S = 0.10  # 100ms
+
+def throttled_rmtree(root, batch=DELETE_BATCH, pause=DELETE_PAUSE_S):
+    if not os.path.exists(root):
+        return
+    # Collect files for a stable progress bar
+    files = []
+    for dp, _, fs in os.walk(root):
+        for f in fs:
+            files.append(os.path.join(dp, f))
+
+    bar = tqdm(total=len(files), desc="Deleting")
+    for i, p in enumerate(files, 1):
+        try:
+            os.chmod(p, stat.S_IWRITE)
+        except Exception:
+            pass
+
+        attempt = 0
+        while True:
+            try:
+                os.unlink(p)
+                break
+            except FileNotFoundError:
+                break
+            except OSError as oe:
+                if getattr(oe, "winerror", 0) in (5, 32, 483) and attempt < 5:
+                    time.sleep(pause * (attempt + 1))
+                    attempt += 1
+                    continue
+                # Give up on odd errors rather than crash the whole deploy
+                # (old file may be locked by AV or indexing; we'll try removing the directory later)
+                break
+
+        bar.update(1)
+        if i % batch == 0:
+            flush_fs()
+            time.sleep(pause)
+
+    bar.close()
+
+    # Remove directories bottom-up; ignore stubborn remnants
+    for dp, dns, _ in sorted(os.walk(root), key=lambda t: t[0], reverse=True):
+        for d in dns:
+            try:
+                os.rmdir(os.path.join(dp, d))
+            except Exception:
+                pass
+    try:
+        os.rmdir(root)
+    except Exception:
+        pass
+    flush_fs()
+    time.sleep(pause)
+
+
+def delete_tree(path):
+    if not os.path.isdir(path):
+        return
+    if DEPLOY_TO_RADIO:
+        throttled_rmtree(path)
+    else:
+        delete_tree(path)
+
 
 def safe_full_copy(srcall, out_dir):
     """Safer full-copy for slow FAT32 targets:
@@ -192,7 +282,7 @@ def safe_full_copy(srcall, out_dir):
         # If a previous backup exists, remove it first
         if os.path.isdir(old_dir):
             print("Deleting previous backup…")
-            shutil.rmtree(old_dir, onerror=on_rm_error)
+            delete_tree(old_dir)
             flush_fs()
             time.sleep(2)
 
@@ -203,14 +293,14 @@ def safe_full_copy(srcall, out_dir):
         except Exception as e:
             print(f"[WARN] Rename failed ({e}). Falling back to direct delete.")
             print("Deleting files…")
-            shutil.rmtree(out_dir, onerror=on_rm_error)
+            delete_tree(out_dir)
         flush_fs()
         time.sleep(2)
 
         # Delete the rotated .old folder
         if os.path.isdir(old_dir):
             print("Deleting files…")
-            shutil.rmtree(old_dir, onerror=on_rm_error)
+            delete_tree(old_dir)
             flush_fs()
             time.sleep(2)
 
