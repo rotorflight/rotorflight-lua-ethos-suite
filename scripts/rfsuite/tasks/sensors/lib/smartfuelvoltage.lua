@@ -25,7 +25,7 @@ local voltageThreshold        = 0.15
 local preStabiliseDelay       = 1.5
 
 local telemetry
-local currentMode = rfsuite.flightmode.current
+local currentMode = rfsuite.flightmode.current or "preflight"
 local lastMode = currentMode
 local lastSensorMode
 
