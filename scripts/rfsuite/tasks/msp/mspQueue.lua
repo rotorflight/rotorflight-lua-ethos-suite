@@ -151,8 +151,8 @@ function MspQueueController:processQueue()
 
     rfsuite.app.triggers.mspBusy = true
 
-    if rfsuite.session.telemetrySensor then
-        local module = model.getModule(rfsuite.session.telemetrySensor:module())
+    if rfsuite.session.telemetrySensor and rfsuite.session.telemetryModule then
+        local module = rfsuite.session.telemetryModule
         if module and module.muteSensorLost then module:muteSensorLost(2.0) end
     end
 

@@ -18,7 +18,7 @@ THROTTLE_EXTS = None  # unused when throttling all copies
 THROTTLE_MIN_BYTES = 0  # unused when throttling all copies
 THROTTLE_CHUNK = 16 * 1024          # 16 KiB
 THROTTLE_PAUSE_EVERY = 64 * 1024  # pause+fsync every 64 KiB written
-THROTTLE_PAUSE_S = 0.1             # 100 ms
+THROTTLE_PAUSE_S = 0.2             # 200 ms
 
 def _kill_previous_tail_if_any():
     try:

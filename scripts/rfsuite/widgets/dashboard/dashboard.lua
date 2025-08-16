@@ -78,6 +78,9 @@ local objectsThreadedWakeupCount = 0
 local lastLoadedBoxCount = 0
 local lastBoxRectsCount = 0
 
+-- Some placeholders used by dashboard loader
+local moduleState
+
 -- Track background loading of remaining flight mode modules
 local statePreloadQueue = {"inflight", "postflight"}
 local statePreloadIndex = 1
@@ -254,43 +257,65 @@ end
 -- disabled RF modules, missing sensors, or invalid telemetry sensors. Returns `nil` if no issues are detected.
 -- @return string|nil Overlay message if an issue is detected, otherwise `nil`.
 function dashboard.computeOverlayMessage()
-    local apiVersionAsString = tostring(rfsuite.session.apiVersion)
-    local state = dashboard.flightmode or "preflight"
-    local moduleState = (model.getModule(0):enable() or model.getModule(1):enable()) or false
-    local sportSensor = system.getSource({appId = 0xF101})
-    local elrsSensor = system.getSource({crsfId = 0x14, subIdStart = 0, subIdEnd = 1})
-    local telemetry = tasks.telemetry
-    
 
+    local state = dashboard.flightmode or "preflight"
+    local telemetry = tasks.telemetry
+    local pad = "      " -- for RF version banner
+
+    -- 1) Theme load error (recent only)
     if dashboard.themeFallbackUsed and dashboard.themeFallbackUsed[state] and
        (os.clock() - (dashboard.themeFallbackTime and dashboard.themeFallbackTime[state] or 0)) < 10 then
         return i18n("widgets.dashboard.theme_load_error")
-    elseif not utils.ethosVersionAtLeast() then
+    end
+
+    -- 2) ETHOS version
+    if not utils.ethosVersionAtLeast() then
         return string.format(
             string.upper(i18n("ethos")) .. " < V%d.%d.%d",
             rfsuite.config.ethosVersion[1],
             rfsuite.config.ethosVersion[2],
             rfsuite.config.ethosVersion[3]
         )
-    elseif not tasks.active() then
+    end
+
+    -- 3) Background task
+    if not tasks.active() then
         return i18n("widgets.dashboard.check_bg_task")
-    elseif moduleState == false then
+    end
+
+    -- 4) RF module on?
+    if rfsuite.session.telemetryModule == false then
         return i18n("widgets.dashboard.check_rf_module_on")
-    elseif not (sportSensor or elrsSensor) then
+    end
+
+    -- 5) Sensors discovered? 
+    if not rfsuite.session.telemetrySensor and rfsuite.session.telemetryState then
         return i18n("widgets.dashboard.check_discovered_sensors")
-    elseif not rfsuite.session.isConnectedHigh and  state ~= "postflight" then
-        return i18n("widgets.dashboard.waiting_for_connection")    
-    elseif rfsuite.session.isConnectedHigh and not rfsuite.session.isConnectedLow and rfsuite.session.rfVersion and  state ~= "postflight" then
-        local pad = "      "
-        return pad .. "RF" .. rfsuite.session.rfVersion .. pad
-    elseif not rfsuite.session.telemetryState and state == "preflight" then
+    end
+
+    -- 6) If we don't have link (preflight), surface that first
+    if state == "preflight" and not rfsuite.session.telemetryState and rfsuite.session.telemetrySensor then
         return i18n("widgets.dashboard.no_link")
-    elseif rfsuite.session.telemetryState and telemetry and not telemetry.validateSensors() then
+    end
+  
+    -- 7) As soon as we know RF version, show it with precedence
+    if rfsuite.session.rfVersion and not rfsuite.session.isConnectedLow and state ~= "postflight" then
+        return pad .. "RF" .. rfsuite.session.rfVersion .. pad
+    end
+
+    -- 8) Link is up but sensors fail validation
+    if rfsuite.session.telemetryState and telemetry and not telemetry.validateSensors() then
         return i18n("widgets.dashboard.validate_sensors")
+    end
+
+    -- 9) LAST: generic waiting message (don’t let it mask actionable errors)
+    if not rfsuite.session.isConnectedHigh and state ~= "postflight" then
+        return i18n("widgets.dashboard.waiting_for_connection")
     end
 
     return nil
 end
+
 
 --- Calculates the width and height of a box based on its properties.
 -- Supports percentage-based, fixed, and grid-span sizing.

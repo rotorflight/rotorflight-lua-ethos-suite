@@ -677,34 +677,56 @@ app._uiTasks = {
     end
 
     if (app.dialogs.nolinkDisplay and not app.triggers.wasConnected) then
-      local apiStr        = tostring(rfsuite.session.apiVersion)
-      local moduleEnabled = model.getModule(0):enable() or model.getModule(1):enable()
-      local sensorSport   = system.getSource({appId=0xF101})
-      local sensorElrs    = system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1})
+      local offline       = app.offlineMode == true
+      local apiStr        = tostring(rfsuite.session.apiVersion or "")
+      local moduleEnabled = rfsuite.session.telemetryModule and rfsuite.session.telemetryModule:enable() or false
       local curRssi       = app.utils.getRSSI()
+
       local invalid, abort = false, false
       local msg = i18n("app.msg_connecting_to_fbl")
+
+      -- 1) ETHOS version (hard stop text, but not "invalid" so progress continues)
       if not utils.ethosVersionAtLeast() then
         msg = string.format("%s < V%d.%d.%d", string.upper(i18n("ethos")), table.unpack(rfsuite.config.ethosVersion))
+
+      -- 2) Background task (invalid + abort)
       elseif not rfsuite.tasks.active() then
         msg, invalid, abort = i18n("app.check_bg_task"), true, true
-      elseif not moduleEnabled and not app.offlineMode then
+
+      -- 3) RF module on? (invalid, unless offline)
+      elseif (not moduleEnabled) and (not offline) then
         msg, invalid = i18n("app.check_rf_module_on"), true
-      elseif not (sensorSport or sensorElrs) and not app.offlineMode then
+
+      -- 4) Sensors discovered? (invalid, unless offline)
+      elseif (not rfsuite.session.telemetrySensor) and (not offline) then
         msg, invalid = i18n("app.check_discovered_sensors"), true
-      elseif curRssi == 0 and not app.offlineMode then
+
+      -- 5) Heli on / link power (RSSI==0) (invalid, unless offline)
+      elseif (curRssi == 0) and (not offline) then
         msg, invalid = i18n("app.check_heli_on"), true
-      elseif not app.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiStr) and not app.offlineMode then
+
+      -- 6) Supported API version notice (message only, not "invalid")
+      elseif (not app.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiStr)) and (not offline) then
         msg = i18n("app.check_supported_version") .. " (" .. apiStr .. ")"
       end
+
       app.triggers.invalidConnectionSetup = invalid
+
+      -- Progress the dialog (bigger steps when invalid so the user gets feedback faster)
       local step = invalid and 5 or 10
       app.dialogs.nolinkValueCounter = app.dialogs.nolinkValueCounter + step
+
       if rfsuite.app.dialogs.noLink then
         rfsuite.app.dialogs.noLink:value(app.dialogs.nolinkValueCounter)
         rfsuite.app.dialogs.noLink:message(msg)
       end
-      if invalid and app.dialogs.nolinkValueCounter == 10 then app.audio.playBufferWarn = true end
+
+      -- One-time audible nudge when we first mark it invalid
+      if invalid and app.dialogs.nolinkValueCounter == 10 then
+        app.audio.playBufferWarn = true
+      end
+
+      -- Finish: hide dialog and optionally abort app if bg tasks missing
       if app.dialogs.nolinkValueCounter >= 100 then
         app.dialogs.nolinkDisplay = false
         app.triggers.wasConnected = true
@@ -712,6 +734,7 @@ app._uiTasks = {
         if abort then app.close() end
       end
     end
+
   end,
 
   -- 5. Trigger Save Dialogs

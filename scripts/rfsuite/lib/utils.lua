@@ -64,6 +64,7 @@ function utils.session()
         telemetryType        = nil,
         telemetryTypeChanged = nil,
         telemetrySensor      = nil,
+        telemetryModule      = nil,
 
         -- Sensors / Repair
         repairSensors       = false,
