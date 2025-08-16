@@ -12,6 +12,10 @@ local tasksLoaded = false
 
 local TASK_TIMEOUT_SECONDS = 10
 
+
+-- Debounce for telemetryTypeChanged -> avoid repeated resets on ELRS/S.Port flaps
+local TYPE_CHANGE_DEBOUNCE = 1.0  -- seconds
+local lastTypeChangeAt = 0
 -- Base path and priority levels
 local BASE_PATH = "tasks/onconnect/tasks/"
 local PRIORITY_LEVELS = {"high", "medium", "low"}
@@ -80,12 +84,20 @@ function tasks.wakeup()
     local telemetryActive = rfsuite.tasks.msp.onConnectChecksInit and rfsuite.session.telemetryState
 
     if rfsuite.session.telemetryTypeChanged then
-        rfsuite.utils.logRotorFlightBanner()
-        --rfsuite.utils.log("Telemetry type changed, resetting tasks.", "info")
-        rfsuite.session.telemetryTypeChanged = false
-        tasks.resetAllTasks()
-        tasksLoaded = false
-        return
+        local now = os.clock()
+        -- debounce: ignore repeated pulses within the window
+        if telemetryActive and (lastTypeChangeAt == 0 or (now - lastTypeChangeAt) >= TYPE_CHANGE_DEBOUNCE) then
+            rfsuite.utils.logRotorFlightBanner()
+            -- rfsuite.utils.log("Telemetry type changed, resetting tasks.", "info")
+            lastTypeChangeAt = now
+            rfsuite.session.telemetryTypeChanged = false
+            tasks.resetAllTasks()
+            tasksLoaded = false
+            return
+        else
+            -- swallow spurious/rapid duplicate pulses
+            rfsuite.session.telemetryTypeChanged = false
+        end
     end
 
     if not telemetryActive then
