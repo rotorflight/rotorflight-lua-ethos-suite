@@ -1,0 +1,29 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "kill deploy",
+      "type": "shell",
+      "problemMatcher": [],
+      "presentation": { "reveal": "silent", "panel": "shared" },
+
+      // default to Unix script (overridden on Windows)
+      "command": "${workspaceFolder}/.vscode/scripts/kill-deploy.sh",
+
+      "osx": {
+        "command": "${workspaceFolder}/.vscode/scripts/kill-deploy.sh"
+      },
+      "linux": {
+        "command": "${workspaceFolder}/.vscode/scripts/kill-deploy.sh"
+      },
+      "windows": {
+        "command": "powershell",
+        "args": [
+          "-NoProfile",
+          "-ExecutionPolicy", "Bypass",
+          "-File", "${workspaceFolder}\\.vscode\\scripts\\kill-deploy.ps1"
+        ]
+      }
+    }
+  ]
+}
