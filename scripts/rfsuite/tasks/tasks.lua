@@ -22,6 +22,16 @@ tasks._initIndex = 1
 local ethosVersionGood = nil
 local telemetryCheckScheduler = os.clock()
 local lastTelemetrySensorName, sportSensor, elrsSensor = nil, nil, nil
+local lastTelemetryModelPath = nil
+-- added: robust model/telemetry change tracking
+local lastModelPath = nil
+local lastTelemetryType = nil
+local telemetryTypeStableSince = 0
+local TELEMETRY_DEBOUNCE = 0.5
+-- internal latches (not exposed as session)
+local _modelChangeLatched = false
+local _telemetryTypeChangeLatched = false
+
 
 local usingSimulator = system.getVersion().simulation
 
@@ -194,12 +204,54 @@ function tasks.telemetryCheckScheduler()
             if not currentTelemetrySensor then
                 utils.session()
             else
+                
                 rfsuite.session.telemetryState = true
                 rfsuite.session.telemetrySensor = currentTelemetrySensor
-                rfsuite.session.telemetryType = sportSensor and "sport" or elrsSensor and "crsf" or nil
-                rfsuite.session.telemetryTypeChanged = currentTelemetrySensor:name() ~= lastTelemetrySensorName
+                rfsuite.session.telemetryModule  = model.getModule(currentTelemetrySensor:module())
+
+                -- clear outward-facing pulses at the start of this pass
+                rfsuite.session.telemetryTypeChanged  = false
+                rfsuite.session.telemetryModelChanged = false
+
+                -- compute current telemetry type
+                local currentType = sportSensor and "sport" or elrsSensor and "crsf" or nil
+                rfsuite.session.telemetryType = currentType
+
+                -- debounced type-change detection -> internal latch
+                local nowClock = os.clock()
+                if currentType ~= lastTelemetryType then
+                    if telemetryTypeStableSince == 0 then
+                        telemetryTypeStableSince = nowClock
+                    elseif (nowClock - telemetryTypeStableSince) >= TELEMETRY_DEBOUNCE then
+                        _telemetryTypeChangeLatched = true
+                        lastTelemetryType = currentType
+                        telemetryTypeStableSince = 0
+                    end
+                else
+                    telemetryTypeStableSince = 0
+                end
+
+                -- emit one-tick pulses from internal latches
+                if _telemetryTypeChangeLatched then
+                    rfsuite.session.telemetryTypeChanged = true
+                    _telemetryTypeChangeLatched = false
+                end
+                if _modelChangeLatched then
+                    rfsuite.session.telemetryModelChanged = true
+                    _modelChangeLatched = false
+                end
+
+                -- keep sensor-name compare as secondary pulse
+                local sensorNameChanged = currentTelemetrySensor:name() ~= lastTelemetrySensorName
+                if sensorNameChanged then
+                    rfsuite.session.telemetryTypeChanged = true
+                end
+
+                -- update "last" markers AFTER logic
                 lastTelemetrySensorName = currentTelemetrySensor:name()
+                lastTelemetryModelPath  = model.path()
                 telemetryCheckScheduler = now
+
             end
         end
     end
@@ -219,7 +271,21 @@ function tasks.wakeup()
     schedulerTick = schedulerTick + 1
     tasks.heartbeat = os.clock()
 
-    if ethosVersionGood == nil then
+    
+    -- model-change tripwire: guarded; not gated by telemetry
+    do
+        local ok, p = pcall(function() return (model and model.path) and model.path() end)
+        if ok then
+            if p and lastModelPath and p ~= lastModelPath then
+                -- latch internally; we'll emit a one-tick pulse during the scheduler pass
+                _modelChangeLatched = true
+                -- force next telemetry pass to treat type as possibly changed
+                lastTelemetryType = nil
+            end
+            lastModelPath = p or lastModelPath
+        end
+    end
+if ethosVersionGood == nil then
         ethosVersionGood = utils.ethosVersionAtLeast()
     end
     if not ethosVersionGood then return end

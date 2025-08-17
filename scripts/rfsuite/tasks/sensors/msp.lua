@@ -146,17 +146,48 @@ local msp_sensors = {
 msp.sensors = msp_sensors
 local sensorCache = {}
 
+-- Optimization caches & state
+local negativeCache = {}      -- appId -> true if system.getSource() returned nil
+local lastValue = {}          -- appId -> last value pushed
+local lastPush = {}           -- appId -> last os.clock() push time
+local lastModule = nil        -- detect telemetry module changes
+local VALUE_EPSILON = 0.0     -- push on any change (use >0 to throttle)
+local FORCE_REFRESH_INTERVAL = 5  -- seconds; heartbeat pushes to avoid TX warnings
+
 local function getCurrentTime()
     return os.time()
 end
 
-local function createOrUpdateSensor(appId, fieldMeta, value)
-    if not sensorCache[appId] then
-        local existingSensor = system.getSource({ category = CATEGORY_TELEMETRY_SENSOR, appId = appId })
+local function clamp(v, minv, maxv)
+    if v == nil then return nil end
+    if v < minv then return minv elseif v > maxv then return maxv else return v end
+end
 
+local function createOrUpdateSensor(appId, fieldMeta, value)
+    -- Detect module changes and invalidate caches so sensors rebind
+    local currentModule = rfsuite.session.telemetrySensor and rfsuite.session.telemetrySensor:module()
+    if lastModule ~= currentModule then
+        sensorCache = {}
+        negativeCache = {}
+        lastValue = {}
+        lastPush = {}
+        lastModule = currentModule
+    end
+
+    -- Skip repeated lookups if we already know there is no source yet
+    if sensorCache[appId] == nil and negativeCache[appId] then
+        -- wait for a future reset to try again
+    end
+
+    if not sensorCache[appId] and not negativeCache[appId] then
+        local existingSensor = system.getSource({ category = CATEGORY_TELEMETRY_SENSOR, appId = appId })
         if existingSensor then
             sensorCache[appId] = existingSensor
         else
+            if not rfsuite.session.telemetrySensor then
+                negativeCache[appId] = true
+                return
+            end
             local sensor = model.createSensor()
             sensor:name(fieldMeta.sensorname)
             sensor:appId(appId)
@@ -172,10 +203,31 @@ local function createOrUpdateSensor(appId, fieldMeta, value)
 
             sensorCache[appId] = sensor
         end
+        if not sensorCache[appId] then negativeCache[appId] = true end
     end
 
-    if sensorCache[appId] then
-        sensorCache[appId]:value(value)
+    local sensor = sensorCache[appId]
+    if not sensor then return end
+
+    -- Clamp and push with heartbeat
+    local minv = fieldMeta.minimum or -1000000000
+    local maxv = fieldMeta.maximum or 1000000000
+    local v = clamp(value, minv, maxv)
+    local last = lastValue[appId]
+    local nowc = os.clock()
+    local stale = (nowc - (lastPush[appId] or 0)) >= FORCE_REFRESH_INTERVAL
+
+    if v == nil then
+        sensor:reset()
+        lastValue[appId] = nil
+        lastPush[appId] = nowc
+        return
+    end
+
+    if last == nil or math.abs(v - last) >= VALUE_EPSILON or stale then
+        sensor:value(v)
+        lastValue[appId] = v
+        lastPush[appId] = nowc
     end
 end
 
@@ -217,7 +269,19 @@ function msp.wakeup()
 
     if rfsuite.session.resetMSPSensors == true  then
         sensorCache = {}
+        negativeCache = {}
+        lastValue = {}
+        lastPush = {}
         rfsuite.session.resetMSPSensors = false  -- Reset immediately
+    end
+
+    -- If telemetry inactive, clear and bail
+    if not (rfsuite.session.telemetryState and rfsuite.session.telemetrySensor) then
+        sensorCache = {}
+        negativeCache = {}
+        lastValue = {}
+        lastPush = {}
+        return
     end
 
     local now = getCurrentTime()
@@ -251,10 +315,11 @@ function msp.wakeup()
             meta.last_update_time = meta.last_update_time or 0
             meta.last_sent_value = meta.last_sent_value or nil
 
-            -- Refresh the telemetry sensor every 5s with cached value
-            if meta.appId and meta.last_sent_value ~= nil and (now - meta.last_update_time) >= 5 then
+            -- Refresh the telemetry sensor periodically with cached value (heartbeat)
+            if meta.appId and meta.last_sent_value ~= nil and (os.clock() - (lastPush[meta.appId] or 0)) >= FORCE_REFRESH_INTERVAL then
                 createOrUpdateSensor(meta.appId, meta, meta.last_sent_value)
                 meta.last_update_time = now
+                lastPush[meta.appId] = os.clock()
             end
         end
 
@@ -268,13 +333,12 @@ function msp.wakeup()
                 for field_key, meta in pairs(fields) do
                     local value = API.readValue(field_key)
                     if value ~= nil then
-                        meta.last_sent_value = value
-                        meta.last_update_time = now
-
                         -- apply transformation if defined
                         if meta.transform and type(meta.transform) == "function" then
                             value = meta.transform(value)
                         end
+                        meta.last_sent_value = value
+                        meta.last_update_time = now
 
                         -- update sensor
                         if meta.sensorname and meta.appId then
@@ -298,6 +362,18 @@ end
 
 function msp.reset()
     sensorCache = {}
+    negativeCache = {}
+    lastValue = {}
+    lastPush = {}
+    lastModule = nil
+    -- Clear per-field caches
+    for _, api_meta in pairs(msp_sensors) do
+        api_meta.last_time = 0
+        for _, meta in pairs(api_meta.fields or {}) do
+            meta.last_update_time = 0
+            meta.last_sent_value = nil
+        end
+    end
 end
 
 return msp

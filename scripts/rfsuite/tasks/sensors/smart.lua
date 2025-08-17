@@ -68,6 +68,15 @@ local lastWake = os.clock()
 local telemetry
 local firstWakeup = true
 
+-- Caches & state tracking
+local sensorCache = {}
+local negativeCache = {}      -- appId -> true when system.getSource() returned nil (avoid re-query thrash)
+local lastValue = {}          -- appId -> last numeric value pushed to TX
+local lastPush = {}           -- appId -> last os.clock() time we pushed any value
+local lastModule = nil        -- detect module changes to rebind DIY sensors
+local VALUE_EPSILON = 0.0     -- push on any change; keep 0 to avoid stale warnings
+local FORCE_REFRESH_INTERVAL = 5  -- seconds; force a heartbeat write this often even if unchanged
+
 local function calculateFuel()
     -- work out what type of sensor we are running and use 
     -- the appropriate calculation method
@@ -87,9 +96,9 @@ function calculateConsumption()
             -- If smartvoltage is enabled, calculate mAh used based on capacity
             if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery and rfsuite.session.modelPreferences.battery.calc_local then
                 if rfsuite.session.modelPreferences.battery.calc_local == 1 then
-                    local capacity = rfsuite.session.batteryConfig.batteryCapacity or 1000 -- Default to 1000mAh if not set
+                    local capacity = (rfsuite.session.batteryConfig and rfsuite.session.batteryConfig.batteryCapacity) or 1000 -- Default to 1000mAh if not set
                     local smartfuelPct = rfsuite.tasks.telemetry.getSensor("smartfuel")
-                    local warningPercentage = rfsuite.session.batteryConfig.consumptionWarningPercentage or 30
+                    local warningPercentage = (rfsuite.session.batteryConfig and rfsuite.session.batteryConfig.consumptionWarningPercentage) or 30
                     if smartfuelPct then
                         local usableCapacity = capacity * (1 - warningPercentage / 100)
                         local usedPercent = 100 - smartfuelPct -- how much has been used
@@ -108,6 +117,12 @@ end
 local function resetFuel()
     smartfuel.reset()
     smartfuelvoltage.reset()
+end
+
+
+local function clamp(v, minv, maxv)
+    if v == nil then return nil end
+    if v < minv then return minv elseif v > maxv then return maxv else return v end
 end
 
 local function resetConsumption()
@@ -135,15 +150,30 @@ local smart_sensors = {
 }
 
 smart.sensors = smart_sensors
-local sensorCache = {}
 
 local function createOrUpdateSensor(appId, fieldMeta, value)
-    if not sensorCache[appId] then
-        local existingSensor = system.getSource({ category = CATEGORY_TELEMETRY_SENSOR, appId = appId })
+    -- If module changed, invalidate cache so sensors rebind correctly
+    local currentModule = rfsuite.session.telemetrySensor and rfsuite.session.telemetrySensor:module()
+    if lastModule ~= currentModule then
+        sensorCache = {}
+        negativeCache = {}
+        lastModule = currentModule
+    end
 
+    -- Negative cache: if we previously saw no source for this appId, skip lookup this tick
+    if sensorCache[appId] == nil and negativeCache[appId] then
+        -- nothing to do this time
+    end
+
+    if not sensorCache[appId] and not negativeCache[appId] then
+        local existingSensor = system.getSource({ category = CATEGORY_TELEMETRY_SENSOR, appId = appId })
         if existingSensor then
             sensorCache[appId] = existingSensor
         else
+            if not rfsuite.session.telemetrySensor then
+                negativeCache[appId] = true
+                return
+            end
             local sensor = model.createSensor({type=SENSOR_TYPE_DIY})
             sensor:name(fieldMeta.name)
             sensor:appId(appId)
@@ -159,12 +189,26 @@ local function createOrUpdateSensor(appId, fieldMeta, value)
 
             sensorCache[appId] = sensor
         end
+        if not sensorCache[appId] then negativeCache[appId] = true end
     end
 
-    if value then
-        sensorCache[appId]:value(value)
+    -- Push or reset value. To avoid TX sensor warnings, we periodically force a write even if unchanged.
+    if value ~= nil then
+        local minv = fieldMeta.minimum or -1000000000
+        local maxv = fieldMeta.maximum or 1000000000
+        local v = clamp(value, minv, maxv)
+        local last = lastValue[appId]
+        local now = os.clock()
+        local stale = (now - (lastPush[appId] or 0)) >= FORCE_REFRESH_INTERVAL
+        if last == nil or math.abs(v - last) >= VALUE_EPSILON or stale then
+            sensorCache[appId]:value(v)
+            lastValue[appId] = v
+            lastPush[appId] = now
+        end
     else
-        sensorCache[appId]:reset()    
+        sensorCache[appId]:reset()
+        lastValue[appId] = nil
+        lastPush[appId] = os.clock()
     end
 end
 
@@ -176,6 +220,14 @@ function smart.wakeup()
         log = rfsuite.utils.log
         tasks = rfsuite.tasks
         firstWakeup = false
+    end
+
+    -- If telemetry is inactive, clear caches & bail
+    if not (rfsuite.session.telemetryState and rfsuite.session.telemetrySensor) then
+        sensorCache = {}
+        negativeCache = {}
+        lastValue = {}
+        return
     end
 
     -- rate-limit: bail out until interval has elapsed
@@ -190,14 +242,17 @@ function smart.wakeup()
             value = meta.value()
         else
             value = meta.value  -- Assume value is already calculated
-        end    
+        end
         createOrUpdateSensor(meta.appId, meta, value)
-
     end
 end
 
 function smart.reset()
     sensorCache = {}
+    negativeCache = {}
+    lastValue = {}
+    lastPush = {}
+    lastModule = nil
 
     resetFuel()
     resetConsumption()

@@ -31,8 +31,8 @@ local voltageThreshold    = 0.15      -- Maximum allowed voltage variation withi
 local preStabiliseDelay   = 1.5       -- Minimum seconds to wait after configuration or telemetry update before checking for stabilisation.
 
 local telemetry                       -- Reference to the telemetry task, used to access sensor data.
-local lastMode = rfsuite.flightmode.current
-local currentMode = rfsuite.flightmode.current
+local lastMode = rfsuite.flightmode.current or "preflight" -- Last flight mode to detect changes.
+local currentMode = rfsuite.flightmode.current or "preflight"
 local lastSensorMode
 
 -- Discharge curve with 0.01V per cell resolution from 3.00V to 4.20V (121 points)

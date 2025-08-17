@@ -2,10 +2,5 @@
 **/.DS_Store
 *.orig.png
 scripts/rfsuite.zip
-bin/deploy/vscode/__pycache__/*.pyc
-bin/deploy/vscode/__pycache__/*.pyo
-/bin/deploy/vscode/__pycache__/*.pyc
-/bin/deploy/vscode/__pycache__/*.pyo
-/bin/deploy/vscode/__pycache__
-bin/deploy/vscode/__pycache__/subprocess_conout.cpython-312.pyc
 /bin/sound-generator/soundpack/user/*.wav
+*subprocess_conout.cpython-312.*

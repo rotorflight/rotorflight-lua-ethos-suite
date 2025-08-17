@@ -22,7 +22,8 @@ jobs:
     - name: Update version and config in main.lua
       run: |
         # Use GIT_VER set in previous step
-        sed -i 's/\(config.version = {[^}]*suffix = \)"[^"]*"/\1"${{ env.GIT_VER }}"/' scripts/rfsuite/main.lua
+        sed -E -i "s/(version[[:space:]]*=[[:space:]]*\{[^}]*suffix[[:space:]]*=[[:space:]]*\")[^\"]*(\")/\1${{ env.GIT_VER }}\2/" scripts/rfsuite/main.lua
+
 
         # Show updated file (for verification)
         grep 'config\.' scripts/rfsuite/main.lua

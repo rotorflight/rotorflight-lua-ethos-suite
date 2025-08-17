@@ -62,7 +62,7 @@ local ONCHANGE_RATE = 0.5        -- seconds between onchange scans
 -- Store the last validated sensors and timestamp
 local lastValidationResult = nil
 local lastValidationTime   = 0
-local VALIDATION_RATE_LIMIT = 2  -- seconds
+local VALIDATION_RATE_LIMIT = 10  -- seconds
 
 local telemetryState = false
 
@@ -905,7 +905,7 @@ end
 function telemetry.validateSensors(returnValid)
     local now = os_clock()
     if (now - lastValidationTime) < VALIDATION_RATE_LIMIT then
-        return lastValidationResult
+        return lastValidationResult or true
     end
     lastValidationTime = now
 

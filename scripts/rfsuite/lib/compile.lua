@@ -4,31 +4,12 @@
  * Copyright (C) Rotorflight Project
  * License: GPLv3 - https://www.gnu.org/licenses/gpl-3.0.en.html
  *
- * Features:
- *   - Deferred & throttled compilation of Lua scripts
- *   - Disk and in-memory LRU caching
- *   - Memory-aware eviction with pinning support
- *
- * Basic Usage:
- *   local compile = require("rfsuite.lib.compile")
- *   local chunk = compile.loadfile("myscript.lua") -- Load & cache script
- *   chunk() -- Executes the script
- *
- *   -- To pin script in memory (won't be evicted automatically):
- *   local chunk = compile.loadfile("myscript.lua", true)
- *
- *   -- To unpin later (allow eviction):
- *   compile.unpin("myscript.lua")
- *
- *   -- Drop-in replacements:
- *   compile.dofile("myscript.lua")
- *   compile.require("modulename")
 ]]
 
 local compile = {}
-local arg = {...}
+local arg     = { ... }
 
-compile._startTime = os.clock()
+compile._startTime    = os.clock()
 compile._startupDelay = 15 -- seconds before starting any compiles
 
 -- Configuration: expects rfsuite.config to be globally available
@@ -39,15 +20,18 @@ if rfsuite and rfsuite.config then
   end
 end
 
-local baseDir     = "./"
-local compiledDir = baseDir .. "cache/"
+local baseDir      = "./"
+local compiledDir  = baseDir .. "cache/"
 local SCRIPT_PREFIX = "SCRIPTS:"
 
 local function ensure_dir(dir)
   if os.mkdir then
     local found = false
     for _, name in ipairs(system.listFiles(baseDir)) do
-      if name == "cache" then found = true; break end
+      if name == "cache" then
+        found = true
+        break
+      end
     end
     if not found then os.mkdir(dir) end
   end
@@ -72,14 +56,14 @@ end
 
 -- Adaptive LRU Cache with Pinning Support
 local LUA_RAM_THRESHOLD = 32 * 1024
-local LRU_HARD_LIMIT = 50
-local EVICT_INTERVAL = 5
+local LRU_HARD_LIMIT    = 50
+local EVICT_INTERVAL    = 5
 
 local function LRUCache()
   local self = {
-    cache = {},
-    order = {},
-    pinned = {},
+    cache       = {},
+    order       = {},
+    pinned      = {},
     _last_evict = 0,
   }
 
@@ -100,13 +84,13 @@ local function LRUCache()
   function self:evict_if_low_memory()
     self._last_evict = os.clock()
     local usage = system.getMemoryUsage and system.getMemoryUsage()
-    local i = 1
+    local i     = 1
     while i <= #self.order do
       local key = self.order[i]
       if not self.pinned[key] and (
-          (usage and usage.luaRamAvailable and usage.luaRamAvailable < LUA_RAM_THRESHOLD) or
-          #self.order > LRU_HARD_LIMIT
-        ) then
+        (usage and usage.luaRamAvailable and usage.luaRamAvailable < LUA_RAM_THRESHOLD) or
+        #self.order > LRU_HARD_LIMIT
+      ) then
         table.remove(self.order, i)
         self.cache[key] = nil
         usage = system.getMemoryUsage and system.getMemoryUsage() or usage
@@ -150,12 +134,16 @@ end
 local lru_cache = LRUCache()
 
 -- Compile Queue System
-compile._queue = {}
+compile._queue      = {}
 compile._queued_map = {}
 
 function compile._enqueue(script, cache_path, cache_fname)
   if not compile._queued_map[cache_fname] then
-    table.insert(compile._queue, {script = script, cache_path = cache_path, cache_fname = cache_fname})
+    table.insert(compile._queue, {
+      script      = script,
+      cache_path  = cache_path,
+      cache_fname = cache_fname
+    })
     compile._queued_map[cache_fname] = true
   end
 end
@@ -163,15 +151,19 @@ end
 function compile.wakeup()
   local now = os.clock()
   if (now - compile._startTime) < compile._startupDelay then return end
+
   if #compile._queue > 0 then
     local entry = table.remove(compile._queue, 1)
     compile._queued_map[entry.cache_fname] = nil
+
     local ok, err = pcall(function()
       system.compile(entry.script)
       os.rename(entry.script .. "c", entry.cache_path)
       disk_cache[entry.cache_fname] = true
     end)
+
     compile._lastCompile = now
+
     if rfsuite and rfsuite.utils and log then
       if ok then
         rfsuite.utils.log("Deferred-compiled (throttled): " .. entry.script, "info")
@@ -182,7 +174,7 @@ function compile.wakeup()
   end
 end
 
--- Enhanced loadfile: supports pin = true or {pin=true}
+-- Enhanced loadfile: supports pin = true or { pin = true }
 function compile.loadfile(script, opts)
   local startTime
   if logTimings then startTime = os.clock() end
@@ -195,7 +187,7 @@ function compile.loadfile(script, opts)
   end
 
   local cache_fname = cachename(script) .. "c"
-  local cache_key = cache_fname
+  local cache_key   = cache_fname
 
   local loader = lru_cache:get(cache_key)
   local which
@@ -205,18 +197,19 @@ function compile.loadfile(script, opts)
   else
     if not rfsuite.preferences.developer.compile then
       loader = loadfile(script)
-      which = "raw"
+      which  = "raw"
     else
       local cache_path = compiledDir .. cache_fname
       if disk_cache[cache_fname] then
         loader = loadfile(cache_path)
-        which = "compiled"
+        which  = "compiled"
       else
         compile._enqueue(script, cache_path, cache_fname)
         loader = loadfile(script)
-        which = "raw (queued for deferred compile)"
+        which  = "raw (queued for deferred compile)"
       end
     end
+
     if loader then
       lru_cache:set(cache_key, loader)
       if opts.pin then
@@ -243,7 +236,7 @@ function compile.require(modname)
   end
 
   local raw_path = modname:gsub("%%.", "/") .. ".lua"
-  local path = cachename(raw_path)
+  local path     = cachename(raw_path)
   local chunk
 
   if not rfsuite.preferences.developer.compile then
@@ -263,7 +256,7 @@ function compile.unpin(script)
   lru_cache:unpin(cache_key)
 end
 
--- list all currently pinned cache keys
+-- List all currently pinned cache keys
 function compile.listPinned()
   local pinnedScripts = {}
   for key in pairs(lru_cache.pinned) do
@@ -273,11 +266,11 @@ function compile.listPinned()
   return pinnedScripts
 end
 
--- force clear all in-memory cache, including pinned
+-- Force clear all in-memory cache, including pinned
 function compile.clearAll()
   local total = #lru_cache.order
-  lru_cache.cache = {}
-  lru_cache.order = {}
+  lru_cache.cache  = {}
+  lru_cache.order  = {}
   lru_cache.pinned = {}
   if rfsuite and rfsuite.utils then
     rfsuite.utils.log("Cleared all cached scripts (" .. total .. " evicted)", "info")

@@ -23,13 +23,19 @@
 --
 local arg = {...}
 local config = arg[1]
-local cacheExpireTime = 10 -- Time in seconds to expire the caches
-local lastCacheFlushTime = os.clock() -- Store the initial time
+-- local cacheExpireTime = 10 -- Time in seconds to expire the caches (disabled)
+-- local lastCacheFlushTime = os.clock() -- Store the initial time (disabled)
+-- (Periodic cache flush disabled; using event-driven clears)
 
 local frsky_legacy = {}
 
 -- used by sensors.lua to know if module has changed
 frsky_legacy.name = "frsky_legacy"
+
+-- Bounded drain controls (tune as needed)
+local MAX_FRAMES_PER_WAKEUP = 32
+local MAX_TIME_BUDGET      = 0.004
+
 
 --[[
 createSensorList: A table mapping sensor IDs to their respective sensor details.
@@ -111,6 +117,11 @@ frsky_legacy.createSensorCache = {}
 frsky_legacy.dropSensorCache = {}
 frsky_legacy.renameSensorCache = {}
 
+-- Track once-only ops to avoid repeated work
+frsky_legacy.renamed = {}
+frsky_legacy.dropped = {}
+
+
 --[[
     createSensor - Creates a custom sensor if it does not already exist in the cache.
 
@@ -178,11 +189,17 @@ local function dropSensor(physId, primId, appId, frameValue)
     if dropSensorList[appId] ~= nil then
         local v = dropSensorList[appId]
 
+        -- Negative cache and once-only drop
         if frsky_legacy.dropSensorCache[appId] == nil then
-            frsky_legacy.dropSensorCache[appId] = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
-
-            if frsky_legacy.dropSensorCache[appId] ~= nil then frsky_legacy.dropSensorCache[appId]:drop() end
-
+            local src = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
+            frsky_legacy.dropSensorCache[appId] = src or false
+        end
+        local src = frsky_legacy.dropSensorCache[appId]
+        if src and src ~= false then
+            if not frsky_legacy.dropped[appId] then
+                src:drop()
+                frsky_legacy.dropped[appId] = true
+            end
         end
 
     end
@@ -208,11 +225,20 @@ local function renameSensor(physId, primId, appId, frameValue)
     if renameSensorList[appId] ~= nil then
         local v = renameSensorList[appId]
 
+        -- Skip if already renamed
+        if frsky_legacy.renamed[appId] then return end
+
+        -- Negative cache for missing sources
         if frsky_legacy.renameSensorCache[appId] == nil then
-            frsky_legacy.renameSensorCache[appId] = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
-
-            if frsky_legacy.renameSensorCache[appId] ~= nil then if frsky_legacy.renameSensorCache[appId]:name() == v.onlyifname then frsky_legacy.renameSensorCache[appId]:name(v.name) end end
-
+            local src = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
+            frsky_legacy.renameSensorCache[appId] = src or false
+        end
+        local src = frsky_legacy.renameSensorCache[appId]
+        if src and src ~= false then
+            if src:name() == v.onlyifname then
+                src:name(v.name)
+                frsky_legacy.renamed[appId] = true
+            end
         end
 
     end
@@ -259,24 +285,33 @@ function frsky_legacy.wakeup()
         frsky_legacy.dropSensorCache = {} -- We don't use this in this script, but keep it here in case the legacy script is used
     end
 
-    -- Check if it's time to expire the caches
-    if os.clock() - lastCacheFlushTime >= cacheExpireTime then
-        clearCaches()
-        lastCacheFlushTime = os.clock() -- Reset the timer
-    end
+    -- Periodic cache expiry removed (was causing bursts). Use event-driven clears only.
 
-    -- Flush sensor list if we kill the sensors
+    -- Flush sensor list if telemetry is inactive
     if not rfsuite.session.telemetryState or not rfsuite.session.telemetrySensor then clearCaches() end
 
-    -- If GUI or queue is busy.. do not do this!
-    if rfsuite.tasks and rfsuite.tasks.telemetry and rfsuite.session.telemetryState and rfsuite.session.telemetrySensor then if rfsuite.app.guiIsRunning == false and rfsuite.tasks.msp.mspQueue:isProcessed() then while telemetryPop() do end end end
+    -- If GUI idle and MSP queue processed, drain with a budget
+    if rfsuite.tasks and rfsuite.tasks.telemetry and rfsuite.session.telemetryState and rfsuite.session.telemetrySensor then
+        if rfsuite.app.guiIsRunning == false and rfsuite.tasks.msp.mspQueue:isProcessed() then
+            local start = os.clock()
+            local count = 0
+            while count < MAX_FRAMES_PER_WAKEUP do
+                if (os.clock() - start) > MAX_TIME_BUDGET then break end
+                local ok = telemetryPop()
+                if not ok then break end
+                count = count + 1
+            end
+        end
+    end
 
 end
 
 function frsky_legacy.reset()
     frsky_legacy.createSensorCache = {}
     frsky_legacy.renameSensorCache = {}
-    frsky_legacy.dropSensorCache = {} 
+    frsky_legacy.dropSensorCache = {}
+    frsky_legacy.renamed = {}
+    frsky_legacy.dropped = {}
 end
 
 return frsky_legacy

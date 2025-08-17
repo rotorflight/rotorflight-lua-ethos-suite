@@ -59,7 +59,7 @@ elrs.telemetryFrameSkip  = 0
 elrs.telemetryFrameCount = 0
 
 -- refresh stale sensors older than this many milliseconds
-local REFRESH_INTERVAL_MS = 500 -- 0.5s
+local REFRESH_INTERVAL_MS = 5000 -- 5s
 
 ---------------------------------------------------------------------
 -- Utilities
@@ -373,7 +373,7 @@ end
 ---------------------------------------------------------------------
 function elrs.crossfirePop()
     if (CRSF_PAUSE_TELEMETRY == true or rfsuite.app.triggers.mspBusy == true or not telemetryActive()) then
-        local module = model.getModule(rfsuite.session.telemetrySensor and rfsuite.session.telemetrySensor:module())
+        local module = rfsuite.session.telemetryModule
         if module ~= nil and module.muteSensorLost ~= nil then module:muteSensorLost(5.0) end
         if not telemetryActive() then resetSensors() end
         return false

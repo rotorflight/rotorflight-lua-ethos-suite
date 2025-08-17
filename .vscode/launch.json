@@ -9,7 +9,9 @@
       "args": ["--launch"],
       "console": "integratedTerminal",
       "subProcess": false,          // <- prevents auto-attach to child procs
-      "justMyCode": true     
+      "justMyCode": true,
+      "stopOnEntry": false,
+      "preLaunchTask": "kill deploy"
     },   
     {
       "name": "Deploy & Choose",
@@ -19,7 +21,9 @@
       "args": ["--choose", "--launch"],
       "console": "integratedTerminal",
       "subProcess": false,          // <- prevents auto-attach to child procs
-      "justMyCode": true     
+      "justMyCode": true,
+      "stopOnEntry": false,
+      "preLaunchTask": "kill deploy"
     },   
     {
       "name": "Deploy Radio",
@@ -29,7 +33,24 @@
       "args": ["--radio"],
       "console": "integratedTerminal",
       "subProcess": false,          // <- prevents auto-attach to child procs
-      "justMyCode": true      
+      "justMyCode": true,
+      "stopOnEntry": false,
+      "preLaunchTask": "kill deploy"
+    },
+    {
+      "name": "Deploy Radio + Serial Debug",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/bin/deploy/deploy.py",
+      "args": [
+        "--radio",
+        "--radio-debug"
+      ],
+      "console": "integratedTerminal",
+      "subProcess": false,
+      "justMyCode": true,
+      "stopOnEntry": false,
+      "preLaunchTask": "kill deploy"
     }
   ]
 }
