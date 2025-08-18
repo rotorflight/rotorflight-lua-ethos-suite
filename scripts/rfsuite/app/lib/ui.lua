@@ -32,7 +32,7 @@ function ui.progressDisplay(title, message)
     message = message or i18n("app.msg_loading_from_fbl")
 
     rfsuite.app.dialogs.progressDisplay   = true
-    rfsuite.app.dialogs.progressWatchDog  = rfsuite.clock
+    rfsuite.app.dialogs.progressWatchDog  = os.clock()
     rfsuite.app.dialogs.progress = form.openProgressDialog({
         title   = title,
         message = message,
@@ -54,13 +54,14 @@ function ui.progressDisplay(title, message)
                 end
             end
 
-            -- Timeout
+            -- Timeout (hard timeout)
             if app.dialogs.progressWatchDog
-               and (os.clock() - app.dialogs.progressWatchDog) > tonumber(rfsuite.tasks.msp.protocol.pageReqTimeout) then
-
+               and (os.clock() - app.dialogs.progressWatchDog) > tonumber(rfsuite.tasks.msp.protocol.pageReqTimeout) 
+               and app.dialogs.progressDisplay == true then
                 app.audio.playTimeout = true
-                app.ui.progressDisplayMessage(i18n("app.error_timed_out"))
+                app.dialogs.progress:message(i18n("app.error_timed_out"))
                 app.dialogs.progress:closeAllowed(true)
+                app.dialogs.progress:value(100)
                 app.Page   = app.PageTmp
                 app.PageTmp = nil
                 app.dialogs.progressCounter = 0
@@ -87,7 +88,7 @@ function ui.progressDisplaySave(message)
     local app = rfsuite.app
 
     rfsuite.app.dialogs.saveDisplay  = true
-    rfsuite.app.dialogs.saveWatchDog = rfsuite.clock
+    rfsuite.app.dialogs.saveWatchDog = os.clock()
 
     local msg = ({
         [app.pageStatus.saving]      = "app.msg_saving_settings",
@@ -133,7 +134,8 @@ function ui.progressDisplaySave(message)
 
             local timeout = tonumber(rfsuite.tasks.msp.protocol.saveTimeout + 5)
             if (app.dialogs.saveWatchDog and (os.clock() - app.dialogs.saveWatchDog) > timeout)
-               or (app.dialogs.saveProgressCounter > 120 and rfsuite.tasks.msp.mspQueue:isProcessed()) then
+               or (app.dialogs.saveProgressCounter > 120 and rfsuite.tasks.msp.mspQueue:isProcessed()) 
+               and app.dialogs.saveDisplay == true then
 
                 app.audio.playTimeout = true
                 app.dialogs.save:message(i18n("app.error_timed_out"))
