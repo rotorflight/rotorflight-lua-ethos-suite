@@ -196,9 +196,16 @@ function tasks.telemetryCheckScheduler()
 
         if not telemetryState then
             utils.session()
+            sportSensor = nil
+            elrsSensor = nil
         else
-            sportSensor = system.getSource({ appId = 0xF101 })
-            elrsSensor = system.getSource({ crsfId = 0x14, subIdStart = 0, subIdEnd = 1 })
+            if not sportSensor then
+                sportSensor = system.getSource({ appId = 0xF101 })
+            end
+            if not elrsSensor then
+                elrsSensor = system.getSource({ crsfId = 0x14, subIdStart = 0, subIdEnd = 1 })
+            end
+
             currentTelemetrySensor = sportSensor or elrsSensor
 
             if not currentTelemetrySensor then
@@ -207,8 +214,10 @@ function tasks.telemetryCheckScheduler()
                 
                 rfsuite.session.telemetryState = true
                 rfsuite.session.telemetrySensor = currentTelemetrySensor
-                rfsuite.session.telemetryModule  = model.getModule(currentTelemetrySensor:module())
-
+                if not rfsuite.session.telemetryModule then
+                    rfsuite.session.telemetryModule  = model.getModule(currentTelemetrySensor:module())
+                end
+                
                 -- clear outward-facing pulses at the start of this pass
                 rfsuite.session.telemetryTypeChanged  = false
                 rfsuite.session.telemetryModelChanged = false
@@ -242,13 +251,14 @@ function tasks.telemetryCheckScheduler()
                 end
 
                 -- keep sensor-name compare as secondary pulse
-                local sensorNameChanged = currentTelemetrySensor:name() ~= lastTelemetrySensorName
+                local currentTelemetrySensorName = currentTelemetrySensor:name()
+                local sensorNameChanged = currentTelemetrySensorName ~= lastTelemetrySensorName
                 if sensorNameChanged then
                     rfsuite.session.telemetryTypeChanged = true
                 end
 
                 -- update "last" markers AFTER logic
-                lastTelemetrySensorName = currentTelemetrySensor:name()
+                lastTelemetrySensorName = currentTelemetrySensorName
                 lastTelemetryModelPath  = model.path()
                 telemetryCheckScheduler = now
 
