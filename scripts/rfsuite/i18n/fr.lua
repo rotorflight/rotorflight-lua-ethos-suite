@@ -111,7 +111,7 @@ return {
       ["current_gain"] = "Valeur de gain pour le capteur de courant",
       ["tbl_extgov"] = "Regulateur Externe",
       ["buzzer_volume"] = "Volume du buzzer",
-      ["gov_d"] = "Valeur derivee pour le regulateur",
+      ["drive_freq"] = "PWM drive frequency",
       ["tbl_enabled"] = "Active",
       ["gov_p"] = "Valeur proportionnelle pour le regulateur"
     },
@@ -622,7 +622,7 @@ return {
             ["motor_erpm_max"] = "ERPM max moteur",
             ["name"] = "FLYROTOR",
             ["low_voltage_protection"] = "Protection basse tension",
-            ["gov_d"] = "Gov-D",
+            ["drive_freq"] = "Drive frequency",
             ["telemetry_protocol"] = "Protocole de telemetrie",
             ["motor_direction"] = "Sens moteur",
             ["throttle_protocol"] = "Protocole des gaz",

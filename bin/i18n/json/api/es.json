@@ -346,9 +346,9 @@
       "translation": "Volumen del Buzzer",
       "needs_translation": "false"
     },
-    "gov_d": {
-      "english": "Derivative value for the governor",
-      "translation": "Valor de derivada para el governor",
+    "drive_freq": {
+      "english": "PWM drive frequency",
+      "translation": "PWM drive frequency",
       "needs_translation": "false"
     },
     "tbl_enabled": {

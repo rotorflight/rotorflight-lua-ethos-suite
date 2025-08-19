@@ -972,9 +972,9 @@
             "translation": "Protection basse tension",
             "needs_translation": "false"
           },
-          "gov_d": {
-            "english": "Gov-D",
-            "translation": "Gov-D",
+          "drive_freq": {
+            "english": "Drive frequency",
+            "translation": "Drive frequency",
             "needs_translation": "false"
           },
           "telemetry_protocol": {

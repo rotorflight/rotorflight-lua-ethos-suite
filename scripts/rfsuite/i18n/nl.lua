@@ -111,7 +111,7 @@ return {
       ["current_gain"] = "Gain waarde voor stroomsensor",
       ["tbl_extgov"] = "Externe Governor",
       ["buzzer_volume"] = "Buzzer volume",
-      ["gov_d"] = "Derivative gain voor de governor",
+      ["drive_freq"] = "PWM drive frequency",
       ["tbl_enabled"] = "Aan",
       ["gov_p"] = "Proportional gain voor de governor"
     },
@@ -622,7 +622,7 @@ return {
             ["motor_erpm_max"] = "Motor ERPM max",
             ["name"] = "FLYROTOR",
             ["low_voltage_protection"] = "Lage spanning beveil.",
-            ["gov_d"] = "Gov-D",
+            ["drive_freq"] = "Drive frequency",
             ["telemetry_protocol"] = "Telemetry protocol",
             ["motor_direction"] = "Motor draairichting",
             ["throttle_protocol"] = "Throttle protocol",

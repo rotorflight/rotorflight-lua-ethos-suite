@@ -346,9 +346,9 @@
       "translation": "Summerlautstaerke",
       "needs_translation": "false"
     },
-    "gov_d": {
-      "english": "Derivative value for the governor",
-      "translation": "Differenzialwert fuer den Governor",
+    "drive_freq": {
+      "english": "PWM drive frequency",
+      "translation": "PWM drive frequency",
       "needs_translation": "false"
     },
     "tbl_enabled": {

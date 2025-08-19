@@ -19,7 +19,7 @@ local apidata = {
             { t = i18n("app.modules.esc_tools.mfg.flrtr.gov"),             mspapi = 1, apikey = "governor",        type = 1 },
             { t = i18n("app.modules.esc_tools.mfg.flrtr.gov_p"),           mspapi = 1, apikey = "gov_p"                     },
             { t = i18n("app.modules.esc_tools.mfg.flrtr.gov_i"),           mspapi = 1, apikey = "gov_i"                     },
-            { t = i18n("app.modules.esc_tools.mfg.flrtr.gov_d"),           mspapi = 1, apikey = "gov_d"                     },
+            { t = i18n("app.modules.esc_tools.mfg.flrtr.drive_freq"),      mspapi = 1, apikey = "drive_freq"                },
             { t = i18n("app.modules.esc_tools.mfg.flrtr.motor_erpm_max"),  mspapi = 1, apikey = "motor_erpm_max"            }
         }
     }                 

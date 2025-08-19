@@ -85,7 +85,7 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "soft_start",              type = "U8",  apiVersion = 12.07, simResponse = {15},          min = 5, max = 55},
     {field = "gov_p",                   type = "U16", apiVersion = 12.07, simResponse = {0, 45},       min = 0, max = 100, default = 45, byteorder = "big"},
     {field = "gov_i",                   type = "U16", apiVersion = 12.07, simResponse = {0, 35},       min = 0, max = 100, default = 35,  byteorder = "big"},
-    {field = "gov_d",                   type = "U16", apiVersion = 12.07, simResponse = {0, 0},        min = 0, max = 100, default = 0,  byteorder = "big"},
+    {field = "drive_freq",              type = "U16", apiVersion = 12.07, simResponse = {0, 24000},    min = 20000, max = 32000, default = 24000, step = 1000, unit = "Hz",byteorder = "big"},
     {field = "motor_erpm_max",          type = "U24", apiVersion = 12.07, simResponse = {2, 23, 40},   min = 0, max = 1000000, step = 100, byteorder = "big"},
     {field = "throttle_protocol",       type = "U8",  apiVersion = 12.08, simResponse = {0},           min = 0, max = 1, table = {"PWM", "RESERVE"}, tableIdxInc = -1},
     {field = "telemetry_protocol",      type = "U8",  apiVersion = 12.08, simResponse = {0},           min = 0, max = 0, table = {"FLYROTOR"}, tableIdxInc = -1},

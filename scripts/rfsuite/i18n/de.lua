@@ -111,7 +111,7 @@ return {
       ["current_gain"] = "Verstaerkungswert fuer den Stromsensor",
       ["tbl_extgov"] = "Externer Governor",
       ["buzzer_volume"] = "Summerlautstaerke",
-      ["gov_d"] = "Differenzialwert fuer den Governor",
+      ["drive_freq"] = "PWM drive frequency",
       ["tbl_enabled"] = "Aktiviert",
       ["gov_p"] = "Proportionalwert fuer den Governor"
     },
@@ -622,7 +622,7 @@ return {
             ["motor_erpm_max"] = "Max. Motor-ERPM",
             ["name"] = "FLYROTOR",
             ["low_voltage_protection"] = "Unterspannungsschutz",
-            ["gov_d"] = "Gov-D",
+            ["drive_freq"] = "Drive frequency",
             ["telemetry_protocol"] = "Telemetrieprotokoll",
             ["motor_direction"] = "Motordrehrichtung",
             ["throttle_protocol"] = "Gasprotokoll",

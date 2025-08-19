@@ -111,7 +111,7 @@ return {
       ["current_gain"] = "Valor de ganancia para el sensor actual",
       ["tbl_extgov"] = "Governor Externo",
       ["buzzer_volume"] = "Volumen del Buzzer",
-      ["gov_d"] = "Valor de derivada para el governor",
+      ["drive_freq"] = "PWM drive frequency",
       ["tbl_enabled"] = "Habilitado",
       ["gov_p"] = "Valor proporcional para el governor"
     },
@@ -622,7 +622,7 @@ return {
             ["motor_erpm_max"] = "Max ERPM Motor",
             ["name"] = "FLYROTOR",
             ["low_voltage_protection"] = "Proteccion bajo voltaje",
-            ["gov_d"] = "Gov-D",
+            ["drive_freq"] = "Drive frequency",
             ["telemetry_protocol"] = "Protocolo de telemetria",
             ["motor_direction"] = "Direccion del Motor",
             ["throttle_protocol"] = "Protocolo de acelerador",
