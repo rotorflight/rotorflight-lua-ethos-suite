@@ -32,7 +32,7 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "motor_pwm_protocol",       type = "U8",  apiVersion = 12.06, simResponse = {0}, table = pwmProtocol, tableIdxInc = -1},
     {field = "motor_pwm_rate",           type = "U16", apiVersion = 12.06, simResponse = {250, 0}, min=50, max = 8000, default = 250, unit="Hz"},
     {field = "use_unsynced_pwm",         type = "U8",  apiVersion = 12.06, simResponse = {1}},
-    {field = "motor_pole_count_0",       type = "U8",  apiVersion = 12.06, simResponse = {6}, min = 2, max = 256, step = 2, default = 8},
+    {field = "motor_pole_count_0",       type = "U8",  apiVersion = 12.06, simResponse = {6}, min = 2, max = 256, step = 2, default = 10},
     {field = "motor_pole_count_1",       type = "U8",  apiVersion = 12.06, simResponse = {4}},
     {field = "motor_pole_count_2",       type = "U8",  apiVersion = 12.06, simResponse = {2}},
     {field = "motor_pole_count_3",       type = "U8",  apiVersion = 12.06, simResponse = {1}},
