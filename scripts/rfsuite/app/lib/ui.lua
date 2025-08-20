@@ -44,13 +44,22 @@ function ui.progressDisplay(title, message)
 
             if not app.triggers.closeProgressLoader then
                 app.dialogs.progressCounter = app.dialogs.progressCounter + 2
-            elseif app.triggers.closeProgressLoader and rfsuite.tasks.msp.mspQueue:isProcessed() then
+            elseif app.triggers.closeProgressLoader and rfsuite.tasks.msp.mspQueue:isProcessed() then   -- this is the one we normally catch
                 app.dialogs.progressCounter = app.dialogs.progressCounter + 15
                 if app.dialogs.progressCounter >= 100 then
                     app.dialogs.progress:close()
                     app.dialogs.progressDisplay = false
                     app.dialogs.progressCounter = 0
                     app.triggers.closeProgressLoader = false
+                end
+            elseif app.triggers.closeProgressLoader and  app.triggers.closeProgressLoaderNoisProcessed then   -- an oddball for things where we dont want to check against isProcessed
+                app.dialogs.progressCounter = app.dialogs.progressCounter + 15
+                if app.dialogs.progressCounter >= 100 then
+                    app.dialogs.progress:close()
+                    app.dialogs.progressDisplay = false
+                    app.dialogs.progressCounter = 0
+                    app.triggers.closeProgressLoader = false
+                    app.triggers.closeProgressLoaderNoisProcessed= false
                 end
             end
 

@@ -116,6 +116,7 @@ local function openPage(pidx, title, script)
     end
 
     rfsuite.app.triggers.closeProgressLoader = true
+    rfsuite.app.triggers.closeProgressLoaderNoisProcessed = true
 
     enableWakeup = true
     collectgarbage()
@@ -169,6 +170,7 @@ local function wakeup()
             rfsuite.app.formFields[pidx]:enable(true)
             if rfsuite.preferences.menulastselected["sbuschannel"] == rfsuite.currentSbusServoIndex then rfsuite.app.formFields[rfsuite.currentSbusServoIndex]:focus() end
         end
+        -- close the progressDisplay
     end
 
 end

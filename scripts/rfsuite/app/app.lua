@@ -73,6 +73,7 @@ triggers.closeSaveFake         = false
 triggers.badMspVersion         = false
 triggers.badMspVersionDisplay  = false
 triggers.closeProgressLoader   = false
+triggers.closeProgressLoaderNoisProcessed = false
 triggers.mspBusy               = false
 triggers.disableRssiTimeout    = false
 triggers.timeIsSet             = false
