@@ -283,32 +283,27 @@ function dashboard.computeOverlayMessage()
         return i18n("widgets.dashboard.check_bg_task")
     end
 
-    -- 4) RF module on?
-    if rfsuite.session.telemetryModule == false then
-        return i18n("widgets.dashboard.check_rf_module_on")
-    end
-
-    -- 5) Sensors discovered? 
+    -- 4) Sensors discovered? 
     if not rfsuite.session.telemetrySensor and rfsuite.session.telemetryState then
         return i18n("widgets.dashboard.check_discovered_sensors")
     end
 
-    -- 6) If we don't have link (preflight), surface that first
+    -- 5) If we don't have link (preflight), surface that first
     if state == "preflight" and not rfsuite.session.telemetryState and rfsuite.session.telemetrySensor then
         return i18n("widgets.dashboard.no_link")
     end
   
-    -- 7) As soon as we know RF version, show it with precedence
+    -- 6) As soon as we know RF version, show it with precedence
     if rfsuite.session.rfVersion and not rfsuite.session.isConnectedLow and state ~= "postflight" then
         return pad .. "RF" .. rfsuite.session.rfVersion .. pad
     end
 
-    -- 8) Link is up but sensors fail validation
+    -- 7) Link is up but sensors fail validation
     if rfsuite.session.telemetryState and telemetry and not telemetry.validateSensors() then
         return i18n("widgets.dashboard.validate_sensors")
     end
 
-    -- 9) LAST: generic waiting message (don’t let it mask actionable errors)
+    -- 8) LAST: generic waiting message (don’t let it mask actionable errors)
     if not rfsuite.session.isConnectedHigh and state ~= "postflight" then
         return i18n("widgets.dashboard.waiting_for_connection")
     end

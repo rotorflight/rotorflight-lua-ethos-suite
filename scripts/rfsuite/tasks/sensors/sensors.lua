@@ -94,8 +94,6 @@ function sensors.wakeup()
             log("Delay complete; resuming sensor wakeup","info")
             delayPending = false
         else
-            local module = rfsuite.session.telemetryModule
-            if module ~= nil and module.muteSensorLost ~= nil then module:muteSensorLost(5.0) end
             return  -- Still waiting; do nothing
         end
     end
