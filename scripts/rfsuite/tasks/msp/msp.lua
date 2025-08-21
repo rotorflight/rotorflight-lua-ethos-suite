@@ -71,13 +71,10 @@ function msp.wakeup()
         msp.sensor:module(rfsuite.session.telemetrySensor:module())
     end
     
-    if not msp.sensorTlm and rfsuite.session.telemetrySensor then
-        msp.sensorTlm = sport.getSensor({primId = 0x32})
-        local moduleId = rfsuite.session.telemetrySensor:module()
-        msp.sensorTlm:module(moduleId)
-        rfsuite.session.telemetryModule = model.getModule(moduleId)
+    if not msp.sensorTlm then
+        msp.sensorTlm = sport.getSensor()
+        msp.sensorTlm:module(rfsuite.session.telemetrySensor:module())
     end
-
 
     if rfsuite.session.resetMSP and not delayPending then
         delayStartTime = os.clock()
