@@ -281,12 +281,12 @@
   },
   "tx_batt": {
     "english": "TX Battery",
-    "translation": "TX Battery",
-    "needs_translation": "true"
+    "translation": "Batería TX",
+    "needs_translation": "false"
   },
   "link_max": {
     "english": "Link Max",
-    "translation": "Link Max",
-    "needs_translation": "true"
+    "translation": "Max Enlace",
+    "needs_translation": "false"
   }
 }

@@ -979,38 +979,38 @@
   "BATTERY_INI": {
     "calcfuel_local": {
       "english": "Calculate Fuel Using",
-      "translation": "Calculate Fuel Using",
-      "needs_translation": "true"
+      "translation": "Calcular uso de Combustible",
+      "needs_translation": "false"
     },
     "tbl_off": {
       "english": "Current Sensor",
-      "translation": "Current Sensor",
-      "needs_translation": "true"
+      "translation": "Sensor de Corriente",
+      "needs_translation": "false"
     },
     "tbl_on": {
       "english": "Voltage Sensor",
-      "translation": "Voltage Sensor",
-      "needs_translation": "true"
+      "translation": "Sensor de Voltaje",
+      "needs_translation": "false"
     },
     "sag_multiplier": {
       "english": "Raise or lower to adjust for the amount of voltage sag you see in flight.",
-      "translation": "Raise or lower to adjust for the amount of voltage sag you see in flight.",
-      "needs_translation": "true"
+      "translation": "Elevar o disminuir en función de la caída de voltaje en vuelo.",
+      "needs_translation": "false"
     },
     "alert_off": {
       "english": "Off",
-      "translation": "Off",
-      "needs_translation": "true"
+      "translation": "Apagado",
+      "needs_translation": "false"
     },
     "alert_bec": {
       "english": "BEC",
       "translation": "BEC",
-      "needs_translation": "true"
+      "needs_translation": "false"
     },
     "alert_rxbatt": {
       "english": "RxBatt",
-      "translation": "Rx Batt",
-      "needs_translation": "true"
+      "translation": "Bat. Rx",
+      "needs_translation": "false"
     }
   },
   "BATTERY_CONFIG": {
