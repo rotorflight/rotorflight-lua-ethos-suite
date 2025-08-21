@@ -238,6 +238,11 @@
         "translation": "Taille de file d'attente MSP Journal",
         "needs_translation": "false"
       },
+      "txt_taskprofiler": {
+        "english": "Log tasks speed",
+        "translation": "Log tasks speed",
+        "needs_translation": "true"
+      },
       "txt_memusage": {
         "english": "Log memory usage",
         "translation": "Journaliser utilisation memoire",

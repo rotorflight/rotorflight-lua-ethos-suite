@@ -464,6 +464,7 @@ return {
         ["txt_debug"] = "DEBUG",
         ["txt_mspdata"] = "Journaliser donnees MSP",
         ["txt_queuesize"] = "Taille de file d'attente MSP Journal",
+        ["txt_taskprofiler"] = "Log tasks speed",
         ["txt_memusage"] = "Journaliser utilisation memoire",
         ["txt_batttype"] = "Tx Battery Options",
         ["txt_battdef"] = "Default",

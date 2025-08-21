@@ -238,6 +238,11 @@
         "translation": "Log MSP wachtlijst grootte",
         "needs_translation": "false"
       },
+      "txt_taskprofiler": {
+        "english": "Log tasks speed",
+        "translation": "Log taak snelheid",
+        "needs_translation": "false"
+      },
       "txt_memusage": {
         "english": "Log memory usage",
         "translation": "Log geheugengebruik",

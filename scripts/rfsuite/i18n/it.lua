@@ -464,6 +464,7 @@ return {
         ["txt_debug"] = "DEBUG",
         ["txt_mspdata"] = "Log msp data",
         ["txt_queuesize"] = "Dimensione Coda Log MSP",
+        ["txt_taskprofiler"] = "Log tasks speed",
         ["txt_memusage"] = "Uso Memoria Log",
         ["txt_batttype"] = "Tx Battery Options",
         ["txt_battdef"] = "Default",

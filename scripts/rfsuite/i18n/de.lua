@@ -464,6 +464,7 @@ return {
         ["txt_debug"] = "DEBUG",
         ["txt_mspdata"] = "Protokolliere MSP Daten",
         ["txt_queuesize"] = "Protokolliere MSP Warteschlangengroesse",
+        ["txt_taskprofiler"] = "Log tasks speed",
         ["txt_memusage"] = "Protokolliere Speicherauslastung",
         ["txt_batttype"] = "Tx Battery Options",
         ["txt_battdef"] = "Default",

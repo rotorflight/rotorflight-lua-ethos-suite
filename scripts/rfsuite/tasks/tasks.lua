@@ -19,6 +19,8 @@ tasks._initMetadata = nil
 tasks._initKeys = nil
 tasks._initIndex = 1
 
+local lastProfileDump = os.clock()
+
 local ethosVersionGood = nil
 local telemetryCheckScheduler = os.clock()
 local lastTelemetrySensorName, sportSensor, elrsSensor = nil, nil, nil
@@ -166,7 +168,11 @@ function tasks.findTasks()
                         spreadschedule = tconfig.spreadschedule or false,
                         simulatoronly = tconfig.simulatoronly or false,
                         last_run = os.clock() - offset,
-                        duration = 0
+                        -- profiling fields
+                        duration = 0,          -- last run duration (s)
+                        totalDuration = 0,     -- cumulative duration (s)
+                        runs = 0,              -- number of executions
+                        maxDuration = 0        -- slowest single run (s)
                     }
                     table.insert(tasksList, task)
 
@@ -295,7 +301,7 @@ function tasks.wakeup()
             lastModelPath = p or lastModelPath
         end
     end
-if ethosVersionGood == nil then
+    if ethosVersionGood == nil then
         ethosVersionGood = utils.ethosVersionAtLeast()
     end
     if not ethosVersionGood then return end
@@ -341,7 +347,11 @@ if ethosVersionGood == nil then
                     connected = meta.connected or false,
                     simulatoronly = meta.simulatoronly or false,
                     last_run = os.clock() - offset,
-                    duration = 0
+                    -- profiling fields
+                    duration = 0,
+                    totalDuration = 0,
+                    runs = 0,
+                    maxDuration = 0
                 })
             end
 
@@ -394,7 +404,16 @@ if ethosVersionGood == nil then
                 if elapsed >= task.interval then
                     local fn = tasks[task.name].wakeup
                     if fn then
+                        -- === profiling start ===
+                        local __start = os.clock()
                         local ok, err = pcall(fn, tasks[task.name])
+                        local __end = os.clock()
+                        local __dur = __end - __start
+                        task.duration = __dur
+                        task.totalDuration = (task.totalDuration or 0) + __dur
+                        task.runs = (task.runs or 0) + 1
+                        task.maxDuration = math.max(task.maxDuration or 0, __dur)
+                        -- === profiling end ===
                         if not ok then
                             print(("Error in task %q wakeup: %s"):format(task.name, err))
                             collectgarbage("collect")
@@ -435,7 +454,16 @@ if ethosVersionGood == nil then
         for _, task in ipairs(mustRunTasks) do
             local fn = tasks[task.name].wakeup
             if fn then
+                -- === profiling start (must-run) ===
+                local __start = os.clock()
                 local ok, err = pcall(fn, tasks[task.name])
+                local __end = os.clock()
+                local __dur = __end - __start
+                task.duration = __dur
+                task.totalDuration = (task.totalDuration or 0) + __dur
+                task.runs = (task.runs or 0) + 1
+                task.maxDuration = math.max(task.maxDuration or 0, __dur)
+                -- === profiling end ===
                 if not ok then
                     print(("Error in task %q wakeup (must-run): %s"):format(task.name, err))
                     collectgarbage("collect")
@@ -448,7 +476,16 @@ if ethosVersionGood == nil then
             local task = normalEligibleTasks[i]
             local fn = tasks[task.name].wakeup
             if fn then
+                -- === profiling start ===
+                local __start = os.clock()
                 local ok, err = pcall(fn, tasks[task.name])
+                local __end = os.clock()
+                local __dur = __end - __start
+                task.duration = __dur
+                task.totalDuration = (task.totalDuration or 0) + __dur
+                task.runs = (task.runs or 0) + 1
+                task.maxDuration = math.max(task.maxDuration or 0, __dur)
+                -- === profiling end ===
                 if not ok then
                     print(("Error in task %q wakeup: %s"):format(task.name, err))
                     collectgarbage("collect")
@@ -463,6 +500,16 @@ if ethosVersionGood == nil then
     else
         runSpreadTasks()
     end
+
+    if rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.taskprofiler then
+        if now - lastProfileDump >= 5 then
+            if tasks.dumpProfile then
+                tasks.dumpProfile()
+            end
+            lastProfileDump = now
+        end
+    end   
+
 end
 
 
@@ -474,6 +521,55 @@ function tasks.reset()
         end
     end
   rfsuite.utils.session()
+end
+
+-- =========================
+-- Profiling utilities
+-- =========================
+function tasks.dumpProfile(opts)
+    -- opts = { sort = "avg" | "last" | "max" | "total" | "runs" }
+    local sortKey = (opts and opts.sort) or "avg"
+    local snapshot = {}
+    for _, t in ipairs(tasksList) do
+        local runs = t.runs or 0
+        local avg = runs > 0 and ((t.totalDuration or 0) / runs) or 0
+        table.insert(snapshot, {
+            name = t.name,
+            last = t.duration or 0,
+            max  = t.maxDuration or 0,
+            total= t.totalDuration or 0,
+            runs = runs,
+            avg  = avg,
+            interval = t.interval or 0
+        })
+    end
+    local order = {
+        avg = function(a,b) return a.avg   > b.avg   end,
+        last= function(a,b) return a.last  > b.last  end,
+        max = function(a,b) return a.max   > b.max   end,
+        total=function(a,b) return a.total > b.total end,
+        runs=function(a,b) return a.runs   > b.runs  end
+    }
+    table.sort(snapshot, order[sortKey] or order.avg)
+
+    utils.log("====== Task Profile ======", "info")
+    for _, p in ipairs(snapshot) do
+        utils.log(string.format(
+            "%-15s | avg: %8.5fs | last: %8.5fs | max: %8.5fs | total: %8.3fs | runs: %6d | interval: %.2fs",
+            p.name, p.avg, p.last, p.max, p.total, p.runs, p.interval
+        ), "info")
+    end
+    utils.log("===", "info")
+end
+
+function tasks.resetProfile()
+    for _, t in ipairs(tasksList) do
+        t.duration = 0
+        t.totalDuration = 0
+        t.runs = 0
+        t.maxDuration = 0
+    end
+    utils.log("[profile] Cleared profiling stats", "info")
 end
 
 return tasks

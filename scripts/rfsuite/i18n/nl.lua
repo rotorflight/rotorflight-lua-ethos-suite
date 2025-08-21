@@ -464,6 +464,7 @@ return {
         ["txt_debug"] = "DEBUG",
         ["txt_mspdata"] = "Log msp data",
         ["txt_queuesize"] = "Log MSP wachtlijst grootte",
+        ["txt_taskprofiler"] = "Log taak snelheid",
         ["txt_memusage"] = "Log geheugengebruik",
         ["txt_batttype"] = "Tx Batterij opties",
         ["txt_battdef"] = "Standaard",
