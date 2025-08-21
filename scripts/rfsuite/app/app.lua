@@ -680,7 +680,6 @@ app._uiTasks = {
     if (app.dialogs.nolinkDisplay and not app.triggers.wasConnected) then
       local offline       = app.offlineMode == true
       local apiStr        = tostring(rfsuite.session.apiVersion or "")
-      local moduleEnabled = rfsuite.session.telemetryModule and rfsuite.session.telemetryModule:enable() or false
       local curRssi       = app.utils.getRSSI()
 
       local invalid, abort = false, false
@@ -694,19 +693,15 @@ app._uiTasks = {
       elseif not rfsuite.tasks.active() then
         msg, invalid, abort = i18n("app.check_bg_task"), true, true
 
-      -- 3) RF module on? (invalid, unless offline)
-      elseif (not moduleEnabled) and (not offline) then
-        msg, invalid = i18n("app.check_rf_module_on"), true
-
-      -- 4) Sensors discovered? (invalid, unless offline)
+      -- 3) Sensors discovered? (invalid, unless offline)
       elseif (not rfsuite.session.telemetrySensor) and (not offline) then
         msg, invalid = i18n("app.check_discovered_sensors"), true
 
-      -- 5) Heli on / link power (RSSI==0) (invalid, unless offline)
+      -- 4) Heli on / link power (RSSI==0) (invalid, unless offline)
       elseif (curRssi == 0) and (not offline) then
         msg, invalid = i18n("app.check_heli_on"), true
 
-      -- 6) Supported API version notice (message only, not "invalid")
+      -- 5) Supported API version notice (message only, not "invalid")
       elseif (not app.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiStr)) and (not offline) then
         msg = i18n("app.check_supported_version") .. " (" .. apiStr .. ")"
       end
