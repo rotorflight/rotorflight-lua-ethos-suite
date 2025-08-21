@@ -681,6 +681,7 @@ def main():
     p.add_argument('--radio', action='store_true')
     p.add_argument('--radio-debug', action='store_true')
     p.add_argument('--minify',    action='store_true')
+    p.add_argument('--connect-only', action='store_true')
     args = p.parse_args()
 
     DEPLOY_TO_RADIO = args.radio 
@@ -691,8 +692,20 @@ def main():
             config.update(json.load(f))
 
     # select targets
-    
-    if args.radio:
+    if args.radio and args.connect_only:
+        # enable serial mode on the radio
+        ethos_serial(config['ethossuite_bin'], 'start')
+
+        v = str(config.get('serial_vid', DEFAULT_SERIAL_VID))
+        p = str(config.get('serial_pid', DEFAULT_SERIAL_PID))
+        b = int(config.get('serial_baud', DEFAULT_SERIAL_BAUD))
+        r = int(config.get('serial_retries', DEFAULT_SERIAL_RETRIES))
+        d = float(config.get('serial_retry_delay', DEFAULT_SERIAL_DELAY))
+        nh = str(config.get('serial_name_hint', "Serial"))
+
+        # now just tail the serial output (until Ctrl+C)
+        return tail_serial_debug(vid=v, pid=p, baud=b, retries=r, delay=d, name_hint=nh)
+    elif args.radio:
         # Make sure the radio storage is available (serial OFF => mass storage ON)
         print("[ETHOS] Disabling serial debug before copy to protect filesystem…")
         ethos_serial(config['ethossuite_bin'], 'stop')
