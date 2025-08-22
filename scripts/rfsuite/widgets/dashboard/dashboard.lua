@@ -294,8 +294,12 @@ function dashboard.computeOverlayMessage()
     end
   
     -- 6) As soon as we know RF version, show it with precedence
-    if rfsuite.session.rfVersion and not rfsuite.session.isConnectedLow and state ~= "postflight" then
-        return pad .. "RF" .. rfsuite.session.rfVersion .. pad
+    if rfsuite.session.apiVersion and rfsuite.session.rfVersion and not rfsuite.session.isConnectedLow and state ~= "postflight" then
+        if system.getVersion().simulation == true then
+            return pad .. "SIM " .. rfsuite.session.apiVersion .. pad
+        else
+            return pad .. "RF" .. rfsuite.session.rfVersion .. pad
+        end
     end
 
     -- 7) Link is up but sensors fail validation
