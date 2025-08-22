@@ -15,38 +15,26 @@
  * Note. Some icons have been sourced from https://www.flaticon.com/
 ]] --
 -- Constants for MSP Commands
-local API_NAME = "GOVERNOR_CONFIG" -- API name (must be same as filename)
-local MSP_API_CMD_READ = 142 -- Command identifier for MSP Mixer Config Read
-local MSP_API_CMD_WRITE = 143 -- Command identifier for saving Mixer Config Settings
+local API_NAME = "GOVERNOR_PROFILE_RF22" -- API name (must be same as filename)
+local MSP_API_CMD_READ = 148 -- Command identifier 
+local MSP_API_CMD_WRITE = 149 -- Command identifier 
 local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write 
 
--- define msp structure for reading and writing
-
-
-local gov_modeTable ={[0] = rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_govmode_off"), rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_govmode_passthrough"), rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_govmode_standard"), rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_govmode_mode1"), rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_govmode_mode2")}
-
+-- Define the MSP response data structures
 local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "gov_mode",                        type = "U8",  apiVersion = 12.09, simResponse = {3},    min = 0,  max = #gov_modeTable,   table = gov_modeTable},
-    {field = "gov_startup_time",                type = "U16", apiVersion = 12.09, simResponse = {100, 0}, min = 0,  max = 600, unit = "s", default = 200, decimals = 1, scale = 10},
-    {field = "gov_spoolup_time",                type = "U16", apiVersion = 12.09, simResponse = {100, 0}, min = 0,  max = 600, unit = "s", default = 100, decimals = 1, scale = 10},
-    {field = "gov_tracking_time",               type = "U16", apiVersion = 12.09, simResponse = {20, 0},  min = 0,  max = 100, unit = "s", default = 10,  decimals = 1, scale = 10},
-    {field = "gov_recovery_time",               type = "U16", apiVersion = 12.09, simResponse = {20, 0},  min = 0,  max = 100, unit = "s", default = 21,  decimals = 1, scale = 10},
-    {field = "gov_throttle_hold_timeout",       type = "U16", apiVersion = 12.09, simResponse = {30, 0}},
-    {field = "gov_lost_headspeed_timeout",      type = "U16", apiVersion = 12.09, simResponse = {0, 0}},  -- padding in 12.09
-    {field = "gov_autorotation_timeout",        type = "U16", apiVersion = 12.09, simResponse = {0, 0}},  -- padding in 12.09
-    {field = "gov_autorotation_bailout_time",   type = "U16", apiVersion = 12.09, simResponse = {0, 0}},  -- padding in 12.09
-    {field = "gov_autorotation_min_entry_time", type = "U16", apiVersion = 12.09, simResponse = {50, 0}}, -- padding in 12.09
-    {field = "gov_handover_throttle",           type = "U8",  apiVersion = 12.09, simResponse = {10},   min = 10, max = 50,  unit = "%", default = 20},
-    {field = "gov_pwr_filter",                  type = "U8",  apiVersion = 12.09, simResponse = {5}},
-    {field = "gov_rpm_filter",                  type = "U8",  apiVersion = 12.09, simResponse = {10}},
-    {field = "gov_tta_filter",                  type = "U8",  apiVersion = 12.09, simResponse = {0}},
-    {field = "gov_ff_filter",                   type = "U8",  apiVersion = 12.09, simResponse = {10}},
-    {field = "gov_spoolup_min_throttle",        type = "U8",  apiVersion = 12.09, simResponse = {0}, },  -- padding in 12.09
-    {field = "gov_d_filter",                    type = "U8",  apiVersion = 12.09, simResponse = {0}, },  
-    {field = "gov_spooldown_time",              type = "U16", apiVersion = 12.09, simResponse = {0, 0}, },  
-    {field = "gov_throttle_type",               type = "U8", apiVersion = 12.09, simResponse = {0}, },     
-    {field = "gov_idle_collective",             type = "S8",  apiVersion = 12.09, simResponse = {0}, }, 
-    {field = "gov_wot_collective",              type = "S8",  apiVersion = 12.09, simResponse = {0}, }    
+    {field = "governor_headspeed",            type = "U16", apiVersion = 12.06, simResponse = {208, 7}, min = 0,   max = 50000, default = 1000, unit = "rpm", step = 10},
+    {field = "governor_gain",                 type = "U8",  apiVersion = 12.06, simResponse = {100},    min = 0,   max = 250,   default = 40},
+    {field = "governor_p_gain",               type = "U8",  apiVersion = 12.06, simResponse = {10},     min = 0,   max = 250,   default = 40},
+    {field = "governor_i_gain",               type = "U8",  apiVersion = 12.06, simResponse = {125},    min = 0,   max = 250,   default = 50},
+    {field = "governor_d_gain",               type = "U8",  apiVersion = 12.06, simResponse = {5},      min = 0,   max = 250,   default = 0},
+    {field = "governor_f_gain",               type = "U8",  apiVersion = 12.06, simResponse = {20},     min = 0,   max = 250,   default = 10},
+    {field = "governor_tta_gain",             type = "U8",  apiVersion = 12.06, simResponse = {0},      min = 0,   max = 250,   default = 0},
+    {field = "governor_tta_limit",            type = "U8",  apiVersion = 12.06, simResponse = {20},     min = 0,   max = 250,   default = 20,   unit = "%"},
+    {field = "governor_yaw_ff_weight",        type = "U8",  apiVersion = 12.06, simResponse = {10},     min = 0,   max = 250,   default = 0},
+    {field = "governor_cyclic_ff_weight",     type = "U8",  apiVersion = 12.06, simResponse = {40},     min = 0,   max = 250,   default = 10},
+    {field = "governor_collective_ff_weight", type = "U8",  apiVersion = 12.06, simResponse = {100},    min = 0,   max = 250,   default = 100},
+    {field = "governor_max_throttle",         type = "U8",  apiVersion = 12.06, simResponse = {100},    min = 40,  max = 100,   default = 100,  unit = "%"},
+    {field = "governor_min_throttle",         type = "U8",  apiVersion = 12.06, simResponse = {10},     min = 0,   max = 100,   default = 10,   unit = "%"}
 }
 
 -- Process structure in one pass

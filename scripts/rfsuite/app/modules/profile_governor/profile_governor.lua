@@ -5,7 +5,7 @@ local i18n = rfsuite.i18n.get
 
 local apidata = {
     api = {
-        [1] = 'GOVERNOR_PROFILE',
+        [1] = 'GOVERNOR_PROFILE_RF22',
     },
     formdata = {
         labels = {
