@@ -2565,6 +2565,61 @@
         "translation": "Mode",
         "needs_translation": "false"
       },
+      "throttle_type": {
+        "english": "Throttle type",
+        "translation": "Throttle type",
+        "needs_translation": "false"
+      },
+      "collective": {
+        "english": "Collective",
+        "translation": "Collective",
+        "needs_translation": "false"
+      },
+      "idle_collective": {
+        "english": "Idle",
+        "translation": "Idle",
+        "needs_translation": "false"
+      },
+      "wot_collective": {
+        "english": "WOT",
+        "translation": "WOT",
+        "needs_translation": "false"
+      },
+      "throttle_hold_timeout": {
+        "english": "Throttle hold timeout",
+        "translation": "Throttle hold timeout",
+        "needs_translation": "false"
+      },
+      "ramp_time": {
+        "english": "Ramp time",
+        "translation": "Ramp time",
+        "needs_translation": "false"
+      },
+      "startup": {
+        "english": "Startup",
+        "translation": "Startup",
+        "needs_translation": "false"
+      },
+      "spoolup": {
+        "english": "Spoolup",
+        "translation": "Spoolup",
+        "needs_translation": "false"
+      },
+      "spooldown": {
+        "english": "Spooldown",
+        "translation": "Spooldown",
+        "needs_translation": "false"
+      },
+      "tracking": {
+        "english": "Tracking",
+        "translation": "Tracking",
+        "needs_translation": "false"
+      },
+      "recovery": {
+        "english": "Recovery",
+        "translation": "Recovery",
+        "needs_translation": "false"
+      },
       "help_p2": {
         "english": "Each parameter is simply a time value in seconds for each governor action.",
         "translation": "Each parameter is simply a time value in seconds for each governor action.",
@@ -2578,11 +2633,6 @@
       "name": {
         "english": "Governor",
         "translation": "Governor",
-        "needs_translation": "false"
-      },
-      "startup_time": {
-        "english": "Startup time",
-        "translation": "Startup time",
         "needs_translation": "false"
       },
       "spoolup_time": {

@@ -2565,6 +2565,71 @@
         "translation": "Modus",
         "needs_translation": "false"
       },
+      "throttle_type": {
+        "english": "Throttle type",
+        "translation": "Throttle protocol",
+        "needs_translation": "true"
+      },
+      "collective": {
+        "english": "Collective",
+        "translation": "Collective",
+        "needs_translation": "true"
+      },
+      "idle_collective": {
+        "english": "Idle",
+        "translation": "Idle collective",
+        "needs_translation": "true"
+      },
+      "wot_collective": {
+        "english": "WOT",
+        "translation": "WOT collective",
+        "needs_translation": "true"
+      },
+      "throttle_hold_timeout": {
+        "english": "Throttle hold timeout",
+        "translation": "Throttle hold timeout",
+        "needs_translation": "true"
+      },
+      "ramp_time": {
+        "english": "Ramp time",
+        "translation": "Ramp time",
+        "needs_translation": "true"
+      },
+      "startup": {
+        "english": "Startup",
+        "translation": "Startup",
+        "needs_translation": "true"
+      },
+      "spoolup": {
+        "english": "Spoolup",
+        "translation": "Spoolup",
+        "needs_translation": "true"
+      },
+      "spooldown": {
+        "english": "Spooldown",
+        "translation": "Spooldown",
+        "needs_translation": "true"
+      },
+      "tracking": {
+        "english": "Tracking",
+        "translation": "Tracking",
+        "needs_translation": "true"
+      },
+      "recovery": {
+        "english": "Recovery",
+        "translation": "Recovery",
+        "needs_translation": "true"
+      },
+      "filters": {
+        "english": "Filters",
+        "translation": "Filters",
+        "needs_translation": "true"
+      },
+      "rpm_filter": {
+        "english": "Headspeed",
+        "translation": "Headspeed",
+        "needs_translation": "true"
+      },
       "help_p2": {
         "english": "Each parameter is simply a time value in seconds for each governor action.",
         "translation": "Jeder Parameter ist einfach ein Zeitwert in Sekunden fuer jede Regleraktion.",
@@ -2578,11 +2643,6 @@
       "name": {
         "english": "Governor",
         "translation": "Governor",
-        "needs_translation": "false"
-      },
-      "startup_time": {
-        "english": "Startup time",
-        "translation": "Startzeit",
         "needs_translation": "false"
       },
       "spoolup_time": {

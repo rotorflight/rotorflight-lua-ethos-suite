@@ -1,23 +1,55 @@
 local i18n = rfsuite.i18n.get
 
-local apidata = {
-    api = {
-        [1] = 'GOVERNOR_CONFIG_RF22',
-    },
-    formdata = {
-        labels = {
+local apidata
+
+if rfsuite.session.apiVersion >= 12.09 then
+    apidata = {
+        api = {
+            [1] = 'GOVERNOR_CONFIG',
         },
-        fields = {
-        { t = i18n("app.modules.governor.mode"),                  mspapi = 1, apikey = "gov_mode", postEdit = function(self) self.setGovernorMode(self) end,  type = 1},
-        { t = i18n("app.modules.governor.handover_throttle"),     mspapi = 1, apikey = "gov_handover_throttle" },
-        { t = i18n("app.modules.governor.startup_time"),          mspapi = 1, apikey = "gov_startup_time" },
-        { t = i18n("app.modules.governor.spoolup_time"),          mspapi = 1, apikey = "gov_spoolup_time" },
-        { t = i18n("app.modules.governor.spoolup_min_throttle"),  mspapi = 1, apikey = "gov_spoolup_min_throttle", apiversion = 12.08 },
-        { t = i18n("app.modules.governor.tracking_time"),         mspapi = 1, apikey = "gov_tracking_time" },
-        { t = i18n("app.modules.governor.recovery_time"),         mspapi = 1, apikey = "gov_recovery_time" },
-        }
-    }                 
-}
+        formdata = {
+            labels = {
+                {t = i18n("app.modules.governor.collective"),  inline_size = 17.3,    label = 1},
+                {t = i18n("app.modules.governor.ramp_time"),  inline_size = 17.3,    label = 2},
+                {t = "",  inline_size = 17.3,    label = 3},
+                {t = "",  inline_size = 17.3,    label = 4},
+            },
+            fields = {
+            { t = i18n("app.modules.governor.mode"),                  mspapi = 1, apikey = "gov_mode", postEdit = function(self) self.setGovernorMode(self) end,  type = 1},
+            { t = i18n("app.modules.governor.throttle_type"),         mspapi = 1, apikey = "gov_throttle_type", type = 1},
+            { t = i18n("app.modules.governor.idle_collective"),     mspapi = 1, apikey = "gov_idle_collective", inline = 2, label = 1 },
+            { t = i18n("app.modules.governor.wot_collective"),     mspapi = 1, apikey = "gov_wot_collective", inline = 1, label = 1 },
+            { t = i18n("app.modules.governor.handover_throttle"),     mspapi = 1, apikey = "gov_handover_throttle" },
+            { t = i18n("app.modules.governor.throttle_hold_timeout"),     mspapi = 1, apikey = "gov_throttle_hold_timeout" },
+
+            { t = i18n("app.modules.governor.startup"),     mspapi = 1, apikey = "gov_startup_time", inline = 2, label = 2 },
+            { t = i18n("app.modules.governor.spoolup"),     mspapi = 1, apikey = "gov_spoolup_time", inline = 1, label = 2 },
+            { t = i18n("app.modules.governor.spooldown"),     mspapi = 1, apikey = "gov_spooldown_time", inline = 2, label = 3 },
+            { t = i18n("app.modules.governor.tracking"),     mspapi = 1, apikey = "gov_tracking_time", inline = 1, label = 3 },
+            { t = i18n("app.modules.governor.recovery"),     mspapi = 1, apikey = "gov_recovery_time", inline = 1, label = 4 },
+            }
+        }                 
+    }
+else
+    apidata = {
+        api = {
+            [1] = 'GOVERNOR_CONFIG_RF22',
+        },
+        formdata = {
+            labels = {
+            },
+            fields = {
+            { t = i18n("app.modules.governor.mode"),                  mspapi = 1, apikey = "gov_mode", postEdit = function(self) self.setGovernorMode(self) end,  type = 1},
+            { t = i18n("app.modules.governor.handover_throttle"),     mspapi = 1, apikey = "gov_handover_throttle" },
+            { t = i18n("app.modules.governor.startup_time"),          mspapi = 1, apikey = "gov_startup_time" },
+            { t = i18n("app.modules.governor.spoolup_time"),          mspapi = 1, apikey = "gov_spoolup_time" },
+            { t = i18n("app.modules.governor.spoolup_min_throttle"),  mspapi = 1, apikey = "gov_spoolup_min_throttle", apiversion = 12.08 },
+            { t = i18n("app.modules.governor.tracking_time"),         mspapi = 1, apikey = "gov_tracking_time" },
+            { t = i18n("app.modules.governor.recovery_time"),         mspapi = 1, apikey = "gov_recovery_time" },
+            }
+        }                 
+    }    
+end
 
 local function disableFields()
     for i, _ in ipairs(rfsuite.app.formFields) do
