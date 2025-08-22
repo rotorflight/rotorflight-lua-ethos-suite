@@ -238,6 +238,11 @@
         "translation": "Dimensione Coda Log MSP",
         "needs_translation": "false"
       },
+      "txt_taskprofiler": {
+        "english": "Log tasks speed",
+        "translation": "Log tasks speed",
+        "needs_translation": "true"
+      },
       "txt_memusage": {
         "english": "Log memory usage",
         "translation": "Uso Memoria Log",

@@ -51,6 +51,14 @@
       "justMyCode": true,
       "stopOnEntry": false,
       "preLaunchTask": "kill deploy"
-    }
+    },
+    {
+      "name": "Radio: Serial Debug",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/bin/deploy/deploy.py",
+      "args": ["--radio", "--connect-only"],
+      "console": "integratedTerminal"
+    }    
   ]
 }

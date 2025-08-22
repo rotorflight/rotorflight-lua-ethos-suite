@@ -87,8 +87,8 @@
     },
     "smartfuel": {
       "english": "Smart Fuel",
-      "translation": "Smart Fuel",
-      "needs_translation": "true"
+      "translation": "Combustible Inteligente",
+      "needs_translation": "false"
     },
     "rssi": {
       "english": "RSSI",

@@ -23,9 +23,6 @@ local arg = {...}
 local config = arg[1]
 
 local frsky = {}
--- local cacheExpireTime = 10 -- Time in seconds to expire the caches (disabled)
--- local lastCacheFlushTime = os.clock() -- Store the initial time (disabled)
--- (Periodic cache flush disabled; using event-driven clears)
 
 frsky.name = "frsky"
 
@@ -33,6 +30,7 @@ frsky.name = "frsky"
 local MAX_FRAMES_PER_WAKEUP = 32
 local MAX_TIME_BUDGET      = 0.004
 
+local dropSensorList = {}
 
 --[[
 createSensorList:
@@ -40,11 +38,6 @@ createSensorList:
     - Example entries:
         - [0x5100] = {name = "Heartbeat", unit = UNIT_RAW}
         - [0x51A0] = {name = "Pitch Control", unit = UNIT_DEGREE, decimals = 2}
-
-dropSensorList:
-    This table is intended for sensors that should be dropped if the MSP version is less than 12.08.
-    - Example entry (commented out):
-        - [0x0400] = {name = "Temp1"}
 
 renameSensorList:
     This table maps sensor IDs to their new names, conditional on their current names.
@@ -126,10 +119,6 @@ createSensorList[0x52F8] = {name = "Debug 7", unit = UNIT_RAW}
 0x5FE2
 ]]--
 
-local log = rfsuite.utils.log
-
-local dropSensorList = {}
-
 -- rename
 local renameSensorList = {}
 renameSensorList[0x0500] = {name = "Headspeed", onlyifname = "RPM"}
@@ -173,8 +162,8 @@ renameSensorList[0x0402] = {name = "BEC Temp", onlyifname = "Temp1"}
 renameSensorList[0x5210] = {name = "Y.angle", onlyifname = "Heading"}
 
 frsky.createSensorCache = {}
-frsky.dropSensorCache = {}
 frsky.renameSensorCache = {}
+frsky.dropSensorCache = {}
 
 -- Track once-only ops to avoid repeated work
 frsky.renamed = {}
@@ -193,48 +182,32 @@ frsky.dropped = {}
     specified by appId exists. If the sensor does not exist, it creates a new sensor
     with the specified parameters and caches it for future use.
 ]]
+-- createSensor: return a status
 local function createSensor(physId, primId, appId, frameValue)
+    if rfsuite.session.apiVersion == nil then return "skip" end
+    local v = createSensorList[appId]
+    if not v then return "skip" end
 
-    -- we dont want any deletions if api has not been found
-    if rfsuite.session.apiVersion == nil then return end
-
-    -- check for custom sensors and create them if they dont exist
-    if createSensorList[appId] ~= nil then
-
-        local v = createSensorList[appId]
-
+    if frsky.createSensorCache[appId] == nil then
+        frsky.createSensorCache[appId] = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
         if frsky.createSensorCache[appId] == nil then
-
-            frsky.createSensorCache[appId] = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
-
-            if frsky.createSensorCache[appId] == nil then
-
-                log("Creating sensor: " .. v.name, "info")
-
-                frsky.createSensorCache[appId] = model.createSensor()
-                frsky.createSensorCache[appId]:name(v.name)
-                frsky.createSensorCache[appId]:appId(appId)
-                frsky.createSensorCache[appId]:physId(physId)
-                frsky.createSensorCache[appId]:module(rfsuite.session.telemetrySensor:module())
-
-                frsky.createSensorCache[appId]:minimum(min or -1000000000)
-                frsky.createSensorCache[appId]:maximum(max or 2147483647)
-                if v.unit ~= nil then
-                    frsky.createSensorCache[appId]:unit(v.unit)
-                    frsky.createSensorCache[appId]:protocolUnit(v.unit)
-                end
-                if v.decimals ~= nil then
-                    frsky.createSensorCache[appId]:decimals(v.decimals)
-                    frsky.createSensorCache[appId]:protocolDecimals(v.decimals)
-                end
-                if v.minimum ~= nil then frsky.createSensorCache[appId]:minimum(v.minimum) end
-                if v.maximum ~= nil then frsky.createSensorCache[appId]:maximum(v.maximum) end
-
-            end
-
+            local s = model.createSensor()
+            s:name(v.name)
+            s:appId(appId)
+            s:physId(physId)
+            s:module(rfsuite.session.telemetrySensor:module())
+            s:minimum(min or -1000000000)
+            s:maximum(max or 2147483647)
+            if v.unit     then s:unit(v.unit); s:protocolUnit(v.unit) end
+            if v.decimals then s:decimals(v.decimals); s:protocolDecimals(v.decimals) end
+            if v.minimum  then s:minimum(v.minimum) end
+            if v.maximum  then s:maximum(v.maximum) end
+            frsky.createSensorCache[appId] = s
+            return "created"
         end
     end
 
+    return "noop"  -- already present
 end
 
 --[[
@@ -252,34 +225,25 @@ end
     If the sensor is in the dropSensorList and not already cached, it retrieves the sensor source and drops it.
 ]]
 local function dropSensor(physId, primId, appId, frameValue)
+    if rfsuite.session.apiVersion == nil then return "skip" end
+    if not dropSensorList or not dropSensorList[appId] then return "skip" end
 
-    -- we dont want any deletions if api has not been found
-    if rfsuite.session.apiVersion == nil then return end
-
-    -- we do not do any sensor dropping post 12.08 as have new frsky telem system
-    if rfsuite.session.apiVersion >= 12.08 then return end
-
-    -- check for custom sensors and create them if they dont exist
-    if dropSensorList[appId] ~= nil then
-        local v = dropSensorList[appId]
-
-        -- Negative cache and once-only drop
-        if frsky.dropSensorCache[appId] == nil then
-            local src = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
-            frsky.dropSensorCache[appId] = src or false
-        end
-        local src = frsky.dropSensorCache[appId]
-        if src and src ~= false then
-            if not frsky.dropped[appId] then
-                log("Drop sensor: " .. v.name, "info")
-                src:drop()
-                frsky.dropped[appId] = true
-            end
-        end
-
+    if frsky.dropSensorCache[appId] == nil then
+        local src = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
+        frsky.dropSensorCache[appId] = src or false
     end
-
+    local src = frsky.dropSensorCache[appId]
+    if src and src ~= false then
+        if not frsky.dropped[appId] then
+            src:drop()
+            frsky.dropped[appId] = true
+            return "dropped"
+        end
+        return "noop"
+    end
+    return "skip"
 end
+
 
 --[[
     renameSensor - Renames a sensor based on provided parameters if certain conditions are met.
@@ -295,34 +259,27 @@ end
     If the sensor exists and is not already cached, it retrieves the sensor source and renames it if its current name matches the specified condition.
 ]]
 local function renameSensor(physId, primId, appId, frameValue)
+    if rfsuite.session.apiVersion == nil then return "skip" end
+    local v = renameSensorList[appId]
+    if not v then return "skip" end
+    if frsky.renamed[appId] then return "noop" end
 
-    -- we dont want any deletions if api has not been found
-    if rfsuite.session.apiVersion == nil then return end
-
-    -- check for custom sensors and create them if they dont exist
-    if renameSensorList[appId] ~= nil then
-        local v = renameSensorList[appId]
-
-        -- Skip if already renamed
-        if frsky.renamed[appId] then return end
-
-        -- Negative cache for missing sources
-        if frsky.renameSensorCache[appId] == nil then
-            local src = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
-            frsky.renameSensorCache[appId] = src or false
-        end
-        local src = frsky.renameSensorCache[appId]
-        if src and src ~= false then
-            if src:name() == v.onlyifname then
-                log("Rename sensor: " .. v.name, "info")
-                src:name(v.name)
-                frsky.renamed[appId] = true
-            end
-        end
-
+    if frsky.renameSensorCache[appId] == nil then
+        local src = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
+        frsky.renameSensorCache[appId] = src or false
     end
-
+    local src = frsky.renameSensorCache[appId]
+    if src and src ~= false then
+        if src:name() == v.onlyifname then
+            src:name(v.name)
+            frsky.renamed[appId] = true
+            return "renamed"
+        end
+        return "noop"
+    end
+    return "skip"
 end
+
 
 --[[
     Function: telemetryPop
@@ -337,15 +294,24 @@ end
         - The function calls createSensor, dropSensor, and renameSensor with the frame's 
           physical ID, primary ID, application ID, and value.
 --]]
+-- telemetryPop: short-circuit based on status
 local function telemetryPop()
     local frame = rfsuite.tasks.msp.sensorTlm:popFrame()
     if frame == nil then return false end
+    if not frame.physId or not frame.primId then return false end
 
-    if not frame.physId or not frame.primId then return end
+    local physId, primId, appId, value = frame:physId(), frame:primId(), frame:appId(), frame:value()
 
-    createSensor(frame:physId(), frame:primId(), frame:appId(), frame:value())
-    dropSensor(frame:physId(), frame:primId(), frame:appId(), frame:value())
-    renameSensor(frame:physId(), frame:primId(), frame:appId(), frame:value())
+    -- 1) If this appId belongs to create list and we created/found it, we can skip rename/drop
+    local cs = createSensor(physId, primId, appId, value)
+    if cs ~= "skip" then return true end   -- handled or confirmed not needed; nothing else to do
+
+    -- 2) If you’re actively dropping legacy sensors, try that next
+    local ds = dropSensor(physId, primId, appId, value)
+    if ds ~= "skip" then return true end
+
+    -- 3) Finally, try a conditional rename
+    renameSensor(physId, primId, appId, value)
     return true
 end
 
@@ -362,27 +328,16 @@ end
 ]]
 function frsky.wakeup()
 
-    -- Function to clear caches
-    local function clearCaches()
-        frsky.createSensorCache = {}
-        frsky.renameSensorCache = {}
-        frsky.dropSensorCache = {}
-    end
-
-    -- Periodic cache expiry removed (was causing bursts). Use event-driven clears only.
-
     -- Flush sensor list if telemetry is inactive
-    if not rfsuite.session.telemetryState or not rfsuite.session.telemetrySensor then clearCaches() end
+    if not rfsuite.session.telemetryState or not rfsuite.session.telemetrySensor then frsky.reset() end
 
     -- If GUI idle and MSP queue processed, drain with a budget
     if rfsuite.tasks and rfsuite.tasks.telemetry and rfsuite.session.telemetryState and rfsuite.session.telemetrySensor then
         if rfsuite.app.guiIsRunning == false and rfsuite.tasks.msp.mspQueue:isProcessed() then
             local start = os.clock()
             local count = 0
-            while count < MAX_FRAMES_PER_WAKEUP do
-                if (os.clock() - start) > MAX_TIME_BUDGET then break end
-                local ok = telemetryPop()
-                if not ok then break end
+            while count < MAX_FRAMES_PER_WAKEUP and (os.clock() - start) <= MAX_TIME_BUDGET do
+                if not telemetryPop() then break end
                 count = count + 1
             end
         end
@@ -392,8 +347,8 @@ end
 
 function frsky.reset()
     frsky.createSensorCache = {}
-    frsky.dropSensorCache = {}
     frsky.renameSensorCache = {}
+    frsky.dropSensorCache = {}
     frsky.renamed = {}
     frsky.dropped = {}
 end
