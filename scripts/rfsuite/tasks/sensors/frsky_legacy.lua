@@ -265,9 +265,10 @@ local function telemetryPop()
 
     if not frame.physId or not frame.primId then return end
 
-    createSensor(frame:physId(), frame:primId(), frame:appId(), frame:value())
-    dropSensor(frame:physId(), frame:primId(), frame:appId(), frame:value())
-    renameSensor(frame:physId(), frame:primId(), frame:appId(), frame:value())
+    local physId, primId, appId, value = frame:physId(), frame:primId(), frame:appId(), frame:value()
+    createSensor(physId, primId, appId, value)
+    renameSensor(physId, primId, appId, value)
+    dropSensor(physId, primId, appId, value)
     return true
 end
 

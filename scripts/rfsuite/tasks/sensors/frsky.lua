@@ -23,9 +23,6 @@ local arg = {...}
 local config = arg[1]
 
 local frsky = {}
--- local cacheExpireTime = 10 -- Time in seconds to expire the caches (disabled)
--- local lastCacheFlushTime = os.clock() -- Store the initial time (disabled)
--- (Periodic cache flush disabled; using event-driven clears)
 
 frsky.name = "frsky"
 
@@ -40,11 +37,6 @@ createSensorList:
     - Example entries:
         - [0x5100] = {name = "Heartbeat", unit = UNIT_RAW}
         - [0x51A0] = {name = "Pitch Control", unit = UNIT_DEGREE, decimals = 2}
-
-dropSensorList:
-    This table is intended for sensors that should be dropped if the MSP version is less than 12.08.
-    - Example entry (commented out):
-        - [0x0400] = {name = "Temp1"}
 
 renameSensorList:
     This table maps sensor IDs to their new names, conditional on their current names.
@@ -126,10 +118,6 @@ createSensorList[0x52F8] = {name = "Debug 7", unit = UNIT_RAW}
 0x5FE2
 ]]--
 
-local log = rfsuite.utils.log
-
-local dropSensorList = {}
-
 -- rename
 local renameSensorList = {}
 renameSensorList[0x0500] = {name = "Headspeed", onlyifname = "RPM"}
@@ -173,7 +161,6 @@ renameSensorList[0x0402] = {name = "BEC Temp", onlyifname = "Temp1"}
 renameSensorList[0x5210] = {name = "Y.angle", onlyifname = "Heading"}
 
 frsky.createSensorCache = {}
-frsky.dropSensorCache = {}
 frsky.renameSensorCache = {}
 
 -- Track once-only ops to avoid repeated work
@@ -208,8 +195,6 @@ local function createSensor(physId, primId, appId, frameValue)
             frsky.createSensorCache[appId] = system.getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
 
             if frsky.createSensorCache[appId] == nil then
-
-                log("Creating sensor: " .. v.name, "info")
 
                 frsky.createSensorCache[appId] = model.createSensor()
                 frsky.createSensorCache[appId]:name(v.name)
@@ -257,7 +242,8 @@ local function dropSensor(physId, primId, appId, frameValue)
     if rfsuite.session.apiVersion == nil then return end
 
     -- we do not do any sensor dropping post 12.08 as have new frsky telem system
-    if rfsuite.session.apiVersion >= 12.08 then return end
+    -- this check happens in sensors.lua, so is redundant here
+    -- if rfsuite.session.apiVersion >= 12.08 then return end
 
     -- check for custom sensors and create them if they dont exist
     if dropSensorList[appId] ~= nil then
@@ -271,7 +257,6 @@ local function dropSensor(physId, primId, appId, frameValue)
         local src = frsky.dropSensorCache[appId]
         if src and src ~= false then
             if not frsky.dropped[appId] then
-                log("Drop sensor: " .. v.name, "info")
                 src:drop()
                 frsky.dropped[appId] = true
             end
@@ -314,7 +299,6 @@ local function renameSensor(physId, primId, appId, frameValue)
         local src = frsky.renameSensorCache[appId]
         if src and src ~= false then
             if src:name() == v.onlyifname then
-                log("Rename sensor: " .. v.name, "info")
                 src:name(v.name)
                 frsky.renamed[appId] = true
             end
@@ -343,9 +327,9 @@ local function telemetryPop()
 
     if not frame.physId or not frame.primId then return end
 
-    createSensor(frame:physId(), frame:primId(), frame:appId(), frame:value())
-    dropSensor(frame:physId(), frame:primId(), frame:appId(), frame:value())
-    renameSensor(frame:physId(), frame:primId(), frame:appId(), frame:value())
+    local physId, primId, appId, value = frame:physId(), frame:primId(), frame:appId(), frame:value()
+    createSensor(physId, primId, appId, value)
+    renameSensor(physId, primId, appId, value)
     return true
 end
 
@@ -366,7 +350,6 @@ function frsky.wakeup()
     local function clearCaches()
         frsky.createSensorCache = {}
         frsky.renameSensorCache = {}
-        frsky.dropSensorCache = {}
     end
 
     -- Periodic cache expiry removed (was causing bursts). Use event-driven clears only.
@@ -392,10 +375,8 @@ end
 
 function frsky.reset()
     frsky.createSensorCache = {}
-    frsky.dropSensorCache = {}
     frsky.renameSensorCache = {}
     frsky.renamed = {}
-    frsky.dropped = {}
 end
 
 return frsky
