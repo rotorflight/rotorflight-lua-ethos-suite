@@ -250,13 +250,13 @@ return {
       ["model_param1_value"] = "Establezca el tiempo esperado de vuelo en segundos. El transmisor emitirá beeps cuando el tiempo establecido se haya alcanzado."
     },
     ["BATTERY_INI"] = {
-      ["calcfuel_local"] = "Calculate Fuel Using",
-      ["tbl_off"] = "Current Sensor",
-      ["tbl_on"] = "Voltage Sensor",
-      ["sag_multiplier"] = "Raise or lower to adjust for the amount of voltage sag you see in flight.",
-      ["alert_off"] = "Off",
+      ["calcfuel_local"] = "Calcular uso de Combustible",
+      ["tbl_off"] = "Sensor de Corriente",
+      ["tbl_on"] = "Sensor de Voltaje",
+      ["sag_multiplier"] = "Elevar o disminuir en función de la caída de voltaje en vuelo.",
+      ["alert_off"] = "Apagado",
       ["alert_bec"] = "BEC",
-      ["alert_rxbatt"] = "Rx Batt"
+      ["alert_rxbatt"] = "Bat. Rx"
     },
     ["BATTERY_CONFIG"] = {
       ["vbatmincellvoltage"] = "El voltaje minimo por celda al cual se dispara la alarma de bajo voltaje.",
@@ -464,10 +464,11 @@ return {
         ["txt_debug"] = "DEBUG",
         ["txt_mspdata"] = "Log datos msp",
         ["txt_queuesize"] = "Tamaño cola Log MSP",
+        ["txt_taskprofiler"] = "Velocidad tareas de Log",
         ["txt_memusage"] = "Uso de memoria Log",
-        ["txt_batttype"] = "Tx Battery Options",
-        ["txt_battdef"] = "Default",
-        ["txt_batttext"] = "Text",
+        ["txt_batttype"] = "Opciones Batería Tx",
+        ["txt_battdef"] = "Por defecto",
+        ["txt_batttext"] = "Texto",
         ["txt_battdig"] = "Digital",
         ["dashboard"] = "Panel",
         ["dashboard_theme"] = "Tema",
@@ -516,9 +517,9 @@ return {
         ["timer_postalert"] = "Alerta Post-timer",
         ["timer_postalert_period"] = "Período Alerta",
         ["timer_postalert_interval"] = "Intervalo Alerta",
-        ["adj_callouts"] = "Adjustment Callouts",
-        ["adj_function"] = "Adjustment Function",
-        ["adj_value"] = "Adjustment Value"
+        ["adj_callouts"] = "Avisos de Ajuste",
+        ["adj_function"] = "Función de Ajuste",
+        ["adj_value"] = "Valor de Ajuste"
       },
       ["validate_sensors"] = {
         ["help_p1"] = "Esta herramienta intenta listar todos los sensores necesarios que faltan.",
@@ -865,7 +866,7 @@ return {
         ["help_logs_p3"] = "- estado de armado, voltaje, velocidad del rotor, corriente, temperatura del ESC"
       },
       ["battery"] = {
-        ["calcfuel_local"] = "Calculate fuel using",
+        ["calcfuel_local"] = "Calcular uso de comustible",
         ["max_cell_voltage"] = "Voltaje Máx Celda",
         ["full_cell_voltage"] = "Voltaje de Celda llena",
         ["name"] = "Batería",
@@ -877,9 +878,9 @@ return {
         ["consumption_warning_percentage"] = "Advertencia Consumo %",
         ["timer"] = "Alarma Tiempo Vuelo",
         ["voltage_multiplier"] = "Compensación de caída",
-        ["alert_type"] = "BEC or Rx Batt Voltage Alert",
-        ["bec_voltage_alert"] = "BEC Alert Value",
-        ["rx_voltage_alert"] = "RX Batt Alert Value"
+        ["alert_type"] = "Alerta de voltaje Rx",
+        ["bec_voltage_alert"] = "Valor Alerta BEC",
+        ["rx_voltage_alert"] = "Valor Alerta Bat. RX"
       },
       ["profile_mainrotor"] = {
         ["gain"] = "Ganancia",
@@ -1259,7 +1260,7 @@ return {
       ["governor"] = "Estado Governor",
       ["adj_func"] = "Ajus.(Función)",
       ["fuel"] = "Nivel de Carga",
-      ["smartfuel"] = "Smart Fuel",
+      ["smartfuel"] = "Combustible Inteligente",
       ["rssi"] = "RSSI",
       ["link"] = "Calidad de Enlace",
       ["adj_val"] = "Ajus.(Valor)",
@@ -1347,8 +1348,8 @@ return {
       ["cell_voltage"] = "Voltaje Celda",
       ["volts_per_cell"] = "Volts por celda",
       ["warning"] = "Advertencia",
-      ["tx_batt"] = "TX Battery",
-      ["link_max"] = "Link Max"
+      ["tx_batt"] = "Batería TX",
+      ["link_max"] = "Max Enlace"
     },
     ["governor"] = {
       ["UNKNOWN"] = "DESCONOCIDO",

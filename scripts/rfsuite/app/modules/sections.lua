@@ -27,6 +27,7 @@ local i18n = rfsuite.i18n.get
 sections[#sections + 1] = {title = rfsuite.i18n.get("app.modules.pids.name"), module = "pids", script = "pids.lua", image = "app/modules/pids/pids.png"}
 sections[#sections + 1] = {title = rfsuite.i18n.get("app.modules.rates.name"), module = "rates", script = "rates.lua", image = "app/modules/rates/rates.png"}
 sections[#sections + 1] = {title = rfsuite.i18n.get("app.modules.profile_governor.name"), module = "profile_governor", script = "profile_governor.lua", image = "app/modules/profile_governor/governor.png"}
+sections[#sections + 1] = {title = rfsuite.i18n.get("app.modules.profile_tailrotor.name"), module = "tailrotor", script = "tailrotor.lua", image = "app/modules/tailrotor/tailrotor.png"}
 sections[#sections + 1] = {title = i18n("app.menu_section_advanced"), id = "advanced", image = "app/gfx/advanced.png"}
 sections[#sections + 1] = {title = i18n("app.menu_section_hardware"), id = "hardware", image = "app/gfx/hardware.png"}
 sections[#sections + 1] = {title = i18n("app.menu_section_tools"), id = "tools", image = "app/gfx/tools.png"}

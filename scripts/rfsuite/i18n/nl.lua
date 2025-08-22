@@ -250,13 +250,13 @@ return {
       ["model_param1_value"] = "Stel deze in op de verwachtte flight tijd in seconds. De zender zal piepen als de tijd bereikt is."
     },
     ["BATTERY_INI"] = {
-      ["calcfuel_local"] = "Calculate Fuel Using",
-      ["tbl_off"] = "Current Sensor",
-      ["tbl_on"] = "Voltage Sensor",
-      ["sag_multiplier"] = "Raise or lower to adjust for the amount of voltage sag you see in flight.",
-      ["alert_off"] = "Off",
+      ["calcfuel_local"] = "Bereken brandstof verbruik",
+      ["tbl_off"] = "Stroom sensor",
+      ["tbl_on"] = "Voltage sensor",
+      ["sag_multiplier"] = "Verhoog of verlaag om de hoeveelheid voltage dip te veranderen tijdens de vlucht.",
+      ["alert_off"] = "Uit",
       ["alert_bec"] = "BEC",
-      ["alert_rxbatt"] = "Rx Batt"
+      ["alert_rxbatt"] = "Rx Bat"
     },
     ["BATTERY_CONFIG"] = {
       ["vbatmincellvoltage"] = "Het minimale voltage wanneer laag voltage alarm wordt getriggerd.",
@@ -464,11 +464,12 @@ return {
         ["txt_debug"] = "DEBUG",
         ["txt_mspdata"] = "Log msp data",
         ["txt_queuesize"] = "Log MSP wachtlijst grootte",
+        ["txt_taskprofiler"] = "Log taak snelheid",
         ["txt_memusage"] = "Log geheugengebruik",
-        ["txt_batttype"] = "Tx Battery Options",
-        ["txt_battdef"] = "Default",
-        ["txt_batttext"] = "Text",
-        ["txt_battdig"] = "Digital",
+        ["txt_batttype"] = "Tx Batterij opties",
+        ["txt_battdef"] = "Standaard",
+        ["txt_batttext"] = "Tekst",
+        ["txt_battdig"] = "Digitaal",
         ["dashboard"] = "Dashboard",
         ["dashboard_theme"] = "Thema",
         ["dashboard_theme_panel_global"] = "Standaard thema voor alle modellen",
@@ -516,9 +517,9 @@ return {
         ["timer_postalert"] = "Na-timer waarschuwing",
         ["timer_postalert_period"] = "Waarschuwing periode",
         ["timer_postalert_interval"] = "Waarschuwing interval",
-        ["adj_callouts"] = "Adjustment Callouts",
-        ["adj_function"] = "Adjustment Function",
-        ["adj_value"] = "Adjustment Value"
+        ["adj_callouts"] = "Aanpassing callouts",
+        ["adj_function"] = "Aanpassing functie",
+        ["adj_value"] = "Aanpassing waarde"
       },
       ["validate_sensors"] = {
         ["help_p1"] = "Deze tool probeert een beknopt overzicht te geven van alle sensoren die u niet ontvangt.",
@@ -865,7 +866,7 @@ return {
         ["help_logs_p3"] = "- arm status, voltage, headspeed, current, esc temperature"
       },
       ["battery"] = {
-        ["calcfuel_local"] = "Calculate fuel using",
+        ["calcfuel_local"] = "Bereken brandstofgebruik",
         ["max_cell_voltage"] = "Max Cel Spanning",
         ["full_cell_voltage"] = "Volle Cell Spanning",
         ["name"] = "Batterij",
@@ -877,9 +878,9 @@ return {
         ["consumption_warning_percentage"] = "Verbruik Waarschuwing %",
         ["timer"] = "Flight Tijd",
         ["voltage_multiplier"] = "Sag compensatie",
-        ["alert_type"] = "BEC or Rx Batt Voltage Alert",
-        ["bec_voltage_alert"] = "BEC Alert Value",
-        ["rx_voltage_alert"] = "RX Batt Alert Value"
+        ["alert_type"] = "BEC of Rx Bat voltage waarschuwing",
+        ["bec_voltage_alert"] = "BEC waarschuwing waarde",
+        ["rx_voltage_alert"] = "RX Bat waarschuwing waarde"
       },
       ["profile_mainrotor"] = {
         ["gain"] = "Gain",
@@ -1259,7 +1260,7 @@ return {
       ["governor"] = "Governor Status",
       ["adj_func"] = "Adj (Functies)",
       ["fuel"] = "Laad niveau",
-      ["smartfuel"] = "Smart Fuel",
+      ["smartfuel"] = "Smart brandstof",
       ["rssi"] = "RSSI",
       ["link"] = "Linkkwaliteit",
       ["adj_val"] = "Adj (Waarde)",
@@ -1347,8 +1348,8 @@ return {
       ["cell_voltage"] = "Cel voltage",
       ["volts_per_cell"] = "Voltage per cel",
       ["warning"] = "Waarschuwing",
-      ["tx_batt"] = "TX Battery",
-      ["link_max"] = "Link Max"
+      ["tx_batt"] = "TX batterij",
+      ["link_max"] = "Link max"
     },
     ["governor"] = {
       ["UNKNOWN"] = "ONBEKEND",

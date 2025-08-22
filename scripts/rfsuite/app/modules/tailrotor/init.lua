@@ -17,17 +17,13 @@
  * 
 
 ]] --
-local data = {}
-local i18n = rfsuite.i18n.get
-
-data['help'] = {}
-
-data['help']['default'] = {
-    
-    i18n("app.modules.profile_tailrotor.help_p2"),
-    i18n("app.modules.profile_tailrotor.help_p5")
+local init = {
+    title = rfsuite.i18n.get("app.modules.profile_tailrotor.name"), -- title of the page
+    section = "main", -- do not run if busy with msp
+    script = "tailrotor.lua", -- run this script
+    image = "tailrotor.png", -- image for the page
+    order = 2, -- order in the section
+    ethosversion = {1, 6, 2} -- disable button if ethos version is less than this
 }
 
-data['fields'] = {}
-
-return data
+return init

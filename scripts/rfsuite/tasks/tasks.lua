@@ -22,20 +22,39 @@ tasks._initIndex = 1
 local ethosVersionGood = nil
 local telemetryCheckScheduler = os.clock()
 local lastTelemetrySensorName, sportSensor, elrsSensor = nil, nil, nil
-local lastTelemetryModelPath = nil
--- added: robust model/telemetry change tracking
-local lastModelPath = nil
-local lastTelemetryType = nil
-local telemetryTypeStableSince = 0
-local TELEMETRY_DEBOUNCE = 0.5
--- internal latches (not exposed as session)
-local _modelChangeLatched = false
-local _telemetryTypeChangeLatched = false
-
 
 local usingSimulator = system.getVersion().simulation
 
 local tlm = system.getSource({ category = CATEGORY_SYSTEM_EVENT, member = TELEMETRY_ACTIVE })
+
+-- =========================
+-- Profiler config & helpers
+-- =========================
+-- Zero-overhead when disabled (just a few conditionals).
+tasks.profile = {
+  enabled = false,         -- master switch
+  dumpInterval = 5,        -- seconds between dumps at end of wakeup()
+  minDuration = 0,         -- only record runs >= this many seconds
+  include = nil,           -- optional set: { taskname = true, ... }
+  exclude = nil,           -- optional set: { taskname = true, ... }
+  onDump = nil             -- optional function(snapshot) -> true to suppress default logging
+}
+
+local function profWanted(name)
+  if not tasks.profile.enabled then return false end
+  local inc, exc = tasks.profile.include, tasks.profile.exclude
+  if inc and not inc[name] then return false end
+  if exc and exc[name] then return false end
+  return true
+end
+
+local function profRecord(task, dur)
+  if dur < (tasks.profile.minDuration or 0) then return end
+  task.duration = dur
+  task.totalDuration = (task.totalDuration or 0) + dur
+  task.runs = (task.runs or 0) + 1
+  task.maxDuration = math.max(task.maxDuration or 0, dur)
+end
 
 -- Returns true if the task is active (based on recent run time or triggers)
 function tasks.isTaskActive(name)
@@ -54,16 +73,12 @@ function tasks.isTaskActive(name)
     return false
 end
 
-
-
 local function taskOffset(name, interval)
     local hash = 0
     for i = 1, #name do
         hash = (hash * 31 + name:byte(i)) % 100000
     end
     local base = (hash % (interval * 1000)) / 1000  -- base hash offset
-
-
     local jitter = math.random() * interval
     return (base + jitter) % interval
 end
@@ -75,7 +90,6 @@ function tasks.dumpSchedule()
   for _, t in ipairs(tasksList) do
     local next_run = t.last_run + t.interval
     local in_secs  = next_run - now
-    -- string.format: TaskName | interval | offset = last_run offset | next in
     utils.log(
       string.format(
         "%-15s | interval: %4.1fs | last_run: %8.2f | next in: %6.2fs",
@@ -154,7 +168,7 @@ function tasks.findTasks()
 
                     -- add a small drift to de-synchronize fixed intervals
                     local baseInterval = tconfig.interval or 1
-                    local interval     = baseInterval + (math.random() * 0.1)                    
+                    local interval     = baseInterval + (math.random() * 0.1)
                     local offset = taskOffset(dir, interval)
 
                     local task = {
@@ -166,7 +180,11 @@ function tasks.findTasks()
                         spreadschedule = tconfig.spreadschedule or false,
                         simulatoronly = tconfig.simulatoronly or false,
                         last_run = os.clock() - offset,
-                        duration = 0
+                        -- profiling fields
+                        duration = 0,
+                        totalDuration = 0,
+                        runs = 0,
+                        maxDuration = 0
                     }
                     table.insert(tasksList, task)
 
@@ -196,72 +214,20 @@ function tasks.telemetryCheckScheduler()
 
         if not telemetryState then
             utils.session()
-            sportSensor = nil
-            elrsSensor = nil
         else
-            if not sportSensor then
-                sportSensor = system.getSource({ appId = 0xF101 })
-            end
-            if not elrsSensor then
-                elrsSensor = system.getSource({ crsfId = 0x14, subIdStart = 0, subIdEnd = 1 })
-            end
-
+            sportSensor = system.getSource({ appId = 0xF101 })
+            elrsSensor = system.getSource({ crsfId = 0x14, subIdStart = 0, subIdEnd = 1 })
             currentTelemetrySensor = sportSensor or elrsSensor
 
             if not currentTelemetrySensor then
                 utils.session()
             else
-                
                 rfsuite.session.telemetryState = true
                 rfsuite.session.telemetrySensor = currentTelemetrySensor
-                if not rfsuite.session.telemetryModule then
-                    rfsuite.session.telemetryModule  = model.getModule(currentTelemetrySensor:module())
-                end
-                
-                -- clear outward-facing pulses at the start of this pass
-                rfsuite.session.telemetryTypeChanged  = false
-                rfsuite.session.telemetryModelChanged = false
-
-                -- compute current telemetry type
-                local currentType = sportSensor and "sport" or elrsSensor and "crsf" or nil
-                rfsuite.session.telemetryType = currentType
-
-                -- debounced type-change detection -> internal latch
-                local nowClock = os.clock()
-                if currentType ~= lastTelemetryType then
-                    if telemetryTypeStableSince == 0 then
-                        telemetryTypeStableSince = nowClock
-                    elseif (nowClock - telemetryTypeStableSince) >= TELEMETRY_DEBOUNCE then
-                        _telemetryTypeChangeLatched = true
-                        lastTelemetryType = currentType
-                        telemetryTypeStableSince = 0
-                    end
-                else
-                    telemetryTypeStableSince = 0
-                end
-
-                -- emit one-tick pulses from internal latches
-                if _telemetryTypeChangeLatched then
-                    rfsuite.session.telemetryTypeChanged = true
-                    _telemetryTypeChangeLatched = false
-                end
-                if _modelChangeLatched then
-                    rfsuite.session.telemetryModelChanged = true
-                    _modelChangeLatched = false
-                end
-
-                -- keep sensor-name compare as secondary pulse
-                local currentTelemetrySensorName = currentTelemetrySensor:name()
-                local sensorNameChanged = currentTelemetrySensorName ~= lastTelemetrySensorName
-                if sensorNameChanged then
-                    rfsuite.session.telemetryTypeChanged = true
-                end
-
-                -- update "last" markers AFTER logic
-                lastTelemetrySensorName = currentTelemetrySensorName
-                lastTelemetryModelPath  = model.path()
+                rfsuite.session.telemetryType = sportSensor and "sport" or elrsSensor and "crsf" or nil
+                rfsuite.session.telemetryTypeChanged = currentTelemetrySensor:name() ~= lastTelemetrySensorName
+                lastTelemetrySensorName = currentTelemetrySensor:name()
                 telemetryCheckScheduler = now
-
             end
         end
     end
@@ -281,21 +247,9 @@ function tasks.wakeup()
     schedulerTick = schedulerTick + 1
     tasks.heartbeat = os.clock()
 
-    
-    -- model-change tripwire: guarded; not gated by telemetry
-    do
-        local ok, p = pcall(function() return (model and model.path) and model.path() end)
-        if ok then
-            if p and lastModelPath and p ~= lastModelPath then
-                -- latch internally; we'll emit a one-tick pulse during the scheduler pass
-                _modelChangeLatched = true
-                -- force next telemetry pass to treat type as possibly changed
-                lastTelemetryType = nil
-            end
-            lastModelPath = p or lastModelPath
-        end
-    end
-if ethosVersionGood == nil then
+    tasks.profile.enabled = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.taskprofiler
+
+    if ethosVersionGood == nil then
         ethosVersionGood = utils.ethosVersionAtLeast()
     end
     if not ethosVersionGood then return end
@@ -341,7 +295,11 @@ if ethosVersionGood == nil then
                     connected = meta.connected or false,
                     simulatoronly = meta.simulatoronly or false,
                     last_run = os.clock() - offset,
-                    duration = 0
+                    -- profiling fields
+                    duration = 0,
+                    totalDuration = 0,
+                    runs = 0,
+                    maxDuration = 0
                 })
             end
 
@@ -358,7 +316,6 @@ if ethosVersionGood == nil then
     end
 
     tasks.telemetryCheckScheduler()
-
 
     local now = os.clock()
     local cycleFlip = schedulerTick % 2  -- alternate every tick
@@ -394,10 +351,21 @@ if ethosVersionGood == nil then
                 if elapsed >= task.interval then
                     local fn = tasks[task.name].wakeup
                     if fn then
-                        local ok, err = pcall(fn, tasks[task.name])
-                        if not ok then
-                            print(("Error in task %q wakeup: %s"):format(task.name, err))
-                            collectgarbage("collect")
+                        if profWanted(task.name) then
+                            local t0 = os.clock()
+                            local ok, err = pcall(fn, tasks[task.name])
+                            local t1 = os.clock()
+                            profRecord(task, t1 - t0)
+                            if not ok then
+                                print(("Error in task %q wakeup: %s"):format(task.name, err))
+                                collectgarbage("collect")
+                            end
+                        else
+                            local ok, err = pcall(fn, tasks[task.name])
+                            if not ok then
+                                print(("Error in task %q wakeup: %s"):format(task.name, err))
+                                collectgarbage("collect")
+                            end
                         end
                     end
                     task.last_run = now
@@ -435,10 +403,21 @@ if ethosVersionGood == nil then
         for _, task in ipairs(mustRunTasks) do
             local fn = tasks[task.name].wakeup
             if fn then
-                local ok, err = pcall(fn, tasks[task.name])
-                if not ok then
-                    print(("Error in task %q wakeup (must-run): %s"):format(task.name, err))
-                    collectgarbage("collect")
+                if profWanted(task.name) then
+                    local t0 = os.clock()
+                    local ok, err = pcall(fn, tasks[task.name])
+                    local t1 = os.clock()
+                    profRecord(task, t1 - t0)
+                    if not ok then
+                        print(("Error in task %q wakeup (must-run): %s"):format(task.name, err))
+                        collectgarbage("collect")
+                    end
+                else
+                    local ok, err = pcall(fn, tasks[task.name])
+                    if not ok then
+                        print(("Error in task %q wakeup (must-run): %s"):format(task.name, err))
+                        collectgarbage("collect")
+                    end
                 end
             end
             task.last_run = now
@@ -448,10 +427,21 @@ if ethosVersionGood == nil then
             local task = normalEligibleTasks[i]
             local fn = tasks[task.name].wakeup
             if fn then
-                local ok, err = pcall(fn, tasks[task.name])
-                if not ok then
-                    print(("Error in task %q wakeup: %s"):format(task.name, err))
-                    collectgarbage("collect")
+                if profWanted(task.name) then
+                    local t0 = os.clock()
+                    local ok, err = pcall(fn, tasks[task.name])
+                    local t1 = os.clock()
+                    profRecord(task, t1 - t0)
+                    if not ok then
+                        print(("Error in task %q wakeup: %s"):format(task.name, err))
+                        collectgarbage("collect")
+                    end
+                else
+                    local ok, err = pcall(fn, tasks[task.name])
+                    if not ok then
+                        print(("Error in task %q wakeup: %s"):format(task.name, err))
+                        collectgarbage("collect")
+                    end
                 end
             end
             task.last_run = now
@@ -463,8 +453,17 @@ if ethosVersionGood == nil then
     else
         runSpreadTasks()
     end
-end
 
+    -- Periodic profile dump (only when profiler is on)
+    if tasks.profile.enabled then
+        tasks._lastProfileDump = tasks._lastProfileDump or now
+        local dumpEvery = tasks.profile.dumpInterval or 5
+        if (now - tasks._lastProfileDump) >= dumpEvery then
+            if tasks.dumpProfile then tasks.dumpProfile() end
+            tasks._lastProfileDump = now
+        end
+    end
+end
 
 function tasks.reset()
     --utils.log("Reset all tasks", "info")
@@ -474,6 +473,58 @@ function tasks.reset()
         end
     end
   rfsuite.utils.session()
+end
+
+-- =========================
+-- Profiling utilities
+-- =========================
+function tasks.dumpProfile(opts)
+    if not tasks.profile.enabled then return end
+    local sortKey = (opts and opts.sort) or "avg"
+    local snapshot = {}
+    for _, t in ipairs(tasksList) do
+        local runs = t.runs or 0
+        local avg = runs > 0 and ((t.totalDuration or 0) / runs) or 0
+        snapshot[#snapshot+1] = {
+            name = t.name,
+            last = t.duration or 0,
+            max  = t.maxDuration or 0,
+            total= t.totalDuration or 0,
+            runs = runs,
+            avg  = avg,
+            interval = t.interval or 0
+        }
+    end
+    local order = {
+        avg   = function(a,b) return a.avg   > b.avg   end,
+        last  = function(a,b) return a.last  > b.last  end,
+        max   = function(a,b) return a.max   > b.max   end,
+        total = function(a,b) return a.total > b.total end,
+        runs  = function(a,b) return a.runs  > b.runs  end
+    }
+    table.sort(snapshot, order[sortKey] or order.avg)
+
+    -- Allow consumer to intercept (e.g., UI sink) and suppress logs.
+    if tasks.profile.onDump and tasks.profile.onDump(snapshot) then return end
+
+    utils.log("====== Task Profile ======", "info")
+    for _, p in ipairs(snapshot) do
+        utils.log(string.format(
+            "%-15s | avg:%8.5fs | last:%8.5fs | max:%8.5fs | total:%8.3fs | runs:%6d | int:%4.2fs",
+            p.name, p.avg, p.last, p.max, p.total, p.runs, p.interval
+        ), "info")
+    end
+    utils.log("================================", "info")
+end
+
+function tasks.resetProfile()
+    for _, t in ipairs(tasksList) do
+        t.duration = 0
+        t.totalDuration = 0
+        t.runs = 0
+        t.maxDuration = 0
+    end
+    utils.log("[profile] Cleared profiling stats", "info")
 end
 
 return tasks

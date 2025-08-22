@@ -178,12 +178,6 @@ To build and deploy RFSuite locally:
     pip install serial
     ```
 
--- Install luamin
-
-   ```bash
-   npm install luamin
-   ```
-
 If you do not have npm command, you will need to install NodeJS   
 
 ### Config file
@@ -201,15 +195,11 @@ Config: C:\GitHub\rotorflight-lua-ethos-suite.json
 
 -   **Deploy & Launch** – Pushes scripts to the default simulator
 
--   **Deploy & Launch [minify]** – Pushes scripts to the default simulator and minifies the files using luamin
-
 -   **Deploy & Choose** – Pushes scripts to the selected simulator 
-
--   **Deploy & Choose [minify]** – Pushes scripts to the selected simulator and minifies the files using luamin
     
 -   **Deploy Radio** – Pushes scripts to the radio
 
--   **Deploy Radio [minify]** – Pushes scripts to the radio and minifies the files using luamin
+-   **Deploy Radio and  Debug** – Pushes scripts to the radio and starts serial console
     
 
 ----------

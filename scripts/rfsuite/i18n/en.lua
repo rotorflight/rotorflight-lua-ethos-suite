@@ -464,6 +464,7 @@ return {
         ["txt_debug"] = "DEBUG",
         ["txt_mspdata"] = "Log msp data",
         ["txt_queuesize"] = "Log MSP queue size",
+        ["txt_taskprofiler"] = "Log tasks speed",
         ["txt_memusage"] = "Log memory usage",
         ["txt_batttype"] = "Tx Battery Options",
         ["txt_battdef"] = "Default",

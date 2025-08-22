@@ -238,6 +238,11 @@
         "translation": "Log MSP queue size",
         "needs_translation": "false"
       },
+      "txt_taskprofiler": {
+        "english": "Log tasks speed",
+        "translation": "Log tasks speed",
+        "needs_translation": "false"
+      },
       "txt_memusage": {
         "english": "Log memory usage",
         "translation": "Log memory usage",

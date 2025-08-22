@@ -238,6 +238,11 @@
         "translation": "Tamaño cola Log MSP",
         "needs_translation": "false"
       },
+      "txt_taskprofiler": {
+        "english": "Log tasks speed",
+        "translation": "Velocidad tareas de Log",
+        "needs_translation": "false"
+      },
       "txt_memusage": {
         "english": "Log memory usage",
         "translation": "Uso de memoria Log",
@@ -245,23 +250,23 @@
       },
       "txt_batttype": {
         "english": "Tx Battery Options",
-        "translation": "Tx Battery Options",
-        "needs_translation": "true"
+        "translation": "Opciones Batería Tx",
+        "needs_translation": "false"
       },
       "txt_battdef": {
         "english": "Default",
-        "translation": "Default",
-        "needs_translation": "true"
+        "translation": "Por defecto",
+        "needs_translation": "false"
       },
       "txt_batttext": {
         "english": "Text",
-        "translation": "Text",
-        "needs_translation": "true"
+        "translation": "Texto",
+        "needs_translation": "false"
       },
       "txt_battdig": {
         "english": "Digital",
         "translation": "Digital",
-        "needs_translation": "true"
+        "needs_translation": "false"
       },
       "dashboard": {
         "english": "Dashboard",
@@ -500,18 +505,18 @@
       },
       "adj_callouts": {
         "english": "Adjustment Callouts",
-        "translation": "Adjustment Callouts",
-        "needs_translation": "true"
+        "translation": "Avisos de Ajuste",
+        "needs_translation": "false"
       },
       "adj_function": {
         "english": "Adjustment Function",
-        "translation": "Adjustment Function",
-        "needs_translation": "true"
+        "translation": "Función de Ajuste",
+        "needs_translation": "false"
       },
       "adj_value": {
         "english": "Adjustment Value",
-        "translation": "Adjustment Value",
-        "needs_translation": "true"
+        "translation": "Valor de Ajuste",
+        "needs_translation": "false"
       }
     },
     "validate_sensors": {
@@ -2077,8 +2082,8 @@
     "battery": {
       "calcfuel_local": {
         "english": "Calculate Fuel Using",
-        "translation": "Calculate fuel using",
-        "needs_translation": "true"
+        "translation": "Calcular uso de comustible",
+        "needs_translation": "false"
       },
       "max_cell_voltage": {
         "english": "Max Cell Voltage",
@@ -2137,18 +2142,18 @@
       },
       "alert_type": {
         "english": "Rx Voltage Alert",
-        "translation": "BEC or Rx Batt Voltage Alert",
-        "needs_translation": "true"
+        "translation": "Alerta de voltaje Rx",
+        "needs_translation": "false"
       },
       "bec_voltage_alert": {
         "english": "BEC Alert Value",
-        "translation": "BEC Alert Value",
-        "needs_translation": "true"
+        "translation": "Valor Alerta BEC",
+        "needs_translation": "false"
       },
       "rx_voltage_alert": {
         "english": "RxBatt Alert Value",
-        "translation": "RX Batt Alert Value",
-        "needs_translation": "true"
+        "translation": "Valor Alerta Bat. RX",
+        "needs_translation": "false"
       }
     },
     "profile_mainrotor": {
