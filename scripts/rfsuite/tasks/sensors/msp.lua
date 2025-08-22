@@ -66,10 +66,13 @@
 ]]
 
 local msp = {}
+msp.clock = os.clock()
 
 -- container vars
 local log
 local tasks 
+
+
 
 local firstWakeup = true
 
@@ -214,7 +217,7 @@ local function createOrUpdateSensor(appId, fieldMeta, value)
     local maxv = fieldMeta.maximum or 1000000000
     local v = clamp(value, minv, maxv)
     local last = lastValue[appId]
-    local nowc = os.clock()
+    local nowc = msp.clock
     local stale = (nowc - (lastPush[appId] or 0)) >= FORCE_REFRESH_INTERVAL
 
     if v == nil then
@@ -253,6 +256,8 @@ end
 
 local lastWakeupTime = 0
 function msp.wakeup()
+
+    msp.clock = os.clock()
 
     if firstWakeup then
         log = rfsuite.utils.log
@@ -316,10 +321,10 @@ function msp.wakeup()
             meta.last_sent_value = meta.last_sent_value or nil
 
             -- Refresh the telemetry sensor periodically with cached value (heartbeat)
-            if meta.appId and meta.last_sent_value ~= nil and (os.clock() - (lastPush[meta.appId] or 0)) >= FORCE_REFRESH_INTERVAL then
+            if meta.appId and meta.last_sent_value ~= nil and (msp.clock - (lastPush[meta.appId] or 0)) >= FORCE_REFRESH_INTERVAL then
                 createOrUpdateSensor(meta.appId, meta, meta.last_sent_value)
                 meta.last_update_time = now
-                lastPush[meta.appId] = os.clock()
+                lastPush[meta.appId] = msp.clock
             end
         end
 
