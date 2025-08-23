@@ -705,7 +705,7 @@ function utils.apiVersionCompare(op, req)
         return t
     end
 
-    local a, b = parts(rfsuite.session.apiVersion), parts(req)
+    local a, b = parts(rfsuite.session.apiVersion or 12.06), parts(req)
     if #a == 0 or #b == 0 then return false end
 
     -- pad shorter list with zeros

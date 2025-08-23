@@ -199,7 +199,6 @@ end
     If a field type does not have a corresponding read function, an error is logged and the parsing is halted.
 ]]
 local function parseMSPChunk(buf, structure, state)
-    local apiVersion = rfsuite.session.apiVersion or 12.06
     local processedFields = 0
     local startIndex = state.index
 
@@ -207,7 +206,7 @@ local function parseMSPChunk(buf, structure, state)
         local field = structure[state.index]
         state.index = state.index + 1
 
-        if field.apiVersion and apiVersion < field.apiVersion then
+        if field.apiVersion and rfsuite.utils.apiVersionCompare("<", field.apiVersion) then
             goto continue
         end
 
@@ -399,14 +398,13 @@ end
 ]]
 function apiLoader.calculateMinBytes(structure)
 
-    local apiVersion = rfsuite.session.apiVersion
     local totalBytes = 0
 
     for _, param in ipairs(structure) do
         local insert_param = false
     
         -- API version check logic
-        if not param.apiVersion or compareApiVersion(">=", param.apiVersion) then
+        if not param.apiVersion or rfsuite.utils.apiVersionCompare(">=", param.apiVersion) then
             insert_param = true
         end
     
@@ -430,15 +428,13 @@ end
                      that meet the API version criteria.
 ]]
 function apiLoader.filterByApiVersion(structure)
-
-    local apiVersion = rfsuite.session.apiVersion or 12.06
     local filteredStructure = {}
 
     for _, param in ipairs(structure) do
         local insert_param = false
 
         -- API version check logic
-        if not param.apiVersion or (apiVersion and utils.round(apiVersion,2) >= utils.round(param.apiVersion,2)) then
+        if not param.apiVersion or rfsuite.utils.apiVersionCompare(">=", param.apiVersion) then
             insert_param = true
         end
 
@@ -795,10 +791,8 @@ function apiLoader.prepareStructureData(structure)
     local minBytes = 0
     local simResponse = {}
 
-    local apiVersion = rfsuite.session.apiVersion or 12.06
-
     for _, param in ipairs(structure) do
-        if param.apiVersion and apiVersion < param.apiVersion then
+        if param.apiVersion and rfsuite.utils.apiVersionCompare("<", param.apiVersion) then
             goto continue
         end
 
