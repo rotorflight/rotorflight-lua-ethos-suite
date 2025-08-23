@@ -1,6 +1,6 @@
 local function openPage(pidx, title, script)
 
-    if rfsuite.session.apiVersion >= 12.09 then
+    if rfsuite.utils.apiVersionCompare(">=", "12.09") then
         -- load new menu with 3 pages
         rfsuite.app.ui.openPage(pidx, title, "governor/governor.lua")        
     else
