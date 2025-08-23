@@ -633,7 +633,7 @@ end
 -- @param buf     The buffer containing the command data.
 -- @param err     Any error associated with the command.
 function utils.logMsp(cmd, rwState, buf, err)
-    if rfsuite.preferences.developer.logmsp then
+    if rfsuite.preferences.developer.logmspQueue then
         local payload = rfsuite.utils.joinTableItems(buf, ", ")
         rfsuite.utils.log(rwState .. " [" .. cmd .. "]{" .. payload .. "}", "info")
         if err then
