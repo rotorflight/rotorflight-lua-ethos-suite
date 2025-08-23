@@ -22,13 +22,13 @@ local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write
 
 -- define msp structure for reading and writing
 
-
-local gov_modeTable ={[0] = rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_govmode_off"), rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_govmode_external"), rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_govmode_electric"), rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_govmode_nitro")}
-local throttleTypeTable ={[0] = rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_throttle_type_normal"), rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_throttle_type_off_on"),rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_throttle_type_off_idle_on"),rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_throttle_type_idle_auto_on")}
-
 local MSP_API_STRUCTURE_READ_DATA
 
 if rfsuite.session.apiVersion >= 12.09 then
+
+    local gov_modeTable ={[0] = rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_govmode_off"), rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_govmode_external"), rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_govmode_electric"), rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_govmode_nitro")}
+    local throttleTypeTable ={[0] = rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_throttle_type_normal"), rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_throttle_type_off_on"),rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_throttle_type_off_idle_on"),rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_throttle_type_idle_auto_on")}
+
     MSP_API_STRUCTURE_READ_DATA = {
         {field = "gov_mode",                        type = "U8",  apiVersion = 12.09, simResponse = {1},    min = 0,  max = #gov_modeTable,   table = gov_modeTable},
         {field = "gov_startup_time",                type = "U16", apiVersion = 12.09, simResponse = {100, 0}, min = 0,  max = 600, unit = "s", default = 200, decimals = 1, scale = 10},
@@ -48,11 +48,14 @@ if rfsuite.session.apiVersion >= 12.09 then
         {field = "gov_spoolup_min_throttle",        type = "U8",  apiVersion = 12.09, simResponse = {0}, },  -- padding in 12.09
         {field = "gov_d_filter",                    type = "U8",  apiVersion = 12.09, simResponse = {0}, },  
         {field = "gov_spooldown_time",              type = "U16", apiVersion = 12.09, simResponse = {0, 0}, unit = "s"},  
-        {field = "gov_throttle_type",               type = "U8", apiVersion = 12.09, simResponse = {0}, min = 0,  max = #throttleTypeTable,   table = throttleTypeTable},     
+        {field = "gov_throttle_type",               type = "U8",  apiVersion = 12.09, simResponse = {0}, min = 0,  max = #throttleTypeTable,   table = throttleTypeTable},     
         {field = "gov_idle_collective",             type = "S8",  apiVersion = 12.09, simResponse = {0}, unit = "%", min = 0, max = 100 }, 
         {field = "gov_wot_collective",              type = "S8",  apiVersion = 12.09, simResponse = {0}, unit = "%", min = 0, max = 100 }    
     }
 else
+
+    local gov_modeTable ={[0] = rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_govmode_off"), rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_govmode_passthrough"), rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_govmode_standard"), rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_govmode_mode1"), rfsuite.i18n.get("api.GOVERNOR_CONFIG.tbl_govmode_mode2")}
+
     MSP_API_STRUCTURE_READ_DATA = {
         {field = "gov_mode",                        type = "U8",  apiVersion = 12.06, simResponse = {3},    min = 0,  max = #gov_modeTable,   table = gov_modeTable},
         {field = "gov_startup_time",                type = "U16", apiVersion = 12.06, simResponse = {100, 0}, min = 0,  max = 600, unit = "s", default = 200, decimals = 1, scale = 10},
