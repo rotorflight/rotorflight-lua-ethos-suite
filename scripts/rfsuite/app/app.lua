@@ -776,7 +776,7 @@ app._uiTasks = {
     if not app.triggers.showSaveArmedWarning or app.triggers.closeSave then return end
     if not app.dialogs.progressDisplay then
       app.dialogs.progressCounter = 0
-      local key = (rfsuite.session.apiVersion >= 12.08 and "app.msg_please_disarm_to_save_warning" or "app.msg_please_disarm_to_save")
+      local key = (rfsuite.utils.apiVersionCompare(">=", "12.08") and "app.msg_please_disarm_to_save_warning" or "app.msg_please_disarm_to_save")
       app.ui.progressDisplay(i18n("app.msg_save_not_commited"), i18n(key))
     end
     if app.dialogs.progressCounter >= 100 then
