@@ -200,7 +200,7 @@ function utils.getGovernorState(value)
         [101] = i18n("widgets.governor.DISARMED")
     }
 
-    if rfsuite.session and rfsuite.session.apiVersion and rfsuite.session.apiVersion > 12.07 then
+    if rfsuite.session and rfsuite.session.apiVersion and rfsuite.utils.apiVersionCompare(">", "12.07") then
         local armflags = rfsuite.tasks.telemetry.getSensor("armflags")
         if armflags == 0 or armflags == 2 then
             value = 101
@@ -690,5 +690,45 @@ function utils.keys(tbl)
     end
     return keys
 end
+
+-- advanced compare function for version strings that should avoid issues
+-- with floating point roundings
+-- apiVersionCompare(op, req)
+-- op:  one of ">", "<", ">=", "<=", "==", "!=", "~="
+-- req: required version ("12.09", 12.09, or "12.9.1")
+function utils.apiVersionCompare(op, req)
+    local function parts(x)
+        local t = {}
+        for n in tostring(x):gmatch("(%d+)") do
+            t[#t+1] = tonumber(n)
+        end
+        return t
+    end
+
+    local a, b = parts(rfsuite.session.apiVersion), parts(req)
+    if #a == 0 or #b == 0 then return false end
+
+    -- pad shorter list with zeros
+    local len = math.max(#a, #b)
+    local cmp = 0
+    for i = 1, len do
+        local ai = a[i] or 0
+        local bi = b[i] or 0
+        if ai ~= bi then
+            cmp = (ai > bi) and 1 or -1
+            break
+        end
+    end
+
+    if op == ">"  then return cmp == 1 end
+    if op == "<"  then return cmp == -1 end
+    if op == ">=" then return cmp >= 0 end
+    if op == "<=" then return cmp <= 0 end
+    if op == "==" then return cmp == 0 end
+    if op == "!=" or op == "~=" then return cmp ~= 0 end
+
+    return false -- unknown operator
+end
+
 
 return utils

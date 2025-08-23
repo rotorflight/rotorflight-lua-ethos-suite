@@ -198,8 +198,9 @@ local function openPage(pidx, title, script)
 
 
         local section = pvalue
-        local hideSection = (section.ethosversion and rfsuite.session.ethosRunningVersion < section.ethosversion) or
-                            (section.mspversion and (rfsuite.session.apiVersion or 1) < section.mspversion) 
+        local hideSection =
+            (section.ethosversion and rfsuite.session.ethosRunningVersion < section.ethosversion) or
+            (section.mspversion   and rfsuite.utils.apiVersionCompare("<", section.mspversion))
                             --or
                             --(section.developer and not rfsuite.preferences.developer.devtools)
 

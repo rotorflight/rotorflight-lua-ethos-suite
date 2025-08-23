@@ -435,10 +435,10 @@ function ui.openMainMenuSub(activesection)
 
             for pidx, page in ipairs(MainMenu.pages) do
                 if page.section == idx then
-                    local hideEntry =
-                        (page.ethosversion and not rfsuite.utils.ethosVersionAtLeast(page.ethosversion))
-                        or (page.mspversion and (rfsuite.session.apiVersion or 1) < page.mspversion)
-                        or (page.developer and not rfsuite.preferences.developer.devtools)
+                local hideEntry =
+                    (page.ethosversion and not rfsuite.utils.ethosVersionAtLeast(page.ethosversion))
+                    or (page.mspversion and rfsuite.utils.apiVersionCompare("<", page.mspversion))
+                    or (page.developer and not rfsuite.preferences.developer.devtools)
 
                     local offline = page.offline
                     rfsuite.app.formFieldsOffline[pidx] = offline or false
@@ -896,16 +896,15 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
     if rfsuite.app.Page.fields then
         for i, field in ipairs(rfsuite.app.Page.fields) do
             local label   = rfsuite.app.Page.labels
-            local version = rfsuite.utils.round(rfsuite.session.apiVersion, 2)
-            if version == nil then return end
+            if rfsuite.session.apiVersion == nil then return end
 
             local valid =
-                (field.apiversion    == nil or rfsuite.utils.round(field.apiversion,    2) <= version)
-                and (field.apiversionlt  == nil or rfsuite.utils.round(field.apiversionlt,  2) >  version)
-                and (field.apiversiongt  == nil or rfsuite.utils.round(field.apiversiongt,  2) <  version)
-                and (field.apiversionlte == nil or rfsuite.utils.round(field.apiversionlte, 2) >= version)
-                and (field.apiversiongte == nil or rfsuite.utils.round(field.apiversiongte, 2) <= version)
-                and (field.enablefunction == nil or field.enablefunction())
+                (field.apiversion    == nil or rfsuite.utils.apiVersionCompare(">=", field.apiversion))    and
+                (field.apiversionlt  == nil or rfsuite.utils.apiVersionCompare("<",  field.apiversionlt))  and
+                (field.apiversiongt  == nil or rfsuite.utils.apiVersionCompare(">",  field.apiversiongt))  and
+                (field.apiversionlte == nil or rfsuite.utils.apiVersionCompare("<=", field.apiversionlte)) and
+                (field.apiversiongte == nil or rfsuite.utils.apiVersionCompare(">=", field.apiversiongte)) and
+                (field.enablefunction == nil or field.enablefunction())
 
             if field.hidden ~= true and valid then
                 rfsuite.app.ui.fieldLabel(field, i, label)
