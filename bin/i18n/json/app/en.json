@@ -2540,6 +2540,21 @@
       }
     },
     "governor": {
+      "menu_general": {
+        "english": "General",
+        "translation": "General",
+        "needs_translation": "false"
+      },
+      "menu_filters": {
+        "english": "Filters",
+        "translation": "Filters",
+        "needs_translation": "false"
+      },
+      "menu_time": {
+        "english": "Ramp Time",
+        "translation": "Ramp Time",
+        "needs_translation": "false"
+      },
       "help_p1": {
         "english": "These parameters apply globally to the governor regardless of the profile in use.",
         "translation": "These parameters apply globally to the governor regardless of the profile in use.",
@@ -2576,13 +2591,13 @@
         "needs_translation": "false"
       },
       "idle_collective": {
-        "english": "Idle",
-        "translation": "Idle",
+        "english": "Idle Collective",
+        "translation": "Idle Collective",
         "needs_translation": "false"
       },
       "wot_collective": {
-        "english": "WOT",
-        "translation": "WOT",
+        "english": "WOT Collective",
+        "translation": "WOT Collective",
         "needs_translation": "false"
       },
       "throttle_hold_timeout": {
@@ -2595,34 +2610,19 @@
         "translation": "Ramp time",
         "needs_translation": "false"
       },
-      "startup": {
-        "english": "Startup",
-        "translation": "Startup",
+      "startup_time": {
+        "english": "Startup time",
+        "translation": "Startup time",
         "needs_translation": "false"
       },
-      "spoolup": {
-        "english": "Spoolup",
-        "translation": "Spoolup",
+      "spoolup_time": {
+        "english": "Spoolup time",
+        "translation": "Spoolup time",
         "needs_translation": "false"
       },
-      "spooldown": {
-        "english": "Spooldown",
-        "translation": "Spooldown",
-        "needs_translation": "false"
-      },
-      "tracking": {
-        "english": "Tracking",
-        "translation": "Tracking",
-        "needs_translation": "false"
-      },
-      "recovery": {
-        "english": "Recovery",
-        "translation": "Recovery",
-        "needs_translation": "false"
-      },
-      "help_p2": {
-        "english": "Each parameter is simply a time value in seconds for each governor action.",
-        "translation": "Each parameter is simply a time value in seconds for each governor action.",
+      "spooldown_time": {
+        "english": "Spooldown time",
+        "translation": "Spooldown time",
         "needs_translation": "false"
       },
       "tracking_time": {
@@ -2630,14 +2630,39 @@
         "translation": "Tracking time",
         "needs_translation": "false"
       },
+      "help_p2": {
+        "english": "Each parameter is simply a time value in seconds for each governor action.",
+        "translation": "Each parameter is simply a time value in seconds for each governor action.",
+        "needs_translation": "false"
+      },
       "name": {
         "english": "Governor",
         "translation": "Governor",
         "needs_translation": "false"
       },
-      "spoolup_time": {
-        "english": "Spoolup time",
-        "translation": "Spoolup time",
+      "gov_rpm_filter": {
+        "english": "RPM Filter Cutoff",
+        "translation": "RPM Filter Cutoff",
+        "needs_translation": "false"
+      },
+      "gov_pwr_filter": {
+        "english": "Voltage Filter Cutoff",
+        "translation": "Voltage Filter Cutoff",
+        "needs_translation": "false"
+      },
+      "gov_tta_filter": {
+        "english": "TTA Bandwidth",
+        "translation": "TTA Bandwidth",
+        "needs_translation": "false"
+      },
+      "gov_ff_filter": {
+        "english": "Precomp Bandwidth",
+        "translation": "Precomp Bandwidth",
+        "needs_translation": "false"
+      },
+      "gov_d_filter": {
+        "english": "D-Term Cutoff",
+        "translation": "D-Term Cutoff",
         "needs_translation": "false"
       }
     },

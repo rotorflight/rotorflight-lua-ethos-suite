@@ -973,6 +973,9 @@ return {
         ["help_p1"] = "Link trims: Gebruiken om kleine afwijkingen in uw swashplate bij te werken. Wordt doorgaans alleen gebruikt als de swashlinks niet verstelbaar zijn."
       },
       ["governor"] = {
+        ["menu_general"] = "General",
+        ["menu_filters"] = "Filters",
+        ["menu_time"] = "Time",
         ["help_p1"] = "Deze parameters zijn van toepassing op de governor, ongeacht het gebruikte profiel.",
         ["handover_throttle"] = "Overdracht throttle%",
         ["spoolup_min_throttle"] = "Min opstart throttle%",
@@ -984,17 +987,17 @@ return {
         ["wot_collective"] = "WOT collective",
         ["throttle_hold_timeout"] = "Throttle hold timeout",
         ["ramp_time"] = "Ramp time",
-        ["startup"] = "Startup",
-        ["spoolup"] = "Spoolup",
-        ["spooldown"] = "Spooldown",
-        ["tracking"] = "Tracking",
-        ["recovery"] = "Recovery",
-        ["filters"] = "Filters",
-        ["rpm_filter"] = "Headspeed",
-        ["help_p2"] = "Elke parameter is een tijdswaarde in seconden voor elke governor actie.\n\n",
+        ["startup_time"] = "Startup time",
+        ["spoolup_time"] = "Optoer tijd",
+        ["spooldown_time"] = "Spooldown time",
         ["tracking_time"] = "Tracking time",
+        ["help_p2"] = "Elke parameter is een tijdswaarde in seconden voor elke governor actie.\n\n",
         ["name"] = "Governor",
-        ["spoolup_time"] = "Optoer tijd"
+        ["gov_rpm_filter"] = "RPM Filter Cutoff",
+        ["gov_pwr_filter"] = "Voltage Filter Cutoff",
+        ["gov_tta_filter"] = "TTA Bandwidth",
+        ["gov_ff_filter"] = "Precomp Bandwidth",
+        ["gov_d_filter"] = "D-Term Cutoff"
       },
       ["accelerometer"] = {
         ["help_p1"] = "De accelerometer wordt gebruikt om de hoek van de flight controller te meten ten opzichte van de horizon. Deze data wordt gebruikt om het vliegtuig te stabiliseren en zelf leveling functionaliteit te bieden.",

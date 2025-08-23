@@ -41,12 +41,12 @@ if rfsuite.session.apiVersion >= 12.09 then
         {field = "gov_autorotation_bailout_time",   type = "U16", apiVersion = 12.09, simResponse = {0, 0}},  -- padding in 12.09
         {field = "gov_autorotation_min_entry_time", type = "U16", apiVersion = 12.09, simResponse = {50, 0}}, -- padding in 12.09
         {field = "gov_handover_throttle",           type = "U8",  apiVersion = 12.09, simResponse = {10},   min = 10, max = 50,  unit = "%", default = 20},
-        {field = "gov_pwr_filter",                  type = "U8",  apiVersion = 12.09, simResponse = {5}},
+        {field = "gov_pwr_filter",                  type = "U8",  apiVersion = 12.09, simResponse = {5}, unit = "Hz"},
         {field = "gov_rpm_filter",                  type = "U8",  apiVersion = 12.09, simResponse = {10}, unit = "Hz"},
-        {field = "gov_tta_filter",                  type = "U8",  apiVersion = 12.09, simResponse = {0}},
-        {field = "gov_ff_filter",                   type = "U8",  apiVersion = 12.09, simResponse = {10}},
+        {field = "gov_tta_filter",                  type = "U8",  apiVersion = 12.09, simResponse = {0}, unit = "Hz"},
+        {field = "gov_ff_filter",                   type = "U8",  apiVersion = 12.09, simResponse = {10}, unit = "Hz"},
         {field = "gov_spoolup_min_throttle",        type = "U8",  apiVersion = 12.09, simResponse = {0}, },  -- padding in 12.09
-        {field = "gov_d_filter",                    type = "U8",  apiVersion = 12.09, simResponse = {0}, },  
+        {field = "gov_d_filter",                    type = "U8",  apiVersion = 12.09, simResponse = {0}, unit = "Hz" },  
         {field = "gov_spooldown_time",              type = "U16", apiVersion = 12.09, simResponse = {0, 0}, unit = "s"},  
         {field = "gov_throttle_type",               type = "U8",  apiVersion = 12.09, simResponse = {0}, min = 0,  max = #throttleTypeTable,   table = throttleTypeTable},     
         {field = "gov_idle_collective",             type = "S8",  apiVersion = 12.09, simResponse = {0}, unit = "%", min = 0, max = 100 }, 

@@ -973,6 +973,9 @@ return {
         ["help_p1"] = "Ajuste de enlaces: Se utiliza para corregir pequeños problemas de nivelación en el swashplate. Normalmente se utiliza cuando los brazos del swashplate no son ajustables."
       },
       ["governor"] = {
+        ["menu_general"] = "General",
+        ["menu_filters"] = "Filters",
+        ["menu_time"] = "Time",
         ["help_p1"] = "Estos parámetros se aplican globalmente al governor independientemente del perfil en uso.",
         ["handover_throttle"] = "% Acelerador Transferencia",
         ["spoolup_min_throttle"] = "% Acelerador Mín Arranque",
@@ -984,17 +987,17 @@ return {
         ["wot_collective"] = "WOT collective",
         ["throttle_hold_timeout"] = "Throttle hold timeout",
         ["ramp_time"] = "Ramp time",
-        ["startup"] = "Startup",
-        ["spoolup"] = "Spoolup",
-        ["spooldown"] = "Spooldown",
-        ["tracking"] = "Tracking",
-        ["recovery"] = "Recovery",
-        ["filters"] = "Filters",
-        ["rpm_filter"] = "Headspeed",
-        ["help_p2"] = "Todos los parámetros son tiempos en segundos para cada acción del governor.",
+        ["startup_time"] = "Startup time",
+        ["spoolup_time"] = "Tiempo de Arranque",
+        ["spooldown_time"] = "Spooldown time",
         ["tracking_time"] = "Tiempo de Tracking",
+        ["help_p2"] = "Todos los parámetros son tiempos en segundos para cada acción del governor.",
         ["name"] = "Governor",
-        ["spoolup_time"] = "Tiempo de Arranque"
+        ["gov_rpm_filter"] = "RPM Filter Cutoff",
+        ["gov_pwr_filter"] = "Voltage Filter Cutoff",
+        ["gov_tta_filter"] = "TTA Bandwidth",
+        ["gov_ff_filter"] = "Precomp Bandwidth",
+        ["gov_d_filter"] = "D-Term Cutoff"
       },
       ["accelerometer"] = {
         ["help_p1"] = "El acelerómetro se utiliza para medir el ángulo del controlador de vuelo respecto del horizonte. Los datos obtenidos son utilizados para estabilizar la aeronave y porveer funcionalidad de nivelado automático.",

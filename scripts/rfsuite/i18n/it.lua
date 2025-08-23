@@ -973,6 +973,9 @@ return {
         ["help_p1"] = "Link trims: Utilizzare per correggere piccoli problemi di livellamento nel piatto oscillante. In genere utilizzato solo se i link oscillanti non sono regolabili."
       },
       ["governor"] = {
+        ["menu_general"] = "General",
+        ["menu_filters"] = "Filters",
+        ["menu_time"] = "Time",
         ["help_p1"] = "Questi parametri si applicano globalmente al regolatore, indipendentemente dal profilo in uso.",
         ["handover_throttle"] = "Trasferimento acceleratore%",
         ["spoolup_min_throttle"] = "Rampa di accelerazione % min",
@@ -984,17 +987,17 @@ return {
         ["wot_collective"] = "WOT collective",
         ["throttle_hold_timeout"] = "Throttle hold timeout",
         ["ramp_time"] = "Ramp time",
-        ["startup"] = "Startup",
-        ["spoolup"] = "Spoolup",
-        ["spooldown"] = "Spooldown",
-        ["tracking"] = "Tracking",
-        ["recovery"] = "Recovery",
-        ["filters"] = "Filters",
-        ["rpm_filter"] = "Headspeed",
-        ["help_p2"] = "Ogni parametro e' semplicemente un valore temporale in secondi per ogni azione del regolatore.",
+        ["startup_time"] = "Startup time",
+        ["spoolup_time"] = "Tempo Rampa di accelerazione",
+        ["spooldown_time"] = "Spooldown time",
         ["tracking_time"] = "Tempo Tracciatura",
+        ["help_p2"] = "Ogni parametro e' semplicemente un valore temporale in secondi per ogni azione del regolatore.",
         ["name"] = "Governor",
-        ["spoolup_time"] = "Tempo Rampa di accelerazione"
+        ["gov_rpm_filter"] = "RPM Filter Cutoff",
+        ["gov_pwr_filter"] = "Voltage Filter Cutoff",
+        ["gov_tta_filter"] = "TTA Bandwidth",
+        ["gov_ff_filter"] = "Precomp Bandwidth",
+        ["gov_d_filter"] = "D-Term Cutoff"
       },
       ["accelerometer"] = {
         ["help_p1"] = "L'accelerometro e' utilizzato per misurare l'angolo del controller di volo rispetto all'orizzonte. Questi dati sono utilizzati per stabilizzare l'aeromobile e fornire la funzionalita' di autolivellamento.",

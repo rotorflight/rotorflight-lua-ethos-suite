@@ -973,6 +973,9 @@ return {
         ["help_p1"] = "Trimmungen verknuepfen: Verwenden Sie dies, um kleine Nivellierungsprobleme in Ihrer Taumelscheibe zu korrigieren. Normalerweise nur notwendig, wenn die Taumelscheibenanlenkungen nicht verstellbar sind."
       },
       ["governor"] = {
+        ["menu_general"] = "General",
+        ["menu_filters"] = "Filters",
+        ["menu_time"] = "Time",
         ["help_p1"] = "Diese Parameter gelten global fuer den Drehzahlreger (Governor), unabhaengig vom verwendeten Profil.",
         ["handover_throttle"] = "Uebergabe-Gas%",
         ["spoolup_min_throttle"] = "Min. Spoolup-Gas%",
@@ -984,17 +987,17 @@ return {
         ["wot_collective"] = "WOT collective",
         ["throttle_hold_timeout"] = "Throttle hold timeout",
         ["ramp_time"] = "Ramp time",
-        ["startup"] = "Startup",
-        ["spoolup"] = "Spoolup",
-        ["spooldown"] = "Spooldown",
-        ["tracking"] = "Tracking",
-        ["recovery"] = "Recovery",
-        ["filters"] = "Filters",
-        ["rpm_filter"] = "Headspeed",
-        ["help_p2"] = "Jeder Parameter ist einfach ein Zeitwert in Sekunden fuer jede Regleraktion.",
+        ["startup_time"] = "Startup time",
+        ["spoolup_time"] = "Spoolup-Zeit",
+        ["spooldown_time"] = "Spooldown time",
         ["tracking_time"] = "Tracking-Zeit",
+        ["help_p2"] = "Jeder Parameter ist einfach ein Zeitwert in Sekunden fuer jede Regleraktion.",
         ["name"] = "Governor",
-        ["spoolup_time"] = "Spoolup-Zeit"
+        ["gov_rpm_filter"] = "RPM Filter Cutoff",
+        ["gov_pwr_filter"] = "Voltage Filter Cutoff",
+        ["gov_tta_filter"] = "TTA Bandwidth",
+        ["gov_ff_filter"] = "Precomp Bandwidth",
+        ["gov_d_filter"] = "D-Term Cutoff"
       },
       ["accelerometer"] = {
         ["help_p1"] = "Der Beschleunigungssensor wird verwendet, um den Winkel des Flugcontrollers in Bezug auf den Horizont zu messen. Diese Daten werden zur Stabilisierung des Fluggeraets und zur Bereitstellung der Selbstnivellierungsfunktion verwendet.",

@@ -973,6 +973,9 @@ return {
         ["help_p1"] = "Lier les trims : Utilisez pour ajuster les petits problemes de nivellement dans votre plateau cyclique. A utilise uniquement si les liens du plateau cyclique ne sont pas ajustables."
       },
       ["governor"] = {
+        ["menu_general"] = "General",
+        ["menu_filters"] = "Filters",
+        ["menu_time"] = "Time",
         ["help_p1"] = "Ces parametres s'appliquent globalement au gouverneur, quel que soit le profil utilise.",
         ["handover_throttle"] = "Transfert des gaz %",
         ["spoolup_min_throttle"] = "Gaz min. de demarrage %",
@@ -984,17 +987,17 @@ return {
         ["wot_collective"] = "WOT collective",
         ["throttle_hold_timeout"] = "Throttle hold timeout",
         ["ramp_time"] = "Ramp time",
-        ["startup"] = "Startup",
-        ["spoolup"] = "Spoolup",
-        ["spooldown"] = "Spooldown",
-        ["tracking"] = "Tracking",
-        ["recovery"] = "Recovery",
-        ["filters"] = "Filters",
-        ["rpm_filter"] = "Headspeed",
-        ["help_p2"] = "Chaque paramtre est simplement une valeur de temps en secondes pour chaque action du gouverneur.",
+        ["startup_time"] = "Startup time",
+        ["spoolup_time"] = "Temps de monte en regime",
+        ["spooldown_time"] = "Spooldown time",
         ["tracking_time"] = "Temps de suivi",
+        ["help_p2"] = "Chaque paramtre est simplement une valeur de temps en secondes pour chaque action du gouverneur.",
         ["name"] = "Gouverneur",
-        ["spoolup_time"] = "Temps de monte en regime"
+        ["gov_rpm_filter"] = "RPM Filter Cutoff",
+        ["gov_pwr_filter"] = "Voltage Filter Cutoff",
+        ["gov_tta_filter"] = "TTA Bandwidth",
+        ["gov_ff_filter"] = "Precomp Bandwidth",
+        ["gov_d_filter"] = "D-Term Cutoff"
       },
       ["accelerometer"] = {
         ["help_p1"] = "L'accelerometre est utilise pour mesurer l'angle du controleur de vol par rapport a l'horizon. Ces donnees sont utilisees pour stabiliser l'aeronef et fournir une fonctionnalite d'auto-nivellement.",
