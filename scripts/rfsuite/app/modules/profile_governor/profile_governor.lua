@@ -38,7 +38,7 @@ if rfsuite.session.apiVersion >= 12.09 then
 else
     apidata = {
         api = {
-            [1] = 'GOVERNOR_PROFILE_RF22',
+            [1] = 'GOVERNOR_PROFILE',
         },
         formdata = {
             labels = {
