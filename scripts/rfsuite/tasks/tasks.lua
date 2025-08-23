@@ -224,6 +224,9 @@ function tasks.telemetryCheckScheduler()
             else
                 rfsuite.session.telemetryState = true
                 rfsuite.session.telemetrySensor = currentTelemetrySensor
+
+                local module = model.getModule(rfsuite.session.telemetrySensor:module())
+                rfsuite.session.telemetryModule = module
                 rfsuite.session.telemetryType = sportSensor and "sport" or elrsSensor and "crsf" or nil
                 rfsuite.session.telemetryTypeChanged = currentTelemetrySensor:name() ~= lastTelemetrySensorName
                 lastTelemetrySensorName = currentTelemetrySensor:name()

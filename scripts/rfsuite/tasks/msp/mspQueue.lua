@@ -120,6 +120,7 @@ end
 --============================--
 
 function MspQueueController:processQueue()
+
     -- Optional loop throttling to reduce CPU when called from a hot loop
     if self.loopInterval and self.loopInterval > 0 then
         local now = os.clock()
@@ -154,6 +155,11 @@ function MspQueueController:processQueue()
     end
 
     rfsuite.app.triggers.mspBusy = true
+
+    if rfsuite.session.telemetryModule then
+        local module = rfsuite.session.telemetryModule
+        if module and module.muteSensorLost then module:muteSensorLost(2.0) end
+    end
 
     -- Load a new current message if needed
     if not self.currentMessage then
