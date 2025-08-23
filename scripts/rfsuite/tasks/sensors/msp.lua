@@ -227,7 +227,7 @@ local function createOrUpdateSensor(appId, fieldMeta, value)
         if existingSensor then
             sensorCache[appId] = existingSensor
         else
-            if not rfsuite.session.telemetrySensor then
+            if not (rfsuite.session.telemetryState and rfsuite.session.telemetrySensor) then
                 negativeCache[appId] = true
                 return
             end
