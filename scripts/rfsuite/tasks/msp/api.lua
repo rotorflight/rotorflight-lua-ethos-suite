@@ -270,14 +270,13 @@ function apiLoader.parseMSPData(buf, structure, processed, other, options)
         }
 
         local function processNextChunk()
-            local apiVersion = rfsuite.session.apiVersion or 12.06
             local processedFields = 0
 
             while state.index <= #structure and processedFields < fieldsPerTick do
                 local field = structure[state.index]
                 state.index = state.index + 1
 
-                if field.apiVersion and apiVersion < field.apiVersion then
+                if field.apiVersion and rfsuite.utils.apiVersionCompare("<", field.apiVersion) then
                     goto continue
                 end
 
@@ -342,10 +341,9 @@ function apiLoader.parseMSPData(buf, structure, processed, other, options)
         local typeSizes = get_type_size()
         local position_map = {}
         local current_byte = 1
-        local apiVersion = rfsuite.session.apiVersion or 12.06
 
         for _, field in ipairs(structure) do
-            if field.apiVersion and apiVersion < field.apiVersion then
+            if field.apiVersion and rfsuite.utils.apiVersionCompare("<", field.apiVersion) then
                 goto continue
             end
 
@@ -408,7 +406,7 @@ function apiLoader.calculateMinBytes(structure)
         local insert_param = false
     
         -- API version check logic
-        if not param.apiVersion or (apiVersion and apiVersion >= param.apiVersion) then
+        if not param.apiVersion or compareApiVersion(">=", param.apiVersion) then
             insert_param = true
         end
     
