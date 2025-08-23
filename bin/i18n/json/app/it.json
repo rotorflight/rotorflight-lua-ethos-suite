@@ -1807,6 +1807,21 @@
         "translation": "Max throttle",
         "needs_translation": "false"
       },
+      "idle_throttle": {
+        "english": "Idle throttle",
+        "translation": "Idle throttle",
+        "needs_translation": "true"
+      },
+      "auto_throttle": {
+        "english": "Auto throttle",
+        "translation": "Auto throttle",
+        "needs_translation": "true"
+      },
+      "fallback_drop": {
+        "english": "Thr. Fallback drop",
+        "translation": "Thr. Fallback drop",
+        "needs_translation": "true"
+      },
       "full_headspeed": {
         "english": "Full headspeed",
         "translation": "Piena Velocita'Rotore",

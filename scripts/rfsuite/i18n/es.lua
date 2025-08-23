@@ -307,7 +307,10 @@ return {
       ["tbl_throttle_type_normal"] = "NORMAL",
       ["tbl_throttle_type_off_on"] = "OFF_ON",
       ["tbl_throttle_type_off_idle_on"] = "OFF_IDLE_ON",
-      ["tbl_throttle_type_idle_auto_on"] = "OFF_IDLE_AUTO_ON"
+      ["tbl_throttle_type_idle_auto_on"] = "OFF_IDLE_AUTO_ON",
+      ["governor_idle_throttle"] = "Idle throttle",
+      ["governor_auto_throttle"] = "Auto throttle",
+      ["governor_fallback_drop"] = "Fallback drop"
     },
     ["RC_CONFIG"] = {
       ["rc_deflection"] = "Defleccion desde el centro del joystick en microsegundos (uS).",
@@ -812,6 +815,9 @@ return {
         ["help_p6"] = "Asistencia de Torque de Cola: Para colas motorizadas. Ganancia y límite de aceleracion del rotor cuando se utiliza el torque del rotor principal para asistir al giro sobre el eje vertical.",
         ["help_p4"] = "Precomp: Precompensación del Governor para comandos de cíclico, colectivo, y dirección (cola).",
         ["max_throttle"] = "Acelerador Máx",
+        ["idle_throttle"] = "Idle throttle",
+        ["auto_throttle"] = "Auto throttle",
+        ["fallback_drop"] = "Thr. Fallback drop",
         ["full_headspeed"] = "Velocidad Máx Rotor",
         ["precomp"] = "Precomp",
         ["gain"] = "Ganacia PID maestra",

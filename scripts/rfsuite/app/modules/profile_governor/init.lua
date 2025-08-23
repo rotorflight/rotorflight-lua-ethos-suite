@@ -20,7 +20,7 @@
 local init = {
     title = rfsuite.i18n.get("app.modules.profile_governor.name"), -- title of the page
     section = "main", -- do not run if busy with msp
-    script = "profile_governor.lua", -- run this script
+    script = "select.lua", -- run this script
     image = "governor.png", -- image for the page
     order = 5, -- order in the section
     ethosversion = {1, 6, 2} -- disable button if ethos version is less than this

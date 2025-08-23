@@ -307,7 +307,10 @@ return {
       ["tbl_throttle_type_normal"] = "NORMAL",
       ["tbl_throttle_type_off_on"] = "OFF_ON",
       ["tbl_throttle_type_off_idle_on"] = "OFF_IDLE_ON",
-      ["tbl_throttle_type_idle_auto_on"] = "OFF_IDLE_AUTO_ON"
+      ["tbl_throttle_type_idle_auto_on"] = "OFF_IDLE_AUTO_ON",
+      ["governor_idle_throttle"] = "Idle throttle",
+      ["governor_auto_throttle"] = "Auto throttle",
+      ["governor_fallback_drop"] = "Fallback drop"
     },
     ["RC_CONFIG"] = {
       ["rc_deflection"] = "Deviation du manche par rapport au centre en microsecondes (us).",
@@ -812,6 +815,9 @@ return {
         ["help_p6"] = "Assistance couple d'anticouple : Pour rotors anticouple motorises. Gain et limite de l'augmentation du regime lors de l'utilisation du couple du rotor principal pour l'assistance en lacet.",
         ["help_p4"] = "Precompensation : Gain de precompensation du gouverneur pour les commandes de lacet, cyclique et collectif.",
         ["max_throttle"] = "Gaz max",
+        ["idle_throttle"] = "Idle throttle",
+        ["auto_throttle"] = "Auto throttle",
+        ["fallback_drop"] = "Thr. Fallback drop",
         ["full_headspeed"] = "Regime rotor max",
         ["precomp"] = "Precompensation",
         ["gain"] = "Gain PID principal",

@@ -307,7 +307,10 @@ return {
       ["tbl_throttle_type_normal"] = "NORMAL",
       ["tbl_throttle_type_off_on"] = "OFF_ON",
       ["tbl_throttle_type_off_idle_on"] = "OFF_IDLE_ON",
-      ["tbl_throttle_type_idle_auto_on"] = "OFF_IDLE_AUTO_ON"
+      ["tbl_throttle_type_idle_auto_on"] = "OFF_IDLE_AUTO_ON",
+      ["governor_idle_throttle"] = "Idle throttle",
+      ["governor_auto_throttle"] = "Auto throttle",
+      ["governor_fallback_drop"] = "Fallback drop"
     },
     ["RC_CONFIG"] = {
       ["rc_deflection"] = "Deflessione dello stick dal centro in microsecondi (us).",
@@ -812,6 +815,9 @@ return {
         ["help_p6"] = "Assistenza alla coppia di coda: per code motorizzate. Guadagno e limite di aumento della velocita' utilizzando la coppia del rotore principale per l'assistenza yaw",
         ["help_p4"] = "Precomp: guadagno precomp per gli input di imbardata, ciclico e collettivo.",
         ["max_throttle"] = "Max throttle",
+        ["idle_throttle"] = "Idle throttle",
+        ["auto_throttle"] = "Auto throttle",
+        ["fallback_drop"] = "Thr. Fallback drop",
         ["full_headspeed"] = "Piena Velocita'Rotore",
         ["precomp"] = "Precomp",
         ["gain"] = "Guadagno Master PID",

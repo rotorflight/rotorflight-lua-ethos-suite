@@ -22,7 +22,7 @@ local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write
 
 local MSP_API_STRUCTURE_READ_DATA
 
-if rfsuite.session.apiVersion >= 12.09 then
+if rfsuite.utils.apiVersionCompare(">=", "12.09") then
     MSP_API_STRUCTURE_READ_DATA = {
         {field = "governor_headspeed",            type = "U16", apiVersion = 12.09, simResponse = {208, 7}, min = 0,   max = 50000, default = 1000, unit = "rpm", step = 10},
         {field = "governor_gain",                 type = "U8",  apiVersion = 12.09, simResponse = {100},    min = 0,   max = 250,   default = 40},
@@ -37,10 +37,10 @@ if rfsuite.session.apiVersion >= 12.09 then
         {field = "governor_collective_weight",    type = "U8",  apiVersion = 12.09, simResponse = {100},    min = 0,   max = 250,   default = 100},
         {field = "governor_max_throttle",         type = "U8",  apiVersion = 12.09, simResponse = {100},    min = 40,  max = 100,   default = 100,  unit = "%"},
         {field = "governor_min_throttle",         type = "U8",  apiVersion = 12.09, simResponse = {10},     min = 0,   max = 100,   default = 10,   unit = "%"},
-        {field = "governor_idle_throttle",        type = "U8",  apiVersion = 12.09, simResponse = {10},  },
-        {field = "governor_auto_throttle",        type = "U8",  apiVersion = 12.09, simResponse = {10},  },
-        {field = "governor_fallback_drop",        type = "U8",  apiVersion = 12.09, simResponse = {10},  },
-        {field = "governor_flags",                type = "U16", apiVersion = 12.09, simResponse = {10},  },
+        {field = "governor_idle_throttle",        type = "U8",  apiVersion = 12.09, simResponse = {10},     min = 0,   max = 100,   default = 0,  unit = "%"},
+        {field = "governor_auto_throttle",        type = "U8",  apiVersion = 12.09, simResponse = {10},     min = 0,   max = 100,   default = 0,  unit = "%"},
+        {field = "governor_fallback_drop",        type = "U8",  apiVersion = 12.09, simResponse = {10},     min = 0,   max = 50,   default = 10,  unit = "%"},
+        {field = "governor_flags",                type = "U16", apiVersion = 12.09, simResponse = {251, 3}, },
     }
 else
     MSP_API_STRUCTURE_READ_DATA = {
