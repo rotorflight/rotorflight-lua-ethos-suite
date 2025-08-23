@@ -40,7 +40,7 @@ if rfsuite.utils.apiVersionCompare(">=", "12.09") then
         {field = "gov_autorotation_timeout",        type = "U16", apiVersion = 12.09, simResponse = {0, 0}},   -- padding in 12.09
         {field = "gov_autorotation_bailout_time",   type = "U16", apiVersion = 12.09, simResponse = {0, 0}},   -- padding in 12.09
         {field = "gov_autorotation_min_entry_time", type = "U16", apiVersion = 12.09, simResponse = {0, 0}},   -- padding in 12.09
-        {field = "gov_handover_throttle",           type = "U8",  apiVersion = 12.09, simResponse = {20},   min = 10, max = 50,  unit = "%", default = 20},
+        {field = "gov_handover_throttle",           type = "U8",  apiVersion = 12.09, simResponse = {20},   min = 0, max = 50,  unit = "%", default = 20},
         {field = "gov_pwr_filter",                  type = "U8",  apiVersion = 12.09, simResponse = {20}, unit = "Hz", min = 0, max = 250, default = 20},
         {field = "gov_rpm_filter",                  type = "U8",  apiVersion = 12.09, simResponse = {20}, unit = "Hz", min = 0, max = 250, default = 20},
         {field = "gov_tta_filter",                  type = "U8",  apiVersion = 12.09, simResponse = {0}, unit = "Hz", min = 0, max = 250, default = 20},
