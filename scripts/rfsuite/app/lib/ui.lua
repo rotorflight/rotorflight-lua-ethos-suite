@@ -54,8 +54,6 @@ function ui.progressDisplay(title, message, speed)
                 mult = 2
             end
 
-            print("Mult: " .. mult)
-
             if not app.triggers.closeProgressLoader then
                 app.dialogs.progressCounter = app.dialogs.progressCounter + (2 * mult)
             elseif app.triggers.closeProgressLoader and rfsuite.tasks.msp.mspQueue:isProcessed() then   -- this is the one we normally catch
