@@ -94,7 +94,7 @@ local function openPage(pidx, title, script)
                     -- Optional: your action when pressing a theme
                     -- Example: rfsuite.app.ui.loadTheme(theme.folder)
                     rfsuite.preferences.menulastselected["settings_dashboard_themes"] = idx
-                rfsuite.app.ui.progressDisplay()
+                rfsuite.app.ui.progressDisplay(nil,nil,true)
                     local configure = theme.configure
                     local source = theme.source
                     local folder = theme.folder
@@ -160,12 +160,12 @@ local function event(widget, category, value, x, y)
 end
 
 local function onNavMenu()
-    rfsuite.app.ui.progressDisplay()
-        rfsuite.app.ui.openPage(
-            pageIdx,
-            i18n("app.modules.settings.dashboard"),
-            "settings/tools/dashboard.lua"
-        )
+    rfsuite.app.ui.progressDisplay(nil,nil,true)
+    rfsuite.app.ui.openPage(
+        pageIdx,
+        i18n("app.modules.settings.dashboard"),
+        "settings/tools/dashboard.lua"
+    )
         return true
 end
 

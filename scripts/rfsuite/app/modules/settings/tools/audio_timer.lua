@@ -217,6 +217,15 @@ local function event(widget, category, value, x, y)
     end
 end
 
+local function onNavMenu()
+    rfsuite.app.ui.progressDisplay(nil,nil,true)
+    rfsuite.app.ui.openPage(
+        pageIdx,
+        i18n("app.modules.settings.name"),
+        "settings/tools/audio.lua"
+    )
+end
+
 return {
     event      = event,
     openPage   = openPage,

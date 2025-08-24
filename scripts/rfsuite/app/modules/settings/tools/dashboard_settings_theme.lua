@@ -138,7 +138,7 @@ local function event(widget, category, value, x, y)
 end
 
 local function onNavMenu()
-    --rfsuite.app.ui.progressDisplay()
+    rfsuite.app.ui.progressDisplay(nil,nil,true)
         rfsuite.app.ui.openPage(
             pageIdx,
             i18n("app.modules.settings.dashboard"),
