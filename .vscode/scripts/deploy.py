@@ -758,6 +758,15 @@ def main():
 
     DEPLOY_TO_RADIO = args.radio 
 
+    DEPLOY_PIDFILE = os.path.join(tempfile.gettempdir(), "rfdeploy-copy.pid")
+    try:
+        with open(DEPLOY_PIDFILE, "w") as f:
+            f.write(str(os.getpid()))
+    except Exception:
+        pass
+    atexit.register(lambda: os.path.exists(DEPLOY_PIDFILE) and os.remove(DEPLOY_PIDFILE))
+
+
     # load override config
     if args.config != CONFIG_PATH:
         with open(args.config) as f:
