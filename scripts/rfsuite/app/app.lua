@@ -143,6 +143,7 @@ app.dialogs.progress          = false
 app.dialogs.progressDisplay   = false
 app.dialogs.progressWatchDog  = nil
 app.dialogs.progressCounter   = 0
+app.dialogs.progressSpeed     = false
 app.dialogs.progressRateLimit = os.clock()
 app.dialogs.progressRate      = 0.25
 

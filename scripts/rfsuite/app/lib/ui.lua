@@ -25,11 +25,18 @@ local i18n  = rfsuite.i18n.get
 --------------------------------------------------------------------------------
 
 -- Show a progress dialog (defaults: "Loading" / "Loading data from flight controller...").
-function ui.progressDisplay(title, message)
+function ui.progressDisplay(title, message, speed)
     if rfsuite.app.dialogs.progressDisplay then return end
 
     title   = title   or i18n("app.msg_loading")
     message = message or i18n("app.msg_loading_from_fbl")
+
+
+    if speed then
+        rfsuite.app.dialogs.progressSpeed = true
+    else
+        rfsuite.app.dialogs.progressSpeed = false
+    end
 
     rfsuite.app.dialogs.progressDisplay   = true
     rfsuite.app.dialogs.progressWatchDog  = os.clock()
@@ -42,10 +49,17 @@ function ui.progressDisplay(title, message)
 
             app.dialogs.progress:value(app.dialogs.progressCounter)
 
+            local mult = 1
+            if app.dialogs.progressSpeed then
+                mult = 2
+            end
+
+            print("Mult: " .. mult)
+
             if not app.triggers.closeProgressLoader then
-                app.dialogs.progressCounter = app.dialogs.progressCounter + 2
+                app.dialogs.progressCounter = app.dialogs.progressCounter + (2 * mult)
             elseif app.triggers.closeProgressLoader and rfsuite.tasks.msp.mspQueue:isProcessed() then   -- this is the one we normally catch
-                app.dialogs.progressCounter = app.dialogs.progressCounter + 15
+                app.dialogs.progressCounter = app.dialogs.progressCounter + (15 * mult)
                 if app.dialogs.progressCounter >= 100 then
                     app.dialogs.progress:close()
                     app.dialogs.progressDisplay = false
@@ -53,12 +67,13 @@ function ui.progressDisplay(title, message)
                     app.triggers.closeProgressLoader = false
                 end
             elseif app.triggers.closeProgressLoader and  app.triggers.closeProgressLoaderNoisProcessed then   -- an oddball for things where we dont want to check against isProcessed
-                app.dialogs.progressCounter = app.dialogs.progressCounter + 15
+                app.dialogs.progressCounter = app.dialogs.progressCounter + (15 * mult)
                 if app.dialogs.progressCounter >= 100 then
                     app.dialogs.progress:close()
                     app.dialogs.progressDisplay = false
                     app.dialogs.progressCounter = 0
                     app.triggers.closeProgressLoader = false
+                    app.dialogs.progressSpeed = false
                     app.triggers.closeProgressLoaderNoisProcessed= false
                 end
             end
@@ -74,6 +89,7 @@ function ui.progressDisplay(title, message)
                 app.Page   = app.PageTmp
                 app.PageTmp = nil
                 app.dialogs.progressCounter = 0
+                app.dialogs.progressSpeed = false
                 app.dialogs.progressDisplay = false
             end
         end
@@ -115,7 +131,7 @@ function ui.progressNolinkDisplay()
             app.triggers.invalidConnectionSetup = invalid
 
             -- Progress the dialog (bigger steps when invalid so the user gets feedback faster)
-            local step = invalid and 10 or 20
+            local step = invalid and 20 or 40
             app.dialogs.nolinkValueCounter = app.dialogs.nolinkValueCounter + step
 
             if rfsuite.app.dialogs.noLink then
@@ -370,7 +386,9 @@ function ui.openMainMenu()
                 paint   = function() end,
                 press   = function()
                     rfsuite.preferences.menulastselected["mainmenu"] = pidx
-                    rfsuite.app.ui.progressDisplay()
+                    local speed = false
+                    if pvalue.loaderspeed then speed = true end
+                    rfsuite.app.ui.progressDisplay(nil,nil,speed)
                     if pvalue.module then
                         rfsuite.app.isOfflinePage = true
                         rfsuite.app.ui.openPage(pidx, pvalue.title, pvalue.module .. "/" .. pvalue.script)
@@ -519,7 +537,9 @@ function ui.openMainMenuSub(activesection)
                             paint   = function() end,
                             press   = function()
                                 rfsuite.preferences.menulastselected[activesection] = pidx
-                                rfsuite.app.ui.progressDisplay()
+                                local speed = false
+                                if page.loaderspeed or section.loaderspeed then speed = true end
+                                rfsuite.app.ui.progressDisplay(nil,nil,speed)
                                 rfsuite.app.isOfflinePage = offline
                                 rfsuite.app.ui.openPage(pidx, page.title, page.folder .. "/" .. page.script)
                             end

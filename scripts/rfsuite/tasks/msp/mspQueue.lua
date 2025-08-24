@@ -159,8 +159,7 @@ function MspQueueController:processQueue()
     if rfsuite.session.telemetryModule then
         local module = rfsuite.session.telemetryModule
         if module and module.muteSensorLost then
-            print("Mute Sensor Lost")
-            module:muteSensorLost(5.0)
+            module:muteSensorLost(2.0)
         end
     end
 
