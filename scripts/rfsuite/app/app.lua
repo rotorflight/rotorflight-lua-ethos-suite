@@ -677,49 +677,6 @@ app._uiTasks = {
       end
     end
 
-    if (app.dialogs.nolinkDisplay and not app.triggers.wasConnected) then
-      local offline       = app.offlineMode == true
-      local apiStr        = tostring(rfsuite.session.apiVersion or "")
-      local curRssi       = app.utils.getRSSI()
-
-      local invalid, abort = false, false
-      local msg = i18n("app.msg_connecting_to_fbl")
-
-      -- 1) ETHOS version (hard stop text, but not "invalid" so progress continues)
-      if not utils.ethosVersionAtLeast() then
-        msg = string.format("%s < V%d.%d.%d", string.upper(i18n("ethos")), table.unpack(rfsuite.config.ethosVersion))
-
-      -- 2) Background task (invalid + abort)
-      elseif not rfsuite.tasks.active() then
-        msg, invalid, abort = i18n("app.check_bg_task"), true, true
-
-      end  
-
-      app.triggers.invalidConnectionSetup = invalid
-
-      -- Progress the dialog (bigger steps when invalid so the user gets feedback faster)
-      local step = invalid and 5 or 10
-      app.dialogs.nolinkValueCounter = app.dialogs.nolinkValueCounter + step
-
-      if rfsuite.app.dialogs.noLink then
-        rfsuite.app.dialogs.noLink:value(app.dialogs.nolinkValueCounter)
-        rfsuite.app.dialogs.noLink:message(msg)
-      end
-
-      -- One-time audible nudge when we first mark it invalid
-      if invalid and app.dialogs.nolinkValueCounter == 10 then
-        app.audio.playBufferWarn = true
-      end
-
-      -- Finish: hide dialog and optionally abort app if bg tasks missing
-      if app.dialogs.nolinkValueCounter >= 100 then
-        app.dialogs.nolinkDisplay = false
-        app.triggers.wasConnected = true
-        if rfsuite.app.dialogs.noLink then rfsuite.app.dialogs.noLink:close() end
-        if abort then app.close() end
-      end
-    end
-
   end,
 
   -- 5. Trigger Save Dialogs
