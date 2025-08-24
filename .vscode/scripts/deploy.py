@@ -20,6 +20,17 @@ THROTTLE_CHUNK = 16 * 1024          # 16 KiB
 THROTTLE_PAUSE_EVERY = 64 * 1024  # pause+fsync every 64 KiB written
 THROTTLE_PAUSE_S = 0.2             # 200 ms
 
+def file_md5(path, chunk=1024 * 1024):
+    import hashlib
+    h = hashlib.md5()
+    with open(path, 'rb', buffering=0) as f:
+        while True:
+            b = f.read(chunk)
+            if not b:
+                break
+            h.update(b)
+    return h.hexdigest()
+
 def _kill_previous_tail_if_any():
     try:
         with open(SERIAL_PIDFILE, "r") as f:
@@ -587,19 +598,80 @@ def copy_files(src_override, fileext, targets):
                         shutil.copy(os.path.join(r,f), out_dir)
 
         # fast
+        # fast
         elif fileext == 'fast':
             scr = os.path.join(git_src, 'scripts', tgt)
-            for r,_,files in os.walk(scr):
-                for f in files:
-                    srcf = os.path.join(r,f)
-                    rel = os.path.relpath(srcf, scr)
-                    dstf = os.path.join(out_dir, rel)
-                    os.makedirs(os.path.dirname(dstf), exist_ok=True)
-                    if not os.path.exists(dstf) or os.path.getmtime(srcf)>os.path.getmtime(dstf):
-                        shutil.copy(srcf, dstf)
-                        print(f"Copy {f}")
 
-        
+            # FAT/exFAT timestamp slack (seconds)
+            TS_SLACK = 2.0
+
+            # Collect a stable list first (so bars have fixed totals)
+            files_all = []
+            for r, _, files in os.walk(scr):
+                for f in files:
+                    srcf = os.path.join(r, f)
+                    rel  = os.path.relpath(srcf, scr)
+                    dstf = os.path.join(out_dir, rel)
+                    files_all.append((srcf, dstf, rel))
+
+            def needs_copy_with_md5(srcf, dstf):
+                """Return True if dstf should be updated from srcf (size/mtime with slack, else MD5)."""
+                try:
+                    ss = os.stat(srcf)
+                except FileNotFoundError:
+                    return False  # source vanished
+                if not os.path.exists(dstf):
+                    return True
+                try:
+                    ds = os.stat(dstf)
+                except FileNotFoundError:
+                    return True
+
+                # 1) Different size → copy
+                if ss.st_size != ds.st_size:
+                    return True
+                # 2) Source meaningfully newer → copy
+                if (ss.st_mtime - ds.st_mtime) > TS_SLACK:
+                    return True
+                # 3) Otherwise, verify by MD5
+                try:
+                    return file_md5(srcf) != file_md5(dstf)
+                except Exception:
+                    # If hashing fails for any reason, be safe
+                    return True
+
+            # ===== Pass 1: Verify (MD5) =====
+            to_copy = []
+            if files_all:
+                bar_verify = tqdm(total=len(files_all), desc="Verifying (MD5)")
+                for srcf, dstf, rel in files_all:
+                    # Ensure parent exists before we check/copy later
+                    os.makedirs(os.path.dirname(dstf), exist_ok=True)
+                    if needs_copy_with_md5(srcf, dstf):
+                        to_copy.append((srcf, dstf, rel))
+                    bar_verify.update(1)
+                bar_verify.close()
+
+            # ===== Pass 2: Update only what changed =====
+            copied = 0
+            if to_copy:
+                bar_update = tqdm(total=len(to_copy), desc="Updating files")
+                for srcf, dstf, rel in to_copy:
+                    if DEPLOY_TO_RADIO:
+                        throttled_copyfile(srcf, dstf)
+                        flush_fs()
+                        time.sleep(0.05)
+                    else:
+                        shutil.copy(srcf, dstf)
+                    if not rel.replace("\\","/").endswith("tasks/logger/init.lua"):
+                        print(f"Copy {rel}")
+                    copied += 1
+                    bar_update.update(1)
+                bar_update.close()
+
+            if not copied:
+                print("Fast deploy: nothing to update.")
+    
         # full
         else:
             srcall = os.path.join(git_src, 'scripts', tgt)
