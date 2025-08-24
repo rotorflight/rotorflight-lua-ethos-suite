@@ -132,9 +132,164 @@ def minify_lua_file(filepath):
     except Exception as e:
         print(f"[MINIFY ERROR] Exception during luamin run: {e}")
 
-
-
 def get_ethos_scripts_dir(ethossuite_bin, retries=1, delay=5):
+    """
+    Ask Ethos Suite for the SCRIPTS path. Robust against chatty output:
+    - Prefer explicit path lines (e.g. 'E:\\scripts')
+    - Else parse the 'New removable disks: [...]' blob and use mountpoint + '\\scripts'
+    - Else fall back to scanning drive letters for an existing '\\scripts'
+    """
+    import re, json, string
+
+    cmd = [ethossuite_bin, "--get-path", "SCRIPTS", "--radio", "auto"]
+    path_re = re.compile(r'^(?:[A-Za-z]:\\|\\\\\?\\|//)[^\r\n]+$')
+
+    def _clean(line: str) -> str:
+        line = (line or "").strip().strip('"').strip("'")
+        if not line: return ""
+        low = line.lower()
+        if low.startswith("exit code"): return ""
+        if low.startswith("new removable disks"): return line  # keep for JSON parse
+        if line.startswith("{") or line.startswith("["): return line
+        return line
+
+    def _scan_drives_for_scripts():
+        for letter in string.ascii_uppercase:
+            root = f"{letter}:\\scripts"
+            try:
+                if os.path.isdir(root):
+                    return os.path.normpath(root)
+            except Exception:
+                pass
+        return None
+
+    last_err = None
+    for attempt in range(retries + 1):
+        try:
+            res = subprocess.run(cmd, text=True, capture_output=True, timeout=20)
+            if res.returncode != 0:
+                raise subprocess.CalledProcessError(res.returncode, cmd, output=res.stdout, stderr=res.stderr)
+
+            raw = res.stdout or ""
+            lines = [_clean(l) for l in raw.splitlines() if l.strip()]
+            # 1) Prefer explicit path-like lines
+            candidates = [l for l in lines if path_re.match(l)]
+            existing = [os.path.normpath(p) for p in candidates if os.path.isdir(os.path.normpath(p))]
+            if existing:
+                # Prefer the one whose basename is 'scripts'
+                preferred = [p for p in existing if os.path.basename(p).lower() == "scripts"]
+                return preferred[0] if preferred else existing[0]
+            if candidates:
+                # If nothing exists yet, return the most plausible; wait_for_scripts_mount() will verify
+                preferred = [p for p in candidates if "scripts" in p.lower()]
+                return os.path.normpath(preferred[0] if preferred else candidates[0])
+
+            # 2) Parse the "New removable disks:  [...]" blob if present
+            blob_lines = [l for l in lines if l.lower().startswith("new removable disks")]
+            if blob_lines:
+                # Extract JSON array portion (first '[' ... last ']')
+                blob = blob_lines[-1]
+                try:
+                    start = blob.index('['); end = blob.rindex(']') + 1
+                    arr = json.loads(blob[start:end])
+                    # Prefer the entry with radioDisk == 'radio', else first that has a mountpoint
+                    choice = None
+                    for item in arr:
+                        if item.get("radioDisk") == "radio":
+                            choice = item; break
+                    if not choice and arr:
+                        choice = arr[0]
+                    if choice:
+                        mps = choice.get("mountpoints") or []
+                        for mp in mps:
+                            p = (mp.get("path") or "").strip()
+                            if p:
+                                scripts = os.path.normpath(os.path.join(p, "scripts"))
+                                return scripts
+                except Exception:
+                    pass
+
+            # 3) Last resort: scan mounted drive letters for an existing \scripts
+            scanned = _scan_drives_for_scripts()
+            if scanned:
+                return scanned
+
+            # No usable hint; let caller retry
+            raise RuntimeError("No path-like output from Ethos Suite; mount not ready yet.")
+        except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired, RuntimeError) as e:
+            last_err = e
+            if attempt < retries:
+                print(f"[ETHOS] Could not get SCRIPTS path (attempt {attempt+1}/{retries+1}). Retrying in {delay}s…")
+                time.sleep(delay)
+            else:
+                raise last_err
+
+    """
+    Ask Ethos Suite for the SCRIPTS path. Returns a normalized existing path.
+    Skips noisy lines like "New removable disks: [...]".
+    """
+    import re
+
+    cmd = [ethossuite_bin, "--get-path", "SCRIPTS", "--radio", "auto"]
+    path_re = re.compile(r'^(?:[A-Za-z]:\\|\\\\\?\\|//)[^\r\n]+$')  # Windows drive, \\?\ or UNC
+
+    def _clean(line: str) -> str:
+        # Strip quotes and whitespace
+        line = line.strip().strip('"').strip("'")
+        # Ignore obvious noise
+        if not line:
+            return ""
+        if line.lower().startswith("exit code"):
+            return ""
+        if line.lower().startswith("new removable disks"):
+            return ""
+        if line.startswith("{") or line.startswith("["):
+            return ""
+        return line
+
+    last_err = None
+    for attempt in range(retries + 1):
+        try:
+            res = subprocess.run(cmd, text=True, capture_output=True, timeout=15)
+            if res.returncode != 0:
+                raise subprocess.CalledProcessError(res.returncode, cmd, output=res.stdout, stderr=res.stderr)
+
+            raw_lines = (res.stdout or "").splitlines()
+            # Clean and filter
+            candidates = []
+            for l in raw_lines:
+                c = _clean(l)
+                if not c:
+                    continue
+                # Prefer things that look like paths, ideally ending with "scripts"
+                if path_re.match(c):
+                    candidates.append(c)
+
+            # Heuristics: prefer existing paths, then those that contain \scripts
+            existing = [os.path.normpath(p) for p in candidates if os.path.isdir(os.path.normpath(p))]
+            if existing:
+                # If multiple, prefer one whose basename is 'scripts'
+                preferred = [p for p in existing if os.path.basename(p).lower() == "scripts"]
+                return preferred[0] if preferred else existing[0]
+
+            # If nothing exists yet, still try best-looking candidate (may mount a moment later)
+            if candidates:
+                # Prefer entries that contain 'scripts'
+                preferred = [p for p in candidates if "scripts" in p.lower()]
+                return os.path.normpath(preferred[0] if preferred else candidates[0])
+
+            # No usable line; fall through to retry
+            raise RuntimeError("No path-like output from Ethos Suite.")
+
+        except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired, RuntimeError) as e:
+            last_err = e
+            if attempt < retries:
+                print(f"[ETHOS] Could not get SCRIPTS path (attempt {attempt+1}/{retries+1}). Retrying in {delay}s…")
+                time.sleep(delay)
+            else:
+                raise last_err
+
+
     """
     Ask Ethos Suite for the SCRIPTS path. Retries after `delay` seconds
     if the tool returns no path or fails. Raises on final failure.
@@ -175,6 +330,7 @@ def get_ethos_scripts_dir(ethossuite_bin, retries=1, delay=5):
                 time.sleep(delay)
             else:
                 raise last_err
+            
 # Permission handler for Windows rm errors
 def on_rm_error(func, path, exc_info):
     """Resilient rm error handler:
@@ -376,21 +532,24 @@ def ethos_serial(ethossuite_bin, action, radio=None):
         return 1, "", str(e)
 
 
-def wait_for_scripts_mount(ethossuite_bin, attempts=5, delay=2):
+def wait_for_scripts_mount(ethossuite_bin, attempts=10, delay=2):
     """
-    Poll Ethos for the SCRIPTS path until it responds, to confirm the
-    radio's storage is mounted and ready for copy.
+    Poll Ethos for the SCRIPTS path until the directory actually exists.
     """
     last_err = None
     for i in range(attempts):
         try:
-            path = get_ethos_scripts_dir(ethossuite_bin, retries=0)
-            return path
+            path = get_ethos_scripts_dir(ethossuite_bin, retries=0, delay=delay)
+            if path and os.path.isdir(path):
+                return os.path.normpath(path)
+            raise RuntimeError(f"Ethos returned non-directory path: {path!r}")
         except Exception as e:
             last_err = e
             print(f"[ETHOS] Waiting for radio drive ({i+1}/{attempts})…")
             time.sleep(delay)
     raise RuntimeError(f"Radio drive did not mount: {last_err}")
+
+
 
 
 def _find_com_port_by_vid_pid(vid_hex, pid_hex):
