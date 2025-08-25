@@ -267,33 +267,8 @@ function dashboard.computeOverlayMessage()
        (os.clock() - (dashboard.themeFallbackTime and dashboard.themeFallbackTime[state] or 0)) < 10 then
         return i18n("widgets.dashboard.theme_load_error")
     end
-
-    -- 2) ETHOS version
-    if not utils.ethosVersionAtLeast() then
-        return string.format(
-            string.upper(i18n("ethos")) .. " < V%d.%d.%d",
-            rfsuite.config.ethosVersion[1],
-            rfsuite.config.ethosVersion[2],
-            rfsuite.config.ethosVersion[3]
-        )
-    end
-
-    -- 3) Background task
-    if not tasks.active() then
-        return i18n("widgets.dashboard.check_bg_task")
-    end
-
-    -- 4) Sensors discovered? 
-    if not rfsuite.session.telemetrySensor and rfsuite.session.telemetryState then
-        return i18n("widgets.dashboard.check_discovered_sensors")
-    end
-
-    -- 5) If we don't have link (preflight), surface that first
-    if state == "preflight" and not rfsuite.session.telemetryState and rfsuite.session.telemetrySensor then
-        return i18n("widgets.dashboard.no_link")
-    end
   
-    -- 6) As soon as we know RF version, show it with precedence
+    -- 2) As soon as we know RF version, show it with precedence
     if rfsuite.session.apiVersion and rfsuite.session.rfVersion and not rfsuite.session.isConnectedLow and state ~= "postflight" then
         if system.getVersion().simulation == true then
             return pad .. "SIM " .. rfsuite.session.apiVersion .. pad
@@ -302,12 +277,7 @@ function dashboard.computeOverlayMessage()
         end
     end
 
-    -- 7) Link is up but sensors fail validation
-    if rfsuite.session.telemetryState and telemetry and not telemetry.validateSensors() then
-        return i18n("widgets.dashboard.validate_sensors")
-    end
-
-    -- 8) LAST: generic waiting message (don’t let it mask actionable errors)
+    -- 3) LAST: generic waiting message (don’t let it mask actionable errors)
     if not rfsuite.session.isConnectedHigh and state ~= "postflight" then
         return i18n("widgets.dashboard.waiting_for_connection")
     end
