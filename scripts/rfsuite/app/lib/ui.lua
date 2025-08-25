@@ -129,7 +129,7 @@ function ui.progressNolinkDisplay()
             app.triggers.invalidConnectionSetup = invalid
 
             -- Progress the dialog (bigger steps when invalid so the user gets feedback faster)
-            local step = invalid and 20 or 40
+            local step = invalid and 15 or 30
             app.dialogs.nolinkValueCounter = app.dialogs.nolinkValueCounter + step
 
             if rfsuite.app.dialogs.noLink then
