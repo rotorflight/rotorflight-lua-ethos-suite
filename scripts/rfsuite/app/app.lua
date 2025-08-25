@@ -164,11 +164,7 @@ app.dialogs.saveRateLimit     = os.clock()
 app.dialogs.saveRate          = 0.25
 
 -- No-link dialog
-app.dialogs.nolink            = false
 app.dialogs.nolinkDisplay     = false
-app.dialogs.nolinkValueCounter= 0
-app.dialogs.nolinkRateLimit   = os.clock()
-app.dialogs.nolinkRate        = 0.25
 
 -- Bad version dialog
 app.dialogs.badversion        = false
@@ -673,7 +669,7 @@ app._uiTasks = {
       if not app.dialogs.nolinkDisplay and not app.triggers.wasConnected then
         if app.dialogs.progressDisplay and app.dialogs.progress then app.dialogs.progress:close() end
         if app.dialogs.saveDisplay and app.dialogs.save then app.dialogs.save:close() end
-        app.ui.progressNolinkDisplay()
+        app.ui.progressDisplay(i18n("app.msg_connecting"),i18n("app.msg_connecting_to_fbl"),true)
         app.dialogs.nolinkDisplay = true
       end
     end
