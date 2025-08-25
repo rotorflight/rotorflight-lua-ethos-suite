@@ -245,6 +245,8 @@ local function saveSettings()
   local totalRequests    = #apiList
   local completedRequests= 0
 
+  rfsuite.app.Page.apidata.apiState.isProcessing = true
+
   if app.Page.preSave then app.Page.preSave(app.Page) end
 
   for apiID, apiNAME in ipairs(apiList) do
@@ -264,6 +266,7 @@ local function saveSettings()
         log("All API requests have been completed!", "debug")
         if app.Page.postSave then app.Page.postSave(app.Page) end
         app.settingsSaved()
+        rfsuite.app.Page.apidata.apiState.isProcessing = false
       end
     end)
 

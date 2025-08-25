@@ -127,8 +127,12 @@ function ui.progressDisplaySave(message)
 
             app.dialogs.save:value(app.dialogs.saveProgressCounter)
 
+            local isProcessing = (app.Page and app.Page.apidata and app.Page.apidata.apiState and app.Page.apidata.apiState.isProcessing) or false
+
             if not app.dialogs.saveProgressCounter then
                 app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 1
+            elseif isProcessing then
+                app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 3                     
             elseif app.triggers.closeSaveFake then
                 app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 5
                 if app.dialogs.saveProgressCounter >= 100 then
@@ -137,7 +141,7 @@ function ui.progressDisplaySave(message)
                     app.dialogs.saveDisplay         = false
                     app.dialogs.saveWatchDog        = nil
                     app.dialogs.save:close()
-                end
+                end           
             elseif rfsuite.tasks.msp.mspQueue:isProcessed() then
                 app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 15
                 if app.dialogs.saveProgressCounter >= 100 then
