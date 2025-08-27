@@ -240,7 +240,7 @@ local function wakeup()
     end  
 
     -- enable/disable the tool button
-    if rfsuite.session and rfsuite.session.apiVersion and rfsuite.session.apiVersion < 12.08 then
+    if rfsuite.session and rfsuite.session.apiVersion and rfsuite.utils.apiVersionCompare("<", "12.08") then
         rfsuite.app.formNavigationFields['tool']:enable(false)
     else
         rfsuite.app.formNavigationFields['tool']:enable(true)

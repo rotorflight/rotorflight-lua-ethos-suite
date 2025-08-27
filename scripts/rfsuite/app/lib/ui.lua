@@ -25,11 +25,18 @@ local i18n  = rfsuite.i18n.get
 --------------------------------------------------------------------------------
 
 -- Show a progress dialog (defaults: "Loading" / "Loading data from flight controller...").
-function ui.progressDisplay(title, message)
+function ui.progressDisplay(title, message, speed)
     if rfsuite.app.dialogs.progressDisplay then return end
 
     title   = title   or i18n("app.msg_loading")
     message = message or i18n("app.msg_loading_from_fbl")
+
+
+    if speed then
+        rfsuite.app.dialogs.progressSpeed = true
+    else
+        rfsuite.app.dialogs.progressSpeed = false
+    end
 
     rfsuite.app.dialogs.progressDisplay   = true
     rfsuite.app.dialogs.progressWatchDog  = os.clock()
@@ -42,10 +49,19 @@ function ui.progressDisplay(title, message)
 
             app.dialogs.progress:value(app.dialogs.progressCounter)
 
+            local mult = 1
+            if app.dialogs.progressSpeed then
+                mult = 2
+            end
+
+            local isProcessing = (app.Page and app.Page.apidata and app.Page.apidata.apiState and app.Page.apidata.apiState.isProcessing) or false
+
             if not app.triggers.closeProgressLoader then
-                app.dialogs.progressCounter = app.dialogs.progressCounter + 2
+                app.dialogs.progressCounter = app.dialogs.progressCounter + (2 * mult)
+            elseif isProcessing then    
+                app.dialogs.progressCounter = app.dialogs.progressCounter + (3 * mult)
             elseif app.triggers.closeProgressLoader and rfsuite.tasks.msp.mspQueue:isProcessed() then   -- this is the one we normally catch
-                app.dialogs.progressCounter = app.dialogs.progressCounter + 15
+                app.dialogs.progressCounter = app.dialogs.progressCounter + (15 * mult)
                 if app.dialogs.progressCounter >= 100 then
                     app.dialogs.progress:close()
                     app.dialogs.progressDisplay = false
@@ -53,12 +69,13 @@ function ui.progressDisplay(title, message)
                     app.triggers.closeProgressLoader = false
                 end
             elseif app.triggers.closeProgressLoader and  app.triggers.closeProgressLoaderNoisProcessed then   -- an oddball for things where we dont want to check against isProcessed
-                app.dialogs.progressCounter = app.dialogs.progressCounter + 15
+                app.dialogs.progressCounter = app.dialogs.progressCounter + (15 * mult)
                 if app.dialogs.progressCounter >= 100 then
                     app.dialogs.progress:close()
                     app.dialogs.progressDisplay = false
                     app.dialogs.progressCounter = 0
                     app.triggers.closeProgressLoader = false
+                    app.dialogs.progressSpeed = false
                     app.triggers.closeProgressLoaderNoisProcessed= false
                 end
             end
@@ -74,6 +91,7 @@ function ui.progressDisplay(title, message)
                 app.Page   = app.PageTmp
                 app.PageTmp = nil
                 app.dialogs.progressCounter = 0
+                app.dialogs.progressSpeed = false
                 app.dialogs.progressDisplay = false
             end
         end
@@ -82,14 +100,6 @@ function ui.progressDisplay(title, message)
     rfsuite.app.dialogs.progressCounter = 0
     rfsuite.app.dialogs.progress:value(0)
     rfsuite.app.dialogs.progress:closeAllowed(false)
-end
-
--- Connecting… progress (no link).
-function ui.progressNolinkDisplay()
-    rfsuite.app.dialogs.nolinkDisplay = true
-    rfsuite.app.dialogs.noLink = form.openProgressDialog(i18n("app.msg_connecting"), i18n("app.msg_connecting_to_fbl"))
-    rfsuite.app.dialogs.noLink:closeAllowed(false)
-    rfsuite.app.dialogs.noLink:value(0)
 end
 
 -- Show a "Saving…" progress dialog.
@@ -117,8 +127,12 @@ function ui.progressDisplaySave(message)
 
             app.dialogs.save:value(app.dialogs.saveProgressCounter)
 
+            local isProcessing = (app.Page and app.Page.apidata and app.Page.apidata.apiState and app.Page.apidata.apiState.isProcessing) or false
+
             if not app.dialogs.saveProgressCounter then
                 app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 1
+            elseif isProcessing then
+                app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 3                     
             elseif app.triggers.closeSaveFake then
                 app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 5
                 if app.dialogs.saveProgressCounter >= 100 then
@@ -127,7 +141,7 @@ function ui.progressDisplaySave(message)
                     app.dialogs.saveDisplay         = false
                     app.dialogs.saveWatchDog        = nil
                     app.dialogs.save:close()
-                end
+                end           
             elseif rfsuite.tasks.msp.mspQueue:isProcessed() then
                 app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 15
                 if app.dialogs.saveProgressCounter >= 100 then
@@ -320,7 +334,9 @@ function ui.openMainMenu()
                 paint   = function() end,
                 press   = function()
                     rfsuite.preferences.menulastselected["mainmenu"] = pidx
-                    rfsuite.app.ui.progressDisplay()
+                    local speed = false
+                    if pvalue.loaderspeed then speed = true end
+                    rfsuite.app.ui.progressDisplay(nil,nil,speed)
                     if pvalue.module then
                         rfsuite.app.isOfflinePage = true
                         rfsuite.app.ui.openPage(pidx, pvalue.title, pvalue.module .. "/" .. pvalue.script)
@@ -435,10 +451,10 @@ function ui.openMainMenuSub(activesection)
 
             for pidx, page in ipairs(MainMenu.pages) do
                 if page.section == idx then
-                    local hideEntry =
-                        (page.ethosversion and not rfsuite.utils.ethosVersionAtLeast(page.ethosversion))
-                        or (page.mspversion and (rfsuite.session.apiVersion or 1) < page.mspversion)
-                        or (page.developer and not rfsuite.preferences.developer.devtools)
+                local hideEntry =
+                    (page.ethosversion and not rfsuite.utils.ethosVersionAtLeast(page.ethosversion))
+                    or (page.mspversion and rfsuite.utils.apiVersionCompare("<", page.mspversion))
+                    or (page.developer and not rfsuite.preferences.developer.devtools)
 
                     local offline = page.offline
                     rfsuite.app.formFieldsOffline[pidx] = offline or false
@@ -469,7 +485,9 @@ function ui.openMainMenuSub(activesection)
                             paint   = function() end,
                             press   = function()
                                 rfsuite.preferences.menulastselected[activesection] = pidx
-                                rfsuite.app.ui.progressDisplay()
+                                local speed = false
+                                if page.loaderspeed or section.loaderspeed then speed = true end
+                                rfsuite.app.ui.progressDisplay(nil,nil,speed)
                                 rfsuite.app.isOfflinePage = offline
                                 rfsuite.app.ui.openPage(pidx, page.title, page.folder .. "/" .. page.script)
                             end
@@ -896,16 +914,15 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
     if rfsuite.app.Page.fields then
         for i, field in ipairs(rfsuite.app.Page.fields) do
             local label   = rfsuite.app.Page.labels
-            local version = rfsuite.utils.round(rfsuite.session.apiVersion, 2)
-            if version == nil then return end
+            if rfsuite.session.apiVersion == nil then return end
 
             local valid =
-                (field.apiversion    == nil or rfsuite.utils.round(field.apiversion,    2) <= version)
-                and (field.apiversionlt  == nil or rfsuite.utils.round(field.apiversionlt,  2) >  version)
-                and (field.apiversiongt  == nil or rfsuite.utils.round(field.apiversiongt,  2) <  version)
-                and (field.apiversionlte == nil or rfsuite.utils.round(field.apiversionlte, 2) >= version)
-                and (field.apiversiongte == nil or rfsuite.utils.round(field.apiversiongte, 2) <= version)
-                and (field.enablefunction == nil or field.enablefunction())
+                (field.apiversion    == nil or rfsuite.utils.apiVersionCompare(">=", field.apiversion))    and
+                (field.apiversionlt  == nil or rfsuite.utils.apiVersionCompare("<",  field.apiversionlt))  and
+                (field.apiversiongt  == nil or rfsuite.utils.apiVersionCompare(">",  field.apiversiongt))  and
+                (field.apiversionlte == nil or rfsuite.utils.apiVersionCompare("<=", field.apiversionlte)) and
+                (field.apiversiongte == nil or rfsuite.utils.apiVersionCompare(">=", field.apiversiongte)) and
+                (field.enablefunction == nil or field.enablefunction())
 
             if field.hidden ~= true and valid then
                 rfsuite.app.ui.fieldLabel(field, i, label)

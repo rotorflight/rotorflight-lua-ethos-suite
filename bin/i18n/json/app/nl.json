@@ -1807,6 +1807,21 @@
         "translation": "Max throttle",
         "needs_translation": "false"
       },
+      "idle_throttle": {
+        "english": "Idle throttle",
+        "translation": "Idle throttle",
+        "needs_translation": "true"
+      },
+      "auto_throttle": {
+        "english": "Auto throttle",
+        "translation": "Auto throttle",
+        "needs_translation": "true"
+      },
+      "fallback_drop": {
+        "english": "Thr. Fallback drop",
+        "translation": "Thr. Fallback drop",
+        "needs_translation": "true"
+      },
       "full_headspeed": {
         "english": "Full headspeed",
         "translation": "Max rotortoerental",
@@ -2540,6 +2555,21 @@
       }
     },
     "governor": {
+      "menu_general": {
+        "english": "General",
+        "translation": "General",
+        "needs_translation": "true"
+      },
+      "menu_filters": {
+        "english": "Filters",
+        "translation": "Filters",
+        "needs_translation": "true"
+      },
+      "menu_time": {
+        "english": "Ramp Time",
+        "translation": "Time",
+        "needs_translation": "true"
+      },
       "help_p1": {
         "english": "These parameters apply globally to the governor regardless of the profile in use.",
         "translation": "Deze parameters zijn van toepassing op de governor, ongeacht het gebruikte profiel.",
@@ -2565,14 +2595,59 @@
         "translation": "Mode",
         "needs_translation": "false"
       },
-      "help_p2": {
-        "english": "Each parameter is simply a time value in seconds for each governor action.",
-        "translation": "Elke parameter is een tijdswaarde in seconden voor elke governor actie.\n\n",
+      "throttle_type": {
+        "english": "Throttle type",
+        "translation": "Throttle protocol",
+        "needs_translation": "true"
+      },
+      "collective": {
+        "english": "Collective",
+        "translation": "Collective",
+        "needs_translation": "true"
+      },
+      "idle_collective": {
+        "english": "Idle Collective",
+        "translation": "Idle collective",
+        "needs_translation": "true"
+      },
+      "wot_collective": {
+        "english": "WOT Collective",
+        "translation": "WOT collective",
+        "needs_translation": "true"
+      },
+      "throttle_hold_timeout": {
+        "english": "Throttle hold timeout",
+        "translation": "Throttle hold timeout",
+        "needs_translation": "true"
+      },
+      "ramp_time": {
+        "english": "Ramp time",
+        "translation": "Ramp time",
+        "needs_translation": "true"
+      },
+      "startup_time": {
+        "english": "Startup time",
+        "translation": "Startup time",
+        "needs_translation": "true"
+      },
+      "spoolup_time": {
+        "english": "Spoolup time",
+        "translation": "Optoer tijd",
         "needs_translation": "false"
+      },
+      "spooldown_time": {
+        "english": "Spooldown time",
+        "translation": "Spooldown time",
+        "needs_translation": "true"
       },
       "tracking_time": {
         "english": "Tracking time",
         "translation": "Tracking time",
+        "needs_translation": "false"
+      },
+      "help_p2": {
+        "english": "Each parameter is simply a time value in seconds for each governor action.",
+        "translation": "Elke parameter is een tijdswaarde in seconden voor elke governor actie.\n\n",
         "needs_translation": "false"
       },
       "name": {
@@ -2580,15 +2655,30 @@
         "translation": "Governor",
         "needs_translation": "false"
       },
-      "startup_time": {
-        "english": "Startup time",
-        "translation": "Opstarttijd",
-        "needs_translation": "false"
+      "gov_rpm_filter": {
+        "english": "RPM Filter Cutoff",
+        "translation": "RPM Filter Cutoff",
+        "needs_translation": "true"
       },
-      "spoolup_time": {
-        "english": "Spoolup time",
-        "translation": "Optoer tijd",
-        "needs_translation": "false"
+      "gov_pwr_filter": {
+        "english": "Voltage Filter Cutoff",
+        "translation": "Voltage Filter Cutoff",
+        "needs_translation": "true"
+      },
+      "gov_tta_filter": {
+        "english": "TTA Bandwidth",
+        "translation": "TTA Bandwidth",
+        "needs_translation": "true"
+      },
+      "gov_ff_filter": {
+        "english": "Precomp Bandwidth",
+        "translation": "Precomp Bandwidth",
+        "needs_translation": "true"
+      },
+      "gov_d_filter": {
+        "english": "D-Term Cutoff",
+        "translation": "D-Term Cutoff",
+        "needs_translation": "true"
       }
     },
     "accelerometer": {

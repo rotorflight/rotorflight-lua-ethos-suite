@@ -1,4 +1,4 @@
-
+ 
 local version = rfsuite.version().version
 local ethosVersion = rfsuite.config.environment.major .. "." .. rfsuite.config.environment.minor .. "." .. rfsuite.config.environment.revision
 local apiVersion = rfsuite.session.apiVersion

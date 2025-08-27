@@ -20,22 +20,45 @@ local MSP_API_CMD_READ = 148 -- Command identifier
 local MSP_API_CMD_WRITE = 149 -- Command identifier 
 local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write 
 
--- Define the MSP response data structures
-local MSP_API_STRUCTURE_READ_DATA = {
-    {field = "governor_headspeed",            type = "U16", apiVersion = 12.06, simResponse = {208, 7}, min = 0,   max = 50000, default = 1000, unit = "rpm", step = 10},
-    {field = "governor_gain",                 type = "U8",  apiVersion = 12.06, simResponse = {100},    min = 0,   max = 250,   default = 40},
-    {field = "governor_p_gain",               type = "U8",  apiVersion = 12.06, simResponse = {10},     min = 0,   max = 250,   default = 40},
-    {field = "governor_i_gain",               type = "U8",  apiVersion = 12.06, simResponse = {125},    min = 0,   max = 250,   default = 50},
-    {field = "governor_d_gain",               type = "U8",  apiVersion = 12.06, simResponse = {5},      min = 0,   max = 250,   default = 0},
-    {field = "governor_f_gain",               type = "U8",  apiVersion = 12.06, simResponse = {20},     min = 0,   max = 250,   default = 10},
-    {field = "governor_tta_gain",             type = "U8",  apiVersion = 12.06, simResponse = {0},      min = 0,   max = 250,   default = 0},
-    {field = "governor_tta_limit",            type = "U8",  apiVersion = 12.06, simResponse = {20},     min = 0,   max = 250,   default = 20,   unit = "%"},
-    {field = "governor_yaw_ff_weight",        type = "U8",  apiVersion = 12.06, simResponse = {10},     min = 0,   max = 250,   default = 0},
-    {field = "governor_cyclic_ff_weight",     type = "U8",  apiVersion = 12.06, simResponse = {40},     min = 0,   max = 250,   default = 10},
-    {field = "governor_collective_ff_weight", type = "U8",  apiVersion = 12.06, simResponse = {100},    min = 0,   max = 250,   default = 100},
-    {field = "governor_max_throttle",         type = "U8",  apiVersion = 12.06, simResponse = {100},    min = 40,  max = 100,   default = 100,  unit = "%"},
-    {field = "governor_min_throttle",         type = "U8",  apiVersion = 12.06, simResponse = {10},     min = 0,   max = 100,   default = 10,   unit = "%"}
-}
+local MSP_API_STRUCTURE_READ_DATA
+
+if rfsuite.utils.apiVersionCompare(">=", "12.09") then
+    MSP_API_STRUCTURE_READ_DATA = {
+        {field = "governor_headspeed",            type = "U16", apiVersion = 12.09, simResponse = {208, 7}, min = 0,   max = 50000, default = 1000, unit = "rpm", step = 10},
+        {field = "governor_gain",                 type = "U8",  apiVersion = 12.09, simResponse = {100},    min = 0,   max = 250,   default = 40},
+        {field = "governor_p_gain",               type = "U8",  apiVersion = 12.09, simResponse = {10},     min = 0,   max = 250,   default = 40},
+        {field = "governor_i_gain",               type = "U8",  apiVersion = 12.09, simResponse = {125},    min = 0,   max = 250,   default = 50},
+        {field = "governor_d_gain",               type = "U8",  apiVersion = 12.09, simResponse = {5},      min = 0,   max = 250,   default = 0},
+        {field = "governor_f_gain",               type = "U8",  apiVersion = 12.09, simResponse = {20},     min = 0,   max = 250,   default = 10},
+        {field = "governor_tta_gain",             type = "U8",  apiVersion = 12.09, simResponse = {0},      min = 0,   max = 250,   default = 0},
+        {field = "governor_tta_limit",            type = "U8",  apiVersion = 12.09, simResponse = {20},     min = 0,   max = 250,   default = 20,   unit = "%"},
+        {field = "governor_yaw_weight",           type = "U8",  apiVersion = 12.09, simResponse = {10},     min = 0,   max = 250,   default = 0},
+        {field = "governor_cyclic_weight",        type = "U8",  apiVersion = 12.09, simResponse = {40},     min = 0,   max = 250,   default = 10},
+        {field = "governor_collective_weight",    type = "U8",  apiVersion = 12.09, simResponse = {100},    min = 0,   max = 250,   default = 100},
+        {field = "governor_max_throttle",         type = "U8",  apiVersion = 12.09, simResponse = {100},    min = 40,  max = 100,   default = 100,  unit = "%"},
+        {field = "governor_min_throttle",         type = "U8",  apiVersion = 12.09, simResponse = {10},     min = 0,   max = 100,   default = 10,   unit = "%"},
+        {field = "governor_idle_throttle",        type = "U8",  apiVersion = 12.09, simResponse = {10},     min = 0,   max = 100,   default = 0,  unit = "%"},
+        {field = "governor_auto_throttle",        type = "U8",  apiVersion = 12.09, simResponse = {10},     min = 0,   max = 100,   default = 0,  unit = "%"},
+        {field = "governor_fallback_drop",        type = "U8",  apiVersion = 12.09, simResponse = {10},     min = 0,   max = 50,   default = 10,  unit = "%"},
+        {field = "governor_flags",                type = "U16", apiVersion = 12.09, simResponse = {251, 3}, },
+    }
+else
+    MSP_API_STRUCTURE_READ_DATA = {
+        {field = "governor_headspeed",            type = "U16", apiVersion = 12.06, simResponse = {208, 7}, min = 0,   max = 50000, default = 1000, unit = "rpm", step = 10},
+        {field = "governor_gain",                 type = "U8",  apiVersion = 12.06, simResponse = {100},    min = 0,   max = 250,   default = 40},
+        {field = "governor_p_gain",               type = "U8",  apiVersion = 12.06, simResponse = {10},     min = 0,   max = 250,   default = 40},
+        {field = "governor_i_gain",               type = "U8",  apiVersion = 12.06, simResponse = {125},    min = 0,   max = 250,   default = 50},
+        {field = "governor_d_gain",               type = "U8",  apiVersion = 12.06, simResponse = {5},      min = 0,   max = 250,   default = 0},
+        {field = "governor_f_gain",               type = "U8",  apiVersion = 12.06, simResponse = {20},     min = 0,   max = 250,   default = 10},
+        {field = "governor_tta_gain",             type = "U8",  apiVersion = 12.06, simResponse = {0},      min = 0,   max = 250,   default = 0},
+        {field = "governor_tta_limit",            type = "U8",  apiVersion = 12.06, simResponse = {20},     min = 0,   max = 250,   default = 20,   unit = "%"},
+        {field = "governor_yaw_ff_weight",        type = "U8",  apiVersion = 12.06, simResponse = {10},     min = 0,   max = 250,   default = 0},
+        {field = "governor_cyclic_ff_weight",     type = "U8",  apiVersion = 12.06, simResponse = {40},     min = 0,   max = 250,   default = 10},
+        {field = "governor_collective_ff_weight", type = "U8",  apiVersion = 12.06, simResponse = {100},    min = 0,   max = 250,   default = 100},
+        {field = "governor_max_throttle",         type = "U8",  apiVersion = 12.06, simResponse = {100},    min = 40,  max = 100,   default = 100,  unit = "%"},
+        {field = "governor_min_throttle",         type = "U8",  apiVersion = 12.06, simResponse = {10},     min = 0,   max = 100,   default = 10,   unit = "%"}
+    }    
+end
 
 -- Process structure in one pass
 local MSP_API_STRUCTURE_READ, MSP_MIN_BYTES, MSP_API_SIMULATOR_RESPONSE =

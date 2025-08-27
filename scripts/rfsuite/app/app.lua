@@ -143,6 +143,7 @@ app.dialogs.progress          = false
 app.dialogs.progressDisplay   = false
 app.dialogs.progressWatchDog  = nil
 app.dialogs.progressCounter   = 0
+app.dialogs.progressSpeed     = false
 app.dialogs.progressRateLimit = os.clock()
 app.dialogs.progressRate      = 0.25
 
@@ -163,11 +164,7 @@ app.dialogs.saveRateLimit     = os.clock()
 app.dialogs.saveRate          = 0.25
 
 -- No-link dialog
-app.dialogs.nolink            = false
 app.dialogs.nolinkDisplay     = false
-app.dialogs.nolinkValueCounter= 0
-app.dialogs.nolinkRateLimit   = os.clock()
-app.dialogs.nolinkRate        = 0.25
 
 -- Bad version dialog
 app.dialogs.badversion        = false
@@ -248,6 +245,8 @@ local function saveSettings()
   local totalRequests    = #apiList
   local completedRequests= 0
 
+  rfsuite.app.Page.apidata.apiState.isProcessing = true
+
   if app.Page.preSave then app.Page.preSave(app.Page) end
 
   for apiID, apiNAME in ipairs(apiList) do
@@ -267,6 +266,7 @@ local function saveSettings()
         log("All API requests have been completed!", "debug")
         if app.Page.postSave then app.Page.postSave(app.Page) end
         app.settingsSaved()
+        rfsuite.app.Page.apidata.apiState.isProcessing = false
       end
     end)
 
@@ -672,62 +672,8 @@ app._uiTasks = {
       if not app.dialogs.nolinkDisplay and not app.triggers.wasConnected then
         if app.dialogs.progressDisplay and app.dialogs.progress then app.dialogs.progress:close() end
         if app.dialogs.saveDisplay and app.dialogs.save then app.dialogs.save:close() end
-        app.ui.progressNolinkDisplay()
+        app.ui.progressDisplay(i18n("app.msg_connecting"),i18n("app.msg_connecting_to_fbl"),true)
         app.dialogs.nolinkDisplay = true
-      end
-    end
-
-    if (app.dialogs.nolinkDisplay and not app.triggers.wasConnected) then
-      local offline       = app.offlineMode == true
-      local apiStr        = tostring(rfsuite.session.apiVersion or "")
-      local curRssi       = app.utils.getRSSI()
-
-      local invalid, abort = false, false
-      local msg = i18n("app.msg_connecting_to_fbl")
-
-      -- 1) ETHOS version (hard stop text, but not "invalid" so progress continues)
-      if not utils.ethosVersionAtLeast() then
-        msg = string.format("%s < V%d.%d.%d", string.upper(i18n("ethos")), table.unpack(rfsuite.config.ethosVersion))
-
-      -- 2) Background task (invalid + abort)
-      elseif not rfsuite.tasks.active() then
-        msg, invalid, abort = i18n("app.check_bg_task"), true, true
-
-      -- 3) Sensors discovered? (invalid, unless offline)
-      elseif (not rfsuite.session.telemetrySensor) and (not offline) then
-        msg, invalid = i18n("app.check_discovered_sensors"), true
-
-      -- 4) Heli on / link power (RSSI==0) (invalid, unless offline)
-      elseif (curRssi == 0) and (not offline) then
-        msg, invalid = i18n("app.check_heli_on"), true
-
-      -- 5) Supported API version notice (message only, not "invalid")
-      elseif (not app.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiStr)) and (not offline) then
-        msg = i18n("app.check_supported_version") .. " (" .. apiStr .. ")"
-      end
-
-      app.triggers.invalidConnectionSetup = invalid
-
-      -- Progress the dialog (bigger steps when invalid so the user gets feedback faster)
-      local step = invalid and 5 or 10
-      app.dialogs.nolinkValueCounter = app.dialogs.nolinkValueCounter + step
-
-      if rfsuite.app.dialogs.noLink then
-        rfsuite.app.dialogs.noLink:value(app.dialogs.nolinkValueCounter)
-        rfsuite.app.dialogs.noLink:message(msg)
-      end
-
-      -- One-time audible nudge when we first mark it invalid
-      if invalid and app.dialogs.nolinkValueCounter == 10 then
-        app.audio.playBufferWarn = true
-      end
-
-      -- Finish: hide dialog and optionally abort app if bg tasks missing
-      if app.dialogs.nolinkValueCounter >= 100 then
-        app.dialogs.nolinkDisplay = false
-        app.triggers.wasConnected = true
-        if rfsuite.app.dialogs.noLink then rfsuite.app.dialogs.noLink:close() end
-        if abort then app.close() end
       end
     end
 
@@ -776,7 +722,7 @@ app._uiTasks = {
     if not app.triggers.showSaveArmedWarning or app.triggers.closeSave then return end
     if not app.dialogs.progressDisplay then
       app.dialogs.progressCounter = 0
-      local key = (rfsuite.session.apiVersion >= 12.08 and "app.msg_please_disarm_to_save_warning" or "app.msg_please_disarm_to_save")
+      local key = (rfsuite.utils.apiVersionCompare(">=", "12.08") and "app.msg_please_disarm_to_save_warning" or "app.msg_please_disarm_to_save")
       app.ui.progressDisplay(i18n("app.msg_save_not_commited"), i18n(key))
     end
     if app.dialogs.progressCounter >= 100 then
