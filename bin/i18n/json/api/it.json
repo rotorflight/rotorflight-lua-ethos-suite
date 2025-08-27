@@ -1231,8 +1231,8 @@
       "needs_translation": "true"
     },
     "tbl_throttle_type_idle_auto_on": {
-      "english": "OFF_IDLE_AUTO_ON",
-      "translation": "OFF_IDLE_AUTO_ON",
+      "english": "IDLE_AUTO_ON",
+      "translation": "IDLE_AUTO_ON",
       "needs_translation": "true"
     },
     "governor_idle_throttle": {
