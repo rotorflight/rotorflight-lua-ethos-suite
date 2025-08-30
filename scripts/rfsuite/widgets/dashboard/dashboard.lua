@@ -267,8 +267,13 @@ function dashboard.computeOverlayMessage()
        (os.clock() - (dashboard.themeFallbackTime and dashboard.themeFallbackTime[state] or 0)) < 10 then
         return i18n("widgets.dashboard.theme_load_error")
     end
+
+    -- 2) Background task
+    if not tasks.active() then
+        return i18n("widgets.dashboard.check_bg_task")
+    end    
   
-    -- 2) As soon as we know RF version, show it with precedence
+    -- 3) As soon as we know RF version, show it with precedence
     if rfsuite.session.apiVersion and rfsuite.session.rfVersion and not rfsuite.session.isConnectedLow and state ~= "postflight" then
         if system.getVersion().simulation == true then
             return pad .. "SIM " .. rfsuite.session.apiVersion .. pad
@@ -277,7 +282,7 @@ function dashboard.computeOverlayMessage()
         end
     end
 
-    -- 3) LAST: generic waiting message (don’t let it mask actionable errors)
+    -- 4) LAST: generic waiting message (don’t let it mask actionable errors)
     if not rfsuite.session.isConnectedHigh and state ~= "postflight" then
         return i18n("widgets.dashboard.waiting_for_connection")
     end

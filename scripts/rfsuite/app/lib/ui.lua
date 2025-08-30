@@ -60,7 +60,7 @@ function ui.progressDisplay(title, message, speed)
                 app.dialogs.progressCounter = app.dialogs.progressCounter + (2 * mult)
             elseif isProcessing then    
                 app.dialogs.progressCounter = app.dialogs.progressCounter + (3 * mult)
-            elseif app.triggers.closeProgressLoader and rfsuite.tasks.msp.mspQueue:isProcessed() then   -- this is the one we normally catch
+            elseif app.triggers.closeProgressLoader and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue:isProcessed() then   -- this is the one we normally catch
                 app.dialogs.progressCounter = app.dialogs.progressCounter + (15 * mult)
                 if app.dialogs.progressCounter >= 100 then
                     app.dialogs.progress:close()
@@ -82,6 +82,7 @@ function ui.progressDisplay(title, message, speed)
 
             -- Timeout (hard timeout)
             if app.dialogs.progressWatchDog
+               and rfsuite.tasks.msp
                and (os.clock() - app.dialogs.progressWatchDog) > tonumber(rfsuite.tasks.msp.protocol.pageReqTimeout) 
                and app.dialogs.progressDisplay == true then
                 app.audio.playTimeout = true
@@ -94,6 +95,17 @@ function ui.progressDisplay(title, message, speed)
                 app.dialogs.progressSpeed = false
                 app.dialogs.progressDisplay = false
             end
+
+            if not rfsuite.tasks.msp  then
+                app.dialogs.progressCounter = app.dialogs.progressCounter + (2 * mult)
+                if app.dialogs.progressCounter >= 100 then
+                    app.dialogs.progress:close()
+                    app.dialogs.progressDisplay = false
+                    app.dialogs.progressCounter = 0
+                    app.dialogs.progressSpeed = false
+                end
+            end
+
         end
     })
 
@@ -345,6 +357,10 @@ function ui.openMainMenu()
                     end
                 end
             })
+
+            if pvalue.bgtask then
+                rfsuite.app.formFields[pidx]:enable(false)
+            end
 
             if pvalue.disabled then
                 rfsuite.app.formFields[pidx]:enable(false)
