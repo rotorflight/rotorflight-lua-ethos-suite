@@ -24,6 +24,7 @@ local init = {
     image = "gfx/logs.png", -- image for the page
     order = 15, -- order in the section
     offline = true, -- run this script offline
+    loaderspeed = true, -- show faster loader when opening this page
     ethosversion = {1, 6, 2} -- disable button if ethos version is less than this,
 }
 

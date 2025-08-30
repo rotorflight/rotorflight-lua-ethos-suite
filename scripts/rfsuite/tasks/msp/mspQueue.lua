@@ -54,7 +54,11 @@ local function deepCopy(original)
 end
 
 -- Safe logging guard
-local function LOG_ENABLED()
+local function LOG_ENABLED_MSP()
+    return rfsuite and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logmsp
+end
+
+local function LOG_ENABLED_MSP_QUEUE()
     return rfsuite and rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logmspQueue
 end
 
@@ -116,6 +120,7 @@ end
 --============================--
 
 function MspQueueController:processQueue()
+
     -- Optional loop throttling to reduce CPU when called from a hot loop
     if self.loopInterval and self.loopInterval > 0 then
         local now = os.clock()
@@ -127,7 +132,7 @@ function MspQueueController:processQueue()
     self.mspBusyStart = self.mspBusyStart or os.clock()
 
     -- lightweight, guarded logging
-    if LOG_ENABLED() then
+    if LOG_ENABLED_MSP_QUEUE() then
         local count = self:queueCount()
         if count ~= lastQueueCount then
             rfsuite.utils.log("MSP Queue: " .. count .. " messages in queue", "info")
@@ -150,6 +155,13 @@ function MspQueueController:processQueue()
     end
 
     rfsuite.app.triggers.mspBusy = true
+
+    if rfsuite.session.telemetryModule then
+        local module = rfsuite.session.telemetryModule
+        if module and module.muteSensorLost then
+            module:muteSensorLost(5.0)
+        end
+    end
 
     -- Load a new current message if needed
     if not self.currentMessage then
@@ -180,7 +192,7 @@ function MspQueueController:processQueue()
     else
         -- Simulator path
         if not self.currentMessage.simulatorResponse then
-            if LOG_ENABLED() then
+            if LOG_ENABLED_MSP() then
                 rfsuite.utils.log("No simulator response for command " .. tostring(self.currentMessage.command), "debug")
             end
             self.currentMessage = nil
@@ -190,14 +202,14 @@ function MspQueueController:processQueue()
         cmd, buf, err = self.currentMessage.command, self.currentMessage.simulatorResponse, nil
         if cmd then
             local rwState = (self.currentMessage.payload and #self.currentMessage.payload > 0) and "WRITE" or "READ"
-            if LOG_ENABLED() then rfsuite.utils.logMsp(cmd, rwState, self.currentMessage.payload or buf, err) end
+            if LOG_ENABLED_MSP() then rfsuite.utils.logMsp(cmd, rwState, self.currentMessage.payload or buf, err) end
         end
     end
 
     -- Per-message timeout
     if self.currentMessage and (os.clock() - self.currentMessageStartTime) > (self.currentMessage.timeout or self.timeout) then
         if self.currentMessage.errorHandler then self.currentMessage:errorHandler() end
-        if LOG_ENABLED() then rfsuite.utils.log("Message timeout exceeded. Flushing queue.", "debug") end
+        if LOG_ENABLED_MSP() then rfsuite.utils.log("Message timeout exceeded. Flushing queue.", "debug") end
         self.currentMessage = nil
         self.uuid = nil
         return
@@ -214,7 +226,7 @@ function MspQueueController:processQueue()
 
         if self.currentMessage.processReply then
             self.currentMessage:processReply(buf)
-            if cmd and LOG_ENABLED() then
+            if cmd and LOG_ENABLED_MSP() then
                 local rwState = (self.currentMessage.payload and #self.currentMessage.payload > 0) and "WRITE" or "READ"
                 rfsuite.utils.logMsp(cmd, rwState, self.currentMessage.payload or buf, err)
             end
@@ -255,12 +267,12 @@ end
 function MspQueueController:add(message)
     if not rfsuite.session.telemetryState then return end
     if not message then
-        if LOG_ENABLED() then rfsuite.utils.log("Unable to queue - nil message.", "debug") end
+        if LOG_ENABLED_MSP() then rfsuite.utils.log("Unable to queue - nil message.", "debug") end
         return
     end
 
     if message.uuid and self.uuid == message.uuid then
-        if LOG_ENABLED() then rfsuite.utils.log("Skipping duplicate message with UUID " .. message.uuid, "debug") end
+        if LOG_ENABLED_MSP() then rfsuite.utils.log("Skipping duplicate message with UUID " .. message.uuid, "debug") end
         return
     end
 

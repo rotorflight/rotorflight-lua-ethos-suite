@@ -10,7 +10,8 @@ if rfsuite.session.activeRateTable == nil then
 end
 
 local rows
-if rfsuite.session.apiVersion >= 12.08 then
+if rfsuite.utils.apiVersionCompare(">=", "12.08") then
+    print("here")
     rows = {
         i18n("app.modules.rates_advanced.response_time"),
         i18n("app.modules.rates_advanced.acc_limit"),
@@ -165,13 +166,13 @@ local function openPage(idx, title, script)
     for i = 1, #rfsuite.app.Page.fields do
         local f = rfsuite.app.Page.fields[i]
 
-        local version = rfsuite.utils.round(rfsuite.session.apiVersion,2)
-        local valid = (f.apiversion    == nil or rfsuite.utils.round(f.apiversion,2)    <= version) and
-        (f.apiversionlt  == nil or rfsuite.utils.round(f.apiversionlt,2)  >  version) and
-        (f.apiversiongt  == nil or rfsuite.utils.round(f.apiversiongt,2)  <  version) and
-        (f.apiversionlte == nil or rfsuite.utils.round(f.apiversionlte,2) >= version) and
-        (f.apiversiongte == nil or rfsuite.utils.round(f.apiversiongte,2) <= version) and
-        (f.enablefunction == nil or f.enablefunction())
+        local valid =
+            (f.apiversion    == nil or rfsuite.utils.apiVersionCompare(">=", f.apiversion))    and
+            (f.apiversionlt  == nil or rfsuite.utils.apiVersionCompare("<",  f.apiversionlt))  and
+            (f.apiversiongt  == nil or rfsuite.utils.apiVersionCompare(">",  f.apiversiongt))  and
+            (f.apiversionlte == nil or rfsuite.utils.apiVersionCompare("<=", f.apiversionlte)) and
+            (f.apiversiongte == nil or rfsuite.utils.apiVersionCompare(">=", f.apiversiongte)) and
+            (f.enablefunction == nil or f.enablefunction())
 
         
         if f.row and f.col and valid then

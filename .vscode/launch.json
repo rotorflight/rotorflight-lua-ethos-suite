@@ -5,7 +5,7 @@
       "name": "Deploy & Launch",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/bin/deploy/deploy.py",
+      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
       "args": ["--launch"],
       "console": "integratedTerminal",
       "subProcess": false,          // <- prevents auto-attach to child procs
@@ -14,10 +14,22 @@
       "preLaunchTask": "kill deploy"
     },   
     {
+      "name": "Deploy & Launch [Fast]",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
+      "args": ["--fileext", "fast", "--launch"],
+      "console": "integratedTerminal",
+      "subProcess": false,          // <- prevents auto-attach to child procs
+      "justMyCode": true,
+      "stopOnEntry": false,
+      "preLaunchTask": "kill deploy"
+    },       
+    {
       "name": "Deploy & Choose",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/bin/deploy/deploy.py",
+      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
       "args": ["--choose", "--launch"],
       "console": "integratedTerminal",
       "subProcess": false,          // <- prevents auto-attach to child procs
@@ -26,10 +38,22 @@
       "preLaunchTask": "kill deploy"
     },   
     {
+      "name": "Deploy & Choose [Fast]",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
+      "args": ["--fileext", "fast", "--choose", "--launch"],
+      "console": "integratedTerminal",
+      "subProcess": false,          // <- prevents auto-attach to child procs
+      "justMyCode": true,
+      "stopOnEntry": false,
+      "preLaunchTask": "kill deploy"
+    },      
+    {
       "name": "Deploy Radio",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/bin/deploy/deploy.py",
+      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
       "args": ["--radio"],
       "console": "integratedTerminal",
       "subProcess": false,          // <- prevents auto-attach to child procs
@@ -38,10 +62,22 @@
       "preLaunchTask": "kill deploy"
     },
     {
+      "name": "Deploy Radio [Fast]",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
+      "args": ["--fileext", "fast", "--radio"],
+      "console": "integratedTerminal",
+      "subProcess": false,          // <- prevents auto-attach to child procs
+      "justMyCode": true,
+      "stopOnEntry": false,
+      "preLaunchTask": "kill deploy"
+    },    
+    {
       "name": "Deploy Radio + Serial Debug",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/bin/deploy/deploy.py",
+      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
       "args": [
         "--radio",
         "--radio-debug"
@@ -52,11 +88,28 @@
       "stopOnEntry": false,
       "preLaunchTask": "kill deploy"
     },
+     {
+      "name": "Deploy Radio + Serial Debug [Fast]",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
+      "args": [
+        "--fileext",
+        "fast",
+        "--radio",
+        "--radio-debug"
+      ],
+      "console": "integratedTerminal",
+      "subProcess": false,
+      "justMyCode": true,
+      "stopOnEntry": false,
+      "preLaunchTask": "kill deploy"
+    },   
     {
       "name": "Radio: Serial Debug",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/bin/deploy/deploy.py",
+      "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
       "args": ["--radio", "--connect-only"],
       "console": "integratedTerminal"
     }    

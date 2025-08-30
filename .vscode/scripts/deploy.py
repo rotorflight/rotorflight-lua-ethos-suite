@@ -20,6 +20,17 @@ THROTTLE_CHUNK = 16 * 1024          # 16 KiB
 THROTTLE_PAUSE_EVERY = 64 * 1024  # pause+fsync every 64 KiB written
 THROTTLE_PAUSE_S = 0.2             # 200 ms
 
+def file_md5(path, chunk=1024 * 1024):
+    import hashlib
+    h = hashlib.md5()
+    with open(path, 'rb', buffering=0) as f:
+        while True:
+            b = f.read(chunk)
+            if not b:
+                break
+            h.update(b)
+    return h.hexdigest()
+
 def _kill_previous_tail_if_any():
     try:
         with open(SERIAL_PIDFILE, "r") as f:
@@ -121,9 +132,164 @@ def minify_lua_file(filepath):
     except Exception as e:
         print(f"[MINIFY ERROR] Exception during luamin run: {e}")
 
-
-
 def get_ethos_scripts_dir(ethossuite_bin, retries=1, delay=5):
+    """
+    Ask Ethos Suite for the SCRIPTS path. Robust against chatty output:
+    - Prefer explicit path lines (e.g. 'E:\\scripts')
+    - Else parse the 'New removable disks: [...]' blob and use mountpoint + '\\scripts'
+    - Else fall back to scanning drive letters for an existing '\\scripts'
+    """
+    import re, json, string
+
+    cmd = [ethossuite_bin, "--get-path", "SCRIPTS", "--radio", "auto"]
+    path_re = re.compile(r'^(?:[A-Za-z]:\\|\\\\\?\\|//)[^\r\n]+$')
+
+    def _clean(line: str) -> str:
+        line = (line or "").strip().strip('"').strip("'")
+        if not line: return ""
+        low = line.lower()
+        if low.startswith("exit code"): return ""
+        if low.startswith("new removable disks"): return line  # keep for JSON parse
+        if line.startswith("{") or line.startswith("["): return line
+        return line
+
+    def _scan_drives_for_scripts():
+        for letter in string.ascii_uppercase:
+            root = f"{letter}:\\scripts"
+            try:
+                if os.path.isdir(root):
+                    return os.path.normpath(root)
+            except Exception:
+                pass
+        return None
+
+    last_err = None
+    for attempt in range(retries + 1):
+        try:
+            res = subprocess.run(cmd, text=True, capture_output=True, timeout=20)
+            if res.returncode != 0:
+                raise subprocess.CalledProcessError(res.returncode, cmd, output=res.stdout, stderr=res.stderr)
+
+            raw = res.stdout or ""
+            lines = [_clean(l) for l in raw.splitlines() if l.strip()]
+            # 1) Prefer explicit path-like lines
+            candidates = [l for l in lines if path_re.match(l)]
+            existing = [os.path.normpath(p) for p in candidates if os.path.isdir(os.path.normpath(p))]
+            if existing:
+                # Prefer the one whose basename is 'scripts'
+                preferred = [p for p in existing if os.path.basename(p).lower() == "scripts"]
+                return preferred[0] if preferred else existing[0]
+            if candidates:
+                # If nothing exists yet, return the most plausible; wait_for_scripts_mount() will verify
+                preferred = [p for p in candidates if "scripts" in p.lower()]
+                return os.path.normpath(preferred[0] if preferred else candidates[0])
+
+            # 2) Parse the "New removable disks:  [...]" blob if present
+            blob_lines = [l for l in lines if l.lower().startswith("new removable disks")]
+            if blob_lines:
+                # Extract JSON array portion (first '[' ... last ']')
+                blob = blob_lines[-1]
+                try:
+                    start = blob.index('['); end = blob.rindex(']') + 1
+                    arr = json.loads(blob[start:end])
+                    # Prefer the entry with radioDisk == 'radio', else first that has a mountpoint
+                    choice = None
+                    for item in arr:
+                        if item.get("radioDisk") == "radio":
+                            choice = item; break
+                    if not choice and arr:
+                        choice = arr[0]
+                    if choice:
+                        mps = choice.get("mountpoints") or []
+                        for mp in mps:
+                            p = (mp.get("path") or "").strip()
+                            if p:
+                                scripts = os.path.normpath(os.path.join(p, "scripts"))
+                                return scripts
+                except Exception:
+                    pass
+
+            # 3) Last resort: scan mounted drive letters for an existing \scripts
+            scanned = _scan_drives_for_scripts()
+            if scanned:
+                return scanned
+
+            # No usable hint; let caller retry
+            raise RuntimeError("No path-like output from Ethos Suite; mount not ready yet.")
+        except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired, RuntimeError) as e:
+            last_err = e
+            if attempt < retries:
+                print(f"[ETHOS] Could not get SCRIPTS path (attempt {attempt+1}/{retries+1}). Retrying in {delay}s…")
+                time.sleep(delay)
+            else:
+                raise last_err
+
+    """
+    Ask Ethos Suite for the SCRIPTS path. Returns a normalized existing path.
+    Skips noisy lines like "New removable disks: [...]".
+    """
+    import re
+
+    cmd = [ethossuite_bin, "--get-path", "SCRIPTS", "--radio", "auto"]
+    path_re = re.compile(r'^(?:[A-Za-z]:\\|\\\\\?\\|//)[^\r\n]+$')  # Windows drive, \\?\ or UNC
+
+    def _clean(line: str) -> str:
+        # Strip quotes and whitespace
+        line = line.strip().strip('"').strip("'")
+        # Ignore obvious noise
+        if not line:
+            return ""
+        if line.lower().startswith("exit code"):
+            return ""
+        if line.lower().startswith("new removable disks"):
+            return ""
+        if line.startswith("{") or line.startswith("["):
+            return ""
+        return line
+
+    last_err = None
+    for attempt in range(retries + 1):
+        try:
+            res = subprocess.run(cmd, text=True, capture_output=True, timeout=15)
+            if res.returncode != 0:
+                raise subprocess.CalledProcessError(res.returncode, cmd, output=res.stdout, stderr=res.stderr)
+
+            raw_lines = (res.stdout or "").splitlines()
+            # Clean and filter
+            candidates = []
+            for l in raw_lines:
+                c = _clean(l)
+                if not c:
+                    continue
+                # Prefer things that look like paths, ideally ending with "scripts"
+                if path_re.match(c):
+                    candidates.append(c)
+
+            # Heuristics: prefer existing paths, then those that contain \scripts
+            existing = [os.path.normpath(p) for p in candidates if os.path.isdir(os.path.normpath(p))]
+            if existing:
+                # If multiple, prefer one whose basename is 'scripts'
+                preferred = [p for p in existing if os.path.basename(p).lower() == "scripts"]
+                return preferred[0] if preferred else existing[0]
+
+            # If nothing exists yet, still try best-looking candidate (may mount a moment later)
+            if candidates:
+                # Prefer entries that contain 'scripts'
+                preferred = [p for p in candidates if "scripts" in p.lower()]
+                return os.path.normpath(preferred[0] if preferred else candidates[0])
+
+            # No usable line; fall through to retry
+            raise RuntimeError("No path-like output from Ethos Suite.")
+
+        except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired, RuntimeError) as e:
+            last_err = e
+            if attempt < retries:
+                print(f"[ETHOS] Could not get SCRIPTS path (attempt {attempt+1}/{retries+1}). Retrying in {delay}s…")
+                time.sleep(delay)
+            else:
+                raise last_err
+
+
     """
     Ask Ethos Suite for the SCRIPTS path. Retries after `delay` seconds
     if the tool returns no path or fails. Raises on final failure.
@@ -164,6 +330,7 @@ def get_ethos_scripts_dir(ethossuite_bin, retries=1, delay=5):
                 time.sleep(delay)
             else:
                 raise last_err
+            
 # Permission handler for Windows rm errors
 def on_rm_error(func, path, exc_info):
     """Resilient rm error handler:
@@ -365,21 +532,24 @@ def ethos_serial(ethossuite_bin, action, radio=None):
         return 1, "", str(e)
 
 
-def wait_for_scripts_mount(ethossuite_bin, attempts=5, delay=2):
+def wait_for_scripts_mount(ethossuite_bin, attempts=10, delay=2):
     """
-    Poll Ethos for the SCRIPTS path until it responds, to confirm the
-    radio's storage is mounted and ready for copy.
+    Poll Ethos for the SCRIPTS path until the directory actually exists.
     """
     last_err = None
     for i in range(attempts):
         try:
-            path = get_ethos_scripts_dir(ethossuite_bin, retries=0)
-            return path
+            path = get_ethos_scripts_dir(ethossuite_bin, retries=0, delay=delay)
+            if path and os.path.isdir(path):
+                return os.path.normpath(path)
+            raise RuntimeError(f"Ethos returned non-directory path: {path!r}")
         except Exception as e:
             last_err = e
             print(f"[ETHOS] Waiting for radio drive ({i+1}/{attempts})…")
             time.sleep(delay)
     raise RuntimeError(f"Radio drive did not mount: {last_err}")
+
+
 
 
 def _find_com_port_by_vid_pid(vid_hex, pid_hex):
@@ -587,19 +757,80 @@ def copy_files(src_override, fileext, targets):
                         shutil.copy(os.path.join(r,f), out_dir)
 
         # fast
+        # fast
         elif fileext == 'fast':
             scr = os.path.join(git_src, 'scripts', tgt)
-            for r,_,files in os.walk(scr):
-                for f in files:
-                    srcf = os.path.join(r,f)
-                    rel = os.path.relpath(srcf, scr)
-                    dstf = os.path.join(out_dir, rel)
-                    os.makedirs(os.path.dirname(dstf), exist_ok=True)
-                    if not os.path.exists(dstf) or os.path.getmtime(srcf)>os.path.getmtime(dstf):
-                        shutil.copy(srcf, dstf)
-                        print(f"Copy {f}")
 
-        
+            # FAT/exFAT timestamp slack (seconds)
+            TS_SLACK = 2.0
+
+            # Collect a stable list first (so bars have fixed totals)
+            files_all = []
+            for r, _, files in os.walk(scr):
+                for f in files:
+                    srcf = os.path.join(r, f)
+                    rel  = os.path.relpath(srcf, scr)
+                    dstf = os.path.join(out_dir, rel)
+                    files_all.append((srcf, dstf, rel))
+
+            def needs_copy_with_md5(srcf, dstf):
+                """Return True if dstf should be updated from srcf (size/mtime with slack, else MD5)."""
+                try:
+                    ss = os.stat(srcf)
+                except FileNotFoundError:
+                    return False  # source vanished
+                if not os.path.exists(dstf):
+                    return True
+                try:
+                    ds = os.stat(dstf)
+                except FileNotFoundError:
+                    return True
+
+                # 1) Different size → copy
+                if ss.st_size != ds.st_size:
+                    return True
+                # 2) Source meaningfully newer → copy
+                if (ss.st_mtime - ds.st_mtime) > TS_SLACK:
+                    return True
+                # 3) Otherwise, verify by MD5
+                try:
+                    return file_md5(srcf) != file_md5(dstf)
+                except Exception:
+                    # If hashing fails for any reason, be safe
+                    return True
+
+            # ===== Pass 1: Verify (MD5) =====
+            to_copy = []
+            if files_all:
+                bar_verify = tqdm(total=len(files_all), desc="Verifying (MD5)")
+                for srcf, dstf, rel in files_all:
+                    # Ensure parent exists before we check/copy later
+                    os.makedirs(os.path.dirname(dstf), exist_ok=True)
+                    if needs_copy_with_md5(srcf, dstf):
+                        to_copy.append((srcf, dstf, rel))
+                    bar_verify.update(1)
+                bar_verify.close()
+
+            # ===== Pass 2: Update only what changed =====
+            copied = 0
+            if to_copy:
+                bar_update = tqdm(total=len(to_copy), desc="Updating files")
+                for srcf, dstf, rel in to_copy:
+                    if DEPLOY_TO_RADIO:
+                        throttled_copyfile(srcf, dstf)
+                        flush_fs()
+                        time.sleep(0.05)
+                    else:
+                        shutil.copy(srcf, dstf)
+                    if not rel.replace("\\","/").endswith("tasks/logger/init.lua"):
+                        print(f"Copy {rel}")
+                    copied += 1
+                    bar_update.update(1)
+                bar_update.close()
+
+            if not copied:
+                print("Fast deploy: nothing to update.")
+    
         # full
         else:
             srcall = os.path.join(git_src, 'scripts', tgt)
@@ -685,6 +916,15 @@ def main():
     args = p.parse_args()
 
     DEPLOY_TO_RADIO = args.radio 
+
+    DEPLOY_PIDFILE = os.path.join(tempfile.gettempdir(), "rfdeploy-copy.pid")
+    try:
+        with open(DEPLOY_PIDFILE, "w") as f:
+            f.write(str(os.getpid()))
+    except Exception:
+        pass
+    atexit.register(lambda: os.path.exists(DEPLOY_PIDFILE) and os.remove(DEPLOY_PIDFILE))
+
 
     # load override config
     if args.config != CONFIG_PATH:

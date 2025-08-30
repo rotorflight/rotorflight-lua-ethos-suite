@@ -124,7 +124,7 @@ local function openPage(pidx, title, script)
             end,
             press = function()
                 rfsuite.preferences.menulastselected["settings_dashboard"] = pidx
-                rfsuite.app.ui.progressDisplay()
+                rfsuite.app.ui.progressDisplay(nil,nil,true)
                 rfsuite.app.ui.openPage(pidx, pvalue.folder, "settings/tools/" .. pvalue.script)
             end
         })
@@ -161,12 +161,12 @@ end
 
 
 local function onNavMenu()
-    rfsuite.app.ui.progressDisplay()
-        rfsuite.app.ui.openPage(
-            pageIdx,
-            i18n("app.modules.settings.name"),
-            "settings/settings.lua"
-        )
+    rfsuite.app.ui.progressDisplay(nil,nil,true)
+    rfsuite.app.ui.openPage(
+        pageIdx,
+        i18n("app.modules.settings.name"),
+        "settings/settings.lua"
+    )
         return true
 end
 

@@ -1,30 +1,20 @@
-$ErrorActionPreference = 'SilentlyContinue'
+# .vscode/scripts/kill-deploy.ps1
 
-# Kill simulator.exe if present
-Get-Process -Name simulator -ErrorAction SilentlyContinue | ForEach-Object {
-    try { Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue } catch {}
-}
-
-# Match deploy.py (full path or plain filename)
-$patterns = @(
-  'bin[\\/]+deploy[\\/]+deploy\.py',
-  'deploy\.py'
-)
-
-$procs = Get-CimInstance Win32_Process |
-  Where-Object {
-    $cl = $_.CommandLine
-    if (-not $cl) { return $false }
-    foreach ($pat in $patterns) {
-      if ($cl -match $pat) { return $true }
+$deployPidFile = Join-Path $env:TEMP 'rfdeploy-copy.pid'
+if (Test-Path $deployPidFile) {
+    $deployPid = (Get-Content $deployPidFile | Out-String).Trim()
+    if ($deployPid -match '^\d+$') {
+        try { taskkill /PID $deployPid /T /F | Out-Null } catch {}
     }
-    return $false
-  }
-
-if ($procs) {
-  foreach ($p in $procs) {
-    try { Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue } catch {}
-  }
+    Remove-Item $deployPidFile -ErrorAction SilentlyContinue
 }
 
-exit 0
+# Optional: also kill any previous serial tail (your script already writes this file)
+$serialPidFile = Join-Path $env:TEMP 'rfdeploy-serial.pid'
+if (Test-Path $serialPidFile) {
+    $serialPid = (Get-Content $serialPidFile | Out-String).Trim()
+    if ($serialPid -match '^\d+$') {
+        try { taskkill /PID $serialPid /T /F | Out-Null } catch {}
+    }
+    Remove-Item $serialPidFile -ErrorAction SilentlyContinue
+}
