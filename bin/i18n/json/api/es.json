@@ -336,9 +336,14 @@
       "translation": "Valor de ganancia para el sensor actual",
       "needs_translation": "false"
     },
-    "tbl_extgov": {
-      "english": "External Governor",
-      "translation": "Governor Externo",
+    "tbl_linear_thr": {
+      "english": "Linear Throttle",
+      "translation": "Linear Throttle",
+      "needs_translation": "false"
+    },
+    "tbl_rf_gov": {
+      "english": "RF Gyro Governor",
+      "translation": "RF Gyro Governor",
       "needs_translation": "false"
     },
     "buzzer_volume": {

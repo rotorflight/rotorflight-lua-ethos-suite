@@ -70,7 +70,7 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "esc_hardware",            type = "U8",  apiVersion = 12.07, simResponse = {0}},
     {field = "throttle_min",            type = "U16", apiVersion = 12.07, simResponse = {4, 76},       byteorder = "big"},
     {field = "throttle_max",            type = "U16", apiVersion = 12.07, simResponse = {7, 148},      byteorder = "big"},
-    {field = "governor",                type = "U8",  apiVersion = 12.07, simResponse = {0},           table = {rfsuite.i18n.get("api.ESC_PARAMETERS_FLYROTOR.tbl_extgov"), rfsuite.i18n.get("api.ESC_PARAMETERS_FLYROTOR.tbl_escgov")}, tableIdxInc = -1},
+    {field = "governor",                type = "U8",  apiVersion = 12.07, simResponse = {0},           table = {rfsuite.i18n.get("api.ESC_PARAMETERS_FLYROTOR.tbl_escgov"), rfsuite.i18n.get("api.ESC_PARAMETERS_FLYROTOR.tbl_linear_thr"), rfsuite.i18n.get("api.ESC_PARAMETERS_FLYROTOR.tbl_rf_gov")}, tableIdxInc = -1},
     {field = "cell_count",              type = "U8",  apiVersion = 12.07, simResponse = {6},           min = 4, max = 14, default = 6},
     {field = "low_voltage_protection",  type = "U8",  apiVersion = 12.07, simResponse = {30},          min = 28, max = 38, scale = 10, default = 30, decimals = 1, unit = "V"},
     {field = "temperature_protection",  type = "U8",  apiVersion = 12.07, simResponse = {125},         min = 50, max = 135, default = 125, unit = "°"},
@@ -93,7 +93,7 @@ local MSP_API_STRUCTURE_READ_DATA = {
     {field = "led_color_rgb",           type = "U24", apiVersion = 12.08, simResponse = {0, 0, 0}},
     {field = "motor_temp_sensor",       type = "U8",  apiVersion = 12.08, simResponse = {0},           min = 0, max = 1, table={rfsuite.i18n.get("api.ESC_PARAMETERS_FLYROTOR.tbl_disabled"), rfsuite.i18n.get("api.ESC_PARAMETERS_FLYROTOR.tbl_enabled")}, tableIdxInc = -1},
     {field = "motor_temp",              type = "U8",  apiVersion = 12.08, simResponse = {100},         min = 50, max = 150, unit = "°"},
-    {field = "battery_capacity",        type = "U16", apiVersion = 12.08, simResponse = {0, 0},        min = 0, max = 10000, step = 100, unit = "mAh", byteorder = "big"},
+    {field = "battery_capacity",        type = "U16", apiVersion = 12.08, simResponse = {0, 0},        min = 0, max = 50000, step = 100, unit = "mAh", byteorder = "big"},
 }
 
 -- Process structure in one pass
