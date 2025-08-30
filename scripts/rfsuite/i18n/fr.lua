@@ -511,6 +511,7 @@ return {
         ["bec_threshold"] = "Seuil (Volt)",
         ["fuel"] = "Carburant",
         ["fuel_callout_default"] = "Par defaut (uniquement a 10%)",
+        ["fuel_callout_5"] = "50% and 5%",
         ["fuel_callout_10"] = "Chaque 10%",
         ["fuel_callout_20"] = "Chaque 20%",
         ["fuel_callout_25"] = "Every 25%",

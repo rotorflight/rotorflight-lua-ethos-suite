@@ -511,6 +511,7 @@ return {
         ["bec_threshold"] = "Schwellwert (V)",
         ["fuel"] = "Kraftstoff",
         ["fuel_callout_default"] = "Standard (Nur wenn 10%)",
+        ["fuel_callout_5"] = "50% and 5%",
         ["fuel_callout_10"] = "Alle 10%",
         ["fuel_callout_20"] = "Alle 20%",
         ["fuel_callout_25"] = "Alle 25%",

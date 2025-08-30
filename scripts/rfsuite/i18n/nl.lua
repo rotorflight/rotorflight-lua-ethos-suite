@@ -511,6 +511,7 @@ return {
         ["bec_threshold"] = "Limiet (V)",
         ["fuel"] = "Brandstof",
         ["fuel_callout_default"] = "Standaard (Alleen per 10%)",
+        ["fuel_callout_5"] = "50% and 5%",
         ["fuel_callout_10"] = "Elke 10%",
         ["fuel_callout_20"] = "Elke 20%",
         ["fuel_callout_25"] = "Elke 25%",

@@ -511,6 +511,7 @@ return {
         ["bec_threshold"] = "Soglia (V)",
         ["fuel"] = "Carburante",
         ["fuel_callout_default"] = "Default (Solo al 10%)",
+        ["fuel_callout_5"] = "50% and 5%",
         ["fuel_callout_10"] = "Ogni 10%",
         ["fuel_callout_20"] = "Ogni 20%",
         ["fuel_callout_25"] = "Ogni 25%",

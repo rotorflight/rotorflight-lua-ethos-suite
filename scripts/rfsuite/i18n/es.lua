@@ -511,6 +511,7 @@ return {
         ["bec_threshold"] = "Umbral (V)",
         ["fuel"] = "Combustible",
         ["fuel_callout_default"] = "Por defecto (solo al 10%)",
+        ["fuel_callout_5"] = "50% and 5%",
         ["fuel_callout_10"] = "Cada 10%",
         ["fuel_callout_20"] = "Cada 20%",
         ["fuel_callout_25"] = "Cada 25%",

@@ -511,6 +511,7 @@ return {
         ["bec_threshold"] = "Threshold (V)",
         ["fuel"] = "Fuel",
         ["fuel_callout_default"] = "Default (Only at 10%)",
+        ["fuel_callout_5"] = "50% and 5%",
         ["fuel_callout_10"] = "Every 10%",
         ["fuel_callout_20"] = "Every 20%",
         ["fuel_callout_25"] = "Every 25%",

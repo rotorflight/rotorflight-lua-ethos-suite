@@ -423,6 +423,11 @@
         "translation": "Por defecto (solo al 10%)",
         "needs_translation": "false"
       },
+      "fuel_callout_5": {
+        "english": "50% and 5%",
+        "translation": "50% and 5%",
+        "needs_translation": "true"
+      },
       "fuel_callout_10": {
         "english": "Every 10%",
         "translation": "Cada 10%",

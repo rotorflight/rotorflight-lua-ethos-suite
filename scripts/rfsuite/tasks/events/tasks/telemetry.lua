@@ -35,40 +35,34 @@ local lastLowFuelAnnounced   = false
 local lastLowFuelRepeat      = 0
 local lastLowFuelRepeatCount = 0
 
+local function buildSmartfuelThresholds(sel)
+    if sel == 0 then
+        return {100, 10}
+    elseif sel == 10 then
+        local t = {}
+        for i = 100, 10, -10 do t[#t+1] = i end
+        return t
+    elseif sel == 20 then
+        local t = {}
+        for i = 100, 20, -20 do t[#t+1] = i end
+        t[#t+1] = 10
+        return t
+    elseif sel == 25 then
+        return {100, 75, 50, 25, 10}
+    elseif sel == 50 then
+        return {100, 50, 10}
+    elseif sel == 5 then
+        return {50, 5}
+    elseif type(sel) == "number" and sel > 0 then
+        return {sel}
+    else
+        return {10}
+    end
+end
+
 local function smartfuelCallout(value)
     local smartfuelcallout = tonumber(eventPrefs.smartfuelcallout) or 0
-    local thresholds = {}
-
-    if smartfuelcallout == 0 then
-        for _, i in ipairs({100, 10}) do table.insert(thresholds, i) end
-    elseif smartfuelcallout == 10 then
-        for i = 100, 10, -10 do table.insert(thresholds, i) end
-    elseif smartfuelcallout == 20 then
-        for i = 100, 20, -20 do table.insert(thresholds, i) end
-    elseif smartfuelcallout == 25 then
-        for i = 100, 25, -25 do table.insert(thresholds, i) end
-    elseif smartfuelcallout == 50 then
-        for _, i in ipairs({100, 50}) do table.insert(thresholds, i) end
-    else
-        table.insert(thresholds, smartfuelcallout)
-    end
-
-    -- Force 10% and 0% into the list
-    table.insert(thresholds, 10)
-    table.insert(thresholds, 0)
-
-    -- Remove duplicates
-    local seen = {}
-    local unique = {}
-    for _, v in ipairs(thresholds) do
-        if not seen[v] then
-            seen[v] = true
-            table.insert(unique, v)
-        end
-    end
-
-    -- Replace with deduped list
-    thresholds = unique
+    local thresholds = buildSmartfuelThresholds(smartfuelcallout)
 
     -- 0% logic (repeats, haptic)
     if value <= 0 then
