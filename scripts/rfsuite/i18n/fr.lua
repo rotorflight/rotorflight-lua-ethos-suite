@@ -251,13 +251,13 @@ return {
       ["model_param1_value"] = "Reglez ceci sur la duree de vol prevue en secondes. La radiocommande emettra un bip lorsque la duree sera atteinte."
     },
     ["BATTERY_INI"] = {
-      ["calcfuel_local"] = "Calculate Fuel Using",
-      ["tbl_off"] = "Current Sensor",
-      ["tbl_on"] = "Voltage Sensor",
-      ["sag_multiplier"] = "Raise or lower to adjust for the amount of voltage sag you see in flight.",
-      ["alert_off"] = "Off",
+      ["calcfuel_local"] = "Calcul du carburant utilisé",
+      ["tbl_off"] = "Capteur courant",
+      ["tbl_on"] = "Capteur tension",
+      ["sag_multiplier"] = "Ajuster pour compenser la chute de tension en vol",
+      ["alert_off"] = "Arrêt",
       ["alert_bec"] = "BEC",
-      ["alert_rxbatt"] = "Rx Batt"
+      ["alert_rxbatt"] = "Batt RX"
     },
     ["BATTERY_CONFIG"] = {
       ["vbatmincellvoltage"] = "Tension minimale par cellule avant le declenchement de l'alarme de basse tension.",
@@ -302,16 +302,16 @@ return {
       ["gov_spoolup_time"] = "Temps constant pour l'augmentation progressive, en secondes, mesurant le temps de zero a pleine vitesse de rotation.",
       ["gov_spoolup_min_throttle"] = "Gaz minimum a utiliser pour une montee progressive, en pourcentage. Pour les moteurs electriques, la valeur par defaut est 5%, pour le nitro, elle doit etre reglee pour que l'embrayage commence a s'engager en douceur 10-15%.",
       ["tbl_govmode_off"] = "DESACTIVER",
-      ["tbl_govmode_external"] = "EXTERNAL",
-      ["tbl_govmode_electric"] = "ELECTRIC",
+      ["tbl_govmode_external"] = "EXTERNE",
+      ["tbl_govmode_electric"] = "ELECTRIQUE",
       ["tbl_govmode_nitro"] = "NITRO",
       ["tbl_throttle_type_normal"] = "NORMAL",
-      ["tbl_throttle_type_off_on"] = "OFF_ON",
-      ["tbl_throttle_type_off_idle_on"] = "OFF_IDLE_ON",
-      ["tbl_throttle_type_idle_auto_on"] = "IDLE_AUTO_ON",
-      ["governor_idle_throttle"] = "Idle throttle",
-      ["governor_auto_throttle"] = "Auto throttle",
-      ["governor_fallback_drop"] = "Fallback drop"
+      ["tbl_throttle_type_off_on"] = "ARRET_ALLUME",
+      ["tbl_throttle_type_off_idle_on"] = "ARRET_RALENTI_ALLUME",
+      ["tbl_throttle_type_idle_auto_on"] = "RALENTI_AUTO_ALLUME",
+      ["governor_idle_throttle"] = "Ralenti Gaz",
+      ["governor_auto_throttle"] = "Gaz Auto",
+      ["governor_fallback_drop"] = "Coupure de secours"
     },
     ["RC_CONFIG"] = {
       ["rc_deflection"] = "Deviation du manche par rapport au centre en microsecondes (us).",
@@ -1294,7 +1294,7 @@ return {
       ["governor"] = "Status du Gouverneur",
       ["adj_func"] = "Ajustements Fonctions",
       ["fuel"] = "Niveau de Carburant",
-      ["smartfuel"] = "Smart Fuel",
+      ["smartfuel"] = "Carburant Intelligent",
       ["rssi"] = "Signal du Recepteur",
       ["link"] = "Qualité du Lien",
       ["adj_val"] = "Ajustements Valeurs",
@@ -1382,8 +1382,8 @@ return {
       ["cell_voltage"] = "Tension Cellule",
       ["volts_per_cell"] = "VVolts par cellule",
       ["warning"] = "Avertissement",
-      ["tx_batt"] = "TX Battery",
-      ["link_max"] = "Link Max"
+      ["tx_batt"] = "Batterie Emetteur",
+      ["link_max"] = "Signal Max"
     },
     ["governor"] = {
       ["UNKNOWN"] = "INCONNU",
