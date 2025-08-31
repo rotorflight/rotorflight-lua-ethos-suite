@@ -443,6 +443,10 @@ return {
     ["msg_connecting_to_fbl"] = "Connexion au controleur de vol...",
     ["navigation_help"] = "?",
     ["modules"] = {
+      ["diagnostics"] = {
+        ["name"] = "Diagnostics",
+        ["help_p1"] = "This module provides various tools to help diagnose issues with your flight controller or configuration."
+      },
       ["stats"] = {
         ["name"] = "Statistiques",
         ["totalflighttime"] = "Temps de vol total",

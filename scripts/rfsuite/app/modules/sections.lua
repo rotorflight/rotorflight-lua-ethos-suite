@@ -29,49 +29,42 @@ sections[#sections + 1] = {
     module = "pids",
     script = "pids.lua",
     image = "app/modules/pids/pids.png",
-    bgtask = false
 }
 sections[#sections + 1] = {
     title = rfsuite.i18n.get("app.modules.rates.name"),
     module = "rates",
     script = "rates.lua",
     image = "app/modules/rates/rates.png",
-    bgtask = false
 }
 sections[#sections + 1] = {
     title = rfsuite.i18n.get("app.modules.profile_governor.name"),
     module = "profile_governor",
     script = "profile_governor.lua",
     image = "app/modules/profile_governor/governor.png",
-    bgtask = false
 }
 sections[#sections + 1] = {
     title = rfsuite.i18n.get("app.modules.profile_tailrotor.name"),
     module = "tailrotor",
     script = "tailrotor.lua",
     image = "app/modules/tailrotor/tailrotor.png",
-    bgtask = false
 }
 sections[#sections + 1] = {
     title = i18n("app.menu_section_advanced"),
     id = "advanced",
     image = "app/gfx/advanced.png",
     loaderspeed = true,
-    bgtask = false
 }
 sections[#sections + 1] = {
     title = i18n("app.menu_section_hardware"),
     id = "hardware",
     image = "app/gfx/hardware.png",
     loaderspeed = true,
-    bgtask = false
 }
 sections[#sections + 1] = {
     title = i18n("app.menu_section_tools"),
     id = "tools",
     image = "app/gfx/tools.png",
     newline = true,
-    bgtask = false
 }
 sections[#sections + 1] = {
     title = rfsuite.i18n.get("app.modules.logs.name"),
@@ -80,7 +73,6 @@ sections[#sections + 1] = {
     script = "logs_dir.lua",
     image = "app/modules/logs/gfx/logs.png",
     loaderspeed = true,
-    bgtask = false
 }
 sections[#sections + 1] = {
     title = rfsuite.i18n.get("app.modules.settings.name"),
@@ -89,7 +81,15 @@ sections[#sections + 1] = {
     script = "settings.lua",
     image = "app/modules/settings/settings.png",
     loaderspeed = true,
-    bgtask = false
+}
+sections[#sections + 1] = {
+    title = rfsuite.i18n.get("app.modules.diagnostics.name"),
+    module = "diagnostics",
+    script = "diagnostics.lua",
+    image = "app/modules/diagnostics/diagnostics.png",
+    loaderspeed = true,
+    bgtask = true,
+    offline = true,
 }
 sections[#sections + 1] = {
     title = rfsuite.i18n.get("app.modules.about.name"),
@@ -97,7 +97,6 @@ sections[#sections + 1] = {
     script = "about.lua",
     image = "app/modules/about/about.png",
     loaderspeed = true,
-    bgtask = false
 }
 
 return sections

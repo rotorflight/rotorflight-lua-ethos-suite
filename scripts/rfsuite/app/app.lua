@@ -641,7 +641,17 @@ app._uiTasks = {
     if app.uiState == app.uiStatus.mainMenu then
       local apiV = tostring(rfsuite.session.apiVersion)
 
-      if not rfsuite.session.isConnected then
+      if not rfsuite.tasks.active() then
+          for i, v in pairs(app.formFieldsBGTask) do
+            if v == false then
+              if app.formFields[i] then
+                app.formFields[i]:enable(false)
+              else
+                log("Main Menu Icon " .. i .. " not found in formFields", "info")
+              end
+            end
+          end 
+      elseif not rfsuite.session.isConnected then
         for i, v in pairs(app.formFieldsOffline) do
           if v == false then
             if app.formFields[i] then
@@ -650,7 +660,7 @@ app._uiTasks = {
               log("Main Menu Icon " .. i .. " not found in formFields", "info")
             end
           end
-        end
+        end 
       elseif rfsuite.session.apiVersion and app.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiV) then
         app.offlineMode = false
         for i in pairs(app.formFieldsOffline) do

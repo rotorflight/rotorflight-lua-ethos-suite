@@ -99,7 +99,7 @@ return {
       ["motor_erpm_max"] = "RPM Massimi",
       ["throttle_max"] = "Valore Massimo Gas",
       ["tbl_ccw"] = "Antiorario",
-      ["tbl_escgov"] = "ESC Governor",
+      ["tbl_escgov"] = "Esc Governor",
       ["temperature_protection"] = "Temperatura alla quale taglio potenza al 50%",
       ["tbl_automatic"] = "Automatico",
       ["low_voltage_protection"] = "Voltaggio al quale si taglia potenza al 50%",
@@ -443,6 +443,10 @@ return {
     ["msg_connecting_to_fbl"] = "Connessione al flight controller...",
     ["navigation_help"] = "?",
     ["modules"] = {
+      ["diagnostics"] = {
+        ["name"] = "Diagnostics",
+        ["help_p1"] = "This module provides various tools to help diagnose issues with your flight controller or configuration."
+      },
       ["stats"] = {
         ["name"] = "Stats",
         ["totalflighttime"] = "Totale Tempo Volo",

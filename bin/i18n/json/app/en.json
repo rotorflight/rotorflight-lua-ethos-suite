@@ -90,6 +90,18 @@
     "needs_translation": "false"
   },
   "modules": {
+    "diagnostics": {
+      "name": {
+        "english": "Diagnostics",
+        "translation": "Diagnostics",
+        "needs_translation": "false"
+      },
+      "help_p1": {
+        "english": "This module provides various tools to help diagnose issues with your flight controller or configuration.",
+        "translation": "This module provides various tools to help diagnose issues with your flight controller or configuration.",
+        "needs_translation": "false"
+      }
+    },
     "stats": {
       "name": {
         "english": "Stats",

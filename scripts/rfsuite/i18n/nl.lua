@@ -99,7 +99,7 @@ return {
       ["motor_erpm_max"] = "Maximale RPM",
       ["throttle_max"] = "Maximale throttle waarde",
       ["tbl_ccw"] = "CCW",
-      ["tbl_escgov"] = "ESC Governor",
+      ["tbl_escgov"] = "Esc Governor",
       ["temperature_protection"] = "Temperatuur waarbij vermogen wordt verlaagd met 50%",
       ["tbl_automatic"] = "Automatisch",
       ["low_voltage_protection"] = "Voltage waarbij vermogen wordt verlaagd met 50%",
@@ -443,6 +443,10 @@ return {
     ["msg_connecting_to_fbl"] = "Verbinden met vliegcontroller...",
     ["navigation_help"] = "?",
     ["modules"] = {
+      ["diagnostics"] = {
+        ["name"] = "Diagnostics",
+        ["help_p1"] = "This module provides various tools to help diagnose issues with your flight controller or configuration."
+      },
       ["stats"] = {
         ["name"] = "Status",
         ["totalflighttime"] = "Totale Flight tijd",

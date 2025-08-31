@@ -245,6 +245,7 @@ end
 function ui.openMainMenu()
     rfsuite.app.formFields         = {}
     rfsuite.app.formFieldsOffline  = {}
+    rfsuite.app.formFieldsBGTask   = {}
     rfsuite.app.formLines          = {}
     rfsuite.app.lastLabel          = nil
     rfsuite.app.isOfflinePage      = false
@@ -316,6 +317,7 @@ function ui.openMainMenu()
     for pidx, pvalue in ipairs(Menu) do
         if not pvalue.developer then
             rfsuite.app.formFieldsOffline[pidx] = pvalue.offline or false
+            rfsuite.app.formFieldsBGTask[pidx] = pvalue.bgtask or false
 
             if pvalue.newline then
                 lc = 0
@@ -357,10 +359,6 @@ function ui.openMainMenu()
                     end
                 end
             })
-
-            if not pvalue.bgtask then
-                rfsuite.app.formFields[pidx]:enable(false)
-            end
 
             if pvalue.disabled then
                 rfsuite.app.formFields[pidx]:enable(false)
