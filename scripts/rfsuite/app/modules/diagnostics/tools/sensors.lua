@@ -39,7 +39,7 @@ local function openPage(pidx, title, script)
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript= script
 
-    rfsuite.app.ui.fieldHeader(rfsuite.i18n.get("app.modules.validate_sensors.name"))
+    rfsuite.app.ui.fieldHeader(rfsuite.i18n.get("app.modules.diagnostics.name")  .. " / " .. rfsuite.i18n.get("app.modules.validate_sensors.name"))
 
     -- fresh tables so lookups are never stale/nil
     rfsuite.app.formLineCnt = 0
@@ -57,7 +57,10 @@ local function openPage(pidx, title, script)
 end
 
 function sensorKeyExists(searchKey, sensorTable)
+    if type(sensorTable) ~= "table" then return false end
+
     for _, sensor in pairs(sensorTable) do if sensor['key'] == searchKey then return true end end
+
     return false
 end
 
@@ -294,6 +297,27 @@ local function onToolMenu(self)
 
 end
 
+local function event(widget, category, value, x, y)
+    -- if close event detected go to section home page
+    if category == EVT_CLOSE and value == 0 or value == 35 then
+        rfsuite.app.ui.openPage(
+            pageIdx,
+            i18n("app.modules.diagnostics.name"),
+            "diagnostics/diagnostics.lua"
+        )
+        return true
+    end
+end
+
+
+local function onNavMenu()
+    rfsuite.app.ui.progressDisplay(nil,nil,true)
+    rfsuite.app.ui.openPage(
+        pageIdx,
+        i18n("app.modules.diagnostics.name"),
+        "diagnostics/diagnostics.lua"
+    )
+end
 
 return {
     reboot = false,
@@ -306,6 +330,8 @@ return {
     postRead = postRead,
     openPage = openPage,
     onToolMenu = onToolMenu,
+    onNavMenu = onNavMenu,
+    event = event,
     navButtons = {
         menu = true,
         save = false,
