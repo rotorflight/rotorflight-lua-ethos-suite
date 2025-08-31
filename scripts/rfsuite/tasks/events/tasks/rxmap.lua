@@ -59,8 +59,10 @@ function rxmap.wakeup()
         if src then
             local val = src:value()
             if val ~= nil then
-                rfsuite.session.rx.values[name] = val
+                
             end
+        else
+            rfsuite.session.rx.values[name] = nil
         end
     end
 end
