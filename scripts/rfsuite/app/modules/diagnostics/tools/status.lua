@@ -205,6 +205,28 @@ local function onToolMenu(self)
 
 end
 
+local function event(widget, category, value, x, y)
+    -- if close event detected go to section home page
+    if category == EVT_CLOSE and value == 0 or value == 35 then
+        rfsuite.app.ui.openPage(
+            pageIdx,
+            i18n("app.modules.diagnostics.name"),
+            "diagnostics/diagnostics.lua"
+        )
+        return true
+    end
+end
+
+
+local function onNavMenu()
+    rfsuite.app.ui.progressDisplay(nil,nil,true)
+    rfsuite.app.ui.openPage(
+        pageIdx,
+        i18n("app.modules.diagnostics.name"),
+        "diagnostics/diagnostics.lua"
+    )
+end
+
 return {
     apidata = apidata,
     reboot = false,
@@ -217,12 +239,14 @@ return {
     postRead = postRead,
     eraseDataflash = eraseDataflash,
     onToolMenu = onToolMenu,
+    onNavMenu = onNavMenu,
+    onNavMenu = onNavMenu,
     navButtons = {
         menu = true,
         save = false,
         reload = false,
         tool = true,
-        help = true
+        help = false
     },
     API = {},
 }

@@ -17,6 +17,13 @@ local S_PAGES = {
         bgtask = true,  -- requires background tasks for icon to be enabled
         offline = true  -- requires connection to fbl to run
     }, 
+    {
+        name = i18n("app.modules.status.name"),
+        script = "status.lua",
+        image = "status.png",
+        bgtask = true,  -- requires background tasks for icon to be enabled
+        offline = true  -- requires connection to fbl to run
+    },     
 }
 
 local function openPage(pidx, title, script)
@@ -153,7 +160,7 @@ local function openPage(pidx, title, script)
             press = function()
                 rfsuite.preferences.menulastselected["diagnostics"] = pidx
                 app.ui.progressDisplay(nil,nil,true)
-                app.ui.openPage(pidx, pvalue.folder, "diagnostics/tools/" .. pvalue.script)
+                app.ui.openPage(pidx, rfsuite.i18n.get("app.modules.diagnostics.name")  .. " / " .. pvalue.name, "diagnostics/tools/" .. pvalue.script)
             end
         })
 

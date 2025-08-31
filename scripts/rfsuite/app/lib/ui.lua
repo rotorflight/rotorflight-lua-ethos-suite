@@ -827,6 +827,8 @@ function ui.fieldHeader(title)
     local formFields = app.formFields
     local lcdWidth  = rfsuite.app.lcdWidth
 
+    if not title then title = "No Title" end
+
     local w, _ = lcd.getWindowSize()
     local padding  = 5
     local colStart = math.floor(w * 59.4 / 100)
