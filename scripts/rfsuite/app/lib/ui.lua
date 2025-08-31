@@ -358,7 +358,7 @@ function ui.openMainMenu()
                 end
             })
 
-            if pvalue.bgtask then
+            if not pvalue.bgtask then
                 rfsuite.app.formFields[pidx]:enable(false)
             end
 
