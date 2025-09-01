@@ -1229,7 +1229,7 @@ return {
         ["erase"] = "Effacer",
         ["arming_disable_flag_10"] = "Pas de pre-armement",
         ["arming_disable_flag_21"] = "Redemarrage requis",
-        ["name"] = "Statut",
+        ["name"] = "Statut FBL",
         ["arming_disable_flag_13"] = "CLI",
         ["arming_disable_flag_14"] = "Menu CMS",
         ["arming_disable_flag_16"] = "MSP",

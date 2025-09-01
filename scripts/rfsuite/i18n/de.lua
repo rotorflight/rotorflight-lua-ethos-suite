@@ -1229,7 +1229,7 @@ return {
         ["erase"] = "Loeschen",
         ["arming_disable_flag_10"] = "Kein Pre-Arm",
         ["arming_disable_flag_21"] = "Neustart erforderlich",
-        ["name"] = "Status",
+        ["name"] = "FBL Status",
         ["arming_disable_flag_13"] = "CLI",
         ["arming_disable_flag_14"] = "CMS-Menue",
         ["arming_disable_flag_16"] = "MSP",

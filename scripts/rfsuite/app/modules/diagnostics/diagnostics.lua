@@ -4,6 +4,13 @@ local log = rfsuite.utils.log
 
 local S_PAGES = {
     {
+        name = i18n("app.modules.rfstatus.name"),
+        script = "rfstatus.lua",
+        image = "rfstatus.png",
+        bgtask = false,  -- requires background tasks for icon to be enabled
+        offline = false  -- requires connection to fbl to run
+    }, 
+    {
         name = i18n("app.modules.msp_speed.name"),
         script = "msp_speed.lua",
         image = "msp_speed.png",
@@ -19,7 +26,7 @@ local S_PAGES = {
     }, 
     {
         name = i18n("app.modules.status.name"),
-        script = "status.lua",
+        script = "fblstatus.lua",
         image = "status.png",
         bgtask = true,  -- requires background tasks for icon to be enabled
         offline = true  -- requires connection to fbl to run

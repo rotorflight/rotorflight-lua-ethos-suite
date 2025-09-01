@@ -1229,7 +1229,7 @@ return {
         ["erase"] = "Borrar",
         ["arming_disable_flag_10"] = "No Pre Armado",
         ["arming_disable_flag_21"] = "Reinicio requerido",
-        ["name"] = "Estado",
+        ["name"] = "Estado FBL",
         ["arming_disable_flag_13"] = "CLI",
         ["arming_disable_flag_14"] = "Menú CMS",
         ["arming_disable_flag_16"] = "MSP",

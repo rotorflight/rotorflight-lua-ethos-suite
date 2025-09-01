@@ -1229,7 +1229,7 @@ return {
         ["erase"] = "Cancella",
         ["arming_disable_flag_10"] = "No Pre Arm",
         ["arming_disable_flag_21"] = "Reboot Richiesto",
-        ["name"] = "Stato",
+        ["name"] = "Stato FBL",
         ["arming_disable_flag_13"] = "CLI",
         ["arming_disable_flag_14"] = "CMS Menu",
         ["arming_disable_flag_16"] = "MSP",

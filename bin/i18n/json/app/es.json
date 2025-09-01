@@ -3721,8 +3721,8 @@
         "needs_translation": "false"
       },
       "name": {
-        "english": "Status",
-        "translation": "Estado",
+        "english": "FBL Status",
+        "translation": "Estado FBL",
         "needs_translation": "false"
       },
       "arming_disable_flag_13": {
