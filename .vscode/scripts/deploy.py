@@ -666,7 +666,7 @@ def tail_serial_debug(vid=DEFAULT_SERIAL_VID, pid=DEFAULT_SERIAL_PID,
 
     try:
         with s:
-            print("— Serial connected. Press Ctrl+C to stop —")
+            print("- Serial connected. Press Ctrl+C to stop -")
             buf = b""
             while True:
                 try:

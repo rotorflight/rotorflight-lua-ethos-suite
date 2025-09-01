@@ -1408,7 +1408,7 @@
         "needs_translation": "false"
       },
       "help_p3": {
-        "english": "Tail P/I/D Gains: Increase P until slight wobble in funnels, then back off slightly. Raise I until tail holds firm in hard moves (too high causes slow wag). Adjust D for smooth stops—higher for slow servos, lower for fast ones.",
+        "english": "Tail P/I/D Gains: Increase P until slight wobble in funnels, then back off slightly. Raise I until tail holds firm in hard moves (too high causes slow wag). Adjust D for smooth stops-higher for slow servos, lower for fast ones.",
         "translation": "Heck P/I/D-Gains: Erhoehen Sie P, bis leichtes Wackeln in Funnels auftritt, dann leicht reduzieren. Erhoehen Sie I, bis das Heck in harten Manoevern stabil bleibt (zu hoch verursacht langsames Schwingen). D anpassen fuer sanfte Stopps – hoeher fuer langsame Servos, niedriger fuer schnelle.",
         "needs_translation": "false"
       }

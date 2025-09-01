@@ -1408,7 +1408,7 @@
         "needs_translation": "false"
       },
       "help_p3": {
-        "english": "Tail P/I/D Gains: Increase P until slight wobble in funnels, then back off slightly. Raise I until tail holds firm in hard moves (too high causes slow wag). Adjust D for smooth stops—higher for slow servos, lower for fast ones.",
+        "english": "Tail P/I/D Gains: Increase P until slight wobble in funnels, then back off slightly. Raise I until tail holds firm in hard moves (too high causes slow wag). Adjust D for smooth stops-higher for slow servos, lower for fast ones.",
         "translation": "Tail P/I/D Gains: Verhoog P tot een lichte wag in hurricanes, en ga dan iets terug. Verhoog I tot de staart locked-in is in harde bewegingen (te hoog veroorzaakt langzame wag). Pas D aan voor soepele stops: hoger voor langzame servo's, lager voor snelle.",
         "needs_translation": "false"
       }

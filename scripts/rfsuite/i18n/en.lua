@@ -728,7 +728,7 @@ return {
         ["d"] = "D",
         ["b"] = "B",
         ["help_p4"] = "Tail Stop Gain (CW/CCW): Adjust separately for clean, bounce-free stops in both directions.",
-        ["help_p3"] = "Tail P/I/D Gains: Increase P until slight wobble in funnels, then back off slightly. Raise I until tail holds firm in hard moves (too high causes slow wag). Adjust D for smooth stops—higher for slow servos, lower for fast ones."
+        ["help_p3"] = "Tail P/I/D Gains: Increase P until slight wobble in funnels, then back off slightly. Raise I until tail holds firm in hard moves (too high causes slow wag). Adjust D for smooth stops-higher for slow servos, lower for fast ones."
       },
       ["msp_speed"] = {
         ["seconds_600"] = "  600S  ",

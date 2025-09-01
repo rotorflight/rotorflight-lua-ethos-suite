@@ -1408,8 +1408,8 @@
         "needs_translation": "false"
       },
       "help_p3": {
-        "english": "Tail P/I/D Gains: Increase P until slight wobble in funnels, then back off slightly. Raise I until tail holds firm in hard moves (too high causes slow wag). Adjust D for smooth stops—higher for slow servos, lower for fast ones.",
-        "translation": "Ganacia P/I/D de cola: Incremente P hasta un leve tambaleo durante embudos, luego disminuya levemente. Aumente I hasta que la cola se mantenga firme durante movimientos rápidos (demasiado alto causa un meneo lento de la cola). Ajuste D para paradas suaves — más alto para servos lentos, más bajo para rápidos.",
+        "english": "Tail P/I/D Gains: Increase P until slight wobble in funnels, then back off slightly. Raise I until tail holds firm in hard moves (too high causes slow wag). Adjust D for smooth stops-higher for slow servos, lower for fast ones.",
+        "translation": "Ganacia P/I/D de cola: Incremente P hasta un leve tambaleo durante embudos, luego disminuya levemente. Aumente I hasta que la cola se mantenga firme durante movimientos rápidos (demasiado alto causa un meneo lento de la cola). Ajuste D para paradas suaves - más alto para servos lentos, más bajo para rápidos.",
         "needs_translation": "false"
       }
     },

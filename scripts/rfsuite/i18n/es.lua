@@ -728,7 +728,7 @@ return {
         ["d"] = "D",
         ["b"] = "B",
         ["help_p4"] = "Ganancia Detención Cola (Horaria CW/Antihoraria CCW): Ajuste separadamente para detenciones limpias, sin rebotes, en ambos sentidos.",
-        ["help_p3"] = "Ganacia P/I/D de cola: Incremente P hasta un leve tambaleo durante embudos, luego disminuya levemente. Aumente I hasta que la cola se mantenga firme durante movimientos rápidos (demasiado alto causa un meneo lento de la cola). Ajuste D para paradas suaves — más alto para servos lentos, más bajo para rápidos."
+        ["help_p3"] = "Ganacia P/I/D de cola: Incremente P hasta un leve tambaleo durante embudos, luego disminuya levemente. Aumente I hasta que la cola se mantenga firme durante movimientos rápidos (demasiado alto causa un meneo lento de la cola). Ajuste D para paradas suaves - más alto para servos lentos, más bajo para rápidos."
       },
       ["msp_speed"] = {
         ["seconds_600"] = "  600S  ",
