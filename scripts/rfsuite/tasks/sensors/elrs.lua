@@ -439,12 +439,7 @@ function elrs.wakeup()
             frameCount = frameCount + 1
             if frameCount >= 50 then break end
             if CRSF_PAUSE_TELEMETRY == true or rfsuite.app.triggers.mspBusy == true then
-                if rfsuite.session.telemetryModule then
-                    local module = rfsuite.session.telemetryModule
-                    if module and module.muteSensorLost then
-                        module:muteSensorLost(5.0)
-                    end
-                end                
+                rfsuite.utils.muteSensorLostWarnings()
                 break 
             end
         end

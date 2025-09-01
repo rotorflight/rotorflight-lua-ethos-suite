@@ -328,6 +328,7 @@ function msp.wakeup()
     lastWakeupTime = now
 
     if not tasks.msp.mspQueue:isProcessed() then
+        rfsuite.utils.muteSensorLostWarnings()
         log("MSP queue busy.. skipping dynamic MSP sensors", "info")
         return
     end

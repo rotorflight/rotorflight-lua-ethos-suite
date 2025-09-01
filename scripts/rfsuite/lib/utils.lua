@@ -731,5 +731,14 @@ function utils.apiVersionCompare(op, req)
     return false -- unknown operator
 end
 
+function utils.muteSensorLostWarnings()
+    if rfsuite.session.telemetryModule then
+        local module = rfsuite.session.telemetryModule
+        if module and module.muteSensorLost then
+            module:muteSensorLost(2.0)
+        end
+    end
+end
+
 
 return utils

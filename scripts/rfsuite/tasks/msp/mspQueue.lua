@@ -156,12 +156,7 @@ function MspQueueController:processQueue()
 
     rfsuite.app.triggers.mspBusy = true
 
-    if rfsuite.session.telemetryModule then
-        local module = rfsuite.session.telemetryModule
-        if module and module.muteSensorLost then
-            module:muteSensorLost(5.0)
-        end
-    end
+    rfsuite.utils.muteSensorLostWarnings()
 
     -- Load a new current message if needed
     if not self.currentMessage then
