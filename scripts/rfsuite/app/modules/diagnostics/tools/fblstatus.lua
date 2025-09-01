@@ -240,6 +240,7 @@ return {
     eraseDataflash = eraseDataflash,
     onToolMenu = onToolMenu,
     onNavMenu = onNavMenu,
+    event = event,
     navButtons = {
         menu = true,
         save = false,
