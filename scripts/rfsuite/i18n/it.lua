@@ -1196,6 +1196,9 @@ return {
         ["min_cutoff"] = "Min cutoff",
         ["center"] = "Centro"
       },
+      ["rfstatus"] = {
+        ["name"] = "Status"
+      },
       ["fblstatus"] = {
         ["arming_disable_flag_3"] = "Recupero RX Fallata",
         ["arming_disable_flag_20"] = "Filtro RPM",

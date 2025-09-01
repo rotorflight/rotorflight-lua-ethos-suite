@@ -1196,6 +1196,9 @@ return {
         ["min_cutoff"] = "Corte Mín",
         ["center"] = "Centro"
       },
+      ["rfstatus"] = {
+        ["name"] = "Status"
+      },
       ["fblstatus"] = {
         ["arming_disable_flag_3"] = "Falla Recup. RX",
         ["arming_disable_flag_20"] = "Filtro RPM",

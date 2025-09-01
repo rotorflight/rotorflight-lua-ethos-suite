@@ -3559,6 +3559,13 @@
         "needs_translation": "false"
       }
     },
+    "rfstatus": {
+      "name": {
+        "english": "Status",
+        "translation": "Status",
+        "needs_translation": "true"
+      }
+    },
     "fblstatus": {
       "arming_disable_flag_3": {
         "english": "Bad RX Recovery",
