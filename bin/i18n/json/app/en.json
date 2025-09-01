@@ -3564,6 +3564,41 @@
         "english": "Status",
         "translation": "Status",
         "needs_translation": "false"
+      },
+      "error": {
+        "english": "ERROR",
+        "translation": "ERROR",
+        "needs_translation": "false"
+      },
+      "ok": {
+        "english": "OK",
+        "translation": "OK",
+        "needs_translation": "false"
+      },
+      "unknown": {
+        "english": "UNKNOWN",
+        "translation": "UNKNOWN",
+        "needs_translation": "false"
+      },
+      "mspsensor": {
+        "english": "MSP Sensor",
+        "translation": "MSP Sensor",
+        "needs_translation": "false"
+      },
+      "rfmodule": {
+        "english": "RF Module",
+        "translation": "RF Module",
+        "needs_translation": "false"
+      },
+      "bgtask": {
+        "english": "Background Task",
+        "translation": "Background Task",
+        "needs_translation": "false"
+      },
+      "telemetrysensors": {
+        "english": "Telemetry Sensors",
+        "translation": "Telemetry Sensors",
+        "needs_translation": "false"
       }
     },
     "fblstatus": {

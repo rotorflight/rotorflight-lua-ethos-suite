@@ -21,6 +21,7 @@ local function openPage(pidx, title, script)
     rfsuite.app.lastIdx   = pidx   -- was idx
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript= script
+    local config = {}
 
     rfsuite.app.ui.fieldHeader(rfsuite.i18n.get("app.modules.diagnostics.name")  .. " / " .. rfsuite.i18n.get("app.modules.rfstatus.name"))
 
@@ -28,6 +29,56 @@ local function openPage(pidx, title, script)
     rfsuite.app.formLineCnt = 0
     rfsuite.app.formFields  = {}
     rfsuite.app.formLines   = {}
+    local formFieldCount = 0
+
+    -- Background Task status
+    local bgtaskStatus = rfsuite.i18n.get("app.modules.rfstatus.ok")
+    if not rfsuite.tasks.active() then bgtaskStatus = rfsuite.i18n.get("app.modules.rfstatus.error") end
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine(rfsuite.i18n.get("app.modules.rfstatus.bgtask"))
+    rfsuite.app.formFields[formFieldCount] = form.addStaticText(
+                    rfsuite.app.formLines[rfsuite.app.formLineCnt], 
+                    nil, 
+                    bgtaskStatus
+                )
+    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+    formFieldCount = formFieldCount + 1
+
+
+    -- RF Module Status
+    local moduleState = (model.getModule(0):enable()  or model.getModule(1):enable()) or false            
+    local moduleStatus = rfsuite.i18n.get("app.modules.rfstatus.ok")
+    if not moduleState then moduleStatus = rfsuite.i18n.get("app.modules.rfstatus.error") end
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine(rfsuite.i18n.get("app.modules.rfstatus.rfmodule"))
+    rfsuite.app.formFields[formFieldCount] = form.addStaticText(
+                    rfsuite.app.formLines[rfsuite.app.formLineCnt], 
+                    nil, 
+                    moduleStatus
+                )
+    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+    formFieldCount = formFieldCount + 1
+
+    -- MSP Sensor Status
+    local sportSensor = system.getSource({appId = 0xF101})
+    local elrsSensor = system.getSource({crsfId=0x14, subIdStart=0, subIdEnd=1})
+    local mspStatus = rfsuite.i18n.get("app.modules.rfstatus.ok")
+    if not (sportSensor or elrsSensor)  then mspStatus = rfsuite.i18n.get("app.modules.rfstatus.error") end
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine(rfsuite.i18n.get("app.modules.rfstatus.mspsensor"))
+    rfsuite.app.formFields[formFieldCount] = form.addStaticText(
+                    rfsuite.app.formLines[rfsuite.app.formLineCnt], 
+                    nil, 
+                    mspStatus
+                )
+    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+    formFieldCount = formFieldCount + 1
+
+    -- Telemetry Sensor Status
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine(rfsuite.i18n.get("app.modules.rfstatus.telemetrysensors"))
+    rfsuite.app.formFields[formFieldCount] = form.addStaticText(
+                    rfsuite.app.formLines[rfsuite.app.formLineCnt], 
+                    nil, 
+                    "-")
+    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+    formFieldCount = formFieldCount + 1
 
 
     enableWakeup = true
@@ -47,6 +98,20 @@ local function wakeup()
 
     -- prevent wakeup running until after initialised
     if enableWakeup == false then return end
+
+
+    local sensors = rfsuite.tasks and rfsuite.tasks.telemetry and rfsuite.tasks.telemetry.validateSensors(false) or false
+    local telemStatus = rfsuite.i18n.get("app.modules.rfstatus.unknown")
+    if type(sensors) == "table" then
+        if #sensors == 0 then
+            telemStatus = rfsuite.i18n.get("app.modules.rfstatus.ok")
+        else
+            telemStatus = rfsuite.i18n.get("app.modules.rfstatus.error")
+        end
+    else
+        telemStatus = "-"
+    end
+    rfsuite.app.formFields[3]:value(telemStatus)
 
 end
 

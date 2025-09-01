@@ -1197,7 +1197,14 @@ return {
         ["center"] = "Center"
       },
       ["rfstatus"] = {
-        ["name"] = "Status"
+        ["name"] = "Status",
+        ["error"] = "ERROR",
+        ["ok"] = "OK",
+        ["unknown"] = "UNKNOWN",
+        ["mspsensor"] = "MSP Sensor",
+        ["rfmodule"] = "RF Module",
+        ["bgtask"] = "Background Task",
+        ["telemetrysensors"] = "Telemetry Sensors"
       },
       ["fblstatus"] = {
         ["arming_disable_flag_3"] = "Bad RX Recovery",
