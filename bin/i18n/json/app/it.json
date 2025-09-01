@@ -2964,17 +2964,7 @@
         "needs_translation": "false"
       }
     },
-    "about": {
-      "help_p1": {
-        "english": "This page provides some useful information that you may be asked for when requesting support.",
-        "translation": "Questa pagina fornisce alcune informazioni utili che potrebbero esserti richieste quando richiedi assistenza.",
-        "needs_translation": "false"
-      },
-      "msgbox_credits": {
-        "english": "Credits",
-        "translation": "Crediti",
-        "needs_translation": "false"
-      },
+    "info": {
       "ethos_version": {
         "english": "Ethos Version",
         "translation": "Versione Ethos",
@@ -2991,8 +2981,8 @@
         "needs_translation": "false"
       },
       "name": {
-        "english": "About",
-        "translation": "A Proposito",
+        "english": "Info",
+        "translation": "Infor",
         "needs_translation": "false"
       },
       "supported_versions": {
@@ -3000,24 +2990,9 @@
         "translation": "Versioni MSP Supportate",
         "needs_translation": "false"
       },
-      "license": {
-        "english": "You may copy, distribute, and modify the software as long as you track changes/dates in source files. Any modifications to or software including (via compiler) GPL-licensed code must also be made available under the GPL along with build & install instructions.",
-        "translation": "e' possibile copiare, distribuire e modificare il software a condizione di tenere traccia delle modifiche/date nei file sorgente. Qualsiasi modifica o software che includa (tramite compilatore) codice con licenza GPL deve essere reso disponibile anche sotto la GPL insieme alle istruzioni di compilazione e installazione.",
-        "needs_translation": "false"
-      },
       "simulation": {
         "english": "Simulation",
         "translation": "Simulazione",
-        "needs_translation": "false"
-      },
-      "help_p2": {
-        "english": "For support, please first read the help pages on www.rotorflight.org",
-        "translation": "Per assistenza, leggere prima le pagine di aiuto su www.rotorflight.org",
-        "needs_translation": "false"
-      },
-      "opener": {
-        "english": "Rotorflight is an open source project. Contribution from other like minded people, keen to assist in making this software even better, is welcomed and encouraged. You do not have to be a hardcore programmer to help.",
-        "translation": "Rotorflight e' un progetto open source. Il contributo di altre persone che condividono la stessa mentalita' e che desiderano contribuire a migliorare ulteriormente questo software e' ben accetto e incoraggiato. Non e' necessario essere un programmatore esperto per dare una mano.",
         "needs_translation": "false"
       },
       "version": {
@@ -3028,11 +3003,6 @@
       "msp_version": {
         "english": "MSP Version",
         "translation": "Versione MSP",
-        "needs_translation": "false"
-      },
-      "credits": {
-        "english": "Notable contributors to both the Rotorflight firmware and this software are: Petri Mattila, Egon Lubbers, Rob Thomson, Rob Gayle, Phil Kaighin, Robert Burrow, Keith Williams, Bertrand Songis, Venbs Zhou... and many more who have spent hours testing and providing feedback!",
-        "translation": "I principali contributori sia al firmware Rotorflight che a questo software sono: Petri Mattila, Egon Lubbers, Rob Thomson, Rob Gayle, Phil Kaighin, Robert Burrow, Keith Williams, Bertrand Songis, Venbs Zhou... e molti altri che hanno trascorso ore a Rotorere e fornire feedback.!",
         "needs_translation": "false"
       },
       "msp_transport": {

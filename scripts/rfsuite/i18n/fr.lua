@@ -1069,21 +1069,15 @@ return {
         ["collective_tilt_correction"] = "Correction Inclinaison Collective",
         ["swash_pitch_limit"] = "Limite Totale du Pas"
       },
-      ["about"] = {
-        ["help_p1"] = "Cette page fournit des informations utiles que vous pourriez devoir fournir lors d'une demande d'assistance.",
-        ["msgbox_credits"] = "Credits",
+      ["info"] = {
         ["ethos_version"] = "Version Ethos",
         ["rf_version"] = "Version Rotorflight",
         ["fc_version"] = "Version FC",
-        ["name"] = "A propos",
+        ["name"] = "Info",
         ["supported_versions"] = "Versions MSP supportes",
-        ["license"] = "Vous pouvez copier, distribuer et modifier le logiciel tant que vous suivez les modifications et les dates dans les fichiers sources. Toute modification ou tout logiciel incluant du code sous licence GPL (via le compilateur) doit egalement etre mis a disposition sous la GPL avec les instructions de compilation et d'installation.",
         ["simulation"] = "Simulation",
-        ["help_p2"] = "Pour toute assistance, veuillez d'abord lire les pages d'aide sur www.rotorflight.org",
-        ["opener"] = "Rotorflight est un projet open source. Toute contribution de personnes partageant le meme etat d'esprit, desireuses d'ameliorer encore ce logiciel, est la bienvenue et encouragee. Vous n'avez pas besoin d'etre un programmeur experimente pour aider.",
         ["version"] = "Version",
         ["msp_version"] = "Version MSP",
-        ["credits"] = "Les contributeurs notables au firmware Rotorflight et a ce logiciel sont : Petri Mattila, Egon Lubbers, Rob Thomson, Rob Gayle, Phil Kaighin, Robert Burrow, Keith Williams, Bertrand Songis, Venbs Zhou... et bien d'autres qui ont passe des heures a tester et fournir des retours !",
         ["msp_transport"] = "Transport MSP"
       },
       ["rates_advanced"] = {

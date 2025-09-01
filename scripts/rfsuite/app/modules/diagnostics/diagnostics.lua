@@ -24,6 +24,13 @@ local S_PAGES = {
         bgtask = true,  -- requires background tasks for icon to be enabled
         offline = true  -- requires connection to fbl to run
     },     
+    {
+        name = i18n("app.modules.info.name"),
+        script = "info.lua",
+        image = "info.png",
+        bgtask = true,  -- requires background tasks for icon to be enabled
+        offline = true  -- requires connection to fbl to run
+    },      
 }
 
 local function openPage(pidx, title, script)

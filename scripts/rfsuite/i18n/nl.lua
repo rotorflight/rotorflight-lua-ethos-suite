@@ -1069,21 +1069,15 @@ return {
         ["collective_tilt_correction"] = "Collective Tilt Correction",
         ["swash_pitch_limit"] = "Total Pitch Limit"
       },
-      ["about"] = {
-        ["help_p1"] = "Op deze pagina vindt u nuttige informatie die u mogelijk wordt gevraagd wanneer u ondersteuning nodig heeft",
-        ["msgbox_credits"] = "Credits",
+      ["info"] = {
         ["ethos_version"] = "Ethos Versie",
         ["rf_version"] = "Rotorflight Versie",
         ["fc_version"] = "FC Versie",
-        ["name"] = "Over",
+        ["name"] = "Info",
         ["supported_versions"] = "Ondersteunde MSP Versies",
-        ["license"] = "You may copy, distribute, and modify the software as long as you track changes/dates in source files. Any modifications to or software including (via compiler) GPL-licensed code must also be made available under the GPL along with build & install instructions.",
         ["simulation"] = "Simulatie",
-        ["help_p2"] = "Voor ondersteuning, lees eerst de helppagina's op www.rotorflight.org\n\n",
-        ["opener"] = "Rotorflight is een open source project. Bijdragen van andere mensen, die graag willen helpen deze software nog beter te maken, zijn welkom en worden aangemoedigd. Je hoeft geen hardcore programmeur te zijn om te helpen.",
         ["version"] = "Versie",
         ["msp_version"] = "MSP Versie",
-        ["credits"] = "Bekende personen die aan de Rotorflight-firmware en deze software hebben bijgedragen zijn: Petri Mattila, Egon Lubbers, Rob Thomson, Rob Gayle, Phil Kaighin, Robert Burrow, Keith Williams, Bertrand Songis, Venbs Zhou... en nog veel meer mensen die urenlang hebben getest en feedback hebben gegeven!",
         ["msp_transport"] = "MSP Transport"
       },
       ["rates_advanced"] = {

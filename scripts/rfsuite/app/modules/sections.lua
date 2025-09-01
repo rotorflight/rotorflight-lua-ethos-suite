@@ -91,12 +91,6 @@ sections[#sections + 1] = {
     bgtask = true,
     offline = true,
 }
-sections[#sections + 1] = {
-    title = rfsuite.i18n.get("app.modules.about.name"),
-    module = "about",
-    script = "about.lua",
-    image = "app/modules/about/about.png",
-    loaderspeed = true,
-}
+
 
 return sections

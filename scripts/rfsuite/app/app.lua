@@ -778,7 +778,7 @@ app._uiTasks = {
     app.updateTelemetryState()
     if app.uiState == app.uiStatus.mainMenu then
       invalidatePages()
-    elseif app.triggers.isReady and rfsuite.tasks.msp.mspQueue:isProcessed()
+    elseif app.triggers.isReady and (rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue:isProcessed())
            and app.Page and app.Page.values then
       app.triggers.isReady = false
       app.triggers.closeProgressLoader = true

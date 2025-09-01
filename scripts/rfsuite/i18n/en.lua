@@ -1069,21 +1069,15 @@ return {
         ["collective_tilt_correction"] = "Collective Tilt Correction",
         ["swash_pitch_limit"] = "Total Pitch Limit"
       },
-      ["about"] = {
-        ["help_p1"] = "This page provides some useful information that you may be asked for when requesting support.",
-        ["msgbox_credits"] = "Credits",
+      ["info"] = {
         ["ethos_version"] = "Ethos Version",
         ["rf_version"] = "Rotorflight Version",
         ["fc_version"] = "FC Version",
-        ["name"] = "About",
+        ["name"] = "Info",
         ["supported_versions"] = "Supported MSP Versions",
-        ["license"] = "You may copy, distribute, and modify the software as long as you track changes/dates in source files. Any modifications to or software including (via compiler) GPL-licensed code must also be made available under the GPL along with build & install instructions.",
         ["simulation"] = "Simulation",
-        ["help_p2"] = "For support, please first read the help pages on www.rotorflight.org",
-        ["opener"] = "Rotorflight is an open source project. Contribution from other like minded people, keen to assist in making this software even better, is welcomed and encouraged. You do not have to be a hardcore programmer to help.",
         ["version"] = "Version",
         ["msp_version"] = "MSP Version",
-        ["credits"] = "Notable contributors to both the Rotorflight firmware and this software are: Petri Mattila, Egon Lubbers, Rob Thomson, Rob Gayle, Phil Kaighin, Robert Burrow, Keith Williams, Bertrand Songis, Venbs Zhou... and many more who have spent hours testing and providing feedback!",
         ["msp_transport"] = "MSP Transport"
       },
       ["rates_advanced"] = {
