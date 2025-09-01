@@ -85,6 +85,14 @@ function sensors.wakeup()
         delayStartTime = os.clock()
         delayPending = true
         rfsuite.session.resetSensors = false  -- Reset immediately
+
+        if rfsuite.session.telemetryModule then
+            local module = rfsuite.session.telemetryModule
+            if module and module.muteSensorLost then
+                module:muteSensorLost(2.0)
+            end
+        end
+
         log("Delaying sensor wakeup for " .. delayDuration .. " seconds","info")
         return  -- Exit early; wait starts now
     end
