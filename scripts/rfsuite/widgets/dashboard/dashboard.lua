@@ -1180,9 +1180,7 @@ function dashboard.wakeup(widget)
     if dashboard.overlayMessage ~= newMessage then
         dashboard.overlayMessage = newMessage
         dashboard._hg_cycles = newMessage and dashboard._hg_cycles_required or 0
-        if dashboard._useSpreadSchedulingPaint then
-            lcd.invalidate(widget)
-        end
+        lcd.invalidate(widget)
     end
 
     local state = dashboard.flightmode or "preflight"
