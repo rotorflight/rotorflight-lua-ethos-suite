@@ -824,7 +824,7 @@ app._uiTasks = {
 -- Round‑robin executor
 app._nextUiTask      = 1
 app._taskAccumulator = 0
-app._uiTaskPercent   = 50
+app._uiTaskPercent   = 100
 function app.wakeup()
   app.guiIsRunning = true
   local total = #app._uiTasks
