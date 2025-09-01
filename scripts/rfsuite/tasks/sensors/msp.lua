@@ -328,7 +328,6 @@ function msp.wakeup()
     lastWakeupTime = now
 
     if not tasks.msp.mspQueue:isProcessed() then
-        rfsuite.utils.muteSensorLostWarnings()
         log("MSP queue busy.. skipping dynamic MSP sensors", "info")
         return
     end
@@ -337,8 +336,6 @@ function msp.wakeup()
     if not armSource then return end
     local isArmed = armSource:value()
     local isAdmin = rfsuite.app.guiIsRunning
-
-    if isAdmin then return end -- Pause polling when GUI open
 
     -- Reschedule if state changed
     local armedBool    = (isArmed == 1 or isArmed == 3)
@@ -366,6 +363,8 @@ function msp.wakeup()
             lastPush[appId] = now
         end
     end
+
+    if isAdmin then return end -- Pause polling when GUI open
 
     -- Poll due APIs
     for api_name, due in pairs(next_due) do
