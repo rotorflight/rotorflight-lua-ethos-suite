@@ -2,7 +2,7 @@ local fields = {}
 local labels = {}
 local i18n = rfsuite.i18n.get
 local enableWakeup = false
-
+local lastWakeup = 0  -- store last run time in seconds
 local w, h = lcd.getWindowSize()
 local buttonW = 100
 local buttonWs = buttonW - (buttonW * 20) / 100
@@ -99,7 +99,14 @@ local function wakeup()
     -- prevent wakeup running until after initialised
     if enableWakeup == false then return end
 
+    -- check time since last execution
+    local now = os.clock()
+    if (now - lastWakeup) < 2 then  -- less than 2 seconds ago
+        return
+    end
+    lastWakeup = now
 
+    -- update this from wakeup as needs link
     local sensors = rfsuite.tasks and rfsuite.tasks.telemetry and rfsuite.tasks.telemetry.validateSensors(false) or false
     local telemStatus = rfsuite.i18n.get("app.modules.rfstatus.unknown")
     if type(sensors) == "table" then
@@ -111,7 +118,9 @@ local function wakeup()
     else
         telemStatus = "-"
     end
-    rfsuite.app.formFields[3]:value(telemStatus)
+    if rfsuite.app.formFields[3] then
+        rfsuite.app.formFields[3]:value(telemStatus)
+    end
 
 end
 
