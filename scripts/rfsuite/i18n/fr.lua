@@ -1196,7 +1196,7 @@ return {
         ["min_cutoff"] = "Coupure min",
         ["center"] = "Centre"
       },
-      ["status"] = {
+      ["fblstatus"] = {
         ["arming_disable_flag_3"] = "Mauvaise recuperation RX",
         ["arming_disable_flag_20"] = "Filtre RPM",
         ["arming_disable_flag_11"] = "Charge",

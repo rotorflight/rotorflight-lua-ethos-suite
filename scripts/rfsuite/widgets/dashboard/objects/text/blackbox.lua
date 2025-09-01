@@ -120,7 +120,7 @@ function render.wakeup(box)
         local transformedUsed  = utils.transformValue(usedMB, box)
         local transformedTotal = utils.transformValue(totalMB, box)
         displayValue = string.format("%." .. decimals .. "f/%." .. decimals .. "f %s",
-            transformedUsed, transformedTotal, rfsuite.i18n.get("app.modules.status.megabyte"))
+            transformedUsed, transformedTotal, rfsuite.i18n.get("app.modules.fblstatus.megabyte"))
     else
         -- Show loading dots while no telemetry data is present
         if totalSize == nil and usedSize == nil then

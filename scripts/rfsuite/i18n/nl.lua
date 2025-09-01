@@ -1196,7 +1196,7 @@ return {
         ["min_cutoff"] = "Min cutoff",
         ["center"] = "Center"
       },
-      ["status"] = {
+      ["fblstatus"] = {
         ["arming_disable_flag_3"] = "Bad RX Recovery",
         ["arming_disable_flag_20"] = "RPM Filter",
         ["arming_disable_flag_11"] = "Belasting",

@@ -3559,7 +3559,7 @@
         "needs_translation": "false"
       }
     },
-    "status": {
+    "fblstatus": {
       "arming_disable_flag_3": {
         "english": "Bad RX Recovery",
         "translation": "Recupero RX Fallata",

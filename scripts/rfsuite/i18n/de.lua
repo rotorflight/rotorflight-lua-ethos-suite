@@ -1196,7 +1196,7 @@ return {
         ["min_cutoff"] = "Min. Grenzfreq.",
         ["center"] = "Mitte"
       },
-      ["status"] = {
+      ["fblstatus"] = {
         ["arming_disable_flag_3"] = "RX-Wiederherstellung fehlgeschlagen",
         ["arming_disable_flag_20"] = "RPM-Filter",
         ["arming_disable_flag_11"] = "Auslastung",

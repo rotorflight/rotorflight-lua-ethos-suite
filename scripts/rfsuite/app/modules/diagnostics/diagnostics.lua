@@ -25,9 +25,9 @@ local S_PAGES = {
         offline = true  -- requires connection to fbl to run
     }, 
     {
-        name = i18n("app.modules.status.name"),
+        name = i18n("app.modules.fblstatus.name"),
         script = "fblstatus.lua",
-        image = "status.png",
+        image = "fblstatus.png",
         bgtask = true,  -- requires background tasks for icon to be enabled
         offline = true  -- requires connection to fbl to run
     },     
