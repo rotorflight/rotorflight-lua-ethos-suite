@@ -1299,7 +1299,7 @@ return {
       ["governor"] = "Stato Governor",
       ["adj_func"] = "Adj (Funzione)",
       ["fuel"] = "Carica Livello",
-      ["smartfuel"] = "Smart Fuel",
+      ["smartfuel"] = "Carica Intelligente",
       ["rssi"] = "RSSI",
       ["link"] = "Qualità Collegamento",
       ["adj_val"] = "Adj (Valore)",
@@ -1387,8 +1387,8 @@ return {
       ["cell_voltage"] = "Voltaggio Cella",
       ["volts_per_cell"] = "Volts per cella",
       ["warning"] = "Attenzione",
-      ["tx_batt"] = "TX Battery",
-      ["link_max"] = "Link Max"
+      ["tx_batt"] = "Batteria TX",
+      ["link_max"] = "Link Massimo"
     },
     ["governor"] = {
       ["UNKNOWN"] = "SCONOSCIUTO",

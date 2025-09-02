@@ -1299,7 +1299,7 @@ return {
       ["governor"] = "Governor Status",
       ["adj_func"] = "Adj (Funktion)",
       ["fuel"] = "Kraftstoffstand",
-      ["smartfuel"] = "Smart Fuel",
+      ["smartfuel"] = "Intelligenter Kraftstoff",
       ["rssi"] = "RSSI",
       ["link"] = "Verbindungsqualitaet",
       ["adj_val"] = "Adj (Wert)",
@@ -1387,8 +1387,8 @@ return {
       ["cell_voltage"] = "Zellenspannung",
       ["volts_per_cell"] = "Volt pro Zelle",
       ["warning"] = "Warnung",
-      ["tx_batt"] = "TX Battery",
-      ["link_max"] = "Link Max"
+      ["tx_batt"] = "Senderakku",
+      ["link_max"] = "Verbindung Max"
     },
     ["governor"] = {
       ["UNKNOWN"] = "UNBEKANNT",

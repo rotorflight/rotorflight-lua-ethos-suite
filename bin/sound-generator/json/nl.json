@@ -98,8 +98,8 @@
   {
     "file": "events/alerts/rxvolt.wav",
     "english": "RX Batt Voltage Warning",
-    "translation": null,
-    "needs_translation": true
+    "translation": "Ontvanger batterij voltage waarschuwing",
+    "needs_translation": false
   },
   {
     "file": "events/gov/off.wav",
