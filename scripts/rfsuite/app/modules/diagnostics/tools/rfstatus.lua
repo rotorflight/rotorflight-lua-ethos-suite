@@ -43,6 +43,7 @@ local IDX_RF_MODULE     = 1
 local IDX_MSP           = 2
 local IDX_TELEM         = 3
 local IDX_FBLCONNECTED  = 4
+local IDX_APIVERSION    = 5
 
 -- Helpers
 local function setStatus(field, ok, dashIfNil)
@@ -129,6 +130,9 @@ local function openPage(pidx, title, script)
   -- FBL Connected
   addStatusLine("app.modules.rfstatus.fblconnected", "-")
 
+  -- API Version
+  addStatusLine("app.modules.rfstatus.apiversion", "-")
+
   enableWakeup = true
 end
 
@@ -191,6 +195,15 @@ local function wakeup()
       else
         setStatus(field, nil, true) -- dash 
       end
+    end
+  end
+
+  -- API Version
+  do
+    local field = rfsuite.app.formFields and rfsuite.app.formFields[IDX_APIVERSION]
+    if field then
+      local isInvalid = not rfsuite.session.apiVersionInvalid 
+      setStatus(field, isInvalid)
     end
   end
 

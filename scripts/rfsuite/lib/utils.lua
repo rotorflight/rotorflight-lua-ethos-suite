@@ -46,6 +46,7 @@ function utils.session()
 
         -- Versions / IDs
         apiVersion          = nil,
+        apiVersionInvalid   = nil,
         fcVersion           = nil,
         rfVersion           = nil,
         ethosRunningVersion = nil,
@@ -740,5 +741,19 @@ function utils.muteSensorLostWarnings()
     end
 end
 
+--[[
+    Checks whether a string exists within an array.
+
+    @param array (table) List of strings.
+    @param s (string)    String to find.
+
+    @return (boolean) True if found; otherwise false.
+]]
+function utils.stringInArray(array, s)
+    for i, value in ipairs(array) do
+        if value == s then return true end
+    end
+    return false
+end
 
 return utils

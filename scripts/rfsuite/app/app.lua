@@ -661,7 +661,7 @@ app._uiTasks = {
             end
           end
         end 
-      elseif rfsuite.session.apiVersion and app.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiV) then
+      elseif rfsuite.session.apiVersion and rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiV) then
         app.offlineMode = false
         for i in pairs(app.formFieldsOffline) do
           if app.formFields[i] then

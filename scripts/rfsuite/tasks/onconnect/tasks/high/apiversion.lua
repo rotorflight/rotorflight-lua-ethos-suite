@@ -23,7 +23,20 @@ function apiversion.wakeup()
     if rfsuite.session.apiVersion == nil then
         local API = rfsuite.tasks.msp.api.load("API_VERSION")
         API.setCompleteHandler(function(self, buf)
-            rfsuite.session.apiVersion = API.readVersion()
+            local version = API.readVersion()
+
+            if version then
+                local apiVersionString = tostring(version)
+                if not rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiVersionString) then
+                    rfsuite.utils.log("Incompatible API version detected: " .. apiVersionString, "info")
+                    rfsuite.session.apiVersionInvalid = true
+                    return
+                end
+            end
+
+            rfsuite.session.apiVersion = version
+            rfsuite.session.apiVersionInvalid = false
+
             if rfsuite.session.apiVersion  then
                 rfsuite.utils.log("API version: " .. rfsuite.session.apiVersion, "info")
             end
@@ -35,6 +48,7 @@ end
 
 function apiversion.reset()
     rfsuite.session.apiVersion = nil
+    rfsuite.session.apiVersionInvalid = nil
 end
 
 function apiversion.isComplete()

@@ -55,10 +55,14 @@ function ui.progressDisplay(title, message, speed)
             end
 
             local isProcessing = (app.Page and app.Page.apidata and app.Page.apidata.apiState and app.Page.apidata.apiState.isProcessing) or false
+            local apiV = tostring(rfsuite.session.apiVersion)
 
             if not app.triggers.closeProgressLoader then
                 app.dialogs.progressCounter = app.dialogs.progressCounter + (2 * mult)
-            elseif isProcessing then    
+                if app.dialogs.progressCounter > 50 and rfsuite.session.apiVersion and not rfsuite.utils.stringInArray(rfsuite.config.supportedMspApiVersion, apiV) then
+                    print("No API version yet")
+                end
+            elseif isProcessing then
                 app.dialogs.progressCounter = app.dialogs.progressCounter + (3 * mult)
             elseif app.triggers.closeProgressLoader and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue:isProcessed() then   -- this is the one we normally catch
                 app.dialogs.progressCounter = app.dialogs.progressCounter + (15 * mult)

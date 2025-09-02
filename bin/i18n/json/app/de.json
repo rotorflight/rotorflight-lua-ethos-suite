@@ -3604,6 +3604,11 @@
         "english": "Telemetry Sensors",
         "translation": "Telemetrie-Sensoren",
         "needs_translation": false
+      },
+      "apiversion": {
+        "english": "MSP API Version",
+        "translation": "MSP-API-Version",
+        "needs_translation": false
       }
     },
     "fblstatus": {

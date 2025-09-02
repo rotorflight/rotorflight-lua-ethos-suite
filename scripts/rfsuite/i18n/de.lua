@@ -1205,7 +1205,8 @@ return {
         ["rfmodule"] = "RF-Modul",
         ["bgtask"] = "Hintergrund-Task",
         ["fblconnected"] = "FBL verbunden",
-        ["telemetrysensors"] = "Telemetrie-Sensoren"
+        ["telemetrysensors"] = "Telemetrie-Sensoren",
+        ["apiversion"] = "MSP-API-Version"
       },
       ["fblstatus"] = {
         ["arming_disable_flag_3"] = "RX-Wiederherstellung fehlgeschlagen",
