@@ -95,34 +95,81 @@ end
 
 
 local function wakeup()
-
-    -- prevent wakeup running until after initialised
     if enableWakeup == false then return end
 
     -- check time since last execution
     local now = os.clock()
-    if (now - lastWakeup) < 2 then  -- less than 2 seconds ago
-        return
-    end
+    if (now - lastWakeup) < 2 then return end
     lastWakeup = now
 
-    -- update this from wakeup as needs link
-    local sensors = rfsuite.tasks and rfsuite.tasks.telemetry and rfsuite.tasks.telemetry.validateSensors(false) or false
-    local telemStatus = rfsuite.i18n.get("app.modules.rfstatus.unknown")
-    if type(sensors) == "table" then
-        if #sensors == 0 then
-            telemStatus = rfsuite.i18n.get("app.modules.rfstatus.ok")
-        else
-            telemStatus = rfsuite.i18n.get("app.modules.rfstatus.error")
+    -- Background Task
+    do
+        local field = rfsuite.app.formFields and rfsuite.app.formFields[0]
+        if field then
+            if rfsuite.tasks and rfsuite.tasks.active() then
+                field:value(i18n("app.modules.rfstatus.ok"))
+                field:color(GREEN)
+            else
+                field:value(i18n("app.modules.rfstatus.error"))
+                field:color(RED)
+            end
         end
-    else
-        telemStatus = "-"
-    end
-    if rfsuite.app.formFields[3] then
-        rfsuite.app.formFields[3]:value(telemStatus)
     end
 
+    -- RF Module
+    do
+        local field = rfsuite.app.formFields and rfsuite.app.formFields[1]
+        if field then
+            local m0 = model.getModule(0)
+            local m1 = model.getModule(1)
+            local enabled = (m0 and m0:enable()) or (m1 and m1:enable()) or false
+            if enabled then
+                field:value(i18n("app.modules.rfstatus.ok"))
+                field:color(GREEN)
+            else
+                field:value(i18n("app.modules.rfstatus.error"))
+                field:color(RED)
+            end
+        end
+    end
+
+    -- MSP Sensor
+    do
+        local field = rfsuite.app.formFields and rfsuite.app.formFields[2]
+        if field then
+            local sportSensor = system.getSource({appId = 0xF101})
+            local elrsSensor  = system.getSource({crsfId = 0x14, subIdStart = 0, subIdEnd = 1})
+            if sportSensor or elrsSensor then
+                field:value(i18n("app.modules.rfstatus.ok"))
+                field:color(GREEN)
+            else
+                field:value(i18n("app.modules.rfstatus.error"))
+                field:color(RED)
+            end
+        end
+    end
+
+    -- Telemetry Sensors
+    do
+        local field = rfsuite.app.formFields and rfsuite.app.formFields[3]
+        if field then
+            local sensors = rfsuite.tasks and rfsuite.tasks.telemetry
+                          and rfsuite.tasks.telemetry.validateSensors(false) or false
+            if type(sensors) == "table" then
+                if #sensors == 0 then
+                    field:value(i18n("app.modules.rfstatus.ok"))
+                    field:color(GREEN)
+                else
+                    field:value(i18n("app.modules.rfstatus.error"))
+                    field:color(RED)
+                end
+            else
+                field:value("-")
+            end
+        end
+    end
 end
+
 
 
 local function event(widget, category, value, x, y)
