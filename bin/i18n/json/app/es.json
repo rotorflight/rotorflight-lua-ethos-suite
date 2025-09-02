@@ -93,13 +93,13 @@
     "diagnostics": {
       "name": {
         "english": "Diagnostics",
-        "translation": "Diagnostics",
-        "needs_translation": true
+        "translation": "Diagnóstico",
+        "needs_translation": false
       },
       "help_p1": {
         "english": "This module provides various tools to help diagnose issues with your flight controller or configuration.",
-        "translation": "This module provides various tools to help diagnose issues with your flight controller or configuration.",
-        "needs_translation": true
+        "translation": "Este módulo ofrece varias herramientas para diagnosticar problemas con el controlador de vuelo o la configuración.",
+        "needs_translation": false
       }
     },
     "stats": {
@@ -437,8 +437,8 @@
       },
       "fuel_callout_5": {
         "english": "50% and 5%",
-        "translation": "50% and 5%",
-        "needs_translation": true
+        "translation": "50% y 5%",
+        "needs_translation": false
       },
       "fuel_callout_10": {
         "english": "Every 10%",
@@ -1826,18 +1826,18 @@
       },
       "idle_throttle": {
         "english": "Idle throttle",
-        "translation": "Idle throttle",
-        "needs_translation": true
+        "translation": "Acelerador ralentí",
+        "needs_translation": false
       },
       "auto_throttle": {
         "english": "Auto throttle",
-        "translation": "Auto throttle",
-        "needs_translation": true
+        "translation": "Acelerador auto",
+        "needs_translation": false
       },
       "fallback_drop": {
         "english": "Thr. Fallback drop",
-        "translation": "Thr. Fallback drop",
-        "needs_translation": true
+        "translation": "Caída de respaldo",
+        "needs_translation": false
       },
       "full_headspeed": {
         "english": "Full headspeed",
@@ -2575,17 +2575,17 @@
       "menu_general": {
         "english": "General",
         "translation": "General",
-        "needs_translation": true
+        "needs_translation": false
       },
       "menu_filters": {
         "english": "Filters",
-        "translation": "Filters",
-        "needs_translation": true
+        "translation": "Filtros",
+        "needs_translation": false
       },
       "menu_time": {
         "english": "Ramp Time",
-        "translation": "Time",
-        "needs_translation": true
+        "translation": "Tiempo de Rampa",
+        "needs_translation": false
       },
       "help_p1": {
         "english": "These parameters apply globally to the governor regardless of the profile in use.",
@@ -2614,38 +2614,38 @@
       },
       "throttle_type": {
         "english": "Throttle type",
-        "translation": "Throttle protocol",
-        "needs_translation": true
+        "translation": "Tipo de acelerador",
+        "needs_translation": false
       },
       "collective": {
         "english": "Collective",
-        "translation": "Collective",
-        "needs_translation": true
+        "translation": "Colectivo",
+        "needs_translation": false
       },
       "idle_collective": {
         "english": "Idle Collective",
-        "translation": "Idle collective",
-        "needs_translation": true
+        "translation": "Colectivo ralentí",
+        "needs_translation": false
       },
       "wot_collective": {
         "english": "WOT Collective",
-        "translation": "WOT collective",
-        "needs_translation": true
+        "translation": "Colectivo máx.",
+        "needs_translation": false
       },
       "throttle_hold_timeout": {
         "english": "Throttle hold timeout",
-        "translation": "Throttle hold timeout",
-        "needs_translation": true
+        "translation": "Tiempo retención acelerador",
+        "needs_translation": false
       },
       "ramp_time": {
         "english": "Ramp time",
-        "translation": "Ramp time",
-        "needs_translation": true
+        "translation": "Tiempo de rampa",
+        "needs_translation": false
       },
       "startup_time": {
         "english": "Startup time",
-        "translation": "Startup time",
-        "needs_translation": true
+        "translation": "Tiempo de inicio",
+        "needs_translation": false
       },
       "spoolup_time": {
         "english": "Spoolup time",
@@ -2654,8 +2654,8 @@
       },
       "spooldown_time": {
         "english": "Spooldown time",
-        "translation": "Spooldown time",
-        "needs_translation": true
+        "translation": "Tiempo de apagado",
+        "needs_translation": false
       },
       "tracking_time": {
         "english": "Tracking time",
@@ -2674,28 +2674,28 @@
       },
       "gov_rpm_filter": {
         "english": "RPM Filter Cutoff",
-        "translation": "RPM Filter Cutoff",
-        "needs_translation": true
+        "translation": "Corte Filtro RPM",
+        "needs_translation": false
       },
       "gov_pwr_filter": {
         "english": "Voltage Filter Cutoff",
-        "translation": "Voltage Filter Cutoff",
-        "needs_translation": true
+        "translation": "Corte Filtro Voltaje",
+        "needs_translation": false
       },
       "gov_tta_filter": {
         "english": "TTA Bandwidth",
-        "translation": "TTA Bandwidth",
-        "needs_translation": true
+        "translation": "Ancho Banda TTA",
+        "needs_translation": false
       },
       "gov_ff_filter": {
         "english": "Precomp Bandwidth",
-        "translation": "Precomp Bandwidth",
-        "needs_translation": true
+        "translation": "Ancho Banda Precomp",
+        "needs_translation": false
       },
       "gov_d_filter": {
         "english": "D-Term Cutoff",
-        "translation": "D-Term Cutoff",
-        "needs_translation": true
+        "translation": "Corte D-Term",
+        "needs_translation": false
       }
     },
     "accelerometer": {
@@ -3561,49 +3561,49 @@
     },
     "rfstatus": {
       "name": {
-        "english": "Status",
-        "translation": "Status",
-        "needs_translation": true
+      "english": "Status",
+      "translation": "Estado",
+      "needs_translation": false
       },
       "error": {
-        "english": "ERROR",
-        "translation": "ERROR",
-        "needs_translation": true
+      "english": "ERROR",
+      "translation": "ERROR",
+      "needs_translation": false
       },
       "ok": {
-        "english": "OK",
-        "translation": "OK",
-        "needs_translation": true
+      "english": "OK",
+      "translation": "OK",
+      "needs_translation": false
       },
       "unknown": {
-        "english": "UNKNOWN",
-        "translation": "UNKNOWN",
-        "needs_translation": true
+      "english": "UNKNOWN",
+      "translation": "DESCONOCIDO",
+      "needs_translation": false
       },
       "mspsensor": {
-        "english": "MSP Sensor",
-        "translation": "MSP Sensor",
-        "needs_translation": true
+      "english": "MSP Sensor",
+      "translation": "Sensor MSP",
+      "needs_translation": false
       },
       "rfmodule": {
-        "english": "RF Module",
-        "translation": "RF Module",
-        "needs_translation": true
+      "english": "RF Module",
+      "translation": "Módulo RF",
+      "needs_translation": false
       },
       "bgtask": {
-        "english": "Background Task",
-        "translation": "Background Task",
-        "needs_translation": true
+      "english": "Background Task",
+      "translation": "Tarea en Fondo",
+      "needs_translation": false
       },
       "fblconnected": {
-        "english": "FBL Connected",
-        "translation": "FBL Connected",
-        "needs_translation": true
+      "english": "FBL Connected",
+      "translation": "FBL Conectado",
+      "needs_translation": false
       },
       "telemetrysensors": {
-        "english": "Telemetry Sensors",
-        "translation": "Telemetry Sensors",
-        "needs_translation": true
+      "english": "Telemetry Sensors",
+      "translation": "Sensores Telemetría",
+      "needs_translation": false
       }
     },
     "fblstatus": {

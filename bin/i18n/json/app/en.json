@@ -138,7 +138,7 @@
       "no_themes_available_to_configure": {
         "english": "No configurable themes installed on this device",
         "translation": "No configurable themes installed on this device",
-        "needs_translation": true
+        "needs_translation": false
       },
       "txt_audio_timer": {
         "english": "Timer",

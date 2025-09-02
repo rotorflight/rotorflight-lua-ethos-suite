@@ -984,38 +984,38 @@
   "BATTERY_INI": {
     "calcfuel_local": {
       "english": "Calculate Fuel Using",
-      "translation": "Calculate Fuel Using",
-      "needs_translation": true
+      "translation": "Calcola carburante usando",
+      "needs_translation": false
     },
     "tbl_off": {
       "english": "Current Sensor",
-      "translation": "Current Sensor",
-      "needs_translation": true
+      "translation": "Sensore corrente",
+      "needs_translation": false
     },
     "tbl_on": {
       "english": "Voltage Sensor",
-      "translation": "Voltage Sensor",
-      "needs_translation": true
+      "translation": "Sensore tensione",
+      "needs_translation": false
     },
     "sag_multiplier": {
       "english": "Raise or lower to adjust for the amount of voltage sag you see in flight.",
-      "translation": "Raise or lower to adjust for the amount of voltage sag you see in flight.",
-      "needs_translation": true
+      "translation": "Aumenta o diminuisci per regolare il calo di tensione visto in volo.",
+      "needs_translation": false
     },
     "alert_off": {
       "english": "Off",
-      "translation": "Off",
-      "needs_translation": true
+      "translation": "Spento",
+      "needs_translation": false
     },
     "alert_bec": {
       "english": "BEC",
       "translation": "BEC",
-      "needs_translation": true
+      "needs_translation": false
     },
     "alert_rxbatt": {
       "english": "RxBatt",
-      "translation": "Rx Batt",
-      "needs_translation": true
+      "translation": "Batteria ricevente",
+      "needs_translation": false
     }
   },
   "BATTERY_CONFIG": {
@@ -1207,53 +1207,53 @@
     },
     "tbl_govmode_external": {
       "english": "EXTERNAL",
-      "translation": "EXTERNAL",
-      "needs_translation": true
+      "translation": "ESTERNO",
+      "needs_translation": false
     },
     "tbl_govmode_electric": {
       "english": "ELECTRIC",
-      "translation": "ELECTRIC",
-      "needs_translation": true
+      "translation": "ELETTRICO",
+      "needs_translation": false
     },
     "tbl_govmode_nitro": {
       "english": "NITRO",
       "translation": "NITRO",
-      "needs_translation": true
+      "needs_translation": false
     },
     "tbl_throttle_type_normal": {
       "english": "NORMAL",
-      "translation": "NORMAL",
-      "needs_translation": true
+      "translation": "NORMALE",
+      "needs_translation": false
     },
     "tbl_throttle_type_off_on": {
       "english": "OFF_ON",
-      "translation": "OFF_ON",
-      "needs_translation": true
+      "translation": "SPENTO_ACCESO",
+      "needs_translation": false
     },
     "tbl_throttle_type_off_idle_on": {
       "english": "OFF_IDLE_ON",
-      "translation": "OFF_IDLE_ON",
-      "needs_translation": true
+      "translation": "SPENTO_MINIMO_ACC",
+      "needs_translation": false
     },
     "tbl_throttle_type_idle_auto_on": {
       "english": "IDLE_AUTO_ON",
-      "translation": "IDLE_AUTO_ON",
-      "needs_translation": true
+      "translation": "MINIMO_AUTO_ACC",
+      "needs_translation": false
     },
     "governor_idle_throttle": {
       "english": "Idle throttle",
-      "translation": "Idle throttle",
-      "needs_translation": true
+      "translation": "Acceleratore minimo",
+      "needs_translation": false
     },
     "governor_auto_throttle": {
       "english": "Auto throttle",
-      "translation": "Auto throttle",
-      "needs_translation": true
+      "translation": "Acceleratore automatico",
+      "needs_translation": false
     },
     "governor_fallback_drop": {
       "english": "Fallback drop",
-      "translation": "Fallback drop",
-      "needs_translation": true
+      "translation": "Caduta di sicurezza",
+      "needs_translation": false
     }
   },
   "RC_CONFIG": {

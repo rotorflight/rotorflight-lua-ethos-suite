@@ -94,39 +94,39 @@
       "name": {
         "english": "Diagnostics",
         "translation": "Diagnostics",
-        "needs_translation": true
+        "needs_translation": false
       },
       "help_p1": {
         "english": "This module provides various tools to help diagnose issues with your flight controller or configuration.",
-        "translation": "This module provides various tools to help diagnose issues with your flight controller or configuration.",
-        "needs_translation": true
+        "translation": "Ce module propose divers outils pour diagnostiquer les problemes de votre controleur de vol ou de sa configuration.",
+        "needs_translation": false
       }
     },
     "stats": {
       "name": {
-        "english": "Stats",
-        "translation": "Statistiques",
-        "needs_translation": true
+      "english": "Stats",
+      "translation": "Statistiques",
+      "needs_translation": false
       },
       "totalflighttime": {
-        "english": "Total Flight Time",
-        "translation": "Temps de vol total",
-        "needs_translation": true
+      "english": "Total Flight Time",
+      "translation": "Temps de vol total",
+      "needs_translation": false
       },
       "flightcount": {
-        "english": "Flight Count",
-        "translation": "Nombre de vols",
-        "needs_translation": true
+      "english": "Flight Count",
+      "translation": "Nombre de vols",
+      "needs_translation": false
       },
       "lastflighttime": {
-        "english": "Last Flight Time",
-        "translation": "Dernier temps de vol",
-        "needs_translation": true
+      "english": "Last Flight Time",
+      "translation": "Dernier temps de vol",
+      "needs_translation": false
       },
       "help_p1": {
-        "english": "Use this module to update the recorded flight statistics on the flight controller.",
-        "translation": "Utilisez ce module pour mettre à jour les statistiques de vol enregistrées sur le contrôleur de vol.",
-        "needs_translation": true
+      "english": "Use this module to update the recorded flight statistics on the flight controller.",
+      "translation": "Utilisez ce module pour mettre à jour les statistiques de vol enregistrées sur le contrôleur de vol.",
+      "needs_translation": false
       }
     },
     "settings": {
@@ -252,8 +252,8 @@
       },
       "txt_taskprofiler": {
         "english": "Log tasks speed",
-        "translation": "Log tasks speed",
-        "needs_translation": true
+        "translation": "Journaliser vitesse des taches",
+        "needs_translation": false
       },
       "txt_memusage": {
         "english": "Log memory usage",
@@ -262,23 +262,23 @@
       },
       "txt_batttype": {
         "english": "Tx Battery Options",
-        "translation": "Tx Battery Options",
-        "needs_translation": true
+        "translation": "Options batterie Tx",
+        "needs_translation": false
       },
       "txt_battdef": {
         "english": "Default",
-        "translation": "Default",
-        "needs_translation": true
+        "translation": "Defaut",
+        "needs_translation": false
       },
       "txt_batttext": {
         "english": "Text",
-        "translation": "Text",
-        "needs_translation": true
+        "translation": "Texte",
+        "needs_translation": false
       },
       "txt_battdig": {
         "english": "Digital",
-        "translation": "Digital",
-        "needs_translation": true
+        "translation": "Numerique",
+        "needs_translation": false
       },
       "dashboard": {
         "english": "Dashboard",
@@ -437,8 +437,8 @@
       },
       "fuel_callout_5": {
         "english": "50% and 5%",
-        "translation": "50% and 5%",
-        "needs_translation": true
+        "translation": "50% et 5%",
+        "needs_translation": false
       },
       "fuel_callout_10": {
         "english": "Every 10%",
@@ -522,18 +522,18 @@
       },
       "adj_callouts": {
         "english": "Adjustment Callouts",
-        "translation": "Adjustment Callouts",
-        "needs_translation": true
+        "translation": "Annonces de réglage",
+        "needs_translation": false
       },
       "adj_function": {
         "english": "Adjustment Function",
-        "translation": "Adjustment Function",
-        "needs_translation": true
+        "translation": "Fonction de réglage",
+        "needs_translation": false
       },
       "adj_value": {
         "english": "Adjustment Value",
-        "translation": "Adjustment Value",
-        "needs_translation": true
+        "translation": "Valeur de réglage",
+        "needs_translation": false
       }
     },
     "validate_sensors": {
@@ -1826,18 +1826,18 @@
       },
       "idle_throttle": {
         "english": "Idle throttle",
-        "translation": "Idle throttle",
-        "needs_translation": true
+        "translation": "Ralenti gaz",
+        "needs_translation": false
       },
       "auto_throttle": {
         "english": "Auto throttle",
-        "translation": "Auto throttle",
-        "needs_translation": true
+        "translation": "Gaz auto",
+        "needs_translation": false
       },
       "fallback_drop": {
         "english": "Thr. Fallback drop",
-        "translation": "Thr. Fallback drop",
-        "needs_translation": true
+        "translation": "Chute secours gaz",
+        "needs_translation": false
       },
       "full_headspeed": {
         "english": "Full headspeed",
@@ -2114,8 +2114,8 @@
     "battery": {
       "calcfuel_local": {
         "english": "Calculate Fuel Using",
-        "translation": "Calculate fuel using",
-        "needs_translation": true
+        "translation": "Calculer le carburant avec",
+        "needs_translation": false
       },
       "max_cell_voltage": {
         "english": "Max Cell Voltage",
@@ -2174,18 +2174,18 @@
       },
       "alert_type": {
         "english": "Rx Voltage Alert",
-        "translation": "BEC or Rx Batt Voltage Alert",
-        "needs_translation": true
+        "translation": "Alerte tension Rx ou BEC",
+        "needs_translation": false
       },
       "bec_voltage_alert": {
         "english": "BEC Alert Value",
-        "translation": "BEC Alert Value",
-        "needs_translation": true
+        "translation": "Valeur alerte BEC",
+        "needs_translation": false
       },
       "rx_voltage_alert": {
         "english": "RxBatt Alert Value",
-        "translation": "RX Batt Alert Value",
-        "needs_translation": true
+        "translation": "Valeur alerte batt. Rx",
+        "needs_translation": false
       }
     },
     "profile_mainrotor": {
@@ -2575,17 +2575,17 @@
       "menu_general": {
         "english": "General",
         "translation": "General",
-        "needs_translation": true
+        "needs_translation": false
       },
       "menu_filters": {
         "english": "Filters",
-        "translation": "Filters",
-        "needs_translation": true
+        "translation": "Filtres",
+        "needs_translation": false
       },
       "menu_time": {
         "english": "Ramp Time",
-        "translation": "Time",
-        "needs_translation": true
+        "translation": "Temps de rampe",
+        "needs_translation": false
       },
       "help_p1": {
         "english": "These parameters apply globally to the governor regardless of the profile in use.",
@@ -2614,38 +2614,38 @@
       },
       "throttle_type": {
         "english": "Throttle type",
-        "translation": "Throttle protocol",
-        "needs_translation": true
+        "translation": "Type de gaz",
+        "needs_translation": false
       },
       "collective": {
         "english": "Collective",
-        "translation": "Collective",
-        "needs_translation": true
+        "translation": "Collectif",
+        "needs_translation": false
       },
       "idle_collective": {
         "english": "Idle Collective",
-        "translation": "Idle collective",
-        "needs_translation": true
+        "translation": "Collectif ralenti",
+        "needs_translation": false
       },
       "wot_collective": {
         "english": "WOT Collective",
-        "translation": "WOT collective",
-        "needs_translation": true
+        "translation": "Collectif plein gaz",
+        "needs_translation": false
       },
       "throttle_hold_timeout": {
         "english": "Throttle hold timeout",
-        "translation": "Throttle hold timeout",
-        "needs_translation": true
+        "translation": "Delai maintien gaz",
+        "needs_translation": false
       },
       "ramp_time": {
         "english": "Ramp time",
-        "translation": "Ramp time",
-        "needs_translation": true
+        "translation": "Temps de rampe",
+        "needs_translation": false
       },
       "startup_time": {
         "english": "Startup time",
-        "translation": "Startup time",
-        "needs_translation": true
+        "translation": "Temps de demarrage",
+        "needs_translation": false
       },
       "spoolup_time": {
         "english": "Spoolup time",
@@ -2654,8 +2654,8 @@
       },
       "spooldown_time": {
         "english": "Spooldown time",
-        "translation": "Spooldown time",
-        "needs_translation": true
+        "translation": "Temps de descente en regime",
+        "needs_translation": false
       },
       "tracking_time": {
         "english": "Tracking time",
@@ -2674,28 +2674,28 @@
       },
       "gov_rpm_filter": {
         "english": "RPM Filter Cutoff",
-        "translation": "RPM Filter Cutoff",
-        "needs_translation": true
+        "translation": "Coupure filtre RPM",
+        "needs_translation": false
       },
       "gov_pwr_filter": {
         "english": "Voltage Filter Cutoff",
-        "translation": "Voltage Filter Cutoff",
-        "needs_translation": true
+        "translation": "Coupure filtre tension",
+        "needs_translation": false
       },
       "gov_tta_filter": {
         "english": "TTA Bandwidth",
-        "translation": "TTA Bandwidth",
-        "needs_translation": true
+        "translation": "Bande passante TTA",
+        "needs_translation": false
       },
       "gov_ff_filter": {
         "english": "Precomp Bandwidth",
-        "translation": "Precomp Bandwidth",
-        "needs_translation": true
+        "translation": "Bande passante precomp.",
+        "needs_translation": false
       },
       "gov_d_filter": {
         "english": "D-Term Cutoff",
-        "translation": "D-Term Cutoff",
-        "needs_translation": true
+        "translation": "Coupure D-term",
+        "needs_translation": false
       }
     },
     "accelerometer": {
@@ -3560,50 +3560,50 @@
       }
     },
     "rfstatus": {
-      "name": {
+        "name": {
         "english": "Status",
-        "translation": "Status",
-        "needs_translation": true
+        "translation": "Statut",
+        "needs_translation": false
       },
       "error": {
         "english": "ERROR",
-        "translation": "ERROR",
-        "needs_translation": true
+        "translation": "ERREUR",
+        "needs_translation": false
       },
       "ok": {
         "english": "OK",
         "translation": "OK",
-        "needs_translation": true
+        "needs_translation": false
       },
       "unknown": {
         "english": "UNKNOWN",
-        "translation": "UNKNOWN",
-        "needs_translation": true
+        "translation": "INCONNU",
+        "needs_translation": false
       },
       "mspsensor": {
         "english": "MSP Sensor",
-        "translation": "MSP Sensor",
-        "needs_translation": true
+        "translation": "Capteur MSP",
+        "needs_translation": false
       },
       "rfmodule": {
         "english": "RF Module",
-        "translation": "RF Module",
-        "needs_translation": true
+        "translation": "Module RF",
+        "needs_translation": false
       },
       "bgtask": {
         "english": "Background Task",
-        "translation": "Background Task",
-        "needs_translation": true
+        "translation": "Tâche arrière-plan",
+        "needs_translation": false
       },
       "fblconnected": {
         "english": "FBL Connected",
-        "translation": "FBL Connected",
-        "needs_translation": true
+        "translation": "FBL connecté",
+        "needs_translation": false
       },
       "telemetrysensors": {
         "english": "Telemetry Sensors",
-        "translation": "Telemetry Sensors",
-        "needs_translation": true
+        "translation": "Capteurs télémétrie",
+        "needs_translation": false
       }
     },
     "fblstatus": {

@@ -1207,53 +1207,53 @@
     },
     "tbl_govmode_external": {
       "english": "EXTERNAL",
-      "translation": "EXTERNAL",
-      "needs_translation": true
+      "translation": "EXTERNO",
+      "needs_translation": false
     },
     "tbl_govmode_electric": {
       "english": "ELECTRIC",
-      "translation": "ELECTRIC",
-      "needs_translation": true
+      "translation": "ELECTRICO",
+      "needs_translation": false
     },
     "tbl_govmode_nitro": {
       "english": "NITRO",
       "translation": "NITRO",
-      "needs_translation": true
+      "needs_translation": false
     },
     "tbl_throttle_type_normal": {
       "english": "NORMAL",
       "translation": "NORMAL",
-      "needs_translation": true
+      "needs_translation": false
     },
     "tbl_throttle_type_off_on": {
       "english": "OFF_ON",
-      "translation": "OFF_ON",
-      "needs_translation": true
+      "translation": "APAGADO_ENCENDIDO",
+      "needs_translation": false
     },
     "tbl_throttle_type_off_idle_on": {
       "english": "OFF_IDLE_ON",
-      "translation": "OFF_IDLE_ON",
-      "needs_translation": true
+      "translation": "APAGADO_MARCHA_ENCENDIDO",
+      "needs_translation": false
     },
     "tbl_throttle_type_idle_auto_on": {
       "english": "IDLE_AUTO_ON",
-      "translation": "IDLE_AUTO_ON",
-      "needs_translation": true
+      "translation": "MARCHA_AUTO_ENCENDIDO",
+      "needs_translation": false
     },
     "governor_idle_throttle": {
       "english": "Idle throttle",
-      "translation": "Idle throttle",
-      "needs_translation": true
+      "translation": "Acelerador en marcha",
+      "needs_translation": false
     },
     "governor_auto_throttle": {
       "english": "Auto throttle",
-      "translation": "Auto throttle",
-      "needs_translation": true
+      "translation": "Acelerador automatico",
+      "needs_translation": false
     },
     "governor_fallback_drop": {
       "english": "Fallback drop",
-      "translation": "Fallback drop",
-      "needs_translation": true
+      "translation": "Caida de respaldo",
+      "needs_translation": false
     }
   },
   "RC_CONFIG": {
