@@ -92,14 +92,14 @@
   "modules": {
     "diagnostics": {
       "name": {
-      "english": "Diagnostics",
-      "translation": "Diagnose",
-      "needs_translation": false
+        "english": "Diagnostics",
+        "translation": "Diagnose",
+        "needs_translation": false
       },
       "help_p1": {
-      "english": "This module provides various tools to help diagnose issues with your flight controller or configuration.",
-      "translation": "Dieses Modul bietet verschiedene Werkzeuge, um Probleme mit Ihrem Flugcontroller oder Ihrer Konfiguration zu diagnostizieren.",
-      "needs_translation": false
+        "english": "This module provides various tools to help diagnose issues with your flight controller or configuration.",
+        "translation": "Dieses Modul bietet verschiedene Werkzeuge, um Probleme mit Ihrem Flugcontroller oder Ihrer Konfiguration zu diagnostizieren.",
+        "needs_translation": false
       }
     },
     "stats": {
@@ -3561,49 +3561,49 @@
     },
     "rfstatus": {
       "name": {
-      "english": "Status",
-      "translation": "Status",
-      "needs_translation": false
+        "english": "Status",
+        "translation": "Status",
+        "needs_translation": false
       },
       "error": {
-      "english": "ERROR",
-      "translation": "FEHLER",
-      "needs_translation": false
+        "english": "ERROR",
+        "translation": "FEHLER",
+        "needs_translation": false
       },
       "ok": {
-      "english": "OK",
-      "translation": "OK",
-      "needs_translation": false
+        "english": "OK",
+        "translation": "OK",
+        "needs_translation": false
       },
       "unknown": {
-      "english": "UNKNOWN",
-      "translation": "UNBEKANNT",
-      "needs_translation": false
+        "english": "UNKNOWN",
+        "translation": "UNBEKANNT",
+        "needs_translation": false
       },
       "mspsensor": {
-      "english": "MSP Sensor",
-      "translation": "MSP-Sensor",
-      "needs_translation": false
+        "english": "MSP Sensor",
+        "translation": "MSP-Sensor",
+        "needs_translation": false
       },
       "rfmodule": {
-      "english": "RF Module",
-      "translation": "RF-Modul",
-      "needs_translation": false
+        "english": "RF Module",
+        "translation": "RF-Modul",
+        "needs_translation": false
       },
       "bgtask": {
-      "english": "Background Task",
-      "translation": "Hintergrund-Task",
-      "needs_translation": false
+        "english": "Background Task",
+        "translation": "Hintergrund-Task",
+        "needs_translation": false
       },
       "fblconnected": {
-      "english": "FBL Connected",
-      "translation": "FBL verbunden",
-      "needs_translation": false
+        "english": "FBL Connected",
+        "translation": "FBL verbunden",
+        "needs_translation": false
       },
       "telemetrysensors": {
-      "english": "Telemetry Sensors",
-      "translation": "Telemetrie-Sensoren",
-      "needs_translation": false
+        "english": "Telemetry Sensors",
+        "translation": "Telemetrie-Sensoren",
+        "needs_translation": false
       }
     },
     "fblstatus": {

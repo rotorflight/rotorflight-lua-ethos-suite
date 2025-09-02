@@ -3561,49 +3561,49 @@
     },
     "rfstatus": {
       "name": {
-      "english": "Status",
-      "translation": "Estado",
-      "needs_translation": false
+        "english": "Status",
+        "translation": "Estado",
+        "needs_translation": false
       },
       "error": {
-      "english": "ERROR",
-      "translation": "ERROR",
-      "needs_translation": false
+        "english": "ERROR",
+        "translation": "ERROR",
+        "needs_translation": false
       },
       "ok": {
-      "english": "OK",
-      "translation": "OK",
-      "needs_translation": false
+        "english": "OK",
+        "translation": "OK",
+        "needs_translation": false
       },
       "unknown": {
-      "english": "UNKNOWN",
-      "translation": "DESCONOCIDO",
-      "needs_translation": false
+        "english": "UNKNOWN",
+        "translation": "DESCONOCIDO",
+        "needs_translation": false
       },
       "mspsensor": {
-      "english": "MSP Sensor",
-      "translation": "Sensor MSP",
-      "needs_translation": false
+        "english": "MSP Sensor",
+        "translation": "Sensor MSP",
+        "needs_translation": false
       },
       "rfmodule": {
-      "english": "RF Module",
-      "translation": "Módulo RF",
-      "needs_translation": false
+        "english": "RF Module",
+        "translation": "Módulo RF",
+        "needs_translation": false
       },
       "bgtask": {
-      "english": "Background Task",
-      "translation": "Tarea en Fondo",
-      "needs_translation": false
+        "english": "Background Task",
+        "translation": "Tarea en Fondo",
+        "needs_translation": false
       },
       "fblconnected": {
-      "english": "FBL Connected",
-      "translation": "FBL Conectado",
-      "needs_translation": false
+        "english": "FBL Connected",
+        "translation": "FBL Conectado",
+        "needs_translation": false
       },
       "telemetrysensors": {
-      "english": "Telemetry Sensors",
-      "translation": "Sensores Telemetría",
-      "needs_translation": false
+        "english": "Telemetry Sensors",
+        "translation": "Sensores Telemetría",
+        "needs_translation": false
       }
     },
     "fblstatus": {

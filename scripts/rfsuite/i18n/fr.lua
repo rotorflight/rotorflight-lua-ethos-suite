@@ -445,7 +445,7 @@ return {
     ["modules"] = {
       ["diagnostics"] = {
         ["name"] = "Diagnostics",
-        ["help_p1"] = "This module provides various tools to help diagnose issues with your flight controller or configuration."
+        ["help_p1"] = "Ce module propose divers outils pour diagnostiquer les problemes de votre controleur de vol ou de sa configuration."
       },
       ["stats"] = {
         ["name"] = "Statistiques",
@@ -479,12 +479,12 @@ return {
         ["txt_debug"] = "DEBUG",
         ["txt_mspdata"] = "Journaliser donnees MSP",
         ["txt_queuesize"] = "Taille de file d'attente MSP Journal",
-        ["txt_taskprofiler"] = "Log tasks speed",
+        ["txt_taskprofiler"] = "Journaliser vitesse des taches",
         ["txt_memusage"] = "Journaliser utilisation memoire",
-        ["txt_batttype"] = "Tx Battery Options",
-        ["txt_battdef"] = "Default",
-        ["txt_batttext"] = "Text",
-        ["txt_battdig"] = "Digital",
+        ["txt_batttype"] = "Options batterie Tx",
+        ["txt_battdef"] = "Defaut",
+        ["txt_batttext"] = "Texte",
+        ["txt_battdig"] = "Numerique",
         ["dashboard"] = "Tableau de bord",
         ["dashboard_theme"] = "Theme",
         ["dashboard_theme_panel_global"] = "Theme par defaut pour tous les modeles",
@@ -516,7 +516,7 @@ return {
         ["bec_threshold"] = "Seuil (Volt)",
         ["fuel"] = "Carburant",
         ["fuel_callout_default"] = "Par defaut (uniquement a 10%)",
-        ["fuel_callout_5"] = "50% and 5%",
+        ["fuel_callout_5"] = "50% et 5%",
         ["fuel_callout_10"] = "Chaque 10%",
         ["fuel_callout_20"] = "Chaque 20%",
         ["fuel_callout_25"] = "Every 25%",
@@ -533,9 +533,9 @@ return {
         ["timer_postalert"] = "Alerte apres minuteur",
         ["timer_postalert_period"] = "Periode alerte",
         ["timer_postalert_interval"] = "Intervalle alerte",
-        ["adj_callouts"] = "Adjustment Callouts",
-        ["adj_function"] = "Adjustment Function",
-        ["adj_value"] = "Adjustment Value"
+        ["adj_callouts"] = "Annonces de réglage",
+        ["adj_function"] = "Fonction de réglage",
+        ["adj_value"] = "Valeur de réglage"
       },
       ["validate_sensors"] = {
         ["help_p1"] = "Cet outil tente de lister tous les capteurs que vous ne recevez pas dans une liste concise.",
@@ -821,9 +821,9 @@ return {
         ["help_p6"] = "Assistance couple d'anticouple : Pour rotors anticouple motorises. Gain et limite de l'augmentation du regime lors de l'utilisation du couple du rotor principal pour l'assistance en lacet.",
         ["help_p4"] = "Precompensation : Gain de precompensation du gouverneur pour les commandes de lacet, cyclique et collectif.",
         ["max_throttle"] = "Gaz max",
-        ["idle_throttle"] = "Idle throttle",
-        ["auto_throttle"] = "Auto throttle",
-        ["fallback_drop"] = "Thr. Fallback drop",
+        ["idle_throttle"] = "Ralenti gaz",
+        ["auto_throttle"] = "Gaz auto",
+        ["fallback_drop"] = "Chute secours gaz",
         ["full_headspeed"] = "Regime rotor max",
         ["precomp"] = "Precompensation",
         ["gain"] = "Gain PID principal",
@@ -885,7 +885,7 @@ return {
         ["help_logs_p3"] = "- Status Actuel d'Armement, Tension Actuelle, Tours Moteurs, Courant Amp, Temperature ESC"
       },
       ["battery"] = {
-        ["calcfuel_local"] = "Calculate fuel using",
+        ["calcfuel_local"] = "Calculer le carburant avec",
         ["max_cell_voltage"] = "Tension max par cellule",
         ["full_cell_voltage"] = "Tension pleine de cellule",
         ["name"] = "Batterie",
@@ -897,9 +897,9 @@ return {
         ["consumption_warning_percentage"] = "Avert. conso %",
         ["timer"] = "Temps de vol",
         ["voltage_multiplier"] = "Compensation de chute",
-        ["alert_type"] = "BEC or Rx Batt Voltage Alert",
-        ["bec_voltage_alert"] = "BEC Alert Value",
-        ["rx_voltage_alert"] = "RX Batt Alert Value"
+        ["alert_type"] = "Alerte tension Rx ou BEC",
+        ["bec_voltage_alert"] = "Valeur alerte BEC",
+        ["rx_voltage_alert"] = "Valeur alerte batt. Rx"
       },
       ["profile_mainrotor"] = {
         ["gain"] = "Gain",
@@ -986,30 +986,30 @@ return {
       },
       ["governor"] = {
         ["menu_general"] = "General",
-        ["menu_filters"] = "Filters",
-        ["menu_time"] = "Time",
+        ["menu_filters"] = "Filtres",
+        ["menu_time"] = "Temps de rampe",
         ["help_p1"] = "Ces parametres s'appliquent globalement au gouverneur, quel que soit le profil utilise.",
         ["handover_throttle"] = "Transfert des gaz %",
         ["spoolup_min_throttle"] = "Gaz min. de demarrage %",
         ["recovery_time"] = "Temps de recuperation",
         ["mode"] = "Mode",
-        ["throttle_type"] = "Throttle protocol",
-        ["collective"] = "Collective",
-        ["idle_collective"] = "Idle collective",
-        ["wot_collective"] = "WOT collective",
-        ["throttle_hold_timeout"] = "Throttle hold timeout",
-        ["ramp_time"] = "Ramp time",
-        ["startup_time"] = "Startup time",
+        ["throttle_type"] = "Type de gaz",
+        ["collective"] = "Collectif",
+        ["idle_collective"] = "Collectif ralenti",
+        ["wot_collective"] = "Collectif plein gaz",
+        ["throttle_hold_timeout"] = "Delai maintien gaz",
+        ["ramp_time"] = "Temps de rampe",
+        ["startup_time"] = "Temps de demarrage",
         ["spoolup_time"] = "Temps de monte en regime",
-        ["spooldown_time"] = "Spooldown time",
+        ["spooldown_time"] = "Temps de descente en regime",
         ["tracking_time"] = "Temps de suivi",
         ["help_p2"] = "Chaque paramtre est simplement une valeur de temps en secondes pour chaque action du gouverneur.",
         ["name"] = "Gouverneur",
-        ["gov_rpm_filter"] = "RPM Filter Cutoff",
-        ["gov_pwr_filter"] = "Voltage Filter Cutoff",
-        ["gov_tta_filter"] = "TTA Bandwidth",
-        ["gov_ff_filter"] = "Precomp Bandwidth",
-        ["gov_d_filter"] = "D-Term Cutoff"
+        ["gov_rpm_filter"] = "Coupure filtre RPM",
+        ["gov_pwr_filter"] = "Coupure filtre tension",
+        ["gov_tta_filter"] = "Bande passante TTA",
+        ["gov_ff_filter"] = "Bande passante precomp.",
+        ["gov_d_filter"] = "Coupure D-term"
       },
       ["accelerometer"] = {
         ["help_p1"] = "L'accelerometre est utilise pour mesurer l'angle du controleur de vol par rapport a l'horizon. Ces donnees sont utilisees pour stabiliser l'aeronef et fournir une fonctionnalite d'auto-nivellement.",
@@ -1197,15 +1197,15 @@ return {
         ["center"] = "Centre"
       },
       ["rfstatus"] = {
-        ["name"] = "Status",
-        ["error"] = "ERROR",
+        ["name"] = "Statut",
+        ["error"] = "ERREUR",
         ["ok"] = "OK",
-        ["unknown"] = "UNKNOWN",
-        ["mspsensor"] = "MSP Sensor",
-        ["rfmodule"] = "RF Module",
-        ["bgtask"] = "Background Task",
-        ["fblconnected"] = "FBL Connected",
-        ["telemetrysensors"] = "Telemetry Sensors"
+        ["unknown"] = "INCONNU",
+        ["mspsensor"] = "Capteur MSP",
+        ["rfmodule"] = "Module RF",
+        ["bgtask"] = "Tâche arrière-plan",
+        ["fblconnected"] = "FBL connecté",
+        ["telemetrysensors"] = "Capteurs télémétrie"
       },
       ["fblstatus"] = {
         ["arming_disable_flag_3"] = "Mauvaise recuperation RX",

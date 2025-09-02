@@ -251,13 +251,13 @@ return {
       ["model_param1_value"] = "Setzen Sie die erwartete Flugzeit in Sekunden. Die Fernsteuerung biept sobald die Flugzeit erreicht wurde."
     },
     ["BATTERY_INI"] = {
-      ["calcfuel_local"] = "Calculate Fuel Using",
-      ["tbl_off"] = "Current Sensor",
-      ["tbl_on"] = "Voltage Sensor",
-      ["sag_multiplier"] = "Raise or lower to adjust for the amount of voltage sag you see in flight.",
-      ["alert_off"] = "Off",
+      ["calcfuel_local"] = "Kraftstoff berechnen mit",
+      ["tbl_off"] = "Stromsensor",
+      ["tbl_on"] = "Spannungssensor",
+      ["sag_multiplier"] = "Erhoehen oder verringern, um den Spannungseinbruch im Flug anzupassen.",
+      ["alert_off"] = "Aus",
       ["alert_bec"] = "BEC",
-      ["alert_rxbatt"] = "Rx Batt"
+      ["alert_rxbatt"] = "Empfaengerakku"
     },
     ["BATTERY_CONFIG"] = {
       ["vbatmincellvoltage"] = "Die minimale Spannung pro Zelle, bevor der Niederspannungsalarm ausgeloest wird.",
@@ -302,16 +302,16 @@ return {
       ["gov_spoolup_time"] = "Zeitkonstante fuer das langsame Hochfahren in Sekunden, gemessen von null bis zur vollen Drehzahl.",
       ["gov_spoolup_min_throttle"] = "Minimaler Gaswert fuer langsames Hochfahren in Prozent. Bei Elektromotoren ist der Standardwert 5 %, bei Nitro sollte der Wert so eingestellt werden, dass die Kupplung fuer ein sanftes Hochfahren zu greifen beginnt (10-15 %).",
       ["tbl_govmode_off"] = "AUS",
-      ["tbl_govmode_external"] = "EXTERNAL",
-      ["tbl_govmode_electric"] = "ELECTRIC",
+      ["tbl_govmode_external"] = "EXTERN",
+      ["tbl_govmode_electric"] = "ELEKTRISCH",
       ["tbl_govmode_nitro"] = "NITRO",
       ["tbl_throttle_type_normal"] = "NORMAL",
-      ["tbl_throttle_type_off_on"] = "OFF_ON",
-      ["tbl_throttle_type_off_idle_on"] = "OFF_IDLE_ON",
-      ["tbl_throttle_type_idle_auto_on"] = "IDLE_AUTO_ON",
-      ["governor_idle_throttle"] = "Idle throttle",
-      ["governor_auto_throttle"] = "Auto throttle",
-      ["governor_fallback_drop"] = "Fallback drop"
+      ["tbl_throttle_type_off_on"] = "AUS_EIN",
+      ["tbl_throttle_type_off_idle_on"] = "AUS_LEERLAUF_EIN",
+      ["tbl_throttle_type_idle_auto_on"] = "LEERLAUF_AUTO_EIN",
+      ["governor_idle_throttle"] = "Leerlaufgas",
+      ["governor_auto_throttle"] = "Automatikgas",
+      ["governor_fallback_drop"] = "Fallback-Absenkung"
     },
     ["RC_CONFIG"] = {
       ["rc_deflection"] = "Knueppelausschlag vom Mittelpunkt in Mikrosekunden (µs).",
@@ -444,8 +444,8 @@ return {
     ["navigation_help"] = "?",
     ["modules"] = {
       ["diagnostics"] = {
-        ["name"] = "Diagnostics",
-        ["help_p1"] = "This module provides various tools to help diagnose issues with your flight controller or configuration."
+        ["name"] = "Diagnose",
+        ["help_p1"] = "Dieses Modul bietet verschiedene Werkzeuge, um Probleme mit Ihrem Flugcontroller oder Ihrer Konfiguration zu diagnostizieren."
       },
       ["stats"] = {
         ["name"] = "Statistiken",
@@ -478,11 +478,11 @@ return {
         ["txt_info"] = "INFO",
         ["txt_debug"] = "DEBUG",
         ["txt_mspdata"] = "Protokolliere MSP Daten",
-        ["txt_queuesize"] = "Protokolliere MSP Warteschlangengroesse",
-        ["txt_taskprofiler"] = "Log tasks speed",
-        ["txt_memusage"] = "Protokolliere Speicherauslastung",
-        ["txt_batttype"] = "Tx Battery Options",
-        ["txt_battdef"] = "Default",
+        ["txt_queuesize"] = "MSP Warteschlange",
+        ["txt_taskprofiler"] = "Aufgaben Tempo",
+        ["txt_memusage"] = "Speicher",
+        ["txt_batttype"] = "Tx Batterieoptionen",
+        ["txt_battdef"] = "Standard",
         ["txt_batttext"] = "Text",
         ["txt_battdig"] = "Digital",
         ["dashboard"] = "Dashboard",
@@ -516,7 +516,7 @@ return {
         ["bec_threshold"] = "Schwellwert (V)",
         ["fuel"] = "Kraftstoff",
         ["fuel_callout_default"] = "Standard (Nur wenn 10%)",
-        ["fuel_callout_5"] = "50% and 5%",
+        ["fuel_callout_5"] = "50% und 5%",
         ["fuel_callout_10"] = "Alle 10%",
         ["fuel_callout_20"] = "Alle 20%",
         ["fuel_callout_25"] = "Alle 25%",
@@ -533,9 +533,9 @@ return {
         ["timer_postalert"] = "Nach-timer Alarmierung",
         ["timer_postalert_period"] = "Alarmierungs Periode",
         ["timer_postalert_interval"] = "Alarmierungs Interval",
-        ["adj_callouts"] = "Adjustment Callouts",
-        ["adj_function"] = "Adjustment Function",
-        ["adj_value"] = "Adjustment Value"
+        ["adj_callouts"] = "Einstellungsansagen",
+        ["adj_function"] = "Einstellungsfunktion",
+        ["adj_value"] = "Einstellungswert"
       },
       ["validate_sensors"] = {
         ["help_p1"] = "Dieses Tool versucht, eine kurze Liste aller Sensoren zu erstellen, die nicht empfangen werden.",
@@ -821,9 +821,9 @@ return {
         ["help_p6"] = "Heck-Drehmoment-Unterstuetzung: Fuer motorisierte Heckrotoren. Verstaerkung und Begrenzung der Drehzahlerhoehung beim Gierausgleich durch das Hauptrotordrehmoment.",
         ["help_p4"] = "Vorkompensation: Governor-Vorkompensation fuer Gier-, zyklische und kollektive Eingaben.",
         ["max_throttle"] = "Max. Gas",
-        ["idle_throttle"] = "Idle throttle",
-        ["auto_throttle"] = "Auto throttle",
-        ["fallback_drop"] = "Thr. Fallback drop",
+        ["idle_throttle"] = "Leerlaufgas",
+        ["auto_throttle"] = "Automatisches Gas",
+        ["fallback_drop"] = "Fallback-Gasabfall",
         ["full_headspeed"] = "Volle Drehzahl",
         ["precomp"] = "Vorkompensation",
         ["gain"] = "PID-Masterverstaerkung",
@@ -885,7 +885,7 @@ return {
         ["help_logs_p3"] = "- Arm-Status, Spannung, Drehzahl, Strom, ESC-Temperatur"
       },
       ["battery"] = {
-        ["calcfuel_local"] = "Calculate fuel using",
+        ["calcfuel_local"] = "Kraftstoff berechnen mit",
         ["max_cell_voltage"] = "Maximale Zellenspannung",
         ["full_cell_voltage"] = "Volle Zellenspannung",
         ["name"] = "Batterie",
@@ -897,9 +897,9 @@ return {
         ["consumption_warning_percentage"] = "Verbrauchswarnung %",
         ["timer"] = "Flugzeitalarm",
         ["voltage_multiplier"] = "Spannungsausgleich",
-        ["alert_type"] = "BEC or Rx Batt Voltage Alert",
-        ["bec_voltage_alert"] = "BEC Alert Value",
-        ["rx_voltage_alert"] = "RX Batt Alert Value"
+        ["alert_type"] = "RX-Spannungswarnung",
+        ["bec_voltage_alert"] = "BEC-Wert Warnung",
+        ["rx_voltage_alert"] = "RX-Wert Warnung"
       },
       ["profile_mainrotor"] = {
         ["gain"] = "Verstaerkung",
@@ -985,31 +985,31 @@ return {
         ["help_p1"] = "Trimmungen verknuepfen: Verwenden Sie dies, um kleine Nivellierungsprobleme in Ihrer Taumelscheibe zu korrigieren. Normalerweise nur notwendig, wenn die Taumelscheibenanlenkungen nicht verstellbar sind."
       },
       ["governor"] = {
-        ["menu_general"] = "General",
-        ["menu_filters"] = "Filters",
-        ["menu_time"] = "Time",
+        ["menu_general"] = "Allgemein",
+        ["menu_filters"] = "Filter",
+        ["menu_time"] = "Rampezeit",
         ["help_p1"] = "Diese Parameter gelten global fuer den Drehzahlreger (Governor), unabhaengig vom verwendeten Profil.",
         ["handover_throttle"] = "Uebergabe-Gas%",
         ["spoolup_min_throttle"] = "Min. Spoolup-Gas%",
         ["recovery_time"] = "Erholungszeit",
         ["mode"] = "Modus",
-        ["throttle_type"] = "Throttle protocol",
-        ["collective"] = "Collective",
-        ["idle_collective"] = "Idle collective",
-        ["wot_collective"] = "WOT collective",
-        ["throttle_hold_timeout"] = "Throttle hold timeout",
-        ["ramp_time"] = "Ramp time",
-        ["startup_time"] = "Startup time",
+        ["throttle_type"] = "Gasprotokoll",
+        ["collective"] = "Kollektiv",
+        ["idle_collective"] = "Kollektiv-Leerlauf",
+        ["wot_collective"] = "Kollektiv-Vollgas",
+        ["throttle_hold_timeout"] = "Gas-Hold Timeout",
+        ["ramp_time"] = "Rampezeit",
+        ["startup_time"] = "Startzeit",
         ["spoolup_time"] = "Spoolup-Zeit",
-        ["spooldown_time"] = "Spooldown time",
+        ["spooldown_time"] = "Spooldown-Zeit",
         ["tracking_time"] = "Tracking-Zeit",
         ["help_p2"] = "Jeder Parameter ist einfach ein Zeitwert in Sekunden fuer jede Regleraktion.",
         ["name"] = "Governor",
-        ["gov_rpm_filter"] = "RPM Filter Cutoff",
-        ["gov_pwr_filter"] = "Voltage Filter Cutoff",
-        ["gov_tta_filter"] = "TTA Bandwidth",
-        ["gov_ff_filter"] = "Precomp Bandwidth",
-        ["gov_d_filter"] = "D-Term Cutoff"
+        ["gov_rpm_filter"] = "RPM-Filter Grenzwert",
+        ["gov_pwr_filter"] = "Spannungsfilter Grenzwert",
+        ["gov_tta_filter"] = "TTA-Bandbreite",
+        ["gov_ff_filter"] = "Vorkomp. Bandbreite",
+        ["gov_d_filter"] = "D-Term Grenzwert"
       },
       ["accelerometer"] = {
         ["help_p1"] = "Der Beschleunigungssensor wird verwendet, um den Winkel des Flugcontrollers in Bezug auf den Horizont zu messen. Diese Daten werden zur Stabilisierung des Fluggeraets und zur Bereitstellung der Selbstnivellierungsfunktion verwendet.",
@@ -1198,14 +1198,14 @@ return {
       },
       ["rfstatus"] = {
         ["name"] = "Status",
-        ["error"] = "ERROR",
+        ["error"] = "FEHLER",
         ["ok"] = "OK",
-        ["unknown"] = "UNKNOWN",
-        ["mspsensor"] = "MSP Sensor",
-        ["rfmodule"] = "RF Module",
-        ["bgtask"] = "Background Task",
-        ["fblconnected"] = "FBL Connected",
-        ["telemetrysensors"] = "Telemetry Sensors"
+        ["unknown"] = "UNBEKANNT",
+        ["mspsensor"] = "MSP-Sensor",
+        ["rfmodule"] = "RF-Modul",
+        ["bgtask"] = "Hintergrund-Task",
+        ["fblconnected"] = "FBL verbunden",
+        ["telemetrysensors"] = "Telemetrie-Sensoren"
       },
       ["fblstatus"] = {
         ["arming_disable_flag_3"] = "RX-Wiederherstellung fehlgeschlagen",

@@ -251,13 +251,13 @@ return {
       ["model_param1_value"] = "Reglez cette valeur sur la duree de vol prevue, en secondes. La radiocommande emettra un bip lorsque cette duree sera atteinte."
     },
     ["BATTERY_INI"] = {
-      ["calcfuel_local"] = "Calculate Fuel Using",
-      ["tbl_off"] = "Current Sensor",
-      ["tbl_on"] = "Voltage Sensor",
-      ["sag_multiplier"] = "Raise or lower to adjust for the amount of voltage sag you see in flight.",
-      ["alert_off"] = "Off",
+      ["calcfuel_local"] = "Calcola carburante usando",
+      ["tbl_off"] = "Sensore corrente",
+      ["tbl_on"] = "Sensore tensione",
+      ["sag_multiplier"] = "Aumenta o diminuisci per regolare il calo di tensione visto in volo.",
+      ["alert_off"] = "Spento",
       ["alert_bec"] = "BEC",
-      ["alert_rxbatt"] = "Rx Batt"
+      ["alert_rxbatt"] = "Batteria ricevente"
     },
     ["BATTERY_CONFIG"] = {
       ["vbatmincellvoltage"] = "La tensione minima per cella prima che scatti l'allarme di bassa tensione.",
@@ -302,16 +302,16 @@ return {
       ["gov_spoolup_time"] = "Costante di tempo per avviamento lento, in secondi, che misura il tempo da zero alla massima velocita' di rotazione.",
       ["gov_spoolup_min_throttle"] = "Acceleratore minimo per un avvio lento, in percentuale. Per i motori elettrici il valore e' 5%, per i nitro andrebbe impostato in modo che la frizione innesti gradualmente al 10-15%.",
       ["tbl_govmode_off"] = "OFF",
-      ["tbl_govmode_external"] = "EXTERNAL",
-      ["tbl_govmode_electric"] = "ELECTRIC",
+      ["tbl_govmode_external"] = "ESTERNO",
+      ["tbl_govmode_electric"] = "ELETTRICO",
       ["tbl_govmode_nitro"] = "NITRO",
-      ["tbl_throttle_type_normal"] = "NORMAL",
-      ["tbl_throttle_type_off_on"] = "OFF_ON",
-      ["tbl_throttle_type_off_idle_on"] = "OFF_IDLE_ON",
-      ["tbl_throttle_type_idle_auto_on"] = "IDLE_AUTO_ON",
-      ["governor_idle_throttle"] = "Idle throttle",
-      ["governor_auto_throttle"] = "Auto throttle",
-      ["governor_fallback_drop"] = "Fallback drop"
+      ["tbl_throttle_type_normal"] = "NORMALE",
+      ["tbl_throttle_type_off_on"] = "SPENTO_ACCESO",
+      ["tbl_throttle_type_off_idle_on"] = "SPENTO_MINIMO_ACC",
+      ["tbl_throttle_type_idle_auto_on"] = "MINIMO_AUTO_ACC",
+      ["governor_idle_throttle"] = "Acceleratore minimo",
+      ["governor_auto_throttle"] = "Acceleratore automatico",
+      ["governor_fallback_drop"] = "Caduta di sicurezza"
     },
     ["RC_CONFIG"] = {
       ["rc_deflection"] = "Deflessione dello stick dal centro in microsecondi (us).",
@@ -444,8 +444,8 @@ return {
     ["navigation_help"] = "?",
     ["modules"] = {
       ["diagnostics"] = {
-        ["name"] = "Diagnostics",
-        ["help_p1"] = "This module provides various tools to help diagnose issues with your flight controller or configuration."
+        ["name"] = "Diagnostica",
+        ["help_p1"] = "Questo modulo offre vari strumenti per diagnosticare problemi con il controller di volo o la configurazione."
       },
       ["stats"] = {
         ["name"] = "Stats",
@@ -479,12 +479,12 @@ return {
         ["txt_debug"] = "DEBUG",
         ["txt_mspdata"] = "Log msp data",
         ["txt_queuesize"] = "Dimensione Coda Log MSP",
-        ["txt_taskprofiler"] = "Log tasks speed",
+        ["txt_taskprofiler"] = "Velocità log task",
         ["txt_memusage"] = "Uso Memoria Log",
-        ["txt_batttype"] = "Tx Battery Options",
-        ["txt_battdef"] = "Default",
-        ["txt_batttext"] = "Text",
-        ["txt_battdig"] = "Digital",
+        ["txt_batttype"] = "Opzioni Batteria Tx",
+        ["txt_battdef"] = "Predefinito",
+        ["txt_batttext"] = "Testo",
+        ["txt_battdig"] = "Digitale",
         ["dashboard"] = "Dashboard",
         ["dashboard_theme"] = "Tema",
         ["dashboard_theme_panel_global"] = "Globale",
@@ -505,7 +505,7 @@ return {
         ["feet"] = "Piedi",
         ["warning"] = "Attenzione",
         ["governor_state"] = "Stato Governor",
-        ["arming_flags"] = "Arming Flags",
+        ["arming_flags"] = "Flags di Armo",
         ["voltage"] = "Voltaggio",
         ["pid_rates_profile"] = "Profilo PID/escursioni",
         ["pid_profile"] = "Profilo PID",
@@ -516,7 +516,7 @@ return {
         ["bec_threshold"] = "Soglia (V)",
         ["fuel"] = "Carburante",
         ["fuel_callout_default"] = "Default (Solo al 10%)",
-        ["fuel_callout_5"] = "50% and 5%",
+        ["fuel_callout_5"] = "50% e 5%",
         ["fuel_callout_10"] = "Ogni 10%",
         ["fuel_callout_20"] = "Ogni 20%",
         ["fuel_callout_25"] = "Ogni 25%",
@@ -533,9 +533,9 @@ return {
         ["timer_postalert"] = "Avviso Post-timer",
         ["timer_postalert_period"] = "Periodo Avviso",
         ["timer_postalert_interval"] = "Intervallo Avviso",
-        ["adj_callouts"] = "Adjustment Callouts",
-        ["adj_function"] = "Adjustment Function",
-        ["adj_value"] = "Adjustment Value"
+        ["adj_callouts"] = "Avvisi Regolazione",
+        ["adj_function"] = "Funzione Regolazione",
+        ["adj_value"] = "Valore Regolazione"
       },
       ["validate_sensors"] = {
         ["help_p1"] = "Questo strumento prova a elencare tutti i sensori che non ricevi in una lista concisa.",
@@ -821,9 +821,9 @@ return {
         ["help_p6"] = "Assistenza alla coppia di coda: per code motorizzate. Guadagno e limite di aumento della velocita' utilizzando la coppia del rotore principale per l'assistenza yaw",
         ["help_p4"] = "Precomp: guadagno precomp per gli input di imbardata, ciclico e collettivo.",
         ["max_throttle"] = "Max throttle",
-        ["idle_throttle"] = "Idle throttle",
-        ["auto_throttle"] = "Auto throttle",
-        ["fallback_drop"] = "Thr. Fallback drop",
+        ["idle_throttle"] = "Minimo acceleratore",
+        ["auto_throttle"] = "Acceleratore auto",
+        ["fallback_drop"] = "Caduta fallback thr.",
         ["full_headspeed"] = "Piena Velocita'Rotore",
         ["precomp"] = "Precomp",
         ["gain"] = "Guadagno Master PID",
@@ -885,7 +885,7 @@ return {
         ["help_logs_p3"] = "- stato armo, voltaggio, Vel.Rotore, corrente, esc temperatura"
       },
       ["battery"] = {
-        ["calcfuel_local"] = "Calculate fuel using",
+        ["calcfuel_local"] = "Calcola carburante con",
         ["max_cell_voltage"] = "Voltaggio Max Cella",
         ["full_cell_voltage"] = "Voltaggio Cella pieno",
         ["name"] = "Batteria",
@@ -897,9 +897,9 @@ return {
         ["consumption_warning_percentage"] = "Avviso Consumo %",
         ["timer"] = "Tempo Volo",
         ["voltage_multiplier"] = "Compensazione di caduta",
-        ["alert_type"] = "BEC or Rx Batt Voltage Alert",
-        ["bec_voltage_alert"] = "BEC Alert Value",
-        ["rx_voltage_alert"] = "RX Batt Alert Value"
+        ["alert_type"] = "Avviso Tensione Rx",
+        ["bec_voltage_alert"] = "Valore Avviso BEC",
+        ["rx_voltage_alert"] = "Valore Avviso Batt Rx"
       },
       ["profile_mainrotor"] = {
         ["gain"] = "Guadagno",
@@ -985,31 +985,31 @@ return {
         ["help_p1"] = "Link trims: Utilizzare per correggere piccoli problemi di livellamento nel piatto oscillante. In genere utilizzato solo se i link oscillanti non sono regolabili."
       },
       ["governor"] = {
-        ["menu_general"] = "General",
-        ["menu_filters"] = "Filters",
-        ["menu_time"] = "Time",
+        ["menu_general"] = "Generale",
+        ["menu_filters"] = "Filtri",
+        ["menu_time"] = "Tempo Ramp",
         ["help_p1"] = "Questi parametri si applicano globalmente al regolatore, indipendentemente dal profilo in uso.",
         ["handover_throttle"] = "Trasferimento acceleratore%",
         ["spoolup_min_throttle"] = "Rampa di accelerazione % min",
         ["recovery_time"] = "Tempo Recupero",
         ["mode"] = "Modo",
-        ["throttle_type"] = "Throttle protocol",
-        ["collective"] = "Collective",
-        ["idle_collective"] = "Idle collective",
-        ["wot_collective"] = "WOT collective",
-        ["throttle_hold_timeout"] = "Throttle hold timeout",
-        ["ramp_time"] = "Ramp time",
-        ["startup_time"] = "Startup time",
+        ["throttle_type"] = "Tipo acceleratore",
+        ["collective"] = "Collettivo",
+        ["idle_collective"] = "Collettivo minimo",
+        ["wot_collective"] = "Collettivo massimo",
+        ["throttle_hold_timeout"] = "Timeout blocco acceleratore",
+        ["ramp_time"] = "Tempo rampa",
+        ["startup_time"] = "Tempo avvio",
         ["spoolup_time"] = "Tempo Rampa di accelerazione",
-        ["spooldown_time"] = "Spooldown time",
+        ["spooldown_time"] = "Tempo Spooldown",
         ["tracking_time"] = "Tempo Tracciatura",
         ["help_p2"] = "Ogni parametro e' semplicemente un valore temporale in secondi per ogni azione del regolatore.",
         ["name"] = "Governor",
-        ["gov_rpm_filter"] = "RPM Filter Cutoff",
-        ["gov_pwr_filter"] = "Voltage Filter Cutoff",
-        ["gov_tta_filter"] = "TTA Bandwidth",
-        ["gov_ff_filter"] = "Precomp Bandwidth",
-        ["gov_d_filter"] = "D-Term Cutoff"
+        ["gov_rpm_filter"] = "Taglio Filtro RPM",
+        ["gov_pwr_filter"] = "Taglio Filtro Volt",
+        ["gov_tta_filter"] = "Banda TTA",
+        ["gov_ff_filter"] = "Banda Precomp",
+        ["gov_d_filter"] = "Taglio D-Term"
       },
       ["accelerometer"] = {
         ["help_p1"] = "L'accelerometro e' utilizzato per misurare l'angolo del controller di volo rispetto all'orizzonte. Questi dati sono utilizzati per stabilizzare l'aeromobile e fornire la funzionalita' di autolivellamento.",
@@ -1197,15 +1197,15 @@ return {
         ["center"] = "Centro"
       },
       ["rfstatus"] = {
-        ["name"] = "Status",
-        ["error"] = "ERROR",
+        ["name"] = "Stato",
+        ["error"] = "ERRORE",
         ["ok"] = "OK",
-        ["unknown"] = "UNKNOWN",
-        ["mspsensor"] = "MSP Sensor",
-        ["rfmodule"] = "RF Module",
-        ["bgtask"] = "Background Task",
-        ["fblconnected"] = "FBL Connected",
-        ["telemetrysensors"] = "Telemetry Sensors"
+        ["unknown"] = "SCONOSCIUTO",
+        ["mspsensor"] = "Sensore MSP",
+        ["rfmodule"] = "Modulo RF",
+        ["bgtask"] = "Task Background",
+        ["fblconnected"] = "FBL Connesso",
+        ["telemetrysensors"] = "Sensori Telemetria"
       },
       ["fblstatus"] = {
         ["arming_disable_flag_3"] = "Recupero RX Fallata",
