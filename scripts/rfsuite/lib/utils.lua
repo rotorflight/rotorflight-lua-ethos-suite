@@ -314,10 +314,8 @@ function utils.dir_exists(base, name)
 end
 
 function utils.file_exists(name)
-    rfsuite.utils.log("Checking if file exists: " .. name, "debug")
-    local f = io.open(name, "r")
-    if f then
-        io.close(f)
+    local tgt = os.stat(name)
+    if tgt then
         return true
     end
     return false

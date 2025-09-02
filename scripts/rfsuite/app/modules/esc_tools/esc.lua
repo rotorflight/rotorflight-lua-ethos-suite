@@ -10,9 +10,8 @@ local function findMFG()
 
         local init_path = mfgs_path .. v .. '/init.lua'
 
-        local f = io.open(init_path, "r")
+        local f = os.stat(init_path)
         if f then
-            io.close(f)
 
             local func, err = rfsuite.compiler.loadfile(init_path)
 
