@@ -75,7 +75,7 @@ local lastValue = {}          -- appId -> last numeric value pushed to TX
 local lastPush = {}           -- appId -> last os.clock() time we pushed any value
 local lastModule = nil        -- detect module changes to rebind DIY sensors
 local VALUE_EPSILON = 0.0     -- push on any change; keep 0 to avoid stale warnings
-local FORCE_REFRESH_INTERVAL = 5  -- seconds; force a heartbeat write this often even if unchanged
+local FORCE_REFRESH_INTERVAL = 2.5  -- seconds; force a heartbeat write this often even if unchanged
 
 local function calculateFuel()
     -- work out what type of sensor we are running and use 
@@ -92,7 +92,7 @@ local function calculateFuel()
 
 end
 
-function calculateConsumption()
+local function calculateConsumption()
             -- If smartvoltage is enabled, calculate mAh used based on capacity
             if rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.battery and rfsuite.session.modelPreferences.battery.calc_local then
                 if rfsuite.session.modelPreferences.battery.calc_local == 1 then

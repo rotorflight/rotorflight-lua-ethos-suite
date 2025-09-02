@@ -443,6 +443,10 @@ return {
     ["msg_connecting_to_fbl"] = "Connecting to flight controller...",
     ["navigation_help"] = "?",
     ["modules"] = {
+      ["diagnostics"] = {
+        ["name"] = "Diagnostics",
+        ["help_p1"] = "This module provides various tools to help diagnose issues with your flight controller or configuration."
+      },
       ["stats"] = {
         ["name"] = "Stats",
         ["totalflighttime"] = "Total Flight Time",
@@ -724,7 +728,7 @@ return {
         ["d"] = "D",
         ["b"] = "B",
         ["help_p4"] = "Tail Stop Gain (CW/CCW): Adjust separately for clean, bounce-free stops in both directions.",
-        ["help_p3"] = "Tail P/I/D Gains: Increase P until slight wobble in funnels, then back off slightly. Raise I until tail holds firm in hard moves (too high causes slow wag). Adjust D for smooth stops—higher for slow servos, lower for fast ones."
+        ["help_p3"] = "Tail P/I/D Gains: Increase P until slight wobble in funnels, then back off slightly. Raise I until tail holds firm in hard moves (too high causes slow wag). Adjust D for smooth stops-higher for slow servos, lower for fast ones."
       },
       ["msp_speed"] = {
         ["seconds_600"] = "  600S  ",
@@ -1065,21 +1069,15 @@ return {
         ["collective_tilt_correction"] = "Collective Tilt Correction",
         ["swash_pitch_limit"] = "Total Pitch Limit"
       },
-      ["about"] = {
-        ["help_p1"] = "This page provides some useful information that you may be asked for when requesting support.",
-        ["msgbox_credits"] = "Credits",
+      ["info"] = {
         ["ethos_version"] = "Ethos Version",
         ["rf_version"] = "Rotorflight Version",
         ["fc_version"] = "FC Version",
-        ["name"] = "About",
+        ["name"] = "Info",
         ["supported_versions"] = "Supported MSP Versions",
-        ["license"] = "You may copy, distribute, and modify the software as long as you track changes/dates in source files. Any modifications to or software including (via compiler) GPL-licensed code must also be made available under the GPL along with build & install instructions.",
         ["simulation"] = "Simulation",
-        ["help_p2"] = "For support, please first read the help pages on www.rotorflight.org",
-        ["opener"] = "Rotorflight is an open source project. Contribution from other like minded people, keen to assist in making this software even better, is welcomed and encouraged. You do not have to be a hardcore programmer to help.",
         ["version"] = "Version",
         ["msp_version"] = "MSP Version",
-        ["credits"] = "Notable contributors to both the Rotorflight firmware and this software are: Petri Mattila, Egon Lubbers, Rob Thomson, Rob Gayle, Phil Kaighin, Robert Burrow, Keith Williams, Bertrand Songis, Venbs Zhou... and many more who have spent hours testing and providing feedback!",
         ["msp_transport"] = "MSP Transport"
       },
       ["rates_advanced"] = {
@@ -1198,7 +1196,17 @@ return {
         ["min_cutoff"] = "Min cutoff",
         ["center"] = "Center"
       },
-      ["status"] = {
+      ["rfstatus"] = {
+        ["name"] = "Status",
+        ["error"] = "ERROR",
+        ["ok"] = "OK",
+        ["unknown"] = "UNKNOWN",
+        ["mspsensor"] = "MSP Sensor",
+        ["rfmodule"] = "RF Module",
+        ["bgtask"] = "Background Task",
+        ["telemetrysensors"] = "Telemetry Sensors"
+      },
+      ["fblstatus"] = {
         ["arming_disable_flag_3"] = "Bad RX Recovery",
         ["arming_disable_flag_20"] = "RPM Filter",
         ["arming_disable_flag_11"] = "Load",
@@ -1231,7 +1239,7 @@ return {
         ["erase"] = "Erase",
         ["arming_disable_flag_10"] = "No Pre Arm",
         ["arming_disable_flag_21"] = "Reboot Required",
-        ["name"] = "Status",
+        ["name"] = "FBL Status",
         ["arming_disable_flag_13"] = "CLI",
         ["arming_disable_flag_14"] = "CMS Menu",
         ["arming_disable_flag_16"] = "MSP",

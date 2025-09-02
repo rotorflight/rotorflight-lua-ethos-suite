@@ -18,11 +18,13 @@
 
 ]] --
 local init = {
-    title = rfsuite.i18n.get("app.modules.about.name"), -- title of the page
-    section = "footer", -- do not run if busy with msp
-    script = "about.lua", -- run this script
-    image = "about.png", -- image for the page
-    order = 1, -- order in the section
+    title = rfsuite.i18n.get("app.modules.diagnostics.name"), -- title of the page
+    section = "system", -- do not run if busy with msp
+    script = "diagnostics.lua", -- run this script
+    image = "diagnostics.png", -- image for the page
+    order = 10, -- order in the section
+    bgtask = true, -- enable button if bgtask not active
+    offline = true, -- run this script offline
     ethosversion = {1, 6, 2} -- disable button if ethos version is less than this
 }
 

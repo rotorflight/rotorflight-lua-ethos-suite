@@ -162,7 +162,7 @@ local lastModule    = nil
 
 -- Constants
 local VALUE_EPSILON          = 0.0  -- push on any change (set >0 to throttle)
-local FORCE_REFRESH_INTERVAL = 5    -- seconds; heartbeat refresh interval
+local FORCE_REFRESH_INTERVAL = 2.5    -- seconds; heartbeat refresh interval
 
 -- Scheduler state
 local next_due     = {}  -- api_name -> epoch seconds for next poll
@@ -337,8 +337,6 @@ function msp.wakeup()
     local isArmed = armSource:value()
     local isAdmin = rfsuite.app.guiIsRunning
 
-    if isAdmin then return end -- Pause polling when GUI open
-
     -- Reschedule if state changed
     local armedBool    = (isArmed == 1 or isArmed == 3)
     local stateChanged = (lastState.isArmed ~= armedBool)
@@ -365,6 +363,8 @@ function msp.wakeup()
             lastPush[appId] = now
         end
     end
+
+    if isAdmin then return end -- Pause polling when GUI open
 
     -- Poll due APIs
     for api_name, due in pairs(next_due) do

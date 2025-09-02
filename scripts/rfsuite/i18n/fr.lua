@@ -251,13 +251,13 @@ return {
       ["model_param1_value"] = "Reglez ceci sur la duree de vol prevue en secondes. La radiocommande emettra un bip lorsque la duree sera atteinte."
     },
     ["BATTERY_INI"] = {
-      ["calcfuel_local"] = "Calculate Fuel Using",
-      ["tbl_off"] = "Current Sensor",
-      ["tbl_on"] = "Voltage Sensor",
-      ["sag_multiplier"] = "Raise or lower to adjust for the amount of voltage sag you see in flight.",
-      ["alert_off"] = "Off",
+      ["calcfuel_local"] = "Calcul du carburant utilisé",
+      ["tbl_off"] = "Capteur courant",
+      ["tbl_on"] = "Capteur tension",
+      ["sag_multiplier"] = "Ajuster pour compenser la chute de tension en vol",
+      ["alert_off"] = "Arrêt",
       ["alert_bec"] = "BEC",
-      ["alert_rxbatt"] = "Rx Batt"
+      ["alert_rxbatt"] = "Batt RX"
     },
     ["BATTERY_CONFIG"] = {
       ["vbatmincellvoltage"] = "Tension minimale par cellule avant le declenchement de l'alarme de basse tension.",
@@ -302,16 +302,16 @@ return {
       ["gov_spoolup_time"] = "Temps constant pour l'augmentation progressive, en secondes, mesurant le temps de zero a pleine vitesse de rotation.",
       ["gov_spoolup_min_throttle"] = "Gaz minimum a utiliser pour une montee progressive, en pourcentage. Pour les moteurs electriques, la valeur par defaut est 5%, pour le nitro, elle doit etre reglee pour que l'embrayage commence a s'engager en douceur 10-15%.",
       ["tbl_govmode_off"] = "DESACTIVER",
-      ["tbl_govmode_external"] = "EXTERNAL",
-      ["tbl_govmode_electric"] = "ELECTRIC",
+      ["tbl_govmode_external"] = "EXTERNE",
+      ["tbl_govmode_electric"] = "ELECTRIQUE",
       ["tbl_govmode_nitro"] = "NITRO",
       ["tbl_throttle_type_normal"] = "NORMAL",
-      ["tbl_throttle_type_off_on"] = "OFF_ON",
-      ["tbl_throttle_type_off_idle_on"] = "OFF_IDLE_ON",
-      ["tbl_throttle_type_idle_auto_on"] = "IDLE_AUTO_ON",
-      ["governor_idle_throttle"] = "Idle throttle",
-      ["governor_auto_throttle"] = "Auto throttle",
-      ["governor_fallback_drop"] = "Fallback drop"
+      ["tbl_throttle_type_off_on"] = "ARRET_ALLUME",
+      ["tbl_throttle_type_off_idle_on"] = "ARRET_RALENTI_ALLUME",
+      ["tbl_throttle_type_idle_auto_on"] = "RALENTI_AUTO_ALLUME",
+      ["governor_idle_throttle"] = "Ralenti Gaz",
+      ["governor_auto_throttle"] = "Gaz Auto",
+      ["governor_fallback_drop"] = "Coupure de secours"
     },
     ["RC_CONFIG"] = {
       ["rc_deflection"] = "Deviation du manche par rapport au centre en microsecondes (us).",
@@ -443,6 +443,10 @@ return {
     ["msg_connecting_to_fbl"] = "Connexion au controleur de vol...",
     ["navigation_help"] = "?",
     ["modules"] = {
+      ["diagnostics"] = {
+        ["name"] = "Diagnostics",
+        ["help_p1"] = "This module provides various tools to help diagnose issues with your flight controller or configuration."
+      },
       ["stats"] = {
         ["name"] = "Statistiques",
         ["totalflighttime"] = "Temps de vol total",
@@ -1065,21 +1069,15 @@ return {
         ["collective_tilt_correction"] = "Correction Inclinaison Collective",
         ["swash_pitch_limit"] = "Limite Totale du Pas"
       },
-      ["about"] = {
-        ["help_p1"] = "Cette page fournit des informations utiles que vous pourriez devoir fournir lors d'une demande d'assistance.",
-        ["msgbox_credits"] = "Credits",
+      ["info"] = {
         ["ethos_version"] = "Version Ethos",
         ["rf_version"] = "Version Rotorflight",
         ["fc_version"] = "Version FC",
-        ["name"] = "A propos",
+        ["name"] = "Info",
         ["supported_versions"] = "Versions MSP supportes",
-        ["license"] = "Vous pouvez copier, distribuer et modifier le logiciel tant que vous suivez les modifications et les dates dans les fichiers sources. Toute modification ou tout logiciel incluant du code sous licence GPL (via le compilateur) doit egalement etre mis a disposition sous la GPL avec les instructions de compilation et d'installation.",
         ["simulation"] = "Simulation",
-        ["help_p2"] = "Pour toute assistance, veuillez d'abord lire les pages d'aide sur www.rotorflight.org",
-        ["opener"] = "Rotorflight est un projet open source. Toute contribution de personnes partageant le meme etat d'esprit, desireuses d'ameliorer encore ce logiciel, est la bienvenue et encouragee. Vous n'avez pas besoin d'etre un programmeur experimente pour aider.",
         ["version"] = "Version",
         ["msp_version"] = "Version MSP",
-        ["credits"] = "Les contributeurs notables au firmware Rotorflight et a ce logiciel sont : Petri Mattila, Egon Lubbers, Rob Thomson, Rob Gayle, Phil Kaighin, Robert Burrow, Keith Williams, Bertrand Songis, Venbs Zhou... et bien d'autres qui ont passe des heures a tester et fournir des retours !",
         ["msp_transport"] = "Transport MSP"
       },
       ["rates_advanced"] = {
@@ -1198,7 +1196,17 @@ return {
         ["min_cutoff"] = "Coupure min",
         ["center"] = "Centre"
       },
-      ["status"] = {
+      ["rfstatus"] = {
+        ["name"] = "Status",
+        ["error"] = "ERROR",
+        ["ok"] = "OK",
+        ["unknown"] = "UNKNOWN",
+        ["mspsensor"] = "MSP Sensor",
+        ["rfmodule"] = "RF Module",
+        ["bgtask"] = "Background Task",
+        ["telemetrysensors"] = "Telemetry Sensors"
+      },
+      ["fblstatus"] = {
         ["arming_disable_flag_3"] = "Mauvaise recuperation RX",
         ["arming_disable_flag_20"] = "Filtre RPM",
         ["arming_disable_flag_11"] = "Charge",
@@ -1231,7 +1239,7 @@ return {
         ["erase"] = "Effacer",
         ["arming_disable_flag_10"] = "Pas de pre-armement",
         ["arming_disable_flag_21"] = "Redemarrage requis",
-        ["name"] = "Statut",
+        ["name"] = "Statut FBL",
         ["arming_disable_flag_13"] = "CLI",
         ["arming_disable_flag_14"] = "Menu CMS",
         ["arming_disable_flag_16"] = "MSP",
@@ -1290,7 +1298,7 @@ return {
       ["governor"] = "Status du Gouverneur",
       ["adj_func"] = "Ajustements Fonctions",
       ["fuel"] = "Niveau de Carburant",
-      ["smartfuel"] = "Smart Fuel",
+      ["smartfuel"] = "Carburant Intelligent",
       ["rssi"] = "Signal du Recepteur",
       ["link"] = "Qualité du Lien",
       ["adj_val"] = "Ajustements Valeurs",
@@ -1378,8 +1386,8 @@ return {
       ["cell_voltage"] = "Tension Cellule",
       ["volts_per_cell"] = "VVolts par cellule",
       ["warning"] = "Avertissement",
-      ["tx_batt"] = "TX Battery",
-      ["link_max"] = "Link Max"
+      ["tx_batt"] = "Batterie Emetteur",
+      ["link_max"] = "Signal Max"
     },
     ["governor"] = {
       ["UNKNOWN"] = "INCONNU",

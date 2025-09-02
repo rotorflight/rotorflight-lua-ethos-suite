@@ -443,6 +443,10 @@ return {
     ["msg_connecting_to_fbl"] = "Conectando al controlador de vuelo...",
     ["navigation_help"] = "?",
     ["modules"] = {
+      ["diagnostics"] = {
+        ["name"] = "Diagnostics",
+        ["help_p1"] = "This module provides various tools to help diagnose issues with your flight controller or configuration."
+      },
       ["stats"] = {
         ["name"] = "Estadísticas",
         ["totalflighttime"] = "Tiempo Total de Vuelo",
@@ -724,7 +728,7 @@ return {
         ["d"] = "D",
         ["b"] = "B",
         ["help_p4"] = "Ganancia Detención Cola (Horaria CW/Antihoraria CCW): Ajuste separadamente para detenciones limpias, sin rebotes, en ambos sentidos.",
-        ["help_p3"] = "Ganacia P/I/D de cola: Incremente P hasta un leve tambaleo durante embudos, luego disminuya levemente. Aumente I hasta que la cola se mantenga firme durante movimientos rápidos (demasiado alto causa un meneo lento de la cola). Ajuste D para paradas suaves — más alto para servos lentos, más bajo para rápidos."
+        ["help_p3"] = "Ganacia P/I/D de cola: Incremente P hasta un leve tambaleo durante embudos, luego disminuya levemente. Aumente I hasta que la cola se mantenga firme durante movimientos rápidos (demasiado alto causa un meneo lento de la cola). Ajuste D para paradas suaves - más alto para servos lentos, más bajo para rápidos."
       },
       ["msp_speed"] = {
         ["seconds_600"] = "  600S  ",
@@ -1065,21 +1069,15 @@ return {
         ["collective_tilt_correction"] = "Corrección Inclinación Colectivo",
         ["swash_pitch_limit"] = "Límite Total Cabeceo"
       },
-      ["about"] = {
-        ["help_p1"] = "Esta página provee información que le puede ser requerida cuando solicite soporte técnico.",
-        ["msgbox_credits"] = "Créditos",
+      ["info"] = {
         ["ethos_version"] = "Versión de Ethos",
         ["rf_version"] = "Versión de Rotorflight",
         ["fc_version"] = "Versión de FC",
-        ["name"] = "Acerca de",
+        ["name"] = "Información",
         ["supported_versions"] = "Ver. MSP Soportadas",
-        ["license"] = "Puede copiar, distribuir, y modificar este software siempre y cuando se comprometa a marcar/fechar los cambios en el código fuente. Todas las modificaciones a nuestro software incluyendo código licenciado mediante GPL (via compilador) deben ser distribuidas bajo licencia GPL junto con instrucciones de compilación e instalación.",
         ["simulation"] = "Simulación",
-        ["help_p2"] = "Para obtener soporte por favor lea primero las páginas de ayuda en www.rotorflight.org",
-        ["opener"] = "Rotorflight es un proyecto de código abierto. Contribuciones de gente que piensa como nosotros, entusiasta en ayudar a mejorar este software, es bienvenida y motivada. No hace falta que que sea un programador de élite para ayudar.",
         ["version"] = "Versión",
         ["msp_version"] = "Versión de MSP",
-        ["credits"] = "Contribuyentes notables tanto para el firmware de Rotorflight como a este software son: Petri Mattila, Egon Lubbers, Rob Thomson, Rob Gayle, Phil Kaighin, Robert Burrow, Keith Williams, Bertrand Songis, Venbs Zhou... y muchos más que han dedicado horas probando y proveyendo feedback! Traducción al Español: Pablo Montoreano",
         ["msp_transport"] = "Transporte MSP"
       },
       ["rates_advanced"] = {
@@ -1198,7 +1196,17 @@ return {
         ["min_cutoff"] = "Corte Mín",
         ["center"] = "Centro"
       },
-      ["status"] = {
+      ["rfstatus"] = {
+        ["name"] = "Status",
+        ["error"] = "ERROR",
+        ["ok"] = "OK",
+        ["unknown"] = "UNKNOWN",
+        ["mspsensor"] = "MSP Sensor",
+        ["rfmodule"] = "RF Module",
+        ["bgtask"] = "Background Task",
+        ["telemetrysensors"] = "Telemetry Sensors"
+      },
+      ["fblstatus"] = {
         ["arming_disable_flag_3"] = "Falla Recup. RX",
         ["arming_disable_flag_20"] = "Filtro RPM",
         ["arming_disable_flag_11"] = "Carga",
@@ -1231,7 +1239,7 @@ return {
         ["erase"] = "Borrar",
         ["arming_disable_flag_10"] = "No Pre Armado",
         ["arming_disable_flag_21"] = "Reinicio requerido",
-        ["name"] = "Estado",
+        ["name"] = "Estado FBL",
         ["arming_disable_flag_13"] = "CLI",
         ["arming_disable_flag_14"] = "Menú CMS",
         ["arming_disable_flag_16"] = "MSP",

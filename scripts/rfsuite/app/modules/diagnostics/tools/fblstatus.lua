@@ -27,10 +27,10 @@ local apidata = {
         labels = {
         },
         fields = {
-            {t = i18n("app.modules.status.arming_flags"), value = "-", type = displayType, disable = disableType, position = displayPos},
-            {t = i18n("app.modules.status.dataflash_free_space"), value = "-", type = displayType, disable = disableType, position = displayPos},
-            {t = i18n("app.modules.status.real_time_load"), value = "-", type = displayType, disable = disableType, position = displayPos},
-            {t = i18n("app.modules.status.cpu_load"), value = "-", type = displayType, disable = disableType, position = displayPos}
+            {t = i18n("app.modules.fblstatus.arming_flags"), value = "-", type = displayType, disable = disableType, position = displayPos},
+            {t = i18n("app.modules.fblstatus.dataflash_free_space"), value = "-", type = displayType, disable = disableType, position = displayPos},
+            {t = i18n("app.modules.fblstatus.real_time_load"), value = "-", type = displayType, disable = disableType, position = displayPos},
+            {t = i18n("app.modules.fblstatus.cpu_load"), value = "-", type = displayType, disable = disableType, position = displayPos}
         }
     }                 
 }
@@ -109,9 +109,9 @@ local function postRead(self)
 end
 
 local function getFreeDataflashSpace()
-    if not summary.supported then return i18n("app.modules.status.unsupported") end
+    if not summary.supported then return i18n("app.modules.fblstatus.unsupported") end
     local freeSpace = summary.totalSize - summary.usedSize
-    return string.format("%.1f " .. i18n("app.modules.status.megabyte"), freeSpace / (1024 * 1024))
+    return string.format("%.1f " .. i18n("app.modules.fblstatus.megabyte"), freeSpace / (1024 * 1024))
 end
 
 local function wakeup()
@@ -123,7 +123,7 @@ local function wakeup()
         rfsuite.app.audio.playEraseFlash = true
         triggerEraseDataFlash = false
 
-        rfsuite.app.ui.progressDisplay(i18n("app.modules.status.erasing"), i18n("app.modules.status.erasing_dataflash"))
+        rfsuite.app.ui.progressDisplay(i18n("app.modules.fblstatus.erasing"), i18n("app.modules.fblstatus.erasing_dataflash"))
         rfsuite.app.Page.eraseDataflash()
         rfsuite.app.triggers.isReady = true
     end
@@ -188,8 +188,8 @@ local function onToolMenu(self)
     local message
     local title
 
-    title = i18n("app.modules.status.erase")
-    message = i18n("app.modules.status.erase_prompt")
+    title = i18n("app.modules.fblstatus.erase")
+    message = i18n("app.modules.fblstatus.erase_prompt")
 
     form.openDialog({
         width = nil,
@@ -205,6 +205,28 @@ local function onToolMenu(self)
 
 end
 
+local function event(widget, category, value, x, y)
+    -- if close event detected go to section home page
+    if category == EVT_CLOSE and value == 0 or value == 35 then
+        rfsuite.app.ui.openPage(
+            pageIdx,
+            i18n("app.modules.diagnostics.name"),
+            "diagnostics/diagnostics.lua"
+        )
+        return true
+    end
+end
+
+
+local function onNavMenu()
+    rfsuite.app.ui.progressDisplay(nil,nil,true)
+    rfsuite.app.ui.openPage(
+        pageIdx,
+        i18n("app.modules.diagnostics.name"),
+        "diagnostics/diagnostics.lua"
+    )
+end
+
 return {
     apidata = apidata,
     reboot = false,
@@ -217,12 +239,14 @@ return {
     postRead = postRead,
     eraseDataflash = eraseDataflash,
     onToolMenu = onToolMenu,
+    onNavMenu = onNavMenu,
+    event = event,
     navButtons = {
         menu = true,
         save = false,
         reload = false,
         tool = true,
-        help = true
+        help = false
     },
     API = {},
 }

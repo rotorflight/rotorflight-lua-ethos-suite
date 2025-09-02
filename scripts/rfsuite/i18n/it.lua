@@ -443,6 +443,10 @@ return {
     ["msg_connecting_to_fbl"] = "Connessione al flight controller...",
     ["navigation_help"] = "?",
     ["modules"] = {
+      ["diagnostics"] = {
+        ["name"] = "Diagnostics",
+        ["help_p1"] = "This module provides various tools to help diagnose issues with your flight controller or configuration."
+      },
       ["stats"] = {
         ["name"] = "Stats",
         ["totalflighttime"] = "Totale Tempo Volo",
@@ -1065,21 +1069,15 @@ return {
         ["collective_tilt_correction"] = "Correzione dell'inclinazione collettiva",
         ["swash_pitch_limit"] = "Limite Totale Pitch"
       },
-      ["about"] = {
-        ["help_p1"] = "Questa pagina fornisce alcune informazioni utili che potrebbero esserti richieste quando richiedi assistenza.",
-        ["msgbox_credits"] = "Crediti",
+      ["info"] = {
         ["ethos_version"] = "Versione Ethos",
         ["rf_version"] = "Versione Rotorflight",
         ["fc_version"] = "Versione FC",
-        ["name"] = "A Proposito",
+        ["name"] = "Infor",
         ["supported_versions"] = "Versioni MSP Supportate",
-        ["license"] = "e' possibile copiare, distribuire e modificare il software a condizione di tenere traccia delle modifiche/date nei file sorgente. Qualsiasi modifica o software che includa (tramite compilatore) codice con licenza GPL deve essere reso disponibile anche sotto la GPL insieme alle istruzioni di compilazione e installazione.",
         ["simulation"] = "Simulazione",
-        ["help_p2"] = "Per assistenza, leggere prima le pagine di aiuto su www.rotorflight.org",
-        ["opener"] = "Rotorflight e' un progetto open source. Il contributo di altre persone che condividono la stessa mentalita' e che desiderano contribuire a migliorare ulteriormente questo software e' ben accetto e incoraggiato. Non e' necessario essere un programmatore esperto per dare una mano.",
         ["version"] = "Versione",
         ["msp_version"] = "Versione MSP",
-        ["credits"] = "I principali contributori sia al firmware Rotorflight che a questo software sono: Petri Mattila, Egon Lubbers, Rob Thomson, Rob Gayle, Phil Kaighin, Robert Burrow, Keith Williams, Bertrand Songis, Venbs Zhou... e molti altri che hanno trascorso ore a Rotorere e fornire feedback.!",
         ["msp_transport"] = "Trasporto MSP"
       },
       ["rates_advanced"] = {
@@ -1198,7 +1196,17 @@ return {
         ["min_cutoff"] = "Min cutoff",
         ["center"] = "Centro"
       },
-      ["status"] = {
+      ["rfstatus"] = {
+        ["name"] = "Status",
+        ["error"] = "ERROR",
+        ["ok"] = "OK",
+        ["unknown"] = "UNKNOWN",
+        ["mspsensor"] = "MSP Sensor",
+        ["rfmodule"] = "RF Module",
+        ["bgtask"] = "Background Task",
+        ["telemetrysensors"] = "Telemetry Sensors"
+      },
+      ["fblstatus"] = {
         ["arming_disable_flag_3"] = "Recupero RX Fallata",
         ["arming_disable_flag_20"] = "Filtro RPM",
         ["arming_disable_flag_11"] = "Carica",
@@ -1231,7 +1239,7 @@ return {
         ["erase"] = "Cancella",
         ["arming_disable_flag_10"] = "No Pre Arm",
         ["arming_disable_flag_21"] = "Reboot Richiesto",
-        ["name"] = "Stato",
+        ["name"] = "Stato FBL",
         ["arming_disable_flag_13"] = "CLI",
         ["arming_disable_flag_14"] = "CMS Menu",
         ["arming_disable_flag_16"] = "MSP",

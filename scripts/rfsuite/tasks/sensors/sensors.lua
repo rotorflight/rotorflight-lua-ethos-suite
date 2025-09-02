@@ -85,6 +85,7 @@ function sensors.wakeup()
         delayStartTime = os.clock()
         delayPending = true
         rfsuite.session.resetSensors = false  -- Reset immediately
+
         log("Delaying sensor wakeup for " .. delayDuration .. " seconds","info")
         return  -- Exit early; wait starts now
     end

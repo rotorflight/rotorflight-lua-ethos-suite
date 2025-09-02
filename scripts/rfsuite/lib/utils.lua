@@ -154,13 +154,13 @@ end
 --- @return string Uppercased, comma-separated descriptions or "OK".
 function utils.armingDisableFlagsToString(flags)
     if flags == nil then
-        return i18n("app.modules.status.ok"):upper()
+        return i18n("app.modules.fblstatus.ok"):upper()
     end
 
     local names = {}
     for i = 0, 25 do
         if (flags & (1 << i)) ~= 0 then
-            local key  = "app.modules.status.arming_disable_flag_" .. i
+            local key  = "app.modules.fblstatus.arming_disable_flag_" .. i
             local name = i18n(key)
             if name and name ~= "" then
                 table.insert(names, name)
@@ -169,7 +169,7 @@ function utils.armingDisableFlagsToString(flags)
     end
 
     if #names == 0 then
-        return i18n("app.modules.status.ok"):upper()
+        return i18n("app.modules.fblstatus.ok"):upper()
     end
 
     return table.concat(names, ", "):upper()
@@ -729,6 +729,15 @@ function utils.apiVersionCompare(op, req)
     if op == "!=" or op == "~=" then return cmp ~= 0 end
 
     return false -- unknown operator
+end
+
+function utils.muteSensorLostWarnings()
+    if rfsuite.session.telemetryModule then
+        local module = rfsuite.session.telemetryModule
+        if module and module.muteSensorLost then
+            module:muteSensorLost(2.0)
+        end
+    end
 end
 
 

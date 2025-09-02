@@ -205,43 +205,33 @@ local function openPage(pidx, title, script)
 
     form.clear()
 
-    local titleline = form.addLine(i18n("app.modules.msp_speed.name"))
+    local titleline = form.addLine(i18n("app.modules.diagnostics.name") .. " / " .. i18n("app.modules.msp_speed.name"))
 
     local buttonW = 100
     local buttonWs = buttonW - (buttonW * 20) / 100
     local x = w - 10
 
-    rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {x = x - 5 - buttonW - buttonWs - 5 - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}, {
+    rfsuite.app.formNavigationFields['menu'] = form.addButton(line, {x = x - 5 - buttonW - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = buttonW, h = rfsuite.app.radio.navbuttonHeight}, {
         text = i18n("app.navigation_menu"),
         icon = nil,
         options = FONT_S,
         press = function()
-            rfsuite.app.ui.openMainMenu()
+            rfsuite.app.ui.openPage(
+                pageIdx,
+                i18n("app.modules.diagnostics.name"),
+                "diagnostics/diagnostics.lua"
+            )
         end
     })
     rfsuite.app.formNavigationFields['menu']:focus()
 
     -- ACTION BUTTON
-    rfsuite.app.formNavigationFields['tool'] = form.addButton(line, {x = x - 5 - buttonWs - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = buttonWs, h = rfsuite.app.radio.navbuttonHeight}, {
+    rfsuite.app.formNavigationFields['tool'] = form.addButton(line, {x = x - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = buttonWs, h = rfsuite.app.radio.navbuttonHeight}, {
         text = "*",
         icon = nil,
         options = FONT_S,
         press = function()
             openSpeedTestDialog()
-        end
-    })
-
-    -- HELP BUTTON
-    local help = assert(rfsuite.compiler.loadfile("app/modules/msp_speed/help.lua"))()
-    local section = rfsuite.app.lastScript:match("([^/]+)")
-    rfsuite.app.formNavigationFields['help'] = form.addButton(line, {x = x - buttonWs, y = rfsuite.app.radio.linePaddingTop, w = buttonWs, h = rfsuite.app.radio.navbuttonHeight}, {
-        text = "?",
-        icon = nil,
-        options = FONT_S,
-        paint = function()
-        end,
-        press = function()
-            rfsuite.app.ui.openPageHelp(help.help['default'], section)
         end
     })
 
@@ -318,8 +308,22 @@ function close()
     end
 end
 
+local function event(widget, category, value, x, y)
+    -- if close event detected go to section home page
+    if category == EVT_CLOSE and value == 0 or value == 35 then
+        rfsuite.app.ui.openPage(
+            pageIdx,
+            i18n("app.modules.diagnostics.name"),
+            "diagnostics/diagnostics.lua"
+        )
+        return true
+    end
+end
+
+
 return {
     openPage = openPage,
+    onNavMenu = onNavMenu,
     mspRetry = mspRetry,
     mspSuccess = mspSuccess,
     mspTimeout = mspTimeout,

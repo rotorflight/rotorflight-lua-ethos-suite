@@ -90,6 +90,18 @@
     "needs_translation": "false"
   },
   "modules": {
+    "diagnostics": {
+      "name": {
+        "english": "Diagnostics",
+        "translation": "Diagnostics",
+        "needs_translation": "true"
+      },
+      "help_p1": {
+        "english": "This module provides various tools to help diagnose issues with your flight controller or configuration.",
+        "translation": "This module provides various tools to help diagnose issues with your flight controller or configuration.",
+        "needs_translation": "true"
+      }
+    },
     "stats": {
       "name": {
         "english": "Stats",
@@ -1396,7 +1408,7 @@
         "needs_translation": "false"
       },
       "help_p3": {
-        "english": "Tail P/I/D Gains: Increase P until slight wobble in funnels, then back off slightly. Raise I until tail holds firm in hard moves (too high causes slow wag). Adjust D for smooth stops—higher for slow servos, lower for fast ones.",
+        "english": "Tail P/I/D Gains: Increase P until slight wobble in funnels, then back off slightly. Raise I until tail holds firm in hard moves (too high causes slow wag). Adjust D for smooth stops-higher for slow servos, lower for fast ones.",
         "translation": "Tail P/I/D Gains: Verhoog P tot een lichte wag in hurricanes, en ga dan iets terug. Verhoog I tot de staart locked-in is in harde bewegingen (te hoog veroorzaakt langzame wag). Pas D aan voor soepele stops: hoger voor langzame servo's, lager voor snelle.",
         "needs_translation": "false"
       }
@@ -2952,17 +2964,7 @@
         "needs_translation": "false"
       }
     },
-    "about": {
-      "help_p1": {
-        "english": "This page provides some useful information that you may be asked for when requesting support.",
-        "translation": "Op deze pagina vindt u nuttige informatie die u mogelijk wordt gevraagd wanneer u ondersteuning nodig heeft",
-        "needs_translation": "false"
-      },
-      "msgbox_credits": {
-        "english": "Credits",
-        "translation": "Credits",
-        "needs_translation": "false"
-      },
+    "info": {
       "ethos_version": {
         "english": "Ethos Version",
         "translation": "Ethos Versie",
@@ -2979,8 +2981,8 @@
         "needs_translation": "false"
       },
       "name": {
-        "english": "About",
-        "translation": "Over",
+        "english": "Info",
+        "translation": "Info",
         "needs_translation": "false"
       },
       "supported_versions": {
@@ -2988,24 +2990,9 @@
         "translation": "Ondersteunde MSP Versies",
         "needs_translation": "false"
       },
-      "license": {
-        "english": "You may copy, distribute, and modify the software as long as you track changes/dates in source files. Any modifications to or software including (via compiler) GPL-licensed code must also be made available under the GPL along with build & install instructions.",
-        "translation": "You may copy, distribute, and modify the software as long as you track changes/dates in source files. Any modifications to or software including (via compiler) GPL-licensed code must also be made available under the GPL along with build & install instructions.",
-        "needs_translation": "false"
-      },
       "simulation": {
         "english": "Simulation",
         "translation": "Simulatie",
-        "needs_translation": "false"
-      },
-      "help_p2": {
-        "english": "For support, please first read the help pages on www.rotorflight.org",
-        "translation": "Voor ondersteuning, lees eerst de helppagina's op www.rotorflight.org\n\n",
-        "needs_translation": "false"
-      },
-      "opener": {
-        "english": "Rotorflight is an open source project. Contribution from other like minded people, keen to assist in making this software even better, is welcomed and encouraged. You do not have to be a hardcore programmer to help.",
-        "translation": "Rotorflight is een open source project. Bijdragen van andere mensen, die graag willen helpen deze software nog beter te maken, zijn welkom en worden aangemoedigd. Je hoeft geen hardcore programmeur te zijn om te helpen.",
         "needs_translation": "false"
       },
       "version": {
@@ -3016,11 +3003,6 @@
       "msp_version": {
         "english": "MSP Version",
         "translation": "MSP Versie",
-        "needs_translation": "false"
-      },
-      "credits": {
-        "english": "Notable contributors to both the Rotorflight firmware and this software are: Petri Mattila, Egon Lubbers, Rob Thomson, Rob Gayle, Phil Kaighin, Robert Burrow, Keith Williams, Bertrand Songis, Venbs Zhou... and many more who have spent hours testing and providing feedback!",
-        "translation": "Bekende personen die aan de Rotorflight-firmware en deze software hebben bijgedragen zijn: Petri Mattila, Egon Lubbers, Rob Thomson, Rob Gayle, Phil Kaighin, Robert Burrow, Keith Williams, Bertrand Songis, Venbs Zhou... en nog veel meer mensen die urenlang hebben getest en feedback hebben gegeven!",
         "needs_translation": "false"
       },
       "msp_transport": {
@@ -3577,7 +3559,49 @@
         "needs_translation": "false"
       }
     },
-    "status": {
+    "rfstatus": {
+      "name": {
+        "english": "Status",
+        "translation": "Status",
+        "needs_translation": "true"
+      },
+      "error": {
+        "english": "ERROR",
+        "translation": "ERROR",
+        "needs_translation": "true"
+      },
+      "ok": {
+        "english": "OK",
+        "translation": "OK",
+        "needs_translation": "true"
+      },
+      "unknown": {
+        "english": "UNKNOWN",
+        "translation": "UNKNOWN",
+        "needs_translation": "true"
+      },
+      "mspsensor": {
+        "english": "MSP Sensor",
+        "translation": "MSP Sensor",
+        "needs_translation": "true"
+      },
+      "rfmodule": {
+        "english": "RF Module",
+        "translation": "RF Module",
+        "needs_translation": "true"
+      },
+      "bgtask": {
+        "english": "Background Task",
+        "translation": "Background Task",
+        "needs_translation": "true"
+      },
+      "telemetrysensors": {
+        "english": "Telemetry Sensors",
+        "translation": "Telemetry Sensors",
+        "needs_translation": "true"
+      }
+    },
+    "fblstatus": {
       "arming_disable_flag_3": {
         "english": "Bad RX Recovery",
         "translation": "Bad RX Recovery",
@@ -3739,8 +3763,8 @@
         "needs_translation": "false"
       },
       "name": {
-        "english": "Status",
-        "translation": "Status",
+        "english": "FBL Status",
+        "translation": "FBL Status",
         "needs_translation": "false"
       },
       "arming_disable_flag_13": {
