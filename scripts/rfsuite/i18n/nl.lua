@@ -1204,6 +1204,7 @@ return {
         ["mspsensor"] = "MSP Sensor",
         ["rfmodule"] = "RF Module",
         ["bgtask"] = "Background Task",
+        ["fblconnected"] = "FBL Connected",
         ["telemetrysensors"] = "Telemetry Sensors"
       },
       ["fblstatus"] = {

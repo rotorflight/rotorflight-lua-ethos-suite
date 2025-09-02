@@ -3595,6 +3595,11 @@
         "translation": "Background Task",
         "needs_translation": "true"
       },
+      "fblconnected": {
+        "english": "FBL Connected",
+        "translation": "FBL Connected",
+        "needs_translation": "true"
+      },
       "telemetrysensors": {
         "english": "Telemetry Sensors",
         "translation": "Telemetry Sensors",
