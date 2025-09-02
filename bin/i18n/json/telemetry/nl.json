@@ -3,147 +3,147 @@
     "attpitch": {
       "english": "P.angle",
       "translation": "P.hoek",
-      "needs_translation": "false"
+      "needs_translation": false
     },
     "attroll": {
       "english": "R.angle",
       "translation": "R.hoek",
-      "needs_translation": "false"
+      "needs_translation": false
     },
     "attyaw": {
       "english": "Y.angle",
       "translation": "Y.hoek",
-      "needs_translation": "false"
+      "needs_translation": false
     },
     "accx": {
       "english": "Accel X",
       "translation": "Accel X",
-      "needs_translation": "false"
+      "needs_translation": false
     },
     "accy": {
       "english": "Accel Y",
       "translation": "Accel Z",
-      "needs_translation": "false"
+      "needs_translation": false
     },
     "accz": {
       "english": "Accel Z",
       "translation": "Accel Z",
-      "needs_translation": "false"
+      "needs_translation": false
     },
     "groundspeed": {
       "english": "Ground Speed",
       "translation": "Grond snelheid",
-      "needs_translation": "false"
+      "needs_translation": false
     },
     "esc_temp": {
       "english": "ESC Temperature",
       "translation": "ESC Temperatuur",
-      "needs_translation": "false"
+      "needs_translation": false
     },
     "rate_profile": {
       "english": "Rate Profile",
       "translation": "Rate Profiel",
-      "needs_translation": "false"
+      "needs_translation": false
     },
     "headspeed": {
       "english": "Headspeed",
       "translation": "Rotortoerental",
-      "needs_translation": "false"
+      "needs_translation": false
     },
     "altitude": {
       "english": "Altitude",
       "translation": "Hoogte",
-      "needs_translation": "false"
+      "needs_translation": false
     },
     "voltage": {
       "english": "Voltage",
       "translation": "Voltage",
-      "needs_translation": "false"
+      "needs_translation": false
     },
     "bec_voltage": {
       "english": "Bec voltage",
       "translation": "Bec voltage",
-      "needs_translation": "false"
+      "needs_translation": false
     },
     "cell_count": {
       "english": "Cell count",
       "translation": "Aantal cellen",
-      "needs_translation": "false"
+      "needs_translation": false
     },
     "governor": {
       "english": "Governor State",
       "translation": "Governor Status",
-      "needs_translation": "false"
+      "needs_translation": false
     },
     "adj_func": {
       "english": "Adj (Function)",
       "translation": "Adj (Functies)",
-      "needs_translation": "false"
+      "needs_translation": false
     },
     "fuel": {
       "english": "Fuel",
       "translation": "Laad niveau",
-      "needs_translation": "false"
+      "needs_translation": false
     },
     "smartfuel": {
       "english": "Smart Fuel",
       "translation": "Smart brandstof",
-      "needs_translation": "false"
+      "needs_translation": false
     },
     "rssi": {
       "english": "RSSI",
       "translation": "RSSI",
-      "needs_translation": "false"
+      "needs_translation": false
     },
     "link": {
       "english": "Link Quality",
       "translation": "Linkkwaliteit",
-      "needs_translation": "false"
+      "needs_translation": false
     },
     "adj_val": {
       "english": "Adj (Value)",
       "translation": "Adj (Waarde)",
-      "needs_translation": "false"
+      "needs_translation": false
     },
     "arming_flags": {
       "english": "Arming Flags",
       "translation": "Arming Flags",
-      "needs_translation": "false"
+      "needs_translation": false
     },
     "current": {
       "english": "Current",
       "translation": "Stroom",
-      "needs_translation": "false"
+      "needs_translation": false
     },
     "throttle_pct": {
       "english": "Throttle %",
       "translation": "Throttle %",
-      "needs_translation": "false"
+      "needs_translation": false
     },
     "consumption": {
       "english": "Consumption",
       "translation": "Verbruik",
-      "needs_translation": "false"
+      "needs_translation": false
     },
     "smartconsumption": {
       "english": "Smart Consumption",
       "translation": "Slim verbruik",
-      "needs_translation": "false"
+      "needs_translation": false
     },
     "pid_profile": {
       "english": "PID Profile",
       "translation": "PID Profiel",
-      "needs_translation": "false"
+      "needs_translation": false
     },
     "mcu_temp": {
       "english": "MCU Temperature",
       "translation": "MCU Temperatuur",
-      "needs_translation": "false"
+      "needs_translation": false
     },
     "armdisableflags": {
       "english": "Arming Disable",
       "translation": "Arming Disable",
-      "needs_translation": "false"
+      "needs_translation": false
     }
   }
 }

@@ -2,61 +2,61 @@
   "UNKNOWN": {
     "english": "UNKNOWN",
     "translation": "SCONOSCIUTO",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "IDLE": {
     "english": "IDLE",
     "translation": "MINIMO",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "DISARMED": {
     "english": "DISARMED",
     "translation": "DISARMATO",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "OFF": {
     "english": "OFF",
     "translation": "OFF",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "SPOOLUP": {
     "english": "SPOOLUP",
     "translation": "SPOOLUP",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "ACTIVE": {
     "english": "ACTIVE",
     "translation": "ATTIVO",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "RECOVERY": {
     "english": "RECOVERY",
     "translation": "RECUPERA",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "THROFF": {
     "english": "THR-OFF",
     "translation": "THR-OFF",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "LOSTHS": {
     "english": "LOST-HS",
     "translation": "HS-PERSO",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "AUTOROT": {
     "english": "AUTOROT",
     "translation": "AUTOROTAZIONE",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "DISABLED": {
     "english": "DISABLED",
     "translation": "DISABILITA",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "BAILOUT": {
     "english": "BAILOUT",
     "translation": "SALVATAGGIO",
-    "needs_translation": "false"
+    "needs_translation": false
   }
 }

@@ -2,51 +2,51 @@
   "reload": {
     "english": "reload",
     "translation": "herlaad",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "image": {
     "english": "image",
     "translation": "foto",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "error": {
     "english": "error",
     "translation": "fout",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "save": {
     "english": "save",
     "translation": "opslaan",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "ethos": {
     "english": "ethos",
     "translation": "ethos",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "version": {
     "english": "version",
     "translation": "versie",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "bg_task_disabled": {
     "english": "bg task disabled",
     "translation": "bg task uitgeschakeld",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "no_link": {
     "english": "no link",
     "translation": "geen verbinding",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "background_task_disabled": {
     "english": "background task disabled",
     "translation": "background task uitgeschakeld",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "no_sensor": {
     "english": "no sensor",
     "translation": "geen sensor",
-    "needs_translation": "false"
+    "needs_translation": false
   }
 }

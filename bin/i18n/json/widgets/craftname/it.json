@@ -2,21 +2,21 @@
   "txt_enter_craft_name": {
     "english": "Enter Craft Name",
     "translation": "Nome Velivolo",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "title": {
     "english": "CRAFT NAME",
     "translation": "NOME VELIVOLO",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "txt_cancel": {
     "english": "Cancel",
     "translation": "Cancella",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "txt_save": {
     "english": "Save",
     "translation": "Salva",
-    "needs_translation": "false"
+    "needs_translation": false
   }
 }

@@ -2,51 +2,51 @@
   "reload": {
     "english": "reload",
     "translation": "ricarica",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "image": {
     "english": "image",
     "translation": "immagine",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "error": {
     "english": "error",
     "translation": "errore",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "save": {
     "english": "save",
     "translation": "salva",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "ethos": {
     "english": "ethos",
     "translation": "ethos",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "version": {
     "english": "version",
     "translation": "versione",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "bg_task_disabled": {
     "english": "bg task disabled",
     "translation": "bg task disabilitato",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "no_link": {
     "english": "no link",
     "translation": "no link",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "background_task_disabled": {
     "english": "background task disabled",
     "translation": "background task disabilitato",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "no_sensor": {
     "english": "no sensor",
     "translation": "nessun sensore",
-    "needs_translation": "false"
+    "needs_translation": false
   }
 }

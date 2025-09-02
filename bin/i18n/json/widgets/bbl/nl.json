@@ -2,31 +2,31 @@
   "erase_dataflash": {
     "english": "Erase dataflash",
     "translation": "Gegevensflash wissen",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "erasing": {
     "english": "Erasing...",
     "translation": "Bezig met wissen...",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "display": {
     "english": "Display",
     "translation": "Weergave",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "display_free": {
     "english": "Free",
     "translation": "Vrij",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "display_used": {
     "english": "Used",
     "translation": "Gebruikt",
-    "needs_translation": "false"
+    "needs_translation": false
   },
   "display_outof": {
     "english": "Used/Total",
     "translation": "Gebruikt/Totaal",
-    "needs_translation": "false"
+    "needs_translation": false
   }
 }
