@@ -18,8 +18,6 @@ local apidata = {
                 {t = i18n("app.modules.profile_governor.full_headspeed"),          mspapi = 1, apikey = "governor_headspeed", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},   
                 {t = i18n("app.modules.profile_governor.min_throttle"),            mspapi = 1, apikey = "governor_min_throttle", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
                 {t = i18n("app.modules.profile_governor.max_throttle"),            mspapi = 1, apikey = "governor_max_throttle", enablefunction = function() return (rfsuite.session.governorMode >=1 ) end},
-                {t = i18n("app.modules.profile_governor.idle_throttle"),           mspapi = 1, apikey = "governor_idle_throttle", enablefunction = function() return (rfsuite.session.governorMode >=1 ) end},
-                {t = i18n("app.modules.profile_governor.auto_throttle"),           mspapi = 1, apikey = "governor_auto_throttle", enablefunction = function() return (rfsuite.session.governorMode >=1 ) end},
                 {t = i18n("app.modules.profile_governor.fallback_drop"),           mspapi = 1, apikey = "governor_fallback_drop", enablefunction = function() return (rfsuite.session.governorMode >=1 ) end},
                 {t = i18n("app.modules.profile_governor.gain"),                    mspapi = 1, apikey = "governor_gain", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
                 {t = i18n("app.modules.profile_governor.p"),                       inline = 4, label = 1, mspapi = 1, apikey = "governor_p_gain", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},

@@ -50,7 +50,10 @@ if rfsuite.utils.apiVersionCompare(">=", "12.09") then
         {field = "gov_spooldown_time",              type = "U16", apiVersion = 12.09, simResponse = {30, 0}, min = 0,  max = 600, unit = "s", default = 100, decimals = 1, scale = 10},
         {field = "gov_throttle_type",               type = "U8",  apiVersion = 12.09, simResponse = {0}, min = 0, max = #throttleTypeTable, table = throttleTypeTable},
         {field = "gov_idle_collective",             type = "S8",  apiVersion = 12.09, simResponse = {161}, unit = "%", min = -100, max = 100, default = -95},
-        {field = "gov_wot_collective",              type = "S8",  apiVersion = 12.09, simResponse = {246}, unit = "%", min = -100, max = 100, default = -10}
+        {field = "gov_wot_collective",              type = "S8",  apiVersion = 12.09, simResponse = {246}, unit = "%", min = -100, max = 100, default = -10},
+        {field = "governor_idle_throttle",          type = "U8",    apiVersion = 12.09, simResponse = {10},     min = 0,   max = 100,   default = 0,  unit = "%"},
+        {field = "governor_auto_throttle",          type = "U8",    apiVersion = 12.09, simResponse = {10},     min = 0,   max = 100,   default = 0,  unit = "%"},
+
     }
 
 else
