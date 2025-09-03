@@ -537,6 +537,11 @@ return {
         ["adj_function"] = "Aanpassing functie",
         ["adj_value"] = "Aanpassing waarde"
       },
+      ["sensors"] = {
+        ["name"] = "Sensors",
+        ["help_p1"] = "This tool provides the ability to discover and configure sensors connected to your flight controller.",
+        ["help_p2"] = "Use this tool after connecting new sensors to your flight controller. It will attempt to detect and configure them automatically."
+      },
       ["validate_sensors"] = {
         ["help_p1"] = "Deze tool probeert een beknopt overzicht te geven van alle sensoren die u niet ontvangt.",
         ["invalid"] = "INVALID",

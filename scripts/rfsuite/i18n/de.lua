@@ -537,6 +537,11 @@ return {
         ["adj_function"] = "Einstellungsfunktion",
         ["adj_value"] = "Einstellungswert"
       },
+      ["sensors"] = {
+        ["name"] = "Sensors",
+        ["help_p1"] = "This tool provides the ability to discover and configure sensors connected to your flight controller.",
+        ["help_p2"] = "Use this tool after connecting new sensors to your flight controller. It will attempt to detect and configure them automatically."
+      },
       ["validate_sensors"] = {
         ["help_p1"] = "Dieses Tool versucht, eine kurze Liste aller Sensoren zu erstellen, die nicht empfangen werden.",
         ["invalid"] = "UNGUELTIG",
