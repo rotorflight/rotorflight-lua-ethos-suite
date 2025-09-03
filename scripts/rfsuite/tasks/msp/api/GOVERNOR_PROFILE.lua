@@ -37,8 +37,6 @@ if rfsuite.utils.apiVersionCompare(">=", "12.09") then
         {field = "governor_collective_weight",    type = "U8",  apiVersion = 12.09, simResponse = {100},    min = 0,   max = 250,   default = 100},
         {field = "governor_max_throttle",         type = "U8",  apiVersion = 12.09, simResponse = {100},    min = 40,  max = 100,   default = 100,  unit = "%"},
         {field = "governor_min_throttle",         type = "U8",  apiVersion = 12.09, simResponse = {10},     min = 0,   max = 100,   default = 10,   unit = "%"},
-        {field = "governor_idle_throttle",        type = "U8",  apiVersion = 12.09, simResponse = {10},     min = 0,   max = 100,   default = 0,  unit = "%"},
-        {field = "governor_auto_throttle",        type = "U8",  apiVersion = 12.09, simResponse = {10},     min = 0,   max = 100,   default = 0,  unit = "%"},
         {field = "governor_fallback_drop",        type = "U8",  apiVersion = 12.09, simResponse = {10},     min = 0,   max = 50,   default = 10,  unit = "%"},
         {field = "governor_flags",                type = "U16", apiVersion = 12.09, simResponse = {251, 3}, },
     }

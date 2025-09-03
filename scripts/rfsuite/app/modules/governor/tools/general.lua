@@ -10,10 +10,12 @@ local apidata = {
             fields = {
             { t = i18n("app.modules.governor.mode"),                  mspapi = 1, apikey = "gov_mode", postEdit = function(self) self.setGovernorMode(self) end,  type = 1},
             { t = i18n("app.modules.governor.throttle_type"),         mspapi = 1, apikey = "gov_throttle_type", type = 1},
-            { t = i18n("app.modules.governor.idle_collective"),     mspapi = 1, apikey = "gov_idle_collective" },
-            { t = i18n("app.modules.governor.wot_collective"),     mspapi = 1, apikey = "gov_wot_collective" },
+            { t = i18n("app.modules.governor.idle_collective"),       mspapi = 1, apikey = "gov_idle_collective" },
+            { t = i18n("app.modules.governor.wot_collective"),        mspapi = 1, apikey = "gov_wot_collective" },
             { t = i18n("app.modules.governor.handover_throttle"),     mspapi = 1, apikey = "gov_handover_throttle" },
-            { t = i18n("app.modules.governor.throttle_hold_timeout"),     mspapi = 1, apikey = "gov_throttle_hold_timeout" },
+            {t = i18n("app.modules.profile_governor.idle_throttle"),  mspapi = 1, apikey = "governor_idle_throttle", enablefunction = function() return (rfsuite.session.governorMode >=1 ) end},
+            {t = i18n("app.modules.profile_governor.auto_throttle"),  mspapi = 1, apikey = "governor_auto_throttle", enablefunction = function() return (rfsuite.session.governorMode >=1 ) end},
+            { t = i18n("app.modules.governor.throttle_hold_timeout"), mspapi = 1, apikey = "gov_throttle_hold_timeout" },
             }
         }               
     }    
