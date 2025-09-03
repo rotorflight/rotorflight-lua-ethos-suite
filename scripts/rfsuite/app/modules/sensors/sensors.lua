@@ -40,16 +40,20 @@ local sensorList = {
         name = i18n("app.modules.sensors.voltage"),
         sensors = {
             esc = {
-                name = i18n("app.modules.sensors.voltage.esc")
+                name = i18n("app.modules.sensors.voltage.esc"),
+                id = 42
             },
             bec = {
-                name = i18n("app.modules.sensors.voltage.bec")
+                name = i18n("app.modules.sensors.voltage.bec"),
+                id = 43
             },
             bus = {
-                name = i18n("app.modules.sensors.voltage.bus")
+                name = i18n("app.modules.sensors.voltage.bus"),
+                id = 44
             },
             mcu = {
-                name = i18n("app.modules.sensors.voltage.mcu")
+                name = i18n("app.modules.sensors.voltage.mcu"),
+                id = 45
             }
         },
     },
