@@ -1,6 +1,9 @@
 local i18n = rfsuite.i18n.get
 local enableWakeup = false
 
+local mspData = nil
+local config = {}
+
 -- Lookup table (by ID)
 local TELEMETRY_SENSORS = {
   [0] =  { name = i18n("telemetry.sensor_none"),                 id = 0,   group = "general" },
@@ -234,8 +237,8 @@ local GROUP_ORDER = {
 
 
 local function openPage(pidx, title, script)
-    enableWakeup = false
-    rfsuite.app.triggers.closeProgressLoader = true
+
+
     form.clear()
 
     -- track page
@@ -250,7 +253,7 @@ local function openPage(pidx, title, script)
 
     rfsuite.app.formLineCnt = 0
     rfsuite.app.formFields = {}
-    local config = {}
+
 
     local formFieldCount = 0
 
@@ -263,15 +266,14 @@ local function openPage(pidx, title, script)
                 local sensor = TELEMETRY_SENSORS[id]
                 if sensor then
                     local line = panel:addLine(sensor.name)
-                    formFieldCount = formFieldCount + 1
+                    formFieldCount = id -- keep index aligned with sensor ID
                     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
 
                     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(
                         line, nil,
-                        function() return config[sensor.group] and config[sensor.group][sensor.id] or false end,
+                        function() return config[sensor.id] or false end,
                         function(val)
-                            if not config[sensor.group] then config[sensor.group] = {} end
-                            config[sensor.group][sensor.id] = val
+                            config[sensor.id] = val
                         end
                     )
                 end
@@ -279,17 +281,46 @@ local function openPage(pidx, title, script)
         end
     end
     
-
+    enableWakeup = true
 end   
 
 local function wakeup()
     if enableWakeup == false then return end
 
+    -- get the current config from fbl
+    if not rfsuite.app.Page.mspData then
+      local API = rfsuite.tasks.msp.api.load("TELEMETRY_CONFIG")
+        API.setCompleteHandler(function(self, buf)
+          rfsuite.app.Page.mspData = API.data()
+          rfsuite.app.triggers.closeProgressLoader = true
+      end)
+      API.setUUID("a23e4567-e89b-12d3-a456-426614174001")
+      API.read()      
+    end
+
+    -- if we have data, populate config if empty (stop as soon as config has something in it)
+    if rfsuite.app.Page.mspData and rfsuite.app.Page.mspData.parsed and #config == 0 then
+      local parsed = rfsuite.app.Page.mspData.parsed
+        for key, value in pairs(parsed) do
+            -- update the form config table
+            -- by default field is 'false' so only set true values
+            if value ~= 0 then
+              config[value] = true
+            end
+        end
+    end
+
+end
+
+local function onSaveMenu()
+
 end
 
 return {
+    mspData = mspData, -- expose for other modules
     openPage = openPage,
     eepromWrite = true,
+    onSaveMenu = onSaveMenu,
     reboot = false,
     wakeup = wakeup,
     API = {},
