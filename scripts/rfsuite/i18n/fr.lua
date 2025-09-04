@@ -539,7 +539,9 @@ return {
       },
       ["telemetry"] = {
         ["name"] = "Télémétrie",
-        ["invalid_version"] = "RF2.2 ou version ultérieure requise"
+        ["invalid_version"] = "RF2.2 ou version ultérieure requise",
+        ["msg_set_defaults"] = "Appliquer les capteurs par défaut ?",
+        ["no_more_than_40"] = "Pas plus de 40 capteurs peuvent être activés en même temps"
       },
       ["validate_sensors"] = {
         ["help_p1"] = "Cet outil tente de lister tous les capteurs que vous ne recevez pas dans une liste concise.",

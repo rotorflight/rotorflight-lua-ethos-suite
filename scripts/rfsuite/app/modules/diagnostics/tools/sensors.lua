@@ -262,10 +262,12 @@ local function wakeup()
     end  
 
     -- enable/disable the tool button
-    if rfsuite.session and rfsuite.session.apiVersion and rfsuite.utils.apiVersionCompare("<", "12.08") then
-        rfsuite.app.formNavigationFields['tool']:enable(false)
-    else
-        rfsuite.app.formNavigationFields['tool']:enable(true)
+    if rfsuite.app.formNavigationFields['tool'] then
+        if rfsuite.session and rfsuite.session.apiVersion and rfsuite.utils.apiVersionCompare("<", "12.08") then
+            rfsuite.app.formNavigationFields['tool']:enable(false)
+        else
+            rfsuite.app.formNavigationFields['tool']:enable(true)
+        end
     end
 
     if progressLoader then
@@ -348,14 +350,14 @@ return {
     postLoad = postLoad,
     postRead = postRead,
     openPage = openPage,
-    onToolMenu = onToolMenu,
+    --onToolMenu = onToolMenu,
     onNavMenu = onNavMenu,
     event = event,
     navButtons = {
         menu = true,
         save = false,
         reload = false,
-        tool = true,
+        tool = false,
         help = false
     },
     API = {},

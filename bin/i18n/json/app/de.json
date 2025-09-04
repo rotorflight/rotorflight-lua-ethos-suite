@@ -546,6 +546,16 @@
         "english": "RF2.2 or later required",
         "translation": "RF2.2 oder neuer erforderlich",
         "needs_translation": false
+      },
+      "msg_set_defaults": {
+        "english": "Apply default sensors?",
+        "translation": "Standard-Sensoren anwenden?",
+        "needs_translation": false
+      },
+      "no_more_than_40": {
+        "english": "No more than 40 sensors can be enabled at once",
+        "translation": "Es können nicht mehr als 40 Sensoren gleichzeitig aktiviert werden",
+        "needs_translation": false
       }
     },
     "validate_sensors": {

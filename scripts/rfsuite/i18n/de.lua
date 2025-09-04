@@ -539,7 +539,9 @@ return {
       },
       ["telemetry"] = {
         ["name"] = "Telemetrie",
-        ["invalid_version"] = "RF2.2 oder neuer erforderlich"
+        ["invalid_version"] = "RF2.2 oder neuer erforderlich",
+        ["msg_set_defaults"] = "Standard-Sensoren anwenden?",
+        ["no_more_than_40"] = "Es können nicht mehr als 40 Sensoren gleichzeitig aktiviert werden"
       },
       ["validate_sensors"] = {
         ["help_p1"] = "Dieses Tool versucht, eine kurze Liste aller Sensoren zu erstellen, die nicht empfangen werden.",

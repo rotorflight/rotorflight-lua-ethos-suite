@@ -5,6 +5,9 @@ local mspData = nil
 local config = {}
 local triggerSave = false
 local configLoaded = false
+local configApplied = false
+local setDefaultSensors = false
+
 
 -- Lookup table (by ID)
 local TELEMETRY_SENSORS = {
@@ -225,6 +228,42 @@ local GROUP_ORDER = {
   "debug",
 }
 
+local function countEnabledSensors()
+    -- alert if more than 40 sensors selected
+    local count = 0
+    for _, v in pairs(config) do
+        if v == true then
+            count = count + 1
+        end
+    end
+
+    return count
+
+  end
+
+local function alertIfTooManySensors()
+
+      local buttons = {{
+          label = i18n("app.modules.profile_select.ok"),
+          action = function()
+            return true
+          end
+      }}
+
+      form.openDialog({
+          width = nil,
+          title = i18n("app.modules.telemetry.name"),
+          message = i18n("app.modules.telemetry.no_more_than_40"),
+          buttons = buttons,
+          wakeup = function()
+          end,
+          paint = function()
+          end,
+          options = TEXT_LEFT
+      })
+ 
+
+end
 
 
 
@@ -276,6 +315,11 @@ local function openPage(pidx, title, script)
                         line, nil,
                         function() return config[sensor.id] or false end,
                         function(val)
+                            local count = countEnabledSensors()
+                            if count > 40 then
+                                alertIfTooManySensors()
+                                return false
+                            end
                             config[sensor.id] = val
                         end
                     )
@@ -312,6 +356,21 @@ local function applySettings()
 
 end
 
+local function  getDefaultSensors(sensorList)
+  local defaultSensors = {}
+  local i = 0
+   for idx,sensor in pairs(sensorList) do
+        if sensor['mandatory'] == true and sensor['set_telemetry_sensors'] ~= nil then
+          defaultSensors[i] = sensor['set_telemetry_sensors']
+          i = i + 1
+        end
+    end
+
+    return defaultSensors
+end
+
+
+
 local function wakeup()
     if enableWakeup == false then return end
 
@@ -320,7 +379,6 @@ local function wakeup()
       local API = rfsuite.tasks.msp.api.load("TELEMETRY_CONFIG")
         API.setCompleteHandler(function(self, buf)
           local hasData = API.readValue("telem_sensor_slot_40")
-          print(hasData)
           if hasData then
               rfsuite.app.Page.mspData = API.data()
               rfsuite.app.Page.configLoaded = true
@@ -331,7 +389,7 @@ local function wakeup()
     end
 
     -- if we have data, populate config if empty (stop as soon as config has something in it)
-    if rfsuite.app.Page and rfsuite.app.Page.configLoaded  == true then
+    if rfsuite.app.Page and rfsuite.app.Page.configLoaded  == true and rfsuite.app.Page.configApplied == false then
       local parsed = rfsuite.app.Page.mspData.parsed
         for key, value in pairs(parsed) do
             -- update the form config table
@@ -340,6 +398,7 @@ local function wakeup()
               config[value] = true
             end
         end
+        rfsuite.app.Page.configApplied = true
         rfsuite.app.triggers.closeProgressLoader = true
     end
 
@@ -359,7 +418,6 @@ local function wakeup()
         local WRITEAPI = rfsuite.tasks.msp.api.load("TELEMETRY_CONFIG")
         WRITEAPI.setUUID("123e4567-e89b-12d3-a456-426614174000")
         WRITEAPI.setCompleteHandler(function(self, buf)
-            print("Telemetry settings saved")
             applySettings()
         end)
 
@@ -389,6 +447,15 @@ local function wakeup()
         triggerSave = false
     end
 
+    if setDefaultSensors == true then
+
+      local sensorList = getDefaultSensors(rfsuite.tasks.telemetry.listSensors())
+      for k,v in pairs(sensorList) do
+          config[v] = true
+      end
+      setDefaultSensors = false
+    end
+
 
 end
 
@@ -411,7 +478,7 @@ local function onSaveMenu()
     form.openDialog({
         width = nil,
         title = i18n("app.modules.profile_select.save_settings"),
-        message = i18n("app.modules.profile_select.save_prompt"),
+        message = i18n("app.msg_saving_settings"),
         buttons = buttons,
         wakeup = function()
         end,
@@ -424,20 +491,53 @@ local function onSaveMenu()
 
 end
 
+local function onToolMenu(self)
+
+    local buttons = {{
+        label = rfsuite.i18n.get("app.btn_ok"),
+        action = function()
+
+            -- we push this to the background task to do its job
+            setDefaultSensors = true
+            return true
+        end
+    }, {
+        label = rfsuite.i18n.get("app.btn_cancel"),
+        action = function()
+            return true
+        end
+    }}
+
+    form.openDialog({
+        width = nil,
+        title =  rfsuite.i18n.get("app.modules.telemetry.name"),
+        message = rfsuite.i18n.get("app.modules.telemetry.msg_set_defaults"),
+        buttons = buttons,
+        wakeup = function()
+        end,
+        paint = function()
+        end,
+        options = TEXT_LEFT
+    })
+
+end
+
 return {
     mspData = mspData, -- expose for other modules
     openPage = openPage,
     eepromWrite = true,
     onSaveMenu = onSaveMenu,
+    onToolMenu = onToolMenu,
     reboot = false,
     wakeup = wakeup,
     API = {},
     configLoaded = configLoaded,
+    configApplied = configApplied,
     navButtons = {
         menu   = true,
         save   = true,
         reload = true,
-        tool   = false,
+        tool   = true,
         help   = false,
     },    
 }

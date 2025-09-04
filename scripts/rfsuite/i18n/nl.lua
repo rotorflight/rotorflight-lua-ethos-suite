@@ -539,7 +539,9 @@ return {
       },
       ["telemetry"] = {
         ["name"] = "Telemetrie",
-        ["invalid_version"] = "RF2.2 of nieuwer vereist"
+        ["invalid_version"] = "RF2.2 of nieuwer vereist",
+        ["msg_set_defaults"] = "Standaard sensoren toepassen?",
+        ["no_more_than_40"] = "Er kunnen niet meer dan 40 sensoren tegelijk worden ingeschakeld"
       },
       ["validate_sensors"] = {
         ["help_p1"] = "Deze tool probeert een beknopt overzicht te geven van alle sensoren die u niet ontvangt.",

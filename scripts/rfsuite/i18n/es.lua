@@ -539,7 +539,9 @@ return {
       },
       ["telemetry"] = {
         ["name"] = "Telemetría",
-        ["invalid_version"] = "Se requiere RF2.2 o posterior"
+        ["invalid_version"] = "Se requiere RF2.2 o posterior",
+        ["msg_set_defaults"] = "¿Aplicar sensores por defecto?",
+        ["no_more_than_40"] = "No se pueden habilitar más de 40 sensores a la vez"
       },
       ["validate_sensors"] = {
         ["help_p1"] = "Esta herramienta intenta listar todos los sensores necesarios que faltan.",

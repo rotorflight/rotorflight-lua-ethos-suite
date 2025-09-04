@@ -539,7 +539,9 @@ return {
       },
       ["telemetry"] = {
         ["name"] = "Telemetry",
-        ["invalid_version"] = "RF2.2 or later required"
+        ["invalid_version"] = "RF2.2 or later required",
+        ["msg_set_defaults"] = "Apply default sensors?",
+        ["no_more_than_40"] = "No more than 40 sensors can be enabled at once"
       },
       ["validate_sensors"] = {
         ["help_p1"] = "This tool attempts to list all the sensors that you are not receiving in a concise list.",
