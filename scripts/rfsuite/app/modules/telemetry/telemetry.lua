@@ -7,6 +7,7 @@ local triggerSave = false
 local configLoaded = false
 local configApplied = false
 local setDefaultSensors = false
+local PREV_STATE = {}
 
 -- Lookup table (by ID)
 local TELEMETRY_SENSORS = {
@@ -315,6 +316,34 @@ local function openPage(pidx, title, script)
                 alertIfTooManySensors()
                 return false
               end
+
+              if val == true and NOT_AT_SAME_TIME[sensor.id] then
+                -- disable conflicting sensors
+                for _, conflictId in ipairs(NOT_AT_SAME_TIME[sensor.id]) do
+                  -- remember previous state
+                  PREV_STATE[conflictId] = config[conflictId]
+
+                  config[conflictId] = false
+                  if rfsuite.app.formFields[conflictId] then
+                    rfsuite.app.formFields[conflictId]:enable(false)
+                  end
+                end
+
+              elseif val == false and NOT_AT_SAME_TIME[sensor.id] then
+                -- re-enable conflicting sensors
+                for _, conflictId in ipairs(NOT_AT_SAME_TIME[sensor.id]) do
+                  if rfsuite.app.formFields[conflictId] then
+                    rfsuite.app.formFields[conflictId]:enable(true)
+                  end
+
+                  -- restore previous state if we saved one
+                  if PREV_STATE[conflictId] ~= nil then
+                    config[conflictId] = PREV_STATE[conflictId]
+                    PREV_STATE[conflictId] = nil -- clear after restoring
+                  end
+                end
+              end            
+
               config[sensor.id] = val
             end
           )
