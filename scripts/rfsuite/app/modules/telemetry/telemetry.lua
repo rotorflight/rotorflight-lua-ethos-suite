@@ -3,21 +3,22 @@ local enableWakeup = false
 
 local mspData = nil
 local config = {}
+local triggerSave = false
+local configLoaded = false
 
 -- Lookup table (by ID)
 local TELEMETRY_SENSORS = {
-  [0] =  { name = i18n("telemetry.sensor_none"),                 id = 0,   group = "general" },
-  [1] =  { name = i18n("telemetry.sensor_heartbeat"),            id = 1,   group = "general" },
+  [0] =  { name = i18n("telemetry.sensor_none"),                 id = 0,   group = "system" },
+  [1] =  { name = i18n("telemetry.sensor_heartbeat"),            id = 1,   group = "system" },
 
   [2] =  { name = i18n("telemetry.sensor_battery"),              id = 2,   group = "battery" },
   [3] =  { name = i18n("telemetry.sensor_battery_voltage"),      id = 3,   group = "battery" },
   [4] =  { name = i18n("telemetry.sensor_battery_current"),      id = 4,   group = "battery" },
   [5] =  { name = i18n("telemetry.sensor_battery_consumption"),  id = 5,   group = "battery" },
   [6] =  { name = i18n("telemetry.sensor_battery_charge_level"), id = 6,   group = "battery" },
-
-  [7] =  { name = i18n("telemetry.sensor_battery_cell_count"),   id = 7,   group = "battery_cells" },
-  [8] =  { name = i18n("telemetry.sensor_battery_cell_voltage"), id = 8,   group = "battery_cells" },
-  [9] =  { name = i18n("telemetry.sensor_battery_cell_voltages"),id = 9,   group = "battery_cells" },
+  [7] =  { name = i18n("telemetry.sensor_battery_cell_count"),   id = 7,   group = "battery" },
+  [8] =  { name = i18n("telemetry.sensor_battery_cell_voltage"), id = 8,   group = "battery" },
+  [9] =  { name = i18n("telemetry.sensor_battery_cell_voltages"),id = 9,   group = "battery" },
 
   [10] = { name = i18n("telemetry.sensor_control"),              id = 10,  group = "control" },
   [11] = { name = i18n("telemetry.sensor_pitch_control"),        id = 11,  group = "control" },
@@ -54,15 +55,15 @@ local TELEMETRY_SENSORS = {
   [40] = { name = i18n("telemetry.sensor_esc2_status"),          id = 40,  group = "esc2" },
   [41] = { name = i18n("telemetry.sensor_esc2_model"),           id = 41,  group = "esc2" },
 
-  [42] = { name = i18n("telemetry.sensor_esc_voltage"),          id = 42,  group = "esc" },
-  [43] = { name = i18n("telemetry.sensor_bec_voltage"),          id = 43,  group = "esc" },
-  [44] = { name = i18n("telemetry.sensor_bus_voltage"),          id = 44,  group = "esc" },
-  [45] = { name = i18n("telemetry.sensor_mcu_voltage"),          id = 45,  group = "esc" },
+  [42] = { name = i18n("telemetry.sensor_esc_voltage"),          id = 42,  group = "voltage" },
+  [43] = { name = i18n("telemetry.sensor_bec_voltage"),          id = 43,  group = "voltage" },
+  [44] = { name = i18n("telemetry.sensor_bus_voltage"),          id = 44,  group = "voltage" },
+  [45] = { name = i18n("telemetry.sensor_mcu_voltage"),          id = 45,  group = "voltage" },
 
-  [46] = { name = i18n("telemetry.sensor_esc_current"),          id = 46,  group = "esc" },
-  [47] = { name = i18n("telemetry.sensor_bec_current"),          id = 47,  group = "esc" },
-  [48] = { name = i18n("telemetry.sensor_bus_current"),          id = 48,  group = "esc" },
-  [49] = { name = i18n("telemetry.sensor_mcu_current"),          id = 49,  group = "esc" },
+  [46] = { name = i18n("telemetry.sensor_esc_current"),          id = 46,  group = "current" },
+  [47] = { name = i18n("telemetry.sensor_bec_current"),          id = 47,  group = "current" },
+  [48] = { name = i18n("telemetry.sensor_bus_current"),          id = 48,  group = "current" },
+  [49] = { name = i18n("telemetry.sensor_mcu_current"),          id = 49,  group = "current" },
 
   [50] = { name = i18n("telemetry.sensor_esc_temp"),             id = 50,  group = "temps" },
   [51] = { name = i18n("telemetry.sensor_bec_temp"),             id = 51,  group = "temps" },
@@ -72,24 +73,24 @@ local TELEMETRY_SENSORS = {
   [55] = { name = i18n("telemetry.sensor_battery_temp"),         id = 55,  group = "temps" },
   [56] = { name = i18n("telemetry.sensor_exhaust_temp"),         id = 56,  group = "temps" },
 
-  [57] = { name = i18n("telemetry.sensor_heading"),              id = 57,  group = "nav" },
-  [58] = { name = i18n("telemetry.sensor_altitude"),             id = 58,  group = "nav" },
-  [59] = { name = i18n("telemetry.sensor_variometer"),           id = 59,  group = "nav" },
+  [57] = { name = i18n("telemetry.sensor_heading"),              id = 57,  group = "gyro" },
+  [58] = { name = i18n("telemetry.sensor_altitude"),             id = 58,  group = "barometer" },
+  [59] = { name = i18n("telemetry.sensor_variometer"),           id = 59,  group = "barometer" },
 
   [60] = { name = i18n("telemetry.sensor_headspeed"),            id = 60,  group = "rpm" },
   [61] = { name = i18n("telemetry.sensor_tailspeed"),            id = 61,  group = "rpm" },
   [62] = { name = i18n("telemetry.sensor_motor_rpm"),            id = 62,  group = "rpm" },
   [63] = { name = i18n("telemetry.sensor_trans_rpm"),            id = 63,  group = "rpm" },
 
-  [64] = { name = i18n("telemetry.sensor_attitude"),             id = 64,  group = "attitude" },
-  [65] = { name = i18n("telemetry.sensor_attitude_pitch"),       id = 65,  group = "attitude" },
-  [66] = { name = i18n("telemetry.sensor_attitude_roll"),        id = 66,  group = "attitude" },
-  [67] = { name = i18n("telemetry.sensor_attitude_yaw"),         id = 67,  group = "attitude" },
+  [64] = { name = i18n("telemetry.sensor_attitude"),             id = 64,  group = "gyro" },
+  [65] = { name = i18n("telemetry.sensor_attitude_pitch"),       id = 65,  group = "gyro" },
+  [66] = { name = i18n("telemetry.sensor_attitude_roll"),        id = 66,  group = "gyro" },
+  [67] = { name = i18n("telemetry.sensor_attitude_yaw"),         id = 67,  group = "gyro" },
 
-  [68] = { name = i18n("telemetry.sensor_accel"),                id = 68,  group = "accel" },
-  [69] = { name = i18n("telemetry.sensor_accel_x"),              id = 69,  group = "accel" },
-  [70] = { name = i18n("telemetry.sensor_accel_y"),              id = 70,  group = "accel" },
-  [71] = { name = i18n("telemetry.sensor_accel_z"),              id = 71,  group = "accel" },
+  [68] = { name = i18n("telemetry.sensor_accel"),                id = 68,  group = "gyro" },
+  [69] = { name = i18n("telemetry.sensor_accel_x"),              id = 69,  group = "gyro" },
+  [70] = { name = i18n("telemetry.sensor_accel_y"),              id = 70,  group = "gyro" },
+  [71] = { name = i18n("telemetry.sensor_accel_z"),              id = 71,  group = "gyro" },
 
   [72] = { name = i18n("telemetry.sensor_gps"),                  id = 72,  group = "gps" },
   [73] = { name = i18n("telemetry.sensor_gps_sats"),             id = 73,  group = "gps" },
@@ -105,9 +106,9 @@ local TELEMETRY_SENSORS = {
   [83] = { name = i18n("telemetry.sensor_gps_date_time"),        id = 83,  group = "gps" },
 
   [84] = { name = i18n("telemetry.sensor_load"),                 id = 84,  group = "load" },
-  [85] = { name = i18n("telemetry.sensor_cpu_load"),             id = 85,  group = "load" },
-  [86] = { name = i18n("telemetry.sensor_sys_load"),             id = 86,  group = "load" },
-  [87] = { name = i18n("telemetry.sensor_rt_load"),              id = 87,  group = "load" },
+  [85] = { name = i18n("telemetry.sensor_cpu_load"),             id = 85,  group = "system" },
+  [86] = { name = i18n("telemetry.sensor_sys_load"),             id = 86,  group = "system" },
+  [87] = { name = i18n("telemetry.sensor_rt_load"),              id = 87,  group = "system" },
 
   [88] = { name = i18n("telemetry.sensor_model_id"),             id = 88,  group = "status" },
   [89] = { name = i18n("telemetry.sensor_flight_mode"),          id = 89,  group = "status" },
@@ -122,7 +123,7 @@ local TELEMETRY_SENSORS = {
   [97] = { name = i18n("telemetry.sensor_battery_profile"),      id = 97,  group = "profiles" },
   [98] = { name = i18n("telemetry.sensor_led_profile"),          id = 98,  group = "profiles" },
 
-  [99] = { name = i18n("telemetry.sensor_adjfunc"),              id = 99,  group = "tuning" },
+  [99] = { name = i18n("telemetry.sensor_adjfunc"),              id = 99,  group = "status" },
 
   [100] = { name = i18n("telemetry.sensor_debug_0"),             id = 100, group = "debug" },
   [101] = { name = i18n("telemetry.sensor_debug_1"),             id = 101, group = "debug" },
@@ -139,17 +140,13 @@ local TELEMETRY_SENSORS = {
 
 -- Display sections (groups)
 local SENSOR_GROUPS = {
-  general = {
-    title = i18n("telemetry.group_general"),
-    ids = { 0, 1 },
+  voltage = {
+    title = i18n("telemetry.group_voltage"),
+    ids = { 42, 43, 44, 45 },
   },
   battery = {
     title = i18n("telemetry.group_battery"),
-    ids = { 2, 3, 4, 5, 6 },
-  },
-  battery_cells = {
-    title = i18n("telemetry.group_battery_cells"),
-    ids = { 7, 8, 9 },
+    ids = { 3, 4, 5, 6, 7, 8},
   },
   control = {
     title = i18n("telemetry.group_control"),
@@ -157,51 +154,47 @@ local SENSOR_GROUPS = {
   },
   esc1 = {
     title = i18n("telemetry.group_esc1"),
-    ids = { 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28 },
+    ids = { 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28 },
   },
   esc2 = {
     title = i18n("telemetry.group_esc2"),
-    ids = { 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41 },
+    ids = { 30, 31, 32, 33, 36, 41},
   },
-  esc = {
-    title = i18n("telemetry.group_esc_common"),
-    ids = { 42, 43, 44, 45, 46, 47, 48, 49 },
+  current = {
+    title = i18n("telemetry.group_current"),
+    ids = { 46, 47, 48, 49 },
   },
   temps = {
     title = i18n("telemetry.group_temperatures"),
-    ids = { 50, 51, 52, 53, 54, 55, 56, 109 },
+    ids = { 50, 51, 52 },
   },
-  nav = {
-    title = i18n("telemetry.group_navigation"),
-    ids = { 57, 58, 59 },
+  barometer = {
+    title = i18n("telemetry.group_barometer"),
+    ids = { 58, 59 },
   },
   rpm = {
-    title = i18n("telemetry.group_rpm_speed"),
-    ids = { 60, 61, 62, 63, 108 },
+    title = i18n("telemetry.group_rpm"),
+    ids = { 60, 61},
   },
-  attitude = {
-    title = i18n("telemetry.group_attitude"),
-    ids = { 64, 65, 66, 67 },
-  },
-  accel = {
-    title = i18n("telemetry.group_accel"),
-    ids = { 68, 69, 70, 71 },
+  gyro = {
+    title = i18n("telemetry.group_gyro"),
+    ids = { 57, 64, 65, 66, 67, 68, 69, 70, 71 },
   },
   gps = {
     title = i18n("telemetry.group_gps"),
-    ids = { 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83 },
+    ids = { 73, 74, 77, 78, 79, 80, 81, 82 },
   },
-  load = {
+  system = {
     title = i18n("telemetry.group_load"),
-    ids = { 84, 85, 86, 87 },
+    ids = { 1, 85, 86, 87 },
   },
   status = {
     title = i18n("telemetry.group_status"),
-    ids = { 88, 89, 90, 91, 92, 93, 94 },
+    ids = { 88, 89, 90, 91, 92, 93 ,99},
   },
   profiles = {
     title = i18n("telemetry.group_profiles"),
-    ids = { 95, 96, 97, 98 },
+    ids = { 95, 96, 98 },
   },
   tuning = {
     title = i18n("telemetry.group_tuning"),
@@ -215,25 +208,24 @@ local SENSOR_GROUPS = {
 
 -- Optional: control the visual order of sections when rendering
 local GROUP_ORDER = {
-  "general",
-  "status",
-  "profiles",
-  "tuning",
-  "control",
   "battery",
-  "battery_cells",
+  "voltage",
+  "current",
+  "temps",
   "esc1",
   "esc2",
-  "esc",
-  "temps",
   "rpm",
-  "attitude",
-  "accel",
+  "barometer",
+  "gyro",
   "gps",
-  "nav",
-  "load",
+  "status",
+  "profiles",
+  "control",
+  "system",
   "debug",
 }
+
+
 
 
 local function openPage(pidx, title, script)
@@ -254,6 +246,17 @@ local function openPage(pidx, title, script)
     rfsuite.app.formLineCnt = 0
     rfsuite.app.formFields = {}
 
+    -- quick exit if running unsupported version of msp protocol
+    if rfsuite.utils.apiVersionCompare("<", "12.08") then
+      rfsuite.app.triggers.closeProgressLoader = true
+
+      rfsuite.app.formLines[#rfsuite.app.formLines + 1] = form.addLine(i18n("app.modules.telemetry.invalid_version"))
+
+      rfsuite.app.formNavigationFields['save']:enable(false)
+      rfsuite.app.formNavigationFields['reload']:enable(false)
+
+      return
+    end 
 
     local formFieldCount = 0
 
@@ -284,22 +287,51 @@ local function openPage(pidx, title, script)
     enableWakeup = true
 end   
 
+local function rebootFC()
+
+    local RAPI = rfsuite.tasks.msp.api.load("REBOOT")
+    RAPI.setUUID("123e4567-e89b-12d3-a456-426614174000")
+    RAPI.setCompleteHandler(function(self)
+        rfsuite.utils.log("Rebooting FC","info")
+
+        rfsuite.utils.onReboot()
+
+    end)
+    RAPI.write()
+    
+end
+
+local function applySettings()
+    local EAPI = rfsuite.tasks.msp.api.load("EEPROM_WRITE")
+    EAPI.setUUID("550e8400-e29b-41d4-a716-446655440000")
+    EAPI.setCompleteHandler(function(self)
+        rfsuite.utils.log("Writing to EEPROM","info")
+        rebootFC()
+    end)
+    EAPI.write()
+
+end
+
 local function wakeup()
     if enableWakeup == false then return end
 
     -- get the current config from fbl
-    if not rfsuite.app.Page.mspData then
+    if not rfsuite.app.Page.configLoaded then
       local API = rfsuite.tasks.msp.api.load("TELEMETRY_CONFIG")
         API.setCompleteHandler(function(self, buf)
-          rfsuite.app.Page.mspData = API.data()
-          rfsuite.app.triggers.closeProgressLoader = true
+          local hasData = API.readValue("telem_sensor_slot_40")
+          print(hasData)
+          if hasData then
+              rfsuite.app.Page.mspData = API.data()
+              rfsuite.app.Page.configLoaded = true
+          end
       end)
       API.setUUID("a23e4567-e89b-12d3-a456-426614174001")
       API.read()      
     end
 
     -- if we have data, populate config if empty (stop as soon as config has something in it)
-    if rfsuite.app.Page.mspData and rfsuite.app.Page.mspData.parsed and #config == 0 then
+    if rfsuite.app.Page and rfsuite.app.Page.configLoaded  == true then
       local parsed = rfsuite.app.Page.mspData.parsed
         for key, value in pairs(parsed) do
             -- update the form config table
@@ -308,11 +340,87 @@ local function wakeup()
               config[value] = true
             end
         end
+        rfsuite.app.triggers.closeProgressLoader = true
     end
+
+    -- save?
+    if triggerSave == true then
+        rfsuite.app.ui.progressDisplaySave()
+
+        local selectedSensors = {}
+
+        -- add selected sensors first
+        for k, v in pairs(config) do
+            if v == true then
+                table.insert(selectedSensors, k)
+            end
+        end
+
+        local WRITEAPI = rfsuite.tasks.msp.api.load("TELEMETRY_CONFIG")
+        WRITEAPI.setUUID("123e4567-e89b-12d3-a456-426614174000")
+        WRITEAPI.setCompleteHandler(function(self, buf)
+            print("Telemetry settings saved")
+            applySettings()
+        end)
+
+
+        local buffer = rfsuite.app.Page.mspData['buffer']  -- Existing buffer
+        local sensorIndex = 13  -- Start at byte 13 (1-based indexing)
+
+        -- Insert new sensors into buffer
+        for _, sensor_id in ipairs(selectedSensors) do
+            if sensorIndex <= 52 then  -- 13 bytes + 40 sensor slots = 53 max (1-based)
+                buffer[sensorIndex] = sensor_id
+                sensorIndex = sensorIndex + 1
+            else
+                break  -- Stop if buffer limit is reached
+            end
+        end
+
+        -- Fill remaining slots with zeros
+        for i = sensorIndex, 52 do
+            buffer[i] = 0
+        end
+
+        -- Send updated buffer
+        WRITEAPI.write(buffer)
+
+
+        triggerSave = false
+    end
+
 
 end
 
 local function onSaveMenu()
+
+    local buttons = {{
+        label = i18n("app.btn_ok_long"),
+        action = function()
+            triggerSave = true
+            return true
+        end
+    }, {
+        label = i18n("app.modules.profile_select.cancel"),
+        action = function()
+            triggerSave = false
+            return true
+        end
+    }}
+
+    form.openDialog({
+        width = nil,
+        title = i18n("app.modules.profile_select.save_settings"),
+        message = i18n("app.modules.profile_select.save_prompt"),
+        buttons = buttons,
+        wakeup = function()
+        end,
+        paint = function()
+        end,
+        options = TEXT_LEFT
+    })
+
+    triggerSave = false
 
 end
 
@@ -324,10 +432,11 @@ return {
     reboot = false,
     wakeup = wakeup,
     API = {},
+    configLoaded = configLoaded,
     navButtons = {
         menu   = true,
         save   = true,
-        reload = false,
+        reload = true,
         tool   = false,
         help   = false,
     },    

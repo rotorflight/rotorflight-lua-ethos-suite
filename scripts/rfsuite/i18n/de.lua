@@ -538,7 +538,8 @@ return {
         ["adj_value"] = "Einstellungswert"
       },
       ["telemetry"] = {
-        ["name"] = "Telemetrie"
+        ["name"] = "Telemetrie",
+        ["invalid_version"] = "RF2.2 oder neuer erforderlich"
       },
       ["validate_sensors"] = {
         ["help_p1"] = "Dieses Tool versucht, eine kurze Liste aller Sensoren zu erstellen, die nicht empfangen werden.",
@@ -1316,18 +1317,18 @@ return {
     ["armdisableflags"] = "Arming-Disable"
   },
   ["telemetry"] = {
-    ["group_general"] = "Allgemein",
+    ["group_system"] = "System",
+    ["group_voltage"] = "Spannung",
     ["group_battery"] = "Akku",
-    ["group_battery_cells"] = "Akkuzellen",
     ["group_control"] = "Steuerung",
     ["group_esc1"] = "Regler 1",
     ["group_esc2"] = "Regler 2",
-    ["group_esc_common"] = "Regler (Allgemein)",
+    ["group_current"] = "Strom",
     ["group_temperatures"] = "Temperaturen",
-    ["group_navigation"] = "Navigation",
-    ["group_rpm_speed"] = "U/min / Geschwindigkeit",
+    ["group_barometer"] = "Barometer",
+    ["group_rpm"] = "U/min",
     ["group_attitude"] = "Lage",
-    ["group_accel"] = "Beschleunigungssensor",
+    ["group_gyro"] = "Gyro",
     ["group_gps"] = "GPS",
     ["group_load"] = "Systemauslastung",
     ["group_status"] = "Status",
@@ -1344,7 +1345,7 @@ return {
     ["sensor_battery_cell_count"] = "Anzahl Akkuzellen",
     ["sensor_battery_cell_voltage"] = "Akkuzellenspannung",
     ["sensor_battery_cell_voltages"] = "Akkuzellenspannungen",
-    ["sensor_control"] = "Steuerung",
+    ["sensor_control"] = "Steuerung (Hi-Res)",
     ["sensor_pitch_control"] = "Nicksteuerung",
     ["sensor_roll_control"] = "Rollsteuerung",
     ["sensor_yaw_control"] = "Giersteuerung",
@@ -1398,11 +1399,11 @@ return {
     ["sensor_tailspeed"] = "Heckrotordrehzahl",
     ["sensor_motor_rpm"] = "Motordrehzahl",
     ["sensor_trans_rpm"] = "Getriebedrehzahl",
-    ["sensor_attitude"] = "Lage",
+    ["sensor_attitude"] = "Lage (Hi-Res)",
     ["sensor_attitude_pitch"] = "Lage Nick",
     ["sensor_attitude_roll"] = "Lage Roll",
     ["sensor_attitude_yaw"] = "Lage Gier",
-    ["sensor_accel"] = "Beschleunigung",
+    ["sensor_accel"] = "Accel (Hi-Res)",
     ["sensor_accel_x"] = "Beschleunigung X",
     ["sensor_accel_y"] = "Beschleunigung Y",
     ["sensor_accel_z"] = "Beschleunigung Z",

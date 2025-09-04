@@ -538,7 +538,8 @@ return {
         ["adj_value"] = "Valeur de réglage"
       },
       ["telemetry"] = {
-        ["name"] = "Télémétrie"
+        ["name"] = "Télémétrie",
+        ["invalid_version"] = "RF2.2 ou version ultérieure requise"
       },
       ["validate_sensors"] = {
         ["help_p1"] = "Cet outil tente de lister tous les capteurs que vous ne recevez pas dans une liste concise.",
@@ -1316,18 +1317,18 @@ return {
     ["armdisableflags"] = "Desactivation Armement"
   },
   ["telemetry"] = {
-    ["group_general"] = "Général",
+    ["group_system"] = "Système",
+    ["group_voltage"] = "Tension",
     ["group_battery"] = "Batterie",
-    ["group_battery_cells"] = "Cellules de batterie",
     ["group_control"] = "Contrôle",
     ["group_esc1"] = "ESC 1",
     ["group_esc2"] = "ESC 2",
-    ["group_esc_common"] = "ESC (Common)",
+    ["group_current"] = "Courant",
     ["group_temperatures"] = "Températures",
-    ["group_navigation"] = "Navigation",
-    ["group_rpm_speed"] = "RPM / Speed",
+    ["group_barometer"] = "Baromètre",
+    ["group_rpm"] = "RPM",
     ["group_attitude"] = "Attitude",
-    ["group_accel"] = "Accéléromètre",
+    ["group_gyro"] = "Gyro",
     ["group_gps"] = "GPS",
     ["group_load"] = "Charge du système",
     ["group_status"] = "Statut",
@@ -1344,7 +1345,7 @@ return {
     ["sensor_battery_cell_count"] = "Battery Nombre de cellules",
     ["sensor_battery_cell_voltage"] = "Battery Tension de cellule",
     ["sensor_battery_cell_voltages"] = "Battery Tensions des cellules",
-    ["sensor_control"] = "Contrôle",
+    ["sensor_control"] = "Contrôle (Hi-Res)",
     ["sensor_pitch_control"] = "Contrôle du tangage",
     ["sensor_roll_control"] = "Contrôle du roulis",
     ["sensor_yaw_control"] = "Contrôle du lacet",
@@ -1398,11 +1399,11 @@ return {
     ["sensor_tailspeed"] = "Vitesse de queue",
     ["sensor_motor_rpm"] = "Motor RPM",
     ["sensor_trans_rpm"] = "Transmission RPM",
-    ["sensor_attitude"] = "Attitude",
+    ["sensor_attitude"] = "Attitude (Hi-Res)",
     ["sensor_attitude_pitch"] = "Attitude Pitch",
     ["sensor_attitude_roll"] = "Attitude Roll",
     ["sensor_attitude_yaw"] = "Attitude Yaw",
-    ["sensor_accel"] = "Accélération",
+    ["sensor_accel"] = "Accel (Hi-Res)",
     ["sensor_accel_x"] = "Accélération X",
     ["sensor_accel_y"] = "Accélération Y",
     ["sensor_accel_z"] = "Accélération Z",

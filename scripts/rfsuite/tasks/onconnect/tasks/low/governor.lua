@@ -27,7 +27,6 @@ function governor.wakeup()
         local API = rfsuite.tasks.msp.api.load("GOVERNOR_CONFIG")
         API.setCompleteHandler(function(self, buf)
             local governorMode = API.readValue("gov_mode")
-            print("Governor mode: " .. (governorMode or "unknown"))
             if governorMode then
                 rfsuite.utils.log("Governor mode: " .. governorMode, "info")
             end

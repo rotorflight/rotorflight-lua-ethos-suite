@@ -111,6 +111,9 @@ local function read()
             local structure = MSP_API_STRUCTURE_READ
             rfsuite.tasks.msp.api.parseMSPData(buf, structure, nil, nil, function(result)
                 mspData = result
+
+                print(MSP_MIN_BYTES)
+
                 if #buf >= MSP_MIN_BYTES then
                     local completeHandler = handlers.getCompleteHandler()
                     if completeHandler then completeHandler(self, buf) end

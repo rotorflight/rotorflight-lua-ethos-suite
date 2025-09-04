@@ -694,6 +694,7 @@ end
 -- op:  one of ">", "<", ">=", "<=", "==", "!=", "~="
 -- req: required version ("12.09", 12.09, or "12.9.1")
 function utils.apiVersionCompare(op, req)
+
     local function parts(x)
         local t = {}
         for n in tostring(x):gmatch("(%d+)") do

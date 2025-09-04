@@ -538,7 +538,8 @@ return {
         ["adj_value"] = "Aanpassing waarde"
       },
       ["telemetry"] = {
-        ["name"] = "Telemetrie"
+        ["name"] = "Telemetrie",
+        ["invalid_version"] = "RF2.2 of nieuwer vereist"
       },
       ["validate_sensors"] = {
         ["help_p1"] = "Deze tool probeert een beknopt overzicht te geven van alle sensoren die u niet ontvangt.",
@@ -1316,18 +1317,18 @@ return {
     ["armdisableflags"] = "Arming Disable"
   },
   ["telemetry"] = {
-    ["group_general"] = "Algemeen",
+    ["group_system"] = "Systeem",
+    ["group_voltage"] = "Spanning",
     ["group_battery"] = "Batterij",
-    ["group_battery_cells"] = "Batterijcellen",
     ["group_control"] = "Besturing",
     ["group_esc1"] = "ESC 1",
     ["group_esc2"] = "ESC 2",
-    ["group_esc_common"] = "ESC (Common)",
+    ["group_current"] = "Stroom",
     ["group_temperatures"] = "Temperatuurs",
-    ["group_navigation"] = "Navigatie",
-    ["group_rpm_speed"] = "RPM / Speed",
+    ["group_barometer"] = "Barometer",
+    ["group_rpm"] = "RPM",
     ["group_attitude"] = "Houding",
-    ["group_accel"] = "Versnellingsmeter",
+    ["group_gyro"] = "Gyro",
     ["group_gps"] = "GPS",
     ["group_load"] = "Systeembelasting",
     ["group_status"] = "Status",
@@ -1344,7 +1345,7 @@ return {
     ["sensor_battery_cell_count"] = "Battery Aantal cellen",
     ["sensor_battery_cell_voltage"] = "Battery Celspanning",
     ["sensor_battery_cell_voltages"] = "Battery Celspanningen",
-    ["sensor_control"] = "Besturing",
+    ["sensor_control"] = "Besturing (Hi-Res)",
     ["sensor_pitch_control"] = "Hoogtebesturing",
     ["sensor_roll_control"] = "Rolbesturing",
     ["sensor_yaw_control"] = "Gierbesturing",
@@ -1398,11 +1399,11 @@ return {
     ["sensor_tailspeed"] = "Staartsnelheid",
     ["sensor_motor_rpm"] = "Motor RPM",
     ["sensor_trans_rpm"] = "Transmission RPM",
-    ["sensor_attitude"] = "Houding",
+    ["sensor_attitude"] = "Houding (Hi-Res)",
     ["sensor_attitude_pitch"] = "Houding Pitch",
     ["sensor_attitude_roll"] = "Houding Roll",
     ["sensor_attitude_yaw"] = "Houding Yaw",
-    ["sensor_accel"] = "Versnelling",
+    ["sensor_accel"] = "Accel (Hi-Res)",
     ["sensor_accel_x"] = "Versnelling X",
     ["sensor_accel_y"] = "Versnelling Y",
     ["sensor_accel_z"] = "Versnelling Z",

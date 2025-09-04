@@ -538,7 +538,8 @@ return {
         ["adj_value"] = "Valor de Ajuste"
       },
       ["telemetry"] = {
-        ["name"] = "Telemetría"
+        ["name"] = "Telemetría",
+        ["invalid_version"] = "Se requiere RF2.2 o posterior"
       },
       ["validate_sensors"] = {
         ["help_p1"] = "Esta herramienta intenta listar todos los sensores necesarios que faltan.",
@@ -1316,18 +1317,18 @@ return {
     ["armdisableflags"] = "Desactivar Armado"
   },
   ["telemetry"] = {
-    ["group_general"] = "General",
+    ["group_system"] = "Sistema",
+    ["group_voltage"] = "Voltaje",
     ["group_battery"] = "Batería",
-    ["group_battery_cells"] = "Celdas de batería",
     ["group_control"] = "Control",
     ["group_esc1"] = "ESC 1",
     ["group_esc2"] = "ESC 2",
-    ["group_esc_common"] = "ESC (Común)",
+    ["group_current"] = "Corriente",
     ["group_temperatures"] = "Temperaturas",
-    ["group_navigation"] = "Navegación",
-    ["group_rpm_speed"] = "RPM / Velocidad",
+    ["group_barometer"] = "Barómetro",
+    ["group_rpm"] = "RPM",
     ["group_attitude"] = "Actitud",
-    ["group_accel"] = "Acelerómetro",
+    ["group_gyro"] = "Gyro",
     ["group_gps"] = "GPS",
     ["group_load"] = "Carga del sistema",
     ["group_status"] = "Estado",
@@ -1344,7 +1345,7 @@ return {
     ["sensor_battery_cell_count"] = "Cantidad de celdas de batería",
     ["sensor_battery_cell_voltage"] = "Voltaje de celda de batería",
     ["sensor_battery_cell_voltages"] = "Voltajes de celdas de batería",
-    ["sensor_control"] = "Control",
+    ["sensor_control"] = "Control (Hi-Res)",
     ["sensor_pitch_control"] = "Control de cabeceo",
     ["sensor_roll_control"] = "Control de alabeo",
     ["sensor_yaw_control"] = "Control de guiñada",
@@ -1398,11 +1399,11 @@ return {
     ["sensor_tailspeed"] = "Velocidad de cola",
     ["sensor_motor_rpm"] = "RPM del motor",
     ["sensor_trans_rpm"] = "RPM de transmisión",
-    ["sensor_attitude"] = "Actitud",
+    ["sensor_attitude"] = "Actitud (Hi-Res)",
     ["sensor_attitude_pitch"] = "Cabeceo de actitud",
     ["sensor_attitude_roll"] = "Alabeo de actitud",
     ["sensor_attitude_yaw"] = "Guiñada de actitud",
-    ["sensor_accel"] = "Aceleración",
+    ["sensor_accel"] = "Accel (Hi-Res)",
     ["sensor_accel_x"] = "Aceleración X",
     ["sensor_accel_y"] = "Aceleración Y",
     ["sensor_accel_z"] = "Aceleración Z",

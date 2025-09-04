@@ -541,6 +541,11 @@
         "english": "Telemetry",
         "translation": "Telemetrie",
         "needs_translation": false
+      },
+      "invalid_version": {
+        "english": "RF2.2 or later required",
+        "translation": "RF2.2 oder neuer erforderlich",
+        "needs_translation": false
       }
     },
     "validate_sensors": {

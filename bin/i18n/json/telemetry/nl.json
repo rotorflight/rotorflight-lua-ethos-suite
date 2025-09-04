@@ -1,17 +1,17 @@
 {
-  "group_general": {
-    "english": "General",
-    "translation": "Algemeen",
+  "group_system": {
+    "english": "System",
+    "translation": "Systeem",
+    "needs_translation": false
+  },
+  "group_voltage": {
+    "english": "Voltage",
+    "translation": "Spanning",
     "needs_translation": false
   },
   "group_battery": {
     "english": "Battery",
     "translation": "Batterij",
-    "needs_translation": false
-  },
-  "group_battery_cells": {
-    "english": "Battery Cells",
-    "translation": "Batterijcellen",
     "needs_translation": false
   },
   "group_control": {
@@ -29,9 +29,9 @@
     "translation": "ESC 2",
     "needs_translation": false
   },
-  "group_esc_common": {
-    "english": "ESC (Common)",
-    "translation": "ESC (Common)",
+  "group_current": {
+    "english": "Current",
+    "translation": "Stroom",
     "needs_translation": false
   },
   "group_temperatures": {
@@ -39,14 +39,14 @@
     "translation": "Temperatuurs",
     "needs_translation": false
   },
-  "group_navigation": {
-    "english": "Navigation",
-    "translation": "Navigatie",
+  "group_barometer": {
+    "english": "Barometer",
+    "translation": "Barometer",
     "needs_translation": false
   },
-  "group_rpm_speed": {
-    "english": "RPM / Speed",
-    "translation": "RPM / Speed",
+  "group_rpm": {
+    "english": "RPM",
+    "translation": "RPM",
     "needs_translation": false
   },
   "group_attitude": {
@@ -54,10 +54,10 @@
     "translation": "Houding",
     "needs_translation": false
   },
-  "group_accel": {
-    "english": "Accelerometer",
-    "translation": "Versnellingsmeter",
-    "needs_translation": false
+  "group_gyro": {
+    "english": "Gyro",
+    "translation": "Gyro",
+    "needs_translation": true
   },
   "group_gps": {
     "english": "GPS",
@@ -140,8 +140,8 @@
     "needs_translation": false
   },
   "sensor_control": {
-    "english": "Control",
-    "translation": "Besturing",
+    "english": "Control (Hi-Res)",
+    "translation": "Besturing (Hi-Res)",
     "needs_translation": false
   },
   "sensor_pitch_control": {
@@ -410,8 +410,8 @@
     "needs_translation": false
   },
   "sensor_attitude": {
-    "english": "Attitude",
-    "translation": "Houding",
+    "english": "Attitude (Hi-Res)",
+    "translation": "Houding (Hi-Res)",
     "needs_translation": false
   },
   "sensor_attitude_pitch": {
@@ -430,8 +430,8 @@
     "needs_translation": false
   },
   "sensor_accel": {
-    "english": "Acceleration",
-    "translation": "Versnelling",
+    "english": "Accel (Hi-Res)",
+    "translation": "Accel (Hi-Res)",
     "needs_translation": false
   },
   "sensor_accel_x": {
@@ -585,7 +585,7 @@
     "needs_translation": false
   },
   "sensor_adjfunc": {
-    "english": "Adjustable Function",
+    "english": "Adjustment Function",
     "translation": "Instelbare functie",
     "needs_translation": false
   },
