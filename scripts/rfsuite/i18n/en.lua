@@ -537,10 +537,8 @@ return {
         ["adj_function"] = "Adjustment Function",
         ["adj_value"] = "Adjustment Value"
       },
-      ["sensors"] = {
-        ["name"] = "Sensors",
-        ["help_p1"] = "This tool provides the ability to discover and configure sensors connected to your flight controller.",
-        ["help_p2"] = "Use this tool after connecting new sensors to your flight controller. It will attempt to detect and configure them automatically."
+      ["telemetry"] = {
+        ["name"] = "Telemetry"
       },
       ["validate_sensors"] = {
         ["help_p1"] = "This tool attempts to list all the sensors that you are not receiving in a concise list.",
@@ -1287,6 +1285,37 @@ return {
     ["check_supported_version"] = "This version of the Lua script \ncan't be used with the selected model"
   },
   ["sensors"] = {
+    ["attpitch"] = "P.angle",
+    ["attroll"] = "R.angle",
+    ["attyaw"] = "Y.angle",
+    ["accx"] = "Accel X",
+    ["accy"] = "Accel Y",
+    ["accz"] = "Accel Z",
+    ["groundspeed"] = "Ground Speed",
+    ["esc_temp"] = "ESC Temperature",
+    ["rate_profile"] = "Rate Profile",
+    ["headspeed"] = "Headspeed",
+    ["altitude"] = "Altitude",
+    ["voltage"] = "Voltage",
+    ["bec_voltage"] = "Bec voltage",
+    ["cell_count"] = "Cell count",
+    ["governor"] = "Governor State",
+    ["adj_func"] = "Adj (Function)",
+    ["fuel"] = "Fuel",
+    ["smartfuel"] = "Smart Fuel",
+    ["rssi"] = "RSSI",
+    ["link"] = "Link Quality",
+    ["adj_val"] = "Adj (Value)",
+    ["arming_flags"] = "Arming Flags",
+    ["current"] = "Current",
+    ["throttle_pct"] = "Throttle %",
+    ["consumption"] = "Consumption",
+    ["smartconsumption"] = "Smart Consumption",
+    ["pid_profile"] = "PID Profile",
+    ["mcu_temp"] = "MCU Temperature",
+    ["armdisableflags"] = "Arming Disable"
+  },
+  ["telemetry"] = {
     ["group_general"] = "General",
     ["group_battery"] = "Battery",
     ["group_battery_cells"] = "Battery Cells",
@@ -1415,39 +1444,6 @@ return {
     ["sensor_debug_7"] = "Debug 7",
     ["sensor_rpm"] = "RPM",
     ["sensor_temp"] = "Temperature"
-  },
-  ["telemetry"] = {
-    ["sensors"] = {
-      ["attpitch"] = "P.angle",
-      ["attroll"] = "R.angle",
-      ["attyaw"] = "Y.angle",
-      ["accx"] = "Accel X",
-      ["accy"] = "Accel Y",
-      ["accz"] = "Accel Z",
-      ["groundspeed"] = "Ground Speed",
-      ["esc_temp"] = "ESC Temperature",
-      ["rate_profile"] = "Rate Profile",
-      ["headspeed"] = "Headspeed",
-      ["altitude"] = "Altitude",
-      ["voltage"] = "Voltage",
-      ["bec_voltage"] = "Bec voltage",
-      ["cell_count"] = "Cell count",
-      ["governor"] = "Governor State",
-      ["adj_func"] = "Adj (Function)",
-      ["fuel"] = "Fuel",
-      ["smartfuel"] = "Smart Fuel",
-      ["rssi"] = "RSSI",
-      ["link"] = "Link Quality",
-      ["adj_val"] = "Adj (Value)",
-      ["arming_flags"] = "Arming Flags",
-      ["current"] = "Current",
-      ["throttle_pct"] = "Throttle %",
-      ["consumption"] = "Consumption",
-      ["smartconsumption"] = "Smart Consumption",
-      ["pid_profile"] = "PID Profile",
-      ["mcu_temp"] = "MCU Temperature",
-      ["armdisableflags"] = "Arming Disable"
-    }
   },
   ["widgets"] = {
     ["bbl"] = {

@@ -18,10 +18,10 @@
 
 ]] --
 local init = {
-    title = rfsuite.i18n.get("app.modules.sensors.name"), -- title of the page
+    title = rfsuite.i18n.get("app.modules.telemetry.name"), -- title of the page
     section = "hardware", -- do not run if busy with msp
-    script = "sensors.lua", -- run this script
-    image = "sensors.png", -- image for the page
+    script = "telemetry.lua", -- run this script
+    image = "telemetry.png", -- image for the page
     order = 4, -- order in the section
     developer = false, -- hide this page if true
     ethosversion = {1, 6, 2} -- disable button if ethos version is less than this

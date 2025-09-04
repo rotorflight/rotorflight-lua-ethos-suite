@@ -536,21 +536,11 @@
         "needs_translation": false
       }
     },
-    "sensors": {
+    "telemetry": {
       "name": {
-        "english": "Sensors",
-        "translation": "Sensors",
-        "needs_translation": true
-      },
-      "help_p1": {
-        "english": "This tool provides the ability to discover and configure sensors connected to your flight controller.",
-        "translation": "This tool provides the ability to discover and configure sensors connected to your flight controller.",
-        "needs_translation": true
-      },
-      "help_p2": {
-        "english": "Use this tool after connecting new sensors to your flight controller. It will attempt to detect and configure them automatically.",
-        "translation": "Use this tool after connecting new sensors to your flight controller. It will attempt to detect and configure them automatically.",
-        "needs_translation": true
+        "english": "Telemetry",
+        "translation": "Telemetria",
+        "needs_translation": false
       }
     },
     "validate_sensors": {

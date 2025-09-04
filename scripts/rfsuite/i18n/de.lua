@@ -537,10 +537,8 @@ return {
         ["adj_function"] = "Einstellungsfunktion",
         ["adj_value"] = "Einstellungswert"
       },
-      ["sensors"] = {
-        ["name"] = "Sensors",
-        ["help_p1"] = "This tool provides the ability to discover and configure sensors connected to your flight controller.",
-        ["help_p2"] = "Use this tool after connecting new sensors to your flight controller. It will attempt to detect and configure them automatically."
+      ["telemetry"] = {
+        ["name"] = "Telemetrie"
       },
       ["validate_sensors"] = {
         ["help_p1"] = "Dieses Tool versucht, eine kurze Liste aller Sensoren zu erstellen, die nicht empfangen werden.",
@@ -1287,6 +1285,37 @@ return {
     ["check_supported_version"] = "Diese Version des Lua-Skripts\nkann nicht mit dem ausgewaehlten Modell verwendet werden."
   },
   ["sensors"] = {
+    ["attpitch"] = "P.Winkel",
+    ["attroll"] = "R.Winkel",
+    ["attyaw"] = "Y.Winkel",
+    ["accx"] = "Beschl. X",
+    ["accy"] = "Beschl. Z",
+    ["accz"] = "Beschl. Z",
+    ["groundspeed"] = "Boden­geschwindigkeit",
+    ["esc_temp"] = "ESC Temperatur",
+    ["rate_profile"] = "Rate-Profil",
+    ["headspeed"] = "Drehzahl",
+    ["altitude"] = "Hoehe",
+    ["voltage"] = "Spannung",
+    ["bec_voltage"] = "BEC Spannung",
+    ["cell_count"] = "Zellenanzahl",
+    ["governor"] = "Governor Status",
+    ["adj_func"] = "Adj (Funktion)",
+    ["fuel"] = "Kraftstoffstand",
+    ["smartfuel"] = "Intelligenter Kraftstoff",
+    ["rssi"] = "RSSI",
+    ["link"] = "Verbindungsqualitaet",
+    ["adj_val"] = "Adj (Wert)",
+    ["arming_flags"] = "Arming-Flags",
+    ["current"] = "Strom",
+    ["throttle_pct"] = "Gas %",
+    ["consumption"] = "Verbrauch",
+    ["smartconsumption"] = "Intelligenter Verbrauch",
+    ["pid_profile"] = "PID-Profil",
+    ["mcu_temp"] = "MCU Temperatur",
+    ["armdisableflags"] = "Arming-Disable"
+  },
+  ["telemetry"] = {
     ["group_general"] = "Allgemein",
     ["group_battery"] = "Akku",
     ["group_battery_cells"] = "Akkuzellen",
@@ -1415,39 +1444,6 @@ return {
     ["sensor_debug_7"] = "Debug 7",
     ["sensor_rpm"] = "U/min",
     ["sensor_temp"] = "Temperatur"
-  },
-  ["telemetry"] = {
-    ["sensors"] = {
-      ["attpitch"] = "P.Winkel",
-      ["attroll"] = "R.Winkel",
-      ["attyaw"] = "Y.Winkel",
-      ["accx"] = "Beschl. X",
-      ["accy"] = "Beschl. Z",
-      ["accz"] = "Beschl. Z",
-      ["groundspeed"] = "Boden­geschwindigkeit",
-      ["esc_temp"] = "ESC Temperatur",
-      ["rate_profile"] = "Rate-Profil",
-      ["headspeed"] = "Drehzahl",
-      ["altitude"] = "Hoehe",
-      ["voltage"] = "Spannung",
-      ["bec_voltage"] = "BEC Spannung",
-      ["cell_count"] = "Zellenanzahl",
-      ["governor"] = "Governor Status",
-      ["adj_func"] = "Adj (Funktion)",
-      ["fuel"] = "Kraftstoffstand",
-      ["smartfuel"] = "Intelligenter Kraftstoff",
-      ["rssi"] = "RSSI",
-      ["link"] = "Verbindungsqualitaet",
-      ["adj_val"] = "Adj (Wert)",
-      ["arming_flags"] = "Arming-Flags",
-      ["current"] = "Strom",
-      ["throttle_pct"] = "Gas %",
-      ["consumption"] = "Verbrauch",
-      ["smartconsumption"] = "Intelligenter Verbrauch",
-      ["pid_profile"] = "PID-Profil",
-      ["mcu_temp"] = "MCU Temperatur",
-      ["armdisableflags"] = "Arming-Disable"
-    }
   },
   ["widgets"] = {
     ["bbl"] = {

@@ -537,10 +537,8 @@ return {
         ["adj_function"] = "Función de Ajuste",
         ["adj_value"] = "Valor de Ajuste"
       },
-      ["sensors"] = {
-        ["name"] = "Sensors",
-        ["help_p1"] = "This tool provides the ability to discover and configure sensors connected to your flight controller.",
-        ["help_p2"] = "Use this tool after connecting new sensors to your flight controller. It will attempt to detect and configure them automatically."
+      ["telemetry"] = {
+        ["name"] = "Telemetría"
       },
       ["validate_sensors"] = {
         ["help_p1"] = "Esta herramienta intenta listar todos los sensores necesarios que faltan.",
@@ -1287,6 +1285,37 @@ return {
     ["check_supported_version"] = "Esta versión del script Lua \nno se puede utilizar con el modelo seleccionado"
   },
   ["sensors"] = {
+    ["attpitch"] = "Angulo P.",
+    ["attroll"] = "Angulo R.",
+    ["attyaw"] = "Angulo Y.",
+    ["accx"] = "Acel. X",
+    ["accy"] = "Acel. Y",
+    ["accz"] = "Acel. Z",
+    ["groundspeed"] = "Velocidad Avance",
+    ["esc_temp"] = "Temperatura ESC",
+    ["rate_profile"] = "Perfil Tasas",
+    ["headspeed"] = "Veloc. Rotor",
+    ["altitude"] = "Altitud",
+    ["voltage"] = "Voltaje",
+    ["bec_voltage"] = "Voltaje BEC",
+    ["cell_count"] = "Nro de Celdas",
+    ["governor"] = "Estado Governor",
+    ["adj_func"] = "Ajus.(Función)",
+    ["fuel"] = "Nivel de Carga",
+    ["smartfuel"] = "Combustible Inteligente",
+    ["rssi"] = "RSSI",
+    ["link"] = "Calidad de Enlace",
+    ["adj_val"] = "Ajus.(Valor)",
+    ["arming_flags"] = "Banderas Armado",
+    ["current"] = "Corriente",
+    ["throttle_pct"] = "% Acelerador",
+    ["consumption"] = "Consumo",
+    ["smartconsumption"] = "Consumo Inteligente",
+    ["pid_profile"] = "Perfil PID",
+    ["mcu_temp"] = "Temperatura MCU",
+    ["armdisableflags"] = "Desactivar Armado"
+  },
+  ["telemetry"] = {
     ["group_general"] = "General",
     ["group_battery"] = "Batería",
     ["group_battery_cells"] = "Celdas de batería",
@@ -1415,39 +1444,6 @@ return {
     ["sensor_debug_7"] = "Depuración 7",
     ["sensor_rpm"] = "RPM",
     ["sensor_temp"] = "Temperatura"
-  },
-  ["telemetry"] = {
-    ["sensors"] = {
-      ["attpitch"] = "Angulo P.",
-      ["attroll"] = "Angulo R.",
-      ["attyaw"] = "Angulo Y.",
-      ["accx"] = "Acel. X",
-      ["accy"] = "Acel. Y",
-      ["accz"] = "Acel. Z",
-      ["groundspeed"] = "Velocidad Avance",
-      ["esc_temp"] = "Temperatura ESC",
-      ["rate_profile"] = "Perfil Tasas",
-      ["headspeed"] = "Veloc. Rotor",
-      ["altitude"] = "Altitud",
-      ["voltage"] = "Voltaje",
-      ["bec_voltage"] = "Voltaje BEC",
-      ["cell_count"] = "Nro de Celdas",
-      ["governor"] = "Estado Governor",
-      ["adj_func"] = "Ajus.(Función)",
-      ["fuel"] = "Nivel de Carga",
-      ["smartfuel"] = "Combustible Inteligente",
-      ["rssi"] = "RSSI",
-      ["link"] = "Calidad de Enlace",
-      ["adj_val"] = "Ajus.(Valor)",
-      ["arming_flags"] = "Banderas Armado",
-      ["current"] = "Corriente",
-      ["throttle_pct"] = "% Acelerador",
-      ["consumption"] = "Consumo",
-      ["smartconsumption"] = "Consumo Inteligente",
-      ["pid_profile"] = "Perfil PID",
-      ["mcu_temp"] = "Temperatura MCU",
-      ["armdisableflags"] = "Desactivar Armado"
-    }
   },
   ["widgets"] = {
     ["bbl"] = {

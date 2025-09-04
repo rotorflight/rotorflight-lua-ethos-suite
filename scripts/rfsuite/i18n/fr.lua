@@ -537,10 +537,8 @@ return {
         ["adj_function"] = "Fonction de réglage",
         ["adj_value"] = "Valeur de réglage"
       },
-      ["sensors"] = {
-        ["name"] = "Sensors",
-        ["help_p1"] = "This tool provides the ability to discover and configure sensors connected to your flight controller.",
-        ["help_p2"] = "Use this tool after connecting new sensors to your flight controller. It will attempt to detect and configure them automatically."
+      ["telemetry"] = {
+        ["name"] = "Télémétrie"
       },
       ["validate_sensors"] = {
         ["help_p1"] = "Cet outil tente de lister tous les capteurs que vous ne recevez pas dans une liste concise.",
@@ -1287,6 +1285,37 @@ return {
     ["check_supported_version"] = "Cette version du script Lua ne peut pas etre utilisee avec le modele selectionne."
   },
   ["sensors"] = {
+    ["attpitch"] = "Angle Prof.",
+    ["attroll"] = "Angle Roll",
+    ["attyaw"] = "Angle Lacet",
+    ["accx"] = "Accel X",
+    ["accy"] = "Accel Z",
+    ["accz"] = "Accel Z",
+    ["groundspeed"] = "Vitesse Sol",
+    ["esc_temp"] = "Temperature ESC",
+    ["rate_profile"] = "Profile de Rates",
+    ["headspeed"] = "Tours Moteurs",
+    ["altitude"] = "Altitude",
+    ["voltage"] = "Tension",
+    ["bec_voltage"] = "Tension BEC",
+    ["cell_count"] = "Nombre de cellules",
+    ["governor"] = "Status du Gouverneur",
+    ["adj_func"] = "Ajustements Fonctions",
+    ["fuel"] = "Niveau de Carburant",
+    ["smartfuel"] = "Carburant Intelligent",
+    ["rssi"] = "Signal du Recepteur",
+    ["link"] = "Qualité du Lien",
+    ["adj_val"] = "Ajustements Valeurs",
+    ["arming_flags"] = "Drapeaux Armement",
+    ["current"] = "Courant",
+    ["throttle_pct"] = "Pourcentage de Gaz",
+    ["consumption"] = "Consommation",
+    ["smartconsumption"] = "Consommation Intelligente",
+    ["pid_profile"] = "Profile de PID",
+    ["mcu_temp"] = "Temperature Micro Processeur",
+    ["armdisableflags"] = "Desactivation Armement"
+  },
+  ["telemetry"] = {
     ["group_general"] = "Général",
     ["group_battery"] = "Batterie",
     ["group_battery_cells"] = "Cellules de batterie",
@@ -1415,39 +1444,6 @@ return {
     ["sensor_debug_7"] = "Débogage 7",
     ["sensor_rpm"] = "RPM",
     ["sensor_temp"] = "Température"
-  },
-  ["telemetry"] = {
-    ["sensors"] = {
-      ["attpitch"] = "Angle Prof.",
-      ["attroll"] = "Angle Roll",
-      ["attyaw"] = "Angle Lacet",
-      ["accx"] = "Accel X",
-      ["accy"] = "Accel Z",
-      ["accz"] = "Accel Z",
-      ["groundspeed"] = "Vitesse Sol",
-      ["esc_temp"] = "Temperature ESC",
-      ["rate_profile"] = "Profile de Rates",
-      ["headspeed"] = "Tours Moteurs",
-      ["altitude"] = "Altitude",
-      ["voltage"] = "Tension",
-      ["bec_voltage"] = "Tension BEC",
-      ["cell_count"] = "Nombre de cellules",
-      ["governor"] = "Status du Gouverneur",
-      ["adj_func"] = "Ajustements Fonctions",
-      ["fuel"] = "Niveau de Carburant",
-      ["smartfuel"] = "Carburant Intelligent",
-      ["rssi"] = "Signal du Recepteur",
-      ["link"] = "Qualité du Lien",
-      ["adj_val"] = "Ajustements Valeurs",
-      ["arming_flags"] = "Drapeaux Armement",
-      ["current"] = "Courant",
-      ["throttle_pct"] = "Pourcentage de Gaz",
-      ["consumption"] = "Consommation",
-      ["smartconsumption"] = "Consommation Intelligente",
-      ["pid_profile"] = "Profile de PID",
-      ["mcu_temp"] = "Temperature Micro Processeur",
-      ["armdisableflags"] = "Desactivation Armement"
-    }
   },
   ["widgets"] = {
     ["bbl"] = {

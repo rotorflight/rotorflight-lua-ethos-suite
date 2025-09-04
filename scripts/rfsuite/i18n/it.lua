@@ -537,10 +537,8 @@ return {
         ["adj_function"] = "Funzione Regolazione",
         ["adj_value"] = "Valore Regolazione"
       },
-      ["sensors"] = {
-        ["name"] = "Sensors",
-        ["help_p1"] = "This tool provides the ability to discover and configure sensors connected to your flight controller.",
-        ["help_p2"] = "Use this tool after connecting new sensors to your flight controller. It will attempt to detect and configure them automatically."
+      ["telemetry"] = {
+        ["name"] = "Telemetria"
       },
       ["validate_sensors"] = {
         ["help_p1"] = "Questo strumento prova a elencare tutti i sensori che non ricevi in una lista concisa.",
@@ -1287,6 +1285,37 @@ return {
     ["check_supported_version"] = "Questa Versione del Lua Script \nnon puo' essere usata con il modello selezionato"
   },
   ["sensors"] = {
+    ["attpitch"] = "P.angle",
+    ["attroll"] = "R.angle",
+    ["attyaw"] = "Y.angle",
+    ["accx"] = "Accel X",
+    ["accy"] = "Accel Z",
+    ["accz"] = "Accel Z",
+    ["groundspeed"] = "Velocità Suolo",
+    ["esc_temp"] = "Temperatura ESC",
+    ["rate_profile"] = "Valori Profilo",
+    ["headspeed"] = "Velocita' Rotore",
+    ["altitude"] = "Altitudine",
+    ["voltage"] = "Voltaggio",
+    ["bec_voltage"] = "Voltaggio Bec",
+    ["cell_count"] = "Numero Celle",
+    ["governor"] = "Stato Governor",
+    ["adj_func"] = "Adj (Funzione)",
+    ["fuel"] = "Carica Livello",
+    ["smartfuel"] = "Carica Intelligente",
+    ["rssi"] = "RSSI",
+    ["link"] = "Qualità Collegamento",
+    ["adj_val"] = "Adj (Valore)",
+    ["arming_flags"] = "Flags Armo",
+    ["current"] = "Corrente",
+    ["throttle_pct"] = "Acceleratore %",
+    ["consumption"] = "Consumo",
+    ["smartconsumption"] = "Consumo Intelligente",
+    ["pid_profile"] = "Profilo PID",
+    ["mcu_temp"] = "Temperatura MCU",
+    ["armdisableflags"] = "Disattivazione Armo"
+  },
+  ["telemetry"] = {
     ["group_general"] = "Generale",
     ["group_battery"] = "Batteria",
     ["group_battery_cells"] = "Celle della batteria",
@@ -1415,39 +1444,6 @@ return {
     ["sensor_debug_7"] = "Debug 7",
     ["sensor_rpm"] = "RPM",
     ["sensor_temp"] = "Temperatura"
-  },
-  ["telemetry"] = {
-    ["sensors"] = {
-      ["attpitch"] = "P.angle",
-      ["attroll"] = "R.angle",
-      ["attyaw"] = "Y.angle",
-      ["accx"] = "Accel X",
-      ["accy"] = "Accel Z",
-      ["accz"] = "Accel Z",
-      ["groundspeed"] = "Velocità Suolo",
-      ["esc_temp"] = "Temperatura ESC",
-      ["rate_profile"] = "Valori Profilo",
-      ["headspeed"] = "Velocita' Rotore",
-      ["altitude"] = "Altitudine",
-      ["voltage"] = "Voltaggio",
-      ["bec_voltage"] = "Voltaggio Bec",
-      ["cell_count"] = "Numero Celle",
-      ["governor"] = "Stato Governor",
-      ["adj_func"] = "Adj (Funzione)",
-      ["fuel"] = "Carica Livello",
-      ["smartfuel"] = "Carica Intelligente",
-      ["rssi"] = "RSSI",
-      ["link"] = "Qualità Collegamento",
-      ["adj_val"] = "Adj (Valore)",
-      ["arming_flags"] = "Flags Armo",
-      ["current"] = "Corrente",
-      ["throttle_pct"] = "Acceleratore %",
-      ["consumption"] = "Consumo",
-      ["smartconsumption"] = "Consumo Intelligente",
-      ["pid_profile"] = "Profilo PID",
-      ["mcu_temp"] = "Temperatura MCU",
-      ["armdisableflags"] = "Disattivazione Armo"
-    }
   },
   ["widgets"] = {
     ["bbl"] = {

@@ -537,10 +537,8 @@ return {
         ["adj_function"] = "Aanpassing functie",
         ["adj_value"] = "Aanpassing waarde"
       },
-      ["sensors"] = {
-        ["name"] = "Sensors",
-        ["help_p1"] = "This tool provides the ability to discover and configure sensors connected to your flight controller.",
-        ["help_p2"] = "Use this tool after connecting new sensors to your flight controller. It will attempt to detect and configure them automatically."
+      ["telemetry"] = {
+        ["name"] = "Telemetrie"
       },
       ["validate_sensors"] = {
         ["help_p1"] = "Deze tool probeert een beknopt overzicht te geven van alle sensoren die u niet ontvangt.",
@@ -1287,6 +1285,37 @@ return {
     ["check_supported_version"] = "Deze versie van het lua script \n kan niet gebruikt worden met het geselecteerde model"
   },
   ["sensors"] = {
+    ["attpitch"] = "P.hoek",
+    ["attroll"] = "R.hoek",
+    ["attyaw"] = "Y.hoek",
+    ["accx"] = "Accel X",
+    ["accy"] = "Accel Z",
+    ["accz"] = "Accel Z",
+    ["groundspeed"] = "Grond snelheid",
+    ["esc_temp"] = "ESC Temperatuur",
+    ["rate_profile"] = "Rate Profiel",
+    ["headspeed"] = "Rotortoerental",
+    ["altitude"] = "Hoogte",
+    ["voltage"] = "Voltage",
+    ["bec_voltage"] = "Bec voltage",
+    ["cell_count"] = "Aantal cellen",
+    ["governor"] = "Governor Status",
+    ["adj_func"] = "Adj (Functies)",
+    ["fuel"] = "Laad niveau",
+    ["smartfuel"] = "Smart brandstof",
+    ["rssi"] = "RSSI",
+    ["link"] = "Linkkwaliteit",
+    ["adj_val"] = "Adj (Waarde)",
+    ["arming_flags"] = "Arming Flags",
+    ["current"] = "Stroom",
+    ["throttle_pct"] = "Throttle %",
+    ["consumption"] = "Verbruik",
+    ["smartconsumption"] = "Slim verbruik",
+    ["pid_profile"] = "PID Profiel",
+    ["mcu_temp"] = "MCU Temperatuur",
+    ["armdisableflags"] = "Arming Disable"
+  },
+  ["telemetry"] = {
     ["group_general"] = "Algemeen",
     ["group_battery"] = "Batterij",
     ["group_battery_cells"] = "Batterijcellen",
@@ -1415,39 +1444,6 @@ return {
     ["sensor_debug_7"] = "Foutopsporing 7",
     ["sensor_rpm"] = "RPM",
     ["sensor_temp"] = "Temperatuur"
-  },
-  ["telemetry"] = {
-    ["sensors"] = {
-      ["attpitch"] = "P.hoek",
-      ["attroll"] = "R.hoek",
-      ["attyaw"] = "Y.hoek",
-      ["accx"] = "Accel X",
-      ["accy"] = "Accel Z",
-      ["accz"] = "Accel Z",
-      ["groundspeed"] = "Grond snelheid",
-      ["esc_temp"] = "ESC Temperatuur",
-      ["rate_profile"] = "Rate Profiel",
-      ["headspeed"] = "Rotortoerental",
-      ["altitude"] = "Hoogte",
-      ["voltage"] = "Voltage",
-      ["bec_voltage"] = "Bec voltage",
-      ["cell_count"] = "Aantal cellen",
-      ["governor"] = "Governor Status",
-      ["adj_func"] = "Adj (Functies)",
-      ["fuel"] = "Laad niveau",
-      ["smartfuel"] = "Smart brandstof",
-      ["rssi"] = "RSSI",
-      ["link"] = "Linkkwaliteit",
-      ["adj_val"] = "Adj (Waarde)",
-      ["arming_flags"] = "Arming Flags",
-      ["current"] = "Stroom",
-      ["throttle_pct"] = "Throttle %",
-      ["consumption"] = "Verbruik",
-      ["smartconsumption"] = "Slim verbruik",
-      ["pid_profile"] = "PID Profiel",
-      ["mcu_temp"] = "MCU Temperatuur",
-      ["armdisableflags"] = "Arming Disable"
-    }
   },
   ["widgets"] = {
     ["bbl"] = {
