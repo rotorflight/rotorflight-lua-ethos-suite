@@ -1,408 +1,237 @@
 local i18n = rfsuite.i18n.get
 local enableWakeup = false
 
+-- Lookup table (by ID)
+TELEMETRY_SENSORS = {
+  [0] =  { name = i18n("app.modules.sensors.sensor_none"),                 id = 0,   group = "general" },
+  [1] =  { name = i18n("app.modules.sensors.sensor_heartbeat"),            id = 1,   group = "general" },
 
-local sensorList = {
-    battery = {
-        name = i18n("app.modules.sensors.battery"),
-        sensors = {
-            voltage = {
-                name = i18n("app.modules.sensors.battery.voltage"),
-                id = 3
-            },
-            current = {
-                name = i18n("app.modules.sensors.battery.current"),
-                id = 4
-            },
-            consumption = {
-                name = i18n("app.modules.sensors.battery.consumption"),
-                id = 5
-            },
-            chargelevel = {
-                name = i18n("app.modules.sensors.battery.chargelevel"),
-                id = 6
-            },
-            cellcount = {
-                name = i18n("app.modules.sensors.battery.cellcount"),
-                id = 7
-            },
-            cellvoltage = {
-                name = i18n("app.modules.sensors.battery.cellvoltage"),
-                id = 8
-            },
-            cellvoltages = {
-                name = i18n("app.modules.sensors.battery.cellvoltages"),
-                id = 9
-            }
-        }
-    },
-    voltage = {
-        name = i18n("app.modules.sensors.voltage"),
-        sensors = {
-            esc = {
-                name = i18n("app.modules.sensors.voltage.esc"),
-                id = 42
-            },
-            bec = {
-                name = i18n("app.modules.sensors.voltage.bec"),
-                id = 43
-            },
-            bus = {
-                name = i18n("app.modules.sensors.voltage.bus"),
-                id = 44
-            },
-            mcu = {
-                name = i18n("app.modules.sensors.voltage.mcu"),
-                id = 45
-            }
-        },
-    },
-    current = {
-        name = i18n("app.modules.sensors.current"),
-        sensors = {
-            esc = {
-                name = i18n("app.modules.sensors.current.esc"),
-                id = 46
-            },
-            bec = {
-                name = i18n("app.modules.sensors.current.bec"),
-                id = 47
-            },
-        }
-    },
-    temperature = {
-        name = i18n("app.modules.sensors.temperature"),
-        sensors = {
-            esc = {
-                name = i18n("app.modules.sensors.temperature.esc"),
-                id = 50
-            },
-            bec = {
-                name = i18n("app.modules.sensors.temperature.bec"),
-                id = 51
-            },
-            mcu = {
-                name = i18n("app.modules.sensors.temperature.mcu"),
-                id = 52
-            }
-        }
+  [2] =  { name = i18n("app.modules.sensors.sensor_battery"),              id = 2,   group = "battery" },
+  [3] =  { name = i18n("app.modules.sensors.sensor_battery_voltage"),      id = 3,   group = "battery" },
+  [4] =  { name = i18n("app.modules.sensors.sensor_battery_current"),      id = 4,   group = "battery" },
+  [5] =  { name = i18n("app.modules.sensors.sensor_battery_consumption"),  id = 5,   group = "battery" },
+  [6] =  { name = i18n("app.modules.sensors.sensor_battery_charge_level"), id = 6,   group = "battery" },
 
-    },
-    esc1 = {
-        name = i18n("app.modules.sensors.esc1"),
-        sensors = {
-            voltage = {
-                name = i18n("app.modules.sensors.esc1.voltage"),
-                id = 17
-            },
-            current = {
-                name = i18n("app.modules.sensors.esc1.current"),
-                id = 18
-            },
-            capacity = {
-                name = i18n("app.modules.sensors.esc1.capacity"),
-                id = 19
-            },
-            erpm = {
-                name = i18n("app.modules.sensors.esc1.erpm"),
-                id = 20
-            },
-            power = {
-                name = i18n("app.modules.sensors.esc1.power"),
-                id = 21
-            },
-            throttle = {
-                name = i18n("app.modules.sensors.esc1.throttle"),
-                id = 22
-            },
-            temp1 = {
-                name = i18n("app.modules.sensors.esc1.temp1"),
-                id = 23
-            },
-            temp2 = {
-                name = i18n("app.modules.sensors.esc1.temp2"),
-                id = 24
-            },
-            becvoltage = {
-                name = i18n("app.modules.sensors.esc1.becvoltage"),
-                id = 25
-            },
-            beccurrent = {
-                name = i18n("app.modules.sensors.esc1.beccurrent"),
-                id = 26
-            },
-            status = {
-                name = i18n("app.modules.sensors.esc1.status"),
-                id = 27
-            },
-            model = {
-                name = i18n("app.modules.sensors.esc1.model"),
-                id = 28
-            }
-        }
-    },
-    esc2 = {
-        name = i18n("app.modules.sensors.esc2"),
-        sensors = {
-            voltage = {
-                name = i18n("app.modules.sensors.esc2.voltage"),
-                id = 30
-            },
-            current = {
-                name = i18n("app.modules.sensors.esc2.current"),
-                id = 31
-            },
-            capacity = {
-                name = i18n("app.modules.sensors.esc2.capacity"),
-                id = 32
-            },
-            erpm = {
-                name = i18n("app.modules.sensors.esc2.erpm"),
-                id = 33
-            },
-            power = {
-                name = i18n("app.modules.sensors.esc2.power"),
-                id = 34
-            },
-            throttle = {
-                name = i18n("app.modules.sensors.esc2.throttle"),
-                id = 35
-            },
-            temp1 = {
-                name = i18n("app.modules.sensors.esc2.temp1"),
-                id = 36
-            },
-            temp2 = {
-                name = i18n("app.modules.sensors.esc2.temp2"),
-                id = 37
-            },
-            becvoltage = {
-                name = i18n("app.modules.sensors.esc2.becvoltage"),
-                id = 38
-            },
-            beccurrent = {
-                name = i18n("app.modules.sensors.esc2.beccurrent"),
-                id = 39
-            },
-            status = {
-                name = i18n("app.modules.sensors.esc2.status"),
-                id = 40
-            },
-            model = {
-                name = i18n("app.modules.sensors.esc2.model"),
-                id = 41
-            }
-        }
-    },
-    rpm = {
-        name = i18n("app.modules.sensors.rpm"),
-        sensors = {
-            headspeed = {
-                name = i18n("app.modules.sensors.rpm.headspeed"),
-                id = 60
-            },
-            tailspeed = {
-                name = i18n("app.modules.sensors.rpm.tailspeed"),
-                id = 61
-            }
-        }
+  [7] =  { name = i18n("app.modules.sensors.sensor_battery_cell_count"),   id = 7,   group = "battery_cells" },
+  [8] =  { name = i18n("app.modules.sensors.sensor_battery_cell_voltage"), id = 8,   group = "battery_cells" },
+  [9] =  { name = i18n("app.modules.sensors.sensor_battery_cell_voltages"),id = 9,   group = "battery_cells" },
 
-    },
-    barometer = {
-        name = i18n("app.modules.sensors.barometer"),
-        sensors = {
-            altitude = {
-                name = i18n("app.modules.sensors.barometer.altitude"),
-                id = 58
-            },
-            variometer = {
-                name = i18n("app.modules.sensors.barometer.variometer"),
-                id = 59
-            }
-        }
-    },
-    gyro = {
-        name = i18n("app.modules.sensors.gyro"),
-        sensors = {
-            heading = {
-                name = i18n("app.modules.sensors.gyro.heading"),
-                id = 57
-            },
-            attitudehighres = {
-                name = i18n("app.modules.sensors.gyro.attitudehighres"),
-                id = 64
-            },
-            accelx = {
-                name = i18n("app.modules.sensors.gyro.accelx"),
-                id = 69
-            },
-            accely = {
-                name = i18n("app.modules.sensors.gyro.accely"),
-                id = 70
-            },
-            accelz = {
-                name = i18n("app.modules.sensors.gyro.accelz"),
-                id = 71
-            },
-        }
-    },
-    gps = {
-        name = i18n("app.modules.sensors.gps"),
-        sensors = {
-            sats = {
-                name = i18n("app.modules.sensors.gps.sats"),
-                id = 73
-            },
-            coordinates = {
-                name = i18n("app.modules.sensors.gps.coordinates"),
-                id = 77
-            },
-            altitude = {
-                name = i18n("app.modules.sensors.gps.altitude"),
-                id = 78
-            },
-            heading = {
-                name = i18n("app.modules.sensors.gps.heading"),
-                id = 79
-            },
-            speed = {
-                name = i18n("app.modules.sensors.gps.speed"),
-                id = 80
-            }
-        }
-    },
-    status = {
-        name = i18n("app.modules.sensors.status"),
-        sensors = {
-            modelid = {
-                name = i18n("app.modules.sensors.status.modelid"),
-                id = 88
-            },
-            flightmode = {
-                name = i18n("app.modules.sensors.status.flightmode"),
-                id = 89
-            },
-            armingflags = {
-                name = i18n("app.modules.sensors.status.armingflags"),
-                id = 90
-            },
-            armingdisableflags = {
-                name = i18n("app.modules.sensors.status.armingdisableflags"),
-                id = 91
-            },
-            rescuestate = {
-                name = i18n("app.modules.sensors.status.rescuestate"),
-                id = 92
-            },
-            governorstate = {
-                name = i18n("app.modules.sensors.status.governorstate"),
-                id = 93
-            },
-            adjustmentfunctions = {
-                name = i18n("app.modules.sensors.status.adjustmentfunctions"),
-                id = 99
-            }
-        }
-    },
-    profile = {
-        name = i18n("app.modules.sensors.profile"),
-        sensors = {
-            pidprofile = {
-                name = i18n("app.modules.sensors.profile.pidprofile"),
-                id = 95
-            },
-            rateprofile = {
-                name = i18n("app.modules.sensors.profile.rateprofile"),
-                id = 96
-            }
-        }
-    },
-    control = {
-        name = i18n("app.modules.sensors.control"),
-        sensors = {
-            pitch = {
-                name = i18n("app.modules.sensors.control.pitch"),
-                id = 11
-            },
-            roll = {
-                name = i18n("app.modules.sensors.control.roll"),
-                id = 12
-            },
-            yaw = {
-                name = i18n("app.modules.sensors.control.yaw"),
-                id = 13
-            },
-            collective = {
-                name = i18n("app.modules.sensors.control.collective"),
-                id = 14
-            },
-            throttle = {
-                name = i18n("app.modules.sensors.control.throttle"),
-                id = 15
-            }
-        }
-    },
-    system = {
-        name = i18n("app.modules.sensors.system"),
-        sensors = {
-            heartbeat = {
-                name = i18n("app.modules.sensors.system.heartbeat"),
-                id = 1
-            },
-            cpuload = {
-                name = i18n("app.modules.sensors.system.cpuload"),
-                id = 85
-            },
-            sysload = {
-                name = i18n("app.modules.sensors.system.sysload"),
-                id = 86
-            },
-            rtload = {
-                name = i18n("app.modules.sensors.system.rtload"),
-                id = 87
-            }
-        }
-    },
-    debug = {
-        name = i18n("app.modules.sensors.debug"),
-        sensors = {
-            debug0 = {
-                name = i18n("app.modules.sensors.debug.debug0"),
-                id = 100
-            },
-            debug1 = {
-                name = i18n("app.modules.sensors.debug.debug1"),
-                id = 101
-            },
-            debug2 = {
-                name = i18n("app.modules.sensors.debug.debug2"),
-                id = 102
-            },
-            debug3 = {
-                name = i18n("app.modules.sensors.debug.debug3"),
-                id = 103
-            },
-            debug4 = {
-                name = i18n("app.modules.sensors.debug.debug4"),
-                id = 104
-            },
-            debug5 = {
-                name = i18n("app.modules.sensors.debug.debug5"),
-                id = 105
-            },
-            debug6 = {
-                name = i18n("app.modules.sensors.debug.debug6"),
-                id = 106
-            },
-            debug7 = {
-                name = i18n("app.modules.sensors.debug.debug7"),
-                id = 107
-            },
-        }
+  [10] = { name = i18n("app.modules.sensors.sensor_control"),              id = 10,  group = "control" },
+  [11] = { name = i18n("app.modules.sensors.sensor_pitch_control"),        id = 11,  group = "control" },
+  [12] = { name = i18n("app.modules.sensors.sensor_roll_control"),         id = 12,  group = "control" },
+  [13] = { name = i18n("app.modules.sensors.sensor_yaw_control"),          id = 13,  group = "control" },
+  [14] = { name = i18n("app.modules.sensors.sensor_collective_control"),   id = 14,  group = "control" },
+  [15] = { name = i18n("app.modules.sensors.sensor_throttle_control"),     id = 15,  group = "control" },
 
-    }
+  [16] = { name = i18n("app.modules.sensors.sensor_esc1_data"),            id = 16,  group = "esc1" },
+  [17] = { name = i18n("app.modules.sensors.sensor_esc1_voltage"),         id = 17,  group = "esc1" },
+  [18] = { name = i18n("app.modules.sensors.sensor_esc1_current"),         id = 18,  group = "esc1" },
+  [19] = { name = i18n("app.modules.sensors.sensor_esc1_capacity"),        id = 19,  group = "esc1" },
+  [20] = { name = i18n("app.modules.sensors.sensor_esc1_erpm"),            id = 20,  group = "esc1" },
+  [21] = { name = i18n("app.modules.sensors.sensor_esc1_power"),           id = 21,  group = "esc1" },
+  [22] = { name = i18n("app.modules.sensors.sensor_esc1_throttle"),        id = 22,  group = "esc1" },
+  [23] = { name = i18n("app.modules.sensors.sensor_esc1_temp1"),           id = 23,  group = "esc1" },
+  [24] = { name = i18n("app.modules.sensors.sensor_esc1_temp2"),           id = 24,  group = "esc1" },
+  [25] = { name = i18n("app.modules.sensors.sensor_esc1_bec_voltage"),     id = 25,  group = "esc1" },
+  [26] = { name = i18n("app.modules.sensors.sensor_esc1_bec_current"),     id = 26,  group = "esc1" },
+  [27] = { name = i18n("app.modules.sensors.sensor_esc1_status"),          id = 27,  group = "esc1" },
+  [28] = { name = i18n("app.modules.sensors.sensor_esc1_model"),           id = 28,  group = "esc1" },
 
+  [29] = { name = i18n("app.modules.sensors.sensor_esc2_data"),            id = 29,  group = "esc2" },
+  [30] = { name = i18n("app.modules.sensors.sensor_esc2_voltage"),         id = 30,  group = "esc2" },
+  [31] = { name = i18n("app.modules.sensors.sensor_esc2_current"),         id = 31,  group = "esc2" },
+  [32] = { name = i18n("app.modules.sensors.sensor_esc2_capacity"),        id = 32,  group = "esc2" },
+  [33] = { name = i18n("app.modules.sensors.sensor_esc2_erpm"),            id = 33,  group = "esc2" },
+  [34] = { name = i18n("app.modules.sensors.sensor_esc2_power"),           id = 34,  group = "esc2" },
+  [35] = { name = i18n("app.modules.sensors.sensor_esc2_throttle"),        id = 35,  group = "esc2" },
+  [36] = { name = i18n("app.modules.sensors.sensor_esc2_temp1"),           id = 36,  group = "esc2" },
+  [37] = { name = i18n("app.modules.sensors.sensor_esc2_temp2"),           id = 37,  group = "esc2" },
+  [38] = { name = i18n("app.modules.sensors.sensor_esc2_bec_voltage"),     id = 38,  group = "esc2" },
+  [39] = { name = i18n("app.modules.sensors.sensor_esc2_bec_current"),     id = 39,  group = "esc2" },
+  [40] = { name = i18n("app.modules.sensors.sensor_esc2_status"),          id = 40,  group = "esc2" },
+  [41] = { name = i18n("app.modules.sensors.sensor_esc2_model"),           id = 41,  group = "esc2" },
+
+  [42] = { name = i18n("app.modules.sensors.sensor_esc_voltage"),          id = 42,  group = "esc" },
+  [43] = { name = i18n("app.modules.sensors.sensor_bec_voltage"),          id = 43,  group = "esc" },
+  [44] = { name = i18n("app.modules.sensors.sensor_bus_voltage"),          id = 44,  group = "esc" },
+  [45] = { name = i18n("app.modules.sensors.sensor_mcu_voltage"),          id = 45,  group = "esc" },
+
+  [46] = { name = i18n("app.modules.sensors.sensor_esc_current"),          id = 46,  group = "esc" },
+  [47] = { name = i18n("app.modules.sensors.sensor_bec_current"),          id = 47,  group = "esc" },
+  [48] = { name = i18n("app.modules.sensors.sensor_bus_current"),          id = 48,  group = "esc" },
+  [49] = { name = i18n("app.modules.sensors.sensor_mcu_current"),          id = 49,  group = "esc" },
+
+  [50] = { name = i18n("app.modules.sensors.sensor_esc_temp"),             id = 50,  group = "temps" },
+  [51] = { name = i18n("app.modules.sensors.sensor_bec_temp"),             id = 51,  group = "temps" },
+  [52] = { name = i18n("app.modules.sensors.sensor_mcu_temp"),             id = 52,  group = "temps" },
+  [53] = { name = i18n("app.modules.sensors.sensor_air_temp"),             id = 53,  group = "temps" },
+  [54] = { name = i18n("app.modules.sensors.sensor_motor_temp"),           id = 54,  group = "temps" },
+  [55] = { name = i18n("app.modules.sensors.sensor_battery_temp"),         id = 55,  group = "temps" },
+  [56] = { name = i18n("app.modules.sensors.sensor_exhaust_temp"),         id = 56,  group = "temps" },
+
+  [57] = { name = i18n("app.modules.sensors.sensor_heading"),              id = 57,  group = "nav" },
+  [58] = { name = i18n("app.modules.sensors.sensor_altitude"),             id = 58,  group = "nav" },
+  [59] = { name = i18n("app.modules.sensors.sensor_variometer"),           id = 59,  group = "nav" },
+
+  [60] = { name = i18n("app.modules.sensors.sensor_headspeed"),            id = 60,  group = "rpm" },
+  [61] = { name = i18n("app.modules.sensors.sensor_tailspeed"),            id = 61,  group = "rpm" },
+  [62] = { name = i18n("app.modules.sensors.sensor_motor_rpm"),            id = 62,  group = "rpm" },
+  [63] = { name = i18n("app.modules.sensors.sensor_trans_rpm"),            id = 63,  group = "rpm" },
+
+  [64] = { name = i18n("app.modules.sensors.sensor_attitude"),             id = 64,  group = "attitude" },
+  [65] = { name = i18n("app.modules.sensors.sensor_attitude_pitch"),       id = 65,  group = "attitude" },
+  [66] = { name = i18n("app.modules.sensors.sensor_attitude_roll"),        id = 66,  group = "attitude" },
+  [67] = { name = i18n("app.modules.sensors.sensor_attitude_yaw"),         id = 67,  group = "attitude" },
+
+  [68] = { name = i18n("app.modules.sensors.sensor_accel"),                id = 68,  group = "accel" },
+  [69] = { name = i18n("app.modules.sensors.sensor_accel_x"),              id = 69,  group = "accel" },
+  [70] = { name = i18n("app.modules.sensors.sensor_accel_y"),              id = 70,  group = "accel" },
+  [71] = { name = i18n("app.modules.sensors.sensor_accel_z"),              id = 71,  group = "accel" },
+
+  [72] = { name = i18n("app.modules.sensors.sensor_gps"),                  id = 72,  group = "gps" },
+  [73] = { name = i18n("app.modules.sensors.sensor_gps_sats"),             id = 73,  group = "gps" },
+  [74] = { name = i18n("app.modules.sensors.sensor_gps_pdop"),             id = 74,  group = "gps" },
+  [75] = { name = i18n("app.modules.sensors.sensor_gps_hdop"),             id = 75,  group = "gps" },
+  [76] = { name = i18n("app.modules.sensors.sensor_gps_vdop"),             id = 76,  group = "gps" },
+  [77] = { name = i18n("app.modules.sensors.sensor_gps_coord"),            id = 77,  group = "gps" },
+  [78] = { name = i18n("app.modules.sensors.sensor_gps_altitude"),         id = 78,  group = "gps" },
+  [79] = { name = i18n("app.modules.sensors.sensor_gps_heading"),          id = 79,  group = "gps" },
+  [80] = { name = i18n("app.modules.sensors.sensor_gps_groundspeed"),      id = 80,  group = "gps" },
+  [81] = { name = i18n("app.modules.sensors.sensor_gps_home_distance"),    id = 81,  group = "gps" },
+  [82] = { name = i18n("app.modules.sensors.sensor_gps_home_direction"),   id = 82,  group = "gps" },
+  [83] = { name = i18n("app.modules.sensors.sensor_gps_date_time"),        id = 83,  group = "gps" },
+
+  [84] = { name = i18n("app.modules.sensors.sensor_load"),                 id = 84,  group = "load" },
+  [85] = { name = i18n("app.modules.sensors.sensor_cpu_load"),             id = 85,  group = "load" },
+  [86] = { name = i18n("app.modules.sensors.sensor_sys_load"),             id = 86,  group = "load" },
+  [87] = { name = i18n("app.modules.sensors.sensor_rt_load"),              id = 87,  group = "load" },
+
+  [88] = { name = i18n("app.modules.sensors.sensor_model_id"),             id = 88,  group = "status" },
+  [89] = { name = i18n("app.modules.sensors.sensor_flight_mode"),          id = 89,  group = "status" },
+  [90] = { name = i18n("app.modules.sensors.sensor_arming_flags"),         id = 90,  group = "status" },
+  [91] = { name = i18n("app.modules.sensors.sensor_arming_disable_flags"), id = 91,  group = "status" },
+  [92] = { name = i18n("app.modules.sensors.sensor_rescue_state"),         id = 92,  group = "status" },
+  [93] = { name = i18n("app.modules.sensors.sensor_governor_state"),       id = 93,  group = "status" },
+  [94] = { name = i18n("app.modules.sensors.sensor_governor_flags"),       id = 94,  group = "status" },
+
+  [95] = { name = i18n("app.modules.sensors.sensor_pid_profile"),          id = 95,  group = "profiles" },
+  [96] = { name = i18n("app.modules.sensors.sensor_rates_profile"),        id = 96,  group = "profiles" },
+  [97] = { name = i18n("app.modules.sensors.sensor_battery_profile"),      id = 97,  group = "profiles" },
+  [98] = { name = i18n("app.modules.sensors.sensor_led_profile"),          id = 98,  group = "profiles" },
+
+  [99] = { name = i18n("app.modules.sensors.sensor_adjfunc"),              id = 99,  group = "tuning" },
+
+  [100] = { name = i18n("app.modules.sensors.sensor_debug_0"),             id = 100, group = "debug" },
+  [101] = { name = i18n("app.modules.sensors.sensor_debug_1"),             id = 101, group = "debug" },
+  [102] = { name = i18n("app.modules.sensors.sensor_debug_2"),             id = 102, group = "debug" },
+  [103] = { name = i18n("app.modules.sensors.sensor_debug_3"),             id = 103, group = "debug" },
+  [104] = { name = i18n("app.modules.sensors.sensor_debug_4"),             id = 104, group = "debug" },
+  [105] = { name = i18n("app.modules.sensors.sensor_debug_5"),             id = 105, group = "debug" },
+  [106] = { name = i18n("app.modules.sensors.sensor_debug_6"),             id = 106, group = "debug" },
+  [107] = { name = i18n("app.modules.sensors.sensor_debug_7"),             id = 107, group = "debug" },
+
+  [108] = { name = i18n("app.modules.sensors.sensor_rpm"),                 id = 108, group = "rpm" },
+  [109] = { name = i18n("app.modules.sensors.sensor_temp"),                id = 109, group = "temps" },
 }
+
+-- Display sections (groups)
+SENSOR_GROUPS = {
+  general = {
+    title = i18n("app.modules.sensors.group_general"),
+    ids = { 0, 1 },
+  },
+  battery = {
+    title = i18n("app.modules.sensors.group_battery"),
+    ids = { 2, 3, 4, 5, 6 },
+  },
+  battery_cells = {
+    title = i18n("app.modules.sensors.group_battery_cells"),
+    ids = { 7, 8, 9 },
+  },
+  control = {
+    title = i18n("app.modules.sensors.group_control"),
+    ids = { 10, 11, 12, 13, 14, 15 },
+  },
+  esc1 = {
+    title = i18n("app.modules.sensors.group_esc1"),
+    ids = { 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28 },
+  },
+  esc2 = {
+    title = i18n("app.modules.sensors.group_esc2"),
+    ids = { 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41 },
+  },
+  esc = {
+    title = i18n("app.modules.sensors.group_esc_common"),
+    ids = { 42, 43, 44, 45, 46, 47, 48, 49 },
+  },
+  temps = {
+    title = i18n("app.modules.sensors.group_temperatures"),
+    ids = { 50, 51, 52, 53, 54, 55, 56, 109 },
+  },
+  nav = {
+    title = i18n("app.modules.sensors.group_navigation"),
+    ids = { 57, 58, 59 },
+  },
+  rpm = {
+    title = i18n("app.modules.sensors.group_rpm_speed"),
+    ids = { 60, 61, 62, 63, 108 },
+  },
+  attitude = {
+    title = i18n("app.modules.sensors.group_attitude"),
+    ids = { 64, 65, 66, 67 },
+  },
+  accel = {
+    title = i18n("app.modules.sensors.group_accel"),
+    ids = { 68, 69, 70, 71 },
+  },
+  gps = {
+    title = i18n("app.modules.sensors.group_gps"),
+    ids = { 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83 },
+  },
+  load = {
+    title = i18n("app.modules.sensors.group_load"),
+    ids = { 84, 85, 86, 87 },
+  },
+  status = {
+    title = i18n("app.modules.sensors.group_status"),
+    ids = { 88, 89, 90, 91, 92, 93, 94 },
+  },
+  profiles = {
+    title = i18n("app.modules.sensors.group_profiles"),
+    ids = { 95, 96, 97, 98 },
+  },
+  tuning = {
+    title = i18n("app.modules.sensors.group_tuning"),
+    ids = { 99 },
+  },
+  debug = {
+    title = i18n("app.modules.sensors.group_debug"),
+    ids = { 100, 101, 102, 103, 104, 105, 106, 107 },
+  },
+}
+
+-- Optional: control the visual order of sections when rendering
+GROUP_ORDER = {
+  "general",
+  "status",
+  "profiles",
+  "tuning",
+  "control",
+  "battery",
+  "battery_cells",
+  "esc1",
+  "esc2",
+  "esc",
+  "temps",
+  "rpm",
+  "attitude",
+  "accel",
+  "gps",
+  "nav",
+  "load",
+  "debug",
+}
+
 
 
 local function openPage(pidx, title, script)
