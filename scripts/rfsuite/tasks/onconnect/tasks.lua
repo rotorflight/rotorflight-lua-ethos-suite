@@ -84,11 +84,28 @@ function tasks.wakeup()
     local telemetryActive = rfsuite.tasks.msp.onConnectChecksInit and rfsuite.session.telemetryState
 
     if rfsuite.session.telemetryTypeChanged then
+        --[[
         rfsuite.utils.logRotorFlightBanner()
         rfsuite.session.telemetryTypeChanged = false
         tasks.resetAllTasks()
         tasksLoaded = false
         return
+    ]]
+        local now = os.clock()
+        -- debounce: ignore repeated pulses within the window
+        if telemetryActive and (lastTypeChangeAt == 0 or (now - lastTypeChangeAt) >= TYPE_CHANGE_DEBOUNCE) then
+            rfsuite.utils.logRotorFlightBanner()
+            -- rfsuite.utils.log("Telemetry type changed, resetting tasks.", "info")
+            lastTypeChangeAt = now
+            rfsuite.session.telemetryTypeChanged = false
+            tasks.resetAllTasks()
+            tasksLoaded = false
+            return
+        else
+            -- swallow spurious/rapid duplicate pulses
+            rfsuite.session.telemetryTypeChanged = false
+        end
+
     end
 
     if not telemetryActive then
