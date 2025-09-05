@@ -1162,9 +1162,14 @@ function dashboard.wakeup(widget)
 
     -- Throttle CPU usage based on connection and visibility
     if not rfsuite.session.isConnected then
-        if (now - lastWakeup) < 0.5 then return end
+        -- if not connected, then poll every 1 second
+        if (now - lastWakeup) < 1 then return end
     elseif admin or not visible then
+        -- if admin app is running or quick return
         return 
+    else
+        -- default rate limit of 0.05s (50% of clock speed)
+        if (now - lastWakeup) < 0.05 then return end   
     end
 
     local currentFlightMode = rfsuite.flightmode.current or "preflight"
