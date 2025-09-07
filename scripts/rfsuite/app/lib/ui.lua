@@ -540,6 +540,62 @@ function ui.getLabel(id, page)
     return nil
 end
 
+-- Boolean field.
+function ui.fieldBoolean(i)
+    local app        = rfsuite.app
+    local page       = app.Page
+    local fields     = page.fields
+    local f          = fields[i]
+    local formLines  = app.formLines
+    local formFields = app.formFields
+    local radioText  = app.radio.text
+
+    local posText, posField
+
+    if f.inline and f.inline >= 1 and f.label then
+        if radioText == 2 and f.t2 then f.t = f.t2 end
+        local p = rfsuite.app.utils.getInlinePositions(f, page)
+        posText, posField = p.posText, p.posField
+        form.addStaticText(formLines[rfsuite.app.formLineCnt], posText, f.t)
+    else
+        if f.t then
+            if radioText == 2 and f.t2 then f.t = f.t2 end
+            if f.label then f.t = "        " .. f.t end
+        end
+        rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+        formLines[rfsuite.app.formLineCnt] = form.addLine(f.t)
+        posField = f.position or nil
+    end
+
+    local tbldata = f.table and rfsuite.app.utils.convertPageValueTable(f.table, f.tableIdxInc) or {}
+
+    formFields[i] = form.addBooleanField(
+        formLines[rfsuite.app.formLineCnt],
+        posField,
+        function()
+            if not fields or not fields[i] then
+                ui.disableAllFields()
+                ui.disableAllNavigationFields()
+                ui.enableNavigationField('menu')
+                return nil
+            end
+            if fields[i].value == 0 then
+                return false
+            else
+                return true    
+            end
+        end,
+        function(value)
+            if value == false then value = 0 else value = 1 end
+            if f.postEdit then f.postEdit(page, value) end
+            if f.onChange then f.onChange(page, value) end
+            f.value = rfsuite.app.utils.saveFieldValue(fields[i], value)
+        end
+    )
+
+    if f.disable then formFields[i]:enable(false) end
+end
+
 -- Choice field.
 function ui.fieldChoice(i)
     local app        = rfsuite.app
@@ -950,6 +1006,7 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
                 elseif field.table or field.type == 1 then rfsuite.app.ui.fieldChoice(i)
                 elseif field.type == 2 then rfsuite.app.ui.fieldNumber(i)
                 elseif field.type == 3 then rfsuite.app.ui.fieldText(i)
+                elseif field.type == 5 then rfsuite.app.ui.fieldBoolean(i)
                 else                         rfsuite.app.ui.fieldNumber(i)
                 end
             else
