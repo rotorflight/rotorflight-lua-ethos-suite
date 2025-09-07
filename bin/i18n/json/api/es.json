@@ -559,6 +559,16 @@
       "english": "TTA max headspeed increase over full headspeed.",
       "translation": "Maximo incremento TTA por encima de la velocidad maxima del rotor.",
       "needs_translation": false
+    },
+    "tbl_off": {
+      "english": "OFF",
+      "translation": "OFF",
+      "needs_translation": true
+    },
+    "tbl_on": {
+      "english": "ON",
+      "translation": "ON",
+      "needs_translation": true
     }
   },
   "PID_PROFILE": {

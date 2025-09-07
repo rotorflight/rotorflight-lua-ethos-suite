@@ -156,7 +156,9 @@ return {
       ["governor_p_gain"] = "PID loop P-term gain.",
       ["governor_yaw_ff_weight"] = "Gewicht voor yaw precompensation - Hoeveel yaw is mixed in de feedforward.",
       ["governor_max_throttle"] = "Maximale throttle welke de governor mag gebruiken.",
-      ["governor_tta_limit"] = "TTA max rotortoerental boven volledige rotortoerental."
+      ["governor_tta_limit"] = "TTA max rotortoerental boven volledige rotortoerental.",
+      ["tbl_off"] = "OFF",
+      ["tbl_on"] = "ON"
     },
     ["PID_PROFILE"] = {
       ["bterm_cutoff_2"] = "B-term afsnijding in Hz.",
@@ -816,6 +818,16 @@ return {
       },
       ["profile_governor"] = {
         ["tail_torque_assist"] = "Tail Torque Assist",
+        ["fc_throttle_curve"] = "FC Throttle Curve",
+        ["tx_precomp_curve"] = "TX Precomp Curve",
+        ["fallback_precomp"] = "Fallback Precomp",
+        ["voltage_comp"] = "Voltage Comp",
+        ["pid_spoolup"] = "PID Spoolup",
+        ["hs_adjustment"] = "HS Adjustment",
+        ["dyn_min_throttle"] = "Dyn. Min Throttle",
+        ["autorotation"] = "Autorotation",
+        ["suspend"] = "Suspend",
+        ["bypass"] = "Bypass",
         ["p"] = "P",
         ["i"] = "I",
         ["yaw"] = "Yaw",

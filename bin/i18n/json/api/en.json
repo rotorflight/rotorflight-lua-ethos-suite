@@ -559,6 +559,16 @@
       "english": "TTA max headspeed increase over full headspeed.",
       "translation": "TTA max headspeed increase over full headspeed.",
       "needs_translation": false
+    },
+    "tbl_off": {
+      "english": "OFF",
+      "translation": "OFF",
+      "needs_translation": false
+    },
+    "tbl_on": {
+      "english": "ON",
+      "translation": "ON",
+      "needs_translation": false
     }
   },
   "PID_PROFILE": {
