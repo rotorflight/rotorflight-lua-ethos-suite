@@ -156,9 +156,7 @@ return {
       ["governor_p_gain"] = "Gain du terme P de la boucle PID.",
       ["governor_yaw_ff_weight"] = "Valeur de precompensation en lacet - quantite de lacet melangee dans la precompensation.",
       ["governor_max_throttle"] = "Accelerateur de sortie maximal que le regulateur est autorise a utiliser.",
-      ["governor_tta_limit"] = "Limite TTA de l'augmentation maximale de la vitesse de rotation par rapport a la vitesse de rotation totale.",
-      ["tbl_off"] = "OFF",
-      ["tbl_on"] = "ON"
+      ["governor_tta_limit"] = "Limite TTA de l'augmentation maximale de la vitesse de rotation par rapport a la vitesse de rotation totale."
     },
     ["PID_PROFILE"] = {
       ["bterm_cutoff_2"] = "Frequence de coupure du B-term en Hz.",
@@ -818,16 +816,6 @@ return {
       },
       ["profile_governor"] = {
         ["tail_torque_assist"] = "Tail Torque Assist",
-        ["fc_throttle_curve"] = "FC Throttle Curve",
-        ["tx_precomp_curve"] = "TX Precomp Curve",
-        ["fallback_precomp"] = "Fallback Precomp",
-        ["voltage_comp"] = "Voltage Comp",
-        ["pid_spoolup"] = "PID Spoolup",
-        ["hs_adjustment"] = "HS Adjustment",
-        ["dyn_min_throttle"] = "Dyn. Min Throttle",
-        ["autorotation"] = "Autorotation",
-        ["suspend"] = "Suspend",
-        ["bypass"] = "Bypass",
         ["p"] = "P",
         ["i"] = "I",
         ["yaw"] = "Lacet",

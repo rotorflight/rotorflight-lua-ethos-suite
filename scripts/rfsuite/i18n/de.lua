@@ -156,9 +156,7 @@ return {
       ["governor_p_gain"] = "P-Term-Verstaerkung der PID-Regler.",
       ["governor_yaw_ff_weight"] = "Gier-Vorkompensationsgewicht – wie stark Gier in das Feedforward gemischt wird.",
       ["governor_max_throttle"] = "Maximales Ausgangs-Gas, das der Governor verwenden darf.",
-      ["governor_tta_limit"] = "Maximale TTA-Drehzahlerhoehung ueber die volle Drehzahl hinaus.",
-      ["tbl_off"] = "OFF",
-      ["tbl_on"] = "ON"
+      ["governor_tta_limit"] = "Maximale TTA-Drehzahlerhoehung ueber die volle Drehzahl hinaus."
     },
     ["PID_PROFILE"] = {
       ["bterm_cutoff_2"] = "B-Term-Grenzfrequenz in Hz.",
@@ -818,16 +816,6 @@ return {
       },
       ["profile_governor"] = {
         ["tail_torque_assist"] = "Tail Torque Assist",
-        ["fc_throttle_curve"] = "FC Throttle Curve",
-        ["tx_precomp_curve"] = "TX Precomp Curve",
-        ["fallback_precomp"] = "Fallback Precomp",
-        ["voltage_comp"] = "Voltage Comp",
-        ["pid_spoolup"] = "PID Spoolup",
-        ["hs_adjustment"] = "HS Adjustment",
-        ["dyn_min_throttle"] = "Dyn. Min Throttle",
-        ["autorotation"] = "Autorotation",
-        ["suspend"] = "Suspend",
-        ["bypass"] = "Bypass",
         ["p"] = "P",
         ["i"] = "I",
         ["yaw"] = "Gier",

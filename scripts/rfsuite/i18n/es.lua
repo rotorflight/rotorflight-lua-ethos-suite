@@ -156,9 +156,7 @@ return {
       ["governor_p_gain"] = "Ganancia P-term del loop PID.",
       ["governor_yaw_ff_weight"] = "Precompensacion de direccion - cuanto comando de direccion se mezcla con el avance (feedforward).",
       ["governor_max_throttle"] = "Salida maxima de acelerador que se le permite usar al governor.",
-      ["governor_tta_limit"] = "Maximo incremento TTA por encima de la velocidad maxima del rotor.",
-      ["tbl_off"] = "OFF",
-      ["tbl_on"] = "ON"
+      ["governor_tta_limit"] = "Maximo incremento TTA por encima de la velocidad maxima del rotor."
     },
     ["PID_PROFILE"] = {
       ["bterm_cutoff_2"] = "Corte de B-term en Hz.",
@@ -818,16 +816,6 @@ return {
       },
       ["profile_governor"] = {
         ["tail_torque_assist"] = "Tail Torque Assist",
-        ["fc_throttle_curve"] = "FC Throttle Curve",
-        ["tx_precomp_curve"] = "TX Precomp Curve",
-        ["fallback_precomp"] = "Fallback Precomp",
-        ["voltage_comp"] = "Voltage Comp",
-        ["pid_spoolup"] = "PID Spoolup",
-        ["hs_adjustment"] = "HS Adjustment",
-        ["dyn_min_throttle"] = "Dyn. Min Throttle",
-        ["autorotation"] = "Autorotation",
-        ["suspend"] = "Suspend",
-        ["bypass"] = "Bypass",
         ["p"] = "P",
         ["i"] = "I",
         ["yaw"] = "Dirección",
