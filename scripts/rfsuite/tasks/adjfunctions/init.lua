@@ -17,7 +17,7 @@
  * 
 ]] --
 local init = {
-    interval        = 0.5,                  -- run every 0.5 seconds
+    interval        = 1.0,                  -- run every 1.0 seconds
     script          = "adjfunctions.lua",   -- run this script
     linkrequired    = true,                 -- run this script only if link is established
     connected       = true,            -- run this script only if msp is connected
