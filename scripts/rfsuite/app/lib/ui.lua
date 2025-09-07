@@ -542,6 +542,14 @@ end
 
 -- Boolean field.
 function ui.fieldBoolean(i)
+
+    -- we dont have boolean fields in ethos 1.70 and below because they candidate
+    -- have dynamic values
+    if utils.ethosVersionAtLeast(1,7,0) then
+        ui.fieldChoice(i)
+        return
+    end
+
     local app        = rfsuite.app
     local page       = app.Page
     local fields     = page.fields
