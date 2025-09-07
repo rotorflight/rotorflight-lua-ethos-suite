@@ -23,6 +23,22 @@ local MSP_REBUILD_ON_WRITE = false -- Rebuild the payload on write
 local MSP_API_STRUCTURE_READ_DATA
 
 if rfsuite.utils.apiVersionCompare(">=", "12.09") then
+
+    local offOn = {rfsuite.i18n.get("api.GOVERNOR_PROFILE.tbl_off"), rfsuite.i18n.get("api.GOVERNOR_PROFILE.tbl_on")}
+
+    local governor_flags_bitmap = {
+        { field = "fc_throttle_curve",    table = offOn, tableIdxInc = -1},    -- bit 0
+        { field = "tx_precomp_curve",     table = offOn, tableIdxInc = -1 },    -- bit 1
+        { field = "fallback_precomp",     table = offOn, tableIdxInc = -1 },    -- bit 2
+        { field = "voltage_comp",         table = offOn, tableIdxInc = -1 },    -- bit 3
+        { field = "pid_spoolup",          table = offOn, tableIdxInc = -1 },    -- bit 4
+        { field = "hs_adjustment",        table = offOn, tableIdxInc = -1 },    -- bit 5
+        { field = "dyn_min_throttle",     table = offOn, tableIdxInc = -1 },    -- bit 6
+        { field = "autorotation",         table = offOn, tableIdxInc = -1 },    -- bit 7
+        { field = "suspend",              table = offOn, tableIdxInc = -1 },    -- bit 8
+        { field = "bypass",               table = offOn, tableIdxInc = -1 },    -- bit 9 (up to 15 bits can be defined)
+    }
+
     MSP_API_STRUCTURE_READ_DATA = {
         {field = "governor_headspeed",            type = "U16", apiVersion = 12.09, simResponse = {208, 7}, min = 0,   max = 50000, default = 1000, unit = "rpm", step = 10},
         {field = "governor_gain",                 type = "U8",  apiVersion = 12.09, simResponse = {100},    min = 0,   max = 250,   default = 40},
@@ -38,7 +54,7 @@ if rfsuite.utils.apiVersionCompare(">=", "12.09") then
         {field = "governor_max_throttle",         type = "U8",  apiVersion = 12.09, simResponse = {100},    min = 40,  max = 100,   default = 100,  unit = "%"},
         {field = "governor_min_throttle",         type = "U8",  apiVersion = 12.09, simResponse = {10},     min = 0,   max = 100,   default = 10,   unit = "%"},
         {field = "governor_fallback_drop",        type = "U8",  apiVersion = 12.09, simResponse = {10},     min = 0,   max = 50,   default = 10,  unit = "%"},
-        {field = "governor_flags",                type = "U16", apiVersion = 12.09, simResponse = {251, 3}, },
+        {field = "governor_flags",                type = "U16", apiVersion = 12.09, simResponse = {251, 3}, bitmap = governor_flags_bitmap},
     }
 else
     MSP_API_STRUCTURE_READ_DATA = {

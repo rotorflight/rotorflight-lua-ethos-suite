@@ -12,7 +12,7 @@ local apidata = {
             { t = i18n("app.modules.governor.gov_pwr_filter"),     mspapi = 1, apikey = "gov_pwr_filter"},
             { t = i18n("app.modules.governor.gov_tta_filter"),     mspapi = 1, apikey = "gov_tta_filter"},
             { t = i18n("app.modules.governor.gov_ff_filter"),      mspapi = 1, apikey = "gov_ff_filter"},                        
-            { t = i18n("app.modules.governor.gov_d_filter"),       mspapi = 1, apikey = "gov_d_filter"},
+            { t = i18n("app.modules.governor.gov_d_filter"),       mspapi = 1, apikey = "gov_d_filter"},			
             }
         }               
     }    

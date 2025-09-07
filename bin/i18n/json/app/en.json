@@ -1791,6 +1791,56 @@
         "translation": "Tail Torque Assist",
         "needs_translation": false
       },
+      "fc_throttle_curve": {
+        "english": "FC Throttle Curve",
+        "translation": "FC Throttle Curve",
+        "needs_translation": false
+      },
+      "tx_precomp_curve": {
+        "english": "TX Precomp Curve",
+        "translation": "TX Precomp Curve",
+        "needs_translation": false
+      },
+      "fallback_precomp": {
+        "english": "Fallback Precomp",
+        "translation": "Fallback Precomp",
+        "needs_translation": false
+      },
+      "voltage_comp": {
+        "english": "Voltage Comp",
+        "translation": "Voltage Comp",
+        "needs_translation": false
+      },
+      "pid_spoolup": {
+        "english": "PID Spoolup",
+        "translation": "PID Spoolup",
+        "needs_translation": false
+      },
+      "hs_adjustment": {
+        "english": "HS Adjustment",
+        "translation": "HS Adjustment",
+        "needs_translation": false
+      },
+      "dyn_min_throttle": {
+        "english": "Dyn. Min Throttle",
+        "translation": "Dyn. Min Throttle",
+        "needs_translation": false
+      },
+      "autorotation": {
+        "english": "Autorotation",
+        "translation": "Autorotation",
+        "needs_translation": false
+      },
+      "suspend": {
+        "english": "Suspend",
+        "translation": "Suspend",
+        "needs_translation": false
+      },
+      "bypass": {
+        "english": "Bypass",
+        "translation": "Bypass",
+        "needs_translation": false
+      },
       "p": {
         "english": "P",
         "translation": "P",
