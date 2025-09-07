@@ -1004,6 +1004,7 @@ return {
       },
       ["governor"] = {
         ["menu_general"] = "Allgemein",
+        ["menu_flags"] = "Flags",
         ["menu_filters"] = "Filter",
         ["menu_time"] = "Rampezeit",
         ["help_p1"] = "Diese Parameter gelten global fuer den Drehzahlreger (Governor), unabhaengig vom verwendeten Profil.",

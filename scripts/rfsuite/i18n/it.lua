@@ -1004,6 +1004,7 @@ return {
       },
       ["governor"] = {
         ["menu_general"] = "Generale",
+        ["menu_flags"] = "Flags",
         ["menu_filters"] = "Filtri",
         ["menu_time"] = "Tempo Ramp",
         ["help_p1"] = "Questi parametri si applicano globalmente al regolatore, indipendentemente dal profilo in uso.",

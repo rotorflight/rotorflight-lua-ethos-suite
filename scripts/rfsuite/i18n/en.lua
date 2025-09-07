@@ -1004,6 +1004,7 @@ return {
       },
       ["governor"] = {
         ["menu_general"] = "General",
+        ["menu_flags"] = "Flags",
         ["menu_filters"] = "Filters",
         ["menu_time"] = "Ramp Time",
         ["help_p1"] = "These parameters apply globally to the governor regardless of the profile in use.",

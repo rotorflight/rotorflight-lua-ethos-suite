@@ -2649,6 +2649,11 @@
         "translation": "Allgemein",
         "needs_translation": false
       },
+      "menu_flags": {
+        "english": "Flags",
+        "translation": "Flags",
+        "needs_translation": true
+      },
       "menu_filters": {
         "english": "Filters",
         "translation": "Filter",

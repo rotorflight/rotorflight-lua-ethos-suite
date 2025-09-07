@@ -1004,6 +1004,7 @@ return {
       },
       ["governor"] = {
         ["menu_general"] = "Algemeen",
+        ["menu_flags"] = "Flags",
         ["menu_filters"] = "Filters",
         ["menu_time"] = "Ramp Tijd",
         ["help_p1"] = "Deze parameters zijn van toepassing op de governor, ongeacht het gebruikte profiel.",

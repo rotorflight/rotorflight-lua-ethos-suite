@@ -1004,6 +1004,7 @@ return {
       },
       ["governor"] = {
         ["menu_general"] = "General",
+        ["menu_flags"] = "Flags",
         ["menu_filters"] = "Filtres",
         ["menu_time"] = "Temps de rampe",
         ["help_p1"] = "Ces parametres s'appliquent globalement au gouverneur, quel que soit le profil utilise.",

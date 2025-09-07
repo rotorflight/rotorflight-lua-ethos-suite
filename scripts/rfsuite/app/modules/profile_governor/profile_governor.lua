@@ -29,16 +29,6 @@ local apidata = {
                 {t = i18n("app.modules.profile_governor.col"),                     inline = 1, label = 2, mspapi = 1, apikey = "governor_collective_weight", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
                 {t = i18n("app.modules.profile_governor.tta_gain"),                inline = 2, label = 3, mspapi = 1, apikey = "governor_tta_gain", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
                 {t = i18n("app.modules.profile_governor.tta_limit"),               inline = 1, label = 3, mspapi = 1, apikey = "governor_tta_limit", enablefunction = function() return (rfsuite.session.governorMode >=2 ) end},
-                {t = i18n("app.modules.profile_governor.fc_throttle_curve"),       mspapi = 1, apikey = "governor_flags->fc_throttle_curve", type = 1},
-                {t = i18n("app.modules.profile_governor.tx_precomp_curve"),       mspapi = 1, apikey = "governor_flags->tx_precomp_curve", type = 1},
-                {t = i18n("app.modules.profile_governor.fallback_precomp"),       mspapi = 1, apikey = "governor_flags->fallback_precomp", type = 1},
-                {t = i18n("app.modules.profile_governor.voltage_comp"),           mspapi = 1, apikey = "governor_flags->voltage_comp", type = 1},
-                {t = i18n("app.modules.profile_governor.pid_spoolup"),            mspapi = 1, apikey = "governor_flags->pid_spoolup", type = 1},
-                {t = i18n("app.modules.profile_governor.hs_adjustment"),          mspapi = 1, apikey = "governor_flags->hs_adjustment", type = 1},
-                {t = i18n("app.modules.profile_governor.dyn_min_throttle"),       mspapi = 1, apikey = "governor_flags->dyn_min_throttle", type = 1},
-                {t = i18n("app.modules.profile_governor.autorotation"),           mspapi = 1, apikey = "governor_flags->autorotation", type = 1},
-                {t = i18n("app.modules.profile_governor.suspend"),                mspapi = 1, apikey = "governor_flags->suspend", type = 1},
-                {t = i18n("app.modules.profile_governor.bypass"),                 mspapi = 1, apikey = "governor_flags->bypass", type = 1},
             }
         }
     }
