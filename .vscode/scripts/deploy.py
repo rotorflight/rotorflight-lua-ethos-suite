@@ -757,9 +757,23 @@ def copy_files(src_override, fileext, targets):
                         shutil.copy(os.path.join(r,f), out_dir)
 
         # fast
-        # fast
         elif fileext == 'fast':
             scr = os.path.join(git_src, 'scripts', tgt)
+
+            # ensure no leftover .luac files in target
+            if os.path.isdir(out_dir):
+                removed = 0
+                for r, _, files in os.walk(out_dir):
+                    for f in files:
+                        if f.endswith('.luac'):
+                            try:
+                                os.remove(os.path.join(r, f))
+                                removed += 1
+                            except Exception as e:
+                                print(f"[WARN] Failed to delete {f}: {e}")
+                if removed:
+                    print(f"Fast deploy cleanup: removed {removed} stale .luac file(s).")
+
 
             # FAT/exFAT timestamp slack (seconds)
             TS_SLACK = 2.0
