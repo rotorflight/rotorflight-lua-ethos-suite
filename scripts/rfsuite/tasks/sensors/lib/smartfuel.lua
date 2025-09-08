@@ -206,8 +206,12 @@ local function smartFuelCalc()
         end
     end
 
-    -- Detect voltage increase after stabilization if not yet flying
-    if #lastVoltages >= 1 and rfsuite.flightmode.current == "preflight" then
+    -- Detect voltage increase after stabilization if not yet flying, Only allow this reset whilst in preflight & disarmed.
+    local isDisarmed  = (rfsuite and rfsuite.session and rfsuite.session.isArmed == false)
+    local isPreflight = (rfsuite and rfsuite.flightmode and rfsuite.flightmode.current == "preflight")
+
+    -- Need at least 2 samples because we read (#lastVoltages - 1)
+    if lastVoltages and #lastVoltages >= 2 and isPreflight and isDisarmed then
         local prev = lastVoltages[#lastVoltages - 1]
         if voltage > prev + voltageThreshold then
             rfsuite.utils.log("Voltage increased after stabilization – resetting...", "info")
@@ -217,7 +221,7 @@ local function smartFuelCalc()
             stabilizeNotBefore = os.clock() + preStabiliseDelay
             return nil  -- Ensure upstream caller knows we are resetting
         end
-    end    
+    end  
 
     -- After voltage is stable, proceed as normal
     local cellCount, packCapacity, reserve, maxCellV, minCellV, fullCellV =
