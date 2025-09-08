@@ -214,6 +214,9 @@ function tasks.telemetryCheckScheduler()
 
         if not telemetryState then
             utils.session()
+            if rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue  then
+                rfsuite.tasks.msp.mspQueue:clear()
+            end     
         else
             sportSensor = system.getSource({ appId = 0xF101 })
             elrsSensor = system.getSource({ crsfId = 0x14, subIdStart = 0, subIdEnd = 1 })
@@ -221,6 +224,9 @@ function tasks.telemetryCheckScheduler()
 
             if not currentTelemetrySensor then
                 utils.session()
+                if rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue  then
+                    rfsuite.tasks.msp.mspQueue:clear()
+                end                
             else
                 rfsuite.session.telemetryState = true
                 rfsuite.session.telemetrySensor = currentTelemetrySensor
