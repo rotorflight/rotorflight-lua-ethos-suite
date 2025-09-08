@@ -3729,6 +3729,11 @@
         "translation": "Boot Grace Time",
         "needs_translation": false
       },
+      "arming_disable_flag_6": {
+        "english": "RPM Signal",
+        "translation": "RPM Signal",
+        "needs_translation": false
+      },
       "megabyte": {
         "english": "MB",
         "translation": "MB",

@@ -1236,6 +1236,7 @@ return {
         ["arming_disable_flag_25"] = "Arm Switch",
         ["erasing"] = "Erasing",
         ["arming_disable_flag_9"] = "Boot Grace Time",
+        ["arming_disable_flag_6"] = "RPM Signal",
         ["megabyte"] = "MB",
         ["arming_disable_flag_17"] = "Paralyze",
         ["arming_disable_flag_5"] = "Governor",

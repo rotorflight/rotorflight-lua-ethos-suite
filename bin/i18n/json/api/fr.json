@@ -562,13 +562,13 @@
     },
     "tbl_off": {
       "english": "OFF",
-      "translation": "OFF",
-      "needs_translation": true
+      "translation": "DESACTIVER",
+      "needs_translation": false
     },
     "tbl_on": {
       "english": "ON",
-      "translation": "ON",
-      "needs_translation": true
+      "translation": "ACTIVER",
+      "needs_translation": false
     }
   },
   "PID_PROFILE": {

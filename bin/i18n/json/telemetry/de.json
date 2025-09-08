@@ -56,8 +56,8 @@
   },
   "group_gyro": {
     "english": "Gyro",
-    "translation": "Gyro",
-    "needs_translation": true
+    "translation": "Kreisel",
+    "needs_translation": false
   },
   "group_gps": {
     "english": "GPS",

@@ -1788,58 +1788,58 @@
     "profile_governor": {
       "tail_torque_assist": {
         "english": "Tail Torque Assist",
-        "translation": "Tail Torque Assist",
-        "needs_translation": true
+        "translation": "Staart Koppel Assistent",
+        "needs_translation": false
       },
       "fc_throttle_curve": {
         "english": "FC Throttle Curve",
-        "translation": "FC Throttle Curve",
-        "needs_translation": true
+        "translation": "FC Gas Kromme",
+        "needs_translation": false
       },
       "tx_precomp_curve": {
         "english": "TX Precomp Curve",
-        "translation": "TX Precomp Curve",
-        "needs_translation": true
+        "translation": "TX Precomp Kromme",
+        "needs_translation": false
       },
       "fallback_precomp": {
         "english": "Fallback Precomp",
-        "translation": "Fallback Precomp",
-        "needs_translation": true
+        "translation": "Terugval Precomp",
+        "needs_translation": false
       },
       "voltage_comp": {
         "english": "Voltage Comp",
-        "translation": "Voltage Comp",
-        "needs_translation": true
+        "translation": "Spanning Comp",
+        "needs_translation": false
       },
       "pid_spoolup": {
         "english": "PID Spoolup",
-        "translation": "PID Spoolup",
-        "needs_translation": true
+        "translation": "PID Optoeren",
+        "needs_translation": false
       },
       "hs_adjustment": {
         "english": "HS Adjustment",
-        "translation": "HS Adjustment",
-        "needs_translation": true
+        "translation": "HS Aanpassing",
+        "needs_translation": false
       },
       "dyn_min_throttle": {
         "english": "Dyn. Min Throttle",
-        "translation": "Dyn. Min Throttle",
-        "needs_translation": true
+        "translation": "Dyn. Min Gas",
+        "needs_translation": false
       },
       "autorotation": {
         "english": "Autorotation",
-        "translation": "Autorotation",
-        "needs_translation": true
+        "translation": "Autorotatie",
+        "needs_translation": false
       },
       "suspend": {
         "english": "Suspend",
-        "translation": "Suspend",
-        "needs_translation": true
+        "translation": "Pauzeren",
+        "needs_translation": false
       },
       "bypass": {
         "english": "Bypass",
-        "translation": "Bypass",
-        "needs_translation": true
+        "translation": "Omzeilen",
+        "needs_translation": false
       },
       "p": {
         "english": "P",
@@ -2651,8 +2651,8 @@
       },
       "menu_flags": {
         "english": "Flags",
-        "translation": "Flags",
-        "needs_translation": true
+        "translation": "Vlaggen",
+        "needs_translation": false
       },
       "menu_filters": {
         "english": "Filters",
@@ -3727,6 +3727,11 @@
       "arming_disable_flag_9": {
         "english": "Boot Grace Time",
         "translation": "Boot Grace Time",
+        "needs_translation": false
+      },
+      "arming_disable_flag_6": {
+        "english": "RPM Signal",
+        "translation": "RPM Signaal",
         "needs_translation": false
       },
       "megabyte": {

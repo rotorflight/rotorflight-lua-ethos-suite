@@ -157,8 +157,8 @@ return {
       ["governor_yaw_ff_weight"] = "Precompensacion de direccion - cuanto comando de direccion se mezcla con el avance (feedforward).",
       ["governor_max_throttle"] = "Salida maxima de acelerador que se le permite usar al governor.",
       ["governor_tta_limit"] = "Maximo incremento TTA por encima de la velocidad maxima del rotor.",
-      ["tbl_off"] = "OFF",
-      ["tbl_on"] = "ON"
+      ["tbl_off"] = "APAGADO",
+      ["tbl_on"] = "ENCENDIDO"
     },
     ["PID_PROFILE"] = {
       ["bterm_cutoff_2"] = "Corte de B-term en Hz.",
@@ -540,24 +540,24 @@ return {
         ["adj_value"] = "Valor de Ajuste"
       },
       ["telemetry"] = {
-        ["name"] = "Telemetría",
-        ["invalid_version"] = "Se requiere RF2.2 o posterior",
-        ["msg_set_defaults"] = "¿Aplicar sensores por defecto?",
-        ["no_more_than_40"] = "No se pueden habilitar más de 40 sensores a la vez"
+        ["name"] = "Telemetry",
+        ["invalid_version"] = "RF2.2 o posterior requerido",
+        ["msg_set_defaults"] = "Aplicar sensores por defecto?",
+        ["no_more_than_40"] = "Maximo 40 sensores habilitados"
       },
       ["validate_sensors"] = {
-        ["help_p1"] = "Esta herramienta intenta listar todos los sensores necesarios que faltan.",
+        ["help_p1"] = "Esta herramienta lista los sensores que faltan.",
         ["invalid"] = "INVALIDOS",
         ["name"] = "Sensores",
-        ["msg_repair"] = "Activa los sensores necesarios en el controlador de vuelo?",
-        ["msg_repair_fin"] = "El controlador de vuelo está configurado? Puede que necesite ejecutar 'Descubrir Sensores' para ver los cambios.",
+        ["msg_repair"] = "Activar sensores requeridos en el controlador?",
+        ["msg_repair_fin"] = "Controlador configurado? Descubrir sensores para ver cambios.",
         ["ok"] = "OK",
-        ["help_p2"] = "Utilice esta herramienta para asegurar que está enviando los sensores que corresponde."
+        ["help_p2"] = "Use esta herramienta para verificar sensores correctos."
       },
       ["msp_exp"] = {
-        ["help_p1"] = "Esta herramienta provee la capacidad de enviar un string de bytes al controlador de vuelo. Lo utilizan los desarrolladores durante el debugging.",
+        ["help_p1"] = "Permite enviar un string de bytes al controlador. Util para debugging.",
         ["name"] = "MSP Experimental",
-        ["help_p2"] = "Si no sabe lo que está haciendo no la use, podrian suceder cosas peligrosas."
+        ["help_p2"] = "No usar si no sabe que hace, puede causar problemas."
       },
       ["esc_tools"] = {
         ["unknown"] = "DESCONOCIDO",
@@ -817,17 +817,17 @@ return {
         ["help_p2"] = "Si utiliza un botón en su radio para cambiar los modos de vuelo o tasas, esta función anula la elección tan pronto como cambie la posición del botón."
       },
       ["profile_governor"] = {
-        ["tail_torque_assist"] = "Tail Torque Assist",
-        ["fc_throttle_curve"] = "FC Throttle Curve",
-        ["tx_precomp_curve"] = "TX Precomp Curve",
-        ["fallback_precomp"] = "Fallback Precomp",
-        ["voltage_comp"] = "Voltage Comp",
-        ["pid_spoolup"] = "PID Spoolup",
-        ["hs_adjustment"] = "HS Adjustment",
-        ["dyn_min_throttle"] = "Dyn. Min Throttle",
-        ["autorotation"] = "Autorotation",
-        ["suspend"] = "Suspend",
-        ["bypass"] = "Bypass",
+        ["tail_torque_assist"] = "Asist. Torque Cola",
+        ["fc_throttle_curve"] = "Curva Acel. FC",
+        ["tx_precomp_curve"] = "Curva Precomp TX",
+        ["fallback_precomp"] = "Precomp Resp.",
+        ["voltage_comp"] = "Comp Voltaje",
+        ["pid_spoolup"] = "PID Arranque",
+        ["hs_adjustment"] = "Ajuste VR",
+        ["dyn_min_throttle"] = "Min Dinamico",
+        ["autorotation"] = "Autorotacion",
+        ["suspend"] = "Suspender",
+        ["bypass"] = "Ignorar",
         ["p"] = "P",
         ["i"] = "I",
         ["yaw"] = "Dirección",
@@ -1004,7 +1004,7 @@ return {
       },
       ["governor"] = {
         ["menu_general"] = "General",
-        ["menu_flags"] = "Flags",
+        ["menu_flags"] = "Banderas",
         ["menu_filters"] = "Filtros",
         ["menu_time"] = "Tiempo de Rampa",
         ["help_p1"] = "Estos parámetros se aplican globalmente al governor independientemente del perfil en uso.",
@@ -1236,6 +1236,7 @@ return {
         ["arming_disable_flag_25"] = "Botón Armado",
         ["erasing"] = "Borrando",
         ["arming_disable_flag_9"] = "Tiempo gracia inicio",
+        ["arming_disable_flag_6"] = "Señal RPM",
         ["megabyte"] = "MB",
         ["arming_disable_flag_17"] = "Paralizar",
         ["arming_disable_flag_5"] = "Governor",
@@ -1343,7 +1344,7 @@ return {
     ["group_barometer"] = "Barómetro",
     ["group_rpm"] = "RPM",
     ["group_attitude"] = "Actitud",
-    ["group_gyro"] = "Gyro",
+    ["group_gyro"] = "Giro",
     ["group_gps"] = "GPS",
     ["group_load"] = "Carga del sistema",
     ["group_status"] = "Estado",

@@ -1788,58 +1788,58 @@
     "profile_governor": {
       "tail_torque_assist": {
         "english": "Tail Torque Assist",
-        "translation": "Tail Torque Assist",
-        "needs_translation": true
+        "translation": "Assistenza Coppia Coda",
+        "needs_translation": false
       },
       "fc_throttle_curve": {
         "english": "FC Throttle Curve",
-        "translation": "FC Throttle Curve",
-        "needs_translation": true
+        "translation": "Curva Acceleratore FC",
+        "needs_translation": false
       },
       "tx_precomp_curve": {
         "english": "TX Precomp Curve",
-        "translation": "TX Precomp Curve",
-        "needs_translation": true
+        "translation": "Curva Precomp TX",
+        "needs_translation": false
       },
       "fallback_precomp": {
         "english": "Fallback Precomp",
-        "translation": "Fallback Precomp",
-        "needs_translation": true
+        "translation": "Precomp Fallback",
+        "needs_translation": false
       },
       "voltage_comp": {
         "english": "Voltage Comp",
-        "translation": "Voltage Comp",
-        "needs_translation": true
+        "translation": "Compensazione Volt",
+        "needs_translation": false
       },
       "pid_spoolup": {
         "english": "PID Spoolup",
-        "translation": "PID Spoolup",
-        "needs_translation": true
+        "translation": "PID Avvio",
+        "needs_translation": false
       },
       "hs_adjustment": {
         "english": "HS Adjustment",
-        "translation": "HS Adjustment",
-        "needs_translation": true
+        "translation": "Regolazione HS",
+        "needs_translation": false
       },
       "dyn_min_throttle": {
         "english": "Dyn. Min Throttle",
-        "translation": "Dyn. Min Throttle",
-        "needs_translation": true
+        "translation": "Minimo Dyn. Thr",
+        "needs_translation": false
       },
       "autorotation": {
         "english": "Autorotation",
-        "translation": "Autorotation",
-        "needs_translation": true
+        "translation": "Autorotazione",
+        "needs_translation": false
       },
       "suspend": {
         "english": "Suspend",
-        "translation": "Suspend",
-        "needs_translation": true
+        "translation": "Sospendi",
+        "needs_translation": false
       },
       "bypass": {
         "english": "Bypass",
         "translation": "Bypass",
-        "needs_translation": true
+        "needs_translation": false
       },
       "p": {
         "english": "P",
@@ -3727,6 +3727,11 @@
       "arming_disable_flag_9": {
         "english": "Boot Grace Time",
         "translation": "Boot Grace Time",
+        "needs_translation": false
+      },
+      "arming_disable_flag_6": {
+        "english": "RPM Signal",
+        "translation": "Segnale RPM",
         "needs_translation": false
       },
       "megabyte": {
