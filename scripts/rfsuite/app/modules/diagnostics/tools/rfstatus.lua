@@ -38,12 +38,14 @@ local displayPos = {
 }
 
 -- Indices into rfsuite.app.formFields (intentionally 0-based)
-local IDX_BG_TASK       = 0
-local IDX_RF_MODULE     = 1
-local IDX_MSP           = 2
-local IDX_TELEM         = 3
-local IDX_FBLCONNECTED  = 4
-local IDX_APIVERSION    = 5
+local IDX_CPULOAD     = 0
+local IDX_FREERAM     = 1
+local IDX_BG_TASK     = 2
+local IDX_RF_MODULE   = 3
+local IDX_MSP         = 4
+local IDX_TELEM       = 5
+local IDX_FBLCONNECTED= 6
+local IDX_APIVERSION  = 7
 
 -- Helpers
 local function setStatus(field, ok, dashIfNil)
@@ -106,6 +108,13 @@ local function openPage(pidx, title, script)
   rfsuite.app.formLines      = {}
   rfsuite.app.formFieldCount = 0
 
+  -- CPU Load %
+  addStatusLine("CPU Load", string.format("%.1f%%", rfsuite.session.cpuload or 0))
+
+  -- Free RAM
+  addStatusLine("Free RAM", string.format("%.1f kB", rfsuite.session.freeram or 0))
+
+
   -- Background Task status
   addStatusLine(
     "app.modules.rfstatus.bgtask",
@@ -147,6 +156,22 @@ local function wakeup()
   local now = os.clock()
   if (now - lastWakeup) < 2 then return end
   lastWakeup = now
+
+  -- CPU Load
+  do
+    local field = rfsuite.app.formFields and rfsuite.app.formFields[IDX_CPULOAD]
+    if field then
+      field:value(string.format("%.1f%%", rfsuite.session.cpuload or 0))
+    end
+  end
+
+  -- Free RAM
+  do
+    local field = rfsuite.app.formFields and rfsuite.app.formFields[IDX_FREERAM]
+    if field then
+      field:value(string.format("%.1f kB", rfsuite.utils.round(rfsuite.session.freeram or 0, 1)))
+    end
+  end
 
   -- Background Task
   do

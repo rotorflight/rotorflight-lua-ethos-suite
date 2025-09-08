@@ -102,8 +102,6 @@ local function updateStats()
 
     fields['runtime']:value(startTestLength)
 
-    fields['memory']:value(rfsuite.utils.round(system.getMemoryUsage().luaRamAvailable / 1000, 2) .. 'kB')
-
     fields['total']:value(tostring(mspSpeedTestStats['total']))
 
     fields['retries']:value(tostring(mspSpeedTestStats['retries']))
@@ -258,9 +256,6 @@ local function openPage(pidx, title, script)
 
     line['rf'] = form.addLine(i18n("app.modules.msp_speed.rf_protocol"))
     fields['rf'] = form.addStaticText(line['rf'], posText, string.upper(rfsuite.tasks.msp.protocol.mspProtocol))
-
-    line['memory'] = form.addLine(i18n("app.modules.msp_speed.memory_free"))
-    fields['memory'] = form.addStaticText(line['memory'], posText, rfsuite.utils.round(system.getMemoryUsage().luaRamAvailable / 1000, 2) .. 'kB')
 
     line['runtime'] = form.addLine(i18n("app.modules.msp_speed.test_length"))
     fields['runtime'] = form.addStaticText(line['runtime'], posText, "-")

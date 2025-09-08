@@ -27,6 +27,19 @@ local usingSimulator = system.getVersion().simulation
 
 local tlm = system.getSource({ category = CATEGORY_SYSTEM_EVENT, member = TELEMETRY_ACTIVE })
 
+-- track cpu
+local CPU_TICK_HZ     = 20
+local CPU_TICK_BUDGET = 1 / CPU_TICK_HZ
+local CPU_ALPHA       = 0.2
+local cpu_avg         = 0
+
+-- track memory
+local MEM_ALPHA   = 0.2
+local mem_avg_kb  = 0
+local last_mem_t  = 0
+local MEM_PERIOD  = 2.0   -- seconds between samples
+
+
 -- =========================
 -- Profiler config & helpers
 -- =========================
@@ -472,6 +485,27 @@ function tasks.wakeup()
             tasks._lastProfileDump = now
         end
     end
+
+    -- track average cpu load
+    local elapsed = os.clock() - tasks.heartbeat
+    local instant = elapsed / CPU_TICK_BUDGET
+    cpu_avg = CPU_ALPHA * instant + (1 - CPU_ALPHA) * cpu_avg
+    rfsuite.session.cpuload = math.min(100, math.max(0, cpu_avg * 100))
+
+    -- track average memory usage
+    do
+        local now = os.clock()
+        if (now - last_mem_t) >= MEM_PERIOD then
+            last_mem_t = now
+            local m = system.getMemoryUsage()
+            if m and m.luaRamAvailable then
+                local free_now = m.luaRamAvailable / 1000
+                mem_avg_kb = MEM_ALPHA * free_now + (1 - MEM_ALPHA) * mem_avg_kb
+                rfsuite.session.freeram = mem_avg_kb
+            end
+        end
+    end
+
 end
 
 function tasks.reset()
