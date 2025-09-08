@@ -46,7 +46,7 @@ local function wakeup()
         -- update active profile
         -- the check happens in postLoad          
         if rfsuite.session.activeProfile ~= nil then
-            rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " #" .. rfsuite.session.activeProfile)
+            rfsuite.app.formFields['title']:value(rfsuite.app.Page.title .. " / " .. i18n("app.modules.governor.menu_general") .. " #" .. rfsuite.session.activeProfile)
         end
 
         if rfsuite.session.governorMode == 0 then
@@ -67,10 +67,27 @@ local function wakeup()
 
 end
 
+local function event(widget, category, value, x, y)
+    -- if close event detected go to section home page
+    if category == EVT_CLOSE and value == 0 or value == 35 then
+        rfsuite.app.ui.openPage(pidx, title, "profile_governor/governor.lua")  
+        return true
+    end
+end
+
+
+local function onNavMenu()
+    rfsuite.app.ui.progressDisplay()
+    rfsuite.app.ui.openPage(pidx, title, "profile_governor/governor.lua")  
+    return true
+end
+
 return {
     apidata = apidata,
     title = i18n("app.modules.profile_governor.name"),
     reboot = false,
+    event = event,
+    onNavMenu = onNavMenu,
     refreshOnProfileChange = true,
     eepromWrite = true,
     postLoad = postLoad,

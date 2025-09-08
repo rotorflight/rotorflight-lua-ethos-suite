@@ -39,7 +39,7 @@ sections[#sections + 1] = {
 sections[#sections + 1] = {
     title = rfsuite.i18n.get("app.modules.profile_governor.name"),
     module = "profile_governor",
-    script = "profile_governor.lua",
+    script = "select.lua",
     image = "app/modules/profile_governor/governor.png",
 }
 sections[#sections + 1] = {

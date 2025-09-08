@@ -3,19 +3,19 @@
 local i18n = rfsuite.i18n.get
 local S_PAGES = {
     [1] = {name = i18n("app.modules.governor.menu_general"), script = "general.lua", image = "general.png"},
-    [2] = {name = i18n("app.modules.governor.menu_time"), script = "time.lua", image = "time.png"},
-    [3] = {name = i18n("app.modules.governor.menu_filters"), script = "filters.lua", image = "filters.png"},
+    [2] = {name = i18n("app.modules.governor.menu_flags"), script = "flags.lua", image = "flags.png"},
 }
 
 local enableWakeup = false
 local prevConnectedState = nil
 local initTime = os.clock()
+local governorDisabledMsg = false
 
 local function openPage(pidx, title, script)
 
 
     rfsuite.tasks.msp.protocol.mspIntervalOveride = nil
-
+    rfsuite.app.formLines = {}
 
     rfsuite.app.triggers.isReady = false
     rfsuite.app.uiState = rfsuite.app.uiStatus.mainMenu
@@ -28,7 +28,7 @@ local function openPage(pidx, title, script)
 
     -- Clear old icons
     for i in pairs(rfsuite.app.gfx_buttons) do
-        if i ~= "governor" then
+        if i ~= "profile_governor" then
             rfsuite.app.gfx_buttons[i] = nil
         end
     end    
@@ -57,6 +57,16 @@ local function openPage(pidx, title, script)
     rfsuite.app.ui.fieldHeader(
         i18n(i18n("app.modules.governor.name"))
     )
+
+
+    if rfsuite.session.governorMode == 0 then
+        if governorDisabledMsg == false then
+            governorDisabledMsg = true
+
+            rfsuite.app.formLines[#rfsuite.app.formLines + 1] = form.addLine(i18n("app.modules.profile_governor.disabled_message"))
+
+        end
+    end
 
 
     local buttonW
@@ -90,8 +100,8 @@ local function openPage(pidx, title, script)
     end
 
 
-    if rfsuite.app.gfx_buttons["governor"] == nil then rfsuite.app.gfx_buttons["governor"] = {} end
-    if rfsuite.preferences.menulastselected["governor"] == nil then rfsuite.preferences.menulastselected["governor"] = 1 end
+    if rfsuite.app.gfx_buttons["profile_governor"] == nil then rfsuite.app.gfx_buttons["profile_governor"] = {} end
+    if rfsuite.preferences.menulastselected["profile_governor"] == nil then rfsuite.preferences.menulastselected["profile_governor"] = 1 end
 
 
     local Menu = assert(rfsuite.compiler.loadfile("app/modules/" .. script))()
@@ -112,30 +122,30 @@ local function openPage(pidx, title, script)
         if lc >= 0 then bx = (buttonW + padding) * lc end
 
         if rfsuite.preferences.general.iconsize ~= 0 then
-            if rfsuite.app.gfx_buttons["governor"][pidx] == nil then rfsuite.app.gfx_buttons["governor"][pidx] = lcd.loadMask("app/modules/governor/gfx/" .. pvalue.image) end
+            if rfsuite.app.gfx_buttons["profile_governor"][pidx] == nil then rfsuite.app.gfx_buttons["profile_governor"][pidx] = lcd.loadMask("app/modules/governor/gfx/" .. pvalue.image) end
         else
-            rfsuite.app.gfx_buttons["governor"][pidx] = nil
+            rfsuite.app.gfx_buttons["profile_governor"][pidx] = nil
         end
 
         rfsuite.app.formFields[pidx] = form.addButton(line, {x = bx, y = y, w = buttonW, h = buttonH}, {
             text = pvalue.name,
-            icon = rfsuite.app.gfx_buttons["governor"][pidx],
+            icon = rfsuite.app.gfx_buttons["profile_governor"][pidx],
             options = FONT_S,
             paint = function()
             end,
             press = function()
-                rfsuite.preferences.menulastselected["governor"] = pidx
+                rfsuite.preferences.menulastselected["profile_governor"] = pidx
                 rfsuite.app.ui.progressDisplay()
                 local name = i18n("app.modules.governor.name") .. " / " .. pvalue.name
-                rfsuite.app.ui.openPage(pidx, name, "governor/tools/" .. pvalue.script)
+                rfsuite.app.ui.openPage(pidx, name, "profile_governor/tools/" .. pvalue.script)
             end
         })
 
-        if pvalue.disabled == true then rfsuite.app.formFields[pidx]:enable(false) end
+        if pvalue.disabled == true or  rfsuite.session.governorMode == 0 then rfsuite.app.formFields[pidx]:enable(false) end
 
         local currState = (rfsuite.session.isConnected and rfsuite.session.mcu_id) and true or false
             
-        if rfsuite.preferences.menulastselected["governor"] == pidx then rfsuite.app.formFields[pidx]:focus() end
+        if rfsuite.preferences.menulastselected["profile_governor"] == pidx then rfsuite.app.formFields[pidx]:focus() end
 
         lc = lc + 1
 
@@ -152,7 +162,7 @@ end
 local function event(widget, category, value, x, y)
     -- if close event detected go to section home page
     if category == EVT_CLOSE and value == 0 or value == 35 then
-        rfsuite.app.ui.openMainMenuSub(rfsuite.app.lastMenu)
+        rfsuite.app.ui.openMainMenu()
         return true
     end
 end
@@ -160,7 +170,7 @@ end
 
 local function onNavMenu()
     rfsuite.app.ui.progressDisplay()
-        rfsuite.app.ui.openMainMenuSub(rfsuite.app.lastMenu)
+        rfsuite.app.ui.openMainMenu()
         return true
 end
 
@@ -182,7 +192,7 @@ local function wakeup()
     -- only update if state has changed
     if currState ~= prevConnectedState then
         -- toggle all three fields together
-        rfsuite.app.formFields[2]:enable(currState)
+        --rfsuite.app.formFields[2]:enable(currState)
 
         if not currState then
             rfsuite.app.formNavigationFields['menu']:focus()

@@ -2,10 +2,10 @@ local function openPage(pidx, title, script)
 
     if rfsuite.utils.apiVersionCompare(">=", "12.09") then
         -- load new menu with 3 pages
-        rfsuite.app.ui.openPage(pidx, title, "profile_governor/profile_governor.lua")        
+        rfsuite.app.ui.openPage(pidx, title, "profile_governor/governor.lua")        
     else
         -- load legacy single page rf2.2
-        rfsuite.app.ui.openPage(pidx, title, "profile_governor/profile_governor_legacy.lua")
+        rfsuite.app.ui.openPage(pidx, title, "profile_governor/governor_legacy.lua")
     end
 
 end
