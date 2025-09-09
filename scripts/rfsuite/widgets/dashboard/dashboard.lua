@@ -1530,7 +1530,7 @@ function dashboard.listThemes()
     end
 
     scanThemes(themesBasePath, "system")
-    local basePath = "SCRIPTS:/" .. preferences
+    local basePath = "SCRIPTS:/" .. preferences .. "/"
     if utils.dir_exists(basePath, 'dashboard') then
         scanThemes(themesUserPath, "user")
     end
