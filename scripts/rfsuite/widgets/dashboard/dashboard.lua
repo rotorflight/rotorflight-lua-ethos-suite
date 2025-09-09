@@ -142,7 +142,7 @@ dashboard._loader_min_duration = 1.5
 dashboard._loader_start_time = nil
 
 -- ===== Repaint governor ==== ------
-dashboard._minPaintInterval   = 0.05   -- 50ms ≈ 20 FPS; tune between 0.033–0.1
+dashboard._minPaintInterval   = 0.1   -- 50ms ≈ 20 FPS; tune between 0.033–0.1
 dashboard._lastInvalidateTime = 0
 dashboard._pendingInvalidates = {}     -- queued rects to invalidate
 
@@ -275,17 +275,19 @@ dashboard.loaders = assert(
 )()
 
 function dashboard.loader(x, y, w, h)
-        dashboard.loaders.staticLoader(dashboard, x, y, w, h)
-        lcd.invalidate()
+    dashboard.loaders.staticLoader(dashboard, x, y, w, h)
+    _queueInvalidateRect(x, y, w, h)
+    _flushInvalidatesRespectingBudget()
 end
 
 local function forceInvalidateAllObjects()
-    for i, rect in ipairs(dashboard.boxRects) do
+    for _, rect in ipairs(dashboard.boxRects) do
         local obj = dashboard.objectsByType[rect.box.type]
         if obj and obj.dirty and obj.dirty(rect.box) then
-            lcd.invalidate(rect.x, rect.y, rect.w, rect.h)
+            _queueInvalidateRect(rect.x, rect.y, rect.w, rect.h)
         end
     end
+    _flushInvalidatesRespectingBudget()
 end
 
 function dashboard.overlaymessage(x, y, w, h, txt)
@@ -797,7 +799,8 @@ function dashboard.renderLayout(widget, config)
         local loaderY = (isFullScreen and headerLayout.height) or 0
         dashboard.overlaymessage(0, loaderY, W, H - loaderY, dashboard.overlayMessage)
         dashboard._hg_cycles = dashboard._hg_cycles - 1
-        lcd.invalidate()
+        _queueInvalidateRect(0, loaderY, W, H - loaderY)
+        _flushInvalidatesRespectingBudget()
         return
     end
 
@@ -1440,6 +1443,7 @@ function dashboard.wakeup(widget)
             if needsFullInvalidate then
                 -- queue a full repaint
                 _queueInvalidateRect(0, 0, W, H)
+                dashboard._forceFullRepaint = false  -- reset once consumed
             else
                 for _, r in ipairs(dirtyRects) do
                     _queueInvalidateRect(r.x, r.y, r.w, r.h)
