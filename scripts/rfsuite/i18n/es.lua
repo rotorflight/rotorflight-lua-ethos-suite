@@ -458,6 +458,9 @@ return {
       },
       ["settings"] = {
         ["name"] = "Configuración",
+        ["dashboard"] = "Panel",
+        ["txt_overlaygrid"] = "Mostrar cuadrícula",
+        ["txt_overlaystats"] = "Mostrar estadísticas",
         ["no_themes_available_to_configure"] = "No hay temas configurables instalados en este dispositivo",
         ["txt_audio_timer"] = "Timer",
         ["txt_audio_events"] = "Eventos",
@@ -488,7 +491,6 @@ return {
         ["txt_battdef"] = "Por defecto",
         ["txt_batttext"] = "Texto",
         ["txt_battdig"] = "Digital",
-        ["dashboard"] = "Panel",
         ["dashboard_theme"] = "Tema",
         ["dashboard_theme_panel_global"] = "Tema por defecto Global",
         ["dashboard_theme_panel_model"] = "Tema opcional para este modelo",

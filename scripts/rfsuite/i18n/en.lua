@@ -458,6 +458,9 @@ return {
       },
       ["settings"] = {
         ["name"] = "Settings",
+        ["dashboard"] = "Dashboard",
+        ["txt_overlaygrid"] = "Show grid",
+        ["txt_overlaystats"] = "Show stats",
         ["no_themes_available_to_configure"] = "No configurable themes installed on this device",
         ["txt_audio_timer"] = "Timer",
         ["txt_audio_events"] = "Events",
@@ -488,7 +491,6 @@ return {
         ["txt_battdef"] = "Default",
         ["txt_batttext"] = "Text",
         ["txt_battdig"] = "Digital",
-        ["dashboard"] = "Dashboard",
         ["dashboard_theme"] = "Theme",
         ["dashboard_theme_panel_global"] = "Default theme for all models",
         ["dashboard_theme_panel_model"] = "Optional theme for this model",

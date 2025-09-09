@@ -458,6 +458,9 @@ return {
       },
       ["settings"] = {
         ["name"] = "Paramètres",
+        ["dashboard"] = "Tableau de bord",
+        ["txt_overlaygrid"] = "Afficher la grille",
+        ["txt_overlaystats"] = "Afficher les statistiques",
         ["no_themes_available_to_configure"] = "Aucun theme configurable n'est installe sur cet appareil",
         ["txt_audio_timer"] = "Minuteur",
         ["txt_audio_events"] = "Evenements",
@@ -488,7 +491,6 @@ return {
         ["txt_battdef"] = "Defaut",
         ["txt_batttext"] = "Texte",
         ["txt_battdig"] = "Numerique",
-        ["dashboard"] = "Tableau de bord",
         ["dashboard_theme"] = "Theme",
         ["dashboard_theme_panel_global"] = "Theme par defaut pour tous les modeles",
         ["dashboard_theme_panel_model"] = "Theme optionnel pour ce modele",

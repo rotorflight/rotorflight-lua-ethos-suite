@@ -647,12 +647,14 @@ function utils.reportMemoryUsage(location)
     if not rfsuite.preferences.developer.memstats then return end
     location = location or "Unknown"
 
+    local cpuInfo = rfsuite.session and rfsuite.session.cpuload or 0
     local memInfo = system.getMemoryUsage() or {}
     local mainStackKB     = (memInfo.mainStackAvailable or 0) / 1024
     local ramKB           = (memInfo.ramAvailable or 0) / 1024
     local luaRamKB        = (memInfo.luaRamAvailable or 0) / 1024
     local luaBitmapsRamKB = (memInfo.luaBitmapsRamAvailable or 0) / 1024
 
+    rfsuite.utils.log(string.format("[%s] CPU Load: %.2f ", location, rfsuite.utils.round(cpuInfo,0)) .. "%", "info")
     rfsuite.utils.log(string.format("[%s] Main stack available: %.2f KB", location, mainStackKB), "info")
     rfsuite.utils.log(string.format("[%s] System RAM available: %.2f KB", location, ramKB), "info")
     rfsuite.utils.log(string.format("[%s] Lua RAM available: %.2f KB", location, luaRamKB), "info")

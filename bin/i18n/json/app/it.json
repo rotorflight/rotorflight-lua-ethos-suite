@@ -135,6 +135,21 @@
         "translation": "Impostazioni",
         "needs_translation": false
       },
+      "dashboard": {
+        "english": "Dashboard",
+        "translation": "Dashboard",
+        "needs_translation": false
+      },
+      "txt_overlaygrid": {
+        "english": "Show grid",
+        "translation": "Mostra griglia",
+        "needs_translation": false
+      },
+      "txt_overlaystats": {
+        "english": "Show stats",
+        "translation": "Mostra statistiche",
+        "needs_translation": false
+      },
       "no_themes_available_to_configure": {
         "english": "No configurable themes installed on this device",
         "translation": "Nessun tema disponibile configurabile",
@@ -283,11 +298,6 @@
       "txt_battdig": {
         "english": "Digital",
         "translation": "Digitale",
-        "needs_translation": false
-      },
-      "dashboard": {
-        "english": "Dashboard",
-        "translation": "Dashboard",
         "needs_translation": false
       },
       "dashboard_theme": {
@@ -2657,7 +2667,7 @@
       "menu_flags": {
         "english": "Flags",
         "translation": "Flags",
-        "needs_translation": true
+        "needs_translation": false
       },
       "menu_filters": {
         "english": "Filters",

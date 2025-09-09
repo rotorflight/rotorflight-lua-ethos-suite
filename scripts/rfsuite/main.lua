@@ -93,6 +93,8 @@ local userpref_defaults = {
     taskprofiler = false, -- periodic print task profile
     mspexpbytes = 8,
     apiversion = 2, -- msp api version to use for simulator
+    overlaystats = false, -- show cpu load in overlay
+    overlaygrid = false, -- show overlay grid
   },
   timer = {
     timeraudioenable = false,

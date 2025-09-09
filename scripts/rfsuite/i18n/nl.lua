@@ -458,6 +458,9 @@ return {
       },
       ["settings"] = {
         ["name"] = "Instellingen",
+        ["dashboard"] = "Dashboard",
+        ["txt_overlaygrid"] = "Toon raster",
+        ["txt_overlaystats"] = "Toon statistieken",
         ["no_themes_available_to_configure"] = "Geen themes beschikbaar om in te stellen",
         ["txt_audio_timer"] = "Timer",
         ["txt_audio_events"] = "Gebeurtenissen",
@@ -488,7 +491,6 @@ return {
         ["txt_battdef"] = "Standaard",
         ["txt_batttext"] = "Tekst",
         ["txt_battdig"] = "Digitaal",
-        ["dashboard"] = "Dashboard",
         ["dashboard_theme"] = "Thema",
         ["dashboard_theme_panel_global"] = "Standaard thema voor alle modellen",
         ["dashboard_theme_panel_model"] = "Optioneel thema voor dit model",

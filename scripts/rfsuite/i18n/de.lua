@@ -458,6 +458,9 @@ return {
       },
       ["settings"] = {
         ["name"] = "Einstellungen",
+        ["dashboard"] = "Dashboard",
+        ["txt_overlaygrid"] = "Gitter anzeigen",
+        ["txt_overlaystats"] = "Statistiken anzeigen",
         ["no_themes_available_to_configure"] = "Keine konfigurierbaren Designs auf dem Geraet installiert.",
         ["txt_audio_timer"] = "Timer",
         ["txt_audio_events"] = "Events",
@@ -488,7 +491,6 @@ return {
         ["txt_battdef"] = "Standard",
         ["txt_batttext"] = "Text",
         ["txt_battdig"] = "Digital",
-        ["dashboard"] = "Dashboard",
         ["dashboard_theme"] = "Design",
         ["dashboard_theme_panel_global"] = "Standard-Design fuer alle Modelle",
         ["dashboard_theme_panel_model"] = "Optionales Design fuer dieses Modell",

@@ -741,7 +741,7 @@ function dashboard.renderLayout(widget, config)
 
 
     -- Draw optional grid overlay
-    if layout.showgrid then
+    if layout.showgrid or rfsuite.preferences.developer.overlaygrid then
         lcd.color(layout.showgrid)
         lcd.pen(1)
 
@@ -763,33 +763,46 @@ function dashboard.renderLayout(widget, config)
     end
 
     -- Optional: Overlay cpu/ram stats if layout.showstats is set
-    if layout.showstats then
-
+    if layout.showstats or rfsuite.preferences.developer.overlaystats then
         local headerOffset = (isFullScreen and headerLayout and headerLayout.height) or 0
 
         local cpuUsage = rfsuite.session and rfsuite.session.cpuload or 0
         local ramUsage = rfsuite.session and rfsuite.session.freeram or 0
-        lcd.font(FONT_XXS)
 
-        local cpuText = "CPU: " .. rfsuite.utils.round(cpuUsage) .. "%"
-        local ramText = "RAM: " .. rfsuite.utils.round(ramUsage) .. "kB"
+        lcd.font(FONT_S)
 
-        local cpuW, cpuH = lcd.getTextSize(cpuText)
-        local ramW, ramH = lcd.getTextSize(ramText)
+        local cpuText = "CPU: " .. rfsuite.utils.round(cpuUsage, 0) .. "%"
+        local ramText = "RAM: " .. rfsuite.utils.round(ramUsage, 0) .. "kB"
+
+        -- measure widths
+        local cpuW, textH = lcd.getTextSize(cpuText)
+        local ramW, _     = lcd.getTextSize(ramText)
 
         local padX, padY = 6, 4
-        local boxW = math.max(cpuW, ramW) + padX * 2
-        local boxH = cpuH + ramH + padY * 3
+        local spacing    = 12  -- space between CPU and RAM
 
-        local boxX, boxY = 4, 4 + headerOffset
+        -- box dimensions
+        local boxW = cpuW + spacing + ramW + padX * 2
+        local boxH = textH + padY * 2
+        local boxX = 4
+        local boxY = 4 + headerOffset
 
+        -- draw background + border
         lcd.color(lcd.RGB(0, 0, 0))
         lcd.drawFilledRectangle(boxX, boxY, boxW, boxH)
-
+        lcd.pen(1)
         lcd.color(lcd.RGB(255, 255, 255))
-        lcd.drawText(boxX + padX, boxY + padY, cpuText)
-        lcd.drawText(boxX + padX, boxY + padY + cpuH + padY, ramText)
+        lcd.drawRectangle(boxX, boxY, boxW, boxH)
+        lcd.pen(0)
+
+        -- draw text inside box
+        local textY = boxY + padY
+        lcd.color(lcd.RGB(255, 255, 255))
+        lcd.drawText(boxX + padX, textY, cpuText)
+        lcd.drawText(boxX + padX + cpuW + spacing, textY, ramText)
     end
+
+
 
     -- Handle overlay messages
     if dashboard.overlayMessage then

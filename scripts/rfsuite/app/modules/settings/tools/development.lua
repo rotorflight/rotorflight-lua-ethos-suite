@@ -204,6 +204,42 @@ formFieldCount = formFieldCount + 1
                                                             end    
                                                         end)                                                            
 
+
+    local dashboardPanel = form.addExpansionPanel(i18n("app.modules.settings.dashboard"))
+    dashboardPanel:open(false)
+
+    formFieldCount = formFieldCount + 1
+    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = dashboardPanel:addLine(i18n("app.modules.settings.txt_overlaygrid"))
+    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.app.formLineCnt], 
+                                                        nil, 
+                                                        function() 
+                                                            if rfsuite.preferences and rfsuite.preferences.developer then
+                                                                return settings['overlaygrid'] 
+                                                            end
+                                                        end, 
+                                                        function(newValue) 
+                                                            if rfsuite.preferences and rfsuite.preferences.developer then
+                                                                settings.overlaygrid = newValue
+                                                            end    
+                                                        end)       
+
+    formFieldCount = formFieldCount + 1
+    rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = dashboardPanel:addLine(i18n("app.modules.settings.txt_overlaystats"))
+    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.app.formLineCnt], 
+                                                        nil, 
+                                                        function() 
+                                                            if rfsuite.preferences and rfsuite.preferences.developer then
+                                                                return settings['overlaystats'] 
+                                                            end
+                                                        end, 
+                                                        function(newValue) 
+                                                            if rfsuite.preferences and rfsuite.preferences.developer then
+                                                                settings.overlaystats = newValue
+                                                            end    
+                                                        end)   
+
     
 end
 

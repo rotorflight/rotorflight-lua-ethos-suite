@@ -458,6 +458,9 @@ return {
       },
       ["settings"] = {
         ["name"] = "Impostazioni",
+        ["dashboard"] = "Dashboard",
+        ["txt_overlaygrid"] = "Mostra griglia",
+        ["txt_overlaystats"] = "Mostra statistiche",
         ["no_themes_available_to_configure"] = "Nessun tema disponibile configurabile",
         ["txt_audio_timer"] = "Timer",
         ["txt_audio_events"] = "Eventi",
@@ -488,7 +491,6 @@ return {
         ["txt_battdef"] = "Predefinito",
         ["txt_batttext"] = "Testo",
         ["txt_battdig"] = "Digitale",
-        ["dashboard"] = "Dashboard",
         ["dashboard_theme"] = "Tema",
         ["dashboard_theme_panel_global"] = "Globale",
         ["dashboard_theme_panel_model"] = "Modello",

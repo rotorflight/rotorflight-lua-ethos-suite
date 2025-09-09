@@ -135,6 +135,21 @@
         "translation": "Paramètres",
         "needs_translation": false
       },
+      "dashboard": {
+        "english": "Dashboard",
+        "translation": "Tableau de bord",
+        "needs_translation": false
+      },
+      "txt_overlaygrid": {
+        "english": "Show grid",
+        "translation": "Afficher la grille",
+        "needs_translation": false
+      },
+      "txt_overlaystats": {
+        "english": "Show stats",
+        "translation": "Afficher les statistiques",
+        "needs_translation": false
+      },
       "no_themes_available_to_configure": {
         "english": "No configurable themes installed on this device",
         "translation": "Aucun theme configurable n'est installe sur cet appareil",
@@ -283,11 +298,6 @@
       "txt_battdig": {
         "english": "Digital",
         "translation": "Numerique",
-        "needs_translation": false
-      },
-      "dashboard": {
-        "english": "Dashboard",
-        "translation": "Tableau de bord",
         "needs_translation": false
       },
       "dashboard_theme": {
