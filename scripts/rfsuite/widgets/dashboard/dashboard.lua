@@ -618,8 +618,34 @@ function dashboard.renderLayout(widget, config)
         lcd.pen(SOLID)
     end
 
+    -- Optional: Overlay cpu/ram stats if layout.showstats is set
+    if layout.showstats then
 
+        local headerOffset = (isFullScreen and headerLayout and headerLayout.height) or 0
 
+        local cpuUsage = rfsuite.session and rfsuite.session.cpuload or 0
+        local ramUsage = rfsuite.session and rfsuite.session.freeram or 0
+        lcd.font(FONT_XXS)
+
+        local cpuText = "CPU: " .. rfsuite.utils.round(cpuUsage) .. "%"
+        local ramText = "RAM: " .. rfsuite.utils.round(ramUsage) .. "kB"
+
+        local cpuW, cpuH = lcd.getTextSize(cpuText)
+        local ramW, ramH = lcd.getTextSize(ramText)
+
+        local padX, padY = 6, 4
+        local boxW = math.max(cpuW, ramW) + padX * 2
+        local boxH = cpuH + ramH + padY * 3
+
+        local boxX, boxY = 4, 4 + headerOffset
+
+        lcd.color(lcd.RGB(0, 0, 0))
+        lcd.drawFilledRectangle(boxX, boxY, boxW, boxH)
+
+        lcd.color(lcd.RGB(255, 255, 255))
+        lcd.drawText(boxX + padX, boxY + padY, cpuText)
+        lcd.drawText(boxX + padX, boxY + padY + cpuH + padY, ramText)
+    end
 
     -- Handle overlay messages
     if dashboard.overlayMessage then

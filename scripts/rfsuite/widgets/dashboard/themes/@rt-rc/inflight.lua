@@ -125,6 +125,7 @@ local layout = {
     rows    = 14,
     padding = 2,
     --showgrid = lcd.RGB(100, 100, 100)  -- or any color you prefer
+    showstats = false  -- or any color you prefer    
 }
 
 -- Header Layout
