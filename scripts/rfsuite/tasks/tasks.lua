@@ -29,6 +29,9 @@ local tlm = system.getSource({ category = CATEGORY_SYSTEM_EVENT, member = TELEME
 
 -- track cpu
 local CPU_TICK_HZ     = 20
+
+-- Track the start time of the previous wakeup for accurate utilization
+local last_wakeup_start = nil
 local CPU_TICK_BUDGET = 1 / CPU_TICK_HZ
 local CPU_ALPHA       = 0.2
 local cpu_avg         = 0
@@ -487,10 +490,29 @@ function tasks.wakeup()
     end
 
     -- track average cpu load
-    local elapsed = os.clock() - tasks.heartbeat
-    local instant = elapsed / CPU_TICK_BUDGET
-    cpu_avg = CPU_ALPHA * instant + (1 - CPU_ALPHA) * cpu_avg
-    rfsuite.session.cpuload = math.min(100, math.max(0, cpu_avg * 100))
+    
+  -- Accurate CPU utilization: work_time / wall_time_between_wakeups
+  local t_end = os.clock()
+  local work_elapsed = t_end - now
+
+  local dt
+  if last_wakeup_start ~= nil then
+    dt = now - last_wakeup_start
+  else
+    dt = (1 / CPU_TICK_HZ)
+  end
+
+  -- Guard against pathological tiny dt (e.g., re-entrancy)
+  if dt < (0.25 * (1 / CPU_TICK_HZ)) then
+    dt = (1 / CPU_TICK_HZ)
+  end
+
+  local instant_util = work_elapsed / dt   -- 0..∞
+  cpu_avg = CPU_ALPHA * instant_util + (1 - CPU_ALPHA) * cpu_avg
+  rfsuite.session.cpuload = math.min(100, math.max(0, cpu_avg * 100))
+
+  last_wakeup_start = now
+
 
     -- track average memory usage
     do
