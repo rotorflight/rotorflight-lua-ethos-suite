@@ -471,6 +471,7 @@ return {
         ["txt_devtools"] = "Tools Sviluppatori",
         ["txt_apiversion"] = "API Versione",
         ["txt_logging"] = "Logging",
+        ["txt_objectprofiler"] = "Velocità pannello",
         ["txt_compilation"] = "Compilazione",
         ["txt_loglocation"] = "Percorso Log",
         ["txt_console"] = "CONSOLE",

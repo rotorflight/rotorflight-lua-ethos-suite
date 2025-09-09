@@ -200,6 +200,11 @@
         "translation": "Loggeo",
         "needs_translation": false
       },
+      "txt_objectprofiler": {
+        "english": "Log dashboard speed",
+        "translation": "Registrar velocidad del panel",
+        "needs_translation": false
+      },
       "txt_compilation": {
         "english": "Compilation",
         "translation": "Compilación",

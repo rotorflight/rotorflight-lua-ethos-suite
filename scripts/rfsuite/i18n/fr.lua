@@ -471,6 +471,7 @@ return {
         ["txt_devtools"] = "Outils developpeur",
         ["txt_apiversion"] = "Version API",
         ["txt_logging"] = "Journalisation",
+        ["txt_objectprofiler"] = "Vitesse tableau de bord",
         ["txt_compilation"] = "Compilation",
         ["txt_loglocation"] = "Emplacement Journal",
         ["txt_console"] = "CONSOLE",

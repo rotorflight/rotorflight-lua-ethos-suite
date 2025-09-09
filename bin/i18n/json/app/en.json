@@ -200,6 +200,11 @@
         "translation": "Logging",
         "needs_translation": false
       },
+      "txt_objectprofiler": {
+        "english": "Log dashboard speed",
+        "translation": "Log dashboard speed",
+        "needs_translation": false
+      },
       "txt_compilation": {
         "english": "Compilation",
         "translation": "Compilation",

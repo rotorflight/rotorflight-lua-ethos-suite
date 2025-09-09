@@ -471,6 +471,7 @@ return {
         ["txt_devtools"] = "Entwickler-Werkzeuge",
         ["txt_apiversion"] = "API Version",
         ["txt_logging"] = "Protokollierung",
+        ["txt_objectprofiler"] = "Dashboard-Geschw. protokollieren",
         ["txt_compilation"] = "Kompilation",
         ["txt_loglocation"] = "Protokoll-Speicherort",
         ["txt_console"] = "KONSOLE",

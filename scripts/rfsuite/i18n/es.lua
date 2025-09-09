@@ -471,6 +471,7 @@ return {
         ["txt_devtools"] = "Herramientas Desarrollo",
         ["txt_apiversion"] = "Versión API",
         ["txt_logging"] = "Loggeo",
+        ["txt_objectprofiler"] = "Registrar velocidad del panel",
         ["txt_compilation"] = "Compilación",
         ["txt_loglocation"] = "Posición Log",
         ["txt_console"] = "CONSOLA",

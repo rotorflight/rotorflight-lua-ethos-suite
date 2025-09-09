@@ -471,6 +471,7 @@ return {
         ["txt_devtools"] = "Developer Tools",
         ["txt_apiversion"] = "API Version",
         ["txt_logging"] = "Logging",
+        ["txt_objectprofiler"] = "Log dashboard speed",
         ["txt_compilation"] = "Compilation",
         ["txt_loglocation"] = "Log location",
         ["txt_console"] = "CONSOLE",

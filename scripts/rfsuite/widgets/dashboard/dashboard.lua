@@ -99,14 +99,6 @@ local scheduledBoxIndices = {}
 local firstWakeup = true
 local firstWakeupCustomTheme = true
 
--- === Lightweight per-object profiler =======================================
-dashboard.prof = dashboard.prof or {
-    enabled      = true,     -- flip to false to disable
-    reportEvery  = 2.0,      -- seconds between logs
-    lastReport   = 0,
-    perType      = {}        -- [type] = { paint=secs, wakeup=secs, paint_calls=n, wakeup_calls=n }
-}
-
 lcd.invalidate() -- force an initial redraw to show the hourglass
 
 -- Layout state for boxes (UI elements):
@@ -150,12 +142,13 @@ dashboard._loader_min_duration = 1.5
 dashboard._loader_start_time = nil
 
 
--- === Simple per-object profiler =======================================
+-- === Simple per-object *instance* profiler ================================
 dashboard.prof = dashboard.prof or {
-    enabled      = true,     -- flip to false to disable
-    reportEvery  = 2.0,      -- seconds between logs
-    lastReport   = 0,
-    perType      = {}
+    enabled            = true,   -- master toggle
+    reportEvery        = 2.0,    -- seconds
+    lastReport         = 0,
+    perId              = {},     -- [id] = { type=..., paint=sec, wakeup=sec, pc=cnt, wc=cnt }
+    firstInventoryDone = false,  -- to print the object list once
 }
 
 local function _profStart()
@@ -163,18 +156,28 @@ local function _profStart()
     return os.clock()
 end
 
-local function _profStop(kind, typ, t0)
+local function _profStop(kind, id, typ, t0)
     if t0 == 0 then return end
     local dt = os.clock() - t0
-    local slot = dashboard.prof.perType[typ] or { paint=0, wakeup=0, paint_calls=0, wakeup_calls=0 }
-    if kind == "paint" then
-        slot.paint = slot.paint + dt
-        slot.paint_calls = slot.paint_calls + 1
-    else
-        slot.wakeup = slot.wakeup + dt
-        slot.wakeup_calls = slot.wakeup_calls + 1
+    local rec = dashboard.prof.perId[id]
+    if not rec then
+        rec = { type = typ, paint = 0, wakeup = 0, pc = 0, wc = 0 }
+        dashboard.prof.perId[id] = rec
     end
-    dashboard.prof.perType[typ] = slot
+    if kind == "paint" then
+        rec.paint = rec.paint + dt
+        rec.pc = rec.pc + 1
+    else
+        rec.wakeup = rec.wakeup + dt
+        rec.wc = rec.wc + 1
+    end
+end
+
+local function _profIdFromRect(rect)
+    local b = rect.box
+    -- Include header flag + exact geometry so same type in different slots are distinct
+    local H = rect.isHeader and "H" or "B"
+    return string.format("%s@%s:%d,%d,%dx%d", b.type or "?", H, rect.x, rect.y, rect.w, rect.h)
 end
 
 local function _profReportIfDue()
@@ -184,23 +187,40 @@ local function _profReportIfDue()
     if P.lastReport == 0 then P.lastReport = now return end
     if (now - P.lastReport) < (P.reportEvery or 2.0) then return end
 
-   log("--------------- OBJECT PROFILER --------------- ", "info")
-    for typ, v in pairs(P.perType) do
-        local paint_ms  = (v.paint  or 0) * 1000
-        local wake_ms   = (v.wakeup or 0) * 1000
-        local pc, wc    = v.paint_calls or 0, v.wakeup_calls or 0
-        local ap = pc > 0 and (paint_ms/pc) or 0
-        local aw = wc > 0 and (wake_ms/wc)  or 0
-        log(string.format(
-            "[prof] %-18s | paint: %7.3fms total (%4d, avg %6.3f) | wakeup: %7.3fms total (%4d, avg %6.3f)",
-            typ, paint_ms, pc, ap, wake_ms, wc, aw
-        ), "info")
-        v.paint, v.wakeup, v.paint_calls, v.wakeup_calls = 0, 0, 0, 0
+    -- Build a sorted list by total time (paint+wakeup) this interval
+    local rows, perTypeAgg = {}, {}
+    for id, v in pairs(P.perId) do
+        local tot = (v.paint + v.wakeup)
+        rows[#rows+1] = { id=id, type=v.type, paint=v.paint, wake=v.wakeup, pc=v.pc, wc=v.wc, tot=tot }
+        local T = v.type or "?"
+        local agg = perTypeAgg[T] or { paint=0, wake=0, pc=0, wc=0, tot=0 }
+        agg.paint, agg.wake, agg.pc, agg.wc, agg.tot =
+            agg.paint + v.paint, agg.wake + v.wakeup, agg.pc + v.pc, agg.wc + v.wc, agg.tot + tot
+        perTypeAgg[T] = agg
     end
-   log("----------------------------------------------- ", "info")       
+    table.sort(rows, function(a,b) return a.tot > b.tot end)
+
+    log("--------------- OBJECT PROFILER (per instance) ---------------", "info")
+    for _, r in ipairs(rows) do
+        local pms, wms = r.paint*1000, r.wake*1000
+        local ap = r.pc>0 and (pms/r.pc) or 0
+        local aw = r.wc>0 and (wms/r.wc) or 0
+        log(string.format("[prof] %-40s | paint:%7.3fms (%4d, avg %6.3f) | wakeup:%7.3fms (%4d, avg %6.3f)",
+            r.id, pms, r.pc, ap, wms, r.wc, aw), "info")
+        -- reset this instance for next interval
+        local rec = P.perId[r.id]; rec.paint, rec.wakeup, rec.pc, rec.wc = 0,0,0,0
+    end
+    log("-------------------- per-type summary ------------------------", "info")
+    for T, a in pairs(perTypeAgg) do
+        log(string.format("[sum ] %-18s | paint:%7.3fms | wakeup:%7.3fms | total:%7.3fms",
+            T, a.paint*1000, a.wake*1000, a.tot*1000), "info")
+    end
+    log("--------------------------------------------------------------", "info")
 
     P.lastReport = now
 end
+-- ========================================================================
+
 
 
 -- Utility methods loaded from external utils.lua (drawing, color helpers, etc.)
@@ -577,9 +597,10 @@ function dashboard.renderLayout(widget, config)
             local obj = dashboard.objectsByType[box.type]
             if obj and obj.paint then
                 if objectProfiler then
+                    local id = _profIdFromRect(rect)
                     local t0 = _profStart()
                     obj.paint(rect.x, rect.y, rect.w, rect.h, box)
-                    _profStop("paint", box.type, t0)
+                    _profStop("paint", id, box.type, t0)
                 else
                     obj.paint(rect.x, rect.y, rect.w, rect.h, box)                    
                 end
@@ -640,9 +661,11 @@ function dashboard.renderLayout(widget, config)
             local obj = dashboard.objectsByType[geom.box.type]
             if obj and obj.paint then
                 if objectProfiler then
+                    local fakeRect = { x = geom.x, y = geom.y, w = w, h = geom.h, box = geom.box, isHeader = true }
+                    local id = _profIdFromRect(fakeRect)
                     local t0 = _profStart()
                     obj.paint(geom.x, geom.y, w, geom.h, geom.box)
-                    _profStop("paint", box.type, t0)
+                    _profStop("paint", id, geom.box.type, t0)  -- <-- was box.type before
                 else
                     obj.paint(geom.x, geom.y, w, geom.h, geom.box)
                 end
@@ -1311,9 +1334,10 @@ function dashboard.wakeup(widget)
             local obj = dashboard.objectsByType[rect.box.type]
             if obj and obj.wakeup then
                 if objectProfiler then
+                    local id = _profIdFromRect(rect)
                     local t0 = _profStart()
                     obj.wakeup(rect.box)
-                    _profStop("wakeup", rect.box.type, t0)
+                    _profStop("wakeup", id, rect.box.type, t0)
                 else
                     obj.wakeup(rect.box)
                 end
