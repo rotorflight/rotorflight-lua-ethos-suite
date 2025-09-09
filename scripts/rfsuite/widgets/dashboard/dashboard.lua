@@ -26,6 +26,7 @@ local preferences = rfsuite.config.preferences
 local utils = rfsuite.utils
 local log = utils.log
 local tasks = rfsuite.tasks
+local objectProfiler = false
 
 
 -- Supported resolutions
@@ -97,6 +98,15 @@ local scheduledBoxIndices = {}
 -- Flag to perform initialization logic only once on first wakeup
 local firstWakeup = true
 local firstWakeupCustomTheme = true
+
+-- === Lightweight per-object profiler =======================================
+dashboard.prof = dashboard.prof or {
+    enabled      = true,     -- flip to false to disable
+    reportEvery  = 2.0,      -- seconds between logs
+    lastReport   = 0,
+    perType      = {}        -- [type] = { paint=secs, wakeup=secs, paint_calls=n, wakeup_calls=n }
+}
+
 lcd.invalidate() -- force an initial redraw to show the hourglass
 
 -- Layout state for boxes (UI elements):
@@ -138,6 +148,60 @@ dashboard._hg_cycles = 0
 -- how long the loader must stay visible (in seconds)
 dashboard._loader_min_duration = 1.5
 dashboard._loader_start_time = nil
+
+
+-- === Simple per-object profiler =======================================
+dashboard.prof = dashboard.prof or {
+    enabled      = true,     -- flip to false to disable
+    reportEvery  = 2.0,      -- seconds between logs
+    lastReport   = 0,
+    perType      = {}
+}
+
+local function _profStart()
+    if not (dashboard.prof and dashboard.prof.enabled) then return 0 end
+    return os.clock()
+end
+
+local function _profStop(kind, typ, t0)
+    if t0 == 0 then return end
+    local dt = os.clock() - t0
+    local slot = dashboard.prof.perType[typ] or { paint=0, wakeup=0, paint_calls=0, wakeup_calls=0 }
+    if kind == "paint" then
+        slot.paint = slot.paint + dt
+        slot.paint_calls = slot.paint_calls + 1
+    else
+        slot.wakeup = slot.wakeup + dt
+        slot.wakeup_calls = slot.wakeup_calls + 1
+    end
+    dashboard.prof.perType[typ] = slot
+end
+
+local function _profReportIfDue()
+    local P = dashboard.prof
+    if not (P and P.enabled) then return end
+    local now = os.clock()
+    if P.lastReport == 0 then P.lastReport = now return end
+    if (now - P.lastReport) < (P.reportEvery or 2.0) then return end
+
+   log("--------------- OBJECT PROFILER --------------- ", "info")
+    for typ, v in pairs(P.perType) do
+        local paint_ms  = (v.paint  or 0) * 1000
+        local wake_ms   = (v.wakeup or 0) * 1000
+        local pc, wc    = v.paint_calls or 0, v.wakeup_calls or 0
+        local ap = pc > 0 and (paint_ms/pc) or 0
+        local aw = wc > 0 and (wake_ms/wc)  or 0
+        log(string.format(
+            "[prof] %-18s | paint: %7.3fms total (%4d, avg %6.3f) | wakeup: %7.3fms total (%4d, avg %6.3f)",
+            typ, paint_ms, pc, ap, wake_ms, wc, aw
+        ), "info")
+        v.paint, v.wakeup, v.paint_calls, v.wakeup_calls = 0, 0, 0, 0
+    end
+   log("----------------------------------------------- ", "info")       
+
+    P.lastReport = now
+end
+
 
 -- Utility methods loaded from external utils.lua (drawing, color helpers, etc.)
 dashboard.utils = assert(
@@ -512,7 +576,13 @@ function dashboard.renderLayout(widget, config)
             local box = rect.box
             local obj = dashboard.objectsByType[box.type]
             if obj and obj.paint then
-                obj.paint(rect.x, rect.y, rect.w, rect.h, box)
+                if objectProfiler then
+                    local t0 = _profStart()
+                    obj.paint(rect.x, rect.y, rect.w, rect.h, box)
+                    _profStop("paint", box.type, t0)
+                else
+                    obj.paint(rect.x, rect.y, rect.w, rect.h, box)                    
+                end
             end
 
             if dashboard.selectedBoxIndex == i and box.onpress then
@@ -569,7 +639,13 @@ function dashboard.renderLayout(widget, config)
             end
             local obj = dashboard.objectsByType[geom.box.type]
             if obj and obj.paint then
-                obj.paint(geom.x, geom.y, w, geom.h, geom.box)
+                if objectProfiler then
+                    local t0 = _profStart()
+                    obj.paint(geom.x, geom.y, w, geom.h, geom.box)
+                    _profStop("paint", box.type, t0)
+                else
+                    obj.paint(geom.x, geom.y, w, geom.h, geom.box)
+                end
             end
         end
 
@@ -981,7 +1057,9 @@ function dashboard.paint(widget)
         callStateFunc("paint", widget)
     end
 
-
+    if objectProfiler then
+        _profReportIfDue()
+    end
 end
 
 --- Configures the given dashboard widget by invoking the "configure" state function.
@@ -1124,6 +1202,8 @@ function dashboard.wakeup(widget)
     -- Check if MSP is allow msp to be prioritized
     if rfsuite.app and rfsuite.app.triggers.mspBusy and not (rfsuite.session and rfsuite.session.isConnected) then return end
 
+    objectProfiler = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logobjprof
+
     local telemetry = tasks.telemetry
     local W, H = lcd.getWindowSize()
 
@@ -1230,7 +1310,13 @@ function dashboard.wakeup(widget)
             local rect = dashboard.boxRects[idx]
             local obj = dashboard.objectsByType[rect.box.type]
             if obj and obj.wakeup then
-                obj.wakeup(rect.box)
+                if objectProfiler then
+                    local t0 = _profStart()
+                    obj.wakeup(rect.box)
+                    _profStop("wakeup", rect.box.type, t0)
+                else
+                    obj.wakeup(rect.box)
+                end
             end
         end
 
