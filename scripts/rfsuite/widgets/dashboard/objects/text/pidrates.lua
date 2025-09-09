@@ -60,9 +60,16 @@ local render = {}
 local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
-local lastDisplayValue = nil
 
+-- External invalidation: call when runtime params change
+function render.invalidate(box) box._cfg = nil end
+
+-- Only repaint when displayed value changes
 function render.dirty(box)
+    if box._lastDisplayValue == nil then
+        box._lastDisplayValue = box._currentDisplayValue
+        return true
+    end
     if box._lastDisplayValue ~= box._currentDisplayValue then
         box._lastDisplayValue = box._currentDisplayValue
         return true
@@ -70,39 +77,89 @@ function render.dirty(box)
     return false
 end
 
+-- Build/refresh static config (theme & params aware)
+local function ensureCfg(box)
+    local theme_version = (rfsuite and rfsuite.theme and rfsuite.theme.version) or 0
+    local param_version = box._param_version or 0 -- bump externally when params change
+    local cfg = box._cfg
+    if (not cfg) or (cfg._theme_version ~= theme_version) or (cfg._param_version ~= param_version) then
+        cfg = {}
+        cfg._theme_version     = theme_version
+        cfg._param_version     = param_version
+
+        -- Source/object selection (static)
+        cfg.object             = getParam(box, "object")
+        if cfg.object == "pid" then
+            cfg.source = "pid_profile"
+        elseif cfg.object == "rates" then
+            cfg.source = "rate_profile"
+        else
+            cfg.source = nil
+        end
+
+        -- Title styling
+        cfg.title              = getParam(box, "title")
+        cfg.titlepos           = getParam(box, "titlepos")
+        cfg.titlealign         = getParam(box, "titlealign")
+        cfg.titlefont          = getParam(box, "titlefont")
+        cfg.titlespacing       = getParam(box, "titlespacing")
+        cfg.titlecolor         = resolveThemeColor("titlecolor", getParam(box, "titlecolor"))
+        cfg.titlepadding       = getParam(box, "titlepadding")
+        cfg.titlepaddingleft   = getParam(box, "titlepaddingleft")
+        cfg.titlepaddingright  = getParam(box, "titlepaddingright")
+        cfg.titlepaddingtop    = getParam(box, "titlepaddingtop")
+        cfg.titlepaddingbottom = getParam(box, "titlepaddingbottom")
+
+        -- Value styling/static params
+        cfg.font               = getParam(box, "font") or FONT_L
+        cfg.valuealign         = getParam(box, "valuealign")
+        cfg.defaultTextColor   = resolveThemeColor("textcolor", getParam(box, "textcolor"))
+        cfg.fillcolor          = utils.resolveThemeColor("fillcolor", getParam(box, "fillcolor"))
+        cfg.valuepadding       = getParam(box, "valuepadding")
+        cfg.valuepaddingleft   = getParam(box, "valuepaddingleft")
+        cfg.valuepaddingright  = getParam(box, "valuepaddingright")
+        cfg.valuepaddingtop    = getParam(box, "valuepaddingtop")
+        cfg.valuepaddingbottom = getParam(box, "valuepaddingbottom")
+
+        -- Row layout/static
+        cfg.rowalign           = getParam(box, "rowalign")
+        cfg.rowpadding         = getParam(box, "rowpadding")
+        cfg.rowpaddingleft     = getParam(box, "rowpaddingleft")
+        cfg.rowpaddingright    = getParam(box, "rowpaddingright")
+        cfg.rowpaddingtop      = getParam(box, "rowpaddingtop")
+        cfg.rowpaddingbottom   = getParam(box, "rowpaddingbottom")
+        cfg.rowspacing         = getParam(box, "rowspacing")
+        cfg.rowfont            = getParam(box, "rowfont")
+        cfg.highlightlarger    = getParam(box, "highlightlarger")
+        cfg.profilecount       = math.max(1, math.min(6, tonumber(getParam(box, "profilecount")) or 6))
+
+        -- Misc
+        cfg.novalue            = getParam(box, "novalue") or "-"
+        cfg.bgcolor            = resolveThemeColor("bgcolor", getParam(box, "bgcolor"))
+        cfg.fontList           = (utils.getFontListsForResolution().value_default) or {}
+
+        box._cfg = cfg
+    end
+    return box._cfg
+end
+
 function render.wakeup(box)
+    local cfg = ensureCfg(box)
 
     local telemetry = rfsuite.tasks.telemetry
-    
-    -- Value extraction
-    local object = (getParam(box, "object"))
-    local source
-
-    if object == "pid" then
-        source = "pid_profile"
-    elseif object == "rates" then
-        source = "rate_profile"
-    end
-
-    -- Try telemetry first, fallback to static value
     local value
-    if telemetry and source then
-        value = select(1, telemetry.getSensor(source))
+    if telemetry and cfg.source then
+        value = select(1, telemetry.getSensor(cfg.source))
     end
-
     if value == nil then
         value = getParam(box, "value")
     end
 
-    -- Transform and fallback display
-    local fallbackText = getParam(box, "novalue") or "-"
     local displayValue
-
     if value == nil then
-        -- Show animated dots if no value (telemetry/data not ready)
+        -- loading dots
         local maxDots = 3
-        if box._dotCount == nil then box._dotCount = 0 end
-        box._dotCount = (box._dotCount + 1) % (maxDots + 1)
+        box._dotCount = ((box._dotCount or 0) + 1) % (maxDots + 1)
         displayValue = string.rep(".", box._dotCount)
         if displayValue == "" then displayValue = "." end
     else
@@ -111,91 +168,46 @@ function render.wakeup(box)
 
     local index = tonumber(displayValue)
     if index == nil or index < 1 or index > 6 then
-        index = nil
-        -- Only use fallback if the value is NOT loading dots
         if value ~= nil then
-            displayValue = fallbackText
+            displayValue = cfg.novalue
         end
     end
 
+    -- Dynamic text color based on thresholds and *numeric* value when present
+    local dynColor = utils.resolveThresholdColor(value, box, "textcolor", "textcolor") or cfg.defaultTextColor
 
-    -- Text color and fontlist caching
-    local textcolor = utils.resolveThresholdColor(value, box, "textcolor", "textcolor")
-    local fontLists = utils.getFontListsForResolution()
-
-    -- Set box.value so dashboard/dirty can track change for redraws
+    -- Set for dirty()/paint()
     box._currentDisplayValue = displayValue
-
-    box._cache = {
-        displayValue        = displayValue,
-        activeIndex         = index,
-        font                = getParam(box, "font") or FONT_L,
-        textcolor           = textcolor or resolveThemeColor("textcolor", getParam(box, "textcolor")),
-        fillcolor           = utils.resolveThemeColor("fillcolor", getParam(box, "fillcolor")),
-        bgcolor             = resolveThemeColor("bgcolor", getParam(box, "bgcolor")),
-        title               = getParam(box, "title"),
-        titlepos            = getParam(box, "titlepos"),
-        titlealign          = getParam(box, "titlealign"),
-        titlefont           = getParam(box, "titlefont"),
-        titlespacing        = getParam(box, "titlespacing"),
-        titlecolor          = resolveThemeColor("titlecolor", getParam(box, "titlecolor")),
-        titlepadding        = getParam(box, "titlepadding"),
-        titlepaddingleft    = getParam(box, "titlepaddingleft"),
-        titlepaddingright   = getParam(box, "titlepaddingright"),
-        titlepaddingtop     = getParam(box, "titlepaddingtop"),
-        titlepaddingbottom  = getParam(box, "titlepaddingbottom"),
-        valuealign          = getParam(box, "valuealign"),
-        valuepadding        = getParam(box, "valuepadding"),
-        valuepaddingleft    = getParam(box, "valuepaddingleft"),
-        valuepaddingright   = getParam(box, "valuepaddingright"),
-        valuepaddingtop     = getParam(box, "valuepaddingtop"),
-        valuepaddingbottom  = getParam(box, "valuepaddingbottom"),
-        rowalign            = getParam(box, "rowalign"),
-        rowpadding          = getParam(box, "rowpadding"),
-        rowpaddingleft      = getParam(box, "rowpaddingleft"),
-        rowpaddingright     = getParam(box, "rowpaddingright"),
-        rowpaddingtop       = getParam(box, "rowpaddingtop"),
-        rowpaddingbottom    = getParam(box, "rowpaddingbottom"),
-        rowspacing          = getParam(box, "rowspacing"),
-        rowfont             = getParam(box, "rowfont"),
-        fontList            = fontLists.value_default or {},
-        highlightlarger     = getParam(box, "highlightlarger"),
-        profilecount        = math.max(1, math.min(6, tonumber(getParam(box, "profilecount")) or 6)),
-    }
+    box._dynamicTextColor = dynColor
+    box._isLoadingDots = (value == nil)
 end
 
 function render.paint(x, y, w, h, box)
     x, y = utils.applyOffset(x, y, box)
-    local c = box._cache or {}
+    local c = box._cfg or {}
 
     utils.box(
         x, y, w, h,
         c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing,
         c.titlecolor, c.titlepadding, c.titlepaddingleft, c.titlepaddingright,
         c.titlepaddingtop, c.titlepaddingbottom,
-        nil, nil, c.font, c.valuealign, c.textcolor,
+        nil, nil, c.font, c.valuealign, box._dynamicTextColor or c.defaultTextColor,
         c.valuepadding, c.valuepaddingleft, c.valuepaddingright,
         c.valuepaddingtop, c.valuepaddingbottom,
         c.bgcolor
     )
 
-    -- Get base and stepped font using resolution-aware font list
+    -- Draw row of numbers 1..profilecount, highlighting the active index
     local fontList = c.fontList or {}
     local baseFont = _G[c.rowfont] or _G[c.font] or FONT_L
 
     local baseIndex
-    for i, f in ipairs(fontList) do
-        if f == baseFont then
-            baseIndex = i
-            break
-        end
-    end
+    for i, f in ipairs(fontList) do if f == baseFont then baseIndex = i; break end end
     local largerFont = baseFont
     if c.highlightlarger and baseIndex and baseIndex < #fontList then
         largerFont = fontList[baseIndex + 1]
     end
 
-    -- Spacing and alignment setup
     lcd.font(baseFont)
     local _, baseHeight = lcd.getTextSize("8")
 
@@ -225,11 +237,13 @@ function render.paint(x, y, w, h, box)
         startX = x + padLeft + (totalWidth - totalContentWidth) / 2
     end
 
-    -- Draw numbers 1–profilecount
+    -- Active index from displayValue
+    local activeIndex = tonumber(box._currentDisplayValue)
+
     for i = 1, count do
         local cx = startX + (i - 1) * spacing
         local text = tostring(i)
-        local isActive = (c.displayValue ~= nil) and (tonumber(c.displayValue) == i)
+        local isActive = (activeIndex ~= nil) and (activeIndex == i)
         local currentFont = (isActive and c.highlightlarger and largerFont) or baseFont
 
         lcd.font(currentFont)
@@ -237,9 +251,9 @@ function render.paint(x, y, w, h, box)
         local yOffset = (isActive and c.highlightlarger and largerFont ~= baseFont) and (baseHeight - th) / 2 or 0
 
         if isActive then
-            lcd.color(c.fillcolor or c.textcolor or WHITE)
+            lcd.color(c.fillcolor or c.defaultTextColor or WHITE)
         else
-            lcd.color(c.textcolor or WHITE)
+            lcd.color(c.defaultTextColor or WHITE)
         end
 
         lcd.drawText(cx + (spacing - tw) / 2, rowY + yOffset, text)
@@ -247,3 +261,4 @@ function render.paint(x, y, w, h, box)
 end
 
 return render
+
