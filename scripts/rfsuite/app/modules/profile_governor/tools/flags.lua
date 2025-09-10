@@ -13,16 +13,16 @@ local apidata = {
 
             },
             fields = {
-                {t = i18n("app.modules.profile_governor.fc_throttle_curve"),       mspapi = 1, apikey = "governor_flags->fc_throttle_curve", type = 1},
-                {t = i18n("app.modules.profile_governor.tx_precomp_curve"),       mspapi = 1, apikey = "governor_flags->tx_precomp_curve", type = 1},
-                {t = i18n("app.modules.profile_governor.fallback_precomp"),       mspapi = 1, apikey = "governor_flags->fallback_precomp", type = 1},
-                {t = i18n("app.modules.profile_governor.voltage_comp"),           mspapi = 1, apikey = "governor_flags->voltage_comp", type = 1},
-                {t = i18n("app.modules.profile_governor.pid_spoolup"),            mspapi = 1, apikey = "governor_flags->pid_spoolup", type = 1},
-                {t = i18n("app.modules.profile_governor.hs_adjustment"),          mspapi = 1, apikey = "governor_flags->hs_adjustment", type = 1},
-                {t = i18n("app.modules.profile_governor.dyn_min_throttle"),       mspapi = 1, apikey = "governor_flags->dyn_min_throttle", type = 1},
-                {t = i18n("app.modules.profile_governor.autorotation"),           mspapi = 1, apikey = "governor_flags->autorotation", type = 1},
-                {t = i18n("app.modules.profile_governor.suspend"),                mspapi = 1, apikey = "governor_flags->suspend", type = 1},
-                {t = i18n("app.modules.profile_governor.bypass"),                 mspapi = 1, apikey = "governor_flags->bypass", type = 1},
+                {t = i18n("app.modules.profile_governor.fc_throttle_curve"),       mspapi = 1, apikey = "governor_flags->fc_throttle_curve", type = 4},
+                {t = i18n("app.modules.profile_governor.tx_precomp_curve"),       mspapi = 1, apikey = "governor_flags->tx_precomp_curve", type = 4},
+                {t = i18n("app.modules.profile_governor.fallback_precomp"),       mspapi = 1, apikey = "governor_flags->fallback_precomp", type = 4},
+                {t = i18n("app.modules.profile_governor.voltage_comp"),           mspapi = 1, apikey = "governor_flags->voltage_comp", type = 4},
+                {t = i18n("app.modules.profile_governor.pid_spoolup"),            mspapi = 1, apikey = "governor_flags->pid_spoolup", type = 4},
+                {t = i18n("app.modules.profile_governor.hs_adjustment"),          mspapi = 1, apikey = "governor_flags->hs_adjustment", type = 4},
+                {t = i18n("app.modules.profile_governor.dyn_min_throttle"),       mspapi = 1, apikey = "governor_flags->dyn_min_throttle", type = 4},
+                {t = i18n("app.modules.profile_governor.autorotation"),           mspapi = 1, apikey = "governor_flags->autorotation", type = 4},
+                {t = i18n("app.modules.profile_governor.suspend"),                mspapi = 1, apikey = "governor_flags->suspend", type = 4},
+                {t = i18n("app.modules.profile_governor.bypass"),                 mspapi = 1, apikey = "governor_flags->bypass", type = 4},
             }
         }
     }

@@ -541,15 +541,8 @@ function ui.getLabel(id, page)
 end
 
 -- Boolean field.
+-- Single Boolean field with optional inversion when f.subtype == 1
 function ui.fieldBoolean(i)
-
-    -- we dont have boolean fields in ethos 1.70 and below because they candidate
-    -- have dynamic values
-    if utils.ethosVersionAtLeast(1,7,0) then
-        ui.fieldChoice(i)
-        return
-    end
-
     local app        = rfsuite.app
     local page       = app.Page
     local fields     = page.fields
@@ -558,8 +551,19 @@ function ui.fieldBoolean(i)
     local formFields = app.formFields
     local radioText  = app.radio.text
 
+    -- Defensive guard: field must exist
+    if not f then
+        ui.disableAllFields()
+        ui.disableAllNavigationFields()
+        ui.enableNavigationField('menu')
+        return
+    end
+
+    local invert = (f.subtype == 1)  -- your proposed switch
+
     local posText, posField
 
+    -- Label / inline handling
     if f.inline and f.inline >= 1 and f.label then
         if radioText == 2 and f.t2 then f.t = f.t2 end
         local p = rfsuite.app.utils.getInlinePositions(f, page)
@@ -575,26 +579,34 @@ function ui.fieldBoolean(i)
         posField = f.position or nil
     end
 
-    local tbldata = f.table and rfsuite.app.utils.convertPageValueTable(f.table, f.tableIdxInc) or {}
+    -- Helper: decode stored numeric (0/1) -> UI boolean, honoring inversion
+    local function decode()
+        if not fields or not fields[i] then
+            ui.disableAllFields()
+            ui.disableAllNavigationFields()
+            ui.enableNavigationField('menu')
+            return nil
+        end
+        local v = (fields[i].value == 1) and 1 or 0
+        if invert then v = (v == 1) and 0 or 1 end
+        return (v == 1)
+    end
+
+    -- Helper: encode UI boolean -> stored numeric (0/1), honoring inversion
+    local function encode(b)
+        local v = b and 1 or 0
+        if invert then v = (v == 1) and 0 or 1 end
+        return v
+    end
 
     formFields[i] = form.addBooleanField(
         formLines[rfsuite.app.formLineCnt],
         posField,
         function()
-            if not fields or not fields[i] then
-                ui.disableAllFields()
-                ui.disableAllNavigationFields()
-                ui.enableNavigationField('menu')
-                return nil
-            end
-            if fields[i].value == 0 then
-                return false
-            else
-                return true    
-            end
+            return decode()
         end,
-        function(value)
-            if value == false then value = 0 else value = 1 end
+        function(valueBool)
+            local value = encode(valueBool == true)
             if f.postEdit then f.postEdit(page, value) end
             if f.onChange then f.onChange(page, value) end
             f.value = rfsuite.app.utils.saveFieldValue(fields[i], value)
@@ -603,6 +615,7 @@ function ui.fieldBoolean(i)
 
     if f.disable then formFields[i]:enable(false) end
 end
+
 
 -- Choice field.
 function ui.fieldChoice(i)
@@ -1014,7 +1027,8 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
                 elseif field.table or field.type == 1 then rfsuite.app.ui.fieldChoice(i)
                 elseif field.type == 2 then rfsuite.app.ui.fieldNumber(i)
                 elseif field.type == 3 then rfsuite.app.ui.fieldText(i)
-                elseif field.type == 5 then rfsuite.app.ui.fieldBoolean(i)
+                elseif field.type == 4 then rfsuite.app.ui.fieldBoolean(i)
+                elseif field.type == 5 then rfsuite.app.ui.fieldBooleanInverted(i)                    
                 else                         rfsuite.app.ui.fieldNumber(i)
                 end
             else
