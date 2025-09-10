@@ -1,4 +1,23 @@
--- Simplified Task Scheduler with single `interval`
+--[[
+
+ * Copyright (C) Rotorflight Project
+ *
+ *
+ * License GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ 
+ * Note.  Some icons have been sourced from https://www.flaticon.com/
+ * 
+
+]] --
 
 local utils = rfsuite.utils
 local compiler = rfsuite.compiler.loadfile
@@ -10,7 +29,7 @@ local taskSchedulerPercentage = 0.5
 local schedulerTick = 0
 
 local tasks, tasksList = {}, {}
-tasks.heartbeat, tasks.init, tasks.wasOn = nil, true, false
+tasks.heartbeat, tasks.begin, tasks.wasOn = nil, true, false
 rfsuite.session.telemetryTypeChanged = true
 
 tasks._justInitialized = false
@@ -30,6 +49,10 @@ local tlm = system.getSource({ category = CATEGORY_SYSTEM_EVENT, member = TELEME
 
 -- track cpu
 local CPU_TICK_HZ     = 20
+
+-- Accurate scheduler cadence & tolerances (seconds)
+local SCHED_DT    = 1 / CPU_TICK_HZ        -- 0.05s at 20 Hz
+local OVERDUE_TOL = SCHED_DT * 0.25        -- small tolerance to avoid boundary flapping
 
 -- Track the start time of the previous wakeup for accurate utilization
 local last_wakeup_start = nil
@@ -109,7 +132,7 @@ function tasks.dumpSchedule()
     local in_secs  = next_run - now
     utils.log(
       string.format(
-        "%-15s | interval: %4.1fs | last_run: %8.2f | next in: %6.2fs",
+        "%-15s | interval: %4.3fs | last_run: %8.3f | next in: %6.3fs",
         t.name, t.interval, t.last_run, in_secs
       ),
       "info"
@@ -178,7 +201,7 @@ function tasks.findTasks()
                     local scriptPath = taskPath .. dir .. "/" .. tconfig.script
                     local fn, loadErr = compiler(scriptPath)
                     if fn then
-                        tasks[dir] = fn(config)
+                        tasks[dir] = fn(config)  -- assumes global 'config'
                     else
                         utils.log("Failed to load task script " .. scriptPath .. ": " .. loadErr, "warn")
                     end
@@ -277,6 +300,32 @@ function tasks.active()
     return false
 end
 
+-- compute positive seconds overdue (<= 0 means not yet due)
+local function overdue_seconds(task, now, grace_s)
+  return (now - task.last_run) - (task.interval + (grace_s or 0))
+end
+
+-- All-second logic + sub-second tolerance; returns (ok_to_run, overdue_seconds)
+local function canRunTask(task, now)
+    local hf = task.interval < SCHED_DT           -- high-frequency task
+    local grace = hf and OVERDUE_TOL or (task.interval * 0.25)  -- light grace for slow tasks
+
+    local od = overdue_seconds(task, now, grace)  -- >0 means overdue by that many seconds
+
+    local priorityTask = task.name == "msp" or task.name == "callback"
+
+    local linkOK = not task.linkrequired or rfsuite.session.telemetryState
+    local connOK = not task.connected    or rfsuite.session.isConnected
+
+    local ok =
+        linkOK
+        and connOK
+        and (priorityTask or od >= 0 or not rfsuite.app.triggers.mspBusy)
+        and (not task.simulatoronly or usingSimulator)
+
+    return ok, od
+end
+
 function tasks.wakeup()
     schedulerTick = schedulerTick + 1
     tasks.heartbeat = os.clock()
@@ -288,8 +337,8 @@ function tasks.wakeup()
     end
     if not ethosVersionGood then return end
 
-    if tasks.init then
-        tasks.init = false
+    if tasks.begin == true then
+        tasks.begin = false
         tasks._justInitialized = true
         tasks.initialize()
         return
@@ -313,7 +362,7 @@ function tasks.wakeup()
                 end
             end
             local script = "tasks/" .. key .. "/" .. meta.script
-            local module = assert(compiler(script))(config)
+            local module = assert(compiler(script))(config) -- assumes global 'config'
             tasks[key] = module
 
             if meta.interval >= 0 then
@@ -354,55 +403,37 @@ function tasks.wakeup()
     local now = os.clock()
     local cycleFlip = schedulerTick % 2  -- alternate every tick
 
-    local function canRunTask(task)
-        local intervalTicks = task.interval * 20
-        local isHighFrequency = intervalTicks < 20
-        local clockDelta = now - task.last_run
-        local graceFactor = 0.25
-
-        local overdue
-        if isHighFrequency then
-            overdue = clockDelta >= intervalTicks
-        else
-            overdue = clockDelta >= (intervalTicks + intervalTicks * graceFactor)
-        end
-
-        local priorityTask = task.name == "msp" or task.name == "callback"
-
-        local linkOK = not task.linkrequired or rfsuite.session.telemetryState
-        local connOK = not task.connected    or rfsuite.session.isConnected
-
-        return linkOK
-            and connOK
-            and (priorityTask or overdue or not rfsuite.app.triggers.mspBusy)
-            and (not task.simulatoronly or usingSimulator)
-    end
-
     local function runNonSpreadTasks()
         for _, task in ipairs(tasksList) do
-            if not task.spreadschedule and tasks[task.name].wakeup and canRunTask(task) then
-                local elapsed = now - task.last_run
-                if elapsed >= task.interval then
-                    local fn = tasks[task.name].wakeup
-                    if fn then
-                        if profWanted(task.name) then
-                            local t0 = os.clock()
-                            local ok, err = pcall(fn, tasks[task.name])
-                            local t1 = os.clock()
-                            profRecord(task, t1 - t0)
-                            if not ok then
-                                print(("Error in task %q wakeup: %s"):format(task.name, err))
-                                collectgarbage("collect")
-                            end
-                        else
-                            local ok, err = pcall(fn, tasks[task.name])
-                            if not ok then
-                                print(("Error in task %q wakeup: %s"):format(task.name, err))
-                                collectgarbage("collect")
+            if not task.spreadschedule and tasks[task.name].wakeup then
+                local okToRun, od = canRunTask(task, now)
+                if okToRun then
+                    local elapsed = now - task.last_run
+                    if elapsed + OVERDUE_TOL >= task.interval then
+                        if (od or 0) > 0 then
+                            utils.log(string.format("[scheduler] %s overdue by %.3fs", task.name, od), "debug")
+                        end
+                        local fn = tasks[task.name].wakeup
+                        if fn then
+                            if profWanted(task.name) then
+                                local t0 = os.clock()
+                                local ok, err = pcall(fn, tasks[task.name])
+                                local t1 = os.clock()
+                                profRecord(task, t1 - t0)
+                                if not ok then
+                                    print(("Error in task %q wakeup: %s"):format(task.name, err))
+                                    collectgarbage("collect")
+                                end
+                            else
+                                local ok, err = pcall(fn, tasks[task.name])
+                                if not ok then
+                                    print(("Error in task %q wakeup: %s"):format(task.name, err))
+                                    collectgarbage("collect")
+                                end
                             end
                         end
+                        task.last_run = now
                     end
-                    task.last_run = now
                 end
             end
         end
@@ -412,12 +443,21 @@ function tasks.wakeup()
         local normalEligibleTasks, mustRunTasks = {}, {}
 
         for _, task in ipairs(tasksList) do
-            if task.spreadschedule and canRunTask(task) then
-                local elapsed = now - task.last_run
-                if elapsed >= 2 * task.interval then
-                    table.insert(mustRunTasks, task)
-                elseif elapsed >= task.interval then
-                    table.insert(normalEligibleTasks, task)
+            if task.spreadschedule then
+                local okToRun, od = canRunTask(task, now)
+                if okToRun then
+                    local elapsed = now - task.last_run
+                    if elapsed >= 2 * task.interval then
+                        table.insert(mustRunTasks, task)
+                        utils.log(string.format("[scheduler] %s hard overdue by %.3fs",
+                          task.name, elapsed - 2*task.interval), "debug")
+                    elseif elapsed + OVERDUE_TOL >= task.interval then
+                        table.insert(normalEligibleTasks, task)
+                        if elapsed - task.interval > 0 then
+                            utils.log(string.format("[scheduler] %s overdue by %.3fs",
+                              task.name, elapsed - task.interval), "debug")
+                        end
+                    end
                 end
             end
         end
@@ -525,9 +565,9 @@ function tasks.wakeup()
 
     -- track average memory usage
     do
-        local now = os.clock()
-        if (now - last_mem_t) >= MEM_PERIOD then
-            last_mem_t = now
+        local now2 = os.clock()
+        if (now2 - last_mem_t) >= MEM_PERIOD then
+            last_mem_t = now2
             local m = system.getMemoryUsage()
             if m and m.luaRamAvailable then
                 local free_now = m.luaRamAvailable / 1000
@@ -584,7 +624,7 @@ function tasks.dumpProfile(opts)
     utils.log("====== Task Profile ======", "info")
     for _, p in ipairs(snapshot) do
         utils.log(string.format(
-            "%-15s | avg:%8.5fs | last:%8.5fs | max:%8.5fs | total:%8.3fs | runs:%6d | int:%4.2fs",
+            "%-15s | avg:%8.5fs | last:%8.5fs | max:%8.5fs | total:%8.3fs | runs:%6d | int:%4.3fs",
             p.name, p.avg, p.last, p.max, p.total, p.runs, p.interval
         ), "info")
     end
@@ -605,16 +645,17 @@ function tasks.event(widget, category, value, x, y)
     print("Event:", widget, category, value, x, y)
 end
 
+
 function tasks.init()
-    --print("Init:")
+    -- print("onInit:")
 end
 
 function tasks.read()
-    --print("Read:")
+    -- print("onRead:")
 end
 
 function tasks.write()
-    --print("Write:")
+    -- print("onWrite:")
 end
 
 return tasks
