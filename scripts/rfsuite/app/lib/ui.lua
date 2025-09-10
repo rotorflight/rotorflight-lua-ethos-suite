@@ -148,7 +148,7 @@ function ui.progressDisplaySave(message)
             if not app.dialogs.saveProgressCounter then
                 app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 1
             elseif isProcessing then
-                app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 3                     
+                app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 3        
             elseif app.triggers.closeSaveFake then
                 app.dialogs.saveProgressCounter = app.dialogs.saveProgressCounter + 5
                 if app.dialogs.saveProgressCounter >= 100 then

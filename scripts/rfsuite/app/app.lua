@@ -204,12 +204,15 @@ local mspEepromWrite = {
     end
   end,
   errorHandler = function(self)
-    if rfsuite.session.isArmed then
-      app.triggers.closeSave = true
-      app.audio.playSaveArmed = true
-      app.triggers.showSaveArmedWarning = true
-    end
+    app.triggers.closeSave = true
   end,
+--  errorHandler = function(self)
+--    if rfsuite.session.isArmed then
+--      app.triggers.closeSave = true
+--      app.audio.playSaveArmed = true
+--      app.triggers.showSaveArmedWarning = true
+--    end
+--  end,
   simulatorResponse = {}
 }
 
@@ -219,6 +222,9 @@ function app.settingsSaved()
     if app.pageState ~= app.pageStatus.eepromWrite then
       app.pageState = app.pageStatus.eepromWrite
       app.triggers.closeSave = true
+      if rfsuite.session.isArmed then
+        app.triggers.showSaveArmedWarning = true
+      end
       rfsuite.tasks.msp.mspQueue:add(mspEepromWrite)
     end
   elseif app.pageState ~= app.pageStatus.eepromWrite then
@@ -731,12 +737,14 @@ app._uiTasks = {
   function()
     if not app.triggers.showSaveArmedWarning or app.triggers.closeSave then return end
     if not app.dialogs.progressDisplay then
+      app.audio.playSaveArmed = true
       app.dialogs.progressCounter = 0
       local key = (rfsuite.utils.apiVersionCompare(">=", "12.08") and "app.msg_please_disarm_to_save_warning" or "app.msg_please_disarm_to_save")
       app.ui.progressDisplay(i18n("app.msg_save_not_commited"), i18n(key))
     end
     if app.dialogs.progressCounter >= 100 then
       app.triggers.showSaveArmedWarning = false
+      app.dialogs.progressDisplay = false
       app.dialogs.progress:close()
     end
   end,
