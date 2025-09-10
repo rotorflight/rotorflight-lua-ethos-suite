@@ -274,22 +274,27 @@ end
     Short: Manages sensor caches and ensures timely clearing.
 --]]
 function frsky_legacy.wakeup()
-
-    -- Function to clear caches
     local function clearCaches()
         frsky_legacy.createSensorCache = {}
         frsky_legacy.renameSensorCache = {}
-        frsky_legacy.dropSensorCache = {} -- We don't use this in this script, but keep it here in case the legacy script is used
+        frsky_legacy.dropSensorCache   = {}
     end
 
-    -- Periodic cache expiry removed (was causing bursts). Use event-driven clears only.
+    if not rfsuite.session.telemetryState or not rfsuite.session.telemetrySensor then
+        clearCaches()
+        return
+    end
 
-    -- Flush sensor list if telemetry is inactive
-    if not rfsuite.session.telemetryState or not rfsuite.session.telemetrySensor then clearCaches() end
+    if not (rfsuite.tasks and rfsuite.tasks.telemetry and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue) then
+        return
+    end
 
-    -- If GUI idle and MSP queue processed, drain with a budget
-    if rfsuite.tasks and rfsuite.tasks.telemetry and rfsuite.session.telemetryState and rfsuite.session.telemetrySensor then
-        if rfsuite.app.guiIsRunning == false and rfsuite.tasks.msp.mspQueue:isProcessed() then
+    if rfsuite.app and rfsuite.app.guiIsRunning == false and rfsuite.tasks.msp.mspQueue:isProcessed() then
+        local discoverActive = (system and system.isSensorDiscoverActive and system.isSensorDiscoverActive() == true)
+
+        if discoverActive then
+            while telemetryPop() do end      -- unbounded for discovery
+        else
             local start = os.clock()
             local count = 0
             while count < MAX_FRAMES_PER_WAKEUP and (os.clock() - start) <= MAX_TIME_BUDGET do
@@ -298,8 +303,8 @@ function frsky_legacy.wakeup()
             end
         end
     end
-
 end
+
 
 function frsky_legacy.reset()
     frsky_legacy.createSensorCache = {}

@@ -327,13 +327,26 @@ end
     - Ensures that the function does not run if the GUI is busy or the MSP queue is not processed.
 ]]
 function frsky.wakeup()
+    -- Bail early if telemetry is unavailable
+    if not rfsuite.session.telemetryState or not rfsuite.session.telemetrySensor then
+        frsky.reset()
+        return
+    end
 
-    -- Flush sensor list if telemetry is inactive
-    if not rfsuite.session.telemetryState or not rfsuite.session.telemetrySensor then frsky.reset() end
+    -- Safety: required task objects present?
+    if not (rfsuite.tasks and rfsuite.tasks.telemetry and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue) then
+        return
+    end
 
-    -- If GUI idle and MSP queue processed, drain with a budget
-    if rfsuite.tasks and rfsuite.tasks.telemetry and rfsuite.session.telemetryState and rfsuite.session.telemetrySensor then
-        if rfsuite.app.guiIsRunning == false and rfsuite.tasks.msp.mspQueue:isProcessed() then
+    -- Drain only when GUI is idle and MSP queue is processed (your preferred gating)
+    if rfsuite.app and rfsuite.app.guiIsRunning == false and rfsuite.tasks.msp.mspQueue:isProcessed() then
+        local discoverActive = (system and system.isSensorDiscoverActive and system.isSensorDiscoverActive() == true)
+
+        if discoverActive then
+            -- ETHOS discovery: unbounded drain for faster sensor discovery
+            while telemetryPop() do end
+        else
+            -- Legacy: bounded, low CPU
             local start = os.clock()
             local count = 0
             while count < MAX_FRAMES_PER_WAKEUP and (os.clock() - start) <= MAX_TIME_BUDGET do
@@ -342,8 +355,8 @@ function frsky.wakeup()
             end
         end
     end
-
 end
+
 
 function frsky.reset()
     frsky.createSensorCache = {}
