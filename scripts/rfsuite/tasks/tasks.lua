@@ -339,6 +339,7 @@ local function canRunTask(task, now)
 end
 
 function tasks.wakeup()
+
     schedulerTick = schedulerTick + 1
     tasks.heartbeat = os.clock()
 
@@ -556,8 +557,7 @@ function tasks.wakeup()
         end
     end
 
-    -- track average cpu load
-    
+    -- track average cpu load    
   -- Accurate CPU utilization: work_time / wall_time_between_wakeups
   local t_end = os.clock()
   local work_elapsed = t_end - now
@@ -575,6 +575,25 @@ function tasks.wakeup()
   end
 
   local instant_util = work_elapsed / dt   -- 0..∞
+
+  -- ---- Simulator CPU bias ---
+  if usingSimulator then
+    -- Target the radio's baseline utilization in sim.
+    local SIM_TARGET_UTIL = 0.50        -- e.g. 20%
+    local SIM_MAX_UTIL    = 0.80        -- never report above this via bias
+    -- Blend toward the target only when we're below it.
+    if instant_util < SIM_TARGET_UTIL then
+        -- Amount to blend this tick (EMA-ish). Tune 0.25..0.5 for snappier/slower convergence.
+        local BLEND = 0.55
+        instant_util = math.min(
+        SIM_MAX_UTIL,
+        instant_util + (SIM_TARGET_UTIL - instant_util) * BLEND
+        )
+    end
+  end
+  -- ---- end simulator bias ----
+
+
   cpu_avg = CPU_ALPHA * instant_util + (1 - CPU_ALPHA) * cpu_avg
   rfsuite.session.cpuload = math.min(100, math.max(0, cpu_avg * 100))
 
