@@ -19,11 +19,14 @@
 
 local tailmode = {}
 
+local mspCallMade = false
+
 function tailmode.wakeup()
     -- quick exit if no apiVersion
     if rfsuite.session.apiVersion == nil then return end    
 
-    if (rfsuite.session.tailMode == nil or rfsuite.session.swashMode == nil)  then
+    if (rfsuite.session.tailMode == nil or rfsuite.session.swashMode == nil)  and mspCallMade == false then
+        mspCallMade = true
         local API = rfsuite.tasks.msp.api.load("MIXER_CONFIG")
         API.setCompleteHandler(function(self, buf)
             rfsuite.session.tailMode = API.readValue("tail_rotor_mode")
@@ -42,6 +45,7 @@ end
 function tailmode.reset()
     rfsuite.session.tailMode = nil
     rfsuite.session.swashMode = nil
+    mspCallMade = false
 end
 
 function tailmode.isComplete()

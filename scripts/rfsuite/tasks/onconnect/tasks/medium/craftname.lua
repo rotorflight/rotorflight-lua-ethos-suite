@@ -19,11 +19,14 @@
 
 local craftname = {}
 
+local mspCallMade = false
+
 function craftname.wakeup()
     -- quick exit if no apiVersion
     if rfsuite.session.apiVersion == nil then return end    
 
-    if (rfsuite.session.craftName == nil) then
+    if (rfsuite.session.craftName == nil) and (mspCallMade == false) then
+        mspCallMade = true
         local API = rfsuite.tasks.msp.api.load("NAME")
         API.setCompleteHandler(function(self, buf)
             rfsuite.session.craftName = API.readValue("name")
@@ -46,6 +49,7 @@ end
 
 function craftname.reset()
     rfsuite.session.craftName = nil
+    mspCallMade = false
 end
 
 function craftname.isComplete()

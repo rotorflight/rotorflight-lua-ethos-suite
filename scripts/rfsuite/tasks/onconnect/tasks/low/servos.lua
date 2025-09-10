@@ -19,11 +19,16 @@
 
 local servos = {}
 
+local mspCall1Made = false
+local mspCall2Made = false
+
 function servos.wakeup()
     -- quick exit if no apiVersion
     if rfsuite.session.apiVersion == nil then return end    
 
-    if (rfsuite.session.servoCount == nil)  then
+
+    if (rfsuite.session.servoCount == nil) and (mspCall1Made == false) then
+        mspCall1Made = true
         local API = rfsuite.tasks.msp.api.load("STATUS")
         API.setCompleteHandler(function(self, buf)
             rfsuite.session.servoCount = API.readValue("servo_count")
@@ -34,7 +39,8 @@ function servos.wakeup()
         API.setUUID("d7e0db36-ca3c-4e19-9a64-40e76c78329c")
         API.read()
 
-    elseif (rfsuite.session.servoOverride == nil)  then
+    elseif (rfsuite.session.servoOverride == nil) and (mspCall2Made == false) then
+        mspCall2Made = true
         local API = rfsuite.tasks.msp.api.load("SERVO_OVERRIDE")
         API.setCompleteHandler(function(self, buf)
             for i, v in pairs(API.data().parsed) do
@@ -54,6 +60,8 @@ end
 function servos.reset()
     rfsuite.session.servoCount = nil
     rfsuite.session.servoOverride = nil
+    mspCall1Made = false
+    mspCall2Made = false
 end
 
 function servos.isComplete()

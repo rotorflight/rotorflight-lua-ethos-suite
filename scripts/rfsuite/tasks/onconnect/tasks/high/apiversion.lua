@@ -19,8 +19,13 @@
 
 local apiversion = {}
 
+local mspCallMade = false
+
 function apiversion.wakeup()
-    if rfsuite.session.apiVersion == nil then
+    if rfsuite.session.apiVersion == nil and mspCallMade == false then
+
+        mspCallMade = true
+
         local API = rfsuite.tasks.msp.api.load("API_VERSION")
         API.setCompleteHandler(function(self, buf)
             local version = API.readVersion()
@@ -49,6 +54,7 @@ end
 function apiversion.reset()
     rfsuite.session.apiVersion = nil
     rfsuite.session.apiVersionInvalid = nil
+    mspCallMade = false
 end
 
 function apiversion.isComplete()

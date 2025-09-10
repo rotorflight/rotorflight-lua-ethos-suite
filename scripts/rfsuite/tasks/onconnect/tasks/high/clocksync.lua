@@ -19,11 +19,16 @@
 
 local clocksync = {}
 
+local mspCallMade = false
+
 function clocksync.wakeup()
     -- quick exit if no apiVersion
     if rfsuite.session.apiVersion == nil then return end    
 
-    if rfsuite.session.clockSet == nil then
+    if rfsuite.session.clockSet == nil and mspCallMade == false then
+
+        mspCallMade = true
+
         local API = rfsuite.tasks.msp.api.load("RTC", 1)
         API.setCompleteHandler(function(self, buf)
             rfsuite.session.clockSet = true
@@ -39,6 +44,7 @@ end
 
 function clocksync.reset()
     rfsuite.session.clockSet = nil
+    mspCallMade = false
 end
 
 function clocksync.isComplete()

@@ -19,11 +19,17 @@
 
 local uid = {}
 
+local mspCallMade = false
+
 function uid.wakeup()
     -- quick exit if no apiVersion
     if rfsuite.session.apiVersion == nil then return end    
 
-    if (rfsuite.session.mcu_id == nil)  then
+    if (rfsuite.session.mcu_id == nil and mspCallMade == false)  then
+
+
+        mspCallMade = true
+
         local API = rfsuite.tasks.msp.api.load("UID")
         API.setCompleteHandler(function(self, buf)
             local U_ID_0 = API.readValue("U_ID_0")
@@ -56,6 +62,7 @@ end
 
 function uid.reset()
     rfsuite.session.mcu_id = nil
+    mspCallMade = false
 end
 
 function uid.isComplete()

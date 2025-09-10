@@ -19,8 +19,13 @@
 
 local fcversion = {}
 
+local mspCallMade = false
+
 function fcversion.wakeup()
-    if rfsuite.session.fcVersion== nil then
+    if rfsuite.session.fcVersion== nil and mspCallMade == false then
+
+        mspCallMade = true
+
         local API = rfsuite.tasks.msp.api.load("FC_VERSION")
         API.setCompleteHandler(function(self, buf)
             rfsuite.session.fcVersion = API.readVersion()
@@ -37,6 +42,7 @@ end
 function fcversion.reset()
     rfsuite.session.fcVersion = nil
     rfsuite.session.rfVersion = nil
+    mspCallMade = false
 end
 
 function fcversion.isComplete()
