@@ -43,6 +43,10 @@ local telemetryCheckScheduler = os.clock()
 local lastTelemetrySensorName, sportSensor, elrsSensor = nil, nil, nil
 local lastModuleId = 0
 
+local lastCheckAt
+local lastModuleId
+local lastSensorName
+
 local usingSimulator = system.getVersion().simulation
 
 local tlm = system.getSource({ category = CATEGORY_SYSTEM_EVENT, member = TELEMETRY_ACTIVE })
@@ -247,10 +251,6 @@ function tasks.findTasks()
 end
 
 -- Telemetry check scheduler: runs every 2 seconds to detect changes in telemetry source
-local lastCheckAt
-local lastModuleId
-local lastSensorName
-
 function tasks.telemetryCheckScheduler()
     local now = os.clock()
     if now - (lastCheckAt or 0) < 2 then return end
