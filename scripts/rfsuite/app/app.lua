@@ -206,13 +206,6 @@ local mspEepromWrite = {
   errorHandler = function(self)
     app.triggers.closeSave = true
   end,
---  errorHandler = function(self)
---    if rfsuite.session.isArmed then
---      app.triggers.closeSave = true
---      app.audio.playSaveArmed = true
---      app.triggers.showSaveArmedWarning = true
---    end
---  end,
   simulatorResponse = {}
 }
 
