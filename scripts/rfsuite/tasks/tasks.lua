@@ -246,51 +246,60 @@ function tasks.findTasks()
     return taskMetadata
 end
 
+-- Telemetry check scheduler: runs every 2 seconds to detect changes in telemetry source
+local lastCheckAt
+local lastModuleId
+local lastSensorName
+
 function tasks.telemetryCheckScheduler()
     local now = os.clock()
+    if now - (lastCheckAt or 0) < 2 then return end
 
-    if now - (telemetryCheckScheduler or 0) >= 2 then
-        local telemetryState = tlm and tlm:state() or false
-        if rfsuite.simevent.telemetry_state == false and system.getVersion().simulation then
-            telemetryState = false
-        end
-
-        if not telemetryState then
-            utils.session()
-            if rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue  then
-                rfsuite.tasks.msp.mspQueue:clear()
-            end     
-        else
-            sportSensor = system.getSource({ appId = 0xF101 })
-            elrsSensor = system.getSource({ crsfId = 0x14, subIdStart = 0, subIdEnd = 1 })
-            currentTelemetrySensor = sportSensor or elrsSensor
-
-            if not currentTelemetrySensor then
-                utils.session()
-                if rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue  then
-                    rfsuite.tasks.msp.mspQueue:clear()
-                end                
-            else
-                rfsuite.session.telemetryState = true
-                rfsuite.session.telemetrySensor = currentTelemetrySensor
-
-                local sensorModule = rfsuite.session.telemetrySensor:module()
-                local module = model.getModule(sensorModule)
-                rfsuite.session.telemetryModule = module
-                rfsuite.session.telemetryType = sportSensor and "sport" or elrsSensor and "crsf" or nil
-                rfsuite.session.telemetryTypeChanged = currentTelemetrySensor:name() ~= lastTelemetrySensorName
-                lastTelemetrySensorName = currentTelemetrySensor:name()
-                telemetryCheckScheduler = now
-
-                if lastModuleId ~= sensorModule then
-                    lastModuleId = sensorModule
-                    rfsuite.utils.log("Module ID changed, resetting session","info")
-                    rfsuite.session.telemetryTypeChanged = true
-                end
-
-            end
-        end
+    -- Helper: clear session + MSP queue
+    local function clearSessionAndQueue()
+        utils.session()
+        local q = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue
+        if q then q:clear() end
     end
+
+    -- Determine current telemetry state, respecting simulation override
+    local telemetryState = (tlm and tlm:state()) or false
+    if system.getVersion().simulation and rfsuite.simevent.telemetry_state == false then
+        telemetryState = false
+    end
+
+    if not telemetryState then
+        lastCheckAt = now
+        return clearSessionAndQueue()
+    end
+
+    -- Prefer FrSky S.Port; fall back to CRSF/ELRS
+    local sportSensor = system.getSource({ appId = 0xF101 })
+    local elrsSensor  = system.getSource({ crsfId = 0x14, subIdStart = 0, subIdEnd = 1 })
+    local current     = sportSensor or elrsSensor
+
+    if not current then
+        lastCheckAt = now
+        return clearSessionAndQueue()
+    end
+
+    local sensorName = current:name()
+    local moduleId   = current:module()
+
+    rfsuite.session.telemetryState        = true
+    rfsuite.session.telemetrySensor       = current
+    rfsuite.session.telemetryModule       = model.getModule(moduleId)
+    rfsuite.session.telemetryType         = sportSensor and "sport" or (elrsSensor and "crsf") or nil
+
+    local changed = (sensorName ~= lastSensorName) or (moduleId ~= lastModuleId)
+    rfsuite.session.telemetryTypeChanged = changed
+    if changed then
+        lastModuleId       = moduleId
+        lastSensorName     = sensorName
+        rfsuite.utils.log("Transport changed, resetting session", "info")
+    end
+
+    lastCheckAt = now
 end
 
 function tasks.active()
