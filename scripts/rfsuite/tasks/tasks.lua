@@ -601,4 +601,20 @@ function tasks.resetProfile()
     utils.log("[profile] Cleared profiling stats", "info")
 end
 
+function tasks.event(widget, category, value, x, y)
+    print("Event:", widget, category, value, x, y)
+end
+
+function tasks.init()
+    --print("Init:")
+end
+
+function tasks.read()
+    --print("Read:")
+end
+
+function tasks.write()
+    --print("Write:")
+end
+
 return tasks

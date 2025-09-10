@@ -203,6 +203,9 @@ local function register_bg_task()
     key = rfsuite.config.bgTaskKey,
     wakeup = rfsuite.tasks.wakeup,
     event = rfsuite.tasks.event,
+    init = rfsuite.tasks.init,
+    read = rfsuite.tasks.read,
+    write = rfsuite.tasks.write,
   })
 end
 
