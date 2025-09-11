@@ -63,9 +63,6 @@ dashboard.DEFAULT_THEME = "system/default"
 local themesBasePath = "SCRIPTS:/" .. baseDir .. "/widgets/dashboard/themes/"
 local themesUserPath = "SCRIPTS:/" .. preferences .. "/dashboard/"
 
--- Create the user theme directory if it doesn't exist
-os.mkdir(themesUserPath)
-
 -- Cache for loaded state modules (preflight, inflight, postflight)
 local loadedStateModules = {}
 
@@ -98,8 +95,6 @@ local scheduledBoxIndices = {}
 -- Flag to perform initialization logic only once on first wakeup
 local firstWakeup = true
 local firstWakeupCustomTheme = true
-
-lcd.invalidate() -- force an initial redraw to show the hourglass
 
 -- Layout state for boxes (UI elements):
 dashboard.boxRects = {}              -- will hold {x, y, w, h, box} for each box
@@ -264,16 +259,6 @@ end
 -- ========================================================================
 
 
-
--- Utility methods loaded from external utils.lua (drawing, color helpers, etc.)
-dashboard.utils = assert(
-    compile("SCRIPTS:/" .. baseDir .. "/widgets/dashboard/lib/utils.lua")
-)()
-
-dashboard.loaders = assert(
-    compile("SCRIPTS:/" .. baseDir .. "/widgets/dashboard/lib/loaders.lua")
-)()
-
 function dashboard.loader(x, y, w, h)
     dashboard.loaders.staticLoader(dashboard, x, y, w, h)
     _queueInvalidateRect(x, y, w, h)
@@ -316,8 +301,10 @@ function dashboard.loadObjectType(box)
     if not typ then return end
 
     if not dashboard._moduleCache[typ] then
-        local baseDir = baseDir or "default"
-        local objPath = "SCRIPTS:/" .. baseDir .. "/widgets/dashboard/objects/" .. typ .. ".lua"
+
+        local bdir = baseDir or "default"
+        local objPath = "SCRIPTS:/" .. bdir .. "/widgets/dashboard/objects/" .. typ .. ".lua"
+
         local ok, obj = pcall(function()
             return assert(compile(objPath))()
         end)
@@ -346,8 +333,8 @@ function dashboard.loadAllObjects(boxConfigs)
         if typ then
             -- only load from disk the first time we see this type
             if not dashboard._moduleCache[typ] then
-                local baseDir = baseDir or "default"
-                local objPath = "SCRIPTS:/" .. baseDir .. "/widgets/dashboard/objects/" .. typ .. ".lua"
+                local bdir = baseDir or "default"
+                local objPath = "SCRIPTS:/" .. bdir .. "/widgets/dashboard/objects/" .. typ .. ".lua"
                 local ok, obj = pcall(function()
                     return assert(compile(objPath))()
                 end)
@@ -1094,10 +1081,41 @@ end
 --- Creates a dashboard widget by invoking the "create" state function.
 -- @param widget The widget instance to be created.
 -- @return The result of the "create" state function for the given widget.
-function dashboard.create(widget)
-    return {value=0}
-end
+function dashboard.create()
+    -- 1) one-time (per Lua VM) helper modules; don’t recompile per instance
+    if not dashboard.utils then
+        dashboard.utils = assert(compile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/lib/utils.lua"))()
+    end
+    if not dashboard.loaders then
+        dashboard.loaders = assert(compile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/lib/loaders.lua"))()
+    end
 
+    -- 2) ensure user theme dir exists
+    os.mkdir("SCRIPTS:/" .. rfsuite.config.preferences .. "/dashboard/")
+
+    -- 3) reset per-instance runtime flags/state
+    dashboard._pendingInvalidates = {}
+    dashboard._lastInvalidateTime = 0
+    dashboard._hg_cycles          = 0
+    dashboard.overlayMessage      = nil
+
+    -- per-instance scheduling
+    firstWakeup                = true
+    firstWakeupCustomTheme     = true
+    wakeupScheduler            = 0
+    objectWakeupIndex          = 1
+    objectsThreadedWakeupCount = 0
+    objectWakeupsPerCycle      = nil
+    scheduledBoxIndices        = {}
+    dashboard.boxRects         = {}
+    dashboard.selectedBoxIndex = nil
+
+    -- kick a first frame if you want the hourglass immediately
+    lcd.invalidate()
+
+    -- return widget instance table (Ethos will pass it back to wakeup/paint/…)
+    return { value = 0 }
+end
 
 --- Paints the dashboard widget based on the current flight mode state.
 -- Determines the current state and retrieves the corresponding module from `loadedStateModules`.
