@@ -8,6 +8,9 @@
 local arg = {...}
 local config = arg[1]
 
+local MAX_QUEUE = 50        -- If we exceed this many lines queued, force flush
+local FLUSH_QUEUE_SIZE = 2  -- number of lines to queue before writing to file
+
 local logging = {}
 local logInterval = 1 -- changing this will skew the log analysis - so dont change it
 local logFileName
@@ -59,20 +62,36 @@ end
 
 function logging.queueLog(msg)
     table.insert(log_queue, msg)
+    if #log_queue >= MAX_QUEUE then
+        -- If something stalls and the queue grows, force a flush to bound memory.
+        logging.writeLogs(true)
+    end
 end
 
 function logging.writeLogs(forcewrite)
     local max_lines = forcewrite and #log_queue or 10
     if #log_queue > 0 and logFileName then
-        rfsuite.utils.log("Write " .. #log_queue .. " lines to " .. logFileName,"info")
         local filePath = "LOGS:rfsuite/telemetry/" .. rfsuite.session.mcu_id .. "/" .. logFileName
+
+        rfsuite.utils.log(
+            string.format("Write %d (of %d) lines to %s",
+            math.min(#log_queue, max_lines), #log_queue, logFileName),
+            "info"
+        )
+
         local f = io.open(filePath, 'a')
-        for i = 1, math.min(#log_queue, max_lines) do
-            io.write(f, table.remove(log_queue, 1) .. "\n")
-        end
+
+        local n = math.min(#log_queue, max_lines)
+        -- write N lines in one go
+        io.write(f, table.concat(log_queue, "\n", 1, n), "\n")
+
+        -- drop the written slots WITHOUT shifting the table
+        for i = 1, n do log_queue[i] = nil end
+
         io.close(f)
+        end
     end
-end
+
 
 
 function logging.getLogHeader()
@@ -87,7 +106,8 @@ function logging.getLogLine()
         local src = cachedSensors[sensor.name]
         values[i] = src and src:value() or 0
     end
-    return os.date("%Y-%m-%d_%H:%M:%S") .. ", " .. rfsuite.utils.joinTableItems(values, ", ")
+    local ts = os.time()              -- integer epoch
+    return ts .. ", " .. rfsuite.utils.joinTableItems(values, ", ")
 end
 
 function logging.getLogTable()
@@ -115,6 +135,7 @@ function logging.flushLogs()
         logFileName, logHeader = nil, nil
         logging.writeLogs(true)
         logdir = nil
+        collectgarbage()
     end    
 end
 
@@ -173,7 +194,7 @@ function logging.wakeup()
         if os.clock() - logRateLimit >= logInterval then
             logRateLimit = os.clock()
             logging.queueLog(logging.getLogLine())
-            if #log_queue >= 5 then
+            if #log_queue >= FLUSH_QUEUE_SIZE then
                 logging.writeLogs()
             end
         end
