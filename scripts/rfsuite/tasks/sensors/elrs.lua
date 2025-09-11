@@ -181,7 +181,25 @@ function elrs.setFblSensors(list)
 end
 
 -- default (stub) until caller sets the real list
-elrs.setFblSensors({ 0, 1, 3, 4, 5, 6, 7, 8, 9 })
+local defaultFblSensors = {
+  3,   -- Voltage
+  4,   -- Current
+  5,   -- Consumption
+  6,   -- Fuel / Charge Level
+  15,  -- Throttle %
+  23,  -- ESC Temp
+  43,  -- BEC Voltage
+  52,  -- MCU Temp
+  60,  -- Headspeed
+  90,  -- Arm Flags
+  91,  -- Arm Disable Flags
+  93,  -- Governor
+  95,  -- PID Profile
+  96,  -- Rate Profile
+  99,  -- Adjustment Function
+}
+
+elrs.setFblSensors(defaultFblSensors)
 
 local function isEnabled(sidElrs)
   return enabledSidElrs[sidElrs] == true

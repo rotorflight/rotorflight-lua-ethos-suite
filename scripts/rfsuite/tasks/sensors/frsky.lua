@@ -88,8 +88,26 @@ function frsky.setFblSensors(fblIds)
 
 end
 
--- Default stub (until caller provides the profile)
-frsky.setFblSensors({ 1,3,4,5,6,7,8,9,57,60 })  -- example
+-- default (stub) until caller sets the real list
+local defaultFblSensors = {
+  3,   -- Voltage
+  4,   -- Current
+  5,   -- Consumption
+  6,   -- Fuel / Charge Level
+  15,  -- Throttle %
+  23,  -- ESC Temp
+  43,  -- BEC Voltage
+  52,  -- MCU Temp
+  60,  -- Headspeed
+  90,  -- Arm Flags
+  91,  -- Arm Disable Flags
+  93,  -- Governor
+  95,  -- PID Profile
+  96,  -- Rate Profile
+  99,  -- Adjustment Function
+}
+
+elrs.setFblSensors(defaultFblSensors)
 
 ----------------------------------------------------------------------
 -- Helpers: create, drop, rename (same flow as before; gated by lists)
