@@ -51,9 +51,6 @@ local usingSimulator = system.getVersion().simulation
 
 local tlm = system.getSource({ category = CATEGORY_SYSTEM_EVENT, member = TELEMETRY_ACTIVE })
 
--- set scheduler mode
-local SCHEDULER_40HZ = false  -- if true, alternate spread/non-spread tasks each tick; else run both every tick
-
 -- track cpu
 local CPU_TICK_HZ     = 20
 
@@ -534,18 +531,10 @@ function tasks.wakeup()
         end
     end
 
-    if SCHEDULER_40HZ then
-        local cycleFlip = schedulerTick % 2
-        if cycleFlip == 0 then
-            runNonSpreadTasks()
-        else
-            runSpreadTasks()
-        end
-    else
-        -- No per-tick switching: run both groups every wakeup
-        runNonSpreadTasks()
-        runSpreadTasks()
-    end
+    -- No per-tick switching: run both groups every wakeup
+    runNonSpreadTasks()
+    runSpreadTasks()
+
 
     -- Periodic profile dump (only when profiler is on)
     if tasks.profile.enabled then
