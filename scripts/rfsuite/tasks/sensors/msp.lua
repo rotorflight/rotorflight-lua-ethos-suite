@@ -328,7 +328,7 @@ function msp.wakeup()
     lastWakeupTime = now
 
     if not tasks.msp.mspQueue:isProcessed() then
-        log("MSP queue busy.. skipping dynamic MSP sensors", "info")
+     --   log("MSP queue busy.. skipping dynamic MSP sensors", "info")
         return
     end
 
