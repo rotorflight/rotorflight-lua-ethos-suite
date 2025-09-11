@@ -43,17 +43,18 @@
 
 ]] --
 
+-- keep these constant / cheap definitions at file scope
 local utils = rfsuite.utils
 local compiler = rfsuite.compiler.loadfile
 
 local currentTelemetrySensor
-local tasksPerCycle = 1
-local taskSchedulerPercentage = 0.5
+local tasksPerCycle
+local taskSchedulerPercentage
 
-local schedulerTick = 0
+local schedulerTick
 
 local tasks, tasksList = {}, {}
-tasks.heartbeat, tasks.begin, tasks.wasOn = nil, true, false
+tasks.heartbeat, tasks.begin, tasks.wasOn = nil, nil, false  -- begin nil by default
 rfsuite.session.telemetryTypeChanged = true
 
 tasks._justInitialized = false
@@ -62,37 +63,32 @@ tasks._initMetadata = nil
 tasks._initKeys = nil
 tasks._initIndex = 1
 
-local ethosVersionGood = nil
-local telemetryCheckScheduler = os.clock()
-local lastTelemetrySensorName, sportSensor, elrsSensor = nil, nil, nil
-local lastModuleId = 0
-
-local lastCheckAt
+local ethosVersionGood
+local telemetryCheckScheduler = os.clock  -- keep reference, actual timers set later
+local lastTelemetrySensorName, sportSensor, elrsSensor
 local lastModuleId
+local lastCheckAt
 local lastSensorName
 
 local usingSimulator = system.getVersion().simulation
 
-local tlm = system.getSource({ category = CATEGORY_SYSTEM_EVENT, member = TELEMETRY_ACTIVE })
+local tlm 
 
--- track cpu
+-- CPU constants (cheap -> keep)
 local CPU_TICK_HZ     = 20
+local SCHED_DT        = 1 / CPU_TICK_HZ
+local OVERDUE_TOL     = SCHED_DT * 0.25
 
--- Accurate scheduler cadence & tolerances (seconds)
-local SCHED_DT    = 1 / CPU_TICK_HZ        -- 0.05s at 20 Hz
-local OVERDUE_TOL = SCHED_DT * 0.25        -- small tolerance to avoid boundary flapping
+-- CPU/mem moving-average state (declare only)
+local last_wakeup_start
+local CPU_TICK_BUDGET
+local CPU_ALPHA
+local cpu_avg
 
--- Track the start time of the previous wakeup for accurate utilization
-local last_wakeup_start = nil
-local CPU_TICK_BUDGET = 1 / CPU_TICK_HZ
-local CPU_ALPHA       = 0.2
-local cpu_avg         = 0
-
--- track memory
-local MEM_ALPHA   = 0.2
-local mem_avg_kb  = 0
-local last_mem_t  = 0
-local MEM_PERIOD  = 2.0   -- seconds between samples
+local MEM_ALPHA
+local mem_avg_kb
+local last_mem_t
+local MEM_PERIOD
 
 
 -- =========================
@@ -699,8 +695,50 @@ end
 
 
 function tasks.init()
-    -- print("onInit:")
+    -- initialize all mutable runtime state here (no heavy work yet)
+    currentTelemetrySensor     = nil
+    tasksPerCycle              = 1
+    taskSchedulerPercentage    = 0.5
+    schedulerTick              = 0
+
+    ethosVersionGood           = nil
+    lastTelemetrySensorName    = nil
+    sportSensor, elrsSensor    = nil, nil
+    lastModuleId               = 0
+    lastSensorName             = nil
+    lastCheckAt                = nil
+
+    -- profiler / CPU / mem tracking baselines
+    CPU_TICK_BUDGET            = 1 / CPU_TICK_HZ
+    CPU_ALPHA                  = 0.2
+    cpu_avg                    = 0
+    last_wakeup_start          = nil
+
+    MEM_ALPHA                  = 0.2
+    mem_avg_kb                 = 0
+    last_mem_t                 = 0
+    MEM_PERIOD                 = 2.0
+
+    -- reset public flags
+    tasks.heartbeat            = nil
+    tasks.wasOn                = false
+    tasks._justInitialized     = false
+
+    -- fresh task container(s)
+    tasksList                  = {}
+    tasks._initState           = "start"
+    tasks._initMetadata        = nil
+    tasks._initKeys            = nil
+    tasks._initIndex           = 1
+
+    -- mark that we should run the discovery/bootstrap on first wakeup tick
+    tasks.begin                = true
+
+    -- Init telemetry sensor
+    tlm = system.getSource({ category = CATEGORY_SYSTEM_EVENT, member = TELEMETRY_ACTIVE })
+
 end
+
 
 function tasks.read()
     -- print("onRead:")
