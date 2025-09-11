@@ -57,6 +57,9 @@ local tasks, tasksList = {}, {}
 tasks.heartbeat, tasks.begin, tasks.wasOn = nil, nil, false  -- begin nil by default
 
 
+local currentSensor, currentModuleId, currentTelemetryType
+local internalModule, externalModule
+
 tasks._justInitialized = false
 tasks._initState = "start"
 tasks._initMetadata = nil
@@ -267,76 +270,73 @@ function tasks.findTasks()
     return taskMetadata
 end
 
--- Telemetry check scheduler: runs every 2 seconds to detect changes in telemetry source
+local function clearSessionAndQueue()
+    tasks.setTelemetryTypeChanged()
+    utils.session()
+    local q = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue
+    if q then q:clear() end
+
+    internalModule = nil
+    externalModule = nil
+    currentSensor = nil
+    currentModuleId = nil
+    currentTelemetryType = nil
+
+end
+
+-- Telemetry check scheduler: 
 function tasks.telemetryCheckScheduler()
-    local now = os.clock()
 
-    -- we do this on every tick to ensure we catch telemetry state changes
     local telemetryState = (tlm and tlm:state()) or false
-
-    if now - (lastCheckAt or 0) < 2 then return end
-
-    -- Helper: clear session + MSP queue
-    local function clearSessionAndQueue()
-        utils.session()
-        local q = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue
-        if q then q:clear() end
-    end
-
-    -- Determine current telemetry state, respecting simulation override
     if system.getVersion().simulation and rfsuite.simevent.telemetry_state == false then
         telemetryState = false
     end
 
+    -- early out if link is down
     if not telemetryState then
-        lastCheckAt = now
         return clearSessionAndQueue()
     end
 
-    -- Prefer FrSky S.Port; fall back to CRSF/ELRS
-    local currentSensor
-    local currentModuleId
-    local currentTelemetryType
+    -- fast path: if we already have a sensor, don’t rescan every time
+    if currentSensor then
+        rfsuite.session.telemetryState  = true
+        rfsuite.session.telemetrySensor = currentSensor
+        rfsuite.session.telemetryModule = currentModuleId
+        rfsuite.session.telemetryType   = currentTelemetryType
+        return
+    end
 
-    local internalModule = model.getModule(0)
-    local externalModule = model.getModule(1)
+    -- only do heavy calls when we *don’t* already have a sensor
+    if not internalModule or not externalModule then
+        internalModule = model.getModule(0)
+        externalModule = model.getModule(1)
+    end
 
-    if internalModule:enable() then
-        -- we only have sport on internal module - enforce it.
-        currentSensor = system.getSource({ appId = 0xF101 })
-        currentModuleId = internalModule
+    if internalModule and internalModule:enable() then
+        currentSensor      = system.getSource({ appId = 0xF101 })
+        currentModuleId    = internalModule
         currentTelemetryType = "sport"
-    elseif externalModule:enable()  then
-         -- we might have sport or elrs on the external module -- check elrs first
-        currentSensor = system.getSource({ crsfId = 0x14, subIdStart = 0, subIdEnd = 1 })
-        currentModuleId = externalModule
+    elseif externalModule and externalModule:enable() then
+        currentSensor      = system.getSource({ crsfId = 0x14, subIdStart = 0, subIdEnd = 1 })
+        currentModuleId    = externalModule
         currentTelemetryType = "crsf"
         if not currentSensor then
-            -- try sport again as it might be an external sport module!
-            currentSensor = system.getSource({ appId = 0xF101 })
+            currentSensor      = system.getSource({ appId = 0xF101 })
             currentTelemetryType = "sport"
         end
-    else
-        rfsuite.utils.log("No telemetry modules enabled", "info")    
-        currentSensor = nil
-        currentModuleId = nil
-        currentTelemetryType = nil
     end
 
+
     if not currentSensor then
-        lastCheckAt = now
         return clearSessionAndQueue()
     end
 
-    -- local sensorName = currentSensor:name()
-    local moduleId   = currentModuleId
+    rfsuite.session.telemetryState  = true
+    rfsuite.session.telemetrySensor = currentSensor
+    rfsuite.session.telemetryModule = currentModuleId
+    rfsuite.session.telemetryType   = currentTelemetryType
 
-    rfsuite.session.telemetryState        = true
-    rfsuite.session.telemetrySensor       = currentSensor
-    rfsuite.session.telemetryModule       = currentModuleId
-    rfsuite.session.telemetryType         = currentTelemetryType
 
-    
     if currentTelemetryType ~= lastTelemetryType then
         rfsuite.utils.log("Telemetry type changed to " .. tostring(currentTelemetryType), "info")
         tasks.setTelemetryTypeChanged()
@@ -344,8 +344,6 @@ function tasks.telemetryCheckScheduler()
         clearSessionAndQueue()
     end
 
-
-    lastCheckAt = now
 end
 
 function tasks.active()
