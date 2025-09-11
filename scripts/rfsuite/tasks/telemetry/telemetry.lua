@@ -40,15 +40,31 @@ local cache_hits, cache_misses = 0, 0
 local HOT_SIZE  = 20
 local hot_list, hot_index = {}, {}
 
+local function rebuild_hot_index()
+  hot_index = {}
+  for i, k in t_ipairs(hot_list) do
+    hot_index[k] = i
+  end
+end
+
 local function mark_hot(key)
   local idx = hot_index[key]
-  if idx then
+
+  -- If the key is already in the list, remove it safely
+  if idx and idx >= 1 and idx <= #hot_list then
     t_remove(hot_list, idx)
+    rebuild_hot_index()
+  -- Otherwise, evict the LRU if at capacity
   elseif #hot_list >= HOT_SIZE then
     local old = t_remove(hot_list, 1)
-    hot_index[old] = nil
-    sensors[old] = nil -- evict the old sensor so cache size ≤ HOT_SIZE
+    if old ~= nil then
+      hot_index[old] = nil
+      sensors[old] = nil -- evict the old sensor so cache size ≤ HOT_SIZE
+    end
+    rebuild_hot_index()
   end
+
+  -- Push 'key' to MRU position
   t_insert(hot_list, key)
   hot_index[key] = #hot_list
 end

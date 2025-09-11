@@ -73,6 +73,8 @@ local telemetryCheckScheduler = os.clock  -- keep reference, actual timers set l
 local lastCheckAt
 local lastTelemetryType
 
+local lastNameCheckAt = 0
+local NAME_CHECK_INTERVAL = 2.0
 
 local usingSimulator = system.getVersion().simulation
 
@@ -288,6 +290,8 @@ end
 -- Telemetry check scheduler: 
 function tasks.telemetryCheckScheduler()
 
+    local now = os.clock()
+
     local telemetryState = (tlm and tlm:state()) or false
     if system.getVersion().simulation and rfsuite.simevent.telemetry_state == false then
         telemetryState = false
@@ -306,11 +310,14 @@ function tasks.telemetryCheckScheduler()
        rfsuite.session.telemetryType   = currentTelemetryType 
 
        -- catch switching when to fast for telemetry to drop
-       if currentSensor:name() ~= lastSensorName then
-           utils.log("Telemetry sensor changed to " .. tostring(currentSensor:name()), "info")
-           lastSensorName = currentSensor:name()
-           currentSensor = nil  -- force re-detect next time           
-       end
+        if now - lastNameCheckAt >= NAME_CHECK_INTERVAL then
+            lastNameCheckAt = now
+            if currentSensor:name() ~= lastSensorName then
+                utils.log("Telemetry sensor changed to " .. tostring(currentSensor:name()), "info")
+                lastSensorName = currentSensor:name()
+                currentSensor = nil  -- force re-detect next time           
+            end
+        end     
 
       return
     end
