@@ -26,16 +26,20 @@
 --
 -- Useful for periodic operations that require sub-second timing.
 
-An example for a task meta info is as folloows
+-- The tasks flip with running each on a different cycle is important.
+-- It prevents the system 'bogging down' if many tasks are due at the same time.
+-- It also helps to spread out CPU load, which is important for accurate CPU timing.
 
-local init = {
-    interval        = 0.25,            -- run every 0.25 seconds.  Note. Minimum interval is ~0.05s
-    script          = "sensors.lua",   -- run this script
-    linkrequired    = true,            -- run this script only if link is established
-    spreadschedule  = false,           -- run on every loop
-    simulatoronly   = false,           -- run this script in simulation mode
-    connected       = true,            -- run this script only if msp is connected
-}
+-- An example for a task meta info is as follows
+
+-- local init = {
+--     interval        = 0.25,            -- run every 0.25 seconds.  Note. Minimum interval is ~0.05s
+--     script          = "sensors.lua",   -- run this script
+--     linkrequired    = true,            -- run this script only if link is established
+--     spreadschedule  = false,           -- run on every loop
+--     simulatoronly   = false,           -- run this script in simulation mode
+--     connected       = true,            -- run this script only if msp is connected
+-- }
 
 ]] --
 
