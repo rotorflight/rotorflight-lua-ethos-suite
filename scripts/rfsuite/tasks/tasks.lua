@@ -695,10 +695,6 @@ end
 
 
 function tasks.init()
-
-    -- full teardown of existing tasks (if any)
-    tasks.teardown({ removeCache = false }) 
-
     -- initialize all mutable runtime state here (no heavy work yet)
     currentTelemetrySensor     = nil
     tasksPerCycle              = 1
@@ -742,49 +738,6 @@ function tasks.init()
     tlm = system.getSource({ category = CATEGORY_SYSTEM_EVENT, member = TELEMETRY_ACTIVE })
 
 end
-
--- ADD: full teardown helper
-function tasks.teardown(opts)
-    opts = opts or {}
-
-    -- 1) Ask existing tasks to reset (calls each task's reset if present)
-    pcall(function() if tasks.reset then tasks.reset() end end)
-
-    -- 2) Clear MSP queue and reset session (mirrors your existing approach)
-    local q = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue
-    if q and q.clear then pcall(function() q:clear() end) end
-    if utils and utils.session then pcall(utils.session) end
-
-    -- 3) Unload dynamically loaded task modules & clear scheduling list
-    if tasksList then
-        for _, t in ipairs(tasksList) do
-            tasks[t.name] = nil
-        end
-    end
-    tasksList = {}
-
-    -- 4) Drop init/discovery state so initialize() fully rebuilds
-    tasks._initMetadata = nil
-    tasks._initKeys     = nil
-    tasks._initIndex    = 1
-    tasks._initState    = "start"
-
-    -- 5) Reset telemetry/session flags
-    rfsuite.session.telemetryState        = false
-    rfsuite.session.telemetrySensor       = nil
-    rfsuite.session.telemetryModule       = nil
-    rfsuite.session.telemetryType         = nil
-    rfsuite.session.telemetryTypeChanged  = true
-    if rfsuite.app and rfsuite.app.triggers then
-        rfsuite.app.triggers.mspBusy = false
-    end
-
-    -- 6) Optionally force cache rebuild on next initialize()
-    if opts.removeCache then
-        pcall(function() os.remove("cache/tasks.lua") end)
-    end
-end
-
 
 
 function tasks.read()
