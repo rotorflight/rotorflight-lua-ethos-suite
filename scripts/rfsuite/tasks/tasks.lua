@@ -367,13 +367,11 @@ local function canRunTask(task, now)
     local connOK = not task.connected    or rfsuite.session.isConnected
     local cpuOK = (not rfsuite.session or rfsuite.session.cpuload == nil) 
                 or (rfsuite.session.cpuload <= (task.cpuload or 100))
-    local elrsSensorOK = not rfsuite.session.elrsCustomSensorBusy
 
     local ok =
         linkOK
         and cpuOK
         and connOK
-        and elrsSensorOK
         and (priorityTask or od >= 0 or not rfsuite.app.triggers.mspBusy)
         and (not task.simulatoronly or usingSimulator)
 
@@ -578,11 +576,11 @@ function tasks.wakeup()
     end
 
     local cycleFlip = schedulerTick % 2
-    --if cycleFlip == 0 then
+    if cycleFlip == 0 then
         runNonSpreadTasks()
-   -- else
+    else
         runSpreadTasks()
-   -- end
+    end
 
     -- Periodic profile dump (only when profiler is on)
     if tasks.profile.enabled then

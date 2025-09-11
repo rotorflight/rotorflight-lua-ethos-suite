@@ -436,7 +436,6 @@ function elrs.wakeup()
     if telemetryActive() and rfsuite.session.telemetrySensor then
         local frameCount = 0
         while elrs.crossfirePop() do
-            rfsuite.session.elrsCustomSensorBusy = true
             frameCount = frameCount + 1
             if frameCount >= 50 then break end
             if CRSF_PAUSE_TELEMETRY == true or rfsuite.app.triggers.mspBusy == true then
@@ -447,7 +446,6 @@ function elrs.wakeup()
     else
         resetSensors()
     end
-    rfsuite.session.elrsCustomSensorBusy = false
 end
 
 function elrs.reset()
