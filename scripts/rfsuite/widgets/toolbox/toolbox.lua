@@ -16,7 +16,7 @@
 ]] --
 
 local toolbox = {}
-local wakeupScheduler = os.clock()
+local wakeupScheduler
 local LCD_W, LCD_H
 
 -- List of available sub-widgets (folder names must match these entries)
@@ -41,6 +41,9 @@ end
 -- Called once when the widget is created.
 -- We attach per-instance state and loadedWidget fields to 'widget'.
 function toolbox.create()
+
+    wakeupScheduler = os.clock()
+
     return {
         value = 0,
         state = { setup = false },
