@@ -20,9 +20,10 @@ local init = {
     interval        = 0.25,         -- run every 0.25 seconds
     script          = "logger.lua", -- run this script
     linkrequired    = false,        -- run this script only if link is established
-    connected       = false,         -- run this script only if msp is connected
+    connected       = false,        -- run this script only if msp is connected
     spreadschedule  = true,         -- run on every loop
     simulatoronly   = true,         -- run this script in simulation mode
+    cpuload         = 40,           -- do not run if cpu load is above this percentage    
 }
 
 return init

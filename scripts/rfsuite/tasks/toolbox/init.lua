@@ -20,9 +20,10 @@ local init = {
     interval        = 0.5,              -- run every 0.5 seconds
     script          = "toolbox.lua",    -- run this script
     linkrequired    = true,             -- run this script only if link is established
-    connected       = true,            -- run this script only if msp is connected
+    connected       = true,             -- run this script only if msp is connected
     spreadschedule  = true,             -- run on every loop    
-    simulatoronly   = false,            -- run this script in simulation mode              
+    simulatoronly   = false,            -- run this script in simulation mode
+    cpuload         = 40,               -- do not run if cpu load is above this percentage                  
 }
 
 return init

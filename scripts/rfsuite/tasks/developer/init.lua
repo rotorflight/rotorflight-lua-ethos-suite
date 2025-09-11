@@ -17,11 +17,12 @@
  * 
 ]] --
 local init = {
-    interval        = -1,                -- run every 5 seconds (set to -1 to disable after debug)
+    interval        = -1,               -- run every 5 seconds (set to -1 to disable after debug)
     script          = "developer.lua",  -- run this script
     linkrequired    = false,            -- run this script only if link is established
     spreadschedule  = true,             -- run on every loop
     simulatoronly   = true,             -- run this script in simulation mode
+    cpuload         = 50,               -- do not run if cpu load is above this percentage
 }
 
 return init

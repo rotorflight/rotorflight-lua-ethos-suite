@@ -22,7 +22,8 @@ local init = {
     linkrequired    = false,           -- run this script only if link is established  
     connected       = true,            -- run this script only if msp is connected      
     spreadschedule  = true,            -- run on every loop 
-    simulatoronly   = false,           -- run this script in simulation mode         
+    simulatoronly   = false,           -- run this script in simulation mode   
+    cpuload         = 60,              -- do not run if cpu load is above this percentage          
 }
 
 return init
