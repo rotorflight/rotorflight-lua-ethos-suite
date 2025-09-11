@@ -22,8 +22,8 @@ local i18n = {}
 -- Config
 local defaultLocale   = "en"
 local folder          = "i18n"
-local HOT_SIZE        = 100
-local EVICT_THRESHOLD = 20   -- seconds
+local HOT_SIZE        = 50
+local EVICT_THRESHOLD = 2   -- seconds
 
 -- State
 local translations        -- full translations table (nil if evicted)
