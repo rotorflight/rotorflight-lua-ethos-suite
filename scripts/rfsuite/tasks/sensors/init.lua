@@ -23,7 +23,6 @@ local init = {
     spreadschedule  = false,            -- run on every loop
     simulatoronly   = false,           -- run this script in simulation mode
     connected       = true,            -- run this script only if msp is connected
-    cpuload         = 60,                   -- do not run if cpu load is above this percentage    
 }
 
 return init

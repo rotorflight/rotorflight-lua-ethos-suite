@@ -17,13 +17,12 @@
  * 
 ]] --
 local init = {
-    interval        = 1,                 -- run every second
-    script          = "simevent.lua",    -- run this script
-    linkrequired    = false,             -- run this script only if link is established
+    interval       = 1,                 -- run every second
+    script         = "simevent.lua",    -- run this script
+    linkrequired   = false,             -- run this script only if link is established
     connected       = false,         -- run this script only if msp is connected
     spreadschedule  = true,             -- run on every loop 
-    simulatoronly   = true,              -- run this script in simulation mode
-    cpuload         = 50,                   -- do not run if cpu load is above this percentage    
+    simulatoronly  = true,              -- run this script in simulation mode
 }
 
 return init
