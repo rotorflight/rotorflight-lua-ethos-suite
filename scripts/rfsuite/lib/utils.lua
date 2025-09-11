@@ -275,35 +275,6 @@ function utils.createCacheFile(tbl, path, options)
     f:close()
 end
 
-function utils.logRotorFlightBanner()
-    local version = rfsuite.version().version or "Unknown Version"
-
-    local banner = {
-        "===============================================",
-        "    ROTORFLIGHT RFSUITE - Version: " .. version,
-        "===============================================",
-        "   ______.........--=T=--.........______",
-        "      .             |:|",
-        " :-. //           /\"\"\"\"\"\"-.",
-        " ': '-._____..--\"\"(\"\"\"\"\"\")()`---.__",
-        "  /:   _..__   ''  \":\"\"\"\"'[] |\"\"`\\",
-        "  ': :'     `-.     _:._     '\"\"\"\" :",
-        "   ::          '--=:____:.___....-\"",
-        "                     O\"       O\"",
-        "===============================================",
-        "  Rotorflight is free software licensed under",
-        "  the GNU General Public License version 3.0",
-        "  https://www.gnu.org/licenses/gpl-3.0.en.html",
-        "                                              ",
-        " For more information, visit rotorflight.org",
-        "==============================================="
-    }
-
-    for _, line in ipairs(banner) do
-        rfsuite.utils.log(line, "info")
-    end
-end
-
 function utils.dir_exists(base, name)
     base = base or "./"
     if not name then return false end

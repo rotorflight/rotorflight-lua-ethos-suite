@@ -52,13 +52,14 @@ local tasksPerCycle
 local taskSchedulerPercentage
 
 local schedulerTick
-
+local lastSensorName
 local tasks, tasksList = {}, {}
 tasks.heartbeat, tasks.begin, tasks.wasOn = nil, nil, false  -- begin nil by default
 
 
 local currentSensor, currentModuleId, currentTelemetryType
 local internalModule, externalModule
+
 
 tasks._justInitialized = false
 tasks._initState = "start"
@@ -299,11 +300,19 @@ function tasks.telemetryCheckScheduler()
 
     -- fast path: if we already have a sensor, don’t rescan every time
     if currentSensor then
-        rfsuite.session.telemetryState  = true
-        rfsuite.session.telemetrySensor = currentSensor
-        rfsuite.session.telemetryModule = currentModuleId
-        rfsuite.session.telemetryType   = currentTelemetryType
-        return
+       rfsuite.session.telemetryState  = true
+       rfsuite.session.telemetrySensor = currentSensor
+       rfsuite.session.telemetryModule = currentModuleId
+       rfsuite.session.telemetryType   = currentTelemetryType 
+
+       -- catch switching when to fast for telemetry to drop
+       if currentSensor:name() ~= lastSensorName then
+           utils.log("Telemetry sensor changed to " .. tostring(currentSensor:name()), "info")
+           lastSensorName = currentSensor:name()
+           currentSensor = nil  -- force re-detect next time           
+       end
+
+      return
     end
 
     -- only do heavy calls when we *don’t* already have a sensor

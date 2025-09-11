@@ -1001,7 +1001,7 @@ function telemetry.wakeup()
     end
 
     -- Reset if telemetry is inactive or telemetry type changed
-    if (not rfsuite.session.telemetryState) or telemetryTypeChanged then
+    if (not rfsuite.session.telemetryState)  then
         telemetry.reset()
     end
 end
@@ -1013,6 +1013,7 @@ end
 
 function telemetry.setTelemetryTypeChanged()
     telemetryTypeChanged = true
+    telemetry.reset()
 end
 
 
