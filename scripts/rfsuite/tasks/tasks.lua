@@ -39,7 +39,6 @@
 --     spreadschedule  = false,           -- run on every loop
 --     simulatoronly   = false,           -- run this script in simulation mode
 --     connected       = true,            -- run this script only if msp is connected
---     cpuload         = 50,              -- do not run if cpu load is above this percentage
 -- }
 
 ]] --
@@ -53,8 +52,6 @@ local tasksPerCycle
 local taskSchedulerPercentage
 
 local schedulerTick
-local internalModule
-local externalModule
 
 local tasks, tasksList = {}, {}
 tasks.heartbeat, tasks.begin, tasks.wasOn = nil, nil, false  -- begin nil by default
@@ -196,7 +193,6 @@ function tasks.initialize()
                             linkrequired = tconfig.linkrequired or false,
                             connected = tconfig.connected or false,
                             simulatoronly = tconfig.simulatoronly or false,
-                            cpuload = tconfig.cpuload or 100,
                             spreadschedule = tconfig.spreadschedule or false,
                             init = initPath
                         }
@@ -247,7 +243,6 @@ function tasks.findTasks()
                         connected = tconfig.connected or false,
                         spreadschedule = tconfig.spreadschedule or false,
                         simulatoronly = tconfig.simulatoronly or false,
-                        cpuload = tconfig.cpuload or 100,
                         last_run = os.clock() - offset,
                         -- profiling fields
                         duration = 0,
@@ -263,7 +258,6 @@ function tasks.findTasks()
                         linkrequired = task.linkrequired,
                         connected = task.connected,
                         simulatoronly = task.simulatoronly,
-                        cpuload = task.cpuload,
                         spreadschedule = task.spreadschedule
                     }
                 end
@@ -273,68 +267,83 @@ function tasks.findTasks()
     return taskMetadata
 end
 
--- Telemetry check scheduler: runs every 0.5 seconds to detect changes in telemetry source
+-- Telemetry check scheduler: runs every 2 seconds to detect changes in telemetry source
 function tasks.telemetryCheckScheduler()
     local now = os.clock()
-    if now - (lastCheckAt or 0) < 0.5 then return end
 
-    -- Determine telemetry state, respecting simulation override
+    -- we do this on every tick to ensure we catch telemetry state changes
     local telemetryState = (tlm and tlm:state()) or false
-    if system.getVersion().simulation and rfsuite.simevent.telemetry_state == false then
-        telemetryState = false
-    end
 
+    if now - (lastCheckAt or 0) < 2 then return end
+
+    -- Helper: clear session + MSP queue
     local function clearSessionAndQueue()
         utils.session()
         local q = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue
         if q then q:clear() end
     end
 
+    -- Determine current telemetry state, respecting simulation override
+    if system.getVersion().simulation and rfsuite.simevent.telemetry_state == false then
+        telemetryState = false
+    end
+
     if not telemetryState then
         lastCheckAt = now
-        clearSessionAndQueue()
-        return
+        return clearSessionAndQueue()
     end
 
     -- Prefer FrSky S.Port; fall back to CRSF/ELRS
-    if not internalModule then internalModule = model.getModule(0) end
-    if not externalModule then externalModule = model.getModule(1) end
-    local currentSensor, currentModuleId, currentTelemetryType
+    local currentSensor
+    local currentModuleId
+    local currentTelemetryType
+
+    local internalModule = model.getModule(0)
+    local externalModule = model.getModule(1)
 
     if internalModule:enable() then
-        if not currentSensor then currentSensor = system.getSource({ appId = 0xF101 }) end
+        -- we only have sport on internal module - enforce it.
+        currentSensor = system.getSource({ appId = 0xF101 })
         currentModuleId = internalModule
         currentTelemetryType = "sport"
-    elseif externalModule:enable() then
-        if not currentSensor then currentSensor = system.getSource({ crsfId = 0x14, subIdStart = 0, subIdEnd = 1 }) end
+    elseif externalModule:enable()  then
+         -- we might have sport or elrs on the external module -- check elrs first
+        currentSensor = system.getSource({ crsfId = 0x14, subIdStart = 0, subIdEnd = 1 })
         currentModuleId = externalModule
         currentTelemetryType = "crsf"
         if not currentSensor then
+            -- try sport again as it might be an external sport module!
             currentSensor = system.getSource({ appId = 0xF101 })
             currentTelemetryType = "sport"
         end
     else
-        utils.log("No telemetry modules enabled", "info")
-        currentSensor, currentModuleId, currentTelemetryType = nil, nil, nil
+        rfsuite.utils.log("No telemetry modules enabled", "info")    
+        currentSensor = nil
+        currentModuleId = nil
+        currentTelemetryType = nil
     end
 
     if not currentSensor then
         lastCheckAt = now
-        clearSessionAndQueue()
-        return
+        return clearSessionAndQueue()
     end
 
-    rfsuite.session.telemetryState  = true
-    rfsuite.session.telemetrySensor = currentSensor
-    rfsuite.session.telemetryModule = currentModuleId
-    rfsuite.session.telemetryType   = currentTelemetryType
+    -- local sensorName = currentSensor:name()
+    local moduleId   = currentModuleId
 
+    rfsuite.session.telemetryState        = true
+    rfsuite.session.telemetrySensor       = currentSensor
+    rfsuite.session.telemetryModule       = currentModuleId
+    rfsuite.session.telemetryType         = currentTelemetryType
+
+    
     if currentTelemetryType ~= lastTelemetryType then
-        utils.log("Telemetry type changed to " .. tostring(currentTelemetryType), "info")
+        rfsuite.utils.log("Telemetry type changed to " .. tostring(currentTelemetryType), "info")
         tasks.setTelemetryTypeChanged()
         lastTelemetryType = currentTelemetryType
         clearSessionAndQueue()
     end
+
 
     lastCheckAt = now
 end
@@ -365,12 +374,9 @@ local function canRunTask(task, now)
 
     local linkOK = not task.linkrequired or rfsuite.session.telemetryState
     local connOK = not task.connected    or rfsuite.session.isConnected
-    local cpuOK = (not rfsuite.session or rfsuite.session.cpuload == nil) 
-                or (rfsuite.session.cpuload <= (task.cpuload or 100))
 
     local ok =
         linkOK
-        and cpuOK
         and connOK
         and (priorityTask or od >= 0 or not rfsuite.app.triggers.mspBusy)
         and (not task.simulatoronly or usingSimulator)
@@ -430,7 +436,6 @@ function tasks.wakeup()
                     linkrequired = meta.linkrequired or false,
                     connected = meta.connected or false,
                     simulatoronly = meta.simulatoronly or false,
-                    cpuload = meta.cpuload or 100,
                     last_run = os.clock() - offset,
                     -- profiling fields
                     duration = 0,
@@ -614,7 +619,7 @@ function tasks.wakeup()
   -- ---- Simulator CPU bias ---
   if usingSimulator then
     -- Target the radio's baseline utilization in sim.
-    local SIM_TARGET_UTIL = 0.50        -- e.g. 50%
+    local SIM_TARGET_UTIL = 0.50        -- e.g. 20%
     local SIM_MAX_UTIL    = 0.80        -- never report above this via bias
     -- Blend toward the target only when we're below it.
     if instant_util < SIM_TARGET_UTIL then
