@@ -17,6 +17,26 @@
  * Note.  Some icons have been sourced from https://www.flaticon.com/
  * 
 
+-- Task scheduler timing notes:
+--   - The scheduler tick runs at 20 Hz (every 50 ms).
+--   - Spread tasks can run as often as every tick (minimum ~0.05 s).
+--   - Non-spread tasks are only checked every other tick (minimum ~0.1 s).
+--   - A small random jitter (~+0.1 s) is applied when tasks are loaded, 
+--     so very short intervals will often be rounded upward.
+--
+-- Useful for periodic operations that require sub-second timing.
+
+An example for a task meta info is as folloows
+
+local init = {
+    interval        = 0.25,            -- run every 0.25 seconds.  Note. Minimum interval is ~0.05s
+    script          = "sensors.lua",   -- run this script
+    linkrequired    = true,            -- run this script only if link is established
+    spreadschedule  = false,           -- run on every loop
+    simulatoronly   = false,           -- run this script in simulation mode
+    connected       = true,            -- run this script only if msp is connected
+}
+
 ]] --
 
 local utils = rfsuite.utils
