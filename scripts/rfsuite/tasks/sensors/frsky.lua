@@ -347,6 +347,7 @@ function frsky.wakeup()
 
         if discoverActive then
             -- ETHOS discovery: unbounded drain for faster sensor discovery
+            rfsuite.utils.log("FRSKY: Discovery active, draining all frames", "info")
             while telemetryPop() do end
         else
             -- Legacy: bounded, low CPU

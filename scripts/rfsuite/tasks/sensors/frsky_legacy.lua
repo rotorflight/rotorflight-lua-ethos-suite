@@ -294,7 +294,7 @@ function frsky_legacy.wakeup()
 
     if rfsuite.app and rfsuite.app.guiIsRunning == false and rfsuite.tasks.msp.mspQueue:isProcessed() then
         local discoverActive = (system and system.isSensorDiscoverActive and system.isSensorDiscoverActive() == true)
-
+            rfsuite.utils.log("FRSKY: Discovery active, draining all frames", "info")
         if discoverActive then
             while telemetryPop() do end      -- unbounded for discovery
         else
