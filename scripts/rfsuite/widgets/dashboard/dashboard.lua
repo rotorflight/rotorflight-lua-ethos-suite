@@ -1078,10 +1078,54 @@ local function callStateFunc(funcName, widget, paintFallback)
     end
 end
 
+function dashboard.teardown(deep)
+  -- Clear UI + scheduling
+  dashboard._pendingInvalidates = {}
+  dashboard._lastInvalidateTime = 0
+  dashboard._hg_cycles = 0
+  dashboard.overlayMessage = nil
+  dashboard.boxRects = {}
+  dashboard.selectedBoxIndex = nil
+  scheduledBoxIndices = {}
+  wakeupScheduler = 0
+  objectWakeupIndex = 1
+  objectsThreadedWakeupCount = 0
+  objectWakeupsPerCycle = nil
+  lastLoadedBoxCount = 0
+  lastBoxRectsCount = 0
+
+  -- Theme/flight mode bookkeeping
+  firstWakeup = true
+  firstWakeupCustomTheme = true
+  dashboard.themeFallbackUsed = { preflight=false, inflight=false, postflight=false }
+  dashboard.themeFallbackTime = { preflight=0, inflight=0, postflight=0 }
+  dashboard.currentWidgetPath = nil
+
+  -- Optional: nuke process-wide caches (heavier)
+  if deep then
+    loadedStateModules = {}
+    dashboard._moduleCache = {}
+    dashboard.objectsByType = {}
+    dashboard.renders = {}
+    if dashboard.prof and dashboard.prof.perId then
+      dashboard.prof.perId = {}
+      dashboard.prof.lastReport = 0
+    end
+  end
+
+  -- Visual refresh
+  lcd.invalidate()
+end
+
+
 --- Creates a dashboard widget by invoking the "create" state function.
 -- @param widget The widget instance to be created.
 -- @return The result of the "create" state function for the given widget.
 function dashboard.create()
+
+    -- Teardown all data from previous instance
+    dashboard.teardown(true)  
+
     -- 1) one-time (per Lua VM) helper modules; don’t recompile per instance
     if not dashboard.utils then
         dashboard.utils = assert(compile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/lib/utils.lua"))()
