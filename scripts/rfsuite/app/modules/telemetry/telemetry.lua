@@ -1,3 +1,5 @@
+-- telemetry.lua (refactored to use sid.lua)
+
 local i18n = rfsuite.i18n.get
 local enableWakeup = false
 
@@ -9,214 +11,70 @@ local configApplied = false
 local setDefaultSensors = false
 local PREV_STATE = {}
 
--- Lookup table (by ID)
-local TELEMETRY_SENSORS = {
-  [0]   = { name = i18n("telemetry.sensor_none"),                 id = 0,   group = "system" },
-  [1]   = { name = i18n("telemetry.sensor_heartbeat"),            id = 1,   group = "system" },
+----------------------------------------------------------------------
+-- Load the shared sensor definitions (sid.lua)
+-- Expects sid.lua to 'return sensorList' (table keyed by numeric ID)
+----------------------------------------------------------------------
+local sensorList = rfsuite.tasks.sensors.getSensors()
 
-  [2]   = { name = i18n("telemetry.sensor_battery"),              id = 2,   group = "battery" },
-  [3]   = { name = i18n("telemetry.sensor_battery_voltage"),      id = 3,   group = "battery" },
-  [4]   = { name = i18n("telemetry.sensor_battery_current"),      id = 4,   group = "battery" },
-  [5]   = { name = i18n("telemetry.sensor_battery_consumption"),  id = 5,   group = "battery" },
-  [6]   = { name = i18n("telemetry.sensor_battery_charge_level"), id = 6,   group = "battery" },
-  [7]   = { name = i18n("telemetry.sensor_battery_cell_count"),   id = 7,   group = "battery" },
-  [8]   = { name = i18n("telemetry.sensor_battery_cell_voltage"), id = 8,   group = "battery" },
-  [9]   = { name = i18n("telemetry.sensor_battery_cell_voltages"),id = 9,   group = "battery" },
+----------------------------------------------------------------------
+-- Build TELEMETRY_SENSORS from sid.lua
+-- (id, name, group) are taken directly from sensorList
+-- If you prefer i18n names, add an 'i18nKey' in sid.lua entries and
+-- replace 'displayName' below to use i18n(i18nKey).
+----------------------------------------------------------------------
+local TELEMETRY_SENSORS = {}
+do
+  for id, s in pairs(sensorList) do
+    -- prefer i18n if you later add s.i18nKey to sid.lua
+    local displayName = s.name or ("Sensor " .. tostring(id))
+    TELEMETRY_SENSORS[id] = {
+      name  = displayName,
+      id    = id,
+      group = s.group or "system",
+    }
+  end
+end
 
-  [10]  = { name = i18n("telemetry.sensor_control"),              id = 10,  group = "control" },
-  [11]  = { name = i18n("telemetry.sensor_pitch_control"),        id = 11,  group = "control" },
-  [12]  = { name = i18n("telemetry.sensor_roll_control"),         id = 12,  group = "control" },
-  [13]  = { name = i18n("telemetry.sensor_yaw_control"),          id = 13,  group = "control" },
-  [14]  = { name = i18n("telemetry.sensor_collective_control"),   id = 14,  group = "control" },
-  [15]  = { name = i18n("telemetry.sensor_throttle_control"),     id = 15,  group = "control" },
+----------------------------------------------------------------------
+-- Build SENSOR_GROUPS from sid.lua groups
+-- Title tries i18n("telemetry.group_"..group) else uses the group name.
+-- IDs are sorted numerically for a stable UI order.
+----------------------------------------------------------------------
+local function buildGroups(list)
+  local groups = {}
+  for id, s in pairs(list) do
+    local grp = s.group or "system"
+    if not groups[grp] then
+      -- Try internationalized title first; fallback to raw group name
+      local key = "telemetry.group_" .. grp
+      local title = i18n(key) or grp
+      groups[grp] = { title = title, ids = {} }
+    end
+    table.insert(groups[grp].ids, id)
+  end
+  -- sort each group's IDs
+  for _, g in pairs(groups) do
+    table.sort(g.ids, function(a, b) return a < b end)
+  end
+  return groups
+end
 
-  [16]  = { name = i18n("telemetry.sensor_esc1_data"),            id = 16,  group = "esc1" },
-  [17]  = { name = i18n("telemetry.sensor_esc1_voltage"),         id = 17,  group = "esc1" },
-  [18]  = { name = i18n("telemetry.sensor_esc1_current"),         id = 18,  group = "esc1" },
-  [19]  = { name = i18n("telemetry.sensor_esc1_capacity"),        id = 19,  group = "esc1" },
-  [20]  = { name = i18n("telemetry.sensor_esc1_erpm"),            id = 20,  group = "esc1" },
-  [21]  = { name = i18n("telemetry.sensor_esc1_power"),           id = 21,  group = "esc1" },
-  [22]  = { name = i18n("telemetry.sensor_esc1_throttle"),        id = 22,  group = "esc1" },
-  [23]  = { name = i18n("telemetry.sensor_esc1_temp1"),           id = 23,  group = "esc1" },
-  [24]  = { name = i18n("telemetry.sensor_esc1_temp2"),           id = 24,  group = "esc1" },
-  [25]  = { name = i18n("telemetry.sensor_esc1_bec_voltage"),     id = 25,  group = "esc1" },
-  [26]  = { name = i18n("telemetry.sensor_esc1_bec_current"),     id = 26,  group = "esc1" },
-  [27]  = { name = i18n("telemetry.sensor_esc1_status"),          id = 27,  group = "esc1" },
-  [28]  = { name = i18n("telemetry.sensor_esc1_model"),           id = 28,  group = "esc1" },
+local SENSOR_GROUPS = buildGroups(sensorList)
 
-  [29]  = { name = i18n("telemetry.sensor_esc2_data"),            id = 29,  group = "esc2" },
-  [30]  = { name = i18n("telemetry.sensor_esc2_voltage"),         id = 30,  group = "esc2" },
-  [31]  = { name = i18n("telemetry.sensor_esc2_current"),         id = 31,  group = "esc2" },
-  [32]  = { name = i18n("telemetry.sensor_esc2_capacity"),        id = 32,  group = "esc2" },
-  [33]  = { name = i18n("telemetry.sensor_esc2_erpm"),            id = 33,  group = "esc2" },
-  [34]  = { name = i18n("telemetry.sensor_esc2_power"),           id = 34,  group = "esc2" },
-  [35]  = { name = i18n("telemetry.sensor_esc2_throttle"),        id = 35,  group = "esc2" },
-  [36]  = { name = i18n("telemetry.sensor_esc2_temp1"),           id = 36,  group = "esc2" },
-  [37]  = { name = i18n("telemetry.sensor_esc2_temp2"),           id = 37,  group = "esc2" },
-  [38]  = { name = i18n("telemetry.sensor_esc2_bec_voltage"),     id = 38,  group = "esc2" },
-  [39]  = { name = i18n("telemetry.sensor_esc2_bec_current"),     id = 39,  group = "esc2" },
-  [40]  = { name = i18n("telemetry.sensor_esc2_status"),          id = 40,  group = "esc2" },
-  [41]  = { name = i18n("telemetry.sensor_esc2_model"),           id = 41,  group = "esc2" },
-
-  [42]  = { name = i18n("telemetry.sensor_esc_voltage"),          id = 42,  group = "voltage" },
-  [43]  = { name = i18n("telemetry.sensor_bec_voltage"),          id = 43,  group = "voltage" },
-  [44]  = { name = i18n("telemetry.sensor_bus_voltage"),          id = 44,  group = "voltage" },
-  [45]  = { name = i18n("telemetry.sensor_mcu_voltage"),          id = 45,  group = "voltage" },
-
-  [46]  = { name = i18n("telemetry.sensor_esc_current"),          id = 46,  group = "current" },
-  [47]  = { name = i18n("telemetry.sensor_bec_current"),          id = 47,  group = "current" },
-  [48]  = { name = i18n("telemetry.sensor_bus_current"),          id = 48,  group = "current" },
-  [49]  = { name = i18n("telemetry.sensor_mcu_current"),          id = 49,  group = "current" },
-
-  [50]  = { name = i18n("telemetry.sensor_esc_temp"),             id = 50,  group = "temps" },
-  [51]  = { name = i18n("telemetry.sensor_bec_temp"),             id = 51,  group = "temps" },
-  [52]  = { name = i18n("telemetry.sensor_mcu_temp"),             id = 52,  group = "temps" },
-  [53]  = { name = i18n("telemetry.sensor_air_temp"),             id = 53,  group = "temps" },
-  [54]  = { name = i18n("telemetry.sensor_motor_temp"),           id = 54,  group = "temps" },
-  [55]  = { name = i18n("telemetry.sensor_battery_temp"),         id = 55,  group = "temps" },
-  [56]  = { name = i18n("telemetry.sensor_exhaust_temp"),         id = 56,  group = "temps" },
-
-  [57]  = { name = i18n("telemetry.sensor_heading"),              id = 57,  group = "gyro" },
-  [58]  = { name = i18n("telemetry.sensor_altitude"),             id = 58,  group = "barometer" },
-  [59]  = { name = i18n("telemetry.sensor_variometer"),           id = 59,  group = "barometer" },
-
-  [60]  = { name = i18n("telemetry.sensor_headspeed"),            id = 60,  group = "rpm" },
-  [61]  = { name = i18n("telemetry.sensor_tailspeed"),            id = 61,  group = "rpm" },
-  [62]  = { name = i18n("telemetry.sensor_motor_rpm"),            id = 62,  group = "rpm" },
-  [63]  = { name = i18n("telemetry.sensor_trans_rpm"),            id = 63,  group = "rpm" },
-
-  [64]  = { name = i18n("telemetry.sensor_attitude"),             id = 64,  group = "gyro" },
-  [65]  = { name = i18n("telemetry.sensor_attitude_pitch"),       id = 65,  group = "gyro" },
-  [66]  = { name = i18n("telemetry.sensor_attitude_roll"),        id = 66,  group = "gyro" },
-  [67]  = { name = i18n("telemetry.sensor_attitude_yaw"),         id = 67,  group = "gyro" },
-
-  [68]  = { name = i18n("telemetry.sensor_accel"),                id = 68,  group = "gyro" },
-  [69]  = { name = i18n("telemetry.sensor_accel_x"),              id = 69,  group = "gyro" },
-  [70]  = { name = i18n("telemetry.sensor_accel_y"),              id = 70,  group = "gyro" },
-  [71]  = { name = i18n("telemetry.sensor_accel_z"),              id = 71,  group = "gyro" },
-
-  [72]  = { name = i18n("telemetry.sensor_gps"),                  id = 72,  group = "gps" },
-  [73]  = { name = i18n("telemetry.sensor_gps_sats"),             id = 73,  group = "gps" },
-  [74]  = { name = i18n("telemetry.sensor_gps_pdop"),             id = 74,  group = "gps" },
-  [75]  = { name = i18n("telemetry.sensor_gps_hdop"),             id = 75,  group = "gps" },
-  [76]  = { name = i18n("telemetry.sensor_gps_vdop"),             id = 76,  group = "gps" },
-  [77]  = { name = i18n("telemetry.sensor_gps_coord"),            id = 77,  group = "gps" },
-  [78]  = { name = i18n("telemetry.sensor_gps_altitude"),         id = 78,  group = "gps" },
-  [79]  = { name = i18n("telemetry.sensor_gps_heading"),          id = 79,  group = "gps" },
-  [80]  = { name = i18n("telemetry.sensor_gps_groundspeed"),      id = 80,  group = "gps" },
-  [81]  = { name = i18n("telemetry.sensor_gps_home_distance"),    id = 81,  group = "gps" },
-  [82]  = { name = i18n("telemetry.sensor_gps_home_direction"),   id = 82,  group = "gps" },
-  [83]  = { name = i18n("telemetry.sensor_gps_date_time"),        id = 83,  group = "gps" },
-
-  [84]  = { name = i18n("telemetry.sensor_load"),                 id = 84,  group = "load" },
-  [85]  = { name = i18n("telemetry.sensor_cpu_load"),             id = 85,  group = "system" },
-  [86]  = { name = i18n("telemetry.sensor_sys_load"),             id = 86,  group = "system" },
-  [87]  = { name = i18n("telemetry.sensor_rt_load"),              id = 87,  group = "system" },
-
-  [88]  = { name = i18n("telemetry.sensor_model_id"),             id = 88,  group = "status" },
-  [89]  = { name = i18n("telemetry.sensor_flight_mode"),          id = 89,  group = "status" },
-  [90]  = { name = i18n("telemetry.sensor_arming_flags"),         id = 90,  group = "status" },
-  [91]  = { name = i18n("telemetry.sensor_arming_disable_flags"), id = 91,  group = "status" },
-  [92]  = { name = i18n("telemetry.sensor_rescue_state"),         id = 92,  group = "status" },
-  [93]  = { name = i18n("telemetry.sensor_governor_state"),       id = 93,  group = "status" },
-  [94]  = { name = i18n("telemetry.sensor_governor_flags"),       id = 94,  group = "status" },
-
-  [95]  = { name = i18n("telemetry.sensor_pid_profile"),          id = 95,  group = "profiles" },
-  [96]  = { name = i18n("telemetry.sensor_rates_profile"),        id = 96,  group = "profiles" },
-  [97]  = { name = i18n("telemetry.sensor_battery_profile"),      id = 97,  group = "profiles" },
-  [98]  = { name = i18n("telemetry.sensor_led_profile"),          id = 98,  group = "profiles" },
-
-  [99]  = { name = i18n("telemetry.sensor_adjfunc"),              id = 99,  group = "status" },
-
-  [100] = { name = i18n("telemetry.sensor_debug_0"),              id = 100, group = "debug" },
-  [101] = { name = i18n("telemetry.sensor_debug_1"),              id = 101, group = "debug" },
-  [102] = { name = i18n("telemetry.sensor_debug_2"),              id = 102, group = "debug" },
-  [103] = { name = i18n("telemetry.sensor_debug_3"),              id = 103, group = "debug" },
-  [104] = { name = i18n("telemetry.sensor_debug_4"),              id = 104, group = "debug" },
-  [105] = { name = i18n("telemetry.sensor_debug_5"),              id = 105, group = "debug" },
-  [106] = { name = i18n("telemetry.sensor_debug_6"),              id = 106, group = "debug" },
-  [107] = { name = i18n("telemetry.sensor_debug_7"),              id = 107, group = "debug" },
-
-  [108] = { name = i18n("telemetry.sensor_rpm"),                  id = 108, group = "rpm" },
-  [109] = { name = i18n("telemetry.sensor_temp"),                 id = 109, group = "temps" },
-}
-
--- Display sections (groups)
-local SENSOR_GROUPS = {
-  voltage = {
-    title = i18n("telemetry.group_voltage"),
-    ids = { 42, 43, 44, 45 },
-  },
-  battery = {
-    title = i18n("telemetry.group_battery"),
-    ids = { 3, 4, 5, 6, 7, 8 },
-  },
-  control = {
-    title = i18n("telemetry.group_control"),
-    ids = { 10, 11, 12, 13, 14, 15 },
-  },
-  esc1 = {
-    title = i18n("telemetry.group_esc1"),
-    ids = { 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28 },
-  },
-  esc2 = {
-    title = i18n("telemetry.group_esc2"),
-    ids = { 30, 31, 32, 33, 36, 41 },
-  },
-  current = {
-    title = i18n("telemetry.group_current"),
-    ids = { 46, 47, 48, 49 },
-  },
-  temps = {
-    title = i18n("telemetry.group_temperatures"),
-    ids = { 50, 51, 52 },
-  },
-  barometer = {
-    title = i18n("telemetry.group_barometer"),
-    ids = { 58, 59 },
-  },
-  rpm = {
-    title = i18n("telemetry.group_rpm"),
-    ids = { 60, 61 },
-  },
-  gyro = {
-    title = i18n("telemetry.group_gyro"),
-    ids = { 57, 64, 65, 66, 67, 68, 69, 70, 71 },
-  },
-  gps = {
-    title = i18n("telemetry.group_gps"),
-    ids = { 73, 74, 77, 78, 79, 80, 81, 82 },
-  },
-  system = {
-    title = i18n("telemetry.group_load"),
-    ids = { 1, 85, 86, 87 },
-  },
-  status = {
-    title = i18n("telemetry.group_status"),
-    ids = { 88, 89, 90, 91, 92, 93, 99 },
-  },
-  profiles = {
-    title = i18n("telemetry.group_profiles"),
-    ids = { 95, 96, 98 },
-  },
-  tuning = {
-    title = i18n("telemetry.group_tuning"),
-    ids = { 99 },
-  },
-  debug = {
-    title = i18n("telemetry.group_debug"),
-    ids = { 100, 101, 102, 103, 104, 105, 106, 107 },
-  },
-}
-
+----------------------------------------------------------------------
+-- Existing rules: mutually exclusive sensors remain unchanged
+----------------------------------------------------------------------
 local NOT_AT_SAME_TIME = {
   [10] = {11, 12, 13, 14},  -- control
   [64] = {65, 66, 67},      -- attitude
   [68] = {69, 70, 71},      -- accel
-
 }
 
--- Optional: control the visual order of sections when rendering
+----------------------------------------------------------------------
+-- Optional: keep the explicit visual order. Any missing groups
+-- will be appended automatically in alphabetical order below.
+----------------------------------------------------------------------
 local GROUP_ORDER = {
   "battery",
   "voltage",
@@ -234,6 +92,22 @@ local GROUP_ORDER = {
   "system",
   "debug",
 }
+
+-- Append any groups not explicitly listed above (once)
+do
+  local listed = {}
+  for _, g in ipairs(GROUP_ORDER) do listed[g] = true end
+  local extras = {}
+  for g, _ in pairs(SENSOR_GROUPS) do
+    if not listed[g] then table.insert(extras, g) end
+  end
+  table.sort(extras)
+  for _, g in ipairs(extras) do table.insert(GROUP_ORDER, g) end
+end
+
+----------------------------------------------------------------------
+-- Everything below this line is your original UI / MSP logic
+----------------------------------------------------------------------
 
 local function countEnabledSensors()
   local count = 0
@@ -328,7 +202,6 @@ local function openPage(pidx, title, script)
                     rfsuite.app.formFields[conflictId]:enable(false)
                   end
                 end
-
               elseif val == false and NOT_AT_SAME_TIME[sensor.id] then
                 -- re-enable conflicting sensors
                 for _, conflictId in ipairs(NOT_AT_SAME_TIME[sensor.id]) do
@@ -342,7 +215,7 @@ local function openPage(pidx, title, script)
                     PREV_STATE[conflictId] = nil -- clear after restoring
                   end
                 end
-              end            
+              end
 
               config[sensor.id] = val
             end
@@ -375,10 +248,10 @@ local function applySettings()
   EAPI.write()
 end
 
-local function getDefaultSensors(sensorList)
+local function getDefaultSensors(sensorListFromApi)
   local defaultSensors = {}
   local i = 0
-  for _, sensor in pairs(sensorList) do
+  for _, sensor in pairs(sensorListFromApi) do
     if sensor["mandatory"] == true and sensor["set_telemetry_sensors"] ~= nil then
       defaultSensors[i] = sensor["set_telemetry_sensors"]
       i = i + 1
@@ -461,8 +334,8 @@ local function wakeup()
   end
 
   if setDefaultSensors == true then
-    local sensorList = getDefaultSensors(rfsuite.tasks.telemetry.listSensors())
-    for _, v in pairs(sensorList) do
+    local sensorListFromApi = getDefaultSensors(rfsuite.tasks.telemetry.listSensors())
+    for _, v in pairs(sensorListFromApi) do
       config[v] = true
     end
     setDefaultSensors = false

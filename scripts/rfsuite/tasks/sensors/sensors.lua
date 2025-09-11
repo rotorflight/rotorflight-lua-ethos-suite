@@ -34,6 +34,8 @@ local smart = assert(rfsuite.compiler.loadfile("tasks/sensors/smart.lua"))(confi
 local log = rfsuite.utils.log
 local tasks = rfsuite.tasks
 
+local sid = assert(rfsuite.compiler.loadfile("tasks/sensors/sid.lua"))(config)
+
 --[[
     loadSensorModule - Loads the appropriate sensor module based on the current protocol and preferences.
 
@@ -124,6 +126,14 @@ function sensors.reset()
     if msp and msp.reset then msp.reset() end
     loadedSensorModule = nil  -- Clear loaded sensor module
 
+end
+
+function sensors.getSensorBySid(sidValue)
+    return sid[sidValue]
+end
+
+function sensors.getSensors()
+    return sid
 end
 
 return sensors
