@@ -249,6 +249,9 @@ end
 --]]
 -- telemetryPop: short-circuit based on status
 local function telemetryPop()
+
+    if not rfsuite.tasks.msp.sensorTlm then return false end
+
     local frame = rfsuite.tasks.msp.sensorTlm:popFrame()
     if frame == nil then return false end
     if not frame.physId or not frame.primId then return false end
