@@ -96,4 +96,14 @@ elrs.RFSensors = {
     [98] = { sidElrs = 0x1213, sidSport = nil,     name = "LED Profile",   unit = UNIT_RAW,     prec = 0, min = 1,    max = 6,       dec = decU8 },
 
     [99] = { sidElrs = 0x1220, sidSport = 0x5110,  name = "ADJ",           unit = UNIT_RAW,     prec = 0, min = nil,  max = nil,     dec = decAdjFunc },
+
+    [100] = {sidElrs = 0xDB00, sidSport = nil,    name = "DBG0", unit = UNIT_RAW, prec = 0, dec = decS32 },
+    [101] = {sidElrs = 0xDB01, sidSport = nil,    name = "DBG1", unit = UNIT_RAW, prec = 0, dec = decS32 },
+    [102] = {sidElrs = 0xDB02, sidSport = nil,    name = "DBG2", unit = UNIT_RAW, prec = 0, dec = decS32 },
+    [103] = {sidElrs = 0xDB03, sidSport = nil,    name = "DBG3", unit = UNIT_RAW, prec = 0, dec = decS32 },
+    [104] = {sidElrs = 0xDB04, sidSport = nil,    name = "DBG4", unit = UNIT_RAW, prec = 0, dec = decS32 },
+    [105] = {sidElrs = 0xDB05, sidSport = nil,    name = "DBG5", unit = UNIT_RAW, prec = 0, dec = decS32 },
+    [106] = {sidElrs = 0xDB06, sidSport = nil,    name = "DBG6", unit = UNIT_RAW, prec = 0, dec = decS32 },
+    [107] = {sidElrs = 0xDB07, sidSport = nil, name = "DBG7", unit = UNIT_RAW, prec = 0, dec = decS32 },
+
 }
