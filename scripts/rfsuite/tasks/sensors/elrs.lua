@@ -1,8 +1,7 @@
--- tasks/sensors/elrs.lua  (refactored: no _G, uses sid.lua dec strings, polls only whitelisted sensors)
+-- tasks/sensors/elrs.lua  (lazy sid load, compact map, free sid; polls only whitelisted sensors)
 
 local arg = {...}
 local config = arg[1]
-local sidList = rfsuite.tasks.sensors.sid  
 
 local elrs = {}
 elrs.name = "elrs"
@@ -17,8 +16,15 @@ else
   elrs.pushFrame = function(x, y) return crsf.pushFrame(x, y) end
 end
 
+-- ==== Lazy sid accessor (avoids circular load; allows freeing & reload) ====
+local function getSidList()
+  local mod = rfsuite and rfsuite.tasks and rfsuite.tasks.sensors
+  if not mod then return nil end
+  return mod.sid or (mod.getSid and mod.getSid()) or nil
+end
+
 ---------------------------------------------------------------------
--- Decoders (local). NOTE: all writes go through setTelemetryValue().
+-- Decoders (locals). All writes go through setTelemetryValue().
 ---------------------------------------------------------------------
 local function decInt(data, pos, bytes, signed)
   local val = 0
@@ -146,12 +152,17 @@ local DECODERS = {
 }
 
 ---------------------------------------------------------------------
--- Load shared sensor list from sidList parameter and build ELRS lookup
+-- Build ELRS lookup keyed by sidElrs ONCE, then free sid.lua to save RAM
 ---------------------------------------------------------------------
+local _elrsMapBuilt = false
 
--- Build ELRS table keyed by sidElrs
-elrs.RFSensors = {}
-do
+local function ensureElrsMap()
+  if _elrsMapBuilt then return end
+  elrs.RFSensors = {}
+
+  local sidList = getSidList()
+  if not sidList then return end
+
   for _, s in pairs(sidList) do
     if s.sidElrs then
       local decFn = DECODERS[s.dec] or decNil
@@ -165,6 +176,14 @@ do
       }
     end
   end
+
+  -- Free the big table now; keep only the compact elrs.RFSensors
+  if rfsuite and rfsuite.tasks and rfsuite.tasks.sensors then
+    rfsuite.tasks.sensors.sid = nil
+  end
+  collectgarbage("collect")
+
+  _elrsMapBuilt = true
 end
 
 ---------------------------------------------------------------------
@@ -174,31 +193,26 @@ local enabledSidElrs = {}
 
 function elrs.setFblSensors(list)
   enabledSidElrs = {}
-  for _, id in ipairs(list or {}) do
-    local s = sidList[id]
-    if s and s.sidElrs then enabledSidElrs[s.sidElrs] = true end
+
+  -- We need sid to map rotorflight id -> sidElrs (load, then free)
+  local sidList = getSidList()
+  if sidList then
+    for _, id in ipairs(list or {}) do
+      local s = sidList[id]
+      if s and s.sidElrs then enabledSidElrs[s.sidElrs] = true end
+    end
+    -- free again after use
+    if rfsuite and rfsuite.tasks and rfsuite.tasks.sensors then
+      rfsuite.tasks.sensors.sid = nil
+    end
+    collectgarbage("collect")
   end
 end
 
 -- default (stub) until caller sets the real list
 local defaultFblSensors = {
-  3,   -- Voltage
-  4,   -- Current
-  5,   -- Consumption
-  6,   -- Fuel / Charge Level
-  15,  -- Throttle %
-  23,  -- ESC Temp
-  43,  -- BEC Voltage
-  52,  -- MCU Temp
-  60,  -- Headspeed
-  90,  -- Arm Flags
-  91,  -- Arm Disable Flags
-  93,  -- Governor
-  95,  -- PID Profile
-  96,  -- Rate Profile
-  99,  -- Adjustment Function
+  3,4,5,6,15,23,43,52,60,90,91,93,95,96,99
 }
-
 elrs.setFblSensors(defaultFblSensors)
 
 local function isEnabled(sidElrs)
@@ -293,9 +307,11 @@ local function refreshStaleSensors()
 end
 
 ---------------------------------------------------------------------
--- Telemetry pump (unchanged logic; uses elrs.RFSensors from sid.lua)
+-- Telemetry pump (uses elrs.RFSensors; ensure map exists first)
 ---------------------------------------------------------------------
 function elrs.crossfirePop()
+  ensureElrsMap()
+
   if (CRSF_PAUSE_TELEMETRY == true or rfsuite.app.triggers.mspBusy == true or not telemetryActive()) then
     if not telemetryActive() then resetSensors() end
     return false
@@ -327,7 +343,6 @@ function elrs.crossfirePop()
       ptr = np or prev
       if ptr <= prev then break end
 
-      -- For simple decoders that return a single value:
       if val ~= nil then
         setTelemetryValue(sidElrs, 0, 0, val, sensor.unit, sensor.prec, sensor.name, sensor.min, sensor.max)
       end
@@ -336,8 +351,8 @@ function elrs.crossfirePop()
       if tlvCount >= MAX_TLVS_PER_FRAME then break end
     end
 
-    setTelemetryValue(0xEE01, 0, 0, elrs.telemetryFrameCount, UNIT_RAW, 0, "Frame Count", 0, 2147483647)
-    setTelemetryValue(0xEE02, 0, 0, elrs.telemetryFrameSkip,  UNIT_RAW, 0, "Frame Skip",  0, 2147483647)
+    setTelemetryValue(constants.FRAME_COUNT_ID, 0, 0, elrs.telemetryFrameCount, UNIT_RAW, 0, "Frame Count", 0, 2147483647)
+    setTelemetryValue(constants.FRAME_SKIP_ID,  0, 0, elrs.telemetryFrameSkip,  UNIT_RAW, 0, "Frame Skip",  0, 2147483647)
   end
 
   return true
@@ -359,6 +374,8 @@ end
 
 function elrs.reset()
   resetSensors()
+  -- if you want to rebuild map later:
+  -- _elrsMapBuilt = false
 end
 
 return elrs

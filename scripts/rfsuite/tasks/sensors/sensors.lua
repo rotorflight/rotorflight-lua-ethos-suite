@@ -29,7 +29,6 @@ local delayDuration = 2  -- seconds
 local delayStartTime = nil
 local delayPending = false
 
-local sid = assert(rfsuite.compiler.loadfile("tasks/sensors/sid.lua"))(config)
 local msp = assert(rfsuite.compiler.loadfile("tasks/sensors/msp.lua"))(config)
 local smart = assert(rfsuite.compiler.loadfile("tasks/sensors/smart.lua"))(config)
 local log = rfsuite.utils.log
@@ -129,7 +128,13 @@ function sensors.reset()
 
 end
 
--- Expose the sid table for shared use
-sensors.sid = sid
+
+-- On-demand sid accessor with cache; allows freeing and reload later
+function sensors.getSid()
+  if sensors.sid then return sensors.sid end
+  sensors.sid = assert(rfsuite.compiler.loadfile("tasks/sensors/sid.lua"))(config)
+  return sensors.sid
+end
+
 
 return sensors

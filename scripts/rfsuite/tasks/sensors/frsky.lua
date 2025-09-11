@@ -1,11 +1,17 @@
--- tasks/sensors/frsky.lua  (refactored: uses sid.lua passed in, polls only whitelisted, supports optional sid.lua sport* hints)
+-- tasks/sensors/frsky.lua  (lazy sid load, compact maps, free sid; acts only on whitelisted S.Port sensors)
 
 local arg = {...}
-local config   = arg[1]
-local sidList = rfsuite.tasks.sensors.sid  
+local config = arg[1]
 
 local frsky = {}
 frsky.name = "frsky"
+
+-- ================= Lazy sid accessor =================
+local function getSidList()
+  local mod = rfsuite and rfsuite.tasks and rfsuite.tasks.sensors
+  if not mod then return nil end
+  return mod.sid or (mod.getSid and mod.getSid()) or nil
+end
 
 -- Bounded drain controls
 local MAX_FRAMES_PER_WAKEUP = 32
@@ -18,22 +24,23 @@ frsky.dropSensorCache   = {}
 frsky.renamed = {}
 frsky.dropped = {}
 
--- dynamic lists built from sidList + whitelist
+-- dynamic lists built from sid.lua + whitelist
 local createSensorList = {}  -- [appId] = {name=..., unit=..., decimals=..., minimum=..., maximum=...}
-local renameSensorList = {}  -- [appId] = {name="New", onlyifname="Old"}  or array of rules
+local renameSensorList = {}  -- [appId] = { {name="New", onlyifname="Old"}, ... }
 local dropSensorList   = {}  -- [appId] = true
-
--- whitelist: enabled S.Port appIds
-local enabledAppIds = {}
+local enabledAppIds    = {}  -- whitelist of expected appIds
 
 ----------------------------------------------------------------------
--- Public API: set the Rotorflight ID list we expect (e.g. {0,1,5,10})
--- We map each to its sidSport appId and rebuild our lists.
+-- Public API: set Rotorflight IDs we expect (e.g., {0,1,5,10})
+-- We map each to its sidSport appId, build tiny lists, then free sid.
 ----------------------------------------------------------------------
 function frsky.setFblSensors(fblIds)
-  enabledAppIds = {}
+  enabledAppIds, createSensorList, renameSensorList, dropSensorList = {}, {}, {}, {}
 
-  -- collect enabled appIds from sidList
+  local sidList = getSidList()
+  if not sidList then return end
+
+  -- 1) Mark enabled S.Port appIds from Rotorflight ids
   for _, id in ipairs(fblIds or {}) do
     local s = sidList[id]
     if s and s.sidSport then
@@ -41,79 +48,40 @@ function frsky.setFblSensors(fblIds)
     end
   end
 
-  -- (Re)build lists from sidList + enabledAppIds
-  createSensorList, renameSensorList, dropSensorList = {}, {}, {}
-
+  -- 2) Build tiny maps only for enabled appIds
   for _, s in pairs(sidList) do
     local appId = s.sidSport
     if appId and enabledAppIds[appId] then
-      -- CREATE entry
-      local name = s.sportName or s.name
-      local decimals = s.sportDecimals
-      if decimals == nil then decimals = s.prec end
-
       createSensorList[appId] = {
-        name     = name,
+        name     = s.sportName or s.name,
         unit     = s.unit,
-        decimals = decimals,
+        decimals = (s.sportDecimals ~= nil) and s.sportDecimals or s.prec,
         minimum  = s.min,
         maximum  = s.max,
       }
-
-      -- optional DROP entry
       if s.sportDrop == true then
         dropSensorList[appId] = true
       end
-
-      -- optional RENAME rule(s)
       if s.sportRename then
-        if s.sportRename[1] ~= nil then
-          -- array of rules
-          renameSensorList[appId] = s.sportRename
-        else
-          -- single rule table
-          renameSensorList[appId] = { s.sportRename }
-        end
+        renameSensorList[appId] = (s.sportRename[1] and s.sportRename) or { s.sportRename }
       end
     end
   end
 
-  -- Fallback: if you still want a few hard-coded renames when no hints exist in sid.lua,
-  -- you can keep a tiny compatibility block here. Example:
-  local function addFallbackRename(appId, newName, onlyIf)
-    if not enabledAppIds[appId] then return end
-    if renameSensorList[appId] == nil then renameSensorList[appId] = {} end
-    table.insert(renameSensorList[appId], { name = newName, onlyifname = onlyIf })
+  -- 3) Free sid to reclaim memory
+  if rfsuite and rfsuite.tasks and rfsuite.tasks.sensors then
+    rfsuite.tasks.sensors.sid = nil
   end
-
+  collectgarbage("collect")
 end
 
--- default (stub) until caller sets the real list
-local defaultFblSensors = {
-  3,   -- Voltage
-  4,   -- Current
-  5,   -- Consumption
-  6,   -- Fuel / Charge Level
-  15,  -- Throttle %
-  23,  -- ESC Temp
-  43,  -- BEC Voltage
-  52,  -- MCU Temp
-  60,  -- Headspeed
-  90,  -- Arm Flags
-  91,  -- Arm Disable Flags
-  93,  -- Governor
-  95,  -- PID Profile
-  96,  -- Rate Profile
-  99,  -- Adjustment Function
-}
-
-elrs.setFblSensors(defaultFblSensors)
+-- Default stub (until caller provides the real profile list)
+local defaultFblSensors = { 3,4,5,6,15,23,43,52,60,90,91,93,95,96,99 }
+frsky.setFblSensors(defaultFblSensors)
 
 ----------------------------------------------------------------------
--- Helpers: create, drop, rename (same flow as before; gated by lists)
+-- Helpers: create, drop, rename (same flow; gated by tiny maps)
 ----------------------------------------------------------------------
-
--- createSensor: return a status ("created"|"noop"|"skip")
 local function createSensor(physId, primId, appId, frameValue)
   if rfsuite.session.apiVersion == nil then return "skip" end
   local v = createSensorList[appId]
@@ -127,7 +95,6 @@ local function createSensor(physId, primId, appId, frameValue)
       s:appId(appId)
       s:physId(physId)
       s:module(rfsuite.session.telemetrySensor:module())
-      -- bounds (if provided; else use broad defaults)
       if v.minimum  ~= nil then s:minimum(v.minimum) else s:minimum(-1000000000) end
       if v.maximum  ~= nil then s:maximum(v.maximum) else s:maximum(2147483647) end
       if v.unit     ~= nil then s:unit(v.unit); s:protocolUnit(v.unit) end
@@ -136,11 +103,9 @@ local function createSensor(physId, primId, appId, frameValue)
       return "created"
     end
   end
-
-  return "noop"  -- already present
+  return "noop"
 end
 
--- dropSensor: return status ("dropped"|"noop"|"skip")
 local function dropSensor(physId, primId, appId, frameValue)
   if rfsuite.session.apiVersion == nil then return "skip" end
   if not dropSensorList[appId] then return "skip" end
@@ -161,7 +126,6 @@ local function dropSensor(physId, primId, appId, frameValue)
   return "skip"
 end
 
--- renameSensor: return status ("renamed"|"noop"|"skip")
 local function renameSensor(physId, primId, appId, frameValue)
   if rfsuite.session.apiVersion == nil then return "skip" end
   local rules = renameSensorList[appId]
@@ -201,45 +165,35 @@ local function telemetryPop()
 
   -- Skip entirely if this appId is not in any of our lists (saves work)
   if not (createSensorList[appId] or renameSensorList[appId] or dropSensorList[appId]) then
-    return true  -- frame consumed, nothing to do
+    return true
   end
 
-  -- 1) If this appId belongs to create list and we created/found it, we can skip rename/drop
   local cs = createSensor(physId, primId, appId, value)
   if cs ~= "skip" then return true end
 
-  -- 2) If you’re actively dropping legacy sensors, try that next
   local ds = dropSensor(physId, primId, appId, value)
   if ds ~= "skip" then return true end
 
-  -- 3) Finally, try a conditional rename
   renameSensor(physId, primId, appId, value)
   return true
 end
 
 function frsky.wakeup()
-  -- Bail early if telemetry is unavailable
   if not rfsuite.session.telemetryState or not rfsuite.session.telemetrySensor then
     frsky.reset()
     return
   end
-
-  -- Safety: required task objects present?
   if not (rfsuite.tasks and rfsuite.tasks.telemetry and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue) then
     return
   end
 
   if rfsuite.app and rfsuite.app.guiIsRunning == false and rfsuite.tasks.msp.mspQueue:isProcessed() then
     local discoverActive = (system and system.isSensorDiscoverActive and system.isSensorDiscoverActive() == true)
-
     if discoverActive then
-      -- ETHOS discovery: unbounded drain for faster sensor discovery
       rfsuite.utils.log("FRSKY: Discovery active, draining all frames", "info")
       while telemetryPop() do end
     else
-      -- Legacy: bounded, low CPU
-      local start = os.clock()
-      local count = 0
+      local start, count = os.clock(), 0
       while count < MAX_FRAMES_PER_WAKEUP and (os.clock() - start) <= MAX_TIME_BUDGET do
         if not telemetryPop() then break end
         count = count + 1
