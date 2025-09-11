@@ -1373,8 +1373,6 @@ function dashboard.wakeup(widget)
     elseif admin or not visible then
         -- if admin app is running or quick return
         return 
-    elseif rfsuite.session and rfsuite.session.cpuload >= 60 then
-        return        
     else
         -- default rate limit of 0.05s (50% of clock speed)
         if (now - lastWakeup) < 0.05 then return end   
