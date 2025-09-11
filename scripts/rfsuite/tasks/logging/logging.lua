@@ -44,7 +44,6 @@ local logTable = {
 
 local log_queue = {}
 local logDirChecked = false
-local cachedSensors = {} -- cache for sensor sources
 
 
 local function generateLogFilename()
@@ -103,10 +102,10 @@ end
 function logging.getLogLine()
     local values = {}
     for i, sensor in ipairs(logTable) do
-        local src = cachedSensors[sensor.name]
+        local src = telemetry and telemetry.getSensorSource(sensor.name)
         values[i] = src and src:value() or 0
     end
-    local ts = os.time()              -- integer epoch
+    local ts = os.time()
     return ts .. ", " .. rfsuite.utils.joinTableItems(values, ", ")
 end
 
@@ -114,20 +113,6 @@ function logging.getLogTable()
     return logTable
 end
 
--- Sensor cache setup — runs once when telemetry becomes active
-local function cacheSensorSources()
-    if not telemetry then return end
-    
-    cachedSensors = {}
-    for _, sensor in ipairs(logTable) do
-        cachedSensors[sensor.name] = telemetry.getSensorSource(sensor.name)
-    end
-end
-
--- Clear all cached sensors
-local function clearSensorCache()
-    cachedSensors = {}
-end
 
 function logging.flushLogs()
     if logFileName or logHeader then
@@ -140,8 +125,7 @@ function logging.flushLogs()
 end
 
 function logging.reset()
-    clearSensorCache()
-    cacheSensorSources()
+
 end
 
 function logging.wakeup()
@@ -162,15 +146,9 @@ function logging.wakeup()
 
     if not telemetry.active() then
         logging.flushLogs()
-        clearSensorCache()
-        cacheSensorSources()
         return
     end
 
-    -- Cache sensors once when telemetry activates
-    if not next(cachedSensors) then
-        cacheSensorSources()
-    end
 
     -- SIMPLIFIED logging trigger:
     if rfsuite.utils.inFlight() then

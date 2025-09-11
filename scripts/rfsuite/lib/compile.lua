@@ -56,7 +56,7 @@ end
 
 -- Adaptive LRU Cache with Pinning Support
 local LUA_RAM_THRESHOLD = 32 * 1024
-local LRU_HARD_LIMIT    = 50
+local LRU_HARD_LIMIT    = 10
 local EVICT_INTERVAL    = 5
 
 local function LRUCache()
