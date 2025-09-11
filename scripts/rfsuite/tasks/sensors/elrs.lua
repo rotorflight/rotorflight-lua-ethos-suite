@@ -2,7 +2,7 @@
 
 local arg = {...}
 local config = arg[1]
-local sidList = arg[2]   -- <- sid table passed in
+local sidList = rfsuite.tasks.sensors.sid  
 
 local elrs = {}
 elrs.name = "elrs"

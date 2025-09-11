@@ -15,7 +15,7 @@ local PREV_STATE = {}
 -- Load the shared sensor definitions (sid.lua)
 -- Expects sid.lua to 'return sensorList' (table keyed by numeric ID)
 ----------------------------------------------------------------------
-local sensorList = rfsuite.tasks.sensors.getSensors()
+local sensorList = rfsuite.tasks.sensors.sid
 
 ----------------------------------------------------------------------
 -- Build TELEMETRY_SENSORS from sid.lua

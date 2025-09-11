@@ -2,7 +2,7 @@
 
 local arg = {...}
 local config   = arg[1]
-local sidList  = arg[2]   -- <-- passed in from sensors.lua (single source of truth)
+local sidList = rfsuite.tasks.sensors.sid  
 
 local frsky = {}
 frsky.name = "frsky"
