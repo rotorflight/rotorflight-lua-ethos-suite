@@ -16,6 +16,8 @@ local round = rfsuite.utils.round
 
 local telemetry = {}
 
+local telemetryTypeChanged = false
+
 -- ========= Fast locals for frequently used globals (cuts table lookups) =========
 local os_clock       = os.clock
 local sys_getSource  = system.getSource
@@ -999,7 +1001,7 @@ function telemetry.wakeup()
     end
 
     -- Reset if telemetry is inactive or telemetry type changed
-    if (not rfsuite.session.telemetryState) or rfsuite.session.telemetryTypeChanged then
+    if (not rfsuite.session.telemetryState) or telemetryTypeChanged then
         telemetry.reset()
     end
 end
@@ -1008,6 +1010,11 @@ end
 function telemetry.getSensorStats(sensorKey)
     return telemetry.sensorStats[sensorKey] or { min = nil, max = nil }
 end
+
+function telemetry.setTelemetryTypeChanged()
+    telemetryTypeChanged = true
+end
+
 
 telemetry.sensorTable = sensorTable
 

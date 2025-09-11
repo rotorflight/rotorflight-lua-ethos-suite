@@ -31,6 +31,7 @@ msp.onConnectChecksInit = true
 
 local protocol = assert(rfsuite.compiler.loadfile("tasks/msp/protocols.lua"))()
 
+local telemetryTypeChanged = false
 
 msp.mspQueue = nil
 
@@ -96,9 +97,9 @@ function msp.wakeup()
 
    msp.activeProtocol = rfsuite.session.telemetryType
 
-    if rfsuite.tasks.wasOn == true then rfsuite.session.telemetryTypeChanged = true end
+    if rfsuite.tasks.wasOn == true then telemetryTypeChanged = true end
 
-    if rfsuite.session.telemetryTypeChanged == true then
+    if telemetryTypeChanged == true then
 
         --rfsuite.utils.log("Switching protocol: " .. msp.activeProtocol)
 
@@ -113,6 +114,7 @@ function msp.wakeup()
 
         rfsuite.utils.session()
         msp.onConnectChecksInit = true
+        telemetryTypeChanged = false
     end
 
     if rfsuite.session.telemetrySensor ~= nil and rfsuite.session.telemetryState == false then
@@ -142,6 +144,10 @@ function msp.wakeup()
         msp.mspQueue:clear()
     end
 
+end
+
+function msp.setTelemetryTypeChanged()
+    telemetryTypeChanged = true
 end
 
 function msp.reset()
