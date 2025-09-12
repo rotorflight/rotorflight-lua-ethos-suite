@@ -6,9 +6,13 @@ local config = arg[1]
 local frsky = {}
 frsky.name = "frsky"
 
+local function telemetryActive()
+  return rfsuite and rfsuite.session and rfsuite.session.telemetryState == true
+end
+
 -- Detect changes to MSP-provided whitelist
 local function slotsFingerprint()
-  local slots = rfsuite and rfsuite.session and rfsuite.session.sensorSlots
+  local slots = rfsuite and rfsuite.session and rfsuite.session.telemetryConfig 
   if not slots then return "" end
   local acc = {}
   for i = 1, #slots do acc[#acc+1] = tostring(slots[i] or "") end
@@ -25,8 +29,8 @@ local function getSidList()
 end
 
 -- Bounded drain controls
-local MAX_FRAMES_PER_WAKEUP = 32
-local MAX_TIME_BUDGET       = 0.004
+local MAX_FRAMES_PER_WAKEUP = 200
+local MAX_TIME_BUDGET       = 0.1
 
 -- runtime caches
 frsky.createSensorCache = {}
@@ -87,7 +91,7 @@ function frsky.setFblSensors(fblIds)
 end
 
 -- Default stub (until caller provides the real profile list)
-frsky.setFblSensors(rfsuite.session.sensorSlots)
+frsky.setFblSensors(rfsuite.session.telemetryConfig)
 
 ----------------------------------------------------------------------
 -- Helpers: create, drop, rename (same flow; gated by tiny maps)
@@ -202,22 +206,22 @@ function frsky.wakeup()
   local fp = slotsFingerprint()
   if fp ~= _lastSlotsFp then
     _lastSlotsFp = fp
-    frsky.setFblSensors(rfsuite.session.sensorSlots or {})
+    frsky.setFblSensors(rfsuite.session.telemetryConfig or {})
     frsky.reset() -- clears create/rename/drop caches so next frames re-apply rules
   end  
 
   if rfsuite.app and rfsuite.app.guiIsRunning == false and rfsuite.tasks.msp.mspQueue:isProcessed() then
-    local discoverActive = (system and system.isSensorDiscoverActive and system.isSensorDiscoverActive() == true)
-    if discoverActive then
-      rfsuite.utils.log("FRSKY: Discovery active, draining all frames", "info")
-      while telemetryPop() do end
-    else
-      local start, count = os.clock(), 0
-      while count < MAX_FRAMES_PER_WAKEUP and (os.clock() - start) <= MAX_TIME_BUDGET do
-        if not telemetryPop() then break end
-        count = count + 1
-      end
+
+
+  if telemetryActive() and rfsuite.session.telemetrySensor then
+    local n = 0
+    while telemetryPop() do
+      n = n + 1
+      if n >= 50 then break end
+      if rfsuite.app.triggers.mspBusy == true then break end
     end
+  end
+
   end
 end
 

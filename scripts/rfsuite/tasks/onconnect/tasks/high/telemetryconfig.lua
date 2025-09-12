@@ -37,10 +37,9 @@ function telemetryconfig.wakeup()
                 local key = "telem_sensor_slot_" .. i
                 slots[i] = tonumber(data[key]) or 0
             end
-            rfsuite.session.sensorSlots = slots
 
             -- also keep the full config table if you want other settings
-            rfsuite.session.telemetryConfig = data
+            rfsuite.session.telemetryConfig = slots
 
             -- build a string with only non-zero entries
             local parts = {}
@@ -52,7 +51,7 @@ function telemetryconfig.wakeup()
             local slotsStr = table.concat(parts, ",")
 
             if rfsuite.utils and rfsuite.utils.log then
-                rfsuite.utils.log("Updated sensorSlots: " .. slotsStr, "info")
+                rfsuite.utils.log("Updated telemetry sensors: " .. slotsStr, "info")
             end
         end)
         API.setUUID("38163617-1496-4886-8b81-6a1dd6d7ed81")
@@ -62,12 +61,12 @@ function telemetryconfig.wakeup()
 end
 
 function telemetryconfig.reset()
-    rfsuite.session.craftName = {}
+    rfsuite.rfsuite.session.telemetryConfig = {}
     mspCallMade = false
 end
 
 function telemetryconfig.isComplete()
-    if rfsuite.session.craftName ~= nil then
+    if rfsuite.session.telemetryConfig ~= nil then
         return true
     end
 end
