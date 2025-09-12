@@ -264,8 +264,8 @@ local function saveSettings()
       if completedRequests == totalRequests then
         log("All API requests have been completed!", "debug")
         if app.Page.postSave then app.Page.postSave(app.Page) end
-        app.settingsSaved()
-        rfsuite.app.Page.apidata.apiState.isProcessing = false
+           app.Page.apidata.apiState.isProcessing = false
+          app.settingsSaved()
       end
     end)
 
