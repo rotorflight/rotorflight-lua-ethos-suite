@@ -230,6 +230,10 @@ local constants = {
   FRAME_SKIP_ID  = 0xEE02,
 }
 
+local META_UID = {}
+META_UID[constants.FRAME_COUNT_ID] = true
+META_UID[constants.FRAME_SKIP_ID]  = true
+
 elrs.telemetryFrameId    = 0
 elrs.telemetryFrameSkip  = 0
 elrs.telemetryFrameCount = 0
@@ -282,7 +286,8 @@ end
 -- SINGLE GATE: if not enabled, drop the write
 setTelemetryValue = function(uid, subid, instance, value, unit, dec, name, min, max)
   if not telemetryActive() then return end
-  if not isEnabled(uid) then return end
+  -- allow meta sensors regardless of whitelist
+  if not (META_UID[uid] or isEnabled(uid)) then return end
 
   local s = getOrCreateSensor(uid, name, unit, dec, value, min, max)
   if s then
@@ -290,7 +295,7 @@ setTelemetryValue = function(uid, subid, instance, value, unit, dec, name, min, 
     if last == nil or last ~= value then
       s:value(value)
       sensors.lastvalue[uid] = value
-      sensors.lasttime[uid] = nowMs()
+      sensors.lasttime[uid]  = nowMs()
     end
   end
 end

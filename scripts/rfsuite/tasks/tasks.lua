@@ -789,7 +789,7 @@ end
 function tasks.setTelemetryTypeChanged()
     for _, task in ipairs(tasksList) do
         if tasks[task.name].setTelemetryTypeChanged then
-            rfsuite.utils.log("Notifying task [" .. task.name .. "] of telemetry type change", "info")
+            --rfsuite.utils.log("Notifying task [" .. task.name .. "] of telemetry type change", "info")
             tasks[task.name].setTelemetryTypeChanged()
         end
     end

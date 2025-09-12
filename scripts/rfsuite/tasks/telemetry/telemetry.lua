@@ -75,7 +75,7 @@ end
 
 -- Rate‐limiting for wakeup()
 local sensorRateLimit = os_clock()
-local ONCHANGE_RATE = 0.5        -- seconds between onchange scans
+local ONCHANGE_RATE = 5        -- seconds between onchange scans
 
 -- Store the last validated sensors and timestamp
 local lastValidationResult = nil
@@ -796,6 +796,7 @@ end
 
 -- Helper: get cached raw Source object for a given sensorKey
 function telemetry.getSensorSource(name)
+
     local entry = sensorTable[name]
     if not entry then return nil end
 
@@ -836,6 +837,7 @@ function telemetry.getSensorSource(name)
         end
 
     elseif rfsuite.session.telemetryType == "crsf" then
+
         if not crsfSOURCE then crsfSOURCE = sys_getSource({ category = CATEGORY_TELEMETRY_SENSOR, appId = 0xEE01 }) end
         if crsfSOURCE then
             protocol = "crsf"
