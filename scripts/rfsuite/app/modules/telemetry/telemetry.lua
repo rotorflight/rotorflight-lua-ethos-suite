@@ -291,47 +291,67 @@ local function wakeup()
   end
 
   -- save?
-  if triggerSave == true then
-    rfsuite.app.ui.progressDisplaySave(i18n("app.modules.profile_select.save_settings"))
+if triggerSave == true then
+  rfsuite.app.ui.progressDisplaySave(i18n("app.modules.profile_select.save_settings"))
 
-    local selectedSensors = {}
+  local selectedSensors = {}
 
-    -- add selected sensors first
-    for k, v in pairs(config) do
-      if v == true then
-        table.insert(selectedSensors, k)
-      end
+  -- add selected sensors first
+  for k, v in pairs(config) do
+    if v == true then
+      table.insert(selectedSensors, k)
     end
-
-    local WRITEAPI = rfsuite.tasks.msp.api.load("TELEMETRY_CONFIG")
-    WRITEAPI.setUUID("123e4567-e89b-12d3-a456-426614174000")
-    WRITEAPI.setCompleteHandler(function(self, buf)
-      applySettings()
-    end)
-
-    local buffer = rfsuite.app.Page.mspData["buffer"] -- Existing buffer
-    local sensorIndex = 13 -- Start at byte 13 (1-based indexing)
-
-    -- Insert new sensors into buffer
-    for _, sensor_id in ipairs(selectedSensors) do
-      if sensorIndex <= 52 then -- 13 bytes + 40 sensor slots = 53 max (1-based)
-        buffer[sensorIndex] = sensor_id
-        sensorIndex = sensorIndex + 1
-      else
-        break -- Stop if buffer limit is reached
-      end
-    end
-
-    -- Fill remaining slots with zeros
-    for i = sensorIndex, 52 do
-      buffer[i] = 0
-    end
-
-    -- Send updated buffer
-    WRITEAPI.write(buffer)
-
-    triggerSave = false
   end
+
+  local WRITEAPI = rfsuite.tasks.msp.api.load("TELEMETRY_CONFIG")
+  WRITEAPI.setUUID("123e4567-e89b-12d3-a456-426614174120")
+  WRITEAPI.setCompleteHandler(function(self, buf)
+    rfsuite.utils.log("Telemetry config written, now writing to EEPROM","info")
+    applySettings()
+  end)
+
+  local buffer = rfsuite.app.Page.mspData["buffer"] -- Existing buffer
+  local sensorIndex = 13 -- Start at byte 13 (1-based indexing)
+
+  -- NEW: track exactly what we apply (max 40)
+  local appliedSensors = {}
+
+  -- Insert new sensors into buffer
+  for _, sensor_id in ipairs(selectedSensors) do
+    if sensorIndex <= 52 then -- 13 bytes + 40 sensor slots = 53 max (1-based)
+      buffer[sensorIndex] = sensor_id
+      table.insert(appliedSensors, sensor_id) -- NEW: mirror applied
+      sensorIndex = sensorIndex + 1
+    else
+      break -- Stop if buffer limit is reached
+    end
+  end
+
+  -- Fill remaining slots with zeros
+  for i = sensorIndex, 52 do
+    buffer[i] = 0
+  end
+
+  -- NEW: update session copy of applied telemetry config
+  rfsuite.session = rfsuite.session or {}
+  rfsuite.session.telemetryConfig = appliedSensors
+
+  rfsuite.utils.log("Applied telemetry sensors: " .. table.concat(appliedSensors, ", "), "info")
+
+  -- Send updated buffer
+  WRITEAPI.write(buffer)
+
+  triggerSave = false
+end
+
+if setDefaultSensors == true then
+  local sensorListFromApi = getDefaultSensors(rfsuite.tasks.telemetry.listSensors())
+  for _, v in pairs(sensorListFromApi) do
+    config[v] = true
+  end
+  setDefaultSensors = false
+end
+
 
   if setDefaultSensors == true then
     local sensorListFromApi = getDefaultSensors(rfsuite.tasks.telemetry.listSensors())

@@ -130,6 +130,7 @@ local function read()
 end
 
 local function write(suppliedPayload)
+
     if MSP_API_CMD_WRITE == nil then
         rfsuite.utils.log("No value set for MSP_API_CMD_WRITE", "debug")
         return
