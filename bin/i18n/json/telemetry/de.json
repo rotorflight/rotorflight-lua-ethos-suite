@@ -34,7 +34,7 @@
     "translation": "Strom",
     "needs_translation": false
   },
-  "group_temperatures": {
+  "group_temps": {
     "english": "Temperatures",
     "translation": "Temperaturen",
     "needs_translation": false

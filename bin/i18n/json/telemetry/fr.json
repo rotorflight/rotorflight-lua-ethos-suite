@@ -34,7 +34,7 @@
     "translation": "Courant",
     "needs_translation": false
   },
-  "group_temperatures": {
+  "group_temps": {
     "english": "Temperatures",
     "translation": "Températures",
     "needs_translation": false

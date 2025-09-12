@@ -34,7 +34,7 @@
     "translation": "Current",
     "needs_translation": false
   },
-  "group_temperatures": {
+  "group_temps": {
     "english": "Temperatures",
     "translation": "Temperatures",
     "needs_translation": false
