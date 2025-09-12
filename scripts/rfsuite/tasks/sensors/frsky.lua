@@ -6,6 +6,17 @@ local config = arg[1]
 local frsky = {}
 frsky.name = "frsky"
 
+-- Detect changes to MSP-provided whitelist
+local function slotsFingerprint()
+  local slots = rfsuite and rfsuite.session and rfsuite.session.sensorSlots
+  if not slots then return "" end
+  local acc = {}
+  for i = 1, #slots do acc[#acc+1] = tostring(slots[i] or "") end
+  return table.concat(acc, ",")
+end
+
+local _lastSlotsFp = nil
+
 -- ================= Lazy sid accessor =================
 local function getSidList()
   local mod = rfsuite and rfsuite.tasks and rfsuite.tasks.sensors
@@ -76,8 +87,7 @@ function frsky.setFblSensors(fblIds)
 end
 
 -- Default stub (until caller provides the real profile list)
-local defaultFblSensors = { 3,4,5,6,15,23,43,52,60,90,91,93,95,96,99 }
-frsky.setFblSensors(defaultFblSensors)
+frsky.setFblSensors(rfsuite.session.sensorSlots)
 
 ----------------------------------------------------------------------
 -- Helpers: create, drop, rename (same flow; gated by tiny maps)
@@ -179,6 +189,7 @@ local function telemetryPop()
 end
 
 function frsky.wakeup()
+
   if not rfsuite.session.telemetryState or not rfsuite.session.telemetrySensor then
     frsky.reset()
     return
@@ -186,6 +197,14 @@ function frsky.wakeup()
   if not (rfsuite.tasks and rfsuite.tasks.telemetry and rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue) then
     return
   end
+
+  -- If MSP changed the selected sensors, rebuild tiny maps and reset caches
+  local fp = slotsFingerprint()
+  if fp ~= _lastSlotsFp then
+    _lastSlotsFp = fp
+    frsky.setFblSensors(rfsuite.session.sensorSlots or {})
+    frsky.reset() -- clears create/rename/drop caches so next frames re-apply rules
+  end  
 
   if rfsuite.app and rfsuite.app.guiIsRunning == false and rfsuite.tasks.msp.mspQueue:isProcessed() then
     local discoverActive = (system and system.isSensorDiscoverActive and system.isSensorDiscoverActive() == true)

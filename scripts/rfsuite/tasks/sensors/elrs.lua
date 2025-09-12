@@ -16,6 +16,17 @@ else
   elrs.pushFrame = function(x, y) return crsf.pushFrame(x, y) end
 end
 
+-- Track changes to the MSP-provided whitelist
+local function slotsFingerprint()
+  local slots = rfsuite and rfsuite.session and rfsuite.session.sensorSlots
+  if not slots then return "" end
+  local acc = {}
+  for i = 1, #slots do acc[#acc+1] = tostring(slots[i] or "") end
+  return table.concat(acc, ",")
+end
+
+local _lastSlotsFp = nil
+
 -- ==== Lazy sid accessor (avoids circular load; allows freeing & reload) ====
 local function getSidList()
   local mod = rfsuite and rfsuite.tasks and rfsuite.tasks.sensors
@@ -209,11 +220,8 @@ function elrs.setFblSensors(list)
   end
 end
 
--- default (stub) until caller sets the real list
-local defaultFblSensors = {
-  3,4,5,6,15,23,43,52,60,90,91,93,95,96,99
-}
-elrs.setFblSensors(defaultFblSensors)
+
+elrs.setFblSensors(rfsuite.session.sensorSlots)
 
 local function isEnabled(sidElrs)
   return enabledSidElrs[sidElrs] == true
@@ -364,6 +372,14 @@ function elrs.crossfirePop()
 end
 
 function elrs.wakeup()
+  -- Rebuild whitelist if MSP changed the selection
+  local fp = slotsFingerprint()
+  if fp ~= _lastSlotsFp then
+    _lastSlotsFp = fp
+    elrs.setFblSensors(rfsuite.session.sensorSlots or {})
+    resetSensors() -- clears local caches so new ones get created on demand
+  end
+
   if telemetryActive() and rfsuite.session.telemetrySensor then
     local n = 0
     while elrs.crossfirePop() do
