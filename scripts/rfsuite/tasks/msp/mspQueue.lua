@@ -88,6 +88,7 @@ function MspQueueController.new(opts)
     self.maxRetries = opts.maxRetries or 3
     self.timeout = opts.timeout or 2.0
 
+
     self.uuid = nil
 
     -- CPU controls
@@ -128,7 +129,7 @@ function MspQueueController:processQueue()
         self._nextProcessAt = now + self.loopInterval
     end
 
-    local mspBusyTimeout = 2.0
+    local mspBusyTimeout = 10.0
     self.mspBusyStart = self.mspBusyStart or os.clock()
 
     -- lightweight, guarded logging
@@ -147,8 +148,9 @@ function MspQueueController:processQueue()
     end
 
     -- Timeout watchdog for global MSP busy state
+    -- This aims to simply unblock the queue if something goes wrong
     if self.mspBusyStart and (os.clock() - self.mspBusyStart) > mspBusyTimeout then
-        rfsuite.utils.log("MSP busy timeout exceeded. Forcing clear.", "warn")
+        rfsuite.utils.log("MSP busy timeout exceeded. Forcing clear.", "info")
         rfsuite.app.triggers.mspBusy = false
         self.mspBusyStart = nil
         return
@@ -168,7 +170,7 @@ function MspQueueController:processQueue()
     local cmd, buf, err
 
     -- Sending cadence controlled by protocol override or default 1s
-    local lastTimeInterval = rfsuite.tasks.msp.protocol.mspIntervalOveride or 1
+    local lastTimeInterval = rfsuite.tasks.msp.protocol.mspIntervalOveride or 0.1
     if lastTimeInterval == nil then lastTimeInterval = 1 end
 
     if not system:getVersion().simulation then
@@ -203,7 +205,7 @@ function MspQueueController:processQueue()
 
     -- Per-message timeout
     if self.currentMessage and (os.clock() - self.currentMessageStartTime) > (self.currentMessage.timeout or self.timeout) then
-        if self.currentMessage.errorHandler then self.currentMessage:errorHandler() end
+        if self.currentMessage.setErrorHandler then self.currentMessage:setErrorHandler() end
         if LOG_ENABLED_MSP() then rfsuite.utils.log("Message timeout exceeded. Flushing queue.", "debug") end
         self.currentMessage = nil
         self.uuid = nil
@@ -232,7 +234,7 @@ function MspQueueController:processQueue()
     elseif self.retryCount > self.maxRetries then
         -- Hard failure: clear queue and notify
         self:clear()
-        if self.currentMessage and self.currentMessage.errorHandler then self.currentMessage:errorHandler() end
+        if self.currentMessage and self.currentMessage.setErrorHandler then self.currentMessage:setErrorHandler() end
         if rfsuite.app.Page and rfsuite.app.Page.mspTimeout then rfsuite.app.Page.mspTimeout() end
     end
 end

@@ -65,7 +65,10 @@ local delayPending = false
 
 function msp.wakeup()
 
-    if rfsuite.session.telemetrySensor == nil then return end
+    if rfsuite.session.telemetrySensor == nil then 
+        rfsuite.utils.log("No telemetry sensor configured", "info")
+        return 
+    end
 
     if not msp.sensor then
         msp.sensor = sport.getSensor({primId = 0x32})

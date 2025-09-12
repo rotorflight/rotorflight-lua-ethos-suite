@@ -41,7 +41,6 @@ local supportedProtocols = {
     sport = {
         mspTransport = "sp.lua",
         mspProtocol = "sport",
-        push = sportTelemetryPush,
         maxTxBufferSize = 6,
         maxRxBufferSize = 6,
         maxRetries = 10,

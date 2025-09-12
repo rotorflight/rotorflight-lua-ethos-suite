@@ -308,7 +308,14 @@ if triggerSave == true then
   WRITEAPI.setCompleteHandler(function(self, buf)
     rfsuite.utils.log("Telemetry config written, now writing to EEPROM","info")
     applySettings()
-  end)
+  end
+  )
+  WRITEAPI.setErrorHandler(function(self, buf)
+    rfsuite.utils.log("Write to fbl failed.","info")
+
+  end
+  )
+
 
   local buffer = rfsuite.app.Page.mspData["buffer"] -- Existing buffer
   local sensorIndex = 13 -- Start at byte 13 (1-based indexing)
@@ -416,10 +423,25 @@ local function onToolMenu(self)
   })
 end
 
+local function mspSuccess()
+  rfsuite.utils.log("MSP operation successful", "info")
+end
+
+local function mspRetry()
+  --rfsuite.utils.log("MSP operation retrying", "info")
+end
+
+local function mspTimeout()
+  rfsuite.utils.log("MSP operation timed out", "info")
+end
+
 return {
   mspData = mspData, -- expose for other modules
   openPage = openPage,
   eepromWrite = true,
+  mspSuccess = mspSuccess,
+  mspRetry = mspRetry,
+  mspTimeout = mspTimeout,
   onSaveMenu = onSaveMenu,
   onToolMenu = onToolMenu,
   reboot = false,

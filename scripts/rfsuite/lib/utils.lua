@@ -116,6 +116,7 @@ function utils.session()
         clockSet   = nil,
         resetMSP   = nil
     }
+    rfsuite.utils.log("Session initialized", "info")
 end
 
 
@@ -637,6 +638,7 @@ end
 
 
 function utils.onReboot()
+    rfsuite.utils.log("utils.onReboot called", "info")
     rfsuite.session.resetSensors    = true
     rfsuite.session.resetTelemetry  = true
     rfsuite.session.resetMSP        = true

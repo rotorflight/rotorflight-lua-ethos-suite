@@ -871,8 +871,6 @@ function app.create()
   config.environment        = system.getVersion()
   config.ethosRunningVersion= {config.environment.major, config.environment.minor, config.environment.revision}
 
-  print(rfsuite.session.apiVersion)
-
   app.lcdWidth, app.lcdHeight = lcd.getWindowSize()
   app.radio = assert(compile("app/radios.lua"))()
 
