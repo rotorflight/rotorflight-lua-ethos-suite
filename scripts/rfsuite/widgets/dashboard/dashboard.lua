@@ -54,6 +54,9 @@ local initTime = os.clock()
 
 local lastWakeup = os.clock()
 
+local isSliding = false
+local isSlidingStart = 0
+
 -- Default theme to fall back on if user or system theme fails to load
 dashboard.DEFAULT_THEME = "system/default"
 
@@ -1218,6 +1221,12 @@ function dashboard.event(widget, category, value, x, y)
         dashboard.resetFlightModeAsk()
     end
 
+    -- Touch and hold
+    if category  == 1 and value == 16642 then
+         isSliding = true
+         isSlidingStart = os.clock()
+    end
+
     if category == EVT_KEY and lcd.hasFocus() then
         local indices = getOnpressBoxIndices()
         local count = #indices
@@ -1370,6 +1379,13 @@ function dashboard.wakeup(widget)
     if not rfsuite.session.isConnected then
         -- if not connected, then poll every 1 second
         if (now - lastWakeup) < 1 then return end
+    elseif isSliding then
+        -- check if sliding timeout expired
+        if (now - isSlidingStart) > 1 then
+            isSliding = false
+        else
+            return
+        end
     elseif admin or not visible then
         -- if admin app is running or quick return
         return 
