@@ -61,7 +61,7 @@ function telemetryconfig.wakeup()
 end
 
 function telemetryconfig.reset()
-    rfsuite.session.telemetryConfig = {}
+    rfsuite.session.telemetryConfig = nil
     mspCallMade = false
 end
 

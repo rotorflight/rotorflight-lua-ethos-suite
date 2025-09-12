@@ -570,10 +570,10 @@ function apiLoader.buildWritePayload(apiname, payload, api_structure, noDelta)
     end
 
     if useDelta then
-        utils.log("[buildWritePayload] Using delta updates for " .. apiname, "info")
+        --utils.log("[buildWritePayload] Using delta updates for " .. apiname, "info")
         return apiLoader.buildDeltaPayload(apiname, payload, api_structure, positionmap, receivedBytes, receivedBytesCount)
     else
-        utils.log("[buildWritePayload] Using full rebuild for " .. apiname, "info")
+        --utils.log("[buildWritePayload] Using full rebuild for " .. apiname, "info")
         return apiLoader.buildFullPayload(apiname, payload, api_structure)
     end
 end

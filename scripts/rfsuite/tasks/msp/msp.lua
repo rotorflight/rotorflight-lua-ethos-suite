@@ -66,7 +66,7 @@ local delayPending = false
 function msp.wakeup()
 
     if rfsuite.session.telemetrySensor == nil then 
-        rfsuite.utils.log("No telemetry sensor configured", "info")
+        --rfsuite.utils.log("No telemetry sensor configured", "info")
         return 
     end
 

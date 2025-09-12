@@ -26,7 +26,6 @@ local function openPage(pidx, title, script)
     -- Clear old icons
     for i in pairs(rfsuite.app.gfx_buttons) do
         if i ~= "settings_dashboard_audio" then
-            print("Clearing icon: " .. i)
             rfsuite.app.gfx_buttons[i] = nil
         end
     end

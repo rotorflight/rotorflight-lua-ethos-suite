@@ -116,7 +116,7 @@ function utils.session()
         clockSet   = nil,
         resetMSP   = nil
     }
-    rfsuite.utils.log("Session initialized", "info")
+    --rfsuite.utils.log("Session initialized", "info")
 end
 
 

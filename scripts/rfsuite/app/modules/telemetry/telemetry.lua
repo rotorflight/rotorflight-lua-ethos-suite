@@ -318,6 +318,9 @@ if triggerSave == true then
 
 
   local buffer = rfsuite.app.Page.mspData["buffer"] -- Existing buffer
+  
+  local slotsStrBefore = table.concat(buffer, ",")
+
   local sensorIndex = 13 -- Start at byte 13 (1-based indexing)
 
   -- NEW: track exactly what we apply (max 40)
@@ -333,6 +336,8 @@ if triggerSave == true then
       break -- Stop if buffer limit is reached
     end
   end
+
+  local slotsStrAfter = table.concat(buffer, ",")
 
   -- Fill remaining slots with zeros
   for i = sensorIndex, 52 do
@@ -424,7 +429,7 @@ local function onToolMenu(self)
 end
 
 local function mspSuccess()
-  rfsuite.utils.log("MSP operation successful", "info")
+  --rfsuite.utils.log("MSP operation successful", "info")
 end
 
 local function mspRetry()
@@ -433,6 +438,12 @@ end
 
 local function mspTimeout()
   rfsuite.utils.log("MSP operation timed out", "info")
+
+  -- page cant be relied on, force close
+  rfsuite.app.audio.playTimeout = true
+  rfsuite.app.ui.disableAllFields()
+  rfsuite.app.ui.disableAllNavigationFields()
+  rfsuite.app.ui.enableNavigationField('menu')
 end
 
 return {

@@ -11,7 +11,6 @@ end
 
 local rows
 if rfsuite.utils.apiVersionCompare(">=", "12.08") then
-    print("here")
     rows = {
         i18n("app.modules.rates_advanced.response_time"),
         i18n("app.modules.rates_advanced.acc_limit"),
