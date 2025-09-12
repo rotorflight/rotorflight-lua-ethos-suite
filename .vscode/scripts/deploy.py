@@ -560,7 +560,7 @@ def _find_com_port_by_vid_pid(vid_hex, pid_hex):
         return None
 
 
-def _find_com_port(vid_hex=None, pid_hex=None, name_hint=None):
+def _find_com_port(vid_hex=None, pid_hex=None, name_hint=None, allow_fuzzy_if_no_vidpid=True, prefer_pid_from_hwid=True):
     try:
         from serial.tools import list_ports
     except Exception:
@@ -580,6 +580,21 @@ def _find_com_port(vid_hex=None, pid_hex=None, name_hint=None):
         print(f"  - device={p.device} vid={p.vid} pid={p.pid} desc='{desc}' iface='{iface}' hwid='{p.hwid}'")
 
     # 1) Strict VID/PID match if provided
+    # Helper to parse PID from the HWID string (e.g. 'USB VID:PID=0483:5750 ...')
+    def _pid_from_hwid(hw):
+        try:
+            hw = hw or ""
+            # find ...PID=hhhh:pppp...
+            token = "PID="
+            if token in hw:
+                rhs = hw.split(token, 1)[1]
+                pid_str = rhs.split(":")[1].split()[0]
+                return int(pid_str, 16)
+        except Exception:
+            pass
+        return None
+
+    # 1) Strict VID/PID match if provided (no fuzzy fallback)
     if vid_hex and pid_hex:
         try:
             vid = int(vid_hex, 16)
@@ -593,13 +608,43 @@ def _find_com_port(vid_hex=None, pid_hex=None, name_hint=None):
                         return p.device
                 except Exception:
                     pass
+            # If strict match not found, be conservative: keep waiting; do NOT choose another PID.
+            print(f"[SERIAL] No exact VID:PID match yet ({vid_hex}:{pid_hex}). Will keep scanning.")
+            return None
 
-    # 2) Fallback: fuzzy name/description match (e.g. contains 'Serial' or 'FrSky')
-    hints = [h.lower() for h in [name_hint, "frsky", "serial", "stm", "vcp", "x20", "x18", "x14"] if h]
-    for p in ports:
-        desc = f"{p.description or ''} {getattr(p,'interface','') or ''}".lower()
-        if any(h in desc for h in hints):
-            return p.device
+    # 2) If only VID is known, prefer same-VID ports, and among them prefer PID from hwid/attr == desired
+    if vid_hex and not pid_hex:
+        try:
+            vid = int(vid_hex, 16)
+        except Exception:
+            vid = None
+        candidates = []
+        for p in ports:
+            try:
+                if p.vid == vid:
+                    candidates.append(p)
+            except Exception:
+                pass
+        if candidates:
+            # Prefer 5750 if present (either via attribute or parsed from HWID)
+            def _score(cp):
+                cp_pid = getattr(cp, "pid", None)
+                hw_pid = _pid_from_hwid(getattr(cp, "hwid", None)) if prefer_pid_from_hwid else None
+                pid_val = cp_pid if cp_pid is not None else hw_pid
+                # Highest priority for 0x5750, then anything else but de-prioritize 0x5740
+                if pid_val == 0x5750: return 0
+                if pid_val == 0x5740: return 2
+                return 1
+            best = sorted(candidates, key=_score)[0]
+            return best.device
+
+    # 3) Only if no VID/PID are provided AND allowed, use fuzzy hints
+    if allow_fuzzy_if_no_vidpid and not vid_hex and not pid_hex:
+        hints = [h.lower() for h in [name_hint, "frsky", "serial", "stm", "vcp", "x20", "x18", "x14"] if h]
+        for p in ports:
+            desc = f"{p.description or ''} {getattr(p,'interface','') or ''}".lower()
+            if any(h in desc for h in hints):
+                return p.device
 
     return None
 
@@ -629,8 +674,9 @@ def tail_serial_debug(vid=DEFAULT_SERIAL_VID, pid=DEFAULT_SERIAL_PID,
 
     port = None
     for i in range(retries):
-        # Prefer strict VID/PID match, then fallback to name hint
-        port = _find_com_port(vid_hex=vid, pid_hex=pid, name_hint=name_hint)
+        # Strict VID/PID only; do not fall back to fuzzy when VID/PID are known
+        port = _find_com_port(vid_hex=vid, pid_hex=pid, name_hint=name_hint,
+                              allow_fuzzy_if_no_vidpid=False)
         if port:
             break
         print(f"[SERIAL] Waiting for COM port ({i+1}/{retries})…")
