@@ -21,6 +21,7 @@ local config = arg[1]
 local flightmode = {}
 local lastFlightMode = nil
 local hasBeenInFlight = false
+local lastArmed = false
 
 local throttleThreshold = 50 -- Throttle (%) required for flight mode transition
 
@@ -76,18 +77,36 @@ end
 -- It also manages the `hasBeenInFlight` flag to track if the system has ever been in flight.
 -- @return string The determined flight mode: "preflight", "inflight", or "postflight".
 local function determineMode()
-    if rfsuite.flightmode.current == "inflight" and not rfsuite.session.isConnected then
+    local armed     = rfsuite.session.isArmed
+    local connected = rfsuite.session.isConnected
+    local current   = rfsuite.flightmode.current
+
+    -- If we *were* inflight and now lost the link, go to postflight.
+    if current == "inflight" and not connected then
         hasBeenInFlight = false
+        lastArmed = armed
         return "postflight"
     end
 
+    -- Arming rising edge starts a fresh cycle: ensure we don't fall back to postflight.
+    if armed and not lastArmed then
+        hasBeenInFlight = false
+        lastArmed = armed
+        return "preflight"
+    end
+
+    -- In-flight has highest priority.
     if flightmode.inFlight() then
         hasBeenInFlight = true
+        lastArmed = armed
         return "inflight"
     end
 
+    -- No special transition; derive from whether we've flown since last arming.
+    lastArmed = armed
     return hasBeenInFlight and "postflight" or "preflight"
 end
+
 
 --- Wakes up the flight mode task and updates the current flight mode if it has changed.
 -- Determines the current flight mode using `determineMode()`. If the mode has changed since the last check,
@@ -99,7 +118,7 @@ function flightmode.wakeup()
         rfsuite.utils.log("Flight mode: " .. mode, "info")
         rfsuite.flightmode.current = mode
         lastFlightMode = mode
-    end
+    end    
 end
 
 return flightmode
