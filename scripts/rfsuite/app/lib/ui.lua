@@ -846,6 +846,286 @@ function ui.fieldNumber(i)
     end
 end
 
+-- Source field.
+function ui.fieldSource(i)
+    local app        = rfsuite.app
+    local page       = app.Page
+    local fields     = page.fields
+    local f          = fields[i]
+    local formLines  = app.formLines
+    local formFields = app.formFields
+
+    local posField, posText
+
+    if f.inline and f.inline >= 1 and f.label then
+        local p = rfsuite.app.utils.getInlinePositions(f, page)
+        posText, posField = p.posText, p.posField
+        form.addStaticText(formLines[rfsuite.app.formLineCnt], posText, f.t)
+    else
+        if f.t then
+            if f.label then f.t = "        " .. f.t end
+        else
+            f.t = ""
+        end
+        rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+        formLines[rfsuite.app.formLineCnt] = form.addLine(f.t)
+        posField = f.position or nil
+    end
+
+    if f.offset then
+        if f.min then f.min = f.min + f.offset end
+        if f.max then f.max = f.max + f.offset end
+    end
+
+    local minValue = rfsuite.app.utils.scaleValue(f.min, f)
+    local maxValue = rfsuite.app.utils.scaleValue(f.max, f)
+
+    if f.mult then
+        if minValue then minValue = minValue * f.mult end
+        if maxValue then maxValue = maxValue * f.mult end
+    end
+
+    minValue = minValue or 0
+    maxValue = maxValue or 0
+
+    formFields[i] = form.addSourceField(
+        formLines[rfsuite.app.formLineCnt],
+        posField,
+        function()
+            if not (page.fields and page.fields[i]) then
+                ui.disableAllFields()
+                ui.disableAllNavigationFields()
+                ui.enableNavigationField('menu')
+                return nil
+            end
+            return rfsuite.app.utils.getFieldValue(page.fields[i])
+        end,
+        function(value)
+            if f.postEdit then f.postEdit(page) end
+            if f.onChange then f.onChange(page) end
+            f.value = rfsuite.app.utils.saveFieldValue(page.fields[i], value)
+        end
+    )
+
+    local currentField = formFields[i]
+
+    if f.onFocus  then currentField:onFocus(function() f.onFocus(page) end) end
+
+    if f.disable  then currentField:enable(false)        end
+
+end
+
+-- Sensor field.
+function ui.fieldSensor(i)
+    local app        = rfsuite.app
+    local page       = app.Page
+    local fields     = page.fields
+    local f          = fields[i]
+    local formLines  = app.formLines
+    local formFields = app.formFields
+
+    local posField, posText
+
+    if f.inline and f.inline >= 1 and f.label then
+        local p = rfsuite.app.utils.getInlinePositions(f, page)
+        posText, posField = p.posText, p.posField
+        form.addStaticText(formLines[rfsuite.app.formLineCnt], posText, f.t)
+    else
+        if f.t then
+            if f.label then f.t = "        " .. f.t end
+        else
+            f.t = ""
+        end
+        rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+        formLines[rfsuite.app.formLineCnt] = form.addLine(f.t)
+        posField = f.position or nil
+    end
+
+    if f.offset then
+        if f.min then f.min = f.min + f.offset end
+        if f.max then f.max = f.max + f.offset end
+    end
+
+    local minValue = rfsuite.app.utils.scaleValue(f.min, f)
+    local maxValue = rfsuite.app.utils.scaleValue(f.max, f)
+
+    if f.mult then
+        if minValue then minValue = minValue * f.mult end
+        if maxValue then maxValue = maxValue * f.mult end
+    end
+
+    minValue = minValue or 0
+    maxValue = maxValue or 0
+
+    formFields[i] = form.addSensorField(
+        formLines[rfsuite.app.formLineCnt],
+        posField,
+        function()
+            if not (page.fields and page.fields[i]) then
+                ui.disableAllFields()
+                ui.disableAllNavigationFields()
+                ui.enableNavigationField('menu')
+                return nil
+            end
+            return rfsuite.app.utils.getFieldValue(page.fields[i])
+        end,
+        function(value)
+            if f.postEdit then f.postEdit(page) end
+            if f.onChange then f.onChange(page) end
+            f.value = rfsuite.app.utils.saveFieldValue(page.fields[i], value)
+        end
+    )
+
+    local currentField = formFields[i]
+
+    if f.onFocus  then currentField:onFocus(function() f.onFocus(page) end) end
+
+    if f.disable  then currentField:enable(false)        end
+
+end
+
+-- Color field.
+function ui.fieldColor(i)
+    local app        = rfsuite.app
+    local page       = app.Page
+    local fields     = page.fields
+    local f          = fields[i]
+    local formLines  = app.formLines
+    local formFields = app.formFields
+
+    local posField, posText
+
+    if f.inline and f.inline >= 1 and f.label then
+        local p = rfsuite.app.utils.getInlinePositions(f, page)
+        posText, posField = p.posText, p.posField
+        form.addStaticText(formLines[rfsuite.app.formLineCnt], posText, f.t)
+    else
+        if f.t then
+            if f.label then f.t = "        " .. f.t end
+        else
+            f.t = ""
+        end
+        rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+        formLines[rfsuite.app.formLineCnt] = form.addLine(f.t)
+        posField = f.position or nil
+    end
+
+    if f.offset then
+        if f.min then f.min = f.min + f.offset end
+        if f.max then f.max = f.max + f.offset end
+    end
+
+    local minValue = rfsuite.app.utils.scaleValue(f.min, f)
+    local maxValue = rfsuite.app.utils.scaleValue(f.max, f)
+
+    if f.mult then
+        if minValue then minValue = minValue * f.mult end
+        if maxValue then maxValue = maxValue * f.mult end
+    end
+
+    minValue = minValue or 0
+    maxValue = maxValue or 0
+
+    formFields[i] = form.addColorField(
+        formLines[rfsuite.app.formLineCnt],
+        posField,
+        function()
+            if not (page.fields and page.fields[i]) then
+                ui.disableAllFields()
+                ui.disableAllNavigationFields()
+                ui.enableNavigationField('menu')
+            end
+            local color = page.fields[i]
+            if type(color) ~= "number" then
+                return COLOR_BLACK
+            else 
+                return color
+            end
+        end,
+        function(value)
+            if f.postEdit then f.postEdit(page) end
+            if f.onChange then f.onChange(page) end
+            f.value = rfsuite.app.utils.saveFieldValue(page.fields[i], value)
+        end
+    )
+
+    local currentField = formFields[i]
+
+    if f.onFocus  then currentField:onFocus(function() f.onFocus(page) end) end
+
+    if f.disable  then currentField:enable(false)        end
+
+end
+
+-- Source field.
+function ui.fieldSwitch(i)
+    local app        = rfsuite.app
+    local page       = app.Page
+    local fields     = page.fields
+    local f          = fields[i]
+    local formLines  = app.formLines
+    local formFields = app.formFields
+
+    local posField, posText
+
+    if f.inline and f.inline >= 1 and f.label then
+        local p = rfsuite.app.utils.getInlinePositions(f, page)
+        posText, posField = p.posText, p.posField
+        form.addStaticText(formLines[rfsuite.app.formLineCnt], posText, f.t)
+    else
+        if f.t then
+            if f.label then f.t = "        " .. f.t end
+        else
+            f.t = ""
+        end
+        rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
+        formLines[rfsuite.app.formLineCnt] = form.addLine(f.t)
+        posField = f.position or nil
+    end
+
+    if f.offset then
+        if f.min then f.min = f.min + f.offset end
+        if f.max then f.max = f.max + f.offset end
+    end
+
+    local minValue = rfsuite.app.utils.scaleValue(f.min, f)
+    local maxValue = rfsuite.app.utils.scaleValue(f.max, f)
+
+    if f.mult then
+        if minValue then minValue = minValue * f.mult end
+        if maxValue then maxValue = maxValue * f.mult end
+    end
+
+    minValue = minValue or 0
+    maxValue = maxValue or 0
+
+    formFields[i] = form.addSwitchField(
+        formLines[rfsuite.app.formLineCnt],
+        posField,
+        function()
+            if not (page.fields and page.fields[i]) then
+                ui.disableAllFields()
+                ui.disableAllNavigationFields()
+                ui.enableNavigationField('menu')
+                return nil
+            end
+            return rfsuite.app.utils.getFieldValue(page.fields[i])
+        end,
+        function(value)
+            if f.postEdit then f.postEdit(page) end
+            if f.onChange then f.onChange(page) end
+            f.value = rfsuite.app.utils.saveFieldValue(page.fields[i], value)
+        end
+    )
+
+    local currentField = formFields[i]
+
+    if f.onFocus  then currentField:onFocus(function() f.onFocus(page) end) end
+
+    if f.disable  then currentField:enable(false)        end
+
+end
+
 -- Static text field.
 function ui.fieldStaticText(i)
     local app         = rfsuite.app
@@ -1109,7 +1389,11 @@ function ui.openPage(idx, title, script, extra1, extra2, extra3, extra5, extra6)
                 elseif field.type == 3 then rfsuite.app.ui.fieldText(i)
                 elseif field.type == 4 then rfsuite.app.ui.fieldBoolean(i)
                 elseif field.type == 5 then rfsuite.app.ui.fieldBooleanInverted(i)  
-                elseif field.type == 6 then rfsuite.app.ui.fieldSlider(i)                      
+                elseif field.type == 6 then rfsuite.app.ui.fieldSlider(i)  
+                elseif field.type == 7 then rfsuite.app.ui.fieldSource(i)   
+                elseif field.type == 8 then rfsuite.app.ui.fieldSwitch(i) 
+                elseif field.type == 9 then rfsuite.app.ui.fieldSensor(i)     
+                elseif field.type == 10 then rfsuite.app.ui.fieldColor(i) 
                 else                         rfsuite.app.ui.fieldNumber(i)
                 end
             else
