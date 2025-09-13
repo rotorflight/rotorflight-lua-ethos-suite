@@ -6,57 +6,76 @@
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
-      "args": ["--launch"],
+      "args": [
+        "--config-env", "RFSUITE_CONFIG",
+        "--launch"
+      ],
       "console": "integratedTerminal",
-      "subProcess": false,          // <- prevents auto-attach to child procs
+      "subProcess": false, // prevents auto-attach to child procs
       "justMyCode": true,
       "stopOnEntry": false,
       "preLaunchTask": "kill deploy"
-    },   
+    },
     {
       "name": "Deploy & Launch [Fast]",
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
-      "args": ["--fileext", "fast", "--launch"],
+      "args": [
+        "--config-env", "RFSUITE_CONFIG",
+        "--fileext", "fast",
+        "--launch"
+      ],
       "console": "integratedTerminal",
-      "subProcess": false,          // <- prevents auto-attach to child procs
+      "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
       "preLaunchTask": "kill deploy"
-    },       
+    },
     {
       "name": "Deploy & Choose",
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
-      "args": ["--choose", "--launch"],
+      "args": [
+        "--config-env", "RFSUITE_CONFIG",
+        "--choose",
+        "--launch"
+      ],
       "console": "integratedTerminal",
-      "subProcess": false,          // <- prevents auto-attach to child procs
+      "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
       "preLaunchTask": "kill deploy"
-    },   
+    },
     {
       "name": "Deploy & Choose [Fast]",
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
-      "args": ["--fileext", "fast", "--choose", "--launch"],
+      "args": [
+        "--config-env", "RFSUITE_CONFIG",
+        "--fileext", "fast",
+        "--choose",
+        "--launch"
+      ],
       "console": "integratedTerminal",
-      "subProcess": false,          // <- prevents auto-attach to child procs
+      "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
       "preLaunchTask": "kill deploy"
-    },      
+    },
     {
       "name": "Deploy Radio",
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
-      "args": ["--radio"],
+      "args": [
+        "--config-env", "RFSUITE_CONFIG",
+        "--radio"
+      ],
       "console": "integratedTerminal",
-      "subProcess": false,          // <- prevents auto-attach to child procs
+      "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
       "preLaunchTask": "kill deploy"
@@ -66,19 +85,24 @@
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
-      "args": ["--fileext", "fast", "--radio"],
+      "args": [
+        "--config-env", "RFSUITE_CONFIG",
+        "--fileext", "fast",
+        "--radio"
+      ],
       "console": "integratedTerminal",
-      "subProcess": false,          // <- prevents auto-attach to child procs
+      "subProcess": false,
       "justMyCode": true,
       "stopOnEntry": false,
       "preLaunchTask": "kill deploy"
-    },    
+    },
     {
       "name": "Deploy Radio + Serial Debug",
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
       "args": [
+        "--config-env", "RFSUITE_CONFIG",
         "--radio",
         "--radio-debug"
       ],
@@ -88,14 +112,14 @@
       "stopOnEntry": false,
       "preLaunchTask": "kill deploy"
     },
-     {
+    {
       "name": "Deploy Radio + Serial Debug [Fast]",
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
       "args": [
-        "--fileext",
-        "fast",
+        "--config-env", "RFSUITE_CONFIG",
+        "--fileext", "fast",
         "--radio",
         "--radio-debug"
       ],
@@ -104,14 +128,18 @@
       "justMyCode": true,
       "stopOnEntry": false,
       "preLaunchTask": "kill deploy"
-    },   
+    },
     {
       "name": "Radio: Serial Debug",
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/.vscode/scripts/deploy.py",
-      "args": ["--radio", "--connect-only"],
+      "args": [
+        "--config-env", "RFSUITE_CONFIG",
+        "--radio",
+        "--connect-only"
+      ],
       "console": "integratedTerminal"
-    }    
+    }
   ]
 }

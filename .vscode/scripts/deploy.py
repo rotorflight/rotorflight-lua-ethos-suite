@@ -479,11 +479,17 @@ def safe_full_copy(srcall, out_dir):
     pbar = tqdm(total=total)
     shutil.copytree(srcall, out_dir, dirs_exist_ok=True, copy_function=copy_verbose)
     pbar.close()
-# Load config from environment variable only
-CONFIG_PATH = os.environ.get('RFSUITE_CONFIG')
+
+# parse args early so we can know --config-env
+_p = argparse.ArgumentParser(add_help=False)
+_p.add_argument("--config-env", help="Name of env var that contains the config path")
+_early, _ = _p.parse_known_args()
+
+env_name = _early.config_env 
+CONFIG_PATH = os.environ.get(env_name)
 
 if not CONFIG_PATH:
-    print("[CONFIG ERROR] Environment variable RFSUITE_CONFIG is not set.")
+    print(f"[CONFIG ERROR] Environment variable '{env_name}' is not set.")
     sys.exit(1)
 
 if not os.path.exists(CONFIG_PATH):
@@ -496,7 +502,6 @@ try:
 except json.JSONDecodeError as e:
     print(f"[CONFIG ERROR] Failed to parse JSON config file: {e}")
     sys.exit(1)
-
 
 pbar = None
 
@@ -963,6 +968,11 @@ def launch_sims(targets):
 def main():
     global DEPLOY_TO_RADIO
     p = argparse.ArgumentParser(description='Deploy & launch')
+    p = argparse.ArgumentParser(description='Deploy & launch')
+    p.add_argument(
+        '--config-env',
+        help='Name of env var that contains the config path (eg: PROJECT_CONFIG)'
+    )
     p.add_argument('--config', default=CONFIG_PATH)
     p.add_argument('--src')
     p.add_argument('--fileext')
