@@ -15,6 +15,7 @@ local logging = {}
 local logInterval = 1 -- changing this will skew the log analysis - so dont change it
 local logFileName
 local logRateLimit = os.clock()
+local logHeader
 
 local telemetry
 
@@ -84,8 +85,14 @@ function logging.writeLogs(forcewrite)
         -- write N lines in one go
         io.write(f, table.concat(log_queue, "\n", 1, n), "\n")
 
-        -- drop the written slots WITHOUT shifting the table
-        for i = 1, n do log_queue[i] = nil end
+        -- compact the queue so #log_queue stays accurate (avoid holes)
+        local total = #log_queue
+        if n < total then
+            table.move(log_queue, n+1, total, 1)
+            for i = total - n + 1, total do log_queue[i] = nil end
+        else
+            for i = 1, total do log_queue[i] = nil end
+        end
 
         io.close(f)
         end
@@ -116,9 +123,10 @@ end
 
 function logging.flushLogs()
     if logFileName or logHeader then
-        rfsuite.utils.log("Flushing logs - ".. logFileName,"info")
-        logFileName, logHeader = nil, nil
+        rfsuite.utils.log("Flushing logs - " .. tostring(logFileName), "info")
+        -- Write pending lines before clearing state so they don't carry over
         logging.writeLogs(true)
+        logFileName, logHeader = nil, nil
         logdir = nil
         collectgarbage()
     end    
@@ -165,8 +173,14 @@ function logging.wakeup()
             rfsuite.ini.save_ini_file(iniName, iniData)
         end
         if not logHeader then
-            logHeader = logging.getLogHeader()
-            logging.queueLog(logHeader)
+            -- Write the header immediately so it is always the first line
+            local filePath = "LOGS:rfsuite/telemetry/" .. rfsuite.session.mcu_id .. "/" .. logFileName
+            local f = io.open(filePath, 'w')
+            if f then
+                io.write(f, logging.getLogHeader(), "\n")
+                io.close(f)
+                logHeader = true
+            end
         end
 
         if os.clock() - logRateLimit >= logInterval then
