@@ -167,7 +167,7 @@ local sensorList = {
               sportName = "Rate Profile" },
     [98] = { sidElrs = 0x1213, sidSport = nil,     group = "profiles", name = "LED Profile",   unit = UNIT_RAW,     prec = 0, min = 1,    max = 6,       dec ="decU8" },
 
-    [99] = { sidElrs = 0x1220, sidSport = {0x5110,0x5111},  group = "status",   name = "ADJ",           unit = UNIT_RAW,     prec = 0, min = nil,  max = nil,     dec ="decAdjFunc",
+    [99] = { sidElrs = 0x1220, sidSport = {0x5110, 0x5111},  group = "status",   name = "ADJ",           unit = UNIT_RAW,     prec = 0, min = nil,  max = nil,     dec ="decAdjFunc",
               sportName = {"Adj. Source", "Adj. Value"} },
 
     -- Debug

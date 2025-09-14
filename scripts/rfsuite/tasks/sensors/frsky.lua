@@ -160,6 +160,7 @@ local function createSensor(physId, primId, appId, frameValue)
             local sExtra = model.createSensor({ type = SENSOR_TYPE_DIY })
             sExtra:name(e.name)
             sExtra:appId(e.appId)
+            sExtra:physId(physId)  
             sExtra:module(rfsuite.session.telemetrySensor:module())
             if e.minimum  ~= nil then sExtra:minimum(e.minimum) else sExtra:minimum(-1000000000) end
             if e.maximum  ~= nil then sExtra:maximum(e.maximum) else sExtra:maximum(2147483647) end
