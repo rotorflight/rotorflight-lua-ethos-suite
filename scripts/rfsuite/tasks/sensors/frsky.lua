@@ -45,6 +45,13 @@ local renameSensorList = {}  -- [appId] = { {name="New", onlyifname="Old"}, ... 
 local dropSensorList   = {}  -- [appId] = true
 local enabledAppIds    = {}  -- whitelist of expected appIds
 
+-- Are there any actions left to perform?
+local function hasPendingActions()
+  return next(createSensorList)
+      or next(renameSensorList)
+      or next(dropSensorList)
+end
+
 ----------------------------------------------------------------------
 -- Public API: set Rotorflight IDs we expect (e.g., {0,1,5,10})
 -- We map each to its sidSport appId, build tiny lists, then free sid.
@@ -114,6 +121,7 @@ local function createSensor(physId, primId, appId, frameValue)
       if v.unit     ~= nil then s:unit(v.unit); s:protocolUnit(v.unit) end
       if v.decimals ~= nil then s:decimals(v.decimals); s:protocolDecimals(v.decimals) end
       frsky.createSensorCache[appId] = s
+      createSensorList[appId] = nil   -- rule done: stop watching this appId
       return "created"
     end
   end
@@ -133,6 +141,7 @@ local function dropSensor(physId, primId, appId, frameValue)
     if not frsky.dropped[appId] then
       src:drop()
       frsky.dropped[appId] = true
+      dropSensorList[appId] = nil     -- rule done: stop watching this appId
       return "dropped"
     end
     return "noop"
@@ -157,6 +166,7 @@ local function renameSensor(physId, primId, appId, frameValue)
       if cur == rule.onlyifname then
         src:name(rule.name)
         frsky.renamed[appId] = true
+        renameSensorList[appId] = nil -- rule done: stop watching this appId
         return "renamed"
       end
     end
@@ -213,14 +223,17 @@ function frsky.wakeup()
   if rfsuite.app and rfsuite.app.guiIsRunning == false and rfsuite.tasks.msp.mspQueue:isProcessed() then
 
 
-  if telemetryActive() and rfsuite.session.telemetrySensor then
-    local n = 0
-    while telemetryPop() do
-      n = n + 1
-      if n >= 50 then break end
-      if rfsuite.app.triggers.mspBusy == true then break end
+    -- Only drain frames while there is work to do (create/rename/drop).
+    if telemetryActive() and rfsuite.session.telemetrySensor and hasPendingActions() then
+      local n = 0
+      while telemetryPop() do
+        n = n + 1
+        if n >= 50 then break end
+        if rfsuite.app.triggers.mspBusy == true then break end
+        -- If we ran out of actions mid-loop, we can stop early.
+        if not hasPendingActions() then break end
+      end
     end
-  end
 
   end
 end
