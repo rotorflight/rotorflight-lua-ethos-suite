@@ -34,17 +34,14 @@ local MAX_TIME_BUDGET       = 0.1
 
 -- runtime caches
 frsky.createSensorCache = {}
-frsky.renameSensorCache = {}
-frsky.renamed = {}
 
 -- dynamic lists built from sid.lua + whitelist
 local createSensorList = {}  -- [appId] = {name=..., unit=..., decimals=..., minimum=..., maximum=...}
-local renameSensorList = {}  -- [appId] = { {name="New", onlyifname="Old"}, ... }
 local enabledAppIds    = {}  -- whitelist of expected appIds
 
 -- Are there any actions left to perform?
 local function hasPendingActions()
-  return next(createSensorList) or next(renameSensorList)
+  return next(createSensorList) 
 end
 
 ----------------------------------------------------------------------
@@ -52,7 +49,7 @@ end
 -- We map each to its sidSport appId, build tiny lists, then free sid.
 ----------------------------------------------------------------------
 function frsky.setFblSensors(fblIds)
-  enabledAppIds, createSensorList, renameSensorList = {}, {}, {}
+  enabledAppIds, createSensorList = {}, {}
 
   local sidList = getSidList()
   if not sidList then return end
@@ -104,9 +101,6 @@ function frsky.setFblSensors(fblIds)
           end)(),
         }
 
-        if s.sportRename then
-          renameSensorList[triggerAppId] = (s.sportRename[1] and s.sportRename) or { s.sportRename }
-        end
       end
     end
   end
@@ -122,7 +116,7 @@ end
 frsky.setFblSensors(rfsuite.session.telemetryConfig)
 
 ----------------------------------------------------------------------
--- Helpers: create, rename (same flow; gated by tiny maps)
+-- Helpers: create (same flow; gated by tiny maps)
 ----------------------------------------------------------------------
 local function createSensor(physId, primId, appId, frameValue)
   if rfsuite.session.apiVersion == nil then return "skip" end
@@ -168,32 +162,6 @@ local function createSensor(physId, primId, appId, frameValue)
   return "noop"
 end
 
-local function renameSensor(physId, primId, appId, frameValue)
-  if rfsuite.session.apiVersion == nil then return "skip" end
-  local rules = renameSensorList[appId]
-  if not rules then return "skip" end
-  if frsky.renamed[appId] then return "noop" end
-
-  if frsky.renameSensorCache[appId] == nil then
-    local src = system.getSource({ category = CATEGORY_TELEMETRY_SENSOR, appId = appId })
-    frsky.renameSensorCache[appId] = src or false
-  end
-  local src = frsky.renameSensorCache[appId]
-  if src and src ~= false then
-    local cur = src:name()
-    for _, rule in ipairs(rules) do
-      if cur == rule.onlyifname then
-        src:name(rule.name)
-        frsky.renamed[appId] = true
-        renameSensorList[appId] = nil -- rule done: stop watching this appId
-        return "renamed"
-      end
-    end
-    return "noop"
-  end
-  return "skip"
-end
-
 ----------------------------------------------------------------------
 -- Frame drain (bounded, discovery-aware). Only acts on known appIds.
 ----------------------------------------------------------------------
@@ -207,14 +175,13 @@ local function telemetryPop()
   local physId, primId, appId, value = frame:physId(), frame:primId(), frame:appId(), frame:value()
 
   -- Skip entirely if this appId is not in any of our lists (saves work)
-  if not (createSensorList[appId] or renameSensorList[appId]) then
+  if not (createSensorList[appId]) then
     return true
   end
 
   local cs = createSensor(physId, primId, appId, value)
   if cs ~= "skip" then return true end
 
-  renameSensor(physId, primId, appId, value)
   return true
 end
 
@@ -233,13 +200,13 @@ function frsky.wakeup()
   if fp ~= _lastSlotsFp then
     _lastSlotsFp = fp
     frsky.setFblSensors(rfsuite.session.telemetryConfig or {})
-    frsky.reset() -- clears create/rename caches so next frames re-apply rules
+    frsky.reset() -- clears create caches so next frames re-apply rules
   end  
 
   if rfsuite.app and rfsuite.app.guiIsRunning == false and rfsuite.tasks.msp.mspQueue:isProcessed() then
 
 
-    -- Only drain frames while there is work to do (create/rename).
+    -- Only drain frames while there is work to do (create).
     if telemetryActive() and rfsuite.session.telemetrySensor and hasPendingActions() then
       local n = 0
       while telemetryPop() do
@@ -256,8 +223,6 @@ end
 
 function frsky.reset()
   frsky.createSensorCache = {}
-  frsky.renameSensorCache = {}
-  frsky.renamed = {}
 end
 
 return frsky
