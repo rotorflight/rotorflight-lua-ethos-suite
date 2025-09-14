@@ -6,6 +6,126 @@ local config = arg[1]
 local frsky = {}
 frsky.name = "frsky"
 
+-- init caches
+frsky.createSensorCache = frsky.createSensorCache or {}
+frsky.renameSensorCache = frsky.renameSensorCache or {}
+frsky.renamed = frsky.renamed or {}
+
+
+-- rename table
+local renameSensorList = {
+    -- RPM sensors
+    [0x0500] = { name = "Headspeed", onlyifname = "RPM" },
+    [0x0501] = { name = "Tailspeed", onlyifname = "RPM" },
+    [0x0508] = { name = "ESC1 RPM", onlyifname = "RPM" },
+    [0x050A] = { name = "ESC2 RPM", onlyifname = "RPM" },
+
+    -- Voltage sensors
+    [0x0210] = { name = "Voltage", onlyifname = "VFAS" },
+    [0x0211] = { name = "ESC Voltage", onlyifname = "VFAS" },
+    [0x0218] = { name = "ESC1 Voltage", onlyifname = "VFAS" },
+    [0x0219] = { name = "BEC1 Voltage", onlyifname = "VFAS" },
+    [0x021A] = { name = "ESC2 Voltage", onlyifname = "VFAS" },
+    [0x0900] = { name = "MCU Voltage", onlyifname = "ADC3" },
+    [0x0901] = { name = "BEC Voltage", onlyifname = "ADC3" },
+    [0x0902] = { name = "BUS Voltage", onlyifname = "ADC3" },
+    [0x0910] = { name = "Cell Voltage", onlyifname = "ADC4" },
+
+    -- Current sensors
+    [0x0208] = { name = "ESC1 Current", onlyifname = "Current" },
+    [0x020A] = { name = "ESC2 Current", onlyifname = "Current" },
+    [0x0201] = { name = "ESC Current", onlyifname = "Current" },
+    [0x0222] = { name = "BEC Current", onlyifname = "Current" },
+    [0x0229] = { name = "BEC1 Current", onlyifname = "Current" },
+
+    -- Temperature sensors
+    [0x0B70] = { name = "ESC Temp", onlyifname = "ESC temp" },
+    [0x0418] = { name = "ESC1 Temp", onlyifname = "Temp2" },
+    [0x0419] = { name = "BEC1 Temp", onlyifname = "Temp2" },
+    [0x041A] = { name = "ESC2 Temp", onlyifname = "Temp2" },
+    [0x0400] = { name = "MCU Temp", onlyifname = "Temp1" },
+    [0x0401] = { name = "ESC Temp", onlyifname = "Temp1" },
+    [0x0402] = { name = "BEC Temp", onlyifname = "Temp1" },
+
+    -- Misc sensors
+    [0x0600] = { name = "Charge Level", onlyifname = "Fuel" },
+    [0x0840] = { name = "GPS Heading", onlyifname = "GPS course" },
+    [0x5210] = { name = "Y.angle", onlyifname = "Heading" },
+}
+
+
+--[[
+    renameSensor - Renames a sensor based on provided parameters if certain conditions are met.
+
+    Parameters:
+    physId (number) - The physical ID of the sensor.
+    primId (number) - The primary ID of the sensor.
+    appId (number) - The application ID of the sensor.
+    frameValue (number) - The frame value of the sensor.
+
+    Description:
+    This function checks if the API version is available and if the sensor with the given appId exists in the renameSensorList.
+    If the sensor exists and is not already cached, it retrieves the sensor source and renames it if its current name matches the specified condition.
+]]
+-- Renames a sensor to its desired name when found. If already correct, mark done.
+local function renameSensor(physId, primId, appId, frameValue)
+    if rfsuite.session.apiVersion == nil then return "skip" end
+    local v = renameSensorList[appId]
+    if not v then return "skip" end
+    if frsky.renamed[appId] then return "noop" end
+
+    if frsky.renameSensorCache[appId] == nil then
+        local src = system.getSource({ category = CATEGORY_TELEMETRY_SENSOR, appId = appId })
+        frsky.renameSensorCache[appId] = src or false
+    end
+    local src = frsky.renameSensorCache[appId]
+    if not src or src == false then
+        return "skip" -- doesn’t exist yet; try again next cycle
+    end
+
+    local current = src:name()
+    if current == v.name then
+        frsky.renamed[appId] = true
+        return "done"
+    end
+
+    -- If onlyifname is set, prefer renaming when it matches vendor default;
+    -- otherwise, still rename if it's simply not the desired name.
+    if (v.onlyifname and current == v.onlyifname) or (current ~= v.name) then
+        src:name(v.name)
+        frsky.renamed[appId] = true
+        return "renamed"
+    end
+
+    return "noop"
+end
+
+-- Rename maintenance scheduling (every 30 seconds), runs at end of wakeup()
+local RENAME_INTERVAL_MS = 30000
+frsky._nextRenameAt = frsky._nextRenameAt or 0
+
+local function nowMs()
+    if system and system.getTimeCounter then return system.getTimeCounter() end
+    return math.floor((os.clock() or 0) * 1000)
+end
+
+-- Run through all known rename rules on a short budget.
+local function runRenameMaintenance()
+    if not renameSensorList then return end
+    local t = nowMs()
+    if t < (frsky._nextRenameAt or 0) then return end
+    frsky._nextRenameAt = t + RENAME_INTERVAL_MS
+
+    local start = t
+    for appId, _ in pairs(renameSensorList) do
+        if not (frsky.renamed and frsky.renamed[appId]) then
+            pcall(function() renameSensor(nil, nil, appId, nil) end)
+            -- small time budget; stop if we’ve spent ~5ms
+            if nowMs() - start > 5 then break end
+        end
+    end
+end
+
 local function telemetryActive()
   return rfsuite and rfsuite.session and rfsuite.session.telemetryState == true
 end
@@ -34,6 +154,8 @@ local MAX_TIME_BUDGET       = 0.1
 
 -- runtime caches
 frsky.createSensorCache = {}
+frsky.renameSensorCache = {}
+frsky.renamed = {}
 
 -- dynamic lists built from sid.lua + whitelist
 local createSensorList = {}  -- [appId] = {name=..., unit=..., decimals=..., minimum=..., maximum=...}
@@ -219,10 +341,19 @@ function frsky.wakeup()
     end
 
   end
+
+
+  -- Rename sensors (if needed)
+  -- we run this every 30 seconds 
+  runRenameMaintenance()
+
 end
 
 function frsky.reset()
   frsky.createSensorCache = {}
+  frsky.renameSensorCache = {}
+  frsky.renamed = {}
+  frsky._nextRenameAt = 0
 end
 
 return frsky
