@@ -66,29 +66,59 @@ function frsky.setFblSensors(fblIds)
   for _, id in ipairs(fblIds or {}) do
     local s = sidList[id]
     if s and s.sidSport then
-      enabledAppIds[s.sidSport] = true
+      local sport = s.sidSport
+      if type(sport) == "table" then
+        enabledAppIds[sport[1]] = true     -- trigger appId when array
+      else
+        enabledAppIds[sport] = true        -- scalar case
+      end
     end
   end
 
   -- 2) Build tiny maps only for enabled appIds
   for _, s in pairs(sidList) do
-    local appId = s.sidSport
-    if appId and enabledAppIds[appId] then
-      createSensorList[appId] = {
-        name     = s.sportName or s.name,
-        unit     = s.unit,
-        decimals = (s.sportDecimals ~= nil) and s.sportDecimals or s.prec,
-        minimum  = s.min,
-        maximum  = s.max,
-      }
-      if s.sportDrop == true then
-        dropSensorList[appId] = true
-      end
-      if s.sportRename then
-        renameSensorList[appId] = (s.sportRename[1] and s.sportRename) or { s.sportRename }
+    local sport = s.sidSport
+    if sport then
+      if type(sport) ~= "table" then sport = { sport } end
+      local names = s.sportName or s.name
+      if type(names) ~= "table" then names = { names } end
+
+      -- first element is the trigger appId we expect frames for
+      local triggerAppId = sport[1]
+      if enabledAppIds[triggerAppId] then
+        -- record the primary (trigger) create rule, plus any “extras” to create
+        createSensorList[triggerAppId] = {
+          name     = names[1] or s.name,
+          unit     = s.unit,
+          decimals = (s.sportDecimals ~= nil) and s.sportDecimals or s.prec,
+          minimum  = s.min,
+          maximum  = s.max,
+          extras   = (function()
+            local acc = {}
+            for i = 2, #sport do
+              acc[#acc+1] = {
+                appId    = sport[i],                 -- DIY appId to create
+                name     = names[i] or (s.name .. " #" .. i),
+                unit     = s.unit,                   -- inherit unless you later add per-item arrays
+                decimals = (s.sportDecimals ~= nil) and s.sportDecimals or s.prec,
+                minimum  = s.min,
+                maximum  = s.max,
+              }
+            end
+            return (#acc > 0) and acc or nil
+          end)(),
+        }
+
+        if s.sportDrop == true then
+          dropSensorList[triggerAppId] = true
+        end
+        if s.sportRename then
+          renameSensorList[triggerAppId] = (s.sportRename[1] and s.sportRename) or { s.sportRename }
+        end
       end
     end
   end
+
 
   -- 3) Free sid to reclaim memory
   if rfsuite and rfsuite.tasks and rfsuite.tasks.sensors then
@@ -121,6 +151,24 @@ local function createSensor(physId, primId, appId, frameValue)
       if v.unit     ~= nil then s:unit(v.unit); s:protocolUnit(v.unit) end
       if v.decimals ~= nil then s:decimals(v.decimals); s:protocolDecimals(v.decimals) end
       frsky.createSensorCache[appId] = s
+
+      if v.extras then
+        for _, e in ipairs(v.extras) do
+          -- only create if it doesn't exist yet
+          local existing = system.getSource({ category = CATEGORY_TELEMETRY_SENSOR, appId = e.appId })
+          if not existing then
+            local sExtra = model.createSensor({ type = SENSOR_TYPE_DIY })
+            sExtra:name(e.name)
+            sExtra:appId(e.appId)
+            sExtra:module(rfsuite.session.telemetrySensor:module())
+            if e.minimum  ~= nil then sExtra:minimum(e.minimum) else sExtra:minimum(-1000000000) end
+            if e.maximum  ~= nil then sExtra:maximum(e.maximum) else sExtra:maximum(2147483647) end
+            if e.unit     ~= nil then sExtra:unit(e.unit);           sExtra:protocolUnit(e.unit) end
+            if e.decimals ~= nil then sExtra:decimals(e.decimals);   sExtra:protocolDecimals(e.decimals) end
+          end
+        end
+      end
+
       createSensorList[appId] = nil   -- rule done: stop watching this appId
       return "created"
     end
