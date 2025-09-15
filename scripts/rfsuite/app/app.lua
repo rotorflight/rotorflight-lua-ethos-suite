@@ -54,7 +54,6 @@ triggers table:
 ]]
 local triggers = {}
 triggers.exitAPP               = false
-triggers.noRFMsg               = false
 triggers.triggerSave           = false
 triggers.triggerSaveNoProgress = false
 triggers.triggerReload         = false
@@ -70,23 +69,17 @@ triggers.profileswitchLast     = nil
 triggers.rateswitchLast        = nil
 triggers.closeSave             = false
 triggers.closeSaveFake         = false
-triggers.badMspVersion         = false
-triggers.badMspVersionDisplay  = false
 triggers.closeProgressLoader   = false
 triggers.closeProgressLoaderNoisProcessed = false
-triggers.mspBusy               = false
 triggers.disableRssiTimeout    = false
-triggers.timeIsSet             = false
-triggers.invalidConnectionSetup= false
 triggers.wasConnected          = false
-triggers.isArmed               = false
 triggers.showSaveArmedWarning  = false
 
 -- Expose triggers
 app.triggers = triggers
 
 -- UI
-app.ui = assert(compile("app/lib/ui.lua"))(config)
+app.ui = nil
 
 -- Utils (loaded later in app.create if missing)
 app.utils = nil
@@ -119,7 +112,6 @@ app.radio                 = {}
 app.sensor                = {}
 app.init                  = nil
 app.guiIsRunning          = false
-app.adjfunctions          = nil
 app.profileCheckScheduler = os.clock()
 app.offlineMode           = false
 
@@ -1001,10 +993,8 @@ function app.close()
 
   -- Reset triggers
   app.triggers.exitAPP = false
-  app.triggers.noRFMsg = false
   app.triggers.telemetryState = nil
   app.triggers.wasConnected = false
-  app.triggers.invalidConnectionSetup = false
   app.triggers.disableRssiTimeout = false
 
   -- Reset dialogs
